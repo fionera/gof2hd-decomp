@@ -217,7 +217,7 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script) {
     uint32_t minHeight = layout->field_0x2d8;
     if (minHeight > imageHeight)
         imageHeight = minHeight;
-    int boxHeight = imageHeight + layout->field_0x8 + 10;
+    int boxHeight = imageHeight + layout->windowTopInset + 10;
 
     if (imageId >= 10000) {
         Wanted *wanted = (**g_Radio_drawWantedRoot)[imageId - 10000];
@@ -231,11 +231,11 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script) {
     layout->setDrawColor(-1);
     (*g_Radio_drawImageFactory)->drawChar(this->imageParts,
                                           this->boxX + 5,
-                                          layout->field_0x8 + this->boxY + 5,
+                                          layout->windowTopInset + this->boxY + 5,
                                           false);
     static_cast<Globals *>(*g_Radio_drawGlobals)->drawLines((unsigned int) (uintptr_t) this->font, this->textLines,
                                                             layout->field_0x2d4 + this->boxX + 7,
-                                                            layout->field_0x8 + this->boxY + 7);
+                                                            layout->windowTopInset + this->boxY + 7);
 
     if (this->soundPending != 0)
         this->soundPending = 0;

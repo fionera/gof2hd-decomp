@@ -665,7 +665,7 @@ void Status::resetGame() {
         delete wm;
     }
 
-    this->field_0x30 = 0;
+    this->fadeValue = 0;
     this->wingmen = 0;
     for (unsigned j = 0; j < this->field_94->size(); j = j + 1)
         (*this->field_94)[j] = 0;
@@ -1792,7 +1792,7 @@ void Status::setWingmen(Array<String *> *list) {
     if (list == 0) {
         wingmen = 0;
         this->field_0x28 = 0;
-        this->field_0x30 = 0;
+        this->fadeValue = 0;
     } else {
         Array<String *> *na = new Array<String *>();
         wingmen = (int32_t)(intptr_t)

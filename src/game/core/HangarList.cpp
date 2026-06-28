@@ -186,7 +186,7 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
 
     (*this->tabs)[4] = list;
     ListItem *terminator = new ListItem(0);
-    terminator->field_0x24 = 0;
+    terminator->selectable = 0;
     ArrayAdd(terminator, *(*this->tabs)[4]);
 }
 
@@ -199,7 +199,7 @@ void HangarList::fillBuyList(ListItem *item) {
     (*this->tabs)[3] = nullptr;
 
     uint32_t isShip = item->isShip();
-    int type = item->field_0x28;
+    int type = item->slot;
     int count = 0;
     if (isShip == 0) {
         if (!item->isSlot()) {
@@ -337,11 +337,11 @@ void HangarList::initShipTab(Ship *ship) {
                 (*items)[out] = li;
                 for (uint32_t k = 0; k < equipment->size(); ++k) {
                     if ((*equipment)[k] == li->item) {
-                        li->field_0x40 = k;
+                        li->subTabIndex = k;
                         break;
                     }
                 }
-                li->field_0x3c = j;
+                li->inTabIndex = j;
             }
             delete slotItems;
             if (!cargoEmpty) {

@@ -49,7 +49,7 @@ void ScrollTouchWindow::draw() {
     int contentHeight;
     if (this->hasFrame == 0) {
         Layout *layout = *g_STW_layout_draw_plain;
-        contentHeight = this->height - layout->field_0x2c * 2;
+        contentHeight = this->height - layout->field_0x2c_rowHeight * 2;
         scrollOffset = 0;
     } else {
         Layout *layout = *g_STW_layout_draw_window;
@@ -59,8 +59,8 @@ void ScrollTouchWindow::draw() {
                                this->width, this->height, true);
         }
         layout = *g_STW_layout_draw_window;
-        contentHeight = this->height - layout->field_0x2c * 2;
-        scrollOffset = -layout->field_0x8;
+        contentHeight = this->height - layout->field_0x2c_rowHeight * 2;
+        scrollOffset = -layout->windowTopInset;
     }
 
     this->scrollBox->draw();
@@ -73,9 +73,9 @@ void ScrollTouchWindow::draw() {
 
     if (startPx > 0 || heightPx >= 1) {
         Layout *layout = *g_STW_layout_draw_scrollbar;
-        int yOffset = (this->hasFrame == 0) ? 0 : layout->field_0x8;
-        layout->drawScrollBar((this->x + this->width) - layout->field_0x48 - layout->field_0x2c,
-                              this->y + layout->field_0x2c + yOffset,
+        int yOffset = (this->hasFrame == 0) ? 0 : layout->windowTopInset;
+        layout->drawScrollBar((this->x + this->width) - layout->field_0x48 - layout->field_0x2c_rowHeight,
+                              this->y + layout->field_0x2c_rowHeight + yOffset,
                               scrollHeight, startPx, heightPx);
     }
 
@@ -90,7 +90,7 @@ void ScrollTouchWindow::drawTextBG() {
     int x = this->x;
     int y = this->y;
     int w = this->width;
-    int pad = layout->field_0x2c;
+    int pad = layout->field_0x2c_rowHeight;
     float relHeight = this->scrollBox->getRelativeScrollHeight();
     int widthInset;
     int heightInset;
@@ -124,7 +124,7 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame) 
     int extra;
     int boxY;
     if (hasFrame) {
-        int top = layout->field_0x8;
+        int top = layout->windowTopInset;
         boxY = border + y + top;
         extra = -top;
     } else {
@@ -151,7 +151,7 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h) {
     this->height = h;
 
     Layout *layout = *g_STW_layout_1741c0;
-    int top = layout->field_0x8;
+    int top = layout->windowTopInset;
     int border = layout->field_0x4c;
     this->scrollBox = new ScrollTouchBox(border + x, top + border + y, w - border * 2,
                                          (h - top) - border * 2);

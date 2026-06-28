@@ -54,7 +54,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     if (crate->crateGeometry == nullptr ||
         (crate->stealFlag == 0 && ((Player *) crate)->isActive() == 0)) {
     detach:
-        radar->field_0x8 = nullptr;
+        radar->dockNavPtr = nullptr;
         radar->field_0x1c = nullptr;
         this->grabbedCrate = nullptr;
         this->active = 0;
@@ -106,7 +106,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         this->grabbedCrate->captureCrate(hud);
         this->grabbedCrate = nullptr;
         this->active = 0;
-        radar->field_0x8 = nullptr;
+        radar->dockNavPtr = nullptr;
         radar->field_0x1c = nullptr;
         this->soundPlaying = 0;
         gCaptureSound->stop(nullptr);

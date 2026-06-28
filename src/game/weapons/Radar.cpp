@@ -59,7 +59,7 @@ Radar::Radar(Level *level) {
     this->transform = Matrix();
 
     this->lockedEnemy = nullptr;
-    this->field_0x8 = nullptr;
+    this->dockNavPtr = nullptr;
     this->field_0x14 = 0;
     this->enabled = 1;
     this->field_0x58 = 0;

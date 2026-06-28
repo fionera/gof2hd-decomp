@@ -18,17 +18,9 @@ class Radar {
 public:
     Level *level;
 
-    union {
-        // lint: union_decl (both names referenced cross-file: RocketGun.cpp / PlayerEgo.cpp)
-        KIPlayer *lockedEnemy;
-        KIPlayer *dockTargetPtr;
-    };
+    KIPlayer *lockedEnemy;
 
-    union {
-        // lint: union_decl (both names referenced cross-file: TractorBeam.cpp / PlayerEgo.cpp)
-        KIPlayer *field_0x8;
-        KIPlayer *dockNavPtr;
-    };
+    KIPlayer *dockNavPtr;
 
     KIPlayer *lockedAsteroid;
     int field_0x10;

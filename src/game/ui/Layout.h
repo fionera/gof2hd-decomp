@@ -21,32 +21,16 @@ using ::AbyssEngine::PaintCanvas;
 
 class Layout {
 public:
-    union {
-        // lint: union_decl (dual-name alias; both cross-file: ModStation.cpp/MenuTouchWindow.cpp choiceWindowOpen, StarMap.cpp layoutVisibleFlag)
-        uint8_t choiceWindowOpen;
-        uint8_t layoutVisibleFlag;
-    };
+    uint8_t choiceWindowOpen;
 
     uint8_t _pad_0x1[3];
     int field_0x4;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x8 used cross-file: ChoiceWindow.cpp/DialogueWindow.cpp/Radio.cpp/etc, windowTopInset: MenuTouchWindow.cpp)
-        int field_0x8;
-        int windowTopInset;
-    };
+    int windowTopInset;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0xc used cross-file: WantedWindow.cpp/MenuTouchWindow.cpp/HangarWindow.cpp/etc)
-        int field_0xc;
-        int field_0xc_leftMargin;
-    };
+    int field_0xc_leftMargin;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x10 used cross-file: WantedWindow.cpp/HangarWindow.cpp/StatusWindow.cpp/etc)
-        int field_0x10;
-        int field_0x10_rightMargin;
-    };
+    int field_0x10_rightMargin;
 
     int footerTextInset;
 
@@ -54,31 +38,15 @@ public:
 
     int field_0x1c;
 
-    union {
-        // lint: union_decl (dual-name alias; both cross-file: WantedWindow.cpp field_0x20, MenuTouchWindow.cpp field_0x20_top)
-        int field_0x20;
-        int field_0x20_top;
-    };
+    int field_0x20_top;
 
     int field_0x24;
 
-    union {
-        // lint: union_decl (dual-name alias; both cross-file: HangarWindow.cpp field_0x28, WantedWindow.cpp/ListItemWindow.cpp buttonInsetX)
-        int field_0x28;
-        int buttonInsetX;
-    };
+    int buttonInsetX;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x2c used cross-file: WantedWindow.cpp/ListItemWindow.cpp/StatusWindow.cpp/etc)
-        int field_0x2c;
-        int field_0x2c_rowHeight;
-    };
+    int field_0x2c_rowHeight;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x30 used cross-file: ChoiceWindow.cpp/DialogueWindow.cpp/SpaceLounge.cpp/etc)
-        int field_0x30;
-        int field_0x30_rowHeight;
-    };
+    int field_0x30_rowHeight;
 
     int field_0x34;
     int field_0x38;
@@ -95,12 +63,7 @@ public:
     int field_0x64;
     uint8_t _pad_0x68[8];
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x70 used cross-file: WantedWindow.cpp/HangarWindow.cpp/SpaceLounge.cpp/etc)
-        int field_0x70;
-        int field_0x70_rowHeight;
-        int promptYOffset;
-    };
+    int field_0x70_rowHeight;
 
     int field_0x74;
     int field_0x78;
@@ -137,11 +100,7 @@ public:
     int field_0x10c_rowBaseY;
     int field_0x110_strip58;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x114 used cross-file: HangarWindow.cpp)
-        int field_0x114;
-        int field_0x114_strip5c;
-    };
+    int field_0x114_strip5c;
 
     uint8_t _pad_0x118[12];
     int field_0x124;

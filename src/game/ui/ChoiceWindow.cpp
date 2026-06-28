@@ -114,7 +114,7 @@ static int *g_ChoiceWindow_screenHeight_146dc4 = nullptr;
 
 void ChoiceWindow::setHeight(int height) {
     Layout *layout = *g_ChoiceWindow_layout_146dc4;
-    int top = layout->field_0x8;
+    int top = layout->windowTopInset;
     this->height = top + height;
 
     TouchButton *button = this->leftButton;
@@ -263,9 +263,9 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
         (this->width - layout->field_0x4c * 2) - layout->field_0x48,
         lines);
 
-    int contentHeight = layout->field_0x4 * (int) lines->size() + layout->field_0x8 +
+    int contentHeight = layout->field_0x4 * (int) lines->size() + layout->windowTopInset +
                         layout->field_0x4c * 2 + this->padding * 2 +
-                        layout->field_0x30;
+                        layout->field_0x30_rowHeight;
     int maxHeight = layout->field_0x278;
     if ((unsigned) contentHeight < (unsigned) maxHeight)
         maxHeight = contentHeight;
@@ -276,8 +276,8 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     this->y = y;
 
     this->scrollWindow = new ScrollTouchWindow(
-        this->x, layout->field_0x8 + y, this->width,
-        (((maxHeight - this->padding * 2) - layout->field_0x8) - layout->field_0x30) +
+        this->x, layout->windowTopInset + y, this->width,
+        (((maxHeight - this->padding * 2) - layout->windowTopInset) - layout->field_0x30_rowHeight) +
         layout->field_0x2bc,
         false);
 
@@ -342,18 +342,18 @@ void ChoiceWindow::setMiscButton(String const &text) {
                                        this->y + this->height - padding, buttonWidth, 0x22, 4);
 
     layout = *g_ChoiceWindow_layout_147068_c;
-    setHeight((this->height - layout->field_0x8) + this->padding * 2 + layout->field_0x30);
+    setHeight((this->height - layout->windowTopInset) + this->padding * 2 + layout->field_0x30_rowHeight);
 
     this->miscButton->setPosition(this->x + this->width / 2,
                                   this->y + this->height - this->padding, 0x24);
 
     layout = *g_ChoiceWindow_layout_147068_c;
-    int delta = -(layout->field_0x30 + this->padding);
+    int delta = -(layout->field_0x30_rowHeight + this->padding);
     if (this->leftButton != nullptr) this->leftButton->translate(0, delta);
     if (this->rightButton != nullptr) this->rightButton->translate(0, delta);
 
     this->scrollWindow->setYPosition(
-        *g_ChoiceWindow_screenHeight_147068 / 2 - this->height / 2 + layout->field_0x8);
+        *g_ChoiceWindow_screenHeight_147068 / 2 - this->height / 2 + layout->windowTopInset);
 }
 
 static Layout **g_ChoiceWindow_layout_1471bc = nullptr;
@@ -422,22 +422,22 @@ void ChoiceWindow::draw() {
         if (this->rightButton != nullptr) {
             this->rightButton->draw();
             pos = this->rightButton->getPosition();
-            g_ChoiceWindow_posTargetA_1471bc->rightButtonPosX = (int) pos[0];
+            g_ChoiceWindow_posTargetA_1471bc->rightOrSingleButtonPos = (int) pos[0];
             pos = this->rightButton->getPosition();
-            g_ChoiceWindow_posTargetB_1471bc->rightButtonPosY = (int) pos[1];
+            g_ChoiceWindow_posTargetB_1471bc->rightOrSingleButtonPos = (int) pos[1];
         }
 
         if (this->leftButton != nullptr) {
             pos = this->leftButton->getPosition();
-            g_ChoiceWindow_posTargetC_1471bc->leftButtonPosX = (int) pos[0];
+            g_ChoiceWindow_posTargetC_1471bc->leftButtonPos = (int) pos[0];
             pos = this->leftButton->getPosition();
-            g_ChoiceWindow_posTargetD_1471bc->leftButtonPosY = (int) pos[1];
+            g_ChoiceWindow_posTargetD_1471bc->leftButtonPos = (int) pos[1];
 
             if (this->rightButton == nullptr) {
                 pos = this->leftButton->getPosition();
-                g_ChoiceWindow_posTargetC_1471bc->singleButtonPosX = (int) pos[0];
+                g_ChoiceWindow_posTargetC_1471bc->rightOrSingleButtonPos = (int) pos[0];
                 pos = this->leftButton->getPosition();
-                g_ChoiceWindow_posTargetD_1471bc->singleButtonPosY = (int) pos[1];
+                g_ChoiceWindow_posTargetD_1471bc->rightOrSingleButtonPos = (int) pos[1];
             }
         }
 

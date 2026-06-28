@@ -446,9 +446,9 @@ int DialogueWindow::init() {
     int margin = layout->field_0x4c;
     this->scrollWindow = new ScrollTouchWindow(
         this->frameX + margin * 2 + layout->field_0x2d4,
-        layout->field_0x8 + this->frameY,
+        layout->windowTopInset + this->frameY,
         frameW - margin * 2 - layout->field_0x2d4,
-        frameH - margin * 2 - layout->field_0x8 - layout->field_0x30,
+        frameH - margin * 2 - layout->windowTopInset - layout->field_0x30_rowHeight,
         false);
 
     this->choiceWindow = new ChoiceWindow();
@@ -634,7 +634,7 @@ void DialogueWindow::draw() {
     layout = *g_dw_layoutDraw;
     int margin = layout->field_0x4c;
     (*g_dw_imageFactoryDraw)->drawChar(this->faceParts,
-                                       this->frameX + margin, this->frameY + margin + layout->field_0x8,
+                                       this->frameX + margin, this->frameY + margin + layout->windowTopInset,
                                        this->mirrorFace);
 
     this->prevButton->draw();

@@ -450,7 +450,7 @@ int StarMap::OnTouchEnd(int x, int y) {
         return 0;
     }
     Layout *layout = *g_StarMap_end_layout;
-    if (layout->layoutVisibleFlag == 0 && layout->OnTouchEnd(x, y) != 0) {
+    if (layout->choiceWindowOpen == 0 && layout->OnTouchEnd(x, y) != 0) {
         if (this->mode == 3 && this->isGalaxyMode != 0) {
             this->transitionOut = 1;
             this->momentumFactor = 0.0f;

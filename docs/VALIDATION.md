@@ -92,11 +92,15 @@ the handful of ABI-mandated exceptions that are documented inline rather than re
   **69 exported function signatures the original itself exports with `void*` params** (e.g.
   `loadingScreen(PaintCanvas*, int, void*)`, `ModStation::OnTouchEnd(int,int,void*)`) and the
   undefined-import decompiler shims — changing either would change a mangled name and break parity.
-- **`union` → single member.** Decompiler dual-name `{ realName; field_0xNN; }` aliases were collapsed
-  to the real name (with cross-file reference fixes); function-local bit-pun unions became
-  `__builtin_memcpy`/`reinterpret_cast`. Genuine type-pun data members (two different types/sizes at
-  one offset, both used cross-file — these model the binary's real memory layout, not debt) carry a
-  same-line `// lint: union_decl` waiver.
+- **`union` → single member.** Every union whose members are the *same field under different names*
+  (a `field_0xNN` placeholder + a descriptive name, or two identical-purpose fields — e.g. `Array`'s
+  `size_`/`count`, the `Layout`/`ListItem`/`Status`/`Radar` field-alias unions) was **collapsed** to
+  one member by renaming all users tree-wide to the kept name (each cross-file rename receiver-checked,
+  since `field_0xNN` names are reused across unrelated classes). Function-local bit-pun unions became
+  `__builtin_memcpy`/`reinterpret_cast`. Only **genuine type-puns** remain — members reinterpreting the
+  same bytes as *different types/sizes* (`int`/`float`, array/`Matrix`, wide field over named bytes,
+  pointer over handle/flag-bytes) — which model the binary's real memory layout and carry a same-line
+  `// lint: union_decl` waiver. A scan confirms 0 same-type placeholder-alias unions remain.
 - **one class per file** is enforced on **headers** (the public-API surface; every `.h` defines one
   class). Class/struct definitions inside a `.cpp` are single-TU implementation helpers (recovered
   data overlays / view structs) and are not separate public classes.

@@ -392,7 +392,7 @@ stationStackLoaded:
     st->field_ac = (Array<bool> *) this->field_0x84;
     st->field_b0 = this->field_0x88;
     srcByteArray = (Array<uint8_t> *) this->field_0x8c;
-    srcCount = srcByteArray->size_;
+    srcCount = srcByteArray->count;
     for (copyIndex = 0; srcCount != copyIndex; copyIndex = copyIndex + 1) {
         st->field_b4->data_[copyIndex] = srcByteArray->data_[copyIndex];
     }
@@ -449,7 +449,7 @@ afterDlcUnsaleable:
     }
     Array<BluePrint *> *bluePrintArray = (Array<BluePrint *> *) this->field_0x140;
     if (bluePrintArray != (Array<BluePrint *> *) 0x0) {
-        for (i = 0; i < bluePrintArray->size_; i = i + 1) {
+        for (i = 0; i < bluePrintArray->count; i = i + 1) {
             blueprint = bluePrintArray->data_[i];
             if ((blueprint != (BluePrint *) 0x0) &&
                 (((blueprint->getIndex() == 0xdf ||
@@ -483,25 +483,25 @@ afterDlcUnsaleable:
     st->standing = (Standing *) this->field_0x13c;
     {
         Array<uint32_t> *bpVec = (Array<uint32_t> *) this->field_0x140;
-        for (i = 0; i < bpVec->size_; i = i + 1) {
+        for (i = 0; i < bpVec->count; i = i + 1) {
             ((Array<uint32_t> *) Globals::status->bluePrints)->data_[i] = bpVec->data_[i];
         }
     }
     Globals::status->pendingProducts = (Array<PendingProduct *> *) this->field_0x144;
     {
         Array<uint32_t> *agVec = (Array<uint32_t> *) this->field_0x148;
-        for (i = 0; i < agVec->size_; i = i + 1) {
+        for (i = 0; i < agVec->count; i = i + 1) {
             ((Array<uint32_t> *) Globals::status->agents)->data_[i] = agVec->data_[i];
         }
     }
     st = Globals::status;
     st->wingmen = this->field_0x14c;
     st->field_0x2c = this->field_0x150;
-    st->field_0x30 = this->field_0x154;
+    st->fadeValue = this->field_0x154;
     st->field_0x28 = this->field_0x158;
     st->passengers = this->field_0x15c;
     srcByteArray2 = (Array<uint8_t> *) this->field_0x160;
-    srcCount = srcByteArray2->size_;
+    srcCount = srcByteArray2->count;
     for (copyIndex = 0; srcCount != copyIndex; copyIndex = copyIndex + 1) {
         ((Array<uint8_t> *) st->systemVisibilities)->data_[copyIndex] =
                 srcByteArray2->data_[copyIndex];
@@ -512,27 +512,27 @@ afterDlcUnsaleable:
     }
     visBuf[0x1a] = 1;
     srcVec = (Array<uint32_t> *) this->field_0x164;
-    for (i = 0; i < srcVec->size_; i = i + 1) {
+    for (i = 0; i < srcVec->count; i = i + 1) {
         ((Array<uint32_t> *) st->field_0x3c)->data_[i] = srcVec->data_[i];
     }
     srcVec = (Array<uint32_t> *) this->field_0x168;
-    for (i = 0; i < srcVec->size_; i = i + 1) {
+    for (i = 0; i < srcVec->count; i = i + 1) {
         ((Array<uint32_t> *) st->field_0x40)->data_[i] = srcVec->data_[i];
     }
     srcVec = (Array<uint32_t> *) this->field_0x16c;
-    for (i = 0; i < srcVec->size_; i = i + 1) {
+    for (i = 0; i < srcVec->count; i = i + 1) {
         ((Array<uint32_t> *) st->field_0x44)->data_[i] = srcVec->data_[i];
     }
     srcVec = (Array<uint32_t> *) this->field_0x170;
-    for (i = 0; i < srcVec->size_; i = i + 1) {
+    for (i = 0; i < srcVec->count; i = i + 1) {
         ((Array<uint32_t> *) st->field_0x48)->data_[i] = srcVec->data_[i];
     }
     {
         Array<uint8_t> *dstByteVec = (Array<uint8_t> *) st->field_54;
         st->field_4c = (Array<bool> *) this->field_0x174;
         srcByteArray2 = (Array<uint8_t> *) this->field_0x178;
-        i = srcByteArray2->size_;
-        if (dstByteVec->size_ <= i) {
+        i = srcByteArray2->count;
+        if (dstByteVec->count <= i) {
             for (j = 0; i != j; j = j + 1) {
                 dstByteVec->data_[j] = srcByteArray2->data_[j];
             }
@@ -578,11 +578,11 @@ afterDlcUnsaleable:
         ego->flag_0x3a = this->field_0x114;
         st->field_58 = (Array<bool> *) this->field_0x17c;
         srcVec = (Array<uint32_t> *) this->field_0x1b4;
-        if ((srcVec != (Array<uint32_t> *) 0x0) && (i = srcVec->size_, i != 0)) {
+        if ((srcVec != (Array<uint32_t> *) 0x0) && (i = srcVec->count, i != 0)) {
             for (j = 0; j < i; j = j + 1) {
                 ((Array<uint32_t> *) Globals::status->wanted)->data_[j] = srcVec->data_[j];
                 srcVec = (Array<uint32_t> *) this->field_0x1b4;
-                i = srcVec->size_;
+                i = srcVec->count;
             }
         }
         st = Globals::status;

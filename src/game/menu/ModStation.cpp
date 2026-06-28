@@ -1339,9 +1339,9 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     if (((NewsTicker *) (this->newsTicker))->OnTouchMove(x, y) != 0)
         return;
     Layout *layout = layoutObj;
-    if (y <= layout->field_0xc)
+    if (y <= layout->field_0xc_leftMargin)
         return;
-    if (*(int *) *g_ModStation_tm_screenH - layout->field_0x10 <= y)
+    if (*(int *) *g_ModStation_tm_screenH - layout->field_0x10_rightMargin <= y)
         return;
     if (x <= (int) (intptr_t) this->hangarGeom)
         return;
@@ -2470,9 +2470,9 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     if (((NewsTicker *) (this->newsTicker))->OnTouchBegin(x, y) != 0)
         return;
     Layout *layout = layoutObj;
-    if (y <= layout->field_0xc)
+    if (y <= layout->field_0xc_leftMargin)
         return;
-    if (*(int *) *g_ModStation_tb_screenH - layout->field_0x10 <= y)
+    if (*(int *) *g_ModStation_tb_screenH - layout->field_0x10_rightMargin <= y)
         return;
     if (x <= (int) (intptr_t) this->hangarGeom)
         return;

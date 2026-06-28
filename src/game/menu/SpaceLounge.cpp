@@ -823,8 +823,8 @@ void SpaceLounge::drawLounge() {
             int boxY = y - pad;
             int width = pad * 2 + textWidth;
             s2 = "";
-            layout->drawBox(2, boxX, boxY, width, layout->field_0x30, s2, 1u);
-            canvas->DrawRectangle(boxX, boxY, width, layout->field_0x30);
+            layout->drawBox(2, boxX, boxY, width, layout->field_0x30_rowHeight, s2, 1u);
+            canvas->DrawRectangle(boxX, boxY, width, layout->field_0x30_rowHeight);
 
             s3 = agent->isKnown() == 0 ? "?" : "";
             s4 = s3 + s0;
@@ -883,7 +883,7 @@ void SpaceLounge::drawLounge() {
 
     int buttonHeight = layout->field_0x2d8;
     if (this->visibleButtonCount > 2) {
-        int needed = layout->field_0x30 * (this->visibleButtonCount - 1) + layout->field_0x34 * (
+        int needed = layout->field_0x30_rowHeight * (this->visibleButtonCount - 1) + layout->field_0x34 * (
                          this->visibleButtonCount - 2);
         if (needed > buttonHeight) {
             buttonHeight = needed;
@@ -937,7 +937,7 @@ int SpaceLounge::init() {
     Layout *layout = *layoutSlot;
     int panelW = layoutMetric(layout, 0x68);
     this->panelX = panelW / 2;
-    this->panelY = layout->field_0x20 + layout->field_0xc;
+    this->panelY = layout->field_0x20_top + layout->field_0xc_leftMargin;
     this->panelWidth = panelW - layout->field_0x4c * 3 - layout->field_0x2d4;
 
     this->scrollWindow = new ScrollTouchWindow(
@@ -945,8 +945,8 @@ int SpaceLounge::init() {
         this->panelY, this->panelWidth, layoutMetric(layout, 0x6c), false);
 
     this->mode = 0;
-    this->buttonPanelY = this->panelY + layoutMetric(layout, 0x6c) + layout->field_0x2c;
-    this->buttonsHeight = (layout->field_0x34 + layout->field_0x30) * 5;
+    this->buttonPanelY = this->panelY + layoutMetric(layout, 0x6c) + layout->field_0x2c_rowHeight;
+    this->buttonsHeight = (layout->field_0x34 + layout->field_0x30_rowHeight) * 5;
 
     if (this->buttons != 0) {
         Array<TouchButton *> *oldButtons = this->buttons;
@@ -961,12 +961,12 @@ int SpaceLounge::init() {
     String *text = (*textsSlot)->getText(0);
     int baseY = this->buttonPanelY + layout->field_0x4c;
     this->buttonX = this->panelX + layoutMetric(layout, 0x68) - layout->field_0x4c - this->panelWidth;
-    this->buttonY1 = (baseY + layout->field_0x2d8 / 2) - layout->field_0x30 / 2;
+    this->buttonY1 = (baseY + layout->field_0x2d8 / 2) - layout->field_0x30_rowHeight / 2;
     this->buttonY0 = baseY;
 
     for (unsigned i = 0; i < 5; ++i) {
         TouchButton *button = new TouchButton(*text, 0, this->buttonX,
-                                              baseY + (int) i * (layout->field_0x30 + layout->field_0x34),
+                                              baseY + (int) i * (layout->field_0x30_rowHeight + layout->field_0x34),
                                               this->panelWidth, 0x11, 4);
         (*buttons)[i] = button;
         button->setTextColor(-1);

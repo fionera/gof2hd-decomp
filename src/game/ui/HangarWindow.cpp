@@ -218,7 +218,7 @@ void HangarWindow::render() {
 
                 int topY = *g_hw_screenWidth;
                 if (scrollPx > 0)
-                    topY = (topY - layout->field_0x48) - layout->field_0x2c;
+                    topY = (topY - layout->field_0x48) - layout->field_0x2c_rowHeight;
 
                 int rowGap;
                 if (tab == 0)
@@ -228,7 +228,7 @@ void HangarWindow::render() {
                 else
                     rowGap = 0;
 
-                topY += (layout->field_0x28 + this->hintOffsetX) * -2;
+                topY += (layout->buttonInsetX + this->hintOffsetX) * -2;
                 int baseY = layout->field_0x2cc;
                 int colW = layout->field_0x4c;
 
@@ -239,11 +239,11 @@ void HangarWindow::render() {
                     int y = 0;
                     for (int r = 0; r <= rows; r++) {
                         ((PaintCanvas *) canvas)->DrawImage2D((unsigned) this->hintImage,
-                                                              (layout->field_0x28 - iw) + this->hintOffsetX, y,
+                                                              (layout->buttonInsetX - iw) + this->hintOffsetX, y,
                                                               (unsigned char) 1);
-                        int off = (scrollPx < 1) ? 0 : (layout->field_0x48 + layout->field_0x2c);
+                        int off = (scrollPx < 1) ? 0 : (layout->field_0x48 + layout->field_0x2c_rowHeight);
                         ((PaintCanvas *) canvas)->DrawImage2D((unsigned) this->hintImage,
-                                                              this->hintOffsetX + layout->field_0x28 + topY + off, y,
+                                                              this->hintOffsetX + layout->buttonInsetX + topY + off, y,
                                                               (unsigned char) 0);
                         y += ih;
                     }
@@ -263,8 +263,8 @@ void HangarWindow::render() {
                 int boxW = rowGap - 2;
 
                 for (unsigned int i = 0; i < items->size(); i++) {
-                    int y = (layout->field_0x70 + this->field_0x100.d) * (int) i +
-                            this->scrollOffset + layout->field_0x20 + layout->field_0xc;
+                    int y = (layout->field_0x70_rowHeight + this->field_0x100.d) * (int) i +
+                            this->scrollOffset + layout->field_0x20_top + layout->field_0xc_leftMargin;
                     if (y < 0 || y > *g_hw_screenHeight)
                         continue;
 
@@ -274,21 +274,21 @@ void HangarWindow::render() {
 
                     if (this->selectedItem == li && ((ListItem *) (li))->isTextButton() == 0) {
                         String boxText;
-                        if (tab == 0 && ((ListItem *) li)->field_0x3c >= 0) {
-                            ((Layout *) (layout))->drawBox(10, this->hintOffsetX + layout->field_0x28, y, topY,
-                                                           layout->field_0x70, boxText);
+                        if (tab == 0 && ((ListItem *) li)->inTabIndex >= 0) {
+                            ((Layout *) (layout))->drawBox(10, this->hintOffsetX + layout->buttonInsetX, y, topY,
+                                                           layout->field_0x70_rowHeight, boxText);
                         } else {
-                            ((Layout *) (layout))->drawBox(4, this->hintOffsetX + layout->field_0x28, y, topY,
-                                                           layout->field_0x70, boxText);
+                            ((Layout *) (layout))->drawBox(4, this->hintOffsetX + layout->buttonInsetX, y, topY,
+                                                           layout->field_0x70_rowHeight, boxText);
                         }
-                    } else if (tab != 0 || ((ListItem *) li)->field_0x3c < 0) {
+                    } else if (tab != 0 || ((ListItem *) li)->inTabIndex < 0) {
                         String boxText;
-                        ((Layout *) (layout))->drawBox(3, this->hintOffsetX + layout->field_0x28, y, topY,
-                                                       layout->field_0x70, boxText);
+                        ((Layout *) (layout))->drawBox(3, this->hintOffsetX + layout->buttonInsetX, y, topY,
+                                                       layout->field_0x70_rowHeight, boxText);
                     } else {
                         String boxText;
-                        ((Layout *) (layout))->drawBox(9, this->hintOffsetX + layout->field_0x28, y, topY,
-                                                       layout->field_0x70, boxText);
+                        ((Layout *) (layout))->drawBox(9, this->hintOffsetX + layout->buttonInsetX, y, topY,
+                                                       layout->field_0x70_rowHeight, boxText);
                     }
 
                     ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
@@ -306,16 +306,16 @@ void HangarWindow::render() {
                             ((PaintCanvas *) canvas)->SetColor(shipPriceColor);
                             String price = Layout::formatCredits(((ListItem *) li)->ship->getPrice());
                             ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, price,
-                                                                 contentBase + layout->field_0x28 + this->hintOffsetX,
+                                                                 contentBase + layout->buttonInsetX + this->hintOffsetX,
                                                                  0, (bool) 1);
                             ((ImageFactory *) (*g_hw_globals))->drawShip(
-                                ((ListItem *) li)->ship->getIndex(), this->hintOffsetX + layout->field_0x28 + rowGap,
+                                ((ListItem *) li)->ship->getIndex(), this->hintOffsetX + layout->buttonInsetX + rowGap,
                                 this->iconOffsetY + y);
                             ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
                         } else if (((ListItem *) (li))->isSlot() != 0) {
                             if (tab == 4 && i == items->size() - 1) {
                                 (*this->buttons)[(0x5c) >> 2]->setPosition(
-                                    this->hintOffsetX + layout->field_0x28 + topY / 2, layout->field_0x114 + y, 0x14);
+                                    this->hintOffsetX + layout->buttonInsetX + topY / 2, layout->field_0x114_strip5c + y, 0x14);
                                 (*this->buttons)[(0x5c) >> 2]->setVisible(true);
                                 (*this->buttons)[(0x5c) >> 2]->draw();
                                 String tmp;
@@ -325,20 +325,20 @@ void HangarWindow::render() {
                             float rate = ((ListItem *) li)->bluePrint->getCompletionRate();
                             if (rate > 0.0f) {
                                 ((PaintCanvas *) canvas)->DrawImage2D((unsigned) this->progressBarBgImage,
-                                                                      layout->field_0x28 + contentBase + 2 + this->
+                                                                      layout->buttonInsetX + contentBase + 2 + this->
                                                                       hintOffsetX, 0, (unsigned char) 0);
                                 float dcw = (float) this->progressBarWidth;
                                 ((PaintCanvas *) canvas)->DrawRegion2D((unsigned) this->progressBarFillImage, 0, 0,
                                                                        (int) (rate * dcw), this->progressBarHeight,
                                                                        (float) (int) (rate * dcw),
                                                                        0, 0, 0,
-                                                                       layout->field_0x28 + contentBase + 3 + this->
+                                                                       layout->buttonInsetX + contentBase + 3 + this->
                                                                        hintOffsetX);
                                 float sliderW = (float) (this->progressBarWidth - 4);
                                 ((PaintCanvas *) canvas)->DrawImage2D((unsigned) this->progressBarBorderImage,
-                                                                      this->hintOffsetX + layout->field_0x28 +
+                                                                      this->hintOffsetX + layout->buttonInsetX +
                                                                       contentBase + 5 + (int) (rate * sliderW),
-                                                                      (layout->field_0x70 / 2) + 2 + y,
+                                                                      (layout->field_0x70_rowHeight / 2) + 2 + y,
                                                                       (unsigned char) 0x11);
                                 ((PaintCanvas *) canvas)->SetColor(0x777777ffu);
 
@@ -346,9 +346,9 @@ void HangarWindow::render() {
                                 pct.Set((long long) (int) (rate * 100.0f));
                                 sum = pct + sfx;
                                 ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, sum,
-                                                                     contentBase + 2 + layout->field_0x28 + this->
+                                                                     contentBase + 2 + layout->buttonInsetX + this->
                                                                      hintOffsetX +
-                                                                     this->progressBarWidth + layout->field_0x2c, 0,
+                                                                     this->progressBarWidth + layout->field_0x2c_rowHeight, 0,
                                                                      (bool) 0);
                                 ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
                             }
@@ -359,9 +359,9 @@ void HangarWindow::render() {
                                             bpIdx)))))->
                                     getType();
                             ((ImageFactory *) (*g_hw_globals))->drawItem(
-                                bpIdx, type, layout->field_0x28 + rowGap + this->hintOffsetX);
+                                bpIdx, type, layout->buttonInsetX + rowGap + this->hintOffsetX);
 
-                            if (((ListItem *) li)->field_0x45 != 0)
+                            if (((ListItem *) li)->craftable != 0)
                                 ((PaintCanvas *) canvas)->SetColor(0x00ed00ffu);
                         } else if (((ListItem *) (li))->isPendingProduct() != 0) {
                             int amt = ((ListItem *) li)->pendingProduct->quantity;
@@ -379,20 +379,20 @@ void HangarWindow::render() {
                                             pidx)))))->
                                     getType();
                             ((ImageFactory *) (*g_hw_globals))->drawItem(
-                                pidx, type, rowGap + layout->field_0x28 + this->hintOffsetX);
+                                pidx, type, rowGap + layout->buttonInsetX + this->hintOffsetX);
                         } else if (((ListItem *) (li))->isMoveToCargoButton() != 0) {
-                            (*this->buttons)[(0x18) >> 2]->setPosition(this->hintOffsetX + layout->field_0x28, y, 0x11);
+                            (*this->buttons)[(0x18) >> 2]->setPosition(this->hintOffsetX + layout->buttonInsetX, y, 0x11);
                             (*this->buttons)[(0x18) >> 2]->setVisible(true);
                             (*this->buttons)[(0x18) >> 2]->draw();
                         } else if (((ListItem *) (li))->isSellButton() != 0) {
-                            (*this->buttons)[(0x14) >> 2]->setPosition(this->hintOffsetX + layout->field_0x28, y, 0x11);
+                            (*this->buttons)[(0x14) >> 2]->setPosition(this->hintOffsetX + layout->buttonInsetX, y, 0x11);
                             (*this->buttons)[(0x14) >> 2]->setVisible(true);
                             (*this->buttons)[(0x14) >> 2]->draw();
                         } else {
                             String txt;
                             ((String *) &txt)->Set(((String *) ((ListItem *) li)->name)->data);
-                            ((Layout *) (layout))->drawBox(0, this->hintOffsetX + layout->field_0x28,
-                                                           (y + layout->field_0x70) - layout->field_0x1c, topY,
+                            ((Layout *) (layout))->drawBox(0, this->hintOffsetX + layout->buttonInsetX,
+                                                           (y + layout->field_0x70_rowHeight) - layout->field_0x1c, topY,
                                                            layout->field_0x1c, txt);
                         }
                     } else {
@@ -411,24 +411,24 @@ void HangarWindow::render() {
                         if (this->upgradeMode == 0) {
                             String price = Layout::formatCredits(((Item *) ((ListItem *) li)->item)->getSinglePrice());
                             ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, price,
-                                                                 contentBase + layout->field_0x28 + this->hintOffsetX,
+                                                                 contentBase + layout->buttonInsetX + this->hintOffsetX,
                                                                  0, (bool) 1);
                         }
                         int iidx = ((Item *) ((ListItem *) li)->item)->getIndex();
                         int itype = ((Item *) ((ListItem *) li)->item)->getType();
                         ((ImageFactory *) (*g_hw_globals))->drawItem(iidx, itype,
-                                                                     layout->field_0x28 + rowGap + this->hintOffsetX);
+                                                                     layout->buttonInsetX + rowGap + this->hintOffsetX);
                     }
 
                     ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, label,
-                                                         this->hintOffsetX + layout->field_0x28 + contentBase, 0,
+                                                         this->hintOffsetX + layout->buttonInsetX + contentBase, 0,
                                                          (bool) 0);
                 }
 
                 if (scrollPx > 0 || startPx > 0) {
                     ((Layout *) (layout))->drawScrollBar(
-                        ((*g_hw_screenHeight - layout->field_0x48) - layout->field_0x28) -
-                        this->hintOffsetX, layout->field_0x20 + layout->field_0xc, this->visibleHeight, startPx,
+                        ((*g_hw_screenHeight - layout->field_0x48) - layout->buttonInsetX) -
+                        this->hintOffsetX, layout->field_0x20_top + layout->field_0xc_leftMargin, this->visibleHeight, startPx,
                         scrollPx);
                 }
             }
@@ -477,8 +477,8 @@ void HangarWindow::render() {
                 else
                     vis = (i != 4 || g_hw_optionFlags[0x4c] == 0);
                 b->setVisible(vis);
-                b->setPosition(layout->field_0x28 + ((ChoiceWindow *) this->dialog)->x,
-                               layout->field_0x8);
+                b->setPosition(layout->buttonInsetX + ((ChoiceWindow *) this->dialog)->x,
+                               layout->windowTopInset);
                 b->draw();
             }
         }
@@ -520,7 +520,7 @@ void HangarWindow::render() {
                 int x = (this->gridSpacingX + this->buttonWidth) *
                         ((i + rowOff * -3) & 0xff) +
                         ((*g_hw_screenHeight / 2 - this->buttonWidth) - this->gridSpacingX);
-                int yy = (int) ((float) ((layout->field_0x20 * -3) +
+                int yy = (int) ((float) ((layout->field_0x20_top * -3) +
                                          (*g_hw_screenWidth / 2 - this->gridButtonHeight / 2)) +
                                 (float) this->gridSpacingY * -0.5f +
                                 (float) ((int) rowOff * (this->gridSpacingY + this->gridButtonHeight)));
@@ -530,12 +530,12 @@ void HangarWindow::render() {
                 ((TouchButton *) (b))->draw();
 
                 ((PaintCanvas *) canvas)->DrawImage2D((unsigned) (*(int *) ((char *) (this->tabIcons) + (i * 4))), x,
-                                                      yy - layout->field_0x2c, (unsigned char) 0x11);
+                                                      yy - layout->field_0x2c_rowHeight, (unsigned char) 0x11);
             }
         }
 
         if (this->listModeFlag == 0) {
-            int h17 = layout->field_0x30;
+            int h17 = layout->field_0x30_rowHeight;
             int h34 = layout->field_0x34;
             int th = ((PaintCanvas *) canvas)->GetTextHeight(0);
             this->dialog->setHeight((h34 + h17) * 6 + th * 2);
@@ -585,11 +585,11 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 }
             }
 
-            if (layout->field_0xc < coord) {
+            if (layout->field_0xc_leftMargin < coord) {
                 int row = IDIV(
-                    (((coord - layout->field_0xc) - layout->field_0x20) - self->field_0x100.d) -
+                    (((coord - layout->field_0xc_leftMargin) - layout->field_0x20_top) - self->field_0x100.d) -
                     self->scrollOffset,
-                    layout->field_0x70 + self->field_0x100.d);
+                    layout->field_0x70_rowHeight + self->field_0x100.d);
                 if (row < self->hangarList->getCurrentLength()) {
                     self->hangarList->setCurrentItemIndex(row);
                     if (self->currentItemIsHighlighted() != 0 &&
@@ -1169,11 +1169,11 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
 
     Layout *layout = *g_hw_layout;
     unsigned char skip = 1;
-    if (layout->field_0xc < coord && coord < *g_hw_screenWidth - layout->field_0x10) {
+    if (layout->field_0xc_leftMargin < coord && coord < *g_hw_screenWidth - layout->field_0x10_rightMargin) {
         int row = IDIV(
-            ((coord - layout->field_0xc) - layout->field_0x20) - self->field_0x100.d -
+            ((coord - layout->field_0xc_leftMargin) - layout->field_0x20_top) - self->field_0x100.d -
             self->scrollOffset,
-            layout->field_0x70 + self->field_0x100.d);
+            layout->field_0x70_rowHeight + self->field_0x100.d);
         if (self->hangarList->getCurrentLength() > row) {
             self->hangarList->setCurrentItemIndex(row);
             self->highlightItem(self->hangarList->getCurrentItem());
@@ -1340,7 +1340,7 @@ void HangarWindow::setSellMode(bool buy) {
     int tab = self->hangarList->getCurrentTab();
     if (tab == 1) {
         if (self->buyMode == 0) {
-            if (((ListItem *) (item))->isItem() != 0 && ((Item *) (item->field_0x10))->getType() != 4) {
+            if (((ListItem *) (item))->isItem() != 0 && ((Item *) (item->item))->getType() != 4) {
                 unsigned char *flags = *g_hw_itemFlags;
                 if ((*(uint8_t *) ((char *) (flags) + (0x1e))) == 0) {
                     Globals::gameText->getText(*g_hw_sellTextId1);
@@ -1359,8 +1359,8 @@ void HangarWindow::setSellMode(bool buy) {
                 (*(uint8_t *) ((char *) (flags) + (0x1d))) = 1;
                 self->dialogActive = 1;
             }
-            self->savedStationAmount = ((Item *) (item->field_0x10))->getStationAmount();
-            self->savedAmount = ((Item *) (item->field_0x10))->getAmount();
+            self->savedStationAmount = ((Item *) (item->item))->getStationAmount();
+            self->savedAmount = ((Item *) (item->item))->getAmount();
             self->savedCredits = Globals::status->getCredits();
             self->savedLoad = self->currentLoad;
         }
@@ -1467,7 +1467,7 @@ void HangarWindow::setSellMode(bool buy) {
     }
 
     self->bluePrintBuyCount = 0;
-    if (self->bluePrint->isEmpty() != 0 && ((Item *) (item->field_0x10))->getAmount() > 0) {
+    if (self->bluePrint->isEmpty() != 0 && ((Item *) (item->item))->getAmount() > 0) {
         int idx = self->bluePrint->getIndex();
         bool flag;
         AbyssEngine::String *text;
@@ -1488,8 +1488,8 @@ void HangarWindow::setSellMode(bool buy) {
         self->dialogActive = 1;
     }
 
-    self->savedBlueprintAmount = ((Item *) (item->field_0x10))->getBlueprintAmount();
-    self->savedAmount = ((Item *) (item->field_0x10))->getAmount();
+    self->savedBlueprintAmount = ((Item *) (item->item))->getBlueprintAmount();
+    self->savedAmount = ((Item *) (item->item))->getAmount();
     self->savedCredits = Globals::status->getCredits();
     self->savedLoad = self->currentLoad;
     self->bluePrintItem = self->selectedItem;
@@ -1521,7 +1521,7 @@ void HangarWindow::selectItem(ListItem *item) {
         if (((ListItem *) (item))->isSelectable() == 0)
             return;
         if (((ListItem *) (item))->isShip() == 0) {
-            if (((Item *) (li->field_0x10))->isUnsaleable() != 0)
+            if (((Item *) (li->item))->isUnsaleable() != 0)
                 return;
 
             uint8_t was = self->buyMode;
@@ -1534,12 +1534,12 @@ void HangarWindow::selectItem(ListItem *item) {
                     (*(uint8_t *) ((char *) (flags) + (0x1d))) = 1;
                     self->dialogActive = 1;
                 }
-                self->savedStationAmount = ((Item *) (li->field_0x10))->getStationAmount();
-                self->savedAmount = ((Item *) (li->field_0x10))->getAmount();
+                self->savedStationAmount = ((Item *) (li->item))->getStationAmount();
+                self->savedAmount = ((Item *) (li->item))->getAmount();
                 self->savedCredits = Globals::status->getCredits();
                 self->savedLoad = self->currentLoad;
             } else {
-                if (((ListItem *) (item))->isItem() != 0 && ((Item *) (li->field_0x10))->getType() != 4) {
+                if (((ListItem *) (item))->isItem() != 0 && ((Item *) (li->item))->getType() != 4) {
                     unsigned char *flags = *g_hw_itemFlags;
                     if ((*(uint8_t *) ((char *) (flags) + (0x1e))) == 0) {
                         Globals::gameText->getText(*g_hw_sellMsgTextId2);
@@ -1658,7 +1658,7 @@ void HangarWindow::selectItem(ListItem *item) {
             int passengerCount = globals->field_0x34;
             int chosen = passengerCount;
             if (passengerCount > 0)
-                chosen = li->field_0x3c;
+                chosen = li->inTabIndex;
             int adj = passengerCount - 1;
             if (passengerCount >= 1)
                 adj = chosen;
@@ -1675,17 +1675,17 @@ void HangarWindow::selectItem(ListItem *item) {
         }
     }
 
-    if (li->field_0x3c >= 0) {
+    if (li->inTabIndex >= 0) {
         ListItem *ci = self->hangarList->getCurrentItem();
-        self->demountItem(curItem, ci->field_0x40);
+        self->demountItem(curItem, ci->subTabIndex);
         return;
     }
 
     Globals *globals = (Globals *) *g_hw_globals;
-    int sort = li->field_0x10->getSort();
+    int sort = li->item->getSort();
     Item *existing = Globals::status->getShip()->getFirstEquipmentOfSort(sort);
     bool conflict = false;
-    if (((Item *) (li->field_0x10))->getSort() == 0x15) {
+    if (((Item *) (li->item))->getSort() == 0x15) {
         if (Globals::status->getShip()->getIndex() != 0x2c &&
             existing != 0 && Globals::status->getShip()->getIndex() != 0x31)
             conflict = true;
@@ -1693,22 +1693,22 @@ void HangarWindow::selectItem(ListItem *item) {
         conflict = true;
     }
 
-    if (conflict && li->field_0x10->canBeInstalledMultipleTimes() == 0) {
+    if (conflict && li->item->canBeInstalledMultipleTimes() == 0) {
         String name, copy, etext, fmt, result, etext2, fmt2, result2;
         ((String *) &copy)->Set((name).data);
         ((Item *) (existing))->getIndex();
         Status_replaceHash(&result, globals, &copy, &etext, &fmt);
-        ((Item *) (li->field_0x10))->getIndex();
+        ((Item *) (li->item))->getIndex();
         Status_replaceHash(&result2, globals, &result, &etext2, &fmt2);
         self->dialog->set(*(String *) &name, true);
         self->replaceEquipPending = 1;
         self->dialogActive = 1;
-        self->pendingMountItem = li->field_0x10;
+        self->pendingMountItem = li->item;
         self->pendingDemountItem = existing;
         return;
     }
 
-    self->mountItem(li->field_0x10);
+    self->mountItem(li->item);
 }
 
 float HangarWindow::getRelativeScrollHeight() {
@@ -1880,7 +1880,7 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
         return 0;
     }
 
-    if (layout->field_0xc < coord && coord < *g_hw_screenWidth - layout->field_0x10) {
+    if (layout->field_0xc_leftMargin < coord && coord < *g_hw_screenWidth - layout->field_0x10_rightMargin) {
         int dy = coord - this->lastTouchY;
         this->scrollDelta = dy;
         this->damping = 1.0f;
@@ -1923,7 +1923,7 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
     ListItem *item = (ListItem *) this->hangarList->getCurrentItemAt(row);
     if (item == 0)
         return;
-    Item *itm = item->field_0x10;
+    Item *itm = item->item;
     if (itm == 0 || ((Item *) (itm))->getType() != 1)
         return;
     if (((ListItem *) (item))->isItem() == 0 || ((Item *) (itm))->getType() != 1)
@@ -1995,7 +1995,7 @@ void HangarWindow::showFreeCreditsWindow() {
     }
     int btnW = ((TouchButton *) (0))->getWidth();
     Layout *layout = *g_hw_layout;
-    this->dialog->setWidth(layout->field_0x2c + btnW + maxW + layout->field_0x28 * 4);
+    this->dialog->setWidth(layout->field_0x2c_rowHeight + btnW + maxW + layout->buttonInsetX * 4);
 
     this->freeCreditsActive = 1;
     this->dialogActive = 1;
@@ -2278,8 +2278,8 @@ void HangarWindow::initialize() {
 
     self->currentLoad = Globals::status->getShip()->getCurrentLoad();
     Layout *lay2 = *g_hw_layout;
-    self->visibleHeight = ((*g_hw_screenHeight - lay2->field_0x10 - lay2->field_0xc) -
-                           lay2->field_0x20) - lay2->field_0x24;
+    self->visibleHeight = ((*g_hw_screenHeight - lay2->field_0x10_rightMargin - lay2->field_0xc_leftMargin) -
+                           lay2->field_0x20_top) - lay2->field_0x24;
 
     int extra = 0;
     if (*g_hw_blackMarketHintFlag != 0 && *g_hw_introHintFlag == 0) {

@@ -6,11 +6,7 @@
 template<class T>
 class Array {
 public:
-    union {
-        // lint: union_decl (Array length is dual-named size_/count by the decompiler; both used pervasively tree-wide)
-        unsigned int size_;
-        unsigned int count;
-    };
+    unsigned int count;
 
     T *data_;
 
@@ -23,8 +19,8 @@ public:
     Array(const Array &o) {
         capacity_ = o.capacity_ ? o.capacity_ : 1;
         data_ = static_cast<T *>(::operator new[](capacity_ * sizeof(T)));
-        size_ = o.size_;
-        for (unsigned int i = 0; i < size_; ++i) data_[i] = o.data_[i];
+        count = o.count;
+        for (unsigned int i = 0; i < count; ++i) data_[i] = o.data_[i];
     }
 
     Array &operator=(const Array &o) {
@@ -32,37 +28,37 @@ public:
             if (data_) ::operator delete[](data_);
             capacity_ = o.capacity_ ? o.capacity_ : 1;
             data_ = static_cast<T *>(::operator new[](capacity_ * sizeof(T)));
-            size_ = o.size_;
-            for (unsigned int i = 0; i < size_; ++i) data_[i] = o.data_[i];
+            count = o.count;
+            for (unsigned int i = 0; i < count; ++i) data_[i] = o.data_[i];
         }
         return *this;
     }
 
-    unsigned int size() const { return size_; }
-    bool empty() const { return size_ == 0; }
+    unsigned int size() const { return count; }
+    bool empty() const { return count == 0; }
     T *data() { return data_; }
     const T *data() const { return data_; }
     T &operator[](unsigned int i) { return data_[i]; }
     const T &operator[](unsigned int i) const { return data_[i]; }
     T *begin() { return data_; }
-    T *end() { return data_ + size_; }
+    T *end() { return data_ + count; }
     const T *begin() const { return data_; }
-    const T *end() const { return data_ + size_; }
+    const T *end() const { return data_ + count; }
     T &front() { return data_[0]; }
-    T &back() { return data_[size_ - 1]; }
+    T &back() { return data_[count - 1]; }
     T &at(unsigned int i) { return data_[i]; }
 
-    void pop_back() { if (size_) --size_; }
+    void pop_back() { if (count) --count; }
 
     void erase(T *pos) {
         for (T *q = pos; q + 1 != end(); ++q) *q = *(q + 1);
-        if (size_) --size_;
+        if (count) --count;
     }
 
     void insert(T *pos, T item) {
         unsigned int idx = static_cast<unsigned int>(pos - data_);
         ArrayAdd(item, *this);
-        for (unsigned int i = size_ - 1; i > idx; --i) data_[i] = data_[i - 1];
+        for (unsigned int i = count - 1; i > idx; --i) data_[i] = data_[i - 1];
         data_[idx] = item;
     }
 
@@ -83,7 +79,7 @@ template<class T>
 Array<T>::Array() {
     T *p = static_cast<T *>(::operator new[](sizeof(T)));
     *p = T();
-    size_ = 0;
+    count = 0;
     data_ = p;
     capacity_ = 1;
 }
@@ -96,23 +92,23 @@ Array<T>::~Array() {
 
 template<class T>
 void ArrayAdd(T item, Array<T> &a) {
-    a.capacity_ = a.size_ + 1;
+    a.capacity_ = a.count + 1;
     a.data_ = static_cast<T *>(realloc(a.data_, a.capacity_ * sizeof(T)));
-    a.data_[a.size_] = item;
-    a.size_ = a.capacity_;
+    a.data_[a.count] = item;
+    a.count = a.capacity_;
 }
 
 template<class T>
 void ArrayAdd(const T *src, unsigned int count, Array<T> &a) {
-    a.capacity_ = a.size_ + count;
+    a.capacity_ = a.count + count;
     a.data_ = static_cast<T *>(realloc(a.data_, a.capacity_ * sizeof(T)));
-    memcpy(a.data_ + a.size_, src, count * sizeof(T));
-    a.size_ = a.capacity_;
+    memcpy(a.data_ + a.count, src, count * sizeof(T));
+    a.count = a.capacity_;
 }
 
 template<class T>
 void ArrayAdd(const Array<T> &src, Array<T> &a) {
-    ArrayAdd(src.data_, src.size_, a);
+    ArrayAdd(src.data_, src.count, a);
 }
 
 template<class T>
@@ -126,12 +122,12 @@ void ArraySet(const T *src, unsigned int count, Array<T> &a) {
         a.data_ = p;
     }
     memcpy(p, src, count * sizeof(T));
-    a.size_ = count;
+    a.count = count;
 }
 
 template<class T>
 void ArraySet(const Array<T> &src, Array<T> &a) {
-    ArraySet(src.data_, src.size_, a);
+    ArraySet(src.data_, src.count, a);
 }
 
 template<class T>
@@ -149,13 +145,13 @@ void ArraySetLength(unsigned int n, Array<T> &a) {
         a.data_ = p;
     }
     memset(p, 0, c * sizeof(T));
-    a.size_ = n;
+    a.count = n;
 }
 
 template<class T>
 void ArrayRemoveAll(Array<T> &a) {
     a.capacity_ = 1;
-    a.size_ = 0;
+    a.count = 0;
     a.data_ = static_cast<T *>(realloc(a.data_, sizeof(T)));
     memset(a.data_, 0, a.capacity_ * sizeof(T));
 }
@@ -163,12 +159,12 @@ void ArrayRemoveAll(Array<T> &a) {
 template<class T>
 void ArrayRemove(T item, Array<T> &a) {
     unsigned int write = 0;
-    for (unsigned int read = 0; read < a.size_; ++read) {
+    for (unsigned int read = 0; read < a.count; ++read) {
         T cur = a.data_[read];
         if (cur != item)
             a.data_[write++] = cur;
     }
-    a.size_ = write;
+    a.count = write;
     unsigned int cap = write ? write : 1;
     a.capacity_ = cap;
     a.data_ = static_cast<T *>(realloc(a.data_, cap * sizeof(T)));
@@ -202,15 +198,15 @@ void ArrayReleaseArrays(Array<T> &a) {
 
 template<class T>
 void ArrayAddCached(T item, Array<T> &a) {
-    if (a.size_ >= a.capacity_) {
+    if (a.count >= a.capacity_) {
         unsigned int oldCap = a.capacity_;
         a.data_ = static_cast<T *>(realloc(a.data_, static_cast<size_t>(oldCap) * 2 * sizeof(T)));
         memset(reinterpret_cast<char *>(a.data_) + static_cast<size_t>(oldCap) * sizeof(T),
                0, static_cast<size_t>(oldCap) * sizeof(T));
         a.capacity_ = oldCap * 2;
     }
-    a.data_[a.size_] = item;
-    a.size_ = a.size_ + 1;
+    a.data_[a.count] = item;
+    a.count = a.count + 1;
 }
 
 #endif

@@ -4568,7 +4568,7 @@ void PaintCanvas::DrawStringColor(unsigned int index, const AbyssEngine::String 
 }
 
 void PaintCanvas::SetMatForGlow(AbyssEngine::Material *glowSource) {
-    for (unsigned int i = 0; i < glowSource->meshes.size_; i++) {
+    for (unsigned int i = 0; i < glowSource->meshes.count; i++) {
         ArrayAdd<AbyssEngine::Mesh *>(glowSource->meshes.data_[i],
                                       *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&this->glowMeshes_count));
 

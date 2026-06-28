@@ -34,8 +34,7 @@ public:
     Array<Agent *> *agents;
     int32_t wingmen;
 
-    union {
-        // lint: union_decl -- 32-bit word overlaid with per-byte access
+    union { // lint: union_decl -- 32-bit word overlaid with per-byte access
         int32_t field_0x28;
 
         struct {
@@ -48,14 +47,9 @@ public:
 
     int32_t field_0x2c;
 
-    union {
-        // lint: union_decl -- both names live cross-file (Level.cpp field_0x30 / MenuTouchWindow fadeValue)
-        int32_t field_0x30;
-        uint32_t fadeValue;
-    };
+    uint32_t fadeValue;
 
-    union {
-        // lint: union_decl -- int overlaid with per-byte access
+    union { // lint: union_decl -- int overlaid with per-byte access
         int32_t passengers;
 
         struct {
@@ -66,26 +60,17 @@ public:
         };
     };
 
-    union {
-        // lint: union_decl -- Array<bool>* overlaid with flag bytes
+    union { // lint: union_decl -- Array<bool>* overlaid with flag bytes
         Array<bool> *systemVisibilities;
 
         struct {
             uint8_t field_0x34_b0;
 
-            union {
-                // lint: union_decl -- flag_0x35 used cross-file (MenuTouchWindow.cpp status->flag_0x35)
-                uint8_t dlcOverrideFlag;
-                uint8_t flag_0x35;
-            };
+            uint8_t dlcOverrideFlag;
 
             uint8_t field_0x36_b2;
 
-            union {
-                // lint: union_decl -- flag_0x37 used cross-file (MenuTouchWindow.cpp status->flag_0x37)
-                uint8_t versionOverrideFlag;
-                uint8_t flag_0x37;
-            };
+            uint8_t versionOverrideFlag;
         };
     };
 
@@ -94,8 +79,7 @@ public:
     Array<int> *field_0x44;
     Array<int> *field_0x48;
 
-    union {
-        // lint: union_decl -- Array<bool>* overlaid with per-byte access
+    union { // lint: union_decl -- Array<bool>* overlaid with per-byte access
         Array<bool> *field_4c;
 
         struct {
@@ -122,11 +106,7 @@ public:
     int32_t field_84;
     int32_t field_88;
 
-    union {
-        // lint: union_decl -- both names live cross-file (StarMap.cpp field_8c / MenuTouchWindow preSetField0x84)
-        int32_t field_8c;
-        int32_t preSetField0x84;
-    };
+    int32_t field_8c;
 
     Array<int> *field_90;
     Array<bool> *field_94;
@@ -143,8 +123,7 @@ public:
     int32_t field_c0;
     int32_t field_c4;
 
-    union {
-        // lint: union_decl -- two 32-bit fields overlaid with 64-bit access
+    union { // lint: union_decl -- two 32-bit fields overlaid with 64-bit access
         struct {
             int32_t field_c8;
             int32_t field_cc;
@@ -172,8 +151,7 @@ public:
     uint8_t field_0x108;
     uint8_t _pad_0x109[3];
 
-    union {
-        // lint: union_decl -- struct overlaid with 64-bit access
+    union { // lint: union_decl -- struct overlaid with 64-bit access
         struct {
             int32_t field_10c;
             uint8_t field_110;
@@ -188,8 +166,7 @@ public:
     int32_t field_118;
     int32_t field_11c;
 
-    union {
-        // lint: union_decl -- uint8 field_120 vs int32 mode_0x114, both used cross-file
+    union { // lint: union_decl -- uint8 field_120 vs int32 mode_0x114, both used cross-file
         uint8_t field_120;
         int32_t mode_0x114;
     };
@@ -205,8 +182,7 @@ public:
     int32_t field_144;
     int32_t field_148;
 
-    union {
-        // lint: union_decl -- Station* vs int32 handle, both used cross-file (Generator.cpp field_14c)
+    union { // lint: union_decl -- Station* vs int32 handle, both used cross-file (Generator.cpp field_14c)
         Station *voidStation;
         int32_t field_14c;
     };
@@ -486,7 +462,7 @@ static_assert(offsetof(Status, bluePrints) == 0x18, "");
 static_assert(offsetof(Status, pendingProducts) == 0x1c, "");
 static_assert(offsetof(Status, agents) == 0x20, "");
 static_assert(offsetof(Status, field_0x28) == 0x28, "");
-static_assert(offsetof(Status, field_0x30) == 0x30, "");
+static_assert(offsetof(Status, fadeValue) == 0x30, "");
 static_assert(offsetof(Status, passengers) == 0x34, "");
 static_assert(offsetof(Status, systemVisibilities) == 0x38, "");
 static_assert(offsetof(Status, field_5c) == 0x5c, "shieldHp");

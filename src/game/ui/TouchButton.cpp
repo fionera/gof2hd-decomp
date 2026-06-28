@@ -393,7 +393,7 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
             this->rightWidth = rightW;
 
             if (kind != 0xb)
-                this->layoutHeight = (*g_TB_layoutMetrics)->field_0x30;
+                this->layoutHeight = (*g_TB_layoutMetrics)->field_0x30_rowHeight;
             else
                 this->layoutHeight = this->height;
 

@@ -148,7 +148,7 @@ public:
         int touchX;
         float touchXf;
     }; // lint: union_decl -- int/float reinterpret
-    union {
+    union { // lint: union_decl -- int/float reinterpret (both used in ModStation.cpp)
         int touchY;
         float touchYf;
     }; // lint: union_decl -- int/float reinterpret

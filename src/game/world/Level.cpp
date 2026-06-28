@@ -3912,7 +3912,7 @@ void Level::createWingmen() {
         int seed = **g_cwm_seedSrc;
         Globals::status->getWingmen();
         ((AbyssEngine::AERandom *) (intptr_t) seed)->setSeed((long long) seed);
-        int fighter = (int) Globals::globals->getRandomEnemyFighter(Globals::status->field_0x30);
+        int fighter = (int) Globals::globals->getRandomEnemyFighter((int) Globals::status->fadeValue);
         int ship = (int) (intptr_t) createShip(5, 0, fighter, 0, 1, 0);
         (*arr)[i] = (KIPlayer *) (intptr_t) ship;
 
@@ -3926,7 +3926,7 @@ void Level::createWingmen() {
         int wmList = Globals::status->getWingmen();
         (*arr)[i]->name =
                 **(String **) (*(int *) (wmList + 4) + i * 4);
-        (*arr)[i]->shipGroup = Globals::status->field_0x30;
+        (*arr)[i]->shipGroup = (int) Globals::status->fadeValue;
 
         Globals::status->getMission();
         if (((Mission *) Globals::status->getMission())->getType() == 0xc)

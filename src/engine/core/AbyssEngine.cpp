@@ -743,7 +743,7 @@ namespace AbyssEngine {
         }
 
         const float inv255 = 1.0f / 255.0f;
-        for (unsigned int i = 0; i < mat->meshes.size_; ++i) {
+        for (unsigned int i = 0; i < mat->meshes.count; ++i) {
             Matrix world;
             AE_AEMath_matMul(&world, &mat->arr_5c.data_[i]);
             ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
@@ -764,11 +764,11 @@ namespace AbyssEngine {
             engine->LightSetGlobalSceneColorAmbient(mat->ambientColor.x, 0.0f, 0.0f);
         }
 
-        mat->arr_2c.size_ = 0;
-        mat->arr_5c.size_ = 0;
-        mat->arr_38.size_ = 0;
-        mat->meshes.size_ = 0;
-        mat->arr_50.size_ = 0;
+        mat->arr_2c.count = 0;
+        mat->arr_5c.count = 0;
+        mat->arr_38.count = 0;
+        mat->meshes.count = 0;
+        mat->arr_50.count = 0;
     }
 }
 
@@ -2109,9 +2109,9 @@ namespace AbyssEngine {
 
     int TransformConvertToVBO(Transform *t) {
         if (t != 0) {
-            for (unsigned int i = 0; i < t->meshes.size_; ++i)
+            for (unsigned int i = 0; i < t->meshes.count; ++i)
                 MeshConvertToVBO(t->meshes.data_[i]);
-            for (unsigned int i = 0; i < t->children.size_; ++i)
+            for (unsigned int i = 0; i < t->children.count; ++i)
                 TransformConvertToVBO(t->children.data_[i]);
         }
         return 1;
@@ -2930,12 +2930,12 @@ namespace AbyssEngine {
         if (t == 0)
             return;
 
-        for (unsigned int i = 0; i < t->children.size_; ++i) {
+        for (unsigned int i = 0; i < t->children.count; ++i) {
             TransformRelease(engine, &t->children.data_[i]);
             t = (Transform *) *slot;
         }
 
-        for (unsigned int i = 0; i < t->meshes.size_; ++i) {
+        for (unsigned int i = 0; i < t->meshes.count; ++i) {
             MeshRelease(engine, &t->meshes.data_[i]);
             t = (Transform *) *slot;
         }

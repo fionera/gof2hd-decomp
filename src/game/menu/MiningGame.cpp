@@ -540,7 +540,7 @@ void MiningGame::render2D() {
         int promptWidth = canvas->GetTextWidth((unsigned int) (long) font, *amountText);
         canvas->DrawString((unsigned int) (long) font, *amountText,
                            *g_MiningGame_screenWRender / 2 - promptWidth / 2,
-                           layout->promptYOffset + this->progressBarY, false);
+                           layout->field_0x70_rowHeight + this->progressBarY, false);
         canvas->SetColor((unsigned int) -1);
         {
             String *_s = amountText;

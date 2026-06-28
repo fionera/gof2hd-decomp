@@ -31,8 +31,8 @@ int WantedWindow::OnTouchMove(int x, int y) {
     }
 
     Layout *layout = *g_WantedWindow_move_layout;
-    if (((layout->field_0xc < y) &&
-         (y < *g_WantedWindow_move_screen_h - layout->field_0x10) &&
+    if (((layout->field_0xc_leftMargin < y) &&
+         (y < *g_WantedWindow_move_screen_h - layout->field_0x10_rightMargin) &&
          (x < *g_WantedWindow_move_screen_w_a / 2)) ||
         (*g_WantedWindow_move_force != 0)) {
         int delta = y - this->lastDragY;
@@ -166,11 +166,11 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
     Array<Wanted *> *list = this->wantedList;
     Layout *layout = *g_WantedWindow_hit_layout;
     int numerator = y - this->windowY;
-    numerator -= layout->field_0xc;
-    numerator -= layout->field_0x20;
+    numerator -= layout->field_0xc_leftMargin;
+    numerator -= layout->field_0x20_top;
     numerator -= layout->field_0x5c;
     numerator -= this->scrollOffset;
-    int idx = numerator / (layout->field_0x70 + layout->field_0x34);
+    int idx = numerator / (layout->field_0x70_rowHeight + layout->field_0x34);
     if ((uint32_t) idx > (uint32_t)((int) list->size() - 1)) {
         return 0xffffffffu;
     }
@@ -316,10 +316,10 @@ void WantedWindow::draw() {
     unsigned int font = *g_WantedWindow_draw_font;
 
     canvas->EnableClip(this->windowX,
-                       this->windowY + layout->field_0xc +
-                       layout->field_0x20 + layout->field_0x5c,
+                       this->windowY + layout->field_0xc_leftMargin +
+                       layout->field_0x20_top + layout->field_0x5c,
                        this->windowWidth,
-                       layout->field_0x2c + this->visibleHeight);
+                       layout->field_0x2c_rowHeight + this->visibleHeight);
 
     float relStart = this->getRelativeScrollStartPos();
     float visf = (float) this->visibleHeight;
@@ -328,29 +328,29 @@ void WantedWindow::draw() {
     int barStart = (int) (relStart * visf);
     if (barSize >= 1 || barStart >= 0) {
         layout->drawScrollBar(((this->windowX + (this->windowWidth >> 1)) -
-                               layout->field_0x2c) - layout->field_0x48,
-                              this->windowY + layout->field_0x2c +
-                              layout->field_0xc + layout->field_0x20 +
+                               layout->field_0x2c_rowHeight) - layout->field_0x48,
+                              this->windowY + layout->field_0x2c_rowHeight +
+                              layout->field_0xc_leftMargin + layout->field_0x20_top +
                               layout->field_0x5c,
                               this->visibleHeight, barStart, barSize);
     }
 
-    int y = this->windowY + layout->field_0xc + layout->field_0x20 +
-            layout->field_0x5c + layout->field_0x2c + this->scrollOffset;
-    int inset = barSize < 1 ? 0 : layout->field_0x2c + layout->field_0x48;
+    int y = this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top +
+            layout->field_0x5c + layout->field_0x2c_rowHeight + this->scrollOffset;
+    int inset = barSize < 1 ? 0 : layout->field_0x2c_rowHeight + layout->field_0x48;
 
     for (uint32_t i = 0; i < this->wantedList->size(); ++i) {
         int style = (i == this->selectedWanted || i == this->highlightedWanted) ? 4 : 3;
         String boxLabel("", false);
         layout->drawBox(style, layout->buttonInsetX + this->windowX, y,
                         (this->windowWidth >> 1) -
-                        (inset + layout->buttonInsetX + layout->field_0x2c),
-                        layout->field_0x70, boxLabel, 0);
+                        (inset + layout->buttonInsetX + layout->field_0x2c_rowHeight),
+                        layout->field_0x70_rowHeight, boxLabel, 0);
 
         Wanted *wanted = (*this->wantedList)[i];
         canvas->SetColor(wanted->isActive() ? 0xffffffffu : 0xff808080u);
         String name = wanted->getName();
-        int textY = y + layout->field_0x70 / 2 - canvas->GetTextHeight(font) / 2;
+        int textY = y + layout->field_0x70_rowHeight / 2 - canvas->GetTextHeight(font) / 2;
         canvas->DrawString(font, name,
                            this->windowX + layout->buttonInsetX +
                            layout->field_0x44,
@@ -368,7 +368,7 @@ void WantedWindow::draw() {
                                 textY);
         }
 
-        y += layout->field_0x34 + layout->field_0x70;
+        y += layout->field_0x34 + layout->field_0x70_rowHeight;
     }
 
     canvas->DisableClip();
@@ -384,47 +384,47 @@ void WantedWindow::draw() {
     String leftHdr;
     leftHdr.copy((*g_WantedWindow_draw_text)->getText(0xc95), false);
     layout->drawBox(1, layout->buttonInsetX + this->windowX,
-                    this->windowY + layout->field_0xc + layout->field_0x20,
-                    (this->windowWidth >> 1) - (layout->field_0x2c + layout->buttonInsetX),
+                    this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top,
+                    (this->windowWidth >> 1) - (layout->field_0x2c_rowHeight + layout->buttonInsetX),
                     layout->field_0x5c, leftHdr, 0);
 
     String leftBody("", false);
     layout->drawBox(5, layout->buttonInsetX + this->windowX,
-                    this->windowY + layout->field_0xc + layout->field_0x20 +
-                    layout->field_0x5c + layout->field_0x2c,
-                    (this->windowWidth >> 1) - (layout->field_0x2c + layout->buttonInsetX),
+                    this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top +
+                    layout->field_0x5c + layout->field_0x2c_rowHeight,
+                    (this->windowWidth >> 1) - (layout->field_0x2c_rowHeight + layout->buttonInsetX),
                     ((this->windowHeight -
-                      (layout->field_0x20 + layout->field_0xc +
-                       layout->field_0x5c + layout->field_0x2c * 2)) -
-                     layout->field_0x10) -
+                      (layout->field_0x20_top + layout->field_0xc_leftMargin +
+                       layout->field_0x5c + layout->field_0x2c_rowHeight * 2)) -
+                     layout->field_0x10_rightMargin) -
                     layout->field_0x24,
                     leftBody, 0);
 
     String rightHdr;
     rightHdr.copy((*g_WantedWindow_draw_text)->getText(0xc95), false);
-    layout->drawBox(1, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c,
-                    this->windowY + layout->field_0xc + layout->field_0x20,
-                    ((this->windowWidth >> 1) - layout->field_0x2c) - layout->buttonInsetX,
+    layout->drawBox(1, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight,
+                    this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top,
+                    ((this->windowWidth >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX,
                     layout->field_0x5c, rightHdr, 0);
 
     String rightBody("", false);
-    layout->drawBox(5, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c,
-                    this->windowY + layout->field_0x2c + layout->field_0xc +
-                    layout->field_0x20 + layout->field_0x5c,
-                    ((this->windowWidth >> 1) - layout->field_0x2c) - layout->buttonInsetX,
+    layout->drawBox(5, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight,
+                    this->windowY + layout->field_0x2c_rowHeight + layout->field_0xc_leftMargin +
+                    layout->field_0x20_top + layout->field_0x5c,
+                    ((this->windowWidth >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX,
                     ((this->windowHeight -
-                      (layout->field_0xc + layout->field_0x2c * 2 +
-                       layout->field_0x20 + layout->field_0x5c)) -
-                     layout->field_0x10) -
+                      (layout->field_0xc_leftMargin + layout->field_0x2c_rowHeight * 2 +
+                       layout->field_0x20_top + layout->field_0x5c)) -
+                     layout->field_0x10_rightMargin) -
                     layout->field_0x24,
                     rightBody, 0);
 
     if (this->imageParts != nullptr) {
-        int charX = this->windowX + (this->windowWidth >> 1) + layout->field_0x2c;
-        int charY = layout->field_0x5c + this->windowY + layout->field_0x2c +
-                    layout->field_0xc + layout->field_0x20;
+        int charX = this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight;
+        int charY = layout->field_0x5c + this->windowY + layout->field_0x2c_rowHeight +
+                    layout->field_0xc_leftMargin + layout->field_0x20_top;
         (*g_WantedWindow_draw_factory)->drawChar(this->imageParts, charX, charY, false);
-        int textX = layout->field_0x2d4 + charX + layout->field_0x2c;
+        int textX = layout->field_0x2d4 + charX + layout->field_0x2c_rowHeight;
         canvas->DrawString(font, this->nameText, textX, charY, false);
 
         String fromLine = String("from: ", false) +
@@ -570,12 +570,12 @@ int WantedWindow::init() {
     layout->setWindowDimensions(this->windowX, this->windowY, this->windowWidth, this->windowHeight);
 
     layout = *g_WantedWindow_init_layout;
-    this->contentHeight = (layout->field_0x34 + layout->field_0x70) *
+    this->contentHeight = (layout->field_0x34 + layout->field_0x70_rowHeight) *
                           (int) this->wantedList->size();
     this->visibleHeight =
-            (((((this->windowHeight - layout->field_0x10) - layout->field_0xc) -
-               layout->field_0x20) - layout->field_0x24) - layout->field_0x5c) +
-            layout->field_0x2c;
+            (((((this->windowHeight - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin) -
+               layout->field_0x20_top) - layout->field_0x24) - layout->field_0x5c) +
+            layout->field_0x2c_rowHeight;
 
     delete this->detailButton;
     this->starMap = nullptr;
@@ -587,9 +587,9 @@ int WantedWindow::init() {
         String *label = text->getText(0x1a8);
         this->detailButton = new TouchButton(
             *label, 0,
-            this->windowX + (this->windowWidth >> 1) + layout->field_0x2c,
-            (((this->windowY - layout->field_0x2c) + this->windowHeight) -
-             layout->field_0x10) - layout->field_0x24,
+            this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight,
+            (((this->windowY - layout->field_0x2c_rowHeight) + this->windowHeight) -
+             layout->field_0x10_rightMargin) - layout->field_0x24,
             activeWidth, 0x21, 4);
     }
     this->hangarUpdate = 0;
@@ -723,16 +723,16 @@ void WantedWindow::selectWanted(int idx) {
     Layout *layout = *g_WantedWindow_select_layout;
     int y = this->windowY;
     int h = this->windowHeight;
-    int top = y + layout->field_0xc + layout->field_0x20 +
-              layout->field_0x5c + layout->field_0x2c;
-    int height = (((((y - layout->field_0x2c) + h) - top) -
-                   layout->field_0x10) - layout->field_0x2d8) -
+    int top = y + layout->field_0xc_leftMargin + layout->field_0x20_top +
+              layout->field_0x5c + layout->field_0x2c_rowHeight;
+    int height = (((((y - layout->field_0x2c_rowHeight) + h) - top) -
+                   layout->field_0x10_rightMargin) - layout->field_0x2d8) -
                  layout->field_0x24;
     if (wanted->isActive() != 0) {
-        height = (height - layout->field_0x4c) - layout->field_0x30;
+        height = (height - layout->field_0x4c) - layout->field_0x30_rowHeight;
     }
 
-    int pad = layout->field_0x2c;
+    int pad = layout->field_0x2c_rowHeight;
     this->scrollWindow = new ScrollTouchWindow(
         this->windowX + (this->windowWidth >> 1) + pad,
         layout->field_0x2d8 + pad + top,

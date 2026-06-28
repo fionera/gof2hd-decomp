@@ -22,63 +22,31 @@ public:
     BluePrint *bluePrint;
     Ship *ship;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x10 used cross-file: HangarWindow.cpp li->field_0x10/item->field_0x10)
-        Item *item;
-        Item *field_0x10;
-    };
+    Item *item;
 
     Mission *mission;
     PendingProduct *pendingProduct;
     AbyssEngine::String *name;
     AbyssEngine::String *name2;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x24 used cross-file: Hud.cpp item->field_0x24)
-        uint8_t selectable;
-        uint8_t field_0x24;
-    };
+    uint8_t selectable;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x28 used cross-file: HangarList.cpp item->field_0x28)
-        int slot;
-        int field_0x28;
-    };
+    int slot;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x2c used cross-file: Hud.cpp item->field_0x2c)
-        int itemId;
-        int field_0x2c;
-    };
+    int itemId;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x30 used cross-file: Hud.cpp item->field_0x30)
-        int buttonKind;
-        int field_0x30;
-    };
+    int buttonKind;
 
     int imageIndex;
     uint8_t textButton;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x3c used cross-file: HangarWindow.cpp/HangarList.cpp li->field_0x3c)
-        int inTabIndex;
-        int field_0x3c;
-    };
+    int inTabIndex;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x40 used cross-file: HangarList.cpp li->field_0x40)
-        int subTabIndex;
-        int field_0x40;
-    };
+    int subTabIndex;
 
     uint8_t text;
 
-    union {
-        // lint: union_decl (dual-name alias; field_0x45 used cross-file: HangarWindow.cpp ((ListItem *) li)->field_0x45)
-        uint8_t craftable;
-        uint8_t field_0x45;
-    };
+    uint8_t craftable;
 
     ListItem(Agent *a);
 

@@ -89,7 +89,7 @@ public:
             int freeCamFinger1Z;
         };
     }; // lint: union_decl (type-pun: Vector overlaid with int xyz)
-    union {
+    union { // lint: union_decl (type-pun: Vector overlaid with int xyz; both used)
         Vector freeCamFinger0;
 
         struct {
@@ -120,7 +120,7 @@ public:
             uint8_t menuTouchOpen;
         };
     }; // lint: union_decl (type-pun: uint16 overlaid with byte flags; both used via static_asserts)
-    union {
+    union { // lint: union_decl (type-pun: int overlaid with byte flags; both used via static_asserts/MGame.cpp)
         int field_0xca;
 
         struct {

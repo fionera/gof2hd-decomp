@@ -1559,9 +1559,9 @@ void RecordHandler::recordStoreWrite(int slot) {
             for (unsigned i = 0; i < wingmen->size(); i++) {
                 AEFile_WriteString((*wingmen)[i], fd, true);
             }
-            AEFile_WriteInt(status->field_0x30, fd);
+            AEFile_WriteInt((int) status->fadeValue, fd);
 
-            AEFile_WriteInt(status->field_0x30, fd);
+            AEFile_WriteInt((int) status->fadeValue, fd);
             AEFile_WriteInt(5, fd);
 
             int *wingmenStats = reinterpret_cast<int *>((intptr_t) status->field_0x28);

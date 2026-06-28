@@ -53,7 +53,7 @@ void ListItemWindow::OnTouchBegin(int x, int y) {
     if (this->shows3DShipFlag &&
         this->x + (this->width >> 1) < x) {
         Layout *obj = (Layout *) *g_liw_screen;
-        if (y < this->y + obj->field_0xc + obj->field_0x20 + this->previewHeight) {
+        if (y < this->y + obj->field_0xc_leftMargin + obj->field_0x20_top + this->previewHeight) {
             this->dragLastX = x;
             this->dragStartX = x;
             this->dragDelta = 0;
@@ -109,9 +109,9 @@ void ListItemWindow::render() {
     int s = obj->field_0x128;
     int h = this->previewHeight - s * 2;
     canvas->EnableClip(
-        this->x + s + (this->width >> 1) + obj->field_0x2c,
-        this->y + s + obj->field_0xc + obj->field_0x20,
-        ((this->width >> 1) - (obj->field_0x2c + s * 2)) - obj->buttonInsetX,
+        this->x + s + (this->width >> 1) + obj->field_0x2c_rowHeight,
+        this->y + s + obj->field_0xc_leftMargin + obj->field_0x20_top,
+        ((this->width >> 1) - (obj->field_0x2c_rowHeight + s * 2)) - obj->buttonInsetX,
         h);
     canvas->SetColor((unsigned int) (long) canvas);
     Matrix *m = (Matrix *) canvas->CameraGetLocal((unsigned int) (long) canvas);
@@ -201,9 +201,9 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
         this->shows3DShipFlag = 0;
     } else {
         this->previewHeight =
-                ((((this->height - layout->field_0xc) - layout->field_0x10) - layout->field_0x20) - layout->field_0x24)
+                ((((this->height - layout->field_0xc_leftMargin) - layout->field_0x10_rightMargin) - layout->field_0x20_top) - layout->field_0x24)
                 / 2
-                - layout->field_0x2c;
+                - layout->field_0x2c_rowHeight;
         *(uint32_t *) &this->previewAngle = g_liw_s_baseAngle;
         this->shows3DShipFlag = 1;
         liw_set_buildShipPreview(this, item, layout);
@@ -216,13 +216,13 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
         int progH = this->previewHeight;
 
         int sel = (progH > 0) ? layout->field_0x1c : layout->field_0x5c;
-        int rowH = layout->field_0x2c;
+        int rowH = layout->field_0x2c_rowHeight;
         int sx = this->x + rowH + (this->width >> 1);
-        int sy = layout->field_0x20 + this->y + rowH + layout->field_0xc + progH + sel;
+        int sy = layout->field_0x20_top + this->y + rowH + layout->field_0xc_leftMargin + progH + sel;
         int sw = (this->width >> 1) - layout->buttonInsetX;
         int sh = ((this->height -
-                   (layout->field_0xc + rowH * 2 + layout->field_0x20 + progH + sel))
-                  - layout->field_0x10) - layout->field_0x24;
+                   (layout->field_0xc_leftMargin + rowH * 2 + layout->field_0x20_top + progH + sel))
+                  - layout->field_0x10_rightMargin) - layout->field_0x24;
         this->scrollWindow = new ScrollTouchWindow(sx, sy, sw, sh, false);
     }
 
@@ -319,7 +319,7 @@ void ListItemWindow::draw() {
     if (isItemish == 0 && li->isBluePrint() == 0 && li->isPendingProduct() == 0) {
         if (isShip != 0) {
             int boxX = this->x, boxY = this->y, w = this->width;
-            int c0c = layout->field_0xc, c20 = layout->field_0x20, c28 = layout->buttonInsetX, c2c = layout->field_0x2c;
+            int c0c = layout->field_0xc_leftMargin, c20 = layout->field_0x20_top, c28 = layout->buttonInsetX, c2c = layout->field_0x2c_rowHeight;
             int color = layout->field_0x5c;
             int textId = *g_liw_d_headerId;
             li->ship->getIndex();
@@ -334,14 +334,14 @@ void ListItemWindow::draw() {
 
             ImageFactory *fac = *g_liw_d_imageFactory;
             int shipIdx = li->ship->getIndex();
-            fac->drawShip(shipIdx, this->x + layout->buttonInsetX + layout->field_0x2c,
-                          ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) - layout->
+            fac->drawShip(shipIdx, this->x + layout->buttonInsetX + layout->field_0x2c_rowHeight,
+                          ((this->y + layout->field_0xc_leftMargin + layout->field_0x20_top + layout->field_0x5c / 2) - layout->
                            field_0x2c8 /
                            2) + layout->field_0x124);
         }
     } else {
         int boxX = this->x, boxY = this->y, w = this->width;
-        int c0c = layout->field_0xc, c20 = layout->field_0x20, c28 = layout->buttonInsetX, c2c = layout->field_0x2c;
+        int c0c = layout->field_0xc_leftMargin, c20 = layout->field_0x20_top, c28 = layout->buttonInsetX, c2c = layout->field_0x2c_rowHeight;
         int color = layout->field_0x5c;
         int textId = *g_liw_d_headerId;
         li->getIndex();
@@ -371,8 +371,8 @@ void ListItemWindow::draw() {
         int idx = itemPtr->getIndex();
         int type = itemPtr->getType();
         fac->drawItem(idx, type,
-                      layout->buttonInsetX + this->x + layout->field_0x2c,
-                      layout->field_0x124 + ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2)
+                      layout->buttonInsetX + this->x + layout->field_0x2c_rowHeight,
+                      layout->field_0x124 + ((this->y + layout->field_0xc_leftMargin + layout->field_0x20_top + layout->field_0x5c / 2)
                                              -
                                              layout->field_0x2c8 / 2));
     }
@@ -380,9 +380,9 @@ void ListItemWindow::draw() {
     Array<String *> *rows = this->labels;
     if (rows != 0) {
         uint32_t n = rows->size();
-        int rowH = layout->field_0x2c;
-        int yTop = layout->field_0x5c + layout->field_0xc + this->y + layout->field_0x20 + rowH;
-        if ((uint32_t)(*g_liw_d_scrollLimit - layout->field_0x10) < (uint32_t)((layout->field_0x1c + rowH) * n + yTop))
+        int rowH = layout->field_0x2c_rowHeight;
+        int yTop = layout->field_0x5c + layout->field_0xc_leftMargin + this->y + layout->field_0x20_top + rowH;
+        if ((uint32_t)(*g_liw_d_scrollLimit - layout->field_0x10_rightMargin) < (uint32_t)((layout->field_0x1c + rowH) * n + yTop))
             rowH = 2;
         int ycur = yTop;
         for (uint32_t i = 0; i < n; i++) {
@@ -391,7 +391,7 @@ void ListItemWindow::draw() {
             String s;
             s.Set(((*rows)[i])->data);
             layout->drawBox(6, layout->buttonInsetX + this->x, ycur,
-                            (this->width >> 1) - (layout->field_0x2c + layout->buttonInsetX), color, s, 0);
+                            (this->width >> 1) - (layout->field_0x2c_rowHeight + layout->buttonInsetX), color, s, 0);
             canvas->SetColor(canvasHandle);
 
             int textX, textY;
@@ -408,7 +408,7 @@ void ListItemWindow::draw() {
                         if (a < b) trendImage = this->arrowDownImage;
                         if (b < a) trendImage = this->arrowUpImage;
                         canvas->DrawImage2D(trendImage,
-                                            ((this->x + (this->width >> 1)) - layout->field_0x2c) - this->
+                                            ((this->x + (this->width >> 1)) - layout->field_0x2c_rowHeight) - this->
                                             arrowSeparator, 0);
                     }
                     int sep = this->arrowSeparator;
@@ -416,7 +416,7 @@ void ListItemWindow::draw() {
                     String *arrowStr = *g_liw_d_arrowR;
                     int tw = canvas->GetTextWidth(canvasHandle, *arrowStr);
                     centered = (char) ((char) ycur + (char) (layout->field_0x1c / 2) - (char) this->textHalfHeight);
-                    textX = (((this->x + (this->width >> 1) + 10) - layout->field_0x2c) - sep) - tw;
+                    textX = (((this->x + (this->width >> 1) + 10) - layout->field_0x2c_rowHeight) - sep) - tw;
                     textY = layout->field_0x1c;
                     drewArrow = true;
                 }
@@ -426,7 +426,7 @@ void ListItemWindow::draw() {
                 String *arrowStr = *g_liw_d_arrowL;
                 int tw = canvas->GetTextWidth(canvasHandle, *arrowStr);
                 centered = (char) ((char) ycur + (char) (layout->field_0x1c / 2) - (char) this->textHalfHeight);
-                textX = (this->x + (this->width >> 1) + layout->field_0x2c * -2) - tw;
+                textX = (this->x + (this->width >> 1) + layout->field_0x2c_rowHeight * -2) - tw;
                 textY = layout->field_0x1c;
             }
             canvas->DrawString(canvasHandle, *valStr, textX, textY, centered);
@@ -437,26 +437,26 @@ void ListItemWindow::draw() {
     if (this->previewHeight < 1) {
         String s;
         s.Set(((*g_liw_d_gameText)->getText(*g_liw_d_headerId))->data);
-        layout->drawBox(1, this->x + (this->width >> 1) + layout->field_0x2c,
-                        this->y + layout->field_0xc + layout->field_0x20,
-                        ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x5c, s, 0);
+        layout->drawBox(1, this->x + (this->width >> 1) + layout->field_0x2c_rowHeight,
+                        this->y + layout->field_0xc_leftMargin + layout->field_0x20_top,
+                        ((this->width >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX, layout->field_0x5c, s, 0);
     } else {
         canvas->SetColor(canvasHandle);
         {
             String s("", false);
-            layout->drawBox(8, this->x + (this->width >> 1) + layout->field_0x2c,
-                            this->y + layout->field_0xc + layout->field_0x20,
-                            ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, this->previewHeight, s,
+            layout->drawBox(8, this->x + (this->width >> 1) + layout->field_0x2c_rowHeight,
+                            this->y + layout->field_0xc_leftMargin + layout->field_0x20_top,
+                            ((this->width >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX, this->previewHeight, s,
                             0);
         }
         int prog = this->previewHeight;
-        int yBox = this->y + layout->field_0xc + layout->field_0x20;
-        if (prog > 0) yBox = yBox + prog + layout->field_0x2c;
+        int yBox = this->y + layout->field_0xc_leftMargin + layout->field_0x20_top;
+        if (prog > 0) yBox = yBox + prog + layout->field_0x2c_rowHeight;
         {
             String s;
             s.Set(((*g_liw_d_gameText)->getText(*g_liw_d_headerId))->data);
-            layout->drawBox(0, this->x + (this->width >> 1) + layout->field_0x2c, yBox,
-                            ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x1c, s, 0);
+            layout->drawBox(0, this->x + (this->width >> 1) + layout->field_0x2c_rowHeight, yBox,
+                            ((this->width >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX, layout->field_0x1c, s, 0);
         }
         canvas->SetColor(canvasHandle);
         canvas->DrawImage2D(this->scrollThumbImage, this->scrollBarX - this->scrollBarOffsetX, 0);

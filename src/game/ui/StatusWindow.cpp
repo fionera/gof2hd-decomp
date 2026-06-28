@@ -48,7 +48,7 @@ StatusWindow::~StatusWindow() {
 
 int StatusWindow::OnTouchMove(int x, int y) {
     Layout *layout = *g_SWm_layout;
-    if ((layout->field_0xc < y && y < *g_SWm_height - layout->field_0x10) || *g_SWm_force != 0) {
+    if ((layout->field_0xc_leftMargin < y && y < *g_SWm_height - layout->field_0x10_rightMargin) || *g_SWm_force != 0) {
         int delta = y - this->lastTouchY;
         this->scrollVelocity = delta;
         this->scrollDamping = 1.0f;
@@ -431,10 +431,10 @@ void StatusWindow::draw() {
     int barH = (int) (relH * ch);
     if (barH > 0 || (int) (relStart * ch) > 0) {
         layout->drawScrollBar((screenW - layout->field_0x48) - layout->buttonInsetX,
-                              layout->field_0x20 + layout->field_0xc, contentH, (int) (relStart * ch), barH);
+                              layout->field_0x20_top + layout->field_0xc_leftMargin, contentH, (int) (relStart * ch), barH);
     }
 
-    int top = layout->field_0x20 + layout->field_0xc;
+    int top = layout->field_0x20_top + layout->field_0xc_leftMargin;
     int colW;
     if (*land == 0) {
         colW = screenW;
@@ -443,7 +443,7 @@ void StatusWindow::draw() {
         colW = screenW >> 1;
     }
     if (barH > 0)
-        colW = (colW - layout->field_0x48) - layout->field_0x2c;
+        colW = (colW - layout->field_0x48) - layout->field_0x2c_rowHeight;
     this->boxWidth = colW + layout->buttonInsetX * -2;
 
     String creditStr;
@@ -464,7 +464,7 @@ void StatusWindow::draw() {
     if (tab == 0 || *land != 0) {
         int boxW = this->boxWidth;
         int x0 = layout->buttonInsetX;
-        int pad = layout->field_0x2c;
+        int pad = layout->field_0x2c_rowHeight;
         String lbl;
 
         String *t = (*g_swd_gameText)->getText(*g_swd_textId);
@@ -579,14 +579,14 @@ void StatusWindow::draw() {
         int x0 = layout->buttonInsetX;
         int rowH = this->medalRowHeight;
         int gridX0 = drewStats ? (boxW + (third >> 1) + x0) : (x0 + (third >> 1));
-        int gridY0 = layout->field_0xc + (rowH >> 1) + layout->field_0x2c;
+        int gridY0 = layout->field_0xc_leftMargin + (rowH >> 1) + layout->field_0x2c_rowHeight;
 
         if (drewStats != 0) {
             String hdr;
             String *t = (*g_swd_gameText)->getText(*g_swd_textId);
             hdr.Set((t)->data);
             layout->drawBox(0, boxW + x0 * 2, top, x0 + boxW, layout->field_0x1c, hdr, 0);
-            gridY0 += layout->field_0x1c + layout->field_0x2c;
+            gridY0 += layout->field_0x1c + layout->field_0x2c_rowHeight;
         }
 
         for (int i = 0; i < this->medalCount; i++) {
@@ -603,13 +603,13 @@ void StatusWindow::draw() {
             int lineH = layout->field_0x4;
             String lbl;
             lbl.ctor_char("", false);
-            layout->drawBox(2, layout->buttonInsetX, (((screenH - layout->field_0x10) -
+            layout->drawBox(2, layout->buttonInsetX, (((screenH - layout->field_0x10_rightMargin) -
                                                        layout->field_0x24) - lineH * lines) +
                                                      layout->field_0x4c * -2, this->boxWidth,
                             layout->field_0x4c * 2 + lineH * lines, lbl, 0);
 
             lbl.ctor_char("", false);
-            layout->drawBox(5, layout->buttonInsetX, (((screenH - layout->field_0x10) -
+            layout->drawBox(5, layout->buttonInsetX, (((screenH - layout->field_0x10_rightMargin) -
                                                        layout->field_0x24) - lineH * lines) +
                                                      layout->field_0x4c * -2, this->boxWidth,
                             layout->field_0x4c * 2 + lineH * lines, lbl, 0);
@@ -699,7 +699,7 @@ StatusWindow::StatusWindow() {
     int *heights = new int[3];
     this->tabHeights = heights;
     int row = ((layout->field_0x1c * 3 + layout->field_0x2d8) +
-               layout->field_0x2c * 8) + this->charImageHeight +
+               layout->field_0x2c_rowHeight * 8) + this->charImageHeight +
               layout->field_0x4 * 7;
     heights[0] = row;
 
@@ -708,12 +708,12 @@ StatusWindow::StatusWindow() {
         lineH = this->medalRowHeight * (this->medalCount / 3);
     } else {
         lineH = (this->medalCount / 3) * this->medalRowHeight +
-                layout->field_0x1c + layout->field_0x2c;
+                layout->field_0x1c + layout->field_0x2c_rowHeight;
     }
     heights[1] = lineH + 10;
 
     this->contentHeight = heights[this->activeTab];
     this->viewportHeight =
-    (((g_sw_screenH - layout->field_0x10) - layout->field_0xc) -
-     layout->field_0x20) - layout->field_0x24;
+    (((g_sw_screenH - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin) -
+     layout->field_0x20_top) - layout->field_0x24;
 }

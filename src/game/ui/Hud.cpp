@@ -661,7 +661,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 
         String *str = new String(*(String *) dst);
         ListItem *item = new ListItem(str);
-        item->field_0x2c = itemId;
+        item->itemId = itemId;
         addToEventQueue(item);
         return;
     }
@@ -833,9 +833,9 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 
     String *str = new String(this->field_0x1f4);
     ListItem *item = new ListItem(str);
-    item->field_0x2c = itemId;
-    if (!slotMode || extender) item->field_0x30 = 2;
-    if (slotMode) item->field_0x24 = 1;
+    item->itemId = itemId;
+    if (!slotMode || extender) item->buttonKind = 2;
+    if (slotMode) item->selectable = 1;
     addToEventQueue(item);
 }
 

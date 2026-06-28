@@ -1422,7 +1422,7 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
         int dist = PE_adp_glide(this);
         if (dist < 200) {
             this->dockStation = 0;
-            radar->dockTargetPtr = 0;
+            radar->lockedEnemy = 0;
             radar->dockNavPtr = 0;
             adp_clearDockVector(this);
             ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->setActive(true);

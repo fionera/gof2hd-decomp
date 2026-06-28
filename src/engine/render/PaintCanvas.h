@@ -41,10 +41,8 @@ namespace AbyssEngine {
 
     class PaintCanvas {
     public:
-        union {
-            // lint: union_decl (cross-file blocker: `initialized` used in PaintCanvas.cpp/JniBridge.cpp etc., `selfHandle` used in PlayerEgo.cpp; differently-sized live aliases at offset 0 cannot be collapsed without breaking layout/other TUs)
+        union { // lint: union_decl 1-byte initialized vs 4-byte selfHandle reinterpret (initialized used in PaintCanvas.cpp/JniBridge.cpp etc., selfHandle used in PlayerEgo.cpp) — genuine size-mismatch type-pun at offset 0
             unsigned char initialized;
-            bool gravityRotationEnabled;
             unsigned int selfHandle;
         };
 
