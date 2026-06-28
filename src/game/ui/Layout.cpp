@@ -387,7 +387,7 @@ Layout::Layout() {
     memset(&this->field_0x4, 0, 0x2d8 - 0x04);
 
     if (!hd) {
-        this->field_0x238 = 0x46;
+        this->field_0x238_blk16.a = 0x46;
         this->field_0x27c = 0x1c;
         this->field_0x280 = 0;
         this->scrollBarInset = 1;

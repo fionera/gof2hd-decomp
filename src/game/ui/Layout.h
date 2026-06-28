@@ -136,11 +136,7 @@ public:
     uint8_t _pad_0x204[48];
     int field_0x234;
 
-    union {
-        // lint: union_decl (type-pun: int vs Blk16 overlay at offset 0x238)
-        int field_0x238;
-        Blk16 field_0x238_blk16;
-    };
+    Blk16 field_0x238_blk16;
 
     int field_0x248;
     int field_0x24c;
