@@ -5,8 +5,6 @@
 namespace AbyssEngine {
     class Mesh;
 
-
-
     struct Image2D {
         Mesh *mesh;
         uint32_t field_0x4;

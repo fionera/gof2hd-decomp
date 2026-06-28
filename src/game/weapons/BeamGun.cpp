@@ -9,7 +9,6 @@
 
 using ::AbyssEngine::Transform;
 
-
 namespace AbyssEngine {
     namespace AEMath {
         Vector operator+(const Vector &lhs, const Vector &rhs);
@@ -24,16 +23,13 @@ void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector)
 
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 
-
-static void **BeamGun_canvas = nullptr;
+static PaintCanvas **BeamGun_canvas = nullptr;
 
 static int32_t BeamGun_secondaryMeshes[256] = {};
 
+static void (*BeamGun_enemiesHandler_slot)(Player **) = nullptr;
 
-static void (*BeamGun_enemiesHandler_slot)(void *) = nullptr;
-
-
-static void (*BeamGun_enemyHandler_slot)(void *) = nullptr;
+static void (*BeamGun_enemyHandler_slot)(Player *) = nullptr;
 
 BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
     int type = meshKind;
@@ -47,7 +43,7 @@ BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
     this->owner = owner;
     this->meshKind = kind;
 
-    PaintCanvas *canvas = (PaintCanvas *) *BeamGun_canvas;
+    PaintCanvas *canvas = *BeamGun_canvas;
     uint16_t primaryMesh = (uint16_t)(kind + 0x3795);
     if (type == 0xe4)
         primaryMesh = 0x4a92;
@@ -102,7 +98,7 @@ void BeamGun::update(int elapsed) {
         return;
     }
 
-    PaintCanvas *canvas = (PaintCanvas *) *BeamGun_canvas;
+    PaintCanvas *canvas = *BeamGun_canvas;
 
     if (gun->hitSmall != 0) {
         AEGeometry *geometry = this->primaryGeometry;
@@ -199,15 +195,11 @@ void BeamGun::setEnemies(Array<Player *> *enemies) {
     BeamGun_enemiesHandler_slot(enemies->data());
 }
 
-
-
-
-
 namespace {
     struct PlayerEnemyHandleView {
-        void *pad_0;
-        void *pad_4;
-        void *enemyHandle;
+        Player *pad_0;
+        Player *pad_4;
+        Player *enemyHandle;
     };
 #if __SIZEOF_POINTER__ == 4
     static_assert(__builtin_offsetof(PlayerEnemyHandleView, enemyHandle) == 8,

@@ -8,19 +8,16 @@
 #include "engine/math/Vector.h"
 #include "engine/render/Mesh.h"
 
-
 namespace AbyssEngine {
     class PaintCanvas;
     class Mesh;
 }
+
 using ::AbyssEngine::PaintCanvas;
 using ::AbyssEngine::Mesh;
 
 class LodMeshMerger {
 public:
-
-
-
     int rows;
     uint16_t flags;
     uint8_t initialized;
@@ -28,8 +25,8 @@ public:
     PaintCanvas *canvas;
     uint32_t mergedMeshId;
     uint32_t transformId;
-    void *mergedMesh;
-    void **transformedMeshes;
+    Mesh *mergedMesh;
+    Mesh **transformedMeshes;
     AbyssEngine::Matrix *transforms;
     int8_t *lodLevels;
     uint8_t *enabled;
@@ -53,7 +50,7 @@ public:
 
     int init();
 
-    void *transformMesh(Mesh *src, const AbyssEngine::Matrix &m);
+    Mesh *transformMesh(Mesh *src, const AbyssEngine::Matrix &m);
 };
 
 #endif

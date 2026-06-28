@@ -9,6 +9,7 @@ AENormalFile::~AENormalFile() {
 }
 
 uint32_t AENormalFile::Read(uint32_t bytes, void *buffer) {
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
     if (file != nullptr) {
         return file->Read(bytes, buffer);
     }
@@ -16,6 +17,7 @@ uint32_t AENormalFile::Read(uint32_t bytes, void *buffer) {
 }
 
 uint32_t AENormalFile::Write(uint32_t bytes, void *buffer) {
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
     if (file != nullptr) {
         return file->Write(bytes, buffer);
     }

@@ -634,7 +634,7 @@ static int volatile
 g_Generator_shipRaces[0x40];
 static uint8_t *volatile
 g_Generator_shipFlags;
-static void **volatile
+static Array<Wanted *> ***volatile
 g_Generator_wantedList;
 
 Array<Ship *> *Generator::getShipBuyList(Station *station) {
@@ -675,13 +675,13 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             }
         }
         if (g_Generator_shipFlags[0x37] != 0) {
-            Array<void *> *wanted = *(Array<void *> **) *g_Generator_wantedList;
+            Array<Wanted *> *wanted = **g_Generator_wantedList;
             if (wanted != nullptr && wanted->size() != 0) {
                 const int offsets[4] = {0x18, 0x30, 0x48, 0x60};
                 const int ships[4] = {0x2d, 0x2e, 0x2f, 0x30};
                 for (int i = 0; i != 4; ++i) {
-                    void *w = *(void **) ((char *) wanted->data() + offsets[i]);
-                    if (((Wanted *) w)->isTerminated()) {
+                    Wanted *w = *(Wanted **) ((char *) wanted->data() + offsets[i]);
+                    if (w->isTerminated()) {
                         Ship *ship = allShips->data()[ships[i]]->makeShip(-1);
                         ArrayAdd(ship, *result);
                         Ship *added = result->data()[result->size() - 1];

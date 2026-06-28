@@ -3,7 +3,6 @@
 #include "engine/render/PaintCanvas.h"
 #include <cstdlib>
 
-
 void LodMeshMerger::setEnabled(int index, bool value) {
     if (enabled[index] != value) {
         enabled[index] = value;
@@ -29,13 +28,13 @@ void LodMeshMerger::setMatrix(int index, const Matrix &m) {
 void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
     uint32_t id;
     canvas->MeshCreate(meshId, id, false);
-    void *ptr = canvas->MeshGetPointer(id);
-    sourceMeshes.data()[rows * lod + index] = (Mesh *) ptr;
+    Mesh *ptr = canvas->MeshGetPointer(id);
+    sourceMeshes.data()[rows * lod + index] = ptr;
 }
 
 void LodMeshMerger::update() {
     for (int i = 0; i < rows; i++) {
-        Mesh *sph = (Mesh *) transformedMeshes[i];
+        Mesh *sph = transformedMeshes[i];
         Vector sphCenter = {sph->boundsCenterX, sph->boundsCenterY, sph->boundsCenterZ};
         uint8_t vis = (uint8_t) canvas->CameraIsSphereinViewFrustum(
             sphCenter, sph->boundsRadius);
@@ -55,7 +54,7 @@ void LodMeshMerger::update() {
     for (int j = 0; j < rows; j++) {
         if (enabled[j] != 0 && visible[j] != 0) {
             signed char lod = lodLevels[j];
-            Mesh *src = (Mesh *) transformedMeshes[rows * lod + j];
+            Mesh *src = transformedMeshes[rows * lod + j];
             indexBudget += src->indexCount;
         }
     }
@@ -64,23 +63,23 @@ void LodMeshMerger::update() {
         if (enabled[j] != 0 && visible[j] != 0) {
             signed char lod = lodLevels[j];
             if (lod < cols - 1) {
-                Mesh *prev = (Mesh *) transformedMeshes[rows * lod + j];
+                Mesh *prev = transformedMeshes[rows * lod + j];
                 setLod(j, (signed char) (lod + 1));
                 signed char newLod = lodLevels[j];
-                Mesh *cur = (Mesh *) transformedMeshes[rows * newLod + j];
+                Mesh *cur = transformedMeshes[rows * newLod + j];
                 indexBudget += cur->indexCount - prev->indexCount;
             }
         }
     }
 
-    Mesh *out = (Mesh *) mergedMesh;
+    Mesh *out = mergedMesh;
     int vtxOffset = 0;
     int idxOffset = 0;
     for (int j = 0; j < rows; j++) {
         if (enabled[j] != 0 && visible[j] != 0) {
             uint8_t mask = out->vertexFormat;
             signed char lod = lodLevels[j];
-            Mesh *src = (Mesh *) transformedMeshes[rows * lod + j];
+            Mesh *src = transformedMeshes[rows * lod + j];
 
             if (mask & 1) {
                 memcpy((char *) out->positions + vtxOffset * 0xc,
@@ -128,7 +127,7 @@ LodMeshMerger::LodMeshMerger(int rows_, int cols_, PaintCanvas *canvas_, uint16_
     ArraySetLength((uint32_t)(cols * rows), sourceMeshes);
 
     uint32_t n = (uint32_t) rows;
-    transformedMeshes = new void *[n * cols]();
+    transformedMeshes = new Mesh *[n * cols]();
 
     lodLevels = new int8_t[n]();
 
@@ -199,7 +198,7 @@ int LodMeshMerger::init() {
     return initialized;
 }
 
-void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
+Mesh *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
     Mesh *out = (Mesh *) ::operator new(sizeof(Mesh));
 
     memset(out, 0, sizeof(Mesh));
@@ -219,7 +218,7 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
         out->indices = src->indices;
 
     if (f & 0x1) {
-        out->positions = new char[vcount * 0xc];
+        out->positions = (unsigned char *) new char[vcount * 0xc];
         int o = 0;
         for (uint32_t i = 0; i < vcount; i++) {
             *(Vector *) ((char *) out->positions + o) =
@@ -231,7 +230,7 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
     }
 
     if (f & 0x4) {
-        out->normals = new char[vcount * 0xc];
+        out->normals = (unsigned char *) new char[vcount * 0xc];
         int o = 0;
         for (uint32_t i = 0; i < vcount; i++) {
             Vector rot = AbyssEngine::AEMath::MatrixRotateVector(m, *(Vector *) ((char *) src->normals + o));
@@ -261,13 +260,12 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
     return out;
 }
 
-
-static void (*const g_freeFn)(void *) = ::free;
+static void (*const g_freeFn)(void *) = ::free; // lint: void_ptr (matches libc free signature)
 
 LodMeshMerger::~LodMeshMerger() {
     int count = rows * cols;
     for (int i = 0; i < count; i++) {
-        Mesh *cell = (Mesh *) transformedMeshes[i];
+        Mesh *cell = transformedMeshes[i];
         if (cell != nullptr) {
             if (cell->positions != nullptr) {
                 delete[] (char *) cell->positions;

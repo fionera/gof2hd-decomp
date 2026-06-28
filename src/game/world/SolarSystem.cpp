@@ -45,7 +45,7 @@ SolarSystem::~SolarSystem() {
     this->linkedSystemIds = nullptr;
 }
 
-static Status ** gStatusOrbit = nullptr;
+static Status **gStatusOrbit = nullptr;
 
 bool SolarSystem::currentOrbitHasWarpGate() {
     int orbit = this->jumpgateStationId;
@@ -64,6 +64,7 @@ int SolarSystem::getWarpGateIndex() { return jumpgateStationId; }
 uint32_t *SolarSystem::getStations() { return (uint32_t *) stationIds; }
 uint32_t *SolarSystem::getRoutes() { return (uint32_t *) linkedSystemIds; }
 void *SolarSystem::getForbiddenGoods() { return forbiddenGoods; }
+// lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
 
 uint8_t SolarSystem::isVisible() {
     return this->visible;
@@ -113,10 +114,10 @@ String SolarSystem::getName() {
 
 static const int kPirateBaseStations[4] = {0, 0, 0, 0};
 
-static void * gPirateBaseRoot = nullptr;
+static char **gPirateBaseRoot = nullptr;
 
 int SolarSystem::hasPirateBase() {
-    char *base = *(char **) gPirateBaseRoot;
+    char *base = *gPirateBaseRoot;
     for (uint32_t i = 0; i <= 3; i++) {
         if (stationIsInSystem(kPirateBaseStations[i]) != 0) {
             char *flags = *(char **) (*(char **) (base + 0x4c) + 4);
@@ -145,10 +146,10 @@ uint32_t SolarSystem::hasNoOwner() {
 
 static const int kBlueprintStations[5] = {0, 0, 0, 0, 0};
 
-static void * gBlueprintRoot = nullptr;
+static char **gBlueprintRoot = nullptr;
 
 int SolarSystem::hasHiddenBlueprint() {
-    char *base = *(char **) gBlueprintRoot;
+    char *base = *gBlueprintRoot;
     for (uint32_t i = 0; i <= 4; i++) {
         if (stationIsInSystem(kBlueprintStations[i]) != 0) {
             char *flags = *(char **) (*(char **) (base + 0x58) + 4);
@@ -168,7 +169,7 @@ int SolarSystem::getWarpGateEnumIndex() {
     return (int) getStationEnumIndex(this->jumpgateStationId);
 }
 
-static Galaxy ** gGalaxyDiscover = nullptr;
+static Galaxy **gGalaxyDiscover = nullptr;
 
 int SolarSystem::isFullyDiscovered() {
     Array<int> *arr = this->stationIds;

@@ -8,7 +8,6 @@
 
 #include "engine/math/AEMath.h"
 
-
 namespace AbyssEngine {
     class Mesh;
 
@@ -16,12 +15,9 @@ namespace AbyssEngine {
     public:
         int textures[8];
 
-        union {
-            int materialMode;
-            int blendMode;
-        };
+        int blendMode;
 
-        void *addData;
+        unsigned char *addData;
         uint32_t addDataSize;
         Array<AEMath::Matrix> arr_2c;
         Array<AEMath::Matrix> arr_38;
@@ -41,7 +37,7 @@ namespace AbyssEngine {
     static_assert(sizeof(Array<AEMath::Matrix>) == 0x0c, "Array layout (Material)");
     static_assert(sizeof(Material) == 0x74, "Material size");
     static_assert(__builtin_offsetof(Material, textures) == 0x00, "Material::textures");
-    static_assert(__builtin_offsetof(Material, materialMode) == 0x20, "Material::materialMode");
+    static_assert(__builtin_offsetof(Material, blendMode) == 0x20, "Material::blendMode");
     static_assert(__builtin_offsetof(Material, addData) == 0x24, "Material::addData");
     static_assert(__builtin_offsetof(Material, addDataSize) == 0x28, "Material::addDataSize");
     static_assert(__builtin_offsetof(Material, arr_2c) == 0x2c, "Material::arr_2c");
@@ -56,6 +52,7 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     class Material;
 }
+
 using ::AbyssEngine::Material;
 
 #endif

@@ -9,8 +9,7 @@
 #include "engine/math/AEMath.h"
 #include "engine/math/Transform.h"
 
-
-static void *g_PaintCanvas = nullptr;
+static PaintCanvas **g_PaintCanvas = nullptr;
 
 MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
     : ObjectGun(param, gun, mesh, 0, level) {
@@ -30,12 +29,13 @@ MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
         this->readyFlags[i] = 1;
     }
 
-    void **canvas = (void **) g_PaintCanvas;
-    this->geometry = new AEGeometry((uint16_t)(mesh + 1), (PaintCanvas *) *canvas, false);
-    ((PaintCanvas *) *canvas)->TransformAddChild(this->transform, this->geometry->transform);
+    PaintCanvas **canvas = g_PaintCanvas;
+    this->geometry = new AEGeometry((uint16_t)(mesh + 1), *canvas, false);
+    (*canvas)->TransformAddChild(this->transform, this->geometry->transform);
 
-    void *transform = ((PaintCanvas *) *canvas)->TransformGetTransform(this->geometry->transform);
-    ((AbyssEngine::Transform *) transform)->SetAnimationState((AbyssEngine::AnimationMode) 2, 0);
+    AbyssEngine::Transform *transform =
+            (AbyssEngine::Transform *) (*canvas)->TransformGetTransform(this->geometry->transform);
+    transform->SetAnimationState((AbyssEngine::AnimationMode) 2, 0);
 }
 
 MineGun::~MineGun() {
@@ -75,11 +75,11 @@ void MineGun::setPlayer(PlayerEgo *player) {
 void MineGun::update(int delta) {
     ObjectGun::update(delta);
 
-    void **canvas = (void **) g_PaintCanvas;
+    PaintCanvas **canvas = g_PaintCanvas;
     if (this->gun->active != 0) {
-        void *transform =
-                ((PaintCanvas *) *canvas)->TransformGetTransform(this->geometry->transform);
-        ((AbyssEngine::Transform *) transform)->Update((long long) delta, 0);
+        AbyssEngine::Transform *transform =
+                (AbyssEngine::Transform *) (*canvas)->TransformGetTransform(this->geometry->transform);
+        transform->Update((long long) delta, 0);
     }
 
     const float rumbleRange = 30000.0f;

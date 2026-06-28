@@ -88,12 +88,14 @@ float StatusWindow::getRelativeScrollStartPos() {
 
 void Status_replaceHash(void *out, void *key, void *a, void *b);
 
+// lint: void_ptr (external symbol; param types are mangling-load-bearing)
+
 static Layout **g_swe_layout = nullptr;
 static char *g_swe_dialogBlock = nullptr;
-static void *g_swe_status = nullptr;
+static Status **g_swe_status = nullptr;
 static GameText **g_swe_gameText = nullptr;
 static Globals **g_swe_globals = nullptr;
-static void *g_swe_font = nullptr;
+static unsigned int *g_swe_font = nullptr;
 
 void StatusWindow::OnTouchEnd(int x, int y) {
     int vy = this->scrollVelocity;
@@ -142,11 +144,11 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     int count = (elite == 0) ? medals[this->selectedMedal] : 1;
 
                     String hdr, valStr, valTmp, full;
-                    void *key = *(void **) g_swe_status;
+                    Status *key = *g_swe_status;
                     String *t = (*g_swe_gameText)->getText(this->selectedMedal + 0x610);
                     hdr.Set((t)->data);
-                    void *val = (void *) (intptr_t) ach->getValue(this->selectedMedal, count);
-                    valStr.Set(((String *) val)->data);
+                    String *val = (String *) (intptr_t) ach->getValue(this->selectedMedal, count);
+                    valStr.Set(val->data);
                     valTmp.Set((valStr).data);
                     Status_replaceHash(&full, key, &hdr, &valTmp);
 
@@ -154,7 +156,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     full += hint;
 
                     (*g_swe_globals)->getLineArray(
-                        static_cast<unsigned int>(reinterpret_cast<std::size_t>(*(void **) g_swe_font)),
+                        *g_swe_font,
                         full, this->boxWidth - layout->field_0x4c * 2, this->detailLines);
                     (*this->medalButtons)[i]->setAlwaysPressed(true);
                 }
@@ -258,7 +260,11 @@ String StatusWindow::getMedalHintText(int medalIndex) {
     int state = medals[medalIndex];
 
     String out;
-    { if (out.data) delete[] out.data; out.data = nullptr; out.length = 0; }
+    {
+        if (out.data) delete[] out.data;
+        out.data = nullptr;
+        out.length = 0;
+    }
 
     if (state != 0) {
         String tmpA;
@@ -352,9 +358,11 @@ String StatusWindow::getMedalHintText(int medalIndex) {
     return out;
 }
 
-void *Achievements_get();
+Achievements *Achievements_get();
 
 int Achievements_isUnlocked(void *ach, int index);
+
+// lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 static ImageFactory **g_sw_imageFactory = nullptr;
 static int g_sw_charDef = 0;
@@ -393,13 +401,11 @@ void StatusWindow::reInit() {
     this->charImageHeight = canvas->GetImage2DHeight(this->rankImage0);
 }
 
-void Globals_drawLines(void *globals, void *font, void *arr, int y, char clip);
-
 static int *g_swd_dimW = nullptr;
 static int *g_swd_dimH = nullptr;
 static Layout **g_swd_layout = nullptr;
 static ImageFactory **g_swd_imageFactory = nullptr;
-static void *g_swd_font = nullptr;
+static unsigned int *g_swd_font = nullptr;
 static Globals **g_swd_globals = nullptr;
 static char *g_swd_landscape = nullptr;
 static int *g_swd_textId = nullptr;
@@ -408,7 +414,7 @@ static GameText **g_swd_gameText = nullptr;
 void StatusWindow::draw() {
     PaintCanvas *canvas = Globals::Canvas;
     Layout *layout = *g_swd_layout;
-    void *font = *(void **) g_swd_font;
+    unsigned int font = *g_swd_font;
     char *land = g_swd_landscape;
     int screenW = *g_swd_dimW;
     int screenH = *g_swd_dimH;
@@ -441,7 +447,11 @@ void StatusWindow::draw() {
     this->boxWidth = colW + layout->buttonInsetX * -2;
 
     String creditStr;
-    { if (creditStr.data) delete[] creditStr.data; creditStr.data = nullptr; creditStr.length = 0; }
+    {
+        if (creditStr.data) delete[] creditStr.data;
+        creditStr.data = nullptr;
+        creditStr.length = 0;
+    }
     String sep;
     if (GameText::getLanguage() == 9)
         sep.ctor_char("\xa1", false);
@@ -622,9 +632,9 @@ void StatusWindow::draw() {
     }
 }
 
-static void *g_sw_gameTextDef = nullptr;
+static GameText **g_sw_gameTextDef = nullptr;
 static Layout **g_sw_layout = nullptr;
-static void *g_sw_layoutW = nullptr;
+static int **g_sw_layoutW = nullptr;
 static unsigned char *g_sw_tabIndex = nullptr;
 static int g_sw_screenH = 0;
 
@@ -633,14 +643,14 @@ StatusWindow::StatusWindow() {
     ArraySetLength(2, *(this->tabButtons));
 
     Layout *layout = *g_sw_layout;
-    int layoutW = *(int *) *(void **) g_sw_layoutW;
+    int layoutW = **g_sw_layoutW;
 
-    String *t0 = ((GameText *) *(void **) g_sw_gameTextDef)->getText(0xa8);
+    String *t0 = (*g_sw_gameTextDef)->getText(0xa8);
     int helpOff = layout->getHelpButtonOffset();
     TouchButton *b0 = new TouchButton(*t0, 3, layoutW - helpOff, 0, 0x12);
     (*this->tabButtons)[1] = b0;
 
-    String *t1 = ((GameText *) *(void **) g_sw_gameTextDef)->getText(0x241);
+    String *t1 = (*g_sw_gameTextDef)->getText(0x241);
     int helpOff2 = layout->getHelpButtonOffset();
     TouchButton *b1 = new TouchButton(*t1, 3, 0, 0, 0x12);
     int w1 = b1->getWidth();
@@ -662,7 +672,7 @@ StatusWindow::StatusWindow() {
     int *medalIds = Globals::achievements->getMedals();
     for (int i = 0; i < this->medalCount; i++) {
         int medal = medalIds[i];
-        String *txt = ((GameText *) *(void **) g_sw_gameTextDef)->getText(0x5e3 + i);
+        String *txt = (*g_sw_gameTextDef)->getText(0x5e3 + i);
         TouchButton *btn = new TouchButton(i, medal, *txt, 0, 0, 'D');
         (*this->medalButtons)[i] = btn;
     }

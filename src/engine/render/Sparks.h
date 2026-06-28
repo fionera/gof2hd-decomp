@@ -6,7 +6,6 @@
 
 #include "engine/math/AEMath.h"
 
-
 class Sparks {
 public:
     int *lifetimeThresholds;

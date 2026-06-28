@@ -8,7 +8,6 @@
 
 class Radar;
 
-
 class AEGeometry;
 class ChoiceWindow;
 class DialogueWindow;
@@ -21,11 +20,10 @@ class Radio;
 class StarMap;
 class TargetFollowCamera;
 
-
-
 namespace AbyssEngine {
     class ApplicationManager;
 }
+
 using ::AbyssEngine::ApplicationManager;
 
 #pragma pack(push, 1)
@@ -53,7 +51,17 @@ public:
     uint8_t active;
     uint8_t _pad_0x55[3];
     PlayerEgo *player;
-    union { int field_0x5c; struct { uint8_t _b5c; uint8_t pauseOpen; uint8_t cutsceneActive; uint8_t jumpActive; }; };
+
+    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
+        int field_0x5c;
+
+        struct {
+            uint8_t _b5c;
+            uint8_t pauseOpen;
+            uint8_t cutsceneActive;
+            uint8_t jumpActive;
+        };
+    }; // lint: union_decl (type-pun: int overlaid with byte flags; both used via static_asserts/MGame.cpp)
     uint8_t gameOverActive;
     uint8_t campaignMission;
     uint8_t _pad_0x62[2];
@@ -71,21 +79,57 @@ public:
     int touch0Id;
     int touch1Id;
     int menuTime;
-    union { Vector freeCamFinger1; struct { int freeCamFinger1X; int freeCamFinger1Y; int freeCamFinger1Z; }; };
-    union { Vector freeCamFinger0; struct { int freeCamFinger0X; int freeCamFinger0Y; int freeCamFinger0Z; }; };
-    float flCameraRoll;
-    void *activeTouchId;
+
+    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
+        Vector freeCamFinger1;
+
+        struct {
+            int freeCamFinger1X;
+            int freeCamFinger1Y;
+            int freeCamFinger1Z;
+        };
+    }; // lint: union_decl (type-pun: Vector overlaid with int xyz)
     union {
+        Vector freeCamFinger0;
+
+        struct {
+            int freeCamFinger0X;
+            int freeCamFinger0Y;
+            int freeCamFinger0Z;
+        };
+    }; // lint: union_decl (type-pun: Vector overlaid with int xyz)
+    float flCameraRoll;
+    void *activeTouchId; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
+    union {
+        // lint: union_decl (type-pun: int overlaid with byte flags; both used via static_asserts/MGame.cpp)
         int dockChoiceOpen;
+
         struct {
             uint8_t field_0xc1;
-            union { uint8_t autopilotMenuOpen; uint8_t field_0xc2; };
-            union { uint8_t field_0xc6; uint8_t field_0xc3; };
+            uint8_t autopilotMenuOpen;
+            uint8_t field_0xc6;
             uint8_t starMapOpen;
         };
     };
-    union { uint16_t field_0xc8; struct { uint8_t _bc8; uint8_t menuTouchOpen; }; };
-    union { int field_0xca; struct { uint8_t _bca; uint8_t touchesStream; uint8_t touchesStation; uint8_t jumpGateSoundStarted; }; };
+
+    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
+        uint16_t field_0xc8;
+
+        struct {
+            uint8_t _bc8;
+            uint8_t menuTouchOpen;
+        };
+    }; // lint: union_decl (type-pun: uint16 overlaid with byte flags; both used via static_asserts)
+    union {
+        int field_0xca;
+
+        struct {
+            uint8_t _bca;
+            uint8_t touchesStream;
+            uint8_t touchesStation;
+            uint8_t jumpGateSoundStarted;
+        };
+    }; // lint: union_decl (type-pun: int overlaid with byte flags; both used via static_asserts)
     uint8_t choiceWindowOpen;
     uint8_t field_0xcf;
     int choiceItemCount;
@@ -99,7 +143,16 @@ public:
     uint8_t _pad_0xde[2];
     uint8_t field_0xe0;
     uint8_t _pad_0xe1[3];
-    union { Vector egoJumpPos; struct { int egoJumpPosX; int egoJumpPosY; int egoJumpPosZ; }; };
+
+    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
+        Vector egoJumpPos;
+
+        struct {
+            int egoJumpPosX;
+            int egoJumpPosY;
+            int egoJumpPosZ;
+        };
+    }; // lint: union_decl (type-pun: Vector overlaid with int xyz)
     unsigned cameraId;
     TargetFollowCamera *camera;
     int hudTouchFlags;
@@ -159,7 +212,15 @@ public:
     int field_0x1ac;
     int field_0x1b0;
     int field_0x1b4;
-    union { uint16_t thrustActive; struct { uint8_t _b1b8; uint8_t thrustEngaged; }; };
+
+    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
+        uint16_t thrustActive;
+
+        struct {
+            uint8_t _b1b8;
+            uint8_t thrustEngaged;
+        };
+    }; // lint: union_decl (type-pun: uint16 overlaid with byte flags; both used via static_asserts)
     uint8_t _pad_0x1ba[2];
     int field_0x1bc;
     int thrustStartY;
@@ -197,11 +258,11 @@ public:
 
     void OnTouchEnd(int p1, int p2) override;
 
-    void OnTouchBegin(int p1, int p2, void *touchId) override;
+    void OnTouchBegin(int p1, int p2, void *touchId) override; // lint: void_ptr -- exported override signature (Pv)
 
-    void OnTouchMove(int p1, int y, void *touch) override;
+    void OnTouchMove(int p1, int y, void *touch) override; // lint: void_ptr -- exported override signature (Pv)
 
-    void OnTouchEnd(int p1, int p2, void *touchId) override;
+    void OnTouchEnd(int p1, int p2, void *touchId) override; // lint: void_ptr -- exported override signature (Pv)
 
     void OnUpdate() override;
 
@@ -225,21 +286,21 @@ public:
 
     void dockEvent(int p1, int p2);
 
-    void freeCamTouchBegin(int x, int y, void *id);
+    void freeCamTouchBegin(int x, int y, void *id); // lint: void_ptr -- exported method signature (Pv)
 
-    void freeCamTouchEnd(int p1, int p2, void *id);
+    void freeCamTouchEnd(int p1, int p2, void *id); // lint: void_ptr -- exported method signature (Pv)
 
-    void freeCamTouchMove(int x, int y, void *touchId);
+    void freeCamTouchMove(int x, int y, void *touchId); // lint: void_ptr -- exported method signature (Pv)
 
     void gameOverCheck();
 
     void handleAccelerometer();
 
-    void maneuverTouchBegin(int x, int y, void *p);
+    void maneuverTouchBegin(int x, int y, void *p); // lint: void_ptr -- exported method signature (Pv)
 
-    void maneuverTouchEnd(int a, int b, void *p);
+    void maneuverTouchEnd(int a, int b, void *p); // lint: void_ptr -- exported method signature (Pv)
 
-    void maneuverTouchMove(int a, int b, void *p);
+    void maneuverTouchMove(int a, int b, void *p); // lint: void_ptr -- exported method signature (Pv)
 
     int nextCamId(int cur);
 

@@ -10,26 +10,30 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/core/CheatHandler.h"
 
-namespace AbyssEngine { 
+namespace AbyssEngine {
     class AESoundRessource;
     class CheatHandler;
     class ConfigReader;
     class IApplicationModule;
     class KeyCode;
     struct AESoundInfo;
- }
-
+}
 
 namespace AbyssEngine {
     class PaintCanvas;
     class Engine;
 }
+
 using ::AbyssEngine::PaintCanvas;
 using ::AbyssEngine::Engine;
 
 typedef void LoadingCallback_t(PaintCanvas *canvas, int loading, void *data);
 
+// lint: void_ptr (callback typedef, opaque user data; original exports with Pv mangling)
+
 typedef bool ResumeCallback_t(PaintCanvas *canvas, void *data);
+
+// lint: void_ptr (callback typedef, opaque user data; original exports with Pv mangling)
 
 typedef void QuitCallback_t();
 
@@ -41,12 +45,12 @@ namespace AbyssEngine {
         uint32_t currentKeyHigh;
         char *keyMappingTable;
         bool orientationTrackingEnabled;
-        void *currentModule;
+        IApplicationModule *currentModule;
         QuitCallback_t *quitCallback;
         LoadingCallback_t *loadingCallback;
-        void *loadingCallbackData;
+        void *loadingCallbackData; // lint: void_ptr (opaque user data forwarded to LoadingCallback_t)
         ResumeCallback_t *resumeCallback;
-        void *resumeCallbackData;
+        void *resumeCallbackData; // lint: void_ptr (opaque user data forwarded to ResumeCallback_t)
         CheatHandler *cheatHandler;
         bool cheatsEnabled;
         ConfigReader *configReader;
@@ -55,8 +59,8 @@ namespace AbyssEngine {
         Array<IApplicationModule *> *modules;
         Array<unsigned int> *moduleIds;
         unsigned int currentModuleId;
-        void *pendingModule;
-        void *applicationData;
+        IApplicationModule *pendingModule;
+        void *applicationData; // lint: void_ptr (opaque app data, GetApplicationData/SetApplicationData ABI)
         uint64_t currentTimeMs;
         uint64_t frameTimeMs;
         uint64_t previousFrameTimeMs;
@@ -87,18 +91,23 @@ namespace AbyssEngine {
 
         void CheatSetCallback(void (*callback)(int, void *), void *data);
 
+        // lint: void_ptr (exported ABI signature, opaque cheat callback user data)
+
         void CheatUpdate(unsigned short key);
 
         void CheckForOrientationChange();
 
-        void *ConfigGetKeysForAction(long long action);
+        void *ConfigGetKeysForAction(long long action); // lint: void_ptr (exported ABI signature, returns Pv)
 
         void ConfigReadFile(String name);
 
         void ConfigRegisterAction(long long value, long long key);
 
         void ConfigRegisterTokenReadFunction(String name,
-                                             ConfigTokenReadFunction read, void *context);
+                                             ConfigTokenReadFunction read,
+                                             void *context);
+
+        // lint: void_ptr (exported ABI signature, opaque token-read context)
 
         void ConvertTouchCoords(int &x, int &y);
 
@@ -106,19 +115,19 @@ namespace AbyssEngine {
 
         uint64_t GetActionState();
 
-        void *GetApplicationData();
+        void *GetApplicationData(); // lint: void_ptr (exported ABI signature, returns Pv)
 
-        void *GetApplicationModule(unsigned int id);
+        void *GetApplicationModule(unsigned int id); // lint: void_ptr (exported ABI signature, returns Pv)
 
         String GetApplicationVersionString();
 
-        void *GetCurrentApplicationModule() const;
+        void *GetCurrentApplicationModule() const; // lint: void_ptr (exported ABI signature, returns Pv)
 
         uint64_t GetCurrentTimeMillis();
 
         uint64_t GetElapsedTimeMillis();
 
-        void *GetEngine();
+        void *GetEngine(); // lint: void_ptr (exported ABI signature, returns Pv)
 
         uint64_t GetKeyState();
 
@@ -128,17 +137,25 @@ namespace AbyssEngine {
 
         void LoadingCallbackShow(int mode, void *data);
 
+        // lint: void_ptr (exported ABI signature, opaque loading-callback user data)
+
         void OnKeyPress(int key);
 
         void OnKeyRelease(int key);
 
         void OnTouchBegin(int xArg, int yArg, void *touch);
 
+        // lint: void_ptr (exported ABI signature, opaque platform touch handle)
+
         void OnTouchEnd(int xArg, int yArg, void *touch);
+
+        // lint: void_ptr (exported ABI signature, opaque platform touch handle)
 
         void OnTouchEnd();
 
         void OnTouchMove(int xArg, int yArg, void *touch);
+
+        // lint: void_ptr (exported ABI signature, opaque platform touch handle)
 
         void OnUpdate(long long now);
 
@@ -150,7 +167,7 @@ namespace AbyssEngine {
 
         void Resume(bool arg);
 
-        void SetApplicationData(void *data);
+        void SetApplicationData(void *data); // lint: void_ptr (exported ABI signature, opaque app data)
 
         void SetApplicationModule(IApplicationModule *module);
 
@@ -160,7 +177,11 @@ namespace AbyssEngine {
 
         void SetLoadingCallback(LoadingCallback_t *callback, void *data);
 
+        // lint: void_ptr (exported ABI signature, opaque loading-callback user data)
+
         void SetResumeCallback(ResumeCallback_t *callback, void *data);
+
+        // lint: void_ptr (exported ABI signature, opaque resume-callback user data)
 
         void SoundEnable(bool enable);
 
@@ -211,7 +232,6 @@ namespace AbyssEngine {
         void VibrateEnable(bool enable);
 
         void VibrateSupported();
-
     };
 }
 

@@ -6,7 +6,6 @@
 
 #include "engine/math/Vector.h"
 
-
 class BoundingAAB : public BoundingVolume {
 public:
     float halfExtentX;

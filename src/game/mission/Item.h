@@ -2,11 +2,8 @@
 #define GOF2_ITEM_H
 #include "engine/core/Array.h"
 
-
 #include "game/mission/ItemTable.h"
 class Station;
-
-
 
 class Item {
 public:
@@ -123,25 +120,24 @@ public:
 
     bool isUnsaleable();
 
-    static bool isInList(int index, int amount, Array<Item*> *items);
+    static bool isInList(int index, int amount, Array<Item *> *items);
 
-    static bool isInList(int index, Array<Item*> *items);
+    static bool isInList(int index, Array<Item *> *items);
 
-    static bool isInList(Item *item, Array<Item*> *items);
+    static bool isInList(Item *item, Array<Item *> *items);
 
-    static void fabricate(Item *item, Array<Item*> *items, int amount);
+    static void fabricate(Item *item, Array<Item *> *items, int amount);
 
-    static Array<Item*> *combineItems(Array<Item*> *items, Array<Item*> *stationItems);
+    static Array<Item *> *combineItems(Array<Item *> *items, Array<Item *> *stationItems);
 
-    static Array<Item*> *extractItems(Array<Item*> *items, bool station);
+    static Array<Item *> *extractItems(Array<Item *> *items, bool station);
 
-    static void combineDuplicates(Array<Item*> *items);
+    static void combineDuplicates(Array<Item *> *items);
 
-    static Array<Item*> *mixItems(Array<Item*> *items, Array<Item*> *stationItems);
-
+    static Array<Item *> *mixItems(Array<Item *> *items, Array<Item *> *stationItems);
 };
 
 typedef Array<int> IntArray;
-typedef Array<Item*> ItemArray;
+typedef Array<Item *> ItemArray;
 
 #endif

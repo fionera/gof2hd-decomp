@@ -7,7 +7,6 @@
 
 #include "engine/math/AEMath.h"
 
-
 using AbyssEngine::AEMath::Vector;
 
 class FModSound {
@@ -19,9 +18,9 @@ public:
     uint8_t lowMemory;
     uint8_t categoryEnabled[4];
     FMOD::Event *events[0x8f5];
-    void *category[4];
-    void *system;
-    void *music;
+    FMOD::EventCategory *category[4];
+    FMOD::EventSystem *system;
+    FMOD::MusicSystem *music;
     int initialized;
     int reverbPreset;
     int propSlot;

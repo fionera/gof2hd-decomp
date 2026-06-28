@@ -17,29 +17,36 @@ using AbyssEngine::Matrix;
 
 void FModSound_resumeEvent(void *player, int channel);
 
-void FModSound_pauseEvent(void *player);
+// lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
 
-void FModSound_stopEvent(void *player);
+void FModSound_pauseEvent(void *player); // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
+
+void FModSound_stopEvent(void *player); // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
 
 void FModSound_playEvent(void *player, int event, int flags);
 
-static void **gCanvasPtr = nullptr;
-static void *const gAERandom = nullptr;
-static void *const gItemDb = nullptr;
+// lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
+
+struct ItemDb;
+
+static PaintCanvas **gCanvasPtr = nullptr;
+static AbyssEngine::AERandom **const gAERandom = nullptr;
+static ItemDb **const gItemDb = nullptr;
 static unsigned KIPlayer_initA = 0;
 static unsigned KIPlayer_initB = 0;
 
-
-
-
 struct ItemDb {
-    void *field_0;
+    unsigned char *field_0;
     Item **prototypes;
 };
 
 KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
                    float x, float y, float z, bool active) {
-    { if (this->name.data) delete[] this->name.data; this->name.data = nullptr; this->name.length = 0; }
+    {
+        if (this->name.data) delete[] this->name.data;
+        this->name.data = nullptr;
+        this->name.length = 0;
+    }
 
     this->field_0x90 = 0;
     this->field_0x94 = 0;
@@ -49,7 +56,7 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     this->field_0x110 = 0;
     this->field_0x114 = 0;
     this->field_0x118 = 0;
-    this->field_0x2c = 0;
+    this->autoPilotState = 0;
     this->field_0x30 = 0;
     this->field_0x34 = 0;
     this->level = 0;
@@ -101,7 +108,11 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
         String tmp;
         tmp.ctor_char("", false);
         this->name = tmp;
-        { if (tmp.data) delete[] tmp.data; tmp.data = nullptr; tmp.length = 0; }
+        {
+            if (tmp.data) delete[] tmp.data;
+            tmp.data = nullptr;
+            tmp.length = 0;
+        }
     }
 
     this->field_0x24 = 0;
@@ -174,7 +185,11 @@ KIPlayer::~KIPlayer() {
         this->spacePoints = 0;
     }
 
-    { if (this->name.data) delete[] this->name.data; this->name.data = nullptr; this->name.length = 0; }
+    {
+        if (this->name.data) delete[] this->name.data;
+        this->name.data = nullptr;
+        this->name.length = 0;
+    }
 }
 
 int KIPlayer::getSpeed() {
@@ -437,7 +452,7 @@ void KIPlayer::captureCrate(Hud *hud) {
             continue;
 
         if ((unsigned) (this->state - 3) >= 2)
-            amount = ((AbyssEngine::AERandom *) (*(void **) gAERandom))->nextInt();
+            amount = (*gAERandom)->nextInt();
 
         Status *status = Globals::status;
 
@@ -455,7 +470,7 @@ void KIPlayer::captureCrate(Hud *hud) {
 
         int itemId = (*this->cargo)[i];
 
-        ItemDb *db = *(ItemDb **) gItemDb;
+        ItemDb *db = *gItemDb;
         Item *item = db->prototypes[itemId]->makeItem();
         (*this->cargo)[i + 1] = (*this->cargo)[i + 1] - amount;
         if (item == 0)

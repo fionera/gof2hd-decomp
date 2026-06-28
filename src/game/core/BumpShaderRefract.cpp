@@ -83,17 +83,17 @@ namespace AbyssEngine {
             glEnableVertexAttribArray(uSampler0);
 
         int loc0 = aPosition;
-        const void *ptr;
+        const float *ptr;
         int last;
         if (*(uint8_t *) (m + 0x5c) == 0) {
             if (loc0 >= 0)
-                glVertexAttribPointer(loc0, 3, 0x1406, 0, 0, *(void **) (m + 0x4));
+                glVertexAttribPointer(loc0, 3, 0x1406, 0, 0, *(float **) (m + 0x4));
             if (aTexCoord >= 0)
-                glVertexAttribPointer(aTexCoord, 2, 0x1406, 0, 0, *(void **) (m + 0x8));
+                glVertexAttribPointer(aTexCoord, 2, 0x1406, 0, 0, *(float **) (m + 0x8));
             last = uSampler0;
             if (last < 0)
                 return;
-            ptr = *(void **) (m + 0xc);
+            ptr = *(float **) (m + 0xc);
         } else {
             if (loc0 >= 0) {
                 glBindBuffer(0x8892, *(uint32_t *) (m + 0x60));

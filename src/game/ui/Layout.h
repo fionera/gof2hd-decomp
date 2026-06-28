@@ -13,15 +13,16 @@
 class ChoiceWindow;
 class TouchButton;
 
-
 namespace AbyssEngine {
     class PaintCanvas;
 }
+
 using ::AbyssEngine::PaintCanvas;
 
 class Layout {
 public:
     union {
+        // lint: union_decl (dual-name alias; both cross-file: ModStation.cpp/MenuTouchWindow.cpp choiceWindowOpen, StarMap.cpp layoutVisibleFlag)
         uint8_t choiceWindowOpen;
         uint8_t layoutVisibleFlag;
     };
@@ -30,33 +31,31 @@ public:
     int field_0x4;
 
     union {
+        // lint: union_decl (dual-name alias; field_0x8 used cross-file: ChoiceWindow.cpp/DialogueWindow.cpp/Radio.cpp/etc, windowTopInset: MenuTouchWindow.cpp)
         int field_0x8;
         int windowTopInset;
     };
 
     union {
+        // lint: union_decl (dual-name alias; field_0xc used cross-file: WantedWindow.cpp/MenuTouchWindow.cpp/HangarWindow.cpp/etc)
         int field_0xc;
         int field_0xc_leftMargin;
     };
 
     union {
+        // lint: union_decl (dual-name alias; field_0x10 used cross-file: WantedWindow.cpp/HangarWindow.cpp/StatusWindow.cpp/etc)
         int field_0x10;
         int field_0x10_rightMargin;
     };
 
-    union {
-        int field_0x14;
-        int footerTextInset;
-    };
+    int footerTextInset;
 
-    union {
-        int field_0x18;
-        int headerTitleY;
-    };
+    int headerTitleY;
 
     int field_0x1c;
 
     union {
+        // lint: union_decl (dual-name alias; both cross-file: WantedWindow.cpp field_0x20, MenuTouchWindow.cpp field_0x20_top)
         int field_0x20;
         int field_0x20_top;
     };
@@ -64,16 +63,19 @@ public:
     int field_0x24;
 
     union {
+        // lint: union_decl (dual-name alias; both cross-file: HangarWindow.cpp field_0x28, WantedWindow.cpp/ListItemWindow.cpp buttonInsetX)
         int field_0x28;
         int buttonInsetX;
     };
 
     union {
+        // lint: union_decl (dual-name alias; field_0x2c used cross-file: WantedWindow.cpp/ListItemWindow.cpp/StatusWindow.cpp/etc)
         int field_0x2c;
         int field_0x2c_rowHeight;
     };
 
     union {
+        // lint: union_decl (dual-name alias; field_0x30 used cross-file: ChoiceWindow.cpp/DialogueWindow.cpp/SpaceLounge.cpp/etc)
         int field_0x30;
         int field_0x30_rowHeight;
     };
@@ -94,6 +96,7 @@ public:
     uint8_t _pad_0x68[8];
 
     union {
+        // lint: union_decl (dual-name alias; field_0x70 used cross-file: WantedWindow.cpp/HangarWindow.cpp/SpaceLounge.cpp/etc)
         int field_0x70;
         int field_0x70_rowHeight;
         int promptYOffset;
@@ -135,6 +138,7 @@ public:
     int field_0x110_strip58;
 
     union {
+        // lint: union_decl (dual-name alias; field_0x114 used cross-file: HangarWindow.cpp)
         int field_0x114;
         int field_0x114_strip5c;
     };
@@ -172,10 +176,13 @@ public:
     int field_0x200;
     uint8_t _pad_0x204[48];
     int field_0x234;
+
     union {
+        // lint: union_decl (type-pun: int vs Blk16 overlay at offset 0x238)
         int field_0x238;
         Blk16 field_0x238_blk16;
     };
+
     int field_0x248;
     int field_0x24c;
     int field_0x250;
@@ -192,10 +199,7 @@ public:
     int field_0x27c;
     int field_0x280;
 
-    union {
-        uint8_t field_0x284;
-        uint8_t field_0x284_sliderSlot5Enabled;
-    };
+    uint8_t field_0x284_sliderSlot5Enabled;
 
     uint8_t field_0x285;
     uint8_t field_0x286;
@@ -234,47 +238,26 @@ public:
     int field_0x2fc;
     int field_0x300;
     int field_0x304;
-    union {
-        int field_0x308;
-        int choiceWindowTitleHeight;
-    };
+    int choiceWindowTitleHeight;
 
     int field_0x30c;
     int field_0x310;
     int field_0x314;
     int field_0x318;
 
-    union {
-        int field_0x31c;
-        int helpWindowX;
-    };
+    int helpWindowX;
 
-    union {
-        int field_0x320;
-        int helpWindowY;
-    };
+    int helpWindowY;
 
     unsigned bgPatternImage;
 
-    union {
-        int field_0x328;
-        int headerPatternImage;
-    };
+    int headerPatternImage;
 
-    union {
-        unsigned titleBarImage;
-        unsigned headerIconImage;
-    };
+    unsigned headerIconImage;
 
-    union {
-        int field_0x330;
-        int headerCapImage;
-    };
+    int headerCapImage;
     unsigned footerImageLeft;
-    union {
-        unsigned footerFillImage;
-        unsigned field_0x338;
-    };
+    unsigned footerFillImage;
     int footerImageRight;
     unsigned field_0x340;
     unsigned footerPatternImage;
@@ -291,10 +274,7 @@ public:
     unsigned field_0x370;
     int scrollBarImage;
 
-    union {
-        unsigned field_0x378;
-        unsigned scrollBarFillImage;
-    };
+    unsigned scrollBarFillImage;
     unsigned field_0x37c;
     unsigned field_0x380;
     int field_0x384;
@@ -306,16 +286,10 @@ public:
     unsigned field_0x39c;
     int field_0x3a0;
 
-    union {
-        unsigned rewardIconImage;
-        unsigned field_0x3a4;
-    };
+    unsigned rewardIconImage;
     int field_0x3a8;
 
-    union {
-        int field_0x3ac;
-        int textBaselineAdjust;
-    };
+    int textBaselineAdjust;
 
     unsigned drawColor;
     TouchButton *backButton;
@@ -332,60 +306,39 @@ public:
     int field_0x3d8;
     uint8_t field_0x3dc;
     uint8_t _pad_0x3dd[3];
-    union {
-        int field_0x3e0;
-        int scrollBarInset;
-    };
+    int scrollBarInset;
 
-    union {
-        int field_0x3e4;
-        int scrollBarHandle;
-    };
+    int scrollBarHandle;
 
-    union {
-        int field_0x3e8;
-        int rewardBoxWidth;
-    };
+    int rewardBoxWidth;
 
-    union {
-        int field_0x3ec;
-        int rewardBoxHeight;
-    };
+    int rewardBoxHeight;
 
-    union {
-        int field_0x3f0;
-        int rewardBoxX;
-    };
+    int rewardBoxX;
 
-    union {
-        int field_0x3f4;
-        int rewardBoxY;
-    };
+    int rewardBoxY;
 
-    union {
-        int field_0x3f8;
-        int rewardBoxY2;
-    };
+    int rewardBoxY2;
 
-    union {
-        int field_0x3fc;
-        int footerButtonOffset;
-    };
+    int footerButtonOffset;
     uint8_t fading;
     uint8_t fadeOut;
     uint8_t _pad_0x402[2];
     unsigned fadeColor;
 
     union {
+        // lint: union_decl (type-pun: overlapping fade-state struct views at offset 0x408)
         struct {
             int fadeProgress;
             int fadeDuration;
             uint8_t fillScreen;
         };
+
         struct {
             uint8_t _skip_0x408[1];
             int field_0x409;
         };
+
         struct {
             uint8_t _skip_0x40d[5];
             int field_0x40d;

@@ -18,7 +18,6 @@
 #include "engine/math/AEMath.h"
 #include "engine/math/Matrix.h"
 
-
 class Agent;
 class ChoiceWindow;
 class CutScene;
@@ -27,11 +26,11 @@ class ListItemWindow;
 class ScrollTouchWindow;
 class StarMap;
 class TouchButton;
-namespace AbyssEngine { 
+
+namespace AbyssEngine {
     class EaseInOut;
     class EaseInOutMatrix;
- }
-
+}
 
 class SpaceLounge {
 public:

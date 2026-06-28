@@ -11,7 +11,6 @@
 class AEGeometry;
 class TargetFollowCamera;
 
-
 class Explosion {
 public:
     int type;

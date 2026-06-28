@@ -69,7 +69,7 @@ namespace AbyssEngine {
         fbo->Activate();
 
         if (target == 0) {
-            glBindFramebuffer(0x8d40, engine->field_0x40c);
+            glBindFramebuffer(0x8d40, engine->viewFramebuffer);
             int width;
             int height;
             if (engine->appManager->paintCanvas->gameOrientation == 2) {

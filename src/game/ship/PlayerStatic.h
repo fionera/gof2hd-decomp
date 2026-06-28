@@ -7,11 +7,8 @@
 #include "engine/math/Vector.h"
 class AEGeometry;
 
-
 class PlayerStatic : public KIPlayer {
 public:
-
-
     int32_t positionX;
     int32_t positionY;
     int32_t positionZ;

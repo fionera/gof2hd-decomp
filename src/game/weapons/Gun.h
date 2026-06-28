@@ -10,12 +10,10 @@
 
 #include "engine/math/Matrix.h"
 
-
 class Player;
 
 class Level;
 class Sparks;
-
 
 class Gun {
 public:
@@ -37,11 +35,7 @@ public:
     uint8_t active;
     uint8_t hitSmall;
 
-    union {
-        float pitchRate;
-
-        float field_0x50;
-    };
+    float pitchRate;
 
     uint8_t field_0x54;
     int itemIndex;
@@ -63,7 +57,9 @@ public:
     int fireIndex;
 
     union {
+        // lint: union_decl int field_0xa4 (whole-slot, set in Gun.cpp/Level.cpp/ObjectGun.cpp) overlaps individual bytes field_0xa5/0xa6/0xa7 (read in ObjectGun.cpp) — genuine cross-file type-pun, layout-fixed
         int field_0xa4;
+
         struct {
             uint8_t field_0xa4_b0;
             uint8_t field_0xa5;
@@ -104,7 +100,7 @@ public:
 
     void calcLevelCollision();
 
-    void *getEnemies();
+    void *getEnemies(); // lint: void_ptr exported method return type; consumed as void* in RocketGun.cpp
 
     int getMagnitude();
 

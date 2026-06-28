@@ -61,31 +61,25 @@ float Level::b;
 #include <cstddef>
 
 namespace {
+    struct EngineColorEntry {
+        uint32_t color;
+        uint8_t pad[0x9c];
+    };
 
-struct EngineColorEntry {
-    uint32_t color;
-    uint8_t pad[0x9c];
-};
-
-struct EngineColorTable {
-    uint8_t field_0x0[0x1254];
-    union {
-        uint32_t engineColorEntry0;
+    struct EngineColorTable {
+        uint8_t field_0x0[0x1254];
         EngineColorEntry entries[1];
     };
-};
 
-static_assert(sizeof(EngineColorEntry) == 0xa0,
-              "EngineColorEntry stride must be 0xa0");
-static_assert(offsetof(struct EngineColorTable, engineColorEntry0) == 0x1254,
-              "engineColorEntry0 must live at table offset 0x1254");
-static_assert(offsetof(struct EngineColorTable, entries) == 0x1254,
-              "entries must live at table offset 0x1254");
-
+    static_assert(sizeof(EngineColorEntry) == 0xa0,
+                  "EngineColorEntry stride must be 0xa0");
+    static_assert(offsetof(struct EngineColorTable, entries) == 0x1254,
+                  "entries must live at table offset 0x1254");
 }
 
 Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
+// lint: void_ptr (free-function signature; retype changes mangling)
 
 static unsigned char *g_initStreamOut = nullptr;
 
@@ -175,8 +169,7 @@ static float *g_flashCol_g = nullptr;
 
 static float *g_flashCol_b = nullptr;
 
-static void (**g_levelSubCtor)(void *) = nullptr;
-
+static void (**g_levelSubCtor)(Matrix *) = nullptr;
 
 static int **g_cso_textA = nullptr;
 
@@ -218,9 +211,12 @@ static inline float bitsToFloat(int bits) {
     return f;
 }
 
+struct PlayerEgoPolymorphic;
+
 struct PlayerEgoVtable {
     void (*slot[7])();
-    void (*placeAtStation)(void *self, int stationStack);
+
+    void (*placeAtStation)(PlayerEgoPolymorphic *self, int stationStack);
 };
 
 struct PlayerEgoPolymorphic {
@@ -390,8 +386,9 @@ void Level::switchSkyboxForSupernovaReversal() {
     skyboxMesh = skyboxMeshHandle;
     int tex2 = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
     unsigned int skyboxTexHandle;
-    Globals::Canvas->TextureCreate((unsigned short) ((unsigned short) (tex2 + 0x2751)), nullptr, nullptr, skyboxTexHandle,
-                           false);
+    Globals::Canvas->TextureCreate((unsigned short) ((unsigned short) (tex2 + 0x2751)), nullptr, nullptr,
+                                   skyboxTexHandle,
+                                   false);
     field_198 = skyboxTexHandle;
     skyboxTexture = -1;
 }
@@ -432,7 +429,8 @@ uint8_t Level::friendCargoWasStolen() {
 }
 
 Array<void *> *Level::getMessages() {
-    return (Array<void *> *) messages;
+    // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
+    return (Array<void *> *) messages; // lint: void_ptr (exported return type)
 }
 
 Route *Level::getEnemyRoute() {
@@ -717,7 +715,8 @@ Level::~Level() {
         landmarks = nullptr;
     }
     if (messages) {
-        ArrayReleaseClasses(*messages); delete messages;
+        ArrayReleaseClasses(*messages);
+        delete messages;
         messages = nullptr;
     }
     if (field_104) {
@@ -973,14 +972,15 @@ void Level::createSpace() {
             Globals::status->getSystem();
             sysVariant = (((SolarSystem *) Globals::status->getSystem())->getIndex() % 3);
             Globals::Canvas->TextureCreate((unsigned short) ((sysVariant + 0x2766) & 0xffff), nullptr, nullptr,
-                                   g_level_texOutScratch, false);
+                                           g_level_texOutScratch, false);
 
             Globals::status->getSystem();
             if (0xf < ((SolarSystem *) Globals::status->getSystem())->getTextureIndex()) {
                 Engine *eng = (Engine *) Globals::appManager->GetEngine();
                 if (eng->IsPostEffectActivated() != false) {
-                    AbyssEngine::Mesh *mp = Globals::Canvas->MeshGetPointer((unsigned int) *(unsigned *) &this->skyboxMesh);
-                    mp->meshPostEffectFlag = 0;
+                    AbyssEngine::Mesh *mp = Globals::Canvas->MeshGetPointer(
+                        (unsigned int) *(unsigned *) &this->skyboxMesh);
+                    mp->materialId = 0;
                 }
             }
         } else {
@@ -1026,7 +1026,8 @@ void Level::createRadioMessage(int type, int sub) {
 
     if (this->messages != nullptr) {
         if (this->messages) {
-            ArrayReleaseClasses(*this->messages); delete this->messages;
+            ArrayReleaseClasses(*this->messages);
+            delete this->messages;
             this->messages = nullptr;
         }
     }
@@ -1188,7 +1189,8 @@ void Level::createRadioMessage(int type, int sub) {
     if (aborted) {
         if (this->messages != nullptr)
             if (this->messages) {
-                ArrayReleaseClasses(*this->messages); delete this->messages;
+                ArrayReleaseClasses(*this->messages);
+                delete this->messages;
                 this->messages = nullptr;
             }
         PlayerEgo *ego = this->player;
@@ -1203,7 +1205,7 @@ void Level::createRadioMessage(int type, int sub) {
     }
 
     PlayerEgo *ego = this->player;
-    this->crm_dispatch(ego->field_0x1c, (void *) this->messages);
+    this->crm_dispatch(ego->field_0x1c, this->messages);
 }
 
 int Level::init() {
@@ -1372,7 +1374,7 @@ int Level::init() {
     if (this->enemies != nullptr) {
         for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
             KIPlayer *e = (*this->enemies)[i];
-            if (e->deadFlag == 0 && e->inactiveFlag == 0 && e->field_0x3f == 0) {
+            if (e->deadFlag == 0 && e->lostMissionCrateToEgo == 0 && e->field_0x3f == 0) {
                 int wm = e->isWingMan();
                 if (wm == 0) {
                     if ((char) e->field_0x44 == 0 && e->stealFlagByte == 0)
@@ -1600,7 +1602,7 @@ void Level::createAsteroids() {
     int density = ((AbyssEngine::AERandom *) (intptr_t) * rngObj)->nextInt() + 2;
     int alien2 = Globals::status->inAlienOrbit();
 
-    void *canvas = (void *) Globals::Canvas;
+    PaintCanvas *canvas = Globals::Canvas;
     int kind = 0x9a;
     int probCursor = 0;
 
@@ -1670,7 +1672,7 @@ void Level::createAsteroids() {
         }
 
         AEGeometry *geo = (AEGeometry *) ::operator new(0xc0);
-        new((void *) geo) AEGeometry((uint16_t) mesh, (PaintCanvas *) canvas, 0);
+        new(geo) AEGeometry((uint16_t) mesh, canvas, 0);
 
         bool near = (int) i < density;
         {
@@ -1877,7 +1879,7 @@ void Level::reset() {
         count = 0;
         for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
             KIPlayer *e = (*this->enemies)[i];
-            if (e->deadFlag == 0 && e->inactiveFlag == 0 && e->field_0x3f == 0) {
+            if (e->deadFlag == 0 && e->lostMissionCrateToEgo == 0 && e->field_0x3f == 0) {
                 int wm = e->isWingMan();
                 if (wm == 0) {
                     if ((char) e->field_0x44 == 0 && e->stealFlagByte == 0) {
@@ -2119,7 +2121,8 @@ void Level::connectPlayers() {
         Mission *m = (Mission *) Globals::status->getMission();
         int mtype = ((Mission *) Globals::status->getMission())->getType();
         bool branchA = !(((i & 1) == 0 && mtype == 0xc)) &&
-                       ((Mission *) Globals::status->getMission())->getType() != 2 && ((Mission *) Globals::status->getMission())->
+                       ((Mission *) Globals::status->getMission())->getType() != 2 && ((Mission *) Globals::status->
+                           getMission())->
                        getType() != 9;
 
         bool jumpAlwaysFriend = false;
@@ -2295,40 +2298,40 @@ void Level::createRadioMessages(int set) {
                 {0x69e, 0, 6, 0x13}, {0x69f, 0, 6, 0x14}, {0x6a0, 0xf, 6, 0x15},
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(0x17, *(this->messages));
-            for (unsigned i = 0; i < 0x17; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(0x17, *(this->messages));
+                for (unsigned i = 0; i < 0x17; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 1: {
             static const RMSpec t[] = {{0x6a1, 2, 5, 10000}, {0x6a2, 2, 6, 0}, {0x6a3, 2, 6, 1}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(3, *(this->messages));
-            for (unsigned i = 0; i < 3; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(3, *(this->messages));
+                for (unsigned i = 0; i < 3; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 7: {
             static const RMSpec t[] = {{0x6dc, 2, 0x10, 0}, {0x6dd, 0, 6, 0}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(2, *(this->messages));
-            for (unsigned i = 0; i < 2; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(2, *(this->messages));
+                for (unsigned i = 0; i < 2; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x10: {
@@ -2337,14 +2340,14 @@ void Level::createRadioMessages(int set) {
                 {0x731, 1, 6, 2}, {0x732, 0, 6, 3}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(5, *(this->messages));
-            for (unsigned i = 0; i < 5; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(5, *(this->messages));
+                for (unsigned i = 0; i < 5; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x15: {
@@ -2353,14 +2356,14 @@ void Level::createRadioMessages(int set) {
                 {0x75c, 0xe, 8, 0}, {0x75d, 0xe, 0x15, 0}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(5, *(this->messages));
-            for (unsigned i = 0; i < 5; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(5, *(this->messages));
+                for (unsigned i = 0; i < 5; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x18: {
@@ -2369,40 +2372,40 @@ void Level::createRadioMessages(int set) {
                 {0x780, 6, 0x16, 3}, {0x781, 6, 6, 3}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(5, *(this->messages));
-            for (unsigned i = 0; i < 5; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(5, *(this->messages));
+                for (unsigned i = 0; i < 5; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x19: {
             static const RMSpec t[] = {{0x785, 0, 5, 20000}, {0x786, 6, 6, 0}, {0x787, 0, 6, 1}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(3, *(this->messages));
-            for (unsigned i = 0; i < 3; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(3, *(this->messages));
+                for (unsigned i = 0; i < 3; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x26: {
             static const RMSpec t[] = {{0x7ed, 0x15, 5, 15000}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(1, *(this->messages));
-            for (unsigned i = 0; i < 1; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(1, *(this->messages));
+                for (unsigned i = 0; i < 1; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x28: {
@@ -2411,14 +2414,14 @@ void Level::createRadioMessages(int set) {
                 {0x7fe, 0, 6, 3}, {0x7ff, 7, 0xc, 0}, {0x800, 0, 0x18, 0}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(7, *(this->messages));
-            for (unsigned i = 0; i < 7; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(7, *(this->messages));
+                for (unsigned i = 0; i < 7; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x29: {
@@ -2428,92 +2431,92 @@ void Level::createRadioMessages(int set) {
                 {0x80f, 0, 1, 0}, {0x810, 0, 6, 6}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(8, *(this->messages));
-            for (unsigned i = 0; i < 8; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(8, *(this->messages));
+                for (unsigned i = 0; i < 8; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x31: {
             static const RMSpec t[] = {{0x848, 0, 5, 8000}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(1, *(this->messages));
-            for (unsigned i = 0; i < 1; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(1, *(this->messages));
+                for (unsigned i = 0; i < 1; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x32: {
             static const RMSpec t[] = {{0x849, 0x3f, 5, 8000}, {0x84a, 0, 6, 0}, {0x84b, 0x3f, 6, 1}, {0x84c, 0, 6, 2}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(4, *(this->messages));
-            for (unsigned i = 0; i < 4; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(4, *(this->messages));
+                for (unsigned i = 0; i < 4; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x33: {
             static const RMSpec t[] = {{0x84d, 0x3f, 5, 8000}, {0x84e, 0, 6, 0}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(2, *(this->messages));
-            for (unsigned i = 0; i < 2; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(2, *(this->messages));
+                for (unsigned i = 0; i < 2; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x34: {
             static const RMSpec t[] = {{0x84f, 0x3f, 5, 8000}, {0x850, 0, 6, 0}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(2, *(this->messages));
-            for (unsigned i = 0; i < 2; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(2, *(this->messages));
+                for (unsigned i = 0; i < 2; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x36: {
             static const RMSpec t[] = {{0x851, 0, 5, 8000}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(1, *(this->messages));
-            for (unsigned i = 0; i < 1; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(1, *(this->messages));
+                for (unsigned i = 0; i < 1; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x37: {
             static const RMSpec t[] = {{0x85a, 0, 5, 8000}, {0x85b, 0, 6, 0}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(2, *(this->messages));
-            for (unsigned i = 0; i < 2; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(2, *(this->messages));
+                for (unsigned i = 0; i < 2; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x38: {
@@ -2522,14 +2525,14 @@ void Level::createRadioMessages(int set) {
                 {0x86d, 0, 0x14, 3}, {0x86e, 0, 6, 3}, {0x86f, 0x1b, 0x1c, 0}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(6, *(this->messages));
-            for (unsigned i = 0; i < 6; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(6, *(this->messages));
+                for (unsigned i = 0; i < 6; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x40: {
@@ -2538,27 +2541,27 @@ void Level::createRadioMessages(int set) {
                 {0x8b8, 0, 6, 3}, {0x8b9, 0x1e, 0x14, 5}, {0x8ba, 0, 6, 5}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(7, *(this->messages));
-            for (unsigned i = 0; i < 7; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(7, *(this->messages));
+                for (unsigned i = 0; i < 7; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x41: {
             static const RMSpec t[] = {{0x8cb, 0, 5, 12000}, {0x8cc, 0x14, 6, 0}, {0x8cd, 0, 6, 1}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(3, *(this->messages));
-            for (unsigned i = 0; i < 3; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(3, *(this->messages));
+                for (unsigned i = 0; i < 3; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x43: {
@@ -2569,40 +2572,40 @@ void Level::createRadioMessages(int set) {
                 {0x8fa, 0x1f, 6, 10}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(0xc, *(this->messages));
-            for (unsigned i = 0; i < 0xc; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(0xc, *(this->messages));
+                for (unsigned i = 0; i < 0xc; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x45: {
             static const RMSpec t[] = {{0x90e, 0, 5, 8000}, {0x90f, 0, 6, 0}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(2, *(this->messages));
-            for (unsigned i = 0; i < 2; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(2, *(this->messages));
+                for (unsigned i = 0; i < 2; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x46: {
             static const RMSpec t[] = {{0x910, 0, 5, 8000}, {0x911, 0, 6, 0}, {0x912, 0x22, 6, 1}, {0x913, 0, 6, 2}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(4, *(this->messages));
-            for (unsigned i = 0; i < 4; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(4, *(this->messages));
+                for (unsigned i = 0; i < 4; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x49: {
@@ -2612,66 +2615,66 @@ void Level::createRadioMessages(int set) {
                 {0x932, 0, 6, 6}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(8, *(this->messages));
-            for (unsigned i = 0; i < 8; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(8, *(this->messages));
+                for (unsigned i = 0; i < 8; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x77: {
             static const RMSpec t[] = {{0xab9, 0x11, 0x1b, 1}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(1, *(this->messages));
-            for (unsigned i = 0; i < 1; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(1, *(this->messages));
+                for (unsigned i = 0; i < 1; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x78: {
             static const RMSpec t[] = {{0xac5, 0, 5, 0x5dc}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(1, *(this->messages));
-            for (unsigned i = 0; i < 1; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(1, *(this->messages));
+                for (unsigned i = 0; i < 1; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x83: {
             static const RMSpec t[] = {{0xb2b, 0, 0x1b, 2}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(1, *(this->messages));
-            for (unsigned i = 0; i < 1; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(1, *(this->messages));
+                for (unsigned i = 0; i < 1; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x85: {
             static const RMSpec t[] = {{0xb33, 0x11, 0x1b, 1}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(1, *(this->messages));
-            for (unsigned i = 0; i < 1; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(1, *(this->messages));
+                for (unsigned i = 0; i < 1; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x87: {
@@ -2680,14 +2683,14 @@ void Level::createRadioMessages(int set) {
                 {0xb46, 0, 0x1b, 3}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(4, *(this->messages));
-            for (unsigned i = 0; i < 4; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(4, *(this->messages));
+                for (unsigned i = 0; i < 4; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x89: {
@@ -2696,14 +2699,14 @@ void Level::createRadioMessages(int set) {
                 {0xb52, 0, 6, 2}, {0xb53, 0x32, 6, 3}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(5, *(this->messages));
-            for (unsigned i = 0; i < 5; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(5, *(this->messages));
+                for (unsigned i = 0; i < 5; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x90: {
@@ -2712,40 +2715,40 @@ void Level::createRadioMessages(int set) {
                 {0xb9b, 0x27, 6, 2}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(4, *(this->messages));
-            for (unsigned i = 0; i < 4; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(4, *(this->messages));
+                for (unsigned i = 0; i < 4; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x91: {
             static const RMSpec t[] = {{0xb9c, 0, 5, 7000}, {0xb9d, 0x27, 6, 0}, {0xb9e, 0x27, 0x1b, 5}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(3, *(this->messages));
-            for (unsigned i = 0; i < 3; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(3, *(this->messages));
+                for (unsigned i = 0; i < 3; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x93: {
             static const RMSpec t[] = {{0xbac, 0, 5, 7000}, {0xbad, 0, 6, 0}};
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(2, *(this->messages));
-            for (unsigned i = 0; i < 2; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(2, *(this->messages));
+                for (unsigned i = 0; i < 2; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         case 0x50: {
@@ -2754,14 +2757,14 @@ void Level::createRadioMessages(int set) {
                 {0x971, 0, 6, 2}, {0x972, 6, 6, 3}
             };
             {
-            this->messages = new Array<RadioMessage *>();
-            ArraySetLength(5, *(this->messages));
-            for (unsigned i = 0; i < 5; i = i + 1) {
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                (*this->messages)[i] = m;
+                this->messages = new Array<RadioMessage *>();
+                ArraySetLength(5, *(this->messages));
+                for (unsigned i = 0; i < 5; i = i + 1) {
+                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
+                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
+                    (*this->messages)[i] = m;
+                }
             }
-        }
             break;
         }
         default:
@@ -2936,7 +2939,7 @@ void Level::wingmanDied(AbyssEngine::String const &name) {
     }
 }
 
-static inline void zero16(void *p) {
+static inline void zero16(unsigned char *p) {
     ((int *) p)[0] = 0;
     ((int *) p)[1] = 0;
     ((int *) p)[2] = 0;
@@ -2944,7 +2947,7 @@ static inline void zero16(void *p) {
 }
 
 Level::Level(int mission) {
-    void (*ctor)(void *) = *g_levelSubCtor;
+    void(*ctor)(Matrix *) = *g_levelSubCtor;
     field_b4 = 0;
     field_b8 = 0;
     field_bc = 0;
@@ -2957,10 +2960,10 @@ Level::Level(int mission) {
     ctor(&this->skyMatrix);
     ctor(&this->cloudMatrix);
     ctor(&this->reversalMatrix);
-    zero16(&field_1c);
-    zero16(&this->field_90);
-    zero16(&this->particleRenderBoolPtr);
-    zero16(&this->field_74);
+    zero16((unsigned char *) &field_1c);
+    zero16((unsigned char *) &this->field_90);
+    zero16((unsigned char *) &this->particleRenderBoolPtr);
+    zero16((unsigned char *) &this->field_74);
     skyboxMesh = -1;
     field_08 = -1;
     skyboxTexture = -1;
@@ -2978,8 +2981,8 @@ Level::Level(int mission) {
     objectivesA = nullptr;
     objectivesB = nullptr;
     memset(&this->asteroidWaypoint, 0, 0x65);
-    zero16(&this->hostileCount);
-    zero16(&this->flashType);
+    zero16((unsigned char *) &this->hostileCount);
+    zero16((unsigned char *) &this->flashType);
     field_18a = 0;
     field_188 = 0;
     movingStarsIndex = -1;
@@ -3051,7 +3054,7 @@ void Level::createStaticObjects() {
                 }
                 ArrayAdd(o, *(this->enemies));
                 if (o->cargo != 0)
-                    delete (Array<void *> *) o->cargo;
+                    delete o->cargo;
                 o->cargo = 0;
             }
         }
@@ -3072,7 +3075,7 @@ void Level::createStaticObjects() {
             ((PlayerFixedObject *) o)->setName(name);
             ((PlayerFixedObject *) o)->setDockingType(1);
             if (o->cargo != 0)
-                delete (Array<void *> *) o->cargo;
+                delete o->cargo;
             o->cargo = 0;
             o->player->setAlwaysFriend(1);
             if (this->enemies == nullptr) {
@@ -3113,6 +3116,7 @@ int Level::createStaticObject(Waypoint *wp, int type, bool jitter) {
 }
 
 void *Level::getBoundingVolume(int /*unused*/, AEGeometry *kind) {
+    // lint: void_ptr (method return type is symbol-baked)
     int index = (int) (intptr_t) kind;
     FileRead *fr = (FileRead *) ::operator new(1);
     new(fr) FileRead();
@@ -3124,7 +3128,7 @@ void *Level::getBoundingVolume(int /*unused*/, AEGeometry *kind) {
         coll = (int *) fr->loadStaticCollision(index);
     (fr->~FileRead(), ::operator delete(fr));
 
-    void *result = 0;
+    Array<BoundingVolume *> *result = nullptr;
     if (coll != 0) {
         unsigned n = *(unsigned *) coll[1];
         Array<BoundingVolume *> *arr = new Array<BoundingVolume *>();
@@ -3154,7 +3158,7 @@ void *Level::getBoundingVolume(int /*unused*/, AEGeometry *kind) {
             (*arr)[i] = bv;
         }
 
-        ::operator delete((void *) (intptr_t) coll[1]);
+        ::operator delete((int *) (intptr_t) coll[1]);
         ::operator delete(coll);
     }
     return result;
@@ -3226,7 +3230,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         if (type == 0x2c || type == 0x31 || type == 0x33) {
             if (type == 0x33) obj->field_0x25 = 0;
             if (type != 0x33 && obj->cargo != 0) {
-                delete (Array<void *> *) obj->cargo;
+                delete obj->cargo;
                 obj->cargo = 0;
             }
         }
@@ -3235,9 +3239,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         new(obj) PlayerFixedObject(type, race, pl, 0, fx, fy, fz);
 
         int wreck = -1;
-        void *bv = nullptr;
+        BoundingVolume *bv = nullptr;
         obj->setWreckedMeshId(wreck);
-        obj->setBV((BoundingVolume *) bv);
+        obj->setBV(bv);
         AEGeometry *gg = Globals::globals->getShipGroup(type, race, 0);
         obj->setShipGroup(gg, type, false);
         this->lodManager->addObject(obj->geometry);
@@ -3259,7 +3263,7 @@ void Level::almostKillWanted(int index) {
         return;
     }
     int m = (int) (intptr_t) ::operator new(0x78);
-    new((void *) (intptr_t) m) Mission(4, 0, Globals::status->getStation()->getIndex());
+    new((Mission *) (intptr_t) m) Mission(4, 0, Globals::status->getStation()->getIndex());
     ((Mission *) (m))->setCampaignMission(true);
     ((Mission *) (m))->setWon(1);
     Globals::status->setMission((Mission *) (intptr_t) m);
@@ -3273,13 +3277,14 @@ void Level::almostKillWanted(int index) {
     *(unsigned char *) &e->player->enemyFlags = 0;
     e->reviveLockFlag = 1;
     Array<Wanted *> *w = Globals::status->getWanted();
-    return w->wantedListData[index]->setActive(0 != 0);
+    return w->data_[index]->setActive(0 != 0);
 }
 
 void Level::assignGuns() {
     if (this->enemyGuns != nullptr) {
         if (this->enemyGuns) {
-            ArrayReleaseClasses(*this->enemyGuns); delete this->enemyGuns;
+            ArrayReleaseClasses(*this->enemyGuns);
+            delete this->enemyGuns;
             this->enemyGuns = nullptr;
         }
     }
@@ -3334,7 +3339,8 @@ void Level::assignGuns() {
             } else {
                 Globals::status->getMission();
                 dmg = baseDmg;
-                if (((Mission *) Globals::status->getMission())->getType() == 0xc && ((KIPlayer *) (intptr_t) e)->player->
+                if (((Mission *) Globals::status->getMission())->getType() == 0xc && ((KIPlayer *) (intptr_t) e)->player
+                    ->
                     isAlwaysFriend() != 0) {
                     color = 0x41e00000;
                     dmg = Globals::status->getLevel() + baseDmg;
@@ -3455,10 +3461,10 @@ void Level::assignGuns() {
                         gun->damage = stat->getAttribute(0x9);
                         gun->fireDelay = stat->getAttribute(0xb);
                         gun->initialLifetime = stat->getAttribute(0xc);
-                        gun->field_0x50 = (float) stat->getAttribute(0xd);
+                        gun->pitchRate = (float) stat->getAttribute(0xd);
                         if (camp2 == 0x9e && kt == 0x49c2 && ((KIPlayer *) (intptr_t) e)->player->isAlwaysEnemy() !=
                             0) {
-                            gun->field_0x50 = gun->field_0x50 * 1.2f;
+                            gun->pitchRate = gun->pitchRate * 1.2f;
                             gun->damage = (int) ((float) gun->damage * 1.5f);
                             Player *pp = (*this->enemies)[i]->player;
                             int mhp = pp->getMaxHitpoints();
@@ -3476,7 +3482,8 @@ void Level::assignGuns() {
                 res = 0x37d9;
             }
 
-            if (Globals::status->getMission() != 0 && ((Mission *) Globals::status->getMission())->isCampaignMission() != 0) {
+            if (Globals::status->getMission() != 0 && ((Mission *) Globals::status->getMission())->isCampaignMission()
+                != 0) {
                 if (**g_ag_statusB == Globals::status->getCurrentCampaignMission() &&
                     2 < **g_ag_alienCnt &&
                     ((*this->enemies)[i])->isEnemy() != 0)
@@ -3510,7 +3517,7 @@ void Level::assignGuns() {
                 new(r) RocketGun(gun->itemIndex, gun, res, 0, 0, sc,
                                  sc == ITEM_SORT_MISSILE ? 1 : 0, this);
                 (*this->enemyGuns)[outIdx] = (ObjectGun *) r;
-                gun->field_0x50 = 8.0f;
+                gun->pitchRate = 8.0f;
                 gun->initialLifetime = 10000;
                 gun->fireDelay = 3000;
                 gun->damage = gun->damage << 2;
@@ -3555,7 +3562,7 @@ void Level::assignGuns() {
                 new(r3) RocketGun(gun3->itemIndex, gun3, 0x37a0, 0, 0, gun3->weaponType,
                                   gun3->weaponType == ITEM_SORT_MISSILE, this);
                 ArrayAdd((AbstractGun *) r3, *(this->enemyGuns));
-                gun3->field_0x50 = 8.0f;
+                gun3->pitchRate = 8.0f;
                 gun3->initialLifetime = 10000;
                 gun3->fireDelay = 3000;
                 gun3->damage = gun3->damage << 2;
@@ -3596,7 +3603,8 @@ void Level::createGasClouds() {
     int *prob = (int *) gal->getPlasmaProbabilities(st);
 
     int ship = (int) (intptr_t) Globals::status->getShip();
-    if ((int) (intptr_t)((Ship *) (intptr_t) ship)->getFirstEquipmentOfSort(0x21) == 0 || Globals::status->inAlienOrbit() != 0)
+    if ((int) (intptr_t)((Ship *) (intptr_t) ship)->getFirstEquipmentOfSort(0x21) == 0 || Globals::status->
+        inAlienOrbit() != 0)
         return;
 
     Globals::status->getSystem();
@@ -3621,14 +3629,14 @@ void Level::createGasClouds() {
     int count = (countF > 0.0f) ? (int) countF : 0;
     ArraySetLength((unsigned) count, *(this->gasClouds));
 
-    void *canvas = (void *) Globals::Canvas;
+    PaintCanvas *canvas = Globals::Canvas;
     for (unsigned i = 0; i < this->gasClouds->size(); i = i + 1) {
         int kind = *prob;
         Vector pos;
         levelCloudRandomPos(this, (int) (intptr_t) rng, boss, i, &pos);
 
         AEGeometry *geo = (AEGeometry *) ::operator new(0xc0);
-        new((void *) geo) AEGeometry((uint16_t) 0x37d1, (PaintCanvas *) canvas, 0);
+        new(geo) AEGeometry((uint16_t) 0x37d1, canvas, 0);
         PlayerGasCloud *cloud = (PlayerGasCloud *) ::operator new(0x16c);
         new(cloud) PlayerGasCloud(kind, this->field_94, geo, pos);
         (*this->gasClouds)[i] = cloud;
@@ -3852,25 +3860,25 @@ void Level::initParticleSystems() {
     }
     if (Globals::status->getCurrentCampaignMission() == 0x50) {
         {
-        ParticleSystemManager *mgr = this->particleSystemMgr;
-        if (mgr == nullptr) {
-            this->field_58 = -1;
-        } else {
-            int sys = mgr->addSystem(0, ParticleSettings::ParticleSet_0x18, true);
-            mgr->enableSystemEmit(sys, true);
-            this->field_58 = sys;
+            ParticleSystemManager *mgr = this->particleSystemMgr;
+            if (mgr == nullptr) {
+                this->field_58 = -1;
+            } else {
+                int sys = mgr->addSystem(0, ParticleSettings::ParticleSet_0x18, true);
+                mgr->enableSystemEmit(sys, true);
+                this->field_58 = sys;
+            }
         }
-    }
         {
-        ParticleSystemManager *mgr = this->particleSystemMgr;
-        if (mgr == nullptr) {
-            this->field_5c = -1;
-        } else {
-            int sys = mgr->addSystem(0, ParticleSettings::ParticleSet_0x18, true);
-            mgr->enableSystemEmit(sys, true);
-            this->field_5c = sys;
+            ParticleSystemManager *mgr = this->particleSystemMgr;
+            if (mgr == nullptr) {
+                this->field_5c = -1;
+            } else {
+                int sys = mgr->addSystem(0, ParticleSettings::ParticleSet_0x18, true);
+                mgr->enableSystemEmit(sys, true);
+                this->field_5c = sys;
+            }
         }
-    }
     }
 
     (this->field_74)->init();
@@ -3940,7 +3948,8 @@ void Level::createWingmen() {
 void Level::createScene() {
     if (this->enemies != nullptr) {
         if (this->enemies) {
-            ArrayReleaseClasses(*this->enemies); delete this->enemies;
+            ArrayReleaseClasses(*this->enemies);
+            delete this->enemies;
             this->enemies = nullptr;
         }
     }
@@ -3952,14 +3961,14 @@ void Level::createScene() {
         Globals::status->setMission((Mission *) Globals::status->wanted);
         createMission();
         if (Globals::status->getCurrentCampaignMission() == 0x2b) {
-            void *canvas = (void *) Globals::Canvas;
+            PaintCanvas *canvas = Globals::Canvas;
             AEGeometry *g = (AEGeometry *) ::operator new(0xc0);
-            new((void *) g) AEGeometry((uint16_t) 0x37d0, (PaintCanvas *) canvas, 0);
+            new(g) AEGeometry((uint16_t) 0x37d0, canvas, 0);
             PlayerStatic *p = (PlayerStatic *) ::operator new(0x130);
             new(p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
             ArrayAdd((KIPlayer *) p, *(this->enemies));
             g = (AEGeometry *) ::operator new(0xc0);
-            new((void *) g) AEGeometry((uint16_t) 0x37d1, (PaintCanvas *) canvas, 0);
+            new(g) AEGeometry((uint16_t) 0x37d1, canvas, 0);
             p = (PlayerStatic *) ::operator new(0x130);
             new(p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
             ArrayAdd((KIPlayer *) p, *(this->enemies));
@@ -3974,7 +3983,7 @@ void Level::createScene() {
         Station *st = (Station *) Globals::status->getStation();
         int *agents = (int *) ((Station *) st)->getAgents();
         char taken[7];
-        void *canvas = (void *) Globals::Canvas;
+        PaintCanvas *canvas = Globals::Canvas;
 
         if (agents == 0) {
             this->enemies = new Array<KIPlayer *>();
@@ -4000,19 +4009,19 @@ void Level::createScene() {
                 taken[seat] = 1;
 
                 AEGeometry *g = (AEGeometry *) ::operator new(0xc0);
-                new((void *) g) AEGeometry((uint16_t)(unsigned)part, (PaintCanvas *) canvas, 0);
+                new(g) AEGeometry((uint16_t)(unsigned)part, canvas, 0);
                 PlayerStatic *p = (PlayerStatic *) ::operator new(0x130);
                 new(p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 (*this->enemies)[a] = (KIPlayer *) p;
 
                 g = (AEGeometry *) ::operator new(0xc0);
-                new((void *) g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas *) canvas, 0);
+                new(g) AEGeometry((uint16_t)(unsigned)mode, canvas, 0);
                 p = (PlayerStatic *) ::operator new(0x130);
                 new(p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 (*this->enemies)[nAgents + a] = (KIPlayer *) p;
 
                 g = (AEGeometry *) ::operator new(0xc0);
-                new((void *) g) AEGeometry((uint16_t) 0x380c, (PaintCanvas *) canvas, 0);
+                new(g) AEGeometry((uint16_t) 0x380c, canvas, 0);
                 p = (PlayerStatic *) ::operator new(0x130);
                 new(p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 (*this->enemies)[nAgents * 2 + a] = (KIPlayer *) p;
@@ -4020,7 +4029,7 @@ void Level::createScene() {
         }
         for (unsigned u = 0; u < crew; u = u + 1) {
             AEGeometry *g = (AEGeometry *) ::operator new(0xc0);
-            new((void *) g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas *) canvas, 0);
+            new(g) AEGeometry((uint16_t)(unsigned)mode, canvas, 0);
             PlayerStatic *p = (PlayerStatic *) ::operator new(0x130);
             new(p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
             (*this->enemies)[this->enemies->size() + (u - crew)] = (KIPlayer *) p;
@@ -4058,17 +4067,17 @@ void Level::createScene() {
         ((KIPlayer *) (intptr_t) actor)->setToSleep();
         ((KIPlayer *) (intptr_t) actor)->player->setAlwaysFriend(1);
 
-        void *canvas = (void *) Globals::Canvas;
+        PaintCanvas *canvas = Globals::Canvas;
         for (unsigned u = 0; u < 4; u = u + 1) {
             AEGeometry *g = (AEGeometry *) ::operator new(0xc0);
-            new((void *) g) AEGeometry((uint16_t)(unsigned)(0x3800 + u), (PaintCanvas *) canvas, 0);
+            new(g) AEGeometry((uint16_t)(unsigned)(0x3800 + u), canvas, 0);
             Vector rot = {0, 0, 0};
             ((AEGeometry *) g)->setRotation(*(const AbyssEngine::AEMath::Vector *) (&rot));
             PlayerStatic *p = (PlayerStatic *) ::operator new(0x130);
             new(p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
             if ((int) race < 4 && race != 1) {
                 AEGeometry *child = (AEGeometry *) ::operator new(0xc0);
-                new((void *) child) AEGeometry((uint16_t)(unsigned)u, (PaintCanvas *) canvas, 0);
+                new(child) AEGeometry((uint16_t)(unsigned)u, canvas, 0);
                 ((AEGeometry *) g)->addChild(((AEGeometry *) child)->transform);
                 [&] {
                     AEGeometry *g_ = (AEGeometry *) (child);
@@ -4304,9 +4313,8 @@ static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i) {
     ((KIPlayer *) kiSlot)->setPosition(p.x + side, p.y, p.z - back);
 }
 
-
 unsigned char Level::doInstantJump;
-void *Level::programmedStation;
+Station *Level::programmedStation;
 unsigned char Level::comingFromAlienWorld;
 unsigned char Level::initStreamOutPosition;
 int Level::energyCellsForNextJump;

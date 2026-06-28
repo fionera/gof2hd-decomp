@@ -8,13 +8,10 @@
 
 #include "engine/math/AEMath.h"
 
-
 class Radar;
-
 
 class Gun;
 class Level;
-
 
 class RocketGun : public ObjectGun {
 public:

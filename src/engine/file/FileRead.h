@@ -11,7 +11,6 @@
 
 #include "engine/math/AEMath.h"
 
-
 class Agent;
 class Item;
 class NewsItem;
@@ -20,7 +19,6 @@ class SolarSystem;
 class SpacePoint;
 class Station;
 class Wanted;
-
 
 class FileRead {
 public:

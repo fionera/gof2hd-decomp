@@ -9,13 +9,11 @@
 
 #include "engine/math/Vector.h"
 
-
 class AEGeometry;
 class Explosion;
 class Gun;
 class Level;
 class PlayerEgo;
-
 
 class BombGun : public RocketGun {
 public:

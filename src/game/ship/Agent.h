@@ -4,11 +4,8 @@
 #include "../../engine/core/AEString.h"
 #include "game/core/String.h"
 
-
 #include "game/ship/Triple.h"
 class Mission;
-
-
 
 class Agent {
 public:
@@ -18,15 +15,8 @@ public:
     int wingmanCount;
     AbyssEngine::String systemName;
 
-    union {
-        uint8_t wasAskedForDifficulty;
-        uint8_t field_0x24;
-    };
-
-    union {
-        uint8_t wasAskedForLocation;
-        uint8_t field_0x25;
-    };
+    uint8_t wasAskedForDifficulty;
+    uint8_t wasAskedForLocation;
 
     int field_0x28;
     int field_0x2c;

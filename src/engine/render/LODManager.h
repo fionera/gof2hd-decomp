@@ -7,12 +7,8 @@
 #include "engine/math/AEMath.h"
 #include "engine/math/Vector.h"
 
-
-
 #include "engine/render/Touch.h"
 class AEGeometry;
-
-
 
 void AddTouch(int x, int y, int id, int action);
 
@@ -22,7 +18,7 @@ void RemoveTouches();
 
 Touch GetTouch(int index);
 
-extern "C" void ndk_resetNativeItemInformationList();
+extern "C" void ndk_resetNativeItemInformationList(); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
 class LODManager {
 public:

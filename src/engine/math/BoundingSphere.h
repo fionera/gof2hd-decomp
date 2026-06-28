@@ -6,7 +6,6 @@
 
 #include "engine/math/AEMath.h"
 
-
 class BoundingSphere : public BoundingVolume {
 public:
     float radius;

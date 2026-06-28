@@ -6,17 +6,15 @@
 
 #include "engine/math/Vector.h"
 
-
-namespace AbyssEngine { 
+namespace AbyssEngine {
     class FBOContainer;
     class Mesh;
- }
-
-
+}
 
 namespace AbyssEngine {
     class Engine;
 }
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {

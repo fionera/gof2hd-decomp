@@ -2,6 +2,7 @@
 #define GOF2_FILEINTERFACEANDROID_H
 #include <cstdio>
 #include <zip.h>
+#include <jni.h>
 
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
@@ -9,17 +10,14 @@
 
 using AbyssEngine::String;
 
-typedef struct _jobject *jobject;
-
-extern void *APKArchive;
-extern void *ZIPArchive;
+extern struct zip *APKArchive;
+extern struct zip *ZIPArchive;
 
 class FileInterfaceAndroid : public FileInterface {
 public:
-
-    void *file;
-    void *zipFile;
-    void *jniStream;
+    FILE *file;
+    zip_file *zipFile;
+    jobject jniStream;
     uint8_t modeFlag;
     char pad_15[7];
     int32_t zipReadPos;
@@ -28,8 +26,8 @@ public:
     char pad_25[3];
     int32_t zipReadLen;
     char pad_2c[4];
-    void *appRootDir;
-    void *zipDirectory;
+    const char *appRootDir;
+    const char *zipDirectory;
 
     FileInterfaceAndroid();
 
@@ -43,11 +41,17 @@ public:
 
     void *OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) override;
 
+    // lint: void_ptr virtual override return type baked into vtable/symbol
+
     void *OpenWrite(String name, int p2, bool p3, unsigned int p4) override;
 
-    uint32_t Read(uint32_t n, void *buf) override;
+    // lint: void_ptr virtual override return type baked into vtable/symbol
+
+    uint32_t Read(uint32_t n, void *buf) override; // lint: void_ptr virtual override param (FileInterface byte buffer)
 
     uint32_t Write(uint32_t n, const void *buf) override;
+
+    // lint: void_ptr virtual override param (FileInterface byte buffer)
 
     uint32_t Seek(uint32_t n) override;
 
@@ -59,15 +63,17 @@ public:
 
     uint32_t GetDeviceFreeSpace() override;
 
-    void SetAppRootDir(void *p) override;
+    void SetAppRootDir(void *p) override; // lint: void_ptr virtual override param (FileInterface)
 
-    void SetZipDirectory(void *p) override;
+    void SetZipDirectory(void *p) override; // lint: void_ptr virtual override param (FileInterface)
 
     void ResetSaveDirectory() override;
 
     void Close() override;
 
     void *OpenAppend(String name, int p2, bool p3, unsigned int p4) override;
+
+    // lint: void_ptr virtual override return type baked into vtable/symbol
 
     char *Output(char *line) override;
 
@@ -81,16 +87,15 @@ public:
 
     String GetDirPreFix() override;
 
-
-    static void *methodRead;
+    static jmethodID methodRead;
     static int fileCounter;
-    static void *methodWrite;
-    static void *methodCloseRead;
-    static void *methodFileExist;
-    static void *methodCloseWrite;
-    static void *env;
-    static void *clazz;
-    static void *context;
+    static jmethodID methodWrite;
+    static jmethodID methodCloseRead;
+    static jmethodID methodFileExist;
+    static jmethodID methodCloseWrite;
+    static JNIEnv *env;
+    static jclass clazz;
+    static jobject context;
 };
 
 char *logi(char *message);

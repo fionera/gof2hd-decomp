@@ -7,7 +7,6 @@
 
 #include "engine/math/AEMath.h"
 
-
 class MovingStars {
 public:
     uint32_t *billboardIds;

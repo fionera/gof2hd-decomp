@@ -6,7 +6,6 @@
 
 class Level;
 
-
 class AutoPilotList {
 public:
     int selected;

@@ -60,7 +60,7 @@ void String_ToUpperCase(String * self);
 void String_ToLowerCase(String * self);
 void String_ConvertFromUTF8(String * self);
 
-void *String_Split(String * self, String * sep);
+void *String_Split(String * self, String * sep); // lint: void_ptr exported String shim signature, must not change
 void String_SplitTags(String * self, String * tag);
 
 char *String_GetAEChar(String * self);

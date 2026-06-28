@@ -1,4 +1,5 @@
 #include "game/mission/Status.h"
+#include <cstring>
 #include "game/core/Globals.h"
 #include "game/mission/PendingProduct.h"
 #include "game/core/GameSettings.h"
@@ -16,16 +17,16 @@
 #include "game/ship/Ship.h"
 
 static int *g_campaignSentinel = nullptr;
-static void *g_incKillsHook = nullptr;
-static void *g_incPirateKillsHook = nullptr;
+static Status *g_incKillsHook = nullptr;
+static Status *g_incPirateKillsHook = nullptr;
 
-static void incKills_notify(void *arg);
+static void incKills_notify(Status * arg);
 
-static void incPirateKills_notify(void *arg);
+static void incPirateKills_notify(Status * arg);
 
-static void incKills_notify(void *arg) { (void) arg; }
+static void incKills_notify(Status *arg) { (void) arg; }
 
-static void incPirateKills_notify(void *arg) { (void) arg; }
+static void incPirateKills_notify(Status *arg) { (void) arg; }
 
 struct FileRead {
     FileRead();
@@ -788,7 +789,8 @@ void Status::resetGame() {
     }
 
     if (this->bluePrints != 0) {
-        ArrayReleaseClasses(*this->bluePrints); delete this->bluePrints;
+        ArrayReleaseClasses(*this->bluePrints);
+        delete this->bluePrints;
     }
     this->bluePrints = 0;
     if (bpCount != 0) {
@@ -804,7 +806,8 @@ void Status::resetGame() {
     }
 
     if (this->pendingProducts != 0) {
-        ArrayReleaseClasses(*this->pendingProducts); delete this->pendingProducts;
+        ArrayReleaseClasses(*this->pendingProducts);
+        delete this->pendingProducts;
     }
     this->pendingProducts = 0;
 
@@ -1052,21 +1055,15 @@ static const float g_gammaTableA[5] = {0, 0, 0, 0, 0};
 static const float g_gammaTableB[5] = {0, 0, 0, 0, 0};
 
 static inline int as_int(float f) {
-    union {
-        float f;
-        int i;
-    } u;
-    u.f = f;
-    return u.i;
+    int i;
+    memcpy(&i, &f, sizeof(i));
+    return i;
 }
 
 static inline float as_float(unsigned u) {
-    union {
-        unsigned u;
-        float f;
-    } x;
-    x.u = u;
-    return x.f;
+    float f;
+    memcpy(&f, &u, sizeof(f));
+    return f;
 }
 
 int Status::getGammaRayDamagePerSecond(int station, int system) {
@@ -1255,8 +1252,6 @@ void Status::nextCampaignMission(bool advance) {
             return;
         }
     }
-
-
 }
 
 void Status::setStation(Station *s) {

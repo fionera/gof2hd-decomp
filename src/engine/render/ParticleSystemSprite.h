@@ -9,7 +9,6 @@
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
-
 namespace AbyssEngine {
 #ifndef GOF2_ENUM_BlendMode
 #define GOF2_ENUM_BlendMode
@@ -19,6 +18,7 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     class PaintCanvas;
 }
+
 using ::AbyssEngine::PaintCanvas;
 using AbyssEngine::BlendMode;
 
@@ -37,7 +37,7 @@ public:
     uint32_t idOffset;
     uint8_t initialized;
     int liveCount;
-    void *spriteData;
+    char *spriteData;
     int *ages;
     int8_t *setIndices;
     float cachedPow;

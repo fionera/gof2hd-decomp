@@ -5,7 +5,6 @@
 #include "engine/render/RenderEnums.h"
 
 namespace AbyssEngine {
-
     class ResourceMaterial {
     public:
         ResourceMaterial(uint16_t texId, uint16_t texId2, BlendMode blend);

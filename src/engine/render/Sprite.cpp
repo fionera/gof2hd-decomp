@@ -3,7 +3,6 @@
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 
-
 static PaintCanvas **g_Sprite_canvas = &Globals::Canvas;
 
 static PaintCanvas **g_Sprite_draw_image_canvas = &Globals::Canvas;

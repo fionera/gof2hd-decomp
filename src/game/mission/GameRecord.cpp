@@ -147,16 +147,14 @@ typedef uint32_t uint;
 
 long Array_dtor(void *self);
 
+// lint: void_ptr (external symbol; heterogeneous Array<T>* callers, mangled signature is fixed)
+
 long Station_getIndex(...);
 
 long Station_getSystem(...);
 
-
-
-
-
 struct PlayerEgoSaveBlock {
-    uint8_t  _pad_0x00[0x8];
+    uint8_t _pad_0x00[0x8];
     uint32_t restored_0x08;
     uint32_t restored_0x0c;
     uint32_t restored_0x10;
@@ -165,44 +163,41 @@ struct PlayerEgoSaveBlock {
     uint32_t restored_0x1c;
     uint32_t restored_0x20;
     uint32_t restored_0x24;
-    uint8_t  flag_0x28;
-    uint8_t  flag_0x29;
-    uint8_t  flag_0x2a;
-    uint8_t  flag_0x2b;
-    uint8_t  flag_0x2c;
-    uint8_t  flag_0x2d;
-    uint8_t  flag_0x2e;
-    uint8_t  flag_0x2f;
-    uint8_t  flag_0x30;
-    uint8_t  flag_0x31;
-    uint8_t  flag_0x32;
-    uint8_t  flag_0x33;
-    uint8_t  flag_0x34;
-    uint8_t  flag_0x35;
-    uint8_t  flag_0x36;
-    uint8_t  flag_0x37;
-    uint8_t  flag_0x38;
-    uint8_t  flag_0x39;
-    uint8_t  flag_0x3a;
+    uint8_t flag_0x28;
+    uint8_t flag_0x29;
+    uint8_t flag_0x2a;
+    uint8_t flag_0x2b;
+    uint8_t flag_0x2c;
+    uint8_t flag_0x2d;
+    uint8_t flag_0x2e;
+    uint8_t flag_0x2f;
+    uint8_t flag_0x30;
+    uint8_t flag_0x31;
+    uint8_t flag_0x32;
+    uint8_t flag_0x33;
+    uint8_t flag_0x34;
+    uint8_t flag_0x35;
+    uint8_t flag_0x36;
+    uint8_t flag_0x37;
+    uint8_t flag_0x38;
+    uint8_t flag_0x39;
+    uint8_t flag_0x3a;
 };
+
 static PlayerEgoSaveBlock *const *const kPlayerEgoSlot =
         (PlayerEgoSaveBlock *const *const) 0x220290;
-
-
 
 static Mission *const *const *const kCampaignMissionSlot =
         (Mission *const *const *const) 0x2202bc;
 
-
-
-
 struct MissionFlags {
-    uint8_t  _pad_0x00[0x2c];
+    uint8_t _pad_0x00[0x2c];
     uint32_t field_0x2c;
-    uint8_t  _pad_0x30[0x5];
-    uint8_t  dlcSkyboxFlag;
-    uint8_t  versionGuardFlag;
+    uint8_t _pad_0x30[0x5];
+    uint8_t dlcSkyboxFlag;
+    uint8_t versionGuardFlag;
 };
+
 static MissionFlags *const *const kMissionFlagsSlot = (MissionFlags *const *const) 0x22016c;
 
 static const uint32_t kRecordExtendedTag = 0x6e6a78;
@@ -210,7 +205,7 @@ static const uint32_t kRecordExtendedTag = 0x6e6a78;
 void GameRecord::load() {
     bool campaignLocked;
     int campaignStage;
-    void *deadArray;
+    unsigned char *deadArray;
     Array<uint8_t> *srcByteArray;
     Array<uint32_t> *srcVec;
     BluePrint *blueprint;
@@ -303,25 +298,29 @@ void GameRecord::load() {
         Globals::status->setCampaignMission(m);
     }
     if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-        ((this->field_0x40 == 0x56 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation != 100)))) {
+        ((this->field_0x40 == 0x56 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
+                                       != 100)))) {
         (*kPlayerEgoSlot)->flag_0x31 = 1;
         Mission *m = new Mission(0xb, 0, 100);
         Globals::status->setCampaignMission(m);
     }
     if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-        ((this->field_0x40 == 0x57 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation != 10)))) {
+        ((this->field_0x40 == 0x57 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
+                                       != 10)))) {
         (*kPlayerEgoSlot)->flag_0x31 = 1;
         Mission *m = new Mission(4, 0, 10);
         Globals::status->setCampaignMission(m);
     }
     if ((((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-         (this->field_0x40 == 0x58)) && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation != 10)) {
+         (this->field_0x40 == 0x58)) && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(),
+                                         targetStation != 10)) {
         (*kPlayerEgoSlot)->flag_0x31 = 1;
         Mission *m = new Mission(0xb, 0, 10);
         Globals::status->setCampaignMission(m);
     }
     if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-        ((this->field_0x40 == 0x59 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation != 10)))) {
+        ((this->field_0x40 == 0x59 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
+                                       != 10)))) {
         (*kPlayerEgoSlot)->flag_0x31 = 1;
         Globals::status->setCurrentCampaignMission(0x56);
         Mission *m = new Mission(0xb, 0, 100);
@@ -352,19 +351,19 @@ stationStackLoaded:
     ((Station *) Globals::status->voidStation)->setShips((Array<Ship *> *) this->field_0x184, true);
     st = Globals::status;
     if (st->field_94 != (Array<bool> *) 0x0) {
-        deadArray = (void *) Array_dtor(st->field_94);
+        deadArray = (unsigned char *) Array_dtor(st->field_94);
         ::operator delete(deadArray);
         st = Globals::status;
     }
     st->field_94 = (Array<bool> *) this->field_0x68;
     if (st->field_98 != (Array<bool> *) 0x0) {
-        deadArray = (void *) Array_dtor(st->field_98);
+        deadArray = (unsigned char *) Array_dtor(st->field_98);
         ::operator delete(deadArray);
         st = Globals::status;
     }
     st->field_98 = (Array<bool> *) this->field_0x6c;
     if (st->field_90 != (Array<int> *) 0x0) {
-        deadArray = (void *) Array_dtor(st->field_90);
+        deadArray = (unsigned char *) Array_dtor(st->field_90);
         ::operator delete(deadArray);
         st = Globals::status;
     }
@@ -386,7 +385,7 @@ stationStackLoaded:
     st->field_a4 = this->field_0x7c;
     st->field_a8 = this->field_0x80;
     if (st->field_ac != (Array<bool> *) 0x0) {
-        deadArray = (void *) Array_dtor(st->field_ac);
+        deadArray = (unsigned char *) Array_dtor(st->field_ac);
         ::operator delete(deadArray);
         st = Globals::status;
     }
@@ -461,7 +460,7 @@ afterDlcUnsaleable:
                 if (station != (Station *) 0x0) {
                     int sysIndex = Station_getSystem(station);
                     SolarSystem *sys = (SolarSystem *) Globals::galaxy->getSystem(sysIndex);
-                    if (sys->getRoutes() == (void *) 0x0) {
+                    if (sys->getRoutes() == nullptr) {
                         ((BluePrint *) bluePrintArray->data_[i])->stationIndex = 10;
                         delete station;
                         station = (Station *) Globals::galaxy->getStation(

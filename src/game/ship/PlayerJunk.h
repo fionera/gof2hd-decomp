@@ -4,9 +4,7 @@
 
 class Player;
 
-
 class AEGeometry;
-
 
 class PlayerJunk : public KIPlayer {
 public:

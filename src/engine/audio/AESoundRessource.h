@@ -4,10 +4,8 @@
 #include "../core/AEString.h"
 #include "engine/audio/AESoundInfo.h"
 #include "engine/audio/AESoundInterface.h"
-namespace AbyssEngine {
-    
-    
 
+namespace AbyssEngine {
     class AESoundRessource {
     public:
         const AESoundInfo *soundInfoTable;

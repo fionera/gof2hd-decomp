@@ -58,7 +58,7 @@ namespace AbyssEngine {
         if (this->a_color >= 0)
             glEnableVertexAttribArray(this->a_color);
 
-        char *texBase = (char *) engine->field_0x30;
+        char *texBase = (char *) engine->appManager;
         int *tex = *(int **) (texBase + 0x20);
         if (tex != 0)
             ((::Engine *) engine)->SetTextureSlot(tex[1], 1);
@@ -72,7 +72,7 @@ namespace AbyssEngine {
                 return;
             if (this->a_color < 0)
                 return;
-            glVertexAttribPointer(this->a_color, 2, 0x1406, 0, 0, *(void **) (*tex + 8));
+            glVertexAttribPointer(this->a_color, 2, 0x1406, 0, 0, *(unsigned char **) (*tex + 8));
         } else {
             glBindBuffer(0x8892, mesh->positionVBO);
             glVertexAttribPointer(this->a_position, 3, 0x1406, 0, 0, 0);

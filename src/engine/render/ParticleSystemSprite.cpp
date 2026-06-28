@@ -3,7 +3,6 @@
 #define GOF2_ENUM_BlendMode
 #include "engine/render/PaintCanvas.h"
 
-
 void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
                     const Array<ParticleSettings::ParticleSet> &sets, bool mirror, bool alphaFade);
 
@@ -19,7 +18,7 @@ void ParticleSystem_updateAreaExitParticleImpl(ParticleSystemSprite *self, int i
 using AbyssEngine::AEMath::VectorSignedToFloat;
 using AbyssEngine::AEMath::VectorUnsignedToFloat;
 
-static void *g_PaintCanvas = nullptr;
+static PaintCanvas *g_PaintCanvas = nullptr;
 
 static char *g_particleSetBase = nullptr;
 
@@ -48,7 +47,7 @@ ParticleSystemSprite::ParticleSystemSprite(PaintCanvas *canvas, const Matrix *ma
 }
 
 void ParticleSystemSprite::reset() {
-    PaintCanvas *pc = (PaintCanvas *) g_PaintCanvas;
+    PaintCanvas *pc = g_PaintCanvas;
     for (int i = 0; i < this->particleCount; i++) {
         pc->SpriteSystemSetPosition(this->canvasHandle, (uint16_t)(this->idOffset + i),
                                     4294967296.0f, 4294967296.0f, 4294967296.0f);
@@ -73,7 +72,7 @@ int ParticleSystemSprite::getQuadCount() {
 }
 
 void ParticleSystemSprite::release() {
-    delete[] (char *) this->spriteData;
+    delete[] this->spriteData;
     this->spriteData = nullptr;
     delete[] this->ages;
     this->ages = nullptr;
@@ -102,7 +101,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
     if ((int) ((uint32_t) this->flags << 0x18) < 0)
         return;
 
-    PaintCanvas *pc = (PaintCanvas *) g_PaintCanvas;
+    PaintCanvas *pc = g_PaintCanvas;
     uint32_t handle = this->canvasHandle;
     uint16_t id = (uint16_t) this->spriteId;
 
@@ -180,8 +179,8 @@ void ParticleSystemSprite::setAlpha(int index, uint32_t color, float alpha) {
         c3 = c3 * alpha;
     }
 
-    ((PaintCanvas *) g_PaintCanvas)->SpriteSystemSetRGBA(this->canvasHandle,
-                                                         (uint16_t)(this->idOffset + index), c3, c2, c1, c0);
+    g_PaintCanvas->SpriteSystemSetRGBA(this->canvasHandle,
+                                       (uint16_t)(this->idOffset + index), c3, c2, c1, c0);
 }
 
 void ParticleSystemSprite::enable(bool enabled) {
@@ -202,7 +201,7 @@ void ParticleSystemSprite::setParticle(const Vector &pos, float p2, uint32_t col
     (void) p9;
     (void) p10;
 
-    PaintCanvas *pc = (PaintCanvas *) g_PaintCanvas;
+    PaintCanvas *pc = g_PaintCanvas;
     uint32_t handle = this->canvasHandle;
     uint16_t id = (uint16_t) this->spriteId;
 

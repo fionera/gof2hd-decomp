@@ -2,6 +2,7 @@
 #define GOF2_RESOURCETEXTURE_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
+
 namespace AbyssEngine {
     class ResourceTexture {
     public:

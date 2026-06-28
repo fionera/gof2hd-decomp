@@ -17,7 +17,6 @@
 #include "game/core/Globals.h"
 #include "game/ui/TouchButton.h"
 
-
 struct EngineSoundConfig {
     char field_0x0[0xe];
     uint8_t autoAdvanceEnabled;
@@ -34,7 +33,6 @@ int DialogueWindow::OnTouchBegin(int x, int y) {
     }
     return 0;
 }
-
 
 static int g_dw_briefingCounts[0xa2];
 
@@ -101,8 +99,16 @@ DialogueWindow::~DialogueWindow() {
     delete this->moreButton;
     this->moreButton = 0;
 
-    { if (this->agentName.data) delete[] this->agentName.data; this->agentName.data = nullptr; this->agentName.length = 0; }
-    { if (this->bodyText.data) delete[] this->bodyText.data; this->bodyText.data = nullptr; this->bodyText.length = 0; }
+    {
+        if (this->agentName.data) delete[] this->agentName.data;
+        this->agentName.data = nullptr;
+        this->agentName.length = 0;
+    }
+    {
+        if (this->bodyText.data) delete[] this->bodyText.data;
+        this->bodyText.data = nullptr;
+        this->bodyText.length = 0;
+    }
 }
 
 int DialogueWindow::OnTouchMove(int x, int y) {
@@ -133,14 +139,12 @@ bool DialogueWindow::isLastPage() {
     return this->page == len - 1;
 }
 
-
 static int g_dw_briefingDialogueIds[0xa2];
 
 bool DialogueWindow::hasBriefingDialogue(int id) {
     if (id > 0xa1) return false;
     return g_dw_briefingDialogueIds[id] > 0;
 }
-
 
 static int g_dw_successDialogueIds[0xa2];
 
@@ -171,7 +175,6 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     this->loadContent();
 }
 
-
 static GameText *g_dw_gameTextLoad_storage = nullptr;
 static GameText **g_dw_gameTextLoad = &g_dw_gameTextLoad_storage;
 
@@ -187,7 +190,7 @@ static int g_dw_campaignBriefingTextIds[0x1000];
 
 static int g_dw_campaignSuccessTextIds[0x1000];
 
-static void *g_dw_defaultClientImage = nullptr;
+static int *g_dw_defaultClientImage = nullptr;
 
 void DialogueWindow::loadContent() {
     GameText *gameText = *g_dw_gameTextLoad;
@@ -232,7 +235,7 @@ void DialogueWindow::loadContent() {
             this->agentName = *(gameText->getText(0x63d));
             this->mirrorFace = 1;
         } else {
-            this->clientImage = (void *) (intptr_t) mission->getClientImage();
+            this->clientImage = mission->getClientImage();
             this->agentName = mission->getClientName();
             this->mirrorFace = 0;
         }
@@ -275,7 +278,7 @@ void DialogueWindow::loadContent() {
 
     this->prevButton->setVisible(this->page != 0);
     this->moreButton->setVisible(this->length() > 1);
-    this->faceParts = (*g_dw_imageFactoryLoad)->loadChar((int *) this->clientImage);
+    this->faceParts = (*g_dw_imageFactoryLoad)->loadChar(this->clientImage);
 
     if (this->isLastPage() != 0) {
         this->nextButton->replaceTextKeepSize(*gameText->getText(0xb5));
@@ -291,11 +294,18 @@ void DialogueWindow::loadContent() {
 }
 
 DialogueWindow::DialogueWindow() {
-    { if (this->bodyText.data) delete[] this->bodyText.data; this->bodyText.data = nullptr; this->bodyText.length = 0; }
-    { if (this->agentName.data) delete[] this->agentName.data; this->agentName.data = nullptr; this->agentName.length = 0; }
+    {
+        if (this->bodyText.data) delete[] this->bodyText.data;
+        this->bodyText.data = nullptr;
+        this->bodyText.length = 0;
+    }
+    {
+        if (this->agentName.data) delete[] this->agentName.data;
+        this->agentName.data = nullptr;
+        this->agentName.length = 0;
+    }
     this->init();
 }
-
 
 static EngineSoundConfig g_dw_soundConfig_storage;
 static EngineSoundConfig *g_dw_soundConfig = &g_dw_soundConfig_storage;
@@ -321,7 +331,6 @@ void DialogueWindow::update(int dt) {
         }
     }
 }
-
 
 static FModSound *g_dw_soundChoice_storage = nullptr;
 static FModSound **g_dw_soundChoice = &g_dw_soundChoice_storage;
@@ -378,7 +387,6 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
     return 0;
 }
 
-
 static int g_dw_briefingPartCounts[0xa2];
 
 static int g_dw_successPartCounts[0xa2];
@@ -388,8 +396,8 @@ static const char g_dw_defaultAgentName[] = "";
 static int g_dw_screenWidth_storage = 0;
 static int *g_dw_screenWidth = &g_dw_screenWidth_storage;
 
-static void *g_dw_layoutInit_storage = nullptr;
-static void **g_dw_layoutInit = &g_dw_layoutInit_storage;
+static Layout *g_dw_layoutInit_storage = nullptr;
+static Layout **g_dw_layoutInit = &g_dw_layoutInit_storage;
 
 static int g_dw_screenHeight_storage = 0;
 static int *g_dw_screenHeight = &g_dw_screenHeight_storage;
@@ -427,7 +435,7 @@ int DialogueWindow::init() {
     this->autoAdvanceTimer = 0;
     this->mirrorFace = 0;
 
-    Layout *layout = (Layout *) *g_dw_layoutInit;
+    Layout *layout = *g_dw_layoutInit;
     int frameW = layout->field_0x54;
     int frameH = layout->field_0x58;
     this->frameWidth = frameW;
@@ -446,20 +454,20 @@ int DialogueWindow::init() {
     this->choiceWindow = new ChoiceWindow();
 
     GameText *gameText = *g_dw_gameTextInit;
-    layout = (Layout *) *g_dw_layoutInit;
+    layout = *g_dw_layoutInit;
     margin = layout->field_0x4c;
     this->prevButton = new TouchButton(*gameText->getText(0xb3), 5,
                                        this->frameX + margin, this->frameY - margin + this->frameHeight,
                                        layout->field_0x50, 0x21, 4);
 
-    layout = (Layout *) *g_dw_layoutInit;
+    layout = *g_dw_layoutInit;
     margin = layout->field_0x4c;
     this->nextButton = new TouchButton(*gameText->getText(0xb4), 6,
                                        this->frameX + this->frameWidth - margin,
                                        this->frameY - margin + this->frameHeight,
                                        layout->field_0x50, 0x22, 4);
 
-    layout = (Layout *) *g_dw_layoutInit;
+    layout = *g_dw_layoutInit;
     margin = layout->field_0x4c;
     this->moreButton = new TouchButton(*gameText->getText(0x18b), 0,
                                        this->frameX + half_round_to_zero(this->frameWidth),
@@ -469,7 +477,6 @@ int DialogueWindow::init() {
     return 0;
 }
 
-
 static const char g_dw_emptyString[] = "";
 
 static ImageFactory *g_dw_imageFactoryCtor_storage = nullptr;
@@ -478,12 +485,20 @@ static ImageFactory **g_dw_imageFactoryCtor = &g_dw_imageFactoryCtor_storage;
 static GameText *g_dw_gameTextCtor_storage = nullptr;
 static GameText **g_dw_gameTextCtor = &g_dw_gameTextCtor_storage;
 
-static void *g_dw_layoutCtor_storage = nullptr;
-static void **g_dw_layoutCtor = &g_dw_layoutCtor_storage;
+static Layout *g_dw_layoutCtor_storage = nullptr;
+static Layout **g_dw_layoutCtor = &g_dw_layoutCtor_storage;
 
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
-    { if (this->bodyText.data) delete[] this->bodyText.data; this->bodyText.data = nullptr; this->bodyText.length = 0; }
-    { if (this->agentName.data) delete[] this->agentName.data; this->agentName.data = nullptr; this->agentName.length = 0; }
+    {
+        if (this->bodyText.data) delete[] this->bodyText.data;
+        this->bodyText.data = nullptr;
+        this->bodyText.length = 0;
+    }
+    {
+        if (this->agentName.data) delete[] this->agentName.data;
+        this->agentName.data = nullptr;
+        this->agentName.length = 0;
+    }
     this->init();
 
     String blank(g_dw_emptyString, false);
@@ -499,7 +514,7 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     this->nextButton = 0;
 
     GameText *gameText = *g_dw_gameTextCtor;
-    Layout *layout = (Layout *) *g_dw_layoutCtor;
+    Layout *layout = *g_dw_layoutCtor;
     int margin = layout->field_0x4c;
     int x = this->frameX + this->frameWidth / 2;
     int y = this->frameY + this->frameHeight - margin;
@@ -513,13 +528,20 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
 }
 
 DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
-    { if (this->bodyText.data) delete[] this->bodyText.data; this->bodyText.data = nullptr; this->bodyText.length = 0; }
-    { if (this->agentName.data) delete[] this->agentName.data; this->agentName.data = nullptr; this->agentName.length = 0; }
+    {
+        if (this->bodyText.data) delete[] this->bodyText.data;
+        this->bodyText.data = nullptr;
+        this->bodyText.length = 0;
+    }
+    {
+        if (this->agentName.data) delete[] this->agentName.data;
+        this->agentName.data = nullptr;
+        this->agentName.length = 0;
+    }
     this->init();
     this->level = level;
     this->set(mission, kind, -1);
 }
-
 
 static int g_dw_germanBriefingTexts[64];
 
@@ -567,7 +589,6 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     return *picked;
 }
 
-
 static int g_dw_drawGuard_storage = 0;
 static int *g_dw_drawGuard = &g_dw_drawGuard_storage;
 
@@ -602,7 +623,11 @@ void DialogueWindow::draw() {
     String title;
     title.Set((this->agentName).data);
     layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, title, 1);
-    { if (title.data) delete[] title.data; title.data = nullptr; title.length = 0; }
+    {
+        if (title.data) delete[] title.data;
+        title.data = nullptr;
+        title.length = 0;
+    }
 
     this->scrollWindow->draw();
 

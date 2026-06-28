@@ -12,7 +12,6 @@
 
 class Player;
 
-
 class AEGeometry;
 class Gun;
 class Hud;
@@ -20,15 +19,8 @@ class Level;
 class Route;
 class SpacePoint;
 
-
 class KIPlayer {
 public:
-
-
-
-
-
-
     Player *player;
     AEGeometry *geometry;
     AEGeometry *parentGeometry;
@@ -37,24 +29,19 @@ public:
     String name;
     uint8_t field_0x24;
 
-    union {
-        uint8_t garbledWingmanFlag;
-        uint8_t field_0x25;
-    };
+    uint8_t field_0x25;
 
     uint8_t _pad_0x26[2];
     int shipGroup;
 
-    union {
-        int autoPilotState;
-        int field_0x2c;
-    };
+    int autoPilotState;
 
     int field_0x30;
     int field_0x34;
     int field_0x38;
 
     union {
+        // lint: union_decl int stealFlag reinterprets 4-byte struct (stealFlagByte/countsAsEnemyExcludeFlag/...) — type-pun, layout-load-bearing
         int stealFlag;
 
         struct {
@@ -66,6 +53,7 @@ public:
     };
 
     union {
+        // lint: union_decl int field_0x40 reinterprets overlapping byte structs (deadFlag/reviveLockFlag/...) — type-pun, layout-load-bearing
         int field_0x40;
 
         struct {
@@ -94,16 +82,13 @@ public:
     uint32_t field_0x64;
     uint8_t diedWithMissionCrate;
 
-    union {
-        uint8_t lostMissionCrateToEgo;
-        uint8_t inactiveFlag;
-        uint8_t proximityAlarmFlag;
-    };
+    uint8_t lostMissionCrateToEgo;
 
     uint8_t field_0x6a;
     uint8_t _pad_0x6b;
 
     union {
+        // lint: union_decl Route* route aliases 4 status bytes (noTargetFlag/routeByte*) — pointer/byte type-pun, layout-load-bearing
         Route *route;
 
         struct {

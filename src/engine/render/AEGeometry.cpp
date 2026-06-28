@@ -2,7 +2,6 @@
 #include "engine/render/LodMeshMerger.h"
 #include "engine/math/Transform.h"
 
-
 void _ae_geom_render(uint32_t canvas, uint32_t tf, int z);
 
 void _ae_TransformAddMeshId(uint32_t canvas, uint32_t tf, uint32_t meshId);
@@ -11,9 +10,15 @@ void _ae_TransformAddMesh(uint32_t canvas, uint32_t tf, uint16_t mesh, int z);
 
 void _ae_MatrixSetRotation(void *out, uint32_t loc, float x, float y, float z, int order);
 
+// lint: void_ptr imported symbol, Pv mangling must match original
+
 void _ae_MatrixSetScaling(void *out, uint32_t loc, float sx, float sy, float sz);
 
+// lint: void_ptr imported symbol, Pv mangling must match original
+
 void _ae_setPosition3(void *self, float x, float y, float z);
+
+// lint: void_ptr imported symbol, Pv mangling must match original
 
 void _ae_TransformRemoveChild(PaintCanvas *canvas, uint32_t tf, uint32_t child);
 
@@ -23,13 +28,17 @@ void _ae_setmesh_b(uint32_t canvas, uint32_t mesh, uint32_t *tfp);
 
 void _ae_MatrixSetTranslation(void *out, float x, float y, float z);
 
+// lint: void_ptr imported symbol, Pv mangling must match original
+
 void _ae_TransformSetLocal(uint32_t canvas, uint32_t tf, void *m);
+
+// lint: void_ptr imported symbol, Pv mangling must match original
 
 void _ae_MeshCreate(PaintCanvas *c, uint16_t mesh, uint32_t *out, bool flag);
 
-void _ae_getDirection(void *self, Vector *out);
+void _ae_getDirection(void *self, Vector *out); // lint: void_ptr imported symbol, Pv mangling must match original
 
-void _ae_getPosition(void *self, Vector *out);
+void _ae_getPosition(void *self, Vector *out); // lint: void_ptr imported symbol, Pv mangling must match original
 
 uint32_t Transform_GetTransform(uint32_t tf);
 
@@ -282,7 +291,7 @@ void AEGeometry::translate(float x, float y, float z) {
     char buf[60];
     char src[60];
     uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    memcpy(src, (void *) loc, 0x3c);
+    memcpy(src, (const Matrix *) (uintptr_t) loc, 0x3c);
     _ae_MatrixSetTranslation(buf, *(float *) (src + 0x0c) + z, *(float *) (src + 0x1c),
                              *(float *) (src + 0x2c) + y);
     _ae_TransformSetLocal((uint32_t)(uintptr_t)this->canvas, this->transform, buf);
@@ -351,7 +360,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
 
     char matrixCopy[60];
     uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    memcpy(matrixCopy, (void *) loc, 0x3c);
+    memcpy(matrixCopy, (const Matrix *) (uintptr_t) loc, 0x3c);
 
     loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
     Vector pos = MatrixGetPosition(*(Matrix *) loc);
@@ -416,7 +425,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
 void AEGeometry::setDirection(const Vector &dir, const Vector &up) {
     char local[60];
     uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    memcpy(local, (void *) loc, 0x3c);
+    memcpy(local, (const Matrix *) (uintptr_t) loc, 0x3c);
 
     Vector right = up;
     VectorCross(&right, &dir);
@@ -443,7 +452,7 @@ void AEGeometry::setDirection(const Vector &dir, const Vector &up) {
 
     AEGeomCanvas::TransformSetLocal(this->canvas, this->transform, &m);
     loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    _ae_MatrixSetScaling((void *) local, loc, this->scalingX, this->scalingY, this->scalingZ);
+    _ae_MatrixSetScaling(local, loc, this->scalingX, this->scalingY, this->scalingZ);
 }
 
 void AEGeometry::rotate(const Vector &v) {

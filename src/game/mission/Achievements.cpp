@@ -181,7 +181,7 @@ void Achievements::applyNewMedals() {
 }
 
 static Status *gAchStatus = nullptr;
-static Status *const* gAchStatusHolder = &gAchStatus;
+static Status *const*gAchStatusHolder = &gAchStatus;
 
 void Achievements::initCheckEquipmentAndWeapons() {
     Status *status = *gAchStatusHolder;

@@ -5,8 +5,6 @@
 namespace AbyssEngine {
     class Mesh;
 
-
-
     struct SpriteSystem {
         uint16_t count;
         uint16_t pad0x2;

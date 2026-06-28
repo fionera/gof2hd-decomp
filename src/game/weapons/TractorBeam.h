@@ -6,12 +6,10 @@
 
 class Radar;
 
-
 class AEGeometry;
 class Hud;
 class KIPlayer;
 class Level;
-
 
 class TractorBeam {
 public:

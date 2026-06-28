@@ -11,48 +11,42 @@
 
 #include "engine/math/AEMath.h"
 
-
-
 #include "game/ship/ExplosionEmitterHolder.h"
 
 #include "game/ship/MiningInputFlags.h"
 class Player;
 class Radar;
 
-
 class AEGeometry;
+class Explosion;
 class Gun;
 class Hud;
+class Item;
 class KIPlayer;
 class Level;
 class LevelScript;
 class Radio;
 class RepairBeam;
 class Route;
+class SpacePoint;
 class TargetFollowCamera;
+class TractorBeam;
 
+namespace AbyssEngine {
+    class EaseInOutMatrix;
+}
 
 typedef AbyssEngine::AEMath::Vector Vec3;
 
-
-
 class PlayerEgo {
 public:
-    void *player;
-
-
-
-
-
-
-
-
-
-
+    Player *player;
 
     union {
+        // lint: union_decl transform block overlaps rocketReturnMatrix (offset-shifted matrices) — type-pun, layout-load-bearing
         struct {
             union {
+                // lint: union_decl AEMath::Matrix transform aliases geometry-pointer struct at same storage — type-pun, layout-load-bearing
                 AbyssEngine::AEMath::Matrix transform;
 
                 struct {
@@ -60,20 +54,21 @@ public:
                     AEGeometry *geometry;
                     Level *level;
                     LevelScript *levelScript;
-                    void *field_0x14;
+                    Radar *field_0x14;
                     Radio *radioRef;
                     int field_0x1c;
                     int field_0x20;
                     uint8_t freeze;
                     uint8_t inWormhole;
-                    void *turretGeometry;
-                    void *field_0x2c;
-                    void *field_0x30;
-                    void *gunYawGeo;
-                    void *gunMuzzleRoot;
-                    void *gunExtraGeo;
+                    AEGeometry *turretGeometry;
+                    AEGeometry *field_0x2c;
+                    AEGeometry *field_0x30;
+                    AEGeometry *gunYawGeo;
+                    AEGeometry *gunMuzzleRoot;
+                    AEGeometry *gunExtraGeo;
                 };
             };
+
             float maneuverParam;
             float field_0x80;
             int targetFollowCamera;
@@ -84,8 +79,9 @@ public:
             AbyssEngine::AEMath::Matrix rocketReturnMatrix;
         };
     };
-    void *explosion;
-    void *explosion2;
+
+    Explosion *explosion;
+    Explosion *explosion2;
     int field_0xac;
     int field_0xb0;
     uint8_t switchToStandardCam;
@@ -98,13 +94,14 @@ public:
     int field_0xcc;
     int field_0xd0;
     void *boostSoundId;
-    void *rollGeometry;
+    // lint: void_ptr  opaque FMOD sound-event id stored in a pointer-width slot (used only as (int)(intptr_t)); no typed pointee
+    AEGeometry *rollGeometry;
     float rotX;
     float rotY;
     float rotZ;
     float waypointX;
     float waypointY;
-    void *gunBaseGeo;
+    AEGeometry *gunBaseGeo;
     int route;
     int pitchAccumDir;
     int yawAccumDir;
@@ -129,30 +126,31 @@ public:
     AbyssEngine::AEMath::Vector headingVec;
     uint8_t turretMode;
     uint32_t turretCamera;
-    void *dockCameraNode;
-    void *dockCameraLeaf;
+    AEGeometry *dockCameraNode;
+    AEGeometry *dockCameraLeaf;
     uint8_t autoTurretEquipped;
     int autoTurretTimer;
     int autoTurretFireTimer;
-    void *autoTurretTarget;
-    void *autoTurretPrevTarget;
+    KIPlayer *autoTurretTarget;
+    KIPlayer *autoTurretPrevTarget;
     int rocketControlGun;
     int rocketBanking;
-    void *dockCameraMid;
+    AEGeometry *dockCameraMid;
     uint8_t turretActive;
     uint8_t field_0x1a1;
     float lookPitch;
     float lookYaw;
     uint8_t cloaked;
     uint8_t chargingCloak;
-    void *cloak;
-    void *tractorBeam;
+    Item *cloak;
+    TractorBeam *tractorBeam;
     Array<RepairBeam *> *repairBeams;
     int asteroidTarget;
     int dockingState;
     int dockingPointIndex;
 
     union {
+        // lint: union_decl int/uint8 size-mismatch reinterpret (dockApproachDist/resumeFlag) — type-pun, layout-load-bearing
         int dockApproachDist;
         uint8_t resumeFlag;
     };
@@ -161,7 +159,7 @@ public:
     int field_0x1d0;
     int dockScaling;
     int miningSettleTimer;
-    void *dockStation;
+    KIPlayer *dockStation;
     int miningGame;
     int hackingGame;
     short docked;
@@ -197,7 +195,7 @@ public:
     uint8_t field_0x2a8;
     uint8_t rollDirection;
     AbyssEngine::AEMath::Matrix rollMatrix;
-    void *field_0x2c0;
+    void *field_0x2c0; // lint: void_ptr  opaque flag, only ever compared != 0; never assigned a typed value in the tree
     uint8_t gunExtraVisible;
     float rotateX;
     float rotateY;
@@ -223,10 +221,10 @@ public:
     int maneuverType;
     AbyssEngine::AEMath::Vector strafeTargetVec;
     AbyssEngine::AEMath::Vector facingVec;
-    void *navPoint;
+    SpacePoint *navPoint;
     uint8_t autoTurretEnabled;
     uint8_t dockedFlag;
-    void *easeMatrix;
+    AbyssEngine::EaseInOutMatrix *easeMatrix;
     int dockTotalAmount;
     int dockTransferedAmount;
     int cloakRechargeMax;
@@ -234,11 +232,11 @@ public:
     uint8_t throttleStarted;
     int throttle;
     float strafeAccel;
-    void *strafeNavPoint;
+    SpacePoint *strafeNavPoint;
     int cloakMaterial1;
     int cloakMaterial2;
     int cloakMaterial3;
-    void *field_0x394;
+    unsigned char *field_0x394;
     uint8_t volatileGoods;
     uint8_t lostMiningGameFlag;
     AbyssEngine::AEMath::Matrix turretHudMatrix;
@@ -574,7 +572,6 @@ public:
     void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6, int arg7);
 
     int updateManeuver();
-
 
     static AbyssEngine::AEMath::Vector crosshairPos;
     static AbyssEngine::AEMath::Vector crosshairShootPos;

@@ -9,14 +9,11 @@
 
 #include "engine/math/AEMath.h"
 
-
 class Radar;
-
 
 class AEGeometry;
 class Hud;
 class Level;
-
 
 class RepairBeam {
 public:

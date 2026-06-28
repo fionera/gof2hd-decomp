@@ -7,9 +7,7 @@
 
 #include "engine/math/Vector.h"
 
-
 class Route;
-
 
 class Waypoint : public KIPlayer {
 public:

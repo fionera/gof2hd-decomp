@@ -12,7 +12,9 @@
   ],
   "buildPresets": [
     { "name": "build", "configurePreset": "default", "targets": ["gof2"] },
+    { "name": "link", "configurePreset": "default", "targets": ["link_so"] },
+    { "name": "diff", "configurePreset": "default", "targets": ["diff"] },
     { "name": "verify", "configurePreset": "default", "targets": ["verify"] },
-    { "name": "relink", "configurePreset": "default", "targets": ["relink"] }
+    { "name": "lint", "configurePreset": "default", "targets": ["lint"] }
   ]
 }

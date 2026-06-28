@@ -36,7 +36,7 @@ namespace AbyssEngine {
         }
 
         long long elapsed =
-                (long long) ((ApplicationManager *) engine->field_0x30)->GetElapsedTimeMillis();
+                (long long) engine->appManager->GetElapsedTimeMillis();
         long long t = this->animTime + elapsed / 5;
         this->animTime = (t < 0xe10) ? t : (t - 0xe10);
         glUniform1i(this->uColor, (int) this->animTime);

@@ -5,13 +5,11 @@
 namespace AbyssEngine {
     class Mesh;
 
-
-
     struct ImageFont {
         uint16_t glyphCount;
         uint16_t pad0x2;
         uint16_t *codes;
-        void *field_0x8;
+        unsigned char *field_0x8;
         Mesh **glyphMeshes;
         int16_t spacing;
         int16_t yOffset;

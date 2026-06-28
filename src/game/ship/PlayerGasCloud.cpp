@@ -24,9 +24,6 @@ namespace AbyssEngine {
     }
 }
 
-
-
-
 struct PgcCampaign {
     char reserved0[0x2d];
     char rescueMissionFlag;
@@ -36,12 +33,7 @@ static_assert(offsetof(PgcCampaign, rescueMissionFlag) == 0x2d,
               "PgcCampaign.rescueMissionFlag must be at 0x2d");
 #endif
 
-
-
-
 static PaintCanvas **g_pgc_canvas = nullptr;
-
-
 
 static Array<Item *> ***g_pgc_itemList = nullptr;
 static PaintCanvas **g_pgc_canvasRoot = nullptr;
@@ -168,6 +160,7 @@ void PlayerGasCloud::setPosition(const Vector &position) {
 }
 
 void *PlayerGasCloud::getSparks() {
+    // lint: void_ptr (exported method return type baked into ABI)
     return this->sparkGeometries;
 }
 

@@ -9,14 +9,13 @@
 class AEGeometry;
 class LensFlare;
 
-
 class StarSystem {
 public:
     Vector sunLightColor;
     uint8_t supernovaSystem;
     uint32_t supernovaSunTexture;
     Array<uint32_t> *texturesArray;
-    void *playerTargets;
+    Array<KIPlayer *> *playerTargets;
     Array<AEGeometry *> *planetsArray;
     Array<Vector> *positionsArray;
     Array<int> *stationIdxArray;
@@ -39,9 +38,9 @@ public:
 
     ~StarSystem();
 
-    void *getPlanetTargets();
+    void *getPlanetTargets(); // lint: void_ptr (exported signature; mangling must match lib)
 
-    void *getPlanets();
+    void *getPlanets(); // lint: void_ptr (exported signature; mangling must match lib)
 
     Array<int> *getStationIndices();
 
@@ -70,6 +69,5 @@ public:
     void switchSunForSupernovaReversal();
 
     void updateSupernova(int dt);
-
 };
 #endif

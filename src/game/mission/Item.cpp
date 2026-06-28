@@ -7,7 +7,6 @@
 
 static Status *&status = Globals::status;
 
-
 int Item::getAttribute(int attribute) {
     int *data = attributes->data();
     uint32_t size = attributes->size();

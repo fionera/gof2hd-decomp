@@ -68,7 +68,7 @@ namespace AbyssEngine {
         vst1q_u32((uint32_t *) &engine->projMatrix[8], zero);
         vst1q_u32((uint32_t *) &engine->projMatrix[4], zero);
         vst1q_u32((uint32_t *) &engine->projMatrix[0], zero);
-        engine->field_0x3e4 = this->program;
+        engine->currentProgram = this->program;
 
         engine->projMatrix[0] = 2.0f / (float) AbyssEngine_Engine_GetDisplayWidth(engine);
         engine->projMatrix[5] = -(2.0f / (float) AbyssEngine_Engine_GetDisplayHeight(engine));
@@ -89,7 +89,7 @@ namespace AbyssEngine {
         glUseProgram(this->program);
         glActiveTexture(0x84c0);
         fbo->Activate();
-        glBindFramebuffer(0x8d40, engine->field_0x40c);
+        glBindFramebuffer(0x8d40, engine->viewFramebuffer);
         glClear(0x4100);
 
         int width;

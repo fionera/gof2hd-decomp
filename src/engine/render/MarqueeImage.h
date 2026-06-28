@@ -2,9 +2,11 @@
 #define GOF2_MARQUEEIMAGE_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
+
 namespace AbyssEngine {
     class PaintCanvas;
 }
+
 using ::AbyssEngine::PaintCanvas;
 
 class MarqueeImage {

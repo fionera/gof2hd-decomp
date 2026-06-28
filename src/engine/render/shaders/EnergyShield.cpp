@@ -29,8 +29,8 @@ namespace AbyssEngine {
             }
             glActiveTexture(0x84c7);
             ((::Engine *) engine)->ActivateRefractFBO();
-            glUniform1f(this->uM7, mesh->field_0x24);
-            glUniform1f(this->uRefract, mesh->field_0x24 / 3.0f);
+            glUniform1f(this->uM7, mesh->shaderAnimValue1);
+            glUniform1f(this->uRefract, mesh->shaderAnimValue1 / 3.0f);
             this->dirty = 0;
         }
 

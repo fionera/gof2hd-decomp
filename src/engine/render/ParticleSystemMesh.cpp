@@ -1,6 +1,5 @@
 #include "engine/render/ParticleSystemMesh.h"
 
-
 void _psm_emitTrail(ParticleSystemMesh *self, int id);
 
 void _psm_emitUsual(ParticleSystemMesh *self, int id);
@@ -13,7 +12,7 @@ void _psm_render2(PaintCanvas *canvas, uint32_t texture, uint32_t camera);
 
 void _psm_vectorMinus(Vector *out, const Vector *a, const Vector *b);
 
-void _psm_vectorPlus(void *out, const Vector *a, const Vector *b);
+void _psm_vectorPlus(Vector *out, const Vector *a, const Vector *b);
 
 static char g_ParticleSetData[1];
 
@@ -67,8 +66,8 @@ void _psm_meshSetColor(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float
 void _psm_finishCurrentTrailParticle(ParticleSystemMesh *self, ParticleSet set, int id, const Vector *a,
                                      const Vector *b);
 
-void _psm_base_ctor(ParticleSystemMesh *self, PaintCanvas *canvas, const Matrix *matrix, const void *sets,
-                    bool a, bool b);
+void _psm_base_ctor(ParticleSystemMesh *self, PaintCanvas *canvas, const Matrix *matrix,
+                    const Array<ParticleSet> *sets, bool a, bool b);
 
 int ParticleSystemMesh::getPrevId(int id) {
     if (id == 0)
@@ -168,8 +167,8 @@ void ParticleSystemMesh::setQuadEdge(const Vector &edge, int point, const Vector
     _psm_vectorMinus(&pos, &edge, &delta);
     _psm_meshSetPoint(this->canvas, this->mesh, (uint16_t) point, pos.x, pos.y, pos.z);
 
-    _psm_vectorPlus((void *) tmpStorage, &edge, &delta);
-    pos = *(Vector *) (void *) tmpStorage;
+    _psm_vectorPlus((Vector *) tmpStorage, &edge, &delta);
+    pos = *(Vector *) tmpStorage;
 
     uint8_t wide = this->wide;
     int next = point + 1;

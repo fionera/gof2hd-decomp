@@ -103,7 +103,7 @@ namespace AbyssEngine {
                 glUniform1i(this->uLodDist, g_rimByteGlobal);
             if (this->uFogColor >= 0) {
                 float v = 0.0f;
-                int *m30 = (int *) mesh->field_0x30;
+                int *m30 = (int *) mesh->material;
                 if (m30 != 0) {
                     v = 1.0f;
                     if (m30[9] == 0)
@@ -111,7 +111,7 @@ namespace AbyssEngine {
                 }
                 glUniform1f(this->uFogColor, v);
             }
-            if (engine->field_0x32c >= 2) {
+            if (engine->lightCount >= 2) {
                 glUniform3fv(this->uDiffuseColor1, 1, (float *) &engine->lightSpecularShaded);
                 glUniform3fv(this->uSpecularColor1, 1, (float *) &engine->field_0x308);
                 glUniform3fv(this->uRimColor, 1, (float *) &engine->particleAmbient);

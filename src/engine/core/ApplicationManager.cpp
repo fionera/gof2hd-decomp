@@ -10,36 +10,50 @@
 #include <cstddef>
 
 namespace {
-
-
-
     struct ModuleVTable {
         void (*slot0)();
-        void (*destroy)(void *self);
-        int (*showLoading)(void *self);
-        void (*release)(void *self);
-        void (*onKeyPress)(void *self, void *self2, unsigned int, unsigned int,
-                           unsigned int, unsigned int);
-        void (*onKeyRelease)(void *self, void *self2, unsigned int, unsigned int,
-                             unsigned int, unsigned int);
-        void (*onTouchBegin2)(void *self, int x, int y);
-        void (*onTouchMove2)(void *self, int x, int y);
-        void (*onTouchEnd2)(void *self, int x, int y);
-        void (*onTouchBegin3)(void *self, int x, int y, void *data);
-        void (*onTouchMove3)(void *self, int x, int y, void *data);
-        void (*onTouchEnd3)(void *self, int x, int y, void *data);
-        void (*onRender3D)(void *self);
-        void (*onRender2D)(void *self);
-        void (*onUpdate)(void *self);
-        void (*onSuspend)(void *self);
-        void (*onResume)(void *self);
+
+        void (*destroy)(IApplicationModule *self);
+
+        int (*showLoading)(IApplicationModule *self);
+
+        void (*release)(IApplicationModule *self);
+
+        void (*onKeyPress)(IApplicationModule *self, IApplicationModule *self2,
+                           unsigned int, unsigned int, unsigned int, unsigned int);
+
+        void (*onKeyRelease)(IApplicationModule *self, IApplicationModule *self2,
+                             unsigned int, unsigned int, unsigned int, unsigned int);
+
+        void (*onTouchBegin2)(IApplicationModule *self, int x, int y);
+
+        void (*onTouchMove2)(IApplicationModule *self, int x, int y);
+
+        void (*onTouchEnd2)(IApplicationModule *self, int x, int y);
+
+        void (*onTouchBegin3)(IApplicationModule *self, int x, int y, void *data);
+
+        // lint: void_ptr (touch handle is void* in IApplicationModule interface)
+        void (*onTouchMove3)(IApplicationModule *self, int x, int y, void *data);
+
+        // lint: void_ptr (touch handle is void* in IApplicationModule interface)
+        void (*onTouchEnd3)(IApplicationModule *self, int x, int y, void *data);
+
+        // lint: void_ptr (touch handle is void* in IApplicationModule interface)
+        void (*onRender3D)(IApplicationModule *self);
+
+        void (*onRender2D)(IApplicationModule *self);
+
+        void (*onUpdate)(IApplicationModule *self);
+
+        void (*onSuspend)(IApplicationModule *self);
+
+        void (*onResume)(IApplicationModule *self);
     };
 
-    inline ModuleVTable *module_vtable(void *module) {
+    inline ModuleVTable *module_vtable(IApplicationModule *module) {
         return *reinterpret_cast<ModuleVTable **>(module);
     }
-
-
 
     struct KeyMappingHeader {
         unsigned int capacity;
@@ -54,9 +68,6 @@ namespace {
         return reinterpret_cast<KeyMappingHeader *>(keyMappingTable -
                                                     sizeof(KeyMappingHeader));
     }
-
-
-
 
     struct ActionEntry {
         unsigned int actionLow;
@@ -90,12 +101,10 @@ static_assert(sizeof(ActionEntry) == 0x10, "action entry size");
 #endif
 
 namespace {
-
     int g_perfPending;
     uint64_t g_perfCounter;
     uint64_t g_perfLimit;
     int g_perfExpired;
-
 
     int g_touchMode;
     int g_touchToggle;
@@ -103,13 +112,11 @@ namespace {
     float g_touchFloat;
     int g_touchDown;
 
-
     int g_orientationLeft;
     int g_orientationRight;
     int g_orientationFlat;
     int g_orientationUpsideDown;
     int g_orientationInactive;
-
 
     int64_t g_perfElapsed;
     int64_t g_perfActionCount;
@@ -168,13 +175,13 @@ ApplicationManager::ApplicationManager(Engine *engine) {
 }
 
 ApplicationManager::~ApplicationManager() {
-    void *module = this->currentModule;
+    IApplicationModule *module = this->currentModule;
     if (module != 0) {
         module_vtable(module)->release(module);
     }
 
     for (unsigned int i = 0; i < this->modules->size(); ++i) {
-        void *entry = (*this->modules)[i];
+        IApplicationModule *entry = (*this->modules)[i];
         if (entry != 0) {
             module_vtable(entry)->destroy(entry);
         }
@@ -212,7 +219,7 @@ ApplicationManager::~ApplicationManager() {
 }
 
 void ApplicationManager::SetApplicationModule(IApplicationModule *module) {
-    void *current = this->currentModule;
+    IApplicationModule *current = this->currentModule;
     this->pendingModule = module;
     this->state = current != 0;
 }
@@ -230,7 +237,7 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
     unsigned int count = this->moduleIds->size();
     for (unsigned int index = 0; index < count; ++index) {
         if ((*this->moduleIds)[index] == id) {
-            void *module = (*this->modules)[index];
+            IApplicationModule *module = (*this->modules)[index];
             this->state = this->currentModule != 0;
             this->currentModuleId = id;
             this->pendingModule = module;
@@ -240,6 +247,7 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
 }
 
 void *ApplicationManager::GetApplicationModule(unsigned int id) {
+    // lint: void_ptr (exported GetApplicationModule return type, baked ABI)
     unsigned int count = this->moduleIds->size();
     for (unsigned int index = 0; index < count; ++index) {
         if ((int) (*this->moduleIds)[index] == (int) id) {
@@ -250,6 +258,7 @@ void *ApplicationManager::GetApplicationModule(unsigned int id) {
 }
 
 void *ApplicationManager::GetEngine() {
+    // lint: void_ptr (exported GetEngine return type, header-declared ABI)
     return this->engine;
 }
 
@@ -259,7 +268,7 @@ void ApplicationManager::Resume(bool arg) {
         return;
     }
 
-    void *module = this->currentModule;
+    IApplicationModule *module = this->currentModule;
     if (module != 0) {
         module_vtable(module)->onResume(module);
         if (this->engine != 0) {
@@ -279,7 +288,7 @@ void ApplicationManager::Suspend() {
         return;
     }
 
-    void *module = this->currentModule;
+    IApplicationModule *module = this->currentModule;
     if (module != 0) {
         module_vtable(module)->onSuspend(module);
         if (this->engine != 0) {
@@ -303,8 +312,8 @@ void ApplicationManager::OnUpdate(long long now) {
 
     switch (this->state) {
         case 0: {
-            void *next = this->pendingModule;
-            void *module = next != 0 ? next : this->currentModule;
+            IApplicationModule *next = this->pendingModule;
+            IApplicationModule *module = next != 0 ? next : this->currentModule;
             if (next != 0) {
                 this->pendingModule = 0;
                 this->currentModule = next;
@@ -332,7 +341,7 @@ void ApplicationManager::OnUpdate(long long now) {
             break;
         }
         case 1: {
-            void *module = this->currentModule;
+            IApplicationModule *module = this->currentModule;
             if (module != 0) {
                 module_vtable(module)->release(module);
                 this->engine->ResetLightParam();
@@ -350,7 +359,7 @@ void ApplicationManager::OnUpdate(long long now) {
             this->keyState = 0;
             break;
         case 5: {
-            void *module = this->currentModule;
+            IApplicationModule *module = this->currentModule;
             if (module != 0) {
                 ModuleVTable *vtable = module_vtable(module);
                 vtable->onRender3D(module);
@@ -415,7 +424,7 @@ void ApplicationManager::OnKeyPress(int key) {
         ++keyIndex;
     }
 
-    void *module = this->currentModule;
+    IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         module_vtable(module)->onKeyPress(module, module, keyLow, keyHigh, actionLow, actionHigh);
     }
@@ -463,7 +472,7 @@ void ApplicationManager::OnKeyRelease(int key) {
         ++keyIndex;
     }
 
-    void *module = this->currentModule;
+    IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         module_vtable(module)->onKeyRelease(module, module, keyLow, keyHigh, actionLow, actionHigh);
     }
@@ -519,10 +528,11 @@ void ApplicationManager::ConvertTouchCoords(int &x, int &y) {
 }
 
 void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
+    // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
     int x = xArg;
     int y = yArg;
 
-    void *module = this->currentModule;
+    IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
@@ -565,10 +575,11 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
 }
 
 void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
+    // lint: void_ptr (exported OnTouchMove touch handle param, baked ABI)
     int x = xArg;
     int y = yArg;
 
-    void *module = this->currentModule;
+    IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
@@ -581,11 +592,12 @@ void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
 }
 
 void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
+    // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
     g_touchDown = 0;
     int x = xArg;
     int y = yArg;
 
-    void *module = this->currentModule;
+    IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
@@ -628,7 +640,7 @@ static bool update_orientation_timer(ApplicationManager *self, int *timer) {
 }
 
 void ApplicationManager::CheckForOrientationChange() {
-    double tilt = this->engine->field_0x4b0;
+    double tilt = this->engine->accelRaw[0];
     PaintCanvas *canvas;
     int *timer;
     AbyssEngine::LandscapeMode target;
@@ -689,6 +701,7 @@ void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
 }
 
 void *ApplicationManager::ConfigGetKeysForAction(long long action) {
+    // lint: void_ptr (exported ConfigGetKeysForAction return type, header-declared ABI)
     int low = (int) action;
     int high = (int) (action >> 32);
     Array<String *> *result = 0;
@@ -711,16 +724,19 @@ void *ApplicationManager::ConfigGetKeysForAction(long long action) {
 }
 
 void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) {
+    // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
     this->loadingCallback = callback;
     this->loadingCallbackData = data;
 }
 
 void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) {
+    // lint: void_ptr (opaque user data forwarded to ResumeCallback_t, baked ABI)
     this->resumeCallback = callback;
     this->resumeCallbackData = data;
 }
 
 void ApplicationManager::LoadingCallbackShow(int mode, void *data) {
+    // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
     LoadingCallback_t *callback = this->loadingCallback;
     if (callback != 0) {
         callback(this->paintCanvas, mode, data);
@@ -747,6 +763,7 @@ void ApplicationManager::CheatAddCode(const String &code, int value) {
 }
 
 void ApplicationManager::CheatSetCallback(void (*callback)(int, void *), void *data) {
+    // lint: void_ptr (exported CheatSetCallback signature, opaque cheat callback + data, baked ABI)
     if (this->cheatHandler != 0) {
         this->cheatHandler->SetCheatFunc(callback, data);
     }
@@ -892,10 +909,12 @@ bool ApplicationManager::CheckCrack(const char *path) {
 }
 
 void *ApplicationManager::GetApplicationData() {
+    // lint: void_ptr (exported GetApplicationData return type, baked ABI)
     return this->applicationData;
 }
 
 void ApplicationManager::SetApplicationData(void *data) {
+    // lint: void_ptr (exported SetApplicationData param, opaque app data, baked ABI)
     this->applicationData = data;
 }
 
@@ -904,7 +923,9 @@ void ApplicationManager::SetExitCallback(QuitCallback_t *callback) {
 }
 
 void *ApplicationManager::GetCurrentApplicationModule() const {
+    // lint: void_ptr (exported GetCurrentApplicationModule return type, baked ABI)
     return reinterpret_cast<void *>(this->currentModuleId);
+    // lint: void_ptr (cast produces the void* return value mandated by the waived signature)
 }
 
 String ApplicationManager::GetApplicationVersionString() {
@@ -920,6 +941,7 @@ void ApplicationManager::ConfigReadFile(String name) {
 
 void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigTokenReadFunction read,
                                                          void *context) {
+    // lint: void_ptr (exported ConfigRegisterTokenReadFunction opaque context param, baked ABI)
     ConfigReader *reader = this->configReader;
     if (reader != 0) {
         reader->RegisterTokenReadFunction(name, read, context);

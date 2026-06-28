@@ -7,12 +7,9 @@
 
 #include "engine/math/Matrix.h"
 
-
 class Player;
 
-
 class AEGeometry;
-
 
 class PlayerCreature : public KIPlayer {
 public:

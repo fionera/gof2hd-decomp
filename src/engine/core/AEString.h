@@ -57,6 +57,7 @@ namespace AbyssEngine {
             Set(src->data);
             if (reverse) Reverse();
         }
+
         const char16_t *text() const { return reinterpret_cast<const char16_t *>(data); }
         uint32_t size() const { return (uint32_t) length; }
 
@@ -113,7 +114,7 @@ namespace AbyssEngine {
         AESTRING_SHIM void Set_longlong(long long v) { Set((long long) v); }
         AESTRING_SHIM void Set_wchar(const uint16_t *s) { Set((const unsigned short *) s); }
 
-        void *Split(String sep);
+        void *Split(String sep); // lint: void_ptr String method return type, signature must not change
 
         void SplitTags(String tag);
 
@@ -157,7 +158,6 @@ namespace AbyssEngine {
         }
 
         static uint16_t *getWCharFromUtf8(char *utf8, int len);
-
 
         static char16_t termChar;
     };

@@ -10,14 +10,12 @@
 
 #include "engine/math/Matrix.h"
 
-
 class Player;
 
 class AEGeometry;
 class Explosion;
 class Gun;
 class Level;
-
 
 class ObjectGun : public AbstractGun {
 public:

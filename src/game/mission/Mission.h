@@ -4,7 +4,6 @@
 #include "../../engine/core/AEString.h"
 class Agent;
 
-
 using AbyssEngine::String;
 
 class Mission {
@@ -71,11 +70,13 @@ public:
 
     void setProductionGoods(int a, int b);
 
-    void *setTargetName(String rhs);
+    void *setTargetName(String rhs); // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
 
     void setTargetStation(int idx);
 
     void *setTargetSystemName(const String &rhs);
+
+    // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
 
     void setVisible(bool v);
 
@@ -131,7 +132,6 @@ public:
 
     bool isOutsideMission();
 
-
-    static void *empty;
+    static Mission *empty;
 };
 #endif

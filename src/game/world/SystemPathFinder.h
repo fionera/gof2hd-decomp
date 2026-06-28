@@ -10,7 +10,6 @@ class Node;
 class SolarSystem;
 class Status;
 
-
 class SystemPathFinder {
 public:
     SystemPathFinder();

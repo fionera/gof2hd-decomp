@@ -7,60 +7,62 @@
 
 #include "game/ui/RefreshThunk.h"
 class TouchButton;
-
-
-
+class TouchSlider;
+class GameRecord;
+class ChoiceWindow;
+class MissionsWindow;
+class ScrollTouchWindow;
 
 class MenuTouchWindow {
 public:
     uint8_t cinematicSteerActive;
     uint8_t pendingActivate;
     uint8_t pad_0x2[2];
-    Array<void *> *buttons;
-    void *cinematicTouchIdA;
-    void *cinematicTouchIdB;
+    Array<TouchButton *> *buttons;
+    void *cinematicTouchIdA; // lint: void_ptr (opaque touch handle; matches exported void* touchId)
+    void *cinematicTouchIdB; // lint: void_ptr (opaque touch handle; matches exported void* touchId)
     uint8_t pad_0x10[4];
-    void *cinematicBtnA;
-    void *cinematicBtnB;
+    TouchButton *cinematicBtnA;
+    TouchButton *cinematicBtnB;
     uint8_t pad_0x1c[0x74];
     int cinematicAnchorA;
     int cinematicAnchorB;
     unsigned short cinematicTouchState;
     uint8_t pad_0x9a[2];
-    Array<void *> *previewStrings0;
-    Array<void *> *previewStrings1;
+    Array<AbyssEngine::String *> *previewStrings0;
+    Array<AbyssEngine::String *> *previewStrings1;
     uint8_t pad_0xa4[8];
-    Array<void *> *optionsButtons;
-    Array<void *> *buttonsB0;
-    Array<void *> *buttonsB4;
-    Array<void *> *buttonsB8;
-    void *previewRecords;
-    Array<void *> *scrollEntries;
-    void *okButton;
-    void *backButton;
-    void *optBtnCC;
-    void *optBtnD0;
-    void *optBtnD4;
-    void *optBtnD8;
-    void *optBtnDC;
+    Array<TouchButton *> *optionsButtons;
+    Array<TouchButton *> *buttonsB0;
+    Array<TouchButton *> *buttonsB4;
+    Array<TouchButton *> *buttonsB8;
+    Array<GameRecord *> *previewRecords;
+    Array<TouchButton *> *scrollEntries;
+    TouchButton *okButton;
+    TouchButton *backButton;
+    TouchButton *optBtnCC;
+    TouchButton *optBtnD0;
+    TouchButton *optBtnD4;
+    TouchButton *optBtnD8;
+    TouchButton *optBtnDC;
     uint8_t pad_0xe0[4];
-    void *scrollUpButton;
-    void *scrollExtraButton;
-    void *sliders;
-    void *scrollWindowA;
-    void *scrollWindowB;
-    Array<void *> *scrollSlots;
-    void *missionsWindow;
-    Array<void *> *recordRows;
-    void *choiceWindow;
+    TouchButton *scrollUpButton;
+    TouchButton *scrollExtraButton;
+    Array<TouchSlider *> *sliders;
+    ScrollTouchWindow *scrollWindowA;
+    ScrollTouchWindow *scrollWindowB;
+    Array<TouchButton *> *scrollSlots;
+    MissionsWindow *missionsWindow;
+    Array<Array<AbyssEngine::String *> *> *recordRows;
+    ChoiceWindow *choiceWindow;
     uint8_t upButtonPressed;
     uint8_t downButtonPressed;
     uint8_t pad_0x10a[0x12];
     uint32_t scrollbarImageId;
     int field_0x120;
     uint8_t pad_0x124[0x10];
-    void *heapBufA;
-    void *heapBufB;
+    unsigned char *heapBufA;
+    unsigned char *heapBufB;
     uint8_t pad_0x13c[0x18];
     int listEntryWidth;
     int listEntryHeight;
@@ -149,11 +151,15 @@ public:
 
     int OnTouchEnd(int y, int x, void *touchId);
 
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+
     void createRecordButtons(bool inSaveMode);
 
     void startValkyrie();
 
     int OnTouchBegin(int y, int x, void *touchId);
+
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     int loadGame(int slot);
 
@@ -176,6 +182,8 @@ public:
     float getRelativeScrollHeight();
 
     int OnTouchMove(int y, int x, void *touchId);
+
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     void setSkipButtonVisible(bool visible);
 

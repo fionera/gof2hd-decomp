@@ -33,25 +33,25 @@ struct StackVector {
     operator Vector *() { return reinterpret_cast<Vector *>(v); }
 };
 
-typedef void (*RenderProc)(void *);
+typedef void (*RenderProc)(AEGeometry *);
 
-typedef void * (*LevelListProc)(Level *);
+typedef unsigned char * (*LevelListProc)(Level *);
 
-typedef void (*ReadWaypointProc)(StackVector *out, void *waypoint);
+typedef void (*ReadWaypointProc)(StackVector *out, Waypoint *waypoint);
 
-typedef void (*SetVectorProc)(void *self, StackVector *value);
+typedef void (*SetVectorProc)(unsigned char *self, StackVector *value);
 
-typedef void (*VirtualCommandProc)(void *self, int a, int b, int c);
+typedef void (*VirtualCommandProc)(unsigned char *self, int a, int b, int c);
 
 static volatile RenderProc gRenderProc;
 static volatile LevelListProc gLevelListProc;
 
-static inline void *arrayData(void *array) {
-    return *reinterpret_cast<void **>(static_cast<char *>(array) + 4);
+static inline unsigned char *arrayData(unsigned char *array) {
+    return *reinterpret_cast<unsigned char **>(array + 4);
 }
 
-static inline void *firstListEntry(void *list) {
-    return static_cast<void **>(arrayData(list))[0];
+static inline unsigned char *firstListEntry(unsigned char *list) {
+    return reinterpret_cast<unsigned char **>(arrayData(list))[0];
 }
 
 void LevelScript::render3D() {
@@ -96,7 +96,7 @@ void LevelScript::resetCamera(Level *level) {
 void LevelScript::skipSequence() {
     if (field_0x24 > 0 && Globals::status->getCurrentCampaignMission() > 0) {
         field_0x24 = 0x1b59;
-        void *player = (void *) m_pLevel->getPlayer();
+        PlayerEgo *player = m_pLevel->getPlayer();
         (void) player; /* virtual Player flag setter — resolved via vtable */
     }
 }
@@ -117,26 +117,26 @@ void LevelScript::setAutoPilotToProgrammedStation() {
     }
 
     SolarSystem *system = (SolarSystem *) Globals::status->getSystem();
-    void *player;
-    void *target;
+    PlayerEgo *player;
+    unsigned char *target;
 
     if (system->stationIsInSystem(programmed)) {
-        player = (void *) m_pLevel->getPlayer();
-        void *targets = ((StarSystem *) m_pLevel->getStarSystem())->getPlanetTargets();
+        player = m_pLevel->getPlayer();
+        unsigned char *targets = (unsigned char *) ((StarSystem *) m_pLevel->getStarSystem())->getPlanetTargets();
         int targetIndex = system->getStationEnumIndex(programmed->getIndex());
-        target = static_cast<void **>(arrayData(targets))[targetIndex];
+        target = reinterpret_cast<unsigned char **>(arrayData(targets))[targetIndex];
     } else if (system->currentOrbitHasWarpGate()) {
-        player = (void *) m_pLevel->getPlayer();
+        player = m_pLevel->getPlayer();
         Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
-        target = (void *) (*landmarks)[1];
+        target = (unsigned char *) (*landmarks)[1];
     } else {
         int warpGateIndex = system->getWarpGateEnumIndex();
         if (warpGateIndex < 0) {
             return;
         }
-        player = (void *) m_pLevel->getPlayer();
-        void *targets = ((StarSystem *) m_pLevel->getStarSystem())->getPlanetTargets();
-        target = static_cast<void **>(arrayData(targets))[warpGateIndex];
+        player = m_pLevel->getPlayer();
+        unsigned char *targets = (unsigned char *) ((StarSystem *) m_pLevel->getStarSystem())->getPlanetTargets();
+        target = reinterpret_cast<unsigned char **>(arrayData(targets))[warpGateIndex];
     }
 
     (void) player;
@@ -198,6 +198,7 @@ void LevelScript::skipCutscene() {
             m_nState = 9;
             for (int i = 0; i != 8; ++i) {
                 Array<void *> *messages = m_pLevel->getMessages();
+                // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
                 ((RadioMessage *) ((*messages)[i]))->trigger();
                 messages = m_pLevel->getMessages();
                 ((RadioMessage *) ((*messages)[i]))->finish();
@@ -207,15 +208,15 @@ void LevelScript::skipCutscene() {
             m_nScriptCounterA = 0;
 
             LevelListProc getList = gLevelListProc;
-            void *list = getList(m_pLevel);
+            unsigned char *list = getList(m_pLevel);
             ((PlayerFighter *) firstListEntry(list))->setAIDisabled(false);
 
             list = getList(m_pLevel);
-            void *fighter = firstListEntry(list);
+            unsigned char *fighter = firstListEntry(list);
 
             list = getList(m_pLevel);
             Route *route = ((KIPlayer *) firstListEntry(list))->getRoute();
-            void *waypoint = route->getWaypoint();
+            Waypoint *waypoint = route->getWaypoint();
             ReadWaypointProc readWaypoint =
                     *(ReadWaypointProc *) (*reinterpret_cast<char **>(waypoint) + 0x28);
             readWaypoint(&position, waypoint);
@@ -227,6 +228,7 @@ void LevelScript::skipCutscene() {
         if (m_nState <= 4) {
             for (int i = 0; i != 4; ++i) {
                 Array<void *> *messages = m_pLevel->getMessages();
+                // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
                 ((RadioMessage *) ((*messages)[i]))->trigger();
                 messages = m_pLevel->getMessages();
                 ((RadioMessage *) ((*messages)[i]))->finish();
@@ -240,14 +242,15 @@ void LevelScript::skipCutscene() {
         m_nScriptCounterB = 0;
         for (int i = 0; i != 3; ++i) {
             Array<void *> *messages = m_pLevel->getMessages();
+            // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
             ((RadioMessage *) ((*messages)[i]))->trigger();
             messages = m_pLevel->getMessages();
             ((RadioMessage *) ((*messages)[i]))->finish();
         }
 
         LevelListProc getList = gLevelListProc;
-        void *list = getList(m_pLevel);
-        void *player = firstListEntry(list);
+        unsigned char *list = getList(m_pLevel);
+        unsigned char *player = firstListEntry(list);
         VirtualCommandProc command =
                 *(VirtualCommandProc *) (*reinterpret_cast<char **>(player) + 0x48);
         command(player, 0x000ba51e, 0, 0x000ba4b6);
@@ -324,15 +327,15 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
 
     camera->setLookAtCam(true);
 
-    void *player = (void *) level->getPlayer();
+    PlayerEgo *player = level->getPlayer();
     if (player == 0) {
         m_bStartSequence = 0;
     } else {
         ((Player *) player)->setVulnerable(false);
     }
 
-    player = (void *) level->getPlayer();
-    ((PlayerEgo *) player)->setCollide(false);
+    player = level->getPlayer();
+    player->setCollide(false);
 
     if (Globals::status->getCurrentCampaignMission() == 0) {
         m_nScriptTimerA = 0;

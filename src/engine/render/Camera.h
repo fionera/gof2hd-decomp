@@ -6,13 +6,11 @@
 
 #include "engine/math/AEMath.h"
 
-
 namespace AbyssEngine {
     class Camera {
     public:
         float position[3];
         AEMath::Matrix projection;
-
 
         float frustumTanHalfFov;
         float field_0x4c;

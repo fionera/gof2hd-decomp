@@ -7,12 +7,10 @@
 
 #include "engine/math/AEMath.h"
 
-
-
-
 namespace AbyssEngine {
     class PaintCanvas;
 }
+
 using ::AbyssEngine::PaintCanvas;
 
 class Trail {

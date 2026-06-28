@@ -8,7 +8,6 @@
 
 #include "engine/math/Vector.h"
 
-
 namespace AbyssEngine {
     class EaseInOutMatrix {
     public:
@@ -26,7 +25,8 @@ namespace AbyssEngine {
 
         EaseInOutMatrix(AEMath::Matrix mn, AEMath::Matrix mx, int duration);
 
-        ~EaseInOutMatrix();
+        ~EaseInOutMatrix() {
+        } // inline so D1 folds into the original's base-object D2
 
         void SetRange(AEMath::Matrix mn, AEMath::Matrix mx);
 

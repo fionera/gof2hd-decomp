@@ -8,9 +8,12 @@
 #include "engine/math/Vector.h"
 
 #include "engine/render/AEGeomCanvas.h"
-namespace AbyssEngine { class PaintCanvas; }
-using ::AbyssEngine::PaintCanvas;
 
+namespace AbyssEngine {
+    class PaintCanvas;
+}
+
+using ::AbyssEngine::PaintCanvas;
 
 class LodMeshMerger;
 
@@ -29,7 +32,6 @@ namespace AbyssEngine {
         Vector MatrixGetDir(const Matrix &m);
     }
 }
-
 
 class AEGeometry {
 public:

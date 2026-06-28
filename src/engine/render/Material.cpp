@@ -39,8 +39,5 @@ namespace AbyssEngine {
     }
 
     Material::~Material() {
-
-
-
     }
 }

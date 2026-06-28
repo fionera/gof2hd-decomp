@@ -5,7 +5,6 @@ class ParticleSettingsRef {
 public:
     static void initialize();
 
-
     static int assertInit;
     static unsigned char cur[7680];
     static unsigned char init[7680];

@@ -5,7 +5,6 @@
 
 #include "engine/math/AEMath.h"
 
-
 namespace AbyssEngine {
     class Quaternion {
     public:

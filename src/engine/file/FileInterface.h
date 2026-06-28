@@ -1,7 +1,6 @@
 #ifndef GALAXYONFIRE2_FILEINTERFACE_H
 #define GALAXYONFIRE2_FILEINTERFACE_H
 
-
 #include "engine/core/AEString.h"
 
 class FileInterface {
@@ -13,13 +12,23 @@ public:
 
     virtual void *OpenRead(String name, int size, bool windowed, int packedSize, int rawSize, unsigned int offset) = 0;
 
+    // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
+
     virtual void *OpenWrite(String name, int size, bool append, unsigned int mode) = 0;
+
+    // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
     virtual void *OpenAppend(String name, int size, bool append, unsigned int mode) = 0;
 
+    // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
+
     virtual uint32_t Read(uint32_t bytes, void *buffer) = 0;
 
+    // lint: void_ptr (exported virtual; raw buffer param, ABI-mandated)
+
     virtual uint32_t Write(uint32_t bytes, const void *buffer) = 0;
+
+    // lint: void_ptr (exported virtual; raw buffer param, ABI-mandated)
 
     virtual uint32_t Seek(uint32_t bytes) = 0;
 
@@ -35,7 +44,11 @@ public:
 
     virtual void SetAppRootDir(void *path) = 0;
 
+    // lint: void_ptr (exported virtual; param type baked into mangled symbol, ABI-mandated)
+
     virtual void SetZipDirectory(void *path) = 0;
+
+    // lint: void_ptr (exported virtual; param type baked into mangled symbol, ABI-mandated)
 
     virtual uint32_t FileEnumInit(char *pattern, bool recurse) = 0;
 

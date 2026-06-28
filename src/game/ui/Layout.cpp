@@ -10,7 +10,6 @@
 #include "game/ui/TouchButton.h"
 #include "engine/render/PaintCanvas.h"
 
-
 void TouchButton_footerAnim(...);
 
 void TouchButton_ctorStr(...);
@@ -24,7 +23,6 @@ void Globals_drawLines(...);
 uint8_t Layout::isFading() {
     return this->fading;
 }
-
 
 static int **gTouchButtonHolder = nullptr;
 
@@ -52,7 +50,6 @@ void Layout::update(int dt) {
         }
     }
 }
-
 
 static PaintCanvas **gPaintCanvasHolder = nullptr;
 
@@ -89,11 +86,9 @@ void Layout::setDrawColor(int color) {
     this->drawColor = color;
 }
 
-
 static int *gW = nullptr;
 
 static int *gH = nullptr;
-
 
 static int *gA = nullptr;
 
@@ -124,7 +119,6 @@ uint8_t Layout::helpPressed() {
     return this->helpPressedFlag;
 }
 
-
 static PaintCanvas **g_dfCanvas = nullptr;
 
 static int **g_dfMetric = nullptr;
@@ -135,7 +129,7 @@ static const char g_dfSep[] = "";
 
 static const char g_dfTail[] = "";
 
-static void **g_dfFont = nullptr;
+static unsigned *g_dfFont = nullptr;
 
 void Layout::drawFooterNoBackButton() {
     int stationMode = 0;
@@ -152,7 +146,7 @@ void Layout::drawFooterNoBackButton() {
     pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
                     (this->windowY + this->windowHeight) - footerH);
     int both = wLeft + wRight;
-    this->drawBGPattern(this->field_0x338, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
+    this->drawBGPattern(this->footerFillImage, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
                         this->windowWidth + both * -2, footerH);
     pc->DrawImage2D(this->footerImageRight,
                     (this->windowX - both) + this->windowWidth,
@@ -183,7 +177,7 @@ void Layout::drawFooterNoBackButton() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        void *font = *g_dfFont;
+        unsigned font = *g_dfFont;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
@@ -195,7 +189,7 @@ void Layout::drawFooterNoBackButton() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        void *font = *g_dfFont;
+        unsigned font = *g_dfFont;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
             int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
@@ -224,7 +218,7 @@ void Layout::drawFooter() {
     pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
                     (this->windowY + this->windowHeight) - footerH);
     int both = wLeft + wRight;
-    this->drawBGPattern(this->field_0x338, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
+    this->drawBGPattern(this->footerFillImage, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
                         this->windowWidth + both * -2, footerH);
     pc->DrawImage2D(this->footerImageRight,
                     (this->windowX - both) + this->windowWidth,
@@ -255,7 +249,7 @@ void Layout::drawFooter() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        void *font = *g_dfFont;
+        unsigned font = *g_dfFont;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
@@ -267,7 +261,7 @@ void Layout::drawFooter() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        void *font = *g_dfFont;
+        unsigned font = *g_dfFont;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
             int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
@@ -313,7 +307,6 @@ void Layout::startFade(bool fadeOut, int color, int duration) {
     this->fadeDuration = duration;
 }
 
-
 static unsigned *g_tipColor = nullptr;
 
 static int **g_tipTextId = nullptr;
@@ -342,7 +335,6 @@ void Layout::initTip() {
     canvas->GetLineArray(color, *str, width, this->tipLines);
 }
 
-
 static unsigned *g_efColor = nullptr;
 
 static int *g_efScreenH = nullptr;
@@ -369,7 +361,6 @@ void Layout::drawEmptyFooter(bool showBack) {
     alignas(4) unsigned char sp[8];
     TouchButton_footerAnim(this->backButton, 1, footerH, sp);
 }
-
 
 static char *g_cfgHd = nullptr;
 
@@ -450,7 +441,7 @@ Layout::Layout() {
     this->field_0x1f0 = v1f0;
     this->field_0x1f4 = v1f4;
     this->field_0x1f8 = v1f8;
-    this->field_0x284 = 1;
+    this->field_0x284_sliderSlot5Enabled = 1;
     this->field_0x285 = 1;
     this->field_0x286 = 1;
     this->field_0x288 = v288;
@@ -531,7 +522,6 @@ String Layout::formatCredits(int n) {
     return num + suffix;
 }
 
-
 static PaintCanvas **g_bgCanvas = nullptr;
 
 void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
@@ -573,7 +563,6 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
         pc->DrawRegion2D(img, 0, 0, remW, remH, 0, 0, 0, x + fullW, y + fullH);
     }
 }
-
 
 static const char g_fnEmpty[] = "";
 
@@ -622,15 +611,13 @@ String Layout::formatNumber(int value) {
     return out;
 }
 
-
 static int *gW1 = nullptr;
 
 static int *gW2 = nullptr;
 
 static int *gW3 = nullptr;
 
-typedef void (*SetPosFn)(void *btn, int x, int y, int mode);
-
+typedef void (*SetPosFn)(TouchButton *btn, int x, int y, int mode);
 
 static SetPosFn gSetPos = nullptr;
 
@@ -650,7 +637,6 @@ void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
            (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
 }
 
-
 static FModSound **gFmod = nullptr;
 
 void Layout::showMissionRewardMessage(int show, bool flag) {
@@ -663,7 +649,6 @@ void Layout::showMissionRewardMessage(int show, bool flag) {
     this->rewardCredits = show;
     sound->play(0x24, 0, 0, 0.0f);
 }
-
 
 static PaintCanvas **g_bbCanvas = nullptr;
 
@@ -722,7 +707,6 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     }
 }
 
-
 static PaintCanvas **g_sbCanvas = nullptr;
 
 static unsigned g_sbColor0 = 0;
@@ -765,7 +749,6 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
                     this->scrollBarHandle + x + 1, (thumb - ih) + y + off, (unsigned char) (0x02));
 }
 
-
 static PaintCanvas **g_dfCanvasA = nullptr;
 
 static int **g_dfDimA = nullptr;
@@ -801,36 +784,35 @@ uint8_t Layout::drawFade() {
     return this->fading;
 }
 
-
 static PaintCanvas **g_dbCanvas = nullptr;
 
 static int **g_dbMetric0 = nullptr;
 
-static void **g_dbFont0c = nullptr;
+static unsigned *g_dbFont0c = nullptr;
 
-static void **g_dbFont0r = nullptr;
+static unsigned *g_dbFont0r = nullptr;
 
-static void **g_dbFont0 = nullptr;
+static unsigned *g_dbFont0 = nullptr;
 
 static int **g_dbMetric1 = nullptr;
 
-static void **g_dbFont1c = nullptr;
+static unsigned *g_dbFont1c = nullptr;
 
-static void **g_dbFont1r = nullptr;
+static unsigned *g_dbFont1r = nullptr;
 
-static void **g_dbFont1 = nullptr;
+static unsigned *g_dbFont1 = nullptr;
 
 static int **g_dbMetric6 = nullptr;
 
-static void **g_dbFont6c = nullptr;
+static unsigned *g_dbFont6c = nullptr;
 
-static void **g_dbFont6r = nullptr;
+static unsigned *g_dbFont6r = nullptr;
 
-static void **g_dbFont6 = nullptr;
+static unsigned *g_dbFont6 = nullptr;
 
 static int **g_dbMetric7 = nullptr;
 
-static void **g_dbFont7 = nullptr;
+static unsigned *g_dbFont7 = nullptr;
 
 void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigned char flags) {
     PaintCanvas *pc = *g_dbCanvas;
@@ -963,7 +945,6 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
     pc->SetColor(saved);
 }
 
-
 static PaintCanvas **g_dwCanvas = nullptr;
 
 static int **g_dwBorderTop = nullptr;
@@ -972,7 +953,7 @@ static int **g_dwMetric = nullptr;
 
 static const char g_dwCmpLit[] = "";
 
-static void ***g_dwFont = nullptr;
+static unsigned **g_dwFont = nullptr;
 
 void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
     PaintCanvas *pc = *g_dwCanvas;
@@ -997,7 +978,6 @@ void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
     pc->SetColor(saved);
 }
 
-
 static unsigned *g_dtColor = nullptr;
 
 static int **g_dtMetricA = nullptr;
@@ -1008,7 +988,7 @@ static int *g_dtDimH = nullptr;
 
 static const char g_dtBoxLit[] = "";
 
-static void **g_dtLinesA = nullptr;
+static unsigned *g_dtLinesA = nullptr;
 
 static unsigned *g_dtLinesB = nullptr;
 
@@ -1024,11 +1004,11 @@ void Layout::drawTip() {
         this->drawBox(5, (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, box, 0u);
 
         Globals::Canvas->DrawImage2D(this->tipBoxImage,
-                             dimH >> 1, (dimW >> 1) + 0x3f, (unsigned char) (0x11));
+                                     dimH >> 1, (dimW >> 1) + 0x3f, (unsigned char) (0x11));
 
         int lineCount = (int) this->tipLines->size();
         int y = (dimW >> 1) + 0x3f - ((lineCount * mA[4 / 4]) >> 1);
-        reinterpret_cast<Globals *>(*g_dtLinesB)->drawLines((unsigned) (uintptr_t) *(void **) g_dtLinesA,
+        reinterpret_cast<Globals *>(*g_dtLinesB)->drawLines((unsigned) (uintptr_t) * g_dtLinesA,
                                                             this->tipLines,
                                                             dimH >> 1, y);
     }
@@ -1043,7 +1023,6 @@ void Layout::drawHelpWindow() {
         this->choiceWindow->draw();
 }
 
-
 static FModSound **gFmodHelp = nullptr;
 
 void Layout::initHelpWindow(String text) {
@@ -1055,7 +1034,6 @@ void Layout::initHelpWindow(String text) {
     this->choiceWindowOpen = 1;
     this->helpPressedFlag = 0;
 }
-
 
 static int **g_rwW = nullptr;
 
@@ -1092,7 +1070,6 @@ void Layout::resetWindowDimensions() {
     }
 }
 
-
 static const String *g_tagBaseString = nullptr;
 
 static const char g_tagLit0[] = "";
@@ -1104,7 +1081,6 @@ static const char g_tagLit2[] = "";
 String Layout::tagString(String in) {
     return String(g_tagLit0) + *g_tagBaseString + String(g_tagLit1) + in + String(g_tagLit2);
 }
-
 
 static PaintCanvas **g_rlCanvas = nullptr;
 
@@ -1133,7 +1109,7 @@ void Layout::reload() {
     canvas->Image2DCreate(static_cast<unsigned short>(0x474), reinterpret_cast<unsigned int &>(this->headerIconImage));
     canvas->Image2DCreate(static_cast<unsigned short>(0x502), reinterpret_cast<unsigned int &>(this->footerImageLeft));
     canvas->Image2DCreate(static_cast<unsigned short>(0x506), reinterpret_cast<unsigned int &>(this->field_0x340));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x501), reinterpret_cast<unsigned int &>(this->field_0x338));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x501), reinterpret_cast<unsigned int &>(this->footerFillImage));
     canvas->Image2DCreate(static_cast<unsigned short>(0x507),
                           reinterpret_cast<unsigned int &>(this->footerPatternImage));
     canvas->Image2DCreate(static_cast<unsigned short>(0x4fe), reinterpret_cast<unsigned int &>(this->footerImageRight));
@@ -1143,7 +1119,7 @@ void Layout::reload() {
                           reinterpret_cast<unsigned int &>(this->scrollBarFillImage));
     canvas->Image2DCreate(static_cast<unsigned short>(0x487), reinterpret_cast<unsigned int &>(this->scrollBarImage));
     canvas->Image2DCreate(static_cast<unsigned short>(0x48b), reinterpret_cast<unsigned int &>(this->field_0x37c));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x52d), reinterpret_cast<unsigned int &>(this->field_0x3a4));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x52d), reinterpret_cast<unsigned int &>(this->rewardIconImage));
 
     if (*g_rlHdFlag == 0) {
         canvas->Image2DCreate(static_cast<unsigned short>(0x480), reinterpret_cast<unsigned int &>(this->field_0x350));
@@ -1239,7 +1215,7 @@ void Layout::drawFooterStation() {
     pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
                     (this->windowY + this->windowHeight) - footerH);
     int both = wLeft + wRight;
-    this->drawBGPattern(this->field_0x338, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
+    this->drawBGPattern(this->footerFillImage, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
                         this->windowWidth + both * -2, footerH);
     pc->DrawImage2D(this->footerImageRight,
                     (this->windowX - both) + this->windowWidth,
@@ -1270,7 +1246,7 @@ void Layout::drawFooterStation() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        void *font = *g_dfFont;
+        unsigned font = *g_dfFont;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
@@ -1282,7 +1258,7 @@ void Layout::drawFooterStation() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        void *font = *g_dfFont;
+        unsigned font = *g_dfFont;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
             int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
@@ -1296,12 +1272,11 @@ void Layout::drawFooterStation() {
     }
 }
 
-
 static unsigned *g_dhColor = nullptr;
 
 static int **g_dhMetric = nullptr;
 
-static void ***g_dhFont = nullptr;
+static unsigned **g_dhFont = nullptr;
 
 void Layout::drawHeader(String title, bool transition) {
     PaintCanvas *pc = Globals::Canvas;
@@ -1328,7 +1303,6 @@ void Layout::drawHeader(String title, bool transition) {
     }
 }
 
-
 static PaintCanvas **g_mrCanvas = nullptr;
 
 static int *g_mrDimA = nullptr;
@@ -1341,7 +1315,7 @@ static int *g_mrDimB = nullptr;
 
 static int *g_mrTextId = nullptr;
 
-static void **g_mrFont = nullptr;
+static unsigned *g_mrFont = nullptr;
 
 static const char g_mrLit2[] = "";
 
@@ -1382,13 +1356,13 @@ void Layout::drawMissionRewardMessage(bool transition) {
         }
 
         int sh = *g_mrDimB;
-        pc->DrawImage2D(this->field_0x3a4, sh >> 1, (char) boxX, (unsigned char) (0x11));
+        pc->DrawImage2D(this->rewardIconImage, sh >> 1, (char) boxX, (unsigned char) (0x11));
 
         String *txt = Globals::gameText->getText(*g_mrTextId);
         String line(*txt);
 
         sh = *g_mrDimB;
-        void *font = *g_mrFont;
+        unsigned font = *g_mrFont;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), line);
         pc->DrawString((unsigned) (unsigned long) (font), line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
 
@@ -1439,7 +1413,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
     pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
                     (this->windowY + this->windowHeight) - footerH);
     int both = wLeft + wRight;
-    this->drawBGPattern(this->field_0x338, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
+    this->drawBGPattern(this->footerFillImage, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
                         this->windowWidth + both * -2, footerH);
     pc->DrawImage2D(this->footerImageRight,
                     (this->windowX - both) + this->windowWidth,
@@ -1470,7 +1444,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        void *font = *g_dfFont;
+        unsigned font = *g_dfFont;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
@@ -1482,7 +1456,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        void *font = *g_dfFont;
+        unsigned font = *g_dfFont;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
             int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);

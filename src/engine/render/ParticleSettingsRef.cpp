@@ -11,7 +11,6 @@ void ParticleSettingsRef::initialize() {
     g_PSR_counter = 0x2a;
 }
 
-
 int ParticleSettingsRef::assertInit;
 unsigned char ParticleSettingsRef::cur[7680];
 unsigned char ParticleSettingsRef::init[7680];

@@ -2,6 +2,7 @@
 #define GOF2_IMAGEPART_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
+
 class ImagePart {
 public:
     int id;

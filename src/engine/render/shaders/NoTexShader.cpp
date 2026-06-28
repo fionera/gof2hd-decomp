@@ -19,9 +19,9 @@ namespace AbyssEngine {
         glEnableVertexAttribArray(this->aPosition);
 
         int size;
-        const void *ptr;
+        const unsigned char *ptr;
         if (mesh == 0) {
-            ptr = *(void **) &engine->field_0x348;
+            ptr = *(unsigned char **) &engine->lineVertexBase;
             size = 2;
         } else {
             if (mesh->uploaded == 0) {

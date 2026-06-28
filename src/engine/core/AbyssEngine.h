@@ -15,7 +15,6 @@
 
 #include "engine/math/AEMath.h"
 
-
 namespace AbyssEngine {
     class Engine;
     class Material;
@@ -37,7 +36,6 @@ namespace AbyssEngine {
     };
 
     extern int currentUsedShaderIndex;
-
 
     extern float currentFps;
     extern float debugTouch[4];
@@ -66,9 +64,6 @@ namespace AbyssEngine {
     extern int loadMesh;
     extern long long triDrawn;
     extern unsigned char ShaderSet;
-
-
-
 }
 
 #endif

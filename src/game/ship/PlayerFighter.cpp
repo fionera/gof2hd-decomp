@@ -18,10 +18,7 @@
 #include "engine/math/Transform.h"
 #include "engine/math/EaseInOutMatrix.h"
 
-
-
-void AEMath_Matrix_ctor(void *m);
-
+void AEMath_Matrix_ctor(void *m); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 int AERandom_nextInt_nobound(int rng);
 
@@ -31,17 +28,19 @@ float VectorSignedToFloat(int v, int mode);
 
 int *RH_op_new_arr(unsigned int n);
 
-void RH_op_delete_arr(void *p);
+void RH_op_delete_arr(void *p); // lint: void_ptr (external symbol; generic deallocator, param type load-bearing)
 
 void PF_update_dead(PlayerFighter * self);
 
 void PF_update_body(PlayerFighter *self, int dt);
 
-void AEMath_MatrixAssign(void *dst, void *src);
+void AEMath_MatrixAssign(void *dst, void *src); // lint: void_ptr (external symbol; param types load-bearing)
 
-void AEMath_MatrixIdentity(void *out, void *m);
+void AEMath_MatrixIdentity(void *out, void *m); // lint: void_ptr (external symbol; param types load-bearing)
 
 void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz);
+
+// lint: void_ptr (external symbol; param type load-bearing)
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -55,7 +54,7 @@ namespace AbyssEngine {
 
 int AERandom_nextIntB(int rng, int bound);
 
-void PF_vscale(void *out, void *vec, float scalar);
+void PF_vscale(void *out, void *vec, float scalar); // lint: void_ptr (external symbol; param types load-bearing)
 
 uint8_t PlayerFighter::hasMissionCrateLost() {
     return this->missionCrateLost;
@@ -152,21 +151,21 @@ uint8_t PlayerFighter::hasCrateLost() {
     return this->crateLost;
 }
 
-static void *const gSL_f1 = nullptr;
-static void *const gSL_f2 = nullptr;
-static void *const gSL_f3 = nullptr;
-
 typedef int (*F1)(int geom);
 
 typedef int (*F2)(int base, int v, int kind, int z);
 
 typedef void (*F3)(int base, int v, int z);
 
+static const F1 gSL_f1 = nullptr;
+static const F2 gSL_f2 = nullptr;
+static const F3 gSL_f3 = nullptr;
+
 void PlayerFighter::setLevel(Level *lvl) {
     ((KIPlayer *) (this))->setLevel(lvl);
-    F1 f1 = (F1) gSL_f1;
-    F2 f2 = (F2) gSL_f2;
-    F3 f3 = (F3) gSL_f3;
+    F1 f1 = gSL_f1;
+    F2 f2 = gSL_f2;
+    F3 f3 = gSL_f3;
     Level *lev = (Level *) (intptr_t) this->level;
 
     int v;
@@ -191,7 +190,7 @@ void PlayerFighter::setLevel(Level *lvl) {
     return f3((int) (intptr_t) lev->field_8c, v, 0);
 }
 
-static void *const gPFC_guard = nullptr;
+static int **const gPFC_guard = nullptr;
 static int *const gPFC_sharedRoute = nullptr;
 static const int gPFC_defaultRoute = 0;
 
@@ -199,7 +198,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
                              float x, float y, float z, bool flag)
     : KIPlayer(faction, wingmanCmd, player, geom, x, y, z, flag) {
     PlayerFighter * self = this;
-    int *guardP = *(int **) gPFC_guard;
+    int *guardP = *gPFC_guard;
     volatile int saved = *guardP;
 
     self->field_0x200 = 0;
@@ -323,12 +322,12 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->currentSpeed = self->speed;
     self->currentRotate = self->rotate;
     self->route->setLoop(0);
-    ((Route *) ((void *) (long) *shared))->setLoop(0);
+    ((Route *) (intptr_t) * shared)->setLoop(0);
     self->routeClone = 0;
 
     if (Globals::status->getCurrentCampaignMission() != 0x29) {
         if (wingmanCmd == 9) {
-            self->routeClone = ((Route *) ((void *) (long) *shared))->clone();
+            self->routeClone = ((Route *) (intptr_t) * shared)->clone();
         } else {
             self->routeClone = self->route->clone();
         }
@@ -393,10 +392,10 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     return;
 }
 
-static void *const gUpd_guard = nullptr;
+static int **const gUpd_guard = nullptr;
 
 void PlayerFighter::update(int dt) {
-    int *guardP = *(int **) gUpd_guard;
+    int *guardP = *gUpd_guard;
     volatile int saved = *guardP;
 
     if (this->state == 4 && this->explosion->isPlaying() == 0 &&
@@ -445,12 +444,13 @@ void PlayerFighter::setPosition(float x, float y, float z) {
         this->trail->reset(this->workingPosition);
     }
     int m = (int) (intptr_t) & ((AEGeometry *) (intptr_t) this->geometry)->getMatrix();
-    AEMath_MatrixAssign(((Player *) (intptr_t) this->player)->transform, (void *) m);
+    AEMath_MatrixAssign(((Player *) (intptr_t) this->player)->transform,
+                        (AbyssEngine::AEMath::Matrix *) (intptr_t) m);
 
     return;
 }
 
-static void *const gRoll_guard = nullptr;
+static int **const gRoll_guard = nullptr;
 static const float gRoll_threshold = 0;
 static const float gRoll_f18 = 0;
 static const float gRoll_f1c = 0;
@@ -468,7 +468,7 @@ static const float gRoll_f48 = 0;
 
 void PlayerFighter::roll(int angle) {
     PlayerFighter * self = this;
-    int *guardP = *(int **) gRoll_guard;
+    int *guardP = *gRoll_guard;
     volatile int saved = *guardP;
 
     if (self->rollActive == 0) {
@@ -639,19 +639,19 @@ int PlayerFighter::outerCollide(float x, float y, float z) {
     return 0;
 }
 
-static inline void AEMath_VectorScale(void *out, float s, void *v) {
-    *(AbyssEngine::AEMath::Vector *) out =
-            s * *(const AbyssEngine::AEMath::Vector *) v;
+static inline void AEMath_VectorScale(AbyssEngine::AEMath::Vector *out, float s,
+                                      const AbyssEngine::AEMath::Vector *v) {
+    *out = s * *v;
 }
-
-static void *const gIP_guard = nullptr;
-static const float gIP_strength = 0;
-static void *const gIP_rngFn = nullptr;
 
 typedef int (*RngFn)(int rng, int bound);
 
+static int **const gIP_guard = nullptr;
+static const float gIP_strength = 0;
+static const RngFn gIP_rngFn = nullptr;
+
 void PlayerFighter::initPush(const Vector &target, int radius) {
-    int *guardP = *(int **) gIP_guard;
+    int *guardP = *gIP_guard;
     volatile int saved = *guardP;
 
     AbyssEngine::AEMath::Vector gp = this->getPosition();
@@ -676,7 +676,7 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
     AbyssEngine::AEMath::VectorNormalize((Vector *) norm, (Vector *) dir);
     this->pushNormal = *(Vector *) norm;
 
-    RngFn rng = (RngFn) gIP_rngFn;
+    RngFn rng = gIP_rngFn;
     int rngObj = (int) (intptr_t) Globals::rnd;
     float rx = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
     float ry = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
@@ -685,13 +685,14 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
     float rnorm[3];
     AbyssEngine::AEMath::VectorNormalize((Vector *) rnorm, (Vector *) rvec);
     float scaled[3];
-    AEMath_VectorScale(scaled, (float) strength, rnorm);
+    AEMath_VectorScale((AbyssEngine::AEMath::Vector *) scaled, (float) strength,
+                       (const AbyssEngine::AEMath::Vector *) rnorm);
     this->pushImpulse = *(Vector *) scaled;
 
     return;
 }
 
-static void *const gExhaustCanvas = nullptr;
+static unsigned *const gExhaustCanvas = nullptr;
 
 void PlayerFighter::setExhaustVisible(bool vis) {
     int geom = this->geometry;
@@ -701,16 +702,16 @@ void PlayerFighter::setExhaustVisible(bool vis) {
                      ? (int) ((AEGeometry *) (intptr_t) sub)->childTransform
                      : (int) ((AEGeometry *) (intptr_t) geom)->childTransform;
         if (id != -1) {
-            unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(*(unsigned *) gExhaustCanvas);
+            unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(*gExhaustCanvas);
 
             return ((AbyssEngine::Transform *) (unsigned long) t)->SetVisible(vis);
         }
     }
 }
 
-static void *const gR_g3 = nullptr;
-static void *const gR_g4 = nullptr;
-static void *const gR_g5 = nullptr;
+static unsigned **const gR_g3 = nullptr;
+static unsigned **const gR_g4 = nullptr;
+static unsigned **const gR_g5 = nullptr;
 
 void PlayerFighter::render() {
     if (this->wreckGeometry != 0) {
@@ -728,7 +729,7 @@ void PlayerFighter::render() {
             if (this->field_0x1f8 >= 300) {
                 goto done;
             }
-            idp = *(unsigned **) gR_g4;
+            idp = *gR_g4;
         } else {
             if (st != 3) {
                 goto done;
@@ -736,7 +737,7 @@ void PlayerFighter::render() {
             if (this->subGeometry == 0) {
                 return ((AEGeometry *) (intptr_t) this->geometry)->render();
             }
-            idp = *(unsigned **) gR_g3;
+            idp = *gR_g3;
         }
     } else {
         if (active != 0 || st != 5) {
@@ -745,16 +746,18 @@ void PlayerFighter::render() {
         if (this->subGeometry == 0) {
             ((AEGeometry *) (0))->render();
         } else {
-            idp = *(unsigned **) gR_g5;
+            idp = *gR_g5;
             unsigned char tmp[60];
             unsigned id = *idp;
-            void *src = Globals::Canvas->TransformGetLocal(id);
+            unsigned char *src = (unsigned char *) Globals::Canvas->TransformGetLocal(id);
             memcpy(tmp, src, 0x3c);
             Globals::Canvas->TransformSetLocal(
-                *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t) ((AEGeometry *) (intptr_t) this->subGeometry)->transform);
+                *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t)((AEGeometry *) (intptr_t) this->subGeometry)->
+                transform);
             ((AEGeometry *) (0))->render();
             Globals::Canvas->TransformSetLocal(
-                *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t) ((AEGeometry *) (intptr_t) this->subGeometry)->transform);
+                *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t)((AEGeometry *) (intptr_t) this->subGeometry)->
+                transform);
         }
         if (this->trail != 0) {
             ((AbyssEngine::Trail *) (0))->render();
@@ -764,23 +767,27 @@ void PlayerFighter::render() {
     {
         unsigned char tmp[60];
         unsigned id = *idp;
-        void *src = Globals::Canvas->TransformGetLocal(id);
+        unsigned char *src = (unsigned char *) Globals::Canvas->TransformGetLocal(id);
         memcpy(tmp, src, 0x3c);
-        Globals::Canvas->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t) ((AEGeometry *) (intptr_t) this->subGeometry)->transform);
+        Globals::Canvas->TransformSetLocal(
+            *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t)((AEGeometry *) (intptr_t) this->subGeometry)->
+            transform);
         ((AEGeometry *) (0))->render();
-        Globals::Canvas->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t) ((AEGeometry *) (intptr_t) this->subGeometry)->transform);
+        Globals::Canvas->TransformSetLocal(
+            *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t)((AEGeometry *) (intptr_t) this->subGeometry)->
+            transform);
     }
 done:
     ;
 }
 
-void AEMath_MatrixMul(void *out, void *m);
+void AEMath_MatrixMul(void *out, void *m); // lint: void_ptr (external symbol; param types load-bearing)
 
-static void *const gPush_guard = nullptr;
+static int **const gPush_guard = nullptr;
 static const float gPush_div = 0;
 
 void PlayerFighter::push(int dt) {
-    int *guardP = *(int **) gPush_guard;
+    int *guardP = *gPush_guard;
     volatile int saved = *guardP;
 
     if (0 < this->pushTimer) {
@@ -797,31 +804,31 @@ void PlayerFighter::push(int dt) {
         int lo = this->deltaTime;
         int hi = this->deltaTimeHi;
         if ((int) (unsigned) (lo == 0) <= hi) {
-            void *geom = (void *) (intptr_t) this->geometry;
-            void *m = (void *) &((AEGeometry *) ((int) (long) geom))->getMatrix();
+            AEGeometry *geom = (AEGeometry *) (intptr_t) this->geometry;
+            AbyssEngine::AEMath::Matrix *m = &geom->getMatrix();
             AEMath_MatrixMul(rot, m);
 
-            ((AEGeometry *) ((int) (long) geom))->setMatrix(*(const Matrix *) rot);
+            geom->setMatrix(*(const Matrix *) rot);
             lo = this->deltaTime;
             hi = this->deltaTimeHi;
         }
         float speed = (float) (((long long) hi << 32) | (unsigned) lo);
-        void *geom = (void *) (intptr_t) this->geometry;
+        AEGeometry *geom = (AEGeometry *) (intptr_t) this->geometry;
         float ftotal2 = VectorSignedToFloat(this->pushDuration, 0);
 
         unsigned char a[12], b[12], c[60];
         PF_vscale(a, &this->pushNormal, speed);
         PF_vscale(b, a, this->currentSpeed);
         PF_vscale(c, b, (2.0f - frac) * 3.0f * (ftotal2 / gPush_div));
-        ((AEGeometry *) (geom))->translate(*(Vector *) c);
+        geom->translate(*(Vector *) c);
     }
 
     return;
 }
 
-static void *const gReset_vfn = nullptr;
+typedef void (*VFn)(Vector *dst, int *zeroVec);
 
-typedef void (*VFn)(void *dst, void *zeroVec);
+static const VFn gReset_vfn = nullptr;
 
 void PlayerFighter::reset() {
     ((KIPlayer *) (this))->reset();
@@ -845,7 +852,7 @@ void PlayerFighter::reset() {
         this->state = 0;
     }
 
-    VFn vfn = (VFn) gReset_vfn;
+    VFn vfn = gReset_vfn;
     int z[3] = {0, 0, 0};
     vfn(&this->resetVecA, z);
     vfn(&this->resetVecB, z);
@@ -872,6 +879,8 @@ void PF_cloakStop(PlayerFighter *self, int on);
 
 void PF_cloakApply(void *meshPtr, int arg, float alpha, int flag);
 
+// lint: void_ptr (external symbol; param type load-bearing)
+
 static const float gHC_divIn = 0;
 static const float gHC_divOut = 0;
 
@@ -895,11 +904,11 @@ void PlayerFighter::handleCloaking() {
                     ((AEGeometry *) (intptr_t) this->subGeometry)->meshId);
                 matId = this->cloakMaterial;
                 this->cloakSavedMode =
-                    ((AbyssEngine::Material *) mp->material)->materialMode;
+                        ((AbyssEngine::Material *) mp->material)->blendMode;
             }
             AbyssEngine::Material *mat =
-                (AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(matId);
-            mat->materialMode = 0xe;
+                    (AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(matId);
+            mat->blendMode = 0xe;
             Globals::Canvas->MeshChangeMaterial(
                 ((AEGeometry *) (intptr_t) this->subGeometry)->meshId,
                 this->cloakMaterial);
@@ -921,10 +930,10 @@ void PlayerFighter::handleCloaking() {
                 ((PlayerFighter *) (this))->setExhaustVisible(false);
                 this->exhaustHidden = 1;
             }
-            void *cv = (void *) Globals::Canvas;
-            int mp = (int) (long) Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry)->meshId);
+            int mp = (int) (long) Globals::Canvas->
+                    MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry)->meshId);
             float a = VectorSignedToFloat(this->cloakTimer, 0) / gHC_divIn;
-            PF_cloakApply((void *) (long) mp, (int) (long) cv, a, 1);
+            PF_cloakApply((AbyssEngine::Mesh *) (intptr_t) mp, (int) (long) Globals::Canvas, a, 1);
             return;
         } else {
             if (this->cloakDuration < total) {
@@ -933,8 +942,8 @@ void PlayerFighter::handleCloaking() {
                 this->cloakActive = 0;
                 this->field_0x13c = 0;
                 AbyssEngine::Material *mat =
-                    (AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial);
-                mat->materialMode = restore;
+                        (AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial);
+                mat->blendMode = restore;
                 PF_cloakStop(this, 1);
                 return;
             }
@@ -942,12 +951,12 @@ void PlayerFighter::handleCloaking() {
                 return;
             }
             this->exhaustHidden = 0;
-            void *cv = (void *) Globals::Canvas;
-            int mp = (int) (long) Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry)->meshId);
+            int mp = (int) (long) Globals::Canvas->
+                    MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry)->meshId);
             float a = VectorSignedToFloat(this->cloakTimer, 0);
             float b = VectorSignedToFloat(this->cloakDuration - 2000, 0);
             float alpha = (a - b) / gHC_divOut + 1.0f;
-            PF_cloakApply((void *) (long) mp, (int) (long) cv, alpha, 1);
+            PF_cloakApply((AbyssEngine::Mesh *) (intptr_t) mp, (int) (long) Globals::Canvas, alpha, 1);
             return;
         }
     }
@@ -1006,6 +1015,5 @@ void PlayerFighter::revive() {
         delete g;
     }
 }
-
 
 int PlayerFighter::stationRouteAliens;

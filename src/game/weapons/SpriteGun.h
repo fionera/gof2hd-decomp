@@ -7,9 +7,7 @@
 
 class Player;
 
-
 class Gun;
-
 
 class SpriteGun {
 public:

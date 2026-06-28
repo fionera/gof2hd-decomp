@@ -6,7 +6,6 @@
 #include "engine/core/AERandom.h"
 #include "engine/render/PaintCanvas.h"
 
-
 using AbyssEngine::Matrix;
 using AbyssEngine::Transform;
 
@@ -27,8 +26,8 @@ void MatrixGetDir(Vector *out, const Matrix *matrix);
 void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
 
 namespace {
-int Explosion_paintCanvas;
-void *Explosion_random;
+    int Explosion_paintCanvas;
+    AbyssEngine::AERandom *Explosion_random;
 }
 
 static inline PaintCanvas *explosionCanvas() {
@@ -36,38 +35,48 @@ static inline PaintCanvas *explosionCanvas() {
 }
 
 static inline AbyssEngine::AERandom *explosionRandom() {
-    return (AbyssEngine::AERandom *) Explosion_random;
+    return Explosion_random;
 }
 
 void Explosion::reset() {
     PaintCanvas *canvas = explosionCanvas();
 
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
+        (AbyssEngine::AnimationMode) 3, 0);
+    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
+        (AbyssEngine::AnimationMode) 1, 0);
 
     uint32_t lodTransform = this->primaryMesh->altTransform;
     if (lodTransform != 0xffffffffu) {
-        ((Transform *) canvas->TransformGetTransform(lodTransform))->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
-        ((Transform *) canvas->TransformGetTransform(this->primaryMesh->altTransform))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+        ((Transform *) canvas->TransformGetTransform(lodTransform))->SetAnimationState(
+            (AbyssEngine::AnimationMode) 3, 0);
+        ((Transform *) canvas->TransformGetTransform(this->primaryMesh->altTransform))->SetAnimationState(
+            (AbyssEngine::AnimationMode) 1, 0);
     }
 
     AEGeometry *secondary = this->secondaryMesh;
     if (secondary != 0) {
-        ((Transform *) canvas->TransformGetTransform(secondary->transform))->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
-        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+        ((Transform *) canvas->TransformGetTransform(secondary->transform))->SetAnimationState(
+            (AbyssEngine::AnimationMode) 3, 0);
+        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState(
+            (AbyssEngine::AnimationMode) 1, 0);
     }
 
     if (this->type == 6) {
-        ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationRangeInTime(0x8fcLL, 10000000LL);
-        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationRangeInTime(0x8fcLL, 10000000LL);
+        ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationRangeInTime(
+            0x8fcLL, 10000000LL);
+        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationRangeInTime(
+            0x8fcLL, 10000000LL);
     }
 
     Array<AEGeometry *> *streaks = this->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
-            ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+            ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationState(
+                (AbyssEngine::AnimationMode) 3, 0);
+            ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationState(
+                (AbyssEngine::AnimationMode) 1, 0);
         }
     }
 
@@ -329,19 +338,22 @@ Explosion::Explosion(int type) {
             break;
     }
 
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
+        (AbyssEngine::AnimationMode) 1, 0);
 
     if (this->secondaryMesh != 0) {
-        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState(
+            (AbyssEngine::AnimationMode) 1, 0);
         ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->boundingRadius = 10000.0f;
     }
 
     uint64_t primaryDuration =
-            (uint64_t) ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->animationLength;
+            (uint64_t)((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->animationLength;
     uint64_t duration = 0;
     if (this->secondaryMesh != 0) {
         uint64_t secondaryDuration =
-                (uint64_t) ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->animationLength;
+                (uint64_t)((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->
+                animationLength;
         duration = secondaryDuration < primaryDuration ? primaryDuration : secondaryDuration;
     } else if (primaryDuration != 0) {
         duration = primaryDuration;
@@ -604,7 +616,8 @@ void Explosion::addFireStreaks() {
         AEGeometry *geometry = new AEGeometry((uint16_t) 0x37d4, canvas, false);
         (*this->fireStreaks)[i] = geometry;
 
-        ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+        ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationState(
+            (AbyssEngine::AnimationMode) 1, 0);
         ((Transform *) canvas->TransformGetTransform(geometry->transform))->boundingRadius = 10000.0f;
 
         float x = (float) explosionRandom()->nextInt(0x168);

@@ -8,35 +8,34 @@
 #include "engine/math/AEMath.h"
 #include "engine/math/Vector.h"
 
-
 class Player;
-
 
 class Hud;
 class KIPlayer;
 class Level;
 
-
 class Radar {
 public:
-    void *level;
+    Level *level;
 
     union {
+        // lint: union_decl (both names referenced cross-file: RocketGun.cpp / PlayerEgo.cpp)
         KIPlayer *lockedEnemy;
-        void *dockTargetPtr;
+        KIPlayer *dockTargetPtr;
     };
 
     union {
-        void *field_0x8;
-        void *dockNavPtr;
+        // lint: union_decl (both names referenced cross-file: TractorBeam.cpp / PlayerEgo.cpp)
+        KIPlayer *field_0x8;
+        KIPlayer *dockNavPtr;
     };
 
     KIPlayer *lockedAsteroid;
     int field_0x10;
     int field_0x14;
     int field_0x18;
-    void *field_0x1c;
-    void *lockedStation;
+    KIPlayer *field_0x1c;
+    KIPlayer *lockedStation;
     Array<KIPlayer *> *players;
     KIPlayer *lockedGasCloud;
     int field_0x3c;
@@ -127,7 +126,6 @@ public:
     void drawCurrentLock(Hud *hud);
 
     void calcDistance(float p0, float a, float b, float c, float d, float e);
-
 
     static unsigned char drawTarget;
 };

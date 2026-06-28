@@ -7,14 +7,12 @@ template<class T>
 class Array {
 public:
     union {
+        // lint: union_decl (Array length is dual-named size_/count by the decompiler; both used pervasively tree-wide)
         unsigned int size_;
         unsigned int count;
     };
 
-    union {
-        T *data_;
-        T *wantedListData;
-    };
+    T *data_;
 
     unsigned int capacity_;
 
@@ -80,9 +78,6 @@ public:
     void shrink_to_fit() {
     }
 };
-
-
-
 
 template<class T>
 Array<T>::Array() {

@@ -46,7 +46,7 @@ namespace AbyssEngine {
         glFramebufferRenderbuffer(0x8d40, 0x8d00, 0x8d41, this->renderbuffer);
         glCheckFramebufferStatus(0x8d40);
         this->created = 1;
-        glBindFramebuffer(0x8d40, this->engine->field_0x40c);
+        glBindFramebuffer(0x8d40, this->engine->viewFramebuffer);
     }
 
     void FBOContainer::Release() {
@@ -76,6 +76,6 @@ namespace AbyssEngine {
     }
 
     void FBOContainer::EndCapture() {
-        glBindFramebuffer(0x8d40, this->engine->field_0x40c);
+        glBindFramebuffer(0x8d40, this->engine->viewFramebuffer);
     }
 }

@@ -8,7 +8,6 @@
 class KIPlayer;
 class Waypoint;
 
-
 class Route {
 public:
     int32_t currentIndex;

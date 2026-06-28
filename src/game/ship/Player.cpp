@@ -33,10 +33,8 @@ static int *g_cws_sound2 = nullptr;
 static int *g_cws_sound3 = nullptr;
 static int **g_damage_text = nullptr;
 static unsigned int g_shoot_mask = 0;
-static void **g_update_sound = nullptr;
+static FModSound **g_update_sound = nullptr;
 static float **g_update_speed = nullptr;
-
-
 
 struct SlaveLink {
     int field_0x0;
@@ -45,8 +43,6 @@ struct SlaveLink {
 #if __SIZEOF_POINTER__ == 4
 static_assert(__builtin_offsetof(SlaveLink, player) == 4, "SlaveLink.player must be at +4");
 #endif
-
-
 
 struct AudioStateView {
     char pad_0[0xf];
@@ -57,22 +53,26 @@ static_assert(__builtin_offsetof(AudioStateView, soundEnabledFlag) == 0xf,
               "AudioStateView.soundEnabledFlag must be at +0xf");
 #endif
 
-void MatrixGetPosition(void *out, float *matrix);
+// lint: void_ptr - free function defined in another TU; retyping the param would
+// change the referenced mangled symbol and break symbol parity / linking.
+void MatrixGetPosition(void *out, float *matrix); // lint: void_ptr (external symbol; param mangling load-bearing)
 
 static int gStopSoundIds[256];
-static void *gFModSound = nullptr;
-static void *gFModSoundAlt = nullptr;
-static void **gFModSoundPtr = nullptr;
+static FModSound *gFModSound = nullptr;
+static FModSound *gFModSoundAlt = nullptr;
+static FModSound **gFModSoundPtr = nullptr;
 
-void Gun_setEnemies(void *gun);
+void Gun_setEnemies(void *gun); // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
 static int gShootSoundsByType[256];
 static int gShootSoundsByIndex[256];
-static void *gAppManagerA = nullptr;
-static void *gAppManagerB = nullptr;
-static void *gAppManagerC = nullptr;
+static AudioStateView *gAppManagerA = nullptr;
+static AudioStateView *gAppManagerB = nullptr;
+static AudioStateView *gAppManagerC = nullptr;
 
 void FloatVectorMax(void *out, float a, float b, int c, int d);
+
+// lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
 void Player::pitchAllPrimaryGuns(float pitch) {
     if (this->guns != 0) {
@@ -579,7 +579,7 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     float tmp[3];
     MatrixGetPosition(tmp, self->transform);
     *(Vector *) self->position = *(Vector *) tmp;
-    self->enginePositionVec = (void *) (__INTPTR_TYPE__) -1;
+    self->enginePositionVec = (Vector *) (__INTPTR_TYPE__) -1;
 }
 
 Vector Player::getPosition() {
@@ -676,8 +676,8 @@ void Player::damageEmp(int amount, bool flag) {
             goto lab_30f4;
         }
         {
-            void *st = (void *) (long) Globals::status->getStanding();
-            ((Standing *) (st))->applyDisable(self->kiPlayer->shipGroup);
+            Standing *st = (Standing *) (long) Globals::status->getStanding();
+            st->applyDisable(self->kiPlayer->shipGroup);
             ki = self->kiPlayer;
         }
     lab_30e2:
@@ -696,9 +696,9 @@ void Player::damageEmp(int amount, bool flag) {
                 int cnt = Globals::status->field_134 + 1;
                 Globals::status->field_134 = cnt;
                 if (Globals::achievements->getValue(0x2a, 1) <= cnt) {
-                    void *ego = (void *) (__INTPTR_TYPE__) ((Level *) (self->kiPlayer->level))->getPlayer();
-                    void *hud = (void *) (__INTPTR_TYPE__) ((PlayerEgo *) (ego))->getHUD();
-                    ((Hud *) (hud))->hudEventMedal(0x2a, 100);
+                    PlayerEgo *ego = ((Level *) (self->kiPlayer->level))->getPlayer();
+                    Hud *hud = (Hud *) (__INTPTR_TYPE__) ego->getHUD();
+                    hud->hudEventMedal(0x2a, 100);
                     Globals::status->field_138 = 1;
                 }
             }
@@ -792,7 +792,7 @@ void Player::stopShootSound(int index, int channel) {
         return;
     }
     if (((1 << channel) & 0x10c) != 0) {
-        void *sound;
+        FModSound *sound;
         int id;
         if (this->kiPlayer != 0 && this->kiPlayer->shipGroup == 9) {
             id = 0x3e;
@@ -801,7 +801,7 @@ void Player::stopShootSound(int index, int channel) {
             id = gStopSoundIds[index];
             sound = gFModSound;
         }
-        ((FModSound *) sound)->stop(id);
+        sound->stop(id);
     }
 }
 
@@ -1021,8 +1021,8 @@ void Player::damage(int amount, bool flag, int missionId) {
             bool sameRace = (race == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
             if (!sameRace) {
                 int race2 = self->kiPlayer->shipGroup;
-                void *sys = (void *) (long) Globals::status->getSystem();
-                if (race2 != ((SolarSystem *) (sys))->getAttackRace()) {
+                SolarSystem *sys = (SolarSystem *) (long) Globals::status->getSystem();
+                if (race2 != sys->getAttackRace()) {
                     goto LAB_342a;
                 }
             }
@@ -1036,23 +1036,23 @@ void Player::damage(int amount, bool flag, int missionId) {
 
             if (f1 < dmgF) {
                 ((Level *) (self->kiPlayer->level))->friendTurnedEnemy(0);
-                void *ship = (void *) Globals::status->getShip();
-                void *standing = (void *) (long) Globals::status->getStanding();
-                if (((Ship *) (ship))->getSignatureRace() >= 0) {
-                    bool match = ((unsigned int) ((Ship *) (ship))->getSignatureRace() ==
+                Ship *ship = (Ship *) Globals::status->getShip();
+                Standing *standing = (Standing *) (long) Globals::status->getStanding();
+                if (ship->getSignatureRace() >= 0) {
+                    bool match = ((unsigned int) ship->getSignatureRace() ==
                                   (unsigned int) self->kiPlayer->shipGroup);
                     unsigned int dis = 0;
                     if (match) dis = (unsigned char) self->kiPlayer->field_0x42;
                     if (match && dis == 0) {
-                        Item *item = ((Ship *) (ship))->getFirstEquipmentOfSort(0x1d);
-                        ((Ship *) (ship))->removeEquipment(item);
-                        void *st2 = (void *) (long) Globals::status->getStanding();
-                        ((Standing *) (st2))->applyDelict(((Ship *) (ship))->getSignatureRace(), 100);
-                        ((Standing *) (standing))->setPlayerSignatureRace(-1);
-                        void *ego = (void *) (__INTPTR_TYPE__) ((Level *) (self->kiPlayer->level))->getPlayer();
-                        int hud = (int) (__INTPTR_TYPE__) ((PlayerEgo *) (ego))->getHUD();
+                        Item *item = ship->getFirstEquipmentOfSort(0x1d);
+                        ship->removeEquipment(item);
+                        Standing *st2 = (Standing *) (long) Globals::status->getStanding();
+                        st2->applyDelict(ship->getSignatureRace(), 100);
+                        standing->setPlayerSignatureRace(-1);
+                        PlayerEgo *ego = ((Level *) (self->kiPlayer->level))->getPlayer();
+                        int hud = (int) (__INTPTR_TYPE__) ego->getHUD();
                         PlayerEgo *p = ((Level *) (self->kiPlayer->level))->getPlayer();
-                        ((Hud *) (hud))->hudEvent(0x1f, p, 0);
+                        ((Hud *) (intptr_t) hud)->hudEvent(0x1f, p, 0);
                     }
                 }
             }
@@ -1060,20 +1060,20 @@ void Player::damage(int amount, bool flag, int missionId) {
             float f3 = (float) self->maxHitpoints;
             float dmgF3 = (float) self->damageDoneByPlayer;
             if (frac2 * f3 < dmgF3) {
-                void *ship = (void *) Globals::status->getShip();
-                void *standing = (void *) (long) Globals::status->getStanding();
-                if (((Ship *) (ship))->getSignatureRace() >= 0 &&
+                Ship *ship = (Ship *) Globals::status->getShip();
+                Standing *standing = (Standing *) (long) Globals::status->getStanding();
+                if (ship->getSignatureRace() >= 0 &&
                     self->kiPlayer->shipGroup < 4 &&
                     self->kiPlayer->field_0x42 == 0) {
-                    Item *item = ((Ship *) (ship))->getFirstEquipmentOfSort(0x1d);
-                    ((Ship *) (ship))->removeEquipment(item);
-                    void *st2 = (void *) (long) Globals::status->getStanding();
-                    ((Standing *) (st2))->applyDelict(((Ship *) (ship))->getSignatureRace(), 100);
-                    ((Standing *) (standing))->setPlayerSignatureRace(-1);
-                    void *ego = (void *) (__INTPTR_TYPE__) ((Level *) (self->kiPlayer->level))->getPlayer();
-                    int hud = (int) (__INTPTR_TYPE__) ((PlayerEgo *) (ego))->getHUD();
+                    Item *item = ship->getFirstEquipmentOfSort(0x1d);
+                    ship->removeEquipment(item);
+                    Standing *st2 = (Standing *) (long) Globals::status->getStanding();
+                    st2->applyDelict(ship->getSignatureRace(), 100);
+                    standing->setPlayerSignatureRace(-1);
+                    PlayerEgo *ego = ((Level *) (self->kiPlayer->level))->getPlayer();
+                    int hud = (int) (__INTPTR_TYPE__) ego->getHUD();
                     PlayerEgo *p = ((Level *) (self->kiPlayer->level))->getPlayer();
-                    ((Hud *) (hud))->hudEvent(0x1f, p, 0);
+                    ((Hud *) (intptr_t) hud)->hudEvent(0x1f, p, 0);
                 }
                 self->turnedEnemyFlag = 1;
             }
@@ -1154,14 +1154,14 @@ LAB_3488: {
 
                     Globals::status->inBlackMarketSystem() == 0) {
                     if (self->kiPlayer->field_0x42 == 0) {
-                        void *st = (void *) (long) Globals::status->getStanding();
-                        ((Standing *) (st))->applyKill(self->kiPlayer->shipGroup);
+                        Standing *st = (Standing *) (long) Globals::status->getStanding();
+                        st->applyKill(self->kiPlayer->shipGroup);
                     }
                     int mission = Globals::status->getCampaignMission();
                     KIPlayer *ki3 = self->kiPlayer;
 
-                    void *txt = ((GameText *) (*g_damage_text[0]))->getText(missionId);
-                    int cmp = (&ki3->name)->Compare_str((String *) txt);
+                    String *txt = ((GameText *) (*g_damage_text[0]))->getText(missionId);
+                    int cmp = (&ki3->name)->Compare_str(txt);
                     if (missionId == 0xb3 && cmp == 0) {
                         ((Mission *) (intptr_t) mission)->setStatusValue(
                             ((Mission *) (intptr_t) mission)->getStatusValue() + 1);
@@ -1255,7 +1255,7 @@ void Player::setMaxArmorHP(int value) {
 
 static const float k_shoot_inc = 0.0f;
 
-static void (**g_update_transform)(void *, void *, int) = nullptr;
+static void (**g_update_transform)(float *, float *, int) = nullptr;
 
 static const float k_update_a = 0.0f;
 static const float k_update_b = 0.0f;
@@ -1292,13 +1292,13 @@ Vector *Player::update(int dt, bool doSound) {
     }
 
     AudioStateView *flagObj = reinterpret_cast<AudioStateView *>(gEngine);
-    if (flagObj->soundEnabledFlag == 0 || doSound == 0 || self->enginePositionVec == (void *) (__INTPTR_TYPE__) -1) {
+    if (flagObj->soundEnabledFlag == 0 || doSound == 0 || self->enginePositionVec == (Vector *) (__INTPTR_TYPE__) -1) {
         if (self->engineSoundPlaying != 0) {
             self->StopEngineSound();
         }
     } else {
         float *transform = self->transform;
-        void (*fn)(void *, void *, int) = *g_update_transform;
+        void (*fn)(float *, float *, int) = *g_update_transform;
         float local[3];
         float spd = (float) (**g_update_speed);
         fn(*g_update_speed, local, (int) (long) transform);
@@ -1499,5 +1499,4 @@ void Player::StopEngineSound() {
     }
 }
 
-
-void *Player::velocity;
+Vector *Player::velocity;

@@ -19,7 +19,13 @@ class Galaxy;
 class Achievements;
 class Item;
 class GameText;
-template<class T> class Array;
+class ImageFactory;
+class Ship;
+class Generator;
+class RecordHandler;
+template<class T>
+class Array;
+
 namespace AbyssEngine {
     class ApplicationManager;
     class Engine;
@@ -27,15 +33,13 @@ namespace AbyssEngine {
     class AERandom;
 }
 
-
-
 class Globals {
 public:
     Array<int> *soundResources;
     int field_0x34;
-    void *field_0x3c;
-    void *field_0x40;
-    void *field_0x48;
+    void *field_0x3c; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
+    void *field_0x40; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
+    void *field_0x48; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
     unsigned int *field_0x54;
     int field_0xac;
     unsigned short field_0x110;
@@ -166,11 +170,6 @@ public:
     static int logoIsShown;
     static int isInMainMenu;
 
-
-
-
-
-
     static char *cItemListID_00;
     static char *cItemListID_01;
     static char *cItemListID_02;
@@ -197,8 +196,6 @@ public:
     static char *cItemListPrice_03;
     static char *cItemListPrice_04;
 
-
-
     static AbyssEngine::ApplicationManager *appManager;
     static unsigned char gameLoaded;
     static unsigned char gameSaving;
@@ -211,13 +208,13 @@ public:
     static int mouseDeltaX;
     static int mouseDeltaY;
     static int mouse_wheel;
-    static void *recordSlots;
+    static void *recordSlots; // lint: void_ptr (unknown record-slot storage, never referenced)
     static Achievements *achievements;
-    static void *imageFactory;
+    static ImageFactory *imageFactory;
     static int mouse_wheelX;
     static int mouse_wheelY;
     static int qualityLevel;
-    static void *shipTemplate;
+    static Ship *shipTemplate;
     static unsigned char showBestDeal;
     static int simulateFire;
     static int subMenuIndex;
@@ -225,7 +222,7 @@ public:
     static float action_menu_x;
     static float action_menu_y;
     static float action_menu_z;
-    static void *recordHandler;
+    static RecordHandler *recordHandler;
     static float touch_stick_z;
     static float turret_view_x;
     static float turret_view_y;
@@ -265,7 +262,7 @@ public:
     static int lastStationMusicPlayed;
     static int menu_touch_window_type;
     static unsigned char useLowResTexturesForHD;
-    static void *instantActionPlayerName;
+    static char *instantActionPlayerName;
     static unsigned char isRunningHDonWeakDevice;
     static float quickmenu_button_start_x;
     static float quickmenu_button_start_y;
@@ -275,11 +272,12 @@ public:
     static unsigned char startLiteVersionWithMoreCredits;
     static AbyssEngine::AERandom *rnd;
     static void *font;
+    // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
     static unsigned char keys[1020];
-    static void *bankZ;
+    static void *bankZ; // lint: void_ptr (unknown audio-bank handle, never referenced)
     static unsigned char hints[59];
     static Array<Item *> *items;
-    static void *ships;
+    static Array<Ship *> *ships;
     static AbyssEngine::PaintCanvas *Canvas;
     static float fire_x;
     static float fire_y;
@@ -294,9 +292,8 @@ public:
     static float pause_y;
     static float pause_z;
     static GameText *gameText;
-    static void *fontAlien;
-    static void *generator;
+    static void *fontAlien; // lint: void_ptr (unknown alien-font handle, never referenced)
+    static Generator *generator;
 };
-
 
 #endif

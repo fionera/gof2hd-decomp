@@ -215,7 +215,8 @@ namespace AbyssEngine {
         }
 
         uint count = (uint) this->keyFrames.size();
-        while ((uint)++index < count)
+        while ((uint)++index < count
+        )
         {
             KeyFrame *dst = items[index];
             uint flags0 = key->channelFlags;
@@ -343,7 +344,7 @@ namespace AbyssEngine {
             this->localTranslation = other->localTranslation;
             this->localScale = other->localScale;
             this->localMatrix = other->localMatrix;
-            this->renderMode = other->renderMode;
+            this->flags = other->flags;
 
             for (uint i = 0; i < other->meshes.size(); ++i) {
                 Mesh *mesh = new Mesh(other->meshes[i]);
@@ -362,6 +363,7 @@ namespace AbyssEngine {
     }
 
     void Transform::SetAnimationState(AnimationMode, void *) {
+        // lint: void_ptr method parameter baked into mangled symbol
     }
 
     Transform::Transform() {
@@ -404,7 +406,7 @@ namespace AbyssEngine {
         this->localMatrix = identity;
         this->rotationMatrix = identity;
 
-        this->renderMode = 2;
+        this->flags = 2;
         this->localMatrix.m[5] = 1.0f;
         this->vfcEnabled = true;
         this->keyFramesShared = false;
@@ -828,7 +830,6 @@ namespace AbyssEngine {
         } else if (index == this->keyFrames.size()) {
             KeyFrame *last = this->keyFrames[this->keyFrames.size() - 1];
             uint mask = key->channelFlags;
-
 
             float *keyFields = &key->translation.x;
             const float *lastFields = &last->translation.x;

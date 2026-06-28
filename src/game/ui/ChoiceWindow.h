@@ -5,12 +5,9 @@
 #include "ScrollTouchWindow.h"
 #include "TouchButton.h"
 
-
 #include "game/ui/ChoiceWindowButtonPosCache.h"
 class ScrollTouchWindow;
 class TouchButton;
-
-
 
 class ChoiceWindow {
 public:

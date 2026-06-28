@@ -95,7 +95,7 @@ namespace AbyssEngine {
             int viewportLoc = this->uniform_u17;
             if (viewportLoc >= 0) {
                 float invW, invH;
-                if (*(int *) (eng->field_0x30[0] + 0x30) == 2) {
+                if (*(int *) (((char **) eng->appManager)[0] + 0x30) == 2) {
                     invW = 1.0f / (float) eng->GetDisplayWidth();
                     invH = 1.0f / (float) eng->GetDisplayHeight();
                 } else {
@@ -111,9 +111,9 @@ namespace AbyssEngine {
             if (this->uniform_u18 >= 0)
                 glUniform1f(this->uniform_u18, reinterpret_cast<float &>(mesh->materialId));
             if (this->uniform_u19 >= 0)
-                glUniform1f(this->uniform_u19, mesh->field_0x20);
+                glUniform1f(this->uniform_u19, mesh->shaderAnimValue0);
 
-            if (eng->field_0x32c < 2) {
+            if (eng->lightCount < 2) {
                 glUniform3f(this->uniform_u12, 0.0f, 0.0f, 0.0f);
                 glUniform3f(this->uniform_u13, 0.0f, 0.0f, 0.0f);
                 glUniform3f(this->uniform_u14, 0.0f, 0.0f, 0.0f);

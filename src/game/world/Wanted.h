@@ -2,6 +2,7 @@
 #define GOF2_WANTED_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
+
 class Wanted {
 public:
     String name;

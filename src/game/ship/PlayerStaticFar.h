@@ -15,11 +15,8 @@ class Player;
 class AEGeometry;
 class BoundingVolume;
 
-
 class PlayerStaticFar : public PlayerStatic {
 public:
-
-
     Player *player;
     Vector initPosition;
     Vector cameraPosition;

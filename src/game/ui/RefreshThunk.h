@@ -6,10 +6,6 @@
 #include "game/ui/ModuleTransitionThunk.h"
 
 struct RefreshThunk {
-    union {
-        void (*refreshFn)();
-
-        void *field_0x0;
-    };
+    void (*refreshFn)();
 };
 #endif

@@ -3,8 +3,8 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static void *GenericShader_registerSrc = nullptr;
-static void **GenericShader_registerDst = nullptr;
+static AbyssEngine::GenericShader *GenericShader_registerSrc = nullptr;
+static AbyssEngine::GenericShader **GenericShader_registerDst = nullptr;
 
 namespace AbyssEngine {
     int GenericShader::ShaderIndex;

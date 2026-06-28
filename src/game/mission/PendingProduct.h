@@ -5,7 +5,6 @@
 #include "../../engine/core/AEString.h"
 class BluePrint;
 
-
 class PendingProduct {
 public:
     String stationName;

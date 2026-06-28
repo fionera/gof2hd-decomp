@@ -48,8 +48,8 @@ namespace AbyssEngine {
     void SpecCubeAlphaMapping::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (this->dirty != 0) {
             float envFactor = 1.0f;
-            char *mat = (char *) mesh->field_0x30;
-            if (mat != 0 && *(void **) (mat + 0x24) != 0 && *(int *) (mat + 0x28) == 4) {
+            char *mat = (char *) mesh->material;
+            if (mat != 0 && *(float **) (mat + 0x24) != 0 && *(int *) (mat + 0x28) == 4) {
                 envFactor = **(float **) (mat + 0x24);
             }
             glUniform1f(this->uniU11, envFactor);

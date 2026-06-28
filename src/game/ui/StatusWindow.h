@@ -8,7 +8,6 @@
 class ImagePart;
 class TouchButton;
 
-
 typedef AbyssEngine::String String;
 
 class StatusWindow {

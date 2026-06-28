@@ -10,15 +10,10 @@
 #include "game/ship/Player.h"
 #include "engine/render/AEGeometry.h"
 
-
 struct MeshId {
     uint16_t id;
     uint16_t pad;
 };
-
-
-
-
 
 struct EgoPlayerView {
     char header[0x40];
@@ -35,25 +30,42 @@ namespace AbyssEngine {
     }
 }
 
-static void *g_PaintCanvas = nullptr;
+static PaintCanvas **g_PaintCanvas = nullptr;
 
+// The following are normally-named free-function shims for the PaintCanvas
+// engine API; their void* parameters/returns are part of their mangled
+// symbol names, so retyping them would break symbol parity. Left as-is.
 void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
+
+// lint: void_ptr free-function signature, retype changes mangling
 
 void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags);
 
+// lint: void_ptr free-function signature, retype changes mangling
+
 void TransformCreate(void *canvas, uint32_t *transform);
+
+// lint: void_ptr free-function signature, retype changes mangling
 
 uint32_t TransformGetTransform(void *canvas, uint32_t transform);
 
+// lint: void_ptr free-function signature, retype changes mangling
+
 void TransformSetLocal(void *canvas, uint32_t transform, Matrix *matrix);
+
+// lint: void_ptr free-function signature, retype changes mangling
 
 void DrawTransform(void *canvas, uint32_t transform, int flags);
 
+// lint: void_ptr free-function signature, retype changes mangling
+
 void MatrixRotateVector(void *out, const void *matrix, const void *vec);
 
-void *CameraGetCurrent(void *canvas);
+// lint: void_ptr free-function signature, retype changes mangling
 
-void *CameraGetLocal(void *canvas, void *camera);
+void *CameraGetCurrent(void *canvas); // lint: void_ptr free-function signature, retype changes mangling
+
+void *CameraGetLocal(void *canvas, void *camera); // lint: void_ptr free-function signature, retype changes mangling
 
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 
@@ -69,14 +81,14 @@ void VectorNormalize(Vector *out, const Vector *in);
 
 void VectorCross(Vector *out, const Vector *a, const Vector *b);
 
-void ObjectGun_setEnemies_impl(void *items);
+void ObjectGun_setEnemies_impl(void *items); // lint: void_ptr free-function signature, retype changes mangling
 
-static void *g_ObjectGunScaleFlag = nullptr;
-static void *g_ObjectGunRenderScaleFlag = nullptr;
+static uint8_t *g_ObjectGunScaleFlag = nullptr;
+static uint8_t *g_ObjectGunRenderScaleFlag = nullptr;
 static MeshId g_ObjectGunGeometryIds[256] = {};
 static int g_ObjectGunPlayerGunIds[256] = {};
 
-static uint32_t (*g_TransformGetObject)(void *canvas, uint32_t mesh) = nullptr;
+static uint32_t (*g_TransformGetObject)(PaintCanvas *canvas, uint32_t mesh) = nullptr;
 
 static void (*g_TransformSetState)(uint32_t object, int state, int value) = nullptr;
 
@@ -90,7 +102,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->side.z = 0.0f;
     this->orientation = AbyssEngine::AEMath::Matrix();
 
-    void **canvas = (void **) g_PaintCanvas;
+    PaintCanvas **canvas = g_PaintCanvas;
     this->useEgoOrientation = 0;
     this->explosions = nullptr;
     this->explosionReady = nullptr;
@@ -110,7 +122,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     int type = gun->weaponType;
     this->visible = (type <= 8 && ((1u << type) & 0x10aU) != 0) ? 1 : 0;
 
-    if (*(uint8_t *) g_ObjectGunScaleFlag != 0) {
+    if (*g_ObjectGunScaleFlag != 0) {
         if (type == 1 || type == 3 || type == 8) {
             this->scaleX = 0.6f;
             this->scaleY = 0.6f;
@@ -182,14 +194,14 @@ void ObjectGun::setScaling(int x, int y, int /*z*/) {
 }
 
 void ObjectGun::replaceGun(unsigned int mesh, int /*unused*/) {
-    void **canvas = (void **) g_PaintCanvas;
+    PaintCanvas **canvas = g_PaintCanvas;
     TransformRemoveMesh(*canvas, this->transform, this->meshId);
     this->meshId = (int) mesh;
     TransformAddMesh(*canvas, this->transform, (uint16_t) mesh, 0);
 }
 
 void ObjectGun::setEnemies(Array<Player *> *enemies) {
-    ObjectGun_setEnemies_impl((void *) enemies->data());
+    ObjectGun_setEnemies_impl(enemies->data());
 }
 
 void ObjectGun::setEnemy(Player * /*enemy*/) {
@@ -208,7 +220,7 @@ void ObjectGun::update(int dt) {
     Vector offsets;
     Vector zero = {0.0f, 0.0f, 0.0f};
 
-    void **canvas = (void **) g_PaintCanvas;
+    PaintCanvas **canvas = g_PaintCanvas;
     uint32_t transform = TransformGetTransform(*canvas, this->transform);
     ((AbyssEngine::Transform *) ((uint64_t) transform))->Update((int64_t) dt, 0);
 
@@ -252,7 +264,6 @@ void ObjectGun::update(int dt) {
 
         gun = this->gun;
 
-
         Player *matrixPlayer;
         if (gun->isPlayerGun() == 0)
             matrixPlayer = gun->owner;
@@ -272,9 +283,8 @@ void ObjectGun::update(int dt) {
         ((AbyssEngine::Transform *) ((uint64_t) transform))->Update((int64_t) dt, 0);
 
         if (this->gun->weaponType != ITEM_SORT_TURRET) {
-            void *paint = *canvas;
-            void *camera = CameraGetCurrent(paint);
-            cameraMatrix = *(const Matrix *) CameraGetLocal(paint, camera);
+            PaintCanvas *paint = *canvas;
+            cameraMatrix = *(const Matrix *) CameraGetLocal(paint, CameraGetCurrent(paint));
             MatrixGetDir(&dir, &cameraMatrix);
             MatrixGetUp(&up, &cameraMatrix);
             this->geometry->setDirection(dir, up);
@@ -379,10 +389,9 @@ void ObjectGun::render() {
         cameraLocal.m[5] = 1.0f;
         cameraLocal.m[14] = 1.0f;
         if (gun->weaponType == ITEM_SORT_TURRET) {
-            void **canvas = (void **) g_PaintCanvas;
-            void *paint = *canvas;
-            void *camera = CameraGetCurrent(paint);
-            cameraLocal = *(const Matrix *) CameraGetLocal(paint, camera);
+            PaintCanvas **canvas = g_PaintCanvas;
+            PaintCanvas *paint = *canvas;
+            cameraLocal = *(const Matrix *) CameraGetLocal(paint, CameraGetCurrent(paint));
             if (this->visible != 0) {
                 for (uint32_t mi = 0; mi < 15; ++mi)
                     rotate.m[mi] = 0.0f;
@@ -408,10 +417,9 @@ void ObjectGun::render() {
                     muzzle.y = -this->dir.y;
                     muzzle.z = -this->dir.z;
                     if ((uint32_t)(gun->itemIndex - 0xb4) > 2) {
-                        void **canvas = (void **) g_PaintCanvas;
-                        void *paint = *canvas;
-                        void *camera = CameraGetCurrent(paint);
-                        cameraLocal = *(const Matrix *) CameraGetLocal(paint, camera);
+                        PaintCanvas **canvas = g_PaintCanvas;
+                        PaintCanvas *paint = *canvas;
+                        cameraLocal = *(const Matrix *) CameraGetLocal(paint, CameraGetCurrent(paint));
                         MatrixGetDir(&dir, &cameraLocal);
                         muzzle = dir;
                         gun = this->gun;
@@ -484,15 +492,15 @@ void ObjectGun::render() {
                     MatrixSetTranslation(&scaleMatrix, gunPos->x, gunPos->y, gunPos->z);
                     MatrixGetDir(&dir, &scaleMatrix);
                     ::VectorNormalize(&muzzle, &dir);
-                    muzzle *= gun->field_0x50;
+                    muzzle *= gun->pitchRate;
                     ((Vector *) gun->velocities)[i] = muzzle;
                     player->empPointsF = 0.0f;
                     player->maxEmpPointsF = 0.0f;
                     MatrixSetRotation(&scaleMatrix, this->rollAngle, 0.0f, 0.0f);
-                    TransformSetLocal(*(void **) g_PaintCanvas, this->secondaryTransform, &scaleMatrix);
+                    TransformSetLocal(*g_PaintCanvas, this->secondaryTransform, &scaleMatrix);
                 }
 
-                if (*(uint8_t *) g_ObjectGunRenderScaleFlag != 0)
+                if (*g_ObjectGunRenderScaleFlag != 0)
                     MatrixSetScaling(&local, this->scaleX, this->scaleY, this->scaleZ);
 
                 if (this->gun->weaponType == ITEM_SORT_MINE) {
@@ -509,7 +517,7 @@ void ObjectGun::render() {
                     MatrixSetScaling(&local, this->scaleX, this->scaleY, this->scaleZ);
                 }
 
-                void **canvas = (void **) g_PaintCanvas;
+                PaintCanvas **canvas = g_PaintCanvas;
                 TransformSetLocal(*canvas, this->transform, &this->orientation);
                 DrawTransform(*canvas, this->transform, 0);
             } else {

@@ -18,7 +18,11 @@
 
 void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
 
+// lint: void_ptr (external symbol; param types are mangling-load-bearing)
+
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
+
+// lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 void Hud_loadImages(Hud * self);
 
@@ -108,6 +112,7 @@ uint8_t Hud::cargoFull() {
 }
 
 unsigned int Hud::touchEnd(unsigned int a, unsigned int b, void *key) {
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     int i = 0;
     unsigned int ret = 0;
     for (; i != 0x19; i = i + 1) {
@@ -133,7 +138,7 @@ unsigned int Hud::touchEnd(unsigned int a, unsigned int b, void *key) {
 void Hud::releaseAllKeys() {
     this->touchFlags = 0;
     for (int i = 0; i != 0x19; i++) {
-        Array<void *> *p = this->keyArray;
+        Array<void *> *p = this->keyArray; // lint: void_ptr (mirrors keyArray's opaque touch-handle element type)
         if (p != 0) {
             if ((*p)[i] != 0)
                 (*p)[i] = 0;
@@ -179,9 +184,9 @@ uint8_t Hud::jumpMapSelected() {
     return this->jumpMapSelectedFlag;
 }
 
-static void **g_Hud_font = nullptr;
-static void **g_Hud_canvas2 = nullptr;
-static void **g_Hud_screenW = nullptr;
+static String **g_Hud_font = nullptr;
+static PaintCanvas **g_Hud_canvas2 = nullptr;
+static int **g_Hud_screenW = nullptr;
 static Level **g_Hud_level = nullptr;
 
 void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsigned int x, unsigned int y) {
@@ -193,7 +198,6 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
     this->letterbox = (unsigned char) letterbox;
 
     PaintCanvas *canvas = Globals::Canvas;
-
 
     canvas->DrawImage2D((unsigned) this->reticleImage, this->field_0x42c, 0);
     {
@@ -214,7 +218,6 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
         canvas->DrawImage2D((unsigned) img, bx, by, '\x11');
     }
 
-
     {
         Status *st = Globals::status;
         bool show = false;
@@ -231,7 +234,6 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
             canvas->DrawImage2D((unsigned) img, this->field_0x3f8, 0);
         }
     }
-
 
     {
         PlayerEgo *e = ego;
@@ -273,10 +275,9 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
         }
     }
 
-
     {
         Level *lvl = *g_Hud_level;
-        PlayerEgo *player = (PlayerEgo *) (lvl ? (void *) (long) lvl->getPlayer() : (void *) 0);
+        PlayerEgo *player = lvl ? lvl->getPlayer() : nullptr;
 
         if (player != 0 && player->hasAutoTurret() != 0) {
             bool on = player->autoTurretIsEnabled() != 0 || ((this->autoTurretFlags & 0x20) != 0);
@@ -284,7 +285,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
             canvas->DrawImage2D((unsigned) img, this->field_0x3fe, 0);
         } else {
             if (this->secondaryLabelTimer > 0) {
-                void *font = *g_Hud_font;
+                String *font = *g_Hud_font;
                 int screenW = *(int *) *g_Hud_screenW;
                 unsigned short iconW = this->field_0x3ec;
                 canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
@@ -293,7 +294,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
                     (unsigned) (long) canvas, *(String *) (font));
                 int tx = this->field_0x3ec + ((screenW - iconW) - textW) / 2;
                 Globals::Canvas->DrawString((unsigned) (long) canvas,
-                                    this->field_0x51c, tx, 0, false);
+                                            this->field_0x51c, tx, 0, false);
                 canvas->SetColor((unsigned) 0xffffffffu);
                 int t = this->secondaryLabelTimer;
                 if (t > 4000) t = 0;
@@ -303,7 +304,6 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
     }
 
     drawOrbitInformation();
-
 
     canvas->SetColor((unsigned) 0xffffffffu);
     canvas->DrawImage2D((unsigned) this->missionBannerImage, this->field_0x438, 0);
@@ -318,14 +318,13 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     drawPauseButton();
 
-
     if (this->messageActive != 0) {
         canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
-        void *font = *g_Hud_font;
+        String *font = *g_Hud_font;
         int screenW = *(int *) *g_Hud_screenW;
         int w = Globals::Canvas->GetTextWidth((unsigned) (long) canvas, *(String *) (font));
         Globals::Canvas->DrawString((unsigned) (long) canvas,
-                            this->field_0x51c, screenW / 2 - w / 2, this->field_0x3e2, false);
+                                    this->field_0x51c, screenW / 2 - w / 2, this->field_0x3e2, false);
         canvas->SetColor((unsigned) 0xffffffffu);
     }
 }
@@ -360,12 +359,11 @@ void Hud::updateQueue(int dt) {
     this->eventQueuePaused = v;
 }
 
+static int **g_Hud_oiLayout = nullptr;
 
-static void **g_Hud_oiLayout = nullptr;
+static int **g_Hud_oiStatus = nullptr;
 
-static void **g_Hud_oiStatus = nullptr;
-
-static void **g_Hud_oiFont = nullptr;
+static String **g_Hud_oiFont = nullptr;
 
 static GameText **g_Hud_oiGameText = nullptr;
 static const char g_Hud_oiSep[1] = {0};
@@ -378,24 +376,29 @@ void Hud::drawOrbitInformation() {
     Globals::Canvas->SetColor((unsigned) (-1));
     int x = Globals::Canvas->GetImage2DWidth((unsigned) (0)) + layout[0x87];
 
-    if (((SolarSystem *) (((void *) (long) Globals::status->getSystem())))->hasNoOwner() == 0)
+    if (((SolarSystem *) ((long) Globals::status->getSystem()))->hasNoOwner() == 0)
         Globals::Canvas->DrawImage2D((unsigned) this->factionLogoImage, 3, 0);
 
-    void *font = *g_Hud_oiFont;
+    String *font = *g_Hud_oiFont;
 
     {
         char name[12];
         ((Station *) (name))->getName();
         Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (name), (x), (char) layout[0x88], false);
-        { String *_s = ((String *) (name)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+        {
+            String *_s = ((String *) (name));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
     }
     Globals::Canvas->SetColor((unsigned) (-1));
 
     if (Globals::status->getCurrentCampaignMission() <= 0xf) return;
 
-    void *sys = ((void *) (long) Globals::status->getSystem());
-    int sec = ((SolarSystem *) (sys))->getSecurityLevel();
-    int idx = ((SolarSystem *) (((void *) (long) Globals::status->getSystem())))->getIndex();
+    SolarSystem *sys = (SolarSystem *) ((long) Globals::status->getSystem());
+    int sec = sys->getSecurityLevel();
+    int idx = ((SolarSystem *) ((long) Globals::status->getSystem()))->getIndex();
     int *status = (int *) *g_Hud_oiStatus;
     if (idx == 0x1a && status[0x45] > 1) sec = 3;
 
@@ -405,24 +408,50 @@ void Hud::drawOrbitInformation() {
         ((String *) (copy))->Set(((String *) (sysName))->data);
         ((String *) (sep))->ctor_char(g_Hud_oiSep, false);
         *(String *) acc = *(String *) copy + *(String *) sep;
-        void *txt = (*g_Hud_oiGameText)->getText(0);
+        String *txt = (*g_Hud_oiGameText)->getText(0);
         *(String *) full = *(String *) acc + *(String *) txt;
         Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (full), (x), (char) layout[0x89], false);
-        { String *_s = ((String *) (full)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (acc)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (sep)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (copy)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (sysName)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+        {
+            String *_s = ((String *) (full));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (acc));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (sep));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (copy));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (sysName));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
     }
 
     const unsigned char *row = g_Hud_secColors + sec * 0xc;
     Globals::Canvas->SetColor((unsigned char) (row[0]), (unsigned char) (row[4]), (unsigned char) (row[8]),
-                      (unsigned char) (0xff));
-    void *secTxt = (*g_Hud_oiGameText)->getText(sec);
+                              (unsigned char) (0xff));
+    String *secTxt = (*g_Hud_oiGameText)->getText(sec);
     Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (secTxt), (x), (char) layout[0x8a], false);
 }
 
 unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) {
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     unsigned int i = 0;
     for (; i <= 0x18; i = i + 1) {
         if ((*this->keyArray)[i] == key && this->elementBits[i] == 0x20)
@@ -450,12 +479,11 @@ found:
     return 0x20;
 }
 
+static char **g_Hud_teCinematic = nullptr;
 
-static void **g_Hud_teCinematic = nullptr;
+static int **g_Hud_teScreenW = nullptr;
 
-static void **g_Hud_teScreenW = nullptr;
-
-static void **g_Hud_teScreenH = nullptr;
+static int **g_Hud_teScreenH = nullptr;
 
 static inline bool span(unsigned short o, int w, unsigned int v) {
     return o <= v && v <= (unsigned int) o + w;
@@ -540,10 +568,9 @@ Hud::Hud() {
     init();
 }
 
-
 static GameText **g_Hud_ccGameText = nullptr;
 
-static void **g_Hud_ccTemplate = nullptr;
+static Status **g_Hud_ccTemplate = nullptr;
 static const char g_Hud_ccHashX[1] = {0};
 static const char g_Hud_ccHashN[1] = {0};
 static const char g_Hud_ccUnit[1] = {0};
@@ -556,15 +583,15 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 
     if (missionDelivery) {
         GameText *gt = *g_Hud_ccGameText;
-        void *base = gt->getText(0x219);
-        void *dst = &this->field_0x1f4;
+        String *base = gt->getText(0x219);
+        String *dst = &this->field_0x1f4;
         *((String *) (dst)) = *((String *) (base));
 
-        void *tmpl = *g_Hud_ccTemplate;
+        Status *tmpl = *g_Hud_ccTemplate;
         char a40[12];
         ((String *) (a40))->Set(((String *) (dst))->data);
         int type = Globals::status->getMission()->getType();
-        void *typeTxt = gt->getText(type == 3 ? 0x56e : 0x56f);
+        String *typeTxt = gt->getText(type == 3 ? 0x56e : 0x56f);
         char a4c[12];
         ((String *) (a4c))->Set(((String *) (typeTxt))->data);
         char a58[12];
@@ -572,10 +599,30 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         char out1[12];
         Status_replaceHash(out1, tmpl, a40, a4c, a58);
         *((String *) (dst)) = *((String *) (out1));
-        { String *_s = ((String *) (out1)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (a58)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (a4c)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (a40)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+        {
+            String *_s = ((String *) (out1));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (a58));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (a4c));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (a40));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
 
         tmpl = *g_Hud_ccTemplate;
         char a64[12];
@@ -587,10 +634,30 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         char out2[12];
         Status_replaceHash(out2, tmpl, a64, a70, a7c);
         *((String *) (dst)) = *((String *) (out2));
-        { String *_s = ((String *) (out2)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (a7c)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (a70)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (a64)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+        {
+            String *_s = ((String *) (out2));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (a7c));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (a70));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (a64));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
 
         String *str = new String(*(String *) dst);
         ListItem *item = new ListItem(str);
@@ -601,7 +668,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 
     if (single) {
         GameText *gt = *g_Hud_ccGameText;
-        void *txt = gt->getText(0x142);
+        String *txt = gt->getText(0x142);
         *((String *) (&this->field_0x1f4)) = *((String *) (txt));
         String *str = new String(this->field_0x1f4);
         ListItem *item = new ListItem(str, 1);
@@ -622,18 +689,43 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         *(String *) a94 = *(String *) a0 + *(String *) ac;
         char a88[12];
         ((String *) (a88))->Set(((String *) (a94))->data);
-        void *unit = gt->getText(itemId + 0x4fa);
+        String *unit = gt->getText(itemId + 0x4fa);
         char k34[12];
         *(String *) k34 = *(String *) a88 + *(String *) unit;
-        { String *_s = ((String *) (a88)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (a94)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (ac)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-        { String *_s = ((String *) (a0)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+        {
+            String *_s = ((String *) (a88));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (a94));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (ac));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
+        {
+            String *_s = ((String *) (a0));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
 
         char b8[12];
         ((String *) (b8))->Set(((String *) (k34))->data);
         int idx = sameHudEventAsBeforeAggregate(*(String *) b8);
-        { String *_s = ((String *) (b8)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+        {
+            String *_s = ((String *) (b8));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
         if (idx >= 0) {
             this->eventQueueTimer = 2000;
             this->cargoAggregateCount += count;
@@ -645,19 +737,54 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
             *(String *) nA0 = *(String *) nAc + *(String *) nC4;
             char n94[12];
             ((String *) (n94))->Set(((String *) (nA0))->data);
-            void *u2 = gt->getText(itemId + 0x4fa);
+            String *u2 = gt->getText(itemId + 0x4fa);
             char n88[12];
             *(String *) n88 = *(String *) n94 + *(String *) u2;
             *((String *) ((*this->eventQueue)[idx]->name)) = *((String *) (n88));
-            { String *_s = ((String *) (n88)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-            { String *_s = ((String *) (n94)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-            { String *_s = ((String *) (nA0)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-            { String *_s = ((String *) (nC4)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-            { String *_s = ((String *) (nAc)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-            { String *_s = ((String *) (k34)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+            {
+                String *_s = ((String *) (n88));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
+            {
+                String *_s = ((String *) (n94));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
+            {
+                String *_s = ((String *) (nA0));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
+            {
+                String *_s = ((String *) (nC4));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
+            {
+                String *_s = ((String *) (nAc));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
+            {
+                String *_s = ((String *) (k34));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
             return;
         }
-        { String *_s = ((String *) (k34)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+        {
+            String *_s = ((String *) (k34));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
     }
 
     this->cargoAggregateCount = count;
@@ -669,15 +796,40 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
     *(String *) a94 = *(String *) a0 + *(String *) ac;
     char a88[12];
     ((String *) (a88))->Set(((String *) (a94))->data);
-    void *unit = gt->getText(itemId + 0x4fa);
+    String *unit = gt->getText(itemId + 0x4fa);
     char k34[12];
     *(String *) k34 = *(String *) a88 + *(String *) unit;
     *((String *) (&this->field_0x1f4)) = *((String *) (k34));
-    { String *_s = ((String *) (k34)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (a88)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (a94)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (ac)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (a0)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+    {
+        String *_s = ((String *) (k34));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (a88));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (a94));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (ac));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (a0));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
 
     String *str = new String(this->field_0x1f4);
     ListItem *item = new ListItem(str);
@@ -687,10 +839,9 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
     addToEventQueue(item);
 }
 
-
 void Hud::drawEventString(String text, bool rightAlign) {
-    void *font = *g_Hud_font;
-    void *canvas = *g_Hud_canvas2;
+    String *font = *g_Hud_font;
+    PaintCanvas *canvas = *g_Hud_canvas2;
     int x;
     if (this->letterbox == 0) {
         int base = this->eventLineMargin;
@@ -758,24 +909,23 @@ int Hud::sameHudEventAsBeforeAggregate(String str) {
     return i;
 }
 
-
 static GameText **g_Hud_gameText = nullptr;
 
-static void **g_Hud_swCanvas = nullptr;
+static PaintCanvas **g_Hud_swCanvas = nullptr;
 
-static void **g_Hud_swFont = nullptr;
+static String **g_Hud_swFont = nullptr;
 
-static void **g_Hud_swScreenW = nullptr;
+static int **g_Hud_swScreenW = nullptr;
 static const char g_Hud_swSep[1] = {0};
 static const char g_Hud_swEnd[1] = {0};
 
 void Hud::updateSecondaryWeaponString() {
-    void *item = this->currentSecondaryWeapon;
+    Item *item = this->currentSecondaryWeapon;
     if (item == 0) return;
 
     GameText *gt = *g_Hud_gameText;
     int idx = ((Item *) (item))->getIndex();
-    void *name = gt->getText(idx + 0x4fa);
+    String *name = gt->getText(idx + 0x4fa);
 
     char sep[12], acc1[12], amount[12], acc2[12], end[12], acc3[12];
     ((String *) (sep))->ctor_char(g_Hud_swSep, false);
@@ -787,26 +937,55 @@ void Hud::updateSecondaryWeaponString() {
     *(String *) acc3 = *(String *) acc2 + *(String *) end;
 
     *((String *) (&this->field_0x3b4)) = *((String *) (acc3));
-    { String *_s = ((String *) (acc3)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (end)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (acc2)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (amount)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (acc1)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (sep)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+    {
+        String *_s = ((String *) (acc3));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (end));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (acc2));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (amount));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (acc1));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (sep));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
 
     int screenW = *(int *) *g_Hud_swScreenW;
     int w = Globals::Canvas->GetTextWidth((unsigned) (long) (*g_Hud_swCanvas), *(String *) (*g_Hud_swFont));
     this->secondaryLabelX = (screenW >> 1) - (w >> 1);
 }
 
+static char **g_Hud_eqLetterbox = nullptr;
 
-static void **g_Hud_eqLetterbox = nullptr;
+static HudEventDisplay **g_Hud_eqSelf = nullptr;
 
-static void **g_Hud_eqSelf = nullptr;
+static int **g_Hud_eqScreenW = nullptr;
 
-static void **g_Hud_eqScreenW = nullptr;
-
-static void **g_Hud_eqFont = nullptr;
+static String **g_Hud_eqFont = nullptr;
 
 void Hud::drawEventQueue() {
     char letterbox = *(char *) *g_Hud_eqLetterbox;
@@ -816,7 +995,8 @@ void Hud::drawEventQueue() {
     int dispBase = src->eventBannerDisplayBase;
     float dispScale = src->eventBannerDisplayScale;
 
-    Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0));
+    Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
+                              (unsigned char) (0));
     float mul = (letterbox == 0) ? -2.0f : -1.0f;
     int yOff = (int) (mul * dispScale);
 
@@ -843,10 +1023,11 @@ void Hud::drawEventQueue() {
             b3 = 0xff;
             b4 = 0xff;
         }
-        Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (b2), (unsigned char) (b3), (unsigned char) (b4));
+        Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (b2), (unsigned char) (b3),
+                                  (unsigned char) (b4));
 
         String *label = (String *) item->name;
-        void *font = *g_Hud_eqFont;
+        String *font = *g_Hud_eqFont;
         int screenW = *(int *) *g_Hud_eqScreenW;
         int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) (font));
         char y = (char) ((char) yOff + (char) dispBase + cinematicY);
@@ -857,6 +1038,7 @@ void Hud::drawEventQueue() {
 }
 
 unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) {
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     unsigned int e = touchedElement(a, b);
     if (e == 0) {
         for (int i = 0; i != 0x19; i = i + 1) {
@@ -904,14 +1086,13 @@ unsigned int Hud::sameHudEventAsBefore(String str) {
     return 0;
 }
 
+static int **g_Hud_initLayout = nullptr;
 
-static void **g_Hud_initLayout = nullptr;
+static int **g_Hud_initBound = nullptr;
 
-static void **g_Hud_initBound = nullptr;
+static int **g_Hud_initOutX = nullptr;
 
-static void **g_Hud_initOutX = nullptr;
-
-static void **g_Hud_initOutY = nullptr;
+static int **g_Hud_initOutY = nullptr;
 
 static const unsigned short g_Hud_raceBadge[16] = {0};
 static const char g_Hud_initMsg[1] = {0};
@@ -923,6 +1104,7 @@ int Hud::init() {
     this->hackingGameActive = 0;
 
     this->keyArray = new Array<void *>();
+    // lint: void_ptr (opaque touch-handle element type, matches exported void* touchId)
     ArraySetLength(0x19, *(this->keyArray));
     this->elementBits = new int[0x19];
     for (int i = 0; i != 0x19; i++) {
@@ -932,7 +1114,7 @@ int Hud::init() {
     this->touchFlags = 0;
 
     if (Globals::status->inAlienOrbit() == 0) {
-        int race = ((SolarSystem *) (((void *) (long) Globals::status->getSystem())))->getRace();
+        int race = ((SolarSystem *) ((long) Globals::status->getSystem()))->getRace();
         Image2DCreate(Globals::Canvas, g_Hud_raceBadge[race], &this->factionLogoImage);
     }
 
@@ -942,7 +1124,12 @@ int Hud::init() {
         char tmp[12];
         ((String *) (tmp))->ctor_char(g_Hud_initMsg, false);
         *((String *) (&this->field_0x51c)) = *((String *) (tmp));
-        { String *_s = ((String *) (tmp)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+        {
+            String *_s = ((String *) (tmp));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
     }
 
     closeHudMenu();
@@ -1019,10 +1206,9 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
     return this;
 }
 
+static int **g_Hud_dmLayout = nullptr;
 
-static void **g_Hud_dmLayout = nullptr;
-
-static void **g_Hud_dmFont = nullptr;
+static String **g_Hud_dmFont = nullptr;
 static const char g_Hud_dmPrefix[1] = {0};
 
 void Hud::drawMenu(int unused) {
@@ -1042,7 +1228,8 @@ void Hud::drawMenu(int unused) {
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
         unsigned int count = (unsigned int) this->menuButtons->size();
         for (unsigned int i = 0; i < count - 1; i++) {
-            Globals::Canvas->DrawImage2D((unsigned) this->quickMenuMiddleImage, this->field_0x3c4 + this->menuOriginX, 0);
+            Globals::Canvas->DrawImage2D((unsigned) this->quickMenuMiddleImage, this->field_0x3c4 + this->menuOriginX,
+                                         0);
             y += this->field_0x3d0;
             count = (unsigned int) this->menuButtons->size();
         }
@@ -1067,23 +1254,38 @@ void Hud::drawMenu(int unused) {
     ((String *) (prefix))->ctor_char(g_Hud_dmPrefix, false);
     ((String *) (num))->Set((long long) (this->fuelGaugeValue));
     *(String *) label = *(String *) prefix + *(String *) num;
-    { String *_s = ((String *) (num)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (prefix)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+    {
+        String *_s = ((String *) (num));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (prefix));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
 
     int gx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
     unsigned char gy = (unsigned char) ((char) y + (char) (layout[0xc] / 2)
                                         + (char) layout[0xa2]);
     Globals::Canvas->DrawImage2D((unsigned) this->fuelGaugeBarImage, gx, gy, (unsigned char) 0x11);
     Globals::Canvas->DrawImage2D((unsigned) this->fuelGaugeIconImage, gx - layout[0x8c],
-                         (char) layout[0xc] + (char) gy + (char) layout[0xa3], (unsigned char) 0x11);
+                                 (char) layout[0xc] + (char) gy + (char) layout[0xa3], (unsigned char) 0x11);
 
     int barW = layout[0x8c];
-    void *font = *g_Hud_dmFont;
+    String *font = *g_Hud_dmFont;
     int ih = Globals::Canvas->GetImage2DHeight((unsigned) (0));
     int th = Globals::Canvas->GetTextHeight(0);
     char ty = (char) (((gy + (char) (ih / 2)) - (char) (th / 2)) + (char) layout[0x8d]);
     Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (label), (barW + gx), (ty), false);
-    { String *_s = ((String *) (label)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+    {
+        String *_s = ((String *) (label));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
 }
 
 void Hud::clearQueue() {
@@ -1105,7 +1307,7 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             if (this->hasAutofireUI == 0) return;
             break;
         case 3:
-            if (this->hasBoostButton == 0 || ((PlayerEgo *) ((void *) (long) arg))->readyToBoost() == 0) return;
+            if (this->hasBoostButton == 0 || ((PlayerEgo *) ((long) arg))->readyToBoost() == 0) return;
             break;
         case 4:
             if (this->hasBoostButton == 0) return;
@@ -1146,7 +1348,12 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
     char probe[12];
     ((String *) (probe))->Set((line)->data);
     unsigned int dup = sameHudEventAsBefore(*(String *) probe);
-    { String *_s = ((String *) (probe)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+    {
+        String *_s = ((String *) (probe));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
     if (dup != 0)
         return;
 
@@ -1160,7 +1367,7 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         item = new ListItem(str, 0);
     addToEventQueue(item);
 
-    void *font = *g_Hud_font;
+    String *font = *g_Hud_font;
     int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) (font));
     int screenW = *(int *) *g_Hud_screenW;
     this->eventScrollTick = 0;
@@ -1169,12 +1376,11 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             (unsigned char) ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w);
 }
 
+static int **g_Hud_csLayout = nullptr;
 
-static void **g_Hud_csLayout = nullptr;
+static int **g_Hud_csStatus = nullptr;
 
-static void **g_Hud_csStatus = nullptr;
-
-static void **g_Hud_csScreenW = nullptr;
+static int **g_Hud_csScreenW = nullptr;
 static const char g_Hud_csZero[1] = {0};
 
 void Hud::drawChallengeModeScore(int unused) {
@@ -1182,7 +1388,7 @@ void Hud::drawChallengeModeScore(int unused) {
     int *layout = (int *) *g_Hud_csLayout;
     int *status = (int *) *g_Hud_csStatus;
     int screenW = *(int *) *g_Hud_csScreenW;
-    void *sprite = this->digitSprite;
+    Sprite *sprite = this->digitSprite;
 
     Globals::Canvas->SetColor((unsigned) (-1));
     int fw = ((Sprite *) (sprite))->getFrameWidth();
@@ -1199,8 +1405,18 @@ void Hud::drawChallengeModeScore(int unused) {
             ((String *) (z))->ctor_char(g_Hud_csZero, false);
             *(String *) acc = *(String *) z + *(String *) score;
             *((String *) (score)) = *((String *) (acc));
-            { String *_s = ((String *) (acc)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-            { String *_s = ((String *) (z)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+            {
+                String *_s = ((String *) (acc));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
+            {
+                String *_s = ((String *) (z));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
         }
     }
 
@@ -1216,7 +1432,12 @@ void Hud::drawChallengeModeScore(int unused) {
             char ch[12];
             *((String *) (ch)) = ((String *) score)->SubString(i - 1, i);
             int frame = ((String *) (ch))->ValueOf();
-            { String *_s = ((String *) (ch)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+            {
+                String *_s = ((String *) (ch));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
             ((Sprite *) (sprite))->setFrame(frame);
             ((Sprite *) (sprite))->setPosition(x, y);
             ((Sprite *) (sprite))->draw(1.0f, 1.0f);
@@ -1244,13 +1465,23 @@ void Hud::drawChallengeModeScore(int unused) {
                     char ch[12];
                     *((String *) (ch)) = ((String *) bonusStr)->SubString(i - 1, i);
                     int frame = ((String *) (ch))->ValueOf();
-                    { String *_s = ((String *) (ch)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+                    {
+                        String *_s = ((String *) (ch));
+                        if (_s->data) delete[] _s->data;
+                        _s->data = nullptr;
+                        _s->length = 0;
+                    }
                     ((Sprite *) (sprite))->setFrame(frame);
                     ((Sprite *) (sprite))->setPosition(x, bonusY);
                     ((Sprite *) (sprite))->draw(1.0f, 1.0f);
                     x += dw;
                 }
-                { String *_s = ((String *) (bonusStr)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+                {
+                    String *_s = ((String *) (bonusStr));
+                    if (_s->data) delete[] _s->data;
+                    _s->data = nullptr;
+                    _s->length = 0;
+                }
             }
         }
         Globals::Canvas->DrawImage2D((unsigned) this->multiplierIconImage, pad + startX, 0);
@@ -1264,30 +1495,44 @@ void Hud::drawChallengeModeScore(int unused) {
             char ch[12];
             *((String *) (ch)) = ((String *) timeStr)->SubString(i - 1, i);
             int frame = ((String *) (ch))->ValueOf();
-            { String *_s = ((String *) (ch)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+            {
+                String *_s = ((String *) (ch));
+                if (_s->data) delete[] _s->data;
+                _s->data = nullptr;
+                _s->length = 0;
+            }
             ((Sprite *) (sprite))->setFrame(frame);
             ((Sprite *) (sprite))->setPosition(x, yRow);
             ((Sprite *) (sprite))->draw(1.0f, 1.0f);
             x += dw;
         }
-        { String *_s = ((String *) (timeStr)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+        {
+            String *_s = ((String *) (timeStr));
+            if (_s->data) delete[] _s->data;
+            _s->data = nullptr;
+            _s->length = 0;
+        }
     }
     Globals::Canvas->SetColor((unsigned) (-1));
-    { String *_s = ((String *) (score)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+    {
+        String *_s = ((String *) (score));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
 }
 
+static PaintCanvas **g_Hud_meCanvas = nullptr;
 
-static void **g_Hud_meCanvas = nullptr;
+static String **g_Hud_meFont = nullptr;
 
-static void **g_Hud_meFont = nullptr;
-
-static void **g_Hud_meScreenW = nullptr;
+static int **g_Hud_meScreenW = nullptr;
 static const char g_Hud_meSep[1] = {0};
 static const char g_Hud_meEnd[1] = {0};
 
 void Hud::hudEventMedal(int medalId, int percent) {
     GameText *gt = *g_Hud_gameText;
-    void *name = gt->getText(medalId + 0x5e3);
+    String *name = gt->getText(medalId + 0x5e3);
 
     char sep[12], acc1[12], num[12], acc2[12], end[12], acc3[12];
     ((String *) (sep))->ctor_char(g_Hud_meSep, false);
@@ -1298,19 +1543,54 @@ void Hud::hudEventMedal(int medalId, int percent) {
     ((String *) (end))->ctor_char(g_Hud_meEnd, false);
     *(String *) acc3 = *(String *) acc2 + *(String *) end;
 
-    void *dst = &this->field_0x1e0;
+    String *dst = &this->field_0x1e0;
     *((String *) (dst)) = *((String *) (acc3));
-    { String *_s = ((String *) (acc3)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (end)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (acc2)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (num)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (acc1)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
-    { String *_s = ((String *) (sep)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+    {
+        String *_s = ((String *) (acc3));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (end));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (acc2));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (num));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (acc1));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
+    {
+        String *_s = ((String *) (sep));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
 
     char probe[12];
     ((String *) (probe))->Set(((String *) (dst))->data);
     int same = sameHudEventAsBefore(*(String *) probe);
-    { String *_s = ((String *) (probe)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+    {
+        String *_s = ((String *) (probe));
+        if (_s->data) delete[] _s->data;
+        _s->data = nullptr;
+        _s->length = 0;
+    }
     if (same != 0) return;
 
     String *str = new String(*(String *) dst);
@@ -1324,18 +1604,17 @@ void Hud::hudEventMedal(int medalId, int percent) {
     this->letterbox = ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w) ? 1 : 0;
 }
 
+static int **g_Hud_imLayout = nullptr;
 
-static void **g_Hud_imLayout = nullptr;
+static char **g_Hud_imLetterbox = nullptr;
 
-static void **g_Hud_imLetterbox = nullptr;
+static CargoBay **g_Hud_imCargoA = nullptr;
 
-static void **g_Hud_imCargoA = nullptr;
+static CargoBay **g_Hud_imCargoB = nullptr;
 
-static void **g_Hud_imCargoB = nullptr;
+static char **g_Hud_imFlagA = nullptr;
 
-static void **g_Hud_imFlagA = nullptr;
-
-static void **g_Hud_imFlagB = nullptr;
+static char **g_Hud_imFlagB = nullptr;
 
 void Hud::initHudMenu(int menuType, Level *lvl) {
     if (this->menuButtons != 0) {
@@ -1413,7 +1692,6 @@ Hud::~Hud() {
 bool Hud::drawTitleImage(bool visible) {
     return visible;
 }
-
 
 int Hud::RADAR_WIDTH;
 int Hud::RADAR_HEIGHT;

@@ -11,11 +11,11 @@
 
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
-namespace AbyssEngine { 
+
+namespace AbyssEngine {
     class Camera;
     class KeyFrame;
- }
-
+}
 
 using uint = uint32_t;
 using longlong = int64_t;
@@ -34,17 +34,12 @@ namespace AbyssEngine {
 
     class Transform {
     public:
-
-
         AEMath::Matrix worldMatrix;
         Array<Mesh *> meshes;
         int id;
         Array<Transform *> children;
 
-        union {
-            int flags;
-            int renderMode;
-        };
+        int flags;
 
         AEMath::Matrix rotationMatrix;
         AEMath::Matrix localMatrix;
@@ -120,7 +115,7 @@ namespace AbyssEngine {
 
         int DebugOut(int value);
 
-        void SetAnimationState(AnimationMode, void *);
+        void SetAnimationState(AnimationMode, void *); // lint: void_ptr method parameter baked into mangled symbol
 
         void AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
                          const AEMath::Vector &c, const AEMath::Vector &d,

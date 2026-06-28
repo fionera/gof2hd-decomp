@@ -24,15 +24,13 @@ namespace AbyssEngine {
         }
 
         float InvSqrt(float value) {
-            union {
-                float f;
-                int i;
-            } bits;
-
-            bits.f = value;
-            bits.i = 0x5f3759df - (bits.i >> 1);
-            bits.f = bits.f * (1.5f - value * 0.5f * bits.f * bits.f);
-            return bits.f;
+            float f = value;
+            int i;
+            __builtin_memcpy(&i, &f, sizeof(i));
+            i = 0x5f3759df - (i >> 1);
+            __builtin_memcpy(&f, &i, sizeof(f));
+            f = f * (1.5f - value * 0.5f * f * f);
+            return f;
         }
 
         Vector &Vector::operator=(const Vector &other) {

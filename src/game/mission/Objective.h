@@ -4,7 +4,6 @@
 #include "../../engine/core/AEString.h"
 class Level;
 
-
 class Objective {
 public:
     int type;

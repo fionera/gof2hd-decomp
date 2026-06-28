@@ -39,7 +39,7 @@ namespace AbyssEngine {
         unsigned short id;
         int kind;
         int unused;
-        void *payload;
+        void *payload; // lint: void_ptr (heterogeneous resource payload dispatched by kind; no common base)
     };
 }
 

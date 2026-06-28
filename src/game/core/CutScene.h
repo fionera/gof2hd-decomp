@@ -4,12 +4,10 @@
 #include "../../engine/core/AEString.h"
 #include "engine/math/Vector.h"
 
-
 class AEGeometry;
 class Level;
 class PlayerEgo;
 class TargetFollowCamera;
-
 
 class CutScene {
 public:

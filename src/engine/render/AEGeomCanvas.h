@@ -6,7 +6,10 @@
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
-namespace AbyssEngine { class PaintCanvas; }
+namespace AbyssEngine {
+    class PaintCanvas;
+}
+
 using ::AbyssEngine::PaintCanvas;
 
 struct AEGeomCanvas {

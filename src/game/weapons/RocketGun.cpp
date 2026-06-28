@@ -9,7 +9,6 @@
 #include "game/weapons/Radar.h"
 #include "engine/render/PaintCanvas.h"
 
-
 void MatrixRotateVector(Vector &out, const Matrix &matrix, const Vector &vec);
 
 void MatrixGetDir(Vector &out, const Matrix &matrix);
@@ -185,7 +184,7 @@ void RocketGun::seekEnemy(int unused, int index) {
     Vector enemyPos;
 
     Gun *gun = this->gun;
-    void *hasEnemies = gun->getEnemies();
+    Array<Player *> *hasEnemies = (Array<Player *> *) gun->getEnemies();
     Player *enemy = nullptr;
 
     if (gun->owner == nullptr)
@@ -239,7 +238,7 @@ have_enemy:
         rotated += steer;
         VectorRotateToTarget(toTarget, rotated);
         muzzleVelocities[index] = toTarget;
-        muzzleVelocities[index] *= g->field_0x50;
+        muzzleVelocities[index] *= g->pitchRate;
     }
 }
 
@@ -290,7 +289,7 @@ void RocketGun::update(int elapsed) {
         this->fadeTimer = 0;
         gun->hitSmall = 0;
 
-        void *local = Globals::Canvas->TransformGetLocal(this->transform);
+        Matrix *local = (Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
         int shot = gun->fireIndex;
         Vector *positions = (Vector *) gun->positions;
         MatrixSetTranslation(matrix, positions[shot].x, positions[shot].y, positions[shot].z);
@@ -298,7 +297,7 @@ void RocketGun::update(int elapsed) {
         Vector *velocities = (Vector *) gun->velocities;
         gunVec = velocities[shot];
 
-        local = Globals::Canvas->TransformGetLocal(this->transform);
+        local = (Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
         memcpy(&matrix, local, 0x3c);
         axis.x = 0.0f;
         axis.y = 1.0f;

@@ -5,9 +5,6 @@
 
 class FileInterface;
 
-
-
-
 class AENormalFile : public AELowLevelFile {
 public:
     FileInterface *file;
@@ -18,7 +15,11 @@ public:
 
     uint32_t Write(uint32_t bytes, void *buffer) override;
 
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
+
     uint32_t Read(uint32_t bytes, void *buffer) override;
+
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
 
     uint32_t Skip(uint32_t bytes) override;
 

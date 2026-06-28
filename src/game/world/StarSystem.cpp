@@ -15,7 +15,6 @@
 
 int StarSystem::orbitPlanetIndex;
 
-
 namespace AbyssEngine {
     namespace AEMath {
         Vector operator+(const Vector &lhs, const Vector &rhs);
@@ -24,25 +23,17 @@ namespace AbyssEngine {
     }
 }
 
-void ArrayRelease_KIPlayer(void *array);
+void ArrayRelease_KIPlayer(void *array); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *Array_KIPlayer_dtor(void *array);
+void *Array_KIPlayer_dtor(void *array); // lint: void_ptr (external symbol; mangling must match lib)
 
-void Array_KIPlayer_ctor(void *array);
+void Array_KIPlayer_ctor(void *array); // lint: void_ptr (external symbol; mangling must match lib)
 
-void Array_Station_release(void *array);
+void Array_Station_release(void *array); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *Array_Station_dtor(void *array);
+void *Array_Station_dtor(void *array); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline uint32_t flat_count(void *array) {
-    return static_cast<Array<void *> *>(array)->size_;
-}
-
-static inline void *flat_data(void *array) {
-    return static_cast<Array<void *> *>(array)->data_;
-}
-
-void MatrixGetPosition(Vector *out, void *matrix);
+void MatrixGetPosition(Vector *out, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
 
 void MatrixGetUp(Vector *out, const Matrix *matrix);
 
@@ -65,10 +56,12 @@ void StarSystem::renderSunStreak() {
 }
 
 void *StarSystem::getPlanetTargets() {
+    // lint: void_ptr (exported signature; mangling must match lib)
     return this->playerTargets;
 }
 
 void *StarSystem::getPlanets() {
+    // lint: void_ptr (exported signature; mangling must match lib)
     return this->planetsArray;
 }
 
@@ -113,7 +106,6 @@ StarSystem::~StarSystem() {
 
 typedef Engine *(*EngineGetter)(ApplicationManager *app);
 
-
 static EngineGetter g_StarSystem_init_getEngine = nullptr;
 
 static float g_StarSystem_init_sunColors[256] = {0};
@@ -131,7 +123,7 @@ static inline uint32_t rgba_scaled(uint32_t color, float scale) {
 
 void StarSystem::initLight() {
     Engine *engine = (Engine *) Globals::appManager->GetEngine();
-    engine->field_0x32c = 2;
+    engine->lightCount = 2;
 
     Status *status = Globals::status;
     uint32_t baseIndex;
@@ -194,16 +186,16 @@ void StarSystem::initLight() {
     getEngine(Globals::appManager)->LightSetMaterialColorSpecular(1.0f, 1.0f, 1.0f);
     getEngine(Globals::appManager)->LightSetMaterialColorShininess(0.7f);
     getEngine(Globals::appManager)->LightSetLightDirection(this->lightDirection.x, this->lightDirection.y,
-                                                   this->lightDirection.z, 0x4000);
+                                                           this->lightDirection.z, 0x4000);
     getEngine(Globals::appManager)->LightSetLightColorAmbient(0.0f, 0.0f, 0.0f, 0x4000);
     getEngine(Globals::appManager)->LightSetLightColorDiffuse(this->sunLightColor.x, this->sunLightColor.y,
-                                                      this->sunLightColor.z, 0x4000);
+                                                              this->sunLightColor.z, 0x4000);
     getEngine(Globals::appManager)->LightSetLightColorSpecular(2.0f, 2.0f, 2.0f, 0x4000);
     getEngine(Globals::appManager)->LightSetLightDirection(0.0f, 0.0f, 1.0f, 0x4001);
     getEngine(Globals::appManager)->LightSetLightColorDiffuse(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
     getEngine(Globals::appManager)->LightSetLightColorSpecular(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
     getEngine(Globals::appManager)->LightSetParticleAmbient(this->sunLightColor.x, this->sunLightColor.y,
-                                                    this->sunLightColor.z);
+                                                            this->sunLightColor.z);
 
     Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_1);
     this->fogEnabled = 0;
@@ -276,7 +268,6 @@ void StarSystem::render2D() {
     this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
 }
 
-
 static uint16_t g_StarSystem_ctor_planetTextures[256] = {0};
 
 static uint16_t g_StarSystem_ctor_stationTextures[256] = {0};
@@ -346,13 +337,13 @@ StarSystem::StarSystem(int mode) {
     SolarSystem *system = (SolarSystem *) (intptr_t) status->getSystem();
     uint32_t *stations = system->getStations();
     FileRead reader;
-    void *stationArray = (void *) (intptr_t) reader.loadStationsBinary();
+    Array<Station *> *stationArray = (Array<Station *> *) (intptr_t) reader.loadStationsBinary();
 
     this->texturesArray = new Array<uint32_t>();
-    ArraySetLength(flat_count(stationArray) + 1, *(this->texturesArray));
+    ArraySetLength(stationArray->size() + 1, *(this->texturesArray));
 
     this->stationIdxArray = new Array<int>();
-    ArraySetLength(flat_count(stations), *(this->stationIdxArray));
+    ArraySetLength(reinterpret_cast<Array<int> *>(stations)->size(), *(this->stationIdxArray));
 
     int mission = status->getCurrentCampaignMission();
     if ((mission == 0x59 && this->supernovaSystem != 0) ||
@@ -363,14 +354,14 @@ StarSystem::StarSystem(int mode) {
     } else {
         uint32_t tex = ((SolarSystem *) (intptr_t) status->getSystem())->getTextureIndex();
         Globals::Canvas->TextureCreate(g_StarSystem_ctor_planetTextures[tex],
-                               (*this->texturesArray)[0], false);
+                                       (*this->texturesArray)[0], false);
         this->tintColor = g_StarSystem_ctor_systemColors[
             ((SolarSystem *) (intptr_t) status->getSystem())->getIndex()];
     }
 
-    uint32_t count = flat_count(stations);
-    int *stationIds = (int *) flat_data(stations);
-    Station **loadedStations = (Station **) flat_data(stationArray);
+    uint32_t count = reinterpret_cast<Array<int> *>(stations)->size();
+    int *stationIds = reinterpret_cast<Array<int> *>(stations)->data();
+    Station **loadedStations = stationArray->data();
     for (uint32_t i = 1; i < this->texturesArray->size(); ++i) {
         int stationIndex = stationIds[i - 1];
         int currentStation = status->getStation()->getIndex();
@@ -380,18 +371,18 @@ StarSystem::StarSystem(int mode) {
             if (mode == 3 && status->getCurrentCampaignMission() == 0) {
                 this->selectedStationSlot = i;
                 Globals::Canvas->TextureCreate((uint16_t) 0x273b,
-                                       (*this->texturesArray)[i], false);
+                                               (*this->texturesArray)[i], false);
             } else {
                 Globals::Canvas->TextureCreate(g_StarSystem_ctor_planetTextures[stationTex],
-                                       (*this->texturesArray)[i], false);
+                                               (*this->texturesArray)[i], false);
             }
         } else {
             Globals::Canvas->TextureCreate(g_StarSystem_ctor_stationTextures[stationTex],
-                                   (*this->texturesArray)[i], false);
+                                           (*this->texturesArray)[i], false);
             if (Globals::status->orbitHasPlanetRing(station->getIndex()) != 0) {
                 this->planetRing = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
                 Globals::Canvas->TextureCreate((uint16_t) 0x7198,
-                                       this->planetRingTexture, false);
+                                               this->planetRingTexture, false);
                 this->planetRingIndex = i;
             }
         }
@@ -401,11 +392,11 @@ StarSystem::StarSystem(int mode) {
     Array_Station_release(stationArray);
     ::operator delete(Array_Station_dtor(stationArray));
 
-    this->playerTargets = ::operator new(0x0c);
+    this->playerTargets = (Array<KIPlayer *> *) ::operator new(0x0c);
     Array_KIPlayer_ctor(this->playerTargets);
 
     ArraySetLength<unsigned int>(static_cast<unsigned int>(count),
-                                 *static_cast<Array<unsigned int> *>(this->playerTargets));
+                                 *reinterpret_cast<Array<unsigned int> *>(this->playerTargets));
 
     this->planetsArray = new Array<AEGeometry *>();
     ArraySetLength(count + 1, *(this->planetsArray));
@@ -416,7 +407,7 @@ StarSystem::StarSystem(int mode) {
     Globals::rnd->setSeed((long long) status->getStation()->getIndex() * 300);
 
     int sunSlot = Globals::rnd->nextInt(14);
-    PlayerStatic **targets = (PlayerStatic **) flat_data(this->playerTargets);
+    PlayerStatic **targets = (PlayerStatic **) this->playerTargets->data();
     for (uint32_t i = 0; i < this->planetsArray->size(); ++i) {
         AEGeometry *geom = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
         (*this->planetsArray)[i] = geom;
@@ -433,7 +424,7 @@ StarSystem::StarSystem(int mode) {
             });
             if (this->supernovaSystem != 0) {
                 Globals::Canvas->TextureCreate((uint16_t) 0x2dde,
-                                       this->supernovaSunTexture, false);
+                                               this->supernovaSunTexture, false);
             }
             usedSlots[sunSlot * 4] = 1;
         } else {
@@ -489,22 +480,21 @@ void StarSystem::scaleSunDuringSupernovaIntro(int amount) {
 
 void StarSystem::switchPlanetForIntro() {
     Globals::Canvas->TextureCreate((uint16_t) 0x273a,
-                           (*this->texturesArray)[this->selectedStationSlot], false);
+                                   (*this->texturesArray)[this->selectedStationSlot], false);
     AEGeometry *planet = (*this->planetsArray)[this->selectedStationSlot];
     planet->setScaling(planet->getScaling() * 2.0f);
 }
 
 void StarSystem::switchSunForSupernovaReversal() {
     Globals::Canvas->TextureCreate((uint16_t) 0x2734,
-                           (*this->texturesArray)[0], false);
+                                   (*this->texturesArray)[0], false);
     AEGeometry *sun = (*this->planetsArray)[0];
     sun->setScaling(2.429073312463973e24f, 2.429073312463973e24f, 2.429073312463973e24f);
 }
 
-typedef void *(*GetTransformFn)(PaintCanvas *canvas, int transform_id);
+typedef AbyssEngine::Transform *(*GetTransformFn)(PaintCanvas *canvas, int transform_id);
 
-typedef void (*SetTransformModeFn)(void *transform, int mode, int value);
-
+typedef void (*SetTransformModeFn)(AbyssEngine::Transform *transform, int mode, int value);
 
 static GetTransformFn g_StarSystem_intro_getTransform = nullptr;
 
@@ -534,10 +524,9 @@ void StarSystem::switchSunForSupernovaIntro() {
     this->tintColor = g_StarSystem_intro_colors[system->getIndex()];
 }
 
-
 static uint32_t g_StarSystem_render_station_index_storage = 0;
 static uint32_t *g_StarSystem_render_station_index =
-    &g_StarSystem_render_station_index_storage;
+        &g_StarSystem_render_station_index_storage;
 
 void StarSystem::render() {
     Vector cameraPos;
@@ -550,7 +539,7 @@ void StarSystem::render() {
 
     PaintCanvas *canvas = Globals::Canvas;
     unsigned current = canvas->CameraGetCurrent();
-    void *local = canvas->CameraGetLocal(current);
+    Matrix *local = (Matrix *) canvas->CameraGetLocal(current);
     MatrixGetPosition(&cameraPos, local);
 
     uint32_t count = this->planetsArray->size();
@@ -559,8 +548,8 @@ void StarSystem::render() {
         if (count > 1) {
             if (i == 0) {
                 unsigned current2 = canvas->CameraGetCurrent();
-                void *local2 = canvas->CameraGetLocal(current2);
-                savedCamera = *(const Matrix *) local2;
+                Matrix *local2 = (Matrix *) canvas->CameraGetLocal(current2);
+                savedCamera = *local2;
                 tempVec = (*this->positionsArray)[0] + cameraPos;
                 if (this->supernovaSystem == 0) {
                     MatrixGetUp(&up, &savedCamera);
@@ -591,8 +580,8 @@ void StarSystem::render() {
                 if (this->supernovaSystem != 0) {
                     tempVec *= grow;
                     unsigned current3 = canvas->CameraGetCurrent();
-                    void *local3 = canvas->CameraGetLocal(current3);
-                    savedCamera = *(const Matrix *) local3;
+                    Matrix *local3 = (Matrix *) canvas->CameraGetLocal(current3);
+                    savedCamera = *local3;
                     up = (*this->positionsArray)[0] + cameraPos;
                     MatrixGetUp(&scaleBytes, &savedCamera);
                     MatrixGetLookAt(&lookAt, &up, &cameraPos, &scaleBytes);

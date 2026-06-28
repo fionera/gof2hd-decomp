@@ -18,7 +18,6 @@ class StarMap;
 class TouchButton;
 class Wanted;
 
-
 class WantedWindow {
 public:
     uint32_t lastButtonHit;

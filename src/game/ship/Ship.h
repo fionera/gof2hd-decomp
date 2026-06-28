@@ -6,7 +6,6 @@
 
 class Item;
 
-
 class Ship {
 public:
     Ship(int index, int baseHP, int baseLoad, int value,

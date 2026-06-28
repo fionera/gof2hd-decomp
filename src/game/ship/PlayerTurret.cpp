@@ -13,7 +13,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/mission/Status.h"
 
-
 namespace AbyssEngine {
     namespace AEMath {
         Vector MatrixGetDir(const Matrix &matrix);
@@ -34,7 +33,6 @@ namespace AbyssEngine {
 
         Matrix operator*(const Matrix &, const Matrix &);
     }
-
 }
 
 static FModSound **g_turretSound = nullptr;
@@ -244,11 +242,11 @@ void PlayerTurret::update(int delta) {
         manager->enableSystemEmit(this->particleSystemId, true);
         this->explosion->start(this->cachedPosition, zero);
 
-        int random = ((AbyssEngine::AERandom *)(g_turretRandom))->nextInt(100);
+        int random = ((AbyssEngine::AERandom *) (g_turretRandom))->nextInt(100);
         if (random < 0) {
             this->cargo = new Array<int>();
             ArrayAdd(99, *(this->cargo));
-            ArrayAdd(((AbyssEngine::AERandom *)(g_turretRandom))->nextInt(10) + 1, *(this->cargo));
+            ArrayAdd(((AbyssEngine::AERandom *) (g_turretRandom))->nextInt(10) + 1, *(this->cargo));
             this->createCrate(3);
         } else {
             Player *levelPlayer = (Player *) (intptr_t) this->level->getPlayer();

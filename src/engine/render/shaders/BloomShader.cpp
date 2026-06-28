@@ -7,7 +7,6 @@
 #include <GLES2/gl2.h>
 #include <arm_neon.h>
 
-
 static unsigned char g_BloomShader_internalInitNeeded;
 static unsigned int g_BloomShader_shaderMode;
 
@@ -118,7 +117,7 @@ namespace AbyssEngine {
     }
 
     void BloomShader::RenderEffect(FBOContainer *source, Engine *engine) {
-        engine->field_0x3e4 = this->program;
+        engine->currentProgram = this->program;
 
         if (g_BloomShader_internalInitNeeded != 0) {
             g_BloomShader_internalInitNeeded = 0;
@@ -229,7 +228,7 @@ namespace AbyssEngine {
         base->Activate();
         glActiveTexture(0x84c1);
         bloom->Activate();
-        glBindFramebuffer(0x8d40, engine->field_0x40c);
+        glBindFramebuffer(0x8d40, engine->viewFramebuffer);
         unsigned int width;
         unsigned int height;
         if (engine->appManager->paintCanvas->gameOrientation == 2) {

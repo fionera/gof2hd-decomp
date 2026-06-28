@@ -6,7 +6,6 @@
 
 class Station;
 
-
 class SolarSystem {
 public:
     int starR;
@@ -56,6 +55,8 @@ public:
     uint32_t *getStations();
 
     void *getForbiddenGoods();
+
+    // lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
 
     uint32_t *getRoutes();
 

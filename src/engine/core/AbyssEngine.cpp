@@ -17,38 +17,29 @@
 #include <cstring>
 
 namespace {
-
-
-
-
-struct CurveKeyframe {
-    uint8_t  tag;
-    uint8_t  pad0x1[7];
-    uint32_t timeLo;
-    uint32_t timeHi;
-    int32_t  value;
-    int32_t  c0;
-    int32_t  c1;
-};
+    struct CurveKeyframe {
+        uint8_t tag;
+        uint8_t pad0x1[7];
+        uint32_t timeLo;
+        uint32_t timeHi;
+        int32_t value;
+        int32_t c0;
+        int32_t c1;
+    };
 
 #if __SIZEOF_POINTER__ == 4
 #include <cstddef>
-static_assert(offsetof(CurveKeyframe, tag) == 0x0, "CurveKeyframe.tag");
-static_assert(offsetof(CurveKeyframe, timeLo) == 0x8, "CurveKeyframe.timeLo");
-static_assert(offsetof(CurveKeyframe, timeHi) == 0xc, "CurveKeyframe.timeHi");
-static_assert(offsetof(CurveKeyframe, value) == 0x10, "CurveKeyframe.value");
-static_assert(offsetof(CurveKeyframe, c0) == 0x14, "CurveKeyframe.c0");
-static_assert(offsetof(CurveKeyframe, c1) == 0x18, "CurveKeyframe.c1");
+    static_assert(offsetof(CurveKeyframe, tag) == 0x0, "CurveKeyframe.tag");
+    static_assert(offsetof(CurveKeyframe, timeLo) == 0x8, "CurveKeyframe.timeLo");
+    static_assert(offsetof(CurveKeyframe, timeHi) == 0xc, "CurveKeyframe.timeHi");
+    static_assert(offsetof(CurveKeyframe, value) == 0x10, "CurveKeyframe.value");
+    static_assert(offsetof(CurveKeyframe, c0) == 0x14, "CurveKeyframe.c0");
+    static_assert(offsetof(CurveKeyframe, c1) == 0x18, "CurveKeyframe.c1");
 #endif
-
 }
 
 namespace AbyssEngine {
-
-
-
     int currentUsedShaderIndex;
-
 
     float currentFps;
     float debugTouch[4];
@@ -79,9 +70,13 @@ namespace AbyssEngine {
     unsigned char ShaderSet;
 
     Engine *AE_getInitGLThis();
+
     int AE_getInitGLWidth();
+
     int AE_getInitGLHeight();
+
     void AE_AEMath_matMul(AEMath::Matrix *out, const AEMath::Matrix *rhs);
+
     void AE_SpriteSystem_pushMatrix(unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3,
                                     unsigned int m4, unsigned int m5, unsigned int m6, unsigned int m7,
                                     unsigned int m8, unsigned int m9, unsigned int m10, unsigned int m11,
@@ -91,7 +86,7 @@ namespace AbyssEngine {
 namespace {
     struct EngineArrayHeader {
         uint32_t count;
-        void *data;
+        unsigned char *data;
         uint32_t capacity;
     };
 
@@ -109,14 +104,15 @@ namespace {
     char *g_Mesh_vboEnabledFlag;
     char *g_SpriteSystem_tangentFlag;
     char *g_SpriteSystem_uvFlipFlag;
-    void *g_MeshRelease_freeFn;
+
+    void (*g_MeshRelease_freeFn)(AbyssEngine::Engine *, AbyssEngine::Mesh **);
 
     template<class T>
-    inline void ArrayAddCachedRaw(T item, void *arrayHeader) {
-        EngineArrayHeader *a = (EngineArrayHeader *) arrayHeader;
+    inline void ArrayAddCachedRaw(T item, EngineArrayHeader *arrayHeader) {
+        EngineArrayHeader *a = arrayHeader;
         if (a->count >= a->capacity) {
             uint32_t oldCap = a->capacity;
-            a->data = realloc(a->data, (size_t) oldCap * 2 * sizeof(T));
+            a->data = (unsigned char *) realloc(a->data, (size_t) oldCap * 2 * sizeof(T));
             memset((T *) a->data + oldCap, 0, oldCap * sizeof(T));
             a->capacity = oldCap * 2;
         }
@@ -233,9 +229,9 @@ namespace AbyssEngine {
         int width = AE_getInitGLWidth();
         int height = AE_getInitGLHeight();
 
-        self->fboContainer = 0;
-        self->framebufferWidth = width;
-        self->framebufferHeight = height;
+        self->refractFBO = 0;
+        self->displayWidth = width;
+        self->displayHeight = height;
         self->viewportWidth = width;
         self->viewportHeight = height;
 
@@ -248,7 +244,7 @@ namespace AbyssEngine {
         self->hasVibration = false;
 
         char *shaderFlag = g_Engine_shaderModeFlag;
-        self->field_0x40c = 0;
+        self->viewFramebuffer = 0;
         self->ResetLightParam();
         glViewport(0, 0, self->viewportHeight, self->viewportWidth);
 
@@ -272,15 +268,15 @@ namespace AbyssEngine {
         glCullFace(0x405);
         glEnable(0xb44);
         self->AfterGLInit();
-        ((PaintCanvas *) *(void **) self->paintCanvas)->Initialize(false);
+        (*(PaintCanvas **) self->appManager)->Initialize(false);
 
         self->maxTextureSize = 0;
         glGetIntegerv(0xd33, reinterpret_cast<GLint *>(&self->maxTextureSize));
 
         if (*shaderFlag != 0 && *g_Engine_fboEnabledFlag != 0) {
             FBOContainer *fbo = new FBOContainer(self, String(""));
-            self->fboContainer = fbo;
-            fbo->Create((int) self->framebufferWidth, (int) self->framebufferHeight, true, false);
+            self->refractFBO = fbo;
+            fbo->Create((int) self->displayWidth, (int) self->displayHeight, true, false);
         }
     }
 }
@@ -328,7 +324,8 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
-                   unsigned int vertexFormat, void **out);
+                   unsigned int vertexFormat,
+                   void **out); // lint: void_ptr (exported MeshCreate symbol; void** baked into mangled name)
 
     void MeshRelease(Engine * engine, Mesh * *slot);
 
@@ -357,6 +354,7 @@ namespace AbyssEngine {
         if (regionCount <= index) return -1;
 
         if (MeshCreate(engine, 4, 2, 0x13, (void **) region) != 1)
+            // lint: void_ptr (cast to exported MeshCreate void** param)
             return -2;
 
         unsigned char mode = 0;
@@ -385,8 +383,10 @@ namespace AbyssEngine {
                 pos[7] = halfH;
                 pos[10] = halfH;
 
-                double atlasH = (double) AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->atlasH, mode);
-                double atlasW = (double) AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->atlasW, mode);
+                double atlasH = (double)
+                        AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->atlasH, mode);
+                double atlasW = (double)
+                        AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->atlasW, mode);
                 float offYs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) region->offY, mode);
                 float offXs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) region->offX, mode);
                 float offYu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->offY, mode);
@@ -538,16 +538,16 @@ namespace AbyssEngine {
     }
 }
 
-
-
-extern "C" {
-void glVertexPointer(int size, unsigned int type, int stride, const void *ptr);
+extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+void glVertexPointer(int size, unsigned int type, int stride, const void *ptr); // lint: void_ptr (OpenGL ABI signature)
 
 void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr);
 
-void glNormalPointer(unsigned int type, int stride, const void *ptr);
+// lint: void_ptr (OpenGL ABI signature)
 
-void glColorPointer(int size, unsigned int type, int stride, const void *ptr);
+void glNormalPointer(unsigned int type, int stride, const void *ptr); // lint: void_ptr (OpenGL ABI signature)
+
+void glColorPointer(int size, unsigned int type, int stride, const void *ptr); // lint: void_ptr (OpenGL ABI signature)
 }
 
 namespace AbyssEngine {
@@ -720,7 +720,7 @@ namespace AbyssEngine {
         curve->entries = 0;
 
         if (*slot != 0)
-            operator delete((void *) *slot);
+            operator delete(*slot);
         *slot = 0;
     }
 }
@@ -779,7 +779,7 @@ namespace AbyssEngine {
         if (*slot == 0)
             return;
 
-        void *table = (*slot)->codes;
+        uint16_t *table = (*slot)->codes;
         if (table != 0)
             operator delete[](table);
         (*slot)->codes = 0;
@@ -800,7 +800,7 @@ namespace AbyssEngine {
         (*slot)->glyphMeshes = 0;
 
         if (*slot != 0)
-            operator delete((void *) *slot);
+            operator delete(*slot);
         *slot = 0;
     }
 }
@@ -828,7 +828,7 @@ namespace AbyssEngine {
         if (m->vertexFormat & 0x10) {
             if (AEFile::Read((uint32_t)(2), &m->indexCount, handle) == 0)
                 return -1;
-            void *idx = ::operator new[]((unsigned int) m->indexCount << 1);
+            unsigned char *idx = (unsigned char *) ::operator new[]((unsigned int) m->indexCount << 1);
             (*slot)->indices = idx;
             if (AEFile::Read((uint32_t)((unsigned int) (*slot)->indexCount << 1), (*slot)->indices, handle) == 0)
                 return -1;
@@ -844,13 +844,13 @@ namespace AbyssEngine {
         unsigned int vcount = (*slot)->vertexCount;
 
         if (compressedPos) {
-            void *raw = ::operator new[](vcount * 6);
+            unsigned char *raw = (unsigned char *) ::operator new[](vcount * 6);
             if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) {
                 ::operator delete[](raw);
                 return -1;
             }
             m = *slot;
-            void *pos = ::operator new[](vcount * 0xc);
+            unsigned char *pos = (unsigned char *) ::operator new[](vcount * 0xc);
             m->positions = pos;
             m = *slot;
             short *rawShorts = (short *) raw;
@@ -868,19 +868,19 @@ namespace AbyssEngine {
         } else if ((flags & 3) == 0) {
             if ((flags & 0x18) != 0) {
                 m = *slot;
-                void *pos = ::operator new[](vcount * 0xc);
+                unsigned char *pos = (unsigned char *) ::operator new[](vcount * 0xc);
                 m->positions = pos;
                 if (AEFile::Read((uint32_t)((*slot)->vertexCount * 0xc), (*slot)->positions, handle) == 0)
                     return -1;
             }
         } else {
-            void *raw = ::operator new[](vcount * 0xc);
+            unsigned char *raw = (unsigned char *) ::operator new[](vcount * 0xc);
             if (AEFile::Read((uint32_t)(vcount * 0xc), raw, handle) == 0) {
                 ::operator delete[](raw);
                 return -1;
             }
             m = *slot;
-            void *pos = ::operator new[](vcount * 0xc);
+            unsigned char *pos = (unsigned char *) ::operator new[](vcount * 0xc);
             m->positions = pos;
             m = *slot;
             int *rawInts = (int *) raw;
@@ -910,13 +910,13 @@ namespace AbyssEngine {
 
         if (m->vertexFormat & 2) {
             if (compressedPos) {
-                void *raw = ::operator new[](vcount << 2);
+                unsigned char *raw = (unsigned char *) ::operator new[](vcount << 2);
                 if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) {
                     ::operator delete[](raw);
                     return -1;
                 }
                 m = *slot;
-                void *uv = ::operator new[](vcount << 3);
+                unsigned char *uv = (unsigned char *) ::operator new[](vcount << 3);
                 m->texCoords = uv;
                 m = *slot;
                 char flip = *g_uvFlipFlag;
@@ -935,7 +935,7 @@ namespace AbyssEngine {
                 }
                 ::operator delete[](raw);
             } else if ((flags & 0x18) != 0) {
-                void *uv = ::operator new[](vcount << 3);
+                unsigned char *uv = (unsigned char *) ::operator new[](vcount << 3);
                 m->texCoords = uv;
                 if (AEFile::Read((uint32_t)((*slot)->vertexCount << 3), (*slot)->texCoords, handle) == 0)
                     return -1;
@@ -954,13 +954,13 @@ namespace AbyssEngine {
 
         if (m->vertexFormat & 4) {
             if (compressedPos) {
-                void *raw = ::operator new[](vcount * 6);
+                unsigned char *raw = (unsigned char *) ::operator new[](vcount * 6);
                 if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) {
                     ::operator delete[](raw);
                     return -1;
                 }
                 m = *slot;
-                void *nrm = ::operator new[](vcount * 0xc);
+                unsigned char *nrm = (unsigned char *) ::operator new[](vcount * 0xc);
                 m->normals = nrm;
                 m = *slot;
                 const double scale = 1.0 / 32767.0;
@@ -995,7 +995,7 @@ namespace AbyssEngine {
                 }
                 ::operator delete[](raw);
             } else if ((flags & 0x18) != 0) {
-                void *nrm = ::operator new[](vcount * 0xc);
+                unsigned char *nrm = (unsigned char *) ::operator new[](vcount * 0xc);
                 m->normals = nrm;
                 if (AEFile::Read((uint32_t)((*slot)->vertexCount * 0xc), (*slot)->normals, handle) == 0)
                     return -1;
@@ -1003,10 +1003,10 @@ namespace AbyssEngine {
 
             if (*g_tangentEnabled != 0) {
                 m = *slot;
-                void *tan = ::operator new[](vcount * 0xc);
+                unsigned char *tan = (unsigned char *) ::operator new[](vcount * 0xc);
                 m->tangents = tan;
                 m = *slot;
-                void *bin = ::operator new[](vcount * 0xc);
+                unsigned char *bin = (unsigned char *) ::operator new[](vcount * 0xc);
                 m->binormals = bin;
                 m = *slot;
 
@@ -1088,13 +1088,13 @@ namespace AbyssEngine {
 
         if (m->vertexFormat & 8) {
             if (compressedPos) {
-                void *raw = ::operator new[](vcount << 2);
+                unsigned char *raw = (unsigned char *) ::operator new[](vcount << 2);
                 if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) {
                     ::operator delete[](raw);
                     return -1;
                 }
                 m = *slot;
-                void *col = ::operator new[](vcount << 4);
+                unsigned char *col = (unsigned char *) ::operator new[](vcount << 4);
                 m->colors = col;
                 m = *slot;
                 const float inv = 255.0f;
@@ -1107,7 +1107,7 @@ namespace AbyssEngine {
                 }
                 ::operator delete[](raw);
             } else if ((flags & 0x18) != 0) {
-                void *col = ::operator new[](vcount << 4);
+                unsigned char *col = (unsigned char *) ::operator new[](vcount << 4);
                 m->colors = col;
                 if (AEFile::Read((uint32_t)((*slot)->vertexCount << 4), (*slot)->colors, handle) == 0)
                     return -1;
@@ -1137,7 +1137,7 @@ namespace AbyssEngine {
                 {
                     EngineArrayHeader *a = (EngineArrayHeader *) &(*slot)->animation->meshes;
                     a->capacity = a->count + 1;
-                    a->data = realloc(a->data, (a->count + 1) * sizeof(Mesh *));
+                    a->data = (unsigned char *) realloc(a->data, (a->count + 1) * sizeof(Mesh *));
                     ((Mesh **) a->data)[a->count] = childPtr;
                     a->count = a->capacity;
                 }
@@ -1182,7 +1182,8 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
-                   unsigned int fmt, void **out);
+                   unsigned int fmt,
+                   void **out); // lint: void_ptr (exported MeshCreate symbol; void** baked into mangled name)
 
     void MeshRelease(Engine * engine, Mesh * *slot);
 
@@ -1200,7 +1201,7 @@ namespace AbyssEngine {
 
         unsigned int triCount = (n << 1) & 0xffff;
         int rc = MeshCreate(engine, (unsigned short) ((n & 0x3fff) << 2), (unsigned short) triCount,
-                            0x1f, (void **) &sys->mesh);
+                            0x1f, (void **) &sys->mesh); // lint: void_ptr (cast to exported MeshCreate void** param)
         SpriteSystem *s = *out;
         if (rc != 1) {
             MeshRelease(engine, &s->mesh);
@@ -1211,7 +1212,7 @@ namespace AbyssEngine {
                 operator delete[]((*out)->sizeCpu);
             (*out)->sizeCpu = 0;
             if (*out != 0)
-                operator delete((void *) *out);
+                operator delete(*out);
             *out = 0;
             return -1;
         }
@@ -1219,18 +1220,18 @@ namespace AbyssEngine {
         Mesh *mesh = s->mesh;
         int *indexArr = (int *) mesh->indices;
 
-        void *posCpu = operator new[](n * 0xc);
+        unsigned char *posCpu = (unsigned char *) operator new[](n * 0xc);
         s->posCpu = (float *) posCpu;
         memset((*out)->posCpu, 0, n * 0xc);
 
         s = *out;
         s->sharedSize = sharedSize ? 1 : 0;
         if (sharedSize) {
-            void *sz = operator new[](2);
+            unsigned char *sz = (unsigned char *) operator new[](2);
             s->sizeCpu = (int16_t *) sz;
             *(unsigned short *) (*out)->sizeCpu = 0;
         } else {
-            void *sz = operator new[]((n << 1));
+            unsigned char *sz = (unsigned char *) operator new[]((n << 1));
             s->sizeCpu = (int16_t *) sz;
             memset((*out)->sizeCpu, 0, (n << 1));
         }
@@ -1299,7 +1300,7 @@ namespace AbyssEngine {
         unsigned int handle = 0;
         if (AEFile::OpenRead(path, (uint32_t *) (&handle)) == 0) {
             if (*out != 0)
-                ::operator delete((void *) *out);
+                ::operator delete(*out);
             *out = 0;
             return -1;
         }
@@ -1334,7 +1335,7 @@ namespace AbyssEngine {
                 case 3:
                 case 0x81: {
                     unsigned int sz = (unsigned int) im->width * (unsigned int) im->height * 4;
-                    void *p = ::operator new[](sz);
+                    unsigned char *p = (unsigned char *) ::operator new[](sz);
                     im->data = p;
                     im = *out;
                     if (AEFile::Read((uint32_t)(sz), im->data, handle) == 0) goto fail;
@@ -1351,7 +1352,7 @@ namespace AbyssEngine {
                 case 0xd:
                 case 0xf:
                     if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-                    im->data = ::operator new[](dataLen);
+                    im->data = (unsigned char *) ::operator new[](dataLen);
                     if (AEFile::Read((uint32_t)(dataLen), im->data, handle) == 0) goto fail;
                     im->format = 4;
                     im->dataLen = dataLen;
@@ -1359,7 +1360,7 @@ namespace AbyssEngine {
                 case 0x10:
                 case 0x12:
                     if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-                    im->data = ::operator new[](dataLen);
+                    im->data = (unsigned char *) ::operator new[](dataLen);
                     if (AEFile::Read((uint32_t)(dataLen), im->data, handle) == 0) goto fail;
                     im->format = 5;
                     im->dataLen = dataLen;
@@ -1368,7 +1369,7 @@ namespace AbyssEngine {
                 case 0x13:
                     if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
                     im->format = 7;
-                    im->data = ::operator new[](im->dataLen);
+                    im->data = (unsigned char *) ::operator new[](im->dataLen);
                     if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
                     break;
                 case 0x14:
@@ -1379,7 +1380,7 @@ namespace AbyssEngine {
                     if (fmt == 0x40)
                         im->hasMipmaps = 0;
                     if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-                    im->data = ::operator new[](dataLen);
+                    im->data = (unsigned char *) ::operator new[](dataLen);
                     if (AEFile::Read((uint32_t)(dataLen), im->data, handle) == 0) goto fail;
                     im->format = 0xb;
                     im->dataLen = dataLen;
@@ -1390,21 +1391,21 @@ namespace AbyssEngine {
                 case 0x22:
                     if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
                     im->format = 8;
-                    im->data = ::operator new[](im->dataLen);
+                    im->data = (unsigned char *) ::operator new[](im->dataLen);
                     if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
                     break;
                 case 0x21:
                 case 0x23:
                     if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
                     im->format = 9;
-                    im->data = ::operator new[](im->dataLen);
+                    im->data = (unsigned char *) ::operator new[](im->dataLen);
                     if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
                     break;
                 case 0x24:
                 case 0x26:
                     if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
                     im->format = 10;
-                    im->data = ::operator new[](im->dataLen);
+                    im->data = (unsigned char *) ::operator new[](im->dataLen);
                     if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
                     break;
                 default:
@@ -1428,7 +1429,7 @@ namespace AbyssEngine {
             operator delete[]((*slot)->data);
             (*slot)->data = 0;
             if (*slot != 0)
-                operator delete((void *) *slot);
+                operator delete(*slot);
             *slot = 0;
         }
     }
@@ -1441,7 +1442,7 @@ namespace AbyssEngine {
         if (*slot != 0) {
             MeshRelease(engine, (Mesh **) *slot);
             if (*slot != 0)
-                operator delete((void *) *slot);
+                operator delete(*slot);
             *slot = 0;
         }
     }
@@ -1465,35 +1466,35 @@ namespace AbyssEngine {
         m->field_0x2a = (short) triCount;
 
         unsigned int posBytes = (unsigned int) vertexCount * 0xc;
-        void *p = operator new[](posBytes);
+        unsigned char *p = (unsigned char *) operator new[](posBytes);
         m->positions = p;
         memset(p, 0, posBytes);
 
         if (vertexFormat & 0x10) {
-            p = operator new[]((unsigned int) triCount * 6);
+            p = (unsigned char *) operator new[]((unsigned int) triCount * 6);
             m->indices = p;
             memset(p, 0, (unsigned int) triCount * 6);
         }
         if (vertexFormat & 2) {
-            p = operator new[]((unsigned int) vertexCount << 3);
+            p = (unsigned char *) operator new[]((unsigned int) vertexCount << 3);
             m->texCoords = p;
             memset(p, 0, (unsigned int) vertexCount << 3);
         }
         if (vertexFormat & 4) {
-            p = operator new[](posBytes);
+            p = (unsigned char *) operator new[](posBytes);
             m->normals = p;
             memset(p, 0, posBytes);
             if (*g_Mesh_tangentEnabledFlag != 0) {
-                p = operator new[](posBytes);
+                p = (unsigned char *) operator new[](posBytes);
                 m->tangents = p;
                 memset(p, 0, posBytes);
-                p = operator new[](posBytes);
+                p = (unsigned char *) operator new[](posBytes);
                 m->binormals = p;
                 memset(p, 0, posBytes);
             }
         }
         if (vertexFormat & 8) {
-            p = operator new[]((unsigned int) vertexCount << 4);
+            p = (unsigned char *) operator new[]((unsigned int) vertexCount << 4);
             m->colors = p;
             memset(p, 0, (unsigned int) vertexCount << 4);
         }
@@ -1688,10 +1689,10 @@ namespace AbyssEngine {
 
                         unsigned int *mdst = (unsigned int *) spr->colors + n * 16;
                         for (int r = 0; r < 4; ++r) {
-                            mdst[r * 4 + 0] = *(uint32_t *) &engine->flCurrentColorR;
-                            mdst[r * 4 + 1] = *(uint32_t *) &engine->field_0xd4;
-                            mdst[r * 4 + 2] = *(uint32_t *) &engine->field_0xd8;
-                            mdst[r * 4 + 3] = *(uint32_t *) &engine->field_0xdc;
+                            mdst[r * 4 + 0] = *(uint32_t *) &engine->glColor[0];
+                            mdst[r * 4 + 1] = *(uint32_t *) &engine->glColor[1];
+                            mdst[r * 4 + 2] = *(uint32_t *) &engine->glColor[2];
+                            mdst[r * 4 + 3] = *(uint32_t *) &engine->glColor[3];
                         }
                         canvas->field_0xc = n + 1;
 
@@ -1741,7 +1742,8 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
-                   unsigned int vertexFormat, void **out);
+                   unsigned int vertexFormat,
+                   void **out); // lint: void_ptr (exported MeshCreate symbol; void** baked into mangled name)
 
     void ImageFontRelease(Engine * engine, ImageFont * *slot);
 
@@ -1848,19 +1850,19 @@ namespace AbyssEngine {
             if (g == index) {
                 ImageFont *font = *out;
                 if (AEFile::Read((uint32_t)(2), &font->glyphCount, handle) == 0) goto fail;
-                void *codes = ::operator new[]((unsigned int) font->glyphCount << 1);
+                unsigned char *codes = (unsigned char *) ::operator new[]((unsigned int) font->glyphCount << 1);
                 font->codes = (uint16_t *) codes;
                 if (AEFile::Read((uint32_t)((unsigned int) (*out)->glyphCount << 1), (*out)->codes,
                                  handle) == 0)
                     goto fail;
                 font = *out;
-                void *meshes = ::operator new[]((unsigned int) font->glyphCount << 2);
+                unsigned char *meshes = (unsigned char *) ::operator new[]((unsigned int) font->glyphCount << 2);
                 font->glyphMeshes = (Mesh **) meshes;
 
                 unsigned int n = (*out)->glyphCount;
                 for (unsigned int gi = 0; gi < n; ++gi) {
-                    void **meshSlot = (void **) &(*out)->glyphMeshes[gi];
-                    if (MeshCreate(engine, 4, 2, 0x13, meshSlot) != 1)
+                    if (MeshCreate(engine, 4, 2, 0x13, (void **) &(*out)->glyphMeshes[gi]) != 1)
+                        // lint: void_ptr (cast to exported MeshCreate void** param)
                         goto fail;
                     unsigned short sizeY = 0, sizeX = 0, offX = 0, offY = 0;
                     if (AEFile::Read((uint32_t)(2), &sizeY, handle) == 0) goto fail;
@@ -1922,12 +1924,9 @@ namespace AbyssEngine {
     int MeshDraw(Engine * engine, Mesh * mesh);
 
     static inline unsigned int f2u(float f) {
-        union {
-            float f;
-            unsigned int u;
-        } c;
-        c.f = f;
-        return c.u;
+        unsigned int u;
+        memcpy(&u, &f, sizeof(u));
+        return u;
     }
 
     void SpriteSystemDraw(Engine *engine, const Matrix &view, const Matrix &world, SpriteSystem *sys) {
@@ -1983,21 +1982,21 @@ namespace AbyssEngine {
             MeshDraw(engine, mesh);
         } else {
             Material *batch = (Material *) mesh->material;
-            ArrayAddCachedRaw<Mesh *>(mesh, &batch->meshes);
+            ArrayAddCachedRaw<Mesh *>(mesh, (EngineArrayHeader *) &batch->meshes);
 
             const float *v = view;
             AE_SpriteSystem_pushMatrix(f2u(v[0]), f2u(v[1]), f2u(v[2]), f2u(v[3]), f2u(v[4]), f2u(v[5]),
                                        f2u(v[6]), f2u(v[7]), f2u(v[8]), f2u(v[9]), f2u(v[10]), f2u(v[11]),
-                                       f2u(v[12]), f2u(v[13]), f2u(v[14]), (int) (intptr_t) &batch->arr_2c);
+                                       f2u(v[12]), f2u(v[13]), f2u(v[14]), (int) (intptr_t) & batch->arr_2c);
             unsigned int one = 0x3f800000;
             unsigned int negOne = 0xbf800000;
             AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, negOne, 0, 0, 0, 0, one, 0,
-                                       one, one, one, (int) (intptr_t) &batch->arr_38);
+                                       one, one, one, (int) (intptr_t) & batch->arr_38);
             const float *w = world;
             AE_SpriteSystem_pushMatrix(f2u(w[0]), f2u(w[1]), f2u(w[2]), f2u(w[3]), f2u(w[4]), f2u(w[5]),
                                        f2u(w[6]), f2u(w[7]), f2u(w[8]), f2u(w[9]), f2u(w[10]), f2u(w[11]),
-                                       f2u(w[12]), f2u(w[13]), f2u(w[14]), (int) (intptr_t) &batch->arr_5c);
-            ArrayAddCachedRaw<unsigned int>(0xffffffff, &batch->arr_50);
+                                       f2u(w[12]), f2u(w[13]), f2u(w[14]), (int) (intptr_t) & batch->arr_5c);
+            ArrayAddCachedRaw<unsigned int>(0xffffffff, (EngineArrayHeader *) &batch->arr_50);
         }
     }
 }
@@ -2011,9 +2010,9 @@ namespace AbyssEngine {
 
         unsigned int vcount = m->vertexCount;
 
-        void *colArr = m->colors;
-        void *tanArr = m->tangents;
-        void *binArr = m->binormals;
+        float *colArr = (float *) m->colors;
+        float *tanArr = (float *) m->tangents;
+        float *binArr = (float *) m->binormals;
 
         glGenBuffers(1, &m->positionVBO);
         glBindBuffer(0x8892, m->positionVBO);
@@ -2131,13 +2130,15 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    typedef void (*ImageCallback)(Image *, void *);
+    typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported texture-load callback signature)
 
     int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user,
+                                    // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     unsigned int *outIds, float scale, AELoadedTexture *outTex,
                                     bool flag);
 
     int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user,
+                              // lint: void_ptr (exported TextureCreateFromFile signature)
                               unsigned int *outIds, bool /*flag*/, float scale) {
         TextureCreateFromFileIntern(engine, path, cb, user, outIds, scale,
                                     (AELoadedTexture *) 0, false);
@@ -2146,9 +2147,7 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-
-
-    extern "C" {
+    extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     void glTexEnvi(unsigned int t, unsigned int p, int v);
     }
 
@@ -2170,7 +2169,9 @@ namespace AbyssEngine {
     }
 
     int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *),
+                                    // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     void *user, unsigned int *outIds, float aniso,
+                                    // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     AELoadedTexture *outTex, bool /*flag*/) {
         Image *imgPtr = 0;
         *outIds = 0;
@@ -2425,12 +2426,12 @@ namespace AbyssEngine {
         if (*slot == 0)
             return;
 
-        void *p = (*slot)->posCpu;
+        unsigned char *p = (unsigned char *) (*slot)->posCpu;
         if (p != 0)
             operator delete[](p);
         (*slot)->posCpu = 0;
 
-        p = (*slot)->sizeCpu;
+        p = (unsigned char *) (*slot)->sizeCpu;
         if (p != 0)
             operator delete[](p);
         (*slot)->sizeCpu = 0;
@@ -2438,19 +2439,20 @@ namespace AbyssEngine {
         MeshRelease(engine, &(*slot)->mesh);
 
         if (*slot != 0)
-            operator delete((void *) *slot);
+            operator delete(*slot);
         *slot = 0;
     }
 }
 
 namespace AbyssEngine {
     int CurveCreate(void **src, unsigned short count, Curve **out) {
+        // lint: void_ptr (exported CurveCreate signature; void** baked into mangled name)
         Curve *curve = (Curve *) operator new(8);
         curve->entries = 0;
         *out = curve;
         curve->count = count;
 
-        void *data = operator new[]((unsigned int) count << 2);
+        unsigned char *data = (unsigned char *) operator new[]((unsigned int) count << 2);
         curve->entries = data;
         memcpy(data, src, (unsigned int) count << 2);
         return 1;
@@ -2513,7 +2515,7 @@ namespace AbyssEngine {
         delete m->animation;
         m->animation = 0;
 
-        operator delete((void *) m);
+        operator delete(m);
         *slot = 0;
     }
 }
@@ -2581,7 +2583,7 @@ namespace AbyssEngine {
         unsigned int handle = 0;
         if (AEFile::OpenRead(path, &m->positionVBO) == 0) {
             if (*out != 0)
-                ::operator delete((void *) *out);
+                ::operator delete(*out);
             *out = 0;
             return -1;
         }
@@ -2663,7 +2665,7 @@ namespace AbyssEngine {
                     {
                         EngineArrayHeader *a = (EngineArrayHeader *) &(*out)->animation->meshes;
                         a->capacity = a->count + 1;
-                        a->data = realloc(a->data, (a->count + 1) * sizeof(Mesh *));
+                        a->data = (unsigned char *) realloc(a->data, (a->count + 1) * sizeof(Mesh *));
                         ((Mesh **) a->data)[a->count] = childPtr;
                         a->count = a->capacity;
                     }

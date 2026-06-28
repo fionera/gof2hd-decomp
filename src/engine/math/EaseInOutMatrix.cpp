@@ -26,9 +26,6 @@ namespace AbyssEngine {
         return this->m_current;
     }
 
-    EaseInOutMatrix::~EaseInOutMatrix() {
-    }
-
     void EaseInOutMatrix::SetDuration(int duration) {
         m_duration = (float) duration;
     }

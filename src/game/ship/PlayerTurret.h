@@ -14,11 +14,8 @@ class Explosion;
 class KIPlayer;
 class Level;
 
-
 class PlayerTurret : public KIPlayer {
 public:
-
-
     bool turretEnabled;
     char field_0x3e;
     bool isSentryGun;

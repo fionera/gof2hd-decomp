@@ -165,6 +165,7 @@ unsigned int Objective::achieved(int value) {
         }
         case 22: {
             Array<void *> *messages = this->level->getMessages();
+            // lint: void_ptr matches Level::getMessages() exported signature
             return ((RadioMessage *) (*messages)[messages->size() - 1])->isOver();
         }
         case 23:

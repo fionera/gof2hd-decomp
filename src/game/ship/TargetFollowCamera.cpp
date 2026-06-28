@@ -3,8 +3,9 @@
 #include "engine/render/AEGeometry.h"
 #include "engine/render/PaintCanvas.h"
 
-
 namespace AbyssEngine {
+    class AERandom;
+
     namespace AEMath {
         Matrix MatrixGetLookAt(const Vector &pos, const Vector &at, const Vector &up);
 
@@ -13,9 +14,9 @@ namespace AbyssEngine {
 }
 
 static unsigned g_currentCamera = 0;
-static void *g_cameraRng = nullptr;
+static AbyssEngine::AERandom *g_cameraRng = nullptr;
 
-int AERandom(void *rng, int bound);
+int AERandom(void *rng, int bound); // lint: void_ptr (free fn signature baked into imported mangled name)
 
 static const double g_TFC_seedHandlingA = 0.005;
 static const double g_TFC_seedHandlingB = 0.006;

@@ -4,7 +4,6 @@
 #include "engine/file/AEFile.h"
 #include <GLES2/gl2.h>
 
-
 namespace AbyssEngine {
     int ShaderBaseStruct::shaderIndexIntern;
 

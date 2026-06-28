@@ -8,7 +8,6 @@
 
 class Item;
 
-
 class BluePrint {
 public:
     Array<int> *ingredientCounters;

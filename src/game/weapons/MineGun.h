@@ -12,7 +12,6 @@ class Gun;
 class Level;
 class PlayerEgo;
 
-
 class MineGun : public ObjectGun {
 public:
     PlayerEgo *player;

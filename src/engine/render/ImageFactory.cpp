@@ -9,7 +9,7 @@
 namespace AbyssEngine {
 }
 
-typedef void (*GetTextFn)(unsigned canvas, int id, void *out);
+typedef void (*GetTextFn)(unsigned canvas, int id, unsigned int *out);
 
 static GetTextFn *g_reload_getText;
 static unsigned *g_reload_canvas;
@@ -18,8 +18,6 @@ static unsigned *g_IF_drawShip_canvas;
 static unsigned *g_drawItem_canvas;
 static int *g_IF_idTable;
 static unsigned *g_IF_drawItem4_canvas;
-
-
 
 int IMAGE_OFFSETS[104];
 int IMAGE_OFFSETS_IPAD[104] = {
@@ -68,10 +66,10 @@ int IMAGE_OFFSETS_IPAD_LARGE[104] = {
     32, 200, 32, 0, 32, 0, 32, 0,
 };
 
-static void *gCreateChar2Rng1;
+static AbyssEngine::AERandom **gCreateChar2Rng1;
 static int gCreateChar2Table;
-static void *gCreateChar2Rng2;
-static void *gCreateCharRng;
+static AbyssEngine::AERandom **gCreateChar2Rng2;
+static AbyssEngine::AERandom **gCreateCharRng;
 
 static unsigned *g_IF_li_canvas;
 static char *g_IF_flagA;
@@ -163,6 +161,7 @@ void ImageFactory::drawItem(int itemId, int x, int y) {
 }
 
 void *ImageFactory::loadImage(int row, int col, int frameBase) {
+    // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
     int id = g_IF_idTable[row * 4 + col];
     if (id < 0)
         return nullptr;
@@ -172,7 +171,6 @@ void *ImageFactory::loadImage(int row, int col, int frameBase) {
             ->Image2DCreate((unsigned short) ((short) id + (short) frameBase), image);
 
     int *posBase;
-
 
     int cell = row * 8 + col * 2;
     if (*g_IF_flagA != 0) {
@@ -221,13 +219,13 @@ Array<ImagePart *> *ImageFactory::loadChar(int *desc) {
 }
 
 void ImageFactory::createChar(int race) {
-    int sexRoll = ((AbyssEngine::AERandom *)(*(void **) gCreateCharRng))->nextInt(2);
+    int sexRoll = (*gCreateCharRng)->nextInt(2);
     this->createChar(sexRoll == 0, race);
 }
 
 int *ImageFactory::createChar(bool isMale, int race) {
     if (race == 3) {
-        int reroll = ((AbyssEngine::AERandom *)(*(void **) gCreateChar2Rng1))->nextInt(4);
+        int reroll = (*gCreateChar2Rng1)->nextInt(4);
         race = (reroll != 0) ? 2 : 0;
     }
     int row = race;
@@ -240,7 +238,7 @@ int *ImageFactory::createChar(bool isMale, int race) {
 
     int *partCounts = &table[row * 4];
     for (int i = 0; i != 4; ++i)
-        desc[i + 1] = ((AbyssEngine::AERandom *)(*(void **) gCreateChar2Rng2))->nextInt(partCounts[i]);
+        desc[i + 1] = (*gCreateChar2Rng2)->nextInt(partCounts[i]);
     return desc;
 }
 

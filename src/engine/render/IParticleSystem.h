@@ -8,14 +8,13 @@
 
 #include "engine/math/AEMath.h"
 
-
-
 namespace AbyssEngine {
     class PaintCanvas;
 }
+
 using ::AbyssEngine::PaintCanvas;
 
-void AERandom_dtor(void *self);
+void AERandom_dtor(void *self); // lint: void_ptr (AERandom ABI shim, Pv mangling baked in)
 
 class IParticleSystem {
 public:
@@ -55,7 +54,7 @@ public:
 
     ~IParticleSystem() {
         delete this->particleSets;
-        AERandom_dtor(reinterpret_cast<void *>(this->random));
+        AERandom_dtor(this->random);
     }
 
     virtual int init(uint32_t resource, uint16_t idOffset) = 0;

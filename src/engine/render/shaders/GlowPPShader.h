@@ -4,16 +4,15 @@
 #include "../../core/AEString.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine { 
+namespace AbyssEngine {
     class FBOContainer;
     class Mesh;
- }
-
-
+}
 
 namespace AbyssEngine {
     class Engine;
 }
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {

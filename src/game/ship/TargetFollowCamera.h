@@ -9,7 +9,6 @@
 #include "engine/math/Vector.h"
 class AEGeometry;
 
-
 using AbyssEngine::Matrix;
 using AbyssEngine::Vector;
 

@@ -233,6 +233,7 @@ ListItem::ListItem(AbyssEngine::String *src, bool b, int v) {
 }
 
 void *ListItem::init() {
+    // lint: void_ptr (exported signature; return type baked into ABI)
     this->lines = 0;
     this->agent = 0;
     this->bluePrint = 0;

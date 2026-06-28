@@ -62,8 +62,6 @@ namespace AbyssEngine {
     }
 
     void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine) {
-
-
         float *projMatrix = engine->projMatrix;
 
         uint32x4_t zero = vdupq_n_u32(0);
@@ -102,7 +100,7 @@ namespace AbyssEngine {
         fbo->Activate();
 
         if (Engine_IsPostEffectActivated(engine) == 0) {
-            glBindFramebuffer(0x8d40, engine->field_0x40c);
+            glBindFramebuffer(0x8d40, engine->viewFramebuffer);
             unsigned int width;
             unsigned int viewportHeight;
             if (engine->appManager->paintCanvas->gameOrientation == 2) {

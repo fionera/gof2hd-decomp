@@ -1,7 +1,6 @@
 #include "engine/core/GameText.h"
 #include "engine/file/AEFile.h"
 
-
 static short g_GameText_language_storage = 0;
 static short *g_GameText_language = &g_GameText_language_storage;
 static unsigned short g_GameText_langReset_storage = 0;
@@ -150,7 +149,11 @@ int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
 static const char gInitLangStr[] = "";
 
 GameText::GameText() {
-    { if (this->fallbackText.data) delete[] this->fallbackText.data; this->fallbackText.data = nullptr; this->fallbackText.length = 0; }
+    {
+        if (this->fallbackText.data) delete[] this->fallbackText.data;
+        this->fallbackText.data = nullptr;
+        this->fallbackText.length = 0;
+    }
     *g_GameText_langReset = 0xffff;
     this->textTable = nullptr;
     this->textCount = 0;
@@ -334,6 +337,5 @@ void GameText::ReadLangFile(unsigned int file, int count) {
 
     AEFile::Close(file);
 }
-
 
 unsigned short GameText::currentLang;

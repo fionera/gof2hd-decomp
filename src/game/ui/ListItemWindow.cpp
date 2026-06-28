@@ -12,8 +12,6 @@
 #include "engine/render/PaintCanvas.h"
 
 namespace {
-
-
     struct ItemDatabase {
         unsigned int count;
         Item **itemTable;
@@ -22,27 +20,30 @@ namespace {
 
 void liw_set_buildShipPreview(void *self, void *item, void *layout);
 
+// lint: void_ptr (imported symbol; param mangling must match lib)
+
 void liw_set_fillRows(void *self, void *item, void *layout, int isShip, bool param6);
+
+// lint: void_ptr (imported symbol; param mangling must match lib)
 
 void _liw_render_tail(void *c, int a, int h, void *sp);
 
-
-
+// lint: void_ptr (imported symbol; param mangling must match lib)
 
 char *LISTITEMWINDOW_UNITS[62] = {
-    (char *) "",     (char *) "",   (char *) "",     (char *) "",     (char *) "",
-    (char *) "",     (char *) "",   (char *) "",     (char *) "",     (char *) "",
-    (char *) "",     (char *) "ms", (char *) "m",    (char *) "km/h", (char *) "m",
-    (char *) "",     (char *) "",   (char *) "",     (char *) "",     (char *) "ms",
-    (char *) "",     (char *) "%",  (char *) "%",    (char *) "",     (char *) "ms",
-    (char *) "%",    (char *) "ms", (char *) "ms",   (char *) "%",    (char *) "ms",
-    (char *) "",     (char *) "",   (char *) "%",    (char *) "%",    (char *) "",
-    (char *) "ms",   (char *) "ms", (char *) "ms",   (char *) "",     (char *) "%",
-    (char *) "%",    (char *) "ms", (char *) "ms",   (char *) "ms",   (char *) "m",
-    (char *) "",     (char *) "%",  (char *) "m",    (char *) "t",    (char *) "km/h",
-    (char *) "%",    (char *) "m",  (char *) "%",    (char *) "m",    (char *) "%",
-    (char *) "",     (char *) "%",  (char *) "",     (char *) "",     (char *) "t",
-    (char *) "",     (char *) "",
+    (char *) "", (char *) "", (char *) "", (char *) "", (char *) "",
+    (char *) "", (char *) "", (char *) "", (char *) "", (char *) "",
+    (char *) "", (char *) "ms", (char *) "m", (char *) "km/h", (char *) "m",
+    (char *) "", (char *) "", (char *) "", (char *) "", (char *) "ms",
+    (char *) "", (char *) "%", (char *) "%", (char *) "", (char *) "ms",
+    (char *) "%", (char *) "ms", (char *) "ms", (char *) "%", (char *) "ms",
+    (char *) "", (char *) "", (char *) "%", (char *) "%", (char *) "",
+    (char *) "ms", (char *) "ms", (char *) "ms", (char *) "", (char *) "%",
+    (char *) "%", (char *) "ms", (char *) "ms", (char *) "ms", (char *) "m",
+    (char *) "", (char *) "%", (char *) "m", (char *) "t", (char *) "km/h",
+    (char *) "%", (char *) "m", (char *) "%", (char *) "m", (char *) "%",
+    (char *) "", (char *) "%", (char *) "", (char *) "", (char *) "t",
+    (char *) "", (char *) "",
 };
 
 static int **g_liw_screen = nullptr;
@@ -93,10 +94,9 @@ void ListItemWindow::OnTouchEnd(int x, int y) {
     }
 }
 
-
 static PaintCanvas **g_liw_r_canvas = nullptr;
 
-static void **g_liw_r_obj = nullptr;
+static Layout **g_liw_r_obj = nullptr;
 
 void ListItemWindow::render() {
     if (!this->shows3DShipFlag)
@@ -105,7 +105,7 @@ void ListItemWindow::render() {
     PaintCanvas *canvas = *g_liw_r_canvas;
     canvas->Begin3d();
 
-    Layout *obj = (Layout *) *g_liw_r_obj;
+    Layout *obj = *g_liw_r_obj;
     int s = obj->field_0x128;
     int h = this->previewHeight - s * 2;
     canvas->EnableClip(
@@ -114,14 +114,13 @@ void ListItemWindow::render() {
         ((this->width >> 1) - (obj->field_0x2c + s * 2)) - obj->buttonInsetX,
         h);
     canvas->SetColor((unsigned int) (long) canvas);
-    void *m = canvas->CameraGetLocal((unsigned int) (long) canvas);
-    this->previewTransform = *(Matrix *) m;
+    Matrix *m = (Matrix *) canvas->CameraGetLocal((unsigned int) (long) canvas);
+    this->previewTransform = *m;
     this->previewGeometry->render();
     canvas->End3d();
     int dummy;
-    _liw_render_tail((void *) canvas, 0, h, &dummy);
+    _liw_render_tail(canvas, 0, h, &dummy);
 }
-
 
 static char **g_liw_s_fullscreen = nullptr;
 
@@ -265,10 +264,9 @@ ListItemWindow::~ListItemWindow() {
     this->scrollWindow = 0;
 }
 
-
 static char *g_liw_d_maskFlag = nullptr;
 
-static void **g_liw_d_canvas = nullptr;
+static PaintCanvas **g_liw_d_canvas = nullptr;
 
 static Layout **g_liw_d_layout = nullptr;
 
@@ -278,7 +276,7 @@ static GameText **g_liw_d_gameText = nullptr;
 
 static ImageFactory **g_liw_d_imageFactory = nullptr;
 
-static void **g_liw_d_itemDB = nullptr;
+static ItemDatabase **g_liw_d_itemDB = nullptr;
 
 static String **g_liw_d_arrowL = nullptr;
 
@@ -337,7 +335,8 @@ void ListItemWindow::draw() {
             ImageFactory *fac = *g_liw_d_imageFactory;
             int shipIdx = li->ship->getIndex();
             fac->drawShip(shipIdx, this->x + layout->buttonInsetX + layout->field_0x2c,
-                          ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) - layout->field_0x2c8 /
+                          ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) - layout->
+                           field_0x2c8 /
                            2) + layout->field_0x124);
         }
     } else {
@@ -358,7 +357,7 @@ void ListItemWindow::draw() {
         Item *itemPtr;
         if (li->isItem() == 0) {
             int idx;
-            ItemDatabase *db = (ItemDatabase *) *g_liw_d_itemDB;
+            ItemDatabase *db = *g_liw_d_itemDB;
             if (li->isBluePrint() == 0)
                 idx = li->pendingProduct->blueprintIndex;
             else
@@ -373,8 +372,9 @@ void ListItemWindow::draw() {
         int type = itemPtr->getType();
         fac->drawItem(idx, type,
                       layout->buttonInsetX + this->x + layout->field_0x2c,
-                      layout->field_0x124 + ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) -
-                                       layout->field_0x2c8 / 2));
+                      layout->field_0x124 + ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2)
+                                             -
+                                             layout->field_0x2c8 / 2));
     }
 
     Array<String *> *rows = this->labels;
@@ -470,8 +470,11 @@ void ListItemWindow::draw() {
 
 void MatrixSetRotation(void *m, float x, float y, float z);
 
+// lint: void_ptr (imported symbol; param mangling must match lib)
+
 void MatrixSetScaling(void *m, float x, float y, float z);
 
+// lint: void_ptr (imported symbol; param mangling must match lib)
 
 static uint32_t *g_liw_u_tf = nullptr;
 
@@ -502,36 +505,35 @@ void ListItemWindow::update(int frameTime) {
 
     uint32_t tf = *g_liw_u_tf;
     PaintCanvas *canvas = (PaintCanvas *) (long) tf;
-    void *loc = canvas->TransformGetLocal(tf);
+    Matrix *loc = (Matrix *) canvas->TransformGetLocal(tf);
     MatrixSetRotation(loc, angle, 0.0f, 0.0f);
-    loc = canvas->TransformGetLocal(tf);
+    loc = (Matrix *) canvas->TransformGetLocal(tf);
     float tableAngle = g_liw_u_angleTable[idx] + baseAngle;
     MatrixSetScaling(loc, tableAngle, tableAngle, tableAngle);
 
     if (this->previewSentinel != -1) {
-        loc = canvas->TransformGetLocal(tf);
+        loc = (Matrix *) canvas->TransformGetLocal(tf);
         MatrixSetRotation(loc, angle, 0.0f, 0.0f);
-        loc = canvas->TransformGetLocal(tf);
+        loc = (Matrix *) canvas->TransformGetLocal(tf);
         MatrixSetScaling(loc, tableAngle, tableAngle, tableAngle);
     }
 
     this->previewGeometry->setRotation(tableAngle, tableAngle, tableAngle);
 }
 
+static Layout ***g_liw_a = nullptr;
 
-static void ***g_liw_a = nullptr;
-
-static void ***g_liw_b = nullptr;
+static PaintCanvas ***g_liw_b = nullptr;
 
 ListItemWindow::ListItemWindow() {
-    void **a = *g_liw_a;
-    void **b = *g_liw_b;
+    Layout **a = *g_liw_a;
+    PaintCanvas **b = *g_liw_b;
     this->labels = 0;
     this->values = 0;
     this->statsCur = 0;
     this->statsPrev = 0;
-    void *av = *a;
-    PaintCanvas *canvas = (PaintCanvas *) *b;
+    Layout *av = *a;
+    PaintCanvas *canvas = *b;
     this->scrollWindow = 0;
     (void) av;
     int h = canvas->GetTextHeight((unsigned int) (long) canvas);

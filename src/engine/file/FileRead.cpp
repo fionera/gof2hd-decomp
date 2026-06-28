@@ -170,7 +170,8 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
             Matrix matrix;
             MatrixIdentity(matrix);
             Matrix rotation =
-                    MatrixSetRotation(matrix, rx * angleScale, rz * angleScale, ry * rollScale, AbyssEngine::AEMath::ROTATION_ORDER_XZY);
+                    MatrixSetRotation(matrix, rx * angleScale, rz * angleScale, ry * rollScale,
+                                      AbyssEngine::AEMath::ROTATION_ORDER_XZY);
             Vector direction = MatrixGetDir(rotation);
 
             uint32_t selected = 0;

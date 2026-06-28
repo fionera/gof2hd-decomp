@@ -5,9 +5,9 @@
 #include "game/weapons/AbstractGun.h"
 #include "engine/core/Array.h"
 
-typedef void (*GetPosFn)(void *out);
+typedef void (*GetPosFn)(float *out);
 
-static inline void getPos(void *kip, void *out) {
+static inline void getPos(KIPlayer *kip, float *out) {
     (*(*(GetPosFn **) kip + 0xa))(out);
 }
 
@@ -68,13 +68,13 @@ Waypoint *Route::getWaypoint(int index) {
     Waypoint *wp = nullptr;
     if ((int) this->waypoints->size() > index &&
         (wp = (*this->waypoints)[index]) != nullptr) {
-        void *k = (void *) (*this->dockingTargets)[index];
+        KIPlayer *k = (*this->dockingTargets)[index];
         if (k != nullptr) {
-            getPos(k, pos);
+            getPos(k, (float *) pos);
             wp->x = (int) *(float *) (pos + 0);
-            getPos((void *) (*this->dockingTargets)[index], pos);
+            getPos((*this->dockingTargets)[index], (float *) pos);
             wp->y = (int) *(float *) (pos + 4);
-            getPos((void *) (*this->dockingTargets)[index], pos);
+            getPos((*this->dockingTargets)[index], (float *) pos);
             wp->z = (int) *(float *) (pos + 8);
         }
     }

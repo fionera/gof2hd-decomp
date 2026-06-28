@@ -10,18 +10,15 @@
 #include "game/ship/Agent.h"
 #include "game/core/Globals.h"
 
-void Globals_drawLines(void *globals, String *font, Array<String *> *lines,
-                       int x, int y);
-
 static Array<Wanted *> **g_Radio_wantedRoot;
 static ImageFactory **g_Radio_imageFactoryCreate;
 static ImageFactory **g_Radio_imageFactoryLoad;
-static int * g_Radio_imagePartTable[0x3f];
+static int *g_Radio_imagePartTable[0x3f];
 static GameText **g_Radio_gameText;
 static String **g_Radio_fontNormal;
 static String **g_Radio_fontWide;
 static Layout **g_Radio_layoutForText;
-static void **g_Radio_globals;
+static Globals **g_Radio_globals;
 static char g_Radio_agentName[1];
 static Layout **g_Radio_layout;
 static int **g_Radio_screenWidth;
@@ -30,12 +27,20 @@ static Layout **g_Radio_drawLayout;
 static Array<Wanted *> **g_Radio_drawWantedRoot;
 static GameText **g_Radio_drawGameText;
 static ImageFactory **g_Radio_drawImageFactory;
-static void **g_Radio_drawGlobals;
+static Globals **g_Radio_drawGlobals;
 
 static String radio_string_from_cstr(const char *c) {
     String r;
-    for (const char *p = c; p && *p; ++p)
-        { int _nl = r.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < r.length; _i++) _nd[_i] = r.data[_i]; _nd[r.length] = (unsigned short) ((char16_t) (unsigned char) *p); _nd[_nl] = 0; if (r.data) delete[] r.data; r.data = _nd; r.length = _nl; }
+    for (const char *p = c; p && *p; ++p) {
+        int _nl = r.length + 1;
+        unsigned short *_nd = new unsigned short[_nl + 1];
+        for (int _i = 0; _i < r.length; _i++) _nd[_i] = r.data[_i];
+        _nd[r.length] = (unsigned short) ((char16_t) (unsigned char) *p);
+        _nd[_nl] = 0;
+        if (r.data) delete[] r.data;
+        r.data = _nd;
+        r.length = _nl;
+    }
     return r;
 }
 

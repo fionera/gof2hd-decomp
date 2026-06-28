@@ -3,8 +3,6 @@
 #include <cstdint>
 
 namespace AbyssEngine {
-
-
     struct AELoadedTexture {
         uint32_t glId;
         uint32_t field_0x4;

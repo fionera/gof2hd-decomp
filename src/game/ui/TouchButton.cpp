@@ -174,7 +174,7 @@ static const char g_TB_emptyStr[] = "";
 
 int TouchButton::init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x,
                       int y, unsigned char flags0, unsigned char flags1) {
-    void *canvas = Globals::Canvas;
+    PaintCanvas *canvas = Globals::Canvas;
 
     this->kind = (int) kind;
     this->visible = 1;
@@ -206,7 +206,7 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
 
     switch (kind) {
         case 4: {
-            void *ach = Globals::achievements;
+            Achievements *ach = Globals::achievements;
             int elite = (((Achievements *) (ach))->isEliteMedal(achId) != 0) ? 1 : 0;
             this->iconTexId = TB_iconTexId(elite, achStage);
             ((PaintCanvas *) (canvas))->Image2DCreate(TB_iconImgId(elite, achStage), this->iconImage);
@@ -445,7 +445,7 @@ static unsigned int *g_TB_defSpacing = nullptr;
 
 TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
                          unsigned char flags0, unsigned char flags1) {
-    void *canvas = Globals::Canvas;
+    PaintCanvas *canvas = Globals::Canvas;
     this->fontId = *g_TB_defSpacing;
     this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
 
@@ -461,7 +461,7 @@ static String **g_TB_d_unitStr = nullptr;
 static unsigned int g_TB_d_frameMask = 0;
 
 void TouchButton::draw() {
-    void *canvas = Globals::Canvas;
+    PaintCanvas *canvas = Globals::Canvas;
     unsigned int savedColor = ((PaintCanvas *) (canvas))->GetColor();
 
     if (this->visible == 0)
@@ -568,7 +568,7 @@ void TouchButton::draw() {
         unsigned int lblColor = (unsigned int) this->textColor;
         if (this->halfTransparent != 0)
             Globals::Canvas->SetColor((unsigned char) (lblColor >> 16), (unsigned char) (lblColor >> 8),
-                              (unsigned char) lblColor, (unsigned char) (lblColor >> 24));
+                                      (unsigned char) lblColor, (unsigned char) (lblColor >> 24));
         else
             Globals::Canvas->SetColor(0xffffffff);
 
@@ -719,7 +719,7 @@ bool TouchButton::touchedInside(int px, int py) {
 
 TouchButton::TouchButton(unsigned int kind, unsigned int image,
                          int a, int b, int c, unsigned char flag) {
-    void *canvas = Globals::Canvas;
+    PaintCanvas *canvas = Globals::Canvas;
     this->image = image;
     this->fontId = *g_TB_defSpacing;
     this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
@@ -741,7 +741,7 @@ TouchButton::TouchButton(String const &text,
     this->fontSpacing = kerning;
     this->fontId = spacing;
 
-    void *canvas = Globals::Canvas;
+    PaintCanvas *canvas = Globals::Canvas;
     short prev = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
     ((PaintCanvas *) (canvas))->FontSetSpacing(spacing, (short) kerning);
 
@@ -757,7 +757,7 @@ TouchButton::TouchButton(int x, int y, String const &text, int p4, int p5, unsig
 }
 
 TouchButton::TouchButton(unsigned int kind, int a, int b, int c, unsigned char flag) {
-    void *canvas = Globals::Canvas;
+    PaintCanvas *canvas = Globals::Canvas;
     this->fontId = *g_TB_defSpacing;
     this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
 

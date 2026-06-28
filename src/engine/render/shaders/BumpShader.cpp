@@ -99,7 +99,7 @@ namespace AbyssEngine {
             if (this->u21Loc >= 0)
                 glUniform1i(this->u21Loc, *gBumpFlag);
 
-            if (ctx->field_0x32c < 2) {
+            if (ctx->lightCount < 2) {
                 glUniform3f(this->u11Loc, 0, 0, 0);
                 glUniform3f(this->u12Loc, 0, 0, 0);
                 glUniform3f(this->u13Loc, 0, 0, 0);

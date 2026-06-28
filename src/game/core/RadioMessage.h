@@ -9,7 +9,6 @@ class Objective;
 class PlayerEgo;
 class Radio;
 
-
 class RadioMessage {
 public:
     Radio *radio;

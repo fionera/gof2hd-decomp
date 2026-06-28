@@ -5,13 +5,15 @@
 
 #include "game/ship/KIPlayer.h"
 
+class Mission;
+
 namespace AbyssEngine {
     static PaintCanvas *gPaintCanvas = nullptr;
 
     static PaintCanvas **gRadarCanvasForDraw = nullptr;
-    static void *gRadarMissionSlot = nullptr;
+    static Mission **gRadarMissionSlot = nullptr;
     static PaintCanvas **gRadarCanvasSlot = nullptr;
-    static void *gRadarLayoutSlot = nullptr;
+    static unsigned char **gRadarLayoutSlot = nullptr;
     static uint8_t *gRadarDrawCurrentLockFlag = nullptr;
 }
 
@@ -22,18 +24,18 @@ using ::AbyssEngine::gRadarCanvasSlot;
 using ::AbyssEngine::gRadarLayoutSlot;
 using ::AbyssEngine::gRadarDrawCurrentLockFlag;
 
-int Radar_GetMissionState(void *mission);
+int Radar_GetMissionState(void *mission); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-int Radar_GetMissionType(void *mission);
+int Radar_GetMissionType(void *mission); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void *Radar_GetSystemStations();
+void *Radar_GetSystemStations(); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-static inline int layout_i32(void *layout, unsigned off) {
-    return *reinterpret_cast<int *>(static_cast<char *>(layout) + off);
+static inline int layout_i32(unsigned char *layout, unsigned off) {
+    return *reinterpret_cast<int *>(layout + off);
 }
 
-static inline uint8_t station_u8(void *station, unsigned off) {
-    return *reinterpret_cast<uint8_t *>(static_cast<char *>(station) + off);
+static inline uint8_t station_u8(unsigned char *station, unsigned off) {
+    return *reinterpret_cast<uint8_t *>(station + off);
 }
 
 int Radar::getTurretScopeWidth() {
@@ -79,7 +81,7 @@ Radar::Radar(Level *level) {
     this->field_0x1a8 = 0;
     this->level = level;
 
-    void *layout = *reinterpret_cast<void **>(gRadarLayoutSlot);
+    unsigned char *layout = *gRadarLayoutSlot;
     if (layout != nullptr) {
         int width = layout_i32(layout, 0xac);
         int height = layout_i32(layout, 0xa8);
@@ -127,7 +129,7 @@ uint8_t Radar::isPlasmaInRange() {
 }
 
 bool Radar::stationLocked() {
-    void *station = this->lockedStation;
+    unsigned char *station = reinterpret_cast<unsigned char *>(this->lockedStation);
     if (station != nullptr) {
         return station_u8(station, 0x71) != 0;
     }
@@ -151,8 +153,8 @@ void Radar::unlockAsteroid() {
 }
 
 int Radar::getPlanetDockIndex() {
-    void *stations = Radar_GetSystemStations();
-    return reinterpret_cast<int *>(stations)[this->planetDockIndex];
+    int *stations = static_cast<int *>(Radar_GetSystemStations());
+    return stations[this->planetDockIndex];
 }
 
 void Radar::update(KIPlayer *player) {
@@ -196,7 +198,7 @@ long long Radar::draw(Player *, Hud *, int mode) {
     PaintCanvas *canvas = *gRadarCanvasForDraw;
     canvas->SetColor(static_cast<unsigned int>(-1));
 
-    void *mission = *reinterpret_cast<void **>(gRadarMissionSlot);
+    Mission *mission = *gRadarMissionSlot;
     int missionState = Radar_GetMissionState(mission);
     if (missionState == 0 && Radar_GetMissionType(mission) == 0) {
         this->drawMode = static_cast<uint8_t>(mode);
@@ -237,13 +239,13 @@ void Radar::drawCurrentLock(Hud *) {
     String label;
 
     if (this->field_0x14 == 0) {
-        void *locked = this->lockedAsteroid;
+        KIPlayer *locked = this->lockedAsteroid;
         if (locked == nullptr) {
             locked = this->lockedGasCloud;
             if (locked == nullptr) {
                 locked = this->lockedEnemy;
                 if (locked == nullptr) {
-                    locked = this->lockedStation;
+                    locked = static_cast<KIPlayer *>(this->lockedStation);
                     if (locked == nullptr) {
                         *gRadarDrawCurrentLockFlag = 0;
                         return;
@@ -285,6 +287,5 @@ void Radar::calcDistance(float, float a, float b, float c, float d, float e) {
         text = km + text;
     }
 }
-
 
 unsigned char Radar::drawTarget;

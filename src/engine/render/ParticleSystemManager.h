@@ -9,11 +9,9 @@
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
-
 class IParticleSystem;
 class ParticleSystemMesh;
 class ParticleSystemSprite;
-
 
 namespace AbyssEngine {
 #ifndef GOF2_ENUM_BlendMode
@@ -22,19 +20,21 @@ namespace AbyssEngine {
 #endif
 }
 
-
 namespace AbyssEngine {
     class PaintCanvas;
 }
+
 using ::AbyssEngine::PaintCanvas;
 
 class ParticleSystemManager {
 public:
     union {
+        // lint: union_decl 16-bit flags vs low-byte alias; flags (sprite|mesh active bits) and flagsLow (narrow byte write in PlayerEgo) are both used cross-file at offset 0
         uint16_t flags;
         uint8_t flagsLow;
     };
-    void *canvas;
+
+    PaintCanvas *canvas;
     int32_t cameraSet;
     int32_t accumulatedDt;
     uint8_t enabled;
@@ -49,7 +49,7 @@ public:
     uint8_t spriteUsesExtra;
 
     uint32_t meshSystemCount;
-    void *meshSystems;
+    ParticleSystemMesh **meshSystems;
     uint32_t meshSystemCapacity;
     int16_t meshTextureId;
     int16_t meshUvId;
@@ -132,6 +132,5 @@ private:
     Array<ParticleSystemMesh *> &meshArray() {
         return *reinterpret_cast<Array<ParticleSystemMesh *> *>(&meshSystemCount);
     }
-
 };
 #endif

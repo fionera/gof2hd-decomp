@@ -9,13 +9,13 @@
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
-
 namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
     class PaintCanvas;
 }
+
 using ::AbyssEngine::PaintCanvas;
 using AbyssEngine::BlendMode;
 

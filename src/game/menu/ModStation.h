@@ -12,15 +12,27 @@ class CutScene;
 class DialogueWindow;
 class NewsTicker;
 class StarMap;
-namespace AbyssEngine { 
-    class EaseInOutMatrix;
- }
+class ChoiceWindow;
+class SpaceLounge;
+class MenuTouchWindow;
+class TouchButton;
+class ScrollTouchBox;
+class AEGeometry;
+class Radio;
+struct HangarWindow;
+struct StatusWindow;
+template<class T>
+class Array;
 
+namespace AbyssEngine {
+    class EaseInOutMatrix;
+    class EaseInOut;
+}
 
 class ModStation {
 public:
-
     union FlagWord {
+        // lint: union_decl -- word/halfword/byte view type
         uint32_t word;
         uint16_t halfword;
         uint16_t halfwords[2];
@@ -34,60 +46,78 @@ public:
     CutScene *cutScene;
     char pendingHangarClose;
     NewsTicker *newsTicker;
+
     union {
+        // lint: union_decl -- pointer overlaid with FlagWord view
         AbyssEngine::EaseInOutMatrix *cameraTween;
         FlagWord cameraTweenFlags;
     };
+
     char stationActive;
     int dt;
     int loadTick;
+
     union {
+        // lint: union_decl -- int64 overlaid with FlagWord pair
         long long accumTime;
+
         struct {
             FlagWord accumTimeLo;
             FlagWord accumTimeHi;
         };
     };
+
     String stationName;
     int selectedButton;
     int *buttonState;
+
     union {
+        // lint: union_decl -- int overlaid with FlagWord view
         int departPending;
         FlagWord departPendingFlags;
     };
-    void *dlcMenu;
+
+    MenuTouchWindow *dlcMenu;
     int activeMission;
-    void *radioMessages;
+    Array<Radio *> *radioMessages;
     int field_0x5c;
     FlagWord m_nStarMapWindowOpen;
     FlagWord subWindowFlags;
     FlagWord modalFlags;
     FlagWord screenFlags;
+
     union {
-        void *choiceWindow;
+        // lint: union_decl -- pointer overlaid with FlagWord view
+        ChoiceWindow *choiceWindow;
         FlagWord choiceWindowFlags;
     };
-    void *spaceLounge;
-    void *hangarWindow;
-    void *statusWindow;
+
+    SpaceLounge *spaceLounge;
+    HangarWindow *hangarWindow;
+    StatusWindow *statusWindow;
     DialogueWindow *m_pDialogueWindow;
     DialogueWindow *dialogueWindow;
-    void *medalChoiceWindow;
+    ChoiceWindow *medalChoiceWindow;
     int *buttonRow;
-    void *buttonLaunch;
+    TouchButton *buttonLaunch;
+
     union {
-        void *buttonCredits;
+        // lint: union_decl -- pointer overlaid with FlagWord view
+        TouchButton *buttonCredits;
         FlagWord buttonCreditsFlags;
     };
+
     union {
-        void *scrollBox;
+        // lint: union_decl -- pointer overlaid with FlagWord view
+        ScrollTouchBox *scrollBox;
         FlagWord scrollBoxFlags;
     };
+
     int introTimer;
-    void *hangarShipGeom;
+    AEGeometry *hangarShipGeom;
 
     int field_0xa4;
-    void *hangarGeom;
+    AEGeometry *hangarGeom;
     int field_0xac;
     FlagWord cameraFlags;
     int field_0xb4;
@@ -110,26 +140,38 @@ public:
     int field_0xf8;
     int field_0xfc;
     FlagWord dragFlags;
-    void *idleBox;
+    ScrollTouchBox *idleBox;
     int field_0x108;
     int field_0x10c;
-    union { int touchX; float touchXf; };
-    union { int touchY; float touchYf; };
+
+    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
+        int touchX;
+        float touchXf;
+    }; // lint: union_decl -- int/float reinterpret
     union {
+        int touchY;
+        float touchYf;
+    }; // lint: union_decl -- int/float reinterpret
+    union {
+        // lint: union_decl -- FlagWord/float reinterpret
         FlagWord scrollFlags;
         float scrollFlagsf;
     };
-    union { int scrollTarget; float scrollTargetf; };
+
+    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
+        int scrollTarget;
+        float scrollTargetf;
+    }; // lint: union_decl -- int/float reinterpret
     int field_0x120;
     int field_0x124;
-    void *activeTouch;
+    void *activeTouch; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
     FlagWord field_0x12c;
     int camKeyX;
     int camKeyY;
     int camKeyZ;
-    void *easeX;
-    void *easeY;
-    void *easeZ;
+    AbyssEngine::EaseInOut *easeX;
+    AbyssEngine::EaseInOut *easeY;
+    AbyssEngine::EaseInOut *easeZ;
     FlagWord field_0x148;
     uint8_t field_0x14c[0x278 - 0x14c];
     float camCoordX;
@@ -163,11 +205,11 @@ public:
 
     void OnSuspend();
 
-    void OnTouchBegin(int x, int y, void *touch);
+    void OnTouchBegin(int x, int y, void *touch); // lint: void_ptr
 
-    void OnTouchEnd(int x, int y, void *touch);
+    void OnTouchEnd(int x, int y, void *touch); // lint: void_ptr
 
-    void OnTouchMove(int x, int y, void *touch);
+    void OnTouchMove(int x, int y, void *touch); // lint: void_ptr
 
     int OnTouchBegin(int x, int y);
 

@@ -10,13 +10,11 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 
-
-
 static int **g_APL_apFlag = nullptr;
 
 static GameText **g_APL_gametext = nullptr;
 
-static void **g_APL_font = nullptr;
+static unsigned char **g_APL_font = nullptr;
 
 static int **g_APL_screenW = nullptr;
 
@@ -77,7 +75,7 @@ AutoPilotList::AutoPilotList(Level *level) {
 
     this->width = 0;
     this->selected = 0;
-    void *font = *g_APL_font;
+    unsigned char *font = *g_APL_font;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         if ((*this->entries)[i] != nullptr) {
             int w = Globals::Canvas->GetTextWidth(

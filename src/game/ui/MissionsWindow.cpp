@@ -21,11 +21,6 @@
 #include "game/menu/ModStation.h"
 #include <cstddef>
 
-
-
-
-
-
 struct CampaignMissionFlags {
     char pad00[0x35];
     char campaignVisibleFlagA;
@@ -39,11 +34,6 @@ static_assert(offsetof(CampaignMissionFlags, campaignVisibleFlagB) == 0x37,
               "CampaignMissionFlags flagB offset");
 #endif
 
-
-
-
-
-
 static GameText *g_mw_gameText = nullptr;
 
 static Layout **g_mw_m_layout = nullptr;
@@ -56,15 +46,15 @@ static char *g_mwi_flagB = nullptr;
 static char *g_mwi_flagC = nullptr;
 static int *g_mwi_screenW = nullptr;
 static int *g_mwi_screenH = nullptr;
-static void *g_mwi_campaign = nullptr;
+static CampaignMissionFlags **g_mwi_campaign = nullptr;
 static ImageFactory **g_mwi_imageFactory = nullptr;
 static int g_mwi_actionColor = 0;
 
 static Layout **g_mwd_layout = nullptr;
 static int *g_mwd_textId = nullptr;
-static void *g_mwd_color = nullptr;
+static unsigned int *g_mwd_color = nullptr;
 static ImageFactory **g_mwd_imageFactory = nullptr;
-static void *g_mwd_font = nullptr;
+static unsigned int *g_mwd_font = nullptr;
 
 static char *g_mwt_flagA = nullptr;
 static char *g_mwt_flagB = nullptr;
@@ -74,19 +64,23 @@ static int *g_mwt_screenH = nullptr;
 static Layout **g_mwt_layout = nullptr;
 static Layout **g_mwt_resetLayout = nullptr;
 
-static void *g_mw_campaign = nullptr;
+static CampaignMissionFlags **g_mw_campaign = nullptr;
 static int *g_mw_textBase = nullptr;
 static int *g_mw_titleTable = nullptr;
 
-
-
 void Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
+
+// lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 int ApplicationManager_GetCurrentApplicationModule(void *appMgr);
 
-int _mw_GetTextHeight(void *canvas);
+// lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+int _mw_GetTextHeight(void *canvas); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char flags);
+
+// lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 int StarMap_OnTouchEnd(StarMap *map, int x, int y);
 
@@ -263,7 +257,7 @@ int MissionsWindow::init() {
         (((((this->m_y - topY) + this->m_height) - L->field_0x10) - L->field_0x24) - reserve)
         + L->field_0x2c * -2, false);
 
-    CampaignMissionFlags *campFlags = *(CampaignMissionFlags **) g_mwi_campaign;
+    CampaignMissionFlags *campFlags = *g_mwi_campaign;
     bool campShow = (Globals::status->gameWon() == 0) ||
                     (campFlags->campaignVisibleFlagB != 0 ||
                      campFlags->campaignVisibleFlagA != 0);
@@ -273,8 +267,8 @@ int MissionsWindow::init() {
             String *t = g_mw_gameText->getText(titleId);
             text = *t;
         }
-        void *key = Globals::status;
-        Mission *cm = (Mission *) ((void *) (intptr_t) Globals::status->getCampaignMission());
+        Status *key = Globals::status;
+        Mission *cm = (Mission *) (intptr_t) Globals::status->getCampaignMission();
         int type = cm->getType();
         bool production = (type == 0xa7) || (cm->getType() == 0xae);
         String suffix("", false);
@@ -320,7 +314,7 @@ int MissionsWindow::init() {
 
         Mission *fm = Globals::status->getFreelanceMission();
         String text = Globals::globals->getAgentMissionText(fm->getAgent());
-        void *key = Globals::status;
+        Status *key = Globals::status;
         String body(text);
         int rew = fm->getReward();
         int bonus = fm->getBonus();
@@ -399,11 +393,11 @@ void MissionsWindow::draw() {
 
     PaintCanvas *canvas = Globals::Canvas;
     Layout *L = *g_mwd_layout;
-    void *color = *(void **) g_mwd_color;
-    void *font = *(void **) g_mwd_font;
+    unsigned int color = *g_mwd_color;
+    unsigned int font = *g_mwd_font;
     int titleId = *g_mwd_textId;
 
-    ((PaintCanvas *) canvas)->SetColor((unsigned int) (uintptr_t) color);
+    ((PaintCanvas *) canvas)->SetColor(color);
 
     {
         String *ht = g_mw_gameText->getText(titleId);
@@ -469,14 +463,14 @@ void MissionsWindow::draw() {
         int detailY = oy + L->field_0xc + L->field_0x20 + L->field_0x2c + L->field_0x5c;
 
         String name = ((Agent *) (fm->getAgent()))->getName();
-        ((PaintCanvas *) canvas)->DrawString((unsigned int) (uintptr_t) font, name, detailX, detailY, false);
+        ((PaintCanvas *) canvas)->DrawString(font, name, detailX, detailY, false);
 
         String station = ((Agent *) (fm->getAgent()))->getStationName();
-        ((PaintCanvas *) canvas)->DrawString((unsigned int) (uintptr_t) font, station, detailX, detailY, false);
+        ((PaintCanvas *) canvas)->DrawString(font, station, detailX, detailY, false);
 
         String *typeTxt = g_mw_gameText->getText(
             ((Agent *) (fm->getAgent()))->getMission()->getType() + 0x162);
-        ((PaintCanvas *) canvas)->DrawString((unsigned int) (uintptr_t) font, *typeTxt, detailX, detailY, false);
+        ((PaintCanvas *) canvas)->DrawString(font, *typeTxt, detailX, detailY, false);
     }
 
     this->m_pFreelanceWindow->draw();
@@ -562,7 +556,7 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
             this->m_pStarMap = map;
             if (map == nullptr) {
                 StarMap *m = new StarMap(true,
-                                         (Mission *) (void *) (intptr_t) Globals::status->getCampaignMission(),
+                                         (Mission *) (intptr_t) Globals::status->getCampaignMission(),
                                          false, -1);
                 ModStation *mod2 = (ModStation *) appMgr->GetApplicationModule(5);
                 mod2->starMap = m;
@@ -570,7 +564,7 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
                 this->m_pStarMap = mod3->starMap;
             } else {
                 this->m_pStarMap->init(true,
-                                       (Mission *) (void *) (intptr_t) Globals::status->getCampaignMission(),
+                                       (Mission *) (intptr_t) Globals::status->getCampaignMission(),
                                        false, -1);
             }
             this->m_starMapActive = 1;
@@ -659,12 +653,12 @@ void MissionsWindow::update(int dt) {
     this->m_pCampaignWindow->update(dt);
     this->m_pFreelanceWindow->update(dt);
 
-    Mission *cm = (Mission *) ((void *) (intptr_t) Globals::status->getCampaignMission());
+    Mission *cm = (Mission *) (intptr_t) Globals::status->getCampaignMission();
     int type = cm->getType();
     bool relevant = (type == 0xa7) || (cm->getType() == 0xae);
 
     if (relevant) {
-        CampaignMissionFlags *camp = *(CampaignMissionFlags **) g_mw_campaign;
+        CampaignMissionFlags *camp = *g_mw_campaign;
         bool show = (Globals::status->gameWon() == 0) ||
                     (camp->campaignVisibleFlagB != 0 || camp->campaignVisibleFlagA != 0);
         if (show) {
@@ -674,7 +668,7 @@ void MissionsWindow::update(int dt) {
                     g_mw_titleTable[Globals::status->getCurrentCampaignMission()]);
                 text = *titleTxt;
 
-                void *key = Globals::status;
+                Status *key = Globals::status;
                 String hdr(text);
                 int need = cm->getProductionGoodAmount();
                 int have = cm->getStatusValue();

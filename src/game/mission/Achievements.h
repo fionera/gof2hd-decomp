@@ -6,7 +6,6 @@
 
 class PlayerEgo;
 
-
 class Achievements {
 public:
     int *medals;
@@ -73,7 +72,6 @@ public:
     void setMedals(int *src, int count);
 
     void updateCredits(int value);
-
 };
 
 #endif

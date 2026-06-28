@@ -6,16 +6,13 @@
 
 #include "engine/math/Matrix.h"
 
-
 class Radar;
-
 
 class AEGeometry;
 class Explosion;
 class Hud;
 class Level;
 class TargetFollowCamera;
-
 
 class LevelScript {
 public:

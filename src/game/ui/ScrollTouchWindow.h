@@ -6,7 +6,6 @@
 
 class ScrollTouchBox;
 
-
 class ScrollTouchWindow {
 public:
     ScrollTouchBox *scrollBox;

@@ -7,11 +7,9 @@
 
 namespace AbyssEngine {
     class Engine;
- }
-
+}
 
 namespace AbyssEngine {
-
     class ConfigReader {
     public:
         Array<TokenStruct *> tokens;
@@ -23,6 +21,8 @@ namespace AbyssEngine {
         ~ConfigReader();
 
         void RegisterTokenReadFunction(String name, ConfigTokenReadFunction read, void *context);
+
+        // lint: void_ptr (param baked into mangled symbol)
 
         String GetNewLine();
 

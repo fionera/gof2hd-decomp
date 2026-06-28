@@ -15,7 +15,6 @@ class Mission;
 class PendingProduct;
 class Ship;
 
-
 class ListItem {
 public:
     Array<AbyssEngine::String *> *lines;
@@ -24,6 +23,7 @@ public:
     Ship *ship;
 
     union {
+        // lint: union_decl (dual-name alias; field_0x10 used cross-file: HangarWindow.cpp li->field_0x10/item->field_0x10)
         Item *item;
         Item *field_0x10;
     };
@@ -34,21 +34,25 @@ public:
     AbyssEngine::String *name2;
 
     union {
+        // lint: union_decl (dual-name alias; field_0x24 used cross-file: Hud.cpp item->field_0x24)
         uint8_t selectable;
         uint8_t field_0x24;
     };
 
     union {
+        // lint: union_decl (dual-name alias; field_0x28 used cross-file: HangarList.cpp item->field_0x28)
         int slot;
         int field_0x28;
     };
 
     union {
+        // lint: union_decl (dual-name alias; field_0x2c used cross-file: Hud.cpp item->field_0x2c)
         int itemId;
         int field_0x2c;
     };
 
     union {
+        // lint: union_decl (dual-name alias; field_0x30 used cross-file: Hud.cpp item->field_0x30)
         int buttonKind;
         int field_0x30;
     };
@@ -57,11 +61,13 @@ public:
     uint8_t textButton;
 
     union {
+        // lint: union_decl (dual-name alias; field_0x3c used cross-file: HangarWindow.cpp/HangarList.cpp li->field_0x3c)
         int inTabIndex;
         int field_0x3c;
     };
 
     union {
+        // lint: union_decl (dual-name alias; field_0x40 used cross-file: HangarList.cpp li->field_0x40)
         int subTabIndex;
         int field_0x40;
     };
@@ -69,6 +75,7 @@ public:
     uint8_t text;
 
     union {
+        // lint: union_decl (dual-name alias; field_0x45 used cross-file: HangarWindow.cpp ((ListItem *) li)->field_0x45)
         uint8_t craftable;
         uint8_t field_0x45;
     };
@@ -119,7 +126,7 @@ public:
 
     int getPrice();
 
-    void *init();
+    void *init(); // lint: void_ptr (exported signature; return type baked into ABI)
 
     bool isBluePrint();
 

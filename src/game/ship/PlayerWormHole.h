@@ -7,14 +7,10 @@
 
 #include "engine/math/Vector.h"
 
-
 class AEGeometry;
-
 
 class PlayerWormHole : public PlayerStaticFar {
 public:
-
-
     int timer;
     int scale;
     uint8_t missionLock;

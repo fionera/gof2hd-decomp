@@ -2,14 +2,14 @@
 #define GOF2_MODMAINMENU_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
+#include "engine/core/ApplicationManager.h"
 class CutScene;
 class MenuTouchWindow;
-
 
 class ModMainMenu {
 public:
     int paintCanvas;
-    void *appManager;
+    ApplicationManager *appManager;
     int state;
     uint8_t initialized;
     int frameTime;
@@ -38,11 +38,11 @@ public:
 
     virtual void OnTouchEnd(int x, int y);
 
-    virtual void OnTouchBegin(int x, int y, void *touch);
+    virtual void OnTouchBegin(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
 
-    virtual void OnTouchMove(int x, int y, void *touch);
+    virtual void OnTouchMove(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
 
-    virtual void OnTouchEnd(int x, int y, void *touch);
+    virtual void OnTouchEnd(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
 
     virtual void OnUpdate();
 

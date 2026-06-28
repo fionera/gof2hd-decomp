@@ -7,21 +7,17 @@
 #include "game/mission/Item.h"
 #include "game/ship/PlayerEgo.h"
 
-
 #include "game/ui/HudEventDisplay.h"
 
 #include "game/ui/CargoBay.h"
 class Radar;
-
 
 class Item;
 class Level;
 class ListItem;
 class PlayerEgo;
 class TouchButton;
-
-
-
+class Sprite;
 
 class Hud {
 public:
@@ -67,7 +63,7 @@ public:
     unsigned char hasAutofireUI;
     String field_0x228;
     unsigned char cargoFullFlag;
-    void *menuLevel;
+    Level *menuLevel;
     unsigned char shieldHitFlash;
     Item *currentSecondaryWeapon;
     Array<Item *> *equipmentArray;
@@ -89,7 +85,7 @@ public:
     unsigned int touchFlags;
     unsigned char autoTurretFlags;
     int field_0x288;
-    Array<void *> *keyArray;
+    Array<void *> *keyArray; // lint: void_ptr (opaque touch-handle element type; matches exported void* touchId)
     int *elementBits;
     int quickMenuTopImage;
     int quickMenuBottomImage;
@@ -191,7 +187,7 @@ public:
     unsigned char hackingGameActive;
     int cargoAggregateCount;
     Array<unsigned int> *uintArray;
-    void *digitSprite;
+    Sprite *digitSprite;
     int multiplierIconImage;
 
     Hud();
@@ -275,9 +271,15 @@ public:
 
     unsigned int touchBegin(unsigned int a, unsigned int b, void *key);
 
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+
     unsigned int touchEnd(unsigned int a, unsigned int b, void *key);
 
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+
     unsigned int touchMove(unsigned int a, unsigned int b, void *key);
+
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     unsigned int touchedElement(unsigned int x, unsigned int y);
 
@@ -286,7 +288,6 @@ public:
     void updateSecondaryWeaponString();
 
     bool drawTitleImage(bool visible);
-
 
     static int RADAR_WIDTH;
     static int RADAR_HEIGHT;

@@ -8,24 +8,33 @@
 
 class Gun;
 class KIPlayer;
-namespace FMOD { class Event; }
 
+namespace FMOD {
+    class Event;
+}
 
 class Player {
 public:
     Array<Array<Gun *> *> *guns;
+
     union {
+        // lint: union_decl float[15] view aliases AEMath::Matrix at same storage — type-pun, layout-load-bearing
         float transform[15];
         AbyssEngine::AEMath::Matrix transformMatrix;
     };
+
     int32_t radius;
+
     union {
+        // lint: union_decl uint16 destroyed reinterprets byte pair (destroyedByte/spawnedFlag) — type-pun, layout-load-bearing
         uint16_t destroyed;
+
         struct {
             uint8_t destroyedByte;
             uint8_t spawnedFlag;
         };
     };
+
     uint8_t pad_46[2];
     int32_t mirrorPosX;
     int32_t mirrorPosY;
@@ -33,13 +42,17 @@ public:
     uint16_t field_54;
     uint8_t pad_56[2];
     int32_t field_58;
+
     union {
+        // lint: union_decl uint16 enemyFlags reinterprets byte pair (enemyFlagsLo/carriesFriendCargoFlag) — type-pun, layout-load-bearing
         uint16_t enemyFlags;
+
         struct {
             uint8_t enemyFlagsLo;
             uint8_t carriesFriendCargoFlag;
         };
     };
+
     uint8_t field_5e;
     uint8_t pad_5f;
     float flShake;
@@ -47,24 +60,32 @@ public:
     uint8_t armorHit;
     uint8_t hullHit;
     uint8_t gammaHit;
+
     union {
+        // lint: union_decl uint16/uint8 size-mismatch reinterpret (empDisabled/empDisabledByte) — type-pun, layout-load-bearing
         uint16_t empDisabled;
         uint8_t empDisabledByte;
     };
+
     uint8_t pad_6a[2];
     int32_t damageDoneByPlayer;
     uint8_t playShootSoundFlag;
     uint8_t pad_71[3];
     Array<Player *> *enemies;
     int32_t hitpoints;
+
     union {
+        // lint: union_decl int32/float reinterpret of same slot (empPoints/empPointsF) — type-pun, layout-load-bearing
         int32_t empPoints;
         float empPointsF;
     };
+
     union {
+        // lint: union_decl int32/float reinterpret of same slot (maxEmpPoints/maxEmpPointsF) — type-pun, layout-load-bearing
         int32_t maxEmpPoints;
         float maxEmpPointsF;
     };
+
     int32_t maxHitpoints;
     float shieldHP;
     int32_t armorHP;
@@ -99,7 +120,7 @@ public:
     uint8_t neverAttack;
     uint8_t pad_ef;
     FMOD::Event *engineEvent;
-    void *enginePositionVec;
+    Vector *enginePositionVec;
     uint8_t enginePaused;
     uint8_t pad_f9[3];
     float position[3];
@@ -306,8 +327,7 @@ public:
 
     void StopEngineSound();
 
-
-    static void *velocity;
+    static Vector *velocity;
 };
 
 #endif

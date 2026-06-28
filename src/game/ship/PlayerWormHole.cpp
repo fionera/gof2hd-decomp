@@ -13,7 +13,7 @@
 #include "game/ship/PlayerStaticFar.h"
 #include "game/ui/Hud.h"
 #include "game/core/String.h"
-
+#include "engine/core/AERandom.h"
 
 static GameText **g_playerWormHole_text = nullptr;
 
@@ -23,12 +23,11 @@ static AbyssEngine::PaintCanvas **g_playerWormHole_update_canvas = nullptr;
 
 static Status **g_playerWormHole_update_status = nullptr;
 
-static void **g_playerWormHole_update_random = nullptr;
+static AERandom **g_playerWormHole_update_random = nullptr;
 
-typedef int (*RandomNextIntFn)(void *random, int limit);
+typedef int (*RandomNextIntFn)(AERandom *random, int limit);
 
 typedef PlayerEgo *(*GetPlayerFn)(Level *level);
-
 
 static RandomNextIntFn g_playerWormHole_update_randomAlien = nullptr;
 
@@ -153,7 +152,7 @@ void PlayerWormHole::update(int elapsed) {
 
             this->timer = -3000;
 
-            void *random = *g_playerWormHole_update_random;
+            AERandom *random = *g_playerWormHole_update_random;
             int x, y, z;
             if (!status->inAlienOrbit()) {
                 RandomNextIntFn next = g_playerWormHole_update_randomNormal;

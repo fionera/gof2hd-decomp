@@ -5,7 +5,7 @@
 #include "engine/audio/AESoundInfo.h"
 
 namespace AbyssEngine {
-class AESoundInterface {
+    class AESoundInterface {
     public:
         virtual char *loadSound(const char *name) = 0;
 

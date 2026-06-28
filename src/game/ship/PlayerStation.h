@@ -10,11 +10,8 @@
 class AEGeometry;
 class Station;
 
-
 class PlayerStation : public PlayerStaticFar {
 public:
-
-
     AEGeometry *rootGeometry;
     uint32_t meshTransform;
     int32_t stationIndex;
@@ -39,7 +36,7 @@ public:
 
     Vector projectCollisionOnSurface(const Vector &position) override;
 
-    void *getRoot();
+    void *getRoot(); // lint: void_ptr (exported method return type baked into ABI)
 
     Vector getProjectionVector(const Vector &position) override;
 

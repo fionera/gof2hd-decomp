@@ -3,15 +3,13 @@
 #include <cstdint>
 
 namespace AbyssEngine {
-
-
     struct Image {
         uint16_t width;
         uint16_t height;
         uint32_t format;
         uint8_t hasMipmaps;
         uint8_t pad0x9[3];
-        void *data;
+        unsigned char *data;
         uint32_t dataLen;
     };
 }

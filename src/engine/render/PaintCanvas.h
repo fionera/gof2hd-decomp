@@ -18,8 +18,7 @@ namespace AbyssEngine {
     class Engine;
     class Mesh;
     class Transform;
- }
-
+}
 
 namespace AbyssEngine {
     class Material;
@@ -43,10 +42,12 @@ namespace AbyssEngine {
     class PaintCanvas {
     public:
         union {
+            // lint: union_decl (cross-file blocker: `initialized` used in PaintCanvas.cpp/JniBridge.cpp etc., `selfHandle` used in PlayerEgo.cpp; differently-sized live aliases at offset 0 cannot be collapsed without breaking layout/other TUs)
             unsigned char initialized;
             bool gravityRotationEnabled;
             unsigned int selfHandle;
         };
+
         int culledCount;
         char *quad2dMesh;
         int field_0xc;
@@ -59,7 +60,7 @@ namespace AbyssEngine {
         unsigned int meshCount;
         char **meshes;
         int gameOrientation;
-        void *engine;
+        Engine *engine;
         Matrix projMatrix3d;
         Matrix projOrthoMatrix;
         Matrix worldViewMatrix;
@@ -74,19 +75,19 @@ namespace AbyssEngine {
         ::Array<AbyssEngine::Material *> materials;
         ::Array<AbyssEngine::SpriteSystem *> spriteSystems;
         unsigned int glowMeshes_count;
-        void *glowMeshes_data;
+        char *glowMeshes_data;
         unsigned int glowMeshes_cap;
         unsigned int glowMatA_count;
-        void *glowMatA_data;
+        char *glowMatA_data;
         unsigned int glowMatA_cap;
         unsigned int glowMatB_count;
-        void *glowMatB_data;
+        char *glowMatB_data;
         unsigned int glowMatB_cap;
         unsigned int glowUints_count;
-        void *glowUints_data;
+        char *glowUints_data;
         unsigned int glowUints_cap;
         unsigned int glowMatC_count;
-        void *glowMatC_data;
+        char *glowMatC_data;
         unsigned int glowMatC_cap;
         char *lineMesh;
         unsigned int field_0x1cc;
@@ -258,7 +259,7 @@ namespace AbyssEngine {
 
         void CameraSetCurrent(unsigned int index);
 
-        void *CameraGetLocal(unsigned int index);
+        void *CameraGetLocal(unsigned int index); // lint: void_ptr (ABI method return; mangling must match lib)
 
         void CameraSetLocal(unsigned int index, const Matrix &matrix);
 
@@ -272,18 +273,17 @@ namespace AbyssEngine {
 
         int CameraIsPointinViewFrustum(const Vector &point);
 
-
         void TransformCreate(unsigned int &out);
 
         void TransformCreate(unsigned short resId, unsigned int &out);
 
-        void *TransformGetLocal(unsigned int index);
+        void *TransformGetLocal(unsigned int index); // lint: void_ptr (ABI method return; mangling must match lib)
 
         void TransformSetLocal(unsigned int index, const Matrix &matrix);
 
         void TransformSetColor(unsigned int index, unsigned int color);
 
-        void *TransformGetTransform(unsigned int index);
+        void *TransformGetTransform(unsigned int index); // lint: void_ptr (ABI method return; mangling must match lib)
 
         int TransformGetTriCount(unsigned int index);
 
@@ -376,13 +376,14 @@ namespace AbyssEngine {
 
         void MaterialCreate(unsigned short resId, unsigned int &out);
 
-        void *MaterialGetMaterial(unsigned int index);
+        void *MaterialGetMaterial(unsigned int index); // lint: void_ptr (ABI method return; mangling must match lib)
 
         void MaterialChange(unsigned int index, BlendMode param3, unsigned int param4);
 
         void MaterialResourceChangeTexture(unsigned int resId, unsigned int texture, int slot);
 
         void TextureCreate(unsigned short resId, void (*callback)(AbyssEngine::Image *, void *), void *userData,
+                           // lint: void_ptr (ABI method params: callback userData; mangling must match lib)
                            unsigned int &out, bool useCallbackLoader);
 
         void TextureCreate(unsigned short id, unsigned int &out, bool flag);
@@ -393,7 +394,7 @@ namespace AbyssEngine {
 
         void SetResourceList(AbyssEngine::Resource *const *list, unsigned int count);
 
-        void *FindResource(unsigned short id);
+        void *FindResource(unsigned short id); // lint: void_ptr (ABI method return; mangling must match lib)
 
         int ResourceLoaded(unsigned int index, ResourceType type);
 
@@ -449,7 +450,6 @@ namespace AbyssEngine {
 
         void GetScreenPosition(Matrix &m, const Vector &worldPos,
                                Vector &outVec);
-
     };
 }
 

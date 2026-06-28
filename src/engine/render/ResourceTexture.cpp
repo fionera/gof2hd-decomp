@@ -1,7 +1,6 @@
 #include "engine/render/ResourceTexture.h"
 #include "game/core/String.h"
 
-
 namespace AbyssEngine {
     ResourceTexture::ResourceTexture(const char *name, float value) {
         uint32_t len = String::GetStringLength(name);

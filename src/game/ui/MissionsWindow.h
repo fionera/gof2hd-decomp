@@ -15,7 +15,6 @@ class StarMap;
 class TouchButton;
 class WantedWindow;
 
-
 class MissionsWindow {
 public:
     ScrollTouchWindow *m_pCampaignWindow;

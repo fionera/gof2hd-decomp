@@ -6,8 +6,7 @@
 #include "engine/core/ApplicationManager.h"
 #include <GLES2/gl2.h>
 
-
-extern "C" {
+extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 float sinf(float x);
 }
 

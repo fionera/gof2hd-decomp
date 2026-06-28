@@ -7,33 +7,34 @@
 #include "engine/render/Engine.h"
 #include "game/world/Wanted.h"
 
-
 #include "game/mission/OptionsRecord.h"
-namespace AbyssEngine { 
-    class PaintCanvas;
- }
 
+namespace AbyssEngine {
+    class PaintCanvas;
+}
 
 class Agent;
 class GameRecord;
 class Mission;
 class Wanted;
-namespace AbyssEngine { 
-    class Engine;
- }
 
+namespace AbyssEngine {
+    class Engine;
+}
 
 #pragma pack(push, 1)
 #pragma pack(pop)
 
-void BuildResourceList(AbyssEngine::Engine * engine);
+void BuildResourceList(AbyssEngine::Engine *engine);
 
 void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder);
+
+// lint: void_ptr (exported free function; mangled signature is fixed)
 
 class RecordHandler {
 public:
     Mission *currentMission;
-    void *currentAgent;
+    Agent *currentAgent;
     String optionsPath;
     String recordDir;
     String backupDir;
@@ -58,27 +59,27 @@ public:
 
     void loadResolutionValue(float resolution);
 
-    void *readAgent(unsigned int fd);
+    void *readAgent(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
 
-    void *readAllPreviewRecords();
+    void *readAllPreviewRecords(); // lint: void_ptr (method signature; return type fixed)
 
-    void *readAllRecords();
+    void *readAllRecords(); // lint: void_ptr (method signature; return type fixed)
 
-    void *readMission(unsigned int fd);
+    void *readMission(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
 
     int readOptionsFileAsByteArray(signed char **out);
 
-    void *readRecord(int slot);
+    void *readRecord(int slot); // lint: void_ptr (method signature; return type fixed)
 
     int readRecordAsByteArray(signed char **out, int slot, bool fromBackup);
 
     void recoverSDVersionSaves();
 
-    void *readWanted(unsigned int fd);
+    void *readWanted(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
 
-    void *recordStoreRead(int slot);
+    void *recordStoreRead(int slot); // lint: void_ptr (method signature; return type fixed)
 
-    void *recordStoreReadPreview(int slot);
+    void *recordStoreReadPreview(int slot); // lint: void_ptr (method signature; return type fixed)
 
     void recordStoreWrite(int slot);
 

@@ -6,7 +6,6 @@
 
 class AEGeometry;
 
-
 class PlayerJumpgate : public PlayerStaticFar {
 public:
     uint8_t activated;

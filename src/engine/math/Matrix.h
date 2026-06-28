@@ -5,6 +5,7 @@ namespace AbyssEngine {
     namespace AEMath {
         struct Matrix {
             union {
+                // lint: union_decl (genuine type-pun: m[15] array aliases named row floats; m11_rightY/m12_upY read cross-file in PlayerEgo.cpp; layout-critical)
                 float m[15];
 
                 struct {

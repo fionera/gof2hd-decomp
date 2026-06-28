@@ -31,11 +31,6 @@ bool AbyssEngine::PostEffectFlag;
 #include <cstdarg>
 #include <cstring>
 
-
-
-
-
-
 void FBOContainer_ActivateRender2Texture(AbyssEngine::FBOContainer * self);
 void FBOContainer_ActivateTexture(AbyssEngine::FBOContainer * self);
 void FBOContainer_DeactivateRender2Texture(AbyssEngine::FBOContainer * self);
@@ -44,15 +39,15 @@ void ShaderUpdateRimColor();
 
 void ShaderUpdateMaterialColor();
 
-void ShaderCtor_0(void *);
+void ShaderCtor_0(void *); // lint: void_ptr Pv-mangled shim signature
 
-void ShaderCtor_1(void *);
+void ShaderCtor_1(void *); // lint: void_ptr Pv-mangled shim signature
 
-void ShaderCtor_2(void *);
+void ShaderCtor_2(void *); // lint: void_ptr Pv-mangled shim signature
 
-void ShaderCtor_3(void *);
+void ShaderCtor_3(void *); // lint: void_ptr Pv-mangled shim signature
 
-void ShaderCtor_4(void *);
+void ShaderCtor_4(void *); // lint: void_ptr Pv-mangled shim signature
 
 static String *g_Engine_vendorString = nullptr;
 static String *g_Engine_rendererString = nullptr;
@@ -83,9 +78,6 @@ namespace {
     int g_Engine_postEffectCounter;
     int g_Engine_postEffectPending;
 
-
-
-
     struct TextureEntry {
         uint32_t glTexture;
         unsigned char pad_04[0x10 - 0x04];
@@ -99,11 +91,13 @@ namespace {
 #endif
 }
 
-void MeshRelease(Engine *self, void *meshSlot);
+void MeshRelease(Engine *self, void *meshSlot); // lint: void_ptr Pv-mangled shim signature
 
 void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh);
 
-void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
+// lint: void_ptr Pv-mangled shim signature
+
+void esMatrixMultiply(void *out, const void *lhs, const void *rhs); // lint: void_ptr Pv-mangled shim signature
 
 void glError() {
     glGetError();
@@ -229,7 +223,7 @@ void Engine::ActivateRender2TextureFBO() {
     }
 }
 
-typedef void Materialfv(unsigned int face, unsigned int pname, const void *params);
+typedef void Materialfv(unsigned int face, unsigned int pname, const float *params);
 
 static Materialfv *volatile g_Engine_glMaterialfv;
 
@@ -388,7 +382,8 @@ void Engine::LightSetLightCount(int count) {
 }
 
 void Engine::SetAddData(void *data, int size) {
-    this->addData = data;
+    // lint: void_ptr exported method signature (addData member typed in Engine.h)
+    this->addData = (unsigned char *) data;
     this->addDataSize = size;
 }
 
@@ -535,7 +530,7 @@ void Engine::RenderMesh(Mesh *mesh) {
         this->AEClientState(0x8075, normals);
         bool colors = ((uint32_t) mesh->vertexFormat << 28) < 0;
         if (colors) {
-            glColorPointer(4, 0x1406, 0, (void *) (uintptr_t) mesh->colors);
+            glColorPointer(4, 0x1406, 0, (unsigned char *) (uintptr_t) mesh->colors);
         }
         this->AEClientState(0x8076, colors);
         if (((uint32_t) mesh->vertexFormat << 27) < 0) {
@@ -951,7 +946,7 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
 }
 
 void Engine::initFileInterface() {
-    void *fileInterface = new (operator new(0x38)) FileInterfaceAndroid();
+    FileInterfaceAndroid *fileInterface = new(operator new(0x38)) FileInterfaceAndroid();
     this->fileInterface = fileInterface;
     return AEFile::SetInterface((FileInterface *) fileInterface);
 }
@@ -978,11 +973,11 @@ int Engine::InitGL(bool shaders, int width, int height) {
     this->viewportWidth = width;
     this->viewportHeight = height;
 
-    void *fileInterface = new (operator new(0x38)) FileInterfaceAndroid();
+    FileInterfaceAndroid *fileInterface = new(operator new(0x38)) FileInterfaceAndroid();
     this->fileInterface = fileInterface;
     AEFile::SetInterface((FileInterface *) fileInterface);
 
-    this->field_0x10 = 0;
+    this->lastGlError = 0;
     this->vibrationSupported = 0;
     this->hasVibration = 0;
     g_Engine_useShaders = shaders;
@@ -1014,8 +1009,8 @@ int Engine::InitGL(bool shaders, int width, int height) {
     glEnable(0xb44);
     this->AfterGLInit();
     this->appManager->paintCanvas->Initialize(false);
-    this->depthBits = 0;
-    glGetIntegerv(0xd33, (GLint *) &this->depthBits);
+    this->maxTextureSize = 0;
+    glGetIntegerv(0xd33, (GLint *) &this->maxTextureSize);
 
     if (g_Engine_useShaders != 0 && g_Engine_supportsFBO != 0) {
         FBOContainer *fbo = new FBOContainer(this, String("refract"));
@@ -1118,7 +1113,7 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
 Engine::Engine() {
     Engine * self = this;
 
-    self->field_0x340 = 0;
+    self->field_0x33c.y = 0;
     self->lightColor.x = 0;
     self->lightColor.z = 0;
     self->field_0x3cc = 0;
@@ -1129,8 +1124,8 @@ Engine::Engine() {
     up.z = 0.0f;
     self->lightDir = up;
     self->triangleCounts = new Array<int>();
-    self->field_0x478 = 0;
-    self->field_0x400 = 0;
+    self->field_0x474.y = 0;
+    self->eyePosition.y = 0;
     self->field_0x468 = up;
     self->fogColor = up;
     self->shaders = new Array<ShaderBaseStruct *>();
@@ -1147,9 +1142,9 @@ Engine::Engine() {
     self->postEffectFBO = 0;
     self->refractFBO = 0;
     self->glowActive = 0;
-    self->field_0x360 = 0;
+    self->autoPilotEngaged = 0;
     self->field_0x4a8 = 0;
-    self->field_0x70 = 0;
+    self->textureByteCounter = 0;
     self->field_0x100 = 0;
     self->currentProgram = -1;
     for (int i = 0; i != 0x14; i += 1) {
@@ -1175,7 +1170,7 @@ Engine::Engine() {
     self->gravRaw[1] = 0;
     self->gravRaw[2] = 0;
     self->field_0x28 = 0x14;
-    self->field_0x20 = 1;
+    self->linearFilterFlag = 1;
     self->appManager = new ApplicationManager(self);
     self->fogMinDist = 0;
     self->fogMaxDist = 0;
@@ -1223,7 +1218,7 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
     }
 }
 
-typedef void ShaderCtor(void *);
+typedef void ShaderCtor(void *); // lint: void_ptr matches Pv-mangled ShaderCtor_N shim signatures
 
 uint32_t Engine::ShaderInit() {
     static const uint32_t sizes[] = {
@@ -1234,9 +1229,9 @@ uint32_t Engine::ShaderInit() {
     };
     ShaderCtor *ctors[] = {ShaderCtor_0, ShaderCtor_1, ShaderCtor_2, ShaderCtor_3, ShaderCtor_4};
     for (uint32_t i = 0; i < sizeof(sizes) / sizeof(sizes[0]); i += 1) {
-        void *shader = operator new(sizes[i]);
+        ShaderBaseStruct *shader = (ShaderBaseStruct *) operator new(sizes[i]);
         ctors[i % 5](shader);
-        this->ShaderRegister((ShaderBaseStruct *) shader);
+        this->ShaderRegister(shader);
     }
     glGetError();
     return 1;
@@ -1246,13 +1241,11 @@ uint64_t Engine::SetEyePosition(float x, float y, float z) {
     this->eyePosition.x = x;
     this->eyePosition.y = y;
     this->eyePosition.z = z;
-    union {
-        float f;
-        uint32_t u;
-    } cx, cy;
-    cx.f = x;
-    cy.f = y;
-    return (uint64_t) cx.u | ((uint64_t) cy.u << 32);
+    uint32_t cx;
+    uint32_t cy;
+    memcpy(&cx, &x, sizeof(cx));
+    memcpy(&cy, &y, sizeof(cy));
+    return (uint64_t) cx | ((uint64_t) cy << 32);
 }
 
 void Engine::SetModelMatrix(const Matrix &matrix) {
@@ -1365,6 +1358,7 @@ void Engine::GrabFrameBuffer() {
 }
 
 void *Engine::GetJPEGImageData(float quality) {
+    // lint: void_ptr return type fixed by Engine.h declaration
     return nullptr;
 }
 
@@ -1524,7 +1518,6 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     return ShaderUpdateMaterialColor();
 }
 
-
 unsigned char AbyssEngine::Engine::EnableGlow;
 int AbyssEngine::Engine::ImageCount;
 int AbyssEngine::Engine::switchGlow;
@@ -1532,7 +1525,7 @@ int AbyssEngine::Engine::SwapCounter;
 int AbyssEngine::Engine::switchBloom;
 unsigned char AbyssEngine::Engine::enableShader;
 unsigned char AbyssEngine::Engine::EnableRefract;
-void *AbyssEngine::Engine::LodDistShader;
+AbyssEngine::ShaderBaseStruct *AbyssEngine::Engine::LodDistShader;
 unsigned char AbyssEngine::Engine::DisableRefract;
 int AbyssEngine::Engine::AnisotropyValue;
 unsigned char AbyssEngine::Engine::KeepRawMeshData;

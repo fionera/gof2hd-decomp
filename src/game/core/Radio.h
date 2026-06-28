@@ -11,7 +11,6 @@ class LevelScript;
 class PlayerEgo;
 class RadioMessage;
 
-
 class Radio {
 public:
     Array<RadioMessage *> *messages;

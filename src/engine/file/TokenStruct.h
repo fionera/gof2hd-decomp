@@ -8,10 +8,12 @@ namespace AbyssEngine {
 
     typedef void (*ConfigTokenReadFunction)(ConfigReader *, void *);
 
+    // lint: void_ptr callback ctx param; baked into RegisterTokenReadFunction ABI signature
+
     struct TokenStruct {
         String name;
         ConfigTokenReadFunction read;
-        void *context;
+        void *context; // lint: void_ptr opaque callback ctx; matches RegisterTokenReadFunction ABI
     };
 }
 

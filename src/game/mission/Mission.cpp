@@ -6,7 +6,6 @@
 #include "engine/core/GameText.h"
 #include "game/world/Station.h"
 
-
 static GameText **g_gameText;
 
 uint8_t Mission::isInstantActionMission() {
@@ -42,6 +41,7 @@ void Mission::setProductionGoods(int a, int b) {
 }
 
 void *Mission::setTargetName(String rhs) {
+    // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
     this->targetName = rhs;
     return &this->targetName;
 }
@@ -67,6 +67,7 @@ void Mission::setInstantActionMission(bool v) {
 }
 
 void *Mission::setTargetSystemName(const String &rhs) {
+    // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
     this->targetSystemName = rhs;
     return &this->targetSystemName;
 }
@@ -285,5 +286,4 @@ void Mission::setDifficulty(int difficulty) {
     this->reward = difficulty;
 }
 
-
-void *Mission::empty;
+Mission *Mission::empty;

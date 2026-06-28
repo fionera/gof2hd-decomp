@@ -4,15 +4,14 @@
 #include "../../core/AEString.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine { 
+namespace AbyssEngine {
     class Mesh;
- }
-
-
+}
 
 namespace AbyssEngine {
     class Engine;
 }
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
@@ -27,40 +26,22 @@ namespace AbyssEngine {
         int normalMatrixLoc;
         int uCameraPosition;
 
-        union {
-            int uLightDirection;
-            int field_0x38;
-        };
+        int uLightDirection;
 
         int samplerLoc1;
         int samplerLoc0;
 
-        union {
-            int uParam6;
-            int field_0x44;
-        };
+        int uParam6;
 
-        union {
-            int uLightAmbient;
-            int field_0x48;
-        };
+        int uLightAmbient;
 
-        union {
-            int uParam8;
-            int field_0x4c;
-        };
+        int uParam8;
 
-        union {
-            int uLightDiffuse;
-            int field_0x50;
-        };
+        int uLightDiffuse;
 
         int uShininess;
 
-        union {
-            int uColor;
-            int field_0x58;
-        };
+        int uColor;
 
         SpecCubeMapping();
 

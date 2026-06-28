@@ -3,7 +3,10 @@
 #include "engine/core/Array.h"
 #include "AEString.h"
 class Globals;
-namespace AbyssEngine { class Engine; }
+
+namespace AbyssEngine {
+    class Engine;
+}
 
 class GameData {
 public:
@@ -48,12 +51,13 @@ public:
     AbyssEngine::String field_0xb8;
     uint8_t field_0xc4;
 
-    GameData();
+    GameData() {
+    }
 
-    ~GameData();
+    ~GameData() {
+    }
 };
 
-
-void OnDestroyApplication(AbyssEngine::Engine * engine);
+void OnDestroyApplication(AbyssEngine::Engine *engine);
 
 #endif

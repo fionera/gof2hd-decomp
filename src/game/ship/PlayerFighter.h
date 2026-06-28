@@ -20,11 +20,10 @@ class KIPlayer;
 class Level;
 class Route;
 class Trail;
-namespace AbyssEngine { 
+
+namespace AbyssEngine {
     class EaseInOutMatrix;
- }
-
-
+}
 
 class PlayerFighter : public KIPlayer {
 public:
@@ -210,7 +209,6 @@ public:
     void setWingmanCommand(int cmd, KIPlayer *target) override;
 
     void update(int dt) override;
-
 
     static int stationRouteAliens;
 };

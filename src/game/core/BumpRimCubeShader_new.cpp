@@ -116,7 +116,7 @@ namespace AbyssEngine {
                 glUniform1i(this->uniform23, g_rimnByteGlobal);
             if (this->uniform19 >= 0) {
                 float v = 0.0f;
-                int *m30 = (int *) mesh->field_0x30;
+                int *m30 = (int *) mesh->material;
                 if (m30 != 0) {
                     v = 1.0f;
                     if (m30[9] == 0)
@@ -125,7 +125,7 @@ namespace AbyssEngine {
                 glUniform1f(this->uniform19, v);
             }
             int loc5c = this->uniform10;
-            if (eng->field_0x32c >= 2) {
+            if (eng->lightCount >= 2) {
                 if (loc5c >= 0) {
                     buf[0] = eng->lightAmbientShaded.x + eng->lightSpecularShaded.x;
                     buf[1] = eng->lightAmbientShaded.y + eng->lightSpecularShaded.y;

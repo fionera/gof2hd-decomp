@@ -8,13 +8,11 @@
 
 #include "engine/math/AEMath.h"
 
-
-namespace AbyssEngine { 
+namespace AbyssEngine {
     class Engine;
     class FBOContainer;
     class Mesh;
- }
-
+}
 
 namespace AbyssEngine {
     class ShaderBaseStruct {

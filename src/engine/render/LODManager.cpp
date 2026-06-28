@@ -9,27 +9,21 @@ int curTouchSize = 0;
 int maxTouchSize = 0;
 Touch *touches = nullptr;
 
-uint32_t CameraGetCurrent(void *canvas);
+uint32_t CameraGetCurrent(void *canvas); // lint: void_ptr (free-function signature; retype changes mangling)
 
 Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
+// lint: void_ptr (free-function signature; retype changes mangling)
+
 static PaintCanvas **g_LOD_canvas = nullptr;
 
-
-
-
-
 static char *cItemListID_05 = nullptr, *cItemListID_06 = nullptr, *cItemListID_07 = nullptr,
-            *cItemListID_08 = nullptr, *cItemListID_09 = nullptr, *cItemListID_10 = nullptr,
-            *cItemListID_11 = nullptr, *cItemListID_12 = nullptr, *cItemListID_13 = nullptr,
-            *cItemListID_14 = nullptr, *cItemListID_15 = nullptr, *cItemListID_16 = nullptr,
-            *cItemListID_17 = nullptr, *cItemListID_18 = nullptr, *cItemListID_19 = nullptr,
-            *cItemListID_20 = nullptr, *cItemListID_21 = nullptr, *cItemListID_22 = nullptr,
-            *cItemListID_23 = nullptr, *cItemListID_24 = nullptr;
-
-
-
-
+        *cItemListID_08 = nullptr, *cItemListID_09 = nullptr, *cItemListID_10 = nullptr,
+        *cItemListID_11 = nullptr, *cItemListID_12 = nullptr, *cItemListID_13 = nullptr,
+        *cItemListID_14 = nullptr, *cItemListID_15 = nullptr, *cItemListID_16 = nullptr,
+        *cItemListID_17 = nullptr, *cItemListID_18 = nullptr, *cItemListID_19 = nullptr,
+        *cItemListID_20 = nullptr, *cItemListID_21 = nullptr, *cItemListID_22 = nullptr,
+        *cItemListID_23 = nullptr, *cItemListID_24 = nullptr;
 
 struct LODSettings {
     unsigned char reserved_0x00[0x28];
@@ -70,7 +64,7 @@ void LODManager::removeObject(AEGeometry *g) {
 }
 
 void LODManager::forceUpdate(int dt, bool useParent) {
-    void *canvas = *g_LOD_canvas;
+    PaintCanvas *canvas = *g_LOD_canvas;
     float factor = g_LOD_settings->distanceFactor;
 
     uint32_t cam = CameraGetCurrent(canvas);
@@ -124,7 +118,7 @@ Touch GetTouch(int index) {
     return touches[index];
 }
 
-extern "C" void ndk_resetNativeItemInformationList() {
+extern "C" void ndk_resetNativeItemInformationList() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     if (Globals::cItemListID_00 != nullptr && Globals::cItemListID_01 != nullptr &&
         Globals::cItemListID_02 != nullptr && Globals::cItemListID_03 != nullptr &&
         Globals::cItemListID_04 != nullptr) {

@@ -44,7 +44,6 @@
 class Music;
 class Cfg;
 
-
 int FModSound_tryToStopMusicForBGMusic();
 
 void Music_resume(Music *m, int one, int v);
@@ -75,10 +74,10 @@ void DialogueWindow_ctor(...);
 
 void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
 
-
 static int *g_maneuverScale;
 
 void MGame::maneuverTouchEnd(int a, int b, void *p) {
+    // lint: void_ptr -- exported method signature (Pv)
     MGame *self = this;
     (void) b;
     (void) p;
@@ -96,7 +95,6 @@ void MGame::maneuverTouchEnd(int a, int b, void *p) {
     self->maneuverActive = 0;
 }
 
-
 static Music **g_music;
 
 static Cfg **g_cfg;
@@ -108,9 +106,8 @@ void MGame::OnResume() {
     return Music_resume(*mp, 1, **(int **) g_cfg);
 }
 
-
-
 void MGame::maneuverTouchMove(int a, int b, void *p) {
+    // lint: void_ptr -- exported method signature (Pv)
     (void) a;
     (void) p;
     if (this->maneuverActive != 0) {
@@ -127,6 +124,7 @@ void MGame::maneuverTouchMove(int a, int b, void *p) {
 }
 
 void MGame::maneuverTouchBegin(int x, int y, void *p) {
+    // lint: void_ptr -- exported method signature (Pv)
     (void) p;
     this->maneuverActive = 1;
     this->maneuverStartX = x;
@@ -216,7 +214,6 @@ float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);
 void FModSound_setProp(int snd, int id);
 
 void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z);
-
 
 static int *g_jsSound;
 
@@ -405,7 +402,7 @@ afterTurret:
             this->player->setFreeLookMode(0);
             {
                 Engine *eng = (Engine *) this->applicationManager->GetEngine();
-                eng->field_0x360 = 0;
+                eng->autoPilotEngaged = 0;
             }
             goto firstPerson;
         case 1:
@@ -441,10 +438,10 @@ firstPerson: {
     }
 }
 
-
 static int *g_fcb_guard;
 
 void MGame::freeCamTouchBegin(int x, int y, void *idPtr) {
+    // lint: void_ptr -- exported method signature (Pv)
     int id = (int) (intptr_t) idPtr;
     char buf[12];
     float fy = (float) y;
@@ -479,7 +476,6 @@ tail:
     this->freeCamDragging = 1;
 }
 
-
 static GameText **g_gameText;
 
 void MGame::useCloak() {
@@ -492,7 +488,7 @@ void MGame::useCloak() {
     Item *eq = ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x15);
     int attr = eq == 0 ? 0 : ((Item *) (eq))->getAttribute(0x26);
     ChoiceWindow *cw = this->choiceWindow;
-    void *txt = ((GameText *) (*g_gameText))->getText(0x247);
+    String *txt = ((GameText *) (*g_gameText))->getText(0x247);
     String s0, s1, s2, s3, s4, s5;
     s2.ctor_char("", false);
     s3 = *(String *) txt + s2;
@@ -505,7 +501,6 @@ void MGame::useCloak() {
     this->choiceWindowOpen = 1;
     ((MGame *) (this))->pauseSounds();
 }
-
 
 static int **g_goWormText;
 
@@ -634,8 +629,6 @@ void MGame::gameOverCheck() {
 
 int ApplicationManager_GetApplicationData();
 
-
-
 struct MGameAppData {
     uint8_t _pad0[5];
     uint8_t modalActive;
@@ -647,7 +640,6 @@ static_assert(offsetof(MGameAppData, modalActive) == 5, "MGameAppData::modalActi
 static_assert(offsetof(MGameAppData, transitionActive) == 0xc, "MGameAppData::transitionActive @ 0xc");
 #endif
 
-
 static Layout ***g_tbStarLayout;
 
 static int **g_tbRecordTrack;
@@ -655,6 +647,7 @@ static int **g_tbRecordTrack;
 static int **g_tbMenuTrack;
 
 void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
+    // lint: void_ptr -- exported override signature (Pv)
     MGame *self = this;
 
     if (self->activeTouchId == 0)
@@ -739,7 +732,6 @@ void MGame::OnUpdate() {
     this->successCheck();
 }
 
-
 static RecordHandler **g_record;
 
 static FModSound **g_fmod;
@@ -773,7 +765,6 @@ void MGame::OnSuspend() {
 
 int Station_getIndex(Station * s);
 
-
 static int *g_deAutoFlag;
 
 static int g_dePostEffect;
@@ -801,7 +792,7 @@ void MGame::dockEvent(int p1, int p2) {
     ((PlayerEgo *) (pos))->getPosition();
     this->touchesStation = this->level->collideStation(*(Vector *) pos);
 
-    Status *status = (Status *) (void *) &Globals::status;
+    Status *status = (Status *) &Globals::status;
     Mission *m = Globals::status->getMission();
     bool special = ((Mission *) (m))->isEmpty() != 0 ||
                    ((Mission *) (Globals::status->getMission()))->getType() == 0xb ||
@@ -879,7 +870,7 @@ void MGame::dockEvent(int p1, int p2) {
                     this->choiceWindow = cw;
                 }
                 {
-                    void *txt = ((GameText *) (*g_gameText))->getText(g_deTextB);
+                    String *txt = ((GameText *) (*g_gameText))->getText(g_deTextB);
                     String name = ((Station *) (Globals::status->getStation()))->getName();
                     String sPrefix, sSuffix, t1, t2, t3, result;
                     sPrefix.ctor_char((const char *) (intptr_t) g_deLitB0, false);
@@ -901,7 +892,7 @@ void MGame::dockEvent(int p1, int p2) {
                     this->choiceWindow = cw;
                 }
                 {
-                    void *txt = ((GameText *) (*g_gameText))->getText(g_deTextA);
+                    String *txt = ((GameText *) (*g_gameText))->getText(g_deTextA);
                     String name = ((Station *) (Globals::status->getStation()))->getName();
                     String sPrefix, sSuffix, t1, t2, t3, result;
                     sPrefix.ctor_char((const char *) (intptr_t) g_deLitA0, false);
@@ -959,6 +950,7 @@ void MGame::dockEvent(int p1, int p2) {
 }
 
 void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) {
+    // lint: void_ptr -- exported method signature (Pv)
     int id = (int) (intptr_t) idPtr;
     (void) p1;
     (void) p2;
@@ -995,7 +987,6 @@ void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) {
         this->dragRotIntY = (int) ny;
     }
 }
-
 
 static int **g_kdJumpDst;
 
@@ -1047,7 +1038,7 @@ void MGame::UseKhadorDrive() {
 
     if (Globals::status->inAlienOrbit() == 0) {
         if (this->player->hasVolatileGoods() != 0) {
-            void *txt = ((GameText *) (**g_kdVolText))->getText(0);
+            String *txt = ((GameText *) (**g_kdVolText))->getText(0);
             this->choiceWindow->set(*(String *) txt);
             this->pauseOpen = 1;
             this->choiceWindowOpen = 1;
@@ -1089,10 +1080,7 @@ void MGame::UseKhadorDrive() {
     return this->hud->closeHudMenu();
 }
 
-
 static int g_initParticleFlag;
-
-
 
 struct ParticleSystemGlobal {
     uint8_t _pad0[0xf];
@@ -1136,7 +1124,8 @@ int MGame::OnInitialize() {
         } else {
             texSel = 0x2f08;
         }
-        Globals::Canvas->TextureCreate((unsigned short) (unsigned) (intptr_t) self->paintCanvas, 0, (void *) 0, texSel, false);
+        Globals::Canvas->TextureCreate((unsigned short) (unsigned) (intptr_t) self->paintCanvas, 0, nullptr, texSel,
+                                       false);
         Globals::Canvas->ChangeCubeTexture((unsigned) (intptr_t) self->paintCanvas);
 
         {
@@ -1245,7 +1234,8 @@ int MGame::OnInitialize() {
     Globals::status->field_13c = 0;
     Globals::status->field_144 = 0;
 
-    Item *eq = ((Ship *) (((Status *) ((Status *) *((int *) &Globals::status)))->getShip()))->getFirstEquipmentOfSort(0x15);
+    Item *eq = ((Ship *) (((Status *) ((Status *) *((int *) &Globals::status)))->getShip()))->
+            getFirstEquipmentOfSort(0x15);
     if (eq != 0) {
         self->cloakAttributeMax = ((Item *) (eq))->getAttribute(0x26);
         self->cloakAttribute = ((Item *) (eq))->getAttribute(0x26);
@@ -1340,7 +1330,7 @@ int MGame::OnInitialize() {
 
         self->field_0xc8 = 0;
         bool renderParticles =
-            ((ParticleSystemGlobal *) (intptr_t) g_initParticleFlag)->particlesEnabled != 0;
+                ((ParticleSystemGlobal *) (intptr_t) g_initParticleFlag)->particlesEnabled != 0;
         if (!renderParticles) {
             if (Globals::status->getCurrentCampaignMission() > 1) {
                 Vec3 p = self->player->getPosition();
@@ -1407,14 +1397,13 @@ int MGame::OnInitialize() {
         String *font = *g_initInfoFont;
         String *text = (String *) ((GameText *) (*g_gameText))->getText(g_initInfoTextKey);
         Globals::globals->getLineArray(static_cast<unsigned int>(reinterpret_cast<std::size_t>(font)),
-                               *text, *g_initInfoWidth, self->missionInfoLines);
+                                       *text, *g_initInfoWidth, self->missionInfoLines);
         self->active = 1;
     }
     return 0;
 }
 
-void TFC_zoomTarget(void *cam, float z);
-
+void TFC_zoomTarget(TargetFollowCamera *cam, float z);
 
 static float g_fcRotScale;
 
@@ -1423,6 +1412,7 @@ static float g_fcZoomMax;
 static float g_fcZoomMin;
 
 void MGame::freeCamTouchMove(int x, int y, void *touchId) {
+    // lint: void_ptr -- exported method signature (Pv)
     int ty = (int) (intptr_t) touchId;
     if (this->player->isMining() != 0) {
         this->needsRedraw = 1;
@@ -1495,11 +1485,12 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
 }
 
 void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
+    // lint: void_ptr -- exported override signature (Pv)
     if (this->activeTouchId == touchId) {
         this->activeTouchId = 0;
         this->field_0xc1 = 0;
-        this->field_0xc2 = 0;
-        this->field_0xc3 = 0;
+        this->autopilotMenuOpen = 0;
+        this->field_0xc6 = 0;
     }
 
     int wasAutoPilot = this->player->isAutoPilot();
@@ -1521,11 +1512,10 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
     (void) hr;
 }
 
-
 static uint8_t **g_scFlag;
 
 void Status_replaceHash(String * out, Status * self, String * haystack,
-                                   String * needle, String * repl);
+                        String * needle, String * repl);
 
 static int g_scFollowTextKey;
 
@@ -1692,7 +1682,7 @@ deliverFollowup:
         ((Mission *) ((Mission *) (intptr_t) status->getCampaignMission()))->setStatusValue(0);
         ((Mission *) ((Mission *) (intptr_t) status->getCampaignMission()))->setWon(false);
 
-        void *tmpl = ((GameText *) (*g_gameText))->getText(g_scFollowTextKey);
+        String *tmpl = ((GameText *) (*g_gameText))->getText(g_scFollowTextKey);
         String sTmpl, sHash, sStation, sResult;
         sTmpl = *(String *) tmpl;
         sHash.ctor_char((const char *) (intptr_t) g_scFollowHashLit, false);
@@ -1735,10 +1725,12 @@ done:
 MGame::~MGame() {
     MGame *self = this;
     ((MGame *) (self))->OnRelease();
-    { if (this->gameOverTitle.data) delete[] this->gameOverTitle.data; this->gameOverTitle.data = nullptr; this->gameOverTitle.length = 0; }
+    {
+        if (this->gameOverTitle.data) delete[] this->gameOverTitle.data;
+        this->gameOverTitle.data = nullptr;
+        this->gameOverTitle.length = 0;
+    }
 }
-
-
 
 void MGame::resumeSounds() {
     ((FModSound *) (*g_fmod))->resumeAll();
@@ -1748,7 +1740,6 @@ void MGame::resumeSounds() {
     for (uint32_t i = 0; i < e->size(); i++)
         ((KIPlayer *) ((*e)[i]))->ResumeEngineSound();
 }
-
 
 static int *g_jumpFlag;
 
@@ -1767,7 +1758,7 @@ void MGame::startChargingJumpDrive() {
             w = new ChoiceWindow();
             this->choiceWindow = w;
         }
-        void *txt = ((GameText *) (*(int *) Globals::status))->getText(0x243);
+        String *txt = ((GameText *) (*(int *) Globals::status))->getText(0x243);
         ((ChoiceWindow *) (w))->set(*(String *) txt);
         this->pauseOpen = 1;
         this->choiceWindowOpen = 1;
@@ -1793,7 +1784,7 @@ void MGame::startChargingJumpDrive() {
             this->choiceWindow = w;
         }
         int hc2 = Globals::status->hardCoreMode();
-        void *txt = ((GameText *) (*(int *) Globals::status))->getText(hc2 != 0 ? 0x243 : 0x244);
+        String *txt = ((GameText *) (*(int *) Globals::status))->getText(hc2 != 0 ? 0x243 : 0x244);
         ((ChoiceWindow *) (w))->set(*(String *) txt);
         this->pauseOpen = 1;
         this->choiceWindowOpen = 1;
@@ -1809,8 +1800,6 @@ void MGame::startChargingJumpDrive() {
     ((Ship *) (Globals::status->getShip()))->removeCargo(0x7a, needed);
 }
 
-
-
 void MGame::pauseSounds() {
     this->pauseSnapshot = this->pauseOpen;
     ((FModSound *) (*g_fmod))->pauseAllPlayingSoundFXEvents();
@@ -1822,12 +1811,12 @@ void MGame::pauseSounds() {
     }
 }
 
-void Radio_ctor(Radio *r);
+void Radio_ctor(Radio * r);
 
-void *TargetFollowCamera_dtor(void *c);
+unsigned char *TargetFollowCamera_dtor(TargetFollowCamera * c);
 
 void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
-                                        int a, int b, int d, int e, int f, int g);
+                             int a, int b, int d, int e, int f, int g);
 
 static int g_resAspectA;
 
@@ -1963,7 +1952,6 @@ void MGame::reset() {
 
 static int g_accelTune;
 
-
 struct AccelTune {
     uint8_t _pad0[0x10];
     char invertSign;
@@ -1971,7 +1959,6 @@ struct AccelTune {
     float refValue;
     float baseValue;
 };
-
 
 struct AccelCtxValue {
     double _v0;
@@ -2013,7 +2000,7 @@ afterYaw: {
         double *v1 = ((Engine *) appMgr->GetEngine())->GetAccelValue();
         double d0 = *v1;
         AccelCtxValue *c2 =
-            (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
+                (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
 
         float base = (float) d0;
         AccelTune *tune = (AccelTune *) (intptr_t) g_accelTune;
@@ -2022,7 +2009,7 @@ afterYaw: {
         char sign = tune->invertSign;
 
         AccelCtxValue *c3 =
-            (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
+                (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
 
         float a, b;
         if (sign == 0) {
@@ -2068,7 +2055,6 @@ afterYaw: {
     }
 }
 
-
 static int **g_tmShipTune;
 
 static int **g_tmStarMap;
@@ -2076,6 +2062,7 @@ static int **g_tmStarMap;
 static int **g_tmAppData;
 
 void MGame::OnTouchMove(int p1, int y, void *touch) {
+    // lint: void_ptr -- exported override signature (Pv)
     MGame *self = this;
     int handledFree = 0;
     if (self->pauseOpen != 0) {
@@ -2164,12 +2151,11 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
         return;
     }
     if (self->menuTouchOpen != 0) {
-        MGameAppData *ad = (MGameAppData *) (intptr_t) **g_tmAppData;
+        MGameAppData *ad = (MGameAppData *) (intptr_t) * *g_tmAppData;
         if (ad->modalActive == 0 && ad->transitionActive == 0)
             self->menuWindow->OnTouchMove(p1, y, touch);
     }
 }
-
 
 static uint8_t *g_cinFlagA;
 
@@ -2196,10 +2182,9 @@ void MGame::setCinematicMode(bool on) {
     }
 }
 
-void TFC_translate(void *cam, int x, int y, int z);
+void TFC_translate(TargetFollowCamera *cam, int x, int y, int z);
 
-void *TFC_getPosition(void *cam);
-
+Vector *TFC_getPosition(TargetFollowCamera * cam);
 
 static int g_ujZNear;
 
@@ -2229,7 +2214,8 @@ void MGame::updateJumpScene() {
 
     if (self->usingJumpDrive != 0 && self->jumpFlash != 0) {
         AbyssEngine::Transform *tr =
-            (AbyssEngine::Transform *) (intptr_t) Globals::Canvas->TransformGetTransform((unsigned) (uintptr_t) Globals::Canvas);
+                (AbyssEngine::Transform *) (intptr_t) Globals::Canvas->TransformGetTransform(
+                    (unsigned) (uintptr_t) Globals::Canvas);
         long long ct = tr->currentTime;
         int prog = (int) ((unsigned long long) ct >> 32);
         int over = ((unsigned) ct > 0x6a4);
@@ -2300,7 +2286,8 @@ afterCam:
     bool ended;
     if (self->usingJumpDrive != 0) {
         AbyssEngine::Transform *tr =
-            (AbyssEngine::Transform *) (intptr_t) Globals::Canvas->TransformGetTransform((unsigned) (uintptr_t) Globals::Canvas);
+                (AbyssEngine::Transform *) (intptr_t) Globals::Canvas->TransformGetTransform(
+                    (unsigned) (uintptr_t) Globals::Canvas);
         ended = tr->animating != 0;
     } else {
         Array<KIPlayer *> *lm = self->level->getLandmarks();
@@ -2354,15 +2341,17 @@ done:
     ;
 }
 
-
 static int g_mgameInitVal;
 
 MGame::MGame() {
-    { if (this->gameOverTitle.data) delete[] this->gameOverTitle.data; this->gameOverTitle.data = nullptr; this->gameOverTitle.length = 0; }
+    {
+        if (this->gameOverTitle.data) delete[] this->gameOverTitle.data;
+        this->gameOverTitle.data = nullptr;
+        this->gameOverTitle.length = 0;
+    }
 
     int z = 0;
     int initVal = g_mgameInitVal;
-
 
     this->freeCamFinger1X = 0;
     this->freeCamFinger1Y = 0;
@@ -2397,7 +2386,6 @@ MGame::MGame() {
     this->loadProgress = 0x64;
     this->loadingImage = -1;
     this->cameraMode = z;
-
 
     this->frameTime = 0;
     this->frameTimeHigh = 0;
@@ -2448,10 +2436,9 @@ MGame::MGame() {
     this->field_0x1e0 = z;
 }
 
-void *Radio_dtor(...);
+unsigned char *Radio_dtor(Radio * p);
 
-void *DialogueWindow_dtor(...);
-
+unsigned char *DialogueWindow_dtor(DialogueWindow * p);
 
 static int g_relPostEffect;
 
@@ -2460,8 +2447,6 @@ static int *g_relSoundFlag;
 static int *g_relLayout;
 
 static int **g_relImgFactory;
-
-
 
 struct StarMapModule {
     uint8_t _pad0[0x10];
@@ -2494,7 +2479,6 @@ void MGame::OnRelease() {
     this->gameOverActive = 0;
     this->player = 0;
     this->field_0x5c = 0;
-
 
     this->frameTime = 0;
     this->frameTimeHigh = 0;
@@ -2556,7 +2540,7 @@ void MGame::OnRelease() {
 
     if (this->gameRecord != 0) {
         ((GameRecord *) (intptr_t) this->gameRecord)->~GameRecord();
-        ::operator delete((void *) (intptr_t) this->gameRecord);
+        ::operator delete((GameRecord *) (intptr_t) this->gameRecord);
     }
     this->gameRecord = 0;
 
@@ -2585,7 +2569,6 @@ void MGame::OnRelease() {
     if (*soundFlag != 0)
         FModSound_restoreState();
 }
-
 
 static Layout ***g_r2dHelpLayout;
 

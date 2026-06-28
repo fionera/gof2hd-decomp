@@ -39,8 +39,6 @@ public:
 
     inline void setLanguage_i(int langId) { setLanguage(langId); }
 
-
-
     static unsigned short currentLang;
 };
 

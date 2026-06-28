@@ -23,7 +23,6 @@ namespace AbyssEngine {
         int nextInt();
 
         int nextInt(int bound);
-
     };
 }
 

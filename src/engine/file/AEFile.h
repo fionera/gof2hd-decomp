@@ -10,16 +10,13 @@
 #include "AENormalFile.h"
 #include "AEPakFile.h"
 
-
 #include "engine/file/AEPakFileEntry.h"
 class AELowLevelFile;
 class FileInterface;
 
-
 using String = AbyssEngine::String;
 
-
-void *OpenAppend(unsigned short *name, int size, bool append, unsigned int mode);
+FileInterface *OpenAppend(unsigned short *name, int size, bool append, unsigned int mode);
 
 class AEFile {
 public:
@@ -49,7 +46,7 @@ public:
 
     static void Close(uint32_t handle);
 
-    static uint32_t Read(uint32_t bytes, void *buffer, uint32_t handle);
+    static uint32_t Read(uint32_t bytes, void *buffer, uint32_t handle); // lint: void_ptr ABI signature (Pv mangled)
 
     static uint32_t Read(bool &value, uint32_t handle);
 
@@ -81,7 +78,7 @@ public:
 
     static void ReadSwitched(String &value, uint32_t handle);
 
-    static uint32_t Write(uint32_t bytes, void *buffer, uint32_t handle);
+    static uint32_t Write(uint32_t bytes, void *buffer, uint32_t handle); // lint: void_ptr ABI signature (Pv mangled)
 
     static void Write(bool value, uint32_t handle);
 
@@ -129,18 +126,17 @@ public:
 
     static const char *GetAppRootDir();
 
-    static void SetAppRootDir(void *path);
+    static void SetAppRootDir(void *path); // lint: void_ptr ABI signature (Pv mangled)
 
-    static void SetZipDirectory(void *path);
+    static void SetZipDirectory(void *path); // lint: void_ptr ABI signature (Pv mangled)
 
     static void SetSaveDirectory(String path);
 
     static void ResetSaveDirectory();
 
-
-    static void *fileInterface;
-    static void *pakFileEntryList;
-    static void *file;
-    static void *appRoot;
+    static FileInterface *fileInterface;
+    static Array<AEPakFileEntry *> *pakFileEntryList;
+    static Array<AELowLevelFile *> *file;
+    static char *appRoot;
 };
 #endif

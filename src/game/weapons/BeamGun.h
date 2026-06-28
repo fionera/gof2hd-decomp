@@ -14,7 +14,6 @@ class AEGeometry;
 class Gun;
 class Level;
 
-
 class BeamGun {
 public:
     int32_t field_0x4;

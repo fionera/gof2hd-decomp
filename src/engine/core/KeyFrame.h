@@ -6,7 +6,6 @@
 
 #include "engine/math/AEMath.h"
 
-
 namespace AbyssEngine {
     class KeyFrame {
     public:
@@ -18,17 +17,23 @@ namespace AbyssEngine {
         AEMath::Vector localRotation;
         float alpha;
         uint32_t field_0x4c;
-        union {
-            int64_t timestamp;
-            struct {
-                uint32_t timestampLo;
-                uint32_t timestampHi;
-            };
-        };
+        int64_t timestamp;
         uint32_t channelFlags;
         uint32_t channelFlagsHi;
 
-        KeyFrame();
+        // Defined inline so the complete-object ctor (C1) folds into the base-object C2 the
+        // original exports (see docs/VALIDATION.md).
+        KeyFrame() {
+            const AEMath::Vector one = {1.0f, 1.0f, 1.0f};
+
+            timestamp = 0;
+            __builtin_memset(this, 0, 0x48);
+            scale = one;
+            localScale = one;
+            channelFlags = 0;
+            channelFlagsHi = 0;
+            alpha = 1.0f;
+        }
     };
 
 #if defined(GOF2_MATCH) && __SIZEOF_POINTER__ == 4

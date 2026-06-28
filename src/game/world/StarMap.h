@@ -19,10 +19,10 @@ class Mission;
 class SolarSystem;
 class Station;
 class TouchButton;
-namespace AbyssEngine { 
-    class EaseInOut;
- }
 
+namespace AbyssEngine {
+    class EaseInOut;
+}
 
 class StarMap {
 public:

@@ -10,50 +10,52 @@
 #include "engine/render/ParticleSystemSprite.h"
 #include "engine/render/PaintCanvas.h"
 
-void _psm_ArrayReleaseSprites(void *arr);
+// lint: void_ptr -- the following forward-declared shims are UNDEFINED (UND)
+// symbols in the linked .so; their mangled names encode `Pv` (void*), so their
+// signatures are fixed by symbol parity and must NOT be retyped.
+void _psm_ArrayReleaseSprites(void *arr); // lint: void_ptr
 
-void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res);
+void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res); // lint: void_ptr
 
-void _psm_renderMeshes(void *self);
+void _psm_renderMeshes(void *self); // lint: void_ptr
 
-void _psm_renderSpritesExt(void *self);
+void _psm_renderSpritesExt(void *self); // lint: void_ptr
 
-void _psm_releaseSprites(void *self);
+void _psm_releaseSprites(void *self); // lint: void_ptr
 
-void _psm_constructAfterCamera(void *self);
+void _psm_constructAfterCamera(void *self); // lint: void_ptr
 
-void _ips_emitManual(void *sys, float x, float y, float z);
+void _ips_emitManual(void *sys, float x, float y, float z); // lint: void_ptr
 
-void _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigned c);
+void _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigned c); // lint: void_ptr
 
-void _psm_spriteRender2(void *canvas, unsigned a);
+void _psm_spriteRender2(void *canvas, unsigned a); // lint: void_ptr
 
-void _psm_arraySpriteCtor(void *arr);
+void _psm_arraySpriteCtor(void *arr); // lint: void_ptr
 
-void _psm_arraySpriteDtor(void *arr);
+void _psm_arraySpriteDtor(void *arr); // lint: void_ptr
 
-void _ips_enableUpdate(void *sys, bool enable);
+void _ips_enableUpdate(void *sys, bool enable); // lint: void_ptr
 
-short _ips_getParticleCount16(void *sys);
+short _ips_getParticleCount16(void *sys); // lint: void_ptr
 
-int _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag);
+int _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag); // lint: void_ptr
 
-int _psm_firstUpdate(void *self, int a, int b, int c);
+int _psm_firstUpdate(void *self, int a, int b, int c); // lint: void_ptr
 
-void _ips_reset(void *sys);
+void _ips_reset(void *sys); // lint: void_ptr
 
-void _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned c);
+void _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned c); // lint: void_ptr
 
-void _psm_meshRender2(void *canvas, unsigned a);
+void _psm_meshRender2(void *canvas, unsigned a); // lint: void_ptr
 
-void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
+void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets, // lint: void_ptr
                    bool b4, bool b5);
 
-void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
+void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets, // lint: void_ptr
                 bool b4, bool b5);
 
-int _ips_getParticleCount(void *sys);
-
+int _ips_getParticleCount(void *sys); // lint: void_ptr
 
 static char *g_activeParticleSet = nullptr;
 
@@ -248,9 +250,9 @@ void ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet cam) {
 unsigned int ParticleSystemManager::addMeshSystem(AbyssEngine::AEMath::Matrix const *matrix,
                                                   Array<ParticleSettings::ParticleSet> const &sets,
                                                   bool flag) {
-    void *sys = ::operator new(0xa0);
+    ParticleSystemMesh *sys = static_cast<ParticleSystemMesh *>(::operator new(0xa0));
     _psmesh_ctor(sys, this->canvas, matrix, &sets, flag, this->meshUsesExtra != 0);
-    ArrayAdd<ParticleSystemMesh *>(static_cast<ParticleSystemMesh *>(sys), meshArray());
+    ArrayAdd<ParticleSystemMesh *>(sys, meshArray());
 
     this->meshParticleCount += _ips_getParticleCount(sys);
 
@@ -411,9 +413,9 @@ void ParticleSystemManager::initSprites() {
 
 int ParticleSystemManager::addSpriteSystem(AbyssEngine::AEMath::Matrix const *matrix,
                                            Array<ParticleSettings::ParticleSet> const &sets, bool flag) {
-    void *sys = ::operator new(0x78);
+    ParticleSystemSprite *sys = static_cast<ParticleSystemSprite *>(::operator new(0x78));
     _pss_ctor(sys, this->canvas, matrix, &sets, flag, this->spriteUsesExtra != 0);
-    ArrayAdd<ParticleSystemSprite *>(static_cast<ParticleSystemSprite *>(sys), spriteArray());
+    ArrayAdd<ParticleSystemSprite *>(sys, spriteArray());
     this->spriteParticleCount += _ips_getParticleCount(sys);
     return this->spriteSystems.count - 1;
 }

@@ -106,6 +106,7 @@ int String::ValueOf() {
 }
 
 void *String::Split(String sep) {
+    // lint: void_ptr exported String method return type, signature must not change
     if (this->length != 0 && sep.length != 0) {
         Array<String *> *arr = new Array<String *>();
 
@@ -744,6 +745,5 @@ String &String::operator+=(const long long &v) {
     *this += tmp;
     return *this;
 }
-
 
 char16_t AbyssEngine::String::termChar;

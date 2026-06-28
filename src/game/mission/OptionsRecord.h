@@ -13,14 +13,7 @@ struct OptionsRecord {
     uint8_t flag_0xa;
     uint8_t field_0x0b[2];
 
-    union {
-        uint16_t flag_word_0xd;
-
-        struct {
-            uint8_t musicMasterVolumeFlag;
-            uint8_t autoAdvanceEnabled;
-        };
-    };
+    uint16_t flag_word_0xd;
 
     uint8_t flag_0xf;
     uint8_t field_0x10[3];
@@ -43,6 +36,7 @@ struct OptionsRecord {
     uint8_t flag_0x31;
 
     union {
+        // lint: union_decl flag_dword_0x32 (whole-slot, zeroed in MenuTouchWindow.cpp) overlaps bytes flag_0x34/flag_0x35 (set/read in MenuTouchWindow.cpp) — genuine cross-file type-pun, layout-fixed
         int32_t flag_dword_0x32;
 
         struct {
@@ -56,6 +50,7 @@ struct OptionsRecord {
     uint8_t flag_0x37;
 
     union {
+        // lint: union_decl flag_word_0x38 (whole-slot set in MenuTouchWindow.cpp) overlaps bytes flag_0x38/flag_0x39 (set in MenuTouchWindow.cpp) — genuine cross-file type-pun, layout-fixed
         uint16_t flag_word_0x38;
 
         struct {

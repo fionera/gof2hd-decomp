@@ -67,7 +67,6 @@ void ScrollTouchBox::OnTouchBegin(int x, int y) {
     }
 }
 
-
 static String **g_ScrollTouchBox_defaultFont_135598 = nullptr;
 
 ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height) {
@@ -87,7 +86,6 @@ ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height) {
     this->velocity = 0.0f;
     this->font = *g_ScrollTouchBox_defaultFont_135598;
 }
-
 
 static int **g_ScrollTouchBox_defaultWidth_13570c = nullptr;
 
@@ -134,8 +132,7 @@ apply:
     this->velocity = (float) pull * 0.5f;
 }
 
-
-static void **g_ScrollTouchBox_canvas_135778 = nullptr;
+static PaintCanvas **g_ScrollTouchBox_canvas_135778 = nullptr;
 
 static char *g_ScrollTouchBox_flag_135778 = nullptr;
 
@@ -152,9 +149,9 @@ void ScrollTouchBox::draw() {
     if ((unsigned short) shifted < 6)
         special = (0x33U >> (shifted & 0x3f)) & 1;
 
-    void **canvasHolder = g_ScrollTouchBox_canvas_135778;
-    void *canvas = *canvasHolder;
-    ((PaintCanvas *) canvas)->SetColor((unsigned int) -1);
+    PaintCanvas **canvasHolder = g_ScrollTouchBox_canvas_135778;
+    PaintCanvas *canvas = *canvasHolder;
+    canvas->SetColor((unsigned int) -1);
 
     Array<String *> *firstLineArray = this->lines;
     if (firstLineArray != 0) {
@@ -179,7 +176,7 @@ void ScrollTouchBox::draw() {
             int lineY = (*fontHolder)->lineHeight * (int) i + yBase + this->scrollOffset;
             if (count == 1 ||
                 (yBase <= lineY &&
-                 lineY + lastOffset <= (this->height + yBase) - ((PaintCanvas *) canvas)->GetTextHeight(
+                 lineY + lastOffset <= (this->height + yBase) - canvas->GetTextHeight(
                      (unsigned int) (unsigned long) this->font))) {
                 int x;
                 String *font = this->font;
@@ -190,21 +187,21 @@ void ScrollTouchBox::draw() {
                     int left = this->x;
                     int width = this->width;
                     if (this->centered == 0) {
-                        x = (left + width) - ((PaintCanvas *) canvas)->GetTextWidth(
+                        x = (left + width) - canvas->GetTextWidth(
                                 (unsigned int) (unsigned long) font, *line);
                     } else {
-                        x = (left + (width >> 1)) - (((PaintCanvas *) canvas)->GetTextWidth(
+                        x = (left + (width >> 1)) - (canvas->GetTextWidth(
                                                          (unsigned int) (unsigned long) font, *line) >> 1);
                     }
                 } else {
                     x = this->x;
                     if (this->centered != 0) {
                         int width = this->width;
-                        x = (x + (width >> 1)) - (((PaintCanvas *) canvas)->GetTextWidth(
+                        x = (x + (width >> 1)) - (canvas->GetTextWidth(
                                                       (unsigned int) (unsigned long) font, *line) >> 1);
                     }
                 }
-                ((PaintCanvas *) canvas)->DrawString((unsigned int) (unsigned long) font, *line, x, lineY, false);
+                canvas->DrawString((unsigned int) (unsigned long) font, *line, x, lineY, false);
             }
         }
     }
@@ -212,8 +209,7 @@ void ScrollTouchBox::draw() {
     *g_ScrollTouchBox_dirty_135778 = 1;
 }
 
-
-static void **g_ScrollTouchBox_globals_135600 = nullptr;
+static Globals **g_ScrollTouchBox_globals_135600 = nullptr;
 
 static FontMetrics **g_ScrollTouchBox_font_135600 = nullptr;
 
@@ -229,10 +225,10 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
     this->font = (String *) (std::size_t) font;
     Array<String *> *lineArray = new Array<String *>();
 
-    void **globals = g_ScrollTouchBox_globals_135600;
+    Globals **globals = g_ScrollTouchBox_globals_135600;
     int lineWidth = this->textWidth;
     this->lines = lineArray;
-    static_cast<Globals *>(*globals)->getLineArray(font, text, lineWidth, lineArray);
+    (*globals)->getLineArray(font, text, lineWidth, lineArray);
 
     FontMetrics **fontHolder = g_ScrollTouchBox_font_135600;
     int boxHeight = this->height;
@@ -252,7 +248,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
         int fontArg = font;
         lineWidth = this->width;
         this->lines = lineArray;
-        static_cast<Globals *>(*globals)->getLineArray(fontArg, text, lineWidth, lineArray);
+        (*globals)->getLineArray(fontArg, text, lineWidth, lineArray);
 
         String *empty = new String(g_ScrollTouchBox_empty_135600, false);
         ArrayAdd(empty, *(this->lines));

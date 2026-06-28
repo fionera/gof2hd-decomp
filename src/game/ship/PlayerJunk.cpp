@@ -8,13 +8,12 @@
 #include "game/world/Level.h"
 #include "engine/render/ParticleSystemManager.h"
 
-
 static FModSound *g_PJ_sound = nullptr;
 
 namespace AbyssEngine {
 }
 
-static void *g_PJ_random = nullptr;
+static AbyssEngine::AERandom *g_PJ_random = nullptr;
 
 PlayerJunk::PlayerJunk(int type, Player *player, AEGeometry *geometry,
                        float x, float y, float z)
@@ -52,11 +51,11 @@ void PlayerJunk::update(int elapsed) {
             this->level->junkDied();
             this->state = 3;
             g_PJ_sound->play(0x16, nullptr, nullptr, 0.0f);
-            if (((AbyssEngine::AERandom *)(g_PJ_random))->nextInt(100) < 10) {
+            if (g_PJ_random->nextInt(100) < 10) {
                 this->hasCargo = 1;
                 this->cargo = new Array<int>();
                 ArrayAdd(99, *this->cargo);
-                ArrayAdd(((AbyssEngine::AERandom *)(g_PJ_random))->nextInt(10) + 1, *this->cargo);
+                ArrayAdd(g_PJ_random->nextInt(10) + 1, *this->cargo);
                 this->createCrate(3);
             } else {
                 this->player->setActive(false);

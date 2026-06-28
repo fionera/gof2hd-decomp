@@ -1,13 +1,11 @@
 #ifndef GOF2_VIRTUALINPUT_H
 #define GOF2_VIRTUALINPUT_H
 
-
-
-namespace AbyssEngine { 
+namespace AbyssEngine {
     class Engine;
- }
+}
 
-extern "C" unsigned int F(unsigned int value);
+extern "C" unsigned int F(unsigned int value); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
 int GetKeyState(char *name);
 
@@ -35,16 +33,16 @@ void keyReleased(AbyssEngine::Engine *engine, int key);
 
 void keyReleasedWithDelay(AbyssEngine::Engine *engine, int key);
 
-void SendStoredKeyUpEvents(AbyssEngine::Engine * engine);
+void SendStoredKeyUpEvents(AbyssEngine::Engine *engine);
 
 void keyEventReleased(AbyssEngine::Engine *engine, char *name);
 
-void KeyboardAnimationTimer(AbyssEngine::Engine * engine);
+void KeyboardAnimationTimer(AbyssEngine::Engine *engine);
 
 int ActualizeMouseVisibilty(int force);
 
-void actualizeButtonPositions(AbyssEngine::Engine * engine);
+void actualizeButtonPositions(AbyssEngine::Engine *engine);
 
-void simulateTouch(AbyssEngine::Engine * engine);
+void simulateTouch(AbyssEngine::Engine *engine);
 
 #endif

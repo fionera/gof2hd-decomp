@@ -3,12 +3,10 @@
 #include <cstdint>
 
 namespace AbyssEngine {
-
-
     struct Curve {
         uint16_t count;
         uint16_t pad0x2;
-        void *entries;
+        unsigned char *entries; // array of CurveKeyframe*, cast at use sites (keyframe type is file-local)
     };
 }
 

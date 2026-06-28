@@ -12,7 +12,7 @@
 static PaintCanvas **g_NewsTicker_draw_canvas = nullptr;
 static int **g_NewsTicker_draw_fontHeight = nullptr;
 static int *g_NewsTicker_draw_screenHeight = nullptr;
-static void **g_NewsTicker_draw_font = nullptr;
+static unsigned char **g_NewsTicker_draw_font = nullptr;
 static int *g_NewsTicker_touchMove_screenWidth = nullptr;
 static int **g_NewsTicker_getHeight_font = nullptr;
 static int *g_NewsTicker_getHeight_screen = nullptr;
@@ -21,13 +21,17 @@ static AbyssEngine::AERandom **g_NewsTicker_ctor_random = nullptr;
 static Status **g_NewsTicker_ctor_status = nullptr;
 static GameText **g_NewsTicker_ctor_text = nullptr;
 static const char g_NewsTicker_ctor_separator[1] = {0};
-static void **g_NewsTicker_ctor_font = nullptr;
+static unsigned char **g_NewsTicker_ctor_font = nullptr;
 static PaintCanvas **g_NewsTicker_ctor_canvas = nullptr;
 static int **g_NewsTicker_touchBegin_font = nullptr;
 static int *g_NewsTicker_touchBegin_screen = nullptr;
 
 NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
-    { if (this->tickerText.data) delete[] this->tickerText.data; this->tickerText.data = nullptr; this->tickerText.length = 0; }
+    {
+        if (this->tickerText.data) delete[] this->tickerText.data;
+        this->tickerText.data = nullptr;
+        this->tickerText.length = 0;
+    }
     this->x = x;
     this->y = y;
     this->width = width;
@@ -44,7 +48,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
 
     for (uint32_t i = 0; i < allItems->size(); ++i) {
         NewsItem *item = (*allItems)[i];
-        if (item->field_0x10 > 0 && item->field_0x10 <= level && level <= item->field_0x14) {
+        if (item->minLevel > 0 && item->minLevel <= level && level <= item->maxLevel) {
             if (((uint8_t *) item->data)[faction] != 0) {
                 ArrayAdd((NewsItem *) item->clone(), *items);
             }
@@ -63,13 +67,13 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
         if (status->getSystem() > 0x15 && item->id == 0x0d) {
             continue;
         }
-        if (item->field_0x14 < 0xa1 || item->field_0x10 > level) {
+        if (item->maxLevel < 0xa1 || item->minLevel > level) {
             continue;
         }
         if (random->nextInt(100) > 0x31) {
             continue;
         }
-        if (((uint8_t *) item->data)[faction] == 0 || item->field_0x18 != 0) {
+        if (((uint8_t *) item->data)[faction] == 0 || item->used != 0) {
             continue;
         }
         if (item->flag != 0) {
@@ -82,7 +86,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
             status->field_174 = item->id;
         }
         ArrayAdd((NewsItem *) item->clone(), *items);
-        item->field_0x18 = 1;
+        item->used = 1;
         ++added;
     }
 
@@ -94,7 +98,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
         String replaced = replaceTokens(line);
 
         if (item->flag != 0) {
-            if (item->field_0x18 == 0) {
+            if (item->used == 0) {
                 replaced = status->string_168;
             } else {
                 status->string_168 = replaced;

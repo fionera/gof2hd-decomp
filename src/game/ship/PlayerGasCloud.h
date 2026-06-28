@@ -8,7 +8,6 @@
 class AEGeometry;
 class ParticleSystemManager;
 
-
 class PlayerGasCloud : public KIPlayer {
 public:
     Vector center;
@@ -40,7 +39,7 @@ public:
 
     void setPosition(const Vector &position);
 
-    void *getSparks();
+    void *getSparks(); // lint: void_ptr (exported method return type baked into ABI)
 
     Vector getPosition();
 

@@ -9,7 +9,6 @@
 #include "game/mission/Mission.h"
 #include "game/world/Level.h"
 
-
 #include "game/ui/DialogueWindowGermanTextTable.h"
 class Agent;
 class ChoiceWindow;
@@ -18,8 +17,6 @@ class Level;
 class Mission;
 class ScrollTouchWindow;
 class TouchButton;
-
-
 
 class DialogueWindow {
 public:
@@ -32,7 +29,7 @@ public:
     int frameY;
     int frameWidth;
     int frameHeight;
-    void *clientImage;
+    int *clientImage;
     String bodyText;
     String agentName;
     ScrollTouchWindow *scrollWindow;

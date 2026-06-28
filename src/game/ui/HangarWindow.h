@@ -9,7 +9,6 @@
 #include "game/ui/ListItemWindow.h"
 #include "game/ui/Layout.h"
 
-
 #include "game/ui/Blk16.h"
 class BluePrint;
 class ChoiceWindow;
@@ -19,8 +18,6 @@ class ListItem;
 class ListItemWindow;
 class Ship;
 class TouchButton;
-
-
 
 class HangarWindow {
 public:
@@ -36,7 +33,7 @@ public:
     Array<TouchButton *> *buttons;
     Item *pendingMountItem;
     Item *pendingDemountItem;
-    void *tabIcons;
+    unsigned int *tabIcons;
     unsigned int scrollHintImageA;
     unsigned int scrollHintImageB;
     uint8_t dialogActive;
@@ -45,7 +42,7 @@ public:
     int field_0x48;
     int contentWidth;
     int contentHeight;
-    void *columnWidths;
+    int *columnWidths;
     int viewMode;
     ListItem *selectedItem;
     int holdTime;
@@ -178,7 +175,6 @@ public:
     static Ship *statusShip();
 
     static void render3D_thunk(ListItemWindow *listItemWindow);
-
 
     static int lastTab;
 };

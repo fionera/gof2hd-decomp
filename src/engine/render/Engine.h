@@ -7,15 +7,15 @@
 
 #include "engine/math/AEMath.h"
 
-
 #include "engine/render/DeviceInfo.h"
 #include "engine/render/LightColor.h"
-namespace AbyssEngine { 
+class FileInterface;
+
+namespace AbyssEngine {
     class FBOContainer;
     class Mesh;
     class ShaderBaseStruct;
- }
-
+}
 
 namespace AbyssEngine {
     class Engine;
@@ -33,8 +33,6 @@ typedef void InitializeCallback(AbyssEngine::Engine *);
 
 void glError();
 
-
-
 namespace AbyssEngine {
     class Engine {
     public:
@@ -42,26 +40,18 @@ namespace AbyssEngine {
         uint32_t deviceHeight;
         uint8_t isPad;
 
-        union {
-            uint32_t maxTextureSize;
-            uint32_t depthBits;
-        };
+        uint32_t maxTextureSize;
 
-        union {
-            uint32_t lastGlError;
-            uint32_t field_0x10;
-        };
+        uint32_t lastGlError;
 
         String lastErrorPath;
 
-        union {
-            uint8_t linearFilterFlag;
-            uint8_t field_0x20;
-        };
+        uint8_t linearFilterFlag;
 
-        void *fileInterface;
+        FileInterface *fileInterface;
 
         union {
+            // lint: union_decl int/float type-pun (raw int store vs float read)
             int field_0x28;
             float explosionTimeline;
         };
@@ -69,11 +59,7 @@ namespace AbyssEngine {
         bool vibrationSupported;
         uint8_t _pad0x2d[3];
 
-        union {
-            ApplicationManager *appManager;
-            char **field_0x30;
-            void *paintCanvas;
-        };
+        ApplicationManager *appManager;
 
         uint32_t field_0x34;
         uint8_t _pad0x38[4];
@@ -87,10 +73,7 @@ namespace AbyssEngine {
         int triangleCountA;
         int triangleCountB;
 
-        union {
-            int textureByteCounter;
-            uint32_t field_0x70;
-        };
+        int textureByteCounter;
 
         bool field_0x74;
         uint8_t _pad0x75[3];
@@ -98,99 +81,45 @@ namespace AbyssEngine {
         int boundTextures[20];
         float field_0xcc;
 
-        union {
-            float glColor[4];
-
-            struct {
-                float flCurrentColorR, field_0xd4, field_0xd8, field_0xdc;
-            };
-        };
+        float glColor[4];
 
         int packedColor;
         uint8_t _pad0xe4[24];
         unsigned char shaderModeFlag;
         unsigned char statsBucketFlag;
+
         union {
+            // lint: union_decl multi-size pun (uint16 0x100 store vs uint8 read)
             uint16_t field_0xfd;
             unsigned char statsEnabled;
         };
+
         uint32_t field_0x100;
         float worldViewProjMatrix[16];
         float modelMatrixGL[16];
         float worldViewMatrixGL[16];
         float uvMatrix[16];
 
-        union {
-            float normalMatrix[9];
+        float normalMatrix[9];
 
-            struct {
-                uint32_t field_0x204, field_0x208, field_0x20c,
-                        field_0x210, field_0x214, field_0x218,
-                        field_0x21c, field_0x220, field_0x224;
-            };
-        };
-
-        union {
-            LightColor lightDiffuse;
-
-            struct {
-                float flLightDiffuseR, flLightDiffuseG, flLightDiffuseB, flLightDiffuseA;
-            };
-        };
+        LightColor lightDiffuse;
         uint8_t _pad0x238[16];
 
-        union {
-            LightColor lightSpecular;
-
-            struct {
-                float flLightSpecularR, flLightSpecularG, flLightSpecularB, flLightSpecularA;
-            };
-        };
+        LightColor lightSpecular;
         uint8_t _pad0x258[16];
 
         LightColor lightAmbient;
         uint8_t _pad0x278[16];
 
-        union {
-            float sceneAmbient[4];
+        float sceneAmbient[4];
 
-            struct {
-                float field_0x288, field_0x28c, field_0x290;
-                uint32_t field_0x294;
-            };
-        };
+        float materialDiffuse[4];
 
-        union {
-            float materialDiffuse[4];
+        float materialAmbient[4];
 
-            struct {
-                float field_0x298, field_0x29c, field_0x2a0;
-                uint32_t field_0x2a4;
-            };
-        };
+        float materialSpecular[4];
 
-        union {
-            float materialAmbient[4];
-
-            struct {
-                float field_0x2a8, field_0x2ac, field_0x2b0;
-                uint32_t field_0x2b4;
-            };
-        };
-
-        union {
-            float materialSpecular[4];
-
-            struct {
-                float field_0x2b8, field_0x2bc, field_0x2c0;
-                uint32_t field_0x2c4;
-            };
-        };
-
-        union {
-            float materialShininess;
-            float field_0x2c8;
-        };
+        float materialShininess;
 
         Vector lightAmbientShaded;
         Vector lightSpecularShaded;
@@ -201,75 +130,34 @@ namespace AbyssEngine {
         Vector field_0x308;
         Vector field_0x314;
 
-        union {
-            Vector rimColor;
+        Vector rimColor;
 
-            struct {
-                float field_0x320, field_0x324, field_0x328;
-            };
-        };
+        int lightCount;
 
-        union {
-            int lightCount;
-            int field_0x32c;
-        };
+        Vector lightDir;
 
-        union {
-            Vector lightDir;
-            Vector field_0x330;
-        };
+        Vector field_0x33c;
 
-        union {
-            Vector field_0x33c;
+        int lineVertexBase;
 
-            struct {
-                float field_0x33c_x;
-                uint32_t field_0x340;
-                float field_0x344;
-            };
-        };
+        Vector lightColor;
 
-        union {
-            int lineVertexBase;
-            int field_0x348;
-        };
-
-        union {
-            Vector lightColor;
-
-            struct {
-                float field_0x34c, field_0x350, field_0x354;
-            };
-        };
-
-        void *addData;
+        unsigned char *addData;
         int addDataSize;
 
-        union {
-            int autoPilotEngaged;
-            uint32_t field_0x360;
-        };
+        int autoPilotEngaged;
 
         uint8_t _pad0x364[4];
 
-        union {
-            int framebufferWidth;
-            int displayWidth;
-        };
+        int displayWidth;
 
-        union {
-            int framebufferHeight;
-            int displayHeight;
-        };
+        int displayHeight;
 
         int viewportWidth;
         int viewportHeight;
         float lightDirty[2];
 
-        union {
-            Mesh *quadMesh;
-            char *field_0x380;
-        };
+        Mesh *quadMesh;
 
         float projMatrix[16];
         uint8_t field_0x3c4;
@@ -282,50 +170,24 @@ namespace AbyssEngine {
         Array<int> *triangleCounts;
         uint32_t field_0x3e0;
 
-        union {
-            int currentProgram;
-            int field_0x3e4;
-        };
+        int currentProgram;
 
-        union {
-            float fogMinDist;
-            uint32_t field_0x3e8;
-        };
+        float fogMinDist;
 
-        union {
-            float fogMaxDist;
-            uint32_t field_0x3ec;
-        };
+        float fogMaxDist;
 
-        union {
-            Vector fogColor;
-            Vector field_0x3f0;
-        };
+        Vector fogColor;
 
-        union {
-            Vector eyePosition;
-
-            struct {
-                float eyePosition_x;
-                uint32_t field_0x400;
-                float eyePosition_z;
-            };
-        };
+        Vector eyePosition;
 
         uint8_t _pad0x408[4];
 
-        union {
-            uint32_t viewFramebuffer;
-            uint32_t field_0x40c;
-        };
+        uint32_t viewFramebuffer;
 
         uint32_t postEffectFlags;
         AbyssEngine::FBOContainer *postEffectFBO;
 
-        union {
-            AbyssEngine::FBOContainer *fboContainer;
-            AbyssEngine::FBOContainer *refractFBO;
-        };
+        AbyssEngine::FBOContainer *refractFBO;
 
         uint8_t glowActive;
         uint32_t glEnableFlags;
@@ -333,15 +195,7 @@ namespace AbyssEngine {
         float uvMatrixGL[16];
         Vector field_0x468;
 
-        union {
-            Vector field_0x474;
-
-            struct {
-                float field_0x474_x;
-                uint32_t field_0x478;
-                float field_0x47c;
-            };
-        };
+        Vector field_0x474;
 
         bool hasVibration;
         DestroyCallback *onDestroyCallback;
@@ -351,31 +205,11 @@ namespace AbyssEngine {
         uint32_t clientStateFlagsAE;
         uint32_t field_0x4a8;
 
-        union {
-            struct {
-                double accelRaw[3];
-                volatile double accelValue[3];
-            };
+        double accelRaw[3];
+        volatile double accelValue[3];
 
-            struct {
-                double field_0x4b0, field_0x4b8;
-                volatile double field_0x4c0, field_0x4c8, field_0x4d0;
-                double field_0x4d8;
-            };
-        };
-
-        union {
-            struct {
-                double gravRaw[3];
-                volatile double gravValue[3];
-            };
-
-            struct {
-                double field_0x4e0, field_0x4e8;
-                volatile double field_0x4f0, field_0x4f8, field_0x500;
-                double field_0x508;
-            };
-        };
+        double gravRaw[3];
+        volatile double gravValue[3];
 
         uint32_t shaderCount;
         Array<ShaderBaseStruct *> *shaders;
@@ -488,7 +322,7 @@ namespace AbyssEngine {
 
         void SetAccelValue(double x, double y, double z);
 
-        void SetAddData(void *data, int size);
+        void SetAddData(void *data, int size); // lint: void_ptr exported method signature
 
         void SetColor(float red, float green, float blue, float alpha);
 
@@ -524,7 +358,7 @@ namespace AbyssEngine {
 
         void GrabFrameBuffer();
 
-        void *GetJPEGImageData(float quality);
+        void *GetJPEGImageData(float quality); // lint: void_ptr exported method signature
 
         void SaveImageToPhotosAlbum();
 
@@ -569,8 +403,6 @@ namespace AbyssEngine {
 
         static bool fogEnabled;
 
-
-
         static unsigned char EnableGlow;
         static int ImageCount;
         static int switchGlow;
@@ -578,7 +410,7 @@ namespace AbyssEngine {
         static int switchBloom;
         static unsigned char enableShader;
         static unsigned char EnableRefract;
-        static void *LodDistShader;
+        static ShaderBaseStruct *LodDistShader;
         static unsigned char DisableRefract;
         static int AnisotropyValue;
         static unsigned char KeepRawMeshData;
@@ -602,8 +434,6 @@ namespace AbyssEngine {
 }
 
 using ::AbyssEngine::Engine;
-
-
 
 extern AbyssEngine::Engine *gEngine;
 

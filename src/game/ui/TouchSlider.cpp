@@ -4,10 +4,6 @@
 #include "engine/render/PaintCanvas.h"
 #include <cstddef>
 
-
-
-
-
 struct TouchSliderAppConfig {
     char _reserved[0x7c];
     int touchPadding;
@@ -26,11 +22,10 @@ void TouchSlider::setPosition(int x, int y) {
     this->knobX = (int) (knobBase + this->value * trackRange);
 }
 
-
 static PaintCanvas **g_TouchSlider_canvas = &Globals::Canvas;
 
-static void *g_TouchSlider_app_storage = nullptr;
-static void **g_TouchSlider_app = &g_TouchSlider_app_storage;
+static TouchSliderAppConfig *g_TouchSlider_app_storage = nullptr;
+static TouchSliderAppConfig **g_TouchSlider_app = &g_TouchSlider_app_storage;
 
 TouchSlider::TouchSlider(int type, int x, int y, float value) {
     this->type = type;
@@ -59,7 +54,7 @@ TouchSlider::TouchSlider(int type, int x, int y, float value) {
     setPosition(x, y);
     this->numSteps = 0;
 
-    this->touchPadding = ((TouchSliderAppConfig *) *g_TouchSlider_app)->touchPadding;
+    this->touchPadding = (*g_TouchSlider_app)->touchPadding;
 }
 
 TouchSlider::~TouchSlider() {

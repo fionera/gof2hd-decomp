@@ -5,51 +5,37 @@
 #include "game/mission/Status.h"
 #include "game/world/SolarSystem.h"
 
-
-
-
 static int **gShipDataRoot = nullptr;
-static int *gRaceTable      = nullptr;
-static int *gDifficultyPtr  = nullptr;
-static int *gShopRoot       = nullptr;
+static int *gRaceTable = nullptr;
+static int *gDifficultyPtr = nullptr;
+static int *gShopRoot = nullptr;
 
 namespace {
-
-
-
-
-
-
-
-struct ShipDataEntry {
-    int category;
-    unsigned char _pad04[0x14 - 0x04];
-    int basePrice;
-};
+    struct ShipDataEntry {
+        int category;
+        unsigned char _pad04[0x14 - 0x04];
+        int basePrice;
+    };
 #if __SIZEOF_POINTER__ == 4
-static_assert(offsetof(ShipDataEntry, category) == 0x00, "");
-static_assert(offsetof(ShipDataEntry, basePrice) == 0x14, "");
+    static_assert(offsetof(ShipDataEntry, category) == 0x00, "");
+    static_assert(offsetof(ShipDataEntry, basePrice) == 0x14, "");
 #endif
 
-
-struct ShipDataObj {
-    int _field00;
-    ShipDataEntry **table;
-};
+    struct ShipDataObj {
+        int _field00;
+        ShipDataEntry **table;
+    };
 #if __SIZEOF_POINTER__ == 4
-static_assert(offsetof(ShipDataObj, table) == 0x04, "");
+    static_assert(offsetof(ShipDataObj, table) == 0x04, "");
 #endif
 
-
-
-struct ShopEntry {
-    unsigned char _pad000[0x17c];
-    Item *cloakItem;
-};
+    struct ShopEntry {
+        unsigned char _pad000[0x17c];
+        Item *cloakItem;
+    };
 #if __SIZEOF_POINTER__ == 4
-static_assert(offsetof(ShopEntry, cloakItem) == 0x17c, "");
+    static_assert(offsetof(ShopEntry, cloakItem) == 0x17c, "");
 #endif
-
 }
 
 Ship::Ship(int index, int baseHP, int baseLoad, int value,
@@ -550,7 +536,7 @@ void Ship::refreshValue() {
     this->boostDelay = 0;
     this->boostTime = 0;
     if (Globals::status != 0 && Globals::status->getStanding() != 0) {
-        ((Standing *) ((void *) (intptr_t) Globals::status->getStanding()))->setPlayerSignatureRace(-1);
+        ((Standing *) ((intptr_t) Globals::status->getStanding()))->setPlayerSignatureRace(-1);
     }
     this->value = this->price;
 
@@ -634,7 +620,7 @@ void Ship::refreshValue() {
                     int idx = cur->getIndex();
                     this->signatureRace = idx - 0xbd;
                     if (Globals::status != 0 && Globals::status->getStanding() != 0) {
-                        ((Standing *) ((void *) (intptr_t) Globals::status->getStanding()))->setPlayerSignatureRace(
+                        ((Standing *) ((intptr_t) Globals::status->getStanding()))->setPlayerSignatureRace(
                             this->signatureRace);
                     }
                     break;

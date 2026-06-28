@@ -10,13 +10,11 @@
 
 #include "engine/math/AEMath.h"
 
-
 class Player;
 
 class AEGeometry;
 class BoundingVolume;
 class Explosion;
-
 
 typedef AbyssEngine::AEMath::Vector V3;
 
@@ -111,7 +109,7 @@ public:
 
     void setMoving(bool v);
 
-    void *setName(String name);
+    void *setName(String name); // lint: void_ptr (exported method return type)
 
     void setPosition(float x, float y, float z) override;
 

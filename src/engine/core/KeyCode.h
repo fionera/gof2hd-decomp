@@ -4,7 +4,6 @@
 
 #include "engine/core/AEString.h"
 
-
 namespace AbyssEngine {
     class KeyCode {
     public:

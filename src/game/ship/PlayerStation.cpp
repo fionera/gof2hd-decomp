@@ -65,6 +65,7 @@ Vector PlayerStation::projectCollisionOnSurface(const Vector &position) {
 }
 
 void *PlayerStation::getRoot() {
+    // lint: void_ptr (exported method return type baked into ABI)
     return this->rootGeometry;
 }
 

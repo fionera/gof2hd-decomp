@@ -12,6 +12,7 @@ AEPakFile::~AEPakFile() {
 }
 
 uint32_t AEPakFile::Read(uint32_t bytes, void *buffer) {
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
     FileInterface *file;
     if (bytes != 0 && (file = fileInterface) != nullptr) {
         if (static_cast<int>(position + bytes) > static_cast<int>(sizeLimit)) {
@@ -26,6 +27,7 @@ uint32_t AEPakFile::Read(uint32_t bytes, void *buffer) {
 }
 
 uint32_t AEPakFile::Write(uint32_t, void *) {
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
     return 0;
 }
 

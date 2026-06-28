@@ -102,8 +102,8 @@ namespace AbyssEngine {
         glEnableVertexAttribArray(this->copyAttribPosition);
         glEnableVertexAttribArray(this->copyAttribTexCoord);
         glUniformMatrix4fv(this->copyUniformWorldView, 1, 0, engine->worldViewProjMatrix);
-        glVertexAttribPointer(this->copyAttribPosition, 3, 0x1406, 0, 0, *(void **) (engine->field_0x380 + 4));
-        glVertexAttribPointer(this->copyAttribTexCoord, 2, 0x1406, 0, 0, *(void **) (engine->field_0x380 + 8));
+        glVertexAttribPointer(this->copyAttribPosition, 3, 0x1406, 0, 0, *(float **) ((char *) engine->quadMesh + 4));
+        glVertexAttribPointer(this->copyAttribTexCoord, 2, 0x1406, 0, 0, *(float **) ((char *) engine->quadMesh + 8));
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->copyAttribPosition);
@@ -117,8 +117,10 @@ namespace AbyssEngine {
             glEnableVertexAttribArray(this->blurXAttribPosition);
             glEnableVertexAttribArray(this->blurXAttribTexCoord);
             glUniformMatrix4fv(this->blurXUniformWorldView, 1, 0, engine->worldViewProjMatrix);
-            glVertexAttribPointer(this->blurXAttribPosition, 3, 0x1406, 0, 0, *(void **) (engine->field_0x380 + 4));
-            glVertexAttribPointer(this->blurXAttribTexCoord, 2, 0x1406, 0, 0, *(void **) (engine->field_0x380 + 8));
+            glVertexAttribPointer(this->blurXAttribPosition, 3, 0x1406, 0, 0,
+                                  *(float **) ((char *) engine->quadMesh + 4));
+            glVertexAttribPointer(this->blurXAttribTexCoord, 2, 0x1406, 0, 0,
+                                  *(float **) ((char *) engine->quadMesh + 8));
             glUniform1f(this->blurXUniformSampleSize, 1.0f / (float) this->blurXTarget->width);
             glClear(0x4000);
             Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
@@ -132,8 +134,10 @@ namespace AbyssEngine {
             glEnableVertexAttribArray(this->blurYAttribPosition);
             glEnableVertexAttribArray(this->blurYAttribTexCoord);
             glUniformMatrix4fv(this->blurYUniformWorldView, 1, 0, engine->worldViewProjMatrix);
-            glVertexAttribPointer(this->blurYAttribPosition, 3, 0x1406, 0, 0, *(void **) (engine->field_0x380 + 4));
-            glVertexAttribPointer(this->blurYAttribTexCoord, 2, 0x1406, 0, 0, *(void **) (engine->field_0x380 + 8));
+            glVertexAttribPointer(this->blurYAttribPosition, 3, 0x1406, 0, 0,
+                                  *(float **) ((char *) engine->quadMesh + 4));
+            glVertexAttribPointer(this->blurYAttribTexCoord, 2, 0x1406, 0, 0,
+                                  *(float **) ((char *) engine->quadMesh + 8));
             glUniform1f(this->blurYUniformSampleSize, 1.0f / (float) this->blurYTarget->height);
             glClear(0x4000);
             Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
@@ -157,10 +161,10 @@ namespace AbyssEngine {
         secondTexture->Activate();
 
         if (target == 0) {
-            glBindFramebuffer(0x8d40, engine->field_0x40c);
+            glBindFramebuffer(0x8d40, engine->viewFramebuffer);
             uint32_t width;
             uint32_t height;
-            if (*(int32_t *) (*(char **) engine->field_0x30 + 0x30) == 2) {
+            if (*(int32_t *) (*(char **) engine->appManager + 0x30) == 2) {
                 width = Engine_GetDisplayWidth(engine);
                 height = Engine_GetDisplayHeight(engine);
             } else {
@@ -175,8 +179,10 @@ namespace AbyssEngine {
         glEnableVertexAttribArray(this->combineAttribPosition);
         glEnableVertexAttribArray(this->combineAttribTexCoord);
         glUniformMatrix4fv(this->combineUniformWorldView, 1, 0, engine->worldViewProjMatrix);
-        glVertexAttribPointer(this->combineAttribPosition, 3, 0x1406, 0, 0, *(void **) (engine->field_0x380 + 4));
-        glVertexAttribPointer(this->combineAttribTexCoord, 2, 0x1406, 0, 0, *(void **) (engine->field_0x380 + 8));
+        glVertexAttribPointer(this->combineAttribPosition, 3, 0x1406, 0, 0,
+                              *(float **) ((char *) engine->quadMesh + 4));
+        glVertexAttribPointer(this->combineAttribTexCoord, 2, 0x1406, 0, 0,
+                              *(float **) ((char *) engine->quadMesh + 8));
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->combineAttribPosition);

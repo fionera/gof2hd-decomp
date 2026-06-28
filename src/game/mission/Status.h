@@ -21,16 +21,7 @@ class Standing;
 class Station;
 class Wanted;
 
-
 using AbyssEngine::String;
-
-
-
-
-
-
-
-
 
 #pragma pack(push, 4)
 class Status {
@@ -42,8 +33,11 @@ public:
     Array<PendingProduct *> *pendingProducts;
     Array<Agent *> *agents;
     int32_t wingmen;
+
     union {
+        // lint: union_decl -- 32-bit word overlaid with per-byte access
         int32_t field_0x28;
+
         struct {
             uint8_t _byte_0x28;
             uint8_t _byte_0x29;
@@ -51,15 +45,19 @@ public:
             uint8_t _byte_0x2b;
         };
     };
+
     int32_t field_0x2c;
 
     union {
+        // lint: union_decl -- both names live cross-file (Level.cpp field_0x30 / MenuTouchWindow fadeValue)
         int32_t field_0x30;
         uint32_t fadeValue;
     };
 
     union {
+        // lint: union_decl -- int overlaid with per-byte access
         int32_t passengers;
+
         struct {
             uint8_t _byte_0x34;
             uint8_t byte_0x35;
@@ -69,12 +67,14 @@ public:
     };
 
     union {
+        // lint: union_decl -- Array<bool>* overlaid with flag bytes
         Array<bool> *systemVisibilities;
 
         struct {
             uint8_t field_0x34_b0;
 
             union {
+                // lint: union_decl -- flag_0x35 used cross-file (MenuTouchWindow.cpp status->flag_0x35)
                 uint8_t dlcOverrideFlag;
                 uint8_t flag_0x35;
             };
@@ -82,6 +82,7 @@ public:
             uint8_t field_0x36_b2;
 
             union {
+                // lint: union_decl -- flag_0x37 used cross-file (MenuTouchWindow.cpp status->flag_0x37)
                 uint8_t versionOverrideFlag;
                 uint8_t flag_0x37;
             };
@@ -92,8 +93,11 @@ public:
     Array<int> *field_0x40;
     Array<int> *field_0x44;
     Array<int> *field_0x48;
+
     union {
+        // lint: union_decl -- Array<bool>* overlaid with per-byte access
         Array<bool> *field_4c;
+
         struct {
             uint8_t _byte_0x4c;
             uint8_t _byte_0x4d;
@@ -101,6 +105,7 @@ public:
             uint8_t _byte_0x4f;
         };
     };
+
     Array<bool> *field_50;
     Array<bool> *field_54;
     Array<bool> *field_58;
@@ -118,6 +123,7 @@ public:
     int32_t field_88;
 
     union {
+        // lint: union_decl -- both names live cross-file (StarMap.cpp field_8c / MenuTouchWindow preSetField0x84)
         int32_t field_8c;
         int32_t preSetField0x84;
     };
@@ -136,13 +142,17 @@ public:
     int32_t field_bc;
     int32_t field_c0;
     int32_t field_c4;
+
     union {
+        // lint: union_decl -- two 32-bit fields overlaid with 64-bit access
         struct {
             int32_t field_c8;
             int32_t field_cc;
         };
+
         int64_t field_c8_q;
     };
+
     int32_t field_d0;
     int32_t field_d4;
     int32_t field_d8;
@@ -161,20 +171,25 @@ public:
     int32_t field_0x104;
     uint8_t field_0x108;
     uint8_t _pad_0x109[3];
+
     union {
+        // lint: union_decl -- struct overlaid with 64-bit access
         struct {
             int32_t field_10c;
             uint8_t field_110;
             uint8_t field_0x111;
             uint8_t _pad_0x112[2];
         };
+
         int64_t field_10c_q;
     };
+
     int32_t field_114;
     int32_t field_118;
     int32_t field_11c;
 
     union {
+        // lint: union_decl -- uint8 field_120 vs int32 mode_0x114, both used cross-file
         uint8_t field_120;
         int32_t mode_0x114;
     };
@@ -191,6 +206,7 @@ public:
     int32_t field_148;
 
     union {
+        // lint: union_decl -- Station* vs int32 handle, both used cross-file (Generator.cpp field_14c)
         Station *voidStation;
         int32_t field_14c;
     };
@@ -459,11 +475,8 @@ public:
     int isFreighterMissionStation(int station);
 
     int getFreighterMissionStationBit(int station);
-
 };
 #pragma pack(pop)
-
-
 
 #if __SIZEOF_POINTER__ == 4
 static_assert(sizeof(Status) == 492, "Status must be 492 bytes");

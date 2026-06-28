@@ -17,7 +17,6 @@ class Ship;
 class SolarSystem;
 class Station;
 
-
 Mission *Mission_ctor_full(Mission *self, int type, AbyssEngine::String *name,
                            int *imageParts, int race, int reward,
                            int targetStation, int difficulty);

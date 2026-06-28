@@ -104,7 +104,7 @@ namespace AbyssEngine {
                     w = 1.0f;
                 glUniform1f(this->uIsGlowMat, w);
             }
-            if (engine->field_0x32c >= 2) {
+            if (engine->lightCount >= 2) {
                 glUniform3fv(this->uDiffuseColor0, 1, (float *) &engine->lightSpecularShaded);
                 glUniform3fv(this->uSpecularColor0, 1, (float *) &engine->field_0x308);
                 glUniform3fv(this->uSpecularColor1, 1, (float *) &engine->particleAmbient);

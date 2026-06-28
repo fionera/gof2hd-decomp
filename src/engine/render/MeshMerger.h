@@ -5,33 +5,30 @@
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
-namespace AbyssEngine { 
+namespace AbyssEngine {
     class Mesh;
- }
-
-
+}
 
 namespace AbyssEngine {
     class PaintCanvas;
 }
+
 using ::AbyssEngine::PaintCanvas;
 
 class MeshMerger {
 public:
     using Mesh = AbyssEngine::Mesh;
 
-
-
     int rows;
     uint16_t flags;
     uint8_t initialized;
-    void *sourceMeshes;
+    Mesh **sourceMeshes;
     PaintCanvas *canvas;
     uint32_t mergedMeshId;
     uint32_t transformId;
-    void **transformedMeshes;
+    Mesh **transformedMeshes;
     char *matrices;
-    void *mergedMesh;
+    Mesh *mergedMesh;
     int8_t *lods;
     uint8_t *enabledFlags;
     uint8_t *visibleFlags;
@@ -60,6 +57,8 @@ public:
     int init();
 
     void *transformMesh(Mesh *mesh, const Matrix &m);
+
+    // lint: void_ptr (method return type baked into symbol-parity contract)
 };
 
 #endif

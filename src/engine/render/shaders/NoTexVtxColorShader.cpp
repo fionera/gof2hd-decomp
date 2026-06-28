@@ -39,10 +39,10 @@ namespace AbyssEngine {
 
         int index = aPosition;
         int size;
-        const void *ptr;
+        const unsigned char *ptr;
         int stride = 0;
         if (mesh == 0) {
-            ptr = *(void **) &engine->field_0x348;
+            ptr = *(unsigned char **) &engine->lineVertexBase;
             size = 2;
         } else {
             glVertexAttribPointer(index, 3, 0x1406, 0, stride, mesh->positions);

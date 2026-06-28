@@ -15,7 +15,7 @@ namespace AbyssEngine {
         unsigned short id;
         int kind;
         int unused;
-        void *payload;
+        void *payload; // lint: void_ptr (heterogeneous resource payload dispatched by kind; no common base)
     };
 
     struct ResourceImage {
@@ -29,6 +29,7 @@ void loadLowTexturesAndMaterials(AbyssEngine::Engine * engine);
 
 namespace {
     inline AbyssEngine::Resource *makeRes(unsigned short id, int kind, void *payload) {
+        // lint: void_ptr (heterogeneous resource payload dispatched by kind; no common base)
         AbyssEngine::Resource *r = new AbyssEngine::Resource;
         r->id = id;
         r->kind = kind;

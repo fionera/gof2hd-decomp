@@ -7,7 +7,6 @@
 class Gun;
 class Level;
 
-
 class SentryGun : public ObjectGun {
 public:
     int cooldown;

@@ -3,6 +3,7 @@
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
 #include <cstdint>
+#include <new>
 
 namespace AbyssEngine {
     class ResourceTransform {

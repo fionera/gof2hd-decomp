@@ -2,34 +2,28 @@
 
 #include <cstdio>
 
-
-
-extern "C" unsigned int S[4][256];
+extern "C" unsigned int S[4][256]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 unsigned int S[4][256];
 
-
-
-extern "C" unsigned int P[18];
+extern "C" unsigned int P[18]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 unsigned int P[18];
 
-
-
-extern "C" std::FILE *SubkeyFile;
+extern "C" std::FILE *SubkeyFile; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 std::FILE *SubkeyFile = nullptr;
 
+extern "C" unsigned int F(unsigned int value); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
-extern "C" unsigned int F(unsigned int value);
-
-extern "C" int opensubkeyfile() {
+extern "C" int opensubkeyfile() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     SubkeyFile = std::fopen("Blowfish.dat", "rb");
     return SubkeyFile != nullptr ? 0 : -1;
 }
 
-extern "C" void *decrypt(void *ctx) {
+extern "C" void *decrypt(void *ctx) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    // lint: void_ptr extern "C" ABI signature (opaque ctx in/out)
     return ctx;
 }
 
-extern "C" void Blowfish_encipher(unsigned int *xl, unsigned int *xr) {
+extern "C" void Blowfish_encipher(unsigned int *xl, unsigned int *xr) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
     for (int i = 0; i != 16; ++i) {
@@ -41,7 +35,7 @@ extern "C" void Blowfish_encipher(unsigned int *xl, unsigned int *xr) {
     *xr = Xl ^ P[16];
 }
 
-extern "C" void Blowfish_decipher(unsigned int *xl, unsigned int *xr) {
+extern "C" void Blowfish_decipher(unsigned int *xl, unsigned int *xr) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
     for (unsigned int i = 17; i > 1; --i) {
@@ -53,12 +47,11 @@ extern "C" void Blowfish_decipher(unsigned int *xl, unsigned int *xr) {
     *xr = Xl ^ P[1];
 }
 
-extern "C" void InitializeBlowfish(unsigned char *key, int keylen) {
+extern "C" void InitializeBlowfish(unsigned char *key, int keylen) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     if (opensubkeyfile() != 0) {
         std::printf("InitializeBlowfish: cannot open subkey file\n");
         return;
     }
-
 
     for (unsigned int i = 0; i < 18; ++i) {
         if (std::fread(&P[i], 4, 1, SubkeyFile) != 1)
@@ -72,7 +65,6 @@ extern "C" void InitializeBlowfish(unsigned char *key, int keylen) {
     }
     std::fclose(SubkeyFile);
 
-
     short k = 0;
     for (int i = 0; i != 18; ++i) {
         unsigned int data = 0;
@@ -85,8 +77,6 @@ extern "C" void InitializeBlowfish(unsigned char *key, int keylen) {
         }
         P[i] ^= data;
     }
-
-
 
     unsigned int dl = 0;
     unsigned int dr = 0;

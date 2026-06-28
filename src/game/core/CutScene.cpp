@@ -16,7 +16,6 @@
 #include "game/ship/PlayerFighter.h"
 #include "game/ship/Ship.h"
 
-
 using AbyssEngine::AERandom;
 using AbyssEngine::AnimationMode;
 
@@ -40,9 +39,13 @@ float VectorSignedToFloat(int v, int mode);
 
 void MatrixSetRotation(void *m, float x, float y, float z);
 
+// lint: void_ptr (external symbol; param mangling must match lib)
+
 void MatrixSetTranslation(void *m, float x, float y, float z);
 
-int Station_getIndex(void *station);
+// lint: void_ptr (external symbol; param mangling must match lib)
+
+int Station_getIndex(void *station); // lint: void_ptr (external symbol; param mangling must match lib)
 
 CutScene::CutScene(int mode) {
     this->shipPosY = 0;
@@ -165,19 +168,19 @@ void CutScene::process(int /*delta*/) {
         Array<KIPlayer *> *enemies = this->level->getEnemies();
         if (pt != 0 && enemies != nullptr && enemies->size() > 1) {
             unsigned int n = enemies->size();
-            void *e0 = (*enemies)[n - 2];
+            KIPlayer *e0 = (*enemies)[n - 2];
 
-            if (e0 != nullptr && ((KIPlayer *) e0)->geometry != nullptr) {
-                AEGeometry *g0 = ((KIPlayer *) e0)->geometry;
+            if (e0 != nullptr && e0->geometry != nullptr) {
+                AEGeometry *g0 = e0->geometry;
                 float f = VectorSignedToFloat(this->frameDelta, 0);
                 g0->translate(f * CutScene_proc_tx0, 0.0f, 0.0f);
                 float f1 = VectorSignedToFloat(this->frameDelta, 0);
                 float f2 = VectorSignedToFloat(-(int) this->frameDelta, 0);
                 g0->rotate(f1 * CutScene_proc_rx0, 0.0f, f2 * CutScene_proc_rz0);
             }
-            void *e1 = (*enemies)[n - 1];
-            if (e1 != nullptr && ((KIPlayer *) e1)->geometry != nullptr) {
-                AEGeometry *g1 = ((KIPlayer *) e1)->geometry;
+            KIPlayer *e1 = (*enemies)[n - 1];
+            if (e1 != nullptr && e1->geometry != nullptr) {
+                AEGeometry *g1 = e1->geometry;
                 float f = VectorSignedToFloat(this->frameDelta, 0);
                 g1->translate(f * CutScene_proc_tx0, 0.0f, 0.0f);
                 float f1 = VectorSignedToFloat(this->frameDelta, 0);
@@ -187,7 +190,7 @@ void CutScene::process(int /*delta*/) {
         }
     } else if (this->mode == 0x17) {
         unsigned int kind;
-        void *st = Globals::status->getStation();
+        Station *st = Globals::status->getStation();
         if (Station_getIndex(st) == 0x65) {
             kind = 10;
         } else {
@@ -407,7 +410,7 @@ void CutScene::replacePlayerShip(int /*a*/, int b) {
         Array<KIPlayer *> *en6 = this->level->getEnemies();
         ((PlayerFighter *) ((*en6)[0]))->setExhaustVisible(false);
 
-        ((LODManager *) (*(void **) this))->removeObject(oldGeom);
+        (*(LODManager **) this)->removeObject(oldGeom);
         delete oldGeom;
     }
 
@@ -450,14 +453,14 @@ void CutScene::initialize() {
         Array<KIPlayer *> *enemies = this->level->getEnemies();
         if (pt != 0 && enemies != nullptr && enemies->size() > 1) {
             unsigned int n = enemies->size();
-            void *e0 = (*enemies)[n - 2];
+            KIPlayer *e0 = (*enemies)[n - 2];
             if (e0 != nullptr && (*enemies)[n - 1] != nullptr) {
                 float v[3];
                 v[0] = VectorSignedToFloat(rx - 24000, 0);
                 v[1] = 0.0f;
                 v[2] = VectorSignedToFloat(ry + 0x9a4c, 0);
 
-                ((KIPlayer *) e0)->setPosition(v[0], v[1], v[2]);
+                e0->setPosition(v[0], v[1], v[2]);
                 v[0] = VectorSignedToFloat(rx - 0x5b68, 0);
                 v[2] = VectorSignedToFloat(ry + 0x96c8, 0);
                 ((KIPlayer *) (*enemies)[n - 1])->setPosition(v[0], v[1], v[2]);
@@ -537,7 +540,7 @@ void CutScene::resetCamera() {
         canvas->CameraSetPerspective(0, CutScene_persp_fov_mode17, CutScene_persp_znear, CutScene_persp_zfar);
 
         Array<KIPlayer *> *enemies = this->level->getEnemies();
-        void *lead = (*enemies)[0];
+        KIPlayer *lead = (*enemies)[0];
         (void) lead;
         return;
     }

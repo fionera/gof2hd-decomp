@@ -47,13 +47,9 @@ struct StatusWindow {
     int OnTouchMove(int x, int y);
 };
 
-
-
-
 struct HangarWindowHead {
     char shipChanged;
 };
-
 
 struct AppData {
     char pad00[0xd];
@@ -62,24 +58,21 @@ struct AppData {
     char purchaseReady;
     char restoreNotice;
     char pad43[0x48 - 0x43];
-    int  purchaseId;
+    int purchaseId;
     char pad4c[0x58 - 0x4c];
     int *purchaseList;
     char pad5c[0x60 - 0x5c];
     Array<String *> *iapArray;
 };
 
-
 struct HintRecord {
     char flags[0x40];
 };
-
 
 struct TextRootRecord {
     char pad000[0x2ec];
     char noRoutesHintShown;
 };
-
 
 struct SettingsBlock {
     char pad00[0x2b];
@@ -102,47 +95,41 @@ static_assert(offsetof(SettingsBlock, gameWonShown) == 0x38, "");
 static_assert(offsetof(SettingsBlock, dlc1WonShown) == 0x39, "");
 #endif
 
-
-
 int FModSound_tryToStopMusicForBGMusic();
 
+void AEMath_MatrixSetTranslation(Matrix *m, int x, int y, int z);
 
-
-
-void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
-
-void AEMath_MatrixSetRotation(void *m, void *loc, int rx, int ry, int a4, int a5);
+void AEMath_MatrixSetRotation(Matrix *m, Matrix *loc, int rx, int ry, int a4, int a5);
 
 int Station_getIndex(Station * st);
 
+class ScrollTouchBox;
 
-void *ms_op_delete(void *p);
+unsigned char *ms_op_delete(unsigned char *p);
 
-void *ArrayReleaseClasses_TouchButton(void *a);
+unsigned char *ArrayReleaseClasses_TouchButton(int *a);
 
-void *Array_TB_dtor(void *p);
+unsigned char *Array_TB_dtor(int *p);
 
-void *HangarWindow_dtor(void *p);
+unsigned char *HangarWindow_dtor(HangarWindow *p);
 
-void *StarMap_dtor(void *p);
+unsigned char *StarMap_dtor(StarMap * p);
 
-void *MissionsWindow_dtor(void *p);
+unsigned char *MissionsWindow_dtor(DialogueWindow * p);
 
-void *DialogueWindow_dtor(void *p);
+unsigned char *DialogueWindow_dtor(DialogueWindow * p);
 
-void *ChoiceWindow_dtor(void *p);
+unsigned char *ChoiceWindow_dtor(ChoiceWindow * p);
 
-void *StatusWindow_dtor(void *p);
+unsigned char *StatusWindow_dtor(StatusWindow *p);
 
-void *CutScene_dtor(void *p);
+unsigned char *CutScene_dtor(CutScene * p);
 
-void *Radio_dtor(void *p);
+unsigned char *Radio_dtor(Radio * p);
 
-void *Array_RM_dtor(void *p);
+unsigned char *Array_RM_dtor(Array<Radio *> * p);
 
-
-void *ScrollTouchBox_dtor(void *p);
-
+unsigned char *ScrollTouchBox_dtor(ScrollTouchBox *p);
 
 void ModStation::autosave() {
     if (Globals::status->getPlayingTime() - 1LL < 0)
@@ -155,7 +142,6 @@ void ModStation::autosave() {
     if ((int) (intptr_t) this->dlcMenu != 0) {
     }
 }
-
 
 static Ship *(*g_ModStation_es_getShip)(Status *) = 0;
 
@@ -192,7 +178,6 @@ void ModStation::enterStation() {
     Globals::status->field_11c = 0;
 }
 
-
 static int *g_ModStation_ach_a = 0;
 
 static int *g_ModStation_ach_b = 0;
@@ -221,33 +206,30 @@ void ModStation::setGameLoaded() {
     this->cameraFlags.bytes[3] = 1;
 }
 
-
-static void **g_ModStation_suspendObj = 0;
+static RecordHandler **g_ModStation_suspendObj = 0;
 
 void ModStation::OnSuspend() {
     this->activeTouch = 0;
-    void **holder = g_ModStation_suspendObj;
-    void *obj = *holder;
+    RecordHandler **holder = g_ModStation_suspendObj;
+    RecordHandler *obj = *holder;
     if (obj != 0)
-        ((RecordHandler *) obj)->saveOptions();
+        obj->saveOptions();
 }
 
+static FModSound **g_ModStation_resumeObj = 0;
 
-static void **g_ModStation_resumeObj = 0;
-
-static void **g_ModStation_resumeArg = 0;
+static int **g_ModStation_resumeArg = 0;
 
 void ModStation::OnResume() {
-    void **holder = g_ModStation_resumeObj;
-    void *obj = *holder;
+    FModSound **holder = g_ModStation_resumeObj;
+    FModSound *obj = *holder;
     if (obj == 0)
         return;
     if (FModSound_tryToStopMusicForBGMusic() != 0)
         return;
-    int arg = *(int *) *g_ModStation_resumeArg;
-    ((FModSound *) *holder)->setVolume(1, (float) arg);
+    int arg = **g_ModStation_resumeArg;
+    (*holder)->setVolume(1, (float) arg);
 }
-
 
 static int *g_cpp_stack = 0;
 
@@ -276,11 +258,11 @@ void Ship_addCargo_cpp(int ship, Item *it);
 int Item_getAmount_cpp();
 
 int Item_getIndex_cpp(Item * it);
-void *PendingProduct_dtor_cpp(PendingProduct * p);
+unsigned char *PendingProduct_dtor_cpp(PendingProduct * p);
 
-void operator_delete_cpp(void *p);
+void operator_delete_cpp(unsigned char *p);
 
-void ChoiceWindow_setNotice_cpp(void *cw);
+void ChoiceWindow_setNotice_cpp(ChoiceWindow * cw);
 
 int GameText_getText_cppline(int id);
 
@@ -290,9 +272,9 @@ void ModStation::checkPendingProducts() {
     GameText_getText_cpp(textId);
 
     Array<PendingProduct *> *products =
-        (Array<PendingProduct *> *) (intptr_t) Status_getPendingProducts_cpp(*(int *) g_cpp_status);
+            (Array<PendingProduct *> *) (intptr_t) Status_getPendingProducts_cpp(*(int *) g_cpp_status);
     if (products != 0) {
-        Array<int> *itemTable = (Array<int> *) (intptr_t) **g_cpp_itemTable;
+        Array<int> *itemTable = (Array<int> *) (intptr_t) * *g_cpp_itemTable;
         for (unsigned i = 0; i < products->size(); i = i + 1) {
             PendingProduct *pp = (*products)[i];
             if (pp != 0) {
@@ -327,14 +309,16 @@ void ModStation::checkPendingProducts() {
 done:;
 }
 
-
 static int *g_okp_stack = 0;
 
 void Status_checkForLevelUp_okp();
 
 void leaveStation();
+
 int GameText_getText_frag(int id);
-void ChoiceWindow_set1_frag(void *cw, int textStr);
+
+void ChoiceWindow_set1_frag(ChoiceWindow *cw, int textStr);
+
 int GameText_root_frag();
 
 void ModStation::OnKeyPress(long long, long long key) {
@@ -420,7 +404,6 @@ int ModStation::ShowLoadingScreen() {
     return 1;
 }
 
-
 static int *g_msc_stack = 0;
 
 int Status_getStation_msc();
@@ -432,6 +415,7 @@ int Status_getSystem_msc();
 int SolarSystem_getRace_msc();
 
 const int *ModStation_msc_camCoordTable();
+
 const int *ModStation_msc_camRotTable();
 
 ModStation::ModStation() {
@@ -510,12 +494,11 @@ void ModStation::leaveStation() {
     leaveStation();
 }
 
-
 static int *g_ModStation_cm_credit1 = 0;
 
 static int *g_ModStation_cm_credit2 = 0;
 
-static void **g_ModStation_cm_lead = 0;
+static int **g_ModStation_cm_lead = 0;
 
 void ModStation::checkMedals() {
     Globals::globals->reportLeaderboards();
@@ -527,7 +510,7 @@ void ModStation::checkMedals() {
             this->modalFlags.bytes[2] = 0;
             return;
         }
-        Array<int *> *medalArr = *(Array<int *> **)&this->medalArray;
+        Array<int *> *medalArr = *(Array<int *> **) &this->medalArray;
         int *medal = (*medalArr)[idx];
         ((ChoiceWindow *) (this->medalChoiceWindow))->setMedal(medal[0], medal[1]);
         int delta = *g_ModStation_cm_credit2;
@@ -555,7 +538,7 @@ void ModStation::checkMedals() {
         return;
 
     Array<int *> *arr = new Array<int *>();
-    *(Array<int *> **)&this->medalArray = arr;
+    *(Array<int *> **) &this->medalArray = arr;
     ArraySetLength(this->medalCount, *arr);
     int j = 0;
     this->medalCount = 0;
@@ -591,7 +574,7 @@ void ModStation::OnRender3D() {
         this->modalFlags.bytes[0] != 0 || this->subWindowFlags.bytes[3] != 0 || *p65 != 0 ||
         this->m_nStarMapWindowOpen.bytes[2] != 0) {
         if (this->subWindowFlags.bytes[3] != 0) {
-            ((StarMap *) ((void *&) this->starMap))->renderBG();
+            this->starMap->renderBG();
         } else if (*p65 != 0) {
             ((SpaceLounge *) (this->spaceLounge))->OnRenderBG();
         }
@@ -602,14 +585,13 @@ void ModStation::OnRender3D() {
     if (*p65 != 0)
         ((SpaceLounge *) (this->spaceLounge))->OnRender3D();
     else if (this->subWindowFlags.bytes[3] != 0)
-        ((StarMap *) ((void *&) this->starMap))->render();
+        this->starMap->render();
     else if (this->subWindowFlags.bytes[0] != 0)
         ((MissionsWindow *) (this->m_pDialogueWindow))->render3D();
     else if (this->subWindowFlags.bytes[2] == 0 && this->cutScene != 0)
         ((CutScene *) (this->cutScene))->render3D();
     ((PaintCanvas *) Globals::Canvas)->End3d();
 }
-
 
 static int **g_rl_engineHolder = 0;
 
@@ -654,7 +636,6 @@ void ModStation::resetLight() {
     Engine_LightEnable_rl(engine, g_rl_lightFlag);
 }
 
-
 static int *g_ou_stack = 0;
 
 static int **g_ou_sound = 0;
@@ -673,8 +654,6 @@ static int **g_ou_textRoot = 0;
 
 static int **g_ou_module = 0;
 
-
-
 int ApplicationManager_GetElapsedTimeMillis_ou();
 
 int ApplicationManager_GetApplicationData_ou();
@@ -683,7 +662,7 @@ void ApplicationManager_SetCurrentApplicationModule_ou(int module);
 
 void FModSound_updateAll_ou(int sound);
 
-void FModSound_play_ou(int sound, int id, void *p, float vol);
+void FModSound_play_ou(int sound, int id, const float *p, float vol);
 
 void FModSound_stop_ou(int sound);
 
@@ -691,7 +670,7 @@ void FModSound_setParamValue_ou(int sound, int a, int b, float v);
 
 void Layout_update_ou(int layout);
 
-void Layout_formatCredits_ou(void *outStr);
+void Layout_formatCredits_ou(ModStation * outStr);
 
 void Status_incPlayingTime_ou(long long delta);
 
@@ -729,11 +708,11 @@ void Mission_setStatusValue_ou(int v);
 
 void Mission_ctor_ou(Mission *m, int a, int b, int c);
 
-void Mission_setCampaignMission_ou(void *mission);
+void Mission_setCampaignMission_ou(Mission * mission);
 
-void Achievements_updateCredits_ou(void *ach, int credits);
+void Achievements_updateCredits_ou(Achievements *ach, int credits);
 
-int Globals_getInAppPurchaseArrayIndex_ou(int globals, void *arr);
+int Globals_getInAppPurchaseArrayIndex_ou(int globals, Array<String *> *arr);
 
 void TouchButton_setText_ou(int btn);
 
@@ -763,28 +742,31 @@ void HangarWindow_hideMessage_ou();
 
 void StatusWindow_update_ou(int w);
 
-void MenuTouchWindow_update_ou(void *w, int dt);
+void MenuTouchWindow_update_ou(MenuTouchWindow *w, int dt);
 
-void MenuTouchWindow_dtor_ou(void *w);
+void MenuTouchWindow_dtor_ou(MenuTouchWindow * w);
 
 int SpaceLounge_introFinished_ou();
 
 void SpaceLounge_ctor_ou(SpaceLounge * l);
 
-void SpaceLounge_init_ou(void *l);
+void SpaceLounge_init_ou(SpaceLounge * l);
 
 void SpaceLounge_update_ou(int l);
 
-void SpaceLounge_setHangarUpdate_ou(void *l);
+void SpaceLounge_setHangarUpdate_ou(SpaceLounge * l);
 
 int Radio_lastMessageShown_ou();
 
-float EaseInOut_advance_ou(void *e, int elapsed);
-unsigned ModStation_ou_cameraHandle();
-void ModStation_ou_setCameraLocal(unsigned h, const Matrix &m);
-void AEGeometry_rotate_ou(void *geom, float x, float y, float z);
-void Engine_setHangarLightIntensity_ou(float v);
+float EaseInOut_advance_ou(AbyssEngine::EaseInOut *e, int elapsed);
 
+unsigned ModStation_ou_cameraHandle();
+
+void ModStation_ou_setCameraLocal(unsigned h, const Matrix &m);
+
+void AEGeometry_rotate_ou(AEGeometry *geom, float x, float y, float z);
+
+void Engine_setHangarLightIntensity_ou(float v);
 
 void ModStation::OnUpdate() {
     int *status = *(int **) g_ou_status;
@@ -815,7 +797,7 @@ void ModStation::OnUpdate() {
     Layout_formatCredits_ou(this);
     TouchButton_setText_ou(creditsBtn);
 
-    Achievements_updateCredits_ou((void *) **(int **) g_ou_achievements, Status_getCredits_ou());
+    Achievements_updateCredits_ou((Achievements *) **(int **) g_ou_achievements, Status_getCredits_ou());
 
     if (this->stationActive != 0) {
         char *flag = *g_ou_spaceLoungeFlag;
@@ -848,8 +830,8 @@ void ModStation::OnUpdate() {
             *appData->purchaseList != 0 &&
             (unsigned) (appData->purchaseId - 0x32) < 5) {
             int idx = Globals::globals->getInAppPurchaseArrayIndex(appData->purchaseId,
-                                                           appData->iapArray);
-            if (-1 < (intptr_t) (*appData->iapArray)[idx]) {
+                                                                   appData->iapArray);
+            if (-1 < (intptr_t)(*appData->iapArray)[idx]) {
                 Status_changeCredits_ou(*status);
                 this->autosave();
                 ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(**g_ou_textRoot));
@@ -905,7 +887,7 @@ void ModStation::OnUpdate() {
             t = (int) (intptr_t) this->spaceLounge;
             this->m_nStarMapWindowOpen.bytes[0] = 1;
         }
-        this->spaceLounge = (void *) (intptr_t) (t + this->dt);
+        this->spaceLounge = (SpaceLounge *) (intptr_t)(t + this->dt);
         CutScene_update_ou((int) (intptr_t) this->cutScene);
 
         if (Radio_lastMessageShown_ou() != 0) {
@@ -962,7 +944,7 @@ void ModStation::OnUpdate() {
         }
 
         if (this->modalFlags.bytes[2] == 0 && this->screenFlags.bytes[2] != 0) {
-            Status *rec = (Status *) (intptr_t) *(int *) g_ou_status;
+            Status *rec = (Status *) (intptr_t) * (int *) g_ou_status;
             if (rec->byte_0x2a == 0) {
                 ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(**g_ou_textRoot));
                 this->screenFlags.bytes[3] = 1;
@@ -1060,7 +1042,7 @@ void ModStation::OnUpdate() {
                     this->dialogueWindow = dw;
                     Status_removeMission_ou(*status);
                     if (Mission_getType_ou() == 0xd) {
-                        ((Status *) (intptr_t) *status)->field_0xf0 = 0;
+                        ((Status *) (intptr_t) * status)->field_0xf0 = 0;
                         this->autosave();
                     }
                 }
@@ -1070,7 +1052,7 @@ void ModStation::OnUpdate() {
                 this->modalFlags.bytes[1] = 1;
                 this->dialogueWindow = dw;
                 if (Mission_getType_ou() == 0xd) {
-                    ((Status *) (intptr_t) *status)->field_0xf0 = 0;
+                    ((Status *) (intptr_t) * status)->field_0xf0 = 0;
                     this->autosave();
                 }
                 if (this->spaceLounge != 0)
@@ -1097,18 +1079,16 @@ void ModStation::OnUpdate() {
         this->scrollFlagsf = cur;
         Engine_setHangarLightIntensity_ou(cur);
     }
-    if ((int) (intptr_t) this->cutScene != 0 && this->m_nStarMapWindowOpen.bytes[0] == 0)
-        {
-            void *geom = this->hangarGeom;
-            if (geom != nullptr)
-                AEGeometry_rotate_ou(geom, 0.0f, 0.1f, 0.0f);
-        }
+    if ((int) (intptr_t) this->cutScene != 0 && this->m_nStarMapWindowOpen.bytes[0] == 0) {
+        AEGeometry *geom = this->hangarGeom;
+        if (geom != nullptr)
+            AEGeometry_rotate_ou(geom, 0.0f, 0.1f, 0.0f);
+    }
 
 epilogue:;
 }
 
-
-static void **g_ModStation_ric_chk = 0;
+static int **g_ModStation_ric_chk = 0;
 
 static int *g_ModStation_ric_rotX = 0;
 
@@ -1125,26 +1105,26 @@ void ModStation::resetIdleCamForHangar() {
             this->camKeyX, this->camKeyX);
     else
         this->easeX = new AbyssEngine::EaseInOut(this->camKeyX,
-                                                                        this->camKeyX);
+                                                 this->camKeyX);
 
     if (this->easeY != 0)
         ((AbyssEngine::EaseInOut *) (this->easeY))->SetRange(
             this->camKeyY, this->camKeyY);
     else
         this->easeY = new AbyssEngine::EaseInOut(this->camKeyY,
-                                                                        this->camKeyY);
+                                                 this->camKeyY);
 
     if (this->easeZ != 0)
         ((AbyssEngine::EaseInOut *) (this->easeZ))->SetRange(
             this->camKeyZ, this->camKeyZ);
     else
         this->easeZ = new AbyssEngine::EaseInOut(this->camKeyZ,
-                                                                        this->camKeyZ);
+                                                 this->camKeyZ);
 
     Globals::Canvas->CameraGetCurrent();
-    void *loc = Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
+    Matrix *loc = (Matrix *) Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
 
-    AEMath_MatrixSetTranslation(matrix, this->camKeyX, this->camKeyY,
+    AEMath_MatrixSetTranslation((Matrix *) matrix, this->camKeyX, this->camKeyY,
                                 this->camKeyZ);
 
     int race;
@@ -1161,11 +1141,10 @@ void ModStation::resetIdleCamForHangar() {
     }
 
     Globals::Canvas->CameraGetCurrent();
-    void *loc2 = Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
-    AEMath_MatrixSetRotation(matrix, loc2, g_ModStation_ric_rotX[race], g_ModStation_ric_rotY[race], 0, 2);
+    Matrix *loc2 = (Matrix *) Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
+    AEMath_MatrixSetRotation((Matrix *) matrix, loc2, g_ModStation_ric_rotX[race], g_ModStation_ric_rotY[race], 0, 2);
     (void) loc;
 }
-
 
 static int *g_ch_stack = 0;
 
@@ -1184,24 +1163,29 @@ int Achievements_gotAllGoldMedals_ch();
 
 int Achievements_gotAllSupernovaMedals_ch(Achievements * a);
 
-int Status_isBlueprintUnlocked_ch(void *status, int bp);
+int Status_isBlueprintUnlocked_ch(Status *status, int bp);
 
-void Status_unlockBluePrint_ch(void *status, int bp);
+void Status_unlockBluePrint_ch(Status *status, int bp);
 
 int Status_hardCoreMode_ch();
 
 int GameText_getText_ch(int id);
+
 int GameText_text_ch(int slot);
-void ChoiceWindow_set6_ch(void *cw, int a, int b, int c, int d, int e);
-void ChoiceWindow_set1_ch(void *cw, int textStr);
-void DialogueWindow_initWingman_ch(void *dw, int kind);
+
+void ChoiceWindow_set6_ch(ChoiceWindow *cw, int a, int b, int c, int d, int e);
+
+void ChoiceWindow_set1_ch(ChoiceWindow *cw, int textStr);
+
+void DialogueWindow_initWingman_ch(DialogueWindow *dw, int kind);
+
 void FModSound_playWingmanRecruit_ch();
 
 void ModStation::checkHints() {
     if (this->m_nStarMapWindowOpen.bytes[0] != 0)
         return;
 
-    HintRecord *hintRec = (HintRecord *) (intptr_t) *g_ch_hintRec;
+    HintRecord *hintRec = (HintRecord *) (intptr_t) * g_ch_hintRec;
 
     if (this->modalFlags.bytes[2] == 0 && this->m_nStarMapWindowOpen.bytes[3] == 0 &&
         hintRec->flags[0x34] == 0 &&
@@ -1223,7 +1207,7 @@ void ModStation::checkHints() {
         for (int k = 0; k < 4; k = k + 1) {
             if (this->modalFlags.bytes[2] != 0) return;
             if (this->m_nStarMapWindowOpen.bytes[3] == 0 && hintRec->flags[wantedFlag[k]] == 0) {
-                Status *st = (Status *) (intptr_t) *status;
+                Status *st = (Status *) (intptr_t) * status;
                 Wanted *w = (*st->wanted)[wantedOff[k] / 4];
                 if (Wanted_isTerminated_ch(w) != 0) {
                     ChoiceWindow_set1_ch(this->choiceWindow, GameText_getText_ch(wantedOff[k]));
@@ -1250,7 +1234,7 @@ void ModStation::checkHints() {
         }
 
         if (this->modalFlags.bytes[2] == 0 && this->m_nStarMapWindowOpen.bytes[3] == 0) {
-            void *statPtr = (void *) *status;
+            Status *statPtr = (Status *) *status;
             if (Status_isBlueprintUnlocked_ch(statPtr, 0xe8) == 0 &&
                 Achievements_gotAllGoldMedals_ch() != 0 &&
                 Achievements_gotAllSupernovaMedals_ch(*g_ch_ach) != 0) {
@@ -1281,21 +1265,21 @@ void ModStation::checkHints() {
         this->m_nStarMapWindowOpen.bytes[3] == 0) {
         delete this->dialogueWindow;
         this->dialogueWindow = nullptr;
-        void *dw = ::operator new(0x74);
+        DialogueWindow *dw = (DialogueWindow *) ::operator new(0x74);
         DialogueWindow_initWingman_ch(dw, 0);
-        this->dialogueWindow = (DialogueWindow *) dw;
+        this->dialogueWindow = dw;
         FModSound_playWingmanRecruit_ch();
         this->modalFlags.bytes[1] = 1;
         this->alarmFlags.bytes[3] = 1;
     }
 }
 
-
 static Layout **g_ModStation_tm_layout = 0;
 
-static void **g_ModStation_tm_screenH = 0;
+static int **g_ModStation_tm_screenH = 0;
 
 void ModStation::OnTouchMove(int x, int y, void *touch) {
+    // lint: void_ptr
     if (this->activeTouch != touch)
         return;
     this->touchX = x;
@@ -1326,7 +1310,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
         return;
     }
     if (this->subWindowFlags.bytes[3] != 0) {
-        ((StarMap *) ((void *&) this->starMap))->OnTouchMove(x, y);
+        this->starMap->OnTouchMove(x, y);
         return;
     }
     if (this->subWindowFlags.bytes[1] != 0) {
@@ -1368,7 +1352,6 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     this->camScrollPos = x;
 }
 
-
 static FModSound **g_ModStation_or_sound = 0;
 
 static Layout **g_ModStation_or_reload = 0;
@@ -1394,9 +1377,9 @@ void ModStation::OnRelease() {
         ms_op_delete(HangarWindow_dtor(this->hangarWindow));
     this->hangarWindow = 0;
 
-    if ((void *&) this->starMap != 0)
-        ms_op_delete(StarMap_dtor((void *&) this->starMap));
-    (void *&) this->starMap = 0;
+    if (this->starMap != 0)
+        ms_op_delete(StarMap_dtor(this->starMap));
+    this->starMap = 0;
 
     delete (SpaceLounge *) this->spaceLounge;
     this->spaceLounge = 0;
@@ -1425,7 +1408,7 @@ void ModStation::OnRelease() {
     this->dlcMenu = 0;
 
     if (this->activeMission != 0)
-        ms_op_delete(Radio_dtor((void *) (intptr_t) this->activeMission));
+        ms_op_delete(Radio_dtor((Radio *) (intptr_t) this->activeMission));
     this->activeMission = 0;
 
     if (this->radioMessages != 0)
@@ -1433,7 +1416,7 @@ void ModStation::OnRelease() {
     this->radioMessages = 0;
 
     if (this->newsTicker != 0)
-        ms_op_delete((this->newsTicker->~NewsTicker(), this->newsTicker));
+        ms_op_delete((unsigned char *) (this->newsTicker->~NewsTicker(), this->newsTicker));
     this->newsTicker = 0;
 
     if (this->choiceWindow != 0)
@@ -1463,7 +1446,7 @@ void ModStation::OnRelease() {
     this->easeZ = 0;
 
     if (this->activeMission != 0)
-        ms_op_delete(Radio_dtor((void *) (intptr_t) this->activeMission));
+        ms_op_delete(Radio_dtor((Radio *) (intptr_t) this->activeMission));
     this->activeMission = 0;
 
     if (this->scrollBox != 0)
@@ -1474,7 +1457,6 @@ void ModStation::OnRelease() {
     if (*soundHolder != 0)
         (*g_ModStation_or_sound)->freeAllEvents();
 }
-
 
 static int *g_ote_stack = 0;
 
@@ -1498,9 +1480,6 @@ static int **g_ote_itemTable = 0;
 
 static int **g_ote_shipTable = 0;
 
-
-
-
 void ApplicationManager_SetCurrentApplicationModule_ote(int module);
 
 int ApplicationManager_GetApplicationData_ote();
@@ -1511,7 +1490,7 @@ int Station_getIndex_ote(Station * s);
 
 int Station_stationHasPirateBase_ote();
 
-int Station_hasShip_ote(void *station);
+int Station_hasShip_ote(Station * station);
 
 int Station_getAgents_ote(Station * s);
 void Station_addShip_ote(Ship * s);
@@ -1519,7 +1498,7 @@ void Station_departStation_ote(Station * s);
 
 void Station_setAttackedFriends_ote(Station *s, int flag);
 
-void Station_setItems_ote(Station *s, void *arr, int flag);
+void Station_setItems_ote(Station *s, Array<Item *> *arr, int flag);
 
 int Status_getShip_ote();
 
@@ -1584,7 +1563,7 @@ void Agent_setEvent_ote(Agent *a, int e);
 
 void Agent_setOfferAccepted_ote(Agent *a, int flag);
 
-void Achievements_resetNewMedals_ote(void *ach);
+void Achievements_resetNewMedals_ote(Achievements * ach);
 
 int GameText_getText_ote(int id);
 
@@ -1630,13 +1609,13 @@ int StatusWindow_OnTouchEnd_ote(int w, int p1, int p2);
 
 int MissionsWindow_OnTouchEnd_ote(int w, int p1);
 
-int MenuTouchWindow_OnTouchEnd_ote(MenuTouchWindow *w, int p1, int p2, void *p3);
+int MenuTouchWindow_OnTouchEnd_ote(MenuTouchWindow *w, int p1, int p2, void *p3); // lint: void_ptr
 
 void MenuTouchWindow_ctor_ote(MenuTouchWindow *w, int kind);
 
 int TouchButton_OnTouchEnd_ote(int btn, int p1);
 
-void FModSound_play_ote(int sound, int id, void *p, float vol);
+void FModSound_play_ote(int sound, int id, const float *p, float vol);
 
 void FModSound_stop_ote(int sound);
 
@@ -1648,17 +1627,20 @@ void CutScene_replacePlayerShip_ote(int cs, int shipIndex);
 
 void CutScene_checkForTurret_ote(int cs);
 
-void ChoiceWindow_setFee_frag(void *cw, int credits, int templateId);
+void ChoiceWindow_setFee_frag(ChoiceWindow *cw, int credits, int templateId);
 
-void *ModStation_ote_buttonRow(ModStation * self);
-int TouchButton_getX_ote(void *btn);
-int TouchButton_getY_ote(void *btn);
+int *ModStation_ote_buttonRow(ModStation * self);
+int TouchButton_getX_ote(TouchButton * btn);
+int TouchButton_getY_ote(TouchButton * btn);
 
-void Radio_ctor_ote(void *radio);
-void Radio_addMessage_ote(void *radio, int textId);
-void ScrollTouchBox_initRadio_ote(void *box, void *radio);
+void Radio_ctor_ote(Radio * radio);
+
+void Radio_addMessage_ote(Radio *radio, int textId);
+
+void ScrollTouchBox_initRadio_ote(ScrollTouchBox * box, Radio * radio);
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) {
+    // lint: void_ptr
     int *status = *(int **) g_ote_status;
 
     if (this->activeTouch != touch)
@@ -1680,24 +1662,41 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
         if (this->dialogueWindow->OnTouchEnd(x, x) != 0) {
             if (this->activeMission != 0) {
                 {
-                        Mission *mission = (Mission *) this->activeMission;
+                    Mission *mission = (Mission *) this->activeMission;
 
-                        if (mission != 0) {
-                            int type = Mission_getType_ote();
-                            int campaign = Mission_isCampaignMission_ote(mission);
-                            if (type == 8) {
-                                if (campaign == 0) {
-                                    int ship = Status_getShip_ote();
-                                    int good = Mission_getProductionGoodIndex_ote(mission);
-                                    Mission_getProductionGoodAmount_ote();
-                                    Ship_removeCargo_ote(ship, good);
-                                    if ((int) (intptr_t) this->hangarWindow != 0)
-                                        HangarWindow_initialize_ote();
+                    if (mission != 0) {
+                        int type = Mission_getType_ote();
+                        int campaign = Mission_isCampaignMission_ote(mission);
+                        if (type == 8) {
+                            if (campaign == 0) {
+                                int ship = Status_getShip_ote();
+                                int good = Mission_getProductionGoodIndex_ote(mission);
+                                Mission_getProductionGoodAmount_ote();
+                                Ship_removeCargo_ote(ship, good);
+                                if ((int) (intptr_t) this->hangarWindow != 0)
+                                    HangarWindow_initialize_ote();
+                            }
+                        } else if (campaign == 0 && Mission_getType_ote() == 0xb) {
+                            Status_setPassengers_ote(*status, 0);
+                            if (Mission_isCampaignMission_ote(mission) == 0)
+                                ((Status *) (intptr_t) * status)->field_b8 += Mission_getProductionGoodAmount_ote();
+                            Status_getShip_ote();
+                            Array<Item *> *cargo = (Array<Item *> *) (intptr_t) Ship_getCargo_ote();
+                            if (cargo != 0) {
+                                for (unsigned i = 0; i < cargo->size(); i = i + 1) {
+                                    if (Item_isUnsaleable_ote((*cargo)[i]) != 0 &&
+                                        (Item_getIndex_ote((*cargo)[i]) == 0x74 ||
+                                         Item_getIndex_ote((*cargo)[i]) == 0x75)) {
+                                        Ship_removeCargo1_ote((Item *) Status_getShip_ote());
+                                        if ((int) (intptr_t) this->hangarWindow != 0)
+                                            HangarWindow_initialize_ote();
+                                        break;
+                                    }
                                 }
-                            } else if (campaign == 0 && Mission_getType_ote() == 0xb) {
-                                Status_setPassengers_ote(*status, 0);
-                                if (Mission_isCampaignMission_ote(mission) == 0)
-                                    ((Status *) (intptr_t) *status)->field_b8 += Mission_getProductionGoodAmount_ote();
+                            }
+                        } else if (Mission_getType_ote() != 3 && Mission_getType_ote() != 5 &&
+                                   Mission_getType_ote() != 0xb) {
+                            if (Mission_getType_ote() == 0) {
                                 Status_getShip_ote();
                                 Array<Item *> *cargo = (Array<Item *> *) (intptr_t) Ship_getCargo_ote();
                                 if (cargo != 0) {
@@ -1712,100 +1711,84 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
                                         }
                                     }
                                 }
-                            } else if (Mission_getType_ote() != 3 && Mission_getType_ote() != 5 &&
-                                       Mission_getType_ote() != 0xb) {
-                                if (Mission_getType_ote() == 0) {
-                                    Status_getShip_ote();
-                                    Array<Item *> *cargo = (Array<Item *> *) (intptr_t) Ship_getCargo_ote();
-                                    if (cargo != 0) {
-                                        for (unsigned i = 0; i < cargo->size(); i = i + 1) {
-                                            if (Item_isUnsaleable_ote((*cargo)[i]) != 0 &&
-                                                (Item_getIndex_ote((*cargo)[i]) == 0x74 ||
-                                                 Item_getIndex_ote((*cargo)[i]) == 0x75)) {
-                                                Ship_removeCargo1_ote((Item *) Status_getShip_ote());
-                                                if ((int) (intptr_t) this->hangarWindow != 0)
-                                                    HangarWindow_initialize_ote();
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    ((Status *) (intptr_t) *status)->field_9c += Mission_getProductionGoodAmount_ote();
-                                } else if (Mission_getType_ote() == 0xe) {
-                                    Status_getShip_ote();
-                                    Array<Item *> *cargo = (Array<Item *> *) (intptr_t) Ship_getCargo_ote();
-                                    if (cargo != 0) {
-                                        for (unsigned i = 0; i < cargo->size(); i = i + 1) {
-                                            if (Item_getIndex_ote((*cargo)[i]) == 0x73) {
-                                                Ship_removeCargo1_ote((Item *) Status_getShip_ote());
-                                                if ((int) (intptr_t) this->hangarWindow != 0)
-                                                    HangarWindow_initialize_ote();
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (Mission_isCampaignMission_ote(mission) == 0) {
-                            Status_incMissionCount_ote(*status);
-                            int reward = Mission_getReward_ote();
-                            int bonus = Mission_getBonus_ote();
-                            Layout_showMissionRewardMessage_ote(*(int *) *(int **) g_ote_helpLayout, (char) (bonus + reward));
-                            {
-                                Mission_getReward_ote();
-                                int bonus = Mission_getBonus_ote();
-                                if ((unsigned) bonus >= 0)
-                                    Status_getCurrentCampaignMission_ote();
-                                Status_changeCredits_ote(*status);
-                                Status_removeMission_ote(*status);
-                                this->activeMission = 0;
-                                if ((int) (intptr_t) this->spaceLounge != 0)
-                                    SpaceLounge_refresh_ote();
-                                this->modalFlags.bytes[1] = 0;
-                                this->checkHints();
-                            }
-                            return;
-                        }
-
-                        int camp = Status_getCurrentCampaignMission_ote();
-                        if (camp == 0x2b) {
-                            Status_removeMission_ote(*status);
-                            Status_setMission_ote(*status);
-                            this->modalFlags.bytes[1] = 0;
-                            int snd = **(int **) g_ote_sound;
-                            FModSound_stop_ote(snd);
-                            FModSound_play_ote(snd, 0x90, 0, 0.0f);
-                            {
-                                void *radio = ::operator new(0x40);
-                                Radio_ctor_ote(radio);
-                                for (int id = 0x817; id <= 0x81a; ++id)
-                                    Radio_addMessage_ote(radio, id);
-                                this->activeMission = (int) (intptr_t) radio;
-
-                                void *box = ::operator new(0x80);
-                                ScrollTouchBox_initRadio_ote(box, radio);
-                                this->idleBox = box;
-                            }
-                            this->m_nStarMapWindowOpen.bytes[0] = 1;
-                            return;
-                        }
-
-                        if (Status_getCurrentCampaignMission_ote() != 0x94)
-                            Status_nextCampaignMission_ote(*status);
-
-                        int cm = Status_getCurrentCampaignMission_ote();
-                        unsigned d = (unsigned) (cm - 0x2c);
-                        bool handled = false;
-                        if (d < 0xf) {
-                            if ((1 << (d & 0xff) & 0x5830) != 0) {
-                                int cs = (int) (intptr_t) this->cutScene;
+                                ((Status *) (intptr_t) * status)->field_9c += Mission_getProductionGoodAmount_ote();
+                            } else if (Mission_getType_ote() == 0xe) {
                                 Status_getShip_ote();
-                                int shipIndex = Ship_getIndex_ote();
-                                Ship *sh = (Ship *) Status_getShip_ote();
-                                Ship_getRace_ote(sh);
-                                CutScene_replacePlayerShip_ote(cs, shipIndex);
-                                {
+                                Array<Item *> *cargo = (Array<Item *> *) (intptr_t) Ship_getCargo_ote();
+                                if (cargo != 0) {
+                                    for (unsigned i = 0; i < cargo->size(); i = i + 1) {
+                                        if (Item_getIndex_ote((*cargo)[i]) == 0x73) {
+                                            Ship_removeCargo1_ote((Item *) Status_getShip_ote());
+                                            if ((int) (intptr_t) this->hangarWindow != 0)
+                                                HangarWindow_initialize_ote();
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (Mission_isCampaignMission_ote(mission) == 0) {
+                        Status_incMissionCount_ote(*status);
+                        int reward = Mission_getReward_ote();
+                        int bonus = Mission_getBonus_ote();
+                        Layout_showMissionRewardMessage_ote(*(int *) *(int **) g_ote_helpLayout,
+                                                            (char) (bonus + reward));
+                        {
+                            Mission_getReward_ote();
+                            int bonus = Mission_getBonus_ote();
+                            if ((unsigned) bonus >= 0)
+                                Status_getCurrentCampaignMission_ote();
+                            Status_changeCredits_ote(*status);
+                            Status_removeMission_ote(*status);
+                            this->activeMission = 0;
+                            if ((int) (intptr_t) this->spaceLounge != 0)
+                                SpaceLounge_refresh_ote();
+                            this->modalFlags.bytes[1] = 0;
+                            this->checkHints();
+                        }
+                        return;
+                    }
+
+                    int camp = Status_getCurrentCampaignMission_ote();
+                    if (camp == 0x2b) {
+                        Status_removeMission_ote(*status);
+                        Status_setMission_ote(*status);
+                        this->modalFlags.bytes[1] = 0;
+                        int snd = **(int **) g_ote_sound;
+                        FModSound_stop_ote(snd);
+                        FModSound_play_ote(snd, 0x90, 0, 0.0f);
+                        {
+                            Radio *radio = (Radio *) ::operator new(0x40);
+                            Radio_ctor_ote(radio);
+                            for (int id = 0x817; id <= 0x81a; ++id)
+                                Radio_addMessage_ote(radio, id);
+                            this->activeMission = (int) (intptr_t) radio;
+
+                            ScrollTouchBox *box = (ScrollTouchBox *) ::operator new(0x80);
+                            ScrollTouchBox_initRadio_ote(box, radio);
+                            this->idleBox = box;
+                        }
+                        this->m_nStarMapWindowOpen.bytes[0] = 1;
+                        return;
+                    }
+
+                    if (Status_getCurrentCampaignMission_ote() != 0x94)
+                        Status_nextCampaignMission_ote(*status);
+
+                    int cm = Status_getCurrentCampaignMission_ote();
+                    unsigned d = (unsigned) (cm - 0x2c);
+                    bool handled = false;
+                    if (d < 0xf) {
+                        if ((1 << (d & 0xff) & 0x5830) != 0) {
+                            int cs = (int) (intptr_t) this->cutScene;
+                            Status_getShip_ote();
+                            int shipIndex = Ship_getIndex_ote();
+                            Ship *sh = (Ship *) Status_getShip_ote();
+                            Ship_getRace_ote(sh);
+                            CutScene_replacePlayerShip_ote(cs, shipIndex);
+                            {
                                 Mission_getReward_ote();
                                 int bonus = Mission_getBonus_ote();
                                 if ((unsigned) bonus >= 0)
@@ -1818,167 +1801,44 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
                                 this->modalFlags.bytes[1] = 0;
                                 this->checkHints();
                             }
-                                return;
-                            }
-                            if (d == 1) {
-                                Status_removeMission_ote(*status);
-                                this->activeMission = 0;
-                                Status_setMission_ote(*status);
-                                this->selectedButton = 1;
-                                this->modalFlags.bytes[1] = 0;
-
-                                {
-                                    int module = **(int **) g_ote_module;
-                                    if (module != 0)
-                                        ((void (*)(int, int)) module)(module, 0x10000);
-                                }
-                                return;
-                            }
-                            if (d != 0)
-                                handled = false;
-                            else
-                                handled = true;
+                            return;
                         }
+                        if (d == 1) {
+                            Status_removeMission_ote(*status);
+                            this->activeMission = 0;
+                            Status_setMission_ote(*status);
+                            this->selectedButton = 1;
+                            this->modalFlags.bytes[1] = 0;
 
-                        if (!handled) {
-                            if ((unsigned) (cm - 0x4b) > 8 || (1 << ((cm - 0x4b) & 0xff) & 0x103) == 0) {
-                                if (cm == 0x12) {
-                                    Status_removeMission_ote(*status);
-                                    this->modalFlags.bytes[1] = 0;
-                                    this->activeMission = 0;
-                                    return;
-                                }
+                            {
+                                int module = **(int **) g_ote_module;
+                                if (module != 0)
+                                    ((void (*)(int, int)) module)(module, 0x10000);
+                            }
+                            return;
+                        }
+                        if (d != 0)
+                            handled = false;
+                        else
+                            handled = true;
+                    }
 
-                                Station *here = (Station *) Status_getStation_ote();
-                                int hereIdx = Station_getIndex_ote(here);
+                    if (!handled) {
+                        if ((unsigned) (cm - 0x4b) > 8 || (1 << ((cm - 0x4b) & 0xff) & 0x103) == 0) {
+                            if (cm == 0x12) {
+                                Status_removeMission_ote(*status);
+                                this->modalFlags.bytes[1] = 0;
+                                this->activeMission = 0;
+                                return;
+                            }
 
-                                if (cm == 0x4d && hereIdx == 100) {
-                                    Ship *sh = (Ship *) Status_getStation_ote();
-                                    Ship_makeShip_ote((*(Array<int> *) (intptr_t) **g_ote_shipTable)[(0x94) / 4]);
-                                    Station_addShip_ote(sh);
-                                    {
-                                        Mission_getReward_ote();
-                                        int bonus = Mission_getBonus_ote();
-                                        if ((unsigned) bonus >= 0)
-                                            Status_getCurrentCampaignMission_ote();
-                                        Status_changeCredits_ote(*status);
-                                        Status_removeMission_ote(*status);
-                                        this->activeMission = 0;
-                                        if ((int) (intptr_t) this->spaceLounge != 0)
-                                            SpaceLounge_refresh_ote();
-                                        this->modalFlags.bytes[1] = 0;
-                                        this->checkHints();
-                                    }
-                                    return;
-                                }
-                                if (cm == 0x4e) {
-                                    ((Status *) (intptr_t) *status)->field_5c = -1;
-                                    ((Status *) (intptr_t) *status)->field_60 = -1;
-                                    ((Status *) (intptr_t) *status)->field_64 = -1;
-                                    ((Status *) (intptr_t) *status)->field_68 = -1;
-                                    Achievements_resetNewMedals_ote((void *) **(int **) g_ote_achievements);
-                                    Station *home = (Station *) *status;
-                                    Status_getStation_ote();
-                                    Status_departStation_ote(home);
-                                    **(int **) g_ote_module = 1;
-                                    ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
-                                    this->stationActive = 0;
-                                    {
-                                        Mission_getReward_ote();
-                                        int bonus = Mission_getBonus_ote();
-                                        if ((unsigned) bonus >= 0)
-                                            Status_getCurrentCampaignMission_ote();
-                                        Status_changeCredits_ote(*status);
-                                        Status_removeMission_ote(*status);
-                                        this->activeMission = 0;
-                                        if ((int) (intptr_t) this->spaceLounge != 0)
-                                            SpaceLounge_refresh_ote();
-                                        this->modalFlags.bytes[1] = 0;
-                                        this->checkHints();
-                                    }
-                                    return;
-                                }
-                                Station *st = (Station *) Status_getStation_ote();
-                                if (cm == 0x54 && Station_getIndex_ote(st) == 100) {
-                                    Ship *sh = (Ship *) Status_getStation_ote();
-                                    if (Station_hasShip_ote(sh) == 0) {
-                                        Ship_makeShip_ote((*(Array<int> *) (intptr_t) **g_ote_shipTable)[(0x98) / 4]);
-                                        Station_addShip_ote(sh);
-                                    }
-                                    if (Station_hasShip_ote(sh) == 0) {
-                                        Ship_makeShip_ote((*(Array<int> *) (intptr_t) **g_ote_shipTable)[(0xa0) / 4]);
-                                        Station_addShip_ote(sh);
-                                    }
-                                    Item_makeItem_ote((*(Array<int> *) (intptr_t) **g_ote_itemTable)[(0x224) / 4]);
-                                    Ship_addCargo_ote((Item *) Status_getShip_ote());
-                                    {
-                                        Mission_getReward_ote();
-                                        int bonus = Mission_getBonus_ote();
-                                        if ((unsigned) bonus >= 0)
-                                            Status_getCurrentCampaignMission_ote();
-                                        Status_changeCredits_ote(*status);
-                                        Status_removeMission_ote(*status);
-                                        this->activeMission = 0;
-                                        if ((int) (intptr_t) this->spaceLounge != 0)
-                                            SpaceLounge_refresh_ote();
-                                        this->modalFlags.bytes[1] = 0;
-                                        this->checkHints();
-                                    }
-                                    return;
-                                }
+                            Station *here = (Station *) Status_getStation_ote();
+                            int hereIdx = Station_getIndex_ote(here);
 
-                                if (cm == 0xa0 || cm == 0x90 || cm == 99 || cm == 0x77 || cm == 0x85 || cm == 0x6d ||
-                                    cm == 0x59) {
-                                    Station *home = (Station *) *status;
-                                    **(char **) g_ote_module = 1;
-                                    Galaxy_getStation_ote(**(int **) g_ote_galaxy);
-                                    Status_departStation_ote(home);
-                                    ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
-                                    this->stationActive = 0;
-                                    return;
-                                }
-                                if (cm == 0x68) {
-                                    if (this->hangarWindow != 0) {
-                                        HangarWindow_dtor_ote((HangarWindow *) this->hangarWindow);
-                                        ::operator delete(this->hangarWindow);
-                                    }
-                                    this->subWindowFlags.bytes[2] = 0;
-                                    this->hangarWindow = 0;
-                                    {
-                                        Mission_getReward_ote();
-                                        int bonus = Mission_getBonus_ote();
-                                        if ((unsigned) bonus >= 0)
-                                            Status_getCurrentCampaignMission_ote();
-                                        Status_changeCredits_ote(*status);
-                                        Status_removeMission_ote(*status);
-                                        this->activeMission = 0;
-                                        if ((int) (intptr_t) this->spaceLounge != 0)
-                                            SpaceLounge_refresh_ote();
-                                        this->modalFlags.bytes[1] = 0;
-                                        this->checkHints();
-                                    }
-                                    return;
-                                }
-                                if (cm == 0x80) {
-                                    Status_activateNewWanted_ote();
-                                    if (((Status *) (intptr_t) *(int *) g_ote_status)->byte_0x2a == 0)
-                                        this->screenFlags.bytes[2] = 1;
-                                    {
-                                        Mission_getReward_ote();
-                                        int bonus = Mission_getBonus_ote();
-                                        if ((unsigned) bonus >= 0)
-                                            Status_getCurrentCampaignMission_ote();
-                                        Status_changeCredits_ote(*status);
-                                        Status_removeMission_ote(*status);
-                                        this->activeMission = 0;
-                                        if ((int) (intptr_t) this->spaceLounge != 0)
-                                            SpaceLounge_refresh_ote();
-                                        this->modalFlags.bytes[1] = 0;
-                                        this->checkHints();
-                                    }
-                                    return;
-                                }
-
+                            if (cm == 0x4d && hereIdx == 100) {
+                                Ship *sh = (Ship *) Status_getStation_ote();
+                                Ship_makeShip_ote((*(Array<int> *) (intptr_t) * *g_ote_shipTable)[(0x94) / 4]);
+                                Station_addShip_ote(sh);
                                 {
                                     Mission_getReward_ote();
                                     int bonus = Mission_getBonus_ote();
@@ -1994,18 +1854,141 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
                                 }
                                 return;
                             }
-                        }
+                            if (cm == 0x4e) {
+                                ((Status *) (intptr_t) * status)->field_5c = -1;
+                                ((Status *) (intptr_t) * status)->field_60 = -1;
+                                ((Status *) (intptr_t) * status)->field_64 = -1;
+                                ((Status *) (intptr_t) * status)->field_68 = -1;
+                                Achievements_resetNewMedals_ote((Achievements *) **(int **) g_ote_achievements);
+                                Station *home = (Station *) *status;
+                                Status_getStation_ote();
+                                Status_departStation_ote(home);
+                                **(int **) g_ote_module = 1;
+                                ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
+                                this->stationActive = 0;
+                                {
+                                    Mission_getReward_ote();
+                                    int bonus = Mission_getBonus_ote();
+                                    if ((unsigned) bonus >= 0)
+                                        Status_getCurrentCampaignMission_ote();
+                                    Status_changeCredits_ote(*status);
+                                    Status_removeMission_ote(*status);
+                                    this->activeMission = 0;
+                                    if ((int) (intptr_t) this->spaceLounge != 0)
+                                        SpaceLounge_refresh_ote();
+                                    this->modalFlags.bytes[1] = 0;
+                                    this->checkHints();
+                                }
+                                return;
+                            }
+                            Station *st = (Station *) Status_getStation_ote();
+                            if (cm == 0x54 && Station_getIndex_ote(st) == 100) {
+                                Ship *sh = (Ship *) Status_getStation_ote();
+                                if (Station_hasShip_ote((Station *) sh) == 0) {
+                                    Ship_makeShip_ote((*(Array<int> *) (intptr_t) * *g_ote_shipTable)[(0x98) / 4]);
+                                    Station_addShip_ote(sh);
+                                }
+                                if (Station_hasShip_ote((Station *) sh) == 0) {
+                                    Ship_makeShip_ote((*(Array<int> *) (intptr_t) * *g_ote_shipTable)[(0xa0) / 4]);
+                                    Station_addShip_ote(sh);
+                                }
+                                Item_makeItem_ote((*(Array<int> *) (intptr_t) * *g_ote_itemTable)[(0x224) / 4]);
+                                Ship_addCargo_ote((Item *) Status_getShip_ote());
+                                {
+                                    Mission_getReward_ote();
+                                    int bonus = Mission_getBonus_ote();
+                                    if ((unsigned) bonus >= 0)
+                                        Status_getCurrentCampaignMission_ote();
+                                    Status_changeCredits_ote(*status);
+                                    Status_removeMission_ote(*status);
+                                    this->activeMission = 0;
+                                    if ((int) (intptr_t) this->spaceLounge != 0)
+                                        SpaceLounge_refresh_ote();
+                                    this->modalFlags.bytes[1] = 0;
+                                    this->checkHints();
+                                }
+                                return;
+                            }
 
-                        Status_removeMission_ote(*status);
-                        this->activeMission = 0;
-                        Status_setMission_ote(*status);
-                        this->modalFlags.bytes[1] = 0;
-                        ((Status *) (intptr_t) *status)->wanted = 0; /* cutscene slot (+0x0) */
-                        {
-                            int module = **(int **) g_ote_module;
-                            if (module != 0)
-                                ((void (*)(int, int)) module)(module, 5);
+                            if (cm == 0xa0 || cm == 0x90 || cm == 99 || cm == 0x77 || cm == 0x85 || cm == 0x6d ||
+                                cm == 0x59) {
+                                Station *home = (Station *) *status;
+                                **(char **) g_ote_module = 1;
+                                Galaxy_getStation_ote(**(int **) g_ote_galaxy);
+                                Status_departStation_ote(home);
+                                ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
+                                this->stationActive = 0;
+                                return;
+                            }
+                            if (cm == 0x68) {
+                                if (this->hangarWindow != 0) {
+                                    HangarWindow_dtor_ote((HangarWindow *) this->hangarWindow);
+                                    ::operator delete(this->hangarWindow);
+                                }
+                                this->subWindowFlags.bytes[2] = 0;
+                                this->hangarWindow = 0;
+                                {
+                                    Mission_getReward_ote();
+                                    int bonus = Mission_getBonus_ote();
+                                    if ((unsigned) bonus >= 0)
+                                        Status_getCurrentCampaignMission_ote();
+                                    Status_changeCredits_ote(*status);
+                                    Status_removeMission_ote(*status);
+                                    this->activeMission = 0;
+                                    if ((int) (intptr_t) this->spaceLounge != 0)
+                                        SpaceLounge_refresh_ote();
+                                    this->modalFlags.bytes[1] = 0;
+                                    this->checkHints();
+                                }
+                                return;
+                            }
+                            if (cm == 0x80) {
+                                Status_activateNewWanted_ote();
+                                if (((Status *) (intptr_t) * (int *) g_ote_status)->byte_0x2a == 0)
+                                    this->screenFlags.bytes[2] = 1;
+                                {
+                                    Mission_getReward_ote();
+                                    int bonus = Mission_getBonus_ote();
+                                    if ((unsigned) bonus >= 0)
+                                        Status_getCurrentCampaignMission_ote();
+                                    Status_changeCredits_ote(*status);
+                                    Status_removeMission_ote(*status);
+                                    this->activeMission = 0;
+                                    if ((int) (intptr_t) this->spaceLounge != 0)
+                                        SpaceLounge_refresh_ote();
+                                    this->modalFlags.bytes[1] = 0;
+                                    this->checkHints();
+                                }
+                                return;
+                            }
+
+                            {
+                                Mission_getReward_ote();
+                                int bonus = Mission_getBonus_ote();
+                                if ((unsigned) bonus >= 0)
+                                    Status_getCurrentCampaignMission_ote();
+                                Status_changeCredits_ote(*status);
+                                Status_removeMission_ote(*status);
+                                this->activeMission = 0;
+                                if ((int) (intptr_t) this->spaceLounge != 0)
+                                    SpaceLounge_refresh_ote();
+                                this->modalFlags.bytes[1] = 0;
+                                this->checkHints();
+                            }
+                            return;
                         }
+                    }
+
+                    Status_removeMission_ote(*status);
+                    this->activeMission = 0;
+                    Status_setMission_ote(*status);
+                    this->modalFlags.bytes[1] = 0;
+                    ((Status *) (intptr_t) * status)->wanted = 0; /* cutscene slot (+0x0) */
+                    {
+                        int module = **(int **) g_ote_module;
+                        if (module != 0)
+                            ((void (*)(int, int)) module)(module, 5);
+                    }
                 }
                 return;
             }
@@ -2028,7 +2011,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
                             Station *home = (Station *) **(int **) g_ote_status;
                             Status_getStation_ote();
                             Status_departStation_ote(home);
-                            Achievements_resetNewMedals_ote((void *) **(int **) g_ote_achievements);
+                            Achievements_resetNewMedals_ote((Achievements *) **(int **) g_ote_achievements);
                             int mod = (Status_getCurrentCampaignMission_ote() == 0x10) ? -1 : 1;
                             **(int **) g_ote_module = mod;
                             ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
@@ -2056,162 +2039,164 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
                 Station *home = (Station *) **(int **) g_ote_status;
                 Status_getStation_ote();
                 Status_departStation_ote(home);
-                Achievements_resetNewMedals_ote((void *) **(int **) g_ote_achievements);
+                Achievements_resetNewMedals_ote((Achievements *) **(int **) g_ote_achievements);
                 **(int **) g_ote_module = 1;
                 ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
                 this->stationActive = 0;
             }
         } else if (r == 0) {
             {
-                    (void) x;
-                    (void) y;
+                (void) x;
+                (void) y;
 
-                    if (this->departPendingFlags.bytes[2] != 0) {
-                        this->departPendingFlags.bytes[2] = 0;
-                        int camp = Status_getCurrentCampaignMission_ote();
-                        if (camp == 0x18) {
-                            Station *st = (Station *) Status_getStation_ote();
-                            if (Station_getIndex_ote(st) == 10) {
-                                unsigned i = 0;
-                                for (;;) {
-                                    Station *st1 = (Station *) Status_getStation_ote();
-                                    Array<Agent *> *ag = (Array<Agent *> *) (intptr_t) Station_getAgents_ote(st1);
-                                    if (ag->size() <= i) break;
-                                    Station *st2 = (Station *) Status_getStation_ote();
-                                    Array<Agent *> *agents = (Array<Agent *> *) (intptr_t) Station_getAgents_ote(st2);
-                                    Agent *a = (*agents)[i];
-                                    if (Agent_getOffer_ote(a) == 2 && Agent_getSellItemIndex_ote(a) == 0x44) {
-                                        Agent_setEvent_ote(a, 1);
-                                        Agent_setOfferAccepted_ote(a, 1);
-                                    }
-                                    i = i + 1;
+                if (this->departPendingFlags.bytes[2] != 0) {
+                    this->departPendingFlags.bytes[2] = 0;
+                    int camp = Status_getCurrentCampaignMission_ote();
+                    if (camp == 0x18) {
+                        Station *st = (Station *) Status_getStation_ote();
+                        if (Station_getIndex_ote(st) == 10) {
+                            unsigned i = 0;
+                            for (;;) {
+                                Station *st1 = (Station *) Status_getStation_ote();
+                                Array<Agent *> *ag = (Array<Agent *> *) (intptr_t) Station_getAgents_ote(st1);
+                                if (ag->size() <= i) break;
+                                Station *st2 = (Station *) Status_getStation_ote();
+                                Array<Agent *> *agents = (Array<Agent *> *) (intptr_t) Station_getAgents_ote(st2);
+                                Agent *a = (*agents)[i];
+                                if (Agent_getOffer_ote(a) == 2 && Agent_getSellItemIndex_ote(a) == 0x44) {
+                                    Agent_setEvent_ote(a, 1);
+                                    Agent_setOfferAccepted_ote(a, 1);
                                 }
+                                i = i + 1;
                             }
                         }
-                        Station *home = (Station *) *status;
-                        if (Status_getCurrentCampaignMission_ote() == 0x30) {
-                            Galaxy_getStation_ote(**(int **) g_ote_galaxy);
-                            Status_departStation_ote(home);
-                            **(char **) g_ote_galaxy = 1;
-                        } else {
-                            Status_getStation_ote();
-                            Status_departStation_ote(home);
-                        }
-                        ((Status *) (intptr_t) *status)->field_5c = -1;
-                        ((Status *) (intptr_t) *status)->field_60 = -1;
-                        ((Status *) (intptr_t) *status)->field_64 = -1;
-                        ((Status *) (intptr_t) *status)->field_68 = -1;
-                        Achievements_resetNewMedals_ote((void *) **(int **) g_ote_achievements);
-                        **(int **) g_ote_module = 1;
-                        ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
-                        this->stationActive = 0;
-                        return;
                     }
-
-                    if (this->modalFlags.bytes[3] != 0) {
-                        int credits = Status_getCredits_ote();
-                        if ((int) (intptr_t) this->buttonCredits <= credits) {
-                            Status_changeCredits_ote(*status);
-                            this->modalFlags.bytes[3] = 0;
-                            this->buttonCreditsFlags.bytes[0] = 1;
-                            Station *st = (Station *) Status_getStation_ote();
-                            Station_setAttackedFriends_ote(st, 0);
-                            this->choiceWindowFlags.bytes[1] = 1;
-                            this->enterStation();
-                            this->autosave();
-                            {
-                                if (this->scrollBoxFlags.bytes[0] != 0) {
-                                    this->screenFlags.bytes[3] = 0;
-                                    this->scrollBoxFlags.bytes[0] = 0;
-                                    AppData *appData = (AppData *) (intptr_t) ApplicationManager_GetApplicationData_ote();
-                                    appData->hideRadio = 1;
-                                    return;
-                                }
-                                if (this->screenFlags.bytes[0] == 0) {
-                                    if (this->screenFlags.bytes[1] != 0) {
-                                        int feeCredits = Status_getCredits_ote();
-                                        if (feeCredits < 25000) {
-                                            ChoiceWindow_setFee_frag(this->choiceWindow, feeCredits, 1);
-                                            this->screenFlags.bytes[1] = 0;
-                                            return;
-                                        }
-                                        Status_changeCredits_ote(*status);
-                                        this->screenFlags.bytes[3] = 0;
-                                        this->screenFlags.bytes[1] = 0;
-                                        Station *home = (Station *) *status;
-                                        Galaxy_getStation_ote(**(int **) g_ote_galaxy);
-                                        Status_setStation_ote(home);
-                                        **(int **) g_ote_module = 0;
-                                        ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
-                                    }
-                                    if (this->pendingHangarClose != 0 && this->subWindowFlags.bytes[2] != 0) {
-                                        this->pendingHangarClose = 0;
-                                        this->subWindowFlags.bytes[2] = 0;
-                                    }
-                                    this->screenFlags.bytes[3] = 0;
-                                } else {
-                                    Status_changeCredits_ote(*status);
-                                    Ship_removeCargo_ote(Status_getShip_ote(), 0x6d);
-                                    ((Status *) (intptr_t) *status)->field_114 = 3;
-                                    RecordHandler_saveOptions_ote((RecordHandler *) **(int **) g_ote_status);
-                                    ChoiceWindow_setNotice_ote((int) (intptr_t) this->choiceWindow, GameText_getText_ote(**g_ote_textRoot));
-                                    Station *st2 = (Station *) Status_getStation_ote();
-                                    Station_setItems_ote(st2, 0, 0);
-                                    Station_setItems_ote(((Status *) (intptr_t) *status)->voidStation, 0, 0);
-                                    this->screenFlags.bytes[0] = 0;
-                                }
-                            }
-                            return;
-                        }
-                        ChoiceWindow_setFee_frag(this->choiceWindow, credits, 0);
-                        this->modalFlags.bytes[3] = 1;
-                        this->departPendingFlags.bytes[2] = 1;
-                        this->screenFlags.bytes[3] = 1;
-                        return;
+                    Station *home = (Station *) *status;
+                    if (Status_getCurrentCampaignMission_ote() == 0x30) {
+                        Galaxy_getStation_ote(**(int **) g_ote_galaxy);
+                        Status_departStation_ote(home);
+                        **(char **) g_ote_galaxy = 1;
+                    } else {
+                        Status_getStation_ote();
+                        Status_departStation_ote(home);
                     }
+                    ((Status *) (intptr_t) * status)->field_5c = -1;
+                    ((Status *) (intptr_t) * status)->field_60 = -1;
+                    ((Status *) (intptr_t) * status)->field_64 = -1;
+                    ((Status *) (intptr_t) * status)->field_68 = -1;
+                    Achievements_resetNewMedals_ote((Achievements *) **(int **) g_ote_achievements);
+                    **(int **) g_ote_module = 1;
+                    ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
+                    this->stationActive = 0;
+                    return;
+                }
 
-                    {
-                        if (this->scrollBoxFlags.bytes[0] != 0) {
-                            this->screenFlags.bytes[3] = 0;
-                            this->scrollBoxFlags.bytes[0] = 0;
-                            AppData *appData = (AppData *) (intptr_t) ApplicationManager_GetApplicationData_ote();
-                            appData->hideRadio = 1;
-                            return;
-                        }
-                        if (this->screenFlags.bytes[0] == 0) {
-                            if (this->screenFlags.bytes[1] != 0) {
-                                int credits = Status_getCredits_ote();
-                                if (credits < 25000) {
-                                    ChoiceWindow_setFee_frag(this->choiceWindow, credits, 1);
-                                    this->screenFlags.bytes[1] = 0;
-                                    return;
-                                }
-                                Status_changeCredits_ote(*status);
+                if (this->modalFlags.bytes[3] != 0) {
+                    int credits = Status_getCredits_ote();
+                    if ((int) (intptr_t) this->buttonCredits <= credits) {
+                        Status_changeCredits_ote(*status);
+                        this->modalFlags.bytes[3] = 0;
+                        this->buttonCreditsFlags.bytes[0] = 1;
+                        Station *st = (Station *) Status_getStation_ote();
+                        Station_setAttackedFriends_ote(st, 0);
+                        this->choiceWindowFlags.bytes[1] = 1;
+                        this->enterStation();
+                        this->autosave();
+                        {
+                            if (this->scrollBoxFlags.bytes[0] != 0) {
                                 this->screenFlags.bytes[3] = 0;
-                                this->screenFlags.bytes[1] = 0;
-                                Station *home = (Station *) *status;
-                                Galaxy_getStation_ote(**(int **) g_ote_galaxy);
-                                Status_setStation_ote(home);
-                                **(int **) g_ote_module = 0;
-                                ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
+                                this->scrollBoxFlags.bytes[0] = 0;
+                                AppData *appData = (AppData *) (intptr_t) ApplicationManager_GetApplicationData_ote();
+                                appData->hideRadio = 1;
+                                return;
                             }
-                            if (this->pendingHangarClose != 0 && this->subWindowFlags.bytes[2] != 0) {
-                                this->pendingHangarClose = 0;
-                                this->subWindowFlags.bytes[2] = 0;
+                            if (this->screenFlags.bytes[0] == 0) {
+                                if (this->screenFlags.bytes[1] != 0) {
+                                    int feeCredits = Status_getCredits_ote();
+                                    if (feeCredits < 25000) {
+                                        ChoiceWindow_setFee_frag(this->choiceWindow, feeCredits, 1);
+                                        this->screenFlags.bytes[1] = 0;
+                                        return;
+                                    }
+                                    Status_changeCredits_ote(*status);
+                                    this->screenFlags.bytes[3] = 0;
+                                    this->screenFlags.bytes[1] = 0;
+                                    Station *home = (Station *) *status;
+                                    Galaxy_getStation_ote(**(int **) g_ote_galaxy);
+                                    Status_setStation_ote(home);
+                                    **(int **) g_ote_module = 0;
+                                    ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
+                                }
+                                if (this->pendingHangarClose != 0 && this->subWindowFlags.bytes[2] != 0) {
+                                    this->pendingHangarClose = 0;
+                                    this->subWindowFlags.bytes[2] = 0;
+                                }
+                                this->screenFlags.bytes[3] = 0;
+                            } else {
+                                Status_changeCredits_ote(*status);
+                                Ship_removeCargo_ote(Status_getShip_ote(), 0x6d);
+                                ((Status *) (intptr_t) * status)->field_114 = 3;
+                                RecordHandler_saveOptions_ote((RecordHandler *) **(int **) g_ote_status);
+                                ChoiceWindow_setNotice_ote((int) (intptr_t) this->choiceWindow,
+                                                           GameText_getText_ote(**g_ote_textRoot));
+                                Station *st2 = (Station *) Status_getStation_ote();
+                                Station_setItems_ote(st2, 0, 0);
+                                Station_setItems_ote(((Status *) (intptr_t) * status)->voidStation, 0, 0);
+                                this->screenFlags.bytes[0] = 0;
                             }
-                            this->screenFlags.bytes[3] = 0;
-                        } else {
-                            Status_changeCredits_ote(*status);
-                            Ship_removeCargo_ote(Status_getShip_ote(), 0x6d);
-                            ((Status *) (intptr_t) *status)->field_114 = 3;
-                            RecordHandler_saveOptions_ote((RecordHandler *) **(int **) g_ote_status);
-                            ChoiceWindow_setNotice_ote((int) (intptr_t) this->choiceWindow, GameText_getText_ote(**g_ote_textRoot));
-                            Station *st = (Station *) Status_getStation_ote();
-                            Station_setItems_ote(st, 0, 0);
-                            Station_setItems_ote(((Status *) (intptr_t) *status)->voidStation, 0, 0);
-                            this->screenFlags.bytes[0] = 0;
                         }
+                        return;
                     }
+                    ChoiceWindow_setFee_frag(this->choiceWindow, credits, 0);
+                    this->modalFlags.bytes[3] = 1;
+                    this->departPendingFlags.bytes[2] = 1;
+                    this->screenFlags.bytes[3] = 1;
+                    return;
+                }
+
+                {
+                    if (this->scrollBoxFlags.bytes[0] != 0) {
+                        this->screenFlags.bytes[3] = 0;
+                        this->scrollBoxFlags.bytes[0] = 0;
+                        AppData *appData = (AppData *) (intptr_t) ApplicationManager_GetApplicationData_ote();
+                        appData->hideRadio = 1;
+                        return;
+                    }
+                    if (this->screenFlags.bytes[0] == 0) {
+                        if (this->screenFlags.bytes[1] != 0) {
+                            int credits = Status_getCredits_ote();
+                            if (credits < 25000) {
+                                ChoiceWindow_setFee_frag(this->choiceWindow, credits, 1);
+                                this->screenFlags.bytes[1] = 0;
+                                return;
+                            }
+                            Status_changeCredits_ote(*status);
+                            this->screenFlags.bytes[3] = 0;
+                            this->screenFlags.bytes[1] = 0;
+                            Station *home = (Station *) *status;
+                            Galaxy_getStation_ote(**(int **) g_ote_galaxy);
+                            Status_setStation_ote(home);
+                            **(int **) g_ote_module = 0;
+                            ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
+                        }
+                        if (this->pendingHangarClose != 0 && this->subWindowFlags.bytes[2] != 0) {
+                            this->pendingHangarClose = 0;
+                            this->subWindowFlags.bytes[2] = 0;
+                        }
+                        this->screenFlags.bytes[3] = 0;
+                    } else {
+                        Status_changeCredits_ote(*status);
+                        Ship_removeCargo_ote(Status_getShip_ote(), 0x6d);
+                        ((Status *) (intptr_t) * status)->field_114 = 3;
+                        RecordHandler_saveOptions_ote((RecordHandler *) **(int **) g_ote_status);
+                        ChoiceWindow_setNotice_ote((int) (intptr_t) this->choiceWindow,
+                                                   GameText_getText_ote(**g_ote_textRoot));
+                        Station *st = (Station *) Status_getStation_ote();
+                        Station_setItems_ote(st, 0, 0);
+                        Station_setItems_ote(((Status *) (intptr_t) * status)->voidStation, 0, 0);
+                        this->screenFlags.bytes[0] = 0;
+                    }
+                }
             }
         }
         return;
@@ -2246,7 +2231,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
                 }
             }
             if ((int) (intptr_t) this->buttonLaunch < sold)
-                ((Status *) (intptr_t) *st)->field_a8 += sold - (int) (intptr_t) this->buttonLaunch;
+                ((Status *) (intptr_t) * st)->field_a8 += sold - (int) (intptr_t) this->buttonLaunch;
             HangarWindow_setSellMode_ote((int) (intptr_t) this->hangarWindow);
             this->resetIdleCamForHangar();
             HangarWindowHead *hw = (HangarWindowHead *) this->hangarWindow;
@@ -2274,7 +2259,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
                     int *xs = this->buttonCacheX;
                     int *ys = this->buttonCacheY;
                     for (int i = 0; i < n && i < 5; ++i) {
-                        void *b = (void *) btns[i];
+                        TouchButton *b = (TouchButton *) (intptr_t) btns[i];
                         xs[i] = TouchButton_getX_ote(b);
                         ys[i] = TouchButton_getY_ote(b);
                     }
@@ -2323,7 +2308,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
                     int *xs = this->buttonCacheX;
                     int *ys = this->buttonCacheY;
                     for (int i = 0; i < n && i < 5; ++i) {
-                        void *b = (void *) btns[i];
+                        TouchButton *b = (TouchButton *) (intptr_t) btns[i];
                         xs[i] = TouchButton_getX_ote(b);
                         ys[i] = TouchButton_getY_ote(b);
                     }
@@ -2334,89 +2319,86 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
     }
     if (this->screenFlags.bytes[1] != 0) {
         {
-                int *help = *(int **) g_ote_helpLayout;
+            int *help = *(int **) g_ote_helpLayout;
 
-                if (TouchButton_OnTouchEnd_ote((int) (intptr_t) this->dlcMenu, x) != 0)
-                    return;
+            if (TouchButton_OnTouchEnd_ote((int) (intptr_t) this->dlcMenu, x) != 0)
+                return;
 
-                if (TouchButton_OnTouchEnd_ote(this->activeMission, x) != 0) {
-                    RecordHandler *rh = (RecordHandler *) **(int **) g_ote_status;
-                    ((Status *) (intptr_t) *(int *) g_ote_status)->byte_0x4e = 1;
-                    RecordHandler_saveOptions_ote(rh);
-                    if (this->hangarWindow == 0) {
-                        HangarWindow *hw = (HangarWindow *) ::operator new(0x134);
-                        HangarWindow_ctor_ote(hw);
-                        this->hangarWindow = hw;
-                    }
-                    HangarWindow_initialize_ote();
-                    this->pendingHangarClose = 1;
-                    this->subWindowFlags.bytes[2] = 1;
-                    HangarWindow_showCreditsBuyWindow_ote((HangarWindow *) this->hangarWindow);
+            if (TouchButton_OnTouchEnd_ote(this->activeMission, x) != 0) {
+                RecordHandler *rh = (RecordHandler *) **(int **) g_ote_status;
+                ((Status *) (intptr_t) * (int *) g_ote_status)->byte_0x4e = 1;
+                RecordHandler_saveOptions_ote(rh);
+                if (this->hangarWindow == 0) {
+                    HangarWindow *hw = (HangarWindow *) ::operator new(0x134);
+                    HangarWindow_ctor_ote(hw);
+                    this->hangarWindow = hw;
                 }
+                HangarWindow_initialize_ote();
+                this->pendingHangarClose = 1;
+                this->subWindowFlags.bytes[2] = 1;
+                HangarWindow_showCreditsBuyWindow_ote((HangarWindow *) this->hangarWindow);
+            }
 
-                this->selectedButton = -1;
-                for (unsigned i = 0; i < 5; i = i + 1) {
-                    if (TouchButton_OnTouchEnd_ote(this->buttonRow[i], x) != 0) {
-                        this->selectedButton = (int) i;
+            this->selectedButton = -1;
+            for (unsigned i = 0; i < 5; i = i + 1) {
+                if (TouchButton_OnTouchEnd_ote(this->buttonRow[i], x) != 0) {
+                    this->selectedButton = (int) i;
 
-                        {
-                            int module = **(int **) g_ote_module;
-                            if (module != 0)
-                                ((void (*)(int, int)) module)(module, 0x10000);
-                        }
-                        return;
-                    }
-                }
-
-                if (Layout_OnTouchEndR_ote((Layout *) *help, x, y) != 0) {
-                    if (this->dlcMenu == 0) {
-                        MenuTouchWindow *w = (MenuTouchWindow *) ::operator new(0x240);
-                        MenuTouchWindow_ctor_ote(w, 2);
-                        this->dlcMenu = w;
-                    }
-                    Status_checkForLevelUp_ote();
-                    this->screenFlags.bytes[2] = 1;
                     {
-                        int *row = (int *) ModStation_ote_buttonRow(this);
-                        if (row != nullptr) {
-                            int *btns = (int *) row[1];
-                            int n = row[0];
-                            int *xs = this->buttonCacheX;
-                            int *ys = this->buttonCacheY;
-                            for (int i = 0; i < n && i < 5; ++i) {
-                                void *b = (void *) btns[i];
-                                xs[i] = TouchButton_getX_ote(b);
-                                ys[i] = TouchButton_getY_ote(b);
-                            }
-                        }
+                        int module = **(int **) g_ote_module;
+                        if (module != 0)
+                            ((void (*)(int, int)) module)(module, 0x10000);
                     }
                     return;
                 }
+            }
 
-                if (Layout_helpPressed_ote((Layout *) *help) != 0)
-                    Layout_initHelpWindow_ote(*help, GameText_getText_ote(**g_ote_textRoot));
-
-                if (this->newsTicker->OnTouchEnd(x, 0) == 0) {
-                    float dx = VectorSignedToFloat(this->idleDeltaX, 0);
-                    float dy = VectorSignedToFloat(this->idleDeltaY, 0);
-                    this->camCoordX += dx * 0.01f;
-                    this->camCoordY += dy * 0.01f;
+            if (Layout_OnTouchEndR_ote((Layout *) *help, x, y) != 0) {
+                if (this->dlcMenu == 0) {
+                    MenuTouchWindow *w = (MenuTouchWindow *) ::operator new(0x240);
+                    MenuTouchWindow_ctor_ote(w, 2);
+                    this->dlcMenu = w;
                 }
+                Status_checkForLevelUp_ote();
+                this->screenFlags.bytes[2] = 1;
+                {
+                    int *row = (int *) ModStation_ote_buttonRow(this);
+                    if (row != nullptr) {
+                        int *btns = (int *) row[1];
+                        int n = row[0];
+                        int *xs = this->buttonCacheX;
+                        int *ys = this->buttonCacheY;
+                        for (int i = 0; i < n && i < 5; ++i) {
+                            TouchButton *b = (TouchButton *) (intptr_t) btns[i];
+                            xs[i] = TouchButton_getX_ote(b);
+                            ys[i] = TouchButton_getY_ote(b);
+                        }
+                    }
+                }
+                return;
+            }
+
+            if (Layout_helpPressed_ote((Layout *) *help) != 0)
+                Layout_initHelpWindow_ote(*help, GameText_getText_ote(**g_ote_textRoot));
+
+            if (this->newsTicker->OnTouchEnd(x, 0) == 0) {
+                float dx = VectorSignedToFloat(this->idleDeltaX, 0);
+                float dy = VectorSignedToFloat(this->idleDeltaY, 0);
+                this->camCoordX += dx * 0.01f;
+                this->camCoordY += dy * 0.01f;
+            }
         }
     }
 }
 
-
-
-
-
 static Layout **g_ModStation_tb_layout = 0;
 
-static void **g_ModStation_tb_screenH = 0;
+static int **g_ModStation_tb_screenH = 0;
 
-static void **g_ModStation_tb_clear = 0;
+static int **g_ModStation_tb_clear = 0;
 
 void ModStation::OnTouchBegin(int x, int y, void *touch) {
+    // lint: void_ptr
     if (this->activeTouch != 0)
         return;
     this->scrollFlags.bytes[0] = 1;
@@ -2429,7 +2411,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
             (unsigned char &) this->stationActive = 0;
             Globals::status->nextCampaignMission(true);
             unsigned int mod = *(unsigned int *) Globals::appManager;
-            *(int *) *g_ModStation_tb_clear = 0;
+            **g_ModStation_tb_clear = 0;
 
             Globals::appManager->SetCurrentApplicationModule(mod);
             this->m_nStarMapWindowOpen.bytes[0] = 0;
@@ -2463,7 +2445,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         return;
     }
     if (this->subWindowFlags.bytes[3] != 0) {
-        ((StarMap *) ((void *&) this->starMap))->OnTouchBegin(x, y);
+        this->starMap->OnTouchBegin(x, y);
         return;
     }
     if (this->modalFlags.bytes[0] != 0) {
@@ -2504,7 +2486,6 @@ int ModStation::OnTouchBegin(int x, int y) { return x; }
 int ModStation::OnTouchEnd(int x, int y) { return x; }
 int ModStation::OnTouchMove(int x, int y) { return x; }
 
-
 static int *g_r2d_stack = 0;
 
 static int **g_r2d_helpLayout = 0;
@@ -2517,7 +2498,7 @@ void SpaceLounge_draw_r2d(ModStation * self);
 
 void SpaceLounge_draw3DShip_r2d();
 
-void MissionsWindow_draw_r2d(void *w);
+void MissionsWindow_draw_r2d(MissionsWindow * w);
 
 void StarMap_draw_r2d(ModStation * self);
 void StatusWindow_draw_r2d(ModStation * self);
@@ -2529,8 +2510,9 @@ void CutScene_render2D_r2d();
 void ChoiceWindow_draw_r2d(ModStation * self);
 void Layout_drawHelpWindow_r2d(Layout * l);
 
-void *ModStation_r2d_layout();
-void Layout_drawCredits_r2d(void *layout);
+Layout *ModStation_r2d_layout();
+
+void Layout_drawCredits_r2d(Layout * layout);
 
 void ModStation::OnRender2D() {
     Globals::Canvas->Begin2d();
@@ -2545,7 +2527,7 @@ void ModStation::OnRender2D() {
     } else if (this->subWindowFlags.bytes[1] != 0) {
         SpaceLounge_draw_r2d(this);
     } else if (this->subWindowFlags.bytes[0] != 0) {
-        MissionsWindow_draw_r2d(this->m_pDialogueWindow);
+        MissionsWindow_draw_r2d((MissionsWindow *) this->m_pDialogueWindow);
     } else if (this->subWindowFlags.bytes[3] != 0) {
         StarMap_draw_r2d(this);
     } else if (this->modalFlags.bytes[0] != 0) {
@@ -2556,7 +2538,7 @@ void ModStation::OnRender2D() {
         Radio_draw_r2d(this);
         CutScene_render2D_r2d();
     } else {
-        void *layout = this->buttonState;
+        Layout *layout = (Layout *) this->buttonState;
         if (layout == nullptr) layout = ModStation_r2d_layout();
         if (layout != nullptr)
             Layout_drawCredits_r2d(layout);
@@ -2586,7 +2568,6 @@ void ModStation::OnRender2D() {
     Globals::Canvas->SwapBuffer();
 }
 
-
 static int *g_oi_stack = 0;
 
 static int **g_oi_status = 0;
@@ -2606,9 +2587,6 @@ static int **g_oi_textRoot = 0;
 static char **g_oi_demoFlag = 0;
 
 static int *g_oi_musicId = 0;
-
-
-
 
 int Status_getCurrentCampaignMission_oi();
 
@@ -2696,7 +2674,7 @@ int Station_getName_oi();
 
 int Station_hasItem_oi(int station);
 
-int Station_hasShip_oi(void *station);
+int Station_hasShip_oi(Station * station);
 
 int Station_hasAttackedFriends_oi();
 
@@ -2706,7 +2684,7 @@ void Station_addItem_oi(Item * it);
 void Station_addShip_oi(Ship * s);
 void Station_removeShip_oi(Ship * s);
 
-void Station_setShips_oi(void *station, int list);
+void Station_setShips_oi(Station *station, int list);
 
 int Standing_isEnemy_oi(int standing);
 
@@ -2720,9 +2698,9 @@ int Achievements_gotAllGoldMedals_oi();
 
 int GameText_getText_oi(int id);
 
-void ChoiceWindow_set_oi(void *cw, int text, int flag);
+void ChoiceWindow_set_oi(ChoiceWindow *cw, int text, int flag);
 
-void ChoiceWindow_setNotice_oi(void *cw, int text);
+void ChoiceWindow_setNotice_oi(ChoiceWindow *cw, int text);
 
 int CutScene_initialize_oi(CutScene * cs);
 
@@ -2734,7 +2712,7 @@ void TouchButton_setHalfTransparent_oi(int flag);
 
 void Globals_playMusicAndFadeOutCurrent_oi(int id);
 
-void FModSound_play_oi(int sound, int id, void *pos, float vol);
+void FModSound_play_oi(int sound, int id, const float *pos, float vol);
 
 void FModSound_enableReverb_oi(int sound);
 
@@ -2746,15 +2724,23 @@ void Generator_computerTradeGoods_oi(Generator * g, Station * s);
 int Generator_getShipBuyList_oi(Station * s);
 
 const int *ModStation_msc_camCoordTable();
+
 const int *ModStation_msc_camRotTable();
+
 unsigned ModStation_oi_cameraHandle();
+
 void ModStation_oi_setCameraLocal(unsigned h, const Matrix &m);
+
 int GameText_getText_oiImpl(int id);
-void ChoiceWindow_setFee_oiImpl(void *cw, int credits, int templateId);
-void ChoiceWindow_set6_oiImpl(void *cw, int a, int b, int c, int d, int e, int f);
-void ChoiceWindow_set1_oiImpl(void *cw, int textStr);
-void NewsTicker_build_oiImpl(void *self);
-void DlcMenu_build_oiImpl(void *self);
+
+void ChoiceWindow_setFee_oiImpl(ChoiceWindow *cw, int credits, int templateId);
+
+void ChoiceWindow_set6_oiImpl(ChoiceWindow *cw, int a, int b, int c, int d, int e, int f);
+
+void ChoiceWindow_set1_oiImpl(ChoiceWindow *cw, int textStr);
+
+void NewsTicker_build_oiImpl(ModStation * self);
+void DlcMenu_build_oiImpl(ModStation * self);
 
 void ModStation::OnInitialize() {
     int *status = *(int **) g_oi_status;
@@ -2788,7 +2774,7 @@ void ModStation::OnInitialize() {
 
         if (Status_getCurrentCampaignMission_oi() == 1) {
             Ship *ship = (Ship *) *shipTbl;
-            Ship_makeShip_oi((*(Array<int> *) (intptr_t) **g_oi_shipTable)[0]);
+            Ship_makeShip_oi((*(Array<int> *) (intptr_t) * *g_oi_shipTable)[0]);
             Status_setShip_oi(ship);
             Ship_setRace_oi(Ship_getIndex_oi());
             int eq = Item_makeItem_oi();
@@ -2863,7 +2849,7 @@ void ModStation::OnInitialize() {
                 if (ships != 0) {
                     for (unsigned i = 0; i < ships->size(); i = i + 1) {
                         if (Ship_getIndex_oi() == 0x25)
-                            Ship_setPrice_oi((int) (intptr_t) (*ships)[i]);
+                            Ship_setPrice_oi((int) (intptr_t)(*ships)[i]);
                     }
                 }
             }
@@ -2871,7 +2857,7 @@ void ModStation::OnInitialize() {
 
         if (this->modalFlags.bytes[1] == 0 && this->modalFlags.bytes[2] == 0 &&
             this->m_nStarMapWindowOpen.bytes[3] == 0 &&
-            ((TextRootRecord *) (intptr_t) **g_oi_textRoot)->noRoutesHintShown == 0) {
+            ((TextRootRecord *) (intptr_t) * *g_oi_textRoot)->noRoutesHintShown == 0) {
             Station *st2 = (Station *) Status_getStation_oi();
             if (Station_getIndex_oi(st2) != 0x65) {
                 Status_getShip_oi();
@@ -2888,7 +2874,7 @@ void ModStation::OnInitialize() {
             }
         }
 
-        ((Status *) (intptr_t) *(int *) g_oi_status)->field_f8 = 1;
+        ((Status *) (intptr_t) * (int *) g_oi_status)->field_f8 = 1;
         this->scrollFlags.bytes[0] = 0;
         this->activeTouch = 0;
         this->cameraFlags.bytes[3] = 0;
@@ -2935,7 +2921,7 @@ void ModStation::OnInitialize() {
                     Status_getStation_oi();
                     if (Station_stationHasPirateBase_oi() != 0) {
                         if (this->dialogueWindow == 0) {
-                            void *cw = this->choiceWindow;
+                            ChoiceWindow *cw = this->choiceWindow;
                             ChoiceWindow_set6_oiImpl(cw,
                                                      GameText_getText_oiImpl(0x3e), GameText_getText_oiImpl(0x49),
                                                      GameText_getText_oiImpl(0x7e), GameText_getText_oiImpl(0x7f),
@@ -2958,7 +2944,7 @@ void ModStation::OnInitialize() {
                         if (Station_getIndex_oi(s3) != 0x65 && this->modalFlags.bytes[2] == 0 &&
                             this->m_nStarMapWindowOpen.bytes[3] == 0 &&
                             this->alarmFlags.bytes[0] == 0 /* RAWREAD: alarmActive (+0xd8) */ &&
-                            ((Status *) (intptr_t) *(int *) g_oi_status)->field_0x108 == 0) {
+                            ((Status *) (intptr_t) * (int *) g_oi_status)->field_0x108 == 0) {
                             Status_getStation_oi();
                             bool enemy = false;
                             if (Station_hasAttackedFriends_oi() != 0) {
@@ -2996,11 +2982,11 @@ void ModStation::OnInitialize() {
             if (items != 0) {
                 for (unsigned i = 0; i < items->size(); i = i + 1) {
                     if (Item_getIndex_oi((*items)[i]) == 0x29)
-                        Item_setPrice_oi((int) (intptr_t) (*items)[i]);
+                        Item_setPrice_oi((int) (intptr_t)(*items)[i]);
                 }
             }
             Item *it = (Item *) Status_getStation_oi();
-            Item_makeItemDescAmt_oi((*(Array<int> *) (intptr_t) **g_oi_itemTable)[(0xa4) / 4], 10);
+            Item_makeItemDescAmt_oi((*(Array<int> *) (intptr_t) * *g_oi_itemTable)[(0xa4) / 4], 10);
             Station_addItem_oi(it);
         }
         if (Status_getCurrentCampaignMission_oi() == 0x1b &&
@@ -3023,7 +3009,7 @@ void ModStation::OnInitialize() {
                     int st0 = Status_getStation_oi();
                     if (Station_hasItem_oi(st0) == 0 && Station_hasItem_oi(Status_getStation_oi()) == 0) {
                         Item *it = (Item *) Status_getStation_oi();
-                        Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) **g_oi_itemTable)[(0x290) / 4]);
+                        Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) * *g_oi_itemTable)[(0x290) / 4]);
                         Station_addItem_oi(it);
                     }
                 }
@@ -3039,7 +3025,7 @@ void ModStation::OnInitialize() {
                 amt = (cargo == 0) ? 0 : Item_getAmount_oi();
                 if (amt < 6 && Station_hasItem_oi(Status_getStation_oi()) == 0) {
                     Item *it = (Item *) Status_getStation_oi();
-                    Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) **g_oi_itemTable)[(0x1e8) / 4]);
+                    Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) * *g_oi_itemTable)[(0x1e8) / 4]);
                     Station_addItem_oi(it);
                 }
             }
@@ -3065,7 +3051,7 @@ void ModStation::OnInitialize() {
             if (needNew) {
                 Generator *g = (Generator *) ::operator new(1);
                 Generator_ctor_oi(g);
-                void *station = (void *) Status_getStation_oi();
+                Station *station = (Station *) (intptr_t) Status_getStation_oi();
                 Status_getStation_oi();
                 int list = Generator_getShipBuyList_oi((Station *) g);
                 Station_setShips_oi(station, list);
@@ -3082,25 +3068,25 @@ void ModStation::OnInitialize() {
              Status_getCurrentCampaignMission_oi() == 0x53 ||
              Status_getCurrentCampaignMission_oi() == 0x54)) {
             Ship *st = (Ship *) Status_getStation_oi();
-            if (Station_hasShip_oi(st) != 0) {
+            if (Station_hasShip_oi((Station *) st) != 0) {
                 Array<Ship *> *ships = (Array<Ship *> *) (intptr_t) Station_getShips_oi();
                 unsigned i = 0;
                 while (i < ships->size() && Ship_getIndex_oi() != 0x25) i = i + 1;
                 Station_removeShip_oi(st);
             }
-            if (Station_hasShip_oi(st) == 0) {
-                Ship_makeShip_oi((*(Array<int> *) (intptr_t) **g_oi_shipTable)[(0x98) / 4]);
+            if (Station_hasShip_oi((Station *) st) == 0) {
+                Ship_makeShip_oi((*(Array<int> *) (intptr_t) * *g_oi_shipTable)[(0x98) / 4]);
                 Station_addShip_oi(st);
             }
-            if (Station_hasShip_oi(st) == 0) {
-                Ship_makeShip_oi((*(Array<int> *) (intptr_t) **g_oi_shipTable)[(0xa0) / 4]);
+            if (Station_hasShip_oi((Station *) st) == 0) {
+                Ship_makeShip_oi((*(Array<int> *) (intptr_t) * *g_oi_shipTable)[(0xa0) / 4]);
                 Station_addShip_oi(st);
             }
         }
 
         Station *st6c = (Station *) Status_getStation_oi();
         bool atReward = Station_getIndex_oi(st6c) == 0x6c;
-        int rewardState = atReward ? ((Status *) (intptr_t) *(int *) g_oi_status)->field_114 : 0;
+        int rewardState = atReward ? ((Status *) (intptr_t) * (int *) g_oi_status)->field_114 : 0;
         if (atReward && rewardState == 1) {
             if (this->dialogueWindow != 0) {
             }
@@ -3109,7 +3095,7 @@ void ModStation::OnInitialize() {
             this->screenFlags.bytes[1] = 1;
         } else {
             Station *st = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st) == 0x6c && ((Status *) (intptr_t) *(int *) g_oi_status)->field_114 == 2) {
+            if (Station_getIndex_oi(st) == 0x6c && ((Status *) (intptr_t) * (int *) g_oi_status)->field_114 == 2) {
                 if (Status_getCredits_oi() < 100000 ||
                     Ship_hasCargo_oi(Status_getShip_oi(), 0x6d) == 0) {
                     ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(**g_oi_textRoot));
@@ -3125,13 +3111,13 @@ void ModStation::OnInitialize() {
             Station *st = (Station *) Status_getStation_oi();
             if (Mission_getTargetStation_oi() == Station_getIndex_oi(st) &&
                 Station_hasItem_oi(Status_getStation_oi()) == 0) {
-                Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) **g_oi_itemTable)[(0x1cc) / 4]);
+                Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) * *g_oi_itemTable)[(0x1cc) / 4]);
                 Item *it = (Item *) Status_getStation_oi();
                 Station_addItem_oi(it);
             }
         }
 
-        SettingsBlock *settings = (SettingsBlock *) (intptr_t) *(int *) g_oi_settings;
+        SettingsBlock *settings = (SettingsBlock *) (intptr_t) * (int *) g_oi_settings;
         int rec = *(int *) g_oi_textRoot;
         (void) rec;
         if (Status_getCurrentCampaignMission_oi() == 0xa2 && (unsigned char) settings->wantedActivatedShown == 0) {
@@ -3139,14 +3125,14 @@ void ModStation::OnInitialize() {
             this->m_nStarMapWindowOpen.bytes[3] = 1;
             settings->wantedActivatedShown = 1;
         }
-        SettingsBlock *settings2 = (SettingsBlock *) (intptr_t) *(int *) g_oi_settings;
-        if (Status_gameWon_oi() != 0 && ((Status *) (intptr_t) *(int *) g_oi_status)->byte_0x35 == 0 &&
+        SettingsBlock *settings2 = (SettingsBlock *) (intptr_t) * (int *) g_oi_settings;
+        if (Status_gameWon_oi() != 0 && ((Status *) (intptr_t) * (int *) g_oi_status)->byte_0x35 == 0 &&
             settings->gameWonShown == 0) {
             ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(**g_oi_textRoot));
             this->m_nStarMapWindowOpen.bytes[3] = 1;
             settings->gameWonShown = 1;
         }
-        if (Status_dlc1Won_oi() != 0 && ((Status *) (intptr_t) *(int *) g_oi_status)->byte_0x37 == 0 &&
+        if (Status_dlc1Won_oi() != 0 && ((Status *) (intptr_t) * (int *) g_oi_status)->byte_0x37 == 0 &&
             settings->dlc1WonShown == 0) {
             ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(**g_oi_textRoot));
             this->m_nStarMapWindowOpen.bytes[3] = 1;
@@ -3214,7 +3200,7 @@ void ModStation::OnInitialize() {
         Status_getStation_oi();
         Station_getName_oi();
 
-        Status *stRec = (Status *) (intptr_t) *st;
+        Status *stRec = (Status *) (intptr_t) * st;
         long long enterTime = (long long) (uint32_t) stRec->field_70 |
                               ((long long) stRec->field_74 << 32);
         long long now = (long long) (unsigned) Status_getPlayingTime_lo_oi();
@@ -3241,7 +3227,7 @@ void ModStation::OnInitialize() {
         this->stationActive = 1;
         this->state = 100;
 
-        Array<void *> *btns = (Array<void *> *) (intptr_t) this->buttonRow;
+        Array<TouchButton *> *btns = (Array<TouchButton *> *) (intptr_t) this->buttonRow;
         if (btns != 0) {
             for (unsigned i = 0; i < btns->size(); i = i + 1) {
                 (void) i;
@@ -3253,7 +3239,6 @@ void ModStation::OnInitialize() {
     this->state = next;
 }
 
-
 static int *g_dlc_stack = 0;
 
 static int *g_dlc_btnX = 0;
@@ -3262,12 +3247,11 @@ static int *g_dlc_btnY = 0;
 
 static int **g_dlc_btnCount = 0;
 
-
 void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind);
 
 void MenuTouchWindow_callDlcMenu_dlc(MenuTouchWindow * w);
 
-void TouchButton_getPosition_dlc(void *dst, void *win, unsigned idx);
+void TouchButton_getPosition_dlc(float *dst, MenuTouchWindow *win, unsigned idx);
 
 void ModStation::showDlcMenu() {
     MenuTouchWindow *win = (MenuTouchWindow *) this->dlcMenu;
@@ -3295,7 +3279,6 @@ void ModStation::showDlcMenu() {
     MenuTouchWindow_callDlcMenu_dlc(win);
 }
 
-
 static int *g_cbs_stack = 0;
 
 static int **g_cbs_textId = 0;
@@ -3318,11 +3301,11 @@ void ModStation::showCBSMessage() {
 
 int GameText_getText_frag(int id);
 
-void ChoiceWindow_set1_frag(void *cw, int textStr);
+void ChoiceWindow_set1_frag(ChoiceWindow *cw, int textStr);
 
-void ChoiceWindow_setNotice_frag(void *cw, int textStr);
+void ChoiceWindow_setNotice_frag(ChoiceWindow *cw, int textStr);
 
-void ChoiceWindow_set6_frag(void *cw, int a, int b, int yesNo, int c, int d, int e);
+void ChoiceWindow_set6_frag(ChoiceWindow *cw, int a, int b, int yesNo, int c, int d, int e);
 
 int Status_holder_frag();
 

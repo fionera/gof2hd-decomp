@@ -8,7 +8,6 @@
 class SolarSystem;
 class Station;
 
-
 class Galaxy {
 public:
     Galaxy();
@@ -27,9 +26,9 @@ public:
 
     int getSystem(int index);
 
-    void *getPlasmaProbabilities(Station *station);
+    int *getPlasmaProbabilities(Station *station);
 
-    void *getAsteroidProbabilities(Station *station);
+    int *getAsteroidProbabilities(Station *station);
 
     int getStation(int index);
 
@@ -41,7 +40,6 @@ public:
 
     uint8_t *visited;
     Array<SolarSystem *> *systems;
-
 };
 
 #endif

@@ -10,11 +10,9 @@
 
 #include "engine/math/AEMath.h"
 
-
 class AEGeometry;
 class ListItem;
 class ScrollTouchWindow;
-
 
 class ListItemWindow {
 public:

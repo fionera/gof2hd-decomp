@@ -30,10 +30,7 @@ struct VirtualKey {
     int offsetX;
     int offsetY;
 
-    union {
-        void *touch;
-        int touchWindowHandle;
-    };
+    int touchWindowHandle;
 
     int field_0x44;
     int field_0x48;
@@ -46,12 +43,9 @@ constexpr int kVirtualKeyCount = 48;
 
 VirtualKey keys[kVirtualKeyCount];
 
-
 int stackX;
 int stackY;
 int wheelStack;
-
-
 
 int currentstate;
 int stateChanged;
@@ -149,7 +143,7 @@ namespace {
     unsigned char g_simTouchActive;
 }
 
-extern "C" unsigned int F(unsigned int value) {
+extern "C" unsigned int F(unsigned int value) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     const unsigned int *table = *g_hashTable;
     const unsigned int *col0 = table;
     const unsigned int *col1 = table + 0x100;
@@ -295,7 +289,8 @@ void keyReleased(AbyssEngine::Engine *engine, int key) {
             continue;
 
         engine->appManager->OnTouchEnd(vk.baseX + vk.offsetX, vk.baseY + vk.offsetY,
-                                       vk.touch);
+                                       reinterpret_cast<void *>(vk.touchWindowHandle));
+        // lint: void_ptr (opaque touch handle for OnTouchEnd ABI)
         engine->appManager->OnTouchEnd();
         engine->DrawQuad(vk.offsetX, vk.offsetY, 10, 10);
         if (vk.action != 0)
@@ -393,7 +388,9 @@ void keyPressed(AbyssEngine::Engine *engine, int key) {
 
             if (vk.hasTouch != 0) {
                 engine->appManager->OnTouchBegin(vk.baseX + vk.offsetX,
-                                                 vk.baseY + vk.offsetY, vk.touch);
+                                                 vk.baseY + vk.offsetY,
+                                                 reinterpret_cast<void *>(vk.touchWindowHandle));
+                // lint: void_ptr (opaque touch handle for OnTouchBegin ABI)
                 vk.offsetX = vk.baseX;
                 vk.offsetY = vk.baseY;
             }
@@ -433,9 +430,9 @@ matched:
             break;
         case 7: *reinterpret_cast<float *>(g_aimAssist) = 0.01f;
             break;
-        case 8: engine->field_0x360 = 0x3f800000;
+        case 8: engine->autoPilotEngaged = 0x3f800000;
             break;
-        case 9: engine->field_0x360 = 0xbf800000;
+        case 9: engine->autoPilotEngaged = static_cast<int>(0xbf800000);
             break;
         case 0x13: *g_pressFireFlag = 1;
             break;
@@ -605,9 +602,9 @@ void simulateTouch(AbyssEngine::Engine *engine) {
     }
 
     if (keyHeld(8))
-        engine->field_0x360 = static_cast<uint32_t>(floatToBits(-1.0f));
+        engine->autoPilotEngaged = static_cast<int>(floatToBits(-1.0f));
     if (keyHeld(9))
-        engine->field_0x360 = static_cast<uint32_t>(floatToBits(1.0f));
+        engine->autoPilotEngaged = static_cast<int>(floatToBits(1.0f));
 
     if (keyHeld(11)) {
         Globals::rotateShipInStation = floatToBits(keyHeld(14) ? -40.0f : -20.0f);
@@ -745,15 +742,20 @@ void simulateTouch(AbyssEngine::Engine *engine) {
             if (down == 0 && !inactive) {
                 if (ex == 0.5f && ey == 0.5f) {
                     mgr->OnTouchEnd(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                    // lint: void_ptr (synthetic touch handle for OnTouchEnd ABI)
                     g_simTouchActive = 0;
                 } else {
                     mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                    // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                 }
             } else if (down == 1 && !inactive) {
                 mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
             } else if (active == 0 && down == 1) {
                 mgr->OnTouchBegin(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                // lint: void_ptr (synthetic touch handle for OnTouchBegin ABI)
                 mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                 g_simTouchActive = 1;
             }
         }

@@ -10,6 +10,7 @@ struct ShipDefTable {
     uint8_t _pad_0x0c[0x8];
 
     union {
+        // lint: union_decl (both names referenced cross-file: MenuTouchWindow.cpp)
         int32_t shipDefId;
         int32_t itemDef_secondary;
     };
@@ -32,10 +33,7 @@ struct ShipDefTable {
 
     uint8_t _pad_0xb4[0x18];
 
-    union {
-        int32_t itemDef_equip0xcc;
-        int32_t itemDef_0xcc;
-    };
+    int32_t itemDef_equip0xcc;
 
     uint8_t _pad_0xd0[0x10];
 
@@ -47,22 +45,13 @@ struct ShipDefTable {
 
     uint8_t _pad_0x114[0x30];
 
-    union {
-        int32_t itemDef_equip0x144;
-        int32_t itemDef_0x144;
-    };
+    int32_t itemDef_equip0x144;
 
     uint8_t _pad_0x148[0xc];
 
-    union {
-        int32_t itemDef_equip0x154;
-        int32_t itemDef_0x154;
-    };
+    int32_t itemDef_equip0x154;
 
-    union {
-        int32_t itemDef_equip0x158;
-        int32_t itemDef_0x158;
-    };
+    int32_t itemDef_equip0x158;
 
     uint8_t _pad_0x15c[0x8c];
 

@@ -16,7 +16,6 @@ class ListItem;
 class Ship;
 class Status;
 
-
 class HangarList {
 public:
     Array<Array<ListItem *> *> *tabs;

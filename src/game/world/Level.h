@@ -21,8 +21,6 @@
 #include "engine/math/Vector.h"
 #include "engine/math/Matrix.h"
 
-
-
 #include "game/world/RadioStageEntry.h"
 class AEGeometry;
 class BoundingVolume;
@@ -39,8 +37,8 @@ class PlayerFixedObject;
 class RadioMessage;
 class Route;
 class StarSystem;
+class Station;
 class Waypoint;
-
 
 class Level {
 public:
@@ -242,7 +240,7 @@ public:
 
     void createRadioMessages(int set);
 
-    void *getBoundingVolume(int param, AEGeometry *kind);
+    void *getBoundingVolume(int param, AEGeometry *kind); // lint: void_ptr (method return type is symbol-baked)
 
     PlayerEgo *getPlayer();
 
@@ -280,7 +278,7 @@ public:
 
     int getFriendsLeft();
 
-    Array<void *> *getMessages();
+    Array<void *> *getMessages(); // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
 
     int getTimeLimit();
 
@@ -366,11 +364,10 @@ public:
 
     void incNumDeliveredPassengers(int delta);
 
-    void crm_dispatch(int egoComm, void *queue);
-
+    void crm_dispatch(int egoComm, void *queue); // lint: void_ptr (method param is symbol-baked)
 
     static unsigned char doInstantJump;
-    static void *programmedStation;
+    static Station *programmedStation;
     static unsigned char comingFromAlienWorld;
     static unsigned char initStreamOutPosition;
     static int energyCellsForNextJump;
@@ -394,6 +391,5 @@ static_assert(__builtin_offsetof(Level, cloudMatrix) == 0x20c, "Level::cloudMatr
 static_assert(__builtin_offsetof(Level, reversalMatrix) == 0x248, "Level::reversalMatrix offset");
 static_assert(__builtin_offsetof(Level, field_284) == 0x284, "Level::field_284 offset");
 #endif
-
 
 #endif

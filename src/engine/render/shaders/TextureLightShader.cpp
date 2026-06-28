@@ -61,7 +61,7 @@ namespace AbyssEngine {
             glUniform4f(this->uColor0, engine->lightDir.x, engine->lightDir.y,
                         engine->lightDir.z, engine->lightDirty[0]);
 
-            if (engine->field_0x32c < 2) {
+            if (engine->lightCount < 2) {
                 glUniform3f(this->uLight0Color, 0, 0, 0);
                 glUniform3f(this->uLight1Color, 0, 0, 0);
                 glUniform3f(this->uLight2Color, 0, 0, 0);

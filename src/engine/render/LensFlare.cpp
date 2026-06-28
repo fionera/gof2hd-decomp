@@ -68,9 +68,9 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex) {
     this->intensity = fade;
 
     PaintCanvas *canvas = *(PaintCanvas **) gLF_Canvas2;
-    void *img0 = (void *) (uintptr_t) this->images[0];
-    void *img1 = (void *) (uintptr_t) this->images[1];
-    void *img2 = (void *) (uintptr_t) this->images[2];
+    uint32_t img0 = this->images[0];
+    uint32_t img1 = this->images[1];
+    uint32_t img2 = this->images[2];
 
     {
         uint32_t a = (uint32_t)(1.0f - (1.0f - fade));

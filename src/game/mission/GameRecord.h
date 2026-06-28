@@ -5,30 +5,24 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 
-
-
-
-
-
-
-
-
-
-
 #pragma pack(push, 1)
 class GameRecord {
 public:
-    void *data;
+    uint8_t *data;
     uint32_t field_0x04;
     uint32_t field_0x08;
     uint32_t field_0x0c;
+
     union {
+        // lint: union_decl (cross-file alias; RecordHandler.cpp reads rec->playTime64)
         struct {
-            void *playTimeObj;
+            uint8_t *playTimeObj;
             uint32_t field_0x14;
         };
+
         int64_t playTime64;
     };
+
     uint32_t field_0x18;
     uint32_t field_0x1c;
     uint32_t killsText;
@@ -76,15 +70,15 @@ public:
     uint32_t field_0xc8;
     uint32_t field_0xcc;
     uint32_t field_0xd0;
-    uint8_t  field_0xd4;
-    uint8_t  field_0xd5;
-    uint8_t  field_0xd6;
-    uint8_t  field_0xd7;
+    uint8_t field_0xd4;
+    uint8_t field_0xd5;
+    uint8_t field_0xd6;
+    uint8_t field_0xd7;
     uint32_t field_0xd8;
-    uint8_t  field_0xdc;
-    uint8_t  field_0xdd;
-    uint8_t  field_0xde;
-    uint8_t  field_0xdf;
+    uint8_t field_0xdc;
+    uint8_t field_0xdd;
+    uint8_t field_0xde;
+    uint8_t field_0xdf;
     uint32_t field_0xe0;
     uint32_t field_0xe4;
     uint32_t field_0xe8;
@@ -94,38 +88,41 @@ public:
     uint32_t field_0xf8;
     uint32_t field_0xfc;
 
-    uint8_t  field_0x100;
-    uint8_t  field_0x101;
-    uint8_t  field_0x102;
-    uint8_t  field_0x103;
-    uint8_t  field_0x104;
-    uint8_t  field_0x105;
-    uint8_t  field_0x106;
-    uint8_t  field_0x107;
-    uint8_t  field_0x108;
-    uint8_t  field_0x109;
-    uint8_t  field_0x10a;
-    uint8_t  field_0x10b;
-    uint8_t  field_0x10c;
-    uint8_t  field_0x10d;
-    uint8_t  field_0x10e;
-    uint8_t  field_0x10f;
-    uint8_t  field_0x110;
-    uint8_t  field_0x111;
-    uint8_t  field_0x112;
-    uint8_t  field_0x113;
-    uint8_t  field_0x114;
-    uint8_t  dlcRequiredFlag;
-    uint8_t  field_0x116;
-    uint8_t  versionMismatchFlag;
-    uint8_t  field_0x118;
-    uint8_t  field_0x119;
-    uint8_t  field_0x11a;
-    uint8_t  field_0x11b;
+    uint8_t field_0x100;
+    uint8_t field_0x101;
+    uint8_t field_0x102;
+    uint8_t field_0x103;
+    uint8_t field_0x104;
+    uint8_t field_0x105;
+    uint8_t field_0x106;
+    uint8_t field_0x107;
+    uint8_t field_0x108;
+    uint8_t field_0x109;
+    uint8_t field_0x10a;
+    uint8_t field_0x10b;
+    uint8_t field_0x10c;
+    uint8_t field_0x10d;
+    uint8_t field_0x10e;
+    uint8_t field_0x10f;
+    uint8_t field_0x110;
+    uint8_t field_0x111;
+    uint8_t field_0x112;
+    uint8_t field_0x113;
+    uint8_t field_0x114;
+    uint8_t dlcRequiredFlag;
+    uint8_t field_0x116;
+    uint8_t versionMismatchFlag;
+    uint8_t field_0x118;
+    uint8_t field_0x119;
+    uint8_t field_0x11a;
+    uint8_t field_0x11b;
+
     union {
-        float    rank;
-        int32_t  rankBits;
+        // lint: union_decl (cross-file alias; RecordHandler.cpp reads rec->rankBits)
+        float rank;
+        int32_t rankBits;
     };
+
     uint32_t field_0x120;
     uint32_t field_0x124;
     uint32_t field_0x128;
@@ -166,7 +163,7 @@ public:
     uint32_t field_0x1b4;
     uint32_t field_0x1b8;
     uint32_t field_0x1bc;
-    uint8_t  field_0x1c0;
+    uint8_t field_0x1c0;
 
     GameRecord();
 

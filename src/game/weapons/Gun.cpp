@@ -8,68 +8,59 @@
 #include "engine/core/Array.h"
 #include "engine/math/Vector.h"
 
-
-
-
-
 namespace {
+    struct GunItemRegistry {
+        int32_t field_0x0;
+        int32_t *itemTable;
+        uint8_t pad_0x08[0xc8 - 0x08];
+        int32_t nukeDetonations;
+    };
 
+    struct GunUpdateGlobals {
+        uint8_t pad_0x00[0x12c];
+        int32_t field_0x12c;
+    };
 
-struct GunItemRegistry {
-    int32_t field_0x0;
-    int32_t *itemTable;
-    uint8_t pad_0x08[0xc8 - 0x08];
-    int32_t nukeDetonations;
-};
+    struct GunLevelHandle {
+        uint8_t pad_0x00[0x69];
+        uint8_t field_0x69;
+    };
 
-
-struct GunUpdateGlobals {
-    uint8_t pad_0x00[0x12c];
-    int32_t field_0x12c;
-};
-
-
-struct GunLevelHandle {
-    uint8_t pad_0x00[0x69];
-    uint8_t field_0x69;
-};
-
-
-struct GunTransformHandle {
-    uint8_t pad_0x00[0xed];
-    uint8_t visible_0xed;
-};
+    struct GunTransformHandle {
+        uint8_t pad_0x00[0xed];
+        uint8_t visible_0xed;
+    };
 
 #if __SIZEOF_POINTER__ == 4
-static_assert(__builtin_offsetof(GunItemRegistry, itemTable) == 0x04,
-              "GunItemRegistry::itemTable offset");
-static_assert(__builtin_offsetof(GunItemRegistry, nukeDetonations) == 0xc8,
-              "GunItemRegistry::nukeDetonations offset");
-static_assert(__builtin_offsetof(GunUpdateGlobals, field_0x12c) == 0x12c,
-              "GunUpdateGlobals::field_0x12c offset");
-static_assert(__builtin_offsetof(GunLevelHandle, field_0x69) == 0x69,
-              "GunLevelHandle::field_0x69 offset");
-static_assert(__builtin_offsetof(GunTransformHandle, visible_0xed) == 0xed,
-              "GunTransformHandle::visible_0xed offset");
+    static_assert(__builtin_offsetof(GunItemRegistry, itemTable) == 0x04,
+                  "GunItemRegistry::itemTable offset");
+    static_assert(__builtin_offsetof(GunItemRegistry, nukeDetonations) == 0xc8,
+                  "GunItemRegistry::nukeDetonations offset");
+    static_assert(__builtin_offsetof(GunUpdateGlobals, field_0x12c) == 0x12c,
+                  "GunUpdateGlobals::field_0x12c offset");
+    static_assert(__builtin_offsetof(GunLevelHandle, field_0x69) == 0x69,
+                  "GunLevelHandle::field_0x69 offset");
+    static_assert(__builtin_offsetof(GunTransformHandle, visible_0xed) == 0xed,
+                  "GunTransformHandle::visible_0xed offset");
 #endif
-
 }
 
 typedef Array<Vector> VecArray;
 
+void Gun_VecArray_ctor(VecArray *a);
 
-void Gun_VecArray_ctor(void *a);
+void Gun_VecPtrArray_ctor(Array<int> * a);
 
-void Gun_VecPtrArray_ctor(void *a);
+void Gun_VecArray_setLength(int n, VecArray *a);
 
-void Gun_VecArray_setLength(int n, void *a);
+void Gun_VecPtrArray_setLength(int n, Array<int> *a);
 
-void Gun_VecPtrArray_setLength(int n, void *a);
+void Gun_ArrayReleaseClasses(VecArray *a);
 
-void Gun_ArrayReleaseClasses(VecArray * a);
-void *Gun_ArrayDtor(VecArray * a);
+VecArray *Gun_ArrayDtor(VecArray *a);
 
-typedef void (*dtor_fn)(void *);
+typedef void (*dtor_fn)(VecArray *);
+
 static dtor_fn const gGunStringDtor = nullptr;
 
 Gun::~Gun() noexcept(false) {
@@ -90,17 +81,17 @@ Gun::~Gun() noexcept(false) {
         Gun_ArrayReleaseClasses(arr);
         VecArray *arr2 = reinterpret_cast<VecArray *>(this->wobbleOffsets);
         if (arr2 != 0) {
-            void *p = Gun_ArrayDtor(arr2);
+            VecArray *p = Gun_ArrayDtor(arr2);
             ::operator delete(p);
         }
     }
     this->wobbleOffsets = 0;
 
     dtor_fn d = gGunStringDtor;
-    d(&this->field_0x2c);
-    d(&this->field_0x20);
-    d(&this->directionCount);
-    d(&this->count);
+    d(reinterpret_cast<VecArray *>(&this->field_0x2c));
+    d(reinterpret_cast<VecArray *>(&this->field_0x20));
+    d(reinterpret_cast<VecArray *>(&this->directionCount));
+    d(reinterpret_cast<VecArray *>(&this->count));
 }
 
 void Gun::setFriendGun(bool v) {
@@ -112,6 +103,7 @@ int Gun::getMagnitude() {
 }
 
 void *Gun::getEnemies() {
+    // lint: void_ptr exported method return type baked into header; consumed as void* in RocketGun.cpp
     return this->enemies;
 }
 
@@ -152,7 +144,6 @@ void Gun::removeAllEnemies() {
 }
 
 namespace AbyssEngine {
-
     namespace Transform {
         void SetAnimationState(unsigned tf, int a, int b);
     }
@@ -194,7 +185,7 @@ void Gun::setIndex(int index) {
         for (unsigned i = 0; i < count; i = i + 1) {
             AEGeometry *geom = new AEGeometry((uint16_t) g, (PaintCanvas *) *canvasHolder, false);
             this->geometries[i] = geom->transform;
-            int r = ((AbyssEngine::AERandom *)(*rngHolder))->nextInt();
+            int r = ((AbyssEngine::AERandom *) (*rngHolder))->nextInt();
             this->randomFlags[i] = (r == 0);
             unsigned tf = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder);
             AbyssEngine::Transform::SetAnimationState(tf, 0, 0);
@@ -295,7 +286,7 @@ void Gun::render() {
                 unsigned c = canvas;
                 AbyssEngine::PaintCanvas::CameraGetCurrent();
                 unsigned camLocal = AbyssEngine::PaintCanvas::CameraGetLocal(c);
-                memcpy(camBuf, (const void *) camLocal, 0x3c);
+                memcpy(camBuf, (const unsigned char *) camLocal, 0x3c);
                 unsigned tl = AbyssEngine::PaintCanvas::TransformGetLocal(canvas);
                 AbyssEngine::AEMath::MatrixGetPosition(&local, (const Matrix *) tl);
                 this->targetDir = *(const Vector *) ((Vector *) &local);
@@ -309,10 +300,10 @@ void Gun::render() {
 }
 
 Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
-    Gun_VecArray_ctor(&this->count);
-    Gun_VecArray_ctor(&this->directionCount);
-    Gun_VecArray_ctor(&this->field_0x20);
-    Gun_VecArray_ctor(&this->field_0x2c);
+    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->count));
+    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->directionCount));
+    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->field_0x20));
+    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->field_0x2c));
     this->offset.x = 0;
     this->offset.y = 0;
     this->offset.z = 0;
@@ -327,7 +318,7 @@ Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector d
     this->randomFlags = 0;
     this->slotIndex = kind;
     this->damage = p2;
-    this->field_0x50 = p7;
+    this->pitchRate = p7;
     this->targetDir.z = 0;
     this->velocity.x = 0;
     this->velocity.y = 0;
@@ -358,13 +349,13 @@ Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector d
     this->field_0x78 = p4 << 1;
     this->lifetimes = new int[count];
     this->hitFlags = new uint8_t[count];
-    void *arr = ::operator new(0xc);
+    Array<int> *arr = static_cast<Array<int> *>(::operator new(0xc));
     Gun_VecPtrArray_ctor(arr);
-    this->wobbleOffsets = static_cast<Array<int> *>(arr);
-    Gun_VecArray_setLength(count, &this->count);
-    Gun_VecArray_setLength(count, &this->directionCount);
-    Gun_VecArray_setLength(count, &this->field_0x20);
-    Gun_VecArray_setLength(count, &this->field_0x2c);
+    this->wobbleOffsets = arr;
+    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->count));
+    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->directionCount));
+    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->field_0x20));
+    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->field_0x2c));
     Gun_VecPtrArray_setLength(count, this->wobbleOffsets);
     Vector *positions = reinterpret_cast<Vector *>(this->positions);
     for (int i = 0; i < (int) count; i = i + 1) {

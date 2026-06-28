@@ -2,183 +2,83 @@
 #define GOF2_MESH_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
+
 namespace AbyssEngine {
     class Transform;
+    class Material;
 
     class Mesh {
     public:
-        union {
-            uint8_t vertexFormat;
-            uint8_t field_0x0;
-        };
+        uint8_t vertexFormat;
 
-        union {
-            uint16_t vertexCount;
-            uint16_t field_0x2;
-        };
+        uint16_t vertexCount;
 
-        union {
-            void *positions;
-            void *field_0x4;
-        };
+        unsigned char *positions;
 
-        union {
-            void *texCoords;
-            void *field_0x8;
-        };
+        unsigned char *texCoords;
 
-        union {
-            void *colors;
-            void *field_0xc;
-        };
+        unsigned char *colors;
 
-        union {
-            void *normals;
-            void *field_0x10;
-        };
+        unsigned char *normals;
 
-        union {
-            void *tangents;
-            void *field_0x14;
-        };
+        unsigned char *tangents;
 
-        union {
-            void *binormals;
-            void *field_0x18;
-        };
+        unsigned char *binormals;
 
-        union {
-            uint32_t materialId;
-            uint32_t field_0x1c;
-            int32_t meshPostEffectFlag;
-        };
+        uint32_t materialId;
 
-        union {
-            float shaderAnimValue0;
-            float localOffset;
-            float field_0x20;
-        };
+        float shaderAnimValue0;
 
-        union {
-            float shaderAnimValue1;
-            float field_0x24;
-        };
+        float shaderAnimValue1;
 
-        union {
-            uint16_t indexCount;
-            uint16_t field_0x28;
-        };
+        uint16_t indexCount;
 
         uint16_t field_0x2a;
 
-        union {
-            void *indices;
-            void *field_0x2c;
-        };
+        unsigned char *indices;
 
-        union {
-            void *material;
-            void *materialBlock;
-            void *field_0x30;
-        };
+        Material *material;
 
-        union {
-            Transform *animation;
-            Transform *field_0x34;
-        };
+        Transform *animation;
 
-        union {
-            uint8_t shared;
-            uint8_t field_0x38;
-        };
+        uint8_t shared;
 
-        union {
-            float boundsCenterX;
-            float field_0x3c;
-        };
+        float boundsCenterX;
 
-        union {
-            float boundsCenterY;
-            float field_0x40;
-        };
+        float boundsCenterY;
 
-        union {
-            float boundsCenterZ;
-            float field_0x44;
-        };
+        float boundsCenterZ;
 
-        union {
-            float boundsRadius;
-            float field_0x48;
-        };
+        float boundsRadius;
 
-        union {
-            float boundsRadiusSq;
-            float field_0x4c;
-        };
+        float boundsRadiusSq;
 
         float pivotX;
         float pivotY;
 
-        union {
-            uint8_t uploaded;
-            uint8_t field_0x5c;
-        };
+        uint8_t uploaded;
 
-        union {
-            unsigned int positionVBO;
-            unsigned int field_0x60;
-        };
+        unsigned int positionVBO;
 
-        union {
-            unsigned int indexVBO;
-            uint32_t field_0x64;
-        };
+        unsigned int indexVBO;
 
-        union {
-            unsigned int texCoordVBO;
-            unsigned int field_0x68;
-        };
+        unsigned int texCoordVBO;
 
-        union {
-            unsigned int normalVBO;
-            uint32_t field_0x6c;
-        };
+        unsigned int normalVBO;
 
-        union {
-            unsigned int tangentVBO;
-            uint32_t field_0x70;
-        };
+        unsigned int tangentVBO;
 
-        union {
-            unsigned int binormalVBO;
-            uint32_t field_0x74;
-        };
+        unsigned int binormalVBO;
 
-        union {
-            unsigned int colorVBO;
-            uint32_t field_0x78;
-        };
+        unsigned int colorVBO;
 
-        union {
-            int vboByteSize;
-            uint32_t field_0x7c;
-        };
+        int vboByteSize;
 
-        union {
-            uint32_t enhancedData;
-            uint32_t field_0x80;
-        };
+        uint32_t enhancedData;
 
-        union {
-            uint8_t vboEligible;
-            uint8_t field_0x84;
-        };
+        uint8_t vboEligible;
 
-        union {
-            uint8_t hasAnimation;
-            uint8_t field_0x85;
-        };
+        uint8_t hasAnimation;
 
         Mesh(Mesh *src);
 

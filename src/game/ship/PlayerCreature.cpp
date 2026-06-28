@@ -10,7 +10,6 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/weapons/Radar.h"
 
-
 static int PlayerCreature_weightTable[16] = {};
 static int PlayerCreature_rageTable[16] = {};
 static int PlayerCreature_enduranceTable[16] = {};
@@ -30,8 +29,9 @@ namespace AbyssEngine {
 namespace AbyssEngine {
 }
 
-void *ParticleSystemManager_emitManual_v(
-    void *self, int handle, const float *pos, void *ret, const float *vel, float p5);
+void *ParticleSystemManager_emitManual_v( // lint: void_ptr external free fn; Pv signature fixed in original .so
+    void *self, int handle, const float *pos, void *ret, const float *vel,
+    float p5); // lint: void_ptr external free fn; Pv signature fixed in original .so
 
 uint8_t PlayerCreature::isHooked() {
     return this->hooked;
@@ -141,8 +141,8 @@ void PlayerCreature::update(int elapsed) {
         } else {
             int half = elapsed >> 1;
             float negativeHalf = (float) half * -0.5f;
-            int first = ((AbyssEngine::AERandom *)(*PlayerCreature_randomMax))->nextInt(half);
-            int second = ((AbyssEngine::AERandom *)(*PlayerCreature_randomMax))->nextInt(half);
+            int first = ((AbyssEngine::AERandom *) (*PlayerCreature_randomMax))->nextInt(half);
+            int second = ((AbyssEngine::AERandom *) (*PlayerCreature_randomMax))->nextInt(half);
             float xAngle = ((negativeHalf + (float) first) * 0.000244140625f) * 2.0f * 3.1415927f;
             float zAngle = ((negativeHalf + (float) second) * 0.000244140625f) * 2.0f * 3.1415927f;
             AbyssEngine::AEMath::MatrixSetRotation(this->rageMatrix, xAngle, zAngle, 0.0f);
@@ -170,7 +170,7 @@ void PlayerCreature::update(int elapsed) {
             Level *level = this->level;
             PlayerEgo *ego = level->getPlayer();
             Radar *radar = (Radar *) ego->field_0x14;
-            if (radar->field_0x1c == (void *) this) {
+            if (radar->field_0x1c == this) {
                 ego = level->getPlayer();
                 radar = (Radar *) ego->field_0x14;
                 radar->field_0x1c = nullptr;
@@ -186,7 +186,7 @@ void PlayerCreature::update(int elapsed) {
             position.z = this->posZ;
             Level *levelObject = this->level;
             ParticleSystemManager_emitManual_v(
-                (void *) (intptr_t) levelObject->particleSystemMgr,
+                (void *) (intptr_t) levelObject->particleSystemMgr, // lint: void_ptr arg to external fn's void* param
                 levelObject->field_34,
                 (const float *) &position, nullptr, (const float *) &zero, 0.0f);
         }

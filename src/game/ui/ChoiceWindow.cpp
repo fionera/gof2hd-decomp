@@ -163,7 +163,16 @@ void ChoiceWindow::setMedal(int medal, int count) {
             uv /= 10;
         } while (uv);
         if (neg) buf[n++] = '-';
-        while (n--) { int _nl = number.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < number.length; _i++) _nd[_i] = number.data[_i]; _nd[number.length] = (unsigned short) ((char16_t) (unsigned char) buf[n]); _nd[_nl] = 0; if (number.data) delete[] number.data; number.data = _nd; number.length = _nl; }
+        while (n--) {
+            int _nl = number.length + 1;
+            unsigned short *_nd = new unsigned short[_nl + 1];
+            for (int _i = 0; _i < number.length; _i++) _nd[_i] = number.data[_i];
+            _nd[number.length] = (unsigned short) ((char16_t) (unsigned char) buf[n]);
+            _nd[_nl] = 0;
+            if (number.data) delete[] number.data;
+            number.data = _nd;
+            number.length = _nl;
+        }
     }
 
     String finalText = Globals::status->replaceHash(pattern, number);
@@ -219,7 +228,7 @@ static Layout **g_ChoiceWindow_defaultConfig_1469b0 = nullptr;
 static int *g_ChoiceWindow_screenWidth_1469b0 = nullptr;
 static FModSound **g_ChoiceWindow_sound_1469b0 = nullptr;
 static Layout **g_ChoiceWindow_layout_1469b0 = nullptr;
-static void **g_ChoiceWindow_lineFont_1469b0 = nullptr;
+static unsigned int *g_ChoiceWindow_lineFont_1469b0 = nullptr;
 static int *g_ChoiceWindow_screenHeight_1469b0 = nullptr;
 
 void ChoiceWindow::set(String const &title, String const &message, bool hasButtons,
@@ -249,7 +258,7 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
 
     Layout *layout = *g_ChoiceWindow_layout_1469b0;
     Globals::globals->getLineArray(
-        static_cast<unsigned int>(reinterpret_cast<std::size_t>(*g_ChoiceWindow_lineFont_1469b0)),
+        *g_ChoiceWindow_lineFont_1469b0,
         message,
         (this->width - layout->field_0x4c * 2) - layout->field_0x48,
         lines);
@@ -351,12 +360,12 @@ static Layout **g_ChoiceWindow_layout_1471bc = nullptr;
 static int g_ChoiceWindow_medalColorsLow_1471bc[64];
 static int g_ChoiceWindow_medalColorsHigh_1471bc[64];
 static int g_ChoiceWindow_creditValues_1471bc[64];
-static void **g_ChoiceWindow_font_1471bc_a = nullptr;
-static void **g_ChoiceWindow_font_1471bc_b = nullptr;
-static void *g_ChoiceWindow_posTargetA_1471bc = nullptr;
-static void *g_ChoiceWindow_posTargetB_1471bc = nullptr;
-static void *g_ChoiceWindow_posTargetC_1471bc = nullptr;
-static void *g_ChoiceWindow_posTargetD_1471bc = nullptr;
+static unsigned int *g_ChoiceWindow_font_1471bc_a = nullptr;
+static unsigned int *g_ChoiceWindow_font_1471bc_b = nullptr;
+static ChoiceWindowButtonPosCache *g_ChoiceWindow_posTargetA_1471bc = nullptr;
+static ChoiceWindowButtonPosCache *g_ChoiceWindow_posTargetB_1471bc = nullptr;
+static ChoiceWindowButtonPosCache *g_ChoiceWindow_posTargetC_1471bc = nullptr;
+static ChoiceWindowButtonPosCache *g_ChoiceWindow_posTargetD_1471bc = nullptr;
 static int *g_ChoiceWindow_dirtyFlag_1471bc = nullptr;
 
 void ChoiceWindow::draw() {
@@ -389,18 +398,18 @@ void ChoiceWindow::draw() {
             String creditsText = Layout::formatCredits(
                 g_ChoiceWindow_creditValues_1471bc[this->count]);
 
-            void *font = *g_ChoiceWindow_font_1471bc_a;
-            int textWidth = canvas->GetTextWidth((unsigned int) (unsigned long) font, creditsText);
-            canvas->DrawString((unsigned int) (unsigned long) font, creditsText,
+            unsigned int font = *g_ChoiceWindow_font_1471bc_a;
+            int textWidth = canvas->GetTextWidth(font, creditsText);
+            canvas->DrawString(font, creditsText,
                                this->x + (this->width >> 1) - textWidth / 2,
                                this->y + this->height - this->padding3,
                                false);
         }
 
         canvas->SetColor(0xffffffff);
-        void *font = *g_ChoiceWindow_font_1471bc_b;
-        int textWidth = canvas->GetTextWidth((unsigned int) (unsigned long) font, this->medalText);
-        canvas->DrawString((unsigned int) (unsigned long) font, this->medalText,
+        unsigned int font = *g_ChoiceWindow_font_1471bc_b;
+        int textWidth = canvas->GetTextWidth(font, this->medalText);
+        canvas->DrawString(font, this->medalText,
                            this->x + (this->width >> 1) - textWidth / 2,
                            this->y + this->padding4, false);
     }
@@ -413,22 +422,22 @@ void ChoiceWindow::draw() {
         if (this->rightButton != nullptr) {
             this->rightButton->draw();
             pos = this->rightButton->getPosition();
-            ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetA_1471bc)->rightButtonPosX = (int) pos[0];
+            g_ChoiceWindow_posTargetA_1471bc->rightButtonPosX = (int) pos[0];
             pos = this->rightButton->getPosition();
-            ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetB_1471bc)->rightButtonPosY = (int) pos[1];
+            g_ChoiceWindow_posTargetB_1471bc->rightButtonPosY = (int) pos[1];
         }
 
         if (this->leftButton != nullptr) {
             pos = this->leftButton->getPosition();
-            ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetC_1471bc)->leftButtonPosX = (int) pos[0];
+            g_ChoiceWindow_posTargetC_1471bc->leftButtonPosX = (int) pos[0];
             pos = this->leftButton->getPosition();
-            ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetD_1471bc)->leftButtonPosY = (int) pos[1];
+            g_ChoiceWindow_posTargetD_1471bc->leftButtonPosY = (int) pos[1];
 
             if (this->rightButton == nullptr) {
                 pos = this->leftButton->getPosition();
-                ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetC_1471bc)->singleButtonPosX = (int) pos[0];
+                g_ChoiceWindow_posTargetC_1471bc->singleButtonPosX = (int) pos[0];
                 pos = this->leftButton->getPosition();
-                ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetD_1471bc)->singleButtonPosY = (int) pos[1];
+                g_ChoiceWindow_posTargetD_1471bc->singleButtonPosY = (int) pos[1];
             }
         }
 

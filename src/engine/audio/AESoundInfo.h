@@ -2,8 +2,9 @@
 #define GOF2_AESOUNDINFO_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
+
 namespace AbyssEngine {
-struct AESoundInfo {
+    struct AESoundInfo {
         int id;
         const char *name;
         int type;
