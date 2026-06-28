@@ -53,7 +53,7 @@ public:
     };
 
     union {
-        // lint: union_decl int field_0x40 reinterprets overlapping byte structs (deadFlag/reviveLockFlag/...) — type-pun, layout-load-bearing
+        // lint: union_decl int field_0x40 (whole-slot, set in Level.cpp/KIPlayer.cpp) reinterprets named flag bytes (deadFlag/field_0x42/reviveLockFlag, read across Level.cpp/Player.cpp) — type-pun, layout-load-bearing
         int field_0x40;
 
         struct {
@@ -61,13 +61,6 @@ public:
             char deadFlag;
             char field_0x42;
             uint8_t reviveLockFlag;
-        };
-
-        struct {
-            char field_0x40b;
-            char field_0x41b;
-            char field_0x42b;
-            char field_0x43b;
         };
     };
 

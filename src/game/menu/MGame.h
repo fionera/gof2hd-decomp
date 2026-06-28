@@ -80,24 +80,8 @@ public:
     int touch1Id;
     int menuTime;
 
-    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
-        Vector freeCamFinger1;
-
-        struct {
-            int freeCamFinger1X;
-            int freeCamFinger1Y;
-            int freeCamFinger1Z;
-        };
-    }; // lint: union_decl (type-pun: Vector overlaid with int xyz)
-    union { // lint: union_decl (type-pun: Vector overlaid with int xyz; both used)
-        Vector freeCamFinger0;
-
-        struct {
-            int freeCamFinger0X;
-            int freeCamFinger0Y;
-            int freeCamFinger0Z;
-        };
-    }; // lint: union_decl (type-pun: Vector overlaid with int xyz)
+    Vector freeCamFinger1;
+    Vector freeCamFinger0;
     float flCameraRoll;
     void *activeTouchId; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
     union {
@@ -347,7 +331,7 @@ static_assert(offsetof(MGame, radar) == 128, "MGame::radar @ 128");
 static_assert(offsetof(MGame, radio) == 132, "MGame::radio @ 132");
 static_assert(offsetof(MGame, menuWindow) == 136, "MGame::menuWindow @ 136");
 static_assert(offsetof(MGame, menuTime) == 160, "MGame::menuTime @ 160");
-static_assert(offsetof(MGame, freeCamFinger1X) == 164, "MGame::freeCamFinger1X @ 164");
+static_assert(offsetof(MGame, freeCamFinger1) == 164, "MGame::freeCamFinger1 @ 164");
 static_assert(offsetof(MGame, flCameraRoll) == 188, "MGame::flCameraRoll @ 188");
 static_assert(offsetof(MGame, activeTouchId) == 192, "MGame::activeTouchId @ 192");
 static_assert(offsetof(MGame, dockChoiceOpen) == 196, "MGame::dockChoiceOpen @ 196");

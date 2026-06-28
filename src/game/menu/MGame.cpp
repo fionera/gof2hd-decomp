@@ -2353,10 +2353,8 @@ MGame::MGame() {
     int z = 0;
     int initVal = g_mgameInitVal;
 
-    this->freeCamFinger1X = 0;
-    this->freeCamFinger1Y = 0;
-    this->freeCamFinger1Z = 0;
-    this->freeCamFinger0X = 0;
+    this->freeCamFinger1.x = this->freeCamFinger1.y = this->freeCamFinger1.z = 0.0f;
+    this->freeCamFinger0.x = 0.0f;
 
     this->flShakeAmpX = 0;
     this->flShakeAmpY = 0;
@@ -2376,8 +2374,7 @@ MGame::MGame() {
     this->field_0x1bc = z;
     this->thrustStartY = z;
     this->field_0x1c4 = z;
-    this->freeCamFinger0Y = z;
-    this->freeCamFinger0Z = z;
+    this->freeCamFinger0.y = this->freeCamFinger0.z = 0.0f;
     this->flShakePhaseY = z;
     this->field_0x150 = z;
     this->field_0x19c = z;

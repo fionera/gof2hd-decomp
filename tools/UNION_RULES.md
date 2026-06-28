@@ -38,3 +38,27 @@ These model the binary's real memory layout and cannot be unified by renaming. T
 
 Do NOT run the build (the orchestrator rebuilds + checks symbol parity centrally). Report, per union:
 collapsed (kept name + dropped names + #cross-file renames) or kept-as-type-pun (one-line reason).
+
+## Follow-up: is each union a DECOMPILER ARTIFACT or a GENUINE binary overlay?
+
+DECOMPILER ARTIFACT (FIX — collapse to the one real field, rewrite the few divergent uses):
+- A real COMPOSITE type (Vector / Matrix / a named struct) overlaid with scalar/component views that
+  exist ONLY to bulk-init/zero it — e.g. `union { Vector v; struct { int vX, vY, vZ; }; }` where vX/
+  vY/vZ are only ever set to 0. The int-bit zero equals the float 0.0f, so the component struct is a
+  decompiler view for "zero the Vector". FIX: drop the scalar view, keep the composite, rewrite the
+  init to the composite (`v = Vector();` / `v.x = v.y = v.z = 0;` / memset).
+- A named struct (the real, full-width type) shadowed by a redundant scalar sub-view of its first
+  member (the Blk16 case) — keep the struct, rewrite the scalar use as `.member`.
+
+GENUINE OVERLAY (KEEP, with an accurate same-line `// lint: union_decl` reason):
+- int<->float where BOTH the integer value AND the float value are genuinely computed/used as their
+  types (not merely zeroed): empPoints/empPointsF, rank/rankBits, touchX/touchXf, fixed-point, etc.
+- a flag WORD (`int`/`uint16`) that is cleared/compared as a word AND whose individual named flag
+  BYTES are set/read — both access widths are real (faithful overlay).
+- a pointer slot reused as an int handle or flag bytes in a different object state.
+- an equal-size raw-array vs typed-class view where BOTH are load-bearing and the typed side is
+  layout-sensitive (Matrix) — collapsing is high-risk; keep.
+
+When in doubt, KEEP and say why. Verify the receiver type before any cross-file rename (field_0xNN /
+component names are reused across classes). Do NOT run the build — the orchestrator rebuilds + checks
+symbol parity centrally. Report per union: artifact (what you did) or genuine (one-line reason).
