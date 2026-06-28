@@ -74,17 +74,12 @@ public:
     Array<Player *> *enemies;
     int32_t hitpoints;
 
-    union {
-        // lint: union_decl int32/float reinterpret of same slot (empPoints/empPointsF) — type-pun, layout-load-bearing
-        int32_t empPoints;
-        float empPointsF;
-    };
-
-    union {
-        // lint: union_decl int32/float reinterpret of same slot (maxEmpPoints/maxEmpPointsF) — type-pun, layout-load-bearing
-        int32_t maxEmpPoints;
-        float maxEmpPointsF;
-    };
+    // EMP charge counters. These are genuine ints (set/compared/decremented as ints; converted with
+    // an explicit (float) where a float is wanted, e.g. Player.cpp). NOT a real type-pun: the only
+    // `*F` float view re-reads the int bits as a float rotation angle in ObjectGun (≈ garbage for
+    // typical counts) — a decompiler artifact; that one site keeps the exact bit-reinterpret explicitly.
+    int32_t empPoints;
+    int32_t maxEmpPoints;
 
     int32_t maxHitpoints;
     float shieldHP;

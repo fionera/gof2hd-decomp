@@ -1169,7 +1169,7 @@ Engine::Engine() {
     self->gravRaw[0] = 0;
     self->gravRaw[1] = 0;
     self->gravRaw[2] = 0;
-    self->field_0x28 = 0x14;
+    reinterpret_cast<int &>(self->explosionTimeline) = 0x14;  // raw-int placeholder (see Engine.h)
     self->linearFilterFlag = 1;
     self->appManager = new ApplicationManager(self);
     self->fogMinDist = 0;

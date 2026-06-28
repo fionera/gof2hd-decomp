@@ -50,11 +50,12 @@ namespace AbyssEngine {
 
         FileInterface *fileInterface;
 
-        union {
-            // lint: union_decl int/float type-pun (raw int store vs float read)
-            int field_0x28;
-            float explosionTimeline;
-        };
+        // Supernova-flare timeline (read as a float, `1.0f <= explosionTimeline`, in Level.cpp).
+        // NOTE: not a real type-pun. The ctor only raw-int-inits it to 0x14 (see Engine.cpp); the
+        // float writer that ramps it toward 1.0 is not yet recovered, so today the flare check is
+        // effectively dead. Modelled as the float it is read as; the int init is an explicit
+        // reinterpret at the one write site.
+        float explosionTimeline;
 
         bool vibrationSupported;
         uint8_t _pad0x2d[3];

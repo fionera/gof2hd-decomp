@@ -486,7 +486,9 @@ void ObjectGun::render() {
                     local.m[5] = 1.0f;
                     local.m[14] = 1.0f;
 
-                    MatrixSetRotation(&scaleMatrix, player->empPointsF, player->maxEmpPointsF, 0.0f);
+                    // NOTE: re-reads the int EMP counters' bits as floats (decompiler artifact; see Player.h).
+                    MatrixSetRotation(&scaleMatrix, reinterpret_cast<float &>(player->empPoints),
+                                      reinterpret_cast<float &>(player->maxEmpPoints), 0.0f);
                     AbyssEngine::AEMath::MatrixMultiply(playerView->orientation, local);
                     this->orientation = playerView->orientation;
                     MatrixSetTranslation(&scaleMatrix, gunPos->x, gunPos->y, gunPos->z);
@@ -494,8 +496,8 @@ void ObjectGun::render() {
                     ::VectorNormalize(&muzzle, &dir);
                     muzzle *= gun->pitchRate;
                     ((Vector *) gun->velocities)[i] = muzzle;
-                    player->empPointsF = 0.0f;
-                    player->maxEmpPointsF = 0.0f;
+                    player->empPoints = 0;
+                    player->maxEmpPoints = 0;
                     MatrixSetRotation(&scaleMatrix, this->rollAngle, 0.0f, 0.0f);
                     TransformSetLocal(*g_PaintCanvas, this->secondaryTransform, &scaleMatrix);
                 }
