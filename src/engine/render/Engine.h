@@ -85,15 +85,16 @@ namespace AbyssEngine {
         float glColor[4];
 
         int packedColor;
-        uint8_t _pad0xe4[24];
+        uint8_t _pad0xe4[23];  // was [24] (off-by-one); 23 puts shaderModeFlag@0xfb..statsEnabled@0xfd
         unsigned char shaderModeFlag;
         unsigned char statsBucketFlag;
 
-        union {
-            // lint: union_decl multi-size pun (uint16 0x100 store vs uint8 read)
-            uint16_t field_0xfd;
-            unsigned char statsEnabled;
-        };
+        // 0xfd/0xfe: two byte flags. The ctor inits them with a single (unaligned) 16-bit store of
+        // 0x100 -> statsEnabled(0xfd)=0, field_0xfe=1 (matches the original's `strh #0x100,[r4,#253]`).
+        // Previously a {uint16; uint8} union, which forced 2-byte alignment and wrongly shifted the
+        // field from 0xfd to 0xfe (no static_assert caught it). statsEnabled is read in AbyssEngine.
+        unsigned char statsEnabled;  // 0xfd
+        unsigned char field_0xfe;    // 0xfe
 
         uint32_t field_0x100;
         float worldViewProjMatrix[16];
@@ -437,5 +438,10 @@ namespace AbyssEngine {
 using ::AbyssEngine::Engine;
 
 extern AbyssEngine::Engine *gEngine;
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(AbyssEngine::Engine, statsEnabled) == 0xfd, "Engine::statsEnabled @0xfd");
+static_assert(__builtin_offsetof(AbyssEngine::Engine, field_0x100) == 0x100, "Engine::field_0x100 @0x100");
+#endif
 
 #endif

@@ -1153,7 +1153,7 @@ Engine::Engine() {
     self->frameBufferTextures[0] = -1;
     self->frameBufferTextures[1] = -1;
     self->clientStateFlagsAE = 0;
-    self->field_0xfd = 0x100;
+    reinterpret_cast<uint16_t &>(self->statsEnabled) = 0x100;  // strh: statsEnabled(0xfd)=0, field_0xfe=1
     self->field_0x78 = -1;
     self->glEnableFlags = 0;
     self->lightingEnabled = 0;

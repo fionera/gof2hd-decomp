@@ -2856,7 +2856,7 @@ static char paintcanvas_g_bg_a = 0;
 static char paintcanvas_g_bg_b = 0;
 
 void PaintCanvas::BeginBG() {
-    *(unsigned char *) &((Engine *) this->engine)->field_0xfd = 0;
+    ((Engine *) this->engine)->statsEnabled = 0;
     paintcanvas_ext_gl_disable(0xb71);
     paintcanvas_ext_gl_depthmask(0);
     paintcanvas_ext_gl_disable(0xbe2);
@@ -2985,7 +2985,7 @@ void PaintCanvas::TextureCreateGlobal(AbyssEngine::String name, unsigned int uni
 static char paintcanvas_g_use_matgl = 0;
 
 void PaintCanvas::Begin3d() {
-    *(unsigned char *) &((Engine *) this->engine)->field_0xfd = 0;
+    ((Engine *) this->engine)->statsEnabled = 0;
     paintcanvas_ext_gl_enable(0xb71);
     paintcanvas_ext_gl_depthmask(1);
     paintcanvas_ext_gl_disable(0xbe2);
@@ -4471,7 +4471,7 @@ static char paintcanvas_g_b2d_flag_storage = 0;
 static char *paintcanvas_g_b2d_flag = &paintcanvas_g_b2d_flag_storage;
 
 void PaintCanvas::Begin2d() {
-    *(unsigned char *) &((Engine *) this->engine)->field_0xfd = 1;
+    ((Engine *) this->engine)->statsEnabled = 1;
     paintcanvas_ext_gl_disable(0xb71);
     paintcanvas_ext_gl_depthmask(0);
     paintcanvas_ext_gl_enable(0xbe2);
