@@ -56,6 +56,7 @@ set(GOF2_NDK_OBJDUMP    "${_gcc}/bin/arm-linux-androideabi-objdump"    CACHE FIL
 set(GOF2_NDK_NM         "${_gcc}/bin/arm-linux-androideabi-nm"         CACHE FILEPATH "" FORCE)
 set(GOF2_NDK_AS         "${_gcc}/bin/arm-linux-androideabi-as"         CACHE FILEPATH "" FORCE)
 set(GOF2_NDK_GOLD       "${_gcc}/arm-linux-androideabi/bin/ld.gold"    CACHE FILEPATH "" FORCE)
+set(GOF2_NDK_STRIP      "${_gcc}/bin/arm-linux-androideabi-strip"      CACHE FILEPATH "" FORCE)
 
 set(GOF2_NDK_SYSROOT       "${_root}/sysroot"                                        CACHE PATH "" FORCE)
 set(GOF2_NDK_LIBCXX_INC    "${_root}/sources/cxx-stl/llvm-libc++/include"            CACHE PATH "" FORCE)

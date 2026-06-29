@@ -51,6 +51,10 @@ add_custom_command(OUTPUT "${_so}"
             --whole-archive ${_libzip_out} ${_zlib_out} --no-whole-archive
             ${GOF2_NDK_LIBCXXABI_A}
             ${_libdir}/crtend_so.o
+    # The original release .so is stripped (only .dynsym; no .symtab/.strtab/.debug_*). Strip ours the
+    # same way so the section set matches -- a prerequisite for byte/hash identicality. Keeps .dynsym
+    # (required for a shared object), so sodiff/verify (which read .dynsym + .text) are unaffected.
+    COMMAND ${GOF2_NDK_STRIP} --strip-all "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
