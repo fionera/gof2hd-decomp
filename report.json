@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4541,
   "compared": 4507,
-  "avg_match": 67.47,
-  "byte_exact": 940,
-  "linked_exact": 1686,
-  "fuzzy_perfect": 1686,
+  "avg_match": 67.53,
+  "byte_exact": 947,
+  "linked_exact": 1695,
+  "fuzzy_perfect": 1695,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -5822,22 +5822,6 @@
    "usize": 154
   },
   {
-   "name": "_ZN13PlayerFighterC1EiiP6PlayerP10AEGeometryfffb",
-   "pct": 22.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1324,
-   "usize": 1268
-  },
-  {
-   "name": "_ZN13PlayerFighterC2EiiP6PlayerP10AEGeometryfffb",
-   "pct": 22.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1324,
-   "usize": 1268
-  },
-  {
    "name": "_ZN10AEGeometry9translateEfff",
    "pct": 22.5,
    "byte": false,
@@ -5964,6 +5948,22 @@
    "linked": false,
    "osize": 74,
    "usize": 48
+  },
+  {
+   "name": "_ZN13PlayerFighterC1EiiP6PlayerP10AEGeometryfffb",
+   "pct": 22.9,
+   "byte": false,
+   "linked": false,
+   "osize": 1324,
+   "usize": 1268
+  },
+  {
+   "name": "_ZN13PlayerFighterC2EiiP6PlayerP10AEGeometryfffb",
+   "pct": 22.9,
+   "byte": false,
+   "linked": false,
+   "osize": 1324,
+   "usize": 1268
   },
   {
    "name": "_ZN9Generator12createAgentsEP7Station",
@@ -7606,14 +7606,6 @@
    "usize": 232
   },
   {
-   "name": "_ZN5MGame12successCheckEv",
-   "pct": 30.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1468,
-   "usize": 1352
-  },
-  {
    "name": "_ZN6Layout13drawBGPatternEjiiii",
    "pct": 30.9,
    "byte": false,
@@ -7668,6 +7660,14 @@
    "linked": false,
    "osize": 232,
    "usize": 256
+  },
+  {
+   "name": "_ZN5MGame12successCheckEv",
+   "pct": 31.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1468,
+   "usize": 1352
   },
   {
    "name": "_ZN8GameText7getTextEi",
@@ -11878,14 +11878,6 @@
    "usize": 4
   },
   {
-   "name": "_ZN5Route15getLastWaypointEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10,
-   "usize": 8
-  },
-  {
    "name": "_ZN5Trail6renderEv",
    "pct": 50.0,
    "byte": false,
@@ -12582,14 +12574,6 @@
    "usize": 268
   },
   {
-   "name": "_ZN5Route5cloneEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 320,
-   "usize": 346
-  },
-  {
    "name": "zip_set_archive_flag",
    "pct": 53.3,
    "byte": false,
@@ -12710,14 +12694,6 @@
    "usize": 84
   },
   {
-   "name": "_ZN5Route11getWaypointEi",
-   "pct": 54.0,
-   "byte": false,
-   "linked": false,
-   "osize": 164,
-   "usize": 164
-  },
-  {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setAPKPath",
    "pct": 54.1,
    "byte": false,
@@ -12764,6 +12740,14 @@
    "linked": false,
    "osize": 232,
    "usize": 228
+  },
+  {
+   "name": "_ZN5Route5cloneEv",
+   "pct": 54.1,
+   "byte": false,
+   "linked": false,
+   "osize": 320,
+   "usize": 346
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas7BeginBGEv",
@@ -14230,6 +14214,14 @@
    "usize": 304
   },
   {
+   "name": "_ZN5Route11getWaypointEi",
+   "pct": 60.3,
+   "byte": false,
+   "linked": false,
+   "osize": 164,
+   "usize": 164
+  },
+  {
    "name": "_ZN7StationD1Ev",
    "pct": 60.3,
    "byte": false,
@@ -15356,30 +15348,6 @@
    "linked": false,
    "osize": 8,
    "usize": 8
-  },
-  {
-   "name": "_ZN5Route6lengthEv",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 6
-  },
-  {
-   "name": "_ZN5RouteD1Ev",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 64
-  },
-  {
-   "name": "_ZN5RouteD2Ev",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 64
   },
   {
    "name": "_ZN6AEFile10OpenAppendERN11AbyssEngine6StringEPj",
@@ -17214,6 +17182,14 @@
    "usize": 14
   },
   {
+   "name": "_ZN5Route15getLastWaypointEv",
+   "pct": 75.0,
+   "byte": false,
+   "linked": false,
+   "osize": 10,
+   "usize": 8
+  },
+  {
    "name": "_ZN5Route6updateERKN11AbyssEngine6AEMath6VectorE",
    "pct": 75.0,
    "byte": false,
@@ -17990,22 +17966,6 @@
    "usize": 20
   },
   {
-   "name": "_ZN5RouteC1EPiP5ArrayIP8KIPlayerES0_i",
-   "pct": 78.0,
-   "byte": false,
-   "linked": false,
-   "osize": 154,
-   "usize": 158
-  },
-  {
-   "name": "_ZN5RouteC2EPiP5ArrayIP8KIPlayerES0_i",
-   "pct": 78.0,
-   "byte": false,
-   "linked": false,
-   "osize": 154,
-   "usize": 158
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas7Begin2dEv",
    "pct": 78.3,
    "byte": false,
@@ -18348,14 +18308,6 @@
    "linked": false,
    "osize": 118,
    "usize": 118
-  },
-  {
-   "name": "_ZN5Route15waypointDefinedEv",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10,
-   "usize": 10
   },
   {
    "name": "_ZN6AEFile15RegisterPakFileEN11AbyssEngine6StringE",
@@ -18734,6 +18686,22 @@
    "usize": 36
   },
   {
+   "name": "_ZN5RouteC1EPiP5ArrayIP8KIPlayerES0_i",
+   "pct": 81.4,
+   "byte": false,
+   "linked": false,
+   "osize": 154,
+   "usize": 158
+  },
+  {
+   "name": "_ZN5RouteC2EPiP5ArrayIP8KIPlayerES0_i",
+   "pct": 81.4,
+   "byte": false,
+   "linked": false,
+   "osize": 154,
+   "usize": 158
+  },
+  {
    "name": "_ZN11AbyssEngine18TextureLightShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 81.5,
    "byte": false,
@@ -18790,14 +18758,6 @@
    "usize": 34
   },
   {
-   "name": "_ZN5Route14getDockingTimeEi",
-   "pct": 81.8,
-   "byte": false,
-   "linked": false,
-   "osize": 24,
-   "usize": 24
-  },
-  {
    "name": "_ZN8Standing12getEnemyRaceEi",
    "pct": 81.8,
    "byte": false,
@@ -18836,22 +18796,6 @@
    "linked": false,
    "osize": 80,
    "usize": 66
-  },
-  {
-   "name": "_ZN5RouteC1EPii",
-   "pct": 82.0,
-   "byte": false,
-   "linked": false,
-   "osize": 162,
-   "usize": 162
-  },
-  {
-   "name": "_ZN5RouteC2EPii",
-   "pct": 82.0,
-   "byte": false,
-   "linked": false,
-   "osize": 162,
-   "usize": 162
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17TransformGetLocalEj",
@@ -20278,14 +20222,6 @@
    "usize": 54
   },
   {
-   "name": "_ZN5Route13getExactCloneEv",
-   "pct": 88.5,
-   "byte": false,
-   "linked": false,
-   "osize": 66,
-   "usize": 66
-  },
-  {
    "name": "_ZN7StarMapD1Ev",
    "pct": 88.6,
    "byte": false,
@@ -20774,14 +20710,6 @@
    "usize": 28
   },
   {
-   "name": "_ZN5Route16getDockingTargetEi",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 22,
-   "usize": 22
-  },
-  {
    "name": "_ZN6Sparks7explodeERKN11AbyssEngine6AEMath6VectorE",
    "pct": 90.0,
    "byte": false,
@@ -20828,14 +20756,6 @@
    "linked": false,
    "osize": 48,
    "usize": 48
-  },
-  {
-   "name": "_ZN5Route13reachWaypointEi",
-   "pct": 90.2,
-   "byte": false,
-   "linked": false,
-   "osize": 102,
-   "usize": 102
   },
   {
    "name": "_ZN11AbyssEngine13SandboxShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -21068,14 +20988,6 @@
    "linked": false,
    "osize": 14,
    "usize": 12
-  },
-  {
-   "name": "_ZN5Route16getDockingTargetEv",
-   "pct": 90.9,
-   "byte": false,
-   "linked": false,
-   "osize": 24,
-   "usize": 24
   },
   {
    "name": "_ZN6Galaxy15distancePercentEiiii",
@@ -21388,14 +21300,6 @@
    "linked": false,
    "osize": 32,
    "usize": 32
-  },
-  {
-   "name": "_ZN5Route12setNewCoordsEN11AbyssEngine6AEMath6VectorE",
-   "pct": 92.3,
-   "byte": false,
-   "linked": false,
-   "osize": 44,
-   "usize": 44
   },
   {
    "name": "_ZN8ListItem5isTabEv",
@@ -21716,14 +21620,6 @@
    "linked": false,
    "osize": 48,
    "usize": 46
-  },
-  {
-   "name": "_ZN5Route5resetEv",
-   "pct": 93.8,
-   "byte": false,
-   "linked": false,
-   "osize": 36,
-   "usize": 36
   },
   {
    "name": "_ZN6Player12gunAvailableEi",
@@ -22158,6 +22054,14 @@
    "usize": 132
   },
   {
+   "name": "_ZN5Route13getExactCloneEv",
+   "pct": 96.2,
+   "byte": false,
+   "linked": false,
+   "osize": 66,
+   "usize": 66
+  },
+  {
    "name": "_ZN6Player12damageShieldEi",
    "pct": 96.2,
    "byte": false,
@@ -22220,14 +22124,6 @@
    "linked": false,
    "osize": 72,
    "usize": 72
-  },
-  {
-   "name": "_ZN5Route9translateERKN11AbyssEngine6AEMath6VectorE",
-   "pct": 96.4,
-   "byte": false,
-   "linked": false,
-   "osize": 94,
-   "usize": 94
   },
   {
    "name": "_ZN5Level15alarmAllFriendsEib",
@@ -22340,6 +22236,22 @@
    "linked": false,
    "osize": 292,
    "usize": 292
+  },
+  {
+   "name": "_ZN5RouteC1EPii",
+   "pct": 96.7,
+   "byte": false,
+   "linked": false,
+   "osize": 162,
+   "usize": 162
+  },
+  {
+   "name": "_ZN5RouteC2EPii",
+   "pct": 96.7,
+   "byte": false,
+   "linked": false,
+   "osize": 162,
+   "usize": 162
   },
   {
    "name": "_ZN10AEGeometry17setLodChildMeshesEPt",
@@ -22460,6 +22372,22 @@
    "linked": false,
    "osize": 140,
    "usize": 140
+  },
+  {
+   "name": "_ZN5RouteD1Ev",
+   "pct": 98.0,
+   "byte": false,
+   "linked": false,
+   "osize": 68,
+   "usize": 64
+  },
+  {
+   "name": "_ZN5RouteD2Ev",
+   "pct": 98.0,
+   "byte": false,
+   "linked": false,
+   "osize": 68,
+   "usize": 64
   },
   {
    "name": "_ZN5RadioD1Ev",
@@ -31582,12 +31510,84 @@
    "usize": 4
   },
   {
+   "name": "_ZN5Route12setNewCoordsEN11AbyssEngine6AEMath6VectorE",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 44,
+   "usize": 44
+  },
+  {
+   "name": "_ZN5Route13reachWaypointEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 102,
+   "usize": 102
+  },
+  {
+   "name": "_ZN5Route14getDockingTimeEi",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 24,
+   "usize": 24
+  },
+  {
+   "name": "_ZN5Route15waypointDefinedEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 10,
+   "usize": 10
+  },
+  {
+   "name": "_ZN5Route16getDockingTargetEi",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 22,
+   "usize": 22
+  },
+  {
+   "name": "_ZN5Route16getDockingTargetEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 24,
+   "usize": 24
+  },
+  {
+   "name": "_ZN5Route5resetEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 36,
+   "usize": 36
+  },
+  {
+   "name": "_ZN5Route6lengthEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
    "name": "_ZN5Route7setLoopEb",
    "pct": 100.0,
    "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN5Route9translateERKN11AbyssEngine6AEMath6VectorE",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 94,
+   "usize": 94
   },
   {
    "name": "_ZN5Trail6updateERKN11AbyssEngine6AEMath6VectorES4_",

@@ -12,6 +12,9 @@ class Route {
 public:
     int32_t currentIndex;
     uint8_t loop;
+    // Ghidra ground truth: a 4-byte field sits at 0x8 before waypoints@0xc; our decomp lacked it,
+    // shifting waypoints/dockingTargets/dockingTimes 4 bytes low.
+    int32_t field_0x8;
     Array<Waypoint *> *waypoints;
     Array<KIPlayer *> *dockingTargets;
     Array<int> *dockingTimes;
