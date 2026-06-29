@@ -73,12 +73,13 @@ namespace AbyssEngine {
         // embedded matrices are each 4 bytes short (-0x10); the upstream model is +8, so the net
         // deficit by this point is 8 bytes. Reserve it in the matrix region so lineMesh lands @0x1c8
         // and field_0x1cc/field_0x1f8 land at their named offsets.
-        unsigned char _pad_matrix_undersize[8];
+        unsigned char _pad_matrix_undersize[4];
         ::Array<AbyssEngine::Resource *> resources;
         ::Array<AbyssEngine::ImageFont *> fonts;
         ::Array<AbyssEngine::Image2D *> images;
         unsigned int transformCount;
         char **transforms;
+        unsigned int transforms_cap; // Ghidra: transforms is an inline Array (count/data/capacity@0x160)
         ::Array<AbyssEngine::Camera *> cameras;
         unsigned int currentCamera;
         ::Array<AbyssEngine::Material *> materials;
