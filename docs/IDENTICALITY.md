@@ -65,3 +65,27 @@ Systematic clusters (one cause fixes many):
 2. **ParticleSettings_str[401401]={0}** -- 392KB zero array (the .rodata bloat), a mis-sized decomp
    artifact; the real particle-name string table is a few KB. Needs the original's data recovered
    (the `buf` results are dead in our decomp, so it's correctness-neutral but blocks .rodata identicality).
+
+## PaintCanvas layout reconstruction (in progress — concrete data)
+
+offdrift + per-method disasm give the original offsets (vs ours) for PaintCanvas fields:
+- `engine`        orig 0x34  ours 0x3c   (GetWidth, SetWorldViewMatrix: `ldr [r0,#0x34]`)
+- `meshCount`     orig 0x24  ours 0x30   (MeshSetUv: `ldr.w ip,[r0,#0x24]`)
+- `meshes`        orig 0x28  ours 0x34   (MeshSetUv: `ldr [r0,#0x28]`)
+Deltas: meshCount/meshes are +0xc (our struct has 12 extra bytes before 0x24); engine is +8 (so our
+struct is ALSO missing 4 bytes between `meshes` and `engine` — orig has 2 fields there [0x2c,0x30],
+we have 1 [`gameOrientation`]). Root: `::Array<AELoadedTexture*> cubeTextures` (12B, count/data_/
+capacity_) is MIS-PLACED at 0x20 in ours; the original has it elsewhere. All early fields
+(culledCount, quad2dMesh, field_0xc/14/1c, mask2dImage, gameOrientation, cubeTextures) ARE used, so
+this is a RE-ORDER, not a deletion.
+
+### Safe methodology for any struct (no-degradation gated)
+1. Disassemble every method of the struct (ours+orig), align 1:1 (size-match), map each our-offset to
+   its orig-offset; translate offsets->field names via the source. This yields the COMPLETE original
+   field order (a full layout reconstructor tool over offdrift is the next tooling step).
+2. Reorder/repad the header to match, atomically (the whole struct, not a few fields).
+3. Rebuild + relink + verify: keep ONLY if byte_exact/linked_exact counts RISE and parity stays
+   35/0/0; otherwise revert. The verify counts are the hard no-degradation gate.
+
+This is the engine for the byte-exactness campaign; each reconstructed struct flips many functions.
+Dozens of structs drift (offdrift delta histogram: -8:14, +4:12, +8:11, +32:9, ... across 300 fns).
