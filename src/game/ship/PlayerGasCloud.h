@@ -10,6 +10,9 @@ class ParticleSystemManager;
 
 class PlayerGasCloud : public KIPlayer {
 public:
+    // Ghidra ground truth: a 4-byte field precedes center@0x128; our decomp lacked it, shifting
+    // center/modelGeometry/sparkGeometries.. 4 bytes low.
+    int field_0x124;
     Vector center;
     AEGeometry *modelGeometry;
     Array<AEGeometry *> *sparkGeometries;
