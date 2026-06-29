@@ -16,6 +16,9 @@ public:
     uint8_t asteroidFlag;
     int asteroidIndex;
     Explosion *explosion;
+    // Ghidra ground truth: a 4-byte field sits at 0x130 between explosion@0x12c and lastDelta@0x134;
+    // our decomp lacked it, shifting lastDelta/scaling/spin/.. 4 bytes low.
+    int field_0x130;
     int lastDelta;
     float scaling;
     uint8_t minable;
