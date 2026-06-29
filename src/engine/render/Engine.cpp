@@ -692,13 +692,13 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
 
 void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
     PaintCanvas *manager = this->appManager->paintCanvas;
-    uint32_t count = manager->field_0x10;
+    uint32_t count = manager->cubeTextures.count;
     if (count == 0 || slot >= 8 || textureIndex > count - 1) {
         return;
     }
     uint32_t *bound = (uint32_t *) &this->boundTextures[slot];
 
-    TextureEntry *textureEntry = (TextureEntry *) manager->field_0x14[textureIndex];
+    TextureEntry *textureEntry = (TextureEntry *) manager->cubeTextures.data_[textureIndex];
     uint32_t texture = textureEntry->glTexture;
     if (*bound == texture) {
         return;
@@ -709,7 +709,7 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
         g_Engine_texEnv = env;
         if (g_Engine_useShaders == 0) {
             glTexEnvf(0x8500, 0x8501, env);
-            textureEntry = (TextureEntry *) manager->field_0x14[textureIndex];
+            textureEntry = (TextureEntry *) manager->cubeTextures.data_[textureIndex];
         } else if (g_Engine_texEnvDirty != 0) {
             g_Engine_texEnvDirty = 0;
         }
@@ -1188,7 +1188,7 @@ Engine::Engine() {
 
 void Engine::SetTextures(uint32_t first, uint32_t second) {
     PaintCanvas *manager = this->appManager->paintCanvas;
-    uint32_t count = manager->field_0x10;
+    uint32_t count = manager->cubeTextures.count;
     if (count == 0 || first > count - 1) {
         return;
     }
@@ -1205,7 +1205,7 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
         return;
     }
 
-    uint32_t texture = **(uint32_t **) (manager->field_0x14 + second);
+    uint32_t texture = **(uint32_t **) (manager->cubeTextures.data_ + second);
     if (this->boundTextures[1] != texture) {
         glActiveTexture(0x84c1);
         this->GlEnable(0xde1, true);
@@ -1323,7 +1323,7 @@ void Engine::LightSetLight(unsigned int light) {
 
 void Engine::SetTexturesExt(uint32_t first, ...) {
     PaintCanvas *manager = this->appManager->paintCanvas;
-    if (manager->field_0x10 != 0) {
+    if (manager->cubeTextures.count != 0) {
         va_list args;
         va_start(args, first);
         uint32_t slot = 0;

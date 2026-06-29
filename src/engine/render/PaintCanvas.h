@@ -50,16 +50,21 @@ namespace AbyssEngine {
         int culledCount;
         char *quad2dMesh;
         int field_0xc;
-        unsigned int field_0x10;
-        char **field_0x14;
-        unsigned int field_0x18;
-        unsigned char field_0x1c;
-        ::Array<AbyssEngine::AELoadedTexture *> cubeTextures;
-        char *mask2dImage;
-        unsigned int meshCount;
-        char **meshes;
-        int gameOrientation;
-        Engine *engine;
+        // Ghidra ground truth (decompiled ChangeCubeTexture): the cube-texture Array lives at 0x10
+        // (count=field_0x10, data=field_0x14, capacity=field_0x18). Our decomp had duplicated it as a
+        // separate Array at 0x20 (the now-removed field_0x10/0x14/0x18 were unused placeholders),
+        // displacing meshCount/meshes/engine by 0xc. Relocated to 0x10 so the named fields hit their
+        // real offsets (meshCount 0x24, meshes 0x28, engine 0x34).
+        ::Array<AbyssEngine::AELoadedTexture *> cubeTextures;  // 0x10 (count/data/capacity)
+        unsigned char field_0x1c;                              // 0x1c
+        int field_0x20;                                        // 0x20
+        unsigned int meshCount;                                // 0x24
+        char **meshes;                                         // 0x28
+        char *mask2dImage;                                     // 0x2c (Ghidra gap)
+        int gameOrientation;                                   // 0x30 (orientation)
+        Engine *engine;                                        // 0x34
+        int field_0x38;                                        // 0x38
+        int field_0x3c;                                        // 0x3c
         Matrix projMatrix3d;
         Matrix projOrthoMatrix;
         Matrix worldViewMatrix;
@@ -459,6 +464,11 @@ namespace AbyssEngine {
 #if __SIZEOF_POINTER__ == 4
     static_assert(__builtin_offsetof(PaintCanvas, initialized) == 0x0, "PaintCanvas::initialized offset");
     static_assert(__builtin_offsetof(PaintCanvas, culledCount) == 0x4, "PaintCanvas::culledCount offset");
+    static_assert(__builtin_offsetof(PaintCanvas, cubeTextures) == 0x10, "PaintCanvas::cubeTextures @0x10");
+    static_assert(__builtin_offsetof(PaintCanvas, meshCount) == 0x24, "PaintCanvas::meshCount @0x24");
+    static_assert(__builtin_offsetof(PaintCanvas, meshes) == 0x28, "PaintCanvas::meshes @0x28");
+    static_assert(__builtin_offsetof(PaintCanvas, engine) == 0x34, "PaintCanvas::engine @0x34");
+    static_assert(__builtin_offsetof(PaintCanvas, projMatrix3d) == 0x40, "PaintCanvas::projMatrix3d @0x40");
     static_assert(__builtin_offsetof(PaintCanvas, lineMesh) == 0x1c8, "PaintCanvas::lineMesh offset");
     static_assert(__builtin_offsetof(PaintCanvas, field_0x1cc) == 0x1cc, "PaintCanvas::field_0x1cc offset");
     static_assert(__builtin_offsetof(PaintCanvas, field_0x1f8) == 0x1f8, "PaintCanvas::field_0x1f8 offset");
