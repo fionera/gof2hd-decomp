@@ -38,6 +38,9 @@ public:
     int field_0x44;
     int field_0x48;
     Matrix m_matrix;
+    // Original reserves 0x40 for the matrix region (0x4c..0x8b); our AEMath::Matrix is 0x3c, so the
+    // trailing 4 bytes are explicit padding -- keeps field_0x8c.. at their Ghidra-named offsets.
+    uint8_t _pad_0x88[4];
     int field_0x8c;
     int m_nScriptTimerA;
     int m_nScriptCounterA;
@@ -90,4 +93,11 @@ public:
 
     void setEvent(int event);
 };
+
+#if __SIZEOF_POINTER__ == 4
+#include <cstddef>
+static_assert(__builtin_offsetof(LevelScript, field_0x8c) == 0x8c, "LevelScript::field_0x8c");
+static_assert(__builtin_offsetof(LevelScript, field_0xa0) == 0xa0, "LevelScript::field_0xa0");
+static_assert(__builtin_offsetof(LevelScript, field_0xa4) == 0xa4, "LevelScript::field_0xa4");
+#endif
 #endif
