@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4541,
   "compared": 4507,
-  "avg_match": 67.53,
-  "byte_exact": 947,
-  "linked_exact": 1695,
-  "fuzzy_perfect": 1695,
+  "avg_match": 67.54,
+  "byte_exact": 948,
+  "linked_exact": 1697,
+  "fuzzy_perfect": 1697,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -6886,22 +6886,6 @@
    "usize": 924
   },
   {
-   "name": "_ZN10NewsTickerC1Eiiiii",
-   "pct": 27.3,
-   "byte": false,
-   "linked": false,
-   "osize": 972,
-   "usize": 760
-  },
-  {
-   "name": "_ZN10NewsTickerC2Eiiiii",
-   "pct": 27.3,
-   "byte": false,
-   "linked": false,
-   "osize": 972,
-   "usize": 760
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine15ResetLightParamEv",
    "pct": 27.3,
    "byte": false,
@@ -6948,6 +6932,22 @@
    "linked": false,
    "osize": 256,
    "usize": 228
+  },
+  {
+   "name": "_ZN10NewsTickerC1Eiiiii",
+   "pct": 27.6,
+   "byte": false,
+   "linked": false,
+   "osize": 972,
+   "usize": 760
+  },
+  {
+   "name": "_ZN10NewsTickerC2Eiiiii",
+   "pct": 27.6,
+   "byte": false,
+   "linked": false,
+   "osize": 972,
+   "usize": 760
   },
   {
    "name": "_ZN13PlayerFighter14handleCloakingEv",
@@ -7974,14 +7974,6 @@
    "usize": 132
   },
   {
-   "name": "_ZN10NewsTicker12OnTouchBeginEii",
-   "pct": 32.7,
-   "byte": false,
-   "linked": false,
-   "osize": 80,
-   "usize": 30
-  },
-  {
    "name": "_ZN13PlayerFighter4rollEi",
    "pct": 32.8,
    "byte": false,
@@ -8604,6 +8596,14 @@
    "linked": false,
    "osize": 244,
    "usize": 134
+  },
+  {
+   "name": "_ZN10NewsTicker12OnTouchBeginEii",
+   "pct": 36.7,
+   "byte": false,
+   "linked": false,
+   "osize": 80,
+   "usize": 30
   },
   {
    "name": "_ZN14BoundingVolume7collideEfff",
@@ -10804,14 +10804,6 @@
    "linked": false,
    "osize": 144,
    "usize": 94
-  },
-  {
-   "name": "_ZN10NewsTicker11OnTouchMoveEii",
-   "pct": 47.8,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 56
   },
   {
    "name": "_ZN13AutoPilotListC1EP5Level",
@@ -14284,6 +14276,14 @@
    "linked": false,
    "osize": 284,
    "usize": 256
+  },
+  {
+   "name": "_ZN10NewsTicker11OnTouchMoveEii",
+   "pct": 60.9,
+   "byte": false,
+   "linked": false,
+   "osize": 76,
+   "usize": 56
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager20ConfigRegisterActionExx",
@@ -17820,14 +17820,6 @@
    "linked": false,
    "osize": 20,
    "usize": 20
-  },
-  {
-   "name": "_ZN10NewsTicker10OnTouchEndEii",
-   "pct": 77.8,
-   "byte": false,
-   "linked": false,
-   "osize": 22,
-   "usize": 22
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15GetImage2DWidthEj",
@@ -22326,14 +22318,6 @@
    "usize": 208
   },
   {
-   "name": "_ZN10NewsTicker6updateEi",
-   "pct": 97.8,
-   "byte": false,
-   "linked": false,
-   "osize": 144,
-   "usize": 144
-  },
-  {
    "name": "_ZN11AbyssEngine6CameraC2Efffff",
    "pct": 97.8,
    "byte": false,
@@ -24252,6 +24236,22 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN10NewsTicker10OnTouchEndEii",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 22,
+   "usize": 22
+  },
+  {
+   "name": "_ZN10NewsTicker6updateEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 144,
+   "usize": 144
   },
   {
    "name": "_ZN10PlayerJunk12outerCollideEfff",

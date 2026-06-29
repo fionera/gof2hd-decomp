@@ -11,6 +11,9 @@ public:
     int width;
     int textWidth;
     String tickerText;
+    // Ghidra ground truth: 8 bytes sit between tickerText and touched@0x28; our decomp lacked them,
+    // shifting touched/lastTouchX 8 bytes low.
+    uint8_t _pad_0x20[8];
     uint8_t touched;
     int lastTouchX;
 
