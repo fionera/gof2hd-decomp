@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4541,
   "compared": 4507,
-  "avg_match": 67.32,
-  "byte_exact": 931,
-  "linked_exact": 1672,
-  "fuzzy_perfect": 1672,
+  "avg_match": 67.38,
+  "byte_exact": 934,
+  "linked_exact": 1677,
+  "fuzzy_perfect": 1677,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -3086,14 +3086,6 @@
    "usize": 282
   },
   {
-   "name": "_ZN18TargetFollowCamera8setLocalEN11AbyssEngine6AEMath6MatrixE",
-   "pct": 11.0,
-   "byte": false,
-   "linked": false,
-   "osize": 124,
-   "usize": 88
-  },
-  {
    "name": "_Z15IsDialogVisiblei",
    "pct": 11.1,
    "byte": false,
@@ -3732,6 +3724,14 @@
    "linked": false,
    "osize": 280,
    "usize": 200
+  },
+  {
+   "name": "_ZN18TargetFollowCamera8setLocalEN11AbyssEngine6AEMath6MatrixE",
+   "pct": 13.7,
+   "byte": false,
+   "linked": false,
+   "osize": 124,
+   "usize": 88
   },
   {
    "name": "_ZN11AbyssEngine27TextureCreateFromFileInternEPNS_6EngineEPKcPFvPNS_5ImageEPvES6_PjfPNS_15AELoadedTextureEb",
@@ -5462,14 +5462,6 @@
    "usize": 152
   },
   {
-   "name": "_ZN18TargetFollowCamera6updateEi",
-   "pct": 21.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2104,
-   "usize": 1592
-  },
-  {
    "name": "ndk_iapBoughtConsumable",
    "pct": 21.1,
    "byte": false,
@@ -5652,6 +5644,14 @@
    "linked": false,
    "osize": 84,
    "usize": 48
+  },
+  {
+   "name": "_ZN18TargetFollowCamera6updateEi",
+   "pct": 21.8,
+   "byte": false,
+   "linked": false,
+   "osize": 2104,
+   "usize": 1592
   },
   {
    "name": "_ZN9FModSound19getEventPauseLengthEi",
@@ -8718,22 +8718,6 @@
    "usize": 120
   },
   {
-   "name": "_ZN18TargetFollowCameraC1EjP10AEGeometryN11AbyssEngine6AEMath6VectorES4_",
-   "pct": 37.1,
-   "byte": false,
-   "linked": false,
-   "osize": 444,
-   "usize": 376
-  },
-  {
-   "name": "_ZN18TargetFollowCameraC2EjP10AEGeometryN11AbyssEngine6AEMath6VectorES4_",
-   "pct": 37.1,
-   "byte": false,
-   "linked": false,
-   "osize": 444,
-   "usize": 376
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas19ReleaseAllResourcesEv",
    "pct": 37.2,
    "byte": false,
@@ -8860,6 +8844,22 @@
    "linked": false,
    "osize": 244,
    "usize": 204
+  },
+  {
+   "name": "_ZN18TargetFollowCameraC1EjP10AEGeometryN11AbyssEngine6AEMath6VectorES4_",
+   "pct": 37.9,
+   "byte": false,
+   "linked": false,
+   "osize": 444,
+   "usize": 376
+  },
+  {
+   "name": "_ZN18TargetFollowCameraC2EjP10AEGeometryN11AbyssEngine6AEMath6VectorES4_",
+   "pct": 37.9,
+   "byte": false,
+   "linked": false,
+   "osize": 444,
+   "usize": 376
   },
   {
    "name": "_ZN8FileRead18loadStationsBinaryEv",
@@ -10094,14 +10094,6 @@
    "usize": 94
   },
   {
-   "name": "_ZN18TargetFollowCamera17resetShipHandlingEv",
-   "pct": 44.4,
-   "byte": false,
-   "linked": false,
-   "osize": 24,
-   "usize": 20
-  },
-  {
    "name": "_ZN4Ship11removeCargoEi",
    "pct": 44.4,
    "byte": false,
@@ -10356,14 +10348,6 @@
    "linked": false,
    "osize": 96,
    "usize": 70
-  },
-  {
-   "name": "_ZN18TargetFollowCamera8hitSmallEv",
-   "pct": 45.5,
-   "byte": false,
-   "linked": false,
-   "osize": 30,
-   "usize": 30
   },
   {
    "name": "_ZN5MGame10OnRender3DEv",
@@ -11798,22 +11782,6 @@
    "usize": 14
   },
   {
-   "name": "_ZN18TargetFollowCamera7setRollEf",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 6
-  },
-  {
-   "name": "_ZN18TargetFollowCamera8setFixedEb",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 6
-  },
-  {
    "name": "_ZN20ParticleSystemSprite12getQuadCountEv",
    "pct": 50.0,
    "byte": false,
@@ -12678,14 +12646,6 @@
    "usize": 140
   },
   {
-   "name": "_ZN18TargetFollowCamera18setFastForwardModeEb",
-   "pct": 53.5,
-   "byte": false,
-   "linked": false,
-   "osize": 104,
-   "usize": 172
-  },
-  {
    "name": "_ZN6SpriteC1EPjiii",
    "pct": 53.5,
    "byte": false,
@@ -12934,14 +12894,6 @@
    "usize": 138
   },
   {
-   "name": "_ZN18TargetFollowCamera15setShipHandlingEf",
-   "pct": 54.9,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 80
-  },
-  {
    "name": "_ZN11AbyssEngine18ApplicationManager22ConfigGetKeysForActionEx",
    "pct": 55.0,
    "byte": false,
@@ -13030,6 +12982,14 @@
    "usize": 76
   },
   {
+   "name": "_ZN18TargetFollowCamera17resetShipHandlingEv",
+   "pct": 55.6,
+   "byte": false,
+   "linked": false,
+   "osize": 24,
+   "usize": 20
+  },
+  {
    "name": "_ZN11TouchButtonC1ERKN11AbyssEngine6StringEiiiihh",
    "pct": 55.7,
    "byte": false,
@@ -13044,6 +13004,14 @@
    "linked": false,
    "osize": 168,
    "usize": 148
+  },
+  {
+   "name": "_ZN18TargetFollowCamera18setFastForwardModeEb",
+   "pct": 55.8,
+   "byte": false,
+   "linked": false,
+   "osize": 104,
+   "usize": 172
   },
   {
    "name": "_ZN18TargetFollowCamera9setLockedEb",
@@ -14230,14 +14198,6 @@
    "usize": 12
   },
   {
-   "name": "_ZN18TargetFollowCamera4rollEf",
-   "pct": 60.0,
-   "byte": false,
-   "linked": false,
-   "osize": 18,
-   "usize": 18
-  },
-  {
    "name": "_ZN3Hud9playerHitEv",
    "pct": 60.0,
    "byte": false,
@@ -14772,6 +14732,14 @@
    "linked": false,
    "osize": 44,
    "usize": 44
+  },
+  {
+   "name": "_ZN18TargetFollowCamera8hitSmallEv",
+   "pct": 63.6,
+   "byte": false,
+   "linked": false,
+   "osize": 30,
+   "usize": 30
   },
   {
    "name": "_ZN13PlayerFighterD1Ev",
@@ -15358,12 +15326,12 @@
    "usize": 8
   },
   {
-   "name": "_ZN18TargetFollowCamera3hitEv",
+   "name": "_ZN18TargetFollowCamera15setShipHandlingEf",
    "pct": 66.7,
    "byte": false,
    "linked": false,
-   "osize": 34,
-   "usize": 34
+   "osize": 84,
+   "usize": 80
   },
   {
    "name": "_ZN20FileInterfaceAndroid6OutputEPc",
@@ -19318,12 +19286,12 @@
    "usize": 18
   },
   {
-   "name": "_ZN18TargetFollowCamera8getLocalEv",
+   "name": "_ZN18TargetFollowCamera3hitEv",
    "pct": 83.3,
    "byte": false,
    "linked": false,
-   "osize": 16,
-   "usize": 16
+   "osize": 34,
+   "usize": 34
   },
   {
    "name": "_ZN5Agent21getModPricePercentageEv",
@@ -21676,14 +21644,6 @@
    "linked": false,
    "osize": 74,
    "usize": 72
-  },
-  {
-   "name": "_ZN18TargetFollowCamera20calculateCoefficentsEf",
-   "pct": 93.1,
-   "byte": false,
-   "linked": false,
-   "osize": 102,
-   "usize": 102
   },
   {
    "name": "_ZN6Sparks9translateERKN11AbyssEngine6AEMath6VectorE",
@@ -29238,6 +29198,14 @@
    "usize": 6
   },
   {
+   "name": "_ZN18TargetFollowCamera20calculateCoefficentsEf",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 102,
+   "usize": 102
+  },
+  {
    "name": "_ZN18TargetFollowCamera20setFirstPersonMatrixERN11AbyssEngine6AEMath6MatrixE",
    "pct": 100.0,
    "byte": false,
@@ -29247,6 +29215,38 @@
   },
   {
    "name": "_ZN18TargetFollowCamera23setRotationAroundTargetEb",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
+   "name": "_ZN18TargetFollowCamera4rollEf",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 18,
+   "usize": 18
+  },
+  {
+   "name": "_ZN18TargetFollowCamera7setRollEf",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
+   "name": "_ZN18TargetFollowCamera8getLocalEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 16,
+   "usize": 16
+  },
+  {
+   "name": "_ZN18TargetFollowCamera8setFixedEb",
    "pct": 100.0,
    "byte": true,
    "linked": true,

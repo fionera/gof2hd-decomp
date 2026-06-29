@@ -55,6 +55,9 @@ public:
     uint8_t useTargetsUpVec;
     float shakeAmount;
     int shakeFrequency;
+    // Ghidra ground truth: an 8-byte gap sits between shakeFrequency@0x114 and rumbleStrength@0x120;
+    // our decomp was missing it, shifting rumbleStrength..fixed/localMatrix 8 bytes too low.
+    uint8_t _pad_0x118[8];
     int rumbleStrength;
     uint8_t smallRumble;
     float handlingDampingA;
