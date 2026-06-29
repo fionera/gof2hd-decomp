@@ -51,8 +51,8 @@ void PlayerCreature::unhook() {
 }
 
 void PlayerCreature::render() {
-    if (this->renderGeometry != nullptr) {
-        this->renderGeometry->render();
+    if (this->renderGeometry() != nullptr) {
+        this->renderGeometry()->render();
     }
 
     if ((uint32_t)(this->state - 3) >= 2) {
@@ -65,7 +65,7 @@ int PlayerCreature::getEndurance() {
 }
 
 int PlayerCreature::getWeight() {
-    return PlayerCreature_weightTable[this->creatureType];
+    return PlayerCreature_weightTable[this->creatureType()];
 }
 
 uint8_t PlayerCreature::isCaught() {
@@ -74,7 +74,7 @@ uint8_t PlayerCreature::isCaught() {
 
 void PlayerCreature::rage(int amount) {
     float amountScale = (float) amount / -100.0f;
-    float typeScale = (float) PlayerCreature_rageTable[this->creatureType];
+    float typeScale = (float) PlayerCreature_rageTable[this->creatureType()];
     this->rageTimer = 0;
     this->raging = 0x101;
     this->rageScale = (amountScale + 1.0f) * (typeScale + 1.0f);

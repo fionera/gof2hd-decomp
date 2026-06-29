@@ -13,8 +13,11 @@ class AEGeometry;
 
 class PlayerCreature : public KIPlayer {
 public:
-    AEGeometry *renderGeometry;
-    int creatureType;
+    // ASM ground truth: renderGeometry is KIPlayer::crateGeometry@0x78 and creatureType is
+    // KIPlayer::type@0xac (Ghidra). Our decomp duplicated them here, adding 8 bytes and shifting
+    // lastElapsed/raging/.. low. Aliased to the real KIPlayer fields.
+    AEGeometry *&renderGeometry() { return this->crateGeometry; }
+    int &creatureType() { return this->type; }
     int lastElapsed;
     uint16_t raging;
     uint8_t hooked;
