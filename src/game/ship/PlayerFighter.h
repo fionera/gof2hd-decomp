@@ -27,43 +27,36 @@ namespace AbyssEngine {
 
 class PlayerFighter : public KIPlayer {
 public:
-    int32_t player;
-    int32_t geometry;
-    int32_t subGeometry;
-    uint8_t field_0x24;
-    signed char field_0x25;
-    int32_t wingmanCommand;
-    Vector renderPosition;
-    int32_t field_0x38;
-    signed char field_0x43;
-    uint8_t crateCaptured;
-    Array<int> *lootList;
-    int32_t level;
-    float posX;
-    float posY;
-    float posZ;
-    uint8_t missionCrateLost;
-    uint8_t missionCrateCaptured;
-    uint8_t crateLost;
-    Route *routeClone;
-    uint8_t exhaustHidden;
-    AEGeometry *wreckGeometry;
-    int32_t field_0x80;
-    int32_t field_0x84;
-    int32_t state;
-    Vector resetVecA;
-    uint8_t isMissionCrate;
-    int32_t deathTimer;
-    signed char field_0xdc;
-    int32_t field_0xe4;
-    int32_t field_0xf0;
-    uint8_t field_0xf5;
-    int32_t fov;
-    signed char rollActive;
-    int32_t pushTimer;
-    int32_t pushDuration;
-    Vector pushNormal;
-    Vector pushImpulse;
+    // ASM ground truth: these duplicated KIPlayer base fields (Ghidra offset = KIPlayer offset). Same-
+    // named ones inherit; differently-named ones alias the real KIPlayer field. explosion+ then land at
+    // their real offsets (explosion@0x124). player/geometry/field_0x24/field_0x25/field_0x38/level/posX/
+    // posY/posZ/field_0x80/field_0x84/state/field_0xdc/field_0xe4/field_0xf0 inherit by name.
+    int32_t &player() { return reinterpret_cast<int32_t &>(this->KIPlayer::player); }
+    int32_t &geometry() { return reinterpret_cast<int32_t &>(this->KIPlayer::geometry); }
+    int32_t &level() { return reinterpret_cast<int32_t &>(this->KIPlayer::level); }
+    signed char &field_0xdc() { return reinterpret_cast<signed char &>(this->wingmanFlag); }
+    int32_t &subGeometry() { return reinterpret_cast<int32_t &>(this->parentGeometry); }
+    int32_t &wingmanCommand() { return this->shipGroup; }
+    Vector &renderPosition() { return reinterpret_cast<Vector &>(this->autoPilotState); }
+    signed char &field_0x43() { return reinterpret_cast<signed char &>(this->reviveLockFlag); }
+    uint8_t &crateCaptured() { return reinterpret_cast<uint8_t &>(this->hasCargo); }
+    Array<int> *&lootList() { return this->cargo; }
+    uint8_t &missionCrateLost() { return this->diedWithMissionCrate; }
+    uint8_t &missionCrateCaptured() { return this->lostMissionCrateToEgo; }
+    uint8_t &crateLost() { return this->field_0x6a; }
+    Route *&routeClone() { return this->route; }
+    uint8_t &exhaustHidden() { return this->field_0x74; }
+    AEGeometry *&wreckGeometry() { return this->crateGeometry; }
+    Vector &resetVecA() { return reinterpret_cast<Vector &>(this->field_0x90); }
+    uint8_t &isMissionCrate() { return reinterpret_cast<uint8_t &>(this->carriesMissionCrate); }
+    int32_t &deathTimer() { return this->field_0xd8; }
+    uint8_t &field_0xf5() { return this->visibleFlag; }
+    int32_t &fov() { return this->engineSoundEvent; }
+    signed char &rollActive() { return reinterpret_cast<signed char &>(this->field_0x100); }
+    int32_t &pushTimer() { return this->field_0x104; }
+    int32_t &pushDuration() { return this->field_0x108; }
+    Vector &pushNormal() { return reinterpret_cast<Vector &>(this->field_0x10c); }
+    Vector &pushImpulse() { return reinterpret_cast<Vector &>(this->field_0x118); }
     Explosion *explosion;
     int32_t field_0x128;
     uint8_t field_0x12c;

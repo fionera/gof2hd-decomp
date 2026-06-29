@@ -117,7 +117,8 @@ public:
     int field_0xe4;
     KIPlayer *wingmanTarget;
     uint8_t jumperFlag;
-    uint8_t _pad_0xed[7];
+    uint8_t _pad_0xed[3];
+    int field_0xf0; // real field @0xf0 (accessed by PlayerFighter); split from the 0xed pad, no shift
     uint8_t jumpDone;
     uint8_t visibleFlag;
     uint8_t _pad_0xf6[2];
