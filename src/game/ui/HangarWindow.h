@@ -44,6 +44,7 @@ public:
     int contentHeight;
     int *columnWidths;
     int viewMode;
+    uint8_t _pad_0x5c[12];   // 0x5c..0x68 (unmodeled members; restores selectedItem @0x68)
     ListItem *selectedItem;
     int holdTime;
     int repeatTimer;
@@ -57,7 +58,6 @@ public:
     int savedStationAmount;
     uint16_t shipSwapPending;
     uint8_t dlcMenuPending;
-    uint8_t swapConfirmFlag;
     uint8_t sellShipPending;
     int bluePrintBuyCount;
     int savedCredits;
@@ -74,14 +74,10 @@ public:
     int scrollOffset;
     int lastTouchY;
     int scrollOffsetBackup;
-    int scrollDelta;
-    int field_0xc1;
-    float damping;
-    int field_0xc5;
-    float velocity;
-    int field_0xc9;
-    int touchStartY;
-    int field_0xcd;
+    int scrollDelta;     // @0xc0 (init also writes &scrollDelta+1 unaligned -> ex field_0xc1)
+    float damping;       // @0xc4 (ex field_0xc5: &damping+1 unaligned write)
+    float velocity;      // @0xc8 (ex field_0xc9: &velocity+1 unaligned write)
+    int touchStartY;     // @0xcc (ex field_0xcd: &touchStartY+1 unaligned write)
     uint8_t dragging;
     uint8_t suppressTouchEnd;
     uint8_t sellConfirmPending;
@@ -178,4 +174,17 @@ public:
 
     static int lastTab;
 };
+
+#if __SIZEOF_POINTER__ == 4
+// Former field_0xc1/c5/c9/cd were unaligned-write artifacts (init writes &scrollDelta+1 ...)
+// over the real fields scrollDelta/damping/velocity/touchStartY; they are not separate members.
+static_assert(__builtin_offsetof(HangarWindow, scrollDelta) == 0xc0, "HangarWindow::scrollDelta (ex field_0xc1-1)");
+static_assert(__builtin_offsetof(HangarWindow, damping) == 0xc4, "HangarWindow::damping (ex field_0xc5-1)");
+static_assert(__builtin_offsetof(HangarWindow, velocity) == 0xc8, "HangarWindow::velocity (ex field_0xc9-1)");
+static_assert(__builtin_offsetof(HangarWindow, touchStartY) == 0xcc, "HangarWindow::touchStartY (ex field_0xcd-1)");
+static_assert(__builtin_offsetof(HangarWindow, field_0x100) == 0x100, "HangarWindow::field_0x100");
+static_assert(__builtin_offsetof(HangarWindow, buttonHeight) == 0x110, "HangarWindow::buttonHeight");
+static_assert(__builtin_offsetof(HangarWindow, field_0x114) == 0x114, "HangarWindow::field_0x114");
+static_assert(__builtin_offsetof(HangarWindow, iconOffsetY) == 0x118, "HangarWindow::iconOffsetY");
+#endif
 #endif

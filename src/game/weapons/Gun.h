@@ -24,8 +24,10 @@ public:
     char *positions;
     int directionCount;
     char *velocities;
+    uint8_t _pad_0x18[8]; // drift: 8 bytes missing upstream (two 4-byte fields) so field_0x20 lands at 0x20
     int field_0x20;
     char *upVectors;
+    uint8_t _pad_0x28[4]; // drift: 4 bytes missing so field_0x2c lands at 0x2c
     int field_0x2c;
     char *hitPositions;
     int level;
@@ -38,6 +40,7 @@ public:
 
     float pitchRate;
 
+    uint8_t _pad_0x50[4]; // drift: 4 bytes missing so field_0x54 lands at 0x54
     uint8_t field_0x54;
     int itemIndex;
     ItemSort weaponType;
@@ -57,6 +60,7 @@ public:
     int field_0x98;
     int fireIndex;
 
+    uint8_t _pad_0xa0[4]; // drift: 4 bytes missing so the former-union run lands at 0xa4
     // Former union { int field_0xa4; struct{...}; } at 0xa4: the wide int
     // `field_0xa4` is reinterpret_cast<int&>(field_0xa4_b0) at its use sites.
     uint8_t field_0xa4_b0;
@@ -142,10 +146,27 @@ public:
 };
 
 #if __SIZEOF_POINTER__ == 4
-// Former-union site, offsets locked at their actual (preserved) values. NOTE: Gun's field_0xNN
-// names are pre-existingly drifted ~0x14 ahead of true offsets (missing/mis-sized fields upstream
-// in this struct, unrelated to the union removal); the union elimination was layout-neutral.
-static_assert(offsetof(Gun, field_0xa4_b0) == 0x90, "Gun former-union byte preserved");
-static_assert(offsetof(Gun, field_0xa8) == 0x94, "Gun field after former-union preserved");
+// Drift fixed: 0x14 bytes of padding inserted upstream (8 @0x18, 4 @0x28, 4 @0x50, 4 @0xa0) so
+// every field_0xNN now lands at its named offset 0xNN. The former-union run (a4_b0/a5/a6/a7)
+// stays contiguous at 0xa4. Sentinel: targetDir is the first field after the drift run.
+static_assert(offsetof(Gun, field_0x20) == 0x20, "");
+static_assert(offsetof(Gun, field_0x2c) == 0x2c, "");
+static_assert(offsetof(Gun, field_0x54) == 0x54, "");
+static_assert(offsetof(Gun, field_0x78) == 0x78, "");
+static_assert(offsetof(Gun, field_0x89) == 0x89, "");
+static_assert(offsetof(Gun, field_0x8c) == 0x8c, "");
+static_assert(offsetof(Gun, field_0x90) == 0x90, "");
+static_assert(offsetof(Gun, field_0x94) == 0x94, "");
+static_assert(offsetof(Gun, field_0x98) == 0x98, "");
+static_assert(offsetof(Gun, field_0xa4_b0) == 0xa4, "Gun former-union byte at 0xa4");
+static_assert(offsetof(Gun, field_0xa5) == 0xa5, "");
+static_assert(offsetof(Gun, field_0xa6) == 0xa6, "");
+static_assert(offsetof(Gun, field_0xa7) == 0xa7, "");
+static_assert(offsetof(Gun, field_0xa8) == 0xa8, "");
+static_assert(offsetof(Gun, field_0xb0) == 0xb0, "");
+static_assert(offsetof(Gun, field_0xcc) == 0xcc, "");
+static_assert(offsetof(Gun, field_0xd0) == 0xd0, "");
+static_assert(offsetof(Gun, field_0xd4) == 0xd4, "");
+static_assert(offsetof(Gun, targetDir) == 0xd8, "Gun first field after drift run");
 #endif
 #endif

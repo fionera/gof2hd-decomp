@@ -945,7 +945,7 @@ void MenuTouchWindow::startValkyrie() {
     OptionsRecord *optB = (OptionsRecord *) *gValOptB;
     ((Status *) *statusHolder)->field_8c = 0x1a0a;
     opt->flag_word_0x8 = 0x101;
-    opt->flag_word_0xd = 0x101;
+    reinterpret_cast<uint16_t &>(opt->flag_word_0xd[0]) = 0x101;
     opt->flag_word_0x1c = 0x101;
     opt->flag_dword_0x20 = 0x1010101;
     opt->flag_0x17 = 1;
@@ -2349,7 +2349,7 @@ void MenuTouchWindow::startSupernova() {
     opt->flag_0xa = 1;
     opt->flag_0x15 = 1;
     opt->flag_0x13 = 1;
-    opt->flag_word_0xd = 0x101;
+    reinterpret_cast<uint16_t &>(opt->flag_word_0xd[0]) = 0x101;
     opt->flag_0xf = 1;
     opt->flag_0x26 = 1;
     opt->flag_0x31 = 1;

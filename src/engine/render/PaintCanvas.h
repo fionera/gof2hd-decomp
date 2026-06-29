@@ -64,6 +64,11 @@ namespace AbyssEngine {
         Matrix projOrthoMatrix;
         Matrix worldViewMatrix;
         Matrix identityMatrix;
+        // AEMath::Matrix is 0x3c here but 0x40 in the original (NEVER change Matrix.h). The four
+        // embedded matrices are each 4 bytes short (-0x10); the upstream model is +8, so the net
+        // deficit by this point is 8 bytes. Reserve it in the matrix region so lineMesh lands @0x1c8
+        // and field_0x1cc/field_0x1f8 land at their named offsets.
+        unsigned char _pad_matrix_undersize[8];
         ::Array<AbyssEngine::Resource *> resources;
         ::Array<AbyssEngine::ImageFont *> fonts;
         ::Array<AbyssEngine::Image2D *> images;
@@ -454,6 +459,10 @@ namespace AbyssEngine {
 #if __SIZEOF_POINTER__ == 4
     static_assert(__builtin_offsetof(PaintCanvas, initialized) == 0x0, "PaintCanvas::initialized offset");
     static_assert(__builtin_offsetof(PaintCanvas, culledCount) == 0x4, "PaintCanvas::culledCount offset");
+    static_assert(__builtin_offsetof(PaintCanvas, lineMesh) == 0x1c8, "PaintCanvas::lineMesh offset");
+    static_assert(__builtin_offsetof(PaintCanvas, field_0x1cc) == 0x1cc, "PaintCanvas::field_0x1cc offset");
+    static_assert(__builtin_offsetof(PaintCanvas, field_0x1f8) == 0x1f8, "PaintCanvas::field_0x1f8 offset");
+    static_assert(__builtin_offsetof(PaintCanvas, colorR) == 0x1fc, "PaintCanvas::colorR offset");
 #endif
 }
 

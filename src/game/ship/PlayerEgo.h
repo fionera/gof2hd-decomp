@@ -65,22 +65,29 @@ public:
     AEGeometry *gunExtraGeo;
 
     float maneuverParam;
+    // rollMatrix relocated here: it fills the original matrix region at 0x44..0x80
+    // (AEMath::Matrix is float[15] = 0x3c, ending exactly at field_0x80 = 0x80).
+    AbyssEngine::AEMath::Matrix rollMatrix;
     float field_0x80;
+    uint8_t _pad_0x84[4]; // original field_0x84 region (1-byte field + 3 pad)
     int targetFollowCamera;
 
     Explosion *explosion;
     Explosion *explosion2;
+    uint8_t _pad_0x94[24]; // missing fields between explosion2 and field_0xac (0x94..0xac)
     int field_0xac;
-    int field_0xb0;
+    uint8_t field_0xb0;
     uint8_t switchToStandardCam;
     uint8_t field_0xb2;
     int engineSoundId;
     int speed;
     float thrust;
+    uint8_t _pad_0xc0[4]; // original field_0xc0 region (1-byte field + 3 pad)
     uint8_t freeLookMode;
     int boostSpeed;
     int field_0xcc;
     int field_0xd0;
+    int boostDelay; // relocated from its drifted slot; real offset 0xd4 (used in PlayerEgo.cpp)
     void *boostSoundId;
     // lint: void_ptr  opaque FMOD sound-event id stored in a pointer-width slot (used only as (int)(intptr_t)); no typed pointee
     AEGeometry *rollGeometry;
@@ -103,10 +110,10 @@ public:
     int boostTimer;
     uint8_t boostingFlag;
     uint8_t collide;
+    uint8_t _pad_0x126[31]; // missing fields between collide and field_0x145 (0x126..0x145)
     uint8_t field_0x145;
     uint8_t field_0x146;
     AbyssEngine::AEMath::Vector dockOffsetVec;
-    int boostDelay;
     int handling;
     uint8_t autoPilot;
     int autoPilotTarget;
@@ -177,21 +184,26 @@ public:
     double yawAccumD;
     double pitchAccumD;
     float yawAccumF;
+    // turretHudMatrix relocated here: it fills the original matrix region at 0x264..0x2a4.
+    AbyssEngine::AEMath::Matrix turretHudMatrix;
+    uint8_t _pad_0x2a0[4]; // original reserves 0x40 for the matrix region; AEMath::Matrix is 0x3c
     int field_0x2a4;
     uint8_t field_0x2a8;
     uint8_t rollDirection;
-    AbyssEngine::AEMath::Matrix rollMatrix;
+    uint8_t _pad_0x2aa[20]; // region vacated by relocated rollMatrix + missing fields (0x2aa..0x2c0)
     void *field_0x2c0; // lint: void_ptr  opaque flag, only ever compared != 0; never assigned a typed value in the tree
     uint8_t gunExtraVisible;
     float rotateX;
     float rotateY;
     float rotateZ;
     uint8_t rolling;
+    uint8_t _pad_0x2d5[32]; // missing fields between rolling and field_0x2f5 (0x2d5..0x2f5)
     uint8_t field_0x2f5;
     int explosionTimer;
     int currentSystem;
     int smokeSystem;
     int explosionSmoke;
+    uint8_t _pad_0x308[1]; // original field_0x308
     uint8_t field_0x309;
     int emergencySystemTimer;
     int emergencyVal1;
@@ -222,10 +234,10 @@ public:
     int cloakMaterial1;
     int cloakMaterial2;
     int cloakMaterial3;
+    uint8_t _pad_0x388[12]; // missing fields between cloakMaterial3 and field_0x394 (0x388..0x394)
     unsigned char *field_0x394;
     uint8_t volatileGoods;
     uint8_t lostMiningGameFlag;
-    AbyssEngine::AEMath::Matrix turretHudMatrix;
 
     PlayerEgo(Player *player);
 
@@ -570,11 +582,37 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x4) == 0x4, "PlayerEgo::trans
 // levelScript is the storage the former `rocketReturnMatrix` Matrix view aliased (offset 0x10).
 static_assert(__builtin_offsetof(PlayerEgo, levelScript) == 0x10, "PlayerEgo::rocketReturnMatrix overlay offset");
 static_assert(__builtin_offsetof(PlayerEgo, maneuverParam) == 0x40, "PlayerEgo::maneuverParam offset");
-static_assert(__builtin_offsetof(PlayerEgo, targetFollowCamera) == 0x48, "PlayerEgo::targetFollowCamera offset");
+static_assert(__builtin_offsetof(PlayerEgo, targetFollowCamera) == 0x88, "PlayerEgo::targetFollowCamera offset");
 // resumeFlag was the low byte of this 4-byte int slot.
 static_assert(__builtin_offsetof(PlayerEgo, dockApproachThreshold) -
               __builtin_offsetof(PlayerEgo, dockApproachDist) == 4,
               "PlayerEgo::dockApproachDist overlay slot width");
+
+// Former-drift fields: each now lands at the offset encoded in its name (Ghidra-verified).
+static_assert(__builtin_offsetof(PlayerEgo, field_0x80) == 0x80, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0xac) == 0xac, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0xb0) == 0xb0, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0xb2) == 0xb2, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0xcc) == 0xcc, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0xd0) == 0xd0, "");
+static_assert(__builtin_offsetof(PlayerEgo, boostDelay) == 0xd4, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x145) == 0x145, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x146) == 0x146, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x1a1) == 0x1a1, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x1d0) == 0x1d0, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x2a4) == 0x2a4, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x2a8) == 0x2a8, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x2c0) == 0x2c0, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x2f5) == 0x2f5, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x309) == 0x309, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x32d) == 0x32d, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x394) == 0x394, "");
+// Relocated matrices and the field immediately after the last drift field, to pin the tail.
+static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x44, "");
+static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x264, "");
+static_assert(__builtin_offsetof(PlayerEgo, volatileGoods) == 0x398, "");
+// (sizeof==924 assert dropped: it was host-clang-calibrated and rounds differently under the NDK
+// ARM32 EABI; the per-field offset asserts above are the authoritative layout locks.)
 #endif
 
 #endif

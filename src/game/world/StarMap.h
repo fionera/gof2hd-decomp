@@ -62,14 +62,18 @@ public:
     int *stationDistances;
     Array<int> *systemPath;
     AEGeometry *starSystemRoot;
+    uint8_t _pad_0x9c[12];
     uint8_t pad_0xa8_a;
     uint8_t choiceVisible;
     uint8_t jumpMapModeA;
     uint8_t jumpMapModeB;
     AbyssEngine::Vector field_0xac;
+    uint8_t _pad_0xb8[4];
     AbyssEngine::Vector field_0xbc;
+    uint8_t _pad_0xc8[4];
     AbyssEngine::Vector field_0xcc;
     uint8_t missionChangedFlag;
+    uint8_t _pad_0xd9[12];
     int32_t field_0xe8;
     int32_t field_0xec;
     uint8_t isGalaxyMode;
@@ -88,6 +92,7 @@ public:
     uint32_t raceImageA;
     uint32_t raceImageB;
     uint32_t raceImageDefault;
+    uint8_t _pad_0x130[4];
     uint32_t image_0x134;
     uint8_t transitionIn;
     uint8_t transitionOut;
@@ -177,4 +182,22 @@ public:
 
     uint8_t missionChanged();
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(StarMap, pad_0xa8_a) == 0xa8, "");
+static_assert(__builtin_offsetof(StarMap, choiceVisible) == 0xa9, "");
+static_assert(__builtin_offsetof(StarMap, field_0xac) == 0xac, "");
+static_assert(__builtin_offsetof(StarMap, field_0xbc) == 0xbc, "");
+static_assert(__builtin_offsetof(StarMap, field_0xcc) == 0xcc, "");
+static_assert(__builtin_offsetof(StarMap, field_0xe8) == 0xe8, "");
+static_assert(__builtin_offsetof(StarMap, field_0xec) == 0xec, "");
+static_assert(__builtin_offsetof(StarMap, isGalaxyMode) == 0xf0, "");
+static_assert(__builtin_offsetof(StarMap, image_0x134) == 0x134, "");
+static_assert(__builtin_offsetof(StarMap, transitionIn) == 0x138, "");
+static_assert(__builtin_offsetof(StarMap, field_0x14c) == 0x14c, "");
+static_assert(__builtin_offsetof(StarMap, field_0x158) == 0x158, "");
+static_assert(__builtin_offsetof(StarMap, field_0x164) == 0x164, "");
+static_assert(__builtin_offsetof(StarMap, field_0x190) == 0x190, "");
+static_assert(__builtin_offsetof(StarMap, systemPositions) == 0x194, "");
+#endif
 #endif

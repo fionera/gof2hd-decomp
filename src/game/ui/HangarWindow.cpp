@@ -2293,12 +2293,12 @@ void HangarWindow::initialize() {
     self->buyMode = 0;
     self->bluePrintPurchasePending = 0;
     self->shipSwapPending = 0;
-    self->swapConfirmFlag = 0;
+    self->dlcMenuPending = 0;
 
-    self->field_0xc1 = 0;
-    self->field_0xc5 = 0;
-    self->field_0xc9 = 0;
-    self->field_0xcd = 0;
+    self->scrollDelta = 0;
+    self->damping = 0;
+    self->velocity = 0;
+    self->touchStartY = 0;
     self->savedScrollOffset = 0;
     self->field_0x0 = 0;
     self->active = 1;

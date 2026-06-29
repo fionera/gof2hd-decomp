@@ -35,16 +35,24 @@ namespace AbyssEngine {
 
 class Globals {
 public:
-    Array<int> *soundResources;
-    int field_0x34;
+    Array<int> *soundResources;                  // @0x0
+    unsigned char _pad_0x4[48];                   // 0x04..0x34 (unmodeled members)
+    int field_0x34;                               // @0x34
+    unsigned char _pad_0x38[4];                   // 0x38..0x3c
     void *field_0x3c; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
     void *field_0x40; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
+    unsigned char _pad_0x44[4];                   // 0x44..0x48
     void *field_0x48; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
-    unsigned int *field_0x54;
-    int field_0xac;
-    unsigned short field_0x110;
-    int field_0x114;
-    int field_0x14c;
+    unsigned char _pad_0x4c[8];                   // 0x4c..0x54
+    unsigned int *field_0x54;                     // @0x54
+    unsigned char _pad_0x58[84];                  // 0x58..0xac
+    int field_0xac;                               // @0xac
+    unsigned char _pad_0xb0[96];                  // 0xb0..0x110
+    unsigned short field_0x110;                   // @0x110
+    unsigned char _pad_0x112[2];                  // 0x112..0x114
+    int field_0x114;                              // @0x114
+    unsigned char _pad_0x118[52];                 // 0x118..0x14c
+    int field_0x14c;                              // @0x14c
 
     Globals();
 
@@ -295,5 +303,17 @@ public:
     static void *fontAlien; // lint: void_ptr (unknown alien-font handle, never referenced)
     static Generator *generator;
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(Globals, field_0x34) == 0x34, "Globals::field_0x34");
+static_assert(__builtin_offsetof(Globals, field_0x3c) == 0x3c, "Globals::field_0x3c");
+static_assert(__builtin_offsetof(Globals, field_0x40) == 0x40, "Globals::field_0x40");
+static_assert(__builtin_offsetof(Globals, field_0x48) == 0x48, "Globals::field_0x48");
+static_assert(__builtin_offsetof(Globals, field_0x54) == 0x54, "Globals::field_0x54");
+static_assert(__builtin_offsetof(Globals, field_0xac) == 0xac, "Globals::field_0xac");
+static_assert(__builtin_offsetof(Globals, field_0x110) == 0x110, "Globals::field_0x110");
+static_assert(__builtin_offsetof(Globals, field_0x114) == 0x114, "Globals::field_0x114");
+static_assert(__builtin_offsetof(Globals, field_0x14c) == 0x14c, "Globals::field_0x14c");
+#endif
 
 #endif
