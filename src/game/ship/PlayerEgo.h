@@ -165,6 +165,10 @@ public:
     int miningSettleTimer;
     KIPlayer *dockStation;
     int miningGame;
+    // Ghidra: currentMiningAmount@0x1e4 precedes hackingGameDockIndex@0x1e8; ours lacked it. +4 here is
+    // balanced by removing the spurious _pad_0x2a0[4] (original matrix region is 0x3c), keeping field_
+    // 0x2a4@0x2a4; turretHudMatrix shifts 0x264->0x268. (Doubles above are now floats so no re-align.)
+    int currentMiningAmount;
     int hackingGame;
     short docked;
     uint8_t dockedToStream;
@@ -191,13 +195,18 @@ public:
     int shakeAccum;
     float pitchRamp;
     float yawRamp;
-    double rollAccum;
-    double yawAccumD;
-    double pitchAccumD;
+    // ASM ground truth: these were modeled as 8-byte doubles but the .cpp accesses them via (float&),
+    // and Ghidra shows separate 4-byte fields here (freeCargoSpace@0x250/flAgility@0x254 etc.). Split
+    // into floats + their separated high-half fields (size-neutral 24 bytes, removes 8-byte alignment).
+    float rollAccum;
+    int field_0x24c;
+    float yawAccumD;
+    int field_0x254;
+    float pitchAccumD;
+    int field_0x25c;
     float yawAccumF;
     // turretHudMatrix relocated here: it fills the original matrix region at 0x264..0x2a4.
     AbyssEngine::AEMath::Matrix turretHudMatrix;
-    uint8_t _pad_0x2a0[4]; // original reserves 0x40 for the matrix region; AEMath::Matrix is 0x3c
     int field_0x2a4;
     uint8_t field_0x2a8;
     uint8_t rollDirection;
@@ -620,7 +629,7 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x32d) == 0x32d, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x394) == 0x394, "");
 // Relocated matrices and the field immediately after the last drift field, to pin the tail.
 static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x44, "");
-static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x264, "");
+static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x268, "");
 static_assert(__builtin_offsetof(PlayerEgo, volatileGoods) == 0x398, "");
 // (sizeof==924 assert dropped: it was host-clang-calibrated and rounds differently under the NDK
 // ARM32 EABI; the per-field offset asserts above are the authoritative layout locks.)
