@@ -60,7 +60,9 @@ public:
     Explosion *explosion;
     int32_t field_0x128;
     uint8_t field_0x12c;
-    short field_0x12d;
+    // field_0x12d is a short@0x12d in the original (0x12d-0x12f); modeled as two bytes so the packed
+    // layout matches (a `short` here forces 2-byte alignment -> a pad at 0x12d that shifts field_0x130+).
+    uint8_t field_0x12d;
     uint8_t field_0x12e;
     signed char field_0x12f;
     int32_t field_0x130;
