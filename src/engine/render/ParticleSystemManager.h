@@ -34,6 +34,9 @@ public:
     uint16_t flags;
 
     PaintCanvas *canvas;
+    // Ghidra ground truth: a 4-byte field sits at 0x8 (field_0x8) before cameraSet@0xc; our decomp
+    // was missing it, shifting cameraSet/accumulatedDt/enabled/spriteSystems.. all 4 bytes too low.
+    int32_t field_0x8;
     int32_t cameraSet;
     int32_t accumulatedDt;
     uint8_t enabled;

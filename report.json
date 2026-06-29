@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4541,
   "compared": 4507,
-  "avg_match": 67.23,
-  "byte_exact": 929,
-  "linked_exact": 1663,
-  "fuzzy_perfect": 1663,
+  "avg_match": 67.3,
+  "byte_exact": 930,
+  "linked_exact": 1669,
+  "fuzzy_perfect": 1669,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -6670,14 +6670,6 @@
    "usize": 90
   },
   {
-   "name": "_ZN21ParticleSystemManager5resetEv",
-   "pct": 25.9,
-   "byte": false,
-   "linked": false,
-   "osize": 60,
-   "usize": 64
-  },
-  {
    "name": "_ZN7Globals26getKeyBindingReplaceStringEi",
    "pct": 25.9,
    "byte": false,
@@ -7942,14 +7934,6 @@
    "usize": 756
   },
   {
-   "name": "_ZN21ParticleSystemManager8render3dEv",
-   "pct": 32.3,
-   "byte": false,
-   "linked": false,
-   "osize": 36,
-   "usize": 40
-  },
-  {
    "name": "_ZN3Hud10touchBeginEjjPv",
    "pct": 32.3,
    "byte": false,
@@ -8060,6 +8044,14 @@
    "linked": false,
    "osize": 20,
    "usize": 20
+  },
+  {
+   "name": "_ZN21ParticleSystemManager5resetEv",
+   "pct": 33.3,
+   "byte": false,
+   "linked": false,
+   "osize": 60,
+   "usize": 64
   },
   {
    "name": "_ZN3Hud16resetAnalogStickEv",
@@ -8534,14 +8526,6 @@
    "usize": 496
   },
   {
-   "name": "_ZN21ParticleSystemManager8initMeshEv",
-   "pct": 36.0,
-   "byte": false,
-   "linked": false,
-   "osize": 190,
-   "usize": 184
-  },
-  {
    "name": "_ZN6AEFile12ReadSwitchedERN11AbyssEngine6StringEj",
    "pct": 36.1,
    "byte": false,
@@ -8798,6 +8782,14 @@
    "usize": 180
   },
   {
+   "name": "_ZN21ParticleSystemManager8initMeshEv",
+   "pct": 37.4,
+   "byte": false,
+   "linked": false,
+   "osize": 190,
+   "usize": 184
+  },
+  {
    "name": "_ZN9RocketGun9seekEnemyEii",
    "pct": 37.4,
    "byte": false,
@@ -9028,6 +9020,14 @@
    "linked": false,
    "osize": 280,
    "usize": 256
+  },
+  {
+   "name": "_ZN21ParticleSystemManager8render3dEv",
+   "pct": 38.7,
+   "byte": false,
+   "linked": false,
+   "osize": 36,
+   "usize": 40
   },
   {
    "name": "_ZN11TouchButtonC1Ejjiiih",
@@ -9630,14 +9630,6 @@
    "usize": 304
   },
   {
-   "name": "_ZN21ParticleSystemManager11initSpritesEv",
-   "pct": 41.4,
-   "byte": false,
-   "linked": false,
-   "osize": 192,
-   "usize": 196
-  },
-  {
    "name": "_ZN11AbyssEngine18ApplicationManager18ConvertTouchCoordsERiS1_",
    "pct": 41.6,
    "byte": false,
@@ -9828,6 +9820,14 @@
    "linked": false,
    "osize": 272,
    "usize": 228
+  },
+  {
+   "name": "_ZN21ParticleSystemManager11initSpritesEv",
+   "pct": 42.8,
+   "byte": false,
+   "linked": false,
+   "osize": 192,
+   "usize": 196
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager10OnTouchEndEv",
@@ -10366,14 +10366,6 @@
    "usize": 30
   },
   {
-   "name": "_ZN21ParticleSystemManager9constructEv",
-   "pct": 45.5,
-   "byte": false,
-   "linked": false,
-   "osize": 30,
-   "usize": 30
-  },
-  {
    "name": "_ZN5MGame10OnRender3DEv",
    "pct": 45.5,
    "byte": false,
@@ -10548,38 +10540,6 @@
    "linked": false,
    "osize": 84,
    "usize": 56
-  },
-  {
-   "name": "_ZN21ParticleSystemManagerC1EPN11AbyssEngine11PaintCanvasEN16ParticleSettings9CameraSetEtNS0_9BlendModeEbtS5_b",
-   "pct": 46.4,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 106
-  },
-  {
-   "name": "_ZN21ParticleSystemManagerC1EPN11AbyssEngine11PaintCanvasEN16ParticleSettings9CameraSetEtbtb",
-   "pct": 46.4,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 104
-  },
-  {
-   "name": "_ZN21ParticleSystemManagerC2EPN11AbyssEngine11PaintCanvasEN16ParticleSettings9CameraSetEtNS0_9BlendModeEbtS5_b",
-   "pct": 46.4,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 106
-  },
-  {
-   "name": "_ZN21ParticleSystemManagerC2EPN11AbyssEngine11PaintCanvasEN16ParticleSettings9CameraSetEtbtb",
-   "pct": 46.4,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 104
   },
   {
    "name": "_ZN9PlayerEgo5rightEif",
@@ -12470,14 +12430,6 @@
    "usize": 32
   },
   {
-   "name": "_ZN21ParticleSystemManager13addMeshSystemEPKN11AbyssEngine6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEb",
-   "pct": 51.4,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 86
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas14RestoreImage2DEPNS_7Image2DE",
    "pct": 51.6,
    "byte": false,
@@ -12556,14 +12508,6 @@
    "linked": false,
    "osize": 164,
    "usize": 164
-  },
-  {
-   "name": "_ZN21ParticleSystemManager6updateEx",
-   "pct": 52.1,
-   "byte": false,
-   "linked": false,
-   "osize": 188,
-   "usize": 180
   },
   {
    "name": "_ZN11AbyssEngine12MaterialDrawEPNS_11PaintCanvasEPNS_6EngineEPNS_8MaterialEb",
@@ -12948,14 +12892,6 @@
    "linked": false,
    "osize": 140,
    "usize": 124
-  },
-  {
-   "name": "_ZN21ParticleSystemManager15addSpriteSystemEPKN11AbyssEngine6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEb",
-   "pct": 54.5,
-   "byte": false,
-   "linked": false,
-   "osize": 90,
-   "usize": 82
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas27CameraIsSphereinViewFrustumERKNS_6AEMath6VectorEf",
@@ -14710,6 +14646,46 @@
    "usize": 34
   },
   {
+   "name": "_ZN21ParticleSystemManager13addMeshSystemEPKN11AbyssEngine6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEb",
+   "pct": 62.9,
+   "byte": false,
+   "linked": false,
+   "osize": 96,
+   "usize": 86
+  },
+  {
+   "name": "_ZN21ParticleSystemManagerC1EPN11AbyssEngine11PaintCanvasEN16ParticleSettings9CameraSetEtNS0_9BlendModeEbtS5_b",
+   "pct": 62.9,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 106
+  },
+  {
+   "name": "_ZN21ParticleSystemManagerC1EPN11AbyssEngine11PaintCanvasEN16ParticleSettings9CameraSetEtbtb",
+   "pct": 62.9,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 104
+  },
+  {
+   "name": "_ZN21ParticleSystemManagerC2EPN11AbyssEngine11PaintCanvasEN16ParticleSettings9CameraSetEtNS0_9BlendModeEbtS5_b",
+   "pct": 62.9,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 106
+  },
+  {
+   "name": "_ZN21ParticleSystemManagerC2EPN11AbyssEngine11PaintCanvasEN16ParticleSettings9CameraSetEtbtb",
+   "pct": 62.9,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 104
+  },
+  {
    "name": "_ZN5MGame13gameOverCheckEv",
    "pct": 62.9,
    "byte": false,
@@ -14724,6 +14700,14 @@
    "linked": false,
    "osize": 140,
    "usize": 106
+  },
+  {
+   "name": "_ZN21ParticleSystemManager6updateEx",
+   "pct": 63.0,
+   "byte": false,
+   "linked": false,
+   "osize": 188,
+   "usize": 180
   },
   {
    "name": "_ZN5MGame9OnReleaseEv",
@@ -15396,6 +15380,14 @@
    "linked": false,
    "osize": 2,
    "usize": 4
+  },
+  {
+   "name": "_ZN21ParticleSystemManager15addSpriteSystemEPKN11AbyssEngine6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEb",
+   "pct": 66.7,
+   "byte": false,
+   "linked": false,
+   "osize": 90,
+   "usize": 82
   },
   {
    "name": "_ZN3Hud11firePressedEv",
@@ -16156,22 +16148,6 @@
    "linked": false,
    "osize": 28,
    "usize": 18
-  },
-  {
-   "name": "_ZN21ParticleSystemManager12renderMeshesEv",
-   "pct": 70.6,
-   "byte": false,
-   "linked": false,
-   "osize": 46,
-   "usize": 46
-  },
-  {
-   "name": "_ZN21ParticleSystemManager13renderSpritesEv",
-   "pct": 70.6,
-   "byte": false,
-   "linked": false,
-   "osize": 44,
-   "usize": 44
   },
   {
    "name": "_ZN5MGameD1Ev",
@@ -17326,22 +17302,6 @@
    "usize": 10
   },
   {
-   "name": "_ZN21ParticleSystemManagerD1Ev",
-   "pct": 75.0,
-   "byte": false,
-   "linked": false,
-   "osize": 54,
-   "usize": 46
-  },
-  {
-   "name": "_ZN21ParticleSystemManagerD2Ev",
-   "pct": 75.0,
-   "byte": false,
-   "linked": false,
-   "osize": 54,
-   "usize": 46
-  },
-  {
    "name": "_ZN4Item27canBeInstalledMultipleTimesEv",
    "pct": 75.0,
    "byte": false,
@@ -17868,14 +17828,6 @@
    "linked": false,
    "osize": 50,
    "usize": 50
-  },
-  {
-   "name": "_ZN21ParticleSystemManager14releaseSpritesEv",
-   "pct": 76.9,
-   "byte": false,
-   "linked": false,
-   "osize": 32,
-   "usize": 32
   },
   {
    "name": "_ZN6Status12changeRatingEi",
@@ -18934,14 +18886,6 @@
    "usize": 36
   },
   {
-   "name": "_ZN21ParticleSystemManager4initEv",
-   "pct": 81.5,
-   "byte": false,
-   "linked": false,
-   "osize": 34,
-   "usize": 36
-  },
-  {
    "name": "_Z8GetTouchi",
    "pct": 81.8,
    "byte": false,
@@ -19620,14 +19564,6 @@
    "linked": false,
    "osize": 36,
    "usize": 36
-  },
-  {
-   "name": "_ZN21ParticleSystemManager12cameraToggleEN16ParticleSettings9CameraSetE",
-   "pct": 84.6,
-   "byte": false,
-   "linked": false,
-   "osize": 32,
-   "usize": 32
   },
   {
    "name": "_ZN4Ship8hasCloakEv",
@@ -20526,12 +20462,12 @@
    "usize": 10
   },
   {
-   "name": "_ZN21ParticleSystemManager7releaseEv",
+   "name": "_ZN21ParticleSystemManager4initEv",
    "pct": 88.9,
    "byte": false,
    "linked": false,
-   "osize": 26,
-   "usize": 26
+   "osize": 34,
+   "usize": 36
   },
   {
    "name": "_ZN4Ship8addCargoEP5ArrayIP4ItemE",
@@ -21916,6 +21852,22 @@
    "linked": false,
    "osize": 516,
    "usize": 516
+  },
+  {
+   "name": "_ZN21ParticleSystemManagerD1Ev",
+   "pct": 93.8,
+   "byte": false,
+   "linked": false,
+   "osize": 54,
+   "usize": 46
+  },
+  {
+   "name": "_ZN21ParticleSystemManagerD2Ev",
+   "pct": 93.8,
+   "byte": false,
+   "linked": false,
+   "osize": 54,
+   "usize": 46
   },
   {
    "name": "_ZN4Ship11removeCargoEP4Item",
@@ -29438,12 +29390,60 @@
    "usize": 2
   },
   {
+   "name": "_ZN21ParticleSystemManager12cameraToggleEN16ParticleSettings9CameraSetE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 32,
+   "usize": 32
+  },
+  {
+   "name": "_ZN21ParticleSystemManager12renderMeshesEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 46,
+   "usize": 46
+  },
+  {
    "name": "_ZN21ParticleSystemManager12renderPost3dEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN21ParticleSystemManager13renderSpritesEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 44,
+   "usize": 44
+  },
+  {
+   "name": "_ZN21ParticleSystemManager14releaseSpritesEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 32,
+   "usize": 32
+  },
+  {
+   "name": "_ZN21ParticleSystemManager7releaseEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 26,
+   "usize": 26
+  },
+  {
+   "name": "_ZN21ParticleSystemManager9constructEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 30,
+   "usize": 30
   },
   {
    "name": "_ZN3Gun10getEnemiesEv",
