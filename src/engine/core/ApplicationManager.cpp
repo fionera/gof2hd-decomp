@@ -128,9 +128,6 @@ namespace {
 }
 
 ApplicationManager::ApplicationManager(Engine *engine) {
-    this->modules = new Array<IApplicationModule *>();
-    this->moduleIds = new Array<unsigned int>();
-    this->actionTable = new Array<long long>();
 
     this->frameTimeMs = 0;
     this->previousFrameTimeMs = 0;
@@ -180,15 +177,15 @@ ApplicationManager::~ApplicationManager() {
         module_vtable(module)->release(module);
     }
 
-    for (unsigned int i = 0; i < this->modules->size(); ++i) {
-        IApplicationModule *entry = (*this->modules)[i];
+    for (unsigned int i = 0; i < this->modules.size(); ++i) {
+        IApplicationModule *entry = this->modules[i];
         if (entry != 0) {
             module_vtable(entry)->destroy(entry);
         }
-        (*this->modules)[i] = 0;
+        this->modules[i] = 0;
     }
-    ArrayRelease(*(this->modules));
-    ArrayRemoveAll(*(this->moduleIds));
+    ArrayRelease(this->modules);
+    ArrayRemoveAll(this->moduleIds);
 
     delete this->paintCanvas;
     this->paintCanvas = 0;
@@ -213,9 +210,6 @@ ApplicationManager::~ApplicationManager() {
     }
     this->keyMappingTable = 0;
 
-    delete this->actionTable;
-    delete this->moduleIds;
-    delete this->modules;
 }
 
 void ApplicationManager::SetApplicationModule(IApplicationModule *module) {
@@ -234,10 +228,10 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
         }
     }
 
-    unsigned int count = this->moduleIds->size();
+    unsigned int count = this->moduleIds.size();
     for (unsigned int index = 0; index < count; ++index) {
-        if ((*this->moduleIds)[index] == id) {
-            IApplicationModule *module = (*this->modules)[index];
+        if (this->moduleIds[index] == id) {
+            IApplicationModule *module = this->modules[index];
             this->state = this->currentModule != 0;
             this->currentModuleId = id;
             this->pendingModule = module;
@@ -248,10 +242,10 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
 
 void *ApplicationManager::GetApplicationModule(unsigned int id) {
     // lint: void_ptr (exported GetApplicationModule return type, baked ABI)
-    unsigned int count = this->moduleIds->size();
+    unsigned int count = this->moduleIds.size();
     for (unsigned int index = 0; index < count; ++index) {
-        if ((int) (*this->moduleIds)[index] == (int) id) {
-            return (*this->modules)[index];
+        if ((int) this->moduleIds[index] == (int) id) {
+            return this->modules[index];
         }
     }
     return 0;
@@ -406,8 +400,8 @@ void ApplicationManager::OnKeyPress(int key) {
             this->keyState |= keyLow;
             this->keyStateHigh |= keyHigh;
 
-            ActionEntry *entries = action_entries(this->actionTable);
-            for (unsigned int i = 0; i < this->actionTable->size(); i += 2) {
+            ActionEntry *entries = action_entries(&this->actionTable);
+            for (unsigned int i = 0; i < this->actionTable.size(); i += 2) {
                 ActionEntry *entry = &entries[i / 2];
                 if (entry->keyIndex == keyIndex && entry->flags == 0) {
                     actionLow |= entry->actionLow;
@@ -454,8 +448,8 @@ void ApplicationManager::OnKeyRelease(int key) {
             this->keyState &= ~keyLow;
             this->keyStateHigh &= ~keyHigh;
 
-            ActionEntry *entries = action_entries(this->actionTable);
-            for (unsigned int i = 0; i < this->actionTable->size(); i += 2) {
+            ActionEntry *entries = action_entries(&this->actionTable);
+            for (unsigned int i = 0; i < this->actionTable.size(); i += 2) {
                 ActionEntry *entry = &entries[i / 2];
                 if (entry->keyIndex == keyIndex && entry->flags == 0) {
                     actionLow |= entry->actionLow;
@@ -696,8 +690,8 @@ void ApplicationManager::CheckForOrientationChange() {
 }
 
 void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
-    ArrayAdd(value, *(this->actionTable));
-    ArrayAdd(key, *(this->actionTable));
+    ArrayAdd(value, this->actionTable);
+    ArrayAdd(key, this->actionTable);
 }
 
 void *ApplicationManager::ConfigGetKeysForAction(long long action) {
@@ -706,15 +700,15 @@ void *ApplicationManager::ConfigGetKeysForAction(long long action) {
     int high = (int) (action >> 32);
     Array<String *> *result = 0;
 
-    for (unsigned int index = 0; index < this->actionTable->size(); index += 2) {
-        ActionEntry *entry = &action_entries(this->actionTable)[index / 2];
+    for (unsigned int index = 0; index < this->actionTable.size(); index += 2) {
+        ActionEntry *entry = &action_entries(&this->actionTable)[index / 2];
         int actionLow = (int) entry->actionLow;
         int actionHigh = (int) entry->actionHigh;
         if (((actionLow ^ low) | (actionHigh ^ high)) == 0) {
             if (result == 0) {
                 result = new Array<String *>();
             }
-            unsigned int keyIndex = action_entries(this->actionTable)[index / 2].keyIndex;
+            unsigned int keyIndex = action_entries(&this->actionTable)[index / 2].keyIndex;
             AbyssEngine::KeyCode *entries = key_entries(this->keyMappingTable);
             String *string = new String(entries[keyIndex].name);
             ArrayAdd(string, *result);
@@ -971,8 +965,8 @@ void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {
 void ApplicationManager::RegisterApplicationModule(unsigned int id, IApplicationModule *module) {
     if (module != 0) {
         module->SetApplicationManager(this);
-        ArrayAdd(module, *(this->modules));
-        ArrayAdd(id, *(this->moduleIds));
+        ArrayAdd(module, this->modules);
+        ArrayAdd(id, this->moduleIds);
     }
 }
 

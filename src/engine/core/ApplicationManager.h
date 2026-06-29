@@ -59,8 +59,11 @@ namespace AbyssEngine {
         ConfigReader *configReader;
         int state;
         int savedState;
-        Array<IApplicationModule *> *modules;
-        Array<unsigned int> *moduleIds;
+        // Ghidra ground truth: these are INLINE Array members (count+data_+capacity_ = 12 bytes each at
+        // 0x44/0x50), not heap pointers. Our decomp modeled them as Array<T>* (4 bytes), losing 16 bytes
+        // and shifting state/savedState/currentModuleId/... below.
+        Array<IApplicationModule *> modules;
+        Array<unsigned int> moduleIds;
         unsigned int currentModuleId;
         IApplicationModule *pendingModule;
         void *applicationData; // lint: void_ptr (opaque app data, GetApplicationData/SetApplicationData ABI)
@@ -69,7 +72,7 @@ namespace AbyssEngine {
         uint64_t previousFrameTimeMs;
         uint32_t keyState;
         uint32_t keyStateHigh;
-        Array<long long> *actionTable;
+        Array<long long> actionTable; // inline Array (see modules/moduleIds above)
         uint32_t actionMask;
         uint32_t actionMaskHigh;
         uint32_t actionState;
