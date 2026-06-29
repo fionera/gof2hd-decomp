@@ -18,7 +18,11 @@ namespace AbyssEngine {
     class ShaderBaseStruct {
     public:
         int program;
-        volatile uint16_t flags;
+        // Ghidra ground truth: the 16-bit `flags` is at 0x8 and `dirty` (materialDirty) is its HIGH
+        // byte at 0x9. Our decomp had split `dirty` to a separate field at 0xa (the wrong byte, in the
+        // padding). Model `dirty` as the real 0x9 byte; the 16-bit `flags` view is a reinterpret over
+        // flagsLow (its sole writer sets 0x100 = dirty:=1).
+        uint8_t flagsLow;
         uint8_t dirty;
         String name;
         const char *vertexPath;
