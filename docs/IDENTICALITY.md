@@ -89,3 +89,23 @@ this is a RE-ORDER, not a deletion.
 
 This is the engine for the byte-exactness campaign; each reconstructed struct flips many functions.
 Dozens of structs drift (offdrift delta histogram: -8:14, +4:12, +8:11, +32:9, ... across 300 fns).
+
+## GROUND-TRUTH unblock: Ghidra has the original loaded
+
+The original (android_2.0.16_libgof2hdaa.so, 8096 fns, image_base 0x10000) is OPEN in Ghidra (MCP).
+`get_struct_layout <Struct>` returns the real field offsets; `decompile_function <addr>` shows real
+field usage. This is the authoritative source for the byte-exactness campaign — reconstruct each
+struct from Ghidra's layout, not from guesses. The verify byte_exact/linked_exact count remains the
+no-degradation gate when applying.
+
+### PaintCanvas — definitive layout (Ghidra get_struct_layout, size 524):
+0x0 gravityRotationEnabled(=initialized), 0x4 culledCount, 0x8 field_0x8(=quad2dMesh), 0xc field_0xc,
+0x10 field_0x10, 0x14 field_0x14, [0x18 gap], 0x1c field_0x1c, 0x20 field_0x20(int), 0x24
+field_0x24(=meshCount), 0x28 field_0x28(=meshes), [0x2c gap=mask2dImage], 0x30 orientation
+(=gameOrientation), 0x34 engine, 0x38.. matrices, ... 0x150 images, 0x164 cameras, ...
+DECOMP BUG: `ChangeCubeTexture` (decompiled) reads cube count@field_0x10 / data@field_0x14 -> the
+cube-texture Array IS field_0x10/0x14/0x18 (count/data/capacity @ 0x10). Our decomp instead made a
+SEPARATE `cubeTextures` Array at 0x20, displacing field_0x20/meshCount/meshes by +0xc (root of the
+~10 PaintCanvas near-misses, e.g. engine 0x3c-should-be-0x34). FIX: map `cubeTextures`->0x10 (merge
+with field_0x10/0x14/0x18 uses), add the standalone `field_0x20` int, shift meshCount/meshes/
+gameOrientation/engine back by 0xc. Verify-gate each step.
