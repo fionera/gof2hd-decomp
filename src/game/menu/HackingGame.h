@@ -37,8 +37,8 @@ public:
     int update(int dt);
 
     int difficulty;
-    uint32_t reserved_14;
-    uint32_t reserved_18;
+    // ASM ground truth: target[] starts at 0x4 (orig), not 0xc — our decomp had two spurious 4-byte
+    // reserved fields here (unused), shifting every accessed field +8. Removed.
     int target[6];
     int current[6];
     int working[6];
@@ -58,6 +58,6 @@ public:
     int rewardItem;
     int rewardAmount;
     int dockingIndex;
-    uint8_t trailingState[0x320 - 0x140];
+    uint8_t trailingState[0x320 - 0x138];
 };
 #endif
