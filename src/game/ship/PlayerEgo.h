@@ -97,6 +97,10 @@ public:
     float waypointX;
     float waypointY;
     AEGeometry *gunBaseGeo;
+    // Ghidra: movingStars@0xf8 sits between gunBaseGeo@0xf4 and route@0xfc. Our decomp lacked it; the
+    // route..collide block was 4 low. Added here and the _pad_0x126 below shrinks by 4 to keep the
+    // downstream asserts (field_0x145@0x145) pinned.
+    int movingStars;
     int route;
     int pitchAccumDir;
     int yawAccumDir;
@@ -110,7 +114,7 @@ public:
     int boostTimer;
     uint8_t boostingFlag;
     uint8_t collide;
-    uint8_t _pad_0x126[31]; // missing fields between collide and field_0x145 (0x126..0x145)
+    uint8_t _pad_0x126[27]; // missing fields between collide and field_0x145 (shrunk by 4 for movingStars)
     uint8_t field_0x145;
     uint8_t field_0x146;
     AbyssEngine::AEMath::Vector dockOffsetVec;
