@@ -100,3 +100,10 @@ add_custom_target(lint
     COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/goal_lint.py ${CMAKE_SOURCE_DIR}/src
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
     COMMENT "Structural lint of src/")
+
+# Field name/offset drift: every field_0xNN must sit at offset 0xNN (its offset in the original
+# binary). Authoritative check via clang -fdump-record-layouts (works for non-standard-layout too).
+add_custom_target(drift
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/layout.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
+    COMMENT "Field name/offset drift check (layout.py)")
