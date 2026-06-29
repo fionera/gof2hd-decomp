@@ -41,6 +41,9 @@ namespace AbyssEngine {
     class ApplicationManager {
     public:
         PaintCanvas *paintCanvas;
+        // Ghidra ground truth: a 4-byte field sits at 0x4 between paintCanvas and currentKey@0x8;
+        // our decomp lacked it, shifting currentKey..savedState 4 bytes low.
+        uint32_t field_0x4;
         uint32_t currentKey;
         uint32_t currentKeyHigh;
         char *keyMappingTable;
