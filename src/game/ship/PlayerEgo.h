@@ -111,12 +111,17 @@ public:
     float pitchAccumulator;
     float yawRate;
     float pitchRate;
+    // Ghidra: 4 fields (0x120/0x124/0x128/0x12c) precede lastHP(=combinedHp)@0x130; ours lacked them.
+    int field_0x120;
+    int field_0x124;
+    int field_0x128;
+    int field_0x12c;
     int lastHP;
     int shakeIntensity;
     int boostTimer;
     uint8_t boostingFlag;
     uint8_t collide;
-    uint8_t _pad_0x126[23]; // shrunk for movingStars + field_0x108
+    uint8_t _pad_0x126[7]; // shrunk for movingStars + field_0x108 + 4 fields @0x120
     uint8_t field_0x145;
     uint8_t field_0x146;
     AbyssEngine::AEMath::Vector dockOffsetVec;
