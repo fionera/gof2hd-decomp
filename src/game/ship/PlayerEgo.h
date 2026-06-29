@@ -104,6 +104,8 @@ public:
     int route;
     int pitchAccumDir;
     int yawAccumDir;
+    // Ghidra: a 4-byte field@0x108 precedes currentSecondaryWeaponIndex@0x10c; ours lacked it.
+    int field_0x108;
     int currentSecondaryWeaponIndex;
     float yawAccumulator;
     float pitchAccumulator;
@@ -114,7 +116,7 @@ public:
     int boostTimer;
     uint8_t boostingFlag;
     uint8_t collide;
-    uint8_t _pad_0x126[27]; // missing fields between collide and field_0x145 (shrunk by 4 for movingStars)
+    uint8_t _pad_0x126[23]; // shrunk for movingStars + field_0x108
     uint8_t field_0x145;
     uint8_t field_0x146;
     AbyssEngine::AEMath::Vector dockOffsetVec;
