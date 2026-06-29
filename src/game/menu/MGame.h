@@ -52,16 +52,10 @@ public:
     uint8_t _pad_0x55[3];
     PlayerEgo *player;
 
-    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
-        int field_0x5c;
-
-        struct {
-            uint8_t _b5c;
-            uint8_t pauseOpen;
-            uint8_t cutsceneActive;
-            uint8_t jumpActive;
-        };
-    }; // lint: union_decl (type-pun: int overlaid with byte flags; both used via static_asserts/MGame.cpp)
+    uint8_t _b5c; // field_0x5c (int) = reinterpret_cast<int &>(_b5c)
+    uint8_t pauseOpen;
+    uint8_t cutsceneActive;
+    uint8_t jumpActive;
     uint8_t gameOverActive;
     uint8_t campaignMission;
     uint8_t _pad_0x62[2];
@@ -84,36 +78,17 @@ public:
     Vector freeCamFinger0;
     float flCameraRoll;
     void *activeTouchId; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
-    union {
-        // lint: union_decl (type-pun: int overlaid with byte flags; both used via static_asserts/MGame.cpp)
-        int dockChoiceOpen;
+    uint8_t field_0xc1; // dockChoiceOpen (int) = reinterpret_cast<int &>(field_0xc1)
+    uint8_t autopilotMenuOpen;
+    uint8_t field_0xc6;
+    uint8_t starMapOpen;
 
-        struct {
-            uint8_t field_0xc1;
-            uint8_t autopilotMenuOpen;
-            uint8_t field_0xc6;
-            uint8_t starMapOpen;
-        };
-    };
-
-    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
-        uint16_t field_0xc8;
-
-        struct {
-            uint8_t _bc8;
-            uint8_t menuTouchOpen;
-        };
-    }; // lint: union_decl (type-pun: uint16 overlaid with byte flags; both used via static_asserts)
-    union { // lint: union_decl (type-pun: int overlaid with byte flags; both used via static_asserts/MGame.cpp)
-        int field_0xca;
-
-        struct {
-            uint8_t _bca;
-            uint8_t touchesStream;
-            uint8_t touchesStation;
-            uint8_t jumpGateSoundStarted;
-        };
-    }; // lint: union_decl (type-pun: int overlaid with byte flags; both used via static_asserts)
+    uint8_t _bc8; // field_0xc8 (uint16_t) = reinterpret_cast<uint16_t &>(_bc8)
+    uint8_t menuTouchOpen;
+    uint8_t _bca; // field_0xca (int) = reinterpret_cast<int &>(_bca)
+    uint8_t touchesStream;
+    uint8_t touchesStation;
+    uint8_t jumpGateSoundStarted;
     uint8_t choiceWindowOpen;
     uint8_t field_0xcf;
     int choiceItemCount;
@@ -128,15 +103,8 @@ public:
     uint8_t field_0xe0;
     uint8_t _pad_0xe1[3];
 
-    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
-        Vector egoJumpPos;
-
-        struct {
-            int egoJumpPosX;
-            int egoJumpPosY;
-            int egoJumpPosZ;
-        };
-    }; // lint: union_decl (type-pun: Vector overlaid with int xyz)
+    // egoJumpPos overlaid with int xyz: egoJumpPosX/Y/Z = reinterpret_cast<int &>(egoJumpPos.x/.y/.z)
+    Vector egoJumpPos;
     unsigned cameraId;
     TargetFollowCamera *camera;
     int hudTouchFlags;
@@ -197,14 +165,8 @@ public:
     int field_0x1b0;
     int field_0x1b4;
 
-    union { // lint: union_decl (genuine type-pun: differing types/sizes overlaid at one offset, both used)
-        uint16_t thrustActive;
-
-        struct {
-            uint8_t _b1b8;
-            uint8_t thrustEngaged;
-        };
-    }; // lint: union_decl (type-pun: uint16 overlaid with byte flags; both used via static_asserts)
+    uint8_t _b1b8; // thrustActive (uint16_t) = reinterpret_cast<uint16_t &>(_b1b8)
+    uint8_t thrustEngaged;
     uint8_t _pad_0x1ba[2];
     int field_0x1bc;
     int thrustStartY;
@@ -316,7 +278,7 @@ static_assert(offsetof(MGame, loadProgress) == 12, "MGame::loadProgress @ 12");
 static_assert(offsetof(MGame, deltaTime) == 64, "MGame::deltaTime @ 64");
 static_assert(offsetof(MGame, field_0x44) == 68, "MGame::field_0x44 @ 68");
 static_assert(offsetof(MGame, player) == 88, "MGame::player @ 88");
-static_assert(offsetof(MGame, field_0x5c) == 92, "MGame::field_0x5c @ 92");
+static_assert(offsetof(MGame, _b5c) == 92, "MGame::_b5c (field_0x5c) @ 92");
 static_assert(offsetof(MGame, pauseOpen) == 93, "MGame::pauseOpen @ 93");
 static_assert(offsetof(MGame, cutsceneActive) == 94, "MGame::cutsceneActive @ 94");
 static_assert(offsetof(MGame, jumpActive) == 95, "MGame::jumpActive @ 95");
@@ -334,13 +296,13 @@ static_assert(offsetof(MGame, menuTime) == 160, "MGame::menuTime @ 160");
 static_assert(offsetof(MGame, freeCamFinger1) == 164, "MGame::freeCamFinger1 @ 164");
 static_assert(offsetof(MGame, flCameraRoll) == 188, "MGame::flCameraRoll @ 188");
 static_assert(offsetof(MGame, activeTouchId) == 192, "MGame::activeTouchId @ 192");
-static_assert(offsetof(MGame, dockChoiceOpen) == 196, "MGame::dockChoiceOpen @ 196");
+static_assert(offsetof(MGame, field_0xc1) == 196, "MGame::field_0xc1 (dockChoiceOpen) @ 196");
 static_assert(offsetof(MGame, autopilotMenuOpen) == 197, "MGame::autopilotMenuOpen @ 197");
 static_assert(offsetof(MGame, field_0xc6) == 198, "MGame::field_0xc6 @ 198");
 static_assert(offsetof(MGame, starMapOpen) == 199, "MGame::starMapOpen @ 199");
-static_assert(offsetof(MGame, field_0xc8) == 200, "MGame::field_0xc8 @ 200");
+static_assert(offsetof(MGame, _bc8) == 200, "MGame::_bc8 (field_0xc8) @ 200");
 static_assert(offsetof(MGame, menuTouchOpen) == 201, "MGame::menuTouchOpen @ 201");
-static_assert(offsetof(MGame, field_0xca) == 202, "MGame::field_0xca @ 202");
+static_assert(offsetof(MGame, _bca) == 202, "MGame::_bca (field_0xca) @ 202");
 static_assert(offsetof(MGame, touchesStream) == 203, "MGame::touchesStream @ 203");
 static_assert(offsetof(MGame, touchesStation) == 204, "MGame::touchesStation @ 204");
 static_assert(offsetof(MGame, jumpGateSoundStarted) == 205, "MGame::jumpGateSoundStarted @ 205");
@@ -351,7 +313,7 @@ static_assert(offsetof(MGame, field_0xd8) == 216, "MGame::field_0xd8 @ 216");
 static_assert(offsetof(MGame, jumpDriveActive) == 220, "MGame::jumpDriveActive @ 220");
 static_assert(offsetof(MGame, usingJumpDrive) == 221, "MGame::usingJumpDrive @ 221");
 static_assert(offsetof(MGame, field_0xe0) == 224, "MGame::field_0xe0 @ 224");
-static_assert(offsetof(MGame, egoJumpPosX) == 228, "MGame::egoJumpPosX @ 228");
+static_assert(offsetof(MGame, egoJumpPos) == 228, "MGame::egoJumpPos (egoJumpPosX) @ 228");
 static_assert(offsetof(MGame, cameraId) == 240, "MGame::cameraId @ 240");
 static_assert(offsetof(MGame, camera) == 244, "MGame::camera @ 244");
 static_assert(offsetof(MGame, hudTouchFlags) == 248, "MGame::hudTouchFlags @ 248");
@@ -382,7 +344,7 @@ static_assert(offsetof(MGame, field_0x1a0) == 416, "MGame::field_0x1a0 @ 416");
 static_assert(offsetof(MGame, pauseSnapshot) == 422, "MGame::pauseSnapshot @ 422");
 static_assert(offsetof(MGame, flFastForwardFactor) == 424, "MGame::flFastForwardFactor @ 424");
 static_assert(offsetof(MGame, field_0x1ac) == 428, "MGame::field_0x1ac @ 428");
-static_assert(offsetof(MGame, thrustActive) == 440, "MGame::thrustActive @ 440");
+static_assert(offsetof(MGame, _b1b8) == 440, "MGame::_b1b8 (thrustActive) @ 440");
 static_assert(offsetof(MGame, thrustEngaged) == 441, "MGame::thrustEngaged @ 441");
 static_assert(offsetof(MGame, field_0x1bc) == 444, "MGame::field_0x1bc @ 444");
 static_assert(offsetof(MGame, thrustStartY) == 448, "MGame::thrustStartY @ 448");

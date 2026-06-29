@@ -42,43 +42,31 @@ class PlayerEgo {
 public:
     Player *player;
 
-    union {
-        // lint: union_decl transform block overlaps rocketReturnMatrix (offset-shifted matrices) — type-pun, layout-load-bearing
-        struct {
-            union {
-                // lint: union_decl AEMath::Matrix transform aliases geometry-pointer struct at same storage — type-pun, layout-load-bearing
-                AbyssEngine::AEMath::Matrix transform;
+    // Former overlay region (offset 0x4..0x4c). These named pointers are the real fields.
+    //   - The `transform` Matrix view aliases this storage at offset 0x4:
+    //       reinterpret_cast<AbyssEngine::AEMath::Matrix &>(field_0x4)
+    //   - The `rocketReturnMatrix` Matrix view aliases this storage at offset 0x10 (levelScript):
+    //       reinterpret_cast<AbyssEngine::AEMath::Matrix &>(levelScript)
+    AEGeometry *field_0x4;
+    AEGeometry *geometry;
+    Level *level;
+    LevelScript *levelScript;
+    Radar *field_0x14;
+    Radio *radioRef;
+    int field_0x1c;
+    int field_0x20;
+    uint8_t freeze;
+    uint8_t inWormhole;
+    AEGeometry *turretGeometry;
+    AEGeometry *field_0x2c;
+    AEGeometry *field_0x30;
+    AEGeometry *gunYawGeo;
+    AEGeometry *gunMuzzleRoot;
+    AEGeometry *gunExtraGeo;
 
-                struct {
-                    AEGeometry *field_0x4;
-                    AEGeometry *geometry;
-                    Level *level;
-                    LevelScript *levelScript;
-                    Radar *field_0x14;
-                    Radio *radioRef;
-                    int field_0x1c;
-                    int field_0x20;
-                    uint8_t freeze;
-                    uint8_t inWormhole;
-                    AEGeometry *turretGeometry;
-                    AEGeometry *field_0x2c;
-                    AEGeometry *field_0x30;
-                    AEGeometry *gunYawGeo;
-                    AEGeometry *gunMuzzleRoot;
-                    AEGeometry *gunExtraGeo;
-                };
-            };
-
-            float maneuverParam;
-            float field_0x80;
-            int targetFollowCamera;
-        };
-
-        struct {
-            char _rocketReturnMatrixPad[0xC];
-            AbyssEngine::AEMath::Matrix rocketReturnMatrix;
-        };
-    };
+    float maneuverParam;
+    float field_0x80;
+    int targetFollowCamera;
 
     Explosion *explosion;
     Explosion *explosion2;
@@ -149,11 +137,9 @@ public:
     int dockingState;
     int dockingPointIndex;
 
-    union {
-        // lint: union_decl int/uint8 size-mismatch reinterpret (dockApproachDist/resumeFlag) — type-pun, layout-load-bearing
-        int dockApproachDist;
-        uint8_t resumeFlag;
-    };
+    // `resumeFlag` is the low byte of this int slot:
+    //   reinterpret_cast<uint8_t &>(dockApproachDist)
+    int dockApproachDist;
 
     int dockApproachThreshold;
     int field_0x1d0;
@@ -579,10 +565,16 @@ public:
 };
 
 #if __SIZEOF_POINTER__ == 4
-static_assert(__builtin_offsetof(PlayerEgo, transform) == 0x4, "PlayerEgo::transform offset");
-static_assert(__builtin_offsetof(PlayerEgo, rocketReturnMatrix) == 0x10, "PlayerEgo::rocketReturnMatrix offset");
+// field_0x4 is the storage the former `transform` Matrix view aliased (offset 0x4).
+static_assert(__builtin_offsetof(PlayerEgo, field_0x4) == 0x4, "PlayerEgo::transform overlay offset");
+// levelScript is the storage the former `rocketReturnMatrix` Matrix view aliased (offset 0x10).
+static_assert(__builtin_offsetof(PlayerEgo, levelScript) == 0x10, "PlayerEgo::rocketReturnMatrix overlay offset");
 static_assert(__builtin_offsetof(PlayerEgo, maneuverParam) == 0x40, "PlayerEgo::maneuverParam offset");
 static_assert(__builtin_offsetof(PlayerEgo, targetFollowCamera) == 0x48, "PlayerEgo::targetFollowCamera offset");
+// resumeFlag was the low byte of this 4-byte int slot.
+static_assert(__builtin_offsetof(PlayerEgo, dockApproachThreshold) -
+              __builtin_offsetof(PlayerEgo, dockApproachDist) == 4,
+              "PlayerEgo::dockApproachDist overlay slot width");
 #endif
 
 #endif

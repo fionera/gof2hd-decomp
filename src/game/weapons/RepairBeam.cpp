@@ -161,7 +161,7 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                         if (pl->carriesFriendCargoFlag != 0 && RB_Player_getHitpoints() < RB_Player_getMaxHitpoints())
                             consider = true;
                     } else if (this->sort == 0x29) {
-                        if (kp->noTargetFlag == 0 &&
+                        if (reinterpret_cast<uint8_t &>(kp->route) == 0 &&
                             kp->player->enemyFlagsLo != 0) {
                             Player **plp = (Player **) RB_Level_getPlayer(level);
                             if (RB_Player_getShieldDamageRate(*plp) < 100 &&

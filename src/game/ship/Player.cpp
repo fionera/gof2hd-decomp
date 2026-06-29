@@ -262,7 +262,7 @@ bool Player::isAsteroid() {
     KIPlayer *ki = this->kiPlayer;
     bool result = false;
     if (ki != 0) {
-        result = ki->stealFlag != 0;
+        result = reinterpret_cast<int &>(ki->stealFlagByte) != 0;
     }
     return result;
 }
@@ -553,19 +553,19 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
 
     self->playShootSoundFlag = 1;
     self->playShootSoundId = 1;
-    self->destroyed = 0;
+    reinterpret_cast<uint16_t &>(self->destroyedByte) = 0;
     self->active = 1;
     self->damageTimer = 0;
     self->vulnerable = 1;
     self->kiPlayer = 0;
     self->bombForce = 0.0f;
-    self->enemyFlags = 0;
+    reinterpret_cast<uint16_t &>(self->enemyFlagsLo) = 0;
     self->turnedEnemyFlag = 0;
     self->alwaysEnemy = 0;
     self->alwaysFriend = 0;
     self->enemies = 0;
     self->field_54 = 0;
-    self->empDisabled = 0;
+    reinterpret_cast<uint16_t &>(self->empDisabledByte) = 0;
     self->neverAttack = 0;
     self->healAccumulator = 0;
     self->engineEvent = 0;
@@ -666,7 +666,7 @@ void Player::damageEmp(int amount, bool flag) {
             }
         }
         KIPlayer *ki = self->kiPlayer;
-        if (ki->stealFlag != 0) {
+        if (reinterpret_cast<int &>(ki->stealFlagByte) != 0) {
             goto lab_30e2;
         }
         if (ki->countsAsEnemyExcludeFlag != 0) {
@@ -685,7 +685,7 @@ void Player::damageEmp(int amount, bool flag) {
             goto lab_3164;
         }
     lab_30f4:
-        if (self->empDisabled != 0) {
+        if (reinterpret_cast<uint16_t &>(self->empDisabledByte) != 0) {
             goto lab_3164;
         }
         {
@@ -708,7 +708,7 @@ void Player::damageEmp(int amount, bool flag) {
 lab_3164:
 
     float f = (float) self->empData;
-    self->empDisabled = 1;
+    reinterpret_cast<uint16_t &>(self->empDisabledByte) = 1;
     self->empPoints = 0;
     (self->pad_e8[0]) = 0;
     self->empForce = f;
@@ -734,7 +734,7 @@ void Player::addGun(Array<Gun *> *gunsIn, int slot) {
 
 void Player::setAlwaysEnemy(bool value) {
     this->alwaysEnemy = value;
-    this->enemyFlags = 1;
+    reinterpret_cast<uint16_t &>(this->enemyFlagsLo) = 1;
     this->turnedEnemyFlag = 1;
 }
 
@@ -818,11 +818,11 @@ void Player::reset() {
     self->vulnerable = 1;
     self->active = 1;
     self->field_54 = 0;
-    self->destroyed = 0;
+    reinterpret_cast<uint16_t &>(self->destroyedByte) = 0;
     self->damageDoneByPlayer = 0;
     self->field_5e = 0;
     self->damageTimer = 0;
-    self->empDisabled = 0;
+    reinterpret_cast<uint16_t &>(self->empDisabledByte) = 0;
     self->shieldHit = 0;
     self->armorHit = 0;
     self->hullHit = 0;
@@ -999,7 +999,7 @@ void Player::damage(int amount, bool flag, int missionId) {
         if (self->alwaysEnemy == 0 &&
             (unsigned int) (ki->shipGroup - 9) > 1 &&
             Globals::status->getSystem() != 0 &&
-            ((self->enemyFlags == 0) || (self->turnedEnemyFlag != 0))) {
+            ((reinterpret_cast<uint16_t &>(self->enemyFlagsLo) == 0) || (self->turnedEnemyFlag != 0))) {
             ki = self->kiPlayer;
             if (ki->field_0x42 != 0) {
                 if (amount > 0) {
@@ -1015,7 +1015,7 @@ void Player::damage(int amount, bool flag, int missionId) {
         if (ki != 0 && self->alwaysEnemy == 0 &&
             (unsigned int) (ki->shipGroup - 9) > 1 &&
             self->kiPlayer->isWingMan() == 0 && Globals::status->getSystem() != 0 &&
-            ((self->enemyFlags == 0) || (self->turnedEnemyFlag != 0))) {
+            ((reinterpret_cast<uint16_t &>(self->enemyFlagsLo) == 0) || (self->turnedEnemyFlag != 0))) {
             int race = self->kiPlayer->shipGroup;
             Globals::status->getSystem();
             bool sameRace = (race == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
@@ -1132,7 +1132,7 @@ LAB_3488: {
     {
         int hp;
         KIPlayer *ki = self->kiPlayer;
-        if (ki != 0 && ki->stealFlag == 0 && ki->countsAsEnemyExcludeFlag == 0 &&
+        if (ki != 0 && reinterpret_cast<int &>(ki->stealFlagByte) == 0 && ki->countsAsEnemyExcludeFlag == 0 &&
 
             ki->field_0x42 != 0) {
             hp = self->hitpoints;
@@ -1147,10 +1147,10 @@ LAB_3488: {
         if (hp < 1) {
             self->hitpoints = 0;
             if (flag != 0) {
-                self->destroyed = 1;
+                reinterpret_cast<uint16_t &>(self->destroyedByte) = 1;
             } else {
                 KIPlayer *ki2 = self->kiPlayer;
-                if (ki2 != 0 && ki2->stealFlag == 0 && ki2->countsAsEnemyExcludeFlag == 0 &&
+                if (ki2 != 0 && reinterpret_cast<int &>(ki2->stealFlagByte) == 0 && ki2->countsAsEnemyExcludeFlag == 0 &&
 
                     Globals::status->inBlackMarketSystem() == 0) {
                     if (self->kiPlayer->field_0x42 == 0) {
@@ -1243,7 +1243,7 @@ void Player::stopShooting(int slot, int channel) {
 
 void Player::setAlwaysFriend(bool value) {
     this->alwaysFriend = value;
-    this->enemyFlags = 0x100;
+    reinterpret_cast<uint16_t &>(this->enemyFlagsLo) = 0x100;
     this->turnedEnemyFlag = 0;
 }
 
@@ -1273,7 +1273,7 @@ Vector *Player::update(int dt, bool doSound) {
 
     Vector *result = 0;
 
-    if (self->empDisabled != 0) {
+    if (reinterpret_cast<uint16_t &>(self->empDisabledByte) != 0) {
         int e = self->empData + dt;
         float ef = (float) self->empData;
         float ef2 = (float) e;
@@ -1283,7 +1283,7 @@ Vector *Player::update(int dt, bool doSound) {
         self->empData = e;
         self->empPoints = (int) v;
         if (maxEmp < (int) v) {
-            self->empDisabled = 0;
+            reinterpret_cast<uint16_t &>(self->empDisabledByte) = 0;
             self->empPoints = maxEmp;
             Globals::status->field_134 = Globals::status->field_134 - 1;
             self->empData = 0;

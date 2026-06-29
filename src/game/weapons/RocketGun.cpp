@@ -265,7 +265,7 @@ void RocketGun::update(int elapsed) {
         gunVec.x = gun->offset.x;
         gunVec.y = gun->offset.y;
         gunVec.z = gun->offset.z + kMuzzleZAdd;
-        MatrixRotateVector(axis, player->transform, gunVec);
+        MatrixRotateVector(axis, reinterpret_cast<AbyssEngine::AEMath::Matrix &>(player->field_0x4), gunVec);
         basePos += axis;
         this->geometry->setPosition(basePos);
 
@@ -274,7 +274,7 @@ void RocketGun::update(int elapsed) {
         scaling = scaling / kScaleMul;
         this->geometry->setScaling(scaling);
 
-        MatrixGetDir(axis, player->transform);
+        MatrixGetDir(axis, reinterpret_cast<AbyssEngine::AEMath::Matrix &>(player->field_0x4));
         zero.x = 0.0f;
         zero.y = 1.0f;
         zero.z = 0.0f;

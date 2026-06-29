@@ -28,11 +28,10 @@ using ::AbyssEngine::PaintCanvas;
 
 class ParticleSystemManager {
 public:
-    union {
-        // lint: union_decl 16-bit flags vs low-byte alias; flags (sprite|mesh active bits) and flagsLow (narrow byte write in PlayerEgo) are both used cross-file at offset 0
-        uint16_t flags;
-        uint8_t flagsLow;
-    };
+    // Former union (flags:16 / flagsLow:8) collapsed to the 16-bit field.
+    // flagsLow (2 low-byte writes in PlayerEgo.cpp) now writes via
+    // reinterpret_cast<uint8_t &>(flags).
+    uint16_t flags;
 
     PaintCanvas *canvas;
     int32_t cameraSet;
@@ -133,4 +132,9 @@ private:
         return *reinterpret_cast<Array<ParticleSystemMesh *> *>(&meshSystemCount);
     }
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(ParticleSystemManager, flags) == 0x0, "ParticleSystemManager::flags offset");
+static_assert(__builtin_offsetof(ParticleSystemManager, canvas) == 0x4, "ParticleSystemManager::canvas offset");
+#endif
 #endif

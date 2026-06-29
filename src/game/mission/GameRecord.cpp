@@ -498,8 +498,8 @@ afterDlcUnsaleable:
     st->wingmen = this->field_0x14c;
     st->field_0x2c = this->field_0x150;
     st->fadeValue = this->field_0x154;
-    st->field_0x28 = this->field_0x158;
-    st->passengers = this->field_0x15c;
+    reinterpret_cast<int32_t &>(st->_byte_0x28) = this->field_0x158;
+    reinterpret_cast<int32_t &>(st->_byte_0x34) = this->field_0x15c;
     srcByteArray2 = (Array<uint8_t> *) this->field_0x160;
     srcCount = srcByteArray2->count;
     for (copyIndex = 0; srcCount != copyIndex; copyIndex = copyIndex + 1) {

@@ -10,29 +10,17 @@ namespace {
         float colorG;
         float colorB;
 
-        union {
-            // lint: union_decl bytes 0x0c..0x13 read under several overlapping interpretations (volumePair/musicVolume/sfxVolume/ambientVolume/flagAt0f/flagAt10/flagAt11) cross-method
-            uint8_t _region[8];
-
-            struct {
-                uint8_t musicVolume;
-                uint8_t sfxVolume;
-                uint8_t ambientVolume;
-                int16_t flagAt0f;
-            };
-
-            struct {
-                int16_t volumePair;
-                uint8_t _pad0e;
-                uint8_t _pad0f;
-                int16_t flagAt10;
-            };
-
-            struct {
-                uint8_t _pad0c[5];
-                uint8_t flagAt11;
-            };
-        };
+        // Bytes 0x0c..0x13: a single 8-byte region read under several overlapping
+        // interpretations. Canonical storage is the byte array; the former named
+        // members are accessed via reinterpret_cast at their byte offset within it:
+        //   musicVolume  uint8  @0x0c -> _region[0]
+        //   volumePair   int16  @0x0c -> reinterpret_cast<int16_t&>(_region[0])
+        //   sfxVolume    uint8  @0x0d -> _region[1]
+        //   ambientVolume uint8 @0x0e -> _region[2]
+        //   flagAt0f     int16  @0x0f -> reinterpret_cast<int16_t&>(_region[3])
+        //   flagAt10     int16  @0x10 -> reinterpret_cast<int16_t&>(_region[4])
+        //   flagAt11     uint8  @0x11 -> _region[5]
+        uint8_t _region[8];
 
         float glowR;
         float glowG;
@@ -63,18 +51,13 @@ namespace {
     };
 
     struct InitZeroObject {
-        union {
-            // lint: union_decl same region zeroed via aligned slots[12] and misaligned tailAt2b..tailAt37 (offset 0x2b) interpretations
-            int32_t slots[12];
-
-            struct {
-                uint8_t _lead[0x2b];
-                int32_t tailAt2b;
-                int32_t tailAt2f;
-                int32_t tailAt33;
-                int32_t tailAt37;
-            };
-        };
+        // Region 0x00..0x3a. Canonical storage is the aligned int32 slot array
+        // (slots[0..11] cover 0x00..0x2f); the misaligned tail ints overlap the
+        // tail of that region and the trailing bytes, accessed via byte-offset
+        // reinterpret_cast over slots:
+        //   tailAt2b int32 @0x2b, tailAt2f @0x2f, tailAt33 @0x33, tailAt37 @0x37
+        int32_t slots[12];
+        uint8_t _tail_0x30[0x0b];
     };
 
     struct AgentBusyObject {
@@ -111,13 +94,7 @@ namespace {
     static_assert(offsetof(GameSettingsRecord, colorR) == 0x00, "colorR");
     static_assert(offsetof(GameSettingsRecord, colorG) == 0x04, "colorG");
     static_assert(offsetof(GameSettingsRecord, colorB) == 0x08, "colorB");
-    static_assert(offsetof(GameSettingsRecord, musicVolume) == 0x0c, "musicVolume");
-    static_assert(offsetof(GameSettingsRecord, sfxVolume) == 0x0d, "sfxVolume");
-    static_assert(offsetof(GameSettingsRecord, ambientVolume) == 0x0e, "ambientVolume");
-    static_assert(offsetof(GameSettingsRecord, volumePair) == 0x0c, "volumePair");
-    static_assert(offsetof(GameSettingsRecord, flagAt0f) == 0x0f, "flagAt0f");
-    static_assert(offsetof(GameSettingsRecord, flagAt10) == 0x10, "flagAt10");
-    static_assert(offsetof(GameSettingsRecord, flagAt11) == 0x11, "flagAt11");
+    static_assert(offsetof(GameSettingsRecord, _region) == 0x0c, "_region");
     static_assert(offsetof(GameSettingsRecord, glowR) == 0x14, "glowR");
     static_assert(offsetof(GameSettingsRecord, glowG) == 0x18, "glowG");
     static_assert(offsetof(GameSettingsRecord, tintR) == 0x1c, "tintR");
@@ -141,10 +118,9 @@ namespace {
     static_assert(offsetof(GameSettingsRecord, resHeight) == 0x58, "resHeight");
     static_assert(offsetof(GameSettingsRecord, shortAt60) == 0x60, "shortAt60");
 
-    static_assert(offsetof(InitZeroObject, tailAt2b) == 0x2b, "tailAt2b");
-    static_assert(offsetof(InitZeroObject, tailAt2f) == 0x2f, "tailAt2f");
-    static_assert(offsetof(InitZeroObject, tailAt33) == 0x33, "tailAt33");
-    static_assert(offsetof(InitZeroObject, tailAt37) == 0x37, "tailAt37");
+    static_assert(offsetof(InitZeroObject, slots) == 0x00, "slots");
+    static_assert(offsetof(InitZeroObject, _tail_0x30) == 0x30, "_tail_0x30");
+    static_assert(sizeof(InitZeroObject) == 0x3b, "InitZeroObject size");
 
     static_assert(offsetof(AgentBusyObject, guardCounter) == 0xd0, "guardCounter");
     static_assert(offsetof(LineMetrics, lineHeight) == 0x04, "lineHeight");
@@ -424,17 +400,18 @@ struct Q16 {
 };
 
 struct HintsBuffer {
-    union {
-        // lint: union_decl same region cleared via aligned quad[4] and misaligned quadAt2b (offset 0x2b) NEON-quad interpretations
-        Q16 quad[4];
-
-        struct {
-            uint8_t _pad2b[0x2b];
-            Q16 quadAt2b;
-        };
-    };
+    // Region 0x00..0x3f. Canonical storage is the aligned NEON-quad array
+    // (quad[0..3] at 0x00/0x10/0x20/0x30); the misaligned quadAt2b (Q16 @0x2b)
+    // overlaps quad[2]/quad[3] and is accessed via byte-offset reinterpret_cast.
+    Q16 quad[4];
 };
 #pragma pack(pop)
+
+#if __SIZEOF_POINTER__ == 4
+#include <cstddef>
+static_assert(offsetof(HintsBuffer, quad) == 0x00, "quad");
+static_assert(sizeof(HintsBuffer) == 0x40, "HintsBuffer size");
+#endif
 
 static HintsBuffer *const gHints = nullptr;
 
@@ -442,7 +419,7 @@ void Globals::resetHints() {
     HintsBuffer *hints = gHints;
     const int32x4_t z = vdupq_n_s32(0);
     hints->quad[0].v = z;
-    hints->quadAt2b.v = z;
+    reinterpret_cast<Q16 &>(reinterpret_cast<uint8_t *>(hints->quad)[0x2b]).v = z;
     hints->quad[2].v = z;
     hints->quad[1].v = z;
 }
@@ -1656,8 +1633,8 @@ Globals::Globals() {
     settings->colorR = 0.5f;
     settings->colorG = 0.5f;
     settings->colorB = 0.5f;
-    settings->volumePair = 0x101;
-    settings->flagAt10 = 0;
+    reinterpret_cast<int16_t &>(settings->_region[0]) = 0x101;
+    reinterpret_cast<int16_t &>(settings->_region[4]) = 0;
 
     settings->glowR = 0.5f;
     settings->glowG = 0.5f;
@@ -1667,7 +1644,7 @@ Globals::Globals() {
     settings->tintB = 0.5f;
     settings->brightness = 1.0f;
     settings->contrast = 0.5f;
-    settings->ambientVolume = 1;
+    settings->_region[2] = 1;
     settings->enableFlag30 = 1;
     settings->shortAt40 = 0;
     settings->intAt50 = 0;
@@ -2214,7 +2191,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     char *langFlag = *gI_langFlag;
     char *zeroByte = *gI_zeroByte;
 
-    settings->flagAt11 = 1;
+    settings->_region[5] = 1;
     settings->enableFlag30 = 1;
     settings->colorR = 0.5f;
     settings->colorG = 0.5f;
@@ -2223,7 +2200,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     settings->brightness = 1.0f;
     *zeroByte = 0;
     char lang = *langFlag;
-    settings->flagAt0f = 0x101;
+    reinterpret_cast<int16_t &>(settings->_region[3]) = 0x101;
     *flagFFFF = -1;
     *langSettingSlot = (lang == 0) ? 6 : 0xc;
 
@@ -2274,16 +2251,16 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     fmod->init();
 
     VolFn setMus = *gI_setMusVol;
-    setMus(*fmodSlotP, 1, settings->sfxVolume);
-    setMus(*fmodSlotP, 2, settings->musicVolume);
-    setMus(*fmodSlotP, 3, settings->ambientVolume);
+    setMus(*fmodSlotP, 1, settings->_region[1]);
+    setMus(*fmodSlotP, 2, settings->_region[0]);
+    setMus(*fmodSlotP, 3, settings->_region[2]);
     VolFn setSfx = *gI_setSfxVol;
     setSfx(*fmodSlotP, 1, reinterpret_cast<int32_t &>(settings->colorR));
     setSfx(*fmodSlotP, 2, reinterpret_cast<int32_t &>(settings->colorG));
     setSfx(*fmodSlotP, 3, reinterpret_cast<int32_t &>(settings->colorB));
 
     if (FModSound_tryToStopMusicForBGMusic() != 0) {
-        settings->sfxVolume = 0;
+        settings->_region[1] = 0;
     }
 
     **gI_g381c = 0;
@@ -2301,10 +2278,10 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     obj->slots[9] = 0;
     obj->slots[10] = 0;
     obj->slots[11] = 0;
-    obj->tailAt2b = 0;
-    obj->tailAt2f = 0;
-    obj->tailAt33 = 0;
-    obj->tailAt37 = 0;
+    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2b]) = 0;
+    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2f]) = 0;
+    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x33]) = 0;
+    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x37]) = 0;
     InitFlagByte *flagByteObj = *(InitFlagByte **) gI_g3822;
     flagByteObj->flag = 0;
     **gI_g3824 = 0;

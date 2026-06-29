@@ -160,7 +160,7 @@ void BombGun::update(int elapsed) {
                 transform = (AbyssEngine::Transform *) canvas->TransformGetTransform(this->transform);
                 transform->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
 
-                player->rocketReturnMatrix = ((Player *) player->player)->transformMatrix;
+                reinterpret_cast<AbyssEngine::AEMath::Matrix &>(player->levelScript) = reinterpret_cast<AbyssEngine::AEMath::Matrix &>(((Player *) player->player)->transform[0]);
                 sound()->play(0x45c, nullptr, nullptr, 0.0f);
             }
 

@@ -1,5 +1,6 @@
 #ifndef GOF2_OPTIONSRECORD_H
 #define GOF2_OPTIONSRECORD_H
+#include <cstddef>
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "GameRecord.h"
@@ -35,34 +36,36 @@ struct OptionsRecord {
     uint8_t field_0x30;
     uint8_t flag_0x31;
 
-    union {
-        // lint: union_decl flag_dword_0x32 (whole-slot, zeroed in MenuTouchWindow.cpp) overlaps bytes flag_0x34/flag_0x35 (set/read in MenuTouchWindow.cpp) — genuine cross-file type-pun, layout-fixed
-        int32_t flag_dword_0x32;
-
-        struct {
-            uint8_t field_0x32[2];
-            uint8_t flag_0x34;
-            uint8_t flag_0x35;
-        };
-    };
+    // This 4-byte slot is zeroed whole (formerly flag_dword_0x32) in MenuTouchWindow.cpp and also
+    // accessed as the named bytes flag_0x34/flag_0x35. Kept as the bytes; the whole-word write is
+    // reinterpret_cast<int32_t &>(field_0x32[0]).
+    uint8_t field_0x32[2];
+    uint8_t flag_0x34;
+    uint8_t flag_0x35;
 
     uint8_t flag_0x36;
     uint8_t flag_0x37;
 
-    union {
-        // lint: union_decl flag_word_0x38 (whole-slot set in MenuTouchWindow.cpp) overlaps bytes flag_0x38/flag_0x39 (set in MenuTouchWindow.cpp) — genuine cross-file type-pun, layout-fixed
-        uint16_t flag_word_0x38;
-
-        struct {
-            uint8_t flag_0x38;
-            uint8_t flag_0x39;
-        };
-    };
+    // This 2-byte slot is set whole (formerly flag_word_0x38) in MenuTouchWindow.cpp and also
+    // accessed as the named bytes flag_0x38/flag_0x39. Kept as the bytes; the whole-word write is
+    // reinterpret_cast<uint16_t &>(flag_0x38).
+    uint8_t flag_0x38;
+    uint8_t flag_0x39;
 
     uint8_t field_0x3a;
     uint8_t flag_0x3b;
     uint8_t field_0x3c[0xc];
     uint8_t firstRunPreviewChecked;
 };
+
+// OptionsRecord is naturally aligned (no #pragma pack), so its members do not sit at the literal
+// hex offsets in their names. These asserts lock the byte layout of the former-union sites
+// relative to their anchors so the promoted members cannot shift.
+static_assert(sizeof(OptionsRecord) == 0x50, "OptionsRecord size");
+static_assert(offsetof(OptionsRecord, flag_0x34) == offsetof(OptionsRecord, field_0x32) + 2, "flag_0x34");
+static_assert(offsetof(OptionsRecord, flag_0x35) == offsetof(OptionsRecord, field_0x32) + 3, "flag_0x35");
+static_assert(offsetof(OptionsRecord, flag_0x36) == offsetof(OptionsRecord, field_0x32) + 4, "flag_0x36 follows the 4-byte slot");
+static_assert(offsetof(OptionsRecord, flag_0x39) == offsetof(OptionsRecord, flag_0x38) + 1, "flag_0x39");
+static_assert(offsetof(OptionsRecord, field_0x3a) == offsetof(OptionsRecord, flag_0x38) + 2, "field_0x3a follows the 2-byte slot");
 
 #endif

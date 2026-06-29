@@ -532,7 +532,7 @@ void PlayerEgo::resetLastHP() {
 void PlayerEgo::setExhaustVisible(bool param) {
     Level *lvl = this->level;
     this->exhaustVisible = param;
-    lvl->field_80->flagsLow = param;
+    reinterpret_cast<uint8_t &>(lvl->field_80->flags) = param;
     Array<int> *arr = lvl->field_a8;
     if (arr != nullptr) {
         for (unsigned i = 0; i < arr->size(); i++) {
@@ -692,7 +692,7 @@ void PlayerEgo::hideShipForFirstPersonCameraView(bool param) {
     this->field_0x32d = r1;
     unsigned char nr = r1 ^ 1;
     this->field_0x309 = (this->visible != 0) & nr;
-    this->level->field_80->flagsLow = nr & (this->exhaustVisible != 0);
+    reinterpret_cast<uint8_t &>(this->level->field_80->flags) = nr & (this->exhaustVisible != 0);
 }
 
 void PlayerEgo::changeThrust(float v) {
@@ -1764,7 +1764,7 @@ void PlayerEgo::handleAutoTurret(int dt) {
                 if (((KIPlayer *) (e))->isDying() != 0) continue;
                 if (((Player *) (((KIPlayer *) e)->player))->isActive() == 0) continue;
                 if (((KIPlayer *) (e))->isEnemy() == 0) continue;
-                if (((KIPlayer *) e)->noTargetFlag != 0) continue;
+                if (reinterpret_cast<uint8_t &>(((KIPlayer *) e)->route) != 0) continue;
 
                 float epos[3];
                 ((KIPlayer *) (e))->getPosition();
@@ -1874,8 +1874,8 @@ void PlayerEgo::roll(int amount) {
         return;
 
     AbyssEngine::AEMath::Matrix &m = ((AEGeometry *) (this->geometry))->getMatrix();
-    float rx = m.m11_rightY;
-    float ry = m.m12_upY;
+    float rx = m.m[4];
+    float ry = m.m[5];
     float mag = rx > 0.0f ? rx : -rx;
 
     if (amount > 0x3b)
@@ -1932,7 +1932,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *candidates) {
         if (((KIPlayer *) (obj))->getType() == 0x4262 && ((KIPlayer *) (obj))->isVisible() != 0) {
             if (((PlayerWormHole *) (obj))->isShrinking() == 0 && ((intptr_t) this->miningGame) == 0)
                 PE_cc_wormhole(this, obj);
-        } else if (((KIPlayer *) obj)->stealFlag == 0) {
+        } else if (reinterpret_cast<int &>(((KIPlayer *) obj)->stealFlagByte) == 0) {
             if (((KIPlayer *) (obj))->isVisible() != 0) {
                 bool docking = (((char &) this->dockingState) != 0 || this->dockedFlag != 0)
                                && (KIPlayer *) (intptr_t) this->asteroidTarget == obj;
@@ -2122,7 +2122,7 @@ void PlayerEgo::setTurretMode(bool enable) {
 
     if (this->field_0x30 != 0) {
         AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            (unsigned int) (Globals::Canvas->selfHandle));
+            (unsigned int) (reinterpret_cast<unsigned int &>(Globals::Canvas->initialized)));
         ((AbyssEngine::Transform *) (tf))->SetVisible(enable != 0);
         int v = (enable != 0);
         if (enable == 0)
@@ -2713,7 +2713,7 @@ void PlayerEgo::handleShip(int dt) {
     snd->setParamValue((FMOD::Event *) (long) ((Player *) (this->player))->GetEngineEvent(), 1,
                        ((float &) this->rollAccum) * g_PE_hs_throttleBias + 0.5f);
 
-    unsigned int tf = Globals::Canvas->selfHandle;
+    unsigned int tf = reinterpret_cast<unsigned int &>(Globals::Canvas->initialized);
 
     PE_handleShip_orient(this, dt, tf);
 

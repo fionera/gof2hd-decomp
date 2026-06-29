@@ -1,16 +1,16 @@
 #ifndef GOF2_GAME_GAMESETTINGS_H
 #define GOF2_GAME_GAMESETTINGS_H
 
+#include <cstddef>
 #include <cstdint>
 
 struct GameSettings {
     uint8_t field_0x0[0x35];
 
-    union {
-        // lint: union_decl byte 0x35 read as two distinct flags cross-file: blackMarketUnlockedFlag (Status.cpp) and settingSkipCampaignFlag (Level.cpp)
-        uint8_t blackMarketUnlockedFlag;
-        char settingSkipCampaignFlag;
-    };
+    // Byte 0x35 is read as two distinct flags across files: blackMarketUnlockedFlag (Status.cpp)
+    // and (formerly) settingSkipCampaignFlag (Level.cpp). They are the same 1-byte slot; the
+    // Level.cpp use was renamed to blackMarketUnlockedFlag.
+    uint8_t blackMarketUnlockedFlag;
 
     uint8_t hardCoreFlag;
 
@@ -21,5 +21,10 @@ struct GameSettings {
     int steerAnchorX;
     int fireAnchorX;
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(GameSettings, blackMarketUnlockedFlag) == 0x35, "blackMarketUnlockedFlag");
+static_assert(offsetof(GameSettings, hardCoreFlag) == 0x36, "hardCoreFlag");
+#endif
 
 #endif

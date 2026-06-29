@@ -95,7 +95,7 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     this->field_0x44 = 0;
     this->field_0x48 = -1;
     this->field_0x8c = 1;
-    this->stealFlag = 0;
+    reinterpret_cast<int &>(this->stealFlagByte) = 0;
     this->hasCargo = 0;
     this->carriesMissionCrate = 0;
     this->diedWithMissionCrate = 0;
@@ -119,7 +119,7 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     this->visibleFlag = 1;
     this->wingmanTarget = 0;
     this->field_0x70 = 0;
-    this->field_0x40 = 0;
+    reinterpret_cast<int &>(this->field_0x3f) = 0;
     this->field_0xd8 = 0;
     this->field_0x80 = -1;
     this->field_0x84 = -1;
@@ -232,7 +232,7 @@ void KIPlayer::setRotationSpeed(float speed) {
 }
 
 uint8_t KIPlayer::isEnemy() {
-    return (uint8_t) this->player->enemyFlags;
+    return (uint8_t) reinterpret_cast<uint16_t &>(this->player->enemyFlagsLo);
 }
 
 bool KIPlayer::isDocked() {
@@ -479,7 +479,7 @@ void KIPlayer::captureCrate(Hud *hud) {
         if (this->player->carriesFriendCargoFlag != 0)
             this->level->stealFriendCargo();
 
-        if (this->stealFlag == 0)
+        if (reinterpret_cast<int &>(this->stealFlagByte) == 0)
             ((Standing *) (intptr_t) status->getStanding())->applyStealCargo(this->shipGroup);
 
         bool special = false;

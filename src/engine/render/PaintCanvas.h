@@ -41,10 +41,11 @@ namespace AbyssEngine {
 
     class PaintCanvas {
     public:
-        union { // lint: union_decl 1-byte initialized vs 4-byte selfHandle reinterpret (initialized used in PaintCanvas.cpp/JniBridge.cpp etc., selfHandle used in PlayerEgo.cpp) — genuine size-mismatch type-pun at offset 0
-            unsigned char initialized;
-            unsigned int selfHandle;
-        };
+        // Former union (initialized:1B / selfHandle:4B) collapsed to the 1-byte field + pad.
+        // selfHandle (2 uses in PlayerEgo.cpp) reads the full 4-byte slot via
+        // reinterpret_cast<unsigned int &>(initialized).
+        unsigned char initialized;
+        unsigned char _pad_0x1[3];
 
         int culledCount;
         char *quad2dMesh;
@@ -449,6 +450,11 @@ namespace AbyssEngine {
         void GetScreenPosition(Matrix &m, const Vector &worldPos,
                                Vector &outVec);
     };
+
+#if __SIZEOF_POINTER__ == 4
+    static_assert(__builtin_offsetof(PaintCanvas, initialized) == 0x0, "PaintCanvas::initialized offset");
+    static_assert(__builtin_offsetof(PaintCanvas, culledCount) == 0x4, "PaintCanvas::culledCount offset");
+#endif
 }
 
 using ::AbyssEngine::PaintCanvas;

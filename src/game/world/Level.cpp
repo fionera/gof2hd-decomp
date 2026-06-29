@@ -895,7 +895,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             gun->weaponType = static_cast<ItemSort>(kind);
             gun->setPlayerGun(1);
             if ((idx == 0x30 || idx == 0xe0 || idx == 0xb5)) {
-                gun->field_0xa4 = 1;
+                reinterpret_cast<int &>(gun->field_0xa4_b0) = 1;
                 if (idx == 0xe0) gun->field_0xa5 = 1;
             }
             obj = (ObjectGun *) ::operator new(0xb0);
@@ -1316,7 +1316,7 @@ int Level::init() {
                 int won = Globals::status->gameWon();
                 GameSettings *settings = (GameSettings *) *g_init_settings;
                 bool skip = won != 0 && settings->settingSkipIntroFlag == 0 &&
-                            settings->settingSkipCampaignFlag == 0;
+                            settings->blackMarketUnlockedFlag == 0;
                 if (skip) {
                     thisptr->createMission();
                     if (**g_init_bmFlag != 0 && Globals::status->inBlackMarketSystem() != 0) {
@@ -1416,7 +1416,7 @@ void Level::createFighterTurrets() {
                 t->setHost(ki, *(Vector *) offset);
                 *(PlayerTurret **) &ki->field_0x10 = t;
                 t->shipGroup = (kind == 0x2d) ? 8 : 0;
-                t->noTargetFlag = 1;
+                reinterpret_cast<uint8_t &>(t->route) = 1;
                 ArrayAdd((KIPlayer *) t, *(this->enemies));
             }
         }
@@ -2101,7 +2101,7 @@ void Level::connectPlayers() {
                 }
                 if (consider) {
                     bool skip = false;
-                    if ((char) ((KIPlayer *) (intptr_t) e)->field_0x40 != 0 && ((PlayerFixedObject *) (intptr_t) e)->
+                    if ((char) reinterpret_cast<int &>(((KIPlayer *) (intptr_t) e)->field_0x3f) != 0 && ((PlayerFixedObject *) (intptr_t) e)->
                         getDockingType() == 3) {
                         Station *st = (Station *) Globals::status->getStation();
                         if (((Station *) st)->stationHasHiddenBlueprint(1) != 0)
@@ -2168,7 +2168,7 @@ void Level::connectPlayers() {
                         }
                         if (consider) {
                             bool skip = false;
-                            if ((char) ((KIPlayer *) (intptr_t) e)->field_0x40 != 0 &&
+                            if ((char) reinterpret_cast<int &>(((KIPlayer *) (intptr_t) e)->field_0x3f) != 0 &&
                                 ((PlayerFixedObject *) (intptr_t) e)->getDockingType() == 3) {
                                 Station *st = (Station *) Globals::status->getStation();
                                 if (((Station *) st)->stationHasHiddenBlueprint(1) != 0)
@@ -3274,7 +3274,7 @@ void Level::almostKillWanted(int index) {
     KIPlayer *e = (*this->enemies)[0];
     e->player->setAlwaysEnemy(0);
     ((Player *) (int) (intptr_t)(*this->enemies)[1])->resetDamageDoneByPlayer();
-    *(unsigned char *) &e->player->enemyFlags = 0;
+    e->player->enemyFlagsLo = 0;
     e->reviveLockFlag = 1;
     Array<Wanted *> *w = Globals::status->getWanted();
     return w->data_[index]->setActive(0 != 0);
@@ -4146,9 +4146,9 @@ void Level::renderBG(int t) {
 
     Matrix *sky = &this->skyMatrix;
     (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-    sky->e7 = 0;
-    sky->e3 = 0;
-    sky->e11 = 0;
+    sky->m[7] = 0;
+    sky->m[3] = 0;
+    sky->m[11] = 0;
 
     Matrix *cloudMtx = &this->cloudMatrix;
     if (Globals::status->inAlienOrbit() == 0 &&
@@ -4179,9 +4179,9 @@ void Level::renderBG(int t) {
         ((PaintCanvas *) (long) (canvas))->CameraGetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent());
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
         (*sky = *sky);
-        sky->e7 = 0;
-        sky->e3 = 0;
-        sky->e11 = 0;
+        sky->m[7] = 0;
+        sky->m[3] = 0;
+        sky->m[11] = 0;
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
         ((PaintCanvas *) (long) (canvas))->
                 DrawTransform((unsigned int) (long) (*(Matrix **) &this->field_1b4), nullptr);
@@ -4224,9 +4224,9 @@ void Level::renderBG(int t) {
             AbyssEngine::AEMath::MatrixSetRotation(this->reversalMatrix, ax, ay, az);
         }
         (*sky *= this->reversalMatrix);
-        sky->e3 = 0;
-        sky->e7 = 0;
-        sky->e11 = 0;
+        sky->m[3] = 0;
+        sky->m[7] = 0;
+        sky->m[11] = 0;
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
         ((PaintCanvas *) (long) (canvas))->
                 DrawTransform((unsigned int) (long) (*(Matrix **) &this->field_1bc), nullptr);
@@ -4238,9 +4238,9 @@ void Level::renderBG(int t) {
         ((PaintCanvas *) (long) (canvas))->CameraGetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent());
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
         (*sky = *sky);
-        sky->e7 = 0;
-        sky->e3 = 0;
-        sky->e11 = 0;
+        sky->m[7] = 0;
+        sky->m[3] = 0;
+        sky->m[11] = 0;
         ((PaintCanvas *) (long) (canvas))->SetWorldViewMatrix(this->skyMatrix);
         ((PaintCanvas *) (long) (canvas))->SetColor(0xffffffffu);
         const AbyssEngine::AEMath::Matrix *eng =

@@ -107,12 +107,15 @@ def lint_file(path):
     viol = []
 
     def add(crit, lineno, snippet):
-        # A `// lint: <crit>` comment waives the criterion on its own line OR an adjacent line
-        # (within +-2): waivers are written same-line, just above, or just below the declaration,
-        # and an auto-formatter may insert a blank line between the two -- so accept a small window.
-        for l in range(lineno - 2, lineno + 3):
-            if crit in waivers.get(l, ()):
-                return
+        # union_decl is UN-waivable: the original source has no unions (Ghidra invents them), so any
+        # `union` is a decompiler artifact to eliminate, never to waive.
+        if crit != "union_decl":
+            # A `// lint: <crit>` comment waives the criterion on its own line OR an adjacent line
+            # (within +-2): waivers are written same-line, just above, or just below the declaration,
+            # and an auto-formatter may insert a blank line between the two -- so accept a small window.
+            for l in range(lineno - 2, lineno + 3):
+                if crit in waivers.get(l, ()):
+                    return
         viol.append((crit, lineno, snippet))
 
     # one class per file: a public class lives in its own header. We enforce this on HEADERS
@@ -193,8 +196,8 @@ def find_cycles(root, files):
 # per-file **ratchet** against a baseline: changed/new code may not raise a file's count, and the
 # baseline shrinks as files are cleaned (`--update-baseline`). This makes `lint` a real regression
 # gate that is achievable now, instead of demanding the whole recovery be complete.
-HARD = ["banned_token", "extern_c", "explicit_inst", "circular_inc"]
-SOFT = ["void_ptr", "union_decl", "one_class"]
+HARD = ["banned_token", "extern_c", "union_decl", "explicit_inst", "circular_inc"]
+SOFT = ["void_ptr", "one_class"]
 ALL_CRITS = SOFT + HARD
 
 

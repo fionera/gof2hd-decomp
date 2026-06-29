@@ -956,7 +956,7 @@ void MenuTouchWindow::startValkyrie() {
     opt->flag_0x1e = 1;
     opt->flag_0x24 = 1;
     opt->flag_0x36 = 0;
-    opt->flag_dword_0x32 = 0;
+    reinterpret_cast<int32_t &>(opt->field_0x32[0]) = 0;
     opt->flag_0x38 = 1;
     optB->flag_0x34 = 1;
 
@@ -968,7 +968,7 @@ void MenuTouchWindow::startValkyrie() {
 
     ModuleTransitionThunk *thunk = gValTransition;
     optB->fadeValue = this->fadeValue;
-    thunk->transitionFn(thunk->field_0x0, 5);
+    thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
 }
 
 static Layout *const *const gBgLayout = nullptr;
@@ -1271,9 +1271,9 @@ int MenuTouchWindow::loadGame(int slot) {
 
     Status *flags = (Status *) *gLoadStatusFlags;
     GameRecord *record = (GameRecord *) rec;
-    bool versionOk = (record->versionMismatchFlag == 0) || (flags->versionOverrideFlag != 0);
+    bool versionOk = (record->versionMismatchFlag == 0) || (reinterpret_cast<uint8_t *>(&flags->systemVisibilities)[3] != 0);
     if (versionOk) {
-        bool dlcOk = (record->dlcRequiredFlag == 0) || (flags->dlcOverrideFlag != 0);
+        bool dlcOk = (record->dlcRequiredFlag == 0) || (reinterpret_cast<uint8_t *>(&flags->systemVisibilities)[1] != 0);
         if (dlcOk) {
             _mtw_Status_resetGame();
             _mtw_GameRecord_load(rec);
@@ -1515,20 +1515,20 @@ void MenuTouchWindow::update(int dt) {
         switch (code) {
             case 0: {
                 Status *status = (Status *) *gUpStatusObj;
-                status->dlcOverrideFlag = 1;
+                reinterpret_cast<uint8_t *>(&status->systemVisibilities)[1] = 1;
                 _mtw_Status_setSystemVisibility(status, 0x19, true);
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[1]));
             }
             break;
             case 1: {
-                ((Status *) *gUpStatusObj)->mode_0x114 = 3;
+                reinterpret_cast<int32_t &>(((Status *) *gUpStatusObj)->field_120) = 3;
                 ((OptionsRecord *) *gUpOptObj)->flag_0x36 = 1;
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[2]));
             }
             break;
             case 2: {
                 Status *status = (Status *) *gUpStatusObj;
-                status->versionOverrideFlag = 1;
+                reinterpret_cast<uint8_t *>(&status->systemVisibilities)[3] = 1;
                 _mtw_Status_setSystemVisibility(status, 0x19, true);
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[3]));
             }
@@ -2344,7 +2344,7 @@ void MenuTouchWindow::startSupernova() {
     opt->flag_dword_0x20 = 0x1010101;
     opt->flag_0x17 = 1;
     opt->flag_0x36 = 0;
-    opt->flag_dword_0x32 = 0;
+    reinterpret_cast<int32_t &>(opt->field_0x32[0]) = 0;
     opt->flag_word_0x8 = 0x101;
     opt->flag_0xa = 1;
     opt->flag_0x15 = 1;
@@ -2356,7 +2356,7 @@ void MenuTouchWindow::startSupernova() {
     opt->flag_0x24 = 1;
     opt->flag_word_0x1c = 0x101;
     opt->flag_0x1e = 1;
-    opt->flag_word_0x38 = 0x101;
+    reinterpret_cast<uint16_t &>(opt->flag_0x38) = 0x101;
     Achievements *ach = *gSnAch;
     optB->flag_0x34 = 1;
 
@@ -2368,7 +2368,7 @@ void MenuTouchWindow::startSupernova() {
 
     ModuleTransitionThunk *thunk = gSnTransition;
     optB->fadeValue = this->fadeValue;
-    thunk->transitionFn(thunk->field_0x0, 5);
+    thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
 }
 
 static FModSound *const *const gGof2Fmod = nullptr;
@@ -2383,6 +2383,6 @@ void MenuTouchWindow::startGOF2() {
     float v = _mtw_FModSound_stop(snd);
     _mtw_FModSound_play(snd, 0x8f, 0, v);
     ModuleTransitionThunk *thunk = *gGof2Transition;
-    thunk->transitionFn3(thunk->field_0x0, 2, 0);
+    reinterpret_cast<void (*)(void *, int, int)>(thunk->transitionFn)(reinterpret_cast<void *&>(thunk->transitionFn), 2, 0); // lint: void_ptr (thunk slot cast to 3-arg variant; opaque context)
 }
 

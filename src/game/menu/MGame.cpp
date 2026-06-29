@@ -256,7 +256,7 @@ void MGame::startJumpScene() {
     this->field_0x70 = g_jsHudFlag;
     this->hud->releaseAllKeys();
     this->field_0x110 = 0;
-    this->field_0x5c = 0;
+    reinterpret_cast<int &>(this->_b5c) = 0;
 
     PaintCanvas *pc = Globals::Canvas;
     unsigned cam = this->cameraId;
@@ -282,20 +282,20 @@ void MGame::startJumpScene() {
         Array<KIPlayer *> *lm = this->level->getLandmarks();
         KIPlayer *obj = (*lm)[0];
         this->egoJumpPos = obj->getPosition();
-        float nz = (float) this->egoJumpPosZ + *(float *) &g_jsOffsetZ;
-        this->egoJumpPosZ = (int) nz;
+        float nz = (float) reinterpret_cast<int &>(this->egoJumpPos.z) + *(float *) &g_jsOffsetZ;
+        reinterpret_cast<int &>(this->egoJumpPos.z) = (int) nz;
         if (this->player->geometry != nullptr) {
             Vector pos = this->player->getPosition();
             ((AEGeometry *) (this->player->geometry))->setPosition(pos);
         }
         this->player->setComputerControlled(1);
         ((AEGeometry *) this->player->geometry)->setRotation((float) 0, (float) 0, (float) 0);
-        this->egoJumpPosX = (int) ((float) this->egoJumpPosX + *(float *) &g_jsOffsetX);
-        this->egoJumpPosY = (int) ((float) this->egoJumpPosY + *(float *) &g_jsOffsetY);
-        this->egoJumpPosZ = (int) ((float) this->egoJumpPosZ + *(float *) &g_jsOffsetZ2);
-        camX = (float) this->egoJumpPosX;
-        camY = (float) this->egoJumpPosY;
-        camZ = (float) this->egoJumpPosZ;
+        reinterpret_cast<int &>(this->egoJumpPos.x) = (int) ((float) reinterpret_cast<int &>(this->egoJumpPos.x) + *(float *) &g_jsOffsetX);
+        reinterpret_cast<int &>(this->egoJumpPos.y) = (int) ((float) reinterpret_cast<int &>(this->egoJumpPos.y) + *(float *) &g_jsOffsetY);
+        reinterpret_cast<int &>(this->egoJumpPos.z) = (int) ((float) reinterpret_cast<int &>(this->egoJumpPos.z) + *(float *) &g_jsOffsetZ2);
+        camX = (float) reinterpret_cast<int &>(this->egoJumpPos.x);
+        camY = (float) reinterpret_cast<int &>(this->egoJumpPos.y);
+        camZ = (float) reinterpret_cast<int &>(this->egoJumpPos.z);
     } else {
         this->player->resetMovement();
         this->player->setComputerControlled(1);
@@ -339,9 +339,9 @@ void MGame::startJumpScene() {
         FModSound_setProp(*snd, 0x8d4);
         ((FModSound *) (*snd))->play(0x20, 0, 0 /* vel: arg lost in decomp */, 0.0f);
 
-        camX = (float) this->egoJumpPosX;
-        camZ = (float) this->egoJumpPosY;
-        camY = (float) this->egoJumpPosZ;
+        camX = (float) reinterpret_cast<int &>(this->egoJumpPos.x);
+        camZ = (float) reinterpret_cast<int &>(this->egoJumpPos.y);
+        camY = (float) reinterpret_cast<int &>(this->egoJumpPos.z);
     }
     TFC_setPosition(this->camera, camX, camY, camZ);
 }
@@ -683,7 +683,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             return;
         }
         if (self->autopilotMenuOpen != 0 || self->choiceWindowOpen != 0 ||
-            self->dockChoiceOpen != 0) {
+            reinterpret_cast<int &>(self->field_0xc1) != 0) {
             self->choiceWindow->OnTouchBegin(p1, p2);
             return;
         }
@@ -1328,7 +1328,7 @@ int MGame::OnInitialize() {
             }
         }
 
-        self->field_0xc8 = 0;
+        reinterpret_cast<uint16_t &>(self->_bc8) = 0;
         bool renderParticles =
                 ((ParticleSystemGlobal *) (intptr_t) g_initParticleFlag)->particlesEnabled != 0;
         if (!renderParticles) {
@@ -1496,7 +1496,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
     int wasAutoPilot = this->player->isAutoPilot();
     this->flFastForwardWeight = 1.0f;
     TFC_setFastForwardMode(this->camera, 0);
-    this->player->resumeFlag = 1;
+    reinterpret_cast<uint8_t &>(this->player->dockApproachDist) = 1;
 
     unsigned hr = 0;
     if (this->pauseOpen == 0) {
@@ -1907,11 +1907,11 @@ void MGame::reset() {
     this->elapsedTimeHigh = 0;
     this->cameraMode = 0;
     this->field_0x18 = 0;
-    this->field_0x5c = 0;
+    reinterpret_cast<int &>(this->_b5c) = 0;
     this->jumpActive = 0;
-    this->dockChoiceOpen = 0;
+    reinterpret_cast<int &>(this->field_0xc1) = 0;
     this->field_0xc6 = 0;
-    this->field_0xc8 = 0;
+    reinterpret_cast<uint16_t &>(this->_bc8) = 0;
     this->field_0xe0 = 0;
     this->freeCamMode = 0;
     this->field_0x110 = 0;
@@ -1922,7 +1922,7 @@ void MGame::reset() {
     this->lastTapTimeHigh = 0;
     this->lastAlignTime = 0;
     this->lastAlignTimeHigh = 0;
-    this->thrustActive = 0;
+    reinterpret_cast<uint16_t &>(this->_b1b8) = 0;
     this->thrustThreshold = (*g_resShipTune)[0x2f4 / 4];
     this->thrustBase = 0;
     this->gameRecord = 0;
@@ -2091,7 +2091,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
             unsigned mode = (unsigned) self->cameraMode;
             if (mode <= 1) {
                 ((MGame *) (self))->maneuverTouchMove(mode, y, touch);
-                if (self->thrustActive != 0 && self->jumpActive == 0) {
+                if (reinterpret_cast<uint16_t &>(self->_b1b8) != 0 && self->jumpActive == 0) {
                     int f8 = self->hudTouchFlags;
                     int ok = (f8 == 0) ||
                              (f8 == 0x20 && self->activeTouchId != touch);
@@ -2134,7 +2134,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
     if (self->pauseOpen == 0) return;
 
     if (self->gameOverActive != 0 || self->autopilotMenuOpen != 0 ||
-        self->choiceWindowOpen != 0 || self->dockChoiceOpen != 0) {
+        self->choiceWindowOpen != 0 || reinterpret_cast<int &>(self->field_0xc1) != 0) {
         self->choiceWindow->OnTouchMove(p1, y);
         return;
     }
@@ -2259,13 +2259,13 @@ afterCam:
     }
 
     Vector *camPos = (Vector *) TFC_getPosition(self->camera);
-    float threshold = (float) self->egoJumpPosZ + *(float *) &g_ujZNear;
+    float threshold = (float) reinterpret_cast<int &>(self->egoJumpPos.z) + *(float *) &g_ujZNear;
     if (camPos->z < threshold && self->usingJumpDrive == 0) {
         Array<KIPlayer *> *lm = self->level->getLandmarks();
         ((PlayerJumpgate *) ((int) (intptr_t)(*lm)[1]))->activate();
         float p[4];
         ((PlayerEgo *) (p))->getPosition();
-        float t2 = (float) self->egoJumpPosZ + *(float *) &g_ujZSound;
+        float t2 = (float) reinterpret_cast<int &>(self->egoJumpPos.z) + *(float *) &g_ujZSound;
         if (t2 <= p[2] && self->jumpGateSoundStarted == 0) {
             int *snd = g_ujSound;
             FModSound_setProp(*snd, self->player->field_0x1c);
@@ -2368,9 +2368,9 @@ MGame::MGame() {
 
     this->elapsedTime = z;
     this->elapsedTimeHigh = z;
-    this->egoJumpPosX = z;
-    this->egoJumpPosY = z;
-    this->egoJumpPosZ = z;
+    reinterpret_cast<int &>(this->egoJumpPos.x) = z;
+    reinterpret_cast<int &>(this->egoJumpPos.y) = z;
+    reinterpret_cast<int &>(this->egoJumpPos.z) = z;
     this->field_0x1bc = z;
     this->thrustStartY = z;
     this->field_0x1c4 = z;
@@ -2414,19 +2414,19 @@ MGame::MGame() {
     this->field_0x1d4 = z;
     this->deltaTime = z;
     this->player = 0;
-    this->field_0x5c = z;
+    reinterpret_cast<int &>(this->_b5c) = z;
     this->gameOverActive = 0;
     this->campaignMission = 0;
     this->starMap = 0;
     this->choiceWindow = 0;
     this->_bc8 = 0;
-    this->dockChoiceOpen = z;
+    reinterpret_cast<int &>(this->field_0xc1) = z;
     this->autopilotMenuOpen = 0;
     this->field_0xc6 = 0;
     this->starMapOpen = 0;
     this->choiceWindowOpen = 0;
     this->field_0xcf = 0;
-    this->field_0xca = z;
+    reinterpret_cast<int &>(this->_bca) = z;
     this->field_0xd8 = z;
     this->jumpDriveActive = z;
     this->field_0x1d8 = initVal;
@@ -2475,7 +2475,7 @@ void MGame::OnRelease() {
     this->deltaTime = 0;
     this->gameOverActive = 0;
     this->player = 0;
-    this->field_0x5c = 0;
+    reinterpret_cast<int &>(this->_b5c) = 0;
 
     this->frameTime = 0;
     this->frameTimeHigh = 0;
@@ -2683,9 +2683,9 @@ void MGame::OnRender2D() {
                     self->dialogueWindow->draw();
                 }
                 if (self->autopilotMenuOpen != 0 || self->field_0xc6 != 0 ||
-                    self->choiceWindowOpen != 0 || self->dockChoiceOpen != 0)
+                    self->choiceWindowOpen != 0 || reinterpret_cast<int &>(self->field_0xc1) != 0)
                     self->choiceWindow->draw();
-                if (self->field_0xca != 0)
+                if (reinterpret_cast<int &>(self->_bca) != 0)
                     self->hud->drawMenu(0);
             } else if (!(self->elapsedTimeHigh < (int) (self->elapsedTime < 0xbb9))) {
                 Globals::Canvas->SetColor((unsigned) (intptr_t) self->paintCanvas);

@@ -34,61 +34,37 @@ public:
     Array<Agent *> *agents;
     int32_t wingmen;
 
-    union { // lint: union_decl -- 32-bit word overlaid with per-byte access
-        int32_t field_0x28;
-
-        struct {
-            uint8_t _byte_0x28;
-            uint8_t _byte_0x29;
-            uint8_t byte_0x2a;
-            uint8_t _byte_0x2b;
-        };
-    };
+    // former union: int32 field_0x28 overlaid with these bytes.
+    // wide view: reinterpret_cast<int32_t &>(_byte_0x28)
+    uint8_t _byte_0x28;
+    uint8_t _byte_0x29;
+    uint8_t byte_0x2a;
+    uint8_t _byte_0x2b;
 
     int32_t field_0x2c;
 
     uint32_t fadeValue;
 
-    union { // lint: union_decl -- int overlaid with per-byte access
-        int32_t passengers;
+    // former union: int32 passengers overlaid with these bytes.
+    // wide view: reinterpret_cast<int32_t &>(_byte_0x34)
+    uint8_t _byte_0x34;
+    uint8_t byte_0x35;
+    uint8_t _byte_0x36;
+    uint8_t byte_0x37;
 
-        struct {
-            uint8_t _byte_0x34;
-            uint8_t byte_0x35;
-            uint8_t _byte_0x36;
-            uint8_t byte_0x37;
-        };
-    };
-
-    union { // lint: union_decl -- Array<bool>* overlaid with flag bytes
-        Array<bool> *systemVisibilities;
-
-        struct {
-            uint8_t field_0x34_b0;
-
-            uint8_t dlcOverrideFlag;
-
-            uint8_t field_0x36_b2;
-
-            uint8_t versionOverrideFlag;
-        };
-    };
+    // former union: Array<bool>* systemVisibilities overlaid with flag bytes.
+    // byte views: reinterpret_cast<uint8_t *>(&systemVisibilities)[n]
+    //   [1] = dlcOverrideFlag, [3] = versionOverrideFlag
+    Array<bool> *systemVisibilities;
 
     Array<int> *field_0x3c;
     Array<int> *field_0x40;
     Array<int> *field_0x44;
     Array<int> *field_0x48;
 
-    union { // lint: union_decl -- Array<bool>* overlaid with per-byte access
-        Array<bool> *field_4c;
-
-        struct {
-            uint8_t _byte_0x4c;
-            uint8_t _byte_0x4d;
-            uint8_t byte_0x4e;
-            uint8_t _byte_0x4f;
-        };
-    };
+    // former union: Array<bool>* field_4c overlaid with per-byte access.
+    // byte views: reinterpret_cast<uint8_t *>(&field_4c)[n]  ([2] = byte_0x4e)
+    Array<bool> *field_4c;
 
     Array<bool> *field_50;
     Array<bool> *field_54;
@@ -123,14 +99,10 @@ public:
     int32_t field_c0;
     int32_t field_c4;
 
-    union { // lint: union_decl -- two 32-bit fields overlaid with 64-bit access
-        struct {
-            int32_t field_c8;
-            int32_t field_cc;
-        };
-
-        int64_t field_c8_q;
-    };
+    // former union: two int32 fields overlaid with int64 field_c8_q.
+    // wide view: reinterpret_cast<int64_t &>(field_c8)
+    int32_t field_c8;
+    int32_t field_cc;
 
     int32_t field_d0;
     int32_t field_d4;
@@ -151,25 +123,21 @@ public:
     uint8_t field_0x108;
     uint8_t _pad_0x109[3];
 
-    union { // lint: union_decl -- struct overlaid with 64-bit access
-        struct {
-            int32_t field_10c;
-            uint8_t field_110;
-            uint8_t field_0x111;
-            uint8_t _pad_0x112[2];
-        };
-
-        int64_t field_10c_q;
-    };
+    // former union: this sub-struct overlaid with int64 field_10c_q.
+    // wide view: reinterpret_cast<int64_t &>(field_10c)
+    int32_t field_10c;
+    uint8_t field_110;
+    uint8_t field_0x111;
+    uint8_t _pad_0x112[2];
 
     int32_t field_114;
     int32_t field_118;
     int32_t field_11c;
 
-    union { // lint: union_decl -- uint8 field_120 vs int32 mode_0x114, both used cross-file
-        uint8_t field_120;
-        int32_t mode_0x114;
-    };
+    // former union: uint8 field_120 overlaid with int32 mode_0x114.
+    // wide view: reinterpret_cast<int32_t &>(field_120)
+    uint8_t field_120;
+    uint8_t _pad_0x121[3];
 
     int32_t field_124;
     int32_t field_128;
@@ -182,10 +150,9 @@ public:
     int32_t field_144;
     int32_t field_148;
 
-    union { // lint: union_decl -- Station* vs int32 handle, both used cross-file (Generator.cpp field_14c)
-        Station *voidStation;
-        int32_t field_14c;
-    };
+    // former union: Station* voidStation overlaid with int32 handle field_14c.
+    // int view: reinterpret_cast<int32_t &>(voidStation)
+    Station *voidStation;
 
     int32_t field_150;
     int32_t field_154;
@@ -461,9 +428,9 @@ static_assert(offsetof(Status, standing) == 0x14, "");
 static_assert(offsetof(Status, bluePrints) == 0x18, "");
 static_assert(offsetof(Status, pendingProducts) == 0x1c, "");
 static_assert(offsetof(Status, agents) == 0x20, "");
-static_assert(offsetof(Status, field_0x28) == 0x28, "");
+static_assert(offsetof(Status, _byte_0x28) == 0x28, "");
 static_assert(offsetof(Status, fadeValue) == 0x30, "");
-static_assert(offsetof(Status, passengers) == 0x34, "");
+static_assert(offsetof(Status, _byte_0x34) == 0x34, "");
 static_assert(offsetof(Status, systemVisibilities) == 0x38, "");
 static_assert(offsetof(Status, field_5c) == 0x5c, "shieldHp");
 static_assert(offsetof(Status, field_60) == 0x60, "armorHp");
@@ -479,7 +446,7 @@ static_assert(offsetof(Status, field_0x111) == 0x111, "");
 static_assert(offsetof(Status, field_114) == 0x114, "");
 static_assert(offsetof(Status, field_11c) == 0x11c, "");
 static_assert(offsetof(Status, field_124) == 0x124, "");
-static_assert(offsetof(Status, field_14c) == 0x14c, "generatedStation");
+static_assert(offsetof(Status, voidStation) == 0x14c, "generatedStation");
 static_assert(offsetof(Status, field_150) == 0x150, "");
 static_assert(offsetof(Status, field_158) == 0x158, "");
 static_assert(offsetof(Status, field_178) == 0x178, "missionCounter");
@@ -502,6 +469,23 @@ static_assert(offsetof(Status, jumpgatesUsed) == 0x1dc, "");
 static_assert(offsetof(Status, capturedCrates) == 0x1e0, "");
 static_assert(offsetof(Status, boughtEquipment) == 0x1e4, "");
 static_assert(offsetof(Status, currentCampaignMission) == 0x1e8, "campaignStep");
+
+// former-union sites: each first member + the field immediately after it.
+static_assert(__builtin_offsetof(Status, _byte_0x28) == 0x28, "");
+static_assert(__builtin_offsetof(Status, field_0x2c) == 0x2c, "");
+static_assert(__builtin_offsetof(Status, _byte_0x34) == 0x34, "");
+static_assert(__builtin_offsetof(Status, systemVisibilities) == 0x38, "");
+static_assert(__builtin_offsetof(Status, field_0x3c) == 0x3c, "");
+static_assert(__builtin_offsetof(Status, field_4c) == 0x4c, "");
+static_assert(__builtin_offsetof(Status, field_50) == 0x50, "");
+static_assert(__builtin_offsetof(Status, field_c8) == 0xc8, "");
+static_assert(__builtin_offsetof(Status, field_cc) == 0xcc, "");
+static_assert(__builtin_offsetof(Status, field_10c) == 0x10c, "");
+static_assert(__builtin_offsetof(Status, field_110) == 0x110, "");
+static_assert(__builtin_offsetof(Status, field_120) == 0x120, "");
+static_assert(__builtin_offsetof(Status, field_124) == 0x124, "");
+static_assert(__builtin_offsetof(Status, voidStation) == 0x14c, "");
+static_assert(__builtin_offsetof(Status, field_150) == 0x150, "");
 #endif
 
 #endif

@@ -62,3 +62,42 @@ GENUINE OVERLAY (KEEP, with an accurate same-line `// lint: union_decl` reason):
 When in doubt, KEEP and say why. Verify the receiver type before any cross-file rename (field_0xNN /
 component names are reused across classes). Do NOT run the build — the orchestrator rebuilds + checks
 symbol parity centrally. Report per union: artifact (what you did) or genuine (one-line reason).
+
+## FINAL DIRECTIVE: ELIMINATE EVERY UNION (the original source has none)
+
+Ghidra invents a `union` whenever one offset is accessed as >1 type; the original C++ used a single
+field + an explicit cast at the specific sites. Remove ALL `union`s. Result must have ZERO `union`
+keywords, identical byte layout, identical behavior, and still compile + hold symbol parity.
+
+Per pattern:
+1. `union { Wide w; struct { sub-fields... }; };`  (a wide view over named sub-fields)
+   -> promote the sub-fields to plain members at the same offsets (drop the union+struct wrappers).
+      Rewrite every `w` access as `reinterpret_cast<Wide &>(firstSubField)`.
+      e.g. `{int field_0x5c; struct{uint8_t pauseOpen,cutsceneActive,jumpActive,_pad;};}`
+        -> `uint8_t pauseOpen, cutsceneActive, jumpActive, _pad_0x5f;`
+           and `x->field_0x5c`  ->  `reinterpret_cast<int &>(x->pauseOpen)`.
+2. `union { A a; B b; };`  (same offset, different types; A = the semantic value-type)
+   -> keep `A a;`, rewrite each `b` use as `reinterpret_cast<B &>(a)`.
+      float/int: keep the float, `rankBits` -> `reinterpret_cast<int32_t &>(rank)`.
+      pointer/int-handle: keep the pointer, `field_14c` -> `reinterpret_cast<int32_t &>(voidStation)`.
+3. `union { A a; A b; };`  (same type, two names) -> keep one, RENAME the other's uses (no cast).
+      Verify the receiver is THIS class first (field_0xNN / flag names are reused across classes).
+4. `union FlagWord { uint32_t word; uint16_t halfword; uint16_t halfwords[2]; uint8_t bytes[4]; };`
+   -> delete the FlagWord type. Each `FlagWord` member becomes the underlying unioned slot (the
+      pointer/int it overlaid). Rewrite:
+        x.word         -> reinterpret_cast<uint32_t &>(slot)
+        x.halfword     -> reinterpret_cast<uint16_t &>(slot)
+        x.halfwords[n] -> reinterpret_cast<uint16_t *>(&slot)[n]
+        x.bytes[n]     -> reinterpret_cast<uint8_t  *>(&slot)[n]
+5. arrays `union { T arr[N]; named...; }` (Matrix m[15]/named, Globals arrays):
+   keep the array as canonical, rewrite named-element uses as `arr[index]` (cross-file rename, verify
+   receiver). Matrix is layout-critical: keep `float m[15]`, map m11_rightY->m[1], m12_upY->m[2], etc.
+
+HARD CONSTRAINTS:
+- Identical byte layout: keep every named sub-field at its existing offset; do NOT add/remove bytes.
+  Add a `static_assert(__builtin_offsetof(Class, firstKeptMember) == 0xNN, "")` (guard with
+  `#if __SIZEOF_POINTER__ == 4`) for each former-union site AND the field immediately after it.
+- Identical behavior: reinterpret_cast preserves bits; an int-write of a value equals the union write.
+- Verify receiver type on every cross-file rename/rewrite.
+- Do NOT run the build (orchestrator rebuilds + checks parity + offsets centrally).
+Report per union: how you eliminated it (kept field + rewritten sites).

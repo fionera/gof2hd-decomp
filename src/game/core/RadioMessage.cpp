@@ -108,7 +108,7 @@ int RadioMessage::getSoundID() {
 
 namespace {
     uint8_t enemyFriendFlag(Player *player) {
-        return static_cast<uint8_t>(player->enemyFlags >> 8);
+        return static_cast<uint8_t>(reinterpret_cast<uint16_t &>(player->enemyFlagsLo) >> 8);
     }
 }
 

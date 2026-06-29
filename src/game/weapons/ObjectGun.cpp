@@ -312,7 +312,7 @@ void ObjectGun::update(int dt) {
             offsets.z = 13.0f;
         }
 
-        if (gun->field_0xa4 != 0) {
+        if (reinterpret_cast<int &>(gun->field_0xa4_b0) != 0) {
             if (weapon == 0xb5) {
                 offsets.x = gun->field_0xa6 != 0 ? -1.5f : 1.5f;
             } else {

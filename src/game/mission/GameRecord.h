@@ -13,15 +13,11 @@ public:
     uint32_t field_0x08;
     uint32_t field_0x0c;
 
-    union {
-        // lint: union_decl (cross-file alias; RecordHandler.cpp reads rec->playTime64)
-        struct {
-            uint8_t *playTimeObj;
-            uint32_t field_0x14;
-        };
-
-        int64_t playTime64;
-    };
+    // 0x10..0x17 is read both as a {pointer, uint32} pair and as a single int64 playTime
+    // (RecordHandler.cpp). Kept as the two real members; the int64 view is
+    // reinterpret_cast<int64_t &>(playTimeObj) at the few sites that need it.
+    uint8_t *playTimeObj;
+    uint32_t field_0x14;
 
     uint32_t field_0x18;
     uint32_t field_0x1c;
@@ -117,11 +113,9 @@ public:
     uint8_t field_0x11a;
     uint8_t field_0x11b;
 
-    union {
-        // lint: union_decl (cross-file alias; RecordHandler.cpp reads rec->rankBits)
-        float rank;
-        int32_t rankBits;
-    };
+    // 0x11c is the float rank; RecordHandler.cpp also writes its raw bits via
+    // reinterpret_cast<int32_t &>(rank).
+    float rank;
 
     uint32_t field_0x120;
     uint32_t field_0x124;
@@ -188,10 +182,13 @@ static_assert(offsetof(GameRecord, field_0x102) == 0x102, "");
 static_assert(offsetof(GameRecord, dlcRequiredFlag) == 0x115, "dlcRequiredFlag");
 static_assert(offsetof(GameRecord, versionMismatchFlag) == 0x117, "versionMismatchFlag");
 static_assert(offsetof(GameRecord, playTimeObj) == 0x10, "playTimeObj");
+static_assert(offsetof(GameRecord, field_0x14) == 0x14, "field_0x14");
+static_assert(offsetof(GameRecord, field_0x18) == 0x18, "field_0x18");
 static_assert(offsetof(GameRecord, killsText) == 0x20, "killsText");
 static_assert(offsetof(GameRecord, pilotName) == 0x194, "pilotName");
 static_assert(offsetof(GameRecord, field_0x119) == 0x119, "");
 static_assert(offsetof(GameRecord, rank) == 0x11c, "");
+static_assert(offsetof(GameRecord, field_0x120) == 0x120, "");
 static_assert(offsetof(GameRecord, field_0x130) == 0x130, "");
 static_assert(offsetof(GameRecord, shipId) == 0x1a0, "");
 static_assert(offsetof(GameRecord, field_0x1b4) == 0x1b4, "");

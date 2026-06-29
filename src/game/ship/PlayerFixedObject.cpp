@@ -145,13 +145,13 @@ void PlayerFixedObject::update(int dt) {
     Player *player = (Player *) self->player;
     unsigned char enemyFlag = 0;
     if ((self->faction & 0xfffffffe) == 8) {
-        reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = 1;
+        player->enemyFlagsLo = 1;
         enemyFlag = 0;
     } else {
         int st = Globals::status->getStanding();
         unsigned char e = ((Standing *) (long) st)->isEnemy(self->faction);
         player = (Player *) self->player;
-        reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = e;
+        player->enemyFlagsLo = e;
         if ((self->faction & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
@@ -160,12 +160,12 @@ void PlayerFixedObject::update(int dt) {
             player = (Player *) self->player;
         }
     }
-    reinterpret_cast<uint8_t *>(&player->enemyFlags)[1] = enemyFlag;
+    player->carriesFriendCargoFlag = enemyFlag;
 
     if (reinterpret_cast<Player *>(self->player)->turnedEnemy() != 0)
-        ((Player *) self->player)->enemyFlags = 1;
+        reinterpret_cast<uint16_t &>(((Player *) self->player)->enemyFlagsLo) = 1;
     if (((Player *) (self->player))->isAlwaysFriend() != 0)
-        ((Player *) self->player)->enemyFlags = 0x100;
+        reinterpret_cast<uint16_t &>(((Player *) self->player)->enemyFlagsLo) = 0x100;
 
     if (self->state != 6) {
         float bomb = ((Player *) (self->player))->getBombForce();
@@ -208,7 +208,7 @@ void PlayerFixedObject::update(int dt) {
 afterMotion:
 
     if (((Player *) (self->player))->getHitpoints() < 1 && (unsigned int) (self->state - 3) >= 2) {
-        if ((char) ((Player *) self->player)->enemyFlags == 0) {
+        if ((char) reinterpret_cast<uint16_t &>(((Player *) self->player)->enemyFlagsLo) == 0) {
             ((Level *) (self->level))->friendDied();
         } else {
             ((Level *) ((int) (__INTPTR_TYPE__) self->level))->enemyDied(0, (bool) (unsigned char) self->kind);
@@ -277,7 +277,7 @@ afterMotion:
                 }
             }
             if (self->kind == 0xe &&
-                (char) ((Player *) self->player)->destroyed == 0) {
+                (char) reinterpret_cast<uint16_t &>(((Player *) self->player)->destroyedByte) == 0) {
                 PfoEgoCounters *egoObj = *g_pfo_egoA;
 
                 egoObj->destroyedEnemyCount = egoObj->destroyedEnemyCount + 1;

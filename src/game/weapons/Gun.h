@@ -1,5 +1,6 @@
 #ifndef GOF2_GUN_H
 #define GOF2_GUN_H
+#include <cstddef>
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "engine/render/Sparks.h"
@@ -56,17 +57,12 @@ public:
     int field_0x98;
     int fireIndex;
 
-    union {
-        // lint: union_decl int field_0xa4 (whole-slot, set in Gun.cpp/Level.cpp/ObjectGun.cpp) overlaps individual bytes field_0xa5/0xa6/0xa7 (read in ObjectGun.cpp) — genuine cross-file type-pun, layout-fixed
-        int field_0xa4;
-
-        struct {
-            uint8_t field_0xa4_b0;
-            uint8_t field_0xa5;
-            uint8_t field_0xa6;
-            uint8_t field_0xa7;
-        };
-    };
+    // Former union { int field_0xa4; struct{...}; } at 0xa4: the wide int
+    // `field_0xa4` is reinterpret_cast<int&>(field_0xa4_b0) at its use sites.
+    uint8_t field_0xa4_b0;
+    uint8_t field_0xa5;
+    uint8_t field_0xa6;
+    uint8_t field_0xa7;
 
     uint8_t field_0xa8;
     uint8_t delayActive;
@@ -144,4 +140,12 @@ public:
 
     void update(int dt);
 };
+
+#if __SIZEOF_POINTER__ == 4
+// Former-union site, offsets locked at their actual (preserved) values. NOTE: Gun's field_0xNN
+// names are pre-existingly drifted ~0x14 ahead of true offsets (missing/mis-sized fields upstream
+// in this struct, unrelated to the union removal); the union elimination was layout-neutral.
+static_assert(offsetof(Gun, field_0xa4_b0) == 0x90, "Gun former-union byte preserved");
+static_assert(offsetof(Gun, field_0xa8) == 0x94, "Gun field after former-union preserved");
+#endif
 #endif

@@ -40,29 +40,19 @@ public:
     int field_0x34;
     int field_0x38;
 
-    union {
-        // lint: union_decl int stealFlag reinterprets 4-byte struct (stealFlagByte/countsAsEnemyExcludeFlag/...) — type-pun, layout-load-bearing
-        int stealFlag;
+    // Former union { int stealFlag; struct{...}; } at 0x3c: the wide int
+    // `stealFlag` is reinterpret_cast<int&>(stealFlagByte) at its use sites.
+    char stealFlagByte;
+    uint8_t countsAsEnemyExcludeFlag;
+    uint8_t field_0x3e;
+    char field_0x3f_b;
 
-        struct {
-            char stealFlagByte;
-            uint8_t countsAsEnemyExcludeFlag;
-            uint8_t field_0x3e;
-            char field_0x3f_b;
-        };
-    };
-
-    union {
-        // lint: union_decl int field_0x40 (whole-slot, set in Level.cpp/KIPlayer.cpp) reinterprets named flag bytes (deadFlag/field_0x42/reviveLockFlag, read across Level.cpp/Player.cpp) — type-pun, layout-load-bearing
-        int field_0x40;
-
-        struct {
-            char field_0x3f;
-            char deadFlag;
-            char field_0x42;
-            uint8_t reviveLockFlag;
-        };
-    };
+    // Former union { int field_0x40; struct{...}; } at 0x40: the wide int
+    // `field_0x40` is reinterpret_cast<int&>(field_0x3f) at its use sites.
+    char field_0x3f;
+    char deadFlag;
+    char field_0x42;
+    uint8_t reviveLockFlag;
 
     int field_0x44;
     int field_0x48;
@@ -80,17 +70,10 @@ public:
     uint8_t field_0x6a;
     uint8_t _pad_0x6b;
 
-    union {
-        // lint: union_decl Route* route aliases 4 status bytes (noTargetFlag/routeByte*) — pointer/byte type-pun, layout-load-bearing
-        Route *route;
-
-        struct {
-            uint8_t noTargetFlag;
-            uint8_t routeByte1;
-            uint8_t routeByte2;
-            uint8_t routeByte3;
-        };
-    };
+    // Former union { Route* route; struct{ uint8_t noTargetFlag, routeByte1..3; }; }
+    // at 0x6c: keep the pointer; the status bytes are reinterpret views over it
+    // (noTargetFlag == reinterpret_cast<uint8_t&>(route)) at their use sites.
+    Route *route;
 
     uint16_t field_0x70;
     uint8_t field_0x72;
@@ -281,8 +264,14 @@ public:
 #if __SIZEOF_POINTER__ == 4
 
 static_assert(sizeof(KIPlayer) == 292, "KIPlayer must be 292 bytes (binary layout)");
+// Former-union sites (offsets must be byte-identical to the eliminated unions):
+static_assert(offsetof(KIPlayer, stealFlagByte) == 0x3c, "KIPlayer::stealFlagByte must be at 0x3c");
+static_assert(offsetof(KIPlayer, field_0x3f) == 0x40, "KIPlayer::field_0x3f must be at 0x40");
+static_assert(offsetof(KIPlayer, deadFlag) == 0x41, "KIPlayer::deadFlag must be at 0x41");
+static_assert(offsetof(KIPlayer, field_0x44) == 0x44, "KIPlayer::field_0x44 must be at 0x44");
 static_assert(offsetof(KIPlayer, posX) == 0x58, "KIPlayer::posX must be at 0x58");
 static_assert(offsetof(KIPlayer, route) == 0x6c, "KIPlayer::route must be at 0x6c");
+static_assert(offsetof(KIPlayer, field_0x70) == 0x70, "KIPlayer::field_0x70 must be at 0x70");
 static_assert(offsetof(KIPlayer, field_0x74) == 0x74, "KIPlayer::field_0x74 must be at 0x74");
 static_assert(offsetof(KIPlayer, field_0x76) == 0x76, "KIPlayer::field_0x76 must be at 0x76");
 #endif

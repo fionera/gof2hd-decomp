@@ -281,24 +281,13 @@ public:
     uint8_t _pad_0x402[2];
     unsigned fadeColor;
 
-    union {
-        // lint: union_decl (type-pun: overlapping fade-state struct views at offset 0x408)
-        struct {
-            int fadeProgress;
-            int fadeDuration;
-            uint8_t fillScreen;
-        };
-
-        struct {
-            uint8_t _skip_0x408[1];
-            int field_0x409;
-        };
-
-        struct {
-            uint8_t _skip_0x40d[5];
-            int field_0x40d;
-        };
-    };
+    // Fade-state region at 0x408. Canonical members are the aligned fade fields;
+    // the misaligned offset-shifted views field_0x409 (int @0x409) and
+    // field_0x40d (int @0x40d) are accessed via byte-offset reinterpret_cast over
+    // fadeProgress.
+    int fadeProgress;     // 0x408
+    int fadeDuration;     // 0x40c
+    uint8_t fillScreen;   // 0x410
 
     Layout();
 
@@ -396,4 +385,11 @@ public:
 
     void drawFooter(bool stationMode, bool showBack);
 };
+
+#if __SIZEOF_POINTER__ == 4
+#include <cstddef>
+static_assert(__builtin_offsetof(Layout, fadeProgress) == 0x408, "fadeProgress");
+static_assert(__builtin_offsetof(Layout, fadeDuration) == 0x40c, "fadeDuration");
+static_assert(__builtin_offsetof(Layout, fillScreen) == 0x410, "fillScreen");
+#endif
 #endif

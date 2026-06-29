@@ -1303,7 +1303,7 @@ int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
         AEFile::FileDelete(path);
     AEFile::OpenWrite(path, &fd);
 
-    AEFile_Write_i64(rec->playTime64, fd);
+    AEFile_Write_i64(reinterpret_cast<int64_t &>(rec->playTimeObj), fd);
     AEFile_Write_i32((int) rec->field_0x08, fd);
 
     num = ((Station *) (&num))->getName();
@@ -1312,7 +1312,7 @@ int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
     AEFile_Write_str(&rec->field_0x188, fd, true);
     AEFile_Write_i32((int) rec->field_0x40, fd);
     AEFile_Write_i32((int) rec->killsText, fd);
-    AEFile_Write_f32(rec->rankBits, fd);
+    AEFile_Write_f32(reinterpret_cast<int32_t &>(rec->rank), fd);
     AEFile_Write_i32(reinterpret_cast<Ship *>((intptr_t) rec->field_0x130)->getIndex(), fd);
 
     AEFile::Close(fd);
@@ -1413,7 +1413,7 @@ void RecordHandler::recordStoreWrite(int slot) {
             }
         }
         AEFile_WriteInt(status->field_b8, fd);
-        AEFile_WriteLong(status->field_c8_q, fd);
+        AEFile_WriteLong(reinterpret_cast<int64_t &>(status->field_c8), fd);
 
         AEFile_WriteInt(status->field_c8, fd);
         AEFile_WriteInt(status->field_cc, fd);
@@ -1564,13 +1564,13 @@ void RecordHandler::recordStoreWrite(int slot) {
             AEFile_WriteInt((int) status->fadeValue, fd);
             AEFile_WriteInt(5, fd);
 
-            int *wingmenStats = reinterpret_cast<int *>((intptr_t) status->field_0x28);
+            int *wingmenStats = reinterpret_cast<int *>((intptr_t) reinterpret_cast<int32_t &>(status->_byte_0x28));
             for (unsigned i = 0; i < 5; i++) {
                 AEFile_WriteInt(wingmenStats[i], fd);
             }
         }
 
-        AEFile_WriteInt(status->passengers, fd);
+        AEFile_WriteInt(reinterpret_cast<int32_t &>(status->_byte_0x34), fd);
         {
             Array<bool> *arr = status->systemVisibilities;
             AEFile_WriteInt(arr->size(), fd);
@@ -1629,7 +1629,7 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_WriteBool((flags->flag[0x23] != 0), fd);
         AEFile_WriteBool((flags->flag[0x24] != 0), fd);
 
-        AEFile_WriteLong(status->field_10c_q, fd);
+        AEFile_WriteLong(reinterpret_cast<int64_t &>(status->field_10c), fd);
 
         AEFile_WriteBool((flags->flag[0x25] != 0), fd);
         AEFile_WriteBool((flags->flag[0x26] != 0), fd);
@@ -1889,7 +1889,7 @@ void *RecordHandler::recordStoreRead(int slot) {
 
             AEFile_ReadInt(&rec->field_0x08, fd);
             AEFile_ReadInt(&rec->field_0x0c, fd);
-            AEFile_ReadLong(&rec->playTime64, fd);
+            AEFile_ReadLong(&reinterpret_cast<int64_t &>(rec->playTimeObj), fd);
             AEFile_ReadInt(&rec->field_0x18, fd);
             AEFile_ReadInt(&rec->field_0x1c, fd);
             AEFile_ReadInt(&rec->killsText, fd);

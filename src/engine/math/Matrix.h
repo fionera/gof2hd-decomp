@@ -4,17 +4,10 @@
 namespace AbyssEngine {
     namespace AEMath {
         struct Matrix {
-            union {
-                // lint: union_decl (genuine type-pun: m[15] array aliases named row floats; m11_rightY/m12_upY read cross-file in PlayerEgo.cpp; layout-critical)
-                float m[15];
-
-                struct {
-                    float e0, e1, e2, e3;
-                    float m11_rightY, m12_upY, e6, e7;
-                    float e8, e9, e10, e11;
-                    float e12, e13, e14;
-                };
-            };
+            // Canonical 15-float storage. Named element views were removed (former union);
+            // cross-file uses now index m[] directly: e3=m[3], m11_rightY=m[4], m12_upY=m[5],
+            // e7=m[7], e11=m[11].
+            float m[15];
 
             Matrix();
 
@@ -34,8 +27,6 @@ namespace AbyssEngine {
     using AEMath::Matrix;
 
     static_assert(__builtin_offsetof(AEMath::Matrix, m) == 0x00, "AEMath::Matrix::m offset");
-    static_assert(__builtin_offsetof(AEMath::Matrix, m11_rightY) == 0x10, "AEMath::Matrix::m11_rightY offset");
-    static_assert(__builtin_offsetof(AEMath::Matrix, m12_upY) == 0x14, "AEMath::Matrix::m12_upY offset");
     static_assert(sizeof(AEMath::Matrix) == 0x3c, "AEMath::Matrix size");
 }
 

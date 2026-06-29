@@ -278,7 +278,7 @@ void PlayerTurret::update(int delta) {
 
     int faction = this->shipGroup;
     if ((faction & 0xfffffffeU) == 8) {
-        player->enemyFlags = 1;
+        reinterpret_cast<uint16_t &>(player->enemyFlagsLo) = 1;
     } else {
         Standing *standing = (Standing *) (intptr_t) Globals::status->getStanding();
         bool enemy = standing->isEnemy(faction);
@@ -286,13 +286,13 @@ void PlayerTurret::update(int delta) {
         if ((faction & 0xfffffffeU) != 8) {
             friendly = ((Standing *) (intptr_t) Globals::status->getStanding())->isFriend(faction);
         }
-        player->enemyFlags = (uint16_t)((friendly ? 0x100 : 0) | (enemy ? 1 : 0));
+        reinterpret_cast<uint16_t &>(player->enemyFlagsLo) = (uint16_t)((friendly ? 0x100 : 0) | (enemy ? 1 : 0));
     }
     if (player->turnedEnemy() != 0) {
-        player->enemyFlags = 1;
+        reinterpret_cast<uint16_t &>(player->enemyFlagsLo) = 1;
     }
     if (player->isAlwaysFriend() != 0) {
-        player->enemyFlags = 0x100;
+        reinterpret_cast<uint16_t &>(player->enemyFlagsLo) = 0x100;
     }
 
     if (this->isSentryGun) {
@@ -324,13 +324,13 @@ void PlayerTurret::pickEnemy() {
         }
 
         bool accepted = false;
-        if ((enemy->empDisabled >> 8) != 0 && (this->player->enemyFlags & 0xff) != 0) {
+        if ((reinterpret_cast<uint16_t &>(enemy->empDisabledByte) >> 8) != 0 && (reinterpret_cast<uint16_t &>(this->player->enemyFlagsLo) & 0xff) != 0) {
             accepted = true;
         } else if (!this->isSentryGun) {
             if (enemy->getKIPlayer() != nullptr) {
                 accepted = true;
             }
-        } else if ((enemy->enemyFlags & 0xff) != 0) {
+        } else if ((reinterpret_cast<uint16_t &>(enemy->enemyFlagsLo) & 0xff) != 0) {
             accepted = true;
         }
 

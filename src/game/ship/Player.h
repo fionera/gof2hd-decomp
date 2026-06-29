@@ -17,23 +17,16 @@ class Player {
 public:
     Array<Array<Gun *> *> *guns;
 
-    union {
-        // lint: union_decl float[15] view aliases AEMath::Matrix at same storage — type-pun, layout-load-bearing
-        float transform[15];
-        AbyssEngine::AEMath::Matrix transformMatrix;
-    };
+    // Canonical raw matrix storage; the AEMath::Matrix view is taken via
+    // reinterpret_cast<AbyssEngine::AEMath::Matrix &>(transform[0]) at the few sites that need it.
+    float transform[15];
 
     int32_t radius;
 
-    union {
-        // lint: union_decl uint16 destroyed reinterprets byte pair (destroyedByte/spawnedFlag) — type-pun, layout-load-bearing
-        uint16_t destroyed;
-
-        struct {
-            uint8_t destroyedByte;
-            uint8_t spawnedFlag;
-        };
-    };
+    // Former uint16 `destroyed` overlay: byte pair promoted to plain members.
+    // The 16-bit view is `reinterpret_cast<uint16_t &>(destroyedByte)`.
+    uint8_t destroyedByte;
+    uint8_t spawnedFlag;
 
     uint8_t pad_46[2];
     int32_t mirrorPosX;
@@ -43,15 +36,10 @@ public:
     uint8_t pad_56[2];
     int32_t field_58;
 
-    union {
-        // lint: union_decl uint16 enemyFlags reinterprets byte pair (enemyFlagsLo/carriesFriendCargoFlag) — type-pun, layout-load-bearing
-        uint16_t enemyFlags;
-
-        struct {
-            uint8_t enemyFlagsLo;
-            uint8_t carriesFriendCargoFlag;
-        };
-    };
+    // Former uint16 `enemyFlags` overlay: byte pair promoted to plain members.
+    // The 16-bit view is `reinterpret_cast<uint16_t &>(enemyFlagsLo)`.
+    uint8_t enemyFlagsLo;
+    uint8_t carriesFriendCargoFlag;
 
     uint8_t field_5e;
     uint8_t pad_5f;
@@ -61,11 +49,10 @@ public:
     uint8_t hullHit;
     uint8_t gammaHit;
 
-    union {
-        // lint: union_decl uint16/uint8 size-mismatch reinterpret (empDisabled/empDisabledByte) — type-pun, layout-load-bearing
-        uint16_t empDisabled;
-        uint8_t empDisabledByte;
-    };
+    // Former uint16 `empDisabled` overlay (2-byte slot). The byte view is the real low byte;
+    // the 16-bit view is `reinterpret_cast<uint16_t &>(empDisabledByte)`.
+    uint8_t empDisabledByte;
+    uint8_t pad_69;
 
     uint8_t pad_6a[2];
     int32_t damageDoneByPlayer;
@@ -324,5 +311,16 @@ public:
 
     static Vector *velocity;
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(Player, transform) == 0x4, "Player::transform offset");
+static_assert(__builtin_offsetof(Player, radius) == 0x40, "Player::radius offset");
+static_assert(__builtin_offsetof(Player, destroyedByte) == 0x44, "Player::destroyed overlay offset");
+static_assert(__builtin_offsetof(Player, pad_46) == 0x46, "Player::pad_46 offset (after destroyed overlay)");
+static_assert(__builtin_offsetof(Player, enemyFlagsLo) == 0x5c, "Player::enemyFlags overlay offset");
+static_assert(__builtin_offsetof(Player, field_5e) == 0x5e, "Player::field_5e offset (after enemyFlags overlay)");
+static_assert(__builtin_offsetof(Player, empDisabledByte) == 0x68, "Player::empDisabled overlay offset");
+static_assert(__builtin_offsetof(Player, pad_6a) == 0x6a, "Player::pad_6a offset (after empDisabled overlay)");
+#endif
 
 #endif

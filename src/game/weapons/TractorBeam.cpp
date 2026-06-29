@@ -52,7 +52,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     }
 
     if (crate->crateGeometry == nullptr ||
-        (crate->stealFlag == 0 && ((Player *) crate)->isActive() == 0)) {
+        (reinterpret_cast<int &>(crate->stealFlagByte) == 0 && ((Player *) crate)->isActive() == 0)) {
     detach:
         radar->dockNavPtr = nullptr;
         radar->field_0x1c = nullptr;

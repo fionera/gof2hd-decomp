@@ -260,9 +260,9 @@ void StarSystem::render2D() {
     unsigned current = Globals::Canvas->CameraGetCurrent();
     Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(current);
     Vector pos;
-    pos.x = local->e3 + this->lightDirection.x * 65536.0f;
-    pos.y = local->e7 + this->lightDirection.y * 65536.0f;
-    pos.z = local->e11 + this->lightDirection.z * 65536.0f;
+    pos.x = local->m[3] + this->lightDirection.x * 65536.0f;
+    pos.y = local->m[7] + this->lightDirection.y * 65536.0f;
+    pos.z = local->m[11] + this->lightDirection.z * 65536.0f;
     this->lensFlare->update(0);
     Globals::Canvas->GetScreenPosition(pos, pos);
     this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);

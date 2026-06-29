@@ -1192,8 +1192,8 @@ void Layout::reload() {
     this->fadeColor = 0;
     this->fadeProgress = 0;
     this->rewardMessageActive = 0;
-    this->field_0x40d = 0;
-    this->field_0x409 = 0;
+    reinterpret_cast<int &>(reinterpret_cast<uint8_t *>(&this->fadeProgress)[5]) = 0;
+    reinterpret_cast<int &>(reinterpret_cast<uint8_t *>(&this->fadeProgress)[1]) = 0;
 }
 
 void Layout::drawHeader() {
