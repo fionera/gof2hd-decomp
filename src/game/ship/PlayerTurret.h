@@ -19,12 +19,16 @@ public:
     bool turretEnabled;
     char field_0x3e;
     bool isSentryGun;
-    Vector cachedPosition;
-    Vector hostWorldOffset;
-    Vector aimPoint;
-    int reviveFlag;
+    // ASM ground truth: our PlayerTurret was 404 vs 360 (Ghidra). These five fields duplicated KIPlayer
+    // base fields (cachedPosition@0x58=posX, hostWorldOffset@0x90, aimPoint@0x9c, reviveFlag@0xa8=
+    // rotationSpeed, frameDelta@0xac=type), adding 0x2c=44 bytes and shifting everything below. They
+    // become accessors aliasing the real KIPlayer fields; spawnInvulnTimer.. now land at their offsets.
+    Vector &cachedPosition() { return reinterpret_cast<Vector &>(this->posX); }
+    Vector &hostWorldOffset() { return reinterpret_cast<Vector &>(this->field_0x90); }
+    Vector &aimPoint() { return reinterpret_cast<Vector &>(this->field_0x9c); }
+    int &reviveFlag() { return reinterpret_cast<int &>(this->rotationSpeed); }
+    int &frameDelta() { return reinterpret_cast<int &>(this->type); }
 
-    int frameDelta;
     int spawnInvulnTimer;
     int explosionTimer;
     int pickEnemyTimer;

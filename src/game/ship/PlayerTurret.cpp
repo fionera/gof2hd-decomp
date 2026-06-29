@@ -94,7 +94,7 @@ void PlayerTurret::revive() {
     this->player->reset();
     this->crateGeometry = nullptr;
     this->state = 1;
-    this->reviveFlag = 0;
+    this->reviveFlag() = 0;
     this->explosion->reset();
     AEGeometry *geometry = this->parentGeometry;
     this->spawnInvulnTimer = 0;
@@ -141,7 +141,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     Vector dir = MatrixGetDir(matrix);
     Vector normal = VectorNormalize(dir);
     Vector scaled = normal * 3000.0f;
-    this->aimPoint = enemyPos + scaled;
+    this->aimPoint() = enemyPos + scaled;
 
     if (!this->isSentryGun) {
         Matrix base = this->geometry->getMatrix();
@@ -152,7 +152,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
         matrix = this->geometry->getMatrix();
     }
 
-    Vector local = MatrixInverseTransformVector(matrix, this->aimPoint);
+    Vector local = MatrixInverseTransformVector(matrix, this->aimPoint());
     Vector aim = VectorNormalize(local);
 
     bool ready = false;
@@ -173,7 +173,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
             this->pickEnemyTimer += delta;
             return;
         }
-        float step = (float) this->frameDelta;
+        float step = (float) this->frameDelta();
         float next = (float) this->rotationAccum - step;
         this->rotationAccum = (int) next;
         mainGeometry->rotate(next, 0.0f, step * 0.001f * 0.25f);
@@ -186,7 +186,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
             this->pickEnemyTimer += delta;
             return;
         }
-        float step = (float) this->frameDelta;
+        float step = (float) this->frameDelta();
         float next = (float) this->rotationAccum + step;
         this->rotationAccum = (int) next;
         mainGeometry->rotate(next, 0.0f, step * 0.001f * -0.25f);
@@ -203,7 +203,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
 }
 
 void PlayerTurret::update(int delta) {
-    this->frameDelta = delta;
+    this->frameDelta() = delta;
 
     Player *player = this->player;
     if (!player->isActive()) {
@@ -221,14 +221,14 @@ void PlayerTurret::update(int delta) {
 
     if (this->turretHost != nullptr) {
         const Matrix &hostMatrix = *(const Matrix *) this->turretHost->player->transform;
-        this->hostWorldOffset = MatrixRotateVector(hostMatrix, this->hostOffset);
+        this->hostWorldOffset() = MatrixRotateVector(hostMatrix, this->hostOffset);
         this->geometry->setMatrix(hostMatrix);
-        this->geometry->translate(this->hostWorldOffset);
+        this->geometry->translate(this->hostWorldOffset());
     }
 
     Matrix geomMatrix = this->geometry->getMatrix();
     *(Matrix *) player->transform = geomMatrix;
-    this->cachedPosition = this->geometry->getPosition();
+    this->cachedPosition() = this->geometry->getPosition();
 
     int hp = player->getHitpoints();
     int state = this->state;
@@ -238,9 +238,9 @@ void PlayerTurret::update(int delta) {
         (*g_turretSound)->play(0x16, nullptr, nullptr, 0.0f);
         Vector zero = {0.0f, 0.0f, 0.0f};
         ParticleSystemManager *manager = (ParticleSystemManager *) this->level->field_74;
-        manager->emitManual(this->level->field_3c, this->cachedPosition, 0, 0.0f);
+        manager->emitManual(this->level->field_3c, this->cachedPosition(), 0, 0.0f);
         manager->enableSystemEmit(this->particleSystemId, true);
-        this->explosion->start(this->cachedPosition, zero);
+        this->explosion->start(this->cachedPosition(), zero);
 
         int random = ((AbyssEngine::AERandom *) (g_turretRandom))->nextInt(100);
         if (random < 0) {
@@ -316,7 +316,7 @@ void PlayerTurret::pickEnemy() {
         return;
     }
 
-    const Vector &position = this->cachedPosition;
+    const Vector &position = this->cachedPosition();
     for (uint32_t i = 0; i < enemies->size(); ++i) {
         Player *enemy = (*enemies)[i];
         if (enemy->isDead() || !enemy->isActive()) {
