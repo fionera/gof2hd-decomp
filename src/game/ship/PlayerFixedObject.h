@@ -56,6 +56,8 @@ public:
     int32_t intPosY;
     int32_t intPosZ;
     uint16_t wreckMeshId;
+    // Ghidra: a 4-byte field@0x188 sits between wreckMeshId@0x184 and explosion@0x18c; ours lacked it.
+    int field_0x188;
     Explosion *explosion;
     int explosionElapsed;
     int wreckType;
