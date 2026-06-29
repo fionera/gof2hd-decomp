@@ -73,6 +73,8 @@ namespace AbyssEngine {
         uint32_t keyState;
         uint32_t keyStateHigh;
         Array<long long> actionTable; // inline Array (see modules/moduleIds above)
+        // Ghidra: a 4-byte field sits between actionTable (ends 0x94) and actionMask@0x98; ours lacked it.
+        uint32_t field_0x94;
         uint32_t actionMask;
         uint32_t actionMaskHigh;
         uint32_t actionState;
