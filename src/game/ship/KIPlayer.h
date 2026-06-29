@@ -48,8 +48,8 @@ public:
     char field_0x3f_b;
 
     // Former union { int field_0x40; struct{...}; } at 0x40: the wide int
-    // `field_0x40` is reinterpret_cast<int&>(field_0x3f) at its use sites.
-    char field_0x3f;
+    // `field_0x40` is reinterpret_cast<int&>(field_0x40) at its use sites.
+    char field_0x40;
     char deadFlag;
     char field_0x42;
     uint8_t reviveLockFlag;
@@ -266,7 +266,7 @@ public:
 static_assert(sizeof(KIPlayer) == 292, "KIPlayer must be 292 bytes (binary layout)");
 // Former-union sites (offsets must be byte-identical to the eliminated unions):
 static_assert(offsetof(KIPlayer, stealFlagByte) == 0x3c, "KIPlayer::stealFlagByte must be at 0x3c");
-static_assert(offsetof(KIPlayer, field_0x3f) == 0x40, "KIPlayer::field_0x3f must be at 0x40");
+static_assert(offsetof(KIPlayer, field_0x40) == 0x40, "KIPlayer::field_0x40 must be at 0x40");
 static_assert(offsetof(KIPlayer, deadFlag) == 0x41, "KIPlayer::deadFlag must be at 0x41");
 static_assert(offsetof(KIPlayer, field_0x44) == 0x44, "KIPlayer::field_0x44 must be at 0x44");
 static_assert(offsetof(KIPlayer, posX) == 0x58, "KIPlayer::posX must be at 0x58");

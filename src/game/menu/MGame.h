@@ -78,7 +78,7 @@ public:
     Vector freeCamFinger0;
     float flCameraRoll;
     void *activeTouchId; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
-    uint8_t field_0xc1; // dockChoiceOpen (int) = reinterpret_cast<int &>(field_0xc1)
+    uint8_t field_0xc4; // dockChoiceOpen (int) = reinterpret_cast<int &>(field_0xc4)
     uint8_t autopilotMenuOpen;
     uint8_t field_0xc6;
     uint8_t starMapOpen;
@@ -296,7 +296,7 @@ static_assert(offsetof(MGame, menuTime) == 160, "MGame::menuTime @ 160");
 static_assert(offsetof(MGame, freeCamFinger1) == 164, "MGame::freeCamFinger1 @ 164");
 static_assert(offsetof(MGame, flCameraRoll) == 188, "MGame::flCameraRoll @ 188");
 static_assert(offsetof(MGame, activeTouchId) == 192, "MGame::activeTouchId @ 192");
-static_assert(offsetof(MGame, field_0xc1) == 196, "MGame::field_0xc1 (dockChoiceOpen) @ 196");
+static_assert(offsetof(MGame, field_0xc4) == 196, "MGame::field_0xc4 (dockChoiceOpen) @ 196");
 static_assert(offsetof(MGame, autopilotMenuOpen) == 197, "MGame::autopilotMenuOpen @ 197");
 static_assert(offsetof(MGame, field_0xc6) == 198, "MGame::field_0xc6 @ 198");
 static_assert(offsetof(MGame, starMapOpen) == 199, "MGame::starMapOpen @ 199");

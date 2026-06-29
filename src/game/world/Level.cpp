@@ -1374,7 +1374,7 @@ int Level::init() {
     if (this->enemies != nullptr) {
         for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
             KIPlayer *e = (*this->enemies)[i];
-            if (e->deadFlag == 0 && e->lostMissionCrateToEgo == 0 && e->field_0x3f == 0) {
+            if (e->deadFlag == 0 && e->lostMissionCrateToEgo == 0 && e->field_0x40 == 0) {
                 int wm = e->isWingMan();
                 if (wm == 0) {
                     if ((char) e->field_0x44 == 0 && e->stealFlagByte == 0)
@@ -1879,7 +1879,7 @@ void Level::reset() {
         count = 0;
         for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
             KIPlayer *e = (*this->enemies)[i];
-            if (e->deadFlag == 0 && e->lostMissionCrateToEgo == 0 && e->field_0x3f == 0) {
+            if (e->deadFlag == 0 && e->lostMissionCrateToEgo == 0 && e->field_0x40 == 0) {
                 int wm = e->isWingMan();
                 if (wm == 0) {
                     if ((char) e->field_0x44 == 0 && e->stealFlagByte == 0) {
@@ -2101,7 +2101,7 @@ void Level::connectPlayers() {
                 }
                 if (consider) {
                     bool skip = false;
-                    if ((char) reinterpret_cast<int &>(((KIPlayer *) (intptr_t) e)->field_0x3f) != 0 && ((PlayerFixedObject *) (intptr_t) e)->
+                    if ((char) reinterpret_cast<int &>(((KIPlayer *) (intptr_t) e)->field_0x40) != 0 && ((PlayerFixedObject *) (intptr_t) e)->
                         getDockingType() == 3) {
                         Station *st = (Station *) Globals::status->getStation();
                         if (((Station *) st)->stationHasHiddenBlueprint(1) != 0)
@@ -2168,7 +2168,7 @@ void Level::connectPlayers() {
                         }
                         if (consider) {
                             bool skip = false;
-                            if ((char) reinterpret_cast<int &>(((KIPlayer *) (intptr_t) e)->field_0x3f) != 0 &&
+                            if ((char) reinterpret_cast<int &>(((KIPlayer *) (intptr_t) e)->field_0x40) != 0 &&
                                 ((PlayerFixedObject *) (intptr_t) e)->getDockingType() == 3) {
                                 Station *st = (Station *) Globals::status->getStation();
                                 if (((Station *) st)->stationHasHiddenBlueprint(1) != 0)
@@ -3424,7 +3424,7 @@ void Level::assignGuns() {
                     gun->damage = (int) ((double) gun->damage * 0.5);
                 } else {
                     KIPlayer *k = (*this->enemies)[i];
-                    if ((uint8_t) k->field_0x3f == 0) {
+                    if ((uint8_t) k->field_0x40 == 0) {
                         gun->weaponType = ITEM_SORT_BLASTER;
                         if ((uint8_t) k->shipGroup == 1) {
                             gun->setIndex(0xf);

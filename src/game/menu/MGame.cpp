@@ -683,7 +683,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             return;
         }
         if (self->autopilotMenuOpen != 0 || self->choiceWindowOpen != 0 ||
-            reinterpret_cast<int &>(self->field_0xc1) != 0) {
+            reinterpret_cast<int &>(self->field_0xc4) != 0) {
             self->choiceWindow->OnTouchBegin(p1, p2);
             return;
         }
@@ -1488,7 +1488,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
     // lint: void_ptr -- exported override signature (Pv)
     if (this->activeTouchId == touchId) {
         this->activeTouchId = 0;
-        this->field_0xc1 = 0;
+        this->field_0xc4 = 0;
         this->autopilotMenuOpen = 0;
         this->field_0xc6 = 0;
     }
@@ -1909,7 +1909,7 @@ void MGame::reset() {
     this->field_0x18 = 0;
     reinterpret_cast<int &>(this->_b5c) = 0;
     this->jumpActive = 0;
-    reinterpret_cast<int &>(this->field_0xc1) = 0;
+    reinterpret_cast<int &>(this->field_0xc4) = 0;
     this->field_0xc6 = 0;
     reinterpret_cast<uint16_t &>(this->_bc8) = 0;
     this->field_0xe0 = 0;
@@ -2134,7 +2134,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
     if (self->pauseOpen == 0) return;
 
     if (self->gameOverActive != 0 || self->autopilotMenuOpen != 0 ||
-        self->choiceWindowOpen != 0 || reinterpret_cast<int &>(self->field_0xc1) != 0) {
+        self->choiceWindowOpen != 0 || reinterpret_cast<int &>(self->field_0xc4) != 0) {
         self->choiceWindow->OnTouchMove(p1, y);
         return;
     }
@@ -2420,7 +2420,7 @@ MGame::MGame() {
     this->starMap = 0;
     this->choiceWindow = 0;
     this->_bc8 = 0;
-    reinterpret_cast<int &>(this->field_0xc1) = z;
+    reinterpret_cast<int &>(this->field_0xc4) = z;
     this->autopilotMenuOpen = 0;
     this->field_0xc6 = 0;
     this->starMapOpen = 0;
@@ -2683,7 +2683,7 @@ void MGame::OnRender2D() {
                     self->dialogueWindow->draw();
                 }
                 if (self->autopilotMenuOpen != 0 || self->field_0xc6 != 0 ||
-                    self->choiceWindowOpen != 0 || reinterpret_cast<int &>(self->field_0xc1) != 0)
+                    self->choiceWindowOpen != 0 || reinterpret_cast<int &>(self->field_0xc4) != 0)
                     self->choiceWindow->draw();
                 if (reinterpret_cast<int &>(self->_bca) != 0)
                     self->hud->drawMenu(0);
