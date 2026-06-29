@@ -164,11 +164,11 @@ public:
     int dockScaling;
     int miningSettleTimer;
     KIPlayer *dockStation;
+    // miningGame is at 0x1e4 (drift: our 0x1e0->orig 0x1e4); field_0x1e0@0x1e0 precedes it. The +4 from
+    // these two is balanced by removing the spurious _pad_0x2a0[4] (original matrix region is 0x3c),
+    // keeping field_0x2a4@0x2a4; turretHudMatrix shifts 0x264->0x268. (Doubles above are now floats.)
+    int field_0x1e0;
     int miningGame;
-    // Ghidra: currentMiningAmount@0x1e4 precedes hackingGameDockIndex@0x1e8; ours lacked it. +4 here is
-    // balanced by removing the spurious _pad_0x2a0[4] (original matrix region is 0x3c), keeping field_
-    // 0x2a4@0x2a4; turretHudMatrix shifts 0x264->0x268. (Doubles above are now floats so no re-align.)
-    int currentMiningAmount;
     int hackingGame;
     short docked;
     uint8_t dockedToStream;
