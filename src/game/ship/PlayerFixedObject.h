@@ -20,23 +20,24 @@ typedef AbyssEngine::AEMath::Vector V3;
 
 class PlayerFixedObject : public KIPlayer {
 public:
-    unsigned char empActive;
-    int faction;
-    Vector position;
-    uint8_t field_0x40;
-    uint8_t field_0x41;
-    unsigned char hasCargo;
-    Array<int> *lootList;
-    float spawnX;
-    float spawnY;
-    float spawnZ;
-    AEGeometry *secondaryGeometry;
-    uint8_t collisionEnabled;
-    Vector targetPos;
-    int kind;
-    int explosionTimer;
-    int32_t aiActiveCounter;
-    unsigned char finished;
+    // ASM ground truth: these 0x4c bytes duplicated KIPlayer base fields (Ghidra offset = KIPlayer
+    // offset). Aliased to the real KIPlayer fields so wreckGeometry+ land at their offsets (wreck-
+    // Geometry@0x124). field_0x40/hasCargo inherit by name.
+    uint8_t &empActive() { return this->field_0x24; }
+    int &faction() { return this->shipGroup; }
+    Vector &position() { return reinterpret_cast<Vector &>(this->autoPilotState); }
+    uint8_t &field_0x41() { return reinterpret_cast<uint8_t &>(this->deadFlag); }
+    Array<int> *&lootList() { return this->cargo; }
+    float &spawnX() { return this->posX; }
+    float &spawnY() { return this->posY; }
+    float &spawnZ() { return this->posZ; }
+    AEGeometry *&secondaryGeometry() { return this->crateGeometry; }
+    uint8_t &collisionEnabled() { return reinterpret_cast<uint8_t &>(this->shipGroupFlag); }
+    Vector &targetPos() { return reinterpret_cast<Vector &>(this->field_0x90); }
+    int &kind() { return this->type; }
+    int &explosionTimer() { return this->field_0xd8; }
+    int &aiActiveCounter() { return this->engineSoundEvent; }
+    uint8_t &finished() { return this->field_0x101; }
     AEGeometry *wreckGeometry;
     Array<BoundingVolume *> *boundingVolumes;
     Array<BoundingVolume *> *wreckCollision;

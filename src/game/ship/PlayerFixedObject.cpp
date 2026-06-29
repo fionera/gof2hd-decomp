@@ -131,7 +131,7 @@ static_assert(__builtin_offsetof(PfoEgoCounters, destroyedEnemyCount) == 0x118,
 #endif
 
 static inline bool typeIsPirateOrE(PlayerFixedObject *self) {
-    int k = self->kind;
+    int k = self->kind();
     return k == 0x37a3 || k == 0xe;
 }
 
@@ -139,24 +139,24 @@ void PlayerFixedObject::update(int dt) {
     PlayerFixedObject *self = this;
     self->deltaTime = dt;
 
-    bool kiFlag = (self->aiActiveCounter + 1 != 0) && (self->moving != 0);
+    bool kiFlag = (self->aiActiveCounter() + 1 != 0) && (self->moving != 0);
     ((Player *) (self->player))->update(dt, kiFlag);
 
     Player *player = (Player *) self->player;
     unsigned char enemyFlag = 0;
-    if ((self->faction & 0xfffffffe) == 8) {
+    if ((self->faction() & 0xfffffffe) == 8) {
         player->enemyFlagsLo = 1;
         enemyFlag = 0;
     } else {
         int st = Globals::status->getStanding();
-        unsigned char e = ((Standing *) (long) st)->isEnemy(self->faction);
+        unsigned char e = ((Standing *) (long) st)->isEnemy(self->faction());
         player = (Player *) self->player;
         player->enemyFlagsLo = e;
-        if ((self->faction & 0xfffffffe) == 8) {
+        if ((self->faction() & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
             Standing *st2 = (Standing *) (long) Globals::status->getStanding();
-            enemyFlag = st2->isFriend(self->faction);
+            enemyFlag = st2->isFriend(self->faction());
             player = (Player *) self->player;
         }
     }
@@ -179,24 +179,24 @@ void PlayerFixedObject::update(int dt) {
             float ne = emp - (float) dt;
             float clamped = ne;
             if (ne < 1.0f) clamped = 0.0f;
-            self->empActive = (ne >= 1.0f) ? 1 : 0;
+            self->empActive() = (ne >= 1.0f) ? 1 : 0;
             ((Player *) (self->player))->setEmpForce(clamped);
         }
     }
 
-    if (self->empActive == 0 && (unsigned int) (self->state - 3) >= 2) {
-        int kind = self->kind;
+    if (self->empActive() == 0 && (unsigned int) (self->state - 3) >= 2) {
+        int kind = self->kind();
         bool doMove = (kind != 0x37a3);
         if (doMove) doMove = (self->moving != 0);
         if (doMove) self->moveForward(dt);
 
         int cm = Globals::status->getCurrentCampaignMission();
-        int k2 = self->kind;
+        int k2 = self->kind();
         bool skip = (cm == 0x5b && k2 == 0x494e);
         if (!skip) {
             if (k2 == 0x494a) {
                 if (Globals::status->getCurrentCampaignMission() == 0x91) goto afterMotion;
-                k2 = self->kind;
+                k2 = self->kind();
             }
             if (k2 != 0x4220) {
                 AbyssEngine::Transform *t = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
@@ -211,10 +211,10 @@ afterMotion:
         if ((char) reinterpret_cast<uint16_t &>(((Player *) self->player)->enemyFlagsLo) == 0) {
             ((Level *) (self->level))->friendDied();
         } else {
-            ((Level *) ((int) (__INTPTR_TYPE__) self->level))->enemyDied(0, (bool) (unsigned char) self->kind);
+            ((Level *) ((int) (__INTPTR_TYPE__) self->level))->enemyDied(0, (bool) (unsigned char) self->kind());
         }
-        if (self->kind == 0x37a3)
-            ((Level *) self->level)->pirateStationAction((bool) (unsigned char) self->kind);
+        if (self->kind() == 0x37a3)
+            ((Level *) self->level)->pirateStationAction((bool) (unsigned char) self->kind());
 
         self->moving = 0;
         self->state = 3;
@@ -233,7 +233,7 @@ afterMotion:
             AbyssEngine::Transform *t = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
                 wreck->transform);
             t->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
-            if (self->faction == 3 && self->moving != 0 &&
+            if (self->faction() == 3 && self->moving != 0 &&
                 (int) ((AEGeometry *) self->geometry)->parentTransform != -1) {
                 ((AEGeometry *) (self->geometry))->addChild((uint32_t)(uintptr_t)self->wreckGeometry);
             }
@@ -248,7 +248,7 @@ afterMotion:
         Vector *pos = 0;
 
         if (((PfoAudioSettings *) *g_pfo_audioFlag)->positionalAudioEnabled != 0)
-            pos = &self->position;
+            pos = &self->position();
         (*g_pfo_fmod)->play(0x14, pos, (Vector *) 0, (float) sndHandle);
         lod = (Level *) self->level;
         {
@@ -266,7 +266,7 @@ afterMotion:
         Vector zeroDir = {0.0f, 0.0f, 0.0f};
         expl->start(*(Vector *) posBuf, zeroDir);
 
-        if (self->kind == 0xe) {
+        if (self->kind() == 0xe) {
             Array<KIPlayer *> *enemies = ((Level *) self->level)->getEnemies();
             for (unsigned int i = 0; i < enemies->size(); i++) {
                 KIPlayer *obj = (*enemies)[i];
@@ -276,7 +276,7 @@ afterMotion:
                     ((Player *) (obj->player))->damage(g_pfo_dmgVal);
                 }
             }
-            if (self->kind == 0xe &&
+            if (self->kind() == 0xe &&
                 (char) reinterpret_cast<uint16_t &>(((Player *) self->player)->destroyedByte) == 0) {
                 PfoEgoCounters *egoObj = *g_pfo_egoA;
 
@@ -299,28 +299,28 @@ afterMotion:
     int state = self->state;
     if (state == 3) {
         if (self->explosion != 0)
-            self->explosion->update(dt, self->position);
-        if (self->kind != 0x37a3) {
+            self->explosion->update(dt, self->position());
+        if (self->kind() != 0x37a3) {
             if (self->moving != 0) {
                 self->intPosZ = self->intPosZ + dt;
                 self->wreckGeometry->moveForward((float) dt);
-                if (self->secondaryGeometry != 0)
-                    self->secondaryGeometry->moveForward((float) dt);
+                if (self->secondaryGeometry() != 0)
+                    self->secondaryGeometry()->moveForward((float) dt);
             }
             Matrix &m = self->wreckGeometry->getMatrix();
             *(Matrix *) ((Player *) self->player)->transform = m;
             Vector p = self->wreckGeometry->getPosition();
-            self->position = p;
+            self->position() = p;
             Array<BoundingVolume *> *bv = self->boundingVolumes;
             if (bv != 0) {
                 for (unsigned int i = 0; i < bv->size(); i++) {
                     BoundingVolume *o = (*bv)[i];
-                    o->update(self->position.x, self->position.y, self->position.z);
+                    o->update(self->position().x, self->position().y, self->position().z);
                     bv = self->boundingVolumes;
                 }
             }
         }
-        self->finished = 0;
+        self->finished() = 0;
         AbyssEngine::Transform *t = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
             self->wreckGeometry->transform);
         t->Update((long long) dt, true);
@@ -335,11 +335,11 @@ afterMotion:
             }
             self->explosion->reset();
             float scale = 6.0f;
-            if (self->kind == 0x37e7) scale = 8.0f;
-            if (self->kind == 0x37a3) scale = 8.0f;
+            if (self->kind() == 0x37e7) scale = 8.0f;
+            if (self->kind() == 0x37a3) scale = 8.0f;
             self->explosion->setScaling(scale);
             Vector zeroDir = {0.0f, 0.0f, 0.0f};
-            self->explosion->start(self->position, zeroDir);
+            self->explosion->start(self->position(), zeroDir);
             self->rumbleTimer = 1;
             self->explosionElapsed = 0;
             if (((Level *) self->level)->getPlayer() != 0) {
@@ -349,7 +349,7 @@ afterMotion:
                     TargetFollowCamera *cam = (TargetFollowCamera *) (__INTPTR_TYPE__) ego->getTargetFollowCamera();
                     char cp[12];
                     ((TargetFollowCamera *) ((Vector *) cp))->getPosition();
-                    *(Vector *) cp -= self->position;
+                    *(Vector *) cp -= self->position();
                     float len = AbyssEngine::AEMath::VectorLength(*(const Vector *) cp);
                     float maxd = 50.0f;
                     float use = (len < maxd) ? len : maxd;
@@ -363,22 +363,22 @@ afterMotion:
     } else if (state == 4) {
         self->explosionElapsed = self->explosionElapsed + dt;
         if (self->explosion != 0)
-            self->explosion->update(dt, self->position);
-        self->explosionTimer = self->explosionTimer + dt;
+            self->explosion->update(dt, self->position());
+        self->explosionTimer() = self->explosionTimer() + dt;
 
         bool spin = self->hasCargo != 0 && ((Player *) (self->player))->isActive() != 0 &&
-                    self->secondaryGeometry != 0;
+                    self->secondaryGeometry() != 0;
         if (spin) {
             float r = (float) (dt >> 1) * 0.001f;
             r = (float) (int) (r * 1.0f);
-            self->secondaryGeometry->rotate(r, r, r);
-            if (self->explosionTimer >= 0xea61) {
-                self->finished = 1;
+            self->secondaryGeometry()->rotate(r, r, r);
+            if (self->explosionTimer() >= 0xea61) {
+                self->finished() = 1;
             }
         } else {
             if (self->explosion != 0 && self->explosion->isPlaying() == 0) {
-                if (self->explosionTimer >= 0xea61)
-                    self->finished = 1;
+                if (self->explosionTimer() >= 0xea61)
+                    self->finished() = 1;
             }
         }
 
@@ -387,11 +387,11 @@ afterMotion:
                 (unsigned int) self->wreckMaterial <= 0x7fffffff) {
                 char posBuf[12];
                 ((AEGeometry *) ((Vector *) posBuf))->getPosition();
-                self->position = *(const Vector *) ((Vector *) posBuf);
+                self->position() = *(const Vector *) ((Vector *) posBuf);
                 Array<BoundingVolume *> *bv = self->wreckCollision;
                 for (unsigned int i = 0; i < bv->size(); i++) {
                     BoundingVolume *o = (*bv)[i];
-                    o->update(self->position.x, self->position.y, self->position.z);
+                    o->update(self->position().x, self->position().y, self->position().z);
                 }
                 unsigned short mat;
                 switch ((unsigned int) self->wreckType) {
@@ -441,25 +441,25 @@ afterMotion:
             self->targetEnemy = 0;
             for (unsigned int i = 0; i < enemies->size(); i++) {
                 if (((Player *) (((Player *) (self->player))->getEnemy(i)))->isActive() != 0) {
-                    self->targetPos = ((Player *) (((Player *) (self->player))->getEnemy(i)))->getPosition();
-                    float dx = self->position.x - self->targetPos.x;
-                    float dy = self->position.y - self->targetPos.y;
-                    float dz = self->position.z - self->targetPos.z;
+                    self->targetPos() = ((Player *) (((Player *) (self->player))->getEnemy(i)))->getPosition();
+                    float dx = self->position().x - self->targetPos().x;
+                    float dy = self->position().y - self->targetPos().y;
+                    float dz = self->position().z - self->targetPos().z;
                     const float lo = 0.0f, hi = 50.0f;
                     if (dx < hi && dx > lo && dy < hi && dy > lo && dz < hi && dz > lo) {
                         self->targetEnemy = (int32_t)(__INTPTR_TYPE__)((Player *) (self->player))->getEnemy(i);
-                        self->targetPos = ((Player *) (((Player *) (self->player))->getEnemy(i)))->getPosition();
-                        self->homingTarget.x = self->targetPos.x;
-                        self->homingTarget.y = self->targetPos.y;
-                        self->homingTarget.z = self->targetPos.z;
+                        self->targetPos() = ((Player *) (((Player *) (self->player))->getEnemy(i)))->getPosition();
+                        self->homingTarget.x = self->targetPos().x;
+                        self->homingTarget.y = self->targetPos().y;
+                        self->homingTarget.z = self->targetPos().z;
                         break;
                     }
                 }
             }
         }
-        float vx = self->homingTarget.x - self->position.x;
-        float vy = self->homingTarget.y - self->position.y;
-        float vz = self->homingTarget.z - self->position.z;
+        float vx = self->homingTarget.x - self->position().x;
+        float vy = self->homingTarget.y - self->position().y;
+        float vz = self->homingTarget.z - self->position().z;
         self->homingDir.x = vx;
         self->homingDir.y = vy;
         self->homingDir.z = vz;
@@ -486,7 +486,7 @@ void PlayerFixedObject::setExhaustVisible(bool v) {
 int PlayerFixedObject::collide(float x, float y, float z) {
     PlayerFixedObject *self = this;
     Array<BoundingVolume *> *a = self->wreckCollision;
-    if ((a != 0 || self->state != 4) && self->collisionEnabled != 0) {
+    if ((a != 0 || self->state != 4) && self->collisionEnabled() != 0) {
         if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
                 BoundingVolume *bv = (*a)[i];
@@ -520,13 +520,13 @@ static VecAssignFn *g_pfo_vecAssignZero = nullptr;
 void PlayerFixedObject::reset() {
     this->KIPlayer::reset();
 
-    this->setPosition(this->spawnX, this->spawnY, this->spawnZ);
+    this->setPosition(this->spawnX(), this->spawnY(), this->spawnZ());
 
     this->targetEnemy = 0;
 
-    Vector spawn = {this->spawnX, this->spawnY, this->spawnZ};
+    Vector spawn = {this->spawnX(), this->spawnY(), this->spawnZ()};
     this->respawnPos = spawn;
-    this->position = this->respawnPos;
+    this->position() = this->respawnPos;
 
     this->deltaTime = 0;
     if (this->state != 5)
@@ -534,7 +534,7 @@ void PlayerFixedObject::reset() {
 
     VecAssignFn fn = *g_pfo_vecAssignZero;
     Vector zero = {0.0f, 0.0f, 0.0f};
-    fn(&this->targetPos, &zero);
+    fn(&this->targetPos(), &zero);
     fn(&this->homingTarget, &zero);
     fn(&this->homingDir, &zero);
 }
@@ -546,15 +546,15 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     AbyssEngine::Transform *t = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(geom->transform);
     *(int *) &t->boundingRadius = 0x48f42400;
 
-    int kind = this->kind;
+    int kind = this->kind();
     int sel;
     if (kind == 0xd) {
         sel = 4;
     } else if (kind == 0xe) {
         sel = 0;
     } else if (kind == 0xf) {
-        if (this->faction == 3) sel = 1;
-        else sel = (this->faction == 2) ? 2 : 3;
+        if (this->faction() == 3) sel = 1;
+        else sel = (this->faction() == 2) ? 2 : 3;
     } else if (kind == 0x37a3) {
         sel = 5;
     } else {
@@ -623,7 +623,7 @@ static void render_thunk_other(Explosion *expl) {
 
 void PlayerFixedObject::render() {
     PlayerFixedObject *self = this;
-    AEGeometry *g78 = self->secondaryGeometry;
+    AEGeometry *g78 = self->secondaryGeometry();
     if (g78 != 0 && self->shipHidden == 0) {
         g78->render();
     }
@@ -672,7 +672,7 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
     }
     self->explosion = 0;
     self->wreckMeshId = 0;
-    self->faction = param2;
+    self->faction() = param2;
     self->wreckGeometry = 0;
     self->boundingVolumes = 0;
     self->wreckCollision = 0;
@@ -688,7 +688,7 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
     self->intPosZ = 0;
 
     Vector p = {x, y, z};
-    self->position = p;
+    self->position() = p;
 
     self->moving = 0;
     self->wreckType = -1;
@@ -716,38 +716,38 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
     }
 
     if (special) {
-        if (self->lootList != 0) {
-            delete self->lootList;
+        if (self->lootList() != 0) {
+            delete self->lootList();
         }
-        self->lootList = 0;
+        self->lootList() = 0;
     } else {
         Generator *gen = new Generator();
         if (kind == 0x37a3) {
-            self->field_0x41 = 1;
+            self->field_0x41() = 1;
             Station *station = Globals::status->getStation();
             int sidx = station->getIndex();
             for (uint32_t i = 0; i < 4; i++) {
                 if (g_pfo_stationIdx[i] == sidx) {
-                    self->lootList = gen->getLootList(g_pfo_lootParams[i * 2 + 1], 0);
+                    self->lootList() = gen->getLootList(g_pfo_lootParams[i * 2 + 1], 0);
                 }
             }
         } else {
             Array<int> *loot = gen->getLootList(-1, -1);
-            self->lootList = loot;
+            self->lootList() = loot;
             if (loot != 0) {
                 int second = (kind != 0x498e) ? 0x4a88 : 0x498e;
                 if (kind != 0x498e && kind != second) {
-                    for (int idx = 1; (uint32_t)(idx - 1) < self->lootList->size(); idx += 2) {
+                    for (int idx = 1; (uint32_t)(idx - 1) < self->lootList()->size(); idx += 2) {
                         if (kind == 0xe) {
                             int r = Globals::rnd->nextInt();
-                            int &cell = (*self->lootList)[idx];
+                            int &cell = (*self->lootList())[idx];
                             cell = cell * (r + 5);
                         } else {
                             int r = Globals::rnd->nextInt();
-                            int &base = (*self->lootList)[idx];
+                            int &base = (*self->lootList())[idx];
                             base = base * (r + 2);
                             int r2 = Globals::rnd->nextInt();
-                            int &cell = (*self->lootList)[idx];
+                            int &cell = (*self->lootList())[idx];
                             if (cell < r2 + 8) cell = r2 + 8;
                         }
                     }
@@ -759,18 +759,18 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
 
     ((Player *) self->player)->spawnedFlag = 1;
     if (kind != 0x37a3) {
-        self->aiActiveCounter = 0x2f;
+        self->aiActiveCounter() = 0x2f;
         if (kind == 0xe) {
-            self->aiActiveCounter = -1;
+            self->aiActiveCounter() = -1;
             self->moving = 0;
         }
     }
 }
 
 void PlayerFixedObject::setPosition(float x, float y, float z) {
-    this->spawnX = x;
-    this->spawnY = y;
-    this->spawnZ = z;
+    this->spawnX() = x;
+    this->spawnY() = y;
+    this->spawnZ() = z;
     this->intPosX = (int32_t) x;
     this->intPosY = (int32_t) y;
     this->intPosZ = (int32_t) z;
@@ -782,13 +782,13 @@ void PlayerFixedObject::setPosition(float x, float y, float z) {
 
     char buf[12];
     ((AEGeometry *) ((Vector *) buf))->getPosition();
-    this->position = *(const Vector *) ((Vector *) buf);
+    this->position() = *(const Vector *) ((Vector *) buf);
 
     Array<BoundingVolume *> *bv = this->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
             BoundingVolume *o = (*bv)[i];
-            o->update(this->position.x, this->position.y, this->position.z);
+            o->update(this->position().x, this->position().y, this->position().z);
             bv = this->boundingVolumes;
         }
     }
@@ -815,7 +815,7 @@ void PlayerFixedObject::setDeadButSelectable() {
 int PlayerFixedObject::outerCollide(float x, float y, float z) {
     PlayerFixedObject * self = this;
     Array<BoundingVolume *> *a = self->wreckCollision;
-    if ((a != 0 || self->state != 4) && self->collisionEnabled != 0) {
+    if ((a != 0 || self->state != 4) && self->collisionEnabled() != 0) {
         if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
                 BoundingVolume *bv = (*a)[i];
@@ -850,7 +850,7 @@ void PlayerFixedObject::moveForward(int amount) {
     *(Matrix *) ((Player *) this->player)->transform = *m;
     char buf[12];
     ((AEGeometry *) ((Vector *) buf))->getPosition();
-    this->position = *(const Vector *) ((Vector *) buf);
+    this->position() = *(const Vector *) ((Vector *) buf);
     if (this->wreckGeometry != 0) {
         this->wreckGeometry->moveForward(d);
     }
@@ -858,7 +858,7 @@ void PlayerFixedObject::moveForward(int amount) {
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
             BoundingVolume *o = (*bv)[i];
-            o->update(this->position.x, this->position.y, this->position.z);
+            o->update(this->position().x, this->position().y, this->position().z);
             bv = this->boundingVolumes;
         }
     }
