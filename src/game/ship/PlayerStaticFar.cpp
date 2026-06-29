@@ -18,7 +18,7 @@ static float g_scaleFactor;
 PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z)
     : PlayerStatic(playerId, geometry, x, y, z) {
     this->viewDirection = {0.0f, 0.0f, 0.0f};
-    this->initPosition = {x, y, z};
+    this->initPosition() = {x, y, z};
     this->player->setRadius(0x1d4c);
     this->boundingVolumes = nullptr;
 }
@@ -51,7 +51,7 @@ int PlayerStaticFar::outerCollide(float x, float y, float z) {
 }
 
 Vector PlayerStaticFar::getInitPosition(Vector /*value*/) {
-    return this->initPosition;
+    return this->initPosition();
 }
 
 void PlayerStaticFar::setYRotation(int /*yRotation*/) {
@@ -69,9 +69,9 @@ void PlayerStaticFar::update(int /*delta*/) {
     unsigned int cur = camera->CameraGetCurrent();
     AbyssEngine::AEMath::Matrix *matrix = reinterpret_cast<AbyssEngine::AEMath::Matrix *>(camera->CameraGetLocal(cur));
 
-    this->cameraPosition = MatrixGetPosition(*matrix);
-    this->objectPosition = {(float) this->posX, (float) this->posY, (float) this->posZ};
-    this->viewDirection = this->objectPosition - this->cameraPosition;
+    this->cameraPosition() = MatrixGetPosition(*matrix);
+    this->objectPosition() = {(float) this->posX, (float) this->posY, (float) this->posZ};
+    this->viewDirection = this->objectPosition() - this->cameraPosition();
 
     float len = VectorLength(this->viewDirection);
 
@@ -82,7 +82,7 @@ void PlayerStaticFar::update(int /*delta*/) {
     } else {
         this->viewDirection = VectorNormalize(this->viewDirection);
         this->viewDirection *= g_radius;
-        this->viewDirection += this->cameraPosition;
+        this->viewDirection += this->cameraPosition();
         this->geometry->setPosition(this->viewDirection);
 
         float s = (float) (int) ((g_radius / (float) (int) len) * g_scaleNum);

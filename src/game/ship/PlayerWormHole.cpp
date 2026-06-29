@@ -168,10 +168,10 @@ void PlayerWormHole::update(int elapsed) {
 
             if (mission == 0x1d || mission == 0x29) {
                 PlayerEgo *ego = (PlayerEgo *) (intptr_t) this->level->getPlayer();
-                this->cameraPosition = ego->getPosition();
-                x = (int) (this->cameraPosition.x + (float) x * 1.7f + (float) x);
-                y = (int) (this->cameraPosition.y + (float) y * 1.7f + (float) y);
-                z = (int) (this->cameraPosition.z + (float) z * 1.7f + (float) z);
+                this->cameraPosition() = ego->getPosition();
+                x = (int) (this->cameraPosition().x + (float) x * 1.7f + (float) x);
+                y = (int) (this->cameraPosition().y + (float) y * 1.7f + (float) y);
+                z = (int) (this->cameraPosition().z + (float) z * 1.7f + (float) z);
             }
 
             this->setPosition((float) x, (float) y, (float) z);
@@ -192,7 +192,7 @@ void PlayerWormHole::update(int elapsed) {
 
     canvas = *g_playerWormHole_update_canvas;
     unsigned int currentCamera = canvas->CameraGetCurrent();
-    this->cameraPosition =
+    this->cameraPosition() =
             AbyssEngine::AEMath::MatrixGetPosition(
                 *(AbyssEngine::AEMath::Matrix *) canvas->CameraGetLocal(currentCamera));
 
@@ -200,10 +200,10 @@ void PlayerWormHole::update(int elapsed) {
     this->geometry->setScaling(scale);
 
     this->viewDirection = this->geometry->getPosition();
-    this->cameraPosition -= this->viewDirection;
-    this->cameraPosition = AbyssEngine::AEMath::VectorNormalize(this->cameraPosition);
-    this->cameraPosition.x += 0.5f;
+    this->cameraPosition() -= this->viewDirection;
+    this->cameraPosition() = AbyssEngine::AEMath::VectorNormalize(this->cameraPosition());
+    this->cameraPosition().x += 0.5f;
 
     Vector up = {0.0f, 1.0f, 0.0f};
-    this->geometry->setDirection(this->cameraPosition, up);
+    this->geometry->setDirection(this->cameraPosition(), up);
 }

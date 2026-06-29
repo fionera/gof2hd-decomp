@@ -17,12 +17,16 @@ class BoundingVolume;
 
 class PlayerStaticFar : public PlayerStatic {
 public:
-    Player *player;
-    Vector initPosition;
-    Vector cameraPosition;
-    Vector objectPosition;
+    // ASM ground truth: player@4, initPosition@0x58, cameraPosition@0x90 and objectPosition@0x9c are
+    // all KIPlayer base fields (our decomp duplicated them, adding 0x28=40 bytes and shifting
+    // boundingVolumes/viewDirection). `player` is just inherited; the three position vectors alias the
+    // KIPlayer fields at their real offsets. boundingVolumes now lands @0x130, viewDirection @0x134.
     Array<BoundingVolume *> *boundingVolumes;
     Vector viewDirection;
+
+    Vector &initPosition() { return reinterpret_cast<Vector &>(this->posX); }
+    Vector &cameraPosition() { return reinterpret_cast<Vector &>(this->field_0x90); }
+    Vector &objectPosition() { return reinterpret_cast<Vector &>(this->field_0x9c); }
 
     PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z);
 
