@@ -39,6 +39,12 @@ void glNormalPointer(GLenum type, GLsizei stride, const GLvoid *pointer);
 void glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 void glEnableClientState(GLenum array);
 void glDisableClientState(GLenum array);
+void glEnable(GLenum cap);
+void glDisable(GLenum cap);
+void glBlendFunc(GLenum sfactor, GLenum dfactor);
+void glTexEnvi(GLenum target, GLenum pname, GLint param);
+void glDepthMask(GLboolean flag);
+void glAlphaFunc(GLenum func, GLclampf ref);
 
 #ifdef __cplusplus
 }
