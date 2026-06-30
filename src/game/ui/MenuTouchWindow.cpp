@@ -9,6 +9,7 @@
 #include "game/mission/Status.h"
 #include "game/mission/RecordHandler.h"
 #include "engine/audio/FModSound.h"
+#include "engine/core/ApplicationManager.h"
 #include "game/ship/ShipDefTable.h"
 #include "game/core/GameSettings.h"
 #include <math.h>
@@ -64,7 +65,7 @@ void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b);
 
 void _mtw_render3D_inner(void *obj); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-int _mtw_Layout_OnTouchEnd(void *layout, int y, int x);
+static inline int _mtw_Layout_OnTouchEnd(void *layout, int y, int x) { return ((Layout*)layout)->OnTouchEnd(x, y); }
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -76,11 +77,11 @@ static inline void _mtw_FModSound_resumeAll(void *snd) { ((FModSound*)snd)->resu
 
 void _mtw_FModSound_stopAll();
 
-void _mtw_AppMgr_SetCurrentApplicationModule(void *app, int id);
+static inline void _mtw_AppMgr_SetCurrentApplicationModule(void *app, int id) { ((AbyssEngine::ApplicationManager*)app)->SetCurrentApplicationModule(id); }
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_AppMgr_Quit(void *app); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void _mtw_AppMgr_Quit(void *app) { ((AbyssEngine::ApplicationManager*)app)->Quit(); }
 
 void _mtw_Globals_reportLeaderboards();
 
