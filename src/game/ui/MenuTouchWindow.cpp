@@ -113,7 +113,7 @@ static inline void *_mtw_Array_TB_dtor(void *arr) { ((Array<TouchButton*>*)arr)-
 
 static inline void *_mtw_Array_TS_dtor(void *arr) { ((Array<TouchSlider*>*)arr)->~Array(); return arr; }
 
-void *_mtw_Array_Str_dtor(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void *_mtw_Array_Str_dtor(void *arr) { ((Array<String>*)arr)->~Array(); return arr; }
 
 void *_mtw_TouchButton_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
