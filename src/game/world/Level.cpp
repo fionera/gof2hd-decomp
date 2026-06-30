@@ -251,8 +251,7 @@ int Level::getEnemiesLeft() {
 }
 
 void Level::render2D() {
-    if (starSystem != 0)
-        starSystem->render2D();
+    starSystem->render2D();
 }
 
 int Level::checkGameOver(int param) {

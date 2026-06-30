@@ -129,8 +129,7 @@ void CutScene::render3D() {
 }
 
 void CutScene::render2D() {
-    if (this->level != nullptr)
-        this->level->render2D();
+    this->level->render2D();
 }
 
 void CutScene::process(int /*delta*/) {

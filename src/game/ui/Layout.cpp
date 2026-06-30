@@ -1019,8 +1019,7 @@ void Layout::drawHeader(String title) {
 }
 
 void Layout::drawHelpWindow() {
-    if (this->choiceWindow != nullptr)
-        this->choiceWindow->draw();
+    this->choiceWindow->draw();
 }
 
 static FModSound **gFmodHelp = nullptr;
