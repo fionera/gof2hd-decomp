@@ -11,9 +11,9 @@ static inline int FMOD_Event_setPaused(FMOD::Event *event, int paused) { return 
 
 void FMOD_fade(FModSound *self, int a, int s, float v);
 
-void FMOD_EventSystem_unload(FMOD::EventSystem * system);
+static inline void FMOD_EventSystem_unload(FMOD::EventSystem *system) { system->unload(); }
 
-void FMOD_EventSystem_release(FMOD::EventSystem * system);
+static inline void FMOD_EventSystem_release(FMOD::EventSystem *system) { system->release(); }
 
 int FMOD_EventSystem_freeEventData(FMOD::EventSystem *system, FMOD::Event *event, int waitUntilReady);
 
@@ -27,7 +27,7 @@ static inline int FMOD_Event_setVolume(FMOD::Event *event, float vol) { return e
 
 int FMOD_Event_getProperty(FMOD::Event *event, unsigned char *prop, unsigned char *out, int b = 1);
 
-int FMOD_EventSystem_getNumReverbPresets(FMOD::EventSystem *system, int *out);
+static inline int FMOD_EventSystem_getNumReverbPresets(FMOD::EventSystem *system, int *out) { return system->getNumReverbPresets(out); }
 
 int FMOD_EventSystem_getReverbPresetByIndex(FMOD::EventSystem *system, int idx, unsigned char *props, char **name);
 
@@ -35,7 +35,7 @@ int FMOD_EventSystem_setReverbProperties(FMOD::EventSystem *system, unsigned cha
 
 static inline int FMOD_Event_getParameterByIndex(FMOD::Event *event, int idx, FMOD::EventParameter **out) { return event->getParameterByIndex(idx, out); }
 
-int FMOD_EventParameter_setValue(FMOD::EventParameter *p, float v);
+static inline int FMOD_EventParameter_setValue(FMOD::EventParameter *p, float v) { return p->setValue(v); }
 
 int FMOD_EventSystem_init(FMOD::EventSystem *system, int maxch, unsigned char *extdriver, int flags);
 
@@ -49,7 +49,7 @@ static inline int FMOD_Event_getState(FMOD::Event *event, unsigned *out) { retur
 
 static inline int FMOD_Event_getParameter(FMOD::Event *event, const char *name, FMOD::EventParameter **out) { return event->getParameter(name, out); }
 
-int FMOD_EventSystem_getProject(FMOD::EventSystem *system, const char *name, FMOD::EventProject **out);
+static inline int FMOD_EventSystem_getProject(FMOD::EventSystem *system, const char *name, FMOD::EventProject **out) { return system->getProject(name, out); }
 
 static inline int FMOD_Event_getParentGroup(FMOD::Event *event, FMOD::EventGroup * *out) { return event->getParentGroup(out); }
 static inline int FMOD_Event_getCategory(FMOD::Event *event, FMOD::EventCategory * *out = 0) { return event->getCategory(out); }
