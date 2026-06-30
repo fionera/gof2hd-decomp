@@ -3,7 +3,7 @@
   "original_functions": 4522,
   "ours_functions": 4541,
   "compared": 4507,
-  "avg_match": 69.27,
+  "avg_match": 69.28,
   "byte_exact": 1074,
   "linked_exact": 1931,
   "fuzzy_perfect": 1931,
@@ -7366,14 +7366,6 @@
    "usize": 64
   },
   {
-   "name": "_ZN11AbyssEngine16AESoundRessource7releaseEi",
-   "pct": 30.4,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 36
-  },
-  {
    "name": "_ZN13LodMeshMerger13transformMeshEPN11AbyssEngine4MeshERKNS0_6AEMath6MatrixE",
    "pct": 30.4,
    "byte": false,
@@ -8182,6 +8174,14 @@
    "usize": 428
   },
   {
+   "name": "_ZN11AbyssEngine16AESoundRessource7releaseEi",
+   "pct": 34.8,
+   "byte": false,
+   "linked": false,
+   "osize": 68,
+   "usize": 36
+  },
+  {
    "name": "_ZN7Globals16releaseResourcesEv",
    "pct": 34.8,
    "byte": false,
@@ -8516,14 +8516,6 @@
    "linked": false,
    "osize": 72,
    "usize": 48
-  },
-  {
-   "name": "_ZN11AbyssEngine16AESoundRessource9setVolumeEii",
-   "pct": 37.0,
-   "byte": false,
-   "linked": false,
-   "osize": 80,
-   "usize": 42
   },
   {
    "name": "_ZN11AbyssEngine16AESoundRessourceC1Ev",
@@ -9278,6 +9270,14 @@
    "usize": 86
   },
   {
+   "name": "_ZN11AbyssEngine16AESoundRessource9setVolumeEii",
+   "pct": 40.7,
+   "byte": false,
+   "linked": false,
+   "osize": 80,
+   "usize": 42
+  },
+  {
    "name": "_ZN14PlayerAsteroidC1EiP10AEGeometryiiRKN11AbyssEngine6AEMath6VectorEfi",
    "pct": 40.7,
    "byte": false,
@@ -9356,14 +9356,6 @@
    "linked": false,
    "osize": 624,
    "usize": 436
-  },
-  {
-   "name": "_ZN11AbyssEngine16AESoundRessource4playEif",
-   "pct": 41.0,
-   "byte": false,
-   "linked": false,
-   "osize": 104,
-   "usize": 80
   },
   {
    "name": "_ZN5MGame17freeCamTouchBeginEiiPv",
@@ -9804,6 +9796,14 @@
    "linked": false,
    "osize": 152,
    "usize": 116
+  },
+  {
+   "name": "_ZN11AbyssEngine16AESoundRessource4playEif",
+   "pct": 43.6,
+   "byte": false,
+   "linked": false,
+   "osize": 104,
+   "usize": 80
   },
   {
    "name": "_ZN6Layout10drawHeaderEN11AbyssEngine6StringE",
@@ -17542,30 +17542,6 @@
    "usize": 24
   },
   {
-   "name": "_ZN11AbyssEngine16AESoundRessource14setMusicVolumeEi",
-   "pct": 82.9,
-   "byte": false,
-   "linked": false,
-   "osize": 46,
-   "usize": 48
-  },
-  {
-   "name": "_ZN11AbyssEngine16AESoundRessource14setSoundVolumeEi",
-   "pct": 82.9,
-   "byte": false,
-   "linked": false,
-   "osize": 46,
-   "usize": 48
-  },
-  {
-   "name": "_ZN11AbyssEngine16AESoundRessource9setVolumeEi",
-   "pct": 82.9,
-   "byte": false,
-   "linked": false,
-   "osize": 46,
-   "usize": 48
-  },
-  {
    "name": "_ZN9PlayerEgo7setShipEii",
    "pct": 82.9,
    "byte": false,
@@ -18428,6 +18404,30 @@
    "linked": false,
    "osize": 40,
    "usize": 40
+  },
+  {
+   "name": "_ZN11AbyssEngine16AESoundRessource14setMusicVolumeEi",
+   "pct": 87.8,
+   "byte": false,
+   "linked": false,
+   "osize": 46,
+   "usize": 48
+  },
+  {
+   "name": "_ZN11AbyssEngine16AESoundRessource14setSoundVolumeEi",
+   "pct": 87.8,
+   "byte": false,
+   "linked": false,
+   "osize": 46,
+   "usize": 48
+  },
+  {
+   "name": "_ZN11AbyssEngine16AESoundRessource9setVolumeEi",
+   "pct": 87.8,
+   "byte": false,
+   "linked": false,
+   "osize": 46,
+   "usize": 48
   },
   {
    "name": "_ZN14BoundingSphereC1Efffffff",

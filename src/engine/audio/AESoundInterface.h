@@ -25,8 +25,6 @@ namespace AbyssEngine {
 
         virtual int isPlaying() = 0;
 
-        virtual int loaded() = 0;
-
         virtual void setGain(int gain) = 0;
 
         virtual void setVolume(int volume) = 0;
@@ -36,6 +34,9 @@ namespace AbyssEngine {
         virtual void setMusicVolume(int volume) = 0;
 
         virtual void release() = 0;
+
+        // ASM (original _ZTV AESound): loaded() is the LAST virtual (after release), not before setGain.
+        virtual int loaded() = 0;
     };
 }
 #endif
