@@ -198,7 +198,7 @@ static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void Vec_assign(void *dst, const void *src);
+static inline void Vec_assign(void *dst, const void *src) { for(int _i=0;_i<3;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; }
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -206,7 +206,7 @@ void PE_mtp_steer(PlayerEgo *self, const float *target, int steer, float speed);
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void Vec_sub(void *out, const void *a, const void *b);
+static inline void Vec_sub(void *out, const void *a, const void *b) { for(int _i=0;_i<3;_i++) ((float*)out)[_i]=((const float*)a)[_i]-((const float*)b)[_i]; }
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1005,15 +1005,15 @@ Vec3 PlayerEgo::getTurretPosition() {
     return MatrixGetPosition(world);
 }
 
-void Vec_scale(void *out, const void *v, float s);
+static inline void Vec_scale(void *out, const void *v, float s) { for(int _i=0;_i<3;_i++) ((float*)out)[_i]=((const float*)v)[_i]*s; }
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void Vec_sub(void *out, const void *a, const void *b);
+
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void Vec_assign(void *dst, const void *src);
+
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1793,7 +1793,7 @@ void PlayerEgo::handleAutoTurret(int dt) {
     ((Player *) (this->player))->stopShooting(0);
 }
 
-void Vec_assign(void *dst, const void *src);
+
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
