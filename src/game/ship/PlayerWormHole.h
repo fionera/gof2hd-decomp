@@ -11,6 +11,8 @@ class AEGeometry;
 
 class PlayerWormHole : public PlayerStaticFar {
 public:
+    // ASM: isShrinking reads timer at [this,#336]=0x150; PlayerStaticFar ends @0x140 -> 16 bytes precede.
+    uint8_t _pad_0x140[16];
     int timer;
     int scale;
     uint8_t missionLock;
