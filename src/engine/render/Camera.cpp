@@ -7,7 +7,7 @@ namespace AbyssEngine {
                                Camera *cam);
 
     Camera::Camera(float fov, float aspect, float nearPlane, float farPlane, float param5) {
-        new(&this->projection) AEMath::Matrix();
+        // Original omits the redundant projection identity-init (CameraSetPerspective overwrites it).
         CameraSetPerspective(fov, aspect, nearPlane, farPlane, param5, this);
     }
 }
