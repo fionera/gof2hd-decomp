@@ -47,7 +47,8 @@ Objective *Objective::addObjective(Objective *objective) {
 }
 
 void Objective::setAchievedText(AbyssEngine::String *text) {
-    this->achievedText = new AbyssEngine::String(*text);
+    // Original calls the 2-arg String(const String&, bool=false) ctor (extra movs r2,#0), not the 1-arg.
+    this->achievedText = new AbyssEngine::String(*text, false);
 }
 
 AbyssEngine::String *Objective::getAchievedText() {
