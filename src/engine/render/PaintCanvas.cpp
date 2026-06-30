@@ -693,7 +693,7 @@ static inline void paintcanvas_ext_ss2_matcreate(void *self, unsigned short id, 
 
 void paintcanvas_ext_gsp_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_gsp_getwidth(void *self); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_gsp_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); }
 
 int paintcanvas_ext_gsp_getheight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -831,7 +831,7 @@ void paintcanvas_ext_gsp2_invtransformvec(void *outMat, void *vec);
 
 void paintcanvas_ext_gsp2_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_gsp2_getwidth(void *self); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_gsp2_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); }
 
 int paintcanvas_ext_gsp2_getheight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -897,7 +897,7 @@ void paintcanvas_ext_di4_settexture(void *self, unsigned int tex);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_di4_getwidth(void *self); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_di4_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); }
 
 int paintcanvas_ext_di4_getheight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1105,7 +1105,7 @@ void paintcanvas_ext_di3_restore(unsigned int flag, void *img);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_di3_getwidth(void *self); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_di3_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); }
 
 int paintcanvas_ext_di3_getheight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 
