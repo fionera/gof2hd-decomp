@@ -53,8 +53,16 @@ public:
     AbyssEngine::String str80;
 
     int previewSentinel;
+    // Ghidra: field_0x88 + shipTransform@0x8c/addonTransform@0x90/camera@0x94 precede the 2 preview
+    // matrices (which live in the gap @0x98-0x110), and field_0x110 precedes baseAngle(=field_0x114).
+    // Our decomp lacked these 20 bytes, shifting baseAngle/previewAngle/dragAccum.. low.
+    int field_0x88;
+    int shipTransform;
+    int addonTransform;
+    int camera;
     AbyssEngine::AEMath::Matrix previewTransform;
     AbyssEngine::AEMath::Matrix previewTransform2;
+    int field_0x110;
     float baseAngle;
     float previewAngle;
     int dragAccum;
