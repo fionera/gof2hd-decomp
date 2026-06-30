@@ -2531,14 +2531,14 @@ void PlayerEgo::drawThrottle() {
 void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     this->goingToWaypointFlag = 0;
     int v = (int) (intptr_t) kip;
-    this->autoPilotTarget = v;
     unsigned char old = this->autoPilot;
+    this->autoPilotTarget = v;
     this->autoPilot = (v != 0) ? 1 : 0;
     if (v == 0) {
         ((KIPlayer *) this->field_0x14)->autoPilotState = 0;
         if (old != 0) {
-            this->field_0x2a8 = 0;
             this->field_0x2a4 = 0;
+            this->field_0x2a8 = 0;
         }
         return;
     }

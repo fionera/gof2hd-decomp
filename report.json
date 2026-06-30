@@ -17958,14 +17958,6 @@
    "usize": 36
   },
   {
-   "name": "_ZN9PlayerEgo12setAutoPilotEP8KIPlayer",
-   "pct": 86.8,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 100
-  },
-  {
    "name": "_ZnwjSt11align_val_t",
    "pct": 86.8,
    "byte": false,
@@ -19772,6 +19764,14 @@
    "linked": false,
    "osize": 46,
    "usize": 46
+  },
+  {
+   "name": "_ZN9PlayerEgo12setAutoPilotEP8KIPlayer",
+   "pct": 94.7,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 100
   },
   {
    "name": "_ZN11AbyssEngine11PulseShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
