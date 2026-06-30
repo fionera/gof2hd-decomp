@@ -3,7 +3,7 @@
   "original_functions": 4522,
   "ours_functions": 4542,
   "compared": 4507,
-  "avg_match": 69.64,
+  "avg_match": 69.65,
   "byte_exact": 1102,
   "linked_exact": 1966,
   "fuzzy_perfect": 1966,
@@ -2470,14 +2470,6 @@
    "usize": 224
   },
   {
-   "name": "_ZN11AbyssEngine6Engine10RenderMeshEPNS_4MeshE",
-   "pct": 7.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1040,
-   "usize": 136
-  },
-  {
    "name": "_Z15IsInPrimaryMenui",
    "pct": 8.0,
    "byte": false,
@@ -2548,6 +2540,14 @@
    "linked": false,
    "osize": 716,
    "usize": 512
+  },
+  {
+   "name": "_ZN11AbyssEngine6Engine10RenderMeshEPNS_4MeshE",
+   "pct": 8.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1040,
+   "usize": 136
   },
   {
    "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
@@ -2894,14 +2894,6 @@
    "usize": 168
   },
   {
-   "name": "_ZN11SpaceLounge10getSoundIdEP5Agent",
-   "pct": 10.3,
-   "byte": false,
-   "linked": false,
-   "osize": 644,
-   "usize": 552
-  },
-  {
    "name": "_ZN12HangarWindow10OnTouchEndEii",
    "pct": 10.3,
    "byte": false,
@@ -3046,6 +3038,14 @@
    "usize": 13484
   },
   {
+   "name": "_ZN11SpaceLounge10getSoundIdEP5Agent",
+   "pct": 11.2,
+   "byte": false,
+   "linked": false,
+   "osize": 644,
+   "usize": 552
+  },
+  {
    "name": "_ZN15MenuTouchWindow19createRecordButtonsEb",
    "pct": 11.2,
    "byte": false,
@@ -3134,6 +3134,14 @@
    "usize": 900
   },
   {
+   "name": "_Z13simulateTouchPN11AbyssEngine6EngineE",
+   "pct": 11.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1928,
+   "usize": 1076
+  },
+  {
    "name": "_ZN11AbyssEngine6String11ToUpperCaseEv",
    "pct": 11.8,
    "byte": false,
@@ -3196,14 +3204,6 @@
    "linked": false,
    "osize": 138,
    "usize": 240
-  },
-  {
-   "name": "_Z13simulateTouchPN11AbyssEngine6EngineE",
-   "pct": 12.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1928,
-   "usize": 1076
   },
   {
    "name": "_ZN11TouchButton4drawEv",
@@ -3942,6 +3942,14 @@
    "usize": 202
   },
   {
+   "name": "_ZN11TractorBeam6updateEiP5RadarP5LevelP3Hud",
+   "pct": 15.7,
+   "byte": false,
+   "linked": false,
+   "osize": 852,
+   "usize": 684
+  },
+  {
    "name": "_ZN5Level10assignGunsEv",
    "pct": 15.8,
    "byte": false,
@@ -3964,14 +3972,6 @@
    "linked": false,
    "osize": 220,
    "usize": 108
-  },
-  {
-   "name": "_ZN11TractorBeam6updateEiP5RadarP5LevelP3Hud",
-   "pct": 16.0,
-   "byte": false,
-   "linked": false,
-   "osize": 852,
-   "usize": 684
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjiiiihhh",
@@ -5966,6 +5966,22 @@
    "usize": 472
   },
   {
+   "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU",
+   "pct": 23.5,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 28
+  },
+  {
+   "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getPremiumSKU",
+   "pct": 23.5,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 28
+  },
+  {
    "name": "_ZN11AbyssEngine15EaseInOutMatrix8SetRangeENS_6AEMath6MatrixES2_",
    "pct": 23.5,
    "byte": false,
@@ -6116,22 +6132,6 @@
    "linked": false,
    "osize": 192,
    "usize": 62
-  },
-  {
-   "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU",
-   "pct": 24.0,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 28
-  },
-  {
-   "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getPremiumSKU",
-   "pct": 24.0,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 28
   },
   {
    "name": "_ZN11AbyssEngineplERKNS_6StringES2_",
@@ -10790,22 +10790,6 @@
    "usize": 104
   },
   {
-   "name": "_ZN11AbyssEngine17CubeNormalMappingC1Ev",
-   "pct": 49.1,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 116
-  },
-  {
-   "name": "_ZN11AbyssEngine17CubeNormalMappingC2Ev",
-   "pct": 49.1,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 116
-  },
-  {
    "name": "_ZN11SpaceLounge11OnTouchMoveEii",
    "pct": 49.1,
    "byte": false,
@@ -11734,6 +11718,22 @@
    "usize": 396
   },
   {
+   "name": "_ZN11AbyssEngine17CubeNormalMappingC1Ev",
+   "pct": 52.8,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 116
+  },
+  {
+   "name": "_ZN11AbyssEngine17CubeNormalMappingC2Ev",
+   "pct": 52.8,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 116
+  },
+  {
    "name": "_ZN6Layout8drawFadeEv",
    "pct": 52.8,
    "byte": false,
@@ -12222,14 +12222,6 @@
    "usize": 64
   },
   {
-   "name": "_ZN11AbyssEngine9DNSShader4InitEPNS_6EngineE",
-   "pct": 56.7,
-   "byte": false,
-   "linked": false,
-   "osize": 356,
-   "usize": 328
-  },
-  {
    "name": "_ZN11AbyssEngine17BumpRimCubeShader4InitEPNS_6EngineE",
    "pct": 56.8,
    "byte": false,
@@ -12372,6 +12364,14 @@
    "linked": false,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN11AbyssEngine9DNSShader4InitEPNS_6EngineE",
+   "pct": 57.3,
+   "byte": false,
+   "linked": false,
+   "osize": 356,
+   "usize": 328
   },
   {
    "name": "_ZN13RecordHandler21readRecordAsByteArrayEPPaib",
@@ -19390,6 +19390,22 @@
    "usize": 72
   },
   {
+   "name": "_ZN9RocketGunD1Ev",
+   "pct": 93.3,
+   "byte": false,
+   "linked": false,
+   "osize": 88,
+   "usize": 88
+  },
+  {
+   "name": "_ZN9RocketGunD2Ev",
+   "pct": 93.3,
+   "byte": false,
+   "linked": false,
+   "osize": 88,
+   "usize": 88
+  },
+  {
    "name": "_ZN10AEGeometry20setLodChildTransformEj",
    "pct": 93.5,
    "byte": false,
@@ -19692,22 +19708,6 @@
    "linked": false,
    "osize": 572,
    "usize": 584
-  },
-  {
-   "name": "_ZN9RocketGunD1Ev",
-   "pct": 94.9,
-   "byte": false,
-   "linked": false,
-   "osize": 88,
-   "usize": 88
-  },
-  {
-   "name": "_ZN9RocketGunD2Ev",
-   "pct": 94.9,
-   "byte": false,
-   "linked": false,
-   "osize": 88,
-   "usize": 88
   },
   {
    "name": "_ZSt9terminatev",
