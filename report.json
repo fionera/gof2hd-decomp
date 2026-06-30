@@ -3,7 +3,7 @@
   "original_functions": 4522,
   "ours_functions": 4541,
   "compared": 4507,
-  "avg_match": 69.28,
+  "avg_match": 69.29,
   "byte_exact": 1074,
   "linked_exact": 1931,
   "fuzzy_perfect": 1931,
@@ -3942,20 +3942,20 @@
    "usize": 202
   },
   {
+   "name": "_ZN11TractorBeam6updateEiP5RadarP5LevelP3Hud",
+   "pct": 15.7,
+   "byte": false,
+   "linked": false,
+   "osize": 852,
+   "usize": 684
+  },
+  {
    "name": "_ZN5Level10assignGunsEv",
    "pct": 15.8,
    "byte": false,
    "linked": false,
    "osize": 2948,
    "usize": 2300
-  },
-  {
-   "name": "_ZN11TractorBeam6updateEiP5RadarP5LevelP3Hud",
-   "pct": 16.0,
-   "byte": false,
-   "linked": false,
-   "osize": 852,
-   "usize": 684
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjiiiihhh",
@@ -10046,22 +10046,6 @@
    "usize": 132
   },
   {
-   "name": "_ZN7BeamGunC1EiP3GuniP5Level",
-   "pct": 45.0,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 176
-  },
-  {
-   "name": "_ZN7BeamGunC2EiP3GuniP5Level",
-   "pct": 45.0,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 176
-  },
-  {
    "name": "_ZN9Explosion5startERKN11AbyssEngine6AEMath6VectorES4_",
    "pct": 45.1,
    "byte": false,
@@ -14860,6 +14844,22 @@
    "linked": false,
    "osize": 204,
    "usize": 192
+  },
+  {
+   "name": "_ZN7BeamGunC1EiP3GuniP5Level",
+   "pct": 67.5,
+   "byte": false,
+   "linked": false,
+   "osize": 224,
+   "usize": 184
+  },
+  {
+   "name": "_ZN7BeamGunC2EiP3GuniP5Level",
+   "pct": 67.5,
+   "byte": false,
+   "linked": false,
+   "osize": 224,
+   "usize": 184
   },
   {
    "name": "_ZN11AbyssEngine10BlurShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",

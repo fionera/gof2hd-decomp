@@ -4,6 +4,7 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "Gun.h"
+#include "AbstractGun.h"
 #include "game/world/Level.h"
 
 #include "engine/math/Vector.h"
@@ -14,7 +15,9 @@ class AEGeometry;
 class Gun;
 class Level;
 
-class BeamGun {
+// Original _ZTV: BeamGun : AbstractGun (12 vtable slots); overrides setEnemies/setEnemy/update/render/
+// translate/replaceGun, inherits is* (isRocket/isBomb/isMine/isAuto). Was standalone (6 slots) in ours.
+class BeamGun : public AbstractGun {
 public:
     int32_t field_0x4;
     Gun *gun;
@@ -28,18 +31,18 @@ public:
 
     BeamGun(int owner, Gun *gun, int meshKind, Level *level);
 
-    virtual ~BeamGun();
+    ~BeamGun() override;
 
-    virtual void setEnemies(Array<Player *> *enemies);
+    void setEnemies(Array<Player *> *enemies) override;
 
-    virtual void setEnemy(Player *enemy);
+    void setEnemy(Player *enemy) override;
 
-    virtual void update(int elapsed);
+    void update(int elapsed) override;
 
-    virtual void render();
+    void render() override;
 
-    void replaceGun(unsigned int mesh, int unused);
+    void translate(const AbyssEngine::AEMath::Vector &v) override;
 
-    void translate(const Vector &v);
+    void replaceGun(unsigned int mesh, int unused) override;
 };
 #endif
