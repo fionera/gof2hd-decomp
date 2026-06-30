@@ -94,7 +94,7 @@ void Hud::addToEventQueue(ListItem *item) {
 }
 
 unsigned int Hud::firePressed() {
-    return (this->touchFlags >> 4) & 1;
+    return (reinterpret_cast<const unsigned char &>(this->touchFlags) >> 4) & 1;
 }
 
 void Hud::resetAnalogStick() {

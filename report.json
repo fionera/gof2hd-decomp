@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.62,
-  "byte_exact": 1097,
-  "linked_exact": 1961,
-  "fuzzy_perfect": 1961,
+  "avg_match": 69.63,
+  "byte_exact": 1098,
+  "linked_exact": 1962,
+  "fuzzy_perfect": 1962,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -14300,14 +14300,6 @@
    "linked": false,
    "osize": 90,
    "usize": 82
-  },
-  {
-   "name": "_ZN3Hud11firePressedEv",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 10,
-   "usize": 10
   },
   {
    "name": "_ZN4Item8isInListEiP5ArrayIPS_E",
@@ -28844,6 +28836,14 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN3Hud11firePressedEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 10,
+   "usize": 10
   },
   {
    "name": "_ZN3Hud12closeHudMenuEv",
