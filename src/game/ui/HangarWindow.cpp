@@ -2352,9 +2352,7 @@ HangarWindow::HangarWindow() {
     this->iconOffsetY = lay->field_0x250;
 }
 
-bool HangarWindow::isInitialized() {
-    return this->active != 0;
-}
+unsigned char HangarWindow::isInitialized() { return this->active; }
 
 ListItem *HangarWindow::getCurrentItem() {
     return reinterpret_cast<ListItem *>(this->progressBarBorderImage);

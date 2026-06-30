@@ -103,8 +103,8 @@ void TargetFollowCamera::setFixed(bool e) { this->fixed = e; }
 void TargetFollowCamera::setRotationAroundTarget(bool e) { this->rotateAroundTargetEnabled = e; }
 void TargetFollowCamera::useTargetsUpVector(bool e) { this->useTargetsUpVec = e; }
 
-bool TargetFollowCamera::isInLookAtMode() { return this->lookAtCam != 0; }
-bool TargetFollowCamera::isInFastForwardMode() { return this->fastForward != 0; }
+unsigned char TargetFollowCamera::isInLookAtMode() { return this->lookAtCam; }
+unsigned char TargetFollowCamera::isInFastForwardMode() { return this->fastForward; }
 bool TargetFollowCamera::hideShipForFirstPersonCam() { return this->hideShip != 0; }
 
 void TargetFollowCamera::setFirstPersonMatrix(Matrix &m) { this->firstPersonMatrix = m; }

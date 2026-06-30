@@ -147,9 +147,9 @@ public:
 
     void translateNoUpdate(float dx, float dy, float dz);
 
-    bool isInLookAtMode();
+    unsigned char isInLookAtMode();
 
-    bool isInFastForwardMode();
+    unsigned char isInFastForwardMode();
 
     bool hideShipForFirstPersonCam();
 

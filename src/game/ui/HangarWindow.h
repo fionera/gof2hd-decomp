@@ -116,7 +116,7 @@ public:
 
     unsigned int OnTouchMove(int touch, int coord);
 
-    bool isInitialized();
+    unsigned char isInitialized();
 
     ListItem *getCurrentItem();
 

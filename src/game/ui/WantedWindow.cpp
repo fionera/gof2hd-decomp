@@ -646,9 +646,7 @@ void WantedWindow::setHangarUpdate(bool needsUpdate) {
     this->hangarUpdate = needsUpdate;
 }
 
-bool WantedWindow::hangarNeedsUpdate() {
-    return this->hangarUpdate;
-}
+unsigned char WantedWindow::hangarNeedsUpdate() { return this->hangarUpdate; }
 
 float WantedWindow::getRelativeScrollHeight() {
     int content = this->contentHeight;

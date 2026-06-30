@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.39,
-  "byte_exact": 1085,
-  "linked_exact": 1942,
-  "fuzzy_perfect": 1942,
+  "avg_match": 69.43,
+  "byte_exact": 1089,
+  "linked_exact": 1946,
+  "fuzzy_perfect": 1946,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -1183,7 +1183,7 @@
   },
   {
    "name": "_Z13loadPortraitsPN11AbyssEngine6EngineE",
-   "pct": 0.2,
+   "pct": 0.1,
    "byte": false,
    "linked": false,
    "osize": 21562,
@@ -1766,20 +1766,20 @@
    "usize": 860
   },
   {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 3.4,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 107546
-  },
-  {
    "name": "_ZN12WantedWindow11OnTouchMoveEii",
    "pct": 3.4,
    "byte": false,
    "linked": false,
    "osize": 268,
    "usize": 20
+  },
+  {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 3.5,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 107546
   },
   {
    "name": "zip_replace",
@@ -6862,14 +6862,6 @@
    "usize": 56
   },
   {
-   "name": "_ZN14MissionsWindow6updateEi",
-   "pct": 27.7,
-   "byte": false,
-   "linked": false,
-   "osize": 556,
-   "usize": 220
-  },
-  {
    "name": "_ZN10HangarList16getCurrentItemAtEi",
    "pct": 27.8,
    "byte": false,
@@ -6948,6 +6940,14 @@
    "linked": false,
    "osize": 708,
    "usize": 584
+  },
+  {
+   "name": "_ZN14MissionsWindow6updateEi",
+   "pct": 28.4,
+   "byte": false,
+   "linked": false,
+   "osize": 556,
+   "usize": 220
   },
   {
    "name": "_ZN7Globals7getLineEjN11AbyssEngine6StringEiPS1_",
@@ -7118,14 +7118,6 @@
    "usize": 264
   },
   {
-   "name": "_ZN5Radar12calcDistanceEffffff",
-   "pct": 28.9,
-   "byte": false,
-   "linked": false,
-   "osize": 624,
-   "usize": 440
-  },
-  {
    "name": "_ZN11AbyssEngineeqERKNS_6StringES2_",
    "pct": 29.1,
    "byte": false,
@@ -7236,6 +7228,14 @@
    "linked": false,
    "osize": 92,
    "usize": 62
+  },
+  {
+   "name": "_ZN5Radar12calcDistanceEffffff",
+   "pct": 29.5,
+   "byte": false,
+   "linked": false,
+   "osize": 624,
+   "usize": 440
   },
   {
    "name": "_ZN11SolarSystem13hasPirateBaseEv",
@@ -9822,14 +9822,6 @@
    "usize": 188
   },
   {
-   "name": "_ZN11LevelScript12skipCutsceneEv",
-   "pct": 44.2,
-   "byte": false,
-   "linked": false,
-   "osize": 412,
-   "usize": 348
-  },
-  {
    "name": "_ZN6Layout13formatCreditsEi",
    "pct": 44.2,
    "byte": false,
@@ -9966,6 +9958,14 @@
    "usize": 776
   },
   {
+   "name": "_ZN11LevelScript12skipCutsceneEv",
+   "pct": 44.8,
+   "byte": false,
+   "linked": false,
+   "osize": 412,
+   "usize": 348
+  },
+  {
    "name": "_ZN12ChoiceWindow3setERKN11AbyssEngine6StringES3_",
    "pct": 44.8,
    "byte": false,
@@ -10028,14 +10028,6 @@
    "linked": false,
    "osize": 58,
    "usize": 64
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas16GetReverseStringENS_6StringEb",
-   "pct": 45.0,
-   "byte": false,
-   "linked": false,
-   "osize": 144,
-   "usize": 132
   },
   {
    "name": "_ZN9Explosion5startERKN11AbyssEngine6AEMath6VectorES4_",
@@ -10396,6 +10388,14 @@
    "linked": false,
    "osize": 42,
    "usize": 64
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas16GetReverseStringENS_6StringEb",
+   "pct": 46.8,
+   "byte": false,
+   "linked": false,
+   "osize": 144,
+   "usize": 132
   },
   {
    "name": "_ZN6Status10setWingmenEP5ArrayIPN11AbyssEngine6StringEE",
@@ -12414,38 +12414,6 @@
    "usize": 14
   },
   {
-   "name": "_ZN12HangarWindow13isInitializedEv",
-   "pct": 57.1,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 10
-  },
-  {
-   "name": "_ZN12WantedWindow17hangarNeedsUpdateEv",
-   "pct": 57.1,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 10
-  },
-  {
-   "name": "_ZN18TargetFollowCamera14isInLookAtModeEv",
-   "pct": 57.1,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 12
-  },
-  {
-   "name": "_ZN18TargetFollowCamera19isInFastForwardModeEv",
-   "pct": 57.1,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 12
-  },
-  {
    "name": "_ZN18TargetFollowCamera25hideShipForFirstPersonCamEv",
    "pct": 57.1,
    "byte": false,
@@ -13582,14 +13550,6 @@
    "usize": 98
   },
   {
-   "name": "_ZN11AbyssEngine12BumpShaderV34InitEPNS_6EngineE",
-   "pct": 61.4,
-   "byte": false,
-   "linked": false,
-   "osize": 484,
-   "usize": 492
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas13DrawTransformEPNS_9TransformERKNS_6AEMath6MatrixERS4_",
    "pct": 61.5,
    "byte": false,
@@ -13652,6 +13612,14 @@
    "linked": false,
    "osize": 392,
    "usize": 320
+  },
+  {
+   "name": "_ZN11AbyssEngine12BumpShaderV34InitEPNS_6EngineE",
+   "pct": 61.9,
+   "byte": false,
+   "linked": false,
+   "osize": 484,
+   "usize": 492
   },
   {
    "name": "_ZN6AEFile11GetFileSizeEj",
@@ -26830,6 +26798,14 @@
    "usize": 6
   },
   {
+   "name": "_ZN12HangarWindow13isInitializedEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
    "name": "_ZN12HangarWindow15isInSpecialModeEv",
    "pct": 100.0,
    "byte": true,
@@ -27191,6 +27167,14 @@
   },
   {
    "name": "_ZN12WantedWindow15setHangarUpdateEb",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
+   "name": "_ZN12WantedWindow17hangarNeedsUpdateEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,
@@ -28518,6 +28502,14 @@
    "usize": 6
   },
   {
+   "name": "_ZN18TargetFollowCamera14isInLookAtModeEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
    "name": "_ZN18TargetFollowCamera15getTargetOffsetEv",
    "pct": 100.0,
    "byte": true,
@@ -28551,6 +28543,14 @@
   },
   {
    "name": "_ZN18TargetFollowCamera18useTargetsUpVectorEb",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
+   "name": "_ZN18TargetFollowCamera19isInFastForwardModeEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,

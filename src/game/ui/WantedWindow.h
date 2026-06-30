@@ -61,7 +61,7 @@ public:
 
     void setHangarUpdate(bool needsUpdate);
 
-    bool hangarNeedsUpdate();
+    unsigned char hangarNeedsUpdate();
 
     int OnTouchBegin(int x, int y);
 
