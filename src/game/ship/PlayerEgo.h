@@ -248,6 +248,9 @@ public:
     AbyssEngine::EaseInOutMatrix *easeMatrix;
     int dockTotalAmount;
     int dockTransferedAmount;
+    // ASM: getCloakRechargeRate reads cloakRechargeMax at [this,#872]=0x368; ours had it @0x364.
+    // A 4-byte field precedes it; compensated by shrinking _pad_0x388 below so field_0x394 stays pinned.
+    int field_0x364;
     int cloakRechargeMax;
     int spacePoint;
     uint8_t throttleStarted;
@@ -257,7 +260,7 @@ public:
     int cloakMaterial1;
     int cloakMaterial2;
     int cloakMaterial3;
-    uint8_t _pad_0x388[12]; // missing fields between cloakMaterial3 and field_0x394 (0x388..0x394)
+    uint8_t _pad_0x38c[8]; // shrunk 12->8 to absorb field_0x364 above; field_0x394 stays pinned
     unsigned char *field_0x394;
     uint8_t volatileGoods;
     uint8_t lostMiningGameFlag;
