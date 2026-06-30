@@ -21,11 +21,11 @@ char *AEFile_GetAppRootDir();
 
 FModSound *FMOD_Event_stop_p(FMOD::Event *event, int immediate);
 
-int FMOD_Event_setPitch(FMOD::Event *event, float pitch, int mode);
+static inline int FMOD_Event_setPitch(FMOD::Event *event, float pitch, int mode) { return event->setPitch(pitch, (FMOD_EVENT_PITCHUNITS)mode); }
 
 static inline int FMOD_Event_setVolume(FMOD::Event *event, float vol) { return event->setVolume(vol); }
 
-int FMOD_Event_getProperty(FMOD::Event *event, unsigned char *prop, unsigned char *out, int b = 1);
+static inline int FMOD_Event_getProperty(FMOD::Event *event, unsigned char *prop, unsigned char *out, int b = 1) { return event->getProperty((const char*)prop, (void*)out, b); }
 
 static inline int FMOD_EventSystem_getNumReverbPresets(FMOD::EventSystem *system, int *out) { return system->getNumReverbPresets(out); }
 
