@@ -1549,7 +1549,7 @@ namespace AbyssEngine {
             float *r = (float *) q->positions;
             int v = (int) r[7];
             if (v == 0x18)
-                v = 0x13;
+                v -= 5; // ASM: original subtracts 5 (subeq) rather than moving 19 (moveq); v==0x18 here
             return v;
         }
         return 0;
