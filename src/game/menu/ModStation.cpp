@@ -706,7 +706,7 @@ int Mission_getStatusValue_ou();
 
 void Mission_setStatusValue_ou(int v);
 
-void Mission_ctor_ou(Mission *m, int a, int b, int c);
+static inline void Mission_ctor_ou(Mission *m, int a, int b, int c) { new ((void*)m) Mission(a, b, c); }
 
 void Mission_setCampaignMission_ou(Mission * mission);
 
@@ -728,7 +728,7 @@ void CutScene_process_ou(int cs);
 
 void CutScene_update_ou(int cs);
 
-void CutScene_ctor_ou(CutScene *cs, int kind);
+static inline void CutScene_ctor_ou(CutScene *cs, int kind) { new ((void*)cs) CutScene(kind); }
 
 int CutScene_initialize_ou(CutScene * cs);
 
@@ -748,7 +748,7 @@ static inline void MenuTouchWindow_dtor_ou(MenuTouchWindow *w) { w->~MenuTouchWi
 
 int SpaceLounge_introFinished_ou();
 
-void SpaceLounge_ctor_ou(SpaceLounge * l);
+static inline void SpaceLounge_ctor_ou(SpaceLounge * l) { new ((void*)l) SpaceLounge(); }
 
 static inline void SpaceLounge_init_ou(SpaceLounge * l) { l->init(); }
 
@@ -1587,7 +1587,7 @@ void ChoiceWindow_setNotice_ote(int cw, int textStr);
 
 int HangarWindow_OnTouchEnd_ote(HangarWindow *w, int p1, int p2);
 
-void HangarWindow_ctor_ote(HangarWindow *w);
+static inline void HangarWindow_ctor_ote(HangarWindow *w) { new ((void*)w) HangarWindow(); }
 
 static inline void HangarWindow_dtor_ote(HangarWindow *w) { w->~HangarWindow(); }
 
@@ -1611,7 +1611,7 @@ int MissionsWindow_OnTouchEnd_ote(int w, int p1);
 
 int MenuTouchWindow_OnTouchEnd_ote(MenuTouchWindow *w, int p1, int p2, void *p3); // lint: void_ptr
 
-void MenuTouchWindow_ctor_ote(MenuTouchWindow *w, int kind);
+static inline void MenuTouchWindow_ctor_ote(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); }
 
 int TouchButton_OnTouchEnd_ote(int btn, int p1);
 
@@ -1633,7 +1633,7 @@ int *ModStation_ote_buttonRow(ModStation * self);
 int TouchButton_getX_ote(TouchButton * btn);
 int TouchButton_getY_ote(TouchButton * btn);
 
-void Radio_ctor_ote(Radio * radio);
+static inline void Radio_ctor_ote(Radio * radio) { new ((void*)radio) Radio(); }
 
 void Radio_addMessage_ote(Radio *radio, int textId);
 
@@ -2704,7 +2704,7 @@ void ChoiceWindow_setNotice_oi(ChoiceWindow *cw, int text);
 
 int CutScene_initialize_oi(CutScene * cs);
 
-void CutScene_ctor_oi(CutScene *cs, int kind);
+static inline void CutScene_ctor_oi(CutScene *cs, int kind) { new ((void*)cs) CutScene(kind); }
 
 void CutScene_replacePlayerShip_oi(int cs, int shipIndex);
 
@@ -2718,7 +2718,7 @@ void FModSound_enableReverb_oi(int sound);
 
 void FModSound_setDownPitch_oi(int sound);
 
-void Generator_ctor_oi(Generator * g);
+static inline void Generator_ctor_oi(Generator * g) { new ((void*)g) Generator(); }
 static inline void Generator_dtor_oi(Generator *g) { g->~Generator(); }
 static inline void Generator_computerTradeGoods_oi(Generator * g, Station * s) { g->computerTradeGoods(s); }
 int Generator_getShipBuyList_oi(Station * s);
@@ -3247,7 +3247,7 @@ static int *g_dlc_btnY = 0;
 
 static int **g_dlc_btnCount = 0;
 
-void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind);
+static inline void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); }
 
 static inline void MenuTouchWindow_callDlcMenu_dlc(MenuTouchWindow * w) { w->callDlcMenu(); }
 
