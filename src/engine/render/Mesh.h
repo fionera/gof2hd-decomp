@@ -55,6 +55,9 @@ namespace AbyssEngine {
 
         float pivotX;
         float pivotY;
+        // ASM (shader UpdateMeshData, r5=mesh): fields @0x58+ read +4 vs ours; pivot is 3D, pivotZ@0x58 was
+        // missing so uploaded/VBOs were all 4 low. Affects every Mesh-field reader.
+        float pivotZ;
 
         uint8_t uploaded;
 
