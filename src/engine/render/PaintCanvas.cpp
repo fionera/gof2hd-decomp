@@ -540,9 +540,9 @@ int paintcanvas_ext_text_height(void *); // lint: void_ptr (external symbol; man
 
 void paintcanvas_ext_init_setorientation(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_init_dispwidth(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_init_dispwidth(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayWidth(); }
 
-int paintcanvas_ext_init_dispheight(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_init_dispheight(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayHeight(); }
 
 static inline float paintcanvas_ext_init_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
@@ -554,9 +554,9 @@ void paintcanvas_ext_draw_mesh(void *, void *); // lint: void_ptr (external symb
 
 int paintcanvas_ext_font_get_yoff(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_spm_dispwidth(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_spm_dispwidth(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayWidth(); }
 
-int paintcanvas_ext_spm_dispheight(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_spm_dispheight(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayHeight(); }
 
 static inline float paintcanvas_ext_spm_sinf(float v) { return sinf(v); }
 
@@ -745,9 +745,9 @@ void paintcanvas_ext_tami_finalize(void *tf); // lint: void_ptr (external symbol
 
 void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_rpm_dispwidth(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_rpm_dispwidth(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayWidth(); }
 
-int paintcanvas_ext_rpm_dispheight(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_rpm_dispheight(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayHeight(); }
 
 static inline float paintcanvas_ext_rpm_sinf(float v) { return sinf(v); }
 
@@ -953,9 +953,9 @@ void paintcanvas_ext_sgo_setorientation(void *eng, int mode);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_sgo_dispwidth(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_sgo_dispwidth(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayWidth(); }
 
-int paintcanvas_ext_sgo_dispheight(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_sgo_dispheight(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayHeight(); }
 
 static inline float paintcanvas_ext_sgo_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
