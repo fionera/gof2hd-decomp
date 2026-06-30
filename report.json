@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.63,
-  "byte_exact": 1099,
-  "linked_exact": 1963,
-  "fuzzy_perfect": 1963,
+  "avg_match": 69.64,
+  "byte_exact": 1100,
+  "linked_exact": 1964,
+  "fuzzy_perfect": 1964,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -16726,14 +16726,6 @@
    "usize": 312
   },
   {
-   "name": "_ZN3Hud9playerHitEv",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 14
-  },
-  {
    "name": "_ZN6AEFile15RegisterPakFileEN11AbyssEngine6StringE",
    "pct": 80.0,
    "byte": false,
@@ -28892,6 +28884,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN3Hud9playerHitEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
   },
   {
    "name": "_ZN3NFCC1Ev",

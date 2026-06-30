@@ -71,9 +71,9 @@ public:
     String field_0x228;
     unsigned char cargoFullFlag;
     Level *menuLevel;
-    unsigned char shieldHitFlash;
     Item *currentSecondaryWeapon;
     Array<Item *> *equipmentArray;
+    unsigned char shieldHitFlash; // ASM (playerHit): shieldHitFlash@0x244, after equipmentArray
     Array<ListItem *> *eventQueue;
     int eventQueueTimer;
     unsigned char eventQueueDirty;
