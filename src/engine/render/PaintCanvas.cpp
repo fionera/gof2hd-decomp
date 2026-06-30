@@ -695,7 +695,7 @@ void paintcanvas_ext_gsp_vec_assign(void *dst, void *src); // lint: void_ptr (ex
 
 static inline int paintcanvas_ext_gsp_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); }
 
-int paintcanvas_ext_gsp_getheight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_gsp_getheight(void *self) { return ((PaintCanvas*)self)->GetHeight(); }
 
 float paintcanvas_ext_gsp_signedtofloat(int v, unsigned int mode);
 
@@ -833,7 +833,7 @@ void paintcanvas_ext_gsp2_vec_assign(void *dst, void *src); // lint: void_ptr (e
 
 static inline int paintcanvas_ext_gsp2_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); }
 
-int paintcanvas_ext_gsp2_getheight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_gsp2_getheight(void *self) { return ((PaintCanvas*)self)->GetHeight(); }
 
 float paintcanvas_ext_gsp2_signedtofloat(int v, unsigned int mode);
 
@@ -899,7 +899,7 @@ void paintcanvas_ext_di4_settexture(void *self, unsigned int tex);
 
 static inline int paintcanvas_ext_di4_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); }
 
-int paintcanvas_ext_di4_getheight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_di4_getheight(void *self) { return ((PaintCanvas*)self)->GetHeight(); }
 
 float paintcanvas_ext_di4_signedtofloat(int v, unsigned int mode);
 
@@ -1107,7 +1107,7 @@ void paintcanvas_ext_di3_restore(unsigned int flag, void *img);
 
 static inline int paintcanvas_ext_di3_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); }
 
-int paintcanvas_ext_di3_getheight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
+static inline int paintcanvas_ext_di3_getheight(void *self) { return ((PaintCanvas*)self)->GetHeight(); }
 
 float paintcanvas_ext_di3_signedtofloat(int v, unsigned int mode);
 
