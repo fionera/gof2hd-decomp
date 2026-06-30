@@ -26,7 +26,7 @@ void _psm_vectorScale(Vector *out, const Vector *v, float scale);
 
 void _psm_vectorAssign(Vector *dst, const Vector *src);
 
-void _psm_setQuadEdge(ParticleSystemMesh *self, const Vector *edge, int point, const Vector *delta);
+static inline void _psm_setQuadEdge(ParticleSystemMesh *self, const Vector *edge, int point, const Vector *delta) { self->setQuadEdge(*edge, point, *delta); }
 
 void _psm_meshSetColorWord(PaintCanvas *canvas, uint32_t mesh, uint16_t point, uint32_t color);
 
