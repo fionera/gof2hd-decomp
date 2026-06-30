@@ -26,7 +26,7 @@ void _ae_setmesh_a(uint32_t canvas, uint32_t tf, uint32_t mesh, int z);
 
 void _ae_setmesh_b(uint32_t canvas, uint32_t mesh, uint32_t *tfp);
 
-void _ae_MatrixSetTranslation(void *out, float x, float y, float z);
+static inline void _ae_MatrixSetTranslation(void *out, float x, float y, float z) { AbyssEngine::AEMath::MatrixSetTranslation(*(AbyssEngine::AEMath::Matrix*)out, x, y, z); }
 
 // lint: void_ptr imported symbol, Pv mangling must match original
 
