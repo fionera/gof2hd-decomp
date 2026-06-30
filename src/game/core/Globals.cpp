@@ -375,7 +375,7 @@ void Generator_ctor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-f
 
 void FModSound_ctor(void *s); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-int FModSound_tryToStopMusicForBGMusic();
+static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::sound->tryToStopMusicForBGMusic()); }
 
 void ParticleSettingsRef_initialize();
 

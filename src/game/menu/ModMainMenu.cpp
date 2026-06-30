@@ -18,7 +18,7 @@
 #include "engine/render/ImageFactory.h"
 #include "engine/core/AERandom.h"
 
-int FModSound_tryToStopMusicForBGMusic();
+static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::sound->tryToStopMusicForBGMusic()); }
 
 namespace AbyssEngine {
     namespace AEMath {

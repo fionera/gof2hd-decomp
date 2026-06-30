@@ -45,7 +45,7 @@
 class Music;
 class Cfg;
 
-int FModSound_tryToStopMusicForBGMusic();
+static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::sound->tryToStopMusicForBGMusic()); }
 
 void Music_resume(Music *m, int one, int v);
 

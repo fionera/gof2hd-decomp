@@ -95,7 +95,7 @@ static_assert(offsetof(SettingsBlock, gameWonShown) == 0x38, "");
 static_assert(offsetof(SettingsBlock, dlc1WonShown) == 0x39, "");
 #endif
 
-int FModSound_tryToStopMusicForBGMusic();
+static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::sound->tryToStopMusicForBGMusic()); }
 
 void AEMath_MatrixSetTranslation(Matrix *m, int x, int y, int z);
 
@@ -241,7 +241,7 @@ static int **g_cpp_itemTable = 0;
 
 static inline int Status_getCurrentCampaignMission_cpp() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
-int GameText_getText_cpp(int id);
+static inline int GameText_getText_cpp(int id) { return (int)(Globals::gameText->getText(id)); }
 
 int Status_getPendingProducts_cpp(int status);
 
@@ -264,7 +264,7 @@ void operator_delete_cpp(unsigned char *p);
 
 void ChoiceWindow_setNotice_cpp(ChoiceWindow * cw);
 
-int GameText_getText_cppline(int id);
+static inline int GameText_getText_cppline(int id) { return (int)(Globals::gameText->getText(id)); }
 
 void ModStation::checkPendingProducts() {
     int camp = Status_getCurrentCampaignMission_cpp();
@@ -664,7 +664,7 @@ void FModSound_updateAll_ou(int sound);
 
 void FModSound_play_ou(int sound, int id, const float *p, float vol);
 
-void FModSound_stop_ou(int sound);
+static inline void FModSound_stop_ou(int sound) { Globals::sound->stop(sound); }
 
 void FModSound_setParamValue_ou(int sound, int a, int b, float v);
 
@@ -722,7 +722,7 @@ void ChoiceWindow_setNotice_ou(int cw, int text);
 
 void ChoiceWindow_update_ou(int cw);
 
-int GameText_getText_ou(int id);
+static inline int GameText_getText_ou(int id) { return (int)(Globals::gameText->getText(id)); }
 
 void CutScene_process_ou(int cs);
 
@@ -1159,7 +1159,7 @@ static inline int Status_getCurrentCampaignMission_ch() { return (int)(Globals::
 static inline int Wanted_isTerminated_ch(Wanted * w) { return (int)(w->isTerminated()); }
 static inline int Achievements_gotAllMedals_ch(Achievements * a) { return (int)(a->gotAllMedals()); }
 
-int Achievements_gotAllGoldMedals_ch();
+static inline int Achievements_gotAllGoldMedals_ch() { return (int)(Globals::achievements->gotAllGoldMedals()); }
 
 static inline int Achievements_gotAllSupernovaMedals_ch(Achievements * a) { return (int)(a->gotAllSupernovaMedals()); }
 
@@ -1169,7 +1169,7 @@ static inline void Status_unlockBluePrint_ch(Status *status, int bp) { status->u
 
 static inline int Status_hardCoreMode_ch() { return (int)(Globals::status->hardCoreMode()); }
 
-int GameText_getText_ch(int id);
+static inline int GameText_getText_ch(int id) { return (int)(Globals::gameText->getText(id)); }
 
 int GameText_text_ch(int slot);
 
@@ -1565,7 +1565,7 @@ static inline void Agent_setOfferAccepted_ote(Agent *a, int flag) { a->setOfferA
 
 static inline void Achievements_resetNewMedals_ote(Achievements * ach) { ach->resetNewMedals(); }
 
-int GameText_getText_ote(int id);
+static inline int GameText_getText_ote(int id) { return (int)(Globals::gameText->getText(id)); }
 
 void Galaxy_getStation_ote(int index);
 
@@ -1617,7 +1617,7 @@ int TouchButton_OnTouchEnd_ote(int btn, int p1);
 
 void FModSound_play_ote(int sound, int id, const float *p, float vol);
 
-void FModSound_stop_ote(int sound);
+static inline void FModSound_stop_ote(int sound) { Globals::sound->stop(sound); }
 
 void FModSound_setParamValue_ote(int sound, int a, int b, float v);
 
@@ -2694,9 +2694,9 @@ int Mission_getTargetStation_oi();
 
 int Mission_getType_oi();
 
-int Achievements_gotAllGoldMedals_oi();
+static inline int Achievements_gotAllGoldMedals_oi() { return (int)(Globals::achievements->gotAllGoldMedals()); }
 
-int GameText_getText_oi(int id);
+static inline int GameText_getText_oi(int id) { return (int)(Globals::gameText->getText(id)); }
 
 void ChoiceWindow_set_oi(ChoiceWindow *cw, int text, int flag);
 
@@ -2714,9 +2714,9 @@ void Globals_playMusicAndFadeOutCurrent_oi(int id);
 
 void FModSound_play_oi(int sound, int id, const float *pos, float vol);
 
-void FModSound_enableReverb_oi(int sound);
+static inline void FModSound_enableReverb_oi(int sound) { Globals::sound->enableReverb(sound); }
 
-void FModSound_setDownPitch_oi(int sound);
+static inline void FModSound_setDownPitch_oi(int sound) { Globals::sound->setDownPitch(sound); }
 
 static inline void Generator_ctor_oi(Generator * g) { new ((void*)g) Generator(); }
 static inline void Generator_dtor_oi(Generator *g) { g->~Generator(); }
@@ -3283,7 +3283,7 @@ static int *g_cbs_stack = 0;
 
 static int **g_cbs_textId = 0;
 
-int GameText_getText_cbs(int id);
+static inline int GameText_getText_cbs(int id) { return (int)(Globals::gameText->getText(id)); }
 
 void ChoiceWindow_set_cbs(ChoiceWindow *cw, String *title, String *ok, int modal,
                           String *a, String *b, String *c, int d, int e);
