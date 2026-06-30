@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.5,
+  "avg_match": 69.51,
   "byte_exact": 1091,
-  "linked_exact": 1951,
-  "fuzzy_perfect": 1951,
+  "linked_exact": 1953,
+  "fuzzy_perfect": 1953,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -16892,22 +16892,6 @@
    "linked": false,
    "osize": 50,
    "usize": 48
-  },
-  {
-   "name": "_ZN9PlayerEgo19pitchAllPrimaryGunsEf",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 8
-  },
-  {
-   "name": "_ZN9PlayerEgo9setActiveEb",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 8
   },
   {
    "name": "__cxa_guard_acquire",
@@ -34894,6 +34878,14 @@
    "usize": 22
   },
   {
+   "name": "_ZN9PlayerEgo19pitchAllPrimaryGunsEf",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
    "name": "_ZN9PlayerEgo20addNukeVolatileForceEf",
    "pct": 100.0,
    "byte": true,
@@ -35116,6 +35108,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN9PlayerEgo9setActiveEb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
   },
   {
    "name": "_ZN9PlayerEgo9setFreezeEb",

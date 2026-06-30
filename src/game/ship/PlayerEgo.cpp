@@ -576,8 +576,8 @@ unsigned char PlayerEgo::isInFreeLookMode() {
     return ((uint8_t &) this->freeLookMode);
 }
 
-void PlayerEgo::setActive(bool) {
-    ((Player *) this->player)->setActive(false);
+void PlayerEgo::setActive(bool value) {
+    ((Player *) this->player)->setActive(value);
 }
 
 void PlayerEgo::alignToHorizon() {
@@ -1178,8 +1178,8 @@ void PlayerEgo::checkForTurret() {
     }
 }
 
-void PlayerEgo::pitchAllPrimaryGuns(float) {
-    ((Player *) this->player)->pitchAllPrimaryGuns(0.0f);
+void PlayerEgo::pitchAllPrimaryGuns(float pitch) {
+    ((Player *) this->player)->pitchAllPrimaryGuns(pitch);
 }
 
 void PlayerEgo::stopShooting(int param) {
