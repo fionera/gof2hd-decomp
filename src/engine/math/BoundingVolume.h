@@ -18,7 +18,7 @@ public:
 
     BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez);
 
-    ~BoundingVolume();
+    virtual ~BoundingVolume();
 
     virtual int collide(float x, float y, float z);
 
