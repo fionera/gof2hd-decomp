@@ -239,17 +239,17 @@ static int *g_cpp_textId = 0;
 
 static int **g_cpp_itemTable = 0;
 
-int Status_getCurrentCampaignMission_cpp();
+static inline int Status_getCurrentCampaignMission_cpp() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
 int GameText_getText_cpp(int id);
 
 int Status_getPendingProducts_cpp(int status);
 
-int Status_getStation_cpp();
+static inline int Status_getStation_cpp() { return (int)(Globals::status->getStation()); }
 
 static inline int Station_getIndex_cpp(Station * s) { return (int)(s->getIndex()); }
 
-int Status_getShip_cpp();
+static inline int Status_getShip_cpp() { return (int)(Globals::status->getShip()); }
 
 int Item_makeItem_cpp(int itemDesc);
 
@@ -311,7 +311,7 @@ done:;
 
 static int *g_okp_stack = 0;
 
-void Status_checkForLevelUp_okp();
+static inline void Status_checkForLevelUp_okp() { Globals::status->checkForLevelUp(); }
 
 void leaveStation();
 
@@ -406,11 +406,11 @@ int ModStation::ShowLoadingScreen() {
 
 static int *g_msc_stack = 0;
 
-int Status_getStation_msc();
+static inline int Status_getStation_msc() { return (int)(Globals::status->getStation()); }
 
 static inline int Station_getIndex_msc(Station * s) { return (int)(s->getIndex()); }
 
-int Status_getSystem_msc();
+static inline int Status_getSystem_msc() { return (int)(Globals::status->getSystem()); }
 
 int SolarSystem_getRace_msc();
 
@@ -599,7 +599,7 @@ static int g_rl_lightFlag = 0;
 
 int ApplicationManager_GetEngine_rl();
 
-int Status_getSystem_rl();
+static inline int Status_getSystem_rl() { return (int)(Globals::status->getSystem()); }
 
 int SolarSystem_getRace_rl();
 
@@ -672,29 +672,29 @@ void Layout_update_ou(int layout);
 
 void Layout_formatCredits_ou(ModStation * outStr);
 
-void Status_incPlayingTime_ou(long long delta);
+static inline void Status_incPlayingTime_ou(long long delta) { Globals::status->incPlayingTime(delta); }
 
-int Status_getCredits_ou();
+static inline int Status_getCredits_ou() { return (int)(Globals::status->getCredits()); }
 
-void Status_changeCredits_ou(int status);
+static inline void Status_changeCredits_ou(int status) { Globals::status->changeCredits(status); }
 
-int Status_getCurrentCampaignMission_ou();
+static inline int Status_getCurrentCampaignMission_ou() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
-void Status_nextCampaignMission_ou(int status);
+static inline void Status_nextCampaignMission_ou(int status) { Globals::status->nextCampaignMission(status); }
 
-void Status_setCurrentCampaignMission_ou(int status);
+static inline void Status_setCurrentCampaignMission_ou(int status) { Globals::status->setCurrentCampaignMission(status); }
 
-int Status_getStation_ou();
+static inline int Status_getStation_ou() { return (int)(Globals::status->getStation()); }
 
 static inline int Station_getIndex_ou(Station * s) { return (int)(s->getIndex()); }
 
-int Status_getSystem_ou();
+static inline int Status_getSystem_ou() { return (int)(Globals::status->getSystem()); }
 
 int SolarSystem_getIndex_ou();
 
-int Status_getCampaignMission_ou();
+static inline int Status_getCampaignMission_ou() { return (int)(Globals::status->getCampaignMission()); }
 
-int Status_missionCompleted_ou(int status, int a, long long b);
+static inline int Status_missionCompleted_ou(int status, int a, long long b) { return (int)(Globals::status->missionCompleted(status, a, b)); }
 
 int Status_missionFailed_ou(int status, int a, int b);
 
@@ -1154,7 +1154,7 @@ static int **g_ch_status = 0;
 
 static Achievements **g_ch_ach = 0;
 
-int Status_getCurrentCampaignMission_ch();
+static inline int Status_getCurrentCampaignMission_ch() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
 static inline int Wanted_isTerminated_ch(Wanted * w) { return (int)(w->isTerminated()); }
 static inline int Achievements_gotAllMedals_ch(Achievements * a) { return (int)(a->gotAllMedals()); }
@@ -1167,7 +1167,7 @@ static inline int Status_isBlueprintUnlocked_ch(Status *status, int bp) { return
 
 static inline void Status_unlockBluePrint_ch(Status *status, int bp) { status->unlockBluePrint(bp); }
 
-int Status_hardCoreMode_ch();
+static inline int Status_hardCoreMode_ch() { return (int)(Globals::status->hardCoreMode()); }
 
 int GameText_getText_ch(int id);
 
@@ -1484,7 +1484,7 @@ void ApplicationManager_SetCurrentApplicationModule_ote(int module);
 
 int ApplicationManager_GetApplicationData_ote();
 
-int Status_getStation_ote();
+static inline int Status_getStation_ote() { return (int)(Globals::status->getStation()); }
 
 static inline int Station_getIndex_ote(Station * s) { return (int)(s->getIndex()); }
 
@@ -1500,18 +1500,18 @@ static inline void Station_setAttackedFriends_ote(Station *s, int flag) { s->set
 
 static inline void Station_setItems_ote(Station *s, Array<Item *> *arr, int flag) { s->setItems(arr, flag); }
 
-int Status_getShip_ote();
+static inline int Status_getShip_ote() { return (int)(Globals::status->getShip()); }
 
-int Status_getCredits_ote();
+static inline int Status_getCredits_ote() { return (int)(Globals::status->getCredits()); }
 
-void Status_changeCredits_ote(int status);
+static inline void Status_changeCredits_ote(int status) { Globals::status->changeCredits(status); }
 
-int Status_getCurrentCampaignMission_ote();
+static inline int Status_getCurrentCampaignMission_ote() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
-void Status_nextCampaignMission_ote(int status);
+static inline void Status_nextCampaignMission_ote(int status) { Globals::status->nextCampaignMission(status); }
 
-void Status_departStation_ote(Station * s);
-void Status_setStation_ote(Station * s);
+static inline void Status_departStation_ote(Station * s) { Globals::status->departStation(s); }
+static inline void Status_setStation_ote(Station * s) { Globals::status->setStation(s); }
 
 void Status_setMission_ote(int status);
 
@@ -1521,9 +1521,9 @@ void Status_incMissionCount_ote(int status);
 
 void Status_setPassengers_ote(int status, int n);
 
-void Status_checkForLevelUp_ote();
+static inline void Status_checkForLevelUp_ote() { Globals::status->checkForLevelUp(); }
 
-void Status_activateNewWanted_ote();
+static inline void Status_activateNewWanted_ote() { Globals::status->activateNewWanted(); }
 
 int Ship_getCargo_ote();
 
@@ -2588,47 +2588,47 @@ static char **g_oi_demoFlag = 0;
 
 static int *g_oi_musicId = 0;
 
-int Status_getCurrentCampaignMission_oi();
+static inline int Status_getCurrentCampaignMission_oi() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
-int Status_getStation_oi();
+static inline int Status_getStation_oi() { return (int)(Globals::status->getStation()); }
 
 static inline int Station_getIndex_oi(Station * s) { return (int)(s->getIndex()); }
 
-int Status_getSystem_oi();
+static inline int Status_getSystem_oi() { return (int)(Globals::status->getSystem()); }
 
 int SolarSystem_getRace_oi();
 
 int SolarSystem_getRoutes_oi();
 
-int Status_inAlienOrbit_oi();
+static inline int Status_inAlienOrbit_oi() { return (int)(Globals::status->inAlienOrbit()); }
 
-int Status_inSupernovaSystem_oi();
+static inline int Status_inSupernovaSystem_oi() { return (int)(Globals::status->inSupernovaSystem()); }
 
-int Status_inBlackMarketSystem_oi();
+static inline int Status_inBlackMarketSystem_oi() { return (int)(Globals::status->inBlackMarketSystem()); }
 
-int Status_getShip_oi();
+static inline int Status_getShip_oi() { return (int)(Globals::status->getShip()); }
 
-int Status_getCredits_oi();
+static inline int Status_getCredits_oi() { return (int)(Globals::status->getCredits()); }
 
-int Status_getLevel_oi();
+static inline int Status_getLevel_oi() { return (int)(Globals::status->getLevel()); }
 
-int Status_hardCoreMode_oi();
+static inline int Status_hardCoreMode_oi() { return (int)(Globals::status->hardCoreMode()); }
 
-int Status_getStanding_oi();
+static inline int Status_getStanding_oi() { return (int)(Globals::status->getStanding()); }
 
-int Status_gameWon_oi();
+static inline int Status_gameWon_oi() { return (int)(Globals::status->gameWon()); }
 
-int Status_dlc1Won_oi();
+static inline int Status_dlc1Won_oi() { return (int)(Globals::status->dlc1Won()); }
 
 int Status_getPlayingTime_lo_oi();
 
-int Status_activateNewWanted_oi();
+static inline int Status_activateNewWanted_oi() { return (int)(Globals::status->activateNewWanted()); }
 
-int Status_getFreelanceMission_oi();
+static inline int Status_getFreelanceMission_oi() { return (int)(Globals::status->getFreelanceMission()); }
 
-int Status_getCampaignMission_oi();
+static inline int Status_getCampaignMission_oi() { return (int)(Globals::status->getCampaignMission()); }
 
-void Status_setShip_oi(Ship * s);
+static inline void Status_setShip_oi(Ship * s) { Globals::status->setShip(s); }
 
 int Ship_getIndex_oi();
 
@@ -3311,5 +3311,5 @@ int Status_holder_frag();
 
 int GameText_root_frag();
 
-int Status_getCredits_frag();
+static inline int Status_getCredits_frag() { return (int)(Globals::status->getCredits()); }
 
