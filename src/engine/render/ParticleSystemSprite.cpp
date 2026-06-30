@@ -6,7 +6,7 @@
 void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
                     const Array<ParticleSettings::ParticleSet> &sets, bool mirror, bool alphaFade);
 
-void _pss_base_dtor(ParticleSystemSprite * self);
+static inline void _pss_base_dtor(ParticleSystemSprite *self) { self->~ParticleSystemSprite(); }
 
 void _pss_interpolateColor(ParticleSystemSprite *self, int index, float *alpha, float *red,
                            float *green, float *blue);

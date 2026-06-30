@@ -744,7 +744,7 @@ void StatusWindow_update_ou(int w);
 
 void MenuTouchWindow_update_ou(MenuTouchWindow *w, int dt);
 
-void MenuTouchWindow_dtor_ou(MenuTouchWindow * w);
+static inline void MenuTouchWindow_dtor_ou(MenuTouchWindow *w) { w->~MenuTouchWindow(); }
 
 int SpaceLounge_introFinished_ou();
 
@@ -1589,7 +1589,7 @@ int HangarWindow_OnTouchEnd_ote(HangarWindow *w, int p1, int p2);
 
 void HangarWindow_ctor_ote(HangarWindow *w);
 
-void HangarWindow_dtor_ote(HangarWindow *w);
+static inline void HangarWindow_dtor_ote(HangarWindow *w) { w->~HangarWindow(); }
 
 void HangarWindow_initialize_ote();
 
@@ -2719,7 +2719,7 @@ void FModSound_enableReverb_oi(int sound);
 void FModSound_setDownPitch_oi(int sound);
 
 void Generator_ctor_oi(Generator * g);
-void Generator_dtor_oi(Generator * g);
+static inline void Generator_dtor_oi(Generator *g) { g->~Generator(); }
 void Generator_computerTradeGoods_oi(Generator * g, Station * s);
 int Generator_getShipBuyList_oi(Station * s);
 

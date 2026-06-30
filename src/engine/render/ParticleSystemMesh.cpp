@@ -6,7 +6,7 @@ void _psm_emitUsual(ParticleSystemMesh *self, int id);
 
 void _psm_meshSetPoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
 
-void _psm_mesh_base_dtor(ParticleSystemMesh * self);
+static inline void _psm_mesh_base_dtor(ParticleSystemMesh *self) { self->~ParticleSystemMesh(); }
 
 void _psm_render2(PaintCanvas *canvas, uint32_t texture, uint32_t camera);
 
