@@ -27,6 +27,8 @@ public:
     int field_0x14;
     int field_0x18;
     KIPlayer *field_0x1c;
+    // ASM: stationLocked reads lockedStation at [this,#36]=0x24; ours had it @0x20. 4-byte field precedes.
+    int field_0x20;
     KIPlayer *lockedStation;
     Array<KIPlayer *> *players;
     KIPlayer *lockedGasCloud;
@@ -38,7 +40,7 @@ public:
     uint8_t field_0x54;
     int field_0x58;
 
-    uint8_t pad_0x48_to_0x70[0x70 - 0x48];
+    uint8_t pad_0x48_to_0x70[0x70 - 0x4c]; // shrunk 4 to absorb field_0x20 above; hasReservation stays @0x70
     uint8_t hasReservation;
     uint8_t pad_0x71_to_0x8c[0x8c - 0x71];
     uint8_t reservationDirty;
