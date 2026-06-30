@@ -360,7 +360,7 @@ unsigned char Player::turnedEnemy() {
 }
 
 bool Player::gunAvailable(int slot) {
-    if (slot < 4) {
+    if ((unsigned) slot < 4) { // ASM: original compares slot unsigned (bhi), not signed (bgt)
         Array<Gun *> *slotArray = this->guns->data()[slot];
         if (slotArray != 0 && slotArray->size() != 0) {
             return *(int *) slotArray->data() != 0;
