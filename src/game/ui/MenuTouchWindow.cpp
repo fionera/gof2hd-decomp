@@ -123,11 +123,11 @@ void *_mtw_ScrollTouchWindow_dtor(void *p); // lint: void_ptr (external symbol; 
 
 void *_mtw_Array_Str_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_Array_StrArr_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void *_mtw_Array_StrArr_dtor(void *p) { ((Array<Array<String>*>*)p)->~Array(); return p; }
 
 void _mtw_Array_StrArr_ctor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Array_Str_ctor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void _mtw_Array_Str_ctor(void *p) { new(p) Array<String>(); }
 
 void _mtw_ArraySetLength_StrArr(int n, void *arr);
 
@@ -333,7 +333,7 @@ void _mtw_FModSound_setVolume(void *snd, float v);
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Array_TB_ctor(void *a); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void _mtw_Array_TB_ctor(void *a) { new(a) Array<TouchButton*>(); }
 
 void _mtw_loadPreviewRecords(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
