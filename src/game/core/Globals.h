@@ -35,8 +35,10 @@ namespace AbyssEngine {
 
 class Globals {
 public:
-    Array<int> *soundResources;                  // @0x0
-    unsigned char _pad_0x4[48];                   // 0x04..0x34 (unmodeled members)
+    // ASM: addSoundResourceToList reads soundResources at [this,#4] -> a 4-byte member precedes it @0x0.
+    int field_0x0;                                // @0x0 (was missing; shifted soundResources to @0x4)
+    Array<int> *soundResources;                  // @0x4
+    unsigned char _pad_0x8[44];                   // 0x08..0x34 (unmodeled members)
     int field_0x34;                               // @0x34
     unsigned char _pad_0x38[4];                   // 0x38..0x3c
     void *field_0x3c; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
