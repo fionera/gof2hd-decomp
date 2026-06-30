@@ -1,4 +1,5 @@
 #include "engine/render/PaintCanvas.h"
+#include <math.h>
 #include <GLES/gl.h>
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/Material.h"
@@ -556,9 +557,9 @@ int paintcanvas_ext_spm_dispwidth(void *eng); // lint: void_ptr (external symbol
 
 int paintcanvas_ext_spm_dispheight(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_spm_sinf(float v);
+static inline float paintcanvas_ext_spm_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_spm_cosf(float v);
+static inline float paintcanvas_ext_spm_cosf(float v) { return cosf(v); }
 
 float paintcanvas_ext_spm_signedtofloat(int v, unsigned int mode);
 
@@ -566,9 +567,9 @@ void paintcanvas_ext_dss1_matidentity(void *out, void *m); // lint: void_ptr (ex
 
 void *paintcanvas_ext_dss1_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_dss1_sinf(float v);
+static inline float paintcanvas_ext_dss1_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_dss1_cosf(float v);
+static inline float paintcanvas_ext_dss1_cosf(float v) { return cosf(v); }
 
 void paintcanvas_ext_dss1_memcpy(void *dst, void *src, unsigned int n);
 
@@ -709,9 +710,9 @@ void paintcanvas_ext_cisvf_matidentity(void *out, void *m); // lint: void_ptr (e
 
 void *paintcanvas_ext_cisvf_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_cisvf_sinf(float v);
+static inline float paintcanvas_ext_cisvf_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_cisvf_cosf(float v);
+static inline float paintcanvas_ext_cisvf_cosf(float v) { return cosf(v); }
 
 int paintcanvas_ext_cisvf_inner(const float *pt, float radius, void *m, void *cam);
 
@@ -747,9 +748,9 @@ int paintcanvas_ext_rpm_dispwidth(void *eng); // lint: void_ptr (external symbol
 
 int paintcanvas_ext_rpm_dispheight(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_rpm_sinf(float v);
+static inline float paintcanvas_ext_rpm_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_rpm_cosf(float v);
+static inline float paintcanvas_ext_rpm_cosf(float v) { return cosf(v); }
 
 float paintcanvas_ext_rpm_signedtofloat(int v, unsigned int mode);
 
@@ -769,9 +770,9 @@ void paintcanvas_ext_cipvf_matidentity(void *out, void *m); // lint: void_ptr (e
 
 void *paintcanvas_ext_cipvf_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_cipvf_sinf(float v);
+static inline float paintcanvas_ext_cipvf_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_cipvf_cosf(float v);
+static inline float paintcanvas_ext_cipvf_cosf(float v) { return cosf(v); }
 
 int paintcanvas_ext_cipvf_inner(const float *pt, void *m, void *cam);
 
@@ -815,9 +816,9 @@ void paintcanvas_ext_gsp2_matidentity(void *out, void *m); // lint: void_ptr (ex
 
 void *paintcanvas_ext_gsp2_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_gsp2_sinf(float v);
+static inline float paintcanvas_ext_gsp2_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_gsp2_cosf(float v);
+static inline float paintcanvas_ext_gsp2_cosf(float v) { return cosf(v); }
 
 void paintcanvas_ext_gsp2_memcpy(void *dst, void *src, unsigned int n);
 
@@ -925,9 +926,9 @@ void paintcanvas_ext_dr2_settexture(void *self, unsigned int tex);
 
 float paintcanvas_ext_dr2_signedtofloat(int v, unsigned int mode);
 
-float paintcanvas_ext_dr2_sinf(float v);
+static inline float paintcanvas_ext_dr2_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_dr2_cosf(float v);
+static inline float paintcanvas_ext_dr2_cosf(float v) { return cosf(v); }
 
 void paintcanvas_ext_dr2_setscaling(void *out, float x, float y, float z);
 
@@ -1157,9 +1158,9 @@ float paintcanvas_ext_dr3_signedtofloat(int v, unsigned int mode);
 
 float paintcanvas_ext_dr3_unsignedtofloat(unsigned int v, unsigned int mode);
 
-float paintcanvas_ext_dr3_sinf(float v);
+static inline float paintcanvas_ext_dr3_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_dr3_cosf(float v);
+static inline float paintcanvas_ext_dr3_cosf(float v) { return cosf(v); }
 
 void paintcanvas_ext_dr3_mtx_mul(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1261,9 +1262,9 @@ void paintcanvas_ext_dt2_matidentity(void *out, void *m); // lint: void_ptr (ext
 
 void *paintcanvas_ext_dt2_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_dt2_sinf(float v);
+static inline float paintcanvas_ext_dt2_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_dt2_cosf(float v);
+static inline float paintcanvas_ext_dt2_cosf(float v) { return cosf(v); }
 
 int paintcanvas_ext_dt2_incamvf(void *tf, void *m, void *cam);
 
@@ -1300,9 +1301,9 @@ void paintcanvas_ext_dss_matidentity(void *out, void *m); // lint: void_ptr (ext
 
 void *paintcanvas_ext_dss_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_dss_sinf(float v);
+static inline float paintcanvas_ext_dss_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_dss_cosf(float v);
+static inline float paintcanvas_ext_dss_cosf(float v) { return cosf(v); }
 
 void paintcanvas_ext_dss_mtx_muleq(void *m, void *rhs); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1336,9 +1337,9 @@ void paintcanvas_ext_dss2_matidentity(void *out, void *m); // lint: void_ptr (ex
 
 void *paintcanvas_ext_dss2_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_dss2_sinf(float v);
+static inline float paintcanvas_ext_dss2_sinf(float v) { return sinf(v); }
 
-float paintcanvas_ext_dss2_cosf(float v);
+static inline float paintcanvas_ext_dss2_cosf(float v) { return cosf(v); }
 
 float paintcanvas_ext_dss2_signedtofloat(int v, unsigned int mode);
 
