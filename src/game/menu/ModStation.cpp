@@ -111,25 +111,25 @@ unsigned char *ArrayReleaseClasses_TouchButton(int *a);
 
 unsigned char *Array_TB_dtor(int *p);
 
-unsigned char *HangarWindow_dtor(HangarWindow *p);
+static inline unsigned char * HangarWindow_dtor(HangarWindow *p) { p->~HangarWindow(); return (unsigned char *)(p); }
 
 static inline unsigned char *StarMap_dtor(StarMap *p) { p->~StarMap(); return (unsigned char*)p; }
 
 unsigned char *MissionsWindow_dtor(DialogueWindow * p);
 
-unsigned char *DialogueWindow_dtor(DialogueWindow * p);
+static inline unsigned char * DialogueWindow_dtor(DialogueWindow * p) { p->~DialogueWindow(); return (unsigned char *)(p); }
 
-unsigned char *ChoiceWindow_dtor(ChoiceWindow * p);
+static inline unsigned char * ChoiceWindow_dtor(ChoiceWindow * p) { p->~ChoiceWindow(); return (unsigned char *)(p); }
 
-unsigned char *StatusWindow_dtor(StatusWindow *p);
+static inline unsigned char * StatusWindow_dtor(StatusWindow *p) { p->~StatusWindow(); return (unsigned char *)(p); }
 
-unsigned char *CutScene_dtor(CutScene * p);
+static inline unsigned char * CutScene_dtor(CutScene * p) { p->~CutScene(); return (unsigned char *)(p); }
 
 static inline unsigned char *Radio_dtor(Radio *p) { p->~Radio(); return (unsigned char*)p; }
 
 static inline unsigned char *Array_RM_dtor(Array<Radio *> *p) { p->~Array(); return (unsigned char*)p; }
 
-unsigned char *ScrollTouchBox_dtor(ScrollTouchBox *p);
+static inline unsigned char * ScrollTouchBox_dtor(ScrollTouchBox *p) { p->~ScrollTouchBox(); return (unsigned char *)(p); }
 
 void ModStation::autosave() {
     if (Globals::status->getPlayingTime() - 1LL < 0)
@@ -258,7 +258,7 @@ void Ship_addCargo_cpp(int ship, Item *it);
 int Item_getAmount_cpp();
 
 static inline int Item_getIndex_cpp(Item * it) { return (int)(it->getIndex()); }
-unsigned char *PendingProduct_dtor_cpp(PendingProduct * p);
+static inline unsigned char * PendingProduct_dtor_cpp(PendingProduct * p) { p->~PendingProduct(); return (unsigned char *)(p); }
 
 void operator_delete_cpp(unsigned char *p);
 

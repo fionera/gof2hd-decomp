@@ -1814,7 +1814,7 @@ void MGame::pauseSounds() {
 
 static inline void Radio_ctor(Radio *r) { new(r) Radio(); }
 
-unsigned char *TargetFollowCamera_dtor(TargetFollowCamera * c);
+static inline unsigned char * TargetFollowCamera_dtor(TargetFollowCamera * c) { c->~TargetFollowCamera(); return (unsigned char *)(c); }
 
 void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
                              int a, int b, int d, int e, int f, int g);
@@ -2436,7 +2436,7 @@ MGame::MGame() {
 
 static inline unsigned char *Radio_dtor(Radio *p) { p->~Radio(); return (unsigned char*)p; }
 
-unsigned char *DialogueWindow_dtor(DialogueWindow * p);
+static inline unsigned char * DialogueWindow_dtor(DialogueWindow * p) { p->~DialogueWindow(); return (unsigned char *)(p); }
 
 static int g_relPostEffect;
 
