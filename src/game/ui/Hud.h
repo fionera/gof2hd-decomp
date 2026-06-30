@@ -25,6 +25,9 @@ public:
     unsigned char visible;
     unsigned char field_0x2;
     unsigned char field_0x3;
+    // ASM (closeHudMenu, r0=this): menuButtons null-checked at [this,#24]=0x18, ours @4. 20 bytes precede;
+    // this lands field_0x1c@0x1c (matching the Ghidra-named String run, 12B apart).
+    uint8_t _pad_0x4[20];
     Array<TouchButton *> *menuButtons;
 
     String field_0x1c;
