@@ -61,7 +61,7 @@ namespace AbyssEngine {
     }
 }
 
-void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
+static inline void TFC_setFastForwardMode(TargetFollowCamera *c, int v) { c->setFastForwardMode(v); }
 
 uint8_t TFC_isInLookAtMode(TargetFollowCamera * c);
 
@@ -73,7 +73,7 @@ void FModSound_restoreState();
 
 void DialogueWindow_ctor(...);
 
-void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
+static inline void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on) { c->enableFirstPersonCam(on); }
 
 static int *g_maneuverScale;
 
@@ -347,9 +347,9 @@ void MGame::startJumpScene() {
     TFC_setPosition(this->camera, camX, camY, camZ);
 }
 
-void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v);
+static inline void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v) { c->setRotationAroundTarget(v); }
 
-int TFC_hideShipForFirstPersonCam(TargetFollowCamera * c);
+static inline int TFC_hideShipForFirstPersonCam(TargetFollowCamera *c) { return c->hideShipForFirstPersonCam(); }
 
 void MGame::switchCamera(int id) {
     int turretArg;
@@ -764,7 +764,7 @@ void MGame::OnSuspend() {
     return Level_onSuspend(this->hud);
 }
 
-int Station_getIndex(Station * s);
+static inline int Station_getIndex(Station *s) { return s->getIndex(); }
 
 static int *g_deAutoFlag;
 

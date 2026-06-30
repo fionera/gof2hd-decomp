@@ -50,7 +50,7 @@ int RB_Player_getHitpoints();
 
 int RB_Player_getMaxHitpoints();
 
-int RB_Player_getShieldDamageRate(Player * pl);
+static inline int RB_Player_getShieldDamageRate(Player *pl) { return pl->getShieldDamageRate(); }
 
 void RB_Player_getPosition(Vector * out);
 void RB_PlayerEgo_getPosition(Vector * out);
@@ -59,7 +59,7 @@ void RB_Player_damage(int pl, bool b, int z);
 
 void RB_Player_heal(int pl, float amt);
 
-void RB_Player_regenerateShield(Player *pl, float amt);
+static inline void RB_Player_regenerateShield(Player *pl, float amt) { pl->regenerateShield(amt); }
 
 float RB_PlayerEgo_GetDirVector();
 

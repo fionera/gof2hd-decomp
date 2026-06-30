@@ -28,32 +28,32 @@ int LAYER_DIAMETERS[49] = {
 
 float MiningGame_sqrt(Globals *globals, float value);
 
-void MiningGame_FModSound_setParamValue(FModSound *sound, int index, int param, float value);
+static inline void MiningGame_FModSound_setParamValue(FModSound *sound, int index, int param, float value) { sound->setParamValue(index, param, value); }
 
-void MiningGame_FModSound_play(FModSound *sound, int id, AbyssEngine::AEMath::Vector *pos,
-                               AbyssEngine::AEMath::Vector *vel, float pitch);
+static inline void MiningGame_FModSound_play(FModSound *sound, int id, AbyssEngine::AEMath::Vector *pos,
+                               AbyssEngine::AEMath::Vector *vel, float pitch) { sound->play(id, pos, vel, pitch); }
 
-void MiningGame_FModSound_stop(FModSound *sound, int id);
+static inline void MiningGame_FModSound_stop(FModSound *sound, int id) { sound->stop(id); }
 
-int MiningGame_Achievements_hasMedal(Achievements *achievements, int medal, int value);
+static inline int MiningGame_Achievements_hasMedal(Achievements *achievements, int medal, int value) { return achievements->hasMedal(medal, value); }
 
-int MiningGame_Achievements_getValue(Achievements *achievements, int medal, int value);
+static inline int MiningGame_Achievements_getValue(Achievements *achievements, int medal, int value) { return achievements->getValue(medal, value); }
 
-void MiningGame_Hud_hudEventMedal(Hud *hud, int medal, int value);
+static inline void MiningGame_Hud_hudEventMedal(Hud *hud, int medal, int value) { hud->hudEventMedal(medal, value); }
 
 Ship *MiningGame_Status_getShip(Status * status);
 
 Item *MiningGame_Ship_getFirstEquipmentOfSort(Ship *ship, int sort);
 
-int MiningGame_Item_getAttribute(Item *item, int attribute);
+static inline int MiningGame_Item_getAttribute(Item *item, int attribute) { return item->getAttribute(attribute); }
 
-int MiningGame_Status_getCurrentCampaignMission(Status * status);
+static inline int MiningGame_Status_getCurrentCampaignMission(Status *status) { return status->getCurrentCampaignMission(); }
 
 float MiningGame_Layout_getPulseValue(Layout *layout, float value);
 
 Ship *MiningGame_Status_getShip_render(Status * status);
 
-int MiningGame_Ship_getFreeSpace(Ship * ship);
+static inline int MiningGame_Ship_getFreeSpace(Ship *ship) { return ship->getFreeSpace(); }
 
 int MiningGame_Status_getCurrentCampaignMission_render(Status * status);
 

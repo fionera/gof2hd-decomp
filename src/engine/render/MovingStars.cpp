@@ -92,7 +92,7 @@ float VectorSignedToFloat(int v, int mode);
 
 void MovingStars_TransformSetLocal(PaintCanvas *canvas, uint32_t transformHandle);
 
-int MovingStars_nextInt(AERandom * rng);
+static inline int MovingStars_nextInt(AERandom *rng) { return rng->nextInt(); }
 
 void MovingStars_MatrixSetTranslation(Matrix *m, float x, float y, float z);
 

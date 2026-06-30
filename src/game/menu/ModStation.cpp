@@ -101,7 +101,7 @@ void AEMath_MatrixSetTranslation(Matrix *m, int x, int y, int z);
 
 void AEMath_MatrixSetRotation(Matrix *m, Matrix *loc, int rx, int ry, int a4, int a5);
 
-int Station_getIndex(Station * st);
+static inline int Station_getIndex(Station *st) { return st->getIndex(); }
 
 class ScrollTouchBox;
 
