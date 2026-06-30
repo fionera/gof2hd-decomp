@@ -36,9 +36,9 @@ void _ae_TransformSetLocal(uint32_t canvas, uint32_t tf, void *m);
 
 void _ae_MeshCreate(PaintCanvas *c, uint16_t mesh, uint32_t *out, bool flag);
 
-void _ae_getDirection(void *self, Vector *out); // lint: void_ptr imported symbol, Pv mangling must match original
+static inline void _ae_getDirection(void *self, Vector *out) { *out = ((AEGeometry*)self)->getDirection(); }
 
-void _ae_getPosition(void *self, Vector *out); // lint: void_ptr imported symbol, Pv mangling must match original
+static inline void _ae_getPosition(void *self, Vector *out) { *out = ((AEGeometry*)self)->getPosition(); }
 
 uint32_t Transform_GetTransform(uint32_t tf);
 
