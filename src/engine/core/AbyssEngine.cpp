@@ -2599,19 +2599,24 @@ namespace AbyssEngine {
             return -1;
         }
 
-        static const char sig0[7] = {'A', 'E', 'M', 'e', 's', 'h', 0};
-        static const char sig1[7] = {'A', 'E', 'A', 'n', 'i', 'm', 0};
-        static const char sig2[7] = {'A', 'E', 'S', 'k', 'i', 'n', 0};
-        static const char sig3[7] = {'A', 'E', 'L', 'o', 'd', '0', 0};
-        static const char sig4[7] = {'A', 'E', 'M', 'e', 's', '2', 0};
+        // Mesh-file format magic (verified vs original signature table @0x1da3d0:
+        // "AEMesh\0", "V2AEMesh\0".."V5AEMesh\0"). The 7-byte magic is matched
+        // against "AEMesh\0" and the first 7 bytes of the version-tagged variants;
+        // each full match keeps its fmt bit set. Bits: AEMesh=0x4, V2=0x1, V3=0x2,
+        // V4=0x8, V5=0x10 (downstream: 0x1b => read version short, 0x1a => submeshes).
+        static const char sigMesh[7] = {'A', 'E', 'M', 'e', 's', 'h', 0};
+        static const char sigV2[7] = {'V', '2', 'A', 'E', 'M', 'e', 's'};
+        static const char sigV3[7] = {'V', '3', 'A', 'E', 'M', 'e', 's'};
+        static const char sigV4[7] = {'V', '4', 'A', 'E', 'M', 'e', 's'};
+        static const char sigV5[7] = {'V', '5', 'A', 'E', 'M', 'e', 's'};
         unsigned int fmt = 0x1f;
         for (int i = 0; i < 7; ++i) {
             char ch = magic[i];
-            if (sig0[i] != ch) fmt &= ~1u;
-            if (sig1[i] != ch) fmt &= ~8u;
-            if (sig2[i] != ch) fmt &= ~0x10u;
-            if (sig3[i] != ch) fmt &= ~4u;
-            if (sig4[i] != ch) fmt &= ~2u;
+            if (sigMesh[i] != ch) fmt &= ~4u;
+            if (sigV2[i] != ch) fmt &= ~1u;
+            if (sigV3[i] != ch) fmt &= ~2u;
+            if (sigV4[i] != ch) fmt &= ~8u;
+            if (sigV5[i] != ch) fmt &= ~0x10u;
         }
 
         if (fmt == 0) {
