@@ -1,4 +1,5 @@
 #include "engine/render/PaintCanvas.h"
+#include <string.h>
 #include <math.h>
 #include <GLES/gl.h>
 #include "engine/core/AbyssEngine.h"
@@ -571,7 +572,7 @@ static inline float paintcanvas_ext_dss1_sinf(float v) { return sinf(v); }
 
 static inline float paintcanvas_ext_dss1_cosf(float v) { return cosf(v); }
 
-void paintcanvas_ext_dss1_memcpy(void *dst, void *src, unsigned int n);
+static inline void paintcanvas_ext_dss1_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -820,7 +821,7 @@ static inline float paintcanvas_ext_gsp2_sinf(float v) { return sinf(v); }
 
 static inline float paintcanvas_ext_gsp2_cosf(float v) { return cosf(v); }
 
-void paintcanvas_ext_gsp2_memcpy(void *dst, void *src, unsigned int n);
+static inline void paintcanvas_ext_gsp2_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1198,7 +1199,7 @@ void *paintcanvas_ext_rar_material_dtor(void *p); // lint: void_ptr (external sy
 
 void paintcanvas_ext_rar_ssrelease(void *eng, void *ssptr); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_tg2d_memcpy(void *dst, void *src, unsigned int n);
+static inline void paintcanvas_ext_tg2d_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1242,7 +1243,7 @@ void paintcanvas_ext_tg2di_meshintersect(void *out, float a, float b, void *mesh
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_tg2di_memcpy(void *dst, void *src, unsigned int n);
+static inline void paintcanvas_ext_tg2di_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
