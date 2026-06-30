@@ -653,7 +653,7 @@ void paintcanvas_ext_gl_color(void *, float, float, float, float);
 
 void paintcanvas_ext_matgl_load(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_gl_loadidentity();
+static inline void paintcanvas_ext_gl_loadidentity() { glLoadIdentity(); }
 
 void paintcanvas_ext_gl_ortho_persp(float, float, float);
 
@@ -968,7 +968,7 @@ static inline void paintcanvas_ext_mc_matcreate(void *self, unsigned short id, u
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dm_memcpy(void *dst, const void *src, unsigned int n);
+static inline void paintcanvas_ext_dm_memcpy(void *dst, const void *src, unsigned int n) { memcpy(dst, src, n); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
