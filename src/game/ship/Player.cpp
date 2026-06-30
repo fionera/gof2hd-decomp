@@ -262,7 +262,7 @@ bool Player::isAsteroid() {
     KIPlayer *ki = this->kiPlayer;
     bool result = false;
     if (ki != 0) {
-        result = reinterpret_cast<int &>(ki->stealFlagByte) != 0;
+        result = (uint8_t) ki->stealFlagByte != 0;
     }
     return result;
 }
@@ -377,7 +377,7 @@ bool Player::isGasCloud() {
     KIPlayer *ki = this->kiPlayer;
     bool result = false;
     if (ki != 0) {
-        result = ki->field_0x44 != 0;
+        result = (uint8_t) ki->field_0x44 != 0;
     }
     return result;
 }
