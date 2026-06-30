@@ -247,7 +247,7 @@ int Status_getPendingProducts_cpp(int status);
 
 int Status_getStation_cpp();
 
-int Station_getIndex_cpp(Station * s);
+static inline int Station_getIndex_cpp(Station * s) { return (int)(s->getIndex()); }
 
 int Status_getShip_cpp();
 
@@ -257,7 +257,7 @@ void Ship_addCargo_cpp(int ship, Item *it);
 
 int Item_getAmount_cpp();
 
-int Item_getIndex_cpp(Item * it);
+static inline int Item_getIndex_cpp(Item * it) { return (int)(it->getIndex()); }
 unsigned char *PendingProduct_dtor_cpp(PendingProduct * p);
 
 void operator_delete_cpp(unsigned char *p);
@@ -408,7 +408,7 @@ static int *g_msc_stack = 0;
 
 int Status_getStation_msc();
 
-int Station_getIndex_msc(Station * s);
+static inline int Station_getIndex_msc(Station * s) { return (int)(s->getIndex()); }
 
 int Status_getSystem_msc();
 
@@ -686,7 +686,7 @@ void Status_setCurrentCampaignMission_ou(int status);
 
 int Status_getStation_ou();
 
-int Station_getIndex_ou(Station * s);
+static inline int Station_getIndex_ou(Station * s) { return (int)(s->getIndex()); }
 
 int Status_getSystem_ou();
 
@@ -710,7 +710,7 @@ void Mission_ctor_ou(Mission *m, int a, int b, int c);
 
 void Mission_setCampaignMission_ou(Mission * mission);
 
-void Achievements_updateCredits_ou(Achievements *ach, int credits);
+static inline void Achievements_updateCredits_ou(Achievements *ach, int credits) { ach->updateCredits(credits); }
 
 int Globals_getInAppPurchaseArrayIndex_ou(int globals, Array<String *> *arr);
 
@@ -742,7 +742,7 @@ void HangarWindow_hideMessage_ou();
 
 void StatusWindow_update_ou(int w);
 
-void MenuTouchWindow_update_ou(MenuTouchWindow *w, int dt);
+static inline void MenuTouchWindow_update_ou(MenuTouchWindow *w, int dt) { w->update(dt); }
 
 static inline void MenuTouchWindow_dtor_ou(MenuTouchWindow *w) { w->~MenuTouchWindow(); }
 
@@ -750,7 +750,7 @@ int SpaceLounge_introFinished_ou();
 
 void SpaceLounge_ctor_ou(SpaceLounge * l);
 
-void SpaceLounge_init_ou(SpaceLounge * l);
+static inline void SpaceLounge_init_ou(SpaceLounge * l) { l->init(); }
 
 void SpaceLounge_update_ou(int l);
 
@@ -764,7 +764,7 @@ unsigned ModStation_ou_cameraHandle();
 
 void ModStation_ou_setCameraLocal(unsigned h, const Matrix &m);
 
-void AEGeometry_rotate_ou(AEGeometry *geom, float x, float y, float z);
+static inline void AEGeometry_rotate_ou(AEGeometry *geom, float x, float y, float z) { geom->rotate(x, y, z); }
 
 void Engine_setHangarLightIntensity_ou(float v);
 
@@ -1156,16 +1156,16 @@ static Achievements **g_ch_ach = 0;
 
 int Status_getCurrentCampaignMission_ch();
 
-int Wanted_isTerminated_ch(Wanted * w);
-int Achievements_gotAllMedals_ch(Achievements * a);
+static inline int Wanted_isTerminated_ch(Wanted * w) { return (int)(w->isTerminated()); }
+static inline int Achievements_gotAllMedals_ch(Achievements * a) { return (int)(a->gotAllMedals()); }
 
 int Achievements_gotAllGoldMedals_ch();
 
-int Achievements_gotAllSupernovaMedals_ch(Achievements * a);
+static inline int Achievements_gotAllSupernovaMedals_ch(Achievements * a) { return (int)(a->gotAllSupernovaMedals()); }
 
-int Status_isBlueprintUnlocked_ch(Status *status, int bp);
+static inline int Status_isBlueprintUnlocked_ch(Status *status, int bp) { return (int)(status->isBlueprintUnlocked(bp)); }
 
-void Status_unlockBluePrint_ch(Status *status, int bp);
+static inline void Status_unlockBluePrint_ch(Status *status, int bp) { status->unlockBluePrint(bp); }
 
 int Status_hardCoreMode_ch();
 
@@ -1486,19 +1486,19 @@ int ApplicationManager_GetApplicationData_ote();
 
 int Status_getStation_ote();
 
-int Station_getIndex_ote(Station * s);
+static inline int Station_getIndex_ote(Station * s) { return (int)(s->getIndex()); }
 
 int Station_stationHasPirateBase_ote();
 
 int Station_hasShip_ote(Station * station);
 
-int Station_getAgents_ote(Station * s);
+static inline int Station_getAgents_ote(Station * s) { return (int)(s->getAgents()); }
 void Station_addShip_ote(Ship * s);
 void Station_departStation_ote(Station * s);
 
-void Station_setAttackedFriends_ote(Station *s, int flag);
+static inline void Station_setAttackedFriends_ote(Station *s, int flag) { s->setAttackedFriends(flag); }
 
-void Station_setItems_ote(Station *s, Array<Item *> *arr, int flag);
+static inline void Station_setItems_ote(Station *s, Array<Item *> *arr, int flag) { s->setItems(arr, flag); }
 
 int Status_getShip_ote();
 
@@ -1529,7 +1529,7 @@ int Ship_getCargo_ote();
 
 int Ship_getIndex_ote();
 
-void Ship_getRace_ote(Ship * s);
+static inline void Ship_getRace_ote(Ship * s) { s->getRace(); }
 
 void Ship_removeCargo_ote(int ship, int item);
 
@@ -1538,8 +1538,8 @@ void Ship_addCargo_ote(Item * it);
 
 void Ship_makeShip_ote(int desc);
 
-int Item_isUnsaleable_ote(Item * it);
-int Item_getIndex_ote(Item * it);
+static inline int Item_isUnsaleable_ote(Item * it) { return (int)(it->isUnsaleable()); }
+static inline int Item_getIndex_ote(Item * it) { return (int)(it->getIndex()); }
 
 int Item_getAmount_ote();
 
@@ -1547,8 +1547,8 @@ void Item_makeItem_ote(int desc);
 
 int Mission_getType_ote();
 
-int Mission_isCampaignMission_ote(Mission * m);
-int Mission_getProductionGoodIndex_ote(Mission * m);
+static inline int Mission_isCampaignMission_ote(Mission * m) { return (int)(m->isCampaignMission()); }
+static inline int Mission_getProductionGoodIndex_ote(Mission * m) { return (int)(m->getProductionGoodIndex()); }
 
 int Mission_getProductionGoodAmount_ote();
 
@@ -1556,14 +1556,14 @@ int Mission_getReward_ote();
 
 int Mission_getBonus_ote();
 
-int Agent_getOffer_ote(Agent * a);
-int Agent_getSellItemIndex_ote(Agent * a);
+static inline int Agent_getOffer_ote(Agent * a) { return (int)(a->getOffer()); }
+static inline int Agent_getSellItemIndex_ote(Agent * a) { return (int)(a->getSellItemIndex()); }
 
-void Agent_setEvent_ote(Agent *a, int e);
+static inline void Agent_setEvent_ote(Agent *a, int e) { a->setEvent(e); }
 
-void Agent_setOfferAccepted_ote(Agent *a, int flag);
+static inline void Agent_setOfferAccepted_ote(Agent *a, int flag) { a->setOfferAccepted(flag); }
 
-void Achievements_resetNewMedals_ote(Achievements * ach);
+static inline void Achievements_resetNewMedals_ote(Achievements * ach) { ach->resetNewMedals(); }
 
 int GameText_getText_ote(int id);
 
@@ -1573,7 +1573,7 @@ void Layout_OnTouchEnd_ote(Layout *l, int p1, int p2);
 
 int Layout_OnTouchEndR_ote(Layout *l, int p1, int p2);
 
-int Layout_helpPressed_ote(Layout * l);
+static inline int Layout_helpPressed_ote(Layout * l) { return (int)(l->helpPressed()); }
 
 void Layout_initHelpWindow_ote(int l, int textStr);
 
@@ -1621,7 +1621,7 @@ void FModSound_stop_ote(int sound);
 
 void FModSound_setParamValue_ote(int sound, int a, int b, float v);
 
-void RecordHandler_saveOptions_ote(RecordHandler * rh);
+static inline void RecordHandler_saveOptions_ote(RecordHandler * rh) { rh->saveOptions(); }
 
 void CutScene_replacePlayerShip_ote(int cs, int shipIndex);
 
@@ -2592,7 +2592,7 @@ int Status_getCurrentCampaignMission_oi();
 
 int Status_getStation_oi();
 
-int Station_getIndex_oi(Station * s);
+static inline int Station_getIndex_oi(Station * s) { return (int)(s->getIndex()); }
 
 int Status_getSystem_oi();
 
@@ -2660,7 +2660,7 @@ int Item_makeItemDescAmt_oi(int desc, int amt);
 
 void Item_setUnsaleable_oi(int flag);
 
-int Item_getIndex_oi(Item * it);
+static inline int Item_getIndex_oi(Item * it) { return (int)(it->getIndex()); }
 
 int Item_getAmount_oi();
 
@@ -2720,7 +2720,7 @@ void FModSound_setDownPitch_oi(int sound);
 
 void Generator_ctor_oi(Generator * g);
 static inline void Generator_dtor_oi(Generator *g) { g->~Generator(); }
-void Generator_computerTradeGoods_oi(Generator * g, Station * s);
+static inline void Generator_computerTradeGoods_oi(Generator * g, Station * s) { g->computerTradeGoods(s); }
 int Generator_getShipBuyList_oi(Station * s);
 
 const int *ModStation_msc_camCoordTable();
@@ -3249,7 +3249,7 @@ static int **g_dlc_btnCount = 0;
 
 void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind);
 
-void MenuTouchWindow_callDlcMenu_dlc(MenuTouchWindow * w);
+static inline void MenuTouchWindow_callDlcMenu_dlc(MenuTouchWindow * w) { w->callDlcMenu(); }
 
 void TouchButton_getPosition_dlc(float *dst, MenuTouchWindow *win, unsigned idx);
 
