@@ -369,8 +369,7 @@ void CutScene::process(int /*delta*/) {
 }
 
 void CutScene::renderBG() {
-    if (this->level != nullptr)
-        this->level->renderBG((int) this->frameDelta);
+    this->level->renderBG((int) this->frameDelta);
 }
 
 void CutScene::replacePlayerShip(int /*a*/, int b) {

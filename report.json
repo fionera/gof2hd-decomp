@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.51,
+  "avg_match": 69.53,
   "byte_exact": 1091,
-  "linked_exact": 1953,
-  "fuzzy_perfect": 1953,
+  "linked_exact": 1954,
+  "fuzzy_perfect": 1954,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -2558,14 +2558,6 @@
    "usize": 1868
   },
   {
-   "name": "_ZN7Globals26getInAppPurchaseArrayIndexEiP5ArrayIPN11AbyssEngine6StringEE",
-   "pct": 8.2,
-   "byte": false,
-   "linked": false,
-   "osize": 716,
-   "usize": 512
-  },
-  {
    "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
    "pct": 8.3,
    "byte": false,
@@ -2756,6 +2748,14 @@
    "linked": false,
    "osize": 3076,
    "usize": 400
+  },
+  {
+   "name": "_ZN7Globals26getInAppPurchaseArrayIndexEiP5ArrayIPN11AbyssEngine6StringEE",
+   "pct": 9.4,
+   "byte": false,
+   "linked": false,
+   "osize": 716,
+   "usize": 512
   },
   {
    "name": "_ZN10StarSystem9initLightEv",
@@ -5198,14 +5198,6 @@
    "usize": 36
   },
   {
-   "name": "_ZN8CutScene8renderBGEv",
-   "pct": 20.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10,
-   "usize": 14
-  },
-  {
    "name": "_ZN6Layout24drawMissionRewardMessageEb",
    "pct": 20.2,
    "byte": false,
@@ -5998,14 +5990,6 @@
    "usize": 460
   },
   {
-   "name": "_ZN8CutScene7processEi",
-   "pct": 23.5,
-   "byte": false,
-   "linked": false,
-   "osize": 2008,
-   "usize": 1716
-  },
-  {
    "name": "inflateBackInit_",
    "pct": 23.5,
    "byte": false,
@@ -6228,6 +6212,14 @@
    "linked": false,
    "osize": 48,
    "usize": 30
+  },
+  {
+   "name": "_ZN8CutScene7processEi",
+   "pct": 24.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2008,
+   "usize": 1716
   },
   {
    "name": "_zip_entry_new",
@@ -15486,14 +15478,6 @@
    "usize": 48
   },
   {
-   "name": "_ZN8CutScene8render3DEv",
-   "pct": 73.9,
-   "byte": false,
-   "linked": false,
-   "osize": 112,
-   "usize": 108
-  },
-  {
    "name": "_ZN11HackingGame6reInitEv",
    "pct": 74.0,
    "byte": false,
@@ -16628,6 +16612,14 @@
    "linked": false,
    "osize": 54,
    "usize": 54
+  },
+  {
+   "name": "_ZN8CutScene8render3DEv",
+   "pct": 78.3,
+   "byte": false,
+   "linked": false,
+   "osize": 112,
+   "usize": 108
   },
   {
    "name": "_ZN11AbyssEngine21TextureVtxColorShader23ConnectShaderComponentsEji",
@@ -33132,6 +33124,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN8CutScene8renderBGEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 10,
+   "usize": 10
   },
   {
    "name": "_ZN8FileReadC1Ev",

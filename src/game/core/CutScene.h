@@ -30,10 +30,10 @@ public:
     uint32_t prevTimeHi;
     uint32_t accumLo;
     uint32_t accumHi;
-    uint32_t frameDelta;
+    uint32_t field_0x54;
     // ASM ground truth: the original's time-tracking region has 8 uint32 slots before initialized@0x5c;
     // ours had 7, shifting initialized/turretGeom/followCamera.. 4 bytes low.
-    uint32_t field_0x58;
+    uint32_t frameDelta;
     uint8_t initialized;
     PlayerEgo *player;
     AEGeometry *turretGeom;
