@@ -1,16 +1,16 @@
 {
  "summary": {
   "original_functions": 4522,
-  "ours_functions": 4541,
+  "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.29,
-  "byte_exact": 1074,
-  "linked_exact": 1931,
-  "fuzzy_perfect": 1931,
+  "avg_match": 69.31,
+  "byte_exact": 1075,
+  "linked_exact": 1932,
+  "fuzzy_perfect": 1932,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
-  "extra": 34
+  "extra": 33
  },
  "rows": [
   {
@@ -1044,14 +1044,6 @@
    "linked": false,
    "osize": 4,
    "usize": 22
-  },
-  {
-   "name": "_ZN9SpriteGunD0Ev",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2,
-   "usize": 4
   },
   {
    "name": "_tr_init",
@@ -35214,6 +35206,14 @@
    "usize": 2
   },
   {
+   "name": "_ZN9SpriteGunD0Ev",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 2,
+   "usize": 2
+  },
+  {
    "name": "_ZN9SpriteGunD1Ev",
    "pct": 100.0,
    "byte": true,
@@ -36120,8 +36120,7 @@
   "_ZN5ArrayIPS_IPN11AbyssEngine6StringEEEC1Ev",
   "_ZN5ArrayIPS_IPN11AbyssEngine6StringEEED1Ev",
   "_ZN5ArrayIPaED2Ev",
-  "_ZN5ArrayIbED1Ev",
-  "_ZN9SpriteGunC1EP3Guni"
+  "_ZN5ArrayIbED1Ev"
  ],
  "wrong_type": []
 }

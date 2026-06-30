@@ -4,25 +4,28 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "Gun.h"
+#include "AbstractGun.h"
 
 class Player;
 
 class Gun;
 
-class SpriteGun {
+// Original _ZTV: SpriteGun : AbstractGun (12 slots); overrides setEnemies/setEnemy/update/render, leaves
+// translate/replaceGun PURE (__cxa_pure_virtual at slots 6/7), inherits is*. Was standalone (6 slots) in ours.
+class SpriteGun : public AbstractGun {
 public:
     int32_t field_0x4;
 
     SpriteGun(Gun *gun, int kind);
 
-    virtual ~SpriteGun();
+    ~SpriteGun() override;
 
-    virtual void setEnemies(Array<Player *> *enemies);
+    void setEnemies(Array<Player *> *enemies) override;
 
-    virtual void setEnemy(Player *enemy);
+    void setEnemy(Player *enemy) override;
 
-    virtual void update(int elapsed);
+    void update(int elapsed) override;
 
-    virtual void render();
+    void render() override;
 };
 #endif
