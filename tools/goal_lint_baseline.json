@@ -1,4 +1,54 @@
 {
+ "arm_builtin": {
+  "engine/core/KeyFrame.h": 1,
+  "engine/file/AEFile.cpp": 1,
+  "engine/math/AEMath.cpp": 2,
+  "engine/render/IParticleSystem.cpp": 2,
+  "game/core/CutScene.cpp": 1,
+  "game/core/Globals.cpp": 1,
+  "game/menu/MGame.cpp": 1,
+  "game/ship/PlayerEgo.cpp": 1,
+  "game/ui/WantedWindow.cpp": 2,
+  "game/world/Level.cpp": 2,
+  "game/world/StarMap.cpp": 3
+ },
  "one_class": {},
- "void_ptr": {}
+ "operator_call": {
+  "engine/core/AbyssEngine.cpp": 92,
+  "engine/core/Array.h": 9,
+  "engine/file/AEFile.cpp": 2,
+  "engine/render/Engine.cpp": 4,
+  "engine/render/LODManager.cpp": 25,
+  "engine/render/LodMeshMerger.cpp": 2,
+  "engine/render/PaintCanvas.cpp": 24,
+  "engine/render/ParticleSystemManager.cpp": 2,
+  "engine/render/ResourceTransform.cpp": 2,
+  "engine/render/ShaderBaseStruct.cpp": 3,
+  "game/core/Globals.cpp": 33,
+  "game/core/String.cpp": 6,
+  "game/menu/MGame.cpp": 12,
+  "game/menu/ModStation.cpp": 17,
+  "game/mission/GameRecord.cpp": 4,
+  "game/ship/PlayerEgo.cpp": 3,
+  "game/ui/HangarWindow.cpp": 21,
+  "game/ui/Layout.cpp": 3,
+  "game/ui/MenuTouchWindow.cpp": 49,
+  "game/ui/MissionsWindow.cpp": 2,
+  "game/weapons/Gun.cpp": 2,
+  "game/world/Level.cpp": 119,
+  "game/world/StarMap.cpp": 8,
+  "game/world/StarSystem.cpp": 3,
+  "platform/android/NdkHooks.cpp": 2
+ },
+ "void_ptr": {
+  "engine/audio/FModSound.cpp": 2,
+  "engine/render/AEGeometry.cpp": 2,
+  "engine/render/PaintCanvas.cpp": 27,
+  "game/core/Globals.cpp": 8,
+  "game/menu/ModStation.cpp": 8,
+  "game/menu/SpaceLounge.cpp": 6,
+  "game/ship/PlayerEgo.cpp": 2,
+  "game/ui/MenuTouchWindow.cpp": 16,
+  "game/world/StarMap.cpp": 3
+ }
 }

@@ -86,6 +86,12 @@ UNION = re.compile(r"\bunion\b")
 # Genuine codegen "hacks" the port must never use.
 BANNED = {
     "banned_token": re.compile(r'(\b__asm\b|\basm\s*\(|__attribute__|__declspec)'),
+    # Direct operator calls (`::operator new`, `::operator delete`, `::new`, `::delete`) are a
+    # decompiler idiom; the human-style port allocates with `new T()` / `delete p`. Ratcheted SOFT.
+    "operator_call": re.compile(r'(?:::\s*)?operator\s+(?:new|delete)\b|::\s*(?:new|delete)\b'),
+    # ARM/compiler builtins (`__aeabi_*`, `__builtin_*`) must be written as ordinary C++ -- EXCEPT
+    # `__builtin_offsetof`, which is the standard `offsetof` macro expansion (legitimate). SOFT.
+    "arm_builtin": re.compile(r'__aeabi_\w+|__builtin_(?!offsetof\b)\w+'),
 }
 # `extern "C"` is hard-banned too, BUT waivable per-site: the only legitimate use is the mandatory
 # native ABI boundary (JNI `Java_*` / NDK `ndk*`, which the original ships unmangled) -- those carry
@@ -197,7 +203,7 @@ def find_cycles(root, files):
 # baseline shrinks as files are cleaned (`--update-baseline`). This makes `lint` a real regression
 # gate that is achievable now, instead of demanding the whole recovery be complete.
 HARD = ["banned_token", "extern_c", "union_decl", "explicit_inst", "circular_inc"]
-SOFT = ["void_ptr", "one_class"]
+SOFT = ["void_ptr", "one_class", "operator_call", "arm_builtin"]
 ALL_CRITS = SOFT + HARD
 
 
