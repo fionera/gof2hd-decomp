@@ -158,8 +158,9 @@ void ArrayRemoveAll(Array<T> &a) {
 
 template<class T>
 void ArrayRemove(T item, Array<T> &a) {
+    unsigned int read = 0;
     unsigned int write = 0;
-    for (unsigned int read = 0; read < a.count; ++read) {
+    for (; read < a.count; ++read) {
         T cur = a.data_[read];
         if (cur != item)
             a.data_[write++] = cur;
