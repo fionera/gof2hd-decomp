@@ -48,11 +48,11 @@ uint32_t _psm_cameraGetCurrent(PaintCanvas * canvas);
 
 uint32_t _psm_cameraGetLocal(PaintCanvas *canvas, uint32_t current);
 
-void _psm_updateUsualEdges(ParticleSystemMesh *self, int id, int delta);
+static inline void _psm_updateUsualEdges(ParticleSystemMesh *self, int id, int delta) { self->updateUsualEdges(id, delta); }
 
-void _psm_updateTrailEdges(ParticleSystemMesh *self, int id, int delta);
+static inline void _psm_updateTrailEdges(ParticleSystemMesh *self, int id, int delta) { self->updateTrailEdges(id, delta); }
 
-void _psm_updateSingleColor(ParticleSystemMesh *self, int id);
+static inline void _psm_updateSingleColor(ParticleSystemMesh *self, int id) { self->updateSingleColor(id); }
 
 void _psm_meshSetPointIndirect(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y,
                                float z);
