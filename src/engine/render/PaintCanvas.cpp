@@ -312,13 +312,13 @@ void paintcanvas_ext_add_child(void *, void *); // lint: void_ptr (external symb
 
 static inline void paintcanvas_ext_dr_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); }
 
-void paintcanvas_ext_dr_glLineWidth(float w);
+static inline void paintcanvas_ext_dr_glLineWidth(float w) { glLineWidth(w); }
 
 void paintcanvas_ext_dr_glcap(void *eng, unsigned int cap, int on);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dr_glVertexPointer(int a, int b, int c, void *p);
+static inline void paintcanvas_ext_dr_glVertexPointer(int a, int b, int c, void *p) { glVertexPointer(a, b, c, p); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -326,7 +326,7 @@ void paintcanvas_ext_dr_glColorMask(void *eng, unsigned int cap, int on);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dr_glDrawArrays(int a, int b, int c);
+static inline void paintcanvas_ext_dr_glDrawArrays(int a, int b, int c) { glDrawArrays(a, b, c); }
 
 void paintcanvas_ext_dr_drawline2d(void *eng, void *p, int n, bool b);
 
@@ -602,7 +602,7 @@ void paintcanvas_ext_gl_str_assign(AbyssEngine::String *dst, void *src);
 
 void paintcanvas_ext_gl_str_dtor(void *s); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dl_glLineWidth(float w);
+static inline void paintcanvas_ext_dl_glLineWidth(float w) { glLineWidth(w); }
 
 void paintcanvas_ext_dl_glEnable(void *eng, bool on); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -610,7 +610,7 @@ float paintcanvas_ext_dl_signedtofloat(int v, unsigned int mode);
 
 static inline void paintcanvas_ext_dl_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); }
 
-void paintcanvas_ext_dl_glVertexPointer(int a, int b, int c, void *p);
+static inline void paintcanvas_ext_dl_glVertexPointer(int a, int b, int c, void *p) { glVertexPointer(a, b, c, p); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -618,7 +618,7 @@ void paintcanvas_ext_dl_glColorMask(void *eng, unsigned int cap, int on);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dl_glDrawArrays(int a, int b, int c);
+static inline void paintcanvas_ext_dl_glDrawArrays(int a, int b, int c) { glDrawArrays(a, b, c); }
 
 void paintcanvas_ext_dl_drawline2d(void *eng, void *p, bool b);
 
@@ -763,7 +763,7 @@ void paintcanvas_ext_rpm_glScalef(float x, float y, float z);
 
 void paintcanvas_ext_rpm_glLoadMatrixf(void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_rpm_glFinish();
+static inline void paintcanvas_ext_rpm_glFinish() { glFinish(); }
 
 void paintcanvas_ext_rpm_loadproj(void *eng, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
