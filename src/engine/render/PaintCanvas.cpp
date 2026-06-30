@@ -463,7 +463,7 @@ void paintcanvas_ext_sbm_setalpha(void *eng, unsigned int v, int on);
 
 void paintcanvas_ext_sbm_setlight(int on);
 
-void paintcanvas_ext_sbm_texcombine(unsigned int a, unsigned int b, unsigned int c);
+static inline void paintcanvas_ext_sbm_texcombine(unsigned int a, unsigned int b, unsigned int c) { glTexEnvi(a, b, c); }
 
 AbyssEngine::String *paintcanvas_ext_gla_str_new();
 
