@@ -668,7 +668,7 @@ static inline void FModSound_stop_ou(int sound) { Globals::sound->stop(sound); }
 
 void FModSound_setParamValue_ou(int sound, int a, int b, float v);
 
-void Layout_update_ou(int layout);
+static inline void Layout_update_ou(int layout) { Globals::layout->update(layout); }
 
 void Layout_formatCredits_ou(ModStation * outStr);
 
@@ -1577,7 +1577,7 @@ static inline int Layout_helpPressed_ote(Layout * l) { return (int)(l->helpPress
 
 void Layout_initHelpWindow_ote(int l, int textStr);
 
-void Layout_showMissionRewardMessage_ote(int l, int flag);
+static inline void Layout_showMissionRewardMessage_ote(int l, int flag) { Globals::layout->showMissionRewardMessage(l, flag); }
 
 int ChoiceWindow_OnTouchEnd_ote(int cw, int p1);
 
@@ -2721,7 +2721,7 @@ static inline void FModSound_setDownPitch_oi(int sound) { Globals::sound->setDow
 static inline void Generator_ctor_oi(Generator * g) { new ((void*)g) Generator(); }
 static inline void Generator_dtor_oi(Generator *g) { g->~Generator(); }
 static inline void Generator_computerTradeGoods_oi(Generator * g, Station * s) { g->computerTradeGoods(s); }
-int Generator_getShipBuyList_oi(Station * s);
+static inline int Generator_getShipBuyList_oi(Station * s) { return (int)(Globals::generator->getShipBuyList(s)); }
 
 const int *ModStation_msc_camCoordTable();
 
