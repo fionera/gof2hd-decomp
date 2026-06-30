@@ -896,7 +896,7 @@ void paintcanvas_ext_di4_restore(unsigned int flag, void *img);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_di4_settexture(void *self, unsigned int tex);
+static inline void paintcanvas_ext_di4_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -922,7 +922,7 @@ void paintcanvas_ext_dr2_restore(unsigned int flag, void *img);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dr2_settexture(void *self, unsigned int tex);
+static inline void paintcanvas_ext_dr2_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1054,7 +1054,7 @@ void paintcanvas_ext_string_prep(AbyssEngine::PaintCanvas *, void *, int);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dsc_settexture(void *self, unsigned int tex);
+static inline void paintcanvas_ext_dsc_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1114,7 +1114,7 @@ static inline int paintcanvas_ext_di3_getheight(void *self) { return ((PaintCanv
 
 static inline float paintcanvas_ext_di3_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
-void paintcanvas_ext_di3_settexture(void *self, unsigned int tex);
+static inline void paintcanvas_ext_di3_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1152,7 +1152,7 @@ static inline void paintcanvas_ext_fsp_glFogfv(unsigned int pname, void *v) { gl
 
 void paintcanvas_ext_fsp_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dr3_settexture(void *self, unsigned int tex);
+static inline void paintcanvas_ext_dr3_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
