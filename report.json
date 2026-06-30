@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.64,
-  "byte_exact": 1100,
-  "linked_exact": 1964,
-  "fuzzy_perfect": 1964,
+  "avg_match": 69.66,
+  "byte_exact": 1102,
+  "linked_exact": 1966,
+  "fuzzy_perfect": 1966,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -2294,22 +2294,6 @@
    "usize": 28
   },
   {
-   "name": "_ZN5RadarC1EP5Level",
-   "pct": 6.9,
-   "byte": false,
-   "linked": false,
-   "osize": 2488,
-   "usize": 292
-  },
-  {
-   "name": "_ZN5RadarC2EP5Level",
-   "pct": 6.9,
-   "byte": false,
-   "linked": false,
-   "osize": 2488,
-   "usize": 292
-  },
-  {
    "name": "zip_add",
    "pct": 6.9,
    "byte": false,
@@ -2572,6 +2556,22 @@
    "linked": false,
    "osize": 2112,
    "usize": 1040
+  },
+  {
+   "name": "_ZN5RadarC1EP5Level",
+   "pct": 8.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2488,
+   "usize": 292
+  },
+  {
+   "name": "_ZN5RadarC2EP5Level",
+   "pct": 8.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2488,
+   "usize": 292
   },
   {
    "name": "_ZN6Layout12formatNumberEi",
@@ -10118,14 +10118,6 @@
    "usize": 252
   },
   {
-   "name": "_ZN5Radar6updateEN11AbyssEngine6AEMath6VectorE",
-   "pct": 45.8,
-   "byte": false,
-   "linked": false,
-   "osize": 232,
-   "usize": 210
-  },
-  {
    "name": "_ZN4Ship12hasEquipmentEii",
    "pct": 45.9,
    "byte": false,
@@ -11166,14 +11158,6 @@
    "usize": 6
   },
   {
-   "name": "_ZN5Radar15isPlasmaInRangeEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 6
-  },
-  {
    "name": "_ZN5Radar17getLockedGasCloudEv",
    "pct": 50.0,
    "byte": false,
@@ -11588,6 +11572,14 @@
    "linked": false,
    "osize": 44,
    "usize": 32
+  },
+  {
+   "name": "_ZN5Radar6updateEN11AbyssEngine6AEMath6VectorE",
+   "pct": 51.4,
+   "byte": false,
+   "linked": false,
+   "osize": 232,
+   "usize": 210
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas14RestoreImage2DEPNS_7Image2DE",
@@ -14326,14 +14318,6 @@
    "usize": 60
   },
   {
-   "name": "_ZN5Radar19getTurretScopeWidthEv",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 8,
-   "usize": 8
-  },
-  {
    "name": "_ZN6AEFile10OpenAppendERN11AbyssEngine6StringEPj",
    "pct": 66.7,
    "byte": false,
@@ -14814,14 +14798,6 @@
    "usize": 156
   },
   {
-   "name": "_ZN5Radar17elipsoidIntersectEiiN11AbyssEngine6AEMath6VectorE",
-   "pct": 69.4,
-   "byte": false,
-   "linked": false,
-   "osize": 212,
-   "usize": 214
-  },
-  {
    "name": "_ZN10HangarList4initEP4ShipP5ArrayIP4ItemEPS2_IS1_EPS2_IP9BluePrintE",
    "pct": 69.6,
    "byte": false,
@@ -15028,6 +15004,14 @@
    "linked": false,
    "osize": 356,
    "usize": 346
+  },
+  {
+   "name": "_ZN5Radar17elipsoidIntersectEiiN11AbyssEngine6AEMath6VectorE",
+   "pct": 71.1,
+   "byte": false,
+   "linked": false,
+   "osize": 212,
+   "usize": 214
   },
   {
    "name": "_ZN10RepairBeamC1Eii",
@@ -30910,12 +30894,28 @@
    "usize": 6
   },
   {
+   "name": "_ZN5Radar15isPlasmaInRangeEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
    "name": "_ZN5Radar17getLockedAsteroidEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN5Radar19getTurretScopeWidthEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 8,
+   "usize": 8
   },
   {
    "name": "_ZN5Radio10getMessageEi",

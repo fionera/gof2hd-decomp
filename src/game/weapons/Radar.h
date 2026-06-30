@@ -44,7 +44,7 @@ public:
     uint8_t hasReservation;
     uint8_t pad_0x71_to_0x8c[0x8c - 0x71];
     uint8_t reservationDirty;
-    uint8_t pad_0x8d_to_0x90[0x90 - 0x8d];
+    uint8_t pad_0x8d_to_0xfc[0xfc - 0x8d]; // Ghidra: gap+field_0xa0/a4+gap+raceSprite/blipSprite/qualitySprite
     int screenX;
     int screenY;
     volatile int centerX;
@@ -55,6 +55,8 @@ public:
     int imageHeightSq;
     int onScreen;
     uint8_t field_0x120;
+    int field_0x124; // Ghidra
+    int field_0x128; // Ghidra
     int turretScopeHalfWidth;
     uint8_t plasmaInRange;
     int radarPosX;
