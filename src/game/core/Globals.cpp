@@ -341,21 +341,21 @@ void *FileRead_dtor(void *self); // lint: void_ptr (Pv-mangled internal shim; AB
 
 float VectorScale(void *vec, float scalar); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-void *Galaxy_dtor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+static inline void * Galaxy_dtor(void *g) { ((Galaxy*)g)->~Galaxy(); return (void *)(g); }
 
-void *Status_dtor(void *s); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+static inline void * Status_dtor(void *s) { ((Status*)s)->~Status(); return (void *)(s); }
 
 static inline void *AERandom_dtor(void *r) { ((AbyssEngine::AERandom*)r)->~AERandom(); return r; }
 
-void *Layout_dtor(void *l); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+static inline void * Layout_dtor(void *l) { ((Layout*)l)->~Layout(); return (void *)(l); }
 
 void *Generator_dtor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-void *FModSound_dtor(void *s); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+static inline void * FModSound_dtor(void *s) { ((FModSound*)s)->~FModSound(); return (void *)(s); }
 
-void *Achievements_dtor(void *a); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+static inline void * Achievements_dtor(void *a) { ((Achievements*)a)->~Achievements(); return (void *)(a); }
 
-void *ImageFactory_dtor(void *f); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+static inline void * ImageFactory_dtor(void *f) { ((ImageFactory*)f)->~ImageFactory(); return (void *)(f); }
 
 void Mission_ctor(void *m); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 

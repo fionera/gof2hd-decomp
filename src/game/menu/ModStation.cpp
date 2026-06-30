@@ -115,7 +115,7 @@ static inline unsigned char * HangarWindow_dtor(HangarWindow *p) { p->~HangarWin
 
 static inline unsigned char *StarMap_dtor(StarMap *p) { p->~StarMap(); return (unsigned char*)p; }
 
-unsigned char *MissionsWindow_dtor(DialogueWindow * p);
+static inline unsigned char * MissionsWindow_dtor(DialogueWindow * p) { ((MissionsWindow*)p)->~MissionsWindow(); return (unsigned char *)(p); }
 
 static inline unsigned char * DialogueWindow_dtor(DialogueWindow * p) { p->~DialogueWindow(); return (unsigned char *)(p); }
 

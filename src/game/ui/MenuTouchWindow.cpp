@@ -115,11 +115,11 @@ static inline void *_mtw_Array_TS_dtor(void *arr) { ((Array<TouchSlider*>*)arr)-
 
 static inline void *_mtw_Array_Str_dtor(void *arr) { ((Array<String>*)arr)->~Array(); return arr; }
 
-void *_mtw_TouchButton_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void * _mtw_TouchButton_dtor(void *p) { ((TouchButton*)p)->~TouchButton(); return (void *)(p); }
 
-void *_mtw_ChoiceWindow_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void * _mtw_ChoiceWindow_dtor(void *p) { ((ChoiceWindow*)p)->~ChoiceWindow(); return (void *)(p); }
 
-void *_mtw_ScrollTouchWindow_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void * _mtw_ScrollTouchWindow_dtor(void *p) { ((ScrollTouchWindow*)p)->~ScrollTouchWindow(); return (void *)(p); }
 
 void *_mtw_Array_Str_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -227,9 +227,9 @@ void _mtw_RecordHandler_ctor(void *rh); // lint: void_ptr (external symbol; para
 
 void *_mtw_RecordHandler_readRecord(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_RecordHandler_dtor(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void * _mtw_RecordHandler_dtor(void *rh) { ((RecordHandler*)rh)->~RecordHandler(); return (void *)(rh); }
 
-void *_mtw_GameRecord_dtor(void *gr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void * _mtw_GameRecord_dtor(void *gr) { ((GameRecord*)gr)->~GameRecord(); return (void *)(gr); }
 
 static inline void _mtw_GameRecord_load(void *gr) { ((GameRecord*)gr)->load(); }
 

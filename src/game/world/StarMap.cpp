@@ -35,7 +35,7 @@ static void (*g_StarMap_render_geometry)(AEGeometry *);
 
 static GameText **g_StarMap_alien_text;
 
-void *SystemPathFinder_dtor(void *finder); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void * SystemPathFinder_dtor(void *finder) { ((SystemPathFinder*)finder)->~SystemPathFinder(); return (void *)(finder); }
 
 static Status **g_StarMap_draw_status;
 static Layout **g_StarMap_draw_layout;
