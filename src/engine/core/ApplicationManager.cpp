@@ -871,8 +871,8 @@ void ApplicationManager::SoundSetMusicVolume(int volume) {
 }
 
 void ApplicationManager::SoundEnable(bool enable) {
-    this->soundFxEnabled = enable;
     this->musicEnabled = enable;
+    this->soundFxEnabled = enable;
 }
 
 void ApplicationManager::SoundFxEnable(bool enable) {

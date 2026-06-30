@@ -4,9 +4,9 @@
   "ours_functions": 4540,
   "compared": 4507,
   "avg_match": 69.55,
-  "byte_exact": 1093,
-  "linked_exact": 1956,
-  "fuzzy_perfect": 1956,
+  "byte_exact": 1094,
+  "linked_exact": 1957,
+  "fuzzy_perfect": 1957,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -14230,14 +14230,6 @@
    "usize": 4
   },
   {
-   "name": "_ZN11AbyssEngine18ApplicationManager11SoundEnableEb",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 10,
-   "usize": 10
-  },
-  {
    "name": "_ZN11AbyssEngine18ApplicationManager13ResetKeyStateEv",
    "pct": 66.7,
    "byte": false,
@@ -24188,6 +24180,14 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN11AbyssEngine18ApplicationManager11SoundEnableEb",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 10,
+   "usize": 10
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager11SoundResumeEi",
