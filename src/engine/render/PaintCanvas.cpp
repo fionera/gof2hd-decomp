@@ -642,7 +642,7 @@ void paintcanvas_ext_material_add(void *, void *); // lint: void_ptr (external s
 
 void paintcanvas_ext_get_grav(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_glMatrixMode(unsigned int);
+static inline void paintcanvas_ext_glMatrixMode(unsigned int mode) { glMatrixMode(mode); }
 
 void paintcanvas_ext_gl_depthmask(unsigned int);
 
@@ -727,7 +727,7 @@ void paintcanvas_ext_rs_deletearr(char *p);
 
 void paintcanvas_ext_rs_glActiveTexture(unsigned int tex);
 
-void paintcanvas_ext_rs_glBindTexture(unsigned int target, unsigned int tex);
+static inline void paintcanvas_ext_rs_glBindTexture(unsigned int target, unsigned int tex) { glBindTexture(target, tex); }
 
 void paintcanvas_ext_tami_bsphere_merge(void *dst, void *src);
 
@@ -755,13 +755,13 @@ static inline float paintcanvas_ext_rpm_cosf(float v) { return cosf(v); }
 
 float paintcanvas_ext_rpm_signedtofloat(int v, unsigned int mode);
 
-void paintcanvas_ext_rpm_glMatrixMode(unsigned int mode);
+static inline void paintcanvas_ext_rpm_glMatrixMode(unsigned int mode) { glMatrixMode(mode); }
 
-void paintcanvas_ext_rpm_glLoadIdentity();
+static inline void paintcanvas_ext_rpm_glLoadIdentity() { glLoadIdentity(); }
 
-void paintcanvas_ext_rpm_glScalef(float x, float y, float z);
+static inline void paintcanvas_ext_rpm_glScalef(float x, float y, float z) { glScalef(x, y, z); }
 
-void paintcanvas_ext_rpm_glLoadMatrixf(void *m); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_rpm_glLoadMatrixf(void *m) { glLoadMatrixf((const float*)m); }
 
 static inline void paintcanvas_ext_rpm_glFinish() { glFinish(); }
 
@@ -1101,7 +1101,7 @@ int paintcanvas_ext_ec_getHeight(void *self); // lint: void_ptr (external symbol
 
 int paintcanvas_ext_ec_getWidth(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_ec_glScissor(int x, int y, int w, int h);
+static inline void paintcanvas_ext_ec_glScissor(int x, int y, int w, int h) { glScissor(x, y, w, h); }
 
 void paintcanvas_ext_di3_restore(unsigned int flag, void *img);
 
@@ -1143,9 +1143,9 @@ void paintcanvas_ext_mc2_converttovbo(void *mesh); // lint: void_ptr (external s
 
 float paintcanvas_ext_fsp_unsignedtofloat(unsigned int v, unsigned int mode);
 
-void paintcanvas_ext_fsp_glFogf(unsigned int pname, float v);
+static inline void paintcanvas_ext_fsp_glFogf(unsigned int pname, float v) { glFogf(pname, v); }
 
-void paintcanvas_ext_fsp_glFogfv(unsigned int pname, void *v);
+static inline void paintcanvas_ext_fsp_glFogfv(unsigned int pname, void *v) { glFogfv(pname, (const float*)v); }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
