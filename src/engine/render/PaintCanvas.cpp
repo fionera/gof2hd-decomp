@@ -422,9 +422,9 @@ static inline void paintcanvas_ext_di2_settexture(void *self, unsigned int tex, 
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_di2_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_di2_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
-float paintcanvas_ext_di2_unsignedtofloat(unsigned int v, unsigned int mode);
+static inline float paintcanvas_ext_di2_unsignedtofloat(unsigned int v, unsigned int mode) { (void)mode; return (float)v; }
 
 static inline void paintcanvas_ext_di2_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); }
 
@@ -544,7 +544,7 @@ int paintcanvas_ext_init_dispwidth(void *eng); // lint: void_ptr (external symbo
 
 int paintcanvas_ext_init_dispheight(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_init_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_init_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_init_setpersp(void *self, float a, float b, float c);
 
@@ -562,7 +562,7 @@ static inline float paintcanvas_ext_spm_sinf(float v) { return sinf(v); }
 
 static inline float paintcanvas_ext_spm_cosf(float v) { return cosf(v); }
 
-float paintcanvas_ext_spm_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_spm_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_dss1_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -606,7 +606,7 @@ static inline void paintcanvas_ext_dl_glLineWidth(float w) { glLineWidth(w); }
 
 void paintcanvas_ext_dl_glEnable(void *eng, bool on); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_dl_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_dl_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 static inline void paintcanvas_ext_dl_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); }
 
@@ -699,7 +699,7 @@ static inline int paintcanvas_ext_gsp_getwidth(void *self) { return ((PaintCanva
 
 static inline int paintcanvas_ext_gsp_getheight(void *self) { return ((PaintCanvas*)self)->GetHeight(); }
 
-float paintcanvas_ext_gsp_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_gsp_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 int paintcanvas_ext_sscreate(void *eng, unsigned short id, bool b, void **out);
 
@@ -753,7 +753,7 @@ static inline float paintcanvas_ext_rpm_sinf(float v) { return sinf(v); }
 
 static inline float paintcanvas_ext_rpm_cosf(float v) { return cosf(v); }
 
-float paintcanvas_ext_rpm_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_rpm_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 static inline void paintcanvas_ext_rpm_glMatrixMode(unsigned int mode) { glMatrixMode(mode); }
 
@@ -837,7 +837,7 @@ static inline int paintcanvas_ext_gsp2_getwidth(void *self) { return ((PaintCanv
 
 static inline int paintcanvas_ext_gsp2_getheight(void *self) { return ((PaintCanvas*)self)->GetHeight(); }
 
-float paintcanvas_ext_gsp2_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_gsp2_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_di_restore(unsigned int flag, void *img);
 
@@ -903,7 +903,7 @@ static inline int paintcanvas_ext_di4_getwidth(void *self) { return ((PaintCanva
 
 static inline int paintcanvas_ext_di4_getheight(void *self) { return ((PaintCanvas*)self)->GetHeight(); }
 
-float paintcanvas_ext_di4_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_di4_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 static inline void paintcanvas_ext_di4_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); }
 
@@ -925,7 +925,7 @@ void paintcanvas_ext_dr2_settexture(void *self, unsigned int tex);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_dr2_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_dr2_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 static inline float paintcanvas_ext_dr2_sinf(float v) { return sinf(v); }
 
@@ -957,7 +957,7 @@ int paintcanvas_ext_sgo_dispwidth(void *eng); // lint: void_ptr (external symbol
 
 int paintcanvas_ext_sgo_dispheight(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_sgo_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_sgo_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_sgo_setpersp(void *self, float a, float b, float c);
 
@@ -997,7 +997,7 @@ int paintcanvas_ext_dm_spherefrustum(void *self, void *pt, float radius);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_dm_unsignedtofloat(unsigned int v, unsigned int mode);
+static inline float paintcanvas_ext_dm_unsignedtofloat(unsigned int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_dm_setcolor(void *eng, float r, float g, float b, float a);
 
@@ -1111,7 +1111,7 @@ static inline int paintcanvas_ext_di3_getwidth(void *self) { return ((PaintCanva
 
 static inline int paintcanvas_ext_di3_getheight(void *self) { return ((PaintCanvas*)self)->GetHeight(); }
 
-float paintcanvas_ext_di3_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_di3_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_di3_settexture(void *self, unsigned int tex);
 
@@ -1141,7 +1141,7 @@ void *paintcanvas_ext_mc2_new_mesh_copy(void *src); // lint: void_ptr (external 
 
 void paintcanvas_ext_mc2_converttovbo(void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_fsp_unsignedtofloat(unsigned int v, unsigned int mode);
+static inline float paintcanvas_ext_fsp_unsignedtofloat(unsigned int v, unsigned int mode) { (void)mode; return (float)v; }
 
 static inline void paintcanvas_ext_fsp_glFogf(unsigned int pname, float v) { glFogf(pname, v); }
 
@@ -1155,9 +1155,9 @@ void paintcanvas_ext_dr3_settexture(void *self, unsigned int tex);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_dr3_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_dr3_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
-float paintcanvas_ext_dr3_unsignedtofloat(unsigned int v, unsigned int mode);
+static inline float paintcanvas_ext_dr3_unsignedtofloat(unsigned int v, unsigned int mode) { (void)mode; return (float)v; }
 
 static inline float paintcanvas_ext_dr3_sinf(float v) { return sinf(v); }
 
@@ -1203,7 +1203,7 @@ static inline void paintcanvas_ext_tg2d_memcpy(void *dst, void *src, unsigned in
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_tg2d_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_tg2d_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_tg2d_invtransformvec(void *outMat, void *vec);
 
@@ -1237,7 +1237,7 @@ void paintcanvas_ext_matc_texcreate(void *self, unsigned short id, bool b);
 
 void paintcanvas_ext_matc_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
-float paintcanvas_ext_tg2di_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_tg2di_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_tg2di_meshintersect(void *out, float a, float b, void *mesh);
 
@@ -1342,7 +1342,7 @@ static inline float paintcanvas_ext_dss2_sinf(float v) { return sinf(v); }
 
 static inline float paintcanvas_ext_dss2_cosf(float v) { return cosf(v); }
 
-float paintcanvas_ext_dss2_signedtofloat(int v, unsigned int mode);
+static inline float paintcanvas_ext_dss2_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_dss2_mtx_muleq(void *m, void *rhs); // lint: void_ptr (external symbol; mangling must match lib)
 
