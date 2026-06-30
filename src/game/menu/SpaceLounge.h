@@ -34,10 +34,14 @@ namespace AbyssEngine {
 
 class SpaceLounge {
 public:
+    // ASM (OnRender3D, r4=this): starMap read @4 (field_0x0 precedes); field_0x18 is Ghidra-named @0x18 but
+    // sat @0x10 -> a 2nd 4-byte field (field_0x14) precedes it. Matches the +4-then-+8 delta in OnRender3D.
+    int field_0x0;
     StarMap *starMap;
     ChoiceWindow *choiceWindow;
     ListItemWindow *listWindow;
     int mode;
+    int field_0x14;
     int field_0x18;
     uint8_t chatActive;
     uint8_t popupActive;
