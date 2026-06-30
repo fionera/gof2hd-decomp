@@ -216,8 +216,8 @@ public:
     float rotateX;
     float rotateY;
     float rotateZ;
+    uint8_t _pad_before_rolling[32]; // ASM (roll): rolling is at 0x2f4, AFTER this gap, not before it
     uint8_t rolling;
-    uint8_t _pad_0x2d5[32]; // missing fields between rolling and field_0x2f5 (0x2d5..0x2f5)
     uint8_t field_0x2f5;
     int explosionTimer;
     int currentSystem;

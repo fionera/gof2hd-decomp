@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.53,
-  "byte_exact": 1091,
-  "linked_exact": 1954,
-  "fuzzy_perfect": 1954,
+  "avg_match": 69.54,
+  "byte_exact": 1092,
+  "linked_exact": 1955,
+  "fuzzy_perfect": 1955,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -6790,14 +6790,6 @@
    "usize": 484
   },
   {
-   "name": "_ZN9PlayerEgo4rollEi",
-   "pct": 27.3,
-   "byte": false,
-   "linked": false,
-   "osize": 500,
-   "usize": 256
-  },
-  {
    "name": "zip_unchange_all",
    "pct": 27.3,
    "byte": false,
@@ -7308,6 +7300,14 @@
    "linked": false,
    "osize": 156,
    "usize": 108
+  },
+  {
+   "name": "_ZN9PlayerEgo4rollEi",
+   "pct": 30.3,
+   "byte": false,
+   "linked": false,
+   "osize": 500,
+   "usize": 256
   },
   {
    "name": "zip_stat_init",
@@ -14516,14 +14516,6 @@
    "linked": false,
    "osize": 12,
    "usize": 10
-  },
-  {
-   "name": "_ZN9PlayerEgo14alignToHorizonEv",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 8,
-   "usize": 8
   },
   {
    "name": "_ZN9PlayerEgo16isBoostRefreshedEv",
@@ -34596,6 +34588,14 @@
    "linked": true,
    "osize": 18,
    "usize": 18
+  },
+  {
+   "name": "_ZN9PlayerEgo14alignToHorizonEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 8,
+   "usize": 8
   },
   {
    "name": "_ZN9PlayerEgo14explosionEndedEv",
