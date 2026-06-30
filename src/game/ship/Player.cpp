@@ -829,7 +829,7 @@ void Player::reset() {
     self->gammaHit = 0;
     self->bombForce = 0;
     self->empForce = 0;
-    (self->pad_dd[0]) = 0;
+    (((uint8_t *) &self->field_dc)[1]) = 0; // byte @0xdd (field_dc is int@0xdc)
     (((uint8_t *) &self->empForce)[1]) = 0;
 }
 

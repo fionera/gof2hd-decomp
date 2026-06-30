@@ -91,8 +91,7 @@ public:
     KIPlayer *kiPlayer;
     float bombForce;
     float empForce;
-    uint8_t field_dc;
-    uint8_t pad_dd[3];
+    int32_t field_dc; // ASM (resetDamageDoneByPlayer): written via str (word), not strb; absorbs pad_dd
     uint8_t turnedEnemyFlag;
     uint8_t pad_e1[3];
     int32_t empData;
