@@ -11,15 +11,15 @@
 
 void MatrixRotateVector(Vector &out, const Matrix &matrix, const Vector &vec);
 
-void MatrixGetDir(Vector &out, const Matrix &matrix);
+static inline void MatrixGetDir(Vector &out, const Matrix &matrix) { out = AbyssEngine::AEMath::MatrixGetDir(matrix); }
 
-void VectorCross(Vector &out, const Vector &a, const Vector &b);
+static inline void VectorCross(Vector &out, const Vector &a, const Vector &b) { out = AbyssEngine::AEMath::VectorCross(a, b); }
 
-void VectorNormalize(Vector &out, const Vector &in);
+static inline void VectorNormalize(Vector &out, const Vector &in) { out = AbyssEngine::AEMath::VectorNormalize(in); }
 
 void VectorRotateToTarget(Vector &out, const Vector &in);
 
-void VectorScale(Vector &out, const Vector &in, float scale);
+static inline void VectorScale(Vector &out, const Vector &in, float scale) { out.x=in.x*scale; out.y=in.y*scale; out.z=in.z*scale; }
 
 namespace AbyssEngine {
     namespace AEMath {

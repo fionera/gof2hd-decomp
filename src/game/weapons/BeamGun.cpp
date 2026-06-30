@@ -21,7 +21,7 @@ Transform *BeamGun_canvasTransform(PaintCanvas *canvas, uint32_t transformId);
 
 void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector);
 
-void MatrixGetDir(Vector *out, const Matrix *matrix);
+static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
 
 static PaintCanvas **BeamGun_canvas = nullptr;
 

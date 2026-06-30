@@ -67,9 +67,9 @@ void *CameraGetCurrent(void *canvas); // lint: void_ptr free-function signature,
 
 void *CameraGetLocal(void *canvas, void *camera); // lint: void_ptr free-function signature, retype changes mangling
 
-void MatrixGetDir(Vector *out, const Matrix *matrix);
+static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
 
-void MatrixGetUp(Vector *out, const Matrix *matrix);
+static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
 
 void MatrixSetRotation(Matrix *dst, float x, float y, float z);
 

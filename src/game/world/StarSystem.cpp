@@ -35,7 +35,7 @@ void *Array_Station_dtor(void *array); // lint: void_ptr (external symbol; mangl
 
 void MatrixGetPosition(Vector *out, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
 
-void MatrixGetUp(Vector *out, const Matrix *matrix);
+static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
 
 void MatrixGetLookAt(Matrix *out, const Vector *from, const Vector *to, const Vector *up);
 

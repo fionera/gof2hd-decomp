@@ -13,15 +13,15 @@ void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float an
 
 float VectorLength(const Vector *self);
 
-void MatrixGetPosition(Vector *out, const Matrix *matrix);
+static inline void MatrixGetPosition(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetPosition(*matrix); }
 
 void MatrixSetTranslation(Matrix *out, Matrix *base, float x, float y, float z);
 
 void MatrixSetScaling(Matrix *out, Matrix *base, float x, float y, float z);
 
-void MatrixGetUp(Vector *out, const Matrix *matrix);
+static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
 
-void MatrixGetDir(Vector *out, const Matrix *matrix);
+static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
 
 void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
 
