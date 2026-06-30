@@ -1,4 +1,5 @@
 #include "game/menu/MGame.h"
+#include <new>
 #include "game/core/Radio.h"
 #include "game/core/RadioMessage.h"
 #include "game/core/Globals.h"
@@ -1811,7 +1812,7 @@ void MGame::pauseSounds() {
     }
 }
 
-void Radio_ctor(Radio * r);
+static inline void Radio_ctor(Radio *r) { new(r) Radio(); }
 
 unsigned char *TargetFollowCamera_dtor(TargetFollowCamera * c);
 

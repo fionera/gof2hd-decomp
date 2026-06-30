@@ -1,4 +1,5 @@
 #include "game/weapons/Gun.h"
+#include <new>
 #include "engine/core/AERandom.h"
 #include <cstdint>
 #include "game/ship/Player.h"
@@ -47,7 +48,7 @@ namespace {
 
 typedef Array<Vector> VecArray;
 
-void Gun_VecArray_ctor(VecArray *a);
+static inline void Gun_VecArray_ctor(VecArray *a) { new(a) VecArray(); }
 
 void Gun_VecPtrArray_ctor(Array<int> * a);
 
