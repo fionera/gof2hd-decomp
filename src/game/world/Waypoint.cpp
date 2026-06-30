@@ -18,7 +18,7 @@ Vector Waypoint::getPosition() {
 }
 
 void Waypoint::reset() {
-    this->state = 0;
+    reinterpret_cast<uint8_t &>(this->state) = 0; // ASM: original writes the low byte (strb), not strh
     ((Player *) this->player)->setActive(false);
 }
 
