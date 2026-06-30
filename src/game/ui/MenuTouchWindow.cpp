@@ -231,13 +231,13 @@ void *_mtw_RecordHandler_dtor(void *rh); // lint: void_ptr (external symbol; par
 
 void *_mtw_GameRecord_dtor(void *gr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_GameRecord_load(void *gr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void _mtw_GameRecord_load(void *gr) { ((GameRecord*)gr)->load(); }
 
 void _mtw_ChoiceWindow_set(void *cw, void *s, bool b);
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_AppMgr_GetApplicationModule(void *app, int id);
+static inline void *_mtw_AppMgr_GetApplicationModule(void *app, int id) { return ((AbyssEngine::ApplicationManager*)app)->GetApplicationModule(id); }
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -273,7 +273,7 @@ void _mtw_createRecordButtons(void *self, bool b);
 
 void *_mtw_AppMgr_GetApplicationData(); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_AppMgr_GetEngine(); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void *_mtw_AppMgr_GetEngine() { return GetEngine(); }
 
 void _mtw_ChoiceWindow_set(void *cw, void *s); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
