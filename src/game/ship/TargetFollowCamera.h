@@ -151,7 +151,7 @@ public:
 
     unsigned char isInFastForwardMode();
 
-    bool hideShipForFirstPersonCam();
+    unsigned char hideShipForFirstPersonCam();
 
     void update(int dt);
 };

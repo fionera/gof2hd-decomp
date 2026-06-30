@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.43,
-  "byte_exact": 1089,
-  "linked_exact": 1946,
-  "fuzzy_perfect": 1946,
+  "avg_match": 69.44,
+  "byte_exact": 1090,
+  "linked_exact": 1947,
+  "fuzzy_perfect": 1947,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -2734,6 +2734,14 @@
    "usize": 48
   },
   {
+   "name": "_ZN3Hud10catchCargoEiibbbbb",
+   "pct": 9.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1164,
+   "usize": 1208
+  },
+  {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
    "pct": 9.3,
    "byte": false,
@@ -2828,14 +2836,6 @@
    "linked": false,
    "osize": 144,
    "usize": 58
-  },
-  {
-   "name": "_ZN3Hud10catchCargoEiibbbbb",
-   "pct": 10.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1164,
-   "usize": 1208
   },
   {
    "name": "_ZN7StarMap6renderEv",
@@ -12412,14 +12412,6 @@
    "linked": false,
    "osize": 36,
    "usize": 14
-  },
-  {
-   "name": "_ZN18TargetFollowCamera25hideShipForFirstPersonCamEv",
-   "pct": 57.1,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 12
   },
   {
    "name": "_ZN4Ship8setCargoEP5ArrayIP4ItemE",
@@ -28583,6 +28575,14 @@
   },
   {
    "name": "_ZN18TargetFollowCamera23setRotationAroundTargetEb",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
+   "name": "_ZN18TargetFollowCamera25hideShipForFirstPersonCamEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,

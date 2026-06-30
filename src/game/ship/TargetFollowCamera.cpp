@@ -105,7 +105,7 @@ void TargetFollowCamera::useTargetsUpVector(bool e) { this->useTargetsUpVec = e;
 
 unsigned char TargetFollowCamera::isInLookAtMode() { return this->lookAtCam; }
 unsigned char TargetFollowCamera::isInFastForwardMode() { return this->fastForward; }
-bool TargetFollowCamera::hideShipForFirstPersonCam() { return this->hideShip != 0; }
+unsigned char TargetFollowCamera::hideShipForFirstPersonCam() { return this->hideShip; }
 
 void TargetFollowCamera::setFirstPersonMatrix(Matrix &m) { this->firstPersonMatrix = m; }
 
