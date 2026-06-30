@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.55,
-  "byte_exact": 1094,
-  "linked_exact": 1957,
-  "fuzzy_perfect": 1957,
+  "avg_match": 69.56,
+  "byte_exact": 1095,
+  "linked_exact": 1958,
+  "fuzzy_perfect": 1958,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -1523,7 +1523,7 @@
    "byte": false,
    "linked": false,
    "osize": 8332,
-   "usize": 244
+   "usize": 248
   },
   {
    "name": "_ZN11LevelScriptC2EP5LevelP3HudP5RadarP18TargetFollowCamera",
@@ -1531,7 +1531,7 @@
    "byte": false,
    "linked": false,
    "osize": 8332,
-   "usize": 244
+   "usize": 248
   },
   {
    "name": "inflate",
@@ -10980,14 +10980,6 @@
    "linked": false,
    "osize": 180,
    "usize": 160
-  },
-  {
-   "name": "_ZN11LevelScript17startSequenceOverEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 6
   },
   {
    "name": "_ZN11ModMainMenu10OnKeyPressExx",
@@ -25847,6 +25839,14 @@
   },
   {
    "name": "_ZN11LevelScript13startSequenceEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
+   "name": "_ZN11LevelScript17startSequenceOverEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,

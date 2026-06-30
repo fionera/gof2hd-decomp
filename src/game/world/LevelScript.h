@@ -25,7 +25,7 @@ public:
     TargetFollowCamera *m_pCamera;
     Level *m_pLevel;
     int m_nState;
-    uint16_t m_bStartSequence;
+    uint8_t m_bStartSequence; // ASM (resetStartSequenceOver): m_bStartSequenceOver is at 0x21, so this is 1 byte
     uint8_t m_bStartSequenceOver;
     int field_0x24;
     int field_0x28;
