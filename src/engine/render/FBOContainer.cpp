@@ -4,8 +4,8 @@
 
 namespace AbyssEngine {
     FBOContainer::FBOContainer(Engine *engine, String name) {
-        this->created = 0;
         this->field_0x28 = 0;
+        this->created = 0;
         this->framebuffer = 0;
         this->texture = 0;
         this->renderbuffer = 0;
