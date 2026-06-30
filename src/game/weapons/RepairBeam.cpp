@@ -32,7 +32,7 @@ static char **g_RB_sndFlag;
 
 PlayerEgo *RB_Level_getPlayer(Level * level);
 
-int RB_PlayerEgo_isDead(PlayerEgo * ego);
+static inline int RB_PlayerEgo_isDead(PlayerEgo *ego) { return ego->isDead(); }
 
 int RB_Status_getShip();
 
@@ -42,9 +42,9 @@ int RB_Ship_getIndex();
 
 int RB_Item_getAttribute(int item);
 
-int RB_KIPlayer_isDead(KIPlayer * kp);
+static inline int RB_KIPlayer_isDead(KIPlayer *kp) { return kp->isDead(); }
 
-int RB_KIPlayer_isDying(KIPlayer * kp);
+static inline int RB_KIPlayer_isDying(KIPlayer *kp) { return kp->isDying(); }
 
 int RB_Player_getHitpoints();
 

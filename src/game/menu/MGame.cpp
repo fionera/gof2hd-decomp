@@ -65,7 +65,7 @@ void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 
 uint8_t TFC_isInLookAtMode(TargetFollowCamera * c);
 
-void TFC_setLookAtCam(TargetFollowCamera *c, int v);
+static inline void TFC_setLookAtCam(TargetFollowCamera *c, int v) { c->setLookAtCam(v); }
 
 void Cam_setCinematic(TargetFollowCamera *c, int on);
 
@@ -208,13 +208,13 @@ void MGame::OnRender3D() {
     return Globals::Canvas->End3d();
 }
 
-void TFC_setActive(TargetFollowCamera *c, int v);
+static inline void TFC_setActive(TargetFollowCamera *c, int v) { c->setActive(v); }
 
 float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);
 
 void FModSound_setProp(int snd, int id);
 
-void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z);
+static inline void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z) { c->setPosition(x, y, z); }
 
 static int *g_jsSound;
 
@@ -1404,7 +1404,7 @@ int MGame::OnInitialize() {
     return 0;
 }
 
-void TFC_zoomTarget(TargetFollowCamera *cam, float z);
+static inline void TFC_zoomTarget(TargetFollowCamera *cam, float z) { cam->zoomTarget(z); }
 
 static float g_fcRotScale;
 
@@ -2183,7 +2183,7 @@ void MGame::setCinematicMode(bool on) {
     }
 }
 
-void TFC_translate(TargetFollowCamera *cam, int x, int y, int z);
+static inline void TFC_translate(TargetFollowCamera *cam, int x, int y, int z) { cam->translate(x, y, z); }
 
 Vector *TFC_getPosition(TargetFollowCamera * cam);
 
