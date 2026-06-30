@@ -220,7 +220,7 @@ float PE_roll_bankFactor(PlayerEgo *self, float rx, float ry, float *outZ);
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void hitCamera_(PlayerEgo * self);
+static inline void hitCamera_(PlayerEgo *self) { self->hitCamera(); }
 
 void PE_cc_wormhole(PlayerEgo *self, void *obj);
 
