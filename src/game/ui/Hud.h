@@ -91,10 +91,10 @@ public:
     unsigned char quickMenuOpen;
     unsigned char quickMenuEmpty;
     unsigned int touchFlags;
-    unsigned char autoTurretFlags;
     int field_0x288;
     Array<void *> *keyArray; // lint: void_ptr (opaque touch-handle element type; matches exported void* touchId)
     int *elementBits;
+    unsigned char autoTurretFlags; // ASM (releaseAllKeys): field_0x288@0x288, so autoTurretFlags is after elementBits
     int quickMenuTopImage;
     int quickMenuBottomImage;
     int quickMenuMiddleImage;

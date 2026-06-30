@@ -4,9 +4,9 @@
   "ours_functions": 4540,
   "compared": 4507,
   "avg_match": 69.63,
-  "byte_exact": 1098,
-  "linked_exact": 1962,
-  "fuzzy_perfect": 1962,
+  "byte_exact": 1099,
+  "linked_exact": 1963,
+  "fuzzy_perfect": 1963,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -2326,14 +2326,6 @@
    "usize": 200
   },
   {
-   "name": "_ZN3Hud4initEv",
-   "pct": 7.0,
-   "byte": false,
-   "linked": false,
-   "osize": 3464,
-   "usize": 256
-  },
-  {
    "name": "_ZN11AbyssEngine16MeshConvertToVBOEPNS_4MeshE",
    "pct": 7.1,
    "byte": false,
@@ -2356,6 +2348,14 @@
    "linked": false,
    "osize": 1948,
    "usize": 200
+  },
+  {
+   "name": "_ZN3Hud4initEv",
+   "pct": 7.1,
+   "byte": false,
+   "linked": false,
+   "osize": 3464,
+   "usize": 256
   },
   {
    "name": "_ZN9PlayerEgo17setTurretPositionEN11AbyssEngine6AEMath6VectorE",
@@ -8174,14 +8174,6 @@
    "usize": 104
   },
   {
-   "name": "_ZN3Hud10touchBeginEjjPv",
-   "pct": 35.4,
-   "byte": false,
-   "linked": false,
-   "osize": 186,
-   "usize": 186
-  },
-  {
    "name": "_ZN6Player5shootEixbN11AbyssEngine6AEMath6MatrixE",
    "pct": 35.4,
    "byte": false,
@@ -8436,6 +8428,14 @@
    "linked": false,
    "osize": 68,
    "usize": 78
+  },
+  {
+   "name": "_ZN3Hud10touchBeginEjjPv",
+   "pct": 36.9,
+   "byte": false,
+   "linked": false,
+   "osize": 186,
+   "usize": 186
   },
   {
    "name": "_ZN9Generator11getLootListEii",
@@ -14830,14 +14830,6 @@
    "usize": 94
   },
   {
-   "name": "_ZN3Hud9touchMoveEjjPv",
-   "pct": 69.6,
-   "byte": false,
-   "linked": false,
-   "osize": 204,
-   "usize": 204
-  },
-  {
    "name": "_ZN6AEFile13GetAppRootDirEv",
    "pct": 69.6,
    "byte": false,
@@ -15204,6 +15196,14 @@
    "linked": false,
    "osize": 64,
    "usize": 64
+  },
+  {
+   "name": "_ZN3Hud9touchMoveEjjPv",
+   "pct": 72.5,
+   "byte": false,
+   "linked": false,
+   "osize": 204,
+   "usize": 204
   },
   {
    "name": "_ZN11AbyssEngine12BumpShaderV24InitEPNS_6EngineE",
@@ -17414,14 +17414,6 @@
    "usize": 88
   },
   {
-   "name": "_ZN3Hud14releaseAllKeysEv",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 52
-  },
-  {
    "name": "_ZN3Hud15setTimeExtenderEbbbb",
    "pct": 83.3,
    "byte": false,
@@ -19086,14 +19078,6 @@
    "usize": 380
   },
   {
-   "name": "_ZN3Hud8touchEndEjjPv",
-   "pct": 91.1,
-   "byte": false,
-   "linked": false,
-   "osize": 118,
-   "usize": 118
-  },
-  {
    "name": "_ZN13PlayerFighter12outerCollideEfff",
    "pct": 91.2,
    "byte": false,
@@ -20164,6 +20148,14 @@
    "linked": false,
    "osize": 208,
    "usize": 208
+  },
+  {
+   "name": "_ZN3Hud8touchEndEjjPv",
+   "pct": 97.8,
+   "byte": false,
+   "linked": false,
+   "osize": 118,
+   "usize": 118
   },
   {
    "name": "_ZN5AgentC1EiN11AbyssEngine6StringEiiibiiii",
@@ -28868,6 +28860,14 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN3Hud14releaseAllKeysEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN3Hud19isHackingGameActiveEv",
