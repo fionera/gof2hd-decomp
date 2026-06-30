@@ -241,6 +241,9 @@ public:
     AbyssEngine::AEMath::Vector facingVec;
     SpacePoint *navPoint;
     uint8_t autoTurretEnabled;
+    // ASM: dockedFlag readers (isDocked*/isLanding*) load it at [this,#854]=0x356; ours had it @0x355.
+    // A byte field precedes it; easeMatrix@0x358 is pointer-aligned so the byte is absorbed by padding.
+    uint8_t field_0x355;
     uint8_t dockedFlag;
     AbyssEngine::EaseInOutMatrix *easeMatrix;
     int dockTotalAmount;
