@@ -258,7 +258,7 @@ public:
 
     Vector getHitVector();
 
-    int replaceGuns(int a, int b, int c, int d, int e, bool f);
+    void replaceGuns(int a, int b, int c, int d, int e, bool f);
 
     bool isAsteroid();
 

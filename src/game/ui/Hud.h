@@ -290,7 +290,7 @@ public:
 
     void updateSecondaryWeaponString();
 
-    bool drawTitleImage(bool visible);
+    void drawTitleImage(bool visible);
 
     static int RADAR_WIDTH;
     static int RADAR_HEIGHT;

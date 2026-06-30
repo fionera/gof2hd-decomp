@@ -310,9 +310,7 @@ namespace AbyssEngine {
         InternUpdate(time, updateBounds);
     }
 
-    int Transform::DebugOut(int value) {
-        return value;
-    }
+    void Transform::DebugOut(int value) {}
 
     Transform::Transform(Transform *other) {
         this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};

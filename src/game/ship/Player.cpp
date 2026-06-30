@@ -121,9 +121,7 @@ int Player::getShieldDamageRate() {
     return this->shieldDamageRate;
 }
 
-int Player::replaceGuns(int a, int b, int c, int d, int e, bool f) {
-    return a;
-}
+void Player::replaceGuns(int a, int b, int c, int d, int e, bool f) {}
 
 int Player::getShieldHP() {
     return (int) this->shieldHP;

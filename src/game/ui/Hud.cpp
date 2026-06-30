@@ -1689,9 +1689,7 @@ Hud::~Hud() {
     this->uintArray = 0;
 }
 
-bool Hud::drawTitleImage(bool visible) {
-    return visible;
-}
+void Hud::drawTitleImage(bool visible) {}
 
 int Hud::RADAR_WIDTH;
 int Hud::RADAR_HEIGHT;

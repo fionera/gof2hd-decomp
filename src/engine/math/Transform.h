@@ -113,7 +113,7 @@ namespace AbyssEngine {
 
         void InternUpdate(longlong time, bool updateBounds);
 
-        int DebugOut(int value);
+        void DebugOut(int value);
 
         void SetAnimationState(AnimationMode, void *); // lint: void_ptr method parameter baked into mangled symbol
 
