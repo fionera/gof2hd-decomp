@@ -254,17 +254,13 @@ int Mission::getTargetStation() {
     return this->targetStation;
 }
 
-bool Mission::hasFailed() {
-    return this->failed != 0;
-}
+unsigned char Mission::hasFailed() { return this->failed; }
 
 void Mission::setFailed(bool failed) {
     this->failed = failed ? 1 : 0;
 }
 
-bool Mission::hasWon() {
-    return this->won != 0;
-}
+unsigned char Mission::hasWon() { return this->won; }
 
 void Mission::setWon(bool won) {
     this->won = won ? 1 : 0;

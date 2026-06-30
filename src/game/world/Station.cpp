@@ -72,7 +72,7 @@ int Station::getIndex() { return index; }
 int Station::getSystem() { return systemIndex; }
 int Station::getTecLevel() { return techLevel; }
 int Station::getTextureIndex() { return textureIndex; }
-bool Station::isPlanet() { return planet; }
+unsigned char Station::isPlanet() { return planet; }
 String Station::getName() { return name; }
 
 Array<Agent *> *Station::getAgents() { return agents; }

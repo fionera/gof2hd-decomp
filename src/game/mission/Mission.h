@@ -120,11 +120,11 @@ public:
 
     int getTargetStation();
 
-    bool hasFailed();
+    unsigned char hasFailed();
 
     void setFailed(bool failed);
 
-    bool hasWon();
+    unsigned char hasWon();
 
     void setWon(bool won);
 
