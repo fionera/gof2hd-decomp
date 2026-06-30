@@ -2433,7 +2433,7 @@ MGame::MGame() {
     this->field_0x1e0 = z;
 }
 
-unsigned char *Radio_dtor(Radio * p);
+static inline unsigned char *Radio_dtor(Radio *p) { p->~Radio(); return (unsigned char*)p; }
 
 unsigned char *DialogueWindow_dtor(DialogueWindow * p);
 

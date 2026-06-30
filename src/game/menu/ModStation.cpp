@@ -113,7 +113,7 @@ unsigned char *Array_TB_dtor(int *p);
 
 unsigned char *HangarWindow_dtor(HangarWindow *p);
 
-unsigned char *StarMap_dtor(StarMap * p);
+static inline unsigned char *StarMap_dtor(StarMap *p) { p->~StarMap(); return (unsigned char*)p; }
 
 unsigned char *MissionsWindow_dtor(DialogueWindow * p);
 
@@ -125,7 +125,7 @@ unsigned char *StatusWindow_dtor(StatusWindow *p);
 
 unsigned char *CutScene_dtor(CutScene * p);
 
-unsigned char *Radio_dtor(Radio * p);
+static inline unsigned char *Radio_dtor(Radio *p) { p->~Radio(); return (unsigned char*)p; }
 
 unsigned char *Array_RM_dtor(Array<Radio *> * p);
 
