@@ -141,125 +141,70 @@ public:
 
     virtual ~KIPlayer();
 
-    void PauseEngineSound();
-
-    void PlayEngineSound();
-
-    void ResumeEngineSound();
-
-    void StopEngineSound();
-
-    virtual void awake();
-
-    void captureCrate(Hud *hud);
-
-    int cargoAvailable();
-
-    void createCrate(int type);
-
-    SpacePoint *getNearestDockingPoint(const Vector &dir);
-
-    SpacePoint *getNearestNavigationPoint(const Vector &dir, SpacePoint *target);
-
-    virtual Vector getPosition();
-
-    int getSpeed();
-
-    int getType();
-
-    bool isDead();
-
-    bool isDocked();
-
-    bool isDying();
-
-    uint8_t isEnemy();
-
-    uint8_t isJumper();
-
-    uint8_t isVisible();
-
-    uint8_t isWingMan();
-
-    void jump();
-
-    virtual int collide(float x, float y, float z);
-
-    virtual int outerCollide(const Vector &v);
-
-    virtual int outerCollide(float x, float y, float z);
-
-    virtual void render();
-
-    virtual void update(int dt);
-
-    void reset();
-
-    void setActive(bool active);
-
-    void setDead();
-
-    void setEnemies(Array<Player *> *enemies);
-
-    void setInitActive(bool active);
-
-    void setJumpSphere(uint32_t sphere);
-
-    void setJumper(bool b);
-
-    virtual void setPosition(float x, float y, float z);
-
-    void setPosition(const Vector &v);
-
-    void setRotationSpeed(float speed);
-
-    void setRoute(Route *route);
-
+    // Virtual methods in EXACT original vtable order (verified via _ZTV PlayerJumpgate ABS32 relocs;
+    // setPosition(fff)@vtable#72 matches translate's ldr[vtable+72]). getSpeed/getCollisionNormal/
+    // setState/setPosition(Vector) are virtual in the original.
     virtual void setShipGroup(AEGeometry *geom, int group, bool flag);
-
-    void setSpacePoints(Array<SpacePoint *> *pts);
-
-    void setState(int state);
-
-    void setToSleep();
-
-    void setVisible(bool visible);
-
-    void setWingman(bool b, int cmd);
-
+    virtual void awake();
     virtual void setWingmanCommand(int cmd, KIPlayer *target);
-
-    virtual void setSpeed(float v);
-
-    virtual void revive();
-
-    virtual void push(int dt);
-
-    virtual void translate(const Vector &v);
-
-    virtual void initPush(const Vector &target, int radius);
-
-    Route *getRoute();
-
-    Array<SpacePoint *> *getSpacePoints();
-
     virtual void setLevel(Level *lvl);
-
-    void addGun(Gun *gun, int slot);
-
-    void addGun(Array<Gun *> *guns, int slot);
-
-    int levelCollision(Vector *out, long long flags);
-
-    void enableExplosion();
-
-    void setInitialRotation(Vector rotation);
-
+    virtual void revive();
+    virtual void setSpeed(float v);
+    virtual void translate(const Vector &v);
+    virtual void render();
+    virtual Vector getPosition();
+    virtual void initPush(const Vector &target, int radius);
+    virtual void push(int dt);
+    virtual void update(int dt);
+    virtual int collide(float x, float y, float z);
+    virtual int outerCollide(float x, float y, float z);
+    virtual int outerCollide(const Vector &v);
+    virtual void setPosition(const Vector &v);
+    virtual void setPosition(float x, float y, float z);
+    virtual int getSpeed();
     virtual Vector getProjectionVector(const Vector &v);
-
-    Vector getCollisionNormal(const Vector &position);
-
+    virtual Vector getCollisionNormal(const Vector &position);
     virtual Vector projectCollisionOnSurface(const Vector &position);
+    virtual void setState(int state);
+
+    void PauseEngineSound();
+    void PlayEngineSound();
+    void ResumeEngineSound();
+    void StopEngineSound();
+    void captureCrate(Hud *hud);
+    int cargoAvailable();
+    void createCrate(int type);
+    SpacePoint *getNearestDockingPoint(const Vector &dir);
+    SpacePoint *getNearestNavigationPoint(const Vector &dir, SpacePoint *target);
+    int getType();
+    bool isDead();
+    bool isDocked();
+    bool isDying();
+    uint8_t isEnemy();
+    uint8_t isJumper();
+    uint8_t isVisible();
+    uint8_t isWingMan();
+    void jump();
+    void reset();
+    void setActive(bool active);
+    void setDead();
+    void setEnemies(Array<Player *> *enemies);
+    void setInitActive(bool active);
+    void setJumpSphere(uint32_t sphere);
+    void setJumper(bool b);
+    void setRotationSpeed(float speed);
+    void setRoute(Route *route);
+    void setSpacePoints(Array<SpacePoint *> *pts);
+    void setToSleep();
+    void setVisible(bool visible);
+    void setWingman(bool b, int cmd);
+    Route *getRoute();
+    Array<SpacePoint *> *getSpacePoints();
+    void addGun(Gun *gun, int slot);
+    void addGun(Array<Gun *> *guns, int slot);
+    int levelCollision(Vector *out, long long flags);
+    void enableExplosion();
+    void setInitialRotation(Vector rotation);
 };
 
 #if __SIZEOF_POINTER__ == 4
