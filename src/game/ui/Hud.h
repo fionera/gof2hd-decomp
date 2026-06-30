@@ -53,17 +53,21 @@ public:
     int eventLineX;
     int eventLineY;
     int factionLogoImage;
+    uint8_t _hudrealign_0x118[184]; // realign field_0x1d0 to 0x1d0
     int field_0x1d0;
     int eventScrollTick;
     unsigned char eventScrolls;
+    uint8_t _hudrealign_0x1dc[4]; // realign field_0x1e0 to 0x1e0
     String field_0x1e0;
     unsigned char letterbox;
+    uint8_t _hudrealign_0x1f0[4]; // realign field_0x1f4 to 0x1f4
     String field_0x1f4;
     String field_0x200;
     unsigned char hasBoostButton;
     unsigned char hasShieldBar;
     unsigned char hasArmorRegen;
     unsigned char hasAutofireUI;
+    uint8_t _hudrealign_0x210[24]; // realign field_0x228 to 0x228
     String field_0x228;
     unsigned char cargoFullFlag;
     Level *menuLevel;
@@ -75,6 +79,7 @@ public:
     unsigned char eventQueueDirty;
     int eventQueuePaused;
     unsigned char jumpMapSelectedFlag;
+    uint8_t _hudrealign_0x259[28]; // realign field_0x275 to 0x275
     unsigned char field_0x275;
     unsigned short field_0x276;
     unsigned short weaponSelectState;
@@ -117,6 +122,7 @@ public:
     int quickMenuHeaderImage;
     int fuelGaugeIconImage;
     int fuelGaugeBarImage;
+    uint8_t _hudrealign_0x304[176]; // realign field_0x3b4 to 0x3b4
     String field_0x3b4;
     int secondaryLabelX;
     int field_0x3c4;
@@ -130,20 +136,28 @@ public:
     unsigned short field_0x3e2;
     unsigned short field_0x3e4;
     unsigned short field_0x3e6;
+    uint8_t _hudrealign_0x3e8[4]; // realign field_0x3ec to 0x3ec
     unsigned short field_0x3ec;
     unsigned short field_0x3ee;
+    uint8_t _hudrealign_0x3f0[2]; // realign field_0x3f2 to 0x3f2
     unsigned short field_0x3f2;
     unsigned short field_0x3f4;
+    uint8_t _hudrealign_0x3f6[2]; // realign field_0x3f8 to 0x3f8
     unsigned short field_0x3f8;
     unsigned short field_0x3fa;
+    uint8_t _hudrealign_0x3fc[2]; // realign field_0x3fe to 0x3fe
     unsigned short field_0x3fe;
     unsigned short field_0x400;
+    uint8_t _hudrealign_0x402[2]; // realign field_0x404 to 0x404
     unsigned short field_0x404;
     unsigned short field_0x406;
+    uint8_t _hudrealign_0x408[2]; // realign field_0x40a to 0x40a
     unsigned short field_0x40a;
     unsigned short field_0x40c;
+    uint8_t _hudrealign_0x40e[2]; // realign field_0x410 to 0x410
     unsigned short field_0x410;
     unsigned short field_0x412;
+    uint8_t _hudrealign_0x414[2]; // realign field_0x416 to 0x416
     unsigned short field_0x416;
     unsigned short field_0x418;
     unsigned short field_0x41a;
@@ -152,8 +166,11 @@ public:
     unsigned short lockBracketY;
     unsigned short reticleX;
     unsigned short reticleY;
+    uint8_t _hudrealign_0x426[6]; // realign field_0x42c to 0x42c
     unsigned short field_0x42c;
+    uint8_t _hudrealign_0x42e[10]; // realign field_0x438 to 0x438
     unsigned short field_0x438;
+    uint8_t _hudrealign_0x43a[2]; // realign field_0x43c to 0x43c
     unsigned short field_0x43c;
     unsigned short field_0x43e;
     unsigned short field_0x440;
@@ -163,12 +180,15 @@ public:
     unsigned short field_0x448;
     unsigned short field_0x44a;
     unsigned short field_0x44c;
+    uint8_t _hudrealign_0x44e[6]; // realign field_0x454 to 0x454
     unsigned short field_0x454;
     unsigned short field_0x456;
     unsigned short field_0x458;
     unsigned short field_0x45a;
+    uint8_t _hudrealign_0x45c[2]; // realign field_0x45e to 0x45e
     unsigned short field_0x45e;
     unsigned short field_0x460;
+    uint8_t _hudrealign_0x464[4]; // realign field_0x468 to 0x468
     int field_0x468;
     int hitFlashTimer;
     int field_0x470;
@@ -186,6 +206,7 @@ public:
     int eventLineMarginAlt;
     int secondaryLabelTimerSeed;
     int secondaryLabelTimer;
+    uint8_t _hudrealign_0x4a8[116]; // realign field_0x51c to 0x51c
     String field_0x51c;
     unsigned char hackingGameActive;
     int cargoAggregateCount;
