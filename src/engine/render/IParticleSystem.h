@@ -31,6 +31,9 @@ public:
     int32_t field_0x2c;
     int32_t field_0x30;
     uint32_t flags;
+    // Ghidra: the particleSets inline-array capacity sits @0x40 between particleSets(=flags slot) and
+    // particleSetIndex@0x44; our decomp lacked it, shifting particleSetIndex.. 4 bytes low.
+    uint32_t particleSets_cap;
     uint8_t particleSetIndex;
     uint8_t alphaFade;
     int32_t maxParticles;
