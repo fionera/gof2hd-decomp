@@ -8,6 +8,7 @@
 #include "game/ui/Layout.h"
 #include "game/mission/Status.h"
 #include "game/mission/RecordHandler.h"
+#include "engine/audio/FModSound.h"
 #include "game/ship/ShipDefTable.h"
 #include "game/core/GameSettings.h"
 #include <math.h>
@@ -55,7 +56,7 @@ static_assert(offsetof(MtwAppData, purchaseCode) == 0x48, "appdata 0x48");
 static_assert(offsetof(MtwAppData, dlcMenuAckFlag) == 0x4c, "appdata 0x4c");
 #endif
 
-void *_mtw_GameText_getText(void *gt, int id); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void *_mtw_GameText_getText(void *gt, int id) { return ((GameText*)gt)->getText(id); }
 
 void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b);
 
@@ -71,7 +72,7 @@ int _mtw_ChoiceWindow_OnTouchEnd(void *cw, int y);
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_FModSound_resumeAll(void *snd); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void _mtw_FModSound_resumeAll(void *snd) { ((FModSound*)snd)->resumeAll(); }
 
 void _mtw_FModSound_stopAll();
 
