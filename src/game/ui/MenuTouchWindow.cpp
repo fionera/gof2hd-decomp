@@ -109,9 +109,9 @@ int _mtw_onTouchEnd_genericButtons(void *self, int y, int x, int fieldOff);
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_Array_TB_dtor(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void *_mtw_Array_TB_dtor(void *arr) { ((Array<TouchButton*>*)arr)->~Array(); return arr; }
 
-void *_mtw_Array_TS_dtor(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+static inline void *_mtw_Array_TS_dtor(void *arr) { ((Array<TouchSlider*>*)arr)->~Array(); return arr; }
 
 void *_mtw_Array_Str_dtor(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
