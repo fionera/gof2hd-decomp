@@ -2030,14 +2030,6 @@
    "usize": 1284
   },
   {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 5.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 904
-  },
-  {
    "name": "_Z21SendStoredKeyUpEventsPN11AbyssEngine6EngineE",
    "pct": 5.3,
    "byte": false,
@@ -2076,6 +2068,14 @@
    "linked": false,
    "osize": 58,
    "usize": 36
+  },
+  {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 5.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 904
   },
   {
    "name": "_ZN6Layout10drawFooterEbb",
@@ -4238,14 +4238,6 @@
    "usize": 1628
   },
   {
-   "name": "_ZN5Level15createAsteroidsEv",
-   "pct": 17.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1588,
-   "usize": 1328
-  },
-  {
    "name": "_ZN9PlayerEgo14checkForTurretEv",
    "pct": 17.7,
    "byte": false,
@@ -4276,6 +4268,14 @@
    "linked": false,
    "osize": 1872,
    "usize": 1204
+  },
+  {
+   "name": "_ZN5Level15createAsteroidsEv",
+   "pct": 17.9,
+   "byte": false,
+   "linked": false,
+   "osize": 1588,
+   "usize": 1328
   },
   {
    "name": "_ZN13RecordHandler21convertSDVersionSavesEv",
@@ -5551,7 +5551,7 @@
   },
   {
    "name": "_ZN18TargetFollowCamera6updateEi",
-   "pct": 21.9,
+   "pct": 21.8,
    "byte": false,
    "linked": false,
    "osize": 2104,
@@ -7078,6 +7078,14 @@
    "usize": 264
   },
   {
+   "name": "_ZN5Radar12calcDistanceEffffff",
+   "pct": 28.9,
+   "byte": false,
+   "linked": false,
+   "osize": 624,
+   "usize": 440
+  },
+  {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjii",
    "pct": 29.1,
    "byte": false,
@@ -7180,14 +7188,6 @@
    "linked": false,
    "osize": 92,
    "usize": 62
-  },
-  {
-   "name": "_ZN5Radar12calcDistanceEffffff",
-   "pct": 29.5,
-   "byte": false,
-   "linked": false,
-   "osize": 624,
-   "usize": 440
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15FogSetParameterENS_7FogModeEfffj",

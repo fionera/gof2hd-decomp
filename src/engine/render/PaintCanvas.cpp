@@ -1292,7 +1292,7 @@ void paintcanvas_ext_font_set_spacing(void *, int); // lint: void_ptr (external 
 
 int paintcanvas_ext_get_width(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-int pc_GetWidth(AbyssEngine::PaintCanvas * self);
+static inline int pc_GetWidth(AbyssEngine::PaintCanvas *self) { return self->GetWidth(); }
 int pc_GetHeight(AbyssEngine::PaintCanvas * self);
 
 void pc_Camera_ctor(void *cam, float h, float w); // lint: void_ptr (external symbol; mangling must match lib)
