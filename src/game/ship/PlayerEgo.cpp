@@ -194,7 +194,7 @@ void PE_adp_apply(PlayerEgo * self);
 
 float PE_yawRampDelta(float rate, int frameTime);
 
-void Mat_assign(void *dst, const void *src);
+static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; }
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1861,7 +1861,6 @@ void Mat_identity(void *out, const void *src);
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void Mat_assign(void *dst, const void *src);
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
