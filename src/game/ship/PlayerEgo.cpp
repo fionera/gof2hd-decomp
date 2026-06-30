@@ -252,13 +252,13 @@ void PE_um_strafeTarget(PlayerEgo *self, float *out);
 
 void PE_um_strafeGlide(PlayerEgo * self);
 
-void Mat_getPosition(void *out, const void *m);
+static inline void Mat_getPosition(void *out, const void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); }
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void Mat_getUp(void *out, const void *m); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
+static inline void Mat_getUp(void *out, const void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetUp(*(const AbyssEngine::AEMath::Matrix*)m); }
 
-void Mat_getDir(void *out, const void *m); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
+static inline void Mat_getDir(void *out, const void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetDir(*(const AbyssEngine::AEMath::Matrix*)m); }
 
 void Mat_getLookAt(void *out, const void *eye, const void *dir, const void *up);
 
@@ -1864,7 +1864,7 @@ void Mat_identity(void *out, const void *src);
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void Mat_setRotation(void *out, float x, float y, float z);
+static inline void Mat_setRotation(void *out, float x, float y, float z) { AbyssEngine::AEMath::MatrixSetRotation(*(AbyssEngine::AEMath::Matrix*)out, x, y, z); }
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
