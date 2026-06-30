@@ -19,12 +19,14 @@ class BombGun : public RocketGun {
 public:
     uint32_t meshTransformId;
     float bankingAngle;
+    // ASM (BombGun::render + ctor stores @240/@244/@256): explosion@240 sits right after bankingAngle,
+    // before playerControlled — not 4 fields later. Reordering shifts explosion 0x252->0x240 (-12).
+    Explosion *explosion;
     uint8_t playerControlled;
     uint16_t meshId;
 
     AEGeometry *trailGeometry;
     PlayerEgo *player;
-    Explosion *explosion;
     uint32_t geometryTransformId;
     Vector detonationPosition;
     uint8_t detonationPending;
