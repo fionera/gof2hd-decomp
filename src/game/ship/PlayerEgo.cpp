@@ -284,7 +284,7 @@ void *TractorBeam_new(void *geo, int kind);
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void MatrixGetPosition(void *, void *); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
+static inline void MatrixGetPosition(void *out, void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); }
 
 void *MovingStars_ctor(void *self); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 

@@ -23,7 +23,7 @@ static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = Abyss
 
 static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
 
-void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
+static inline void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up) { *out = AbyssEngine::AEMath::MatrixGetLookAt(*position, *target, *up); }
 
 namespace {
     int Explosion_paintCanvas;

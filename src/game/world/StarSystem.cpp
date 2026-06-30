@@ -37,7 +37,7 @@ void MatrixGetPosition(Vector *out, void *matrix); // lint: void_ptr (external s
 
 static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
 
-void MatrixGetLookAt(Matrix *out, const Vector *from, const Vector *to, const Vector *up);
+static inline void MatrixGetLookAt(Matrix *out, const Vector *from, const Vector *to, const Vector *up) { *out = AbyssEngine::AEMath::MatrixGetLookAt(*from, *to, *up); }
 
 void MatrixSetScaling(Matrix *matrix, float x, float y, float z);
 

@@ -77,7 +77,7 @@ void MatrixSetTranslation(void *matrix, float x, float y, float z);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void VectorNormalize(Vector * out, Vector * value);
+static inline void VectorNormalize(Vector *out, Vector *value) { *out = AbyssEngine::AEMath::VectorNormalize(*value); }
 
 void EaseInOut_Update(void *ease, float dt); // lint: void_ptr (external symbol; mangling must match lib)
 
