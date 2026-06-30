@@ -173,11 +173,11 @@ public:
 
     void OnTouchMove(int x, int y, void *touch); // lint: void_ptr
 
-    int OnTouchBegin(int x, int y);
+    void OnTouchBegin(int x, int y);
 
-    int OnTouchEnd(int x, int y);
+    void OnTouchEnd(int x, int y);
 
-    int OnTouchMove(int x, int y);
+    void OnTouchMove(int x, int y);
 
     void OnUpdate();
 

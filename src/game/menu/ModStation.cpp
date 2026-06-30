@@ -2482,9 +2482,9 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     reinterpret_cast<uint8_t*>(&this->dragFlags)[0] = 1;
 }
 
-int ModStation::OnTouchBegin(int x, int y) { return x; }
-int ModStation::OnTouchEnd(int x, int y) { return x; }
-int ModStation::OnTouchMove(int x, int y) { return x; }
+void ModStation::OnTouchBegin(int x, int y) {}
+void ModStation::OnTouchEnd(int x, int y) {}
+void ModStation::OnTouchMove(int x, int y) {}
 
 static int *g_r2d_stack = 0;
 

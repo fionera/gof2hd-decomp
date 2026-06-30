@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.31,
-  "byte_exact": 1075,
-  "linked_exact": 1932,
-  "fuzzy_perfect": 1932,
+  "avg_match": 69.33,
+  "byte_exact": 1078,
+  "linked_exact": 1935,
+  "fuzzy_perfect": 1935,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -2734,14 +2734,6 @@
    "usize": 48
   },
   {
-   "name": "_ZN3Hud10catchCargoEiibbbbb",
-   "pct": 9.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1164,
-   "usize": 1208
-  },
-  {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
    "pct": 9.3,
    "byte": false,
@@ -2836,6 +2828,14 @@
    "linked": false,
    "osize": 144,
    "usize": 58
+  },
+  {
+   "name": "_ZN3Hud10catchCargoEiibbbbb",
+   "pct": 10.0,
+   "byte": false,
+   "linked": false,
+   "osize": 1164,
+   "usize": 1208
   },
   {
    "name": "_ZN7StarMap6renderEv",
@@ -10654,6 +10654,22 @@
    "usize": 112
   },
   {
+   "name": "_ZN12PlayerTurretC1EiP6PlayerP10AEGeometryfff",
+   "pct": 48.0,
+   "byte": false,
+   "linked": false,
+   "osize": 768,
+   "usize": 688
+  },
+  {
+   "name": "_ZN12PlayerTurretC2EiP6PlayerP10AEGeometryfff",
+   "pct": 48.0,
+   "byte": false,
+   "linked": false,
+   "osize": 768,
+   "usize": 688
+  },
+  {
    "name": "_ZN10ModStation11checkMedalsEv",
    "pct": 48.1,
    "byte": false,
@@ -10708,22 +10724,6 @@
    "linked": false,
    "osize": 112,
    "usize": 188
-  },
-  {
-   "name": "_ZN12PlayerTurretC1EiP6PlayerP10AEGeometryfff",
-   "pct": 48.4,
-   "byte": false,
-   "linked": false,
-   "osize": 768,
-   "usize": 688
-  },
-  {
-   "name": "_ZN12PlayerTurretC2EiP6PlayerP10AEGeometryfff",
-   "pct": 48.4,
-   "byte": false,
-   "linked": false,
-   "osize": 768,
-   "usize": 688
   },
   {
    "name": "_ZN6Status10setStationEP7Station",
@@ -14302,36 +14302,12 @@
    "usize": 6
   },
   {
-   "name": "_ZN10ModStation10OnTouchEndEii",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2,
-   "usize": 4
-  },
-  {
-   "name": "_ZN10ModStation11OnTouchMoveEii",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2,
-   "usize": 4
-  },
-  {
    "name": "_ZN10ModStation12OnKeyReleaseExx",
    "pct": 66.7,
    "byte": false,
    "linked": false,
    "osize": 2,
    "usize": 6
-  },
-  {
-   "name": "_ZN10ModStation12OnTouchBeginEii",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2,
-   "usize": 4
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15MeshClear2DMaskEv",
@@ -22508,6 +22484,30 @@
    "linked": true,
    "osize": 30,
    "usize": 30
+  },
+  {
+   "name": "_ZN10ModStation10OnTouchEndEii",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 2,
+   "usize": 2
+  },
+  {
+   "name": "_ZN10ModStation11OnTouchMoveEii",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 2,
+   "usize": 2
+  },
+  {
+   "name": "_ZN10ModStation12OnTouchBeginEii",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 2,
+   "usize": 2
   },
   {
    "name": "_ZN10ModStation13setGameLoadedEv",
