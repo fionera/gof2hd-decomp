@@ -45,8 +45,8 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->texCoordAttrib);
     }
 
-    void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer *&target, Engine *engine,
-                                  float amount, Vector vector) {
+    FBOContainer *BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer *&target, Engine *engine,
+                                           float amount, Vector vector) {
         float matrix[16] = {};
         matrix[0] = 1.0f;
         matrix[5] = 1.0f;
@@ -148,11 +148,12 @@ namespace AbyssEngine {
         glEnable(0xbe2);
         glBlendFunc(0x302, 0x303);
         glActiveTexture(0x84c0);
+        return target;
     }
 
-    void BlurShader::RenderEffect(FBOContainer *fbo, Engine *engine, float amount, Vector vector) {
+    FBOContainer *BlurShader::RenderEffect(FBOContainer *fbo, Engine *engine, float amount, Vector vector) {
         FBOContainer *target = nullptr;
-        this->RenderEffect(fbo, target, engine, amount, vector);
+        return this->RenderEffect(fbo, target, engine, amount, vector);
     }
 
     void BlurShader::UpdateMeshData(Mesh *mesh, Engine *engine) {

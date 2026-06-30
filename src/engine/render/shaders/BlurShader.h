@@ -45,10 +45,10 @@ namespace AbyssEngine {
 
         void UpdateMeshData(Mesh *mesh, Engine *engine) override;
 
-        void RenderEffect(FBOContainer *fbo, FBOContainer *&target, Engine *engine,
-                          float amount, Vector vector);
+        FBOContainer *RenderEffect(FBOContainer *fbo, FBOContainer *&target, Engine *engine,
+                                   float amount, Vector vector);
 
-        void RenderEffect(FBOContainer *fbo, Engine *engine, float amount, Vector vector);
+        FBOContainer *RenderEffect(FBOContainer *fbo, Engine *engine, float amount, Vector vector);
     };
 }
 
