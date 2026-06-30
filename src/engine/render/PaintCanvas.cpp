@@ -9,6 +9,7 @@
 #include "engine/math/Transform.h"
 #include <cstdint>
 #include <cstddef>
+namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); }
 
 namespace AbyssEngine {
     class SpriteSystem;
@@ -298,7 +299,7 @@ void paintcanvas_ext_fr_glenable(void *eng, unsigned int cap, bool on);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_fr_meshdraw(void *eng, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_fr_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 void paintcanvas_ext_sprite_rgba(unsigned int, float, float, float, float, void *);
 
@@ -430,7 +431,7 @@ static inline void paintcanvas_ext_di2_setwvm(void *self, void *m) { ((PaintCanv
 
 static inline void paintcanvas_ext_di2_gldisable(unsigned int cap) { glDisable(cap); }
 
-void paintcanvas_ext_di2_meshdraw(void *eng, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_di2_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 static inline void paintcanvas_ext_di2_glenable(unsigned int cap) { glEnable(cap); }
 
@@ -526,7 +527,7 @@ static inline void paintcanvas_ext_tfc_meshcreate(void *self, unsigned short id,
 
 static inline void paintcanvas_ext_set_wvm2(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); }
 
-void paintcanvas_ext_meshdraw(void *engine, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 void paintcanvas_ext_mesh_changemat(AbyssEngine::PaintCanvas *, void *, void *);
 
@@ -851,7 +852,7 @@ static inline void paintcanvas_ext_di_setwvm(void *self, void *m) { ((PaintCanva
 
 static inline void paintcanvas_ext_di_gldisable(unsigned int cap) { glDisable(cap); }
 
-void paintcanvas_ext_di_meshdraw(void *eng, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_di_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 static inline void paintcanvas_ext_di_glenable(unsigned int cap) { glEnable(cap); }
 
@@ -909,7 +910,7 @@ static inline void paintcanvas_ext_di4_setwvm(void *self, void *m) { ((PaintCanv
 
 static inline void paintcanvas_ext_di4_gldisable(unsigned int cap) { glDisable(cap); }
 
-void paintcanvas_ext_di4_meshdraw(void *eng, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_di4_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 static inline void paintcanvas_ext_di4_glenable(unsigned int cap) { glEnable(cap); }
 
@@ -945,7 +946,7 @@ static inline void paintcanvas_ext_dr2_setwvm(void *self, void *m) { ((PaintCanv
 
 static inline void paintcanvas_ext_dr2_gldisable(unsigned int cap) { glDisable(cap); }
 
-void paintcanvas_ext_dr2_meshdraw(void *eng, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_dr2_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 static inline void paintcanvas_ext_dr2_glenable(unsigned int cap) { glEnable(cap); }
 
@@ -1013,7 +1014,7 @@ void paintcanvas_ext_dm_setmodelmatrix(void *eng); // lint: void_ptr (external s
 
 void paintcanvas_ext_dm_setuvmatrix(void *eng, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dm_meshdraw(void *eng, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_dm_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 void paintcanvas_ext_dm_resetuvmatrix(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1119,7 +1120,7 @@ void paintcanvas_ext_di3_settexture(void *self, unsigned int tex);
 
 static inline void paintcanvas_ext_di3_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); }
 
-void paintcanvas_ext_di3_meshdraw(void *eng, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_di3_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 int paintcanvas_ext_meshcreate(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1171,7 +1172,7 @@ static inline void paintcanvas_ext_dr3_setwvm(void *self, void *m) { ((PaintCanv
 
 static inline void paintcanvas_ext_dr3_gldisable(unsigned int cap) { glDisable(cap); }
 
-void paintcanvas_ext_dr3_meshdraw(void *eng, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void paintcanvas_ext_dr3_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 static inline void paintcanvas_ext_dr3_glenable(unsigned int cap) { glEnable(cap); }
 
