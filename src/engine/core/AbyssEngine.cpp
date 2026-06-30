@@ -39,6 +39,26 @@ namespace {
 }
 
 namespace AbyssEngine {
+    // Defined in EngineFlags.cpp (separate TU). These MUST be declared in
+    // namespace AbyssEngine (external linkage) so they bind to the real
+    // definitions there; declaring them in an anonymous namespace would give
+    // them internal linkage and leave them undefined in this TU.
+    extern char *g_Camera_frustumEnabledFlag;
+    extern char *g_Engine_fboEnabledFlag;
+    extern char *g_Engine_shaderModeFlag;
+    extern char *g_GameText_arabicEnabledFlag;
+    extern char *g_MeshIntersect_flipVFlag;
+    extern char *g_Mesh_extraArraysFlag;
+    extern char *g_Mesh_keepCpuCopyFlag;
+    extern char *g_Mesh_shaderPathFlag;
+    extern char *g_Mesh_tangentDelFlag;
+    extern char *g_Mesh_tangentEnabledFlag;
+    extern int *g_Mesh_vboByteCounter;
+    extern char *g_Mesh_vboEnabledFlag;
+    extern char *g_SpriteSystem_tangentFlag;
+    extern char *g_SpriteSystem_uvFlipFlag;
+    extern void (*g_MeshRelease_freeFn)(AbyssEngine::Engine *, AbyssEngine::Mesh **);
+
     int currentUsedShaderIndex;
 
     float currentFps;
@@ -89,26 +109,6 @@ namespace {
         unsigned char *data;
         uint32_t capacity;
     };
-
-    // Defined in EngineFlags.cpp (separate TU) — see the note there. Referencing
-    // them via extern keeps their values opaque so the optimizer can't fold the
-    // flag-gated function bodies into early-return stubs.
-    extern char *g_Camera_frustumEnabledFlag;
-    extern char *g_Engine_fboEnabledFlag;
-    extern char *g_Engine_shaderModeFlag;
-    extern char *g_GameText_arabicEnabledFlag;
-    extern char *g_MeshIntersect_flipVFlag;
-    extern char *g_Mesh_extraArraysFlag;
-    extern char *g_Mesh_keepCpuCopyFlag;
-    extern char *g_Mesh_shaderPathFlag;
-    extern char *g_Mesh_tangentDelFlag;
-    extern char *g_Mesh_tangentEnabledFlag;
-    extern int *g_Mesh_vboByteCounter;
-    extern char *g_Mesh_vboEnabledFlag;
-    extern char *g_SpriteSystem_tangentFlag;
-    extern char *g_SpriteSystem_uvFlipFlag;
-
-    extern void (*g_MeshRelease_freeFn)(AbyssEngine::Engine *, AbyssEngine::Mesh **);
 
     template<class T>
     inline void ArrayAddCachedRaw(T item, EngineArrayHeader *arrayHeader) {
