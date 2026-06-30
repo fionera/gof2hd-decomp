@@ -38,8 +38,8 @@ uint8_t PlayerCreature::isHooked() {
 }
 
 void PlayerCreature::calmDown() {
-    this->rageTimer = 0;
     this->raging = 0;
+    this->rageTimer = 0;
     this->endurance = this->maxEndurance;
 }
 
