@@ -1,8 +1,8 @@
 #include "game/world/NewsItem.h"
 
 NewsItem::NewsItem(int id, bool flag, bool *data, int length, int minLevel, int maxLevel) {
-    this->flag = (uint8_t) flag;
     this->id = id;
+    this->flag = (uint8_t) flag;
     this->data = data;
     this->length = length;
     this->minLevel = minLevel;
