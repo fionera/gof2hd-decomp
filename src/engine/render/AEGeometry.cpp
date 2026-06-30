@@ -69,7 +69,9 @@ uint16_t AEGeometry::getID() { return this->mesh; }
 uint8_t AEGeometry::isVisible() { return (uint8_t) this->visibility; }
 
 void AEGeometry::setVisible(bool v) {
-    this->visibility = v ? 0x0101 : 0;
+    // ASM: original writes the raw bool to two bytes (strb @0x49 then @0x48), not a normalized 0x101 strh.
+    reinterpret_cast<uint8_t *>(&this->visibility)[0] = v;
+    reinterpret_cast<uint8_t *>(&this->visibility)[1] = v;
 }
 
 void AEGeometry::DEBUG_setMeshMergerIndex(int a, LodMeshMerger *b) {
