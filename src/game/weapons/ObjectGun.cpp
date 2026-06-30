@@ -77,9 +77,9 @@ void MatrixSetTranslation(Matrix *dst, float x, float y, float z);
 
 void MatrixSetScaling(Matrix *dst, float x, float y, float z);
 
-void VectorNormalize(Vector *out, const Vector *in);
+static inline void VectorNormalize(Vector *out, const Vector *in) { *out = AbyssEngine::AEMath::VectorNormalize(*in); }
 
-void VectorCross(Vector *out, const Vector *a, const Vector *b);
+static inline void VectorCross(Vector *out, const Vector *a, const Vector *b) { *out = AbyssEngine::AEMath::VectorCross(*a, *b); }
 
 void ObjectGun_setEnemies_impl(void *items); // lint: void_ptr free-function signature, retype changes mangling
 
