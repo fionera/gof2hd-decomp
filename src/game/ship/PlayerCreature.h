@@ -20,8 +20,8 @@ public:
     int &creatureType() { return this->type; }
     int lastElapsed;
     uint16_t raging;
+    uint8_t caught; // ASM (unhook): caught written at [this,#298]=0x12a, before hooked@0x12b
     uint8_t hooked;
-    uint8_t caught;
     float rageScale;
     int rageTimer;
     int maxEndurance;
