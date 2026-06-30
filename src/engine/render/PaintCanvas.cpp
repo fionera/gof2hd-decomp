@@ -566,7 +566,7 @@ static inline float paintcanvas_ext_spm_signedtofloat(int v, unsigned int mode) 
 
 void paintcanvas_ext_dss1_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_dss1_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void *paintcanvas_ext_dss1_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); }
 
 static inline float paintcanvas_ext_dss1_sinf(float v) { return sinf(v); }
 
@@ -709,7 +709,7 @@ void *paintcanvas_ext_material_ctor(void *); // lint: void_ptr (external symbol;
 
 void paintcanvas_ext_cisvf_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_cisvf_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void *paintcanvas_ext_cisvf_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); }
 
 static inline float paintcanvas_ext_cisvf_sinf(float v) { return sinf(v); }
 
@@ -769,7 +769,7 @@ void paintcanvas_ext_rpm_loadproj(void *eng, void *m); // lint: void_ptr (extern
 
 void paintcanvas_ext_cipvf_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_cipvf_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void *paintcanvas_ext_cipvf_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); }
 
 static inline float paintcanvas_ext_cipvf_sinf(float v) { return sinf(v); }
 
@@ -815,7 +815,7 @@ void paintcanvas_ext_gsp2_transformvec(void *out, const void *vec);
 
 void paintcanvas_ext_gsp2_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_gsp2_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void *paintcanvas_ext_gsp2_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); }
 
 static inline float paintcanvas_ext_gsp2_sinf(float v) { return sinf(v); }
 
@@ -1261,7 +1261,7 @@ void paintcanvas_ext_tg2di_inner(void *out, void *self, void *childtf, int x, in
 
 void paintcanvas_ext_dt2_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_dt2_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void *paintcanvas_ext_dt2_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); }
 
 static inline float paintcanvas_ext_dt2_sinf(float v) { return sinf(v); }
 
@@ -1300,7 +1300,7 @@ void pc_ArrayAdd_Camera(void *cam, void *arr); // lint: void_ptr (external symbo
 
 void paintcanvas_ext_dss_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_dss_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void *paintcanvas_ext_dss_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); }
 
 static inline float paintcanvas_ext_dss_sinf(float v) { return sinf(v); }
 
@@ -1336,7 +1336,7 @@ void paintcanvas_ext_release_sprite_res(void *, void *); // lint: void_ptr (exte
 
 void paintcanvas_ext_dss2_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_dss2_getgrav(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void *paintcanvas_ext_dss2_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); }
 
 static inline float paintcanvas_ext_dss2_sinf(float v) { return sinf(v); }
 
