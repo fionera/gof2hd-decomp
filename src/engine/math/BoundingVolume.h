@@ -18,17 +18,19 @@ public:
 
     BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez);
 
-    virtual ~BoundingVolume();
+    ~BoundingVolume();
+
+    // Virtual methods in EXACT original vtable order (via _ZTV BoundingAAB ABS32 relocs): getCollisionNormal
+    // @#0, update@#4, collide@#8, outerCollide@#12, projectCollisionOnSurface@#16. NO virtual destructor.
+    virtual AbyssEngine::AEMath::Vector getCollisionNormal(const AbyssEngine::AEMath::Vector &position);
+
+    virtual void update(float x, float y, float z);
 
     virtual int collide(float x, float y, float z);
 
     virtual int outerCollide(float x, float y, float z);
 
-    virtual void update(float x, float y, float z);
-
     virtual AbyssEngine::AEMath::Vector projectCollisionOnSurface(const AbyssEngine::AEMath::Vector &point) = 0;
-
-    AbyssEngine::AEMath::Vector getCollisionNormal(const AbyssEngine::AEMath::Vector &position);
 
     void setVolume(BoundingVolume *src);
 
