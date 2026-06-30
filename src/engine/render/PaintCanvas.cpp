@@ -518,7 +518,7 @@ void *paintcanvas_ext_tfc_new_transform(); // lint: void_ptr (external symbol; m
 
 void paintcanvas_ext_tfc_mtx_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_tfc_meshcreate(void *self, unsigned short id, unsigned int *out, bool b);
+static inline void paintcanvas_ext_tfc_meshcreate(void *self, unsigned short id, unsigned int *out, bool b) { unsigned int o; ((PaintCanvas*)self)->MeshCreate(id, o, b); *out = o; }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -687,7 +687,7 @@ int paintcanvas_ext_ss2_sscreate(void *eng, unsigned short id, bool b, void **ou
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_ss2_matcreate(void *self, unsigned short id, unsigned int *out);
+static inline void paintcanvas_ext_ss2_matcreate(void *self, unsigned short id, unsigned int *out) { unsigned int o; ((PaintCanvas*)self)->MaterialCreate(id, o); *out = o; }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -961,7 +961,7 @@ void paintcanvas_ext_sgo_setpersp(void *self, float a, float b, float c);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_mc_matcreate(void *self, unsigned short id, unsigned int *out);
+static inline void paintcanvas_ext_mc_matcreate(void *self, unsigned short id, unsigned int *out) { unsigned int o; ((PaintCanvas*)self)->MaterialCreate(id, o); *out = o; }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1127,7 +1127,7 @@ void *paintcanvas_ext_mc2_findres(void *self, unsigned short id);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_mc2_matcreate(void *self, unsigned short id, unsigned int *out);
+static inline void paintcanvas_ext_mc2_matcreate(void *self, unsigned short id, unsigned int *out) { unsigned int o; ((PaintCanvas*)self)->MaterialCreate(id, o); *out = o; }
 
 // lint: void_ptr (external symbol; mangling must match lib)
 

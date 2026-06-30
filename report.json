@@ -3,7 +3,7 @@
   "original_functions": 4522,
   "ours_functions": 4542,
   "compared": 4507,
-  "avg_match": 69.59,
+  "avg_match": 69.58,
   "byte_exact": 1102,
   "linked_exact": 1966,
   "fuzzy_perfect": 1966,
@@ -2198,20 +2198,20 @@
    "usize": 78
   },
   {
-   "name": "_ZN14DialogueWindow11loadContentEv",
-   "pct": 6.2,
-   "byte": false,
-   "linked": false,
-   "osize": 3484,
-   "usize": 760
-  },
-  {
    "name": "_ZN15MenuTouchWindow13startValkyrieEv",
    "pct": 6.2,
    "byte": false,
    "linked": false,
    "osize": 612,
    "usize": 42
+  },
+  {
+   "name": "_ZN14DialogueWindow11loadContentEv",
+   "pct": 6.3,
+   "byte": false,
+   "linked": false,
+   "osize": 3484,
+   "usize": 760
   },
   {
    "name": "_ZN5Level11createSceneEv",
@@ -3094,14 +3094,6 @@
    "usize": 34
   },
   {
-   "name": "ndk_iapBoughtPremium",
-   "pct": 11.4,
-   "byte": false,
-   "linked": false,
-   "osize": 276,
-   "usize": 68
-  },
-  {
    "name": "_ZN11AbyssEngine16esMatrixMultiplyEPNS_8ESMatrixES1_S1_",
    "pct": 11.5,
    "byte": false,
@@ -3380,6 +3372,14 @@
    "linked": false,
    "osize": 136,
    "usize": 224
+  },
+  {
+   "name": "ndk_iapBoughtPremium",
+   "pct": 12.7,
+   "byte": false,
+   "linked": false,
+   "osize": 276,
+   "usize": 68
   },
   {
    "name": "_ZN10StarSystem6renderEv",
@@ -4142,6 +4142,14 @@
    "usize": 1136
   },
   {
+   "name": "_ZN13RecordHandler11readMissionEj",
+   "pct": 17.1,
+   "byte": false,
+   "linked": false,
+   "osize": 668,
+   "usize": 728
+  },
+  {
    "name": "_ZN11AbyssEngine11PaintCanvas12DrawRegion2DEjfiiiiff",
    "pct": 17.3,
    "byte": false,
@@ -4204,14 +4212,6 @@
    "linked": false,
    "osize": 352,
    "usize": 308
-  },
-  {
-   "name": "_ZN13RecordHandler11readMissionEj",
-   "pct": 17.5,
-   "byte": false,
-   "linked": false,
-   "osize": 668,
-   "usize": 728
   },
   {
    "name": "deflateReset",
@@ -5862,6 +5862,14 @@
    "usize": 1268
   },
   {
+   "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
+   "pct": 23.0,
+   "byte": false,
+   "linked": false,
+   "osize": 240,
+   "usize": 196
+  },
+  {
    "name": "_ZN17PlayerFixedObject6updateEi",
    "pct": 23.0,
    "byte": false,
@@ -6180,14 +6188,6 @@
    "linked": false,
    "osize": 272,
    "usize": 170
-  },
-  {
-   "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
-   "pct": 24.2,
-   "byte": false,
-   "linked": false,
-   "osize": 240,
-   "usize": 196
   },
   {
    "name": "_ZN11AbyssEngine6Engine18SetWorldViewMatrixERKNS_6AEMath6MatrixE",
@@ -6774,6 +6774,14 @@
    "usize": 280
   },
   {
+   "name": "_ZN5Level18updateMissionOrbitEi",
+   "pct": 27.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1160,
+   "usize": 1036
+  },
+  {
    "name": "_ZN6Status9resetGameEv",
    "pct": 27.3,
    "byte": false,
@@ -6812,14 +6820,6 @@
    "linked": false,
    "osize": 972,
    "usize": 760
-  },
-  {
-   "name": "_ZN5Level18updateMissionOrbitEi",
-   "pct": 27.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1160,
-   "usize": 1036
   },
   {
    "name": "_ZN5MGame8OnResumeEv",
@@ -7302,6 +7302,14 @@
    "usize": 14
   },
   {
+   "name": "_ZN11AbyssEngine11PaintCanvas10MeshCreateEtRjb",
+   "pct": 30.1,
+   "byte": false,
+   "linked": false,
+   "osize": 240,
+   "usize": 136
+  },
+  {
    "name": "_ZN7StarMap11OnTouchMoveEii",
    "pct": 30.1,
    "byte": false,
@@ -7500,14 +7508,6 @@
    "linked": false,
    "osize": 364,
    "usize": 324
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas10MeshCreateEtRjb",
-   "pct": 31.1,
-   "byte": false,
-   "linked": false,
-   "osize": 240,
-   "usize": 142
   },
   {
    "name": "_ZN5MGame12successCheckEv",
@@ -8140,6 +8140,14 @@
    "linked": false,
    "osize": 192,
    "usize": 132
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas10MeshCreateEttatRj",
+   "pct": 34.7,
+   "byte": false,
+   "linked": false,
+   "osize": 136,
+   "usize": 108
   },
   {
    "name": "_ZN13RecordHandler7addHashEi",
@@ -9404,14 +9412,6 @@
    "linked": false,
    "osize": 90,
    "usize": 106
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas10MeshCreateEttatRj",
-   "pct": 41.7,
-   "byte": false,
-   "linked": false,
-   "osize": 136,
-   "usize": 104
   },
   {
    "name": "_ZN5Level14connectPlayersEv",
@@ -10902,14 +10902,6 @@
    "usize": 324
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas15TransformCreateEtRj",
-   "pct": 49.7,
-   "byte": false,
-   "linked": false,
-   "osize": 268,
-   "usize": 148
-  },
-  {
    "name": "_ZN11AbyssEngine12EnergyShield4InitEPNS_6EngineE",
    "pct": 49.7,
    "byte": false,
@@ -11494,6 +11486,14 @@
    "usize": 368
   },
   {
+   "name": "_ZN11AbyssEngine11PaintCanvas15TransformCreateEtRj",
+   "pct": 50.3,
+   "byte": false,
+   "linked": false,
+   "osize": 268,
+   "usize": 142
+  },
+  {
    "name": "_ZN6Galaxy8distanceEP11SolarSystemS1_",
    "pct": 50.3,
    "byte": false,
@@ -11910,6 +11910,14 @@
    "usize": 84
   },
   {
+   "name": "_ZN11AbyssEngine11PaintCanvas18SpriteSystemCreateEtbtRj",
+   "pct": 54.0,
+   "byte": false,
+   "linked": false,
+   "osize": 176,
+   "usize": 136
+  },
+  {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setAPKPath",
    "pct": 54.1,
    "byte": false,
@@ -12068,14 +12076,6 @@
    "linked": false,
    "osize": 64,
    "usize": 50
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas18SpriteSystemCreateEtbtRj",
-   "pct": 55.1,
-   "byte": false,
-   "linked": false,
-   "osize": 176,
-   "usize": 144
   },
   {
    "name": "_ZN13LodMeshMerger6updateEv",
@@ -13558,6 +13558,14 @@
    "usize": 28
   },
   {
+   "name": "_ZN13RecordHandler10writeAgentEP5Agentj",
+   "pct": 62.1,
+   "byte": false,
+   "linked": false,
+   "osize": 592,
+   "usize": 648
+  },
+  {
    "name": "_ZN14PlayerJumpgate11setPositionEfff",
    "pct": 62.1,
    "byte": false,
@@ -13580,14 +13588,6 @@
    "linked": false,
    "osize": 296,
    "usize": 250
-  },
-  {
-   "name": "_ZN13RecordHandler10writeAgentEP5Agentj",
-   "pct": 62.3,
-   "byte": false,
-   "linked": false,
-   "osize": 592,
-   "usize": 648
   },
   {
    "name": "_ZN5Route6updateEfff",
@@ -15030,6 +15030,22 @@
    "usize": 324
   },
   {
+   "name": "_ZN10RepairBeamC1Eii",
+   "pct": 70.9,
+   "byte": false,
+   "linked": false,
+   "osize": 284,
+   "usize": 272
+  },
+  {
+   "name": "_ZN10RepairBeamC2Eii",
+   "pct": 70.9,
+   "byte": false,
+   "linked": false,
+   "osize": 284,
+   "usize": 272
+  },
+  {
    "name": "_ZN11AbyssEngine8MeshDrawEPNS_6EngineEPNS_4MeshE",
    "pct": 71.1,
    "byte": false,
@@ -15044,22 +15060,6 @@
    "linked": false,
    "osize": 212,
    "usize": 214
-  },
-  {
-   "name": "_ZN10RepairBeamC1Eii",
-   "pct": 71.2,
-   "byte": false,
-   "linked": false,
-   "osize": 284,
-   "usize": 272
-  },
-  {
-   "name": "_ZN10RepairBeamC2Eii",
-   "pct": 71.2,
-   "byte": false,
-   "linked": false,
-   "osize": 284,
-   "usize": 272
   },
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetAchievementId",
@@ -15182,14 +15182,6 @@
    "usize": 254
   },
   {
-   "name": "_ZN6Galaxy22getPlasmaProbabilitiesEP7Station",
-   "pct": 71.9,
-   "byte": false,
-   "linked": false,
-   "osize": 388,
-   "usize": 384
-  },
-  {
    "name": "_ZN6MTitle12OnInitializeEv",
    "pct": 71.9,
    "byte": false,
@@ -15204,6 +15196,14 @@
    "linked": false,
    "osize": 80,
    "usize": 58
+  },
+  {
+   "name": "_ZN6Galaxy22getPlasmaProbabilitiesEP7Station",
+   "pct": 72.2,
+   "byte": false,
+   "linked": false,
+   "osize": 388,
+   "usize": 384
   },
   {
    "name": "_ZN5MGame9nextCamIdEi",
