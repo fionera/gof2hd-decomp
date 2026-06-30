@@ -379,7 +379,7 @@ static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::s
 
 void ParticleSettingsRef_initialize();
 
-int Station_getIndex(int station);
+static inline int Station_getIndex(int station) { return (int)(((Station*)(long)station)->getIndex()); }
 
 static Status **g_status;
 

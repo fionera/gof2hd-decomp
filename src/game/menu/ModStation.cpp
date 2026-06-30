@@ -251,9 +251,9 @@ static inline int Station_getIndex_cpp(Station * s) { return (int)(s->getIndex()
 
 static inline int Status_getShip_cpp() { return (int)(Globals::status->getShip()); }
 
-int Item_makeItem_cpp(int itemDesc);
+static inline int Item_makeItem_cpp(int itemDesc) { return (int)(((Item*)(long)itemDesc)->makeItem()); }
 
-void Ship_addCargo_cpp(int ship, Item *it);
+static inline void Ship_addCargo_cpp(int ship, Item *it) { ((Ship*)(long)ship)->addCargo(it); }
 
 int Item_getAmount_cpp();
 
@@ -1531,7 +1531,7 @@ int Ship_getIndex_ote();
 
 static inline void Ship_getRace_ote(Ship * s) { s->getRace(); }
 
-void Ship_removeCargo_ote(int ship, int item);
+static inline void Ship_removeCargo_ote(int ship, int item) { ((Ship*)(long)ship)->removeCargo(item); }
 
 void Ship_removeCargo1_ote(Item * it);
 void Ship_addCargo_ote(Item * it);
@@ -1543,7 +1543,7 @@ static inline int Item_getIndex_ote(Item * it) { return (int)(it->getIndex()); }
 
 int Item_getAmount_ote();
 
-void Item_makeItem_ote(int desc);
+static inline void Item_makeItem_ote(int desc) { ((Item*)(long)desc)->makeItem(); }
 
 int Mission_getType_ote();
 
@@ -2638,7 +2638,7 @@ int Ship_hasCargo_oi(int ship, int item);
 
 int Ship_hasEquipment_oi(int ship, int item);
 
-int Ship_getCargo_oi(int ship);
+static inline int Ship_getCargo_oi(int ship) { return (int)(((Ship*)(long)ship)->getCargo()); }
 
 void Ship_makeShip_oi(int desc);
 
@@ -2650,7 +2650,7 @@ void Ship_setPrice_oi(int shipPtr);
 
 void Ship_removeCargo_oi(int ship);
 
-void Ship_addCargo_oi(int ship, Item *it);
+static inline void Ship_addCargo_oi(int ship, Item *it) { ((Ship*)(long)ship)->addCargo(it); }
 
 int Item_makeItem_oi();
 
