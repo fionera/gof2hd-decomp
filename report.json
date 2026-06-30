@@ -3,10 +3,10 @@
   "original_functions": 4522,
   "ours_functions": 4540,
   "compared": 4507,
-  "avg_match": 69.54,
-  "byte_exact": 1092,
-  "linked_exact": 1955,
-  "fuzzy_perfect": 1955,
+  "avg_match": 69.55,
+  "byte_exact": 1093,
+  "linked_exact": 1956,
+  "fuzzy_perfect": 1956,
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
@@ -14476,14 +14476,6 @@
    "linked": false,
    "osize": 2,
    "usize": 4
-  },
-  {
-   "name": "_ZN7StarMap14setJumpMapModeEbb",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 10,
-   "usize": 10
   },
   {
    "name": "_ZN8GameText11setLanguageEi",
@@ -32988,6 +32980,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN7StarMap14setJumpMapModeEbb",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 10,
+   "usize": 10
   },
   {
    "name": "_ZN7StarMap8renderBGEv",

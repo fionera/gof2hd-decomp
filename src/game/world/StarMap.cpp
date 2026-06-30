@@ -174,8 +174,8 @@ void StarMap::askForJumpIntoAlienWorld() {
 }
 
 void StarMap::setJumpMapMode(bool enabled, bool value) {
-    this->jumpMapModeB = (uint8_t) value;
     this->jumpMapModeA = (uint8_t) enabled;
+    this->jumpMapModeB = (uint8_t) value;
 }
 
 void StarMap::setStart(int start, int target) {
