@@ -1,7 +1,7 @@
 {
  "summary": {
   "original_functions": 4522,
-  "ours_functions": 4542,
+  "ours_functions": 4543,
   "compared": 4507,
   "avg_match": 69.61,
   "byte_exact": 1102,
@@ -10,7 +10,7 @@
   "missing": 15,
   "wrong_type": 0,
   "absent": 15,
-  "extra": 35
+  "extra": 36
  },
  "rows": [
   {
@@ -2478,6 +2478,14 @@
    "usize": 224
   },
   {
+   "name": "_ZN12StatusWindow16getMedalHintTextEi",
+   "pct": 7.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1132,
+   "usize": 1056
+  },
+  {
    "name": "_ZN11AbyssEngine6Engine10RenderMeshEPNS_4MeshE",
    "pct": 7.9,
    "byte": false,
@@ -3086,14 +3094,6 @@
    "usize": 34
   },
   {
-   "name": "ndk_iapBoughtPremium",
-   "pct": 11.4,
-   "byte": false,
-   "linked": false,
-   "osize": 276,
-   "usize": 68
-  },
-  {
    "name": "_ZN11AbyssEngine16esMatrixMultiplyEPNS_8ESMatrixES1_S1_",
    "pct": 11.5,
    "byte": false,
@@ -3228,14 +3228,6 @@
    "linked": false,
    "osize": 1832,
    "usize": 1180
-  },
-  {
-   "name": "_ZN12StatusWindow16getMedalHintTextEi",
-   "pct": 12.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1132,
-   "usize": 1056
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager27SetCurrentApplicationModuleEj",
@@ -3380,6 +3372,14 @@
    "linked": false,
    "osize": 136,
    "usize": 224
+  },
+  {
+   "name": "ndk_iapBoughtPremium",
+   "pct": 12.7,
+   "byte": false,
+   "linked": false,
+   "osize": 276,
+   "usize": 68
   },
   {
    "name": "_ZN10StarSystem6renderEv",
@@ -7070,14 +7070,6 @@
    "usize": 264
   },
   {
-   "name": "_ZN5Radar12calcDistanceEffffff",
-   "pct": 28.9,
-   "byte": false,
-   "linked": false,
-   "osize": 624,
-   "usize": 440
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjii",
    "pct": 29.1,
    "byte": false,
@@ -7180,6 +7172,14 @@
    "linked": false,
    "osize": 92,
    "usize": 62
+  },
+  {
+   "name": "_ZN5Radar12calcDistanceEffffff",
+   "pct": 29.5,
+   "byte": false,
+   "linked": false,
+   "osize": 624,
+   "usize": 440
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15FogSetParameterENS_7FogModeEfffj",
@@ -13198,20 +13198,20 @@
    "usize": 364
   },
   {
+   "name": "_ZN11AbyssEngine15BumpShaderCloak4InitEPNS_6EngineE",
+   "pct": 59.5,
+   "byte": false,
+   "linked": false,
+   "osize": 540,
+   "usize": 536
+  },
+  {
    "name": "_ZN6Status17inSupernovaSystemEv",
    "pct": 59.5,
    "byte": false,
    "linked": false,
    "osize": 44,
    "usize": 46
-  },
-  {
-   "name": "_ZN11AbyssEngine15BumpShaderCloak4InitEPNS_6EngineE",
-   "pct": 59.6,
-   "byte": false,
-   "linked": false,
-   "osize": 540,
-   "usize": 536
   },
   {
    "name": "_ZN11AbyssEngine18SpriteSystemCreateEPNS_6EngineEtbPPNS_12SpriteSystemE",
@@ -13550,6 +13550,14 @@
    "usize": 28
   },
   {
+   "name": "_ZN13RecordHandler10writeAgentEP5Agentj",
+   "pct": 62.1,
+   "byte": false,
+   "linked": false,
+   "osize": 592,
+   "usize": 648
+  },
+  {
    "name": "_ZN14PlayerJumpgate11setPositionEfff",
    "pct": 62.1,
    "byte": false,
@@ -13572,14 +13580,6 @@
    "linked": false,
    "osize": 296,
    "usize": 250
-  },
-  {
-   "name": "_ZN13RecordHandler10writeAgentEP5Agentj",
-   "pct": 62.3,
-   "byte": false,
-   "linked": false,
-   "osize": 592,
-   "usize": 648
   },
   {
    "name": "_ZN5Route6updateEfff",
@@ -36113,6 +36113,7 @@
   "_ZN5ArrayIP11TouchSliderEC1Ev",
   "_ZN5ArrayIP11TouchSliderED1Ev",
   "_ZN5ArrayIP14PendingProductED1Ev",
+  "_ZN5ArrayIP5RadioED2Ev",
   "_ZN5ArrayIP9BluePrintEC1Ev",
   "_ZN5ArrayIP9BluePrintED1Ev",
   "_ZN5ArrayIPN11AbyssEngine7KeyCodeEEC1Ev",

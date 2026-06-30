@@ -127,7 +127,7 @@ unsigned char *CutScene_dtor(CutScene * p);
 
 static inline unsigned char *Radio_dtor(Radio *p) { p->~Radio(); return (unsigned char*)p; }
 
-unsigned char *Array_RM_dtor(Array<Radio *> * p);
+static inline unsigned char *Array_RM_dtor(Array<Radio *> *p) { p->~Array(); return (unsigned char*)p; }
 
 unsigned char *ScrollTouchBox_dtor(ScrollTouchBox *p);
 
