@@ -16062,6 +16062,14 @@
    "usize": 54
   },
   {
+   "name": "_ZN8KIPlayer7setDeadEv",
+   "pct": 75.0,
+   "byte": false,
+   "linked": false,
+   "osize": 12,
+   "usize": 10
+  },
+  {
    "name": "_ZNSt10bad_typeidC1Ev",
    "pct": 75.0,
    "byte": false,
@@ -18508,14 +18516,6 @@
    "linked": false,
    "osize": 12,
    "usize": 10
-  },
-  {
-   "name": "_ZN8KIPlayer7setDeadEv",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 12,
-   "usize": 14
   },
   {
    "name": "_ZN9AEPakFileC1EP13FileInterfaceii",
