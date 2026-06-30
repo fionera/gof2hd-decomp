@@ -32,7 +32,7 @@ Waypoint *Route::getWaypoint() {
 Route *Route::getExactClone() {
     Route *result = clone();
     for (uint32_t i = 0; i < result->waypoints->size(); i++) {
-        if ((*this->waypoints)[i]->state != 0)
+        if ((uint8_t) (*this->waypoints)[i]->state != 0)
             (*result->waypoints)[i]->reached();
     }
     result->currentIndex = this->currentIndex;
