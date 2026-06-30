@@ -66,7 +66,7 @@ static GameText **g_StarMap_end_text;
 
 int Station_getIndex(void *station); // lint: void_ptr (external symbol; mangling must match lib)
 
-void MatrixGetPosition(Vector *out, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void MatrixGetPosition(Vector *out, void *matrix) { *out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)matrix); }
 
 static PaintCanvas **g_StarMap_lights_canvas;
 static FModSound **g_StarMap_update_sound;

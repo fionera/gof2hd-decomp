@@ -81,17 +81,17 @@ static AbyssEngine::AERandom *SpaceLounge_getSoundId_accepted;
 static GameText **SpaceLounge_getSoundId_specialText;
 static AbyssEngine::AERandom *SpaceLounge_getSoundId_specialRandom;
 
-void MatrixGetRight(void *out, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void MatrixGetRight(void *out, void *matrix) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetRight(*(const AbyssEngine::AEMath::Matrix*)matrix); }
 
-void MatrixGetPosition(void *out, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void MatrixGetPosition(void *out, void *matrix) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)matrix); }
 
-void MatrixGetUp(void *out, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void MatrixGetUp(void *out, void *matrix) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetUp(*(const AbyssEngine::AEMath::Matrix*)matrix); }
 
 void MatrixGetLookAt(void *out, void *pos, void *target, void *up);
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void MatrixGetDir(void *out, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
+static inline void MatrixGetDir(void *out, void *matrix) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetDir(*(const AbyssEngine::AEMath::Matrix*)matrix); }
 
 static Level *SpaceLounge_screen_level_slot;
 static PaintCanvas **SpaceLounge_screen_canvas_slot;
