@@ -2143,53 +2143,26 @@ epilogue: {
     }
 }
 
-static int **const gI_mission = nullptr;
-static GameSettingsRecord **const gI_settings = nullptr;
-static int **const gI_flagFFFF = nullptr;
-static int **const gI_langSettingSlot = nullptr;
-
-static char **const gI_langFlag = nullptr;
-static char **const gI_zeroByte = nullptr;
-static Galaxy ***const gI_galaxy = nullptr;
-static Achievements ***const gI_achieve = nullptr;
-static Status ***const gI_status = nullptr;
-static ImageFactory ***const gI_imgFac = nullptr;
-static int ***const gI_items = nullptr;
-static int ***const gI_ships = nullptr;
-static int **const gI_engineSlot = nullptr;
-static AbyssEngine::ApplicationManager ***const gI_appMgr = nullptr;
-static Globals ***const gI_ctxSlot = nullptr;
-static AbyssEngine::AERandom ***const gI_random = nullptr;
-static Generator ***const gI_generator = nullptr;
-static RecordHandler ***const gI_recHandler = nullptr;
-static FModSound ***const gI_fmod = nullptr;
-
-typedef void (*VolFn)(FModSound *snd, int channel, int value);
-
-static VolFn *const gI_setMusVol = nullptr;
-static VolFn *const gI_setSfxVol = nullptr;
-static int ***const gI_g381c = nullptr;
-static char **const gI_g381a = nullptr;
-static InitZeroObject **const gI_g381e = nullptr;
-static int **const gI_g3822 = nullptr;
-static char ***const gI_g3824 = nullptr;
-static char **const gI_g383a = nullptr;
-static Layout ***const gI_layout = nullptr;
+// Globals::init below accesses these engine globals directly (Mission::empty,
+// Globals::options/items/ships/Canvas/globals/generator/recordHandler/sound/
+// layout/imageFactory and the init flag bytes); the original reads each via a
+// GOT-indirect load, which &Global compiles to in PIC. (Previously stubbed as
+// null gI_* placeholder pointers, which folded init to a 2-byte stub.)
 
 int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
     (void) engine;
-    int *missionSlot = *gI_mission;
+    int *missionSlot = (int *) &Mission::empty;
     if (*missionSlot == 0) {
         Mission *m = (Mission *) ::operator new(0x78);
         Mission_ctor(m);
         *missionSlot = (int) (long) m;
     }
 
-    GameSettingsRecord *settings = *gI_settings;
-    int *flagFFFF = (int *) *gI_flagFFFF;
-    int *langSettingSlot = (int *) *gI_langSettingSlot;
-    char *langFlag = *gI_langFlag;
-    char *zeroByte = *gI_zeroByte;
+    GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
+    int *flagFFFF = (int *) &Globals::lastRecordWritten;
+    int *langSettingSlot = (int *) &Globals::recordSlots;
+    char *langFlag = (char *) &Globals::iPad;
+    char *zeroByte = (char *) &Globals::startLiteVersionWithMoreCredits;
 
     settings->_region[5] = 1;
     settings->enableFlag30 = 1;
@@ -2214,15 +2187,15 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     Status_ctor(status);
     Globals::status = status;
     ImageFactory *imgFac = new ImageFactory();
-    **gI_imgFac = imgFac;
+    Globals::imageFactory = imgFac;
 
     FileRead *fr = (FileRead *) ::operator new(1);
     FileRead_ctor(fr);
-    **gI_items = (int *) (long) fr->loadItemsBinary();
-    **gI_ships = (int *) (long) fr->loadShipsBinary();
+    Globals::items = (Array<Item *> *) (long) fr->loadItemsBinary();
+    Globals::ships = (Array<Ship *> *) (long) fr->loadShipsBinary();
     ::operator delete(FileRead_dtor(fr));
 
-    int *engineSlot = *gI_engineSlot;
+    int *engineSlot = (int *) &Globals::Canvas;
     if (*engineSlot == 0) {
         *engineSlot = *reinterpret_cast<int *>(app);
     }
@@ -2231,41 +2204,39 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
 
     AbyssEngine::AERandom *rng = (AbyssEngine::AERandom *) ::operator new(8);
     AERandom_ctor(rng);
-    **gI_ctxSlot = this;
+    Globals::globals = this;
     Globals::rnd = rng;
 
     Generator *gen = (Generator *) ::operator new(1);
     Generator_ctor(gen);
-    **gI_generator = gen;
+    Globals::generator = gen;
 
     RecordHandler *rh = new RecordHandler();
-    RecordHandler **rhSlotP = *gI_recHandler;
+    RecordHandler **rhSlotP = &Globals::recordHandler;
     *rhSlotP = rh;
     Globals::status->resetGame();
     (*rhSlotP)->loadOptions();
 
     FModSound *fmod = (FModSound *) ::operator new(0x243c);
     FModSound_ctor(fmod);
-    FModSound **fmodSlotP = *gI_fmod;
+    FModSound **fmodSlotP = &Globals::sound;
     *fmodSlotP = fmod;
     fmod->init();
 
-    VolFn setMus = *gI_setMusVol;
-    setMus(*fmodSlotP, 1, settings->_region[1]);
-    setMus(*fmodSlotP, 2, settings->_region[0]);
-    setMus(*fmodSlotP, 3, settings->_region[2]);
-    VolFn setSfx = *gI_setSfxVol;
-    setSfx(*fmodSlotP, 1, reinterpret_cast<int32_t &>(settings->colorR));
-    setSfx(*fmodSlotP, 2, reinterpret_cast<int32_t &>(settings->colorG));
-    setSfx(*fmodSlotP, 3, reinterpret_cast<int32_t &>(settings->colorB));
+    (*fmodSlotP)->enableCategory(1, settings->_region[1]);
+    (*fmodSlotP)->enableCategory(2, settings->_region[0]);
+    (*fmodSlotP)->enableCategory(3, settings->_region[2]);
+    (*fmodSlotP)->setVolume(1, settings->colorR);
+    (*fmodSlotP)->setVolume(2, settings->colorG);
+    (*fmodSlotP)->setVolume(3, settings->colorB);
 
     if (FModSound_tryToStopMusicForBGMusic() != 0) {
         settings->_region[1] = 0;
     }
 
-    **gI_g381c = 0;
-    **gI_g381a = 1;
-    InitZeroObject *obj = *gI_g381e;
+    Globals::instantActionPoints = 0;
+    Globals::first_start_ever = 1;
+    InitZeroObject *obj = (InitZeroObject *) Globals::hints;
     obj->slots[0] = 0;
     obj->slots[1] = 0;
     obj->slots[2] = 0;
@@ -2282,13 +2253,13 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2f]) = 0;
     reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x33]) = 0;
     reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x37]) = 0;
-    InitFlagByte *flagByteObj = *(InitFlagByte **) gI_g3822;
+    InitFlagByte *flagByteObj = (InitFlagByte *) &Globals::gameLoaded;
     flagByteObj->flag = 0;
-    **gI_g3824 = 0;
-    **gI_g383a = 0;
+    Globals::gameSaving = 0;
+    Globals::initMemoryWarning = 0;
 
     Layout *layout = new Layout();
-    **gI_layout = layout;
+    Globals::layout = layout;
     layout->reload();
     ParticleSettingsRef_initialize();
 
