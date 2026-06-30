@@ -323,9 +323,9 @@ float VectorSignedToFloat(int v, int mode);
 
 float VectorUnsignedToFloat(unsigned v, int mode);
 
-uint32_t nextInt_71aa4(AbyssEngine::AERandom *self);
+static inline uint32_t nextInt_71aa4(AbyssEngine::AERandom *self) { return self->nextInt(); }
 
-int nextInt_71ad0(AbyssEngine::AERandom *self, int bound);
+static inline int nextInt_71ad0(AbyssEngine::AERandom *self, int bound) { return self->nextInt(bound); }
 
 int idiv(int a, int b);
 
