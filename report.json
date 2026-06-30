@@ -3,7 +3,7 @@
   "original_functions": 4522,
   "ours_functions": 4542,
   "compared": 4507,
-  "avg_match": 69.62,
+  "avg_match": 69.61,
   "byte_exact": 1102,
   "linked_exact": 1966,
   "fuzzy_perfect": 1966,
@@ -3086,6 +3086,14 @@
    "usize": 34
   },
   {
+   "name": "ndk_iapBoughtPremium",
+   "pct": 11.4,
+   "byte": false,
+   "linked": false,
+   "osize": 276,
+   "usize": 68
+  },
+  {
    "name": "_ZN11AbyssEngine16esMatrixMultiplyEPNS_8ESMatrixES1_S1_",
    "pct": 11.5,
    "byte": false,
@@ -3372,14 +3380,6 @@
    "linked": false,
    "osize": 136,
    "usize": 224
-  },
-  {
-   "name": "ndk_iapBoughtPremium",
-   "pct": 12.7,
-   "byte": false,
-   "linked": false,
-   "osize": 276,
-   "usize": 68
   },
   {
    "name": "_ZN10StarSystem6renderEv",
@@ -7070,6 +7070,14 @@
    "usize": 264
   },
   {
+   "name": "_ZN5Radar12calcDistanceEffffff",
+   "pct": 28.9,
+   "byte": false,
+   "linked": false,
+   "osize": 624,
+   "usize": 440
+  },
+  {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjii",
    "pct": 29.1,
    "byte": false,
@@ -7172,14 +7180,6 @@
    "linked": false,
    "osize": 92,
    "usize": 62
-  },
-  {
-   "name": "_ZN5Radar12calcDistanceEffffff",
-   "pct": 29.5,
-   "byte": false,
-   "linked": false,
-   "osize": 624,
-   "usize": 440
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15FogSetParameterENS_7FogModeEfffj",
@@ -8254,14 +8254,6 @@
    "usize": 114
   },
   {
-   "name": "_ZN9PlayerEgo16handleTurretViewEi",
-   "pct": 35.7,
-   "byte": false,
-   "linked": false,
-   "osize": 652,
-   "usize": 448
-  },
-  {
    "name": "zip_fopen",
    "pct": 35.7,
    "byte": false,
@@ -8284,6 +8276,14 @@
    "linked": false,
    "osize": 288,
    "usize": 216
+  },
+  {
+   "name": "_ZN11AbyssEngine6Engine11SetTexturesEjj",
+   "pct": 35.9,
+   "byte": false,
+   "linked": false,
+   "osize": 312,
+   "usize": 184
   },
   {
    "name": "_ZN15MenuTouchWindowD1Ev",
@@ -8334,12 +8334,12 @@
    "usize": 184
   },
   {
-   "name": "_ZN5MGame15updateJumpSceneEv",
+   "name": "_ZN9PlayerEgo16handleTurretViewEi",
    "pct": 36.2,
    "byte": false,
    "linked": false,
-   "osize": 920,
-   "usize": 656
+   "osize": 652,
+   "usize": 448
   },
   {
    "name": "_ZN12ImageFactory8loadCharEPi",
@@ -8412,6 +8412,14 @@
    "linked": false,
    "osize": 328,
    "usize": 288
+  },
+  {
+   "name": "_ZN5MGame15updateJumpSceneEv",
+   "pct": 36.5,
+   "byte": false,
+   "linked": false,
+   "osize": 920,
+   "usize": 656
   },
   {
    "name": "_ZN9Explosion9playSoundEPN11AbyssEngine6AEMath6VectorE",
@@ -8508,14 +8516,6 @@
    "linked": false,
    "osize": 22,
    "usize": 44
-  },
-  {
-   "name": "_ZN11AbyssEngine6Engine11SetTexturesEjj",
-   "pct": 37.0,
-   "byte": false,
-   "linked": false,
-   "osize": 312,
-   "usize": 184
   },
   {
    "name": "_ZN14PlayerGasCloud6renderEv",
@@ -10630,6 +10630,22 @@
    "usize": 112
   },
   {
+   "name": "_ZN12PlayerTurretC1EiP6PlayerP10AEGeometryfff",
+   "pct": 48.0,
+   "byte": false,
+   "linked": false,
+   "osize": 768,
+   "usize": 688
+  },
+  {
+   "name": "_ZN12PlayerTurretC2EiP6PlayerP10AEGeometryfff",
+   "pct": 48.0,
+   "byte": false,
+   "linked": false,
+   "osize": 768,
+   "usize": 688
+  },
+  {
    "name": "_ZN10ModStation11checkMedalsEv",
    "pct": 48.1,
    "byte": false,
@@ -10684,22 +10700,6 @@
    "linked": false,
    "osize": 440,
    "usize": 388
-  },
-  {
-   "name": "_ZN12PlayerTurretC1EiP6PlayerP10AEGeometryfff",
-   "pct": 48.4,
-   "byte": false,
-   "linked": false,
-   "osize": 768,
-   "usize": 688
-  },
-  {
-   "name": "_ZN12PlayerTurretC2EiP6PlayerP10AEGeometryfff",
-   "pct": 48.4,
-   "byte": false,
-   "linked": false,
-   "osize": 768,
-   "usize": 688
   },
   {
    "name": "_ZN6Status10setStationEP7Station",
@@ -11838,6 +11838,14 @@
    "usize": 140
   },
   {
+   "name": "_ZN7Globals26playMusicAndFadeOutCurrentEi",
+   "pct": 53.4,
+   "byte": false,
+   "linked": false,
+   "osize": 588,
+   "usize": 492
+  },
+  {
    "name": "_ZN6SpriteC1EPjiii",
    "pct": 53.5,
    "byte": false,
@@ -11892,14 +11900,6 @@
    "linked": false,
    "osize": 176,
    "usize": 136
-  },
-  {
-   "name": "_ZN7Globals26playMusicAndFadeOutCurrentEi",
-   "pct": 54.0,
-   "byte": false,
-   "linked": false,
-   "osize": 588,
-   "usize": 492
   },
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setAPKPath",
@@ -17294,6 +17294,22 @@
    "usize": 156
   },
   {
+   "name": "_ZN13PlayerFighterD1Ev",
+   "pct": 83.0,
+   "byte": false,
+   "linked": false,
+   "osize": 152,
+   "usize": 136
+  },
+  {
+   "name": "_ZN13PlayerFighterD2Ev",
+   "pct": 83.0,
+   "byte": false,
+   "linked": false,
+   "osize": 152,
+   "usize": 136
+  },
+  {
    "name": "_ZN5LevelD1Ev",
    "pct": 83.0,
    "byte": false,
@@ -17668,22 +17684,6 @@
    "linked": false,
    "osize": 264,
    "usize": 252
-  },
-  {
-   "name": "_ZN13PlayerFighterD1Ev",
-   "pct": 85.1,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 136
-  },
-  {
-   "name": "_ZN13PlayerFighterD2Ev",
-   "pct": 85.1,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 136
   },
   {
    "name": "_ZN11AbyssEngine6Engine13ResetUVMatrixEv",

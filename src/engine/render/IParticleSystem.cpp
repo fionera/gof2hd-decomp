@@ -1,4 +1,5 @@
 #include "engine/render/IParticleSystem.h"
+#include <new>
 #include "engine/core/AERandom.h"
 
 namespace AbyssEngine {
@@ -30,7 +31,7 @@ namespace AbyssEngine {
 
 void *AERandom_seed_ctor(void *self, long long seed); // lint: void_ptr (AERandom ABI shim, Pv mangling baked in)
 
-void AERandom_ctor(void *self); // lint: void_ptr (AERandom ABI shim, Pv mangling baked in)
+static inline void AERandom_ctor(void *self) { new(self) AbyssEngine::AERandom(); }
 
 static char *ParticleSet_definitions = nullptr;
 

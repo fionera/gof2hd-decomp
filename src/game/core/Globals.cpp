@@ -345,7 +345,7 @@ void *Galaxy_dtor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fix
 
 void *Status_dtor(void *s); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-void *AERandom_dtor(void *r); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+static inline void *AERandom_dtor(void *r) { ((AbyssEngine::AERandom*)r)->~AERandom(); return r; }
 
 void *Layout_dtor(void *l); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
@@ -369,7 +369,7 @@ void FileRead_ctor(void *f); // lint: void_ptr (Pv-mangled internal shim; ABI-fi
 
 void *FileRead_dtor(void *f); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-void AERandom_ctor(void *r); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+static inline void AERandom_ctor(void *r) { new(r) AbyssEngine::AERandom(); }
 
 void Generator_ctor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
