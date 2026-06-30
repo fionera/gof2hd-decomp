@@ -157,8 +157,8 @@ void TargetFollowCamera::rotateAroundTarget(float x, float y, float z) {
 
 void TargetFollowCamera::hit() {
     if (this->rumbleActive != 0) return;
-    this->rumbleTimer = 1000;
     this->rumbleActive = 1;
+    this->rumbleTimer = 1000;
     this->rumbleStrength = 6;
     this->smallRumble = 0;
 }
