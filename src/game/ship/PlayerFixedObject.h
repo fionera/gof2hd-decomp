@@ -32,7 +32,7 @@ public:
     float &spawnY() { return this->posY; }
     float &spawnZ() { return this->posZ; }
     AEGeometry *&secondaryGeometry() { return this->crateGeometry; }
-    uint8_t &collisionEnabled() { return reinterpret_cast<uint8_t &>(this->shipGroupFlag); }
+    uint8_t &collisionEnabled() { return reinterpret_cast<uint8_t &>(this->field_0x8c); } // ASM: orig reads @0x8c
     Vector &targetPos() { return reinterpret_cast<Vector &>(this->field_0x90); }
     int &kind() { return this->type; }
     int &explosionTimer() { return this->field_0xd8; }

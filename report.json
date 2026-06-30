@@ -17918,14 +17918,6 @@
    "usize": 50
   },
   {
-   "name": "_ZN17PlayerFixedObject7collideEfff",
-   "pct": 87.2,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 138
-  },
-  {
    "name": "_ZN5Agent21setWingmanFriendNamesEP5ArrayIPN11AbyssEngine6StringEE",
    "pct": 87.2,
    "byte": false,
@@ -17940,14 +17932,6 @@
    "linked": false,
    "osize": 138,
    "usize": 130
-  },
-  {
-   "name": "_ZN17PlayerFixedObject12outerCollideEfff",
-   "pct": 87.4,
-   "byte": false,
-   "linked": false,
-   "osize": 144,
-   "usize": 142
   },
   {
    "name": "_ZN8KIPlayerD1Ev",
@@ -18350,6 +18334,14 @@
    "usize": 10
   },
   {
+   "name": "_ZN17PlayerFixedObject7collideEfff",
+   "pct": 88.9,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 138
+  },
+  {
    "name": "_ZN21ParticleSystemManager4initEv",
    "pct": 88.9,
    "byte": false,
@@ -18460,6 +18452,14 @@
    "linked": false,
    "osize": 132,
    "usize": 112
+  },
+  {
+   "name": "_ZN17PlayerFixedObject12outerCollideEfff",
+   "pct": 89.1,
+   "byte": false,
+   "linked": false,
+   "osize": 144,
+   "usize": 142
   },
   {
    "name": "_ZN6Sparks6updateEi",
