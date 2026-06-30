@@ -210,7 +210,7 @@ static inline void Vec_sub(void *out, const void *a, const void *b) { for(int _i
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-float Vec_length(const void *v); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
+static inline float Vec_length(const void *v) { const float*_p=(const float*)v; return __builtin_sqrtf(_p[0]*_p[0]+_p[1]*_p[1]+_p[2]*_p[2]); }
 
 int PE_hat_aimAndFire(PlayerEgo *self, int dt);
 
