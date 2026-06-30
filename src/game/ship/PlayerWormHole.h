@@ -15,6 +15,7 @@ public:
     uint8_t _pad_0x140[16];
     int timer;
     int scale;
+    int field_0x158; // ASM (ctor): missionLock written at [this,#348]=0x15c, not 0x158; 4-byte field precedes
     uint8_t missionLock;
 
     PlayerWormHole(int playerId, AEGeometry *geometry, float x, float y, float z, bool visible);
