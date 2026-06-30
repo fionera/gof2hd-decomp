@@ -150,8 +150,8 @@ void ArraySetLength(unsigned int n, Array<T> &a) {
 
 template<class T>
 void ArrayRemoveAll(Array<T> &a) {
-    a.capacity_ = 1;
     a.count = 0;
+    a.capacity_ = 1;
     a.data_ = static_cast<T *>(realloc(a.data_, sizeof(T)));
     memset(a.data_, 0, a.capacity_ * sizeof(T));
 }
