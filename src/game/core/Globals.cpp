@@ -1573,60 +1573,34 @@ Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) 
     return outArr;
 }
 
-static int **const gGC_p_f31f6 = nullptr;
-static int **const gGC_p_f31fc = nullptr;
-static int **const gGC_p_f3200 = nullptr;
-static int **const gGC_p_f3204 = nullptr;
-static int **const gGC_p_f3208 = nullptr;
-static GameSettingsRecord **const gGC_p_f320e = nullptr;
-static int **const gGC_p_f3216 = nullptr;
-static int **const gGC_p_f322a = nullptr;
-static int **const gGC_p_f3242 = nullptr;
-static int **const gGC_p_f324a = nullptr;
-static int **const gGC_p_f3252 = nullptr;
-static int **const gGC_p_f325a = nullptr;
-static int **const gGC_p_f3262 = nullptr;
-static int **const gGC_p_f326a = nullptr;
-static int **const gGC_p_f3272 = nullptr;
-static int **const gGC_p_f327a = nullptr;
-static int **const gGC_p_f3288 = nullptr;
-static CtorSecondaryObject **const gGC_p_f32bc = nullptr;
-static char **const gGC_p_f32ec = nullptr;
-static char **const gGC_p_f32f4 = nullptr;
-static char **const gGC_p_f3300 = nullptr;
-static int **const gGC_p_f330c = nullptr;
-static int **const gGC_p_f3316 = nullptr;
-static int **const gGC_p_f3366 = nullptr;
-static int **const gGC_p_f3368 = nullptr;
-static int **const gGC_p_f3372 = nullptr;
-static int **const gGC_p_f337c = nullptr;
-static int **const gGC_p_f337e = nullptr;
-static int **const gGC_p_f3388 = nullptr;
-static int **const gGC_p_f3390 = nullptr;
-static int **const gGC_p_f339e = nullptr;
+// Globals::Globals() below zero-initializes the Globals static members directly
+// (the original reads each via a GOT-indirect load, which &Global compiles to in
+// PIC). Previously stubbed as null gGC_p_* placeholder pointers, which folded the
+// constructor to a 2-byte stub. Each placeholder->member mapping was verified
+// against the original via Ghidra (recovered symbol names + plate comments).
 
 Globals::Globals() {
     Globals *self = this;
-    GameSettingsRecord *settings = *gGC_p_f320e;
-    CtorSecondaryObject *secondary = *gGC_p_f32bc;
-    int *p5 = *gGC_p_f3216;
-    int *p7 = *gGC_p_f3200;
-    int *p9 = *gGC_p_f3208;
-    int *p11 = *gGC_p_f31fc;
-    int *p12 = *gGC_p_f3204;
+    GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
+    CtorSecondaryObject *secondary = (CtorSecondaryObject *) Globals::hints;
+    int *p5 = (int *) &Globals::recordHandler;
+    int *p7 = &Globals::lastStationMusicPlayed;
+    int *p9 = &Globals::lastCampaignMissionFailCount;
+    int *p11 = &Globals::lastSpaceMusicPlayed;
+    int *p12 = &Globals::lastCampaignMissionFailed;
 
-    **gGC_p_f31f6 = 0;
-    **gGC_p_f322a = 0;
-    **gGC_p_f3242 = 0;
-    **gGC_p_f324a = 0;
-    **gGC_p_f3252 = 0;
-    **gGC_p_f325a = 0;
-    **gGC_p_f3262 = 0;
-    **gGC_p_f326a = 0;
-    **gGC_p_f3272 = 0;
-    **gGC_p_f327a = 0;
+    Globals::Canvas = 0;
+    Globals::shipTemplate = 0;
+    Globals::gameText = 0;
+    Globals::font = 0;
+    Globals::fontAlien = 0;
+    Globals::fontLangSelect = 0;
+    Globals::rnd = 0;
+    Globals::globals = 0;
+    Globals::layout = 0;
+    Globals::appManager = 0;
     *p5 = 0;
-    **gGC_p_f3288 = 0;
+    Globals::generator = 0;
 
     *(int *) self = 0;
 
@@ -1661,16 +1635,16 @@ Globals::Globals() {
     settings->intAt48 = 0;
     secondary->slot0 = 0;
 
-    **gGC_p_f32ec = 0;
-    **gGC_p_f32f4 = 0;
+    Globals::gameLoaded = 0;
+    Globals::gameSaving = 0;
     *p11 = -1;
-    **gGC_p_f3300 = 0;
+    Globals::initMemoryWarning = 0;
     *p7 = -1;
     *p9 = 0;
     *p12 = -1;
 
-    int *p7b = *gGC_p_f330c;
-    int *p5b = *gGC_p_f3316;
+    int *p7b = (int *) &Globals::imageFactory;
+    int *p5b = (int *) &Globals::achievements;
 
     float fv = settings->qualityLevel;
     int v54 = 0x247;
@@ -1683,17 +1657,17 @@ Globals::Globals() {
     if (fv <= 0.0f) v58 = 0x16d;
     settings->resHeight = v58;
 
-    int *p11b = *gGC_p_f3366;
-    **gGC_p_f3368 = 0;
-    **gGC_p_f3372 = 0;
-    int *p9b = *gGC_p_f337c;
-    **gGC_p_f337e = -1;
-    **gGC_p_f3388 = 0;
-    **gGC_p_f3390 = 0;
+    int *p11b = (int *) &Globals::galaxy;
+    Globals::instantActionScore = 0;
+    Globals::instantActionWave = 0;
+    int *p9b = (int *) &Globals::status;
+    Globals::instantActionType = -1;
+    Globals::instantActionPlayerName = 0;
+    Globals::items = 0;
     *p9b = 0;
     settings->shortAt60 = 0x100;
     *p11b = 0;
-    int *p8b = *gGC_p_f339e;
+    int *p8b = (int *) &Globals::ships;
     *p5b = 0;
     *p7b = 0;
     *p8b = 0;
