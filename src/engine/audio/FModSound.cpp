@@ -37,7 +37,7 @@ static inline int FMOD_Event_getParameterByIndex(FMOD::Event *event, int idx, FM
 
 static inline int FMOD_EventParameter_setValue(FMOD::EventParameter *p, float v) { return p->setValue(v); }
 
-int FMOD_EventSystem_init(FMOD::EventSystem *system, int maxch, unsigned char *extdriver, int flags);
+static inline int FMOD_EventSystem_init(FMOD::EventSystem *system, int maxch, unsigned char *extdriver, int flags) { return system->init(maxch, (FMOD_INITFLAGS)(uintptr_t)extdriver, (void*)(uintptr_t)flags, (FMOD_EVENT_INITFLAGS)0); }
 
 int FMOD_EventSystem_load(FMOD::EventSystem *system, const char *name, FMOD::EventProject *proj);
 
