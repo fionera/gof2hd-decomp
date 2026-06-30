@@ -44,8 +44,8 @@ void PlayerCreature::calmDown() {
 }
 
 void PlayerCreature::unhook() {
-    this->caught = 0;
     this->rageTimer = 0;
+    this->caught = 0;
     this->raging = 0;
     this->endurance = this->maxEndurance;
 }
