@@ -90,22 +90,25 @@ namespace {
         uint32_t capacity;
     };
 
-    char *g_Camera_frustumEnabledFlag;
-    char *g_Engine_fboEnabledFlag;
-    char *g_Engine_shaderModeFlag;
-    char *g_GameText_arabicEnabledFlag;
-    char *g_MeshIntersect_flipVFlag;
-    char *g_Mesh_extraArraysFlag;
-    char *g_Mesh_keepCpuCopyFlag;
-    char *g_Mesh_shaderPathFlag;
-    char *g_Mesh_tangentDelFlag;
-    char *g_Mesh_tangentEnabledFlag;
-    int *g_Mesh_vboByteCounter;
-    char *g_Mesh_vboEnabledFlag;
-    char *g_SpriteSystem_tangentFlag;
-    char *g_SpriteSystem_uvFlipFlag;
+    // Defined in EngineFlags.cpp (separate TU) — see the note there. Referencing
+    // them via extern keeps their values opaque so the optimizer can't fold the
+    // flag-gated function bodies into early-return stubs.
+    extern char *g_Camera_frustumEnabledFlag;
+    extern char *g_Engine_fboEnabledFlag;
+    extern char *g_Engine_shaderModeFlag;
+    extern char *g_GameText_arabicEnabledFlag;
+    extern char *g_MeshIntersect_flipVFlag;
+    extern char *g_Mesh_extraArraysFlag;
+    extern char *g_Mesh_keepCpuCopyFlag;
+    extern char *g_Mesh_shaderPathFlag;
+    extern char *g_Mesh_tangentDelFlag;
+    extern char *g_Mesh_tangentEnabledFlag;
+    extern int *g_Mesh_vboByteCounter;
+    extern char *g_Mesh_vboEnabledFlag;
+    extern char *g_SpriteSystem_tangentFlag;
+    extern char *g_SpriteSystem_uvFlipFlag;
 
-    void (*g_MeshRelease_freeFn)(AbyssEngine::Engine *, AbyssEngine::Mesh **);
+    extern void (*g_MeshRelease_freeFn)(AbyssEngine::Engine *, AbyssEngine::Mesh **);
 
     template<class T>
     inline void ArrayAddCachedRaw(T item, EngineArrayHeader *arrayHeader) {
