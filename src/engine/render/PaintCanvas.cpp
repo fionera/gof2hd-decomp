@@ -682,9 +682,9 @@ void paintcanvas_ext_child_link(void *, void *, void *); // lint: void_ptr (exte
 
 void paintcanvas_ext_transform_dirty(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void tcg_glActiveTexture(unsigned unit);
+static inline void tcg_glActiveTexture(unsigned unit) { glActiveTexture(unit); }
 
-void tcg_glBindTexture(unsigned target, unsigned tex);
+static inline void tcg_glBindTexture(unsigned target, unsigned tex) { glBindTexture(target, tex); }
 
 int paintcanvas_ext_ss2_sscreate(void *eng, unsigned short id, bool b, void **out);
 

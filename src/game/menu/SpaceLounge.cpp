@@ -24,8 +24,8 @@
 
 #include "engine/render/PaintCanvas.h"
 
-int pc_GetWidth(PaintCanvas * self);
-int pc_GetHeight(PaintCanvas * self);
+static inline int pc_GetWidth(PaintCanvas *self) { return self->GetWidth(); }
+static inline int pc_GetHeight(PaintCanvas *self) { return self->GetHeight(); }
 
 static inline int &layoutMetric(Layout *layout, int off) {
     return *(int *) ((char *) layout + off);
