@@ -372,7 +372,7 @@ int Status::missionFailed(bool docked, int64_t time) {
         if (cur->hasFailed() != 0) {
             return 0;
         }
-        if (cur != 0 && cur->getType() == 0xd && docked && this->field_0x111 != 0) {
+        if (cur != 0 && cur->getType() == 0xd && docked && this->field_0xf1 != 0) {
             return (int) (intptr_t) cur;
         }
     }
