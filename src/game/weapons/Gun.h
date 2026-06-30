@@ -35,12 +35,14 @@ public:
     uint8_t *hitFlags;
     int initialLifetime;
     int fireDelay;
+    // ASM (BeamGun::render etc.): active read at [gun,#76]=0x4c; ours had it @0x48. 4-byte field precedes;
+    // compensated by dropping _pad_0x50 (pitchRate now fills 0x50..0x54), keeping field_0x54 pinned @0x54.
+    int field_0x48;
     uint8_t active;
     uint8_t hitSmall;
 
     float pitchRate;
 
-    uint8_t _pad_0x50[4]; // drift: 4 bytes missing so field_0x54 lands at 0x54
     uint8_t field_0x54;
     int itemIndex;
     ItemSort weaponType;
