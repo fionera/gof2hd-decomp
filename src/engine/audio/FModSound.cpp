@@ -67,7 +67,7 @@ static inline int FMOD_Event_start(FMOD::Event *event) { return event->start(); 
 int FMOD_EventSystem_set3DListenerAttributes(int system, unsigned char *zero, Vector *pos, Vector *vel,
                                              Vector *forward);
 
-int FMOD_EventSystem_update(int system);
+static inline int FMOD_EventSystem_update(int system) { return ((FMOD::EventSystem*)(uintptr_t)system)->update(); }
 
 float VectorSignedToFloat(int v, int mode);
 
