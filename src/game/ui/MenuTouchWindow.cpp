@@ -1272,20 +1272,14 @@ void _mtw_TouchButton_ctor(void *btn, void *label, int a, int x, int y, int w,
                            // lint: void_ptr (external symbol; param type is mangling-load-bearing)
                            char type, char id);
 
-static int *const *const gAddBtnScreenW = nullptr;
-static Layout *const *const gAddBtnLayout = nullptr;
-static int *const *const gAddBtnScreenH = nullptr;
-static int *const *const gAddBtnPosX = nullptr;
-static int *const *const gAddBtnPosY = nullptr;
-static uint32_t *const *const gAddBtnCount = nullptr;
 
 void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton *> *arr, int yOff) {
     TouchButton *btn = (TouchButton *) ::operator new(0xc8);
 
     int btnW = this->buttonWidth;
-    int screenW = **gAddBtnScreenW;
-    int screenH = **gAddBtnScreenH;
-    int rowH = ((Layout *) *gAddBtnLayout)->field_0x30_rowHeight;
+    int screenW = Globals::w;
+    int screenH = Globals::h;
+    int rowH = (Globals::layout)->field_0x30_rowHeight;
 
     int x = screenW / 2 - btnW / 2;
     int y = (rowH + this->buttonRowGap) * row + (yOff - this->buttonYBias) + screenH / 2;
@@ -1295,8 +1289,8 @@ void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Arra
     ((TouchButton *) btn)->field_0x4 = id >> 31;
     ArrayAdd<TouchButton *>((TouchButton *) btn, *arr);
 
-    int *posX = (int *) *gAddBtnPosX;
-    int *posY = (int *) *gAddBtnPosY;
+    int *posX = Globals::sub_menu_buttons_x;
+    int *posY = Globals::sub_menu_buttons_y;
     for (uint32_t i = 0; i < arr->count; i++) {
         if (i < 10) {
             char buf[12];
@@ -1308,7 +1302,7 @@ void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Arra
             posY[i] = (int) *(float *) (buf + 4);
         }
     }
-    **gAddBtnCount = arr->count;
+    Globals::sub_menu_button_count = arr->count;
 }
 
 void MenuTouchWindow::setCutsceneMode(bool mode) {
@@ -1323,13 +1317,9 @@ void MenuTouchWindow::setCutsceneMode(bool mode) {
     }
 }
 
-static int *const *const gPrevScreenW = nullptr;
-static Layout *const *const gPrevLayout = nullptr;
-static int *const *const gPrevRowCnt = nullptr;
 
 typedef void (*RefreshFn)();
 
-static RefreshThunk *const gPrevRefreshThunk = nullptr;
 
 void MenuTouchWindow::loadPreviewRecords() {
     this->scrollOffset = 0;
@@ -1341,9 +1331,9 @@ void MenuTouchWindow::loadPreviewRecords() {
     this->dragStartX = 0;
     this->dragging = 0;
 
-    int *metrics = (int *) *gPrevScreenW;
-    Layout *layout = (Layout *) *gPrevLayout;
-    int *rowObj = (int *) *gPrevRowCnt;
+    int *metrics = &Globals::h;
+    Layout *layout = Globals::layout;
+    int *rowObj = &Globals::recordSlots;
 
     this->contentHeight = (((metrics[0] - layout->field_0xc_leftMargin) - layout->windowTopInset)
                            - layout->field_0x20_top) - layout->field_0x24;
@@ -1360,7 +1350,6 @@ void MenuTouchWindow::loadPreviewRecords() {
     this->previewRecords = (Array<GameRecord *> *) _mtw_RecordHandler_readAllPreviewRecords(rh);
     _mtw_RecordHandler_dtor(rh);
 
-    gPrevRefreshThunk->refreshFn();
 }
 
 
