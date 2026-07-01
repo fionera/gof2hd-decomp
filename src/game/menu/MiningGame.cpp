@@ -386,9 +386,11 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
 static const int g_MiningGame_layerTableRender[49] = {250,210,170,140,110,80,50, 250,210,170,140,110,80,0, 250,200,150,100,70,0,0, 250,170,120,80,0,0,0, 250,160,80,0,0,0,0, 250,120,0,0,0,0,0, 250,0,0,0,0,0,0};
 
 
-static void (*g_MiningGame_drawLayer)(PaintCanvas *canvas, int image, int x, int y,
-                                      int w, int h, int anchor, int tile,
-                                      int frame) = nullptr;
+static void MG_drawLayer(PaintCanvas *canvas, int image, int x, int y,
+                         int w, int h, int align, int anchor, int flip) {
+    canvas->DrawImage2D((unsigned int) image, x, y, w, h,
+                        (unsigned char) align, (unsigned char) anchor, (unsigned char) flip);
+}
 
 
 static char g_MiningGame_oreSuffix[1] = {};
@@ -410,7 +412,7 @@ void MiningGame::render2D() {
     const int *layerTable = g_MiningGame_layerTableRender;
     Layout **layoutHolder = &Globals::layout;
     Layout *layout = *layoutHolder;
-    void(*drawLayer)(PaintCanvas *, int, int, int, int, int, int, int, int) = g_MiningGame_drawLayer;
+    void(*drawLayer)(PaintCanvas *, int, int, int, int, int, int, int, int) = MG_drawLayer;
 
     for (int layerIndex = this->currentLayer; layerIndex < this->targetLayer; layerIndex++) {
         int raw = layerTable[(layerIndex - this->targetLayer * 7) + 0x31];
