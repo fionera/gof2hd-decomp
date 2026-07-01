@@ -1,7 +1,6 @@
 #include "engine/render/LensFlare.h"
+#include "game/core/Globals.h"
 
-static PaintCanvas *const gLensFlareCanvas = nullptr;
-static PaintCanvas *const gLF_Canvas2 = nullptr;
 
 static const uint32_t gFlareR[5] = {0};
 static const uint32_t gFlareG[5] = {0};
@@ -9,7 +8,7 @@ static const uint32_t gFlareB[5] = {0};
 
 LensFlare::LensFlare(PaintCanvas *canvas) {
     this->images = new uint32_t[3];
-    PaintCanvas *singleton = *(PaintCanvas **) gLensFlareCanvas;
+    PaintCanvas *singleton = Globals::Canvas;
     for (int i = 0; i != 3; ++i)
         LensFlare_Image2DCreate(singleton, (short) (i + 0x508), &this->images[i]);
     this->width = LensFlare_GetWidth(canvas);
@@ -67,7 +66,7 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex) {
     float fade = base * (1.0f - dist / halfH);
     this->intensity = fade;
 
-    PaintCanvas *canvas = *(PaintCanvas **) gLF_Canvas2;
+    PaintCanvas *canvas = Globals::Canvas;
     uint32_t img0 = this->images[0];
     uint32_t img1 = this->images[1];
     uint32_t img2 = this->images[2];
