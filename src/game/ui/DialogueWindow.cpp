@@ -175,14 +175,8 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     this->loadContent();
 }
 
-static GameText *g_dw_gameTextLoad_storage = nullptr;
-static GameText **g_dw_gameTextLoad = &g_dw_gameTextLoad_storage;
 
-static FModSound *g_dw_soundLoad_storage = nullptr;
-static FModSound **g_dw_soundLoad = &g_dw_soundLoad_storage;
 
-static ImageFactory *g_dw_imageFactoryLoad_storage = nullptr;
-static ImageFactory **g_dw_imageFactoryLoad = &g_dw_imageFactoryLoad_storage;
 
 static const char g_dw_emptyLoad[] = "";
 
@@ -193,8 +187,8 @@ static int g_dw_campaignSuccessTextIds[0x1000];
 static int *g_dw_defaultClientImage = nullptr;
 
 void DialogueWindow::loadContent() {
-    GameText *gameText = *g_dw_gameTextLoad;
-    FModSound *sound = *g_dw_soundLoad;
+    GameText *gameText = Globals::gameText;
+    FModSound *sound = Globals::sound;
 
     this->nextButton->replaceTextKeepSize(*gameText->getText(0xb4));
     this->mirrorFace = 0;
@@ -278,7 +272,7 @@ void DialogueWindow::loadContent() {
 
     this->prevButton->setVisible(this->page != 0);
     this->moreButton->setVisible(this->length() > 1);
-    this->faceParts = (*g_dw_imageFactoryLoad)->loadChar(this->clientImage);
+    this->faceParts = (Globals::imageFactory)->loadChar(this->clientImage);
 
     if (this->isLastPage() != 0) {
         this->nextButton->replaceTextKeepSize(*gameText->getText(0xb5));
@@ -310,8 +304,6 @@ DialogueWindow::DialogueWindow() {
 static EngineSoundConfig g_dw_soundConfig_storage;
 static EngineSoundConfig *g_dw_soundConfig = &g_dw_soundConfig_storage;
 
-static FModSound *g_dw_fmodSound_storage = nullptr;
-static FModSound **g_dw_fmodSound = &g_dw_fmodSound_storage;
 
 void DialogueWindow::update(int dt) {
     if (this->scrollWindow != 0) {
@@ -321,7 +313,7 @@ void DialogueWindow::update(int dt) {
         this->choiceWindow->update(dt);
     }
     if (g_dw_soundConfig->autoAdvanceEnabled != 0 && this->voiceSound != -1) {
-        FModSound *sound = *g_dw_fmodSound;
+        FModSound *sound = Globals::sound;
         sound->getPlayingProgress(this->voiceSound);
         if (sound->isPlaying(this->voiceSound) == 0 && this->isLastPage() == 0) {
             if (this->autoAdvanceTimer >= this->pauseLength) {
@@ -332,20 +324,10 @@ void DialogueWindow::update(int dt) {
     }
 }
 
-static FModSound *g_dw_soundChoice_storage = nullptr;
-static FModSound **g_dw_soundChoice = &g_dw_soundChoice_storage;
 
-static FModSound *g_dw_soundVoice_storage = nullptr;
-static FModSound **g_dw_soundVoice = &g_dw_soundVoice_storage;
 
-static FModSound *g_dw_soundPrev_storage = nullptr;
-static FModSound **g_dw_soundPrev = &g_dw_soundPrev_storage;
 
-static FModSound *g_dw_soundNext_storage = nullptr;
-static FModSound **g_dw_soundNext = &g_dw_soundNext_storage;
 
-static GameText *g_dw_gameTextTouchEnd_storage = nullptr;
-static GameText **g_dw_gameTextTouchEnd = &g_dw_gameTextTouchEnd_storage;
 
 int DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->choiceActive != 0) {
@@ -357,30 +339,30 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
         if (r != 0) return 0;
         this->choiceActive = 0;
         if (Globals::status->getCurrentCampaignMission() == 0x0f) {
-            FModSound *sound = *g_dw_soundChoice;
+            FModSound *sound = Globals::sound;
             sound->play(0xa2, 0, 0, 0);
             sound->stop(sound->currentMusicEvent);
             sound->play(0x88, 0, 0, 0);
         }
         if (this->voiceSound != -1) {
-            (*g_dw_soundVoice)->stop(this->voiceSound);
+            (Globals::sound)->stop(this->voiceSound);
         }
         return 1;
     }
 
     this->scrollWindow->OnTouchEnd(x, y);
     if (this->prevButton->OnTouchEnd(x, y) != 0) {
-        (*g_dw_soundPrev)->stop(this->voiceSound);
+        (Globals::sound)->stop(this->voiceSound);
         this->previousPage();
     }
     if (this->nextButton->OnTouchEnd(x, y) != 0) {
-        (*g_dw_soundNext)->stop(this->voiceSound);
+        (Globals::sound)->stop(this->voiceSound);
         if (this->nextPage() == 0) {
             return 1;
         }
     }
     if (this->moreButton->OnTouchEnd(x, y) != 0) {
-        String *text = (*g_dw_gameTextTouchEnd)->getText(0x18c);
+        String *text = (Globals::gameText)->getText(0x18c);
         this->choiceWindow->set(*text, true);
         this->choiceActive = 1;
     }
@@ -393,17 +375,9 @@ static int g_dw_successPartCounts[0xa2];
 
 static const char g_dw_defaultAgentName[] = "";
 
-static int g_dw_screenWidth_storage = 0;
-static int *g_dw_screenWidth = &g_dw_screenWidth_storage;
 
-static Layout *g_dw_layoutInit_storage = nullptr;
-static Layout **g_dw_layoutInit = &g_dw_layoutInit_storage;
 
-static int g_dw_screenHeight_storage = 0;
-static int *g_dw_screenHeight = &g_dw_screenHeight_storage;
 
-static GameText *g_dw_gameTextInit_storage = nullptr;
-static GameText **g_dw_gameTextInit = &g_dw_gameTextInit_storage;
 
 static inline int half_round_to_zero(int v) {
     return (v + ((unsigned) v >> 31)) >> 1;
@@ -435,13 +409,13 @@ int DialogueWindow::init() {
     this->autoAdvanceTimer = 0;
     this->mirrorFace = 0;
 
-    Layout *layout = *g_dw_layoutInit;
+    Layout *layout = Globals::layout;
     int frameW = layout->field_0x54;
     int frameH = layout->field_0x58;
     this->frameWidth = frameW;
     this->frameHeight = frameH;
-    this->frameX = half_round_to_zero(*g_dw_screenWidth) - half_round_to_zero(frameW);
-    this->frameY = half_round_to_zero(*g_dw_screenHeight) - half_round_to_zero(frameH);
+    this->frameX = half_round_to_zero(Globals::w) - half_round_to_zero(frameW);
+    this->frameY = half_round_to_zero(Globals::h) - half_round_to_zero(frameH);
 
     int margin = layout->field_0x4c;
     this->scrollWindow = new ScrollTouchWindow(
@@ -453,21 +427,21 @@ int DialogueWindow::init() {
 
     this->choiceWindow = new ChoiceWindow();
 
-    GameText *gameText = *g_dw_gameTextInit;
-    layout = *g_dw_layoutInit;
+    GameText *gameText = Globals::gameText;
+    layout = Globals::layout;
     margin = layout->field_0x4c;
     this->prevButton = new TouchButton(*gameText->getText(0xb3), 5,
                                        this->frameX + margin, this->frameY - margin + this->frameHeight,
                                        layout->field_0x50, 0x21, 4);
 
-    layout = *g_dw_layoutInit;
+    layout = Globals::layout;
     margin = layout->field_0x4c;
     this->nextButton = new TouchButton(*gameText->getText(0xb4), 6,
                                        this->frameX + this->frameWidth - margin,
                                        this->frameY - margin + this->frameHeight,
                                        layout->field_0x50, 0x22, 4);
 
-    layout = *g_dw_layoutInit;
+    layout = Globals::layout;
     margin = layout->field_0x4c;
     this->moreButton = new TouchButton(*gameText->getText(0x18b), 0,
                                        this->frameX + half_round_to_zero(this->frameWidth),
@@ -479,14 +453,8 @@ int DialogueWindow::init() {
 
 static const char g_dw_emptyString[] = "";
 
-static ImageFactory *g_dw_imageFactoryCtor_storage = nullptr;
-static ImageFactory **g_dw_imageFactoryCtor = &g_dw_imageFactoryCtor_storage;
 
-static GameText *g_dw_gameTextCtor_storage = nullptr;
-static GameText **g_dw_gameTextCtor = &g_dw_gameTextCtor_storage;
 
-static Layout *g_dw_layoutCtor_storage = nullptr;
-static Layout **g_dw_layoutCtor = &g_dw_layoutCtor_storage;
 
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     {
@@ -509,12 +477,12 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     this->moreButton->setVisible(false);
     this->prevButton->setVisible(false);
 
-    this->faceParts = (*g_dw_imageFactoryCtor)->loadChar(parts);
+    this->faceParts = (Globals::imageFactory)->loadChar(parts);
     delete this->nextButton;
     this->nextButton = 0;
 
-    GameText *gameText = *g_dw_gameTextCtor;
-    Layout *layout = *g_dw_layoutCtor;
+    GameText *gameText = Globals::gameText;
+    Layout *layout = Globals::layout;
     int margin = layout->field_0x4c;
     int x = this->frameX + this->frameWidth / 2;
     int y = this->frameY + this->frameHeight - margin;
@@ -589,36 +557,18 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     return *picked;
 }
 
-static int g_dw_drawGuard_storage = 0;
-static int *g_dw_drawGuard = &g_dw_drawGuard_storage;
 
-static Layout *g_dw_layoutDraw_storage = nullptr;
-static Layout **g_dw_layoutDraw = &g_dw_layoutDraw_storage;
 
-static ImageFactory *g_dw_imageFactoryDraw_storage = nullptr;
-static ImageFactory **g_dw_imageFactoryDraw = &g_dw_imageFactoryDraw_storage;
 
-static int g_dw_drawPositionsReady_storage = 0;
-static int *g_dw_drawPositionsReady = &g_dw_drawPositionsReady_storage;
 
-static int g_dw_moreButtonX_storage[4];
-static int *g_dw_moreButtonX = g_dw_moreButtonX_storage;
 
-static int g_dw_moreButtonY_storage[4];
-static int *g_dw_moreButtonY = g_dw_moreButtonY_storage;
 
-static int g_dw_nextButtonX_storage[4];
-static int *g_dw_nextButtonX = g_dw_nextButtonX_storage;
 
-static int g_dw_nextButtonY_storage[4];
-static int *g_dw_nextButtonY = g_dw_nextButtonY_storage;
 
-static int g_dw_drawReadyFlag_storage = 0;
-static int *g_dw_drawReadyFlag = &g_dw_drawReadyFlag_storage;
 
 void DialogueWindow::draw() {
     Globals::Canvas->SetColor((unsigned int) -1);
-    Layout *layout = *g_dw_layoutDraw;
+    Layout *layout = Globals::layout;
     layout->drawMask();
     String title;
     title.Set((this->agentName).data);
@@ -631,9 +581,9 @@ void DialogueWindow::draw() {
 
     this->scrollWindow->draw();
 
-    layout = *g_dw_layoutDraw;
+    layout = Globals::layout;
     int margin = layout->field_0x4c;
-    (*g_dw_imageFactoryDraw)->drawChar(this->faceParts,
+    (Globals::imageFactory)->drawChar(this->faceParts,
                                        this->frameX + margin, this->frameY + margin + layout->windowTopInset,
                                        this->mirrorFace);
 
@@ -645,21 +595,21 @@ void DialogueWindow::draw() {
         this->choiceWindow->draw();
     }
 
-    if (*g_dw_drawPositionsReady == 0) {
+    if (Globals::is_choice_window_visible == 0) {
         Vector pos;
         if (this->moreButton != 0) {
             pos = this->moreButton->getPosition();
-            g_dw_moreButtonX[2] = (int) pos.x;
+            Globals::other_buttons_x[2] = (int) pos.x;
             pos = this->moreButton->getPosition();
-            g_dw_moreButtonY[2] = (int) pos.y;
+            Globals::other_buttons_y[2] = (int) pos.y;
         }
         if (this->nextButton != 0) {
             pos = this->nextButton->getPosition();
-            g_dw_nextButtonX[3] = (int) pos.x;
+            Globals::other_buttons_x[3] = (int) pos.x;
             pos = this->nextButton->getPosition();
-            g_dw_nextButtonY[3] = (int) pos.y;
+            Globals::other_buttons_y[3] = (int) pos.y;
         }
-        *g_dw_drawReadyFlag = 1;
+        Globals::is_dialogue_window_visible = 1;
     }
 }
 
