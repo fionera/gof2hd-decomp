@@ -1,4 +1,5 @@
 #include "engine/file/FileRead.h"
+#include "game/core/Globals.h"
 
 #include "engine/core/AbyssEngine.h"
 #include "engine/core/AERandom.h"
@@ -413,8 +414,6 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count) {
     return stations;
 }
 
-static AbyssEngine::AERandom *gNameRandomA = nullptr;
-static AbyssEngine::AERandom *gNameRandomB = nullptr;
 
 Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second) {
     Array<String *> *names = 0;
@@ -442,9 +441,9 @@ Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second
         }
         case 3: {
             if (second) {
-                path = gNameRandomA->nextInt(2) != 0 ? "names_3_b" : "names_3_a";
+                path = Globals::rnd->nextInt(2) != 0 ? "names_3_b" : "names_3_a";
             } else {
-                path = gNameRandomA->nextInt(2) != 0 ? "names_3_d" : "names_3_c";
+                path = Globals::rnd->nextInt(2) != 0 ? "names_3_d" : "names_3_c";
             }
             break;
         }
@@ -472,9 +471,9 @@ Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second
         }
         case 8: {
             if (second) {
-                path = gNameRandomB->nextInt(2) != 0 ? "names_8_b" : "names_8_a";
+                path = Globals::rnd->nextInt(2) != 0 ? "names_8_b" : "names_8_a";
             } else {
-                path = gNameRandomB->nextInt(2) != 0 ? "names_8_d" : "names_8_c";
+                path = Globals::rnd->nextInt(2) != 0 ? "names_8_d" : "names_8_c";
             }
             break;
         }
