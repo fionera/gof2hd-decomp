@@ -383,11 +383,11 @@ static inline int Station_getIndex(int station) { return (int)(((Station*)(long)
 
 static Status **g_status;
 
-static int *const gLB_dest = nullptr;
+extern int g_android_leaderboard_scores[8];
 
 void Globals::reportLeaderboards() {
     int kills = Globals::status->getKills();
-    *gLB_dest = kills;
+    g_android_leaderboard_scores[0] = kills;
 }
 
 Array<int> *Globals::getSoundResourceList() {
@@ -1945,114 +1945,80 @@ void Globals::releaseResources() {
     }
 }
 
-static PaintCanvas ***const gLF_canvas9 = nullptr;
-static unsigned int ***const gLF_font9 = nullptr;
-static PaintCanvas ***const gLF_canvas10 = nullptr;
-static unsigned int ***const gLF_font10 = nullptr;
-static PaintCanvas ***const gLF_canvas11 = nullptr;
-static unsigned int ***const gLF_font11 = nullptr;
-static PaintCanvas ***const gLF_canvas14 = nullptr;
-static unsigned int ***const gLF_font14 = nullptr;
-static PaintCanvas ***const gLF_canvasD = nullptr;
-static unsigned int ***const gLF_font15 = nullptr;
-static unsigned int ***const gLF_fontDef = nullptr;
-static int **const gLF_canvasMain = nullptr;
-static unsigned **const gLF_fontMain = nullptr;
-static unsigned **const gLF_fontExtra = nullptr;
 
-static char *const gLF_flagA = nullptr;
-static char *const gLF_flagB = nullptr;
-static char *const gLF_flagC = nullptr;
-static char *const gLF_flagD = nullptr;
-static char *const gLF_flagE = nullptr;
-static char *const gLF_flagF = nullptr;
-static char *const gLF_flagG = nullptr;
 
 static inline char flag(char *const g) { return *g; }
 
 void Globals::loadFont(int kind) {
-    PaintCanvas **canvasP;
-    unsigned int **fontP;
     unsigned glyph;
     short spacing;
     unsigned char isMainFontPersian = 1;
 
     switch (kind) {
         case 9: {
-            canvasP = *gLF_canvas9;
-            fontP = *gLF_font9;
-            (*canvasP)->FontCreate((unsigned short) 0x2d74, **fontP, false);
-            if (flag(gLF_flagA) != 0) {
+            Globals::Canvas->FontCreate((unsigned short) 0x2d74, *(unsigned int *) &Globals::font, false);
+            if (flag((char *) &Globals::iPadHD) != 0) {
                 spacing = -6;
             } else {
-                spacing = flag(gLF_flagB) != 0 ? -8 : -4;
+                spacing = flag((char *) &Globals::retinaDisplay) != 0 ? -8 : -4;
             }
-            (*canvasP)->FontSetSpacing(*(unsigned *) fontP, spacing);
+            Globals::Canvas->FontSetSpacing(*(unsigned int *) &Globals::font, spacing);
             isMainFontPersian = 0;
             goto epilogue;
         }
         case 10:
-            canvasP = *gLF_canvas10;
-            fontP = *gLF_font10;
             glyph = 0x2d78;
             break;
         case 0xb:
-            canvasP = *gLF_canvas11;
-            fontP = *gLF_font11;
             glyph = 0x2d76;
             break;
         case 0xe:
-            canvasP = *gLF_canvas14;
-            fontP = *gLF_font14;
             glyph = 0x2d7c;
             break;
         default: {
-            canvasP = *gLF_canvasD;
             if (kind == 0xf) {
-                fontP = *gLF_font15;
-                (*canvasP)->FontCreate((unsigned short) 0x2d7e, **fontP, false);
-                if (flag(gLF_flagC) != 0) {
+                Globals::Canvas->FontCreate((unsigned short) 0x2d7e, *(unsigned int *) &Globals::font, false);
+                if (flag((char *) &Globals::iPadHD) != 0) {
                     spacing = -7;
                 } else {
-                    spacing = flag(gLF_flagD) != 0 ? -10 : -5;
+                    spacing = flag((char *) &Globals::retinaDisplay) != 0 ? -10 : -5;
                 }
             } else {
-                fontP = *gLF_fontDef;
-                (*canvasP)->FontCreate((unsigned short) 0x457, **fontP, false);
-                if (flag(gLF_flagE) != 0) {
+                Globals::Canvas->FontCreate((unsigned short) 0x457, *(unsigned int *) &Globals::font, false);
+                if (flag((char *) &Globals::retinaDisplay) != 0) {
                     spacing = -5;
-                } else if (flag(gLF_flagF) != 0) {
+                } else if (flag((char *) &Globals::n9) != 0) {
                     spacing = -4;
-                } else if (flag(gLF_flagG) != 0) {
+                } else if (flag((char *) &Globals::iPadHD) != 0) {
                     spacing = -4;
                 } else {
                     spacing = -2;
                 }
             }
-            (*canvasP)->FontSetSpacing(*(unsigned *) fontP, spacing);
+            Globals::Canvas->FontSetSpacing(*(unsigned int *) &Globals::font, spacing);
             goto setMain;
         }
     }
 
-    (*canvasP)->FontCreate((unsigned short) glyph, **fontP, false);
-    if (flag(gLF_flagA) != 0) {
+    Globals::Canvas->FontCreate((unsigned short) glyph, *(unsigned int *) &Globals::font, false);
+    if (flag((char *) &Globals::iPadHD) != 0) {
         spacing = -6;
     } else {
-        spacing = flag(gLF_flagB) != 0 ? -8 : -4;
+        spacing = flag((char *) &Globals::retinaDisplay) != 0 ? -8 : -4;
     }
-    (*canvasP)->FontSetSpacing(*(unsigned *) fontP, spacing);
+    Globals::Canvas->FontSetSpacing(*(unsigned int *) &Globals::font, spacing);
 
 setMain:
     isMainFontPersian = 1;
 epilogue: {
-        int *mainCanvas = *gLF_canvasMain;
-        unsigned *mainFont = *gLF_fontMain;
+        int *mainCanvas = (int *) &Globals::Canvas;
+        unsigned *mainFont = (unsigned *) &Globals::fontAlien;
         int cv = *mainCanvas;
 
         ((PaintCanvas *) (long) cv)->field_0x1c = isMainFontPersian;
         ((PaintCanvas *) (long) cv)->FontCreate((unsigned short) 0x51e, *mainFont, false);
         ((PaintCanvas *) (long) *mainCanvas)->FontSetSpacing(*mainFont, 0);
-        unsigned *extra = *gLF_fontExtra;
+        unsigned *extra = (unsigned *) &Globals::fontLangSelect;
         ((PaintCanvas *) (long) *mainCanvas)->FontCreate((unsigned short) 0x2d7a, *extra, false);
 
         ((PaintCanvas *) (long) *mainCanvas)->FontSetSpacing(*extra, 0);
