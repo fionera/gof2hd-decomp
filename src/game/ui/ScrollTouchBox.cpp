@@ -132,7 +132,6 @@ apply:
     this->velocity = (float) pull * 0.5f;
 }
 
-static PaintCanvas **g_ScrollTouchBox_canvas_135778 = nullptr;
 
 static char *g_ScrollTouchBox_flag_135778 = nullptr;
 
@@ -149,7 +148,7 @@ void ScrollTouchBox::draw() {
     if ((unsigned short) shifted < 6)
         special = (0x33U >> (shifted & 0x3f)) & 1;
 
-    PaintCanvas **canvasHolder = g_ScrollTouchBox_canvas_135778;
+    PaintCanvas **canvasHolder = &Globals::Canvas;
     PaintCanvas *canvas = *canvasHolder;
     canvas->SetColor((unsigned int) -1);
 
@@ -209,7 +208,6 @@ void ScrollTouchBox::draw() {
     *g_ScrollTouchBox_dirty_135778 = 1;
 }
 
-static Globals **g_ScrollTouchBox_globals_135600 = nullptr;
 
 static FontMetrics **g_ScrollTouchBox_font_135600 = nullptr;
 
@@ -225,7 +223,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
     this->font = (String *) (std::size_t) font;
     Array<String *> *lineArray = new Array<String *>();
 
-    Globals **globals = g_ScrollTouchBox_globals_135600;
+    Globals **globals = &Globals::globals;
     int lineWidth = this->textWidth;
     this->lines = lineArray;
     (*globals)->getLineArray(font, text, lineWidth, lineArray);
