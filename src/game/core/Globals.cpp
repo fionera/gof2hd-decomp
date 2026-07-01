@@ -693,18 +693,6 @@ static const float gSCS_f8728 = 0;
 static const float gSCS_f872c = 0;
 static const float gSCS_f8730 = 0;
 
-static int **const gSCS_screenH = nullptr;
-static char *const gSCS_isPhone = nullptr;
-static char *const gSCS_flagB = nullptr;
-static CoordsObject *const gSCS_objA = nullptr;
-static CoordsObject *const gSCS_objB = nullptr;
-static char *const gSCS_flagC = nullptr;
-static char *const gSCS_flagD = nullptr;
-static CoordsObject *const gSCS_objC = nullptr;
-static char *const gSCS_flagE = nullptr;
-static char *const gSCS_flagF = nullptr;
-static char *const gSCS_flagG = nullptr;
-static char *const gSCS_flagH = nullptr;
 
 static inline char rdflag(char *const g) { return *g; }
 static inline int *rdobj(int *const g) { return g; }
@@ -715,13 +703,13 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
                              unsigned short &o8, unsigned short &o9, unsigned short &o10,
                              unsigned short &o11, unsigned short &o12, unsigned short &o13,
                              unsigned short &o14) {
-    int screenH = **gSCS_screenH;
-    char isPhone = rdflag(gSCS_isPhone);
+    int screenH = Globals::h;
+    char isPhone = rdflag((char *) &Globals::iPadHD);
     int bottom = ((-0x19 - p2) - p3) + screenH;
 
     float thresh = gSCS_f86f8;
     if (isPhone == 0) {
-        thresh = (rdflag(gSCS_flagB) == 0) ? gSCS_f8700 : gSCS_f86fc;
+        thresh = (rdflag((char *) &Globals::iPadLarge) == 0) ? gSCS_f8700 : gSCS_f86fc;
     }
     if (bottom < p1) {
         p1 = bottom;
@@ -733,10 +721,10 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
     if (thresh < fp1) {
         iv = (int) fp1;
         uv = (unsigned short) iv;
-        rdcoords(gSCS_objB)->steerValue = (int) fp1;
+        rdcoords((CoordsObject *) Globals::options)->steerValue = (int) fp1;
         char flag8;
         if (isPhone == 0) {
-            flag8 = rdflag(gSCS_flagC);
+            flag8 = rdflag((char *) &Globals::iPadLarge);
             goto label8508;
         }
         goto common;
@@ -757,15 +745,15 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
         }
     } else {
         if (isPhone == 0) {
-            char flag = rdflag(gSCS_flagD);
+            char flag = rdflag((char *) &Globals::iPadLarge);
             iv = (flag == 0) ? 0x96 : 0x12c;
-            rdcoords(gSCS_objC)->steerValue = iv;
+            rdcoords((CoordsObject *) Globals::options)->steerValue = iv;
             char flag8 = (flag == 0) ? 0 : 1;
             (void) flag8;
             goto label8508;
         }
         uv = 0xd2;
-        rdcoords(gSCS_objA)->steerValue = 0xd2;
+        rdcoords((CoordsObject *) Globals::options)->steerValue = 0xd2;
     }
 
 common: {
@@ -793,7 +781,7 @@ label8556: {
         float fv2;
         float acc;
         if (isPhone == 0) {
-            bool b = (rdflag(gSCS_flagE) == 0);
+            bool b = (rdflag((char *) &Globals::iPadLarge) == 0);
             acc = (b ? gSCS_f8728 : gSCS_f8724) + val6b;
             fv2 = b ? 2.0f : 4.0f;
         } else {
@@ -808,7 +796,7 @@ label8556: {
         if (f12 <= top - fv2) {
             unsigned short u11;
             if (isPhone == 0) {
-                u11 = (rdflag(gSCS_flagH) == 0) ? 0x14 : 0x28;
+                u11 = (rdflag((char *) &Globals::iPadLarge) == 0) ? 0x14 : 0x28;
             } else {
                 u11 = 0x1c;
             }
@@ -818,7 +806,7 @@ label8556: {
             if (isPhone == 0) {
                 float fv14 = 4.0f;
                 a = 0x15a;
-                char flag8 = rdflag(gSCS_flagF);
+                char flag8 = rdflag((char *) &Globals::iPadLarge);
                 if (flag8 == 0) fv14 = 2.0f;
                 b = 0x10a;
                 float d = f12 - (top - fv14);
@@ -836,7 +824,7 @@ label8556: {
                 base = base + scale * fr;
                 o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
                 float fv15 = 4.0f;
-                if (rdflag(gSCS_flagG) == 0) fv15 = 2.0f;
+                if (rdflag((char *) &Globals::iPadLarge) == 0) fv15 = 2.0f;
                 o12 = (unsigned short) ((0.0f < top - fv15) ? (short) (int) (top - fv15) : 0);
             } else {
                 a = 0xf3;
@@ -1807,22 +1795,6 @@ static const float gSCF_be8 = 0;
 static const float gSCF_bec = 0;
 static const float gSCF_bf0 = 0;
 
-static char *const gSCF_isPhone = nullptr;
-static char *const gSCF_flagB = nullptr;
-static int *const gSCF_screenW = nullptr;
-static char *const gSCF_flagC = nullptr;
-static int *const gSCF_screenW2 = nullptr;
-static CoordsObject *const gSCF_objA = nullptr;
-static char *const gSCF_flagD = nullptr;
-static CoordsObject *const gSCF_objB = nullptr;
-static char *const gSCF_flagE = nullptr;
-static char *const gSCF_flagF = nullptr;
-static int *const gSCF_screenW3 = nullptr;
-static CoordsObject *const gSCF_objC = nullptr;
-static char *const gSCF_flagG = nullptr;
-static char *const gSCF_flagH = nullptr;
-static char *const gSCF_flagI = nullptr;
-static char *const gSCF_flagJ = nullptr;
 
 static inline char rf(char *const g) { return *g; }
 static inline int rint(int *const g) { return *g; }
@@ -1839,23 +1811,23 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
                             unsigned short &o11, unsigned short &o12, unsigned short &o13,
                             unsigned short &o14, unsigned short &o15, unsigned short &o16,
                             unsigned short &o17) {
-    char isPhone = rf(gSCF_isPhone);
+    char isPhone = rf((char *) &Globals::iPadHD);
     float fbase = gSCF_b14;
     float fwid = gSCF_b10;
     if (isPhone == 0) {
-        bool b = (rf(gSCF_flagB) == 0);
+        bool b = (rf((char *) &Globals::iPadLarge) == 0);
         fwid = b ? gSCF_b84 : gSCF_b80;
         fbase = b ? gSCF_b8c : gSCF_b88;
     }
 
-    int colDelta = rint(gSCF_screenW) - p2;
+    int colDelta = rint((int *) &Globals::h) - p2;
     float fcol = VectorSignedToFloat(colDelta, 0);
     float fp1 = VectorSignedToFloat(p1, 0);
     float fmax = fp1;
     if (fwid + fcol < fp1) {
         fmax = gSCF_b7c;
         if (isPhone == 0) {
-            fmax = (rf(gSCF_flagC) == 0) ? gSCF_b84 : gSCF_b80;
+            fmax = (rf((char *) &Globals::iPadLarge) == 0) ? gSCF_b84 : gSCF_b80;
         }
         fmax = fmax + fcol;
     }
@@ -1866,35 +1838,35 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     if (fbase < fmax) {
         float t = gSCF_b7c;
         if (isPhone == 0) {
-            t = (rf(gSCF_flagE) == 0) ? gSCF_b84 : gSCF_b80;
+            t = (rf((char *) &Globals::iPadLarge) == 0) ? gSCF_b84 : gSCF_b80;
         }
         float fp1b = fp1;
         if (t + fcol < fp1) {
             fp1b = gSCF_b7c;
             if (isPhone == 0) {
-                fp1b = (rf(gSCF_flagF) == 0) ? gSCF_b84 : gSCF_b80;
+                fp1b = (rf((char *) &Globals::iPadLarge) == 0) ? gSCF_b84 : gSCF_b80;
             }
             fp1b = fp1b + fcol;
         }
-        wField = VectorSignedToFloat(rint(gSCF_screenW3) - p2, 0);
+        wField = VectorSignedToFloat(rint((int *) &Globals::w) - p2, 0);
         iv = (int) fp1b;
-        rcoords(gSCF_objC)->fireValue = (int) fp1b;
+        rcoords((CoordsObject *) Globals::options)->fireValue = (int) fp1b;
         adj13 = gSCF_b90;
         if (isPhone == 0) {
-            char flag6 = rf(gSCF_flagG);
+            char flag6 = rf((char *) &Globals::iPadLarge);
             adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
         }
     } else {
         if (isPhone == 0) {
-            wField = VectorSignedToFloat(rint(gSCF_screenW2) - p2, 0);
-            char flag6 = rf(gSCF_flagD);
+            wField = VectorSignedToFloat(rint((int *) &Globals::w) - p2, 0);
+            char flag6 = rf((char *) &Globals::iPadLarge);
             iv = (flag6 == 0) ? 0x96 : 0x12c;
-            rcoords(gSCF_objB)->fireValue = iv;
+            rcoords((CoordsObject *) Globals::options)->fireValue = iv;
             adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
         } else {
             iv = 0xd2;
-            wField = VectorSignedToFloat(rint(gSCF_screenW2) - p2, 0);
-            rcoords(gSCF_objA)->fireValue = 0xd2;
+            wField = VectorSignedToFloat(rint((int *) &Globals::w) - p2, 0);
+            rcoords((CoordsObject *) Globals::options)->fireValue = 0xd2;
         }
     }
 
@@ -1906,7 +1878,7 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     float tail;
     unsigned short u16;
     if (isPhone == 0) {
-        char flag6 = rf(gSCF_flagH);
+        char flag6 = rf((char *) &Globals::iPadLarge);
         float a10 = (flag6 == 0) ? gSCF_bb8 : gSCF_bb4;
         o10 = clampU(a10 + VectorUnsignedToFloat(o6, 0));
         float a11 = (flag6 == 0) ? 4.0f : 8.0f;
@@ -1939,7 +1911,7 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
             u14 = clampU(w + -2.0f);
             t15 = gSCF_be4;
         } else {
-            char flag = rf(gSCF_flagI);
+            char flag = rf((char *) &Globals::iPadLarge);
             float a = (flag == 0) ? gSCF_be8 : -2.0f;
             u14 = clampU(a + gSCF_be4);
             t15 = (flag == 0) ? gSCF_bf0 : gSCF_bec;
@@ -1951,7 +1923,7 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
             u14 = clampU(w + gSCF_bcc);
             t15 = gSCF_bd0;
         } else {
-            char flag = rf(gSCF_flagJ);
+            char flag = rf((char *) &Globals::iPadLarge);
             float a = (flag == 0) ? gSCF_bd8 : gSCF_bd4;
             u14 = clampU(a + gSCF_bd0);
             t15 = (flag == 0) ? gSCF_be0 : gSCF_bdc;
