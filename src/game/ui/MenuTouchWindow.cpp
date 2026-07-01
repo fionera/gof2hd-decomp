@@ -688,13 +688,7 @@ void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int 
                                // lint: void_ptr (external symbol; param type is mangling-load-bearing)
                                char type, char id);
 
-static int *const *const gCrbRowCount = nullptr;
-static long *const *const gCrbTimeVal = nullptr;
-static GameText *const *const *const gCrbGameText = nullptr;
 static const char gCrbDash[] = "";
-static Layout *const *const gCrbLayout = nullptr;
-static int *const *const gCrbScreenW = nullptr;
-static uint8_t *const *const gCrbBackFlag = nullptr;
 
 void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
     Array<Array<String *> *> *rows = this->recordRows;
@@ -717,11 +711,11 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
     Array<Array<String *> *> *outer = (Array<Array<String *> *> *) ::operator new(0xc);
     _mtw_Array_StrArr_ctor(outer);
     this->recordRows = outer;
-    int rowCount = **gCrbRowCount;
+    int rowCount = Globals::recordSlots;
     _mtw_ArraySetLength_StrArr(rowCount, outer);
 
-    long *timeHolder = *gCrbTimeVal;
-    GameText *const *gtHolder = *gCrbGameText;
+    long *timeHolder = (long *) Globals::globals;
+    GameText *const *gtHolder = &Globals::gameText;
 
     for (int i = 0; i < rowCount; i++) {
         Array<String *> *row = (Array<String *> *) ::operator new(0xc);
@@ -839,11 +833,11 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
         ::operator delete(_mtw_TouchButton_dtor(this->okButton));
         this->okButton = 0;
     }
-    Layout *layout = (Layout *) *gCrbLayout;
-    char backForm = **gCrbBackFlag;
+    Layout *layout = Globals::layout;
+    char backForm = Globals::iPad;
     int extra = layout->field_0x108;
     TouchButton *okBtn = (TouchButton *) ::operator new(0xc8);
-    int screenW = **gCrbScreenW;
+    int screenW = Globals::w;
     int x = (screenW - this->listX) - layout->buttonInsetX;
     int y = layout->field_0x20_top + layout->field_0xc_leftMargin + extra;
     String *okLabel = (String *) _mtw_GameText_getText(*gtHolder, inSaveMode ? 0x1fa : 0x1f9);
