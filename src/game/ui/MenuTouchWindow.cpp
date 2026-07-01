@@ -1424,17 +1424,6 @@ void MenuTouchWindow::saveGame(int slot) {
     this->messageShowing = 1;
 }
 
-static uint8_t *const *const gUpStatusGuard = nullptr;
-static Layout *const *const gUpLayout = nullptr;
-static int *const *const gUpScreenW = nullptr;
-static PaintCanvas *const *const gUpCanvas = nullptr;
-static OptionsRecord *const *const gUpOptObj = nullptr;
-static RecordHandler *const *const gUpRecHandler = nullptr;
-static GameText *const *const gUpGameText = nullptr;
-static Status *const *const gUpStatusObj = nullptr;
-static OptionsRecord *const *const gUpDlcFlags = nullptr;
-static int *const *const gUpScreenH = nullptr;
-static Layout *const *const gUpListLayout = nullptr;
 
 static const int g_mtw_upTextIds[16] = {};
 
@@ -1470,13 +1459,13 @@ void MenuTouchWindow::update(int dt) {
 
     if (busy != 0 || this->purchaseRestorePending != 0) {
         if (appData->purchaseReadyFlag != 0) {
-            Layout *layout = (Layout *) *gUpLayout;
-            PaintCanvas *canvas = *gUpCanvas;
-            this->contentHeight = (((**gUpScreenW - layout->field_0x10_rightMargin)
+            Layout *layout = Globals::layout;
+            PaintCanvas *canvas = Globals::Canvas;
+            this->contentHeight = (((Globals::h - layout->field_0x10_rightMargin)
                                     - layout->field_0xc_leftMargin) - layout->field_0x20_top) - layout->field_0x24;
             int ih = ((PaintCanvas *) canvas)->GetImage2DHeight(this->scrollbarImageId);
             this->contentHeightCache = ih;
-            OptionsRecord *optObj = (OptionsRecord *) *gUpOptObj;
+            OptionsRecord *optObj = (OptionsRecord *) Globals::options;
             int rowH = layout->field_0x2c_rowHeight;
             this->menuState = 0xf;
             this->messageShowing = 0;
@@ -1484,13 +1473,13 @@ void MenuTouchWindow::update(int dt) {
             this->pageHeight = (ih + rowH) * 5;
             appData->purchaseReadyFlag = 0;
             optObj->flag_0x3b = 1;
-            _mtw_RecordHandler_saveOptions(*gUpRecHandler);
+            _mtw_RecordHandler_saveOptions(Globals::recordHandler);
             busy = this->dlcMessageShowing;
         }
         if (busy != 0) {
             if (appData->purchaseErrorFlag != 0) {
                 ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-                String *s = (String *) _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[0]);
+                String *s = (String *) _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[0]);
                 _mtw_ChoiceWindow_set(cw, s);
                 this->dlcErrorDialogShowing = 1;
                 this->messageShowing = 1;
@@ -1507,52 +1496,52 @@ void MenuTouchWindow::update(int dt) {
         ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
         switch (code) {
             case 0: {
-                Status *status = (Status *) *gUpStatusObj;
+                Status *status = Globals::status;
                 reinterpret_cast<uint8_t *>(&status->systemVisibilities)[1] = 1;
                 _mtw_Status_setSystemVisibility(status, 0x19, true);
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[1]));
+                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[1]));
             }
             break;
             case 1: {
-                reinterpret_cast<int32_t &>(((Status *) *gUpStatusObj)->field_120) = 3;
-                ((OptionsRecord *) *gUpOptObj)->flag_0x36 = 1;
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[2]));
+                reinterpret_cast<int32_t &>((Globals::status)->field_120) = 3;
+                ((OptionsRecord *) Globals::options)->flag_0x36 = 1;
+                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[2]));
             }
             break;
             case 2: {
-                Status *status = (Status *) *gUpStatusObj;
+                Status *status = Globals::status;
                 reinterpret_cast<uint8_t *>(&status->systemVisibilities)[3] = 1;
                 _mtw_Status_setSystemVisibility(status, 0x19, true);
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[3]));
+                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[3]));
             }
             break;
             case 3: {
-                ((OptionsRecord *) *gUpOptObj)->flag_0x38 = 1;
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[4]));
+                ((OptionsRecord *) Globals::options)->flag_0x38 = 1;
+                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[4]));
             }
             break;
             case 4: {
-                OptionsRecord *flags = (OptionsRecord *) *gUpOptObj;
-                Status *status = (Status *) *gUpStatusObj;
+                OptionsRecord *flags = (OptionsRecord *) Globals::options;
+                Status *status = Globals::status;
                 flags->flag_0x35 = 1;
                 flags->flag_0x39 = 1;
                 flags->flag_0x37 = 1;
                 _mtw_Status_setSystemVisibility(status, 0x19, true);
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[5]));
+                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[5]));
             }
             break;
         }
-        _mtw_RecordHandler_saveOptions(*gUpRecHandler);
+        _mtw_RecordHandler_saveOptions(Globals::recordHandler);
         this->dlcResultDialogShowing = 1;
         this->dlcMessageShowing = 0;
         this->messageShowing = 1;
         appData->purchaseResultFlag = 0;
         handled = true;
     } else if (this->purchaseRestorePending != 0 && appData->purchaseResultFlag != 0) {
-        _mtw_RecordHandler_saveOptions(*gUpRecHandler);
+        _mtw_RecordHandler_saveOptions(Globals::recordHandler);
         if (this->purchaseRestorePending != 0) {
             ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-            _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[6]));
+            _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[6]));
             this->purchaseRestorePending = 0;
         }
         this->dlcResultDialogShowing = 1;
@@ -1563,16 +1552,16 @@ void MenuTouchWindow::update(int dt) {
     }
     (void) handled;
 
-    if (**gUpStatusGuard != 0) {
-        OptionsRecord *flags = (OptionsRecord *) *gUpDlcFlags;
+    if (Globals::isTelekomCustomer != 0) {
+        OptionsRecord *flags = (OptionsRecord *) Globals::options;
         if (this->messageShowing == 0 && flags->flag_0x35 == 0) {
             ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-            _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, g_mtw_upTextIds[7]));
+            _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[7]));
             this->supernovaPurchaseDialogShowing = 1;
             this->messageShowing = 1;
             flags->flag_0x35 = 1;
-            _mtw_Status_setSystemVisibility(*gUpStatusObj, 0x19, true);
-            _mtw_RecordHandler_saveOptions(*gUpRecHandler);
+            _mtw_Status_setSystemVisibility(Globals::status, 0x19, true);
+            _mtw_RecordHandler_saveOptions(Globals::recordHandler);
         }
     }
 
@@ -1580,11 +1569,11 @@ void MenuTouchWindow::update(int dt) {
     if (state == 0) {
         if (this->backgroundEnabled == 1) {
             int rowGap = this->buttonRowGap;
-            Layout *layout = (Layout *) *gUpListLayout;
+            Layout *layout = Globals::layout;
             Array<TouchButton *> *arr = (Array<TouchButton *> *) this->buttons;
             unsigned int n = *(unsigned int *) arr;
             int total = n * layout->field_0x30_rowHeight;
-            int screenH = **gUpScreenH;
+            int screenH = Globals::h;
             for (unsigned int i = 0; i < n; i++) {
                 _mtw_TouchButton_setYPosition(arr->data_[i],
                                               (layout->field_0x30_rowHeight + this->buttonRowGap) * i +
@@ -1603,13 +1592,13 @@ void MenuTouchWindow::update(int dt) {
         }
     } else if (state == 3) {
         int rowGap = this->buttonRowGap;
-        Layout *layout = (Layout *) *gUpListLayout;
+        Layout *layout = Globals::layout;
         Array<TouchButton *> *arr = (Array<TouchButton *> *) this->optionsButtons;
         unsigned int n = *(unsigned int *) arr;
         int firstCount = *(int *) *(void **) this->buttons;
         // lint: void_ptr (decompiled artifact: reads Array header word as a pointer)
         int total = n * layout->field_0x30_rowHeight;
-        int screenH = **gUpScreenH;
+        int screenH = Globals::h;
         for (unsigned int i = 0; i < n; i++) {
             _mtw_TouchButton_setYPosition(arr->data_[i],
                                           (layout->field_0x30_rowHeight + this->buttonRowGap) * i +
@@ -1637,7 +1626,7 @@ void MenuTouchWindow::update(int dt) {
             if (r == 2 || r == 1) {
                 ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
                 int id = (r == 2) ? g_mtw_upTextIds[8] : g_mtw_upTextIds[9];
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, id));
+                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, id));
                 this->storeInitDialogShowing = 0;
                 this->messageShowing = 1;
                 appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
@@ -1653,7 +1642,7 @@ void MenuTouchWindow::update(int dt) {
         if (r == 2 || r == 1) {
             ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
             int id = (r == 2) ? g_mtw_upTextIds[10] : g_mtw_upTextIds[11];
-            _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*gUpGameText, id));
+            _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, id));
             this->screenshotState = -1;
             this->messageShowing = 1;
             appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
