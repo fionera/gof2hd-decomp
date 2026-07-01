@@ -12,6 +12,7 @@
 #include "engine/core/ApplicationManager.h"
 #include "game/ship/ShipDefTable.h"
 #include "game/core/GameSettings.h"
+#include "game/core/Globals.h"
 #include <math.h>
 #include <cstddef>
 
@@ -1720,25 +1721,18 @@ void _mtw_draw_scrollB(void *self); // lint: void_ptr (external symbol; param ty
 
 void _mtw_draw_buttonsB8(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static int *const *const gDrawDrawingFlag = nullptr;
-static int *const *const gDrawStatePub = nullptr;
-static int *const *const gDrawPosX = nullptr;
-static int *const *const gDrawPosY = nullptr;
-static unsigned int *const *const gDrawCountObj = nullptr;
-static int *const *const gDrawColorSrc = nullptr;
-
 void MenuTouchWindow::draw() {
-    **gDrawDrawingFlag = 1;
+    Globals::is_menu_visible = 1;
     int state = this->menuState;
-    **gDrawStatePub = state;
+    Globals::topMenuIndex = state;
 
     Array<TouchButton *> *btnArr = this->buttons;
     if (state == 0xc) btnArr = this->buttonsB4;
     if (state == 0xe) btnArr = this->buttonsB0;
     Array<TouchButton *> *arr = btnArr;
 
-    int *posX = *gDrawPosX;
-    int *posY = *gDrawPosY;
+    int *posX = Globals::sub_menu_buttons_x;
+    int *posY = Globals::sub_menu_buttons_y;
     for (unsigned int i = 0; i < *(unsigned int *) arr; i++) {
         if (i < 10) {
             char buf[12];
@@ -1748,7 +1742,7 @@ void MenuTouchWindow::draw() {
             posY[i] = (int) *(float *) (buf + 4);
         }
     }
-    **gDrawCountObj = *(unsigned int *) arr;
+    Globals::sub_menu_button_count = *(unsigned int *) arr;
 
     if (this->backgroundEnabled != 0) {
         unsigned int s = this->menuState;
@@ -2072,10 +2066,8 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
 
 void _mtw_buildMenu(void *self, int menuType); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static Layout *const *const gCtorLayout = nullptr;
-
 MenuTouchWindow::MenuTouchWindow(int menuType) {
-    Layout *layout = (Layout *) *gCtorLayout;
+    Layout *layout = Globals::layout;
     this->buttonWidth = layout->field_0x294_buttonWidth;
     this->buttonYBias = layout->field_0x298_buttonYBias;
     this->buttonRowGap = layout->field_0x29c_buttonRowGap;
