@@ -1241,10 +1241,6 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
     return 0;
 }
 
-static Status *const *const gLoadStatusFlags = nullptr;
-static GameText *const *const gLoadGameText = nullptr;
-static AppManager *const *const *const gLoadAppHolder = nullptr;
-static int *const *const gLoadResetCell = nullptr;
 
 int MenuTouchWindow::loadGame(int slot) {
     RecordHandler *rh = (RecordHandler *) ::operator new(0x2c);
@@ -1254,7 +1250,7 @@ int MenuTouchWindow::loadGame(int slot) {
     if (rec == 0) {
         _mtw_Status_resetGame();
         ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-        String *s = (String *) _mtw_GameText_getText(*gLoadGameText, 0x64);
+        String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x64);
         _mtw_ChoiceWindow_set(cw, s, false);
         this->loadFailedDialogShowing = 1;
         this->messageShowing = 1;
@@ -1262,7 +1258,7 @@ int MenuTouchWindow::loadGame(int slot) {
         return 0;
     }
 
-    Status *flags = (Status *) *gLoadStatusFlags;
+    Status *flags = Globals::status;
     GameRecord *record = (GameRecord *) rec;
     bool versionOk = (record->versionMismatchFlag == 0) || (reinterpret_cast<uint8_t *>(&flags->systemVisibilities)[3] != 0);
     if (versionOk) {
@@ -1272,16 +1268,16 @@ int MenuTouchWindow::loadGame(int slot) {
             _mtw_GameRecord_load(rec);
             ::operator delete(_mtw_RecordHandler_dtor(rh));
             ::operator delete(_mtw_GameRecord_dtor(rec));
-            AppManager *const *app = *gLoadAppHolder;
+            AppManager *const *app = (AppManager *const *) &Globals::appManager;
             ModStation *ms = (ModStation *) _mtw_AppMgr_GetApplicationModule(*app, 5);
             ((ModStation *) ms)->setGameLoaded();
-            **gLoadResetCell = 0;
+            Globals::switch_to_target_setting = 0;
             _mtw_AppMgr_SetCurrentApplicationModule(*app, 5);
             return 1;
         }
 
         ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-        String *s = (String *) _mtw_GameText_getText(*gLoadGameText, 0x65);
+        String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x65);
         _mtw_ChoiceWindow_set(cw, s, false);
         this->messageShowing = 1;
         ::operator delete(_mtw_GameRecord_dtor(rec));
@@ -1290,7 +1286,7 @@ int MenuTouchWindow::loadGame(int slot) {
     }
 
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-    String *s = (String *) _mtw_GameText_getText(*gLoadGameText, 0x66);
+    String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x66);
     _mtw_ChoiceWindow_set(cw, s, false);
     this->messageShowing = 1;
     ::operator delete(_mtw_GameRecord_dtor(rec));
