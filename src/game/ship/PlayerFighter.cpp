@@ -190,7 +190,6 @@ void PlayerFighter::setLevel(Level *lvl) {
     return f3((int) (intptr_t) lev->field_8c, v, 0);
 }
 
-static int **const gPFC_guard = nullptr;
 static int *const gPFC_sharedRoute = nullptr;
 static const int gPFC_defaultRoute = 0;
 
@@ -198,8 +197,6 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
                              float x, float y, float z, bool flag)
     : KIPlayer(faction, wingmanCmd, player, geom, x, y, z, flag) {
     PlayerFighter * self = this;
-    int *guardP = *gPFC_guard;
-    volatile int saved = *guardP;
 
     self->field_0x200 = 0;
     self->field_0x204 = 0;
@@ -392,11 +389,8 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     return;
 }
 
-static int **const gUpd_guard = nullptr;
 
 void PlayerFighter::update(int dt) {
-    int *guardP = *gUpd_guard;
-    volatile int saved = *guardP;
 
     if (this->state == 4 && this->explosion->isPlaying() == 0 &&
         (this->crateCaptured() == 0 || 60000 < this->deathTimer())) {
@@ -450,7 +444,6 @@ void PlayerFighter::setPosition(float x, float y, float z) {
     return;
 }
 
-static int **const gRoll_guard = nullptr;
 static const float gRoll_threshold = 0;
 static const float gRoll_f18 = 0;
 static const float gRoll_f1c = 0;
@@ -468,8 +461,6 @@ static const float gRoll_f48 = 0;
 
 void PlayerFighter::roll(int angle) {
     PlayerFighter * self = this;
-    int *guardP = *gRoll_guard;
-    volatile int saved = *guardP;
 
     if (self->rollActive() == 0) {
         goto done;
@@ -646,13 +637,10 @@ static inline void AEMath_VectorScale(AbyssEngine::AEMath::Vector *out, float s,
 
 typedef int (*RngFn)(int rng, int bound);
 
-static int **const gIP_guard = nullptr;
 static const float gIP_strength = 0;
 static const RngFn gIP_rngFn = nullptr;
 
 void PlayerFighter::initPush(const Vector &target, int radius) {
-    int *guardP = *gIP_guard;
-    volatile int saved = *guardP;
 
     AbyssEngine::AEMath::Vector gp = this->getPosition();
     float pos[3] = {gp.x, gp.y, gp.z};
@@ -782,12 +770,9 @@ done:
 
 void AEMath_MatrixMul(void *out, void *m); // lint: void_ptr (external symbol; param types load-bearing)
 
-static int **const gPush_guard = nullptr;
 static const float gPush_div = 0;
 
 void PlayerFighter::push(int dt) {
-    int *guardP = *gPush_guard;
-    volatile int saved = *guardP;
 
     if (0 < this->pushTimer()) {
         int remaining = this->pushTimer() - dt;
