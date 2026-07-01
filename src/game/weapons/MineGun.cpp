@@ -1,4 +1,5 @@
 #include "game/weapons/MineGun.h"
+#include "game/core/Globals.h"
 #include "game/weapons/ObjectGun.h"
 #include "game/weapons/Gun.h"
 #include "game/ship/TargetFollowCamera.h"
@@ -9,7 +10,6 @@
 #include "engine/math/AEMath.h"
 #include "engine/math/Transform.h"
 
-static PaintCanvas **g_PaintCanvas = nullptr;
 
 MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
     : ObjectGun(param, gun, mesh, 0, level) {
@@ -29,7 +29,7 @@ MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
         this->readyFlags[i] = 1;
     }
 
-    PaintCanvas **canvas = g_PaintCanvas;
+    PaintCanvas **canvas = &Globals::Canvas;
     this->geometry = new AEGeometry((uint16_t)(mesh + 1), *canvas, false);
     (*canvas)->TransformAddChild(this->transform, this->geometry->transform);
 
@@ -75,7 +75,7 @@ void MineGun::setPlayer(PlayerEgo *player) {
 void MineGun::update(int delta) {
     ObjectGun::update(delta);
 
-    PaintCanvas **canvas = g_PaintCanvas;
+    PaintCanvas **canvas = &Globals::Canvas;
     if (this->gun->active != 0) {
         AbyssEngine::Transform *transform =
                 (AbyssEngine::Transform *) (*canvas)->TransformGetTransform(this->geometry->transform);

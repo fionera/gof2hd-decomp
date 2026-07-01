@@ -1,4 +1,5 @@
 #include "game/mission/Achievements.h"
+#include "game/core/Globals.h"
 #include "game/mission/Item.h"
 #include "game/mission/Status.h"
 #include "game/ship/Ship.h"
@@ -180,11 +181,9 @@ void Achievements::applyNewMedals() {
     }
 }
 
-static Status *gAchStatus = nullptr;
-static Status *const*gAchStatusHolder = &gAchStatus;
 
 void Achievements::initCheckEquipmentAndWeapons() {
-    Status *status = *gAchStatusHolder;
+    Status *status = Globals::status;
     uint8_t result;
     if (status->getCurrentCampaignMission() < 8) {
         result = 1;
