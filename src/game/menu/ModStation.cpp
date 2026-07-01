@@ -1,6 +1,7 @@
 #include "game/menu/ModStation.h"
 #include <cstddef>
 #include "game/core/Globals.h"
+extern int g_android_current_achievements[3];
 #include "engine/core/GameText.h"
 #include "game/ship/Ship.h"
 #include "engine/audio/FModSound.h"
@@ -178,22 +179,19 @@ void ModStation::enterStation() {
     Globals::status->field_11c = 0;
 }
 
-static int *g_ModStation_ach_a = 0;
 
-static int *g_ModStation_ach_b = 0;
 
-static int *g_ModStation_ach_c = 0;
 
 void ModStation::addAchievement(int medalId, int kind) {
     if (Globals::achievements->isEliteMedal(medalId) != 0)
         return;
     if ((unsigned) (kind - 1) < 2) {
         if (Globals::achievements->getValue(medalId, 3) != -1)
-            *g_ModStation_ach_a = medalId * 3;
+            *g_android_current_achievements = medalId * 3;
         if (kind == 1 && Globals::achievements->getValue(medalId, 2) != -1)
-            g_ModStation_ach_b[1] = medalId * 3 + 1;
+            g_android_current_achievements[1] = medalId * 3 + 1;
     }
-    g_ModStation_ach_c[2] = (medalId * 3 + 3) - kind;
+    g_android_current_achievements[2] = (medalId * 3 + 3) - kind;
 }
 
 void ModStation::showMapWindow() {
@@ -638,7 +636,6 @@ static int *g_ou_stack = 0;
 
 
 
-static char **g_ou_spaceLoungeFlag = 0;
 
 static int **g_ou_appData = 0;
 
@@ -791,7 +788,7 @@ void ModStation::OnUpdate() {
     Achievements_updateCredits_ou((Achievements *) *(int *) &Globals::achievements, Status_getCredits_ou());
 
     if (this->stationActive != 0) {
-        char *flag = *g_ou_spaceLoungeFlag;
+        char *flag = (char *) &Globals::enterSpaceLounge;
         if (*flag != 0) {
             reinterpret_cast<uint8_t*>(&this->buttonCredits)[0] = 1;
             *flag = 0;
@@ -1139,7 +1136,6 @@ void ModStation::resetIdleCamForHangar() {
 
 static int *g_ch_stack = 0;
 
-static int *g_ch_hintRec = 0;
 
 
 
@@ -1174,7 +1170,7 @@ void ModStation::checkHints() {
     if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] != 0)
         return;
 
-    HintRecord *hintRec = (HintRecord *) (intptr_t) * g_ch_hintRec;
+    HintRecord *hintRec = (HintRecord *) (intptr_t) (int) (intptr_t) Globals::hints;
 
     if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 && reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 &&
         hintRec->flags[0x34] == 0 &&
@@ -2546,11 +2542,9 @@ static int *g_oi_stack = 0;
 
 
 
-static int **g_oi_settings = 0;
 
 
 
-static char **g_oi_demoFlag = 0;
 
 static int *g_oi_musicId = 0;
 
@@ -2873,7 +2867,7 @@ void ModStation::OnInitialize() {
         }
         if (Status_inSupernovaSystem_oi() != 0)
             reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
-        if (**g_oi_demoFlag != 0)
+        if (Globals::iPad != 0)
             reinterpret_cast<uint16_t&>(this->alarmFlags) = 0x101;
 
         if (reinterpret_cast<uint8_t*>(&this->cameraFlags)[0] == 0) {
@@ -3083,7 +3077,7 @@ void ModStation::OnInitialize() {
             }
         }
 
-        SettingsBlock *settings = (SettingsBlock *) (intptr_t) * (int *) g_oi_settings;
+        SettingsBlock *settings = (SettingsBlock *) (intptr_t) (int) (intptr_t) Globals::options;
         int rec = *(int *) &Globals::gameText;
         (void) rec;
         if (Status_getCurrentCampaignMission_oi() == 0xa2 && (unsigned char) settings->wantedActivatedShown == 0) {
@@ -3091,7 +3085,7 @@ void ModStation::OnInitialize() {
             reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
             settings->wantedActivatedShown = 1;
         }
-        SettingsBlock *settings2 = (SettingsBlock *) (intptr_t) * (int *) g_oi_settings;
+        SettingsBlock *settings2 = (SettingsBlock *) (intptr_t) (int) (intptr_t) Globals::options;
         if (Status_gameWon_oi() != 0 && ((Status *) (intptr_t) *(int *) &Globals::status)->byte_0x35 == 0 &&
             settings->gameWonShown == 0) {
             ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
@@ -3207,11 +3201,8 @@ void ModStation::OnInitialize() {
 
 static int *g_dlc_stack = 0;
 
-static int *g_dlc_btnX = 0;
 
-static int *g_dlc_btnY = 0;
 
-static int **g_dlc_btnCount = 0;
 
 static inline void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); }
 
@@ -3228,8 +3219,8 @@ void ModStation::showDlcMenu() {
     }
     reinterpret_cast<uint8_t*>(&this->modalFlags)[2] = 1;
 
-    int *bx = g_dlc_btnX;
-    int *by = g_dlc_btnY;
+    int *bx = Globals::sub_menu_buttons_x;
+    int *by = Globals::sub_menu_buttons_y;
     for (unsigned i = 0; i < win->buttons->size(); i = i + 1) {
         if (i < 10) {
             float pos[3];
@@ -3240,7 +3231,7 @@ void ModStation::showDlcMenu() {
             win = (MenuTouchWindow *) this->dlcMenu;
         }
     }
-    **g_dlc_btnCount = win->buttons->size();
+    Globals::sub_menu_button_count = win->buttons->size();
     reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] = 0;
     MenuTouchWindow_callDlcMenu_dlc(win);
 }
