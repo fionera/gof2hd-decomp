@@ -60,9 +60,7 @@ void Gun_ArrayReleaseClasses(VecArray *a);
 
 VecArray *Gun_ArrayDtor(VecArray *a);
 
-typedef void (*dtor_fn)(VecArray *);
 
-static dtor_fn const gGunStringDtor = nullptr;
 
 Gun::~Gun() noexcept(false) {
     delete[] this->lifetimes;
@@ -88,11 +86,10 @@ Gun::~Gun() noexcept(false) {
     }
     this->wobbleOffsets = 0;
 
-    dtor_fn d = gGunStringDtor;
-    d(reinterpret_cast<VecArray *>(&this->field_0x2c));
-    d(reinterpret_cast<VecArray *>(&this->field_0x20));
-    d(reinterpret_cast<VecArray *>(&this->directionCount));
-    d(reinterpret_cast<VecArray *>(&this->count));
+    reinterpret_cast<VecArray *>(&this->field_0x2c)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->field_0x20)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->directionCount)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->count)->~VecArray();
 }
 
 void Gun::setFriendGun(bool v) {
