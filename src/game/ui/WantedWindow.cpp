@@ -18,11 +18,6 @@
 #include "game/core/String.h"
 #include "game/menu/ModStation.h"
 
-static Layout **g_WantedWindow_move_layout = nullptr;
-static int *g_WantedWindow_move_screen_h = nullptr;
-static int *g_WantedWindow_move_screen_w_a = nullptr;
-static int *g_WantedWindow_move_force = nullptr;
-static int *g_WantedWindow_move_screen_w_b = nullptr;
 
 int WantedWindow::OnTouchMove(int x, int y) {
     if (this->showingMap != 0) {
@@ -30,11 +25,11 @@ int WantedWindow::OnTouchMove(int x, int y) {
         return 0;
     }
 
-    Layout *layout = *g_WantedWindow_move_layout;
+    Layout *layout = Globals::layout;
     if (((layout->field_0xc_leftMargin < y) &&
-         (y < *g_WantedWindow_move_screen_h - layout->field_0x10_rightMargin) &&
-         (x < *g_WantedWindow_move_screen_w_a / 2)) ||
-        (*g_WantedWindow_move_force != 0)) {
+         (y < Globals::h - layout->field_0x10_rightMargin) &&
+         (x < Globals::w / 2)) ||
+        (Globals::mouse_wheel != 0)) {
         int delta = y - this->lastDragY;
         this->dragDelta = delta;
         this->scrollDamping = 1.0f;
@@ -42,7 +37,7 @@ int WantedWindow::OnTouchMove(int x, int y) {
         this->lastDragY = y;
     }
 
-    if (*g_WantedWindow_move_screen_w_b / 2 < x) {
+    if (Globals::w / 2 < x) {
         this->scrollWindow->OnTouchMove(x, y);
     }
 
@@ -109,7 +104,6 @@ void WantedWindow::update(int dt) {
     }
 }
 
-static Layout **g_WantedWindow_touch_layout = nullptr;
 
 int WantedWindow::OnTouchBegin(int x, int y) {
     if (this->showingMap != 0) {
@@ -127,7 +121,7 @@ int WantedWindow::OnTouchBegin(int x, int y) {
         (*this->buttons)[i]->OnTouchBegin(x, y);
     }
 
-    (*g_WantedWindow_touch_layout)->OnTouchBegin(x, y);
+    (Globals::layout)->OnTouchBegin(x, y);
     if (this->detailButton != nullptr) {
         Wanted *wanted = (*this->wantedList)[this->selectedWanted];
         if (wanted->isActive() != 0) {
@@ -156,7 +150,6 @@ float WantedWindow::getRelativeScrollStartPos() {
     return -(float) pos / (float) this->contentHeight;
 }
 
-static Layout **g_WantedWindow_hit_layout = nullptr;
 
 uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
     if (x >= this->windowX + (this->windowWidth >> 1)) {
@@ -164,7 +157,7 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
     }
 
     Array<Wanted *> *list = this->wantedList;
-    Layout *layout = *g_WantedWindow_hit_layout;
+    Layout *layout = Globals::layout;
     int numerator = y - this->windowY;
     numerator -= layout->field_0xc_leftMargin;
     numerator -= layout->field_0x20_top;
@@ -177,16 +170,6 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
     return (uint32_t) idx;
 }
 
-static uint8_t *g_WantedWindow_end_fullscreen = nullptr;
-static uint8_t *g_WantedWindow_end_tablet = nullptr;
-static uint8_t *g_WantedWindow_end_small = nullptr;
-static int *g_WantedWindow_end_screen_w = nullptr;
-static int *g_WantedWindow_end_screen_h = nullptr;
-static int *g_WantedWindow_end_window_h = nullptr;
-static int *g_WantedWindow_end_window_w = nullptr;
-static Layout **g_WantedWindow_end_layout_a = nullptr;
-static Layout **g_WantedWindow_end_layout_b = nullptr;
-static GameText **g_WantedWindow_end_text = nullptr;
 
 void WantedWindow::OnTouchEnd(int x, int y) {
     if (this->showingMap != 0) {
@@ -194,16 +177,16 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         uint32_t h;
         uint32_t w;
         uint32_t halfW = 0;
-        if (*g_WantedWindow_end_fullscreen == 0) {
-            h = *g_WantedWindow_end_window_h;
-            w = *g_WantedWindow_end_window_w;
+        if (Globals::iPad == 0) {
+            h = Globals::h;
+            w = Globals::w;
             this->windowX = 0;
             this->windowY = 0;
         } else {
-            if (*g_WantedWindow_end_tablet == 0) {
+            if (Globals::iPadHD == 0) {
                 h = 1000;
                 w = 0x514;
-                if (*g_WantedWindow_end_small == 0) {
+                if (Globals::iPadLarge == 0) {
                     h = 500;
                     w = 0x28a;
                 }
@@ -213,8 +196,8 @@ void WantedWindow::OnTouchEnd(int x, int y) {
                 halfW = 0x1c9;
                 w = 0x392;
             }
-            this->windowX = (*g_WantedWindow_end_screen_w >> 1) - halfW;
-            this->windowY = (*g_WantedWindow_end_screen_h >> 1) - (h >> 1);
+            this->windowX = (Globals::w >> 1) - halfW;
+            this->windowY = (Globals::h >> 1) - (h >> 1);
         }
         this->windowWidth = w;
         this->windowHeight = h;
@@ -287,23 +270,19 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         map->setStart(system, lastSeen);
         delete station;
         this->showingMap = 1;
-        (*g_WantedWindow_end_layout_a)->resetWindowDimensions();
+        (Globals::layout)->resetWindowDimensions();
     } else {
-        Layout *layout = *g_WantedWindow_end_layout_b;
+        Layout *layout = Globals::layout;
         if (layout->OnTouchEnd(x, y) != 0) {
             layout->resetWindowDimensions();
         } else if (layout->helpPressed() != 0) {
             String help;
-            help.copy((*g_WantedWindow_end_text)->getText(0x27b), false);
+            help.copy((Globals::gameText)->getText(0x27b), false);
             layout->initHelpWindow(help);
         }
     }
 }
 
-static Layout **g_WantedWindow_draw_layout = nullptr;
-static unsigned int *g_WantedWindow_draw_font = nullptr;
-static GameText **g_WantedWindow_draw_text = nullptr;
-static ImageFactory **g_WantedWindow_draw_factory = nullptr;
 
 void WantedWindow::draw() {
     if (this->showingMap != 0) {
@@ -311,9 +290,9 @@ void WantedWindow::draw() {
         return;
     }
 
-    Layout *layout = *g_WantedWindow_draw_layout;
+    Layout *layout = Globals::layout;
     PaintCanvas *canvas = Globals::Canvas;
-    unsigned int font = *g_WantedWindow_draw_font;
+    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
 
     canvas->EnableClip(this->windowX,
                        this->windowY + layout->field_0xc_leftMargin +
@@ -374,7 +353,7 @@ void WantedWindow::draw() {
     canvas->DisableClip();
     canvas->SetColor(0xffffffffu);
     String header;
-    header.copy((*g_WantedWindow_draw_text)->getText(0xc93), false);
+    header.copy((Globals::gameText)->getText(0xc93), false);
     layout->drawHeader(header);
 
     for (uint32_t i = 0; i < this->buttons->size(); ++i) {
@@ -382,7 +361,7 @@ void WantedWindow::draw() {
     }
 
     String leftHdr;
-    leftHdr.copy((*g_WantedWindow_draw_text)->getText(0xc95), false);
+    leftHdr.copy((Globals::gameText)->getText(0xc95), false);
     layout->drawBox(1, layout->buttonInsetX + this->windowX,
                     this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top,
                     (this->windowWidth >> 1) - (layout->field_0x2c_rowHeight + layout->buttonInsetX),
@@ -401,7 +380,7 @@ void WantedWindow::draw() {
                     leftBody, 0);
 
     String rightHdr;
-    rightHdr.copy((*g_WantedWindow_draw_text)->getText(0xc95), false);
+    rightHdr.copy((Globals::gameText)->getText(0xc95), false);
     layout->drawBox(1, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight,
                     this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top,
                     ((this->windowWidth >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX,
@@ -423,16 +402,16 @@ void WantedWindow::draw() {
         int charX = this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight;
         int charY = layout->field_0x5c + this->windowY + layout->field_0x2c_rowHeight +
                     layout->field_0xc_leftMargin + layout->field_0x20_top;
-        (*g_WantedWindow_draw_factory)->drawChar(this->imageParts, charX, charY, false);
+        (Globals::imageFactory)->drawChar(this->imageParts, charX, charY, false);
         int textX = layout->field_0x2d4 + charX + layout->field_0x2c_rowHeight;
         canvas->DrawString(font, this->nameText, textX, charY, false);
 
         String fromLine = String("from: ", false) +
-                          *(*g_WantedWindow_draw_text)->getText(0xc93) + this->fromText;
+                          *(Globals::gameText)->getText(0xc93) + this->fromText;
         canvas->DrawString(font, fromLine, textX, charY + layout->field_0x4 * 2, false);
 
         String toLine = String("to: ", false) +
-                        *(*g_WantedWindow_draw_text)->getText(0xc93) + this->toText;
+                        *(Globals::gameText)->getText(0xc93) + this->toText;
         canvas->DrawString(font, toLine, textX, charY + layout->field_0x4 * 3, false);
 
         this->scrollWindow->draw();
@@ -446,15 +425,6 @@ void WantedWindow::draw() {
     layout->drawFooter();
 }
 
-static Layout **g_WantedWindow_init_layout = nullptr;
-static uint8_t *g_WantedWindow_init_fullscreen = nullptr;
-static uint8_t *g_WantedWindow_init_tablet = nullptr;
-static uint8_t *g_WantedWindow_init_small = nullptr;
-static int *g_WantedWindow_init_screen_w = nullptr;
-static int *g_WantedWindow_init_screen_h = nullptr;
-static int *g_WantedWindow_init_window_w = nullptr;
-static int *g_WantedWindow_init_window_h = nullptr;
-static GameText **g_WantedWindow_init_text = nullptr;
 
 int WantedWindow::init() {
     this->scrollOffset = 0;
@@ -466,7 +436,7 @@ int WantedWindow::init() {
 
     Status *status = Globals::status;
     Array<Wanted *> *allWanted = status->getWanted();
-    Layout *layout = *g_WantedWindow_init_layout;
+    Layout *layout = Globals::layout;
 
     for (uint32_t i = 0; i < allWanted->size(); ++i) {
         int race = ((SolarSystem *) (long) status->getSystem())->getRace();
@@ -487,16 +457,16 @@ int WantedWindow::init() {
     uint32_t h;
     uint32_t w;
     uint32_t halfW = 0;
-    if (*g_WantedWindow_init_fullscreen == 0) {
-        h = *g_WantedWindow_init_window_h;
-        w = *g_WantedWindow_init_window_w;
+    if (Globals::iPad == 0) {
+        h = Globals::h;
+        w = Globals::w;
         this->windowX = 0;
         this->windowY = 0;
     } else {
-        if (*g_WantedWindow_init_tablet == 0) {
+        if (Globals::iPadHD == 0) {
             h = 1000;
             w = 0x514;
-            if (*g_WantedWindow_init_small == 0) {
+            if (Globals::iPadLarge == 0) {
                 h = 500;
                 w = 0x28a;
             }
@@ -506,8 +476,8 @@ int WantedWindow::init() {
             halfW = 0x1c9;
             w = 0x392;
         }
-        this->windowX = (*g_WantedWindow_init_screen_w >> 1) - halfW;
-        this->windowY = (*g_WantedWindow_init_screen_h >> 1) - (h >> 1);
+        this->windowX = (Globals::w >> 1) - halfW;
+        this->windowY = (Globals::h >> 1) - (h >> 1);
     }
 
     this->windowWidth = w;
@@ -550,7 +520,7 @@ int WantedWindow::init() {
     this->buttons = buttons;
     ArraySetLength(2, *buttons);
 
-    GameText *text = *g_WantedWindow_init_text;
+    GameText *text = Globals::gameText;
     {
         String *label = text->getText(0xc93);
         int helpOff = layout->getHelpButtonOffset();
@@ -569,7 +539,7 @@ int WantedWindow::init() {
     (*buttons)[1]->setAlwaysPressed(true);
     layout->setWindowDimensions(this->windowX, this->windowY, this->windowWidth, this->windowHeight);
 
-    layout = *g_WantedWindow_init_layout;
+    layout = Globals::layout;
     this->contentHeight = (layout->field_0x34 + layout->field_0x70_rowHeight) *
                           (int) this->wantedList->size();
     this->visibleHeight =
@@ -597,14 +567,13 @@ int WantedWindow::init() {
     return 1;
 }
 
-static unsigned int *g_WantedWindow_ctor_font = nullptr;
 
 WantedWindow::WantedWindow() {
     this->detailButton = nullptr;
     this->starMap = nullptr;
     this->imageParts = nullptr;
     PaintCanvas *canvas = Globals::Canvas;
-    int h = canvas->GetTextHeight(*g_WantedWindow_ctor_font);
+    int h = canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
     this->wantedList = nullptr;
     this->mission = nullptr;
     this->scrollWindow = nullptr;
@@ -669,9 +638,6 @@ float WantedWindow::getRelativeScrollHeight() {
     return (float) num / (float) content;
 }
 
-static ImageFactory **g_WantedWindow_select_factory = nullptr;
-static GameText **g_WantedWindow_select_text_a = nullptr;
-static Layout **g_WantedWindow_select_layout = nullptr;
 
 void WantedWindow::selectWanted(int idx) {
     delete this->imageParts;
@@ -681,7 +647,7 @@ void WantedWindow::selectWanted(int idx) {
     this->scrollWindow = nullptr;
 
     Wanted *wanted = (*this->wantedList)[idx];
-    this->imageParts = (*g_WantedWindow_select_factory)->loadChar(wanted->getImageParts());
+    this->imageParts = (Globals::imageFactory)->loadChar(wanted->getImageParts());
 
     this->nameText = wanted->getName();
 
@@ -708,17 +674,17 @@ void WantedWindow::selectWanted(int idx) {
         this->atText = String("", false);
         this->rewardText = String("", false);
     } else {
-        this->fromText = *(*g_WantedWindow_select_text_a)->getText(0xc9d);
-        this->toText = *(*g_WantedWindow_select_text_a)->getText(0xc9d);
+        this->fromText = *(Globals::gameText)->getText(0xc9d);
+        this->toText = *(Globals::gameText)->getText(0xc9d);
         String reward;
         reward.Set((long long) (wanted->getReward()));
         this->rewardText = reward + String("reward ", false);
-        this->atText = *(*g_WantedWindow_select_text_a)->getText(0xc9d);
+        this->atText = *(Globals::gameText)->getText(0xc9d);
     }
 
-    this->detailText = *(*g_WantedWindow_select_text_a)->getText(0xc9d);
+    this->detailText = *(Globals::gameText)->getText(0xc9d);
 
-    Layout *layout = *g_WantedWindow_select_layout;
+    Layout *layout = Globals::layout;
     int y = this->windowY;
     int h = this->windowHeight;
     int top = y + layout->field_0xc_leftMargin + layout->field_0x20_top +
@@ -738,7 +704,7 @@ void WantedWindow::selectWanted(int idx) {
         height, false);
 
     String body;
-    body = *(*g_WantedWindow_select_text_a)->getText(0xc9d);
+    body = *(Globals::gameText)->getText(0xc9d);
     body += String("\n", false) + this->fromText;
     body += String("\n", false) + this->toText;
     body += String("\n", false) + this->atText;
