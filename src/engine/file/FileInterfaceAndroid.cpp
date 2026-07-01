@@ -32,7 +32,6 @@ static inline const unsigned short *GetAEWChar(const String &s) {
     return reinterpret_cast<const unsigned short *>(s.text());
 }
 
-static int *gFIAInstCount = nullptr;
 
 static const char kDirPreFix[] = "";
 
@@ -53,30 +52,21 @@ FileInterfaceAndroid::FileInterfaceAndroid(FILE *f, bool append) {
     this->zipFile = 0;
     this->jniStream = 0;
     this->modeFlag = append;
-    ++*gFIAInstCount;
+    ++*&FileInterfaceAndroid::fileCounter;
 }
 
-static JNIEnv **gJniEnvObj = nullptr;
 
-static jmethodID *gMidA_read = nullptr;
-static const char *gNmA_read = nullptr;
-static const char *gSgA_read = nullptr;
-static jmethodID *gMidA_write = nullptr;
-static const char *gNmA_write = nullptr;
-static const char *gSgA_write = nullptr;
 
-static jmethodID *gMidB_read = nullptr;
-static jmethodID *gMidB_write = nullptr;
 static const char *gNmB = nullptr;
 static const char *gSgB = nullptr;
 
 FileInterfaceAndroid::FileInterfaceAndroid(jobject stream, bool reading) {
-    JNIEnv *env = *gJniEnvObj;
+    JNIEnv *env = *&FileInterfaceAndroid::env;
     this->file = 0;
     this->zipFile = 0;
     this->jniStream = stream;
     this->modeFlag = reading;
-    ++*gFIAInstCount;
+    ++*&FileInterfaceAndroid::fileCounter;
 
     JNIEnv *jenv = reinterpret_cast<JNIEnv *>(env);
     const JNINativeInterface *jni = JniTable(env);
@@ -84,13 +74,13 @@ FileInterfaceAndroid::FileInterfaceAndroid(jobject stream, bool reading) {
 
     jmethodID *selB;
     if (reading) {
-        if (*gMidA_read == 0)
-            *gMidA_read = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), gNmA_read, gSgA_read);
-        selB = gMidB_read;
+        if (*&FileInterfaceAndroid::methodCloseRead == 0)
+            *&FileInterfaceAndroid::methodCloseRead = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), "close", "()V");
+        selB = &FileInterfaceAndroid::methodRead;
     } else {
-        if (*gMidA_write == 0)
-            *gMidA_write = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), gNmA_write, gSgA_write);
-        selB = gMidB_write;
+        if (*&FileInterfaceAndroid::methodCloseWrite == 0)
+            *&FileInterfaceAndroid::methodCloseWrite = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), "close", "()V");
+        selB = &FileInterfaceAndroid::methodWrite;
     }
     if (*selB == 0)
         *selB = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), gNmB, gSgB);
@@ -101,7 +91,7 @@ FileInterfaceAndroid::FileInterfaceAndroid(zip_file *zf, bool append, int start,
     this->zipFile = zf;
     this->jniStream = 0;
     this->modeFlag = 0;
-    ++*gFIAInstCount;
+    ++*&FileInterfaceAndroid::fileCounter;
     this->zipReadPos = 0;
     this->zipReadLen = 0;
     this->Seek(start);
@@ -110,8 +100,8 @@ FileInterfaceAndroid::FileInterfaceAndroid(zip_file *zf, bool append, int start,
 
 FileInterfaceAndroid::~FileInterfaceAndroid() {
     this->Close();
-    if (*gFIAInstCount != 0)
-        --*gFIAInstCount;
+    if (*&FileInterfaceAndroid::fileCounter != 0)
+        --*&FileInterfaceAndroid::fileCounter;
     else
         this->enabled = 0;
 }
@@ -273,7 +263,6 @@ struct zip *APKArchive = nullptr;
 struct zip *ZIPArchive = nullptr;
 static const char *gZipPrefixA = nullptr;
 static const char *gZipPrefixB = nullptr;
-static const char *gModeRb = nullptr;
 
 uint32_t FileInterfaceAndroid::FileExist(String name) {
     String a(gZipPrefixA);
@@ -294,7 +283,7 @@ uint32_t FileInterfaceAndroid::FileExist(String name) {
     } else {
         String dir(this->appRootDir);
         String full = dir + name;
-        FILE *f = fopen(full.GetAEChar(), gModeRb);
+        FILE *f = fopen(full.GetAEChar(), "rb");
         if (f != 0) {
             fclose(f);
             exists = true;
@@ -357,7 +346,6 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
     return result;
 }
 
-static const char *gModeWb = nullptr;
 
 void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) {
     // lint: void_ptr virtual override return type baked into vtable/symbol
@@ -370,7 +358,7 @@ void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) {
     wide.Set((const unsigned short *) (GetAEWChar(name)));
     String full = dir + wide;
 
-    FILE *f = fopen(full.GetAEChar(), gModeWb);
+    FILE *f = fopen(full.GetAEChar(), "wb");
     if (f == 0)
         return 0;
     return new FileInterfaceAndroid(f, true);
