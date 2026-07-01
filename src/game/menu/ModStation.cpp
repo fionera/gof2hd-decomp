@@ -636,19 +636,14 @@ void ModStation::resetLight() {
 
 static int *g_ou_stack = 0;
 
-static int **g_ou_sound = 0;
 
-static int **g_ou_layout = 0;
 
-static int **g_ou_status = 0;
 
-static int **g_ou_achievements = 0;
 
 static char **g_ou_spaceLoungeFlag = 0;
 
 static int **g_ou_appData = 0;
 
-static int **g_ou_textRoot = 0;
 
 static int **g_ou_module = 0;
 
@@ -767,8 +762,8 @@ static inline void AEGeometry_rotate_ou(AEGeometry *geom, float x, float y, floa
 void Engine_setHangarLightIntensity_ou(float v);
 
 void ModStation::OnUpdate() {
-    int *status = *(int **) g_ou_status;
-    int *sound = *(int **) g_ou_sound;
+    int *status = (int *) Globals::status;
+    int *sound = (int *) Globals::sound;
 
     int elapsed;
     int e = ApplicationManager_GetElapsedTimeMillis_ou();
@@ -785,17 +780,17 @@ void ModStation::OnUpdate() {
     this->accumTime += (long long) elapsed;
 
     FModSound_updateAll_ou(*sound);
-    int *layout = *(int **) g_ou_layout;
+    int *layout = (int *) Globals::layout;
     Layout_update_ou(*layout);
     if (reinterpret_cast<uint8_t*>(&this->accumTime)[2] == 0)
-        Status_incPlayingTime_ou((long long) (unsigned) **(int **) g_ou_status);
+        Status_incPlayingTime_ou((long long) (unsigned) *(int *) &Globals::status);
 
     int creditsBtn = this->activeMission;
     Status_getCredits_ou();
     Layout_formatCredits_ou(this);
     TouchButton_setText_ou(creditsBtn);
 
-    Achievements_updateCredits_ou((Achievements *) **(int **) g_ou_achievements, Status_getCredits_ou());
+    Achievements_updateCredits_ou((Achievements *) *(int *) &Globals::achievements, Status_getCredits_ou());
 
     if (this->stationActive != 0) {
         char *flag = *g_ou_spaceLoungeFlag;
@@ -820,7 +815,7 @@ void ModStation::OnUpdate() {
     {
         AppData *appData = (AppData *) (intptr_t) ApplicationManager_GetApplicationData_ou();
         if (appData->restoreNotice != 0) {
-            ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(**g_ou_textRoot));
+            ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(*(int *) &Globals::gameText));
             reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 1;
             appData->restoreNotice = 0;
         }
@@ -832,7 +827,7 @@ void ModStation::OnUpdate() {
             if (-1 < (intptr_t)(*appData->iapArray)[idx]) {
                 Status_changeCredits_ou(*status);
                 this->autosave();
-                ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(**g_ou_textRoot));
+                ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(*(int *) &Globals::gameText));
                 reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 1;
                 appData->purchaseReady = 0;
                 if ((int) (intptr_t) this->hangarWindow != 0)
@@ -942,9 +937,9 @@ void ModStation::OnUpdate() {
         }
 
         if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 && reinterpret_cast<uint8_t*>(&this->screenFlags)[2] != 0) {
-            Status *rec = (Status *) (intptr_t) * (int *) g_ou_status;
+            Status *rec = (Status *) (intptr_t) *(int *) &Globals::status;
             if (rec->byte_0x2a == 0) {
-                ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(**g_ou_textRoot));
+                ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(*(int *) &Globals::gameText));
                 reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 1;
                 rec->byte_0x2a = 1;
                 reinterpret_cast<uint8_t*>(&this->screenFlags)[2] = 0;
@@ -1027,8 +1022,8 @@ void ModStation::OnUpdate() {
                 int kind = (slot == 1) ? 0x39 : 0x3a;
                 if (slot == 0 || slot == 2) kind = 0;
                 DialogueWindow *dw = new DialogueWindow(
-                    (String *) (intptr_t) GameText_getText_ou(**g_ou_textRoot),
-                    (String *) (intptr_t) GameText_getText_ou(**g_ou_textRoot),
+                    (String *) (intptr_t) GameText_getText_ou(*(int *) &Globals::gameText),
+                    (String *) (intptr_t) GameText_getText_ou(*(int *) &Globals::gameText),
                     (int *) (long) kind);
                 reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 1;
                 this->dialogueWindow = dw;
