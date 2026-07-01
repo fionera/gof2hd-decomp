@@ -452,12 +452,10 @@ float Globals::sqrt(float x) {
     return __builtin_sqrtf(x);
 }
 
-static int *const gDrinks_a = nullptr;
-static int *const gDrinks_rng = nullptr;
 
 void Globals::getRandomSystemForDrinks() {
-    int slot = *gDrinks_a;
-    int picked = nextInt_71ad0((AbyssEngine::AERandom *) *gDrinks_rng, 0x16);
+    int slot = *(int *) &Globals::galaxy;
+    int picked = nextInt_71ad0((AbyssEngine::AERandom *) *(int *) &Globals::rnd, 0x16);
     *(int *) (long) slot = picked;
 }
 
@@ -1372,8 +1370,6 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
     }
 }
 
-static int *const gREF_rng1 = nullptr;
-static int *const gREF_rng2 = nullptr;
 static const int gREF_table = 0;
 
 unsigned Globals::getRandomEnemyFighter(int kind) {
@@ -1390,7 +1386,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
         if (Globals::status->dlc1Won() == 0) {
             r = 9;
         } else {
-            int n = AERandom_nextIntB(*gREF_rng1, 0x64);
+            int n = AERandom_nextIntB(*(int *) &Globals::rnd, 0x64);
             r = 0x27;
             if (n < 0x55) {
                 r = 0x29;
@@ -1405,7 +1401,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
         r = 0x2c;
     } else {
         const int *table = &gREF_table;
-        int *rng = gREF_rng2;
+        int *rng = (int *) &Globals::rnd;
         do {
             do {
                 r = AERandom_nextIntB(*rng, 0x25);
@@ -1416,13 +1412,11 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
     return r;
 }
 
-static int *const gDL2_canvas = nullptr;
-static LineMetrics **const gDL2_lineHeight = nullptr;
 
 void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
                         unsigned int rightX, bool centered) {
-    int *cv = gDL2_canvas;
-    LineMetrics **lh = gDL2_lineHeight;
+    int *cv = (int *) &Globals::Canvas;
+    LineMetrics **lh = (LineMetrics **) &Globals::layout;
     int yacc = startY;
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
@@ -1782,13 +1776,11 @@ Globals::~Globals() {
     **gG_tail = 0;
 }
 
-static int *const gDL_canvas = nullptr;
-static LineMetrics **const gDL_lineHeight = nullptr;
 
 void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
                         bool centered) {
-    int *cv = gDL_canvas;
-    LineMetrics **lh = gDL_lineHeight;
+    int *cv = (int *) &Globals::Canvas;
+    LineMetrics **lh = (LineMetrics **) &Globals::layout;
     int yacc = startY;
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
@@ -2239,10 +2231,6 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     return (int) (long) arr;
 }
 
-static int **const gPM_snd0 = nullptr;
-static int **const gPM_snd1 = nullptr;
-static int **const gPM_snd2 = nullptr;
-static int **const gPM_sndStatus = nullptr;
 static const int gPM_table0 = 0;
 static const int gPM_table1 = 0;
 
@@ -2252,7 +2240,7 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
     int vol = 0;
 
     if (mode == 2) {
-        int *sndP = *gPM_snd2;
+        int *sndP = (int *) &Globals::sound;
         ((FModSound *) (*sndP))->stop(0);
         snd = *sndP;
         track = 0x91;
@@ -2260,9 +2248,9 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
         return;
     }
     if (mode == 1) {
-        int *statSnd = *gPM_sndStatus;
+        int *statSnd = (int *) &Globals::status;
         if (Globals::status->inAlienOrbit() != 0) {
-            int *sndP = *gPM_snd1;
+            int *sndP = (int *) &Globals::sound;
             ((FModSound *) (*sndP))->stop(0);
             snd = *sndP;
             track = 0x88;
@@ -2274,7 +2262,7 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
             return;
         }
         ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-        int *sndP = *gPM_snd1;
+        int *sndP = (int *) &Globals::sound;
         ((FModSound *) (*sndP))->stop(0);
         if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x6c) {
             ((FModSound *) (*sndP))->play(0x92, 0, 0, (float) vol);
@@ -2322,7 +2310,7 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
     }
 
     int race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-    int *sndP = *gPM_snd0;
+    int *sndP = (int *) &Globals::sound;
     ((FModSound *) (*sndP))->stop(0);
     if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x6c) {
         ((FModSound *) (*sndP))->play(0x84, 0, 0, (float) vol);
@@ -2651,7 +2639,6 @@ String Globals::getRandomName(int kind, bool both) {
     return result;
 }
 
-static int **const gGL_canvas = nullptr;
 static const char gGL_empty[] = "";
 
 void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
@@ -2660,7 +2647,7 @@ void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
     if (((unsigned) (lang | 1)) == 0xb) width = 0xf;
     if ((unsigned) lang == 0xf) width = 0xf;
 
-    int *canvas = *gGL_canvas;
+    int *canvas = (int *) &Globals::Canvas;
     unsigned lastSpace = 0;
     unsigned len = text.size();
 
