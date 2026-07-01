@@ -27,13 +27,10 @@ namespace AbyssEngine {
     }
 }
 
-static int *g_cws_items = nullptr;
 static int *g_cws_sound = nullptr;
 static int *g_cws_sound2 = nullptr;
 static int *g_cws_sound3 = nullptr;
-static int **g_damage_text = nullptr;
-static unsigned int g_shoot_mask = 0;
-static FModSound **g_update_sound = nullptr;
+static unsigned int g_shoot_mask = 0x10000003;
 static float **g_update_speed = nullptr;
 
 struct SlaveLink {
@@ -58,17 +55,11 @@ static_assert(__builtin_offsetof(AudioStateView, soundEnabledFlag) == 0xf,
 void MatrixGetPosition(void *out, float *matrix); // lint: void_ptr (external symbol; param mangling load-bearing)
 
 static int gStopSoundIds[256];
-static FModSound *gFModSound = nullptr;
-static FModSound *gFModSoundAlt = nullptr;
-static FModSound **gFModSoundPtr = nullptr;
 
 void Gun_setEnemies(void *gun); // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
 static int gShootSoundsByType[256];
 static int gShootSoundsByIndex[256];
-static AudioStateView *gAppManagerA = nullptr;
-static AudioStateView *gAppManagerB = nullptr;
-static AudioStateView *gAppManagerC = nullptr;
 
 void FloatVectorMax(void *out, float a, float b, int c, int d);
 
@@ -794,10 +785,10 @@ void Player::stopShootSound(int index, int channel) {
         int id;
         if (this->kiPlayer != 0 && this->kiPlayer->shipGroup == 9) {
             id = 0x3e;
-            sound = gFModSoundAlt;
+            sound = Globals::sound;
         } else {
             id = gStopSoundIds[index];
-            sound = gFModSound;
+            sound = Globals::sound;
         }
         sound->stop(id);
     }
@@ -859,7 +850,7 @@ void Player::calcWeaponSounds(int count) {
 
         bool sorted = true;
         int i = 1;
-        Array<Item *> **itemTablePtr = reinterpret_cast<Array<Item *> **>(g_cws_items);
+        Array<Item *> **itemTablePtr = reinterpret_cast<Array<Item *> **>(&Globals::items);
         do {
             for (; i < (int) n; i++) {
                 Item **dataArr = (*itemTablePtr)->data_;
@@ -961,18 +952,18 @@ void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
         }
     }
 
-    FModSound *sound = reinterpret_cast<FModSound *>(gFModSoundPtr[0]);
+    FModSound *sound = reinterpret_cast<FModSound *>(Globals::sound);
     if (static_cast<unsigned int>(channel) < 9 && ((1 << (channel & 0xff)) & 0x10c) != 0) {
         if (sound->isPlaying(soundId) != 0) {
-            if (reinterpret_cast<AudioStateView *>(gAppManagerA)->soundEnabledFlag != 0) {
+            if (reinterpret_cast<AudioStateView *>(Globals::options)->soundEnabledFlag != 0) {
                 sound->updateEvent3DAttributes(soundId, pos, 0, false);
             }
             return;
         }
-        if (reinterpret_cast<AudioStateView *>(gAppManagerB)->soundEnabledFlag == 0) {
+        if (reinterpret_cast<AudioStateView *>(Globals::options)->soundEnabledFlag == 0) {
             pos = 0;
         }
-    } else if (reinterpret_cast<AudioStateView *>(gAppManagerC)->soundEnabledFlag == 0) {
+    } else if (reinterpret_cast<AudioStateView *>(Globals::options)->soundEnabledFlag == 0) {
         pos = 0;
     }
     sound->play(soundId, pos, 0, volume);
@@ -1158,7 +1149,7 @@ LAB_3488: {
                     int mission = Globals::status->getCampaignMission();
                     KIPlayer *ki3 = self->kiPlayer;
 
-                    String *txt = ((GameText *) (*g_damage_text[0]))->getText(missionId);
+                    String *txt = (Globals::gameText)->getText(missionId);
                     int cmp = (&ki3->name)->Compare_str(txt);
                     if (missionId == 0xb3 && cmp == 0) {
                         ((Mission *) (intptr_t) mission)->setStatusValue(
@@ -1308,7 +1299,7 @@ Vector *Player::update(int dt, bool doSound) {
         *(Vector *) tmpC /= (float) dt;
         (void) spd;
         fn(tmpB, local, (int) (long) transform);
-        FMOD::Event *ev = ((FModSound *) (*g_update_sound))->updateEvent3DAttributes(
+        FMOD::Event *ev = (Globals::sound)->updateEvent3DAttributes(
             self->engineEvent, 0, (Vector *) tmpB, (Vector *) tmpC, false);
         self->engineEvent = ev;
         self->engineSoundPlaying = 1;
@@ -1467,7 +1458,7 @@ void Player::PlayEngineSound(int unused, Vector *vec) {
     if (reinterpret_cast<AudioStateView *>(Globals::appManager)->soundEnabledFlag != 0) {
         float pos[12];
         MatrixGetPosition(pos, this->transform);
-        FMOD::Event *ev = ((FModSound *) gFModSoundPtr[0])->updateEvent3DAttributes(
+        FMOD::Event *ev = ((FModSound *) Globals::sound)->updateEvent3DAttributes(
             this->engineEvent, 0, (Vector *) this->enginePositionVec, (Vector *) pos, false);
         this->engineEvent = ev;
         this->engineSoundPlaying = 1;
@@ -1477,21 +1468,21 @@ void Player::PlayEngineSound(int unused, Vector *vec) {
 void Player::PauseEngineSound() {
     FMOD::Event *event = this->engineEvent;
     if (event != 0) {
-        this->enginePaused = ((FModSound *) gFModSound)->pause(event);
+        this->enginePaused = ((FModSound *) Globals::sound)->pause(event);
     }
 }
 
 void Player::ResumeEngineSound(bool force) {
     FMOD::Event *event = this->engineEvent;
     if (event != 0 && (this->enginePaused != 0 || force)) {
-        this->enginePaused = ((FModSound *) gFModSound)->resume(event) ^ 1;
+        this->enginePaused = ((FModSound *) Globals::sound)->resume(event) ^ 1;
     }
 }
 
 void Player::StopEngineSound() {
     FMOD::Event *event = this->engineEvent;
     if (event != 0) {
-        ((FModSound *) gFModSound)->stop(event);
+        ((FModSound *) Globals::sound)->stop(event);
         this->engineSoundPlaying = 0;
         this->engineEvent = 0;
     }
