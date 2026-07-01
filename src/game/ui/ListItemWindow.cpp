@@ -1,4 +1,5 @@
 #include "game/ui/ListItemWindow.h"
+#include "game/core/Globals.h"
 #include "game/ship/Ship.h"
 #include "game/mission/BluePrint.h"
 #include "game/mission/PendingProduct.h"
@@ -46,13 +47,12 @@ char *LISTITEMWINDOW_UNITS[62] = {
     (char *) "", (char *) "",
 };
 
-static int **g_liw_screen = nullptr;
 
 void ListItemWindow::OnTouchBegin(int x, int y) {
     this->scrollWindow->OnTouchBegin(x, y);
     if (this->shows3DShipFlag &&
         this->x + (this->width >> 1) < x) {
-        Layout *obj = (Layout *) *g_liw_screen;
+        Layout *obj = (Layout *) Globals::layout;
         if (y < this->y + obj->field_0xc_leftMargin + obj->field_0x20_top + this->previewHeight) {
             this->dragLastX = x;
             this->dragStartX = x;
@@ -94,18 +94,16 @@ void ListItemWindow::OnTouchEnd(int x, int y) {
     }
 }
 
-static PaintCanvas **g_liw_r_canvas = nullptr;
 
-static Layout **g_liw_r_obj = nullptr;
 
 void ListItemWindow::render() {
     if (!this->shows3DShipFlag)
         return;
 
-    PaintCanvas *canvas = *g_liw_r_canvas;
+    PaintCanvas *canvas = Globals::Canvas;
     canvas->Begin3d();
 
-    Layout *obj = *g_liw_r_obj;
+    Layout *obj = Globals::layout;
     int s = obj->field_0x128;
     int h = this->previewHeight - s * 2;
     canvas->EnableClip(
@@ -122,21 +120,15 @@ void ListItemWindow::render() {
     _liw_render_tail(canvas, 0, h, &dummy);
 }
 
-static char **g_liw_s_fullscreen = nullptr;
 
-static char **g_liw_s_modeFlag = nullptr;
 
-static char **g_liw_s_altFlag = nullptr;
 
-static int *g_liw_s_screenW = nullptr;
 
-static int *g_liw_s_screenH = nullptr;
 
-static Layout **g_liw_s_layoutHolder = nullptr;
 
-static const float g_liw_s_wFull = 0.0f;
-static const float g_liw_s_wAlt = 0.0f;
-static const float g_liw_s_wMode = 0.0f;
+static const float g_liw_s_wFull = 562.5f;
+static const float g_liw_s_wAlt = 800.0f;
+static const float g_liw_s_wMode = 400.0f;
 static const unsigned int g_liw_s_baseAngle = 0u;
 
 void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
@@ -147,33 +139,33 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
     this->param4 = p4;
     this->param5 = p5;
 
-    Layout *layout = *g_liw_s_layoutHolder;
+    Layout *layout = Globals::layout;
 
     int w, h, x, y;
-    if (*g_liw_s_fullscreen == 0) {
+    if (Globals::iPad == 0) {
         this->x = 0;
         this->y = 0;
-        w = *g_liw_s_screenW;
-        h = *g_liw_s_screenH;
+        w = Globals::w;
+        h = Globals::h;
         this->width = w;
         this->height = h;
         x = 0;
         y = 0;
     } else {
         float wf;
-        if (**g_liw_s_modeFlag != 0) {
+        if (Globals::iPadHD != 0) {
             h = 0x392;
             wf = g_liw_s_wMode;
         } else {
-            bool alt = **g_liw_s_altFlag == 0;
+            bool alt = Globals::iPadLarge == 0;
             wf = alt ? g_liw_s_wAlt : g_liw_s_wFull;
             h = alt ? 0x28a : 0x514;
         }
         w = (int) wf;
         this->height = w;
         this->width = h;
-        x = (*g_liw_s_screenW >> 1) - (h >> 1);
-        y = (*g_liw_s_screenH >> 1) - (w >> 1);
+        x = (Globals::w >> 1) - (h >> 1);
+        y = (Globals::h >> 1) - (w >> 1);
         this->x = x;
         this->y = y;
     }
@@ -264,31 +256,23 @@ ListItemWindow::~ListItemWindow() {
     this->scrollWindow = 0;
 }
 
-static char *g_liw_d_maskFlag = nullptr;
 
-static PaintCanvas **g_liw_d_canvas = nullptr;
 
-static Layout **g_liw_d_layout = nullptr;
 
-static int *g_liw_d_headerId = nullptr;
 
-static GameText **g_liw_d_gameText = nullptr;
 
-static ImageFactory **g_liw_d_imageFactory = nullptr;
 
-static ItemDatabase **g_liw_d_itemDB = nullptr;
 
 static String **g_liw_d_arrowL = nullptr;
 
 static String **g_liw_d_arrowR = nullptr;
 
-static int *g_liw_d_scrollLimit = nullptr;
 
 void ListItemWindow::draw() {
-    Layout *layout = *g_liw_d_layout;
-    uint32_t canvasHandle = (uint32_t)(unsigned long) * g_liw_d_canvas;
+    Layout *layout = Globals::layout;
+    uint32_t canvasHandle = (uint32_t)(unsigned long) Globals::Canvas;
     PaintCanvas *canvas = (PaintCanvas *) (long) canvasHandle;
-    bool masked = *g_liw_d_maskFlag != 0;
+    bool masked = Globals::iPad != 0;
 
     if (masked)
         layout->drawMask();
@@ -307,7 +291,7 @@ void ListItemWindow::draw() {
 
     {
         String s;
-        s.Set(((*g_liw_d_gameText)->getText(*g_liw_d_headerId))->data);
+        s.Set(((Globals::gameText)->getText(0x186))->data);
         layout->drawHeader(s);
     }
 
@@ -321,10 +305,10 @@ void ListItemWindow::draw() {
             int boxX = this->x, boxY = this->y, w = this->width;
             int c0c = layout->field_0xc_leftMargin, c20 = layout->field_0x20_top, c28 = layout->buttonInsetX, c2c = layout->field_0x2c_rowHeight;
             int color = layout->field_0x5c;
-            int textId = *g_liw_d_headerId;
+            int textId = 0x186;
             li->ship->getIndex();
             String s;
-            s.Set(((*g_liw_d_gameText)->getText(textId))->data);
+            s.Set(((Globals::gameText)->getText(textId))->data);
             {
                 unsigned savedColor = layout->drawColor;
                 layout->drawColor = static_cast<unsigned>(color);
@@ -332,7 +316,7 @@ void ListItemWindow::draw() {
                 layout->drawColor = savedColor;
             }
 
-            ImageFactory *fac = *g_liw_d_imageFactory;
+            ImageFactory *fac = Globals::imageFactory;
             int shipIdx = li->ship->getIndex();
             fac->drawShip(shipIdx, this->x + layout->buttonInsetX + layout->field_0x2c_rowHeight,
                           ((this->y + layout->field_0xc_leftMargin + layout->field_0x20_top + layout->field_0x5c / 2) - layout->
@@ -343,10 +327,10 @@ void ListItemWindow::draw() {
         int boxX = this->x, boxY = this->y, w = this->width;
         int c0c = layout->field_0xc_leftMargin, c20 = layout->field_0x20_top, c28 = layout->buttonInsetX, c2c = layout->field_0x2c_rowHeight;
         int color = layout->field_0x5c;
-        int textId = *g_liw_d_headerId;
+        int textId = 0x186;
         li->getIndex();
         String s;
-        s.Set(((*g_liw_d_gameText)->getText(textId))->data);
+        s.Set(((Globals::gameText)->getText(textId))->data);
         {
             unsigned savedColor = layout->drawColor;
             layout->drawColor = static_cast<unsigned>(color);
@@ -357,7 +341,7 @@ void ListItemWindow::draw() {
         Item *itemPtr;
         if (li->isItem() == 0) {
             int idx;
-            ItemDatabase *db = *g_liw_d_itemDB;
+            ItemDatabase *db = (ItemDatabase *) Globals::items;
             if (li->isBluePrint() == 0)
                 idx = li->pendingProduct->blueprintIndex;
             else
@@ -367,7 +351,7 @@ void ListItemWindow::draw() {
             itemPtr = li->item;
         }
 
-        ImageFactory *fac = *g_liw_d_imageFactory;
+        ImageFactory *fac = Globals::imageFactory;
         int idx = itemPtr->getIndex();
         int type = itemPtr->getType();
         fac->drawItem(idx, type,
@@ -382,7 +366,7 @@ void ListItemWindow::draw() {
         uint32_t n = rows->size();
         int rowH = layout->field_0x2c_rowHeight;
         int yTop = layout->field_0x5c + layout->field_0xc_leftMargin + this->y + layout->field_0x20_top + rowH;
-        if ((uint32_t)(*g_liw_d_scrollLimit - layout->field_0x10_rightMargin) < (uint32_t)((layout->field_0x1c + rowH) * n + yTop))
+        if ((uint32_t)(Globals::h - layout->field_0x10_rightMargin) < (uint32_t)((layout->field_0x1c + rowH) * n + yTop))
             rowH = 2;
         int ycur = yTop;
         for (uint32_t i = 0; i < n; i++) {
@@ -436,7 +420,7 @@ void ListItemWindow::draw() {
 
     if (this->previewHeight < 1) {
         String s;
-        s.Set(((*g_liw_d_gameText)->getText(*g_liw_d_headerId))->data);
+        s.Set(((Globals::gameText)->getText(0x186))->data);
         layout->drawBox(1, this->x + (this->width >> 1) + layout->field_0x2c_rowHeight,
                         this->y + layout->field_0xc_leftMargin + layout->field_0x20_top,
                         ((this->width >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX, layout->field_0x5c, s, 0);
@@ -454,7 +438,7 @@ void ListItemWindow::draw() {
         if (prog > 0) yBox = yBox + prog + layout->field_0x2c_rowHeight;
         {
             String s;
-            s.Set(((*g_liw_d_gameText)->getText(*g_liw_d_headerId))->data);
+            s.Set(((Globals::gameText)->getText(0x186))->data);
             layout->drawBox(0, this->x + (this->width >> 1) + layout->field_0x2c_rowHeight, yBox,
                             ((this->width >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX, layout->field_0x1c, s, 0);
         }
@@ -476,10 +460,13 @@ void MatrixSetScaling(void *m, float x, float y, float z);
 
 // lint: void_ptr (imported symbol; param mangling must match lib)
 
-static uint32_t *g_liw_u_tf = nullptr;
 
-static const float *g_liw_u_angleTable = nullptr;
-static const float g_liw_u_angleScale = 0.0f;
+static const float g_liw_u_angleTable[64] = {
+    1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f,
+    1.4f, 1.3f, 1.3f, 1.3f, 1.4f, 1.3f, 1.5f, 1.3f, 1.4f, 1.5f,
+    1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f
+};
+static const float g_liw_u_angleScale = 120.0f;
 
 void ListItemWindow::update(int frameTime) {
     this->scrollWindow->update(frameTime);
@@ -503,8 +490,8 @@ void ListItemWindow::update(int frameTime) {
     float angle = (float) this->dragAccum / g_liw_u_angleScale;
     this->previewAngle = angle;
 
-    uint32_t tf = *g_liw_u_tf;
-    PaintCanvas *canvas = (PaintCanvas *) (long) tf;
+    uint32_t tf = this->shipTransform;
+    PaintCanvas *canvas = Globals::Canvas;
     Matrix *loc = (Matrix *) canvas->TransformGetLocal(tf);
     MatrixSetRotation(loc, angle, 0.0f, 0.0f);
     loc = (Matrix *) canvas->TransformGetLocal(tf);
@@ -521,13 +508,11 @@ void ListItemWindow::update(int frameTime) {
     this->previewGeometry->setRotation(tableAngle, tableAngle, tableAngle);
 }
 
-static Layout ***g_liw_a = nullptr;
 
-static PaintCanvas ***g_liw_b = nullptr;
 
 ListItemWindow::ListItemWindow() {
-    Layout **a = *g_liw_a;
-    PaintCanvas **b = *g_liw_b;
+    Layout **a = &Globals::layout;
+    PaintCanvas **b = &Globals::Canvas;
     this->labels = 0;
     this->values = 0;
     this->statsCur = 0;
