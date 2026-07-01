@@ -857,14 +857,9 @@ label8556: {
     }
 }
 
-static int **const gGAMT_guard = nullptr;
 static const char gGAMT_noAgent[] = "";
-static AgentBusyObject ***const gGAMT_busyObj = nullptr;
-static int **const gGAMT_modText = nullptr;
 
 String Globals::getAgentMissionText(Agent *agent) {
-    int *guardP = *gGAMT_guard;
-    int saved = *guardP;
 
     String result;
 
@@ -878,7 +873,7 @@ String Globals::getAgentMissionText(Agent *agent) {
     if (agent->isGenericAgent() == 0) {
         int event = agent->getEvent();
         if (event < 1 && agent->hasAcceptedOffer() == 0) {
-            AgentBusyObject **busySlot = *gGAMT_busyObj;
+            AgentBusyObject **busySlot = (AgentBusyObject **) &Globals::layout;
             AgentBusyObject *busy = *busySlot;
 
             busy->guardCounter += 1;
@@ -892,7 +887,7 @@ String Globals::getAgentMissionText(Agent *agent) {
                 ship = (int) (long) Globals::status->getShip();
                 int modIdx = agent->getSellModIndex();
                 if (((Ship *) (ship))->hasModInstalled(modIdx) != 0) {
-                    String *t = ((GameText *) (long) **gGAMT_modText)->getText(modIdx);
+                    String *t = Globals::gameText->getText(modIdx);
                     (void) t;
                     busy->guardCounter -= 1;
                     result.Set((acc).data);
@@ -2572,16 +2567,11 @@ String Globals::getRandomPlanetName() {
     return name;
 }
 
-static int **const gGRN_guardHolder = nullptr;
 static const char gGRN_noFirst[] = "";
-static int **const gGRN_rng1 = nullptr;
 static const char gGRN_noLast[] = "";
-static int **const gGRN_rng2 = nullptr;
 static const char gGRN_space[] = "";
 
 String Globals::getRandomName(int kind, bool both) {
-    int *guardP = *gGRN_guardHolder;
-    int saved = *guardP;
 
     FileRead *fr = (FileRead *) ::operator new(1);
     FileRead_ctor(fr);
@@ -2592,13 +2582,13 @@ String Globals::getRandomName(int kind, bool both) {
     if (first == 0) {
         firstStr.ctor_char(gGRN_noFirst, false);
     } else {
-        int idx = nextInt_71aa4((AbyssEngine::AERandom *) **gGRN_rng1);
+        int idx = nextInt_71aa4(Globals::rnd);
         firstStr.Set(((*first)[idx])->data);
     }
     if (last == 0) {
         lastStr.ctor_char(gGRN_noLast, false);
     } else {
-        int idx = nextInt_71aa4((AbyssEngine::AERandom *) **gGRN_rng2);
+        int idx = nextInt_71aa4(Globals::rnd);
         lastStr.Set(((*last)[idx])->data);
     }
 
