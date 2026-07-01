@@ -2262,25 +2262,15 @@ void _mtw_Ship_setItem(void *ship, void *item, int slot);
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static Status *const *const gSnStatus = nullptr;
-static int *const *const gSnShipTable = nullptr;
-static Galaxy *const *const gSnGalaxy = nullptr;
-static OptionsRecord *const *const gSnOptA = nullptr;
-static Achievements *const *const gSnAch = nullptr;
-static OptionsRecord *const *const gSnOptB = nullptr;
-static RecordHandler *const *const gSnOptHolder = nullptr;
-static FModSound *const *const gSnFmod = nullptr;
-static ModuleTransitionThunk *const gSnTransition = nullptr;
-
 void MenuTouchWindow::startSupernova() {
-    Status *const *statusHolder = gSnStatus;
+    Status *const *statusHolder = &Globals::status;
     _mtw_Status_resetGame();
     for (int i = 0x54; i != 0; i--)
         _mtw_Status_nextCampaignMission((bool) (unsigned char) (long) *statusHolder);
 
     _mtw_Status_setMission(*statusHolder);
     Status *status = *statusHolder;
-    ShipDefTable *row = *(ShipDefTable **) (*(int *) (*gSnShipTable) + 4);
+    ShipDefTable *row = *(ShipDefTable **) (*(int *) ((int *) Globals::ships) + 4);
     _mtw_Ship_makeShip(row->shipDefId_0x78);
     _mtw_Status_setShip(status);
 
@@ -2326,14 +2316,14 @@ void MenuTouchWindow::startSupernova() {
 
     _mtw_Status_setCredits(*statusHolder);
     Status *station = *statusHolder;
-    _mtw_Galaxy_getStation(*gSnGalaxy, 0x46);
+    _mtw_Galaxy_getStation(Globals::galaxy, 0x46);
     _mtw_Status_setStation(station);
     _mtw_Status_setSystemVisibility(*statusHolder, 6, true);
     _mtw_Status_setSystemVisibility(*statusHolder, 0x19, true);
     _mtw_Status_setCredits(*statusHolder);
 
-    OptionsRecord *opt = (OptionsRecord *) *gSnOptA;
-    OptionsRecord *optB = (OptionsRecord *) *gSnOptB;
+    OptionsRecord *opt = (OptionsRecord *) Globals::hints;
+    OptionsRecord *optB = (OptionsRecord *) Globals::options;
     ((Status *) *statusHolder)->field_8c = 0x1a0a;
     opt->flag_dword_0x20 = 0x1010101;
     opt->flag_0x17 = 1;
@@ -2351,16 +2341,16 @@ void MenuTouchWindow::startSupernova() {
     opt->flag_word_0x1c = 0x101;
     opt->flag_0x1e = 1;
     reinterpret_cast<uint16_t &>(opt->flag_0x38) = 0x101;
-    Achievements *ach = *gSnAch;
+    Achievements *ach = Globals::achievements;
     optB->flag_0x34 = 1;
 
     _mtw_Achievements_setMedal(ach, 0x17, 3);
-    _mtw_Achievements_setMedal(*gSnAch, 0x1e, 1);
+    _mtw_Achievements_setMedal(Globals::achievements, 0x1e, 1);
     _mtw_Status_setKills(*statusHolder, 0x182);
-    _mtw_RecordHandler_saveOptions(*gSnOptHolder);
-    _mtw_FModSound_stop(*gSnFmod);
+    _mtw_RecordHandler_saveOptions(Globals::recordHandler);
+    _mtw_FModSound_stop(Globals::sound);
 
-    ModuleTransitionThunk *thunk = gSnTransition;
+    ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) Globals::appManager;
     optB->fadeValue = this->fadeValue;
     thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
 }
