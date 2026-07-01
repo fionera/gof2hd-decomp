@@ -193,8 +193,6 @@ void PlayerFighter::setLevel(Level *lvl) {
     return PF_enableEmit((int) (intptr_t) lev->field_8c, v, 0);
 }
 
-static int *const gPFC_sharedRoute = nullptr;
-static const int gPFC_defaultRoute = 0;
 
 PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeometry *geom,
                              float x, float y, float z, bool flag)
@@ -268,12 +266,6 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->route = new Route(pts, (unsigned) count);
     RH_op_delete_arr(pts);
 
-    int *shared = gPFC_sharedRoute;
-    if (*shared == 0) {
-        int defPts[12];
-        memcpy(defPts, &gPFC_defaultRoute, 0x30);
-        *shared = (int) (intptr_t)(new Route(defPts, 0xc));
-    }
 
     self->field_0x130 = -1;
     self->field_0x134 = -1;
@@ -322,12 +314,12 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->currentSpeed = self->speed;
     self->currentRotate = self->rotate;
     self->route->setLoop(0);
-    ((Route *) (intptr_t) * shared)->setLoop(0);
+    self->route->setLoop(0);
     self->routeClone() = 0;
 
     if (Globals::status->getCurrentCampaignMission() != 0x29) {
         if (wingmanCmd == 9) {
-            self->routeClone() = ((Route *) (intptr_t) * shared)->clone();
+            self->routeClone() = self->route->clone();
         } else {
             self->routeClone() = self->route->clone();
         }
