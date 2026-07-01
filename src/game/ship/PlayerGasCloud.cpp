@@ -41,14 +41,14 @@ static float g_pgc_countScale = 130.0f;
 static float g_pgc_attrDiv = 100.0f;
 static float g_pgc_spread = 5000.0f;
 static float g_pgc_lifeDiv = 200.0f;
-static float g_pgcu_velScale = 0;
-static float g_pgcu_catchDist = 0;
-static int g_pgcu_minTimer = 0;
-static int g_pgcu_resetTimer = 0;
-static float g_pgcu_fadeLo = 0;
-static float g_pgcu_fadeAdd = 0;
-static float g_pgcu_fadeDiv = 0;
-static float g_pgcu_growDiv = 0;
+static float g_pgcu_velScale = 0.08f;
+static float g_pgcu_catchDist = 800.0f;
+static int g_pgcu_minTimer = -1499;
+static int g_pgcu_resetTimer = -1500;
+static float g_pgcu_fadeLo = 3500.0f;
+static float g_pgcu_fadeAdd = -800.0f;
+static float g_pgcu_fadeDiv = 2700.0f;
+static float g_pgcu_growDiv = 1500.0f;
 
 PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/,
                                AEGeometry *geometry, const Vector &position)

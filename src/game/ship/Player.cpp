@@ -27,9 +27,9 @@ namespace AbyssEngine {
     }
 }
 
-static int *g_cws_sound = nullptr;
-static int *g_cws_sound2 = nullptr;
-static int *g_cws_sound3 = nullptr;
+static const int g_cws_sound[32] = {
+    180,150,310,390,480,200,300,300, 170,200,170,370,370,300,440,340,
+    170,470,170,170,170,170,200,170, 250,150,170,250,270,170,0,0};
 static unsigned int g_shoot_mask = 0x10000003;
 static float **g_update_speed = nullptr;
 
@@ -879,7 +879,7 @@ void Player::calcWeaponSounds(int count) {
         }
 
         int idx = 0;
-        int *sound = g_cws_sound;
+        const int *sound = g_cws_sound;
         do {
             if ((int) n <= idx) break;
             if (order[idx] >= 0) {
@@ -899,10 +899,10 @@ void Player::calcWeaponSounds(int count) {
         if (slot2 != 0 && slot2->size() != 0) {
             Gun *g = slot2->data()[0];
             if (g != 0) {
-                int sid = g_cws_sound3[g->itemIndex];
+                int sid = g_cws_sound[g->itemIndex];
                 g->field_0x89 = 1;
                 (void) sid;
-                Globals::globals->addSoundResourceToList(*g_cws_sound2);
+                Globals::globals->addSoundResourceToList(g_cws_sound[0]);
                 return;
             }
         }
