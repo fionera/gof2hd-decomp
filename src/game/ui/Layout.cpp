@@ -24,11 +24,10 @@ uint8_t Layout::isFading() {
     return this->fading;
 }
 
-static int **gTouchButtonHolder = nullptr;
 
 int Layout::getHelpButtonOffset() {
     int w = this->helpButton->getWidth();
-    return w - (*gTouchButtonHolder)[0x38 / 4];
+    return w - ((int *) Globals::layout)[0x38 / 4];
 }
 
 void Layout::update(int dt) {
@@ -117,7 +116,6 @@ uint8_t Layout::helpPressed() {
 }
 
 
-static int **g_dfMetric = nullptr;
 
 static int g_dfWarnColor = 0;
 
@@ -125,7 +123,6 @@ static const char g_dfSep[] = "";
 
 static const char g_dfTail[] = "";
 
-static unsigned *g_dfFont = nullptr;
 
 void Layout::drawFooterNoBackButton() {
     int stationMode = 0;
@@ -137,7 +134,7 @@ void Layout::drawFooterNoBackButton() {
 
     pc->DrawImage2D(this->footerImageLeft, this->windowX,
                     this->windowY + this->windowHeight, (unsigned char) (0x11));
-    int *m = *g_dfMetric;
+    int *m = (int *) Globals::layout;
     int footerH = m[0x10 / 4];
     pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
                     (this->windowY + this->windowHeight) - footerH);
@@ -173,7 +170,7 @@ void Layout::drawFooterNoBackButton() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        unsigned font = *g_dfFont;
+        unsigned font = (unsigned int) (unsigned long) Globals::font;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
@@ -185,7 +182,7 @@ void Layout::drawFooterNoBackButton() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        unsigned font = *g_dfFont;
+        unsigned font = (unsigned int) (unsigned long) Globals::font;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
             int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
@@ -209,7 +206,7 @@ void Layout::drawFooter() {
 
     pc->DrawImage2D(this->footerImageLeft, this->windowX,
                     this->windowY + this->windowHeight, (unsigned char) (0x11));
-    int *m = *g_dfMetric;
+    int *m = (int *) Globals::layout;
     int footerH = m[0x10 / 4];
     pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
                     (this->windowY + this->windowHeight) - footerH);
@@ -245,7 +242,7 @@ void Layout::drawFooter() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        unsigned font = *g_dfFont;
+        unsigned font = (unsigned int) (unsigned long) Globals::font;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
@@ -257,7 +254,7 @@ void Layout::drawFooter() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        unsigned font = *g_dfFont;
+        unsigned font = (unsigned int) (unsigned long) Globals::font;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
             int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
@@ -303,12 +300,10 @@ void Layout::startFade(bool fadeOut, int color, int duration) {
     this->fadeDuration = duration;
 }
 
-static unsigned *g_tipColor = nullptr;
 
 static int **g_tipTextId = nullptr;
 
 
-static int **g_tipMetric = nullptr;
 
 void Layout::initTip() {
     if (this->tipLines != nullptr) {
@@ -318,14 +313,14 @@ void Layout::initTip() {
     }
     Array<String *> *arr = new Array<String *>();
 
-    unsigned color = *g_tipColor;
+    unsigned color = (unsigned int) (unsigned long) Globals::font;
     int textId = **g_tipTextId;
     PaintCanvas *canvas = Globals::Canvas;
     Globals::rnd->nextInt();
     String *str = Globals::gameText->getText(textId);
 
     this->tipLines = arr;
-    int *m = *g_tipMetric;
+    int *m = (int *) Globals::layout;
     int width = m[0x78 / 4] + m[0x4c / 4] * -2;
     canvas->GetLineArray(color, *str, width, this->tipLines);
 }
@@ -334,7 +329,6 @@ static unsigned *g_efColor = nullptr;
 
 
 
-static int **g_efMetric = nullptr;
 
 void Layout::drawEmptyFooter(bool showBack) {
     PaintCanvas *pc = Globals::Canvas;
@@ -345,10 +339,10 @@ void Layout::drawEmptyFooter(bool showBack) {
     pc->DrawImage2D(this->footerImageLeft, 0, screenH, (unsigned char) (0x11));
 
     int screenW = Globals::w;
-    int footerH = (*g_efMetric)[0x10 / 4];
+    int footerH = ((int *) Globals::layout)[0x10 / 4];
     this->drawBGPattern(this->footerPatternImage, w, screenH - footerH, screenW - w * 2, footerH);
     pc->DrawImage2D(this->footerImageLeft,
-                    screenW - w, screenH - (*g_efMetric)[0x10 / 4], (unsigned char) (0x01));
+                    screenW - w, screenH - ((int *) Globals::layout)[0x10 / 4], (unsigned char) (0x01));
     if (showBack == 0) return;
     this->backButton->setVisible(1);
     alignas(4) unsigned char sp[8];
@@ -608,7 +602,6 @@ typedef void (*SetPosFn)(TouchButton *btn, int x, int y, int mode);
 
 static SetPosFn gSetPos = nullptr;
 
-static int **gTB = nullptr;
 
 void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
     SetPosFn setPos = gSetPos;
@@ -617,7 +610,7 @@ void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
     this->windowWidth = p3;
     this->windowHeight = p4;
     setPos(this->helpButton, p3 + p1, p2, 0x12);
-    int *tb = *gTB;
+    int *tb = (int *) Globals::layout;
     setPos(this->backButton, tb[0x28 / 4] + this->windowX,
            (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
     setPos(this->secondaryButton, tb[0x28 / 4] + this->windowX,
@@ -697,7 +690,6 @@ static unsigned g_sbColor0 = 0;
 
 static unsigned g_sbColor1 = 0;
 
-static int **g_sbMetric = nullptr;
 
 void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     PaintCanvas *pc = Globals::Canvas;
@@ -708,7 +700,7 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     Globals::Canvas->SetColor(g_sbColor1);
 
     int inset = this->scrollBarInset;
-    pc->DrawRectangle(x, inset + y, (*g_sbMetric)[0x48 / 4], trackH - inset * 2);
+    pc->DrawRectangle(x, inset + y, ((int *) Globals::layout)[0x48 / 4], trackH - inset * 2);
     Globals::Canvas->SetColor(this->drawColor);
 
     int thumb = range - 1;
@@ -767,33 +759,19 @@ uint8_t Layout::drawFade() {
 }
 
 
-static int **g_dbMetric0 = nullptr;
 
-static unsigned *g_dbFont0c = nullptr;
 
-static unsigned *g_dbFont0r = nullptr;
 
-static unsigned *g_dbFont0 = nullptr;
 
-static int **g_dbMetric1 = nullptr;
 
-static unsigned *g_dbFont1c = nullptr;
 
-static unsigned *g_dbFont1r = nullptr;
 
-static unsigned *g_dbFont1 = nullptr;
 
-static int **g_dbMetric6 = nullptr;
 
-static unsigned *g_dbFont6c = nullptr;
 
-static unsigned *g_dbFont6r = nullptr;
 
-static unsigned *g_dbFont6 = nullptr;
 
-static int **g_dbMetric7 = nullptr;
 
-static unsigned *g_dbFont7 = nullptr;
 
 void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigned char flags) {
     PaintCanvas *pc = Globals::Canvas;
@@ -807,19 +785,19 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             this->drawBGPattern(this->field_0x34c, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x348, (w + x) - iw, y, (unsigned char) (0x01));
             if (text.size() == 0) break;
-            int *mt = *g_dbMetric0;
+            int *mt = (int *) Globals::layout;
             int tx = mt[0x44 / 4];
             if ((flags & 2) == 0) {
                 if ((int) (flags << 0x1d) < 0) {
-                    int tw = pc->GetTextWidth((unsigned) (unsigned long) (*g_dbFont0c), text);
+                    int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
                     tx = w / 2 - tw / 2;
                 }
             } else {
-                int tw = pc->GetTextWidth((unsigned) (unsigned long) (*g_dbFont0r), text);
+                int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
                 tx = (w - tx) - tw;
             }
             int ty = (y + (mt[0x1c / 4] >> 1) + 1) - this->textBaselineAdjust;
-            pc->DrawString((unsigned) (unsigned long) (*g_dbFont0), text, tx + x, ty, false);
+            pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text, tx + x, ty, false);
             break;
         }
         case 1: {
@@ -828,19 +806,19 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             this->drawBGPattern(this->field_0x354, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x350, (w + x) - iw, y, (unsigned char) (0x01));
             if (text.size() == 0) break;
-            int *mt = *g_dbMetric1;
+            int *mt = (int *) Globals::layout;
             int tx = mt[0x44 / 4];
             if ((flags & 2) == 0) {
                 if ((int) (flags << 0x1d) < 0) {
-                    int tw = pc->GetTextWidth((unsigned) (unsigned long) (*g_dbFont1c), text);
+                    int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
                     tx = w / 2 - tw / 2;
                 }
             } else {
-                int tw = pc->GetTextWidth((unsigned) (unsigned long) (*g_dbFont1r), text);
+                int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
                 tx = (w - tx) - tw;
             }
             int ty = (y + (mt[0x5c / 4] >> 1) + 1) - this->textBaselineAdjust;
-            pc->DrawString((unsigned) (unsigned long) (*g_dbFont1), text, tx + x, ty, false);
+            pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text, tx + x, ty, false);
             break;
         }
         case 2:
@@ -871,23 +849,23 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             this->drawBGPattern(this->field_0x38c, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x388, (w + x) - iw, y, (unsigned char) (0x01));
             if (text.size() == 0) break;
-            int *mt = *g_dbMetric6;
+            int *mt = (int *) Globals::layout;
             int tx = mt[0x44 / 4];
             if ((flags & 2) == 0) {
                 if ((int) (flags << 0x1d) < 0) {
-                    int tw = pc->GetTextWidth((unsigned) (unsigned long) (*g_dbFont6c), text);
+                    int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
                     tx = w / 2 - tw / 2;
                 }
             } else {
-                int tw = pc->GetTextWidth((unsigned) (unsigned long) (*g_dbFont6r), text);
+                int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
                 tx = (w - tx) - tw;
             }
             int ty = (y + (h >> 1) + 1) - this->textBaselineAdjust;
-            pc->DrawString((unsigned) (unsigned long) (*g_dbFont6), text, tx + x, ty, false);
+            pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text, tx + x, ty, false);
             break;
         }
         case 7: {
-            int *mt = *g_dbMetric7;
+            int *mt = (int *) Globals::layout;
             int hdr = mt[8 / 4];
             this->drawBGPattern(this->bgPatternImage, x, hdr + y, w, h - hdr);
             int ih = Globals::Canvas->GetImage2DHeight(this->field_0x394);
@@ -896,7 +874,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             Globals::Canvas->SetColor(0xffffffff);
             pc->DrawImage2D(this->headerIconImage, x, y);
             int ty = (y + (mt[8 / 4] / 2) + 1) - this->textBaselineAdjust;
-            pc->DrawString((unsigned) (unsigned long) (*g_dbFont7), text,
+            pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text,
                            mt[0x28 / 4] + x, ty, false);
             break;
         }
@@ -927,53 +905,47 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
 }
 
 
-static int **g_dwBorderTop = nullptr;
 
-static int **g_dwMetric = nullptr;
 
 static const char g_dwCmpLit[] = "";
 
-static unsigned **g_dwFont = nullptr;
 
 void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
     PaintCanvas *pc = Globals::Canvas;
     unsigned saved = pc->GetColor();
     if (drawBG) {
-        int top = (*g_dwBorderTop)[8 / 4];
+        int top = ((int *) Globals::layout)[8 / 4];
         this->drawBGPattern(this->bgPatternImage, x, top + y, w, h - top);
     }
     Globals::Canvas->SetColor(*(unsigned *) &Globals::Canvas);
-    int *m = *g_dwMetric;
+    int *m = (int *) Globals::layout;
     int top = m[8 / 4];
     pc->DrawRectangle(x, top + y, w, h - top);
     Globals::Canvas->SetColor(this->drawColor);
     pc->DrawImage2D(this->headerIconImage, x, 0);
     if (title.size() != 0 && title.Compare_char(g_dwCmpLit) == 0) {
-        int *mm = *g_dwMetric;
+        int *mm = (int *) Globals::layout;
         int half = mm[8 / 4];
         half += half >> 31;
         int ty = (y + (half >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned) (unsigned long) (**g_dwFont), title, mm[0x28 / 4] + x, ty, false);
+        pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), title, mm[0x28 / 4] + x, ty, false);
     }
     pc->SetColor(saved);
 }
 
 static unsigned *g_dtColor = nullptr;
 
-static int **g_dtMetricA = nullptr;
 
 
 
 static const char g_dtBoxLit[] = "";
 
-static unsigned *g_dtLinesA = nullptr;
 
-static unsigned *g_dtLinesB = nullptr;
 
 void Layout::drawTip() {
     if (this->tipLines != nullptr) {
         Globals::Canvas->SetColor(*g_dtColor);
-        int *mA = *g_dtMetricA;
+        int *mA = (int *) Globals::layout;
         int dimW = Globals::h;
         int dimH = Globals::w;
         int boxW = mA[0x78 / 4];
@@ -986,7 +958,7 @@ void Layout::drawTip() {
 
         int lineCount = (int) this->tipLines->size();
         int y = (dimW >> 1) + 0x3f - ((lineCount * mA[4 / 4]) >> 1);
-        reinterpret_cast<Globals *>(*g_dtLinesB)->drawLines((unsigned) (uintptr_t) * g_dtLinesA,
+        reinterpret_cast<Globals *>((int) (intptr_t) Globals::globals)->drawLines((unsigned) (uintptr_t) (unsigned int) (unsigned long) Globals::font,
                                                             this->tipLines,
                                                             dimH >> 1, y);
     }
@@ -1013,7 +985,6 @@ void Layout::initHelpWindow(String text) {
 
 
 
-static int **g_rwMetric = nullptr;
 
 static int *g_rwOutX = nullptr;
 
@@ -1030,7 +1001,7 @@ void Layout::resetWindowDimensions() {
 
     this->helpButton->setPosition(w, 0, (unsigned char) 0x12);
 
-    int *m = *g_rwMetric;
+    int *m = (int *) Globals::layout;
     int inset = m[0x28 / 4];
     int btnY = (this->windowY + this->windowHeight) - this->footerButtonOffset;
     this->backButton->setPosition(inset + this->windowX, btnY, (unsigned char) 0x21);
@@ -1181,7 +1152,7 @@ void Layout::drawFooterStation() {
 
     pc->DrawImage2D(this->footerImageLeft, this->windowX,
                     this->windowY + this->windowHeight, (unsigned char) (0x11));
-    int *m = *g_dfMetric;
+    int *m = (int *) Globals::layout;
     int footerH = m[0x10 / 4];
     pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
                     (this->windowY + this->windowHeight) - footerH);
@@ -1217,7 +1188,7 @@ void Layout::drawFooterStation() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        unsigned font = *g_dfFont;
+        unsigned font = (unsigned int) (unsigned long) Globals::font;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
@@ -1229,7 +1200,7 @@ void Layout::drawFooterStation() {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        unsigned font = *g_dfFont;
+        unsigned font = (unsigned int) (unsigned long) Globals::font;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
             int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
@@ -1245,9 +1216,7 @@ void Layout::drawFooterStation() {
 
 static unsigned *g_dhColor = nullptr;
 
-static int **g_dhMetric = nullptr;
 
-static unsigned **g_dhFont = nullptr;
 
 void Layout::drawHeader(String title, bool transition) {
     PaintCanvas *pc = Globals::Canvas;
@@ -1262,8 +1231,8 @@ void Layout::drawHeader(String title, bool transition) {
                     this->windowY, iw, ih, (unsigned char) (0x11), (unsigned char) (0x12), (unsigned char) (0x01));
     if (title.size() != 0) {
         pc->DrawImage2D(this->headerIconImage, this->windowX, this->windowY);
-        int *m = *g_dhMetric;
-        pc->DrawString((unsigned) (unsigned long) (**g_dhFont), title,
+        int *m = (int *) Globals::layout;
+        pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), title,
                        m[0x28 / 4] + m[0x44 / 4] + this->windowX,
                        this->headerTitleY + this->windowY, false);
     }
@@ -1283,7 +1252,6 @@ static const char g_mrLit1[] = "";
 
 static int *g_mrTextId = nullptr;
 
-static unsigned *g_mrFont = nullptr;
 
 static const char g_mrLit2[] = "";
 
@@ -1330,7 +1298,7 @@ void Layout::drawMissionRewardMessage(bool transition) {
         String line(*txt);
 
         sh = Globals::w;
-        unsigned font = *g_mrFont;
+        unsigned font = (unsigned int) (unsigned long) Globals::font;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), line);
         pc->DrawString((unsigned) (unsigned long) (font), line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
 
@@ -1376,7 +1344,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
 
     pc->DrawImage2D(this->footerImageLeft, this->windowX,
                     this->windowY + this->windowHeight, (unsigned char) (0x11));
-    int *m = *g_dfMetric;
+    int *m = (int *) Globals::layout;
     int footerH = m[0x10 / 4];
     pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
                     (this->windowY + this->windowHeight) - footerH);
@@ -1412,7 +1380,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        unsigned font = *g_dfFont;
+        unsigned font = (unsigned int) (unsigned long) Globals::font;
         int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
@@ -1424,7 +1392,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
     {
         int x = this->windowX;
         int w = this->windowWidth;
-        unsigned font = *g_dfFont;
+        unsigned font = (unsigned int) (unsigned long) Globals::font;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
             int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
