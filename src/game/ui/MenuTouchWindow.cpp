@@ -402,13 +402,8 @@ float MenuTouchWindow::getRelativeScrollStartPos() {
     return -(float) offset / (float) this->pageHeight;
 }
 
-static uint8_t *const *const gEndLayoutGuard = nullptr;
-static int *const *const gEndStatusObj = nullptr;
-static AppManager *const *const gEndAppHolder = nullptr;
-static FModSound *const *const gEndFmod = nullptr;
-static AppManager *const *const gEndQuitApp = nullptr;
-static int *const *const gEndModuleId = nullptr;
-static int *const *const gEndPendingFlag = nullptr;
+// g_android_link_game_gp is the Google-Play "link game" flag (JniBridge.cpp)
+extern int g_android_link_game_gp;
 
 int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) {
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
@@ -423,7 +418,7 @@ int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) {
     this->pendingActivate = 0;
     this->dragging = 0;
 
-    uint8_t *layoutGuard = (uint8_t *) *gEndLayoutGuard;
+    uint8_t *layoutGuard = (uint8_t *) Globals::layout;
     if (*layoutGuard != 0) {
         if (_mtw_Layout_OnTouchEnd(layoutGuard, y, x) != 0)
             *layoutGuard = 0;
@@ -441,7 +436,7 @@ int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) {
                     this->returnToMenuShowing = 0;
                     this->messageShowing = 0;
                 } else if (r == 0) {
-                    _mtw_AppMgr_Quit(*gEndQuitApp);
+                    _mtw_AppMgr_Quit(Globals::appManager);
                 }
                 return 0;
             }
@@ -449,7 +444,7 @@ int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) {
                 int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
                 if (r != 1) {
                     if (r != 0) return 0;
-                    **gEndPendingFlag = 1;
+                    g_android_link_game_gp = 1;
                 }
                 this->messageShowing = 0;
                 this->genericConfirmB = 0;
@@ -464,11 +459,11 @@ int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) {
                     return 0;
                 }
                 if (r != 0) return 0;
-                _mtw_FModSound_resumeAll(*gEndFmod);
+                _mtw_FModSound_resumeAll(Globals::sound);
                 _mtw_FModSound_stopAll();
-                **gEndModuleId = 2;
-                _mtw_AppMgr_SetCurrentApplicationModule(*gEndAppHolder,
-                                                        **gEndModuleId);
+                Globals::switch_to_target_setting = 2;
+                _mtw_AppMgr_SetCurrentApplicationModule(Globals::appManager,
+                                                        Globals::switch_to_target_setting);
                 this->quitConfirmShowing = 0;
                 this->messageShowing = 0;
                 return 0;
