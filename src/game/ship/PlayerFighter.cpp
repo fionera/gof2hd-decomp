@@ -6,6 +6,7 @@
 #include "engine/render/Material.h"
 #include "game/mission/Mission.h"
 #include "engine/render/AEGeometry.h"
+#include "engine/render/ParticleSystemManager.h"
 #include "game/mission/Generator.h"
 #include "game/world/Level.h"
 #include "game/mission/Status.h"
@@ -151,43 +152,45 @@ uint8_t PlayerFighter::hasCrateLost() {
     return this->crateLost();
 }
 
-typedef int (*F1)(int geom);
 
-typedef int (*F2)(int base, int v, int kind, int z);
 
-typedef void (*F3)(int base, int v, int z);
 
-static const F1 gSL_f1 = nullptr;
-static const F2 gSL_f2 = nullptr;
-static const F3 gSL_f3 = nullptr;
+static inline int PF_getRefMatrix(int geom) {
+    return (int) (intptr_t) &((AEGeometry *) (intptr_t) geom)->getReferenceMatrix();
+}
+static inline int PF_addSystem(int base, int matrix, int kind, int flag) {
+    return ((ParticleSystemManager *) (intptr_t) base)
+        ->addSystem((const AbyssEngine::AEMath::Matrix *) (intptr_t) matrix,
+                    (ParticleSettings::ParticleSet) kind, flag);
+}
+static inline void PF_enableEmit(int base, int handle, int enable) {
+    ((ParticleSystemManager *) (intptr_t) base)->enableSystemEmit(handle, enable);
+}
 
 void PlayerFighter::setLevel(Level *lvl) {
     ((KIPlayer *) (this))->setLevel(lvl);
-    F1 f1 = gSL_f1;
-    F2 f2 = gSL_f2;
-    F3 f3 = gSL_f3;
     Level *lev = (Level *) (intptr_t) this->level();
 
     int v;
-    v = f2((int) (intptr_t) lev->field_74, f1(this->geometry()), 9, 0);
+    v = PF_addSystem((int) (intptr_t) lev->field_74, PF_getRefMatrix(this->geometry()), 9, 0);
     this->engineTrailSystem = v;
-    f3((int) (intptr_t) lev->field_74, v, 0);
+    PF_enableEmit((int) (intptr_t) lev->field_74, v, 0);
 
-    v = f2((int) (intptr_t) lev->particleEmitBoolPtr, f1(this->geometry()), 0xf, 0);
+    v = PF_addSystem((int) (intptr_t) lev->particleEmitBoolPtr, PF_getRefMatrix(this->geometry()), 0xf, 0);
     this->field_0x80 = v;
-    f3((int) (intptr_t) lev->particleEmitBoolPtr, v, 0);
+    PF_enableEmit((int) (intptr_t) lev->particleEmitBoolPtr, v, 0);
 
-    v = f2((int) (intptr_t) lev->particleRenderBoolPtr, f1(this->geometry()), 0x2a, 0);
+    v = PF_addSystem((int) (intptr_t) lev->particleRenderBoolPtr, PF_getRefMatrix(this->geometry()), 0x2a, 0);
     this->field_0x84 = v;
-    f3((int) (intptr_t) lev->particleRenderBoolPtr, v, 0);
+    PF_enableEmit((int) (intptr_t) lev->particleRenderBoolPtr, v, 0);
 
-    v = f2((int) (intptr_t) lev->field_8c, f1(this->geometry()), 0x11, 0);
+    v = PF_addSystem((int) (intptr_t) lev->field_8c, PF_getRefMatrix(this->geometry()), 0x11, 0);
     this->field_0x134 = v;
-    f3((int) (intptr_t) lev->field_8c, v, 0);
+    PF_enableEmit((int) (intptr_t) lev->field_8c, v, 0);
 
-    v = f2((int) (intptr_t) lev->field_8c, f1(this->geometry()), 0x12, 0);
+    v = PF_addSystem((int) (intptr_t) lev->field_8c, PF_getRefMatrix(this->geometry()), 0x12, 0);
     this->field_0x138 = v;
-    return f3((int) (intptr_t) lev->field_8c, v, 0);
+    return PF_enableEmit((int) (intptr_t) lev->field_8c, v, 0);
 }
 
 static int *const gPFC_sharedRoute = nullptr;
