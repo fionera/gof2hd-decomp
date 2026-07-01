@@ -635,10 +635,8 @@ static inline void AEMath_VectorScale(AbyssEngine::AEMath::Vector *out, float s,
     *out = s * *v;
 }
 
-typedef int (*RngFn)(int rng, int bound);
 
 static const float gIP_strength = 0;
-static const RngFn gIP_rngFn = nullptr;
 
 void PlayerFighter::initPush(const Vector &target, int radius) {
 
@@ -664,11 +662,10 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
     AbyssEngine::AEMath::VectorNormalize((Vector *) norm, (Vector *) dir);
     this->pushNormal() = *(Vector *) norm;
 
-    RngFn rng = gIP_rngFn;
     int rngObj = (int) (intptr_t) Globals::rnd;
-    float rx = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
-    float ry = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
-    float rz = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
+    float rx = VectorSignedToFloat(AERandom_nextIntB(rngObj, 200) - 100, 0);
+    float ry = VectorSignedToFloat(AERandom_nextIntB(rngObj, 200) - 100, 0);
+    float rz = VectorSignedToFloat(AERandom_nextIntB(rngObj, 200) - 100, 0);
     float rvec[3] = {rx, ry, rz};
     float rnorm[3];
     AbyssEngine::AEMath::VectorNormalize((Vector *) rnorm, (Vector *) rvec);
