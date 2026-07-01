@@ -57,8 +57,6 @@ FileInterfaceAndroid::FileInterfaceAndroid(FILE *f, bool append) {
 
 
 
-static const char *gNmB = nullptr;
-static const char *gSgB = nullptr;
 
 FileInterfaceAndroid::FileInterfaceAndroid(jobject stream, bool reading) {
     JNIEnv *env = *&FileInterfaceAndroid::env;
@@ -73,17 +71,23 @@ FileInterfaceAndroid::FileInterfaceAndroid(jobject stream, bool reading) {
     jobject cls = jni->GetObjectClass(jenv, stream);
 
     jmethodID *selB;
+    const char *nmB;
+    const char *sgB;
     if (reading) {
         if (*&FileInterfaceAndroid::methodCloseRead == 0)
             *&FileInterfaceAndroid::methodCloseRead = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), "close", "()V");
         selB = &FileInterfaceAndroid::methodRead;
+        nmB = "read";
+        sgB = "([B)I";
     } else {
         if (*&FileInterfaceAndroid::methodCloseWrite == 0)
             *&FileInterfaceAndroid::methodCloseWrite = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), "close", "()V");
         selB = &FileInterfaceAndroid::methodWrite;
+        nmB = "write";
+        sgB = "([B)V";
     }
     if (*selB == 0)
-        *selB = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), gNmB, gSgB);
+        *selB = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), nmB, sgB);
 }
 
 FileInterfaceAndroid::FileInterfaceAndroid(zip_file *zf, bool append, int start, int p4, int p5) {
