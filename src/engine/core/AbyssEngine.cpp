@@ -212,8 +212,8 @@ namespace AbyssEngine {
         unsigned short count = sys->count;
         float *uvBase = (float *) sys->mesh->texCoords;
 
-        for (unsigned int idx = 0; (idx & 0xffff) < (unsigned int) (count << 3); idx += 8) {
-            float *p = uvBase + (idx & 0xffff);
+        for (unsigned short idx = 0; idx < (count << 3); idx += 8) {
+            float *p = uvBase + idx;
             p[0] = u0;
             p[1] = 1.0f - v0;
             p[2] = u1;
