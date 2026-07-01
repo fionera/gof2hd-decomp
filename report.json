@@ -2166,6 +2166,14 @@
    "usize": 200
   },
   {
+   "name": "_ZN7Globals26getInAppPurchaseArrayIndexEiP5ArrayIPN11AbyssEngine6StringEE",
+   "pct": 7.0,
+   "byte": false,
+   "linked": false,
+   "osize": 716,
+   "usize": 512
+  },
+  {
    "name": "_ZN11AbyssEngine9Transform14InsertKeyFrameEPKfxi",
    "pct": 7.1,
    "byte": false,
@@ -2396,14 +2404,6 @@
    "linked": false,
    "osize": 2900,
    "usize": 1868
-  },
-  {
-   "name": "_ZN7Globals26getInAppPurchaseArrayIndexEiP5ArrayIPN11AbyssEngine6StringEE",
-   "pct": 8.2,
-   "byte": false,
-   "linked": false,
-   "osize": 716,
-   "usize": 512
   },
   {
    "name": "_ZN11AbyssEngine6Engine10RenderMeshEPNS_4MeshE",
@@ -2870,20 +2870,20 @@
    "usize": 282
   },
   {
+   "name": "_ZN15MenuTouchWindow11OnTouchMoveEiiPv",
+   "pct": 10.9,
+   "byte": false,
+   "linked": false,
+   "osize": 1920,
+   "usize": 1488
+  },
+  {
    "name": "_ZN8FileRead15loadNamesBinaryEibb",
    "pct": 10.9,
    "byte": false,
    "linked": false,
    "osize": 884,
    "usize": 652
-  },
-  {
-   "name": "_ZN15MenuTouchWindow11OnTouchMoveEiiPv",
-   "pct": 11.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1920,
-   "usize": 1468
   },
   {
    "name": "_Z15IsDialogVisiblei",
@@ -3446,14 +3446,6 @@
    "usize": 284
   },
   {
-   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
-   "pct": 13.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1816,
-   "usize": 1240
-  },
-  {
    "name": "_ZN13RecordHandler9checkHashEj",
    "pct": 13.6,
    "byte": false,
@@ -3492,6 +3484,14 @@
    "linked": false,
    "osize": 2036,
    "usize": 1252
+  },
+  {
+   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
+   "pct": 13.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1816,
+   "usize": 1240
   },
   {
    "name": "_ZN17ScrollTouchWindow4drawEv",
@@ -5126,14 +5126,6 @@
    "usize": 520
   },
   {
-   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
-   "pct": 20.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1896,
-   "usize": 1736
-  },
-  {
    "name": "_ZN15MenuTouchWindow13startValkyrieEv",
    "pct": 20.7,
    "byte": false,
@@ -5244,6 +5236,14 @@
    "linked": false,
    "osize": 664,
    "usize": 268
+  },
+  {
+   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
+   "pct": 20.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1896,
+   "usize": 1740
   },
   {
    "name": "_ZN11AbyssEngine6String4TrimEv",

@@ -28,7 +28,6 @@ class Ship;
 class ChoiceWindow;
 class MissionsWindow;
 
-static PaintCanvas *g_PaintCanvas = nullptr;
 
 struct MtwAppData {
     uint8_t pad_0x0[5];
@@ -1154,18 +1153,18 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             int *img = (int *) this->heapBufB;
             int bound = Globals::w;
             int b28 = (Globals::layout)->buttonInsetX;
-            int iw = g_PaintCanvas->GetImage2DWidth((unsigned int) (long) img);
+            int iw = Globals::Canvas->GetImage2DWidth((unsigned int) (long) img);
             unsigned char hit;
             if ((bound - b28) - iw < y) {
                 int lc = (Globals::layout)->field_0xc_leftMargin;
                 int tp = (Globals::layout)->field_0x20_top;
-                int ih = g_PaintCanvas->GetImage2DHeight((unsigned int) (long) img);
+                int ih = Globals::Canvas->GetImage2DHeight((unsigned int) (long) img);
                 hit = (x < ih + tp + lc) ? 1 : 0;
             } else hit = 0;
             this->scrollbarHit = hit;
 
             b28 = (Globals::layout)->buttonInsetX;
-            iw = g_PaintCanvas->GetImage2DWidth((unsigned int) (long) img);
+            iw = Globals::Canvas->GetImage2DWidth((unsigned int) (long) img);
             if (y < iw + b28) {
                 this->dragStartX = x;
                 this->dragLastX = x;
@@ -1904,7 +1903,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
             if (slayout->field_0xc_leftMargin < x &&
                 x < Globals::h - slayout->field_0x10_rightMargin) {
                 int b28 = slayout->buttonInsetX;
-                int iw = g_PaintCanvas->GetImage2DWidth(*(unsigned int *) this->heapBufA);
+                int iw = Globals::Canvas->GetImage2DWidth(*(unsigned int *) this->heapBufA);
                 if (y < iw + b28) {
                     int dx = x - this->dragLastX;
                     this->dragLastX = x;
@@ -1941,7 +1940,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                 if (slayout->field_0xc_leftMargin < x &&
                     x < Globals::h - slayout->field_0x10_rightMargin) {
                     int b28 = slayout->buttonInsetX;
-                    int iw = g_PaintCanvas->GetImage2DWidth(*(unsigned int *) this->heapBufA);
+                    int iw = Globals::Canvas->GetImage2DWidth(*(unsigned int *) this->heapBufA);
                     if (y < iw + b28) {
                         int dx = x - this->dragLastX;
                         this->dragLastX = x;
