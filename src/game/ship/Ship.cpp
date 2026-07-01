@@ -5,10 +5,11 @@
 #include "game/mission/Status.h"
 #include "game/world/SolarSystem.h"
 
-static int **gShipDataRoot = nullptr;
-static int *gRaceTable = nullptr;
-static int *gDifficultyPtr = nullptr;
-static int *gShopRoot = nullptr;
+static const int gRaceTable[64] = {
+    3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
+    2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
+    8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3,
+    3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
 
 namespace {
     struct ShipDataEntry {
@@ -336,7 +337,7 @@ Item *Ship::getFirstEquipmentOfSort(int sort) {
             }
         }
         if (sort == 0x15 && (this->index == 0x31 || this->index == 0x2c)) {
-            ShopEntry *shop = ((ShopEntry **) gShopRoot)[1];
+            ShopEntry *shop = ((ShopEntry **) Globals::items)[1];
             return shop->cloakItem;
         }
     }
@@ -664,7 +665,7 @@ void Ship::refreshValue() {
 
 void Ship::adjustPrice() {
     if (Globals::status->getStation() != 0 && this->price > 0) {
-        ShipDataObj *root = *(ShipDataObj **) gShipDataRoot;
+        ShipDataObj *root = *(ShipDataObj **) &Globals::ships;
         ShipDataEntry *entry = root->table[this->index];
         int cat = entry->category;
         SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
@@ -677,7 +678,7 @@ void Ship::adjustPrice() {
         }
         float acc = bonus + base;
         float diff = 0.1f;
-        int dv = *gDifficultyPtr;
+        int dv = Globals::globalPriceRaise;
         if (dv != 0) {
             diff = base * (float) dv * 0.7f;
         }
@@ -686,7 +687,7 @@ void Ship::adjustPrice() {
 }
 
 void Ship::priceDecline() {
-    ShipDataObj *root = *(ShipDataObj **) gShipDataRoot;
+    ShipDataObj *root = *(ShipDataObj **) &Globals::ships;
     ShipDataEntry *entry = root->table[this->index];
     this->price = (int) ((float) entry->basePrice / 1.25f);
 }

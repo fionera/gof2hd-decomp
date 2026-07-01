@@ -112,7 +112,7 @@ String SolarSystem::getName() {
     return this->name;
 }
 
-static const int kPirateBaseStations[4] = {0, 0, 0, 0};
+static const int kPirateBaseStations[4] = {1, 33, 47, 86};
 
 static char **gPirateBaseRoot = nullptr;
 
@@ -144,7 +144,7 @@ uint32_t SolarSystem::hasNoOwner() {
     return 0;
 }
 
-static const int kBlueprintStations[5] = {0, 0, 0, 0, 0};
+static const int kBlueprintStations[5] = {132, 133, 134, 129, 123};
 
 static char **gBlueprintRoot = nullptr;
 
