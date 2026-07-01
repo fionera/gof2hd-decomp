@@ -69,18 +69,16 @@ int MiningGame::getAsteroidType() {
     return this->station;
 }
 
-static Globals **g_MiningGame_sqrt = nullptr;
 
-static Layout **g_MiningGame_layout = nullptr;
 
 bool MiningGame::isInCurrentLayer() {
     float dx = this->posX - (float) this->centerX;
     float dy = this->posY - (float) this->centerY;
-    Globals **sqrtHolder = g_MiningGame_sqrt;
+    Globals **sqrtHolder = &Globals::globals;
     int current = this->currentLayer;
     int layer = this->targetLayer;
     int *row = LAYER_DIAMETERS + (7 - layer) * 7;
-    Layout *layout = *g_MiningGame_layout;
+    Layout *layout = Globals::layout;
     Globals *globals = *sqrtHolder;
     int size = row[current];
     float scale = layout->ringRadiusScale;
@@ -121,19 +119,13 @@ MiningGame::~MiningGame() {
     this->drillSprite = nullptr;
 }
 
-static AbyssEngine::AERandom **g_MiningGame_random = nullptr;
 
-static int (*g_MiningGame_randomNext)(AbyssEngine::AERandom *random, int limit) = nullptr;
+static inline int MG_nextInt(AbyssEngine::AERandom *random, int limit) { return random->nextInt(limit); }
 
-static Layout **g_MiningGame_layoutUpdate = nullptr;
 
-static FModSound **g_MiningGame_sound = nullptr;
 
-static Status **g_MiningGame_statusUpdate = nullptr;
 
-static Achievements **g_MiningGame_achievements = nullptr;
 
-static Status **g_MiningGame_statusMedal = nullptr;
 
 int MiningGame::update(int delta) {
     int pulse = this->promptPulseTimer + delta;
@@ -146,8 +138,8 @@ int MiningGame::update(int delta) {
     int driftTimer = this->driftTimer + delta;
     this->driftTimer = driftTimer;
     if (driftTimer >= 2501) {
-        AbyssEngine::AERandom **randomHolder = g_MiningGame_random;
-        int(*next)(AbyssEngine::AERandom *, int) = g_MiningGame_randomNext;
+        AbyssEngine::AERandom **randomHolder = &Globals::rnd;
+        int(*next)(AbyssEngine::AERandom *, int) = MG_nextInt;
         this->driftTimer = next(*randomHolder, 2000) + 500;
 
         int value = next(*randomHolder, 7);
@@ -175,7 +167,7 @@ int MiningGame::update(int delta) {
         this->driftY = ((float) this->centerY - this->posY) * 0.03f;
     }
 
-    Layout *layout = *g_MiningGame_layoutUpdate;
+    Layout *layout = Globals::layout;
     float frameScale = (float) delta;
     this->posX += ((this->inputX + this->driftX) / layout->driftSpeedDivisor) * frameScale;
     this->posY += ((this->inputY + this->driftY) / layout->driftSpeedDivisor) * frameScale;
@@ -184,7 +176,7 @@ int MiningGame::update(int delta) {
     this->rightMarquee->update(delta);
 
     float *layerSpeed = LAYER_SPEEDS;
-    FModSound **soundHolder = g_MiningGame_sound;
+    FModSound **soundHolder = &Globals::sound;
     MiningGame_FModSound_setParamValue(*soundHolder, 0, 1,
                                        ((layerSpeed[this->currentLayer] - 5.0f) / 33.0f) * 3.0f);
 
@@ -223,9 +215,9 @@ int MiningGame::update(int delta) {
             if (nextLayer >= this->targetLayer) {
                 this->gameWonFlag = 1;
                 this->gotCoreFlag = this->targetLayer == 7;
-                Achievements **achHolder = g_MiningGame_achievements;
+                Achievements **achHolder = &Globals::achievements;
                 if (MiningGame_Achievements_hasMedal(*achHolder, 0x26, 1) == 0) {
-                    Status *status = *g_MiningGame_statusMedal;
+                    Status *status = Globals::status;
                     int count = status->field_124 + 1;
                     status->field_124 = count;
                     int goal = MiningGame_Achievements_getValue(*achHolder, 0x26, 1);
@@ -257,7 +249,7 @@ int MiningGame::update(int delta) {
             this->lossTimer = 0x9c4;
             this->oreAmount = 0.0f;
             this->gameLostFlag = 1;
-            (*g_MiningGame_statusUpdate)->field_124 = 0;
+            (Globals::status)->field_124 = 0;
             return 0;
         }
         this->textAlpha = 1.0f;
@@ -266,24 +258,19 @@ int MiningGame::update(int delta) {
     return 1;
 }
 
-static Layout **g_MiningGame_layoutCtor = nullptr;
 
-static Status **g_MiningGame_statusCtor = nullptr;
 
-static PaintCanvas **g_MiningGame_canvasCtor = nullptr;
 
-static int *g_MiningGame_screenW = nullptr;
 
-static int *g_MiningGame_screenH = nullptr;
 
 MiningGame::MiningGame(int layer, int station, Hud *hud) {
     int imageId[2];
     imageId[0] = -1;
 
-    int *screenW = g_MiningGame_screenW;
-    int *screenH = g_MiningGame_screenH;
-    Layout **layoutHolder = g_MiningGame_layoutCtor;
-    Status **statusHolder = g_MiningGame_statusCtor;
+    int *screenW = &Globals::w;
+    int *screenH = &Globals::h;
+    Layout **layoutHolder = &Globals::layout;
+    Status **statusHolder = &Globals::status;
 
     this->layer = layer;
     this->station = station;
@@ -323,7 +310,7 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
         this->oreRate = (float) value / 100.0f;
     }
 
-    PaintCanvas *canvas = *g_MiningGame_canvasCtor;
+    PaintCanvas *canvas = Globals::Canvas;
     unsigned int drillImageId;
     canvas->Image2DCreate(0x4e6, drillImageId);
     imageId[0] = drillImageId;
@@ -395,25 +382,19 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
     this->campaignFlag = MiningGame_Status_getCurrentCampaignMission(*statusHolder) > 4;
 }
 
-static PaintCanvas **g_MiningGame_canvasRender = nullptr;
 
-static int *g_MiningGame_layerTableRender = nullptr;
+static const int g_MiningGame_layerTableRender[49] = {250,210,170,140,110,80,50, 250,210,170,140,110,80,0, 250,200,150,100,70,0,0, 250,170,120,80,0,0,0, 250,160,80,0,0,0,0, 250,120,0,0,0,0,0, 250,0,0,0,0,0,0};
 
-static Layout **g_MiningGame_layoutRender = nullptr;
 
 static void (*g_MiningGame_drawLayer)(PaintCanvas *canvas, int image, int x, int y,
                                       int w, int h, int anchor, int tile,
                                       int frame) = nullptr;
 
-static Status **g_MiningGame_statusRender = nullptr;
 
 static char g_MiningGame_oreSuffix[1] = {};
 
-static String **g_MiningGame_fontString = nullptr;
 
-static GameText **g_MiningGame_gameText = nullptr;
 
-static int *g_MiningGame_screenWRender = nullptr;
 
 void MiningGame::render2D() {
     String amountStorage;
@@ -423,11 +404,11 @@ void MiningGame::render2D() {
     String *suffixText = &suffixStorage;
     String *oreText = &oreStorage;
 
-    PaintCanvas *canvas = *g_MiningGame_canvasRender;
+    PaintCanvas *canvas = Globals::Canvas;
     canvas->SetColor((unsigned int) -1);
 
-    int *layerTable = g_MiningGame_layerTableRender;
-    Layout **layoutHolder = g_MiningGame_layoutRender;
+    const int *layerTable = g_MiningGame_layerTableRender;
+    Layout **layoutHolder = &Globals::layout;
     Layout *layout = *layoutHolder;
     void(*drawLayer)(PaintCanvas *, int, int, int, int, int, int, int, int) = g_MiningGame_drawLayer;
 
@@ -510,7 +491,7 @@ void MiningGame::render2D() {
         _s->length = 0;
     }
 
-    Ship *ship = MiningGame_Status_getShip_render(*g_MiningGame_statusRender);
+    Ship *ship = MiningGame_Status_getShip_render(Globals::status);
     int freeSpace = MiningGame_Ship_getFreeSpace(ship);
     int alpha = (int) (this->textAlpha * 255.0f);
     if (freeSpace < (int) this->oreAmount) {
@@ -519,7 +500,7 @@ void MiningGame::render2D() {
         canvas->SetColor((unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) alpha);
     }
 
-    String *font = *g_MiningGame_fontString;
+    unsigned int font = (unsigned int) (unsigned long) Globals::font;
     int textWidth = canvas->GetTextWidth((unsigned int) (long) font, *oreText);
     int textX = (int) (((this->posX + (float) this->oreIconOffsetX + (float) this->oreIconOffsetY) -
                         (float) layout->hudInset) -
@@ -528,18 +509,18 @@ void MiningGame::render2D() {
     canvas->DrawString((unsigned int) (long) font, *oreText, textX, textY, false);
     canvas->SetColor((unsigned int) -1);
 
-    if (MiningGame_Status_getCurrentCampaignMission_render(*g_MiningGame_statusRender) < 5) {
+    if (MiningGame_Status_getCurrentCampaignMission_render(Globals::status) < 5) {
         int promptAlpha = (int) (((float) this->promptPulseTimer / 2500.0f) * 255.0f);
         if (promptAlpha > 255) {
             promptAlpha = 255 - promptAlpha;
         }
         canvas->SetColor((unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) 0xff,
                          (unsigned char) (uint8_t) promptAlpha);
-        String *prompt = MiningGame_GameText_getText(*g_MiningGame_gameText, 0x268);
+        String *prompt = MiningGame_GameText_getText(Globals::gameText, 0x268);
         amountText->Set((prompt)->data);
         int promptWidth = canvas->GetTextWidth((unsigned int) (long) font, *amountText);
         canvas->DrawString((unsigned int) (long) font, *amountText,
-                           *g_MiningGame_screenWRender / 2 - promptWidth / 2,
+                           Globals::w / 2 - promptWidth / 2,
                            layout->field_0x70_rowHeight + this->progressBarY, false);
         canvas->SetColor((unsigned int) -1);
         {
