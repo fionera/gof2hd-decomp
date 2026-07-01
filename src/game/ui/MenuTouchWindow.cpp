@@ -1789,13 +1789,7 @@ void _mtw_Layout_OnTouchMove(void *layout, int y);
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static Layout *const *const gMvLayout = nullptr;
-static int *const *const gMvScreenW = nullptr;
-static uint8_t *const *const gMvFlagA = nullptr;
-static uint8_t *const *const gMvFlagB = nullptr;
-static FModSound *const *const gMvFmod = nullptr;
 
-static int *const *const gMvScrollBound = nullptr;
 
 int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
@@ -1803,7 +1797,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
         _mtw_ChoiceWindow_OnTouchMove(this->choiceWindow, y);
         return 0;
     }
-    Layout *layout = (Layout *) *gMvLayout;
+    Layout *layout = Globals::layout;
     if (layout->choiceWindowOpen != 0) {
         _mtw_Layout_OnTouchMove(layout, y);
         return 0;
@@ -1814,7 +1808,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
         case 0:
         case 1:
             if (layout->field_0xc_leftMargin < x &&
-                x < **gMvScreenW - layout->field_0x10_rightMargin) {
+                x < Globals::h - layout->field_0x10_rightMargin) {
                 int dx = x - this->dragLastX;
                 this->dragLastX = x;
                 this->dragVelocity = dx;
@@ -1824,7 +1818,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
             _mtw_TouchButton_OnTouchMove(this->okButton, y);
             break;
         case 2: {
-            if (**gMvFlagA == 0) {
+            if (Globals::iPad == 0) {
                 Array<TouchButton *> *arr = (Array<TouchButton *> *) this->optionsButtons;
                 for (unsigned int i = 0; i < *(unsigned int *) arr; i++)
                     _mtw_TouchButton_OnTouchMove(arr->data_[i], y);
@@ -1849,7 +1843,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnD8, y, x);
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnDC, y, x);
                 {
-                    FModSound *fmod = *gMvFmod;
+                    FModSound *fmod = Globals::sound;
                     TouchSlider **sl = ((Array<TouchSlider *> *) this->sliders)->data_;
                     if (_mtw_FModSound_tryToStopMusicForBGMusic() == 0)
                         _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(sl[1]));
@@ -1859,7 +1853,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                 Array<TouchSlider *> *arr = (Array<TouchSlider *> *) this->sliders;
                 for (unsigned int i = 1; i < *(unsigned int *) arr; i++)
                     _mtw_TouchSlider_OnTouchMove(arr->data_[i], y);
-                if (**gMvFlagB != 0 && this->okButton != 0)
+                if (Globals::iPadLargePossible != 0 && this->okButton != 0)
                     _mtw_TouchButton_OnTouchMove(this->okButton, y);
             }
         }
@@ -1884,7 +1878,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
             _mtw_TouchButton_OnTouchMoveXY(this->optBtnD8, y, x);
             _mtw_TouchButton_OnTouchMoveXY(this->optBtnDC, y, x);
             {
-                FModSound *fmod = *gMvFmod;
+                FModSound *fmod = Globals::sound;
                 TouchSlider **sl = ((Array<TouchSlider *> *) this->sliders)->data_;
                 if (_mtw_FModSound_tryToStopMusicForBGMusic() == 0)
                     _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(sl[1]));
@@ -1894,7 +1888,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
             {
                 Array<TouchSlider *> *arr = (Array<TouchSlider *> *) this->sliders;
                 for (unsigned int i = 1; i < *(unsigned int *) arr; i++) {
-                    if (i == 5 && ((Layout *) *gMvLayout)->field_0x284_sliderSlot5Enabled == 0) continue;
+                    if (i == 5 && (Globals::layout)->field_0x284_sliderSlot5Enabled == 0) continue;
                     _mtw_TouchSlider_OnTouchMove(arr->data_[i], y);
                 }
             }
@@ -1936,7 +1930,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
         }
         break;
         case 0xe: {
-            Layout *slayout = (Layout *) *gMvLayout;
+            Layout *slayout = Globals::layout;
 
             _mtw_ScrollTouchWindow_OnTouchMove(this->scrollWindowB, y);
 
@@ -1952,7 +1946,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                 _mtw_TouchButton_OnTouchMove(slots->data_[i], y);
 
             if (slayout->field_0xc_leftMargin < x &&
-                x < **gMvScrollBound - slayout->field_0x10_rightMargin) {
+                x < Globals::h - slayout->field_0x10_rightMargin) {
                 int b28 = slayout->buttonInsetX;
                 int iw = g_PaintCanvas->GetImage2DWidth(*(unsigned int *) this->heapBufA);
                 if (y < iw + b28) {
@@ -1973,7 +1967,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                     _mtw_TouchButton_OnTouchMove(e, y);
             }
             {
-                Layout *slayout = (Layout *) *gMvLayout;
+                Layout *slayout = Globals::layout;
 
                 _mtw_ScrollTouchWindow_OnTouchMove(this->scrollWindowB, y);
 
@@ -1989,7 +1983,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                     _mtw_TouchButton_OnTouchMove(slots->data_[i], y);
 
                 if (slayout->field_0xc_leftMargin < x &&
-                    x < **gMvScrollBound - slayout->field_0x10_rightMargin) {
+                    x < Globals::h - slayout->field_0x10_rightMargin) {
                     int b28 = slayout->buttonInsetX;
                     int iw = g_PaintCanvas->GetImage2DWidth(*(unsigned int *) this->heapBufA);
                     if (y < iw + b28) {
@@ -2039,7 +2033,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
         break;
     }
 
-    _mtw_Layout_OnTouchMove(*gMvLayout, y);
+    _mtw_Layout_OnTouchMove(Globals::layout, y);
     return 0;
 }
 
