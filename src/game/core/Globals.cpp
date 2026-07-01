@@ -577,7 +577,6 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
     }
 }
 
-static int **const gLTS2_guardHolder = nullptr;
 static const char gLTS2_secTens[] = "";
 static const char gLTS2_secEmpty[] = "";
 static const char gLTS2_minTens[] = "";
@@ -1034,7 +1033,6 @@ String Globals::getAgentMissionText(Agent *agent) {
     return result;
 }
 
-static int **const gIAP_guardHolder = nullptr;
 static const char gIAP_prefixA[] = "";
 static const char gIAP_prefixB[] = "";
 static const char gIAP_id50[] = "";
@@ -1049,8 +1047,6 @@ static const char gIAP_id53[] = "";
 static const char gIAP_id54[] = "";
 
 int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) {
-    int *guardP = *gIAP_guardHolder;
-    int saved = *guardP;
     int result = -1;
 
     if (list != 0) {
@@ -1130,7 +1126,6 @@ String Globals::getKeyBindingReplaceString(int key) {
     return result;
 }
 
-static int **const gLTS_guardHolder = nullptr;
 static const char gLTS_minTens[] = "";
 static const char gLTS_minEmpty[] = "";
 static const char gLTS_hrTens[] = "";
@@ -1429,16 +1424,10 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
     }
 }
 
-static unsigned **const gCBB_counter = nullptr;
-static int **const gCBB_canvas = nullptr;
 
 unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
                                       int width) {
-    (void) p1;
-    unsigned *counter = *gCBB_counter;
-    int *canvasP = *gCBB_canvas;
-    int snapshot = *counter;
-
+    (void) p1;    int *canvasP = (int *) &Globals::Canvas;
     unsigned int meshOut = 0;
     ((PaintCanvas *) (long) *canvasP)->MeshCreate((unsigned short) 0xc, (unsigned short) 6, (signed char) 0x13,
                                                   (unsigned short) 0, meshOut);
@@ -1490,11 +1479,8 @@ void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float x1, float 
 
 // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-static int **const gGWC_guardHolder = nullptr;
 
 Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) {
-    int *guardP = *gGWC_guardHolder;
-    int saved = *guardP;
 
     FileRead *fr = (FileRead *) ::operator new(1);
     FileRead_ctor(fr);
