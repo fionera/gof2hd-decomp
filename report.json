@@ -406,14 +406,6 @@
    "usize": 4
   },
   {
-   "name": "_ZN15MenuTouchWindow9startGOF2Ev",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 10
-  },
-  {
    "name": "_ZN17ScrollTouchWindow10drawTextBGEv",
    "pct": 0.0,
    "byte": false,
@@ -9366,6 +9358,14 @@
    "usize": 40
   },
   {
+   "name": "_ZN15MenuTouchWindow9startGOF2Ev",
+   "pct": 42.1,
+   "byte": false,
+   "linked": false,
+   "osize": 96,
+   "usize": 80
+  },
+  {
    "name": "_ZN5Trail10changeTypeEi",
    "pct": 42.1,
    "byte": false,
@@ -9638,6 +9638,14 @@
    "usize": 96
   },
   {
+   "name": "_ZN8FileRead10loadAgentsEv",
+   "pct": 43.5,
+   "byte": false,
+   "linked": false,
+   "osize": 472,
+   "usize": 456
+  },
+  {
    "name": "_ZN11AbyssEngine16AESoundRessource4playEif",
    "pct": 43.6,
    "byte": false,
@@ -9700,14 +9708,6 @@
    "linked": false,
    "osize": 152,
    "usize": 116
-  },
-  {
-   "name": "_ZN8FileRead10loadAgentsEv",
-   "pct": 44.1,
-   "byte": false,
-   "linked": false,
-   "osize": 472,
-   "usize": 456
   },
   {
    "name": "_ZN6Layout13formatCreditsEi",

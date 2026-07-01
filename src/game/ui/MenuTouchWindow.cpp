@@ -2272,18 +2272,15 @@ void MenuTouchWindow::startSupernova() {
     thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
 }
 
-static FModSound *const *const gGof2Fmod = nullptr;
-static Status *const *const gGof2StatusObj = nullptr;
-static ModuleTransitionThunk *const *const gGof2Transition = nullptr;
 
 void MenuTouchWindow::startGOF2() {
     _mtw_Status_resetGame();
-    FModSound *snd = *gGof2Fmod;
+    FModSound *snd = Globals::sound;
 
-    ((Status *) *gGof2StatusObj)->fadeValue = this->fadeValue;
+    // Ghidra: writes fadeValue into the options blob at +0x2c (not a Status object)
+    *(int *)(Globals::options + 0x2c) = this->fadeValue;
     float v = _mtw_FModSound_stop(snd);
     _mtw_FModSound_play(snd, 0x8f, 0, v);
-    ModuleTransitionThunk *thunk = *gGof2Transition;
-    reinterpret_cast<void (*)(void *, int, int)>(thunk->transitionFn)(reinterpret_cast<void *&>(thunk->transitionFn), 2, 0); // lint: void_ptr (thunk slot cast to 3-arg variant; opaque context)
+    _mtw_AppMgr_SetCurrentApplicationModule(Globals::appManager, 2);
 }
 
