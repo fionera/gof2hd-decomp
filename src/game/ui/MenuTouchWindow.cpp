@@ -76,7 +76,7 @@ int _mtw_ChoiceWindow_OnTouchEnd(void *cw, int y);
 
 static inline void _mtw_FModSound_resumeAll(void *snd) { ((FModSound*)snd)->resumeAll(); }
 
-void _mtw_FModSound_stopAll();
+static inline void _mtw_FModSound_stopAll() { Globals::sound->stopAll(); }
 
 static inline void _mtw_AppMgr_SetCurrentApplicationModule(void *app, int id) { ((AbyssEngine::ApplicationManager*)app)->SetCurrentApplicationModule(id); }
 
@@ -146,7 +146,7 @@ void _mtw_TouchButton_ctor7(void *btn, void *label, int a, int x, int y, char ty
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Status_resetGame();
+static inline void _mtw_Status_resetGame() { Globals::status->resetGame(); }
 
 void _mtw_Status_nextCampaignMission(bool a);
 
