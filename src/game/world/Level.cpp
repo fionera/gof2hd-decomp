@@ -33,6 +33,7 @@ float Level::b;
 #include "engine/core/AERandom.h"
 #include "engine/core/ApplicationManager.h"
 #include "engine/file/FileRead.h"
+#include "game/mission/Generator.h"
 #include "engine/math/AEMath.h"
 #include "engine/math/BoundingSphere.h"
 #include "engine/math/BoundingAAB.h"
@@ -1679,6 +1680,88 @@ void Level::createMission() {
                 }
                 raidActive = false;
                 this->hostileCount = 0;
+            }
+
+            // -------- campaign type-167: wanted-boss showdown at the target station --------
+            // Gate matches orig 0xb0e42 (getCampaignMission()->getType()==0xa7 && the current
+            // station is the mission's target station) combined with a wanted person present in
+            // orbit. Spawn (0xb2a48): boss + wingmen with scaled hitpoints/loot, plus the
+            // escape/navigation markers whose space-points are streamed in from disk (0xb4020).
+            {
+                Mission *campMission167 = (Mission *) S->getCampaignMission();
+                if (campMission167 != 0 && campMission167->getType() == 167 &&
+                    S->getStation()->getIndex() == campMission167->getTargetStation() &&
+                    wantedOrbit != 0) {
+                    int numWingmen = wantedOrbit->getNumWingmen();
+                    this->friendCount = this->friendCount + numWingmen + 1;
+
+                    this->enemies = new Array<KIPlayer *>();
+                    ArraySetLength((unsigned) (numWingmen + 1 + 3), *(this->enemies));
+
+                    int bossRace = wantedOrbit->getRace() <= 3 ? wantedOrbit->getRace() : 8;
+                    int dockCoords[3] = {0, 0, 10000};
+                    Route *bossRoute = new Route(dockCoords, 3);
+
+                    KIPlayer *boss = this->createShip(bossRace, 0, wantedOrbit->getShip(),
+                                                      bossRoute->getWaypoint(), 1, 0);
+                    (*this->enemies)[0] = boss;
+
+                    int lvl = S->getLevel();
+                    if (lvl > 20)
+                        lvl = 20;
+                    int bonus = S->gameWon() ? 45 : S->getCurrentCampaignMission();
+                    int total = lvl * 15 + wantedOrbit->getHitpoints() + bonus * 4;
+                    int maxHp = (int) ((float) total * (optDiff + 0.5f));
+                    boss->player->setMaxHitpoints(maxHp);
+                    boss->player->setHitpoints(maxHp);
+                    boss->name = wantedOrbit->getName();
+
+                    if (boss->cargo != 0)
+                        delete boss->cargo;
+                    boss->cargo = new Array<int>();
+                    ArrayAdd(wantedOrbit->getLoot(), *boss->cargo);
+                    ArrayAdd(wantedOrbit->getLootAmount(), *boss->cargo);
+                    boss->field_0x42 = 1;
+                    boss->field_0x48 = wantedOrbit->getIndex();
+
+                    for (int w = 1; w <= numWingmen; w = w + 1) {
+                        KIPlayer *wm = this->createShip(bossRace, 0,
+                                                        (int) G->getRandomEnemyFighter(bossRace),
+                                                        bossRoute->getWaypoint(), 1, 0);
+                        (*this->enemies)[w] = wm;
+                        wm->player->setMaxHitpoints(maxHp / 2);
+                        wm->player->setHitpoints(maxHp / 2);
+                    }
+
+                    // Escape / navigation markers (createStaticObject types 0x4974,0x4a6b,0x1a74
+                    // @ orig 0xb2ea6/0xb2fc2/0xb32a4). Each either carries a hidden-blueprint loot
+                    // list (Generator) or a set of streamed space-points (FileRead).
+                    int escBase = numWingmen + 1;
+                    int escTypes[3] = {18804, 19051, 6772};
+                    for (int e = 0; e < 3; e = e + 1) {
+                        KIPlayer *esc = (KIPlayer *) (intptr_t)
+                            this->createStaticObject((Waypoint *) 0, escTypes[e], true);
+                        (*this->enemies)[escBase + e] = esc;
+                        ((PlayerFixedObject *) esc)->setMoving(false);
+                        if (S->getStation()->stationHasHiddenBlueprint(false) != 0) {
+                            Generator *gen = new Generator();
+                            esc->cargo = gen->getLootList(115, 1);
+                            delete gen;
+                        } else {
+                            FileRead *fr = new FileRead();
+                            int spacePointId = 0; // DEFERRED: exact id table lookup @orig 0xb406c
+                            Array<SpacePoint *> *pts = fr->loadSpacePoints(spacePointId, -1);
+                            delete fr;
+                            esc->setSpacePoints(pts);
+                        }
+                        esc->name = *Globals::gameText->getText(1663);
+                    }
+
+                    // Objective type 18 pair (orig 0xb3732/0xb3748). Exact bounds DEFERRED.
+                    this->objectivesA = new Objective(18, 0, 1, this);
+                    this->objectivesB = new Objective(18, 1, numWingmen + 1, this);
+                    return;
+                }
             }
 
             bool campaignStationMatch = false;
