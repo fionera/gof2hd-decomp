@@ -157,17 +157,11 @@ void AEFile_WriteLong(long long v, unsigned int fd);
 
 void AEFile_ReadLong(void *out, unsigned int fd); // lint: void_ptr (external symbol; mangled signature is fixed)
 
-static AbyssEngine::PaintCanvas *g_LS_canvas = nullptr;
 
-static unsigned char *g_LS_globals = nullptr;
 
-static Layout *g_LS_layout = nullptr;
 
-static int g_LS_screenW = 0;
 
-static int g_LS_screenH = 0;
 
-static GameText *g_LS_gameText = nullptr;
 
 static bool g_LS_gameSaving = false;
 
@@ -192,53 +186,53 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourc
 
     unsigned int spinner = 0xffffffffu;
     unsigned int barFill = 0xffffffffu;
-    g_LS_canvas->Image2DCreate(0x504, spinner);
-    g_LS_canvas->Image2DCreate(0x505, barFill);
+    Globals::Canvas->Image2DCreate(0x504, spinner);
+    Globals::Canvas->Image2DCreate(0x505, barFill);
 
-    int barFillW = g_LS_canvas->GetImage2DWidth(barFill);
-    int spinnerW = g_LS_canvas->GetImage2DWidth(spinner);
-    int barFillH = g_LS_canvas->GetImage2DHeight(barFill);
+    int barFillW = Globals::Canvas->GetImage2DWidth(barFill);
+    int spinnerW = Globals::Canvas->GetImage2DWidth(spinner);
+    int barFillH = Globals::Canvas->GetImage2DHeight(barFill);
 
-    int topMargin = *reinterpret_cast<int *>(g_LS_globals + 0x27c);
+    int topMargin = *reinterpret_cast<int *>((unsigned char *) Globals::globals + 0x27c);
 
-    g_LS_layout->drawBG();
-    g_LS_layout->drawHeader();
-    g_LS_layout->drawEmptyFooter(false);
+    Globals::layout->drawBG();
+    Globals::layout->drawHeader();
+    Globals::layout->drawEmptyFooter(false);
 
     int captionId = g_LS_gameSaving ? 0x18a : 0x189;
-    String caption(*g_LS_gameText->getText(captionId), false);
+    String caption(*Globals::gameText->getText(captionId), false);
 
     if (progress < 0) progress = 100;
     int barShortfall = 100;
     if (progress > 0) barShortfall = 100 - progress;
 
-    int *layoutFields = *reinterpret_cast<int **>(g_LS_layout);
-    int globalsCenterX = *reinterpret_cast<int *>(g_LS_globals);
-    int barBaseline = *reinterpret_cast<int *>(g_LS_globals + 0x290);
+    int *layoutFields = *reinterpret_cast<int **>(Globals::layout);
+    int globalsCenterX = *reinterpret_cast<int *>((unsigned char *) Globals::globals);
+    int barBaseline = *reinterpret_cast<int *>((unsigned char *) Globals::globals + 0x290);
 
     int captionW = canvas->GetTextWidth(resId, caption);
-    int captionX = (g_LS_screenW / 2) - (captionW / 2);
-    int captionY = (g_LS_screenH / 2) - topMargin - layoutFields[1] - layoutFields[0x280 / 4];
+    int captionX = (Globals::w / 2) - (captionW / 2);
+    int captionY = (Globals::h / 2) - topMargin - layoutFields[1] - layoutFields[0x280 / 4];
     canvas->DrawString(resId, caption, captionX, captionY, false);
 
     int spinnerX = (globalsCenterX / 2) - (spinnerW / 2);
-    int spinnerY = (g_LS_screenH / 2) - topMargin;
+    int spinnerY = (Globals::h / 2) - topMargin;
     canvas->DrawImage2D(spinner, spinnerX, spinnerY);
 
     float fillW = static_cast<float>(barShortfall < 0 ? 0 : barShortfall) * 0.01f *
                   static_cast<float>(barFillW);
-    int barTransY = barBaseline + ((g_LS_screenH / 2) - topMargin);
+    int barTransY = barBaseline + ((Globals::h / 2) - topMargin);
     int barCenterX = globalsCenterX / 2;
 
     if (GameText::getLanguage() == 9) {
         float pivot = static_cast<float>(barCenterX + (barFillW / 2)) - fillW;
-        g_LS_canvas->DrawRegion2D(barFill,
+        Globals::Canvas->DrawRegion2D(barFill,
                                   static_cast<int>(static_cast<float>(barFillW) - fillW), 0,
                                   static_cast<int>(fillW), barFillH,
                                   0.0f, 0, 0,
                                   static_cast<int>(pivot), barTransY);
     } else {
-        g_LS_canvas->DrawRegion2D(barFill,
+        Globals::Canvas->DrawRegion2D(barFill,
                                   0, 0,
                                   static_cast<int>(fillW), barFillH,
                                   0.0f, 0, 0,
