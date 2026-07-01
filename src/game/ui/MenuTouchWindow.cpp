@@ -953,20 +953,6 @@ void MenuTouchWindow::startValkyrie() {
     thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
 }
 
-static Layout *const *const gBgLayout = nullptr;
-static int *const *const gBgScreenW = nullptr;
-static int *const *const gBgScrollDiv = nullptr;
-static int *const *const gBgListPosX = nullptr;
-static FModSound *const *const gBgFmod = nullptr;
-static uint8_t *const *const gBgFlagA = nullptr;
-static uint8_t *const *const gBgFlagB = nullptr;
-static uint8_t *const *const gBgFlagC = nullptr;
-static uint8_t *const *const gBgFlagD = nullptr;
-static GameSettings *const *const gBgObjA = nullptr;
-static GameSettings *const *const gBgObjB = nullptr;
-static int *const *const gBgScreenH2 = nullptr;
-static int *const *const gBgScrollImg = nullptr;
-static int *const *const gBgScreenW2 = nullptr;
 
 int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
@@ -975,7 +961,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
         return 0;
     }
 
-    Layout *layout = (Layout *) *gBgLayout;
+    Layout *layout = Globals::layout;
     if (layout->choiceWindowOpen != 0) {
         _mtw_Layout_OnTouchBegin(layout, y);
         return 0;
@@ -991,20 +977,20 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             this->dragging = 1;
             int oldRow = this->selectedRow;
             int leftMargin = layout->field_0xc_leftMargin;
-            if (leftMargin < x && x < **gBgScreenW - layout->field_0x10_rightMargin) {
+            if (leftMargin < x && x < Globals::h - layout->field_0x10_rightMargin) {
                 int rowH = layout->field_0x70_rowHeight;
                 int gap = this->listRowGap;
                 int top = layout->field_0x20_top;
                 int off = this->scrollOffset;
                 int row = _mtw_idiv(x + ((-top - leftMargin) - off), 1);
-                if (row < **gBgScrollDiv) {
-                    int *posX = (int *) *gBgListPosX;
+                if (row < Globals::recordSlots) {
+                    int *posX = (int *) &Globals::w;
                     this->selectedRow = row;
                     float v = _mtw_TouchButton_setPosition(this->okButton,
                                                            (*posX - this->listX) - layout->buttonInsetX,
                                                            row * (gap + rowH) + top + leftMargin + off +
                                                            layout->field_0x108);
-                    _mtw_FModSound_play(*gBgFmod, 0x7c, 0, v);
+                    _mtw_FModSound_play(Globals::sound, 0x7c, 0, v);
                 }
             }
             if (oldRow == this->selectedRow)
@@ -1012,7 +998,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
         }
         break;
         case 3: {
-            if (**gBgFlagA == 0) {
+            if (Globals::iPad == 0) {
                 Array<TouchButton *> *arr = (Array<TouchButton *> *) this->optionsButtons;
                 for (unsigned int i = 0; i < *(unsigned int *) arr; i++)
                     _mtw_TouchButton_OnTouchBegin(arr->data_[i], y);
@@ -1026,7 +1012,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
                 layout->field_0xc_leftMargin + b28 < x &&
                 x < layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth) {
                 this->upButtonPressed = 1;
-                _mtw_FModSound_play(*gBgFmod, 0x7c, 0, 0);
+                _mtw_FModSound_play(Globals::sound, 0x7c, 0, 0);
                 b28 = layout->buttonInsetX;
                 top = b28 + this->listTopY;
             }
@@ -1035,7 +1021,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
                 b28 + layout->field_0xc_leftMargin < x &&
                 x < layout->field_0x20_top + layout->field_0xc_leftMargin + this->listEntryWidth) {
                 this->downButtonPressed = 1;
-                _mtw_FModSound_play(*gBgFmod, 0x7c, 0, 0);
+                _mtw_FModSound_play(Globals::sound, 0x7c, 0, 0);
             }
             _mtw_TouchButton_OnTouchBeginXY(this->optBtnCC, y, x);
             _mtw_TouchButton_OnTouchBeginXY(this->optBtnD0, y, x);
@@ -1046,7 +1032,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             Array<TouchSlider *> *arr = (Array<TouchSlider *> *) this->sliders;
             for (unsigned int i = 1; i < *(unsigned int *) arr; i++)
                 _mtw_TouchSlider_OnTouchBegin(arr->data_[i], y);
-            if (**gBgFlagB != 0 && this->scrollExtraButton != 0)
+            if (Globals::iPadLargePossible != 0 && this->scrollExtraButton != 0)
                 _mtw_TouchButton_OnTouchBegin(this->scrollExtraButton, y);
         }
         break;
@@ -1072,7 +1058,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             Array<TouchSlider *> *arr = (Array<TouchSlider *> *) this->sliders;
             unsigned int n = *(unsigned int *) arr;
             for (unsigned int i = 1; i < n; i++) {
-                if (i == 5 && ((Layout *) *gBgLayout)->field_0x284_sliderSlot5Enabled == 0) continue;
+                if (i == 5 && (Globals::layout)->field_0x284_sliderSlot5Enabled == 0) continue;
                 _mtw_TouchSlider_OnTouchBegin(arr->data_[i], y);
             }
         }
@@ -1085,8 +1071,8 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
                 layout->field_0xc_leftMargin + b28 < x &&
                 x < layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth) {
                 this->upButtonPressed = 1;
-                _mtw_FModSound_play(*gBgFmod, 0x7c, 0, 0);
-                layout = (Layout *) *gBgLayout;
+                _mtw_FModSound_play(Globals::sound, 0x7c, 0, 0);
+                layout = Globals::layout;
                 b28 = layout->buttonInsetX;
                 top = b28 + this->listTopY;
             }
@@ -1095,7 +1081,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
                 b28 + layout->field_0xc_leftMargin < x &&
                 x < layout->field_0x20_top + layout->field_0xc_leftMargin + this->listEntryWidth) {
                 this->downButtonPressed = 1;
-                _mtw_FModSound_play(*gBgFmod, 0x7c, 0, 0);
+                _mtw_FModSound_play(Globals::sound, 0x7c, 0, 0);
             }
             _mtw_TouchButton_OnTouchBegin(this->optBtnCC, y);
             _mtw_TouchButton_OnTouchBegin(this->optBtnD0, y);
@@ -1106,17 +1092,17 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             _mtw_MissionsWindow_OnTouchBegin(this->missionsWindow, y);
             break;
         case 0xb: {
-            if (**gBgFlagC != 0 && **gBgFlagD == 0) {
+            if (Globals::iPad != 0 && Globals::iPadAssetsWithLowerRes == 0) {
                 _mtw_TouchButton_OnTouchBegin(this->cinematicBtnA, y);
                 _mtw_TouchButton_OnTouchBegin(this->cinematicBtnB, y);
-                GameSettings *steerCtl = *gBgObjA;
-                GameSettings *fireCtl = *gBgObjB;
+                GameSettings *steerCtl = (GameSettings *) Globals::options;
+                GameSettings *fireCtl = (GameSettings *) Globals::options;
                 if (touchId != 0 &&
                     (this->cinematicTouchIdA != 0 || y > 0xd1 || this->cinematicTouchIdB == touchId ||
                      x <= steerCtl->steerAnchorX - 0x14 ||
                      steerCtl->steerAnchorX + 300 <= x)) {
                     if (this->cinematicTouchIdB == touchId || touchId == 0 ||
-                        this->cinematicTouchIdB != 0 || y <= **gBgScreenH2 - 0xdc ||
+                        this->cinematicTouchIdB != 0 || y <= Globals::w - 0xdc ||
                         x <= fireCtl->fireAnchorX - 0x14 ||
                         fireCtl->fireAnchorX + 0xe6 <= x) {
                         this->cinematicTouchState = 0;
@@ -1166,20 +1152,20 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             for (unsigned int i = 0; i < *(unsigned int *) slots; i++)
                 _mtw_TouchButton_OnTouchBegin(slots->data_[i], y);
 
-            int *img = *gBgScrollImg;
-            int bound = **gBgScreenW2;
-            int b28 = ((Layout *) *gBgLayout)->buttonInsetX;
+            int *img = (int *) this->heapBufB;
+            int bound = Globals::w;
+            int b28 = (Globals::layout)->buttonInsetX;
             int iw = g_PaintCanvas->GetImage2DWidth((unsigned int) (long) img);
             unsigned char hit;
             if ((bound - b28) - iw < y) {
-                int lc = ((Layout *) *gBgLayout)->field_0xc_leftMargin;
-                int tp = ((Layout *) *gBgLayout)->field_0x20_top;
+                int lc = (Globals::layout)->field_0xc_leftMargin;
+                int tp = (Globals::layout)->field_0x20_top;
                 int ih = g_PaintCanvas->GetImage2DHeight((unsigned int) (long) img);
                 hit = (x < ih + tp + lc) ? 1 : 0;
             } else hit = 0;
             this->scrollbarHit = hit;
 
-            b28 = ((Layout *) *gBgLayout)->buttonInsetX;
+            b28 = (Globals::layout)->buttonInsetX;
             iw = g_PaintCanvas->GetImage2DWidth((unsigned int) (long) img);
             if (y < iw + b28) {
                 this->dragStartX = x;
@@ -1224,7 +1210,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
         break;
     }
 
-    int r = _mtw_Layout_OnTouchBegin(*gBgLayout, y);
+    int r = _mtw_Layout_OnTouchBegin(Globals::layout, y);
     if (r != 0 && this->menuState == 0xd)
         this->pendingActivate = 1;
     return 0;
