@@ -5,10 +5,8 @@
 
 static float gBumpFloatAStorage = 0.0f;
 static float gBumpFloatBStorage = 0.0f;
-static uint8_t gBumpFlagStorage = 0;
 static float *const gBumpFloatA = &gBumpFloatAStorage;
 static float *const gBumpFloatB = &gBumpFloatBStorage;
-static uint8_t *const gBumpFlag = &gBumpFlagStorage;
 
 namespace AbyssEngine {
     int BumpShader::ShaderIndex;
@@ -97,7 +95,7 @@ namespace AbyssEngine {
             if (this->u19Loc >= 0)
                 glUniform1f(this->u19Loc, ctx->fogMaxDist);
             if (this->u21Loc >= 0)
-                glUniform1i(this->u21Loc, *gBumpFlag);
+                glUniform1i(this->u21Loc, AbyssEngine::Engine::fogEnabled);
 
             if (ctx->lightCount < 2) {
                 glUniform3f(this->u11Loc, 0, 0, 0);

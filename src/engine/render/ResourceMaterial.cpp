@@ -1,4 +1,5 @@
 #include "engine/render/ResourceMaterial.h"
+#include "game/core/Globals.h"
 #include "engine/render/ResourceTexture.h"
 #include "engine/render/Engine.h"
 #include "engine/core/ApplicationManager.h"
@@ -43,22 +44,16 @@ namespace AbyssEngine {
     };
 }
 
-static char g_Portraits_zeroFlag = 0;
-static char *g_Portraits_ipadLargeFlag = &g_Portraits_zeroFlag;
-static char *g_Portraits_ipad1440Flag = &g_Portraits_zeroFlag;
-static char *g_Portraits_ipadFlagA = &g_Portraits_zeroFlag;
-static char *g_Portraits_ipadFlagB = &g_Portraits_zeroFlag;
-static char *g_Portraits_ipadFlagC = &g_Portraits_zeroFlag;
 
 void loadPortraits(AbyssEngine::Engine *engine) {
     AbyssEngine::PaintCanvas *canvas = engine->appManager->paintCanvas;
 
     const char *infix;
-    if (*g_Portraits_ipadLargeFlag != 0)
+    if (Globals::iPadLarge != 0)
         infix = "_ipad_large";
-    else if (*g_Portraits_ipad1440Flag != 0)
+    else if (Globals::iPadHD != 0)
         infix = "_ipad_1440";
-    else if ((*g_Portraits_ipadFlagA | *g_Portraits_ipadFlagB | *g_Portraits_ipadFlagC) != 0)
+    else if ((Globals::retinaDisplay | Globals::iPad | Globals::n9) != 0)
         infix = "_ipad";
     else
         infix = "";

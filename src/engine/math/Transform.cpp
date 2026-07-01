@@ -1,9 +1,8 @@
 #include "engine/math/Transform.h"
+#include "engine/core/AbyssEngine.h"
 #include "engine/core/KeyFrame.h"
 #include "engine/render/Mesh.h"
 
-static int g_transform_insert_count = 0;
-static int *g_transform_insert_counter = &g_transform_insert_count;
 static bool g_transform_matrix_flag = false;
 
 namespace AbyssEngine {
@@ -565,7 +564,7 @@ namespace AbyssEngine {
     }
 
     void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
-        ++*g_transform_insert_counter;
+        ++AbyssEngine::lauf;
 
         longlong timestamp = time;
         if (this->animationLength < timestamp) {
@@ -739,7 +738,7 @@ namespace AbyssEngine {
     static float old_angle_divisor = 57.295780f;
 
     void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time) {
-        ++*g_transform_insert_counter;
+        ++AbyssEngine::lauf;
 
         longlong timestamp = time;
         if (this->animationLength < timestamp) {
