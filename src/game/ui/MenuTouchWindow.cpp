@@ -354,13 +354,12 @@ void _mtw_Ship_addCargo(void *ship, void *item);
 
 float _mtw_FModSound_stop(void *snd); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static GameText *const *const gSupernovaGameText = nullptr;
 
 void MenuTouchWindow::showSupernovaMessage() {
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-    GameText *gt = *gSupernovaGameText;
+    GameText *gt = Globals::gameText;
     String *s1 = (String *) _mtw_GameText_getText(gt, 0x266);
-    String *s2 = (String *) _mtw_GameText_getText(*gSupernovaGameText, 0x267);
+    String *s2 = (String *) _mtw_GameText_getText(Globals::gameText, 0x267);
     _mtw_ChoiceWindow_set(cw, s1, s2, false);
     this->messageShowing = 1;
     this->supernovaMessageShowing = 1;
@@ -1364,7 +1363,6 @@ void MenuTouchWindow::loadPreviewRecords() {
     gPrevRefreshThunk->refreshFn();
 }
 
-static GameText *const *const gSaveGameText = nullptr;
 
 void MenuTouchWindow::saveGame(int slot) {
     RecordHandler *rh = (RecordHandler *) ::operator new(0x2c);
@@ -1389,7 +1387,7 @@ void MenuTouchWindow::saveGame(int slot) {
 
     _mtw_createRecordButtons(this, true);
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-    String *s = (String *) _mtw_GameText_getText(*gSaveGameText, 0x32);
+    String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x32);
     _mtw_ChoiceWindow_set(cw, s, false);
     this->saveDialogShowing = 0;
     this->messageShowing = 1;
@@ -1626,16 +1624,14 @@ void MenuTouchWindow::startSupernovaChallenge() {
     _mtw_startSupernovaChallenge_impl(this);
 }
 
-static AppManager *const *const gAppHolder = nullptr;
-static GameText *const *const gDlcGameText = nullptr;
 
 void MenuTouchWindow::callDlcMenu() {
-    AppManager *const *holder = gAppHolder;
+    AppManager *const *holder = (AppManager *const *) &Globals::appManager;
 
     MtwAppData *ad = (MtwAppData *) _mtw_GetApplicationData(*holder);
     ad->dlcMenuAckFlag = 0;
     ad = (MtwAppData *) _mtw_GetApplicationData(*holder);
-    GameText *const *gt = gDlcGameText;
+    GameText *const *gt = &Globals::gameText;
     ad->dlcMenuRequestFlag = 1;
     ChoiceWindow *win = (ChoiceWindow *) this->choiceWindow;
     this->messageShowing = 1;
