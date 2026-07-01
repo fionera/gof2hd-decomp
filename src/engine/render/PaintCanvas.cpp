@@ -1778,8 +1778,7 @@ int PaintCanvas::GetTextWidth(unsigned int index, const AbyssEngine::String &str
     if (index < this->fonts.count) {
         AbyssEngine::ImageFont *font = (this->fonts.data_)[index];
         char *data = (char *) paintcanvas_ext_str_text(&str);
-        unsigned int len = paintcanvas_ext_strlen(data);
-        return paintcanvas_ext_text_width(font, len, str.size());
+        return paintcanvas_ext_text_width(font, (unsigned int) (uintptr_t) data, str.size());
     }
     return 0;
 }
@@ -5148,8 +5147,7 @@ void PaintCanvas::CheckString(unsigned int index, const AbyssEngine::String &str
     if (index < this->fonts.count) {
         AbyssEngine::ImageFont *font = (this->fonts.data_)[index];
         char *data = (char *) paintcanvas_ext_str_text(&str);
-        unsigned int len = paintcanvas_ext_strlen(data);
-        return paintcanvas_ext_check_string(font, len, str.size());
+        return paintcanvas_ext_check_string(font, (unsigned int) (uintptr_t) data, str.size());
     }
 }
 
@@ -5431,8 +5429,7 @@ void PaintCanvas::DrawString(unsigned int index, const AbyssEngine::String &str,
         paintcanvas_ext_string_prep(this, font->atlas, -1);
         AbyssEngine::ImageFont *font2 = (this->fonts.data_)[index];
         char *data = (char *) paintcanvas_ext_str_text(&str);
-        unsigned int len = paintcanvas_ext_strlen(data);
-        paintcanvas_ext_drawstring_str(font2, len, str.size(), x, y,
+        paintcanvas_ext_drawstring_str(font2, (unsigned int) (uintptr_t) data, str.size(), x, y,
                                        this, this->engine, b);
     }
 }
