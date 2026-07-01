@@ -4,6 +4,8 @@
 #include <cmath>
 
 #include "game/ship/KIPlayer.h"
+#include "game/core/Globals.h"
+#include "game/mission/Status.h"
 
 class Mission;
 
@@ -11,18 +13,14 @@ namespace AbyssEngine {
     static PaintCanvas *gPaintCanvas = nullptr;
 
     static PaintCanvas **gRadarCanvasForDraw = nullptr;
-    static Mission **gRadarMissionSlot = nullptr;
     static PaintCanvas **gRadarCanvasSlot = nullptr;
     static unsigned char **gRadarLayoutSlot = nullptr;
-    static uint8_t *gRadarDrawCurrentLockFlag = nullptr;
 }
 
 using ::AbyssEngine::gPaintCanvas;
 using ::AbyssEngine::gRadarCanvasForDraw;
-using ::AbyssEngine::gRadarMissionSlot;
 using ::AbyssEngine::gRadarCanvasSlot;
 using ::AbyssEngine::gRadarLayoutSlot;
-using ::AbyssEngine::gRadarDrawCurrentLockFlag;
 
 int Radar_GetMissionState(void *mission); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -198,7 +196,7 @@ long long Radar::draw(Player *, Hud *, int mode) {
     PaintCanvas *canvas = *gRadarCanvasForDraw;
     canvas->SetColor(static_cast<unsigned int>(-1));
 
-    Mission *mission = *gRadarMissionSlot;
+    Mission *mission = Globals::status->getMission();
     int missionState = Radar_GetMissionState(mission);
     if (missionState == 0 && Radar_GetMissionType(mission) == 0) {
         this->drawMode = static_cast<uint8_t>(mode);
@@ -234,7 +232,7 @@ void Radar::drawCurrentLock(Hud *) {
         return;
     }
 
-    *gRadarDrawCurrentLockFlag = 1;
+    Radar::drawTarget = 1;
 
     String label;
 
@@ -247,7 +245,7 @@ void Radar::drawCurrentLock(Hud *) {
                 if (locked == nullptr) {
                     locked = static_cast<KIPlayer *>(this->lockedStation);
                     if (locked == nullptr) {
-                        *gRadarDrawCurrentLockFlag = 0;
+                        Radar::drawTarget = 0;
                         return;
                     }
                 }
