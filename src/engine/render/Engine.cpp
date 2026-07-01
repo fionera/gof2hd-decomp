@@ -225,7 +225,7 @@ void Engine::ActivateRender2TextureFBO() {
 
 typedef void Materialfv(unsigned int face, unsigned int pname, const float *params);
 
-static Materialfv *volatile g_Engine_glMaterialfv;
+static Materialfv *g_Engine_glMaterialfv;
 
 void Engine::LightSetMaterialColorAlpha(float alpha) {
     if (this->lightingEnabled == 0) {

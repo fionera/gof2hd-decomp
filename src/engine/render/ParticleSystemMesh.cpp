@@ -162,7 +162,7 @@ int ParticleSystemMesh::getQuadCount() {
 
 void ParticleSystemMesh::setQuadEdge(const Vector &edge, int point, const Vector &delta) {
     Vector pos;
-    volatile char tmpStorage[sizeof(Vector)];
+    char tmpStorage[sizeof(Vector)];
 
     _psm_vectorMinus(&pos, &edge, &delta);
     _psm_meshSetPoint(this->canvas, this->mesh, (uint16_t) point, pos.x, pos.y, pos.z);

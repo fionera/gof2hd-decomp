@@ -223,8 +223,8 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
         uint64_t value = g_perfCounter + 1;
         g_perfCounter = value;
         if ((long long) (value - g_perfLimit) >= 0) {
-            *(volatile char *) &g_perfExpired = 1;
-            *(volatile char *) &g_perfPending = 0;
+            *(char *) &g_perfExpired = 1;
+            *(char *) &g_perfPending = 0;
         }
     }
 

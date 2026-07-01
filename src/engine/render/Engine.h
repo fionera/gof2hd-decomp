@@ -208,10 +208,10 @@ namespace AbyssEngine {
         uint32_t field_0x4a8;
 
         double accelRaw[3];
-        volatile double accelValue[3];
+        double accelValue[3];
 
         double gravRaw[3];
-        volatile double gravValue[3];
+        double gravValue[3];
 
         uint32_t shaderCount;
         Array<ShaderBaseStruct *> *shaders;

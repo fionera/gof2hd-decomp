@@ -36,8 +36,7 @@ void Generator::computerTradeGoods(Station *station) {
     }
 }
 
-static int volatile
-g_Generator_stationBlockList[0x34];
+static int g_Generator_stationBlockList[0x34];
 
 int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) {
     AbyssEngine::AERandom *random = Globals::rnd;
@@ -109,24 +108,15 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
     } while (true);
 }
 
-static Array<Item *> **volatile
-g_Generator_agentsItems;
-static int volatile
-g_Generator_offerItemIds[12];
-static int volatile
-g_Generator_offerShipIds[6];
-static Array<Ship *> **volatile
-g_Generator_agentsShips;
-static int *volatile
-g_Generator_storyNames;
-static ImageFactory **volatile
-g_Generator_storyImages;
-static int volatile
-g_Generator_enemyRaces[4];
-static int *volatile
-g_Generator_enemyNames;
-static ImageFactory **volatile
-g_Generator_enemyImages;
+static Array<Item *> **g_Generator_agentsItems;
+static int g_Generator_offerItemIds[12];
+static int g_Generator_offerShipIds[6];
+static Array<Ship *> **g_Generator_agentsShips;
+static int *g_Generator_storyNames;
+static ImageFactory **g_Generator_storyImages;
+static int g_Generator_enemyRaces[4];
+static int *g_Generator_enemyNames;
+static ImageFactory **g_Generator_enemyImages;
 
 Array<Agent *> *Generator::createAgents(Station *station) {
     Status *status = Globals::status;
@@ -283,12 +273,9 @@ Array<Agent *> *Generator::createAgents(Station *station) {
     return result;
 }
 
-static uint8_t *volatile
-g_Generator_missionFlags;
-static Array<Item *> **volatile
-g_Generator_missionItems;
-static int *volatile
-g_Generator_targetNames;
+static uint8_t *g_Generator_missionFlags;
+static Array<Item *> **g_Generator_missionItems;
+static int *g_Generator_targetNames;
 
 Mission *Generator::createMission(Agent *agent,
                                   Array<SolarSystem *> *systems) {
@@ -531,12 +518,9 @@ Mission *Generator::createMission(Agent *agent,
     return mission;
 }
 
-static int *volatile
-g_Generator_nameSource;
-static ImageFactory **volatile
-g_Generator_imageFactory;
-static Array<Item *> **volatile
-g_Generator_agentItems;
+static int *g_Generator_nameSource;
+static ImageFactory **g_Generator_imageFactory;
+static Array<Item *> **g_Generator_agentItems;
 
 Agent *Generator::createAgent(Station *station) {
     Status *status = Globals::status;
@@ -628,14 +612,10 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 
-static Array<Ship *> **volatile
-g_Generator_allShips;
-static int volatile
-g_Generator_shipRaces[0x40];
-static uint8_t *volatile
-g_Generator_shipFlags;
-static Array<Wanted *> ***volatile
-g_Generator_wantedList;
+static Array<Ship *> **g_Generator_allShips;
+static int g_Generator_shipRaces[0x40];
+static uint8_t *g_Generator_shipFlags;
+static Array<Wanted *> ***g_Generator_wantedList;
 
 Array<Ship *> *Generator::getShipBuyList(Station *station) {
     Status *status = Globals::status;
@@ -863,20 +843,13 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
 
 typedef Item *(*ItemFactory)(Item *, int, int);
 
-static Array<Item *> **volatile
-g_Generator_allItems;
-static ItemFactory volatile
-g_Generator_introFactory;
-static int *volatile
-g_Generator_jumpDriveBoost;
-static int *volatile
-g_Generator_weaponBoost;
-static uint8_t *volatile
-g_Generator_unlockFlags;
-static int volatile
-g_Generator_kaamoAllowed[10];
-static int volatile
-g_Generator_blockedItems[9];
+static Array<Item *> **g_Generator_allItems;
+static ItemFactory g_Generator_introFactory;
+static int *g_Generator_jumpDriveBoost;
+static int *g_Generator_weaponBoost;
+static uint8_t *g_Generator_unlockFlags;
+static int g_Generator_kaamoAllowed[10];
+static int g_Generator_blockedItems[9];
 
 Array<Item *> *Generator::getItemBuyList(Station *station) {
     Status *status = Globals::status;
@@ -1103,10 +1076,8 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
     return result;
 }
 
-static Array<Item *> **volatile
-g_Generator_lootItems;
-static int volatile
-g_Generator_typeChances[8];
+static Array<Item *> **g_Generator_lootItems;
+static int g_Generator_typeChances[8];
 
 Array<int> *Generator::getLootList(int itemIndex, int amount) {
     if (itemIndex >= 0) {
@@ -1187,7 +1158,7 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
     return result;
 }
 
-static const volatile int
+static const int
 kaamoSpecialItems[9] = {};
 
 bool Generator::isKaamoSpecialItem(int item) {

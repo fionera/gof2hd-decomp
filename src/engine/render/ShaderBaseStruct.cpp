@@ -9,7 +9,7 @@ namespace AbyssEngine {
 
     ShaderBaseStruct::ShaderBaseStruct() {
         this->program = -1;
-        reinterpret_cast<volatile uint16_t &>(this->flagsLow) = 0x100;
+        reinterpret_cast<uint16_t &>(this->flagsLow) = 0x100;
         ++shaderIndexIntern;
         this->vertexPath = 0;
         this->fragmentPath = 0;

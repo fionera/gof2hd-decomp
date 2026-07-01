@@ -43,8 +43,8 @@ typedef void (*SetVectorProc)(unsigned char *self, StackVector *value);
 
 typedef void (*VirtualCommandProc)(unsigned char *self, int a, int b, int c);
 
-static volatile RenderProc gRenderProc;
-static volatile LevelListProc gLevelListProc;
+static RenderProc gRenderProc;
+static LevelListProc gLevelListProc;
 
 static inline unsigned char *arrayData(unsigned char *array) {
     return *reinterpret_cast<unsigned char **>(array + 4);

@@ -643,7 +643,7 @@ static const char gGBS_prefix[] = "";
 
 String Globals::getBoundedString(const String &text, int width) {
     int *guardP = *gGBS_guardHolder;
-    volatile int saved = *guardP;
+    int saved = *guardP;
 
     String result;
     result.Set((const_cast<String *>(&text))->data);
@@ -867,7 +867,7 @@ static int **const gGAMT_modText = nullptr;
 
 String Globals::getAgentMissionText(Agent *agent) {
     int *guardP = *gGAMT_guard;
-    volatile int saved = *guardP;
+    int saved = *guardP;
 
     String result;
 
@@ -1052,7 +1052,7 @@ static const char gIAP_id54[] = "";
 
 int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) {
     int *guardP = *gIAP_guardHolder;
-    volatile int saved = *guardP;
+    int saved = *guardP;
     int result = -1;
 
     if (list != 0) {
@@ -1500,7 +1500,7 @@ static int **const gGWC_guardHolder = nullptr;
 
 Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) {
     int *guardP = *gGWC_guardHolder;
-    volatile int saved = *guardP;
+    int saved = *guardP;
 
     FileRead *fr = (FileRead *) ::operator new(1);
     FileRead_ctor(fr);
@@ -2607,7 +2607,7 @@ static const char gGRN_space[] = "";
 
 String Globals::getRandomName(int kind, bool both) {
     int *guardP = *gGRN_guardHolder;
-    volatile int saved = *guardP;
+    int saved = *guardP;
 
     FileRead *fr = (FileRead *) ::operator new(1);
     FileRead_ctor(fr);

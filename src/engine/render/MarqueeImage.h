@@ -17,7 +17,7 @@ public:
     int32_t x;
     int32_t y;
     int32_t visibleWidth;
-    volatile float scrollPosition;
+    float scrollPosition;
     float speed;
     int32_t scrollOffset;
 

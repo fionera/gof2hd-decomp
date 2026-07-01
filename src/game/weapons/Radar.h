@@ -47,10 +47,10 @@ public:
     uint8_t pad_0x8d_to_0xfc[0xfc - 0x8d]; // Ghidra: gap+field_0xa0/a4+gap+raceSprite/blipSprite/qualitySprite
     int screenX;
     int screenY;
-    volatile int centerX;
-    volatile int centerY;
-    volatile float weightX;
-    volatile float weightY;
+    int centerX;
+    int centerY;
+    float weightX;
+    float weightY;
     int imageWidthSq;
     int imageHeightSq;
     int onScreen;

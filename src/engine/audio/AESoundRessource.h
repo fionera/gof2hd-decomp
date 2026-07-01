@@ -10,7 +10,7 @@ namespace AbyssEngine {
     public:
         const AESoundInfo *soundInfoTable;
         Array<AESoundInterface *> *sounds;
-        volatile int numSounds;
+        int numSounds;
 
         AESoundRessource();
 

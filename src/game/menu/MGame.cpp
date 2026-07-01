@@ -450,17 +450,17 @@ void MGame::freeCamTouchBegin(int x, int y, void *idPtr) {
     Vector *fingerSlot;
     if (this->touch0Id == 0) {
         if (this->touch1Id == 0) this->menuTime = 0;
-        *(volatile float *) (buf + 4) = fy;
-        *(volatile float *) (buf + 0) = fx;
-        *(volatile int *) (buf + 8) = 0;
+        *(float *) (buf + 4) = fy;
+        *(float *) (buf + 0) = fx;
+        *(int *) (buf + 8) = 0;
         this->touch0Id = id;
         fingerSlot = &this->freeCamFinger1;
     } else {
         if (this->menuTime >= 1000) goto tail;
         this->flCameraRoll = 0;
         float len = AbyssEngine::AEMath::VectorLength(*TFC_getCamOffset(this->camera));
-        *(volatile float *) (buf + 4) = fy;
-        *(volatile float *) (buf + 0) = fx;
+        *(float *) (buf + 4) = fy;
+        *(float *) (buf + 0) = fx;
         this->flCameraRoll = len;
         fingerSlot = &this->freeCamFinger0;
         this->touch1Id = id;
