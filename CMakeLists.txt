@@ -21,6 +21,17 @@ set(GOF2_ORIGINAL_SO "${CMAKE_SOURCE_DIR}/../_work/bins/android_2.0.16_libgof2hd
 file(GLOB_RECURSE _srcs CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
 add_library(gof2 OBJECT ${_srcs})
 
+# Whole-.so byte/hash identity requires reproducing the original's (interleaved) .text function
+# order, since every inter-function bl/blx and GOT/PLT relative offset depends on it. The original's
+# layout is NOT one-class-per-file, so it cannot arise from our source organisation; instead we emit
+# each function in its own section (-ffunction-sections) and hand gold a --section-ordering-file
+# derived from the original's symbol addresses (see the link step). This keeps one-class-per-file,
+# human-style source while letting the linker place functions in the original's exact sequence.
+option(GOF2_MATCH_LAYOUT "Reproduce the original .text function order via section ordering" ON)
+if(GOF2_MATCH_LAYOUT)
+    target_compile_options(gof2 PRIVATE -ffunction-sections)
+endif()
+
 # =================================================================================================
 # Whole-.so link -- produce libgof2hdaa.so the original's shape
 # =================================================================================================
@@ -39,10 +50,25 @@ include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 # aliases that cannot be removed in source are the documented irreducible delta (see docs/VALIDATION.md).
 set(_so "${CMAKE_BINARY_DIR}/libgof2hdaa.so")
 set(_libdir "${GOF2_NDK_CRT_LIBDIR}")
+
+# Generate the section-ordering file from the original's function-symbol addresses, then feed it to
+# gold so our per-function sections are laid out in the original's exact order.
+set(_order "${CMAKE_BINARY_DIR}/section_order.txt")
+set(_order_flag "")
+if(GOF2_MATCH_LAYOUT)
+    add_custom_command(OUTPUT "${_order}"
+        COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
+                "${GOF2_ORIGINAL_SO}" ${GOF2_NDK_NM} "${_order}"
+        DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
+        COMMENT "Generating section-ordering file from the original .so")
+    set(_order_flag "--section-ordering-file=${_order}")
+endif()
+
 add_custom_command(OUTPUT "${_so}"
     COMMAND ${GOF2_NDK_GOLD}
             -shared -soname libgof2hdaa.so --build-id
             --unresolved-symbols=ignore-all --allow-multiple-definition
+            ${_order_flag}
             -o "${_so}"
             ${_libdir}/crtbegin_so.o -L ${_libdir}
             -l log -l GLESv2 -l GLESv1_CM -l EGL -l android -l m -l dl -l c
@@ -58,7 +84,7 @@ add_custom_command(OUTPUT "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
-    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2>
+    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_order}
     COMMENT "Linking libgof2hdaa.so (gold) from gof2 objects + vendored archives"
     COMMAND_EXPAND_LISTS VERBATIM)
 add_custom_target(link_so DEPENDS "${_so}")
