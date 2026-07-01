@@ -881,18 +881,8 @@ void _mtw_Ship_setItem(void *ship, void *item, int slot);
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static Status *const *const gValStatus = nullptr;
-static int *const *const gValShipTable = nullptr;
-static Galaxy *const *const gValGalaxy = nullptr;
-static OptionsRecord *const *const gValOptA = nullptr;
-static Achievements *const *const gValAch = nullptr;
-static OptionsRecord *const *const gValOptB = nullptr;
-static RecordHandler *const *const gValOptHolder = nullptr;
-static FModSound *const *const gValFmod = nullptr;
-static ModuleTransitionThunk *const gValTransition = nullptr;
-
 void MenuTouchWindow::startValkyrie() {
-    Status *const *statusHolder = gValStatus;
+    Status *const *statusHolder = &Globals::status;
     _mtw_Status_resetGame();
     for (int i = 0x2d; i != 0; i--)
         _mtw_Status_nextCampaignMission((bool) (unsigned char) (long) *statusHolder);
@@ -902,7 +892,7 @@ void MenuTouchWindow::startValkyrie() {
     _mtw_Mission_ctor(mission);
     _mtw_Status_setMission(status);
 
-    ShipDefTable *row = *(ShipDefTable **) (*(int *) (*gValShipTable) + 4);
+    ShipDefTable *row = *(ShipDefTable **) (*(int *) ((int *) Globals::ships) + 4);
     status = *statusHolder;
     _mtw_Ship_makeShip(row->itemDef_secondary);
     _mtw_Status_setShip(status);
@@ -937,15 +927,15 @@ void MenuTouchWindow::startValkyrie() {
 
     _mtw_Status_setCredits(*statusHolder);
     Status *station = *statusHolder;
-    _mtw_Galaxy_getStation(*gValGalaxy, 0x5b);
+    _mtw_Galaxy_getStation(Globals::galaxy, 0x5b);
     _mtw_Status_setStation(station);
     _mtw_Status_setSystemVisibility(*statusHolder, 6, true);
     _mtw_Status_setSystemVisibility(*statusHolder, 0x19, true);
     _mtw_Status_setCredits(*statusHolder);
 
-    OptionsRecord *opt = (OptionsRecord *) *gValOptA;
-    Achievements *ach = *gValAch;
-    OptionsRecord *optB = (OptionsRecord *) *gValOptB;
+    OptionsRecord *opt = (OptionsRecord *) Globals::hints;
+    Achievements *ach = Globals::achievements;
+    OptionsRecord *optB = (OptionsRecord *) Globals::options;
     ((Status *) *statusHolder)->field_8c = 0x1a0a;
     opt->flag_word_0x8 = 0x101;
     reinterpret_cast<uint16_t &>(opt->flag_word_0xd[0]) = 0x101;
@@ -964,12 +954,12 @@ void MenuTouchWindow::startValkyrie() {
     optB->flag_0x34 = 1;
 
     _mtw_Achievements_setMedal(ach, 0x17, 3);
-    _mtw_Achievements_setMedal(*gValAch, 0x1e, 1);
-    _mtw_RecordHandler_saveOptions(*gValOptHolder);
+    _mtw_Achievements_setMedal(Globals::achievements, 0x1e, 1);
+    _mtw_RecordHandler_saveOptions(Globals::recordHandler);
     _mtw_Status_setKills(*statusHolder, 0xc5);
-    _mtw_FModSound_stop(*gValFmod);
+    _mtw_FModSound_stop(Globals::sound);
 
-    ModuleTransitionThunk *thunk = gValTransition;
+    ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) Globals::appManager;
     optB->fadeValue = this->fadeValue;
     thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
 }
