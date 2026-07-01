@@ -117,11 +117,11 @@ uint8_t Layout::helpPressed() {
 
 
 
-static int g_dfWarnColor = 0;
+static int g_dfWarnColor = (int) 0xFF2A00FF;
 
-static const char g_dfSep[] = "";
+static const char g_dfSep[] = " / ";
 
-static const char g_dfTail[] = "";
+static const char g_dfTail[] = "t";
 
 
 void Layout::drawFooterNoBackButton() {
@@ -686,9 +686,9 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
 }
 
 
-static unsigned g_sbColor0 = 0;
+static unsigned g_sbColor0 = 0x111417FF;
 
-static unsigned g_sbColor1 = 0;
+static unsigned g_sbColor1 = 0x193043FF;
 
 
 void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
