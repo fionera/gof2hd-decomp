@@ -208,7 +208,7 @@ float Globals::autopilot_z;
 int Globals::mouseDeltaX;
 int Globals::mouseDeltaY;
 int Globals::mouse_wheel;
-void *Globals::recordSlots; // lint: void_ptr (unknown record-slot storage, never referenced)
+int Globals::recordSlots;
 Achievements *Globals::achievements;
 ImageFactory *Globals::imageFactory;
 int Globals::mouse_wheelX;
@@ -2134,7 +2134,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
 
     GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
     int *flagFFFF = (int *) &Globals::lastRecordWritten;
-    int *langSettingSlot = (int *) &Globals::recordSlots;
+    int *langSettingSlot = &Globals::recordSlots;
     char *langFlag = (char *) &Globals::iPad;
     char *zeroByte = (char *) &Globals::startLiteVersionWithMoreCredits;
 

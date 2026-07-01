@@ -2094,24 +2094,12 @@ void MenuTouchWindow::setSkipButtonVisible(bool visible) {
     }
 }
 
-static Layout *const *const gDlsLayout = nullptr;
-static PaintCanvas *const *const gDlsCanvas = nullptr;
-static int *const *const gDlsScreenW = nullptr;
-static uint8_t *const *const gDlsScrollOn = nullptr;
-static uint8_t *const *const gDlsScrollNo = nullptr;
-static uint8_t *const *const gDlsFlagA = nullptr;
-static int *const *const gDlsFlagB = nullptr;
-static uint8_t *const *const gDlsTileCnt = nullptr;
-static int *const *const gDlsRowCount = nullptr;
-static int *const *const gDlsRowMax = nullptr;
 static const char gDlsBoxStr[] = "";
-static int *const *const *const gDlsFont = nullptr;
-static ImageFactory *const *const gDlsImgFact = nullptr;
 
 void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
     (void) param1;
-    Layout *layout = (Layout *) *gDlsLayout;
-    PaintCanvas *canvas = *gDlsCanvas;
+    Layout *layout = Globals::layout;
+    PaintCanvas *canvas = Globals::Canvas;
 
     int rowBaseY = layout->field_0x10c_rowBaseY;
     ((PaintCanvas *) canvas)->SetColor(0xffffffff);
@@ -2120,14 +2108,14 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
     int margin = layout->buttonInsetX;
     int strip58 = layout->field_0x110_strip58;
     int strip5c = layout->field_0x114_strip5c;
-    int screenBound = **gDlsScreenW;
+    int screenBound = Globals::w;
     int inner = screenBound + margin * -2 + scrollOff * -2;
 
-    if (**gDlsScrollOn != 0 && **gDlsScrollNo == 0) {
+    if (Globals::iPad != 0 && Globals::iPadAssetsWithLowerRes == 0) {
         strip5c = 8;
-        if (**gDlsFlagA == 0) {
+        if (Globals::iPadHD == 0) {
             strip58 = 0xc;
-            if (**gDlsTileCnt == 0) {
+            if (Globals::iPadLarge == 0) {
                 strip5c = 4;
                 strip58 = 6;
             }
@@ -2137,7 +2125,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         }
         int iw = ((PaintCanvas *) canvas)->GetImage2DWidth(this->scrollbarImageId);
         int ih = ((PaintCanvas *) canvas)->GetImage2DHeight(this->scrollbarImageId);
-        int count = _mtw_idiv((int) (long) *gDlsTileCnt, 1);
+        int count = _mtw_idiv((int) (long) &Globals::iPadLarge, 1);
         int yy = 0;
         for (int k = 0; k <= count; k++) {
             ((PaintCanvas *) canvas)->DrawImage2D(this->scrollbarImageId,
@@ -2156,8 +2144,8 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
                                  + this->scrollOffset
                                  + layout->field_0x20_top + layout->field_0xc_leftMargin + layout->field_0x108);
 
-    int rowCount = **gDlsRowCount;
-    int rowMax = **gDlsRowMax;
+    int rowCount = Globals::recordSlots;
+    int rowMax = Globals::h;
 
     for (int i = 0; i < rowCount; i++) {
         int rowY = (layout->field_0x70_rowHeight + this->listRowGap) * i + this->scrollOffset
@@ -2171,7 +2159,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         int mode = (i == this->selectedRow) ? 4 : 3;
         _mtw_Layout_drawBox(layout, mode, boxX, rowY, inner - 3, layout->field_0x70_rowHeight, &box);
 
-        int *font = **gDlsFont;
+        int *font = (int *) Globals::font;
         int yName = strip58 + rowY;
         String **cols = this->recordRows->data_[i]->data_;
 
@@ -2183,7 +2171,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         if (slot != 0) {
             unsigned int shipId = slot->shipId;
             if (shipId < 0x40) {
-                _mtw_ImageFactory_drawShip(*gDlsImgFact, shipId,
+                _mtw_ImageFactory_drawShip(Globals::imageFactory, shipId,
                                            layout->field_0x2c_rowHeight + layout->buttonInsetX + this->listX +
                                            this->metricB,
                                            rowBaseY + rowY);

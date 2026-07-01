@@ -218,7 +218,7 @@ public:
     static int mouseDeltaX;
     static int mouseDeltaY;
     static int mouse_wheel;
-    static void *recordSlots; // lint: void_ptr (unknown record-slot storage, never referenced)
+    static int recordSlots;
     static Achievements *achievements;
     static ImageFactory *imageFactory;
     static int mouse_wheelX;
