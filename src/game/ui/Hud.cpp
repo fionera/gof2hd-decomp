@@ -1,4 +1,5 @@
 #include "game/ui/Hud.h"
+#include "game/weapons/Radar.h"
 #include "game/mission/Mission.h"
 #include "game/mission/Item.h"
 #include "engine/render/Sprite.h"
@@ -184,9 +185,6 @@ uint8_t Hud::jumpMapSelected() {
     return this->jumpMapSelectedFlag;
 }
 
-static String **g_Hud_font = nullptr;
-static PaintCanvas **g_Hud_canvas2 = nullptr;
-static int **g_Hud_screenW = nullptr;
 static Level **g_Hud_level = nullptr;
 
 void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsigned int x, unsigned int y) {
@@ -285,8 +283,8 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
             canvas->DrawImage2D((unsigned) img, this->field_0x3fe, 0);
         } else {
             if (this->secondaryLabelTimer > 0) {
-                String *font = *g_Hud_font;
-                int screenW = *(int *) *g_Hud_screenW;
+                String *font = (String *) Globals::font;
+                int screenW = *(int *) &Globals::w;
                 unsigned short iconW = this->field_0x3ec;
                 canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
                 canvas->DrawImage2D((unsigned) this->eventBannerImage, this->field_0x3ec, 0);
@@ -320,8 +318,8 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     if (this->messageActive != 0) {
         canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
-        String *font = *g_Hud_font;
-        int screenW = *(int *) *g_Hud_screenW;
+        String *font = (String *) Globals::font;
+        int screenW = *(int *) &Globals::w;
         int w = Globals::Canvas->GetTextWidth((unsigned) (long) canvas, *(String *) (font));
         Globals::Canvas->DrawString((unsigned) (long) canvas,
                                     this->field_0x51c, screenW / 2 - w / 2, this->field_0x3e2, false);
@@ -359,27 +357,23 @@ void Hud::updateQueue(int dt) {
     this->eventQueuePaused = v;
 }
 
-static int **g_Hud_oiLayout = nullptr;
 
-static int **g_Hud_oiStatus = nullptr;
 
-static String **g_Hud_oiFont = nullptr;
 
-static GameText **g_Hud_oiGameText = nullptr;
 static const char g_Hud_oiSep[1] = {0};
 static const unsigned char g_Hud_secColors[4 * 0xc] = {0};
 
 void Hud::drawOrbitInformation() {
     if (Globals::status->inAlienOrbit() != 0) return;
 
-    int *layout = (int *) *g_Hud_oiLayout;
+    int *layout = (int *) Globals::layout;
     Globals::Canvas->SetColor((unsigned) (-1));
     int x = Globals::Canvas->GetImage2DWidth((unsigned) (0)) + layout[0x87];
 
     if (((SolarSystem *) ((long) Globals::status->getSystem()))->hasNoOwner() == 0)
         Globals::Canvas->DrawImage2D((unsigned) this->factionLogoImage, 3, 0);
 
-    String *font = *g_Hud_oiFont;
+    String *font = (String *) Globals::font;
 
     {
         char name[12];
@@ -399,7 +393,7 @@ void Hud::drawOrbitInformation() {
     SolarSystem *sys = (SolarSystem *) ((long) Globals::status->getSystem());
     int sec = sys->getSecurityLevel();
     int idx = ((SolarSystem *) ((long) Globals::status->getSystem()))->getIndex();
-    int *status = (int *) *g_Hud_oiStatus;
+    int *status = (int *) Globals::status;
     if (idx == 0x1a && status[0x45] > 1) sec = 3;
 
     {
@@ -408,7 +402,7 @@ void Hud::drawOrbitInformation() {
         ((String *) (copy))->Set(((String *) (sysName))->data);
         ((String *) (sep))->ctor_char(g_Hud_oiSep, false);
         *(String *) acc = *(String *) copy + *(String *) sep;
-        String *txt = (*g_Hud_oiGameText)->getText(0);
+        String *txt = (Globals::gameText)->getText(0);
         *(String *) full = *(String *) acc + *(String *) txt;
         Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (full), (x), (char) layout[0x89], false);
         {
@@ -446,7 +440,7 @@ void Hud::drawOrbitInformation() {
     const unsigned char *row = g_Hud_secColors + sec * 0xc;
     Globals::Canvas->SetColor((unsigned char) (row[0]), (unsigned char) (row[4]), (unsigned char) (row[8]),
                               (unsigned char) (0xff));
-    String *secTxt = (*g_Hud_oiGameText)->getText(sec);
+    String *secTxt = (Globals::gameText)->getText(sec);
     Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (secTxt), (x), (char) layout[0x8a], false);
 }
 
@@ -479,11 +473,8 @@ found:
     return 0x20;
 }
 
-static char **g_Hud_teCinematic = nullptr;
 
-static int **g_Hud_teScreenW = nullptr;
 
-static int **g_Hud_teScreenH = nullptr;
 
 static inline bool span(unsigned short o, int w, unsigned int v) {
     return o <= v && v <= (unsigned int) o + w;
@@ -507,7 +498,7 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
     int w = this->touchHalfExtent;
     int w2 = this->touchHalfExtentSmall;
 
-    bool cinematic = *(char *) *g_Hud_teCinematic != 0;
+    bool cinematic = *(char *) &Globals::iPad != 0;
 
     if (cinematic) {
         if (span(this->field_0x40a, w, x) && span(this->field_0x40c, w, y)) return 1;
@@ -539,8 +530,8 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
         if (span(this->field_0x45e, w, x) && span(this->field_0x460, w, y)) return 0x800;
     }
 
-    int screenW = *(int *) *g_Hud_teScreenW;
-    int screenH = *(int *) *g_Hud_teScreenH;
+    int screenW = *(int *) &Globals::w;
+    int screenH = *(int *) &Globals::h;
 
     if (y < (unsigned int) (screenH >> 2)) {
         if (span(this->field_0x40a, w, x) && span(this->field_0x40c, w, y)) return 1;
@@ -568,9 +559,7 @@ Hud::Hud() {
     init();
 }
 
-static GameText **g_Hud_ccGameText = nullptr;
 
-static Status **g_Hud_ccTemplate = nullptr;
 static const char g_Hud_ccHashX[1] = {0};
 static const char g_Hud_ccHashN[1] = {0};
 static const char g_Hud_ccUnit[1] = {0};
@@ -582,12 +571,12 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
     this->cargoFullFlag = single ? 1 : 0;
 
     if (missionDelivery) {
-        GameText *gt = *g_Hud_ccGameText;
+        GameText *gt = Globals::gameText;
         String *base = gt->getText(0x219);
         String *dst = &this->field_0x1f4;
         *((String *) (dst)) = *((String *) (base));
 
-        Status *tmpl = *g_Hud_ccTemplate;
+        Status *tmpl = Globals::status;
         char a40[12];
         ((String *) (a40))->Set(((String *) (dst))->data);
         int type = Globals::status->getMission()->getType();
@@ -624,7 +613,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
             _s->length = 0;
         }
 
-        tmpl = *g_Hud_ccTemplate;
+        tmpl = Globals::status;
         char a64[12];
         ((String *) (a64))->Set(((String *) (dst))->data);
         char a70[12];
@@ -667,7 +656,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
     }
 
     if (single) {
-        GameText *gt = *g_Hud_ccGameText;
+        GameText *gt = Globals::gameText;
         String *txt = gt->getText(0x142);
         *((String *) (&this->field_0x1f4)) = *((String *) (txt));
         String *str = new String(this->field_0x1f4);
@@ -678,7 +667,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 
     if (count < 1) return;
 
-    GameText *gt = *g_Hud_ccGameText;
+    GameText *gt = Globals::gameText;
 
     if (aggregate && this->eventQueueDirty != 0) {
         char a0[12];
@@ -840,8 +829,8 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 }
 
 void Hud::drawEventString(String text, bool rightAlign) {
-    String *font = *g_Hud_font;
-    PaintCanvas *canvas = *g_Hud_canvas2;
+    String *font = (String *) Globals::font;
+    PaintCanvas *canvas = Globals::Canvas;
     int x;
     if (this->letterbox == 0) {
         int base = this->eventLineMargin;
@@ -856,7 +845,7 @@ void Hud::drawEventString(String text, bool rightAlign) {
     } else {
         if (rightAlign == 0) {
             int margin = this->eventLineMarginAlt;
-            int screenW = *(int *) *g_Hud_screenW;
+            int screenW = *(int *) &Globals::w;
             int w = Globals::Canvas->GetTextWidth((unsigned) (long) (canvas), *(String *) (font));
             x = ((screenW - 1) - margin) - w;
         } else {
@@ -909,13 +898,9 @@ int Hud::sameHudEventAsBeforeAggregate(String str) {
     return i;
 }
 
-static GameText **g_Hud_gameText = nullptr;
 
-static PaintCanvas **g_Hud_swCanvas = nullptr;
 
-static String **g_Hud_swFont = nullptr;
 
-static int **g_Hud_swScreenW = nullptr;
 static const char g_Hud_swSep[1] = {0};
 static const char g_Hud_swEnd[1] = {0};
 
@@ -923,7 +908,7 @@ void Hud::updateSecondaryWeaponString() {
     Item *item = this->currentSecondaryWeapon;
     if (item == 0) return;
 
-    GameText *gt = *g_Hud_gameText;
+    GameText *gt = Globals::gameText;
     int idx = ((Item *) (item))->getIndex();
     String *name = gt->getText(idx + 0x4fa);
 
@@ -974,21 +959,18 @@ void Hud::updateSecondaryWeaponString() {
         _s->length = 0;
     }
 
-    int screenW = *(int *) *g_Hud_swScreenW;
-    int w = Globals::Canvas->GetTextWidth((unsigned) (long) (*g_Hud_swCanvas), *(String *) (*g_Hud_swFont));
+    int screenW = *(int *) &Globals::w;
+    int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) ((String *) Globals::font));
     this->secondaryLabelX = (screenW >> 1) - (w >> 1);
 }
 
-static char **g_Hud_eqLetterbox = nullptr;
 
 static HudEventDisplay **g_Hud_eqSelf = nullptr;
 
-static int **g_Hud_eqScreenW = nullptr;
 
-static String **g_Hud_eqFont = nullptr;
 
 void Hud::drawEventQueue() {
-    char letterbox = *(char *) *g_Hud_eqLetterbox;
+    char letterbox = *(char *) &Radar::drawTarget;
     char cinematicY = (letterbox == 0) ? 0 : (char) this->field_0x3e2;
 
     HudEventDisplay *src = (HudEventDisplay *) *g_Hud_eqSelf;
@@ -1027,8 +1009,8 @@ void Hud::drawEventQueue() {
                                   (unsigned char) (b4));
 
         String *label = (String *) item->name;
-        String *font = *g_Hud_eqFont;
-        int screenW = *(int *) *g_Hud_eqScreenW;
+        String *font = (String *) Globals::font;
+        int screenW = *(int *) &Globals::w;
         int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) (font));
         char y = (char) ((char) yOff + (char) dispBase + cinematicY);
         Globals::Canvas->DrawString((unsigned) (long) (font), *label, ((screenW >> 1) - w / 2), (y), false);
@@ -1086,9 +1068,7 @@ unsigned int Hud::sameHudEventAsBefore(String str) {
     return 0;
 }
 
-static int **g_Hud_initLayout = nullptr;
 
-static int **g_Hud_initBound = nullptr;
 
 static int **g_Hud_initOutX = nullptr;
 
@@ -1137,9 +1117,9 @@ int Hud::init() {
     releaseAllKeys();
     this->uintArray = 0;
 
-    int *layout = (int *) *g_Hud_initLayout;
+    int *layout = (int *) Globals::layout;
     int w = Globals::Canvas->GetImage2DWidth((unsigned) (0));
-    int bound = *(int *) *g_Hud_initBound;
+    int bound = *(int *) &Globals::w;
     *(int *) *g_Hud_initOutX = (bound - w) - layout[0x65];
     *(int *) *g_Hud_initOutY = layout[0x66];
     return 0;
@@ -1206,14 +1186,12 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
     return this;
 }
 
-static int **g_Hud_dmLayout = nullptr;
 
-static String **g_Hud_dmFont = nullptr;
 static const char g_Hud_dmPrefix[1] = {0};
 
 void Hud::drawMenu(int unused) {
     (void) unused;
-    int *layout = (int *) *g_Hud_dmLayout;
+    int *layout = (int *) Globals::layout;
     ((Layout *) (layout))->drawMask();
 
     Globals::Canvas->DrawImage2D((unsigned) this->quickMenuTopImage, this->field_0x3c4 + this->menuOriginX, 0);
@@ -1275,7 +1253,7 @@ void Hud::drawMenu(int unused) {
                                  (char) layout[0xc] + (char) gy + (char) layout[0xa3], (unsigned char) 0x11);
 
     int barW = layout[0x8c];
-    String *font = *g_Hud_dmFont;
+    String *font = (String *) Globals::font;
     int ih = Globals::Canvas->GetImage2DHeight((unsigned) (0));
     int th = Globals::Canvas->GetTextHeight(0);
     char ty = (char) (((gy + (char) (ih / 2)) - (char) (th / 2)) + (char) layout[0x8d]);
@@ -1367,27 +1345,24 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         item = new ListItem(str, 0);
     addToEventQueue(item);
 
-    String *font = *g_Hud_font;
+    String *font = (String *) Globals::font;
     int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) (font));
-    int screenW = *(int *) *g_Hud_screenW;
+    int screenW = *(int *) &Globals::w;
     this->eventScrollTick = 0;
     this->eventScrolls = 1;
     this->letterbox =
             (unsigned char) ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w);
 }
 
-static int **g_Hud_csLayout = nullptr;
 
-static int **g_Hud_csStatus = nullptr;
 
-static int **g_Hud_csScreenW = nullptr;
 static const char g_Hud_csZero[1] = {0};
 
 void Hud::drawChallengeModeScore(int unused) {
     (void) unused;
-    int *layout = (int *) *g_Hud_csLayout;
-    int *status = (int *) *g_Hud_csStatus;
-    int screenW = *(int *) *g_Hud_csScreenW;
+    int *layout = (int *) Globals::layout;
+    int *status = (int *) Globals::status;
+    int screenW = *(int *) &Globals::w;
     Sprite *sprite = this->digitSprite;
 
     Globals::Canvas->SetColor((unsigned) (-1));
@@ -1522,16 +1497,13 @@ void Hud::drawChallengeModeScore(int unused) {
     }
 }
 
-static PaintCanvas **g_Hud_meCanvas = nullptr;
 
-static String **g_Hud_meFont = nullptr;
 
-static int **g_Hud_meScreenW = nullptr;
 static const char g_Hud_meSep[1] = {0};
 static const char g_Hud_meEnd[1] = {0};
 
 void Hud::hudEventMedal(int medalId, int percent) {
-    GameText *gt = *g_Hud_gameText;
+    GameText *gt = Globals::gameText;
     String *name = gt->getText(medalId + 0x5e3);
 
     char sep[12], acc1[12], num[12], acc2[12], end[12], acc3[12];
@@ -1597,24 +1569,20 @@ void Hud::hudEventMedal(int medalId, int percent) {
     ListItem *item = new ListItem(str, 3);
     addToEventQueue(item);
 
-    int w = Globals::Canvas->GetTextWidth((unsigned) (long) (*g_Hud_meCanvas), *(String *) (*g_Hud_meFont));
-    int screenW = *(int *) *g_Hud_meScreenW;
+    int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) ((String *) Globals::font));
+    int screenW = *(int *) &Globals::w;
     this->eventScrollTick = 0;
     this->eventScrolls = 1;
     this->letterbox = ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w) ? 1 : 0;
 }
 
-static int **g_Hud_imLayout = nullptr;
 
-static char **g_Hud_imLetterbox = nullptr;
 
 static CargoBay **g_Hud_imCargoA = nullptr;
 
 static CargoBay **g_Hud_imCargoB = nullptr;
 
-static char **g_Hud_imFlagA = nullptr;
 
-static char **g_Hud_imFlagB = nullptr;
 
 void Hud::initHudMenu(int menuType, Level *lvl) {
     if (this->menuButtons != 0) {
@@ -1630,10 +1598,10 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
     updateSecondaryWeaponString();
 
     this->menuOriginX = 0;
-    int *layout = (int *) *g_Hud_imLayout;
+    int *layout = (int *) Globals::layout;
     int rowH = *(int *) (layout[0] + 0x1dc);
 
-    char letterbox = *(char *) *g_Hud_imLetterbox;
+    char letterbox = *(char *) &Globals::iPad;
 
     int yOrigin;
     if (letterbox == 0) {
@@ -1646,8 +1614,8 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
         else {
             v = (float) cargoA->cargoMax;
             float adj = 0.0f;
-            if (*(char *) *g_Hud_imFlagA == 0)
-                adj = (*(char *) *g_Hud_imFlagB == 0) ? 1.0f : 0.0f;
+            if (*(char *) (char *) (Globals::options + 0x11) == 0)
+                adj = (*(char *) (char *) (Globals::hints + 0x11) == 0) ? 1.0f : 0.0f;
             v = v - adj;
         }
         float yf = 0.0f;
@@ -1656,8 +1624,8 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
                 yf = (float) ((CargoBay *) *g_Hud_imCargoA)->cargoCurrent;
             else {
                 float v2 = (float) ((CargoBay *) *g_Hud_imCargoB)->cargoMax;
-                float adj = (*(char *) *g_Hud_imFlagA == 0)
-                                ? ((*(char *) *g_Hud_imFlagB == 0) ? 1.0f : 0.0f)
+                float adj = (*(char *) (char *) (Globals::options + 0x11) == 0)
+                                ? ((*(char *) (char *) (Globals::hints + 0x11) == 0) ? 1.0f : 0.0f)
                                 : 0.0f;
                 yf = v2 - adj;
             }
