@@ -12,19 +12,12 @@
 
 static int **g_APL_apFlag = nullptr;
 
-static GameText **g_APL_gametext = nullptr;
 
-static unsigned char **g_APL_font = nullptr;
 
-static int **g_APL_screenW = nullptr;
 
-static int **g_APL_screenH = nullptr;
 
-static Layout **g_APL_layout_draw = nullptr;
 
-static GameText **g_APL_gametext_draw = nullptr;
 
-static AbyssEngine::String **g_APL_font_draw = nullptr;
 
 static const char kEmpty[] = "";
 static const char kApLit1[] = "";
@@ -37,7 +30,7 @@ AutoPilotList::AutoPilotList(Level *level) {
 
     if (**g_APL_apFlag != 0) {
         String b(kApLit1);
-        String c = *(*g_APL_gametext)->getText(0x222) + b;
+        String c = *(Globals::gameText)->getText(0x222) + b;
         String a = ((Station *) (&a))->getName();
         (*this->entries)[0] = new String(c + a);
         this->count++;
@@ -45,7 +38,7 @@ AutoPilotList::AutoPilotList(Level *level) {
 
     if (((SolarSystem *) Globals::status->getSystem())->currentOrbitHasWarpGate() != 0) {
         String *s = new String;
-        s->Set(((*g_APL_gametext)->getText(0x223))->data);
+        s->Set(((Globals::gameText)->getText(0x223))->data);
         (*this->entries)[1] = s;
         this->count++;
     }
@@ -54,12 +47,12 @@ AutoPilotList::AutoPilotList(Level *level) {
         String c = ((Station *) (&c))->getName();
         String b(kApLit2);
         String a = b + c;
-        (*this->entries)[2] = new String(a + *(*g_APL_gametext)->getText(0x88));
+        (*this->entries)[2] = new String(a + *(Globals::gameText)->getText(0x88));
         this->count++;
     }
 
     String *cancel = new String;
-    cancel->Set(((*g_APL_gametext)->getText(0x225))->data);
+    cancel->Set(((Globals::gameText)->getText(0x225))->data);
     (*this->entries)[3] = cancel;
     this->count++;
 
@@ -67,7 +60,7 @@ AutoPilotList::AutoPilotList(Level *level) {
         Route *route = (Route *) (intptr_t)((PlayerEgo *) ((Level *) level)->getPlayer())->getRoute();
         if (*((uint8_t *) route->getLastWaypoint() + 0x130) == 0) {
             String *s = new String;
-            s->Set(((*g_APL_gametext)->getText(0x23d))->data);
+            s->Set(((Globals::gameText)->getText(0x23d))->data);
             (*this->entries)[4] = s;
             this->count++;
         }
@@ -75,7 +68,7 @@ AutoPilotList::AutoPilotList(Level *level) {
 
     this->width = 0;
     this->selected = 0;
-    unsigned char *font = *g_APL_font;
+    unsigned char *font = (unsigned char *) Globals::font;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         if ((*this->entries)[i] != nullptr) {
             int w = Globals::Canvas->GetTextWidth(
@@ -85,8 +78,8 @@ AutoPilotList::AutoPilotList(Level *level) {
         }
     }
 
-    this->x = (**g_APL_screenW - this->width) / 2;
-    this->y = (**g_APL_screenH + this->count * -0xf - 0xc) / 2;
+    this->x = (Globals::w - this->width) / 2;
+    this->y = (Globals::h + this->count * -0xf - 0xc) / 2;
     while ((*this->entries)[this->selected] == nullptr)
         this->down();
 }
@@ -144,8 +137,8 @@ String AutoPilotList::getTargetString() {
 
 void AutoPilotList::draw() {
     String title;
-    title.Set(((*g_APL_gametext_draw)->getText(0x23c))->data);
-    (*g_APL_layout_draw)->drawWindow(title, this->x, this->y, this->width,
+    title.Set(((Globals::gameText)->getText(0x23c))->data);
+    (Globals::layout)->drawWindow(title, this->x, this->y, this->width,
                                      this->count * 0xf + 0x16);
 
     int drawn = 0;
@@ -153,7 +146,7 @@ void AutoPilotList::draw() {
         String *text = (*this->entries)[i];
         if (text != nullptr) {
             Globals::Canvas->DrawString(
-                (unsigned int) (uintptr_t) * g_APL_font_draw, *text,
+                (unsigned int) (uintptr_t) Globals::font, *text,
                 this->x, drawn * 0xf + this->y + 0x12, false);
             drawn++;
         }
