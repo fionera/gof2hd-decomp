@@ -639,7 +639,7 @@ static inline void AEMath_VectorScale(AbyssEngine::AEMath::Vector *out, float s,
 }
 
 
-static const float gIP_strength = 0;
+static const float gIP_strength = 5000.0f;
 
 void PlayerFighter::initPush(const Vector &target, int radius) {
 
@@ -770,7 +770,7 @@ done:
 
 void AEMath_MatrixMul(void *out, void *m); // lint: void_ptr (external symbol; param types load-bearing)
 
-static const float gPush_div = 0;
+static const float gPush_div = 5000.0f;
 
 void PlayerFighter::push(int dt) {
 
@@ -861,8 +861,8 @@ void PF_cloakApply(void *meshPtr, int arg, float alpha, int flag);
 
 // lint: void_ptr (external symbol; param type load-bearing)
 
-static const float gHC_divIn = 0;
-static const float gHC_divOut = 0;
+static const float gHC_divIn = 2000.0f;
+static const float gHC_divOut = -2000.0f;
 
 void PlayerFighter::handleCloaking() {
     if (this->wingmanCommand() != 10) return;
