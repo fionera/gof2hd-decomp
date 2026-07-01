@@ -56,13 +56,11 @@ namespace {
 
     static void (*g_explode_fn)(void *, int) = nullptr; // lint: void_ptr (fn-ptr slot; param type load-bearing)
     static PlayerEgo *g_PlayerEgo_singleton = nullptr;
-    static FModSound **g_emerg_fmod = nullptr;
-    static const float g_PE_rollNudge = 0.0f;
+        static const float g_PE_rollNudge = 0.0f;
     static const float g_PE_strafeDist = 0.0f;
     static const float g_PE_cft_transformVal = 0.0f;
     static const float g_PE_shakeDiv = 0.0f;
-    static FModSound **g_engine_fmod = nullptr;
-    static char **g_PE_d_miningGate = nullptr;
+        static char **g_PE_d_miningGate = nullptr;
     static const float g_PE_d_eps = 0.0f;
     static const float g_PE_d_lookK1 = 0.0f;
     static const float g_PE_d_lookK2 = 0.0f;
@@ -118,8 +116,7 @@ namespace {
     static float *g_PE_dr_posBlink = nullptr;
     static float *g_PE_dr_posNormal = nullptr;
     static const float g_PE_upd_handlingBias = 0.0f;
-    static FModSound **g_PE_reviveSound = nullptr;
-    static float *g_PE_t_anchor = nullptr;
+        static float *g_PE_t_anchor = nullptr;
     static String **g_PE_t_pctStr = nullptr;
     static const float g_PE_t_timerDiv = 0.0f;
     static const float g_PE_t_pctScale = 0.0f;
@@ -129,8 +126,7 @@ namespace {
     static MiningHostObject **g_PE_aa_winHolder1 = nullptr;
     static MiningHostObject **g_PE_aa_winHolder2 = nullptr;
     static const float g_PE_aa_settleEps = 0.0f;
-    static FModSound **g_PE_hs_sound = nullptr;
-    static const float g_PE_hs_throttleBias = 0.0f;
+        static const float g_PE_hs_throttleBias = 0.0f;
     static const float g_PE_ss_emDiv = 0.0f;
     static const float g_PE_ss_emBias = 0.0f;
     static int *g_PE_tc_sound = nullptr;
@@ -944,7 +940,7 @@ int PlayerEgo::tryToStartEmergencySystem() {
     Ship *s1 = Globals::status->getShip();
     Item *eq = ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x1b);
     ((Ship *) (s1))->removeEquipment(eq);
-    ((FModSound *) (*(FModSound **) g_emerg_fmod))->play(0x45b, (Vector *) 0, (Vector *) 0, 1.0f);
+    ((FModSound *) (Globals::sound))->play(0x45b, (Vector *) 0, (Vector *) 0, 1.0f);
     return 1;
 }
 
@@ -1230,7 +1226,7 @@ void PlayerEgo::StopEngineSound() {
             int cm = Globals::status->getCurrentCampaignMission();
             float g = Globals::status->getGammaRayDamagePerSecond(idx, cm);
             if (0.0f < g && this->engineSoundId != -1) {
-                ((FModSound *) (*(FModSound **) g_engine_fmod))->play((int) (intptr_t)((intptr_t) this->engineSoundId),
+                ((FModSound *) (Globals::sound))->play((int) (intptr_t)((intptr_t) this->engineSoundId),
                                                                       (Vector *) 0, (Vector *) 0, g);
             }
         }
@@ -1705,7 +1701,7 @@ void PlayerEgo::PlayEngineSound() {
         int cm = Globals::status->getCurrentCampaignMission();
         float g = Globals::status->getGammaRayDamagePerSecond(idx, cm);
         if (0.0f < g && this->engineSoundId != -1) {
-            ((FModSound *) (*(FModSound **) g_engine_fmod))->play((int) (intptr_t)((intptr_t) this->engineSoundId),
+            ((FModSound *) (Globals::sound))->play((int) (intptr_t)((intptr_t) this->engineSoundId),
                                                                   (Vector *) 0, (Vector *) 0, g);
         }
     }
@@ -2459,7 +2455,7 @@ void PlayerEgo::revive() {
     ((Player *) (this->player))->setActive(true);
     int v = 0;
 
-    FModSound *snd = *g_PE_reviveSound;
+    FModSound *snd = Globals::sound;
     ((FModSound *) (*(FModSound **) snd))->play((int) (intptr_t) * (FModSound **) snd, (Vector *) 0, (Vector *) 0,
                                                 (float) v);
     ((FModSound *) (snd))->play((int) (intptr_t)((intptr_t) this->field_0x1c), (Vector *) 0, (Vector *) 0, (float) v);
@@ -2705,7 +2701,7 @@ void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
 }
 
 void PlayerEgo::handleShip(int dt) {
-    FModSound *snd = *g_PE_hs_sound;
+    FModSound *snd = Globals::sound;
 
     snd->setParamValue((FMOD::Event *) (long) ((Player *) (this->player))->GetEngineEvent(), 0,
                        ((float &) this->yawAccumD));
