@@ -16,7 +16,6 @@ MovingStars::~MovingStars() {
     this->velocityArray = 0;
 }
 
-typedef unsigned char *(*AllocFn)(int);
 
 int MovingStars_nextIntBounded(uint32_t rng, int bound);
 
@@ -31,7 +30,6 @@ void MovingStars_MatrixSetTranslationFrom(Matrix *out, const Matrix *base,
 
 void MovingStars_TextureCreate(PaintCanvas *canvas, int id, uint32_t *flag, int b);
 
-static AllocFn g_MovingStars_alloc = nullptr;
 
 
 
@@ -41,18 +39,16 @@ static const float kBB0 = 1.0f, kBB1 = 2.0f, kBB2 = 3.0f, kBB3 = 4.0f;
 MovingStars::MovingStars() {
     char mat[60];
 
-    AllocFn alloc = g_MovingStars_alloc;
-
     this->billboardIds = 0;
     this->transformHandles = 0;
     this->textureHandle = 0;
     this->lifeArray = 0;
     this->velocityArray = 0;
 
-    this->billboardIds = (uint32_t *) alloc(200);
-    this->transformHandles = (uint32_t *) alloc(200);
-    this->velocityArray = (int *) alloc(200);
-    int *arr = (int *) alloc(200);
+    this->billboardIds = new uint32_t[50];
+    this->transformHandles = new uint32_t[50];
+    this->velocityArray = new int[50];
+    int *arr = new int[50];
     this->lifeArray = arr;
     for (int i = 0; i != 0x32; i = i + 1)
         arr[i] = 0xffffffff;

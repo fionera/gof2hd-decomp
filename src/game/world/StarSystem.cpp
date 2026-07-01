@@ -104,10 +104,6 @@ StarSystem::~StarSystem() {
     this->positionsArray = nullptr;
 }
 
-typedef Engine *(*EngineGetter)(ApplicationManager *app);
-
-static EngineGetter g_StarSystem_init_getEngine = nullptr;
-
 static float g_StarSystem_init_sunColors[256] = {0};
 
 static float g_StarSystem_init_lightColors[256] = {0};
@@ -171,30 +167,28 @@ void StarSystem::initLight() {
     float lr = g_StarSystem_init_stationColors[stationColorIndex];
     float lg = g_StarSystem_init_stationColors[stationColorIndex + 1];
     float lb = g_StarSystem_init_stationColors[stationColorIndex + 2];
-
-    EngineGetter getEngine = g_StarSystem_init_getEngine;
-    engine = getEngine(Globals::appManager);
+    engine = ((Engine *) Globals::appManager->GetEngine());
     engine->LightSetGlobalSceneColorAmbient(ambientScale * this->sunLightColor.x,
                                             ambientScale * this->sunLightColor.y,
                                             ambientScale * this->sunLightColor.z);
-    engine = getEngine(Globals::appManager);
+    engine = ((Engine *) Globals::appManager->GetEngine());
     engine->LightSetRimColor(g_StarSystem_init_lightColors[baseIndex] * 3.0f,
                              g_StarSystem_init_lightColors[baseIndex + 1] * 3.0f,
                              g_StarSystem_init_lightColors[baseIndex + 2] * 3.0f);
-    getEngine(Globals::appManager)->LightSetMaterialColorAmbient(1.0f, 1.0f, 1.0f);
-    getEngine(Globals::appManager)->LightSetMaterialColorDiffuse(1.0f, 1.0f, 1.0f);
-    getEngine(Globals::appManager)->LightSetMaterialColorSpecular(1.0f, 1.0f, 1.0f);
-    getEngine(Globals::appManager)->LightSetMaterialColorShininess(0.7f);
-    getEngine(Globals::appManager)->LightSetLightDirection(this->lightDirection.x, this->lightDirection.y,
+    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorAmbient(1.0f, 1.0f, 1.0f);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorDiffuse(1.0f, 1.0f, 1.0f);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorSpecular(1.0f, 1.0f, 1.0f);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorShininess(0.7f);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(this->lightDirection.x, this->lightDirection.y,
                                                            this->lightDirection.z, 0x4000);
-    getEngine(Globals::appManager)->LightSetLightColorAmbient(0.0f, 0.0f, 0.0f, 0x4000);
-    getEngine(Globals::appManager)->LightSetLightColorDiffuse(this->sunLightColor.x, this->sunLightColor.y,
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorAmbient(0.0f, 0.0f, 0.0f, 0x4000);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorDiffuse(this->sunLightColor.x, this->sunLightColor.y,
                                                               this->sunLightColor.z, 0x4000);
-    getEngine(Globals::appManager)->LightSetLightColorSpecular(2.0f, 2.0f, 2.0f, 0x4000);
-    getEngine(Globals::appManager)->LightSetLightDirection(0.0f, 0.0f, 1.0f, 0x4001);
-    getEngine(Globals::appManager)->LightSetLightColorDiffuse(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
-    getEngine(Globals::appManager)->LightSetLightColorSpecular(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
-    getEngine(Globals::appManager)->LightSetParticleAmbient(this->sunLightColor.x, this->sunLightColor.y,
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(2.0f, 2.0f, 2.0f, 0x4000);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(0.0f, 0.0f, 1.0f, 0x4001);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorDiffuse(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetParticleAmbient(this->sunLightColor.x, this->sunLightColor.y,
                                                             this->sunLightColor.z);
 
     Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_1);
@@ -492,14 +486,6 @@ void StarSystem::switchSunForSupernovaReversal() {
     sun->setScaling(2.429073312463973e24f, 2.429073312463973e24f, 2.429073312463973e24f);
 }
 
-typedef AbyssEngine::Transform *(*GetTransformFn)(PaintCanvas *canvas, int transform_id);
-
-typedef void (*SetTransformModeFn)(AbyssEngine::Transform *transform, int mode, int value);
-
-static GetTransformFn g_StarSystem_intro_getTransform = nullptr;
-
-static SetTransformModeFn g_StarSystem_intro_setTransformMode = nullptr;
-
 static uint32_t g_StarSystem_intro_colors[256] = {0};
 
 void StarSystem::switchSunForSupernovaIntro() {
@@ -513,12 +499,9 @@ void StarSystem::switchSunForSupernovaIntro() {
     AEGeometry *sun = (*this->planetsArray)[0];
     sun->setMesh(0x2df1);
     sun->setScaling(0.6866455078125f);
-
-    GetTransformFn getTransform = g_StarSystem_intro_getTransform;
-    SetTransformModeFn setTransformMode = g_StarSystem_intro_setTransformMode;
-    setTransformMode(getTransform(Globals::Canvas, sun->transform), 0, 0);
-    setTransformMode(getTransform(Globals::Canvas, sun->transform), 3, 0);
-    setTransformMode(getTransform(Globals::Canvas, sun->transform), 1, 0);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(sun->transform))->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(sun->transform))->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(sun->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
 
     SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
     this->tintColor = g_StarSystem_intro_colors[system->getIndex()];

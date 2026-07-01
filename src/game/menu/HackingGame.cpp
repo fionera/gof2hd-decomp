@@ -94,10 +94,6 @@ void HackingGame::rotateRightCW(int *state) {
     this->rotatingRight = true;
 }
 
-typedef void (*ImageCreateFn)(PaintCanvas *canvas, uint16_t image, uint32_t *out);
-
-static ImageCreateFn g_HackingGame_ctor_imageCreate = nullptr;
-
 HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount, int dockingIndex) {
     this->type = type;
     int scaledType = type + type * 2;
@@ -111,14 +107,12 @@ HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount,
         Globals::Canvas->Image2DCreate((uint16_t)(i + 0x1f50), handle);
         this->tileImages[base + 6 + i] = handle;
     }
-
-    ImageCreateFn create = g_HackingGame_ctor_imageCreate;
-    create(Globals::Canvas, 0x1f48, (uint32_t *) &this->bottomImage);
-    create(Globals::Canvas, 0x1f49, (uint32_t *) &this->topImage);
-    create(Globals::Canvas, 0x1f47, (uint32_t *) &this->mainImage);
-    create(Globals::Canvas, 0x1f46, (uint32_t *) &this->arrowActive);
-    create(Globals::Canvas, 0x1f44, (uint32_t *) &this->arrowIdle);
-    create(Globals::Canvas, 0x1f45, (uint32_t *) &this->markImage);
+    Globals::Canvas->Image2DCreate((uint16_t) 0x1f48, *(unsigned int *) &this->bottomImage);
+    Globals::Canvas->Image2DCreate((uint16_t) 0x1f49, *(unsigned int *) &this->topImage);
+    Globals::Canvas->Image2DCreate((uint16_t) 0x1f47, *(unsigned int *) &this->mainImage);
+    Globals::Canvas->Image2DCreate((uint16_t) 0x1f46, *(unsigned int *) &this->arrowActive);
+    Globals::Canvas->Image2DCreate((uint16_t) 0x1f44, *(unsigned int *) &this->arrowIdle);
+    Globals::Canvas->Image2DCreate((uint16_t) 0x1f45, *(unsigned int *) &this->markImage);
 
     this->difficulty = savedCanvas;
     this->rewardItem = savedRewardItem;
@@ -127,12 +121,10 @@ HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount,
     reInit();
 }
 
-typedef int (*ImageMeasureFn)(PaintCanvas *canvas, int image);
 
 
 
 
-static ImageMeasureFn g_HackingGame_render_height_fn = nullptr;
 
 
 static inline int half_i(int value) {
@@ -200,10 +192,9 @@ void HackingGame::render2D() {
         int topImage = this->topImage;
         int screenW = Globals::w;
         int topWidth = Globals::Canvas->GetImage2DWidth((unsigned) (topImage));
-        ImageMeasureFn measure = g_HackingGame_render_height_fn;
         int screenH = Globals::h;
-        int titleH = measure(Globals::Canvas, this->mainImage);
-        int topH = measure(Globals::Canvas, this->topImage);
+        int titleH = Globals::Canvas->GetImage2DHeight((unsigned) (this->mainImage));
+        int topH = Globals::Canvas->GetImage2DHeight((unsigned) (this->topImage));
         unsigned char **layout = (unsigned char **) &Globals::layout;
 
         Globals::Canvas->DrawImage2D((unsigned) topImage, half_i(screenW) - topWidth,
@@ -272,8 +263,8 @@ void HackingGame::render2D() {
 
             int mark = this->markImage;
             int markW = Globals::Canvas->GetImage2DWidth((unsigned) (mark));
-            int titleH2 = measure(Globals::Canvas, this->mainImage);
-            int markH = measure(Globals::Canvas, mark);
+            int titleH2 = Globals::Canvas->GetImage2DHeight((unsigned) (this->mainImage));
+            int markH = Globals::Canvas->GetImage2DHeight((unsigned) (mark));
             Globals::Canvas->DrawImage2D((unsigned) mark,
                                          half_i(screenW) - half_i(tileW) - half_i(markW),
                                          half_i(Globals::h) + half_i(tileH) +
