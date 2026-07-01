@@ -933,7 +933,6 @@ void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
     pc->SetColor(saved);
 }
 
-static unsigned *g_dtColor = nullptr;
 
 
 
@@ -944,7 +943,7 @@ static const char g_dtBoxLit[] = "";
 
 void Layout::drawTip() {
     if (this->tipLines != nullptr) {
-        Globals::Canvas->SetColor(*g_dtColor);
+        Globals::Canvas->SetColor(0xFFFFFFFF);
         int *mA = (int *) Globals::layout;
         int dimW = Globals::h;
         int dimH = Globals::w;
