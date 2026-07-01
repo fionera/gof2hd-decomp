@@ -15,7 +15,6 @@ namespace AbyssEngine {
 
 AbyssEngine::Transform *PlayerAsteroidTransformGetTransform(PaintCanvas *canvas, uint32_t handle);
 
-static Level *g_playerAsteroidLevel = nullptr;
 static Vector g_playerAsteroidCenter;
 static int g_playerAsteroidCenterLength = 0;
 
@@ -116,7 +115,7 @@ void PlayerAsteroid::update(int delta) {
 
     if (player->getHitpoints() <= 0 && this->state == 0) {
         this->state = 3;
-        g_playerAsteroidLevel->asteroidDied();
+        this->level->asteroidDied();
 
         if (this->dropsLoot() != 0) {
             int quality = this->quality;
