@@ -191,7 +191,7 @@ bool ListItem::isPendingProduct() {
 }
 
 bool ListItem::isTab() {
-    if (this->selectable == 0 && this->name != 0 && this->name->size() != 0)
+    if (this->selectable == 0 && this->name->size() != 0)
         return this->textButton == 0;
     return false;
 }
