@@ -1,4 +1,5 @@
 #include "engine/render/Mesh.h"
+#include "engine/render/Engine.h"
 #include "engine/math/AEMath.h"
 #include "engine/math/Transform.h"
 #include "engine/file/AEFile.h"
@@ -6,8 +7,7 @@
 namespace AbyssEngine {
     int MeshConvertToVBO(Mesh * mesh);
 
-    static unsigned char *g_hasNormalsFlag = nullptr;
-
+    
     Mesh::Mesh(Mesh *src) {
         Mesh * self = this;
 
@@ -31,7 +31,7 @@ namespace AbyssEngine {
         self->boundsRadius = src->boundsRadius;
         self->boundsRadiusSq = src->boundsRadiusSq;
 
-        const bool hasTangents = (*g_hasNormalsFlag != 0);
+        const bool hasTangents = (AbyssEngine::Engine::enableShader != 0);
 
         self->vboByteSize = 0;
         self->vertexFormat = src->vertexFormat;

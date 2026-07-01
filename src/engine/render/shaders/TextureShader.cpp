@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static uint8_t g_TextureShader_hasSecondProgram = 0;
-static uint8_t g_TextureShader_activeSlot = 0;
 
 namespace AbyssEngine {
     int TextureShader::ShaderIndex;
@@ -25,7 +23,7 @@ namespace AbyssEngine {
     }
 
     void TextureShader::UseShader(bool) {
-        if (g_TextureShader_hasSecondProgram != 0 && this->programExt != 0) {
+        if (AbyssEngine::Engine::fogEnabled != 0 && this->programExt != 0) {
             glUseProgram(this->programExt);
             return;
         }
@@ -40,7 +38,7 @@ namespace AbyssEngine {
     }
 
     void TextureShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        int slot = g_TextureShader_activeSlot;
+        int slot = AbyssEngine::Engine::fogEnabled;
 
         glUniformMatrix4fv(this->mvpUniform[slot], 1, 0, engine->worldViewProjMatrix);
 
@@ -79,7 +77,7 @@ namespace AbyssEngine {
 
             location = this->activeTextureUniform[slot];
             if (location >= 0) {
-                glUniform1i(location, g_TextureShader_activeSlot);
+                glUniform1i(location, AbyssEngine::Engine::fogEnabled);
             }
 
             location = this->fogColorUniform[slot];

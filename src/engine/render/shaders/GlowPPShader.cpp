@@ -1,11 +1,10 @@
 #include "engine/render/shaders/GlowPPShader.h"
+#include "engine/core/AbyssEngine.h"
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static uint8_t *g_GlowPPShader_internalInitNeededPtr = nullptr;
-static uint32_t *g_GlowPPShader_shaderModePtr = nullptr;
 
 unsigned int Engine_GetDisplayWidth(::Engine * engine);
 unsigned int Engine_GetDisplayHeight(::Engine * engine);
@@ -40,8 +39,8 @@ namespace AbyssEngine {
     }
 
     void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) {
-        if (*g_GlowPPShader_internalInitNeededPtr != 0) {
-            *g_GlowPPShader_internalInitNeededPtr = 0;
+        if (AbyssEngine::firstRenderGlow != 0) {
+            AbyssEngine::firstRenderGlow = 0;
             this->InternalInit(engine);
             this->backgroundTarget->BeginCapture();
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -147,7 +146,7 @@ namespace AbyssEngine {
 
         FBOContainer *firstTexture = this->blurYTarget;
         FBOContainer *secondTexture = this->backgroundTarget;
-        uint32_t mode = *g_GlowPPShader_shaderModePtr;
+        uint32_t mode = AbyssEngine::Engine::switchGlow;
         if (mode == 0) {
             firstTexture = this->copyTarget;
         } else if (mode == 1) {

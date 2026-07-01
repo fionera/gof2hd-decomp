@@ -1,6 +1,7 @@
 
 
 #include "engine/core/Array.h"
+#include "engine/render/ParticleSettingsRef.h"
 
 #include "engine/render/ParticleSystemMesh.h"
 #define GOF2_ENUM_BlendMode
@@ -57,7 +58,6 @@ void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets, 
 
 int _ips_getParticleCount(void *sys); // lint: void_ptr
 
-static char *g_activeParticleSet = nullptr;
 
 ParticleSystemManager::ParticleSystemManager(
     PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet, unsigned short spriteTex,
@@ -399,8 +399,8 @@ void ParticleSystemManager::initSprites() {
     short offset = 0;
     canvas->SpriteSystemSetAllSize((unsigned int) (short) this->spriteSystemId, 0);
 
-    float u = *(float *) (g_activeParticleSet + 0x90);
-    float w = *(float *) (g_activeParticleSet + 0x94);
+    float u = *(float *) ((char *) ParticleSettingsRef::cur + 0x90);
+    float w = *(float *) ((char *) ParticleSettingsRef::cur + 0x94);
     canvas->SpriteSystemSetAllUv(this->spriteSystemId, u, 0.0f, w, 0.0f);
 
     IParticleSystem **sprites = (IParticleSystem **) this->spriteSystems.data_;

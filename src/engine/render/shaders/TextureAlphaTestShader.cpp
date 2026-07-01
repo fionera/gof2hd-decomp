@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static unsigned char g_TextureAlphaTestShader_useAlphaProgram = 0;
-static unsigned char g_TextureAlphaTestShader_programIndex = 0;
 
 namespace AbyssEngine {
     int TextureAlphaTestShader::ShaderIndex;
@@ -30,7 +28,7 @@ namespace AbyssEngine {
     }
 
     void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        uint8_t programIndex = g_TextureAlphaTestShader_programIndex;
+        uint8_t programIndex = AbyssEngine::Engine::fogEnabled;
 
         glUniformMatrix4fv(this->uMVPMatrixLoc[programIndex], 1, 0, engine->worldViewProjMatrix);
 
@@ -57,7 +55,7 @@ namespace AbyssEngine {
 
             location = this->uSamplerLoc[programIndex];
             if (location >= 0) {
-                glUniform1i(location, g_TextureAlphaTestShader_programIndex);
+                glUniform1i(location, AbyssEngine::Engine::fogEnabled);
             }
 
             location = this->uFogColorLoc[programIndex];
@@ -106,7 +104,7 @@ namespace AbyssEngine {
     }
 
     void TextureAlphaTestShader::UseShader(bool) {
-        if (g_TextureAlphaTestShader_useAlphaProgram != 0) {
+        if (AbyssEngine::Engine::fogEnabled != 0) {
             int program = this->alphaProgram;
             if (program != 0) {
                 glUseProgram(program);
