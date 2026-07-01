@@ -1,4 +1,5 @@
 #include "engine/render/ParticleSystemSprite.h"
+#include "engine/render/ParticleSettingsRef.h"
 
 #define GOF2_ENUM_BlendMode
 #include "engine/render/PaintCanvas.h"
@@ -20,7 +21,6 @@ using AbyssEngine::AEMath::VectorUnsignedToFloat;
 
 static PaintCanvas *g_PaintCanvas = nullptr;
 
-static char *g_particleSetBase = nullptr;
 
 static float g_uvRoundBias = 0.0f;
 
@@ -107,7 +107,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
 
     int *ages = this->ages;
     int8_t *setIdx = this->setIndices;
-    char *set = g_particleSetBase + (int) setIdx[index] * 0xa0;
+    char *set = (char *) ParticleSettingsRef::cur + (int) setIdx[index] * 0xa0;
 
     float age = VectorSignedToFloat(ages[index], 0);
     age = (float) (int) (age + dt);
