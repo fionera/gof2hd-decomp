@@ -13,12 +13,6 @@
 #include "game/core/String.h"
 #include "game/ui/TouchButton.h"
 
-static Layout **g_SWm_layout = nullptr;
-static int *g_SWm_height = nullptr;
-static int *g_SWm_force = nullptr;
-static unsigned char *g_SWm_btnFlag = nullptr;
-static Layout **g_StatusWindow_layout = nullptr;
-static unsigned char *g_StatusWindow_btnFlag = nullptr;
 
 StatusWindow::~StatusWindow() {
     if (this->tabButtons != 0) {
@@ -47,8 +41,8 @@ StatusWindow::~StatusWindow() {
 }
 
 int StatusWindow::OnTouchMove(int x, int y) {
-    Layout *layout = *g_SWm_layout;
-    if ((layout->field_0xc_leftMargin < y && y < *g_SWm_height - layout->field_0x10_rightMargin) || *g_SWm_force != 0) {
+    Layout *layout = Globals::layout;
+    if ((layout->field_0xc_leftMargin < y && y < Globals::h - layout->field_0x10_rightMargin) || Globals::mouse_wheel != 0) {
         int delta = y - this->lastTouchY;
         this->scrollVelocity = delta;
         this->scrollDamping = 1.0f;
@@ -60,12 +54,12 @@ int StatusWindow::OnTouchMove(int x, int y) {
             if (dragDist > 3) {
                 (*this->medalButtons)[this->selectedMedal]->setAlwaysPressed(0);
                 this->selectedMedal = -1;
-                layout = *g_SWm_layout;
+                layout = Globals::layout;
             }
         }
     }
     layout->OnTouchMove(x, y);
-    if (*g_SWm_btnFlag == 0) {
+    if (Globals::iPad == 0) {
         for (unsigned i = 0; i < this->tabButtons->size(); ++i)
             (*this->tabButtons)[i]->OnTouchMove(x, y);
     }
@@ -90,19 +84,13 @@ void Status_replaceHash(void *out, void *key, void *a, void *b);
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-static Layout **g_swe_layout = nullptr;
-static char *g_swe_dialogBlock = nullptr;
-static Status **g_swe_status = nullptr;
-static GameText **g_swe_gameText = nullptr;
-static Globals **g_swe_globals = nullptr;
-static unsigned int *g_swe_font = nullptr;
 
 void StatusWindow::OnTouchEnd(int x, int y) {
     int vy = this->scrollVelocity;
     int newOff = this->scrollOffset + vy;
     float vf = (float) vy;
     int absvy = vy < 0 ? -vy : vy;
-    Layout *layout = *g_swe_layout;
+    Layout *layout = Globals::layout;
 
     this->scrollDamping = 0.9f;
     this->isDragging = 0;
@@ -113,7 +101,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     if (layout->OnTouchEnd(x, y) != 0)
         return;
 
-    if (*g_swe_dialogBlock == 0) {
+    if (Globals::iPad == 0) {
         for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
             if ((*this->tabButtons)[i]->OnTouchEnd(x, y) != 0) {
                 this->activeTab = i;
@@ -144,8 +132,8 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     int count = (elite == 0) ? medals[this->selectedMedal] : 1;
 
                     String hdr, valStr, valTmp, full;
-                    Status *key = *g_swe_status;
-                    String *t = (*g_swe_gameText)->getText(this->selectedMedal + 0x610);
+                    Status *key = Globals::status;
+                    String *t = (Globals::gameText)->getText(this->selectedMedal + 0x610);
                     hdr.Set((t)->data);
                     String *val = (String *) (intptr_t) ach->getValue(this->selectedMedal, count);
                     valStr.Set(val->data);
@@ -155,8 +143,8 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     String hint = this->getMedalHintText(this->selectedMedal);
                     full += hint;
 
-                    (*g_swe_globals)->getLineArray(
-                        *g_swe_font,
+                    (Globals::globals)->getLineArray(
+                        (unsigned int) (uintptr_t) Globals::font,
                         full, this->boxWidth - layout->field_0x4c * 2, this->detailLines);
                     (*this->medalButtons)[i]->setAlwaysPressed(true);
                 }
@@ -168,12 +156,12 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     if (layout->helpPressed() != 0) {
         if (this->activeTab == 1) {
             String title;
-            String *t = (*g_swe_gameText)->getText(0x287);
+            String *t = (Globals::gameText)->getText(0x287);
             title.Set((t)->data);
             layout->initHelpWindow(title);
         } else if (this->activeTab == 0) {
             String title;
-            String *t = (*g_swe_gameText)->getText(0x280);
+            String *t = (Globals::gameText)->getText(0x280);
             title.Set((t)->data);
             layout->initHelpWindow(title);
         }
@@ -181,13 +169,13 @@ void StatusWindow::OnTouchEnd(int x, int y) {
 }
 
 int StatusWindow::OnTouchBegin(int x, int y) {
-    Layout *layout = *g_StatusWindow_layout;
+    Layout *layout = Globals::layout;
     this->touchStartY = y;
     this->lastTouchY = y;
     this->scrollVelocity = 0;
     this->isDragging = 1;
     layout->OnTouchBegin(x, y);
-    if (*g_StatusWindow_btnFlag == 0) {
+    if (Globals::iPad == 0) {
         for (unsigned i = 0; i < this->tabButtons->size(); ++i)
             (*this->tabButtons)[i]->OnTouchBegin(x, y);
     }
@@ -253,7 +241,6 @@ void StatusWindow::update(int frameTime) {
     }
 }
 
-static GameText **g_swh_gameText = nullptr;
 
 String StatusWindow::getMedalHintText(int medalIndex) {
     int *medals = Globals::achievements->getMedals();
@@ -272,7 +259,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
 
         if (medalIndex == 2 && state == 2) {
             tmpA.ctor_char("\n", false);
-            String *hdr = (*g_swh_gameText)->getText(0x114);
+            String *hdr = (Globals::gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
             out += tmpB;
 
@@ -281,14 +268,14 @@ String StatusWindow::getMedalHintText(int medalIndex) {
             for (unsigned int i = 0; i < list->size(); i++) {
                 if ((*list)[i] == 0) {
                     tmpA.ctor_char("\n", false);
-                    String *t = (*g_swh_gameText)->getText(0x594 + (int) i);
+                    String *t = (Globals::gameText)->getText(0x594 + (int) i);
                     tmpB = tmpA + *t;
                     out += tmpB;
                 }
             }
         } else if (medalIndex == 3 && state == 2) {
             tmpA.ctor_char("\n", false);
-            String *hdr = (*g_swh_gameText)->getText(0x114);
+            String *hdr = (Globals::gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
             out += tmpB;
 
@@ -297,14 +284,14 @@ String StatusWindow::getMedalHintText(int medalIndex) {
             for (unsigned int i = 0; i < list->size(); i++) {
                 if ((*list)[i] == 0) {
                     tmpA.ctor_char("\n", false);
-                    String *t = (*g_swh_gameText)->getText(0x59f + (int) i);
+                    String *t = (Globals::gameText)->getText(0x59f + (int) i);
                     tmpB = tmpA + *t;
                     out += tmpB;
                 }
             }
         } else if (medalIndex == 9 && state == 2) {
             tmpA.ctor_char("\n", false);
-            String *hdr = (*g_swh_gameText)->getText(0x114);
+            String *hdr = (Globals::gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
             out += tmpB;
 
@@ -313,14 +300,14 @@ String StatusWindow::getMedalHintText(int medalIndex) {
             for (unsigned int i = 0; i < list->size(); i++) {
                 if ((*list)[i] == 0) {
                     tmpA.ctor_char("\n", false);
-                    String *t = (*g_swh_gameText)->getText(0x57e + (int) i);
+                    String *t = (Globals::gameText)->getText(0x57e + (int) i);
                     tmpB = tmpA + *t;
                     out += tmpB;
                 }
             }
         } else if (medalIndex == 0xd && state == 2) {
             tmpA.ctor_char("\n", false);
-            String *hdr = (*g_swh_gameText)->getText(0x114);
+            String *hdr = (Globals::gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
             out += tmpB;
 
@@ -330,14 +317,14 @@ String StatusWindow::getMedalHintText(int medalIndex) {
                 if (bp->locked == 0) {
                     tmpA.ctor_char("\n", false);
                     int idx = bp->getIndex();
-                    String *t = (*g_swh_gameText)->getText(idx + 0x4fa);
+                    String *t = (Globals::gameText)->getText(idx + 0x4fa);
                     tmpB = tmpA + *t;
                     out += tmpB;
                 }
             }
         } else if (medalIndex == 0xe && state == 2) {
             tmpA.ctor_char("\n", false);
-            String *hdr = (*g_swh_gameText)->getText(0x114);
+            String *hdr = (Globals::gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
             out += tmpB;
 
@@ -347,7 +334,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
                 if (bp->productionCount == 0) {
                     tmpA.ctor_char("\n", false);
                     int idx = bp->getIndex();
-                    String *t = (*g_swh_gameText)->getText(idx + 0x4fa);
+                    String *t = (Globals::gameText)->getText(idx + 0x4fa);
                     tmpB = tmpA + *t;
                     out += tmpB;
                 }
@@ -364,11 +351,10 @@ int Achievements_isUnlocked(void *ach, int index);
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-static ImageFactory **g_sw_imageFactory = nullptr;
 static int g_sw_charDef = 0;
 
 void StatusWindow::reInit() {
-    this->imageParts = (*g_sw_imageFactory)->loadChar(&g_sw_charDef);
+    this->imageParts = (Globals::imageFactory)->loadChar(&g_sw_charDef);
 
     int a0 = Achievements_isUnlocked(Achievements_get(), 0);
     int a1 = Achievements_isUnlocked(Achievements_get(), 1);
@@ -401,23 +387,15 @@ void StatusWindow::reInit() {
     this->charImageHeight = canvas->GetImage2DHeight(this->rankImage0);
 }
 
-static int *g_swd_dimW = nullptr;
-static int *g_swd_dimH = nullptr;
-static Layout **g_swd_layout = nullptr;
-static ImageFactory **g_swd_imageFactory = nullptr;
-static unsigned int *g_swd_font = nullptr;
-static Globals **g_swd_globals = nullptr;
-static char *g_swd_landscape = nullptr;
 static int *g_swd_textId = nullptr;
-static GameText **g_swd_gameText = nullptr;
 
 void StatusWindow::draw() {
     PaintCanvas *canvas = Globals::Canvas;
-    Layout *layout = *g_swd_layout;
-    unsigned int font = *g_swd_font;
-    char *land = g_swd_landscape;
-    int screenW = *g_swd_dimW;
-    int screenH = *g_swd_dimH;
+    Layout *layout = Globals::layout;
+    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
+    char *land = (char *) &Globals::iPad;
+    int screenW = Globals::w;
+    int screenH = Globals::h;
 
     canvas->SetColor(0xffu);
     canvas->FillRectangle(0, 0, screenW, screenH);
@@ -467,7 +445,7 @@ void StatusWindow::draw() {
         int pad = layout->field_0x2c_rowHeight;
         String lbl;
 
-        String *t = (*g_swd_gameText)->getText(*g_swd_textId);
+        String *t = (Globals::gameText)->getText(*g_swd_textId);
         lbl.Set((t)->data);
         layout->drawBox(0, x0, top, boxW, layout->field_0x1c, lbl, 0);
 
@@ -475,14 +453,14 @@ void StatusWindow::draw() {
 
         lbl.ctor_char("", false);
         layout->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
-        (*g_swd_imageFactory)->drawChar(this->imageParts, layout->field_0x4c + x0, y, false);
+        (Globals::imageFactory)->drawChar(this->imageParts, layout->field_0x4c + x0, y, false);
         String credTmp = Layout::formatCredits(Globals::status->getCredits());
         creditStr = credTmp;
         int tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, creditStr);
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         String lvlPrefix, lvlText, lvlFull;
-        String *lt = (*g_swd_gameText)->getText(*g_swd_textId);
+        String *lt = (Globals::gameText)->getText(*g_swd_textId);
         lvlPrefix.ctor_char(" ", false);
         lvlText = *lt;
         int lvl = Globals::status->getLevel();
@@ -493,14 +471,14 @@ void StatusWindow::draw() {
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         String timeStr;
-        (*g_swd_globals)->longToTimeStringNoSeconds(Globals::status->getPlayingTime(), timeStr);
+        (Globals::globals)->longToTimeStringNoSeconds(Globals::status->getPlayingTime(), timeStr);
         tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, creditStr);
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         lbl.ctor_char("", false);
         layout->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
-        (*g_swd_imageFactory)->drawShip(Globals::status->getShip()->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
-        String *shipNameTxt = (*g_swd_gameText)->getText(Globals::status->getShip()->getIndex());
+        (Globals::imageFactory)->drawShip(Globals::status->getShip()->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
+        String *shipNameTxt = (Globals::gameText)->getText(Globals::status->getShip()->getIndex());
         canvas->DrawString((unsigned) (uintptr_t) font, *shipNameTxt,
                            x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y, false);
 
@@ -562,7 +540,7 @@ void StatusWindow::draw() {
                 default: rowVal = st->getGoodsProduced();
                     break;
             }
-            String *labelTxt = (*g_swd_gameText)->getText(*g_swd_textId);
+            String *labelTxt = (Globals::gameText)->getText(*g_swd_textId);
             canvas->DrawString((unsigned) (uintptr_t) font, *labelTxt, rowX, y, false);
             rowStr.Set((long long) (rowVal));
             tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, rowStr);
@@ -583,7 +561,7 @@ void StatusWindow::draw() {
 
         if (drewStats != 0) {
             String hdr;
-            String *t = (*g_swd_gameText)->getText(*g_swd_textId);
+            String *t = (Globals::gameText)->getText(*g_swd_textId);
             hdr.Set((t)->data);
             layout->drawBox(0, boxW + x0 * 2, top, x0 + boxW, layout->field_0x1c, hdr, 0);
             gridY0 += layout->field_0x1c + layout->field_0x2c_rowHeight;
@@ -614,14 +592,14 @@ void StatusWindow::draw() {
                                                      layout->field_0x4c * -2, this->boxWidth,
                             layout->field_0x4c * 2 + lineH * lines, lbl, 0);
 
-            static_cast<Globals *>(*g_swd_globals)->drawLines((unsigned) (uintptr_t) font, this->detailLines,
+            static_cast<Globals *>(Globals::globals)->drawLines((unsigned) (uintptr_t) font, this->detailLines,
                                                               layout->field_0x4c + layout->buttonInsetX,
                                                               (char) screenH);
         }
     }
 
     String header;
-    String *ht = (*g_swd_gameText)->getText(*g_swd_textId);
+    String *ht = (Globals::gameText)->getText(*g_swd_textId);
     header.Set((ht)->data);
     layout->drawHeader(header);
     layout->drawFooter();
@@ -632,32 +610,27 @@ void StatusWindow::draw() {
     }
 }
 
-static GameText **g_sw_gameTextDef = nullptr;
-static Layout **g_sw_layout = nullptr;
-static int **g_sw_layoutW = nullptr;
-static unsigned char *g_sw_tabIndex = nullptr;
-static int g_sw_screenH = 0;
 
 StatusWindow::StatusWindow() {
     this->tabButtons = new Array<TouchButton *>();
     ArraySetLength(2, *(this->tabButtons));
 
-    Layout *layout = *g_sw_layout;
-    int layoutW = **g_sw_layoutW;
+    Layout *layout = Globals::layout;
+    int layoutW = Globals::w;
 
-    String *t0 = (*g_sw_gameTextDef)->getText(0xa8);
+    String *t0 = (Globals::gameText)->getText(0xa8);
     int helpOff = layout->getHelpButtonOffset();
     TouchButton *b0 = new TouchButton(*t0, 3, layoutW - helpOff, 0, 0x12);
     (*this->tabButtons)[1] = b0;
 
-    String *t1 = (*g_sw_gameTextDef)->getText(0x241);
+    String *t1 = (Globals::gameText)->getText(0x241);
     int helpOff2 = layout->getHelpButtonOffset();
     TouchButton *b1 = new TouchButton(*t1, 3, 0, 0, 0x12);
     int w1 = b1->getWidth();
     b1->setPosition(((layoutW - helpOff2) - w1) + layout->field_0x38, 0, 0x12);
     (*this->tabButtons)[0] = b1;
 
-    unsigned int defTab = *g_sw_tabIndex;
+    unsigned int defTab = Globals::iPad;
     this->activeTab = defTab;
     (*this->tabButtons)[defTab]->setAlwaysPressed(true);
 
@@ -672,7 +645,7 @@ StatusWindow::StatusWindow() {
     int *medalIds = Globals::achievements->getMedals();
     for (int i = 0; i < this->medalCount; i++) {
         int medal = medalIds[i];
-        String *txt = (*g_sw_gameTextDef)->getText(0x5e3 + i);
+        String *txt = (Globals::gameText)->getText(0x5e3 + i);
         TouchButton *btn = new TouchButton(i, medal, *txt, 0, 0, 'D');
         (*this->medalButtons)[i] = btn;
     }
@@ -704,7 +677,7 @@ StatusWindow::StatusWindow() {
     heights[0] = row;
 
     int lineH;
-    if (*g_sw_tabIndex == 0) {
+    if (Globals::iPad == 0) {
         lineH = this->medalRowHeight * (this->medalCount / 3);
     } else {
         lineH = (this->medalCount / 3) * this->medalRowHeight +
@@ -714,6 +687,6 @@ StatusWindow::StatusWindow() {
 
     this->contentHeight = heights[this->activeTab];
     this->viewportHeight =
-    (((g_sw_screenH - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin) -
+    (((Globals::h - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin) -
      layout->field_0x20_top) - layout->field_0x24;
 }
