@@ -692,7 +692,6 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
     return;
 }
 
-static unsigned *const gExhaustCanvas = nullptr;
 
 void PlayerFighter::setExhaustVisible(bool vis) {
     int geom = this->geometry();
@@ -702,7 +701,7 @@ void PlayerFighter::setExhaustVisible(bool vis) {
                      ? (int) ((AEGeometry *) (intptr_t) sub)->childTransform
                      : (int) ((AEGeometry *) (intptr_t) geom)->childTransform;
         if (id != -1) {
-            unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(*gExhaustCanvas);
+            unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
 
             return ((AbyssEngine::Transform *) (unsigned long) t)->SetVisible(vis);
         }

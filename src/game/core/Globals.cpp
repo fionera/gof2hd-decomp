@@ -413,10 +413,9 @@ static_assert(offsetof(HintsBuffer, quad) == 0x00, "quad");
 static_assert(sizeof(HintsBuffer) == 0x40, "HintsBuffer size");
 #endif
 
-static HintsBuffer *const gHints = nullptr;
 
 void Globals::resetHints() {
-    HintsBuffer *hints = gHints;
+    HintsBuffer *hints = (HintsBuffer *) Globals::hints;
     const int32x4_t z = vdupq_n_s32(0);
     hints->quad[0].v = z;
     reinterpret_cast<Q16 &>(reinterpret_cast<uint8_t *>(hints->quad)[0x2b]).v = z;
@@ -491,12 +490,11 @@ struct FileRead {
     Array<String *> *loadNamesBinary(int32_t type, bool first, bool second);
 };
 
-static int *const gStationRng = nullptr;
 
 Station *Globals::getRandomStation() {
     FileRead *f = (FileRead *) ::operator new(1);
     FileRead_ctor(f);
-    int which = nextInt_71ad0((AbyssEngine::AERandom *) *gStationRng, 0x87);
+    int which = nextInt_71ad0(Globals::rnd, 0x87);
     Station *r = f->loadStation(which);
     ::operator delete(FileRead_dtor(f));
     return r;
@@ -2588,12 +2586,11 @@ int Globals::getDialogueSoundId(int code, Agent *agent) {
     }
 }
 
-static int *const gPlanetRng = nullptr;
 
 String Globals::getRandomPlanetName() {
     FileRead *f = (FileRead *) ::operator new(1);
     FileRead_ctor(f);
-    int which = nextInt_71ad0((AbyssEngine::AERandom *) *gPlanetRng, 0x64);
+    int which = nextInt_71ad0(Globals::rnd, 0x64);
     Station *st = f->loadStation(which);
     String name = st->getName();
     delete st;
