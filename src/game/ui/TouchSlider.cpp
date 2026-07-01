@@ -24,8 +24,6 @@ void TouchSlider::setPosition(int x, int y) {
 
 static PaintCanvas **g_TouchSlider_canvas = &Globals::Canvas;
 
-static TouchSliderAppConfig *g_TouchSlider_app_storage = nullptr;
-static TouchSliderAppConfig **g_TouchSlider_app = &g_TouchSlider_app_storage;
 
 TouchSlider::TouchSlider(int type, int x, int y, float value) {
     this->type = type;
@@ -54,7 +52,7 @@ TouchSlider::TouchSlider(int type, int x, int y, float value) {
     setPosition(x, y);
     this->numSteps = 0;
 
-    this->touchPadding = (*g_TouchSlider_app)->touchPadding;
+    this->touchPadding = ((TouchSliderAppConfig *) Globals::layout)->touchPadding;
 }
 
 TouchSlider::~TouchSlider() {
