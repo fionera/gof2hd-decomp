@@ -1241,8 +1241,8 @@ namespace AbyssEngine {
 
         unsigned short base = 0;
         unsigned short *idx = (unsigned short *) indexArr;
-        for (unsigned int off = 0; (off & 0xffff) < n * 6; off += 6) {
-            unsigned short *p = idx + (off & 0xffff);
+        for (unsigned short off = 0; off < n * 6; off += 6) {
+            unsigned short *p = idx + off;
             p[0] = base;
             p[1] = base | 1;
             p[2] = base | 2;
@@ -1950,7 +1950,7 @@ namespace AbyssEngine {
 
         unsigned short sizeIdx = 0;
         unsigned short posIdx = 0;
-        for (unsigned int q = 0; (q & 0xffff) < (unsigned int) count * 0xc; q += 0xc) {
+        for (unsigned short q = 0; q < count * 0xc; q += 0xc) {
             float *p = posCpu + (unsigned int) posIdx;
             posIdx = posIdx + 3;
             float px = p[0], py = p[1], pz = p[2];
