@@ -206,22 +206,20 @@ void ModStation::setGameLoaded() {
     reinterpret_cast<uint8_t*>(&this->cameraFlags)[3] = 1;
 }
 
-static RecordHandler **g_ModStation_suspendObj = 0;
 
 void ModStation::OnSuspend() {
     this->activeTouch = 0;
-    RecordHandler **holder = g_ModStation_suspendObj;
+    RecordHandler **holder = &Globals::recordHandler;
     RecordHandler *obj = *holder;
     if (obj != 0)
         obj->saveOptions();
 }
 
-static FModSound **g_ModStation_resumeObj = 0;
 
 static int **g_ModStation_resumeArg = 0;
 
 void ModStation::OnResume() {
-    FModSound **holder = g_ModStation_resumeObj;
+    FModSound **holder = &Globals::sound;
     FModSound *obj = *holder;
     if (obj == 0)
         return;
@@ -1152,7 +1150,6 @@ static int *g_ch_hintRec = 0;
 
 static int **g_ch_status = 0;
 
-static Achievements **g_ch_ach = 0;
 
 static inline int Status_getCurrentCampaignMission_ch() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
@@ -1220,7 +1217,7 @@ void ModStation::checkHints() {
 
     if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0) {
         if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 && hintRec->flags[0x1a] == 0 &&
-            Achievements_gotAllMedals_ch(*g_ch_ach) != 0) {
+            Achievements_gotAllMedals_ch(*&Globals::achievements) != 0) {
             ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x1a));
             hintRec->flags[0x1a] = 1;
             reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
@@ -1237,7 +1234,7 @@ void ModStation::checkHints() {
             Status *statPtr = (Status *) *status;
             if (Status_isBlueprintUnlocked_ch(statPtr, 0xe8) == 0 &&
                 Achievements_gotAllGoldMedals_ch() != 0 &&
-                Achievements_gotAllSupernovaMedals_ch(*g_ch_ach) != 0) {
+                Achievements_gotAllSupernovaMedals_ch(*&Globals::achievements) != 0) {
                 ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x3b));
                 Status_unlockBluePrint_ch(statPtr, 0xe8);
                 this->autosave();
@@ -1249,7 +1246,7 @@ void ModStation::checkHints() {
             hintRec->flags[0x3a] == 0 &&
             0xa1 < Status_getCurrentCampaignMission_ch()) {
             bool ok = (Achievements_gotAllGoldMedals_ch() != 0 &&
-                       Achievements_gotAllSupernovaMedals_ch(*g_ch_ach) != 0 &&
+                       Achievements_gotAllSupernovaMedals_ch(*&Globals::achievements) != 0 &&
                        Status_hardCoreMode_ch() == 0) ||
                       Status_hardCoreMode_ch() != 0;
             if (ok) {
@@ -1274,7 +1271,6 @@ void ModStation::checkHints() {
     }
 }
 
-static Layout **g_ModStation_tm_layout = 0;
 
 static int **g_ModStation_tm_screenH = 0;
 
@@ -1287,7 +1283,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] != 0)
         return;
 
-    Layout **layoutHolder = g_ModStation_tm_layout;
+    Layout **layoutHolder = &Globals::layout;
     Layout *layoutObj = *layoutHolder;
     if (layoutObj->choiceWindowOpen != 0) {
         layoutObj->OnTouchMove(x, y);
@@ -1352,14 +1348,11 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     this->camScrollPos = x;
 }
 
-static FModSound **g_ModStation_or_sound = 0;
 
-static Layout **g_ModStation_or_reload = 0;
 
-static ImageFactory **g_ModStation_or_imgfac = 0;
 
 void ModStation::OnRelease() {
-    FModSound **soundHolder = g_ModStation_or_sound;
+    FModSound **soundHolder = &Globals::sound;
     if (*soundHolder != 0) {
         (*soundHolder)->disableReverb();
         (*soundHolder)->stopAllSoundFXEvents();
@@ -1426,10 +1419,10 @@ void ModStation::OnRelease() {
     Globals::Canvas->ReleaseAllResources();
     Globals::globals->loadFont(GameText::getLanguage());
 
-    Layout **reloadHolder = g_ModStation_or_reload;
+    Layout **reloadHolder = &Globals::layout;
     if (*reloadHolder != 0) {
         (*reloadHolder)->reload();
-        (*g_ModStation_or_imgfac)->reload();
+        (*&Globals::imageFactory)->reload();
         (*reloadHolder)->initTip();
     }
 
@@ -1455,7 +1448,7 @@ void ModStation::OnRelease() {
 
     reinterpret_cast<uint16_t&>(this->cameraFlags) = 0;
     if (*soundHolder != 0)
-        (*g_ModStation_or_sound)->freeAllEvents();
+        (*&Globals::sound)->freeAllEvents();
 }
 
 static int *g_ote_stack = 0;
@@ -2391,7 +2384,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
     }
 }
 
-static Layout **g_ModStation_tb_layout = 0;
 
 static int **g_ModStation_tb_screenH = 0;
 
@@ -2418,7 +2410,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         }
         return;
     }
-    Layout **layoutHolder = g_ModStation_tb_layout;
+    Layout **layoutHolder = &Globals::layout;
     Layout *layoutObj = *layoutHolder;
     if (layoutObj->choiceWindowOpen != 0) {
         layoutObj->OnTouchBegin(x, y);
