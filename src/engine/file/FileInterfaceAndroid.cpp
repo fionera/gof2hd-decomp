@@ -110,7 +110,6 @@ FileInterfaceAndroid::~FileInterfaceAndroid() {
         this->enabled = 0;
 }
 
-static JNIEnv **gJniEnv = nullptr;
 static jobject *gModeWrite = nullptr;
 static jobject *gModeAppend = nullptr;
 
@@ -125,7 +124,7 @@ void FileInterfaceAndroid::Close() {
     }
     jobject m = this->jniStream;
     if (m != 0) {
-        JNIEnv *env = *gJniEnv;
+        JNIEnv *env = *&FileInterfaceAndroid::env;
         jobject *modePtr = (this->modeFlag == 0) ? gModeWrite : gModeAppend;
         JNI_CallVoidMethod(env, m, *modePtr);
         this->jniStream = 0;
@@ -159,8 +158,6 @@ void FileInterfaceAndroid::SetAppRootDir(void *p) {
         this->appRootDir = (const char *) p;
 }
 
-static JNIEnv ***gEnvR = nullptr;
-static jmethodID *gReadMidArg = nullptr;
 
 uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) {
     // lint: void_ptr virtual override param (FileInterface byte buffer)
@@ -171,11 +168,11 @@ uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) {
     if (this->jniStream == 0)
         return false;
 
-    JNIEnv **r9 = *gEnvR;
+    JNIEnv **r9 = &FileInterfaceAndroid::env;
     JNIEnv *env = *r9;
     JNIEnv *jenv = env;
     jbyteArray arr = JniTable(env)->NewByteArray(jenv, (jsize) n);
-    unsigned int got = JNI_CallIntMethod(env, this->jniStream, *gReadMidArg, arr);
+    unsigned int got = JNI_CallIntMethod(env, this->jniStream, FileInterfaceAndroid::methodRead, arr);
 
     bool ok;
     if (JniTable(env)->ExceptionOccurred(jenv) == 0 && got == n) {
@@ -211,8 +208,6 @@ uint32_t FileInterfaceAndroid::Seek(uint32_t n) {
     return delta == 0;
 }
 
-static JNIEnv ***gEnvW = nullptr;
-static jmethodID *gWriteMidArg = nullptr;
 
 uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) {
     // lint: void_ptr virtual override param (FileInterface byte buffer)
@@ -221,12 +216,12 @@ uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) {
     if (this->jniStream == 0)
         return true;
 
-    JNIEnv **r9 = *gEnvW;
+    JNIEnv **r9 = &FileInterfaceAndroid::env;
     JNIEnv *envObj = *r9;
     JNIEnv *jenv = envObj;
     jbyteArray arr = JniTable(envObj)->NewByteArray(jenv, (jsize) n);
     JniTable(envObj)->SetByteArrayRegion(jenv, arr, 0, (jsize) n, (const jbyte *) buf);
-    JNI_CallVoidMethod(envObj, this->jniStream, *gWriteMidArg, arr);
+    JNI_CallVoidMethod(envObj, this->jniStream, FileInterfaceAndroid::methodWrite, arr);
     bool ok = JniTable(envObj)->ExceptionOccurred(jenv) == 0;
     if (!ok)
         JniTable(envObj)->ExceptionClear(jenv);
@@ -310,7 +305,6 @@ struct AndroidIoState {
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(AndroidIoState, stderrFile) == 0xa8, "AndroidIoState layout");
 #endif
-static const char *gModeRbR = nullptr;
 
 void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) {
     // lint: void_ptr virtual override return type baked into vtable/symbol
@@ -343,7 +337,7 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
     } else if (this->appRootDir != 0) {
         String dir(this->appRootDir);
         String full = dir + a;
-        FILE *f = fopen(full.GetAEChar(), gModeRbR);
+        FILE *f = fopen(full.GetAEChar(), "rb");
         if (f != 0)
             result = new FileInterfaceAndroid(f, false);
     }
