@@ -10,7 +10,6 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 
-static int **g_APL_apFlag = nullptr;
 
 
 
@@ -28,10 +27,10 @@ AutoPilotList::AutoPilotList(Level *level) {
     ArraySetLength(5, *(this->entries));
     this->count = 0;
 
-    if (**g_APL_apFlag != 0) {
+    if (Level::programmedStation != 0) {
         String b(kApLit1);
         String c = *(Globals::gameText)->getText(0x222) + b;
-        String a = ((Station *) (&a))->getName();
+        String a = Level::programmedStation->getName();
         (*this->entries)[0] = new String(c + a);
         this->count++;
     }
