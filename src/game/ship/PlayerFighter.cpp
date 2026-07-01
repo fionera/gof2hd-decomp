@@ -810,9 +810,7 @@ void PlayerFighter::push(int dt) {
     return;
 }
 
-typedef void (*VFn)(Vector *dst, int *zeroVec);
 
-static const VFn gReset_vfn = nullptr;
 
 void PlayerFighter::reset() {
     ((KIPlayer *) (this))->reset();
@@ -836,11 +834,9 @@ void PlayerFighter::reset() {
         this->state = 0;
     }
 
-    VFn vfn = gReset_vfn;
-    int z[3] = {0, 0, 0};
-    vfn(&this->resetVecA(), z);
-    vfn(&this->resetVecB, z);
-    vfn(&this->resetVecC, z);
+    this->resetVecA() = (Vector){0, 0, 0};
+    this->resetVecB = (Vector){0, 0, 0};
+    this->resetVecC = (Vector){0, 0, 0};
 
     this->isMissionCrate() = 0;
     this->missionCrateLost() = 0;
