@@ -598,22 +598,19 @@ static int *gW2 = nullptr;
 
 static int *gW3 = nullptr;
 
-typedef void (*SetPosFn)(TouchButton *btn, int x, int y, int mode);
 
-static SetPosFn gSetPos = nullptr;
 
 
 void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
-    SetPosFn setPos = gSetPos;
     this->windowX = p1;
     this->windowY = p2;
     this->windowWidth = p3;
     this->windowHeight = p4;
-    setPos(this->helpButton, p3 + p1, p2, 0x12);
+    this->helpButton->setPosition(p3 + p1, p2, 0x12);
     int *tb = (int *) Globals::layout;
-    setPos(this->backButton, tb[0x28 / 4] + this->windowX,
+    this->backButton->setPosition(tb[0x28 / 4] + this->windowX,
            (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
-    setPos(this->secondaryButton, tb[0x28 / 4] + this->windowX,
+    this->secondaryButton->setPosition(tb[0x28 / 4] + this->windowX,
            (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
 }
 
