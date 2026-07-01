@@ -706,7 +706,7 @@ void Ship::addMod(int mod) {
         this->mods = m;
     }
     unsigned int sz = m->size();
-    bool found = false;
+    int found = 0;
     for (unsigned int i = 0; !found && i < sz; i = i + 1) {
         found = m->data()[i] == mod;
     }
