@@ -1490,25 +1490,26 @@ void Level::createMission() {
             createScene();
             this->missionPtr = 3;
 
-            SolarSystem *sys = (SolarSystem *) S->getSystem();
-            bool introOrThynome = sys->getIndex() == 15 && S->getCurrentCampaignMission() < 16;
+            bool introOrThynome = ((SolarSystem *) S->getSystem())->getIndex() == 15 &&
+                                  S->getCurrentCampaignMission() < 16;
             bool varHastra = S->getStation()->getIndex() == 78;
 
             int pirateCnt = 0;
             Mission *freelance = S->getFreelanceMission();
-            if (freelance != 0 && (freelance->getType() == 0 || freelance->getType() == 11)) {
+            if (freelance != 0 && (freelance->getType() == 0 || freelance->getType() == 11 ||
+                                   freelance->getType() == 15)) {
                 pirateCnt = (int) (5.0f * (float) freelance->getDifficulty() / 10.0f);
             }
 
-            int safety = sys->getSecurityLevel();
+            int safety = ((SolarSystem *) S->getSystem())->getSecurityLevel();
             int raidThreshold = safety == 0 ? 90 : safety == 1 ? 65 : safety == 2 ? 35 : 10;
             bool raidActive = !introOrThynome && rnd->nextInt(100) < raidThreshold;
 
             int raidCoords[3] = {-50000 + rnd->nextInt(100000), 0, 50000 + rnd->nextInt(50000)};
             this->field_180 = new Route(raidCoords, 3);
 
-            int localRace = sys->getRace();
-            int attackerRace = (rnd->nextInt(100) < 75) ? 8 : (int) S->standing->getEnemyRace(localRace);
+            int localRace = ((SolarSystem *) S->getSystem())->getRace();
+            int attackerRace = (rnd->nextInt(100) < 75) ? 8 : (int) ((Standing *) (intptr_t) S->getStanding())->getEnemyRace(localRace);
             int raiderRace = attackerRace;
 
             this->hostileCount = raidActive ? rnd->nextInt(4) : 0;
@@ -1642,14 +1643,42 @@ void Level::createMission() {
                 raiderRace = 8;
             }
 
-            bool station108Handler = false;
             if (S->getStation()->getIndex() == 108) {
                 if (S->field_114 == 0) {
-                    station108Handler = true;
-                } else {
-                    raidActive = false;
-                    this->hostileCount = 0;
+                    // station108_handler (orig 0xb0f3e): dedicated "defend the station"
+                    // campaign event with its own ship array, four static defense
+                    // platforms and a freshly-constructed mission object.
+                    this->friendCount = 0;
+                    this->field_288 = 1;
+                    this->field_164 = 0;
+                    this->field_168 = 0;
+                    this->hostileCount = S->hardCoreMode() ? 8 : 6;
+                    this->enemies = new Array<KIPlayer *>();
+                    ArraySetLength((unsigned) (this->hostileCount + 4), *(this->enemies));
+                    for (int i = 0; i < 4; i = i + 1) {
+                        KIPlayer *st =
+                            (KIPlayer *) (intptr_t) this->createStaticObject((Waypoint *) 0, 0x37a3, true);
+                        (*this->enemies)[i] = st;
+                        st->name = *Globals::gameText->getText(441);
+                    }
+                    (*this->enemies)[0]->setPosition(0.0f, 0.0f, 0.0f);
+                    (*this->enemies)[1]->setPosition(0.0f, 0.0f, 0.0f);
+                    (*this->enemies)[2]->setPosition(0.0f, 0.0f, 0.0f);
+                    (*this->enemies)[3]->setPosition(0.0f, 0.0f, 0.0f);
+                    for (int i = 4; i < (int) this->enemies->size(); i = i + 1) {
+                        KIPlayer *s =
+                            this->createShip(8, 0, (int) G->getRandomEnemyFighter(8), (Waypoint *) 0, 1, 0);
+                        (*this->enemies)[i] = s;
+                    }
+                    String clientStr(*Globals::gameText->getText(1601), false);
+                    Mission *ev = new Mission(4, clientStr, (int *) 0, 4, 0, 108, 0);
+                    S->setFreelanceMission(ev);
+                    S->setMission(ev);
+                    this->objectivesA = new Objective(18, 0, (int) this->enemies->size(), this);
+                    return;
                 }
+                raidActive = false;
+                this->hostileCount = 0;
             }
 
             bool campaignStationMatch = false;
@@ -1666,15 +1695,6 @@ void Level::createMission() {
                 }
             }
 
-            if (station108Handler) {
-                this->friendCount = 0;
-                this->field_288 = 1;
-                this->field_164 = 0;
-                this->field_168 = 0;
-                this->hostileCount = S->hardCoreMode() ? 8 : 6;
-                raidActive = true;
-                raiderRace = 8;
-            }
             if (campaignStationMatch) {
                 this->hostileCount = rnd->nextInt(4) + 6;
                 raidActive = true;
@@ -1760,7 +1780,7 @@ void Level::createMission() {
 
         // -------- mission-type dispatch --------
         int localRace = ((SolarSystem *) S->getSystem())->getRace();
-        int attackerRace = (rnd->nextInt(100) < 75) ? 8 : (int) S->standing->getEnemyRace(localRace);
+        int attackerRace = (rnd->nextInt(100) < 75) ? 8 : (int) ((Standing *) (intptr_t) S->getStanding())->getEnemyRace(localRace);
         bool attackFromBehind = rnd->nextInt(2) == 0;
 
         switch (mission->getType()) {
@@ -1771,7 +1791,7 @@ void Level::createMission() {
                     -50000 + rnd->nextInt(100000), 0, attackFromBehind ? -100000 : 100000
                 };
                 this->enemyRoute = new Route(c, 9);
-                int attackersCnt = 3 + (int) (5.0f * ((float) mission->getDifficulty() / 10.0f));
+                int attackersCnt = 3 + (int) (5.0f * ((float) Globals::status->getMission()->getDifficulty() / 10.0f));
                 int supportCnt = 2 + rnd->nextInt(6);
                 int n = attackersCnt + supportCnt;
                 this->enemies = new Array<KIPlayer *>();
@@ -1844,7 +1864,7 @@ void Level::createMission() {
                 } else {
                     this->playerRoute = createRoute(2 + rnd->nextInt(2));
                 }
-                int pirateCnt = 2 + (int) ((float) mission->getDifficulty() * 5.0f / 10.0f);
+                int pirateCnt = 2 + (int) ((float) Globals::status->getMission()->getDifficulty() * 5.0f / 10.0f);
                 this->enemies = new Array<KIPlayer *>();
                 ArraySetLength((unsigned) pirateCnt, *(this->enemies));
                 for (int i = 0; i < pirateCnt; i = i + 1) {
@@ -1894,7 +1914,7 @@ void Level::createMission() {
                 int lvl = S->getLevel();
                 if (lvl > 20)
                     lvl = 20;
-                s->player->setMaxHitpoints(mission->getDifficulty() * lvl + 300);
+                s->player->setMaxHitpoints(Globals::status->getMission()->getDifficulty() * lvl + 300);
                 this->objectivesA = new Objective(1, 0, this);
                 return;
             }
@@ -1925,9 +1945,9 @@ void Level::createMission() {
             case 9: { // Escort
                 int c[9] = {10000, 0, 100000, 10000, 0, 150000, 10000, 0, 200000};
                 this->enemyRoute = new Route(c, 9);
-                int attackersCnt = 2 + (int) (6.0f * ((float) mission->getDifficulty() / 10.0f));
+                int attackersCnt = 2 + (int) (6.0f * ((float) Globals::status->getMission()->getDifficulty() / 10.0f));
                 int n = attackersCnt + 5;
-                int enemyRace = (int) S->standing->getEnemyRace(mission->getClientRace());
+                int enemyRace = (int) ((Standing *) (intptr_t) S->getStanding())->getEnemyRace(mission->getClientRace());
                 int clientRace = mission->getClientRace();
                 this->enemies = new Array<KIPlayer *>();
                 ArraySetLength((unsigned) n, *(this->enemies));
@@ -1971,8 +1991,8 @@ void Level::createMission() {
                 };
                 this->playerRoute = new Route(c, 6);
                 int cargoShipsCnt = 2 + rnd->nextInt(2);
-                int enemyShipCnt = 2 + (int) ((float) mission->getDifficulty() * 2.0f / 10.0f);
-                int enemyRace = (int) S->standing->getEnemyRace(mission->getClientRace());
+                int enemyShipCnt = 2 + (int) ((float) Globals::status->getMission()->getDifficulty() * 2.0f / 10.0f);
+                int enemyRace = (int) ((Standing *) (intptr_t) S->getStanding())->getEnemyRace(mission->getClientRace());
                 int n = cargoShipsCnt + enemyShipCnt;
                 this->enemies = new Array<KIPlayer *>();
                 ArraySetLength((unsigned) n, *(this->enemies));
@@ -2003,7 +2023,7 @@ void Level::createMission() {
             }
             case 12: { // Challenge
                 this->playerRoute = createRoute(3 + rnd->nextInt(2));
-                int pirateCnt = 3 + (int) (4.0f * ((float) mission->getDifficulty() / 10.0f));
+                int pirateCnt = 3 + (int) (4.0f * ((float) Globals::status->getMission()->getDifficulty() / 10.0f));
                 if (pirateCnt % 2 == 0)
                     pirateCnt = pirateCnt + 1;
                 if (mission->isCampaignMission()) {
@@ -2056,7 +2076,7 @@ void Level::createMission() {
                 t = t + t;
                 int base = (int) t + 1;
                 int enemyShipCnt = (int) ((float) base * (optDiff + 0.5f));
-                int enemyRace = (int) S->standing->getEnemyRace(mission->getClientRace());
+                int enemyRace = (int) ((Standing *) (intptr_t) S->getStanding())->getEnemyRace(mission->getClientRace());
                 this->miningPlant = enemyShipCnt;
                 int n = enemyShipCnt + 3;
                 this->enemies = new Array<KIPlayer *>();
@@ -2074,11 +2094,30 @@ void Level::createMission() {
                 ((PlayerFixedObject *) plant)->setDockingType(1);
                 ((PlayerFixedObject *) plant)->setMoving(false);
                 plant->setPosition(this->field_c8, this->field_cc, this->field_d0);
+                // friendly mining formation: own ship array bound to a follow route (orig 0xb25be)
+                int formationCount = n - (enemyShipCnt + 1);
+                Array<KIPlayer *> *formation = new Array<KIPlayer *>();
+                ArraySetLength((unsigned) formationCount, *formation);
+                int fcoords[3] = {0, 0, 0};
+                int ftimes[1] = {0};
+                Route *formationRoute = new Route(fcoords, formation, ftimes, 1);
+                formationRoute->setLoop(true);
+                Route *formationClone = formationRoute->clone();
                 for (int i = enemyShipCnt + 1; i < n; i = i + 1) {
                     int cr = mission->getClientRace();
-                    KIPlayer *s = this->createShip(cr, 0, (int) G->getRandomEnemyFighter(cr),
-                                                   (Waypoint *) 0, 1, 0);
-                    (*this->enemies)[i] = s;
+                    int fmodel = (int) G->getRandomEnemyFighter(cr);
+                    KIPlayer *s;
+                    if (i == enemyShipCnt + 1) {
+                        s = this->createShip(cr, 0, fmodel, formationRoute->getWaypoint(0), 1, 0);
+                        (*this->enemies)[i] = s;
+                        (*formation)[i - (enemyShipCnt + 1)] = s;
+                        s->setRoute(formationRoute);
+                    } else {
+                        s = this->createShip(cr, 0, fmodel, formationClone->getWaypoint(0), 1, 0);
+                        (*this->enemies)[i] = s;
+                        (*formation)[i - (enemyShipCnt + 1)] = s;
+                        s->setRoute(formationClone);
+                    }
                     s->player->setAlwaysFriend(true);
                     s->player->setNeverAttack(true);
                 }
@@ -2112,10 +2151,18 @@ void Level::createMission() {
                 (*this->enemies)[9] = st2;
                 ((PlayerFixedObject *) st2)->setDockingType(1);
                 st2->player->setHitpoints(9999999);
+                // escort wing: own ship array bound to a follow route (orig 0xb135c)
+                Array<KIPlayer *> *formation = new Array<KIPlayer *>();
+                ArraySetLength(4, *formation);
+                int fcoords[3] = {0, 0, 0};
+                int ftimes[1] = {0};
+                Route *formationRoute = new Route(fcoords, formation, ftimes, 1);
+                formationRoute->setLoop(true);
                 for (int i = 10; i < 14; i = i + 1) {
-                    KIPlayer *s = this->createShip(0, 0, 0x33, this->enemyRoute->getWaypoint(0), 1, 0);
+                    KIPlayer *s = this->createShip(0, 0, 0x33, formationRoute->getWaypoint(0), 1, 0);
                     (*this->enemies)[i] = s;
-                    s->setRoute(this->enemyRoute->clone());
+                    (*formation)[i - 10] = s;
+                    s->setRoute(formationRoute->clone());
                     s->player->setAlwaysFriend(true);
                 }
                 (*this->enemies)[10]->setPosition(20000.0f, -3000.0f, -50000.0f);
@@ -2138,8 +2185,8 @@ void Level::createMission() {
                     rnd->nextInt(140000) - 70000, 0, 140000
                 };
                 this->enemyRoute = new Route(c, 9);
-                mission->getDifficulty();
-                S->standing->getEnemyRace(mission->getClientRace());
+                Globals::status->getMission()->getDifficulty();
+                ((Standing *) (intptr_t) S->getStanding())->getEnemyRace(mission->getClientRace());
                 this->enemies = new Array<KIPlayer *>();
                 ArraySetLength(4, *(this->enemies));
                 Waypoint *w0 = new Waypoint(-30000, 0, 40000, 0);
@@ -2163,12 +2210,28 @@ void Level::createMission() {
                     ((PlayerFixedObject *) s1)->setName(nm);
                 }
                 int clientRace = mission->getClientRace();
+                // escort wing: own ship array bound to a follow route (orig 0xb28be)
+                Array<KIPlayer *> *formation = new Array<KIPlayer *>();
+                ArraySetLength(2, *formation);
+                int fcoords[3] = {0, 0, 0};
+                int ftimes[1] = {0};
+                Route *formationRoute = new Route(fcoords, formation, ftimes, 1);
+                formationRoute->setLoop(true);
+                Route *formationClone = formationRoute->clone();
                 for (int i = 2; i < 4; i = i + 1) {
-                    Waypoint *w = this->enemyRoute->getWaypoint(rnd->nextInt(this->enemyRoute->length()));
-                    KIPlayer *s = this->createShip(clientRace, 0, (int) G->getRandomEnemyFighter(clientRace),
-                                                   w, 1, 0);
-                    (*this->enemies)[i] = s;
-                    s->setRoute(this->enemyRoute->clone());
+                    int fmodel = (int) G->getRandomEnemyFighter(clientRace);
+                    KIPlayer *s;
+                    if (i == 2) {
+                        s = this->createShip(clientRace, 0, fmodel, formationRoute->getWaypoint(0), 1, 0);
+                        (*this->enemies)[i] = s;
+                        (*formation)[i - 2] = s;
+                        s->setRoute(formationRoute);
+                    } else {
+                        s = this->createShip(clientRace, 0, fmodel, formationClone->getWaypoint(0), 1, 0);
+                        (*this->enemies)[i] = s;
+                        (*formation)[i - 2] = s;
+                        s->setRoute(formationClone);
+                    }
                     s->player->setAlwaysFriend(true);
                     s->player->setNeverAttack(true);
                 }
