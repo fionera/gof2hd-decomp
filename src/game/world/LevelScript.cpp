@@ -564,10 +564,46 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 40: // 0x13a4d8
-                // DEFERRED 0x13a4d8: docking approach (GOT getEnemies/getLandmarks thunks, camera
-                // vector choreography); cold substates 0x13e6b8/0x13e6b4.
+            case 40: { // 0x13a4d8
+                if (m_nState != 0) {
+                    // DEFERRED 0x13e6b8: cold substate (m_nState != 0).
+                    break;
+                }
+                if (!((RadioMessage *) ((*messages)[3]))->isTriggered()) {
+                    // DEFERRED 0x13e6b4 -> tail.
+                    break;
+                }
+                // Docking approach done (radio #3): freeze the target on the friend route's first
+                // waypoint, wake it, then run the standard cutscene-exit teardown and reframe the
+                // camera onto it. (r6/r4 GOT thunks resolve to Level::getFriendRoute / Route::getWaypoint.)
+                ((PlayerFixedObject *) (*enemies)[0])->setMoving(true);
+                float wx = (float) m_pLevel->getFriendRoute()->getWaypoint(0)->x;
+                float wy = (float) m_pLevel->getFriendRoute()->getWaypoint(0)->y;
+                float wz = (float) m_pLevel->getFriendRoute()->getWaypoint(0)->z;
+                (*enemies)[0]->setPosition(wx, wy, wz); // vtable+0x48 == KIPlayer::setPosition(fff)
+                (*enemies)[0]->awake();                 // vtable+0xc  == KIPlayer::awake()
+                (*enemies)[0]->setVisible(true);
+                (*enemies)[0]->autoPilotState = 1; // KIPlayer+0x28
+                player->setTurretMode(false);
+                resetCamera(m_pLevel);
+                player->setFreeLookMode(false);
+                m_pCamera->enableFirstPersonCam(false);
+                player->hideShipForFirstPersonCameraView(false);
+                player->player->setVulnerable(false);
+                m_pHud->visible = 0;
+                m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48 (same field the sibling exits zero)
+                player->stopShooting(0);
+                m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                m_pCamera->setLookAtCam(true);
+                Vector camPos40 = (*enemies)[0]->getPosition();
+                m_pCamera->setPosition(camPos40);
+                m_pCamera->translate(-7000.0f, 500.0f, 17000.0f);
+                m_pCamera->setTarget((*enemies)[0]->geometry);
+                m_pLevel->lodManager->forceUpdate(delta, false);
+                m_nState = 1;
+                // -> post-switch tail (0x144e36)
                 break;
+            }
             case 41: { // 0x139d56
                 if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 0) {
                     // DEFERRED 0x13e400: radio-message #4 state-0 sub-branch.
@@ -710,18 +746,64 @@ int LevelScript::process(int delta) {
             case 92: // 0x139ffe
                 // DEFERRED 0x139ffe
                 break;
-            case 94: // 0x13acac
-                // DEFERRED 0x13acac. tbh dispatch on m_nState (0..3): states 1/2/3 -> cold branches
-                // 0x13e08e/0x13dff4/0x13e15c; state 0 (0x13acc2) is the cutscene-exit body:
-                //   guard: run only if level->field_0x178 > 6 || (int64)(field_0x8:field_0xc) >= 60001.
-                //   for enemies[0..1]: (*e)->vfn@0x48((float)(50000 + 3000*i), ...); (*e)->vfn@0xc();
-                //     (*e)->setVisible(true); (*e)->geometry->setDirection(...); ((PlayerFighter*)*e)
-                //     ->setAIDisabled(true).
-                //   then the standard cutscene-exit boilerplate (setTurretMode/resetCamera/... + camera
-                //     reframe on enemies[0]) at 0x13ad72.
-                // Deferred: the two KIPlayer virtual slots (vtable+0x48 float call, vtable+0xc) are not
-                // resolved to named methods, so the body is left faithful-but-undecoded here.
+            case 94: { // 0x13acac (tbh on m_nState 0..3)
+                if (m_nState != 0) {
+                    // DEFERRED 0x13e08e / 0x13dff4 / 0x13e15c: states 1/2/3 cold sub-branches.
+                    break;
+                }
+                // state 0 (0x13acc2): cutscene-exit body. Guard -- only run once the mission has
+                // progressed (level->field_178 > 6) or the 64-bit script counter (field_0x8:field_0xc)
+                // has reached 60001.
+                long long counter94 = *reinterpret_cast<long long *>(&field_0x8);
+                if (!(m_pLevel->field_178 > 6) && counter94 < 60001) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                // Place the two intro ships in a fixed formation, wake them, aim them straight and
+                // hand them to the AI. vtable+0x48 == KIPlayer::setPosition(float,float,float) [slot 18],
+                // vtable+0xc == KIPlayer::awake() [slot 3] (both virtual in KIPlayer.h -> normal calls).
+                for (int i = 0; i != 2; ++i) {
+                    float x = (float) (50000 + 3000 * i);
+                    (*enemies)[i]->setPosition(x, 1000.0f, 140000.0f);
+                    (*enemies)[i]->awake();
+                    (*enemies)[i]->setVisible(true);
+                    (*enemies)[i]->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                    ((PlayerFighter *) (*enemies)[i])->setAIDisabled(true);
+                }
+                // Standard cutscene-exit teardown (0x13ad72): hand control back, hide HUD/radar, then
+                // reframe the camera behind enemies[0] using its own basis vectors.
+                field_0xab = player->isInTurretMode();
+                player->setTurretMode(false);
+                resetCamera(m_pLevel);
+                if (player->isInRocketControl()) {
+                    player->setRocketControl(nullptr, nullptr);
+                    player->killLiberator();
+                    m_pCamera->setRumblePercentage(0.0f, 0);
+                }
+                player->setFreeLookMode(false);
+                m_pCamera->enableFirstPersonCam(false);
+                player->hideShipForFirstPersonCameraView(false);
+                player->stopShooting(0);
+                m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                m_pHud->visible = 0;
+                m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48 (same field the sibling exits zero)
+                m_pCamera->setLookAtCam(true);
+                AEGeometry *geo94 = (*enemies)[0]->geometry;
+                m_pCamera->setTarget(geo94);
+                Vector *camPos94 = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                Vector *tmp94 = reinterpret_cast<Vector *>(&field_0x40);    // LevelScript scratch vec @0x40
+                *camPos94 = geo94->getPosition();
+                *tmp94 = geo94->getDirection();
+                *camPos94 += *tmp94 * 8000.0f;
+                *tmp94 = geo94->getRightVector();
+                *camPos94 += *tmp94 * 1200.0f;
+                *tmp94 = geo94->getUpVector();
+                *camPos94 += *tmp94 * -300.0f;
+                m_pCamera->setPosition(*camPos94);
+                m_nScriptTimerA = 0; // shared tail 0x13b7e0
+                m_nScriptCounterA = 0;
+                // -> post-switch tail (0x144e36)
                 break;
+            }
             case 102: { // 0x13a658
                 if (m_nState != 0) {
                     // DEFERRED 0x13e816: cold substate (m_nState != 0).
@@ -774,7 +856,10 @@ int LevelScript::process(int delta) {
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 }
                 // DEFERRED 0x13aee4: 10-way tbh sub-dispatch on (m_nState-1) for states 1..10
-                // (per-state camera/geometry choreography with GOT-loaded AEMath operators).
+                // (per-state camera/geometry choreography). NOTE (pass 8): the AEMath "operators" here
+                // are ordinary named PLT calls (operator+/-/*, VectorNormalize, MatrixGetPosition/Dir,
+                // Vector::operator=/+=) usable as normal C++; no fn-pointer blocker remains -- only the
+                // per-state FP immediates still need decoding.
                 break;
             }
             case 114: { // 0x13afde
@@ -879,9 +964,10 @@ int LevelScript::process(int delta) {
                 //   if isInRocketControl(): resetCamera/setRocketControl(0,0)/killLiberator/rumble 0;
                 //   player->player->setVulnerable(false); player->setFreeze(true) [PlayerEgo+0x24];
                 //   camera reframe on m_pGeometry4 + translate; m_nState=2.
-                // Deferred: the global status byte, KIPlayer::field_0x140, the PaintCanvas/Transform
-                // GOT-singleton matrix calls and the AEGeometry spawn are not resolved to named
-                // symbols, so the body is left faithful-but-undecoded here.
+                // NOTE (pass 8): the KIPlayer vtable slots are resolved -- +0x48 == setPosition(fff),
+                // +0xc == awake() (both virtual in KIPlayer.h). The PaintCanvas/Transform matrix work
+                // is via GOT singletons (Globals::Canvas) with named methods. Remaining undecoded: the
+                // global status byte selecting the marker index set and KIPlayer::field_0x140.
                 break;
             case 158: // 0x13885c (nested dispatch on m_nState: 1/2/3 -> 0x138878/0x13d724/0x13d74e)
                 // DEFERRED 0x13885c
