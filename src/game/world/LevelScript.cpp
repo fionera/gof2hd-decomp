@@ -13,6 +13,8 @@
 #include "game/mission/Status.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/ship/PlayerFighter.h"
+#include "game/ship/PlayerFixedObject.h"
+#include "engine/render/ParticleSystemManager.h"
 #include "game/world/Route.h"
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
@@ -267,7 +269,7 @@ void LevelScript::skipCutscene() {
     }
 }
 
-void LevelScript::process(int delta) {
+int LevelScript::process(int delta) {
     // Reconstruction pass 1 of _ZN11LevelScript7processEi (original 0xdf90 bytes @ 0x137d18).
     // Implemented faithfully here: prologue accessors + mission dispatch (0x137d18),
     // the mission==1 intro state machine (0x137d82-0x137e82) and the shared "active" tail
@@ -314,7 +316,7 @@ void LevelScript::process(int delta) {
             // DEFERRED (pass 1): scene transition at disasm 0x138a66 -- once the fade completes,
             // the original calls ApplicationManager::SetCurrentApplicationModule(scenes[1]) and
             // returns. Faithful early-out placeholder until that tail is decoded.
-            return;
+            return (m_nFlags & 0xFF00) != 0 ? 1 : 0;
         }
         m_pCamera->translate((float) ((double) delta * 0.1), 0.0f, 0.0f);
     } else {
@@ -483,9 +485,36 @@ void LevelScript::process(int delta) {
                 // DEFERRED 0x13a4d8: docking approach (GOT getEnemies/getLandmarks thunks, camera
                 // vector choreography); cold substates 0x13e6b8/0x13e6b4.
                 break;
-            case 41: // 0x139d56
-                // DEFERRED 0x139d56: particle-emitter + camera setup; cold substates 0x13e400/0x13c5f6.
+            case 41: { // 0x139d56
+                if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 0) {
+                    // DEFERRED 0x13e400: radio-message #4 state-0 sub-branch.
+                    break;
+                }
+                if (((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 1) {
+                    // Radio message #5 in state 1: finish the mining-plant approach cutscene --
+                    // stop rotating the camera, freeze the target, fire its emitters and re-aim.
+                    m_nState = 2;
+                    m_pCamera->setRotationAroundTarget(false);
+                    (*enemies)[0]->geometry->updateReferenceMatrix();
+                    m_pLevel->field_74->enableSystemEmit(field_0xe0, true);
+                    m_pLevel->field_74->enableSystemEmit(field_0xe4, true);
+                    KIPlayer *target = (*m_pLevel->getEnemies())[0];
+                    target->player->setHitpoints(9999999);
+                    ((PlayerFixedObject *) target)->setMoving(false);
+                    m_pCamera->setTarget(target->geometry);
+                    Vector pos = target->getPosition();
+                    m_pCamera->setPosition(pos);
+                    m_pCamera->translate(-3000.0f, -2000.0f, 3000.0f);
+                    // FModSound::play(0x9b, ...) DEFERRED @0x139e1c
+                    target->player->StopEngineSound();
+                    m_nScriptTimerA = 0;
+                    m_nScriptCounterA = 0;
+                    // -> post-switch tail (0x144e36)
+                } else {
+                    // DEFERRED 0x13c5f6: message #5 not-triggered / wrong-state sub-branch.
+                }
                 break;
+            }
             case 42: { // 0x13abaa
                 if (messages == nullptr) {
                     // DEFERRED 0x13c1a4
@@ -590,9 +619,55 @@ void LevelScript::process(int delta) {
         }
     }
 
-    // DEFERRED 0x144e36: post-switch "mission tail" -- player-distance / hitpoints fail checks,
-    // wingman damage propagation, and autopilot/route cleanup, then the function epilogue (0x144f56).
-    // Runs for every mission after the switch; not decoded in this pass.
+    // --- post-switch "mission tail" (disasm 0x144e36); runs for every mission after the switch ---
+    // Gated on field_0xa9 (the escort/target fail-check enable flag).
+    if (field_0xa9 != 0) {
+        if (m_nState == 0) {
+            // While the target has not yet turned hostile: once the player closes to <= 49999
+            // units of enemies[0], flip the whole escort group to permanent enemies (radio #14).
+            Vector playerPos = player->getPosition();
+            Vector enemyPos = (*enemies)[0]->getPosition();
+            Vector diff = playerPos - enemyPos;
+            int distance = (int) AbyssEngine::AEMath::VectorLength(diff);
+            if (distance <= 49999 && player->player->field_5e == 0) {
+                for (unsigned int i = 0; i < enemies->count; ++i) {
+                    (*enemies)[i]->player->setAlwaysEnemy(true);
+                    if (i != 0 && (*enemies)[i - 1]->field_0x3e != 0) {
+                        break;
+                    }
+                }
+                m_pLevel->createRadioMessage(14, ((SolarSystem *) Globals::status->getSystem())->getRace());
+                m_nState = 1;
+            }
+        }
+        if (m_nState <= 1) {
+            // If the mission target (enemies[0]) has been destroyed, fail the mission: instant-kill
+            // the remaining flagged escorts, drop the destination from the station route list, and
+            // send the "mission failed" radio message (#15) + tear down the player's autopilot/route.
+            if ((*enemies)[0]->player->getHitpoints() <= 0) {
+                for (unsigned int i = 1; i < enemies->count; ++i) {
+                    if ((*enemies)[i]->field_0x3e != 0) {
+                        (*enemies)[i]->player->damage(9999999);
+                    }
+                }
+                Array<int> *stationList = reinterpret_cast<Array<int> *>(m_pLevel->field_90);
+                for (unsigned int i = 0; i < stationList->count; ++i) {
+                    if ((*stationList)[i] == Globals::status->getStation()->getIndex()) {
+                        (*stationList)[i] = -1;
+                    }
+                }
+                m_pLevel->createRadioMessage(15, ((SolarSystem *) Globals::status->getSystem())->getRace());
+                player->setAutoPilot(nullptr);
+                player->setRoute(nullptr);
+                m_pLevel->setPlayerRoute(nullptr);
+                m_nState = 2;
+            }
+        }
+    }
+
+    // epilogue (0x144f56): the function returns the cinematicBreak flag -- the high byte of
+    // m_nFlags @0x11 -- normalised to 0/1.
+    return (m_nFlags & 0xFF00) != 0 ? 1 : 0;
 }
 
 void LevelScript::lookBehind() {

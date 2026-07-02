@@ -49,6 +49,7 @@ public:
     int field_0xa0;
     int field_0xa4;
     uint8_t m_bRenderParticles;
+    uint8_t field_0xa9; // fail-check enable flag (read by process() mission-fail tail @0x144e36)
     AEGeometry *m_pParticleGeom0;
     AEGeometry *m_pParticleGeom1;
     AEGeometry *m_pParticleGeom2;
@@ -62,6 +63,8 @@ public:
     Radar *m_pRadar;
     AEGeometry *m_pGeometry5;
     AEGeometry *m_pGeometry6;
+    int field_0xe0; // particle-emit system handle A (process() case 41 @0x139dac)
+    int field_0xe4; // particle-emit system handle B (process() case 41 @0x139dba)
 
     LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamera *camera);
 
@@ -85,7 +88,7 @@ public:
 
     void skipCutscene();
 
-    void process(int delta);
+    int process(int delta);
 
     void lookBehind();
 
