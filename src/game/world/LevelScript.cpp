@@ -563,7 +563,12 @@ int LevelScript::process(int delta) {
             }
             case 67: { // 0x139892
                 if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
-                    // DEFERRED 0x13df7c: radio-message #1 state-0 sub-branch.
+                    // Radio #1 (0x13df7c): silence the lead escort (enemies[10]) -- stop it dead, clear
+                    // its enemy list and cut its exhaust -- then advance to state 1.
+                    m_nState = 1;
+                    (*enemies)[10]->setSpeed(0.0f); // KIPlayer vtable+0x1c [slot 7]
+                    (*enemies)[10]->setEnemies(nullptr);
+                    ((PlayerFighter *) (*enemies)[10])->setExhaustVisible(false);
                     break;
                 }
                 if (((RadioMessage *) ((*messages)[3]))->isOver() && m_nState == 1) {
@@ -623,10 +628,27 @@ int LevelScript::process(int delta) {
                     m_pCamera->setPosition(camPos);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
-                } else {
-                    // DEFERRED 0x13bf9c: state-1 conclude. Once radio #1 is over, restore player
-                    // control + HUD/radar, reset the camera, put enemies[0] to sleep, hide it,
-                    // seed its player field @0x128 = 100000 (setPosition(0,0,-5e6)) and m_nState=2.
+                } else if (m_nState == 1) {
+                    // State-1 conclude (0x13bf9c): keep the LODs warm; once radio #1 is over hand
+                    // control back to the computer, restore the HUD/radar, reframe the camera on the
+                    // player, then put enemies[0] to sleep and park it far off-screen. FP immediate
+                    // from the .rodata pool: @0x13c188 = -5000000.0f (parked-position z).
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        player->setComputerControlled(false);
+                        m_pHud->visible = 1;
+                        m_pRadar->field_0x58 = 1;
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_nFlags = m_nFlags & 0xFF; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
+                        m_nState = 2;
+                        (*m_pLevel->getEnemies())[0]->setActive(false);
+                        (*m_pLevel->getEnemies())[0]->setToSleep();
+                        (*m_pLevel->getEnemies())[0]->setPosition(0.0f, 0.0f, -5000000.0f); // vtable+0x48
+                        (*m_pLevel->getEnemies())[0]->setVisible(false);
+                    }
                 }
                 break;
             }
@@ -656,9 +678,32 @@ int LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     player->freeze = 1; // PlayerEgo+0x24
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
-                } else {
-                    // DEFERRED 0x13c04e: state-1/2 conclude (radio #1 over -> commit enemies[0] as
-                    // an enemy, restore camera and m_nState transitions).
+                } else if (m_nState == 2) {
+                    // DEFERRED 0x13ec3c: state-2 body.
+                } else if (m_nState == 1) {
+                    // State-1 conclude (0x13c04e): keep the LODs warm; once radio #1 is over commit
+                    // enemies[0] (a PlayerFighter) as a permanent enemy -- seed its state fields, drop
+                    // its route -- then reframe the camera ahead of it along its own facing and unfreeze
+                    // the player. FP immediates from the .rodata pool: @0x13c194 = 2000.0f (dir scale),
+                    // @0x13c198/9c/a0 = {-600, 800, -1000} (camera offset); field seed @0x13c190 = 100000.
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                        (*m_pLevel->getEnemies())[0]->player->setAlwaysFriend(false);
+                        (*m_pLevel->getEnemies())[0]->player->setAlwaysEnemy(true);
+                        ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x128 = 100000;
+                        (*m_pLevel->getEnemies())[0]->field_0x38 = 0;
+                        ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x12d = 0;
+                        ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x12c = 0;
+                        (*m_pLevel->getEnemies())[0]->setRoute(nullptr);
+                        Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();          // vtable+0x28
+                        Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
+                        camPos += dir * 2000.0f;
+                        camPos += Vector{-600.0f, 800.0f, -1000.0f};
+                        m_pCamera->setPosition(camPos);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_nState = 2;
+                        player->freeze = 0; // PlayerEgo+0x24
+                    }
                 }
                 break;
             }
@@ -676,7 +721,37 @@ int LevelScript::process(int delta) {
                     }
                     break;
                 }
-                // DEFERRED 0x13db3c / 0x13db76 / 0x13dbd8: states 1/2/3 cold sub-branches.
+                if (m_nState == 1) { // 0x13db3c
+                    // Wait for any late escort (enemies[8+]) whose EMP shield has been knocked below
+                    // its max, then advance to state 2 (via shared tail 0x1438d2 -> m_nState = 2).
+                    for (unsigned int i = 8; i < enemies->count; ++i) {
+                        if ((*enemies)[i]->field_0x40 != 0 &&
+                            (*enemies)[i]->player->getEmpPoints() < (*enemies)[i]->player->getMaxEmpPoints()) {
+                            m_nState = 2;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                if (m_nState == 2) { // 0x13db76
+                    // Once any EMP-disabled escort (enemies[8+]) is found, disarm and stop the first
+                    // live escort (shared tail 0x142f0c) and advance to state 3 (0x144c0c -> m_nState = 3).
+                    for (unsigned int i = 8; i < enemies->count; ++i) {
+                        if ((*enemies)[i]->field_0x40 != 0 && (*enemies)[i]->player->empDisabledByte != 0) {
+                            for (unsigned int j = 8; j < enemies->count; ++j) {
+                                if ((*enemies)[j]->field_0x40 != 0) {
+                                    (*enemies)[j]->field_0x24 = 1;
+                                    ((PlayerFixedObject *) (*enemies)[j])->setMoving(false);
+                                    break;
+                                }
+                            }
+                            m_nState = 3;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                // DEFERRED 0x13dbd8: state-3 cold sub-branch.
                 break;
             }
             default:
