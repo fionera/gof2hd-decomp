@@ -1831,7 +1831,22 @@ int LevelScript::process(int delta) {
                 }
                 // 10-way tbh sub-dispatch on (m_nState-1) for states 1..10 (0x13aee4; table @0x13aef0):
                 //   s1 0x13af3c, s2 0x141e78, s3 0x142062, s4 0x142138, s5 0x142272, s6 0x1422cc,
-                //   s7 0x1426c4, s8 0x1429dc, s9 0x142a04, s10 0x142bf2. States 0 and >10 fall through.
+                //   s7 0x1426c4, s8 0x1429dc, s9 0x142a04, s10 0x142bf2. States 0 and 14+ fall straight
+                //   to the shared 0x144e18 tail; states 11/12/13 divert to their own bodies (0x143eee/
+                //   0x144d24/0x144c38, still DEFERRED) via the range check at 0x143edc.
+                if (m_nState == 11) {
+                    // DEFERRED 0x143eee: state-11 body (64-bit counter += delta gate at 2501, then
+                    // spawns/animates a marker AEGeometry into m_pGeometry6 @0xdc).
+                    break;
+                }
+                if (m_nState == 12) {
+                    // DEFERRED 0x144d24: state-12 body.
+                    break;
+                }
+                if (m_nState == 13) {
+                    // DEFERRED 0x144c38: state-13 body.
+                    break;
+                }
                 if (m_nState == 1) {
                     // State 1 (0x13af3c): drift the camera along the player's basis; after 13s -> s2.
                     // FP: @0x13b1d4 = 6.08f (dir weight), @0x13b1d8 = 0.2f (right weight),
@@ -1845,24 +1860,160 @@ int LevelScript::process(int delta) {
                         m_nState = 2;
                         reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
                     }
+                } else if (m_nState == 2) {
+                    // State 2 (0x141e78): keep drifting the camera (0.9x the s1 rate) and, once radio
+                    // message #1 finishes, split the two escorts onto mirrored fly-away routes derived
+                    // from the player's own basis (route point magnitude 900000, see 0x141f24). FP pool
+                    // @0x142018..0x142024 = 6.08/0.2/0.4/0.9; route consts @0x142028..0x142030 =
+                    // 900000/-900000/-90000.
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    Vector dir = player->geometry->getDirection();
+                    Vector right = player->geometry->getRightVector();
+                    Vector drift = (dir * 6.08f + right * 0.2f) * 0.4f * (float) delta * 0.9f;
+                    m_pCamera->translate(drift.x, drift.y, drift.z);
+                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                        Vector r = player->geometry->getRightVector();
+                        Vector d = player->geometry->getDirection();
+                        int route0[3] = {
+                                (int) (r.x * 900000.0f + d.x * -900000.0f),
+                                (int) (r.y * 900000.0f + d.y * -900000.0f),
+                                (int) (r.z * 900000.0f - d.z * 900000.0f),
+                        };
+                        int route1[3] = {
+                                (int) (d.x * -900000.0f - r.x * 900000.0f),
+                                (int) (d.y * -900000.0f - r.y * 900000.0f),
+                                (int) (-(r.z * 900000.0f) - d.z * 90000.0f),
+                        };
+                        Route *escort0Route = new Route(route0, 3);
+                        Route *escort1Route = new Route(route1, 3);
+                        (*enemies)[0]->setRoute(escort0Route);
+                        (*enemies)[1]->setRoute(escort1Route);
+                        for (int i = 0; i < 2; ++i) {
+                            ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
+                            ((PlayerFighter *) (*enemies)[i])->field_0x12c = 1;
+                        }
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                        m_nState = m_nState + 1; // 2 -> 3
+                    }
+                } else if (m_nState == 3) {
+                    // State 3 (0x142062): counter += delta, slow camera drift (0.4x), keep both escorts
+                    // AI-tagged, and after 3s advance to state 4 (via the shared 0x142266 tail).
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    Vector dir = player->geometry->getDirection();
+                    Vector right = player->geometry->getRightVector();
+                    Vector drift = (dir * 6.08f + right * 0.2f) * 0.4f * (float) delta * 0.4f;
+                    m_pCamera->translate(drift.x, drift.y, drift.z);
+                    for (int i = 0; i < 2; ++i) {
+                        ((PlayerFighter *) (*enemies)[i])->field_0x12c = 1;
+                    }
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) > 3000) {
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                        m_nState = m_nState + 1; // 3 -> 4
+                    }
+                } else if (m_nState == 4) {
+                    // State 4 (0x142138): counter += delta, very slow drift (0.1x); after 3s hand control
+                    // back to the player and tear the cutscene framing down (restore HUD/radar, clear the
+                    // cinematic-break flag, unhide the escort exhausts), then advance to state 5.
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    Vector dir = player->geometry->getDirection();
+                    Vector right = player->geometry->getRightVector();
+                    Vector drift = (dir * 6.08f + right * 0.2f) * 0.4f * (float) delta * 0.1f;
+                    m_pCamera->translate(drift.x, drift.y, drift.z);
+                    for (int i = 0; i < 2; ++i) {
+                        ((PlayerFighter *) (*enemies)[i])->field_0x12c = 1;
+                    }
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) > 3000) {
+                        m_pLevel->getPlayer()->resetGunDelay();
+                        player->setComputerControlled(false);
+                        m_pCamera->setLookAtCam(false);
+                        m_pHud->visible = 1;
+                        m_pRadar->field_0x58 = 1; // radar restore flag @0x48
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                        for (int i = 0; i < 2; ++i) {
+                            (*enemies)[i]->field_0x74 = 1;
+                        }
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                        m_nState = m_nState + 1; // 4 -> 5
+                    }
+                } else if (m_nState == 5) {
+                    // State 5 (0x142272): after 10s, deactivate both escorts (setActive(false) +
+                    // setSpeed(0)) and advance to state 6.
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 10001) {
+                        for (int i = 0; i < 2; ++i) {
+                            (*enemies)[i]->setActive(false);
+                            (*enemies)[i]->setSpeed(0.0f); // KIPlayer vtable+0x1c
+                        }
+                        m_nState = m_nState + 1; // 5 -> 6
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                    }
+                } else if (m_nState == 6) {
+                    // DEFERRED 0x1422cc: state-6 body. After counter>=24001 it cloaks the 5-ship
+                    // formation (enemies[0..4]) along the sun's light direction (StarSystem::
+                    // getLightDirection, VectorNormalize, offset 100000 @0x142a90), reframes the
+                    // PaintCanvas camera-local matrix and drives a long fixed-camera cutscene.
+                } else if (m_nState == 7) {
+                    // DEFERRED 0x1426c4: state-7 body. Drives the PaintCanvas camera-local matrix
+                    // (CameraGetLocal/MatrixGetPosition/MatrixSetTranslation/setLocal) chasing the
+                    // formation; 64-bit counter derives a normalized time (l2f/f2lz, 2.5 scale @0x142704);
+                    // counter>=10001 restores player control. FP @0x142790 = 6.08.
                 } else if (m_nState == 8) {
                     // State 8 (0x1429dc): pure timer -- after 60s advance to state 9.
                     reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
                     if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 60001) {
                         m_nState = 9;
                     }
+                } else if (m_nState == 9) {
+                    // State 9 (0x142a04): every ~110s scatter the dead escorts (enemies[2..4]) as debris
+                    // along the sun direction, then once the player's route waypoint goes live hand back
+                    // control. RNG scatter @0x142a94: base +/- Globals::rnd->nextInt(1000) offsets, per
+                    // ship stagger 10000/15000/20000 (step 5000), sun offset 100000 (@0x142a90), right
+                    // nudge -30000 (@0x142e10).
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 110001) {
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                        Vector lightDir = AbyssEngine::AEMath::VectorNormalize(
+                                m_pLevel->getStarSystem()->getLightDirection());
+                        Vector playerPos = player->geometry->getPosition();
+                        int off = 10000;
+                        for (int i = 2; i < 5; ++i) {
+                            if ((*enemies)[i]->isDead()) {
+                                (*enemies)[i]->revive(); // KIPlayer vtable+0x18
+                                int rx = Globals::rnd->nextInt(1000);
+                                int ry = Globals::rnd->nextInt(1000);
+                                int rz = Globals::rnd->nextInt(1000);
+                                (*enemies)[i]->setPosition(
+                                        playerPos.x + lightDir.x * 100000.0f + (float) off + (float) rx,
+                                        (float) ry,
+                                        playerPos.z + lightDir.z * 100000.0f + (float) rz);
+                                AEGeometry *geo = (*enemies)[i]->geometry;
+                                geo->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
+                                Vector right = geo->getRightVector();
+                                geo->translate(right * -30000.0f);
+                            }
+                            off += 5000;
+                        }
+                    }
+                    if (player->getHitpoints() >= 1 &&
+                        reinterpret_cast<Route *>(player->getRoute()) != nullptr &&
+                        reinterpret_cast<Route *>(player->getRoute())->getWaypoint(0)->state != 0) {
+                        player->player->setVulnerable(false);
+                        player->stopBoost();
+                        m_nState = m_nState + 1; // 9 -> 10
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                    }
+                } else if (m_nState == 10) {
+                    // DEFERRED 0x142bf2: state-10 body. On radio message #7 over, runs the full
+                    // cutscene-exit teardown (setTurretMode/resetCamera/rocket-control/free-look/HUD)
+                    // and reframes on enemies[2]; not-over path diverts to 0x143ed8.
                 }
-                // DEFERRED case 105 states 2/3/4/5/6/7/9/10: the same camera-drift as s1 gates the
-                // early states (s3/s4 add per-frame enemy flag writes @+300 then advance on counter>3000;
-                // s4 also hands control back + clears cinematicBreak; s5 counter>=10001 reactivates the
-                // escorts). s6 (counter>=24001) warps a 3-ship formation near the sun into a full
-                // cutscene; s7 drives the PaintCanvas camera-local matrix chasing enemies[2] (counter>=
-                // 10001 restores control); s9 (counter>=110001) explosion-scatters dead escorts then
-                // gates on the player's route; s10 tears the cutscene down on radio #7 over. Genuinely
-                // deferred micro-formulas: s2 route-waypoint arithmetic (0x141f24), s9 RNG scatter
-                // offsets (0x142a94), and a handful of unnamed vtable slots (+0x0c/+0x1c/+0x18). FP pool:
-                // dir/right/scale 6.08/0.2/0.4; s6 100000/2200/-200/-2200/-30000/6800/1200/400; s7
-                // 0.05/1.96/0.03/0.004/2400; s10 8000/1000.
+                // 0x144e18: shared tail for case-105 states 0..10 and 14+ (states 11/12/13 return
+                // above). Advance the drifting station marker geometry (m_pGeometry6 @0xdc).
+                if (m_pGeometry6 != nullptr) {
+                    m_pGeometry6->moveForward((float) (delta * 13));
+                }
                 break;
             }
             case 114: { // 0x13afde
