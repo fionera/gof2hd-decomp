@@ -539,9 +539,189 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 135: // DEFERRED 0x1391c0
-            case 139: // DEFERRED 0x13965c
-            case 145: // DEFERRED 0x1392f6
+            case 135: { // 0x1391c0
+                if (m_nState == 0) {
+                    // state 0 (0x13c50e): once the player has docked (or the 64-bit script counter
+                    // {field_0x8:field_0xc} has reached 60001), advance to state 1 and (re)home every
+                    // group-8 escort into a widening formation ahead of the player, re-aim it at the
+                    // player and wipe its cargo list.
+                    if (!player->isDockedToDockingPoint() &&
+                        *reinterpret_cast<long long *>(&field_0x8) < 60001) {
+                        // DEFERRED 0x141198: not-yet-progressed cold sub-branch.
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    m_nState = 1;
+                    int xOff = 25000;
+                    for (unsigned int i = 0; i < enemies->count; ++i) {
+                        if ((*enemies)[i]->shipGroup == 8) {
+                            Vector playerPos = player->getPosition();
+                            (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
+                            (*enemies)[i]->awake();       // vtable+0xc
+                            (*enemies)[i]->setVisible(true);
+                            (*enemies)[i]->player->setEnemy(player->player);
+                            delete (*enemies)[i]->cargo;
+                            (*enemies)[i]->cargo = nullptr;
+                        }
+                        xOff += 1000;
+                    }
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 64-bit script counter @0x90
+                    break; // -> post-switch tail (0x144e36)
+                }
+                if (m_nState < 1) {
+                    break; // negative state -> post-switch tail (0x144e36)
+                }
+                // states >= 1: accumulate the 64-bit script counter {m_nScriptTimerA:m_nScriptCounterA}.
+                reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                if (m_nState == 1) {
+                    // Advance once the mission's production quota is at least half filled.
+                    int statusValue = ((Mission *) Globals::status->getCampaignMission())->getStatusValue();
+                    int amount = ((Mission *) Globals::status->getCampaignMission())->getProductionGoodAmount();
+                    if (statusValue >= amount / 2) {
+                        m_nState++;
+                    }
+                }
+                if (reinterpret_cast<long long &>(m_nScriptTimerA) < 75001) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                if (m_nState == 2) {
+                    m_nState = 3;
+                }
+                // Once the timer elapses, revive every dead group-8 escort into the same widening
+                // formation and re-aim it at the player.
+                int xOff = 25000;
+                for (unsigned int i = 0; i < enemies->count; ++i) {
+                    if ((*enemies)[i]->shipGroup == 8 && (*enemies)[i]->isDead()) {
+                        Vector playerPos = player->getPosition();
+                        (*enemies)[i]->revive();          // vtable+0x18
+                        (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
+                        (*enemies)[i]->player->setEnemy(player->player);
+                        delete (*enemies)[i]->cargo;
+                        (*enemies)[i]->cargo = nullptr;
+                    }
+                    xOff += 1000;
+                }
+                reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                break; // -> post-switch tail (0x144e36)
+            }
+            case 139: { // 0x13965c
+                // Count how many of the leading docking-object pair are NOT at docking type 3. This
+                // count (r6) is consumed by the shared conclusion tail 0x13cca8 below (@0x13cd64).
+                int dockingCount = 0;
+                for (int i = 0; i < 2; ++i) {
+                    if (((PlayerFixedObject *) (*enemies)[i])->getDockingType() != 3) {
+                        dockingCount++;
+                    }
+                }
+                if (m_nState == 0) {
+                    // state 0 (0x139688): once the player has won the hacking mini-game at a valid dock,
+                    // rename that dock and clear its docking type, then advance to state 1 (which falls
+                    // straight into the shared conclusion tail below).
+                    if (player->isDockedToDockingPoint() && player->hackingWon() &&
+                        player->getHackingGameDockIndex() >= 0) {
+                        ((PlayerFixedObject *) level->getDockingTarget(player->getHackingGameDockIndex()))
+                            ->setName(String("kJIWQhkbw+d4d44Y9dqVSwNS7N453I", false));
+                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
+                            ->setDockingType(0);
+                        m_nState++;
+                    }
+                }
+                // --- shared cross-case conclusion tail 0x13cca8 (entered with m_nState in r0 and the
+                // docking count in r6; also reached from cm135/case-94). Its body only runs when the
+                // incoming state == 1. ---
+                if (m_nState == 1) {
+                    if (!(*enemies)[0]->player->isAlwaysEnemy() &&
+                        ((RadioMessage *) ((*messages)[1]))->isTriggered()) {
+                        // Turn every non-wingman, non-flagged escort hostile (count re-fetched each pass).
+                        for (unsigned int i = 0; i < level->getEnemies()->count; ++i) {
+                            if (!(*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x3f_b == 0) {
+                                (*enemies)[i]->player->turnEnemy();
+                            }
+                        }
+                    }
+                    if (player->isDockedToDockingPoint() && player->hackingWon() &&
+                        player->getHackingGameDockIndex() >= 0) {
+                        PlayerFixedObject *target =
+                            (PlayerFixedObject *) level->getDockingTarget(player->getHackingGameDockIndex());
+                        if (dockingCount == 1 && target->getDockingType() == 3) {
+                            ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
+                                ->setDockingType(2);
+                            player->setDockingState(2);
+                            Globals::status->field_178 = 0;
+                            m_nState++; // shared tail 0x13953c increments m_nState
+                        }
+                    }
+                }
+                break; // -> post-switch tail (0x144e36)
+            }
+            case 145: { // 0x1392f6
+                // Head (all states): drive all 13 escorts forward; once the fight is underway
+                // (state >= 2) have them return fire on the player. FP step @0x1392fe = (float)(2*delta).
+                float step = (float) (delta << 1);
+                for (int i = 0; i < 13; ++i) {
+                    (*enemies)[i]->geometry->moveForward(step);
+                    if (i != 0 && m_nState >= 2) {
+                        if (m_nState != 4 || *reinterpret_cast<long long *>(&m_nScriptTimerA) <= 1000) {
+                            (*enemies)[i]->player->shoot(0, delta, false);
+                        }
+                    }
+                }
+                if (m_nState == 0) {
+                    // state 0 (0x1393d4): wire every escort to fight the wing leader (enemies[14]), spawn
+                    // the boss explosion effect, advance to state 1, and fall into the state-1 body.
+                    for (int i = 0; i < 13; ++i) {
+                        (*enemies)[i]->setEnemies(nullptr);
+                        (*enemies)[i]->player->setEnemy((*enemies)[14]->player);
+                    }
+                    m_pExplosion = new Explosion(0);
+                    m_pExplosion->addFireStreaks();
+                    m_pExplosion->setScaling(12.0f); // const @0x139708
+                    m_nState = 1;
+                } else if (m_nState >= 2) {
+                    // states 2..5: shared cross-case fight-conclusion tail 0x13cacc (tbh m_nState-2):
+                    //   state 2 -> 0x13cae0, state 3 -> 0x13f53c, state 4 -> 0x13f5fc, state 5 -> 0x13f6c6.
+                    // DEFERRED 0x13cacc: state 2 accumulates the 64-bit script counter, has enemies[0]
+                    // return fire, spawns a tracking AEGeometry off the render canvas and walks a deep
+                    // enemy-linkage pointer chain; states 3/4/5 live far away (0x13f53c/0x13f5fc/0x13f6c6).
+                    // Not decoded this pass (heavy FP/camera + unresolved deep chains).
+                    break; // -> post-switch tail (0x144e36)
+                }
+                // state 1 (0x1393fe): once the intro radio (message #0) is over, run the standard
+                // cutscene-exit teardown and reframe the camera ahead of enemies[0] along its own basis.
+                // FP immediates: dir scale @0x13970c = 18000.0, right scale @0x139710 = 3000.0.
+                if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    // DEFERRED 0x13caca: radio-not-over -> shared tail.
+                    break; // -> post-switch tail (0x144e36)
+                }
+                player->setTurretMode(false);
+                if (player->isInRocketControl()) {
+                    player->setRocketControl(nullptr, nullptr);
+                    player->killLiberator();
+                    m_pCamera->setRumblePercentage(0.0f, 0);
+                }
+                resetCamera(m_pLevel);
+                player->setFreeLookMode(false);
+                m_pCamera->enableFirstPersonCam(false);
+                player->hideShipForFirstPersonCameraView(false);
+                player->stopShooting(0);
+                player->player->setVulnerable(false);
+                player->setVisible(false);
+                player->setFreeze(true);
+                m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                m_pHud->visible = 0;
+                m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48 (same field the siblings exit zero)
+                m_pCamera->setLookAtCam(true);
+                m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                Vector *camPos = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                *camPos = (*enemies)[0]->geometry->getPosition();
+                *camPos += (*enemies)[0]->geometry->getDirection() * 18000.0f;
+                *camPos += (*enemies)[0]->geometry->getRightVector() * 3000.0f;
+                m_pCamera->setPosition(*camPos);
+                (*enemies)[0]->setVisible(true);
+                (*enemies)[0]->setActive(true);
+                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 64-bit script counter @0x90
+                m_nState++; // shared tail 0x13953c increments m_nState
+                break;
+            }
             default:
                 break; // -> post-switch tail (0x144e36)
             }
