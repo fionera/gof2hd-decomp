@@ -627,9 +627,41 @@ int LevelScript::process(int delta) {
                 m_nState = 1; // shared tail 0x13aba4 -> 0x13edde
                 break;
             }
-            case 80: // 0x139e34
-                // DEFERRED 0x139e34
+            case 80: { // 0x139e34
+                if (m_nState != 0) {
+                    // DEFERRED 0x13e630: cold substate (m_nState != 0).
+                    break;
+                }
+                if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    // DEFERRED 0x13e62c -> tail.
+                    break;
+                }
+                // Intro cutscene: freeze the ship under AI control, hide the HUD/radar and pan the
+                // camera to a fixed offset behind the intro geometry (m_pGeometry1).
+                player->setTurretMode(false);
+                resetCamera(m_pLevel);
+                player->setFreeLookMode(false);
+                m_pCamera->enableFirstPersonCam(false);
+                player->hideShipForFirstPersonCameraView(false);
+                player->stopShooting(0);
+                m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                m_pHud->visible = 0;
+                m_pRadar->field_0x58 = 0;
+                player->setComputerControlled(true);
+                player->freeze = 1; // PlayerEgo+0x24 (byte flag): freeze the ship for the cutscene
+                m_pCamera->setLookAtCam(true);
+                m_pCamera->setTarget(m_pGeometry1);
+                Vector *camPos = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                *camPos = m_pGeometry1->getPosition();
+                *camPos += Vector{-20000.0f, 5000.0f, -35000.0f};
+                m_pCamera->setPosition(*camPos);
+                m_nScriptTimerA = 0;
+                m_nScriptCounterA = 0;
+                m_nState = 1;
+                // FModSound::play(1121, ...) DEFERRED @0x139f0c
+                // -> shared tail 0x14433e -> post-switch tail (0x144e36)
                 break;
+            }
             case 91: { // 0x13ac42
                 if (m_nState != 0) {
                     // DEFERRED 0x13ebe8: cold substate (m_nState != 0).
@@ -655,11 +687,56 @@ int LevelScript::process(int delta) {
                 // DEFERRED 0x139ffe
                 break;
             case 94: // 0x13acac
-                // DEFERRED 0x13acac
+                // DEFERRED 0x13acac. tbh dispatch on m_nState (0..3): states 1/2/3 -> cold branches
+                // 0x13e08e/0x13dff4/0x13e15c; state 0 (0x13acc2) is the cutscene-exit body:
+                //   guard: run only if level->field_0x178 > 6 || (int64)(field_0x8:field_0xc) >= 60001.
+                //   for enemies[0..1]: (*e)->vfn@0x48((float)(50000 + 3000*i), ...); (*e)->vfn@0xc();
+                //     (*e)->setVisible(true); (*e)->geometry->setDirection(...); ((PlayerFighter*)*e)
+                //     ->setAIDisabled(true).
+                //   then the standard cutscene-exit boilerplate (setTurretMode/resetCamera/... + camera
+                //     reframe on enemies[0]) at 0x13ad72.
+                // Deferred: the two KIPlayer virtual slots (vtable+0x48 float call, vtable+0xc) are not
+                // resolved to named methods, so the body is left faithful-but-undecoded here.
                 break;
-            case 102: // 0x13a658
-                // DEFERRED 0x13a658
+            case 102: { // 0x13a658
+                if (m_nState != 0) {
+                    // DEFERRED 0x13e816: cold substate (m_nState != 0).
+                    break;
+                }
+                if (!((RadioMessage *) ((*messages)[0]))->isTriggered()) {
+                    // DEFERRED 0x13e812 -> tail.
+                    break;
+                }
+                // Cutscene exit: hand control back, hide/freeze the player ship and reframe the camera
+                // on enemies[0] at a fixed offset.
+                player->setTurretMode(false);
+                resetCamera(m_pLevel);
+                if (player->isInRocketControl()) {
+                    player->setRocketControl(nullptr, nullptr);
+                    player->killLiberator();
+                    m_pCamera->setRumblePercentage(0.0f, 0);
+                }
+                player->setFreeLookMode(false);
+                m_pCamera->enableFirstPersonCam(false);
+                player->hideShipForFirstPersonCameraView(false);
+                player->stopShooting(0);
+                player->setFreeze(true); // PlayerEgo+0x24 (byte flag) via setter
+                player->setVisible(false);
+                player->player->setVulnerable(false);
+                m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                m_pHud->visible = 0;
+                m_pRadar->field_0x58 = 0;
+                m_pCamera->setLookAtCam(true);
+                m_pCamera->setTarget((*enemies)[0]->geometry);
+                Vector camPos = (*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f};
+                m_pCamera->setPosition(camPos);
+                // FModSound::stop(...) DEFERRED @0x13a74e
+                // FModSound::play(2240, ...) DEFERRED @0x13a760
+                m_nScriptTimerA = 0;
+                m_nScriptCounterA = 0;
+                m_nState = 1; // shared tail 0x143d0c increments m_nState (0 -> 1) -> post-switch tail
                 break;
+            }
             case 105: // 0x13aea4
                 // DEFERRED 0x13aea4
                 break;
@@ -681,11 +758,78 @@ int LevelScript::process(int delta) {
                 // DEFERRED 0x139f9c: builds a fixed Route (new Route(pts,3)) and assigns it to the
                 // player; needs the static route-point table from rodata.
                 break;
-            case 154: // 0x13a76e
-                // DEFERRED 0x13a76e
+            case 154: { // 0x13a76e
+                if (m_nState != 0) {
+                    // DEFERRED 0x13e8e8: cold substate (m_nState != 0).
+                    break;
+                }
+                if (!((RadioMessage *) ((*messages)[0]))->isTriggered()) {
+                    // DEFERRED 0x13e8e4 -> tail.
+                    break;
+                }
+                // Cutscene exit: tear down rocket/turret/free-look control, freeze the ship under AI,
+                // hide the HUD/radar, reframe the camera on enemies[2] and point the hostile escort
+                // wave (shipGroup 8+1) at the player.
+                if (player->isInRocketControl()) {
+                    resetCamera(m_pLevel);
+                    player->setRocketControl(nullptr, nullptr);
+                    player->killLiberator();
+                    m_pCamera->setRumblePercentage(0.0f, 0);
+                }
+                player->setTurretMode(false);
+                player->setFreeLookMode(false);
+                m_pCamera->enableFirstPersonCam(false);
+                player->hideShipForFirstPersonCameraView(false);
+                player->stopShooting(0);
+                player->setComputerControlled(true);
+                player->player->setVulnerable(false);
+                player->setSpeed(0.0f);
+                field_0xaa = player->autoTurretIsEnabled();
+                if (field_0xaa != 0) {
+                    player->setAutoTurret(false);
+                }
+                m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                m_pHud->visible = 0;
+                m_pRadar->field_0x58 = 0;
+                m_pCamera->setLookAtCam(true);
+                m_pCamera->setTarget((*m_pLevel->getEnemies())[2]->geometry);
+                Vector *camPos = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                *camPos = (*m_pLevel->getEnemies())[2]->geometry->getPosition();
+                *camPos += Vector{300.0f, 300.0f, 5800.0f};
+                m_pCamera->setPosition(*camPos);
+                ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
+                for (unsigned int i = 0; i < enemies->count; ++i) {
+                    if ((*enemies)[i]->shipGroup == 9) {
+                        AEGeometry *geo = (*enemies)[i]->geometry;
+                        Vector playerPos = m_pLevel->getPlayer()->getPosition();
+                        Vector enemyPos = (*enemies)[i]->getPosition();
+                        Vector dir = AbyssEngine::AEMath::VectorNormalize(playerPos - enemyPos);
+                        geo->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
+                        ((PlayerFighter *) (*enemies)[i])->setAIDisabled(true);
+                    }
+                }
+                (*enemies)[1]->field_0x70 = 1;
+                m_nScriptTimerA = 0;
+                m_nScriptCounterA = 0;
+                m_nState = m_nState + 1; // 0 -> 1
+                m_pLevel->lodManager->forceUpdate(delta, false);
+                // -> post-switch tail (0x144e36)
                 break;
+            }
             case 157: // 0x13a308
-                // DEFERRED 0x13a308
+                // DEFERRED 0x13a308. Head: an index set (12/11/10 or 23/22/21) is chosen from a global
+                // status byte, then for each visible marker geometry (m_pGeometry2 @0xc0, m_pGeometry3
+                // @0xc4) it is repositioned onto (*enemies)[idx]->field_0x140's position and its
+                // PaintCanvas transform is refreshed (PaintCanvas::TransformGetTransform +
+                // Transform::Update). Dispatch on m_nState: state 0 spawns a marker AEGeometry into
+                // m_pGeometry4 @0xcc (new AEGeometry(canvas) + setPosition + setDirection) then
+                // m_nState=1. When radio[?]->isOver(): the standard cutscene-exit teardown runs --
+                //   if isInRocketControl(): resetCamera/setRocketControl(0,0)/killLiberator/rumble 0;
+                //   player->player->setVulnerable(false); player->setFreeze(true) [PlayerEgo+0x24];
+                //   camera reframe on m_pGeometry4 + translate; m_nState=2.
+                // Deferred: the global status byte, KIPlayer::field_0x140, the PaintCanvas/Transform
+                // GOT-singleton matrix calls and the AEGeometry spawn are not resolved to named
+                // symbols, so the body is left faithful-but-undecoded here.
                 break;
             case 158: // 0x13885c (nested dispatch on m_nState: 1/2/3 -> 0x138878/0x13d724/0x13d74e)
                 // DEFERRED 0x13885c

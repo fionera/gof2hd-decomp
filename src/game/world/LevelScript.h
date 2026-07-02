@@ -50,6 +50,7 @@ public:
     int field_0xa4;
     uint8_t m_bRenderParticles;
     uint8_t field_0xa9; // fail-check enable flag (read by process() mission-fail tail @0x144e36)
+    uint8_t field_0xaa; // cutscene-exit save of PlayerEgo::autoTurretIsEnabled() (process() case 154 @0x13a802)
     AEGeometry *m_pParticleGeom0;
     AEGeometry *m_pParticleGeom1;
     AEGeometry *m_pParticleGeom2;
