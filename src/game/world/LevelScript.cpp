@@ -460,9 +460,33 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 16: // 0x13b014
-                // DEFERRED 0x13b014
+            case 16: { // 0x13b014
+                // Intro-approach cutscene exit (radio message #0). Once the intro chatter has fired
+                // and we are still in state 0, hand control back to the computer, hide the HUD/radar
+                // cinematic overlay and reframe the camera behind enemies[0].
+                if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_pHud->visible = 0;
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pRadar->field_0x58 = 0;
+                    player->setComputerControlled(true);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                    Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
+                    camPos += Vector{6000.0f, 4000.0f, 47500.0f};
+                    m_pCamera->setPosition(camPos);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nState = 1;
+                    // -> post-switch tail (0x144e36)
+                }
                 break;
+            }
             case 21: { // 0x13ab24
                 // If nobody has turned hostile yet, and any of enemies[1..3] already carries the
                 // enemy flag, flip all of enemies[1..3] to permanent enemies.
@@ -737,9 +761,22 @@ int LevelScript::process(int delta) {
                 m_nState = 1; // shared tail 0x143d0c increments m_nState (0 -> 1) -> post-switch tail
                 break;
             }
-            case 105: // 0x13aea4
-                // DEFERRED 0x13aea4
+            case 105: { // 0x13aea4
+                // Pre-dispatch head (runs for every state): while still early in the cutscene, creep
+                // the two intro ships forward, and keep the cinematic-break flag latched.
+                if (m_nState <= 2) {
+                    float step = (float) (delta << 1);
+                    for (int i = 0; i != 2; ++i) {
+                        (*enemies)[i]->geometry->moveForward(step);
+                    }
+                }
+                if (m_nState <= 4) {
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                }
+                // DEFERRED 0x13aee4: 10-way tbh sub-dispatch on (m_nState-1) for states 1..10
+                // (per-state camera/geometry choreography with GOT-loaded AEMath operators).
                 break;
+            }
             case 114: { // 0x13afde
                 if (m_nState != 0) {
                     break; // -> post-switch tail (0x144e36)
@@ -754,10 +791,25 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 125: // 0x139f9c
-                // DEFERRED 0x139f9c: builds a fixed Route (new Route(pts,3)) and assigns it to the
-                // player; needs the static route-point table from rodata.
+            case 125: { // 0x139f9c
+                // Once radio message #1 has fired (still in state 0), build the scripted flight route
+                // and hand it to both the level and the player, then arm the script timer.
+                if (m_nState != 0) {
+                    break; // -> tail (0x13b43e)
+                }
+                if (((RadioMessage *) ((*messages)[1]))->isTriggered()) {
+                    m_nState = m_nState + 1; // 0 -> 1
+                    // Route point table from .rodata @0x202778 (three ints).
+                    int routePoints[3] = {-70000, 0, -130000};
+                    Route *route = new Route(routePoints, 3);
+                    m_pLevel->setPlayerRoute(route);
+                    player->setRoute(route);
+                    m_nScriptTimerA = 0;
+                    m_nScriptCounterA = 0;
+                    // -> tail (0x13b518)
+                }
                 break;
+            }
             case 154: { // 0x13a76e
                 if (m_nState != 0) {
                     // DEFERRED 0x13e8e8: cold substate (m_nState != 0).
