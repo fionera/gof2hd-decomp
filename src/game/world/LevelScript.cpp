@@ -27,6 +27,7 @@
 #include "engine/math/AEMath.h"
 #include "game/ship/Ship.h"
 #include "game/ship/PlayerGasCloud.h"
+#include "engine/core/AERandom.h"
 
 static Station *gProgrammedStation = nullptr;
 
@@ -547,7 +548,10 @@ int LevelScript::process(int delta) {
                     // player and wipe its cargo list.
                     if (!player->isDockedToDockingPoint() &&
                         *reinterpret_cast<long long *>(&field_0x8) < 60001) {
-                        // DEFERRED 0x141198: not-yet-progressed cold sub-branch.
+                        // Not-yet-progressed: 0x13c524 branches to the trampoline 0x141198, which
+                        // reloads m_nState and falls into the shared state tail at 0x1391ca. For
+                        // m_nState==0 that tail immediately returns via `if (m_nState < 1) break`, so
+                        // this path is a plain break (the states>=1 tail is handled below).
                         break; // -> post-switch tail (0x144e36)
                     }
                     m_nState = 1;
@@ -679,10 +683,21 @@ int LevelScript::process(int delta) {
                 } else if (m_nState >= 2) {
                     // states 2..5: shared cross-case fight-conclusion tail 0x13cacc (tbh m_nState-2):
                     //   state 2 -> 0x13cae0, state 3 -> 0x13f53c, state 4 -> 0x13f5fc, state 5 -> 0x13f6c6.
-                    // DEFERRED 0x13cacc: state 2 accumulates the 64-bit script counter, has enemies[0]
-                    // return fire, spawns a tracking AEGeometry off the render canvas and walks a deep
-                    // enemy-linkage pointer chain; states 3/4/5 live far away (0x13f53c/0x13f5fc/0x13f6c6).
-                    // Not decoded this pass (heavy FP/camera + unresolved deep chains).
+                    // All four share the shape: counter += delta; gate (state2 <1001, state3 <5001,
+                    // state4 <324, state5 <=10000); one-shot payload; counter=0; m_nState++. Behaviour:
+                    //   s2 has enemies[0] return fire, spawns a tracking AEGeometry(Globals::Canvas) into
+                    //     m_pGeometry* and points the camera at it (orientation via a deep enemy-linkage
+                    //     chain @+0x18 -- DEFERRED).
+                    //   s3 snapshots boss[14]'s matrix into the particle system + Explosion::start; the
+                    //     tracking geom's advance speed comes from the same deep chain @+0x50 (DEFERRED).
+                    //   s4 copies boss[14]->boss[13], swaps visibility and starts boss[13]'s Transform
+                    //     animation (Explosion::update((int)(delta*0.5f)); threshold 324).
+                    //   s5 runs that animation (Transform::Update(delta*0.3)), scatters the 13 fighters
+                    //     outward (counter/100000, forward counter*delta*0.001), then banishes them to
+                    //     setPosition(50000,50000,50000) and restores full player control (threshold 10000).
+                    // FP pool: 0.3 (@0x13fa88), 100000 (@0x13fa8c), 0.001 (@0x13fa90), 50000 (@0x13fa94).
+                    // DEFERRED 0x13cacc: two deep enemy-linkage chains (s2 orientation @+0x18, s3 speed
+                    // @+0x50) are the only genuinely opaque parts; not decoded this pass.
                     break; // -> post-switch tail (0x144e36)
                 }
                 // state 1 (0x1393fe): once the intro radio (message #0) is over, run the standard
@@ -777,8 +792,32 @@ int LevelScript::process(int delta) {
                     player->player->setVulnerable(false);
                     player->freeze = 1; // PlayerEgo+0x24
                     m_nState = 2;
+                } else if (m_nState == 2) {
+                    // State-2 conclude (0x13c3ec): once the follow-up radio message (#4) is over,
+                    // hand control back to the player, restore the HUD/radar, reframe the camera on
+                    // the player ship, banish the lead escort (enemies[10]) far off-screen and disable
+                    // it, then advance to state 3 and clear the cinematic-break flag. FP immediate from
+                    // the .rodata pool: @0x13c550 = 500000.0f (banish coordinate x/y/z).
+                    if (!((RadioMessage *) ((*messages)[4]))->isOver()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    player->player->setVulnerable(true);
+                    player->freeze = 0; // PlayerEgo+0x24
+                    m_pCamera->setLookAtCam(false);
+                    m_pCamera->setTarget(player->geometry);
+                    player->setComputerControlled(false);
+                    m_pHud->visible = 1;
+                    m_pRadar->field_0x58 = 1;
+                    resetCamera(m_pLevel);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    (*enemies)[10]->setPosition(500000.0f, 500000.0f, 500000.0f); // vtable+0x48 [slot 18]
+                    (*enemies)[10]->setActive(false);
+                    (*enemies)[10]->setVisible(false);
+                    m_nState = 3;
+                    m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 } else {
-                    // DEFERRED 0x13c3ec: radio #3 not-over / wrong-state sub-branch.
+                    // DEFERRED 0x13da68: state-3 (radio #5) sub-branch.
                 }
                 break;
             }
@@ -859,7 +898,28 @@ int LevelScript::process(int delta) {
                     player->freeze = 1; // PlayerEgo+0x24
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
                 } else if (m_nState == 2) {
-                    // DEFERRED 0x13ec3c: state-2 body.
+                    // State-2 conclude (0x13ec3c): keep the LODs warm; once radio message #2 is over
+                    // hand control back to the player, restore the HUD/radar, reframe the camera on the
+                    // player and clear the cinematic-break flag. Then buff the lead enemy (enemies[0]):
+                    // triple its max hitpoints, set a cruise speed and a fixed rotate mode.
+                    // FP immediate from the .rodata pool: @0x13edbc = 10.0f (cruise speed).
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    if (!((RadioMessage *) ((*messages)[2]))->isOver()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    m_pCamera->setLookAtCam(false);
+                    m_pCamera->setTarget(player->geometry);
+                    player->setComputerControlled(false);
+                    m_pHud->visible = 1;
+                    m_pRadar->field_0x58 = 1;
+                    resetCamera(m_pLevel);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                    m_nState = 3;
+                    Player *lead = (*m_pLevel->getEnemies())[0]->player;
+                    lead->setMaxHitpoints((*m_pLevel->getEnemies())[0]->player->getMaxHitpoints() * 3);
+                    (*m_pLevel->getEnemies())[0]->setSpeed(10.0f); // vtable+0x1c [slot 7]
+                    ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setRotate(5);
                 } else if (m_nState == 1) {
                     // State-1 conclude (0x13c04e): keep the LODs warm; once radio #1 is over commit
                     // enemies[0] (a PlayerFighter) as a permanent enemy -- seed its state fields, drop
@@ -931,7 +991,26 @@ int LevelScript::process(int delta) {
                     }
                     break;
                 }
-                // DEFERRED 0x13dbd8: state-3 cold sub-branch.
+                // state 3 (0x13dbd8): once radio message #7 fires, scatter the late escorts
+                // (enemies[4..7]) to random positions far around the player -- magnitude
+                // 35000..44999 on ±X/±Z, -5000..4999 on Y (Globals::rnd->nextInt) -- wake each one,
+                // then advance to state 4 (shared tail 0x13e80c -> 0x1438d4). No FP immediates: the
+                // components are integer arithmetic converted with vcvt.f32.s32.
+                if (!((RadioMessage *) ((*messages)[7]))->isTriggered()) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                Vector scatterOrigin = player->getPosition();
+                for (int i = 4; i != 8; ++i) {
+                    int magX = 35000 + Globals::rnd->nextInt(10000);
+                    int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+                    int y = Globals::rnd->nextInt(10000) - 5000;
+                    int magZ = 35000 + Globals::rnd->nextInt(10000);
+                    int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+                    Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
+                    (*enemies)[i]->setPosition(scatterOrigin + offset); // vtable+0x44
+                    (*enemies)[i]->awake();                             // vtable+0xc
+                }
+                m_nState = 4;
                 break;
             }
             default:
@@ -1259,19 +1338,86 @@ int LevelScript::process(int delta) {
                 // -> tail (1410e2)
                 break;
             }
-            case 92: // 0x139ffe
-                // Head (0x139ffe): when m_nState==0 and radio message #2 isTriggered(), advance
-                // m_nState 0->1. Then a 7-way tbh on (m_nState-1) dispatches states 1..7:
-                //   state 1 @0x13a036 (falls through here): guarded by level->field_178==0; sets the
-                //     campaign Mission type to 4, parks the two intro fighters in a formation with a
-                //     shared facing (rodata dir/pos consts @0x13a2d4..0x13a2e8), then the standard
-                //     cutscene-exit teardown + camera reframe on enemies[0]'s geometry basis
-                //     (dir*7000 + right*700 + up*300, consts @0x13a2f4/0x13a2fc/0x13a300) and names
-                //     the docking target from GameText.
-                //   state 2 @0x13fb7a, state 3 @0x13fcde, state 4 @0x13ff1c, state 5 @0x14011a,
-                //   state 6 @0x140214, state 7 @0x140250.
-                // DEFERRED: FP-immediate-heavy formation/animation bodies not decoded this pass.
+            case 92: { // 0x139ffe
+                // Head (0x139ffe): when m_nState==0 and radio message #2 has fired, advance 0->1.
+                // Then a 7-way tbh on (m_nState-1) dispatches states 1..7.
+                if (m_nState == 0 && ((RadioMessage *) ((*messages)[2]))->isTriggered()) {
+                    m_nState = 1;
+                }
+                if (m_nState == 1) {
+                    // State 1 (0x13a036): gated on Globals::status->field_178 == 0. Set the campaign
+                    // Mission type to 4, park the three intro fighters (enemies[0..2]) in a fixed
+                    // formation relative to the reference ship enemies[3], run the standard cutscene-
+                    // exit teardown, reframe the camera on enemies[0]'s basis, clear the docking
+                    // target's type and give it an empty name, then advance (shared tail 0x143d0a:
+                    // m_nState++). FP immediates from the .rodata pool @0x13a2d4..: formation offsets
+                    //   e0 {-76000, 5000, 5000}, e1 {-79000, 4900, 7500}, e2 {-79000, 4900, 2500}
+                    //   (@0x13a2d4/d8/dc/e0/e4/e8); camera scales @0x13a2f4/0x13a2fc/0x13a300 =
+                    //   7000 / 700 / 300. Docking name literal @0x1ca472 is the empty string.
+                    if (Globals::status->field_178 != 0) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    ((Mission *) Globals::status->getCampaignMission())->setType(4);
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+
+                    Vector ref = (*enemies)[3]->geometry->getPosition();
+                    (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f}); // vtable+0x44
+                    (*enemies)[1]->setPosition(ref + Vector{-79000.0f, 4900.0f, 7500.0f});
+                    (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
+                    for (int i = 0; i < 3; ++i) {
+                        (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
+                        ((PlayerFighter *) (*enemies)[i])->field_0x128 = 0;
+                        (*enemies)[i]->field_0x38 = 3;
+                        (*enemies)[i]->awake();       // vtable+0xc
+                        (*enemies)[i]->setVisible(true);
+                    }
+
+                    field_0xab = player->isInTurretMode();
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    if (player->isInRocketControl()) {
+                        player->setRocketControl(nullptr, nullptr);
+                        player->killLiberator();
+                        m_pCamera->setRumblePercentage(0.0f, 0);
+                    }
+                    player->setFreeLookMode(false);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pHud->visible = 0;
+                    m_pRadar->field_0x58 = 0;
+
+                    AEGeometry *geo = (*enemies)[0]->geometry;
+                    m_pCamera->setTarget(geo);
+                    Vector *acc = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                    Vector *tmp = reinterpret_cast<Vector *>(&field_0x40); // LevelScript scratch vec @0x40
+                    *acc = geo->getPosition();
+                    *tmp = geo->getDirection();
+                    *acc += *tmp * 7000.0f;
+                    *tmp = geo->getRightVector();
+                    *acc += *tmp * 700.0f;
+                    *tmp = geo->getUpVector();
+                    *acc += *tmp * 300.0f;
+                    m_pCamera->setPosition(*acc);
+
+                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(0);
+                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setName(String("", false));
+                    m_nScriptTimerA = 0;
+                    m_nScriptCounterA = 0;
+                    m_nState++; // shared tail 0x143d0a increments m_nState
+                }
+                // DEFERRED case 92 states 2..7 (0x13fb7a / 0x13fcde / 0x13ff1c / 0x14011a / 0x140214 /
+                // 0x140250): s2 is a camera fly-by that snaps behind enemies[0] on radio #5; s3/s4 drive
+                // the PaintCanvas camera-local matrix (setLocal) with a radio (s3) vs timer>2000 (s4)
+                // advance, s3 cloaks the fighters (cloak(18000,false)); s5 (timer>=2001) restores player
+                // control (free-look/turret); s6 (timer>=3001) -> s7; s7 finishes docking + full
+                // teardown. FP pool: per-ship move speeds 2.0/2.08/2.05 (s2), 2.0/2.3/2.2 (s3/s4),
+                // 6.0/4.6/4.4 (s5); camera 0.05/1.7/0.03/0.004 (s3/s4). Not decoded here (transition
+                // camera math depends on a NEON-zeroed counter, plus deferred sub-tails 0x1435ec/0x140b0c).
                 break;
+            }
             case 94: { // 0x13acac (tbh on m_nState 0..3)
                 if (m_nState != 0) {
                     // DEFERRED 0x13e08e / 0x13dff4 / 0x13e15c: states 1/2/3 cold sub-branches.
@@ -1381,11 +1527,40 @@ int LevelScript::process(int delta) {
                 if (m_nState <= 4) {
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 }
-                // DEFERRED 0x13aee4: 10-way tbh sub-dispatch on (m_nState-1) for states 1..10
-                // (per-state camera/geometry choreography). NOTE (pass 8): the AEMath "operators" here
-                // are ordinary named PLT calls (operator+/-/*, VectorNormalize, MatrixGetPosition/Dir,
-                // Vector::operator=/+=) usable as normal C++; no fn-pointer blocker remains -- only the
-                // per-state FP immediates still need decoding.
+                // 10-way tbh sub-dispatch on (m_nState-1) for states 1..10 (0x13aee4; table @0x13aef0):
+                //   s1 0x13af3c, s2 0x141e78, s3 0x142062, s4 0x142138, s5 0x142272, s6 0x1422cc,
+                //   s7 0x1426c4, s8 0x1429dc, s9 0x142a04, s10 0x142bf2. States 0 and >10 fall through.
+                if (m_nState == 1) {
+                    // State 1 (0x13af3c): drift the camera along the player's basis; after 13s -> s2.
+                    // FP: @0x13b1d4 = 6.08f (dir weight), @0x13b1d8 = 0.2f (right weight),
+                    // @0x13b1dc = 0.4f (drift scale).
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    Vector dir = player->geometry->getDirection();
+                    Vector right = player->geometry->getRightVector();
+                    Vector drift = (dir * 6.08f + right * 0.2f) * 0.4f * (float) delta;
+                    m_pCamera->translate(drift.x, drift.y, drift.z);
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 13001) {
+                        m_nState = 2;
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                    }
+                } else if (m_nState == 8) {
+                    // State 8 (0x1429dc): pure timer -- after 60s advance to state 9.
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 60001) {
+                        m_nState = 9;
+                    }
+                }
+                // DEFERRED case 105 states 2/3/4/5/6/7/9/10: the same camera-drift as s1 gates the
+                // early states (s3/s4 add per-frame enemy flag writes @+300 then advance on counter>3000;
+                // s4 also hands control back + clears cinematicBreak; s5 counter>=10001 reactivates the
+                // escorts). s6 (counter>=24001) warps a 3-ship formation near the sun into a full
+                // cutscene; s7 drives the PaintCanvas camera-local matrix chasing enemies[2] (counter>=
+                // 10001 restores control); s9 (counter>=110001) explosion-scatters dead escorts then
+                // gates on the player's route; s10 tears the cutscene down on radio #7 over. Genuinely
+                // deferred micro-formulas: s2 route-waypoint arithmetic (0x141f24), s9 RNG scatter
+                // offsets (0x142a94), and a handful of unnamed vtable slots (+0x0c/+0x1c/+0x18). FP pool:
+                // dir/right/scale 6.08/0.2/0.4; s6 100000/2200/-200/-2200/-30000/6800/1200/400; s7
+                // 0.05/1.96/0.03/0.004/2400; s10 8000/1000.
                 break;
             }
             case 114: { // 0x13afde
