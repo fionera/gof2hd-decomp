@@ -16,6 +16,7 @@
 #include "game/world/Route.h"
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
+#include "game/ship/PlayerWormHole.h"
 
 static Station *gProgrammedStation = nullptr;
 
@@ -315,13 +316,20 @@ void LevelScript::process(int delta) {
         }
         m_pCamera->translate((float) ((double) delta * 0.1), 0.0f, 0.0f);
     } else {
-        // DEFERRED (pass 1): mission>=2 general campaign state machine and the per-mission switch,
-        // disasm 0x1381b2-0x145ca8 (~19k instructions, dozens of mission-specific cutscene
-        // branches: mission 0x51 alien-orbit approach, docking, wormholes, supernova, etc.).
-        return;
+        // mission>=2 path (disasm 0x1381b2). This is "Chain A": a long chain of per-mission
+        // *intro* choreographies (approach cutscenes) that each run once, then fall through to
+        // the shared "active" tail below.
+        //
+        // DEFERRED (pass 2): the Chain A per-mission intro choreographies are not decoded here.
+        //   - mission 0x51 alien-orbit approach: disasm 0x1381b2-0x13832c (+ substates 0x138f08,
+        //     0x139136); heavy FP camera/vector work.
+        //   - mission 0x4e (78): disasm 0x13832c; mission chain continues at 0x138574 ...
+        // These converge to the shared tail (0x137f7c). We faithfully fall through to it so the
+        // mission>=2 *general state machine* (the passedTime>7000 deactivation) now runs -- this
+        // was unreachable in pass 1 (it returned early here).
     }
 
-    // --- shared "active" tail (disasm 0x137f7c); runs for missions 0 and 1 ---
+    // --- shared "active" tail / general state machine (disasm 0x137f7c); runs for all missions ---
     if (m_bStartSequence != 0) {
         m_pLevel->lodManager->forceUpdate(30, false);
 
@@ -368,9 +376,40 @@ void LevelScript::process(int delta) {
         }
     }
 
-    // DEFERRED (pass 1): mission==5 special-case (disasm 0x13812a) and the campaign-mission
-    // switch (0x138134-end). For missions 0 and 1 these are no-ops (no matching case), so the
-    // behaviour above is complete for the intro missions.
+    // --- pre-switch mission specials (disasm 0x13812a); run for all missions ---
+    // Re-read the campaign mission (fresh call at 0x13812e; -Oz has no CSE).
+    int switchMission = Globals::status->getCurrentCampaignMission();
+    if (switchMission == 5) {
+        // disasm 0x13813c: on the first frame, park enemies[0] ahead of the player and wake it.
+        if (m_nState == 0) {
+            Vector *scratch = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+            *scratch = player->getPosition();
+            (*enemies)[0]->setPosition(scratch->x + 5000.0f, scratch->y, scratch->z + 30000.0f);
+            (*enemies)[0]->geometry->rotate(0.0f, 3.1415927f, 0.0f); // const @0x13853c = pi
+            (*enemies)[0]->awake();
+            m_nState = 1;
+        }
+    } else if (switchMission == 26 && Globals::status->inAlienOrbit()) {
+        // disasm 0x1382dc: in alien orbit, once radio message #1 fires, spin up the exit wormhole.
+        if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
+            m_nState = 1;
+            Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
+            ((PlayerWormHole *) (*landmarks)[3])->reset(true);
+        }
+    }
+    // DEFERRED (pass 2): further pre-switch specials -- mission 50 (disasm 0x1383e4) and mission 51
+    // (disasm 0x13876c) share the exit-wormhole cutscene body at 0x139ac2.
+
+    // DEFERRED (pass 2): the per-mission campaign switch (disasm 0x13879e-0x144e36, ~50KB, the bulk
+    // of this function). Guarded by Status::getMission()->isCampaignMission() && !isEmpty() (or
+    // mission==42). The dispatch on getCurrentCampaignMission() (0x1387ca) reaches, by mission id:
+    //   14->0x13a9b2  16->0x13b014  21->0x13ab24  24->0x13a930  29->0x139ca2  40->0x13a4d8
+    //   41->0x139d56  42->0x13abaa  56->0x139f14  80->0x139e34  91->0x13ac42  92->0x139ffe
+    //   94->0x13acac  102->0x13a658 105->0x13aea4 114->0x13afde 125->0x139f9c 154->0x13a76e
+    //   157->0x13a308 158 (inline)  64..73->0x138c3e  131..145->0x138a8a
+    // Each target is a dense per-frame cutscene handler (radio-message gated state machine with
+    // camera/particle/sound choreography and GOT-loaded helper thunks). Not decoded in this pass
+    // to avoid fabrication; the v2 bodies diverge substantially from the DeepOpen v1 switch.
 }
 
 void LevelScript::lookBehind() {
