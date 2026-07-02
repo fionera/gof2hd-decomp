@@ -683,8 +683,38 @@ int LevelScript::process(int delta) {
                 } else if (m_nState >= 2) {
                     // states 2..5: shared cross-case fight-conclusion tail 0x13cacc (tbh m_nState-2):
                     //   state 2 -> 0x13cae0, state 3 -> 0x13f53c, state 4 -> 0x13f5fc, state 5 -> 0x13f6c6.
-                    // All four share the shape: counter += delta; gate (state2 <1001, state3 <5001,
-                    // state4 <324, state5 <=10000); one-shot payload; counter=0; m_nState++. Behaviour:
+                    // All four share the shape: script-timer-A (0x90) += delta (the shared 64-bit counter
+                    // pointer is cached at [sp+0x40] = &m_nScriptTimerA); gate (state2 <1001, state3 <5001,
+                    // state4 <324, state5 <=10000); one-shot payload; counter=0; m_nState++. Note the
+                    // shared tail keeps r8 = &enemies.data (enemies+4), so [*r8 + 0x34/0x38] == boss[13]/
+                    // boss[14] == (*enemies)[13] / (*enemies)[14].
+                    if (m_nState == 4) {
+                        // State 4 (0x13f5fc): keep the boss explosion animating; once 324 ms have elapsed
+                        // hand the boss's final pose to its wreck (enemies[13] <- enemies[14]'s matrix),
+                        // swap their visibility/active flags, latch the boss wreck flag (field_0x74) and
+                        // kick off the wreck's PaintCanvas transform animation. Explosion::update takes
+                        // (int)(delta*0.5) and the null camera overload.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                        m_pExplosion->update((int) ((float) delta * 0.5f), (TargetFollowCamera *) nullptr);
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 324) {
+                            break; // -> post-switch tail (0x144e36)
+                        }
+                        KIPlayer *wreck = (*enemies)[13]; // boss[13]
+                        KIPlayer *boss = (*enemies)[14];  // boss[14]
+                        wreck->geometry->setMatrix(boss->geometry->getMatrix());
+                        wreck->setVisible(true);
+                        wreck->setActive(true);
+                        boss->setVisible(false);
+                        boss->setActive(false);
+                        boss->field_0x74 = 1;
+                        AbyssEngine::Transform *anim = (AbyssEngine::Transform *)
+                            Globals::Canvas->TransformGetTransform(wreck->geometry->transform);
+                        anim->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                        m_nState++; // 4 -> 5 (shared set-state tail 0x1438d6)
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    // Behaviour of the remaining (deferred) states:
                     //   s2 has enemies[0] return fire, spawns a tracking AEGeometry(Globals::Canvas) into
                     //     m_pGeometry* and points the camera at it (orientation via a deep enemy-linkage
                     //     chain @+0x18 -- DEFERRED).
@@ -1407,15 +1437,58 @@ int LevelScript::process(int delta) {
                     m_nScriptTimerA = 0;
                     m_nScriptCounterA = 0;
                     m_nState++; // shared tail 0x143d0a increments m_nState
+                } else if (m_nState == 2) {
+                    // State 2 (0x13fb7a): camera fly-by. Creep the three intro ships forward at
+                    // per-ship speeds (2.0/2.08/2.05 * delta; pool @0x13fab8 = {2.05, 2.08}), then once
+                    // radio message #5 fires reset both 64-bit script counters, advance to state 3 and
+                    // snap the follow-camera behind enemies[0] along its own basis. The offsets are
+                    // driven by the just-cleared script-timer-B counter (0 this frame): dir (ctrB+3900),
+                    // right (ctrB+500), up (400 + ctrB*0.004). Scale constants @0x13fef4/0x13fef0 =
+                    // 400.0 / 0.004.
+                    for (int i = 0; i < 3; ++i) {
+                        float sp = (i == 0) ? 2.0f : (i == 1 ? 2.08f : 2.05f);
+                        (*enemies)[i]->geometry->moveForward(sp * (float) delta);
+                    }
+                    if (!((RadioMessage *) ((*messages)[5]))->isTriggered()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                    reinterpret_cast<long long &>(m_nScriptTimerB) = 0;
+                    m_nState++; // 2 -> 3
+                    AEGeometry *geo = (*enemies)[0]->geometry;
+                    m_pCamera->setTarget(geo);
+                    Vector *acc = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                    Vector *tmp = reinterpret_cast<Vector *>(&field_0x40); // LevelScript scratch vec @0x40
+                    long long ctrB = reinterpret_cast<long long &>(m_nScriptTimerB);
+                    *acc = geo->getPosition();
+                    *tmp = geo->getDirection();
+                    *acc += *tmp * (float) (ctrB + 3900);
+                    *tmp = geo->getRightVector();
+                    *acc += *tmp * (float) (ctrB + 500);
+                    *tmp = geo->getUpVector();
+                    *acc += *tmp * (400.0f + (float) ctrB * 0.004f);
+                    m_pCamera->setPosition(*acc);
+                } else if (m_nState == 6) {
+                    // State 6 (0x140214): pure timer -- accumulate the 64-bit script-timer-A counter
+                    // and once it passes 3000 advance to state 7 (0x141e72 -> shared set-state tail
+                    // 0x1438d4 stores m_nState = 7).
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 3001) {
+                        m_nState = 7;
+                    }
                 }
-                // DEFERRED case 92 states 2..7 (0x13fb7a / 0x13fcde / 0x13ff1c / 0x14011a / 0x140214 /
-                // 0x140250): s2 is a camera fly-by that snaps behind enemies[0] on radio #5; s3/s4 drive
-                // the PaintCanvas camera-local matrix (setLocal) with a radio (s3) vs timer>2000 (s4)
-                // advance, s3 cloaks the fighters (cloak(18000,false)); s5 (timer>=2001) restores player
-                // control (free-look/turret); s6 (timer>=3001) -> s7; s7 finishes docking + full
-                // teardown. FP pool: per-ship move speeds 2.0/2.08/2.05 (s2), 2.0/2.3/2.2 (s3/s4),
-                // 6.0/4.6/4.4 (s5); camera 0.05/1.7/0.03/0.004 (s3/s4). Not decoded here (transition
-                // camera math depends on a NEON-zeroed counter, plus deferred sub-tails 0x1435ec/0x140b0c).
+                // DEFERRED case 92 states 3/4/5/7 (0x13fcde / 0x13ff1c / 0x14011a / 0x140250): s3/s4 drive
+                // the PaintCanvas camera-local matrix (m_pCamera->setLocal(): CameraGetLocal ->
+                // MatrixGetPosition -> reframe -> MatrixSetTranslation) chasing enemies[0], s3 advancing
+                // on radio #5 over (also cloak(18000,false) on the 3 fighters), s4 on timer>2000; both
+                // add a right-vector offset scaled by a NEON stack temp [sp+0x4c] (provenance in the
+                // preamble -- unresolved, DEFERRED). s5 (timer>=2001) parks the fighters
+                // (field_0x128=50000, field_0x38=4), disables their AI and restores player control via
+                // the shared lookBehind tails 0x144fd4/0x144fe2. s7 (0x140250) finishes docking on radio
+                // #8 (Level::getPlayer via GOT @0x1405f4 -> setAutoPilot/dockToDockingPoint) then runs the
+                // full cutscene-exit teardown; the not-triggered path exits to sub-tail 0x1435ec. FP pool:
+                // move speeds 2.0/2.3/2.2 (s3/s4), 6.0/4.6/4.4 (s5, pool @0x140248); camera
+                // 0.05/1.7/0.03/0.004 (s3/s4).
                 break;
             }
             case 94: { // 0x13acac (tbh on m_nState 0..3)
