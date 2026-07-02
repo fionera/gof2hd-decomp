@@ -460,10 +460,33 @@ int LevelScript::process(int delta) {
                 }
                 break; // -> post-switch tail (0x144e36)
             }
+            case 144: { // 0x1395e0
+                // Every frame: creep the tracked marker (m_pGeometry4) forward, latch the cinematic
+                // break flag and pan the camera. FP immediates from the .rodata pool:
+                //   @0x139714 = 0.05f, @0x139718 = 0.28f (translate deltas).
+                m_pGeometry4->moveForward((float) (delta * 5));
+                m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                m_pCamera->translate(0.0f, (float) delta * 0.05f, (float) delta * 0.28f);
+                if (m_nState == 3) {
+                    // DEFERRED 0x13d59e: state-3 body.
+                    break;
+                }
+                if (m_nState == 2) {
+                    // DEFERRED 0x13d6c0: state-2 body.
+                    break;
+                }
+                if (m_nState != 1) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                // state 1: keep the LODs warm and lock the camera onto the marker.
+                m_pLevel->lodManager->forceUpdate(delta, false);
+                m_pCamera->setTarget(m_pGeometry4);
+                m_nState = 2; // 0x144c0c: m_nState = 2 -> post-switch tail
+                break;
+            }
             case 135: // DEFERRED 0x1391c0
             case 139: // DEFERRED 0x13965c
             case 142: // DEFERRED 0x139544
-            case 144: // DEFERRED 0x1395e0
             case 145: // DEFERRED 0x1392f6
             default:
                 break; // -> post-switch tail (0x144e36)
@@ -1049,15 +1072,64 @@ int LevelScript::process(int delta) {
                 // is via GOT singletons (Globals::Canvas) with named methods. Remaining undecoded: the
                 // global status byte selecting the marker index set and KIPlayer::field_0x140.
                 break;
-            case 158: // 0x13885c (nested dispatch on m_nState: 1/2/3 -> 0x138878/0x13d724/0x13d74e)
-                // State 1 @0x138878: a per-frame animation body -- advances the 64-bit script counter
-                // (m_nScriptTimerA:m_nScriptCounterA) by delta, derives a normalized time from it
-                // (counter/const @0x1389ac), pans the camera via translate() with FP-scaled deltas,
-                // re-aims m_pGeometry4 @0xcc at the player (getPosition - geom pos -> VectorNormalize
-                // -> setDirection) and, past counter thresholds 29999/25000, moveForward()s it by
-                // delta*2.5 and wakes enemies[0]. States 2/3 @0x13d724/0x13d74e.
-                // DEFERRED: FP-immediate-heavy per-frame bodies not decoded this pass.
+            case 158: { // 0x13885c (nested dispatch on m_nState: 1/2/3 -> 0x138878/0x13d724/0x13d74e)
+                if (m_nState == 3) {
+                    // DEFERRED 0x13d74e: state-3 body (proximity check + AERandom gate).
+                    break;
+                }
+                if (m_nState == 2) {
+                    // DEFERRED 0x13d724: state-2 body (script-counter gate then 0x1403c2).
+                    break;
+                }
+                if (m_nState != 1) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                // State 1 @0x138878: a per-frame fly-in animation. Advance the 64-bit script counter
+                // (m_nScriptTimerA:m_nScriptCounterA) by delta, derive a normalized time from it, pan
+                // the camera, re-aim the marker (m_pGeometry4 @0xcc) toward a fixed world point and, past
+                // successive counter thresholds, moveForward it, wake enemies[0], and hand off. FP
+                // immediates decoded from the .rodata pool:
+                //   @0x1389ac = -34000.0f, @0x1389b0 = 4.8f, @0x1389b4 = 0.7f (camera pan);
+                //   @0x1389b8 = 9000.0f, @0x1389bc = -13000.0f (aim target x/z); @0x143964 = 2000.0f.
+                long long *counter = reinterpret_cast<long long *>(&m_nScriptTimerA);
+                *counter += delta;
+                float t = (float) *counter / -34000.0f + 1.0f;
+                m_pCamera->translate((float) delta * 4.8f * t, 0.0f, (float) (-delta) * 0.7f * t);
+
+                Vector aimTarget{9000.0f, 0.0f, -13000.0f};
+                Vector aimDir = aimTarget - m_pGeometry4->getPosition();
+                m_pGeometry4->setDirection(AbyssEngine::AEMath::VectorNormalize(aimDir),
+                                           Vector{0.0f, 1.0f, 0.0f});
+
+                if (*counter <= 29999) {
+                    m_pGeometry4->moveForward((float) delta * 2.5f);
+                }
+                if (*counter > 25000) {
+                    // Reveal enemies[0] once the marker has closed most of the distance.
+                    if (!(*enemies)[0]->isVisible()) {
+                        (*enemies)[0]->setVisible(true);
+                        (*enemies)[0]->setActive(true);
+                    }
+                }
+                // Continuation (0x14384e): drag enemies[0] onto the marker, follow it and slowly spin
+                // the player, then two counter gates finish the fly-in.
+                (*enemies)[0]->geometry->setPosition(m_pGeometry4->getPosition());
+                m_pCamera->setTarget((*enemies)[0]->geometry);
+                player->geometry->rotate((float) delta / 2000.0f, (float) delta / 2000.0f,
+                                         (float) delta / 2000.0f);
+                if (*counter >= 20000) {
+                    ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(false);
+                    if (*counter >= 34000) {
+                        m_nScriptTimerA = 0;
+                        m_nScriptCounterA = 0;
+                        m_nScriptTimerB = 0;
+                        m_nScriptCounterB = 0;
+                        ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(true);
+                        m_nState = 2;
+                    }
+                }
                 break;
+            }
             default:
                 break;
             }
