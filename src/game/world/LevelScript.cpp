@@ -518,9 +518,36 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
+            case 6: { // s6 @0x13bb7c: drift escort ship [1] outward; at timer>=1100-delta advance to s7.
+                reinterpret_cast<long long &>(m_nScriptTimerA) =
+                        (long long) ((float) delta * 0.3f +
+                                     (float) reinterpret_cast<long long &>(m_nScriptTimerA)); // 0.3 @0x13b93c
+                Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
+                (*enemies)[1]->geometry->translate(Vector{(float) delta * 0.3f, 0.0f, 0.0f});
+                (*enemies)[1]->geometry->rotate(Vector{-(float) delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
+                if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1100 - delta) {
+                    m_nState = 7;
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                }
+                break;
+            }
+            case 8: { // s8 @0x13baf2: drift escort ship [0]; stop at timer>=1100-delta, at >=2001 advance.
+                reinterpret_cast<long long &>(m_nScriptTimerA) =
+                        (long long) ((float) delta * 0.3f +
+                                     (float) reinterpret_cast<long long &>(m_nScriptTimerA)); // 0.3 @0x13b93c
+                if (reinterpret_cast<long long &>(m_nScriptTimerA) < 1100 - delta) {
+                    Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
+                    (*enemies)[0]->geometry->translate(Vector{-(float) delta * 0.3f, 0.0f, 0.0f});
+                    (*enemies)[0]->geometry->rotate(Vector{-(float) delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
+                } else if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 2001) {
+                    m_nState = 9;
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                    m_pCamera->setPosition(-12000.0f, 5000.0f, 15000.0f); // pool @0x13c8f0/c8c4/c8f4
+                }
+                break;
+            }
             default:
-                // DEFERRED heavy substates: s6 @0x13bb7c and s8 @0x13baf2 (per-frame AEGeometry
-                //   translate/rotate on the escort geometry, FP mults 0.3 @0x13b93c / 9.0e-4 @0x13bdb8),
+                // DEFERRED heavy substates:
                 //   s10 @0x13b948 and s11 @0x13bd2c (camera translate + rumble + setDirection + Update,
                 //   FP consts @0x13b930=4000 / @0x13b944=0.7 / @0x13b93c=0.3), and s12 @0x13b7f2 (the
                 //   state-13 handoff: setTarget(player->geometry), setLookAtCam(false), player
@@ -2036,8 +2063,14 @@ int LevelScript::process(int delta) {
                     AEGeometry *planet0 = (*planets)[0];
                     planet0->setScaling(planet0->getScaling() * 4.0f); // 4.0 @0x144d44
                     m_pCamera->setRumblePercentage(50.0f, 10);         // 50.0 @0x145018
-                    // DEFERRED 0x144d6a: for each type-10 object (field_0x28==10) in enemies, call its
-                    //   vtable+0x2c mover to snap it onto the player (arg 100000 @0x14502c).
+                    // 0x144d6a: drag every ship-group-10 object onto the player. vtable+0x2c ==
+                    //   KIPlayer::initPush(const Vector&, int radius); radius 100000 @0x14502c.
+                    for (unsigned int i = 0; i < enemies->count; ++i) {
+                        KIPlayer *mover = (*enemies)[i];
+                        if (mover != nullptr && mover->shipGroup == 10) {
+                            mover->initPush(player->getPosition(), 100000);
+                        }
+                    }
                     if (!Globals::layout->isFading()) {
                         Globals::layout->startFade(false, -1, 2000); // 0x144da2
                         m_pCamera->setTarget(player->geometry);
