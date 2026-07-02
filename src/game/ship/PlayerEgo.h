@@ -121,7 +121,7 @@ public:
     int boostTimer;
     uint8_t boostingFlag;
     uint8_t collide;
-    uint8_t _pad_0x126[7]; // shrunk for movingStars + field_0x108 + 4 fields @0x120
+    uint8_t _pad_0x13e[7]; // shrunk for movingStars + field_0x108 + 4 fields @0x120
     uint8_t field_0x145;
     uint8_t field_0x146;
     AbyssEngine::AEMath::Vector dockOffsetVec;
@@ -199,11 +199,11 @@ public:
     // and Ghidra shows separate 4-byte fields here (freeCargoSpace@0x250/flAgility@0x254 etc.). Split
     // into floats + their separated high-half fields (size-neutral 24 bytes, removes 8-byte alignment).
     float rollAccum;
-    int field_0x24c;
+    int field_0x250;
     float yawAccumD;
-    int field_0x254;
+    int field_0x258;
     float pitchAccumD;
-    int field_0x25c;
+    int field_0x260;
     float yawAccumF;
     // turretHudMatrix relocated here: it fills the original matrix region at 0x264..0x2a4.
     AbyssEngine::AEMath::Matrix turretHudMatrix;
