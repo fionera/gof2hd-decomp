@@ -25,6 +25,8 @@
 #include "engine/core/GameText.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/math/AEMath.h"
+#include "game/ship/Ship.h"
+#include "game/ship/PlayerGasCloud.h"
 
 static Station *gProgrammedStation = nullptr;
 
@@ -484,9 +486,61 @@ int LevelScript::process(int delta) {
                 m_nState = 2; // 0x144c0c: m_nState = 2 -> post-switch tail
                 break;
             }
+            case 142: { // 0x139544
+                // Dispatch on m_nState: states 0/1 run the head here, state 2 lives in the shared
+                // tail 0x142d94, any higher state falls straight through to the post-switch tail.
+                // The raw KIPlayer vtable slots this handler dispatches through are resolved:
+                //   vtable+0x1c == setSpeed(float) [slot 7], +0x28 == getPosition() [slot 10].
+                if (m_nState > 1) {
+                    // --- shared tail 0x142d94 (state 2): once the player is carrying any of the
+                    // plot cargo items (ids 0xc9..0xcd), nudge the drifting target to a slow crawl
+                    // and hand off to state 3 (via tail 0x1438d4 -> m_nState = 3). getShip() is
+                    // re-fetched per test (-Oz has no CSE). ---
+                    if (m_nState == 2) {
+                        if (Globals::status->getShip()->hasCargo(0xc9, 1) ||
+                            Globals::status->getShip()->hasCargo(0xca, 1) ||
+                            Globals::status->getShip()->hasCargo(0xcb, 1) ||
+                            Globals::status->getShip()->hasCargo(0xcc, 1) ||
+                            Globals::status->getShip()->hasCargo(0xcd, 1)) {
+                            (*enemies)[0]->setSpeed(2.1f); // vtable+0x1c, const @0x142e28
+                            m_nState = 3;
+                        }
+                    }
+                    break; // -> post-switch tail (0x144e36)
+                }
+                // Head (states 0 and 1): once the target has coasted to within 3000 units of its
+                // next route waypoint, stop it dead. FP immediate @0x139710 = 3000.0f.
+                Vector targetPos = (*enemies)[0]->getPosition();                              // vtable+0x28
+                Vector waypointPos = (*enemies)[0]->getRoute()->getWaypoint(0)->getPosition(); // vtable+0x28
+                if (AbyssEngine::AEMath::VectorLength(targetPos - waypointPos) < 3000.0f) {
+                    (*enemies)[0]->setSpeed(0.0f); // vtable+0x1c
+                }
+                if (m_nState != 0) {
+                    // --- shared tail 0x13fa64 (state 1): if any gas cloud has started sparking,
+                    // advance to state 2. getGasClouds()/count are re-fetched per iteration. ---
+                    if (m_pLevel->getGasClouds() != nullptr) {
+                        for (unsigned int i = 0; i < m_pLevel->getGasClouds()->count; ++i) {
+                            if (((PlayerGasCloud *) (*m_pLevel->getGasClouds())[i])->getSparks() != nullptr) {
+                                m_nState = 2;
+                            }
+                        }
+                    }
+                    break; // -> post-switch tail (0x144e36)
+                }
+                // state 0 (tail 0x13fa62 route-null path folds to the post-switch tail): once the
+                // player is flying the scripted route and has reached its first waypoint (the
+                // waypoint's low state byte @0x130 has been cleared to a non-zero marker), advance
+                // to state 1 (via tail 0x144c0c -> m_nState = 1). getRoute() returns int (a Route*
+                // ABI-wise), matching the established PlayerEgo::getRoute() call sites.
+                Route *playerRoute = reinterpret_cast<Route *>(static_cast<intptr_t>(player->getRoute()));
+                if (playerRoute != nullptr &&
+                    reinterpret_cast<uint8_t &>(playerRoute->getWaypoint(0)->state) != 0) {
+                    m_nState = 1;
+                }
+                break;
+            }
             case 135: // DEFERRED 0x1391c0
             case 139: // DEFERRED 0x13965c
-            case 142: // DEFERRED 0x139544
             case 145: // DEFERRED 0x1392f6
             default:
                 break; // -> post-switch tail (0x144e36)
@@ -507,10 +561,124 @@ int LevelScript::process(int delta) {
                 (*enemies)[0]->field_0x24 = 1; // -> shared tail 0x13ede4
                 break;
             }
-            case 67: // DEFERRED 0x139892: radio-message #1 exit + camera reframe on enemies[0].
-            case 69: // DEFERRED 0x139720: cutscene-exit teardown + camera reframe (state 0).
-            case 70: // DEFERRED 0x1399a2: cutscene-exit teardown + camera reframe (state 0).
-            case 73: // DEFERRED 0x139834: nested tbh on m_nState 0..3 (proximity/fail check).
+            case 67: { // 0x139892
+                if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
+                    // DEFERRED 0x13df7c: radio-message #1 state-0 sub-branch.
+                    break;
+                }
+                if (((RadioMessage *) ((*messages)[3]))->isOver() && m_nState == 1) {
+                    // Approach cutscene over (radio #3): slow the lead escort (enemies[10]) to a
+                    // crawl, relight its exhaust, then run the standard cutscene-exit teardown and
+                    // reframe the camera on it. FP immediates from the .rodata pool:
+                    //   @0x139b50 = 3.0f (setSpeed), @0x139b58 = 6000.0f, @0x139b54 = -200.0f,
+                    //   @0x139b4c = 1000.0f (camera offset x/y/z).
+                    (*enemies)[10]->setSpeed(3.0f); // KIPlayer vtable+0x1c [slot 7]
+                    ((PlayerFighter *) (*enemies)[10])->setExhaustVisible(true);
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pHud->visible = 0;
+                    m_pRadar->field_0x58 = 0;
+                    player->setComputerControlled(true);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*enemies)[10]->geometry);
+                    Vector camPos = (*enemies)[10]->getPosition() + Vector{6000.0f, -200.0f, 1000.0f};
+                    m_pCamera->setPosition(camPos);
+                    player->player->setVulnerable(false);
+                    player->freeze = 1; // PlayerEgo+0x24
+                    m_nState = 2;
+                } else {
+                    // DEFERRED 0x13c3ec: radio #3 not-over / wrong-state sub-branch.
+                }
+                break;
+            }
+            case 69: { // 0x139720
+                // Cutscene-exit teardown (state 0): once the intro chatter (radio #0) has fired,
+                // hand control back to the AI, hide the HUD/radar cinematic overlay and reframe the
+                // camera behind enemies[0] along its own facing. FP immediates from the .rodata
+                // pool: @0x139b40 = 10000.0f (dir scale), @0x139b44/48/4c = {600, 300, 1000}.
+                if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pHud->visible = 0;
+                    m_pRadar->field_0x58 = 0;
+                    player->setComputerControlled(true);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                    Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
+                    Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
+                    camPos += dir * 10000.0f;
+                    camPos += Vector{600.0f, 300.0f, 1000.0f};
+                    m_pCamera->setPosition(camPos);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
+                } else {
+                    // DEFERRED 0x13bf9c: state-1 conclude. Once radio #1 is over, restore player
+                    // control + HUD/radar, reset the camera, put enemies[0] to sleep, hide it,
+                    // seed its player field @0x128 = 100000 (setPosition(0,0,-5e6)) and m_nState=2.
+                }
+                break;
+            }
+            case 70: { // 0x1399a2
+                // Cutscene-exit teardown variant (state 0): like case 69 but reframes closer, points
+                // the camera to the opposite side and freezes the player ship. FP immediates from
+                // the .rodata pool: @0x139b60 = 3000.0f (dir scale), @0x139b64/68/6c = {-600, -300, -1000}.
+                if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pHud->visible = 0;
+                    m_pRadar->field_0x58 = 0;
+                    player->setComputerControlled(true);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
+                    Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
+                    Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
+                    camPos += dir * 3000.0f;
+                    camPos += Vector{-600.0f, -300.0f, -1000.0f};
+                    m_pCamera->setPosition(camPos);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    player->freeze = 1; // PlayerEgo+0x24
+                    m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
+                } else {
+                    // DEFERRED 0x13c04e: state-1/2 conclude (radio #1 over -> commit enemies[0] as
+                    // an enemy, restore camera and m_nState transitions).
+                }
+                break;
+            }
+            case 73: { // 0x139834 (tbh on m_nState 0..3)
+                if (m_nState > 3) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                if (m_nState == 0) {
+                    // Proximity gate: once the player closes to within 49999 units of enemies[8],
+                    // advance to state 1 (via tail 0x1438d4 -> m_nState = 1). FP const @ 49999.
+                    Vector playerPos = player->getPosition();
+                    Vector enemyPos = (*enemies)[8]->getPosition(); // vtable+0x28
+                    if ((int) AbyssEngine::AEMath::VectorLength(playerPos - enemyPos) <= 49999) {
+                        m_nState = 1;
+                    }
+                    break;
+                }
+                // DEFERRED 0x13db3c / 0x13db76 / 0x13dbd8: states 1/2/3 cold sub-branches.
+                break;
+            }
             default:
                 break; // -> post-switch tail (0x144e36)
             }
