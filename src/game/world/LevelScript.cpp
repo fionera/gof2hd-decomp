@@ -19,6 +19,7 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 #include "game/ship/PlayerWormHole.h"
+#include "game/ship/PlayerStation.h"
 #include "game/mission/Mission.h"
 #include "game/mission/Objective.h"
 #include "game/weapons/Radar.h"
@@ -428,16 +429,106 @@ int LevelScript::process(int delta) {
             }
         }
     } else if (mission == 0x4e) {
-        // Chain A, mission 0x4e intro (disasm 0x138338). Once the 64-bit script counter
-        // field_0x8:field_0xc reaches 7901, keep driving the intro geometry's cinematic transform;
-        // then a 12-way tbh on (m_nState-1) runs the approach choreography substates.
+        // Chain A, mission 0x4e intro/approach cutscene (disasm 0x138338). Once the 64-bit script
+        // counter field_0x8:field_0xc reaches 7901, keep advancing the approached station's
+        // cinematic transform; then a 12-way tbh on (m_nState-1) (disasm 0x138378) runs the
+        // approach choreography substates s1..s12. Substate epilogues re-share the mission tail at
+        // 0x13c88c in the original; here they fall through to the shared active tail below (pass-2
+        // structural approximation, kept consistent).
         if (reinterpret_cast<long long &>(field_0x8) >= 7901) {
-            // DEFERRED 0x13834e: Globals::Canvas->TransformGetTransform(...)->Update((long long)delta,
-            //   false) on landmarks[0]'s [+0x140] source geometry (that field is not yet modelled).
+            // 0x13834e: advance landmarks[0]'s station-root transform animation this frame.
+            // landmarks[0]'s [+0x140] field is PlayerStation::rootGeometry (offset 0x140).
+            PlayerStation *station = (PlayerStation *) (*m_pLevel->getLandmarks())[0];
+            AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                    Globals::Canvas->TransformGetTransform(station->rootGeometry->transform);
+            t->Update((long long) delta, false); // 0x138374
         }
-        // DEFERRED 0x138378 (tbh on m_nState-1): the 12 approach substates
-        //   s1 0x1383a0 s2 0x13ba5c s3 0x13b8dc s4 0x13baba s5 0x13b8c0 s6 0x13bb7c
-        //   s7 0x13bc18 s8 0x13baf2 s9 0x13bc34 s10 0x13b948 s11 0x13bd2c s12 0x13b7f2.
+        // 0x138378: dispatch on (m_nState - 1) -> substates s1..s12 (states 0 / >12 do nothing).
+        switch (m_nState) {
+            case 1: { // s1 @0x1383a0: lock camera onto the station and start its approach animation.
+                m_pCamera->setTarget(((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry);
+                AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                        Globals::Canvas->TransformGetTransform(
+                                ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry->transform);
+                t->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                m_nState = 2;
+                break;
+            }
+            case 2: { // s2 @0x13ba5c: pan the camera in; once counter>=7001 reframe it.
+                m_pCamera->translate(-(float) delta * 0.5f, (float) delta * 0.3f, (float) delta); // 0.3 @0x13b93c
+                if (reinterpret_cast<long long &>(field_0x8) >= 7001) {
+                    m_nState = 3;
+                    m_pCamera->setPosition(20000.0f, 5000.0f, 30000.0f); // pool @0x13bda0/a4/a8
+                }
+                break;
+            }
+            case 3: { // s3 @0x13b8dc: start the approach music (1122), advance at counter>=9001.
+                if (reinterpret_cast<long long &>(field_0x8) >= 7901) {
+                    if (!Globals::sound->isPlaying(1122)) {
+                        Globals::sound->play(1122, nullptr, nullptr, 0.0f);
+                    }
+                    if (reinterpret_cast<long long &>(field_0x8) >= 9001) {
+                        m_nState = 4;
+                    }
+                }
+                break;
+            }
+            case 4: { // s4 @0x13baba: at counter>=18001 reframe the camera and hide the player ship.
+                if (reinterpret_cast<long long &>(field_0x8) >= 18001) {
+                    m_nState = 5;
+                    m_pCamera->setPosition(8000.0f, 31000.0f, -9000.0f); // pool @0x13bdac/b0/b4
+                    player->freeze = 1;       // player+0x24
+                    player->setVisible(false);
+                }
+                break;
+            }
+            case 5: { // s5 @0x13b8c0: at counter>=18001 reset the frame timer and advance.
+                if (reinterpret_cast<long long &>(field_0x8) >= 18001) {
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                    m_nState = 6;
+                }
+                break;
+            }
+            case 7: { // s7 @0x13bc18: at counter>=27001 advance.
+                if (reinterpret_cast<long long &>(field_0x8) >= 27001) {
+                    m_nState = 8;
+                }
+                break;
+            }
+            case 9: { // s9 @0x13bc34: pan the camera, ramp the rumble on the frame timer, then at
+                      // timer>=6001 seat the docking model, play its arrival sting and advance.
+                m_pCamera->translate(-(float) delta * 0.7f, (float) delta, (float) (delta * 3)); // 0.7 @0x13b944
+                reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                float rumble = (float) reinterpret_cast<long long &>(m_nScriptTimerA) / 10000.0f; // @0x13bdbc
+                if (!(rumble < 1.0f)) {
+                    rumble = 1.0f;
+                }
+                m_pCamera->setRumblePercentage(rumble, 100);
+                if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 6001) {
+                    m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 14000.0f}); // z @0x13bdc0
+                    AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                            Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                    t->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+                    t = (AbyssEngine::Transform *)
+                            Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                    t->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                    Globals::sound->play(160, nullptr, nullptr, 0.0f);
+                    m_nState = 10;
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                }
+                break;
+            }
+            default:
+                // DEFERRED heavy substates: s6 @0x13bb7c and s8 @0x13baf2 (per-frame AEGeometry
+                //   translate/rotate on the escort geometry, FP mults 0.3 @0x13b93c / 9.0e-4 @0x13bdb8),
+                //   s10 @0x13b948 and s11 @0x13bd2c (camera translate + rumble + setDirection + Update,
+                //   FP consts @0x13b930=4000 / @0x13b944=0.7 / @0x13b93c=0.3), and s12 @0x13b7f2 (the
+                //   state-13 handoff: setTarget(player->geometry), setLookAtCam(false), player
+                //   setComputerControlled/setVulnerable/setVisible, m_pHud->visible=1). s12 also writes
+                //   a Radar byte @0x48 that lands inside a pad in our Radar model, so it is not yet
+                //   expressible with a named field.
+                break;
+        }
     } else {
         // mission>=2 path (disasm 0x1381b2). This is "Chain A": a long chain of per-mission
         // *intro* choreographies (approach cutscenes) that each run once, then fall through to
