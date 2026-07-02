@@ -289,12 +289,57 @@ int LevelScript::process(int delta) {
     int mission = Globals::status->getCurrentCampaignMission();
 
     if (mission == 0) {
-        // DEFERRED (pass 1): mission-0 intro cutscene choreography, disasm 0x137e84-0x137f76.
-        // Positions/directions the three intro ships, drives the camera local matrix via
-        // PaintCanvas Camera{GetCurrent,GetLocal}+MatrixSetTranslation, and gates on m_nState.
-        // Not decoded here (ambiguous FP register fills for the direction vectors). Falls through
-        // to the shared active tail below, matching the original.
-        (void) player;
+        // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
+        // stages three "enemy" ships in front of a repositioned player/camera while radio
+        // message #2 plays, wobbles them with the UI pulse, then hands off to later substates.
+        RadioMessage *introMsg = (RadioMessage *) ((*messages)[2]);
+        if (introMsg->isOver() && m_nState == 0) {
+            // state 0 setup, once message #2 finishes (disasm 0x137e9c). FP fills decoded from
+            // the constant pool @0x1380d0..0x1380f8 (see per-line values below).
+            m_nState = 1;
+            player->setPosition(18000.0f, -12000.0f, -40000.0f);          // 0x1380d4/d0/d8
+            m_pCamera->setPosition(-12000.0f, 2000.0f, -500.0f);          // 0x1380d0/e0/dc
+            // Set the camera's live local matrix translation to the same point (0x137ec2).
+            AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+            Matrix *local = reinterpret_cast<Matrix *>(
+                    canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+            AbyssEngine::AEMath::MatrixSetTranslation(*local, -12000.0f, 2000.0f, -500.0f);
+            // Park the three intro ships (vtable+0x48 == KIPlayer::setPosition(fff), 0x137eec).
+            (*enemies)[0]->setPosition(-10000.0f, 500.0f, 0.0f);          // 0x1380e8/ec
+            (*enemies)[1]->setPosition(-10000.0f, -300.0f, -1700.0f);     // 0x1380e8/f0/f4
+            (*enemies)[2]->setPosition(-10000.0f, -200.0f, 2000.0f);      // 0x1380e8/f8/e0
+            // Face them +X with +Y up, and make them visible (0x137f34).
+            for (int i = 0; i < 3; ++i) {
+                (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
+                (*enemies)[i]->geometry->setVisible(true);
+            }
+            m_pLevel->lodManager->forceUpdate(30, false);
+            // falls through to the shared active tail (0x137f76 -> 0x137f7c)
+        } else if (m_nState <= 2) {
+            // Per-frame pulse wobble of the three ships while the intro plays (disasm 0x1383fe).
+            float wobble = Globals::layout->getPulseValue(0.0005f) - 0.5f; // 0x138558, -0.5 @0x138412
+            for (int i = 0; i < 3; ++i) {
+                (*enemies)[i]->geometry->translate(0.0f, wobble, 0.0f);
+            }
+            if (m_nState == 1) {
+                // 0x138440: once message #6 finishes, lock the camera onto ship 0 and reframe.
+                RadioMessage *msg6 = (RadioMessage *) ((*messages)[6]);
+                if (msg6->isOver()) {
+                    m_nState = 2;
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    m_pCamera->setPosition(-5000.0f, 300.0f, -5000.0f); // 0x13855c/560
+                }
+            }
+            if (m_nState == 2) {
+                // DEFERRED 0x138482: state-2 body -- restart FModSound event 142 (0x8e) if not
+                // already playing, drift the camera (translate scale 0.2/2.2 @0x138568/13856c),
+                // then gate on message #7 (0x1384d6) to advance to state 3. State 3 (0x1384e6:
+                // exhaust/visibility setup on the three ships, writes enemy+0x128 = delta+80 and
+                // [enemy->field4]+0x5c = 1) is likewise not decoded. Falls through to shared tail.
+            }
+        } else {
+            // DEFERRED 0x1389c8: mission-0 states >2 (post-approach continuation).
+        }
     } else if (mission == 1) {
         // mission==1 intro (disasm 0x137d82). Slowly rotates the player ship and pans the camera
         // while radio message #2 plays; on fade-out it switches to the next scene.
@@ -326,15 +371,27 @@ int LevelScript::process(int delta) {
             return (m_nFlags & 0xFF00) != 0 ? 1 : 0;
         }
         m_pCamera->translate((float) ((double) delta * 0.1), 0.0f, 0.0f);
+    } else if (mission == 0x51 && Globals::status->inAlienOrbit()) {
+        // Chain A, mission 0x51 alien-orbit approach (disasm 0x1381ca). Common per-frame part:
+        // hold the LOD detail, pan the camera in toward the station, and latch the cinematic break.
+        m_pLevel->lodManager->forceUpdate(delta, true);
+        m_pCamera->translate((float) (2 * delta), 0.0f, (float) (-4 * delta)); // 0x1381de/0x1381e8
+        m_nFlags = (uint16_t) ((m_nFlags & 0xFF) | 0x100); // strb 1 -> m_nFlags high byte (cinematicBreak_) @0x11
+        // DEFERRED 0x13821e: the m_nState choreography machine. State 0 stages the station model
+        //   m_pGeometry4 (@0xd8) at the origin, drives its PaintCanvas Transform animation
+        //   (TransformGetTransform -> SetAnimationState 3 then 1) and plays FModSound event 160
+        //   (0xa0), advancing on a 64-bit script counter (this+0x90 pair) >= 10001. State 1 lives
+        //   at 0x138f08, the remaining states at 0x139136. Falls through to the shared tail.
     } else {
         // mission>=2 path (disasm 0x1381b2). This is "Chain A": a long chain of per-mission
         // *intro* choreographies (approach cutscenes) that each run once, then fall through to
         // the shared "active" tail below.
         //
-        // DEFERRED (pass 2): the Chain A per-mission intro choreographies are not decoded here.
-        //   - mission 0x51 alien-orbit approach: disasm 0x1381b2-0x13832c (+ substates 0x138f08,
-        //     0x139136); heavy FP camera/vector work.
-        //   - mission 0x4e (78): disasm 0x13832c; mission chain continues at 0x138574 ...
+        // DEFERRED (pass 2): the remaining Chain A per-mission intro choreographies are not decoded.
+        //   - mission 0x4e (78): disasm 0x138338 (64-bit script-counter gate at 0x1edd), then
+        //     mission chain continues at 0x138574 ...
+        //   - mission 26 alien-orbit (nested, disasm 0x1382dc): radio #1 triggered -> reset the
+        //     wormhole landmark [3]; substate 0x13879e.
         // These converge to the shared tail (0x137f7c). We faithfully fall through to it so the
         // mission>=2 *general state machine* (the passedTime>7000 deactivation) now runs -- this
         // was unreachable in pass 1 (it returned early here).
@@ -1481,8 +1538,15 @@ int LevelScript::process(int delta) {
                 // the PaintCanvas camera-local matrix (m_pCamera->setLocal(): CameraGetLocal ->
                 // MatrixGetPosition -> reframe -> MatrixSetTranslation) chasing enemies[0], s3 advancing
                 // on radio #5 over (also cloak(18000,false) on the 3 fighters), s4 on timer>2000; both
-                // add a right-vector offset scaled by a NEON stack temp [sp+0x4c] (provenance in the
-                // preamble -- unresolved, DEFERRED). s5 (timer>=2001) parks the fighters
+                // add a right-vector offset scaled by the stack temp [sp+0x4c].
+                // PREAMBLE NEON TEMP PROVENANCE (resolved pass 16): [sp+0x4c] is simply `delta`, the
+                // process() argument -- the prologue stores it there at 0x137d6e (strd r5,r6,[sp,#0x48]
+                // with r6==delta) and nothing on the mission==92 dispatch path overwrites it (all other
+                // [sp+0x4c] stores live inside unrelated case bodies). So s3's right-vector offset is
+                // `right * ((float)(-delta) * 0.03f)` (negate delta @0x13fdb6, 0.03 pool @0x13ff10); the
+                // matching reframe uses dir*(counterLo*1.7f) [0x13ff04], up*((counterLo*0.05f)*0.004f)
+                // [0x13fef8/0x13fef0]. A later pass can finish s3-7 with delta available directly.
+                // s5 (timer>=2001) parks the fighters
                 // (field_0x128=50000, field_0x38=4), disables their AI and restores player control via
                 // the shared lookBehind tails 0x144fd4/0x144fe2. s7 (0x140250) finishes docking on radio
                 // #8 (Level::getPlayer via GOT @0x1405f4 -> setAutoPilot/dockToDockingPoint) then runs the
