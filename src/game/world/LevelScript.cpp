@@ -23,6 +23,8 @@
 #include "game/mission/Objective.h"
 #include "game/weapons/Radar.h"
 #include "engine/core/GameText.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/math/AEMath.h"
 
 static Station *gProgrammedStation = nullptr;
 
@@ -418,9 +420,77 @@ int LevelScript::process(int delta) {
         // the original's jump order.
         int cm = Globals::status->getCurrentCampaignMission();
         if (cm >= 131 && cm <= 145) {
-            // DEFERRED 0x138a8a: mission 131..145 range handler (tbh sub-dispatch on m_nState).
+            // Range prong (0x138a8a, tbh cm-131). Most of 131..145 fall straight to the tail;
+            // only 131/135/139/142/144/145 have bodies.
+            switch (cm) {
+            case 131: { // 0x138aac
+                if (m_nState == 2) {
+                    // DEFERRED 0x13c8fc: state-2 body.
+                    break;
+                }
+                if (m_nState != 1) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                // Cinematic camera follow (state 1): take the render camera's current local matrix,
+                // offset its translation ahead of the player along the player's dir/right/up basis
+                // (dir*delta*2.01 + right*delta*0.03 + up*delta*0.01, into tempVec @0x28 with scratch
+                // @0x40), fix the TargetFollowCamera and drive it with the retranslated matrix. Then
+                // advance the 64-bit script counter (m_nScriptTimerA:m_nScriptCounterA) by delta;
+                // once it reaches 3001 hand off to state 2 and reset the counter.
+                AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                Matrix local = *reinterpret_cast<Matrix *>(
+                        canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                Vector *tempVec = reinterpret_cast<Vector *>(&field_0x28);
+                Vector *scratch = reinterpret_cast<Vector *>(&field_0x40);
+                *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
+                *scratch = player->GetDirVector();
+                *tempVec += *scratch * ((float) delta * 2.01f);
+                *scratch = player->geometry->getRightVector();
+                *tempVec += *scratch * ((float) delta * 0.03f);
+                *scratch = player->GetUpVector();
+                *tempVec += *scratch * ((float) delta * 0.01f);
+                m_pCamera->setFixed(true);
+                AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
+                m_pCamera->setLocal(local);
+                long long *counter = reinterpret_cast<long long *>(&m_nScriptTimerA);
+                *counter += delta;
+                if (*counter >= 3001) {
+                    m_nState = 2;
+                    *counter = 0;
+                }
+                break; // -> post-switch tail (0x144e36)
+            }
+            case 135: // DEFERRED 0x1391c0
+            case 139: // DEFERRED 0x13965c
+            case 142: // DEFERRED 0x139544
+            case 144: // DEFERRED 0x1395e0
+            case 145: // DEFERRED 0x1392f6
+            default:
+                break; // -> post-switch tail (0x144e36)
+            }
         } else if (cm >= 64 && cm <= 73) {
-            // DEFERRED 0x138c3e: mission 64..73 range handler.
+            // Range prong (0x138c3e, tbh cm-64). Only 64/67/69/70/73 have bodies; the rest fall to
+            // the tail.
+            switch (cm) {
+            case 64: { // 0x138c56
+                if (m_nState == 0) {
+                    // DEFERRED 0x13cba4: state-0 body.
+                    break;
+                }
+                if (m_nState != 2) {
+                    // DEFERRED 0x13ecf2: state-1 (and other) body.
+                    break;
+                }
+                (*enemies)[0]->field_0x24 = 1; // -> shared tail 0x13ede4
+                break;
+            }
+            case 67: // DEFERRED 0x139892: radio-message #1 exit + camera reframe on enemies[0].
+            case 69: // DEFERRED 0x139720: cutscene-exit teardown + camera reframe (state 0).
+            case 70: // DEFERRED 0x1399a2: cutscene-exit teardown + camera reframe (state 0).
+            case 73: // DEFERRED 0x139834: nested tbh on m_nState 0..3 (proximity/fail check).
+            default:
+                break; // -> post-switch tail (0x144e36)
+            }
         } else {
             switch (cm) {
             case 14: { // 0x13a9b2
@@ -744,7 +814,17 @@ int LevelScript::process(int delta) {
                 break;
             }
             case 92: // 0x139ffe
-                // DEFERRED 0x139ffe
+                // Head (0x139ffe): when m_nState==0 and radio message #2 isTriggered(), advance
+                // m_nState 0->1. Then a 7-way tbh on (m_nState-1) dispatches states 1..7:
+                //   state 1 @0x13a036 (falls through here): guarded by level->field_178==0; sets the
+                //     campaign Mission type to 4, parks the two intro fighters in a formation with a
+                //     shared facing (rodata dir/pos consts @0x13a2d4..0x13a2e8), then the standard
+                //     cutscene-exit teardown + camera reframe on enemies[0]'s geometry basis
+                //     (dir*7000 + right*700 + up*300, consts @0x13a2f4/0x13a2fc/0x13a300) and names
+                //     the docking target from GameText.
+                //   state 2 @0x13fb7a, state 3 @0x13fcde, state 4 @0x13ff1c, state 5 @0x14011a,
+                //   state 6 @0x140214, state 7 @0x140250.
+                // DEFERRED: FP-immediate-heavy formation/animation bodies not decoded this pass.
                 break;
             case 94: { // 0x13acac (tbh on m_nState 0..3)
                 if (m_nState != 0) {
@@ -970,7 +1050,13 @@ int LevelScript::process(int delta) {
                 // global status byte selecting the marker index set and KIPlayer::field_0x140.
                 break;
             case 158: // 0x13885c (nested dispatch on m_nState: 1/2/3 -> 0x138878/0x13d724/0x13d74e)
-                // DEFERRED 0x13885c
+                // State 1 @0x138878: a per-frame animation body -- advances the 64-bit script counter
+                // (m_nScriptTimerA:m_nScriptCounterA) by delta, derives a normalized time from it
+                // (counter/const @0x1389ac), pans the camera via translate() with FP-scaled deltas,
+                // re-aims m_pGeometry4 @0xcc at the player (getPosition - geom pos -> VectorNormalize
+                // -> setDirection) and, past counter thresholds 29999/25000, moveForward()s it by
+                // delta*2.5 and wakes enemies[0]. States 2/3 @0x13d724/0x13d74e.
+                // DEFERRED: FP-immediate-heavy per-frame bodies not decoded this pass.
                 break;
             default:
                 break;
