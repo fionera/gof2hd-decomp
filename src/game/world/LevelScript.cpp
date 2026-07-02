@@ -5,6 +5,7 @@
 #include "game/mission/Explosion.h"
 #include "game/ship/KIPlayer.h"
 #include "game/ui/Hud.h"
+#include "game/ui/Layout.h"
 #include "game/world/StarSystem.h"
 #include "game/ship/TargetFollowCamera.h"
 #include "engine/render/AEGeometry.h"
@@ -264,16 +265,112 @@ void LevelScript::skipCutscene() {
 }
 
 void LevelScript::process(int delta) {
+    // Reconstruction pass 1 of _ZN11LevelScript7processEi (original 0xdf90 bytes @ 0x137d18).
+    // Implemented faithfully here: prologue accessors + mission dispatch (0x137d18),
+    // the mission==1 intro state machine (0x137d82-0x137e82) and the shared "active" tail
+    // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
+    // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
     Level *level = m_pLevel;
-    level->getMessages();
-    level->getPlayer();
-    level->getMessages();
+    Array<void *> *messages = level->getMessages(); // lint: void_ptr (matches Level::getMessages() -> Array<void*>*)
+    PlayerEgo *player = level->getPlayer();
+    Array<KIPlayer *> *enemies = level->getEnemies();
     int mission = Globals::status->getCurrentCampaignMission();
 
-    if (mission != 0) {
-        float frameDelta = (float) delta * 0.001f;
-        m_pCamera->update((int) frameDelta);
+    if (mission == 0) {
+        // DEFERRED (pass 1): mission-0 intro cutscene choreography, disasm 0x137e84-0x137f76.
+        // Positions/directions the three intro ships, drives the camera local matrix via
+        // PaintCanvas Camera{GetCurrent,GetLocal}+MatrixSetTranslation, and gates on m_nState.
+        // Not decoded here (ambiguous FP register fills for the direction vectors). Falls through
+        // to the shared active tail below, matching the original.
+        (void) player;
+    } else if (mission == 1) {
+        // mission==1 intro (disasm 0x137d82). Slowly rotates the player ship and pans the camera
+        // while radio message #2 plays; on fade-out it switches to the next scene.
+        m_pLevel->lodManager->forceUpdate(delta, true);
+
+        // player->rotate(0, angle, angle) with angle = ((delta<<1)&~15) * 2^-16 * 2*pi (0x137d90).
+        float angle = (float) ((delta << 1) & -16) * 1.52587890625e-05f * 6.2831855f;
+        player->rotate(0.0f, angle, angle);
+
+        // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
+        Vector enemyPos = (*enemies)[0]->getPosition();
+        (*enemies)[0]->setToSleep();
+        float depth = enemyPos.z / -5000.0f;
+        if (!(depth < 1.0f)) {
+            depth = 1.0f;
+        }
+        (*enemies)[0]->geometry->moveForward((float) delta * 0.2f * depth);
+
+        // Radio message #2 drives the fade-out and scene switch (0x137e18).
+        RadioMessage *msg2 = (RadioMessage *) ((*messages)[2]);
+        if (msg2->isOver() && m_nState == 0) {
+            m_nState = 1;
+            Globals::layout->startFade(true, 255, 5000);
+        }
+        if (m_nState == 1 && !Globals::layout->isFading()) {
+            // DEFERRED (pass 1): scene transition at disasm 0x138a66 -- once the fade completes,
+            // the original calls ApplicationManager::SetCurrentApplicationModule(scenes[1]) and
+            // returns. Faithful early-out placeholder until that tail is decoded.
+            return;
+        }
+        m_pCamera->translate((float) ((double) delta * 0.1), 0.0f, 0.0f);
+    } else {
+        // DEFERRED (pass 1): mission>=2 general campaign state machine and the per-mission switch,
+        // disasm 0x1381b2-0x145ca8 (~19k instructions, dozens of mission-specific cutscene
+        // branches: mission 0x51 alien-orbit approach, docking, wormholes, supernova, etc.).
+        return;
     }
+
+    // --- shared "active" tail (disasm 0x137f7c); runs for missions 0 and 1 ---
+    if (m_bStartSequence != 0) {
+        m_pLevel->lodManager->forceUpdate(30, false);
+
+        if (Globals::status->getWingmen() != 0) {
+            Array<KIPlayer *> *wingmen = m_pLevel->getEnemies();
+            for (unsigned int i = 0; i < wingmen->count; ++i) {
+                if ((*wingmen)[i]->isWingMan()) {
+                    // DEFERRED (pass 1): (*wingmen)[i] flag @0x12d = 1 (no named field @0x12d yet).
+                }
+            }
+        }
+
+        field_0x24 += delta; // passedTime += delta
+        if (m_pLevel->getPlayer() != 0 &&
+            Globals::status->getCurrentCampaignMission() >= 2 &&
+            field_0x24 >= 7001) {
+            field_0x24 = 0;
+            m_bStartSequence = 0;    // active = false
+            m_bStartSequenceOver = 1; // startSequenceIsOver = true
+            m_pCamera->setLookAtCam(false);
+            ((Player *) m_pLevel->getPlayer())->setVulnerable(true);
+            m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11)
+            m_pLevel->getPlayer()->setCollide(true);
+
+            if (Level::programmedStation != 0) {
+                if (!Globals::status->getStation()->equals(Level::programmedStation)) {
+                    m_pHud->hudEvent(5, m_pLevel->getPlayer(), 0);
+                }
+            }
+
+            Level::initStreamOutPosition = 0;
+            if (Level::doInstantJump == 0) {
+                setAutoPilotToProgrammedStation();
+            }
+
+            if (Globals::status->getWingmen() != 0) {
+                Array<KIPlayer *> *wingmen = m_pLevel->getEnemies();
+                for (unsigned int i = 0; i < wingmen->count; ++i) {
+                    if ((*wingmen)[i]->isWingMan()) {
+                        // DEFERRED (pass 1): (*wingmen)[i] flag @0x12d = 0 (no named field @0x12d).
+                    }
+                }
+            }
+        }
+    }
+
+    // DEFERRED (pass 1): mission==5 special-case (disasm 0x13812a) and the campaign-mission
+    // switch (0x138134-end). For missions 0 and 1 these are no-ops (no matching case), so the
+    // behaviour above is complete for the intro missions.
 }
 
 void LevelScript::lookBehind() {
