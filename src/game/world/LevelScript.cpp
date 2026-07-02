@@ -29,6 +29,10 @@
 #include "game/ship/PlayerGasCloud.h"
 #include "engine/core/AERandom.h"
 #include "engine/audio/FModSound.h"
+#include "engine/math/Transform.h"
+#include "engine/core/ApplicationManager.h"
+#include "game/world/Standing.h"
+#include "game/world/Galaxy.h"
 
 static Station *gProgrammedStation = nullptr;
 
@@ -393,17 +397,47 @@ int LevelScript::process(int delta) {
         m_pLevel->lodManager->forceUpdate(delta, true);
         m_pCamera->translate((float) (2 * delta), 0.0f, (float) (-4 * delta)); // 0x1381de/0x1381e8
         m_nFlags = (uint16_t) ((m_nFlags & 0xFF) | 0x100); // strb 1 -> m_nFlags high byte (cinematicBreak_) @0x11
-        // DEFERRED 0x13821e: the m_nState choreography machine (decoded but not emitted this pass
-        //   because state 0 exits via an early `return 1` -- shared epilogue 0x144f60 -- and drives
-        //   the PaintCanvas Transform API whose [m_pGeometry4+0xc] transform-id field is not yet
-        //   modelled, so faithful emission would require restructuring the top-level mission dispatch).
-        //   State 0 (0x13821e): m_nScriptTimerA (this+0x90) += delta; ramp the camera rumble
-        //   min((float)m_nScriptTimerA / 10000.0f [@0x138540], 1.0f) at 100%; then gate on the 64-bit
-        //   counter at field_0x8:field_0xc (this+0x08) >= 10001 -- once met, seat the station model
-        //   m_pGeometry4 (@0xd8) at (0,0,10000), drive its PaintCanvas Transform (TransformGetTransform
-        //   -> SetAnimationState 3 then 1), play FModSound event 160 (0xa0), set m_nState=1, zero
-        //   m_nScriptTimerA and `return 1`. State 1 lives at 0x138f08, states >=2 at 0x139136 (state 2
-        //   waits for radio message #3 (messages[3]) to be over).
+        if (m_nState == 1) {
+            // DEFERRED 0x138f08: state-1 body.
+        } else if (m_nState != 0) {
+            // DEFERRED 0x139136: state >=2 body (state 2 waits for radio message #3, messages[3]).
+        } else {
+            // State 0 (0x13821e): ramp the camera rumble on the 64-bit script timer m_nScriptTimerA
+            // (this+0x90 += delta), and once the 64-bit script counter field_0x8:field_0xc reaches
+            // 10001, seat the station model, drive its cinematic transform, play the arrival sting,
+            // advance to state 1 and early-return.
+            reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+            float rumble = (float) reinterpret_cast<long long &>(m_nScriptTimerA) / 10000.0f; // @0x138540
+            if (!(rumble < 1.0f)) {
+                rumble = 1.0f;
+            }
+            m_pCamera->setRumblePercentage(rumble, 100); // 0x138262
+            if (reinterpret_cast<long long &>(field_0x8) >= 10001) {
+                // The station model lives at this+0xd8 (named m_pGeometry5 in the header).
+                m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f}); // 0x138278, z=10000.0f @0x138540
+                AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                        Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                t->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr); // 0x13829e
+                t = (AbyssEngine::Transform *)
+                        Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                t->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr); // 0x1382b6
+                Globals::sound->play(160, nullptr, nullptr, 0.0f); // 0x1382cc
+                m_nState = 1;
+                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x1382d4
+                return 1; // shared epilogue 0x144f60 (returns r5 == 1)
+            }
+        }
+    } else if (mission == 0x4e) {
+        // Chain A, mission 0x4e intro (disasm 0x138338). Once the 64-bit script counter
+        // field_0x8:field_0xc reaches 7901, keep driving the intro geometry's cinematic transform;
+        // then a 12-way tbh on (m_nState-1) runs the approach choreography substates.
+        if (reinterpret_cast<long long &>(field_0x8) >= 7901) {
+            // DEFERRED 0x13834e: Globals::Canvas->TransformGetTransform(...)->Update((long long)delta,
+            //   false) on landmarks[0]'s [+0x140] source geometry (that field is not yet modelled).
+        }
+        // DEFERRED 0x138378 (tbh on m_nState-1): the 12 approach substates
+        //   s1 0x1383a0 s2 0x13ba5c s3 0x13b8dc s4 0x13baba s5 0x13b8c0 s6 0x13bb7c
+        //   s7 0x13bc18 s8 0x13baf2 s9 0x13bc34 s10 0x13b948 s11 0x13bd2c s12 0x13b7f2.
     } else {
         // mission>=2 path (disasm 0x1381b2). This is "Chain A": a long chain of per-mission
         // *intro* choreographies (approach cutscenes) that each run once, then fall through to
@@ -486,6 +520,20 @@ int LevelScript::process(int delta) {
             Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
             ((PlayerWormHole *) (*landmarks)[3])->reset(true);
         }
+    } else if ((switchMission == 50 || switchMission == 51) && messages != nullptr &&
+               messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
+        // disasm 0x139ac2 (missions 50 @0x1383e4 and 51 @0x13876c share this body): the exit-wormhole
+        // cutscene turns every non-wingman ship permanently hostile and floors the player's standing.
+        for (unsigned int i = 0; i < enemies->count; ++i) {
+            KIPlayer *kp = (*enemies)[i];
+            if (!kp->isWingMan()) {
+                kp->player->setAlwaysFriend(false);
+                kp->player->setAlwaysEnemy(true);
+                kp->player->turnEnemy();
+            }
+        }
+        ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
+        m_nState = 1; // 0x1381aa -> switch guard 0x13879e
     }
     // DEFERRED (pass 2): further pre-switch specials -- mission 50 (disasm 0x1383e4) and mission 51
     // (disasm 0x13876c) share the exit-wormhole cutscene body at 0x139ac2.
@@ -1888,11 +1936,52 @@ int LevelScript::process(int delta) {
                     break;
                 }
                 if (m_nState == 12) {
-                    // DEFERRED 0x144d24: state-12 body.
+                    // State 12 (0x144d24): inflate the destination planet 4x and hold the rumble, drag
+                    // any type-10 objects onto the player, then once the fade has cleared start the
+                    // outbound fade, spin the player to face back, drop the jump marker and flip the sun
+                    // to its supernova (advancing to state 13).
+                    Array<AEGeometry *> *planets = reinterpret_cast<Array<AEGeometry *> *>(
+                            m_pLevel->getStarSystem()->getPlanets());
+                    AEGeometry *planet0 = (*planets)[0];
+                    planet0->setScaling(planet0->getScaling() * 4.0f); // 4.0 @0x144d44
+                    m_pCamera->setRumblePercentage(50.0f, 10);         // 50.0 @0x145018
+                    // DEFERRED 0x144d6a: for each type-10 object (field_0x28==10) in enemies, call its
+                    //   vtable+0x2c mover to snap it onto the player (arg 100000 @0x14502c).
+                    if (!Globals::layout->isFading()) {
+                        Globals::layout->startFade(false, -1, 2000); // 0x144da2
+                        m_pCamera->setTarget(player->geometry);
+                        Vector dir = player->geometry->getDirection();
+                        player->geometry->setDirection(-dir, Vector{0.0f, 1.0f, 0.0f});
+                        if (m_pGeometry6 != nullptr) {
+                            delete m_pGeometry6; // 0x144df6
+                        }
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                        m_pGeometry6 = nullptr;
+                        m_pLevel->getStarSystem()->switchSunForSupernovaExpansion(); // 0x144e0e
+                        m_nState = m_nState + 1; // 12 -> 13
+                    }
                     break;
                 }
                 if (m_nState == 13) {
-                    // DEFERRED 0x144c38: state-13 body.
+                    // State 13 (0x144c38): rotate/creep the player as a final shudder, hold the rumble,
+                    // and after 6s save the player's HP into Status, roll the campaign forward, hand the
+                    // player to station 0x6f and jump to the results module.
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    float spin = (float) delta / 800.0f; // @0x144c34
+                    player->rotate(spin, spin, spin);
+                    player->geometry->moveForward((float) (delta * 12)); // 0x144c6a
+                    m_pCamera->setRumblePercentage(50.0f, 10); // 50.0 @0x145018
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 6001) {
+                        Globals::status->field_64 = player->player->getHitpoints(); // hullHp @0x64
+                        Globals::status->field_5c = player->player->getShieldHP(); // @0x5c
+                        Globals::status->field_60 = player->player->getArmorHP();  // @0x60
+                        Globals::status->field_68 = player->player->getGammaHP();  // @0x68
+                        Globals::status->nextCampaignMission(true);
+                        Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(0x6f));
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(0x6f));
+                        // DEFERRED 0x144d00: two scene-switch flag globals set to 1 before the jump.
+                        Globals::appManager->SetCurrentApplicationModule(2); // 0x144d1e
+                    }
                     break;
                 }
                 if (m_nState == 1) {
