@@ -21,6 +21,8 @@
 #include "game/ship/PlayerWormHole.h"
 #include "game/mission/Mission.h"
 #include "game/mission/Objective.h"
+#include "game/weapons/Radar.h"
+#include "engine/core/GameText.h"
 
 static Station *gProgrammedStation = nullptr;
 
@@ -421,10 +423,43 @@ int LevelScript::process(int delta) {
             // DEFERRED 0x138c3e: mission 64..73 range handler.
         } else {
             switch (cm) {
-            case 14: // 0x13a9b2
-                // DEFERRED 0x13a9b2: first-person approach cutscene (turret/camera/enemy setup,
-                // enemies[] setHitpoints/setDead loop, forceUpdate); cold substates 0x13ea84/0x13c6fc.
+            case 14: { // 0x13a9b2
+                if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
+                    // DEFERRED 0x13ea84: radio-message #1 state-0 sub-branch.
+                    break;
+                }
+                if (((RadioMessage *) ((*messages)[1]))->isOver() && m_nState == 1) {
+                    // First-person approach cutscene done: hand control back to the player, hide the
+                    // HUD/radar cinematic overlay and instantly kill the type-8 escort wave.
+                    // FModSound::updateEvent3DAttributes(15, player pos, {0,0,0}, false) DEFERRED @0x13aa06
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    player->stopShooting(0);
+                    m_pHud->visible = 0;
+                    m_pRadar->field_0x58 = 0;
+                    m_pLevel->flashScreen(3);
+                    player->setComputerControlled(true);
+                    player->setSpeed(0.0f);
+                    player->player->removeAllGuns();
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setTarget(player->geometry);
+                    m_pCamera->setPosition(player->getPosition());
+                    m_pCamera->translate(1000.0f, 700.0f, 1000.0f);
+                    for (unsigned int i = 0; i < level->getEnemies()->count; ++i) {
+                        if ((*level->getEnemies())[i]->shipGroup == 8) {
+                            (*level->getEnemies())[i]->player->setHitpoints(0);
+                            (*level->getEnemies())[i]->setDead();
+                        }
+                    }
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    // -> shared tail 0x13eddc
+                }
                 break;
+            }
             case 16: // 0x13b014
                 // DEFERRED 0x13b014
                 break;
@@ -476,11 +511,35 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 29: // 0x139ca2
-                // DEFERRED 0x139ca2: radio-gated state 1->2 transition (camera retarget + new
-                // Objective(3) + forceUpdate); cold substates 0x13e1f6/0x13e3bc. Touches unnamed
-                // fields @0xd0/@0xd4 and PlayerEgo+0 -- deferred to avoid inventing members.
+            case 29: { // 0x139ca2
+                if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
+                    // DEFERRED 0x13e1f6: radio-message #0 state-0 sub-branch.
+                    break;
+                }
+                if (((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 1) {
+                    // Cutscene over: retarget the camera to the player, restore the HUD/radar and
+                    // player controls, drop the intro geometry and spawn the follow-up objective.
+                    m_nState = 2;
+                    m_pCamera->setTarget(player->geometry);
+                    m_pHud->visible = 1;
+                    m_pRadar->field_0x58 = 1;
+                    m_nFlags = m_nFlags & 0xFF; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
+                    m_pCamera->setLookAtCam(false);
+                    player->setComputerControlled(false);
+                    player->player->setVulnerable(true);
+                    if (m_pGeometry6 != nullptr) {
+                        delete m_pGeometry6;
+                    }
+                    field_0x8 = 0;
+                    field_0xc = 0;
+                    m_nTimeLimit = 180000;
+                    m_pGeometry6 = nullptr;
+                    m_pLevel->objectivesA = new Objective(3, 180000, m_pLevel);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    // -> shared tail 0x13e3bc
+                }
                 break;
+            }
             case 40: // 0x13a4d8
                 // DEFERRED 0x13a4d8: docking approach (GOT getEnemies/getLandmarks thunks, camera
                 // vector choreography); cold substates 0x13e6b8/0x13e6b4.
@@ -571,9 +630,27 @@ int LevelScript::process(int delta) {
             case 80: // 0x139e34
                 // DEFERRED 0x139e34
                 break;
-            case 91: // 0x13ac42
-                // DEFERRED 0x13ac42: docking-target rename (GameText/String, PlayerFixedObject::setName).
+            case 91: { // 0x13ac42
+                if (m_nState != 0) {
+                    // DEFERRED 0x13ebe8: cold substate (m_nState != 0).
+                    break;
+                }
+                if (!((RadioMessage *) ((*messages)[3]))->isTriggered()) {
+                    // DEFERRED 0x13ebe4 -> tail.
+                    break;
+                }
+                // Docking approved: reset timers, activate the docking target and give it its
+                // localized name.
+                m_nScriptTimerB = 0;
+                m_nScriptCounterB = 0;
+                m_nState = 1;
+                (*enemies)[0]->setActive(true);
+                PlayerFixedObject *dockTarget = (PlayerFixedObject *) m_pLevel->getDockingTarget(0);
+                String dockName(*Globals::gameText->getText(3211), false);
+                dockTarget->setName(dockName);
+                // -> tail (1410e2)
                 break;
+            }
             case 92: // 0x139ffe
                 // DEFERRED 0x139ffe
                 break;
