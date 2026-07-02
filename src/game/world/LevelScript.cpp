@@ -17,6 +17,8 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 #include "game/ship/PlayerWormHole.h"
+#include "game/mission/Mission.h"
+#include "game/mission/Objective.h"
 
 static Station *gProgrammedStation = nullptr;
 
@@ -400,16 +402,197 @@ void LevelScript::process(int delta) {
     // DEFERRED (pass 2): further pre-switch specials -- mission 50 (disasm 0x1383e4) and mission 51
     // (disasm 0x13876c) share the exit-wormhole cutscene body at 0x139ac2.
 
-    // DEFERRED (pass 2): the per-mission campaign switch (disasm 0x13879e-0x144e36, ~50KB, the bulk
-    // of this function). Guarded by Status::getMission()->isCampaignMission() && !isEmpty() (or
-    // mission==42). The dispatch on getCurrentCampaignMission() (0x1387ca) reaches, by mission id:
-    //   14->0x13a9b2  16->0x13b014  21->0x13ab24  24->0x13a930  29->0x139ca2  40->0x13a4d8
-    //   41->0x139d56  42->0x13abaa  56->0x139f14  80->0x139e34  91->0x13ac42  92->0x139ffe
-    //   94->0x13acac  102->0x13a658 105->0x13aea4 114->0x13afde 125->0x139f9c 154->0x13a76e
-    //   157->0x13a308 158 (inline)  64..73->0x138c3e  131..145->0x138a8a
-    // Each target is a dense per-frame cutscene handler (radio-message gated state machine with
-    // camera/particle/sound choreography and GOT-loaded helper thunks). Not decoded in this pass
-    // to avoid fabrication; the v2 bodies diverge substantially from the DeepOpen v1 switch.
+    // --- the per-mission campaign switch (disasm 0x13879e-0x144e36, the bulk of this function) ---
+    // Guard (0x1387a0): only run the switch for a non-empty campaign mission (getMission() called
+    // twice, short-circuited), or unconditionally for mission 42. Otherwise fall straight to the
+    // post-switch tail (0x144e36).
+    if ((Globals::status->getMission()->isCampaignMission() &&
+         !Globals::status->getMission()->isEmpty()) ||
+        Globals::status->getCurrentCampaignMission() == 42) {
+        // Dispatch on the campaign mission id (fresh call at 0x1387ca; -Oz has no CSE). The two
+        // range prongs (0x1387ce/0x1387d8) are checked before the linear compare chain, matching
+        // the original's jump order.
+        int cm = Globals::status->getCurrentCampaignMission();
+        if (cm >= 131 && cm <= 145) {
+            // DEFERRED 0x138a8a: mission 131..145 range handler (tbh sub-dispatch on m_nState).
+        } else if (cm >= 64 && cm <= 73) {
+            // DEFERRED 0x138c3e: mission 64..73 range handler.
+        } else {
+            switch (cm) {
+            case 14: // 0x13a9b2
+                // DEFERRED 0x13a9b2: first-person approach cutscene (turret/camera/enemy setup,
+                // enemies[] setHitpoints/setDead loop, forceUpdate); cold substates 0x13ea84/0x13c6fc.
+                break;
+            case 16: // 0x13b014
+                // DEFERRED 0x13b014
+                break;
+            case 21: { // 0x13ab24
+                // If nobody has turned hostile yet, and any of enemies[1..3] already carries the
+                // enemy flag, flip all of enemies[1..3] to permanent enemies.
+                if (m_nState == 0) {
+                    int i = 1;
+                    while (i <= 3) {
+                        Player *ship = (*level->getEnemies())[i]->player;
+                        ++i;
+                        if (ship->enemyFlagsLo != 0) {
+                            for (int j = 1; j != 4; ++j) {
+                                (*level->getEnemies())[j]->player->setAlwaysEnemy(true);
+                            }
+                            break;
+                        }
+                    }
+                }
+                // Once radio message #2 fires (still in state 0), commit enemies[1..3] as enemies.
+                if (((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 0) {
+                    for (int j = 1; j != 4; ++j) {
+                        (*level->getEnemies())[j]->player->setAlwaysEnemy(true);
+                    }
+                    m_nState = 1; // shared tail 0x13aba4 -> 0x13edde
+                }
+                break;
+            }
+            case 24: { // 0x13a930
+                if (((RadioMessage *) ((*messages)[3]))->isTriggered() && m_nState == 0) {
+                    // DEFERRED 0x13e97e: radio-message #3 state-0 sub-branch.
+                    break;
+                }
+                if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 1) {
+                    // Radio message #4: spin up the exit wormhole (landmarks[3]).
+                    Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
+                    (*landmarks)[3]->setVisible(true);
+                    landmarks = m_pLevel->getLandmarks();
+                    ((PlayerWormHole *) (*landmarks)[3])->reset(false);
+                    landmarks = m_pLevel->getLandmarks();
+                    ((PlayerWormHole *) (*landmarks)[3])->open();
+                    // FModSound::play(0x22, ...) DEFERRED @0x13a9a2
+                    m_nScriptTimerA = 0;
+                    m_nScriptCounterA = 0;
+                    m_nState = 2;
+                    // DEFERRED 0x13c690: continues to the post-switch tail.
+                } else {
+                    // DEFERRED 0x13c68a
+                }
+                break;
+            }
+            case 29: // 0x139ca2
+                // DEFERRED 0x139ca2: radio-gated state 1->2 transition (camera retarget + new
+                // Objective(3) + forceUpdate); cold substates 0x13e1f6/0x13e3bc. Touches unnamed
+                // fields @0xd0/@0xd4 and PlayerEgo+0 -- deferred to avoid inventing members.
+                break;
+            case 40: // 0x13a4d8
+                // DEFERRED 0x13a4d8: docking approach (GOT getEnemies/getLandmarks thunks, camera
+                // vector choreography); cold substates 0x13e6b8/0x13e6b4.
+                break;
+            case 41: // 0x139d56
+                // DEFERRED 0x139d56: particle-emitter + camera setup; cold substates 0x13e400/0x13c5f6.
+                break;
+            case 42: { // 0x13abaa
+                if (messages == nullptr) {
+                    // DEFERRED 0x13c1a4
+                    break;
+                }
+                if (m_nState != 5) {
+                    // DEFERRED 0x13c1a8
+                    break;
+                }
+                if (!((RadioMessage *) ((*messages)[7]))->isOver()) {
+                    // DEFERRED 0x13c1a4
+                    break;
+                }
+                // FModSound::play(0x99, ...) DEFERRED @0x13abe2
+                field_0x8 = 0;
+                field_0xc = 0;
+                if (level->objectivesB != nullptr) {
+                    delete level->objectivesB;
+                }
+                level->objectivesB = nullptr;
+                if (level->objectivesA != nullptr) {
+                    delete level->objectivesA;
+                }
+                level->objectivesA = nullptr;
+                Array<KIPlayer *> *landmarks = level->getLandmarks();
+                (void) landmarks; // ((PlayerWormHole*)(*landmarks)[3])->setPosition(x,y,z) DEFERRED @0x13ac26 (vtable+0x48)
+                landmarks = m_pLevel->getLandmarks();
+                ((PlayerWormHole *) (*landmarks)[3])->open();
+                m_nScriptTimerA = 0;
+                m_nScriptCounterA = 0;
+                m_nState = 6; // shared tail 0x13edde
+                break;
+            }
+            case 56: { // 0x139f14
+                if (m_nState == 1) {
+                    // DEFERRED 0x13cda0
+                    break;
+                }
+                if (m_nState != 0) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                // Disable shooting for every friendly wingman before the cutscene.
+                if (enemies != nullptr) {
+                    for (unsigned int i = 0; i < enemies->count; ++i) {
+                        Player *ship = (*enemies)[i]->player;
+                        if (ship->isAlwaysFriend()) {
+                            ship->setShootingEnabled(false);
+                        }
+                    }
+                }
+                m_nState = 1; // shared tail 0x13aba4 -> 0x13edde
+                break;
+            }
+            case 80: // 0x139e34
+                // DEFERRED 0x139e34
+                break;
+            case 91: // 0x13ac42
+                // DEFERRED 0x13ac42: docking-target rename (GameText/String, PlayerFixedObject::setName).
+                break;
+            case 92: // 0x139ffe
+                // DEFERRED 0x139ffe
+                break;
+            case 94: // 0x13acac
+                // DEFERRED 0x13acac
+                break;
+            case 102: // 0x13a658
+                // DEFERRED 0x13a658
+                break;
+            case 105: // 0x13aea4
+                // DEFERRED 0x13aea4
+                break;
+            case 114: { // 0x13afde
+                if (m_nState != 0) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                // Look for an active docked/type-8 escort among enemies[].
+                for (unsigned int i = 0; i < enemies->count; ++i) {
+                    KIPlayer *e = (*enemies)[i];
+                    if (e->shipGroup == 8 && e->player->isActive()) {
+                        // DEFERRED 0x1405c8: active escort found -> sub-branch.
+                        break;
+                    }
+                }
+                break;
+            }
+            case 125: // 0x139f9c
+                // DEFERRED 0x139f9c: builds a fixed Route (new Route(pts,3)) and assigns it to the
+                // player; needs the static route-point table from rodata.
+                break;
+            case 154: // 0x13a76e
+                // DEFERRED 0x13a76e
+                break;
+            case 157: // 0x13a308
+                // DEFERRED 0x13a308
+                break;
+            case 158: // 0x13885c (nested dispatch on m_nState: 1/2/3 -> 0x138878/0x13d724/0x13d74e)
+                // DEFERRED 0x13885c
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    // DEFERRED 0x144e36: post-switch "mission tail" -- player-distance / hitpoints fail checks,
+    // wingman damage propagation, and autopilot/route cleanup, then the function epilogue (0x144f56).
+    // Runs for every mission after the switch; not decoded in this pass.
 }
 
 void LevelScript::lookBehind() {
