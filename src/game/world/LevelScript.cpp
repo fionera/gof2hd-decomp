@@ -3650,7 +3650,37 @@ int LevelScript::process(int delta) {
             }
             case 158: { // 0x13885c (nested dispatch on m_nState: 1/2/3 -> 0x138878/0x13d724/0x13d74e)
                 if (m_nState == 3) {
-                    // DEFERRED 0x13d74e: state-3 body (proximity check + AERandom gate).
+                    // State 3 @0x13d74e: a "reinforcement" pulse. The primary 64-bit script timer
+                    // (m_nScriptTimerA:m_nScriptCounterA @0x90) advances every frame; every 4000ms
+                    // (once it passes 4001) it resets and, if the escort marker enemies[0] has drawn
+                    // within 25000 units of the player and a 39% dice roll lands (AERandom::nextInt(100)
+                    // >= 61), it wakes the first still-dormant escort in enemies[1..3]. The secondary
+                    // 64-bit clock (m_nScriptTimerB:m_nScriptCounterB @0x98) is the overall dwell timer
+                    // handled by the shared tail below.
+                    long long *timerA = reinterpret_cast<long long *>(&m_nScriptTimerA);
+                    *timerA += delta; // 0x13d76c strd (unconditional)
+                    if (*timerA >= 4001) {
+                        *timerA = 0;
+                        // 0x13d792: distance from the escort marker to the player. FP @0x13d720 = 25000.0f.
+                        Vector toPlayer = (*enemies)[0]->getPosition() - player->getPosition(); // vtable+0x28
+                        if (AbyssEngine::AEMath::VectorLength(toPlayer) < 25000.0f &&
+                            Globals::rnd->nextInt(100) >= 61) { // 0x13d7de
+                            for (int i = 1; i <= 3; ++i) {
+                                if (!(*enemies)[i]->player->isActive()) {
+                                    // 0x145816: wake the first still-dormant escort and re-seat it under AI.
+                                    (*enemies)[i]->revive();          // vtable+0x18
+                                    (*enemies)[i]->setActive(true);
+                                    (*enemies)[i]->setPosition((*enemies)[i]->getPosition()); // vtable+0x44
+                                    (*enemies)[i]->player->turnEnemy();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    // DEFERRED 0x14585a: the shared dwell tail merges two entry points (timerA on the
+                    //   <4001 path @0x140516 vs. timerB @0x14585a) into one 25001-threshold compare that
+                    //   also toggles (PlayerFighter*)enemies[0]->field_0x140; the merge's source-level
+                    //   shape is ambiguous, so the tail is left for a later pass.
                     break;
                 }
                 if (m_nState == 2) {
