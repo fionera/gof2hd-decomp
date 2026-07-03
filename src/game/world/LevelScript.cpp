@@ -358,8 +358,55 @@ int LevelScript::process(int delta) {
                     }
                 }
             }
+        } else if (m_nState == 3) {
+            // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
+            // message #8 finishes hand control back to the player and reframe onto the player ship.
+            // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
+            m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
+            if (((RadioMessage *) ((*messages)[8]))->isOver()) {
+                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0 -> this+0x90 (64-bit)
+                m_nState = 4;
+                player->setComputerControlled(false);
+                player->player->field_5e = 0;
+                m_pRadar->field_0x58 = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
+                m_pLevel->getPlayer()->setCollide(true);
+                m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                m_pCamera->setLookAtCam(false);
+                m_pCamera->setTarget(player->geometry);
+                m_bStartSequence = 0;               // strb 0 -> this+0x20
+                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
+            }
+            // falls through to the shared active tail (0x137f7c)
+        } else if (m_nState == 4) {
+            // State 4 (0x138d2a): once radio message #10 finishes, run the standard cutscene-exit
+            // teardown -- stop event 143's radio sting and replay it, drop the player out of turret
+            // and free-look, reset the camera, re-enable collision, then reframe the camera onto the
+            // player ship, rotate it (yaw = pi/2), and translate it clear. FP immediates from the
+            // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
+            if (((RadioMessage *) ((*messages)[10]))->isOver()) {
+                Globals::sound->stop(Globals::sound->currentMusicEvent);
+                Globals::sound->play(143, nullptr, nullptr, 0.0f);
+                player->setTurretMode(false);
+                resetCamera(m_pLevel);
+                player->setFreeLookMode(false);
+                m_pCamera->enableFirstPersonCam(false);
+                player->hideShipForFirstPersonCameraView(false);
+                m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                m_pLevel->getPlayer()->setCollide(false);
+                m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
+                player->setComputerControlled(true);
+                player->player->removeAllGuns();
+                m_pCamera->setLookAtCam(true);
+                m_pCamera->setTarget(player->geometry);
+                player->geometry->setRotation(0.0f, 1.5707964f, 0.0f);
+                Vector playerPos = player->geometry->getPosition();
+                m_pCamera->setPosition(playerPos);
+                m_pCamera->translate(25000.0f, -200.0f, -1000.0f);
+                m_nState = 5;
+            }
+            // falls through to the shared active tail (0x13d4ec -> 0x137f7c)
         } else {
-            // DEFERRED 0x1389c8: mission-0 states >2 (post-approach continuation).
+            // DEFERRED 0x138fd8: mission-0 states >4 (post-approach continuation).
         }
     } else if (mission == 1) {
         // mission==1 intro (disasm 0x137d82). Slowly rotates the player ship and pans the camera
@@ -399,9 +446,48 @@ int LevelScript::process(int delta) {
         m_pCamera->translate((float) (2 * delta), 0.0f, (float) (-4 * delta)); // 0x1381de/0x1381e8
         m_nFlags = (uint16_t) ((m_nFlags & 0xFF) | 0x100); // strb 1 -> m_nFlags high byte (cinematicBreak_) @0x11
         if (m_nState == 1) {
-            // DEFERRED 0x138f08: state-1 body.
-        } else if (m_nState != 0) {
-            // DEFERRED 0x139136: state >=2 body (state 2 waits for radio message #3, messages[3]).
+            // State 1 (0x138f08): ramp the rumble down over the 64-bit script timer this+0x90
+            // (+= delta), keep the seated station model facing along the camera, advance its
+            // transform, then once the 64-bit script counter field_0x8 reaches 14001 drop the
+            // rumble and advance to state 2. FP divisor @0x138e40 = 4000.0f.
+            reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+            float rumble = (float) reinterpret_cast<long long &>(m_nScriptTimerA) / 4000.0f;
+            if (!(rumble < 1.0f)) {
+                rumble = 1.0f;
+            }
+            m_pCamera->setRumblePercentage(1.0f - rumble, 100);
+            AEGeometry *dockModel = m_pGeometry5;
+            AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+            Vector camDir = AbyssEngine::AEMath::MatrixGetDir(
+                    *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
+            dockModel->setDirection(camDir, Vector{0.0f, 1.0f, 0.0f});
+            AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                    Globals::Canvas->TransformGetTransform(dockModel->transform);
+            t->Update((long long) delta, false);
+            if (reinterpret_cast<long long &>(field_0x8) >= 14001) {
+                m_pCamera->setRumblePercentage(0.0f, 0);
+                m_nState = 2;
+            }
+            // falls through to the shared active tail (0x139132 -> 0x137f7c)
+        } else if (m_nState == 2) {
+            // State 2 (0x139136): once radio message #3 finishes, start the fade-to-white and
+            // advance to state 3. FP-free: startFade(true, 255, 5000) @0x139150.
+            if (((RadioMessage *) ((*messages)[3]))->isOver()) {
+                Globals::layout->startFade(true, 255, 5000);
+                m_nState = 3;
+                return 1; // shared epilogue 0x144f60 (returns r5 == 1)
+            }
+        } else if (m_nState == 3) {
+            // State 3 (0x13916a): once the fade completes, re-enable full-screen fill, advance to
+            // the next campaign mission, then depart station #100 and continue to the post-switch
+            // scene-transition tail.
+            if (!Globals::layout->isFading()) {
+                Globals::layout->enableFillScreen(true);
+                Globals::status->nextCampaignMission(true);
+                // DEFERRED 0x139194: clear the scene-pending flag global, then
+                // Status::departStation(Galaxy::getStation(100)) and jump to the scene tail (0x13b132).
+                return (m_nFlags & 0xFF00) != 0 ? 1 : 0;
+            }
         } else {
             // State 0 (0x13821e): ramp the camera rumble on the 64-bit script timer m_nScriptTimerA
             // (this+0x90 += delta), and once the 64-bit script counter field_0x8:field_0xc reaches
