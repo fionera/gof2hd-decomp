@@ -2081,7 +2081,96 @@ int LevelScript::process(int delta) {
                         }
                         break;
                     }
-                    // DEFERRED 0x13f316: cold substates 3..6 (docking objective + timer states).
+                    // Cold docking substates 3..6 (dispatch @0x13f312/0x13f36e).
+                    if (m_nState == 3) {
+                        // State 3 (0x13f31e): once the mission counter has advanced far enough
+                        // (Globals::status->field_178 >= 10), tear down objective B and arm state 4.
+                        if (Globals::status->field_178 >= 10) {
+                            m_nState = 4;
+                            Objective *obj = m_pLevel->objectivesB; // [m_pLevel,#0x2c]
+                            if (obj != nullptr) {
+                                delete obj;
+                            }
+                            m_pLevel->objectivesB = nullptr;
+                        }
+                        break; // -> tail (0x1410e2)
+                    }
+                    if (m_nState == 4) {
+                        // State 4 (0x13f350): once radio message #6 finishes and the player has
+                        // undocked, reset the 64-bit script timer and advance to state 5.
+                        if (((RadioMessage *) ((*messages)[6]))->isOver() &&
+                            !player->isDockedToDockingPoint()) {
+                            reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0 -> this+0x90
+                            m_nState = 5;
+                        }
+                        break; // -> tail (0x1410e2)
+                    }
+                    if (m_nState == 5) {
+                        // State 5 (0x13f37e): hold for ~3s on the 64-bit script timer, then run the
+                        // full docking-cutscene teardown -- clear autopilot, drop the radar locks,
+                        // exit rocket/turret/free-look/first-person modes, stop shooting, re-seat the
+                        // HUD/radar/camera, hand control back to the AI, and re-aim the docked ship on
+                        // the station before advancing to state 6.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 3001) {
+                            break; // -> tail (0x1410e2)
+                        }
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                        m_pLevel->getPlayer()->setAutoPilot(nullptr); // 0x13f3b0
+                        m_pRadar->lockedEnemy = nullptr;  // strd 0 -> m_pRadar+4
+                        m_pRadar->dockNavPtr = nullptr;   // strd 0 -> m_pRadar+8
+                        if (player->isInRocketControl()) {
+                            resetCamera(m_pLevel);
+                            player->setRocketControl(nullptr, nullptr);
+                            player->killLiberator();
+                            m_pCamera->setRumblePercentage(0.0f, 0);
+                        }
+                        player->setTurretMode(false);
+                        resetCamera(m_pLevel);
+                        player->setFreeLookMode(false);
+                        m_pCamera->enableFirstPersonCam(false);
+                        player->hideShipForFirstPersonCameraView(false);
+                        player->stopShooting(0);
+                        m_pHud->visible = 0;                             // strb 0 -> m_pHud+1
+                        m_nFlags = (uint16_t) ((m_nFlags & 0xFF) | 0x100); // cinematicBreak_ = 1 (@0x11)
+                        m_pRadar->field_0x58 = 0;                       // strb 0 -> m_pRadar+0x48
+                        player->setComputerControlled(true);
+                        player->setCollide(false);
+                        m_pCamera->setLookAtCam(true);
+                        m_pCamera->setTarget(player->geometry);
+                        // DEFERRED 0x13f452: re-aim the player ship at the docking target -- the
+                        //   direction/normalize/setDirection AEMath operator-fn-ptr chain
+                        //   (blx fp / VectorNormalize / operator- / operator* / operator+=) is
+                        //   unproven; the surrounding teardown and the state advance are decoded.
+                        (*enemies)[0]->player->setHitpoints(0); // 0x13f530: enemies[0]->player
+                        m_nState = 6;
+                        break; // -> tail (0x1410e2)
+                    }
+                    if (m_nState == 6) {
+                        // State 6 (0x141002): wait ~2s on the 64-bit script timer while ramping the
+                        // player ship up to cruise speed; then advance the campaign mission, hop the
+                        // status to station #113, snapshot the player's hull/shield/armor/energy into
+                        // Status, and switch the application to the docking (menu) module.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 2001) {
+                            break; // -> tail (0x1410e2)
+                        }
+                        // DEFERRED 0x141022: player speed ramp -- getSpeed() returns the speed's
+                        //   float bit-pattern in an int; the "if (speed < 100.0) setSpeed(speed *
+                        //   1.05)" reinterpret is deferred (no clean lvalue for the bit-cast).
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 8001) {
+                            Globals::status->nextCampaignMission(true);
+                            Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(113)); // 0x141082
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(113));
+                            Level::initStreamOutPosition = 1; // strb 1 -> Level::initStreamOutPosition
+                            Globals::status->field_64 = player->player->getHitpoints(); // hullHp
+                            Globals::status->field_5c = player->player->getShieldHP();   // shieldHp
+                            Globals::status->field_60 = player->player->getArmorHP();    // armorHp
+                            Globals::status->field_68 = player->player->getGammaHP();    // energy
+                            Globals::appManager->SetCurrentApplicationModule(2); // 0x1410de
+                        }
+                        break; // -> tail (0x1410e2)
+                    }
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[3]))->isTriggered()) {
