@@ -3557,6 +3557,53 @@ int LevelScript::process(int delta) {
                     // each drive one beat of the post-cutscene escort/dock sequence. States >10 fall
                     // straight through to the post-switch tail (0x144e36). Simple beats are decoded
                     // here; the matrix-aim and long dwell-tail beats are left DEFERRED.
+                    //
+                    // ========================================================================
+                    // CANONICAL DWELL-TAIL PATTERN (proven, reusable across case 154 states
+                    // 1/2/3/5/6/9 and the analogous per-state escort beats).
+                    //
+                    // Each cold substate first (optionally) runs a camera-creep / target beat,
+                    // then -- only when its radio message isOver() -- bumps the 64-bit primary
+                    // script timer m_nScriptTimerA:m_nScriptCounterA @this+0x90 by delta. If the
+                    // radio is NOT over, control falls straight through to the post-switch tail
+                    // (0x144e36) -- the `break` below. Once the radio is over, the accumulated
+                    // timer is compared against a per-state threshold; when it is reached the
+                    // DWELL TAIL fires:
+                    //
+                    //     if (radio.isOver()) {
+                    //         reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    //         if (reinterpret_cast<long long &>(m_nScriptTimerA) >= <thr>) {
+                    //             <teardown beat: camera retarget to enemies[k], player
+                    //              setSpeed(0)/setFixed(false), LOD forceUpdate, ...>   // DEFERRED
+                    //             reinterpret_cast<long long &>(m_nScriptTimerA) = 0;   // strd 0
+                    //             m_nState = m_nState + 1;                              // advance
+                    //         }
+                    //     }
+                    //
+                    // ARM shape of the gate (all five load timerA via `ldr rX,[base,#144]!`,
+                    // i.e. base := this+0x90, then compare the 64-bit value against the movw
+                    // threshold with subs/sbcs + blt to 0x144e36):
+                    //     ldr.w r0,[base,#144]!   ; base = &m_nScriptTimerA
+                    //     ldr   r1,[base,#4]      ; high word = m_nScriptCounterA
+                    //     movw  r2,#<thr>
+                    //     subs  r0,r0,r2 / sbcs r0,r1,#0 / blt.w 144e36   ; if (timer < thr) break
+                    // The tail either advances m_nState inline (`str r,[this,#0x1c]` after
+                    // `ldrd .. [this,#0x18]; adds r,#1`) or funnels through the shared
+                    // continuation at 0x144a08 which does the same `[this+0x1c] += 1`. Every
+                    // tail resets the 64-bit timer to 0 (`strd r,r,[&m_nScriptTimerA]`).
+                    //
+                    // PER-STATE THRESHOLD TABLE (radio message index -> threshold -> advance):
+                    //   s1  msg#1  thr 1501  gate 0x14444c  advance inline (0x144510)  (E0 @0x13e908)
+                    //   s2  msg#2  thr 1001  gate 0x14452e  advance inline (0x144648)  (E1 @0x142f34)
+                    //   s3  msg#3  thr 1001  gate 0x1445de  advance via 0x144834->0x144a08 (E2 @0x1430d6)
+                    //   s5  msg#5  thr 1001  gate 0x1446e0  advance inline (0x144746)  (E4 @0x1432c2)
+                    //   s6  msg#6  thr 1001  gate 0x1447b8  advance via 0x144834->0x144a08 (E5 @0x14330e)
+                    //   s9  msg#7  thr 2001  gate 0x14484e  hostile-wave arm loop -> 0x144a08 (E8 @0x1434f2)
+                    //
+                    // The teardown BODIES (camera retarget to enemies[k], per-ship KIPlayer/
+                    // Player toggles, hostile-wave arming) are left DEFERRED at their addresses;
+                    // the proven threshold gate + timer reset + state advance are implemented.
+                    // ========================================================================
                     if (m_nState == 1) { // prong E0 @0x13e908
                         // Halt the player and force an LOD refresh, then nudge every shipGroup==9
                         // escort forward by delta*0.5 units. Once radio message #1 is over the primary
@@ -3571,7 +3618,13 @@ int LevelScript::process(int delta) {
                         }
                         if (((RadioMessage *) ((*messages)[1]))->isOver()) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x13e96a
-                            // DEFERRED 0x14444c: 1501-tick dwell tail.
+                            // DWELL TAIL 0x14444c: dwell 1501 ticks, then teardown + advance.
+                            if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1501) {
+                                // DEFERRED 0x14445a-0x144518: camera retarget to enemies + per-ship
+                                // KIPlayer setActive/setVisible loop + LOD forceUpdate.
+                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x14451c strd 0
+                                m_nState = m_nState + 1; // 0x144510 advance
+                            }
                         }
                         // DEFERRED 0x144444: radio-not-over -> shared tail.
                         break;
@@ -3605,6 +3658,13 @@ int LevelScript::process(int delta) {
                         m_pCamera->setLocal(local);                          // 0x1430a6
                         if (((RadioMessage *) ((*messages)[2]))->isOver()) { // 0x1430b0
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1430ce
+                            // DWELL TAIL 0x14452e: dwell 1001 ticks, then teardown + advance.
+                            if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1001) {
+                                // DEFERRED 0x14453c-0x14463c: player setSpeed(0)/setFixed, camera
+                                // retarget to enemies[0], position offset.
+                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x144652 strd 0
+                                m_nState = m_nState + 1; // 0x144648 advance
+                            }
                         }
                         // DEFERRED 0x144524: radio-not-over -> shared dwell tail.
                         break;
@@ -3612,6 +3672,14 @@ int LevelScript::process(int delta) {
                     if (m_nState == 3) { // prong E2 @0x1430d6
                         if (((RadioMessage *) ((*messages)[3]))->isOver()) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1430ec
+                            // DWELL TAIL 0x1445de: dwell 1001 ticks, then teardown + advance.
+                            if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1001) {
+                                // DEFERRED 0x1445ec-0x1445a2: player setSpeed(0)/setFixed, camera
+                                // retarget to enemies[0] + position offset, then LOD forceUpdate
+                                // (via shared continuation 0x144834 -> 0x144a08).
+                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x1445a2 strd 0
+                                m_nState = m_nState + 1; // 0x144a08 shared advance
+                            }
                         }
                         // DEFERRED 0x1445aa/0x1445b2: shared dwell tail.
                         break;
@@ -3651,6 +3719,14 @@ int LevelScript::process(int delta) {
                         // DEFERRED 0x1432c2: camera translate FP arg pool @0x143534.
                         if (((RadioMessage *) ((*messages)[5]))->isOver()) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1432f8
+                            // DWELL TAIL 0x1446e0: dwell 1001 ticks, then teardown + advance.
+                            if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1001) {
+                                // DEFERRED 0x1446ee-0x1447a6: player setSpeed/camera retarget +
+                                // position offset, LOD forceUpdate, PlayerFighter setAIDisabled +
+                                // per-ship KIPlayer setActive / Player setVulnerable loop.
+                                m_nState = m_nState + 1; // 0x144746 advance (inline)
+                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x1447a8 strd 0
+                            }
                         }
                         // DEFERRED 0x1446d8/0x1446e0: 1001-tick dwell tail.
                         break;
@@ -3679,6 +3755,14 @@ int LevelScript::process(int delta) {
                         m_pCamera->setLocal(local);                          // 0x15346c
                         if (((RadioMessage *) ((*messages)[6]))->isOver()) { // 0x153476
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x15348c
+                            // DWELL TAIL 0x1447b8: dwell 1001 ticks, then teardown + advance.
+                            if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1001) {
+                                // DEFERRED 0x1447c6-0x14482e: player setSpeed(0)/setFixed, camera
+                                // retarget to enemies[0] + position offset, then LOD forceUpdate
+                                // (via shared continuation 0x144834 -> 0x144a08).
+                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x14482e strd 0
+                                m_nState = m_nState + 1; // 0x144a08 shared advance
+                            }
                         }
                         // DEFERRED 0x1547ae: radio-not-over -> shared dwell tail.
                         break;
@@ -3704,6 +3788,16 @@ int LevelScript::process(int delta) {
                     if (m_nState == 9) { // prong E8 @0x1434f2
                         if (((RadioMessage *) ((*messages)[7]))->isOver()) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x143508
+                            // DWELL TAIL 0x14484e: dwell 2001 ticks, then arm the hostile wave and
+                            // advance. The teardown here is the largest of the tails.
+                            if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 2001) {
+                                // DEFERRED 0x14485c-0x144a04: loop over all enemies arming the
+                                // hostile escort wave (Player setEnemy / setState 8 / setAlwaysFriend
+                                // / setVulnerable), resetCamera, LOD forceUpdate, and the
+                                // field_0xaa -> PlayerEgo::setAutoTurret(true) restore.
+                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x144a04 strd 0
+                                m_nState = m_nState + 1; // 0x144a08 shared advance
+                            }
                         }
                         // DEFERRED 0x144842/0x14484e: 2001-tick dwell tail.
                         break;
