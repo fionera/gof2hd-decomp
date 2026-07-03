@@ -2467,36 +2467,52 @@ int LevelScript::process(int delta) {
                                 if (firstIdx == -1) {                            // 0x140b62
                                     firstIdx = (int) i;
                                 }
-                                if ((int) i == firstIdx) {
-                                    // Lead escort (0x140b6e): drop it far to the player's left and cloak it.
-                                    // pool: x=-81920.3125 @0x140ea8, y=2000.0 @0x140ea4, z=0.0.
-                                    Vector lead = e->getPosition()                 // vtable+0x28, 0x140b7e
-                                                  + Vector{-81920.3125f, 2000.0f, 0.0f}; // operator+ 0x140bfc
-                                    e->setPosition(lead);                          // vtable+0x44, 0x140c06
+                                if ((int) i == firstIdx || (int) i == firstIdx + 1) {
+                                    // Lead escort (i==firstIdx, 0x140b6e): drop it far to the player's
+                                    //   left. pool: x=-81920.3125 @0x140ea8, y=2000.0 @0x140ea4, z=0.0.
+                                    // Second escort (i==firstIdx+1, 0x140be6): seat it behind/below the
+                                    //   lead escort. pool: x=-2000.0 @0x140eb0, y=-800.0, z=-2000.0.
+                                    // Both share the operator+ / setPosition / cloak code at 0x140bfc.
+                                    Vector pos;
+                                    if ((int) i == firstIdx) {
+                                        pos = e->getPosition()                     // vtable+0x28, 0x140b7e
+                                              + Vector{-81920.3125f, 2000.0f, 0.0f}; // 0x140bfc
+                                    } else {
+                                        pos = (*enemies)[firstIdx]->getPosition()  // vtable+0x28, 0x140bea
+                                              + Vector{-2000.0f, -800.0f, -2000.0f}; // 0x140bfc
+                                    }
+                                    e->setPosition(pos);                           // vtable+0x44, 0x140c06
                                     ((PlayerFighter *) e)->cloak(1000, true);      // 0x140c1e
-                                } else if ((int) i == firstIdx + 1) {
-                                    // Second escort (0x140be6): seat it behind/below the lead escort.
-                                    // pool: x=-2000.0 @0x140eb0, y=-800.0 @0x140eac, z=-2000.0 @0x140eb0.
-                                    Vector pos = (*enemies)[firstIdx]->getPosition()      // vtable+0x28, 0x140bea
-                                                 + Vector{-2000.0f, -800.0f, -2000.0f};   // operator+ 0x140bfc
-                                    e->setPosition(pos);                                  // vtable+0x44, 0x140c06
-                                    // DEFERRED 0x140cd4..0x140d4c (common escort tail, element-offset ambiguous):
-                                    //   Player::setEnemies((elem+4), nullptr); pick = Globals::rnd->nextInt(5);
-                                    //   Player::setEnemy((elem+4), pick==4 ? [sp+0x54]->player : enemies[pick].?);
-                                    //   elem-><vtable+0xc>(); AEGeometry::setDirection({0,0,1},{0,0,0}) via geom(elem+8);
-                                    //   PlayerFighter::setAIDisabled(true).
                                 } else {
                                     // Remaining escorts (0x140c24): scatter to a random position around the
-                                    // player. Globals::rnd->nextInt(...): x/z = (nextInt(2)?1:-1)*(nextInt(10000)
-                                    //   +35000), y = nextInt(10000)-5000. Then setPosition(offset + playerPos?).
-                                    // DEFERRED 0x140c24..0x140cd2: exact base vector for operator+ (arg2 layout
-                                    //   sp+0x170 vs the scattered offset) not byte-confirmed.
-                                    // (common escort tail 0x140cd4 as above.)
+                                    // player. x/z = (nextInt(2)==0 ? 1 : -1) * (35000 + nextInt(10000)),
+                                    //   y = nextInt(10000) - 5000; base = playerPos (arg1 = sp+0x170).
+                                    int magX = 35000 + Globals::rnd->nextInt(10000);      // 0x140c32
+                                    int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1; // 0x140c48
+                                    int y = Globals::rnd->nextInt(10000) - 5000;          // 0x140c62/0x140c9a
+                                    int magZ = 35000 + Globals::rnd->nextInt(10000);      // 0x140c6e
+                                    int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1; // 0x140c88
+                                    Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
+                                    e->setPosition(playerPos + offset);            // 0x140cc6 / 0x140cd2
                                 }
+                                // Common escort tail (0x140cd4..0x140d4c): drop AI enemies, re-aim, disable AI.
+                                e->player->setEnemies(nullptr);                    // [elem+4], 0x140ce0
+                                int pick = Globals::rnd->nextInt(5);               // 0x140cee
+                                Player *foe = (pick == 4)
+                                                  ? player->player                 // [sp+0x54]->player, 0x140d02
+                                                  : (*enemies)[pick + 2]->player;  // data[pick+2]->player, 0x140d08
+                                e->player->setEnemy(foe);                          // [elem+4], 0x140d10
+                                e->awake();                                        // vtable+0xc, 0x140d22
+                                e->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f},  // sp+0x118, 0x140d40
+                                                          Vector{0.0f, 1.0f, 0.0f}); // sp+0x10c
+                                ((PlayerFighter *) e)->setAIDisabled(true);        // 0x140d4c
                             } else if (e->shipGroupFlag == 51) {                  // [+0x7c]==51, 0x140b90/92
-                                // DEFERRED 0x140b98..0x140bce (element-offset ambiguous):
-                                //   Array<Player*>* a = new Array<Player*>(); ArrayAdd(a, (elem[0]+4));
-                                //   ArrayAdd(a, (elem[i]+4)); Player::setEnemies((elem[i]+4), a).
+                                // shipGroup==51 branch (0x140b98): build a 2-element enemy list from the
+                                // first two escorts' Players and hand it to this escort. No delete (0x140bce).
+                                Array<Player *> *foes = new Array<Player *>();       // _Znwj(12) + ctor, 0x140ba0
+                                ArrayAdd((*enemies)[0]->player, *foes);              // data[0]->player, 0x140bb0
+                                ArrayAdd((*enemies)[1]->player, *foes);              // data[1]->player, 0x140bbc
+                                e->player->setEnemies(foes);                        // [elem+4], 0x140bca
                             }
                         }
                         // Cutscene teardown + camera reframe on the lead escort (0x140d5e..0x140e8e).
