@@ -901,7 +901,23 @@ int LevelScript::process(int delta) {
                 m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 m_pCamera->translate(0.0f, (float) delta * 0.05f, (float) delta * 0.28f);
                 if (m_nState == 3) {
-                    // DEFERRED 0x13d59e: state-3 body.
+                    // State 3 @0x13d59e: advance the 64-bit script counter, then for every escort
+                    // in group 44 randomly engage its cloak (1-in-10 per frame, unless it is already
+                    // set up) and drift it forward at a rate that grows with the elapsed frames.
+                    // FP immediate: s16 = @0x139714 = 0.05f (carried from the camera-pan code above).
+                    long long *counter = reinterpret_cast<long long *>(&m_nScriptTimerA);
+                    *counter += delta;
+                    for (unsigned int i = 1; i < enemies->count; ++i) {
+                        if ((*enemies)[i]->shipGroupFlag != 44) {
+                            continue;
+                        }
+                        PlayerFighter *fighter = (PlayerFighter *) (*enemies)[i];
+                        if (Globals::rnd->nextInt(100) <= 9 && fighter->field_0x13c == 0) {
+                            fighter->setCloakingPossible(true);
+                            fighter->cloak(20000, true);
+                        }
+                        (*enemies)[i]->geometry->moveForward((float) *counter * 0.05f);
+                    }
                     break;
                 }
                 if (m_nState == 2) {
@@ -2978,7 +2994,24 @@ int LevelScript::process(int delta) {
                     break;
                 }
                 if (m_nState == 2) {
-                    // DEFERRED 0x13d724: state-2 body (script-counter gate then 0x1403c2).
+                    // State 2 @0x13d724: hold-and-close. The primary 64-bit script timer
+                    // (m_nScriptTimerA:m_nScriptCounterA @0x90) keeps counting up until it caps
+                    // at 3000, driving the marker's forward drift; the secondary counter
+                    // (m_nScriptTimerB:m_nScriptCounterB @0x98) is the overall dwell clock. Once
+                    // it passes 12001 frames and radio message #2 is over, hand off (0x140414).
+                    // FP immediate @0x140604 = 0.1f.
+                    long long *timer = reinterpret_cast<long long *>(&m_nScriptTimerA);
+                    long long *counterB = reinterpret_cast<long long *>(&m_nScriptTimerB);
+                    if (*timer <= 2999) {
+                        *timer += delta;
+                    }
+                    *counterB += delta;
+                    (*enemies)[0]->geometry->moveForward((float) *timer * 0.1f);
+                    if (*counterB > 12001 &&
+                        ((RadioMessage *) ((*messages)[2]))->isOver()) {
+                        // DEFERRED 0x140414: arrival handoff (reset gun delay, drop the look-at
+                        //   camera, un-freeze/reveal the player and re-enable its route).
+                    }
                     break;
                 }
                 if (m_nState != 1) {
