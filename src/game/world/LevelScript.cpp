@@ -2386,8 +2386,71 @@ int LevelScript::process(int delta) {
                 break;
             }
             case 94: { // 0x13acac (tbh on m_nState 0..3)
-                if (m_nState != 0) {
-                    // DEFERRED 0x13e08e / 0x13dff4 / 0x13e15c: states 1/2/3 cold sub-branches.
+                if (m_nState == 1) {
+                    // state 1 (0x13e08e): drift both intro ships forward while the script timer
+                    // ramps; once it passes 6001 ticks re-enable their AI, hand control back and
+                    // reframe the follow camera behind the player (from field_0x40, set in state 0).
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // strd @+0x90 (0x13e0b0)
+                    for (int i = 0; i != 2; ++i) { // 0x13e0bc
+                        (*enemies)[i]->geometry->moveForward((float) (3 * delta)); // 0x13e0c6
+                    }
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) < 6001) { // 0x13e0d4
+                        break; // -> post-switch tail 0x144e36
+                    }
+                    for (int i = 0; i != 2; ++i) { // 0x13e0ec
+                        ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false); // 0x13e0f4
+                    }
+                    m_pLevel->getPlayer()->resetGunDelay();          // 0x13e104
+                    m_pCamera->setLookAtCam(false);                  // 0x13e10c
+                    m_pCamera->setTarget(player->geometry);          // [r9+8]=player->geometry, 0x13e116
+                    bool docked = player->isDockedToDockingPoint();  // 0x13e11c
+                    m_pCamera->setLookAtCam(false);                  // 0x13e126
+                    if (!docked) {
+                        // undocked (0x143cce): reframe the fixed camera from the reframe vector
+                        // stashed in field_0x40 by state 0, then fall into the shared teardown.
+                        m_pCamera->setPosition(*reinterpret_cast<Vector *>(&field_0x40)); // 0x143cd4
+                    } else {
+                        // docked (0x13e130): swing to a look-behind view around the target instead.
+                        lookBehind();                                    // 0x13e132
+                        m_pCamera->setRotationAroundTarget(true);        // 0x13e13a
+                        player->setFreeLookMode(true);                   // 0x13e142
+                        if (field_0xab) {                                // 0x13e146
+                            player->setTurretMode(true);                 // 0x13e154
+                        }
+                    }
+                    // shared teardown (0x143cd8): restore HUD/radar, refresh LOD, clear the
+                    // cinematic-break flag, reset the script timer, stop the music, advance state.
+                    m_pHud->visible = 1;                             // [r6+0xd0]+1 = 1, 0x143ce2
+                    m_pRadar->field_0x58 = 1;                        // [r6+0xd4]+0x48 = 1, 0x143ce8
+                    m_pLevel->lodManager->forceUpdate(delta, false); // 0x143cf2
+                    m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x143cf8
+                    m_nScriptTimerA = 0;                             // strd 0,0 [r8], 0x143cfc
+                    m_nScriptCounterA = 0;
+                    Globals::sound->stop(Globals::sound->currentMusicEvent); // 0x143d06
+                    m_nState = m_nState + 1; // [r6+0x1c] += 1 -> post-switch tail, 0x143d0e
+                    break;
+                }
+                if (m_nState == 2 || m_nState == 3) {
+                    // states 2 (0x13dff4, ships [2..3]) and 3 (0x13e15c, ships [4..5]): once the
+                    // script timer passes 100000 ticks, re-stage that pair of escort ships into a
+                    // fixed formation relative to the player, wake+aim+cloak them, then advance.
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // strd @+0x90 (0x13e010/0x13e178)
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) < 100000) { // pool 0x186a0 @0x13e3d4
+                        break; // -> post-switch tail 0x144e36
+                    }
+                    m_nScriptTimerA = 0; // strd 0,0 [r0] (0x13e018/0x13e180)
+                    m_nScriptCounterA = 0;
+                    int base = (m_nState == 2) ? 2 : 4; // r6 loop start
+                    for (int i = base; i != base + 2; ++i) { // 0x13e086/0x13e1ee
+                        KIPlayer *e = (*enemies)[i];
+                        // pos = player->getPosition() + {x, 3000, 20000}, x = -40000 - 3000*(i-base)
+                        // (base X pool 0xffff63c0=-40000 @0x13e3d8, y=3000 @0x13e3dc, z=20000 @0x13e3e0).
+                        float x = (float) (-40000 - 3000 * (i - base)); // subw r5,#3000 each iter
+                        e->setPosition(player->getPosition() + Vector{x, 3000.0f, 20000.0f}); // vtable+0x44
+                        e->awake();          // vtable+0xc, 0x13e072/0x13e1da
+                        e->setVisible(true); // 0x13e07c/0x13e1e4
+                    }
+                    m_nState = m_nState + 1; // 0x13f6ba: [r0+0x1c]+1 -> set-state tail 0x1438d6
                     break;
                 }
                 // state 0 (0x13acc2): cutscene-exit body. Guard -- only run once the mission has
