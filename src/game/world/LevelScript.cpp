@@ -3620,8 +3620,21 @@ int LevelScript::process(int delta) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x13e96a
                             // DWELL TAIL 0x14444c: dwell 1501 ticks, then teardown + advance.
                             if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1501) {
-                                // DEFERRED 0x14445a-0x144518: camera retarget to enemies + per-ship
-                                // KIPlayer setActive/setVisible loop + LOD forceUpdate.
+                                // 0x14445a: deactivate every shipGroup==9 escort (setActive(false),
+                                // setVisible(false)), then reframe the camera onto the player and
+                                // refresh LOD.
+                                for (unsigned int i = 0; i < enemies->count; ++i) {
+                                    if ((*enemies)[i]->shipGroup == 9) {
+                                        (*enemies)[i]->setActive(false);  // 0x1444a2
+                                        (*enemies)[i]->setVisible(false); // 0x1444b0
+                                    }
+                                }
+                                m_pCamera->setTarget(player->geometry);   // 0x1444c4
+                                Vector camPos = player->getPosition();    // 0x1444ce
+                                camPos += Vector{-350.0f, 400.0f, -1500.0f}; // 0x1444de pool
+                                m_pCamera->setPosition(camPos);           // 0x1444f8
+                                m_pCamera->setFixed(false);               // 0x144504
+                                m_pLevel->lodManager->forceUpdate(delta, false); // 0x144518
                                 reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x14451c strd 0
                                 m_nState = m_nState + 1; // 0x144510 advance
                             }
@@ -3660,10 +3673,19 @@ int LevelScript::process(int delta) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1430ce
                             // DWELL TAIL 0x14452e: dwell 1001 ticks, then teardown + advance.
                             if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1001) {
-                                // DEFERRED 0x14453c-0x14463c: player setSpeed(0)/setFixed, camera
-                                // retarget to enemies[0], position offset.
-                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x144652 strd 0
-                                m_nState = m_nState + 1; // 0x144648 advance
+                                // 0x14453c: halt the player, unfix the camera, then reframe onto the
+                                // lead escort getEnemies()[0]->geometry and refresh LOD (advance runs
+                                // through the shared continuation 0x144834 -> 0x144a08).
+                                player->setSpeed(0.0f);                    // 0x144544
+                                m_pCamera->setFixed(false);                // 0x14454e
+                                AEGeometry *geom0 = (*m_pLevel->getEnemies())[0]->geometry; // 0x144556
+                                m_pCamera->setTarget(geom0);               // 0x144562
+                                Vector camPos = (*m_pLevel->getEnemies())[0]->geometry->getPosition(); // 0x144578
+                                camPos += Vector{0.0f, 4000.0f, 26000.0f}; // 0x144586 pool
+                                m_pCamera->setPosition(camPos);            // 0x14459e
+                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x1445a2 strd 0
+                                m_pLevel->lodManager->forceUpdate(delta, false); // 0x144834
+                                m_nState = m_nState + 1; // 0x144a08 shared advance
                             }
                         }
                         // DEFERRED 0x144524: radio-not-over -> shared dwell tail.
@@ -3674,11 +3696,17 @@ int LevelScript::process(int delta) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1430ec
                             // DWELL TAIL 0x1445de: dwell 1001 ticks, then teardown + advance.
                             if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1001) {
-                                // DEFERRED 0x1445ec-0x1445a2: player setSpeed(0)/setFixed, camera
-                                // retarget to enemies[0] + position offset, then LOD forceUpdate
-                                // (via shared continuation 0x144834 -> 0x144a08).
-                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x1445a2 strd 0
-                                m_nState = m_nState + 1; // 0x144a08 shared advance
+                                // 0x1445ec: halt the player, reframe the camera onto the player itself
+                                // at a fixed offset, unfix it, refresh LOD, then advance inline.
+                                player->setSpeed(0.0f);                    // 0x1445f6
+                                m_pCamera->setTarget(player->geometry);    // 0x144600
+                                Vector camPos = player->getPosition();     // 0x14460c
+                                camPos += Vector{-350.0f, 400.0f, -1500.0f}; // 0x14461c pool
+                                m_pCamera->setPosition(camPos);            // 0x144634
+                                m_pCamera->setFixed(false);                // 0x14463c
+                                m_nState = m_nState + 1; // 0x144648 advance (inline)
+                                m_pLevel->lodManager->forceUpdate(delta, false); // 0x14464e
+                                reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x144652 strd 0
                             }
                         }
                         // DEFERRED 0x1445aa/0x1445b2: shared dwell tail.
@@ -3721,10 +3749,28 @@ int LevelScript::process(int delta) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1432f8
                             // DWELL TAIL 0x1446e0: dwell 1001 ticks, then teardown + advance.
                             if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1001) {
-                                // DEFERRED 0x1446ee-0x1447a6: player setSpeed/camera retarget +
-                                // position offset, LOD forceUpdate, PlayerFighter setAIDisabled +
-                                // per-ship KIPlayer setActive / Player setVulnerable loop.
+                                // 0x1446ee: crawl the player to a slow drift, reframe onto the player,
+                                // refresh LOD, then seat the dock target (enemies[0]) at its parking
+                                // position, re-enable its AI, and light up every shipGroup==9 escort
+                                // (setActive(false) + Player::setVulnerable(true)).
+                                player->setSpeed(0.02f);                   // 0x1446f4 pool
+                                m_pCamera->setTarget(player->geometry);    // 0x1446fe
+                                Vector camPos = player->getPosition();     // 0x144708
+                                camPos += Vector{150.0f, 400.0f, -1500.0f}; // 0x144718 pool
+                                m_pCamera->setPosition(camPos);            // 0x144730
+                                m_pCamera->setFixed(false);                // 0x14473a
                                 m_nState = m_nState + 1; // 0x144746 advance (inline)
+                                m_pLevel->lodManager->forceUpdate(delta, false); // 0x14474c
+                                Vector parkPos{-10000.0f, 0.0f, 22000.0f}; // 0x144750 pool
+                                (*enemies)[0]->setPosition(parkPos);       // 0x144768 vtable+0x44
+                                ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0; // 0x144770
+                                ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false); // 0x144774
+                                for (unsigned int i = 0; i < enemies->count; ++i) {
+                                    if ((*enemies)[i]->shipGroup == 9) {
+                                        (*enemies)[i]->setActive(false);        // 0x144788
+                                        (*enemies)[i]->player->setVulnerable(true); // 0x144798
+                                    }
+                                }
                                 reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x1447a8 strd 0
                             }
                         }
@@ -3757,10 +3803,18 @@ int LevelScript::process(int delta) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x15348c
                             // DWELL TAIL 0x1447b8: dwell 1001 ticks, then teardown + advance.
                             if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 1001) {
-                                // DEFERRED 0x1447c6-0x14482e: player setSpeed(0)/setFixed, camera
-                                // retarget to enemies[0] + position offset, then LOD forceUpdate
-                                // (via shared continuation 0x144834 -> 0x144a08).
+                                // 0x1447c6: halt the player, unfix the camera, reframe onto the lead
+                                // escort getEnemies()[0]->geometry at a fixed offset, then refresh LOD
+                                // and advance through the shared continuation 0x144834 -> 0x144a08.
+                                player->setSpeed(0.0f);                    // 0x1447ce
+                                m_pCamera->setFixed(false);                // 0x1447d8
+                                AEGeometry *geom0 = (*m_pLevel->getEnemies())[0]->geometry; // 0x1447e0
+                                m_pCamera->setTarget(geom0);               // 0x1447ec
+                                Vector camPos = (*m_pLevel->getEnemies())[0]->geometry->getPosition(); // 0x144802
+                                camPos += Vector{200.0f, 300.0f, 1800.0f}; // 0x144810 pool
+                                m_pCamera->setPosition(camPos);            // 0x14482a
                                 reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x14482e strd 0
+                                m_pLevel->lodManager->forceUpdate(delta, false); // 0x144834
                                 m_nState = m_nState + 1; // 0x144a08 shared advance
                             }
                         }
