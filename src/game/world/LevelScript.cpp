@@ -1829,18 +1829,33 @@ int LevelScript::process(int delta) {
                     m_pCamera->enableFirstPersonCam(false);             // 0x13e424
                     player->hideShipForFirstPersonCameraView(false);    // 0x13e42c
                     player->stopShooting(0);                            // 0x13e434
-                    // DEFERRED 0x13e43c: strb 1 -> player+0x24 (byte into turretGeometry ptr slot).
                     m_pHud->visible = 0;                                // [m_pHud+1] = 0  (0x13e444)
                     m_pRadar->field_0x58 = 0;                           // [m_pRadar+0x48] = 0 (0x13e44c)
                     m_nFlags = (m_nFlags & 0xFF) | 0x100;               // strb 1 -> this+0x11 cinematicBreak (0x13e452)
                     m_pCamera->setLookAtCam(true);                      // 0x13e454
                     player->setComputerControlled(true);               // 0x13e45c
                     player->player->setVulnerable(false);              // 0x13e464
-                    // DEFERRED 0x13e470..0x13e4bc: 3-iteration enemy loop (indices 1..3) --
-                    //   revive (vtable+0x18), getPosition/setPosition round-trip, setEnemy, then
-                    //   [enemy+0x38]=0 and vtable+0x5c(1).
-                    // DEFERRED 0x13e4be..0x13e5e2: AEMath orientation-matrix scratch block that
-                    //   aims enemies [0]/[1]/[2] via GOT-loaded operators (sp+0x170 scratch).
+                    player->freeze = 1;                                 // strb 1 -> player+0x24 (0x13e43c)
+                    // Stage escorts [1]/[2]/[3] onto the plant (enemies[0]): revive each, copy the
+                    // plant's position onto it, mark its pilot as the plant's enemy, then arm it
+                    // (field_0x38 = 0; setState(1)). (disasm 0x13e470..0x13e4bc, loop r6 = 1..3)
+                    for (int i = 1; i < 4; ++i) {
+                        (*enemies)[i]->revive();                        // vtable+0x18, 0x13e478
+                        Vector plantPos0 = (*enemies)[0]->getPosition();// vtable+0x28, 0x13e486
+                        (*enemies)[i]->setPosition(plantPos0);          // vtable+0x44, 0x13e490
+                        (*enemies)[i]->player->setEnemy((*enemies)[0]->player); // 0x13e4a2
+                        (*enemies)[i]->field_0x38 = 0;                  // str 0 -> [enemy+0x38] (0x13e4ae)
+                        (*enemies)[i]->setState(1);                     // vtable+0x5c, 0x13e4b6
+                    }
+                    // DEFERRED 0x13e4be..0x13e5e2: AEMath orientation block aiming escorts [1]/[2]/[3]
+                    //   (via [data+4]/[data+8]/[data+0xc]) at three level-space points from the pool
+                    //   ({-40000,500,-30000}@0x13e838/830/83c, {-41000,100,-31000}@0x13e850/858/854,
+                    //   {-42000,?, -32000}@0x13e85c/860). Uses GOT operators AEMath::Vector::operator=
+                    //   (0x20fe98), AEMath::VectorNormalize (0x210260), unary AEMath::operator- neg
+                    //   (0x21054c) then AEGeometry::setDirection (0x21052c) with up={0,1,0}
+                    //   (sp+0x10c = {0,1,0}). First per-enemy op is a vtable+0x20 (KIPlayer::translate)
+                    //   call with the scratch aim point -- the exact operator chain / translate-vs-aim
+                    //   role isn't proven yet, so this stays deferred (no clean sibling match).
                     // Reframe the camera onto the plant: aim at enemies[2], sit at enemies[0].
                     KIPlayer *plant = (*enemies)[0];
                     m_pCamera->setTarget((*enemies)[2]->geometry);      // 0x13e5f0
