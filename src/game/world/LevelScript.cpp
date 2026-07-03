@@ -3524,8 +3524,88 @@ int LevelScript::process(int delta) {
             }
             case 154: { // 0x13a76e
                 if (m_nState != 0) {
-                    // DEFERRED 0x13e8e8: cold substate (m_nState != 0).
-                    break;
+                    // Cold-substate dispatch @0x13e8e4: a 10-way tbh on (m_nState-1). States 1..10
+                    // each drive one beat of the post-cutscene escort/dock sequence. States >10 fall
+                    // straight through to the post-switch tail (0x144e36). Simple beats are decoded
+                    // here; the matrix-aim and long dwell-tail beats are left DEFERRED.
+                    if (m_nState == 1) { // prong E0 @0x13e908
+                        // Halt the player and force an LOD refresh, then nudge every shipGroup==9
+                        // escort forward by delta*0.5 units. Once radio message #1 is over the primary
+                        // script timer starts running (into the DEFERRED 0x14444c dwell tail).
+                        player->setSpeed(0.0f);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        float step = (float) delta * 0.5f; // @0x13e926
+                        for (unsigned int i = 0; i < enemies->count; ++i) {
+                            if ((*enemies)[i]->shipGroup == 9) {
+                                (*enemies)[i]->geometry->moveForward(step);
+                            }
+                        }
+                        if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                            reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x13e96a
+                            // DEFERRED 0x14444c: 1501-tick dwell tail.
+                        }
+                        // DEFERRED 0x144444: radio-not-over -> shared tail.
+                        break;
+                    }
+                    if (m_nState == 2) { // prong E1 @0x142f34
+                        // DEFERRED 0x142f34: camera CameraGetLocal/MatrixGetPosition aim chain.
+                        break;
+                    }
+                    if (m_nState == 3) { // prong E2 @0x1430d6
+                        if (((RadioMessage *) ((*messages)[3]))->isOver()) {
+                            reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1430ec
+                        }
+                        // DEFERRED 0x1445aa/0x1445b2: shared dwell tail.
+                        break;
+                    }
+                    if (m_nState == 4) { // prong E3 @0x143138
+                        // DEFERRED 0x143138: moveForward + CameraGetLocal/MatrixGetPosition aim chain.
+                        break;
+                    }
+                    if (m_nState == 5) { // prong E4 @0x1432c2
+                        // Ease the follow camera in (translate by delta * pool@0x143534) then, once
+                        // radio message #5 is over, run the primary timer into the DEFERRED tail.
+                        // DEFERRED 0x1432c2: camera translate FP arg pool @0x143534.
+                        if (((RadioMessage *) ((*messages)[5]))->isOver()) {
+                            reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1432f8
+                        }
+                        // DEFERRED 0x1446d8/0x1446e0: 1001-tick dwell tail.
+                        break;
+                    }
+                    if (m_nState == 6) { // prong E5 @0x14330e
+                        // DEFERRED 0x14330e: moveForward + CameraGetLocal/MatrixGetPosition aim chain.
+                        break;
+                    }
+                    if (m_nState == 7) { // prong E6 @0x14349c
+                        // Wait for the lead escort enemies[0] to dock; when it does, reset the primary
+                        // script timer and advance to state 8. Otherwise fall through to the tail.
+                        if ((*enemies)[0]->isDocked()) {
+                            reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x1434b4
+                            m_nState = m_nState + 1; // 7 -> 8
+                        }
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    if (m_nState == 8) { // prong E7 @0x1434c0
+                        // Dwell for 2001ms on the primary script timer, then jump to state 9 and rearm.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1434c4
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 2001) {
+                            m_nState = 9;
+                            reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                        }
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    if (m_nState == 9) { // prong E8 @0x1434f2
+                        if (((RadioMessage *) ((*messages)[7]))->isOver()) {
+                            reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x143508
+                        }
+                        // DEFERRED 0x144842/0x14484e: 2001-tick dwell tail.
+                        break;
+                    }
+                    if (m_nState == 10) { // prong E9 @0x14354c
+                        // DEFERRED 0x14354c: objective spawn + isDockedToDockingPoint/hackingWon chain.
+                        break;
+                    }
+                    break; // states >10 -> post-switch tail (0x144e36)
                 }
                 if (!((RadioMessage *) ((*messages)[0]))->isTriggered()) {
                     // DEFERRED 0x13e8e4 -> tail.
