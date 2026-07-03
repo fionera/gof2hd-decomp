@@ -2366,9 +2366,34 @@ int LevelScript::process(int delta) {
                         if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // strd @+0x90 (0x13e8d0)
                         }
-                        // DEFERRED 0x13e8e0/0x143b18: shared cold-state epilogue -- 64-bit timer >= 2001 gate;
-                        // on pass Level::getPlayer()->resetGunDelay() + setFreeze/setVisible/setVulnerable ...
-                        // (large body shared across states 1..6, reconstructed separately).
+                        // Shared cold-state epilogue (0x143b18 -> 0x143b1e, reached by fall-through from
+                        // the cold states 1..6). Wait until the 64-bit script timer passes 2001 ticks
+                        // (movw #2001; subs/sbcs -> blt exit), then hand control back to the player and
+                        // tear the cutscene framing down: re-enable the player ship, drop the look-at cam,
+                        // reframe the fixed camera 2400 units behind the player along its facing, restore
+                        // the HUD/radar, clear the cinematic-break flag, stop the current music, kick off
+                        // event 2241, reset the script timer and advance the state.
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 2001) { // 0x143b1e
+                            m_pLevel->getPlayer()->resetGunDelay();                   // 0x143b34/38
+                            player->setFreeze(false);                                 // 0x143b46
+                            player->setVisible(true);                                 // 0x143b4e
+                            player->player->setVulnerable(true);                      // 0x143b56
+                            m_pCamera->setLookAtCam(false);                           // 0x143b60
+                            m_pCamera->setTarget(player->geometry);                   // [r5+8]=player->geometry, 0x143b6a
+                            // reframe: player->getPosition() - player->GetDirVector() * 2400.0f (pool @0x143d48)
+                            m_pCamera->setPosition(player->getPosition()
+                                                   - player->GetDirVector() * 2400.0f); // 0x143b7a..0x143ba4
+                            m_pHud->visible = 1;                                      // [fp+0xd0]+1 = 1, 0x143bae
+                            m_pRadar->field_0x58 = 1;                                 // [fp+0xd4]+0x48 = 1, 0x143bb4
+                            resetCamera(m_pLevel);                                    // 0x143bbe
+                            m_pLevel->lodManager->forceUpdate(delta, false);          // 0x143bcc
+                            m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x143bd2
+                            m_nScriptTimerA = 0;                                      // strd 0,0 [r4], 0x143bd8
+                            m_nScriptCounterA = 0;
+                            Globals::sound->stop(Globals::sound->currentMusicEvent);  // 0x143be2
+                            Globals::sound->play(2241, nullptr, nullptr, 0.0f);       // movw #0x8c1, 0x143bf4
+                            m_nState = m_nState + 1; // [fp+0x1c] += 1 -> post-switch tail 0x13999a, 0x143bfc
+                        }
                         break;
                     }
                     // DEFERRED 0x13e894: remaining cold substates 2..6 (all HARD):
