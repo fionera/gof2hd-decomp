@@ -593,24 +593,30 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            default:
-                // DEFERRED heavy substate s11 @0x13bd2c. Decoded shape (kept deferred: the array's
-                //   element type + two unnamed vtable slots + the count-10 indexing are unresolved, so
-                //   naming them would be fabrication):
-                //     m_pCamera->translate(-delta*0.7, delta, delta*3);          // 0.7 @0x13b944
-                //     (long long&)m_nScriptTimerA += delta; if (>=3001) -> tail.
-                //     // arr = [sp+96] (a stable Array<T*>-shaped {count@0,data@4} spilled at entry):
-                //     for (i=2; i<arr.count; ++i) {
-                //         arr[i]->vslot0x20(&Vector{0,0,-50000});  // -50000 @0x13bdcc
-                //         arr[i]->vslot0x0c();
-                //     }
-                //     T *tail = arr.data[arr.count-10];                          // count-10 idiom
-                //     m_pCamera->setTarget(tail->field_0x8);
-                //     m_matrix[0..2] = tail->field_0x8->getPosition();           // into [this+0x28]
-                //     m_matrix[0..2] += {2000,500,-20000};                       // @0x13bdd0..d8
-                //     m_pCamera->setPosition(m_matrix[0..2]);
-                //     m_pLevel->lodManager->forceUpdate(30,false); m_nState=12; timerA=0; -> tail.
+            default: { // s11 @0x13bd2c: the wingmen swarm past, then the camera hands off to the tail ship.
+                // Drift the camera, then once 3s elapse push every trailing wingman forward and reframe
+                // the camera onto the ship ten slots from the end (the mission's designated tail ship).
+                m_pCamera->translate(-(float) delta * 0.7f, (float) delta, (float) delta * 3.0f); // 0.7 @0x13b944
+                reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                if (reinterpret_cast<long long &>(m_nScriptTimerA) < 3001) {
+                    break;
+                }
+                // enemies[2..] are the escorting wingmen: nudge each along -Z and wake it.
+                for (unsigned int i = 2; i < enemies->count; ++i) {
+                    (*enemies)[i]->translate(Vector{0.0f, 0.0f, -50000.0f}); // -50000 @0x13bdcc
+                    (*enemies)[i]->awake();                                  // vtable+0xc
+                }
+                KIPlayer *tailShip = (*enemies)[enemies->count - 10];
+                m_pCamera->setTarget(tailShip->parentGeometry);
+                Vector *camPos = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                *camPos = tailShip->parentGeometry->getPosition();
+                *camPos += Vector{2000.0f, 500.0f, -20000.0f}; // @0x13bdd0/d4/d8
+                m_pCamera->setPosition(*camPos);
+                m_pLevel->lodManager->forceUpdate(30, false);
+                m_nState = 12;
+                reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
                 break;
+            }
         }
     } else {
         // mission>=2 path (disasm 0x1381b2). This is "Chain A": a long chain of per-mission
@@ -1643,6 +1649,50 @@ int LevelScript::process(int delta) {
                         reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
                         m_nState = 13;
                     }
+                    break;
+                }
+                if (m_nState == 13) {
+                    // State 13 @0x1440a0: the docking model has seated; hold the camera on it while the
+                    // rumble winds down. Keep drifting the camera, aim the docking model down the camera's
+                    // current facing and step its animation, ramp the rumble back to zero, then at 8s hide
+                    // the wreck and at 100s hand control back to the player and reframe onto the ship.
+                    m_pCamera->translate((float) delta * 0.5f, (float) delta * 0.2f,
+                                         -(float) delta * 4.0f); // 0.5,0.2 @0x1440a8,143d50, -4.0
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    AEGeometry *dockModel = (AEGeometry *) field_0x48;
+                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                    Vector camDir = AbyssEngine::AEMath::MatrixGetDir(
+                            *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
+                    dockModel->setDirection(camDir, Vector{0.0f, 1.0f, 0.0f});
+                    AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                            Globals::Canvas->TransformGetTransform(dockModel->transform);
+                    t->Update((long long) delta, false);
+                    float rumble =
+                            (float) reinterpret_cast<long long &>(m_nScriptTimerA) / 10000.0f; // @0x144468
+                    if (!(rumble < 1.0f)) {
+                        rumble = 1.0f;
+                    }
+                    m_pCamera->setRumblePercentage(1.0f - rumble, 100);
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) < 2151) {
+                        break;
+                    }
+                    // DEFERRED 0x1441a4: ((AEGeometry*)(*enemies)[0]->field_0x140)->setVisible(false)
+                    //   -- KIPlayer::field_0x140 is not a named field in our model yet (see case 157).
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) < 10001) {
+                        break;
+                    }
+                    m_pCamera->setRumblePercentage(0.0f, 0);
+                    m_pCamera->setLookAtCam(false);
+                    m_pCamera->setTarget(player->geometry);
+                    player->setComputerControlled(false);
+                    player->freeze = 0;
+                    m_pHud->visible = 1;
+                    m_pRadar->field_0x58 = 1;
+                    resetCamera(m_pLevel);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nFlags = (uint16_t) (m_nFlags & 0x00ff); // field_0x11 (cinematic break) = 0
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                    m_nState = 14;
                     break;
                 }
                 if (m_nState != 0) {
