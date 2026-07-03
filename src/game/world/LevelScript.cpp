@@ -2353,7 +2353,21 @@ int LevelScript::process(int delta) {
             }
             case 102: { // 0x13a658
                 if (m_nState != 0) {
-                    // DEFERRED 0x13e816: cold substate (m_nState != 0).
+                    // DEFERRED 0x13e816: cold substate (m_nState != 0). 6-way tbh on (m_nState-1),
+                    // table @0x13e822 (base 0x13e822): prong targets & classification (all HARD):
+                    //   state 1 @0x13e880: TargetFollowCamera::translate(FP-scaled) + RadioMessage::isOver
+                    //                      gate; on isOver advances m_nScriptTimerA (strd @+0x90) then tail.
+                    //   state 2 @0x13ef12: KIPlayer setActive/setVisible(true) + vfn @+0x1c(2.0f);
+                    //                      delete old Objective @+0x2c; new Route(int*, 3); KIPlayer::setRoute;
+                    //                      PlayerEgo::setTurretMode(false); resetCamera(level).
+                    //   state 3 @0x140628: heavy FP (l2f/f2lz, vmul.f64) geometry advance; strd timer @+0x90.
+                    //   state 4 @0x1408ea: timer advance (strd @+0x90) w/ 60000 (0xea60) gate; PlayerEgo::
+                    //                      getPosition; enemies loop (slot@+0x28==10) KIPlayer::isDead + 2 vfns.
+                    //   state 5 @0x140a50: AEGeometry::moveForward(FP) + TargetFollowCamera::translate(FP);
+                    //                      timer advance strd @+0x90.
+                    //   state 6 @0x140ed8: AEGeometry::getPosition; FModSound::updateEvent3DAttributes(0x8ca,..);
+                    //                      AEGeometry::moveForward(FP*200); timer gate 0xfa1; Level::getPlayer
+                    //                      -> PlayerEgo::resetGunDelay.
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[0]))->isTriggered()) {
