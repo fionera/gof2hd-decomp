@@ -1847,15 +1847,44 @@ int LevelScript::process(int delta) {
                         (*enemies)[i]->field_0x38 = 0;                  // str 0 -> [enemy+0x38] (0x13e4ae)
                         (*enemies)[i]->setState(1);                     // vtable+0x5c, 0x13e4b6
                     }
-                    // DEFERRED 0x13e4be..0x13e5e2: AEMath orientation block aiming escorts [1]/[2]/[3]
+                    // ============================================================================
+                    // CANONICAL CAMERA-AIM CHAIN (proven, reusable). Two distinct AEMath idioms
+                    // recur across the deferred blocks of this function; keep them straight:
+                    //
+                    //   (A) CAMERA LOCAL-MATRIX CREEP  (proven byte/linked-exact at case 131 states
+                    //       1&2, and now case 154 state 2). Offsets a follow-camera's local matrix
+                    //       translation along a basis. C++ form:
+                    //           Matrix local = *(Matrix*)canvas->CameraGetLocal(
+                    //                              canvas->CameraGetCurrent());
+                    //           Vector *tempVec = (Vector*)&field_0x28;   // scratch @this+0x28
+                    //           Vector *scratch = (Vector*)&field_0x40;   // scratch @this+0x40
+                    //           *tempVec = AEMath::MatrixGetPosition(local);
+                    //           *scratch = <src>->GetDirVector();
+                    //           *tempVec += *scratch * (k_dir);
+                    //           *scratch = <src>->geometry->getRightVector();
+                    //           *tempVec += *scratch * (k_right);
+                    //           *scratch = <src>->GetUpVector();
+                    //           *tempVec += *scratch * (k_up);
+                    //           m_pCamera->setFixed(true);
+                    //           AEMath::MatrixSetTranslation(local, *tempVec);
+                    //           m_pCamera->setLocal(local);
+                    //       ARM: op=(r6/r9), op*(r4/fp), op+=(r8) via three GOT slots; dir/right/up
+                    //       fetch order is fixed. Scalars are the last vldr before each op* (may be
+                    //       compounded, e.g. step*const where step is a reused vmul base).
+                    //
+                    //   (B) GEOMETRY setDirection AIM  (this block, still DEFERRED). Aims a target at
+                    //       a point: dir = normalize(target - here); setDirection(dir, {0,1,0}). Uses
+                    //       AEMath::Vector::operator= (0x20fe98), VectorNormalize (0x210260), unary
+                    //       operator- neg (0x21054c), then setDirection (0x21052c). Distinct from (A):
+                    //       there is NO CameraGetLocal/MatrixGetPosition/setLocal here.
+                    // ----------------------------------------------------------------------------
+                    // DEFERRED 0x13e4be..0x13e5e2: idiom (B) aiming escorts [1]/[2]/[3]
                     //   (via [data+4]/[data+8]/[data+0xc]) at three level-space points from the pool
                     //   ({-40000,500,-30000}@0x13e838/830/83c, {-41000,100,-31000}@0x13e850/858/854,
-                    //   {-42000,?, -32000}@0x13e85c/860). Uses GOT operators AEMath::Vector::operator=
-                    //   (0x20fe98), AEMath::VectorNormalize (0x210260), unary AEMath::operator- neg
-                    //   (0x21054c) then AEGeometry::setDirection (0x21052c) with up={0,1,0}
-                    //   (sp+0x10c = {0,1,0}). First per-enemy op is a vtable+0x20 (KIPlayer::translate)
-                    //   call with the scratch aim point -- the exact operator chain / translate-vs-aim
-                    //   role isn't proven yet, so this stays deferred (no clean sibling match).
+                    //   {-42000,?, -32000}@0x13e85c/860). The first per-enemy op is a vtable+0x20
+                    //   (KIPlayer::translate) call with the scratch aim point -- the exact
+                    //   operator chain / translate-vs-aim role isn't proven yet, so idiom (B) stays
+                    //   deferred (no clean byte-exact sibling for the neg/translate ordering).
                     // Reframe the camera onto the plant: aim at enemies[2], sit at enemies[0].
                     KIPlayer *plant = (*enemies)[0];
                     m_pCamera->setTarget((*enemies)[2]->geometry);      // 0x13e5f0
@@ -3548,7 +3577,36 @@ int LevelScript::process(int delta) {
                         break;
                     }
                     if (m_nState == 2) { // prong E1 @0x142f34
-                        // DEFERRED 0x142f34: camera CameraGetLocal/MatrixGetPosition aim chain.
+                        // Halt the player, refresh LOD, and creep the dock target (enemies[0]) forward
+                        // by delta*0.25. Then run the CANONICAL cinematic camera-aim chain (see the
+                        // write-up above case 131 state 2): take the render camera's current local
+                        // matrix, offset its translation along the player's dir/right/up basis
+                        // (dir*step*0.008 + right*step*-0.05 + up*step*0.0051, with step = delta*0.25),
+                        // fix the follow camera and re-drive it with the retranslated matrix. Once radio
+                        // message #2 is over, advance the 64-bit script counter by delta.
+                        player->setSpeed(0.0f);                              // 0x142f3c
+                        m_pLevel->lodManager->forceUpdate(delta, false);     // 0x142f4e
+                        float step = (float) delta * 0.25f;                  // 0x142f64
+                        (*enemies)[0]->geometry->moveForward(step);          // 0x142f6e
+                        AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                        Matrix local = *reinterpret_cast<Matrix *>(
+                                canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                        Vector *tempVec = reinterpret_cast<Vector *>(&field_0x28);
+                        Vector *scratch = reinterpret_cast<Vector *>(&field_0x40);
+                        *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local); // 0x142f9a
+                        *scratch = player->GetDirVector();                   // 0x142fb6
+                        *tempVec += *scratch * (step * 0.008f);              // 0x142fce
+                        *scratch = player->geometry->getRightVector();       // 0x142ff6
+                        *tempVec += *scratch * (step * -0.05f);              // 0x143008
+                        *scratch = player->GetUpVector();                    // 0x143020
+                        *tempVec += *scratch * (step * 0.0051f);            // 0x143032
+                        m_pCamera->setFixed(true);                           // 0x14304a
+                        AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec); // 0x14305a
+                        m_pCamera->setLocal(local);                          // 0x1430a6
+                        if (((RadioMessage *) ((*messages)[2]))->isOver()) { // 0x1430b0
+                            reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1430ce
+                        }
+                        // DEFERRED 0x144524: radio-not-over -> shared dwell tail.
                         break;
                     }
                     if (m_nState == 3) { // prong E2 @0x1430d6
