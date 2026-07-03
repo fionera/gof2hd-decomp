@@ -2635,9 +2635,104 @@ int LevelScript::process(int delta) {
                         reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0,0 @+0x90, 0x1408e2
                         break; // -> post-switch tail 0x144e36 (0x1408e6)
                     }
-                    // DEFERRED 0x13e894: remaining cold substates 4..6 (all HARD):
-                    //   state 4 @0x1408ea: timer advance (strd @+0x90) w/ 60000 (0xea60) gate; PlayerEgo::
-                    //                      getPosition; enemies loop (slot@+0x28==10) KIPlayer::isDead + 2 vfns.
+                    if (m_nState == 4) {
+                        // state 4 @0x1408ea (tbh table @0x13e822[3]=0x1064 -> 0x1408ea; verified).
+                        // Per-frame: advance the 64-bit script timer by delta (strd @+0x90, 0x1408ea).
+                        // Every 60000-tick (0xea60 @0x140902) cycle, respawn the shipGroup==10 escorts:
+                        // any dead one is revived, woken, and re-scattered to a random spot around the
+                        // player; the timer then resets to 0. Then, unconditionally each frame, retarget
+                        // every dead escort's AI onto the first surviving escort (or the player), and once
+                        // the mission's status value passes 10 finish the wave -- mark the mission solved
+                        // (setType(4)), hand control back to the player, reframe the camera on the lead
+                        // escort and park/deactivate the remaining escorts far away.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1408ee..0x1408fe
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) > 60000) { // 0x140902..0x14090c
+                            Vector playerPos = player->getPosition(); // sp+0x170, 0x140918
+                            for (unsigned int i = 0; i < enemies->count; ++i) { // loop 0x140934..0x140a0a
+                                KIPlayer *e = (*enemies)[i];
+                                if (e->shipGroup != 10) { // [elem+0x28]==10, 0x14093a
+                                    continue;
+                                }
+                                if (!e->isDead()) { // 0x140940
+                                    continue;
+                                }
+                                e->revive();  // vtable+0x18, 0x140950
+                                e->awake();   // vtable+0xc, 0x14095e
+                                // Scatter to a random spot around the player (0x140960..0x1409ee):
+                                //   x/z = (nextInt(2)==0 ? 1 : -1) * (35000 + nextInt(10000)),
+                                //   y = nextInt(10000) - 5000. Base = playerPos.
+                                int magX = 35000 + Globals::rnd->nextInt(10000);      // 0x140974/0x14096e
+                                int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1; // 0x140980
+                                int y = Globals::rnd->nextInt(10000) - 5000;          // 0x14099a/0x1409c0
+                                int magZ = 35000 + Globals::rnd->nextInt(10000);      // 0x1409a8
+                                int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1; // 0x1409b4
+                                Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
+                                e->setPosition(playerPos + offset); // vtable+0x44, 0x1409f2/0x140a00
+                            }
+                            reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0,0 @+0x90, 0x140a0c
+                        }
+                        // Unconditional every frame (0x143974): retarget each dead escort's AI onto the
+                        // first surviving escort among enemies[2..5], or onto the player if none survive.
+                        for (unsigned int i = 0; i < enemies->count; ++i) { // 0x143978..0x1439de
+                            KIPlayer *e = (*enemies)[i];
+                            if (e->shipGroup != 10) { // [elem+0x28]==10, 0x14397e
+                                continue;
+                            }
+                            if (!e->player->getEnemy(0)->isDead()) { // 0x143988/0x14398c
+                                continue;
+                            }
+                            int alive = -1; // r1: index of first surviving escort in [2..5]
+                            for (int j = 2; j <= 5; ++j) { // 0x14399a..0x1439ba
+                                if (!(*enemies)[j]->isDead()) {
+                                    alive = j;
+                                    break;
+                                }
+                            }
+                            Player *foe = (alive < 0) ? player->player               // [sp+0x54]->player, 0x1439ce
+                                                      : (*enemies)[alive]->player;    // data[alive]->player, 0x1439c6
+                            e->player->setEnemy(foe); // 0x1439d2
+                        }
+                        // Wave-complete gate (0x1439e0): only finish once the mission status value passes 10.
+                        if (((Mission *) Globals::status->getCampaignMission())->getStatusValue() >= 10) {
+                            break; // -> post-switch tail 0x144e36
+                        }
+                        ((Mission *) Globals::status->getCampaignMission())->setType(4); // 0x1439fc
+                        m_nState = m_nState + 1; // [this+0x1c] += 1, 0x143a0a..0x143a0e
+                        // Cutscene teardown: drop the player out of the cutscene framing (0x143a10..0x143a70).
+                        player->setTurretMode(false);       // 0x143a12
+                        resetCamera(m_pLevel);              // 0x143a1a
+                        if (player->isInRocketControl()) {  // 0x143a20
+                            player->setRocketControl(nullptr, nullptr); // 0x143a2c
+                            player->killLiberator();        // 0x143a32
+                            m_pCamera->setRumblePercentage(0.0f, 0); // 0x143a3c
+                        }
+                        player->setFreeLookMode(false);     // 0x143a44
+                        m_pCamera->enableFirstPersonCam(false); // 0x143a4c
+                        player->hideShipForFirstPersonCameraView(false); // 0x143a54
+                        player->stopShooting(0);            // 0x143a5c
+                        player->setFreeze(true);            // 0x143a68
+                        player->setVisible(false);          // 0x143a70
+                        player->player->setVulnerable(false); // [player+0]=player->player, 0x143a78
+                        m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ = 1 (byte @0x11), 0x143a82
+                        m_pHud->visible = 0;                // [fp+0xd0]+1 = 0, 0x143a86
+                        m_pRadar->field_0x58 = 0;           // [fp+0xd4]+0x48 = 0, 0x143a8e
+                        m_pCamera->setLookAtCam(false);     // 0x143a94
+                        // Reframe the camera on the lead escort (enemies[0]): its parentGeometry becomes
+                        // the target, and the camera is seated at enemies[0]->getPosition() + {-7000, 9000,
+                        // 40000} (pool @0x143d38/d3c/d40). 0x143a98..0x143ad4.
+                        m_pCamera->setTarget((*enemies)[0]->parentGeometry); // [elem+8], 0x143aa0
+                        m_pCamera->setPosition((*enemies)[0]->getPosition()  // vtable+0x28, 0x143ab4
+                                               + Vector{-7000.0f, 9000.0f, 40000.0f}); // 0x143aca
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0,0 @+0x90, 0x143ada
+                        // Park + deactivate the remaining escorts enemies[2..9] far away (0x143ae4..0x143b12).
+                        for (int i = 2; i != 10; ++i) {
+                            (*enemies)[i]->setPosition(1000000.0f, 1000000.0f, 1000000.0f); // vtable+0x48, 0x143af4
+                            (*enemies)[i]->setActive(false);  // 0x143afe
+                            (*enemies)[i]->setVisible(false); // 0x143b0a
+                        }
+                        break; // -> post-switch tail 0x144e36 (0x143b14)
+                    }
+                    // DEFERRED 0x13e894: remaining cold substates 5..6 (all HARD):
                     //   state 5 @0x140a50: AEGeometry::moveForward(FP) + TargetFollowCamera::translate(FP);
                     //                      timer advance strd @+0x90.
                     //   state 6 @0x140ed8: AEGeometry::getPosition; FModSound::updateEvent3DAttributes(0x8ca,..);
