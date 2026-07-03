@@ -2810,9 +2810,11 @@ int LevelScript::process(int delta) {
                     }
                     break;
                 }
+                // m_nState==0 entry (0x13a662): gate on messages[0]->isTriggered(). When false the
+                // beq targets 0x13e812, whose `subs #1; cmp #5; bhi` (0u-1 > 5) falls to the 0x144e36
+                // tail -> a plain break with no side effects.
                 if (!((RadioMessage *) ((*messages)[0]))->isTriggered()) {
-                    // DEFERRED 0x13e812 -> tail.
-                    break;
+                    break; // 0x13a66e beq 0x13e812 -> 0x144e36
                 }
                 // Cutscene exit: hand control back, hide/freeze the player ship and reframe the camera
                 // on enemies[0] at a fixed offset.
@@ -2837,8 +2839,11 @@ int LevelScript::process(int delta) {
                 m_pCamera->setTarget((*enemies)[0]->geometry);
                 Vector camPos = (*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f};
                 m_pCamera->setPosition(camPos);
-                // FModSound::stop(...) DEFERRED @0x13a74e
-                // FModSound::play(2240, ...) DEFERRED @0x13a760
+                // 0x13a744..0x13a74e: stop the current music (GOT _ZN7Globals5soundE, identical idiom
+                // to the shared epilogue @0x143bd0). r4=Globals::sound, r0=[r4]=currentMusicEvent, r1=[r0].
+                Globals::sound->stop(Globals::sound->currentMusicEvent); // 0x13a74e
+                // 0x13a752..0x13a760: play(0x8c0=2240, nullptr, nullptr, 0.0f) (r8==0 pushed as pitch).
+                Globals::sound->play(2240, nullptr, nullptr, 0.0f);      // 0x13a760
                 m_nScriptTimerA = 0;
                 m_nScriptCounterA = 0;
                 m_nState = 1; // shared tail 0x143d0c increments m_nState (0 -> 1) -> post-switch tail
