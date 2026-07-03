@@ -546,14 +546,59 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
+            case 10: { // s10 @0x13b948: pan the camera further, ramp the rumble DOWN over the frame
+                       // timer, re-aim the docking model along the current camera direction, then at
+                       // timer>=4001 advance to s11 and clear the rumble.
+                m_pCamera->translate(-(float) delta * 0.7f, (float) delta, (float) (delta * 4)); // 0.7 @0x13b944
+                reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                float rumble = (float) reinterpret_cast<long long &>(m_nScriptTimerA) / 4000.0f; // @0x13b930
+                if (!(rumble < 1.0f)) {
+                    rumble = 1.0f;
+                }
+                m_pCamera->setRumblePercentage(1.0f - rumble, 100);
+                AEGeometry *dockModel = m_pGeometry5;
+                AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                Vector camDir = AbyssEngine::AEMath::MatrixGetDir(
+                        *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
+                dockModel->setDirection(camDir, Vector{0.0f, 1.0f, 0.0f});
+                AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                        Globals::Canvas->TransformGetTransform(dockModel->transform);
+                t->Update((long long) delta, false);
+                if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 4001) {
+                    m_nState = 11;
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                    m_pCamera->setRumblePercentage(0.0f, 0);
+                }
+                break;
+            }
+            case 12: { // s12 @0x13b7f2: advance the frame timer, refresh LOD, keep panning the camera;
+                       // once timer>=5001 hand control back to the player (setTarget(player->geometry),
+                       // stop the look-at cam, re-enable the player) and advance to state 13.
+                reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                m_pLevel->lodManager->forceUpdate(30, false);
+                m_pCamera->translate(-(float) delta * 0.3f, (float) delta * 0.3f, (float) delta * 0.5f); // 0.3 @0x13b93c
+                if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 5001) {
+                    m_pCamera->setTarget(player->geometry);
+                    m_pHud->visible = 1;
+                    // DEFERRED 0x13b876: m_pRadar byte @0x48 = 1 -- lands inside imageWidth in our
+                    //   Radar model (no clean named 1-byte field there yet).
+                    m_nFlags = (uint16_t) (m_nFlags & 0x00ff); // field_0x11 = 0 (m_nFlags high byte)
+                    m_pCamera->setLookAtCam(false);
+                    player->setComputerControlled(false);
+                    player->player->setVulnerable(true);
+                    player->freeze = 0;
+                    player->setVisible(true);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nState = 13;
+                }
+                break;
+            }
             default:
-                // DEFERRED heavy substates:
-                //   s10 @0x13b948 and s11 @0x13bd2c (camera translate + rumble + setDirection + Update,
-                //   FP consts @0x13b930=4000 / @0x13b944=0.7 / @0x13b93c=0.3), and s12 @0x13b7f2 (the
-                //   state-13 handoff: setTarget(player->geometry), setLookAtCam(false), player
-                //   setComputerControlled/setVulnerable/setVisible, m_pHud->visible=1). s12 also writes
-                //   a Radar byte @0x48 that lands inside a pad in our Radar model, so it is not yet
-                //   expressible with a named field.
+                // DEFERRED heavy substate s11 @0x13bd2c: camera translate + a vtable-dispatch loop over
+                //   an escort-array staging the docking approach (per-element slots @+0xc/+0x20),
+                //   setTarget, position/direction copy into the matrix region, then setPosition of
+                //   target.pos + {2000,500,-20000} (@0x13bdd0..d8) and advance to state 12. The loop's
+                //   array source and slot semantics reach beyond this pass's scope.
                 break;
         }
     } else {
