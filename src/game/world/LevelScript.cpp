@@ -2732,9 +2732,39 @@ int LevelScript::process(int delta) {
                         }
                         break; // -> post-switch tail 0x144e36 (0x143b14)
                     }
-                    // DEFERRED 0x13e894: remaining cold substates 5..6 (all HARD):
-                    //   state 5 @0x140a50: AEGeometry::moveForward(FP) + TargetFollowCamera::translate(FP);
-                    //                      timer advance strd @+0x90.
+                    if (m_nState == 5) {
+                        // state 5 @0x140a50 (tbh table @0x13e822[4]=0x1117 -> 0x140a50; verified).
+                        // Per-frame: creep the lead escort forward, drift the fixed follow-camera along
+                        // it, keep the 3D audio event pinned to the escort, advance the 64-bit script
+                        // timer; once it passes 8001 ticks reset the timer and advance the state.
+                        //
+                        // 0x140a50..0x140a6e: enemies[0]->geometry->moveForward((float)(delta*6)).
+                        //   r8=delta; r0 = delta + delta*2 = delta*3, <<1 -> delta*6 (add.w r0,r8,r8,lsl#1;
+                        //   lsls r0,#1); vcvt s32->f32; receiver [enemies+4][0]->[+8]=geometry.
+                        (*enemies)[0]->geometry->moveForward((float) (delta * 6));
+                        // 0x140a72..0x140aae: m_pCamera->translate(delta*0.4f, delta*0.1f, (float)-delta*1.8f).
+                        //   s0=(float)delta, s2=(float)-delta; pool s4=0.4f @0x140a44 (0x3ecccccd),
+                        //   s6=0.1f @0x140a48 (0x3dcccccd), s8=1.8f @0x140a4c (0x3fe66666).
+                        m_pCamera->translate((float) delta * 0.4f, (float) delta * 0.1f,
+                                             -(float) delta * 1.8f);
+                        // 0x140ab2..0x140ac6: m_nScriptTimerA(64) += delta (ldr.w r0,[r5,#144]!; adc asr#31; strd).
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                        // 0x140aca..0x140af0: pin FMOD event 2250 (0x8ca) to the lead escort's live position.
+                        //   pos = enemies[0]->geometry->getPosition() (sret sp+0x170), velocity = {0,0,0}
+                        //   (strd 0,0 @sp#280 / str 0 @sp#288), bool last = false (str 0 @sp#0).
+                        Vector enemyPos = (*enemies)[0]->geometry->getPosition();
+                        Vector zero{0.0f, 0.0f, 0.0f};
+                        Globals::sound->updateEvent3DAttributes(2250, &enemyPos, &zero, false);
+                        // 0x140af4..0x140b02: hold until the 64-bit script timer passes 8001 (movw #0x1f41).
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 8001) {
+                            break; // -> post-switch tail 0x144e36
+                        }
+                        // 0x140b06..0x140b0e: reset the timer and advance the state.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0,0 [r5]
+                        m_nState = m_nState + 1; // [r4+28]+1 -> 0x144c0c str m_nState -> 0x144e36
+                        break;
+                    }
+                    // DEFERRED 0x13e894: remaining cold substate 6 (HARD):
                     //   state 6 @0x140ed8: AEGeometry::getPosition; FModSound::updateEvent3DAttributes(0x8ca,..);
                     //                      AEGeometry::moveForward(FP*200); timer gate 0xfa1; Level::getPlayer
                     //                      -> PlayerEgo::resetGunDelay.
