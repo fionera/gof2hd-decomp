@@ -2547,8 +2547,95 @@ int LevelScript::process(int delta) {
                         m_nState = 3; // tail 0x142f2e (movs r0,#3) -> 0x144c0c str m_nState -> 0x144e36
                         break;
                     }
-                    // DEFERRED 0x13e894: remaining cold substates 3..6 (all HARD):
-                    //   state 3 @0x140628: heavy FP (l2f/f2lz, vmul.f64) geometry advance; strd timer @+0x90.
+                    if (m_nState == 3) {
+                        // state 3 @0x140628 (tbh table @0x13e822[2]=0x0f03 -> 0x140628; verified). "Heavy FP
+                        // geometry advance." Advance the two 64-bit script counters, creep the shipGroup==10
+                        // escorts forward at a depth-dependent rate, and drive the fixed follow-camera along
+                        // the lead escort's basis; once the 64-bit script timer passes 10001 ticks, hand the
+                        // escorts back to the AI, re-enable the player ship, reframe the camera and advance.
+                        //
+                        // 0x14062a..0x140690: m_nScriptTimerA(64) += delta (0x14065e/0x14066e), and
+                        //   m_nScriptTimerB(64) = (long long)((float)delta*0.05f + (float)m_nScriptTimerB(64))
+                        //   (l2f @0x14064e, f2lz @0x140682). s2=0.05f @0x140610.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                        reinterpret_cast<long long &>(m_nScriptTimerB) = (long long) (
+                                (float) delta * 0.05f
+                                + (float) reinterpret_cast<long long &>(m_nScriptTimerB));
+                        // Per-frame creep of the shipGroup==10 escorts (loop 0x14069c..0x1406cc). The first
+                        // matching escort advances at delta*2.3 (d17=2.3 @0x140620, s22); the rest at
+                        // delta*2.2 (d16=2.2 @0x140618, s20). The double multiplies are the exact FP source.
+                        float leadStep = (float) ((double) delta * 2.3);   // vmul.f64 d17, cvt s22
+                        float restStep = (float) ((double) delta * 2.2);   // vmul.f64 d16, cvt s20
+                        int firstIdx = -1; // r4
+                        for (unsigned int i = 0; i < enemies->count; ++i) {
+                            KIPlayer *e = (*enemies)[i];
+                            if (e->shipGroup != 10) { // [elem+0x28]==10, 0x1406a0
+                                continue;
+                            }
+                            AEGeometry *geo = e->parentGeometry; // [elem+8], 0x1406a6
+                            if (firstIdx == -1) {
+                                firstIdx = (int) i;
+                            }
+                            if ((int) i == firstIdx) {
+                                geo->moveForward(leadStep); // 0x1406b4
+                            } else {
+                                geo->moveForward(restStep); // 0x1406be
+                            }
+                        }
+                        // Drive the fixed follow-camera along the lead escort's basis (0x1406ce..0x14080c).
+                        // Take the render camera's current local matrix, offset its translation along the
+                        // lead escort geometry's dir/right/up basis, then fix + re-apply the matrix.
+                        //   dir  * delta*2.04  (s0=2.04f @0x140a24)
+                        //   right* delta*0.04  (s0=0.04f @0x140a30)
+                        //   up   * (delta*0.05f * 0.004f) (s16 reused, s0=0.004f @0x140a34)
+                        AEGeometry *leadGeo = (*enemies)[firstIdx]->parentGeometry; // [elem+8], 0x1406d8
+                        AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                        Matrix local = *reinterpret_cast<Matrix *>(
+                                canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                        Vector *tempVec = reinterpret_cast<Vector *>(&field_0x28);   // this+0x28
+                        Vector *scratch = reinterpret_cast<Vector *>(&field_0x40);   // this+0x40
+                        *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
+                        *scratch = leadGeo->getDirection();
+                        *tempVec += *scratch * ((float) delta * 2.04f);
+                        *scratch = leadGeo->getRightVector();
+                        *tempVec += *scratch * ((float) delta * 0.04f);
+                        *scratch = leadGeo->getUpVector();
+                        *tempVec += *scratch * ((float) ((float) delta * 0.05f) * 0.004f);
+                        m_pCamera->setFixed(true);
+                        AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
+                        m_pCamera->setLocal(local);
+                        // Hold until the 64-bit script timer passes 10001 ticks (movw #0x2711 @0x140812).
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 10001) { // 0x14081a
+                            break; // -> post-switch tail 0x144e36
+                        }
+                        // Cutscene teardown + reframe (0x140824..0x1408e6). Re-enable AI on the shipGroup==10
+                        // escorts, drop the player out of the cutscene framing, reset the camera, seat it
+                        // 2400 units behind the player along its facing, restore HUD/radar, clear the
+                        // cinematic-break flag, advance the state and reset the script timer.
+                        for (unsigned int i = 0; i < enemies->count; ++i) {
+                            KIPlayer *e = (*enemies)[i];
+                            if (e->shipGroup == 10) { // [elem+0x28]==10, 0x140830
+                                ((PlayerFighter *) e)->setAIDisabled(false); // 0x140838
+                            }
+                        }
+                        player->setFreeze(false);            // 0x14084e
+                        player->setVisible(true);            // 0x140856
+                        m_pCamera->setFixed(false);          // 0x140864
+                        m_pCamera->setTarget(player->geometry); // [player+8], 0x14086c
+                        m_pCamera->setLookAtCam(false);      // 0x140874
+                        // reframe: player->getPosition() - player->GetDirVector() * 2400.0f (pool @0x140a38)
+                        m_pCamera->setPosition(player->getPosition()
+                                               - player->GetDirVector() * 2400.0f); // 0x140884..0x1408ae
+                        m_pHud->visible = 1;                 // [fp+0xd0]+1 = 1, 0x1408b6
+                        m_pRadar->field_0x58 = 1;            // [fp+0xd4]+0x48 = 1, 0x1408be
+                        resetCamera(m_pLevel);               // 0x1408c6
+                        m_pLevel->lodManager->forceUpdate(delta, false); // 0x1408d2
+                        m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x1408d8
+                        m_nState = m_nState + 1;             // [fp+0x1c] += 1, 0x1408dc/0x1408de
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0,0 @+0x90, 0x1408e2
+                        break; // -> post-switch tail 0x144e36 (0x1408e6)
+                    }
+                    // DEFERRED 0x13e894: remaining cold substates 4..6 (all HARD):
                     //   state 4 @0x1408ea: timer advance (strd @+0x90) w/ 60000 (0xea60) gate; PlayerEgo::
                     //                      getPosition; enemies loop (slot@+0x28==10) KIPlayer::isDead + 2 vfns.
                     //   state 5 @0x140a50: AEGeometry::moveForward(FP) + TargetFollowCamera::translate(FP);
