@@ -1576,7 +1576,33 @@ int LevelScript::process(int delta) {
             }
             case 24: { // 0x13a930
                 if (((RadioMessage *) ((*messages)[3]))->isTriggered() && m_nState == 0) {
-                    // DEFERRED 0x13e97e: radio-message #3 state-0 sub-branch.
+                    // 0x13e97e: radio message #3 -- lock the ship down, aim the camera behind it and
+                    // pre-position the exit wormhole ahead of the player, then clear everyone's enemy list.
+                    player->stopShooting(0);
+                    m_pHud->visible = 0;
+                    m_pRadar->field_0x58 = 0;
+                    m_pCamera->setLookAtCam(false);
+                    player->player->setVulnerable(false);
+                    player->geometry->setRotation(0.0f, 1.5707964f, 0.0f); // yaw = pi/2 @0x13ed8c
+                    player->setComputerControlled(true);
+                    player->player->removeAllGuns();
+                    m_pCamera->setTarget(player->geometry);
+                    Vector camPos = player->geometry->getPosition();
+                    m_pCamera->setPosition(camPos);
+                    m_pCamera->translate(10500.0f, 700.0f, 1000.0f); // pool @0x13ed90/94/98
+                    Vector *ahead = reinterpret_cast<Vector *>(&field_0x28);
+                    Vector *dir = reinterpret_cast<Vector *>(&field_0x40);
+                    *ahead = player->geometry->getPosition();
+                    *dir = player->geometry->getDirection();
+                    *dir *= 45000.0f; // @0x13ed9c
+                    *ahead += *dir;
+                    (*m_pLevel->getLandmarks())[3]->setPosition(ahead->x, ahead->y, ahead->z);
+                    for (unsigned int j = 0; j < m_pLevel->getEnemies()->count; ++j) {
+                        (*m_pLevel->getEnemies())[j]->player->setEnemies(nullptr);
+                    }
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // field_0x11 (cinematic break) = 1
+                    m_nState = 1; // shared tail 0x1438d6 -> post-switch tail (0x144e36)
                     break;
                 }
                 if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 1) {
