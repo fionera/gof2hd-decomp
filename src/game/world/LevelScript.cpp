@@ -735,7 +735,44 @@ int LevelScript::process(int delta) {
             switch (cm) {
             case 131: { // 0x138aac
                 if (m_nState == 2) {
-                    // DEFERRED 0x13c8fc: state-2 body.
+                    // State 2 (0x13c8fc): keep driving the same cinematic camera creep as state 1
+                    // (dir*delta*2.01 + right*delta*0.03 + up*delta*0.01 offset applied to the render
+                    // camera's local matrix), then once the intro radio (message #0) is over run the
+                    // standard cutscene-exit teardown and hand control back to the player.
+                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                    Matrix local = *reinterpret_cast<Matrix *>(
+                            canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                    Vector *tempVec = reinterpret_cast<Vector *>(&field_0x28);
+                    Vector *scratch = reinterpret_cast<Vector *>(&field_0x40);
+                    *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
+                    *scratch = player->GetDirVector();
+                    *tempVec += *scratch * ((float) delta * 2.01f);
+                    *scratch = player->geometry->getRightVector();
+                    *tempVec += *scratch * ((float) delta * 0.03f);
+                    *scratch = player->GetUpVector();
+                    *tempVec += *scratch * ((float) delta * 0.01f);
+                    m_pCamera->setFixed(true);
+                    AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
+                    m_pCamera->setLocal(local);
+                    if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    player->player->setVulnerable(true);
+                    player->setCollide(true);
+                    player->setComputerControlled(false);
+                    player->setTurretMode(false);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    m_pCamera->setFixed(false);
+                    m_pCamera->setTarget(player->geometry);
+                    m_pCamera->setLookAtCam(false);
+                    m_pHud->visible = 1;
+                    m_pRadar->field_0x58 = 1;
+                    resetCamera(m_pLevel);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nScriptTimerA = 0;
+                    m_nScriptCounterA = 0;
+                    m_nState = 3; // 0x13edde shared set-state tail
                     break;
                 }
                 if (m_nState != 1) {
@@ -782,7 +819,14 @@ int LevelScript::process(int delta) {
                     break;
                 }
                 if (m_nState == 2) {
-                    // DEFERRED 0x13d6c0: state-2 body.
+                    // State 2 (0x13d6c0): once radio message #3 is over, reset the script counter and
+                    // advance to state 3.
+                    if (!((RadioMessage *) ((*messages)[3]))->isOver()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    m_nScriptTimerA = 0;
+                    m_nScriptCounterA = 0;
+                    m_nState = 3; // 0x1438d6 shared set-state tail
                     break;
                 }
                 if (m_nState != 1) {
