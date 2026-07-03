@@ -1284,7 +1284,25 @@ int LevelScript::process(int delta) {
                     m_nState = 3;
                     m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 } else {
-                    // DEFERRED 0x13da68: state-3 (radio #5) sub-branch.
+                    // State-3 (0x13da68): once radio message #5 fires, scatter the mid-wave escorts
+                    // (enemies[5..8]) to random positions around enemies[0] -- magnitude 15000..24999
+                    // on ±X/±Z, -5000..4999 on Y (Globals::rnd->nextInt) -- then advance to state 4
+                    // (shared tail 0x13e80c -> 0x1438d4). No FP immediates: the components are integer
+                    // arithmetic converted with vcvt.f32.s32. No awake() call here (unlike case 66/11).
+                    if (!((RadioMessage *) ((*messages)[5]))->isTriggered()) {
+                        break; // -> post-switch tail (0x13eeaa -> 0x144e36)
+                    }
+                    Vector scatterOrigin = (*enemies)[0]->getPosition();
+                    for (int i = 5; i != 9; ++i) {
+                        int magX = 15000 + Globals::rnd->nextInt(10000);
+                        int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+                        int y = Globals::rnd->nextInt(10000) - 5000;
+                        int magZ = 15000 + Globals::rnd->nextInt(10000);
+                        int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+                        Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
+                        (*enemies)[i]->setPosition(scatterOrigin + offset); // vtable+0x44
+                    }
+                    m_nState = 4;
                 }
                 break;
             }
@@ -1625,7 +1643,51 @@ int LevelScript::process(int delta) {
             }
             case 29: { // 0x139ca2
                 if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
-                    // DEFERRED 0x13e1f6: radio-message #0 state-0 sub-branch.
+                    // Intro-approach cutscene (0x13e1f6): hand control back to the AI, hide the
+                    // HUD/radar cinematic overlay, then reframe the camera to a fixed offset built
+                    // from the player ship's own basis vectors (dir*25000 + right*1000 + up*1000 +
+                    // pos, accumulated into the LevelScript scratch vector @0x28), and finally spawn
+                    // the intro geometry (mesh 0x37d2) into m_pGeometry6, seat it on the player, target
+                    // the camera on it and fire radio/sound event 14. FP immediates from the pool:
+                    //   @0x13e3ec = 25000.0f (forward), @0x13e3f0 = 1000.0f (right/up).
+                    m_nState = 1;
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->player->setVulnerable(false);
+                    m_pHud->visible = 0;
+                    m_pRadar->field_0x58 = 0;
+                    player->stopShooting(0);
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pCamera->setLookAtCam(true);
+                    player->setComputerControlled(true);
+                    m_pCamera->setPosition(player->geometry->getPosition());
+                    Vector *frame = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                    *frame = player->geometry->getDirection();
+                    *frame *= 25000.0f;
+                    Vector tmp{0.0f, 0.0f, 0.0f};
+                    tmp = player->geometry->getRightVector();
+                    tmp *= 1000.0f;
+                    *frame += tmp;
+                    tmp = player->geometry->getUpVector();
+                    tmp *= 1000.0f;
+                    *frame += tmp;
+                    *frame += player->geometry->getPosition();
+                    m_pCamera->setPosition(frame->x, frame->y, frame->z);
+                    AEGeometry *intro = new AEGeometry(0x37d2, Globals::Canvas, false);
+                    m_pGeometry6 = intro;
+                    m_pGeometry6->setPosition(player->geometry->getPosition());
+                    m_pGeometry6->setDirection(player->geometry->getDirection(),
+                                               Vector{0.0f, 1.0f, 0.0f});
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_pCamera->setTarget(m_pGeometry6);
+                    Globals::sound->play(14, nullptr, nullptr, 0.0f);
+                    Vector camPos = *m_pCamera->getPosition();
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
+                    // -> shared geometry-6 advance tail (0x144e18)
                     break;
                 }
                 if (((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 1) {
