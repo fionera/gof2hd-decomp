@@ -594,11 +594,22 @@ int LevelScript::process(int delta) {
                 break;
             }
             default:
-                // DEFERRED heavy substate s11 @0x13bd2c: camera translate + a vtable-dispatch loop over
-                //   an escort-array staging the docking approach (per-element slots @+0xc/+0x20),
-                //   setTarget, position/direction copy into the matrix region, then setPosition of
-                //   target.pos + {2000,500,-20000} (@0x13bdd0..d8) and advance to state 12. The loop's
-                //   array source and slot semantics reach beyond this pass's scope.
+                // DEFERRED heavy substate s11 @0x13bd2c. Decoded shape (kept deferred: the array's
+                //   element type + two unnamed vtable slots + the count-10 indexing are unresolved, so
+                //   naming them would be fabrication):
+                //     m_pCamera->translate(-delta*0.7, delta, delta*3);          // 0.7 @0x13b944
+                //     (long long&)m_nScriptTimerA += delta; if (>=3001) -> tail.
+                //     // arr = [sp+96] (a stable Array<T*>-shaped {count@0,data@4} spilled at entry):
+                //     for (i=2; i<arr.count; ++i) {
+                //         arr[i]->vslot0x20(&Vector{0,0,-50000});  // -50000 @0x13bdcc
+                //         arr[i]->vslot0x0c();
+                //     }
+                //     T *tail = arr.data[arr.count-10];                          // count-10 idiom
+                //     m_pCamera->setTarget(tail->field_0x8);
+                //     m_matrix[0..2] = tail->field_0x8->getPosition();           // into [this+0x28]
+                //     m_matrix[0..2] += {2000,500,-20000};                       // @0x13bdd0..d8
+                //     m_pCamera->setPosition(m_matrix[0..2]);
+                //     m_pLevel->lodManager->forceUpdate(30,false); m_nState=12; timerA=0; -> tail.
                 break;
         }
     } else {
@@ -1603,6 +1614,37 @@ int LevelScript::process(int delta) {
                 break;
             }
             case 80: { // 0x139e34
+                if (m_nState == 12) {
+                    // State 12 @0x14421c: per-frame docking-approach choreography. Advance the frame
+                    // timer, keep the wreck explosion rumbling, drift the follow camera, ramp the rumble
+                    // up over 8s, and once 8s elapse seat the docking model ahead of the intro geometry,
+                    // kick its Transform animation, play the docking sting and advance to state 13.
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                    m_pExplosion->update(delta, (TargetFollowCamera *) nullptr);
+                    m_pCamera->translate((float) delta * 0.5f, (float) delta * 0.2f,
+                                         -(float) delta * 4.0f); // 0.5,0.2 @0x14446c,-4.0
+                    float rumble =
+                            (float) reinterpret_cast<long long &>(m_nScriptTimerA) / 8000.0f; // @0x144470
+                    if (!(rumble < 1.0f)) {
+                        rumble = 1.0f;
+                    }
+                    m_pCamera->setRumblePercentage(rumble, 100);
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 8001) {
+                        Vector dockPos = m_pGeometry1->getPosition() +
+                                         Vector{0.0f, 0.0f, -10000.0f}; // z @0x144474
+                        m_pGeometry5->setPosition(dockPos);
+                        AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                                Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                        t->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+                        t = (AbyssEngine::Transform *)
+                                Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
+                        t->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                        Globals::sound->play(160, nullptr, nullptr, 0.0f);
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                        m_nState = 13;
+                    }
+                    break;
+                }
                 if (m_nState != 0) {
                     // DEFERRED 0x13e630: cold substate (m_nState != 0).
                     break;
