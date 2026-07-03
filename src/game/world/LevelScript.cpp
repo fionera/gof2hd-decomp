@@ -3009,8 +3009,34 @@ int LevelScript::process(int delta) {
                     (*enemies)[0]->geometry->moveForward((float) *timer * 0.1f);
                     if (*counterB > 12001 &&
                         ((RadioMessage *) ((*messages)[2]))->isOver()) {
-                        // DEFERRED 0x140414: arrival handoff (reset gun delay, drop the look-at
-                        //   camera, un-freeze/reveal the player and re-enable its route).
+                        // Arrival handoff (0x140414): the marker has reached the player; return
+                        // control. Reset the player's gun-delay, drop the cinematic look-at camera
+                        // and re-target it on the player, un-freeze/reveal/re-route the player, and
+                        // restore the HUD/radar chrome before re-warming the LODs.
+                        field_0x24 = 0;
+                        m_pLevel->getPlayer()->resetGunDelay();
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        player->setComputerControlled(false);
+                        player->setFreeze(false);
+                        player->setVisible(true);
+                        player->setSpeed(2.0f);          // 0x40000000
+                        m_pHud->visible = 1;             // m_pHud byte @0x1 = 1
+                        m_pRadar->field_0x58 = 1;        // m_pRadar byte @0x48 = 1
+                        player->player->setVulnerable(true);
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_nFlags = m_nFlags & 0xFF;       // cinematicBreak_ (m_nFlags high byte @0x11) = 0
+                        // DEFERRED 0x14049c..0x140512: the escort-wrapper tail. [sp,#96] holds a
+                        //   wrapper array whose elem0 has a PlayerFighter @+0 and a Player @+4:
+                        //     ((PlayerFighter*)elem0)->setCloakingPossible(true);
+                        //     ((Player*)elem0->field_0x4)->setAlwaysEnemy(true);
+                        //     ((PlayerFighter*)elem0)->setAIDisabled(false);
+                        //   followed by aiming that fighter's geometry along
+                        //   normalize(player->getPosition() - elem0Pos) with up = {0,1,0}
+                        //   (setDirection @0x14050c), then m_nState = 3 -> tail 0x143d0e. The wrapper
+                        //   array identity (which getter fills [sp,#96]) is not yet resolved.
+                        m_nState = 3;
                     }
                     break;
                 }
