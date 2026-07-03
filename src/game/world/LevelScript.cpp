@@ -2353,10 +2353,25 @@ int LevelScript::process(int delta) {
             }
             case 102: { // 0x13a658
                 if (m_nState != 0) {
-                    // DEFERRED 0x13e816: cold substate (m_nState != 0). 6-way tbh on (m_nState-1),
-                    // table @0x13e822 (base 0x13e822): prong targets & classification (all HARD):
-                    //   state 1 @0x13e880: TargetFollowCamera::translate(FP-scaled) + RadioMessage::isOver
-                    //                      gate; on isOver advances m_nScriptTimerA (strd @+0x90) then tail.
+                    // 0x13e816: cold substate (m_nState != 0). 6-way tbh on (m_nState-1),
+                    // table @0x13e822 (base 0x13e822): prong targets & classification.
+                    if (m_nState == 1) {
+                        // state 1 @0x13e880: slew the follow-camera and, once the mission radio message
+                        // (messages[2]) is over, advance the 64-bit script timer by delta. Both paths then
+                        // fall into the shared 2001-tick gate epilogue (DEFERRED 0x143b18).
+                        //   receiver [sp+0x58]=this -> [+0x14]=m_pCamera; args s6/s0/s2 = delta*0.6/0.8/-2.5
+                        //   (pool 0.6=0x3f19999a @0x13e878, 0.8=0x3f4ccccd @0x13e87c, 2.5=vmov.f32 #4).
+                        m_pCamera->translate((float) delta * 0.6f, (float) delta * 0.8f, -(float) delta * 2.5f);
+                        // isOver source [fp+4]=messages->data, [+8]=elem 2 (fp==messages, cf. case head 0x13a662).
+                        if (((RadioMessage *) ((*messages)[2]))->isOver()) {
+                            reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // strd @+0x90 (0x13e8d0)
+                        }
+                        // DEFERRED 0x13e8e0/0x143b18: shared cold-state epilogue -- 64-bit timer >= 2001 gate;
+                        // on pass Level::getPlayer()->resetGunDelay() + setFreeze/setVisible/setVulnerable ...
+                        // (large body shared across states 1..6, reconstructed separately).
+                        break;
+                    }
+                    // DEFERRED 0x13e894: remaining cold substates 2..6 (all HARD):
                     //   state 2 @0x13ef12: KIPlayer setActive/setVisible(true) + vfn @+0x1c(2.0f);
                     //                      delete old Objective @+0x2c; new Route(int*, 3); KIPlayer::setRoute;
                     //                      PlayerEgo::setTurretMode(false); resetCamera(level).
