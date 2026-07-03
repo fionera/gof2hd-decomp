@@ -3617,7 +3617,32 @@ int LevelScript::process(int delta) {
                         break;
                     }
                     if (m_nState == 4) { // prong E3 @0x143138
-                        // DEFERRED 0x143138: moveForward + CameraGetLocal/MatrixGetPosition aim chain.
+                        // Idiom A (camera local-matrix creep), sibling of state 2. Creep the dock
+                        // target (enemies[0]) forward by step = delta*0.25, then offset the render
+                        // camera's local matrix translation along the player's dir/right/up basis
+                        // (dir*step*0.008 + right*step*-0.05 + up*step*0.005). Once radio message #4
+                        // is over, advance the 64-bit script timer by delta.
+                        float step = (float) delta * 0.25f;                  // s0=0.25 @0x15313a
+                        (*enemies)[0]->geometry->moveForward(step);          // 0x153156
+                        AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                        Matrix local = *reinterpret_cast<Matrix *>(
+                                canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                        Vector *tempVec = reinterpret_cast<Vector *>(&field_0x28);
+                        Vector *scratch = reinterpret_cast<Vector *>(&field_0x40);
+                        *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local); // 0x153198
+                        *scratch = player->GetDirVector();                   // 0x1531a6
+                        *tempVec += *scratch * (step * 0.008f);              // k_dir 0x3c03126f @0x153124
+                        *scratch = player->geometry->getRightVector();       // 0x1531e6
+                        *tempVec += *scratch * (step * -0.05f);             // k_right 0xbd4ccccd @0x153130
+                        *scratch = player->GetUpVector();                    // 0x153208
+                        *tempVec += *scratch * (step * 0.005f);             // k_up 0x3ba3d70a @0x153530
+                        m_pCamera->setFixed(true);                           // 0x15323a
+                        AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec); // 0x15324a
+                        m_pCamera->setLocal(local);                          // 0x153296
+                        if (((RadioMessage *) ((*messages)[4]))->isOver()) { // 0x1532a0
+                            reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1532b4
+                        }
+                        // DEFERRED 0x154658: radio-not-over -> shared dwell tail.
                         break;
                     }
                     if (m_nState == 5) { // prong E4 @0x1432c2
@@ -3631,7 +3656,31 @@ int LevelScript::process(int delta) {
                         break;
                     }
                     if (m_nState == 6) { // prong E5 @0x14330e
-                        // DEFERRED 0x14330e: moveForward + CameraGetLocal/MatrixGetPosition aim chain.
+                        // Idiom A (camera local-matrix creep), sibling of states 2 & 4. Same creep as
+                        // state 4 but with a POSITIVE right scalar: dir*step*0.008 + right*step*0.05 +
+                        // up*step*0.005, step = delta*0.25. Once radio message #6 is over, advance the
+                        // 64-bit script timer by delta.
+                        float step = (float) delta * 0.25f;                  // s0=0.25 @0x153310
+                        (*enemies)[0]->geometry->moveForward(step);          // 0x15332c
+                        AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                        Matrix local = *reinterpret_cast<Matrix *>(
+                                canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                        Vector *tempVec = reinterpret_cast<Vector *>(&field_0x28);
+                        Vector *scratch = reinterpret_cast<Vector *>(&field_0x40);
+                        *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local); // 0x15336e
+                        *scratch = player->GetDirVector();                   // 0x15337c
+                        *tempVec += *scratch * (step * 0.008f);              // k_dir 0x3c03126f @0x153124
+                        *scratch = player->geometry->getRightVector();       // 0x1533bc
+                        *tempVec += *scratch * (step * 0.05f);              // k_right 0x3d4ccccd @0x153548
+                        *scratch = player->GetUpVector();                    // 0x1533de
+                        *tempVec += *scratch * (step * 0.005f);             // k_up 0x3ba3d70a @0x153530
+                        m_pCamera->setFixed(true);                           // 0x153410
+                        AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec); // 0x153420
+                        m_pCamera->setLocal(local);                          // 0x15346c
+                        if (((RadioMessage *) ((*messages)[6]))->isOver()) { // 0x153476
+                            reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x15348c
+                        }
+                        // DEFERRED 0x1547ae: radio-not-over -> shared dwell tail.
                         break;
                     }
                     if (m_nState == 7) { // prong E6 @0x14349c
