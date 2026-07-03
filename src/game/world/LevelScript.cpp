@@ -1819,7 +1819,37 @@ int LevelScript::process(int delta) {
             }
             case 41: { // 0x139d56
                 if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 0) {
-                    // DEFERRED 0x13e400: radio-message #4 state-0 sub-branch.
+                    // Radio message #4 in state 0 (0x13e400): begin the mining-plant approach
+                    // cutscene. Drop the player out of turret/free-look/first-person, reset the
+                    // camera, stop shooting, hide the HUD/radar, latch the look-at cam and hand
+                    // control to the AI, then reframe the camera onto the mining plant.
+                    player->setTurretMode(false);                       // 0x13e40a
+                    resetCamera(m_pLevel);                              // 0x13e414
+                    player->setFreeLookMode(false);                     // 0x13e41c
+                    m_pCamera->enableFirstPersonCam(false);             // 0x13e424
+                    player->hideShipForFirstPersonCameraView(false);    // 0x13e42c
+                    player->stopShooting(0);                            // 0x13e434
+                    // DEFERRED 0x13e43c: strb 1 -> player+0x24 (byte into turretGeometry ptr slot).
+                    m_pHud->visible = 0;                                // [m_pHud+1] = 0  (0x13e444)
+                    m_pRadar->field_0x58 = 0;                           // [m_pRadar+0x48] = 0 (0x13e44c)
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100;               // strb 1 -> this+0x11 cinematicBreak (0x13e452)
+                    m_pCamera->setLookAtCam(true);                      // 0x13e454
+                    player->setComputerControlled(true);               // 0x13e45c
+                    player->player->setVulnerable(false);              // 0x13e464
+                    // DEFERRED 0x13e470..0x13e4bc: 3-iteration enemy loop (indices 1..3) --
+                    //   revive (vtable+0x18), getPosition/setPosition round-trip, setEnemy, then
+                    //   [enemy+0x38]=0 and vtable+0x5c(1).
+                    // DEFERRED 0x13e4be..0x13e5e2: AEMath orientation-matrix scratch block that
+                    //   aims enemies [0]/[1]/[2] via GOT-loaded operators (sp+0x170 scratch).
+                    // Reframe the camera onto the plant: aim at enemies[2], sit at enemies[0].
+                    KIPlayer *plant = (*enemies)[0];
+                    m_pCamera->setTarget((*enemies)[2]->geometry);      // 0x13e5f0
+                    Vector plantPos = plant->getPosition();             // 0x13e604
+                    m_pCamera->setPosition(plantPos);                   // 0x13e60a
+                    // translate immediates from pool 0x13e864/0x13e868: {-38000, 0, -30200}.
+                    m_pCamera->translate(-38000.0f, 0.0f, -30200.0f);   // 0x13e616
+                    m_pLevel->lodManager->forceUpdate(delta, false);    // 0x13e622
+                    m_nState = 1;                                       // 0x13d0e -> [this+0x1c] = 1
                     break;
                 }
                 if (((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 1) {
