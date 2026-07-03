@@ -3842,18 +3842,63 @@ int LevelScript::process(int delta) {
                     if (m_nState == 9) { // prong E8 @0x1434f2
                         if (((RadioMessage *) ((*messages)[7]))->isOver()) {
                             reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x143508
-                            // DWELL TAIL 0x14484e: dwell 2001 ticks, then arm the hostile wave and
-                            // advance. The teardown here is the largest of the tails.
+                            // DWELL TAIL 0x14485c: dwell 2001 ticks, then arm the hostile escort
+                            // wave and hand control back to the player. This is the largest tail.
                             if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 2001) {
-                                // DEFERRED 0x14485c-0x144a04: loop over all enemies arming the
-                                // hostile escort wave (Player setEnemy / setState 8 / setAlwaysFriend
-                                // / setVulnerable), resetCamera, LOD forceUpdate, and the
-                                // field_0xaa -> PlayerEgo::setAutoTurret(true) restore.
+                                // Arm loop 0x14486a..0x1448fe: iterate every escort with
+                                // shipGroup==9; reactivate it and point its Player at a target.
+                                // The target alternates: enemies with index i%3==0 hunt the lead
+                                // escort enemies[0], the rest hunt the player's own ship. (r5 =
+                                // 3*(i/3), and the target is chosen by `r5 == i`.)
+                                for (unsigned int i = 0; i < enemies->count; ++i) { // 0x14486a
+                                    KIPlayer *elem = (*enemies)[i];
+                                    if (elem->shipGroup != 9) { // [elem+0x28]==9, 0x144870
+                                        continue;
+                                    }
+                                    elem->field_0x25 = 1;         // 0x14487a strb 1 -> [elem+0x25]
+                                    elem->setActive(true);        // 0x144882
+                                    elem->setVisible(true);       // 0x14488e
+                                    ((PlayerFighter *) elem)->setAIDisabled(false); // 0x14489a
+                                    Player *target = (i % 3 == 0)          // 0x1448a0 cmp r5(=3*(i/3)),i
+                                                         ? (*enemies)[0]->player   // 0x1448aa
+                                                         : player->player;         // 0x1448e8 [sp+0x54]
+                                    elem->player->setEnemy(target); // 0x1448ec
+                                }
+                                // Boss escort enemies[1]: promote to hostile shipGroup 8 and clear
+                                // its wreck-latch flag (0x14490c..0x154948, r6 = Level::getEnemies).
+                                (*m_pLevel->getEnemies())[1]->shipGroup = 8;  // 0x154912 str 8 -> [+0x28]
+                                (*m_pLevel->getEnemies())[1]->field_0x74 = 0; // 0x154920 strb 0 -> [+0x74]
+                                (*m_pLevel->getEnemies())[1]->player->setAlwaysFriend(false); // 0x154932
+                                (*m_pLevel->getEnemies())[1]->player->setAlwaysEnemy(true);   // 0x154948
+                                // Lead escort enemies[0]: clear its enemy list and make it vulnerable.
+                                (*m_pLevel->getEnemies())[0]->player->setEnemies(nullptr); // 0x15495a
+                                (*m_pLevel->getEnemies())[0]->player->setVulnerable(true);  // 0x15496c
+                                // Camera / player-control teardown (0x144970..0x1449c6): unfix the
+                                // follow camera, reset the player's gun delay, re-target the camera
+                                // onto the player's ship and hand control back (unfreeze, cruise
+                                // speed, player-driven, vulnerable, respawn at z=90000).
+                                m_pCamera->setFixed(false);          // 0x144976
+                                m_pLevel->getPlayer()->resetGunDelay(); // 0x144982
+                                m_pCamera->setLookAtCam(false);      // 0x14498c
+                                m_pCamera->setTarget(player->geometry); // 0x144998 [player+8]
+                                player->setFreeze(false);            // 0x1449a0
+                                player->setSpeed(2.0f);              // 0x1449aa 0x40000000
+                                player->setComputerControlled(false); // 0x1449b2
+                                player->player->setVulnerable(true); // 0x1449ba
+                                player->setPosition(0.0f, 0.0f, 90000.0f); // 0x1449c6 z=0x47afc800
+                                m_pHud->visible = 1;                 // 0x1449ce strb 1 -> [m_pHud+1]
+                                m_pRadar->field_0x58 = 1;            // 0x1449d6 strb 1 -> [m_pRadar+0x48]
+                                resetCamera(m_pLevel);               // 0x1449e0
+                                m_pLevel->lodManager->forceUpdate(delta, false); // 0x1449ee
+                                m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x1449f6
+                                if (field_0xaa != 0) {               // 0x1449f2 ldrb [+0xaa]; cbz
+                                    player->setAutoTurret(true);     // 0x144a00
+                                }
                                 reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x144a04 strd 0
                                 m_nState = m_nState + 1; // 0x144a08 shared advance
                             }
                         }
-                        // DEFERRED 0x144842/0x14484e: 2001-tick dwell tail.
+                        // 0x14484e radio-not-over / timer-not-elapsed -> shared tail.
                         break;
                     }
                     if (m_nState == 10) { // prong E9 @0x14354c
