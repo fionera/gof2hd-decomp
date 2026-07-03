@@ -2498,7 +2498,11 @@ int LevelScript::process(int delta) {
                         Globals::status->nextCampaignMission(true);
                         Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(0x6f));
                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(0x6f));
-                        // DEFERRED 0x144d00: two scene-switch flag globals set to 1 before the jump.
+                        // Arm the scene-switch flags (both set to 1) before handing control to the
+                        // application module: request the target-setting switch and the stream-out
+                        // reposition. (0x144d14 word store; 0x144d1a byte store.)
+                        Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 1;
                         Globals::appManager->SetCurrentApplicationModule(2); // 0x144d1e
                     }
                     break;
@@ -3027,15 +3031,24 @@ int LevelScript::process(int delta) {
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nFlags = m_nFlags & 0xFF;       // cinematicBreak_ (m_nFlags high byte @0x11) = 0
-                        // DEFERRED 0x14049c..0x140512: the escort-wrapper tail. [sp,#96] holds a
-                        //   wrapper array whose elem0 has a PlayerFighter @+0 and a Player @+4:
-                        //     ((PlayerFighter*)elem0)->setCloakingPossible(true);
-                        //     ((Player*)elem0->field_0x4)->setAlwaysEnemy(true);
-                        //     ((PlayerFighter*)elem0)->setAIDisabled(false);
-                        //   followed by aiming that fighter's geometry along
-                        //   normalize(player->getPosition() - elem0Pos) with up = {0,1,0}
-                        //   (setDirection @0x14050c), then m_nState = 3 -> tail 0x143d0e. The wrapper
-                        //   array identity (which getter fills [sp,#96]) is not yet resolved.
+                        // DEFERRED 0x14049c..0x140512: the escort-wrapper tail.
+                        //   ARRAY IDENTITY RESOLVED: [sp,#96] = r8 = m_pLevel->getEnemies()
+                        //   (prologue 0x137d54 `mov r8, r0` after Level::getEnemies; stored by
+                        //   0x137d68 `strd r4,r8,[sp,#92]` into slot 0x60; never overwritten). So
+                        //   elem0 = (*enemies)[0] = data[0] (enemies->field_0x4[0]).
+                        //     ((PlayerFighter*)(*enemies)[0])->setCloakingPossible(true);  // 0x1404a2
+                        //     ((Player*)((*enemies)[0])->field_0x4)->setAlwaysEnemy(true); // 0x1404ae, receiver=[elem0+4]
+                        //     ((PlayerFighter*)(*enemies)[0])->setAIDisabled(false);       // 0x1404b8
+                        //   then aim player->geometry ([player+8], the setDirection receiver @0x14050c):
+                        //     dir = VectorNormalize( -(player->getPosition() - elem0->getPosition()) )
+                        //         = VectorNormalize( elem0Pos - playerPos )   // note extra unary neg @0x1404ec
+                        //     up  = {0,1,0}; elem0->getPosition() is the KIPlayer virtual (vtable+0x28).
+                        //   then m_nState = 3 -> tail 0x143d0e.
+                        //   STILL DEFERRED: setAlwaysEnemy receiver is [elem0+4], the KIPlayer::geometry
+                        //   offset, yet the call is Player::setAlwaysEnemy(Player*). elem0 is polymorphic
+                        //   (vtable@+0, getPosition@+0x28 => KIPlayer/PlayerFighter, player@+0), which
+                        //   conflicts with a Player* living at +4. Cannot express [elem0+4] as a clean
+                        //   human Player* access without a guess; hold until the element type is confirmed.
                         m_nState = 3;
                     }
                     break;

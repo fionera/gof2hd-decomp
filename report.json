@@ -1150,14 +1150,6 @@
    "usize": 764
   },
   {
-   "name": "inflateBack",
-   "pct": 1.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2568,
-   "usize": 4172
-  },
-  {
    "name": "_tr_stored_block",
    "pct": 1.1,
    "byte": false,
@@ -1244,6 +1236,14 @@
    "linked": false,
    "osize": 10376,
    "usize": 192
+  },
+  {
+   "name": "inflateBack",
+   "pct": 1.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2568,
+   "usize": 4172
   },
   {
    "name": "inflate",
@@ -1798,14 +1798,6 @@
    "usize": 78
   },
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 6.3,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 24932
-  },
-  {
    "name": "_ZN7Globals13setCoordsFireEiijjRjRtS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_S1_",
    "pct": 6.4,
    "byte": false,
@@ -1828,6 +1820,14 @@
    "linked": false,
    "osize": 122,
    "usize": 122
+  },
+  {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 6.5,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 24964
   },
   {
    "name": "_ZN5Level11createSceneEv",
@@ -6118,14 +6118,6 @@
    "usize": 222
   },
   {
-   "name": "InitializeBlowfish",
-   "pct": 26.9,
-   "byte": false,
-   "linked": false,
-   "osize": 416,
-   "usize": 340
-  },
-  {
    "name": "_ZN11AbyssEngine16AESoundRessource4initEi",
    "pct": 26.9,
    "byte": false,
@@ -6220,6 +6212,14 @@
    "linked": false,
    "osize": 50,
    "usize": 92
+  },
+  {
+   "name": "InitializeBlowfish",
+   "pct": 27.5,
+   "byte": false,
+   "linked": false,
+   "osize": 416,
+   "usize": 340
   },
   {
    "name": "_ZN11AbyssEngine6Engine15ResetLightParamEv",
@@ -15006,14 +15006,6 @@
    "usize": 22
   },
   {
-   "name": "_ZN11AbyssEngine11NoTexShader4InitEPNS_6EngineE",
-   "pct": 75.0,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 92
-  },
-  {
    "name": "_ZN11AbyssEngine12GlowPPShader11SetInActiveEv",
    "pct": 75.0,
    "byte": false,
@@ -15292,6 +15284,14 @@
    "linked": false,
    "osize": 420,
    "usize": 392
+  },
+  {
+   "name": "_ZN11AbyssEngine11NoTexShader4InitEPNS_6EngineE",
+   "pct": 75.9,
+   "byte": false,
+   "linked": false,
+   "osize": 92,
+   "usize": 92
   },
   {
    "name": "_ZN11AbyssEngine12CheatHandler12AddCheatCodeERKNS_6StringEi",
@@ -15782,20 +15782,20 @@
    "usize": 180
   },
   {
+   "name": "_ZN11AbyssEngine13GenericShader4InitEPNS_6EngineE",
+   "pct": 78.5,
+   "byte": false,
+   "linked": false,
+   "osize": 356,
+   "usize": 356
+  },
+  {
    "name": "_ZN17PlayerFixedObject20setDeadButSelectableEv",
    "pct": 78.8,
    "byte": false,
    "linked": false,
    "osize": 88,
    "usize": 88
-  },
-  {
-   "name": "_ZN11AbyssEngine13GenericShader4InitEPNS_6EngineE",
-   "pct": 79.2,
-   "byte": false,
-   "linked": false,
-   "osize": 356,
-   "usize": 356
   },
   {
    "name": "_ZN11AbyssEngine13TexOnlyShader4InitEPNS_6EngineE",
