@@ -2764,10 +2764,50 @@ int LevelScript::process(int delta) {
                         m_nState = m_nState + 1; // [r4+28]+1 -> 0x144c0c str m_nState -> 0x144e36
                         break;
                     }
-                    // DEFERRED 0x13e894: remaining cold substate 6 (HARD):
-                    //   state 6 @0x140ed8: AEGeometry::getPosition; FModSound::updateEvent3DAttributes(0x8ca,..);
-                    //                      AEGeometry::moveForward(FP*200); timer gate 0xfa1; Level::getPlayer
-                    //                      -> PlayerEgo::resetGunDelay.
+                    if (m_nState == 6) {
+                        // state 6 @0x140ed8 (tbh table @0x13e822[5]=0x135b -> 0x140ed8; verified).
+                        // LAST cold substate: creep the lead escort straight forward, keep the 3D audio
+                        // event pinned to it, advance the 64-bit script timer; once it passes 4001 ticks
+                        // hand control back to the player, tear the cutscene framing down and reframe the
+                        // fixed follow-camera 100 units behind the player, then advance the state.
+                        //
+                        // 0x140ed8..0x140ee6: pin FMOD event 2250 (0x8ca) to the lead escort's live pos.
+                        //   pos = enemies[0]->geometry->getPosition() (sret sp+0x170); receiver
+                        //   [enemies+4][0]->[+8]=geometry. velocity = {0,0,0} (strd 0,0 @sp#280 /
+                        //   str 0 @sp#288), bool last = false (str 0 @sp#0). GOT _ZN7Globals5soundE @0x210168.
+                        Vector enemyPos = (*enemies)[0]->geometry->getPosition();
+                        Vector zero{0.0f, 0.0f, 0.0f};
+                        Globals::sound->updateEvent3DAttributes(2250, &enemyPos, &zero, false);
+                        // 0x140f0c..0x140f36: m_nScriptTimerA(64) += delta (ldr.w r0,[r4,#144]!; adc asr#31; strd).
+                        //   s0 = (float)(delta*200) computed in parallel for the moveForward below (mul #0xc8).
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                        // 0x140f38..0x140f40: enemies[0]->geometry->moveForward((float)(delta*200)).
+                        (*enemies)[0]->geometry->moveForward((float) (delta * 200));
+                        // 0x140f42..0x140f50: hold until the 64-bit script timer passes 4001 (movw #0xfa1).
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 4001) {
+                            break; // -> post-switch tail 0x144e36
+                        }
+                        // Cutscene teardown + camera reframe (0x140f54..0x140ffa).
+                        m_pLevel->getPlayer()->resetGunDelay();  // [r5+0x18]=m_pLevel, 0x140f54/5a
+                        player->setFreeze(false);                // [sp+0x54]=player, 0x140f66
+                        player->setVisible(true);                // 0x140f6e
+                        player->player->setVulnerable(true);     // [player+0]=player->player, 0x140f78
+                        m_pCamera->setLookAtCam(false);          // [r5+0x14]=m_pCamera, 0x140f80
+                        m_pCamera->setTarget(player->geometry);  // [player+8]=player->geometry, 0x140f8a
+                        m_pCamera->setPosition(
+                                *reinterpret_cast<Vector *>(&field_0x40)); // &this+0x40 scratch, 0x140f94
+                        // reframe: player->getPosition() - player->GetDirVector() * 100.0f (pool @0x141270).
+                        m_pCamera->setPosition(player->getPosition()
+                                               - player->GetDirVector() * 100.0f); // 0x140f98..0x140fce
+                        m_pHud->visible = 1;                     // [r5+0xd0]+1 = 1, 0x140fd2/d8
+                        m_pRadar->field_0x58 = 1;                // [r5+0xd4]+0x48 = 1, 0x140fda/de
+                        resetCamera(m_pLevel);                   // [r5+0x18]=m_pLevel, 0x140fe6
+                        m_pLevel->lodManager->forceUpdate(delta, false); // 0x140ff2
+                        m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x140ff6
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0,0 @+0x90, 0x140ffa
+                        m_nState++; // shared tail 0x13953c increments m_nState -> 0x13edde
+                        break; // -> shared set-state tail (0x140ffe -> 0x13953c)
+                    }
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[0]))->isTriggered()) {
