@@ -1949,7 +1949,31 @@ int LevelScript::process(int delta) {
             }
             case 91: { // 0x13ac42
                 if (m_nState != 0) {
-                    // DEFERRED 0x13ebe8: cold substate (m_nState != 0).
+                    // Cold substates (0x13ebe8). States 1 and 2 handle the docking hand-off; the
+                    // deeper docking/objective states (3..6) remain deferred.
+                    if (m_nState == 1) {
+                        // State 1 (0x13ebec): once the player ship is latched onto the docking
+                        // point, advance to state 2.
+                        if (player->isDockedToDockingPoint()) {
+                            m_nState = 2;
+                            break;
+                        }
+                        break;
+                    }
+                    if (m_nState == 2) {
+                        // State 2 (0x13ec02): wait for radio message #5 to finish, then flag the
+                        // docking target and, if the player is still docked, push it into docking
+                        // state 2 before advancing to state 3.
+                        if (((RadioMessage *) ((*messages)[5]))->isOver()) {
+                            ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(2);
+                            if (player->isDockedToDockingPoint()) {
+                                player->setDockingState(2);
+                            }
+                            m_nState = 3;
+                        }
+                        break;
+                    }
+                    // DEFERRED 0x13f316: cold substates 3..6 (docking objective + timer states).
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[3]))->isTriggered()) {
