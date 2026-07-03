@@ -1676,8 +1676,8 @@ int LevelScript::process(int delta) {
                     if (reinterpret_cast<long long &>(m_nScriptTimerA) < 2151) {
                         break;
                     }
-                    // DEFERRED 0x1441a4: ((AEGeometry*)(*enemies)[0]->field_0x140)->setVisible(false)
-                    //   -- KIPlayer::field_0x140 is not a named field in our model yet (see case 157).
+                    // 0x1441a4: hide the escort station's root marker (field @0x140 == rootGeometry).
+                    ((PlayerStation *) (*enemies)[0])->rootGeometry->setVisible(false);
                     if (reinterpret_cast<long long &>(m_nScriptTimerA) < 10001) {
                         break;
                     }
@@ -1725,7 +1725,7 @@ int LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
                 m_nScriptCounterA = 0;
                 m_nState = 1;
-                // FModSound::play(1121, ...) DEFERRED @0x139f0c
+                Globals::sound->play(1121, nullptr, nullptr, 0.0f); // 0x139ef2/0x139f0c
                 // -> shared tail 0x14433e -> post-switch tail (0x144e36)
                 break;
             }
@@ -2662,22 +2662,74 @@ int LevelScript::process(int delta) {
                 // -> post-switch tail (0x144e36)
                 break;
             }
-            case 157: // 0x13a308
-                // DEFERRED 0x13a308. Head: an index set (12/11/10 or 23/22/21) is chosen from a global
-                // status byte, then for each visible marker geometry (m_pGeometry2 @0xc0, m_pGeometry3
-                // @0xc4) it is repositioned onto (*enemies)[idx]->field_0x140's position and its
-                // PaintCanvas transform is refreshed (PaintCanvas::TransformGetTransform +
-                // Transform::Update). Dispatch on m_nState: state 0 spawns a marker AEGeometry into
-                // m_pGeometry4 @0xcc (new AEGeometry(canvas) + setPosition + setDirection) then
-                // m_nState=1. When radio[?]->isOver(): the standard cutscene-exit teardown runs --
-                //   if isInRocketControl(): resetCamera/setRocketControl(0,0)/killLiberator/rumble 0;
-                //   player->player->setVulnerable(false); player->setFreeze(true) [PlayerEgo+0x24];
-                //   camera reframe on m_pGeometry4 + translate; m_nState=2.
-                // NOTE (pass 8): the KIPlayer vtable slots are resolved -- +0x48 == setPosition(fff),
-                // +0xc == awake() (both virtual in KIPlayer.h). The PaintCanvas/Transform matrix work
-                // is via GOT singletons (Globals::Canvas) with named methods. Remaining undecoded: the
-                // global status byte selecting the marker index set and KIPlayer::field_0x140.
+            case 157: { // 0x13a308
+                // Head (0x13a308): pick the escort-ship index by device tier. On a weak device running
+                // the HD build the boss escorts occupy the high slots (23), otherwise slot 12. The
+                // sibling indices (11/10 resp. 22/21) are computed by the original but unused on this
+                // path. `(*enemies)[idx]` is a PlayerStation, and its rootGeometry (field @0x140) is the
+                // world anchor the on-screen marker geometries snap onto each frame.
+                int markerIndex = Globals::isRunningHDonWeakDevice ? 12 : 23; // 0x13a30a/0x13a32a
+                PlayerStation *escort = (PlayerStation *) (*enemies)[markerIndex];
+                // Marker A (m_pGeometry2 @0xc0): if visible, ride it onto the escort anchor and refresh
+                // its live transform (0x13a340).
+                if (m_pGeometry2->isVisible()) {
+                    m_pGeometry2->setPosition(escort->rootGeometry->getPosition());
+                    AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                            Globals::Canvas->TransformGetTransform(m_pGeometry2->transform);
+                    t->Update((long long) delta, true);
+                }
+                // Marker B (m_pGeometry3 @0xc4): same treatment (0x13a382).
+                if (m_pGeometry3->isVisible()) {
+                    m_pGeometry3->setPosition(escort->rootGeometry->getPosition());
+                    AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                            Globals::Canvas->TransformGetTransform(m_pGeometry3->transform);
+                    t->Update((long long) delta, true);
+                }
+                // Dispatch on m_nState (0x13a3d0). State 1 skips setup; state 0 spawns the marker; any
+                // other state jumps to the post-exit cold branch.
+                if (m_nState != 1) {
+                    if (m_nState != 0) {
+                        // DEFERRED 0x13cde8: m_nState >= 2 cold sub-branch (post-exit steady state).
+                        break;
+                    }
+                    // State 0 (0x13a3de): spawn the fly-in marker geometry (m_pGeometry4 @0xcc), place it
+                    // far off to the side facing +Z with +Y up, then advance to state 1.
+                    AEGeometry *marker = new AEGeometry(Globals::Canvas);
+                    m_pGeometry4 = marker;
+                    marker->setPosition(Vector{-120000.0f, 0.0f, 5000.0f});
+                    marker->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                    m_nState = 1;
+                }
+                // States 0/1 both fall through here (0x13a42e): wait for the mission radio message to
+                // finish, then run the standard cutscene-exit teardown.
+                Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr
+                if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    // DEFERRED 0x13cde4: radio-not-over -> shared tail.
+                    break;
+                }
+                if (player->isInRocketControl()) {
+                    // 0x13a44a: hand rocket control back and stop the rumble.
+                    resetCamera(m_pLevel);
+                    player->setRocketControl(nullptr, nullptr);
+                    player->killLiberator();
+                    m_pCamera->setRumblePercentage(0.0f, 0);
+                }
+                // Standard cutscene-exit teardown (0x13a46e).
+                // DEFERRED 0x13a47a/0x13a47e/0x13a486: set the high byte of m_nFlags @+0x11 and clear the
+                //   Hud status byte @+1 and Radar flag @+0x48 -- all land in unnamed padding / packed
+                //   half-words in our model; naming them would risk layout drift.
+                m_pCamera->setLookAtCam(true);
+                m_pCamera->setTarget(m_pGeometry4);
+                m_pCamera->setPosition(m_pGeometry4->getPosition());
+                m_pCamera->translate(-10000.0f, 5000.0f, 25000.0f);
+                player->player->setVulnerable(false);
+                player->setFreeze(true);
+                m_nScriptTimerA = 0;                      // strd zeroes [this+0x90]
+                m_nScriptCounterA = 0;
+                m_nState = 2;
+                // -> post-switch tail (0x143d0e)
                 break;
+            }
             case 158: { // 0x13885c (nested dispatch on m_nState: 1/2/3 -> 0x138878/0x13d724/0x13d74e)
                 if (m_nState == 3) {
                     // DEFERRED 0x13d74e: state-3 body (proximity check + AERandom gate).
