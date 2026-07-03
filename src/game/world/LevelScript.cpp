@@ -3035,20 +3035,23 @@ int LevelScript::process(int delta) {
                         //   ARRAY IDENTITY RESOLVED: [sp,#96] = r8 = m_pLevel->getEnemies()
                         //   (prologue 0x137d54 `mov r8, r0` after Level::getEnemies; stored by
                         //   0x137d68 `strd r4,r8,[sp,#92]` into slot 0x60; never overwritten). So
-                        //   elem0 = (*enemies)[0] = data[0] (enemies->field_0x4[0]).
-                        //     ((PlayerFighter*)(*enemies)[0])->setCloakingPossible(true);  // 0x1404a2
-                        //     ((Player*)((*enemies)[0])->field_0x4)->setAlwaysEnemy(true); // 0x1404ae, receiver=[elem0+4]
-                        //     ((PlayerFighter*)(*enemies)[0])->setAIDisabled(false);       // 0x1404b8
-                        //   then aim player->geometry ([player+8], the setDirection receiver @0x14050c):
-                        //     dir = VectorNormalize( -(player->getPosition() - elem0->getPosition()) )
-                        //         = VectorNormalize( elem0Pos - playerPos )   // note extra unary neg @0x1404ec
-                        //     up  = {0,1,0}; elem0->getPosition() is the KIPlayer virtual (vtable+0x28).
-                        //   then m_nState = 3 -> tail 0x143d0e.
-                        //   STILL DEFERRED: setAlwaysEnemy receiver is [elem0+4], the KIPlayer::geometry
-                        //   offset, yet the call is Player::setAlwaysEnemy(Player*). elem0 is polymorphic
-                        //   (vtable@+0, getPosition@+0x28 => KIPlayer/PlayerFighter, player@+0), which
-                        //   conflicts with a Player* living at +4. Cannot express [elem0+4] as a clean
-                        //   human Player* access without a guess; hold until the element type is confirmed.
+                        //   elem0 = (*enemies)[0] = data[0].
+                        //   RESOLVED: at 0x140490 r0 = [sp,#96] = the ENTIRE enemies Array (not elem0);
+                        //   r4 = that array. So [r4+4] = array->data, [data+0] = elem0 (a KIPlayer*).
+                        //   [elem0+4] is therefore KIPlayer::player (member at KIPlayer offset +4 --
+                        //   vtable occupies +0), a real Player*: it is (*enemies)[0]->player, matching
+                        //   the Player::setAlwaysEnemy(bool) target exactly and the sibling idiom
+                        //   (*enemies)[i]->player->setAlwaysEnemy(true). setCloakingPossible/setAIDisabled
+                        //   take elem0 itself ((PlayerFighter*)(*enemies)[0]).
+                        //   The aim uses AEMath unary+binary operator-: dir @0x1404e2/0x1404ec is
+                        //   -(player->getPosition() - elem0->getPosition()); receiver is player->geometry.
+                        ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(true);   // 0x1404a2
+                        (*enemies)[0]->player->setAlwaysEnemy(true);                    // 0x1404ae, [elem0+4] = ->player
+                        ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);        // 0x1404b8
+                        player->geometry->setDirection(                                // 0x14050c
+                                AbyssEngine::AEMath::VectorNormalize(
+                                        -(player->getPosition() - (*enemies)[0]->getPosition())),
+                                Vector{0.0f, 1.0f, 0.0f});
                         m_nState = 3;
                     }
                     break;
