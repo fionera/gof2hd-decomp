@@ -1305,20 +1305,67 @@ int LevelScript::process(int delta) {
                     // on ±X/±Z, -5000..4999 on Y (Globals::rnd->nextInt) -- then advance to state 4
                     // (shared tail 0x13e80c -> 0x1438d4). No FP immediates: the components are integer
                     // arithmetic converted with vcvt.f32.s32. No awake() call here (unlike case 66/11).
-                    if (!((RadioMessage *) ((*messages)[5]))->isTriggered()) {
-                        break; // -> post-switch tail (0x13eeaa -> 0x144e36)
+                    if (m_nState == 3 && ((RadioMessage *) ((*messages)[5]))->isTriggered()) {
+                        Vector scatterOrigin = (*enemies)[0]->getPosition();
+                        for (int i = 5; i != 9; ++i) {
+                            int magX = 15000 + Globals::rnd->nextInt(10000);
+                            int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+                            int y = Globals::rnd->nextInt(10000) - 5000;
+                            int magZ = 15000 + Globals::rnd->nextInt(10000);
+                            int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+                            Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
+                            (*enemies)[i]->setPosition(scatterOrigin + offset); // vtable+0x44
+                        }
+                        m_nState = 4;
+                        break;
                     }
-                    Vector scatterOrigin = (*enemies)[0]->getPosition();
-                    for (int i = 5; i != 9; ++i) {
-                        int magX = 15000 + Globals::rnd->nextInt(10000);
-                        int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
-                        int y = Globals::rnd->nextInt(10000) - 5000;
-                        int magZ = 15000 + Globals::rnd->nextInt(10000);
-                        int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
-                        Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
-                        (*enemies)[i]->setPosition(scatterOrigin + offset); // vtable+0x44
+                    // State-4 (0x13eeaa): mid-wave escort (enemies[10]) formation-up and camera hand-off.
+                    // Reached whenever we are not in the state-3 scatter path: gate on radio message #7
+                    // being triggered while m_nState == 4. Seat the lead escort above enemies[0], face it
+                    // +Z, wake it, spin it up to speed 2, swap the mission objective for a fresh straight
+                    // outbound route, then run the standard cutscene-exit teardown and lock the camera onto
+                    // enemies[10] before advancing to state 5.
+                    if (!((RadioMessage *) ((*messages)[7]))->isTriggered() || m_nState != 4) {
+                        break; // -> post-switch tail (0x13faee -> 0x144e36)
                     }
-                    m_nState = 4;
+                    // Seat enemies[10] just above enemies[0] (getPosition slot 10; z += 11.71875 pool
+                    // @0x13f1c4), then face it straight +Z with +Y up (0x13eec6..0x13ef0c).
+                    Vector formPos = (*enemies)[0]->getPosition();          // vtable+0x28 [slot 10]
+                    (*enemies)[10]->setPosition(formPos.x, formPos.y, formPos.z + 11.71875f); // vtable+0x48 [slot 18]
+                    (*enemies)[10]->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                    (*enemies)[10]->setActive(true);                        // 0x13ef16
+                    (*enemies)[10]->setVisible(true);                       // 0x13ef1e
+                    (*enemies)[10]->setSpeed(2.0f); // KIPlayer vtable+0x1c [slot 7], 2.0f @0x13ef2c
+                    // Swap the mission objective (m_pLevel->objectivesB @Level+0x2c) for a fresh route:
+                    // free the old Objective, then build Route({0, 0, 800000}, 3) from the .rodata table
+                    // @0x202768 and store the Route pointer back into objectivesB (0x13ef32..0x13ef4c).
+                    delete m_pLevel->objectivesB;
+                    int routePts[3] = {0, 0, 800000}; // .rodata @0x202768
+                    Route *route = new Route(routePts, 3);
+                    m_pLevel->objectivesB = reinterpret_cast<Objective *>(route);
+                    (*enemies)[10]->setRoute(route);                        // 0x13ef72
+                    // Standard cutscene-exit teardown (0x13ef76..): hand control back to the AI, hide the
+                    // HUD/radar cinematic overlay and lock the camera onto enemies[10].
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pHud->visible = 0;
+                    m_pRadar->field_0x58 = 0;
+                    player->setComputerControlled(true);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*enemies)[10]->geometry);
+                    // reframe: enemies[10]->getPosition() + {6000, -200, 10000} (pool @0x13f1cc..0x13f1d4)
+                    Vector camPos = (*enemies)[10]->getPosition() + Vector{6000.0f, -200.0f, 10000.0f};
+                    m_pCamera->setPosition(camPos);
+                    player->player->setVulnerable(false);
+                    player->freeze = 1; // PlayerEgo+0x24
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nState = 5; // -> post-switch tail 0x13999a
                 }
                 break;
             }
