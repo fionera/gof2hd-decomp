@@ -3902,8 +3902,39 @@ int LevelScript::process(int delta) {
                         break;
                     }
                     if (m_nState == 10) { // prong E9 @0x14354c
-                        // DEFERRED 0x14354c: objective spawn + isDockedToDockingPoint/hackingWon chain.
-                        break;
+                        // Final beat of the docking/hacking sequence. Once radio message #8 is over
+                        // and the mission timer has not been armed yet (m_nTimeLimit <= 0), spawn the
+                        // dock/hack objective (a type-3 Objective valued 91000) into the level's
+                        // objectivesB slot. Then, every frame, wait for the player to actually dock at
+                        // the docking point AND for the hack minigame to be won; when both hold, advance
+                        // to state 11, tear down the objective, disarm every shipGroup==9 escort's
+                        // enemy list, and clear the mission timer.
+                        if (((RadioMessage *) ((*messages)[8]))->isOver()) { // 0x14354c
+                            if (m_nTimeLimit <= 0) { // 0x14355e (m_nTimeLimit @this+0, cmp >0 skips)
+                                field_0x8 = 0;      // 0x143568 strd 0,0,[this+8]
+                                field_0xc = 0;
+                                m_nTimeLimit = 91000; // 0x143570 str 0x16378 -> [this+0]
+                                // new Objective(type=3, value=91000, m_pLevel) -> objectivesB, 0x143580
+                                m_pLevel->objectivesB = new Objective(3, 91000, m_pLevel); // 0x143588
+                            }
+                        }
+                        if (!player->isDockedToDockingPoint()) { // 0x14358c
+                            break; // -> post-switch tail (0x144e36)
+                        }
+                        if (!player->hackingWon()) { // 0x143598
+                            break; // -> post-switch tail (0x144e36)
+                        }
+                        m_nState = 11; // 0x1435a8 str 11 -> [this+0x1c]
+                        delete m_pLevel->objectivesB; // 0x1435b0 ~Objective + operator delete
+                        m_pLevel->objectivesB = nullptr; // 0x1435c4
+                        for (unsigned int i = 0; i < enemies->count; ++i) { // 0x1435de
+                            KIPlayer *elem = (*enemies)[i];
+                            if (elem->shipGroup == 9) { // [elem+0x28]==9, 0x1435d0
+                                elem->player->setEnemies(nullptr); // 0x1435d8
+                            }
+                        }
+                        m_nTimeLimit = 0; // 0x1435e4 str 0 -> [this+0]
+                        break; // -> post-switch tail (0x144e36)
                     }
                     break; // states >10 -> post-switch tail (0x144e36)
                 }
