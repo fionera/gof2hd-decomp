@@ -405,8 +405,48 @@ int LevelScript::process(int delta) {
                 m_nState = 5;
             }
             // falls through to the shared active tail (0x13d4ec -> 0x137f7c)
-        } else {
-            // DEFERRED 0x138fd8: mission-0 states >4 (post-approach continuation).
+        } else if (m_nState == 5) {
+            // State 5 (0x138fd8): the post-approach intro continuation. Once radio message #12
+            // finishes, brake the player, drift the follow-camera in, and once message #14 triggers
+            // reset the 64-bit script timer and advance to state 6. Reached via the state dispatch
+            // (0x1389c8 cmp #4 / 0x1389ce cmp #3): the fall-through arm reloads m_nState @0x138fd4
+            // and gates on == 5 (0x138fd8). FP pool @0x139320..0x139338:
+            //   0.98f @0x13932c, 0.3 (double) @0x139330, 0.2f @0x139338.
+            if (((RadioMessage *) ((*messages)[12]))->isOver()) {
+                Vector pos = player->getPosition();                 // 0x138ff0
+                int speedBits = player->getSpeed();                 // 0x138ffa
+                if (reinterpret_cast<float &>(speedBits) == 0.0f) { // vcmp s2,#0 @0x139006
+                    // Once the ship has fully stopped, restart the two docking/idle 3D sound
+                    // events anchored at the player position, swap out the old music sting, and
+                    // start event 161 (0x139010-0x139078).
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Globals::sound->play(157, nullptr, nullptr, 0.0f);          // 0x139026
+                    Globals::sound->updateEvent3DAttributes(157, &pos, &zero, false); // 0x139040
+                    Globals::sound->play(158, nullptr, nullptr, 0.0f);          // 0x13904a
+                    Globals::sound->updateEvent3DAttributes(158, &pos, &zero, false); // 0x139060
+                    Globals::sound->stop(player->field_0x1c);                   // 0x139068 (stop [player+0x1c])
+                    Globals::sound->play(161, nullptr, nullptr, 0.0f);          // 0x139078
+                }
+                // Shared: keep event 161 anchored to the player (0x13907a).
+                Vector zeroTail{0.0f, 0.0f, 0.0f};
+                Globals::sound->updateEvent3DAttributes(161, &pos, &zeroTail, false);
+                // Brake the ship 2% per frame (float @0x13932c = 0.98f, 0x139096).
+                speedBits = player->getSpeed();
+                player->setSpeed(reinterpret_cast<float &>(speedBits) * 0.98f);
+                // Once message #13 finishes, drift the follow-camera in toward the docking bay
+                // (double 0.3 @0x139330, float 0.2f @0x139338; 0x1390b2).
+                if (((RadioMessage *) ((*messages)[13]))->isOver()) {
+                    m_pCamera->translate((float) ((double) delta * 0.3), 0.0f,
+                                         (float) -delta * 0.2f);
+                }
+                // Once message #14 triggers, zero the 64-bit script timer and advance to state 6
+                // (strd 0 -> this+0x90; m_nState = 6 @0x13d4ec; 0x1390f6).
+                if (((RadioMessage *) ((*messages)[14]))->isTriggered()) {
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                    m_nState = 6;
+                }
+            }
+            // falls through to the shared active tail (0x137f7c / 0x13d4ec)
         }
     } else if (mission == 1) {
         // mission==1 intro (disasm 0x137d82). Slowly rotates the player ship and pans the camera
