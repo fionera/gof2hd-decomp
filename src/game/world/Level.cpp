@@ -2812,6 +2812,40 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 135) {
+        // case 135 (body @0xb97a8)
+        int coords[3] = {7000000, 7000000, 7000000};
+        this->enemyRoute = new Route(coords, 3);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(3, *(this->enemies));
+
+        // enemies[0]: a fixed docking object (createStaticObject -> PlayerFixedObject).
+        (*this->enemies)[0] =
+            (KIPlayer *) (intptr_t) this->createStaticObject((Waypoint *) (intptr_t) 0, 19080, true);
+        ((PlayerFixedObject *) (*this->enemies)[0])->setPosition(0.0f, 0.0f, 0.0f); // vtable+0x48 (soft-float)
+        ((PlayerFixedObject *) (*this->enemies)[0])->setMoving(false);
+        ((PlayerFixedObject *) (*this->enemies)[0])->setName(*Globals::gameText->getText(3210));
+        ((PlayerFixedObject *) (*this->enemies)[0])->setDockingType(1);
+        (*this->enemies)[0]->player->setAlwaysFriend(true);
+        // base register proves cargo@0x50 on the KIPlayer, not on player.
+        delete (*this->enemies)[0]->cargo; // 0xb9886: Array<int>::~Array + operator delete
+        (*this->enemies)[0]->cargo = nullptr;
+
+        for (unsigned i = 1; i < 3; i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(8);
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                8, 0, type, this->enemyRoute->getWaypoint(0), true, false);
+            (*this->enemies)[i]->setToSleep();
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+
+        for (unsigned i = 0; i < this->asteroids->size(); i = i + 1) {
+            ((PlayerAsteroid *) (*this->asteroids)[i])->setAsteroidIndex(155);
+        }
+        return;
+    }
+
     if (idx == 137) {
         // case 137 (body @0xb991e)
         this->objectivesA = new Objective(4, 4, this);
