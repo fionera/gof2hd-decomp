@@ -2600,14 +2600,14 @@ void Level::createCampaignMission() {
     if (idx == 65) {
         // case 65 (body @0xb7256)
         int coords[3] = {0, 0, 0};
-        this->field_180 = new Route(coords, 3);
+        this->enemyRoute = new Route(coords, 3);
         this->enemies = new Array<KIPlayer *>();
         ArraySetLength(1, *(this->enemies));
         (*this->enemies)[0] =
             (KIPlayer *) this->createShip(0, 0, 38, (Waypoint *) (intptr_t) 0, true, false);
         (*this->enemies)[0]->player->setAlwaysFriend(true);
         (*this->enemies)[0]->name = *Globals::gameText->getText(1617);
-        (*this->enemies)[0]->setRoute(this->field_180->clone());
+        (*this->enemies)[0]->setRoute(this->enemyRoute->clone());
         (*this->enemies)[0]->player->setHitpoints(9999999);
         return;
     }
@@ -2615,7 +2615,7 @@ void Level::createCampaignMission() {
     if (idx == 97) {
         // case 97 (body @0xb8c32)
         int coords[3] = {0, 0, 50000};
-        this->field_180 = new Route(coords, 3);
+        this->enemyRoute = new Route(coords, 3);
 
         bool hd = Globals::isRunningHDonWeakDevice != 0;
         unsigned enemyCount = hd ? 12 : 8;
@@ -2628,20 +2628,20 @@ void Level::createCampaignMission() {
         for (unsigned i = 0; i < enemyCount; i = i + 1) {
             int type = (int) Globals::globals->getRandomEnemyFighter(8);
             (*this->enemies)[i] = (KIPlayer *) this->createShip(
-                8, 0, type, this->field_180->getWaypoint(0), true, false);
+                8, 0, type, this->enemyRoute->getWaypoint(0), true, false);
             (*this->enemies)[i]->player->setAlwaysEnemy(true);
         }
 
         for (unsigned i = enemyCount; i < friendEnd; i = i + 1) {
             int type = (int) Globals::globals->getRandomEnemyFighter(2);
             (*this->enemies)[i] = (KIPlayer *) this->createShip(
-                2, 0, type, this->field_180->getWaypoint(0), true, false);
+                2, 0, type, this->enemyRoute->getWaypoint(0), true, false);
             (*this->enemies)[i]->player->setAlwaysFriend(true);
         }
 
         for (unsigned i = friendEnd; i < staticEnd; i = i + 1) {
             (*this->enemies)[i] = (KIPlayer *) this->createShip(
-                2, 1, 15, this->field_180->getWaypoint(0), false, (int) friendEnd);
+                2, 1, 15, this->enemyRoute->getWaypoint(0), false, (int) friendEnd);
             ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
             (*this->enemies)[i]->player->setAlwaysFriend(true);
         }
@@ -2682,24 +2682,24 @@ void Level::createCampaignMission() {
     if (idx == 106) {
         // case 106 (body @0xb9670)
         int coords[6] = {-500000, 0, -1700000, -500000, 0, -3700000};
-        this->field_180 = new Route(coords, 6);
+        this->enemyRoute = new Route(coords, 6);
 
         this->enemies = new Array<KIPlayer *>();
         ArraySetLength(1, *(this->enemies));
 
         (*this->enemies)[0] = (KIPlayer *) this->createShip(
-            10, 0, 44, this->field_180->getWaypoint(0), true, false);
+            10, 0, 44, this->enemyRoute->getWaypoint(0), true, false);
 
         // Position the ship at the route's first waypoint, then aim it.
         KIPlayer *ship = (*this->enemies)[0];
-        Waypoint *wp = this->field_180->getWaypoint(0);
+        Waypoint *wp = this->enemyRoute->getWaypoint(0);
         Vector pos = wp->getPosition();
         // DEFERRED 0xb96f8: wp->[vtable+0x28](&out) — return-by-ptr virtual getPosition;
         //   modeled via Waypoint::getPosition(); slot identity not asm-proven.
         ship->setPosition(pos);
         ship->parentGeometry->setDirection(Vector{-1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
 
-        ship->setRoute(this->field_180->clone());
+        ship->setRoute(this->enemyRoute->clone());
         ship->player->setAlwaysFriend(true);
         ship->player->setAlwaysEnemy(false);
         ship->player->setHitpoints(1);
@@ -2716,10 +2716,10 @@ void Level::createCampaignMission() {
         (*this->enemies)[0]->setPosition(300.0f, 50.0f, -6000.0f);
 
         int coords[6] = {0, 0, -5000, 0, 0, 0};
-        this->field_180 = new Route(coords, 6);
+        this->enemyRoute = new Route(coords, 6);
 
         KIPlayer *ship = (*this->enemies)[0];
-        ship->setRoute(this->field_180);
+        ship->setRoute(this->enemyRoute);
         // DEFERRED 0xb53ac: ship->[vtable+0x1c](false) — bool-taking virtual slot on KIPlayer;
         //   slot identity not asm-proven, so not modeled.
         ((PlayerFighter *) ship)->setExhaustVisible(false);
@@ -2768,7 +2768,7 @@ void Level::createCampaignMission() {
     if (idx == 24) {
         // case 24 (body @0xb5da8)
         int coords[6] = {0, 0, 0, 0, 0, 0};
-        this->field_180 = new Route(coords, 6);
+        this->enemyRoute = new Route(coords, 6);
 
         this->enemies = new Array<KIPlayer *>();
         ArraySetLength(5, *(this->enemies));
@@ -2776,14 +2776,14 @@ void Level::createCampaignMission() {
         // enemies[0..2]: escorted friendlies following the route.
         for (unsigned i = 0; i < 3; i = i + 1) {
             (*this->enemies)[i] = (KIPlayer *) this->createShip(
-                9, 0, 8, this->field_180->getWaypoint(), true, false);
-            (*this->enemies)[i]->setRoute(this->field_180->clone());
+                9, 0, 8, this->enemyRoute->getWaypoint(), true, false);
+            (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
         }
 
         // enemies[3..4]: static turrets bound to the same route.
         for (unsigned i = 3; i < 5; i = i + 1) {
             (*this->enemies)[i] = (KIPlayer *) this->createShip(
-                2, 1, 15, this->field_180->getWaypoint(), true, false);
+                2, 1, 15, this->enemyRoute->getWaypoint(), true, false);
             ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
             KIPlayer *ship = (*this->enemies)[i];
             ship->player->setMaxHitpoints(ship->player->getMaxHitpoints() / 3);
@@ -2814,7 +2814,7 @@ void Level::createCampaignMission() {
         // case 145 (body @0xba312; contains the 0xba6a6 finale). id 145 dispatches
         // via the second jump-table (ids 131-158) at tbh 0xb4dcc, index 145-131=14.
         int coords[3] = {-45000, 0, 60000};
-        this->field_180 = new Route(coords, 3);
+        this->enemyRoute = new Route(coords, 3);
 
         this->enemies = new Array<KIPlayer *>();
         ArraySetLength(14, *(this->enemies));
@@ -2829,7 +2829,7 @@ void Level::createCampaignMission() {
             lead->setPosition(spawn);                      // vtable+0x44 setPosition(Vector)
             lead->player->setAlwaysEnemy(true);
             lead->name = *Globals::gameText->getText(1636);
-            lead->setRoute(this->field_180->clone());
+            lead->setRoute(this->enemyRoute->clone());
 
             AEGeometry *geo = lead->parentGeometry;
             ((PlayerFighter *) lead)->field_0x13d = 0;       // strb 0 @[ship+0x13d]
@@ -2847,7 +2847,7 @@ void Level::createCampaignMission() {
             int zBase = 72000 + 2000 * (int) (i - 1);
 
             (*this->enemies)[i] = (KIPlayer *) this->createShip(
-                10, 0, 44, this->field_180->getWaypoint(0), true, false);
+                10, 0, 44, this->enemyRoute->getWaypoint(0), true, false);
 
             AbyssEngine::AERandom *rnd = Globals::rnd;
             int x1 = rnd->nextInt(1000);
@@ -2856,7 +2856,7 @@ void Level::createCampaignMission() {
             (*this->enemies)[i]->setPosition((float) xPos, (float) yPos, (float) zPos);
 
             KIPlayer *ship = (*this->enemies)[i];
-            ship->setRoute(this->field_180->clone());
+            ship->setRoute(this->enemyRoute->clone());
             ship->player->setAlwaysEnemy(true);
             ((PlayerFighter *) ship)->setAIDisabled(true);
             ((PlayerFighter *) ship)->field_0x13d = 0;
