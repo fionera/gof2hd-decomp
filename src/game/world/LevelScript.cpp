@@ -1207,18 +1207,72 @@ int LevelScript::process(int delta) {
                         m_nState++; // 4 -> 5 (shared set-state tail 0x1438d6)
                         break; // -> post-switch tail (0x144e36)
                     }
+                    if (m_nState == 5) {
+                        // State 5 (0x13f6c6): the boss wreck's Transform animation plays out
+                        // (Transform::Update(delta*0.3)); meanwhile the 13 fighters are fanned outward --
+                        // each is re-aimed along its own facing skewed by its right vector (scaled by
+                        // timerA/100000, but only while 2001 <= timerA <= 4999) and pushed forward by
+                        // timerA*delta*0.001. Keep the wreck explosion rumbling ((int)(delta*0.5)). Once
+                        // 10s elapse, banish every fighter to (50000,50000,50000), silence the boss's
+                        // particle emitter and run the standard cutscene-exit teardown (advance state 5->6
+                        // via the shared exit tail). FP pool: 0.3 @0x13fa88, 100000 @0x13fa8c,
+                        // 0.001 @0x13fa90, 50000 @0x13fa94.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x13f6c6
+                        long long timerA = reinterpret_cast<long long &>(m_nScriptTimerA);
+                        // Advance the wreck's Transform animation (0x13f6da).
+                        AbyssEngine::Transform *anim = (AbyssEngine::Transform *)
+                            Globals::Canvas->TransformGetTransform((*enemies)[13]->geometry->transform);
+                        anim->Update((long long) ((float) delta * 0.3f), false); // 0x13f718
+                        // Fan the 13 fighters outward (0x13f732).
+                        Vector *scratch = reinterpret_cast<Vector *>(&field_0x28); // this+0x28
+                        for (int i = 0; i < 13; ++i) {
+                            AEGeometry *geom = (*enemies)[i]->geometry;
+                            *scratch = geom->getDirection(); // 0x13f746
+                            if ((unsigned long long) (timerA - 2001) <= 2998) { // 0x13f74a..0x13f764
+                                *scratch += geom->getRightVector() *
+                                            ((float) timerA / 100000.0f); // 0x13f77c..0x13f798
+                            }
+                            geom->setDirection(AbyssEngine::AEMath::VectorNormalize(*scratch),
+                                               Vector{0.0f, 1.0f, 0.0f}); // 0x13f7c0
+                            geom->moveForward((float) (timerA * (long long) delta) * 0.001f); // 0x13f7f2
+                        }
+                        m_pExplosion->update((int) ((float) delta * 0.5f),
+                                             (TargetFollowCamera *) nullptr); // 0x13f81a
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) <= 9999) { // 0x13f82e
+                            break; // -> post-switch tail (0x144e36)
+                        }
+                        // 10s up: silence the boss emitter (0x13f83e) and banish the fighters (0x13f84a).
+                        m_pLevel->field_74->enableSystemEmit(m_pLevel->field_54, false);
+                        for (int i = 0; i < 13; ++i) {
+                            (*enemies)[i]->setActive(false);  // 0x13f854
+                            (*enemies)[i]->setVisible(false); // 0x13f862
+                            (*enemies)[i]->setPosition(50000.0f, 50000.0f, 50000.0f); // 0x13f878 vtable#72
+                        }
+                        // Standard cutscene-exit teardown (0x13f880).
+                        m_pLevel->getPlayer()->resetGunDelay();
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        player->setComputerControlled(false);
+                        player->player->setVulnerable(true);
+                        player->setFreeze(false);
+                        player->setVisible(true);
+                        m_pHud->visible = 1;      // m_pHud byte @0x1 = 1
+                        m_pRadar->field_0x58 = 1; // m_pRadar byte @0x48 = 1
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_pRadar->lockedEnemy = nullptr; // 0x13f8f2 strd zeroes m_pRadar+4/+8
+                        m_pRadar->dockNavPtr = nullptr;
+                        m_nFlags = (uint16_t) (m_nFlags & 0x00ff); // 0x13f8fa cinematic break high byte = 0
+                        m_nState++; // 5 -> 6 (shared exit tail 0x14500e increments m_nState)
+                        break;
+                    }
                     // Behaviour of the remaining (deferred) states:
                     //   s2 has enemies[0] return fire, spawns a tracking AEGeometry(Globals::Canvas) into
                     //     m_pGeometry* and points the camera at it (orientation via a deep enemy-linkage
                     //     chain @+0x18 -- DEFERRED).
                     //   s3 snapshots boss[14]'s matrix into the particle system + Explosion::start; the
                     //     tracking geom's advance speed comes from the same deep chain @+0x50 (DEFERRED).
-                    //   s4 copies boss[14]->boss[13], swaps visibility and starts boss[13]'s Transform
-                    //     animation (Explosion::update((int)(delta*0.5f)); threshold 324).
-                    //   s5 runs that animation (Transform::Update(delta*0.3)), scatters the 13 fighters
-                    //     outward (counter/100000, forward counter*delta*0.001), then banishes them to
-                    //     setPosition(50000,50000,50000) and restores full player control (threshold 10000).
-                    // FP pool: 0.3 (@0x13fa88), 100000 (@0x13fa8c), 0.001 (@0x13fa90), 50000 (@0x13fa94).
+                    // FP pool: 100000 (@0x13fa8c), 0.001 (@0x13fa90).
                     // DEFERRED 0x13cacc: two deep enemy-linkage chains (s2 orientation @+0x18, s3 speed
                     // @+0x50) are the only genuinely opaque parts; not decoded this pass.
                     break; // -> post-switch tail (0x144e36)
