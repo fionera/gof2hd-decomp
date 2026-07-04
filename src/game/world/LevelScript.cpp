@@ -23,6 +23,7 @@
 #include "game/mission/Mission.h"
 #include "game/mission/Objective.h"
 #include "game/weapons/Radar.h"
+#include "game/weapons/Gun.h"
 #include "engine/core/GameText.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/math/AEMath.h"
@@ -1266,15 +1267,58 @@ int LevelScript::process(int delta) {
                         m_nState++; // 5 -> 6 (shared exit tail 0x14500e increments m_nState)
                         break;
                     }
-                    // Behaviour of the remaining (deferred) states:
-                    //   s2 has enemies[0] return fire, spawns a tracking AEGeometry(Globals::Canvas) into
-                    //     m_pGeometry* and points the camera at it (orientation via a deep enemy-linkage
-                    //     chain @+0x18 -- DEFERRED).
-                    //   s3 snapshots boss[14]'s matrix into the particle system + Explosion::start; the
-                    //     tracking geom's advance speed comes from the same deep chain @+0x50 (DEFERRED).
-                    // FP pool: 100000 (@0x13fa8c), 0.001 (@0x13fa90).
-                    // DEFERRED 0x13cacc: two deep enemy-linkage chains (s2 orientation @+0x18, s3 speed
-                    // @+0x50) are the only genuinely opaque parts; not decoded this pass.
+                    if (m_nState == 2) {
+                        // State 2 (0x13cae0): once 1s has elapsed, have the lead escort keep firing, spawn
+                        // a fresh tracking marker (m_pGeometry4) seated at the lead escort's muzzle, aim it
+                        // along the escort's first gun's fire direction, hide it and point the camera at it,
+                        // then reset the timer and advance to state 3. The aim vector is the Vector at
+                        // Gun+0x18 (the escort's first gun; unnamed pad field in our Gun model). The
+                        // getPosition here is Player's vtable slot 0x28 on enemies[0]->player.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x13cae6
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 1001) { // 0x13caf0 gate
+                            break; // -> post-switch tail (0x144e36)
+                        }
+                        (*enemies)[0]->player->shoot(0, delta, false); // 0x13cb18
+                        m_pGeometry4 = new AEGeometry(Globals::Canvas); // 0x13cb1e..0x13cb36 (0xc0 bytes)
+                        Vector *scratch = reinterpret_cast<Vector *>(&field_0x28); // this+0x28
+                        // getPosition == Player vtable slot 0x28 on the lead escort's Player (0x13cb42).
+                        *scratch = (*enemies)[0]->player->getPosition();
+                        m_pGeometry4->setPosition(*scratch); // 0x13cb4c
+                        // Aim direction = the 12-byte fire-direction Vector at Gun+0x18 of the lead escort's
+                        // first gun (0x13cb50..0x13cb66). Our Gun model splits this region into two
+                        // upstream-dropped 4-byte fields (_pad_0x18) plus field_0x20 (which the ctor reuses as a
+                        // VecArray base), so no single named member spans 0x18..0x24; read it by offset as the
+                        // original does. enemies[0]->player->guns is Array<Array<Gun*>*>.
+                        Gun *leadGun = (*(*(*enemies)[0]->player->guns)[0])[0];
+                        *scratch = *reinterpret_cast<Vector *>(reinterpret_cast<char *>(leadGun) + 0x18);
+                        m_pGeometry4->setDirection(*scratch, Vector{0.0f, 1.0f, 0.0f}); // 0x13cb82
+                        m_pGeometry4->setVisible(false);   // 0x13cb8c
+                        m_pCamera->setTarget(m_pGeometry4); // 0x13cb96
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x13cb9a
+                        m_nState++; // 2 -> 3 (shared set-state tail 0x143d0a)
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    if (m_nState == 3) {
+                        // State 3 (0x13f53c): every frame advance the tracking marker along its facing at a
+                        // speed of Gun+0x50 (== pitchRate) * delta, taken from the lead escort's first gun.
+                        // Once 5s elapse, snapshot the boss[14]'s matrix into the particle system, enable
+                        // its emitter, detonate the boss explosion at that matrix position, reset the timer
+                        // and advance to state 4.
+                        Gun *leadGun = (*(*(*enemies)[0]->player->guns)[0])[0]; // 0x13f542..0x13f556
+                        m_pGeometry4->moveForward(leadGun->pitchRate * (float) delta); // 0x13f558..0x13f56a
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x13f576
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 5001) { // 0x13f580 gate
+                            break; // -> post-switch tail (0x144e36)
+                        }
+                        m_matrix = (*enemies)[14]->geometry->getMatrix(); // 0x13f58e..0x13f5a4
+                        m_pLevel->field_74->systemSetMatrix(m_pLevel->field_54, &m_matrix); // 0x13f5b0
+                        m_pLevel->field_74->enableSystemEmit(m_pLevel->field_54, true);     // 0x13f5bc
+                        Vector burstPos = AbyssEngine::AEMath::MatrixGetPosition(m_matrix); // 0x13f5cc
+                        m_pExplosion->start(burstPos, Vector{0.0f, 0.0f, 0.0f}); // 0x13f5de
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x13f5e4
+                        m_nState++; // 3 -> 4 (shared set-state tail 0x143d0a)
+                        break; // -> post-switch tail (0x144e36)
+                    }
                     break; // -> post-switch tail (0x144e36)
                 }
                 // state 1 (0x1393fe): once the intro radio (message #0) is over, run the standard
