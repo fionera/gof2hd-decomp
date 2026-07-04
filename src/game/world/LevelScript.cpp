@@ -1229,8 +1229,36 @@ int LevelScript::process(int delta) {
             switch (cm) {
             case 64: { // 0x138c56
                 if (m_nState == 0) {
-                    // DEFERRED 0x13cba4: state-0 body.
-                    break;
+                    // state-0 body (0x13cba4): once radio message #0 is triggered, run the standard
+                    // cutscene-exit teardown, lock the camera onto enemies[0] and reframe it ahead of
+                    // that ship along its own facing. FP pool (0x13ccf0..): dir scale 10000.0, then
+                    // +3000.0 on z and +300.0 on y of the resulting camera position.
+                    if (!((RadioMessage *) ((*messages)[0]))->isTriggered()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    player->freeze = 1; // direct byte store @0x13cbbe (PlayerEgo+0x24)
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
+                    m_pHud->visible = 0;
+                    m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48
+                    player->setComputerControlled(false);
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    Vector *camPos = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                    *camPos = (*enemies)[0]->geometry->getPosition();
+                    *camPos += (*enemies)[0]->geometry->getDirection() * 10000.0f;
+                    camPos->z += 3000.0f; // s0 @0x13ccf4
+                    camPos->y += 300.0f;  // s6 @0x13ccf8
+                    m_pCamera->setPosition(*camPos);
+                    m_pLevel->lodManager->forceUpdate(0, false);
+                    m_nState = 1; // shared tail 0x13cc9c stores 1 into m_nState
+                    break; // -> post-switch tail (0x144e36)
                 }
                 if (m_nState != 2) {
                     // DEFERRED 0x13ecf2: state-1 (and other) body.
