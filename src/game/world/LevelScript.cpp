@@ -2151,9 +2151,76 @@ int LevelScript::process(int delta) {
                         m_nState = 9;                                      // 0x1517de
                         break; // 0x1517e0 -> shared tail (0x14433e)
                     }
-                    // DEFERRED: cold substates 9 (0x142b3a) and 10 (0x1417e4) -- the objective/mission
-                    //   tears and Transform-animation-stepping deep fn-ptr chains -- remain unproven;
-                    //   states 3/4/5 route to the default epilogue (0x143c06).
+                    if (m_nState == 9) {
+                        // State 9 (0x14133a): the escort engines have fired; hold on the escort while
+                        // the follow camera drifts sideways (tempVec.x += 2*delta seated into m_matrix)
+                        // and the wreck explosion keeps rumbling. After ~8s snap every landmark's
+                        // transform animation to its end, unlatch the look-at camera, hand control back
+                        // to the player, hide the intro geometry (m_pGeometry0), clear the cinematic
+                        // break and advance to state 10.
+                        m_pExplosion->update(delta, (TargetFollowCamera *) nullptr); // 0x141344
+                        // Drift the camera-path seat: tempVec.x += 2*delta, re-seat m_matrix translation.
+                        Vector *tempVec = reinterpret_cast<Vector *>(&field_0x28); // this+0x28
+                        tempVec->x += (float) (delta * 2); // 0x14134c: sl<<1 -> +2*delta @0x14136c
+                        AbyssEngine::AEMath::MatrixSetTranslation(m_matrix, tempVec->x, tempVec->y,
+                                                                 tempVec->z); // 0x141378
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x14137c
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 8001) { // 0x1f41 @0x141380
+                            break; // -> shared tail (0x14433e)
+                        }
+                        // 0x14139a: snap three of the primary landmark's sub-transforms to their end.
+                        // For each transform id, TransformGetTransform(id)->Update(that->animationLength,
+                        //   false), i.e. fast-forward the animation to completion.
+                        // DEFERRED 0x1413a2-0x14140c: the three-way landmark-transform fast-forward loop
+                        //   walks landmarks[0]->field_0x140 (an unmodeled animation-group object) and
+                        //   reads three uint transform ids at +0xc/+0x10/+0x14 of it. field_0x140 and the
+                        //   id triple are not in any header and adding them is drift-risky, so this loop
+                        //   is left unimplemented; the timer gate and the state exit below are proven.
+                        m_pCamera->setLookAtCam(false);       // 0x14140c
+                        m_pCamera->setTarget(player->geometry); // 0x141416 ([sp+84]+8)
+                        player->setComputerControlled(false); // 0x141420
+                        player->freeze = 0;                   // 0x141428 (player+0x24)
+                        m_pHud->visible = 1;                  // 0x14142c ([this+0xd0]+1)
+                        m_pRadar->field_0x58 = 1;             // 0x141434 ([this+0xd4]+0x48)
+                        resetCamera(m_pLevel);                // 0x14143c
+                        m_pLevel->lodManager->forceUpdate(delta, false); // 0x141444
+                        m_pGeometry0->setVisible(false);      // 0x141450 (this+0xb8)
+                        m_nState = 10;                        // 0x14145a
+                        m_nFlags = (uint16_t) (m_nFlags & 0x00ff); // 0x14145e (cinematic break = 0)
+                        break; // 0x141462 -> shared tail (0x14433e)
+                    }
+                    if (m_nState == 10) {
+                        // State 10 (0x1417e4): the escort has departed. Once radio message #9 finishes,
+                        // tear down the whole cutscene -- release turret/free-look/first-person locks,
+                        // stop shooting, re-enter the cinematic break, hide the HUD/radar, freeze the ship
+                        // under AI control and frame the follow camera behind the intro geometry
+                        // (m_pGeometry1), seated at its position plus a fixed offset. Reset the timer and
+                        // advance to state 11.
+                        if (!((RadioMessage *) ((*messages)[9]))->isOver()) { // [fp+4]+0x24 @0x1417e4
+                            break; // 0x1417f0 -> shared tail (0x143c02)
+                        }
+                        player->setTurretMode(false);         // 0x1417f4
+                        resetCamera(m_pLevel);                // 0x141802
+                        player->setFreeLookMode(false);       // 0x14180c
+                        m_pCamera->enableFirstPersonCam(false); // 0x141814
+                        player->hideShipForFirstPersonCameraView(false); // 0x14181c
+                        player->stopShooting(0);              // 0x141824
+                        m_nFlags = (m_nFlags & 0xFF) | 0x100; // 0x141832 (cinematic break = 1)
+                        m_pHud->visible = 0;                  // 0x141836 ([this+0xd0]+1)
+                        m_pRadar->field_0x58 = 0;             // 0x14183e ([this+0xd4]+0x48)
+                        player->setComputerControlled(true);  // 0x141842
+                        player->freeze = 1;                   // 0x141848 (player+0x24)
+                        m_pCamera->setLookAtCam(true);        // 0x14184e
+                        m_pCamera->setTarget(m_pGeometry1);   // 0x141856 (this+0xbc)
+                        Vector *tempVec = reinterpret_cast<Vector *>(&field_0x28); // this+0x28
+                        *tempVec = m_pGeometry1->getPosition(); // 0x141864
+                        *tempVec += Vector{5000.0f, 20000.0f, -20000.0f}; // 0x141876..0x141886
+                        m_pCamera->setPosition(*tempVec);     // 0x14188a
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x141892
+                        m_nState = 11;                        // 0x141896
+                        break; // 0x141898 -> shared tail (0x14433c)
+                    }
+                    // states 3/4/5 route to the default epilogue (0x143c06).
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
