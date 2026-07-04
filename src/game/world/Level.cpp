@@ -2928,6 +2928,46 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 92) {
+        // case 92 (body @0xb8680)
+        AbyssEngine::AERandom *rnd = Globals::rnd;
+        int coords[9] = {
+            rnd->nextInt(140000) - 70000, 0, -70000,
+            rnd->nextInt(140000) - 70000, 0, -74464,
+            rnd->nextInt(140000) - 70000, 0, -132907
+        };
+        this->enemyRoute = new Route(coords, 9);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(4, *(this->enemies));
+
+        for (unsigned i = 0; i < 3; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                10, 0, 44, this->enemyRoute->getWaypoint(
+                    Globals::rnd->nextInt(this->enemyRoute->length())),
+                true, false);
+            (*this->enemies)[i]->setToSleep();
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+            ((PlayerFighter *) (*this->enemies)[i])->setAIDisabled(true);
+            ((PlayerFighter *) (*this->enemies)[i])->setCloakingPossible(false);
+        }
+
+        // enemies[3]: fixed docking station.
+        Waypoint *wp = new Waypoint(0, 0, 0, (Route *) 0);
+        (*this->enemies)[3] =
+            (KIPlayer *) (intptr_t) this->createStaticObject(wp, 0x4299, false);
+        ((PlayerFixedObject *) (*this->enemies)[3])->setMoving(false);
+        (*this->enemies)[3]->player->setAlwaysFriend(true);
+        ((PlayerFixedObject *) (*this->enemies)[3])->setDockingType(1);
+        ((PlayerFixedObject *) (*this->enemies)[3])->setName(*Globals::gameText->getText(0xc89));
+        delete (*this->enemies)[3]->cargo;
+        (*this->enemies)[3]->cargo = nullptr;
+
+        this->objectivesA = new Objective(22, 0, this);
+        this->objectivesB = new Objective(1, 3, this);
+        return;
+    }
+
     if (idx == 26) {
         // case 26 (body @0xb5ef6)
         this->enemies = new Array<KIPlayer *>();
