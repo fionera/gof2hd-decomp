@@ -2749,6 +2749,82 @@ void Level::createCampaignMission() {
         this->objectivesA = new Objective(4, 4, this);
         return;
     }
+
+    if (idx == 145) {
+        // case 145 (body @0xba312; contains the 0xba6a6 finale). id 145 dispatches
+        // via the second jump-table (ids 131-158) at tbh 0xb4dcc, index 145-131=14.
+        int coords[3] = {-45000, 0, 60000};
+        this->field_180 = new Route(coords, 3);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(14, *(this->enemies));
+
+        // Leader ship (enemies[0]) @0xba352..0xba43e
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(2, 0, 49, (Waypoint *) (intptr_t) 0, true, false);
+        {
+            KIPlayer *lead = (*this->enemies)[0];
+            Vector spawn = {30000.0f, 0.0f, 80000.0f};
+            *(Vector *) &this->field_18c = spawn;         // this->field_18c = {30000,0,80000}
+            lead->setPosition(spawn);                      // vtable+0x44 setPosition(Vector)
+            lead->player->setAlwaysEnemy(true);
+            lead->name = *Globals::gameText->getText(1636);
+            lead->setRoute(this->field_180->clone());
+
+            AEGeometry *geo = lead->parentGeometry;
+            ((PlayerFighter *) lead)->field_0x13d = 0;       // strb 0 @[ship+0x13d]
+            Vector target = {-50000.0f, 0.0f, 50000.0f};
+            Vector dir = AbyssEngine::AEMath::VectorNormalize(target - lead->getPosition());
+            Vector up = {0.0f, 1.0f, 0.0f};
+            geo->setDirection(dir, up);
+            ((PlayerFighter *) lead)->setAIDisabled(true);
+        }
+
+        // Wing formation @0xba48c..0xba5da: enemies[1..12], 12 fighters.
+        // fp (xPos) starts 23000 (+3000/iter); r9 (zBase) starts 72000 (+2000/iter).
+        for (unsigned i = 1; i < 13; i = i + 1) {
+            int xPos = 23000 + 3000 * (int) (i - 1);
+            int zBase = 72000 + 2000 * (int) (i - 1);
+
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                10, 0, 44, this->field_180->getWaypoint(0), true, false);
+
+            AbyssEngine::AERandom *rnd = Globals::rnd;
+            int x1 = rnd->nextInt(1000);
+            int yPos = (rnd->nextInt(1000) - 500) * (int) i + x1;
+            int zPos = rnd->nextInt(1000) + zBase;
+            (*this->enemies)[i]->setPosition((float) xPos, (float) yPos, (float) zPos);
+
+            KIPlayer *ship = (*this->enemies)[i];
+            ship->setRoute(this->field_180->clone());
+            ship->player->setAlwaysEnemy(true);
+            ((PlayerFighter *) ship)->setAIDisabled(true);
+            ((PlayerFighter *) ship)->field_0x13d = 0;
+            ((PlayerFighter *) ship)->setCloakingPossible(false);
+
+            AEGeometry *geo = ship->parentGeometry;
+            Vector target = {-50000.0f, 0.0f, 50000.0f};
+            Vector dir = AbyssEngine::AEMath::VectorNormalize(target - ship->getPosition());
+            Vector up = {0.0f, 1.0f, 0.0f};
+            geo->setDirection(dir, up);
+        }
+
+        // Static hangar/marker object (enemies[13]) @0xba5de..0xba698
+        (*this->enemies)[this->enemies->size() - 1] =
+            (KIPlayer *) (intptr_t) this->createStaticObject((Waypoint *) (intptr_t) 0, 19050, true);
+        {
+            KIPlayer *st = (*this->enemies)[this->enemies->size() - 1];
+            st->setVisible(false);
+            st->setActive(false);
+            st->name = *Globals::gameText->getText(3207);
+            st->shipGroup = 3;                               // str 3 @[KIPlayer+0x28]
+            st->player->setHitpoints(9999999);
+            st->field_0x74 = 1;                               // strb 1 @[KIPlayer+0x74]
+        }
+
+        this->objectivesA = new Objective(4, 2, this);        // @0xba69c..0xba6aa
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
