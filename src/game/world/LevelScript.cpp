@@ -2532,9 +2532,16 @@ int LevelScript::process(int delta) {
                         if (reinterpret_cast<long long &>(m_nScriptTimerA) < 2001) {
                             break; // -> tail (0x1410e2)
                         }
-                        // DEFERRED 0x141022: player speed ramp -- getSpeed() returns the speed's
-                        //   float bit-pattern in an int; the "if (speed < 100.0) setSpeed(speed *
-                        //   1.05)" reinterpret is deferred (no clean lvalue for the bit-cast).
+                        // Speed ramp (0x141022): PlayerEgo::getSpeed() returns the speed's float
+                        // bit-pattern packed into an int; while the ship is below cruise (100.0f)
+                        // nudge it up 5% each frame.  getSpeed() is invoked twice (compare, then
+                        // scale) exactly as the original.
+                        int speedBits = player->getSpeed();                 // 0x141024
+                        if (reinterpret_cast<float &>(speedBits) < 100.0f) { // vcmpe s2,100.0 @0x141030
+                            float scaled = reinterpret_cast<float &>(
+                                    (speedBits = player->getSpeed())) * 1.05f; // vmul 1.05 @0x14104c
+                            player->setSpeed(scaled);                        // 0x141054
+                        }
                         if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 8001) {
                             Globals::status->nextCampaignMission(true);
                             Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(113)); // 0x141082
