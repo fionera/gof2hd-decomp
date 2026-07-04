@@ -3450,6 +3450,96 @@ void Level::createCampaignMission() {
         new Objective(1, 0, this);
         return;
     }
+
+    if (idx == 41) {
+        // case 41 (body @0xb68be)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(8, *(this->enemies));
+
+        // enemies[0]: named friendly freighter with level-scaled hitpoints.
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(1, 1, 13, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[0]->player->setAlwaysFriend(true);
+        (*this->enemies)[0]->name = *Globals::gameText->getText(1604);
+        if (Level::lastMissionFreighterHitpoints <= 0)
+            Level::lastMissionFreighterHitpoints =
+                (int) ((float) (Globals::status->getLevel() * 5 + 1800) * 0.7f);
+        (*this->enemies)[0]->player->setHitpoints(Level::lastMissionFreighterHitpoints);
+        ((PlayerFixedObject *) (*this->enemies)[0])->setMoving(true);
+        (*this->enemies)[0]->setPosition(0.0f, 0.0f, -300000.0f);
+
+        // enemies[1..7]: enemy fighters.
+        for (unsigned i = 1; i < 8; i = i + 1) {
+            (*this->enemies)[i] =
+                (KIPlayer *) this->createShip(9, 0, 8, (Waypoint *) (intptr_t) 0, true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+
+        (*this->enemies)[1]->setPosition(0.0f, 0.0f, -260000.0f);
+        (*this->enemies)[2]->setPosition(-10000.0f, 10000.0f, -240000.0f);
+        (*this->enemies)[3]->setPosition(13000.0f, 2000.0f, -220000.0f);
+        (*this->enemies)[4]->setPosition(-72000.0f, -4000.0f, -210000.0f);
+        (*this->enemies)[5]->setPosition(60000.0f, -40000.0f, -190000.0f);
+        (*this->enemies)[6]->setPosition(-18000.0f, 30000.0f, -160000.0f);
+        (*this->enemies)[7]->setPosition(17000.0f, 40000.0f, -140000.0f);
+        this->player->setPosition(3000.0f, 2000.0f, -320000.0f);
+        this->player->geometry->setRotation(0.0f, 0.0f, 0.0f);
+
+        this->objectivesA = new Objective(25, 0, this);
+        this->objectivesB = new Objective(7, 1, this);
+        return;
+    }
+
+    if (idx == 67) {
+        // case 67 (body @0xb7328)
+        int coords[3] = {220000, -20000, -10000};
+        this->enemyRoute = new Route(coords, 3);
+        this->playerRoute = this->enemyRoute->clone();
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(11, *(this->enemies));
+
+        // enemies[0]: named sleeping static freight object at the route start.
+        (*this->enemies)[0] =
+            (KIPlayer *) (intptr_t) this->createStaticObject((Waypoint *) (intptr_t) 0, 14243, true);
+        (*this->enemies)[0]->name = *Globals::gameText->getText(441);
+        (*this->enemies)[0]->setPosition((float) coords[0], (float) coords[1], (float) coords[2]);
+        (*this->enemies)[0]->player->setAlwaysEnemy(false);
+        (*this->enemies)[0]->player->setAlwaysFriend(true);
+        (*this->enemies)[0]->setToSleep();
+
+        // enemies[1..length-2]: sleeping enemy fighters on the route.
+        for (unsigned i = 1; i < this->enemies->size() - 1; i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(8);
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                8, 0, type, this->enemyRoute->getWaypoint(), true, false);
+            (*this->enemies)[i]->setToSleep();
+            ((PlayerFighter *) (*this->enemies)[i])->field_0x128 = 150000;
+            if (i >= 5)
+                (*this->enemies)[i]->setPosition(800000.0f, 800000.0f, 800000.0f);
+        }
+
+        (*this->enemies)[1]->setPosition((float) (coords[0] + 30000), (float) coords[1],
+                                         (float) coords[2]);
+
+        // Final ship: friendly escort placed relative to the player, following playerRoute.
+        (*this->enemies)[this->enemies->size() - 1] =
+            (KIPlayer *) this->createShip(0, 0, 27, (Waypoint *) (intptr_t) 0, true, false);
+        {
+            Vector base = this->player->getPosition();
+            KIPlayer *escort = (*this->enemies)[this->enemies->size() - 1];
+            Vector offset = {2000.0f, 500.0f, -7000.0f};
+            escort->setPosition(base + offset);
+            escort->player->setAlwaysFriend(true);
+            escort->name = *Globals::gameText->getText(1633);
+            escort->player->setMaxHitpoints(9999999);
+            escort->setRoute(this->playerRoute->clone());
+        }
+
+        this->objectivesA = new Objective(22, 0, this);
+        this->objectivesB = new Objective(1, 0, this);
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
