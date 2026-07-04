@@ -3253,6 +3253,83 @@ void Level::createCampaignMission() {
         delete routeA;
         return;
     }
+
+    if (idx == 38) {
+        // case 38 (body @0xb640e)
+        int coords[3] = {90000, 10000, 80000};
+        this->enemyRoute = new Route(coords, 3);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(7, *(this->enemies));
+
+        // enemies[0..1]: static friendly guards scattered around the waypoint.
+        for (unsigned i = 0; i < 2; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                2, 1, 15, this->enemyRoute->getWaypoint(), true, false);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+            ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
+
+            KIPlayer *guard = (*this->enemies)[i];
+            Waypoint *wp = this->enemyRoute->getWaypoint();
+            int ox = Globals::rnd->nextInt(20000) - 10000;
+            int oy = Globals::rnd->nextInt(20000) - 10000;
+            int oz = Globals::rnd->nextInt(20000) - 10000;
+            guard->setPosition((float) (wp->x + ox), (float) (wp->y + oy),
+                               (float) (wp->z + oz));
+        }
+
+        // enemies[2..]: awake enemy fighters bound to the waypoint.
+        for (unsigned i = 2; i < this->enemies->size(); i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(3);
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                3, 0, type, this->enemyRoute->getWaypoint(), true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+
+        this->objectivesA = new Objective(18, 2, 7, this);
+        new Objective(7, 2, this);
+        return;
+    }
+
+    if (idx == 63) {
+        // case 63 (body @0xb6db8)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(7, *(this->enemies));
+
+        int coords[3] = {0, 0, 0};
+        Route *route = new Route(coords, 3);
+
+        // enemies[0]: sleeping named static object at the (origin) waypoint.
+        (*this->enemies)[0] =
+            (KIPlayer *) (intptr_t) this->createStaticObject(route->getWaypoint(), 0x37a3, true);
+        Waypoint *wp = route->getWaypoint();
+        Vector wpPos = wp->getPosition();
+        (*this->enemies)[0]->setToSleep();
+        (*this->enemies)[0]->name = *Globals::gameText->getText(441);
+
+        // enemies[1..]: sleeping enemy fighters scattered around the waypoint.
+        // Each axis draws a magnitude in [0,20000) then a sign, offset by +10000.
+        for (unsigned i = 1; i < this->enemies->size(); i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(8);
+            (*this->enemies)[i] =
+                (KIPlayer *) this->createShip(8, 0, type, (Waypoint *) (intptr_t) 0, true, false);
+
+            int magX = Globals::rnd->nextInt(20000);
+            int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+            int magY = Globals::rnd->nextInt(20000);
+            int signY = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+            int magZ = Globals::rnd->nextInt(20000);
+            int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+            (*this->enemies)[i]->setPosition(
+                (float) (int) (wpPos.x + (float) (signX * magX + 10000)),
+                (float) (int) (wpPos.y + (float) (signY * magY + 10000)),
+                (float) (int) (wpPos.z + (float) (signZ * magZ + 10000)));
+            (*this->enemies)[i]->setToSleep();
+        }
+
+        new Objective(27, 4, this);
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
