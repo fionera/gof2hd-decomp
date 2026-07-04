@@ -3034,6 +3034,150 @@ void Level::createCampaignMission() {
         }
         return;
     }
+
+    if (idx == 40) {
+        // case 40 (body @0xb65ee)
+        // enemyRoute (@0x110): 3-point route; friendRoute (@0x10c): 6-point route.
+        int enemyCoords[3] = {-20000, -3000, 200000};
+        this->enemyRoute = new Route(enemyCoords, 3);
+
+        int friendCoords[6] = {-20000, -3000, 35000, -20000, -3000, 200000};
+        this->friendRoute = new Route(friendCoords, 6);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(13, *(this->enemies));
+
+        // enemies[0]: escorted friendly leader following friendRoute.
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(0, 1, 13, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[0]->player->setAlwaysFriend(true);
+        (*this->enemies)[0]->name = *Globals::gameText->getText(1604);
+        {
+            KIPlayer *lead = (*this->enemies)[0];
+            lead->player->setMaxHitpoints(Globals::status->getLevel() * 5 + 1800);
+            lead->setPosition(-9999999.0f, -9999999.0f, -9999999.0f);
+            lead->setToSleep();
+            lead->setVisible(false);
+        }
+
+        // enemies[1..4]: wing fighters bound to friendRoute; enemies[2] named.
+        for (unsigned i = 1; i < 5; i = i + 1) {
+            int enemyType = Globals::globals->getRandomEnemyFighter(0);
+            (*this->enemies)[i] =
+                (KIPlayer *) this->createShip(0, 0, enemyType, (Waypoint *) (intptr_t) 0, true, false);
+            (*this->enemies)[i]->setRoute(this->friendRoute->clone());
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+            if (i == 2)
+                (*this->enemies)[i]->name = *Globals::gameText->getText(1605);
+        }
+
+        // enemies[5..8]: escort fighters bound to enemyRoute, awake+enemy.
+        for (unsigned i = 5; i < 9; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                9, 0, 8, this->enemyRoute->getWaypoint(), true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+
+        // enemies[9..12]: sleeping enemy fighters at the origin.
+        for (unsigned i = 9; i < 13; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                9, 0, 8, (Waypoint *) (intptr_t) 0, true, false);
+            (*this->enemies)[i]->setPosition(0.0f, 0.0f, 0.0f);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+            (*this->enemies)[i]->setToSleep();
+        }
+
+        // Reposition the player and orient it, on non-weak devices.
+        this->player->setPosition(-105000.0f, 80000.0f, 200000.0f);
+        this->player->geometry->setRotation(0.0f, 1.5707963705062866f, 0.0f);
+
+        new Objective(7, 1, this);
+        return;
+    }
+
+    if (idx == 56) {
+        // case 56 (body @0xb6b9c)
+        // playerRoute (@0x108): 9-point route; friendRoute (@0x10c) is its clone.
+        int coords[9] = {0, 0, -60000, -12000, -7000, -110000, 15000, 3000, -160000};
+        this->playerRoute = new Route(coords, 9);
+        this->friendRoute = this->playerRoute->clone();
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(9, *(this->enemies));
+
+        // enemies[0..2]: sleeping friendly cargo ships scattered near player*0.8.
+        for (unsigned i = 0; i < 3; i = i + 1) {
+            (*this->enemies)[i] =
+                (KIPlayer *) this->createShip(8, 0, 24, (Waypoint *) (intptr_t) 0, true, false);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+            (*this->enemies)[i]->player->setAlwaysEnemy(false);
+            (*this->enemies)[i]->setToSleep();
+
+            *(Vector *) &this->field_18c = this->player->getPosition() * 0.800000011920929f;
+
+            AbyssEngine::AERandom *rng = Globals::rnd;
+            float px = *(float *) &this->field_18c + -3500.0f + (float) rng->nextInt(7000);
+            float py = *(float *) &this->field_190 + -3500.0f + (float) rng->nextInt(7000);
+            float pz = *(float *) &this->field_194 + -3500.0f + (float) rng->nextInt(7000);
+            (*this->enemies)[i]->setPosition(px, py, pz);
+
+            (*this->enemies)[i]->setRoute(this->friendRoute->clone());
+            (*this->enemies)[i]->player->setHitpoints(9999999);
+        }
+
+        // enemies[3..]: sleeping enemy fighters bound to playerRoute waypoints.
+        for (unsigned i = 3; i < this->enemies->size(); i = i + 1) {
+            int enemyType = Globals::globals->getRandomEnemyFighter(8);
+            int wpIndex = (i < 5) ? 0 : (i < 10 ? 1 : 2);
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                8, 0, enemyType, this->playerRoute->getWaypoint(wpIndex), true, false);
+            (*this->enemies)[i]->setToSleep();
+        }
+
+        new Objective(18, 3, 9, this);
+        return;
+    }
+
+    if (idx == 70) {
+        // case 70 (body @0xb77c0)
+        // Push the player backward along its facing, then anchor enemyRoute at the
+        // player's new position.
+        Vector spawn =
+            this->player->getPosition() - this->player->geometry->getDirection() * 120000.0f;
+        this->player->setPosition(spawn);
+
+        Vector landmarkPos = (*this->landmarks)[1]->getPosition();
+
+        Vector playerPos = this->player->getPosition();
+        int coords[3] = {(int) landmarkPos.x, (int) landmarkPos.y, (int) landmarkPos.z};
+        this->enemyRoute = new Route(coords, 3);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(1, *(this->enemies));
+
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(0, 0, 12, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[0]->player->setAlwaysFriend(true);
+        (*this->enemies)[0]->name = *Globals::gameText->getText(1631);
+        (*this->enemies)[0]->setRoute(this->enemyRoute->clone());
+
+        // Position the ship a quarter of the way from the player toward the landmark,
+        // then orient it to look toward the landmark.
+        {
+            KIPlayer *ship = (*this->enemies)[0];
+            *(Vector *) &this->field_18c = playerPos + (landmarkPos - playerPos) / 4.0f;
+            ship->setPosition(*(Vector *) &this->field_18c);
+
+            AEGeometry *geo = ship->parentGeometry;
+            Vector look = AbyssEngine::AEMath::VectorNormalize(landmarkPos - playerPos);
+            Vector up = {0.0f, 1.0f, 0.0f};
+            geo->setDirection(look, up);
+            ship->player->setHitpoints((int) ((float) ship->player->getMaxHitpoints() * 2.5f));
+        }
+
+        new Objective(1, 0, this);
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
