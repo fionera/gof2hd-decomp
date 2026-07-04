@@ -2984,13 +2984,10 @@ int LevelScript::process(int delta) {
                     // then advance. If the radio hasn't fired the original falls to sub-tail
                     // 0x1435ec (still DEFERRED).
                     if (!((RadioMessage *) ((*messages)[8]))->isTriggered()) {
-                        // DEFERRED 0x1435ec: this is actually the case-92 states 8/9/10/11 dispatch
-                        // (it re-reads m_nState: 9/10 -> 0x143704, 11 -> 0x144416, 8 -> fall-through,
-                        // anything else -> post-switch tail). When reached from state 7 (m_nState==7)
-                        // it lands on the tail. State 8 (0x143606): m_nScriptTimerA (this+0x90) += delta,
-                        // enemies[3]->geometry->moveForward((float)(2*delta)), and once the counter passes
-                        // 8001 run the PaintCanvas camera-local matrix reframe off enemies[3]'s basis
-                        // (setTarget/getPosition + dir/right/up accumulation, same idiom as states 3/4).
+                        // 0x1435ec dispatch: re-reads m_nState (9/10 -> 0x143704, 11 -> 0x144416,
+                        // 8 -> 0x143606, anything else -> post-switch tail). When reached from
+                        // state 7 (m_nState==7) it lands on the tail. States 8/9/10 are handled by
+                        // the else-if branches below; only state 11 remains DEFERRED (see below).
                         break;
                     }
                     if (player->isDockedToDockingPoint()) {
@@ -3031,7 +3028,71 @@ int LevelScript::process(int delta) {
                     m_pCamera->setPosition(*acc);
                     reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
                     m_nState++;
+                } else if (m_nState == 8) {
+                    // State 8 (0x143606): drift the reference escort ship (enemies[3]) forward while
+                    // the script timer ramps; once it passes 8001 ticks reframe the follow camera on
+                    // enemies[3]'s basis (dir*10000 + right*4800), bump the state, reset the timer and
+                    // re-seat the camera-path accumulator (field_0x28) to {1,1,1}.
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // ldr.w r0,[r6,#144]! (0x143614)
+                    (*enemies)[3]->geometry->moveForward((float) (2 * delta)); // 0x143630
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) < 8001) { // movw #0x1f41 (0x143638)
+                        break; // -> post-switch tail 0x144e36
+                    }
+                    m_pCamera->setTarget((*enemies)[3]->geometry); // 0x143656
+                    Vector *acc = reinterpret_cast<Vector *>(&field_0x28); // this+0x28 (sl)
+                    Vector *tmp = reinterpret_cast<Vector *>(&field_0x40); // this+0x40 (r5)
+                    *acc = (*enemies)[3]->geometry->getPosition();  // 0x143666
+                    *tmp = (*enemies)[3]->geometry->getDirection(); // 0x143686
+                    *acc += *tmp * 10000.0f; // pool 0x143950 = 0x461c4000 (0x14369e)
+                    *tmp = (*enemies)[3]->geometry->getRightVector(); // 0x1436b6
+                    *acc += *tmp * 4800.0f;  // pool 0x143954 = 0x45960000 (0x1436ca)
+                    m_pCamera->setPosition(*acc); // 0x1436dc
+                    m_nState++;                   // [fp+0x1c]++ = 9 (0x1436e0)
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0,0 [r6] (0x1436ee)
+                    *acc = Vector{1.0f, 1.0f, 1.0f}; // 0x1436f6..0x1436fe re-seat accumulator
+                } else if (m_nState == 9 || m_nState == 10) {
+                    // States 9/10 (0x143704): keep FMOD event 2249 pinned to enemies[3] and drift the
+                    // ship forward with an accelerating creep (tempVec.x += delta*0.006 each tick).
+                    // At 2001 ticks promote state 9 -> 10; at 7001 ticks unlatch the fixed camera,
+                    // reframe it behind the player (dir*2400), restore HUD/radar, hand control back,
+                    // clear the cinematic break, wake the player, park enemies[3] and advance.
+                    Vector pos = (*enemies)[3]->geometry->getPosition(); // 0x143710
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Globals::sound->updateEvent3DAttributes(2249, &pos, &zero, false); // 0x8c9 (0x14372e)
+                    Vector *acc = reinterpret_cast<Vector *>(&field_0x28); // this+0x28
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // ldrd/strd [r4+0x90] (0x143740)
+                    acc->x += (float) delta * 0.006f; // vmla s4,s0,s2 pool 0x14395c = 0x3bc49ba6 (0x143754)
+                    (*enemies)[3]->geometry->moveForward(acc->x * (float) delta); // s0=s4*s0 (0x14376c)
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) < 2001) { // movw #0x7d1 (0x143774)
+                        break; // -> post-switch tail 0x144e36
+                    }
+                    if (m_nState == 9) { // 0x143786
+                        m_nState = 10;   // 0x14378a moveq
+                    }
+                    if (reinterpret_cast<long long &>(m_nScriptTimerA) < 7001) { // movw #0x1b59 (0x143790)
+                        break; // -> post-switch tail 0x144e36
+                    }
+                    m_pCamera->setFixed(false); // 0x1437a4
+                    m_pCamera->setTarget(player->geometry); // [sp+0x54]+8 (0x1437b2)
+                    m_pCamera->setLookAtCam(false); // 0x1437ba
+                    Vector camPos = player->getPosition(); // sret sp+0x164 (0x1437ca)
+                    Vector dir = player->GetDirVector();   // sret sp+0x100 (0x1437d4)
+                    Vector reframe = camPos - dir * 2400.0f; // pool 0x143960 = 0x45160000 (0x1437e2..0x1437f0)
+                    m_pCamera->setPosition(reframe); // 0x1437f8
+                    m_pHud->visible = 1;             // [r5+0xd0]+1 (0x143802)
+                    m_pRadar->field_0x58 = 1;        // [r5+0xd4]+0x48 (0x143808)
+                    resetCamera(m_pLevel);           // 0x14380e
+                    m_pLevel->lodManager->forceUpdate(delta, false); // 0x14381c
+                    player->setComputerControlled(false); // 0x143824
+                    m_nFlags = (uint16_t) (m_nFlags & 0x00ff); // strb 0 [r5+0x11] clear cinematicBreak (0x14382c)
+                    player->player->setVulnerable(true); // [r9]->setVulnerable(1) (0x143832)
+                    ((KIPlayer *) (*enemies)[3])->setActive(false);  // 0x14383e
+                    ((KIPlayer *) (*enemies)[3])->setVisible(false); // 0x143846
+                    m_nState++; // 0x13953c: [r5+0x1c]+1 -> stored at 0x13edde
                 }
+                // State 11 (0x144416) DEFERRED: shares the dwell tail at 0x14445a (a landmark loop
+                // walking landmarks[i]->field_0x140 transform ids -- unmodeled, drift-risky) so it is
+                // left unimplemented here; when m_nState==7 the msg8 gate above routes to the tail.
                 break;
             }
             case 94: { // 0x13acac (tbh on m_nState 0..3)
