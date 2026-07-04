@@ -2050,8 +2050,31 @@ int LevelScript::process(int delta) {
                     // then run the (deferred) camera/route hand-off that advances to state 3.
                     if (m_nState == 2) {
                         if ((*enemies)[0]->getPosition().z >= 90000.0f) { // 0x13e72e..0x13e746
-                            // DEFERRED 0x13f952: state-2 -> state-3 hand-off (m_nState = 3 plus a
-                            // route/GOT-thunk approach setup; not decoded here).
+                            // State-2 -> state-3 hand-off (0x13f952): advance the substate, then
+                            // scatter the LAST FOUR enemies (indices count-4 .. count-1) randomly
+                            // around level landmark #3 within a +-10000 cube per axis, and wake
+                            // each of them. GOT thunks resolved from asm: r8=Level::getLandmarks,
+                            // r9=AERandom::nextInt, fp=Globals::rnd, s16 constant = -10000.0f.
+                            m_nState = 3; // 0x13f95a: [this+0x1c] = 3
+                            // 0x13f962: start index = enemies.count - 4 (last four enemies)
+                            for (unsigned int i = enemies->count - 4; i < enemies->count; ++i) { // 0x13fa5a bcc.n
+                                KIPlayer *elem = (*enemies)[i]; // 0x13f988..0x13f992
+                                // landmark #3's position sampled once per axis (getPosition,
+                                // vtable+0x28, returns a fresh Vector each call: 0x13f994..0x13f9e2)
+                                float lmX = (*m_pLevel->getLandmarks())[3]->getPosition().x;
+                                int rndX = Globals::rnd->nextInt(20000); // 0x13f9b0
+                                float lmY = (*m_pLevel->getLandmarks())[3]->getPosition().y;
+                                int rndY = Globals::rnd->nextInt(20000); // 0x13f9d0
+                                float lmZ = (*m_pLevel->getLandmarks())[3]->getPosition().z;
+                                int rndZ = Globals::rnd->nextInt(20000); // 0x13fa02
+                                // 0x13fa08..0x13fa36: pos = landmark3 + (-10000) + (float)rnd,
+                                // stored via setPosition(fff) (vtable+0x48).
+                                elem->setPosition(lmX + -10000.0f + (float) rndX,
+                                                  lmY + -10000.0f + (float) rndY,
+                                                  lmZ + -10000.0f + (float) rndZ);
+                                (*enemies)[i]->awake(); // 0x13fa38..0x13fa44 (vtable+0xc)
+                                (*enemies)[i]->awake(); // 0x13fa46..0x13fa52 (vtable+0xc)
+                            }
                         }
                         break; // otherwise fall through to tail (0x144e36)
                     }
