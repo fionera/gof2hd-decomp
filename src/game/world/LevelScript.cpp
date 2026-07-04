@@ -2043,11 +2043,32 @@ int LevelScript::process(int delta) {
                 break;
             }
             case 42: { // 0x13abaa
-                if (messages == nullptr) {
-                    // DEFERRED 0x13c1a4
+                // 0x13abac: the state-5 radio-#7-over path runs the wormhole-arm setup below; every
+                // other entry (messages==null @0x13abb2, state!=5 @0x13abbc, or radio not over
+                // @0x13abcc) falls through to the shared state 0/6/7 dispatch at 0x13c1a4/0x13c1a8.
+                if (messages != nullptr && m_nState == 5 &&
+                    ((RadioMessage *) ((*messages)[7]))->isOver()) {
+                    // FModSound::play(0x99, ...) DEFERRED @0x13abe2
+                    field_0x8 = 0;
+                    field_0xc = 0;
+                    if (level->objectivesB != nullptr) {
+                        delete level->objectivesB;
+                    }
+                    level->objectivesB = nullptr;
+                    if (level->objectivesA != nullptr) {
+                        delete level->objectivesA;
+                    }
+                    level->objectivesA = nullptr;
+                    Array<KIPlayer *> *landmarks = level->getLandmarks();
+                    (void) landmarks; // ((PlayerWormHole*)(*landmarks)[3])->setPosition(x,y,z) DEFERRED @0x13ac26 (vtable+0x48)
+                    landmarks = m_pLevel->getLandmarks();
+                    ((PlayerWormHole *) (*landmarks)[3])->open();
+                    m_nScriptTimerA = 0;
+                    m_nScriptCounterA = 0;
+                    m_nState = 6; // shared tail 0x13edde
                     break;
                 }
-                if (m_nState != 5) {
+                {
                     // Non-state-5 branch (0x13c1a8). State 0 waits for the player to reach the alien
                     // orbit; states 6/7 run the alien-orbit / wormhole-entry cutscene.
                     if (m_nState == 0) {
@@ -2149,28 +2170,6 @@ int LevelScript::process(int delta) {
                     m_nState = 7;                                    // 0x144a0e stores 7 into m_nState
                     break;
                 }
-                if (!((RadioMessage *) ((*messages)[7]))->isOver()) {
-                    // DEFERRED 0x13c1a4
-                    break;
-                }
-                // FModSound::play(0x99, ...) DEFERRED @0x13abe2
-                field_0x8 = 0;
-                field_0xc = 0;
-                if (level->objectivesB != nullptr) {
-                    delete level->objectivesB;
-                }
-                level->objectivesB = nullptr;
-                if (level->objectivesA != nullptr) {
-                    delete level->objectivesA;
-                }
-                level->objectivesA = nullptr;
-                Array<KIPlayer *> *landmarks = level->getLandmarks();
-                (void) landmarks; // ((PlayerWormHole*)(*landmarks)[3])->setPosition(x,y,z) DEFERRED @0x13ac26 (vtable+0x48)
-                landmarks = m_pLevel->getLandmarks();
-                ((PlayerWormHole *) (*landmarks)[3])->open();
-                m_nScriptTimerA = 0;
-                m_nScriptCounterA = 0;
-                m_nState = 6; // shared tail 0x13edde
                 break;
             }
             case 56: { // 0x139f14

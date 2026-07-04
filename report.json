@@ -998,14 +998,6 @@
    "usize": 12
   },
   {
-   "name": "_tr_flush_block",
-   "pct": 0.2,
-   "byte": false,
-   "linked": false,
-   "osize": 964,
-   "usize": 2640
-  },
-  {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
    "pct": 0.3,
    "byte": false,
@@ -1020,6 +1012,14 @@
    "linked": false,
    "osize": 21562,
    "usize": 20900
+  },
+  {
+   "name": "_tr_flush_block",
+   "pct": 0.4,
+   "byte": false,
+   "linked": false,
+   "osize": 964,
+   "usize": 2640
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",
@@ -1118,14 +1118,6 @@
    "usize": 684
   },
   {
-   "name": "inflate_table",
-   "pct": 0.9,
-   "byte": false,
-   "linked": false,
-   "osize": 928,
-   "usize": 2128
-  },
-  {
    "name": "_ZN5Level21createCampaignMissionEv",
    "pct": 1.0,
    "byte": false,
@@ -1150,6 +1142,14 @@
    "usize": 764
   },
   {
+   "name": "inflateBack",
+   "pct": 1.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2568,
+   "usize": 4172
+  },
+  {
    "name": "_tr_stored_block",
    "pct": 1.1,
    "byte": false,
@@ -1164,6 +1164,14 @@
    "linked": false,
    "osize": 1732,
    "usize": 3792
+  },
+  {
+   "name": "inflate_table",
+   "pct": 1.1,
+   "byte": false,
+   "linked": false,
+   "osize": 928,
+   "usize": 2128
   },
   {
    "name": "_ZN11AbyssEngine9Transform6UpdateExb",
@@ -1206,6 +1214,14 @@
    "usize": 580
   },
   {
+   "name": "inflate",
+   "pct": 1.4,
+   "byte": false,
+   "linked": false,
+   "osize": 4360,
+   "usize": 6456
+  },
+  {
    "name": "_ZN11AbyssEngine9Transform18InsertKeyFrame_oldEPKfxi",
    "pct": 1.5,
    "byte": false,
@@ -1236,22 +1252,6 @@
    "linked": false,
    "osize": 8,
    "usize": 732
-  },
-  {
-   "name": "inflateBack",
-   "pct": 1.6,
-   "byte": false,
-   "linked": false,
-   "osize": 2568,
-   "usize": 4172
-  },
-  {
-   "name": "inflate",
-   "pct": 1.8,
-   "byte": false,
-   "linked": false,
-   "osize": 4360,
-   "usize": 6456
   },
   {
    "name": "_ZN11LevelScriptC1EP5LevelP3HudP5RadarP18TargetFollowCamera",
@@ -2022,14 +2022,6 @@
    "usize": 208
   },
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 7.6,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 36164
-  },
-  {
    "name": "_ZN5MGame12OnTouchBeginEiiPv",
    "pct": 7.6,
    "byte": false,
@@ -2484,6 +2476,14 @@
    "linked": false,
    "osize": 324,
    "usize": 76
+  },
+  {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 10.3,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 36180
   },
   {
    "name": "_Z18IsDialogNotVisiblei",
@@ -15790,6 +15790,14 @@
    "usize": 476
   },
   {
+   "name": "_ZN11AbyssEngine10MaskShader4InitEPNS_6EngineE",
+   "pct": 79.3,
+   "byte": false,
+   "linked": false,
+   "osize": 196,
+   "usize": 196
+  },
+  {
    "name": "_ZN11AbyssEngine21TextureVtxColorShader23ConnectShaderComponentsEji",
    "pct": 79.3,
    "byte": false,
@@ -16020,14 +16028,6 @@
    "linked": false,
    "osize": 340,
    "usize": 340
-  },
-  {
-   "name": "_ZN11AbyssEngine10MaskShader4InitEPNS_6EngineE",
-   "pct": 80.4,
-   "byte": false,
-   "linked": false,
-   "osize": 196,
-   "usize": 196
   },
   {
    "name": "_ZN6Player10setEnemiesEP5ArrayIPS_E",
