@@ -2051,7 +2051,40 @@ int LevelScript::process(int delta) {
                     break;
                 }
                 if (m_nState != 0) {
-                    // DEFERRED 0x13e630: cold substate (m_nState != 0).
+                    // Cold substates dispatched by the tbh @0x13e630 (index = m_nState - 1, 10 entries).
+                    // States 3/4/5 fall through to the default (shared camera epilogue 0x143c06);
+                    // states 6..10 (aim/objective-spawn/animation-stepping chains) remain deferred.
+                    if (m_nState == 1) {
+                        // State 1 (0x13e650): drift the follow camera and, after ~3s on the 64-bit
+                        // script timer, advance to state 2.
+                        m_pCamera->translate((float) delta, -(float) delta,
+                                             -12.0f * (float) delta); // 0x13e650: delta, -delta, -12*delta
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 3001) {
+                            reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                            m_nState = 2;
+                        }
+                        break; // -> shared tail (0x14433e)
+                    }
+                    if (m_nState == 2) {
+                        // State 2 (0x1414d6): keep drifting the follow camera and step m_pGeometry1's
+                        // Transform animation; after ~2s, hide m_pGeometry1 and advance to state 6.
+                        m_pCamera->translate((float) delta, -(float) delta,
+                                             -12.0f * (float) delta); // 0x1414d6: delta, -delta, -12*delta
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta;
+                        AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                                Globals::Canvas->TransformGetTransform(m_pGeometry1->transform);
+                        t->Update((long long) delta, true);
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 2001) {
+                            reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
+                            m_nState = 6;
+                            m_pGeometry1->setVisible(false); // this+0xbc
+                        }
+                        break; // -> shared tail (0x14433e)
+                    }
+                    // DEFERRED 0x14156a/0x141658/0x1416ec/0x14133a/0x1417e4: cold substates 6/7/8/9/10
+                    //   (aim chains, objective/mission tears, and the Transform-animation-stepping deep
+                    //   fn-ptr chain @+0xf8) are unproven; states 3/4/5 route to the default epilogue.
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
