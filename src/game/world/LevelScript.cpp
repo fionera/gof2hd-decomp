@@ -2524,13 +2524,25 @@ int LevelScript::process(int delta) {
                             break; // -> shared tail (0x14433e)
                         }
                         // 0x14139a: snap three of the primary landmark's sub-transforms to their end.
-                        // For each transform id, TransformGetTransform(id)->Update(that->animationLength,
-                        //   false), i.e. fast-forward the animation to completion.
-                        // DEFERRED 0x1413a2-0x14140c: the three-way landmark-transform fast-forward loop
-                        //   walks landmarks[0]->field_0x140 (an unmodeled animation-group object) and
-                        //   reads three uint transform ids at +0xc/+0x10/+0x14 of it. field_0x140 and the
-                        //   id triple are not in any header and adding them is drift-risky, so this loop
-                        //   is left unimplemented; the timer gate and the state exit below are proven.
+                        // landmarks[0]'s [+0x140] field is PlayerStation::rootGeometry; for each of its
+                        // three transform ids we call TransformGetTransform(id)->Update(t->animationLength,
+                        // false), i.e. fast-forward the animation to completion.
+                        // 0x1413a2-0x14140c: unrolled as transform (+0xc) / childTransform (+0x14) /
+                        // parentTransform (+0x10), in that emitted order.
+                        {
+                            AEGeometry *root =
+                                    ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry;
+                            AbyssEngine::Transform *t;
+                            t = (AbyssEngine::Transform *)
+                                    Globals::Canvas->TransformGetTransform(root->transform); // 0x1413b6
+                            t->Update((long long) t->animationLength, false);                // 0x1413d6
+                            t = (AbyssEngine::Transform *)
+                                    Globals::Canvas->TransformGetTransform(root->childTransform); // 0x1413d8
+                            t->Update((long long) t->animationLength, false);                     // 0x1413f0
+                            t = (AbyssEngine::Transform *)
+                                    Globals::Canvas->TransformGetTransform(root->parentTransform); // 0x1413f2
+                            t->Update((long long) t->animationLength, false);                      // 0x14140a
+                        }
                         m_pCamera->setLookAtCam(false);       // 0x14140c
                         m_pCamera->setTarget(player->geometry); // 0x141416 ([sp+84]+8)
                         player->setComputerControlled(false); // 0x141420
@@ -3089,10 +3101,15 @@ int LevelScript::process(int delta) {
                     ((KIPlayer *) (*enemies)[3])->setActive(false);  // 0x14383e
                     ((KIPlayer *) (*enemies)[3])->setVisible(false); // 0x143846
                     m_nState++; // 0x13953c: [r5+0x1c]+1 -> stored at 0x13edde
+                } else if (m_nState == 11) {
+                    // State 11 (0x144416): drift the reference escort ship (enemies[3]) forward with
+                    // an accelerating creep (tempVec.x += delta*0.02 each tick), scaled by delta.
+                    // No timer gate -- a pure per-frame drift that falls straight into the shared
+                    // moveForward call site (0x144e32).
+                    Vector *acc = reinterpret_cast<Vector *>(&field_0x28); // this+0x28
+                    acc->x += (float) delta * 0.02f; // vmla s4,s0,s2 pool 0x144490 = 0x3ca3d70a (0x144428)
+                    (*enemies)[3]->geometry->moveForward(acc->x * (float) delta); // s0=s4*s0 (0x144e32)
                 }
-                // State 11 (0x144416) DEFERRED: shares the dwell tail at 0x14445a (a landmark loop
-                // walking landmarks[i]->field_0x140 transform ids -- unmodeled, drift-risky) so it is
-                // left unimplemented here; when m_nState==7 the msg8 gate above routes to the tail.
                 break;
             }
             case 94: { // 0x13acac (tbh on m_nState 0..3)
