@@ -2228,7 +2228,22 @@ int LevelScript::process(int delta) {
             }
             case 56: { // 0x139f14
                 if (m_nState == 1) {
-                    // DEFERRED 0x13cda0
+                    // state 1 (0x13cda0): wait until the player's armor is fully depleted, then
+                    // re-enable shooting for every friendly wingman and advance. If the player still
+                    // has armor left (getArmorHP() > 0) fall straight through to the post-switch tail
+                    // without touching m_nState.
+                    if (player->player->getArmorHP() > 0) { // 0x13cda4, bgt 0x144e36
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    if (enemies != nullptr) { // 0x13cdb2, beq 0x13eddc
+                        for (unsigned int i = 0; i < enemies->count; ++i) { // 0x13cdda loop
+                            Player *ship = (*enemies)[i]->player; // [elem+4], 0x13cdbc
+                            if (ship->isAlwaysFriend()) {          // 0x13cdc4
+                                ship->setShootingEnabled(true);    // 0x13cdd4
+                            }
+                        }
+                    }
+                    m_nState = 2; // 0x13eddc -> post-switch tail (0x144e36)
                     break;
                 }
                 if (m_nState != 0) {
