@@ -2021,8 +2021,48 @@ int LevelScript::process(int delta) {
                         // through the ==7 / ==6 checks below to the post-switch tail).
                     }
                     if (m_nState == 7) {
-                        // DEFERRED 0x13d8fc: state-7 alien-orbit hold (rumble/roll + field_0xa8 gate).
-                        break;
+                        // State 7 (0x13d8fc): wormhole-entry hold. Slam the camera rumble to max and roll
+                        // it backwards proportionally to the frame time, then -- while the particle FX are
+                        // still rendering -- advance each particle geometry's cinematic transform, re-aim
+                        // the two trailing particle geoms along the current camera direction and push the
+                        // lead trailing geom out along that direction. Once the lead particle transform
+                        // passes its 4001-tick keyframe, hide the arrival station. Finally accumulate the
+                        // 64-bit script timer and, after 15s, stop rendering particles and fire the
+                        // fade-to-white; the state itself never advances (persistent hold).
+                        m_pCamera->setRumblePercentage(100.0f, 30);       // 0x13d904
+                        m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta)); // 0x13d922 (-(delta*9)*2)
+                        if (m_bRenderParticles) {                         // 0x13d926 gate on field_0xa8
+                            // 0x13d938/0x13d968/0x13d97e: run each particle geom's transform animation.
+                            AbyssEngine::Transform *t0 = (AbyssEngine::Transform *)
+                                    Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform);
+                            t0->Update((long long) delta, false);
+                            AbyssEngine::Transform *t1 = (AbyssEngine::Transform *)
+                                    Globals::Canvas->TransformGetTransform(m_pParticleGeom1->transform);
+                            t1->Update((long long) delta, false);
+                            AbyssEngine::Transform *t2 = (AbyssEngine::Transform *)
+                                    Globals::Canvas->TransformGetTransform(m_pParticleGeom2->transform);
+                            t2->Update((long long) delta, false);
+                            // 0x13d994: camDir = MatrixGetDir(current camera local matrix).
+                            AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                            Vector camDir = AbyssEngine::AEMath::MatrixGetDir(
+                                    *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
+                            m_pParticleGeom1->setDirection(camDir, Vector{0.0f, 1.0f, 0.0f}); // 0x13d9c4
+                            m_pParticleGeom2->setDirection(camDir, Vector{0.0f, 1.0f, 0.0f}); // 0x13d9d8
+                            m_pParticleGeom1->setPosition(camDir * 10000.0f);                 // 0x13d9e8/0x13d9f0
+                            // 0x13d9f4: once the lead particle transform passes tick 4001, hide station[0].
+                            AbyssEngine::Transform *tp = (AbyssEngine::Transform *)
+                                    Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform);
+                            if (tp->currentTime >= 4001) {
+                                ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
+                            }
+                        }
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x13da28 (64-bit @this+0x90)
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 15001) { // 0x13da3c
+                            m_bRenderParticles = 0;                       // 0x13da4a
+                            Globals::layout->startFade(true, 255, 4000);  // 0x13da5c
+                            reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x13da60
+                        }
+                        break; // -> post-switch tail (0x144e36); m_nState stays 7
                     }
                     if (m_nState != 6) {
                         break; // -> post-switch tail (0x144e36)
