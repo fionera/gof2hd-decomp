@@ -2804,6 +2804,14 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 131) {
+        // case 131 (body @0xb4e08; second jump-table @tbh 0xb4dcc, index 131-131=0).
+        // new(28) -> Objective(4, 0, this); flows to shared tail (bb9b8). Mirrors case 137
+        // (new(28)/ObjectiveC1(r5,4,N,this)/b.w bb9b8) with second ctor arg = 0.
+        this->objectivesA = new Objective(4, 0, this);
+        return;
+    }
+
     if (idx == 137) {
         // case 137 (body @0xb991e)
         this->objectivesA = new Objective(4, 4, this);
