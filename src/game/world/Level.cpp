@@ -129,7 +129,7 @@ static char **g_init_bmFlag = nullptr;
 
 static char **g_ca_lowDetail = nullptr;
 
-static float g_ccm_pos0 = 0;
+static float g_ccm_pos0 = 50000.0f;
 
 static float g_up_eqMax = 0;
 
@@ -2558,21 +2558,21 @@ void Level::createCampaignMission() {
         float c = g_ccm_pos0;
         for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
             int type = (i == 1) ? 0x17 : 2;
-            int ship = (int) (intptr_t) this->createShip(8, 0, type, (Waypoint *) (intptr_t) 0, 1, 0);
-            (*this->enemies)[i] = (KIPlayer *) (intptr_t) ship;
-            ((*this->enemies)[i])->setToSleep();
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(8, 0, type, (Waypoint *) (intptr_t) 0, true, false);
+            (*this->enemies)[i]->setToSleep();
             (*this->enemies)[i]->player->setAlwaysEnemy(true);
             KIPlayer *kp = (*this->enemies)[i];
             kp->setPosition(c, c, c);
             kp->cargo = nullptr;
             kp->hasCargo = 0;
-            Player *ep = kp->player;
-            ep->setHitpoints(ep->getMaxHitpoints());
-            if (i < 3)
+            kp->player->setHitpoints(150);
+            if (i <= 2)
                 ((PlayerFighter *) (*this->enemies)[i])->setExhaustVisible(false);
         }
-        Player *pp = (Player *) this->player->player;
-        pp->setHitpoints(pp->getMaxHitpoints());
+        this->player->player->setHitpoints(9999999);
+        // DEFERRED 0xb52cc: str 9999999 -> [[sp#68]+0][0x64]; strb 1 -> [this->player[0]][0x5e]
+        //   sp#68 = r6 (Globals::status GOT slot @0x21015c) saved by strd @0xb4bf0;
+        //   receiver of the 0x64 store is uncertain (Status vs Player), so not modeled.
         return;
     }
 }
