@@ -2732,10 +2732,25 @@ int LevelScript::process(int delta) {
                         player->setCollide(false);
                         m_pCamera->setLookAtCam(true);
                         m_pCamera->setTarget(player->geometry);
-                        // DEFERRED 0x13f452: re-aim the player ship at the docking target -- the
-                        //   direction/normalize/setDirection AEMath operator-fn-ptr chain
-                        //   (blx fp / VectorNormalize / operator- / operator* / operator+=) is
-                        //   unproven; the surrounding teardown and the state advance are decoded.
+                        // Re-aim the docked ship at the docking target and reframe the camera
+                        // ahead of it (0x13f452..0x13f51e). Receivers resolved from asm: r9 =
+                        // (*enemies)[0] (KIPlayer*), [r9+8] = ->geometry (AEGeometry*, saved to
+                        // [sp,#0x50]); r4 = this (LevelScript), [r4+20] = m_pCamera. The aim
+                        // direction is (playerPos - dockingTarget[0]->getPosition()) normalized;
+                        // the fp GOT thunk is Vector::operator= (copy). FP pool @0x13f5f4 = 10000.0f
+                        // (direction scale), @0x13f5f8 = 700.0f (right-vector scale).
+                        AEGeometry *dockedGeom = (*enemies)[0]->geometry; // [r9+8], saved [sp,#0x50]
+                        dockedGeom->getPosition();                        // 0x13f45a (into scratch)
+                        Vector *camPos = reinterpret_cast<Vector *>(&field_0x28); // this+0x28
+                        *camPos = dockedGeom->getPosition();              // 0x13f46e: *camPos = geom pos
+                        Vector aimDir = AbyssEngine::AEMath::VectorNormalize(
+                                m_pLevel->getPlayer()->getPosition()
+                                - ((KIPlayer *) m_pLevel->getDockingTarget(0))
+                                          ->geometry->getPosition()); // 0x13f47c..0x13f4b0, [dock+8]=geometry
+                        dockedGeom->setDirection(aimDir, Vector{0.0f, 1.0f, 0.0f}); // 0x13f4c6
+                        *camPos += dockedGeom->getDirection() * 10000.0f; // 0x13f4d2..0x13f4f0
+                        *camPos += dockedGeom->getRightVector() * 700.0f; // 0x13f4fc..0x13f516
+                        m_pCamera->setPosition(*camPos);                  // 0x13f51e
                         (*enemies)[0]->player->setHitpoints(0); // 0x13f530: enemies[0]->player
                         m_nState = 6;
                         break; // -> tail (0x1410e2)
