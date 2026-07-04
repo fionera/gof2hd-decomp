@@ -3582,6 +3582,58 @@ void Level::createCampaignMission() {
         this->objectivesB = new Objective(1, 0, this);
         return;
     }
+
+    if (idx == 105) {
+        // case 105 (body @0xb941a)
+        // enemyRoute (@0x110) seeded from a fixed {0, 7000000, 7000000} triple (rodata @0x1fd40c,
+        // copied via NEON into the sp+0x180 scratch, then handed to Route(int*, 3)).
+        int coords[3] = {0, 7000000, 7000000};
+        this->enemyRoute = new Route(coords, 3);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(5, *(this->enemies));
+
+        // enemies[0..1]: friendly wingmen (type 0x25) parked at the route origin (base reg r4 = Level).
+        for (unsigned i = 0; i < 2; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                0, 0, 0x25, this->enemyRoute->getWaypoint(0), true, false);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+        }
+
+        // enemies[2..4]: sleeping enemy fighters (type 0x2c) at the same waypoint (base reg r5 = Level).
+        for (unsigned i = 2; i < 5; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                10, 0, 0x2c, this->enemyRoute->getWaypoint(0), true, false);
+            (*this->enemies)[i]->setToSleep();
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+
+        // Build the player's escape route along the star's light direction, aim the ego at it.
+        Vector lightDir = this->starSystem->getLightDirection();          // starSystem @0xec -> sp+0x118
+        Vector norm = AbyssEngine::AEMath::VectorNormalize(lightDir);     // -> sp+0x140
+        int routeCoords[3] = {(int) (norm.x * 650000.0f), 0, (int) (norm.z * 650000.0f)};
+        Route *playerPath = new Route(routeCoords, 3);
+        this->player->geometry->setDirection(norm, Vector{0.0f, 1.0f, 0.0f}); // player @0xf0 -> geometry @+8
+        this->player->setRoute(playerPath);
+        this->setPlayerRoute(playerPath);
+
+        // Fan the two friendly wingmen out to either side of the player, facing the light direction.
+        for (unsigned j = 0; j < 2; j = j + 1) {
+            KIPlayer *wm = (*this->enemies)[j];                                   // base reg r6 = Level
+            Vector playerPos = this->player->getPosition();                      // player @0xf0 -> sp+0xd0
+            Vector right = this->player->geometry->getRightVector();             // geometry @+8 -> sp+0x94
+            Vector side = playerPos + right * ((j == 0) ? 2100.0f : -2100.0f);   // -> sp+0xf4
+            Vector dir = this->player->geometry->getDirection();                 // geometry @+8 -> sp+0x7c
+            Vector spot = side + dir * 2000.0f;                                  // -> sp+0x1c0
+            wm->setPosition(spot);                                               // vtable+0x44 setPosition(Vector&)
+            wm->geometry->setDirection(norm, Vector{0.0f, 1.0f, 0.0f});          // wm->geometry @+8
+            wm->setRoute(this->enemyRoute->clone());
+            wm->setEnemies((Array<Player *> *) (intptr_t) 0);
+            ((PlayerFighter *) wm)->field_0x13d = 0;                             // strb 0 -> [wm+0x13d]
+            ((PlayerFighter *) wm)->setAIDisabled(true);
+        }
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
