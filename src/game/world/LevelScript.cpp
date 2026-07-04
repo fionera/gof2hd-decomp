@@ -2082,9 +2082,37 @@ int LevelScript::process(int delta) {
                         }
                         break; // -> shared tail (0x14433e)
                     }
-                    // DEFERRED 0x14156a/0x141658/0x1416ec/0x14133a/0x1417e4: cold substates 6/7/8/9/10
-                    //   (aim chains, objective/mission tears, and the Transform-animation-stepping deep
-                    //   fn-ptr chain @+0xf8) are unproven; states 3/4/5 route to the default epilogue.
+                    if (m_nState == 6) {
+                        // State 6 (0x14156a): one-shot camera reframe onto the escort (m_pGeometry6).
+                        // Seat the escort at a fixed world spot, latch the follow camera onto it in
+                        // look-at mode, seat the camera 1/1.7 of the way along a fixed offset, then
+                        // frame the camera to look from the escort back toward that seat by borrowing
+                        // a throwaway AEGeometry's oriented matrix. Finally reveal the hero geometry,
+                        // reset the timer and advance to state 7 in a single frame (no timer gate).
+                        // NB: no Transform +0xf8 fn-ptr chain here -- state 6 uses only named virtual
+                        // calls; the deep animation-step chain lives elsewhere (states 9/10).
+                        m_pGeometry6->setPosition(Vector{12487.0f, -11451.0f, 5958.0f}); // 0x14156a
+                        m_pCamera->setLookAtCam(true);       // 0x141582
+                        m_pCamera->setTarget(m_pGeometry6);  // 0x14158a
+                        Vector *camSeat = reinterpret_cast<Vector *>(&field_0x28); // LevelScript tempVec @0x28
+                        *camSeat = Vector{-28855.0f, -30075.0f, 63820.0f} / 1.7f;  // 0x1415a8/0x1415b4
+                        m_pCamera->setPosition(*camSeat);    // 0x1415bc
+                        Vector facing = m_pGeometry6->getPosition() - *camSeat; // 0x1415c8/0x1415d2
+                        AEGeometry *frame = new AEGeometry(Globals::Canvas); // 0x1415d8 (0xc0 bytes)
+                        frame->setDirection(facing, Vector{0.0f, 1.0f, 0.0f}); // 0x141604
+                        frame->setPosition(*camSeat);        // 0x14160c
+                        Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(),
+                                                        frame->getMatrix()); // 0x141614..0x141626
+                        delete frame;                        // 0x14162a/0x141630
+                        m_pLevel->lodManager->forceUpdate(delta, false); // 0x14163e
+                        m_pGeometry0->setVisible(true);      // 0x141648 (this+0xb8)
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x14164e
+                        m_nState = 7;                        // 0x141652
+                        break; // 0x141654 -> shared tail (0x14433e)
+                    }
+                    // DEFERRED 0x141658/0x1416ec/0x14133a/0x1417e4: cold substates 7/8/9/10
+                    //   (objective/mission tears, and the Transform-animation-stepping deep fn-ptr
+                    //   chain @+0xf8 in states 9/10) remain unproven; states 3/4/5 route to default.
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
