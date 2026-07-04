@@ -1289,7 +1289,27 @@ int LevelScript::process(int delta) {
                 if (m_nState != 2) {
                     break;
                 }
-                (*enemies)[0]->field_0x24 = 1; // -> shared tail 0x13ede4
+                // state-2 (0x13ede4): wait for radio message #5 to trigger, then clear enemies[0]'s
+                // flag byte, build a fresh Route({500000,500000,500000}, 3) from the .rodata table
+                // @0x202758, and hand a clone of it (plus an empty enemy list) to every non-wingman
+                // enemy before advancing to state 3.
+                if (!((RadioMessage *) ((*messages)[5]))->isTriggered()) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                (*enemies)[0]->field_0x24 = 0; // strb 0 @0x13edfc (KIPlayer+0x24)
+                int stateRoutePts[3] = {500000, 500000, 500000}; // .rodata @0x202758
+                Route *stateRoute = new Route(stateRoutePts, 3); // 0x13ee18
+                for (unsigned int j = 1; j < enemies->count; ++j) {
+                    if ((*enemies)[j]->isWingMan()) {
+                        continue; // 0x13ee2a: skip wingmen
+                    }
+                    // DEFERRED 0x13ee3a: (*enemies)[j]->setSpeed(<bitpattern 0x000c3816>) -- vtable slot
+                    //   0x1c (setSpeed(float)) called with r1 = 0x000c3816 (a denormal float ~1.12e-39,
+                    //   int value 800022); not a clean literal, so the exact arg is left unreconstructed.
+                    (*enemies)[j]->player->setEnemies(nullptr); // 0x13ee48
+                    (*enemies)[j]->setRoute(stateRoute->clone()); // 0x13ee54/0x13ee5c
+                }
+                m_nState = 3; // 0x13ee68 stores 3 into m_nState
                 break;
             }
             case 67: { // 0x139892
@@ -1988,7 +2008,65 @@ int LevelScript::process(int delta) {
                     break;
                 }
                 if (m_nState != 5) {
-                    // DEFERRED 0x13c1a8
+                    // Non-state-5 branch (0x13c1a8). State 0 waits for the player to reach the alien
+                    // orbit; states 6/7 run the alien-orbit / wormhole-entry cutscene.
+                    if (m_nState == 0) {
+                        if (!Globals::status->inAlienOrbit()) {
+                            // 0x13f2f8: not in orbit yet -- shrink the exit wormhole and move to state 1.
+                            ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
+                            m_nState = 1;
+                            break;
+                        }
+                        // In orbit at state 0: nothing else to do this frame (m_nState stays 0, falls
+                        // through the ==7 / ==6 checks below to the post-switch tail).
+                    }
+                    if (m_nState == 7) {
+                        // DEFERRED 0x13d8fc: state-7 alien-orbit hold (rumble/roll + field_0xa8 gate).
+                        break;
+                    }
+                    if (m_nState != 6) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    // state 6 (0x13c1c6): keep alien-orbit sound event 0x99 anchored to the player and
+                    // rumble the camera; once the player enters the wormhole, run the standard
+                    // cutscene-exit teardown, reframe the camera on the exit wormhole marker, unlock and
+                    // reset the wormhole, fire sound event 0x9a, and advance to state 7.
+                    Vector orbitPos = player->getPosition();          // 0x13c1c8
+                    Vector orbitVel{0.0f, 0.0f, 0.0f};                 // sp+0x118 zeroed
+                    Globals::sound->updateEvent3DAttributes(0x99, &orbitPos, &orbitVel, false); // 0x13c1f4
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 64-bit @this+0x90
+                    m_pCamera->setRumblePercentage(0.5f, 30);         // 0x13c216
+                    Globals::sound->setParamValue(1, 0x99, 0.5f);     // 0x13c228
+                    if (!player->isInWormhole()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    player->setTurretMode(false);                     // 0x13c23e
+                    resetCamera(m_pLevel);                            // 0x13c24c
+                    player->setFreeLookMode(false);                   // 0x13c254
+                    m_pCamera->enableFirstPersonCam(false);           // 0x13c25e
+                    player->hideShipForFirstPersonCameraView(false);  // 0x13c266
+                    m_pHud->visible = 0;                              // strb 0 @[sl+0xd0]+1
+                    m_pRadar->field_0x58 = 0;                         // strb 0 @[sl+0xd4]+0x48
+                    m_nFlags = (m_nFlags & 0xFF) | 0x100;             // field_0x11 (cinematic break) = 1
+                    m_pCamera->setLookAtCam(true);                    // 0x13c284
+                    player->setComputerControlled(true);              // 0x13c28c
+                    player->setVisible(false);                        // 0x13c294
+                    player->player->setVulnerable(false);             // 0x13c29c
+                    Vector wormPos = player->getPosition();           // 0x13c2ac
+                    m_pCamera->setPosition(wormPos);                  // 0x13c2b4
+                    m_pCamera->setTarget(
+                            ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry); // 0x13c2d4
+                    // Nudge the camera outward along the player's facing (field_0x28 scratch vec).
+                    Vector wormDir = AbyssEngine::AEMath::VectorNormalize(player->getPosition()); // 0x13c2ea
+                    Vector *wormOff = reinterpret_cast<Vector *>(&field_0x28);
+                    *wormOff = 5000.0f * wormDir;                     // 0x13c2f6/0x13c300 (pool @0x13c54c = 5000.0f)
+                    m_pCamera->translate(wormOff->x, wormOff->y, wormOff->z); // 0x13c30e
+                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->freeMissionLock(); // 0x13c31c
+                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);       // 0x13c32c
+                    m_bRenderParticles = 1;                          // strb 1 @[sl+0xa8]
+                    Globals::sound->play(0x9a, nullptr, nullptr, 0.0f); // 0x13c344
+                    reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // strd 0,0 @this+0x90
+                    m_nState = 7;                                    // 0x144a0e stores 7 into m_nState
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[7]))->isOver()) {
