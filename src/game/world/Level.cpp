@@ -46,6 +46,7 @@ float Level::b;
 #include "game/world/Galaxy.h"
 
 #include "game/ship/PlayerFixedObject.h"
+#include "game/ship/PlayerStation.h"
 #include <new>
 #include "game/ship/Agent.h"
 #include "engine/render/Engine.h"
@@ -2882,6 +2883,53 @@ void Level::createCampaignMission() {
         }
 
         this->objectivesA = new Objective(4, 2, this);        // @0xba69c..0xba6aa
+        return;
+    }
+
+    if (idx == 26) {
+        // case 26 (body @0xb5ef6)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(2, *(this->enemies));
+
+        AbyssEngine::AERandom *rng = Globals::rnd;
+        for (unsigned i = 0; i < 2; i = i + 1) {
+            (*this->enemies)[i] =
+                (KIPlayer *) this->createShip(9, 0, 8, (Waypoint *) (intptr_t) 0, true, false);
+
+            // spawn = playerPos - normalize(playerDirection) * 8000
+            Vector spawn = this->player->getPosition();
+            Vector dir = this->player->geometry->getDirection();
+            spawn -= AbyssEngine::AEMath::VectorNormalize(dir) * 8000.0f;
+
+            // jitter each axis by nextInt(1400) - 700
+            spawn.x += (float) (rng->nextInt(1400) - 700);
+            spawn.y += (float) (rng->nextInt(1400) - 700);
+            spawn.z += (float) (rng->nextInt(1400) - 700);
+
+            (*this->enemies)[i]->setPosition(spawn);
+        }
+
+        new Objective(7, 2, this);
+        return;
+    }
+
+    if (idx == 81) {
+        // case 81 (body @0xb805c)
+        this->enemies = new Array<KIPlayer *>();
+
+        Station *station = (Station *) (long) Globals::galaxy->getStation(101);
+        PlayerStation *ps = new PlayerStation(station);
+        ArrayAdd((KIPlayer *) ps, *(this->enemies));
+        (*this->enemies)[0]->name = station->getName();
+        (*this->enemies)[0]->shipGroup = 8;
+        if (station != nullptr)
+            delete station;
+
+        for (int n = 0; n < 8; n = n + 1) {
+            KIPlayer *s =
+                (KIPlayer *) this->createShip(9, 0, 8, (Waypoint *) (intptr_t) 0, true, false);
+            ArrayAdd(s, *(this->enemies));
+        }
         return;
     }
 }
