@@ -2617,7 +2617,36 @@ int LevelScript::process(int delta) {
                 m_nScriptCounterA = 0;
                 m_nState = 1;
                 Globals::sound->play(1121, nullptr, nullptr, 0.0f); // 0x139ef2/0x139f0c
-                // -> shared tail 0x14433e -> post-switch tail (0x144e36)
+                // shared tail 0x14433e: the intro path (and the state 10/12 set-state paths that
+                // fall in via 0x14433c) route here. Only the escort-hold states 7/8/9 do per-frame
+                // camera/geometry work; every other state (including the intro's freshly-set state 1)
+                // falls straight through to the post-switch tail (0x144e36).
+                if (m_nState >= 7 && m_nState <= 9) { // 0x14433e: (unsigned)(m_nState-7) <= 2
+                    // 0x14434a: drift the follow camera down its fixed escort-hold path.
+                    m_pCamera->translate((float) delta * 0.5f, (float) delta * 0.2f,
+                                         -(float) delta * 0.3f); // 0.5,0.2,0.3 @0x14446c,0x144480
+                    if (m_nState >= 8) { // 0x14438c: geometry/loop work only for states 8/9
+                        // 0x1443a2: step the intro geometry's own transform animation.
+                        AbyssEngine::Transform *t = (AbyssEngine::Transform *)
+                                Globals::Canvas->TransformGetTransform(m_pGeometry0->transform); // this+0xb8
+                        t->Update((long long) delta, false); // 0x1443c8
+                        // 0x1443ca: step the primary landmark's three sub-transforms every frame.
+                        // landmarks[0]'s [+0x140] field is PlayerStation::rootGeometry; emitted order
+                        // is transform (+0xc) / childTransform (+0x14) / parentTransform (+0x10), true.
+                        AEGeometry *root =
+                                ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry;
+                        t = (AbyssEngine::Transform *)
+                                Globals::Canvas->TransformGetTransform(root->transform); // 0x1443dc
+                        t->Update((long long) delta, true); // 0x1443ec
+                        t = (AbyssEngine::Transform *)
+                                Globals::Canvas->TransformGetTransform(root->childTransform); // 0x1443ee
+                        t->Update((long long) delta, true); // 0x1443fe
+                        t = (AbyssEngine::Transform *)
+                                Globals::Canvas->TransformGetTransform(root->parentTransform); // 0x144400
+                        t->Update((long long) delta, true); // 0x144410
+                    }
+                }
+                // -> post-switch tail (0x144e36)
                 break;
             }
             case 91: { // 0x13ac42
