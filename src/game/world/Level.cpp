@@ -2932,6 +2932,108 @@ void Level::createCampaignMission() {
         }
         return;
     }
+
+    if (idx == 7) {
+        // case 7 (body @0xb543e)
+        int coords[6] = {-4000, -3000, 80000, 10000, 7000, 160000};
+        this->playerRoute = new Route(coords, 6);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(4, *(this->enemies));
+
+        for (unsigned i = 0; i < 3; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                8, 0, 2, this->playerRoute->getWaypoint(1), true, false);
+            (*this->enemies)[i]->setToSleep();
+        }
+
+        (*this->enemies)[3] =
+            (KIPlayer *) this->createShip(3, 0, 30, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[3]->player->setAlwaysFriend(true);
+
+        Vector base = this->player->getPosition();
+        (*this->enemies)[3]->setPosition(base.x + 50.0f, base.y - 6000.0f, base.z + 700.0f);
+
+        (*this->enemies)[3]->setRoute(this->playerRoute->clone());
+        (*this->enemies)[3]->player->setHitpoints(9999999);
+        (*this->enemies)[3]->name = *Globals::gameText->getText(1599);
+        ((PlayerFighter *) (*this->enemies)[3])->setBoostProb(0);
+
+        new Objective(18, 0, 3, this);
+        return;
+    }
+
+    if (idx == 14) {
+        // case 14 (body @0xb55a6)
+        int coords[3] = {40000, 5000, 30000};
+        this->enemyRoute = new Route(coords, 3);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(7, *(this->enemies));
+
+        for (unsigned i = 0; i < 3; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                8, 0, 0, this->enemyRoute->getWaypoint(), true, false);
+        }
+        for (unsigned i = 3; i < 5; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                0, 0, 5, this->enemyRoute->getWaypoint(), true, false);
+        }
+        for (unsigned i = 5; i < 7; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                0, 1, 14, this->enemyRoute->getWaypoint(), true, false);
+        }
+
+        // enemies[5]: waypoint position nudged forward on X.
+        Vector p5 = this->enemyRoute->getWaypoint()->getPosition();
+        p5.x += 7000.0f;
+        (*this->enemies)[5]->setPosition(p5);
+
+        // enemies[6]: waypoint position offset on all axes.
+        Vector p6 = this->enemyRoute->getWaypoint()->getPosition();
+        p6.x += -9000.0f;
+        p6.y += 2000.0f;
+        p6.z += 7000.0f;
+        (*this->enemies)[6]->setPosition(p6);
+
+        this->player->setPosition(40000.0f, 0.0f, 120000.0f);
+
+        new Objective(31, 0, this);
+        return;
+    }
+
+    if (idx == 28) {
+        // case 28 (body @0xb603a)
+        // Reposition landmark[3], then build a route anchored at its new position.
+        (*this->landmarks)[3]->setPosition(100000.0f, -50000.0f, -40000.0f);
+        *(Vector *) &this->field_18c = (*this->landmarks)[3]->getPosition();
+
+        int coords[3] = {(int) *(float *) &this->field_18c,
+                         (int) *(float *) &this->field_190,
+                         (int) *(float *) &this->field_194};
+        this->enemyRoute = new Route(coords, 3);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(8, *(this->enemies));
+
+        // enemies[0..4]: escort fighters bound to the route.
+        for (unsigned i = 0; i < 5; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                9, 0, 8, this->enemyRoute->getWaypoint(), true, false);
+        }
+
+        // enemies[5..7]: static turrets, weakened, cargo cleared.
+        for (unsigned i = 5; i < 8; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                0, 1, 15, this->enemyRoute->getWaypoint(), true, false);
+            ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
+            KIPlayer *ship = (*this->enemies)[i];
+            ship->player->setMaxHitpoints(ship->player->getMaxHitpoints() / 4);
+            delete ship->cargo; // 0xb6164: Array<int>::~Array + operator delete
+            ship->cargo = nullptr;
+        }
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
