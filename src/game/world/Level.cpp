@@ -2610,6 +2610,101 @@ void Level::createCampaignMission() {
         (*this->enemies)[0]->player->setHitpoints(9999999);
         return;
     }
+
+    if (idx == 97) {
+        // case 97 (body @0xb8c32)
+        int coords[3] = {0, 0, 50000};
+        this->field_180 = new Route(coords, 3);
+
+        bool hd = Globals::isRunningHDonWeakDevice != 0;
+        unsigned enemyCount = hd ? 12 : 8;
+        unsigned friendEnd = hd ? 16 : 11;
+        unsigned staticEnd = hd ? 19 : 11;
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(hd ? 19 : 11, *(this->enemies));
+
+        for (unsigned i = 0; i < enemyCount; i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(8);
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                8, 0, type, this->field_180->getWaypoint(0), true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+
+        for (unsigned i = enemyCount; i < friendEnd; i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(2);
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                2, 0, type, this->field_180->getWaypoint(0), true, false);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+        }
+
+        for (unsigned i = friendEnd; i < staticEnd; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                2, 1, 15, this->field_180->getWaypoint(0), false, (int) friendEnd);
+            ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+        }
+
+        this->objectivesA = new Objective(18, 0, (int) friendEnd, this);
+        return;
+    }
+
+    if (idx == 100) {
+        // case 100 (body @0xb8ddc)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(2, *(this->enemies));
+
+        Vector *spawn = (Vector *) &this->field_18c;
+        *spawn = this->player->getPosition();
+        {
+            int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+            spawn->x += (float) (signX * Globals::rnd->nextInt(50000) + 20000);
+            int signY = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+            spawn->y += (float) (signY * Globals::rnd->nextInt(50000) + 10000);
+            int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+            spawn->z += (float) (signZ * Globals::rnd->nextInt(50000) + 20000);
+        }
+
+        int coords[3] = {(int) spawn->x, (int) spawn->y, (int) spawn->z};
+        Route *route = new Route(coords, 3);
+
+        for (unsigned i = 0; i < 2; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                10, 0, 44, route->getWaypoint(), true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+
+        new Objective(4, 1, this);
+        return;
+    }
+
+    if (idx == 106) {
+        // case 106 (body @0xb9670)
+        int coords[6] = {-500000, 0, -1700000, -500000, 0, -3700000};
+        this->field_180 = new Route(coords, 6);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(1, *(this->enemies));
+
+        (*this->enemies)[0] = (KIPlayer *) this->createShip(
+            10, 0, 44, this->field_180->getWaypoint(0), true, false);
+
+        // Position the ship at the route's first waypoint, then aim it.
+        KIPlayer *ship = (*this->enemies)[0];
+        Waypoint *wp = this->field_180->getWaypoint(0);
+        Vector pos = wp->getPosition();
+        // DEFERRED 0xb96f8: wp->[vtable+0x28](&out) — return-by-ptr virtual getPosition;
+        //   modeled via Waypoint::getPosition(); slot identity not asm-proven.
+        ship->setPosition(pos);
+        ship->parentGeometry->setDirection(Vector{-1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
+
+        ship->setRoute(this->field_180->clone());
+        ship->player->setAlwaysFriend(true);
+        ship->player->setAlwaysEnemy(false);
+        ship->player->setHitpoints(1);
+        ((PlayerFighter *) ship)->setCloakingPossible(false);
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
