@@ -3034,6 +3034,110 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 102) {
+        // case 102 (body @0xb8f5c)
+        AbyssEngine::AERandom *rnd = Globals::rnd;
+        int enemyCoords[9] = {
+            rnd->nextInt(140000) - 70000, 0, -70000,
+            rnd->nextInt(140000) - 70000, 0, -100000,
+            rnd->nextInt(140000) - 70000, 0, -140000
+        };
+        this->enemyRoute = new Route(enemyCoords, 9);
+
+        int friendCoords[9] = {
+            rnd->nextInt(140000) - 70000, 0, -20000,
+            rnd->nextInt(140000) - 70000, 0, -106784,
+            rnd->nextInt(140000) - 70000, 0, -70000
+        };
+        this->friendRoute = new Route(friendCoords, 9);
+
+        Waypoint *wp1 = new Waypoint(-50000, 1000, 70000, (Route *) 0);
+        Waypoint *wp2 = new Waypoint(20000, 10000, 10000, (Route *) 0);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(10, *(this->enemies));
+
+        // enemies[0]: static object anchored at wp1's position.
+        (*this->enemies)[0] =
+            (KIPlayer *) (intptr_t) this->createStaticObject(wp1, 18804, true);
+        {
+            KIPlayer *st = (*this->enemies)[0];
+            st->setPosition(wp1->getPosition());
+            ((PlayerFixedObject *) st)->setMoving(false);
+            st->field_0x70 = 0;
+            ((PlayerFixedObject *) st)->setDockingType(1);
+            st->player->setAlwaysFriend(true);
+            st->player->setHitpoints(9999999);
+            st->field_0x74 = 1;
+            delete st->cargo;
+            st->cargo = nullptr;
+        }
+
+        // enemies[1]: static object, rotated pi about Y, cargo cleared.
+        (*this->enemies)[1] =
+            (KIPlayer *) (intptr_t) this->createStaticObject(wp1, 21113, true);
+        {
+            KIPlayer *st = (*this->enemies)[1];
+            st->setPosition(0.0f, 0.0f, 0.0f);
+            ((PlayerFixedObject *) st)->setMoving(false);
+            ((PlayerFixedObject *) st)->setDockingType(0);
+            st->player->setAlwaysFriend(true);
+            st->player->setHitpoints(9999999);
+            st->geometry->rotate(Vector{0.0f, 3.1415901f, 0.0f});
+            st->setActive(false);
+            delete st->cargo;
+            st->cargo = nullptr;
+        }
+
+        // enemies[2..5]: friendly formation fighters positioned relative to wp1.
+        for (unsigned i = 2; i < 6; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                0, 0, 51, wp2, true, false);
+            KIPlayer *ship = (*this->enemies)[i];
+            Vector offset;
+            if (i == 2) {
+                offset = Vector{10000.0f, 6000.0f, -20000.0f};
+            } else {
+                offset = Vector{
+                    (float) (int) (25000 + 5000 * (int) (i - 2)),
+                    8000.0f,
+                    (float) (int) (-30000 - 5000 * (int) (i - 2))
+                };
+            }
+            ship->setPosition(wp1->getPosition() + offset);
+            ship->player->setAlwaysFriend(true);
+            ((PlayerFighter *) ship)->field_0x13d = 0;
+        }
+
+        // Formation route linking enemies[0] and enemies[1] as docking targets.
+        int formCoords[9] = {0, -1, -1, -1, -30000, 1000, 40000, -1, -1};
+        int formTimes[3] = {20000, 0, 20000};
+        Array<KIPlayer *> *targets = new Array<KIPlayer *>();
+        ArraySetLength(3, *targets);
+        (*targets)[0] = (*this->enemies)[0];
+        (*targets)[2] = (*this->enemies)[1];
+        Route *formRoute = new Route(formCoords, targets, formTimes, 9);
+        formRoute->setLoop(true);
+
+        for (unsigned i = 2; i < 6; i = i + 1) {
+            (*this->enemies)[i]->setRoute(
+                (i == 2) ? formRoute : formRoute->clone());
+        }
+
+        // enemies[6..9]: hostile fighters parked far away, asleep.
+        for (unsigned i = 6; i < 10; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                10, 0, 44, wp2, true, false);
+            (*this->enemies)[i]->setPosition(1000000.0f, 1000000.0f, 1000000.0f);
+            (*this->enemies)[i]->setToSleep();
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+
+        this->objectivesA = new Objective(4, 8, this);
+        this->objectivesB = new Objective(18, 2, 6, this);
+        return;
+    }
+
     if (idx == 26) {
         // case 26 (body @0xb5ef6)
         this->enemies = new Array<KIPlayer *>();
