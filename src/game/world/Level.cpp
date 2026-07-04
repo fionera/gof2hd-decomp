@@ -2968,6 +2968,72 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 94) {
+        // case 94 (body @0xb88a0)
+        int enemyCoords[3] = {-700000, 0, -700000};
+        this->enemyRoute = new Route(enemyCoords, 3);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(10, *(this->enemies));
+
+        // enemies[0..5]: hostile fighters bound to the route, asleep.
+        for (unsigned i = 0; i < 6; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                10, 0, 44, this->enemyRoute->getWaypoint(
+                    Globals::rnd->nextInt(this->enemyRoute->length())),
+                true, false);
+            (*this->enemies)[i]->setToSleep();
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+
+        // enemies[6]: static object, rotated -3pi/4 about Y, cargo cleared.
+        (*this->enemies)[6] =
+            (KIPlayer *) (intptr_t) this->createStaticObject((Waypoint *) 0, 0x495d, false);
+        ((PlayerFixedObject *) (*this->enemies)[6])->setMoving(false);
+        ((PlayerFixedObject *) (*this->enemies)[6])->setDockingType(2);
+        ((PlayerFixedObject *) (*this->enemies)[6])->setName(*Globals::gameText->getText(0xc88));
+        (*this->enemies)[6]->player->setAlwaysFriend(true);
+        (*this->enemies)[6]->geometry->rotate(Vector{0.0f, -2.3561945f, 0.0f});
+        delete (*this->enemies)[6]->cargo;
+        (*this->enemies)[6]->cargo = nullptr;
+
+        // enemies[7]: static object anchored at a fixed waypoint, cargo cleared.
+        Waypoint *wp7 = new Waypoint(30000, -5000, 40000, (Route *) 0);
+        (*this->enemies)[7] =
+            (KIPlayer *) (intptr_t) this->createStaticObject(wp7, 0x4299, false);
+        ((PlayerFixedObject *) (*this->enemies)[7])->setMoving(false);
+        ((PlayerFixedObject *) (*this->enemies)[7])->setDockingType(1);
+        ((PlayerFixedObject *) (*this->enemies)[7])->setName(*Globals::gameText->getText(0xc89));
+        (*this->enemies)[7]->player->setAlwaysFriend(true);
+        delete (*this->enemies)[7]->cargo;
+        (*this->enemies)[7]->cargo = nullptr;
+
+        // Formation route linking enemies[6] and enemies[7] as docking targets.
+        int formCoords[9] = {-1, -1, -1, 20000, -3000, 30000, -1, -1, -1};
+        int formTimes[3] = {12000, 0, 12000};
+        Array<KIPlayer *> *targets = new Array<KIPlayer *>();
+        ArraySetLength(3, *targets);
+        (*targets)[0] = (*this->enemies)[6];
+        (*targets)[2] = (*this->enemies)[7];
+        Route *formRoute = new Route(formCoords, targets, formTimes, 9);
+        formRoute->setLoop(true);
+        Route *formClone = formRoute->clone();
+
+        // enemies[8..9]: friendly fighters following the formation route.
+        for (unsigned i = 8; i < 10; i = i + 1) {
+            unsigned type = Globals::globals->getRandomEnemyFighter(3);
+            Route *route = (i == 8) ? formRoute : formClone;
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                3, 0, type, route->getWaypoint(0), true, false);
+            (*this->enemies)[i]->setRoute(route);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+            (*this->enemies)[i]->player->setNeverAttack(true);
+        }
+
+        this->objectivesB = new Objective(1, 7, this);
+        return;
+    }
+
     if (idx == 26) {
         // case 26 (body @0xb5ef6)
         this->enemies = new Array<KIPlayer *>();
