@@ -2110,9 +2110,50 @@ int LevelScript::process(int delta) {
                         m_nState = 7;                        // 0x141652
                         break; // 0x141654 -> shared tail (0x14433e)
                     }
-                    // DEFERRED 0x141658/0x1416ec/0x14133a/0x1417e4: cold substates 7/8/9/10
-                    //   (objective/mission tears, and the Transform-animation-stepping deep fn-ptr
-                    //   chain @+0xf8 in states 9/10) remain unproven; states 3/4/5 route to default.
+                    if (m_nState == 7) {
+                        // State 7 (0x141658): pure dwell. Advance the 64-bit script timer and, once
+                        // ~801ms elapse, reset it and advance to state 8. No camera/geometry work here.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x15165e..0x15166c
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) >= 801) { // 0x321 @0x15165a
+                            reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x15167c
+                            m_nState = 8;                                       // 0x151684
+                        }
+                        break; // -> shared tail (0x14433e)
+                    }
+                    if (m_nState == 8) {
+                        // State 8 (0x1416ec): one-shot fire-up of the escort's engine effects. After the
+                        // same ~801ms dwell gate, detonate a "start" burst at the escort (m_pGeometry6),
+                        // play radio sting 18, then wire two particle-emitter systems (level handles
+                        // field_58 / field_5c on the shared ParticleSystemManager field_74) onto the
+                        // escort's matrix (system field_58) and onto an offset copy in m_matrix
+                        // (system field_5c, +4500 in X / +1000 in Z), enabling emit on both. Then reset
+                        // the timer and advance to state 9. Gated once, runs in a single frame.
+                        reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 0x1516f2..0x151700
+                        if (reinterpret_cast<long long &>(m_nScriptTimerA) < 801) { // 0x321 @0x1516ee
+                            break; // -> shared tail (0x14433e)
+                        }
+                        Vector escortPos = m_pGeometry6->getPosition();  // 0x15171e
+                        m_pExplosion->start(escortPos, Vector{0.0f, 0.0f, 0.0f}); // 0x151734
+                        Globals::sound->play(18, nullptr, nullptr, 0.0f); // 0x15174a (event 0x12)
+                        // System field_58: track the escort's live matrix, enable its emitter (0x151764/0x151770).
+                        m_pLevel->field_74->systemSetMatrix(m_pLevel->field_58, &m_pGeometry6->getMatrix());
+                        m_pLevel->field_74->enableSystemEmit(m_pLevel->field_58, true);
+                        // System field_5c: seat at the escort's position offset by {+4500, 0, +1000} via
+                        // m_matrix, then enable its emitter (0x1517b4..0x1517d4). tempVec == this+0x28.
+                        Vector *tempVec = reinterpret_cast<Vector *>(&field_0x28); // 0x151780
+                        *tempVec = m_pGeometry6->getPosition();          // 0x151786
+                        tempVec->x += 4500.0f;                           // 4500 @0x151ae0
+                        tempVec->z += 1000.0f;                           // 1000 @0x1516a4
+                        AbyssEngine::AEMath::MatrixSetTranslation(m_matrix, tempVec->x, tempVec->y, tempVec->z); // 0x1517bc
+                        m_pLevel->field_74->systemSetMatrix(m_pLevel->field_5c, &m_matrix); // 0x1517c8
+                        m_pLevel->field_74->enableSystemEmit(m_pLevel->field_5c, true);     // 0x1517d4
+                        reinterpret_cast<long long &>(m_nScriptTimerA) = 0; // 0x1517da
+                        m_nState = 9;                                      // 0x1517de
+                        break; // 0x1517e0 -> shared tail (0x14433e)
+                    }
+                    // DEFERRED: cold substates 9 (0x142b3a) and 10 (0x1417e4) -- the objective/mission
+                    //   tears and Transform-animation-stepping deep fn-ptr chains -- remain unproven;
+                    //   states 3/4/5 route to the default epilogue (0x143c06).
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
