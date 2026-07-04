@@ -2023,9 +2023,10 @@ int LevelScript::process(int delta) {
             case 40: { // 0x13a4d8
                 if (m_nState != 0) {
                     // Cold substate dispatch (0x13e6b8): m_nState 1/2/3/4 each run a distinct
-                    // beat of the docking cutscene. Only state 1 (the translate + cutscene-exit
-                    // teardown) is decoded here; states 2/3/4 (position-gated approach beats and
-                    // their fall-through cascade at 0x13e728..) remain DEFERRED.
+                    // beat of the docking cutscene. State 1 is the translate + cutscene-exit
+                    // teardown; states 2/3/4 (0x13e728..) are a z-position-gated approach cascade
+                    // that walks the docked target (enemies[0], a PlayerFixedObject) forward and
+                    // advances the substate as it crosses successive depth thresholds.
                     if (m_nState == 1) {
                         // State 1 (0x13e6c0): pull the follow-camera back along -X at 2*delta/frame
                         // while the docking radio (message #4) plays. Once it is over, hand the
@@ -2045,7 +2046,38 @@ int LevelScript::process(int delta) {
                         player->player->setVulnerable(true);     // 0x13e722
                         // -> shared exit tail 0x13eddc (advances m_nState)
                     }
-                    // DEFERRED 0x13e728: cold substates 2/3/4 (position-gated approach cascade).
+                    // State 2 (0x13e728): wait until the docked target has drifted to z >= 90000,
+                    // then run the (deferred) camera/route hand-off that advances to state 3.
+                    if (m_nState == 2) {
+                        if ((*enemies)[0]->getPosition().z >= 90000.0f) { // 0x13e72e..0x13e746
+                            // DEFERRED 0x13f952: state-2 -> state-3 hand-off (m_nState = 3 plus a
+                            // route/GOT-thunk approach setup; not decoded here).
+                        }
+                        break; // otherwise fall through to tail (0x144e36)
+                    }
+                    // State 3 (0x13e752): advance once the target has passed landmark[3] in depth.
+                    if (m_nState == 3) {
+                        // Compare the target's z against level landmark #3's z (0x13e752..0x13e784).
+                        if ((*enemies)[0]->getPosition().z >=
+                            (*m_pLevel->getLandmarks())[3]->getPosition().z) {
+                            m_nState = 4; // 0x13e80c -> 0x1438d4 (store m_nState) -> tail
+                        }
+                        break;
+                    }
+                    // State 4 (0x13e790): creep the target forward toward the final approach depth,
+                    // then, once it passes z > 500000, park it and deactivate it (-> state 5).
+                    if (m_nState == 4) {
+                        KIPlayer *docked = (*enemies)[0];
+                        // moveForward((int)(z - 200000 - delta)) via PlayerFixedObject (0x13e79e..0x13e7c6)
+                        ((PlayerFixedObject *) docked)->moveForward(
+                            (int) (docked->getPosition().z - 200000.0f - (float) delta));
+                        if (docked->getPosition().z > 500000.0f) { // 0x13e7ca..0x13e7e6
+                            docked->setPosition(0.0f, 0.0f, -200000.0f); // vtable+0x48 (0x13e7f8)
+                            docked->setActive(false);                    // 0x13e804
+                            m_nState = 5; // 0x141b54 -> 0x1438d4 (store) -> tail
+                        }
+                        break;
+                    }
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[3]))->isTriggered()) {
