@@ -1735,7 +1735,31 @@ int LevelScript::process(int delta) {
             switch (cm) {
             case 14: { // 0x13a9b2
                 if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
-                    // DEFERRED 0x13ea84: radio-message #1 state-0 sub-branch.
+                    // 0x13ea84: radio message #1 fired -- instantly kill enemies[0], fire up its three
+                    // pre-registered particle systems (bound to the player ship's reference matrix) and
+                    // play the explosion cue. enemies[0] is a PlayerFighter whose particle-system handles
+                    // live at PlayerFighter::field_0x130/0x134/0x138 (not KIPlayer, which ends at 0x124).
+                    m_nState = 1;                                            // 0x13ea88 this+0x1c = 1
+                    (*m_pLevel->getEnemies())[0]->player->setHitpoints(0);   // 0x13ea9a
+                    (*m_pLevel->getEnemies())[0]->setDead();                 // 0x13eaa6 vtable
+                    ParticleSystemManager *psm = m_pLevel->field_8c;        // 0x13eaac
+                    PlayerFighter *fighter = (PlayerFighter *) (*m_pLevel->getEnemies())[0];
+                    // system #1 (handle @field_0x130), #2 (@0x134), #3 (@0x138): bind matrix, emit, render.
+                    psm->systemSetMatrix(fighter->field_0x130, &player->geometry->getReferenceMatrix()); // 0x13ead8
+                    psm->enableSystemEmit(fighter->field_0x130, true);      // 0x13eafa
+                    psm->enableSystemRender(fighter->field_0x130, true);    // 0x13eb18
+                    psm = m_pLevel->field_8c;
+                    fighter = (PlayerFighter *) (*m_pLevel->getEnemies())[0];
+                    psm->systemSetMatrix(fighter->field_0x134, &player->geometry->getReferenceMatrix()); // 0x13eb3e
+                    psm->enableSystemEmit(fighter->field_0x134, true);      // 0x13eb5a
+                    psm->enableSystemRender(fighter->field_0x134, true);    // 0x13eb74
+                    psm = m_pLevel->field_8c;
+                    fighter = (PlayerFighter *) (*m_pLevel->getEnemies())[0];
+                    psm->systemSetMatrix(fighter->field_0x138, &player->geometry->getReferenceMatrix()); // 0x13eb8c
+                    psm->enableSystemEmit(fighter->field_0x138, true);      // 0x13ebae
+                    psm->enableSystemRender(fighter->field_0x138, true);    // 0x13ebc8
+                    Globals::sound->play(15, nullptr, nullptr, 0.0f);       // 0x13ebda
+                    // -> post-switch tail (0x144e36)
                     break;
                 }
                 if (((RadioMessage *) ((*messages)[1]))->isOver() && m_nState == 1) {
