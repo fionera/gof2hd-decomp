@@ -1260,8 +1260,33 @@ int LevelScript::process(int delta) {
                     m_nState = 1; // shared tail 0x13cc9c stores 1 into m_nState
                     break; // -> post-switch tail (0x144e36)
                 }
+                if (m_nState == 1) {
+                    // state-1 body (0x13ecfc): keep the LODs warm and let the follow-camera creep
+                    // upward while the fly-past plays; once radio message #2 fires, run the standard
+                    // cutscene-EXIT-to-gameplay conclude (retarget the camera to the player, restore the
+                    // HUD/radar and player control, clear the cinematic break, unfreeze the player and
+                    // drop every enemy's route), then advance to state 2. FP pool @0x13edc0 = 0.2.
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_pCamera->translate(0.0f, (float) delta * 0.2f, 0.0f); // creep up @0x13ed0e
+                    if (!((RadioMessage *) ((*messages)[2]))->isTriggered()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    m_pCamera->setLookAtCam(false);
+                    m_pCamera->setTarget(player->geometry);
+                    player->setComputerControlled(false);
+                    m_pHud->visible = 1;
+                    m_pRadar->field_0x58 = 1;
+                    resetCamera(m_pLevel);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ byte @0x11
+                    player->freeze = 0; // PlayerEgo+0x24
+                    for (unsigned int j = 0; j < enemies->count; ++j) {
+                        (*enemies)[j]->setRoute(nullptr); // KIPlayer::setRoute @0x13edd0
+                    }
+                    m_nState = 2; // 0x13eddc stores 2 into m_nState
+                    break;
+                }
                 if (m_nState != 2) {
-                    // DEFERRED 0x13ecf2: state-1 (and other) body.
                     break;
                 }
                 (*enemies)[0]->field_0x24 = 1; // -> shared tail 0x13ede4
@@ -1726,9 +1751,17 @@ int LevelScript::process(int delta) {
                     m_nScriptTimerA = 0;
                     m_nScriptCounterA = 0;
                     m_nState = 2;
-                    // DEFERRED 0x13c690: continues to the post-switch tail.
-                } else {
-                    // DEFERRED 0x13c68a
+                } else if (m_nState == 2) {
+                    // state-2 (0x13c690): while the wormhole spins up, keep its 3D sound event anchored
+                    // to the camera, rumble the view and slowly roll the player ship. FP pool:
+                    //   @0x13c8d4 = 50.0f (rumble percentage), @0x13c54c = 5000.0f (roll divisor).
+                    Vector camPos = *m_pCamera->getPosition();
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Globals::sound->updateEvent3DAttributes(0x22, &camPos, &zero, false);
+                    m_pCamera->setRumblePercentage(50.0f, 3);
+                    reinterpret_cast<long long &>(m_nScriptTimerA) += delta; // 64-bit @0x90
+                    float roll = (float) delta / 5000.0f;
+                    player->rotate(roll, roll, roll); // 0x13c6f4
                 }
                 break;
             }
