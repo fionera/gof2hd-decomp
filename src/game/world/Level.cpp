@@ -2705,6 +2705,50 @@ void Level::createCampaignMission() {
         ((PlayerFighter *) ship)->setCloakingPossible(false);
         return;
     }
+
+    if (idx == 1) {
+        // case 1 (body @0xb5318)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(1, *(this->enemies));
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(3, 0, 30, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[0]->setPosition(300.0f, 50.0f, -6000.0f);
+
+        int coords[6] = {0, 0, -5000, 0, 0, 0};
+        this->field_180 = new Route(coords, 6);
+
+        KIPlayer *ship = (*this->enemies)[0];
+        ship->setRoute(this->field_180);
+        // DEFERRED 0xb53ac: ship->[vtable+0x1c](false) — bool-taking virtual slot on KIPlayer;
+        //   slot identity not asm-proven, so not modeled.
+        ((PlayerFighter *) ship)->setExhaustVisible(false);
+        return;
+    }
+
+    if (idx == 4) {
+        // case 4 (body @0xb53c4)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(1, *(this->enemies));
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(8, 0, 2, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[0]->setInitActive(false);
+        (*this->enemies)[0]->player->setAlwaysEnemy(true);
+        (*this->enemies)[0]->setPosition(0.0f, 0.0f, -200000.0f);
+        (*this->enemies)[0]->setToSleep();
+        return;
+    }
+
+    if (idx == 87) {
+        // case 87 (body @0xb810a)
+        this->objectivesA = new Objective(22, 0, this);
+        return;
+    }
+
+    if (idx == 137) {
+        // case 137 (body @0xb991e)
+        this->objectivesA = new Objective(4, 4, this);
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
