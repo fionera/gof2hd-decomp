@@ -3330,6 +3330,126 @@ void Level::createCampaignMission() {
         new Objective(27, 4, this);
         return;
     }
+
+    if (idx == 16) {
+        // case 16 (body @0xb577e)
+        int coords[3] = {0, 0, 0};
+        this->enemyRoute = new Route(coords, 3);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(10, *(this->enemies));
+
+        Waypoint *wp = this->enemyRoute->getWaypoint();
+
+        // enemies[0..2]: escort platforms parked at the route waypoint.
+        for (unsigned i = 0; i < 3; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                0, 1, 15, this->enemyRoute->getWaypoint(), true, false);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+            ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
+            Player *p = (*this->enemies)[i]->player;
+            p->setMaxHitpoints(p->getMaxHitpoints() / 3);
+            delete (*this->enemies)[i]->cargo;
+            (*this->enemies)[i]->cargo = nullptr;
+        }
+
+        (*this->enemies)[0]->setPosition((float) wp->x, (float) wp->y, (float) wp->z);
+        {
+            Player *p = (*this->enemies)[0]->player;
+            p->setMaxHitpoints(p->getMaxHitpoints() / 6);
+        }
+        (*this->enemies)[1]->setPosition((float) (wp->x + 3000), (float) (wp->y + 2000),
+                                         (float) (wp->z - 3000));
+        (*this->enemies)[2]->setPosition((float) (wp->x - 9000), (float) (wp->y - 8000),
+                                         (float) (wp->z - 7000));
+
+        // enemies[3..6]: attack fighters scattered around the waypoint (+50000 on Z).
+        for (unsigned i = 3; i < 7; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                9, 0, 8, this->enemyRoute->getWaypoint(), true, false);
+            Player *p = (*this->enemies)[i]->player;
+            p->setMaxHitpoints(p->getMaxHitpoints() * 10);
+            int jitterX = Globals::rnd->nextInt(20000) - 10000;
+            int jitterY = Globals::rnd->nextInt(20000) - 10000;
+            (*this->enemies)[i]->setPosition((float) (wp->x + jitterX),
+                                             (float) (wp->y + jitterY),
+                                             (float) (wp->z + 50000));
+        }
+
+        // enemies[7..9]: friendly interceptors near the player, hitpoints 600.
+        Vector base = this->player->getPosition();
+        for (unsigned i = 7; i < 10; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                0, 0, 5, (Waypoint *) (intptr_t) 0, true, false);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+            (*this->enemies)[i]->player->setHitpoints(600);
+            int jitterX = Globals::rnd->nextInt(4000) - 2000;
+            int jitterY = Globals::rnd->nextInt(3400) - 1700;
+            int jitterZ = Globals::rnd->nextInt(4000) - 2000;
+            (*this->enemies)[i]->setPosition(base.x + (float) jitterX,
+                                             base.y + (float) jitterY,
+                                             base.z + 0.0f + (float) jitterZ);
+        }
+
+        if ((*this->landmarks)[3] != nullptr) {
+            (*this->landmarks)[3]->setVisible(true);
+            (*this->landmarks)[3]->setPosition((float) wp->x, (float) wp->y,
+                                               (float) (wp->z + 40000));
+        }
+
+        new Objective(22, 0, this);
+        return;
+    }
+
+    if (idx == 64) {
+        // case 64 (body @0xb6fc2)
+        Vector pos = this->player->getPosition();
+        Vector dir = this->player->geometry->getDirection();
+        this->player->setPosition(pos - dir * 40000.0f);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(9, *(this->enemies));
+
+        int coords[3] = {100000, 0, 0};
+        this->enemyRoute = new Route(coords, 3);
+
+        // enemies[0]: named friendly convoy leader at the origin.
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(1, 0, 38, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[0]->player->setAlwaysFriend(true);
+        (*this->enemies)[0]->name = *Globals::gameText->getText(1617);
+        (*this->enemies)[0]->setPosition(0.0f, 0.0f, 0.0f);
+        (*this->enemies)[0]->parentGeometry->setDirection(Vector{1.0f, 0.0f, 0.0f},
+                                                          Vector{0.0f, 1.0f, 0.0f});
+        (*this->enemies)[0]->setRoute(this->enemyRoute->clone());
+        (*this->enemies)[0]->cargo = nullptr;
+
+        // enemies[1..]: enemy fighters jittered around the origin.
+        for (unsigned i = 1; i < this->enemies->size(); i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(8);
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                8, 0, type, (Waypoint *) (intptr_t) 0, true, false);
+
+            AbyssEngine::AERandom *rnd = Globals::rnd;
+            int magX = rnd->nextInt(1500);
+            int signX = (rnd->nextInt(2) == 0) ? 1 : -1;
+            int magY = rnd->nextInt(1500);
+            int signY = (rnd->nextInt(2) == 0) ? 1 : -1;
+            int magZ = rnd->nextInt(1500);
+            int signZ = (rnd->nextInt(2) == 0) ? 1 : -1;
+            (*this->enemies)[i]->setPosition((float) (signX * (magX + 1000)),
+                                             (float) (signY * (magY + 1000)),
+                                             (float) (signZ * (magZ + 1000)));
+
+            (*this->enemies)[i]->parentGeometry->setDirection(Vector{1.0f, 0.0f, 0.0f},
+                                                              Vector{0.0f, 1.0f, 0.0f});
+            (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
+        }
+
+        this->objectivesA = new Objective(22, 0, this);
+        new Objective(1, 0, this);
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
