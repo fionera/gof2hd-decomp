@@ -3178,6 +3178,81 @@ void Level::createCampaignMission() {
         new Objective(1, 0, this);
         return;
     }
+
+    if (idx == 91) {
+        // case 91 (body @0xb8560)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(1, *(this->enemies));
+
+        Waypoint *wp = new Waypoint(-20000, 0, 60000, nullptr);
+        KIPlayer *ship = (KIPlayer *) (intptr_t) this->createStaticObject(wp, 0x494e, false);
+        (*this->enemies)[0] = ship;
+        ((PlayerFixedObject *) ship)->setMoving(false);
+        ((PlayerFixedObject *) ship)->setDockingType(0);
+
+        // Anchor the object at its waypoint's position.
+        Vector pos = wp->getPosition();
+        ship->setPosition(pos);
+
+        ship->player->setAlwaysFriend(true);
+        ship->player->setHitpoints(ship->player->getHitpoints() / 20);
+        ship->geometry->setRotation(Vector{0.0f, 5.4977874755859375f, 0.0f});
+        ship->setActive(false);
+
+        delete ship->cargo;
+        ship->cargo = nullptr;
+
+        new Objective(1, 0, this);
+        return;
+    }
+
+    if (idx == 21) {
+        // case 21 (body @0xb5b72)
+        int playerCoords[6] = {0, 40000, -40000, 120000, -10000, 20000};
+        this->playerRoute = new Route(playerCoords, 6);
+
+        int loopCoordsA[3] = {190000, 40000, -40000};
+        Route *routeA = new Route(loopCoordsA, 3);
+        routeA->setLoop(true);
+
+        int loopCoordsB[3] = {-10000, 20000, 190000};
+        Route *routeB = new Route(loopCoordsB, 3);
+        routeB->setLoop(true);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(4, *(this->enemies));
+
+        (*this->enemies)[1] =
+            (KIPlayer *) this->createShip(0, 0, 5, routeA->getWaypoint(), true, false);
+        (*this->enemies)[2] =
+            (KIPlayer *) this->createShip(0, 0, 5, routeA->getWaypoint(), true, false);
+        (*this->enemies)[3] =
+            (KIPlayer *) this->createShip(0, 0, 5, routeA->getWaypoint(), true, false);
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(0, 0, 17, routeB->getWaypoint(), true, false);
+        (*this->enemies)[0]->name = *Globals::gameText->getText(1611);
+        (*this->enemies)[0]->player->setAlwaysEnemy(true);
+
+        for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+            (*this->enemies)[i]->setToSleep();
+            KIPlayer *ship = (*this->enemies)[i];
+            ship->setRoute(i == 0 ? routeB : routeA->clone());
+            ship->geometry->setRotation(0.0f, 3.1415927410125732f, 0.0f);
+        }
+
+        // Position the named leader at routeB's first waypoint, offset in X and Z.
+        {
+            KIPlayer *leader = (*this->enemies)[0];
+            Waypoint *wp = routeB->getWaypoint();
+            leader->setPosition((float) (wp->x + 1000), (float) wp->y, (float) (wp->z + 2000));
+        }
+
+        this->objectivesA = new Objective(22, 0, this);
+        this->objectivesB = new Objective(7, 1, this);
+
+        delete routeA;
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
