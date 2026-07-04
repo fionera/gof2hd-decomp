@@ -2738,6 +2738,65 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 48 || idx == 49) {
+        // case 48 / case 49 (shared body @0xb517a)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(5, *(this->enemies));
+        for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+            (*this->enemies)[i] =
+                (KIPlayer *) this->createShip(1, 0, 9, (Waypoint *) (intptr_t) 0, true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(false);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+        }
+        return;
+    }
+
+    if (idx == 79) {
+        // case 79 (body @0xb7e98)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(7, *(this->enemies));
+        for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(9);
+            (*this->enemies)[i] =
+                (KIPlayer *) this->createShip(9, 0, type, (Waypoint *) (intptr_t) 0, true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+        }
+        return;
+    }
+
+    if (idx == 24) {
+        // case 24 (body @0xb5da8)
+        int coords[6] = {0, 0, 0, 0, 0, 0};
+        this->field_180 = new Route(coords, 6);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(5, *(this->enemies));
+
+        // enemies[0..2]: escorted friendlies following the route.
+        for (unsigned i = 0; i < 3; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                9, 0, 8, this->field_180->getWaypoint(), true, false);
+            (*this->enemies)[i]->setRoute(this->field_180->clone());
+        }
+
+        // enemies[3..4]: static turrets bound to the same route.
+        for (unsigned i = 3; i < 5; i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                2, 1, 15, this->field_180->getWaypoint(), true, false);
+            ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
+            KIPlayer *ship = (*this->enemies)[i];
+            ship->player->setMaxHitpoints(ship->player->getMaxHitpoints() / 3);
+            delete ship->cargo; // 0xb5ea8: Array<int>::~Array + operator delete
+            ship->cargo = nullptr;
+        }
+
+        // landmarks[3]->setVisible(false)  (this->landmarks @0x100)
+        (*this->landmarks)[3]->setVisible(false);
+
+        new Objective(31, 0, this);
+        return;
+    }
+
     if (idx == 87) {
         // case 87 (body @0xb810a)
         this->objectivesA = new Objective(22, 0, this);
