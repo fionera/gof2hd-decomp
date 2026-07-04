@@ -2575,6 +2575,41 @@ void Level::createCampaignMission() {
         //   receiver of the 0x64 store is uncertain (Status vs Player), so not modeled.
         return;
     }
+
+    if (idx == 25 || idx == 29) {
+        // case 25 / case 29 (shared body @0xb4cd2)
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(3, *(this->enemies));
+        AbyssEngine::AERandom *rng = Globals::rnd;
+        for (unsigned i = 0; i < 3; i = i + 1) {
+            (*this->enemies)[i] =
+                (KIPlayer *) this->createShip(9, 0, 8, (Waypoint *) (intptr_t) 0, true, false);
+            int signX = (rng->nextInt(2) == 0) ? 1 : -1;
+            int magX = rng->nextInt(80000) + 20000;
+            int signY = (rng->nextInt(2) == 0) ? 1 : -1;
+            int magY = rng->nextInt(80000) + 20000;
+            int signZ = (rng->nextInt(2) == 0) ? 1 : -1;
+            int magZ = rng->nextInt(80000) + 20000;
+            (*this->enemies)[i]->setPosition((float) (signX * magX), (float) (signY * magY),
+                                             (float) (signZ * magZ));
+        }
+        return;
+    }
+
+    if (idx == 65) {
+        // case 65 (body @0xb7256)
+        int coords[3] = {0, 0, 0};
+        this->field_180 = new Route(coords, 3);
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(1, *(this->enemies));
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(0, 0, 38, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[0]->player->setAlwaysFriend(true);
+        (*this->enemies)[0]->name = *Globals::gameText->getText(1617);
+        (*this->enemies)[0]->setRoute(this->field_180->clone());
+        (*this->enemies)[0]->player->setHitpoints(9999999);
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
