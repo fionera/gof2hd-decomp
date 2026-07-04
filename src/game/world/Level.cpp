@@ -3634,6 +3634,56 @@ void Level::createCampaignMission() {
         }
         return;
     }
+
+    if (idx == 36) {
+        // case 36 (body @0xb618a)
+        // Give the current mission a story agent, then build the player's route and a
+        // wave of sleeping escort/enemy fighters that fan out around the player.
+        Mission *mission = (Mission *) Globals::status->getMission();
+        Agent *agent = new Agent(5, *Globals::gameText->getText(1604), 29, 5, 1, true,
+                                 -1, -1, -1, -1);
+        mission->setAgent(agent);
+
+        // playerRoute (@0x108) from a fixed 12-int coordinate table (rodata @0x1fd128,
+        // memcpy'd into the sp+0x180 scratch, then handed to Route(int*, 12)).
+        int coords[12] = {110000, -10000, -80000, 70000, 0, -100000,
+                          -100000, 10000, -80000, -130000, -50000, -150000};
+        this->playerRoute = new Route(coords, 12);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(8, *(this->enemies));
+
+        // enemies[0]: the lead escort. Positioned relative to the player's current
+        // position (Vector base = this->player->getPosition(); -> sp+0x10c) with a small
+        // random horizontal jitter and a fixed +1000 on Z.
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(1, 0, 9, (Waypoint *) (intptr_t) 0, true, false);
+        Vector base = this->player->getPosition();
+        KIPlayer *lead = (*this->enemies)[0];
+        lead->setPosition(base.x + (float) (Globals::rnd->nextInt(1400) - 700),
+                          base.y + (float) (Globals::rnd->nextInt(1400) - 700),
+                          base.z + 1000.0f);
+        lead->setSpeed(3.0f);
+        ((PlayerFighter *) lead)->setRotate(3);
+        lead->player->setHitpoints(9999999);
+        lead->setRoute(this->playerRoute->clone());
+        lead->player->setAlwaysFriend(true);
+        lead->name = *Globals::gameText->getText(1604);
+        lead->cargo = nullptr;
+
+        // enemies[1..7]: enemy fighters dropped at random waypoints along the player
+        // route and left asleep.
+        for (unsigned i = 1; i < this->enemies->size(); i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(8);
+            Waypoint *wp = this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length()));
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(8, 0, type, wp, true, false);
+            (*this->enemies)[i]->setToSleep();
+        }
+
+        this->objectivesA = new Objective(20, 1, 8, this);
+        this->objectivesB = new Objective(21, 1, 8, this);
+        return;
+    }
 }
 
 void Level::updateOrbit(int dt) {
