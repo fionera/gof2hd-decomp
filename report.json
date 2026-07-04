@@ -1078,6 +1078,14 @@
    "usize": 652
   },
   {
+   "name": "inflate_table",
+   "pct": 0.7,
+   "byte": false,
+   "linked": false,
+   "osize": 928,
+   "usize": 2128
+  },
+  {
    "name": "_ZN15MenuTouchWindowC1Ei",
    "pct": 0.8,
    "byte": false,
@@ -1116,14 +1124,6 @@
    "linked": false,
    "osize": 7072,
    "usize": 684
-  },
-  {
-   "name": "inflate_table",
-   "pct": 0.9,
-   "byte": false,
-   "linked": false,
-   "osize": 928,
-   "usize": 2128
   },
   {
    "name": "_ZN5Level21createCampaignMissionEv",
@@ -1374,6 +1374,14 @@
    "usize": 108
   },
   {
+   "name": "_ZN11AbyssEngine6Engine10ShaderInitEv",
+   "pct": 2.8,
+   "byte": false,
+   "linked": false,
+   "osize": 884,
+   "usize": 88
+  },
+  {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
    "pct": 2.9,
    "byte": false,
@@ -1444,14 +1452,6 @@
    "linked": false,
    "osize": 344,
    "usize": 860
-  },
-  {
-   "name": "_ZN11AbyssEngine6Engine10ShaderInitEv",
-   "pct": 3.4,
-   "byte": false,
-   "linked": false,
-   "osize": 884,
-   "usize": 88
   },
   {
    "name": "zip_replace",
@@ -2398,6 +2398,14 @@
    "usize": 728
   },
   {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 9.9,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 38844
+  },
+  {
    "name": "_ZN11AbyssEngine6String7ReverseEv",
    "pct": 10.0,
    "byte": false,
@@ -2436,14 +2444,6 @@
    "linked": false,
    "osize": 160,
    "usize": 356
-  },
-  {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 10.2,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 38724
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
@@ -3262,6 +3262,14 @@
    "usize": 716
   },
   {
+   "name": "_ZN9RocketGun6updateEi",
+   "pct": 15.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1908,
+   "usize": 1808
+  },
+  {
    "name": "_ZN10AEGeometry9translateEfff",
    "pct": 15.2,
    "byte": false,
@@ -3356,14 +3364,6 @@
    "linked": false,
    "osize": 1244,
    "usize": 202
-  },
-  {
-   "name": "_ZN9RocketGun6updateEi",
-   "pct": 15.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1908,
-   "usize": 1808
   },
   {
    "name": "_ZN11TouchButton4drawEv",
@@ -3526,14 +3526,6 @@
    "usize": 32
   },
   {
-   "name": "_ZN12StatusWindow10OnTouchEndEii",
-   "pct": 16.9,
-   "byte": false,
-   "linked": false,
-   "osize": 768,
-   "usize": 764
-  },
-  {
    "name": "_ZN8CutSceneC1Ei",
    "pct": 17.0,
    "byte": false,
@@ -3652,6 +3644,14 @@
    "linked": false,
    "osize": 1588,
    "usize": 1328
+  },
+  {
+   "name": "_ZN12StatusWindow10OnTouchEndEii",
+   "pct": 17.8,
+   "byte": false,
+   "linked": false,
+   "osize": 768,
+   "usize": 764
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
@@ -4278,20 +4278,20 @@
    "usize": 50
   },
   {
-   "name": "_ZN12PlayerTurret14handleRotationEiP10AEGeometryS1_",
-   "pct": 20.4,
-   "byte": false,
-   "linked": false,
-   "osize": 708,
-   "usize": 588
-  },
-  {
    "name": "_ZN11AbyssEngine16ResourceMaterialC2EttNS_9BlendModeE",
    "pct": 20.5,
    "byte": false,
    "linked": false,
    "osize": 52,
    "usize": 72
+  },
+  {
+   "name": "_ZN12PlayerTurret14handleRotationEiP10AEGeometryS1_",
+   "pct": 20.5,
+   "byte": false,
+   "linked": false,
+   "osize": 708,
+   "usize": 588
   },
   {
    "name": "_ZN11AbyssEngine10GlowShaderC1Ev",
@@ -4463,22 +4463,6 @@
   },
   {
    "name": "_ZN11AbyssEngine17BumpShaderRefractC2Ev",
-   "pct": 20.6,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 84
-  },
-  {
-   "name": "_ZN11AbyssEngine18BumpShaderParticleC1Ev",
-   "pct": 20.6,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 84
-  },
-  {
-   "name": "_ZN11AbyssEngine18BumpShaderParticleC2Ev",
    "pct": 20.6,
    "byte": false,
    "linked": false,
@@ -4692,6 +4676,22 @@
    "linked": false,
    "osize": 84,
    "usize": 40
+  },
+  {
+   "name": "_ZN11AbyssEngine18BumpShaderParticleC1Ev",
+   "pct": 20.8,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 84
+  },
+  {
+   "name": "_ZN11AbyssEngine18BumpShaderParticleC2Ev",
+   "pct": 20.8,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 84
   },
   {
    "name": "_ZN11AbyssEngine20SpecCubeAlphaMappingC1Ev",
@@ -5174,6 +5174,14 @@
    "usize": 218
   },
   {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 22.6,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1136
+  },
+  {
    "name": "_ZN6Layout24drawMissionRewardMessageEb",
    "pct": 22.6,
    "byte": false,
@@ -5340,14 +5348,6 @@
    "linked": false,
    "osize": 148,
    "usize": 138
-  },
-  {
-   "name": "_ZN14MissionsWindow10OnTouchEndEii",
-   "pct": 23.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1088,
-   "usize": 1020
   },
   {
    "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU",
@@ -5518,14 +5518,6 @@
    "usize": 1260
   },
   {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 23.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1136
-  },
-  {
    "name": "_ZN17PlayerFixedObject5resetEv",
    "pct": 23.9,
    "byte": false,
@@ -5612,6 +5604,14 @@
    "linked": false,
    "osize": 200,
    "usize": 148
+  },
+  {
+   "name": "_ZN14MissionsWindow10OnTouchEndEii",
+   "pct": 24.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1088,
+   "usize": 1020
   },
   {
    "name": "_ZN5ArrayIN11AbyssEngine6AEMath6VectorEEC2Ev",
@@ -11518,22 +11518,6 @@
    "usize": 64
   },
   {
-   "name": "_ZN9RocketGunC1EiP3GuniijibP5Level",
-   "pct": 55.8,
-   "byte": false,
-   "linked": false,
-   "osize": 216,
-   "usize": 204
-  },
-  {
-   "name": "_ZN9RocketGunC2EiP3GuniijibP5Level",
-   "pct": 55.8,
-   "byte": false,
-   "linked": false,
-   "osize": 216,
-   "usize": 204
-  },
-  {
    "name": "_ZN7Globals13getRandomNameEib",
    "pct": 55.9,
    "byte": false,
@@ -11716,6 +11700,22 @@
    "linked": false,
    "osize": 116,
    "usize": 80
+  },
+  {
+   "name": "_ZN9RocketGunC1EiP3GuniijibP5Level",
+   "pct": 57.1,
+   "byte": false,
+   "linked": false,
+   "osize": 216,
+   "usize": 204
+  },
+  {
+   "name": "_ZN9RocketGunC2EiP3GuniijibP5Level",
+   "pct": 57.1,
+   "byte": false,
+   "linked": false,
+   "osize": 216,
+   "usize": 204
   },
   {
    "name": "getStringUTFChars",

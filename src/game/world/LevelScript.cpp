@@ -1325,7 +1325,7 @@ int LevelScript::process(int delta) {
                 // cutscene-exit teardown and reframe the camera ahead of enemies[0] along its own basis.
                 // FP immediates: dir scale @0x13970c = 18000.0, right scale @0x139710 = 3000.0.
                 if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
-                    // DEFERRED 0x13caca: radio-not-over -> shared tail.
+                    // 0x13caca: intro radio still playing -> fall to the post-switch tail.
                     break; // -> post-switch tail (0x144e36)
                 }
                 player->setTurretMode(false);
@@ -2022,7 +2022,30 @@ int LevelScript::process(int delta) {
             }
             case 40: { // 0x13a4d8
                 if (m_nState != 0) {
-                    // DEFERRED 0x13e6b8: cold substate (m_nState != 0).
+                    // Cold substate dispatch (0x13e6b8): m_nState 1/2/3/4 each run a distinct
+                    // beat of the docking cutscene. Only state 1 (the translate + cutscene-exit
+                    // teardown) is decoded here; states 2/3/4 (position-gated approach beats and
+                    // their fall-through cascade at 0x13e728..) remain DEFERRED.
+                    if (m_nState == 1) {
+                        // State 1 (0x13e6c0): pull the follow-camera back along -X at 2*delta/frame
+                        // while the docking radio (message #4) plays. Once it is over, hand the
+                        // camera back to the player, restore the HUD/radar, clear the cinematic
+                        // break and return control to the player, then advance via the shared exit
+                        // tail (0x13eddc).
+                        m_pCamera->translate((float) (-(delta << 1)), 0.0f, 0.0f); // 0x13e6c2..0x13e6da
+                        if (!((RadioMessage *) ((*messages)[4]))->isOver()) { // 0x13e6de
+                            break; // -> post-switch tail (0x144e36)
+                        }
+                        m_pCamera->setTarget(player->geometry); // 0x13e6f8
+                        m_pHud->visible = 1;      // [m_pHud+1] = 1  (0x13e702)
+                        m_pRadar->field_0x58 = 1; // [m_pRadar+0x48] = 1 (0x13e708)
+                        m_nFlags = m_nFlags & 0xFF; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
+                        m_pCamera->setLookAtCam(false);          // 0x13e712
+                        player->setComputerControlled(false);    // 0x13e71a
+                        player->player->setVulnerable(true);     // 0x13e722
+                        // -> shared exit tail 0x13eddc (advances m_nState)
+                    }
+                    // DEFERRED 0x13e728: cold substates 2/3/4 (position-gated approach cascade).
                     break;
                 }
                 if (!((RadioMessage *) ((*messages)[3]))->isTriggered()) {
