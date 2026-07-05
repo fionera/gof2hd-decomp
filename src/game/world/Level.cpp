@@ -2798,6 +2798,59 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 73) {
+        // case 73 (body @0xb799c). Partial reconstruction: the two clearly-mapped
+        // sub-blocks (player placement/aim @0xb799c and the enemy escort ring
+        // @0xb7a48) plus the closing objectives @0xb7c38 are modeled. Two middle
+        // sub-blocks are DEFERRED with decoded facts (see below):
+        //   - convoy/formation loop @0xb7b22 (ambiguous GOT-resolved fn pointers:
+        //       Globals::iPad @0x21032c, AEGeometry::getMatrix @0x210258)
+        //   - static-object MatrixRotateVector ring @0xb7c6e (reads an unmodeled
+        //       7-float/entry data table @0x1fd1fc; no header struct)
+
+        // Route from 6 ints @0x1fd1e4 -> enemyRoute @0x110.
+        int coords[6] = {0, 80000, 0, 60000, 150000, 0};
+        this->enemyRoute = new Route(coords, 6);
+
+        // Player placement + aim (@0xb799c..0xb7a48).
+        this->player->setPosition(-30000.0f, 0.0f, 150000.0f);
+        {
+            // aim target derived from the route buffer: {coords[3]+20000, coords[4], coords[5]}.
+            AbyssEngine::AEMath::Vector aim = {(float) (coords[3] + 20000), (float) coords[4],
+                                              (float) coords[5]};
+            AbyssEngine::AEMath::Vector dir =
+                AbyssEngine::AEMath::VectorNormalize(aim - this->player->getPosition());
+            AbyssEngine::AEMath::Vector up = {0.0f, 1.0f, 0.0f};
+            this->player->geometry->setDirection(dir, up);
+        }
+
+        // Enemy escort ring (@0xb7a48..0xb7b22): 8 hostile fighters bound to the
+        // route, asleep; the first four are parked at the far sentinel position.
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(12, *(this->enemies));
+        for (unsigned i = 0; i < 8; i = i + 1) {
+            int type = (int) Globals::globals->getRandomEnemyFighter(8);
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                8, 0, type, this->enemyRoute->getWaypoint(0), true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+            (*this->enemies)[i]->setToSleep();
+            if (i < 4) {
+                (*this->enemies)[i]->setPosition(
+                    AbyssEngine::AEMath::Vector{-800000.0f, -800000.0f, -800000.0f}); // vtable+0x44
+            }
+        }
+
+        // DEFERRED @0xb7b22: convoy/formation loop (createShip group 15 friendlies
+        //   positioned via AEGeometry::getMatrix + Globals::iPad-gated randomness).
+        // DEFERRED @0xb7c6e: static-object ring driven by AEMath::MatrixRotateVector
+        //   over an 8-entry, 7-float-stride (0x1c) table @0x1fd1fc (no modeled type).
+
+        // Closing objectives (@0xb7c38..0xb7c6a).
+        this->objectivesA = new Objective(18, 0, 8, this);
+        this->objectivesB = new Objective(18, 8, 12, this);
+        return;
+    }
+
     if (idx == 87) {
         // case 87 (body @0xb810a)
         this->objectivesA = new Objective(22, 0, this);
