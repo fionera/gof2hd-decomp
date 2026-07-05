@@ -2851,6 +2851,57 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 89) {
+        // case 89 (body @0xb8130). CLEAN parts reconstructed; the geometry-attached
+        // fixed objects (enemies[1..2]) and the 8-enemy escort loop tail are DEFERRED
+        // with decoded facts below (vtable+0x8 dispatch and field_18c-as-Vector writes
+        // are not cleanly modeled).
+
+        // Two looping routes (@0xb8130 friendRoute@0x10c, @0xb8166 enemyRoute@0x110).
+        // Vectors are 6-int route point arrays sourced from rodata @0x1fd34c / 0x1fd368.
+        int route1[6] = {0, -63000, 0, 75000, -60000, 0};
+        this->friendRoute = new Route(route1, 6);
+        this->friendRoute->setLoop(true);
+        int route2[6] = {110000, -63000, -5000, 75000, -60000, -5000};
+        this->enemyRoute = new Route(route2, 6);
+        this->enemyRoute->setLoop(true);
+
+        // Enemy array sized 12 (@0xb819c).
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(12, *(this->enemies));
+
+        // enemies[0]: static object type 0x4260 (@0xb81b6), not moving.
+        (*this->enemies)[0] =
+            (KIPlayer *) (intptr_t) this->createStaticObject((Waypoint *) (intptr_t) 0, 0x4260, false);
+        ((PlayerFixedObject *) (*this->enemies)[0])->setMoving(false);
+
+        // DEFERRED @0xb81dc..0xb8418: two geometry-attached fixed objects.
+        //   enemies[1] (@0xb81dc): new Player(7500,...); new PlayerFixedObject(0x495d, 0, player,
+        //     geometry, 0,0,0). A parent AEGeometry(0x5254, Globals::Canvas, false) is built and
+        //     given two children via AEGeometry::addChild(child->transform) (children 0x5574,
+        //     0x563c, built as heap temporaries then deleted). The parent geometry is attached to
+        //     the object via a virtual call at vtable+0x8 (receiver enemies[1]; method not cleanly
+        //     identified), then object setPosition({-77000,-3000,90000}) via vtable+0x44 and
+        //     setRotation(0.0, <int -1 reinterpreted>, 0.0) via AEGeometry::setRotation(fff).
+        //   enemies[2] (@0xb82d6): mirror of enemies[1] with a 5-child parent geometry
+        //     (0x5254,0x5574,0x563c,0x4990,0x4991 -> addChild, delete temporaries),
+        //     KIPlayer::setVisible(false), then setRotation via the same path.
+        //   These use real symbols (AEGeometry(uint16_t,PaintCanvas*,bool), addChild(uint32_t),
+        //   setRotation) but the vtable+0x8 attach dispatch and field-store chain are not modeled.
+
+        // DEFERRED @0xb8450..0xb8516: 8-enemy escort loop.
+        //   route = (i<4) ? friendRoute : enemyRoute; wp = route->getWaypoint((i<4)?(i>1):(i<7));
+        //   ship = createShip(3, 0, getRandomEnemyFighter(3), wp, true, false);
+        //   ship->setRoute(friendRoute->clone()); reads ship pos via vtable+0x28 and writes it into
+        //   this->field_18c/190/194 as a Vector (operator=); conditionally re-positions via
+        //   vtable+0x48 when field_190 in (-4000,2000); strb 0 @ship+0x13e; enemies[i]=ship.
+        //   Deferred: field_18c-as-Vector aliasing + float compare on field_190 not cleanly typed.
+
+        // Closing objective (@0xb866a): new Objective(1, 0, this).
+        this->objectivesA = new Objective(1, 0, this);
+        return;
+    }
+
     if (idx == 87) {
         // case 87 (body @0xb810a)
         this->objectivesA = new Objective(22, 0, this);
