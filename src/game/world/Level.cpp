@@ -2612,6 +2612,26 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 50) {
+        // case 50 (body @0xb6aae; tail @0xbb9f0)
+        KIPlayer *landmark = (*this->landmarks)[1];
+        Vector base = landmark ? landmark->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
+        *reinterpret_cast<Vector *>(&this->field_18c) = base;
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(4, *(this->enemies));
+        for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+            (*this->enemies)[i] =
+                (KIPlayer *) this->createShip(1, 0, 9, (Waypoint *) (intptr_t) 0, true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(false);
+            (*this->enemies)[i]->player->setAlwaysFriend(true);
+        }
+
+        // Shared exit @0xbb9bc folds createRadioMessages(getCurrentCampaignMission())
+        // into this->messages; modeled elsewhere as the post-switch tail.
+        return;
+    }
+
     if (idx == 97) {
         // case 97 (body @0xb8c32)
         int coords[3] = {0, 0, 50000};
