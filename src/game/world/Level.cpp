@@ -2632,6 +2632,77 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 51) {
+        // case 51 (shared head @0xb6ad0; tail @0xbba7c)
+        KIPlayer *landmark = (*this->landmarks)[1];
+        Vector base = landmark ? landmark->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
+        Vector *spawn = (Vector *) &this->field_18c;
+        *spawn = base;
+
+        int coords[3] = {(int) spawn->x, (int) spawn->y, (int) spawn->z};
+        this->enemyRoute = new Route(coords, 3);
+        this->enemyRoute->setLoop(true);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(6, *(this->enemies));
+
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(1, 1, 13, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[0]->player->setAlwaysEnemy(true);
+
+        Vector diff = this->player->getPosition() - *spawn;
+        *spawn = *spawn + diff / 3.0f;
+        (*this->enemies)[0]->setPosition(spawn->x, spawn->y, spawn->z);
+
+        for (unsigned i = 1; i < this->enemies->size(); i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                1, 0, 9, this->enemyRoute->getWaypoint(), true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+            (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
+        }
+        return;
+    }
+
+    if (idx == 52) {
+        // case 52 (shared head @0xb6af2; tail @0xbbbd8)
+        KIPlayer *landmark = (*this->landmarks)[1];
+        Vector base = landmark ? landmark->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
+        Vector *spawn = (Vector *) &this->field_18c;
+        *spawn = base;
+
+        int coords[3] = {(int) spawn->x, (int) spawn->y, (int) spawn->z};
+        this->enemyRoute = new Route(coords, 3);
+        this->enemyRoute->setLoop(true);
+
+        this->enemies = new Array<KIPlayer *>();
+        ArraySetLength(8, *(this->enemies));
+
+        (*this->enemies)[0] =
+            (KIPlayer *) this->createShip(1, 1, 13, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[0]->player->setAlwaysEnemy(true);
+
+        Vector diff = this->player->getPosition() - *spawn;
+        *spawn = *spawn + diff / 2.0f;
+        (*this->enemies)[0]->setPosition(spawn->x, spawn->y, spawn->z);
+
+        (*this->enemies)[1] =
+            (KIPlayer *) this->createShip(1, 1, 13, (Waypoint *) (intptr_t) 0, true, false);
+        (*this->enemies)[1]->player->setAlwaysEnemy(true);
+
+        spawn->x += 16000.0f;
+        spawn->y += 8388608.0f;
+        spawn->z += 16000.0f;
+        (*this->enemies)[1]->setPosition(spawn->x, spawn->y, spawn->z);
+
+        for (unsigned i = 2; i < this->enemies->size(); i = i + 1) {
+            (*this->enemies)[i] = (KIPlayer *) this->createShip(
+                1, 0, 9, this->enemyRoute->getWaypoint(), true, false);
+            (*this->enemies)[i]->player->setAlwaysEnemy(true);
+            (*this->enemies)[i]->setRoute(this->enemyRoute->clone());
+        }
+        return;
+    }
+
     if (idx == 97) {
         // case 97 (body @0xb8c32)
         int coords[3] = {0, 0, 50000};
