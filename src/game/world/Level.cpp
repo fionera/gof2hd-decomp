@@ -3380,6 +3380,66 @@ void Level::createCampaignMission() {
         return;
     }
 
+    if (idx == 80) {
+        // case 80 (body @0xb7f5a). CLEAN station-setup prefix reconstructed (mirrors case 81);
+        // the geometry setRotation with the local rotation Vector, the MatrixSetRotation block,
+        // and the MatrixRotateVector escort loop tail are DEFERRED with decoded facts below.
+        this->enemies = new Array<KIPlayer *>();
+
+        Station *station = (Station *) (long) Globals::galaxy->getStation(101);
+        PlayerStation *ps = new PlayerStation(station);
+        ArrayAdd((KIPlayer *) ps, *(this->enemies));
+        (*this->enemies)[0]->name = station->getName();
+        (*this->enemies)[0]->shipGroup = 8;
+
+        // DEFERRED @0xb7fbe..0xb7ff8: station geometry orientation.
+        //   (*enemies)[0]->geometry->setRotation(<local Vector at sp+0x180, zeroed>) via
+        //   AEGeometry::setRotation(const Vector&) [vtable+0x140 dispatch on the geometry].
+        //   The local rotation Vector is zero-initialised on the stack; not cleanly modeled.
+
+        if (station != nullptr)
+            delete station;
+
+        // DEFERRED @0xb8004..0xb804e: rotation-matrix setup + level branch.
+        //   A local AEMath::Matrix (sp+0x140) and a local Vector (sp+0x180) are seeded from a
+        //   rodata identity/right-vector block (vld1 @b800c), the Vector's w/components set to
+        //   1.0f (0x3f800000), then AEMath::MatrixSetRotation(matrix, 0,0,0) is called. The
+        //   matrix is used by the MatrixRotateVector escort loop below.
+        //   Then a Status::getLevel() branch computes the escort hitpoints base:
+        //     hp = (Globals::status->getLevel() > 20) ? 520 : Globals::status->getLevel()*15 + 220;
+        //   (getLevel*15 == level + level<<4, +220 -> +0xdc; the >20 arm uses the constant 520.)
+
+        // DEFERRED @0xbb796..: 8-slot static-object escort loop (via bb77a level branch).
+        //   For each slot: type = (i&1) ? 0x381b : 0x381d, obj = createStaticObject(0, type, true);
+        //   ArrayAdd(obj, *enemies); obj->player->setMaxHitpoints(hp); then the object's position
+        //   from the seeded route is run through AEMath::MatrixRotateVector(matrix, pos) and the
+        //   result assigned to the object geometry via AEGeometry::setRotation(Vector&). The
+        //   MatrixRotateVector math over the local Matrix is not cleanly modeled (matrix layout
+        //   is drift-sensitive) and is deferred.
+        return;
+    }
+
+    if (idx == 69) {
+        // case 69 (body @0xb75f8). DEFERRED in full: this builder is wall-to-wall AEMath
+        // Vector/Matrix math (planet geometry, VectorNormalize, setDirection, player-relative
+        // route construction) which is drift-sensitive and not cleanly modeled. Decoded facts:
+        //   @0xb75f8: enemyRoute@0x110 = new Route(pts,6) where pts are the planet-1 geometry
+        //     position (StarSystem::getPlanets()[1]->geometry->getPosition()) scaled *4.0f, then
+        //     each component *10.0f and cast to int (NEON vmul/vcvt).
+        //   @0xb7664: enemies@0xf8 = new Array; ships bound to that route (createShip),
+        //     enemies[0] named/route-cloned; a ship direction is oriented via
+        //     AEMath::VectorNormalize + AEGeometry::setDirection.
+        //   @0xb774a: friendRoute@0x10c = new Route(pts2,3) from a rodata point block; a
+        //     getRandomEnemyFighter(0) fill loop createShip's ships onto the friendRoute waypoint,
+        //     count-driven by enemies length; closes with new Objective(22, 0, this).
+        //   @0xb77c0 onward: further routes built relative to the player position/direction
+        //     (PlayerEgo::getPosition/getDirection, Vector operator*/-/+, VectorNormalize),
+        //     enemies[0] setAlwaysFriend + named (gameText 1631), setHitpoints(maxHp*2.5),
+        //     player setPosition, another looping Route, closing new Objective(1, 0, this).
+        //   All Vector/Matrix ops here are deferred; not reconstructed.
+        return;
+    }
+
     if (idx == 7) {
         // case 7 (body @0xb543e)
         int coords[6] = {-4000, -3000, 80000, 10000, 7000, 160000};
