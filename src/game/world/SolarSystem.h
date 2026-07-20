@@ -54,7 +54,7 @@ public:
 
     uint32_t *getStations();
 
-    void *getForbiddenGoods();
+    void *getForbiddenGoods(); // lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
 
     // lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
 

@@ -42,13 +42,13 @@ namespace AbyssEngine {
 
         virtual void OnTouchEnd(int, int) = 0;
 
-        virtual void OnTouchBegin(int x, int y, void *data) {
+        virtual void OnTouchBegin(int x, int y, void *data) { // lint: void_ptr (virtual vtable signature; mangling/ABI must match)
         } // lint: void_ptr (virtual vtable signature; mangling/ABI must match)
 
-        virtual void OnTouchMove(int x, int y, void *data) {
+        virtual void OnTouchMove(int x, int y, void *data) { // lint: void_ptr (virtual vtable signature; mangling/ABI must match)
         } // lint: void_ptr (virtual vtable signature; mangling/ABI must match)
 
-        virtual void OnTouchEnd(int x, int y, void *data) {
+        virtual void OnTouchEnd(int x, int y, void *data) { // lint: void_ptr (virtual vtable signature; mangling/ABI must match)
         } // lint: void_ptr (virtual vtable signature; mangling/ABI must match)
 
         virtual void OnUpdate() = 0;

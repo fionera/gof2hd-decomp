@@ -281,7 +281,7 @@ public:
     static int lastCampaignMissionFailCount;
     static unsigned char startLiteVersionWithMoreCredits;
     static AbyssEngine::AERandom *rnd;
-    static void *font;
+    static void *font; // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
     // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
     static unsigned char keys[1020];
     static void *bankZ; // lint: void_ptr (unknown audio-bank handle, never referenced)

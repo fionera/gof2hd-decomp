@@ -111,7 +111,7 @@ void AEFile_ReadBool(void *out, unsigned int fd); // lint: void_ptr (external sy
 
 void AEFile_ReadInt(void *out, unsigned int fd); // lint: void_ptr (external symbol; mangled signature is fixed)
 
-void AEFile_ReadString(void *out, unsigned int fd, int flag);
+void AEFile_ReadString(void *out, unsigned int fd, int flag); // lint: void_ptr (external symbol; mangled signature is fixed)
 
 // lint: void_ptr (external symbol; mangled signature is fixed)
 
@@ -119,7 +119,7 @@ void AEFile_Read_i64(void *dst, unsigned int fd); // lint: void_ptr (external sy
 
 void AEFile_Read_i32(void *dst, unsigned int fd); // lint: void_ptr (external symbol; mangled signature is fixed)
 
-void AEFile_Read_bool(void *dst, unsigned int fd, int b);
+void AEFile_Read_bool(void *dst, unsigned int fd, int b); // lint: void_ptr (external symbol; mangled signature is fixed)
 
 // lint: void_ptr (external symbol; mangled signature is fixed)
 
@@ -137,7 +137,7 @@ void AEFile_WriteInt(int v, unsigned int fd);
 
 void AEFile_WriteBool(int v, unsigned int fd);
 
-void AEFile_WriteString(void *s, unsigned int fd, int flag);
+void AEFile_WriteString(void *s, unsigned int fd, int flag); // lint: void_ptr (external symbol; mangled signature is fixed)
 
 // lint: void_ptr (external symbol; mangled signature is fixed)
 
@@ -165,7 +165,7 @@ void AEFile_ReadLong(void *out, unsigned int fd); // lint: void_ptr (external sy
 
 static bool g_LS_gameSaving = false;
 
-void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder) {
+void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder) { // lint: void_ptr (exported free function; mangled signature is fixed)
     // lint: void_ptr (exported free function; mangled signature is fixed)
     canvas->ClearBuffer(0xff);
     canvas->Begin2d();
@@ -245,7 +245,7 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourc
 
 static int *g_RH_recordCount = nullptr;
 
-void *RecordHandler::readAllRecords() {
+void *RecordHandler::readAllRecords() { // lint: void_ptr (method signature; return type fixed by header)
     // lint: void_ptr (method signature; return type fixed by header)
     Array<GameRecord *> *arr = new Array<GameRecord *>();
     int *cnt = g_RH_recordCount;
@@ -257,7 +257,7 @@ void *RecordHandler::readAllRecords() {
     return arr;
 }
 
-void *RecordHandler::readAllPreviewRecords() {
+void *RecordHandler::readAllPreviewRecords() { // lint: void_ptr (method signature; return type fixed by header)
     // lint: void_ptr (method signature; return type fixed by header)
     Array<GameRecord *> *arr = new Array<GameRecord *>();
     int *cnt = g_RH_recordCount;
@@ -399,7 +399,7 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     return sz;
 }
 
-void *RecordHandler::readRecord(int slot) {
+void *RecordHandler::readRecord(int slot) { // lint: void_ptr (method signature; return type fixed by header)
     // lint: void_ptr (method signature; return type fixed by header)
     return this->recordStoreRead(slot);
 }
@@ -407,7 +407,7 @@ void *RecordHandler::readRecord(int slot) {
 void RecordHandler::recoverSDVersionSaves() {
 }
 
-void *RecordHandler::readWanted(unsigned int fd) {
+void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
     // lint: void_ptr (method signature; return type fixed by header)
     (void) this;
     bool active = false;
@@ -512,7 +512,7 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
     delete[] sizes1;
 }
 
-void *RecordHandler::recordStoreReadPreview(int slot) {
+void *RecordHandler::recordStoreReadPreview(int slot) { // lint: void_ptr (method signature; return type fixed by header)
     // lint: void_ptr (method signature; return type fixed by header)
     String path;
     String num;
@@ -935,7 +935,7 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
     return n;
 }
 
-void *RecordHandler::readMission(unsigned int fd) {
+void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
     // lint: void_ptr (method signature; return type fixed by header)
     Mission *mission = 0;
 
@@ -1112,7 +1112,7 @@ void RecordHandler::saveOptions() {
     return;
 }
 
-void *RecordHandler::readAgent(unsigned int fd) {
+void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
     // lint: void_ptr (method signature; return type fixed by header)
     int costs = 0, sellSys = 0, sellBp = 0, event = 0, idx = 0, offer = 0, race = 0;
     int sellItemIdx = 0, sellItemPrice = 0, sellItemQty = 0, station = 0, system = 0;
@@ -1857,7 +1857,7 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     return sz;
 }
 
-void *RecordHandler::recordStoreRead(int slot) {
+void *RecordHandler::recordStoreRead(int slot) { // lint: void_ptr (method signature; return type fixed by header)
     // lint: void_ptr (method signature; return type fixed by header)
     GameRecord *rec = 0;
     String num, path;

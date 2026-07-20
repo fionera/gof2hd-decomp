@@ -8,15 +8,15 @@ static inline void _ae_TransformAddMeshId(uint32_t canvas, uint32_t tf, uint32_t
 
 static inline void _ae_TransformAddMesh(uint32_t canvas, uint32_t tf, uint16_t mesh, int z) { ((PaintCanvas*)(uintptr_t)canvas)->TransformAddMesh(tf, mesh, z); }
 
-void _ae_MatrixSetRotation(void *out, uint32_t loc, float x, float y, float z, int order);
+void _ae_MatrixSetRotation(void *out, uint32_t loc, float x, float y, float z, int order); // lint: void_ptr imported symbol, Pv mangling must match original
 
 // lint: void_ptr imported symbol, Pv mangling must match original
 
-void _ae_MatrixSetScaling(void *out, uint32_t loc, float sx, float sy, float sz);
+void _ae_MatrixSetScaling(void *out, uint32_t loc, float sx, float sy, float sz); // lint: void_ptr imported symbol, Pv mangling must match original
 
 // lint: void_ptr imported symbol, Pv mangling must match original
 
-void _ae_setPosition3(void *self, float x, float y, float z);
+void _ae_setPosition3(void *self, float x, float y, float z); // lint: void_ptr imported symbol, Pv mangling must match original
 
 // lint: void_ptr imported symbol, Pv mangling must match original
 
@@ -26,11 +26,11 @@ void _ae_setmesh_a(uint32_t canvas, uint32_t tf, uint32_t mesh, int z);
 
 void _ae_setmesh_b(uint32_t canvas, uint32_t mesh, uint32_t *tfp);
 
-static inline void _ae_MatrixSetTranslation(void *out, float x, float y, float z) { AbyssEngine::AEMath::MatrixSetTranslation(*(AbyssEngine::AEMath::Matrix*)out, x, y, z); }
+static inline void _ae_MatrixSetTranslation(void *out, float x, float y, float z) { AbyssEngine::AEMath::MatrixSetTranslation(*(AbyssEngine::AEMath::Matrix*)out, x, y, z); } // lint: void_ptr imported symbol, Pv mangling must match original
 
 // lint: void_ptr imported symbol, Pv mangling must match original
 
-static inline void _ae_TransformSetLocal(uint32_t canvas, uint32_t tf, void *m) { ((PaintCanvas*)(uintptr_t)canvas)->TransformSetLocal(tf, *(const AbyssEngine::AEMath::Matrix*)m); }
+static inline void _ae_TransformSetLocal(uint32_t canvas, uint32_t tf, void *m) { ((PaintCanvas*)(uintptr_t)canvas)->TransformSetLocal(tf, *(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr imported symbol, Pv mangling must match original
 
 // lint: void_ptr imported symbol, Pv mangling must match original
 

@@ -65,9 +65,13 @@ if(GOF2_MATCH_LAYOUT)
 endif()
 
 add_custom_command(OUTPUT "${_so}"
+    # --unresolved-symbols=ignore-all: undecompiled engine internals import as shims, as in the
+    # original's app-provided imports. The import set is gated by tools/ratchet.py (a typo'd callee
+    # would otherwise become a silent new import). NO --allow-multiple-definition: a duplicate
+    # strong definition must be a link error, not a silent first-wins pick.
     COMMAND ${GOF2_NDK_GOLD}
             -shared -soname libgof2hdaa.so --build-id
-            --unresolved-symbols=ignore-all --allow-multiple-definition
+            --unresolved-symbols=ignore-all
             ${_order_flag}
             -o "${_so}"
             ${_libdir}/crtbegin_so.o -L ${_libdir}
@@ -98,8 +102,9 @@ add_custom_target(diff
     DEPENDS "${_so}"
     COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/sodiff.py
             --original "${GOF2_ORIGINAL_SO}" --ours "${_so}"
+            --allow "${CMAKE_SOURCE_DIR}/tools/sodiff_allow.txt"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
-    COMMENT "Symbol-parity diff vs the original .so")
+    COMMENT "Symbol-parity diff vs the original .so (allow: documented irreducible delta)")
 
 # verify -- per-function ASM match of our linked .so vs the original (byte-exact / linked-exact /
 # fuzzy %), plus the missing/wrong_type/extra symbol-set deltas.
@@ -110,6 +115,10 @@ add_custom_target(verify
             --original "${GOF2_ORIGINAL_SO}" --ours "${_so}"
             --objdump ${GOF2_NDK_OBJDUMP}
             --fail-on-wrong-type
+    # Sync the tracked repo-root snapshot in the same step, so it can never go stale again
+    # (it drifted once when it was hand-copied per pass).
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/verify/report.json
+            ${CMAKE_SOURCE_DIR}/report.json
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
     COMMENT "Validating ARM build vs original .so (opt=${GOF2_MATCH_OPT})")
 
@@ -137,3 +146,11 @@ add_custom_target(drift
     COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/layout.py
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
     COMMENT "Field name/offset drift check (layout.py)")
+
+# check -- the machine-checked no-degradation gate: relinks/re-verifies if stale, then compares
+# byte_exact/linked_exact/stubs/parity/imports/lint against tools/verify_baseline.json and the
+# tools/sodiff_allow.txt irreducible delta. This is what the pre-push hook runs.
+add_custom_target(check
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/ratchet.py --build-dir ${CMAKE_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
+    COMMENT "No-degradation ratchet vs tools/verify_baseline.json")

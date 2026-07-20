@@ -79,7 +79,7 @@ namespace {
                   "entries must live at table offset 0x1254");
 }
 
-Matrix *CameraGetLocal(void *canvas, uint32_t index);
+Matrix *CameraGetLocal(void *canvas, uint32_t index); // lint: void_ptr (free-function signature; retype changes mangling)
 
 // lint: void_ptr (free-function signature; retype changes mangling)
 
@@ -412,7 +412,7 @@ uint8_t Level::friendCargoWasStolen() {
     return friendCargoStolen;
 }
 
-Array<void *> *Level::getMessages() {
+Array<void *> *Level::getMessages() { // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
     // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
     return (Array<void *> *) messages; // lint: void_ptr (exported return type)
 }
@@ -5518,7 +5518,7 @@ int Level::createStaticObject(Waypoint *wp, int type, bool jitter) {
     return 0;
 }
 
-void *Level::getBoundingVolume(int /*unused*/, AEGeometry *kind) {
+void *Level::getBoundingVolume(int /*unused*/, AEGeometry *kind) { // lint: void_ptr (method return type is symbol-baked)
     // lint: void_ptr (method return type is symbol-baked)
     int index = (int) (intptr_t) kind;
     FileRead *fr = (FileRead *) ::operator new(1);

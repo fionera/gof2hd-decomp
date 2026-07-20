@@ -43,12 +43,10 @@
  "void_ptr": {
   "engine/audio/FModSound.cpp": 2,
   "engine/render/AEGeometry.cpp": 2,
-  "engine/render/PaintCanvas.cpp": 27,
-  "game/core/Globals.cpp": 8,
+  "engine/render/PaintCanvas.cpp": 15,
   "game/menu/ModStation.cpp": 8,
-  "game/menu/SpaceLounge.cpp": 6,
-  "game/ship/PlayerEgo.cpp": 2,
-  "game/ui/MenuTouchWindow.cpp": 16,
+  "game/menu/SpaceLounge.cpp": 4,
+  "game/ui/MenuTouchWindow.cpp": 5,
   "game/world/StarMap.cpp": 3
  }
 }

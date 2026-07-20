@@ -1,6 +1,7 @@
 #include "engine/render/MeshMerger.h"
 #include "engine/render/Mesh.h"
-#include "game/core/Vector.h"
+#include "engine/core/AEString.h"
+#include "engine/core/Array.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
 
@@ -337,7 +338,7 @@ int MeshMerger::init() {
     return this->initialized;
 }
 
-void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
+void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) { // lint: void_ptr (method return type baked into symbol-parity contract)
     // lint: void_ptr (method return type baked into symbol-parity contract)
     Mesh *out = new Mesh(mesh);
     out->vertexCount = mesh->vertexCount;

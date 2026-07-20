@@ -1261,7 +1261,7 @@ void ModStation::checkHints() {
 
 
 
-void ModStation::OnTouchMove(int x, int y, void *touch) {
+void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
     // lint: void_ptr
     if (this->activeTouch != touch)
         return;
@@ -1582,7 +1582,7 @@ int MissionsWindow_OnTouchEnd_ote(int w, int p1);
 
 int MenuTouchWindow_OnTouchEnd_ote(MenuTouchWindow *w, int p1, int p2, void *p3); // lint: void_ptr
 
-static inline void MenuTouchWindow_ctor_ote(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); }
+static inline void MenuTouchWindow_ctor_ote(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); } // lint: void_ptr
 
 int TouchButton_OnTouchEnd_ote(int btn, int p1);
 
@@ -1610,7 +1610,7 @@ void Radio_addMessage_ote(Radio *radio, int textId);
 
 void ScrollTouchBox_initRadio_ote(ScrollTouchBox * box, Radio * radio);
 
-void ModStation::OnTouchEnd(int x, int y, void *touch) {
+void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
     // lint: void_ptr
     int *status = (int *) Globals::status;
 
@@ -2366,7 +2366,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
 
 static int **g_ModStation_tb_clear = 0;
 
-void ModStation::OnTouchBegin(int x, int y, void *touch) {
+void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
     // lint: void_ptr
     if (this->activeTouch != 0)
         return;

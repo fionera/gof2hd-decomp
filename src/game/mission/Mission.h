@@ -74,7 +74,7 @@ public:
 
     void setTargetStation(int idx);
 
-    void *setTargetSystemName(const String &rhs);
+    void *setTargetSystemName(const String &rhs); // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
 
     // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
 

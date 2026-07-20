@@ -13,11 +13,11 @@ public:
 
     ~AENormalFile() override;
 
-    uint32_t Write(uint32_t bytes, void *buffer) override;
+    uint32_t Write(uint32_t bytes, void *buffer) override; // lint: void_ptr virtual buffer param; Pv baked into mangled name
 
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
 
-    uint32_t Read(uint32_t bytes, void *buffer) override;
+    uint32_t Read(uint32_t bytes, void *buffer) override; // lint: void_ptr virtual buffer param; Pv baked into mangled name
 
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
 

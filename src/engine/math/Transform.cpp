@@ -359,7 +359,7 @@ namespace AbyssEngine {
         }
     }
 
-    void Transform::SetAnimationState(AnimationMode, void *) {
+    void Transform::SetAnimationState(AnimationMode, void *) { // lint: void_ptr method parameter baked into mangled symbol
         // lint: void_ptr method parameter baked into mangled symbol
     }
 

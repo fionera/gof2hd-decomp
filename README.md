@@ -14,9 +14,11 @@ or from a shell:
 cmake --preset default                                  # first run downloads NDK r18b (~500MB)
 cmake --build cmake-build-match --target gof2           # compile every TU to ARM objects
 cmake --build cmake-build-match --target link_so        # link libgof2hdaa.so (gold) the original's shape
-cmake --build cmake-build-match --target diff           # whole-.so symbol-parity gate (tools/sodiff.py)
+cmake --build cmake-build-match --target diff           # whole-.so symbol-parity gate (tools/sodiff.py + allowlist)
 cmake --build cmake-build-match --target verify         # per-function ASM match-% table vs the .so
 cmake --build cmake-build-match --target lint           # structural invariants (tools/goal_lint.py)
+cmake --build cmake-build-match --target drift          # field_0xNN offset check (NDK clang, AAPCS)
+cmake --build cmake-build-match --target check          # no-degradation ratchet (tools/ratchet.py); also the pre-push hook
 ```
 Single-function ASM diff: `FN=<mangled> cmake --build cmake-build-match --target verify-fn`.
 `lint` is a ratchet: hard rules (no asm/`__attribute__`/extern-C, no explicit template instantiation,

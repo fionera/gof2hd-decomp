@@ -125,7 +125,7 @@ void ModMainMenu::OnRender3D() {
     Globals::Canvas->End3d();
 }
 
-void ModMainMenu::OnTouchMove(int x, int y, void *touch) {
+void ModMainMenu::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
     // lint: void_ptr (exported virtual signature)
     (void) touch;
     if (this->logoActive != 0)
@@ -144,7 +144,7 @@ void ModMainMenu::OnSuspend() {
         ((RecordHandler *) (intptr_t) obj)->saveOptions();
 }
 
-void ModMainMenu::OnTouchEnd(int x, int y, void *touch) {
+void ModMainMenu::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
     // lint: void_ptr (exported virtual signature)
     (void) touch;
     if (this->logoActive == 0) {
@@ -163,7 +163,7 @@ void ModMainMenu::OnTouchEnd(int x, int y) {
     (void) y;
 }
 
-void ModMainMenu::OnTouchBegin(int x, int y, void *touch) {
+void ModMainMenu::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
     // lint: void_ptr (exported virtual signature)
     if (this->logoActive != 0)
         return;

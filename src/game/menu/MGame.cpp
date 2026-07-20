@@ -77,7 +77,7 @@ static inline void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on) { c->
 
 static int *g_maneuverScale;
 
-void MGame::maneuverTouchEnd(int a, int b, void *p) {
+void MGame::maneuverTouchEnd(int a, int b, void *p) { // lint: void_ptr -- exported method signature (Pv)
     // lint: void_ptr -- exported method signature (Pv)
     MGame *self = this;
     (void) b;
@@ -107,7 +107,7 @@ void MGame::OnResume() {
     return Music_resume(*mp, 1, **(int **) g_cfg);
 }
 
-void MGame::maneuverTouchMove(int a, int b, void *p) {
+void MGame::maneuverTouchMove(int a, int b, void *p) { // lint: void_ptr -- exported method signature (Pv)
     // lint: void_ptr -- exported method signature (Pv)
     (void) a;
     (void) p;
@@ -124,7 +124,7 @@ void MGame::maneuverTouchMove(int a, int b, void *p) {
     }
 }
 
-void MGame::maneuverTouchBegin(int x, int y, void *p) {
+void MGame::maneuverTouchBegin(int x, int y, void *p) { // lint: void_ptr -- exported method signature (Pv)
     // lint: void_ptr -- exported method signature (Pv)
     (void) p;
     this->maneuverActive = 1;
@@ -441,7 +441,7 @@ firstPerson: {
 
 static int *g_fcb_guard;
 
-void MGame::freeCamTouchBegin(int x, int y, void *idPtr) {
+void MGame::freeCamTouchBegin(int x, int y, void *idPtr) { // lint: void_ptr -- exported method signature (Pv)
     // lint: void_ptr -- exported method signature (Pv)
     int id = (int) (intptr_t) idPtr;
     char buf[12];
@@ -647,7 +647,7 @@ static int **g_tbRecordTrack;
 
 static int **g_tbMenuTrack;
 
-void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
+void MGame::OnTouchBegin(int p1, int p2, void *touchId) { // lint: void_ptr -- exported override signature (Pv)
     // lint: void_ptr -- exported override signature (Pv)
     MGame *self = this;
 
@@ -950,7 +950,7 @@ void MGame::dockEvent(int p1, int p2) {
     }
 }
 
-void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) {
+void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) { // lint: void_ptr -- exported method signature (Pv)
     // lint: void_ptr -- exported method signature (Pv)
     int id = (int) (intptr_t) idPtr;
     (void) p1;
@@ -1412,7 +1412,7 @@ static float g_fcZoomMax;
 
 static float g_fcZoomMin;
 
-void MGame::freeCamTouchMove(int x, int y, void *touchId) {
+void MGame::freeCamTouchMove(int x, int y, void *touchId) { // lint: void_ptr -- exported method signature (Pv)
     // lint: void_ptr -- exported method signature (Pv)
     int ty = (int) (intptr_t) touchId;
     if (this->player->isMining() != 0) {
@@ -1485,7 +1485,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
     TFC_zoomTarget(this->camera, zoom);
 }
 
-void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
+void MGame::OnTouchEnd(int p1, int p2, void *touchId) { // lint: void_ptr -- exported override signature (Pv)
     // lint: void_ptr -- exported override signature (Pv)
     if (this->activeTouchId == touchId) {
         this->activeTouchId = 0;
@@ -2062,7 +2062,7 @@ static int **g_tmStarMap;
 
 static int **g_tmAppData;
 
-void MGame::OnTouchMove(int p1, int y, void *touch) {
+void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- exported override signature (Pv)
     // lint: void_ptr -- exported override signature (Pv)
     MGame *self = this;
     int handledFree = 0;

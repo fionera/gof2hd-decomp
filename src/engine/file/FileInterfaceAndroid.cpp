@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <new>
 
-unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);
+unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1); // lint: void_ptr imported Pv-mangled JNI shim
 
 // lint: void_ptr imported Pv-mangled JNI shim
 
@@ -146,20 +146,20 @@ uint32_t FileInterfaceAndroid::GetDeviceFreeSpace() {
     return 0;
 }
 
-void FileInterfaceAndroid::SetZipDirectory(void *p) {
+void FileInterfaceAndroid::SetZipDirectory(void *p) { // lint: void_ptr virtual override param (FileInterface)
     // lint: void_ptr virtual override param (FileInterface)
     if (p != 0)
         this->zipDirectory = (const char *) p;
 }
 
-void FileInterfaceAndroid::SetAppRootDir(void *p) {
+void FileInterfaceAndroid::SetAppRootDir(void *p) { // lint: void_ptr virtual override param (FileInterface)
     // lint: void_ptr virtual override param (FileInterface)
     if (p != 0)
         this->appRootDir = (const char *) p;
 }
 
 
-uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) {
+uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
     // lint: void_ptr virtual override param (FileInterface byte buffer)
     if (this->zipFile != 0)
         return zip_fread(this->zipFile, buf, n) == n;
@@ -209,7 +209,7 @@ uint32_t FileInterfaceAndroid::Seek(uint32_t n) {
 }
 
 
-uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) {
+uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
     // lint: void_ptr virtual override param (FileInterface byte buffer)
     if (this->file != 0)
         return fwrite(buf, 1, n, this->file) == n;
@@ -229,7 +229,7 @@ uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) {
     return ok;
 }
 
-void *FileInterfaceAndroid::OpenAppend(String, int, bool, unsigned int) {
+void *FileInterfaceAndroid::OpenAppend(String, int, bool, unsigned int) { // lint: void_ptr virtual override return type baked into vtable/symbol
     // lint: void_ptr virtual override return type baked into vtable/symbol
     return 0;
 }
@@ -306,7 +306,7 @@ struct AndroidIoState {
 static_assert(offsetof(AndroidIoState, stderrFile) == 0xa8, "AndroidIoState layout");
 #endif
 
-void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) {
+void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) { // lint: void_ptr virtual override return type baked into vtable/symbol
     // lint: void_ptr virtual override return type baked into vtable/symbol
     const unsigned short *w = GetAEWChar(name);
     if (this->enabled == 0)
@@ -345,7 +345,7 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
 }
 
 
-void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) {
+void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) { // lint: void_ptr virtual override return type baked into vtable/symbol
     // lint: void_ptr virtual override return type baked into vtable/symbol
     const unsigned short *w = GetAEWChar(name);
     while (*w)

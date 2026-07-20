@@ -19,15 +19,15 @@ namespace {
     };
 }
 
-void liw_set_buildShipPreview(void *self, void *item, void *layout);
+void liw_set_buildShipPreview(void *self, void *item, void *layout); // lint: void_ptr (imported symbol; param mangling must match lib)
 
 // lint: void_ptr (imported symbol; param mangling must match lib)
 
-void liw_set_fillRows(void *self, void *item, void *layout, int isShip, bool param6);
+void liw_set_fillRows(void *self, void *item, void *layout, int isShip, bool param6); // lint: void_ptr (imported symbol; param mangling must match lib)
 
 // lint: void_ptr (imported symbol; param mangling must match lib)
 
-void _liw_render_tail(void *c, int a, int h, void *sp);
+void _liw_render_tail(void *c, int a, int h, void *sp); // lint: void_ptr (imported symbol; param mangling must match lib)
 
 // lint: void_ptr (imported symbol; param mangling must match lib)
 
@@ -452,11 +452,11 @@ void ListItemWindow::draw() {
     this->scrollWindow->draw();
 }
 
-void MatrixSetRotation(void *m, float x, float y, float z);
+void MatrixSetRotation(void *m, float x, float y, float z); // lint: void_ptr (imported symbol; param mangling must match lib)
 
 // lint: void_ptr (imported symbol; param mangling must match lib)
 
-void MatrixSetScaling(void *m, float x, float y, float z);
+void MatrixSetScaling(void *m, float x, float y, float z); // lint: void_ptr (imported symbol; param mangling must match lib)
 
 // lint: void_ptr (imported symbol; param mangling must match lib)
 

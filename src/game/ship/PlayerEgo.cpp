@@ -173,7 +173,7 @@ void stopShooting_extB(void *, int, int); // lint: void_ptr (external symbol; pa
 
 void *TransformGetLocal(void *, int); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void MatrixSetRotation(void *, void *, float, float, float);
+void MatrixSetRotation(void *, void *, float, float, float); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -181,7 +181,7 @@ int aeabi_idiv_(int a, int b);
 
 float PE_pitchRampDelta(PlayerEgo *self, float rate, int frameTime);
 
-int PE_adp_approach(PlayerEgo *self, void *station);
+int PE_adp_approach(PlayerEgo *self, void *station); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -190,11 +190,11 @@ void PE_adp_apply(PlayerEgo * self);
 
 float PE_yawRampDelta(float rate, int frameTime);
 
-static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; }
+static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-static inline void Vec_assign(void *dst, const void *src) { for(int _i=0;_i<3;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; }
+static inline void Vec_assign(void *dst, const void *src) { for(int _i=0;_i<3;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -202,11 +202,11 @@ void PE_mtp_steer(PlayerEgo *self, const float *target, int steer, float speed);
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-static inline void Vec_sub(void *out, const void *a, const void *b) { for(int _i=0;_i<3;_i++) ((float*)out)[_i]=((const float*)a)[_i]-((const float*)b)[_i]; }
+static inline void Vec_sub(void *out, const void *a, const void *b) { for(int _i=0;_i<3;_i++) ((float*)out)[_i]=((const float*)a)[_i]-((const float*)b)[_i]; } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-static inline float Vec_length(const void *v) { const float*_p=(const float*)v; return __builtin_sqrtf(_p[0]*_p[0]+_p[1]*_p[1]+_p[2]*_p[2]); }
+static inline float Vec_length(const void *v) { const float*_p=(const float*)v; return __builtin_sqrtf(_p[0]*_p[0]+_p[1]*_p[1]+_p[2]*_p[2]); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 int PE_hat_aimAndFire(PlayerEgo *self, int dt);
 
@@ -218,27 +218,27 @@ float PE_roll_bankFactor(PlayerEgo *self, float rx, float ry, float *outZ);
 
 static inline void hitCamera_(PlayerEgo *self) { self->hitCamera(); }
 
-void PE_cc_wormhole(PlayerEgo *self, void *obj);
+void PE_cc_wormhole(PlayerEgo *self, void *obj); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void PE_cc_obstacle(PlayerEgo *self, void *obj, unsigned idx);
+void PE_cc_obstacle(PlayerEgo *self, void *obj, unsigned idx); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void PE_cc_destructible(PlayerEgo *self, void *obj);
+void PE_cc_destructible(PlayerEgo *self, void *obj); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void PlayEngineSound_(PlayerEgo * self);
 
-void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint);
+void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void PE_upd_boost(PlayerEgo *self, int dt);
 
-void PE_upd_docksFinishDelivery(PlayerEgo *self, void *radio);
+void PE_upd_docksFinishDelivery(PlayerEgo *self, void *radio); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -248,27 +248,27 @@ void PE_um_strafeTarget(PlayerEgo *self, float *out);
 
 void PE_um_strafeGlide(PlayerEgo * self);
 
-static inline void Mat_getPosition(void *out, const void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); }
+static inline void Mat_getPosition(void *out, const void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-static inline void Mat_getUp(void *out, const void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetUp(*(const AbyssEngine::AEMath::Matrix*)m); }
+static inline void Mat_getUp(void *out, const void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetUp(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-static inline void Mat_getDir(void *out, const void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetDir(*(const AbyssEngine::AEMath::Matrix*)m); }
+static inline void Mat_getDir(void *out, const void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetDir(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void Mat_getLookAt(void *out, const void *eye, const void *dir, const void *up);
-
-// lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-void PE_htv_applyShake(PlayerEgo *self, int dt, void *eye, void *dir);
+void Mat_getLookAt(void *out, const void *eye, const void *dir, const void *up); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-int PE_aa_approachStep(PlayerEgo *self, int hud2, void *radar);
+void PE_htv_applyShake(PlayerEgo *self, int dt, void *eye, void *dir); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void Mat_mul(void *out, const void *a, const void *b);
+int PE_aa_approachStep(PlayerEgo *self, int hud2, void *radar); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
+
+// lint: void_ptr (external symbol; param/return types mangling-load-bearing)
+
+void Mat_mul(void *out, const void *a, const void *b); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -276,11 +276,11 @@ void PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHandle);
 
 static void (*g_stopBoost_fn)(void *, int); // lint: void_ptr (fn-ptr slot; param type load-bearing)
 
-void *TractorBeam_new(void *geo, int kind);
+void *TractorBeam_new(void *geo, int kind); // lint: void_ptr (fn-ptr slot; param type load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-static inline void MatrixGetPosition(void *out, void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); }
+static inline void MatrixGetPosition(void *out, void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void *MovingStars_ctor(void *self); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1001,7 +1001,7 @@ Vec3 PlayerEgo::getTurretPosition() {
     return MatrixGetPosition(world);
 }
 
-static inline void Vec_scale(void *out, const void *v, float s) { for(int _i=0;_i<3;_i++) ((float*)out)[_i]=((const float*)v)[_i]*s; }
+static inline void Vec_scale(void *out, const void *v, float s) { for(int _i=0;_i<3;_i++) ((float*)out)[_i]=((const float*)v)[_i]*s; } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1046,7 +1046,7 @@ void PlayerEgo::refillGunDelay() {
     ((Player *) this->player)->refillGunDelay(0);
 }
 
-void PE_cft_finishMaterials(void *canvas, int mesh, void *out);
+void PE_cft_finishMaterials(void *canvas, int mesh, void *out); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1853,14 +1853,14 @@ void PlayerEgo::killLiberator() {
     }
 }
 
-void Mat_identity(void *out, const void *src);
+void Mat_identity(void *out, const void *src); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-static inline void Mat_setRotation(void *out, float x, float y, float z) { AbyssEngine::AEMath::MatrixSetRotation(*(AbyssEngine::AEMath::Matrix*)out, x, y, z); }
+static inline void Mat_setRotation(void *out, float x, float y, float z) { AbyssEngine::AEMath::MatrixSetRotation(*(AbyssEngine::AEMath::Matrix*)out, x, y, z); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -2023,7 +2023,7 @@ float PlayerEgo::up(int frameTime, float delta) {
     return target;
 }
 
-void Mat_mul(void *out, const void *a, const void *b);
+void Mat_mul(void *out, const void *a, const void *b); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -2323,12 +2323,12 @@ void PlayerEgo::draw(bool allowHud) {
     ((PlayerEgo *) (this))->drawThrottle();
 }
 
-void PE_upd_subsystems(PlayerEgo *self, int dt, void *radar, void *hud,
+void PE_upd_subsystems(PlayerEgo *self, int dt, void *radar, void *hud, // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
                        // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-                       void *radio,
+                       void *radio, // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
                        void *script); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void PE_upd_post(PlayerEgo *self, int dt, void *radar, void *hud,
+void PE_upd_post(PlayerEgo *self, int dt, void *radar, void *hud, // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
                  // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
                  void *radio, int arg5); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -2587,7 +2587,7 @@ int PlayerEgo::getHullDamageRate() {
     return ((Player *) this->player)->getArmorDamageRate();
 }
 
-void Mat_mul(void *out, const void *a, const void *b);
+void Mat_mul(void *out, const void *a, const void *b); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 

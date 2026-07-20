@@ -17,11 +17,11 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/ui/Layout.h"
 
-void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
+void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-void Image2DCreate(void *canvas, unsigned short id, void *outField);
+void Image2DCreate(void *canvas, unsigned short id, void *outField); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
@@ -112,7 +112,7 @@ uint8_t Hud::cargoFull() {
     return this->cargoFullFlag;
 }
 
-unsigned int Hud::touchEnd(unsigned int a, unsigned int b, void *key) {
+unsigned int Hud::touchEnd(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     int i = 0;
     unsigned int ret = 0;
@@ -444,7 +444,7 @@ void Hud::drawOrbitInformation() {
     Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (secTxt), (x), (char) layout[0x8a], false);
 }
 
-unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) {
+unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     unsigned int i = 0;
     for (; i <= 0x18; i = i + 1) {
@@ -1019,7 +1019,7 @@ void Hud::drawEventQueue() {
     Globals::Canvas->SetColor(0xffffffffu);
 }
 
-unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) {
+unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     unsigned int e = touchedElement(a, b);
     if (e == 0) {
@@ -1083,7 +1083,7 @@ int Hud::init() {
     this->messageActive = 0;
     this->hackingGameActive = 0;
 
-    this->keyArray = new Array<void *>();
+    this->keyArray = new Array<void *>(); // lint: void_ptr (opaque touch-handle element type, matches exported void* touchId)
     // lint: void_ptr (opaque touch-handle element type, matches exported void* touchId)
     ArraySetLength(0x19, *(this->keyArray));
     this->elementBits = new int[0x19];

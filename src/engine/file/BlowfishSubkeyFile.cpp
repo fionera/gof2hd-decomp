@@ -18,7 +18,7 @@ extern "C" int opensubkeyfile() { // lint: extern_c (native ABI boundary; origin
     return SubkeyFile != nullptr ? 0 : -1;
 }
 
-extern "C" void *decrypt(void *ctx) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" void *decrypt(void *ctx) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr extern "C" ABI signature (opaque ctx in/out)
     // lint: void_ptr extern "C" ABI signature (opaque ctx in/out)
     return ctx;
 }

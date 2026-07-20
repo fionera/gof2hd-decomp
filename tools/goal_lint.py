@@ -9,7 +9,8 @@ machine code -- not like decompiler output. This linter gates the invariants the
   union_decl     use of `union` (model the real type instead)
   explicit_inst  explicit template instantiation (`template class X<...>;`) -- templates must be
                  instantiated implicitly so an unused one shows up as a missing symbol, not a lie
-  banned_token   asm( / __asm / __attribute__ / `extern "C"` cruft / linker-script artifacts
+  banned_token   inline asm in any spelling (asm( / asm volatile( / __asm / __asm__) /
+                 __attribute__ / __declspec / `extern "C"` cruft / linker-script artifacts
   circular_inc   a cycle in the #include graph
 
 Exit 0 iff every criterion is clean. Prints offenders grouped by criterion.
@@ -79,13 +80,22 @@ def strip_noise(text):
 
 
 # A class/struct *definition* (has a body), not a forward decl, not a variable of struct type.
-CLASS_DEF = re.compile(r"\b(?:class|struct)\s+([A-Za-z_]\w*)\s*(?:final\s*)?(?::[^{;]+)?\{")
+# An optional `enum` prefix is captured so `enum class` / `enum struct` (scoped enums, not classes)
+# can be skipped by the caller.
+CLASS_DEF = re.compile(r"\b(?P<enum>enum\s+)?(?:class|struct)\s+(?P<name>[A-Za-z_]\w*)\s*(?:final\s*)?(?::[^{;]+)?\{")
 EXPLICIT_INST = re.compile(r"^\s*template\s+(?:class|struct)\s+\w", re.M)
 VOID_PTR = re.compile(r"\bvoid\s*\*")
+# `typedef void FOO;` / `using FOO = void;` launder `void *` behind an alias (FOO* evades VOID_PTR);
+# counted under void_ptr. Function typedefs (`typedef void F();`, `using F = void(*)();`) don't match.
+VOID_ALIAS = re.compile(r"\btypedef\s+void\s+\w+\s*;|\busing\s+\w+\s*=\s*void\s*;")
 UNION = re.compile(r"\bunion\b")
 # Genuine codegen "hacks" the port must never use.
 BANNED = {
-    "banned_token": re.compile(r'(\b__asm\b|\basm\s*\(|__attribute__|__declspec)'),
+    # Inline asm in ANY spelling: `asm(`, `asm volatile(` (any qualifier list), `__asm`, `__asm__`,
+    # plus `__attribute__` / `__declspec`. Matched on comment/string-stripped text, so the bare word
+    # "asm" inside a comment or string literal never trips.
+    "banned_token": re.compile(
+        r'((?<!\w)__asm(?:__)?\b|\basm\b\s*(?:(?:volatile|inline|goto|const)\b\s*)*\(|__attribute__|__declspec)'),
     # Direct operator calls (`::operator new`, `::operator delete`, `::new`, `::delete`) are a
     # decompiler idiom; the human-style port allocates with `new T()` / `delete p`. Ratcheted SOFT.
     "operator_call": re.compile(r'(?:::\s*)?operator\s+(?:new|delete)\b|::\s*(?:new|delete)\b'),
@@ -116,12 +126,11 @@ def lint_file(path):
         # union_decl is UN-waivable: the original source has no unions (Ghidra invents them), so any
         # `union` is a decompiler artifact to eliminate, never to waive.
         if crit != "union_decl":
-            # A `// lint: <crit>` comment waives the criterion on its own line OR an adjacent line
-            # (within +-2): waivers are written same-line, just above, or just below the declaration,
-            # and an auto-formatter may insert a blank line between the two -- so accept a small window.
-            for l in range(lineno - 2, lineno + 3):
-                if crit in waivers.get(l, ()):
-                    return
+            # A `// lint: <crit>` comment waives the criterion on its OWN line only (the codebase
+            # convention per docs/VALIDATION.md). No adjacency slack: a wider window would let one
+            # waiver silently cover a different, NEW violation on a nearby line.
+            if crit in waivers.get(lineno, ()):
+                return
         viol.append((crit, lineno, snippet))
 
     # one class per file: a public class lives in its own header. We enforce this on HEADERS
@@ -130,7 +139,8 @@ def lint_file(path):
     # file), which are not separate public classes; splitting them into their own files would be
     # noise, so they don't count. A .cpp still "implements one class" -- its method definitions.
     if path.suffix in (".h", ".hpp"):
-        defs = [(m.group(1), line_of(clean, m.start())) for m in CLASS_DEF.finditer(clean)]
+        defs = [(m.group("name"), line_of(clean, m.start()))
+                for m in CLASS_DEF.finditer(clean) if not m.group("enum")]
         if len(defs) > 1:
             names = ", ".join(f"{n}@{l}" for n, l in defs)
             add("one_class", defs[1][1], f"{len(defs)} definitions: {names}")
@@ -139,6 +149,9 @@ def lint_file(path):
         l = line_of(clean, m.start())
         add("explicit_inst", l, raw_lines[l - 1].strip())
     for m in VOID_PTR.finditer(clean):
+        l = line_of(clean, m.start())
+        add("void_ptr", l, raw_lines[l - 1].strip())
+    for m in VOID_ALIAS.finditer(clean):
         l = line_of(clean, m.start())
         add("void_ptr", l, raw_lines[l - 1].strip())
     for m in UNION.finditer(clean):

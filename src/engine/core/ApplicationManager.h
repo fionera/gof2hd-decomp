@@ -27,11 +27,11 @@ namespace AbyssEngine {
 using ::AbyssEngine::PaintCanvas;
 using ::AbyssEngine::Engine;
 
-typedef void LoadingCallback_t(PaintCanvas *canvas, int loading, void *data);
+typedef void LoadingCallback_t(PaintCanvas *canvas, int loading, void *data); // lint: void_ptr (callback typedef, opaque user data; original exports with Pv mangling)
 
 // lint: void_ptr (callback typedef, opaque user data; original exports with Pv mangling)
 
-typedef bool ResumeCallback_t(PaintCanvas *canvas, void *data);
+typedef bool ResumeCallback_t(PaintCanvas *canvas, void *data); // lint: void_ptr (callback typedef, opaque user data; original exports with Pv mangling)
 
 // lint: void_ptr (callback typedef, opaque user data; original exports with Pv mangling)
 
@@ -97,7 +97,7 @@ namespace AbyssEngine {
 
         void CheatEnable(bool enable);
 
-        void CheatSetCallback(void (*callback)(int, void *), void *data);
+        void CheatSetCallback(void (*callback)(int, void *), void *data); // lint: void_ptr (exported ABI signature, opaque cheat callback user data)
 
         // lint: void_ptr (exported ABI signature, opaque cheat callback user data)
 
@@ -113,7 +113,7 @@ namespace AbyssEngine {
 
         void ConfigRegisterTokenReadFunction(String name,
                                              ConfigTokenReadFunction read,
-                                             void *context);
+                                             void *context); // lint: void_ptr (exported ABI signature, opaque token-read context)
 
         // lint: void_ptr (exported ABI signature, opaque token-read context)
 
@@ -143,7 +143,7 @@ namespace AbyssEngine {
 
         void KeyCodeSetMapping(Array<KeyCode *> *array);
 
-        void LoadingCallbackShow(int mode, void *data);
+        void LoadingCallbackShow(int mode, void *data); // lint: void_ptr (exported ABI signature, opaque loading-callback user data)
 
         // lint: void_ptr (exported ABI signature, opaque loading-callback user data)
 
@@ -151,17 +151,17 @@ namespace AbyssEngine {
 
         void OnKeyRelease(int key);
 
-        void OnTouchBegin(int xArg, int yArg, void *touch);
+        void OnTouchBegin(int xArg, int yArg, void *touch); // lint: void_ptr (exported ABI signature, opaque platform touch handle)
 
         // lint: void_ptr (exported ABI signature, opaque platform touch handle)
 
-        void OnTouchEnd(int xArg, int yArg, void *touch);
+        void OnTouchEnd(int xArg, int yArg, void *touch); // lint: void_ptr (exported ABI signature, opaque platform touch handle)
 
         // lint: void_ptr (exported ABI signature, opaque platform touch handle)
 
         void OnTouchEnd();
 
-        void OnTouchMove(int xArg, int yArg, void *touch);
+        void OnTouchMove(int xArg, int yArg, void *touch); // lint: void_ptr (exported ABI signature, opaque platform touch handle)
 
         // lint: void_ptr (exported ABI signature, opaque platform touch handle)
 
@@ -183,11 +183,11 @@ namespace AbyssEngine {
 
         void SetExitCallback(QuitCallback_t *callback);
 
-        void SetLoadingCallback(LoadingCallback_t *callback, void *data);
+        void SetLoadingCallback(LoadingCallback_t *callback, void *data); // lint: void_ptr (exported ABI signature, opaque loading-callback user data)
 
         // lint: void_ptr (exported ABI signature, opaque loading-callback user data)
 
-        void SetResumeCallback(ResumeCallback_t *callback, void *data);
+        void SetResumeCallback(ResumeCallback_t *callback, void *data); // lint: void_ptr (exported ABI signature, opaque loading-callback user data)
 
         // lint: void_ptr (exported ABI signature, opaque resume-callback user data)
 

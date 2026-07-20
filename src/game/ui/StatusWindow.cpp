@@ -80,7 +80,7 @@ float StatusWindow::getRelativeScrollStartPos() {
     return -(float) range / (float) this->contentHeight;
 }
 
-void Status_replaceHash(void *out, void *key, void *a, void *b);
+void Status_replaceHash(void *out, void *key, void *a, void *b); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
@@ -347,7 +347,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
 
 Achievements *Achievements_get();
 
-int Achievements_isUnlocked(void *ach, int index);
+int Achievements_isUnlocked(void *ach, int index); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 

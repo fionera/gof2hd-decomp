@@ -20,7 +20,7 @@ namespace AbyssEngine {
 
         ~ConfigReader();
 
-        void RegisterTokenReadFunction(String name, ConfigTokenReadFunction read, void *context);
+        void RegisterTokenReadFunction(String name, ConfigTokenReadFunction read, void *context); // lint: void_ptr (param baked into mangled symbol)
 
         // lint: void_ptr (param baked into mangled symbol)
 

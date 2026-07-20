@@ -55,12 +55,12 @@ void StarSystem::renderSunStreak() {
     this->sunStreak->render();
 }
 
-void *StarSystem::getPlanetTargets() {
+void *StarSystem::getPlanetTargets() { // lint: void_ptr (exported signature; mangling must match lib)
     // lint: void_ptr (exported signature; mangling must match lib)
     return this->playerTargets;
 }
 
-void *StarSystem::getPlanets() {
+void *StarSystem::getPlanets() { // lint: void_ptr (exported signature; mangling must match lib)
     // lint: void_ptr (exported signature; mangling must match lib)
     return this->planetsArray;
 }

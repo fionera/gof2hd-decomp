@@ -36,19 +36,19 @@ void Status_changeCredits(void *globals); // lint: void_ptr cross-file shim, man
 
 float VectorSignedToFloat(int v, int mode);
 
-void TouchButton_ctor_text(void *btn, void *text, int a, int b, int c, char k);
+void TouchButton_ctor_text(void *btn, void *text, int a, int b, int c, char k); // lint: void_ptr cross-file shim, mangled param type
 
 // lint: void_ptr cross-file shim, mangled param type
 
-void TouchButton_ctor_text2(void *btn, void *text, int a, int b, int c, int d, char k);
+void TouchButton_ctor_text2(void *btn, void *text, int a, int b, int c, int d, char k); // lint: void_ptr cross-file shim, mangled param type
 
 // lint: void_ptr cross-file shim, mangled param type
 
-void TouchButton_ctor_img(void *btn, void *img, int a, int b, int c, int d, char k, char m);
+void TouchButton_ctor_img(void *btn, void *img, int a, int b, int c, int d, char k, char m); // lint: void_ptr cross-file shim, mangled param type
 
 // lint: void_ptr cross-file shim, mangled param type
 
-void TouchButton_ctor_img2(void *btn, void *imgA, void *imgB, int a, int b, int c, char k);
+void TouchButton_ctor_img2(void *btn, void *imgA, void *imgB, int a, int b, int c, char k); // lint: void_ptr cross-file shim, mangled param type
 
 // lint: void_ptr cross-file shim, mangled param type
 

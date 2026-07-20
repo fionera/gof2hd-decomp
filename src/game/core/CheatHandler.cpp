@@ -22,7 +22,7 @@ namespace AbyssEngine {
         }
     }
 
-    void CheatHandler::SetCheatFunc(CheatFunc f, void *ctx) {
+    void CheatHandler::SetCheatFunc(CheatFunc f, void *ctx) { // lint: void_ptr (exported method signature)
         // lint: void_ptr (exported method signature)
         func = f;
         context = ctx;

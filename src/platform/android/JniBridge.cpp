@@ -299,11 +299,11 @@ extern "C" void ndk23_handleAcceleration(float x, float y, float z) { // lint: e
     engine->SetGravValue(gravity[3], gravity[4], gravity[5]);
 }
 
-extern "C" jint JNI_OnLoad(JavaVM *vm, void * /*reserved*/) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" jint JNI_OnLoad(JavaVM *vm, void * /*reserved*/) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
     // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
     g_pVM = vm;
     JNIEnv *env = nullptr;
-    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_4) != JNI_OK)
+    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_4) != JNI_OK) // lint: void_ptr (GetEnv requires void** out-param, JNI ABI)
         // lint: void_ptr (GetEnv requires void** out-param, JNI ABI)
         return -1;
     if (env->FindClass("net/fishlabs/gof2hdallandroid2012/GOF2HD2012") == nullptr)
@@ -430,7 +430,7 @@ extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI b
     int touchCount = GetTouchCount();
     for (int i = 0; i < touchCount; ++i) {
         Touch rec = GetTouch(i);
-        void *touch = reinterpret_cast<void *>(rec.x);
+        void *touch = reinterpret_cast<void *>(rec.x); // lint: void_ptr (opaque touch handle for OnTouch* void* params, baked ABI)
         // lint: void_ptr (opaque touch handle for OnTouch* void* params, baked ABI)
         int phase = rec.y;
         int x = rec.id;
@@ -477,7 +477,7 @@ extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI b
     ndk_checkPlaytimeAndSpendOfferwallCredits();
 }
 
-extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
                                           // lint: void_ptr (ndk* touch handle param, baked ABI)
                                           float x, float y) {
     ApplicationManager *manager = (gEngine)->appManager;
@@ -493,7 +493,7 @@ extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int pha
     }
 }
 
-extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
                                              // lint: void_ptr (ndk* touch handle param, baked ABI)
                                              float x, float y) {
     ndk23_handleTouchPadEvent(clazz, touch, phase, x, y);
@@ -652,7 +652,7 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_resize( // lint: ex
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleTouchEvent( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass clazz, jint touch, jint phase, jfloat x, jfloat y) {
-    ndk23_handleTouchScreenEvent(clazz, reinterpret_cast<void *>(touch), phase, x, y);
+    ndk23_handleTouchScreenEvent(clazz, reinterpret_cast<void *>(touch), phase, x, y); // lint: void_ptr (opaque touch handle for ndk* void* param, baked ABI)
     // lint: void_ptr (opaque touch handle for ndk* void* param, baked ABI)
 }
 

@@ -289,7 +289,7 @@ void keyReleased(AbyssEngine::Engine *engine, int key) {
             continue;
 
         engine->appManager->OnTouchEnd(vk.baseX + vk.offsetX, vk.baseY + vk.offsetY,
-                                       reinterpret_cast<void *>(vk.touchWindowHandle));
+                                       reinterpret_cast<void *>(vk.touchWindowHandle)); // lint: void_ptr (opaque touch handle for OnTouchEnd ABI)
         // lint: void_ptr (opaque touch handle for OnTouchEnd ABI)
         engine->appManager->OnTouchEnd();
         engine->DrawQuad(vk.offsetX, vk.offsetY, 10, 10);
@@ -389,7 +389,7 @@ void keyPressed(AbyssEngine::Engine *engine, int key) {
             if (vk.hasTouch != 0) {
                 engine->appManager->OnTouchBegin(vk.baseX + vk.offsetX,
                                                  vk.baseY + vk.offsetY,
-                                                 reinterpret_cast<void *>(vk.touchWindowHandle));
+                                                 reinterpret_cast<void *>(vk.touchWindowHandle)); // lint: void_ptr (opaque touch handle for OnTouchBegin ABI)
                 // lint: void_ptr (opaque touch handle for OnTouchBegin ABI)
                 vk.offsetX = vk.baseX;
                 vk.offsetY = vk.baseY;
@@ -741,20 +741,20 @@ void simulateTouch(AbyssEngine::Engine *engine) {
 
             if (down == 0 && !inactive) {
                 if (ex == 0.5f && ey == 0.5f) {
-                    mgr->OnTouchEnd(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                    mgr->OnTouchEnd(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchEnd ABI)
                     // lint: void_ptr (synthetic touch handle for OnTouchEnd ABI)
                     g_simTouchActive = 0;
                 } else {
-                    mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                    mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                     // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                 }
             } else if (down == 1 && !inactive) {
-                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                 // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
             } else if (active == 0 && down == 1) {
-                mgr->OnTouchBegin(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                mgr->OnTouchBegin(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchBegin ABI)
                 // lint: void_ptr (synthetic touch handle for OnTouchBegin ABI)
-                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchBegin ABI)
                 // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                 g_simTouchActive = 1;
             }

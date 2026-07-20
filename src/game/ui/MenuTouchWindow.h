@@ -149,7 +149,7 @@ public:
 
     float getRelativeScrollStartPos();
 
-    int OnTouchEnd(int y, int x, void *touchId);
+    int OnTouchEnd(int y, int x, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
@@ -157,7 +157,7 @@ public:
 
     void startValkyrie();
 
-    int OnTouchBegin(int y, int x, void *touchId);
+    int OnTouchBegin(int y, int x, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
@@ -181,7 +181,7 @@ public:
 
     float getRelativeScrollHeight();
 
-    int OnTouchMove(int y, int x, void *touchId);
+    int OnTouchMove(int y, int x, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 

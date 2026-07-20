@@ -31,7 +31,7 @@ namespace AbyssEngine {
 
 void *AERandom_seed_ctor(void *self, long long seed); // lint: void_ptr (AERandom ABI shim, Pv mangling baked in)
 
-static inline void AERandom_ctor(void *self) { new(self) AbyssEngine::AERandom(); }
+static inline void AERandom_ctor(void *self) { new(self) AbyssEngine::AERandom(); } // lint: void_ptr (AERandom ABI shim, Pv mangling baked in)
 
 static char *ParticleSet_definitions = nullptr;
 

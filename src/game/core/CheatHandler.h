@@ -9,7 +9,7 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    typedef void (*CheatFunc)(int, void *);
+    typedef void (*CheatFunc)(int, void *); // lint: void_ptr (CheatFunc ABI baked into SetCheatFunc/CheatSetCallback mangling)
 
     // lint: void_ptr (CheatFunc ABI baked into SetCheatFunc/CheatSetCallback mangling)
 

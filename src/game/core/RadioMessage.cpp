@@ -1,6 +1,7 @@
 #include "game/core/RadioMessage.h"
 #include "game/core/Radio.h"
-#include "game/core/Vector.h"
+#include "engine/core/AEString.h"
+#include "engine/core/Array.h"
 #include "game/mission/Objective.h"
 #include "game/ship/KIPlayer.h"
 #include "game/ship/Player.h"

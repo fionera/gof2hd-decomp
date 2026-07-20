@@ -83,7 +83,7 @@ void releaseStringUTFChars(JNIEnv *env, jstring str, const char *chars) {
         operator delete(const_cast<char *>(chars));
     }
     if (str != nullptr) {
-        operator delete(reinterpret_cast<void *>(str));
+        operator delete(reinterpret_cast<void *>(str)); // lint: void_ptr NDK boundary, operator delete ABI requires void*
         // lint: void_ptr NDK boundary, operator delete ABI requires void*
     }
 }

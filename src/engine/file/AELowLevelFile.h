@@ -14,9 +14,9 @@ public:
     virtual ~AELowLevelFile() {
     }
 
-    virtual uint32_t Write(uint32_t bytes, void *buffer) { return 0; }
+    virtual uint32_t Write(uint32_t bytes, void *buffer) { return 0; } // lint: void_ptr virtual buffer param; Pv baked into mangled name
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
-    virtual uint32_t Read(uint32_t bytes, void *buffer) { return 0; }
+    virtual uint32_t Read(uint32_t bytes, void *buffer) { return 0; } // lint: void_ptr virtual buffer param; Pv baked into mangled name
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
     virtual uint32_t Skip(uint32_t bytes) { return 0; }
     virtual uint32_t Release() { return 1; }

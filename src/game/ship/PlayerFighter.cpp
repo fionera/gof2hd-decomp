@@ -39,7 +39,7 @@ void AEMath_MatrixAssign(void *dst, void *src); // lint: void_ptr (external symb
 
 void AEMath_MatrixIdentity(void *out, void *m); // lint: void_ptr (external symbol; param types load-bearing)
 
-void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz);
+void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz); // lint: void_ptr (external symbol; param types load-bearing)
 
 // lint: void_ptr (external symbol; param type load-bearing)
 
@@ -849,7 +849,7 @@ void PF_cloakStart(PlayerFighter * self);
 
 void PF_cloakStop(PlayerFighter *self, int on);
 
-void PF_cloakApply(void *meshPtr, int arg, float alpha, int flag);
+void PF_cloakApply(void *meshPtr, int arg, float alpha, int flag); // lint: void_ptr (external symbol; param type load-bearing)
 
 // lint: void_ptr (external symbol; param type load-bearing)
 

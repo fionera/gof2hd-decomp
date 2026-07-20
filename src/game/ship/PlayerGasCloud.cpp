@@ -150,7 +150,7 @@ void PlayerGasCloud::setPosition(const Vector &position) {
     this->geometry->setPosition(position);
 }
 
-void *PlayerGasCloud::getSparks() {
+void *PlayerGasCloud::getSparks() { // lint: void_ptr (exported method return type baked into ABI)
     // lint: void_ptr (exported method return type baked into ABI)
     return this->sparkGeometries;
 }

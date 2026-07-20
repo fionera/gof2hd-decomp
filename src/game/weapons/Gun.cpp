@@ -100,7 +100,7 @@ int Gun::getMagnitude() {
     return this->magnitude;
 }
 
-void *Gun::getEnemies() {
+void *Gun::getEnemies() { // lint: void_ptr exported method return type baked into header; consumed as void* in RocketGun.cpp
     // lint: void_ptr exported method return type baked into header; consumed as void* in RocketGun.cpp
     return this->enemies;
 }

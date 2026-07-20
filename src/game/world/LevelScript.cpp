@@ -217,7 +217,7 @@ void LevelScript::skipCutscene() {
         if ((uint32_t)(m_nState - 1) < 9) {
             m_nState = 9;
             for (int i = 0; i != 8; ++i) {
-                Array<void *> *messages = m_pLevel->getMessages();
+                Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
                 // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
                 ((RadioMessage *) ((*messages)[i]))->trigger();
                 messages = m_pLevel->getMessages();
@@ -247,7 +247,7 @@ void LevelScript::skipCutscene() {
     } else if (mission == 0x9d) {
         if (m_nState <= 4) {
             for (int i = 0; i != 4; ++i) {
-                Array<void *> *messages = m_pLevel->getMessages();
+                Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
                 // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
                 ((RadioMessage *) ((*messages)[i]))->trigger();
                 messages = m_pLevel->getMessages();
@@ -261,7 +261,7 @@ void LevelScript::skipCutscene() {
         m_nScriptTimerB = 0x2ee1;
         m_nScriptCounterB = 0;
         for (int i = 0; i != 3; ++i) {
-            Array<void *> *messages = m_pLevel->getMessages();
+            Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
             // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
             ((RadioMessage *) ((*messages)[i]))->trigger();
             messages = m_pLevel->getMessages();

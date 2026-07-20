@@ -1,0 +1,71 @@
+# sodiff_allow.txt -- the documented irreducible symbol delta: defined exports our build has that
+# the original does not. Every name here must have a rationale in docs/VALIDATION.md. The diff
+# target and tools/ratchet.py treat any extra export NOT on this list as a hard failure, and
+# tools/ratchet.py --update-baseline refuses to lock a state with undocumented extras.
+#
+# -- Compiler-emitted C1/C2 & D1/D2 ctor/dtor alias duplicates (docs/VALIDATION.md): clang emits
+#    both variants; the original's link kept one name. Removing ours needs __attribute__((used))
+#    or a version script, both banned.
+_ZN11AbyssEngine12ResourceMeshC1EPKctb
+_ZN11AbyssEngine12ResourceMeshD1Ev
+_ZN11AbyssEngine15ResourceTextureC1EPKcf
+_ZN11AbyssEngine15ResourceTextureC1ERKNS_6StringEf
+_ZN11AbyssEngine15ResourceTextureD1Ev
+_ZN11AbyssEngine16ResourceMaterialC1EtNS_9BlendModeE
+_ZN11AbyssEngine16ResourceMaterialC1EttNS_9BlendModeE
+_ZN11AbyssEngine17ResourceTransformD1Ev
+_ZN11AbyssEngine6AEMath6MatrixC1Ev
+_ZN11AbyssEngine6CameraC1Efffff
+_ZN11AbyssEngine6StringC1Ec
+_ZN11AbyssEngine6StringC1Ef
+_ZN11AbyssEngine6StringC1Ei
+_ZN11AbyssEngine6StringC1Ex
+_ZN11AbyssEngine6StringC2ERKS0_
+_ZN11AbyssEngine8MaterialC1EPS0_
+_ZN11AbyssEngine8MaterialC1Ev
+_ZN11AbyssEngine8MaterialD1Ev
+_ZN16ParticleSettingsD1Ev
+_ZN5ArrayIN11AbyssEngine6StringEEC2Ev
+_ZN5ArrayIN11AbyssEngine6StringEED2Ev
+_ZN5ArrayIP10GameRecordED1Ev
+_ZN5ArrayIP11TouchSliderEC1Ev
+_ZN5ArrayIP11TouchSliderED1Ev
+_ZN5ArrayIP14PendingProductED1Ev
+_ZN5ArrayIP5RadioED2Ev
+_ZN5ArrayIP9BluePrintEC1Ev
+_ZN5ArrayIP9BluePrintED1Ev
+_ZN5ArrayIPN11AbyssEngine7KeyCodeEEC1Ev
+_ZN5ArrayIPN11AbyssEngine7KeyCodeEED1Ev
+_ZN5ArrayIPS_IN11AbyssEngine6StringEEED2Ev
+_ZN5ArrayIPS_IP9ImagePartEEC1Ev
+_ZN5ArrayIPS_IPN11AbyssEngine6StringEEEC1Ev
+_ZN5ArrayIPS_IPN11AbyssEngine6StringEEED1Ev
+_ZN5ArrayIPaED2Ev
+_ZN5ArrayIbED1Ev
+#
+# -- Engine flag globals (src/engine/core/EngineFlags.cpp, commit dcdcb0e1): never-set flags the
+#    original keeps as internal data, split to their own TU with external linkage so -Oz cannot
+#    constant-fold the null through the flag-gated engine functions. Hidden visibility would
+#    change the GOT-indirect codegen and __attribute__ is banned, so the exports stay.
+_ZN11AbyssEngine20g_MeshRelease_freeFnE
+_ZN11AbyssEngine21g_Mesh_shaderPathFlagE
+_ZN11AbyssEngine21g_Mesh_tangentDelFlagE
+_ZN11AbyssEngine21g_Mesh_vboByteCounterE
+_ZN11AbyssEngine21g_Mesh_vboEnabledFlagE
+_ZN11AbyssEngine22g_Mesh_extraArraysFlagE
+_ZN11AbyssEngine22g_Mesh_keepCpuCopyFlagE
+_ZN11AbyssEngine23g_Engine_fboEnabledFlagE
+_ZN11AbyssEngine23g_Engine_shaderModeFlagE
+_ZN11AbyssEngine25g_MeshIntersect_flipVFlagE
+_ZN11AbyssEngine25g_Mesh_tangentEnabledFlagE
+_ZN11AbyssEngine25g_SpriteSystem_uvFlipFlagE
+_ZN11AbyssEngine26g_SpriteSystem_tangentFlagE
+_ZN11AbyssEngine27g_Camera_frustumEnabledFlagE
+_ZN11AbyssEngine28g_GameText_arabicEnabledFlagE
+#
+# -- Vendored / not-yet-wired (docs/VALIDATION.md)
+# libcrypto data symbol the original's static link garbage-collected.
+SHA256_version
+# odr-use anchor keeping the five _JNIEnv::Call*Method exports alive until the real JNI dispatch
+# consumer is decompiled.
+_ZN4gof218kJNIEnvCallAnchorsE

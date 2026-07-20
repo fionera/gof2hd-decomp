@@ -1,6 +1,7 @@
 #include "engine/render/SimpleMeshMerger.h"
 #include "engine/render/Mesh.h"
-#include "game/core/Vector.h"
+#include "engine/core/AEString.h"
+#include "engine/core/Array.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
 

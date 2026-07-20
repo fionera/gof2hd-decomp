@@ -88,7 +88,7 @@ public:
     int field_0xcc;
     int field_0xd0;
     int boostDelay; // relocated from its drifted slot; real offset 0xd4 (used in PlayerEgo.cpp)
-    void *boostSoundId;
+    void *boostSoundId; // lint: void_ptr  opaque FMOD sound-event id stored in a pointer-width slot (used only as (int)(intptr_t)); no typed pointee
     // lint: void_ptr  opaque FMOD sound-event id stored in a pointer-width slot (used only as (int)(intptr_t)); no typed pointee
     AEGeometry *rollGeometry;
     float rotX;

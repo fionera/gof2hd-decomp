@@ -1,8 +1,24 @@
 # Binary identicality: gap analysis & roadmap
 
-Goal: produce a `libgof2hdaa.so` byte-identical to `_work/bins/android_2.0.16_libgof2hdaa.so`
+Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16_libgof2hdaa.so`
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
+
+## Update 2026-07-20 — current truth (supersedes the numbers below)
+
+The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
+compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
+vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
+mode). Current: **compared 4511, byte_exact 1115, linked_exact 2125, avg 72.33%, stub_zero_size
+12, missing 0, sodiff extra 53 (all allowlisted)**. Historical figures in the sections below
+(923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
+as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
+`tools/verify_baseline.json` (cmake `check` target + pre-push hook). Two new prerequisites for
+byte-identicality were established from the original source-layout dumps
+(`_work/original_layout/`): original **TU membership** (which functions/statics/literals compile
+together — .rodata/.data order, `.init_array` (orig 3 entries vs our 1), string pools and -Oz
+same-TU inlining all follow it) and original object **link order**. The `drift` target (fixed to
+the real AAPCS ABI) reports 74 drifted fields across 8 classes as open struct work.
 
 ## Section-size deltas (stripped ours vs original)
 

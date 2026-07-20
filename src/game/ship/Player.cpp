@@ -61,7 +61,7 @@ void Gun_setEnemies(void *gun); // lint: void_ptr (external symbol; retyping the
 static int gShootSoundsByType[256];
 static int gShootSoundsByIndex[256];
 
-void FloatVectorMax(void *out, float a, float b, int c, int d);
+void FloatVectorMax(void *out, float a, float b, int c, int d); // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
 // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 

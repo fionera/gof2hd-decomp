@@ -293,15 +293,15 @@ public:
 
     void setVisible(bool value);
 
-    unsigned int touchBegin(unsigned int a, unsigned int b, void *key);
+    unsigned int touchBegin(unsigned int a, unsigned int b, void *key); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
-    unsigned int touchEnd(unsigned int a, unsigned int b, void *key);
+    unsigned int touchEnd(unsigned int a, unsigned int b, void *key); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
-    unsigned int touchMove(unsigned int a, unsigned int b, void *key);
+    unsigned int touchMove(unsigned int a, unsigned int b, void *key); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 

@@ -1,16 +1,8 @@
 #include "engine/math/Vector.h"
 
-namespace AbyssEngine {
-    namespace AEMath {
-        Vector &Vector::operator*=(const Vector &rhs) {
-            x *= rhs.x;
-            y *= rhs.y;
-            z *= rhs.z;
-            return *this;
-        }
-    }
-}
-
+// Vector's compound-assignment operators (=, -=, *=, /=) are emitted from AEMath.cpp -- that TU's
+// copies are the ones the link keeps (object order), matching the original binary. Only the
+// accessors below are emitted from this TU.
 namespace AbyssEngine {
     namespace AEMath {
         Vector::operator float *() { return &x; }
@@ -18,38 +10,5 @@ namespace AbyssEngine {
 
         float &Vector::operator[](int i) { return (&x)[i]; }
         float Vector::operator[](int i) const { return (&x)[i]; }
-    }
-}
-
-namespace AbyssEngine {
-    namespace AEMath {
-        Vector &Vector::operator-=(const Vector &rhs) {
-            x -= rhs.x;
-            y -= rhs.y;
-            z -= rhs.z;
-            return *this;
-        }
-    }
-}
-
-namespace AbyssEngine {
-    namespace AEMath {
-        Vector &Vector::operator/=(const Vector &rhs) {
-            x /= rhs.x;
-            y /= rhs.y;
-            z /= rhs.z;
-            return *this;
-        }
-    }
-}
-
-namespace AbyssEngine {
-    namespace AEMath {
-        Vector &Vector::operator=(const Vector &rhs) {
-            x = rhs.x;
-            y = rhs.y;
-            z = rhs.z;
-            return *this;
-        }
     }
 }

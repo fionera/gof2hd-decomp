@@ -10,23 +10,23 @@ public:
     virtual ~FileInterface() {
     }
 
-    virtual void *OpenRead(String name, int size, bool windowed, int packedSize, int rawSize, unsigned int offset) = 0;
+    virtual void *OpenRead(String name, int size, bool windowed, int packedSize, int rawSize, unsigned int offset) = 0; // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
     // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
-    virtual void *OpenWrite(String name, int size, bool append, unsigned int mode) = 0;
+    virtual void *OpenWrite(String name, int size, bool append, unsigned int mode) = 0; // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
     // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
-    virtual void *OpenAppend(String name, int size, bool append, unsigned int mode) = 0;
+    virtual void *OpenAppend(String name, int size, bool append, unsigned int mode) = 0; // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
     // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
-    virtual uint32_t Read(uint32_t bytes, void *buffer) = 0;
+    virtual uint32_t Read(uint32_t bytes, void *buffer) = 0; // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
     // lint: void_ptr (exported virtual; raw buffer param, ABI-mandated)
 
-    virtual uint32_t Write(uint32_t bytes, const void *buffer) = 0;
+    virtual uint32_t Write(uint32_t bytes, const void *buffer) = 0; // lint: void_ptr (exported virtual; raw buffer param, ABI-mandated)
 
     // lint: void_ptr (exported virtual; raw buffer param, ABI-mandated)
 
@@ -42,11 +42,11 @@ public:
 
     virtual const char *GetAppRootDir() = 0;
 
-    virtual void SetAppRootDir(void *path) = 0;
+    virtual void SetAppRootDir(void *path) = 0; // lint: void_ptr (exported virtual; param type baked into mangled symbol, ABI-mandated)
 
     // lint: void_ptr (exported virtual; param type baked into mangled symbol, ABI-mandated)
 
-    virtual void SetZipDirectory(void *path) = 0;
+    virtual void SetZipDirectory(void *path) = 0; // lint: void_ptr (exported virtual; param type baked into mangled symbol, ABI-mandated)
 
     // lint: void_ptr (exported virtual; param type baked into mangled symbol, ABI-mandated)
 

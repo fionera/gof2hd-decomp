@@ -271,7 +271,7 @@ int Globals::secondaryWeaponsProbChange;
 int Globals::lastCampaignMissionFailCount;
 unsigned char Globals::startLiteVersionWithMoreCredits;
 AbyssEngine::AERandom *Globals::rnd;
-void *Globals::font;
+void *Globals::font; // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
 // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
 unsigned char Globals::keys[1020];
 void *Globals::bankZ; // lint: void_ptr (unknown audio-bank handle, never referenced)
@@ -329,7 +329,7 @@ static inline int nextInt_71ad0(AbyssEngine::AERandom *self, int bound) { return
 
 int idiv(int a, int b);
 
-void MatrixSetTranslation(void *m, float x, float y, float z);
+void MatrixSetTranslation(void *m, float x, float y, float z); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
@@ -341,21 +341,21 @@ void *FileRead_dtor(void *self); // lint: void_ptr (Pv-mangled internal shim; AB
 
 float VectorScale(void *vec, float scalar); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-static inline void * Galaxy_dtor(void *g) { ((Galaxy*)g)->~Galaxy(); return (void *)(g); }
+static inline void * Galaxy_dtor(void *g) { ((Galaxy*)g)->~Galaxy(); return (void *)(g); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-static inline void * Status_dtor(void *s) { ((Status*)s)->~Status(); return (void *)(s); }
+static inline void * Status_dtor(void *s) { ((Status*)s)->~Status(); return (void *)(s); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-static inline void *AERandom_dtor(void *r) { ((AbyssEngine::AERandom*)r)->~AERandom(); return r; }
+static inline void *AERandom_dtor(void *r) { ((AbyssEngine::AERandom*)r)->~AERandom(); return r; } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-static inline void * Layout_dtor(void *l) { ((Layout*)l)->~Layout(); return (void *)(l); }
+static inline void * Layout_dtor(void *l) { ((Layout*)l)->~Layout(); return (void *)(l); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 void *Generator_dtor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-static inline void * FModSound_dtor(void *s) { ((FModSound*)s)->~FModSound(); return (void *)(s); }
+static inline void * FModSound_dtor(void *s) { ((FModSound*)s)->~FModSound(); return (void *)(s); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-static inline void * Achievements_dtor(void *a) { ((Achievements*)a)->~Achievements(); return (void *)(a); }
+static inline void * Achievements_dtor(void *a) { ((Achievements*)a)->~Achievements(); return (void *)(a); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-static inline void * ImageFactory_dtor(void *f) { ((ImageFactory*)f)->~ImageFactory(); return (void *)(f); }
+static inline void * ImageFactory_dtor(void *f) { ((ImageFactory*)f)->~ImageFactory(); return (void *)(f); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 void Mission_ctor(void *m); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
@@ -369,7 +369,7 @@ void FileRead_ctor(void *f); // lint: void_ptr (Pv-mangled internal shim; ABI-fi
 
 void *FileRead_dtor(void *f); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-static inline void AERandom_ctor(void *r) { new(r) AbyssEngine::AERandom(); }
+static inline void AERandom_ctor(void *r) { new(r) AbyssEngine::AERandom(); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 void Generator_ctor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
@@ -1458,7 +1458,7 @@ unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, fl
     return meshOut;
 }
 
-void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float x1, float y1, float z1);
+void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float x1, float y1, float z1); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 

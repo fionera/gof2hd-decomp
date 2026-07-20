@@ -11,7 +11,7 @@ Touch *touches = nullptr;
 
 uint32_t CameraGetCurrent(void *canvas); // lint: void_ptr (free-function signature; retype changes mangling)
 
-Matrix *CameraGetLocal(void *canvas, uint32_t index);
+Matrix *CameraGetLocal(void *canvas, uint32_t index); // lint: void_ptr (free-function signature; retype changes mangling)
 
 // lint: void_ptr (free-function signature; retype changes mangling)
 

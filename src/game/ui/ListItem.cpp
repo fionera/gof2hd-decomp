@@ -232,7 +232,7 @@ ListItem::ListItem(AbyssEngine::String *src, bool b, int v) {
     this->selectable = b;
 }
 
-void *ListItem::init() {
+void *ListItem::init() { // lint: void_ptr (exported signature; return type baked into ABI)
     // lint: void_ptr (exported signature; return type baked into ABI)
     this->lines = 0;
     this->agent = 0;

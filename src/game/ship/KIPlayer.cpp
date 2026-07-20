@@ -15,7 +15,7 @@
 
 using AbyssEngine::Matrix;
 
-void FModSound_resumeEvent(void *player, int channel);
+void FModSound_resumeEvent(void *player, int channel); // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
 
 // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
 
@@ -23,7 +23,7 @@ void FModSound_pauseEvent(void *player); // lint: void_ptr (external shim; Pv ma
 
 void FModSound_stopEvent(void *player); // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
 
-void FModSound_playEvent(void *player, int event, int flags);
+void FModSound_playEvent(void *player, int event, int flags); // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
 
 // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
 

@@ -160,7 +160,7 @@ void ImageFactory::drawItem(int itemId, int x, int y) {
     pc->DrawImage2D(icon, x, y);
 }
 
-void *ImageFactory::loadImage(int row, int col, int frameBase) {
+void *ImageFactory::loadImage(int row, int col, int frameBase) { // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
     // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
     int id = g_IF_idTable[row * 4 + col];
     if (id < 0)

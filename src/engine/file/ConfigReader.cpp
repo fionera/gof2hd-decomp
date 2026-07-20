@@ -72,7 +72,7 @@ namespace AbyssEngine {
     }
 
     void ConfigReader::RegisterTokenReadFunction(
-        String name, ConfigTokenReadFunction read, void *context) {
+        String name, ConfigTokenReadFunction read, void *context) { // lint: void_ptr (param baked into RegisterTokenReadFunction mangled symbol)
         // lint: void_ptr (param baked into RegisterTokenReadFunction mangled symbol)
         TokenStruct *token = new TokenStruct();
         token->name = name;

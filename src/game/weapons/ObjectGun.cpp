@@ -35,31 +35,31 @@ static PaintCanvas **g_PaintCanvas = nullptr;
 // The following are normally-named free-function shims for the PaintCanvas
 // engine API; their void* parameters/returns are part of their mangled
 // symbol names, so retyping them would break symbol parity. Left as-is.
-void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
+void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh); // lint: void_ptr free-function signature, retype changes mangling
 
 // lint: void_ptr free-function signature, retype changes mangling
 
-void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags);
+void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags); // lint: void_ptr free-function signature, retype changes mangling
 
 // lint: void_ptr free-function signature, retype changes mangling
 
-void TransformCreate(void *canvas, uint32_t *transform);
+void TransformCreate(void *canvas, uint32_t *transform); // lint: void_ptr free-function signature, retype changes mangling
 
 // lint: void_ptr free-function signature, retype changes mangling
 
-uint32_t TransformGetTransform(void *canvas, uint32_t transform);
+uint32_t TransformGetTransform(void *canvas, uint32_t transform); // lint: void_ptr free-function signature, retype changes mangling
 
 // lint: void_ptr free-function signature, retype changes mangling
 
-void TransformSetLocal(void *canvas, uint32_t transform, Matrix *matrix);
+void TransformSetLocal(void *canvas, uint32_t transform, Matrix *matrix); // lint: void_ptr free-function signature, retype changes mangling
 
 // lint: void_ptr free-function signature, retype changes mangling
 
-void DrawTransform(void *canvas, uint32_t transform, int flags);
+void DrawTransform(void *canvas, uint32_t transform, int flags); // lint: void_ptr free-function signature, retype changes mangling
 
 // lint: void_ptr free-function signature, retype changes mangling
 
-void MatrixRotateVector(void *out, const void *matrix, const void *vec);
+void MatrixRotateVector(void *out, const void *matrix, const void *vec); // lint: void_ptr free-function signature, retype changes mangling
 
 // lint: void_ptr free-function signature, retype changes mangling
 

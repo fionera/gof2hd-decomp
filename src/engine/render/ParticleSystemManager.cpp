@@ -18,11 +18,11 @@ void _psm_ArrayReleaseSprites(void *arr); // lint: void_ptr
 
 void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res); // lint: void_ptr
 
-static inline void _psm_renderMeshes(void *self) { ((ParticleSystemManager*)self)->renderMeshes(); }
+static inline void _psm_renderMeshes(void *self) { ((ParticleSystemManager*)self)->renderMeshes(); } // lint: void_ptr
 
 void _psm_renderSpritesExt(void *self); // lint: void_ptr
 
-static inline void _psm_releaseSprites(void *self) { ((ParticleSystemManager*)self)->releaseSprites(); }
+static inline void _psm_releaseSprites(void *self) { ((ParticleSystemManager*)self)->releaseSprites(); } // lint: void_ptr
 
 void _psm_constructAfterCamera(void *self); // lint: void_ptr
 

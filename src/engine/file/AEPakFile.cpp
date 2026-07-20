@@ -11,7 +11,7 @@ AEPakFile::~AEPakFile() {
     Release();
 }
 
-uint32_t AEPakFile::Read(uint32_t bytes, void *buffer) {
+uint32_t AEPakFile::Read(uint32_t bytes, void *buffer) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
     FileInterface *file;
     if (bytes != 0 && (file = fileInterface) != nullptr) {
@@ -26,7 +26,7 @@ uint32_t AEPakFile::Read(uint32_t bytes, void *buffer) {
     return 0;
 }
 
-uint32_t AEPakFile::Write(uint32_t, void *) {
+uint32_t AEPakFile::Write(uint32_t, void *) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
     return 0;
 }

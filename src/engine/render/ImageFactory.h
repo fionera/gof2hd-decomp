@@ -31,7 +31,7 @@ public:
 
     Array<ImagePart *> *loadChar(int *desc);
 
-    void *loadImage(int row, int col, int frameBase);
+    void *loadImage(int row, int col, int frameBase); // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
 
     // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
 

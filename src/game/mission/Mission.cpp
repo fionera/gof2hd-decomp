@@ -40,7 +40,7 @@ void Mission::setProductionGoods(int a, int b) {
     this->productionGoodsB = b;
 }
 
-void *Mission::setTargetName(String rhs) {
+void *Mission::setTargetName(String rhs) { // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
     // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
     this->targetName = rhs;
     return &this->targetName;
@@ -66,7 +66,7 @@ void Mission::setInstantActionMission(bool v) {
     this->instantAction = v;
 }
 
-void *Mission::setTargetSystemName(const String &rhs) {
+void *Mission::setTargetSystemName(const String &rhs) { // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
     // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
     this->targetSystemName = rhs;
     return &this->targetSystemName;

@@ -93,7 +93,7 @@ namespace {
 
 void MeshRelease(Engine *self, void *meshSlot); // lint: void_ptr Pv-mangled shim signature
 
-void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh);
+void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh); // lint: void_ptr Pv-mangled shim signature
 
 // lint: void_ptr Pv-mangled shim signature
 
@@ -381,7 +381,7 @@ void Engine::LightSetLightCount(int count) {
     this->lightCount = count;
 }
 
-void Engine::SetAddData(void *data, int size) {
+void Engine::SetAddData(void *data, int size) { // lint: void_ptr exported method signature (addData member typed in Engine.h)
     // lint: void_ptr exported method signature (addData member typed in Engine.h)
     this->addData = (unsigned char *) data;
     this->addDataSize = size;
@@ -1357,7 +1357,7 @@ void Engine::SetFrameBufferScaleFactor(float factor, int slot) {
 void Engine::GrabFrameBuffer() {
 }
 
-void *Engine::GetJPEGImageData(float quality) {
+void *Engine::GetJPEGImageData(float quality) { // lint: void_ptr return type fixed by Engine.h declaration
     // lint: void_ptr return type fixed by Engine.h declaration
     return nullptr;
 }

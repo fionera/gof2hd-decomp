@@ -356,7 +356,7 @@ namespace AbyssEngine {
         if (AEFile::Read((uint32_t)(2), &regionCount, handle) == 0) return -1;
         if (regionCount <= index) return -1;
 
-        if (MeshCreate(engine, 4, 2, 0x13, (void **) region) != 1)
+        if (MeshCreate(engine, 4, 2, 0x13, (void **) region) != 1) // lint: void_ptr (cast to exported MeshCreate void** param)
             // lint: void_ptr (cast to exported MeshCreate void** param)
             return -2;
 
@@ -544,7 +544,7 @@ namespace AbyssEngine {
 extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 void glVertexPointer(int size, unsigned int type, int stride, const void *ptr); // lint: void_ptr (OpenGL ABI signature)
 
-void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr);
+void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr); // lint: void_ptr (OpenGL ABI signature)
 
 // lint: void_ptr (OpenGL ABI signature)
 
@@ -1864,7 +1864,7 @@ namespace AbyssEngine {
 
                 unsigned int n = (*out)->glyphCount;
                 for (unsigned int gi = 0; gi < n; ++gi) {
-                    if (MeshCreate(engine, 4, 2, 0x13, (void **) &(*out)->glyphMeshes[gi]) != 1)
+                    if (MeshCreate(engine, 4, 2, 0x13, (void **) &(*out)->glyphMeshes[gi]) != 1) // lint: void_ptr (cast to exported MeshCreate void** param)
                         // lint: void_ptr (cast to exported MeshCreate void** param)
                         goto fail;
                     unsigned short sizeY = 0, sizeX = 0, offX = 0, offY = 0;
@@ -2135,12 +2135,12 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported texture-load callback signature)
 
-    int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user,
+    int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     unsigned int *outIds, float scale, AELoadedTexture *outTex,
                                     bool flag);
 
-    int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user,
+    int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user, // lint: void_ptr (exported TextureCreateFromFile signature)
                               // lint: void_ptr (exported TextureCreateFromFile signature)
                               unsigned int *outIds, bool /*flag*/, float scale) {
         TextureCreateFromFileIntern(engine, path, cb, user, outIds, scale,
@@ -2171,9 +2171,9 @@ namespace AbyssEngine {
         return 1;
     }
 
-    int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *),
+    int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *), // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    void *user, unsigned int *outIds, float aniso,
+                                    void *user, unsigned int *outIds, float aniso, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     AELoadedTexture *outTex, bool /*flag*/) {
         Image *imgPtr = 0;
@@ -2448,7 +2448,7 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int CurveCreate(void **src, unsigned short count, Curve **out) {
+    int CurveCreate(void **src, unsigned short count, Curve **out) { // lint: void_ptr (exported CurveCreate signature; void** baked into mangled name)
         // lint: void_ptr (exported CurveCreate signature; void** baked into mangled name)
         Curve *curve = (Curve *) operator new(8);
         curve->entries = 0;

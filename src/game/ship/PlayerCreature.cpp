@@ -30,7 +30,7 @@ namespace AbyssEngine {
 }
 
 void *ParticleSystemManager_emitManual_v( // lint: void_ptr external free fn; Pv signature fixed in original .so
-    void *self, int handle, const float *pos, void *ret, const float *vel,
+    void *self, int handle, const float *pos, void *ret, const float *vel, // lint: void_ptr external free fn; Pv signature fixed in original .so
     float p5); // lint: void_ptr external free fn; Pv signature fixed in original .so
 
 uint8_t PlayerCreature::isHooked() {

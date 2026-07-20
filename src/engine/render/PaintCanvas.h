@@ -392,7 +392,7 @@ namespace AbyssEngine {
 
         void MaterialResourceChangeTexture(unsigned int resId, unsigned int texture, int slot);
 
-        void TextureCreate(unsigned short resId, void (*callback)(AbyssEngine::Image *, void *), void *userData,
+        void TextureCreate(unsigned short resId, void (*callback)(AbyssEngine::Image *, void *), void *userData, // lint: void_ptr (ABI method params: callback userData; mangling must match lib)
                            // lint: void_ptr (ABI method params: callback userData; mangling must match lib)
                            unsigned int &out, bool useCallbackLoader);
 

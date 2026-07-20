@@ -66,14 +66,14 @@ static GameText **g_StarMap_end_text;
 
 int Station_getIndex(void *station); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void MatrixGetPosition(Vector *out, void *matrix) { *out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)matrix); }
+static inline void MatrixGetPosition(Vector *out, void *matrix) { *out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)matrix); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static PaintCanvas **g_StarMap_lights_canvas;
 static FModSound **g_StarMap_update_sound;
 static int *g_StarMap_update_screenW;
 static int *g_StarMap_update_screenH;
 
-void MatrixSetTranslation(void *matrix, float x, float y, float z);
+void MatrixSetTranslation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -128,7 +128,7 @@ static unsigned char **g_StarMap_init_font;
 static int *g_StarMap_init_screenW;
 static int *g_StarMap_init_screenH;
 
-void MatrixSetRotation(void *matrix, float x, float y, float z, float w);
+void MatrixSetRotation(void *matrix, float x, float y, float z, float w); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
 

@@ -27,7 +27,7 @@ namespace AbyssEngine {
 
 void BuildResourceList(AbyssEngine::Engine *engine);
 
-void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder);
+void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder); // lint: void_ptr (exported free function; mangled signature is fixed)
 
 // lint: void_ptr (exported free function; mangled signature is fixed)
 

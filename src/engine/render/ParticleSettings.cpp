@@ -6,7 +6,7 @@ ParticleSettings::ParticleSettings() {
 ParticleSettings::~ParticleSettings() {
 }
 
-void ParticleSettings_initSub(void *dst, void *parent);
+void ParticleSettings_initSub(void *dst, void *parent); // lint: void_ptr external symbol, signature baked into mangled name
 
 // lint: void_ptr external symbol, signature baked into mangled name
 

@@ -145,7 +145,7 @@ GameRecord::GameRecord() {
 
 typedef uint32_t uint;
 
-long Array_dtor(void *self);
+long Array_dtor(void *self); // lint: void_ptr (external symbol; heterogeneous Array<T>* callers, mangled signature is fixed)
 
 // lint: void_ptr (external symbol; heterogeneous Array<T>* callers, mangled signature is fixed)
 

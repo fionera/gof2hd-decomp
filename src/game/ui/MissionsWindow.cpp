@@ -43,17 +43,17 @@ static int g_mwi_actionColor = 0;
 
 static int *g_mw_titleTable = nullptr;
 
-void Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
+void Status_replaceHash(void *out, void *key, void *a, void *b, void *c); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-int ApplicationManager_GetCurrentApplicationModule(void *appMgr);
+int ApplicationManager_GetCurrentApplicationModule(void *appMgr); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 int _mw_GetTextHeight(void *canvas); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char flags);
+void TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char flags); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 

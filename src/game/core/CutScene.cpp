@@ -37,11 +37,11 @@ static int CutScene_shipBankTable[256];
 
 float VectorSignedToFloat(int v, int mode);
 
-void MatrixSetRotation(void *m, float x, float y, float z);
+void MatrixSetRotation(void *m, float x, float y, float z); // lint: void_ptr (external symbol; param mangling must match lib)
 
 // lint: void_ptr (external symbol; param mangling must match lib)
 
-void MatrixSetTranslation(void *m, float x, float y, float z);
+void MatrixSetTranslation(void *m, float x, float y, float z); // lint: void_ptr (external symbol; param mangling must match lib)
 
 // lint: void_ptr (external symbol; param mangling must match lib)
 

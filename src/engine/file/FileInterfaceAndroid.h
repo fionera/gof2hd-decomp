@@ -39,17 +39,17 @@ public:
 
     ~FileInterfaceAndroid() override;
 
-    void *OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) override;
+    void *OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) override; // lint: void_ptr virtual override return type baked into vtable/symbol
 
     // lint: void_ptr virtual override return type baked into vtable/symbol
 
-    void *OpenWrite(String name, int p2, bool p3, unsigned int p4) override;
+    void *OpenWrite(String name, int p2, bool p3, unsigned int p4) override; // lint: void_ptr virtual override return type baked into vtable/symbol
 
     // lint: void_ptr virtual override return type baked into vtable/symbol
 
     uint32_t Read(uint32_t n, void *buf) override; // lint: void_ptr virtual override param (FileInterface byte buffer)
 
-    uint32_t Write(uint32_t n, const void *buf) override;
+    uint32_t Write(uint32_t n, const void *buf) override; // lint: void_ptr virtual override param (FileInterface byte buffer)
 
     // lint: void_ptr virtual override param (FileInterface byte buffer)
 
@@ -71,7 +71,7 @@ public:
 
     void Close() override;
 
-    void *OpenAppend(String name, int p2, bool p3, unsigned int p4) override;
+    void *OpenAppend(String name, int p2, bool p3, unsigned int p4) override; // lint: void_ptr virtual override return type baked into vtable/symbol
 
     // lint: void_ptr virtual override return type baked into vtable/symbol
 

@@ -57,91 +57,91 @@ static_assert(offsetof(MtwAppData, purchaseCode) == 0x48, "appdata 0x48");
 static_assert(offsetof(MtwAppData, dlcMenuAckFlag) == 0x4c, "appdata 0x4c");
 #endif
 
-static inline void *_mtw_GameText_getText(void *gt, int id) { return ((GameText*)gt)->getText(id); }
+static inline void *_mtw_GameText_getText(void *gt, int id) { return ((GameText*)gt)->getText(id); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b);
+void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_render3D_inner(void *obj); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline int _mtw_Layout_OnTouchEnd(void *layout, int y, int x) { return ((Layout*)layout)->OnTouchEnd(x, y); }
+static inline int _mtw_Layout_OnTouchEnd(void *layout, int y, int x) { return ((Layout*)layout)->OnTouchEnd(x, y); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-int _mtw_ChoiceWindow_OnTouchEnd(void *cw, int y);
+int _mtw_ChoiceWindow_OnTouchEnd(void *cw, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void _mtw_FModSound_resumeAll(void *snd) { ((FModSound*)snd)->resumeAll(); }
+static inline void _mtw_FModSound_resumeAll(void *snd) { ((FModSound*)snd)->resumeAll(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 static inline void _mtw_FModSound_stopAll() { Globals::sound->stopAll(); }
 
-static inline void _mtw_AppMgr_SetCurrentApplicationModule(void *app, int id) { ((AbyssEngine::ApplicationManager*)app)->SetCurrentApplicationModule(id); }
+static inline void _mtw_AppMgr_SetCurrentApplicationModule(void *app, int id) { ((AbyssEngine::ApplicationManager*)app)->SetCurrentApplicationModule(id); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void _mtw_AppMgr_Quit(void *app) { ((AbyssEngine::ApplicationManager*)app)->Quit(); }
+static inline void _mtw_AppMgr_Quit(void *app) { ((AbyssEngine::ApplicationManager*)app)->Quit(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_Globals_reportLeaderboards();
 
-int _mtw_onTouchEnd_listState(void *self, int y, int x, int state);
+int _mtw_onTouchEnd_listState(void *self, int y, int x, int state); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-int _mtw_onTouchEnd_optionsState(void *self, int y, int x);
+int _mtw_onTouchEnd_optionsState(void *self, int y, int x); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-int _mtw_onTouchEnd_scrollState(void *self, int y, int x, int which);
+int _mtw_onTouchEnd_scrollState(void *self, int y, int x, int which); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-int _mtw_onTouchEnd_missionsState(void *self, int y, int x);
+int _mtw_onTouchEnd_missionsState(void *self, int y, int x); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-int _mtw_onTouchEnd_cinematicState(void *self, int y, int x);
+int _mtw_onTouchEnd_cinematicState(void *self, int y, int x); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-int _mtw_onTouchEnd_genericButtons(void *self, int y, int x, int fieldOff);
+int _mtw_onTouchEnd_genericButtons(void *self, int y, int x, int fieldOff); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void *_mtw_Array_TB_dtor(void *arr) { ((Array<TouchButton*>*)arr)->~Array(); return arr; }
+static inline void *_mtw_Array_TB_dtor(void *arr) { ((Array<TouchButton*>*)arr)->~Array(); return arr; } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void *_mtw_Array_TS_dtor(void *arr) { ((Array<TouchSlider*>*)arr)->~Array(); return arr; }
+static inline void *_mtw_Array_TS_dtor(void *arr) { ((Array<TouchSlider*>*)arr)->~Array(); return arr; } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 static inline void *_mtw_Array_Str_dtor(void *arr) { ((Array<String>*)arr)->~Array(); return arr; }
 
 static inline void * _mtw_TouchButton_dtor(void *p) { ((TouchButton*)p)->~TouchButton(); return (void *)(p); }
 
-static inline void * _mtw_ChoiceWindow_dtor(void *p) { ((ChoiceWindow*)p)->~ChoiceWindow(); return (void *)(p); }
+static inline void * _mtw_ChoiceWindow_dtor(void *p) { ((ChoiceWindow*)p)->~ChoiceWindow(); return (void *)(p); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void * _mtw_ScrollTouchWindow_dtor(void *p) { ((ScrollTouchWindow*)p)->~ScrollTouchWindow(); return (void *)(p); }
+static inline void * _mtw_ScrollTouchWindow_dtor(void *p) { ((ScrollTouchWindow*)p)->~ScrollTouchWindow(); return (void *)(p); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void *_mtw_Array_Str_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void *_mtw_Array_StrArr_dtor(void *p) { ((Array<Array<String>*>*)p)->~Array(); return p; }
+static inline void *_mtw_Array_StrArr_dtor(void *p) { ((Array<Array<String>*>*)p)->~Array(); return p; } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_Array_StrArr_ctor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void _mtw_Array_Str_ctor(void *p) { new(p) Array<String>(); }
+static inline void _mtw_Array_Str_ctor(void *p) { new(p) Array<String>(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_ArraySetLength_StrArr(int n, void *arr);
+void _mtw_ArraySetLength_StrArr(int n, void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_ArraySetLength_Str(int n, void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Globals_longToTimeStringNoSeconds(long long t, void *out);
+void _mtw_Globals_longToTimeStringNoSeconds(long long t, void *out); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_Layout_formatCredits(void *out); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_ctor7(void *btn, void *label, int a, int x, int y, char type);
+void _mtw_TouchButton_ctor7(void *btn, void *label, int a, int x, int y, char type); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -165,59 +165,59 @@ void *_mtw_makeItem2(int itemDef); // lint: void_ptr (external symbol; param typ
 
 void _mtw_Status_setCredits(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_Galaxy_getStation(void *galaxy, int idx);
+void *_mtw_Galaxy_getStation(void *galaxy, int idx); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_Status_setStation(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Status_setSystemVisibility(void *status, int sys, bool vis);
+void _mtw_Status_setSystemVisibility(void *status, int sys, bool vis); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Achievements_setMedal(void *ach, int id, int n);
+void _mtw_Achievements_setMedal(void *ach, int id, int n); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_RecordHandler_saveOptions(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Status_setKills(void *status, int count);
+void _mtw_Status_setKills(void *status, int count); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y);
+void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-int _mtw_Layout_OnTouchBegin(void *layout, int y);
+int _mtw_Layout_OnTouchBegin(void *layout, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_OnTouchBegin(void *btn, int y);
+void _mtw_TouchButton_OnTouchBegin(void *btn, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_OnTouchBeginXY(void *btn, int y, int x);
+void _mtw_TouchButton_OnTouchBeginXY(void *btn, int y, int x); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-float _mtw_TouchButton_setPosition(void *btn, int x, int y);
+float _mtw_TouchButton_setPosition(void *btn, int x, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchSlider_OnTouchBegin(void *sl, int y);
+void _mtw_TouchSlider_OnTouchBegin(void *sl, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_ScrollTouchWindow_OnTouchBegin(void *w, int y);
+void _mtw_ScrollTouchWindow_OnTouchBegin(void *w, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_MissionsWindow_OnTouchBegin(void *w, int y);
+void _mtw_MissionsWindow_OnTouchBegin(void *w, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_FModSound_play(void *snd, int id, void *pos, float v);
+void _mtw_FModSound_play(void *snd, int id, void *pos, float v); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -227,59 +227,59 @@ void _mtw_RecordHandler_ctor(void *rh); // lint: void_ptr (external symbol; para
 
 void *_mtw_RecordHandler_readRecord(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void * _mtw_RecordHandler_dtor(void *rh) { ((RecordHandler*)rh)->~RecordHandler(); return (void *)(rh); }
+static inline void * _mtw_RecordHandler_dtor(void *rh) { ((RecordHandler*)rh)->~RecordHandler(); return (void *)(rh); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void * _mtw_GameRecord_dtor(void *gr) { ((GameRecord*)gr)->~GameRecord(); return (void *)(gr); }
+static inline void * _mtw_GameRecord_dtor(void *gr) { ((GameRecord*)gr)->~GameRecord(); return (void *)(gr); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void _mtw_GameRecord_load(void *gr) { ((GameRecord*)gr)->load(); }
+static inline void _mtw_GameRecord_load(void *gr) { ((GameRecord*)gr)->load(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_ChoiceWindow_set(void *cw, void *s, bool b);
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-static inline void *_mtw_AppMgr_GetApplicationModule(void *app, int id) { return ((AbyssEngine::ApplicationManager*)app)->GetApplicationModule(id); }
+void _mtw_ChoiceWindow_set(void *cw, void *s, bool b); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_getPosition(void *out, void *btn);
+static inline void *_mtw_AppMgr_GetApplicationModule(void *app, int id) { return ((AbyssEngine::ApplicationManager*)app)->GetApplicationModule(id); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_setVisible(void *btn, bool v);
+void _mtw_TouchButton_getPosition(void *out, void *btn); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+// lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_TouchButton_setVisible(void *btn, bool v); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void *_mtw_Array_GameRecord_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_RecordHandler_readAllPreviewRecords(void *rh);
+void *_mtw_RecordHandler_readAllPreviewRecords(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_RecordHandler_recordStoreWrite(void *rh, int slot);
+void _mtw_RecordHandler_recordStoreWrite(void *rh, int slot); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_RecordHandler_recordStoreWritePreview(void *rh, int slot);
+void _mtw_RecordHandler_recordStoreWritePreview(void *rh, int slot); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_RecordHandler_recordStoreReadPreview(void *rh);
+void *_mtw_RecordHandler_recordStoreReadPreview(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_createRecordButtons(void *self, bool b);
+void _mtw_createRecordButtons(void *self, bool b); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void *_mtw_AppMgr_GetApplicationData(); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void *_mtw_AppMgr_GetEngine() { return GetEngine(); }
+static inline void *_mtw_AppMgr_GetEngine() { return GetEngine(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_ChoiceWindow_set(void *cw, void *s); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_ChoiceWindow_update(void *cw); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_setYPosition(void *btn, int y);
+void _mtw_TouchButton_setYPosition(void *btn, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -289,65 +289,65 @@ void _mtw_ScrollTouchWindow_update(void *w); // lint: void_ptr (external symbol;
 
 void _mtw_MissionsWindow_update(void *w); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_startSupernovaChallenge_impl(void *self);
+void _mtw_startSupernovaChallenge_impl(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void *_mtw_GetApplicationData(void *app); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_DlcMenu_call(void *win, void *s1, void *s2);
+void _mtw_DlcMenu_call(void *win, void *s1, void *s2); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_Layout_drawBG();
 
-void _mtw_ChoiceWindow_OnTouchMove(void *cw, int y);
+void _mtw_ChoiceWindow_OnTouchMove(void *cw, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_OnTouchMove(void *btn, int y);
+void _mtw_TouchButton_OnTouchMove(void *btn, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_OnTouchMoveXY(void *btn, int y, int x);
+void _mtw_TouchButton_OnTouchMoveXY(void *btn, int y, int x); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchSlider_OnTouchMove(void *sl, int y);
+void _mtw_TouchSlider_OnTouchMove(void *sl, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 float _mtw_TouchSlider_getValue(void *sl); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_ScrollTouchWindow_OnTouchMove(void *w, int y);
+void _mtw_ScrollTouchWindow_OnTouchMove(void *w, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_MissionsWindow_OnTouchMove(void *w, int y);
+void _mtw_MissionsWindow_OnTouchMove(void *w, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 int _mtw_FModSound_tryToStopMusicForBGMusic();
 
-void _mtw_FModSound_setVolume(void *snd, float v);
+void _mtw_FModSound_setVolume(void *snd, float v); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-static inline void _mtw_Array_TB_ctor(void *a) { new(a) Array<TouchButton*>(); }
+static inline void _mtw_Array_TB_ctor(void *a) { new(a) Array<TouchButton*>(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_loadPreviewRecords(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_TouchButton_draw(void *btn); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Layout_drawBox(void *layout, int mode, int x, int y, int w, int h, void *str);
+void _mtw_Layout_drawBox(void *layout, int mode, int x, int y, int w, int h, void *str); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int x, int y);
+void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int x, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Ship_addCargo(void *ship, void *item);
+void _mtw_Ship_addCargo(void *ship, void *item); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -403,7 +403,7 @@ float MenuTouchWindow::getRelativeScrollStartPos() {
 // g_android_link_game_gp is the Google-Play "link game" flag (JniBridge.cpp)
 extern int g_android_link_game_gp;
 
-int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) {
+int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     if (this->menuState == 0xb && touchId != 0) {
         if (this->cinematicTouchIdA == touchId)
@@ -551,7 +551,7 @@ void _mtw_ArrayReleaseClasses_TB(void *arr); // lint: void_ptr (external symbol;
 void _mtw_ArrayReleaseClasses_Str(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 template<class T>
-static inline void freeObj(T **slot, void *(*dtor)(void *)) {
+static inline void freeObj(T **slot, void *(*dtor)(void *)) { // lint: void_ptr (dtor matches external void*(void*) deallocator ABI)
     // lint: void_ptr (dtor matches external void*(void*) deallocator ABI)
     T *o = *slot;
     if (o != 0) ::operator delete(dtor(o));
@@ -669,15 +669,15 @@ MenuTouchWindow::~MenuTouchWindow() {
 
 void _mtw_ArrayReleaseClasses_Str(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_ArrayReleaseClasses_StrArr(void *arr);
+void _mtw_ArrayReleaseClasses_StrArr(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_String_op_plus(void *out, void *rhs);
+void *_mtw_String_op_plus(void *out, void *rhs); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int w,
+void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int w, // lint: void_ptr (external symbol; param type is mangling-load-bearing)
                                // lint: void_ptr (external symbol; param type is mangling-load-bearing)
                                char type, char id);
 
@@ -864,7 +864,7 @@ void *_mtw_Item_make(int itemDef); // lint: void_ptr (external symbol; param typ
 
 void *_mtw_Item_makeQty(int itemDef, int qty); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Ship_setItem(void *ship, void *item, int slot);
+void _mtw_Ship_setItem(void *ship, void *item, int slot); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -952,7 +952,7 @@ void MenuTouchWindow::startValkyrie() {
 }
 
 
-int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
+int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     if (this->messageShowing != 0) {
         _mtw_ChoiceWindow_OnTouchBegin(this->choiceWindow, y);
@@ -1267,7 +1267,7 @@ int MenuTouchWindow::loadGame(int slot) {
     return 0;
 }
 
-void _mtw_TouchButton_ctor(void *btn, void *label, int a, int x, int y, int w,
+void _mtw_TouchButton_ctor(void *btn, void *label, int a, int x, int y, int w, // lint: void_ptr (external symbol; param type is mangling-load-bearing)
                            // lint: void_ptr (external symbol; param type is mangling-load-bearing)
                            char type, char id);
 
@@ -1552,7 +1552,7 @@ void MenuTouchWindow::update(int dt) {
         Layout *layout = Globals::layout;
         Array<TouchButton *> *arr = (Array<TouchButton *> *) this->optionsButtons;
         unsigned int n = *(unsigned int *) arr;
-        int firstCount = *(int *) *(void **) this->buttons;
+        int firstCount = *(int *) *(void **) this->buttons; // lint: void_ptr (decompiled artifact: reads Array header word as a pointer)
         // lint: void_ptr (decompiled artifact: reads Array header word as a pointer)
         int total = n * layout->field_0x30_rowHeight;
         int screenH = Globals::h;
@@ -1736,17 +1736,17 @@ float MenuTouchWindow::getRelativeScrollHeight() {
     return (float) numer / (float) page;
 }
 
-void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId);
+void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Layout_OnTouchMove(void *layout, int y);
+void _mtw_Layout_OnTouchMove(void *layout, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 
 
-int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
+int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     if (this->messageShowing != 0) {
         _mtw_ChoiceWindow_OnTouchMove(this->choiceWindow, y);
@@ -2174,7 +2174,7 @@ void *_mtw_Item_make(int itemDef); // lint: void_ptr (external symbol; param typ
 
 void *_mtw_Item_makeQty(int itemDef, int qty); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Ship_setItem(void *ship, void *item, int slot);
+void _mtw_Ship_setItem(void *ship, void *item, int slot); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 

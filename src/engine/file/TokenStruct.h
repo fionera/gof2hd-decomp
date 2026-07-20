@@ -6,7 +6,7 @@
 namespace AbyssEngine {
     class ConfigReader;
 
-    typedef void (*ConfigTokenReadFunction)(ConfigReader *, void *);
+    typedef void (*ConfigTokenReadFunction)(ConfigReader *, void *); // lint: void_ptr callback ctx param; baked into RegisterTokenReadFunction ABI signature
 
     // lint: void_ptr callback ctx param; baked into RegisterTokenReadFunction ABI signature
 

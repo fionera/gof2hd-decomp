@@ -31,13 +31,13 @@ namespace {
 
         void (*onTouchEnd2)(IApplicationModule *self, int x, int y);
 
-        void (*onTouchBegin3)(IApplicationModule *self, int x, int y, void *data);
+        void (*onTouchBegin3)(IApplicationModule *self, int x, int y, void *data); // lint: void_ptr (touch handle is void* in IApplicationModule interface)
 
         // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-        void (*onTouchMove3)(IApplicationModule *self, int x, int y, void *data);
+        void (*onTouchMove3)(IApplicationModule *self, int x, int y, void *data); // lint: void_ptr (touch handle is void* in IApplicationModule interface)
 
         // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-        void (*onTouchEnd3)(IApplicationModule *self, int x, int y, void *data);
+        void (*onTouchEnd3)(IApplicationModule *self, int x, int y, void *data); // lint: void_ptr (touch handle is void* in IApplicationModule interface)
 
         // lint: void_ptr (touch handle is void* in IApplicationModule interface)
         void (*onRender3D)(IApplicationModule *self);
@@ -240,7 +240,7 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
     }
 }
 
-void *ApplicationManager::GetApplicationModule(unsigned int id) {
+void *ApplicationManager::GetApplicationModule(unsigned int id) { // lint: void_ptr (exported GetApplicationModule return type, baked ABI)
     // lint: void_ptr (exported GetApplicationModule return type, baked ABI)
     unsigned int count = this->moduleIds.size();
     for (unsigned int index = 0; index < count; ++index) {
@@ -251,7 +251,7 @@ void *ApplicationManager::GetApplicationModule(unsigned int id) {
     return 0;
 }
 
-void *ApplicationManager::GetEngine() {
+void *ApplicationManager::GetEngine() { // lint: void_ptr (exported GetEngine return type, header-declared ABI)
     // lint: void_ptr (exported GetEngine return type, header-declared ABI)
     return this->engine;
 }
@@ -521,7 +521,7 @@ void ApplicationManager::ConvertTouchCoords(int &x, int &y) {
     y = canvas->GetHeight() - y;
 }
 
-void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
+void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) { // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
     int x = xArg;
     int y = yArg;
@@ -568,7 +568,7 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
     }
 }
 
-void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
+void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) { // lint: void_ptr (exported OnTouchMove touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchMove touch handle param, baked ABI)
     int x = xArg;
     int y = yArg;
@@ -585,7 +585,7 @@ void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
     }
 }
 
-void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
+void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) { // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
     g_touchDown = 0;
     int x = xArg;
@@ -694,7 +694,7 @@ void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
     ArrayAdd(key, this->actionTable);
 }
 
-void *ApplicationManager::ConfigGetKeysForAction(long long action) {
+void *ApplicationManager::ConfigGetKeysForAction(long long action) { // lint: void_ptr (exported ConfigGetKeysForAction return type, header-declared ABI)
     // lint: void_ptr (exported ConfigGetKeysForAction return type, header-declared ABI)
     int low = (int) action;
     int high = (int) (action >> 32);
@@ -717,19 +717,19 @@ void *ApplicationManager::ConfigGetKeysForAction(long long action) {
     return result;
 }
 
-void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) {
+void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) { // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
     // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
     this->loadingCallback = callback;
     this->loadingCallbackData = data;
 }
 
-void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) {
+void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) { // lint: void_ptr (opaque user data forwarded to ResumeCallback_t, baked ABI)
     // lint: void_ptr (opaque user data forwarded to ResumeCallback_t, baked ABI)
     this->resumeCallback = callback;
     this->resumeCallbackData = data;
 }
 
-void ApplicationManager::LoadingCallbackShow(int mode, void *data) {
+void ApplicationManager::LoadingCallbackShow(int mode, void *data) { // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
     // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
     LoadingCallback_t *callback = this->loadingCallback;
     if (callback != 0) {
@@ -756,7 +756,7 @@ void ApplicationManager::CheatAddCode(const String &code, int value) {
     }
 }
 
-void ApplicationManager::CheatSetCallback(void (*callback)(int, void *), void *data) {
+void ApplicationManager::CheatSetCallback(void (*callback)(int, void *), void *data) { // lint: void_ptr (exported CheatSetCallback signature, opaque cheat callback + data, baked ABI)
     // lint: void_ptr (exported CheatSetCallback signature, opaque cheat callback + data, baked ABI)
     if (this->cheatHandler != 0) {
         this->cheatHandler->SetCheatFunc(callback, data);
@@ -902,12 +902,12 @@ bool ApplicationManager::CheckCrack(const char *path) {
     return false;
 }
 
-void *ApplicationManager::GetApplicationData() {
+void *ApplicationManager::GetApplicationData() { // lint: void_ptr (exported GetApplicationData return type, baked ABI)
     // lint: void_ptr (exported GetApplicationData return type, baked ABI)
     return this->applicationData;
 }
 
-void ApplicationManager::SetApplicationData(void *data) {
+void ApplicationManager::SetApplicationData(void *data) { // lint: void_ptr (exported SetApplicationData param, opaque app data, baked ABI)
     // lint: void_ptr (exported SetApplicationData param, opaque app data, baked ABI)
     this->applicationData = data;
 }
@@ -916,9 +916,9 @@ void ApplicationManager::SetExitCallback(QuitCallback_t *callback) {
     this->quitCallback = callback;
 }
 
-void *ApplicationManager::GetCurrentApplicationModule() const {
+void *ApplicationManager::GetCurrentApplicationModule() const { // lint: void_ptr (exported GetCurrentApplicationModule return type, baked ABI)
     // lint: void_ptr (exported GetCurrentApplicationModule return type, baked ABI)
-    return reinterpret_cast<void *>(this->currentModuleId);
+    return reinterpret_cast<void *>(this->currentModuleId); // lint: void_ptr (exported GetCurrentApplicationModule return type, baked ABI)
     // lint: void_ptr (cast produces the void* return value mandated by the waived signature)
 }
 
@@ -934,7 +934,7 @@ void ApplicationManager::ConfigReadFile(String name) {
 }
 
 void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigTokenReadFunction read,
-                                                         void *context) {
+                                                         void *context) { // lint: void_ptr (exported ConfigRegisterTokenReadFunction opaque context param, baked ABI)
     // lint: void_ptr (exported ConfigRegisterTokenReadFunction opaque context param, baked ABI)
     ConfigReader *reader = this->configReader;
     if (reader != 0) {

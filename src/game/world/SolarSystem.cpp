@@ -63,7 +63,7 @@ int SolarSystem::getZ() { return mapZ; }
 int SolarSystem::getWarpGateIndex() { return jumpgateStationId; }
 uint32_t *SolarSystem::getStations() { return (uint32_t *) stationIds; }
 uint32_t *SolarSystem::getRoutes() { return (uint32_t *) linkedSystemIds; }
-void *SolarSystem::getForbiddenGoods() { return forbiddenGoods; }
+void *SolarSystem::getForbiddenGoods() { return forbiddenGoods; } // lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
 // lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
 
 uint8_t SolarSystem::isVisible() {

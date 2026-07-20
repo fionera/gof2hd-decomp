@@ -178,7 +178,7 @@ void AEFile::Close(uint32_t handle) {
     slot = nullptr;
 }
 
-uint32_t AEFile::Read(uint32_t bytes, void *buffer, uint32_t handle) {
+uint32_t AEFile::Read(uint32_t bytes, void *buffer, uint32_t handle) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
     if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {
         AELowLevelFile *file = g_AEFile_openFiles->data()[handle];
@@ -270,7 +270,7 @@ void AEFile::ReadSwitched(String &value, uint32_t handle) {
     }
 }
 
-uint32_t AEFile::Write(uint32_t bytes, void *buffer, uint32_t handle) {
+uint32_t AEFile::Write(uint32_t bytes, void *buffer, uint32_t handle) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
     if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {
         AELowLevelFile *file = g_AEFile_openFiles->data()[handle];
@@ -533,7 +533,7 @@ const char *AEFile::GetAppRootDir() {
     return nullptr;
 }
 
-void AEFile::SetAppRootDir(void *path) {
+void AEFile::SetAppRootDir(void *path) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
@@ -541,7 +541,7 @@ void AEFile::SetAppRootDir(void *path) {
     }
 }
 
-void AEFile::SetZipDirectory(void *path) {
+void AEFile::SetZipDirectory(void *path) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
