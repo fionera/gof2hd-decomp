@@ -274,8 +274,6 @@ void Mat_mul(void *out, const void *a, const void *b); // lint: void_ptr (extern
 
 void PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHandle);
 
-static void (*g_stopBoost_fn)(void *, int); // lint: void_ptr (fn-ptr slot; param type load-bearing)
-
 void *TractorBeam_new(void *geo, int kind); // lint: void_ptr (fn-ptr slot; param type load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
@@ -2732,13 +2730,12 @@ void PlayerEgo::handleShip(int dt) {
 void PlayerEgo::stopBoost() {
     this->boostingFlag = 0;
     FModSound *r4 = *(FModSound **) g_stopBoost_obj;
-    void (*fn)(void *, int) = g_stopBoost_fn; // lint: void_ptr (fn-ptr slot; param type load-bearing)
     this->speed = 0x40000000;
-    fn(*(FModSound **) r4, 0x27);
-    fn(*(FModSound **) r4, 0x26);
-    fn(*(FModSound **) r4, 0x29);
-    fn(*(FModSound **) r4, 0x28);
-    return fn(*(FModSound **) r4, 0x44e);
+    ((FModSound *) (*(FModSound **) r4))->stop(0x27);
+    ((FModSound *) (*(FModSound **) r4))->stop(0x26);
+    ((FModSound *) (*(FModSound **) r4))->stop(0x29);
+    ((FModSound *) (*(FModSound **) r4))->stop(0x28);
+    ((FModSound *) (*(FModSound **) r4))->stop(0x44e);
 }
 
 void PlayerEgo::setShip(int race, int group) {
