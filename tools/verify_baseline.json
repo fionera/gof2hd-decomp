@@ -1,12 +1,12 @@
 {
  "verify": {
-  "byte_exact": 1130,
-  "linked_exact": 2216,
+  "byte_exact": 1132,
+  "linked_exact": 2219,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 73.47,
+  "avg_match": 73.48,
   "compared": 4523
  },
  "imports": [
@@ -101,7 +101,6 @@
   "_Z15Engine_DrawQuadPN11AbyssEngine6EngineEiiii",
   "_Z15LensFlare_sqrtff",
   "_Z15Level_onSuspendz",
-  "_Z15MiningGame_sqrtP7Globalsf",
   "_Z15PE_adp_approachP9PlayerEgoPv",
   "_Z15PE_um_dodgeStepP9PlayerEgo",
   "_Z15PE_yawRampDeltafi",

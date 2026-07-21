@@ -26,8 +26,6 @@ int LAYER_DIAMETERS[49] = {
     250, 0, 0, 0, 0, 0, 0,
 };
 
-float MiningGame_sqrt(Globals *globals, float value);
-
 static inline void MiningGame_FModSound_setParamValue(FModSound *sound, int index, int param, float value) { sound->setParamValue(index, param, value); }
 
 static inline void MiningGame_FModSound_play(FModSound *sound, int id, AbyssEngine::AEMath::Vector *pos,
@@ -82,7 +80,7 @@ bool MiningGame::isInCurrentLayer() {
     Globals *globals = *sqrtHolder;
     int size = row[current];
     float scale = layout->ringRadiusScale;
-    float distance = MiningGame_sqrt(globals, dx * dx + dy * dy);
+    float distance = globals->sqrt(dx * dx + dy * dy);
     return distance < scale * (float) (size / 2);
 }
 
@@ -102,16 +100,16 @@ uint8_t MiningGame::gotCore() {
     return this->gotCoreFlag;
 }
 
-float MiningGame::left(float amount) {
-    return this->inputX = amount * 3.0f;
+void MiningGame::left(float amount) {
+    this->inputX = amount * 3.0f;
 }
 
 uint8_t MiningGame::gameLost() {
     return this->gameLostFlag;
 }
 
-float MiningGame::right(float amount) {
-    return this->inputX = amount * 3.0f;
+void MiningGame::right(float amount) {
+    this->inputX = amount * 3.0f;
 }
 
 MiningGame::~MiningGame() {
@@ -197,10 +195,17 @@ int MiningGame::update(int delta) {
         this->oreMarquee->update(delta);
         int nextLayer = this->currentLayer + 1;
         float oldOre = this->oreAmount;
+        int oldOreInt = (int) oldOre;
         float layerFactor = 0.15f + ((float) nextLayer / 7.0f) * 2.35f;
         float newOre = oldOre + ((this->oreRate * layerFactor) / 1000.0f) * frameScale;
         this->oreAmount = newOre;
-        float alpha = oldOre < newOre ? 0.0f : this->textAlpha;
+        float alpha;
+        if ((int) newOre > oldOreInt) {
+            alpha = 0.0f;
+            this->textAlpha = 0.0f;
+        } else {
+            alpha = this->textAlpha;
+        }
         int layerTimer = this->layerTimer + delta;
         this->layerTimer = layerTimer;
         alpha += frameScale / 500.0f;
@@ -311,48 +316,32 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
     }
 
     PaintCanvas *canvas = Globals::Canvas;
-    unsigned int drillImageId;
-    canvas->Image2DCreate(0x4e6, drillImageId);
-    imageId[0] = drillImageId;
+    canvas->Image2DCreate(0x4e6, (unsigned int &) imageId[0]);
     int imageHeight = canvas->GetImage2DHeight(imageId[0]);
     Sprite *sprite = new Sprite((uint32_t) imageId[0], imageHeight, imageHeight);
     this->drillSprite = sprite;
     sprite->defineReferencePixel(imageHeight / 2, imageHeight / 2);
 
     this->animAccumulator = 0.0f;
-    unsigned int createdImageId;
-    canvas->Image2DCreate(0x4e2, createdImageId);
-    this->ringEvenNear = createdImageId;
-    canvas->Image2DCreate(0x4dd, createdImageId);
-    this->ringEvenFar = createdImageId;
-    canvas->Image2DCreate(0x4de, createdImageId);
-    this->ringEvenMid = createdImageId;
-    canvas->Image2DCreate(0x4e1, createdImageId);
-    this->ringOddNear = createdImageId;
-    canvas->Image2DCreate(0x4df, createdImageId);
-    this->ringOddMid = createdImageId;
-    canvas->Image2DCreate(0x4e0, createdImageId);
-    this->ringOddFar = createdImageId;
-    canvas->Image2DCreate(0x4e5, createdImageId);
-    this->oreLabelImageId = createdImageId;
-    canvas->Image2DCreate(0x4e4, createdImageId);
-    this->oreTextImageId = createdImageId;
-    canvas->Image2DCreate(0x4e7, createdImageId);
-    this->oreIconImageId = createdImageId;
-    canvas->Image2DCreate(0x4e3, createdImageId);
-    this->cornerImageId = createdImageId;
-    canvas->Image2DCreate(0x4e8, createdImageId);
-    this->progressBarImageId = createdImageId;
-    canvas->Image2DCreate(0x4ed, createdImageId);
-    this->progressLabelImageId = createdImageId;
+    canvas->Image2DCreate(0x4e2, (unsigned int &) this->ringEvenNear);
+    canvas->Image2DCreate(0x4dd, (unsigned int &) this->ringEvenFar);
+    canvas->Image2DCreate(0x4de, (unsigned int &) this->ringEvenMid);
+    canvas->Image2DCreate(0x4e1, (unsigned int &) this->ringOddNear);
+    canvas->Image2DCreate(0x4df, (unsigned int &) this->ringOddMid);
+    canvas->Image2DCreate(0x4e0, (unsigned int &) this->ringOddFar);
+    canvas->Image2DCreate(0x4e5, (unsigned int &) this->oreLabelImageId);
+    canvas->Image2DCreate(0x4e4, (unsigned int &) this->oreTextImageId);
+    canvas->Image2DCreate(0x4e7, (unsigned int &) this->oreIconImageId);
+    canvas->Image2DCreate(0x4e3, (unsigned int &) this->cornerImageId);
+    canvas->Image2DCreate(0x4e8, (unsigned int &) this->progressBarImageId);
+    canvas->Image2DCreate(0x4ed, (unsigned int &) this->progressLabelImageId);
 
     if (this->isCoreLayer != 0) {
         int coreImage = 0x523;
         if (station == 0xa4) {
             coreImage = 0x522;
         }
-        canvas->Image2DCreate(coreImage, createdImageId);
-        this->coreImageId = createdImageId;
+        canvas->Image2DCreate(coreImage, (unsigned int &) this->coreImageId);
     }
 
     this->progressBarWidth = canvas->GetImage2DWidth(this->progressBarImageId);

@@ -85,9 +85,9 @@ public:
 
     float down(float amount);
 
-    float left(float amount);
+    void left(float amount);
 
-    float right(float amount);
+    void right(float amount);
 
     int getOreAmount();
 
