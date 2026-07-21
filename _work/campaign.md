@@ -2,6 +2,32 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-21 (wave 3 — MCP-free, clean run)
+
+4 workers, NO Ghidra (explicitly forbidden in prompts after the wave-2 crash loop) — diff dumps
+only. Zero worker deaths. Landed serially:
+- FModSound: FMOD vtable-dispatch static wrappers replaced 5 spurious PLT imports (1095->1090 —
+  original dispatches FMOD Event/Category calls through vtables inline, not PLT);
+  promptMusicCue/setMusicParamValue/setVolume linked-exact; downPitch int8_t (strb). +3 byte.
+- ScrollTouchWindow partial: split the worker patch — kept drawTextBG/ctor hunks, REVERTED the
+  draw() hunk (regressed 43->39.6 in gate). Hunk-splitting a mixed patch works well.
+- Standing/ListItem retry: ListItem copy-ctor + dtor pairs linked-exact (+4 linked, +2 byte).
+- trades patch: measurable NO-OP (all 4 targets identical pct) — reverted, not landed.
+End state: **byte 1127, linked 2205, stubs 0, extra 36, imports 1090, avg 73.38.**
+
+Blocked items with actionable analysis (orchestrator or next wave):
+- FModSound::disableReverb: orig memcpys an 80-byte non-zero reverb-properties struct from
+  rodata — extract the bytes from the original .so literal pool (objdump -s) and inline them.
+- GameText::setLanguage(s,i): orig prologue proves the original SOURCE had (langId, stringCount)
+  parameter ROLES swapped relative to our decl usage — needs GameText.h+cpp co-owned rework.
+- Standing::getMissionBonus: orig uses vmax.f32 — clang only emits it under fast-math; likely
+  needs the original's expression shape (not std::max) or is TU-flag related. Deferred.
+- ScrollTouchWindow::setText x2: orig saves/compares a two-level global deref (canary-like
+  pattern around String assignment) — understand before retrying.
+- "Scheduling artifact" claims (enableReverb, resume, pauseAllPlaying, IsCategoryEnabled...):
+  worker gave up on register-allocation deltas; a fresh worker with different idiom attempts may
+  still crack these — do not treat as proven-impossible.
+
 ## Session 2026-07-21 (wave 2 — salvaged)
 
 Wave 2 launched as an 8-worker Workflow (Ship, FModSound, Wanted+WantedWindow, GameText,
