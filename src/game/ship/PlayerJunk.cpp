@@ -18,6 +18,7 @@ static AbyssEngine::AERandom *g_PJ_random = nullptr;
 PlayerJunk::PlayerJunk(int type, Player *player, AEGeometry *geometry,
                        float x, float y, float z)
     : KIPlayer(type, -1, player, geometry, x, y, z, false) {
+    this->countsAsEnemyExcludeFlag = 1;
 }
 
 PlayerJunk::~PlayerJunk() {
@@ -45,7 +46,7 @@ void PlayerJunk::render() {
 }
 
 void PlayerJunk::update(int elapsed) {
-    this->field_0x120 = elapsed;
+    this->field_0x124 = elapsed;
     if (this->player->getHitpoints() < 1) {
         if ((uint32_t)(this->state - 3) >= 2) {
             this->level->junkDied();
@@ -57,13 +58,12 @@ void PlayerJunk::update(int elapsed) {
                 ArrayAdd(99, *this->cargo);
                 ArrayAdd(g_PJ_random->nextInt(10) + 1, *this->cargo);
                 this->createCrate(3);
+                this->hasCargo = 1;
             } else {
                 this->player->setActive(false);
 
-                PlayerEgo *playerObj = this->level->getPlayer();
-                Radar *radar = (Radar *) playerObj->field_0x14;
-                if (radar->field_0x1c == this)
-                    radar->field_0x1c = nullptr;
+                if (((Radar *) this->level->getPlayer()->field_0x14)->field_0x1c == this)
+                    ((Radar *) this->level->getPlayer()->field_0x14)->field_0x1c = nullptr;
             }
 
             Vector position;

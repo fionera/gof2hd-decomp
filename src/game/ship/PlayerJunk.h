@@ -8,6 +8,8 @@ class AEGeometry;
 
 class PlayerJunk : public KIPlayer {
 public:
+    int field_0x124;
+
     PlayerJunk(int type, Player *player, AEGeometry *geometry, float x, float y, float z);
 
     ~PlayerJunk();
