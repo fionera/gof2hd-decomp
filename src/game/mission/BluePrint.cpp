@@ -115,8 +115,8 @@ BluePrint::BluePrint(int item) {
     itemIndex = item;
     Item *it = (*Globals::items)[item];
     int type = it->getType();
-    stationIndex = -1;
     batchMultiplier = (type == 1) ? 10 : 1;
+    stationIndex = -1;
     Array<int> *quantities = (Array<int> *) it->getQuantities();
     ingredientCounters = nullptr;
     if (it->getIngredients() != nullptr) {
@@ -125,8 +125,8 @@ BluePrint::BluePrint(int item) {
         for (uint32_t i = 0; i < ingredientCounters->size(); i++)
             (*ingredientCounters)[i] = (*quantities)[i];
     }
-    productionCount = 0;
     locked = 0;
+    productionCount = 0;
     spentValue = 0;
     remainingBatch = batchMultiplier;
 }
@@ -137,6 +137,7 @@ int BluePrint::getMoneySpent() { return spentValue; }
 void BluePrint::setMoneySpent(int value) { spentValue = value; }
 
 void BluePrint::addItem(Item *item, int amount, int station) {
+    Status *status = Globals::status;
     if (amount == 0)
         return;
     item->setBlueprintAmount(0);
@@ -150,9 +151,8 @@ void BluePrint::addItem(Item *item, int amount, int station) {
         spentValue += item->getSinglePrice() * amount;
         if (station >= 0 && stationIndex < 0) {
             stationIndex = station;
-            Station *current = Globals::status->getStation();
-            if (current->getIndex() == station) {
-                stationName = current->getName();
+            if (status->getStation()->getIndex() == station) {
+                stationName = status->getStation()->getName();
             } else {
                 Station *st = (Station *) (intptr_t) Globals::galaxy->getStation(station);
                 stationName = st->getName();

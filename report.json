@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.44,
+  "avg_match": 73.45,
   "byte_exact": 1130,
-  "linked_exact": 2214,
-  "fuzzy_perfect": 2214,
+  "linked_exact": 2216,
+  "fuzzy_perfect": 2216,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2744,20 +2744,20 @@
    "usize": 82
   },
   {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.6,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
-  },
-  {
    "name": "_ZN11AbyssEngine6String4TrimEv",
    "pct": 15.7,
    "byte": false,
    "linked": false,
    "osize": 132,
    "usize": 152
+  },
+  {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -7096,14 +7096,6 @@
    "usize": 452
   },
   {
-   "name": "_ZN9BluePrint7addItemEP4Itemii",
-   "pct": 35.1,
-   "byte": false,
-   "linked": false,
-   "osize": 300,
-   "usize": 260
-  },
-  {
    "name": "_ZN11AbyssEngine18ApplicationManager17KeyCodeSetMappingEP5ArrayIPNS_7KeyCodeEE",
    "pct": 35.3,
    "byte": false,
@@ -10470,6 +10462,14 @@
    "linked": false,
    "osize": 328,
    "usize": 292
+  },
+  {
+   "name": "_ZN9BluePrint7addItemEP4Itemii",
+   "pct": 50.9,
+   "byte": false,
+   "linked": false,
+   "osize": 300,
+   "usize": 272
   },
   {
    "name": "_ZN13PlayerStation6updateEi",
@@ -16094,22 +16094,6 @@
    "linked": false,
    "osize": 140,
    "usize": 144
-  },
-  {
-   "name": "_ZN9BluePrintC1Ei",
-   "pct": 88.6,
-   "byte": false,
-   "linked": false,
-   "osize": 188,
-   "usize": 188
-  },
-  {
-   "name": "_ZN9BluePrintC2Ei",
-   "pct": 88.6,
-   "byte": false,
-   "linked": false,
-   "osize": 188,
-   "usize": 188
   },
   {
    "name": "_ZN11AbyssEngine12PostBWShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -33494,6 +33478,22 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN9BluePrintC1Ei",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 188,
+   "usize": 188
+  },
+  {
+   "name": "_ZN9BluePrintC2Ei",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 188,
+   "usize": 188
   },
   {
    "name": "_ZN9BluePrintD1Ev",
