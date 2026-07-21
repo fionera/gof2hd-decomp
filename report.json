@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.5,
+  "avg_match": 73.52,
   "byte_exact": 1132,
-  "linked_exact": 2223,
-  "fuzzy_perfect": 2223,
+  "linked_exact": 2226,
+  "fuzzy_perfect": 2226,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -10872,22 +10872,6 @@
    "usize": 96
   },
   {
-   "name": "_ZN7MineGunC1EP3GuniiiP5Level",
-   "pct": 53.8,
-   "byte": false,
-   "linked": false,
-   "osize": 284,
-   "usize": 284
-  },
-  {
-   "name": "_ZN7MineGunC2EP3GuniiiP5Level",
-   "pct": 53.8,
-   "byte": false,
-   "linked": false,
-   "osize": 284,
-   "usize": 284
-  },
-  {
    "name": "_ZN4Ship12replaceCargoEP5ArrayIP4ItemE",
    "pct": 54.1,
    "byte": false,
@@ -12920,22 +12904,6 @@
    "usize": 992
   },
   {
-   "name": "_ZN7MineGunD1Ev",
-   "pct": 65.8,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 132
-  },
-  {
-   "name": "_ZN7MineGunD2Ev",
-   "pct": 65.8,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 132
-  },
-  {
    "name": "zip_stat_index",
    "pct": 65.8,
    "byte": false,
@@ -13494,6 +13462,22 @@
    "linked": false,
    "osize": 52,
    "usize": 48
+  },
+  {
+   "name": "_ZN7MineGunC1EP3GuniiiP5Level",
+   "pct": 68.6,
+   "byte": false,
+   "linked": false,
+   "osize": 284,
+   "usize": 292
+  },
+  {
+   "name": "_ZN7MineGunC2EP3GuniiiP5Level",
+   "pct": 68.6,
+   "byte": false,
+   "linked": false,
+   "osize": 284,
+   "usize": 292
   },
   {
    "name": "_zip_file_fillbuf",
@@ -14632,14 +14616,6 @@
    "usize": 432
   },
   {
-   "name": "_ZN13AutoPilotList15getTargetStringEv",
-   "pct": 76.2,
-   "byte": false,
-   "linked": false,
-   "osize": 48,
-   "usize": 48
-  },
-  {
    "name": "_ZN16SystemPathFinder13constructPathEP4Node",
    "pct": 76.3,
    "byte": false,
@@ -15496,6 +15472,22 @@
    "usize": 92
   },
   {
+   "name": "_ZN7MineGunD1Ev",
+   "pct": 83.9,
+   "byte": false,
+   "linked": false,
+   "osize": 92,
+   "usize": 92
+  },
+  {
+   "name": "_ZN7MineGunD2Ev",
+   "pct": 83.9,
+   "byte": false,
+   "linked": false,
+   "osize": 92,
+   "usize": 92
+  },
+  {
    "name": "_ZN18TargetFollowCamera17resetShipHandlingEv",
    "pct": 84.2,
    "byte": false,
@@ -16094,22 +16086,6 @@
    "linked": false,
    "osize": 52,
    "usize": 52
-  },
-  {
-   "name": "_ZN13AutoPilotListD1Ev",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 32,
-   "usize": 34
-  },
-  {
-   "name": "_ZN13AutoPilotListD2Ev",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 32,
-   "usize": 34
   },
   {
    "name": "_ZN21ParticleSystemManager4initEv",
@@ -25752,6 +25728,14 @@
    "usize": 12
   },
   {
+   "name": "_ZN13AutoPilotList15getTargetStringEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 48,
+   "usize": 48
+  },
+  {
    "name": "_ZN13AutoPilotList2upEv",
    "pct": 100.0,
    "byte": true,
@@ -25782,6 +25766,22 @@
    "linked": true,
    "osize": 88,
    "usize": 88
+  },
+  {
+   "name": "_ZN13AutoPilotListD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 32,
+   "usize": 32
+  },
+  {
+   "name": "_ZN13AutoPilotListD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 32,
+   "usize": 32
   },
   {
    "name": "_ZN13LodMeshMerger10setEnabledEib",

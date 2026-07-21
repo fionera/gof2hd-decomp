@@ -23,9 +23,8 @@ MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
     this->readyFlags = new uint8_t[this->explosions->size()];
     for (uint32_t i = 0; i < this->explosions->size(); ++i) {
         int kind = (gun->damage == 0) ? 7 : 0;
-        Explosion *explosion = new Explosion(kind);
-        explosion->setWeaponIndex(gun->itemIndex);
-        (*this->explosions)[i] = explosion;
+        (*this->explosions)[i] = new Explosion(kind);
+        (*this->explosions)[i]->setWeaponIndex(gun->itemIndex);
         this->readyFlags[i] = 1;
     }
 
@@ -40,13 +39,10 @@ MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
 
 MineGun::~MineGun() {
     if (this->explosions != nullptr) {
-        for (Explosion *explosion: *this->explosions) {
-            delete explosion;
-        }
-        ArrayReleaseClasses(*(this->explosions));
-        delete this->explosions;
-        this->explosions = nullptr;
+        ArrayReleaseClasses(*this->explosions);
     }
+    delete this->explosions;
+    this->explosions = nullptr;
 
     delete[] this->readyFlags;
     this->readyFlags = nullptr;

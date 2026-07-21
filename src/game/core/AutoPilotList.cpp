@@ -84,9 +84,7 @@ AutoPilotList::AutoPilotList(Level *level) {
 }
 
 AutoPilotList::~AutoPilotList() {
-    if (this->entries != nullptr) {
-        ArrayReleaseClasses(*this->entries);
-    }
+    ArrayReleaseClasses(*this->entries);
     delete this->entries;
     this->entries = nullptr;
 }
@@ -130,8 +128,8 @@ int AutoPilotList::fire() {
 String AutoPilotList::getTargetString() {
     int idx = this->selected;
     if (idx >= 0 && (uint32_t) idx < this->entries->size())
-        return *(*this->entries)[idx];
-    return String(kEmpty);
+        return String(*(*this->entries)[idx], false);
+    return String(kEmpty, false);
 }
 
 void AutoPilotList::draw() {
