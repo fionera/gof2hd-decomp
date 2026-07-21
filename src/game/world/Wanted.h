@@ -20,9 +20,9 @@ public:
     int requiredMission;
     int numWingmen;
     int *imageParts;
-    int currentLocation;
-    int travelsTo;
     int lastSeen;
+    int travelsTo;
+    int currentLocation;
     uint8_t terminated;
     uint8_t active;
 

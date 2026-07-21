@@ -31,7 +31,7 @@ uint8_t Wanted::isActive() { return active; }
 void Wanted::setActive(bool v) { active = v; }
 
 String Wanted::getName() {
-    return name;
+    return String(name, false);
 }
 
 Wanted::Wanted(int index, String name, int board, int race, bool male,
@@ -44,10 +44,9 @@ Wanted::Wanted(int index, String name, int board, int race, bool male,
     this->male = male;
     this->terminated = 0;
     this->active = 0;
-    this->imageParts = nullptr;
-    this->currentLocation = -1;
-    this->travelsTo = -1;
     this->lastSeen = -1;
+    this->travelsTo = -1;
+    this->currentLocation = -1;
     this->shipId = shipId;
     this->weapon = weapon;
     this->hitpoints = hitpoints;

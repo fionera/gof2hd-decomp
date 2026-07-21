@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.13,
-  "byte_exact": 1116,
-  "linked_exact": 2190,
-  "fuzzy_perfect": 2190,
+  "avg_match": 73.19,
+  "byte_exact": 1120,
+  "linked_exact": 2192,
+  "fuzzy_perfect": 2192,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -10352,38 +10352,6 @@
    "usize": 6
   },
   {
-   "name": "_ZN6Wanted11getLastSeenEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 4
-  },
-  {
-   "name": "_ZN6Wanted11setLastSeenEi",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 4
-  },
-  {
-   "name": "_ZN6Wanted18getCurrentLocationEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 4
-  },
-  {
-   "name": "_ZN6Wanted18setCurrentLocationEi",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 4
-  },
-  {
    "name": "_ZN7BombGun9setPlayerEP9PlayerEgo",
    "pct": 50.0,
    "byte": false,
@@ -12880,22 +12848,6 @@
    "usize": 272
   },
   {
-   "name": "_ZN12WantedWindowC1Ev",
-   "pct": 64.2,
-   "byte": false,
-   "linked": false,
-   "osize": 244,
-   "usize": 240
-  },
-  {
-   "name": "_ZN12WantedWindowC2Ev",
-   "pct": 64.2,
-   "byte": false,
-   "linked": false,
-   "osize": 244,
-   "usize": 240
-  },
-  {
    "name": "_ZN9PlayerEgo6rotateEfff",
    "pct": 64.3,
    "byte": false,
@@ -13446,14 +13398,6 @@
    "linked": false,
    "osize": 2,
    "usize": 4
-  },
-  {
-   "name": "_ZN6Wanted7getNameEv",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 12,
-   "usize": 10
   },
   {
    "name": "_ZN9PlayerEgo10setVisibleEb",
@@ -15336,6 +15280,14 @@
    "usize": 38
   },
   {
+   "name": "_ZN6Wanted7getNameEv",
+   "pct": 80.0,
+   "byte": false,
+   "linked": false,
+   "osize": 12,
+   "usize": 12
+  },
+  {
    "name": "_ZN7Station20stationHasPirateBaseEv",
    "pct": 80.0,
    "byte": false,
@@ -15406,22 +15358,6 @@
    "linked": false,
    "osize": 152,
    "usize": 144
-  },
-  {
-   "name": "_ZN6WantedC1EiN11AbyssEngine6StringEiibiiiiiiiii",
-   "pct": 81.1,
-   "byte": false,
-   "linked": false,
-   "osize": 116,
-   "usize": 118
-  },
-  {
-   "name": "_ZN6WantedC2EiN11AbyssEngine6StringEiibiiiiiiiii",
-   "pct": 81.1,
-   "byte": false,
-   "linked": false,
-   "osize": 116,
-   "usize": 118
   },
   {
    "name": "_ZN11AbyssEngine9DNSShader4InitEPNS_6EngineE",
@@ -15950,6 +15886,22 @@
    "linked": false,
    "osize": 120,
    "usize": 120
+  },
+  {
+   "name": "_ZN12WantedWindowC1Ev",
+   "pct": 85.2,
+   "byte": false,
+   "linked": false,
+   "osize": 244,
+   "usize": 244
+  },
+  {
+   "name": "_ZN12WantedWindowC2Ev",
+   "pct": 85.2,
+   "byte": false,
+   "linked": false,
+   "osize": 244,
+   "usize": 244
   },
   {
    "name": "_ZN11AbyssEngine12BumpShaderV314UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -17088,6 +17040,22 @@
    "usize": 32
   },
   {
+   "name": "_ZN6WantedD1Ev",
+   "pct": 90.9,
+   "byte": false,
+   "linked": false,
+   "osize": 28,
+   "usize": 28
+  },
+  {
+   "name": "_ZN6WantedD2Ev",
+   "pct": 90.9,
+   "byte": false,
+   "linked": false,
+   "osize": 28,
+   "usize": 28
+  },
+  {
    "name": "_ZN7Globals23replaceKeyBindingTokensERKN11AbyssEngine6StringE",
    "pct": 90.9,
    "byte": false,
@@ -17278,6 +17246,22 @@
    "linked": false,
    "osize": 96,
    "usize": 92
+  },
+  {
+   "name": "_ZN6WantedC1EiN11AbyssEngine6StringEiibiiiiiiiii",
+   "pct": 91.9,
+   "byte": false,
+   "linked": false,
+   "osize": 116,
+   "usize": 116
+  },
+  {
+   "name": "_ZN6WantedC2EiN11AbyssEngine6StringEiibiiiiiiiii",
+   "pct": 91.9,
+   "byte": false,
+   "linked": false,
+   "osize": 116,
+   "usize": 116
   },
   {
    "name": "_ZN11AbyssEngine10MaskShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -31416,6 +31400,22 @@
    "usize": 6
   },
   {
+   "name": "_ZN6Wanted11getLastSeenEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
+   "name": "_ZN6Wanted11setLastSeenEi",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
    "name": "_ZN6Wanted12getHitpointsEv",
    "pct": 100.0,
    "byte": true,
@@ -31488,7 +31488,23 @@
    "usize": 6
   },
   {
+   "name": "_ZN6Wanted18getCurrentLocationEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
    "name": "_ZN6Wanted18getRequiredMissionEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
+   "name": "_ZN6Wanted18setCurrentLocationEi",
    "pct": 100.0,
    "byte": true,
    "linked": true,
@@ -31590,22 +31606,6 @@
    "linked": true,
    "osize": 6,
    "usize": 6
-  },
-  {
-   "name": "_ZN6WantedD1Ev",
-   "pct": 100.0,
-   "byte": false,
-   "linked": true,
-   "osize": 28,
-   "usize": 28
-  },
-  {
-   "name": "_ZN6WantedD2Ev",
-   "pct": 100.0,
-   "byte": false,
-   "linked": true,
-   "osize": 28,
-   "usize": 28
   },
   {
    "name": "_ZN7BeamGun10replaceGunEji",
