@@ -38,10 +38,14 @@ ListItem::ListItem(int a, int b) {
 }
 
 ListItem::~ListItem() {
-    delete this->name;
-    this->name = 0;
-    delete this->name2;
-    this->name2 = 0;
+    if (this->name) {
+        delete this->name;
+        this->name = 0;
+    }
+    if (this->name2) {
+        delete this->name2;
+        this->name2 = 0;
+    }
 }
 
 bool ListItem::isCargo() {
@@ -265,8 +269,16 @@ ListItem::ListItem(ListItem *src) {
     this->mission = src->mission;
     this->selectable = src->selectable;
 
-    this->name = src->name ? new AbyssEngine::String(*src->name, false) : 0;
-    this->name2 = src->name2 ? new AbyssEngine::String(*src->name2, false) : 0;
+    if (src->name) {
+        this->name = new AbyssEngine::String(*src->name, false);
+    } else {
+        this->name = 0;
+    }
+    if (src->name2) {
+        this->name2 = new AbyssEngine::String(*src->name2, false);
+    } else {
+        this->name2 = 0;
+    }
 
     this->slot = src->slot;
     this->itemId = src->itemId;

@@ -67,12 +67,13 @@ int Standing::getStanding(int race) {
             if (cr == 3) r = -100;
             return r;
         }
-        if (race == 0) {
-            int r = 0x46;
-            if (cr == 0) r = 100;
-            if (cr == 1) r = -100;
-            return r;
+        if (race != 0) {
+            return this->standings[race];
         }
+        int r = 0x46;
+        if (cr == 0) r = 100;
+        if (cr == 1) r = -100;
+        return r;
     }
     return this->standings[race];
 }
@@ -96,15 +97,15 @@ void Standing::applyStealCargo(int race) {
 bool Standing::isEnemy(int race) {
     int cr = this->currentRace;
     if (cr >= 0) {
-        if (race != 1) {
-            if (race == 3) {
-                cr = cr - 2;
-            } else if (race == 2) {
-                cr = cr - 3;
-            } else {
-                if (race != 0) return false;
-                cr = cr - 1;
-            }
+        if (race == 1) {
+        } else if (race == 3) {
+            cr = cr - 2;
+        } else if (race == 2) {
+            cr = cr - 3;
+        } else if (race != 0) {
+            return false;
+        } else {
+            cr = cr - 1;
         }
         return cr == 0;
     }
@@ -175,7 +176,8 @@ bool Standing::isFriend(int race) {
             cr = cr - 3;
         } else if (race == 2) {
             cr = cr - 2;
-        } else if (race != 0) {
+        } else if (race == 0) {
+        } else {
             return false;
         }
         return cr == 0;
