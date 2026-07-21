@@ -84,16 +84,16 @@ bool MiningGame::isInCurrentLayer() {
     return distance < scale * (float) (size / 2);
 }
 
-float MiningGame::up(float amount) {
-    return this->inputY = amount * 3.0f;
+void MiningGame::up(float amount) {
+    this->inputY = amount * 3.0f;
 }
 
 uint8_t MiningGame::gameWon() {
     return this->gameWonFlag;
 }
 
-float MiningGame::down(float amount) {
-    return this->inputY = amount * 3.0f;
+void MiningGame::down(float amount) {
+    this->inputY = amount * 3.0f;
 }
 
 uint8_t MiningGame::gotCore() {
@@ -180,8 +180,8 @@ int MiningGame::update(int delta) {
 
     if (isInCurrentLayer()) {
         if (wasInLayer == 0) {
-            MiningGame_FModSound_play(*soundHolder, 1, 0, 0, 0);
-            MiningGame_FModSound_stop(*soundHolder, 3);
+            (*soundHolder)->play(1, nullptr, nullptr, 0.0f);
+            (*soundHolder)->stop(3);
         }
 
         float anim = this->animAccumulator +
@@ -245,8 +245,8 @@ int MiningGame::update(int delta) {
         }
     } else {
         if (wasInLayer != 0) {
-            MiningGame_FModSound_stop(*soundHolder, 1);
-            MiningGame_FModSound_play(*soundHolder, 3, 0, 0, 0);
+            (*soundHolder)->stop(1);
+            (*soundHolder)->play(3, nullptr, nullptr, 0.0f);
         }
         int lossTimer = this->lossTimer + delta;
         this->lossTimer = lossTimer;

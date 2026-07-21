@@ -1243,8 +1243,10 @@ void PlayerEgo::startSmokeEmission() {
 float PlayerEgo::down(int frameTime, float delta) {
     if (((intptr_t) this->miningGame) != 0) {
         if (((MiningInputFlags *) *g_PE_d_miningGate)->invertAxisFlag == 0)
-            return ((MiningGame *) (((intptr_t) this->miningGame)))->down(delta);
-        return ((MiningGame *) (((intptr_t) this->miningGame)))->up(-delta);
+            return (((MiningGame *) (((intptr_t) this->miningGame)))->down(delta), ((MiningGame *) (((intptr_t) this->
+                        miningGame)))->inputY);
+        return (((MiningGame *) (((intptr_t) this->miningGame)))->up(-delta), ((MiningGame *) (((intptr_t) this->
+                    miningGame)))->inputY);
     }
 
     if (this->turretActive != 0) {
@@ -1967,8 +1969,10 @@ void PlayerEgo::dockToPlanet() {
 float PlayerEgo::up(int frameTime, float delta) {
     if (((intptr_t) this->miningGame) != 0) {
         if (((MiningInputFlags *) *g_PE_u_miningGate)->invertAxisFlag == 0)
-            return ((MiningGame *) (((intptr_t) this->miningGame)))->up(-delta);
-        return ((MiningGame *) (((intptr_t) this->miningGame)))->down(delta);
+            return (((MiningGame *) (((intptr_t) this->miningGame)))->up(-delta), ((MiningGame *) (((intptr_t) this->
+                        miningGame)))->inputY);
+        return (((MiningGame *) (((intptr_t) this->miningGame)))->down(delta), ((MiningGame *) (((intptr_t) this->
+                    miningGame)))->inputY);
     }
 
     if (this->turretActive != 0) {

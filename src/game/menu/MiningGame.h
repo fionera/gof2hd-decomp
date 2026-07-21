@@ -81,9 +81,9 @@ public:
 
     ~MiningGame();
 
-    float up(float amount);
+    void up(float amount);
 
-    float down(float amount);
+    void down(float amount);
 
     void left(float amount);
 

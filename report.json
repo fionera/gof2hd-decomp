@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.53,
-  "byte_exact": 1132,
-  "linked_exact": 2227,
-  "fuzzy_perfect": 2227,
+  "avg_match": 73.54,
+  "byte_exact": 1134,
+  "linked_exact": 2229,
+  "fuzzy_perfect": 2229,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2744,20 +2744,20 @@
    "usize": 82
   },
   {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.6,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
-  },
-  {
    "name": "_ZN11AbyssEngine6String4TrimEv",
    "pct": 15.7,
    "byte": false,
    "linked": false,
    "osize": 132,
    "usize": 152
+  },
+  {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -14728,14 +14728,6 @@
    "usize": 118
   },
   {
-   "name": "_ZN10MiningGame6updateEi",
-   "pct": 77.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1184,
-   "usize": 1080
-  },
-  {
    "name": "_ZN9PlayerEgo14startJumpDriveEv",
    "pct": 77.6,
    "byte": false,
@@ -14910,6 +14902,14 @@
    "linked": false,
    "osize": 852,
    "usize": 796
+  },
+  {
+   "name": "_ZN10MiningGame6updateEi",
+   "pct": 79.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1184,
+   "usize": 1096
   },
   {
    "name": "_Z14ArrayAddCachedIPN11AbyssEngine4MeshEEvT_R5ArrayIS3_E",
@@ -15310,22 +15310,6 @@
    "linked": false,
    "osize": 116,
    "usize": 116
-  },
-  {
-   "name": "_ZN10MiningGame2upEf",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 18,
-   "usize": 24
-  },
-  {
-   "name": "_ZN10MiningGame4downEf",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 18,
-   "usize": 24
   },
   {
    "name": "_ZN11AbyssEngine10QuaternionC1ENS_6AEMath6VectorE",
@@ -20382,6 +20366,22 @@
    "linked": true,
    "osize": 140,
    "usize": 140
+  },
+  {
+   "name": "_ZN10MiningGame2upEf",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 18,
+   "usize": 18
+  },
+  {
+   "name": "_ZN10MiningGame4downEf",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 18,
+   "usize": 18
   },
   {
    "name": "_ZN10MiningGame4leftEf",
