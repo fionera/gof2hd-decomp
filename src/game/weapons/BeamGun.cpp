@@ -27,10 +27,6 @@ static PaintCanvas **BeamGun_canvas = nullptr;
 
 static int32_t BeamGun_secondaryMeshes[256] = {};
 
-static void (*BeamGun_enemiesHandler_slot)(Player **) = nullptr;
-
-static void (*BeamGun_enemyHandler_slot)(Player *) = nullptr;
-
 BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
     int type = meshKind;
     int kind = type - 9;
@@ -192,21 +188,9 @@ void BeamGun::translate(const Vector & /*v*/) {
 }
 
 void BeamGun::setEnemies(Array<Player *> *enemies) {
-    BeamGun_enemiesHandler_slot(enemies->data());
-}
-
-namespace {
-    struct PlayerEnemyHandleView {
-        Player *pad_0;
-        Player *pad_4;
-        Player *enemyHandle;
-    };
-#if __SIZEOF_POINTER__ == 4
-    static_assert(__builtin_offsetof(PlayerEnemyHandleView, enemyHandle) == 8,
-                  "enemy handle must sit at Player byte offset 8");
-#endif
+    this->gun->setEnemies(enemies);
 }
 
 void BeamGun::setEnemy(Player *enemy) {
-    BeamGun_enemyHandler_slot(reinterpret_cast<PlayerEnemyHandleView *>(enemy)->enemyHandle);
+    this->gun->setEnemy(enemy);
 }

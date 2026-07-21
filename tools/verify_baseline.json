@@ -1,13 +1,13 @@
 {
  "verify": {
   "byte_exact": 1116,
-  "linked_exact": 2157,
-  "stub_zero_size": 9,
+  "linked_exact": 2164,
+  "stub_zero_size": 4,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 72.89,
-  "compared": 4514
+  "avg_match": 72.93,
+  "compared": 4519
  },
  "imports": [
   "FMOD_EventSystem_Create",

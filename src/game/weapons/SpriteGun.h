@@ -15,8 +15,9 @@ class Gun;
 class SpriteGun : public AbstractGun {
 public:
     int32_t field_0x4;
+    Gun *gun;
 
-    SpriteGun(Gun *gun, int kind);
+    SpriteGun(Gun *g, int kind);
 
     ~SpriteGun() override;
 
