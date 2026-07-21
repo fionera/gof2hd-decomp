@@ -13,7 +13,7 @@ class FModSound {
 public:
     int currentMusicEvent;
     int fadeTargetMusicEvent;
-    int downPitch;
+    int8_t downPitch;
     char *appRootDir;
     uint8_t lowMemory;
     uint8_t categoryEnabled[4];

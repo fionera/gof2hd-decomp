@@ -71,15 +71,15 @@ static inline int FMOD_EventSystem_update(int system) { return ((FMOD::EventSyst
 
 float VectorSignedToFloat(int v, int mode);
 
-void FMOD_MusicSystem_promptCue(FMOD::MusicSystem *music, int cueId);
+static inline void FMOD_MusicSystem_promptCue(FMOD::MusicSystem *music, int cueId) { music->promptCue(cueId); }
 
-void FMOD_MusicSystem_setParameterValue(FMOD::MusicSystem *music, int paramId, float v);
+static inline void FMOD_MusicSystem_setParameterValue(FMOD::MusicSystem *music, int paramId, float v) { music->setParameterValue(paramId, v); }
 
-void FMOD_EventCategory_setVolume(FMOD::EventCategory *category, float volume);
+static inline void FMOD_EventCategory_setVolume(FMOD::EventCategory *category, float volume) { category->setVolume(volume); }
 
-void FMOD_EventCategory_stopAllEvents(FMOD::EventCategory * category);
+static inline void FMOD_EventCategory_stopAllEvents(FMOD::EventCategory *category) { category->stopAllEvents(); }
 
-int FMOD_EventCategory_getInfo(FMOD::EventCategory *category, int *index, char **name);
+static inline int FMOD_EventCategory_getInfo(FMOD::EventCategory *category, int *index, char **name) { return category->getInfo(index, name); }
 
 char *property_name_pause = (char *) "pause";
 char *property_name_purge = (char *) "purge";
@@ -235,13 +235,13 @@ void FModSound::resume(int p1) {
 }
 
 int FModSound::getEventPauseLength(int idx) {
-    int out = 0;
+    int out[1] = {0};
     if (this->initialized != 0 && this->system != 0 && this->categoryEnabled[0] != 0) {
         FMOD::Event *h = this->events[idx];
         if (h != 0)
-            FMOD_Event_getProperty(h, (unsigned char *) property_name_pause, (unsigned char *) &out, 1);
+            FMOD_Event_getProperty(h, (unsigned char *) property_name_pause, (unsigned char *) out, 1);
     }
-    return out;
+    return out[0];
 }
 
 void FModSound::enableReverb(int p1) {
@@ -364,9 +364,9 @@ bool FModSound::resume(FMOD::Event *e) {
 
 void FModSound::setParamValue(FMOD::Event *e, int paramIdx, float val) {
     if (e != 0 && this->system != 0) {
-        FMOD::EventParameter *p;
-        FMOD_Event_getParameterByIndex(e, paramIdx, &p);
-        FMOD_EventParameter_setValue(p, val);
+        FMOD::EventParameter *p[1];
+        FMOD_Event_getParameterByIndex(e, paramIdx, p);
+        FMOD_EventParameter_setValue(p[0], val);
     }
 }
 
@@ -445,9 +445,9 @@ int FModSound::init() {
 
 void FModSound::setParamValue(int paramIdx, int idx, float val) {
     if (idx >= 0 && this->system != 0 && this->events[idx] != 0) {
-        FMOD::EventParameter *p;
-        FMOD_Event_getParameterByIndex(this->events[idx], paramIdx, &p);
-        FMOD_EventParameter_setValue(p, val);
+        FMOD::EventParameter *p[1];
+        FMOD_Event_getParameterByIndex(this->events[idx], paramIdx, p);
+        FMOD_EventParameter_setValue(p[0], val);
     }
 }
 
@@ -455,9 +455,9 @@ unsigned FModSound::isChannelActive(int p1) {
     if (this->system != 0) {
         FMOD::Event *h = this->events[p1];
         if (h != 0) {
-            unsigned s;
-            FMOD_Event_getState(h, &s);
-            return (s >> 4) & 1;
+            unsigned s[1];
+            FMOD_Event_getState(h, s);
+            return (s[0] >> 4) & 1;
         }
     }
     return 0;
@@ -479,8 +479,8 @@ void FModSound::getParam(const char *name, int idx) {
     if (this->system != 0) {
         FMOD::Event *h = this->events[idx];
         if (h != 0) {
-            FMOD::EventParameter *out;
-            FMOD_Event_getParameter(h, name, &out);
+            FMOD::EventParameter *out[1];
+            FMOD_Event_getParameter(h, name, out);
         }
     }
 }
@@ -557,9 +557,9 @@ unsigned FModSound::isPlaying(int p1) {
     if (this->system != 0) {
         FMOD::Event *h = this->events[p1];
         if (h != 0) {
-            unsigned s;
-            FMOD_Event_getState(h, &s);
-            return (s >> 3) & 1;
+            unsigned s[1];
+            FMOD_Event_getState(h, s);
+            return (s[0] >> 3) & 1;
         }
     }
     return 0;
@@ -568,19 +568,19 @@ unsigned FModSound::isPlaying(int p1) {
 void FModSound::freeAllEvents() {
     static const char kProjName[8] = "GoF2";
     if (this->system != 0) {
-        FMOD::EventProject *proj = 0;
-        FMOD_EventSystem_getProject(this->system, kProjName, &proj);
-        if (proj != 0) {
+        FMOD::EventProject *proj[1];
+        proj[0] = 0;
+        FMOD_EventSystem_getProject(this->system, kProjName, proj);
+        if (proj[0] != 0) {
             for (unsigned i = 0; i < 0x8f5u; ++i) {
                 FMOD::Event *e = this->events[i];
                 if (e) {
-                    FMOD::EventGroup *grp;
-                    if (FMOD_Event_getParentGroup(e, &grp) == 0) {
-                        unsigned st;
-                        FMOD_Event_getState(this->events[i], &st);
-                        if ((st & 0x0a) == 0) {
-                            FMOD::Event *ee = this->events[i];
-                            FMOD_Event_stop(ee, 0);
+                    FMOD::EventGroup *grp[1];
+                    if (FMOD_Event_getParentGroup(e, grp) == 0) {
+                        unsigned st[1];
+                        FMOD_Event_getState(this->events[i], st);
+                        if ((st[0] & 0x0a) == 0) {
+                            grp[0]->freeEventData(this->events[i], false);
                             this->events[i] = 0;
                         }
                     }
@@ -611,18 +611,18 @@ uint8_t FModSound::IsCategoryEnabled(int p1) {
 
 void FModSound::setParamValue(const char *name, int idx, float val) {
     if (idx >= 0 && this->system != 0 && this->events[idx] != 0) {
-        FMOD::EventParameter *p;
-        FMOD_Event_getParameter(this->events[idx], name, &p);
-        FMOD_EventParameter_setValue(p, val);
+        FMOD::EventParameter *p[1];
+        FMOD_Event_getParameter(this->events[idx], name, p);
+        FMOD_EventParameter_setValue(p[0], val);
     }
 }
 
 int FModSound::pause(FMOD::Event *e) {
     unsigned r = 0;
     if (e != 0 && this->system != 0) {
-        unsigned s;
-        int st = FMOD_Event_getState(e, &s);
-        if (st == 0 && (int) (s << 0x1c) < 0)
+        unsigned s[1];
+        int st = FMOD_Event_getState(e, s);
+        if (st == 0 && (int) (s[0] << 0x1c) < 0)
             r = FMOD_Event_setPaused(e, 1) == 0;
     }
     return r;
