@@ -42,7 +42,7 @@ float Standing::getStandingRate(int race) {
 bool Standing::isEnemyWithAnyone() {
     int a = this->standings[0];
     int b = this->standings[1];
-    return ((unsigned) (b + 0x46) > 0x8c) || ((unsigned) (a + 0x46) > 0x8c);
+    return ((unsigned) (b + 0x46) > 0x8c) | ((unsigned) (a + 0x46) > 0x8c);
 }
 
 static const uint32_t Standing_enemyRaceTable[4] = {1, 0, 3, 2};
@@ -61,15 +61,17 @@ unsigned Standing::isNeutral(int race) {
 int Standing::getStanding(int race) {
     int cr = this->currentRace;
     if (cr >= 0) {
-        if (race == 0) {
-            if (cr == 0) return 100;
-            if (cr == 1) return -100;
-            return 0x46;
-        }
         if (race == 1) {
-            if (cr == 2) return 100;
-            if (cr == 3) return -100;
-            return 0x46;
+            int r = 0x46;
+            if (cr == 2) r = 100;
+            if (cr == 3) r = -100;
+            return r;
+        }
+        if (race == 0) {
+            int r = 0x46;
+            if (cr == 0) r = 100;
+            if (cr == 1) r = -100;
+            return r;
         }
     }
     return this->standings[race];
@@ -106,16 +108,17 @@ bool Standing::isEnemy(int race) {
         }
         return cr == 0;
     }
-    if (race == 1 || race == 0) {
-        return this->standings[0] < -0x46;
-    }
-    if (race == 2) {
-        return this->standings[1] < -0x46;
+    if (race == 1) {
+        return 0x46 < this->standings[0];
     }
     if (race == 3) {
         return 0x46 < this->standings[1];
     }
-    return false;
+    if (race == 2) {
+        return this->standings[1] < -0x46;
+    }
+    if (race != 0) return false;
+    return this->standings[0] < -0x46;
 }
 
 void Standing::applyDelict(int kind, int severity) {
@@ -142,12 +145,11 @@ void Standing::applyDelict(int kind, int severity) {
 static const int g_apk_raceTable[4] = {1, 0, 3, 2};
 
 void Standing::applyKill(int kind) {
-    Status *status = Globals::status;
     unsigned sysRace;
-    if (status->inAlienOrbit() != 0) {
+    if (Globals::status->inAlienOrbit() != 0) {
         sysRace = 9;
     } else {
-        sysRace = ((SolarSystem *) (long) status->getSystem())->getRace();
+        sysRace = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
     }
     int delta;
     if (kind == 8) {
@@ -178,16 +180,17 @@ bool Standing::isFriend(int race) {
         }
         return cr == 0;
     }
-    if (race == 1 || race == 0) {
-        return 0x46 < this->standings[0];
-    }
-    if (race == 2) {
-        return 0x46 < this->standings[1];
+    if (race == 1) {
+        return this->standings[0] < -0x46;
     }
     if (race == 3) {
         return this->standings[1] < -0x46;
     }
-    return false;
+    if (race == 2) {
+        return 0x46 < this->standings[1];
+    }
+    if (race != 0) return false;
+    return 0x46 < this->standings[0];
 }
 
 float Standing::getMissionBonus(int race) {
