@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.45,
+  "avg_match": 73.47,
   "byte_exact": 1130,
   "linked_exact": 2216,
   "fuzzy_perfect": 2216,
@@ -4296,6 +4296,14 @@
    "usize": 2048
   },
   {
+   "name": "zip_open",
+   "pct": 23.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1200,
+   "usize": 1392
+  },
+  {
    "name": "_ZN17PlayerFixedObject5resetEv",
    "pct": 23.9,
    "byte": false,
@@ -4326,14 +4334,6 @@
    "linked": false,
    "osize": 604,
    "usize": 530
-  },
-  {
-   "name": "zip_open",
-   "pct": 24.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1200,
-   "usize": 1392
   },
   {
    "name": "_ZN3Hud8drawMenuEi",
@@ -10408,14 +10408,6 @@
    "usize": 464
   },
   {
-   "name": "_ZN5Route6updateEfff",
-   "pct": 50.3,
-   "byte": false,
-   "linked": false,
-   "osize": 260,
-   "usize": 264
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas27CameraIsSphereinViewFrustumERKNS_6AEMath6VectorEf",
    "pct": 50.5,
    "byte": false,
@@ -12534,22 +12526,6 @@
    "linked": false,
    "osize": 64,
    "usize": 60
-  },
-  {
-   "name": "_ZN5RouteC1EPiP5ArrayIP8KIPlayerES0_i",
-   "pct": 62.7,
-   "byte": false,
-   "linked": false,
-   "osize": 154,
-   "usize": 158
-  },
-  {
-   "name": "_ZN5RouteC2EPiP5ArrayIP8KIPlayerES0_i",
-   "pct": 62.7,
-   "byte": false,
-   "linked": false,
-   "osize": 154,
-   "usize": 158
   },
   {
    "name": "_ZN5Radar17elipsoidIntersectEiiN11AbyssEngine6AEMath6VectorE",
@@ -15190,6 +15166,22 @@
    "linked": false,
    "osize": 268,
    "usize": 268
+  },
+  {
+   "name": "_ZN5RouteC1EPiP5ArrayIP8KIPlayerES0_i",
+   "pct": 81.0,
+   "byte": false,
+   "linked": false,
+   "osize": 154,
+   "usize": 154
+  },
+  {
+   "name": "_ZN5RouteC2EPiP5ArrayIP8KIPlayerES0_i",
+   "pct": 81.0,
+   "byte": false,
+   "linked": false,
+   "osize": 154,
+   "usize": 154
   },
   {
    "name": "_ZN11AbyssEngine8MaterialC2Ev",
@@ -18126,6 +18118,14 @@
    "linked": false,
    "osize": 118,
    "usize": 118
+  },
+  {
+   "name": "_ZN5Route6updateEfff",
+   "pct": 97.8,
+   "byte": false,
+   "linked": false,
+   "osize": 260,
+   "usize": 260
   },
   {
    "name": "_ZN10MiningGame16isInCurrentLayerEv",

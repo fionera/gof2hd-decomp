@@ -162,23 +162,23 @@ Route *Route::clone() {
     return r;
 }
 
-float Route::update(float x, float y, float z) {
+void Route::update(float x, float y, float z) {
     int idx = this->currentIndex;
     Array<Waypoint *> *wps = this->waypoints;
     if (idx >= (int) wps->size())
-        return x;
+        return;
     if ((*this->dockingTargets)[idx] != nullptr)
-        return x;
+        return;
     Waypoint *wp = (*wps)[idx];
     float dx = x - (float) wp->x;
     if (!(dx < 2000.0f) || !(dx > -2000.0f))
-        return x;
+        return;
     float dy = y - (float) wp->y;
     if (!(dy < 2000.0f) || !(dy > -2000.0f))
-        return x;
+        return;
     float dz = z - (float) wp->z;
     if (!(dz < 2000.0f) || !(dz > -2000.0f))
-        return x;
+        return;
 
     wp->setActive(false);
     (*this->waypoints)[this->currentIndex]->reached();
@@ -198,9 +198,7 @@ float Route::update(float x, float y, float z) {
     }
     if (next < (int) len) {
         (*w)[next]->setActive(true);
-        return 0.0f;
     }
-    return x;
 }
 
 int Route::getDockingTime() {
@@ -208,7 +206,6 @@ int Route::getDockingTime() {
 }
 
 Route::Route(int *coords, int count) {
-    this->loop = 0;
     this->currentIndex = 0;
     this->waypoints = new Array<Waypoint *>();
     this->dockingTargets = new Array<KIPlayer *>();
@@ -221,11 +218,10 @@ Route::Route(int *coords, int count) {
 }
 
 Route::Route(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
-    this->loop = 0;
     this->currentIndex = 0;
     this->waypoints = new Array<Waypoint *>();
-    this->dockingTargets = targets;
     this->dockingTimes = new Array<int>();
+    this->dockingTargets = targets;
     for (int i = 0; i < count; i += 3)
         ArrayAdd(times[i / 3], *(this->dockingTimes));
     for (int i = 0; i < count; i += 3)

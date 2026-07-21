@@ -11,7 +11,7 @@ class Waypoint;
 class Route {
 public:
     int32_t currentIndex;
-    uint8_t loop;
+    uint8_t loop = 0;
     // Ghidra ground truth: a 4-byte field sits at 0x8 before waypoints@0xc; our decomp lacked it,
     // shifting waypoints/dockingTargets/dockingTimes 4 bytes low.
     int32_t field_0x8;
@@ -59,7 +59,7 @@ public:
 
     void update(const Vector &v);
 
-    float update(float x, float y, float z);
+    void update(float x, float y, float z);
 
     bool waypointDefined();
 };
