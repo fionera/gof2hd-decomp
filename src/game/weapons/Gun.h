@@ -31,13 +31,14 @@ public:
     int field_0x2c;
     char *hitPositions;
     int level;
+    // ASM (Gun ctor @0x151f20 / dtor @0x152134): the two new[] results land at 0x3c/0x40 and the
+    // dtor delete[]s [0x3c] (null-checked) then [0x40]; initialLifetime/fireDelay are the
+    // strd pair at 0x44/0x48. 0x38 is only ever zeroed by the ctor.
+    int field_0x38;
     int *lifetimes;
     uint8_t *hitFlags;
     int initialLifetime;
     int fireDelay;
-    // ASM (BeamGun::render etc.): active read at [gun,#76]=0x4c; ours had it @0x48. 4-byte field precedes;
-    // compensated by dropping _pad_0x50 (pitchRate now fills 0x50..0x54), keeping field_0x54 pinned @0x54.
-    int field_0x48;
     uint8_t active;
     uint8_t hitSmall;
 
@@ -153,6 +154,12 @@ public:
 // stays contiguous at 0xa4. Sentinel: targetDir is the first field after the drift run.
 static_assert(offsetof(Gun, field_0x20) == 0x20, "");
 static_assert(offsetof(Gun, field_0x2c) == 0x2c, "");
+static_assert(offsetof(Gun, field_0x38) == 0x38, "");
+static_assert(offsetof(Gun, lifetimes) == 0x3c, "Gun dtor delete[] order");
+static_assert(offsetof(Gun, hitFlags) == 0x40, "MineGun/ObjectGun hitFlags loads");
+static_assert(offsetof(Gun, initialLifetime) == 0x44, "");
+static_assert(offsetof(Gun, fireDelay) == 0x48, "ctor strd pair 0x44/0x48");
+static_assert(offsetof(Gun, active) == 0x4c, "BeamGun::render active read");
 static_assert(offsetof(Gun, field_0x54) == 0x54, "");
 static_assert(offsetof(Gun, field_0x78) == 0x78, "");
 static_assert(offsetof(Gun, field_0x89) == 0x89, "");
