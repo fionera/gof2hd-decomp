@@ -2,8 +2,8 @@
 #include "engine/file/AEFile.h"
 
 static unsigned short g_langCode_storage = 0;
-static unsigned short *g_langCode = &g_langCode_storage;
-static unsigned short *g_GameText_langReset = &g_langCode_storage;
+static unsigned short * volatile g_langCode = &g_langCode_storage;
+static unsigned short * volatile g_GameText_langReset = &g_langCode_storage;
 
 void GameText::release() {
     if (this->textTable == nullptr)
@@ -39,7 +39,7 @@ static const char *gLangPaths[17] = {0};
 static const char gLangPathDefault[] = "";
 static const char gLangPathEnglish[] = "";
 
-void GameText::setLanguage(short stringCount, int langId) {
+void GameText::setLanguage(short langId, int stringCount) {
     if ((unsigned short)*g_langCode == (unsigned short)langId)
         return;
 
@@ -183,9 +183,12 @@ int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
         keep = true;
         unsigned short ch = str[i];
         unsigned *row = gArabicTable;
-        for (int r = 0; r != 0x29; row += 5, ++r) {
+        int r = 0;
+        while (r != 0x29) {
             for (int c = 0; c != 5; ++c)
                 keep = keep & (row[c] != ch);
+            row += 5;
+            ++r;
         }
         ++i;
     } while (keep);
@@ -196,8 +199,8 @@ static const char gInitLangStr[] = "";
 
 GameText::GameText() {
     *g_GameText_langReset = 0xffff;
-    this->textTable = nullptr;
     this->textCount = 0;
+    this->textTable = nullptr;
     String tmp(gInitLangStr);
     this->fallbackText = tmp;
 }
