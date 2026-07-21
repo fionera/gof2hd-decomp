@@ -57,7 +57,13 @@ int PlayerWormHole::open() {
 }
 
 Vector PlayerWormHole::getPosition() {
-    Vector result = {(float) this->positionX, (float) this->positionY, (float) this->positionZ};
+    float fy = (float) this->positionY;
+    float fx = (float) this->positionX;
+    float fz = (float) this->positionZ;
+    Vector result;
+    result.x = fx;
+    result.y = fy;
+    result.z = fz;
     return result;
 }
 
@@ -80,8 +86,8 @@ void PlayerWormHole::setPosition(float x, float y, float z) {
     this->posX = x;
     this->posY = y;
     this->posZ = z;
-    this->positionX = (int) x;
     this->positionY = (int) y;
+    this->positionX = (int) x;
     this->positionZ = (int) z;
     this->geometry->setPosition(x, y, z);
 }
