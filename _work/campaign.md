@@ -2,6 +2,54 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-21 (wave 4 — MCP-free, 8 workers, all landed)
+
+Pre-wave: FModSound::disableReverb cracked by orchestrator — orig memcpys 80B from rodata
+@0x1fb540 which decodes EXACTLY as FMOD_PRESET_OFF (FMOD Ex 4.44 fmod.h); all-zero placeholder
+folded to __aeabi_memclr. Fix: non-zero function-static struct + unsigned char buf (canary) ->
+linked-exact; __aeabi_memcpy8 import added (present in original's set, 1090->1091).
+
+Wave 4: 8 disjoint workers from fresh diffs4 dumps (dumper now persisted:
+scratchpad/dump_diffs.py). Zero deaths, 8/8 items gated PASS, one hunk-revert (Route::getWaypoint
+placement-new rewrite regressed 2pts; kept update+ctor wins). Landed highlights:
+- PlayerWormHole get/setPosition -> 100 (declare fy before fx / store Y before X: LLVM batches
+  VFP converts in Y-first order).
+- AEPakFile/AENormalFile::Release byte-exact (fileInterface->Close() vtable call before delete);
+  the throwing virtual call cascades the SJLJ terminate stub into the dtors (32->36B, ->96.8).
+- CheatHandler::AddCheatCode 59.5->98.8 (String::operator[](int) call form fixes regalloc).
+- MiningGame left/right byte-exact (void return kills the vmov r0,s0 materialization —
+  same trick as Route::update(fff) 50.3->97.8); spurious MiningGame_sqrt import removed
+  via globals->sqrt() (imports 1091->1090).
+- Achievements ctor/dtor pairs linked-exact; initCheckEquipmentAndWeapons 44.8->81.6.
+- AutoPilotList D1/D2 + getTargetString linked-exact; MineGun dtor/ctor +18/+15.
+- BluePrint ctor linked-exact (init order); addItem 35.1->50.9 (early Globals::status load
+  reproduces 9-reg prologue).
+End state: **byte 1132, linked 2226, stubs 0, extra 36, imports 1090, avg 73.52.**
+
+New cross-cutting learnings:
+- void-return discovery: when orig never materializes r0/s0 at return and ours does, the decomp
+  return type is wrong; fixing it frees a callee-saved VFP reg and can jump 40+ pct.
+- Gun.h FIELD DRIFT found: gun->hitFlags is 0x40 in orig, 0x3c in our Gun.h — blocks MineGun
+  render/update (and likely other Gun users). Add to the tier-5 drifted-fields exclusive pass.
+- Recurring 4B tail: missing EH terminate stub in dtors (C++14 implicit-noexcept String dtor vs
+  original's throwing-dtor EH pads). The files-worker workaround (a genuinely throwing virtual
+  call in a sibling method) fixed AEPak/AENormal dtors; Objective/Route dtors still blocked on it.
+- Ship::addMod: orig uses the CLZ equality trick (subs/clz/lsrs #5) = source shape
+  `int += (a == b)`; untried, good next retry.
+- Canary-unknown-trigger family (PlayerJunk::update, MineGun::update, AutoPilotList ctor/draw):
+  orig has canary, plain -fstack-protector needs a byte-array >=8 local we haven't found yet —
+  suspect a String/temp with inline char storage in the original source.
+- Worker claims of "PLT-address-diff-only" at <100 pct (Wanted D1/D2, Objective setAchievedText,
+  PlayerJunk render pre-fix) are USUALLY WRONG — verify masks true PLT displacement diffs; if
+  it shows "|" the callee or code shape differs. Treat such claims as unverified.
+
+Queue after wave 4: per-class tier (4) essentially exhausted — remaining are shader-zoo
+(TU-pooling, exclusive), drifted fields (exclusive, now incl. Gun.h hitFlags), TU merges
+(exclusive), monster fns (orchestrator-only), and hard singles (GameText::setLanguage rework,
+Standing::getMissionBonus vmax, ScrollTouchWindow::setText, FModSound::updateAll 31.0,
+Achievements::checkForNewMedal 7.3, MiningGame::render2D 18.9, AutoPilotList::draw 34.3,
+PlayerWormHole::update 43.9, Route clone/getWaypoint/2-arg ctor).
+
 ## Session 2026-07-21 (wave 3 — MCP-free, clean run)
 
 4 workers, NO Ghidra (explicitly forbidden in prompts after the wave-2 crash loop) — diff dumps
