@@ -84,7 +84,7 @@ Ship::~Ship() {
     }
     this->cargo = 0;
 
-    delete[] this->slots;
+    delete this->slots;
     this->slots = 0;
 
     if (this->mods != 0) {
@@ -179,20 +179,20 @@ Item *Ship::getCargo(int index) {
     for (unsigned int i = 0; i < c->size(); i = i + 1) {
         Item *it = c->data()[i];
         if (it != 0 && it->getIndex() == index) {
-            return this->cargo->data()[i];
+            c = this->cargo;
+            return c->data()[i];
         }
     }
     return 0;
 }
 
 bool Ship::hasCargo(int index, int amount) {
-    Array<Item *> *c = this->cargo;
-    if (c == 0) {
+    if (this->cargo == 0) {
         return false;
     }
-    for (unsigned int i = 0; i < c->size(); i = i + 1) {
-        Item *it = c->data()[i];
-        if (it != 0 && it->getIndex() == index && it->getAmount() >= amount) {
+    for (unsigned int i = 0; i < this->cargo->size(); i = i + 1) {
+        Item *it = this->cargo->data()[i];
+        if (it != 0 && it->getIndex() == index && this->cargo->data()[i]->getAmount() >= amount) {
             return true;
         }
     }
@@ -321,7 +321,8 @@ void Ship::removeEquipment(Item *item) {
     for (unsigned int i = 0; i < eq->size(); i = i + 1) {
         Item *it = eq->data()[i];
         if (it != 0 && it->equals(item)) {
-            this->equipment->data()[i] = 0;
+            eq = this->equipment;
+            eq->data()[i] = 0;
             return;
         }
     }
@@ -447,13 +448,12 @@ int Ship::slotAvailable(int sort) {
 }
 
 bool Ship::hasEquipment(int index, int amount) {
-    Array<Item *> *e = this->equipment;
-    if (e == 0) {
+    if (this->equipment == 0) {
         return false;
     }
-    for (unsigned int i = 0; i < e->size(); i = i + 1) {
-        Item *it = e->data()[i];
-        if (it != 0 && it->getIndex() == index && it->getAmount() >= amount) {
+    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+        Item *it = this->equipment->data()[i];
+        if (it != 0 && it->getIndex() == index && this->equipment->data()[i]->getAmount() >= amount) {
             return true;
         }
     }
@@ -461,13 +461,19 @@ bool Ship::hasEquipment(int index, int amount) {
 }
 
 bool Ship::hasSecondaryWeapons() {
-    if (this->slots[1] == 0 || this->equipment == 0) {
+    if (this->slots[1] == 0 || this->equipment == 0 || this->equipment->size() == 0) {
         return false;
     }
-    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
-        Item *it = this->equipment->data()[i];
-        if (it != 0 && it->getType() == 1) {
-            return true;
+    Array<Item *> *eq = this->equipment;
+    unsigned int sz = eq->size();
+    for (unsigned int i = 0; i < sz; i = i + 1) {
+        Item *it = eq->data()[i];
+        if (it != 0) {
+            if (it->getType() == 1) {
+                return true;
+            }
+            eq = this->equipment;
+            sz = eq->size();
         }
     }
     return false;
@@ -708,8 +714,11 @@ void Ship::addMod(int mod) {
     }
     unsigned int sz = m->size();
     int found = 0;
-    for (unsigned int i = 0; !found && i < sz; i = i + 1) {
+    for (unsigned int i = 0; i < sz; i = i + 1) {
         found = m->data()[i] == mod;
+        if (found) {
+            break;
+        }
     }
     if (found) {
         return;

@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.19,
+  "avg_match": 73.23,
   "byte_exact": 1120,
-  "linked_exact": 2192,
-  "fuzzy_perfect": 2192,
+  "linked_exact": 2193,
+  "fuzzy_perfect": 2193,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -5406,22 +5406,6 @@
    "linked": false,
    "osize": 344,
    "usize": 624
-  },
-  {
-   "name": "_ZN4Ship12hasEquipmentEii",
-   "pct": 29.5,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 68
-  },
-  {
-   "name": "_ZN4Ship8hasCargoEii",
-   "pct": 29.5,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 68
   },
   {
    "name": "_ZN9FModSound14enableCategoryEib",
@@ -13016,14 +13000,6 @@
    "usize": 324
   },
   {
-   "name": "_ZN4Ship19hasSecondaryWeaponsEv",
-   "pct": 65.4,
-   "byte": false,
-   "linked": false,
-   "osize": 58,
-   "usize": 54
-  },
-  {
    "name": "_ZN7MissionC1Ev",
    "pct": 65.4,
    "byte": false,
@@ -16032,6 +16008,14 @@
    "usize": 612
   },
   {
+   "name": "_ZN4Ship6addModEi",
+   "pct": 86.3,
+   "byte": false,
+   "linked": false,
+   "osize": 202,
+   "usize": 190
+  },
+  {
    "name": "_ZN6Status9isOnStackEP7Station",
    "pct": 86.3,
    "byte": false,
@@ -16302,14 +16286,6 @@
    "linked": false,
    "osize": 140,
    "usize": 144
-  },
-  {
-   "name": "_ZN4Ship7setModsEP5ArrayIiE",
-   "pct": 88.5,
-   "byte": false,
-   "linked": false,
-   "osize": 174,
-   "usize": 174
   },
   {
    "name": "_ZN9BluePrintC1Ei",
@@ -16886,14 +16862,6 @@
    "linked": false,
    "osize": 52,
    "usize": 52
-  },
-  {
-   "name": "_ZN4Ship6addModEi",
-   "pct": 90.6,
-   "byte": false,
-   "linked": false,
-   "osize": 202,
-   "usize": 204
   },
   {
    "name": "_zip_new",
@@ -17920,22 +17888,6 @@
    "usize": 132
   },
   {
-   "name": "_ZN4ShipD1Ev",
-   "pct": 95.9,
-   "byte": false,
-   "linked": false,
-   "osize": 94,
-   "usize": 90
-  },
-  {
-   "name": "_ZN4ShipD2Ev",
-   "pct": 95.9,
-   "byte": false,
-   "linked": false,
-   "osize": 94,
-   "usize": 90
-  },
-  {
    "name": "_ZN7Station7hasItemEi",
    "pct": 96.0,
    "byte": false,
@@ -18126,6 +18078,22 @@
    "linked": false,
    "osize": 84,
    "usize": 84
+  },
+  {
+   "name": "_ZN4Ship12hasEquipmentEii",
+   "pct": 96.9,
+   "byte": false,
+   "linked": false,
+   "osize": 76,
+   "usize": 76
+  },
+  {
+   "name": "_ZN4Ship8hasCargoEii",
+   "pct": 96.9,
+   "byte": false,
+   "linked": false,
+   "osize": 76,
+   "usize": 76
   },
   {
    "name": "_ZN11AbyssEngine11CubeMapping11SetInActiveEv",
@@ -18432,6 +18400,14 @@
    "usize": 68
   },
   {
+   "name": "_ZN4Ship7setModsEP5ArrayIiE",
+   "pct": 98.4,
+   "byte": false,
+   "linked": false,
+   "osize": 174,
+   "usize": 174
+  },
+  {
    "name": "_ZN8CutSceneD1Ev",
    "pct": 98.4,
    "byte": false,
@@ -18470,6 +18446,22 @@
    "linked": false,
    "osize": 216,
    "usize": 216
+  },
+  {
+   "name": "_ZN4ShipD1Ev",
+   "pct": 98.6,
+   "byte": false,
+   "linked": false,
+   "osize": 94,
+   "usize": 90
+  },
+  {
+   "name": "_ZN4ShipD2Ev",
+   "pct": 98.6,
+   "byte": false,
+   "linked": false,
+   "osize": 94,
+   "usize": 90
   },
   {
    "name": "_ZN12StatusWindowD1Ev",
@@ -28438,6 +28430,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN4Ship19hasSecondaryWeaponsEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 58,
+   "usize": 58
   },
   {
    "name": "_ZN4Ship20getCurrentWeaponSlotEv",
