@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.23,
-  "byte_exact": 1120,
-  "linked_exact": 2193,
-  "fuzzy_perfect": 2193,
+  "avg_match": 73.3,
+  "byte_exact": 1122,
+  "linked_exact": 2198,
+  "fuzzy_perfect": 2198,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1664,14 +1664,6 @@
    "usize": 135842
   },
   {
-   "name": "_ZN10ModStation12OnInitializeEv",
-   "pct": 8.5,
-   "byte": false,
-   "linked": false,
-   "osize": 6396,
-   "usize": 2816
-  },
-  {
    "name": "_ZN11AbyssEngine6String3SetEf",
    "pct": 8.5,
    "byte": false,
@@ -1702,6 +1694,14 @@
    "linked": false,
    "osize": 640,
    "usize": 112
+  },
+  {
+   "name": "_ZN10ModStation12OnInitializeEv",
+   "pct": 9.0,
+   "byte": false,
+   "linked": false,
+   "osize": 6396,
+   "usize": 2816
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManagerC1EPNS_6EngineE",
@@ -3856,14 +3856,6 @@
    "usize": 70
   },
   {
-   "name": "_ZN14ListItemWindow4drawEv",
-   "pct": 21.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1892,
-   "usize": 1912
-  },
-  {
    "name": "_ZN5MGame10OnRender2DEv",
    "pct": 21.3,
    "byte": false,
@@ -3886,6 +3878,14 @@
    "linked": false,
    "osize": 700,
    "usize": 636
+  },
+  {
+   "name": "_ZN14ListItemWindow4drawEv",
+   "pct": 21.4,
+   "byte": false,
+   "linked": false,
+   "osize": 1892,
+   "usize": 1912
   },
   {
    "name": "_ZN6Player6damageEibi",
@@ -5238,22 +5238,6 @@
    "linked": false,
    "osize": 50,
    "usize": 50
-  },
-  {
-   "name": "_ZN9ObjectiveC1EiiiP5Level",
-   "pct": 28.6,
-   "byte": false,
-   "linked": false,
-   "osize": 28,
-   "usize": 30
-  },
-  {
-   "name": "_ZN9ObjectiveC2EiiiP5Level",
-   "pct": 28.6,
-   "byte": false,
-   "linked": false,
-   "osize": 28,
-   "usize": 30
   },
   {
    "name": "_ZN9PlayerEgo30setCurrentSecondaryWeaponIndexEi",
@@ -9638,22 +9622,6 @@
    "linked": false,
    "osize": 36,
    "usize": 18
-  },
-  {
-   "name": "_ZN9ObjectiveD1Ev",
-   "pct": 47.6,
-   "byte": false,
-   "linked": false,
-   "osize": 50,
-   "usize": 48
-  },
-  {
-   "name": "_ZN9ObjectiveD2Ev",
-   "pct": 47.6,
-   "byte": false,
-   "linked": false,
-   "osize": 50,
-   "usize": 48
   },
   {
    "name": "_zip_cdir_write",
@@ -14360,14 +14328,6 @@
    "usize": 12
   },
   {
-   "name": "_ZN9BluePrint14getStationNameEv",
-   "pct": 72.7,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
-  },
-  {
    "name": "_zip_cdir_grow",
    "pct": 72.7,
    "byte": false,
@@ -15470,22 +15430,6 @@
    "linked": false,
    "osize": 224,
    "usize": 224
-  },
-  {
-   "name": "_ZN9BluePrintD1Ev",
-   "pct": 82.8,
-   "byte": false,
-   "linked": false,
-   "osize": 42,
-   "usize": 34
-  },
-  {
-   "name": "_ZN9BluePrintD2Ev",
-   "pct": 82.8,
-   "byte": false,
-   "linked": false,
-   "osize": 42,
-   "usize": 34
   },
   {
    "name": "_ZN9FModSound12enableReverbEi",
@@ -18270,6 +18214,22 @@
    "linked": false,
    "osize": 112,
    "usize": 112
+  },
+  {
+   "name": "_ZN9ObjectiveD1Ev",
+   "pct": 97.6,
+   "byte": false,
+   "linked": false,
+   "osize": 50,
+   "usize": 46
+  },
+  {
+   "name": "_ZN9ObjectiveD2Ev",
+   "pct": 97.6,
+   "byte": false,
+   "linked": false,
+   "osize": 50,
+   "usize": 46
   },
   {
    "name": "_ZN10AEGeometry23setLodMeshesWithMeshIdsEPtPjPii",
@@ -33440,6 +33400,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN9BluePrint14getStationNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
+  },
+  {
    "name": "_ZN9BluePrint14getTotalAmountEi",
    "pct": 100.0,
    "byte": false,
@@ -33558,6 +33526,22 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN9BluePrintD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 42,
+   "usize": 42
+  },
+  {
+   "name": "_ZN9BluePrintD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 42,
+   "usize": 42
   },
   {
    "name": "_ZN9Explosion11peakReachedEv",
@@ -33872,12 +33856,28 @@
    "usize": 18
   },
   {
+   "name": "_ZN9ObjectiveC1EiiiP5Level",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 28,
+   "usize": 28
+  },
+  {
    "name": "_ZN9ObjectiveC2EiiP5Level",
    "pct": 100.0,
    "byte": true,
    "linked": true,
    "osize": 18,
    "usize": 18
+  },
+  {
+   "name": "_ZN9ObjectiveC2EiiiP5Level",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 28,
+   "usize": 28
   },
   {
    "name": "_ZN9PlayerEgo10driveReadyEv",

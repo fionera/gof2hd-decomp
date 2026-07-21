@@ -26,12 +26,15 @@ bool BluePrint::isEmpty() {
     return spentValue == 0;
 }
 
-String BluePrint::getStationName() {
-    return stationName;
+AbyssEngine::String BluePrint::getStationName() {
+    return AbyssEngine::String(stationName, false);
 }
 
 BluePrint::~BluePrint() {
-    delete ingredientCounters;
+    if (ingredientCounters != nullptr) {
+        ArrayRelease(*ingredientCounters);
+        delete ingredientCounters;
+    }
     ingredientCounters = nullptr;
 }
 
@@ -97,8 +100,8 @@ Array<int> *BluePrint::getQuantityList() {
 }
 
 int BluePrint::getIngredientsValue() {
-    Array<int> *il = getIngredientList();
     int total = 0;
+    Array<int> *il = getIngredientList();
     if (il != nullptr) {
         for (uint32_t i = 0; i < il->size(); i++) {
             int price = (*Globals::items)[(*il)[i]]->getSinglePrice();

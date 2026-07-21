@@ -23,20 +23,20 @@ Objective::Objective(int type, int value, int calcValue, Level *level) {
     this->level = level;
     this->children = nullptr;
     this->achievedText = nullptr;
-    this->storedValue = (type == 0xd) ? calcValue : 0;
+    if (type == 0xd)
+        this->storedValue = calcValue;
 }
 
 Objective::~Objective() {
     if (this->children != nullptr) {
         ArrayReleaseClasses<Objective *>(*this->children);
-        delete this->children;
-        this->children = nullptr;
     }
-
+    delete this->children;
+    this->children = nullptr;
     if (this->achievedText != nullptr) {
         delete this->achievedText;
-        this->achievedText = nullptr;
     }
+    this->achievedText = nullptr;
 }
 
 Objective *Objective::addObjective(Objective *objective) {
