@@ -309,6 +309,7 @@ Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector d
     this->field_0x94 = 0;
     this->field_0x98 = 0;
     this->level = 0;
+    this->field_0x38 = 0;
     this->lifetimes = 0;
     this->enemies = 0;
     this->impact = 0;
