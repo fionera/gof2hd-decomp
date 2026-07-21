@@ -2,6 +2,26 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-21 (exclusive: Gun.h layout fix)
+
+Gun.h 0x38-0x48 span fixed (dac2ac0e): NOT a +4 drift — a 3-field intra-span reorder.
+ASM-derived from orig ctor @0x151f20 (two new[] stores at 0x3c/0x40) + dtor @0x152134
+(delete[] [0x3c] null-checked then [0x40] unchecked = our source order) + strd pair 0x44/0x48.
+New order: field_0x38(int, ctor-zeroed), lifetimes@0x3c, hitFlags@0x40, initialLifetime@0x44,
+fireDelay@0x48. No size change; static_asserts added. Follow-up 1d9b2f78: ctor zeroes
+field_0x38 like orig (no metric delta, semantic alignment).
+Result: linked 2226 -> 2227 (MineGun::render linked-exact), Gun D1/D2 -> 92.9,
+refillGunDelay -> 90.9. No regressions. Full derivation: _work/reconstructions/Gun-layout.md.
+
+QUEUE CORRECTIONS (verified against source, 2026-07-21):
+- AEMath::Matrix 0x3c re-size + Transform re-layout: ALREADY DONE (e0d971d4, 2026-07-06;
+  Matrix.h is float m[15] with sizeof==0x3c assert; no unlinked Transform:: rows remain).
+  The "Matrix mis-size gates Gun::shoot" note was STALE.
+- Gun::shootAt is a PLACEHOLDER body (usize 18 vs orig 1788) — it's an unimplemented monster
+  fn needing real reconstruction (DeepOpen oracle + orig disasm), orchestrator-only.
+  Gun::shoot (orig 88B) forwards to it and will follow once shootAt exists.
+End state: **byte 1132, linked 2227, stubs 0, extra 36, imports 1090, avg 73.53.**
+
 ## Session 2026-07-21 (wave 4 — MCP-free, 8 workers, all landed)
 
 Pre-wave: FModSound::disableReverb cracked by orchestrator — orig memcpys 80B from rodata
