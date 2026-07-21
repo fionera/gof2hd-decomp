@@ -40,7 +40,10 @@ uint32_t AENormalFile::GetFileSize() {
 
 uint32_t AENormalFile::Release() {
     if (file != nullptr) {
-        delete file;
+        file->Close();
+        if (file != nullptr) {
+            delete file;
+        }
     }
     file = nullptr;
     return 1;

@@ -44,7 +44,10 @@ uint32_t AEPakFile::GetFileSize() {
 
 uint32_t AEPakFile::Release() {
     if (fileInterface != nullptr) {
-        delete fileInterface;
+        fileInterface->Close();
+        if (fileInterface != nullptr) {
+            delete fileInterface;
+        }
         fileInterface = nullptr;
     }
     return 1;
