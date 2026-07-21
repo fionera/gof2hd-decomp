@@ -98,8 +98,7 @@ void ScrollTouchWindow::drawTextBG() {
         heightInset = pad * 2;
     }
     int h = this->height;
-    String text(g_STW_empty_drawTextBG);
-    layout->drawBox(5, x, pad + y, w - widthInset, h - heightInset, text, 0);
+    layout->drawBox(5, x, pad + y, w - widthInset, h - heightInset, AbyssEngine::String(g_STW_empty_drawTextBG), 0);
 }
 
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text) {
@@ -116,18 +115,17 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame) 
 
     Layout *layout = Globals::layout;
     int border = layout->field_0x4c;
-    int extra;
     int boxY;
+    int h4;
     if (hasFrame) {
         int top = layout->windowTopInset;
         boxY = border + y + top;
-        extra = -top;
+        h4 = h - border * 2 - top;
     } else {
         boxY = border + y;
-        extra = 0;
+        h4 = h - border * 2;
     }
-    this->scrollBox = new ScrollTouchBox(border + x, boxY, w - border * 2,
-                                         extra + h - border * 2);
+    this->scrollBox = new ScrollTouchBox(border + x, boxY, w - border * 2, h4);
     this->touchActive = 0;
     this->hasFrame = hasFrame;
 }

@@ -3848,6 +3848,14 @@
    "usize": 70
   },
   {
+   "name": "_ZN14ListItemWindow4drawEv",
+   "pct": 21.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1892,
+   "usize": 1912
+  },
+  {
    "name": "_ZN5MGame10OnRender2DEv",
    "pct": 21.3,
    "byte": false,
@@ -3870,14 +3878,6 @@
    "linked": false,
    "osize": 700,
    "usize": 636
-  },
-  {
-   "name": "_ZN14ListItemWindow4drawEv",
-   "pct": 21.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1892,
-   "usize": 1912
   },
   {
    "name": "_ZN6Player6damageEibi",
@@ -6520,14 +6520,6 @@
    "usize": 74
   },
   {
-   "name": "_ZN17ScrollTouchWindow10drawTextBGEv",
-   "pct": 33.8,
-   "byte": false,
-   "linked": false,
-   "osize": 192,
-   "usize": 184
-  },
-  {
    "name": "_ZN18TargetFollowCameraC1EjP10AEGeometryN11AbyssEngine6AEMath6VectorES4_",
    "pct": 33.8,
    "byte": false,
@@ -7840,6 +7832,14 @@
    "usize": 648
   },
   {
+   "name": "_ZN17ScrollTouchWindow10drawTextBGEv",
+   "pct": 38.8,
+   "byte": false,
+   "linked": false,
+   "osize": 192,
+   "usize": 152
+  },
+  {
    "name": "_ZN6AEFile9FileExistERKN11AbyssEngine6StringE",
    "pct": 38.8,
    "byte": false,
@@ -8904,22 +8904,6 @@
    "usize": 544
   },
   {
-   "name": "_ZN17ScrollTouchWindowC1Eiiiib",
-   "pct": 44.1,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 160
-  },
-  {
-   "name": "_ZN17ScrollTouchWindowC2Eiiiib",
-   "pct": 44.1,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 160
-  },
-  {
    "name": "_ZN6Status17addPendingProductEP9BluePrint",
    "pct": 44.1,
    "byte": false,
@@ -9110,6 +9094,22 @@
    "linked": false,
    "osize": 142,
    "usize": 140
+  },
+  {
+   "name": "_ZN17ScrollTouchWindowC1Eiiiib",
+   "pct": 45.2,
+   "byte": false,
+   "linked": false,
+   "osize": 152,
+   "usize": 156
+  },
+  {
+   "name": "_ZN17ScrollTouchWindowC2Eiiiib",
+   "pct": 45.2,
+   "byte": false,
+   "linked": false,
+   "osize": 152,
+   "usize": 156
   },
   {
    "name": "_ZN4Ship12refreshValueEv",
