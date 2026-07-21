@@ -1,10 +1,9 @@
 #include "engine/core/GameText.h"
 #include "engine/file/AEFile.h"
 
-static short g_GameText_language_storage = 0;
-static short *g_GameText_language = &g_GameText_language_storage;
-static unsigned short g_GameText_langReset_storage = 0;
-static unsigned short *g_GameText_langReset = &g_GameText_langReset_storage;
+static unsigned short g_langCode_storage = 0;
+static unsigned short *g_langCode = &g_langCode_storage;
+static unsigned short *g_GameText_langReset = &g_langCode_storage;
 
 void GameText::release() {
     if (this->textTable == nullptr)
@@ -16,7 +15,7 @@ void GameText::release() {
 }
 
 int GameText::getLanguage() {
-    return *g_GameText_language;
+    return (short) *g_langCode;
 }
 
 static const char gRegionCodeStr[] = "";
@@ -36,15 +35,12 @@ void GameText::setSubstituteArray(int *pairs, unsigned count) {
     }
 }
 
-static unsigned short g_langCode_storage = 0;
-static unsigned short *g_langCode = &g_langCode_storage;
-
 static const char *gLangPaths[17] = {0};
 static const char gLangPathDefault[] = "";
 static const char gLangPathEnglish[] = "";
 
 void GameText::setLanguage(short stringCount, int langId) {
-    if ((unsigned int) *g_langCode == ((unsigned int) langId & 0xffff))
+    if ((unsigned short)*g_langCode == (unsigned short)langId)
         return;
 
     this->release();
@@ -52,73 +48,123 @@ void GameText::setLanguage(short stringCount, int langId) {
     this->textTable = new String *[stringCount]();
 
     String path(gLangPathDefault);
-
     unsigned short code;
-    const char *p;
+
     switch (langId) {
-        case 0: p = gLangPaths[0];
+        case 0: {
+            String tmp(gLangPaths[0]);
+            path = tmp;
             code = 0;
             break;
-        case 1: p = gLangPaths[1];
+        }
+        case 1: {
+            String tmp(gLangPaths[1]);
+            path = tmp;
             code = 1;
             break;
-        case 2: p = gLangPaths[2];
+        }
+        case 2: {
+            String tmp(gLangPaths[2]);
+            path = tmp;
             code = 2;
             break;
-        case 3: p = gLangPaths[3];
+        }
+        case 3: {
+            String tmp(gLangPaths[3]);
+            path = tmp;
             code = 3;
             break;
-        case 4: p = gLangPaths[4];
+        }
+        case 4: {
+            String tmp(gLangPaths[4]);
+            path = tmp;
             code = 4;
             break;
-        case 5: p = gLangPaths[5];
+        }
+        case 5: {
+            String tmp(gLangPaths[5]);
+            path = tmp;
             code = 5;
             break;
-        case 6: p = gLangPaths[6];
+        }
+        case 6: {
+            String tmp(gLangPaths[6]);
+            path = tmp;
             code = 6;
             break;
-        case 7: p = gLangPaths[7];
+        }
+        case 7: {
+            String tmp(gLangPaths[7]);
+            path = tmp;
             code = 7;
             break;
-        case 8: p = gLangPaths[8];
+        }
+        case 8: {
+            String tmp(gLangPaths[8]);
+            path = tmp;
             code = 8;
             break;
-        case 9: p = gLangPaths[9];
+        }
+        case 9: {
+            String tmp(gLangPaths[9]);
+            path = tmp;
             code = 9;
             break;
-        case 10: p = gLangPaths[10];
+        }
+        case 10: {
+            String tmp(gLangPaths[10]);
+            path = tmp;
             code = 0;
             break;
-        case 11: p = gLangPaths[11];
+        }
+        case 11: {
+            String tmp(gLangPaths[11]);
+            path = tmp;
             code = 0;
             break;
-        case 12: p = gLangPaths[12];
+        }
+        case 12: {
+            String tmp(gLangPaths[12]);
+            path = tmp;
             code = 12;
             break;
-        case 13: p = gLangPaths[13];
+        }
+        case 13: {
+            String tmp(gLangPaths[13]);
+            path = tmp;
             code = 13;
             break;
-        case 14: p = gLangPaths[14];
+        }
+        case 14: {
+            String tmp(gLangPaths[14]);
+            path = tmp;
             code = 14;
             break;
-        case 15: p = gLangPaths[15];
+        }
+        case 15: {
+            String tmp(gLangPaths[15]);
+            path = tmp;
             code = 15;
             break;
-        default: p = gLangPaths[16];
+        }
+        default: {
+            String tmp(gLangPaths[16]);
+            path = tmp;
             code = 0;
             break;
+        }
     }
-    path = String(p);
     *g_langCode = code;
 
     if (AEFile::FileExist(path) == 0) {
-        path = String(gLangPathEnglish);
+        String fallback(gLangPathEnglish);
+        path = fallback;
         *g_langCode = 0;
     }
 
     unsigned int file = 0;
     AEFile::OpenRead(path, &file);
-    this->ReadLangFile(0, stringCount);
+    this->ReadLangFile(file, stringCount);
 }
 
 GameText::~GameText() {
@@ -149,15 +195,11 @@ int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
 static const char gInitLangStr[] = "";
 
 GameText::GameText() {
-    {
-        if (this->fallbackText.data) delete[] this->fallbackText.data;
-        this->fallbackText.data = nullptr;
-        this->fallbackText.length = 0;
-    }
     *g_GameText_langReset = 0xffff;
     this->textTable = nullptr;
     this->textCount = 0;
     String tmp(gInitLangStr);
+    this->fallbackText = tmp;
 }
 
 static const unsigned int gArabForms[(0x334 / 20) * 5] = {0};
@@ -266,17 +308,17 @@ static const char gLang5001Primary[] = "";
 static const char gLang5001Fallback[] = "";
 
 AbyssEngine::String *GameText::getText(int key) {
-    if (key == 5000) {
-        static String s5000;
-        const char *txt = (*g_langCode != 1) ? gLang5000Fallback : gLang5000Primary;
-        s5000.ctor_char(txt, false);
-        return &s5000;
-    }
     if (key == 5001) {
         static String s5001;
         const char *txt = (*g_langCode != 1) ? gLang5001Fallback : gLang5001Primary;
         s5001.ctor_char(txt, false);
         return &s5001;
+    }
+    if (key == 5000) {
+        static String s5000;
+        const char *txt = (*g_langCode != 1) ? gLang5000Fallback : gLang5000Primary;
+        s5000.ctor_char(txt, false);
+        return &s5000;
     }
 
     uint32_t pairCount = (uint32_t) this->substitutes.size();
