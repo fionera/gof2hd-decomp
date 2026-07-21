@@ -2720,20 +2720,20 @@
    "usize": 82
   },
   {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.6,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
-  },
-  {
    "name": "_ZN11AbyssEngine6String4TrimEv",
    "pct": 15.7,
    "byte": false,
    "linked": false,
    "osize": 132,
    "usize": 152
+  },
+  {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -8224,14 +8224,6 @@
    "usize": 676
   },
   {
-   "name": "_ZN13LodMeshMerger6updateEv",
-   "pct": 40.3,
-   "byte": false,
-   "linked": false,
-   "osize": 454,
-   "usize": 464
-  },
-  {
    "name": "_ZN17PlayerFixedObjectC1EiiP6PlayerP10AEGeometryfff",
    "pct": 40.3,
    "byte": false,
@@ -9494,6 +9486,14 @@
    "linked": false,
    "osize": 13642,
    "usize": 13484
+  },
+  {
+   "name": "_ZN13LodMeshMerger6updateEv",
+   "pct": 46.8,
+   "byte": false,
+   "linked": false,
+   "osize": 454,
+   "usize": 460
   },
   {
    "name": "_ZN6Layout13formatCreditsEi",
@@ -13464,14 +13464,6 @@
    "usize": 164
   },
   {
-   "name": "_ZN13LodMeshMerger4initEv",
-   "pct": 67.8,
-   "byte": false,
-   "linked": false,
-   "osize": 246,
-   "usize": 230
-  },
-  {
    "name": "_ZN15MenuTouchWindow9addButtonEiN11AbyssEngine6StringEiP5ArrayIP11TouchButtonEi",
    "pct": 67.8,
    "byte": false,
@@ -14694,6 +14686,14 @@
    "linked": false,
    "osize": 96,
    "usize": 100
+  },
+  {
+   "name": "_ZN13LodMeshMerger4initEv",
+   "pct": 75.6,
+   "byte": false,
+   "linked": false,
+   "osize": 246,
+   "usize": 242
   },
   {
    "name": "_ZN10NewsTicker9getHeightEv",

@@ -35,9 +35,8 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
 void LodMeshMerger::update() {
     for (int i = 0; i < rows; i++) {
         Mesh *sph = transformedMeshes[i];
-        Vector sphCenter = {sph->boundsCenterX, sph->boundsCenterY, sph->boundsCenterZ};
         uint8_t vis = (uint8_t) canvas->CameraIsSphereinViewFrustum(
-            sphCenter, sph->boundsRadius);
+            *(const Vector *) &sph->boundsCenterX, sph->boundsRadius);
         if (vis != visible[i]) {
             visible[i] = vis;
             if (enabled[i] != 0) {
@@ -98,10 +97,12 @@ void LodMeshMerger::update() {
                        src->texCoords, (uint32_t) src->vertexCount << 3);
             }
             if (mask & 0x10) {
-                const int16_t *si = (const int16_t *) src->indices;
+                int16_t *si = (int16_t *) src->indices;
                 int16_t *di = (int16_t *) out->indices + idxOffset;
-                for (uint16_t k = 0; k < src->indexCount; k++) {
-                    di[k] = (int16_t)(si[k] + (int16_t) vtxOffset);
+                for (int k = -(int)(uint16_t)src->indexCount; k != 0; k++) {
+                    *di = (int16_t)(*si + (int16_t) vtxOffset);
+                    si++;
+                    di++;
                 }
             }
             idxOffset += src->indexCount;
@@ -165,11 +166,12 @@ int LodMeshMerger::init() {
     }
 
     for (int i = 0; i < rows; i++) {
+        int c = 0;
         int lod = lodLevels[i];
         if (lod >= -1 && cols <= lod) {
             lodLevels[i] = 0;
         }
-        for (int c = 0; c < cols; c++) {
+        for (; c < cols; c++) {
             Mesh *mesh = sourceMeshes.data()[rows * c + i];
             if (mesh != nullptr) {
                 transformedMeshes[rows * c + i] = transformMesh(mesh, transforms[i]);
@@ -177,23 +179,25 @@ int LodMeshMerger::init() {
         }
     }
 
-    uint16_t nv = 0;
-    uint16_t ni = 0;
+    uint32_t nv = 0;
+    uint32_t ni = 0;
     for (int i = 0; i < rows; i++) {
         Mesh *m0 = sourceMeshes.data()[i];
-        nv = nv + m0->vertexCount;
-        ni = ni + (uint16_t)(m0->indexCount / 3);
+        nv += m0->vertexCount;
+        ni += (uint32_t)m0->indexCount / 3u;
     }
 
-    canvas->MeshCreate(ni, nv,
+    uint32_t nv_clamped = nv;
+    if (nv_clamped > 65535u) nv_clamped = 65535u;
+    uint32_t ni_clamped = (ni < 65535u) ? ni : 65535u;
+
+    canvas->MeshCreate((uint16_t)ni_clamped, (uint16_t)nv_clamped,
                        (signed char) sourceMeshes.data()[0]->vertexFormat,
                        flags, mergedMeshId);
     mergedMesh = canvas->MeshGetPointer(mergedMeshId);
     canvas->TransformCreate(transformId);
     canvas->TransformAddMeshId(transformId, mergedMeshId);
     dirty = 1;
-
-    initialized = 1;
     update();
     return initialized;
 }
