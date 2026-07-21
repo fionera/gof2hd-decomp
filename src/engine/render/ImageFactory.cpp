@@ -6,18 +6,11 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/Sprite.h"
 
-namespace AbyssEngine {
-}
-
-typedef void (*GetTextFn)(unsigned canvas, int id, unsigned int *out);
-
-static GetTextFn *g_reload_getText;
-static unsigned *g_reload_canvas;
-static unsigned *g_drawChar_canvas;
-static unsigned *g_IF_drawShip_canvas;
-static unsigned *g_drawItem_canvas;
-static int *g_IF_idTable;
-static unsigned *g_IF_drawItem4_canvas;
+static PaintCanvas **g_reload_canvas = &Globals::Canvas;
+static PaintCanvas **g_drawChar_canvas = &Globals::Canvas;
+static PaintCanvas **g_IF_drawShip_canvas = &Globals::Canvas;
+static PaintCanvas **g_drawItem_canvas = &Globals::Canvas;
+static PaintCanvas **g_IF_drawItem4_canvas = &Globals::Canvas;
 
 int IMAGE_OFFSETS[104];
 int IMAGE_OFFSETS_IPAD[104] = {
@@ -66,19 +59,21 @@ int IMAGE_OFFSETS_IPAD_LARGE[104] = {
     32, 200, 32, 0, 32, 0, 32, 0,
 };
 
+static int *g_IF_idTable = IMAGE_OFFSETS;
+
 static AbyssEngine::AERandom **gCreateChar2Rng1;
 static int gCreateChar2Table;
 static AbyssEngine::AERandom **gCreateChar2Rng2;
 static AbyssEngine::AERandom **gCreateCharRng;
 
-static unsigned *g_IF_li_canvas;
-static char *g_IF_flagA;
-static char *g_IF_flagB;
-static int *g_IF_posTableA;
-static int *g_IF_posTableB;
-static int *g_IF_posTableC;
-static char *g_IF_flagC;
-static int *g_IF_posTableD;
+static PaintCanvas **g_IF_li_canvas = &Globals::Canvas;
+static char *g_IF_flagA = (char *)&Globals::iPadHD;
+static char *g_IF_flagB = (char *)&Globals::iPadLarge;
+static int *g_IF_posTableA = IMAGE_OFFSETS_IPAD_HD;
+static int *g_IF_posTableB = IMAGE_OFFSETS_IPAD_LARGE;
+static int *g_IF_posTableC = IMAGE_OFFSETS;
+static char *g_IF_flagC = (char *)&Globals::iPad;
+static int *g_IF_posTableD = IMAGE_OFFSETS_IPAD;
 
 int ImageFactory::getItemImageId(int itemId) {
     int base = 0xef0;
@@ -107,68 +102,66 @@ ImageFactory::ImageFactory() {
 
 void ImageFactory::reload() {
     unsigned *ids = new unsigned[6];
-    unsigned canvas = *g_reload_canvas;
-    GetTextFn getText = *g_reload_getText;
-    getText(canvas, 0x4fa, ids);
-    getText(canvas, 0x4fb, ids + 1);
-    getText(canvas, 0x4f7, ids + 2);
-    getText(canvas, 0x4f8, ids + 3);
-    getText(canvas, 0x4f9, ids + 4);
-    getText(canvas, 0x4fc, ids + 5);
+    PaintCanvas **canvasHolder = g_reload_canvas;
+    (*canvasHolder)->Image2DCreate(0x4fa, ids[0]);
+    (*canvasHolder)->Image2DCreate(0x4fb, ids[1]);
+    (*canvasHolder)->Image2DCreate(0x4f7, ids[2]);
+    (*canvasHolder)->Image2DCreate(0x4f8, ids[3]);
+    (*canvasHolder)->Image2DCreate(0x4f9, ids[4]);
+    (*canvasHolder)->Image2DCreate(0x4fc, ids[5]);
 
-    delete this->sprite;
+    if (this->sprite != nullptr) {
+        delete this->sprite;
+    }
     this->sprite = nullptr;
 
-    PaintCanvas *pc = (PaintCanvas *) (long) canvas;
-    int w = pc->GetImage2DWidth(ids[0]);
-    int h = pc->GetImage2DHeight(ids[0]);
-    this->sprite = new Sprite(ids, 6, w, h);
+    int w = (*canvasHolder)->GetImage2DWidth(ids[0]);
+    int h = (*canvasHolder)->GetImage2DHeight(ids[0]);
+    this->sprite = new Sprite((uint32_t *)ids, 6, w, h);
 
-    pc->Image2DCreate(0x485, this->itemImage);
-    pc->Image2DCreate(0x511, this->shipImage);
+    (*canvasHolder)->Image2DCreate(0x485, this->itemImage);
+    (*canvasHolder)->Image2DCreate(0x511, this->shipImage);
 }
 
 void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, bool flag) {
-    PaintCanvas *pc = (PaintCanvas *) (long) *g_drawChar_canvas;
-    pc->SetColor(0xffffffffu);
-    pc->DrawImage2D(this->itemImage, x, y);
+    PaintCanvas **sl = g_drawChar_canvas;
+    (*sl)->SetColor(0xffffffffu);
+    (*sl)->DrawImage2D(this->itemImage, x, y);
     for (unsigned i = 0; i < parts->size(); ++i) {
         ImagePart *part = (*parts)[i];
         if (part != nullptr) part->draw(x, y, flag);
     }
-    pc->DrawImage2D(this->shipImage, x, y);
+    (*sl)->DrawImage2D(this->shipImage, x, y);
 }
 
 void ImageFactory::drawShip(int shipId, int x, int y) {
-    PaintCanvas *pc = (PaintCanvas *) (long) *g_IF_drawShip_canvas;
+    PaintCanvas **holder = g_IF_drawShip_canvas;
     unsigned classIcon = 0xffffffffu;
-    pc->SetColor(0xffffffffu);
+    (*holder)->SetColor(0xffffffffu);
     this->sprite->setFrame(5);
     this->sprite->setPosition(x, y);
     this->sprite->draw(1.0f, 1.0f);
-    pc->Image2DCreate((unsigned short) (shipId + 0x971), classIcon);
-    pc->DrawImage2D(classIcon, x, y);
+    (*holder)->Image2DCreate((unsigned short) (shipId + 0x971), classIcon);
+    (*holder)->DrawImage2D(classIcon, x, y);
 }
 
 void ImageFactory::drawItem(int itemId, int x, int y) {
-    PaintCanvas *pc = (PaintCanvas *) (long) *g_drawItem_canvas;
+    PaintCanvas **holder = g_drawItem_canvas;
     unsigned icon = 0xffffffffu;
-    pc->SetColor(0xffffffffu);
+    (*holder)->SetColor(0xffffffffu);
     int base = 0xef0;
     if (itemId < 0xb0) base = 0x898;
-    pc->Image2DCreate((unsigned short) (base + itemId), icon);
-    pc->DrawImage2D(icon, x, y);
+    (*holder)->Image2DCreate((unsigned short) (base + itemId), icon);
+    (*holder)->DrawImage2D(icon, x, y);
 }
 
 void *ImageFactory::loadImage(int row, int col, int frameBase) { // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
-    // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
     int id = g_IF_idTable[row * 4 + col];
     if (id < 0)
         return nullptr;
 
     unsigned image = 0;
-    ((PaintCanvas *) (long) *g_IF_li_canvas)
-            ->Image2DCreate((unsigned short) ((short) id + (short) frameBase), image);
+    (*g_IF_li_canvas)->Image2DCreate((unsigned short) ((short)id + (short)frameBase), image);
 
     int *posBase;
 
@@ -189,16 +182,16 @@ void *ImageFactory::loadImage(int row, int col, int frameBase) { // lint: void_p
 }
 
 void ImageFactory::drawItem(int itemId, int frame, int x, int y) {
-    PaintCanvas *pc = (PaintCanvas *) (long) *g_IF_drawItem4_canvas;
+    PaintCanvas **holder = g_IF_drawItem4_canvas;
     unsigned icon = 0xffffffffu;
-    pc->SetColor(0xffffffffu);
+    (*holder)->SetColor(0xffffffffu);
     this->sprite->setFrame(frame);
     this->sprite->setPosition(x, y);
     this->sprite->draw(1.0f, 1.0f);
     int base = 0xef0;
     if (itemId < 0xb0) base = 0x898;
-    pc->Image2DCreate((unsigned short) (base + itemId), icon);
-    pc->DrawImage2D(icon, x, y);
+    (*holder)->Image2DCreate((unsigned short) (base + itemId), icon);
+    (*holder)->DrawImage2D(icon, x, y);
 }
 
 Array<ImagePart *> *ImageFactory::loadChar(int *desc) {
