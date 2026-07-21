@@ -41,9 +41,9 @@ static inline int FMOD_EventSystem_init(FMOD::EventSystem *system, int maxch, un
 
 int FMOD_EventSystem_load(FMOD::EventSystem *system, const char *name, FMOD::EventProject *proj);
 
-void FMOD_EventSystem_getCategory(FMOD::EventSystem * system, FMOD::EventCategory * out);
+static inline int FMOD_EventSystem_getCategory(FMOD::EventSystem *system, const char *name, FMOD::EventCategory **out) { return system->getCategory(name, out); }
 
-void FMOD_EventSystem_getProjectByIndex(FMOD::EventSystem * system, FMOD::EventProject * out);
+static inline int FMOD_EventSystem_getProjectByIndex(FMOD::EventSystem *system, int index, FMOD::EventProject **out) { return system->getProjectByIndex(index, out); }
 
 static inline int FMOD_Event_getState(FMOD::Event *event, unsigned *out) { return event->getState(out); }
 
@@ -56,7 +56,7 @@ static inline int FMOD_Event_getCategory(FMOD::Event *event, FMOD::EventCategory
 
 void FMOD_play(FModSound *self, int a, unsigned char *b, float v);
 
-int FMOD_Event_getInfo(FMOD::Event *event, char **name, unsigned char *info);
+static inline int FMOD_Event_getInfo(FMOD::Event *event, int *index, char **name, FMOD_EVENT_INFO *info) { return event->getInfo(index, name, info); }
 
 int FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, FMOD::Event **out);
 
@@ -263,11 +263,11 @@ float FModSound::getPlayingProgress(int idx) {
     if (this->initialized != 0 && this->system != 0 &&
         this->categoryEnabled[0] != 0 &&
         this->events[idx] != 0) {
-        char *name = 0;
-        int info[8];
-        FMOD_Event_getInfo(this->events[idx], &name, (unsigned char *) info);
-        VectorSignedToFloat(info[2], 0);
-        VectorSignedToFloat(info[1], 0);
+        int index;
+        char *name;
+        FMOD_EVENT_INFO info;
+        FMOD_Event_getInfo(this->events[idx], &index, &name, &info);
+        return (float) info.positionms / (float) info.lengthms;
     }
     return 0.0f;
 }
@@ -436,7 +436,7 @@ void FModSound::disableReverb() {
 int FModSound::init() {
     static const char kSuffixA[16] = ".fev";
     static const char kSuffixB[24] = "_low.fev";
-    static FMOD::EventCategory *kCats[4];
+    static const char *kCats[4] = {"master", "music", "sfx", "voice"};
 
     for (int i = 0; i != 5; i++)
         this->fxSlots[i] = -1;
@@ -456,9 +456,9 @@ int FModSound::init() {
     FMOD_EventSystem_load(this->system, path, 0);
     for (int i = 0; i != 4; i++) {
         this->category[i] = 0;
-        FMOD_EventSystem_getCategory(this->system, kCats[i]);
+        FMOD_EventSystem_getCategory(this->system, kCats[i], &this->category[i]);
     }
-    FMOD_EventSystem_getProjectByIndex(this->system, 0);
+    FMOD_EventSystem_getProjectByIndex(this->system, 0, (FMOD::EventProject **) &this->initialized);
     this->propSlot = 0;
     this->reverbPreset = -1;
     this->currentMusicEvent = -1;
