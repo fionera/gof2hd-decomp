@@ -196,17 +196,26 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
         lines.append((int(m.group(1), 16), ANNOT.sub("", m.group(2)).strip()))
     # pass 1: literal-pool bytes = targets of pc-relative loads (ARM pc bias +8, Thumb +4 word-aligned)
     pool = set()
-    for addr, insn in lines:
+    pic_delta = set()  # pool words consumed by the ldr rX,[pc,#N] / add rX,pc PIC idiom: the word
+    #                    is an address DELTA that changes every link -- mask it, never name it
+    #                    (a delta accidentally equal to a function entry must not compare as sym)
+    for i, (addr, insn) in enumerate(lines):
         pm = PCREL_LOAD.match(insn)
         if pm:
             mnem, reg, imm = pm.group(1), pm.group(2), int(pm.group(3) or 0)
             tgt = ((addr + (4 if thumb else 8)) & ~3) + imm
             width = 8 if (mnem == "ldrd" or (mnem == "vldr" and reg.startswith("d"))) else 4
             pool.update(range(tgt, tgt + width))
+            for _, later in lines[i + 1:i + 5]:
+                if re.match(rf"^add(?:\.[nw])?\s+{reg},\s*pc$", later):
+                    pic_delta.update(range(tgt, tgt + width))
+                    break
     raw, norm = [], []
     for addr, insn in lines:
         raw.append(insn)
-        if addr in pool:
+        if addr in pic_delta:
+            norm.append("pool:addr")
+        elif addr in pool:
             norm.append(pool_norm(blob, addr, resolver))
         else:
             norm.append(normalize(insn, len(blob), base, resolver))

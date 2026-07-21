@@ -156,7 +156,12 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   calls `String::Compare`). Callees local to either binary mask neutrally.
 - **Literal-pool words are compared as data**, not garbage-decoded instructions: constants by
   exact value (mission timers/coordinates now diff for real), function-pointer words by
-  entry-exact symbol, link-dependent address words masked neutrally.
+  entry-exact symbol, link-dependent address words masked neutrally. Pool words consumed by the
+  PIC idiom (`ldr rX, [pc, #N]` … `add rX, pc`) are always masked: they are PC-to-GOT deltas that
+  change value on every relink, and before this rule one that accidentally equalled a function
+  entry address was "named" and produced phantom linked_exact flips on untouched functions
+  whenever unrelated code shifted the layout (±2-5 noise per relink, observed on BeamGun dtors /
+  shader Init family).
 - `linked_exact` additionally requires equal function size; the fuzzy % uses
   `difflib(autojunk=False)` (autojunk floored every ≥200-instruction function to garbage scores,
   mis-steering the worst-first campaign).
