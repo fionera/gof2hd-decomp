@@ -1,7 +1,7 @@
 {
  "verify": {
   "byte_exact": 1127,
-  "linked_exact": 2205,
+  "linked_exact": 2206,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
@@ -949,6 +949,7 @@
   "__aeabi_memclr8",
   "__aeabi_memcpy",
   "__aeabi_memcpy4",
+  "__aeabi_memcpy8",
   "__aeabi_memmove",
   "__aeabi_memmove4",
   "__aeabi_memset4",

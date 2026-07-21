@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 73.38,
   "byte_exact": 1127,
-  "linked_exact": 2205,
-  "fuzzy_perfect": 2205,
+  "linked_exact": 2206,
+  "fuzzy_perfect": 2206,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1105,7 +1105,7 @@
   },
   {
    "name": "_ZN5Level8renderBGEi",
-   "pct": 3.7,
+   "pct": 3.9,
    "byte": false,
    "linked": false,
    "osize": 1320,
@@ -2448,6 +2448,14 @@
    "usize": 52
   },
   {
+   "name": "_ZN14ListItemWindow4drawEv",
+   "pct": 13.4,
+   "byte": false,
+   "linked": false,
+   "osize": 1892,
+   "usize": 1912
+  },
+  {
    "name": "_ZN11AbyssEngine10Quaternion4LerpEPKfS2_f",
    "pct": 13.5,
    "byte": false,
@@ -2728,20 +2736,20 @@
    "usize": 82
   },
   {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
+  },
+  {
    "name": "_ZN11AbyssEngine6String4TrimEv",
    "pct": 15.7,
    "byte": false,
    "linked": false,
    "osize": 132,
    "usize": 152
-  },
-  {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -3846,14 +3854,6 @@
    "linked": false,
    "osize": 124,
    "usize": 70
-  },
-  {
-   "name": "_ZN14ListItemWindow4drawEv",
-   "pct": 21.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1892,
-   "usize": 1912
   },
   {
    "name": "_ZN5MGame10OnRender2DEv",
@@ -15862,14 +15862,6 @@
    "linked": false,
    "osize": 50,
    "usize": 50
-  },
-  {
-   "name": "_ZN9FModSound13disableReverbEv",
-   "pct": 86.1,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 84
   },
   {
    "name": "_ZN10AEGeometry17setLodChildMeshesEPt",
@@ -33550,6 +33542,14 @@
    "linked": true,
    "osize": 24,
    "usize": 24
+  },
+  {
+   "name": "_ZN9FModSound13disableReverbEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 92,
+   "usize": 92
   },
   {
    "name": "_ZN9FModSound14promptMusicCueEi",

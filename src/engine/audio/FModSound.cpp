@@ -400,10 +400,34 @@ int FModSound::pause(int p1) {
 }
 
 void FModSound::disableReverb() {
-    static const unsigned char kRev[0x50] = {0};
+    struct ReverbProps {
+        int instance;
+        int environment;
+        float envDiffusion;
+        int room;
+        int roomHF;
+        int roomLF;
+        float decayTime;
+        float decayHFRatio;
+        float decayLFRatio;
+        int reflections;
+        float reflectionsDelay;
+        int reverb;
+        float reverbDelay;
+        float modulationTime;
+        float modulationDepth;
+        float hfReference;
+        float lfReference;
+        float diffusion;
+        float density;
+        unsigned int flags;
+    };
+    static const ReverbProps kOff = {0,       -1,     1.0f, -10000, -10000, 0,    1.0f,
+                                     1.0f,    1.0f,   -2602, 0.007f, 200,   0.011f,
+                                     0.25f,   0.0f,   5000.0f, 250.0f, 0.0f, 0.0f, 0x33f};
     if (this->system) {
         unsigned char buf[0x50];
-        memcpy(buf, kRev, 0x50);
+        memcpy(buf, &kOff, 0x50);
         FMOD_EventSystem_setReverbProperties(this->system, buf);
     }
     this->reverbPreset = -1;
