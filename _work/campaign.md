@@ -2,6 +2,37 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-21 (wave 2 — salvaged)
+
+Wave 2 launched as an 8-worker Workflow (Ship, FModSound, Wanted+WantedWindow, GameText,
+LodMeshMerger, ScrollTouchWindow, BluePrint+Objective, Standing/ListItem retry). The **Ghidra MCP
+connection flapped** ("MCP error -32000: Connection closed") and every MCP call during a drop
+KILLED the calling worker; the workflow crash-retried ~6 generations per item, burning tokens with
+one clean completion (wantedfam). Stopped the workflow, snapshotted per-item patches from the tree,
+and gated them serially. Landed:
+- 48e19218 Wanted/WantedWindow (completed worker): lastSeen/currentLocation field swap to binary
+  offsets 68/76 -> +4 byte-exact accessors; byte 1116->1120, linked 2190->2192. Trade: Wanted D1/D2
+  linked->90.9 (field-order-sensitive dtor) REQUEUED.
+- Ship (partial): hasEquipment/hasCargo 29.5->96.9, hasSecondaryWeapons linked; 2192->2193.
+  Trade: addMod 90.6->86.3 REQUEUED.
+- BluePrint/Objective (partial): +2 byte (1122), +5 linked (2198). No regressions.
+- LodMeshMerger (partial): init/update pct only.
+- 75e5e32e GameText (partial): getLanguage ->85.7; linked 2198->2200. Trade: setLanguage
+  19.1->14.4 (half-rewritten when worker died) REQUEUED.
+End state: **byte 1122, linked 2200, stubs 0, extra 36, imports 1095, avg 73.32.**
+
+Untouched (workers died before editing) -> wave 3: FModSound (29 fns), ScrollTouchWindow (8),
+Standing/ListItem retry. Plus requeued trades above and wave-1 retry queue.
+
+INFRA learnings (binding for future sessions):
+- If the Ghidra MCP is flapping/disconnected, do NOT run Workflow workers that call it — they die
+  mid-call and crash-loop. Either get the user to reconnect (bridge itself was alive on :8089;
+  the session-side client was the broken half) or run workers MCP-free on the pre-dumped
+  side-by-side diffs (they contain BOTH sides' full disassembly — enough for most matching).
+- macOS backgrounds/App-Naps background-task processes AND sleeps between orchestrator turns:
+  a ratchet that takes ~7 min foreground ran >5 h backgrounded. ALWAYS gate via foreground Bash
+  wrapped in caffeinate -dims; never via run_in_background.
+
 ## Session 2026-07-21 (wave 1)
 
 Queue position: **tier 1 (stubs) COMPLETE — stub_zero_size 12 → 0.** Tier 3/4 in progress.
