@@ -165,12 +165,13 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
 - `linked_exact` additionally requires equal function size; the fuzzy % uses
   `difflib(autojunk=False)` (autojunk floored every ≥200-instruction function to garbage scores,
   mis-steering the worst-first campaign).
-- Zero-size symbols are classified, not dropped: **`stub_zero_size` = 12** exported functions
-  (MeshMerger render/ctors, ImageFactory::reload, MTitle key handlers, BeamGun/SpriteGun enemy
-  setters, PlayerEgo::stopBoost, SpriteGun::update) are UB-collapsed bodies — a non-void function
-  with no `return`, or a call through a never-assigned static function pointer, which `-Oz`
-  deletes to zero bytes so the symbol aliases its neighbour. These are broken bodies to
-  reconstruct from Ghidra, not "missing" symbols.
+- Zero-size symbols are classified, not dropped: **`stub_zero_size` = 0** (2026-07-21). All 12
+  UB-collapsed bodies (MeshMerger render/ctors, ImageFactory::reload, MTitle key handlers,
+  BeamGun/SpriteGun enemy setters, PlayerEgo::stopBoost, SpriteGun::update) were reconstructed
+  from Ghidra in the wave-1 stub campaign — every never-assigned static function pointer they
+  called through is gone. The classification stays in the metric: a non-void function with no
+  `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
+  by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
 Current numbers (of **4511** compared): **byte_exact 1115, linked_exact 2125, avg 72.33%**.
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail

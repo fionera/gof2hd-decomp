@@ -4,6 +4,8 @@
 #include "engine/core/Array.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
+#include <cstdlib>
+#include <cstring>
 
 uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 
@@ -19,11 +21,9 @@ void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
 
 void AEMath_BSphere_assign(void *dst, const void *src); // lint: void_ptr (external symbol signature)
 
-static void (**g_mmRenderFn)(PaintCanvas *canvas, uint32_t transformId, int z) = nullptr;
+void Trail_renderTransform(AbyssEngine::PaintCanvas *canvas, uint32_t transform, int mode);
 
-static unsigned char *(**g_allocFn)(int) = nullptr;
-
-static void (**g_freeFn)(unsigned char *) = nullptr;
+static void (*const g_freeFn)(void *) = ::free; // lint: void_ptr (matches libc free signature)
 
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                        PaintCanvas *canvas, uint16_t flags) {
@@ -114,8 +114,6 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
 }
 
 MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags) {
-    unsigned char *(*alloc)(int) = *g_allocFn;
-
     this->transformedMeshes = nullptr;
     this->matrices = nullptr;
     this->mergedMesh = nullptr;
@@ -128,17 +126,17 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags) 
     long long need = (long long) (unsigned) (cols * rows) * 4;
     int req = (int) ((need >> 32) != 0 ? 0xffffffff : (unsigned) need);
 
-    this->sourceMeshes = (Mesh **) alloc(req);
-    aeabi_memclr4(this->sourceMeshes, bytes);
-    this->transformedMeshes = (Mesh **) alloc(req);
-    aeabi_memclr4(this->transformedMeshes, bytes);
+    this->sourceMeshes = (Mesh **) new unsigned char[req];
+    memset(this->sourceMeshes, 0, bytes);
+    this->transformedMeshes = (Mesh **) new unsigned char[req];
+    memset(this->transformedMeshes, 0, bytes);
 
-    this->lods = (int8_t *) alloc(rows | (rows >> 31));
-    aeabi_memclr(this->lods, rows);
+    this->lods = (int8_t *) new unsigned char[rows | (rows >> 31)];
+    memset(this->lods, 0, rows);
 
     long long mneed = (long long) (unsigned) rows * 0x3c;
     int mreq = (int) ((mneed >> 32) != 0 ? 0xffffffff : (unsigned) mneed);
-    char *matrices = (char *) alloc(mreq);
+    char *matrices = (char *) new unsigned char[mreq];
     for (int off = 0; rows != 0 && off != rows * 0x3c; off += 0x3c)
         new(matrices + off) Matrix();
     this->matrices = matrices;
@@ -166,30 +164,33 @@ MeshMerger::~MeshMerger() {
     if (this->sourceMeshes != nullptr) delete[] this->sourceMeshes;
     this->sourceMeshes = nullptr;
 
-    Mesh **slots = nullptr;
-    for (int i = 0; ; i++) {
-        slots = this->transformedMeshes;
-        if (i >= this->rows * this->cols) break;
-
-        Mesh *cell = slots[i];
-        if (cell != nullptr) {
-            if (cell->positions != nullptr) delete[] (char *) cell->positions;
-            cell->positions = nullptr;
-            if (cell->normals != nullptr) delete[] (char *) cell->normals;
-            cell->normals = nullptr;
-            delete cell;
+    int count = this->rows * this->cols;
+    for (int i = 0; i < count; i++) {
+        Mesh *cell = this->transformedMeshes[i];
+        if (cell->positions != nullptr) {
+            delete[] (char *) cell->positions;
+            this->transformedMeshes[i]->positions = nullptr;
         }
-        slots[i] = nullptr;
+        cell = this->transformedMeshes[i];
+        if (cell->normals != nullptr) {
+            delete[] (char *) cell->normals;
+            this->transformedMeshes[i]->normals = nullptr;
+        }
+        cell = this->transformedMeshes[i];
+        if (cell != nullptr) {
+            delete reinterpret_cast<unsigned char *>(cell);
+        }
+        this->transformedMeshes[i] = nullptr;
     }
-    if (slots != nullptr) delete[] slots;
+    Mesh **transformedMeshes = this->transformedMeshes;
+    if (transformedMeshes != nullptr) delete[] transformedMeshes;
     this->transformedMeshes = nullptr;
 
-    void (*freeFn)(unsigned char *) = *g_freeFn;
-    freeFn((unsigned char *) this->lods);
+    g_freeFn(this->lods);
     this->lods = nullptr;
-    freeFn(this->enabledFlags);
+    g_freeFn(this->enabledFlags);
     this->enabledFlags = nullptr;
-    freeFn(this->visibleFlags);
+    g_freeFn(this->visibleFlags);
     this->visibleFlags = nullptr;
 
     if (this->matrices != nullptr) delete[] this->matrices;
@@ -228,16 +229,15 @@ void MeshMerger::setEnabled(int index, bool enabled) {
 }
 
 void MeshMerger::render() {
-    (*g_mmRenderFn)(this->canvas, this->transformId, 0);
+    Trail_renderTransform(this->canvas, this->transformId, 0);
 }
 
 void MeshMerger::update() {
     int rows = this->rows;
     for (int i = 0; i < rows; i++) {
         Mesh *sph = this->transformedMeshes[i];
-        Vector boundsCenter = {sph->boundsCenterX, sph->boundsCenterY, sph->boundsCenterZ};
         uint8_t vis = (uint8_t) this->canvas->CameraIsSphereinViewFrustum(
-            boundsCenter, sph->boundsRadius);
+            *(const Vector *) &sph->boundsCenterX, sph->boundsRadius);
         int8_t *visArr = (int8_t *) this->visibleFlags;
         if (vis != (uint8_t) visArr[i]) {
             visArr[i] = (int8_t) vis;
