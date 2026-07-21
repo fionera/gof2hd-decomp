@@ -187,7 +187,7 @@ void Route::update(float x, float y, float z) {
     int next = cur + 1;
     this->currentIndex = next;
     uint32_t len = w->size();
-    if (this->loop != 0 && (int) (len - 1) <= cur) {
+    if (this->loop != 0 && cur >= (int) (len - 1)) {
         this->currentIndex = 0;
         for (uint32_t i = 0; i < len; i++) {
             (*w)[i]->reset();
@@ -206,6 +206,7 @@ int Route::getDockingTime() {
 }
 
 Route::Route(int *coords, int count) {
+    this->loop = 0;
     this->currentIndex = 0;
     this->waypoints = new Array<Waypoint *>();
     this->dockingTargets = new Array<KIPlayer *>();
@@ -218,6 +219,7 @@ Route::Route(int *coords, int count) {
 }
 
 Route::Route(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
+    this->loop = 0;
     this->currentIndex = 0;
     this->waypoints = new Array<Waypoint *>();
     this->dockingTimes = new Array<int>();

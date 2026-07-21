@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 73.54,
   "byte_exact": 1134,
-  "linked_exact": 2229,
-  "fuzzy_perfect": 2229,
+  "linked_exact": 2230,
+  "fuzzy_perfect": 2230,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -18024,14 +18024,6 @@
    "usize": 118
   },
   {
-   "name": "_ZN5Route6updateEfff",
-   "pct": 97.8,
-   "byte": false,
-   "linked": false,
-   "osize": 260,
-   "usize": 260
-  },
-  {
    "name": "_ZN4ShipC1Eiiiiiiiif",
    "pct": 97.9,
    "byte": false,
@@ -29614,6 +29606,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN5Route6updateEfff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 260,
+   "usize": 260
   },
   {
    "name": "_ZN5Route7setLoopEb",
