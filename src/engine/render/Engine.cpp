@@ -53,8 +53,8 @@ static String *g_Engine_vendorString = nullptr;
 static String *g_Engine_rendererString = nullptr;
 
 namespace {
-    int g_Engine_useShaders;
-    int g_Engine_supportsFBO;
+    bool g_Engine_useShaders;
+    bool g_Engine_supportsFBO;
 
     int g_Engine_defaultShader;
     int g_Engine_altShader;
@@ -183,7 +183,7 @@ void Engine::SetUVMatrix(const Matrix &matrix) {
         return glMatrixMode(0x1700);
     }
 
-    const float *m = matrix;
+    const float *m = matrix.m;
     float m0 = m[0];
     float m1 = m[1];
     float m2 = m[2];
@@ -764,7 +764,7 @@ void Engine::GlowBeginGlow(int depthFunc) {
 }
 
 void Engine::DrawLine2D(float *verts, int count, bool strip) {
-    this->lineVertexBase = count;
+    this->lineVertexBase = (int)(uintptr_t)verts;
     this->ShaderSetActive(g_Engine_lineShader, 0);
     unsigned int mode = strip != 0 ? 2 : 1;
     return glDrawArrays(mode, 0, count);
@@ -793,6 +793,7 @@ void Engine::ShaderSetActive(int shaderIndex, Mesh *mesh) {
     }
     shader->UseShader(hasExtra);
     shader = (*this->shaders)[shaderIndex];
+    g_Engine_activeShader = shaderIndex;
     shader->UpdateMeshData(mesh, this);
     if (mesh != 0) {
         uint32_t triangles = ((unsigned) (mesh->indexCount) / (unsigned) (3));
@@ -867,7 +868,7 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
     this->sceneAmbient[0] = red;
     this->sceneAmbient[1] = green;
     this->sceneAmbient[2] = blue;
-    this->sceneAmbient[3] = 0x3f800000;
+    this->sceneAmbient[3] = 1.0f;
 
     if (g_Engine_useShaders == 0) {
         return glLightModelfv(0xb53, this->sceneAmbient);
@@ -1376,7 +1377,7 @@ void Engine::Vibrate(unsigned short duration) {
 }
 
 void Engine::SetWorldViewMatrix(const Matrix &matrix) {
-    const float *m = matrix;
+    const float *m = matrix.m;
     if (g_Engine_useShaders != 0) {
         float gl[16] = {
             m[0], m[4], m[8], 0.0f,
