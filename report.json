@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.6,
-  "byte_exact": 1135,
-  "linked_exact": 2235,
-  "fuzzy_perfect": 2235,
+  "avg_match": 73.73,
+  "byte_exact": 1136,
+  "linked_exact": 2242,
+  "fuzzy_perfect": 2242,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2648,6 +2648,14 @@
    "usize": 1628
   },
   {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
+  },
+  {
    "name": "_ZN4Item12getAttributeEi",
    "pct": 15.0,
    "byte": false,
@@ -2750,14 +2758,6 @@
    "linked": false,
    "osize": 132,
    "usize": 152
-  },
-  {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -3398,14 +3398,6 @@
    "linked": false,
    "osize": 80,
    "usize": 46
-  },
-  {
-   "name": "_ZN4Ship15removeEquipmentEP4Item",
-   "pct": 19.2,
-   "byte": false,
-   "linked": false,
-   "osize": 62,
-   "usize": 64
   },
   {
    "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
@@ -4174,14 +4166,6 @@
    "linked": false,
    "osize": 74,
    "usize": 48
-  },
-  {
-   "name": "_ZN4Ship8getCargoEi",
-   "pct": 23.1,
-   "byte": false,
-   "linked": false,
-   "osize": 62,
-   "usize": 64
   },
   {
    "name": "_ZN6Status23getWantedInCurrentOrbitEv",
@@ -6630,14 +6614,6 @@
    "linked": false,
    "osize": 320,
    "usize": 296
-  },
-  {
-   "name": "_ZN4Ship11removeCargoEii",
-   "pct": 34.4,
-   "byte": false,
-   "linked": false,
-   "osize": 118,
-   "usize": 120
   },
   {
    "name": "_ZN6Layout7drawTipEv",
@@ -9320,14 +9296,6 @@
    "usize": 288
   },
   {
-   "name": "_ZN4Ship12setEquipmentEP4Itemi",
-   "pct": 46.2,
-   "byte": false,
-   "linked": false,
-   "osize": 108,
-   "usize": 100
-  },
-  {
    "name": "_ZN5MGame18maneuverTouchBeginEiiPv",
    "pct": 46.2,
    "byte": false,
@@ -10648,14 +10616,6 @@
    "usize": 120
   },
   {
-   "name": "_ZN4Ship23getFirstEquipmentOfSortEi",
-   "pct": 52.4,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 100
-  },
-  {
    "name": "_ZN7StarMap10initLightsEv",
    "pct": 52.4,
    "byte": false,
@@ -10838,22 +10798,6 @@
    "linked": false,
    "osize": 110,
    "usize": 114
-  },
-  {
-   "name": "_ZN4Ship8setCargoEP5ArrayIP4ItemE",
-   "pct": 53.8,
-   "byte": false,
-   "linked": false,
-   "osize": 88,
-   "usize": 96
-  },
-  {
-   "name": "_ZN4Ship12replaceCargoEP5ArrayIP4ItemE",
-   "pct": 54.1,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 92
   },
   {
    "name": "_ZN6Status17inSupernovaSystemEv",
@@ -11422,14 +11366,6 @@
    "linked": false,
    "osize": 60,
    "usize": 60
-  },
-  {
-   "name": "_ZN4Ship12hasCargoTypeEi",
-   "pct": 58.3,
-   "byte": false,
-   "linked": false,
-   "osize": 58,
-   "usize": 54
   },
   {
    "name": "_ZN5ArrayIN16ParticleSettings11ParticleSetEEC2Ev",
@@ -12536,14 +12472,6 @@
    "usize": 208
   },
   {
-   "name": "_ZN4Ship8freeSlotEP4Itemi",
-   "pct": 63.3,
-   "byte": false,
-   "linked": false,
-   "osize": 74,
-   "usize": 74
-  },
-  {
    "name": "zip_rename",
    "pct": 63.3,
    "byte": false,
@@ -13270,14 +13198,6 @@
    "linked": false,
    "osize": 92,
    "usize": 96
-  },
-  {
-   "name": "_ZN4Ship11adjustPriceEv",
-   "pct": 67.6,
-   "byte": false,
-   "linked": false,
-   "osize": 192,
-   "usize": 188
   },
   {
    "name": "_ZN5MGame9nextCamIdEi",
@@ -14992,14 +14912,6 @@
    "usize": 16
   },
   {
-   "name": "_ZN4Ship14removeAllCargoEv",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 24,
-   "usize": 24
-  },
-  {
    "name": "_ZN4Ship16replaceEquipmentEP5ArrayIP4ItemE",
    "pct": 80.0,
    "byte": false,
@@ -15190,14 +15102,6 @@
    "linked": false,
    "osize": 40,
    "usize": 40
-  },
-  {
-   "name": "_ZN4Ship8addCargoEP4Item",
-   "pct": 81.8,
-   "byte": false,
-   "linked": false,
-   "osize": 62,
-   "usize": 62
   },
   {
    "name": "_ZN11AbyssEngine18TextureLightShader4InitEPNS_6EngineE",
@@ -15478,14 +15382,6 @@
    "linked": false,
    "osize": 76,
    "usize": 76
-  },
-  {
-   "name": "_ZN4Ship8hasCloakEv",
-   "pct": 84.6,
-   "byte": false,
-   "linked": false,
-   "osize": 34,
-   "usize": 34
   },
   {
    "name": "_ZN11AbyssEngine6Engine7CopyFBOEv",
@@ -16014,14 +15910,6 @@
    "linked": false,
    "osize": 62,
    "usize": 62
-  },
-  {
-   "name": "_ZN4Ship8addCargoEP5ArrayIP4ItemE",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 24,
-   "usize": 24
   },
   {
    "name": "_ZN7Station7getNameEv",
@@ -16760,6 +16648,14 @@
    "usize": 30
   },
   {
+   "name": "_ZN4Ship11adjustPriceEv",
+   "pct": 91.7,
+   "byte": false,
+   "linked": false,
+   "osize": 192,
+   "usize": 192
+  },
+  {
    "name": "_ZN5ArrayIbEC2Ev",
    "pct": 91.7,
    "byte": false,
@@ -16982,6 +16878,14 @@
    "linked": false,
    "osize": 142,
    "usize": 142
+  },
+  {
+   "name": "_ZN4Ship12setEquipmentEP4Itemi",
+   "pct": 92.7,
+   "byte": false,
+   "linked": false,
+   "osize": 108,
+   "usize": 108
   },
   {
    "name": "_ZN5Level19pirateStationActionEb",
@@ -17488,6 +17392,14 @@
    "usize": 100
   },
   {
+   "name": "_ZN4Ship12hasCargoTypeEi",
+   "pct": 96.0,
+   "byte": false,
+   "linked": false,
+   "osize": 58,
+   "usize": 58
+  },
+  {
    "name": "_ZN7Station7hasItemEi",
    "pct": 96.0,
    "byte": false,
@@ -17526,6 +17438,22 @@
    "linked": false,
    "osize": 72,
    "usize": 72
+  },
+  {
+   "name": "_ZN4Ship15removeEquipmentEP4Item",
+   "pct": 96.2,
+   "byte": false,
+   "linked": false,
+   "osize": 62,
+   "usize": 62
+  },
+  {
+   "name": "_ZN4Ship8getCargoEi",
+   "pct": 96.2,
+   "byte": false,
+   "linked": false,
+   "osize": 62,
+   "usize": 62
   },
   {
    "name": "_ZN11AbyssEngine12CheatHandler6UpdateEt",
@@ -17681,6 +17609,14 @@
   },
   {
    "name": "_Z19ArrayReleaseClassesIP8WaypointEvR5ArrayIT_E",
+   "pct": 96.7,
+   "byte": false,
+   "linked": false,
+   "osize": 74,
+   "usize": 74
+  },
+  {
+   "name": "_ZN4Ship8freeSlotEP4Itemi",
    "pct": 96.7,
    "byte": false,
    "linked": false,
@@ -17864,6 +17800,14 @@
    "usize": 98
   },
   {
+   "name": "_ZN4Ship8setCargoEP5ArrayIP4ItemE",
+   "pct": 97.4,
+   "byte": false,
+   "linked": false,
+   "osize": 88,
+   "usize": 88
+  },
+  {
    "name": "_ZSt13set_terminatePFvvE",
    "pct": 97.4,
    "byte": false,
@@ -17918,6 +17862,14 @@
    "linked": false,
    "osize": 112,
    "usize": 112
+  },
+  {
+   "name": "_ZN4Ship23getFirstEquipmentOfSortEi",
+   "pct": 97.6,
+   "byte": false,
+   "linked": false,
+   "osize": 96,
+   "usize": 96
   },
   {
    "name": "_ZN9ObjectiveD1Ev",
@@ -17984,20 +17936,12 @@
    "usize": 118
   },
   {
-   "name": "_ZN4ShipC1Eiiiiiiiif",
+   "name": "_ZN4Ship11removeCargoEii",
    "pct": 97.9,
    "byte": false,
    "linked": false,
-   "osize": 140,
-   "usize": 140
-  },
-  {
-   "name": "_ZN4ShipC2Eiiiiiiiif",
-   "pct": 97.9,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 140
+   "osize": 118,
+   "usize": 118
   },
   {
    "name": "_ZN6Sparks7explodeEiii",
@@ -28056,6 +28000,14 @@
    "usize": 48
   },
   {
+   "name": "_ZN4Ship12replaceCargoEP5ArrayIP4ItemE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 84,
+   "usize": 84
+  },
+  {
    "name": "_ZN4Ship12setEquipmentEP4Item",
    "pct": 100.0,
    "byte": false,
@@ -28150,6 +28102,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN4Ship14removeAllCargoEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 24,
+   "usize": 24
   },
   {
    "name": "_ZN4Ship14spaceAvailableEi",
@@ -28304,6 +28264,22 @@
    "usize": 4
   },
   {
+   "name": "_ZN4Ship8addCargoEP4Item",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 62,
+   "usize": 62
+  },
+  {
+   "name": "_ZN4Ship8addCargoEP5ArrayIP4ItemE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 24,
+   "usize": 24
+  },
+  {
    "name": "_ZN4Ship8getCargoEv",
    "pct": 100.0,
    "byte": true,
@@ -28352,6 +28328,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN4Ship8hasCloakEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 34,
+   "usize": 34
+  },
+  {
    "name": "_ZN4Ship8setPriceEi",
    "pct": 100.0,
    "byte": true,
@@ -28366,6 +28350,22 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN4ShipC1Eiiiiiiiif",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
+  },
+  {
+   "name": "_ZN4ShipC2Eiiiiiiiif",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
   },
   {
    "name": "_ZN5Agent10getMissionEv",

@@ -59,8 +59,8 @@ Ship::Ship(int index, int baseHP, int baseLoad, int value,
     this->equipment = new Array<Item *>();
     ArraySetLength<Item *>(slot0 + slot1 + slot2 + slot3, *this->equipment);
 
-    this->race = 0;
     this->cargo = 0;
+    this->race = 0;
     this->mods = 0;
     this->numAddedDeviceSlots = 0;
 
@@ -104,23 +104,20 @@ void Ship::addCargo(Item *item) {
 }
 
 int Ship::removeCargo(int index, int amount) {
-    Array<Item *> *c = this->cargo;
-    if (c == 0) {
+    if (this->cargo == 0) {
         return 0;
     }
-    for (unsigned int i = 0; i < c->size(); i = i + 1) {
-        if (c->data()[i]->getIndex() == index) {
+    for (unsigned int i = 0; i < this->cargo->size(); i = i + 1) {
+        if (this->cargo->data()[i]->getIndex() == index) {
             this->cargo->data()[i]->changeAmount(-amount);
-            c = this->cargo;
             if (this->cargo->data()[i]->getAmount() < 1) {
-                setCargo(Item::extractItems(c, true));
+                setCargo(Item::extractItems(this->cargo, true));
                 return 1;
             }
             break;
         }
-        c = this->cargo;
     }
-    setCargo(c);
+    setCargo(this->cargo);
     return 0;
 }
 
@@ -143,8 +140,8 @@ void Ship::setCargo(Array<Item *> *cargo) {
     this->currentLoad = 0;
     this->cargo = cargo;
     if (cargo != 0) {
-        for (unsigned int i = 0; i < cargo->size(); i = i + 1) {
-            this->currentLoad += cargo->data()[i]->getAmount();
+        for (unsigned int i = 0; i < this->cargo->size(); i = i + 1) {
+            this->currentLoad += this->cargo->data()[i]->getAmount();
         }
     }
     refreshValue();
@@ -155,10 +152,10 @@ void Ship::setCargo(Array<Item *> *cargo) {
 }
 
 void Ship::replaceCargo(Array<Item *> *cargo) {
-    this->currentLoad = 0;
     this->cargo = cargo;
-    for (unsigned int i = 0; i < cargo->size(); i = i + 1) {
-        this->currentLoad += cargo->data()[i]->getAmount();
+    this->currentLoad = 0;
+    for (unsigned int i = 0; i < this->cargo->size(); i = i + 1) {
+        this->currentLoad += this->cargo->data()[i]->getAmount();
     }
     refreshValue();
     int freeSpace = (this->baseLoad + this->cargoPlus) - this->currentLoad;
@@ -172,15 +169,13 @@ Array<Item *> *Ship::getCargo() {
 }
 
 Item *Ship::getCargo(int index) {
-    Array<Item *> *c = this->cargo;
-    if (c == 0) {
+    if (this->cargo == 0) {
         return 0;
     }
-    for (unsigned int i = 0; i < c->size(); i = i + 1) {
-        Item *it = c->data()[i];
+    for (unsigned int i = 0; i < this->cargo->size(); i = i + 1) {
+        Item *it = this->cargo->data()[i];
         if (it != 0 && it->getIndex() == index) {
-            c = this->cargo;
-            return c->data()[i];
+            return this->cargo->data()[i];
         }
     }
     return 0;
@@ -200,12 +195,11 @@ bool Ship::hasCargo(int index, int amount) {
 }
 
 bool Ship::hasCargoType(int type) {
-    Array<Item *> *c = this->cargo;
-    if (c == 0) {
+    if (this->cargo == 0) {
         return false;
     }
-    for (unsigned int i = 0; i < c->size(); i = i + 1) {
-        Item *it = c->data()[i];
+    for (unsigned int i = 0; i < this->cargo->size(); i = i + 1) {
+        Item *it = this->cargo->data()[i];
         if (it != 0 && it->getType() == type) {
             return true;
         }
@@ -270,6 +264,7 @@ void Ship::setEquipment(Item *item, int slot) {
     if (old != 0) {
         delete old;
     }
+    this->equipment->data()[idx] = 0;
     this->equipment->data()[idx] = item;
     refreshValue();
 }
@@ -314,25 +309,22 @@ int Ship::addEquipment(Item *item) {
 }
 
 void Ship::removeEquipment(Item *item) {
-    Array<Item *> *eq = this->equipment;
-    if (eq == 0) {
+    if (this->equipment == 0) {
         return;
     }
-    for (unsigned int i = 0; i < eq->size(); i = i + 1) {
-        Item *it = eq->data()[i];
+    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+        Item *it = this->equipment->data()[i];
         if (it != 0 && it->equals(item)) {
-            eq = this->equipment;
-            eq->data()[i] = 0;
+            this->equipment->data()[i] = 0;
             return;
         }
     }
 }
 
 Item *Ship::getFirstEquipmentOfSort(int sort) {
-    Array<Item *> *eq = this->equipment;
-    if (eq != 0) {
-        for (unsigned int i = 0; i < eq->size(); i = i + 1) {
-            Item *it = eq->data()[i];
+    if (this->equipment != 0) {
+        for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+            Item *it = this->equipment->data()[i];
             if (it != 0 && it->getSort() == sort) {
                 return this->equipment->data()[i];
             }
@@ -386,18 +378,19 @@ int Ship::getSlotTypes() {
 }
 
 unsigned int Ship::getSlotPos(Item *item) {
-    if (item == 0) {
+    Item *it = item;
+    if (it == 0) {
         return 0xffffffffu;
     }
     Array<Item *> *eq = this->equipment;
     unsigned int pos = 0xffffffffu;
     for (unsigned int i = 0; i < eq->size(); i = i + 1) {
-        if (eq->data()[i] == item) {
+        if (eq->data()[i] == it) {
             pos = i;
             break;
         }
     }
-    for (int j = 0; j < item->getType(); j = j + 1) {
+    for (int j = 0; j < it->getType(); j = j + 1) {
         pos -= this->slots[j];
     }
     return pos;
@@ -417,7 +410,7 @@ void Ship::freeSlot(Item *item) {
 void Ship::freeSlot(Item *item, int slot) {
     for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
         Item *it = this->equipment->data()[i];
-        if (it != 0 && (unsigned int) slot == i && it->equals(item)) {
+        if (it != 0 && it->equals(item) && (unsigned int) slot == i) {
             this->equipment->data()[slot] = 0;
             break;
         }
@@ -671,12 +664,12 @@ void Ship::refreshValue() {
 
 void Ship::adjustPrice() {
     if (Globals::status->getStation() != 0 && this->price > 0) {
-        ShipDataObj *root = *(ShipDataObj **) &Globals::ships;
-        ShipDataEntry *entry = root->table[this->index];
+        ShipDataObj **ships_ptr = (ShipDataObj **) &Globals::ships;
+        ShipDataEntry *entry = (*ships_ptr)->table[this->index];
         int cat = entry->category;
         SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
         int race = system->getRace();
-        ShipDataEntry *entry2 = root->table[this->index];
+        ShipDataEntry *entry2 = (*ships_ptr)->table[this->index];
         float base = (float) entry2->basePrice;
         float bonus = 0.1f;
         if (gRaceTable[cat] == race) {
@@ -715,7 +708,7 @@ void Ship::addMod(int mod) {
     unsigned int sz = m->size();
     int found = 0;
     for (unsigned int i = 0; i < sz; i = i + 1) {
-        found = m->data()[i] == mod;
+        found += (m->data()[i] == mod);
         if (found) {
             break;
         }
@@ -744,10 +737,11 @@ void Ship::addMod(int mod) {
 }
 
 void Ship::setMods(Array<int> *mods) {
-    this->mods = mods;
-    if (mods != 0) {
-        for (unsigned int i = 0; i < mods->size(); i = i + 1) {
-            int v = mods->data()[i];
+    Array<int> *m = mods;
+    this->mods = m;
+    if (m != 0) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            int v = m->data()[i];
             bool isDev = v == 2;
             if (isDev) {
                 v = this->numAddedDeviceSlots;
@@ -884,7 +878,7 @@ float Ship::getHandlingForShop() {
 }
 
 bool Ship::hasCloak() {
-    return this->hasCloakFlag != 0 || this->index == 0x31 || this->index == 0x2c;
+    return this->hasCloakFlag != 0 || this->index == 0x2c || this->index == 0x31;
 }
 
 bool Ship::hasCloakIntegrated() {
