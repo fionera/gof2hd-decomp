@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 74.07,
-  "byte_exact": 1138,
-  "linked_exact": 2290,
-  "fuzzy_perfect": 2290,
+  "avg_match": 74.09,
+  "byte_exact": 1140,
+  "linked_exact": 2292,
+  "fuzzy_perfect": 2292,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -6184,6 +6184,14 @@
    "usize": 56
   },
   {
+   "name": "_ZN11AbyssEngine6Engine11SetTexturesEjj",
+   "pct": 32.8,
+   "byte": false,
+   "linked": false,
+   "osize": 312,
+   "usize": 184
+  },
+  {
    "name": "_ZN6AEFile4ReadERN11AbyssEngine6StringEjb",
    "pct": 32.8,
    "byte": false,
@@ -6430,14 +6438,6 @@
    "linked": false,
    "osize": 140,
    "usize": 84
-  },
-  {
-   "name": "_ZN11AbyssEngine6Engine11SetTexturesEjj",
-   "pct": 33.7,
-   "byte": false,
-   "linked": false,
-   "osize": 312,
-   "usize": 184
   },
   {
    "name": "_ZN5MGame9dockEventEii",
@@ -7990,22 +7990,6 @@
    "linked": false,
    "osize": 236,
    "usize": 208
-  },
-  {
-   "name": "_ZN11AbyssEngine18ApplicationManager11GetKeyStateEv",
-   "pct": 40.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 8
-  },
-  {
-   "name": "_ZN11AbyssEngine18ApplicationManager14GetActionStateEv",
-   "pct": 40.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 8
   },
   {
    "name": "_ZN11AbyssEngine6String5SplitES0_",
@@ -22000,6 +21984,14 @@
    "usize": 16
   },
   {
+   "name": "_ZN11AbyssEngine18ApplicationManager11GetKeyStateEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
    "name": "_ZN11AbyssEngine18ApplicationManager11SoundEnableEb",
    "pct": 100.0,
    "byte": true,
@@ -22041,6 +22033,14 @@
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager13VibrateEnableEb",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
+   "name": "_ZN11AbyssEngine18ApplicationManager14GetActionStateEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,

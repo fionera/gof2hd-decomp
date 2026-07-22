@@ -477,11 +477,11 @@ void ApplicationManager::ResetKeyState() {
 }
 
 uint64_t ApplicationManager::GetKeyState() {
-    return this->keyState;
+    return ((uint64_t)this->keyStateHigh << 32) | this->keyState;
 }
 
 uint64_t ApplicationManager::GetActionState() {
-    return this->actionState;
+    return ((uint64_t)this->actionStateHigh << 32) | this->actionState;
 }
 
 void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode *> *array) {
