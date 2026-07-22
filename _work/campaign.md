@@ -2,6 +2,34 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-22 (wave 11 — mid-band 35-60%: 3 dead-worker retries + new classes, 8/8 landed)
+
+Pool: diffs11. Workflow wf_e603dd9d-2df. paintcanvas2 stalled 6/6 but left landable edits
+(+1 orchestrator fix). Net: byte 1141->1143, linked 2306->2316 (+10), avg 74.34->74.56,
+imports 1037->1028 (-9).
+- 774d5f2 radar: getPlanetDockIndex shim->getSystem()/getStations() 47.6->89.7, dtor
+  double String-dtor removed. Radar.h layout drift documented (12-56B missing mid-struct:
+  players 0x28 vs 0x34, lockLabel 0x168 vs 0x18c, scannerAvailable 0x175 vs 0x1ab) —
+  NEW exclusive-tier layout item.
+- cda5116a recordhandler2: writeMission AEFile::Write conversions 54.2->78.9 (-4 imports).
+  7 fns canary-blocked.
+- 8492e38f modstation: enterStation 36.0->100 linked.
+- b88cad63 aefile: JACKPOT — file-statics migrated to the REAL AEFile class statics
+  (fileInterface/pakFileEntryList/file are exported .bss syms in orig; our spurious
+  4th "initialized" flag dropped). 13 fns -> 95-98%. Confirms: when orig exports a
+  static, our file-static replica must become the class static.
+- c17b22a3 hangarwindow: getCurrentItem + getRelativeScrollHeight ->100 BYTE-exact,
+  demount/mount/highlight ->90-96.
+- 074caa94 explosion: canvas/rnd = &Globals::* uninit-deref fix; Status D1/D2 ->100;
+  triggered the largest ICF refold storm yet (160 changed / 73 wobble-dips, net +6 linked).
+- 59589542 paintcanvas2 (stalled salvage): worker used true-import glClear but our curated
+  third_party/gl/GLES/gl.h lacks it — orchestrator added GLES2/gl2.h include (Engine.cpp
+  precedent). ClearDepth ->100, -4 imports.
+- 954ef7c1 kiplayer_asteroid: PlayerAsteroid::push +2.4 only.
+STANDOUT FINDING (3 independent workers): orig canaries String/ptr-array locals that
+-fstack-protector never protects => orig likely -fstack-protector-strong. ~15+ fns
+blocked on this. Flag experiment queued (orchestrator-only, ratchet-gated).
+
 ## Session 2026-07-22 (wave 10 — mid-band 35-60% cont., 8 workers, 5/8 left edits, 5/5 landed)
 
 Pool: diffs10 (35-60 band, 67 fns). Workflow wf_94a96e14-19d. 3 workers died mid-response
