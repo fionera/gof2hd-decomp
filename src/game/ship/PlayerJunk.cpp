@@ -77,7 +77,7 @@ void PlayerJunk::update(int elapsed) {
 
             Level *level = this->level;
             level->field_74->emitManual(
-                level->field_34, position, 0, zero, 0.0f);
+                level->field_34, position, 0, zero, -1.0f);
         }
     }
 
