@@ -68,9 +68,8 @@ int MissionsWindow::OnTouchMove(int p1, int p2) {
         this->m_pStarMap->OnTouchMove(p1, p2);
     } else {
         if (Globals::status->wantedBoardAccessible()) {
-            Array<TouchButton *> *arr = this->m_pTabButtons;
-            for (unsigned i = 0; i < arr->size(); i++)
-                (*arr)[i]->OnTouchMove(p1, p2);
+            for (unsigned i = 0; i < this->m_pTabButtons->size(); i++)
+                (*this->m_pTabButtons)[i]->OnTouchMove(p1, p2);
         }
         (Globals::layout)->OnTouchMove(p1, p2);
         this->m_pCampaignWindow->OnTouchMove(p1, p2);
@@ -91,9 +90,8 @@ int MissionsWindow::OnTouchBegin(int p1, int p2) {
         this->m_pStarMap->OnTouchBegin(p1, p2);
     } else {
         if (Globals::status->wantedBoardAccessible()) {
-            Array<TouchButton *> *arr = this->m_pTabButtons;
-            for (unsigned i = 0; i < arr->size(); i++)
-                (*arr)[i]->OnTouchBegin(p1, p2);
+            for (unsigned i = 0; i < this->m_pTabButtons->size(); i++)
+                (*this->m_pTabButtons)[i]->OnTouchBegin(p1, p2);
         }
         (Globals::layout)->OnTouchBegin(p1, p2);
         this->m_pCampaignWindow->OnTouchBegin(p1, p2);

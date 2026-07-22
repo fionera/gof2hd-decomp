@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1138,
-  "linked_exact": 2278,
+  "linked_exact": 2280,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 73.87,
+  "avg_match": 73.9,
   "compared": 4523
  },
  "imports": [
@@ -218,7 +218,6 @@
   "_Z18AEFile_WriteStringPvji",
   "_Z18AEMath_Matrix_ctorPv",
   "_Z18AERandom_seed_ctorPvx",
-  "_Z18Array_Station_dtorPv",
   "_Z18CutScene_update_oui",
   "_Z18EaseInOut_GetValuePv",
   "_Z18FModSound_play_oteiiPKff",
@@ -259,8 +258,6 @@
   "_Z18_psm_spriteRender2Pvj",
   "_Z18_psm_spriteRender4Pvjjj",
   "_Z19AEMath_MatrixAssignPvS_",
-  "_Z19Array_KIPlayer_ctorPv",
-  "_Z19Array_KIPlayer_dtorPv",
   "_Z19ChoiceWindow_set_oiP12ChoiceWindowii",
   "_Z19CutScene_process_oui",
   "_Z19DialogueWindow_ctorz",
@@ -336,8 +333,6 @@
   "_Z20_psm_meshSetTrianglePN11AbyssEngine11PaintCanvasEjtttt",
   "_Z21AEMath_BSphere_assignPvPKv",
   "_Z21AEMath_MatrixIdentityPvS_",
-  "_Z21ArrayRelease_KIPlayerPv",
-  "_Z21Array_Station_releasePv",
   "_Z21ChoiceWindow_draw_r2dP10ModStation",
   "_Z21CutScene_render2D_r2dv",
   "_Z21EaseInOut_GetMinValuePv",

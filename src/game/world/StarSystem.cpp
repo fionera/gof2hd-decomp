@@ -23,16 +23,6 @@ namespace AbyssEngine {
     }
 }
 
-void ArrayRelease_KIPlayer(void *array); // lint: void_ptr (external symbol; mangling must match lib)
-
-void *Array_KIPlayer_dtor(void *array); // lint: void_ptr (external symbol; mangling must match lib)
-
-void Array_KIPlayer_ctor(void *array); // lint: void_ptr (external symbol; mangling must match lib)
-
-void Array_Station_release(void *array); // lint: void_ptr (external symbol; mangling must match lib)
-
-void *Array_Station_dtor(void *array); // lint: void_ptr (external symbol; mangling must match lib)
-
 void MatrixGetPosition(Vector *out, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
@@ -84,23 +74,31 @@ StarSystem::~StarSystem() {
     delete this->planetsArray;
     this->planetsArray = nullptr;
 
-    if (this->playerTargets != nullptr) {
-        ArrayRelease_KIPlayer(this->playerTargets);
-        if (this->playerTargets != nullptr)
-            ::operator delete(Array_KIPlayer_dtor(this->playerTargets));
+    if (this->playerTargets) {
+        ArrayReleaseClasses(*this->playerTargets);
+        delete this->playerTargets;
     }
     this->playerTargets = nullptr;
 
     delete this->lensFlare;
     this->lensFlare = nullptr;
 
-    delete this->texturesArray;
+    if (this->texturesArray) {
+        ArrayRelease(*this->texturesArray);
+        delete this->texturesArray;
+    }
     this->texturesArray = nullptr;
 
-    delete this->stationIdxArray;
+    if (this->stationIdxArray) {
+        ArrayRelease(*this->stationIdxArray);
+        delete this->stationIdxArray;
+    }
     this->stationIdxArray = nullptr;
 
-    delete this->positionsArray;
+    if (this->positionsArray) {
+        ArrayRelease(*this->positionsArray);
+        delete this->positionsArray;
+    }
     this->positionsArray = nullptr;
 }
 
@@ -383,11 +381,10 @@ StarSystem::StarSystem(int mode) {
         (*this->stationIdxArray)[i - 1] = station->getIndex();
     }
 
-    Array_Station_release(stationArray);
-    ::operator delete(Array_Station_dtor(stationArray));
+    ArrayReleaseClasses(*stationArray);
+    delete stationArray;
 
-    this->playerTargets = (Array<KIPlayer *> *) ::operator new(0x0c);
-    Array_KIPlayer_ctor(this->playerTargets);
+    this->playerTargets = new Array<KIPlayer *>();
 
     ArraySetLength<unsigned int>(static_cast<unsigned int>(count),
                                  *reinterpret_cast<Array<unsigned int> *>(this->playerTargets));
@@ -456,13 +453,13 @@ void StarSystem::updateSupernova(int dt) {
     if (streak != nullptr) {
         AbyssEngine::Transform *transform = (AbyssEngine::Transform *) Globals::Canvas
                 ->TransformGetTransform(streak->transform);
-        transform->Update(0, dt);
+        transform->Update((longlong)dt, false);
     }
     AEGeometry *sun = (*this->planetsArray)[0];
     if (sun != nullptr) {
         AbyssEngine::Transform *transform = (AbyssEngine::Transform *) Globals::Canvas
                 ->TransformGetTransform(sun->transform);
-        transform->Update(1, dt);
+        transform->Update((longlong)dt, true);
     }
 }
 
