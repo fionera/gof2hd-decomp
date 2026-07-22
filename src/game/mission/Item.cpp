@@ -162,16 +162,17 @@ Item::~Item() {
 }
 
 int Item::transactionBlueprint(bool fabricate, int mode) {
-    if (mode == 0) {
-        if (amount > 0) {
-            amount -= 1;
-            blueprintAmount += 1;
-            return price;
+    if (fabricate) {
+        if (blueprintAmount >= 1) {
+            blueprintAmount -= 1;
+            amount += 1;
+            return -price;
         }
-    } else if (blueprintAmount > 0) {
-        blueprintAmount -= 1;
-        amount += 1;
-        return -price;
+    } else if (amount >= 1) {
+        int p = price;
+        amount -= 1;
+        blueprintAmount += 1;
+        return p;
     }
     return 0;
 }
@@ -315,6 +316,7 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems) {
     if (stationItems == nullptr) {
         return items;
     }
+    ItemArray *result = items;
 
     ItemArray *stationCopy = new ItemArray();
     ArraySetLength(stationItems->size(), *stationCopy);
@@ -337,7 +339,7 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems) {
         }
     }
 
-    ItemArray *result = items;
+
     if (static_cast<int>(remaining) > 0) {
         ItemArray *unmatched = new ItemArray();
         ArraySetLength(remaining, *unmatched);
