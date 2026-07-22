@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 74.35,
+  "avg_match": 74.36,
   "compared": 4523
  },
  "imports": [
@@ -92,9 +92,6 @@
   "_Z15AEFile_ReadBoolPvj",
   "_Z15AEFile_ReadBytePvj",
   "_Z15AEFile_ReadLongPvj",
-  "_Z15AEFile_Read_f32Pvj",
-  "_Z15AEFile_Read_i32Pvj",
-  "_Z15AEFile_Read_i64Pvj",
   "_Z15AEFile_WriteIntij",
   "_Z15Engine_DrawQuadPN11AbyssEngine6EngineEiiii",
   "_Z15LensFlare_sqrtff",
@@ -113,7 +110,6 @@
   "_Z15_psm_vectorPlusPN11AbyssEngine6AEMath6VectorEPKS1_S4_",
   "_Z16AEFile_ReadFloatPvj",
   "_Z16AEFile_ReadShortPvj",
-  "_Z16AEFile_Read_boolPvji",
   "_Z16AEFile_WriteBoolij",
   "_Z16AEFile_WriteByteij",
   "_Z16AEFile_WriteLongxj",

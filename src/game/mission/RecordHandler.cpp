@@ -524,14 +524,14 @@ GameRecord *RecordHandler::recordStoreReadPreview(int slot) {
         AEFile::OpenRead(path, &fd);
         gr = new GameRecord();
 
-        AEFile_Read_i64(&gr->playTimeObj, fd);
-        AEFile_Read_i32(&gr->field_0x08, fd);
-        AEFile_Read_bool(&gr->pilotName, fd, true);
-        AEFile_Read_bool(&gr->field_0x188, fd, true);
-        AEFile_Read_i32(&gr->field_0x40, fd);
-        AEFile_Read_i32(&gr->killsText, fd);
-        AEFile_Read_f32(&gr->rank, fd);
-        AEFile_Read_i32(&gr->shipId, fd);
+        AEFile::Read(reinterpret_cast<int64_t &>(gr->playTimeObj), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(gr->field_0x08), fd);
+        AEFile::Read(reinterpret_cast<String &>(gr->pilotName), fd, (bool)1);
+        AEFile::Read(reinterpret_cast<String &>(gr->field_0x188), fd, (bool)1);
+        AEFile::Read(reinterpret_cast<int32_t &>(gr->field_0x40), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(gr->killsText), fd);
+        AEFile::Read(gr->rank, fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(gr->shipId), fd);
         AEFile::Close(fd);
     }
     return gr;
@@ -674,47 +674,41 @@ void RecordHandler::writeAgent(Agent *agentPtr, unsigned int fd) {
 }
 
 void RecordHandler::writeMission(Mission *m, unsigned int fd) {
-    RecordHandler * self = this;
-    AEFile_WriteInt(m->getType(), fd);
+    AEFile::Write((int32_t)m->getType(), fd);
     if (m->isEmpty() == 0) {
-        String s;
-        s = m->getClientName();
-        AEFile_WriteString(&s, fd, 1);
-        s = m->getTargetName();
-        AEFile_WriteString(&s, fd, 1);
-        s = m->getTargetStationName();
-        AEFile_WriteString(&s, fd, 1);
-        s = m->getTargetSystemName();
-        AEFile_WriteString(&s, fd, 1);
+        {String s = m->getClientName(); AEFile::Write(s, fd, (bool)1);}
+        {String s = m->getTargetName(); AEFile::Write(s, fd, (bool)1);}
+        {String s = m->getTargetStationName(); AEFile::Write(s, fd, (bool)1);}
+        {String s = m->getTargetSystemName(); AEFile::Write(s, fd, (bool)1);}
 
-        AEFile_WriteBool(m->isCampaignMission(), fd);
+        AEFile::Write((bool)m->isCampaignMission(), fd);
         if (m->getClientImage() == 0) {
-            AEFile_WriteInt(-1, fd);
+            AEFile::Write((int32_t)-1, fd);
         } else {
-            AEFile_WriteInt(5, fd);
+            AEFile::Write((int32_t)5, fd);
             for (int i = 0; i != 5; i++) {
                 int *img = (int *) (long) m->getClientImage();
-                AEFile_WriteInt(img[i], fd);
+                AEFile::Write((int32_t)img[i], fd);
             }
         }
-        AEFile_WriteInt(m->getClientRace(), fd);
-        AEFile_WriteInt(m->getCosts(), fd);
-        AEFile_WriteInt(m->getBonus(), fd);
-        AEFile_WriteInt(m->getReward(), fd);
-        AEFile_WriteInt(m->getTargetStation(), fd);
-        AEFile_WriteInt(m->getDifficulty(), fd);
-        AEFile_WriteInt(m->getProductionGoodIndex(), fd);
-        AEFile_WriteInt(m->getProductionGoodAmount(), fd);
-        AEFile_WriteInt(m->getStatusValue(), fd);
-        AEFile_WriteBool(m->isVisible(), fd);
+        AEFile::Write((int32_t)m->getClientRace(), fd);
+        AEFile::Write((int32_t)m->getCosts(), fd);
+        AEFile::Write((int32_t)m->getBonus(), fd);
+        AEFile::Write((int32_t)m->getReward(), fd);
+        AEFile::Write((int32_t)m->getTargetStation(), fd);
+        AEFile::Write((int32_t)m->getDifficulty(), fd);
+        AEFile::Write((int32_t)m->getProductionGoodIndex(), fd);
+        AEFile::Write((int32_t)m->getProductionGoodAmount(), fd);
+        AEFile::Write((int32_t)m->getStatusValue(), fd);
+        AEFile::Write((bool)m->isVisible(), fd);
 
-        self->currentMission = m;
+        this->currentMission = m;
         Agent *agent = m->getAgent();
-        if (agent == 0 || self->currentAgent == agent) {
-            AEFile_WriteInt(-1, fd);
+        if (agent == 0 || this->currentAgent == agent) {
+            AEFile::Write((int32_t)-1, fd);
         } else {
-            AEFile_WriteInt(1, fd);
-            self->writeAgent(agent, fd);
+            AEFile::Write((int32_t)1, fd);
+            this->writeAgent(agent, fd);
         }
     }
 
