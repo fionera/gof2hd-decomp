@@ -10,6 +10,10 @@
 #include <cstdint>
 #include <cstddef>
 namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); }
+namespace AbyssEngine {
+    typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported TextureCreateFromFile signature)
+    int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, bool flag, float scale); // lint: void_ptr (exported TextureCreateFromFile signature)
+}
 
 namespace AbyssEngine {
     class SpriteSystem;
@@ -699,6 +703,10 @@ int paintcanvas_ext_ss2_sscreate(void *eng, unsigned short id, bool b, void **ou
 // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_ss2_matcreate(void *self, unsigned short id, unsigned int *out) { unsigned int o; ((PaintCanvas*)self)->MaterialCreate(id, o); *out = o; } // lint: void_ptr (external symbol; mangling must match lib)
+
+namespace AbyssEngine {
+    int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, SpriteSystem **out);
+}
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1398,7 +1406,7 @@ void *PaintCanvas::CameraGetLocal(unsigned int index) { // lint: void_ptr (exter
 
 void PaintCanvas::DrawTextLines(unsigned int font,
                                 Array<AbyssEngine::String *> *arr, int x, int y) {
-    this->DrawTextLines(font, arr, x, y, 0u, false);
+    this->DrawTextLines(font, arr, x, y, false);
 }
 
 void PaintCanvas::DrawTextLines(unsigned int font,
@@ -1416,6 +1424,7 @@ void PaintCanvas::DrawTextLines(unsigned int font,
 
 void PaintCanvas::FillRectangle(int x, int y, int w, int h) {
     char abuf[60];
+
     float fx = (float) x;
     float fy = (float) y;
     float fx2 = (float) (x + w);
@@ -1432,26 +1441,16 @@ void PaintCanvas::FillRectangle(int x, int y, int w, int h) {
     vb[10] = fy2;
 
     float *m = (float *) abuf;
+    memset(m, 0, 60);
     m[0] = 1.0f;
-    m[1] = 0.0f;
-    m[2] = 0.0f;
-    m[3] = 0.0f;
-    m[4] = 0.0f;
     m[5] = 1.0f;
-    m[6] = 0.0f;
-    m[7] = 0.0f;
-    m[8] = 0.0f;
-    m[9] = 0.0f;
-    m[10] = 1.0f;
-    m[11] = 0.0f;
-    m[12] = 1.0f;
-    m[13] = 1.0f;
+    m[11] = 1.0f;
     m[14] = 1.0f;
 
-    paintcanvas_ext_fr_setwvm(this, abuf);
-    paintcanvas_ext_fr_glenable(this->engine, 0xde1, false);
-    paintcanvas_ext_fr_meshdraw(this->engine, this->lineMesh);
-    paintcanvas_ext_fr_glenable(this->engine, 0xde1, true);
+    this->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) m);
+    this->engine->GlEnable(0xde1, false);
+    AbyssEngine::MeshDraw(this->engine, (AbyssEngine::Mesh *) this->lineMesh);
+    this->engine->GlEnable(0xde1, true);
 }
 
 void PaintCanvas::SpriteSystemSetRGBA(unsigned int index, unsigned short sub,
@@ -2723,54 +2722,45 @@ int paintcanvas_ext_gl_textwidth(void *self, unsigned int font, const AbyssEngin
 
 void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWidth,
                           AbyssEngine::String *out) {
-    char tmp[16];
     unsigned int lastSpace = 0;
     int width = 5;
     unsigned int i = 0;
     unsigned int len = str.size();
 
     while (i < len) {
-        unsigned short *ch = paintcanvas_ext_gl_strindex(&str, i);
+        unsigned short *ch = str[i];
         unsigned short c = *ch;
         unsigned int next = i + 1;
-        width += paintcanvas_ext_gl_textwidth(this, font, &str, i, next);
+        width += this->GetTextWidth(font, str, i, next);
         if (c == 0x20) {
             lastSpace = i;
         }
         if (width >= maxWidth) {
             if ((int) lastSpace < 1) {
-                paintcanvas_ext_gl_substr(tmp, &str, 0, next);
+                *out = str.SubString(0, next);
             } else {
-                paintcanvas_ext_gl_substr(tmp, &str, 0, lastSpace + 1);
+                *out = str.SubString(0, lastSpace + 1);
             }
-            paintcanvas_ext_gl_str_assign(out, tmp);
-            paintcanvas_ext_gl_str_dtor(tmp);
             return;
         }
-        unsigned short *ch2 = paintcanvas_ext_gl_strindex(&str, i);
+        unsigned short *ch2 = str[i];
         if (*ch2 == 0xa) {
-            paintcanvas_ext_gl_substr(tmp, &str, 0, next);
-            paintcanvas_ext_gl_str_assign(out, tmp);
-            paintcanvas_ext_gl_str_dtor(tmp);
+            *out = str.SubString(0, next);
             return;
         }
-        unsigned short *ch3 = paintcanvas_ext_gl_strindex(&str, i);
+        unsigned short *ch3 = str[i];
         i = next;
         if (*ch3 == 0xd) {
-            paintcanvas_ext_gl_substr(tmp, &str, 0, next);
-            paintcanvas_ext_gl_str_assign(out, tmp);
-            paintcanvas_ext_gl_str_dtor(tmp);
+            *out = str.SubString(0, next);
             return;
         }
     }
 
     if ((int) len < 2) {
-        paintcanvas_ext_gl_str_fromchar(tmp, g_getline_empty_7c428, false);
+        *out = AbyssEngine::String(g_getline_empty_7c428, false);
     } else {
-        paintcanvas_ext_gl_substr(tmp, &str, 0, len);
+        *out = str.SubString(0, len);
     }
-    paintcanvas_ext_gl_str_assign(out, tmp);
-    paintcanvas_ext_gl_str_dtor(tmp);
 }
 
 static char g_dl_flag_794ee_storage = 0;
@@ -2969,10 +2959,6 @@ void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child) {
     }
 }
 
-int tcg_TextureCreateFromFile(void *engine, const char *path, void *cb, void *ud, // lint: void_ptr (external symbol; mangling must match lib)
-                              // lint: void_ptr (external symbol; mangling must match lib)
-                              unsigned *outId, bool b, float f);
-
 static int *g_tcg_canary_storage = 0;
 static int **g_tcg_canary = &g_tcg_canary_storage;
 
@@ -2982,8 +2968,8 @@ void PaintCanvas::TextureCreateGlobal(AbyssEngine::String name, unsigned int uni
 
     char *path = name.GetAEChar();
     unsigned outId;
-    int rc = tcg_TextureCreateFromFile(this->engine, path, 0, 0, &outId, false,
-                                       0.0f);
+    int rc = AbyssEngine::TextureCreateFromFile(this->engine, path, nullptr, nullptr,
+                                                &outId, false, 0.0f);
     if (rc == 1) {
         tcg_glActiveTexture(unit + 0x84c0);
         tcg_glBindTexture(0xde1, 0);
@@ -3039,34 +3025,32 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
                                      unsigned short matResId, unsigned int &out) {
     AbyssEngine::SpriteSystem *ss = 0;
     unsigned int result;
-    int ok = paintcanvas_ext_ss2_sscreate(this->engine, resId, flag, (void **) &ss); // lint: void_ptr (out-param shim signature is void**; mangling must match lib)
-    // lint: void_ptr (out-param shim signature is void**; mangling must match lib)
+    int ok = AbyssEngine::SpriteSystemCreate(this->engine, resId, flag, &ss);
     if (ok == 1) {
         unsigned int mat = 0xffffffff;
-        paintcanvas_ext_ss2_matcreate(this, matResId, &mat);
+        this->MaterialCreate(matResId, mat);
         if (mat <= this->materials.count) {
             ::Node *node = ((PCSpriteSystemView2 *) ss)->node;
             node->spriteMaterial =
                     (unsigned int) (uintptr_t) this->materials.data_[mat];
         }
-        unsigned int i;
-        for (i = 0; i < this->spriteSystems.count; i++) {
-            AbyssEngine::SpriteSystem **slot = &this->spriteSystems.data_[i * 4];
+        unsigned int i = 0;
+        for (; i < this->spriteSystems.count; i++) {
+            AbyssEngine::SpriteSystem **slot = &this->spriteSystems.data_[i];
             if (*slot == nullptr) {
                 *slot = ss;
                 ss = 0;
-                out = i;
-                return;
+                break;
             }
         }
-        if (ss == 0) {
-            return;
+        if (ss != 0) {
+            ArrayAdd<AbyssEngine::SpriteSystem *>(
+                ss,
+                *reinterpret_cast<Array<AbyssEngine::SpriteSystem *> *>(
+                    &this->spriteSystems));
+            i = this->spriteSystems.count - 1;
         }
-        ArrayAdd<AbyssEngine::SpriteSystem *>(
-            static_cast<AbyssEngine::SpriteSystem *>(ss),
-            *reinterpret_cast<Array<AbyssEngine::SpriteSystem *> *>(
-                &this->spriteSystems));
-        result = this->spriteSystems.count - 1;
+        result = i;
     } else {
         result = 0xffffffff;
     }
@@ -3227,21 +3211,21 @@ void PaintCanvas::Resume() {
     unsigned int out = 0;
     for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
         PCCubeTexView *res = (PCCubeTexView *) (this->cubeTextures.data_)[i];
-        char *path = paintcanvas_ext_rs_getAEChar(res->pathField);
+        char *path = reinterpret_cast<AbyssEngine::String *>(res->pathField)->GetAEChar();
         float f = ((PCCubeTexView *) (this->cubeTextures.data_)[i])->scale;
-        int ok = paintcanvas_ext_rs_texfromfile(this->engine, path, 0, 0,
-                                                &out, false, f);
+        int ok = AbyssEngine::TextureCreateFromFile(this->engine, path, nullptr, nullptr,
+                                                    &out, false, f);
         if (ok == 1) {
             ((PCCubeTexView *) (this->cubeTextures.data_)[i])->glTexId = 0;
         }
-        paintcanvas_ext_rs_deletearr(path);
+        delete[] path;
     }
     int *cur = g_resume_curtex_7e828;
     if (*cur != 0) {
-        paintcanvas_ext_rs_glActiveTexture(0x84c7);
+        glActiveTexture(0x84c7);
         PCCubeTexView *res = (PCCubeTexView *) (this->cubeTextures.data_)[*cur];
-        paintcanvas_ext_rs_glBindTexture(0x8513, (unsigned int) res->glTexId);
-        paintcanvas_ext_rs_glActiveTexture(0x84c0);
+        glBindTexture(0x8513, (unsigned int) res->glTexId);
+        glActiveTexture(0x84c0);
     }
 }
 
