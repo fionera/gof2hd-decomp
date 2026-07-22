@@ -6208,6 +6208,22 @@
    "usize": 84
   },
   {
+   "name": "_ZN11AbyssEngine12GlowPPShaderC1Ev",
+   "pct": 33.3,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 84
+  },
+  {
+   "name": "_ZN11AbyssEngine12GlowPPShaderC2Ev",
+   "pct": 33.3,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 84
+  },
+  {
    "name": "_ZN11AbyssEngine16AESoundRessource9setVolumeEii",
    "pct": 33.3,
    "byte": false,
@@ -6833,22 +6849,6 @@
   },
   {
    "name": "_ZN11AbyssEngine12EnergyShieldC2Ev",
-   "pct": 35.1,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 84
-  },
-  {
-   "name": "_ZN11AbyssEngine12GlowPPShaderC1Ev",
-   "pct": 35.1,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 84
-  },
-  {
-   "name": "_ZN11AbyssEngine12GlowPPShaderC2Ev",
    "pct": 35.1,
    "byte": false,
    "linked": false,
@@ -8686,14 +8686,6 @@
    "linked": false,
    "osize": 264,
    "usize": 204
-  },
-  {
-   "name": "_ZN20ParticleSystemSprite6renderEPN11AbyssEngine11PaintCanvasEjjNS0_9BlendModeE",
-   "pct": 44.0,
-   "byte": false,
-   "linked": false,
-   "osize": 156,
-   "usize": 108
   },
   {
    "name": "_ZN15MenuTouchWindow13startValkyrieEv",
@@ -13190,6 +13182,14 @@
    "linked": false,
    "osize": 88,
    "usize": 88
+  },
+  {
+   "name": "_ZN20ParticleSystemSprite6renderEPN11AbyssEngine11PaintCanvasEjjNS0_9BlendModeE",
+   "pct": 69.7,
+   "byte": false,
+   "linked": false,
+   "osize": 156,
+   "usize": 128
   },
   {
    "name": "_ZN9PlayerEgo7setShipEii",

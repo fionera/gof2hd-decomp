@@ -81,18 +81,29 @@ void ParticleSystemSprite::release() {
 }
 
 void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle, uint32_t texture, BlendMode blend) {
+    char mbuf[60];
+    float *m = (float *) mbuf;
     if (handle == 0xffffffffu)
         return;
 
-    canvas->SetTexture(texture, 0);
+    canvas->SetTexture(texture, 0xffffffffu);
     canvas->SetBlendMode(blend);
 
-    float m[16] = {
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f,
-    };
+    m[0] = 1.0f;
+    m[1] = 0.0f;
+    m[2] = 0.0f;
+    m[3] = 0.0f;
+    m[4] = 0.0f;
+    m[5] = 1.0f;
+    m[6] = 0.0f;
+    m[7] = 0.0f;
+    m[8] = 0.0f;
+    m[9] = 0.0f;
+    m[10] = 1.0f;
+    m[11] = 0.0f;
+    m[12] = 1.0f;
+    m[13] = 1.0f;
+    m[14] = 1.0f;
     canvas->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) m);
     canvas->DrawSpriteSystem(handle);
 }
