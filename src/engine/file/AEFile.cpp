@@ -2,10 +2,6 @@
 #include "game/core/String.h"
 #include <new>
 
-static FileInterface *g_AEFile_fileInterface = nullptr;
-static Array<AELowLevelFile *> *g_AEFile_openFiles = nullptr;
-static Array<AEPakFileEntry *> *g_AEFile_pakFiles = nullptr;
-static uint32_t g_AEFile_initialized = 0;
 
 namespace {
     inline void AEStr_set(String &self, const char *s) { self.Set_char(s); }
@@ -33,38 +29,41 @@ void AEFile::SetInterface(FileInterface *fileInterface) {
         return;
     }
 
-    if (g_AEFile_initialized != 0) {
+    if (AEFile::fileInterface != nullptr) {
         fileInterface->ResetSaveDirectory();
     }
 
-    if (g_AEFile_pakFiles == nullptr) {
-        g_AEFile_pakFiles = new Array<AEPakFileEntry *>();
+    if (AEFile::pakFileEntryList == nullptr) {
+        AEFile::pakFileEntryList = new Array<AEPakFileEntry *>();
     }
-    if (g_AEFile_openFiles == nullptr) {
-        g_AEFile_openFiles = new Array<AELowLevelFile *>();
+    if (AEFile::file == nullptr) {
+        AEFile::file = new Array<AELowLevelFile *>();
     }
-    g_AEFile_fileInterface = fileInterface;
+    AEFile::fileInterface = fileInterface;
 }
 
 void AEFile::Release() {
-    if (g_AEFile_openFiles != nullptr) {
-        ArrayReleaseClasses(*g_AEFile_openFiles);
-        delete g_AEFile_openFiles;
-        g_AEFile_openFiles = nullptr;
+    if (AEFile::file != nullptr) {
+        ArrayReleaseClasses(*AEFile::file);
+        delete AEFile::file;
+        AEFile::file = nullptr;
     }
 
-    if (g_AEFile_pakFiles != nullptr) {
-        for (AEPakFileEntry *&entry: *g_AEFile_pakFiles) {
-            delete entry;
-            entry = nullptr;
+    if (AEFile::pakFileEntryList != nullptr) {
+        for (uint32_t i = 0; i < AEFile::pakFileEntryList->size(); i++) {
+            AEPakFileEntry *entry = AEFile::pakFileEntryList->data()[i];
+            if (entry != nullptr) {
+                delete entry;
+            }
+            AEFile::pakFileEntryList->data()[i] = nullptr;
         }
-        delete g_AEFile_pakFiles;
-        g_AEFile_pakFiles = nullptr;
+        delete AEFile::pakFileEntryList;
+        AEFile::pakFileEntryList = nullptr;
     }
 }
 
 uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface == nullptr) {
         return 0;
     }
@@ -104,7 +103,7 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
         file = new AENormalFile(nativeHandle);
     }
 
-    Array<AELowLevelFile *> *files = g_AEFile_openFiles;
+    Array<AELowLevelFile *> *files = AEFile::file;
     uint32_t count = files->size();
     if (handle == nullptr) {
         if (count == 0) {
@@ -164,24 +163,23 @@ uint32_t AEFile::OpenAppend(const char *path, uint32_t *handle) {
 }
 
 void AEFile::Close(uint32_t handle) {
-    if (g_AEFile_fileInterface == nullptr) {
+    if (AEFile::fileInterface == nullptr) {
         return;
     }
-    Array<AELowLevelFile *> *files = g_AEFile_openFiles;
-    if (handle >= files->size()) {
+    if (handle >= AEFile::file->size()) {
         return;
     }
-    AELowLevelFile *&slot = files->data()[handle];
+    AELowLevelFile *slot = AEFile::file->data()[handle];
     if (slot != nullptr) {
         delete slot;
     }
-    slot = nullptr;
+    AEFile::file->data()[handle] = nullptr;
 }
 
 uint32_t AEFile::Read(uint32_t bytes, void *buffer, uint32_t handle) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
-    if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {
-        AELowLevelFile *file = g_AEFile_openFiles->data()[handle];
+    if (AEFile::fileInterface != nullptr && handle < AEFile::file->size()) {
+        AELowLevelFile *file = AEFile::file->data()[handle];
         if (file != nullptr) {
             return file->Read(bytes, buffer);
         }
@@ -272,8 +270,8 @@ void AEFile::ReadSwitched(String &value, uint32_t handle) {
 
 uint32_t AEFile::Write(uint32_t bytes, void *buffer, uint32_t handle) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
-    if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {
-        AELowLevelFile *file = g_AEFile_openFiles->data()[handle];
+    if (AEFile::fileInterface != nullptr && handle < AEFile::file->size()) {
+        AELowLevelFile *file = AEFile::file->data()[handle];
         if (file != nullptr) {
             return file->Write(bytes, buffer);
         }
@@ -315,8 +313,8 @@ uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide) {
 }
 
 uint32_t AEFile::Skip(uint32_t bytes, uint32_t handle) {
-    if (g_AEFile_fileInterface != nullptr) {
-        Array<AELowLevelFile *> *files = g_AEFile_openFiles;
+    if (AEFile::fileInterface != nullptr) {
+        Array<AELowLevelFile *> *files = AEFile::file;
         if (handle < files->size()) {
             AELowLevelFile *file = files->data()[handle];
             if (file != nullptr) {
@@ -328,8 +326,8 @@ uint32_t AEFile::Skip(uint32_t bytes, uint32_t handle) {
 }
 
 uint32_t AEFile::GetFileSize(uint32_t handle) {
-    if (g_AEFile_fileInterface != nullptr) {
-        Array<AELowLevelFile *> *files = g_AEFile_openFiles;
+    if (AEFile::fileInterface != nullptr) {
+        Array<AELowLevelFile *> *files = AEFile::file;
         if (handle < files->size()) {
             AELowLevelFile *file = files->data()[handle];
             if (file != nullptr) {
@@ -346,7 +344,7 @@ void AEFile::RegisterPakFile(String path) {
 }
 
 void AEFile::collectPakFiles(const String &path) {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface == nullptr || fileInterface->enabled == 0) {
         return;
     }
@@ -368,7 +366,7 @@ void AEFile::collectPakFiles(const String &path) {
 }
 
 void AEFile::collectFilesInPakFiles(String &path) {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface == nullptr || fileInterface->enabled == 0) {
         return;
     }
@@ -400,7 +398,7 @@ void AEFile::collectFilesInPakFiles(String &path) {
         entry->offset = offset;
         entry->packedSize = packedSize;
         entry->size = size;
-        ArrayAdd(entry, *g_AEFile_pakFiles);
+        ArrayAdd(entry, *AEFile::pakFileEntryList);
         delete[] name;
 
         uint32_t skippedBytes;
@@ -420,7 +418,7 @@ void AEFile::collectFilesInPakFiles(String &path) {
 }
 
 void AEFile::sortPakFileEntryList() {
-    Array<AEPakFileEntry *> *entries = g_AEFile_pakFiles;
+    Array<AEPakFileEntry *> *entries = AEFile::pakFileEntryList;
     int32_t count = (int32_t) entries->size();
     if (count == 0) {
         return;
@@ -440,7 +438,7 @@ void AEFile::sortPakFileEntryList() {
 }
 
 AELowLevelFile *AEFile::findPakFile(const String &path) {
-    Array<AEPakFileEntry *> *entries = g_AEFile_pakFiles;
+    Array<AEPakFileEntry *> *entries = AEFile::pakFileEntryList;
     if (entries->size() == 0) {
         return nullptr;
     }
@@ -456,7 +454,7 @@ AELowLevelFile *AEFile::findPakFile(const String &path) {
 
         if (entryCrc == wantedCrc) {
             uint16_t *name = AEStr_wchar(entry->name);
-            FileInterface *fileInterface = g_AEFile_fileInterface;
+            FileInterface *fileInterface = AEFile::fileInterface;
             String entryName;
             entryName.Set((const unsigned short *) (name));
             FileInterface *handle;
@@ -486,7 +484,7 @@ AELowLevelFile *AEFile::findPakFile(const String &path) {
 }
 
 uint32_t AEFile::FileExist(const String &path) {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface == nullptr) {
         return 0;
     }
@@ -508,7 +506,7 @@ uint32_t AEFile::FileExist(const String &path) {
 }
 
 uint32_t AEFile::FileDelete(const String &path) {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface == nullptr) {
         return 0;
     }
@@ -518,7 +516,7 @@ uint32_t AEFile::FileDelete(const String &path) {
 }
 
 uint32_t AEFile::GetDeviceFreeSpace() {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface != nullptr) {
         return fileInterface->GetDeviceFreeSpace();
     }
@@ -526,7 +524,7 @@ uint32_t AEFile::GetDeviceFreeSpace() {
 }
 
 const char *AEFile::GetAppRootDir() {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface != nullptr) {
         return fileInterface->GetAppRootDir();
     }
@@ -535,7 +533,7 @@ const char *AEFile::GetAppRootDir() {
 
 void AEFile::SetAppRootDir(void *path) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface != nullptr) {
         fileInterface->SetAppRootDir(path);
     }
@@ -543,14 +541,14 @@ void AEFile::SetAppRootDir(void *path) { // lint: void_ptr ABI signature (Pv man
 
 void AEFile::SetZipDirectory(void *path) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface != nullptr) {
         fileInterface->SetZipDirectory(path);
     }
 }
 
 void AEFile::SetSaveDirectory(String path) {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
+    FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface != nullptr) {
         String savePath;
         savePath.Set((const_cast<String *>(&path))->data);
@@ -559,9 +557,8 @@ void AEFile::SetSaveDirectory(String path) {
 }
 
 void AEFile::ResetSaveDirectory() {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
-    if (fileInterface != nullptr) {
-        fileInterface->ResetSaveDirectory();
+    if (AEFile::fileInterface != nullptr) {
+        AEFile::fileInterface->ResetSaveDirectory();
     }
 }
 
