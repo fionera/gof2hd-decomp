@@ -155,10 +155,9 @@ void ModStation::enterStation() {
     ((Station *) (Globals::status->getStation()))->visit();
     Globals::achievements->applyNewMedals();
 
-    Ship * (*getShip)(Status *) = g_ModStation_es_getShip;
-    Item *e10 = ((Ship *) (getShip(Globals::status)))->getFirstEquipmentOfSort(10);
-    Item *e9 = ((Ship *) (getShip(Globals::status)))->getFirstEquipmentOfSort(9);
-    int shipIdx = ((Ship *) (getShip(Globals::status)))->getIndex();
+    Item *e10 = Globals::status->getShip()->getFirstEquipmentOfSort(10);
+    Item *e9 = Globals::status->getShip()->getFirstEquipmentOfSort(9);
+    int shipIdx = Globals::status->getShip()->getIndex();
     Globals::status->field_150 = shipIdx;
 
     int v;
@@ -507,15 +506,15 @@ void ModStation::checkMedals() {
         Array<int *> *medalArr = *(Array<int *> **) &this->medalArray;
         int *medal = (*medalArr)[idx];
         ((ChoiceWindow *) (this->medalChoiceWindow))->setMedal(medal[0], medal[1]);
-        int delta = *g_ModStation_cm_credit2;
-        if (Globals::status->hardCoreMode() == 0)
-            Globals::status->changeCredits(delta);
+        if (Globals::status->hardCoreMode() == 0) {
+            int *mp = (*medalArr)[this->medalIndex];
+            Globals::status->changeCredits(g_ModStation_cm_credit2[mp[1]]);
+        }
         int *p = (*medalArr)[this->medalIndex];
         this->addAchievement(p[0], p[1]);
         return;
     }
 
-    int delta = *g_ModStation_cm_credit1;
     if (Globals::status->getCurrentCampaignMission() == 1)
         ((ModStation *) ((ModStation *) 1))->addAchievement(0, 1);
     this->medalArray = 0;
@@ -552,8 +551,10 @@ void ModStation::checkMedals() {
     this->medalChoiceWindow = cw;
     int *medal = (*arr)[0];
     cw->setMedal(medal[0], medal[1]);
-    if (Globals::status->hardCoreMode() == 0)
-        Globals::status->changeCredits(delta);
+    if (Globals::status->hardCoreMode() == 0) {
+        int *p0 = (*arr)[0];
+        Globals::status->changeCredits(g_ModStation_cm_credit1[p0[1]]);
+    }
     int *p = (*arr)[0];
     this->addAchievement(p[0], p[1]);
 }
@@ -561,7 +562,7 @@ void ModStation::checkMedals() {
 void ModStation::OnRender3D() {
     if (this->stationActive == 0)
         return;
-    Globals::Canvas->ClearBuffer((unsigned int) (long) Globals::Canvas);
+    Globals::Canvas->ClearBuffer(0);
 
     uint8_t *p65 = &reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1];
     if (this->cutScene == 0 || reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0 || reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0 ||
@@ -1090,24 +1091,24 @@ void ModStation::resetIdleCamForHangar() {
 
     if (this->easeX != 0)
         ((AbyssEngine::EaseInOut *) (this->easeX))->SetRange(
-            this->camKeyX, this->camKeyX);
+            reinterpret_cast<float&>(this->camKeyX), reinterpret_cast<float&>(this->camKeyX));
     else
-        this->easeX = new AbyssEngine::EaseInOut(this->camKeyX,
-                                                 this->camKeyX);
+        this->easeX = new AbyssEngine::EaseInOut(reinterpret_cast<float&>(this->camKeyX),
+                                                 reinterpret_cast<float&>(this->camKeyX));
 
     if (this->easeY != 0)
         ((AbyssEngine::EaseInOut *) (this->easeY))->SetRange(
-            this->camKeyY, this->camKeyY);
+            reinterpret_cast<float&>(this->camKeyY), reinterpret_cast<float&>(this->camKeyY));
     else
-        this->easeY = new AbyssEngine::EaseInOut(this->camKeyY,
-                                                 this->camKeyY);
+        this->easeY = new AbyssEngine::EaseInOut(reinterpret_cast<float&>(this->camKeyY),
+                                                 reinterpret_cast<float&>(this->camKeyY));
 
     if (this->easeZ != 0)
         ((AbyssEngine::EaseInOut *) (this->easeZ))->SetRange(
-            this->camKeyZ, this->camKeyZ);
+            reinterpret_cast<float&>(this->camKeyZ), reinterpret_cast<float&>(this->camKeyZ));
     else
-        this->easeZ = new AbyssEngine::EaseInOut(this->camKeyZ,
-                                                 this->camKeyZ);
+        this->easeZ = new AbyssEngine::EaseInOut(reinterpret_cast<float&>(this->camKeyZ),
+                                                 reinterpret_cast<float&>(this->camKeyZ));
 
     Globals::Canvas->CameraGetCurrent();
     Matrix *loc = (Matrix *) Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
@@ -3217,7 +3218,7 @@ void ModStation::showDlcMenu() {
         MenuTouchWindow_ctor_dlc(win, 2);
         this->dlcMenu = win;
     }
-    reinterpret_cast<uint8_t*>(&this->modalFlags)[2] = 1;
+    reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[2] = 1;
 
     int *bx = Globals::sub_menu_buttons_x;
     int *by = Globals::sub_menu_buttons_y;
@@ -3253,7 +3254,7 @@ void ModStation::showCBSMessage() {
     ChoiceWindow_set_cbs(cw, title, &ok, 1, &emptyA, &emptyB, &emptyA, -1, -1);
 
     reinterpret_cast<uint8_t*>(&this->hintFlags)[1] = 1;
-    reinterpret_cast<uint8_t*>(&this->modalFlags)[3] = 1;
+    reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
 }
 
 int GameText_getText_frag(int id);
