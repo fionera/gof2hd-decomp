@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.55,
-  "byte_exact": 1134,
-  "linked_exact": 2231,
-  "fuzzy_perfect": 2231,
+  "avg_match": 73.57,
+  "byte_exact": 1135,
+  "linked_exact": 2232,
+  "fuzzy_perfect": 2232,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -9608,14 +9608,6 @@
    "usize": 26
   },
   {
-   "name": "_ZN8Standing11getStandingEi",
-   "pct": 48.0,
-   "byte": false,
-   "linked": false,
-   "osize": 56,
-   "usize": 56
-  },
-  {
    "name": "_ZN9PlayerEgo13setTurretModeEb",
    "pct": 48.1,
    "byte": false,
@@ -9694,14 +9686,6 @@
    "linked": false,
    "osize": 52,
    "usize": 56
-  },
-  {
-   "name": "_ZN8Standing15getMissionBonusEi",
-   "pct": 48.5,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 92
   },
   {
    "name": "_ZN8Standing8isFriendEi",
@@ -12310,6 +12294,14 @@
    "linked": false,
    "osize": 82,
    "usize": 74
+  },
+  {
+   "name": "_ZN8Standing15getMissionBonusEi",
+   "pct": 61.3,
+   "byte": false,
+   "linked": false,
+   "osize": 84,
+   "usize": 80
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager8SoundSetEPKNS_11AESoundInfoEi",
@@ -33086,6 +33078,14 @@
    "linked": true,
    "osize": 38,
    "usize": 38
+  },
+  {
+   "name": "_ZN8Standing11getStandingEi",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 56,
+   "usize": 56
   },
   {
    "name": "_ZN8Standing11setStandingEii",

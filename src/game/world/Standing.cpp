@@ -61,18 +61,18 @@ unsigned Standing::isNeutral(int race) {
 int Standing::getStanding(int race) {
     int cr = this->currentRace;
     if (cr >= 0) {
-        if (race == 1) {
-            int r = 0x46;
-            if (cr == 2) r = 100;
-            if (cr == 3) r = -100;
-            return r;
-        }
-        if (race != 0) {
+        if (race != 1) {
+            if (race == 0) {
+                int r = 0x46;
+                if (cr == 0) r = 100;
+                if (cr == 1) r = -100;
+                return r;
+            }
             return this->standings[race];
         }
         int r = 0x46;
-        if (cr == 0) r = 100;
-        if (cr == 1) r = -100;
+        if (cr == 2) r = 100;
+        if (cr == 3) r = -100;
         return r;
     }
     return this->standings[race];
@@ -199,22 +199,23 @@ float Standing::getMissionBonus(int race) {
     float s0;
     switch (race) {
         case 0:
-            s0 = (float) this->standings[0];
-            break;
-        case 1:
             s0 = (float) (-this->standings[0]);
             break;
+        case 1:
+            s0 = (float) this->standings[0];
+            break;
         case 2:
-            s0 = (float) this->standings[1];
+            s0 = (float) (-this->standings[1]);
             break;
         case 3:
-            s0 = (float) (-this->standings[1]);
+            s0 = (float) this->standings[1];
             break;
         default:
             return 0.0f;
     }
     float r = s0 / 100.0f;
-    return r > 0.0f ? r : 0.0f;
+    if (r < 0.0f) r = 0.0f;
+    return r;
 }
 
 void Standing::applyDisable(int race) {
