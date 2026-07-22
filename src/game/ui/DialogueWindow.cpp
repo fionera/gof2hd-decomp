@@ -64,9 +64,10 @@ int DialogueWindow::length() {
 }
 
 int DialogueWindow::nextPage() {
+    int currentPage = this->page;
     int len = this->length();
-    if (this->page < len - 1) {
-        this->page = this->page + 1;
+    if (currentPage < len - 1) {
+        this->page = currentPage + 1;
         this->loadContent();
         return 1;
     }
@@ -81,8 +82,8 @@ DialogueWindow::~DialogueWindow() {
     if (this->faceParts != 0) {
         ArrayReleaseClasses(*this->faceParts);
         delete this->faceParts;
-        this->faceParts = 0;
     }
+    this->faceParts = 0;
 
     delete[] this->briefingOffsets;
     this->briefingOffsets = 0;
@@ -98,17 +99,6 @@ DialogueWindow::~DialogueWindow() {
     this->nextButton = 0;
     delete this->moreButton;
     this->moreButton = 0;
-
-    {
-        if (this->agentName.data) delete[] this->agentName.data;
-        this->agentName.data = nullptr;
-        this->agentName.length = 0;
-    }
-    {
-        if (this->bodyText.data) delete[] this->bodyText.data;
-        this->bodyText.data = nullptr;
-        this->bodyText.length = 0;
-    }
 }
 
 int DialogueWindow::OnTouchMove(int x, int y) {
@@ -288,16 +278,6 @@ void DialogueWindow::loadContent() {
 }
 
 DialogueWindow::DialogueWindow() {
-    {
-        if (this->bodyText.data) delete[] this->bodyText.data;
-        this->bodyText.data = nullptr;
-        this->bodyText.length = 0;
-    }
-    {
-        if (this->agentName.data) delete[] this->agentName.data;
-        this->agentName.data = nullptr;
-        this->agentName.length = 0;
-    }
     this->init();
 }
 
@@ -390,12 +370,12 @@ int DialogueWindow::init() {
     int briefingSum = 0;
     int successSum = 0;
     for (int i = 0; i != 0xa2; ++i) {
-        int briefingCount = g_dw_briefingPartCounts[i];
         int successCount = g_dw_successPartCounts[i];
+        int briefingCount = g_dw_briefingPartCounts[i];
         this->briefingOffsets[i] = briefingSum;
         this->successOffsets[i] = successSum;
-        successSum += briefingCount;
-        briefingSum += successCount;
+        successSum += successCount;
+        briefingSum += briefingCount;
     }
 
     this->agentName = String(g_dw_defaultAgentName, false);
@@ -457,21 +437,10 @@ static const char g_dw_emptyString[] = "";
 
 
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
-    {
-        if (this->bodyText.data) delete[] this->bodyText.data;
-        this->bodyText.data = nullptr;
-        this->bodyText.length = 0;
-    }
-    {
-        if (this->agentName.data) delete[] this->agentName.data;
-        this->agentName.data = nullptr;
-        this->agentName.length = 0;
-    }
     this->init();
 
     String blank(g_dw_emptyString, false);
-    String copy;
-    copy.Set((text)->data);
+    String copy(*text, false);
     this->scrollWindow->setText(blank, copy);
 
     this->moreButton->setVisible(false);
@@ -496,16 +465,6 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
 }
 
 DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
-    {
-        if (this->bodyText.data) delete[] this->bodyText.data;
-        this->bodyText.data = nullptr;
-        this->bodyText.length = 0;
-    }
-    {
-        if (this->agentName.data) delete[] this->agentName.data;
-        this->agentName.data = nullptr;
-        this->agentName.length = 0;
-    }
     this->init();
     this->level = level;
     this->set(mission, kind, -1);
@@ -570,13 +529,9 @@ void DialogueWindow::draw() {
     Globals::Canvas->SetColor((unsigned int) -1);
     Layout *layout = Globals::layout;
     layout->drawMask();
-    String title;
-    title.Set((this->agentName).data);
-    layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, title, 1);
     {
-        if (title.data) delete[] title.data;
-        title.data = nullptr;
-        title.length = 0;
+        String title(this->agentName, false);
+        layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, title);
     }
 
     this->scrollWindow->draw();
@@ -596,18 +551,13 @@ void DialogueWindow::draw() {
     }
 
     if (Globals::is_choice_window_visible == 0) {
-        Vector pos;
         if (this->moreButton != 0) {
-            pos = this->moreButton->getPosition();
-            Globals::other_buttons_x[2] = (int) pos.x;
-            pos = this->moreButton->getPosition();
-            Globals::other_buttons_y[2] = (int) pos.y;
+            Globals::other_buttons_x[2] = (int) this->moreButton->getPosition().x;
+            Globals::other_buttons_y[2] = (int) this->moreButton->getPosition().y;
         }
         if (this->nextButton != 0) {
-            pos = this->nextButton->getPosition();
-            Globals::other_buttons_x[3] = (int) pos.x;
-            pos = this->nextButton->getPosition();
-            Globals::other_buttons_y[3] = (int) pos.y;
+            Globals::other_buttons_x[3] = (int) this->nextButton->getPosition().x;
+            Globals::other_buttons_y[3] = (int) this->nextButton->getPosition().y;
         }
         Globals::is_dialogue_window_visible = 1;
     }
