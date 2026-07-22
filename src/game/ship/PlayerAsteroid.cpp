@@ -242,21 +242,20 @@ void PlayerAsteroid::push(int delta) {
 
     Matrix identity;
     identity = AbyssEngine::AEMath::Matrix();
-    Matrix rotation;
-    MatrixSetRotation(rotation, t * this->pushSpin().x, t * this->pushSpin().y,
+    MatrixSetRotation(identity, t * this->pushSpin().x, t * this->pushSpin().y,
                       t * this->pushSpin().z);
 
     int frameDelta = this->lastDelta;
     AEGeometry *geometry = this->geometry;
     if (frameDelta > 0) {
         Matrix geometryMatrix = geometry->getMatrix();
-        Matrix combined = rotation * geometryMatrix;
+        Matrix combined = geometryMatrix * identity;
         geometry->setMatrix(combined);
         frameDelta = this->lastDelta;
     }
 
     Vector baseMove = this->pushDirection() * ((float) frameDelta);
-    float scale = (2.0f - t) * 3.0f * ((float) this->pushDuration() / 1000.0f);
+    float scale = (2.0f - t) * 3.0f * ((float) this->pushDuration() / 5000.0f);
     Vector move = baseMove * scale;
     geometry->translate(move);
 }

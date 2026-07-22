@@ -7088,14 +7088,6 @@
    "usize": 104
   },
   {
-   "name": "_ZN14PlayerAsteroid4pushEi",
-   "pct": 35.5,
-   "byte": false,
-   "linked": false,
-   "osize": 328,
-   "usize": 288
-  },
-  {
    "name": "_ZN6Status15unlockBluePrintEi",
    "pct": 35.6,
    "byte": false,
@@ -7590,6 +7582,14 @@
    "linked": false,
    "osize": 140,
    "usize": 84
+  },
+  {
+   "name": "_ZN14PlayerAsteroid4pushEi",
+   "pct": 37.9,
+   "byte": false,
+   "linked": false,
+   "osize": 328,
+   "usize": 272
   },
   {
    "name": "_ZN12ImageFactory8drawItemEiii",
