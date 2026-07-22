@@ -350,30 +350,20 @@ void Level::enableParticleEffects(bool emit, bool render) {
 }
 
 void Level::switchSkyboxForIntro() {
-    unsigned int skyboxMeshHandle;
-    Globals::Canvas->MeshCreate((unsigned short) (0x4591), skyboxMeshHandle, false);
-    skyboxMesh = skyboxMeshHandle;
-    unsigned int skyboxTexHandle;
-    Globals::Canvas->TextureCreate((unsigned short) (0x275a), nullptr, nullptr, skyboxTexHandle, false);
-    field_198 = skyboxTexHandle;
+    Globals::Canvas->MeshCreate((unsigned short) (0x4591), (unsigned int &) skyboxMesh, false);
+    Globals::Canvas->TextureCreate((unsigned short) (0x275a), (unsigned int &) field_198, false);
     if (this->asteroids != nullptr) {
         for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
-            (*this->asteroids)[i]->setActive(false);
+            (*this->asteroids)[i]->setDead();
         }
     }
 }
 
 void Level::switchSkyboxForSupernovaReversal() {
     int tex = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
-    unsigned int skyboxMeshHandle;
-    Globals::Canvas->MeshCreate((unsigned short) ((unsigned short) (tex + 0x4588)), skyboxMeshHandle, false);
-    skyboxMesh = skyboxMeshHandle;
+    Globals::Canvas->MeshCreate((unsigned short) ((unsigned short) (tex + 0x4588)), (unsigned int &) skyboxMesh, false);
     int tex2 = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
-    unsigned int skyboxTexHandle;
-    Globals::Canvas->TextureCreate((unsigned short) ((unsigned short) (tex2 + 0x2751)), nullptr, nullptr,
-                                   skyboxTexHandle,
-                                   false);
-    field_198 = skyboxTexHandle;
+    Globals::Canvas->TextureCreate((unsigned short) ((unsigned short) (tex2 + 0x2751)), (unsigned int &) field_198, false);
     skyboxTexture = -1;
 }
 
@@ -532,10 +522,6 @@ Array<KIPlayer *> *Level::getLandmarks() {
     return landmarks;
 }
 
-static inline void actorPreRender(KIPlayer *o, int ctx) {
-    o->update(ctx);
-}
-
 void Level::render(int ctx) {
     if (this->playerGuns != nullptr) {
         for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
@@ -549,31 +535,27 @@ void Level::render(int ctx) {
     }
     if (this->enemies != nullptr) {
         for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
-            KIPlayer *o = (*this->enemies)[i];
-            actorPreRender(o, ctx);
-            o->render();
+            (*this->enemies)[i]->update(ctx);
+            (*this->enemies)[i]->render();
         }
     }
     if (this->asteroids != nullptr) {
         for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
-            KIPlayer *o = (*this->asteroids)[i];
-            actorPreRender(o, ctx);
-            o->render();
+            (*this->asteroids)[i]->update(ctx);
+            (*this->asteroids)[i]->render();
         }
     }
     if (this->gasClouds != nullptr) {
         for (unsigned int i = 0; i < this->gasClouds->size(); i = i + 1) {
-            KIPlayer *o = (*this->gasClouds)[i];
-            actorPreRender(o, ctx);
-            o->render();
+            (*this->gasClouds)[i]->update(ctx);
+            (*this->gasClouds)[i]->render();
         }
     }
     if (this->landmarks != nullptr) {
         for (unsigned int i = 0; i < this->landmarks->size(); i = i + 1) {
-            KIPlayer *o = (*this->landmarks)[i];
-            if (o != nullptr) {
-                actorPreRender(o, ctx);
-                o->render();
+            if ((*this->landmarks)[i] != nullptr) {
+                (*this->landmarks)[i]->update(ctx);
+                (*this->landmarks)[i]->render();
             }
         }
     }
@@ -607,8 +589,7 @@ void Level::render(int ctx) {
     if (field_9c != 0) {
         field_9c->render3d();
     }
-    if (starSystem != 0)
-        starSystem->renderSunStreak();
+    starSystem->renderSunStreak();
 }
 
 int Level::collideStream(Vector v) {
@@ -4314,7 +4295,6 @@ void Level::createSentryGuns() {
         if (enemies == nullptr) {
             enemies = new Array<KIPlayer *>();
         }
-        int color = 0x9923e035;
         for (unsigned int i = 0; i < field_b0->size(); i = i + 1) {
             int obj = createStaticObject((Waypoint *) (intptr_t) 0, i / 3 + 0x49c0, 1);
             (*field_b0)[i] = (KIPlayer *) (intptr_t) obj;
@@ -4322,7 +4302,8 @@ void Level::createSentryGuns() {
             k->player->setRadius(800);
             k->player->setAlwaysFriend(1);
             k->player->setMaxHitpoints(100);
-            k->setPosition((float) color, (float) color, (float) color);
+            k->setPosition(50000.0f, 50000.0f, 50000.0f);
+            k->setActive(false);
             ArrayAdd(k, *enemies);
         }
     }
@@ -6143,11 +6124,9 @@ void Level::attackWanted(int index) {
     if (field_29c == 0) {
         field_29c = 1;
         createRadioMessage(0x10, index);
-        int **slot = (int **) &Globals::status;
-
-        Wanted *wanted = (Wanted *) (intptr_t)(((int *) (*(int *) ((*(int *) *slot) + 4)))[index]);
-        int numWingmen = (wanted != nullptr) ? wanted->getNumWingmen() : 0;
-        for (int i = 1; i - 1 < numWingmen; i = i + 1) {
+        for (int i = 1;
+             i - 1 < (*Globals::status->wanted)[index]->getNumWingmen();
+             i = i + 1) {
             (*enemies)[i]->player->setAlwaysEnemy(1);
             (*enemies)[i]->player->turnEnemy();
         }

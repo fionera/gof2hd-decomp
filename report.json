@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 74.26,
+  "avg_match": 74.31,
   "byte_exact": 1140,
-  "linked_exact": 2302,
-  "fuzzy_perfect": 2302,
+  "linked_exact": 2304,
+  "fuzzy_perfect": 2304,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -6208,22 +6208,6 @@
    "usize": 84
   },
   {
-   "name": "_ZN11AbyssEngine12GlowPPShaderC1Ev",
-   "pct": 33.3,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 84
-  },
-  {
-   "name": "_ZN11AbyssEngine12GlowPPShaderC2Ev",
-   "pct": 33.3,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 84
-  },
-  {
    "name": "_ZN11AbyssEngine16AESoundRessource9setVolumeEii",
    "pct": 33.3,
    "byte": false,
@@ -6849,6 +6833,22 @@
   },
   {
    "name": "_ZN11AbyssEngine12EnergyShieldC2Ev",
+   "pct": 35.1,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 84
+  },
+  {
+   "name": "_ZN11AbyssEngine12GlowPPShaderC1Ev",
+   "pct": 35.1,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 84
+  },
+  {
+   "name": "_ZN11AbyssEngine12GlowPPShaderC2Ev",
    "pct": 35.1,
    "byte": false,
    "linked": false,
@@ -7800,14 +7800,6 @@
    "usize": 184
   },
   {
-   "name": "_ZN5Level12attackWantedEi",
-   "pct": 39.5,
-   "byte": false,
-   "linked": false,
-   "osize": 108,
-   "usize": 116
-  },
-  {
    "name": "_ZN9Explosion5startERKN11AbyssEngine6AEMath6VectorES4_",
    "pct": 39.5,
    "byte": false,
@@ -8072,28 +8064,12 @@
    "usize": 756
   },
   {
-   "name": "_ZN5Level6renderEi",
-   "pct": 40.3,
-   "byte": false,
-   "linked": false,
-   "osize": 400,
-   "usize": 384
-  },
-  {
    "name": "_ZN5MGame12successCheckEv",
    "pct": 40.3,
    "byte": false,
    "linked": false,
    "osize": 1468,
    "usize": 1360
-  },
-  {
-   "name": "_ZN5Level32switchSkyboxForSupernovaReversalEv",
-   "pct": 40.4,
-   "byte": false,
-   "linked": false,
-   "osize": 108,
-   "usize": 124
   },
   {
    "name": "_ZN6Sprite10drawRegionEiiii",
@@ -10200,14 +10176,6 @@
    "usize": 72
   },
   {
-   "name": "_ZN5Level20switchSkyboxForIntroEv",
-   "pct": 50.7,
-   "byte": false,
-   "linked": false,
-   "osize": 80,
-   "usize": 112
-  },
-  {
    "name": "_ZN9BluePrint7addItemEP4Itemii",
    "pct": 50.9,
    "byte": false,
@@ -10502,14 +10470,6 @@
    "linked": false,
    "osize": 62,
    "usize": 64
-  },
-  {
-   "name": "_ZN5Level16createSentryGunsEv",
-   "pct": 52.9,
-   "byte": false,
-   "linked": false,
-   "osize": 232,
-   "usize": 228
   },
   {
    "name": "_ZN7Station8setItemsEP5ArrayIP4ItemEb",
@@ -10998,6 +10958,14 @@
    "linked": false,
    "osize": 140,
    "usize": 116
+  },
+  {
+   "name": "_ZN5Level16createSentryGunsEv",
+   "pct": 56.6,
+   "byte": false,
+   "linked": false,
+   "osize": 232,
+   "usize": 236
   },
   {
    "name": "_zip_file_get_offset",
@@ -12310,6 +12278,14 @@
    "linked": false,
    "osize": 284,
    "usize": 272
+  },
+  {
+   "name": "_ZN5Level32switchSkyboxForSupernovaReversalEv",
+   "pct": 64.2,
+   "byte": false,
+   "linked": false,
+   "osize": 108,
+   "usize": 104
   },
   {
    "name": "_ZN9PlayerEgo6rotateEfff",
@@ -15854,6 +15830,14 @@
    "linked": false,
    "osize": 572,
    "usize": 584
+  },
+  {
+   "name": "_ZN5Level12attackWantedEi",
+   "pct": 90.2,
+   "byte": false,
+   "linked": false,
+   "osize": 108,
+   "usize": 108
   },
   {
    "name": "_ZN11AbyssEngine11CubeMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -29160,6 +29144,14 @@
    "usize": 46
   },
   {
+   "name": "_ZN5Level20switchSkyboxForIntroEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 80,
+   "usize": 80
+  },
+  {
    "name": "_ZN5Level21enableParticleEffectsEbb",
    "pct": 100.0,
    "byte": false,
@@ -29198,6 +29190,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN5Level6renderEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 400,
+   "usize": 400
   },
   {
    "name": "_ZN5Level7collideEN11AbyssEngine6AEMath6VectorEb",
