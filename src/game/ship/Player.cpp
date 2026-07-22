@@ -56,8 +56,6 @@ void MatrixGetPosition(void *out, float *matrix); // lint: void_ptr (external sy
 
 static int gStopSoundIds[256];
 
-void Gun_setEnemies(void *gun); // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
-
 static int gShootSoundsByType[256];
 static int gShootSoundsByIndex[256];
 
@@ -917,9 +915,7 @@ void Player::setEnemies(Array<Player *> *enemies) {
     if (enemies != 0) {
         Array<Player *> *copy = new Array<Player *>();
         this->enemies = copy;
-        for (unsigned int i = 0; i < enemies->size(); i++) {
-            ArrayAdd(enemies->data()[i], *copy);
-        }
+        ArrayAdd(*enemies, *copy);
     }
     Array<Array<Gun *> *> *guns = this->guns;
     if (guns != 0) {
@@ -929,7 +925,7 @@ void Player::setEnemies(Array<Player *> *enemies) {
                 for (unsigned int j = 0; j < slot->size(); j++) {
                     Gun *gun = slot->data()[j];
                     if (gun != 0) {
-                        Gun_setEnemies(gun);
+                        gun->setEnemies(this->enemies);
                         guns = this->guns;
                         slot = guns->data()[i];
                     }

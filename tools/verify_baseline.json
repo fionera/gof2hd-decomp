@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1138,
-  "linked_exact": 2286,
+  "linked_exact": 2287,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 73.91,
+  "avg_match": 73.93,
   "compared": 4523
  },
  "imports": [
@@ -72,7 +72,6 @@
   "_Z14FModSound_ctorPv",
   "_Z14FloatVectorMaxPvffii",
   "_Z14Generator_ctorPv",
-  "_Z14Gun_setEnemiesPv",
   "_Z14Hud_loadImagesP3Hud",
   "_Z14MatrixGetRightPcPKN11AbyssEngine6AEMath6MatrixE",
   "_Z14MatrixIdentityPvS_",

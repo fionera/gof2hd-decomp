@@ -452,7 +452,7 @@ unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) { // lint
             goto found;
     }
 
-    return touchBegin(a, (unsigned int) -1, key);
+    return touchBegin(a, b, key);
 found:
     int dx = (int) a - (int) this->reticleX;
     int dy = (int) b - (int) this->reticleY;

@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.91,
+  "avg_match": 73.93,
   "byte_exact": 1138,
-  "linked_exact": 2286,
-  "fuzzy_perfect": 2286,
+  "linked_exact": 2287,
+  "fuzzy_perfect": 2287,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -4240,14 +4240,6 @@
    "usize": 880
   },
   {
-   "name": "_ZN12StatusWindow16getMedalHintTextEi",
-   "pct": 23.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1132,
-   "usize": 1188
-  },
-  {
    "name": "_ZN9PlayerEgo6renderEb",
    "pct": 23.7,
    "byte": false,
@@ -4278,6 +4270,14 @@
    "linked": false,
    "osize": 2368,
    "usize": 2048
+  },
+  {
+   "name": "_ZN12StatusWindow16getMedalHintTextEi",
+   "pct": 23.9,
+   "byte": false,
+   "linked": false,
+   "osize": 1132,
+   "usize": 1188
   },
   {
    "name": "_ZN17PlayerFixedObject5resetEv",
@@ -11016,6 +11016,22 @@
    "usize": 50
   },
   {
+   "name": "_ZN10MiningGameC1EiiP3Hud",
+   "pct": 55.5,
+   "byte": false,
+   "linked": false,
+   "osize": 972,
+   "usize": 892
+  },
+  {
+   "name": "_ZN10MiningGameC2EiiP3Hud",
+   "pct": 55.5,
+   "byte": false,
+   "linked": false,
+   "osize": 972,
+   "usize": 892
+  },
+  {
    "name": "_ZN11AbyssEngine12GlowPPShader12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineE",
    "pct": 55.6,
    "byte": false,
@@ -11038,22 +11054,6 @@
    "linked": false,
    "osize": 308,
    "usize": 268
-  },
-  {
-   "name": "_ZN10MiningGameC1EiiP3Hud",
-   "pct": 55.8,
-   "byte": false,
-   "linked": false,
-   "osize": 972,
-   "usize": 892
-  },
-  {
-   "name": "_ZN10MiningGameC2EiiP3Hud",
-   "pct": 55.8,
-   "byte": false,
-   "linked": false,
-   "osize": 972,
-   "usize": 892
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas20TransformRemoveChildEjj",
@@ -12352,14 +12352,6 @@
    "usize": 324
   },
   {
-   "name": "_ZN6Player10setEnemiesEP5ArrayIPS_E",
-   "pct": 62.5,
-   "byte": false,
-   "linked": false,
-   "osize": 132,
-   "usize": 148
-  },
-  {
    "name": "deflateParams",
    "pct": 62.5,
    "byte": false,
@@ -13240,6 +13232,14 @@
    "usize": 168
   },
   {
+   "name": "_ZN7Mission12calcDistanceEv",
+   "pct": 68.1,
+   "byte": false,
+   "linked": false,
+   "osize": 132,
+   "usize": 128
+  },
+  {
    "name": "_ZN7Mission7getNameEv",
    "pct": 68.1,
    "byte": false,
@@ -13456,14 +13456,6 @@
    "usize": 44
   },
   {
-   "name": "_ZN7Mission12calcDistanceEv",
-   "pct": 69.6,
-   "byte": false,
-   "linked": false,
-   "osize": 132,
-   "usize": 128
-  },
-  {
    "name": "_ZN11AbyssEngine12EnergyShield4InitEPNS_6EngineE",
    "pct": 69.7,
    "byte": false,
@@ -13606,14 +13598,6 @@
    "linked": false,
    "osize": 140,
    "usize": 138
-  },
-  {
-   "name": "_ZN3Hud9touchMoveEjjPv",
-   "pct": 70.1,
-   "byte": false,
-   "linked": false,
-   "osize": 204,
-   "usize": 204
   },
   {
    "name": "_ZN11AbyssEngine11NoTexShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -16550,6 +16534,14 @@
    "linked": false,
    "osize": 112,
    "usize": 108
+  },
+  {
+   "name": "_ZN3Hud9touchMoveEjjPv",
+   "pct": 92.8,
+   "byte": false,
+   "linked": false,
+   "osize": 204,
+   "usize": 204
   },
   {
    "name": "_Z18ArrayReleaseArraysIPaEvR5ArrayIT_E",
@@ -30046,6 +30038,14 @@
    "linked": true,
    "osize": 34,
    "usize": 34
+  },
+  {
+   "name": "_ZN6Player10setEnemiesEP5ArrayIPS_E",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 132,
+   "usize": 132
   },
   {
    "name": "_ZN6Player11getEmpForceEv",
