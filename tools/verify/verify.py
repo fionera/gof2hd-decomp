@@ -143,7 +143,7 @@ def qualified(demangled):
     return s[cut + 1:] if cut >= 0 else s
 
 
-def normalize(insn, blob_size, base, resolver):
+def normalize(insn, blob_size, base, resolver, off=0):
     """Structural form of one instruction (see module docstring for the rules)."""
     parts = insn.split(None, 1)
     if len(parts) == 2 and BRANCH.match(parts[0]):
@@ -158,11 +158,12 @@ def normalize(insn, blob_size, base, resolver):
             else:
                 addr = (base + t) & 0xFFFFFFFF
                 if mnem.startswith("blx"):
-                    # Thumb->ARM interworking: hardware computes the target from Align(PC,4),
-                    # but the blob is disassembled at offset 0 while the real function may
-                    # start at addr = 2 (mod 4) -- the naive sum then lands 2 bytes past the
-                    # (4-aligned) ARM/PLT entry and resolution fails on that side only.
-                    addr &= ~3
+                    # Thumb->ARM interworking computes the target from Align(PC,4).  objdump
+                    # printed t = Align(off+4,4)+imm for the blob at address 0; at the real
+                    # address the same encoding reaches Align(base+off+4,4)+imm.  For a
+                    # function base = 2 (mod 4) the naive base+t is off by +-2 depending on
+                    # the call site's offset parity, so rebuild the target exactly.
+                    addr = (t - ((off + 4) & ~3) + ((base + off + 4) & ~3)) & 0xFFFFFFFF
                 name = resolver.resolve(addr) if resolver else None
                 sub = f"sym:{name}" if name else "#X"
             insn = f"{mnem}\t{ops[:m.start()]}{sub}{ops[m.end():]}"
@@ -225,7 +226,7 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
         elif addr in pool:
             norm.append(pool_norm(blob, addr, resolver))
         else:
-            norm.append(normalize(insn, len(blob), base, resolver))
+            norm.append(normalize(insn, len(blob), base, resolver, addr))
     return raw, norm
 
 
