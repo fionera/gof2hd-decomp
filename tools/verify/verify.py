@@ -156,7 +156,14 @@ def normalize(insn, blob_size, base, resolver):
             if t < blob_size:
                 sub = f"loc_{t:x}"          # function-relative: compare literally
             else:
-                name = resolver.resolve((base + t) & 0xFFFFFFFF) if resolver else None
+                addr = (base + t) & 0xFFFFFFFF
+                if mnem.startswith("blx"):
+                    # Thumb->ARM interworking: hardware computes the target from Align(PC,4),
+                    # but the blob is disassembled at offset 0 while the real function may
+                    # start at addr = 2 (mod 4) -- the naive sum then lands 2 bytes past the
+                    # (4-aligned) ARM/PLT entry and resolution fails on that side only.
+                    addr &= ~3
+                name = resolver.resolve(addr) if resolver else None
                 sub = f"sym:{name}" if name else "#X"
             insn = f"{mnem}\t{ops[:m.start()]}{sub}{ops[m.end():]}"
     # remaining absolute hex operands legitimately differ between two independent links
