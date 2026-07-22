@@ -2,6 +2,31 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-22 (wave 10 — mid-band 35-60% cont., 8 workers, 5/8 left edits, 5/5 landed)
+
+Pool: diffs10 (35-60 band, 67 fns). Workflow wf_94a96e14-19d. 3 workers died mid-response
+(radar, recordhandler2, modstation) leaving NO tree edits; the other 5 all landed.
+Net: byte 1140->1141, linked 2301->2306 (+5), avg 74.25->74.34, imports 1037 (unchanged —
+fmodsound worker did NOT add the 7 true FMOD imports; those fns are canary/flag-blocked).
+- e70162f0 fmodsound: resume(Event*) `sys = this->system` pre-condition local forces
+  mov r2,r0 / movs r0,#0 early-init ->100 linked; pause s[2] buffer sp-offset fix 35.5->41.9.
+  5 fns blocked: orig has stack canaries our -fstack-protector doesn't emit (ptr-array
+  locals canaried in orig => orig likely -fstack-protector-strong). Flag-blocked class.
+- a07e0f66 level: render — removed cached-element locals for double-fetch `(*arr)[i]->`
+  pattern + unconditional renderSunStreak tail call ->100 linked; switchSkyboxForIntro ->100
+  linked (source was already right; diff was vs stale bin); attackWanted 39.5->90.2,
+  supernovaReversal 40.4->64.2. createSentryGuns: clang 7.0.2 reg-allocator defect
+  (this not restored to r0 after __aeabi_uidiv) — unfixable from source, documented.
+- aa070847 playerfixed: getPosition ->100 BYTE-exact. PlayerFighter untouched.
+- 5fb4dacf particlesprite: render 44.0->69.7 (GlowPPShader C1/C2 -1.8 wobble, untouched TU).
+- 7fbbaaa6 scrolltouch: ctor C1/C2 45.2->76.8, setText String(text,false) temps +10/+5;
+  draw/drawTextBG hunks REGRESSED (drawBox 6-arg overload + drawWindow temp reshape were
+  both wrong) — reverted those two only; Achievements::getValue wobbler flipped ->100 linked.
+Learnings: (a) double-fetch `(*arr)[i]->f(); (*arr)[i]->g();` beats cached-element locals
+for -Oz reg-alloc match in render loops; (b) `T *x = this->field;` before an early-out
+check forces the orig's early default-return init pattern; (c) widening a stack out-buffer
+(s[1]->s[2]) relocates it to sp+0 to match `mov r1,sp` shapes.
+
 ## Session 2026-07-22 (wave 9 — mid-band 35-60% breadth, 8 workers, 6/8 landed)
 
 Pool: diffs9 (35-60 band). Workflow wf_6f0475b8-3f7. 3 workers stalled + 1 died, but ALL
