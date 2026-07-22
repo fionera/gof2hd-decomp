@@ -2,6 +2,55 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-22 (wave 6 — near-miss pool >=85%, 9 workers, 7/8 patches landed)
+
+9 disjoint workers on the pct>=85 near-miss pool (diffs6 dumps, 123 fns; shader zoo excluded
+as the exclusive TU-pooling item; String D0 excluded as unfixable). All 9 returned; 8 edited
+files, wanted_status found all 12 fns blocked (ARM-mode-PLT-stub / register-scheduling causes)
+and correctly edited nothing. Serial salvage: snapshot patches6/, revert, per-item gate.
+
+Landed (net: byte 1136->1137, linked 2242->2271 (+29), avg 73.73->73.79, imports 1090->1081):
+- 0bd604cb paintcanvas: 9 fake paintcanvas_ext_* shim imports -> real member calls; 12 fns
+  linked. ORCHESTRATOR FIX REQUIRED: worker rewrote the 6-arg DrawTextLines logic (flag==0
+  right-align via p5) into a copy of the 5-arg center logic — restored orig logic + member
+  calls, then BOTH overloads linked. Import shrink locked deliberately (convergence).
+  Collateral: Station isAttackedByAliens/visit/isDiscovered linked->fuzzy (GOT reshuffle
+  from import removal; expected to return as imports converge).
+- d214f64c string: dropped redundant length(0) member-init from 7 delegating-to-Set String
+  ctors (+10 linked; orig's Set() zeros data/length itself, vtable strd covers data).
+- 254eb5c4 agent: +6 linked (ctor/dtor pairs, getSystemName/getStationName via 2-arg
+  String(src,false)). ODDITY: getMissionString same transform sits at 83.3, but reverting it
+  alone flips the two GOOD getters to 83.3 (TU fold/ordering interplay) — kept full-patch
+  state (net +2 linked vs partial revert). getMissionString requeued as a single.
+- 5db3c3b4 geometry: AEGeomCanvas static wrappers -> direct PaintCanvas member calls
+  (+4 linked, movs r3,#0 bool materialization restored).
+- 07c13122 item: transactionBlueprint branch on fabricate (r1) not mode — BYTE-EXACT (+1).
+- b734c794 level_station: Station::getName linked (+1), uncoverWanted 87.5->90.
+- 6d4fb288 fighter_kiplayer: no linked flips but 4 real pct gains (KIPlayer dtor 93.8,
+  setMissionCrate 97.4); avg +0.01.
+Reverted: ship addMod compound-loop-condition attempt (86.3->83.0, regression).
+
+Learnings:
+- Fake-shim -> real-member-call conversion is the single richest near-miss vein: it fixes
+  bytes AND shrinks the import set (double gain). Grep for remaining *_ext_* shim decls.
+- Import-set changes reshuffle the GOT -> previously-linked fns in UNRELATED TUs can flip
+  linked->fuzzy. Not a real regression; ratchet nets it; note in commit and move on.
+- Same-shape sibling getters can be codegen-coupled through the TU (Agent getters): judge
+  keep/revert on NET linked count, not per-fn.
+- The dominant blocked cause this wave: -Oz defers callee-saved register moves until after
+  an early cbz/cmp exit, original saves them before. Not controllable from source; a large
+  standing class of ~95% fns (most of Ship) is parked on this compiler-scheduling wall.
+- Ship D1/D2 needs __clang_call_terminate; worker's analysis: requires a throwing dtor in
+  the destruction path (Item::~Item is implicitly noexcept) — same EH-cascade family as
+  AEPak/AENormal, but the trigger must come from Item's TU (cross-file, orchestrator item).
+
+Queue after wave 6: near-miss singles left: Agent::getMissionString (83.3, coupled),
+Level::uncoverWanted (90), KIPlayer dtor/setShipGroup (93+), setMissionCrate (97.4),
+Wanted/StatusWindow/WantedWindow all parked (PLT-stub-mode / scheduling). Next tiers:
+remaining *_ext_* fake-shim conversion sweep (import convergence), shader-zoo TU pooling
+(exclusive), monsters (Gun::shootAt, WantedWindow::draw/selectWanted, convertStringFromArabic),
+hard singles from wave-5 list.
+
 ## Session 2026-07-22 (wave 5 — MCP-free, 12 workers, 9/10 patches landed)
 
 12 disjoint workers on the hard-singles/retry pool (diffs5 dumps). Ship worker "stalled on all
