@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 74.06,
+  "avg_match": 74.07,
   "byte_exact": 1138,
   "linked_exact": 2290,
   "fuzzy_perfect": 2290,
@@ -2712,14 +2712,6 @@
    "usize": 2
   },
   {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
-  },
-  {
    "name": "_ZN16SystemPathFinder15getJumpDistanceEP5ArrayIP11SolarSystemEii",
    "pct": 15.4,
    "byte": false,
@@ -2758,6 +2750,14 @@
    "linked": false,
    "osize": 132,
    "usize": 152
+  },
+  {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -9584,14 +9584,6 @@
    "usize": 104
   },
   {
-   "name": "_ZN11TouchButton13touchedInsideEii",
-   "pct": 48.6,
-   "byte": false,
-   "linked": false,
-   "osize": 144,
-   "usize": 132
-  },
-  {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetOrigamiSuperClub",
    "pct": 48.8,
    "byte": false,
@@ -9662,14 +9654,6 @@
    "linked": false,
    "osize": 96,
    "usize": 60
-  },
-  {
-   "name": "_ZN6Layout8drawMaskEiiii",
-   "pct": 49.2,
-   "byte": false,
-   "linked": false,
-   "osize": 72,
-   "usize": 80
   },
   {
    "name": "_ZN20FileInterfaceAndroid5WriteEjPKv",
@@ -10264,6 +10248,14 @@
    "usize": 236
   },
   {
+   "name": "_ZN11TouchButton13touchedInsideEii",
+   "pct": 50.5,
+   "byte": false,
+   "linked": false,
+   "osize": 144,
+   "usize": 132
+  },
+  {
    "name": "_ZN11AbyssEngine11PaintCanvas7SuspendEv",
    "pct": 50.7,
    "byte": false,
@@ -10736,6 +10728,22 @@
    "usize": 1256
   },
   {
+   "name": "_ZN11TouchButtonC1ERKN11AbyssEngine6StringEiiiihhji",
+   "pct": 54.4,
+   "byte": false,
+   "linked": false,
+   "osize": 204,
+   "usize": 188
+  },
+  {
+   "name": "_ZN11TouchButtonC2ERKN11AbyssEngine6StringEiiiihhji",
+   "pct": 54.4,
+   "byte": false,
+   "linked": false,
+   "osize": 204,
+   "usize": 188
+  },
+  {
    "name": "_ZN14DialogueWindow10OnTouchEndEii",
    "pct": 54.4,
    "byte": false,
@@ -10848,22 +10856,6 @@
    "usize": 224
   },
   {
-   "name": "_ZN11TouchButtonC1ERKN11AbyssEngine6StringEiiiihhji",
-   "pct": 54.9,
-   "byte": false,
-   "linked": false,
-   "osize": 204,
-   "usize": 200
-  },
-  {
-   "name": "_ZN11TouchButtonC2ERKN11AbyssEngine6StringEiiiihhji",
-   "pct": 54.9,
-   "byte": false,
-   "linked": false,
-   "osize": 204,
-   "usize": 200
-  },
-  {
    "name": "zip_fclose",
    "pct": 54.9,
    "byte": false,
@@ -10944,14 +10936,6 @@
    "usize": 1128
   },
   {
-   "name": "_ZN11TouchButton11getPositionEv",
-   "pct": 55.6,
-   "byte": false,
-   "linked": false,
-   "osize": 30,
-   "usize": 30
-  },
-  {
    "name": "_ZN20FileInterfaceAndroid9FileExistEN11AbyssEngine6StringE",
    "pct": 55.7,
    "byte": false,
@@ -10998,6 +10982,14 @@
    "linked": false,
    "osize": 180,
    "usize": 160
+  },
+  {
+   "name": "_ZN6Layout8drawMaskEiiii",
+   "pct": 56.1,
+   "byte": false,
+   "linked": false,
+   "osize": 72,
+   "usize": 68
   },
   {
    "name": "_ZN11AbyssEngine10BlurShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -12848,6 +12840,14 @@
    "usize": 80
   },
   {
+   "name": "_ZN11TouchButton11getPositionEv",
+   "pct": 66.7,
+   "byte": false,
+   "linked": false,
+   "osize": 30,
+   "usize": 30
+  },
+  {
    "name": "_ZN12PlayerTurret10setScalingEf",
    "pct": 66.7,
    "byte": false,
@@ -14528,20 +14528,20 @@
    "usize": 62
   },
   {
+   "name": "_ZN10MiningGame6updateEi",
+   "pct": 79.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1184,
+   "usize": 1096
+  },
+  {
    "name": "_ZN11AbyssEngine17BumpRimCubeShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 79.4,
    "byte": false,
    "linked": false,
    "osize": 852,
    "usize": 796
-  },
-  {
-   "name": "_ZN10MiningGame6updateEi",
-   "pct": 79.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1184,
-   "usize": 1096
   },
   {
    "name": "_Z14ArrayAddCachedIPN11AbyssEngine4MeshEEvT_R5ArrayIS3_E",

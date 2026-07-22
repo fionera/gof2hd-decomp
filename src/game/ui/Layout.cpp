@@ -1405,7 +1405,6 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
 void Layout::drawMask(int x, int y, int w, int h) {
     PaintCanvas *pc = Globals::Canvas;
     unsigned saved = pc->GetColor();
-    pc->SetColor(this->drawColor);
     pc->FillRectangle(x, y, w, h);
     pc->SetColor(saved);
 }

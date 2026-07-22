@@ -88,8 +88,8 @@ void TouchButton::setSplitText(String const &value) {
 
 Vector TouchButton::getPosition() {
     Vector pos;
-    pos.x = static_cast<float>(this->x);
     pos.y = static_cast<float>(this->y);
+    pos.x = static_cast<float>(this->x);
     pos.z = 0.0f;
     return pos;
 }
@@ -680,7 +680,7 @@ bool TouchButton::touchedInside(int px, int py) {
     int h;
     int top;
     if (this->kind == 3) {
-        int v = *reinterpret_cast<int *>(&Globals::Canvas->engine);
+        int v = Globals::Canvas->field_0x38;
         if (xm1 + v > px)
             return false;
         if (this->width + ((x + 1) - v) <= px)
@@ -732,7 +732,7 @@ TouchButton::TouchButton(String const &text,
     short prev = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
     ((PaintCanvas *) (canvas))->FontSetSpacing(spacing, (short) kerning);
 
-    this->init(text, spacing, a, b, c, d, -1, -1, flags0, flags1);
+    this->init(text, 0xffffffffu, a, -1, -1, b, c, d, flags0, flags1);
 
     ((PaintCanvas *) (canvas))->FontSetSpacing(spacing, prev);
 }
@@ -749,6 +749,6 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, unsigned char f
     this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
 
     String tmp(g_TB_emptyStr, false);
-    this->init(tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
+    this->init(tmp, kind, a, -1, -1, b, c, 0, flag, 0x44);
 }
 
