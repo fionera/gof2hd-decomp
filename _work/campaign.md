@@ -2,6 +2,58 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-22 (wave 7 — shim-import convergence, 7 workers, 7/7 patches landed)
+
+STRATEGIC FINDING that drove this wave: the original has only 207 imports; we carried 1081,
+of which 893 are FABRICATED shim externs (fake decls marked "lint: void_ptr (external
+symbol...)"). Every fake shim call really targets an internal game function. Conversion
+recipe (now proven at scale): read the orig side's bl/blx target symbol in the diff dump,
+confirm the real callee is defined in our tree, rename the call — never touch logic.
+Also 19 TRUE imports still missing: 7 FMOD Event/EventSystem methods (FModSound family),
+__aeabi_l2d, unwind_cpp_pr0/pr1, __gnu_ldivmod_helper, fprintf/printf/sscanf/memcpy/
+memset/memalign/mkstemp/raise. orig import list cached at scratchpad/orig_imports.txt.
+
+7 workers on the pct>=60 pool of shim-heavy TUs (diffs7). All landed (one orchestrator fix):
+byte 1137->1138, linked 2271->2287 (+16), imports 1081->1053 (-28), avg 73.78->73.93.
+- 521ebcdd playerego: +7 linked (addGun x2 tail-call checkForTurret — the resetGunDelay
+  guess was wrong; setVisible cascades setExhaustVisible; 7 fns at orig byte count).
+- dc663718 paintcanvas2: +1 byte, -15 imports. ORCHESTRATOR FIX: worker made
+  paintcanvas_g_flipv a TU-global to defeat const-folding -> exported a symbol the orig
+  lacks -> sodiff extra-beyond-allow FAIL. Kept it static; MeshSetUv parked until the
+  real global's identity is known. Mask2D writes field_0x20 not mask2dImage@0x2c.
+  Cost: 5 wave-6 sprite/transform fns flipped linked->fuzzy — sole structural diff is
+  the blx ALIAS CHOICE (gold ICF fold direction shifted when new template instantiations
+  entered the TU). New wobble class alongside GOT reshuffle.
+- 32f354ae recordhandler: notEnoughMemory linked via (int) cast (signed it-lt vs it-cc);
+  writeAgent/writeWanted +16pct each (real AEFile::Write + NRVO). StarMap blocked:
+  READ-ONLY header layout drift (systemPath 148 vs 160) -> layout-item queue.
+- de3e5f42 starsystem_missions: +2 linked, -5 imports (typed ArrayReleaseClasses/dtor
+  calls; Transform::Update((longlong)dt,bool) ABI slot fix; Mission D1/D2 ICF-wobbled out).
+- 9dd13c28 menutouch: +3 linked, -7 imports (ChoiceWindow member calls; saveGame was
+  dropping the slot arg).
+- c40b3c81 cutscene: +3 linked (indexed loop shape in render3D; FogMode_1 in dtor).
+  SpaceLounge blocked: READ-ONLY header field drift (listVisible 0x1f vs 0x1c) -> layout.
+- 00434592 hud_player: +1 linked, -1 import (touchMove real y arg; setEnemies whole-array
+  ArrayAdd + gun->setEnemies). Player near-misses mostly reg-scheduling walls.
+
+Learnings:
+- Shim conversion is now the highest-yield tier and ~860 fakes remain; richest TUs still:
+  PaintCanvas (~470 decls left), MenuTouchWindow (~170), PlayerEgo (~60), below-60-pct fns
+  everywhere (this wave only covered fns >=60).
+- Import shrink causes GOT reshuffle AND gold-ICF fold-direction flips: a handful of
+  linked fns wobble out each wave with only a blx-alias structural diff; they tend to
+  come back. Judge waves on NET linked, never freeze on individual flips.
+- Never introduce a namespace-scope global to defeat const-folding: it exports a symbol
+  and fails parity. If the orig provably has a mutable global (GOT access), find its real
+  identity (likely already among our 36 extra or the orig's dynsym data) first.
+- Layout-item queue grew: StarMap.h (systemPath 148 vs 160), SpaceLounge.h (listVisible
+  0x1f vs 0x1c) — both need exclusive-mode header fixes with drift tooling.
+
+Queue after wave 7: (1) shim-conversion wave 8 on the <60-pct pool of the same TUs +
+next shim-heavy TUs; (2) exclusive layout items StarMap.h + SpaceLounge.h; (3) FModSound
+family to pull in the 7 missing FMOD imports; (4) shader-zoo TU pooling (exclusive);
+(5) monsters (Gun::shootAt, WantedWindow::draw/selectWanted, convertStringFromArabic).
+
 ## Session 2026-07-22 (wave 6 — near-miss pool >=85%, 9 workers, 7/8 patches landed)
 
 9 disjoint workers on the pct>=85 near-miss pool (diffs6 dumps, 123 fns; shader zoo excluded
