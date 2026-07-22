@@ -1,6 +1,7 @@
 #include "engine/render/PaintCanvas.h"
 #include <string.h>
 #include <math.h>
+#include <GLES2/gl2.h>
 #include <GLES/gl.h>
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/Material.h"
@@ -1878,10 +1879,8 @@ int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Vector &a,
     return paintcanvas_ext_getscreenpos_m(this, buf, &a, &b);
 }
 
-static char paintcanvas_g_fog_flag_storage = 0;
-static char paintcanvas_g_fog_ptr_storage = 0;
-static char *paintcanvas_g_fog_flag = &paintcanvas_g_fog_flag_storage;
-static char *paintcanvas_g_fog_ptr = &paintcanvas_g_fog_ptr_storage;
+static char *paintcanvas_g_fog_flag = (char*)&AbyssEngine::Engine::fogEnabled;
+static char *paintcanvas_g_fog_ptr = (char*)&AbyssEngine::Engine::fogEnabled;
 
 void PaintCanvas::FogEnable(bool mode, AbyssEngine::FogMode enable) {
     this->fogEnableFlag = enable;
@@ -3115,12 +3114,11 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId,
                                      bool flag, unsigned int &out) {
     AbyssEngine::SpriteSystem *ss = 0;
     unsigned int result;
-    int ok = paintcanvas_ext_sscreate(this->engine, resId, flag, (void **) &ss); // lint: void_ptr (out-param shim signature is void**; mangling must match lib)
-    // lint: void_ptr (out-param shim signature is void**; mangling must match lib)
+    int ok = AbyssEngine::SpriteSystemCreate(this->engine, resId, flag, &ss);
     if (ok == 1) {
         unsigned int i;
         for (i = 0; i < this->spriteSystems.count; i++) {
-            AbyssEngine::SpriteSystem **slot = &this->spriteSystems.data_[i * 4];
+            AbyssEngine::SpriteSystem **slot = &this->spriteSystems.data_[i];
             if (*slot == nullptr) {
                 *slot = ss;
                 ss = 0;
@@ -3144,13 +3142,11 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId,
 
 void PaintCanvas::MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode,
                                  unsigned int textures, unsigned short p4) {
-    char *obj = (char *) paintcanvas_ext_alloc(0x74);
-    paintcanvas_ext_material_ctor(obj);
     (void) p4;
-    PCMaterialView *mat = (PCMaterialView *) obj;
-    mat->textureSlots[0] = textures;
-    mat->flags0 = mode;
-    paintcanvas_ext_material_add(obj, &this->materials);
+    AbyssEngine::Material *mat = new AbyssEngine::Material();
+    mat->textures[0] = (int)textures;
+    mat->blendMode = (int)mode;
+    ArrayAdd<AbyssEngine::Material*>(mat, this->materials);
     out = this->materials.count - 1;
 }
 
@@ -3200,8 +3196,7 @@ void PaintCanvas::MeshChangeShaderAnimValue(AbyssEngine::Mesh *mesh, float value
     return paintcanvas_ext_shader_anim(this, mesh->animation);
 }
 
-static int g_resume_curtex_7e828_storage = 0;
-static int *const g_resume_curtex_7e828 = &g_resume_curtex_7e828_storage;
+static int *const g_resume_curtex_7e828 = &paintcanvas_g_cube_slot;
 
 int paintcanvas_ext_rs_texfromfile(void *eng, char *path, void *cb, void *ud, // lint: void_ptr (external symbol; mangling must match lib)
                                    // lint: void_ptr (external symbol; mangling must match lib)
@@ -3856,7 +3851,7 @@ void PaintCanvas::ClearBuffer(unsigned int mask) {
 }
 
 void PaintCanvas::ClearDepth() {
-    ClearBuffer(0x100);
+    glClear(0x100);
 }
 
 void PaintCanvas::DrawFrameBufferTexture(int, int, int, int, int, int) {

@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1143,
-  "linked_exact": 2314,
+  "linked_exact": 2316,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 74.55,
+  "avg_match": 74.56,
   "compared": 4523
  },
  "imports": [
@@ -363,7 +363,6 @@
   "_Z21_psm_meshSetColorWordPN11AbyssEngine11PaintCanvasEjtj",
   "_Z21_psm_renderSpritesExtPv",
   "_Z21_pss_interpolateColorP20ParticleSystemSpriteiPfS1_S1_S1_",
-  "_Z21paintcanvas_ext_allocj",
   "_Z21paintcanvas_ext_end3dPN11AbyssEngine11PaintCanvasE",
   "_Z21paintcanvas_ext_fbo_aPv",
   "_Z21paintcanvas_ext_fbo_bPvi",
@@ -461,7 +460,6 @@
   "_Z24paintcanvas_ext_get_gravPv",
   "_Z24paintcanvas_ext_gl_colorPvffff",
   "_Z24paintcanvas_ext_setcolorPvffff",
-  "_Z24paintcanvas_ext_sscreatePvtbPS_",
   "_Z25AEMath_MatrixRotateVectorPN11AbyssEngine6AEMath6VectorEPKS1_",
   "_Z25ChoiceWindow_setNotice_oiP12ChoiceWindowi",
   "_Z25ChoiceWindow_setNotice_ouii",
@@ -617,7 +615,6 @@
   "_Z28paintcanvas_ext_gla_str_copyPvS_b",
   "_Z28paintcanvas_ext_gla_str_dtorPv",
   "_Z28paintcanvas_ext_matc_findresPvt",
-  "_Z28paintcanvas_ext_material_addPvS_",
   "_Z28paintcanvas_ext_rar_gldeltexiPv",
   "_Z28paintcanvas_ext_rar_str_dtorPv",
   "_Z28paintcanvas_ext_rt_deletearrPc",
@@ -663,7 +660,6 @@
   "_Z29paintcanvas_ext_i2d_imgregionPvPctS_",
   "_Z29paintcanvas_ext_i2d_texcreatePvtb",
   "_Z29paintcanvas_ext_init_setperspPvfff",
-  "_Z29paintcanvas_ext_material_ctorPv",
   "_Z29paintcanvas_ext_mc_meshcreatePvttaPS_",
   "_Z29paintcanvas_ext_rar_op_deletePv",
   "_Z29paintcanvas_ext_rar_ssreleasePvS_",
