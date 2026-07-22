@@ -270,7 +270,7 @@ void *RecordHandler::readAllPreviewRecords() { // lint: void_ptr (method signatu
 }
 
 bool RecordHandler::notEnoughMemory() {
-    return AEFile::GetDeviceFreeSpace() < 900;
+    return (int)AEFile::GetDeviceFreeSpace() < 900;
 }
 
 static int *g_CSV_count = nullptr;
@@ -611,69 +611,64 @@ static const char g_WA_empty2[] = "";
 void RecordHandler::writeAgent(Agent *agentPtr, unsigned int fd) {
     RecordHandler * self = this;
     Agent *agent = agentPtr;
-    AEFile_WriteInt(((Agent *) (agent))->getCosts(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getSellSystemIndex(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getSellBlueprintIndex(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getEvent(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getIndex(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getOffer(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getRace(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getSellItemIndex(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getSellItemPrice(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getSellItemQuantity(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getStation(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getSystem(), fd);
-    AEFile_WriteInt(((Agent *) (agent))->getWingmanFriendsCount(), fd);
-    AEFile_WriteBool(((Agent *) (agent))->isMale(), fd);
-    AEFile_WriteBool(((Agent *) (agent))->hasReward(), fd);
-    AEFile_WriteBool(((Agent *) (agent))->hasAcceptedOffer(), fd);
-    AEFile_WriteBool(agent->wasAskedForDifficulty, fd);
-    AEFile_WriteBool(agent->wasAskedForLocation, fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getCosts(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getSellSystemIndex(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getSellBlueprintIndex(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getEvent(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getIndex(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getOffer(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getRace(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getSellItemIndex(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getSellItemPrice(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getSellItemQuantity(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getStation(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getSystem(), fd);
+    AEFile::Write((int32_t)((Agent *) (agent))->getWingmanFriendsCount(), fd);
+    AEFile::Write((bool)((Agent *) (agent))->isMale(), fd);
+    AEFile::Write((bool)((Agent *) (agent))->hasReward(), fd);
+    AEFile::Write((bool)((Agent *) (agent))->hasAcceptedOffer(), fd);
+    AEFile::Write((bool)agent->wasAskedForDifficulty, fd);
+    AEFile::Write((bool)agent->wasAskedForLocation, fd);
 
     if (((Agent *) (agent))->getImageParts() == 0) {
-        AEFile_WriteInt(-1, fd);
+        AEFile::Write((int32_t)-1, fd);
     } else {
-        AEFile_WriteInt(5, fd);
+        AEFile::Write((int32_t)5, fd);
         for (int i = 0; i != 5; i++) {
             int *img = ((Agent *) (agent))->getImageParts();
-            AEFile_WriteInt(img[i], fd);
+            AEFile::Write((int32_t)img[i], fd);
         }
     }
     if (0x12 < ((Agent *) (agent))->getIndex()) {
-        AEFile_WriteInt(((Agent *) (agent))->getSellModIndex(), fd);
+        AEFile::Write((int32_t)((Agent *) (agent))->getSellModIndex(), fd);
     }
 
-    String s;
-    s = agent->getMissionString();
-    AEFile_WriteString(&s, fd, 1);
-    s = agent->getName();
-    AEFile_WriteString(&s, fd, 1);
-    s = agent->getStationName();
-    AEFile_WriteString(&s, fd, 1);
-    s = agent->getSystemName();
-    AEFile_WriteString(&s, fd, 1);
+    {String s = agent->getMissionString(); AEFile::Write(s, fd, (bool)1);}
+    {String s = agent->getName(); AEFile::Write(s, fd, (bool)1);}
+    {String s = agent->getStationName(); AEFile::Write(s, fd, (bool)1);}
+    {String s = agent->getSystemName(); AEFile::Write(s, fd, (bool)1);}
 
     String *f0c = agent->wingman1;
     if (f0c == 0) {
-        s = String(g_WA_empty1);
-        AEFile_WriteString(&s, fd, 1);
+        String s(g_WA_empty1);
+        AEFile::Write(s, fd, (bool)1);
     } else {
-        AEFile_WriteString(f0c, fd, 1);
+        AEFile::Write(*f0c, fd, (bool)1);
     }
     String *f10 = agent->wingman2;
     if (f10 == 0) {
-        s = String(g_WA_empty2);
-        AEFile_WriteString(&s, fd, 1);
+        String s(g_WA_empty2);
+        AEFile::Write(s, fd, (bool)1);
     } else {
-        AEFile_WriteString(f10, fd, 1);
+        AEFile::Write(*f10, fd, (bool)1);
     }
 
     self->currentAgent = agent;
     Mission *mission = agent->getMission();
     if (mission == 0 || self->currentMission == mission) {
-        AEFile_WriteInt(-1, fd);
+        AEFile::Write((int32_t)-1, fd);
     } else {
-        AEFile_WriteInt(1, fd);
+        AEFile::Write((int32_t)1, fd);
         self->writeMission(mission, fd);
     }
 
@@ -1250,33 +1245,31 @@ void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method sign
 
 void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
     (void) this;
-    AEFile_WriteBool(w->isActive(), fd);
-    AEFile_WriteBool(w->isTerminated(), fd);
-    AEFile_WriteInt(w->getCurrentLocation(), fd);
-    AEFile_WriteInt(w->getTravelsTo(), fd);
-    AEFile_WriteInt(w->getLastSeen(), fd);
+    AEFile::Write((bool)w->isActive(), fd);
+    AEFile::Write((bool)w->isTerminated(), fd);
+    AEFile::Write((int32_t)w->getCurrentLocation(), fd);
+    AEFile::Write((int32_t)w->getTravelsTo(), fd);
+    AEFile::Write((int32_t)w->getLastSeen(), fd);
 
-    String name;
-    name = w->getName();
-    AEFile_WriteString(&name, fd, 1);
+    {String name = w->getName(); AEFile::Write(name, fd, (bool)1);}
 
-    AEFile_WriteInt(w->getIndex(), fd);
-    AEFile_WriteInt(w->getBoard(), fd);
-    AEFile_WriteInt(w->getRace(), fd);
-    AEFile_WriteBool(w->isMale(), fd);
-    AEFile_WriteInt(w->getShip(), fd);
-    AEFile_WriteInt(w->getWeapon(), fd);
-    AEFile_WriteInt(w->getHitpoints(), fd);
-    AEFile_WriteInt(w->getLoot(), fd);
-    AEFile_WriteInt(w->getLootAmount(), fd);
-    AEFile_WriteInt(w->getReward(), fd);
-    AEFile_WriteInt(w->getRequiredBounties(), fd);
-    AEFile_WriteInt(w->getRequiredMission(), fd);
-    AEFile_WriteInt(w->getNumWingmen(), fd);
+    AEFile::Write((int32_t)w->getIndex(), fd);
+    AEFile::Write((int32_t)w->getBoard(), fd);
+    AEFile::Write((int32_t)w->getRace(), fd);
+    AEFile::Write((bool)w->isMale(), fd);
+    AEFile::Write((int32_t)w->getShip(), fd);
+    AEFile::Write((int32_t)w->getWeapon(), fd);
+    AEFile::Write((int32_t)w->getHitpoints(), fd);
+    AEFile::Write((int32_t)w->getLoot(), fd);
+    AEFile::Write((int32_t)w->getLootAmount(), fd);
+    AEFile::Write((int32_t)w->getReward(), fd);
+    AEFile::Write((int32_t)w->getRequiredBounties(), fd);
+    AEFile::Write((int32_t)w->getRequiredMission(), fd);
+    AEFile::Write((int32_t)w->getNumWingmen(), fd);
 
     for (int i = 0; i != 5; i++) {
         int *parts = w->getImageParts();
-        AEFile_WriteInt(parts[i], fd);
+        AEFile::Write((int32_t)parts[i], fd);
     }
 
     return;

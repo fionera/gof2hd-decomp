@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.86,
+  "avg_match": 73.87,
   "byte_exact": 1138,
-  "linked_exact": 2277,
-  "fuzzy_perfect": 2277,
+  "linked_exact": 2278,
+  "fuzzy_perfect": 2278,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2736,14 +2736,6 @@
    "usize": 520
   },
   {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.5,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjiih",
    "pct": 15.6,
    "byte": false,
@@ -2758,6 +2750,14 @@
    "linked": false,
    "osize": 132,
    "usize": 152
+  },
+  {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -5545,7 +5545,7 @@
   },
   {
    "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 30.1,
+   "pct": 30.0,
    "byte": false,
    "linked": false,
    "osize": 2012,
@@ -12152,14 +12152,6 @@
    "usize": 104
   },
   {
-   "name": "_ZN13RecordHandler10writeAgentEP5Agentj",
-   "pct": 60.9,
-   "byte": false,
-   "linked": false,
-   "osize": 592,
-   "usize": 648
-  },
-  {
    "name": "_ZN6Status12hardCoreModeEv",
    "pct": 60.9,
    "byte": false,
@@ -12766,14 +12758,6 @@
    "linked": false,
    "osize": 168,
    "usize": 156
-  },
-  {
-   "name": "_ZN13RecordHandler11writeWantedEP6Wantedj",
-   "pct": 65.6,
-   "byte": false,
-   "linked": false,
-   "osize": 312,
-   "usize": 340
   },
   {
    "name": "loadAPKAndZip",
@@ -14544,20 +14528,20 @@
    "usize": 118
   },
   {
+   "name": "_ZN13RecordHandler10writeAgentEP5Agentj",
+   "pct": 77.5,
+   "byte": false,
+   "linked": false,
+   "osize": 592,
+   "usize": 596
+  },
+  {
    "name": "_ZN9PlayerEgo14startJumpDriveEv",
    "pct": 77.6,
    "byte": false,
    "linked": false,
    "osize": 68,
    "usize": 54
-  },
-  {
-   "name": "_ZN13RecordHandler15notEnoughMemoryEv",
-   "pct": 77.8,
-   "byte": false,
-   "linked": false,
-   "osize": 22,
-   "usize": 22
   },
   {
    "name": "_ZN6Layout9startFadeEbii",
@@ -14918,6 +14902,14 @@
    "linked": false,
    "osize": 356,
    "usize": 328
+  },
+  {
+   "name": "_ZN13RecordHandler11writeWantedEP6Wantedj",
+   "pct": 80.5,
+   "byte": false,
+   "linked": false,
+   "osize": 312,
+   "usize": 304
   },
   {
    "name": "_Z14ArrayAddCachedIjEvT_R5ArrayIS0_E",
@@ -15672,6 +15664,14 @@
    "usize": 84
   },
   {
+   "name": "_ZN11AbyssEngine18TextureLightShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
+   "pct": 88.2,
+   "byte": false,
+   "linked": false,
+   "osize": 520,
+   "usize": 512
+  },
+  {
    "name": "_ZN11AbyssEngine6Engine13ResetUVMatrixEv",
    "pct": 88.2,
    "byte": false,
@@ -15686,14 +15686,6 @@
    "linked": false,
    "osize": 140,
    "usize": 144
-  },
-  {
-   "name": "_ZN11AbyssEngine18TextureLightShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
-   "pct": 88.5,
-   "byte": false,
-   "linked": false,
-   "osize": 520,
-   "usize": 512
   },
   {
    "name": "_ZN11AbyssEngine12PostBWShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -25806,6 +25798,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN13RecordHandler15notEnoughMemoryEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 22,
+   "usize": 22
   },
   {
    "name": "_ZN13RecordHandler21recoverSDVersionSavesEv",
