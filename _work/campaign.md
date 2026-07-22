@@ -2,6 +2,52 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-22 (wave 5 — MCP-free, 12 workers, 9/10 patches landed)
+
+12 disjoint workers on the hard-singles/retry pool (diffs5 dumps). Ship worker "stalled on all
+6 attempts" per the harness but its partial tree edits gated cleanly and were the wave's best
+item. scrolltouch + objective correctly landed nothing (all-blocked with analyses). Serial
+salvage: snapshot patches5/ -> revert -> apply/gate/commit per item. Landed:
+- Ship (dead-worker partial): +1 byte +7 linked — ctor pair, replaceCargo, removeAllCargo,
+  addCargo x2, hasCloak exact; removeEquipment 19->96, getCargo 23->96, removeCargo 34->98.
+- MiningGame up/down byte-exact (void-return, same as left/right); PlayerEgo callers switched
+  to the comma-expression-returning-inputY idiom (mirrors wave-4 inputX shape).
+- MineGun dtor pair linked-exact, ctor 68.6->93.3 (Gun base-ctor delegation).
+- Standing::getStanding byte-exact; getMissionBonus 48.5->61.3 (vmax partially cracked).
+- Achievements::applyNewMedals linked-exact; countMedals 43->70.5.
+- GameText::getLanguage linked-exact; setLanguage role-swap landed metric-neutral (stays 14.4).
+- FModSound (orchestrator-corrected): worker's init()/getPlayingProgress wins kept but its fake
+  4-arg FMOD_Event_getInfo shim replaced with the REAL member import
+  FMOD::Event::getInfo(int*,char**,FMOD_EVENT_INFO*); baseline now carries the original's true
+  getCategory/getProjectByIndex/Event::getInfo imports instead of 3 fake shims (imports stay
+  1090). init 68.8->89.3 (real category names {master,music,sfx,voice}). 11 of the worker's 14
+  edits were codegen no-ops (canary array-scope moves did NOT change -Oz codegen) or regressions
+  (freeAllEvents) — dropped.
+- Route::update(fff) linked-exact; AutoPilotList draw 34->51, ctor 55->68 (no flag flips).
+Reverted: PlayerWormHole (measurable no-op).
+End state: **byte 1136, linked 2242, stubs 0, extra 36, imports 1090, avg 73.73.**
+
+Learnings:
+- Import convergence: when a worker's "new import" is IN the original's dynamic table, the fix
+  is deliberate baseline convergence (fake shim -> real symbol), not a violation. Check with
+  objdump -T before rejecting.
+- The array-to-outer-scope canary trick does NOT work: -Oz sinks the alloca back; the canary
+  needs a real >=8B byte array. FModSound canary fns remain open.
+- scrolltouch worker's blocked analysis (plausible, unverified): orig compiler reuses the stmdb
+  register-save area as String temp storage + canary on struct locals — i.e. setText/draw/ctor
+  family may be UNFIXABLE with plain -fstack-protector clang 7.0.2. Treat as low-priority.
+- "Stalled" workflow workers can still have landed good tree edits — always snapshot + gate a
+  dead worker's diff before discarding.
+
+Queue after wave 5 (hard singles remaining): FModSound updateAll/play/isChannelActive family +
+updateEvent3DAttributes (19.3), Achievements::checkForNewMedal 7.3, MiningGame render2D 18.9,
+GameText setLanguage 14.4 + ReadLangFile 26.7, PlayerJunk::update 59.5, PlayerWormHole::update
+43.9, Route clone/getWaypoint/dtor (EH stub), Ship addMod 86.3 + refreshValue 45.2 + getUsedSlots
+etc. mid-tier, Standing isEnemy/isFriend/getMissionBonus, ScrollTouchWindow (likely blocked),
+Objective achieved/setAchievedText/dtor. Monsters (orchestrator-only): Gun::shootAt (1788B,
+placeholder body), WantedWindow::draw/selectWanted, GameText::convertStringFromArabic.
+Exclusive: shader-zoo TU-pooling, TU merges.
+
 ## Session 2026-07-21 (exclusive: Gun.h layout fix)
 
 Gun.h 0x38-0x48 span fixed (dac2ac0e): NOT a +4 drift — a 3-field intra-span reorder.
