@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 74.32,
+  "avg_match": 74.34,
   "byte_exact": 1141,
-  "linked_exact": 2305,
-  "fuzzy_perfect": 2305,
+  "linked_exact": 2306,
+  "fuzzy_perfect": 2306,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -7056,14 +7056,6 @@
    "usize": 64
   },
   {
-   "name": "_ZN17ScrollTouchWindow7setTextEN11AbyssEngine6StringES1_i",
-   "pct": 35.3,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 72
-  },
-  {
    "name": "_ZN8GameText7getTextEi",
    "pct": 35.3,
    "byte": false,
@@ -7136,14 +7128,6 @@
    "usize": 54
   },
   {
-   "name": "_Z13loadPortraitsPN11AbyssEngine6EngineE",
-   "pct": 35.7,
-   "byte": false,
-   "linked": false,
-   "osize": 21562,
-   "usize": 20900
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas13FillRectangleEiiii",
    "pct": 35.7,
    "byte": false,
@@ -7166,6 +7150,14 @@
    "linked": false,
    "osize": 76,
    "usize": 56
+  },
+  {
+   "name": "_Z13loadPortraitsPN11AbyssEngine6EngineE",
+   "pct": 35.8,
+   "byte": false,
+   "linked": false,
+   "osize": 21562,
+   "usize": 20900
   },
   {
    "name": "_ZN10StarSystem8render2DEv",
@@ -8464,14 +8456,6 @@
    "usize": 156
   },
   {
-   "name": "_ZN17ScrollTouchWindow7setTextEN11AbyssEngine6StringES1_",
-   "pct": 42.4,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 70
-  },
-  {
    "name": "_ZN7Globals8loadFontEi",
    "pct": 42.4,
    "byte": false,
@@ -8856,22 +8840,6 @@
    "usize": 140
   },
   {
-   "name": "_ZN17ScrollTouchWindowC1Eiiiib",
-   "pct": 45.2,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 156
-  },
-  {
-   "name": "_ZN17ScrollTouchWindowC2Eiiiib",
-   "pct": 45.2,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 156
-  },
-  {
    "name": "_ZN4Ship12refreshValueEv",
    "pct": 45.2,
    "byte": false,
@@ -8974,6 +8942,14 @@
    "linked": false,
    "osize": 404,
    "usize": 396
+  },
+  {
+   "name": "_ZN17ScrollTouchWindow7setTextEN11AbyssEngine6StringES1_i",
+   "pct": 45.6,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 98
   },
   {
    "name": "_ZN6Player14stopShootSoundEii",
@@ -9310,6 +9286,14 @@
    "linked": false,
    "osize": 776,
    "usize": 732
+  },
+  {
+   "name": "_ZN17ScrollTouchWindow7setTextEN11AbyssEngine6StringES1_",
+   "pct": 47.4,
+   "byte": false,
+   "linked": false,
+   "osize": 96,
+   "usize": 96
   },
   {
    "name": "_ZN14DialogueWindowC1EPN11AbyssEngine6StringES2_Pi",
@@ -14080,6 +14064,22 @@
    "usize": 82
   },
   {
+   "name": "_ZN17ScrollTouchWindowC1Eiiiib",
+   "pct": 76.8,
+   "byte": false,
+   "linked": false,
+   "osize": 152,
+   "usize": 148
+  },
+  {
+   "name": "_ZN17ScrollTouchWindowC2Eiiiib",
+   "pct": 76.8,
+   "byte": false,
+   "linked": false,
+   "osize": 152,
+   "usize": 148
+  },
+  {
    "name": "_ZN11AbyssEngine6AEMath6VectordVERKS1_",
    "pct": 76.9,
    "byte": false,
@@ -16718,14 +16718,6 @@
    "linked": false,
    "osize": 50,
    "usize": 50
-  },
-  {
-   "name": "_ZN12Achievements8getValueEii",
-   "pct": 94.7,
-   "byte": false,
-   "linked": false,
-   "osize": 28,
-   "usize": 28
   },
   {
    "name": "_ZN5ArrayIbED2Ev",
@@ -24702,6 +24694,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN12Achievements8getValueEii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 28,
+   "usize": 28
   },
   {
    "name": "_ZN12Achievements8hasMedalEii",
