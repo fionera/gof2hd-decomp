@@ -77,7 +77,7 @@ void Mission::setVisible(bool v) {
 }
 
 Mission *Mission::clone() {
-    Mission *m = new Mission(this->id, this->name, this->clientImage,
+    Mission *m = new Mission(this->id, AbyssEngine::String(this->name, false), this->clientImage,
                              this->clientRace, this->costs, this->targetStation,
                              this->reward);
     m->instantAction = this->instantAction;

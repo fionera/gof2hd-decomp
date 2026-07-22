@@ -2744,20 +2744,20 @@
    "usize": 82
   },
   {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
+  },
+  {
    "name": "_ZN11AbyssEngine6String4TrimEv",
    "pct": 15.7,
    "byte": false,
    "linked": false,
    "osize": 132,
    "usize": 152
-  },
-  {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -9432,14 +9432,6 @@
    "usize": 300
   },
   {
-   "name": "_ZN7Mission5cloneEv",
-   "pct": 47.2,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 106
-  },
-  {
    "name": "_ZN9PlayerEgo14toggleCloakingEv",
    "pct": 47.2,
    "byte": false,
@@ -9638,6 +9630,14 @@
    "linked": false,
    "osize": 140,
    "usize": 132
+  },
+  {
+   "name": "_ZN7Mission5cloneEv",
+   "pct": 48.9,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 108
   },
   {
    "name": "_ZN10StarSystem26switchSunForSupernovaIntroEv",
