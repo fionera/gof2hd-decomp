@@ -16,7 +16,7 @@
 #include "game/world/Standing.h"
 #include "game/ship/Ship.h"
 
-static int *g_campaignSentinel = nullptr;
+static int **g_campaignSentinel = nullptr;
 static Status *g_incKillsHook = nullptr;
 static Status *g_incPirateKillsHook = nullptr;
 
@@ -203,13 +203,12 @@ Station *Status::getStation() { return station; }
 
 void Status::setCampaignMission(Mission *m) {
     m->setCampaignMission(true);
-    Mission **slot = missions->data();
-    Mission *cur = slot[0];
-    if (cur != 0 && (int *) cur != g_campaignSentinel) {
+    Mission *cur = missions->data()[0];
+    if (cur != 0 && cur != (Mission *) (intptr_t) **g_campaignSentinel) {
         delete cur;
-        slot[0] = 0;
+        missions->data()[0] = 0;
     }
-    slot[0] = m;
+    missions->data()[0] = m;
 }
 
 Wanted *Status::getWantedInCurrentOrbit() {
@@ -593,7 +592,7 @@ bool Status::isOnStack(Station *s) {
 }
 
 bool Status::inAlienOrbit() {
-    return station != playerStation;
+    return station->equals(playerStation);
 }
 
 static int *g_rg_settings = nullptr;
@@ -1051,34 +1050,25 @@ void Status::unlockBluePrint(int index) {
     }
 }
 
-static const float g_gammaTableA[5] = {0, 0, 0, 0, 0};
-static const float g_gammaTableB[5] = {0, 0, 0, 0, 0};
-
-static inline int as_int(float f) {
-    int i;
-    memcpy(&i, &f, sizeof(i));
-    return i;
-}
-
-static inline float as_float(unsigned u) {
-    float f;
-    memcpy(&f, &u, sizeof(f));
-    return f;
-}
+static const int g_gammaTableA[5] = {0x3f333333, 0x3ecccccd, 0x3ecccccd, 0x3e99999a, 0x3e4ccccd};
+static const int g_gammaTableB[5] = {0x40400000, 0x40000000, 0x3f800000, 0x3f000000, 0x3e99999a};
 
 int Status::getGammaRayDamagePerSecond(int station, int system) {
-    unsigned k = station - 0x6d;
-    float result = as_float(0x00000000u);
-    if (k < 5) {
-        if (system < 0x6a) {
-            if (k < 5) return as_int(g_gammaTableA[k]);
-        } else if (currentCampaignMission < 0x9e) {
-            if (k < 5) return as_int(g_gammaTableB[k]);
-        } else if (station == 0x6d) {
-            result = as_float(0x3f800000u);
-        }
+    unsigned k = (unsigned)(station - 0x6d);
+    if (k > 4) {
+        return 0;
     }
-    return as_int(result);
+    if (system <= 0x69) {
+        return g_gammaTableA[k];
+    }
+    if (currentCampaignMission <= 0x9d) {
+        return g_gammaTableB[k];
+    }
+    float result = 0.0f;
+    if (station == 0x6d) result = 1.0f;
+    int r;
+    memcpy(&r, &result, sizeof(r));
+    return r;
 }
 
 int Status::addStationToStack(Station *s) {
@@ -1682,12 +1672,15 @@ Array<int> *Status::loadAgents(Array<int> *agents) {
     return agents;
 }
 
-static int g_levelXPTable[0x15] = {0};
+static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
 
 void Status::checkForLevelUp() {
+    int a0 = field_a0;
+    int a4 = field_a4;
     int d4 = field_d4 / 3;
-    int a0d = field_a0 / 0x32;
-    int sum = a0d + (kills + d4) + field_a4 + missionCount * 2 + currentCampaignMission + stationsVisited;
+    int k = kills + d4;
+    int a0d = a0 / 0x32;
+    int sum = k + a0d + a4 + missionCount * 2 + currentCampaignMission + stationsVisited;
     for (int i = 0; i != 0x15; i = i + 1) {
         if (sum >= g_levelXPTable[i]) {
             level = i;
@@ -1799,8 +1792,7 @@ void Status::setWingmen(Array<String *> *list) {
         na;
         ArraySetLength(list->size(), *na);
         for (unsigned i = 0; i < list->size(); i = i + 1) {
-            String *s = new String();
-            s->copy((*list)[i], false);
+            String *s = new String(*(*list)[i], false);
             (*na)[i] = s;
         }
     }

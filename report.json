@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 74.09,
+  "avg_match": 74.17,
   "byte_exact": 1140,
-  "linked_exact": 2292,
-  "fuzzy_perfect": 2292,
+  "linked_exact": 2293,
+  "fuzzy_perfect": 2293,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2032,14 +2032,6 @@
    "usize": 192
   },
   {
-   "name": "_ZN6Status12inEmptyOrbitEv",
-   "pct": 10.6,
-   "byte": false,
-   "linked": false,
-   "osize": 132,
-   "usize": 100
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvasD1Ev",
    "pct": 10.7,
    "byte": false,
@@ -2480,6 +2472,14 @@
    "usize": 116
   },
   {
+   "name": "_ZN5Level21createCampaignMissionEv",
+   "pct": 13.5,
+   "byte": false,
+   "linked": false,
+   "osize": 29676,
+   "usize": 17464
+  },
+  {
    "name": "_ZN7Globals14setCoordsSteerEiiiiRtS0_S0_S0_S0_S0_S0_S0_S0_S0_",
    "pct": 13.5,
    "byte": false,
@@ -2686,14 +2686,6 @@
    "linked": false,
    "osize": 140,
    "usize": 84
-  },
-  {
-   "name": "_ZN5Level21createCampaignMissionEv",
-   "pct": 15.3,
-   "byte": false,
-   "linked": false,
-   "osize": 29676,
-   "usize": 17464
   },
   {
    "name": "_ZN10ModStation10resetLightEv",
@@ -2966,14 +2958,6 @@
    "linked": false,
    "osize": 24,
    "usize": 2
-  },
-  {
-   "name": "_ZN6Status13departStationEP7Station",
-   "pct": 16.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1008,
-   "usize": 844
   },
   {
    "name": "_ZN7StarMap6renderEv",
@@ -3640,6 +3624,14 @@
    "usize": 138
   },
   {
+   "name": "_ZN6Status13departStationEP7Station",
+   "pct": 20.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1008,
+   "usize": 832
+  },
+  {
    "name": "_ZN5ArrayIN11AbyssEngine6AEMath6MatrixEEC2Ev",
    "pct": 20.4,
    "byte": false,
@@ -4056,14 +4048,6 @@
    "usize": 1284
   },
   {
-   "name": "_ZN6Status19inBlackMarketSystemEv",
-   "pct": 22.2,
-   "byte": false,
-   "linked": false,
-   "osize": 34,
-   "usize": 36
-  },
-  {
    "name": "_ZN6Status9resetGameEv",
    "pct": 22.2,
    "byte": false,
@@ -4166,14 +4150,6 @@
    "linked": false,
    "osize": 74,
    "usize": 48
-  },
-  {
-   "name": "_ZN6Status23getWantedInCurrentOrbitEv",
-   "pct": 23.2,
-   "byte": false,
-   "linked": false,
-   "osize": 130,
-   "usize": 120
   },
   {
    "name": "_ZN6Layout13drawScrollBarEiiiii",
@@ -4888,14 +4864,6 @@
    "usize": 186
   },
   {
-   "name": "_ZN6Status10moveWantedEv",
-   "pct": 27.1,
-   "byte": false,
-   "linked": false,
-   "osize": 860,
-   "usize": 624
-  },
-  {
    "name": "_ZN12HangarWindow10selectItemEP8ListItem",
    "pct": 27.3,
    "byte": false,
@@ -4936,14 +4904,6 @@
    "usize": 80
   },
   {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 27.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1276
-  },
-  {
    "name": "_ZN9Generator11createAgentEP7Station",
    "pct": 27.6,
    "byte": false,
@@ -4966,6 +4926,14 @@
    "linked": false,
    "osize": 792,
    "usize": 656
+  },
+  {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 27.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1280
   },
   {
    "name": "_ZN10HangarList16getCurrentItemAtEi",
@@ -5006,6 +4974,14 @@
    "linked": false,
    "osize": 760,
    "usize": 724
+  },
+  {
+   "name": "_ZN6Status10moveWantedEv",
+   "pct": 27.9,
+   "byte": false,
+   "linked": false,
+   "osize": 860,
+   "usize": 620
   },
   {
    "name": "_ZN11SpaceLounge4drawEv",
@@ -5310,6 +5286,14 @@
    "linked": false,
    "osize": 344,
    "usize": 624
+  },
+  {
+   "name": "_ZN6Status23getWantedInCurrentOrbitEv",
+   "pct": 29.5,
+   "byte": false,
+   "linked": false,
+   "osize": 130,
+   "usize": 120
   },
   {
    "name": "ndk23_newrender",
@@ -5688,14 +5672,6 @@
    "usize": 216
   },
   {
-   "name": "_ZN6Status16inSupernovaOrbitEv",
-   "pct": 30.8,
-   "byte": false,
-   "linked": false,
-   "osize": 34,
-   "usize": 32
-  },
-  {
    "name": "_ZN9FModSound14enableCategoryEib",
    "pct": 30.9,
    "byte": false,
@@ -5766,6 +5742,14 @@
    "linked": false,
    "osize": 48,
    "usize": 22
+  },
+  {
+   "name": "_ZN6Status12inEmptyOrbitEv",
+   "pct": 31.2,
+   "byte": false,
+   "linked": false,
+   "osize": 132,
+   "usize": 108
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13TextureCreateEtPFvPNS_5ImageEPvES3_Rjb",
@@ -5854,14 +5838,6 @@
    "linked": false,
    "osize": 520,
    "usize": 456
-  },
-  {
-   "name": "_ZN6Status17activateNewWantedEv",
-   "pct": 31.6,
-   "byte": false,
-   "linked": false,
-   "osize": 960,
-   "usize": 816
   },
   {
    "name": "ndk_resetNativeItemInformationList",
@@ -6446,6 +6422,14 @@
    "linked": false,
    "osize": 1300,
    "usize": 896
+  },
+  {
+   "name": "_ZN6Status17activateNewWantedEv",
+   "pct": 33.7,
+   "byte": false,
+   "linked": false,
+   "osize": 960,
+   "usize": 796
   },
   {
    "name": "ndk23_handleAcceleration",
@@ -7416,14 +7400,6 @@
    "usize": 204
   },
   {
-   "name": "_ZN6Status15calcCargoPricesEv",
-   "pct": 36.5,
-   "byte": false,
-   "linked": false,
-   "osize": 708,
-   "usize": 584
-  },
-  {
    "name": "_ZN14DialogueWindow4drawEv",
    "pct": 36.6,
    "byte": false,
@@ -7526,6 +7502,14 @@
    "linked": false,
    "osize": 104,
    "usize": 92
+  },
+  {
+   "name": "_ZN6Status15calcCargoPricesEv",
+   "pct": 37.0,
+   "byte": false,
+   "linked": false,
+   "osize": 708,
+   "usize": 580
   },
   {
    "name": "_ZN7Globals26getKeyBindingReplaceStringEi",
@@ -8400,14 +8384,6 @@
    "usize": 40
   },
   {
-   "name": "_ZN6Status15checkForLevelUpEv",
-   "pct": 41.2,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 88
-  },
-  {
    "name": "_ZN14ListItemWindow6renderEv",
    "pct": 41.3,
    "byte": false,
@@ -8736,14 +8712,6 @@
    "usize": 304
   },
   {
-   "name": "_ZN6Status26getGammaRayDamagePerSecondEii",
-   "pct": 43.6,
-   "byte": false,
-   "linked": false,
-   "osize": 88,
-   "usize": 52
-  },
-  {
    "name": "_ZN5MGame19handleAccelerometerEv",
    "pct": 43.7,
    "byte": false,
@@ -8848,14 +8816,6 @@
    "usize": 404
   },
   {
-   "name": "_ZN6Status12inAlienOrbitEv",
-   "pct": 44.4,
-   "byte": false,
-   "linked": false,
-   "osize": 10,
-   "usize": 14
-  },
-  {
    "name": "deflateBound",
    "pct": 44.4,
    "byte": false,
@@ -8902,14 +8862,6 @@
    "linked": false,
    "osize": 676,
    "usize": 472
-  },
-  {
-   "name": "_ZN6Status10setWingmenEP5ArrayIPN11AbyssEngine6StringEE",
-   "pct": 44.7,
-   "byte": false,
-   "linked": false,
-   "osize": 124,
-   "usize": 128
   },
   {
    "name": "_ZN10MeshMergerD1Ev",
@@ -8998,6 +8950,14 @@
    "linked": false,
    "osize": 924,
    "usize": 776
+  },
+  {
+   "name": "_ZN6Status10setWingmenEP5ArrayIPN11AbyssEngine6StringEE",
+   "pct": 45.2,
+   "byte": false,
+   "linked": false,
+   "osize": 124,
+   "usize": 124
   },
   {
    "name": "_ZN11AbyssEngine6Engine21LightSetLightPositionEfffj",
@@ -9158,14 +9118,6 @@
    "linked": false,
    "osize": 108,
    "usize": 106
-  },
-  {
-   "name": "_ZN6Status18setCampaignMissionEP7Mission",
-   "pct": 45.8,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 40
   },
   {
    "name": "_ZN8FileRead10loadTickerEv",
@@ -9470,6 +9422,14 @@
    "linked": false,
    "osize": 36,
    "usize": 18
+  },
+  {
+   "name": "_ZN6Status21wantedBoardAccessibleEv",
+   "pct": 47.7,
+   "byte": false,
+   "linked": false,
+   "osize": 128,
+   "usize": 112
   },
   {
    "name": "_zip_cdir_write",
@@ -10352,14 +10312,6 @@
    "usize": 328
   },
   {
-   "name": "_ZN6Status17inPlanetRingOrbitEv",
-   "pct": 51.3,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 54
-  },
-  {
    "name": "_ZN7StarMap24askForJumpIntoAlienWorldEv",
    "pct": 51.3,
    "byte": false,
@@ -10494,6 +10446,14 @@
    "linked": false,
    "osize": 132,
    "usize": 132
+  },
+  {
+   "name": "_ZN6Status15checkForLevelUpEv",
+   "pct": 52.1,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 100
   },
   {
    "name": "_ZN7MissionC1EiN11AbyssEngine6StringEPiiiii",
@@ -10640,6 +10600,14 @@
    "usize": 80
   },
   {
+   "name": "_ZN6Status26getGammaRayDamagePerSecondEii",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 88,
+   "usize": 64
+  },
+  {
    "name": "zip_add",
    "pct": 53.3,
    "byte": false,
@@ -10686,14 +10654,6 @@
    "linked": false,
    "osize": 110,
    "usize": 114
-  },
-  {
-   "name": "_ZN6Status17inSupernovaSystemEv",
-   "pct": 54.1,
-   "byte": false,
-   "linked": false,
-   "osize": 44,
-   "usize": 46
   },
   {
    "name": "_ZN13RecordHandler12writeMissionEP7Missionj",
@@ -11222,14 +11182,6 @@
    "linked": false,
    "osize": 416,
    "usize": 428
-  },
-  {
-   "name": "_ZN6Status12inStormOrbitEv",
-   "pct": 57.7,
-   "byte": false,
-   "linked": false,
-   "osize": 66,
-   "usize": 70
   },
   {
    "name": "_ZN14PlayerAsteroid8initPushERKN11AbyssEngine6AEMath6VectorEi",
@@ -12096,14 +12048,6 @@
    "usize": 48
   },
   {
-   "name": "_ZN6Status18inDeepScienceOrbitEv",
-   "pct": 61.5,
-   "byte": false,
-   "linked": false,
-   "osize": 50,
-   "usize": 50
-  },
-  {
    "name": "deflateSetHeader",
    "pct": 61.5,
    "byte": false,
@@ -12272,6 +12216,14 @@
    "usize": 86
   },
   {
+   "name": "_ZN6Status17inSupernovaSystemEv",
+   "pct": 62.9,
+   "byte": false,
+   "linked": false,
+   "osize": 44,
+   "usize": 42
+  },
+  {
    "name": "_ZN5Agent21setWingmanFriendNamesEP5ArrayIPN11AbyssEngine6StringEE",
    "pct": 63.1,
    "byte": false,
@@ -12398,14 +12350,6 @@
    "linked": false,
    "osize": 30,
    "usize": 30
-  },
-  {
-   "name": "_ZN6Status21wantedBoardAccessibleEv",
-   "pct": 63.6,
-   "byte": false,
-   "linked": false,
-   "osize": 128,
-   "usize": 112
   },
   {
    "name": "_ZN8GameTextC1Ev",
@@ -13432,22 +13376,6 @@
    "usize": 48
   },
   {
-   "name": "_ZN6Status16inFogSkyboxOrbitEv",
-   "pct": 70.0,
-   "byte": false,
-   "linked": false,
-   "osize": 50,
-   "usize": 54
-  },
-  {
-   "name": "_ZN6Status17inPirateLootOrbitEv",
-   "pct": 70.0,
-   "byte": false,
-   "linked": false,
-   "osize": 50,
-   "usize": 54
-  },
-  {
    "name": "ndk23_setCountryCode",
    "pct": 70.0,
    "byte": false,
@@ -14304,6 +14232,14 @@
    "usize": 36
   },
   {
+   "name": "_ZN6Status18setCampaignMissionEP7Mission",
+   "pct": 76.9,
+   "byte": false,
+   "linked": false,
+   "osize": 68,
+   "usize": 52
+  },
+  {
    "name": "_ZN7Globals16getRandomStationEv",
    "pct": 76.9,
    "byte": false,
@@ -14670,6 +14606,14 @@
    "linked": false,
    "osize": 38,
    "usize": 38
+  },
+  {
+   "name": "_ZN6Status12inStormOrbitEv",
+   "pct": 80.0,
+   "byte": false,
+   "linked": false,
+   "osize": 66,
+   "usize": 66
   },
   {
    "name": "_ZN6Wanted7getNameEv",
@@ -15064,6 +15008,30 @@
    "usize": 24
   },
   {
+   "name": "_ZN6Status16inFogSkyboxOrbitEv",
+   "pct": 84.2,
+   "byte": false,
+   "linked": false,
+   "osize": 50,
+   "usize": 50
+  },
+  {
+   "name": "_ZN6Status17inPirateLootOrbitEv",
+   "pct": 84.2,
+   "byte": false,
+   "linked": false,
+   "osize": 50,
+   "usize": 50
+  },
+  {
+   "name": "_ZN6Status18inDeepScienceOrbitEv",
+   "pct": 84.2,
+   "byte": false,
+   "linked": false,
+   "osize": 50,
+   "usize": 50
+  },
+  {
    "name": "_ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE",
    "pct": 84.2,
    "byte": false,
@@ -15126,6 +15094,22 @@
    "linked": false,
    "osize": 76,
    "usize": 76
+  },
+  {
+   "name": "_ZN6Status16inSupernovaOrbitEv",
+   "pct": 84.6,
+   "byte": false,
+   "linked": false,
+   "osize": 34,
+   "usize": 34
+  },
+  {
+   "name": "_ZN6Status19inBlackMarketSystemEv",
+   "pct": 84.6,
+   "byte": false,
+   "linked": false,
+   "osize": 34,
+   "usize": 34
   },
   {
    "name": "_ZN11AbyssEngine6Engine7CopyFBOEv",
@@ -16646,6 +16630,14 @@
    "linked": false,
    "osize": 200,
    "usize": 188
+  },
+  {
+   "name": "_ZN6Status13missionFailedEbx",
+   "pct": 93.5,
+   "byte": false,
+   "linked": false,
+   "osize": 80,
+   "usize": 80
   },
   {
    "name": "_ZN8KIPlayer12setShipGroupEP10AEGeometryib",
@@ -30704,6 +30696,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN6Status12inAlienOrbitEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 10,
+   "usize": 10
+  },
+  {
    "name": "_ZN6Status12jumpgateUsedEv",
    "pct": 100.0,
    "byte": true,
@@ -30750,14 +30750,6 @@
    "linked": true,
    "osize": 4,
    "usize": 4
-  },
-  {
-   "name": "_ZN6Status13missionFailedEbx",
-   "pct": 100.0,
-   "byte": false,
-   "linked": true,
-   "osize": 80,
-   "usize": 80
   },
   {
    "name": "_ZN6Status13setPassengersEi",
@@ -30918,6 +30910,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN6Status17inPlanetRingOrbitEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN6Status17isStorylineWantedEi",
