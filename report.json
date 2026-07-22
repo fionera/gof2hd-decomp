@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 73.57,
   "byte_exact": 1135,
-  "linked_exact": 2232,
-  "fuzzy_perfect": 2232,
+  "linked_exact": 2233,
+  "fuzzy_perfect": 2233,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -8744,14 +8744,6 @@
    "usize": 40
   },
   {
-   "name": "_ZN12Achievements11countMedalsEv",
-   "pct": 43.2,
-   "byte": false,
-   "linked": false,
-   "osize": 126,
-   "usize": 116
-  },
-  {
    "name": "ndk23_Init",
    "pct": 43.2,
    "byte": false,
@@ -13800,6 +13792,14 @@
    "usize": 164
   },
   {
+   "name": "_ZN12Achievements11countMedalsEv",
+   "pct": 70.5,
+   "byte": false,
+   "linked": false,
+   "osize": 126,
+   "usize": 118
+  },
+  {
    "name": "_ZN11AbyssEngine12GlowPPShader4InitEPNS_6EngineE",
    "pct": 70.6,
    "byte": false,
@@ -15160,14 +15160,6 @@
    "usize": 36
   },
   {
-   "name": "_ZN12Achievements28initCheckEquipmentAndWeaponsEv",
-   "pct": 81.6,
-   "byte": false,
-   "linked": false,
-   "osize": 164,
-   "usize": 172
-  },
-  {
    "name": "_ZN11AbyssEngine17BumpShaderRefract4InitEPNS_6EngineE",
    "pct": 81.7,
    "byte": false,
@@ -15958,6 +15950,14 @@
    "linked": false,
    "osize": 46,
    "usize": 48
+  },
+  {
+   "name": "_ZN12Achievements28initCheckEquipmentAndWeaponsEv",
+   "pct": 88.0,
+   "byte": false,
+   "linked": false,
+   "osize": 164,
+   "usize": 172
   },
   {
    "name": "_ZN4Item20transactionBlueprintEbi",
@@ -17830,14 +17830,6 @@
    "linked": false,
    "osize": 88,
    "usize": 84
-  },
-  {
-   "name": "_ZN12Achievements14applyNewMedalsEv",
-   "pct": 97.1,
-   "byte": false,
-   "linked": false,
-   "osize": 88,
-   "usize": 88
   },
   {
    "name": "_ZN4Ship12addEquipmentEP4Item",
@@ -24958,6 +24950,14 @@
    "linked": true,
    "osize": 10,
    "usize": 10
+  },
+  {
+   "name": "_ZN12Achievements14applyNewMedalsEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 88,
+   "usize": 88
   },
   {
    "name": "_ZN12Achievements14getPirateKillsEv",

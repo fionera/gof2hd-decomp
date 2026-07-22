@@ -120,29 +120,30 @@ void Achievements::countMedals() {
     int *r3 = this->medals;
     int total = 0;
     int golds = 0;
-    this->medalCount = 0;
+    this->medalCount = total;
     for (int i = 0; i < 36; ++i) {
         int v = r3[i];
         if (v != 0) {
-            total += 1;
+            total++;
             if (v == 1) {
                 this->medalCount = total;
-                golds += 1;
+                golds++;
             } else {
                 this->medalCount = total;
             }
         }
     }
-    r3 += 144 / 4;
+    const int *base2 = r3 + 36;
+    int j = 0;
     int supers = 0;
-    for (int j = 0; j < 9; ++j) {
-        if (r3[j] != 0)
-            supers += 1;
+    for (; j < 9; ++j) {
+        if (base2[j] != 0)
+            supers++;
     }
-    uint8_t allSuper = (uint8_t)(supers == 9) & (uint8_t)(golds == 36);
-    uint8_t allGold = (uint8_t)(golds == 36);
-    this->gotAllSupernovaMedals_ = allSuper;
-    this->gotAllGoldMedals_ = allGold;
+    int sOk = (supers == 9);
+    int gOk = (golds == 36);
+    this->gotAllSupernovaMedals_ = (uint8_t)(sOk & gOk);
+    this->gotAllGoldMedals_ = (uint8_t)gOk;
     this->gotAllMedals_ = (uint8_t)(total == 36);
 }
 
@@ -512,10 +513,10 @@ void Achievements::initCheckEquipmentAndWeapons() {
     int r = Globals::status->getCurrentCampaignMission();
     if (r >= 8) {
         Array<Item *> *eq = Globals::status->getShip()->getEquipment();
-        int turrets = 0;
         int weapons = 0;
+        int turrets = 0;
         if (eq != nullptr) {
-            for (int i = 0; i < (int)eq->size(); ++i) {
+            for (unsigned i = 0; i < eq->size(); ++i) {
                 if ((*eq)[i] == nullptr) continue;
                 if ((*eq)[i]->getType() == 4) continue;
                 if ((*eq)[i]->getType() == 0) {
@@ -539,6 +540,6 @@ void Achievements::setMedals(int *src, int count) {
         unsigned v = (unsigned) src[i];
         this->medals[i] = (v < 4) ? (int) v : 0;
     }
-    for (; count <= 44; ++count)
+    for (; count < 45; ++count)
         this->medals[count] = 0;
 }
