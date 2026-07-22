@@ -6,6 +6,7 @@
 #include "game/ship/KIPlayer.h"
 #include "game/core/Globals.h"
 #include "game/mission/Status.h"
+#include "game/world/SolarSystem.h"
 
 class Mission;
 
@@ -25,8 +26,6 @@ using ::AbyssEngine::gRadarLayoutSlot;
 int Radar_GetMissionState(void *mission); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 int Radar_GetMissionType(void *mission); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-void *Radar_GetSystemStations(); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 static inline int layout_i32(unsigned char *layout, unsigned off) {
     return *reinterpret_cast<int *>(layout + off);
@@ -115,7 +114,6 @@ Radar::~Radar() {
         delete players;
     }
     this->players = nullptr;
-    this->lockLabel.~String();
 }
 
 uint8_t Radar::hasScanner() {
@@ -151,8 +149,10 @@ void Radar::unlockAsteroid() {
 }
 
 int Radar::getPlanetDockIndex() {
-    int *stations = static_cast<int *>(Radar_GetSystemStations());
-    return stations[this->planetDockIndex];
+    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
+        static_cast<intptr_t>(Globals::status->getSystem()));
+    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
+    return (*stations)[this->planetDockIndex];
 }
 
 void Radar::update(KIPlayer *player) {

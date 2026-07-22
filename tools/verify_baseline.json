@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 74.34,
+  "avg_match": 74.35,
   "compared": 4523
  },
  "imports": [
@@ -422,7 +422,6 @@
   "_Z23LensFlare_Image2DCreatePN11AbyssEngine11PaintCanvasEsPj",
   "_Z23MissionsWindow_draw_r2dP14MissionsWindow",
   "_Z23NewsTicker_build_oiImplP10ModStation",
-  "_Z23Radar_GetSystemStationsv",
   "_Z23SolarSystem_getIndex_ouv",
   "_Z23SolarSystem_getRace_mscv",
   "_Z23SpaceLounge_refresh_otev",

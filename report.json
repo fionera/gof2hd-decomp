@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 74.34,
+  "avg_match": 74.35,
   "byte_exact": 1141,
   "linked_exact": 2306,
   "fuzzy_perfect": 2306,
@@ -2640,6 +2640,14 @@
    "usize": 1628
   },
   {
+   "name": "_ZN5Level21createCampaignMissionEv",
+   "pct": 14.9,
+   "byte": false,
+   "linked": false,
+   "osize": 29676,
+   "usize": 17464
+  },
+  {
    "name": "_ZN4Item12getAttributeEi",
    "pct": 15.0,
    "byte": false,
@@ -2678,14 +2686,6 @@
    "linked": false,
    "osize": 140,
    "usize": 84
-  },
-  {
-   "name": "_ZN5Level21createCampaignMissionEv",
-   "pct": 15.3,
-   "byte": false,
-   "linked": false,
-   "osize": 29676,
-   "usize": 17464
   },
   {
    "name": "_ZN10ModStation10resetLightEv",
@@ -9336,14 +9336,6 @@
    "usize": 22
   },
   {
-   "name": "_ZN5Radar18getPlanetDockIndexEv",
-   "pct": 47.6,
-   "byte": false,
-   "linked": false,
-   "osize": 36,
-   "usize": 18
-  },
-  {
    "name": "_ZN6Status21wantedBoardAccessibleEv",
    "pct": 47.7,
    "byte": false,
@@ -10312,22 +10304,6 @@
    "usize": 180
   },
   {
-   "name": "_ZN5RadarD1Ev",
-   "pct": 51.9,
-   "byte": false,
-   "linked": false,
-   "osize": 34,
-   "usize": 38
-  },
-  {
-   "name": "_ZN5RadarD2Ev",
-   "pct": 51.9,
-   "byte": false,
-   "linked": false,
-   "osize": 34,
-   "usize": 38
-  },
-  {
    "name": "_ZN7MineGun6updateEi",
    "pct": 51.9,
    "byte": false,
@@ -10550,6 +10526,22 @@
    "linked": false,
    "osize": 110,
    "usize": 114
+  },
+  {
+   "name": "_ZN5RadarD1Ev",
+   "pct": 53.8,
+   "byte": false,
+   "linked": false,
+   "osize": 34,
+   "usize": 34
+  },
+  {
+   "name": "_ZN5RadarD2Ev",
+   "pct": 53.8,
+   "byte": false,
+   "linked": false,
+   "osize": 34,
+   "usize": 34
   },
   {
    "name": "_ZN13RecordHandler12writeMissionEP7Missionj",
@@ -14704,6 +14696,14 @@
    "usize": 380
   },
   {
+   "name": "_ZN12WantedWindow11OnTouchMoveEii",
+   "pct": 82.0,
+   "byte": false,
+   "linked": false,
+   "osize": 268,
+   "usize": 268
+  },
+  {
    "name": "_ZN7Station25stationHasHiddenBlueprintEb",
    "pct": 82.0,
    "byte": false,
@@ -14758,14 +14758,6 @@
    "linked": false,
    "osize": 116,
    "usize": 116
-  },
-  {
-   "name": "_ZN12WantedWindow11OnTouchMoveEii",
-   "pct": 83.1,
-   "byte": false,
-   "linked": false,
-   "osize": 268,
-   "usize": 268
   },
   {
    "name": "_ZN11AbyssEngine10QuaternionC1ENS_6AEMath6VectorE",
@@ -15614,6 +15606,14 @@
    "linked": false,
    "osize": 78,
    "usize": 78
+  },
+  {
+   "name": "_ZN5Radar18getPlanetDockIndexEv",
+   "pct": 89.7,
+   "byte": false,
+   "linked": false,
+   "osize": 36,
+   "usize": 36
   },
   {
    "name": "_ZN11AbyssEngine11BumpMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
