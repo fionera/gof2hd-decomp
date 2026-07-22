@@ -14,6 +14,12 @@ namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*);
 namespace AbyssEngine {
     class SpriteSystem;
     class ImageFont;
+    int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int count);
+    int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int start, unsigned int count);
+    void ImageFontCheckString(ImageFont *font, const unsigned short *str, unsigned int count);
+    void SpriteSystemSetAllUv(float u0, float v0, float u1, float v1, SpriteSystem *sys);
+    void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, SpriteSystem *sys);
+    void SpriteSystemSetRGBA(unsigned short idx, float r, float g, float b, float a, SpriteSystem *sys);
 }
 
 namespace {
@@ -1398,11 +1404,11 @@ void PaintCanvas::DrawTextLines(unsigned int font,
     int xoff = 0;
     for (unsigned int i = 0; i < arr->size(); i++) {
         if (center) {
-            int w = paintcanvas_ext_dtl_textwidth(this, font, arr->data()[i]);
+            int w = this->GetTextWidth(font, *arr->data()[i]);
             xoff = -(w >> 1);
         }
-        paintcanvas_ext_dtl_drawstring(this, font, arr->data()[i], xoff + x, y, false);
-        y += paintcanvas_ext_dtl_textheight(this, font);
+        this->DrawString(font, *arr->data()[i], xoff + x, y, false);
+        y += this->GetTextHeight(font);
     }
 }
 
@@ -1449,12 +1455,12 @@ void PaintCanvas::FillRectangle(int x, int y, int w, int h) {
 void PaintCanvas::SpriteSystemSetRGBA(unsigned int index, unsigned short sub,
                                       float a, float b, float c, float d) {
     if (index < this->spriteSystems.count) {
-        PCSpriteSystemView *s = (PCSpriteSystemView *) (this->spriteSystems.data_)[index];
+        AbyssEngine::SpriteSystem *s = (this->spriteSystems.data_)[index];
         if (s) {
             if ((unsigned int) (unsigned short) s->count <= (unsigned int) sub) {
                 return;
             }
-            return paintcanvas_ext_sprite_rgba(sub, a, b, c, d, s);
+            return AbyssEngine::SpriteSystemSetRGBA(sub, a, b, c, d, s);
         }
     }
 }
@@ -1564,7 +1570,7 @@ void PaintCanvas::SpriteSystemSetAllUv(unsigned int index,
     if (sprite == 0) {
         return;
     }
-    return paintcanvas_ext_sprite_alluv(a, b, c, d, sprite);
+    return AbyssEngine::SpriteSystemSetAllUv(a, b, c, d, sprite);
 }
 
 void PaintCanvas::SpriteSystemGetPosition(unsigned int index, unsigned short sub, Vector &out) {
@@ -1614,11 +1620,11 @@ void PaintCanvas::DrawTextLines(unsigned int font,
     int xoff = 0;
     for (unsigned int i = 0; i < arr->size(); i++) {
         if (flag == 0) {
-            int w = paintcanvas_ext_dtl_textwidth(this, font, arr->data()[i]);
+            int w = this->GetTextWidth(font, *arr->data()[i]);
             xoff = (int) p5 - w;
         }
-        paintcanvas_ext_dtl_drawstring(this, font, arr->data()[i], xoff + x, y, false);
-        y += paintcanvas_ext_dtl_textheight(this, font);
+        this->DrawString(font, *arr->data()[i], xoff + x, y, false);
+        y += this->GetTextHeight(font);
     }
 }
 
@@ -1663,8 +1669,8 @@ int PaintCanvas::GetTextWidth(unsigned int index, const AbyssEngine::String &str
                               unsigned int begin, unsigned int end) {
     if (index < this->fonts.count) {
         AbyssEngine::ImageFont *font = (this->fonts.data_)[index];
-        char *text = (char *) paintcanvas_ext_str_text(&str);
-        return paintcanvas_ext_text_width_range(font, text, begin, end - begin);
+        const unsigned short *text = (const unsigned short *) str;
+        return AbyssEngine::ImageFontGetWidth(font, text, begin, end - begin);
     }
     return 0;
 }
@@ -1708,7 +1714,7 @@ AbyssEngine::Mesh *PaintCanvas::MeshGetPointer(unsigned int index) {
 }
 
 void PaintCanvas::MeshChangeResourceMaterial(unsigned int meshIndex, unsigned short resId) {
-    char *r = paintcanvas_ext_find_res(this, resId);
+    char *r = (char *) this->FindResource(resId);
     if (r) {
         int idx = ((PCResourceView *) r)->handle;
         if (idx + 1 != 0) {
@@ -1728,7 +1734,7 @@ void PaintCanvas::SetColor(unsigned int color) {
     this->colorG = c1;
     this->colorB = c2;
     this->colorA = c3;
-    return paintcanvas_ext_setcolor(this->engine, c0, c1, c2, c3);
+    return this->engine->SetColor(c0, c1, c2, c3);
 }
 
 void PaintCanvas::Vibrate(unsigned short) {
@@ -1763,7 +1769,7 @@ unsigned int PaintCanvas::GetMeshResourceId(AbyssEngine::String &name, unsigned 
     for (unsigned int i = 0; i < this->resources.count; ++i) {
         PCResourceView *res = (PCResourceView *) (this->resources.data_)[i];
         if (res && res->type == 4) {
-            if (paintcanvas_ext_strcmp(&name, *(char **) res->payload) == 0) {
+            if (name.Compare(*(const char **) res->payload) == 0) {
                 PCResourceView *res2 = (PCResourceView *) (this->resources.data_)[i];
                 if (((PCMaterialIdView *) res2->payload)->materialId == p2) {
                     return res2->id;
@@ -1777,8 +1783,8 @@ unsigned int PaintCanvas::GetMeshResourceId(AbyssEngine::String &name, unsigned 
 int PaintCanvas::GetTextWidth(unsigned int index, const AbyssEngine::String &str) {
     if (index < this->fonts.count) {
         AbyssEngine::ImageFont *font = (this->fonts.data_)[index];
-        char *data = (char *) paintcanvas_ext_str_text(&str);
-        return paintcanvas_ext_text_width(font, (unsigned int) (uintptr_t) data, str.size());
+        const unsigned short *data = (const unsigned short *) str;
+        return AbyssEngine::ImageFontGetWidth(font, data, str.length);
     }
     return 0;
 }
@@ -1810,7 +1816,7 @@ void PaintCanvas::SetColor(unsigned char r, unsigned char g,
     this->colorG = fg;
     this->colorB = fb;
     this->colorA = fa;
-    return paintcanvas_ext_setcolor(this->engine, fr, fg, fb, fa);
+    return this->engine->SetColor(fr, fg, fb, fa);
 }
 
 float PaintCanvas::CameraGetCurrentFactor1() {
@@ -2095,12 +2101,12 @@ void PaintCanvas::CheckNUseRefractFBO(bool) {
 void PaintCanvas::SpriteSystemSetUv(unsigned int index, unsigned short sub,
                                     float a, float b, float c, float d) {
     if (index < this->spriteSystems.count) {
-        PCSpriteSystemView *s = (PCSpriteSystemView *) (this->spriteSystems.data_)[index];
+        AbyssEngine::SpriteSystem *s = (this->spriteSystems.data_)[index];
         if (s) {
             if ((unsigned int) (unsigned short) s->count <= (unsigned int) sub) {
                 return;
             }
-            return paintcanvas_ext_sprite_uv(sub, a, b, c, d, s);
+            return AbyssEngine::SpriteSystemSetUv(sub, a, b, c, d, s);
         }
     }
 }
@@ -5146,8 +5152,8 @@ PaintCanvas::TransformGet2DPickedTextureRegion(unsigned int transformIndex, int 
 void PaintCanvas::CheckString(unsigned int index, const AbyssEngine::String &str) {
     if (index < this->fonts.count) {
         AbyssEngine::ImageFont *font = (this->fonts.data_)[index];
-        char *data = (char *) paintcanvas_ext_str_text(&str);
-        return paintcanvas_ext_check_string(font, (unsigned int) (uintptr_t) data, str.size());
+        const unsigned short *data = (const unsigned short *) str;
+        return AbyssEngine::ImageFontCheckString(font, data, str.length);
     }
 }
 
