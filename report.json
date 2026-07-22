@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 74.46,
-  "byte_exact": 1141,
-  "linked_exact": 2307,
-  "fuzzy_perfect": 2307,
+  "avg_match": 74.51,
+  "byte_exact": 1143,
+  "linked_exact": 2308,
+  "fuzzy_perfect": 2308,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2584,6 +2584,14 @@
    "usize": 792
   },
   {
+   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
+   "pct": 14.8,
+   "byte": false,
+   "linked": false,
+   "osize": 2632,
+   "usize": 1628
+  },
+  {
    "name": "_ZN12HangarWindow27refreshCurrentContentHeightEv",
    "pct": 14.8,
    "byte": false,
@@ -2622,14 +2630,6 @@
    "linked": false,
    "osize": 44,
    "usize": 22
-  },
-  {
-   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
-   "pct": 14.9,
-   "byte": false,
-   "linked": false,
-   "osize": 2632,
-   "usize": 1628
   },
   {
    "name": "_ZN4Item12getAttributeEi",
@@ -2728,20 +2728,20 @@
    "usize": 82
   },
   {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
+  },
+  {
    "name": "_ZN11AbyssEngine6String4TrimEv",
    "pct": 15.7,
    "byte": false,
    "linked": false,
    "osize": 132,
    "usize": 152
-  },
-  {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -7912,14 +7912,6 @@
    "usize": 268
   },
   {
-   "name": "_ZN12HangarWindow23getRelativeScrollHeightEv",
-   "pct": 40.0,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 64
-  },
-  {
    "name": "_ZN12StatusWindow23getRelativeScrollHeightEv",
    "pct": 40.0,
    "byte": false,
@@ -8752,14 +8744,6 @@
    "usize": 124
   },
   {
-   "name": "_ZN12HangarWindow9mountItemEP4Item",
-   "pct": 44.7,
-   "byte": false,
-   "linked": false,
-   "osize": 384,
-   "usize": 368
-  },
-  {
    "name": "_ZN5MGame5resetEv",
    "pct": 44.7,
    "byte": false,
@@ -8926,14 +8910,6 @@
    "linked": false,
    "osize": 104,
    "usize": 82
-  },
-  {
-   "name": "_ZN12HangarWindow11demountItemEP4Itemi",
-   "pct": 45.6,
-   "byte": false,
-   "linked": false,
-   "osize": 404,
-   "usize": 396
   },
   {
    "name": "_ZN17ScrollTouchWindow7setTextEN11AbyssEngine6StringES1_i",
@@ -9614,14 +9590,6 @@
    "linked": false,
    "osize": 144,
    "usize": 112
-  },
-  {
-   "name": "_ZN12HangarWindow14getCurrentItemEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 4
   },
   {
    "name": "_ZN13PlayerFighter12setBoostProbEi",
@@ -11510,14 +11478,6 @@
    "linked": false,
    "osize": 64,
    "usize": 68
-  },
-  {
-   "name": "_ZN12HangarWindow13highlightItemEP8ListItem",
-   "pct": 58.7,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 86
   },
   {
    "name": "_zip_free",
@@ -15728,6 +15688,14 @@
    "usize": 584
   },
   {
+   "name": "_ZN12HangarWindow13highlightItemEP8ListItem",
+   "pct": 90.2,
+   "byte": false,
+   "linked": false,
+   "osize": 100,
+   "usize": 100
+  },
+  {
    "name": "_ZN5Level12attackWantedEi",
    "pct": 90.2,
    "byte": false,
@@ -15806,6 +15774,14 @@
    "linked": false,
    "osize": 74,
    "usize": 76
+  },
+  {
+   "name": "_ZN12HangarWindow9mountItemEP4Item",
+   "pct": 90.7,
+   "byte": false,
+   "linked": false,
+   "osize": 384,
+   "usize": 384
   },
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setEnvironmentVariables",
@@ -16624,6 +16600,14 @@
    "usize": 50
   },
   {
+   "name": "_ZN12Achievements8getValueEii",
+   "pct": 94.7,
+   "byte": false,
+   "linked": false,
+   "osize": 28,
+   "usize": 28
+  },
+  {
    "name": "_ZN5ArrayIbED2Ev",
    "pct": 94.7,
    "byte": false,
@@ -16790,6 +16774,14 @@
    "linked": false,
    "osize": 56,
    "usize": 56
+  },
+  {
+   "name": "_ZN12HangarWindow11demountItemEP4Itemi",
+   "pct": 95.8,
+   "byte": false,
+   "linked": false,
+   "osize": 404,
+   "usize": 404
   },
   {
    "name": "_ZN6AEFile11GetFileSizeEj",
@@ -24696,14 +24688,6 @@
    "usize": 4
   },
   {
-   "name": "_ZN12Achievements8getValueEii",
-   "pct": 100.0,
-   "byte": false,
-   "linked": true,
-   "osize": 28,
-   "usize": 28
-  },
-  {
    "name": "_ZN12Achievements8hasMedalEii",
    "pct": 100.0,
    "byte": true,
@@ -24936,12 +24920,28 @@
    "usize": 4
   },
   {
+   "name": "_ZN12HangarWindow14getCurrentItemEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
    "name": "_ZN12HangarWindow15isInSpecialModeEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
+  },
+  {
+   "name": "_ZN12HangarWindow23getRelativeScrollHeightEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 84,
+   "usize": 84
   },
   {
    "name": "_ZN12HangarWindow24currentItemIsHighlightedEv",

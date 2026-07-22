@@ -74,7 +74,7 @@ static int *g_hw_notEnoughTextId;
 static int *g_hw_helpTextId;
 static int *g_hw_sellShipTextId;
 static int *g_hw_baseTextId;
-static FModSound **g_hw_sound;
+static FModSound **g_hw_sound = &Globals::sound;
 static int *g_hw_bpTextId;
 static int *g_hw_buyTextId;
 static int *g_hw_buyTextId2;
@@ -1092,10 +1092,11 @@ int HangarWindow::highlightItem(ListItem *item) {
 
 void HangarWindow::demountItem(Item *item, int slot) {
     int type = item->getType();
+    int amount = 1;
     if (type == 1)
-        item->getAmount();
+        amount = item->getAmount();
 
-    Item *made = item->makeItem();
+    Item *made = item->makeItem(amount);
     Globals::status->getShip()->addCargo(made);
 
     Ship *ship = Globals::status->getShip();
@@ -1104,18 +1105,19 @@ void HangarWindow::demountItem(Item *item, int slot) {
     else
         ship->freeSlot(item, slot);
 
-    bool merged = false;
-    Array<Item *> *cargo = this->itemList;
-    for (unsigned int i = 0; i < cargo->size(); i++) {
-        Item *cur = cargo->data()[i];
-        if (cur->getIndex() == made->getIndex()) {
-            cur->changeAmount(item->getAmount());
-            merged = true;
-            break;
+    {
+        unsigned int i = 0;
+        while (i < this->itemList->size()) {
+            Item *cur = this->itemList->data()[i];
+            i++;
+            if (cur->getIndex() == made->getIndex()) {
+                cur->changeAmount(made->getAmount());
+                goto demount_found;
+            }
         }
-    }
-    if (!merged)
         ArrayAdd(made, *(this->itemList));
+        demount_found:;
+    }
 
     Globals::status->getShip()->setCargo(Item::extractItems(this->itemList, true));
 
@@ -1718,15 +1720,13 @@ float HangarWindow::getRelativeScrollHeight() {
         return 0.0f;
     }
     int e = this->scrollOffset;
-    int num;
     if (e >= 1) {
-        num = b - e;
-    } else if (e >= b - a) {
-        num = b;
-    } else {
-        num = e + a;
+        return (float)(b - e) / (float)a;
     }
-    return (float) num / (float) a;
+    if (e >= b - a) {
+        return (float)b / (float)a;
+    }
+    return (float)(e + a) / (float)a;
 }
 
 void HangarWindow::transaction(bool buy) {
@@ -1816,10 +1816,10 @@ void HangarWindow::mountItem(Item *item) {
     if (type == 1)
         amount = item->getAmount();
 
-    Item *made = item->makeItem();
+    Item *made = item->makeItem(amount);
     Ship *ship = Globals::status->getShip();
     ship->addEquipment(made);
-    Globals::status->getShip()->removeCargo(made->getIndex(), (type == 1) ? amount : 1);
+    Globals::status->getShip()->removeCargo(made->getIndex(), (type == 1) ? made->getAmount() : 1);
 
     Array<Item *> *cargo = this->itemList;
     if (cargo != nullptr) {
@@ -1828,13 +1828,13 @@ void HangarWindow::mountItem(Item *item) {
             if (cur->getIndex() == item->getIndex()) {
                 int change;
                 if (cur->getStationAmount() == 0) {
-                    if (type == 1 || item->getAmount() == 1) {
+                    if (type == 1 || cur->getAmount() == 1) {
                         ArrayRemove(cur, *this->itemList);
                         break;
                     }
                     change = -1;
                 } else if (type == 1) {
-                    change = -item->getAmount();
+                    change = -cur->getAmount();
                 } else {
                     change = -1;
                 }
@@ -2355,7 +2355,7 @@ HangarWindow::HangarWindow() {
 unsigned char HangarWindow::isInitialized() { return this->active; }
 
 ListItem *HangarWindow::getCurrentItem() {
-    return reinterpret_cast<ListItem *>(this->progressBarBorderImage);
+    return this->selectedItem;
 }
 
 int HangarWindow::lastTab;
