@@ -674,28 +674,28 @@ void String::PrintOut() {
 String::String() : data(nullptr), length(0) {
 }
 
-String::String(const char *cstr, bool reverse) : data(nullptr), length(0) {
+String::String(const char *cstr, bool reverse) : data(nullptr) {
     Set(cstr);
     if (reverse) Reverse();
 }
 
-String::String(const uint16_t *wstr, bool reverse) : data(nullptr), length(0) {
+String::String(const uint16_t *wstr, bool reverse) : data(nullptr) {
     Set((const unsigned short *) wstr);
     if (reverse) Reverse();
 }
 
-String::String(const String &other, bool reverse) : data(nullptr), length(0) {
+String::String(const String &other, bool reverse) : data(nullptr) {
     Set(other.data);
     if (reverse) Reverse();
 }
 
-String::String(char c) : data(nullptr), length(0) { Set((long long) c); }
+String::String(char c) : data(nullptr) { Set((long long) c); }
 
-String::String(int v) : data(nullptr), length(0) { Set((long long) v); }
+String::String(int v) : data(nullptr) { Set((long long) v); }
 
-String::String(float v) : data(nullptr), length(0) { ctor_float(v); }
+String::String(float v) : data(nullptr) { ctor_float(v); }
 
-String::String(long long v) : data(nullptr), length(0) { ctor_longlong(v); }
+String::String(long long v) : data(nullptr) { ctor_longlong(v); }
 
 String &String::operator+=(const String &other) {
     const unsigned short *src = other.data;
