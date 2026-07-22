@@ -75,7 +75,7 @@ void DialogueWindow_ctor(...);
 
 static inline void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on) { c->enableFirstPersonCam(on); }
 
-static int *g_maneuverScale;
+static int *g_maneuverScale = &Globals::w;
 
 void MGame::maneuverTouchEnd(int a, int b, void *p) { // lint: void_ptr -- exported method signature (Pv)
     // lint: void_ptr -- exported method signature (Pv)
@@ -477,7 +477,7 @@ tail:
     this->freeCamDragging = 1;
 }
 
-static GameText **g_gameText;
+static GameText **g_gameText = &Globals::gameText;
 
 void MGame::useCloak() {
     void (::PlayerEgo::*pmf)() = &::PlayerEgo::toggleCloaking;
@@ -735,7 +735,7 @@ void MGame::OnUpdate() {
 
 static RecordHandler **g_record;
 
-static FModSound **g_fmod;
+static FModSound **g_fmod = &Globals::sound;
 
 void Level_onSuspend(...);
 
@@ -1979,21 +1979,22 @@ void MGame::handleAccelerometer() {
 
     float yaw = (float) (acc[1] * 2.5);
     float steer = 1.0f;
+    int *shipField = (this->timeWarpState > 0) ? &this->field_0x44 : &this->deltaTime;
     if (yaw <= 1.0f) {
         steer = -1.0f;
         if (yaw < -1.0f) {
-            this->player->left(0x32, steer * steer);
+            this->player->left(*shipField, steer * steer);
             goto afterYaw;
         }
         steer = yaw;
         if (yaw < 0.0f) {
-            this->player->left(0x32, steer * steer);
+            this->player->left(*shipField, steer * steer);
             goto afterYaw;
         }
         if (yaw == 0.0f)
             goto afterYaw;
     }
-    this->player->right(0x32, steer * steer);
+    this->player->right(*shipField, steer * steer);
 
 afterYaw: {
         AbyssEngine::ApplicationManager *appMgr = this->applicationManager;
@@ -2040,7 +2041,7 @@ afterYaw: {
         float roll = (aAbs < bAbs) ? b3 : a3;
 
         float rollMag = 1.0f;
-        int *shipField = (this->timeWarpState > 0) ? &this->field_0x44 : &this->deltaTime;
+        shipField = (this->timeWarpState > 0) ? &this->field_0x44 : &this->deltaTime;
         if (roll <= 1.0f) {
             rollMag = -1.0f;
             if (roll < -1.0f) {
