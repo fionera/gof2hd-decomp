@@ -539,6 +539,7 @@ void PlayerFighter::cloak(int dur, bool b) {
 void PlayerFighter::setMissionCrate(bool on) {
     this->isMissionCrate() = on;
     if (on) {
+        this->lootList() = nullptr;
         this->lootList() = new Array<int>();
         int mission = (int) (intptr_t) Globals::status->getMission();
         int type = ((Mission *) (mission))->getType();
@@ -677,9 +678,11 @@ void PlayerFighter::setExhaustVisible(bool vis) {
     int geom = this->geometry();
     if (geom != 0) {
         int sub = this->subGeometry();
-        int id = (sub != 0)
-                     ? (int) ((AEGeometry *) (intptr_t) sub)->childTransform
-                     : (int) ((AEGeometry *) (intptr_t) geom)->childTransform;
+        int id;
+        if (sub != 0)
+            id = (int) ((AEGeometry *) (intptr_t) sub)->childTransform;
+        else
+            id = (int) ((AEGeometry *) (intptr_t) geom)->childTransform;
         if (id != -1) {
             unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
 

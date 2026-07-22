@@ -184,12 +184,6 @@ KIPlayer::~KIPlayer() {
         delete this->spacePoints;
         this->spacePoints = 0;
     }
-
-    {
-        if (this->name.data) delete[] this->name.data;
-        this->name.data = nullptr;
-        this->name.length = 0;
-    }
 }
 
 int KIPlayer::getSpeed() {
@@ -598,9 +592,10 @@ void KIPlayer::setShipGroup(AEGeometry *geom, int group, bool flag) {
     }
     this->geometry->setPosition(this->posX, this->posY, this->posZ);
     *(Matrix *) this->player->transform = this->geometry->getMatrix();
-    if (this->parentGeometry != 0)
-        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) this->player->transform,
-                                            this->parentGeometry->getMatrix());
+    if (this->parentGeometry != 0) {
+        Matrix &pm = this->parentGeometry->getMatrix();
+        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) this->player->transform, pm);
+    }
 }
 
 void KIPlayer::setPosition(const Vector &v) {

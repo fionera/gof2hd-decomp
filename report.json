@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.78,
+  "avg_match": 73.79,
   "byte_exact": 1137,
   "linked_exact": 2271,
   "fuzzy_perfect": 2271,
@@ -15840,14 +15840,6 @@
    "usize": 62
   },
   {
-   "name": "_ZN8KIPlayer12setShipGroupEP10AEGeometryib",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 160
-  },
-  {
    "name": "_ZN11TouchSliderC1Eiiif",
    "pct": 89.2,
    "byte": false,
@@ -15910,22 +15902,6 @@
    "linked": false,
    "osize": 48,
    "usize": 48
-  },
-  {
-   "name": "_ZN8KIPlayerD1Ev",
-   "pct": 89.6,
-   "byte": false,
-   "linked": false,
-   "osize": 188,
-   "usize": 188
-  },
-  {
-   "name": "_ZN8KIPlayerD2Ev",
-   "pct": 89.6,
-   "byte": false,
-   "linked": false,
-   "osize": 188,
-   "usize": 188
   },
   {
    "name": "_Z19ArrayReleaseClassesIP10RepairBeamEvR5ArrayIT_E",
@@ -16584,14 +16560,6 @@
    "usize": 290
   },
   {
-   "name": "_ZN13PlayerFighter15setMissionCrateEb",
-   "pct": 91.9,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 92
-  },
-  {
    "name": "_ZN6WantedC1EiN11AbyssEngine6StringEiibiiiiiiiii",
    "pct": 91.9,
    "byte": false,
@@ -16920,12 +16888,36 @@
    "usize": 188
   },
   {
+   "name": "_ZN8KIPlayer12setShipGroupEP10AEGeometryib",
+   "pct": 93.5,
+   "byte": false,
+   "linked": false,
+   "osize": 152,
+   "usize": 156
+  },
+  {
    "name": "_ZN5Route5resetEv",
    "pct": 93.8,
    "byte": false,
    "linked": false,
    "osize": 36,
    "usize": 36
+  },
+  {
+   "name": "_ZN8KIPlayerD1Ev",
+   "pct": 93.8,
+   "byte": false,
+   "linked": false,
+   "osize": 188,
+   "usize": 172
+  },
+  {
+   "name": "_ZN8KIPlayerD2Ev",
+   "pct": 93.8,
+   "byte": false,
+   "linked": false,
+   "osize": 188,
+   "usize": 172
   },
   {
    "name": "_ZN20FileInterfaceAndroid4SeekEj",
@@ -17574,6 +17566,14 @@
    "linked": false,
    "osize": 98,
    "usize": 98
+  },
+  {
+   "name": "_ZN13PlayerFighter15setMissionCrateEb",
+   "pct": 97.4,
+   "byte": false,
+   "linked": false,
+   "osize": 96,
+   "usize": 96
   },
   {
    "name": "_ZN4Ship8setCargoEP5ArrayIP4ItemE",
