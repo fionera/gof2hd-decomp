@@ -117,12 +117,12 @@ void AEGeometry::setLodMeshesWithMeshIds(uint16_t *meshes, uint32_t *meshIds, in
     for (int i = 0; i < count; i++) {
         this->lodMeshes[i] = meshes[i];
         this->lodDistancesSq[i] = (unsigned long long) (long long) dists[i];
-        AEGeomCanvas::TransformCreate(this->canvas, &this->lodTransforms[i]);
+        this->canvas->TransformCreate(this->lodTransforms[i]);
         _ae_TransformAddMeshId((uint32_t)(uintptr_t)this->canvas, this->lodTransforms[i], meshIds[i]);
         unsigned long long v = this->lodDistancesSq[i];
         this->lodDistancesSq[i] = v * v;
         if (this->childTransform != 0xffffffffu)
-            AEGeomCanvas::TransformAddChild(this->canvas, this->lodTransforms[i], this->childTransform);
+            this->canvas->TransformAddChild(this->lodTransforms[i], this->childTransform);
     }
 }
 
@@ -131,7 +131,7 @@ void AEGeometry::setLodLastVisibleDistance(uint64_t d) {
 }
 
 Vector AEGeometry::getRightVector() {
-    Matrix &loc = *(Matrix *) AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
+    Matrix &loc = *(Matrix *) this->canvas->TransformGetLocal(this->transform);
     return MatrixGetRight(loc);
 }
 
@@ -145,7 +145,7 @@ Matrix &AEGeometry::getMatrix() {
 }
 
 Vector AEGeometry::getDirection() {
-    Matrix &loc = *(Matrix *) AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
+    Matrix &loc = *(Matrix *) this->canvas->TransformGetLocal(this->transform);
     return MatrixGetDir(loc);
 }
 
@@ -186,12 +186,12 @@ void AEGeometry::setLodMeshes(uint16_t *meshes, int *dists, int count) {
     for (int i = 0; i < count; i++) {
         this->lodMeshes[i] = meshes[i];
         this->lodDistancesSq[i] = (unsigned long long) (long long) dists[i];
-        AEGeomCanvas::TransformCreate(this->canvas, &this->lodTransforms[i]);
-        _ae_TransformAddMesh((uint32_t)(uintptr_t)this->canvas, this->lodTransforms[i], meshes[i], 0);
+        this->canvas->TransformCreate(this->lodTransforms[i]);
+        this->canvas->TransformAddMesh(this->lodTransforms[i], meshes[i], 0);
         unsigned long long v = this->lodDistancesSq[i];
         this->lodDistancesSq[i] = v * v;
         if (this->childTransform != 0xffffffffu)
-            AEGeomCanvas::TransformAddChild(this->canvas, this->lodTransforms[i], this->childTransform);
+            this->canvas->TransformAddChild(this->lodTransforms[i], this->childTransform);
     }
 }
 
@@ -231,11 +231,11 @@ void AEGeometry::setLodChildMeshes(uint16_t *meshes) {
         this->lodChildTransforms = new uint32_t[count];
         for (int i = 0; i < count; i++) {
             this->lodChildMeshes[i] = meshes[i];
-            AEGeomCanvas::TransformCreate(this->canvas, &this->lodChildTransforms[i]);
-            _ae_TransformAddMesh((uint32_t)(uintptr_t)this->canvas, this->lodChildTransforms[i], meshes[i], 0);
-            AEGeomCanvas::TransformAddChild(this->canvas, this->lodTransforms[i], this->lodChildTransforms[i]);
+            this->canvas->TransformCreate(this->lodChildTransforms[i]);
+            this->canvas->TransformAddMesh(this->lodChildTransforms[i], meshes[i], 0);
+            this->canvas->TransformAddChild(this->lodTransforms[i], this->lodChildTransforms[i]);
             _ae_TransformRemoveChild(this->canvas, this->lodTransforms[i], this->childTransform);
-            AEGeomCanvas::TransformAddChild(this->canvas, this->lodTransforms[i], this->childTransform);
+            this->canvas->TransformAddChild(this->lodTransforms[i], this->childTransform);
             count = this->lodCount;
         }
     }
@@ -466,7 +466,7 @@ void AEGeometry::setLodChildTransform(uint32_t param) {
     if (count > 0) {
         this->lodChildTransforms = new uint32_t[count];
         for (int i = 0; i < count; i++) {
-            AEGeomCanvas::TransformAddChild(this->canvas, this->lodTransforms[i], param);
+            this->canvas->TransformAddChild(this->lodTransforms[i], param);
             count = this->lodCount;
         }
     }
