@@ -17,6 +17,8 @@ namespace AbyssEngine {
     int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int count);
     int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int start, unsigned int count);
     void ImageFontCheckString(ImageFont *font, const unsigned short *str, unsigned int count);
+    void ImageFontDrawString(ImageFont *font, const unsigned short *str, unsigned int len, int x, int y, PaintCanvas *canvas, Engine *engine, bool flag);
+    void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int y, PaintCanvas *canvas, Engine *engine, bool flag);
     void SpriteSystemSetAllUv(float u0, float v0, float u1, float v1, SpriteSystem *sys);
     void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, SpriteSystem *sys);
     void SpriteSystemSetRGBA(unsigned short idx, float r, float g, float b, float a, SpriteSystem *sys);
@@ -1466,9 +1468,8 @@ void PaintCanvas::SpriteSystemSetRGBA(unsigned int index, unsigned short sub,
 }
 
 void PaintCanvas::TransformCreate(unsigned int &out) {
-    char *obj = (char *) paintcanvas_ext_alloc(0x180);
-    paintcanvas_ext_transform_ctor(obj);
-    paintcanvas_ext_add_child(obj, &this->transformCount);
+    AbyssEngine::Transform *obj = new AbyssEngine::Transform();
+    ArrayAdd<AbyssEngine::Transform *>(obj, *reinterpret_cast<Array<AbyssEngine::Transform *> *>(&this->transformCount));
     out = this->transformCount - 1;
 }
 
@@ -2058,7 +2059,7 @@ void PaintCanvas::MeshSetNormal(unsigned int index, unsigned short vtx, const Ve
 }
 
 void PaintCanvas::MeshClear2DMask() {
-    this->mask2dImage = 0;
+    this->field_0x20 = 0;
 }
 
 unsigned int PaintCanvas::GetMeshResourceId(AbyssEngine::String &name) {
@@ -2554,7 +2555,7 @@ int PaintCanvas::MeshGetTriCount(AbyssEngine::Mesh *mesh) {
         if (mesh->animation == 0) {
             tri = 0;
         } else {
-            tri = paintcanvas_ext_transform_tricount(this, mesh->animation);
+            tri = this->TransformGetTriCount(mesh->animation);
         }
         int q = (int) ((unsigned) (mesh->indexCount) / (unsigned) (3));
         return q + tri;
@@ -2845,10 +2846,9 @@ void PaintCanvas::End3d() {
 void PaintCanvas::MeshCloneMaterial(unsigned int index, unsigned int &out) {
     int result;
     if (index < this->meshCount) {
-        char *obj = (char *) paintcanvas_ext_alloc(0x74);
         PCMeshView *mesh = (PCMeshView *) (this->meshes)[index];
-        paintcanvas_ext_material_clone(obj, mesh->material);
-        paintcanvas_ext_material_add(obj, &this->materials);
+        AbyssEngine::Material *obj = new AbyssEngine::Material(mesh->material);
+        ArrayAdd<AbyssEngine::Material *>(obj, this->materials);
         result = (int) this->materials.count - 1;
     } else {
         result = -1;
@@ -2940,7 +2940,7 @@ void PaintCanvas::SetResourceList(AbyssEngine::Resource * const * list, unsigned
 void PaintCanvas::MaterialResourceChangeTexture(unsigned int resId,
                                                 unsigned int texture, int slot) {
     if ((unsigned int) slot < 8) {
-        char *r = paintcanvas_ext_find_res(this, resId);
+        char *r = (char *) this->FindResource((unsigned short) resId);
         if (r) {
             unsigned int matIdx = (unsigned int) ((PCResourceView *) r)->handle;
             if (matIdx + 1 != 0 && matIdx < this->materials.count) {
@@ -2952,18 +2952,20 @@ void PaintCanvas::MaterialResourceChangeTexture(unsigned int resId,
 }
 
 void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child) {
-    unsigned int count = this->transformCount;
-    if (parent != child && child < count && parent < count) {
-        char **arr = this->transforms;
-        PCTransformView *p = (PCTransformView *) arr[parent];
-        char *c = arr[child];
-        ArrayAdd<Transform *>((Transform *) c, *reinterpret_cast<Array<Transform *> *>(&p->childCount));
-        char **arr2 = this->transforms;
-        PCTransformView *p2 = (PCTransformView *) arr2[parent];
-        char *c2 = arr2[child];
-        paintcanvas_ext_child_link(&p2->bsphere, c2, p2);
-        char **arr3 = this->transforms;
-        return paintcanvas_ext_transform_dirty(arr3[parent]);
+    if (parent != child) {
+        unsigned int count = this->transformCount;
+        if (child < count && parent < count) {
+            char **arr = this->transforms;
+            AbyssEngine::Transform *p = (AbyssEngine::Transform *) arr[parent];
+            AbyssEngine::Transform *c = (AbyssEngine::Transform *) arr[child];
+            ArrayAdd<AbyssEngine::Transform *>(c, p->children);
+            arr = this->transforms;
+            p = (AbyssEngine::Transform *) arr[parent];
+            c = (AbyssEngine::Transform *) arr[child];
+            p->bounds().Merge(*c);
+            arr = this->transforms;
+            return paintcanvas_ext_transform_dirty(arr[parent]);
+        }
     }
 }
 
@@ -3704,7 +3706,10 @@ void PaintCanvas::GetScreenPosition(AbyssEngine::AEMath::Matrix &m,
 int PaintCanvas::ResourceLoaded(unsigned int index, AbyssEngine::ResourceType type) {
     unsigned int count;
     switch (type) {
-        case 1: {
+        case 1:
+            count = this->fonts.count;
+            break;
+        case 2: {
             PCResourceView *res = (PCResourceView *) (this->resources.data_)[index];
             if (res->type == 2) {
                 int handle = res->handle;
@@ -3712,9 +3717,6 @@ int PaintCanvas::ResourceLoaded(unsigned int index, AbyssEngine::ResourceType ty
             }
             return 0;
         }
-        case 2:
-            count = this->fonts.count;
-            break;
         case 3:
             count = this->images.count;
             break;
@@ -3736,7 +3738,7 @@ int PaintCanvas::ResourceLoaded(unsigned int index, AbyssEngine::ResourceType ty
 int PaintCanvas::TransformGetTriCount(unsigned int index) {
     if (index < this->transformCount) {
         PCTransformView *t = (PCTransformView *) (this->transforms)[index];
-        return paintcanvas_ext_transform_tricount(this, t);
+        return this->TransformGetTriCount((AbyssEngine::Transform *) t);
     }
     return 0;
 }
@@ -3857,9 +3859,9 @@ void PaintCanvas::TransformRemoveMesh(unsigned int transformIndex, unsigned shor
     if (this->transformCount <= transformIndex) {
         return;
     }
-    char *x = paintcanvas_ext_find_mesh(this, meshResId);
+    char *x = (char *) this->FindResource(meshResId);
     if (x) {
-        return paintcanvas_ext_remove_mesh(this, transformIndex, ((PCResourceView *) x)->handle);
+        return this->TransformRemoveMeshId(transformIndex, (unsigned int) ((PCResourceView *) x)->handle);
     }
 }
 
@@ -3881,14 +3883,16 @@ bool PaintCanvas::WarmUpTexture() {
 }
 
 void PaintCanvas::TransformRemoveChild(unsigned int parent, unsigned int child) {
-    unsigned int count = this->transformCount;
-    if (parent != child && child < count && parent < count) {
-        char **arr = this->transforms;
-        char *p = arr[parent];
-        char *c = arr[child];
-        paintcanvas_ext_array_remove(c, p + 0x4c);
-        char **arr2 = this->transforms;
-        return paintcanvas_ext_transform_dirty(arr2[parent]);
+    if (parent != child) {
+        unsigned int count = this->transformCount;
+        if (child < count && parent < count) {
+            char **arr = this->transforms;
+            AbyssEngine::Transform *p = (AbyssEngine::Transform *) arr[parent];
+            AbyssEngine::Transform *c = (AbyssEngine::Transform *) arr[child];
+            ArrayRemove<AbyssEngine::Transform *>(c, p->children);
+            arr = this->transforms;
+            return paintcanvas_ext_transform_dirty(arr[parent]);
+        }
     }
 }
 
@@ -4514,10 +4518,9 @@ void PaintCanvas::DrawString(unsigned int index, const unsigned short *str,
                              int x, int y, bool b) {
     if (index < this->fonts.count) {
         PCFontView *font = (PCFontView *) (this->fonts.data_)[index];
-        paintcanvas_ext_string_prep(this, font->atlas, -1);
+        this->SetTexture((unsigned int)(uintptr_t)font->atlas, (unsigned int)-1);
         AbyssEngine::ImageFont *font2 = (this->fonts.data_)[index];
-        paintcanvas_ext_drawstring_raw(font2, str, x, y, this,
-                                       this->engine, b);
+        AbyssEngine::ImageFontDrawString(font2, str, x, y, this, this->engine, b);
     }
 }
 
@@ -5005,17 +5008,18 @@ void PaintCanvas::SpriteSystemGetPosition(unsigned int index, unsigned short sub
 }
 
 void PaintCanvas::MeshSet2DMask(unsigned int index, int, int) {
-    unsigned int i = index;
     if (this->images.count <= index) {
         return;
     }
+    unsigned int i = index;
     char **arr = (char **) this->images.data_;
     char *img = arr[i];
     if (((PCImage2DView *) img)->restoreFlag != 0) {
         RestoreImage2D(reinterpret_cast<AbyssEngine::Image2D *>(img));
         arr = (char **) this->images.data_;
     }
-    this->mask2dImage = arr[i];
+    // The 2D mask lives at field_0x20 (offset 32), not mask2dImage (0x2c)
+    reinterpret_cast<char *&>(this->field_0x20) = arr[i];
 }
 
 static int g_rar_curtex_87c98_storage = 0;
@@ -5361,11 +5365,8 @@ int PaintCanvas::GetWidth() {
 }
 
 void PaintCanvas::CameraCreate(unsigned int &out) {
-    char *cam = (char *) operator new(0x5c);
-    int w = pc_GetWidth(this);
-    int h = pc_GetHeight(this);
-    pc_Camera_ctor(cam, (float) h, (float) w);
-    pc_ArrayAdd_Camera(cam, &this->cameras);
+    AbyssEngine::Camera *cam = new AbyssEngine::Camera(8000.0f, 256.0f, 16384.0f, (float) this->GetWidth(), (float) this->GetHeight());
+    ArrayAdd<AbyssEngine::Camera *>(cam, this->cameras);
     out = this->cameras.count - 1;
 }
 
@@ -5432,11 +5433,10 @@ void PaintCanvas::DrawString(unsigned int index, const AbyssEngine::String &str,
                              int x, int y, bool b) {
     if (index < this->fonts.count) {
         PCFontView *font = (PCFontView *) (this->fonts.data_)[index];
-        paintcanvas_ext_string_prep(this, font->atlas, -1);
+        this->SetTexture((unsigned int)(uintptr_t)font->atlas, (unsigned int)-1);
         AbyssEngine::ImageFont *font2 = (this->fonts.data_)[index];
-        char *data = (char *) paintcanvas_ext_str_text(&str);
-        paintcanvas_ext_drawstring_str(font2, (unsigned int) (uintptr_t) data, str.size(), x, y,
-                                       this, this->engine, b);
+        const unsigned short *data = (const unsigned short *)str;
+        AbyssEngine::ImageFontDrawString(font2, data, str.size(), x, y, this, this->engine, b);
     }
 }
 
