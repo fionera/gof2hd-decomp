@@ -442,8 +442,7 @@ void PlayerEgo::dockToStream(bool param) {
     this->freeze = 0;
     this->field_0x145 = 0;
     this->docked = 0;
-    if (this->geometry != 0)
-        ((AEGeometry *) this->geometry)->setVisible(this->field_0x309 != 0);
+    ((PlayerEgo *) (this))->setExhaustVisible(false);
 }
 
 void PlayerEgo::hackingShuffle() {
@@ -588,7 +587,7 @@ void PlayerEgo::hitCamera() {
     this->hitShake = 1;
     int cam = this->targetFollowCamera;
     this->hitShakeTimer = 0;
-    ((TargetFollowCamera *) cam)->setRumblePercentage(1.0f, 250);
+    ((TargetFollowCamera *) cam)->hit();
 }
 
 int PlayerEgo::hackingWon() {
@@ -901,7 +900,7 @@ bool PlayerEgo::readyToBoost() {
 
 void PlayerEgo::endExplosion() {
     int v = ((int &) this->explosion);
-    if (v != 0) ((Explosion *) v)->update(0, (TargetFollowCamera *) 0);
+    if (v != 0) ((Explosion *) v)->reset();
 }
 
 bool PlayerEgo::isLandingOrTakingOff() {
@@ -2470,10 +2469,7 @@ void PlayerEgo::revive() {
     player = (Player *) this->player;
     ((Player *) (player))->setArmorHP(((Player *) (player))->getMaxArmorHP());
 
-    if (this->geometry != nullptr) {
-        Vector pos = this->getPosition();
-        ((AEGeometry *) (this->geometry))->setPosition(pos);
-    }
+    ((PlayerEgo *) (this))->setPosition(0.0f, 0.0f, 10000.0f);
 
     float fwd[3] = {0.0f, 0.0f, 1.0f};
     float fwdUp[3] = {0.0f, 1.0f, 0.0f};
