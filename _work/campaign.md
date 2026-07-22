@@ -2,6 +2,40 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-23 (verifier-accuracy fixes + -fstack-protector-strong landed; no fleet)
+
+Orchestrator-only session: the wave-11 flag experiment's RATCHET FAIL (linked -31) was
+root-caused to TWO verifier bugs, both fixed against green gates, then the flag landed
+as a strict win. Net: linked 2316->2500 (+184), avg 74.56->76.72 (+2.16), byte 1143
+stable, imports 1028, extra 36/missing 0.
+- d0b8696d verify fix 1 (blx align-down): Thumb->ARM blx computes from Align(PC,4); fn
+  base = 2 (mod 4) made the naive base+t sum land 2 past the PLT entry -> false '|' on
+  identical code, and #X-vs-#X spurious matches when both sides missed. +23 cleared,
+  -4 formerly-masked TRUE mismatches exposed: AEGeometry::getMatrix/getPosition/
+  getUpVector call our AEGeomCanvas::TransformGetLocal(uint,uint) shim where orig calls
+  PaintCanvas::TransformGetLocal(uint); also PaintCanvas::StopDraw2FBO. 2316->2335.
+- 12d5cb12 verify fix 2 (exact site-parity blx): align-down is wrong for call sites at
+  offset+4 = 2 (mod 4) (true target is base+t+2, align-down lands -4). normalize() now
+  gets the insn offset and rebuilds addr = t - Align(off+4,4) + Align(base+off+4,4).
+  Validated vs ListItem::init PLT 0x73e0c. 2335->2398 (+63, ListItem/CheatCode family).
+- 5a76c25b verify fix 3 (pool-line collapse): masked pool words decode as 1 Thumb32 or
+  2 Thumb16 lines depending on the meaningless word value -> length mismatches on
+  identical code (get_crc_table, switchSkyboxForIntro). One entry per 4-byte word now.
+  2398->2466 (+68, zero losses). This + fix 1 explain the whole "GOT wobble" class.
+- ad147cd4 toolchain: -fstack-protector-strong (NDK default since r14; 3 workers found
+  orig canaries on String/ptr-array locals). With honest verifier: 2466->2500 (+34,
+  zero exact losses), avg +1.76 — biggest single move of the campaign.
+LESSONS: (1) ratchet.py does NOT re-run verify when only tools/ change (report newer
+than .so) — force verify.py directly after tool edits. (2) Snapshot the baseline .so
+(scratchpad/baseline_libgof2hdaa.so) before flag experiments so tool fixes can be
+re-scored without rebuilds. (3) A red gate on instruction-identical diffs means the
+TOOL is wrong — fix it against a green gate, never to turn red green.
+QUEUE for wave 12: AEGeometry AEGeomCanvas-shim conversions (newly exposed);
+canary-unblocked near-misses now at 90%+ (FModSound ctors 97.5, RecordHandler
+writeMission 93.3/writeWanted 92.7/writeAgent 88.1, Radar::getPlanetDockIndex 92.9,
+ApplicationManager OnTouchMove 94.3); AEFile ReadSwitched/collectFilesInPakFiles;
+PaintCanvas::StopDraw2FBO.
+
 ## Session 2026-07-22 (wave 11 — mid-band 35-60%: 3 dead-worker retries + new classes, 8/8 landed)
 
 Pool: diffs11. Workflow wf_e603dd9d-2df. paintcanvas2 stalled 6/6 but left landable edits
