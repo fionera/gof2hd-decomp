@@ -285,6 +285,7 @@ void *MovingStars_ctor(void *self); // lint: void_ptr (external symbol; param/re
 void PlayerEgo::setVisible(bool v) {
     this->visible = v;
     this->field_0x309 = v;
+    this->setExhaustVisible(v);
 }
 
 void PlayerEgo::boost() {
@@ -487,8 +488,7 @@ void PlayerEgo::setRocketControl(Gun *gun, AEGeometry *geo) {
     }
     Matrix *m = &geo->getReferenceMatrix();
     ((ParticleSystemManager *) (psm))->systemSetMatrix(psm_arg, m);
-    if (this->geometry != 0)
-        ((AEGeometry *) this->geometry)->setVisible(this->field_0x309 != 0);
+    this->setAutoPilot(nullptr);
 }
 
 bool PlayerEgo::isMining() {
@@ -881,7 +881,7 @@ int PlayerEgo::getBoostSpeed() {
 
 void PlayerEgo::addGun(Gun *gun, int x) {
     ((Player *) (this->player))->addGun(gun, x);
-    ((Player *) this->player)->resetGunDelay(0);
+    this->checkForTurret();
 }
 
 unsigned char PlayerEgo::aboutToReachAutoTarget() {
@@ -930,7 +930,8 @@ void PlayerEgo::setCollide(bool v) {
 }
 
 int PlayerEgo::tryToStartEmergencySystem() {
-    if (this->field_0xac == 0 || this->emergencySystemTimer != 0) return 0;
+    if (this->field_0xac == 0) return 0;
+    if (this->emergencySystemTimer != 0) return 0;
     if (((Player *) (this->player))->getHitpoints() > 1) return 0;
     ((Player *) (this->player))->setHitpoints(1);
     this->emergencySystemTimer = this->emergencyVal1;
@@ -938,7 +939,7 @@ int PlayerEgo::tryToStartEmergencySystem() {
     Ship *s1 = Globals::status->getShip();
     Item *eq = ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x1b);
     ((Ship *) (s1))->removeEquipment(eq);
-    ((FModSound *) (Globals::sound))->play(0x45b, (Vector *) 0, (Vector *) 0, 1.0f);
+    ((FModSound *) (Globals::sound))->play(0x45b, (Vector *) 0, (Vector *) 0, 0.0f);
     return 1;
 }
 
@@ -1200,9 +1201,9 @@ void PlayerEgo::shake(int amount) {
         range = 1;
     int span = range << 1;
 
-    float dx = (float) (Globals::rnd->next(span) - range);
-    float dy = (float) (Globals::rnd->next(span) - range);
-    float dz = (float) (Globals::rnd->next(span) - range);
+    float dx = (float) (int) (Globals::rnd->next(span) - range);
+    float dy = (float) (int) (Globals::rnd->next(span) - range);
+    float dz = (float) (int) (Globals::rnd->next(span) - range);
     ((AEGeometry *) (cam))->translate(dx, dy, dz);
 }
 
@@ -1637,9 +1638,9 @@ PlayerEgo::~PlayerEgo() noexcept(false) {
         ::operator delete(this->easeMatrix);
     }
     this->easeMatrix = 0;
-    if (Array<RepairBeam *> *beams = this->repairBeams) {
-        ArrayReleaseClasses(*beams);
-        delete beams;
+    if (this->repairBeams) {
+        ArrayReleaseClasses(*this->repairBeams);
+        delete this->repairBeams;
     }
     this->repairBeams = 0;
 }
@@ -2812,7 +2813,7 @@ void PlayerEgo::setShip(int race, int group) {
 
 void PlayerEgo::addGun(Array<Gun *> *arr, int x) {
     static_cast<Player *>(this->player)->addGun(arr, x);
-    ((Player *) this->player)->resetGunDelay(0);
+    this->checkForTurret();
 }
 
 void PlayerEgo::render(bool allowHud) {
