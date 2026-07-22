@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1138,
-  "linked_exact": 2288,
+  "linked_exact": 2287,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 74.01,
+  "avg_match": 74.02,
   "compared": 4523
  },
  "imports": [
@@ -357,7 +357,6 @@
   "_Z21_ae_MatrixSetRotationPvjfffi",
   "_Z21_ips_getParticleCountPv",
   "_Z21_mtw_ChoiceWindow_setPvS_",
-  "_Z21_mtw_ChoiceWindow_setPvS_b",
   "_Z21_mtw_TouchButton_ctorPvS_iiiicc",
   "_Z21_mtw_TouchButton_drawPv",
   "_Z21_mtw_draw_optionsTabsPv",
@@ -435,7 +434,6 @@
   "_Z23_ips_getParticleCount16Pv",
   "_Z23_mtw_ArraySetLength_StriPv",
   "_Z23_mtw_Layout_OnTouchMovePvi",
-  "_Z23_mtw_RecordHandler_ctorPv",
   "_Z23_mtw_loadPreviewRecordsPv",
   "_Z23_psm_canvasSetBlendModePN11AbyssEngine11PaintCanvasENS_9BlendModeE",
   "_Z23_psm_meshTranslatePointPN11AbyssEngine11PaintCanvasEjtfff",
@@ -562,7 +560,6 @@
   "_Z27Status_getPlayingTime_lo_oiv",
   "_Z27TouchButton_getPosition_dlcPfP15MenuTouchWindowj",
   "_Z27_mtw_ArrayReleaseClasses_TBPv",
-  "_Z27_mtw_TouchButton_setVisiblePvb",
   "_Z27_mtw_onTouchEnd_scrollStatePviii",
   "_Z27paintcanvas_ext_cipvf_innerPKfPvS1_",
   "_Z27paintcanvas_ext_cisvf_innerPKffPvS1_",
@@ -655,7 +652,6 @@
   "_Z29Station_hasAttackedFriends_oiv",
   "_Z29Status_getPendingProducts_cppi",
   "_Z29_mtw_ChoiceWindow_OnTouchMovePvi",
-  "_Z29_mtw_RecordHandler_readRecordPv",
   "_Z29_mtw_ScrollTouchWindow_updatePv",
   "_Z29_mtw_TouchButton_OnTouchBeginPvi",
   "_Z29_mtw_TouchButton_setYPositionPvi",

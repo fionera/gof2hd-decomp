@@ -69,7 +69,7 @@ public:
 
     int readOptionsFileAsByteArray(signed char **out);
 
-    void *readRecord(int slot); // lint: void_ptr (method signature; return type fixed)
+    GameRecord *readRecord(int slot);
 
     int readRecordAsByteArray(signed char **out, int slot, bool fromBackup);
 
@@ -77,9 +77,9 @@ public:
 
     void *readWanted(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
 
-    void *recordStoreRead(int slot); // lint: void_ptr (method signature; return type fixed)
+    GameRecord *recordStoreRead(int slot);
 
-    void *recordStoreReadPreview(int slot); // lint: void_ptr (method signature; return type fixed)
+    GameRecord *recordStoreReadPreview(int slot);
 
     void recordStoreWrite(int slot);
 

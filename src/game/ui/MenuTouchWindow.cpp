@@ -1217,54 +1217,51 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) { // lint: void_p
 
 
 int MenuTouchWindow::loadGame(int slot) {
-    RecordHandler *rh = (RecordHandler *) ::operator new(0x2c);
-    _mtw_RecordHandler_ctor(rh);
-    GameRecord *rec = (GameRecord *) _mtw_RecordHandler_readRecord(rh);
+    RecordHandler *rh = new RecordHandler();
+    GameRecord *rec = rh->readRecord(slot);
 
     if (rec == 0) {
-        _mtw_Status_resetGame();
-        ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
+        Globals::status->resetGame();
+        ChoiceWindow *cw = this->choiceWindow;
         String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x64);
-        _mtw_ChoiceWindow_set(cw, s, false);
+        cw->set(*s, false);
         this->loadFailedDialogShowing = 1;
         this->messageShowing = 1;
-        ::operator delete(_mtw_RecordHandler_dtor(rh));
+        delete rh;
         return 0;
     }
 
     Status *flags = Globals::status;
-    GameRecord *record = (GameRecord *) rec;
-    bool versionOk = (record->versionMismatchFlag == 0) || (reinterpret_cast<uint8_t *>(&flags->systemVisibilities)[3] != 0);
+    bool versionOk = (rec->versionMismatchFlag == 0) || (flags->byte_0x37 != 0);
     if (versionOk) {
-        bool dlcOk = (record->dlcRequiredFlag == 0) || (reinterpret_cast<uint8_t *>(&flags->systemVisibilities)[1] != 0);
+        bool dlcOk = (rec->dlcRequiredFlag == 0) || (flags->byte_0x35 != 0);
         if (dlcOk) {
-            _mtw_Status_resetGame();
-            _mtw_GameRecord_load(rec);
-            ::operator delete(_mtw_RecordHandler_dtor(rh));
-            ::operator delete(_mtw_GameRecord_dtor(rec));
-            AppManager *const *app = (AppManager *const *) &Globals::appManager;
-            ModStation *ms = (ModStation *) _mtw_AppMgr_GetApplicationModule(*app, 5);
-            ((ModStation *) ms)->setGameLoaded();
+            Globals::status->resetGame();
+            rec->load();
+            delete rh;
+            delete rec;
+            ModStation *ms = (ModStation *) Globals::appManager->GetApplicationModule(5);
+            ms->setGameLoaded();
             Globals::switch_to_target_setting = 0;
-            _mtw_AppMgr_SetCurrentApplicationModule(*app, 5);
+            Globals::appManager->SetCurrentApplicationModule(5);
             return 1;
         }
 
-        ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
+        ChoiceWindow *cw = this->choiceWindow;
         String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x65);
-        _mtw_ChoiceWindow_set(cw, s, false);
+        cw->set(*s, false);
         this->messageShowing = 1;
-        ::operator delete(_mtw_GameRecord_dtor(rec));
-        ::operator delete(_mtw_RecordHandler_dtor(rh));
+        delete rec;
+        delete rh;
         return 0;
     }
 
-    ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
+    ChoiceWindow *cw = this->choiceWindow;
     String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x66);
-    _mtw_ChoiceWindow_set(cw, s, false);
+    cw->set(*s, false);
     this->messageShowing = 1;
-    ::operator delete(_mtw_GameRecord_dtor(rec));
-    ::operator delete(_mtw_RecordHandler_dtor(rh));
+    delete rec;
+    delete rh;
     return 0;
 }
 
@@ -1307,13 +1304,12 @@ void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Arra
 
 void MenuTouchWindow::setCutsceneMode(bool mode) {
     this->cutsceneMode = (uint8_t) mode;
-    Array<TouchButton *> *arr = (Array<TouchButton *> *) this->buttons;
-    for (uint32_t i = 0; i < *(uint32_t *) arr; i++) {
-        TouchButton *btn = (TouchButton *) arr->data_[i];
+    bool notMode = !mode;
+    for (uint32_t i = 0; i < this->buttons->count; i++) {
+        TouchButton *btn = this->buttons->data_[i];
         if (btn->field_0x0 == 0x13 && btn->field_0x4 == 0) {
-            _mtw_TouchButton_setVisible(btn, (bool) ((uint8_t) mode ^ 1));
+            btn->setVisible(notMode);
         }
-        arr = (Array<TouchButton *> *) this->buttons;
     }
 }
 
@@ -1368,7 +1364,7 @@ void MenuTouchWindow::saveGame(int slot) {
     }
     *cell = 0;
 
-    GameRecord *preview = (GameRecord *) rh->recordStoreReadPreview(slot);
+    GameRecord *preview = rh->recordStoreReadPreview(slot);
     this->previewRecords->data_[slot] = preview;
     delete rh;
 
@@ -1720,14 +1716,14 @@ void MenuTouchWindow::draw() {
 float MenuTouchWindow::getRelativeScrollHeight() {
     int content = this->contentHeight;
     int page = this->pageHeight;
-    if (page < content)
+    if (content <= page)
         return 0.0f;
     int off = this->scrollOffset;
     int numer;
     if (off >= 1) {
         numer = content - off;
     } else {
-        if (content - page <= off) {
+        if (off >= content - page) {
             return (float) content / (float) page;
         }
         numer = off + page;
@@ -2040,13 +2036,12 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
 }
 
 void MenuTouchWindow::setSkipButtonVisible(bool visible) {
-    Array<TouchButton *> *arr = (Array<TouchButton *> *) this->buttons;
+    Array<TouchButton *> *arr = this->buttons;
     if (arr != 0) {
-        for (uint32_t i = 0; i < *(uint32_t *) arr; i++) {
-            TouchButton *btn = (TouchButton *) arr->data_[i];
+        for (uint32_t i = 0; i < this->buttons->count; i++) {
+            TouchButton *btn = this->buttons->data_[i];
             if (btn != 0 && btn->field_0x0 == 0x12 && btn->field_0x4 == 0) {
-                _mtw_TouchButton_setVisible(btn, visible);
-                arr = (Array<TouchButton *> *) this->buttons;
+                btn->setVisible(visible);
             }
         }
     }
@@ -2272,13 +2267,12 @@ void MenuTouchWindow::startSupernova() {
 
 
 void MenuTouchWindow::startGOF2() {
-    _mtw_Status_resetGame();
+    Globals::status->resetGame();
     FModSound *snd = Globals::sound;
 
-    // Ghidra: writes fadeValue into the options blob at +0x2c (not a Status object)
-    *(int *)(Globals::options + 0x2c) = this->fadeValue;
-    float v = _mtw_FModSound_stop(snd);
-    _mtw_FModSound_play(snd, 0x8f, 0, v);
-    _mtw_AppMgr_SetCurrentApplicationModule(Globals::appManager, 2);
+    ((OptionsRecord *) Globals::options)->fadeValue = this->fadeValue;
+    snd->stop(snd->currentMusicEvent);
+    snd->play(0x8f, nullptr, nullptr, 0.0f);
+    Globals::appManager->SetCurrentApplicationModule(2);
 }
 

@@ -251,7 +251,7 @@ void *RecordHandler::readAllRecords() { // lint: void_ptr (method signature; ret
     int *cnt = g_RH_recordCount;
     ArraySetLength(*cnt, *arr);
     for (int i = 0; i < *cnt; i++) {
-        GameRecord *r = (GameRecord *) this->recordStoreRead(i);
+        GameRecord *r = this->recordStoreRead(i);
         (*arr)[i] = r;
     }
     return arr;
@@ -263,7 +263,7 @@ void *RecordHandler::readAllPreviewRecords() { // lint: void_ptr (method signatu
     int *cnt = g_RH_recordCount;
     ArraySetLength(*cnt, *arr);
     for (int i = 0; i < *cnt; i++) {
-        GameRecord *r = (GameRecord *) this->recordStoreReadPreview(i);
+        GameRecord *r = this->recordStoreReadPreview(i);
         (*arr)[i] = r;
     }
     return arr;
@@ -399,8 +399,7 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     return sz;
 }
 
-void *RecordHandler::readRecord(int slot) { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
+GameRecord *RecordHandler::readRecord(int slot) {
     return this->recordStoreRead(slot);
 }
 
@@ -512,8 +511,7 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
     delete[] sizes1;
 }
 
-void *RecordHandler::recordStoreReadPreview(int slot) { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
+GameRecord *RecordHandler::recordStoreReadPreview(int slot) {
     String path;
     String num;
 
@@ -1850,8 +1848,7 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     return sz;
 }
 
-void *RecordHandler::recordStoreRead(int slot) { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
+GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;
     String num, path;
     num.Set((long long) (slot));
