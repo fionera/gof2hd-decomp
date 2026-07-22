@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 73.91,
   "byte_exact": 1138,
-  "linked_exact": 2283,
-  "fuzzy_perfect": 2283,
+  "linked_exact": 2286,
+  "fuzzy_perfect": 2286,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14544,14 +14544,6 @@
    "usize": 96
   },
   {
-   "name": "_ZN8CutScene8render3DEv",
-   "pct": 78.3,
-   "byte": false,
-   "linked": false,
-   "osize": 112,
-   "usize": 108
-  },
-  {
    "name": "deflateInit_",
    "pct": 78.3,
    "byte": false,
@@ -17670,22 +17662,6 @@
    "linked": false,
    "osize": 174,
    "usize": 174
-  },
-  {
-   "name": "_ZN8CutSceneD1Ev",
-   "pct": 98.4,
-   "byte": false,
-   "linked": false,
-   "osize": 164,
-   "usize": 164
-  },
-  {
-   "name": "_ZN8CutSceneD2Ev",
-   "pct": 98.4,
-   "byte": false,
-   "linked": false,
-   "osize": 164,
-   "usize": 164
   },
   {
    "name": "_ZN8Standing11applyDelictEii",
@@ -32104,12 +32080,36 @@
    "usize": 6
   },
   {
+   "name": "_ZN8CutScene8render3DEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 112,
+   "usize": 112
+  },
+  {
    "name": "_ZN8CutScene8renderBGEv",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 10,
    "usize": 10
+  },
+  {
+   "name": "_ZN8CutSceneD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 164,
+   "usize": 164
+  },
+  {
+   "name": "_ZN8CutSceneD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 164,
+   "usize": 164
   },
   {
    "name": "_ZN8FileReadC1Ev",

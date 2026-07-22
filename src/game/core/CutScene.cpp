@@ -79,7 +79,7 @@ CutScene::~CutScene() {
     delete this->level;
     this->level = nullptr;
 
-    Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_dummy);
+    Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_1);
 
     delete this->geom28;
     this->geom28 = nullptr;
@@ -123,8 +123,8 @@ void CutScene::render3D() {
     if (this->geom34 != nullptr) this->geom34->render();
 
     if (this->geometries != nullptr) {
-        for (AEGeometry *g: *this->geometries)
-            g->render();
+        for (unsigned i = 0; i < this->geometries->size(); ++i)
+            (*this->geometries)[i]->render();
     }
 }
 
