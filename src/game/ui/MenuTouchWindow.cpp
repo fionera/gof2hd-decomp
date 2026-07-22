@@ -13,6 +13,7 @@
 #include "game/ship/ShipDefTable.h"
 #include "game/core/GameSettings.h"
 #include "game/core/Globals.h"
+#include "game/ui/ChoiceWindow.h"
 #include <math.h>
 #include <cstddef>
 
@@ -359,7 +360,7 @@ void MenuTouchWindow::showSupernovaMessage() {
     GameText *gt = Globals::gameText;
     String *s1 = (String *) _mtw_GameText_getText(gt, 0x266);
     String *s2 = (String *) _mtw_GameText_getText(Globals::gameText, 0x267);
-    _mtw_ChoiceWindow_set(cw, s1, s2, false);
+    cw->set(*s1, *s2, false);
     this->messageShowing = 1;
     this->supernovaMessageShowing = 1;
 }
@@ -1344,19 +1345,17 @@ void MenuTouchWindow::loadPreviewRecords() {
         ::operator delete(_mtw_Array_GameRecord_dtor(rec));
         this->previewRecords = 0;
     }
-    RecordHandler *rh = (RecordHandler *) ::operator new(0x2c);
-    _mtw_RecordHandler_ctor(rh);
-    this->previewRecords = (Array<GameRecord *> *) _mtw_RecordHandler_readAllPreviewRecords(rh);
-    _mtw_RecordHandler_dtor(rh);
+    RecordHandler *rh = new RecordHandler();
+    this->previewRecords = (Array<GameRecord *> *) rh->readAllPreviewRecords();
+    delete rh;
 
 }
 
 
 void MenuTouchWindow::saveGame(int slot) {
-    RecordHandler *rh = (RecordHandler *) ::operator new(0x2c);
-    _mtw_RecordHandler_ctor(rh);
-    _mtw_RecordHandler_recordStoreWrite(rh, slot);
-    _mtw_RecordHandler_recordStoreWritePreview(rh, slot);
+    RecordHandler *rh = new RecordHandler();
+    rh->recordStoreWrite(slot);
+    rh->recordStoreWritePreview(slot);
 
     int *arr = (int *) this->previewRecords->data_;
     GameRecord *rec = this->previewRecords->data_[slot];
@@ -1369,14 +1368,14 @@ void MenuTouchWindow::saveGame(int slot) {
     }
     *cell = 0;
 
-    GameRecord *preview = (GameRecord *) _mtw_RecordHandler_recordStoreReadPreview(rh);
+    GameRecord *preview = (GameRecord *) rh->recordStoreReadPreview(slot);
     this->previewRecords->data_[slot] = preview;
-    ::operator delete(_mtw_RecordHandler_dtor(rh));
+    delete rh;
 
-    _mtw_createRecordButtons(this, true);
+    this->createRecordButtons(true);
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
     String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x32);
-    _mtw_ChoiceWindow_set(cw, s, false);
+    cw->set(*s, false);
     this->saveDialogShowing = 0;
     this->messageShowing = 1;
 }
@@ -1616,9 +1615,9 @@ void MenuTouchWindow::startSupernovaChallenge() {
 void MenuTouchWindow::callDlcMenu() {
     AppManager *const *holder = (AppManager *const *) &Globals::appManager;
 
-    MtwAppData *ad = (MtwAppData *) _mtw_GetApplicationData(*holder);
+    MtwAppData *ad = (MtwAppData *) ((AbyssEngine::ApplicationManager*)*holder)->GetApplicationData();
     ad->dlcMenuAckFlag = 0;
-    ad = (MtwAppData *) _mtw_GetApplicationData(*holder);
+    ad = (MtwAppData *) ((AbyssEngine::ApplicationManager*)*holder)->GetApplicationData();
     GameText *const *gt = &Globals::gameText;
     ad->dlcMenuRequestFlag = 1;
     ChoiceWindow *win = (ChoiceWindow *) this->choiceWindow;
