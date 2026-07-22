@@ -2,6 +2,41 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-22 (wave 8 — mid-band 35-60% + shim continuation, 6 workers, 5/6 landed)
+
+Pool: diffs8, MIN 35 / MAX 60 pct. Workflow wf_7787ab83-218 (resumable via scriptPath).
+Net: byte 1138, linked 2288->2287 (transient wobble), imports 1053->1049, avg 73.93->74.02.
+- f03ef9de playerego2: +1 net linked. endExplosion -> ((Explosion*)v)->reset(), hitCamera
+  -> ->hit() — both found by decoding ARM interwork VENEERS to get the real blx target.
+  dockToStream: setExhaustVisible(false) with NO null check; revive: setPosition(0,0,10000).
+- dc638692 engine: SetUVMatrix 52.6->95.7, ShaderSetInActive 44.4->91.7, SetWorldView
+  27.3->57.6, LightSetGlobalSceneColorAmbient 0x3f800000->1.0f (43.8->63.2). ORCHESTRATOR
+  TUNE: reverted the same matrix.m hunk in SetModelMatrix only (it regressed there 50.3->45.6
+  while helping the other two — same edit, opposite effect per fn; tune per-fn, not per-pattern).
+- 432494a6 mission: Mission::clone String(src,false) 47.2->48.9.
+- 2758e357 imagefactory_players: RNG globals `= &Globals::rnd` init un-elides UB-elided
+  derefs (createChar 51.9->84.8, 66.0->96.4); gCreateChar2Table scalar -> const int[44]
+  from orig .rodata@0x201c24; PlayerJunk g_PJ_sound/g_PJ_random init (update 59.5->67.9).
+- a74d6255 menutouch2 (DEAD-WORKER SALVAGE — API connection died, tree edits gated fine
+  after one fix): startGOF2 52.6->78.6, -4 imports. Worker called rh->readRecord(slot)
+  against a void* header decl -> compile fail; fixed by retyping RecordHandler
+  readRecord/recordStoreRead/recordStoreReadPreview to GameRecord* (return types are NOT
+  mangled — free semantic win, dropped 4 casts). loadGame 50.8->43.6: conversion cost;
+  tried restoring nested branch structure, identical score -> the dip is GOT/inline shift,
+  not CFG. Requeued.
+- paintcanvas3 STALLED all 6 attempts (no tree edits, no output) — 29 fns still in
+  diffs8/paintcanvas3.txt, requeue with smaller assignment slices.
+
+Learnings:
+- Same source edit (matrix.m) can improve one fn and regress a sibling in the same TU;
+  gate hunks per-fn when regcheck disagrees with itself.
+- Dead workers' tree edits are worth gating: menutouch2 landed with one orchestrator fix.
+- Return types are not part of Itanium mangling: retyping void* method returns to real
+  types is always parity-safe and removes casts.
+- Layout-item queue additions (exclusive-mode, from worker blocked reports): PlayerEgo.h
+  (10 trivial accessors on wrong offsets; resetMovement needs 24B zero at 0x268),
+  Engine struct (lightDiffuseShaded 764 vs 740, lightSpecularShaded 740 vs 728).
+
 ## Session 2026-07-22 (wave 7 — shim-import convergence, 7 workers, 7/7 patches landed)
 
 STRATEGIC FINDING that drove this wave: the original has only 207 imports; we carried 1081,
