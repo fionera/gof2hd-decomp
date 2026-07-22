@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.76,
+  "avg_match": 73.77,
   "byte_exact": 1136,
-  "linked_exact": 2259,
-  "fuzzy_perfect": 2259,
+  "linked_exact": 2265,
+  "fuzzy_perfect": 2265,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15264,6 +15264,14 @@
    "usize": 36
   },
   {
+   "name": "_ZN5Agent16getMissionStringEv",
+   "pct": 83.3,
+   "byte": false,
+   "linked": false,
+   "osize": 14,
+   "usize": 14
+  },
+  {
    "name": "_ZN5Level16almostKillWantedEi",
    "pct": 83.3,
    "byte": false,
@@ -16048,22 +16056,6 @@
    "usize": 56
   },
   {
-   "name": "_ZN5AgentC1EiN11AbyssEngine6StringEiiibiiii",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 242,
-   "usize": 244
-  },
-  {
-   "name": "_ZN5AgentC2EiN11AbyssEngine6StringEiiibiiii",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 242,
-   "usize": 244
-  },
-  {
    "name": "_ZN5ArrayIN11AbyssEngine6AEMath6MatrixEED2Ev",
    "pct": 90.0,
    "byte": false,
@@ -16398,30 +16390,6 @@
    "linked": false,
    "osize": 16,
    "usize": 14
-  },
-  {
-   "name": "_ZN5Agent13getSystemNameEv",
-   "pct": 90.9,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
-  },
-  {
-   "name": "_ZN5Agent14getStationNameEv",
-   "pct": 90.9,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
-  },
-  {
-   "name": "_ZN5Agent16getMissionStringEv",
-   "pct": 90.9,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
   },
   {
    "name": "_ZN6Layout12drawBGBorderEjjiiii",
@@ -16913,22 +16881,6 @@
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas14CameraGetLocalEj",
-   "pct": 93.1,
-   "byte": false,
-   "linked": false,
-   "osize": 72,
-   "usize": 72
-  },
-  {
-   "name": "_ZN5AgentD1Ev",
-   "pct": 93.1,
-   "byte": false,
-   "linked": false,
-   "osize": 72,
-   "usize": 72
-  },
-  {
-   "name": "_ZN5AgentD2Ev",
    "pct": 93.1,
    "byte": false,
    "linked": false,
@@ -28432,6 +28384,14 @@
    "usize": 6
   },
   {
+   "name": "_ZN5Agent13getSystemNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
+  },
+  {
    "name": "_ZN5Agent13setImagePartsEPi",
    "pct": 100.0,
    "byte": true,
@@ -28446,6 +28406,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN5Agent14getStationNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
   },
   {
    "name": "_ZN5Agent14isGenericAgentEv",
@@ -28678,6 +28646,38 @@
    "linked": true,
    "osize": 8,
    "usize": 8
+  },
+  {
+   "name": "_ZN5AgentC1EiN11AbyssEngine6StringEiiibiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 242,
+   "usize": 242
+  },
+  {
+   "name": "_ZN5AgentC2EiN11AbyssEngine6StringEiiibiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 242,
+   "usize": 242
+  },
+  {
+   "name": "_ZN5AgentD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 72,
+   "usize": 72
+  },
+  {
+   "name": "_ZN5AgentD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 72,
+   "usize": 72
   },
   {
    "name": "_ZN5ArrayIN11AbyssEngine6AEMath6VectorEED2Ev",

@@ -3,7 +3,7 @@
 #include "game/mission/Mission.h"
 
 String Agent::getStationName() {
-    return this->stationName;
+    return String(this->stationName, false);
 }
 
 uint8_t Agent::hasAcceptedOffer() {
@@ -39,7 +39,7 @@ void Agent::setStationName(String src) {
 }
 
 String Agent::getMissionString() {
-    return this->missionString;
+    return String(this->missionString, false);
 }
 
 uint8_t Agent::isMale() {
@@ -88,7 +88,7 @@ int Agent::getType() {
 }
 
 String Agent::getSystemName() {
-    return this->systemName;
+    return String(this->systemName, false);
 }
 
 void Agent::giveRewardAtNextChat(bool v) {
@@ -150,8 +150,10 @@ void Agent::setSystemName(String src) {
 Agent::~Agent() noexcept(false) {
     delete[] this->imageParts;
     this->imageParts = nullptr;
-    delete this->wingman1;
-    this->wingman1 = nullptr;
+    if (this->wingman1 != nullptr) {
+        delete this->wingman1;
+        this->wingman1 = nullptr;
+    }
 }
 
 void Agent::setMissionString(String src) {
@@ -245,7 +247,9 @@ Agent::Agent(int kind, String name, int station, int system, int race,
     if (sellBlueprintIndex >= 0)
         this->offer = 3;
     this->offerAccepted = 0;
+    this->rewardAtNextChat = 0;
     this->wasAskedForDifficulty = 0;
+    this->wasAskedForLocation = 0;
     this->wingman1 = nullptr;
     this->wingman2 = nullptr;
     this->wingmanCount = 0;
