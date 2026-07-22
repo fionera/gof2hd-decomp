@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 73.57,
+  "avg_match": 73.58,
   "byte_exact": 1135,
   "linked_exact": 2233,
   "fuzzy_perfect": 2233,
@@ -6592,14 +6592,6 @@
    "usize": 456
   },
   {
-   "name": "_ZN13AutoPilotList4drawEv",
-   "pct": 34.3,
-   "byte": false,
-   "linked": false,
-   "osize": 232,
-   "usize": 228
-  },
-  {
    "name": "_ZN13PlayerFighter4rollEi",
    "pct": 34.3,
    "byte": false,
@@ -10416,6 +10408,14 @@
    "usize": 272
   },
   {
+   "name": "_ZN13AutoPilotList4drawEv",
+   "pct": 51.0,
+   "byte": false,
+   "linked": false,
+   "osize": 232,
+   "usize": 196
+  },
+  {
    "name": "_ZN13PlayerStation6updateEi",
    "pct": 51.1,
    "byte": false,
@@ -10910,22 +10910,6 @@
    "linked": false,
    "osize": 304,
    "usize": 302
-  },
-  {
-   "name": "_ZN13AutoPilotListC1EP5Level",
-   "pct": 54.8,
-   "byte": false,
-   "linked": false,
-   "osize": 760,
-   "usize": 696
-  },
-  {
-   "name": "_ZN13AutoPilotListC2EP5Level",
-   "pct": 54.8,
-   "byte": false,
-   "linked": false,
-   "osize": 760,
-   "usize": 696
   },
   {
    "name": "_ZN14MissionsWindowC1Ev",
@@ -13334,6 +13318,22 @@
    "linked": false,
    "osize": 356,
    "usize": 364
+  },
+  {
+   "name": "_ZN13AutoPilotListC1EP5Level",
+   "pct": 67.9,
+   "byte": false,
+   "linked": false,
+   "osize": 760,
+   "usize": 728
+  },
+  {
+   "name": "_ZN13AutoPilotListC2EP5Level",
+   "pct": 67.9,
+   "byte": false,
+   "linked": false,
+   "osize": 760,
+   "usize": 728
   },
   {
    "name": "_ZN9PlayerEgo15PlayEngineSoundEv",

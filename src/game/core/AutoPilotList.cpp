@@ -12,15 +12,9 @@
 
 
 
-
-
-
-
-
-
 static const char kEmpty[] = "";
-static const char kApLit1[] = "";
-static const char kApLit2[] = "";
+static const char kApLit1[] = ": ";
+static const char kApLit2[] = " ";
 
 AutoPilotList::AutoPilotList(Level *level) {
     this->entries = new Array<String *>();
@@ -28,39 +22,31 @@ AutoPilotList::AutoPilotList(Level *level) {
     this->count = 0;
 
     if (Level::programmedStation != 0) {
-        String b(kApLit1);
-        String c = *(Globals::gameText)->getText(0x222) + b;
-        String a = Level::programmedStation->getName();
-        (*this->entries)[0] = new String(c + a);
+        (*this->entries)[0] = new String(
+            *Globals::gameText->getText(0x222) + String(kApLit1, false) +
+            Level::programmedStation->getName());
         this->count++;
     }
 
     if (((SolarSystem *) Globals::status->getSystem())->currentOrbitHasWarpGate() != 0) {
-        String *s = new String;
-        s->Set(((Globals::gameText)->getText(0x223))->data);
-        (*this->entries)[1] = s;
+        (*this->entries)[1] = new String(*Globals::gameText->getText(0x223), false);
         this->count++;
     }
 
     if (Globals::status->inEmptyOrbit() == 0) {
-        String c = ((Station *) (&c))->getName();
-        String b(kApLit2);
-        String a = b + c;
-        (*this->entries)[2] = new String(a + *(Globals::gameText)->getText(0x88));
+        (*this->entries)[2] = new String(
+            ((Station *) Globals::status->getStation())->getName() +
+            String(kApLit2, false) + *Globals::gameText->getText(0x88));
         this->count++;
     }
 
-    String *cancel = new String;
-    cancel->Set(((Globals::gameText)->getText(0x225))->data);
-    (*this->entries)[3] = cancel;
+    (*this->entries)[3] = new String(*Globals::gameText->getText(0x225), false);
     this->count++;
 
     if (((PlayerEgo *) ((Level *) level)->getPlayer())->getRoute() != 0) {
         Route *route = (Route *) (intptr_t)((PlayerEgo *) ((Level *) level)->getPlayer())->getRoute();
         if (*((uint8_t *) route->getLastWaypoint() + 0x130) == 0) {
-            String *s = new String;
-            s->Set(((Globals::gameText)->getText(0x23d))->data);
-            (*this->entries)[4] = s;
+            (*this->entries)[4] = new String(*Globals::gameText->getText(0x23d), false);
             this->count++;
         }
     }
@@ -133,10 +119,8 @@ String AutoPilotList::getTargetString() {
 }
 
 void AutoPilotList::draw() {
-    String title;
-    title.Set(((Globals::gameText)->getText(0x23c))->data);
-    (Globals::layout)->drawWindow(title, this->x, this->y, this->width,
-                                     this->count * 0xf + 0x16);
+    (Globals::layout)->drawWindow(*Globals::gameText->getText(0x23c),
+        this->x, this->y, this->width, this->count * 0xf + 0x16);
 
     int drawn = 0;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
