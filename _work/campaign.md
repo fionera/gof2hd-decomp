@@ -2,6 +2,44 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-22 (wave 9 — mid-band 35-60% breadth, 8 workers, 6/8 landed)
+
+Pool: diffs9 (35-60 band). Workflow wf_6f0475b8-3f7. 3 workers stalled + 1 died, but ALL
+stalled workers left good tree edits — serial salvage landed every non-empty patch.
+Net: byte 1138->1140, linked 2287->2301 (+14), imports 1049->1037, avg 74.02->74.25.
+- e267c22d mgame: uninit-global-deref inits (g_maneuverScale=&Globals::w, g_fmod, g_gameText)
+  + handleAccelerometer shipField arg. maneuverTouchMove 28.6->100, maneuverTouchEnd ->100.
+  OnKeyPress/OnKeyRelease blocked: orig is bare bx lr from a longlong-returning signature.
+- 3133ffa1 layout_touchbutton: drawMask spurious SetColor removed, getPosition VFP order,
+  touchedInside field_0x38. 2 ctor arg-order hunks REGRESSED and were reverted (worker's
+  init() arg-trace was wrong for 2 of 4 ctor families, right for none that gated better).
+- 2f3f86b4 appmgr: GetKeyState/GetActionState 64-bit (keyState|high pair) — both ->100
+  byte-exact. All 18 other appmgr/FileRead fns blocked (reg-alloc/scheduling walls).
+- d5679d94 status (stalled-worker salvage): orbit-check family ->84-100, setCampaignMission
+  45.8->76.9. missionFailed 100->93.5 + wantedBoardAccessible -16 = TU coupling (sentinel
+  revert did NOT recover them; kept net).
+- ea44df85 dialoguewindow (stalled-worker salvage): C1/C2()->100, dtors ->93.3,
+  nextPage ->84.8, draw ->58.2.
+- 1e44bf3d paintcanvas (stalled-worker salvage + 2 orchestrator fixes): DrawTextLines(4-arg)
+  40->100, SpriteSystemSet* ->100, -12 imports. Fix 1: worker's new TextureCreateFromFile
+  fwd-decl tripped goal_lint void_ptr (+2) — converted the remaining tcg_ shim to the real
+  call and same-line-waived the mangling-required void*s. Fix 2: GetLine — worker used
+  default-ctor String tmp + assignments; reshaping to direct `*out = str.SubString(...)`
+  temps went 27.4->43.0 (above the 35.4 start) AND net +4 more linked TU-wide.
+- hud worker: NO edits, full layout dossier instead — Hud.h wrong in 4 independent regions
+  (eventScroll block +4/+6, eventQueue region +28, autofire region +44, cargoFullFlag +1,
+  drawEventString margins +80). QUEUED as exclusive layout item (12 fns blocked on it).
+- aefile worker died leaving nothing; paintcanvas dump had 29 fns, capped worker at 12.
+
+Learnings:
+- Stalled-worker tree edits are consistently landable — ALWAYS snapshot before killing.
+- Temp-object shape matters at -Oz: `T tmp; ... tmp = f(); *out = tmp;` vs `*out = f();`
+  changed GetLine by +15pct and refolded ICF across the whole TU (+7 linked).
+- goal_lint void_ptr is per-file counted on unwaived lines; mangling-required void* decls
+  need the same-line `// lint: void_ptr (...)` waiver, not baseline edits.
+- Layout-item queue additions: Hud.h (4 regions, dossier in wave-9 workflow output),
+  MGame OnKeyPress/OnKeyRelease signature (bx lr vs longlong return).
+
 ## Session 2026-07-22 (wave 8 — mid-band 35-60% + shim continuation, 6 workers, 5/6 landed)
 
 Pool: diffs8, MIN 35 / MAX 60 pct. Workflow wf_7787ab83-218 (resumable via scriptPath).
