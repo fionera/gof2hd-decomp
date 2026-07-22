@@ -98,7 +98,10 @@ void PlayerFixedObject::outerCollide(Vector v) {
 }
 
 V3 PlayerFixedObject::getPosition() {
-    V3 pos = {(float) intPosX, (float) intPosY, (float) intPosZ};
+    float fy = (float) intPosY;
+    float fx = (float) intPosX;
+    float fz = (float) intPosZ;
+    V3 pos = {fx, fy, fz};
     return pos;
 }
 
@@ -630,7 +633,6 @@ void PlayerFixedObject::render() {
     int state = self->state;
     Explosion *expl;
     if (state == 5) {
-    LAB_538:
         if (self->shipHidden != 0) return;
         return render_thunk_state5(self->geometry);
     }
@@ -638,13 +640,13 @@ void PlayerFixedObject::render() {
         if (self->shipHidden == 0) self->wreckGeometry->render();
         expl = self->explosion;
         if (expl == 0) return;
-    } else {
-        if (state != 3) {
-            if (((Player *) (self->player))->isActive() == 0) return;
-            goto LAB_538;
-        }
+    } else if (state == 3) {
         if (self->shipHidden == 0) self->wreckGeometry->render();
         expl = self->explosion;
+    } else {
+        if (((Player *) (self->player))->isActive() == 0) return;
+        if (self->shipHidden != 0) return;
+        return render_thunk_state5(self->geometry);
     }
     return render_thunk_other(expl);
 }

@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 74.31,
-  "byte_exact": 1140,
-  "linked_exact": 2304,
-  "fuzzy_perfect": 2304,
+  "avg_match": 74.32,
+  "byte_exact": 1141,
+  "linked_exact": 2305,
+  "fuzzy_perfect": 2305,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -7966,14 +7966,6 @@
    "linked": false,
    "osize": 76,
    "usize": 66
-  },
-  {
-   "name": "_ZN17PlayerFixedObject11getPositionEv",
-   "pct": 40.0,
-   "byte": false,
-   "linked": false,
-   "osize": 38,
-   "usize": 38
   },
   {
    "name": "_ZN5Radar6updateEP8KIPlayer",
@@ -26526,6 +26518,14 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN17PlayerFixedObject11getPositionEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 38,
+   "usize": 38
   },
   {
    "name": "_ZN17PlayerFixedObject11setPositionERKN11AbyssEngine6AEMath6VectorE",
