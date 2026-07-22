@@ -61,10 +61,22 @@ int IMAGE_OFFSETS_IPAD_LARGE[104] = {
 
 static int *g_IF_idTable = IMAGE_OFFSETS;
 
-static AbyssEngine::AERandom **gCreateChar2Rng1;
-static int gCreateChar2Table;
-static AbyssEngine::AERandom **gCreateChar2Rng2;
-static AbyssEngine::AERandom **gCreateCharRng;
+static AbyssEngine::AERandom **gCreateChar2Rng1 = &Globals::rnd;
+static const int gCreateChar2Table[] = {
+    11, 11, 11, 11,
+     4,  5,  6,  9,
+     5,  5,  5,  5,
+     2,  2,  2,  2,
+     3,  3,  5,  4,
+     0,  0,  0,  0,
+     2,  3,  5,  0,
+     2,  2,  3,  2,
+     1,  1,  1,  1,
+     1,  1,  1,  1,
+     4,  4,  5,  7,
+};
+static AbyssEngine::AERandom **gCreateChar2Rng2 = &Globals::rnd;
+static AbyssEngine::AERandom **gCreateCharRng = &Globals::rnd;
 
 static PaintCanvas **g_IF_li_canvas = &Globals::Canvas;
 static char *g_IF_flagA = (char *)&Globals::iPadHD;
@@ -222,14 +234,14 @@ int *ImageFactory::createChar(bool isMale, int race) {
         race = (reroll != 0) ? 2 : 0;
     }
     int row = race;
-    int *table = &gCreateChar2Table;
+    const int *table = gCreateChar2Table;
     if (race == 0) row = 10;
     if (isMale) row = race;
     if (row == 5) row = 0;
     int *desc = new int[5];
     desc[0] = row;
 
-    int *partCounts = &table[row * 4];
+    const int *partCounts = &table[row * 4];
     for (int i = 0; i != 4; ++i)
         desc[i + 1] = (*gCreateChar2Rng2)->nextInt(partCounts[i]);
     return desc;

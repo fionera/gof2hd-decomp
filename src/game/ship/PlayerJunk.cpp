@@ -6,14 +6,15 @@
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
 #include "game/world/Level.h"
+#include "game/core/Globals.h"
 #include "engine/render/ParticleSystemManager.h"
 
-static FModSound *g_PJ_sound = nullptr;
+static FModSound **g_PJ_sound = &Globals::sound;
 
 namespace AbyssEngine {
 }
 
-static AbyssEngine::AERandom *g_PJ_random = nullptr;
+static AbyssEngine::AERandom **g_PJ_random = &Globals::rnd;
 
 PlayerJunk::PlayerJunk(int type, Player *player, AEGeometry *geometry,
                        float x, float y, float z)
@@ -51,12 +52,12 @@ void PlayerJunk::update(int elapsed) {
         if ((uint32_t)(this->state - 3) >= 2) {
             this->level->junkDied();
             this->state = 3;
-            g_PJ_sound->play(0x16, nullptr, nullptr, 0.0f);
-            if (g_PJ_random->nextInt(100) < 10) {
+            (*g_PJ_sound)->play(0x16, nullptr, nullptr, 0.0f);
+            if ((*g_PJ_random)->nextInt(100) < 10) {
                 this->hasCargo = 1;
                 this->cargo = new Array<int>();
                 ArrayAdd(99, *this->cargo);
-                ArrayAdd(g_PJ_random->nextInt(10) + 1, *this->cargo);
+                ArrayAdd((*g_PJ_random)->nextInt(10) + 1, *this->cargo);
                 this->createCrate(3);
                 this->hasCargo = 1;
             } else {
