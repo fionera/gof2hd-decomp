@@ -219,14 +219,21 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
                     pic_delta.update(range(tgt, tgt + width))
                     break
     raw, norm = [], []
+    last_word = None  # pool bytes decode as 1 Thumb32 or 2 Thumb16 lines depending on the
+    #                   (masked) word value -- collapse to one entry per 4-byte word so the
+    #                   sequence length never depends on meaningless pool contents
     for addr, insn in lines:
+        if addr in pic_delta or addr in pool:
+            if (addr & ~3) == last_word:
+                continue
+            last_word = addr & ~3
+            raw.append(insn)
+            norm.append("pool:addr" if addr in pic_delta
+                        else pool_norm(blob, addr, resolver))
+            continue
+        last_word = None
         raw.append(insn)
-        if addr in pic_delta:
-            norm.append("pool:addr")
-        elif addr in pool:
-            norm.append(pool_norm(blob, addr, resolver))
-        else:
-            norm.append(normalize(insn, len(blob), base, resolver, addr))
+        norm.append(normalize(insn, len(blob), base, resolver, addr))
     return raw, norm
 
 
