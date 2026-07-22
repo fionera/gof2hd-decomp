@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 73.78,
   "byte_exact": 1137,
-  "linked_exact": 2270,
-  "fuzzy_perfect": 2270,
+  "linked_exact": 2271,
+  "fuzzy_perfect": 2271,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2744,20 +2744,20 @@
    "usize": 82
   },
   {
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 15.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2468,
+   "usize": 2296
+  },
+  {
    "name": "_ZN11AbyssEngine6String4TrimEv",
    "pct": 15.7,
    "byte": false,
    "linked": false,
    "osize": 132,
    "usize": 152
-  },
-  {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 15.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2468,
-   "usize": 2296
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEiS4_f",
@@ -15720,14 +15720,6 @@
    "usize": 18
   },
   {
-   "name": "_ZN5Level13uncoverWantedEi",
-   "pct": 87.5,
-   "byte": false,
-   "linked": false,
-   "osize": 104,
-   "usize": 104
-  },
-  {
    "name": "zip_set_file_comment",
    "pct": 87.6,
    "byte": false,
@@ -15846,14 +15838,6 @@
    "linked": false,
    "osize": 62,
    "usize": 62
-  },
-  {
-   "name": "_ZN7Station7getNameEv",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 12,
-   "usize": 10
   },
   {
    "name": "_ZN8KIPlayer12setShipGroupEP10AEGeometryib",
@@ -16190,6 +16174,14 @@
    "linked": false,
    "osize": 22,
    "usize": 22
+  },
+  {
+   "name": "_ZN5Level13uncoverWantedEi",
+   "pct": 90.0,
+   "byte": false,
+   "linked": false,
+   "osize": 104,
+   "usize": 104
   },
   {
    "name": "_ZN9LensFlareD1Ev",
@@ -32062,6 +32054,14 @@
    "linked": true,
    "osize": 20,
    "usize": 20
+  },
+  {
+   "name": "_ZN7Station7getNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 12,
+   "usize": 12
   },
   {
    "name": "_ZN7Station8getIndexEv",

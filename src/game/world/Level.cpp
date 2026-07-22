@@ -481,9 +481,9 @@ void Level::pirateStationAction(bool param) {
         if (Globals::status->getStation()->getPirateStationIndex() < 0) {
             return;
         }
-        int tbl = (int) (intptr_t) Globals::status->field_4c;
+        Array<bool> *tbl = Globals::status->field_4c;
         int idx = Globals::status->getStation()->getPirateStationIndex();
-        *(unsigned char *) (*(int *) (tbl + 4) + idx) = 1;
+        tbl->data_[idx] = 1;
 
         *((unsigned char *) &Globals::status->field_f8 + 1) = 1;
     }
@@ -4341,10 +4341,9 @@ int Level::collideStation(Vector v) {
 void Level::uncoverWanted(int index) {
     if (field_29c == 0) {
         createRadioMessage(0x12, index);
-        int **g = (int **) &Globals::status;
 
         for (int i = 1;
-             i - 1 < ((Wanted *) ((int *) (*(int *) (*g) + 4))[index])->getNumWingmen();
+             i - 1 < (*Globals::status->wanted)[index]->getNumWingmen();
              i = i + 1) {
             (*enemies)[i]->player->setAlwaysEnemy(1);
             (*enemies)[i]->player->turnEnemy();
