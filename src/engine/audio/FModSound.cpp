@@ -356,8 +356,9 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch) {
 }
 
 bool FModSound::resume(FMOD::Event *e) {
+    FMOD::EventSystem *sys = this->system;
     bool ok = false;
-    if (e != 0 && this->system != 0)
+    if (e != 0 && sys != 0)
         ok = FMOD_Event_setPaused(e, 0) == 0;
     return ok;
 }
@@ -644,7 +645,7 @@ void FModSound::setParamValue(const char *name, int idx, float val) {
 int FModSound::pause(FMOD::Event *e) {
     unsigned r = 0;
     if (e != 0 && this->system != 0) {
-        unsigned s[1];
+        unsigned s[2];
         int st = FMOD_Event_getState(e, s);
         if (st == 0 && (int) (s[0] << 0x1c) < 0)
             r = FMOD_Event_setPaused(e, 1) == 0;

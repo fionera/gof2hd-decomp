@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 74.25,
+  "avg_match": 74.26,
   "byte_exact": 1140,
-  "linked_exact": 2301,
-  "fuzzy_perfect": 2301,
+  "linked_exact": 2302,
+  "fuzzy_perfect": 2302,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -7128,14 +7128,6 @@
    "usize": 288
   },
   {
-   "name": "_ZN9FModSound5pauseEPN4FMOD5EventE",
-   "pct": 35.5,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 56
-  },
-  {
    "name": "_ZN6Status15unlockBluePrintEi",
    "pct": 35.6,
    "byte": false,
@@ -8446,6 +8438,14 @@
    "linked": false,
    "osize": 708,
    "usize": 436
+  },
+  {
+   "name": "_ZN9FModSound5pauseEPN4FMOD5EventE",
+   "pct": 41.9,
+   "byte": false,
+   "linked": false,
+   "osize": 92,
+   "usize": 56
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas26CameraIsPointinViewFrustumERKNS_6AEMath6VectorE",
@@ -10766,14 +10766,6 @@
    "linked": false,
    "osize": 160,
    "usize": 140
-  },
-  {
-   "name": "_ZN9FModSound6resumeEPN4FMOD5EventE",
-   "pct": 55.2,
-   "byte": false,
-   "linked": false,
-   "osize": 38,
-   "usize": 34
   },
   {
    "name": "zip_delete",
@@ -33590,6 +33582,14 @@
    "linked": true,
    "osize": 24,
    "usize": 24
+  },
+  {
+   "name": "_ZN9FModSound6resumeEPN4FMOD5EventE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 38,
+   "usize": 38
   },
   {
    "name": "_ZN9FModSound6resumeEi",
