@@ -45,7 +45,7 @@ uint32_t Transform_GetTransform(uint32_t tf);
 void VectorCross(Vector *out, const Vector *b);
 
 Vector AEGeometry::getPosition() {
-    Matrix &loc = *(Matrix *) AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
+    Matrix &loc = *(Matrix *) this->canvas->TransformGetLocal(this->transform);
     return MatrixGetPosition(loc);
 }
 
@@ -80,7 +80,7 @@ void AEGeometry::DEBUG_setMeshMergerIndex(int a, LodMeshMerger *b) {
 }
 
 void AEGeometry::addChild(uint32_t child) {
-    AEGeomCanvas::TransformAddChild(this->canvas, this->transform, child);
+    this->canvas->TransformAddChild(this->transform, child);
     uint32_t old = this->childTransform;
     if (old != 0xffffffffu)
         this->parentTransform = old;
@@ -136,12 +136,12 @@ Vector AEGeometry::getRightVector() {
 }
 
 Vector AEGeometry::getUpVector() {
-    Matrix &loc = *(Matrix *) AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
+    Matrix &loc = *(Matrix *) this->canvas->TransformGetLocal(this->transform);
     return MatrixGetUp(loc);
 }
 
 Matrix &AEGeometry::getMatrix() {
-    return *(Matrix *) AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
+    return *(Matrix *) this->canvas->TransformGetLocal(this->transform);
 }
 
 Vector AEGeometry::getDirection() {
@@ -174,7 +174,7 @@ Vector AEGeometry::getScaling() {
 }
 
 void AEGeometry::updateReferenceMatrix() {
-    Matrix *loc = (Matrix *) AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
+    Matrix *loc = (Matrix *) this->canvas->TransformGetLocal(this->transform);
     this->referenceMatrix = *loc;
 }
 
@@ -196,12 +196,11 @@ void AEGeometry::setLodMeshes(uint16_t *meshes, int *dists, int count) {
 }
 
 Vector AEGeometry::getParentPosition() {
-    uint32_t canvas = (uint32_t)(uintptr_t)
-    this->canvas;
+    PaintCanvas *cnvs = this->canvas;
     uint32_t tf = this->altTransform;
     if (tf == 0xffffffffu)
         tf = this->transform;
-    Matrix &loc = *(Matrix *) AEGeomCanvas::TransformGetLocal(canvas, tf);
+    Matrix &loc = *(Matrix *) cnvs->TransformGetLocal(tf);
     return MatrixGetPosition(loc);
 }
 
@@ -361,12 +360,12 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
     this->visibility = (this->visibility & 0xff00) | (this->visibility >> 8);
 
     char matrixCopy[60];
-    uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    memcpy(matrixCopy, (const Matrix *) (uintptr_t) loc, 0x3c);
+    memcpy(matrixCopy, this->canvas->TransformGetLocal(this->transform), 0x3c);
 
-    loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    Vector pos = MatrixGetPosition(*(Matrix *) loc);
-    this->cameraDelta = camPos - pos;
+    uint32_t tf2 = this->altTransform;
+    if (tf2 == 0xffffffffu) tf2 = this->transform;
+    Vector pos = MatrixGetPosition(*(Matrix *)this->canvas->TransformGetLocal(tf2));
+    this->cameraDelta = pos - camPos;
 
     float dx = this->cameraDelta.x, dy = this->cameraDelta.y, dz = this->cameraDelta.z;
     this->distSq = (unsigned long long) (dy * dy + dx * dx + dz * dz);
@@ -385,7 +384,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
         return;
     }
 
-    Transform_GetTransform((uint32_t)(uintptr_t)this->canvas);
+    AbyssEngine::Transform *tgt = (AbyssEngine::Transform *)this->canvas->TransformGetTransform(this->transform);
 
     float factor = (screenScale <= 0.0625f) ? 0.75f : 1.0f;
     float detail = (0.03125f < screenScale) ? factor : 0.5f;
@@ -403,12 +402,13 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
 
         uint32_t lodTf = this->lodTransforms[idx];
         if (lodTf != this->transform) {
-            AEGeomCanvas::TransformSetLocal(this->canvas, this->transform, (Matrix *) (uintptr_t) lodTf);
+            this->canvas->TransformSetLocal(lodTf, *(Matrix *) matrixCopy);
             this->transform = this->lodTransforms[idx];
-            uint32_t t = Transform_GetTransform((uint32_t)(uintptr_t)this->canvas);
-            ((AbyssEngine::Transform *) (uintptr_t) t)->SetCurrentAnimationTime(0);
-            t = Transform_GetTransform((uint32_t)(uintptr_t)this->canvas);
-            ((AbyssEngine::Transform *) (uintptr_t) t)->SetCurrentAnimationTime(0);
+            int64_t animTime = tgt->currentTime;
+            tgt = (AbyssEngine::Transform *)this->canvas->TransformGetTransform(this->transform);
+            tgt->SetCurrentAnimationTime(animTime);
+            tgt = (AbyssEngine::Transform *)this->canvas->TransformGetTransform(this->baseTransform);
+            tgt->SetCurrentAnimationTime(animTime);
             this->currentLod = level;
             this->referenceMatrix = *(Matrix *) matrixCopy;
             if (this->merger != nullptr)
@@ -417,7 +417,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
         return;
     }
 
-    AEGeomCanvas::TransformSetLocal(this->canvas, this->transform, (Matrix *) (uintptr_t) this->baseTransform);
+    this->canvas->TransformSetLocal(this->baseTransform, *(Matrix *) matrixCopy);
     this->currentLod = 0;
     this->transform = this->baseTransform;
     if (this->merger != nullptr)

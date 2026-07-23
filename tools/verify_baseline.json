@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1143,
-  "linked_exact": 2500,
+  "linked_exact": 2506,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 76.72,
+  "avg_match": 76.74,
   "compared": 4523
  },
  "imports": [
@@ -394,7 +394,6 @@
   "_Z22TFC_useTargetsUpVectorP18TargetFollowCamerai",
   "_Z22TouchButton_footerAnimz",
   "_Z22TouchButton_setText_oui",
-  "_Z22Transform_GetTransformj",
   "_Z22_mtw_Array_StrArr_ctorPv",
   "_Z22_mtw_Galaxy_getStationPvi",
   "_Z22_mtw_Status_setCreditsPv",
@@ -849,7 +848,6 @@
   "_ZN11AbyssEngine9Transform14InsertKeyFrameEjf",
   "_ZN11AbyssEngine9Transform6UpdateExc",
   "_ZN12AEGeomCanvas15TransformCreateEPN11AbyssEngine11PaintCanvasEPj",
-  "_ZN12AEGeomCanvas17TransformAddChildEPN11AbyssEngine11PaintCanvasEjj",
   "_ZN12AEGeomCanvas17TransformGetLocalEjj",
   "_ZN12AEGeomCanvas17TransformSetLocalEPN11AbyssEngine11PaintCanvasEjPNS0_6AEMath6MatrixE",
   "_ZN4FMOD11EventSystem10getProjectEPKcPPNS_12EventProjectE",

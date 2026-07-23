@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 76.72,
+  "avg_match": 76.74,
   "byte_exact": 1143,
-  "linked_exact": 2500,
-  "fuzzy_perfect": 2500,
+  "linked_exact": 2506,
+  "fuzzy_perfect": 2506,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1560,14 +1560,6 @@
    "usize": 1488
   },
   {
-   "name": "inflate",
-   "pct": 8.1,
-   "byte": false,
-   "linked": false,
-   "osize": 4360,
-   "usize": 4776
-  },
-  {
    "name": "_ZN5RadarC1EP5Level",
    "pct": 8.2,
    "byte": false,
@@ -1582,6 +1574,14 @@
    "linked": false,
    "osize": 2488,
    "usize": 324
+  },
+  {
+   "name": "inflate",
+   "pct": 8.2,
+   "byte": false,
+   "linked": false,
+   "osize": 4360,
+   "usize": 4776
   },
   {
    "name": "_ZN11AbyssEngine6Engine14SetEyePositionEfff",
@@ -2256,14 +2256,6 @@
    "usize": 10004
   },
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 13.0,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 39284
-  },
-  {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
    "pct": 13.0,
    "byte": false,
@@ -2374,6 +2366,14 @@
    "linked": false,
    "osize": 648,
    "usize": 680
+  },
+  {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 14.2,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 39284
   },
   {
    "name": "_ZN12WantedWindow4drawEv",
@@ -3504,20 +3504,20 @@
    "usize": 96
   },
   {
+   "name": "_ZN17PlayerFixedObject6updateEi",
+   "pct": 23.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2768,
+   "usize": 2196
+  },
+  {
    "name": "_ZN3Hud22drawChallengeModeScoreEi",
    "pct": 23.3,
    "byte": false,
    "linked": false,
    "osize": 944,
    "usize": 912
-  },
-  {
-   "name": "_ZN17PlayerFixedObject6updateEi",
-   "pct": 23.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2768,
-   "usize": 2196
   },
   {
    "name": "_ZN11AbyssEngine6EngineC1Ev",
@@ -4552,20 +4552,20 @@
    "usize": 324
   },
   {
+   "name": "_ZN5Level10assignGunsEv",
+   "pct": 28.9,
+   "byte": false,
+   "linked": false,
+   "osize": 2948,
+   "usize": 2332
+  },
+  {
    "name": "_ZN6Player5shootEiixbN11AbyssEngine6AEMath6MatrixE",
    "pct": 28.9,
    "byte": false,
    "linked": false,
    "osize": 468,
    "usize": 372
-  },
-  {
-   "name": "_ZN5Level10assignGunsEv",
-   "pct": 29.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2948,
-   "usize": 2332
   },
   {
    "name": "_ZN6Player6damageEibi",
@@ -12000,14 +12000,6 @@
    "usize": 70
   },
   {
-   "name": "_ZN10AEGeometry9updateLodERKN11AbyssEngine6AEMath6VectorEf",
-   "pct": 69.4,
-   "byte": false,
-   "linked": false,
-   "osize": 532,
-   "usize": 504
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas10MeshCreateEttaRj",
    "pct": 69.4,
    "byte": false,
@@ -13608,6 +13600,14 @@
    "usize": 480
   },
   {
+   "name": "_ZN10AEGeometry9updateLodERKN11AbyssEngine6AEMath6VectorEf",
+   "pct": 81.8,
+   "byte": false,
+   "linked": false,
+   "osize": 532,
+   "usize": 532
+  },
+  {
    "name": "_ZN11AbyssEngine6Engine13ReloadShadersEv",
    "pct": 81.8,
    "byte": false,
@@ -13774,14 +13774,6 @@
    "linked": false,
    "osize": 140,
    "usize": 144
-  },
-  {
-   "name": "_ZN10AEGeometry9getMatrixEv",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 14
   },
   {
    "name": "_ZN10ModStation8autosaveEv",
@@ -14552,14 +14544,6 @@
    "usize": 420
   },
   {
-   "name": "_ZN10AEGeometry21updateReferenceMatrixEv",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 28,
-   "usize": 28
-  },
-  {
    "name": "_ZN11AbyssEngine10BlurShader12RenderEffectEPNS_12FBOContainerEPNS_6EngineEfNS_6AEMath6VectorE",
    "pct": 90.0,
    "byte": false,
@@ -14686,22 +14670,6 @@
    "linked": false,
    "osize": 124,
    "usize": 124
-  },
-  {
-   "name": "_ZN10AEGeometry11getPositionEv",
-   "pct": 90.9,
-   "byte": false,
-   "linked": false,
-   "osize": 26,
-   "usize": 26
-  },
-  {
-   "name": "_ZN10AEGeometry11getUpVectorEv",
-   "pct": 90.9,
-   "byte": false,
-   "linked": false,
-   "osize": 26,
-   "usize": 26
   },
   {
    "name": "_ZN11AbyssEngine6AEMatheqERKNS0_6VectorES3_",
@@ -15078,22 +15046,6 @@
    "linked": false,
    "osize": 142,
    "usize": 142
-  },
-  {
-   "name": "_ZN10AEGeometry17getParentPositionEv",
-   "pct": 92.9,
-   "byte": false,
-   "linked": false,
-   "osize": 32,
-   "usize": 32
-  },
-  {
-   "name": "_ZN10AEGeometry8addChildEj",
-   "pct": 92.9,
-   "byte": false,
-   "linked": false,
-   "osize": 30,
-   "usize": 30
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas14CameraGetLocalEj",
@@ -18008,6 +17960,22 @@
    "usize": 10
   },
   {
+   "name": "_ZN10AEGeometry11getPositionEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 26,
+   "usize": 26
+  },
+  {
+   "name": "_ZN10AEGeometry11getUpVectorEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 26,
+   "usize": 26
+  },
+  {
    "name": "_ZN10AEGeometry11setPositionERKN11AbyssEngine6AEMath6VectorE",
    "pct": 100.0,
    "byte": false,
@@ -18056,12 +18024,28 @@
    "usize": 4
   },
   {
+   "name": "_ZN10AEGeometry17getParentPositionEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 32,
+   "usize": 32
+  },
+  {
    "name": "_ZN10AEGeometry18getReferenceMatrixEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN10AEGeometry21updateReferenceMatrixEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 28,
+   "usize": 28
   },
   {
    "name": "_ZN10AEGeometry23setLodMeshesWithMeshIdsEPtPjPii",
@@ -18126,6 +18110,22 @@
    "linked": true,
    "osize": 26,
    "usize": 26
+  },
+  {
+   "name": "_ZN10AEGeometry8addChildEj",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 30,
+   "usize": 30
+  },
+  {
+   "name": "_ZN10AEGeometry9getMatrixEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
   },
   {
    "name": "_ZN10AEGeometry9isVisibleEv",
