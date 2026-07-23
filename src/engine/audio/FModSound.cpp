@@ -17,7 +17,7 @@ static inline void FMOD_EventSystem_release(FMOD::EventSystem *system) { system-
 
 int FMOD_EventSystem_freeEventData(FMOD::EventSystem *system, FMOD::Event *event, int waitUntilReady);
 
-char *AEFile_GetAppRootDir();
+class AEFile { public: static const char *GetAppRootDir(); };
 
 FModSound *FMOD_Event_stop_p(FMOD::Event *event, int immediate);
 
@@ -143,7 +143,7 @@ FModSound::FModSound() {
     this->system = 0;
     this->music = 0;
     this->initialized = 0;
-    this->appRootDir = AEFile_GetAppRootDir();
+    this->appRootDir = (char *)AEFile::GetAppRootDir();
     this->lowMemory = 1;
     for (int i = 0; i != 4; i++)
         this->categoryEnabled[i] = 1;
@@ -184,7 +184,7 @@ FModSound::~FModSound() {
 }
 
 void FModSound::setDownPitch(bool down) {
-    static const float kUp = 0.1f;
+    static const float kUp = 0.0f;
     float pitch = down ? -1.0f : kUp;
     this->downPitch = down ? 1 : 0;
     for (unsigned i = 0; i < 0x8f5u; ++i) {
@@ -219,9 +219,8 @@ void FModSound::setSoundVolume(int p1, float vol) {
 void FModSound::pauseAllPlaying() {
     for (unsigned i = 0; i < 0x8f5u; ++i) {
         if (this->system) {
-            FMOD::Event *slot = this->events[i];
-            if (slot && isPlaying(i))
-                FMOD_Event_setPaused(slot, 1);
+            if (this->events[i] && isPlaying(i))
+                FMOD_Event_setPaused(this->events[i], 1);
         }
     }
 }
@@ -263,8 +262,8 @@ float FModSound::getPlayingProgress(int idx) {
     if (this->initialized != 0 && this->system != 0 &&
         this->categoryEnabled[0] != 0 &&
         this->events[idx] != 0) {
-        int index;
         char *name;
+        int index;
         FMOD_EVENT_INFO info;
         FMOD_Event_getInfo(this->events[idx], &index, &name, &info);
         return (float) info.positionms / (float) info.lengthms;
@@ -435,8 +434,8 @@ void FModSound::disableReverb() {
 }
 
 int FModSound::init() {
-    static const char kSuffixA[16] = ".fev";
-    static const char kSuffixB[24] = "_low.fev";
+    static const char kSuffixA[16] = "FMOD_GOF2.fev";
+    static const char kSuffixB[32] = "data/audio/FMOD_GOF2.fev";
     static const char *kCats[4] = {"master", "music", "sfx", "voice"};
 
     for (int i = 0; i != 5; i++)
@@ -451,7 +450,7 @@ int FModSound::init() {
     uint8_t lowFlag = this->lowMemory;
     char *end = path + strlen(path);
     if (lowFlag == 0)
-        memcpy(end, kSuffixB, 16);
+        memcpy(end, kSuffixB, 25);
     else
         memcpy(end, kSuffixA, 14);
     FMOD_EventSystem_load(this->system, path, 0);

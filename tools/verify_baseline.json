@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1143,
-  "linked_exact": 2506,
+  "linked_exact": 2511,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 76.74,
+  "avg_match": 76.75,
   "compared": 4523
  },
  "imports": [
@@ -293,7 +293,6 @@
   "_Z19_psm_matrixGetRightPN11AbyssEngine6AEMath6VectorEPKNS0_6MatrixE",
   "_Z19operator_delete_cppPh",
   "_Z19rl_engineFromHolderi",
-  "_Z20AEFile_GetAppRootDirv",
   "_Z20ArrayRemove_AgentPtrPvS_",
   "_Z20ChoiceWindow_set1_chP12ChoiceWindowi",
   "_Z20ChoiceWindow_set6_chP12ChoiceWindowiiiii",

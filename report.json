@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 76.74,
+  "avg_match": 76.75,
   "byte_exact": 1143,
-  "linked_exact": 2506,
-  "fuzzy_perfect": 2506,
+  "linked_exact": 2511,
+  "fuzzy_perfect": 2511,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1560,6 +1560,14 @@
    "usize": 1488
   },
   {
+   "name": "inflate",
+   "pct": 8.1,
+   "byte": false,
+   "linked": false,
+   "osize": 4360,
+   "usize": 4776
+  },
+  {
    "name": "_ZN5RadarC1EP5Level",
    "pct": 8.2,
    "byte": false,
@@ -1574,14 +1582,6 @@
    "linked": false,
    "osize": 2488,
    "usize": 324
-  },
-  {
-   "name": "inflate",
-   "pct": 8.2,
-   "byte": false,
-   "linked": false,
-   "osize": 4360,
-   "usize": 4776
   },
   {
    "name": "_ZN11AbyssEngine6Engine14SetEyePositionEfff",
@@ -3504,20 +3504,20 @@
    "usize": 96
   },
   {
-   "name": "_ZN17PlayerFixedObject6updateEi",
-   "pct": 23.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2768,
-   "usize": 2196
-  },
-  {
    "name": "_ZN3Hud22drawChallengeModeScoreEi",
    "pct": 23.3,
    "byte": false,
    "linked": false,
    "osize": 944,
    "usize": 912
+  },
+  {
+   "name": "_ZN17PlayerFixedObject6updateEi",
+   "pct": 23.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2768,
+   "usize": 2196
   },
   {
    "name": "_ZN11AbyssEngine6EngineC1Ev",
@@ -4552,20 +4552,20 @@
    "usize": 324
   },
   {
-   "name": "_ZN5Level10assignGunsEv",
-   "pct": 28.9,
-   "byte": false,
-   "linked": false,
-   "osize": 2948,
-   "usize": 2332
-  },
-  {
    "name": "_ZN6Player5shootEiixbN11AbyssEngine6AEMath6MatrixE",
    "pct": 28.9,
    "byte": false,
    "linked": false,
    "osize": 468,
    "usize": 372
+  },
+  {
+   "name": "_ZN5Level10assignGunsEv",
+   "pct": 29.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2948,
+   "usize": 2332
   },
   {
    "name": "_ZN6Player6damageEibi",
@@ -11992,14 +11992,6 @@
    "usize": 32
   },
   {
-   "name": "_ZN9FModSound15pauseAllPlayingEv",
-   "pct": 69.2,
-   "byte": false,
-   "linked": false,
-   "osize": 70,
-   "usize": 70
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas10MeshCreateEttaRj",
    "pct": 69.4,
    "byte": false,
@@ -14424,14 +14416,6 @@
    "usize": 36
   },
   {
-   "name": "_ZN9FModSound4initEv",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 332,
-   "usize": 324
-  },
-  {
    "name": "_Z10SetKeyCodePKcii",
    "pct": 89.2,
    "byte": false,
@@ -15048,6 +15032,14 @@
    "usize": 142
   },
   {
+   "name": "_ZN9FModSound4initEv",
+   "pct": 92.7,
+   "byte": false,
+   "linked": false,
+   "osize": 332,
+   "usize": 336
+  },
+  {
    "name": "_ZN11AbyssEngine11PaintCanvas14CameraGetLocalEj",
    "pct": 92.9,
    "byte": false,
@@ -15512,14 +15504,6 @@
    "usize": 58
   },
   {
-   "name": "_ZN9FModSound18getPlayingProgressEi",
-   "pct": 96.0,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 140
-  },
-  {
    "name": "_ZN4Ship15removeEquipmentEP4Item",
    "pct": 96.2,
    "byte": false,
@@ -15768,14 +15752,6 @@
    "usize": 84
   },
   {
-   "name": "_ZN9FModSound12setDownPitchEb",
-   "pct": 97.2,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 100
-  },
-  {
    "name": "_ZN13PlayerFighter15setMissionCrateEb",
    "pct": 97.3,
    "byte": false,
@@ -15830,22 +15806,6 @@
    "linked": false,
    "osize": 116,
    "usize": 116
-  },
-  {
-   "name": "_ZN9FModSoundC1Ev",
-   "pct": 97.5,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 100
-  },
-  {
-   "name": "_ZN9FModSoundC2Ev",
-   "pct": 97.5,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 100
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17GetScreenPositionERKNS_6AEMath6VectorERS2_",
@@ -33376,6 +33336,14 @@
    "usize": 24
   },
   {
+   "name": "_ZN9FModSound12setDownPitchEb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 100,
+   "usize": 100
+  },
+  {
    "name": "_ZN9FModSound13disableReverbEv",
    "pct": 100.0,
    "byte": false,
@@ -33432,12 +33400,28 @@
    "usize": 68
   },
   {
+   "name": "_ZN9FModSound15pauseAllPlayingEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 70,
+   "usize": 70
+  },
+  {
    "name": "_ZN9FModSound16setAudioLanguageEi",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 36,
    "usize": 36
+  },
+  {
+   "name": "_ZN9FModSound18getPlayingProgressEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
   },
   {
    "name": "_ZN9FModSound18isHeadsetPluggedInEv",
@@ -33566,6 +33550,22 @@
    "linked": true,
    "osize": 30,
    "usize": 30
+  },
+  {
+   "name": "_ZN9FModSoundC1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 100,
+   "usize": 100
+  },
+  {
+   "name": "_ZN9FModSoundC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 100,
+   "usize": 100
   },
   {
    "name": "_ZN9FModSoundD1Ev",
