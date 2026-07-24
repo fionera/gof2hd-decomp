@@ -4,11 +4,6 @@
 #define GOF2_ENUM_BlendMode
 #include "engine/render/PaintCanvas.h"
 
-void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
-                    const Array<ParticleSettings::ParticleSet> &sets, bool mirror, bool alphaFade);
-
-static inline void _pss_base_dtor(ParticleSystemSprite *self) { self->~ParticleSystemSprite(); }
-
 void _pss_interpolateColor(ParticleSystemSprite *self, int index, float *alpha, float *red,
                            float *green, float *blue);
 
@@ -18,9 +13,6 @@ void ParticleSystem_updateAreaExitParticleImpl(ParticleSystemSprite *self, int i
 
 using AbyssEngine::AEMath::VectorSignedToFloat;
 using AbyssEngine::AEMath::VectorUnsignedToFloat;
-
-static PaintCanvas *g_PaintCanvas = nullptr;
-
 
 static float g_uvRoundBias = 0.0f;
 
@@ -32,51 +24,42 @@ ParticleSystemSprite::~ParticleSystemSprite() {
 
 ParticleSystemSprite::ParticleSystemSprite(PaintCanvas *canvas, const Matrix *matrix,
                                            const Array<ParticleSettings::ParticleSet> &particleSets,
-                                           bool mirror, bool alphaFade) {
-    _pss_base_ctor(this, canvas, matrix, particleSets, mirror, alphaFade);
-
-    uint32_t count = (uint32_t) this->particleCount;
-
-    char *arr = new char[count * 0xc];
-    if (count != 0)
-        memset(arr, 0, (size_t) count * 0xc);
-    this->spriteData = arr;
-
-    this->cachedPow = AbyssEngine::AEMath::Pow(0.0f, 0.0f);
+                                           bool mirror, bool alphaFade)
+    : IParticleSystem(canvas, matrix, particleSets, mirror, alphaFade) {
+    this->particleVelocities = new Vector[(uint32_t) this->maxParticles]();
+    this->cachedPow = AbyssEngine::AEMath::Pow(0.7f, 0.2f);
 }
 
 void ParticleSystemSprite::reset() {
-    PaintCanvas *pc = g_PaintCanvas;
-    for (int i = 0; i < this->particleCount; i++) {
-        pc->SpriteSystemSetPosition(this->canvasHandle, (uint16_t)(this->idOffset + i),
-                                    4294967296.0f, 4294967296.0f, 4294967296.0f);
-        pc->SpriteSystemSetSize(this->canvasHandle, (uint16_t)(this->idOffset + i), 0);
-        this->ages[i] = -1;
+    for (int i = 0; i < this->maxParticles; i++) {
+        this->canvas->SpriteSystemSetPosition(this->resource, (uint16_t)(this->idOffset + i),
+                                              4294967296.0f, 4294967296.0f, 4294967296.0f);
+        this->canvas->SpriteSystemSetSize(this->resource, (uint16_t)(this->idOffset + i), 0);
+        this->particleAges[i] = -1;
     }
-    this->liveCount = 0;
-    this->started = 1;
+    this->field_0x4 = 1;
+    this->emitTimer = 0;
 }
 
-int ParticleSystemSprite::init(uint32_t spriteId, uint16_t idOffset) {
-    this->spriteId = spriteId;
+void ParticleSystemSprite::init(uint32_t spriteId, uint16_t idOffset) {
+    this->resource = spriteId;
     this->idOffset = idOffset;
     this->initialized = 1;
 
     this->reset();
-    return 0;
 }
 
 int ParticleSystemSprite::getQuadCount() {
-    return this->particleCount;
+    return this->maxParticles;
 }
 
 void ParticleSystemSprite::release() {
-    delete[] this->spriteData;
-    this->spriteData = nullptr;
-    delete[] this->ages;
-    this->ages = nullptr;
-    delete[] this->setIndices;
-    this->setIndices = nullptr;
+    delete[] this->particleVelocities;
+    this->particleVelocities = nullptr;
+    delete[] this->particleAges;
+    this->particleAges = nullptr;
+    delete[] this->particleSetIds;
+    this->particleSetIds = nullptr;
 }
 
 void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle, uint32_t texture, BlendMode blend) {
@@ -108,15 +91,15 @@ void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle, uint32_t
 }
 
 void ParticleSystemSprite::updateSingle(int index, float dt) {
-    if ((int) ((uint32_t) this->flags << 0x18) < 0)
+    if ((int) (this->flags << 24) < 0)
         return;
 
-    PaintCanvas *pc = g_PaintCanvas;
-    uint32_t handle = this->canvasHandle;
-    uint16_t id = (uint16_t) this->spriteId;
+    PaintCanvas *pc = this->canvas;
+    uint32_t handle = this->resource;
+    uint16_t id = (uint16_t) this->resource;
 
-    int *ages = this->ages;
-    int8_t *setIdx = this->setIndices;
+    int *ages = this->particleAges;
+    int8_t *setIdx = this->particleSetIds;
     char *set = (char *) ParticleSettingsRef::cur + (int) setIdx[index] * 0xa0;
 
     float age = VectorSignedToFloat(ages[index], 0);
@@ -159,7 +142,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
             float *out = uv;
             float uvRot[4];
 
-            if ((int) ((uint32_t) this->flags2 << 0x1e) < 0)
+            if (((this->flags >> 24) & 0x2) != 0)
                 out = _pss_rotateUVs(this, uv, index, uvRot);
 
             pc->SpriteSystemSetUv(handle, id, out[1], 0.0f, out[2], 0.0f);
@@ -181,7 +164,7 @@ void ParticleSystemSprite::setAlpha(int index, uint32_t color, float alpha) {
     c2 = c2 * (1.0f / 255.0f);
     c3 = c3 * (1.0f / 255.0f);
 
-    if (this->cAlphaChannelMode == 0) {
+    if (this->alphaFade == 0) {
         c0 = c0 * alpha;
     } else {
         c1 = c1 * alpha;
@@ -189,8 +172,8 @@ void ParticleSystemSprite::setAlpha(int index, uint32_t color, float alpha) {
         c3 = c3 * alpha;
     }
 
-    g_PaintCanvas->SpriteSystemSetRGBA(this->canvasHandle,
-                                       (uint16_t)(this->idOffset + index), c3, c2, c1, c0);
+    this->canvas->SpriteSystemSetRGBA(this->resource,
+                                      (uint16_t)(this->idOffset + index), c3, c2, c1, c0);
 }
 
 void ParticleSystemSprite::enable(bool enabled) {
@@ -211,13 +194,13 @@ void ParticleSystemSprite::setParticle(const Vector &pos, float p2, uint32_t col
     (void) p9;
     (void) p10;
 
-    PaintCanvas *pc = g_PaintCanvas;
-    uint32_t handle = this->canvasHandle;
-    uint16_t id = (uint16_t) this->spriteId;
+    PaintCanvas *pc = this->canvas;
+    uint32_t handle = this->resource;
+    uint16_t id = (uint16_t) this->resource;
 
     pc->SpriteSystemSetPosition(handle, id, pos.y, p4, pos.z);
 
-    short size = (short) this->baseSize + (short) this->idOffset;
+    short size = (short) this->currentParticle + (short) this->idOffset;
     pc->SpriteSystemSetSize(handle, id, size);
 
     pc->SpriteSystemSetUv(handle, id, uv.x, uv.y, uv.z, ((const float *) &uv)[3]);

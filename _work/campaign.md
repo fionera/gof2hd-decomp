@@ -2,6 +2,41 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-24b (wave 14 pt.1 — IParticleSystem family layout re-model, exclusive)
+
+4-worker Ghidra harvest (scratchpad particle_harvest.json) + orchestrator disasm of every family
+ctor/dtor/init/reset/release. Net: byte 1147->1155 (+8), linked 2532->2546 (+14), avg
+76.91->77.09, imports 1022->1014 (-4, AERandom/base-ctor shims gone), extra 36 / stubs 0 /
+missing 0 / wrong_type 0 held. operator_call lint 449->434. Removes the old IParticleSystem
+field_0x2c/0x30 drift entries.
+Ground truth landed (headers have full static_assert maps):
+- IParticleSystem sizeof 0x70 (was 116B wrong): flags u32 @0x34 (single field, not
+  trailFlags/edgeFlags/flags2 splits), inline Array<ParticleSet> @0x38 {count,data,cap},
+  real AbyssEngine::AERandom @0x10 (member object; C1 in ctor mem-init list reproduces the
+  original call sequence AERandom C1 -> stores -> Array C2; fake AERandom_* shims deleted),
+  resource/idOffset i32 @0x54/0x58 (PSM mesh id == PSS sprite handle, unified),
+  particleVelocities/Ages/SetIds @0x64/0x68/0x6c. Vtable has NO virtual dtor; header-inline
+  `~IParticleSystem() {}` emits the Weak D2 the original exports; members auto-destruct in
+  the original's order (Array then AERandom).
+- init retyped int->void (PSS init tail-calls reset with no r0 set; return types unmangled =
+  parity-safe; killed a forced `return 0`).
+- Flag decoding: rotateUVs = bit25 `(flags>>24)&0x2` (old &0x80 was wrong, fixed in
+  emit/emitManual/PSS updateSingle); trail = bit15 `(int)(flags<<16)<0`; edge test bit19.
+- PSMesh 0xa0: derived @0x70.. incl. never-accessed field_0x8c; PSSprite 0x78 (alloc
+  `movs r0,#0x78` beats Ghidra DB 0x74): cachedPow @0x70 = Pow(0.7f,0.2f) (pool consts, old
+  Pow(0,0) wrong) + never-written field_0x74.
+- PSMesh dtor LESSON: literally-empty body lets clang skip the vtable store
+  (CanSkipVTablePointerInitialization) -> 4B vs orig 20B; body `this->release();`
+  (devirtualized, inlines to nothing) forces the store -> linked-exact. Same idiom as PSS dtor.
+- `new Vector[n]()` (value-init aggregate) reproduces the orig alloc+memset pattern in PSS ctor.
+- Family linked-exact gains: base D2, PSM D1/D2, PSS D1/D2, PSS release/init/getQuadCount/
+  enable, PSM emit/finishCurrentTrailParticle/release/incId/startNewSection + more.
+Drift gate: GameData(16)/PlayerAsteroid(3)/Hud(3)/PlayerTurret(1) entries are PRE-EXISTING at
+HEAD (verified via stash) — not from this wave; queue them as layout items.
+Still open in family (next: shim sweep + monsters): PSM/PSS updateSingle, setParticle,
+interpolateColor, emit 25.6 (2368B), emitTrail stub (1716B), updateAreaExitParticle stub
+(700B), PSM ctor 32.6, Manager ctors 62.9.
+
 ## Session 2026-07-24 (wave 13 — shim-sweep by class, 8 workers, 8/8 landed + 1 leftover)
 
 Pools: diffs13 (84 fns, 8 disjoint class pools). Workflow wf_ef0eebba-80a (script had to embed

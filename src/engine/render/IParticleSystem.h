@@ -2,6 +2,7 @@
 #define GOF2_IPARTICLESYSTEM_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
+#include "engine/core/AERandom.h"
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 #include "engine/render/ParticleSettings.h"
@@ -14,53 +15,47 @@ namespace AbyssEngine {
 
 using ::AbyssEngine::PaintCanvas;
 
-void AERandom_dtor(void *self); // lint: void_ptr (AERandom ABI shim, Pv mangling baked in)
-
 class IParticleSystem {
 public:
-    volatile uint16_t field_0x4;
-    volatile uint8_t emitterVelocityDirty;
+    // Set to 1 by the ctor and ParticleSystemSprite::reset, cleared by setMatrix /
+    // resetEmitterVelocity; the manager polls it to decide when to re-init a system.
+    uint8_t field_0x4;
+    uint8_t emitterVelocityDirty;
     PaintCanvas *canvas;
     uint8_t emitEnabled;
     uint8_t renderEnabled;
     uint8_t updateEnabled;
-    uint8_t random[8];
+    AbyssEngine::AERandom random;
     AbyssEngine::AEMath::Matrix const *matrix;
     AbyssEngine::AEMath::Vector emitterVelocity;
     AbyssEngine::AEMath::Vector lastEmitterPosition;
-    int32_t field_0x2c;
-    int32_t field_0x30;
     uint32_t flags;
-    // Ghidra: the particleSets inline-array capacity sits @0x40 between particleSets(=flags slot) and
-    // particleSetIndex@0x44; our decomp lacked it, shifting particleSetIndex.. 4 bytes low.
-    uint32_t particleSets_cap;
+    Array<ParticleSettings::ParticleSet> particleSets;
     uint8_t particleSetIndex;
     uint8_t alphaFade;
     int32_t maxParticles;
     uint8_t mirror;
     int32_t currentParticle;
-    int32_t field_0x54;
-    int32_t field_0x58;
-    uint8_t field_0x5c;
+    // Renderer resource this system draws into: a mesh id for ParticleSystemMesh,
+    // a sprite-system handle for ParticleSystemSprite. -1 until init().
+    int32_t resource;
+    int32_t idOffset;
+    uint8_t initialized;
     float emitTimer;
+    // Per-particle velocity for mesh systems; ParticleSystemMesh also stores its
+    // trail edge vectors here, two per particle.
     AbyssEngine::AEMath::Vector *particleVelocities;
     int *particleAges;
     int8_t *particleSetIds;
-    Array<ParticleSettings::ParticleSet> *particleSets;
 
     IParticleSystem(PaintCanvas *canvas, AbyssEngine::AEMath::Matrix const *matrix,
                     Array<ParticleSettings::ParticleSet> const &sets,
                     bool mirror, bool alphaFade);
 
-    IParticleSystem() {
-    }
-
     ~IParticleSystem() {
-        delete this->particleSets;
-        AERandom_dtor(this->random);
     }
 
-    virtual int init(uint32_t resource, uint16_t idOffset) = 0;
+    virtual void init(uint32_t resource, uint16_t idOffset) = 0;
 
     virtual void emit(int delta);
 
@@ -103,4 +98,30 @@ public:
 
     void resetEmitterVelocity();
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(IParticleSystem, field_0x4) == 0x4, "IParticleSystem::field_0x4 offset");
+static_assert(__builtin_offsetof(IParticleSystem, emitterVelocityDirty) == 0x5, "IParticleSystem::emitterVelocityDirty offset");
+static_assert(__builtin_offsetof(IParticleSystem, canvas) == 0x8, "IParticleSystem::canvas offset");
+static_assert(__builtin_offsetof(IParticleSystem, emitEnabled) == 0xc, "IParticleSystem::emitEnabled offset");
+static_assert(__builtin_offsetof(IParticleSystem, random) == 0x10, "IParticleSystem::random offset");
+static_assert(__builtin_offsetof(IParticleSystem, matrix) == 0x18, "IParticleSystem::matrix offset");
+static_assert(__builtin_offsetof(IParticleSystem, emitterVelocity) == 0x1c, "IParticleSystem::emitterVelocity offset");
+static_assert(__builtin_offsetof(IParticleSystem, lastEmitterPosition) == 0x28, "IParticleSystem::lastEmitterPosition offset");
+static_assert(__builtin_offsetof(IParticleSystem, flags) == 0x34, "IParticleSystem::flags offset");
+static_assert(__builtin_offsetof(IParticleSystem, particleSets) == 0x38, "IParticleSystem::particleSets offset");
+static_assert(__builtin_offsetof(IParticleSystem, particleSetIndex) == 0x44, "IParticleSystem::particleSetIndex offset");
+static_assert(__builtin_offsetof(IParticleSystem, alphaFade) == 0x45, "IParticleSystem::alphaFade offset");
+static_assert(__builtin_offsetof(IParticleSystem, maxParticles) == 0x48, "IParticleSystem::maxParticles offset");
+static_assert(__builtin_offsetof(IParticleSystem, mirror) == 0x4c, "IParticleSystem::mirror offset");
+static_assert(__builtin_offsetof(IParticleSystem, currentParticle) == 0x50, "IParticleSystem::currentParticle offset");
+static_assert(__builtin_offsetof(IParticleSystem, resource) == 0x54, "IParticleSystem::resource offset");
+static_assert(__builtin_offsetof(IParticleSystem, idOffset) == 0x58, "IParticleSystem::idOffset offset");
+static_assert(__builtin_offsetof(IParticleSystem, initialized) == 0x5c, "IParticleSystem::initialized offset");
+static_assert(__builtin_offsetof(IParticleSystem, emitTimer) == 0x60, "IParticleSystem::emitTimer offset");
+static_assert(__builtin_offsetof(IParticleSystem, particleVelocities) == 0x64, "IParticleSystem::particleVelocities offset");
+static_assert(__builtin_offsetof(IParticleSystem, particleAges) == 0x68, "IParticleSystem::particleAges offset");
+static_assert(__builtin_offsetof(IParticleSystem, particleSetIds) == 0x6c, "IParticleSystem::particleSetIds offset");
+static_assert(sizeof(IParticleSystem) == 0x70, "IParticleSystem size");
+#endif
 #endif

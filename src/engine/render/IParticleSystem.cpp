@@ -29,10 +29,6 @@ namespace AbyssEngine {
     }
 }
 
-void *AERandom_seed_ctor(void *self, long long seed); // lint: void_ptr (AERandom ABI shim, Pv mangling baked in)
-
-static inline void AERandom_ctor(void *self) { new(self) AbyssEngine::AERandom(); } // lint: void_ptr (AERandom ABI shim, Pv mangling baked in)
-
 static char *ParticleSet_definitions = nullptr;
 
 void IParticleSystem::enableUpdate(bool enabled) {
@@ -44,7 +40,7 @@ int IParticleSystem::getParticleCount() {
 }
 
 void IParticleSystem::setParticleSet(ParticleSettings::ParticleSet set) {
-    if (!this->particleSets->empty() && (*this->particleSets)[0] == set) {
+    if (!this->particleSets.empty() && this->particleSets[0] == set) {
         this->particleSetIndex = 0;
     }
 }
@@ -72,8 +68,9 @@ void IParticleSystem::setParticleSetIndex(uint8_t index) {
 }
 
 void IParticleSystem::setMatrix(Matrix const *matrix) {
-    *(Matrix const * volatile *) &this->matrix = matrix;
-    this->field_0x4 = 0x100;
+    this->matrix = matrix;
+    this->field_0x4 = 0;
+    this->emitterVelocityDirty = 1;
 }
 
 void IParticleSystem::enableRender(bool enabled) {
@@ -106,7 +103,7 @@ void IParticleSystem::emit(int delta) {
         return;
     }
 
-    int set = (*this->particleSets)[this->particleSetIndex];
+    int set = this->particleSets[this->particleSetIndex];
     if (set == -1) {
         return;
     }
@@ -198,7 +195,7 @@ void IParticleSystem::emit(int delta) {
         int current = this->currentParticle;
         this->particleSetIds[current] = (int8_t) set;
         this->particleAges[current] = 0;
-        if (((this->flags >> 24) & 0x80) != 0) {
+        if (((this->flags >> 24) & 0x2) != 0) {
             uvp = (uint32_t *) rotateUVs((float *) uv, current, (float *) rotated);
         }
 
@@ -208,11 +205,11 @@ void IParticleSystem::emit(int delta) {
         } else {
             int range = velSpread << 1;
             ((float *) velocity)[0] = *(float *) (def + 0x58) +
-                                      (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(range) - velSpread);
+                                      (float) (this->random.nextInt(range) - velSpread);
             ((float *) velocity)[1] = *(float *) (def + 0x5c) +
-                                      (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(range) - velSpread);
+                                      (float) (this->random.nextInt(range) - velSpread);
             ((float *) velocity)[2] = *(float *) (def + 0x60) +
-                                      (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(range) - velSpread);
+                                      (float) (this->random.nextInt(range) - velSpread);
         }
 
         Vector &slot = this->particleVelocities[current];
@@ -240,7 +237,7 @@ void IParticleSystem::emit(int delta) {
         if (*(int *) (def + 0x30) == 1) {
             phase = (float) (i + 1);
         } else {
-            phase = (float) i + (float) ((AbyssEngine::AERandom *) (this->random))->nextInt(10000) * 0.0001f;
+            phase = (float) i + (float) this->random.nextInt(10000) * 0.0001f;
         }
 
         zero_vec(particlePos);
@@ -267,9 +264,9 @@ void IParticleSystem::emit(int delta) {
         if ((this->flags & 0x80) != 0) {
             int posRange = (int) *(float *) (def + 0x78);
             int range = posRange << 1;
-            ((float *) tmp)[0] = (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(range) - posRange);
-            ((float *) tmp)[1] = (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(range) - posRange);
-            ((float *) tmp)[2] = (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(range) - posRange);
+            ((float *) tmp)[0] = (float) (this->random.nextInt(range) - posRange);
+            ((float *) tmp)[1] = (float) (this->random.nextInt(range) - posRange);
+            ((float *) tmp)[2] = (float) (this->random.nextInt(range) - posRange);
             *(Vector *) (particlePos) += *(Vector *) (tmp);
         } else {
             if (*(float *) (def + 0x78) != 0.0f) {
@@ -285,23 +282,23 @@ void IParticleSystem::emit(int delta) {
                 *(Vector *) (particlePos) += *(Vector *) (tmp);
             }
             if (*(float *) (def + 0x84) != 0.0f) {
-                *(Vector *) tmp = *(const Vector *) dir * (float) ((AbyssEngine::AERandom *) (this->random))->nextInt(
+                *(Vector *) tmp = *(const Vector *) dir * (float) this->random.nextInt(
                                       (int) *(float *) (def + 0x84));
                 *(Vector *) (particlePos) += *(Vector *) (tmp);
             }
             int posSpread = *(int *) (def + 0x48);
             if (posSpread != 0) {
-                ((float *) tmp)[0] = (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(posSpread << 1) -
+                ((float *) tmp)[0] = (float) (this->random.nextInt(posSpread << 1) -
                                               posSpread);
                 ((float *) tmp)[1] = 0.0f;
-                ((float *) tmp)[2] = (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(posSpread << 1) -
+                ((float *) tmp)[2] = (float) (this->random.nextInt(posSpread << 1) -
                                               posSpread);
                 *(Vector *) (particlePos) += *(Vector *) (tmp);
             }
             int ySpread = *(int *) (def + 0x4c);
             if (ySpread != 0) {
                 ((float *) particlePos)[1] +=
-                        (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(ySpread << 1) - ySpread);
+                        (float) (this->random.nextInt(ySpread << 1) - ySpread);
             }
         }
 
@@ -310,9 +307,9 @@ void IParticleSystem::emit(int delta) {
         float size1 = *(float *) (def + 0x20);
         int randomLife = *(int *) (def + 0x18);
         if (randomLife != 0) {
-            life += (float) ((AbyssEngine::AERandom *) (this->random))->nextInt(randomLife);
-            size0 += (float) ((AbyssEngine::AERandom *) (this->random))->nextInt(randomLife);
-            size1 += (float) ((AbyssEngine::AERandom *) (this->random))->nextInt(randomLife);
+            life += (float) this->random.nextInt(randomLife);
+            size0 += (float) this->random.nextInt(randomLife);
+            size1 += (float) this->random.nextInt(randomLife);
         }
 
         if (*(float *) (def + 0x24) == 0.0f) {
@@ -394,45 +391,29 @@ void IParticleSystem::interpolateColor(int index, float &alpha, float &red, floa
     }
 }
 
-struct LocalRandom {
-    char data[12];
-};
-
 float *IParticleSystem::rotateUVs(float *src, int seed, float *dst) {
-    LocalRandom random;
-    AERandom_seed_ctor(&random, (long long) seed);
-    unsigned value = (unsigned) ((AbyssEngine::AERandom *) (&random))->nextInt(40000);
+    AbyssEngine::AERandom random((long long) seed);
+    unsigned value = (unsigned) random.nextInt(40000);
     unsigned inv = ~value;
     ((uint32_t *) dst)[0] = ((uint32_t *) src)[value & 1];
     ((uint32_t *) dst)[1] = ((uint32_t *) src)[inv & 1];
     ((uint32_t *) dst)[2] = *(uint32_t *) ((char *) src + (((value & 2) << 1) | 8));
     ((uint32_t *) dst)[3] = *(uint32_t *) ((char *) src + (((inv & 2) << 1) | 8));
-    AERandom_dtor(&random);
     return dst;
 }
 
 IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
                                  Array<ParticleSettings::ParticleSet> const &sets,
-                                 bool mirror, bool alphaFade) {
-    this->canvas = canvas;
-    AERandom_ctor(this->random);
-
-    this->emitterVelocity.x = 0.0f;
-    this->emitterVelocity.y = 0.0f;
-    this->emitterVelocity.z = 0.0f;
-    this->lastEmitterPosition.x = 0.0f;
-    this->matrix = matrix;
-    this->field_0x2c = 0;
-    this->field_0x30 = 0;
-
-    this->particleSets = new Array<ParticleSettings::ParticleSet>();
+                                 bool mirror, bool alphaFade)
+    : canvas(canvas), random(), matrix(matrix), emitterVelocity(),
+      lastEmitterPosition(), particleSets() {
     this->mirror = mirror;
     this->alphaFade = alphaFade;
-    ArraySet(sets, *this->particleSets);
+    ArraySet(sets, this->particleSets);
 
     this->currentParticle = 0;
-    this->field_0x54 = -1;
-    this->field_0x58 = -1;
+    this->resource = -1;
+    this->idOffset = -1;
     this->emitEnabled = 1;
     this->renderEnabled = 1;
     this->updateEnabled = 1;
@@ -471,8 +452,9 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
         maxParticles = this->maxParticles;
     }
 
-    this->field_0x5c = 0;
-    this->field_0x4 = 0x101;
+    this->initialized = 0;
+    this->field_0x4 = 1;
+    this->emitterVelocityDirty = 1;
 }
 
 void IParticleSystem::calcEmitterVelocity(int delta) {
@@ -490,7 +472,7 @@ void IParticleSystem::calcEmitterVelocity(int delta) {
 void IParticleSystem::emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime) {
     if (particleSet != -1) {
         int current = this->currentParticle;
-        int set = (*this->particleSets)[particleSet];
+        int set = this->particleSets[particleSet];
         this->particleSetIds[current] = (int8_t) set;
         char *def = ParticleSet_definitions + (set + set * 4) * 32;
         this->particleAges[current] = 0;
@@ -502,7 +484,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         uv[2] = *(uint32_t *) (def + 0x8c);
         uv[3] = *(uint32_t *) (def + 0x94);
         uint32_t *uvp = uv;
-        if (((this->flags >> 24) & 0x80) != 0) {
+        if (((this->flags >> 24) & 0x2) != 0) {
             uvp = (uint32_t *) rotateUVs((float *) uv, current, (float *) rotated);
         }
 
@@ -515,12 +497,12 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         } else {
             int range = spread << 1;
             ((float *) randomVelocity)[0] = (float) (
-                ((AbyssEngine::AERandom *) (this->random))->nextInt(range) - spread);
+                this->random.nextInt(range) - spread);
             ((float *) randomVelocity)[1] = *(float *) (def + 0x5c) +
-                                            (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(range) -
+                                            (float) (this->random.nextInt(range) -
                                                      spread);
             ((float *) randomVelocity)[2] = (float) (
-                ((AbyssEngine::AERandom *) (this->random))->nextInt(range) - spread);
+                this->random.nextInt(range) - spread);
         }
 
         Vector &slot = this->particleVelocities[current];
@@ -539,16 +521,16 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         if (posSpread != 0) {
             char randomPosition[12];
             ((float *) randomPosition)[0] =
-                    (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(posSpread << 1) - posSpread);
+                    (float) (this->random.nextInt(posSpread << 1) - posSpread);
             ((float *) randomPosition)[1] = 0.0f;
             ((float *) randomPosition)[2] =
-                    (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(posSpread << 1) - posSpread);
+                    (float) (this->random.nextInt(posSpread << 1) - posSpread);
             *(Vector *) (&position) += *(Vector *) (randomPosition);
         }
 
         int ySpread = *(int *) (def + 0x4c);
         if (ySpread != 0) {
-            position.y += (float) (((AbyssEngine::AERandom *) (this->random))->nextInt(ySpread << 1) - ySpread);
+            position.y += (float) (this->random.nextInt(ySpread << 1) - ySpread);
         }
 
         if (lifetime < 0.0f) {
@@ -573,10 +555,10 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                               *(float *) (def + 0x1c), *(float *) (def + 0x20),
                               *(const Vector *) emitVelocity);
         } else {
-            float life = lifetime + (float) ((AbyssEngine::AERandom *) (this->random))->nextInt(randomLife);
-            float size0 = *(float *) (def + 0x1c) + (float) ((AbyssEngine::AERandom *) (this->random))->nextInt(
+            float life = lifetime + (float) this->random.nextInt(randomLife);
+            float size0 = *(float *) (def + 0x1c) + (float) this->random.nextInt(
                               randomLife);
-            float size1 = *(float *) (def + 0x20) + (float) ((AbyssEngine::AERandom *) (this->random))->nextInt(
+            float size1 = *(float *) (def + 0x20) + (float) this->random.nextInt(
                               randomLife);
             float velocityScale = *(float *) (def + 0x24);
             if (velocityScale == 0.0f) {

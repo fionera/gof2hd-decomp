@@ -26,21 +26,10 @@ using ParticleSet = ParticleSettings::ParticleSet;
 
 class ParticleSystemSprite : public IParticleSystem {
 public:
-    uint8_t started;
-    uint32_t canvasHandle;
-    uint8_t flags;
-    uint8_t flags2;
-    char cAlphaChannelMode;
-    int particleCount;
-    int baseSize;
-    uint32_t spriteId;
-    uint32_t idOffset;
-    uint8_t initialized;
-    int liveCount;
-    char *spriteData;
-    int *ages;
-    int8_t *setIndices;
+    // Written once in the ctor (Pow(0.7f, 0.2f)) and never read on Android;
+    // consumed only by an iOS-era code path.
     float cachedPow;
+    uint32_t field_0x74;
 
     ParticleSystemSprite(PaintCanvas *canvas, const Matrix *matrix,
                          const Array<ParticleSettings::ParticleSet> &particleSets,
@@ -48,7 +37,7 @@ public:
 
     ~ParticleSystemSprite();
 
-    int init(uint32_t spriteId, uint16_t idOffset) override;
+    void init(uint32_t spriteId, uint16_t idOffset) override;
 
     void reset() override;
 
@@ -72,4 +61,10 @@ public:
 
     static void render(PaintCanvas *canvas, uint32_t handle);
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(ParticleSystemSprite, cachedPow) == 0x70, "ParticleSystemSprite::cachedPow offset");
+static_assert(__builtin_offsetof(ParticleSystemSprite, field_0x74) == 0x74, "ParticleSystemSprite::field_0x74 offset");
+static_assert(sizeof(ParticleSystemSprite) == 0x78, "ParticleSystemSprite size");
+#endif
 #endif

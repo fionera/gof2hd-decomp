@@ -1,12 +1,12 @@
 {
  "verify": {
-  "byte_exact": 1147,
-  "linked_exact": 2532,
+  "byte_exact": 1155,
+  "linked_exact": 2546,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 76.91,
+  "avg_match": 77.09,
   "compared": 4523
  },
  "imports": [
@@ -51,7 +51,6 @@
   "_Z12_psm_render2PN11AbyssEngine11PaintCanvasEjj",
   "_Z12_psmesh_ctorPvS_PKvS1_bb",
   "_Z12ms_op_deletePh",
-  "_Z13AERandom_dtorPv",
   "_Z13Array_TB_dtorPi",
   "_Z13DrawTransformPvji",
   "_Z13FileRead_ctorPv",
@@ -83,11 +82,9 @@
   "_Z14Radio_draw_r2dP10ModStation",
   "_Z14_mtw_Item_makei",
   "_Z14_mtw_buildMenuPvi",
-  "_Z14_psm_base_ctorP18ParticleSystemMeshPN11AbyssEngine11PaintCanvasEPKNS1_6AEMath6MatrixEPK5ArrayIN16ParticleSettings11ParticleSetEEbb",
   "_Z14_psm_emitTrailP18ParticleSystemMeshi",
   "_Z14_psm_emitUsualP18ParticleSystemMeshi",
   "_Z14_psm_meshSetUVPN11AbyssEngine11PaintCanvasEjtff",
-  "_Z14_pss_base_ctorP20ParticleSystemSpritePN11AbyssEngine11PaintCanvasEPKNS1_6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEbb",
   "_Z14_pss_rotateUVsP20ParticleSystemSpritePfiS1_",
   "_Z15AEFile_ReadBoolPvj",
   "_Z15AEFile_ReadBytePvj",
@@ -212,7 +209,6 @@
   "_Z17stopShooting_extBPvii",
   "_Z18AEFile_WriteStringPvji",
   "_Z18AEMath_Matrix_ctorPv",
-  "_Z18AERandom_seed_ctorPvx",
   "_Z18CutScene_update_oui",
   "_Z18EaseInOut_GetValuePv",
   "_Z18FModSound_play_oteiiPKff",

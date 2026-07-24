@@ -20,7 +20,7 @@
   "engine/render/Engine.cpp": 4,
   "engine/render/LODManager.cpp": 25,
   "engine/render/LodMeshMerger.cpp": 2,
-  "engine/render/PaintCanvas.cpp": 24,
+  "engine/render/PaintCanvas.cpp": 23,
   "engine/render/ParticleSystemManager.cpp": 2,
   "engine/render/ResourceTransform.cpp": 2,
   "engine/render/ShaderBaseStruct.cpp": 3,
@@ -32,12 +32,11 @@
   "game/ship/PlayerEgo.cpp": 3,
   "game/ui/HangarWindow.cpp": 21,
   "game/ui/Layout.cpp": 3,
-  "game/ui/MenuTouchWindow.cpp": 49,
+  "game/ui/MenuTouchWindow.cpp": 38,
   "game/ui/MissionsWindow.cpp": 2,
   "game/weapons/Gun.cpp": 2,
   "game/world/Level.cpp": 119,
   "game/world/StarMap.cpp": 8,
-  "game/world/StarSystem.cpp": 3,
   "platform/android/NdkHooks.cpp": 2
  },
  "void_ptr": {

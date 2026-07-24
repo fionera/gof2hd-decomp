@@ -23,22 +23,6 @@ using ParticleSet = ParticleSettings::ParticleSet;
 
 class ParticleSystemMesh : public IParticleSystem {
 public:
-    uint8_t dirty;
-    uint8_t visible;
-    Vector motion;
-    uint8_t trailFlags;
-    uint8_t edgeFlags;
-    uint8_t colorMask;
-    uint32_t particleCount;
-    uint8_t flipRight;
-    int currentId;
-    uint32_t mesh;
-    uint32_t firstPoint;
-    uint8_t initialized;
-    uint32_t emitCounter;
-    Vector *positions;
-    int *ages;
-    int8_t *setIds;
     uint32_t pointCount;
     uint8_t wide;
     uint32_t field_0x78;
@@ -46,6 +30,7 @@ public:
     uint32_t field_0x80;
     uint32_t field_0x84;
     uint32_t field_0x88;
+    uint32_t field_0x8c;
     uint8_t newSectionStarted;
     uint32_t frameCounter;
     uint32_t edgeCount;
@@ -63,7 +48,7 @@ public:
 
     void release() override;
 
-    int init(uint32_t mesh, uint16_t firstPoint) override;
+    void init(uint32_t mesh, uint16_t firstPoint) override;
 
     void setParticle(const Vector &pos, float scale, uint32_t color, float u0, float u1, float v0,
                      float v1, bool useMaskedColor, float upScale, float dirScale,
@@ -98,4 +83,16 @@ public:
 
     static void emitTrail(int self);
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(ParticleSystemMesh, pointCount) == 0x70, "ParticleSystemMesh::pointCount offset");
+static_assert(__builtin_offsetof(ParticleSystemMesh, wide) == 0x74, "ParticleSystemMesh::wide offset");
+static_assert(__builtin_offsetof(ParticleSystemMesh, field_0x78) == 0x78, "ParticleSystemMesh::field_0x78 offset");
+static_assert(__builtin_offsetof(ParticleSystemMesh, field_0x8c) == 0x8c, "ParticleSystemMesh::field_0x8c offset");
+static_assert(__builtin_offsetof(ParticleSystemMesh, newSectionStarted) == 0x90, "ParticleSystemMesh::newSectionStarted offset");
+static_assert(__builtin_offsetof(ParticleSystemMesh, frameCounter) == 0x94, "ParticleSystemMesh::frameCounter offset");
+static_assert(__builtin_offsetof(ParticleSystemMesh, edgeCount) == 0x98, "ParticleSystemMesh::edgeCount offset");
+static_assert(__builtin_offsetof(ParticleSystemMesh, stride) == 0x9c, "ParticleSystemMesh::stride offset");
+static_assert(sizeof(ParticleSystemMesh) == 0xa0, "ParticleSystemMesh size");
+#endif
 #endif

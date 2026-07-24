@@ -8,8 +8,6 @@ void _psm_emitUsual(ParticleSystemMesh *self, int id);
 
 void _psm_meshSetPoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
 
-static inline void _psm_mesh_base_dtor(ParticleSystemMesh *self) { self->~ParticleSystemMesh(); }
-
 void _psm_render2(PaintCanvas *canvas, uint32_t texture, uint32_t camera);
 
 void _psm_vectorMinus(Vector *out, const Vector *a, const Vector *b);
@@ -68,12 +66,9 @@ void _psm_meshSetColor(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float
 void _psm_finishCurrentTrailParticle(ParticleSystemMesh *self, ParticleSet set, int id, const Vector *a,
                                      const Vector *b);
 
-void _psm_base_ctor(ParticleSystemMesh *self, PaintCanvas *canvas, const Matrix *matrix,
-                    const Array<ParticleSet> *sets, bool a, bool b);
-
 int ParticleSystemMesh::getPrevId(int id) {
     if (id == 0)
-        id = (int) this->particleCount;
+        id = (int) this->maxParticles;
     return id - 1;
 }
 
@@ -84,7 +79,7 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
 }
 
 void ParticleSystemMesh::emit(int id) {
-    if (this->emitEnabled == 0 || this->visible == 0) {
+    if (this->emitEnabled == 0 || this->renderEnabled == 0) {
         this->newSectionStarted = 1;
         return;
     }
@@ -99,12 +94,12 @@ void ParticleSystemMesh::emit(int id) {
 
 void ParticleSystemMesh::finishCurrentTrailParticle(ParticleSet set, int id, const Vector &first,
                                                     const Vector &second) {
-    this->setIds[id] = (int8_t) set;
-    this->ages[id] = 0;
+    this->particleSetIds[id] = (int8_t) set;
+    this->particleAges[id] = 0;
 
     uint32_t flags = this->flags;
     uint32_t offset = (this->edgeCount * id * 2) | 1;
-    Vector *dst = this->positions + offset;
+    Vector *dst = this->particleVelocities + offset;
 
     if ((flags & 0x1000) != 0) {
         *dst = first;
@@ -116,30 +111,30 @@ void ParticleSystemMesh::finishCurrentTrailParticle(ParticleSet set, int id, con
 }
 
 void ParticleSystemMesh::incId() {
-    int id = this->currentId + 1;
-    if (id >= (int) this->particleCount)
+    int id = this->currentParticle + 1;
+    if (id >= (int) this->maxParticles)
         id = 0;
-    this->currentId = id;
+    this->currentParticle = id;
 }
 
 void ParticleSystemMesh::reset() {
     for (int i = 0; i < (int) this->pointCount; i++) {
-        _psm_meshSetPoint(this->canvas, this->mesh,
-                          (uint16_t)(this->firstPoint + i), 0.0f, 0.0f, 0.0f);
+        _psm_meshSetPoint(this->canvas, this->resource,
+                          (uint16_t)(this->idOffset + i), 0.0f, 0.0f, 0.0f);
     }
 
-    for (int i = 0; i < (int) this->particleCount; i++)
-        this->ages[i] = -1;
+    for (int i = 0; i < (int) this->maxParticles; i++)
+        this->particleAges[i] = -1;
 
     this->frameCounter = 0;
-    this->currentId = 0;
+    this->currentParticle = 0;
     this->newSectionStarted = 1;
-    this->emitCounter = 0;
-    this->dirty = 1;
+    this->emitTimer = 0;
+    this->field_0x4 = 1;
 }
 
 ParticleSystemMesh::~ParticleSystemMesh() {
-    _psm_mesh_base_dtor(this);
+    this->release();
 }
 
 void ParticleSystemMesh::release() {
@@ -167,7 +162,7 @@ void ParticleSystemMesh::setQuadEdge(const Vector &edge, int point, const Vector
     char tmpStorage[sizeof(Vector)];
 
     _psm_vectorMinus(&pos, &edge, &delta);
-    _psm_meshSetPoint(this->canvas, this->mesh, (uint16_t) point, pos.x, pos.y, pos.z);
+    _psm_meshSetPoint(this->canvas, this->resource, (uint16_t) point, pos.x, pos.y, pos.z);
 
     _psm_vectorPlus((Vector *) tmpStorage, &edge, &delta);
     pos = *(Vector *) tmpStorage;
@@ -175,23 +170,22 @@ void ParticleSystemMesh::setQuadEdge(const Vector &edge, int point, const Vector
     uint8_t wide = this->wide;
     int next = point + 1;
     PaintCanvas *canvas = this->canvas;
-    uint32_t mesh = this->mesh;
+    uint32_t mesh = this->resource;
     if (wide == 0) {
         _psm_meshSetPoint(canvas, mesh, (uint16_t) next, pos.x, pos.y, pos.z);
     } else {
         void(*setPoint)(PaintCanvas *, uint32_t, uint16_t, float, float, float) = _psm_meshSetPointIndirect;
         setPoint(canvas, mesh, (uint16_t) next, edge.x, edge.y, edge.z);
-        setPoint(this->canvas, this->mesh, (uint16_t)(point + 5), edge.x, edge.y, edge.z);
-        setPoint(this->canvas, this->mesh, (uint16_t)(point + 4), pos.x, pos.y, pos.z);
+        setPoint(this->canvas, this->resource, (uint16_t)(point + 5), edge.x, edge.y, edge.z);
+        setPoint(this->canvas, this->resource, (uint16_t)(point + 4), pos.x, pos.y, pos.z);
     }
 }
 
 ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const Array<ParticleSet> &sets,
-                                       bool a, bool b) {
-    _psm_base_ctor(this, canvas, matrix, &sets, a, b);
-
+                                       bool a, bool b)
+    : IParticleSystem(canvas, matrix, sets, a, b) {
     uint32_t flags = this->flags;
-    uint32_t particleCount = this->particleCount;
+    uint32_t particleCount = this->maxParticles;
     this->field_0x80 = 0;
     this->field_0x84 = 0;
     this->field_0x88 = 0;
@@ -224,7 +218,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
         vectorCount = particleCount * edgeCount * 2;
     }
 
-    this->positions = new Vector[vectorCount]();
+    this->particleVelocities = new Vector[vectorCount]();
     this->field_0x78 = 0;
     this->field_0x7c = 0;
 }
@@ -243,7 +237,7 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
 
     _psm_matrixGetRight(&right, this->matrix);
     _psm_vectorScale(&rightScaled, &right, scale);
-    if (this->flipRight != 0) {
+    if (this->mirror != 0) {
         _psm_vectorScale(&tmpA, &rightScaled, -1.0f);
         _psm_vectorAssign(&rightScaled, &tmpA);
     }
@@ -262,7 +256,7 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
         flags = this->flags;
     }
 
-    int point = (int) this->firstPoint + (int) this->stride * this->currentId * 4;
+    int point = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
     if ((int) (flags << 19) < 0) {
         _psm_vectorMinus(&tmpA, &pos, &upScaled);
         _psm_vectorMinus(&tmpB, &tmpA, &delta);
@@ -292,51 +286,51 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
 
     uint32_t frontColor = color;
     uint32_t backColor = color;
-    uint32_t mask = this->colorMask == 0 ? 0xffffff00u : 0xffu;
+    uint32_t mask = this->alphaFade == 0 ? 0xffffff00u : 0xffu;
     if (useMaskedColor && !finish)
         frontColor &= mask;
     if (finish)
         backColor &= mask;
 
-    int base = (int) this->firstPoint + (int) this->stride * this->currentId * 4;
+    int base = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
     for (int i = 0; i < (int) this->stride; i++) {
-        _psm_meshSetColorWord(this->canvas, this->mesh, (uint16_t) base, backColor);
-        _psm_meshSetColorWord(this->canvas, this->mesh, (uint16_t)(base + 1), backColor);
-        _psm_meshSetColorWord(this->canvas, this->mesh, (uint16_t)(base + 2), frontColor);
-        _psm_meshSetColorWord(this->canvas, this->mesh, (uint16_t)(base + 3), frontColor);
-        _psm_meshSetUV2(this->canvas, this->mesh, (uint16_t) base, u0, v0);
-        _psm_meshSetUV2(this->canvas, this->mesh, (uint16_t)(base + 1), u1, v0);
-        _psm_meshSetUV2(this->canvas, this->mesh, (uint16_t)(base + 2), u0, v1);
-        _psm_meshSetUV2(this->canvas, this->mesh, (uint16_t)(base + 3), u1, v1);
+        _psm_meshSetColorWord(this->canvas, this->resource, (uint16_t) base, backColor);
+        _psm_meshSetColorWord(this->canvas, this->resource, (uint16_t)(base + 1), backColor);
+        _psm_meshSetColorWord(this->canvas, this->resource, (uint16_t)(base + 2), frontColor);
+        _psm_meshSetColorWord(this->canvas, this->resource, (uint16_t)(base + 3), frontColor);
+        _psm_meshSetUV2(this->canvas, this->resource, (uint16_t) base, u0, v0);
+        _psm_meshSetUV2(this->canvas, this->resource, (uint16_t)(base + 1), u1, v0);
+        _psm_meshSetUV2(this->canvas, this->resource, (uint16_t)(base + 2), u0, v1);
+        _psm_meshSetUV2(this->canvas, this->resource, (uint16_t)(base + 3), u1, v1);
         base += 4;
     }
 }
 
-int ParticleSystemMesh::init(uint32_t mesh, uint16_t firstPoint) {
-    this->mesh = mesh;
-    this->firstPoint = firstPoint;
+void ParticleSystemMesh::init(uint32_t mesh, uint16_t firstPoint) {
+    this->resource = mesh;
+    this->idOffset = firstPoint;
 
     void(*setUV)(PaintCanvas *, uint32_t, uint16_t, float, float) = _psm_meshSetUV;
     void(*setZero)(PaintCanvas *, uint32_t, uint16_t, uint32_t) = _psm_meshSetZero;
 
     for (int i = 0; i < (int) this->pointCount; i += 4) {
-        setUV(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i), 0.0f, 0.0f);
-        setUV(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 1), 1.0f, 0.0f);
-        setUV(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 2), 0.0f, 1.0f);
-        setUV(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 3), 1.0f, 1.0f);
-        setZero(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i), 0);
-        setZero(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 1), 0);
-        setZero(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 2), 0);
-        setZero(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 3), 0);
+        setUV(this->canvas, this->resource, (uint16_t)(this->idOffset + i), 0.0f, 0.0f);
+        setUV(this->canvas, this->resource, (uint16_t)(this->idOffset + i + 1), 1.0f, 0.0f);
+        setUV(this->canvas, this->resource, (uint16_t)(this->idOffset + i + 2), 0.0f, 1.0f);
+        setUV(this->canvas, this->resource, (uint16_t)(this->idOffset + i + 3), 1.0f, 1.0f);
+        setZero(this->canvas, this->resource, (uint16_t)(this->idOffset + i), 0);
+        setZero(this->canvas, this->resource, (uint16_t)(this->idOffset + i + 1), 0);
+        setZero(this->canvas, this->resource, (uint16_t)(this->idOffset + i + 2), 0);
+        setZero(this->canvas, this->resource, (uint16_t)(this->idOffset + i + 3), 0);
     }
 
-    int point = (int) this->firstPoint;
+    int point = (int) this->idOffset;
     for (int tri = 0; tri < ((int) this->pointCount >> 1); tri += 2) {
-        _psm_meshSetTriangle(this->canvas, this->mesh,
-                             (uint16_t)(tri + (this->firstPoint >> 1)), (uint16_t)(point + 2),
+        _psm_meshSetTriangle(this->canvas, this->resource,
+                             (uint16_t)(tri + (this->idOffset >> 1)), (uint16_t)(point + 2),
                              (uint16_t)(point + 1), (uint16_t) point);
-        _psm_meshSetTriangle(this->canvas, this->mesh,
-                             (uint16_t)(tri + (this->firstPoint >> 1) + 1), (uint16_t)(point + 1),
+        _psm_meshSetTriangle(this->canvas, this->resource,
+                             (uint16_t)(tri + (this->idOffset >> 1) + 1), (uint16_t)(point + 1),
                              (uint16_t)(point + 2), (uint16_t)(point + 3));
         point += 4;
     }
@@ -344,7 +338,6 @@ int ParticleSystemMesh::init(uint32_t mesh, uint16_t firstPoint) {
     this->initialized = 1;
 
     this->reset();
-    return 0;
 }
 
 void ParticleSystemMesh::updateUsualEdges(int id, int delta) {
@@ -352,20 +345,20 @@ void ParticleSystemMesh::updateUsualEdges(int id, int delta) {
     Vector tmp;
     float scale = (float) delta * 0.001f;
     const Vector *src;
-    if ((int) (this->edgeFlags << 28) < 0) {
-        const Vector *trail = this->positions + id;
-        src = &this->motion;
+    if ((int) (this->flags << 12) < 0) {
+        const Vector *trail = this->particleVelocities + id;
+        src = &this->emitterVelocity;
         scale *= trail->y;
     } else {
-        src = this->positions + id;
+        src = this->particleVelocities + id;
     }
 
     _psm_vectorScale(&tmp, src, scale);
     move = tmp;
 
-    int point = (int) this->firstPoint + (int) this->stride * id * 4;
+    int point = (int) this->idOffset + (int) this->stride * id * 4;
     for (int i = 0; i < (int) this->stride * 4; i++)
-        _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + i), move.x,
+        _psm_meshTranslatePoint(this->canvas, this->resource, (uint16_t)(point + i), move.x,
                                 move.y, move.z);
 }
 
@@ -375,14 +368,14 @@ void ParticleSystemMesh::updateSingleColor(int id) {
     float r;
     float a;
 
-    int start = (int) this->firstPoint;
+    int start = (int) this->idOffset;
     int stride = (int) this->stride;
-    if ((int) (this->trailFlags << 24) < 0) {
-        int prev = id == 0 ? (int) this->particleCount : id;
-        if (this->ages[prev - 1] == -1) {
-            int set = this->setIds[id];
+    if ((int) (this->flags << 16) < 0) {
+        int prev = id == 0 ? (int) this->maxParticles : id;
+        if (this->particleAges[prev - 1] == -1) {
+            int set = this->particleSetIds[id];
             uint32_t color = *(uint32_t *) (g_ParticleSetData + set * 160 + 0x38);
-            uint32_t mask = this->colorMask == 0 ? 0xffffff00u : 0xffu;
+            uint32_t mask = this->alphaFade == 0 ? 0xffffff00u : 0xffu;
             color &= mask;
             r = (float) ((color >> 16) & 0xff) * 0.0039215689f;
             a = (float) (color >> 24) * 0.0039215689f;
@@ -397,26 +390,26 @@ void ParticleSystemMesh::updateSingleColor(int id) {
 
     int point = start + stride * id * 4;
     for (int i = 0; i < (int) this->stride; i++) {
-        _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)(point + 2), a, r, g, b);
-        _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)(point + 3), a, r, g, b);
+        _psm_meshSetColor(this->canvas, this->resource, (uint16_t)(point + 2), a, r, g, b);
+        _psm_meshSetColor(this->canvas, this->resource, (uint16_t)(point + 3), a, r, g, b);
         point += 4;
     }
 
-    if ((int) (this->trailFlags << 24) < 0) {
-        int next = (id == (int) this->particleCount - 1) ? 0 : id + 1;
-        if (this->ages[next] == -1)
+    if ((int) (this->flags << 16) < 0) {
+        int next = (id == (int) this->maxParticles - 1) ? 0 : id + 1;
+        if (this->particleAges[next] == -1)
             return;
-        point = (int) this->firstPoint + (int) this->stride * next * 4;
+        point = (int) this->idOffset + (int) this->stride * next * 4;
         for (int i = 0; i < (int) this->stride; i++) {
-            _psm_meshSetColor(this->canvas, this->mesh, (uint16_t) point, a, r, g, b);
-            _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)(point + 1), a, r, g, b);
+            _psm_meshSetColor(this->canvas, this->resource, (uint16_t) point, a, r, g, b);
+            _psm_meshSetColor(this->canvas, this->resource, (uint16_t)(point + 1), a, r, g, b);
             point += 4;
         }
     } else {
         point = start + stride * id * 4;
         for (int i = 0; i < (int) this->stride; i++) {
-            _psm_meshSetColor(this->canvas, this->mesh, (uint16_t) point, a, r, g, b);
-            _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)(point + 1), a, r, g, b);
+            _psm_meshSetColor(this->canvas, this->resource, (uint16_t) point, a, r, g, b);
+            _psm_meshSetColor(this->canvas, this->resource, (uint16_t)(point + 1), a, r, g, b);
             point += 4;
         }
     }
@@ -437,16 +430,16 @@ void ParticleSystemMesh::emitTrail(int) {
 
 void ParticleSystemMesh::updateSingle(int id, float delta) {
     int intDelta = (int) delta;
-    int set = this->setIds[id];
-    if ((int) (this->trailFlags << 24) < 0) {
+    int set = this->particleSetIds[id];
+    if ((int) (this->flags << 16) < 0) {
         _psm_updateTrailEdges(this, id, intDelta);
-        if (this->ages[id] == -2 && this->newSectionStarted != 0) {
+        if (this->particleAges[id] == -2 && this->newSectionStarted != 0) {
             Vector right;
             Vector scaledRight;
             Vector up;
             Vector scaledUp;
             _psm_matrixGetRight(&right, this->matrix);
-            _psm_vectorScale(&scaledRight, &right, this->flipRight == 0 ? 1.0f : -1.0f);
+            _psm_vectorScale(&scaledRight, &right, this->mirror == 0 ? 1.0f : -1.0f);
             _psm_matrixGetUp(&up, this->matrix);
             float s = (float) *(int32_t *) (g_ParticleSetData + set * 160 + 0x44);
             _psm_vectorScale(&scaledRight, &scaledRight, s);
@@ -457,17 +450,17 @@ void ParticleSystemMesh::updateSingle(int id, float delta) {
         _psm_updateUsualEdges(this, id, intDelta);
     }
 
-    int age = this->ages[id];
+    int age = this->particleAges[id];
     age = (int) ((float) age + delta);
-    this->ages[id] = age;
+    this->particleAges[id] = age;
     _psm_updateSingleColor(this, id);
 
     int lifetime = *(int32_t *) (g_ParticleSetData + set * 160 + 0x28);
     if (age > lifetime) {
-        this->ages[id] = -1;
-        int point = (int) this->firstPoint + (int) this->stride * id * 4;
+        this->particleAges[id] = -1;
+        int point = (int) this->idOffset + (int) this->stride * id * 4;
         for (int i = 0; i < (int) this->stride * 4; i++)
-            _psm_meshSetPoint(this->canvas, this->mesh, (uint16_t)(point + i), 0.0f, 0.0f,
+            _psm_meshSetPoint(this->canvas, this->resource, (uint16_t)(point + i), 0.0f, 0.0f,
                               0.0f);
     }
 }
@@ -475,25 +468,25 @@ void ParticleSystemMesh::updateSingle(int id, float delta) {
 void ParticleSystemMesh::updateTrailEdges(int id, int delta) {
     int edgeCount = (int) this->edgeCount;
     int stride = (int) this->stride;
-    int point = (int) this->firstPoint + id * stride * 4;
-    Vector *edge = this->positions + id * edgeCount * 2;
+    int point = (int) this->idOffset + id * stride * 4;
+    Vector *edge = this->particleVelocities + id * edgeCount * 2;
     float scale = (float) delta * 0.001f;
 
     for (int i = 0; i < edgeCount; i++) {
         Vector move;
         _psm_vectorScale(&move, edge, scale);
-        _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t) point, -move.x, move.y,
+        _psm_meshTranslatePoint(this->canvas, this->resource, (uint16_t) point, -move.x, move.y,
                                 -move.z);
         int span = this->wide == 0 ? 1 : 4;
-        _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + span), move.x,
+        _psm_meshTranslatePoint(this->canvas, this->resource, (uint16_t)(point + span), move.x,
                                 move.y, move.z);
 
-        if (this->ages[id] != -2 || (int) (this->trailFlags << 24) >= 0) {
+        if (this->particleAges[id] != -2 || (int) (this->flags << 16) >= 0) {
             Vector move2;
             _psm_vectorScale(&move2, edge + 1, scale);
-            _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + 2),
+            _psm_meshTranslatePoint(this->canvas, this->resource, (uint16_t)(point + 2),
                                     -move2.x, move2.y, -move2.z);
-            _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + span + 2),
+            _psm_meshTranslatePoint(this->canvas, this->resource, (uint16_t)(point + span + 2),
                                     move2.x, move2.y, move2.z);
             edge += 2;
             point += this->wide == 0 ? 4 : 8;
