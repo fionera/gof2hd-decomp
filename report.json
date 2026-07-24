@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 77.14,
+  "avg_match": 77.15,
   "byte_exact": 1155,
-  "linked_exact": 2548,
-  "fuzzy_perfect": 2548,
+  "linked_exact": 2550,
+  "fuzzy_perfect": 2550,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -9456,14 +9456,6 @@
    "usize": 300
   },
   {
-   "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
-   "pct": 57.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1332,
-   "usize": 1292
-  },
-  {
    "name": "_ZN11AbyssEngine18ApplicationManager25CheckForOrientationChangeEv",
    "pct": 57.1,
    "byte": false,
@@ -10278,6 +10270,14 @@
    "linked": false,
    "osize": 80,
    "usize": 80
+  },
+  {
+   "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
+   "pct": 59.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1332,
+   "usize": 1288
   },
   {
    "name": "_ZN11ModMainMenu10OnTouchEndEiiPv",
@@ -13200,14 +13200,6 @@
    "usize": 36
   },
   {
-   "name": "_ZN8GameDataD2Ev",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 68
-  },
-  {
    "name": "zip_source_file",
    "pct": 80.0,
    "byte": false,
@@ -14478,14 +14470,6 @@
    "linked": false,
    "osize": 188,
    "usize": 188
-  },
-  {
-   "name": "_ZN8GameDataC2Ev",
-   "pct": 91.5,
-   "byte": false,
-   "linked": false,
-   "osize": 168,
-   "usize": 168
   },
   {
    "name": "_ZN11AbyssEngine11CubeMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -31854,6 +31838,22 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN8GameDataC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 168,
+   "usize": 168
+  },
+  {
+   "name": "_ZN8GameDataD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 68,
+   "usize": 68
   },
   {
    "name": "_ZN8GameText11getLanguageEv",
