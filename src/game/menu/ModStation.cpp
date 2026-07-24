@@ -141,6 +141,7 @@ void ModStation::autosave() {
     delete rh;
     reinterpret_cast<uint8_t*>(&this->cameraFlags)[1] = 1;
     if ((int) (intptr_t) this->dlcMenu != 0) {
+        this->dlcMenu->callDlcMenu();
     }
 }
 
@@ -213,7 +214,7 @@ void ModStation::OnSuspend() {
 }
 
 
-static int **g_ModStation_resumeArg = 0;
+static float *g_ModStation_resumeArg = 0;
 
 void ModStation::OnResume() {
     FModSound **holder = &Globals::sound;
@@ -222,8 +223,8 @@ void ModStation::OnResume() {
         return;
     if (FModSound_tryToStopMusicForBGMusic() != 0)
         return;
-    int arg = **g_ModStation_resumeArg;
-    (*holder)->setVolume(1, (float) arg);
+    float arg = *g_ModStation_resumeArg;
+    (*holder)->setVolume(1, arg);
 }
 
 static int *g_cpp_stack = 0;
@@ -1345,7 +1346,7 @@ void ModStation::OnRelease() {
         (*soundHolder)->disableReverb();
         (*soundHolder)->stopAllSoundFXEvents();
     }
-    Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_dummy);
+    Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_1);
 
     if (this->buttonRow != 0) {
         ArrayReleaseClasses_TouchButton(this->buttonRow);
@@ -3209,8 +3210,6 @@ static inline void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind) { new 
 
 static inline void MenuTouchWindow_callDlcMenu_dlc(MenuTouchWindow * w) { w->callDlcMenu(); }
 
-void TouchButton_getPosition_dlc(float *dst, MenuTouchWindow *win, unsigned idx);
-
 void ModStation::showDlcMenu() {
     MenuTouchWindow *win = (MenuTouchWindow *) this->dlcMenu;
     if (win == 0) {
@@ -3224,11 +3223,11 @@ void ModStation::showDlcMenu() {
     int *by = Globals::sub_menu_buttons_y;
     for (unsigned i = 0; i < win->buttons->size(); i = i + 1) {
         if (i < 10) {
-            float pos[3];
-            TouchButton_getPosition_dlc(pos, win, i);
-            bx[i] = (int) pos[0];
-            TouchButton_getPosition_dlc(pos, win, i);
-            by[i] = (int) pos[1];
+            AbyssEngine::AEMath::Vector pos;
+            pos = (*win->buttons)[i]->getPosition();
+            bx[i] = (int) pos.x;
+            pos = (*win->buttons)[i]->getPosition();
+            by[i] = (int) pos.y;
             win = (MenuTouchWindow *) this->dlcMenu;
         }
     }

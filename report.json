@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 76.83,
   "byte_exact": 1145,
-  "linked_exact": 2524,
-  "fuzzy_perfect": 2524,
+  "linked_exact": 2525,
+  "fuzzy_perfect": 2525,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -4552,20 +4552,20 @@
    "usize": 324
   },
   {
-   "name": "_ZN5Level10assignGunsEv",
-   "pct": 28.9,
-   "byte": false,
-   "linked": false,
-   "osize": 2948,
-   "usize": 2332
-  },
-  {
    "name": "_ZN6Player5shootEiixbN11AbyssEngine6AEMath6MatrixE",
    "pct": 28.9,
    "byte": false,
    "linked": false,
    "osize": 468,
    "usize": 372
+  },
+  {
+   "name": "_ZN5Level10assignGunsEv",
+   "pct": 29.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2948,
+   "usize": 2332
   },
   {
    "name": "_ZN6Player6damageEibi",
@@ -7608,6 +7608,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN10ModStation11showDlcMenuEv",
+   "pct": 44.4,
+   "byte": false,
+   "linked": false,
+   "osize": 224,
+   "usize": 232
+  },
+  {
    "name": "_ZN9PlayerEgo5rightEif",
    "pct": 44.4,
    "byte": false,
@@ -8270,14 +8278,6 @@
    "linked": false,
    "osize": 300,
    "usize": 264
-  },
-  {
-   "name": "_ZN10ModStation11showDlcMenuEv",
-   "pct": 48.7,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 208
   },
   {
    "name": "_ZN13PlayerStation6updateEi",
@@ -12120,14 +12120,6 @@
    "usize": 116
   },
   {
-   "name": "_ZN10ModStation8OnResumeEv",
-   "pct": 70.3,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 40
-  },
-  {
    "name": "_ZN12Achievements11countMedalsEv",
    "pct": 70.5,
    "byte": false,
@@ -12440,14 +12432,6 @@
    "usize": 92
   },
   {
-   "name": "_ZN10ModStation9OnReleaseEv",
-   "pct": 72.9,
-   "byte": false,
-   "linked": false,
-   "osize": 492,
-   "usize": 484
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas10DrawStringEjPKtiib",
    "pct": 73.1,
    "byte": false,
@@ -12478,6 +12462,14 @@
    "linked": false,
    "osize": 224,
    "usize": 226
+  },
+  {
+   "name": "_ZN10ModStation9OnReleaseEv",
+   "pct": 73.5,
+   "byte": false,
+   "linked": false,
+   "osize": 492,
+   "usize": 484
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas6ResumeEv",
@@ -12814,6 +12806,14 @@
    "linked": false,
    "osize": 246,
    "usize": 242
+  },
+  {
+   "name": "_ZN10ModStation8OnResumeEv",
+   "pct": 75.7,
+   "byte": false,
+   "linked": false,
+   "osize": 52,
+   "usize": 40
   },
   {
    "name": "_ZN11AbyssEngine15BumpShaderCloak4InitEPNS_6EngineE",
@@ -13686,14 +13686,6 @@
    "linked": false,
    "osize": 140,
    "usize": 144
-  },
-  {
-   "name": "_ZN10ModStation8autosaveEv",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 104,
-   "usize": 92
   },
   {
    "name": "_ZN10PlayerJunk6updateEi",
@@ -18326,6 +18318,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN10ModStation8autosaveEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 104,
+   "usize": 104
   },
   {
    "name": "_ZN10ModStation9OnSuspendEv",
