@@ -28,6 +28,9 @@ public:
     int lastHitpoints;
     int hitFlashActive;
     float hitFlashTimer;
+    // Ghidra ground truth: float at 0x160, paired with hitFlashTimer in the ctor
+    // (strd r2, r1, [r4, #348] stores 0.0001f here) and rewritten to 0.001f in update().
+    float field_0x160;
     int field_0x164;
     int field_0x168;
     int field_0x16c;
@@ -93,4 +96,12 @@ private:
     static AbyssEngine::AEMath::Vector pos;
     static float emitTime;
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(PlayerAsteroid, hitFlashTimer) == 0x15c, "PlayerAsteroid::hitFlashTimer offset");
+static_assert(__builtin_offsetof(PlayerAsteroid, field_0x160) == 0x160, "PlayerAsteroid::field_0x160 offset");
+static_assert(__builtin_offsetof(PlayerAsteroid, field_0x164) == 0x164, "PlayerAsteroid::field_0x164 offset");
+static_assert(__builtin_offsetof(PlayerAsteroid, field_0x16c) == 0x16c, "PlayerAsteroid::field_0x16c offset");
+static_assert(sizeof(PlayerAsteroid) == 0x170, "PlayerAsteroid size");
+#endif
 #endif

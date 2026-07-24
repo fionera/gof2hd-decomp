@@ -26,7 +26,7 @@
   "engine/render/ShaderBaseStruct.cpp": 3,
   "game/core/Globals.cpp": 33,
   "game/core/String.cpp": 6,
-  "game/menu/MGame.cpp": 12,
+  "game/menu/MGame.cpp": 9,
   "game/menu/ModStation.cpp": 17,
   "game/mission/GameRecord.cpp": 4,
   "game/ship/PlayerEgo.cpp": 3,

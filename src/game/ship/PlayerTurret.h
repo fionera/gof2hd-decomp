@@ -17,7 +17,6 @@ class Level;
 class PlayerTurret : public KIPlayer {
 public:
     bool turretEnabled;
-    char field_0x3e;
     bool isSentryGun;
     // ASM ground truth: our PlayerTurret was 404 vs 360 (Ghidra). These five fields duplicated KIPlayer
     // base fields (cachedPosition@0x58=posX, hostWorldOffset@0x90, aimPoint@0x9c, reviveFlag@0xa8=
@@ -80,5 +79,14 @@ public:
 
     void pickEnemy();
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(PlayerTurret, isSentryGun) == 0x125, "PlayerTurret::isSentryGun offset");
+static_assert(__builtin_offsetof(PlayerTurret, spawnInvulnTimer) == 0x128, "PlayerTurret::spawnInvulnTimer offset");
+static_assert(__builtin_offsetof(PlayerTurret, explosion) == 0x13c, "PlayerTurret::explosion offset");
+static_assert(__builtin_offsetof(PlayerTurret, turretHost) == 0x154, "PlayerTurret::turretHost offset");
+static_assert(__builtin_offsetof(PlayerTurret, turretRange) == 0x164, "PlayerTurret::turretRange offset");
+static_assert(sizeof(PlayerTurret) == 0x168, "PlayerTurret size");
+#endif
 
 #endif

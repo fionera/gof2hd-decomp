@@ -4488,14 +4488,6 @@
    "usize": 372
   },
   {
-   "name": "_ZN5Level10assignGunsEv",
-   "pct": 29.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2948,
-   "usize": 2332
-  },
-  {
    "name": "_ZN6Player6damageEibi",
    "pct": 29.0,
    "byte": false,
@@ -4510,6 +4502,14 @@
    "linked": false,
    "osize": 92,
    "usize": 52
+  },
+  {
+   "name": "_ZN5Level10assignGunsEv",
+   "pct": 29.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2948,
+   "usize": 2332
   },
   {
    "name": "_ZN11AbyssEngine10BlurShaderC1Ev",
@@ -10744,22 +10744,6 @@
    "usize": 92
   },
   {
-   "name": "_ZN12PlayerTurretC1EiP6PlayerP10AEGeometryfff",
-   "pct": 63.2,
-   "byte": false,
-   "linked": false,
-   "osize": 768,
-   "usize": 724
-  },
-  {
-   "name": "_ZN12PlayerTurretC2EiP6PlayerP10AEGeometryfff",
-   "pct": 63.2,
-   "byte": false,
-   "linked": false,
-   "osize": 768,
-   "usize": 724
-  },
-  {
    "name": "_ZN14PlayerAsteroid6renderEv",
    "pct": 63.2,
    "byte": false,
@@ -10854,6 +10838,22 @@
    "linked": false,
    "osize": 36,
    "usize": 26
+  },
+  {
+   "name": "_ZN12PlayerTurretC1EiP6PlayerP10AEGeometryfff",
+   "pct": 63.7,
+   "byte": false,
+   "linked": false,
+   "osize": 768,
+   "usize": 720
+  },
+  {
+   "name": "_ZN12PlayerTurretC2EiP6PlayerP10AEGeometryfff",
+   "pct": 63.7,
+   "byte": false,
+   "linked": false,
+   "osize": 768,
+   "usize": 720
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas10InitializeEb",
