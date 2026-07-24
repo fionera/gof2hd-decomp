@@ -949,7 +949,7 @@
    "byte": false,
    "linked": false,
    "osize": 2656,
-   "usize": 392
+   "usize": 388
   },
   {
    "name": "_ZN6Status19nextCampaignMissionEb",
@@ -6496,14 +6496,6 @@
    "usize": 456
   },
   {
-   "name": "_ZN3Hud13hudEventMedalEii",
-   "pct": 37.2,
-   "byte": false,
-   "linked": false,
-   "osize": 448,
-   "usize": 516
-  },
-  {
    "name": "_ZN7BombGun6updateEi",
    "pct": 37.2,
    "byte": false,
@@ -6534,6 +6526,14 @@
    "linked": false,
    "osize": 356,
    "usize": 312
+  },
+  {
+   "name": "_ZN3Hud13hudEventMedalEii",
+   "pct": 37.3,
+   "byte": false,
+   "linked": false,
+   "osize": 448,
+   "usize": 512
   },
   {
    "name": "_ZN7BeamGun6updateEi",

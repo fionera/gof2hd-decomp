@@ -56,11 +56,12 @@ public:
     uint8_t _hudrealign_0x118[184]; // realign field_0x1d0 to 0x1d0
     int field_0x1d0;
     int eventScrollTick;
-    unsigned char eventScrolls;
-    uint8_t _hudrealign_0x1dc[4]; // realign field_0x1e0 to 0x1e0
+    // 4-byte stores in hudEvent/hudEventMedal (str.w [r9,#0x1d8]) prove int, not uchar.
+    int eventScrolls;
+    uint8_t field_0x1dc[4];
     String field_0x1e0;
     unsigned char letterbox;
-    uint8_t _hudrealign_0x1f0[4]; // realign field_0x1f4 to 0x1f4
+    int field_0x1f0; // 4-aligned, so letterbox gets its original 3 pad bytes
     String field_0x1f4;
     String field_0x200;
     unsigned char hasBoostButton;
@@ -185,10 +186,11 @@ public:
     unsigned short field_0x456;
     unsigned short field_0x458;
     unsigned short field_0x45a;
-    uint8_t _hudrealign_0x45c[2]; // realign field_0x45e to 0x45e
+    unsigned short field_0x45c; // real field: Hud::init strh.w [r4,#0x45c]
     unsigned short field_0x45e;
     unsigned short field_0x460;
-    uint8_t _hudrealign_0x464[4]; // realign field_0x468 to 0x468
+    uint8_t field_0x462[2];
+    int field_0x464; // real field: 4-byte access in draw/hudEvent at 0x464
     int field_0x468;
     int hitFlashTimer;
     int field_0x470;
@@ -326,4 +328,11 @@ static_assert(__builtin_offsetof(CargoBay, cargoCurrent) == 0x54,
               "CargoBay::cargoCurrent must live at +0x54");
 static_assert(__builtin_offsetof(CargoBay, cargoMax) == 0x58,
               "CargoBay::cargoMax must live at +0x58");
+static_assert(__builtin_offsetof(Hud, eventScrolls) == 0x1d8, "Hud::eventScrolls offset");
+static_assert(__builtin_offsetof(Hud, field_0x1dc) == 0x1dc, "Hud::field_0x1dc offset");
+static_assert(__builtin_offsetof(Hud, letterbox) == 0x1ec, "Hud::letterbox offset");
+static_assert(__builtin_offsetof(Hud, field_0x1f0) == 0x1f0, "Hud::field_0x1f0 offset");
+static_assert(__builtin_offsetof(Hud, field_0x45c) == 0x45c, "Hud::field_0x45c offset");
+static_assert(__builtin_offsetof(Hud, field_0x464) == 0x464, "Hud::field_0x464 offset");
+static_assert(__builtin_offsetof(Hud, hitFlashTimer) == 0x46c, "Hud::hitFlashTimer offset");
 #endif
