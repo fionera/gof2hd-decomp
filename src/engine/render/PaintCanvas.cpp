@@ -27,6 +27,7 @@ namespace AbyssEngine {
     void SpriteSystemSetAllUv(float u0, float v0, float u1, float v1, SpriteSystem *sys);
     void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, SpriteSystem *sys);
     void SpriteSystemSetRGBA(unsigned short idx, float r, float g, float b, float a, SpriteSystem *sys);
+    void SpriteSystemDraw(Engine *engine, const AEMath::Matrix &view, const AEMath::Matrix &world, SpriteSystem *sys);
 }
 
 namespace {
@@ -618,25 +619,13 @@ void paintcanvas_ext_gl_str_dtor(void *s); // lint: void_ptr (external symbol; m
 
 static inline void paintcanvas_ext_dl_glLineWidth(float w) { glLineWidth(w); }
 
-void paintcanvas_ext_dl_glEnable(void *eng, bool on); // lint: void_ptr (external symbol; mangling must match lib)
-
 static inline float paintcanvas_ext_dl_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 static inline void paintcanvas_ext_dl_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_dl_glVertexPointer(int a, int b, int c, void *p) { glVertexPointer(a, b, c, p); } // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dl_glColorMask(void *eng, unsigned int cap, int on); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_dl_glDrawArrays(int a, int b, int c) { glDrawArrays(a, b, c); }
-
-void paintcanvas_ext_dl_drawline2d(void *eng, void *p, bool b); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 int paintcanvas_ext_get_w(AbyssEngine::PaintCanvas *);
 
@@ -2657,8 +2646,8 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index) {
             inv[0] = 1.0f;
             inv[5] = 1.0f;
             inv[14] = 1.0f;
-            paintcanvas_ext_dss1_mtx_getinv(inv, worldM);
-            paintcanvas_ext_dss1_mtx_assign(worldM, inv);
+            *(AbyssEngine::AEMath::Matrix*)inv = AbyssEngine::AEMath::MatrixGetInverse(*(const AbyssEngine::AEMath::Matrix*)worldM);
+            *(AbyssEngine::AEMath::Matrix*)worldM = *(const AbyssEngine::AEMath::Matrix*)inv;
         } else {
             float rotM[16];
             char scratch[60];
@@ -2666,7 +2655,7 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index) {
             rotM[0] = 1.0f;
             rotM[5] = 1.0f;
             rotM[14] = 1.0f;
-            paintcanvas_ext_dss1_matidentity(scratch, rotM);
+            AbyssEngine::AEMath::MatrixIdentity(*(AbyssEngine::AEMath::Matrix*)scratch);
 
             PCGravView *grav = (PCGravView *) paintcanvas_ext_dss1_getgrav(this->engine);
             double angle = grav->angle * g_dss1_gravscale_8ac10;
@@ -2682,9 +2671,9 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index) {
 
             PCCameraView *cam = (PCCameraView *) ((char **) this->cameras.data_)[this->currentCamera];
             paintcanvas_ext_dss1_memcpy(scratch, cam->localMatrix, 0x3c);
-            paintcanvas_ext_dss1_mtx_muleq(scratch, rotM);
-            paintcanvas_ext_dss1_mtx_getinv(scratch, scratch);
-            paintcanvas_ext_dss1_mtx_assign(worldM, scratch);
+            *(AbyssEngine::AEMath::Matrix*)scratch *= *(const AbyssEngine::AEMath::Matrix*)rotM;
+            *(AbyssEngine::AEMath::Matrix*)scratch = AbyssEngine::AEMath::MatrixGetInverse(*(const AbyssEngine::AEMath::Matrix*)scratch);
+            *(AbyssEngine::AEMath::Matrix*)worldM = *(const AbyssEngine::AEMath::Matrix*)scratch;
         }
     }
 
@@ -2693,8 +2682,7 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index) {
     ident[0] = 1.0f;
     ident[5] = 1.0f;
     ident[14] = 1.0f;
-    paintcanvas_ext_dss1_ssdraw(this->engine, ident, worldM,
-                                this->spriteSystems.data_[index]);
+    AbyssEngine::SpriteSystemDraw(this->engine, *(const AbyssEngine::AEMath::Matrix*)ident, *(const AbyssEngine::AEMath::Matrix*)worldM, this->spriteSystems.data_[index]);
 }
 
 float PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
@@ -2783,26 +2771,26 @@ void PaintCanvas::DrawLine(int x0, int y0, int x1i, int y1i) {
 
     if (*g_dl_flag_794ee == 0) {
         paintcanvas_ext_dl_glLineWidth(1.0f);
-        paintcanvas_ext_dl_glEnable(this->engine, true);
+        ((AbyssEngine::Engine*)this->engine)->GlEnable(0xde1, true);
         v[0] = x1;
         v[1] = y1;
         v[2] = x2;
         v[3] = y2;
         paintcanvas_ext_dl_setwvm(this, abuf);
         paintcanvas_ext_dl_glVertexPointer(2, 0x1406, 0, this->lineVerts);
-        paintcanvas_ext_dl_glColorMask(this->engine, 0x8074, 1);
-        paintcanvas_ext_dl_glColorMask(this->engine, 0x8078, 0);
-        paintcanvas_ext_dl_glColorMask(this->engine, 0x8075, 0);
-        paintcanvas_ext_dl_glColorMask(this->engine, 0x8076, 0);
+        ((AbyssEngine::Engine*)this->engine)->GlEnable(0x8074, true);
+        ((AbyssEngine::Engine*)this->engine)->GlEnable(0x8078, false);
+        ((AbyssEngine::Engine*)this->engine)->GlEnable(0x8075, false);
+        ((AbyssEngine::Engine*)this->engine)->GlEnable(0x8076, false);
         paintcanvas_ext_dl_glDrawArrays(1, 0, 2);
-        paintcanvas_ext_dl_glEnable(this->engine, true);
+        ((AbyssEngine::Engine*)this->engine)->GlEnable(0xde1, true);
     } else {
         paintcanvas_ext_dl_setwvm(this, abuf);
         v[0] = x1;
         v[1] = y1;
         v[2] = x2;
         v[3] = y2;
-        paintcanvas_ext_dl_drawline2d(this->engine, this->lineVerts, true);
+        ((AbyssEngine::Engine*)this->engine)->DrawLine2D(this->lineVerts, 2, false);
     }
 }
 
@@ -5368,14 +5356,14 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index, AbyssEngine::AEMath::Matr
     float inv[16];
 
     if (this->initialized == 0) {
-        paintcanvas_ext_dss_mtx_getinv(inv, local);
-        paintcanvas_ext_dss_mtx_assign(local, inv);
+        *(AbyssEngine::AEMath::Matrix*)inv = AbyssEngine::AEMath::MatrixGetInverse(*(const AbyssEngine::AEMath::Matrix*)local);
+        *(AbyssEngine::AEMath::Matrix*)local = *(const AbyssEngine::AEMath::Matrix*)inv;
     } else {
         memset(identbuf, 0, sizeof(identbuf));
         identbuf[0] = 1.0f;
         identbuf[5] = 1.0f;
         identbuf[14] = 1.0f;
-        paintcanvas_ext_dss_matidentity(scratch, identbuf);
+        AbyssEngine::AEMath::MatrixIdentity(*(AbyssEngine::AEMath::Matrix*)scratch);
 
         PCGravView *grav = (PCGravView *) paintcanvas_ext_dss_getgrav(this->engine);
         double angle = grav->angle * g_dss_gravscale_8ada0;
@@ -5389,9 +5377,9 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index, AbyssEngine::AEMath::Matr
         *(unsigned int *) &identbuf[1] = *(unsigned int *) &s ^ 0x80000000;
         identbuf[4] = s;
 
-        paintcanvas_ext_dss_mtx_muleq(local, identbuf);
-        paintcanvas_ext_dss_mtx_getinv(scratch, local);
-        paintcanvas_ext_dss_mtx_assign(local, scratch);
+        *(AbyssEngine::AEMath::Matrix*)local *= *(const AbyssEngine::AEMath::Matrix*)identbuf;
+        *(AbyssEngine::AEMath::Matrix*)scratch = AbyssEngine::AEMath::MatrixGetInverse(*(const AbyssEngine::AEMath::Matrix*)local);
+        *(AbyssEngine::AEMath::Matrix*)local = *(const AbyssEngine::AEMath::Matrix*)scratch;
     }
 
     float ident2[16];
@@ -5399,8 +5387,7 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index, AbyssEngine::AEMath::Matr
     ident2[0] = 1.0f;
     ident2[5] = 1.0f;
     ident2[14] = 1.0f;
-    paintcanvas_ext_dss_ssdraw(this->engine, ident2, local,
-                               this->spriteSystems.data_[index]);
+    AbyssEngine::SpriteSystemDraw(this->engine, *(const AbyssEngine::AEMath::Matrix*)ident2, *(const AbyssEngine::AEMath::Matrix*)local, this->spriteSystems.data_[index]);
 }
 
 void paintcanvas_ext_drawstring_str(void *, unsigned int, unsigned int, int, int, // lint: void_ptr (external symbol; mangling must match lib)

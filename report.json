@@ -1537,7 +1537,7 @@
   },
   {
    "name": "inflate",
-   "pct": 8.1,
+   "pct": 8.2,
    "byte": false,
    "linked": false,
    "osize": 4360,
@@ -3800,14 +3800,6 @@
    "usize": 464
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas16DrawSpriteSystemEjNS_6AEMath6MatrixE",
-   "pct": 25.2,
-   "byte": false,
-   "linked": false,
-   "osize": 396,
-   "usize": 412
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas18TransformAddMeshIdEjj",
    "pct": 25.2,
    "byte": false,
@@ -3910,6 +3902,14 @@
    "linked": false,
    "osize": 120,
    "usize": 126
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas16DrawSpriteSystemEjNS_6AEMath6MatrixE",
+   "pct": 25.7,
+   "byte": false,
+   "linked": false,
+   "osize": 396,
+   "usize": 416
   },
   {
    "name": "_ZN11SolarSystemC1EiN11AbyssEngine6StringEibiiiiiiPiP5ArrayIiES5_S5_",
@@ -5856,14 +5856,6 @@
    "usize": 508
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas16DrawSpriteSystemEj",
-   "pct": 33.2,
-   "byte": false,
-   "linked": false,
-   "osize": 428,
-   "usize": 448
-  },
-  {
    "name": "_ZN6Layout12formatNumberEi",
    "pct": 33.2,
    "byte": false,
@@ -6664,6 +6656,14 @@
    "usize": 252
   },
   {
+   "name": "_ZN11AbyssEngine11PaintCanvas16DrawSpriteSystemEj",
+   "pct": 38.5,
+   "byte": false,
+   "linked": false,
+   "osize": 428,
+   "usize": 464
+  },
+  {
    "name": "_ZN16SystemPathFinder15getJumpDistanceEP5ArrayIP11SolarSystemEii",
    "pct": 38.5,
    "byte": false,
@@ -6848,14 +6848,6 @@
    "usize": 64
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas8DrawLineEiiii",
-   "pct": 40.0,
-   "byte": false,
-   "linked": false,
-   "osize": 436,
-   "usize": 184
-  },
-  {
    "name": "_ZN11AbyssEngine16esMatrixMultiplyEPNS_8ESMatrixES1_S1_",
    "pct": 40.0,
    "byte": false,
@@ -6958,6 +6950,14 @@
    "linked": false,
    "osize": 444,
    "usize": 356
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas8DrawLineEiiii",
+   "pct": 40.4,
+   "byte": false,
+   "linked": false,
+   "osize": 436,
+   "usize": 192
   },
   {
    "name": "_ZN11AbyssEngineplERKNS_6StringERKi",
