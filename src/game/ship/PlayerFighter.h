@@ -80,6 +80,9 @@ public:
     Vector workingPosition;
     Vector resetVecB;
     Vector resetVecC;
+    Vector field_0x17c;
+    Vector field_0x188;
+    Vector field_0x194;
     int32_t engineTrailSystem;
     float rotate;
     float shootError;
@@ -87,9 +90,11 @@ public:
     int32_t field_0x1b0;
     int32_t boostProb;
     int32_t maneuverTimer;
+    int32_t field_0x1bc;
     int32_t field_0x1c0;
     int32_t field_0x1c4;
     int32_t field_0x1c8;
+    int32_t field_0x1cc;
     int32_t deltaTime;
     int32_t deltaTimeHi;
     int32_t hitpoints;
@@ -109,9 +114,11 @@ public:
     int32_t smoothRoll;
     int32_t field_0x214;
     AbyssEngine::Matrix easeBaseMatrix;
-    AbyssEngine::Matrix rollMatrix;
+    // roll() strh.w [this,#0x254] writes this pair right where easeBaseMatrix ends;
+    // rollMatrix follows at 0x258 after 2 pad bytes.
     signed char field_0x254;
     signed char field_0x255;
+    AbyssEngine::Matrix rollMatrix;
     int32_t field_0x294;
     int32_t field_0x298;
     int32_t rollSamples;
@@ -122,11 +129,13 @@ public:
     int32_t rollSampleIndex;
     uint8_t rollBufferFilled;
     AbyssEngine::EaseInOutMatrix *easeMatrix;
+    // field_0x2c9/field_0x2cd were Ghidra artifacts of the ctor's overlapping unaligned
+    // zero-stores (str.w [+0x2c9], str.w [+0x2cd]) spanning cloakTimer..cloakActive.
+    int32_t field_0x2bc;
+    int32_t field_0x2c0;
     int32_t spacePoint;
     int32_t cloakTimer;
-    int32_t field_0x2c9;
     int32_t cloakDuration;
-    int32_t field_0x2cd;
     uint8_t cloakActive;
     int32_t cloakCooldown;
     uint8_t cloakingPossible;
@@ -207,4 +216,20 @@ public:
 
     static int stationRouteAliens;
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(PlayerFighter, field_0x17c) == 0x17c, "PlayerFighter::field_0x17c offset");
+static_assert(__builtin_offsetof(PlayerFighter, engineTrailSystem) == 0x1a0, "PlayerFighter::engineTrailSystem offset");
+static_assert(__builtin_offsetof(PlayerFighter, field_0x1bc) == 0x1bc, "PlayerFighter::field_0x1bc offset");
+static_assert(__builtin_offsetof(PlayerFighter, deltaTime) == 0x1d0, "PlayerFighter::deltaTime offset");
+static_assert(__builtin_offsetof(PlayerFighter, hitpoints) == 0x1d8, "PlayerFighter::hitpoints offset");
+static_assert(__builtin_offsetof(PlayerFighter, field_0x254) == 0x254, "PlayerFighter::field_0x254 offset");
+static_assert(__builtin_offsetof(PlayerFighter, rollMatrix) == 0x258, "PlayerFighter::rollMatrix offset");
+static_assert(__builtin_offsetof(PlayerFighter, field_0x2bc) == 0x2bc, "PlayerFighter::field_0x2bc offset");
+static_assert(__builtin_offsetof(PlayerFighter, spacePoint) == 0x2c4, "PlayerFighter::spacePoint offset");
+static_assert(__builtin_offsetof(PlayerFighter, cloakTimer) == 0x2c8, "PlayerFighter::cloakTimer offset");
+static_assert(__builtin_offsetof(PlayerFighter, cloakDuration) == 0x2cc, "PlayerFighter::cloakDuration offset");
+static_assert(__builtin_offsetof(PlayerFighter, cloakActive) == 0x2d0, "PlayerFighter::cloakActive offset");
+static_assert(__builtin_offsetof(PlayerFighter, field_0x2d9) == 0x2d9, "PlayerFighter::field_0x2d9 offset");
+#endif
 #endif

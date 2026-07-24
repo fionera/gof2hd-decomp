@@ -358,12 +358,14 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->rollActive() = 0;
     self->field_0x254 = 0;
     self->easeMatrix = 0;
+    self->field_0x2bc = 0;
+    self->field_0x2c0 = 0;
     self->field_0x13c = 0;
     self->spacePoint = 0;
     self->cloakTimer = 0;
     self->cloakCooldown = 0;
-    self->field_0x2cd = 0;
-    self->field_0x2c9 = 0;
+    self->cloakDuration = 0;
+    self->cloakActive = 0;
     self->cloakingPossible = 1;
     self->cloakMaterial = -1;
     self->aiDisabled = 0;

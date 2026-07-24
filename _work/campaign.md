@@ -2,6 +2,41 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-24c (wave 15A — drift eliminated: 49 fields / 5 classes -> 0, exclusive)
+
+Workflow wf_096681a9-c42: 6 read-only sonnet analysts (one per class), ASM evidence via
+`tools/verify/verify.py --show` on the ORIGINAL .so (full dynsym survives stripping — no
+Ghidra needed for layout ground truth; objdump path + verify invocation in build.ninja).
+Controller applied per-class, gated each (link_so+drift+verify+ratchet), 4 commits:
+- PlayerTurret: `char field_0x3e` was a dup of KIPlayer::field_0x3e (base) — removed.
+- PlayerAsteroid: missing `float field_0x160` (ctor strd 0.0001f pairs it w/ hitFlashTimer).
+- Camera: campaign note was STALE — already 0x5c since the Matrix 0x3c fix; PaintCanvas
+  holds Array<Camera*> (no inline shear). Added static_asserts only.
+- Hud: eventScrolls uchar->int (str.w 0x1d8); _hudrealign_0x1f0[4]->int (align-driven);
+  0x45c/0x464 real fields carved out of realign blobs.
+- GameData: 0x6c..0x77 re-modeled as an 11-byte uint8_t run — original's unaligned
+  str.w[+0x6d]/str.w[+0x71]/strh[+0x75] are clang-MERGED byte stores (key idiom!).
+  JniBridge zeroes each byte; clang re-merges identically. GameData C2/D2 -> 100.
+- PlayerFighter (26 fields, multi-gap): +3 Vectors 0x17c/0x188/0x194, +int 0x1bc, +int
+  0x1cc, field_0x254/0x255 moved BEFORE rollMatrix (roll() strh 0x254 right after
+  easeBaseMatrix), +field_0x2bc/0x2c0 after easeMatrix ptr, REMOVED field_0x2c9/0x2cd
+  (Ghidra artifacts of overlapping unaligned ctor zero-stores str.w[+0x2c9]/[+0x2cd]
+  spanning cloakTimer..cloakActive — second key idiom). 16 fn gains (setBoostProb/
+  setAIDisabled/setShootError/setRotate/setCloakingPossible ->100, cloak +8.9,
+  setWingmanCommand +14.9); ctor -0.1 (accepted).
+Net wave 15A: byte 1155->1159, linked 2548->2555, avg 77.14->77.21, drift 49->0 fields.
+LEARNINGS: (1) unaligned wide stores in the original = merged byte fields, model as
+uint8_t runs; (2) overlapping zero-stores create phantom Ghidra fields at odd offsets —
+delete, don't model; (3) drift `name=` hex is ground truth, fix actual to match it;
+(4) analysis-only fleet + controller-applied edits works well for layout (no worker
+edit hazards); analyst prompts + results: scratchpad wave15_analysis.json.
+NEXT: wave 15B PaintCanvas shim redo (~80 shims, 1030 refs, call sites only, NO wrapper
+laundering; sscanf via deliberate --update-baseline); 15C monsters (IParticleSystem::emit
+25.6 2368B, emitManual 27.6, PSM::emitTrail 0.0, PSS::updateAreaExitParticle 0.0,
+Level::initParticleSystems 22.8, PlayerFighter::update 2.2 10376B monster,
+PlayerFighterC2 25.6 1324B now unblocked by correct layout); Ghidra PSM/PSS struct
+sync still pending MCP reconnect.
+
 ## Session 2026-07-24b (wave 14 pt.2 — shim-sweep fleet, 8 workers, 6.5/8 pools landed)
 
 Workflow wf_8981afbe-775 (8 sonnet workers, disjoint TU pools, edit-only; orchestrator gated).
