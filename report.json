@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 76.75,
+  "avg_match": 76.76,
   "byte_exact": 1143,
   "linked_exact": 2511,
   "fuzzy_perfect": 2511,
@@ -1560,14 +1560,6 @@
    "usize": 1488
   },
   {
-   "name": "inflate",
-   "pct": 8.1,
-   "byte": false,
-   "linked": false,
-   "osize": 4360,
-   "usize": 4776
-  },
-  {
    "name": "_ZN5RadarC1EP5Level",
    "pct": 8.2,
    "byte": false,
@@ -1582,6 +1574,14 @@
    "linked": false,
    "osize": 2488,
    "usize": 324
+  },
+  {
+   "name": "inflate",
+   "pct": 8.2,
+   "byte": false,
+   "linked": false,
+   "osize": 4360,
+   "usize": 4776
   },
   {
    "name": "_ZN11AbyssEngine6Engine14SetEyePositionEfff",
@@ -4528,6 +4528,14 @@
    "usize": 236
   },
   {
+   "name": "_ZN5Level10assignGunsEv",
+   "pct": 28.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2948,
+   "usize": 2332
+  },
+  {
    "name": "_ZN7StarMap14initStarSystemEv",
    "pct": 28.8,
    "byte": false,
@@ -4558,14 +4566,6 @@
    "linked": false,
    "osize": 468,
    "usize": 372
-  },
-  {
-   "name": "_ZN5Level10assignGunsEv",
-   "pct": 29.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2948,
-   "usize": 2332
   },
   {
    "name": "_ZN6Player6damageEibi",
@@ -7840,14 +7840,6 @@
    "usize": 504
   },
   {
-   "name": "_ZN13RecordHandler16addHashToOptionsEv",
-   "pct": 46.0,
-   "byte": false,
-   "linked": false,
-   "osize": 256,
-   "usize": 212
-  },
-  {
    "name": "_ZN11AbyssEngine26CameraIsPointinViewFrustumERKNS_6AEMath6VectorEPNS0_6MatrixEPNS_6CameraE",
    "pct": 46.1,
    "byte": false,
@@ -8190,6 +8182,14 @@
    "linked": false,
    "osize": 376,
    "usize": 424
+  },
+  {
+   "name": "_ZN13RecordHandler16addHashToOptionsEv",
+   "pct": 48.2,
+   "byte": false,
+   "linked": false,
+   "osize": 256,
+   "usize": 220
   },
   {
    "name": "_ZN4Item8mixItemsEP5ArrayIPS_ES3_",
@@ -10704,14 +10704,6 @@
    "usize": 34
   },
   {
-   "name": "_ZN13RecordHandler27writeByteArrayAsOptionsFileEPai",
-   "pct": 61.7,
-   "byte": false,
-   "linked": false,
-   "osize": 120,
-   "usize": 124
-  },
-  {
    "name": "_ZN7Station7addItemEP4Item",
    "pct": 61.7,
    "byte": false,
@@ -12848,14 +12840,6 @@
    "usize": 8
   },
   {
-   "name": "_ZN13RecordHandler26readOptionsFileAsByteArrayEPPa",
-   "pct": 75.5,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 140
-  },
-  {
    "name": "_ZN11LevelScript12skipSequenceEv",
    "pct": 75.6,
    "byte": false,
@@ -13536,14 +13520,6 @@
    "usize": 68
   },
   {
-   "name": "_ZN13RecordHandler10readWantedEj",
-   "pct": 80.8,
-   "byte": false,
-   "linked": false,
-   "osize": 484,
-   "usize": 500
-  },
-  {
    "name": "_ZN3Gun9translateERKN11AbyssEngine6AEMath6VectorE",
    "pct": 81.1,
    "byte": false,
@@ -13894,6 +13870,14 @@
    "linked": false,
    "osize": 74,
    "usize": 74
+  },
+  {
+   "name": "_ZN13RecordHandler27writeByteArrayAsOptionsFileEPai",
+   "pct": 84.4,
+   "byte": false,
+   "linked": false,
+   "osize": 120,
+   "usize": 116
   },
   {
    "name": "_ZN17PlayerFixedObject20setDeadButSelectableEv",
@@ -14264,6 +14248,14 @@
    "usize": 292
   },
   {
+   "name": "_ZN13RecordHandler10readWantedEj",
+   "pct": 87.4,
+   "byte": false,
+   "linked": false,
+   "osize": 484,
+   "usize": 484
+  },
+  {
    "name": "_ZN11AbyssEngine6Engine13ResetUVMatrixEv",
    "pct": 87.5,
    "byte": false,
@@ -14334,14 +14326,6 @@
    "linked": false,
    "osize": 520,
    "usize": 512
-  },
-  {
-   "name": "_ZN13RecordHandler10writeAgentEP5Agentj",
-   "pct": 88.1,
-   "byte": false,
-   "linked": false,
-   "osize": 592,
-   "usize": 624
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager14ConfigReadFileENS_6StringE",
@@ -14968,14 +14952,6 @@
    "usize": 72
   },
   {
-   "name": "_ZN13RecordHandler11writeWantedEP6Wantedj",
-   "pct": 92.7,
-   "byte": false,
-   "linked": false,
-   "osize": 312,
-   "usize": 332
-  },
-  {
    "name": "_ZN14BoundingVolumeD1Ev",
    "pct": 92.7,
    "byte": false,
@@ -15104,12 +15080,12 @@
    "usize": 20
   },
   {
-   "name": "_ZN13RecordHandler12writeMissionEP7Missionj",
+   "name": "_ZN13RecordHandler11writeWantedEP6Wantedj",
    "pct": 93.3,
    "byte": false,
    "linked": false,
-   "osize": 432,
-   "usize": 436
+   "osize": 312,
+   "usize": 316
   },
   {
    "name": "_ZN14DialogueWindowD1Ev",
@@ -15238,6 +15214,14 @@
    "linked": false,
    "osize": 48,
    "usize": 48
+  },
+  {
+   "name": "_ZN13RecordHandler26readOptionsFileAsByteArrayEPPa",
+   "pct": 94.2,
+   "byte": false,
+   "linked": false,
+   "osize": 140,
+   "usize": 136
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager11OnTouchMoveEiiPv",
@@ -16024,6 +16008,14 @@
    "usize": 214
   },
   {
+   "name": "_ZN13RecordHandler12writeMissionEP7Missionj",
+   "pct": 98.8,
+   "byte": false,
+   "linked": false,
+   "osize": 432,
+   "usize": 432
+  },
+  {
    "name": "_ZN7MissionC1Ei",
    "pct": 98.8,
    "byte": false,
@@ -16102,6 +16094,14 @@
    "linked": false,
    "osize": 568,
    "usize": 568
+  },
+  {
+   "name": "_ZN13RecordHandler10writeAgentEP5Agentj",
+   "pct": 99.6,
+   "byte": false,
+   "linked": false,
+   "osize": 592,
+   "usize": 592
   },
   {
    "name": "sha256_block_data_order_neon",

@@ -421,11 +421,6 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     AEFile_ReadInt(&lastSeen, fd);
 
     String name;
-    {
-        if (name.data) delete[] name.data;
-        name.data = nullptr;
-        name.length = 0;
-    }
 
     int idx = 0, board = 0, race = 0;
     bool male = true;
@@ -555,14 +550,13 @@ RecordHandler::~RecordHandler() {
 }
 
 void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
-    String tmp;
+    String tmp(this->optionsPath, false);
     unsigned int fd;
 
-    tmp.Set((this->optionsPath).data);
     if (AEFile::FileExist(tmp) != 0)
         AEFile::FileDelete(tmp);
     AEFile::OpenWrite(tmp, &fd);
-    ((AEFile *) (n))->Write(buf, fd);
+    AEFile::Write((uint32_t)n, buf, fd);
     AEFile::Close(fd);
 }
 
@@ -622,11 +616,11 @@ void RecordHandler::writeAgent(Agent *agentPtr, unsigned int fd) {
     AEFile::Write((int32_t)((Agent *) (agent))->getStation(), fd);
     AEFile::Write((int32_t)((Agent *) (agent))->getSystem(), fd);
     AEFile::Write((int32_t)((Agent *) (agent))->getWingmanFriendsCount(), fd);
-    AEFile::Write((bool)((Agent *) (agent))->isMale(), fd);
-    AEFile::Write((bool)((Agent *) (agent))->hasReward(), fd);
-    AEFile::Write((bool)((Agent *) (agent))->hasAcceptedOffer(), fd);
-    AEFile::Write((bool)agent->wasAskedForDifficulty, fd);
-    AEFile::Write((bool)agent->wasAskedForLocation, fd);
+    AEFile::Write(((Agent *) (agent))->isMale(), fd);
+    AEFile::Write(((Agent *) (agent))->hasReward(), fd);
+    AEFile::Write(((Agent *) (agent))->hasAcceptedOffer(), fd);
+    AEFile::Write(agent->wasAskedForDifficulty, fd);
+    AEFile::Write(agent->wasAskedForLocation, fd);
 
     if (((Agent *) (agent))->getImageParts() == 0) {
         AEFile::Write((int32_t)-1, fd);
@@ -700,7 +694,7 @@ void RecordHandler::writeMission(Mission *m, unsigned int fd) {
         AEFile::Write((int32_t)m->getProductionGoodIndex(), fd);
         AEFile::Write((int32_t)m->getProductionGoodAmount(), fd);
         AEFile::Write((int32_t)m->getStatusValue(), fd);
-        AEFile::Write((bool)m->isVisible(), fd);
+        AEFile::Write(m->isVisible(), fd);
 
         this->currentMission = m;
         Agent *agent = m->getAgent();
@@ -1237,8 +1231,8 @@ void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method sign
 
 void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
     (void) this;
-    AEFile::Write((bool)w->isActive(), fd);
-    AEFile::Write((bool)w->isTerminated(), fd);
+    AEFile::Write(w->isActive(), fd);
+    AEFile::Write(w->isTerminated(), fd);
     AEFile::Write((int32_t)w->getCurrentLocation(), fd);
     AEFile::Write((int32_t)w->getTravelsTo(), fd);
     AEFile::Write((int32_t)w->getLastSeen(), fd);
@@ -1248,7 +1242,7 @@ void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
     AEFile::Write((int32_t)w->getIndex(), fd);
     AEFile::Write((int32_t)w->getBoard(), fd);
     AEFile::Write((int32_t)w->getRace(), fd);
-    AEFile::Write((bool)w->isMale(), fd);
+    AEFile::Write((uint8_t)w->isMale(), fd);
     AEFile::Write((int32_t)w->getShip(), fd);
     AEFile::Write((int32_t)w->getWeapon(), fd);
     AEFile::Write((int32_t)w->getHitpoints(), fd);
@@ -1824,11 +1818,9 @@ static Ship ***g_RSR_shipDefs = nullptr;
 static int g_RSR_modVersion = 0;
 
 int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
-    String tmp;
+    String tmp(this->optionsPath, false);
     unsigned int fd;
     int sz;
-
-    tmp.Set((this->optionsPath).data);
     if (AEFile::FileExist(tmp) != 0) {
         AEFile::OpenRead(tmp, &fd);
         sz = AEFile::GetFileSize(fd);
