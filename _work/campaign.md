@@ -2,6 +2,65 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-24 (wave 13 — shim-sweep by class, 8 workers, 8/8 landed + 1 leftover)
+
+Pools: diffs13 (84 fns, 8 disjoint class pools). Workflow wf_ef0eebba-80a (script had to embed
+pool/worker data inline — the Workflow `args` param never reached the script; known bug, use
+scriptPath relaunch with inlined data). Serial salvage via per-worker `git diff` snapshots
+(scratchpad/snapshot_patches.sh) -> revert tree -> apply/gate/commit per item.
+Net: byte 1143->1145 (+2), linked 2511->2527 (+16), avg 76.75->76.86, imports 1025->1018 (-7),
+extra 36 / stubs 0 / missing 0 held.
+- 18c28307 (pre-wave leftover) recordhandler3: writeAgent 88.1->99.6, writeMission 93.3->98.8;
+  orchestrator fixed a void_ptr lint hit by dropping an unneeded (void*) cast (implicit conv).
+- 9b1171cc paintcanvas4: strcmp shims -> String::Compare in GetMesh/GetTextureResourceId,
+  Suspend cached-reload fix (-1 import).
+- c5f34252 particles: PSMesh::render shims -> real PaintCanvas members 78.6->92.9, PSSprite
+  D1/D2 + PSManager::releaseSprites ->100 (-5 imports). PSMesh dtor hunk REVERTED (70->22.2
+  regression). Orchestrator retyped PaintCanvas::CameraGetLocal void*->float* (return types
+  unmangled = parity-safe) instead of waiving the worker's void* local.
+- a5c34a72 fileio: AEFile OPEN_READ=1/OPEN_WRITE=0 enum swap ->100 both (OpenWrite BYTE-exact),
+  ReadSwitched void->uint32_t ->100, FIA::Output `return (char*)this` ->100, FileDelete
+  String(name,false) ->100. FIA::Close hunk REVERTED (gMode statics path was closer).
+- 543027c3 singles: readWanted AEFile_Read* shims -> real members 87.4->97.1.
+- b6b1eb67 weapons: Gun::setLevel stores at 0x38 not 0x34 ->100, ObjectGun::setEnemies receiver
+  is gun member [r0,#8] ->100 BYTE-exact, Gun D1/D2 92.7->95.1.
+- d2b7a487 modstation2: autosave callDlcMenu tail ->100, OnResume float* global, showDlcMenu
+  direct getPosition (-1 import, kept despite -4.3 pct: import convergence). REVERTED: worker
+  added a param to the AEMath_MatrixSetTranslation shim decl = RENAMED the import -> ratchet
+  hard-FAIL "new undefined import". Rule confirmed: never change a shim's signature, only
+  replace call sites with the real callee. Also reverted an OnKeyRelease regression.
+- 2979ee7c menutouch3: startGOF2 + setCutsceneMode ->100, setSkipButtonVisible 52.8->96.0 via
+  xor-or button idiom `!((a^K)|b)`.
+- f7e0c237 render_misc: MovingStars ctor createBillBoard args 61.0->67.5 (C1/C2).
+NEW EXCLUSIVE-TIER LAYOUT ITEMS (worker-evidenced, orchestrator-only, Ghidra ground-truth first):
+- PaintCanvas::identityMatrix ours 0xF4 vs orig 0xF8 — one of the three embedded matrices
+  before it is 4B bigger in orig (not all embedded matrices may be 0x3c!). Blocks
+  CameraGetLocal/TransformGetLocal.
+- sizeof(Camera) ours 96 vs orig 92 — blocks CameraCreate (`movs r0,#92`).
+- IParticleSystem ours 116B vs orig ~52B (!) — every ParticleSystemMesh field shifted +64
+  (mesh 148 vs 84, positions 164 vs 100, edgeCount 212 vs 152...). Biggest single layout gap
+  found so far; full offset list in wave13 particles worker notes (scratchpad wave13_results).
+- Gun.h: `level` int at 0x34 is misnamed; real Level* slot is field_0x38 (setLevel now uses
+  it; audit other `this->level` readers e.g. ignite). VecArray1 starts 0x14 not 0x10 —
+  directionCount at 0x10 is actually VecArray0's capacity field; ctor/dtor alias via
+  &velocities. Needs a Gun.h re-model.
+- Radar.h drift (from wave 11) re-confirmed: getPlanetDockIndex needs planetDockIndex at
+  +0x40 (ours +0x34; 12B missing between lockedGasCloud and players).
+- MenuTouchWindow shim `_mtw_Status_setCredits(void*)` lacks the int arg orig passes (r1=0);
+  fix startValkyrie/startSupernova by direct `(*statusHolder)->setCredits(0)`, NOT by editing
+  the shim signature (see modstation2 lesson). Also Globals::ships is typed one indirection
+  short (orig derefs 3 levels).
+BLOCKED CLASSES (no source fix): register-scheduling walls (AEFile::Seek 93.9, FileExist,
+TransformRemoveMesh/GetTriCount, MeshChangeShaderAnimValue, checkMedals, OnTouchMove,
+MovingStars setRotation/rotate/getRotation/updateLod); GetScreenPosition needs Ghidra to
+resolve paintcanvas_ext_getscreenpos_m's real callee; GetReverseString needs the wchar
+String(in.data,false) form (semantic risk, deferred).
+QUEUE for wave 14: exclusive layout pass FIRST (Camera 92B + PaintCanvas matrix region, then
+IParticleSystem re-model, Gun.h, Radar.h — drain fleet, Ghidra ground truth, verify-gated);
+then remaining fake-shim TUs (PaintCanvas ~219 fakes, PlayerEgo 37, PlayerFighter 17,
+Globals 16, RepairBeam 16, Engine 14, StarMap 11, FModSound 11, MGame 10, HangarWindow 8);
+19 true missing imports; monsters (Gun::shootAt 1788B placeholder, WantedWindow::draw).
+
 ## Session 2026-07-23 (verifier-accuracy fixes + -fstack-protector-strong landed; no fleet)
 
 Orchestrator-only session: the wave-11 flag experiment's RATCHET FAIL (linked -31) was
