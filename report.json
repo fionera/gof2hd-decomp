@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 76.87,
-  "byte_exact": 1145,
-  "linked_exact": 2527,
-  "fuzzy_perfect": 2527,
+  "avg_match": 76.91,
+  "byte_exact": 1147,
+  "linked_exact": 2532,
+  "fuzzy_perfect": 2532,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1560,22 +1560,6 @@
    "usize": 1488
   },
   {
-   "name": "_ZN5RadarC1EP5Level",
-   "pct": 8.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2488,
-   "usize": 324
-  },
-  {
-   "name": "_ZN5RadarC2EP5Level",
-   "pct": 8.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2488,
-   "usize": 324
-  },
-  {
    "name": "inflate",
    "pct": 8.2,
    "byte": false,
@@ -1902,6 +1886,22 @@
    "linked": false,
    "osize": 100,
    "usize": 292
+  },
+  {
+   "name": "_ZN5RadarC1EP5Level",
+   "pct": 10.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2488,
+   "usize": 332
+  },
+  {
+   "name": "_ZN5RadarC2EP5Level",
+   "pct": 10.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2488,
+   "usize": 332
   },
   {
    "name": "_ZN8CutSceneC1Ei",
@@ -8584,22 +8584,6 @@
    "usize": 6
   },
   {
-   "name": "_ZN5Radar10hasScannerEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 6
-  },
-  {
-   "name": "_ZN5Radar17getLockedGasCloudEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 4
-  },
-  {
    "name": "_ZN5Radio16lastMessageShownEv",
    "pct": 50.0,
    "byte": false,
@@ -10776,14 +10760,6 @@
    "usize": 484
   },
   {
-   "name": "_ZN5Radar6updateEN11AbyssEngine6AEMath6VectorE",
-   "pct": 62.7,
-   "byte": false,
-   "linked": false,
-   "osize": 232,
-   "usize": 240
-  },
-  {
    "name": "_ZN6Player8addEnemyEPS_",
    "pct": 62.7,
    "byte": false,
@@ -11046,6 +11022,14 @@
    "linked": false,
    "osize": 156,
    "usize": 156
+  },
+  {
+   "name": "_ZN5Radar6updateEN11AbyssEngine6AEMath6VectorE",
+   "pct": 64.1,
+   "byte": false,
+   "linked": false,
+   "osize": 232,
+   "usize": 240
   },
   {
    "name": "_ZN11AbyssEngine22SimpleRefractionShader4InitEPNS_6EngineE",
@@ -12934,22 +12918,6 @@
    "linked": false,
    "osize": 192,
    "usize": 176
-  },
-  {
-   "name": "_ZN5RadarD1Ev",
-   "pct": 76.9,
-   "byte": false,
-   "linked": false,
-   "osize": 34,
-   "usize": 34
-  },
-  {
-   "name": "_ZN5RadarD2Ev",
-   "pct": 76.9,
-   "byte": false,
-   "linked": false,
-   "osize": 34,
-   "usize": 34
   },
   {
    "name": "_ZN6Status12changeRatingEi",
@@ -14862,14 +14830,6 @@
    "linked": false,
    "osize": 76,
    "usize": 76
-  },
-  {
-   "name": "_ZN5Radar18getPlanetDockIndexEv",
-   "pct": 92.9,
-   "byte": false,
-   "linked": false,
-   "osize": 36,
-   "usize": 36
   },
   {
    "name": "zip_fopen",
@@ -28680,6 +28640,14 @@
    "usize": 16
   },
   {
+   "name": "_ZN5Radar10hasScannerEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
    "name": "_ZN5Radar13stationLockedEv",
    "pct": 100.0,
    "byte": true,
@@ -28720,6 +28688,22 @@
    "usize": 4
   },
   {
+   "name": "_ZN5Radar17getLockedGasCloudEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
+   "name": "_ZN5Radar18getPlanetDockIndexEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 36,
+   "usize": 36
+  },
+  {
    "name": "_ZN5Radar19getTurretScopeWidthEv",
    "pct": 100.0,
    "byte": true,
@@ -28734,6 +28718,22 @@
    "linked": true,
    "osize": 52,
    "usize": 52
+  },
+  {
+   "name": "_ZN5RadarD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 34,
+   "usize": 34
+  },
+  {
+   "name": "_ZN5RadarD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 34,
+   "usize": 34
   },
   {
    "name": "_ZN5Radio10getMessageEi",
