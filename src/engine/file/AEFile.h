@@ -21,8 +21,8 @@ FileInterface *OpenAppend(unsigned short *name, int size, bool append, unsigned 
 class AEFile {
 public:
     enum FileOpenType : uint32_t {
-        OPEN_READ = 0,
-        OPEN_WRITE = 1,
+        OPEN_WRITE = 0,
+        OPEN_READ = 1,
         OPEN_APPEND = 2,
     };
 
@@ -76,7 +76,7 @@ public:
 
     static uint32_t ReadSwitched(int32_t &value, uint32_t handle);
 
-    static void ReadSwitched(String &value, uint32_t handle);
+    static uint32_t ReadSwitched(String &value, uint32_t handle);
 
     static uint32_t Write(uint32_t bytes, void *buffer, uint32_t handle); // lint: void_ptr ABI signature (Pv mangled)
 

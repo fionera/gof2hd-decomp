@@ -234,13 +234,12 @@ void *FileInterfaceAndroid::OpenAppend(String, int, bool, unsigned int) { // lin
     return 0;
 }
 
-char *FileInterfaceAndroid::Output(char *line) {
-    return line;
+char *FileInterfaceAndroid::Output(char *) {
+    return reinterpret_cast<char *>(this);
 }
 
 uint32_t FileInterfaceAndroid::FileDelete(String name) {
-    String *src = *reinterpret_cast<String **>(&name.data);
-    String discard(*src, false);
+    String discard(name, false);
     return 0;
 }
 

@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 76.78,
-  "byte_exact": 1143,
-  "linked_exact": 2517,
-  "fuzzy_perfect": 2517,
+  "avg_match": 76.8,
+  "byte_exact": 1144,
+  "linked_exact": 2522,
+  "fuzzy_perfect": 2522,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -3248,6 +3248,14 @@
    "usize": 100
   },
   {
+   "name": "_ZN6AEFile4OpenERN11AbyssEngine6StringENS_12FileOpenTypeEPj",
+   "pct": 21.7,
+   "byte": false,
+   "linked": false,
+   "osize": 516,
+   "usize": 524
+  },
+  {
    "name": "_ZN9FModSound23updateEvent3DAttributesEPN4FMOD5EventEiPN11AbyssEngine6AEMath6VectorES6_b",
    "pct": 21.7,
    "byte": false,
@@ -3486,14 +3494,6 @@
    "linked": false,
    "osize": 532,
    "usize": 240
-  },
-  {
-   "name": "_ZN6AEFile4OpenERN11AbyssEngine6StringENS_12FileOpenTypeEPj",
-   "pct": 23.2,
-   "byte": false,
-   "linked": false,
-   "osize": 516,
-   "usize": 520
   },
   {
    "name": "_ZN6Galaxy10getStationEi",
@@ -4528,14 +4528,6 @@
    "usize": 236
   },
   {
-   "name": "_ZN5Level10assignGunsEv",
-   "pct": 28.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2948,
-   "usize": 2332
-  },
-  {
    "name": "_ZN7StarMap14initStarSystemEv",
    "pct": 28.8,
    "byte": false,
@@ -4566,6 +4558,14 @@
    "linked": false,
    "osize": 468,
    "usize": 372
+  },
+  {
+   "name": "_ZN5Level10assignGunsEv",
+   "pct": 29.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2948,
+   "usize": 2332
   },
   {
    "name": "_ZN6Player6damageEibi",
@@ -11568,14 +11568,6 @@
    "usize": 40
   },
   {
-   "name": "_ZN20FileInterfaceAndroid6OutputEPc",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2,
-   "usize": 4
-  },
-  {
    "name": "_ZN5Agent7getNameEv",
    "pct": 66.7,
    "byte": false,
@@ -11590,22 +11582,6 @@
    "linked": false,
    "osize": 152,
    "usize": 152
-  },
-  {
-   "name": "_ZN6AEFile8OpenReadERN11AbyssEngine6StringEPj",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 8,
-   "usize": 8
-  },
-  {
-   "name": "_ZN6AEFile9OpenWriteERN11AbyssEngine6StringEPj",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 8,
-   "usize": 8
   },
   {
    "name": "_ZN6Galaxy5resetEv",
@@ -13120,14 +13096,6 @@
    "usize": 100
   },
   {
-   "name": "_ZN6AEFile12ReadSwitchedERN11AbyssEngine6StringEj",
-   "pct": 78.0,
-   "byte": false,
-   "linked": false,
-   "osize": 116,
-   "usize": 108
-  },
-  {
    "name": "_Z19ArrayReleaseClassesIP3GunEvR5ArrayIT_E",
    "pct": 78.1,
    "byte": false,
@@ -14558,14 +14526,6 @@
    "linked": false,
    "osize": 384,
    "usize": 384
-  },
-  {
-   "name": "_ZN20FileInterfaceAndroid10FileDeleteEN11AbyssEngine6StringE",
-   "pct": 90.5,
-   "byte": false,
-   "linked": false,
-   "osize": 48,
-   "usize": 52
   },
   {
    "name": "_ZN6Player13resetGunDelayEi",
@@ -26008,6 +25968,14 @@
    "usize": 2
   },
   {
+   "name": "_ZN20FileInterfaceAndroid10FileDeleteEN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 48,
+   "usize": 48
+  },
+  {
    "name": "_ZN20FileInterfaceAndroid10OpenAppendEN11AbyssEngine6StringEibj",
    "pct": 100.0,
    "byte": true,
@@ -26089,6 +26057,14 @@
   },
   {
    "name": "_ZN20FileInterfaceAndroid18ResetSaveDirectoryEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 2,
+   "usize": 2
+  },
+  {
+   "name": "_ZN20FileInterfaceAndroid6OutputEPc",
    "pct": 100.0,
    "byte": true,
    "linked": true,
@@ -29000,6 +28976,14 @@
    "usize": 52
   },
   {
+   "name": "_ZN6AEFile12ReadSwitchedERN11AbyssEngine6StringEj",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 116,
+   "usize": 116
+  },
+  {
    "name": "_ZN6AEFile12ReadSwitchedERij",
    "pct": 100.0,
    "byte": false,
@@ -29190,6 +29174,22 @@
    "linked": true,
    "osize": 144,
    "usize": 144
+  },
+  {
+   "name": "_ZN6AEFile8OpenReadERN11AbyssEngine6StringEPj",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 8,
+   "usize": 8
+  },
+  {
+   "name": "_ZN6AEFile9OpenWriteERN11AbyssEngine6StringEPj",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 8,
+   "usize": 8
   },
   {
    "name": "_ZN6Galaxy10getSystemsEv",
