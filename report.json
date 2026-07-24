@@ -15200,14 +15200,6 @@
    "usize": 156
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas12CameraCreateERj",
-   "pct": 95.1,
-   "byte": false,
-   "linked": false,
-   "osize": 124,
-   "usize": 124
-  },
-  {
    "name": "_ZN12HangarWindowD1Ev",
    "pct": 95.1,
    "byte": false,
@@ -15662,6 +15654,14 @@
    "linked": false,
    "osize": 116,
    "usize": 116
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas12CameraCreateERj",
+   "pct": 97.6,
+   "byte": false,
+   "linked": false,
+   "osize": 124,
+   "usize": 124
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17GetScreenPositionERKNS_6AEMath6VectorERS2_",
