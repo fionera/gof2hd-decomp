@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 76.8,
+  "avg_match": 76.81,
   "byte_exact": 1144,
   "linked_exact": 2522,
   "fuzzy_perfect": 2522,
@@ -4552,20 +4552,20 @@
    "usize": 324
   },
   {
+   "name": "_ZN5Level10assignGunsEv",
+   "pct": 28.9,
+   "byte": false,
+   "linked": false,
+   "osize": 2948,
+   "usize": 2332
+  },
+  {
    "name": "_ZN6Player5shootEiixbN11AbyssEngine6AEMath6MatrixE",
    "pct": 28.9,
    "byte": false,
    "linked": false,
    "osize": 468,
    "usize": 372
-  },
-  {
-   "name": "_ZN5Level10assignGunsEv",
-   "pct": 29.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2948,
-   "usize": 2332
   },
   {
    "name": "_ZN6Player6damageEibi",
@@ -14208,14 +14208,6 @@
    "usize": 292
   },
   {
-   "name": "_ZN13RecordHandler10readWantedEj",
-   "pct": 87.4,
-   "byte": false,
-   "linked": false,
-   "osize": 484,
-   "usize": 484
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine13ResetUVMatrixEv",
    "pct": 87.5,
    "byte": false,
@@ -15646,6 +15638,14 @@
    "linked": false,
    "osize": 88,
    "usize": 84
+  },
+  {
+   "name": "_ZN13RecordHandler10readWantedEj",
+   "pct": 97.1,
+   "byte": false,
+   "linked": false,
+   "osize": 484,
+   "usize": 484
   },
   {
    "name": "_ZN13PlayerFighter15setMissionCrateEb",

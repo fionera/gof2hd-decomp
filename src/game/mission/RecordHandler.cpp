@@ -414,11 +414,11 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     int currentLocation = -1;
     int travelsTo = -1;
     int lastSeen = -1;
-    AEFile_ReadBool(&active, fd);
-    AEFile_ReadBool(&terminated, fd);
-    AEFile_ReadInt(&currentLocation, fd);
-    AEFile_ReadInt(&travelsTo, fd);
-    AEFile_ReadInt(&lastSeen, fd);
+    AEFile::Read(active, fd);
+    AEFile::Read(terminated, fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(currentLocation), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(travelsTo), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(lastSeen), fd);
 
     String name;
 
@@ -427,20 +427,20 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     int ship = 0, weapon = 0, hp = 0, loot = 0, lootAmt = 0;
     int reward = 0, reqBounties = 0, reqMission = 0, numWingmen = 0;
 
-    AEFile_ReadString(&name, fd, 1);
-    AEFile_ReadInt(&idx, fd);
-    AEFile_ReadInt(&board, fd);
-    AEFile_ReadInt(&race, fd);
-    AEFile_ReadBool(&male, fd);
-    AEFile_ReadInt(&ship, fd);
-    AEFile_ReadInt(&weapon, fd);
-    AEFile_ReadInt(&hp, fd);
-    AEFile_ReadInt(&loot, fd);
-    AEFile_ReadInt(&lootAmt, fd);
-    AEFile_ReadInt(&reward, fd);
-    AEFile_ReadInt(&reqBounties, fd);
-    AEFile_ReadInt(&reqMission, fd);
-    AEFile_ReadInt(&numWingmen, fd);
+    AEFile::Read(name, fd, (bool)1);
+    AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(board), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(race), fd);
+    AEFile::Read(male, fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(ship), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(weapon), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(hp), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(loot), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(lootAmt), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(reward), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(reqBounties), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(reqMission), fd);
+    AEFile::Read(reinterpret_cast<int32_t &>(numWingmen), fd);
 
     Wanted *w = new Wanted(idx, name, board, race, male, ship, weapon, hp, loot,
                            lootAmt, reward, reqBounties, reqMission, numWingmen);
@@ -448,7 +448,7 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     int *parts = new int[5];
     int *p = parts;
     for (unsigned i = 0; i < 5; i++) {
-        AEFile_ReadInt(p, fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(*p), fd);
         p++;
     }
     w->setImageParts(parts);
