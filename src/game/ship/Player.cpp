@@ -1336,7 +1336,7 @@ void Player::shoot(int a, int b, long long pos, bool flag, Matrix mat) {
                     ((Gun *) (g))->ignite();
                 } else if (g->itemIndex == (int) pos && g->fireDelay < g->timer) {
                     if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
-                        ((Level *) (intptr_t) g->level)->field_69 = 1;
+                        g->level->field_69 = 1;
                     }
                     ((Gun *) (g))->shoot(mat, flag, false);
                     self->flShake = self->flShake + k_shoot_inc;

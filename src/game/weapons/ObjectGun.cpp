@@ -527,7 +527,7 @@ void ObjectGun::render() {
             }
             gun = this->gun;
         }
-        if (gun->directionCount <= (int) inactive)
+        if (gun->positionsCap <= (int) inactive)
             gun->active = 0;
     }
 

@@ -2016,14 +2016,6 @@
    "usize": 176
   },
   {
-   "name": "_ZN3Gun6igniteEv",
-   "pct": 11.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1044,
-   "usize": 288
-  },
-  {
    "name": "inflateBack",
    "pct": 11.2,
    "byte": false,
@@ -2094,6 +2086,14 @@
    "linked": false,
    "osize": 76,
    "usize": 108
+  },
+  {
+   "name": "_ZN3Gun6igniteEv",
+   "pct": 11.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1044,
+   "usize": 288
   },
   {
    "name": "_Z18IsDialogNotVisiblei",
@@ -2944,14 +2944,6 @@
    "usize": 148
   },
   {
-   "name": "_ZN9RocketGun6updateEi",
-   "pct": 19.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1908,
-   "usize": 1840
-  },
-  {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
    "pct": 19.6,
    "byte": false,
@@ -3102,6 +3094,14 @@
    "linked": false,
    "osize": 46,
    "usize": 80
+  },
+  {
+   "name": "_ZN9RocketGun6updateEi",
+   "pct": 20.6,
+   "byte": false,
+   "linked": false,
+   "osize": 1908,
+   "usize": 1840
   },
   {
    "name": "_ZN14PlayerJumpgate10timeToJumpEv",
@@ -3760,22 +3760,6 @@
    "usize": 164
   },
   {
-   "name": "_ZN3GunC1EiiiiiifN11AbyssEngine6AEMath6VectorES2_",
-   "pct": 24.9,
-   "byte": false,
-   "linked": false,
-   "osize": 532,
-   "usize": 484
-  },
-  {
-   "name": "_ZN3GunC2EiiiiiifN11AbyssEngine6AEMath6VectorES2_",
-   "pct": 24.9,
-   "byte": false,
-   "linked": false,
-   "osize": 532,
-   "usize": 484
-  },
-  {
    "name": "_ZN9PlayerEgo12drawThrottleEv",
    "pct": 24.9,
    "byte": false,
@@ -3910,6 +3894,22 @@
    "linked": false,
    "osize": 1388,
    "usize": 1316
+  },
+  {
+   "name": "_ZN3GunC1EiiiiiifN11AbyssEngine6AEMath6VectorES2_",
+   "pct": 25.5,
+   "byte": false,
+   "linked": false,
+   "osize": 532,
+   "usize": 484
+  },
+  {
+   "name": "_ZN3GunC2EiiiiiifN11AbyssEngine6AEMath6VectorES2_",
+   "pct": 25.5,
+   "byte": false,
+   "linked": false,
+   "osize": 532,
+   "usize": 484
   },
   {
    "name": "_ZN15IParticleSystem10emitManualEN11AbyssEngine6AEMath6VectorEiPKS2_f",

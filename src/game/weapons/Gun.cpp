@@ -86,9 +86,9 @@ Gun::~Gun() noexcept(false) {
     }
     this->wobbleOffsets = 0;
 
-    reinterpret_cast<VecArray *>(&this->field_0x2c)->~VecArray();
-    reinterpret_cast<VecArray *>(&this->field_0x20)->~VecArray();
-    reinterpret_cast<VecArray *>(&this->velocities)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->hitPositionsCount)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->upVectorsCount)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->velocitiesCount)->~VecArray();
     reinterpret_cast<VecArray *>(&this->count)->~VecArray();
 }
 
@@ -134,7 +134,7 @@ void Gun::setLevelCollision(bool v) {
 }
 
 void Gun::setLevel(Level *lvl) {
-    this->field_0x38 = (int) (intptr_t) lvl;
+    this->level = lvl;
 }
 
 void Gun::removeAllEnemies() {
@@ -299,17 +299,17 @@ void Gun::render() {
 
 Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
     Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->count));
-    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->directionCount));
-    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->field_0x20));
-    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->field_0x2c));
+    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->velocitiesCount));
+    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->upVectorsCount));
+    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->hitPositionsCount));
     this->offset.x = 0;
     this->offset.y = 0;
     this->offset.z = 0;
     this->field_0x90 = 0;
     this->field_0x94 = 0;
     this->field_0x98 = 0;
-    this->level = 0;
-    this->field_0x38 = 0;
+    this->hitPositionsCap = 0;
+    this->level = nullptr;
     this->lifetimes = 0;
     this->enemies = 0;
     this->impact = 0;
@@ -352,9 +352,9 @@ Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector d
     Gun_VecPtrArray_ctor(arr);
     this->wobbleOffsets = arr;
     Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->count));
-    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->directionCount));
-    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->field_0x20));
-    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->field_0x2c));
+    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->velocitiesCount));
+    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->upVectorsCount));
+    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->hitPositionsCount));
     Gun_VecPtrArray_setLength(count, this->wobbleOffsets);
     Vector *positions = reinterpret_cast<Vector *>(this->positions);
     for (int i = 0; i < (int) count; i = i + 1) {
