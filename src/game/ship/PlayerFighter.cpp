@@ -19,8 +19,6 @@
 #include "engine/math/Transform.h"
 #include "engine/math/EaseInOutMatrix.h"
 
-void AEMath_Matrix_ctor(void *m); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 int AERandom_nextInt_nobound(int rng);
 
 static inline int PF_nextInt(int rng) { return AERandom_nextInt_nobound(rng); }
@@ -35,14 +33,6 @@ void PF_update_dead(PlayerFighter * self);
 
 void PF_update_body(PlayerFighter *self, int dt);
 
-void AEMath_MatrixAssign(void *dst, void *src); // lint: void_ptr (external symbol; param types load-bearing)
-
-void AEMath_MatrixIdentity(void *out, void *m); // lint: void_ptr (external symbol; param types load-bearing)
-
-void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz); // lint: void_ptr (external symbol; param types load-bearing)
-
-// lint: void_ptr (external symbol; param type load-bearing)
-
 namespace AbyssEngine {
     namespace AEMath {
         float VectorLength(const Vector &value);
@@ -54,8 +44,6 @@ namespace AbyssEngine {
 }
 
 int AERandom_nextIntB(int rng, int bound);
-
-void PF_vscale(void *out, void *vec, float scalar); // lint: void_ptr (external symbol; param types load-bearing)
 
 uint8_t PlayerFighter::hasMissionCrateLost() {
     return this->missionCrateLost();
@@ -215,8 +203,8 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     {
         0, 0, 0
     };
-    AEMath_Matrix_ctor(&self->easeBaseMatrix);
-    AEMath_Matrix_ctor(&self->rollMatrix);
+    self->easeBaseMatrix = AbyssEngine::AEMath::Matrix();
+    self->rollMatrix = AbyssEngine::AEMath::Matrix();
 
     int rng = (int) (intptr_t) Globals::rnd;
 
@@ -432,9 +420,9 @@ void PlayerFighter::setPosition(float x, float y, float z) {
     if (this->trail != 0) {
         this->trail->reset(this->workingPosition);
     }
-    int m = (int) (intptr_t) & ((AEGeometry *) (intptr_t) this->geometry())->getMatrix();
-    AEMath_MatrixAssign(((Player *) (intptr_t) this->player())->transform,
-                        (AbyssEngine::AEMath::Matrix *) (intptr_t) m);
+    reinterpret_cast<AbyssEngine::AEMath::Matrix &>(
+            ((Player *) (intptr_t) this->player())->transform[0]) =
+            ((AEGeometry *) (intptr_t) this->geometry())->getMatrix();
 
     return;
 }
@@ -470,9 +458,7 @@ void PlayerFighter::roll(int angle) {
         if (0x3b < angle) angle = 0x3c;
 
         if (fwdY >= 0.0f && absX < gRoll_threshold) {
-            unsigned char tmp[60];
-            AEMath_MatrixIdentity(tmp, &self->rollMatrix);
-            AEMath_MatrixAssign(&self->rollMatrix, tmp);
+            AbyssEngine::AEMath::MatrixIdentity(self->rollMatrix);
             self->rollActive() = 0;
             self->field_0x254 = 0;
             goto done;
@@ -515,9 +501,7 @@ void PlayerFighter::roll(int angle) {
         }
         float fa = VectorSignedToFloat(angle, 0);
         self->rollActive() = 1;
-        unsigned char tmp[60];
-        AEMath_MatrixSetRotation(tmp, bank * fa, 0.0f, roll);
-        AEMath_MatrixAssign(&self->rollMatrix, tmp);
+        AbyssEngine::AEMath::MatrixSetRotation(self->rollMatrix, bank * fa, 0.0f, roll);
     }
 
 done:
@@ -763,8 +747,6 @@ done:
     ;
 }
 
-void AEMath_MatrixMul(void *out, void *m); // lint: void_ptr (external symbol; param types load-bearing)
-
 static const float gPush_div = 5000.0f;
 
 void PlayerFighter::push(int dt) {
@@ -776,18 +758,18 @@ void PlayerFighter::push(int dt) {
         this->pushTimer() = remaining;
         float frac = fr / ftotal;
 
-        unsigned char rot[60];
-        AEMath_MatrixSetRotation(rot, frac * this->pushImpulse().z, 0.0f,
-                                 frac * this->pushImpulse().y);
+        Matrix rot;
+        AbyssEngine::AEMath::MatrixSetRotation(rot, frac * this->pushImpulse().z, 0.0f,
+                                               frac * this->pushImpulse().y);
 
         int lo = this->deltaTime;
         int hi = this->deltaTimeHi;
         if ((int) (unsigned) (lo == 0) <= hi) {
             AEGeometry *geom = (AEGeometry *) (intptr_t) this->geometry();
             AbyssEngine::AEMath::Matrix *m = &geom->getMatrix();
-            AEMath_MatrixMul(rot, m);
+            Matrix result = *m * rot;
 
-            geom->setMatrix(*(const Matrix *) rot);
+            geom->setMatrix(result);
             lo = this->deltaTime;
             hi = this->deltaTimeHi;
         }
@@ -795,11 +777,10 @@ void PlayerFighter::push(int dt) {
         AEGeometry *geom = (AEGeometry *) (intptr_t) this->geometry();
         float ftotal2 = VectorSignedToFloat(this->pushDuration(), 0);
 
-        unsigned char a[12], b[12], c[60];
-        PF_vscale(a, &this->pushNormal(), speed);
-        PF_vscale(b, a, this->currentSpeed);
-        PF_vscale(c, b, (2.0f - frac) * 3.0f * (ftotal2 / gPush_div));
-        geom->translate(*(Vector *) c);
+        Vector a = this->pushNormal() * speed;
+        Vector b = a * this->currentSpeed;
+        Vector c = b * ((2.0f - frac) * 3.0f * (ftotal2 / gPush_div));
+        geom->translate(c);
     }
 
     return;
@@ -847,14 +828,6 @@ void PlayerFighter::reset() {
     this->cloakingPossible = 1;
     this->aiDisabled = 0;
 }
-
-void PF_cloakStart(PlayerFighter * self);
-
-void PF_cloakStop(PlayerFighter *self, int on);
-
-void PF_cloakApply(void *meshPtr, int arg, float alpha, int flag); // lint: void_ptr (external symbol; param type load-bearing)
-
-// lint: void_ptr (external symbol; param type load-bearing)
 
 static const float gHC_divIn = 2000.0f;
 static const float gHC_divOut = -2000.0f;
@@ -908,7 +881,7 @@ void PlayerFighter::handleCloaking() {
             int mp = (int) (long) Globals::Canvas->
                     MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId);
             float a = VectorSignedToFloat(this->cloakTimer, 0) / gHC_divIn;
-            PF_cloakApply((AbyssEngine::Mesh *) (intptr_t) mp, (int) (long) Globals::Canvas, a, 1);
+            Globals::Canvas->MeshChangeShaderAnimValue((AbyssEngine::Mesh *) (intptr_t) mp, a, 1u);
             return;
         } else {
             if (this->cloakDuration < total) {
@@ -919,7 +892,7 @@ void PlayerFighter::handleCloaking() {
                 AbyssEngine::Material *mat =
                         (AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial);
                 mat->blendMode = restore;
-                PF_cloakStop(this, 1);
+                this->setExhaustVisible(1);
                 return;
             }
             if (total <= this->cloakDuration - 2000) {
@@ -931,13 +904,13 @@ void PlayerFighter::handleCloaking() {
             float a = VectorSignedToFloat(this->cloakTimer, 0);
             float b = VectorSignedToFloat(this->cloakDuration - 2000, 0);
             float alpha = (a - b) / gHC_divOut + 1.0f;
-            PF_cloakApply((AbyssEngine::Mesh *) (intptr_t) mp, (int) (long) Globals::Canvas, alpha, 1);
+            Globals::Canvas->MeshChangeShaderAnimValue((AbyssEngine::Mesh *) (intptr_t) mp, alpha, 1u);
             return;
         }
     }
 
     if (this->field_0x1e0 != 0 && PF_nextInt((int) (intptr_t) Globals::rnd) < 0x32) {
-        PF_cloakStart(this);
+        this->cloak(-1, false);
         return;
     }
     int acc = this->deltaTime + this->cloakCooldown;
@@ -945,7 +918,7 @@ void PlayerFighter::handleCloaking() {
     if (8000 < acc) {
         this->cloakCooldown = 0;
         if (PF_nextInt((int) (intptr_t) Globals::rnd) < 0x1e) {
-            PF_cloakStart(this);
+            this->cloak(-1, false);
         }
     }
 }

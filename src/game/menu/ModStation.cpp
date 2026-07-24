@@ -40,12 +40,18 @@ struct HangarWindow {
     void OnTouchBegin(int touch, int coord);
 
     unsigned int OnTouchMove(int touch, int coord);
+
+    void update(int dt);
+
+    void hideMessage();
 };
 
 struct StatusWindow {
     int OnTouchBegin(int x, int y);
 
     int OnTouchMove(int x, int y);
+
+    void update(int frameTime);
 };
 
 struct HangarWindowHead {
@@ -650,8 +656,6 @@ int ApplicationManager_GetApplicationData_ou();
 
 void ApplicationManager_SetCurrentApplicationModule_ou(int module);
 
-void FModSound_updateAll_ou(int sound);
-
 void FModSound_play_ou(int sound, int id, const float *p, float vol);
 
 static inline void FModSound_stop_ou(int sound) { Globals::sound->stop(sound); }
@@ -710,43 +714,19 @@ void ChoiceWindow_set_ou(int cw, int text, int flag);
 
 void ChoiceWindow_setNotice_ou(int cw, int text);
 
-void ChoiceWindow_update_ou(int cw);
-
 static inline int GameText_getText_ou(int id) { return (int)(Globals::gameText->getText(id)); }
-
-void CutScene_process_ou(int cs);
-
-void CutScene_update_ou(int cs);
 
 static inline void CutScene_ctor_ou(CutScene *cs, int kind) { new ((void*)cs) CutScene(kind); }
 
 int CutScene_initialize_ou(CutScene * cs);
 
-void StarMap_update_ou(int sm, int dt);
-
-void MissionsWindow_update_ou(int w);
-
-void HangarWindow_update_ou(int w);
-
-void HangarWindow_hideMessage_ou();
-
-void StatusWindow_update_ou(int w);
-
 static inline void MenuTouchWindow_update_ou(MenuTouchWindow *w, int dt) { w->update(dt); }
 
 static inline void MenuTouchWindow_dtor_ou(MenuTouchWindow *w) { w->~MenuTouchWindow(); }
 
-int SpaceLounge_introFinished_ou();
-
 static inline void SpaceLounge_ctor_ou(SpaceLounge * l) { new ((void*)l) SpaceLounge(); }
 
 static inline void SpaceLounge_init_ou(SpaceLounge * l) { l->init(); }
-
-void SpaceLounge_update_ou(int l);
-
-void SpaceLounge_setHangarUpdate_ou(SpaceLounge * l);
-
-int Radio_lastMessageShown_ou();
 
 float EaseInOut_advance_ou(AbyssEngine::EaseInOut *e, int elapsed);
 
@@ -776,7 +756,7 @@ void ModStation::OnUpdate() {
     this->dt = elapsed;
     this->accumTime += (long long) elapsed;
 
-    FModSound_updateAll_ou(*sound);
+    Globals::sound->updateAll(nullptr, nullptr, nullptr, nullptr);
     int *layout = (int *) Globals::layout;
     Layout_update_ou(*layout);
     if (reinterpret_cast<uint8_t*>(&this->accumTime)[2] == 0)
@@ -828,7 +808,7 @@ void ModStation::OnUpdate() {
                 reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 1;
                 appData->purchaseReady = 0;
                 if ((int) (intptr_t) this->hangarWindow != 0)
-                    HangarWindow_hideMessage_ou();
+                    this->hangarWindow->hideMessage();
                 if ((int) (intptr_t) this->dlcMenu != 0) {
                     MenuTouchWindow_dtor_ou(this->dlcMenu);
                     ::operator delete(this->dlcMenu);
@@ -844,7 +824,7 @@ void ModStation::OnUpdate() {
         if (this->newsTicker != nullptr)
             this->newsTicker->update(0);
         if ((int) (intptr_t) this->cutScene != 0)
-            CutScene_process_ou((int) (intptr_t) this->cutScene);
+            this->cutScene->process(0);
         {
             float bx = this->camCoordX;
             float by = this->camCoordY;
@@ -878,9 +858,9 @@ void ModStation::OnUpdate() {
             reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] = 1;
         }
         this->spaceLounge = (SpaceLounge *) (intptr_t)(t + this->dt);
-        CutScene_update_ou((int) (intptr_t) this->cutScene);
+        this->cutScene->update(this->dt);
 
-        if (Radio_lastMessageShown_ou() != 0) {
+        if (((Radio *)(intptr_t)this->activeMission)->lastMessageShown() != 0) {
             float scroll = reinterpret_cast<float&>(this->touchX);
             float target = reinterpret_cast<float&>(this->touchY);
 
@@ -906,19 +886,19 @@ void ModStation::OnUpdate() {
     } else if (reinterpret_cast<uint8_t*>(&this->modalFlags)[0] != 0) {
         this->dialogueWindow->update(0);
     } else if (reinterpret_cast<uint8_t*>(&this->modalFlags)[1] != 0) {
-        StarMap_update_ou((int) (intptr_t) this->starMap, this->dt);
+        this->starMap->update(this->dt);
     } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0) {
-        HangarWindow_update_ou((int) (intptr_t) this->hangarWindow);
+        this->hangarWindow->update(this->dt);
     } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0) {
-        MissionsWindow_update_ou((int) (intptr_t) this->m_pDialogueWindow);
+        ((MissionsWindow *) this->m_pDialogueWindow)->update(this->dt);
     } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0) {
-        SpaceLounge_update_ou((int) (intptr_t) this->spaceLounge);
+        this->spaceLounge->update(this->dt);
     } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0) {
-        StatusWindow_update_ou((int) (intptr_t) this->statusWindow);
+        this->statusWindow->update(this->dt);
     }
 
     if (reinterpret_cast<uint8_t*>(&this->screenFlags)[3] != 0)
-        ChoiceWindow_update_ou((int) (intptr_t) this->choiceWindow);
+        this->choiceWindow->update(this->dt);
     if (reinterpret_cast<uint8_t*>(&this->screenFlags)[2] != 0)
         MenuTouchWindow_update_ou(this->dlcMenu, this->dt);
 
@@ -944,12 +924,12 @@ void ModStation::OnUpdate() {
         }
 
         bool special = false;
-        int intro = (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0) ? SpaceLounge_introFinished_ou() : 0;
+        int intro = (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0) ? this->spaceLounge->introFinished() : 0;
         int completed = Status_missionCompleted_ou(*status, 1, (long long) intro);
         Mission *m = (Mission *) completed;
         int camp = Status_getCurrentCampaignMission_ou();
         if (m == 0 && camp == 0x74) {
-            if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0 && SpaceLounge_introFinished_ou() != 0) {
+            if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0 && this->spaceLounge->introFinished() != 0) {
                 Status_getSystem_ou();
                 if (SolarSystem_getIndex_ou() == 0x12) {
                     Status_getCampaignMission_ou();
@@ -974,7 +954,7 @@ void ModStation::OnUpdate() {
             Station *st = (Station *) Status_getStation_ou();
             int sidx = Station_getIndex_ou(st);
             int bit = (sidx == 0x42) ? 2 : (sidx == 0x37) ? 1 : (sidx == 9) ? 4 : 0;
-            bool introOk = reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0 && SpaceLounge_introFinished_ou() != 0;
+            bool introOk = reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0 && this->spaceLounge->introFinished() != 0;
             if (m == 0) {
                 if (introOk && 0x93 < Status_getCurrentCampaignMission_ou() &&
                     Status_getCurrentCampaignMission_ou() < 0x97 &&
@@ -1046,7 +1026,7 @@ void ModStation::OnUpdate() {
                     this->autosave();
                 }
                 if (this->spaceLounge != 0)
-                    SpaceLounge_setHangarUpdate_ou(this->spaceLounge);
+                    this->spaceLounge->setHangarUpdate(true);
             }
         }
     afterDialogue:

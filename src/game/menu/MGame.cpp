@@ -49,7 +49,6 @@ static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::s
 
 void Music_resume(Music *m, int one, int v);
 
-Vector *TFC_getCamOffset(TargetFollowCamera * c);
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -63,7 +62,6 @@ namespace AbyssEngine {
 
 static inline void TFC_setFastForwardMode(TargetFollowCamera *c, int v) { c->setFastForwardMode(v); }
 
-uint8_t TFC_isInLookAtMode(TargetFollowCamera * c);
 
 static inline void TFC_setLookAtCam(TargetFollowCamera *c, int v) { c->setLookAtCam(v); }
 
@@ -71,7 +69,6 @@ void Cam_setCinematic(TargetFollowCamera *c, int on);
 
 void FModSound_restoreState();
 
-void DialogueWindow_ctor(...);
 
 static inline void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on) { c->enableFirstPersonCam(on); }
 
@@ -458,7 +455,7 @@ void MGame::freeCamTouchBegin(int x, int y, void *idPtr) { // lint: void_ptr -- 
     } else {
         if (this->menuTime >= 1000) goto tail;
         this->flCameraRoll = 0;
-        float len = AbyssEngine::AEMath::VectorLength(*TFC_getCamOffset(this->camera));
+        float len = AbyssEngine::AEMath::VectorLength(*this->camera->getCamOffset());
         *(float *) (buf + 4) = fy;
         *(float *) (buf + 0) = fx;
         this->flCameraRoll = len;
@@ -570,8 +567,7 @@ void MGame::gameOverCheck() {
 
     if (this->level->checkGameOver(0) != 0) {
         if (this->dialogueWindow == 0) {
-            DialogueWindow *w = (DialogueWindow *) ::operator new(0x74);
-            DialogueWindow_ctor(w);
+            DialogueWindow *w = new DialogueWindow();
             Level *lvl = this->level;
             this->dialogueWindow = w;
             if (lvl != 0) w->setLevel(lvl);
@@ -603,8 +599,7 @@ void MGame::gameOverCheck() {
                 }
                 if (!survival) {
                     if (this->dialogueWindow == 0) {
-                        DialogueWindow *w = (DialogueWindow *) ::operator new(0x74);
-                        DialogueWindow_ctor(w);
+                        DialogueWindow *w = new DialogueWindow();
                         Level *lvl = this->level;
                         this->dialogueWindow = w;
                         if (lvl != 0) w->setLevel(lvl);
@@ -628,7 +623,7 @@ void MGame::gameOverCheck() {
     }
 }
 
-int ApplicationManager_GetApplicationData();
+void DialogueWindow_ctor(...);
 
 struct MGameAppData {
     uint8_t _pad0[5];
@@ -693,7 +688,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) { // lint: void_ptr -- e
             return;
         }
         if (self->menuTouchOpen != 0) {
-            MGameAppData *ad = (MGameAppData *) (intptr_t) ApplicationManager_GetApplicationData();
+            MGameAppData *ad = (MGameAppData *) self->applicationManager->GetApplicationData();
             if (ad->modalActive != 0) return;
             if (ad->transitionActive != 0) return;
             self->menuWindow->OnTouchBegin(p1, p2, touchId);
@@ -1816,9 +1811,6 @@ static inline void Radio_ctor(Radio *r) { new(r) Radio(); }
 
 static inline unsigned char * TargetFollowCamera_dtor(TargetFollowCamera * c) { c->~TargetFollowCamera(); return (unsigned char *)(c); }
 
-void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
-                             int a, int b, int d, int e, int f, int g);
-
 static int g_resAspectA;
 
 static int g_resAspectB;
@@ -1881,9 +1873,9 @@ void MGame::reset() {
         ::operator delete(TargetFollowCamera_dtor(this->camera));
         this->camera = 0;
     }
-    TargetFollowCamera *tfc = (TargetFollowCamera *) ::operator new(0x178);
-    TargetFollowCamera_ctor(tfc, this->cameraId,
-                            (int) (intptr_t) this->player->geometry, 0, 0, 0, 0, 0, 0);
+    TargetFollowCamera *tfc = new TargetFollowCamera(
+        (unsigned) this->cameraId, this->player->geometry,
+        AbyssEngine::Vector{0, 0, 0}, AbyssEngine::Vector{0, 0, 0});
     this->camera = tfc;
     pc->CameraSetCurrent(this->cameraId);
     this->player->setTargetFollowCamera(this->camera);
@@ -2177,7 +2169,7 @@ void MGame::setCinematicMode(bool on) {
     *flag = 1;
     if (self->jumpDriveActive == 0 && self->jumpActive == 0) {
         self->cinematicPrevCamMode = self->cameraMode;
-        self->cinematicPrevLookAt = TFC_isInLookAtMode(self->camera);
+        self->cinematicPrevLookAt = self->camera->isInLookAtMode();
         TFC_setLookAtCam(self->camera, 0);
         ((MGame *) (self))->switchCamera(3);
         return self->level->lodManager->forceUpdate(self->deltaTime, true);
@@ -2186,7 +2178,6 @@ void MGame::setCinematicMode(bool on) {
 
 static inline void TFC_translate(TargetFollowCamera *cam, int x, int y, int z) { cam->translate(x, y, z); }
 
-Vector *TFC_getPosition(TargetFollowCamera * cam);
 
 static int g_ujZNear;
 
@@ -2260,7 +2251,7 @@ afterCam:
         ((AbyssEngine::Transform *) (tr))->Update(self->deltaTime, false /* updateBounds: arg lost in decomp */);
     }
 
-    Vector *camPos = (Vector *) TFC_getPosition(self->camera);
+    Vector *camPos = self->camera->getPosition();
     float threshold = (float) reinterpret_cast<int &>(self->egoJumpPos.z) + *(float *) &g_ujZNear;
     if (camPos->z < threshold && self->usingJumpDrive == 0) {
         Array<KIPlayer *> *lm = self->level->getLandmarks();

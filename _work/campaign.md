@@ -2,6 +2,40 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-24b (wave 14 pt.2 — shim-sweep fleet, 8 workers, 6.5/8 pools landed)
+
+Workflow wf_8981afbe-775 (8 sonnet workers, disjoint TU pools, edit-only; orchestrator gated).
+Net: linked 2546->2548 (+2), byte 1155 flat, avg 77.09->77.14, imports 1014->950 (-64),
+extra 36 / stubs 0 / missing 0 held. 36 per-fn gains incl. Engine::ShaderInit +49.4,
+LightEnable +30.5, LightSetGlobalSceneColorAmbient +27.0, PlayerFighter::setPosition ->100,
+PSM::init ->100, startValkyrie/startSupernova +6, MenuTouchWindow update/draw shims gone.
+REVERTED wholesale: PaintCanvas.cpp pool — worker built 215 `static inline` wrappers KEEPING
+the fake shim names (void* params everywhere: void_ptr 15->345 lint FAIL, +5 operator_call,
+direct ::operator new, sscanf wrapper). Import laundering, not call-site replacement; the
+-183 imports it claimed were rejected. PaintCanvas remains the big shim pool (~26 decls,
+paintcanvas_ext_gl_* map to real GLES imports — redo properly, call sites only).
+REVERTED surgically (per-hunk splice from HEAD + shim-decl restore):
+- FileInterfaceAndroid Read/Write: JniTable(env)->CallIntMethod direct dispatch regressed
+  Write 47.8->12.9 (original uses the variadic JNI_Call*Method import shape). Keep shims.
+- PSM setQuadEdge/setParticle(12-arg)/updateSingle: real Vector operators + MeshSetPoint
+  members regressed them (-6.6/-6.5/-19.5) while the SAME substitution gained in
+  reset/init/updateUsual/updateTrail/updateSingleColor — kept those; regressed three kept
+  their _psm_* vector/matrix shims (re-added 12 decls).
+- MGame::successCheck: `new DialogueWindow()` -9.0 there but +2.3 in gameOverCheck (kept);
+  successCheck's 3 sites back on ::operator new(0x74)+DialogueWindow_ctor(...) shim.
+Accepted small losses for import convergence: RepairBeam::update -1.8, PF setLevel -0.9 /
+handleCloaking -0.7, MGame OnTouchBegin -0.1 (all files net-positive).
+sscanf: real original import (nm confirms); adding it needs the deliberate --update-baseline
+path if PaintCanvas redo calls it directly.
+Ghidra hygiene: IParticleSystem struct rebuilt in DB to ground truth (112B, create_struct
+wholesale — NOTE remove_struct_field on packed structs SHIFTS trailing fields, don't use;
+rebuild via create_struct). PSM/PSS derived structs still stale — MCP server disconnected
+mid-sync; redo when back.
+Worker-reported blocked (MenuTouchWindow): _mtw_startSupernovaChallenge_impl 764B blob,
+Status setMission/setShip/setStation + Galaxy_getStation register-chained args, FModSound
+setVolume drops channel arg, _mtw_draw_* / _mtw_onTouchEnd_* opaque sub-functions,
+Ship/Item makers via fn-pointer tables.
+
 ## Session 2026-07-24b (wave 14 pt.1 — IParticleSystem family layout re-model, exclusive)
 
 4-worker Ghidra harvest (scratchpad particle_harvest.json) + orchestrator disasm of every family

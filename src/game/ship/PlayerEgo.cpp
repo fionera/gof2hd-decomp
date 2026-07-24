@@ -228,10 +228,6 @@ void PE_cc_obstacle(PlayerEgo *self, void *obj, unsigned idx); // lint: void_ptr
 
 void PE_cc_destructible(PlayerEgo *self, void *obj); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-// lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-void PlayEngineSound_(PlayerEgo * self);
-
 void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
@@ -2199,7 +2195,7 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
             Globals::Canvas->CameraSetCurrent(
                 (unsigned int) (((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id));
             ((LevelScript *) (this->levelScript))->resetCamera(this->levelScript->m_pLevel);
-            PlayEngineSound_(this);
+            this->PlayEngineSound();
             this->dockingPointIndex = 3;
             ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->setLookAtCam(false);
             ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->useTargetsUpVector(false);
@@ -2219,7 +2215,7 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
     }
 
     if (undock) {
-        PlayEngineSound_(this);
+        this->PlayEngineSound();
         this->dockedFlag = 0;
         this->field_0x1a1 = 0;
         this->field_0x145 = 0;

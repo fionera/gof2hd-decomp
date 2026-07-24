@@ -4,11 +4,6 @@
 #define GOF2_ENUM_BlendMode
 #include "engine/render/PaintCanvas.h"
 
-void _pss_interpolateColor(ParticleSystemSprite *self, int index, float *alpha, float *red,
-                           float *green, float *blue);
-
-float *_pss_rotateUVs(ParticleSystemSprite *self, float *src, int index, float *dst);
-
 void ParticleSystem_updateAreaExitParticleImpl(ParticleSystemSprite *self, int index, float dt);
 
 using AbyssEngine::AEMath::VectorSignedToFloat;
@@ -117,7 +112,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
     pc->SpriteSystemAddSize(handle, id, (short) this->idOffset + (short) index);
 
     float ca, cr, cg, cb;
-    _pss_interpolateColor(this, index, &ca, &cr, &cg, &cb);
+    this->interpolateColor(index, ca, cr, cg, cb);
     pc->SpriteSystemSetRGBA(handle, id, cg, 0.0f, cb, 0.0f);
 
     int frames = *(int *) (set + 0x9c);
@@ -143,7 +138,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
             float uvRot[4];
 
             if (((this->flags >> 24) & 0x2) != 0)
-                out = _pss_rotateUVs(this, uv, index, uvRot);
+                out = this->rotateUVs(uv, index, uvRot);
 
             pc->SpriteSystemSetUv(handle, id, out[1], 0.0f, out[2], 0.0f);
         }

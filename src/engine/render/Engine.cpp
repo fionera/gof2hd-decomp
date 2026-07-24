@@ -27,27 +27,56 @@ bool AbyssEngine::PostEffectFlag;
 #include "engine/render/Material.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/ShaderBaseStruct.h"
+#include "engine/render/shaders/TextureShader.h"
+#include "engine/render/shaders/SimpleShader.h"
+#include "engine/render/shaders/TextureVtxColorShader.h"
+#include "engine/render/shaders/NoTexShader.h"
+#include "engine/render/shaders/NoTexVtxColorShader.h"
+#include "engine/render/shaders/TextureAlphaTestShader.h"
+#include "engine/render/shaders/CubeMapping.h"
+#include "engine/render/shaders/CubeNormalMapping.h"
+#include "engine/render/shaders/BumpMapping.h"
+#include "engine/render/shaders/SandboxShader.h"
+#include "engine/render/shaders/GenericShader.h"
+#include "engine/render/shaders/GenericShader1.h"
+#include "engine/render/shaders/GenericShader2.h"
+#include "engine/render/shaders/TexOnlyShader.h"
+#include "game/core/BumpShaderV2.h"
+#include "game/core/BumpShaderV3.h"
+#include "engine/render/shaders/VertexColorShader.h"
+#include "engine/render/shaders/VertexColorAlphaTextureShader.h"
+#include "engine/render/shaders/PulseShader.h"
+#include "engine/render/shaders/BumpShader.h"
+#include "game/core/BumpShaderV4.h"
+#include "engine/render/shaders/BloomShader.h"
+#include "engine/render/shaders/BlurShader.h"
+#include "engine/render/shaders/PostBWShader.h"
+#include "engine/render/shaders/TextureLightShader.h"
+#include "engine/render/shaders/BumpRimCubeShader.h"
+#include "game/core/BumpShaderCloak.h"
+#include "engine/render/shaders/SpecCubeMapping.h"
+#include "engine/render/shaders/SpecCubeAlphaMapping.h"
+#include "engine/render/shaders/EnergyShield.h"
+#include "engine/render/shaders/SimpleRefractionShader.h"
+#include "engine/render/shaders/GlowShader.h"
+#include "engine/render/shaders/GlowPPShader.h"
+#include "engine/render/shaders/DrawFBOShader.h"
+#include "engine/render/shaders/ColorMixAdd.h"
+#include "game/core/BumpShaderParticle.h"
+#include "engine/render/shaders/DNSShader.h"
+#include "game/core/BumpShaderRefract.h"
+#include "game/core/BumpRimCubeShader_new.h"
 #include <arm_neon.h>
 #include <cstdarg>
 #include <cstring>
 
-void FBOContainer_ActivateRender2Texture(AbyssEngine::FBOContainer * self);
-void FBOContainer_ActivateTexture(AbyssEngine::FBOContainer * self);
-void FBOContainer_DeactivateRender2Texture(AbyssEngine::FBOContainer * self);
-
-void ShaderUpdateRimColor();
-
-void ShaderUpdateMaterialColor();
-
-void ShaderCtor_0(void *); // lint: void_ptr Pv-mangled shim signature
-
-void ShaderCtor_1(void *); // lint: void_ptr Pv-mangled shim signature
-
-void ShaderCtor_2(void *); // lint: void_ptr Pv-mangled shim signature
-
-void ShaderCtor_3(void *); // lint: void_ptr Pv-mangled shim signature
-
-void ShaderCtor_4(void *); // lint: void_ptr Pv-mangled shim signature
+namespace AbyssEngine {
+    int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
+                   unsigned int vertexFormat,
+                   void **out); // lint: void_ptr (exported MeshCreate symbol; void** baked into mangled name)
+    void MeshRelease(Engine *engine, Mesh **slot);
+    void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b);
+}
 
 static String *g_Engine_vendorString = nullptr;
 static String *g_Engine_rendererString = nullptr;
@@ -91,14 +120,6 @@ namespace {
 #endif
 }
 
-void MeshRelease(Engine *self, void *meshSlot); // lint: void_ptr Pv-mangled shim signature
-
-void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh); // lint: void_ptr Pv-mangled shim signature
-
-// lint: void_ptr Pv-mangled shim signature
-
-void esMatrixMultiply(void *out, const void *lhs, const void *rhs); // lint: void_ptr Pv-mangled shim signature
-
 void glError() {
     glGetError();
 }
@@ -121,7 +142,7 @@ double *Engine::GetAccelValue() {
 void Engine::ActivateRender2FracFBO() {
     FBOContainer *fbo = this->refractFBO;
     if (fbo != 0) {
-        return FBOContainer_ActivateRender2Texture(fbo);
+        return fbo->BeginCapture();
     }
 }
 
@@ -168,7 +189,7 @@ void Engine::LightSetRimColor(float red, float green, float blue) {
     this->rimColor.x = red;
     this->rimColor.y = green;
     this->rimColor.z = blue;
-    return ShaderUpdateRimColor();
+    return this->ShaderUpdate();
 }
 
 bool Engine::IsPostEffectActivated() {
@@ -219,7 +240,7 @@ void Engine::SetUVMatrix(const Matrix &matrix) {
 void Engine::ActivateRender2TextureFBO() {
     FBOContainer *fbo = this->postEffectFBO;
     if (fbo != 0) {
-        return FBOContainer_ActivateRender2Texture(fbo);
+        return fbo->BeginCapture();
     }
 }
 
@@ -272,7 +293,7 @@ void Engine::ResetUVMatrix() {
 void Engine::ActivateTextureFBO() {
     FBOContainer *fbo = this->postEffectFBO;
     if (fbo != 0) {
-        return FBOContainer_ActivateTexture(fbo);
+        return fbo->Activate();
     }
 }
 
@@ -332,7 +353,7 @@ void Engine::ReloadShaders() {
 void Engine::DeactivateRender2TextureFBO() {
     FBOContainer *fbo = this->postEffectFBO;
     if (fbo != 0) {
-        return FBOContainer_DeactivateRender2Texture(fbo);
+        return fbo->EndCapture();
     }
 }
 
@@ -442,7 +463,7 @@ void Engine::Initialize(InitializeCallback *callback) {
 void Engine::ActivateRefractFBO() {
     FBOContainer *fbo = this->refractFBO;
     if (fbo != 0) {
-        return FBOContainer_ActivateTexture(fbo);
+        return fbo->Activate();
     }
 }
 
@@ -455,7 +476,7 @@ void Engine::LightSetParticleAmbient(float red, float green, float blue) {
 void Engine::DeactivateRender2FracFBO() {
     FBOContainer *fbo = this->refractFBO;
     if (fbo != 0) {
-        return FBOContainer_DeactivateRender2Texture(fbo);
+        return fbo->EndCapture();
     }
 }
 
@@ -620,7 +641,7 @@ void Engine::SetColor(float red, float green, float blue, float alpha) {
             (int) (green * 255.0f) * 0x10000 + (int) (red * 255.0f) * 0x1000000 +
             (int) (blue * 255.0f) * 0x100 + (int) (alpha * 255.0f);
     if (g_Engine_useShaders != 0) {
-        return ShaderUpdateMaterialColor();
+        return this->ShaderUpdate();
     }
     self->LightSetMaterialColorAlpha(alpha);
     return glColor4f(red, green, blue, alpha);
@@ -647,7 +668,7 @@ Engine::~Engine() {
     delete this->refractFBO;
     this->refractFBO = 0;
 
-    MeshRelease(this, &this->quadMesh);
+    AbyssEngine::MeshRelease(this, &this->quadMesh);
     this->ReleaseGL();
     delete this->shaders;
     delete this->triangleCounts;
@@ -658,7 +679,7 @@ void Engine::ReleaseGL() {
 
 void Engine::AfterGLInit() {
     this->ResetLightParam();
-    MeshCreate(this, 4, 2, 0x13, &this->quadMesh);
+    AbyssEngine::MeshCreate(this, 4, 2, 0x13, (void **) &this->quadMesh); // lint: void_ptr (void** baked into exported MeshCreate)
 
     uint32_t *indices = (uint32_t *) this->quadMesh->indices;
     indices[0] = 0x20000;
@@ -861,7 +882,7 @@ void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
         dst.y = src.g * green;
         dst.z = src.b * blue;
     }
-    return ShaderUpdateMaterialColor();
+    return this->ShaderUpdate();
 }
 
 void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue) {
@@ -882,7 +903,7 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
         dst.y = (src.g + green) * this->materialAmbient[1];
         dst.z = (src.b + blue) * this->materialAmbient[2];
     }
-    return ShaderUpdateMaterialColor();
+    return this->ShaderUpdate();
 }
 
 void Engine::SetPostEffect(uint32_t effect, bool enable) {
@@ -943,7 +964,7 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
         dst.y = src.g * green;
         dst.z = src.b * blue;
     }
-    return ShaderUpdateMaterialColor();
+    return this->ShaderUpdate();
 }
 
 void Engine::initFileInterface() {
@@ -961,7 +982,7 @@ void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
         if (multiply) {
             float local[16];
             memcpy(local, view, 0x40);
-            esMatrixMultiply(this->projMatrix, local, this->projMatrix);
+            AbyssEngine::esMatrixMultiply((AbyssEngine::ESMatrix *) this->projMatrix, (AbyssEngine::ESMatrix *) local, (AbyssEngine::ESMatrix *) this->projMatrix);
         }
     }
     return;
@@ -1076,7 +1097,7 @@ void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsig
     dst.x = (this->sceneAmbient[0] + red) * this->materialAmbient[0];
     dst.y = (this->sceneAmbient[1] + src.g) * this->materialAmbient[1];
     dst.z = (this->sceneAmbient[2] + src.b) * this->materialAmbient[2];
-    return ShaderUpdateMaterialColor();
+    return this->ShaderUpdate();
 }
 
 void Engine::ShaderSetInActive() {
@@ -1108,7 +1129,7 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
     dst.x = this->materialDiffuse[0] * red;
     dst.y = src.g * this->materialDiffuse[1];
     dst.z = src.b * this->materialDiffuse[2];
-    return ShaderUpdateMaterialColor();
+    return this->ShaderUpdate();
 }
 
 Engine::Engine() {
@@ -1219,21 +1240,51 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
     }
 }
 
-typedef void ShaderCtor(void *); // lint: void_ptr matches Pv-mangled ShaderCtor_N shim signatures
-
 uint32_t Engine::ShaderInit() {
-    static const uint32_t sizes[] = {
-        0x8c, 0x2c, 0x94, 0x2c, 0x30, 0x74, 0x5c, 0x68, 0x44, 0x50,
-        0x64, 0x58, 0x58, 0x30, 0x60, 0x84, 0x5c, 0x5c, 0x5c, 0x84,
-        0x5c, 0xa0, 0x64, 0x34, 0x70, 0x98, 0x98, 0x5c, 0x5c, 0x60,
-        0x58, 0x34, 0xa8, 0x60, 0x40, 0x6c, 0x64, 0x4c, 0x98,
-    };
-    ShaderCtor *ctors[] = {ShaderCtor_0, ShaderCtor_1, ShaderCtor_2, ShaderCtor_3, ShaderCtor_4};
-    for (uint32_t i = 0; i < sizeof(sizes) / sizeof(sizes[0]); i += 1) {
-        ShaderBaseStruct *shader = (ShaderBaseStruct *) operator new(sizes[i]);
-        ctors[i % 5](shader);
-        this->ShaderRegister(shader);
-    }
+#define MAKE_SHADER(Type, size) do { \
+        auto *s = new(operator new(size)) AbyssEngine::Type(); \
+        this->ShaderRegister(s); \
+    } while(0)
+    MAKE_SHADER(TextureShader, 0x8c);
+    MAKE_SHADER(SimpleShader, 0x2c);
+    MAKE_SHADER(TextureVtxColorShader, 0x94);
+    MAKE_SHADER(NoTexShader, 0x2c);
+    MAKE_SHADER(NoTexVtxColorShader, 0x30);
+    MAKE_SHADER(TextureAlphaTestShader, 0x74);
+    MAKE_SHADER(CubeMapping, 0x5c);
+    MAKE_SHADER(CubeNormalMapping, 0x68);
+    MAKE_SHADER(BumpMapping, 0x44);
+    MAKE_SHADER(SandboxShader, 0x50);
+    MAKE_SHADER(GenericShader, 0x64);
+    MAKE_SHADER(GenericShader1, 0x58);
+    MAKE_SHADER(GenericShader2, 0x58);
+    MAKE_SHADER(TexOnlyShader, 0x30);
+    MAKE_SHADER(BumpShaderV2, 0x60);
+    MAKE_SHADER(BumpShaderV3, 0x84);
+    MAKE_SHADER(VertexColorShader, 0x5c);
+    MAKE_SHADER(VertexColorAlphaTextureShader, 0x5c);
+    MAKE_SHADER(PulseShader, 0x5c);
+    MAKE_SHADER(BumpShader, 0x84);
+    MAKE_SHADER(BumpShaderV4, 0x5c);
+    MAKE_SHADER(BloomShader, 0xa0);
+    MAKE_SHADER(BlurShader, 0x64);
+    MAKE_SHADER(PostBWShader, 0x34);
+    MAKE_SHADER(TextureLightShader, 0x70);
+    MAKE_SHADER(BumpRimCubeShader, 0x98);
+    MAKE_SHADER(BumpShaderCloak, 0x98);
+    MAKE_SHADER(SpecCubeMapping, 0x5c);
+    MAKE_SHADER(SpecCubeAlphaMapping, 0x5c);
+    MAKE_SHADER(EnergyShield, 0x60);
+    MAKE_SHADER(SimpleRefractionShader, 0x58);
+    MAKE_SHADER(GlowShader, 0x34);
+    MAKE_SHADER(GlowPPShader, 0xa8);
+    MAKE_SHADER(DrawFBOShader, 0x60);
+    MAKE_SHADER(ColorMixAdd, 0x40);
+    MAKE_SHADER(BumpShaderParticle, 0x6c);
+    MAKE_SHADER(DNSShader, 0x64);
+    MAKE_SHADER(BumpShaderRefract, 0x4c);
+    MAKE_SHADER(BumpRimCubeShader_new, 0x98);
+#undef MAKE_SHADER
     glGetError();
     return 1;
 }
@@ -1386,7 +1437,7 @@ void Engine::SetWorldViewMatrix(const Matrix &matrix) {
             m[3], m[7], m[11], 1.0f,
         };
         memcpy(this->worldViewMatrixGL, gl, 0x40);
-        esMatrixMultiply(this->worldViewProjMatrix, gl, this->projMatrix);
+        AbyssEngine::esMatrixMultiply((AbyssEngine::ESMatrix *) this->worldViewProjMatrix, (AbyssEngine::ESMatrix *) gl, (AbyssEngine::ESMatrix *) this->projMatrix);
     } else {
         MatrixGetGL(matrix, this->uvMatrixGL);
         return glLoadMatrixf(this->uvMatrixGL);
@@ -1458,7 +1509,7 @@ void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsi
     dst.x = this->materialSpecular[0] * red;
     dst.y = src.g * this->materialSpecular[1];
     dst.z = src.b * this->materialSpecular[2];
-    return ShaderUpdateMaterialColor();
+    return this->ShaderUpdate();
 }
 
 void Engine::GlEnable(unsigned int cap, bool enable) {
@@ -1492,10 +1543,20 @@ void Engine::GlEnable(unsigned int cap, bool enable) {
     this->glEnableFlags = flags;
 }
 
-void _ZN11AbyssEngine6Engine11LightEnableEb(Engine *self, bool enabled);
-
 void Engine::LightEnable(bool enabled) {
-    _ZN11AbyssEngine6Engine11LightEnableEb(this, enabled);
+    if ((bool) this->lightingEnabled == enabled) return;
+    this->lightingEnabled = enabled;
+    if (!enabled) {
+        this->LightSetMaterialColorAlpha(1.0f);
+    }
+    if (g_Engine_useShaders) return;
+    if (enabled) {
+        glEnable(0xb50);  // GL_LIGHTING
+        glEnable(0x4000); // GL_LIGHT0
+    } else {
+        glDisable(0x4000); // GL_LIGHT0
+        glDisable(0xb50);  // GL_LIGHTING
+    }
 }
 
 void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
@@ -1516,7 +1577,7 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
         dst.y = (this->sceneAmbient[1] + src.g) * green;
         dst.z = (this->sceneAmbient[2] + src.b) * blue;
     }
-    return ShaderUpdateMaterialColor();
+    return this->ShaderUpdate();
 }
 
 unsigned char AbyssEngine::Engine::EnableGlow;

@@ -14,6 +14,7 @@
 #include "game/core/GameSettings.h"
 #include "game/core/Globals.h"
 #include "game/ui/ChoiceWindow.h"
+#include "game/mission/Achievements.h"
 #include <math.h>
 #include <cstddef>
 
@@ -84,8 +85,6 @@ static inline void _mtw_AppMgr_SetCurrentApplicationModule(void *app, int id) { 
 
 static inline void _mtw_AppMgr_Quit(void *app) { ((AbyssEngine::ApplicationManager*)app)->Quit(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Globals_reportLeaderboards();
-
 int _mtw_onTouchEnd_listState(void *self, int y, int x, int state); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
@@ -148,8 +147,6 @@ void _mtw_TouchButton_ctor7(void *btn, void *label, int a, int x, int y, char ty
 
 static inline void _mtw_Status_resetGame() { Globals::status->resetGame(); }
 
-void _mtw_Status_nextCampaignMission(bool a);
-
 void _mtw_Mission_ctor(void *m); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_Status_setMission(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
@@ -164,27 +161,9 @@ void *_mtw_Item_makeItem(int itemDef, int qty); // lint: void_ptr (external symb
 
 void *_mtw_makeItem2(int itemDef); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Status_setCredits(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 void *_mtw_Galaxy_getStation(void *galaxy, int idx); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 void _mtw_Status_setStation(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Status_setSystemVisibility(void *status, int sys, bool vis); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Achievements_setMedal(void *ach, int id, int n); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_RecordHandler_saveOptions(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Status_setKills(void *status, int count); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -224,9 +203,6 @@ void _mtw_FModSound_play(void *snd, int id, void *pos, float v); // lint: void_p
 
 int _mtw_idiv(int a, int b);
 
-void _mtw_RecordHandler_ctor(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_RecordHandler_readRecord(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 static inline void * _mtw_RecordHandler_dtor(void *rh) { ((RecordHandler*)rh)->~RecordHandler(); return (void *)(rh); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -254,26 +230,6 @@ void *_mtw_Array_GameRecord_dtor(void *p); // lint: void_ptr (external symbol; p
 
 void *_mtw_RecordHandler_readAllPreviewRecords(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_RecordHandler_recordStoreWrite(void *rh, int slot); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_RecordHandler_recordStoreWritePreview(void *rh, int slot); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_RecordHandler_recordStoreReadPreview(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_createRecordButtons(void *self, bool b); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_AppMgr_GetApplicationData(); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 static inline void *_mtw_AppMgr_GetEngine() { return GetEngine(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_ChoiceWindow_set(void *cw, void *s); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
@@ -294,13 +250,9 @@ void _mtw_startSupernovaChallenge_impl(void *self); // lint: void_ptr (external 
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void *_mtw_GetApplicationData(void *app); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 void _mtw_DlcMenu_call(void *win, void *s1, void *s2); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Layout_drawBG();
 
 void _mtw_ChoiceWindow_OnTouchMove(void *cw, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -326,17 +278,11 @@ void _mtw_ScrollTouchWindow_OnTouchMove(void *w, int y); // lint: void_ptr (exte
 
 void _mtw_MissionsWindow_OnTouchMove(void *w, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-int _mtw_FModSound_tryToStopMusicForBGMusic();
-
 void _mtw_FModSound_setVolume(void *snd, float v); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 static inline void _mtw_Array_TB_ctor(void *a) { new(a) Array<TouchButton*>(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_loadPreviewRecords(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void _mtw_TouchButton_draw(void *btn); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -351,9 +297,6 @@ void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int x, int y); 
 void _mtw_Ship_addCargo(void *ship, void *item); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-float _mtw_FModSound_stop(void *snd); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 
 void MenuTouchWindow::showSupernovaMessage() {
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
@@ -469,7 +412,7 @@ int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) { // lint: void_ptr
             }
             if (this->leaderboardDialogShowing != 0) {
                 unsigned int r = (unsigned int) _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-                if (r < 2) _mtw_Globals_reportLeaderboards();
+                if (r < 2) Globals::globals->reportLeaderboards();
                 this->leaderboardDialogShowing = 0;
                 this->messageShowing = 0;
             }
@@ -873,7 +816,7 @@ void MenuTouchWindow::startValkyrie() {
     Status *const *statusHolder = &Globals::status;
     _mtw_Status_resetGame();
     for (int i = 0x2d; i != 0; i--)
-        _mtw_Status_nextCampaignMission((bool) (unsigned char) (long) *statusHolder);
+        (*statusHolder)->nextCampaignMission(false);
 
     Status *status = *statusHolder;
     Mission *mission = (Mission *) ::operator new(0x78);
@@ -913,13 +856,13 @@ void MenuTouchWindow::startValkyrie() {
     sh = (Ship *) _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 3);
 
-    _mtw_Status_setCredits(*statusHolder);
+    (*statusHolder)->setCredits(0);
     Status *station = *statusHolder;
     _mtw_Galaxy_getStation(Globals::galaxy, 0x5b);
     _mtw_Status_setStation(station);
-    _mtw_Status_setSystemVisibility(*statusHolder, 6, true);
-    _mtw_Status_setSystemVisibility(*statusHolder, 0x19, true);
-    _mtw_Status_setCredits(*statusHolder);
+    (*statusHolder)->setSystemVisibility(6, true);
+    (*statusHolder)->setSystemVisibility(0x19, true);
+    (*statusHolder)->setCredits(0);
 
     OptionsRecord *opt = (OptionsRecord *) Globals::hints;
     Achievements *ach = Globals::achievements;
@@ -941,11 +884,11 @@ void MenuTouchWindow::startValkyrie() {
     opt->flag_0x38 = 1;
     optB->flag_0x34 = 1;
 
-    _mtw_Achievements_setMedal(ach, 0x17, 3);
-    _mtw_Achievements_setMedal(Globals::achievements, 0x1e, 1);
-    _mtw_RecordHandler_saveOptions(Globals::recordHandler);
-    _mtw_Status_setKills(*statusHolder, 0xc5);
-    _mtw_FModSound_stop(Globals::sound);
+    ach->setMedal(0x17, 3);
+    Globals::achievements->setMedal(0x1e, 1);
+    Globals::recordHandler->saveOptions();
+    (*statusHolder)->setKills(0xc5);
+    Globals::sound->stop(Globals::sound->currentMusicEvent);
 
     ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) Globals::appManager;
     optB->fadeValue = this->fadeValue;
@@ -1406,7 +1349,7 @@ void MenuTouchWindow::update(int dt) {
         }
     }
 
-    MtwAppData *appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+    MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
     unsigned char busy = this->dlcMessageShowing;
 
     if (busy != 0 || this->purchaseRestorePending != 0) {
@@ -1425,7 +1368,7 @@ void MenuTouchWindow::update(int dt) {
             this->pageHeight = (ih + rowH) * 5;
             appData->purchaseReadyFlag = 0;
             optObj->flag_0x3b = 1;
-            _mtw_RecordHandler_saveOptions(Globals::recordHandler);
+            Globals::recordHandler->saveOptions();
             busy = this->dlcMessageShowing;
         }
         if (busy != 0) {
@@ -1450,7 +1393,7 @@ void MenuTouchWindow::update(int dt) {
             case 0: {
                 Status *status = Globals::status;
                 reinterpret_cast<uint8_t *>(&status->systemVisibilities)[1] = 1;
-                _mtw_Status_setSystemVisibility(status, 0x19, true);
+                status->setSystemVisibility(0x19, true);
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[1]));
             }
             break;
@@ -1463,7 +1406,7 @@ void MenuTouchWindow::update(int dt) {
             case 2: {
                 Status *status = Globals::status;
                 reinterpret_cast<uint8_t *>(&status->systemVisibilities)[3] = 1;
-                _mtw_Status_setSystemVisibility(status, 0x19, true);
+                status->setSystemVisibility(0x19, true);
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[3]));
             }
             break;
@@ -1478,19 +1421,19 @@ void MenuTouchWindow::update(int dt) {
                 flags->flag_0x35 = 1;
                 flags->flag_0x39 = 1;
                 flags->flag_0x37 = 1;
-                _mtw_Status_setSystemVisibility(status, 0x19, true);
+                status->setSystemVisibility(0x19, true);
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[5]));
             }
             break;
         }
-        _mtw_RecordHandler_saveOptions(Globals::recordHandler);
+        Globals::recordHandler->saveOptions();
         this->dlcResultDialogShowing = 1;
         this->dlcMessageShowing = 0;
         this->messageShowing = 1;
         appData->purchaseResultFlag = 0;
         handled = true;
     } else if (this->purchaseRestorePending != 0 && appData->purchaseResultFlag != 0) {
-        _mtw_RecordHandler_saveOptions(Globals::recordHandler);
+        Globals::recordHandler->saveOptions();
         if (this->purchaseRestorePending != 0) {
             ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[6]));
@@ -1512,8 +1455,8 @@ void MenuTouchWindow::update(int dt) {
             this->supernovaPurchaseDialogShowing = 1;
             this->messageShowing = 1;
             flags->flag_0x35 = 1;
-            _mtw_Status_setSystemVisibility(Globals::status, 0x19, true);
-            _mtw_RecordHandler_saveOptions(Globals::recordHandler);
+            Globals::status->setSystemVisibility(0x19, true);
+            Globals::recordHandler->saveOptions();
         }
     }
 
@@ -1571,7 +1514,7 @@ void MenuTouchWindow::update(int dt) {
         _mtw_ChoiceWindow_update(this->choiceWindow);
 
     if (state == 0xd) {
-        appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+        appData = (MtwAppData *) Globals::appManager->GetApplicationData();
         if (appData->storeInitFlag != 0) {
             Engine *eng = (Engine *) _mtw_AppMgr_GetEngine();
             int r = eng->field_0x100;
@@ -1581,15 +1524,15 @@ void MenuTouchWindow::update(int dt) {
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, id));
                 this->storeInitDialogShowing = 0;
                 this->messageShowing = 1;
-                appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+                appData = (MtwAppData *) Globals::appManager->GetApplicationData();
                 appData->storeInitFlag = 0;
             }
         }
     }
 
-    appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+    appData = (MtwAppData *) Globals::appManager->GetApplicationData();
     if (appData->screenshotResultFlag != 0) {
-        appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+        appData = (MtwAppData *) Globals::appManager->GetApplicationData();
         int r = appData->storeResultCode;
         if (r == 2 || r == 1) {
             ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
@@ -1597,7 +1540,7 @@ void MenuTouchWindow::update(int dt) {
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, id));
             this->screenshotState = -1;
             this->messageShowing = 1;
-            appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+            appData = (MtwAppData *) Globals::appManager->GetApplicationData();
             appData->screenshotResultFlag = 0;
         }
     }
@@ -1676,7 +1619,7 @@ void MenuTouchWindow::draw() {
     if (this->backgroundEnabled != 0) {
         unsigned int s = this->menuState;
         if ((s | 4) != 0xd) {
-            _mtw_Layout_drawBG();
+            Globals::layout->drawBG();
         }
     }
 
@@ -1795,7 +1738,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) { // lint: void_pt
                 {
                     FModSound *fmod = Globals::sound;
                     TouchSlider **sl = ((Array<TouchSlider *> *) this->sliders)->data_;
-                    if (_mtw_FModSound_tryToStopMusicForBGMusic() == 0)
+                    if (Globals::sound->tryToStopMusicForBGMusic() == 0)
                         _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(sl[1]));
                     _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(sl[2]));
                     _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(sl[3]));
@@ -1830,7 +1773,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) { // lint: void_pt
             {
                 FModSound *fmod = Globals::sound;
                 TouchSlider **sl = ((Array<TouchSlider *> *) this->sliders)->data_;
-                if (_mtw_FModSound_tryToStopMusicForBGMusic() == 0)
+                if (Globals::sound->tryToStopMusicForBGMusic() == 0)
                     _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(sl[1]));
                 _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(sl[2]));
                 _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(sl[3]));
@@ -2030,7 +1973,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->previewStrings1 = 0;
     this->previewRecords = 0;
 
-    _mtw_loadPreviewRecords(this);
+    this->loadPreviewRecords();
 
     _mtw_buildMenu(this, menuType);
 }
@@ -2176,7 +2119,7 @@ void MenuTouchWindow::startSupernova() {
     Status *const *statusHolder = &Globals::status;
     _mtw_Status_resetGame();
     for (int i = 0x54; i != 0; i--)
-        _mtw_Status_nextCampaignMission((bool) (unsigned char) (long) *statusHolder);
+        (*statusHolder)->nextCampaignMission(false);
 
     _mtw_Status_setMission(*statusHolder);
     Status *status = *statusHolder;
@@ -2224,13 +2167,13 @@ void MenuTouchWindow::startSupernova() {
     sh = (Ship *) _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_addCargo(sh, it);
 
-    _mtw_Status_setCredits(*statusHolder);
+    (*statusHolder)->setCredits(0);
     Status *station = *statusHolder;
     _mtw_Galaxy_getStation(Globals::galaxy, 0x46);
     _mtw_Status_setStation(station);
-    _mtw_Status_setSystemVisibility(*statusHolder, 6, true);
-    _mtw_Status_setSystemVisibility(*statusHolder, 0x19, true);
-    _mtw_Status_setCredits(*statusHolder);
+    (*statusHolder)->setSystemVisibility(6, true);
+    (*statusHolder)->setSystemVisibility(0x19, true);
+    (*statusHolder)->setCredits(0);
 
     OptionsRecord *opt = (OptionsRecord *) Globals::hints;
     OptionsRecord *optB = (OptionsRecord *) Globals::options;
@@ -2254,11 +2197,11 @@ void MenuTouchWindow::startSupernova() {
     Achievements *ach = Globals::achievements;
     optB->flag_0x34 = 1;
 
-    _mtw_Achievements_setMedal(ach, 0x17, 3);
-    _mtw_Achievements_setMedal(Globals::achievements, 0x1e, 1);
-    _mtw_Status_setKills(*statusHolder, 0x182);
-    _mtw_RecordHandler_saveOptions(Globals::recordHandler);
-    _mtw_FModSound_stop(Globals::sound);
+    ach->setMedal(0x17, 3);
+    Globals::achievements->setMedal(0x1e, 1);
+    (*statusHolder)->setKills(0x182);
+    Globals::recordHandler->saveOptions();
+    Globals::sound->stop(Globals::sound->currentMusicEvent);
 
     ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) Globals::appManager;
     optB->fadeValue = this->fadeValue;

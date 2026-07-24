@@ -30,7 +30,6 @@ static int **g_RB_sndUpd;
 static int *g_RB_sndUpdEv;
 static char **g_RB_sndFlag;
 
-PlayerEgo *RB_Level_getPlayer(Level * level);
 
 static inline int RB_PlayerEgo_isDead(PlayerEgo *ego) { return ego->isDead(); }
 
@@ -65,7 +64,6 @@ float RB_PlayerEgo_GetDirVector();
 
 float RB_PlayerEgo_GetUpVector();
 
-void RB_Transform_Update(long long t, bool b);
 
 int RB_FModSound_isPlaying(int snd);
 
@@ -134,7 +132,7 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
     this->timer -= dt;
 
     if (enemies != nullptr) {
-        PlayerEgo *ego = RB_Level_getPlayer(level);
+        PlayerEgo *ego = level->getPlayer();
         if (RB_PlayerEgo_isDead(ego) == 0) {
             int ship = RB_Status_getShip();
             int equip = RB_Ship_getFirstEquipmentOfSort(ship);
@@ -163,7 +161,7 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                     } else if (this->sort == 0x29) {
                         if (reinterpret_cast<uint8_t &>(kp->route) == 0 &&
                             kp->player->enemyFlagsLo != 0) {
-                            Player **plp = (Player **) RB_Level_getPlayer(level);
+                            Player **plp = (Player **) level->getPlayer();
                             if (RB_Player_getShieldDamageRate(*plp) < 100 &&
                                 RB_Ship_getFirstEquipmentOfSort(RB_Status_getShip()) != 0)
                                 consider = true;
@@ -218,8 +216,8 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                     continue;
 
                 AEGeometry *geo = (*this->geometries)[i];
-                long long t = (long long) canvas->TransformGetTransform(geo->transform);
-                RB_Transform_Update(t, dt != 0);
+                AbyssEngine::Transform *tr = (AbyssEngine::Transform *) canvas->TransformGetTransform(geo->transform);
+                tr->Update(dt, false);
 
                 Vector tmp;
                 RB_Player_getPosition(&tmp);
@@ -262,11 +260,11 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                 RB_PlayerEgo_getPosition(&ndir);
                 geo->setPosition(ndir);
 
-                long long t2 = (long long) canvas->TransformGetTransform(geo->transform);
-                RB_Transform_Update(t2, dt != 0);
+                AbyssEngine::Transform *tr2 = (AbyssEngine::Transform *) canvas->TransformGetTransform(geo->transform);
+                tr2->Update(dt, false);
 
                 if (this->sort == 0x29) {
-                    Player **plp = (Player **) RB_Level_getPlayer(level);
+                    Player **plp = (Player **) level->getPlayer();
                     if (RB_Player_getShieldDamageRate(*plp) < 100) {
                         int eq = RB_Ship_getFirstEquipmentOfSort(RB_Status_getShip());
                         float a = (float) RB_Item_getAttribute(eq);
@@ -276,7 +274,7 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                             RB_Player_damage((int) (intptr_t) enemy->player, true, 0);
                             charge -= 1.0f;
                         }
-                        Player **plp2 = (Player **) RB_Level_getPlayer(level);
+                        Player **plp2 = (Player **) level->getPlayer();
                         int eq2 = RB_Ship_getFirstEquipmentOfSort(RB_Status_getShip());
                         float a2 = (float) RB_Item_getAttribute(eq2);
                         RB_Player_regenerateShield(*plp2, (shieldAmt * a2) / scaleDiv);
@@ -298,7 +296,7 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
         }
     }
 
-    PlayerEgo *ego2 = RB_Level_getPlayer(level);
+    PlayerEgo *ego2 = level->getPlayer();
     if (RB_PlayerEgo_isDead(ego2) != 0) {
         int snd = *g_RB_sndDead;
         if (RB_FModSound_isPlaying(snd) != 0)

@@ -319,19 +319,11 @@ Generator *Globals::generator;
 
 #include <new>
 
-float VectorSignedToFloat(int v, int mode);
-
-float VectorUnsignedToFloat(unsigned v, int mode);
-
 static inline uint32_t nextInt_71aa4(AbyssEngine::AERandom *self) { return self->nextInt(); }
 
 static inline int nextInt_71ad0(AbyssEngine::AERandom *self, int bound) { return self->nextInt(bound); }
 
-int idiv(int a, int b);
-
 void MatrixSetTranslation(void *m, float x, float y, float z); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-// lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 int AERandom_nextIntB(int rng, int bound);
 
@@ -714,7 +706,7 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
     if (bottom < p1) {
         p1 = bottom;
     }
-    float fp1 = VectorSignedToFloat(p1, 0);
+    float fp1 = static_cast<float>(p1);
 
     unsigned short uv;
     int iv;
@@ -736,7 +728,7 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
         {
             float sub = (flag8 == 0) ? gSCS_f8710 : gSCS_f870c;
             float add14 = (flag8 == 0) ? gSCS_f8718 : gSCS_f8714;
-            float val = VectorUnsignedToFloat(o6, 0);
+            float val = static_cast<float>(o6);
             float r = val - sub;
             o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
             o7 = 0x14;
@@ -761,7 +753,7 @@ common: {
         o5 = 0x1c;
         o6 = uv;
         o13 = 0x1c;
-        float val = VectorUnsignedToFloat(o6, 0);
+        float val = static_cast<float>(o6);
         float r = val + gSCS_f8704;
         o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
         o7 = 0x14;
@@ -771,13 +763,13 @@ common: {
 label8556: {
         unsigned absp2 = (unsigned) (p2 - (p2 >> 31));
         float fv = gSCS_f8708;
-        float val6 = VectorUnsignedToFloat(o6, 0);
+        float val6 = static_cast<float>(o6);
         float r8 = fv + val6;
         o8 = (unsigned short) ((0.0f < r8) ? (short) (int) r8 : 0);
         o9 = (unsigned short) (o7 + (short) (absp2 >> 1));
         o10 = (unsigned short) (o8 + (short) (absp2 >> 1));
 
-        float val6b = VectorUnsignedToFloat(o6, 0);
+        float val6b = static_cast<float>(o6);
         float fv2;
         float acc;
         if (isPhone == 0) {
@@ -791,8 +783,8 @@ label8556: {
         int i12 = (0.0f < acc) ? (int) acc : 0;
         o12 = (unsigned short) i12;
 
-        float top = VectorSignedToFloat(screenH - p4, 0);
-        float f12 = VectorUnsignedToFloat((unsigned) i12, 0);
+        float top = static_cast<float>(screenH - p4);
+        float f12 = static_cast<float>((unsigned) i12);
         if (f12 <= top - fv2) {
             unsigned short u11;
             if (isPhone == 0) {
@@ -816,11 +808,11 @@ label8556: {
                     a = 0xad;
                     b = 0x85;
                 }
-                float fd = VectorUnsignedToFloat((unsigned) i16, 0);
-                float fr = VectorSignedToFloat(a - b, 0);
+                float fd = static_cast<float>((unsigned) i16);
+                float fr = static_cast<float>(a - b);
                 float scale = 1.0f;
                 if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
-                float base = VectorSignedToFloat(b, 0);
+                float base = static_cast<float>(b);
                 base = base + scale * fr;
                 o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
                 float fv15 = 4.0f;
@@ -832,11 +824,11 @@ label8556: {
                 float d = f12 - (top + gSCS_f872c);
                 int i16 = (0.0f < d) ? (int) d : 0;
                 o12 = (unsigned short) i16;
-                float fd = VectorUnsignedToFloat((unsigned) i16, 0);
-                float fr = VectorSignedToFloat(a - b, 0);
+                float fd = static_cast<float>((unsigned) i16);
+                float fr = static_cast<float>(a - b);
                 float scale = 1.0f;
                 if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
-                float base = VectorSignedToFloat(b, 0);
+                float base = static_cast<float>(b);
                 base = base + scale * fr;
                 o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
                 o12 = (unsigned short) ((0.0f < top - gSCS_f8720) ? (short) (int) (top - gSCS_f8720) : 0);
@@ -871,7 +863,7 @@ String Globals::getAgentMissionText(Agent *agent) {
                 int ship = (int) (long) Globals::status->getShip();
                 int price = ((Ship *) (ship))->getPrice();
                 int pct = agent->getModPricePercentage();
-                agent->setSellItemPrice(idiv(price * pct, 100));
+                agent->setSellItemPrice((price * pct) / 100);
                 ship = (int) (long) Globals::status->getShip();
                 int modIdx = agent->getSellModIndex();
                 if (((Ship *) (ship))->hasModInstalled(modIdx) != 0) {
@@ -1364,7 +1356,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
         if (Globals::status->dlc1Won() == 0) {
             r = 9;
         } else {
-            int n = AERandom_nextIntB(*(int *) &Globals::rnd, 0x64);
+            int n = nextInt_71ad0(Globals::rnd, 0x64);
             r = 0x27;
             if (n < 0x55) {
                 r = 0x29;
@@ -1379,10 +1371,9 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
         r = 0x2c;
     } else {
         const int *table = &gREF_table;
-        int *rng = (int *) &Globals::rnd;
         do {
             do {
-                r = AERandom_nextIntB(*rng, 0x25);
+                r = nextInt_71ad0(Globals::rnd, 0x25);
             } while ((unsigned) ((r & ~4u) - 9) < 2);
         } while (((r < 0x10) && ((1u << r & 0x8101u) != 0)) ||
                  (table[r] != t));
@@ -1438,12 +1429,12 @@ unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, fl
     meshCanvas->MeshSetUv((unsigned int) mesh, 10, v1, u0);
     meshCanvas->MeshSetUv((unsigned int) mesh, 0xb, v1, v0);
 
-    float pw = VectorSignedToFloat(width, 0);
-    float nh = VectorSignedToFloat(-height, 0);
+    float pw = static_cast<float>(width);
+    float nh = static_cast<float>(-height);
     meshCanvas->MeshSetPoint((unsigned int) mesh, 0, nh, 0, pw);
-    float nw = VectorSignedToFloat(-width, 0);
+    float nw = static_cast<float>(-width);
     meshCanvas->MeshSetPoint((unsigned int) mesh, 1, nh, 0, nw);
-    float ph = VectorSignedToFloat(height, 0);
+    float ph = static_cast<float>(height);
     meshCanvas->MeshSetPoint((unsigned int) mesh, 2, ph, 0, pw);
     meshCanvas->MeshSetPoint((unsigned int) mesh, 3, ph, 0, nw);
     meshCanvas->MeshSetPoint((unsigned int) mesh, 4, 0, nh, pw);
@@ -1821,8 +1812,8 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     }
 
     int colDelta = rint((int *) &Globals::h) - p2;
-    float fcol = VectorSignedToFloat(colDelta, 0);
-    float fp1 = VectorSignedToFloat(p1, 0);
+    float fcol = static_cast<float>(colDelta);
+    float fp1 = static_cast<float>(p1);
     float fmax = fp1;
     if (fwid + fcol < fp1) {
         fmax = gSCF_b7c;
@@ -1848,7 +1839,7 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
             }
             fp1b = fp1b + fcol;
         }
-        wField = VectorSignedToFloat(rint((int *) &Globals::w) - p2, 0);
+        wField = static_cast<float>(rint((int *) &Globals::w) - p2);
         iv = (int) fp1b;
         rcoords((CoordsObject *) Globals::options)->fireValue = (int) fp1b;
         adj13 = gSCF_b90;
@@ -1858,14 +1849,14 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
         }
     } else {
         if (isPhone == 0) {
-            wField = VectorSignedToFloat(rint((int *) &Globals::w) - p2, 0);
+            wField = static_cast<float>(rint((int *) &Globals::w) - p2);
             char flag6 = rf((char *) &Globals::iPadLarge);
             iv = (flag6 == 0) ? 0x96 : 0x12c;
             rcoords((CoordsObject *) Globals::options)->fireValue = iv;
             adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
         } else {
             iv = 0xd2;
-            wField = VectorSignedToFloat(rint((int *) &Globals::w) - p2, 0);
+            wField = static_cast<float>(rint((int *) &Globals::w) - p2);
             rcoords((CoordsObject *) Globals::options)->fireValue = 0xd2;
         }
     }
@@ -1880,33 +1871,33 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     if (isPhone == 0) {
         char flag6 = rf((char *) &Globals::iPadLarge);
         float a10 = (flag6 == 0) ? gSCF_bb8 : gSCF_bb4;
-        o10 = clampU(a10 + VectorUnsignedToFloat(o6, 0));
+        o10 = clampU(a10 + static_cast<float>(o6));
         float a11 = (flag6 == 0) ? 4.0f : 8.0f;
-        o11 = clampU(a11 + VectorUnsignedToFloat(o7, 0));
+        o11 = clampU(a11 + static_cast<float>(o7));
         float a12 = (flag6 == 0) ? 15.0f : 28.0f;
-        o12 = clampU(a12 + VectorUnsignedToFloat(o6, 0));
+        o12 = clampU(a12 + static_cast<float>(o6));
         float a13 = (flag6 == 0) ? 13.0f : 27.0f;
-        o13 = clampU(a13 + VectorUnsignedToFloat(o7, 0));
+        o13 = clampU(a13 + static_cast<float>(o7));
         float a16 = (flag6 == 0) ? gSCF_bc0 : gSCF_bbc;
-        u16 = clampU(a16 + VectorUnsignedToFloat(o6, 0));
+        u16 = clampU(a16 + static_cast<float>(o6));
         tail = (flag6 == 0) ? gSCF_bc8 : gSCF_bc4;
     } else {
-        o10 = clampU(VectorUnsignedToFloat(o6, 0) + gSCF_b9c);
-        o11 = clampU(VectorUnsignedToFloat(o7, 0) + gSCF_ba0);
-        o12 = clampU(VectorUnsignedToFloat(o6, 0) + gSCF_ba4);
-        o13 = clampU(VectorUnsignedToFloat(o7, 0) + gSCF_ba8);
-        u16 = clampU(VectorUnsignedToFloat(o6, 0) + gSCF_bac);
+        o10 = clampU(static_cast<float>(o6) + gSCF_b9c);
+        o11 = clampU(static_cast<float>(o7) + gSCF_ba0);
+        o12 = clampU(static_cast<float>(o6) + gSCF_ba4);
+        o13 = clampU(static_cast<float>(o7) + gSCF_ba8);
+        u16 = clampU(static_cast<float>(o6) + gSCF_bac);
         tail = gSCF_bb0;
     }
 
     o16 = u16;
-    o17 = clampU(VectorUnsignedToFloat(o7, 0) - tail);
+    o17 = clampU(static_cast<float>(o7) - tail);
 
     unsigned short u14;
     float t15;
     if (colDelta < iv) {
         o5 = p3;
-        float w = VectorUnsignedToFloat(o6, 0);
+        float w = static_cast<float>(o6);
         if (isPhone != 0) {
             u14 = clampU(w + -2.0f);
             t15 = gSCF_be4;
@@ -1918,7 +1909,7 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
         }
     } else {
         o5 = p4;
-        float w = VectorUnsignedToFloat(o6, 0);
+        float w = static_cast<float>(o6);
         if (isPhone != 0) {
             u14 = clampU(w + gSCF_bcc);
             t15 = gSCF_bd0;
@@ -1931,7 +1922,7 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     }
 
     o14 = u14;
-    o15 = clampU(t15 + VectorUnsignedToFloat(o7, 0));
+    o15 = clampU(t15 + static_cast<float>(o7));
 }
 
 static PaintCanvas **const gRR_arg = nullptr;
