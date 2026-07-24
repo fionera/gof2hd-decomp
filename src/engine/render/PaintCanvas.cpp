@@ -1950,7 +1950,7 @@ void PaintCanvas::SetProjOrthoMatrix() {
 
     int h = paintcanvas_ext_getdisplayheight(this->engine);
     this->projOrthoMatrix.m[10] = -0.05f;
-    this->projOrthoMatrix.m[15] = 1.0f;
+    this->projOrthoMatrix_m15 = 1.0f;
     this->projOrthoMatrix.m[12] = -1.0f;
     this->projOrthoMatrix.m[13] = 1.0f;
     this->projOrthoMatrix.m[5] = -(float) (2.0 / (double) h);
@@ -2522,7 +2522,7 @@ void PaintCanvas::Initialize(bool landscape) {
         memset(&this->worldViewMatrix.m[4], 0, 0x10);
         memset(&this->worldViewMatrix.m[8], 0, 0x10);
         memset(&this->worldViewMatrix.m[11], 0, 0x10);
-        this->worldViewMatrix.m[15] = 1.0f;
+        this->worldViewMatrix_m15 = 1.0f;
         this->projOrthoMatrix.m[0] = 2.0f / fh;
         this->worldViewMatrix.m[1] = g_init_const_7e7b4;
         this->worldViewMatrix.m[10] = 1.0f;
@@ -2531,7 +2531,7 @@ void PaintCanvas::Initialize(bool landscape) {
         ymul = fw;
     }
     this->projOrthoMatrix.m[10] = g_init_const_7e7b8;
-    this->projOrthoMatrix.m[15] = 1.0f;
+    this->projOrthoMatrix_m15 = 1.0f;
     this->projOrthoMatrix.m[12] = g_init_const_7e7b4;
     this->projOrthoMatrix.m[13] = 1.0f;
     this->projOrthoMatrix.m[5] = -2.0f / ymul;
@@ -4217,7 +4217,7 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
         this->projOrthoMatrix.m[13] = 1.0f;
         this->worldViewMatrix.m[13] = 0;
         this->worldViewMatrix.m[14] = 0;
-        this->projOrthoMatrix.m[15] = 1.0f;
+        this->projOrthoMatrix_m15 = 1.0f;
         this->worldViewMatrix.m[0] = g_sgo_const_8e6b8;
         this->worldViewMatrix.m[1] = g_sgo_const_8e6b8;
         this->projOrthoMatrix.m[10] = g_sgo_const_8e6b4;
@@ -4226,7 +4226,7 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
         this->worldViewMatrix.m[4] = 1.0f;
         this->projOrthoMatrix.m[0] = 2.0f / fw;
         this->projOrthoMatrix.m[5] = -(2.0f / fh);
-        this->worldViewMatrix.m[15] = 1.0f;
+        this->worldViewMatrix_m15 = 1.0f;
         int w2 = paintcanvas_ext_sgo_dispwidth(this->engine);
         this->worldViewMatrix.m[12] = paintcanvas_ext_sgo_signedtofloat(w2, 0);
         int h2 = paintcanvas_ext_sgo_dispheight(this->engine);
@@ -4241,7 +4241,7 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
         zero16(&this->worldViewMatrix.m[1]);
         this->projOrthoMatrix.m[14] = 0;
         this->projOrthoMatrix.m[13] = 1.0f;
-        this->projOrthoMatrix.m[15] = 1.0f;
+        this->projOrthoMatrix_m15 = 1.0f;
         this->worldViewMatrix.m[1] = 1.0f;
         this->projOrthoMatrix.m[10] = g_sgo_const_8e6b4;
         this->projOrthoMatrix.m[12] = g_sgo_const_8e6b8;
@@ -4249,7 +4249,7 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
         this->worldViewMatrix.m[4] = g_sgo_const_8e6b8;
         this->projOrthoMatrix.m[0] = 2.0f / fh;
         this->projOrthoMatrix.m[5] = -(2.0f / fw);
-        this->worldViewMatrix.m[15] = 1.0f;
+        this->worldViewMatrix_m15 = 1.0f;
         int h2 = paintcanvas_ext_sgo_dispheight(this->engine);
         this->worldViewMatrix.m[12] = paintcanvas_ext_sgo_signedtofloat(h2, 0);
     } else if (orientation != 0) {
@@ -4263,7 +4263,7 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
         this->projOrthoMatrix.m[13] = 1.0f;
         this->worldViewMatrix.m[13] = 0;
         this->worldViewMatrix.m[14] = 0;
-        this->projOrthoMatrix.m[15] = 1.0f;
+        this->projOrthoMatrix_m15 = 1.0f;
         this->worldViewMatrix.m[0] = 1.0f;
         this->projOrthoMatrix.m[10] = g_sgo_const_8e6b4;
         this->projOrthoMatrix.m[12] = g_sgo_const_8e6b8;
@@ -4271,7 +4271,7 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
         this->worldViewMatrix.m[5] = 1.0f;
         this->projOrthoMatrix.m[0] = 2.0f / fw;
         this->projOrthoMatrix.m[5] = -(2.0f / fh);
-        this->worldViewMatrix.m[15] = 1.0f;
+        this->worldViewMatrix_m15 = 1.0f;
     } else {
         zero16(&this->projOrthoMatrix.m[9]);
         zero16(&this->worldViewMatrix.m[8]);
@@ -4282,7 +4282,7 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
         zero16(&this->worldViewMatrix.m[1]);
         this->projOrthoMatrix.m[14] = 0;
         this->projOrthoMatrix.m[13] = 1.0f;
-        this->projOrthoMatrix.m[15] = 1.0f;
+        this->projOrthoMatrix_m15 = 1.0f;
         this->worldViewMatrix.m[1] = g_sgo_const_8e6b8;
         this->projOrthoMatrix.m[10] = g_sgo_const_8e6b4;
         this->projOrthoMatrix.m[12] = g_sgo_const_8e6b8;
@@ -4290,7 +4290,7 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
         this->worldViewMatrix.m[4] = 1.0f;
         this->projOrthoMatrix.m[0] = 2.0f / fh;
         this->projOrthoMatrix.m[5] = -(2.0f / fw);
-        this->worldViewMatrix.m[15] = 1.0f;
+        this->worldViewMatrix_m15 = 1.0f;
         int w2 = paintcanvas_ext_sgo_dispwidth(this->engine);
         this->worldViewMatrix.m[13] = paintcanvas_ext_sgo_signedtofloat(w2, 0);
     }

@@ -63,17 +63,17 @@ namespace AbyssEngine {
         char *mask2dImage;                                     // 0x2c (Ghidra gap)
         int gameOrientation;                                   // 0x30 (orientation)
         Engine *engine;                                        // 0x34
-        int field_0x38;                                        // 0x38
-        int field_0x3c;                                        // 0x3c
-        Matrix projMatrix3d;
-        Matrix projOrthoMatrix;
-        Matrix worldViewMatrix;
-        Matrix identityMatrix;
-        // AEMath::Matrix is 0x3c here but 0x40 in the original (NEVER change Matrix.h). The four
-        // embedded matrices are each 4 bytes short (-0x10); the upstream model is +8, so the net
-        // deficit by this point is 8 bytes. Reserve it in the matrix region so lineMesh lands @0x1c8
-        // and field_0x1cc/field_0x1f8 land at their named offsets.
-        unsigned char _pad_matrix_undersize[4];
+        // Ghidra ground truth (ResetPersMatrix/SetProjOrthoMatrix/CameraGetLocal): the three
+        // projection-region matrices are full GL 4x4s (0x40 bytes) at 0x38/0x78/0xb8 — each is a
+        // 15-float Matrix plus its m[15] slot as a trailing float. identityMatrix at 0xf8 is a
+        // plain 15-float Matrix (CameraGetLocal copies exactly 0x3c of it).
+        Matrix projMatrix3d;                                   // 0x38 (GL 4x4)
+        float projMatrix3d_m15;                                // 0x74
+        Matrix projOrthoMatrix;                                // 0x78 (GL 4x4)
+        float projOrthoMatrix_m15;                             // 0xb4
+        Matrix worldViewMatrix;                                // 0xb8 (GL 4x4)
+        float worldViewMatrix_m15;                             // 0xf4
+        Matrix identityMatrix;                                 // 0xf8
         ::Array<AbyssEngine::Resource *> resources;
         ::Array<AbyssEngine::ImageFont *> fonts;
         ::Array<AbyssEngine::Image2D *> images;
@@ -469,7 +469,10 @@ namespace AbyssEngine {
     static_assert(__builtin_offsetof(PaintCanvas, meshCount) == 0x24, "PaintCanvas::meshCount @0x24");
     static_assert(__builtin_offsetof(PaintCanvas, meshes) == 0x28, "PaintCanvas::meshes @0x28");
     static_assert(__builtin_offsetof(PaintCanvas, engine) == 0x34, "PaintCanvas::engine @0x34");
-    static_assert(__builtin_offsetof(PaintCanvas, projMatrix3d) == 0x40, "PaintCanvas::projMatrix3d @0x40");
+    static_assert(__builtin_offsetof(PaintCanvas, projMatrix3d) == 0x38, "PaintCanvas::projMatrix3d @0x38");
+    static_assert(__builtin_offsetof(PaintCanvas, projOrthoMatrix) == 0x78, "PaintCanvas::projOrthoMatrix @0x78");
+    static_assert(__builtin_offsetof(PaintCanvas, worldViewMatrix) == 0xb8, "PaintCanvas::worldViewMatrix @0xb8");
+    static_assert(__builtin_offsetof(PaintCanvas, identityMatrix) == 0xf8, "PaintCanvas::identityMatrix @0xf8");
     static_assert(__builtin_offsetof(PaintCanvas, lineMesh) == 0x1c8, "PaintCanvas::lineMesh offset");
     static_assert(__builtin_offsetof(PaintCanvas, field_0x1cc) == 0x1cc, "PaintCanvas::field_0x1cc offset");
     static_assert(__builtin_offsetof(PaintCanvas, field_0x1f8) == 0x1f8, "PaintCanvas::field_0x1f8 offset");
