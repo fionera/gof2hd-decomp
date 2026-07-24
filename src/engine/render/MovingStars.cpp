@@ -60,7 +60,7 @@ MovingStars::MovingStars() {
     for (int j = 0; j != 50; j = j + 1) {
         MovingStars_nextIntBounded(*rng, 4);
         uint32_t bb = reinterpret_cast<Globals *>(*globals)
-                ->createBillBoard(0, 0x46, kBB0, kBB1, kBB2, kBB3, 500);
+                ->createBillBoard(0x46, 500, kBB0, kBB1, kBB2, kBB3, 20052);
         this->billboardIds[j] = bb;
         MovingStars_TransformCreate(*canvas, &this->transformHandles[j]);
         MovingStars_TransformAddMeshId(*canvas, this->transformHandles[j],
@@ -204,8 +204,8 @@ void MovingStars_VectorAddAssign(Vector *self, const Vector &other);
 
 
 void MovingStars::translate(const Vector &v) {
-    char pos[12];
     char out[60];
+    char pos[12];
     PaintCanvas **canvas = &Globals::Canvas;
     for (int i = 0; i != 0x32; i = i + 1) {
         uint32_t tf = this->transformHandles[i];

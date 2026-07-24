@@ -10592,22 +10592,6 @@
    "usize": 50
   },
   {
-   "name": "_ZN11MovingStarsC1Ev",
-   "pct": 61.0,
-   "byte": false,
-   "linked": false,
-   "osize": 320,
-   "usize": 316
-  },
-  {
-   "name": "_ZN11MovingStarsC2Ev",
-   "pct": 61.0,
-   "byte": false,
-   "linked": false,
-   "osize": 320,
-   "usize": 316
-  },
-  {
    "name": "_ZN20ParticleSystemSprite5resetEv",
    "pct": 61.1,
    "byte": false,
@@ -11710,6 +11694,22 @@
    "linked": false,
    "osize": 140,
    "usize": 80
+  },
+  {
+   "name": "_ZN11MovingStarsC1Ev",
+   "pct": 67.5,
+   "byte": false,
+   "linked": false,
+   "osize": 320,
+   "usize": 320
+  },
+  {
+   "name": "_ZN11MovingStarsC2Ev",
+   "pct": 67.5,
+   "byte": false,
+   "linked": false,
+   "osize": 320,
+   "usize": 320
   },
   {
    "name": "_ZN11AbyssEngine8MeshDrawEPNS_6EngineEPNS_4MeshE",
