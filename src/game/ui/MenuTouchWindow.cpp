@@ -1307,7 +1307,7 @@ void MenuTouchWindow::setCutsceneMode(bool mode) {
     bool notMode = !mode;
     for (uint32_t i = 0; i < this->buttons->count; i++) {
         TouchButton *btn = this->buttons->data_[i];
-        if (btn->field_0x0 == 0x13 && btn->field_0x4 == 0) {
+        if (!((uint32_t)(btn->field_0x0 ^ 0x13) | (uint32_t)btn->field_0x4)) {
             btn->setVisible(notMode);
         }
     }
@@ -1331,7 +1331,7 @@ void MenuTouchWindow::loadPreviewRecords() {
     Layout *layout = Globals::layout;
     int *rowObj = &Globals::recordSlots;
 
-    this->contentHeight = (((metrics[0] - layout->field_0xc_leftMargin) - layout->windowTopInset)
+    this->contentHeight = (((metrics[0] - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin)
                            - layout->field_0x20_top) - layout->field_0x24;
 
     this->pageHeight = rowObj[0] * (layout->field_0x70_rowHeight + this->listRowGap);
@@ -2040,7 +2040,7 @@ void MenuTouchWindow::setSkipButtonVisible(bool visible) {
     if (arr != 0) {
         for (uint32_t i = 0; i < this->buttons->count; i++) {
             TouchButton *btn = this->buttons->data_[i];
-            if (btn != 0 && btn->field_0x0 == 0x12 && btn->field_0x4 == 0) {
+            if (btn != 0 && !((uint32_t)(btn->field_0x0 ^ 0x12) | (uint32_t)btn->field_0x4)) {
                 btn->setVisible(visible);
             }
         }
@@ -2268,11 +2268,9 @@ void MenuTouchWindow::startSupernova() {
 
 void MenuTouchWindow::startGOF2() {
     Globals::status->resetGame();
-    FModSound *snd = Globals::sound;
-
     ((OptionsRecord *) Globals::options)->fadeValue = this->fadeValue;
-    snd->stop(snd->currentMusicEvent);
-    snd->play(0x8f, nullptr, nullptr, 0.0f);
+    Globals::sound->stop(Globals::sound->currentMusicEvent);
+    Globals::sound->play(0x8f, nullptr, nullptr, 0.0f);
     Globals::appManager->SetCurrentApplicationModule(2);
 }
 
