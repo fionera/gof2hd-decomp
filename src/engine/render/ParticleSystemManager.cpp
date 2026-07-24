@@ -165,7 +165,7 @@ void ParticleSystemManager::reset() {
 void ParticleSystemManager::releaseSprites() {
     ArrayReleaseClasses(this->spriteSystems);
     if (this->spriteSystemId != 0xffffffff) {
-        _psm_ReleaseSpriteSystemResource(this->canvas, this->spriteSystemId);
+        this->canvas->ReleaseSpriteSystemResource(this->spriteSystemId);
         this->spriteSystemId = 0xffffffff;
     }
 }

@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1143,
-  "linked_exact": 2514,
+  "linked_exact": 2517,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 76.77,
+  "avg_match": 76.78,
   "compared": 4523
  },
  "imports": [
@@ -289,7 +289,6 @@
   "_Z19_mtw_draw_cinematicPv",
   "_Z19_mtw_draw_keyConfigPv",
   "_Z19_mtw_render3D_innerPv",
-  "_Z19_psm_cameraGetLocalPN11AbyssEngine11PaintCanvasEj",
   "_Z19_psm_matrixGetRightPN11AbyssEngine6AEMath6VectorEPKNS0_6MatrixE",
   "_Z19operator_delete_cppPh",
   "_Z19rl_engineFromHolderi",
@@ -356,8 +355,6 @@
   "_Z21_mtw_TouchButton_drawPv",
   "_Z21_mtw_draw_optionsTabsPv",
   "_Z21_mtw_steerFromTouchIdPviiS_",
-  "_Z21_psm_cameraGetCurrentPN11AbyssEngine11PaintCanvasE",
-  "_Z21_psm_canvasSetTexturePN11AbyssEngine11PaintCanvasEjj",
   "_Z21_psm_interpolateColorP18ParticleSystemMeshiPfS1_S1_S1_",
   "_Z21_psm_meshSetColorWordPN11AbyssEngine11PaintCanvasEjtj",
   "_Z21_psm_renderSpritesExtPv",
@@ -426,7 +423,6 @@
   "_Z23_mtw_ArraySetLength_StriPv",
   "_Z23_mtw_Layout_OnTouchMovePvi",
   "_Z23_mtw_loadPreviewRecordsPv",
-  "_Z23_psm_canvasSetBlendModePN11AbyssEngine11PaintCanvasENS_9BlendModeE",
   "_Z23_psm_meshTranslatePointPN11AbyssEngine11PaintCanvasEjtfff",
   "_Z23paintcanvas_ctor_matrixPv",
   "_Z23paintcanvas_ext_disablei",
@@ -739,7 +735,6 @@
   "_Z32MovingStars_MatrixSetTranslationPN11AbyssEngine6AEMath6MatrixEfff",
   "_Z32Station_stationHasPirateBase_otev",
   "_Z32_mtw_MissionsWindow_OnTouchBeginPvi",
-  "_Z32_psm_ReleaseSpriteSystemResourcePvj",
   "_Z32paintcanvas_ext_dm_resetuvmatrixPv",
   "_Z32paintcanvas_ext_dm_spherefrustumPvS_f",
   "_Z32paintcanvas_ext_dsc_str_fromcharPvPKcb",

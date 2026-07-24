@@ -269,7 +269,7 @@ namespace AbyssEngine {
 
         void CameraSetCurrent(unsigned int index);
 
-        void *CameraGetLocal(unsigned int index); // lint: void_ptr (ABI method return; mangling must match lib)
+        float *CameraGetLocal(unsigned int index);
 
         void CameraSetLocal(unsigned int index, const Matrix &matrix);
 

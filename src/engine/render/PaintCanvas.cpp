@@ -1392,8 +1392,7 @@ void PaintCanvas::HasVibration() {
     return paintcanvas_ext_has_vibration(this->engine);
 }
 
-void *PaintCanvas::CameraGetLocal(unsigned int index) { // lint: void_ptr (external symbol; mangling must match lib)
-    // lint: void_ptr (external symbol; mangling must match lib)
+float *PaintCanvas::CameraGetLocal(unsigned int index) {
     float *result;
     if (index < this->cameras.count) {
         result = ((PCCameraView *) (this->cameras.data_)[index])->localMatrix;

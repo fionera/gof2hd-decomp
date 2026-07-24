@@ -28,7 +28,6 @@ static float g_colorScale = 0.0f;
 
 ParticleSystemSprite::~ParticleSystemSprite() {
     this->release();
-    _pss_base_dtor(this);
 }
 
 ParticleSystemSprite::ParticleSystemSprite(PaintCanvas *canvas, const Matrix *matrix,

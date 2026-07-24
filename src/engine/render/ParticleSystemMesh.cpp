@@ -1,4 +1,6 @@
 #include "engine/render/ParticleSystemMesh.h"
+#define GOF2_ENUM_BlendMode
+#include "engine/render/PaintCanvas.h"
 
 void _psm_emitTrail(ParticleSystemMesh *self, int id);
 
@@ -423,11 +425,11 @@ void ParticleSystemMesh::updateSingleColor(int id) {
 void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t mesh, uint32_t texture, BlendMode blend) {
     if (mesh == 0xffffffff)
         return;
-    _psm_canvasSetTexture(canvas, texture, 0xffffffff);
-    _psm_canvasSetBlendMode(canvas, blend);
-    uint32_t current = _psm_cameraGetCurrent(canvas);
-    uint32_t local = _psm_cameraGetLocal(canvas, current);
-    return _psm_render2(canvas, mesh, local);
+    canvas->SetTexture(texture, 0xffffffff);
+    canvas->SetBlendMode(blend);
+    uint32_t current = canvas->CameraGetCurrent();
+    float *local = canvas->CameraGetLocal(current);
+    return _psm_render2(canvas, mesh, (uint32_t)(uintptr_t)local);
 }
 
 void ParticleSystemMesh::emitTrail(int) {
