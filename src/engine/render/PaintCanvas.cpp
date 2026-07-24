@@ -1982,7 +1982,7 @@ unsigned int PaintCanvas::GetTextureResourceId(AbyssEngine::String &name) {
         PCResourceView *res = (PCResourceView *) (this->resources.data_)[i];
         if (res && res->type == 2) {
             char *namePtr = *(char **) res->payload;
-            if (paintcanvas_ext_strcmp(&name, namePtr) == 0) {
+            if (name.Compare(namePtr) == 0) {
                 return ((PCResourceView *) (this->resources.data_)[i])->id;
             }
         }
@@ -2065,7 +2065,7 @@ unsigned int PaintCanvas::GetMeshResourceId(AbyssEngine::String &name) {
         PCResourceView *res = (PCResourceView *) (this->resources.data_)[i];
         if (res && res->type == 4) {
             char *namePtr = *(char **) res->payload;
-            if (paintcanvas_ext_strcmp(&name, namePtr) == 0) {
+            if (name.Compare(namePtr) == 0) {
                 return ((PCResourceView *) (this->resources.data_)[i])->id;
             }
         }
@@ -3144,8 +3144,8 @@ void PaintCanvas::MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode,
                                  unsigned int textures, unsigned short p4) {
     (void) p4;
     AbyssEngine::Material *mat = new AbyssEngine::Material();
-    mat->textures[0] = (int)textures;
     mat->blendMode = (int)mode;
+    mat->textures[0] = (int)textures;
     ArrayAdd<AbyssEngine::Material*>(mat, this->materials);
     out = this->materials.count - 1;
 }
@@ -3935,8 +3935,9 @@ void PaintCanvas::Suspend() {
     char texId[4];
     for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
         int *p = (int *) (this->cubeTextures.data_)[i];
-        *(int *) texId = *p;
-        if (*p != -1) {
+        int val = *p;
+        *(int *) texId = val;
+        if (val != -1) {
             paintcanvas_ext_gl_deletetextures(1, texId);
             p = (int *) (this->cubeTextures.data_)[i];
         }

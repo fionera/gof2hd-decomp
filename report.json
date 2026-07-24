@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 76.76,
+  "avg_match": 76.77,
   "byte_exact": 1143,
-  "linked_exact": 2511,
-  "fuzzy_perfect": 2511,
+  "linked_exact": 2514,
+  "fuzzy_perfect": 2514,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -3504,20 +3504,20 @@
    "usize": 96
   },
   {
+   "name": "_ZN17PlayerFixedObject6updateEi",
+   "pct": 23.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2768,
+   "usize": 2196
+  },
+  {
    "name": "_ZN3Hud22drawChallengeModeScoreEi",
    "pct": 23.3,
    "byte": false,
    "linked": false,
    "osize": 944,
    "usize": 912
-  },
-  {
-   "name": "_ZN17PlayerFixedObject6updateEi",
-   "pct": 23.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2768,
-   "usize": 2196
   },
   {
    "name": "_ZN11AbyssEngine6EngineC1Ev",
@@ -4528,14 +4528,6 @@
    "usize": 236
   },
   {
-   "name": "_ZN5Level10assignGunsEv",
-   "pct": 28.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2948,
-   "usize": 2332
-  },
-  {
    "name": "_ZN7StarMap14initStarSystemEv",
    "pct": 28.8,
    "byte": false,
@@ -4558,6 +4550,14 @@
    "linked": false,
    "osize": 250,
    "usize": 324
+  },
+  {
+   "name": "_ZN5Level10assignGunsEv",
+   "pct": 28.9,
+   "byte": false,
+   "linked": false,
+   "osize": 2948,
+   "usize": 2332
   },
   {
    "name": "_ZN6Player5shootEiixbN11AbyssEngine6AEMath6MatrixE",
@@ -14424,14 +14424,6 @@
    "usize": 44
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas7SuspendEv",
-   "pct": 89.5,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 100
-  },
-  {
    "name": "_ZN12RadioMessageC1Eiiii",
    "pct": 89.5,
    "byte": false,
@@ -14886,14 +14878,6 @@
    "linked": false,
    "osize": 18,
    "usize": 14
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas14MaterialCreateERjNS_9BlendModeEjt",
-   "pct": 92.3,
-   "byte": false,
-   "linked": false,
-   "osize": 74,
-   "usize": 74
   },
   {
    "name": "_ZN21ParticleSystemManager14releaseSpritesEv",
@@ -15488,6 +15472,14 @@
    "usize": 58
   },
   {
+   "name": "_ZN11AbyssEngine11PaintCanvas14MaterialCreateERjNS_9BlendModeEjt",
+   "pct": 96.2,
+   "byte": false,
+   "linked": false,
+   "osize": 74,
+   "usize": 74
+  },
+  {
    "name": "_ZN4Ship15removeEquipmentEP4Item",
    "pct": 96.2,
    "byte": false,
@@ -15598,22 +15590,6 @@
    "linked": false,
    "osize": 80,
    "usize": 80
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas17GetMeshResourceIdERNS_6StringE",
-   "pct": 96.6,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 76
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas20GetTextureResourceIdERNS_6StringE",
-   "pct": 96.6,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 76
   },
   {
    "name": "_ZN14ScrollTouchBoxD1Ev",
@@ -19480,6 +19456,14 @@
    "usize": 48
   },
   {
+   "name": "_ZN11AbyssEngine11PaintCanvas17GetMeshResourceIdERNS_6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 76,
+   "usize": 76
+  },
+  {
    "name": "_ZN11AbyssEngine11PaintCanvas17GetMeshResourceIdERNS_6StringEt",
    "pct": 100.0,
    "byte": false,
@@ -19574,6 +19558,14 @@
    "linked": true,
    "osize": 42,
    "usize": 42
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas20GetTextureResourceIdERNS_6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 76,
+   "usize": 76
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas20MeshSetTriangleCountEjt",
@@ -19694,6 +19686,14 @@
    "linked": true,
    "osize": 46,
    "usize": 46
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas7SuspendEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 96,
+   "usize": 96
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas7VibrateEt",
