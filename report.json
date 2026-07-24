@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 76.81,
-  "byte_exact": 1144,
-  "linked_exact": 2522,
-  "fuzzy_perfect": 2522,
+  "avg_match": 76.83,
+  "byte_exact": 1145,
+  "linked_exact": 2524,
+  "fuzzy_perfect": 2524,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -8544,14 +8544,6 @@
    "usize": 6
   },
   {
-   "name": "_ZN3Gun8setLevelEP5Level",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 4
-  },
-  {
    "name": "_ZN3Hud15jumpMapSelectedEv",
    "pct": 50.0,
    "byte": false,
@@ -8657,14 +8649,6 @@
   },
   {
    "name": "_ZN7StarMap14missionChangedEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 6
-  },
-  {
-   "name": "_ZN9ObjectGun10setEnemiesEP5ArrayIP6PlayerE",
    "pct": 50.0,
    "byte": false,
    "linked": false,
@@ -14888,22 +14872,6 @@
    "usize": 156
   },
   {
-   "name": "_ZN3GunD1Ev",
-   "pct": 92.7,
-   "byte": false,
-   "linked": false,
-   "osize": 120,
-   "usize": 120
-  },
-  {
-   "name": "_ZN3GunD2Ev",
-   "pct": 92.7,
-   "byte": false,
-   "linked": false,
-   "osize": 120,
-   "usize": 120
-  },
-  {
    "name": "_ZN4Ship12getEquipmentEi",
    "pct": 92.7,
    "byte": false,
@@ -15286,6 +15254,22 @@
    "linked": false,
    "osize": 136,
    "usize": 132
+  },
+  {
+   "name": "_ZN3GunD1Ev",
+   "pct": 95.1,
+   "byte": false,
+   "linked": false,
+   "osize": 120,
+   "usize": 120
+  },
+  {
+   "name": "_ZN3GunD2Ev",
+   "pct": 95.1,
+   "byte": false,
+   "linked": false,
+   "osize": 120,
+   "usize": 120
   },
   {
    "name": "JNI_OnLoad",
@@ -26312,6 +26296,14 @@
    "usize": 14
   },
   {
+   "name": "_ZN3Gun8setLevelEP5Level",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
    "name": "_ZN3Gun9setImpactEP6Sparks",
    "pct": 100.0,
    "byte": true,
@@ -33643,6 +33635,14 @@
    "name": "_ZN9LensFlare6updateEi",
    "pct": 100.0,
    "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
+   "name": "_ZN9ObjectGun10setEnemiesEP5ArrayIP6PlayerE",
+   "pct": 100.0,
+   "byte": false,
    "linked": true,
    "osize": 6,
    "usize": 6

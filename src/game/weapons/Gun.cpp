@@ -88,7 +88,7 @@ Gun::~Gun() noexcept(false) {
 
     reinterpret_cast<VecArray *>(&this->field_0x2c)->~VecArray();
     reinterpret_cast<VecArray *>(&this->field_0x20)->~VecArray();
-    reinterpret_cast<VecArray *>(&this->directionCount)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->velocities)->~VecArray();
     reinterpret_cast<VecArray *>(&this->count)->~VecArray();
 }
 
@@ -134,7 +134,7 @@ void Gun::setLevelCollision(bool v) {
 }
 
 void Gun::setLevel(Level *lvl) {
-    this->level = (int) (intptr_t) lvl;
+    this->field_0x38 = (int) (intptr_t) lvl;
 }
 
 void Gun::removeAllEnemies() {

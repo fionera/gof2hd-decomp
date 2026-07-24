@@ -201,7 +201,7 @@ void ObjectGun::replaceGun(unsigned int mesh, int /*unused*/) {
 }
 
 void ObjectGun::setEnemies(Array<Player *> *enemies) {
-    ObjectGun_setEnemies_impl(enemies->data());
+    ObjectGun_setEnemies_impl(this->gun);
 }
 
 void ObjectGun::setEnemy(Player * /*enemy*/) {
