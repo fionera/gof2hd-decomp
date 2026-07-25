@@ -33,10 +33,6 @@
 
 static void (*g_StarMap_render_geometry)(AEGeometry *);
 
-static GameText **g_StarMap_alien_text;
-
-static inline void * SystemPathFinder_dtor(void *finder) { ((SystemPathFinder*)finder)->~SystemPathFinder(); return (void *)(finder); }
-
 static Status **g_StarMap_draw_status;
 static Layout **g_StarMap_draw_layout;
 static GameText **g_StarMap_draw_text;
@@ -46,20 +42,6 @@ float EaseInOut_GetValue(void *ease); // lint: void_ptr (external symbol; mangli
 
 float EaseInOut_GetMinValue(void *ease); // lint: void_ptr (external symbol; mangling must match lib)
 
-static int *g_StarMap_depart_store0_a;
-static uint8_t *g_StarMap_depart_flag_a;
-static uint8_t *g_StarMap_depart_jumpFlag_a;
-static int *g_StarMap_depart_jumpCost_a;
-static int *g_StarMap_depart_targetStation;
-static uint8_t *g_StarMap_depart_flag_b;
-static Station **g_StarMap_depart_status2;
-static uint8_t *g_StarMap_depart_jumpFlag_b;
-static int *g_StarMap_depart_jumpCost_b;
-static FModSound **g_StarMap_depart_sound;
-static int *g_StarMap_depart_modstation_flag;
-
-int Station_getSystem(void *station); // lint: void_ptr (external symbol; mangling must match lib)
-
 static Layout **g_StarMap_end_layout;
 static FModSound **g_StarMap_end_sound;
 static GameText **g_StarMap_end_text;
@@ -68,7 +50,6 @@ int Station_getIndex(void *station); // lint: void_ptr (external symbol; manglin
 
 static inline void MatrixGetPosition(Vector *out, void *matrix) { *out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)matrix); } // lint: void_ptr (external symbol; mangling must match lib)
 
-static PaintCanvas **g_StarMap_lights_canvas;
 static FModSound **g_StarMap_update_sound;
 static int *g_StarMap_update_screenW;
 static int *g_StarMap_update_screenH;
@@ -93,8 +74,6 @@ void FileRead_ctor(void *reader); // lint: void_ptr (external symbol; mangling m
 
 void *FileRead_dtor(void *reader); // lint: void_ptr (external symbol; mangling must match lib)
 
-static int *g_StarMap_move_guard;
-static Layout **g_StarMap_move_layout;
 static Layout **g_StarMap_drawKey_layout;
 static int *g_StarMap_drawKey_screenW;
 static int *g_StarMap_drawKey_screenH;
@@ -168,7 +147,7 @@ bool StarMap::isInPlanetMode() {
 void StarMap::askForJumpIntoAlienWorld() {
     ChoiceWindow *window = this->choiceWindow;
     this->alienJumpPending = 1;
-    String *text = (String *) (*g_StarMap_alien_text)->getText(0x1a6);
+    String *text = Globals::gameText->getText(0x1a6);
     window->set(*text, true);
     this->choiceVisible = 1;
 }
@@ -190,14 +169,14 @@ StarMap::~StarMap() {
     if (this->systemPositions != 0) {
         ArrayReleaseClasses(*this->systemPositions);
         delete this->systemPositions;
-        this->systemPositions = 0;
     }
+    this->systemPositions = 0;
 
     if (this->stationPositions != 0) {
         ArrayReleaseClasses(*this->stationPositions);
         delete this->stationPositions;
-        this->stationPositions = 0;
     }
+    this->stationPositions = 0;
 
     delete this->planetGeom;
     this->planetGeom = (AEGeometry *) 0;
@@ -223,9 +202,7 @@ StarMap::~StarMap() {
     delete this->markerGeom;
     this->markerGeom = (AEGeometry *) 0;
 
-    if (this->pathFinder != 0) {
-        operator delete(SystemPathFinder_dtor(this->pathFinder));
-    }
+    delete this->pathFinder;
     this->pathFinder = (SystemPathFinder *) 0;
 }
 
@@ -323,21 +300,18 @@ void StarMap::depart(bool jump) {
     if (this->jumpMapModeA != 0) {
         Array<Station *> *stations = this->stations;
         Globals::status->departStation(stations->data()[selected]);
-        *g_StarMap_depart_store0_a = 0;
+        Level::programmedStation = 0;
         Level::setInitStreamOut();
-        int used = Globals::status->getJumpgateUsed();
-        if (jump) {
-            used = this->jumpMapModeB;
-        }
-        if (jump && used != 0) {
-            int toSystem = Station_getSystem(stations->data()[selected]);
-            int current = Globals::status->getSystem();
-            *g_StarMap_depart_jumpFlag_a = (uint8_t)(toSystem != current);
+        Globals::status->jumpgateUsed();
+        if (jump && this->jumpMapModeB != 0) {
+            int toSystem = stations->data()[selected]->getSystem();
+            int current = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
+            Level::doInstantJump = (uint8_t)(toSystem != current);
             if (toSystem != current) {
-                *g_StarMap_depart_jumpCost_a = this->jumpCost;
+                Level::energyCellsForNextJump = this->jumpCost;
             }
         } else {
-            *g_StarMap_depart_flag_a = 0;
+            Level::doInstantJump = 0;
         }
     } else {
         if (Globals::status->getCurrentCampaignMission() == 3) {
@@ -352,7 +326,7 @@ void StarMap::depart(bool jump) {
 
         Station *target = this->stations->data()[this->selectedStation];
         if (target->equals((Station *) Globals::status->getStation()) == 0) {
-            *g_StarMap_depart_targetStation = (int) (intptr_t) target;
+            Level::programmedStation = target;
         }
 
         if (jump) {
@@ -363,15 +337,15 @@ void StarMap::depart(bool jump) {
             if (((Ship *) (Globals::status->getShip()))->hasJumpDriveIntegrated() == 0 && this->jumpMapModeB == 0) {
                 goto no_jump;
             }
-            int toSystem = Station_getSystem(*g_StarMap_depart_status2);
-            int current = Globals::status->getSystem();
-            *g_StarMap_depart_jumpFlag_b = (uint8_t)(toSystem != current);
+            int toSystem = Level::programmedStation->getSystem();
+            int current = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
+            Level::doInstantJump = (uint8_t)(toSystem != current);
             if (toSystem != current) {
-                *g_StarMap_depart_jumpCost_b = this->jumpCost;
+                Level::energyCellsForNextJump = this->jumpCost;
             }
         } else {
         no_jump:
-            *g_StarMap_depart_flag_b = 0;
+            Level::doInstantJump = 0;
         }
         Globals::achievements->resetNewMedals();
     }
@@ -387,8 +361,8 @@ cleanup: {
         delete stations;
         this->stations = (Array<Station *> *) 0;
     }
-    ((FModSound *) (*g_StarMap_depart_sound))->stop(0x66);
-    *g_StarMap_depart_modstation_flag = 1;
+    Globals::sound->stop(0x66);
+    Globals::switch_to_target_setting = 1;
 
     Globals::appManager->SetCurrentApplicationModule(2);
 }
@@ -535,7 +509,7 @@ int StarMap::OnTouchEnd(int x, int y) {
 void StarMap::initLights() {
     Engine *engine = (Engine *) Globals::appManager->GetEngine();
     engine->LightSetMaterialColorAmbient(0.5f, 0.5f, 0.5f);
-    engine->LightEnable(true);
+    Globals::Canvas->FogEnable(false, AbyssEngine::FogMode_1);
 }
 
 static inline float absf_update(float v) {
@@ -947,7 +921,7 @@ void StarMap::OnTouchMove(int x, int y) {
     if (this->transitionIn != 0 || this->transitionOut != 0) {
         return;
     }
-    Layout *layout = *g_StarMap_move_layout;
+    Layout *layout = Globals::layout;
     layout->OnTouchMove(x, y);
     if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) ||
         this->stationCenterAnim != 0) {
@@ -1486,4 +1460,3 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     ;
     return 0;
 }
-

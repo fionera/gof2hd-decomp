@@ -36,7 +36,7 @@
   "game/ui/MissionsWindow.cpp": 2,
   "game/weapons/Gun.cpp": 2,
   "game/world/Level.cpp": 119,
-  "game/world/StarMap.cpp": 8,
+  "game/world/StarMap.cpp": 7,
   "platform/android/NdkHooks.cpp": 2
  },
  "void_ptr": {
@@ -44,7 +44,6 @@
   "engine/render/PaintCanvas.cpp": 15,
   "game/menu/ModStation.cpp": 8,
   "game/menu/SpaceLounge.cpp": 4,
-  "game/ui/MenuTouchWindow.cpp": 5,
-  "game/world/StarMap.cpp": 3
+  "game/ui/MenuTouchWindow.cpp": 5
  }
 }

@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.44,
+  "avg_match": 77.48,
   "byte_exact": 1159,
-  "linked_exact": 2565,
-  "fuzzy_perfect": 2565,
+  "linked_exact": 2566,
+  "fuzzy_perfect": 2566,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1000,14 +1000,6 @@
    "usize": 160
   },
   {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 3.3,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
-  },
-  {
    "name": "_ZN9PlayerEgo10stopMiningEv",
    "pct": 3.3,
    "byte": false,
@@ -1022,6 +1014,14 @@
    "linked": false,
    "osize": 1948,
    "usize": 228
+  },
+  {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 3.4,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
   },
   {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
@@ -2272,14 +2272,6 @@
    "usize": 1164
   },
   {
-   "name": "_ZN7StarMap6departEb",
-   "pct": 14.0,
-   "byte": false,
-   "linked": false,
-   "osize": 564,
-   "usize": 268
-  },
-  {
    "name": "_ZN7StarMap6renderEv",
    "pct": 14.0,
    "byte": false,
@@ -2576,6 +2568,14 @@
    "usize": 1612
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 16.8,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "_ZN9RocketGun8setRadarEP5Radar",
    "pct": 16.8,
    "byte": false,
@@ -2598,14 +2598,6 @@
    "linked": false,
    "osize": 230,
    "usize": 574
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 17.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -4216,14 +4208,6 @@
    "usize": 176
   },
   {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
-  },
-  {
    "name": "_ZN9ExplosionD1Ev",
    "pct": 28.1,
    "byte": false,
@@ -4238,6 +4222,14 @@
    "linked": false,
    "osize": 68,
    "usize": 110
+  },
+  {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
   },
   {
    "name": "_ZN13PlayerFighter8initPushERKN11AbyssEngine6AEMath6VectorEi",
@@ -6456,14 +6448,6 @@
    "usize": 80
   },
   {
-   "name": "_ZN7StarMap11OnTouchMoveEii",
-   "pct": 37.8,
-   "byte": false,
-   "linked": false,
-   "osize": 900,
-   "usize": 752
-  },
-  {
    "name": "_ZN8FileRead18loadStationsBinaryEP11SolarSystem",
    "pct": 37.8,
    "byte": false,
@@ -6510,6 +6494,14 @@
    "linked": false,
    "osize": 356,
    "usize": 312
+  },
+  {
+   "name": "_ZN7StarMap11OnTouchMoveEii",
+   "pct": 38.2,
+   "byte": false,
+   "linked": false,
+   "osize": 900,
+   "usize": 764
   },
   {
    "name": "_ZN12ChoiceWindow4drawEv",
@@ -8136,6 +8128,14 @@
    "usize": 564
   },
   {
+   "name": "_ZN7StarMap6departEb",
+   "pct": 49.1,
+   "byte": false,
+   "linked": false,
+   "osize": 564,
+   "usize": 548
+  },
+  {
    "name": "ndk23_Init",
    "pct": 49.1,
    "byte": false,
@@ -8704,14 +8704,6 @@
    "usize": 1176
   },
   {
-   "name": "_ZN7StarMap10initLightsEv",
-   "pct": 51.3,
-   "byte": false,
-   "linked": false,
-   "osize": 60,
-   "usize": 52
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine28LightSetMaterialColorAmbientEfff",
    "pct": 51.5,
    "byte": false,
@@ -8870,14 +8862,6 @@
    "linked": false,
    "osize": 104,
    "usize": 128
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -9078,6 +9062,14 @@
    "linked": false,
    "osize": 896,
    "usize": 844
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 54.8,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine6StringpLERKf",
@@ -10640,14 +10632,6 @@
    "usize": 54
   },
   {
-   "name": "_ZN7StarMap24askForJumpIntoAlienWorldEv",
-   "pct": 63.2,
-   "byte": false,
-   "linked": false,
-   "osize": 60,
-   "usize": 46
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas13DrawRectangleEiiii",
    "pct": 63.3,
    "byte": false,
@@ -12144,22 +12128,6 @@
    "usize": 184
   },
   {
-   "name": "_ZN7StarMapD1Ev",
-   "pct": 73.4,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 226
-  },
-  {
-   "name": "_ZN7StarMapD2Ev",
-   "pct": 73.4,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 226
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas6ResumeEv",
    "pct": 73.5,
    "byte": false,
@@ -12720,6 +12688,14 @@
    "usize": 96
   },
   {
+   "name": "_ZN11AbyssEngine18TextureLightShader4InitEPNS_6EngineE",
+   "pct": 78.2,
+   "byte": false,
+   "linked": false,
+   "osize": 392,
+   "usize": 380
+  },
+  {
    "name": "_ZN4Ship12getUsedSlotsEi",
    "pct": 78.3,
    "byte": false,
@@ -13030,14 +13006,6 @@
    "linked": false,
    "osize": 52,
    "usize": 52
-  },
-  {
-   "name": "_ZN11AbyssEngine18TextureLightShader4InitEPNS_6EngineE",
-   "pct": 80.1,
-   "byte": false,
-   "linked": false,
-   "osize": 392,
-   "usize": 380
   },
   {
    "name": "_ZN13AutoPilotList4drawEv",
@@ -14240,6 +14208,14 @@
    "usize": 116
   },
   {
+   "name": "_ZN7StarMap24askForJumpIntoAlienWorldEv",
+   "pct": 90.9,
+   "byte": false,
+   "linked": false,
+   "osize": 60,
+   "usize": 60
+  },
+  {
    "name": "_ZN11AbyssEngine11BumpMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 91.0,
    "byte": false,
@@ -14734,6 +14710,22 @@
    "linked": false,
    "osize": 140,
    "usize": 136
+  },
+  {
+   "name": "_ZN7StarMapD1Ev",
+   "pct": 94.2,
+   "byte": false,
+   "linked": false,
+   "osize": 224,
+   "usize": 224
+  },
+  {
+   "name": "_ZN7StarMapD2Ev",
+   "pct": 94.2,
+   "byte": false,
+   "linked": false,
+   "osize": 224,
+   "usize": 224
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager11OnTouchMoveEiiPv",
@@ -31534,6 +31526,14 @@
    "linked": true,
    "osize": 68,
    "usize": 68
+  },
+  {
+   "name": "_ZN7StarMap10initLightsEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 60,
+   "usize": 60
   },
   {
    "name": "_ZN7StarMap14isInPlanetModeEv",

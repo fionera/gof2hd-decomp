@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1159,
-  "linked_exact": 2565,
+  "linked_exact": 2566,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.44,
+  "avg_match": 77.48,
   "compared": 4523
  },
  "imports": [
@@ -115,7 +115,6 @@
   "_Z17Ship_getIndex_otev",
   "_Z17Ship_makeShip_otei",
   "_Z17Station_getAgentsPv",
-  "_Z17Station_getSystemPv",
   "_Z17Station_getSystemz",
   "_Z17TransformGetLocalPvi",
   "_Z17_ips_enableUpdatePvb",
