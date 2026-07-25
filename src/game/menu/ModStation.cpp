@@ -37,6 +37,8 @@ using AbyssEngine::AEMath::VectorSignedToFloat;
 using AbyssEngine::AEMath::Matrix;
 
 struct HangarWindow {
+    ~HangarWindow();
+
     void OnTouchBegin(int touch, int coord);
 
     unsigned int OnTouchMove(int touch, int coord);
@@ -47,6 +49,8 @@ struct HangarWindow {
 };
 
 struct StatusWindow {
+    ~StatusWindow();
+
     int OnTouchBegin(int x, int y);
 
     int OnTouchMove(int x, int y);
@@ -108,34 +112,6 @@ void AEMath_MatrixSetTranslation(Matrix *m, int x, int y, int z);
 
 void AEMath_MatrixSetRotation(Matrix *m, Matrix *loc, int rx, int ry, int a4, int a5);
 
-
-class ScrollTouchBox;
-
-unsigned char *ms_op_delete(unsigned char *p);
-
-unsigned char *ArrayReleaseClasses_TouchButton(int *a);
-
-unsigned char *Array_TB_dtor(int *p);
-
-static inline unsigned char * HangarWindow_dtor(HangarWindow *p) { p->~HangarWindow(); return (unsigned char *)(p); }
-
-static inline unsigned char *StarMap_dtor(StarMap *p) { p->~StarMap(); return (unsigned char*)p; }
-
-static inline unsigned char * MissionsWindow_dtor(DialogueWindow * p) { ((MissionsWindow*)p)->~MissionsWindow(); return (unsigned char *)(p); }
-
-static inline unsigned char * DialogueWindow_dtor(DialogueWindow * p) { p->~DialogueWindow(); return (unsigned char *)(p); }
-
-static inline unsigned char * ChoiceWindow_dtor(ChoiceWindow * p) { p->~ChoiceWindow(); return (unsigned char *)(p); }
-
-static inline unsigned char * StatusWindow_dtor(StatusWindow *p) { p->~StatusWindow(); return (unsigned char *)(p); }
-
-static inline unsigned char * CutScene_dtor(CutScene * p) { p->~CutScene(); return (unsigned char *)(p); }
-
-static inline unsigned char *Radio_dtor(Radio *p) { p->~Radio(); return (unsigned char*)p; }
-
-static inline unsigned char *Array_RM_dtor(Array<Radio *> *p) { p->~Array(); return (unsigned char*)p; }
-
-static inline unsigned char * ScrollTouchBox_dtor(ScrollTouchBox *p) { p->~ScrollTouchBox(); return (unsigned char *)(p); }
 
 void ModStation::autosave() {
     if (Globals::status->getPlayingTime() - 1LL < 0)
@@ -219,8 +195,6 @@ void ModStation::OnSuspend() {
 }
 
 
-static float *g_ModStation_resumeArg = 0;
-
 void ModStation::OnResume() {
     FModSound **holder = &Globals::sound;
     FModSound *obj = *holder;
@@ -228,21 +202,13 @@ void ModStation::OnResume() {
         return;
     if (FModSound_tryToStopMusicForBGMusic() != 0)
         return;
-    float arg = *g_ModStation_resumeArg;
+    float arg = *reinterpret_cast<float *>(Globals::options);
     (*holder)->setVolume(1, arg);
 }
-
-static int *g_cpp_stack = 0;
-
-
-static int *g_cpp_textId = 0;
-
 
 static inline int Status_getCurrentCampaignMission_cpp() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
 static inline int GameText_getText_cpp(int id) { return (int)(Globals::gameText->getText(id)); }
-
-int Status_getPendingProducts_cpp(int status);
 
 static inline int Status_getStation_cpp() { return (int)(Globals::status->getStation()); }
 
@@ -251,23 +217,16 @@ static inline int Status_getShip_cpp() { return (int)(Globals::status->getShip()
 
 
 
-int Item_getAmount_cpp();
-
-static inline unsigned char * PendingProduct_dtor_cpp(PendingProduct * p) { p->~PendingProduct(); return (unsigned char *)(p); }
-
-void operator_delete_cpp(unsigned char *p);
-
 void ChoiceWindow_setNotice_cpp(ChoiceWindow * cw);
 
 static inline int GameText_getText_cppline(int id) { return (int)(Globals::gameText->getText(id)); }
 
 void ModStation::checkPendingProducts() {
     int camp = Status_getCurrentCampaignMission_cpp();
-    int textId = *(int *) g_cpp_textId;
-    GameText_getText_cpp(textId);
+    GameText_getText_cpp(213);
 
     Array<PendingProduct *> *products =
-            (Array<PendingProduct *> *) (intptr_t) Status_getPendingProducts_cpp(*(int *) &Globals::status);
+            (Array<PendingProduct *> *) (intptr_t) Globals::status->getPendingProducts();
     if (products != 0) {
         Array<int> *itemTable = (Array<int> *) (intptr_t) *(int *) &Globals::items;
         for (unsigned i = 0; i < products->size(); i = i + 1) {
@@ -279,18 +238,18 @@ void ModStation::checkPendingProducts() {
                     if (camp == 0x92 && pp->blueprintIndex == 0xd2) {
                         PendingProduct *o = (*products)[i];
                         if (o != 0)
-                            operator_delete_cpp(PendingProduct_dtor_cpp(o));
+                            delete o;
                         (*products)[i] = 0;
                         goto done;
                     }
-                    Item *it = ((Item*)(long)((*itemTable)[pp->blueprintIndex]))->makeItem();
+                    Item *it = ((Item*)(long)((*itemTable)[pp->blueprintIndex]))->makeItem(pp->quantity);
                     ((Ship*)(long)Status_getShip_cpp())->addCargo(it);
-                    (void) Item_getAmount_cpp();
+                    (void) it->getAmount();
                     GameText_getText_cppline(it->getIndex());
 
                     PendingProduct *o = (*products)[i];
                     if (o != 0)
-                        operator_delete_cpp(PendingProduct_dtor_cpp(o));
+                        delete o;
                     (*products)[i] = 0;
                     reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
                 }
@@ -405,8 +364,6 @@ static inline int Status_getStation_msc() { return (int)(Globals::status->getSta
 
 static inline int Status_getSystem_msc() { return (int)(Globals::status->getSystem()); }
 
-int SolarSystem_getRace_msc();
-
 const int *ModStation_msc_camCoordTable();
 
 const int *ModStation_msc_camRotTable();
@@ -439,8 +396,7 @@ ModStation::ModStation() {
         if (st->getIndex() == 100) {
             race = 7;
         } else {
-            Status_getSystem_msc();
-            race = SolarSystem_getRace_msc();
+            race = ((SolarSystem *) (long) Status_getSystem_msc())->getRace();
         }
     }
 
@@ -1321,60 +1277,50 @@ void ModStation::OnRelease() {
     Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_1);
 
     if (this->buttonRow != 0) {
-        ArrayReleaseClasses_TouchButton(this->buttonRow);
+        ArrayReleaseClasses(
+                *reinterpret_cast<Array<TouchButton *> *>(this->buttonRow));
         if (this->buttonRow != 0)
-            ms_op_delete(Array_TB_dtor(this->buttonRow));
+            delete reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
     }
     this->buttonRow = 0;
 
-    if (this->hangarWindow != 0)
-        ms_op_delete(HangarWindow_dtor(this->hangarWindow));
+    delete this->hangarWindow;
     this->hangarWindow = 0;
 
-    if (this->starMap != 0)
-        ms_op_delete(StarMap_dtor(this->starMap));
+    delete this->starMap;
     this->starMap = 0;
 
     delete (SpaceLounge *) this->spaceLounge;
     this->spaceLounge = 0;
 
-    if (this->m_pDialogueWindow != 0)
-        ms_op_delete(MissionsWindow_dtor(this->m_pDialogueWindow));
+    delete (MissionsWindow *) this->m_pDialogueWindow;
     this->m_pDialogueWindow = 0;
 
-    if (this->dialogueWindow != 0)
-        ms_op_delete(DialogueWindow_dtor(this->dialogueWindow));
+    delete this->dialogueWindow;
     this->dialogueWindow = 0;
 
-    if (this->medalChoiceWindow != 0)
-        ms_op_delete(ChoiceWindow_dtor(this->medalChoiceWindow));
+    delete this->medalChoiceWindow;
     this->medalChoiceWindow = 0;
 
-    if (this->statusWindow != 0)
-        ms_op_delete(StatusWindow_dtor(this->statusWindow));
+    delete this->statusWindow;
     this->statusWindow = 0;
 
-    if (this->cutScene != 0)
-        ms_op_delete(CutScene_dtor(this->cutScene));
+    delete this->cutScene;
     this->cutScene = 0;
 
     delete (MenuTouchWindow *) this->dlcMenu;
     this->dlcMenu = 0;
 
-    if (this->activeMission != 0)
-        ms_op_delete(Radio_dtor((Radio *) (intptr_t) this->activeMission));
+    delete (Radio *) (intptr_t) this->activeMission;
     this->activeMission = 0;
 
-    if (this->radioMessages != 0)
-        ms_op_delete(Array_RM_dtor(this->radioMessages));
+    delete reinterpret_cast<Array<RadioMessage *> *>(this->radioMessages);
     this->radioMessages = 0;
 
-    if (this->newsTicker != 0)
-        ms_op_delete((unsigned char *) (this->newsTicker->~NewsTicker(), this->newsTicker));
+    delete this->newsTicker;
     this->newsTicker = 0;
 
-    if (this->choiceWindow != 0)
-        ms_op_delete(ChoiceWindow_dtor(this->choiceWindow));
+    delete this->choiceWindow;
     this->choiceWindow = 0;
 
     Globals::Canvas->ReleaseAllResources();
@@ -1399,12 +1345,10 @@ void ModStation::OnRelease() {
     delete (AbyssEngine::EaseInOut *) this->easeZ;
     this->easeZ = 0;
 
-    if (this->activeMission != 0)
-        ms_op_delete(Radio_dtor((Radio *) (intptr_t) this->activeMission));
+    delete (Radio *) (intptr_t) this->activeMission;
     this->activeMission = 0;
 
-    if (this->scrollBox != 0)
-        ms_op_delete(ScrollTouchBox_dtor(this->scrollBox));
+    delete this->scrollBox;
     this->scrollBox = 0;
 
     reinterpret_cast<uint16_t&>(this->cameraFlags) = 0;
@@ -3156,8 +3100,6 @@ static int *g_dlc_stack = 0;
 
 static inline void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); }
 
-static inline void MenuTouchWindow_callDlcMenu_dlc(MenuTouchWindow * w) { w->callDlcMenu(); }
-
 void ModStation::showDlcMenu() {
     MenuTouchWindow *win = (MenuTouchWindow *) this->dlcMenu;
     if (win == 0) {
@@ -3181,24 +3123,20 @@ void ModStation::showDlcMenu() {
     }
     Globals::sub_menu_button_count = win->buttons->size();
     reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] = 0;
-    MenuTouchWindow_callDlcMenu_dlc(win);
+    win->callDlcMenu();
 }
 
-static int *g_cbs_stack = 0;
-
-static int **g_cbs_textId = 0;
-
-static inline int GameText_getText_cbs(int id) { return (int)(Globals::gameText->getText(id)); }
-
-void ChoiceWindow_set_cbs(ChoiceWindow *cw, String *title, String *ok, int modal,
-                          String *a, String *b, String *c, int d, int e);
-
 void ModStation::showCBSMessage() {
-    String emptyA, emptyB, ok;
-
+    String code("Code", false);
+    String purchase("In-App Purchase", false);
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-    String *title = (String *) GameText_getText_cbs(**g_cbs_textId);
-    ChoiceWindow_set_cbs(cw, title, &ok, 1, &emptyA, &emptyB, &emptyA, -1, -1);
+    String *title = Globals::gameText->getText(390);
+    String message(
+            "Zum Weiterspielen musst Du Galaxy on Fire 2 freischalten. Moechtest Du die "
+            "Vollversion mit einen COMPUTERBILD SPIELE Freischalt-Code oder via "
+            "In-App-Purchase freischalten?",
+            false);
+    cw->set(*title, message, true, code, purchase, code, -1, -1);
 
     reinterpret_cast<uint8_t*>(&this->hintFlags)[1] = 1;
     reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
@@ -3217,4 +3155,3 @@ int Status_holder_frag();
 int GameText_root_frag();
 
 static inline int Status_getCredits_frag() { return (int)(Globals::status->getCredits()); }
-
