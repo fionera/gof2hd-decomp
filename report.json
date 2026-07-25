@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.53,
   "byte_exact": 1159,
-  "linked_exact": 2568,
-  "fuzzy_perfect": 2568,
+  "linked_exact": 2569,
+  "fuzzy_perfect": 2569,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15624,14 +15624,6 @@
    "usize": 338
   },
   {
-   "name": "_ZN10ModStation9OnReleaseEv",
-   "pct": 99.4,
-   "byte": false,
-   "linked": false,
-   "osize": 492,
-   "usize": 492
-  },
-  {
    "name": "__cxa_demangle",
    "pct": 99.5,
    "byte": false,
@@ -17990,6 +17982,14 @@
    "linked": true,
    "osize": 104,
    "usize": 104
+  },
+  {
+   "name": "_ZN10ModStation9OnReleaseEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 492,
+   "usize": 492
   },
   {
    "name": "_ZN10ModStation9OnSuspendEv",

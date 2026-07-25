@@ -1351,7 +1351,8 @@ void ModStation::OnRelease() {
     delete this->scrollBox;
     this->scrollBox = 0;
 
-    reinterpret_cast<uint16_t&>(this->cameraFlags) = 0;
+    reinterpret_cast<uint8_t *>(&this->cameraFlags)[0] = 0;
+    reinterpret_cast<uint8_t *>(&this->cameraFlags)[1] = 0;
     if (*soundHolder != 0)
         (*&Globals::sound)->freeAllEvents();
 }
