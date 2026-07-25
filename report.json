@@ -15416,14 +15416,6 @@
    "usize": 214
   },
   {
-   "name": "_ZN13RecordHandler12writeMissionEP7Missionj",
-   "pct": 98.8,
-   "byte": false,
-   "linked": false,
-   "osize": 432,
-   "usize": 432
-  },
-  {
    "name": "_ZN7MissionC1Ei",
    "pct": 98.8,
    "byte": false,
@@ -15494,6 +15486,14 @@
    "linked": false,
    "osize": 338,
    "usize": 338
+  },
+  {
+   "name": "_ZN13RecordHandler12writeMissionEP7Missionj",
+   "pct": 99.4,
+   "byte": false,
+   "linked": false,
+   "osize": 432,
+   "usize": 432
   },
   {
    "name": "__cxa_demangle",

@@ -29,7 +29,7 @@ public:
     int productionGoodsA;
     int productionGoodsB;
     int statusValue;
-    uint8_t visible;
+    bool visible;
 
     Mission();
 
@@ -64,7 +64,7 @@ public:
 
     uint8_t isInstantActionMission();
 
-    uint8_t isVisible();
+    bool isVisible();
 
     void setInstantActionMission(bool v);
 

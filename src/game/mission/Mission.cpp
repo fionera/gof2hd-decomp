@@ -50,7 +50,7 @@ String Mission::getClientName() {
     return this->name;
 }
 
-uint8_t Mission::isVisible() {
+bool Mission::isVisible() {
     return this->visible;
 }
 
