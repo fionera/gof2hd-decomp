@@ -8,9 +8,13 @@
 #include "engine/core/Array.h"
 #include "engine/core/Node.h"
 #include "engine/math/Transform.h"
+#include "engine/render/ResourceTexture.h"
+#include "engine/render/ResourceMesh.h"
+#include "engine/render/ResourceTransform.h"
+#include "engine/render/Camera.h"
 #include <cstdint>
 #include <cstddef>
-namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); }
+namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); }
 namespace AbyssEngine {
     typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported TextureCreateFromFile signature)
     int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, bool flag, float scale); // lint: void_ptr (exported TextureCreateFromFile signature)
@@ -1139,13 +1143,6 @@ void paintcanvas_ext_tami_bsphere_merge(void *dst, void *src); // lint: void_ptr
 void paintcanvas_ext_tami_setanimlen(void *tf, int hi, int lo); // lint: void_ptr (external symbol; mangling must match lib)
 void paintcanvas_ext_tami_setanimstate(void *tf, int a, int b); // lint: void_ptr (external symbol; mangling must match lib)
 void paintcanvas_ext_tami_finalize(void *tf); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dtor_releaseall(void *self); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dtor_op_delete(void *p); // lint: void_ptr (external symbol; mangling must match lib)
-void *paintcanvas_ext_dtor_restex_dtor(void *p); // lint: void_ptr (external symbol; mangling must match lib)
-void *paintcanvas_ext_dtor_resmesh_dtor(void *p); // lint: void_ptr (external symbol; mangling must match lib)
-void *paintcanvas_ext_dtor_restransform_dtor(void *p); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dtor_str_dtor(void *p); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dtor_meshrelease(void *eng, void *meshptr); // lint: void_ptr (external symbol; mangling must match lib)
 void paintcanvas_ext_start_fbo(void *); // lint: void_ptr (external symbol; mangling must match lib)
 void paintcanvas_ext_gl_deletetextures(int, void *); // lint: void_ptr (external symbol; mangling must match lib)
 int paintcanvas_ext_dt_incamvf(void *tf, void *m, void *cam); // lint: void_ptr (external symbol; mangling must match lib)
@@ -1164,15 +1161,6 @@ void paintcanvas_ext_dm_drawtransform(void *self, void *tf, void *m, void *m2); 
 int paintcanvas_ext_ec_getHeight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 int paintcanvas_ext_ec_getWidth(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 int paintcanvas_ext_font_get_spacing(void *); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_rar_gldeltex(int n, void *ids); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_rar_str_dtor(void *s); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_rar_op_delete(void *p); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_rar_fontrelease(void *eng, void *fontptr); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_rar_img2drelease(void *eng, void *imgptr); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_rar_meshrelease(void *eng, void *meshptr); // lint: void_ptr (external symbol; mangling must match lib)
-void *paintcanvas_ext_rar_transform_dtor(void *p); // lint: void_ptr (external symbol; mangling must match lib)
-void *paintcanvas_ext_rar_material_dtor(void *p); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_rar_ssrelease(void *eng, void *ssptr); // lint: void_ptr (external symbol; mangling must match lib)
 static inline void paintcanvas_ext_tg2d_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
 void paintcanvas_ext_tg2d_invtransformvec(void *outMat, void *vec); // lint: void_ptr (external symbol; mangling must match lib)
 void paintcanvas_ext_tg2d_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
@@ -1186,7 +1174,6 @@ void paintcanvas_ext_dt2_seteye(void *eng, float a, float b, float c); // lint: 
 void paintcanvas_ext_dt2_drawrec(void *self, void *tf, void *m, void *m2); // lint: void_ptr (external symbol; mangling must match lib)
 void paintcanvas_ext_font_set_spacing(void *, int); // lint: void_ptr (external symbol; mangling must match lib)
 void paintcanvas_ext_transform_shaderanim(AbyssEngine::PaintCanvas *, void *, float, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_release_sprite_res(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -3185,7 +3172,7 @@ void PaintCanvas::SetTexture(unsigned int, unsigned int) {
 }
 
 PaintCanvas::~PaintCanvas() {
-    paintcanvas_ext_dtor_releaseall(this);
+    this->ReleaseAllResources();
 
     for (unsigned int i = 0; i < this->resources.count; i++) {
         PCResourceView *res = (PCResourceView *) (this->resources.data_)[i];
@@ -3196,29 +3183,29 @@ PaintCanvas::~PaintCanvas() {
                 case 1:
                 case 3:
                 case 6:
-                    paintcanvas_ext_dtor_op_delete(payload);
+                    delete payload;
                     break;
                 case 2:
                     if (payload) {
-                        paintcanvas_ext_dtor_op_delete(paintcanvas_ext_dtor_restex_dtor(payload));
+                        delete (AbyssEngine::ResourceTexture *) payload;
                     }
                     break;
                 case 4:
                     if (payload) {
-                        paintcanvas_ext_dtor_op_delete(paintcanvas_ext_dtor_resmesh_dtor(payload));
+                        delete (AbyssEngine::ResourceMesh *) payload;
                     }
                     break;
                 case 5:
                     if (payload) {
-                        paintcanvas_ext_dtor_op_delete(paintcanvas_ext_dtor_restransform_dtor(payload));
+                        delete (AbyssEngine::ResourceTransform *) payload;
                     }
                     break;
                 default:
                     break;
             }
-            AbyssEngine::Resource *cell = (this->resources.data_)[i];
+            char *cell = (char *) (this->resources.data_)[i];
             if (cell != 0) {
-                paintcanvas_ext_dtor_op_delete(cell);
+                delete cell;
             }
             (this->resources.data_)[i] = 0;
 
@@ -3264,14 +3251,14 @@ PaintCanvas::~PaintCanvas() {
         }
     }
 
-    paintcanvas_ext_dtor_meshrelease(this->engine, &this->quad2dMesh);
-    paintcanvas_ext_dtor_meshrelease(this->engine, &this->lineMesh);
+    AbyssEngine::MeshRelease(this->engine, (AbyssEngine::Mesh **) &this->quad2dMesh);
+    AbyssEngine::MeshRelease(this->engine, (AbyssEngine::Mesh **) &this->lineMesh);
 
     for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
         PCCubeTexView *tex = (PCCubeTexView *) (this->cubeTextures.data_)[i];
         if (tex != 0) {
-            paintcanvas_ext_dtor_str_dtor(tex->pathField);
-            paintcanvas_ext_dtor_op_delete(tex);
+            reinterpret_cast<AbyssEngine::String *>(tex->pathField)->~String();
+            delete tex;
         }
         (this->cubeTextures.data_)[i] = 0;
     }
@@ -4832,7 +4819,7 @@ void PaintCanvas::ReleaseAllResources() {
         PCCubeTexView *tex = (PCCubeTexView *) ((char **) this->cubeTextures.data_)[i];
         if (tex->glTexId != -1) {
             unsigned int id = (unsigned int) tex->glTexId;
-            paintcanvas_ext_rar_gldeltex(1, &id);
+            glDeleteTextures(1, (GLuint *) &id);
             *g_rar_texcount_87cce = *g_rar_texcount_87cce - 1;
             Engine *eng = (Engine *) this->engine;
             PCCubeTexView *texEntry = (PCCubeTexView *) ((char **) this->cubeTextures.data_)[i];
@@ -4840,8 +4827,8 @@ void PaintCanvas::ReleaseAllResources() {
             tex = (PCCubeTexView *) ((char **) this->cubeTextures.data_)[i];
         }
         if (tex != 0) {
-            paintcanvas_ext_rar_str_dtor(tex->pathField);
-            paintcanvas_ext_rar_op_delete(tex);
+            reinterpret_cast<AbyssEngine::String *>(tex->pathField)->~String();
+            delete tex;
         }
         ((int **) this->cubeTextures.data_)[i] = 0;
     }
@@ -4849,16 +4836,14 @@ void PaintCanvas::ReleaseAllResources() {
 
     for (unsigned int i = 0; i < this->fonts.count; i++) {
         if (this->fonts.data_[i] != 0) {
-            paintcanvas_ext_rar_fontrelease(this->engine,
-                                            &this->fonts.data_[i]);
+            AbyssEngine::ImageFontRelease(this->engine, &this->fonts.data_[i]);
         }
     }
     PCArrayRemoveAll((PCArrayHeader *) &this->fonts);
 
     for (unsigned int i = 0; i < this->images.count; i++) {
         if (this->images.data_[i] != 0) {
-            paintcanvas_ext_rar_img2drelease(this->engine,
-                                             &this->images.data_[i]);
+            AbyssEngine::Image2DRelease(this->engine, &this->images.data_[i]);
         }
     }
     PCArrayRemoveAll((PCArrayHeader *) &this->images);
@@ -4867,8 +4852,7 @@ void PaintCanvas::ReleaseAllResources() {
         PCMeshView *mesh = (PCMeshView *) ((char **) this->meshes)[i];
         if (mesh != 0) {
             *g_rar_tricount_87d96 = *g_rar_tricount_87d96 - mesh->triCountContribution;
-            paintcanvas_ext_rar_meshrelease(this->engine,
-                                            &this->meshes[i]);
+            AbyssEngine::MeshRelease(this->engine, (AbyssEngine::Mesh **) &this->meshes[i]);
         }
     }
     PCArrayRemoveAll((PCArrayHeader *) &this->meshCount);
@@ -4876,7 +4860,7 @@ void PaintCanvas::ReleaseAllResources() {
     for (unsigned int i = 0; i < this->transformCount; i++) {
         char *tf = this->transforms[i];
         if (tf != 0) {
-            paintcanvas_ext_rar_op_delete(paintcanvas_ext_rar_transform_dtor(tf));
+            delete (AbyssEngine::Transform *) tf;
             this->transforms[i] = 0;
         }
     }
@@ -4885,7 +4869,7 @@ void PaintCanvas::ReleaseAllResources() {
     for (unsigned int i = 0; i < this->cameras.count; i++) {
         AbyssEngine::Camera *cam = this->cameras.data_[i];
         if (cam != 0) {
-            paintcanvas_ext_rar_op_delete(cam);
+            delete cam;
             this->cameras.data_[i] = 0;
         }
     }
@@ -4895,7 +4879,7 @@ void PaintCanvas::ReleaseAllResources() {
     for (unsigned int i = 0; i < this->materials.count; i++) {
         AbyssEngine::Material *mat = this->materials.data_[i];
         if (mat != 0) {
-            paintcanvas_ext_rar_op_delete(paintcanvas_ext_rar_material_dtor(mat));
+            delete mat;
             this->materials.data_[i] = 0;
         }
     }
@@ -4903,8 +4887,7 @@ void PaintCanvas::ReleaseAllResources() {
 
     for (unsigned int i = 0; i < this->spriteSystems.count; i++) {
         if (this->spriteSystems.data_[i] != 0) {
-            paintcanvas_ext_rar_ssrelease(this->engine,
-                                          &this->spriteSystems.data_[i]);
+            AbyssEngine::SpriteSystemRelease(this->engine, &this->spriteSystems.data_[i]);
         }
     }
     PCArrayRemoveAll((PCArrayHeader *) &this->spriteSystems);
@@ -5254,7 +5237,7 @@ void PaintCanvas::ReleaseSpriteSystemResource(unsigned int index) {
     if (index < this->spriteSystems.count) {
         Engine *ctx = this->engine;
         char **arr = (char **) this->spriteSystems.data_;
-        return paintcanvas_ext_release_sprite_res(ctx, arr + index);
+        return AbyssEngine::SpriteSystemRelease(ctx, (AbyssEngine::SpriteSystem **) (arr + index));
     }
 }
 

@@ -121,11 +121,7 @@ public:
     AbyssEngine::Matrix rollMatrix;
     int32_t field_0x294;
     int32_t field_0x298;
-    int32_t rollSamples;
-    int32_t field_0x2a0;
-    int32_t field_0x2a4;
-    int32_t field_0x2a8;
-    int32_t field_0x2ac;
+    float rollSamples[5];   // ring buffer of angle samples (+0x29c..+0x2af, 5 floats)
     int32_t rollSampleIndex;
     uint8_t rollBufferFilled;
     AbyssEngine::EaseInOutMatrix *easeMatrix;

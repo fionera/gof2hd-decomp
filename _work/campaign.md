@@ -2,6 +2,29 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-25c (wave 15D — PaintCanvas dtor/RAR de-shim + PF clean successor, both landed)
+
+Net: avg 77.28->77.29, byte 1159 (=), linked 2556 (=), imports 855->838 (-17), drift 0,
+extra 36, parity 0, RATCHET PASS + locked, lint CLEAN.
+- PaintCanvas dtor/RAR/RSSR fully de-shimmed: all 17 paintcanvas_ext_{dtor_*,rar_*,
+  release_sprite_res} shims + 21 call sites -> real ops, each proven from D1/RAR disasm
+  (typed `delete (ResourceTexture/Mesh/Transform*)payload` where dtor+_ZdlPv pairs exist;
+  MeshRelease/ImageFontRelease/Image2DRelease/SpriteSystemRelease by name; placement
+  `->~String()` on the String embedded at PCCubeTexView.pathField+0; `delete cam`/`delete mat`
+  typed). ReleaseAllResources 32.4->40.9, D1/D2 10.3->13.2. Controller fixed the worker's 4
+  banned `::operator delete` spellings -> plain typed deletes (`delete char* payload/cell`,
+  `delete PODstruct* tex` — identical bare _ZdlPv codegen); operator_call stayed at baseline 23.
+- PlayerFighter clean successor: ctor 25.6->34.6 (beats the rejected draft's 31.8), update
+  2.2->5.1 with STRUCTURED chunks 5-8 (wingman dispatch, target validation/route-follow,
+  maneuver timer RNG gates, enemy scan loop; binary range dd22c->dd620). 0 gotos, 0 void*,
+  0 builtins, lint CLEAN. Rejected-draft mining + DeepOpen control flow worked as a method.
+  Resume state in notes_pf_author2.md; remaining chunks 9-16 (death/loot/boost/docking/
+  shooting/roll/landmark) are the big tail (update is 10376B).
+
+Next: PF update chunks 9-16 successor; remaining ~838 fake imports (fleet skip reasons in
+tasks/w08jt2rdn.output); IParticleSystem::emit -56B frame chase; Ghidra PSM/PSS sync when
+MCP reconnects.
+
 ## Session 2026-07-25b (wave 15C — monster-function fleet: 2 analysts + 4 authors, 4/5 TUs landed)
 
 Analyst→author pipeline on the low-pct monsters. Net: avg 77.27->77.28, byte 1159 (=),

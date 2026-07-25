@@ -18,6 +18,7 @@
 #include "game/world/Standing.h"
 #include "engine/math/Transform.h"
 #include "engine/math/EaseInOutMatrix.h"
+#include "game/weapons/Radar.h"
 
 int AERandom_nextInt_nobound(int rng);
 
@@ -208,43 +209,42 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
 
     int rng = (int) (intptr_t) Globals::rnd;
 
-    float wp[27];
+    float wp[12];
     int r;
-    r = PF_nextInt(rng);
-    wp[0] = VectorSignedToFloat(r - 30000, 0);
-    int r1 = PF_nextInt(rng);
-    int r2 = PF_nextInt(rng);
-    wp[2] = VectorSignedToFloat(r2 + 20000, 0);
-    wp[1] = VectorSignedToFloat(r1 - 10000, 0);
-    r = PF_nextInt(rng);
-    wp[3] = VectorSignedToFloat(r + 5000, 0);
-    r1 = PF_nextInt(rng);
-    r2 = PF_nextInt(rng);
-    wp[5] = VectorSignedToFloat(r2 + 20000, 0);
-    wp[4] = VectorSignedToFloat(r1 - 10000, 0);
-    r = PF_nextInt(rng);
-    wp[6] = VectorSignedToFloat(r + 5000, 0);
-    r1 = PF_nextInt(rng);
-    r2 = PF_nextInt(rng);
-    wp[8] = VectorSignedToFloat(r2 + 55000, 0);
-    wp[7] = VectorSignedToFloat(r1 - 10000, 0);
-    r = PF_nextInt(rng);
-    wp[9] = VectorSignedToFloat(r - 30000, 0);
-    r1 = PF_nextInt(rng);
-    r2 = PF_nextInt(rng);
-    wp[10] = VectorSignedToFloat(r1 - 10000, 0);
-    wp[11] = VectorSignedToFloat(r2 + 55000, 0);
+    r = AERandom_nextIntB(rng, 25000);
+    wp[0] = (float)(r - 30000);
+    int r1 = AERandom_nextIntB(rng, 10000);
+    int r2 = AERandom_nextIntB(rng, 25000);
+    wp[2] = (float)(r2 + 20000);
+    wp[1] = (float)(r1 - 10000);
+    r = AERandom_nextIntB(rng, 25000);
+    wp[3] = (float)(r + 5000);
+    r1 = AERandom_nextIntB(rng, 10000);
+    r2 = AERandom_nextIntB(rng, 25000);
+    wp[5] = (float)(r2 + 20000);
+    wp[4] = (float)(r1 - 10000);
+    r = AERandom_nextIntB(rng, 25000);
+    wp[6] = (float)(r + 5000);
+    r1 = AERandom_nextIntB(rng, 10000);
+    r2 = AERandom_nextIntB(rng, 25000);
+    wp[8] = (float)(r2 + 55000);
+    wp[7] = (float)(r1 - 10000);
+    r = AERandom_nextIntB(rng, 25000);
+    wp[9] = (float)(r - 30000);
+    r1 = AERandom_nextIntB(rng, 10000);
+    r2 = AERandom_nextIntB(rng, 25000);
+    wp[10] = (float)(r1 - 10000);
+    wp[11] = (float)(r2 + 55000);
 
-    int count = PF_nextInt(rng) * 3 + 6;
-    char used[16];
-    for (int i = 0; i < 13; i++) used[i] = 0;
+    int count = AERandom_nextIntB(rng, 3) * 3 + 6;
+    char used[4] = {0, 0, 0, 0};
     unsigned long long bytes = (unsigned long long) (unsigned) count * 4;
     unsigned sz = (int) (bytes >> 32) != 0 ? 0xffffffff : (unsigned) bytes;
     int *pts = RH_op_new_arr(sz);
     for (int i = 0; i < count; i += 3) {
         int idx;
         do {
-            idx = PF_nextInt(rng);
+            idx = AERandom_nextIntB(rng, 4);
         } while (used[idx] != 0);
         used[idx] = 1;
         pts[i] = (int) wp[idx * 3];
@@ -254,20 +254,37 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->route = new Route(pts, (unsigned) count);
     RH_op_delete_arr(pts);
 
+    // Block 3b: stationRouteAliens lazy init (dc576..dc5a0)
+    if (PlayerFighter::stationRouteAliens == 0) {
+        static const int stationWaypoints[12] = {
+            40000, 0, 40000,
+            40000, 0, -40000,
+            -40000, 0, -40000,
+            -40000, 0, 40000
+        };
+        int wpcopy[12];
+        memcpy(wpcopy, stationWaypoints, sizeof(wpcopy));
+        PlayerFighter::stationRouteAliens = (int)(intptr_t)new Route(wpcopy, 12);
+    }
 
+    // Block 4: field initialization (dc5a0..dc636)
     self->field_0x130 = -1;
     self->field_0x134 = -1;
     self->field_0x138 = -1;
     self->field_0x128 = 50000;
     self->rotate = 2.0f;
-    self->shootError = 0;
+    self->shootError = 0x1.f3ffec0000000p-8f;
     self->speed = 2.0f;
     self->field_0x1b0 = 0x5dc;
     self->boostProb = 5;
     self->field_0x38 = 0;
     self->field_0x140 = 0;
+    // Binary: strh zeros [+0x12d] which covers field_0x12d + field_0x12e
     self->field_0x12d = 0;
+    self->field_0x12e = 0;
+    // Binary: strh zeros [+0x13d] which covers field_0x13d + field_0x13e
     self->field_0x13d = 0;
+    self->field_0x13e = 0;
     self->field_0x1f8 = 0;
     self->deathTimer() = 0;
     self->field_0x12f = 0;
@@ -277,37 +294,40 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->field_0x1f4 = 0;
     self->wingmanCommand() = wingmanCmd;
 
+    // Binary: vst1 q8=0 zeros +0x1b8..+0x1c7 (maneuverTimer, field_0x1bc, field_0x1c0, field_0x1c4)
     self->maneuverTimer = 0;
+    self->field_0x1bc = 0;
     self->field_0x1c0 = 0;
     self->field_0x1c4 = 0;
-    self->field_0x1c8 = 0;
+    // Binary: vst1 q8=0 zeros +0x148..+0x157 (field_0x148, commandRoute, boundingVolumes, trail)
     self->field_0x148 = 0;
     self->commandRoute = 0;
     self->boundingVolumes = 0;
     self->trail = 0;
+    // Binary: vst1 q8=0 zeros +0x1d0..+0x1df (deltaTime, deltaTimeHi, hitpoints, field_0x1dc)
     self->deltaTime = 0;
     self->deltaTimeHi = 0;
     self->hitpoints = 0;
     self->field_0x1dc = 0;
+    // Binary: vst1.32 q8=0 zeros +0x1e4..+0x1eb (field_0x1e4, currentSpeed)
     self->field_0x1e4 = 0;
     self->currentSpeed = 0;
-    self->field_0x1ec = 0;
-    self->currentRotate = 0;
 
-    self->workingPosition.x = *(float *) &flag;
-    self->workingPosition.y = 0;
-    self->workingPosition.z = 0;
+    // Block 5: workingPosition from params, then route setup (dc622..dc692)
+    self->workingPosition = Vector{x, y, z};
     self->field_0x13d = 1;
     self->crateCaptured() = 1;
     self->currentSpeed = self->speed;
     self->currentRotate = self->rotate;
-    self->route->setLoop(0);
-    self->route->setLoop(0);
+    // Binary dc656: route->setLoop(true); dc65c: stationRouteAliens->setLoop(true)
+    self->route->setLoop(1);
+    ((Route *)(intptr_t)PlayerFighter::stationRouteAliens)->setLoop(1);
     self->routeClone() = 0;
 
     if (Globals::status->getCurrentCampaignMission() != 0x29) {
         if (wingmanCmd == 9) {
-            self->routeClone() = self->route->clone();
+            // Binary: clones stationRouteAliens ([r5,#0])
+            self->routeClone() = ((Route *)(intptr_t)PlayerFighter::stationRouteAliens)->clone();
         } else {
             self->routeClone() = self->route->clone();
         }
@@ -343,29 +363,34 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     }
     self->fov() = fov;
 
+    // Binary: strd zeros targetRoll+smoothRoll together, then field_0x214
     self->targetRoll = 0;
     self->smoothRoll = 0;
     self->field_0x214 = 0;
-    self->field_0x294 = 0;
-    self->field_0x298 = 0;
-    self->rollSamples = 0;
-    self->field_0x2a0 = 0;
-    self->field_0x2a4 = 0;
-    self->field_0x2a8 = 0;
-    self->field_0x2ac = 0;
+    // Binary: strd stores int bit patterns for roll threshold and rate constants
+    self->field_0x294 = 0x443b8000;  // 750.0f stored as int bits
+    self->field_0x298 = 0x41723ace;  // ~15.14f stored as int bits
+    // Binary: loop str zeros [r8+r1] for r1=0x29c..0x2af (5 words = rollSamples array)
+    self->rollSamples[0] = 0;
+    self->rollSamples[1] = 0;
+    self->rollSamples[2] = 0;
+    self->rollSamples[3] = 0;
+    self->rollSamples[4] = 0;
     self->rollBufferFilled = 0;
     self->rollSampleIndex = 0;
     self->rollActive() = 0;
+    // Binary: strh zeros [+0x254] covering field_0x254 + field_0x255 together
     self->field_0x254 = 0;
+    self->field_0x255 = 0;
     self->easeMatrix = 0;
+    // Binary: strd zeros spacePoint + cloakTimer; then overlapping stores zero cloakDuration + cloakActive
     self->field_0x2bc = 0;
     self->field_0x2c0 = 0;
-    self->field_0x13c = 0;
     self->spacePoint = 0;
     self->cloakTimer = 0;
-    self->cloakCooldown = 0;
     self->cloakDuration = 0;
     self->cloakActive = 0;
+    self->cloakCooldown = 0;
     self->cloakingPossible = 1;
     self->cloakMaterial = -1;
     self->aiDisabled = 0;
@@ -376,13 +401,14 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
 
 
 void PlayerFighter::update(int dt) {
-
+    // Chunk 1: Entry guard — dead state with explosion finished
     if (this->state == 4 && this->explosion->isPlaying() == 0 &&
         (this->crateCaptured() == 0 || 60000 < this->deathTimer())) {
         PF_update_dead(this);
         return;
     }
 
+    // Chunk 2: Timer increment + position snapshot
     this->field_0x1c0 += dt;
     this->maneuverTimer += dt;
     if (this->wingmanCommand() == 1) {
@@ -391,20 +417,273 @@ void PlayerFighter::update(int dt) {
     this->deltaTime = dt;
     this->deltaTimeHi = dt >> 31;
 
-    float pos[3];
-    ((AEGeometry *) (pos))->getPosition();
-    this->renderPosition() = *(Vector *) pos;
+    {
+        Vector pos = ((AEGeometry *)(intptr_t)this->geometry())->getPosition();
+        this->renderPosition() = pos;
+    }
 
+    // Chunk 3: Enemy/friend flag update
     if (this->field_0x43() == 0) {
+        // Enemy flag
         unsigned char enemy;
-        if ((this->wingmanCommand() & 0xfffffffe) == 8) {
+        if ((this->wingmanCommand() & ~1) == 8) {
             enemy = 1;
-        } else if (((KIPlayer *) (this))->isWingMan() != 0) {
+        } else if (((KIPlayer *)(this))->isWingMan() != 0) {
             enemy = 0;
         } else {
-            enemy = (unsigned char) ((Standing *) (Globals::status->getStanding()))->isEnemy(this->wingmanCommand());
+            enemy = (unsigned char)((Standing *)(Globals::status->getStanding()))->isEnemy(this->wingmanCommand());
         }
-        ((Player *) (intptr_t) this->player())->enemyFlagsLo = enemy;
+        ((Player *)(intptr_t)this->player())->enemyFlagsLo = enemy;
+
+        // Friend flag (symmetric pass)
+        unsigned char friend_flag;
+        if ((this->wingmanCommand() & ~1) == 8) {
+            friend_flag = 0;
+        } else if (((KIPlayer *)(this))->isWingMan() != 0) {
+            friend_flag = 1;
+        } else {
+            friend_flag = (unsigned char)((Standing *)(Globals::status->getStanding()))->isFriend(this->wingmanCommand());
+        }
+        ((Player *)(intptr_t)this->player())->carriesFriendCargoFlag = friend_flag;
+    } else {
+        // field_0x43 != 0: HP-based enemy override (region D)
+        int damage_dealt = ((Player *)(intptr_t)this->player())->damageDoneByPlayer;
+        int hp_threshold = ((Player *)(intptr_t)this->player())->getMaxHitpoints() / 20;
+        if (damage_dealt > hp_threshold) {
+            ((Player *)(intptr_t)this->player())->enemyFlagsLo = 1;
+        }
+    }
+
+    // Chunk 3b: Gun switch timer (region E — field_0x42 gate)
+    if (this->KIPlayer::field_0x42 != 0) {
+        this->gunSwitchTimer += dt;
+        if (this->gunSwitchTimer > 20000) {
+            this->gunSwitchTimer = 0;
+            if (((Player *)(intptr_t)this->player())->gunAvailable(1)) {
+                this->field_0x140 = (this->field_0x140 == 0) ? 1 : 0;
+            }
+        }
+    }
+
+    // Chunk 3c: isAlwaysEnemy / lockedEnemy radar check (dd154..dd178 → dd62a)
+    if (((Player *)(intptr_t)this->player())->isAlwaysEnemy() == 0) {
+        PlayerEgo *ego = ((Level *)(intptr_t)this->level())->getPlayer();
+        if (ego != 0) {
+            ego = ((Level *)(intptr_t)this->level())->getPlayer();
+            if (ego->field_0x14 != 0 &&
+                ego->field_0x14->lockedEnemy == (KIPlayer *)this &&
+                this->field_0x43() == 0) {
+                ((Player *)(intptr_t)this->player())->setAlwaysEnemy(1);
+                ((Level *)(intptr_t)this->level())->uncoverWanted(this->KIPlayer::field_0x48);
+            }
+        }
+    }
+
+    // Chunk 4a: Black market / turnedEnemy / isAlwaysFriend flag overrides (dd17c..dd1c6)
+    {
+        Status *st = Globals::status;
+        if (st->inBlackMarketSystem() != 0) {
+            if (st->field_110 != 0) {
+                if (this->wingmanCommand() == 8) {
+                    reinterpret_cast<uint16_t &>(((Player *)(intptr_t)this->player())->enemyFlagsLo) = 0;
+                }
+            }
+        }
+        Player *pl = (Player *)(intptr_t)this->player();
+        if (pl->turnedEnemy() != 0) {
+            reinterpret_cast<uint16_t &>(pl->enemyFlagsLo) = 1;
+        }
+        if (pl->isAlwaysFriend() != 0) {
+            reinterpret_cast<uint16_t &>(pl->enemyFlagsLo) = 0x100;
+        }
+    }
+
+    // Chunk 4b: wingmanFlag — lazy route-clone init (dd1c6..dd1da)
+    if (this->wingmanFlag == 0) {
+        if (this->KIPlayer::route == 0) {
+            this->KIPlayer::route = this->route->clone();
+        }
+    }
+
+    // Chunk 4c: Trail tick update (dd1da..dd20a)
+    {
+        this->field_0x1c8 += dt;
+        if (this->field_0x1c8 >= 201) {
+            if (this->trail != 0) {
+                this->trail->update(this->renderPosition(), this->workingPosition);
+                this->workingPosition = this->renderPosition();
+            }
+            this->field_0x1c8 = 0;
+        }
+    }
+
+    // Chunk 4d: Player::transform = geometry->getMatrix() (dd20a..dd22c)
+    reinterpret_cast<AbyssEngine::AEMath::Matrix &>(
+            ((Player *)(intptr_t)this->player())->transform[0]) =
+            ((AEGeometry *)(intptr_t)this->geometry())->getMatrix();
+    if (this->subGeometry() != 0) {
+        reinterpret_cast<AbyssEngine::AEMath::Matrix &>(
+                ((Player *)(intptr_t)this->player())->transform[0]) *=
+                ((AEGeometry *)(intptr_t)this->subGeometry())->getMatrix();
+    }
+
+    // Chunk 5: Wingman flag / state dispatch (dd22c..dd27e)
+    {
+        int s5 = this->state;
+        Player *pl5 = (Player *)(intptr_t)this->player();
+        bool stop5 = false;
+        if (this->wingmanFlag != 0) {
+            if (s5 == 4 || this->KIPlayer::route == 0) {
+                stop5 = true;
+            } else {
+                // wingmanFlag && state!=4 && route!=0: fetch ego geometry pos → resetVecA
+                PlayerEgo *ego2 = ((Level *)(intptr_t)this->level())->getPlayer();
+                if (ego2 != 0) {
+                    this->resetVecA() = ego2->geometry->getPosition();
+                }
+                // if field_0xe4 == 1: escort path (dd2e0, handled by PF_update_body)
+                // if field_0xe4 != 1: jump back to dd240 = state 3/4 check below
+                if (this->KIPlayer::field_0xe4 == 1) {
+                    PF_update_body(this, dt);
+                    return;
+                }
+            }
+        }
+        if (!stop5 && (unsigned)(s5 - 3) < 2u) {
+            stop5 = true;
+        }
+        if (stop5) {
+            pl5->StopEngineSound();
+            PF_update_body(this, dt);
+            return;
+        }
+        // Normal path: call Player::update
+        int fov_p1 = this->fov() + 1;
+        bool boost = (fov_p1 != 0) && (s5 != 5);
+        pl5->update(dt, boost);
+    }
+
+    // Chunk 5b: getEnemies + aiDisabled gate (dd26c..dd27e)
+    Array<Player *> *enemies = ((Player *)(intptr_t)this->player())->getEnemies();
+    if (this->aiDisabled != 0) {
+        PF_update_body(this, dt);
+        return;
+    }
+
+    // Chunk 6: target index validation + route follow when no enemies (dd27e..dd3c6)
+    if (enemies == nullptr) {
+        // Route follow path (dd35c..dd3c0)
+        Route *kr = this->KIPlayer::route;
+        if (kr == nullptr) {
+            this->KIPlayer::state = 5;
+            PF_update_body(this, dt);
+            return;
+        }
+        {
+            Vector pos = ((AEGeometry *)(intptr_t)this->geometry())->getPosition();
+            kr->update(pos);
+        }
+        Waypoint *wp = kr->getWaypoint();
+        if (wp == nullptr) {
+            PF_update_body(this, dt);
+            return;
+        }
+        this->resetVecB.x = (float)wp->x;
+        this->resetVecB.y = (float)wp->y;
+        this->resetVecB.z = (float)wp->z;
+        this->field_0x12c = 1;
+        PF_update_body(this, dt);
+        return;
+    } else {
+        // Target index validation (dd27e..dd3c6)
+        int tgt = this->KIPlayer::field_0x38;
+        if ((unsigned)tgt >= enemies->count) {
+            tgt = -1;
+            this->KIPlayer::field_0x38 = -1;
+        }
+        if (this->field_0x12e == 0) {
+            this->KIPlayer::field_0x38 = -1;
+        } else if (tgt >= 0) {
+            Player *ep = (*enemies)[tgt];
+            if (ep->isActive() == 0) {
+                this->field_0x12e = 0;
+            }
+        }
+    }
+
+    // Chunk 7: maneuver timer gate + target-scan RNG entry (dd3c6..dd436)
+    {
+        int mtimer = this->maneuverTimer;
+        this->field_0x148 = 0;
+        if (mtimer >= 5001) {
+            // Timer expired: if flag was set, clear it; otherwise roll for new shoot-chance flag
+            uint8_t new_flag;
+            if (this->field_0x12d != 0) {
+                new_flag = 0;
+            } else {
+                new_flag = (uint8_t)(Globals::rnd->nextInt(100) < 20 ? 1 : 0);
+            }
+            this->maneuverTimer = 0;
+            this->field_0x12d = new_flag;
+            // Second RNG roll: should we scan for a new target this frame?
+            int r2 = Globals::rnd->nextInt(100);
+            if (r2 <= 29 && enemies->count >= 2) {
+                // Enter target scan loop (dd426..dd50a) — handled by PF_update_body
+                this->field_0x12e = 0;
+                PF_update_body(this, dt);
+                return;
+            }
+            // No scan: clear target index
+            this->KIPlayer::field_0x38 = 0;
+        }
+    }
+
+    // Chunk 7b: post-timer dd50e wingman/death check (dd50e..dd542) handled by PF_update_body
+    // when timer >= 5001; but timer < 5001 path jumps over to dd544 below.
+    // Since PF_update_body handles dd50e-dd542 too, we fall through for the no-scan path.
+
+    // dd544: if already have a locked target, go straight to PF_update_body (dd7ac path)
+    if (this->field_0x12e != 0) {
+        PF_update_body(this, dt);
+        return;
+    }
+
+    // Chunk 8: linear enemy scan when no locked target (dd55a..dd620)
+    {
+        int tgt_idx = -1;
+        unsigned int n = enemies->count;
+        float R = (float)(int)this->field_0x128;
+        for (unsigned int i = 0; i < n; i++) {
+            Player *ep = enemies->data_[i];
+            if (ep == nullptr) continue;
+            if (!ep->isActive()) continue;
+            if (ep->isDead()) continue;
+            // Get enemy position and store in resetVecA
+            Vector ep_pos = ep->getPosition();
+            this->resetVecA() = ep_pos;
+            // TurnedEnemy check (skip if wingmanCommand==8)
+            if (this->KIPlayer::shipGroup != 8) {
+                if (((Player *)(intptr_t)this->player())->turnedEnemy() != 0) {
+                    // found via turned-enemy: store target
+                    this->field_0x12e = 1;
+                    this->KIPlayer::field_0x38 = (int)i;
+                    PF_update_body(this, dt);
+                    return;
+                }
+            }
+            // Range check: AABB within attack radius R
+            float dx = this->renderPosition().x - this->resetVecA().x;
+            float dy = this->renderPosition().y - this->resetVecA().y;
+            float dz = this->renderPosition().z - this->resetVecA().z;
+            if (dx < R && dx > -R && dy < R && dy > -R && dz < R && dz > -R) {
+                tgt_idx = (int)i;
+                break;
+            }
+        }
+        if (tgt_idx >= 0) {
+            this->field_0x12e = 1;
+            this->KIPlayer::field_0x38 = tgt_idx;
+        }
     }
 
     PF_update_body(this, dt);
