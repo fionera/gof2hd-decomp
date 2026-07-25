@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4560,
   "compared": 4523,
-  "avg_match": 77.34,
+  "avg_match": 77.36,
   "byte_exact": 1159,
   "linked_exact": 2557,
   "fuzzy_perfect": 2557,
@@ -4128,14 +4128,6 @@
    "usize": 492
   },
   {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 27.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
-  },
-  {
    "name": "_ZN5MGame22startChargingJumpDriveEv",
    "pct": 27.8,
    "byte": false,
@@ -4222,6 +4214,14 @@
    "linked": false,
    "osize": 172,
    "usize": 176
+  },
+  {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
   },
   {
    "name": "_ZN9ExplosionD1Ev",
@@ -7120,14 +7120,6 @@
    "usize": 104
   },
   {
-   "name": "_ZN15MenuTouchWindow14startSupernovaEv",
-   "pct": 42.5,
-   "byte": false,
-   "linked": false,
-   "osize": 672,
-   "usize": 612
-  },
-  {
    "name": "_ZN13RecordHandler22writeByteArrayAsRecordEPaiib",
    "pct": 42.6,
    "byte": false,
@@ -7624,14 +7616,6 @@
    "usize": 164
   },
   {
-   "name": "_ZN14PlayerWormHole6updateEi",
-   "pct": 45.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1056,
-   "usize": 1068
-  },
-  {
    "name": "deflateTune",
    "pct": 45.5,
    "byte": false,
@@ -7670,6 +7654,14 @@
    "linked": false,
    "osize": 352,
    "usize": 300
+  },
+  {
+   "name": "_ZN14PlayerWormHole6updateEi",
+   "pct": 45.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1056,
+   "usize": 1068
   },
   {
    "name": "_ZN5TrailC1Eii",
@@ -7934,14 +7926,6 @@
    "linked": false,
    "osize": 152,
    "usize": 120
-  },
-  {
-   "name": "_ZN15MenuTouchWindow13startValkyrieEv",
-   "pct": 47.5,
-   "byte": false,
-   "linked": false,
-   "osize": 612,
-   "usize": 544
   },
   {
    "name": "_ZN17ScrollTouchWindow4drawEv",
@@ -13344,6 +13328,14 @@
    "usize": 154
   },
   {
+   "name": "_ZN15MenuTouchWindow14startSupernovaEv",
+   "pct": 82.7,
+   "byte": false,
+   "linked": false,
+   "osize": 672,
+   "usize": 676
+  },
+  {
    "name": "_ZN7Station25stationHasHiddenBlueprintEb",
    "pct": 82.8,
    "byte": false,
@@ -13486,6 +13478,14 @@
    "linked": false,
    "osize": 40,
    "usize": 40
+  },
+  {
+   "name": "_ZN15MenuTouchWindow13startValkyrieEv",
+   "pct": 84.1,
+   "byte": false,
+   "linked": false,
+   "osize": 612,
+   "usize": 612
   },
   {
    "name": "_ZN11AbyssEngine6Engine11GlowEndGlowEv",

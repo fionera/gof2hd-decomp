@@ -39,14 +39,15 @@ irreducible delta (machine-checked via `tools/sodiff_allow.txt`).
 `objdump`; `layout.py`/`drift_scan.py` use the NDK clang (never the host compiler — host `-m32`
 is i386, which aligns 8-byte scalars to 4 and reports wrong offsets for ARM).
 
-## Current state — symbol parity (2026-07-20)
+## Current state — symbol parity (2026-07-25)
 
 ```
 original: 5370   ours: 5423   extra: 53 (all allowlisted)   missing: 0   (wrong_type: 0   absent: 0)
 ```
 
 **Zero missing, zero wrong_type** — every function and object the original exports, with the correct
-signature, is present (12 of them currently as broken zero-size UB stubs — see the fidelity section).
+signature, is present. The 12 formerly broken zero-size UB stubs have all been reconstructed (see
+the fidelity section).
 The **53 extra** symbols are all documented in `tools/sodiff_allow.txt`, so the `diff` target exits
 0; any extra beyond the list is a hard failure. They break down as 36 ctor/dtor aliases (below),
 15 engine flag globals (below), `SHA256_version`, and `gof2::kJNIEnvCallAnchors`:
@@ -142,7 +143,7 @@ the 726 historical adjacent-line `void_ptr` waivers were mechanically migrated o
 (append-only comment edits), so a waiver can never silently cover a different, new violation on a
 nearby line.
 
-## Current state — per-function ASM fidelity (2026-07-20, metric v2)
+## Current state — per-function ASM fidelity (2026-07-25, metric v2)
 
 A separate axis from symbol parity. The verify metric was rebuilt for structural honesty:
 
@@ -173,17 +174,15 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4511** compared): **byte_exact 1115, linked_exact 2125, avg 72.33%**.
+Current numbers (of **4523** compared): **byte_exact 1159, linked_exact 2557, avg 77.36%**.
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
 monotone, linked_exact within a ±1 transient band, stubs/missing/extra frozen, exports pinned to
-`tools/sodiff_allow.txt`, undefined-import set pinned (1095 names; a typo'd callee is a hard
+`tools/sodiff_allow.txt`, undefined-import set pinned (714 names; a typo'd callee is a hard
 failure), lint clean. `cmake --build … --target check` runs it; the pre-push hook
 (`git config core.hooksPath tools/hooks`) makes it unavoidable. Improvements are locked with
 `tools/ratchet.py --update-baseline` in the same commit.
 
-The `drift` target (NDK-clang record layouts, AAPCS) currently reports **74 drifted fields across
-8 classes** (PlayerFighter 26, Radar 18, GameData 16, ParticleSystemMesh 5, PlayerAsteroid 3,
-IParticleSystem 2, Hud 3 pad-marker names, PlayerTurret 1 stale name) — real pre-existing layout
-bugs the old host-i386 probe could not see. Reconciling each against Ghidra `get_struct_layout`
-under the verify gate is open struct-campaign work.
+The `drift` target (NDK-clang record layouts, AAPCS) currently reports **0 drifted fields**. The
+74-field backlog first exposed by the real ABI probe was reconciled class-by-class against binary
+layout evidence under the verify gate.

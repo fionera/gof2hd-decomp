@@ -11,6 +11,9 @@
 #include "engine/audio/FModSound.h"
 #include "engine/core/ApplicationManager.h"
 #include "game/ship/ShipDefTable.h"
+#include "game/ship/Ship.h"
+#include "game/mission/Item.h"
+#include "game/mission/Mission.h"
 #include "game/core/GameSettings.h"
 #include "game/core/Globals.h"
 #include "game/ui/ChoiceWindow.h"
@@ -24,9 +27,6 @@ class Achievements;
 class Galaxy;
 class ImageFactory;
 class AppManager;
-class Mission;
-class Item;
-class Ship;
 class ChoiceWindow;
 class MissionsWindow;
 
@@ -147,23 +147,14 @@ void _mtw_TouchButton_ctor7(void *btn, void *label, int a, int x, int y, char ty
 
 static inline void _mtw_Status_resetGame() { Globals::status->resetGame(); }
 
-void _mtw_Mission_ctor(void *m); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Status_setMission(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_Ship_makeShip(int shipDef); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Status_setShip(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Ship_setRace(void *ship, int race); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_Item_makeItem(int itemDef, int qty); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_makeItem2(int itemDef); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_Mission_ctor / _mtw_Status_setMission removed: status->setMission(new Mission())
+// _mtw_Ship_makeShip / _mtw_Status_setShip removed: status->setShip(Globals::ships->data_[5]->makeShip(-1))
+// _mtw_Ship_setRace removed: status->getShip()->setRace(0)
+// _mtw_Item_makeItem / _mtw_makeItem2 removed: dead declarations (no call sites)
 
 void *_mtw_Galaxy_getStation(void *galaxy, int idx); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Status_setStation(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_Status_setStation removed: status->setStation(station)
 
 void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -294,7 +285,7 @@ void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int x, int y); 
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_Ship_addCargo(void *ship, void *item); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_Ship_addCargo removed: ship->addCargo(item)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -801,64 +792,45 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
     this->backButton = backBtn;
 }
 
-void *_mtw_Status_getShip(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_Item_make(int itemDef); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_Item_makeQty(int itemDef, int qty); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Ship_setItem(void *ship, void *item, int slot); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_Status_getShip / _mtw_Item_make / _mtw_Item_makeQty / _mtw_Ship_setItem removed:
+// real calls are Status::getShip(), Item::makeItem()/makeItem(int) on Globals::items
+// prototypes, and Ship::setEquipment(Item*, int) (proven from 0x12ca80 disasm).
 
 void MenuTouchWindow::startValkyrie() {
     Status *const *statusHolder = &Globals::status;
-    _mtw_Status_resetGame();
+    Globals::status->resetGame();
     for (int i = 0x2d; i != 0; i--)
         (*statusHolder)->nextCampaignMission(false);
 
     Status *status = *statusHolder;
-    Mission *mission = (Mission *) ::operator new(0x78);
-    _mtw_Mission_ctor(mission);
-    _mtw_Status_setMission(status);
+    Mission *mission = new Mission();
+    status->setMission(mission);
 
-    ShipDefTable *row = *(ShipDefTable **) (*(int *) ((int *) Globals::ships) + 4);
     status = *statusHolder;
-    _mtw_Ship_makeShip(row->itemDef_secondary);
-    _mtw_Status_setShip(status);
+    status->setShip(Globals::ships->data_[5]->makeShip(-1));
 
-    Status *ship = *statusHolder;
-    int race = (int) (long) _mtw_Status_getShip(ship);
-    _mtw_Ship_setRace(ship, race);
+    (*statusHolder)->getShip()->setRace(0);
 
     Item *it;
-    Ship *sh;
-    it = (Item *) _mtw_Item_make(row->itemDef_primary);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 0);
-    it = (Item *) _mtw_Item_make(row->itemDef_secondary);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 1);
-    it = (Item *) _mtw_Item_makeQty(row->itemDef_missile, 0xa);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 0);
-    it = (Item *) _mtw_Item_make(row->itemDef_equip0x144);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 0);
-    it = (Item *) _mtw_Item_make(row->itemDef_equip0xcc);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 1);
-    it = (Item *) _mtw_Item_makeQty(row->itemDef_equip0x158, 0xa);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 2);
-    it = (Item *) _mtw_Item_make(row->itemDef_equip0x154);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 3);
+    it = Globals::items->data_[2]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[5]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[36]->makeItem(10);
+    (*statusHolder)->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[81]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[51]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[86]->makeItem(10);
+    (*statusHolder)->getShip()->setEquipment(it, 2);
+    it = Globals::items->data_[85]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 3);
 
     (*statusHolder)->setCredits(0);
-    Status *station = *statusHolder;
-    _mtw_Galaxy_getStation(Globals::galaxy, 0x5b);
-    _mtw_Status_setStation(station);
+    Status *stationTarget = *statusHolder;
+    Station *station = (Station *) _mtw_Galaxy_getStation(Globals::galaxy, 0x5b);
+    stationTarget->setStation(station);
     (*statusHolder)->setSystemVisibility(6, true);
     (*statusHolder)->setSystemVisibility(0x19, true);
     (*statusHolder)->setCredits(0);
@@ -2099,72 +2071,46 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
     }
 }
 
-void *_mtw_Status_getShip(void *status); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_Item_make(int itemDef); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_Item_makeQty(int itemDef, int qty); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Ship_setItem(void *ship, void *item, int slot); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 void MenuTouchWindow::startSupernova() {
     Status *const *statusHolder = &Globals::status;
-    _mtw_Status_resetGame();
+    Globals::status->resetGame();
     for (int i = 0x54; i != 0; i--)
         (*statusHolder)->nextCampaignMission(false);
 
-    _mtw_Status_setMission(*statusHolder);
+    (*statusHolder)->setMission(Mission::empty);
     Status *status = *statusHolder;
-    ShipDefTable *row = *(ShipDefTable **) (*(int *) ((int *) Globals::ships) + 4);
-    _mtw_Ship_makeShip(row->shipDefId_0x78);
-    _mtw_Status_setShip(status);
+    status->setShip(Globals::ships->data_[30]->makeShip(-1));
 
-    Status *ship = *statusHolder;
-    int race = (int) (long) _mtw_Status_getShip(ship);
-    _mtw_Ship_setRace(ship, race);
+    (*statusHolder)->getShip()->setRace(3);
 
     Item *it;
-    Ship *sh;
-    it = (Item *) _mtw_Item_make(row->itemDef_0x2c0);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 0);
-    it = (Item *) _mtw_Item_make(row->itemDef_0x50);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 1);
-    it = (Item *) _mtw_Item_makeQty(row->itemDef_missile, 0x14);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 0);
-    it = (Item *) _mtw_Item_makeQty(row->itemDef_0xb0, 0x14);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 1);
-    it = (Item *) _mtw_Item_make(row->itemDef_equip0x144);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 0);
-    it = (Item *) _mtw_Item_make(row->itemDef_equip0xcc);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 1);
-    it = (Item *) _mtw_Item_make(row->itemDef_0x110);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 2);
-    it = (Item *) _mtw_Item_make(row->itemDef_equip0x158);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 3);
-    it = (Item *) _mtw_Item_make(row->itemDef_equip0x154);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 4);
-    it = (Item *) _mtw_Item_make(row->itemDef_0xe0);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_setItem(sh, it, 5);
-    it = (Item *) _mtw_Item_makeQty(row->itemDef_cargo0x1e8, 8);
-    sh = (Ship *) _mtw_Status_getShip(*statusHolder);
-    _mtw_Ship_addCargo(sh, it);
+    it = Globals::items->data_[176]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[20]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[36]->makeItem(20);
+    (*statusHolder)->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[44]->makeItem(20);
+    (*statusHolder)->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[81]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[51]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[68]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 2);
+    it = Globals::items->data_[86]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 3);
+    it = Globals::items->data_[85]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 4);
+    it = Globals::items->data_[56]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 5);
+    it = Globals::items->data_[122]->makeItem(8);
+    (*statusHolder)->getShip()->addCargo(it);
 
     (*statusHolder)->setCredits(0);
-    Status *station = *statusHolder;
-    _mtw_Galaxy_getStation(Globals::galaxy, 0x46);
-    _mtw_Status_setStation(station);
+    Status *stationTarget = *statusHolder;
+    Station *station = (Station *) _mtw_Galaxy_getStation(Globals::galaxy, 0x46);
+    stationTarget->setStation(station);
     (*statusHolder)->setSystemVisibility(6, true);
     (*statusHolder)->setSystemVisibility(0x19, true);
     (*statusHolder)->setCredits(0);
