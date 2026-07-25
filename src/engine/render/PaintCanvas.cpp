@@ -759,12 +759,6 @@ void paintcanvas_ext_remove_mesh(void *, unsigned int, int); // lint: void_ptr (
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_enable(int);
-
-void paintcanvas_ext_depthmask(int);
-
-void paintcanvas_ext_clear2(void *, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_array_remove(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_mtx_mul(void *out, const void *a, void *b); // lint: void_ptr (external symbol; mangling must match lib)
@@ -3637,9 +3631,9 @@ void PaintCanvas::TransformRemoveMesh(unsigned int transformIndex, unsigned shor
 }
 
 void PaintCanvas::ClearBuffer(unsigned int mask) {
-    paintcanvas_ext_enable(0xb71);
-    paintcanvas_ext_depthmask(1);
-    return paintcanvas_ext_clear2(this->engine, mask);
+    glEnable(0xb71);
+    glDepthMask(1);
+    return this->engine->ClearBuffer(mask);
 }
 
 void PaintCanvas::ClearDepth() {

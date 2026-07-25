@@ -1440,6 +1440,14 @@
    "usize": 282
   },
   {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
+  },
+  {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
    "pct": 7.4,
    "byte": false,
@@ -1454,14 +1462,6 @@
    "linked": false,
    "osize": 1168,
    "usize": 864
-  },
-  {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -2856,20 +2856,20 @@
    "usize": 148
   },
   {
-   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
-   "pct": 19.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1896,
-   "usize": 1740
-  },
-  {
    "name": "_ZN15MenuTouchWindow16drawLoadSaveMenuEb",
    "pct": 19.6,
    "byte": false,
    "linked": false,
    "osize": 1188,
    "usize": 1100
+  },
+  {
+   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
+   "pct": 19.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1896,
+   "usize": 1740
   },
   {
    "name": "_ZN5ArrayIN11AbyssEngine6AEMath6MatrixEEC2Ev",
@@ -7784,6 +7784,14 @@
    "usize": 60
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 46.9,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN9FModSound14enableCategoryEib",
    "pct": 46.9,
    "byte": false,
@@ -8838,14 +8846,6 @@
    "linked": false,
    "osize": 596,
    "usize": 608
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
