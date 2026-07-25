@@ -174,11 +174,11 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1159, linked_exact 2568, avg 77.52%**.
+Current numbers (of **4523** compared): **byte_exact 1159, linked_exact 2568, avg 77.53%**.
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
 monotone, linked_exact within a ±1 transient band, stubs/missing/extra frozen, exports pinned to
-`tools/sodiff_allow.txt`, undefined-import set pinned (666 names; a typo'd callee is a hard
+`tools/sodiff_allow.txt`, undefined-import set pinned (662 names; a typo'd callee is a hard
 failure), lint clean. `cmake --build … --target check` runs it; the pre-push hook
 (`git config core.hooksPath tools/hooks`) makes it unavoidable. Improvements are locked with
 `tools/ratchet.py --update-baseline` in the same commit.
