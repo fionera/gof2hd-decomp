@@ -73,7 +73,9 @@ public:
     signed char field_0x13e;
     int32_t field_0x140;
     Route *route;
-    int32_t field_0x148;
+    // Escort/attack target (`target__` in the Java lineage); its `field_5e` is the
+    // hidden/sleep flag checked by the proximity-awaken and movement subsystems.
+    Player *targetPlayer;
     Route *commandRoute;
     Array<BoundingVolume *> *boundingVolumes;
     Trail *trail;
@@ -102,7 +104,7 @@ public:
     signed char field_0x1e0;
     int32_t field_0x1e4;
     float currentSpeed;
-    int32_t field_0x1ec;
+    float field_0x1ec;
     float currentRotate;
     short field_0x1f4;
     int32_t field_0x1f8;

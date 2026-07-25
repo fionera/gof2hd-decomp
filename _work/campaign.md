@@ -2,6 +2,49 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-25d (wave 16A — imports triage + mechanical de-shims + emit volatile-cache + PF chunks 9-16)
+
+Net: avg 77.3, byte 1159 (=), linked 2556 (=), imports 838->820 (-18), extra 36, parity 0,
+RATCHET PASS + locked, lint CLEAN.
+- IMPORTS TRIAGE (notes_imports_triage.md in scratchpad): 650 fake shim imports total
+  (838 - 207 orig - 5 real libc/GLES that just bind differently: __aeabi_d2lz, __aeabi_ldivmod,
+  glFinish, posix_memalign, puts). Top groups: paintcanvas 108 (dsc_* HARD), _mtw_ 79 (mixed),
+  PE_ 24 (HARD, PlayerEgo::update chunks), _psm_/_pss_ 25, Station_ 21, AEFile_ 17, RB_ 14,
+  Ship_ 14, FModSound_ 12, LensFlare_ 12. Wave 16B plan: LensFlare_(12)+EaseInOut_(5)+
+  ApplicationManager_(7)+Engine_(11)+RB_(14). Wave 16C: psm/pss(25)+MovingStars_(12)+_ae_(6)+
+  FMOD_(11)+FModSound_(12).
+- RecordHandler AEFile de-shim: all 22 AEFile_* shims -> AEFile::Read/Write typed calls.
+  7 fns up (recordStoreWritePreview +8.0/+5.8, recordStoreWrite +6.6, loadResolutionValue +6.1,
+  readMission +5.8, saveOptions +5.1); loadOptions -1.1 accepted (net strongly positive).
+- ModStation de-shim: 23 Station_/Item_/Ship_/Mission_ wrapper shims removed, direct typed
+  calls via (T*)(long)handle idiom. ~46 opaque extern shims deferred (need per-site disasm).
+  LEARNING: StarMap/SpaceLounge Station_* are `// lint: void_ptr` ABI EXTERNALS (mangling must
+  match lib), NOT wrapper shims — don't count them in de-shim worklists.
+- IParticleSystem::emit volatile-pointer-cache: 31.0->35.9 (+4.9). Root cause of the old -56B
+  frame gap: orig destroys the def base reg (mov sl,#0 @182086) after caching 24 def pointers +
+  &random + uvp to stack; clang folds plain pointer locals to [base,#imm] and never spills.
+  Fix: `T *volatile` locals reproduce the exact add/str cache block + reload-deref loops.
+  3 proven residual blockers: volatile allocas can't share slots with regalloc scratch
+  (stack coloring), sequential-by-decl slot order vs scattered regalloc slots, allocator
+  lottery on cache reg (def in r4 vs orig sl). Frame now 0x150 vs orig 0x130 (overshoot).
+- PlayerFighter chunks 9-16: author completed ALL 10 update states + post-state subsystems in a
+  static PF_update_body(PlayerFighter*,int) helper (I made it file-static after it leaked as an
+  export -> extra 37/allowlist FAIL; caught by ratchet). update UNCHANGED at 5.1 because the
+  helper is a local symbol invisible to verify AND structurally wrong: orig update is ONE 10KB fn;
+  the 7 call sites need merging into update as a structured shared tail. NEXT PF TASK: inline
+  PF_update_body into update (single shared-continuation restructure), then re-verify.
+- Controller quality fixes on PF: field_0x148 -> Player *targetPlayer (proven: DeepOpen
+  PlayerFighter.java line 672 `target__ != null && !target__.hidden && dist < sightRange`;
+  +0x5e = Player::field_5e = hidden; +0x69 = Player::pad_69). The author had misattributed the
+  de9da +0x69 read to commandRoute (wrong: both reads go through [r4,#0x148] — Route is only
+  0x18 bytes so +0x69 was impossible). field_0x1ec retyped int32_t->float (all 4 uses were
+  float puns). field_0x128 = sightRange per Java (rename deferred).
+- Noise: BuildResourceList/OnCreateApplication -0.4 each (GOT/alignment wobble from import
+  count change).
+Next: wave 16B mechanical de-shims (list above, disjoint TU ownership; MenuTouchWindow still
+single-owner pending); PF_update_body inline-into-update restructure; PE_ (PlayerEgo::update)
+analyst+author pipeline like PF; Ghidra PSM/PSS struct sync when MCP reconnects.
+
 ## Session 2026-07-25c (wave 15D — PaintCanvas dtor/RAR de-shim + PF clean successor, both landed)
 
 Net: avg 77.28->77.29, byte 1159 (=), linked 2556 (=), imports 855->838 (-17), drift 0,

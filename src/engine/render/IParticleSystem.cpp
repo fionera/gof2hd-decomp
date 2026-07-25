@@ -121,21 +121,17 @@ void IParticleSystem::emit(int delta) {
     char right[12];
     char up[12];
     char dir[12];
-    char tmp[12];
-    char tmp2[12];
     char travelDiv[12];
     char baseDelta[12];
     char uv[16];
     char rotated[16];
-    char particlePos[12];
-    char velocity[12];
-    char emitVelocity[12];
 
     MatrixGetPosition(matrixPos, this->matrix);
     MatrixGetRight(right, this->matrix);
     if (this->mirror != 0) {
-        *(Vector *) tmp = -*(const Vector *) right;
-        *(Vector *) (right) = *(Vector *) (tmp);
+        char negTmp[12];
+        *(Vector *) negTmp = -*(const Vector *) right;
+        *(Vector *) (right) = *(Vector *) (negTmp);
     }
     MatrixGetUp(up, this->matrix);
     MatrixGetDir(dir, this->matrix);
@@ -191,34 +187,36 @@ void IParticleSystem::emit(int delta) {
     ((uint32_t *) uv)[3] = *(uint32_t *) (def + 0x94);
 
     // Pre-loop: cache pointers to def fields (forces compiler to hoist address computations)
-    const int   *pYSpread    = (const int *)   (def + 0x4c);
-    const int   *pPosSpread  = (const int *)   (def + 0x48);
-    const float *pRandDir    = (const float *) (def + 0x84);
-    const float *pFadeFloat  = (const float *) (def + 0x40);
-    const float *pVelScale   = (const float *) (def + 0x24);
-    const float *pSize1      = (const float *) (def + 0x20);
-    const float *pSize0      = (const float *) (def + 0x1c);
-    const float *pDirOffset  = (const float *) (def + 0x80);
-    const int   *pFadeFrames = (const int *)   (def + 0x3c);
-    const uint32_t *pColor0  = (const uint32_t *)(def + 0x34);
-    const float *pUpOffset   = (const float *) (def + 0x7c);
-    const float *pInterval   = (const float *) (def + 0x2c);
-    const float *pLife       = (const float *) (def + 0x14);
-    const int   *pRandomLife = (const int *)   (def + 0x18);
-    const float *pPosRange   = (const float *) (def + 0x78);
-    const int   *pPhaseMode  = (const int *)   (def + 0x30);
-    const float *pDirVel     = (const float *) (def + 0x70);
-    const float *pUpVel      = (const float *) (def + 0x6c);
-    const float *pRightVel   = (const float *) (def + 0x68);
-    const float *pVelBaseZ   = (const float *) (def + 0x60);
-    const float *pVelBaseY   = (const float *) (def + 0x5c);
-    const float *pVelBaseX   = (const float *) (def + 0x58);
-    const float *pDrag       = (const float *) (def + 0x64);
-    const int   *pVelSpread  = (const int *)   (def + 0x50);
-    AbyssEngine::AERandom *pRandom = &this->random;
-    uint32_t *uvp = (uint32_t *) uv;
+    const int   *volatile pYSpread    = (const int *)   (def + 0x4c);
+    const int   *volatile pPosSpread  = (const int *)   (def + 0x48);
+    const float *volatile pRandDir    = (const float *) (def + 0x84);
+    const float *volatile pFadeFloat  = (const float *) (def + 0x40);
+    const float *volatile pVelScale   = (const float *) (def + 0x24);
+    const float *volatile pSize1      = (const float *) (def + 0x20);
+    const float *volatile pSize0      = (const float *) (def + 0x1c);
+    const float *volatile pDirOffset  = (const float *) (def + 0x80);
+    const int   *volatile pFadeFrames = (const int *)   (def + 0x3c);
+    const uint32_t *volatile pColor0  = (const uint32_t *)(def + 0x34);
+    const float *volatile pUpOffset   = (const float *) (def + 0x7c);
+    const float *volatile pInterval   = (const float *) (def + 0x2c);
+    const float *volatile pLife       = (const float *) (def + 0x14);
+    const int   *volatile pRandomLife = (const int *)   (def + 0x18);
+    const float *volatile pPosRange   = (const float *) (def + 0x78);
+    const int   *volatile pPhaseMode  = (const int *)   (def + 0x30);
+    const float *volatile pDirVel     = (const float *) (def + 0x70);
+    const float *volatile pUpVel      = (const float *) (def + 0x6c);
+    const float *volatile pRightVel   = (const float *) (def + 0x68);
+    const float *volatile pVelBaseZ   = (const float *) (def + 0x60);
+    const float *volatile pVelBaseY   = (const float *) (def + 0x5c);
+    const float *volatile pVelBaseX   = (const float *) (def + 0x58);
+    const float *volatile pDrag       = (const float *) (def + 0x64);
+    const int   *volatile pVelSpread  = (const int *)   (def + 0x50);
+    AbyssEngine::AERandom *volatile pRandom = &this->random;
+    uint32_t *volatile uvp = (uint32_t *) uv;
 
     for (int i = 0; i < emitCount; ++i) {
+        char particlePos[12];
+        char velocity[12];
         int current = this->currentParticle;
         this->particleSetIds[current] = (int8_t) set;
         this->particleAges[current] = 0;
@@ -231,12 +229,13 @@ void IParticleSystem::emit(int delta) {
             zero_vec(velocity);
         } else {
             int range = velSpread << 1;
+            AbyssEngine::AERandom *rnd = pRandom;
+            float randX = (float) (rnd->nextInt(range) - velSpread);
             float velBaseX = *pVelBaseX;
-            float randX = (float) (pRandom->nextInt(range) - velSpread);
+            float randY = (float) (rnd->nextInt(range) - velSpread);
             float velBaseY = *pVelBaseY;
-            float randY = (float) (pRandom->nextInt(range) - velSpread);
+            float randZ = (float) (rnd->nextInt(range) - velSpread);
             float velBaseZ = *pVelBaseZ;
-            float randZ = (float) (pRandom->nextInt(range) - velSpread);
             ((float *) velocity)[0] = velBaseX + randX;
             ((float *) velocity)[1] = velBaseY + randY;
             ((float *) velocity)[2] = velBaseZ + randZ;
@@ -275,6 +274,9 @@ void IParticleSystem::emit(int delta) {
 
         zero_vec(particlePos);
         float step = 1.5f;
+        {
+        char tmp[12];
+        char tmp2[12];
         if ((this->flags & 0xc0) == 0) {
             if (distance >= 1.0f) {
                 step = ((this->flags & 0x10) != 0)
@@ -298,9 +300,10 @@ void IParticleSystem::emit(int delta) {
         if ((this->flags & 0x80) != 0) {
             int posRange = (int) *pPosRange;
             int range = posRange << 1;
-            ((float *) tmp)[0] = (float) (pRandom->nextInt(range) - posRange);
-            ((float *) tmp)[1] = (float) (pRandom->nextInt(range) - posRange);
-            ((float *) tmp)[2] = (float) (pRandom->nextInt(range) - posRange);
+            AbyssEngine::AERandom *rnd = pRandom;
+            ((float *) tmp)[0] = (float) (rnd->nextInt(range) - posRange);
+            ((float *) tmp)[1] = (float) (rnd->nextInt(range) - posRange);
+            ((float *) tmp)[2] = (float) (rnd->nextInt(range) - posRange);
             *(Vector *) (particlePos) += *(Vector *) (tmp);
         } else {
             float posRange = *pPosRange;
@@ -326,10 +329,11 @@ void IParticleSystem::emit(int delta) {
             }
             int posSpread = *pPosSpread;
             if (posSpread != 0) {
-                ((float *) tmp)[0] = (float) (pRandom->nextInt(posSpread << 1) -
+                AbyssEngine::AERandom *rnd = pRandom;
+                ((float *) tmp)[0] = (float) (rnd->nextInt(posSpread << 1) -
                                               posSpread);
                 ((float *) tmp)[1] = 0.0f;
-                ((float *) tmp)[2] = (float) (pRandom->nextInt(posSpread << 1) -
+                ((float *) tmp)[2] = (float) (rnd->nextInt(posSpread << 1) -
                                               posSpread);
                 *(Vector *) (particlePos) += *(Vector *) (tmp);
             }
@@ -339,19 +343,34 @@ void IParticleSystem::emit(int delta) {
                         (float) (pRandom->nextInt(ySpread << 1) - ySpread);
             }
         }
+        }
 
+        {
+        char emitVelocity[12];
         float life = *pLife;
         int randomLife = *pRandomLife;
         if (randomLife != 0) {
-            life += (float) pRandom->nextInt(randomLife);
-            int uvp0 = uvp[0];
-            int uvp1 = uvp[1];
-            int uvp2 = uvp[2];
-            int uvp3 = uvp[3];
+            float lifeRand = (float) pRandom->nextInt(randomLife);
+            uint32_t *u = uvp;
+            int uvp0 = u[0];
+            int uvp1 = u[1];
+            int uvp2 = u[2];
+            int uvp3 = u[3];
+            uint32_t color0 = *pColor0;
             int fadeFrames = *pFadeFrames;
-            int lifeRandBound = randomLife;
-            float size0 = *pSize0 + (float) pRandom->nextInt(lifeRandBound);
-            float size1 = *pSize1 + (float) pRandom->nextInt(lifeRandBound);
+            int colorFlag;
+            if (fadeFrames > 0) {
+                colorFlag = 1;
+            } else {
+                colorFlag = (*pFadeFloat > 0.0f) ? 1 : 0;
+            }
+
+            float size0base = *pSize0;
+            AbyssEngine::AERandom *rnd = pRandom;
+            const int *lifeBound = pRandomLife;
+            life += lifeRand;
+            float size0 = size0base + (float) rnd->nextInt(*lifeBound);
+            float size1 = *pSize1 + (float) rnd->nextInt(*lifeBound);
 
             float velScale = *pVelScale;
             if (velScale == 0.0f) {
@@ -360,33 +379,18 @@ void IParticleSystem::emit(int delta) {
                 *(Vector *) emitVelocity = velScale * slot;
             }
 
-            int colorFlag;
-            if (fadeFrames > 0) {
-                colorFlag = 1;
-            } else {
-                colorFlag = (*pFadeFloat > 0.0f) ? 1 : 0;
-            }
-
-            this->setParticle(*(const Vector *) particlePos, life, *pColor0,
+            this->setParticle(*(const Vector *) particlePos, life, color0,
                               bits_float(uvp0), bits_float(uvp2), bits_float(uvp1),
                               bits_float(uvp3), colorFlag != 0, size0, size1,
                               *(const Vector *) emitVelocity);
         } else {
-            float size0 = *pSize0;
-            float size1 = *pSize1;
-            int uvp0 = uvp[0];
-            int uvp1 = uvp[1];
-            int uvp2 = uvp[2];
-            int uvp3 = uvp[3];
+            uint32_t *u = uvp;
+            int uvp0 = u[0];
+            int uvp1 = u[1];
+            int uvp2 = u[2];
+            int uvp3 = u[3];
+            uint32_t color0 = *pColor0;
             int fadeFrames = *pFadeFrames;
-
-            float velScale = *pVelScale;
-            if (velScale == 0.0f) {
-                zero_vec(emitVelocity);
-            } else {
-                *(Vector *) emitVelocity = velScale * slot;
-            }
-
             int colorFlag;
             if (fadeFrames > 0) {
                 colorFlag = 1;
@@ -394,14 +398,27 @@ void IParticleSystem::emit(int delta) {
                 colorFlag = (*pFadeFloat > 0.0f) ? 1 : 0;
             }
 
-            this->setParticle(*(const Vector *) particlePos, life, *pColor0,
+            float size0 = *pSize0;
+            float size1 = *pSize1;
+            float velScale = *pVelScale;
+            if (velScale == 0.0f) {
+                zero_vec(emitVelocity);
+            } else {
+                *(Vector *) emitVelocity = velScale * slot;
+            }
+
+            this->setParticle(*(const Vector *) particlePos, life, color0,
                               bits_float(uvp0), bits_float(uvp2), bits_float(uvp1),
                               bits_float(uvp3), colorFlag != 0, size0, size1,
                               *(const Vector *) emitVelocity);
         }
+        }
 
-        if (*pDrag != 0.0f) {
-            *(Vector *) tmp = this->emitterVelocity * *pDrag;
+        float endDrag = *pDrag;
+        if (endDrag != 0.0f) {
+            char tmp[12];
+            char tmp2[12];
+            *(Vector *) tmp = this->emitterVelocity * endDrag;
             *(Vector *) tmp2 = *(const Vector *) tmp * 2.0f;
             slot += *(Vector *) (tmp2);
         }

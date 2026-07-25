@@ -108,7 +108,6 @@ void AEMath_MatrixSetTranslation(Matrix *m, int x, int y, int z);
 
 void AEMath_MatrixSetRotation(Matrix *m, Matrix *loc, int rx, int ry, int a4, int a5);
 
-static inline int Station_getIndex(Station *st) { return st->getIndex(); }
 
 class ScrollTouchBox;
 
@@ -247,17 +246,13 @@ int Status_getPendingProducts_cpp(int status);
 
 static inline int Status_getStation_cpp() { return (int)(Globals::status->getStation()); }
 
-static inline int Station_getIndex_cpp(Station * s) { return (int)(s->getIndex()); }
 
 static inline int Status_getShip_cpp() { return (int)(Globals::status->getShip()); }
 
-static inline int Item_makeItem_cpp(int itemDesc) { return (int)(((Item*)(long)itemDesc)->makeItem()); }
 
-static inline void Ship_addCargo_cpp(int ship, Item *it) { ((Ship*)(long)ship)->addCargo(it); }
 
 int Item_getAmount_cpp();
 
-static inline int Item_getIndex_cpp(Item * it) { return (int)(it->getIndex()); }
 static inline unsigned char * PendingProduct_dtor_cpp(PendingProduct * p) { p->~PendingProduct(); return (unsigned char *)(p); }
 
 void operator_delete_cpp(unsigned char *p);
@@ -280,7 +275,7 @@ void ModStation::checkPendingProducts() {
             if (pp != 0) {
                 int dstStation = pp->stationIndex;
                 Station *here = (Station *) Status_getStation_cpp();
-                if (dstStation == Station_getIndex_cpp(here)) {
+                if (dstStation == here->getIndex()) {
                     if (camp == 0x92 && pp->blueprintIndex == 0xd2) {
                         PendingProduct *o = (*products)[i];
                         if (o != 0)
@@ -288,11 +283,10 @@ void ModStation::checkPendingProducts() {
                         (*products)[i] = 0;
                         goto done;
                     }
-                    Item *it = (Item *) Item_makeItem_cpp(
-                        (*itemTable)[pp->blueprintIndex]);
-                    Ship_addCargo_cpp(Status_getShip_cpp(), it);
+                    Item *it = ((Item*)(long)((*itemTable)[pp->blueprintIndex]))->makeItem();
+                    ((Ship*)(long)Status_getShip_cpp())->addCargo(it);
                     (void) Item_getAmount_cpp();
-                    GameText_getText_cppline(Item_getIndex_cpp(it));
+                    GameText_getText_cppline(it->getIndex());
 
                     PendingProduct *o = (*products)[i];
                     if (o != 0)
@@ -408,7 +402,6 @@ static int *g_msc_stack = 0;
 
 static inline int Status_getStation_msc() { return (int)(Globals::status->getStation()); }
 
-static inline int Station_getIndex_msc(Station * s) { return (int)(s->getIndex()); }
 
 static inline int Status_getSystem_msc() { return (int)(Globals::status->getSystem()); }
 
@@ -439,11 +432,11 @@ ModStation::ModStation() {
 
     Station *st = (Station *) Status_getStation_msc();
     int race;
-    if (Station_getIndex_msc(st) == 0x65) {
+    if (st->getIndex() == 0x65) {
         race = 8;
     } else {
         st = (Station *) Status_getStation_msc();
-        if (Station_getIndex_msc(st) == 100) {
+        if (st->getIndex() == 100) {
             race = 7;
         } else {
             Status_getSystem_msc();
@@ -680,7 +673,6 @@ static inline void Status_setCurrentCampaignMission_ou(int status) { Globals::st
 
 static inline int Status_getStation_ou() { return (int)(Globals::status->getStation()); }
 
-static inline int Station_getIndex_ou(Station * s) { return (int)(s->getIndex()); }
 
 static inline int Status_getSystem_ou() { return (int)(Globals::status->getSystem()); }
 
@@ -700,7 +692,6 @@ int Mission_getStatusValue_ou();
 
 void Mission_setStatusValue_ou(int v);
 
-static inline void Mission_ctor_ou(Mission *m, int a, int b, int c) { new ((void*)m) Mission(a, b, c); }
 
 void Mission_setCampaignMission_ou(Mission * mission);
 
@@ -935,7 +926,7 @@ void ModStation::OnUpdate() {
                     Status_getCampaignMission_ou();
                     int mask = Mission_getStatusValue_ou();
                     Station *st = (Station *) Status_getStation_ou();
-                    int sidx = Station_getIndex_ou(st);
+                    int sidx = st->getIndex();
                     special = true;
                     if ((1 << ((sidx - 0x5a) & 0xff) & mask) == 0) {
                         int v = Status_getCampaignMission_ou();
@@ -952,7 +943,7 @@ void ModStation::OnUpdate() {
         bool generic = campNow < 0x94 || Status_getCurrentCampaignMission_ou() > 0x97;
         if (!generic) {
             Station *st = (Station *) Status_getStation_ou();
-            int sidx = Station_getIndex_ou(st);
+            int sidx = st->getIndex();
             int bit = (sidx == 0x42) ? 2 : (sidx == 0x37) ? 1 : (sidx == 9) ? 4 : 0;
             bool introOk = reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0 && this->spaceLounge->introFinished() != 0;
             if (m == 0) {
@@ -969,7 +960,7 @@ void ModStation::OnUpdate() {
                         DialogueWindow *dw = new DialogueWindow();
                         this->dialogueWindow = dw;
                         Mission *nm = (Mission *) ::operator new(0x78);
-                        Mission_ctor_ou(nm, 0xa0, 0, -1);
+                        new ((void*)nm) Mission(0xa0, 0, -1);
                         Mission_setCampaignMission_ou(nm);
                         this->dialogueWindow->set(nm, 1, -1);
                         reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 1;
@@ -993,7 +984,7 @@ void ModStation::OnUpdate() {
         if (generic) {
             if (special) {
                 Station *st = (Station *) Status_getStation_ou();
-                int sidx = Station_getIndex_ou(st);
+                int sidx = st->getIndex();
                 int slot = (sidx == 0x5e) ? 3 : (sidx - 0x5a);
                 FModSound_play_ou(*sound, slot + 0x619, 0, 0.0f);
                 int kind = (slot == 1) ? 0x39 : 0x3a;
@@ -1099,11 +1090,11 @@ void ModStation::resetIdleCamForHangar() {
 
     int race;
     Station *st = Globals::status->getStation();
-    if (Station_getIndex(st) == 0x65) {
+    if (st->getIndex() == 0x65) {
         race = 8;
     } else {
         st = Globals::status->getStation();
-        if (Station_getIndex(st) == 100) {
+        if (st->getIndex() == 100) {
             race = 7;
         } else {
             race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
@@ -1439,19 +1430,15 @@ int ApplicationManager_GetApplicationData_ote();
 
 static inline int Status_getStation_ote() { return (int)(Globals::status->getStation()); }
 
-static inline int Station_getIndex_ote(Station * s) { return (int)(s->getIndex()); }
 
 int Station_stationHasPirateBase_ote();
 
 int Station_hasShip_ote(Station * station);
 
-static inline int Station_getAgents_ote(Station * s) { return (int)(s->getAgents()); }
 void Station_addShip_ote(Ship * s);
 void Station_departStation_ote(Station * s);
 
-static inline void Station_setAttackedFriends_ote(Station *s, int flag) { s->setAttackedFriends(flag); }
 
-static inline void Station_setItems_ote(Station *s, Array<Item *> *arr, int flag) { s->setItems(arr, flag); }
 
 static inline int Status_getShip_ote() { return (int)(Globals::status->getShip()); }
 
@@ -1482,26 +1469,17 @@ int Ship_getCargo_ote();
 
 int Ship_getIndex_ote();
 
-static inline void Ship_getRace_ote(Ship * s) { s->getRace(); }
-
-static inline void Ship_removeCargo_ote(int ship, int item) { ((Ship*)(long)ship)->removeCargo(item); }
-
 void Ship_removeCargo1_ote(Item * it);
 void Ship_addCargo_ote(Item * it);
 
 void Ship_makeShip_ote(int desc);
 
-static inline int Item_isUnsaleable_ote(Item * it) { return (int)(it->isUnsaleable()); }
-static inline int Item_getIndex_ote(Item * it) { return (int)(it->getIndex()); }
 
 int Item_getAmount_ote();
 
-static inline void Item_makeItem_ote(int desc) { ((Item*)(long)desc)->makeItem(); }
 
 int Mission_getType_ote();
 
-static inline int Mission_isCampaignMission_ote(Mission * m) { return (int)(m->isCampaignMission()); }
-static inline int Mission_getProductionGoodIndex_ote(Mission * m) { return (int)(m->getProductionGoodIndex()); }
 
 int Mission_getProductionGoodAmount_ote();
 
@@ -1619,27 +1597,27 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
 
                     if (mission != 0) {
                         int type = Mission_getType_ote();
-                        int campaign = Mission_isCampaignMission_ote(mission);
+                        int campaign = mission->isCampaignMission();
                         if (type == 8) {
                             if (campaign == 0) {
                                 int ship = Status_getShip_ote();
-                                int good = Mission_getProductionGoodIndex_ote(mission);
+                                int good = mission->getProductionGoodIndex();
                                 Mission_getProductionGoodAmount_ote();
-                                Ship_removeCargo_ote(ship, good);
+                                ((Ship *) (long) ship)->removeCargo(good);
                                 if ((int) (intptr_t) this->hangarWindow != 0)
                                     HangarWindow_initialize_ote();
                             }
                         } else if (campaign == 0 && Mission_getType_ote() == 0xb) {
                             Status_setPassengers_ote(*status, 0);
-                            if (Mission_isCampaignMission_ote(mission) == 0)
+                            if (mission->isCampaignMission() == 0)
                                 ((Status *) (intptr_t) * status)->field_b8 += Mission_getProductionGoodAmount_ote();
                             Status_getShip_ote();
                             Array<Item *> *cargo = (Array<Item *> *) (intptr_t) Ship_getCargo_ote();
                             if (cargo != 0) {
                                 for (unsigned i = 0; i < cargo->size(); i = i + 1) {
-                                    if (Item_isUnsaleable_ote((*cargo)[i]) != 0 &&
-                                        (Item_getIndex_ote((*cargo)[i]) == 0x74 ||
-                                         Item_getIndex_ote((*cargo)[i]) == 0x75)) {
+                                    if ((*cargo)[i]->isUnsaleable() != 0 &&
+                                        ((*cargo)[i]->getIndex() == 0x74 ||
+                                         (*cargo)[i]->getIndex() == 0x75)) {
                                         Ship_removeCargo1_ote((Item *) Status_getShip_ote());
                                         if ((int) (intptr_t) this->hangarWindow != 0)
                                             HangarWindow_initialize_ote();
@@ -1654,9 +1632,9 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                 Array<Item *> *cargo = (Array<Item *> *) (intptr_t) Ship_getCargo_ote();
                                 if (cargo != 0) {
                                     for (unsigned i = 0; i < cargo->size(); i = i + 1) {
-                                        if (Item_isUnsaleable_ote((*cargo)[i]) != 0 &&
-                                            (Item_getIndex_ote((*cargo)[i]) == 0x74 ||
-                                             Item_getIndex_ote((*cargo)[i]) == 0x75)) {
+                                        if ((*cargo)[i]->isUnsaleable() != 0 &&
+                                            ((*cargo)[i]->getIndex() == 0x74 ||
+                                             (*cargo)[i]->getIndex() == 0x75)) {
                                             Ship_removeCargo1_ote((Item *) Status_getShip_ote());
                                             if ((int) (intptr_t) this->hangarWindow != 0)
                                                 HangarWindow_initialize_ote();
@@ -1670,7 +1648,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                 Array<Item *> *cargo = (Array<Item *> *) (intptr_t) Ship_getCargo_ote();
                                 if (cargo != 0) {
                                     for (unsigned i = 0; i < cargo->size(); i = i + 1) {
-                                        if (Item_getIndex_ote((*cargo)[i]) == 0x73) {
+                                        if ((*cargo)[i]->getIndex() == 0x73) {
                                             Ship_removeCargo1_ote((Item *) Status_getShip_ote());
                                             if ((int) (intptr_t) this->hangarWindow != 0)
                                                 HangarWindow_initialize_ote();
@@ -1682,7 +1660,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         }
                     }
 
-                    if (Mission_isCampaignMission_ote(mission) == 0) {
+                    if (mission->isCampaignMission() == 0) {
                         Status_incMissionCount_ote(*status);
                         int reward = Mission_getReward_ote();
                         int bonus = Mission_getBonus_ote();
@@ -1739,7 +1717,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             Status_getShip_ote();
                             int shipIndex = Ship_getIndex_ote();
                             Ship *sh = (Ship *) Status_getShip_ote();
-                            Ship_getRace_ote(sh);
+                            sh->getRace();
                             CutScene_replacePlayerShip_ote(cs, shipIndex);
                             {
                                 Mission_getReward_ote();
@@ -1786,7 +1764,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             }
 
                             Station *here = (Station *) Status_getStation_ote();
-                            int hereIdx = Station_getIndex_ote(here);
+                            int hereIdx = here->getIndex();
 
                             if (cm == 0x4d && hereIdx == 100) {
                                 Ship *sh = (Ship *) Status_getStation_ote();
@@ -1835,7 +1813,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                 return;
                             }
                             Station *st = (Station *) Status_getStation_ote();
-                            if (cm == 0x54 && Station_getIndex_ote(st) == 100) {
+                            if (cm == 0x54 && st->getIndex() == 100) {
                                 Ship *sh = (Ship *) Status_getStation_ote();
                                 if (Station_hasShip_ote((Station *) sh) == 0) {
                                     Ship_makeShip_ote((*(Array<int> *) (intptr_t) *(int *) &Globals::ships)[(0x98) / 4]);
@@ -1845,7 +1823,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                     Ship_makeShip_ote((*(Array<int> *) (intptr_t) *(int *) &Globals::ships)[(0xa0) / 4]);
                                     Station_addShip_ote(sh);
                                 }
-                                Item_makeItem_ote((*(Array<int> *) (intptr_t) *(int *) &Globals::items)[(0x224) / 4]);
+                                ((Item*)(long)(*(Array<int> *) (intptr_t) *(int *) &Globals::items)[(0x224) / 4])->makeItem();
                                 Ship_addCargo_ote((Item *) Status_getShip_ote());
                                 {
                                     Mission_getReward_ote();
@@ -1955,9 +1933,9 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             this->dialogueWindow = 0;
             if (justEntered == 0) {
                 Station *st = (Station *) Status_getStation_ote();
-                if (Station_getIndex_ote(st) != 4) {
+                if (st->getIndex() != 4) {
                     st = (Station *) Status_getStation_ote();
-                    if (Station_getIndex_ote(st) != 0x58) {
+                    if (st->getIndex() != 0x58) {
                         Status_getStation_ote();
                         if (Station_stationHasPirateBase_ote() != 0) {
                             reinterpret_cast<uint8_t*>(&this->departPending)[2] = 0;
@@ -2007,14 +1985,14 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     int camp = Status_getCurrentCampaignMission_ote();
                     if (camp == 0x18) {
                         Station *st = (Station *) Status_getStation_ote();
-                        if (Station_getIndex_ote(st) == 10) {
+                        if (st->getIndex() == 10) {
                             unsigned i = 0;
                             for (;;) {
                                 Station *st1 = (Station *) Status_getStation_ote();
-                                Array<Agent *> *ag = (Array<Agent *> *) (intptr_t) Station_getAgents_ote(st1);
+                                Array<Agent *> *ag = st1->getAgents();
                                 if (ag->size() <= i) break;
                                 Station *st2 = (Station *) Status_getStation_ote();
-                                Array<Agent *> *agents = (Array<Agent *> *) (intptr_t) Station_getAgents_ote(st2);
+                                Array<Agent *> *agents = st2->getAgents();
                                 Agent *a = (*agents)[i];
                                 if (Agent_getOffer_ote(a) == 2 && Agent_getSellItemIndex_ote(a) == 0x44) {
                                     Agent_setEvent_ote(a, 1);
@@ -2051,7 +2029,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         reinterpret_cast<uint8_t*>(&this->modalFlags)[3] = 0;
                         reinterpret_cast<uint8_t*>(&this->buttonCredits)[0] = 1;
                         Station *st = (Station *) Status_getStation_ote();
-                        Station_setAttackedFriends_ote(st, 0);
+                        st->setAttackedFriends(0);
                         reinterpret_cast<uint8_t*>(&this->choiceWindow)[1] = 1;
                         this->enterStation();
                         this->autosave();
@@ -2087,14 +2065,14 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                 reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 0;
                             } else {
                                 Status_changeCredits_ote(*status);
-                                Ship_removeCargo_ote(Status_getShip_ote(), 0x6d);
+                                ((Ship *) (long) Status_getShip_ote())->removeCargo(0x6d);
                                 ((Status *) (intptr_t) * status)->field_114 = 3;
                                 RecordHandler_saveOptions_ote((RecordHandler *) *(int *) &Globals::status);
                                 ChoiceWindow_setNotice_ote((int) (intptr_t) this->choiceWindow,
                                                            GameText_getText_ote(*(int *) &Globals::gameText));
                                 Station *st2 = (Station *) Status_getStation_ote();
-                                Station_setItems_ote(st2, 0, 0);
-                                Station_setItems_ote(((Status *) (intptr_t) * status)->voidStation, 0, 0);
+                                st2->setItems(0, (bool)0);
+                                ((Status *) (intptr_t) * status)->voidStation->setItems(0, (bool)0);
                                 reinterpret_cast<uint8_t*>(&this->screenFlags)[0] = 0;
                             }
                         }
@@ -2139,14 +2117,14 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 0;
                     } else {
                         Status_changeCredits_ote(*status);
-                        Ship_removeCargo_ote(Status_getShip_ote(), 0x6d);
+                        ((Ship *) (long) Status_getShip_ote())->removeCargo(0x6d);
                         ((Status *) (intptr_t) * status)->field_114 = 3;
                         RecordHandler_saveOptions_ote((RecordHandler *) *(int *) &Globals::status);
                         ChoiceWindow_setNotice_ote((int) (intptr_t) this->choiceWindow,
                                                    GameText_getText_ote(*(int *) &Globals::gameText));
                         Station *st = (Station *) Status_getStation_ote();
-                        Station_setItems_ote(st, 0, 0);
-                        Station_setItems_ote(((Status *) (intptr_t) * status)->voidStation, 0, 0);
+                        st->setItems(0, (bool)0);
+                        ((Status *) (intptr_t) * status)->voidStation->setItems(0, (bool)0);
                         reinterpret_cast<uint8_t*>(&this->screenFlags)[0] = 0;
                     }
                 }
@@ -2178,8 +2156,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             int sold = 0;
             if (cargo != 0) {
                 for (unsigned i = 0; i < cargo->size(); i = i + 1) {
-                    int idx = Item_getIndex_ote((*cargo)[i]);
-                    if (0x83 < idx && Item_getIndex_ote((*cargo)[i]) < 0x9a)
+                    int idx = (*cargo)[i]->getIndex();
+                    if (0x83 < idx && (*cargo)[i]->getIndex() < 0x9a)
                         sold += Item_getAmount_ote();
                 }
             }
@@ -2195,7 +2173,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 Status_getShip_ote();
                 int shipIndex = Ship_getIndex_ote();
                 Ship *sh = (Ship *) Status_getShip_ote();
-                Ship_getRace_ote(sh);
+                sh->getRace();
                 CutScene_replacePlayerShip_ote(cs, shipIndex);
             }
             if ((int) (intptr_t) this->cutScene != 0)
@@ -2534,7 +2512,6 @@ static inline int Status_getCurrentCampaignMission_oi() { return (int)(Globals::
 
 static inline int Status_getStation_oi() { return (int)(Globals::status->getStation()); }
 
-static inline int Station_getIndex_oi(Station * s) { return (int)(s->getIndex()); }
 
 static inline int Status_getSystem_oi() { return (int)(Globals::status->getSystem()); }
 
@@ -2580,8 +2557,6 @@ int Ship_hasCargo_oi(int ship, int item);
 
 int Ship_hasEquipment_oi(int ship, int item);
 
-static inline int Ship_getCargo_oi(int ship) { return (int)(((Ship*)(long)ship)->getCargo()); }
-
 void Ship_makeShip_oi(int desc);
 
 void Ship_setRace_oi(int race);
@@ -2592,7 +2567,6 @@ void Ship_setPrice_oi(int shipPtr);
 
 void Ship_removeCargo_oi(int ship);
 
-static inline void Ship_addCargo_oi(int ship, Item *it) { ((Ship*)(long)ship)->addCargo(it); }
 
 int Item_makeItem_oi();
 
@@ -2602,7 +2576,6 @@ int Item_makeItemDescAmt_oi(int desc, int amt);
 
 void Item_setUnsaleable_oi(int flag);
 
-static inline int Item_getIndex_oi(Item * it) { return (int)(it->getIndex()); }
 
 int Item_getAmount_oi();
 
@@ -2705,7 +2678,7 @@ void ModStation::OnInitialize() {
             bool skip = false;
             if (Status_getCurrentCampaignMission_oi() == 0x4d) {
                 Station *st = (Station *) Status_getStation_oi();
-                if (Station_getIndex_oi(st) == 0x65)
+                if (st->getIndex() == 0x65)
                     skip = true;
             }
             if (!skip)
@@ -2742,10 +2715,10 @@ void ModStation::OnInitialize() {
         bool showShop = camp < 0xc || special;
         if (!showShop) {
             Station *st = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st) == 100) showShop = true;
+            if (st->getIndex() == 100) showShop = true;
             else {
                 st = (Station *) Status_getStation_oi();
-                if (Station_getIndex_oi(st) == 0x65) showShop = true;
+                if (st->getIndex() == 0x65) showShop = true;
             }
         }
         if (showShop)
@@ -2753,11 +2726,11 @@ void ModStation::OnInitialize() {
 
         int race;
         Station *st = (Station *) Status_getStation_oi();
-        if (Station_getIndex_oi(st) == 0x65) {
+        if (st->getIndex() == 0x65) {
             race = 8;
         } else {
             st = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st) == 100) {
+            if (st->getIndex() == 100) {
                 race = 7;
             } else {
                 Status_getSystem_oi();
@@ -2785,7 +2758,7 @@ void ModStation::OnInitialize() {
 
         if (Status_getCurrentCampaignMission_oi() == 0x4d) {
             Station *st2 = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st2) == 100) {
+            if (st2->getIndex() == 100) {
                 Status_getStation_oi();
                 Array<Ship *> *ships = (Array<Ship *> *) (intptr_t) Station_getShips_oi();
                 if (ships != 0) {
@@ -2801,7 +2774,7 @@ void ModStation::OnInitialize() {
             reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 &&
             ((TextRootRecord *) (intptr_t) *(int *) &Globals::gameText)->noRoutesHintShown == 0) {
             Station *st2 = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st2) != 0x65) {
+            if (st2->getIndex() != 0x65) {
                 Status_getShip_oi();
                 int hasJump = Ship_hasJumpDrive_oi();
                 int hasFuel = Ship_hasCargo_oi(Status_getShip_oi(), 0x55);
@@ -2826,7 +2799,7 @@ void ModStation::OnInitialize() {
     } else if (state == 0x28) {
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st) == 0x78) {
+            if (st->getIndex() == 0x78) {
                 int camp = Status_getCurrentCampaignMission_oi();
                 if (camp == 0x62 || Status_getCurrentCampaignMission_oi() == 100)
                     reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
@@ -2834,17 +2807,17 @@ void ModStation::OnInitialize() {
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st) == 0x3a && Status_getCurrentCampaignMission_oi() == 0x8a)
+            if (st->getIndex() == 0x3a && Status_getCurrentCampaignMission_oi() == 0x8a)
                 reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st) == 0x7e && Status_getCurrentCampaignMission_oi() == 0x78)
+            if (st->getIndex() == 0x7e && Status_getCurrentCampaignMission_oi() == 0x78)
                 reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st) == 0x4e && Status_getCurrentCampaignMission_oi() == 0x8d)
+            if (st->getIndex() == 0x4e && Status_getCurrentCampaignMission_oi() == 0x8d)
                 reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
         }
         if (Status_inSupernovaSystem_oi() != 0)
@@ -2855,10 +2828,10 @@ void ModStation::OnInitialize() {
         if (reinterpret_cast<uint8_t*>(&this->cameraFlags)[0] == 0) {
             bool gate = false;
             Station *st = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st) == 4) gate = true;
+            if (st->getIndex() == 4) gate = true;
             else {
                 st = (Station *) Status_getStation_oi();
-                if (Station_getIndex_oi(st) == 0x58) gate = true;
+                if (st->getIndex() == 0x58) gate = true;
                 else {
                     Status_getStation_oi();
                     if (Station_stationHasPirateBase_oi() != 0) {
@@ -2879,11 +2852,11 @@ void ModStation::OnInitialize() {
             if (Status_getCurrentCampaignMission_oi() != 0x30 &&
                 Status_inBlackMarketSystem_oi() == 0) {
                 Station *s1 = (Station *) Status_getStation_oi();
-                if (Station_getIndex_oi(s1) != 0x6c) {
+                if (s1->getIndex() != 0x6c) {
                     Station *s2 = (Station *) Status_getStation_oi();
-                    if (Station_getIndex_oi(s2) != 100) {
+                    if (s2->getIndex() != 100) {
                         Station *s3 = (Station *) Status_getStation_oi();
-                        if (Station_getIndex_oi(s3) != 0x65 && reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 &&
+                        if (s3->getIndex() != 0x65 && reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 &&
                             reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 &&
                             reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] == 0 /* RAWREAD: alarmActive (+0xd8) */ &&
                             ((Status *) (intptr_t) *(int *) &Globals::status)->field_0x108 == 0) {
@@ -2914,7 +2887,7 @@ void ModStation::OnInitialize() {
         }
 
         Station *here = (Station *) Status_getStation_oi();
-        int hereIdx = Station_getIndex_oi(here);
+        int hereIdx = here->getIndex();
         Status_getCampaignMission_oi();
 
         if (Status_getCurrentCampaignMission_oi() == 0x14 &&
@@ -2923,7 +2896,7 @@ void ModStation::OnInitialize() {
             Array<Item *> *items = (Array<Item *> *) (intptr_t) Station_getItems_oi();
             if (items != 0) {
                 for (unsigned i = 0; i < items->size(); i = i + 1) {
-                    if (Item_getIndex_oi((*items)[i]) == 0x29)
+                    if ((*items)[i]->getIndex() == 0x29)
                         Item_setPrice_oi((int) (intptr_t)(*items)[i]);
                 }
             }
@@ -2963,7 +2936,7 @@ void ModStation::OnInitialize() {
             if ((unsigned) (hereIdx - 100) < 2 || hereIdx == 10) {
             fuelTop:
                 int amt;
-                int cargo = Ship_getCargo_oi(Status_getShip_oi());
+                int cargo = (int) (intptr_t) ((Ship *) (long) Status_getShip_oi())->getCargo();
                 amt = (cargo == 0) ? 0 : Item_getAmount_oi();
                 if (amt < 6 && Station_hasItem_oi(Status_getStation_oi()) == 0) {
                     Item *it = (Item *) Status_getStation_oi();
@@ -2974,7 +2947,7 @@ void ModStation::OnInitialize() {
         }
 
         Station *st10 = (Station *) Status_getStation_oi();
-        if (Station_getIndex_oi(st10) == 10 && Achievements_gotAllGoldMedals_oi() != 0) {
+        if (st10->getIndex() == 10 && Achievements_gotAllGoldMedals_oi() != 0) {
             Status_getStation_oi();
             Array<Ship *> *ships = (Array<Ship *> *) (intptr_t) Station_getShips_oi();
             bool needNew = ships == 0;
@@ -3027,7 +3000,7 @@ void ModStation::OnInitialize() {
         }
 
         Station *st6c = (Station *) Status_getStation_oi();
-        bool atReward = Station_getIndex_oi(st6c) == 0x6c;
+        bool atReward = st6c->getIndex() == 0x6c;
         int rewardState = atReward ? ((Status *) (intptr_t) *(int *) &Globals::status)->field_114 : 0;
         if (atReward && rewardState == 1) {
             if (this->dialogueWindow != 0) {
@@ -3037,7 +3010,7 @@ void ModStation::OnInitialize() {
             reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 1;
         } else {
             Station *st = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(st) == 0x6c && ((Status *) (intptr_t) *(int *) &Globals::status)->field_114 == 2) {
+            if (st->getIndex() == 0x6c && ((Status *) (intptr_t) *(int *) &Globals::status)->field_114 == 2) {
                 if (Status_getCredits_oi() < 100000 ||
                     Ship_hasCargo_oi(Status_getShip_oi(), 0x6d) == 0) {
                     ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
@@ -3051,7 +3024,7 @@ void ModStation::OnInitialize() {
 
         if (Status_getFreelanceMission_oi() != 0 && Mission_getType_oi() == 0xe) {
             Station *st = (Station *) Status_getStation_oi();
-            if (Mission_getTargetStation_oi() == Station_getIndex_oi(st) &&
+            if (Mission_getTargetStation_oi() == st->getIndex() &&
                 Station_hasItem_oi(Status_getStation_oi()) == 0) {
                 Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) *(int *) &Globals::items)[(0x1cc) / 4]);
                 Item *it = (Item *) Status_getStation_oi();
@@ -3148,7 +3121,7 @@ void ModStation::OnInitialize() {
         long long now = (long long) (unsigned) Status_getPlayingTime_lo_oi();
         if (now - enterTime >= 0x7531) {
             Station *here = (Station *) Status_getStation_oi();
-            if (Station_getIndex_oi(here) != 0x6c) {
+            if (here->getIndex() != 0x6c) {
                 Generator *g = (Generator *) ::operator new(1);
                 Generator_ctor_oi(g);
                 Status_getStation_oi();
