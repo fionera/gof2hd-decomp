@@ -4,9 +4,9 @@
   "ours_functions": 4559,
   "compared": 4523,
   "avg_match": 77.53,
-  "byte_exact": 1159,
-  "linked_exact": 2569,
-  "fuzzy_perfect": 2569,
+  "byte_exact": 1160,
+  "linked_exact": 2570,
+  "fuzzy_perfect": 2570,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14968,14 +14968,6 @@
    "usize": 760
   },
   {
-   "name": "_ZN14ScrollTouchBox10OnTouchEndEii",
-   "pct": 96.0,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 68
-  },
-  {
    "name": "_ZN15MenuTouchWindow20setSkipButtonVisibleEb",
    "pct": 96.0,
    "byte": false,
@@ -24942,6 +24934,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN14ScrollTouchBox10OnTouchEndEii",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 68,
+   "usize": 68
   },
   {
    "name": "_ZN14ScrollTouchBox11OnTouchMoveEii",

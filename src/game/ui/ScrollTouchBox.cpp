@@ -41,7 +41,7 @@ void ScrollTouchBox::OnTouchEnd(int x, int y) {
         float speed = 0.0f;
         if ((delta < 0 ? -delta : delta) > 3)
             speed = (float) delta;
-        this->damping = 0.95f;
+        this->damping = 0.9f;
         this->dragging = 0;
         this->scrollOffset = delta + this->scrollOffset;
         this->velocity = speed;
