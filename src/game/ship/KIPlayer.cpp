@@ -15,18 +15,6 @@
 
 using AbyssEngine::Matrix;
 
-void FModSound_resumeEvent(void *player, int channel); // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
-
-// lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
-
-void FModSound_pauseEvent(void *player); // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
-
-void FModSound_stopEvent(void *player); // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
-
-void FModSound_playEvent(void *player, int event, int flags); // lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
-
-// lint: void_ptr (external shim; Pv mangling is symbol-load-bearing)
-
 struct ItemDb;
 
 static PaintCanvas **gCanvasPtr = nullptr;
@@ -208,7 +196,7 @@ uint8_t KIPlayer::isWingMan() {
 
 void KIPlayer::ResumeEngineSound() {
     if (this->player != 0 && this->engineSoundEvent != -1)
-        FModSound_resumeEvent(this->player, 0);
+        this->player->ResumeEngineSound(false);
 }
 
 void KIPlayer::setWingmanCommand(int cmd, KIPlayer *target) {
@@ -218,7 +206,7 @@ void KIPlayer::setWingmanCommand(int cmd, KIPlayer *target) {
 
 void KIPlayer::PauseEngineSound() {
     if (this->player != 0 && this->engineSoundEvent != -1)
-        FModSound_pauseEvent(this->player);
+        this->player->PauseEngineSound();
 }
 
 void KIPlayer::setRotationSpeed(float speed) {
@@ -257,7 +245,7 @@ void KIPlayer::setVisible(bool visible) {
 
 void KIPlayer::StopEngineSound() {
     if (this->player != 0 && this->engineSoundEvent != -1)
-        FModSound_stopEvent(this->player);
+        this->player->StopEngineSound();
 }
 
 void KIPlayer::render() {
@@ -285,7 +273,7 @@ void KIPlayer::setActive(bool active) {
 
 void KIPlayer::PlayEngineSound() {
     if (this->player != 0 && this->engineSoundEvent != -1)
-        FModSound_playEvent(this->player, this->engineSoundEvent, 0);
+        this->player->PlayEngineSound(this->engineSoundEvent, nullptr);
 }
 
 void KIPlayer::setRoute(Route *route) {

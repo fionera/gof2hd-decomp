@@ -10,7 +10,7 @@ The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
 mode). Current: **compared 4523, byte_exact 1159, linked_exact 2566, avg 77.48%, stub_zero_size
-0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 684**. Historical figures in the sections below
+0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 680**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
 `tools/verify_baseline.json` (cmake `check` target + pre-push hook). Two new prerequisites for
