@@ -2,6 +2,44 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-25 (wave 15B pt.2 + 15C starters — fleet gate, PSS/PSM authored)
+
+Gated the round-2 de-shim fleet (w08jt2rdn, 7/8 groups) + two SendMessage-resumed authors.
+Net: avg 77.21->77.26, linked 2555->2556, byte 1159 (=), imports 938->873 (-65), drift 0,
+extra 36, RATCHET PASS, lint CLEAN, baseline locked.
+- PSS::updateAreaExitParticle 77.7->91.6 (author iteration: unnamed-temporary chaining
+  shrank frame 88->72; natural pair order + machine tail-merge; ldmia/stmia via 3x uint32
+  loads; `if (len<1.0f) return;` for the bmi shape). Residual: orig's unfolded
+  `add r0,r5,#120; ldr r1,[r0,#0]` not reconstructible legally (CodeGenPrepare always
+  folds when base is live) — 2 structural lines, documented in notes_pss.md.
+- PSM::emitTrail 0->53.4 + updateSingleColor 64.7->68.1 (emitTrail authored + all 42
+  g_ParticleSetData refs -> real extern ParticleSettingsRef::cur, defeating static-array
+  CSE; header emitTrail de-static'd, mangling unchanged).
+- PaintCanvas fleet keepers: DrawTransform 41.9->75.8, StopDraw2FBO ->100, TransformAddMeshId
+  +10.1, GetLineArray +9.4, TransformCreate +8.6, ReloadTextures +5.7, FontCreate, BeginBG,
+  DrawMesh, MeshChangeShaderAnimValue +2.9. De-shims to REAL fns kept: FindResource,
+  TextureCreateFromFile/Intern, CollectAnimationData, GetAEChar, delete[], glEnable/
+  glDisable/glBlendFunc/glDepthMask (all 4 are genuine orig imports).
+- REVERTED: dtor/ReleaseAllResources rewrites (nonexistent AbyssEngine::Resource* types +
+  banned `::operator delete`) -> HEAD shims; GL1 laundering (glScalef/glLoadMatrixf/
+  glLoadIdentity/glMultMatrixf/glTexEnvi direct calls = fake imports); SetBlendMode case
+  0x25 `sbm_setlight(1)`->`glDepthMask(1)` swap (orig calls a light fn there: LightEnable
+  x5 + LightSetLight x4 = 9 == HEAD's 9 setlight shims; swap cost 45.5->27.6, reverted).
+LEARNINGS: (1) verify.py writes report.json to --build-dir, NOT cwd — stale repo
+report.json poisoned an hour of measurements; always `cp $BUILDDIR/report.json report.json`.
+(2) TextureCreate 64.0->34.1 is verify GOT/PLT-layout wobble: objdump diff of both builds
+is instruction-identical (only PLT addrs/labels). Accepted; do NOT chase pct on blx-heavy
+mid-size fns without an objdump A/B first. (3) The original DEFINES glTexEnvi as a local
+2-byte stub (0x6dad2, exported) — GLES2 build stubs GL1 texenv; we currently shim
+sbm_texcombine; modeling a real stub `glTexEnvi` TU could kill the shim AND match the
+export (needs sodiff_allow check). (4) HEAD-report contamination from mid-gate interleaving
+makes new-vs-HEAD diffs lie — trust only same-methodology A/B rebuilds.
+NEXT: 15C monsters (IParticleSystem::emit 25.6 2368B, emitManual 27.6, emitTrail iterate
+53.4->, Level::initParticleSystems 22.8, PlayerFighter::update 2.2 10376B, PF ctor 25.6);
+glTexEnvi stub experiment; remaining ~866 fake imports (fleet skip reasons in
+tasks/w08jt2rdn.output); dtor/RAR legal de-shim wave (typed delete, real Resource types);
+Ghidra PSM/PSS struct sync when MCP reconnects.
+
 ## Session 2026-07-24c (wave 15A — drift eliminated: 49 fields / 5 classes -> 0, exclusive)
 
 Workflow wf_096681a9-c42: 6 read-only sonnet analysts (one per class), ASM evidence via

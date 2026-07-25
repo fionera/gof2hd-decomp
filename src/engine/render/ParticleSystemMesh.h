@@ -81,7 +81,7 @@ public:
 
     static void render(PaintCanvas *canvas, uint32_t mesh, uint32_t texture, BlendMode blend);
 
-    static void emitTrail(int self);
+    void emitTrail(int delta);
 };
 
 #if __SIZEOF_POINTER__ == 4

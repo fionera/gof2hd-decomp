@@ -178,8 +178,7 @@ void ParticleSystemSprite::enable(bool enabled) {
 void ParticleSystemSprite::updateAreaExitParticle(int index, float dt) {
     char *set = (char *) ParticleSettingsRef::cur + (int) this->particleSetIds[index] * 0xa0;
 
-    Vector move = this->particleVelocities[index] * dt;
-    Vector step = move * 0.001f;
+    Vector step = this->particleVelocities[index] * dt * 0.001f;
     this->canvas->SpriteSystemAddPosition(this->resource, (uint16_t)(this->idOffset + index),
                                           step.x, step.y, step.z);
 
@@ -187,7 +186,7 @@ void ParticleSystemSprite::updateAreaExitParticle(int index, float dt) {
     this->canvas->SpriteSystemGetPosition(this->resource, (uint16_t)(this->idOffset + index), pos);
 
     Vector d = pos - AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
-    float dist = d.y * d.y + d.x * d.x + d.z * d.z;
+    float dist = d.x * d.x + d.y * d.y + d.z * d.z;
 
     float outer = *(float *) (set + 0x78) * *(float *) (set + 0x78);
     if (dist > outer) {
@@ -207,8 +206,8 @@ void ParticleSystemSprite::updateAreaExitParticle(int index, float dt) {
             float b = y * w + x * z;
 
             Vector dir;
-            dir.y = (a + a) / len;
             dir.x = (b + b) / len;
+            dir.y = (a + a) / len;
             dir.z = (x * x + w * w - y * y - z * z) / len;
 
             dir *= *(float *) (set + 0x78);
@@ -217,30 +216,35 @@ void ParticleSystemSprite::updateAreaExitParticle(int index, float dt) {
                                                   (uint16_t)(this->idOffset + index),
                                                   dir.x, dir.y, dir.z);
 
-            Vector vel = *(const Vector *) (set + 0x58);
+            Vector vel;
+            ((uint32_t *) &vel)[0] = *(uint32_t *) (set + 0x58);
+            ((uint32_t *) &vel)[1] = *(uint32_t *) (set + 0x5c);
+            ((uint32_t *) &vel)[2] = *(uint32_t *) (set + 0x60);
             this->particleVelocities[index] = vel;
         }
         return;
     }
 
+    float alpha;
     float mid = *(float *) (set + 0x7c) * *(float *) (set + 0x7c);
     if (dist > mid) {
-        this->setAlpha(index, *(uint32_t *) (set + 0x34), (outer - dist) / (outer - mid));
-        return;
-    }
-
-    float inner = *(float *) (set + 0x80) * *(float *) (set + 0x80);
-    if (dist > inner) {
-        this->setAlpha(index, *(uint32_t *) (set + 0x34), 1.0f);
-        return;
-    }
-
-    float core = *(float *) (set + 0x40) * *(float *) (set + 0x40);
-    if (dist > core) {
-        this->setAlpha(index, *(uint32_t *) (set + 0x34), (dist - core) / (inner - core));
+        alpha = (outer - dist) / (outer - mid);
     } else {
-        this->setAlpha(index, *(uint32_t *) (set + 0x34), 0.0f);
+        float inner = *(float *) (set + 0x80) * *(float *) (set + 0x80);
+        if (dist > inner) {
+            this->setAlpha(index, *(uint32_t *) (set + 0x34), 1.0f);
+            return;
+        }
+
+        float core = *(float *) (set + 0x40) * *(float *) (set + 0x40);
+        if (dist > core) {
+            alpha = (dist - core) / (inner - core);
+        } else {
+            this->setAlpha(index, *(uint32_t *) (set + 0x34), 0.0f);
+            return;
+        }
     }
+    this->setAlpha(index, *(uint32_t *) (set + 0x34), alpha);
 }
 
 void ParticleSystemSprite::setParticle(const Vector &pos, float p2, uint32_t color, float p4,

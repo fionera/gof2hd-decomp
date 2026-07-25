@@ -1,4 +1,5 @@
 #include "engine/render/ParticleSystemMesh.h"
+#include "engine/render/ParticleSettingsRef.h"
 #define GOF2_ENUM_BlendMode
 #include "engine/render/PaintCanvas.h"
 #include "engine/math/AEMath.h"
@@ -34,8 +35,6 @@ void _psm_meshSetUV2(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float u
 void _psm_emitUsual(ParticleSystemMesh *self, int id);
 
 void _psm_render2(PaintCanvas *canvas, uint32_t texture, uint32_t camera);
-
-static char g_ParticleSetData[1];
 
 static inline void _psm_setQuadEdge(ParticleSystemMesh *self, const Vector *edge, int point, const Vector *delta) { self->setQuadEdge(*edge, point, *delta); }
 
@@ -188,7 +187,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
         if (sets.size() != 0) {
             int set = (int) sets.data()[0];
             if (set != -1) {
-                char *data = g_ParticleSetData + (set * 160);
+                char *data = (char *) ParticleSettingsRef::cur + (set * 160);
                 if (*(float *) (data + 0x40) > 0.0f)
                     this->pointCount = (quads << 2) + (stride << 2);
             }
@@ -348,7 +347,7 @@ void ParticleSystemMesh::updateSingleColor(int id) {
         int prev = id == 0 ? (int) this->maxParticles : id;
         if (this->particleAges[prev - 1] == -1) {
             int set = this->particleSetIds[id];
-            uint32_t color = *(uint32_t *) (g_ParticleSetData + set * 160 + 0x38);
+            uint32_t color = *(uint32_t *) (ParticleSettingsRef::cur + set * 160 + 0x38);
             uint32_t mask = this->alphaFade == 0 ? 0xffffff00u : 0xffu;
             color &= mask;
             r = (float) ((color >> 16) & 0xff) * 0.0039215689f;
@@ -399,7 +398,166 @@ void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t mesh, uint32_t tex
     return _psm_render2(canvas, mesh, (uint32_t)(uintptr_t)local);
 }
 
-void ParticleSystemMesh::emitTrail(int) {
+void ParticleSystemMesh::emitTrail(int delta) {
+    int set = (int) this->particleSets.data()[this->particleSetIndex];
+
+    Vector right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix);
+    Vector rightScaled = right * (this->mirror == 0 ? 1.0f : -1.0f);
+    Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
+    Vector dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix);
+
+    Vector edgeRight = (this->flags & 0x20000) == 0
+                       ? rightScaled * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14))
+                       : (rightScaled + up) * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14) * 0.70710677f);
+    Vector edgeUp = (this->flags & 0x20000) == 0
+                    ? up * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14))
+                    : (up - rightScaled) * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14) * 0.70710677f);
+    Vector edgeDir = dir * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14));
+
+    float offsetX = (float) (int) this->field_0x78;
+    float offsetZ = (float) (int) this->field_0x7c;
+    Vector offset;
+    offset.x = offsetX;
+    offset.y = 0.0f;
+    offset.z = offsetZ;
+    Vector pos = AbyssEngine::AEMath::MatrixTransformVector(*this->matrix, offset);
+    pos = pos + *(float *) (ParticleSettingsRef::cur + set * 160 + 0x78) * rightScaled
+              + *(float *) (ParticleSettingsRef::cur + set * 160 + 0x7c) * up
+              + *(float *) (ParticleSettingsRef::cur + set * 160 + 0x80) * dir;
+
+    if (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x40) > 0.0f) {
+        int saved = this->currentParticle;
+        bool finish = this->particleAges[getPrevId(this->currentParticle)] == -1;
+        pos -= *(float *) (ParticleSettingsRef::cur + set * 160 + 0x40) * 0.5f * dir;
+        this->currentParticle = this->maxParticles;
+        Vector zero;
+        zero.x = 0.0f;
+        zero.y = 0.0f;
+        zero.z = 0.0f;
+        setParticle(pos,
+                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x14),
+                    *(uint32_t *) (ParticleSettingsRef::cur + set * 160 + 0x34),
+                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x88),
+                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c),
+                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x90),
+                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c)
+                        + (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x94)
+                           - *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c)) * 0.05f,
+                    true, 0.0f,
+                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x40) * 0.5f,
+                    zero, finish);
+        this->currentParticle = saved;
+        pos -= *(float *) (ParticleSettingsRef::cur + set * 160 + 0x40) * 0.5f * dir;
+    }
+
+    if (this->newSectionStarted == 0) {
+        int point = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
+        uint32_t flags = this->flags;
+        if ((flags & 0x1000) != 0) {
+            setQuadEdge(pos, point + 2, edgeRight);
+            point += this->wide == 0 ? 4 : 8;
+            flags = this->flags;
+        }
+        if ((int) (flags << 18) < 0) {
+            setQuadEdge(pos, point + 2, edgeUp);
+            point += this->wide == 0 ? 4 : 8;
+            flags = this->flags;
+        }
+        if ((int) (flags << 17) < 0) {
+            setQuadEdge(pos, point + 2, edgeDir);
+            flags = this->flags;
+        }
+        if ((int) (flags << 11) < 0) {
+            float t = (float) (int) (this->frameCounter + delta)
+                      / *(float *) (ParticleSettingsRef::cur + set * 160 + 0x2c);
+            float u0 = *(float *) (ParticleSettingsRef::cur + set * 160 + 0x88);
+            float u1 = *(float *) (ParticleSettingsRef::cur + set * 160 + 0x90);
+            float v = *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c)
+                      + (t < 1.0f ? t : 1.0f)
+                        * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x94)
+                           - *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c));
+            int base = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
+            for (int i = 0; i < (int) this->stride; i++) {
+                this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 2), u0, v);
+                this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 3), u1, v);
+                base += 4;
+            }
+        }
+    }
+
+    this->frameCounter += delta;
+    if (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x2c) < (float) (int) this->frameCounter) {
+        Vector diff = *(Vector *) &this->field_0x80 - pos;
+        if (AbyssEngine::AEMath::VectorDot(diff, diff) > 6000.0f)
+            this->newSectionStarted = 1;
+    }
+
+    if (this->newSectionStarted != 0) {
+        this->frameCounter = 0;
+        int prevAge = this->particleAges[getPrevId(this->currentParticle)];
+        float s = (float) *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x44);
+        finishCurrentTrailParticle((ParticleSet) set, this->currentParticle, rightScaled * s, up * s);
+        incId();
+
+        int point = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
+        Vector *vel = this->particleVelocities + this->currentParticle * (int) this->edgeCount * 2;
+        uint32_t flags = this->flags;
+        if ((flags & 0x1000) != 0) {
+            setQuadEdge(pos, point, edgeRight);
+            setQuadEdge(pos, point + 2, edgeRight);
+            vel[0] = rightScaled * s;
+            Vector zero;
+            zero.x = 0.0f;
+            zero.y = 0.0f;
+            zero.z = 0.0f;
+            vel[1] = zero;
+            point += this->wide == 0 ? 4 : 8;
+            vel += 2;
+            flags = this->flags;
+        }
+        if ((int) (flags << 18) < 0) {
+            setQuadEdge(pos, point, edgeUp);
+            setQuadEdge(pos, point + 2, edgeUp);
+            vel[0] = up * s;
+            Vector zero;
+            zero.x = 0.0f;
+            zero.y = 0.0f;
+            zero.z = 0.0f;
+            vel[1] = zero;
+        }
+        *(Vector *) &this->field_0x80 = pos;
+
+        uint32_t frontColor = *(uint32_t *) (ParticleSettingsRef::cur + set * 160 + 0x34);
+        uint32_t backColor = frontColor;
+        if (prevAge == -1) {
+            uint32_t mask = this->alphaFade == 0 ? 0xffffff00u : 0xffu;
+            backColor = frontColor & mask;
+        }
+
+        int base = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
+        for (int i = 0; i < (int) this->stride; i++) {
+            this->canvas->MeshSetColor(this->resource, (uint16_t) base, backColor);
+            this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 1), backColor);
+            this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 2), frontColor);
+            this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 3), frontColor);
+            this->canvas->MeshSetUv(this->resource, (uint16_t) base,
+                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x88),
+                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c));
+            this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 1),
+                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x90),
+                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c));
+            this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 2),
+                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x88),
+                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x94));
+            this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 3),
+                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x90),
+                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x94));
+            base += 4;
+        }
+
+        this->particleAges[this->currentParticle] = -2;
+        this->newSectionStarted = 0;
+    }
 }
 
 void ParticleSystemMesh::updateSingle(int id, float delta) {
@@ -415,7 +573,7 @@ void ParticleSystemMesh::updateSingle(int id, float delta) {
             _psm_matrixGetRight(&right, this->matrix);
             _psm_vectorScale(&scaledRight, &right, this->mirror == 0 ? 1.0f : -1.0f);
             _psm_matrixGetUp(&up, this->matrix);
-            float s = (float) *(int32_t *) (g_ParticleSetData + set * 160 + 0x44);
+            float s = (float) *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x44);
             _psm_vectorScale(&scaledRight, &scaledRight, s);
             _psm_vectorScale(&scaledUp, &up, s);
             _psm_finishCurrentTrailParticle(this, (ParticleSet) set, id, &scaledRight, &scaledUp);
@@ -429,7 +587,7 @@ void ParticleSystemMesh::updateSingle(int id, float delta) {
     this->particleAges[id] = age;
     _psm_updateSingleColor(this, id);
 
-    int lifetime = *(int32_t *) (g_ParticleSetData + set * 160 + 0x28);
+    int lifetime = *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x28);
     if (age > lifetime) {
         this->particleAges[id] = -1;
         int point = (int) this->idOffset + (int) this->stride * id * 4;
