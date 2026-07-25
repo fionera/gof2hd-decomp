@@ -4,46 +4,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/math/AEMath.h"
 
-void _psm_emitTrail(ParticleSystemMesh *self, int id);
-
-void _psm_meshSetPointIndirect(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y,
-                               float z);
-
-void _psm_finishCurrentTrailParticle(ParticleSystemMesh *self, ParticleSet set, int id, const Vector *a,
-                                     const Vector *b);
-
-void _psm_meshSetPoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
-
-void _psm_vectorMinus(Vector *out, const Vector *a, const Vector *b);
-
-void _psm_vectorPlus(Vector *out, const Vector *a, const Vector *b);
-
-void _psm_matrixGetRight(Vector *out, const Matrix *m);
-
-void _psm_matrixGetUp(Vector *out, const Matrix *m);
-
-void _psm_matrixGetDir(Vector *out, const Matrix *m);
-
-void _psm_vectorScale(Vector *out, const Vector *v, float scale);
-
-void _psm_vectorAssign(Vector *dst, const Vector *src);
-
-void _psm_meshSetColorWord(PaintCanvas *canvas, uint32_t mesh, uint16_t point, uint32_t color);
-
-void _psm_meshSetUV2(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float u, float v);
-
-void _psm_emitUsual(ParticleSystemMesh *self, int id);
-
-void _psm_render2(PaintCanvas *canvas, uint32_t texture, uint32_t camera);
-
-static inline void _psm_setQuadEdge(ParticleSystemMesh *self, const Vector *edge, int point, const Vector *delta) { self->setQuadEdge(*edge, point, *delta); }
-
-static inline void _psm_updateUsualEdges(ParticleSystemMesh *self, int id, int delta) { self->updateUsualEdges(id, delta); }
-
-static inline void _psm_updateTrailEdges(ParticleSystemMesh *self, int id, int delta) { self->updateTrailEdges(id, delta); }
-
-static inline void _psm_updateSingleColor(ParticleSystemMesh *self, int id) { self->updateSingleColor(id); }
-
 int ParticleSystemMesh::getPrevId(int id) {
     if (id == 0)
         id = (int) this->maxParticles;
@@ -66,8 +26,8 @@ void ParticleSystemMesh::emit(int id) {
     if ((flags & 0x80) != 0)
         return;
     if ((int) (flags << 16) < 0)
-        return _psm_emitTrail(this, id);
-    return _psm_emitUsual(this, id);
+        return emitTrail(id);
+    return IParticleSystem::emit(id);
 }
 
 void ParticleSystemMesh::finishCurrentTrailParticle(ParticleSet set, int id, const Vector &first,
@@ -120,7 +80,7 @@ void ParticleSystemMesh::release() {
 
 void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t texture) {
     if (texture != 0xffffffff)
-        return _psm_render2(canvas, texture, 0);
+        return canvas->DrawTransform(texture, nullptr);
 }
 
 void ParticleSystemMesh::startNewSection() {
@@ -136,26 +96,21 @@ int ParticleSystemMesh::getQuadCount() {
 }
 
 void ParticleSystemMesh::setQuadEdge(const Vector &edge, int point, const Vector &delta) {
-    Vector pos;
-    char tmpStorage[sizeof(Vector)];
+    Vector pos = edge - delta;
+    this->canvas->MeshSetPoint(this->resource, (uint16_t) point, pos.x, pos.y, pos.z);
 
-    _psm_vectorMinus(&pos, &edge, &delta);
-    _psm_meshSetPoint(this->canvas, this->resource, (uint16_t) point, pos.x, pos.y, pos.z);
-
-    _psm_vectorPlus((Vector *) tmpStorage, &edge, &delta);
-    pos = *(Vector *) tmpStorage;
+    pos = edge + delta;
 
     uint8_t wide = this->wide;
     int next = point + 1;
     PaintCanvas *canvas = this->canvas;
     uint32_t mesh = this->resource;
     if (wide == 0) {
-        _psm_meshSetPoint(canvas, mesh, (uint16_t) next, pos.x, pos.y, pos.z);
+        canvas->MeshSetPoint(mesh, (uint16_t) next, pos.x, pos.y, pos.z);
     } else {
-        void(*setPoint)(PaintCanvas *, uint32_t, uint16_t, float, float, float) = _psm_meshSetPointIndirect;
-        setPoint(canvas, mesh, (uint16_t) next, edge.x, edge.y, edge.z);
-        setPoint(this->canvas, this->resource, (uint16_t)(point + 5), edge.x, edge.y, edge.z);
-        setPoint(this->canvas, this->resource, (uint16_t)(point + 4), pos.x, pos.y, pos.z);
+        canvas->MeshSetPoint(mesh, (uint16_t) next, edge.x, edge.y, edge.z);
+        this->canvas->MeshSetPoint(this->resource, (uint16_t)(point + 5), edge.x, edge.y, edge.z);
+        this->canvas->MeshSetPoint(this->resource, (uint16_t)(point + 4), pos.x, pos.y, pos.z);
     }
 }
 
@@ -213,53 +168,40 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
     Vector tmpA;
     Vector tmpB;
 
-    _psm_matrixGetRight(&right, this->matrix);
-    _psm_vectorScale(&rightScaled, &right, scale);
+    right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix);
+    rightScaled = right * scale;
     if (this->mirror != 0) {
-        _psm_vectorScale(&tmpA, &rightScaled, -1.0f);
-        _psm_vectorAssign(&rightScaled, &tmpA);
+        rightScaled = rightScaled * -1.0f;
     }
 
-    _psm_matrixGetUp(&up, this->matrix);
-    _psm_vectorScale(&upScaled, &up, upScale == 0.0f ? (float) useMaskedColor : upScale);
-    _psm_matrixGetDir(&dir, this->matrix);
-    _psm_vectorScale(&dirScaled, &dir, dirScale == 0.0f ? scale : dirScale);
+    up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
+    upScaled = up * (upScale == 0.0f ? (float) useMaskedColor : upScale);
+    dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix);
+    dirScaled = dir * (dirScale == 0.0f ? scale : dirScale);
 
     uint32_t flags = this->flags;
     if ((flags & 0x20000) != 0) {
-        _psm_vectorMinus(&tmpA, &upScaled, &rightScaled);
-        _psm_vectorScale(&dirScaled, &tmpA, 0.70710677f);
-        _psm_vectorPlus(&tmpB, &rightScaled, &upScaled);
-        _psm_vectorScale(&rightScaled, &tmpB, 0.70710677f);
+        dirScaled = (upScaled - rightScaled) * 0.70710677f;
+        rightScaled = (rightScaled + upScaled) * 0.70710677f;
         flags = this->flags;
     }
 
     int point = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
     if ((int) (flags << 19) < 0) {
-        _psm_vectorMinus(&tmpA, &pos, &upScaled);
-        _psm_vectorMinus(&tmpB, &tmpA, &delta);
-        _psm_setQuadEdge(this, &tmpB, point, &rightScaled);
-        _psm_vectorPlus(&tmpA, &pos, &upScaled);
-        _psm_vectorPlus(&tmpB, &tmpA, &delta);
-        _psm_setQuadEdge(this, &tmpB, point + 2, &rightScaled);
+        setQuadEdge((pos - upScaled) - delta, point, rightScaled);
+        setQuadEdge((pos + upScaled) + delta, point + 2, rightScaled);
         point += this->wide == 0 ? 4 : 8;
         flags = this->flags;
     }
     if ((int) (flags << 18) < 0) {
-        _psm_vectorMinus(&tmpA, &pos, &upScaled);
-        _psm_vectorPlus(&tmpB, &tmpA, &delta);
-        _psm_setQuadEdge(this, &tmpB, point, &dirScaled);
-        _psm_vectorPlus(&tmpA, &pos, &upScaled);
-        _psm_vectorMinus(&tmpB, &tmpA, &delta);
-        _psm_setQuadEdge(this, &tmpB, point + 2, &dirScaled);
+        setQuadEdge((pos - upScaled) + delta, point, dirScaled);
+        setQuadEdge((pos + upScaled) - delta, point + 2, dirScaled);
         point += this->wide == 0 ? 4 : 8;
         flags = this->flags;
     }
     if ((int) (flags << 17) < 0) {
-        _psm_vectorPlus(&tmpB, &pos, &rightScaled);
-        _psm_setQuadEdge(this, &tmpB, point, &upScaled);
-        _psm_vectorMinus(&tmpB, &pos, &rightScaled);
-        _psm_setQuadEdge(this, &tmpB, point + 2, &upScaled);
+        setQuadEdge(pos + rightScaled, point, upScaled);
+        setQuadEdge(pos - rightScaled, point + 2, upScaled);
     }
 
     uint32_t frontColor = color;
@@ -272,14 +214,14 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
 
     int base = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
     for (int i = 0; i < (int) this->stride; i++) {
-        _psm_meshSetColorWord(this->canvas, this->resource, (uint16_t) base, backColor);
-        _psm_meshSetColorWord(this->canvas, this->resource, (uint16_t)(base + 1), backColor);
-        _psm_meshSetColorWord(this->canvas, this->resource, (uint16_t)(base + 2), frontColor);
-        _psm_meshSetColorWord(this->canvas, this->resource, (uint16_t)(base + 3), frontColor);
-        _psm_meshSetUV2(this->canvas, this->resource, (uint16_t) base, u0, v0);
-        _psm_meshSetUV2(this->canvas, this->resource, (uint16_t)(base + 1), u1, v0);
-        _psm_meshSetUV2(this->canvas, this->resource, (uint16_t)(base + 2), u0, v1);
-        _psm_meshSetUV2(this->canvas, this->resource, (uint16_t)(base + 3), u1, v1);
+        this->canvas->MeshSetColor(this->resource, (uint16_t) base, backColor);
+        this->canvas->MeshSetColor(this->resource, (uint16_t)(base + 1), backColor);
+        this->canvas->MeshSetColor(this->resource, (uint16_t)(base + 2), frontColor);
+        this->canvas->MeshSetColor(this->resource, (uint16_t)(base + 3), frontColor);
+        this->canvas->MeshSetUv(this->resource, (uint16_t) base, u0, v0);
+        this->canvas->MeshSetUv(this->resource, (uint16_t)(base + 1), u1, v0);
+        this->canvas->MeshSetUv(this->resource, (uint16_t)(base + 2), u0, v1);
+        this->canvas->MeshSetUv(this->resource, (uint16_t)(base + 3), u1, v1);
         base += 4;
     }
 }
@@ -395,7 +337,7 @@ void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t mesh, uint32_t tex
     canvas->SetBlendMode(blend);
     uint32_t current = canvas->CameraGetCurrent();
     float *local = canvas->CameraGetLocal(current);
-    return _psm_render2(canvas, mesh, (uint32_t)(uintptr_t)local);
+    return canvas->DrawTransform(mesh, (const Matrix*)local);
 }
 
 void ParticleSystemMesh::emitTrail(int delta) {
@@ -563,36 +505,30 @@ void ParticleSystemMesh::updateSingle(int id, float delta) {
     int intDelta = (int) delta;
     int set = this->particleSetIds[id];
     if ((int) (this->flags << 16) < 0) {
-        _psm_updateTrailEdges(this, id, intDelta);
+        updateTrailEdges(id, intDelta);
         if (this->particleAges[id] == -2 && this->newSectionStarted != 0) {
-            Vector right;
-            Vector scaledRight;
-            Vector up;
-            Vector scaledUp;
-            _psm_matrixGetRight(&right, this->matrix);
-            _psm_vectorScale(&scaledRight, &right, this->mirror == 0 ? 1.0f : -1.0f);
-            _psm_matrixGetUp(&up, this->matrix);
+            Vector scaledRight = AbyssEngine::AEMath::MatrixGetRight(*this->matrix) * (this->mirror == 0 ? 1.0f : -1.0f);
+            Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
             float s = (float) *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x44);
-            _psm_vectorScale(&scaledRight, &scaledRight, s);
-            _psm_vectorScale(&scaledUp, &up, s);
-            _psm_finishCurrentTrailParticle(this, (ParticleSet) set, id, &scaledRight, &scaledUp);
+            scaledRight = scaledRight * s;
+            Vector scaledUp = up * s;
+            finishCurrentTrailParticle((ParticleSet) set, id, scaledRight, scaledUp);
         }
     } else {
-        _psm_updateUsualEdges(this, id, intDelta);
+        updateUsualEdges(id, intDelta);
     }
 
     int age = this->particleAges[id];
     age = (int) ((float) age + delta);
     this->particleAges[id] = age;
-    _psm_updateSingleColor(this, id);
+    updateSingleColor(id);
 
     int lifetime = *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x28);
     if (age > lifetime) {
         this->particleAges[id] = -1;
         int point = (int) this->idOffset + (int) this->stride * id * 4;
         for (int i = 0; i < (int) this->stride * 4; i++)
-            _psm_meshSetPoint(this->canvas, this->resource, (uint16_t)(point + i), 0.0f, 0.0f,
-                              0.0f);
+            this->canvas->MeshSetPoint(this->resource, (uint16_t)(point + i), 0.0f, 0.0f, 0.0f);
     }
 }
 

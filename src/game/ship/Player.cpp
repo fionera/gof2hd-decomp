@@ -1479,8 +1479,8 @@ void Player::StopEngineSound() {
     FMOD::Event *event = this->engineEvent;
     if (event != 0) {
         ((FModSound *) Globals::sound)->stop(event);
-        this->engineSoundPlaying = 0;
         this->engineEvent = 0;
+        this->engineSoundPlaying = 0;
     }
 }
 

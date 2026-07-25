@@ -18,11 +18,7 @@ void _psm_ArrayReleaseSprites(void *arr); // lint: void_ptr
 
 void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res); // lint: void_ptr
 
-static inline void _psm_renderMeshes(void *self) { ((ParticleSystemManager*)self)->renderMeshes(); } // lint: void_ptr
-
 void _psm_renderSpritesExt(void *self); // lint: void_ptr
-
-static inline void _psm_releaseSprites(void *self) { ((ParticleSystemManager*)self)->releaseSprites(); } // lint: void_ptr
 
 void _psm_constructAfterCamera(void *self); // lint: void_ptr
 
@@ -188,7 +184,7 @@ void ParticleSystemManager::render3d() {
     bool meshActive = (this->flags & 0xff00) != 0;
     bool spriteActive = (this->flags & 0x00ff) != 0;
     if (meshActive)
-        _psm_renderMeshes(this);
+        renderMeshes();
     if (spriteActive)
         _psm_renderSpritesExt(this);
 }
@@ -234,7 +230,7 @@ void ParticleSystemManager::enableSystemRender(int handle, bool enable) {
 }
 
 void ParticleSystemManager::release() {
-    _psm_releaseSprites(this);
+    releaseSprites();
     this->canvas = nullptr;
     ArrayReleaseClasses<ParticleSystemMesh *>(meshArray());
 }
@@ -243,7 +239,7 @@ void ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet cam) {
     if (this->cameraSet == cam)
         return;
     this->cameraSet = cam;
-    _psm_releaseSprites(this);
+    releaseSprites();
     _psm_constructAfterCamera(this);
 }
 

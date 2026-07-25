@@ -649,11 +649,7 @@ static inline int ApplicationManager_GetApplicationData_ou() { return (int)(intp
 
 static inline void ApplicationManager_SetCurrentApplicationModule_ou(int module) { Globals::appManager->SetCurrentApplicationModule((unsigned int)module); }
 
-void FModSound_play_ou(int sound, int id, const float *p, float vol);
-
 static inline void FModSound_stop_ou(int sound) { Globals::sound->stop(sound); }
-
-void FModSound_setParamValue_ou(int sound, int a, int b, float v);
 
 static inline void Layout_update_ou(int layout) { Globals::layout->update(layout); }
 
@@ -772,9 +768,9 @@ void ModStation::OnUpdate() {
             } else {
                 SpaceLounge_init_ou(this->spaceLounge);
             }
-            FModSound_setParamValue_ou(*sound, 0, *sound, 0.0f);
+            Globals::sound->setParamValue(0, *sound, 0.0f);
             FModSound_stop_ou(*sound);
-            FModSound_play_ou(*sound, 0x6c, 0, 0.0f);
+            Globals::sound->play(0x6c, nullptr, nullptr, 0.0f);
             reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] = 1;
             goto epilogue;
         }
@@ -986,7 +982,7 @@ void ModStation::OnUpdate() {
                 Station *st = (Station *) Status_getStation_ou();
                 int sidx = st->getIndex();
                 int slot = (sidx == 0x5e) ? 3 : (sidx - 0x5a);
-                FModSound_play_ou(*sound, slot + 0x619, 0, 0.0f);
+                Globals::sound->play(slot + 0x619, nullptr, nullptr, 0.0f);
                 int kind = (slot == 1) ? 0x39 : 0x3a;
                 if (slot == 0 || slot == 2) kind = 0;
                 DialogueWindow *dw = new DialogueWindow(
@@ -1137,7 +1133,12 @@ void ChoiceWindow_set1_ch(ChoiceWindow *cw, int textStr);
 
 void DialogueWindow_initWingman_ch(DialogueWindow *dw, int kind);
 
-void FModSound_playWingmanRecruit_ch();
+static inline void FModSound_playWingmanRecruit_ch() {
+    Agent *agent = new Agent(0, AbyssEngine::String(""), 0, 0, Globals::status->field_0x2c, true, 0, 0, 0, 0);
+    int soundId = Globals::globals->getDialogueSoundId(0x139, agent);
+    Globals::sound->play(soundId, nullptr, nullptr, 0.0f);
+    delete agent;
+}
 
 void ModStation::checkHints() {
     if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] != 0)
@@ -1546,11 +1547,7 @@ static inline void MenuTouchWindow_ctor_ote(MenuTouchWindow *w, int kind) { new 
 
 int TouchButton_OnTouchEnd_ote(int btn, int p1);
 
-void FModSound_play_ote(int sound, int id, const float *p, float vol);
-
 static inline void FModSound_stop_ote(int sound) { Globals::sound->stop(sound); }
-
-void FModSound_setParamValue_ote(int sound, int a, int b, float v);
 
 static inline void RecordHandler_saveOptions_ote(RecordHandler * rh) { rh->saveOptions(); }
 
@@ -1689,7 +1686,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
                         int snd = *(int *) &Globals::sound;
                         FModSound_stop_ote(snd);
-                        FModSound_play_ote(snd, 0x90, 0, 0.0f);
+                        Globals::sound->play(0x90, nullptr, nullptr, 0.0f);
                         {
                             Radio *radio = (Radio *) ::operator new(0x40);
                             Radio_ctor_ote(radio);
@@ -2180,8 +2177,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 CutScene_checkForTurret_ote((int) (intptr_t) this->cutScene);
             int snd = *(int *) &Globals::sound;
             FModSound_stop_ote(snd);
-            FModSound_play_ote(snd, 0x7a, 0, 0.0f);
-            FModSound_setParamValue_ote(snd, 0, snd, 0.0f);
+            Globals::sound->play(0x7a, nullptr, nullptr, 0.0f);
+            Globals::sound->setParamValue(0, snd, 0.0f);
             {
                 int *row = (int *) ModStation_ote_buttonRow(this);
                 if (row != nullptr) {
@@ -2205,9 +2202,9 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             this->resetIdleCamForHangar();
             this->resetLight();
             int snd = *(int *) &Globals::sound;
-            FModSound_setParamValue_ote(snd, 0, snd, 0.0f);
+            Globals::sound->setParamValue(0, snd, 0.0f);
             FModSound_stop_ote(snd);
-            FModSound_play_ote(snd, 0x7a, 0, 0.0f);
+            Globals::sound->play(0x7a, nullptr, nullptr, 0.0f);
             CutScene_checkForTurret_ote((int) (intptr_t) this->cutScene);
             if ((int) (intptr_t) this->spaceLounge != 0 && SpaceLounge_hangarNeedsUpdate_ote() != 0) {
                 if (this->hangarWindow != 0) {
@@ -2223,7 +2220,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         if (MissionsWindow_OnTouchEnd_ote((int) (intptr_t) this->m_pDialogueWindow, x) != 0) {
             reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] = 0;
             int snd = *(int *) &Globals::sound;
-            FModSound_setParamValue_ote(snd, 0, snd, 0.0f);
+            Globals::sound->setParamValue(0, snd, 0.0f);
         }
         return;
     }
@@ -2626,8 +2623,6 @@ void CutScene_replacePlayerShip_oi(int cs, int shipIndex);
 void TouchButton_setHalfTransparent_oi(int flag);
 
 void Globals_playMusicAndFadeOutCurrent_oi(int id);
-
-void FModSound_play_oi(int sound, int id, const float *pos, float vol);
 
 static inline void FModSound_enableReverb_oi(int sound) { Globals::sound->enableReverb(sound); }
 
@@ -3131,7 +3126,7 @@ void ModStation::OnInitialize() {
         next = 0x50;
     } else {
         int *sound = (int *) Globals::sound;
-        FModSound_play_oi(*sound, 0x7a, 0, 0.0f);
+        Globals::sound->play(0x7a, nullptr, nullptr, 0.0f);
         FModSound_enableReverb_oi(*sound);
         FModSound_setDownPitch_oi(*sound);
 

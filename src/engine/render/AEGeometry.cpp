@@ -2,12 +2,6 @@
 #include "engine/render/LodMeshMerger.h"
 #include "engine/math/Transform.h"
 
-void _ae_geom_render(uint32_t canvas, uint32_t tf, int z);
-
-static inline void _ae_TransformAddMeshId(uint32_t canvas, uint32_t tf, uint32_t meshId) { ((PaintCanvas*)(uintptr_t)canvas)->TransformAddMeshId(tf, meshId); }
-
-static inline void _ae_TransformAddMesh(uint32_t canvas, uint32_t tf, uint16_t mesh, int z) { ((PaintCanvas*)(uintptr_t)canvas)->TransformAddMesh(tf, mesh, z); }
-
 void _ae_MatrixSetRotation(void *out, uint32_t loc, float x, float y, float z, int order); // lint: void_ptr imported symbol, Pv mangling must match original
 
 // lint: void_ptr imported symbol, Pv mangling must match original
@@ -19,26 +13,6 @@ void _ae_MatrixSetScaling(void *out, uint32_t loc, float sx, float sy, float sz)
 void _ae_setPosition3(void *self, float x, float y, float z); // lint: void_ptr imported symbol, Pv mangling must match original
 
 // lint: void_ptr imported symbol, Pv mangling must match original
-
-static inline void _ae_TransformRemoveChild(PaintCanvas *canvas, uint32_t tf, uint32_t child) { canvas->TransformRemoveChild(tf, child); }
-
-void _ae_setmesh_a(uint32_t canvas, uint32_t tf, uint32_t mesh, int z);
-
-void _ae_setmesh_b(uint32_t canvas, uint32_t mesh, uint32_t *tfp);
-
-static inline void _ae_MatrixSetTranslation(void *out, float x, float y, float z) { AbyssEngine::AEMath::MatrixSetTranslation(*(AbyssEngine::AEMath::Matrix*)out, x, y, z); } // lint: void_ptr imported symbol, Pv mangling must match original
-
-// lint: void_ptr imported symbol, Pv mangling must match original
-
-static inline void _ae_TransformSetLocal(uint32_t canvas, uint32_t tf, void *m) { ((PaintCanvas*)(uintptr_t)canvas)->TransformSetLocal(tf, *(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr imported symbol, Pv mangling must match original
-
-// lint: void_ptr imported symbol, Pv mangling must match original
-
-static inline void _ae_MeshCreate(PaintCanvas *c, uint16_t mesh, uint32_t *out, bool flag) { unsigned int o; c->MeshCreate(mesh, o, flag); *out = o; }
-
-static inline void _ae_getDirection(void *self, Vector *out) { *out = ((AEGeometry*)self)->getDirection(); }
-
-static inline void _ae_getPosition(void *self, Vector *out) { *out = ((AEGeometry*)self)->getPosition(); }
 
 uint32_t Transform_GetTransform(uint32_t tf);
 
@@ -90,7 +64,7 @@ void AEGeometry::addChild(uint32_t child) {
 void AEGeometry::render() {
     if ((uint8_t) this->visibility == 0)
         return;
-    _ae_geom_render((uint32_t)(uintptr_t)this->canvas, this->transform, 0);
+    this->canvas->DrawTransform(this->transform, nullptr);
 }
 
 void AEGeometry::translate(const Vector &v) {
@@ -118,7 +92,7 @@ void AEGeometry::setLodMeshesWithMeshIds(uint16_t *meshes, uint32_t *meshIds, in
         this->lodMeshes[i] = meshes[i];
         this->lodDistancesSq[i] = (unsigned long long) (long long) dists[i];
         this->canvas->TransformCreate(this->lodTransforms[i]);
-        _ae_TransformAddMeshId((uint32_t)(uintptr_t)this->canvas, this->lodTransforms[i], meshIds[i]);
+        this->canvas->TransformAddMeshId(this->lodTransforms[i], meshIds[i]);
         unsigned long long v = this->lodDistancesSq[i];
         this->lodDistancesSq[i] = v * v;
         if (this->childTransform != 0xffffffffu)
@@ -233,7 +207,7 @@ void AEGeometry::setLodChildMeshes(uint16_t *meshes) {
             this->canvas->TransformCreate(this->lodChildTransforms[i]);
             this->canvas->TransformAddMesh(this->lodChildTransforms[i], meshes[i], 0);
             this->canvas->TransformAddChild(this->lodTransforms[i], this->lodChildTransforms[i]);
-            _ae_TransformRemoveChild(this->canvas, this->lodTransforms[i], this->childTransform);
+            this->canvas->TransformRemoveChild(this->lodTransforms[i], this->childTransform);
             this->canvas->TransformAddChild(this->lodTransforms[i], this->childTransform);
             count = this->lodCount;
         }
@@ -281,11 +255,9 @@ AEGeometry::AEGeometry(PaintCanvas *canvas) {
 }
 
 void AEGeometry::setMesh(uint16_t mesh) {
-    uint32_t canvas = (uint32_t)(uintptr_t)
-    this->canvas;
     if (this->transform != 0)
-        return _ae_setmesh_a(canvas, this->transform, mesh, 0);
-    return _ae_setmesh_b(canvas, mesh, &this->transform);
+        return this->canvas->TransformAddMesh(this->transform, mesh, false);
+    return this->canvas->TransformCreate(mesh, this->transform);
 }
 
 void AEGeometry::translate(float x, float y, float z) {
@@ -293,9 +265,9 @@ void AEGeometry::translate(float x, float y, float z) {
     char src[60];
     uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
     memcpy(src, (const Matrix *) (uintptr_t) loc, 0x3c);
-    _ae_MatrixSetTranslation(buf, *(float *) (src + 0x0c) + z, *(float *) (src + 0x1c),
-                             *(float *) (src + 0x2c) + y);
-    _ae_TransformSetLocal((uint32_t)(uintptr_t)this->canvas, this->transform, buf);
+    AbyssEngine::AEMath::MatrixSetTranslation(*(Matrix *)buf, *(float *) (src + 0x0c) + z,
+                                              *(float *) (src + 0x1c), *(float *) (src + 0x2c) + y);
+    this->canvas->TransformSetLocal(this->transform, *(const Matrix *)buf);
     (void) x;
 }
 
@@ -307,8 +279,8 @@ AEGeometry::AEGeometry(uint16_t mesh, PaintCanvas *canvas, bool flag) {
     this->transform = 0;
     this->baseTransform = 0;
     AEGeomCanvas::TransformCreate(canvas, &this->baseTransform);
-    _ae_MeshCreate(canvas, mesh, &this->meshId, flag);
-    _ae_TransformAddMeshId((uint32_t)(uintptr_t)canvas, this->baseTransform, this->meshId);
+    canvas->MeshCreate(mesh, this->meshId, flag);
+    canvas->TransformAddMeshId(this->baseTransform, this->meshId);
 
     this->rotation = Vector{0.0f, 0.0f, 0.0f};
     this->scalingX = 1.0f;
@@ -347,9 +319,9 @@ void AEGeometry::setScaling(float x, float y, float z) {
 void AEGeometry::moveForward(float dist) {
     Vector pos;
     Vector n;
-    _ae_getDirection(this, &pos);
+    pos = this->getDirection();
     VectorNormalize(&n, &pos);
-    _ae_getPosition(this, &pos);
+    pos = this->getPosition();
     pos.x = pos.x + n.x * dist;
     pos.y = pos.y + n.y * dist;
     pos.z = pos.z + n.z * dist;

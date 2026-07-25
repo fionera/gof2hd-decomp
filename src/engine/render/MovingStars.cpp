@@ -17,28 +17,9 @@ MovingStars::~MovingStars() {
 }
 
 
-int MovingStars_nextIntBounded(uint32_t rng, int bound);
-
-void MovingStars_TransformCreate(PaintCanvas * canvas, uint32_t * out);
-
-void MovingStars_TransformAddMeshId(PaintCanvas *canvas, uint32_t tf, uint32_t mesh);
-
-uint32_t MovingStars_TransformGetLocal(PaintCanvas *canvas, uint32_t tf);
-
-void MovingStars_MatrixSetTranslationFrom(Matrix *out, const Matrix *base,
-                                          float x, float y, float z);
-
-void MovingStars_TextureCreate(PaintCanvas *canvas, int id, uint32_t *flag, int b);
-
-
-
-
-
 static const float kBB0 = 1.0f, kBB1 = 2.0f, kBB2 = 3.0f, kBB3 = 4.0f;
 
 MovingStars::MovingStars() {
-    char mat[60];
-
     this->billboardIds = 0;
     this->transformHandles = 0;
     this->textureHandle = 0;
@@ -53,23 +34,23 @@ MovingStars::MovingStars() {
     for (int i = 0; i != 0x32; i = i + 1)
         arr[i] = 0xffffffff;
 
-    int *rng = (int *) &Globals::rnd;
-    int *globals = (int *) &Globals::globals;
+    // Reload the canvas/rnd/globals pointers through their globals each use; caching the
+    // values in locals hoists the loads and diverges from the original per-iteration reloads.
     PaintCanvas **canvas = &Globals::Canvas;
 
     for (int j = 0; j != 50; j = j + 1) {
-        MovingStars_nextIntBounded(*rng, 4);
-        uint32_t bb = reinterpret_cast<Globals *>(*globals)
+        Globals::rnd->nextInt(4);
+        uint32_t bb = Globals::globals
                 ->createBillBoard(0x46, 500, kBB0, kBB1, kBB2, kBB3, 20052);
         this->billboardIds[j] = bb;
-        MovingStars_TransformCreate(*canvas, &this->transformHandles[j]);
-        MovingStars_TransformAddMeshId(*canvas, this->transformHandles[j],
-                                       this->billboardIds[j]);
-        uint32_t loc = MovingStars_TransformGetLocal(*canvas, this->transformHandles[j]);
-        MovingStars_MatrixSetTranslationFrom((Matrix *) mat, (const Matrix *) loc, 0, 0, 0);
+        (*canvas)->TransformCreate(this->transformHandles[j]);
+        (*canvas)->TransformAddMeshId(this->transformHandles[j], this->billboardIds[j]);
+        Matrix mat = AbyssEngine::AEMath::MatrixSetTranslation(
+                *(Matrix *) (*canvas)->TransformGetLocal(this->transformHandles[j]), 0, 0, 0);
+        (void) mat;
     }
 
-    MovingStars_TextureCreate(*canvas, 0x2711, &this->textureHandle, 0);
+    (*canvas)->TextureCreate((unsigned short)0x2711, this->textureHandle, false);
     this->tickAccumulator = 0;
     this->animResetFlag = 0;
     this->animActiveFlag = 0;
@@ -82,16 +63,6 @@ namespace AbyssEngine {
 }
 
 float VectorSignedToFloat(int v, int mode);
-
-void MovingStars_TransformSetLocal(PaintCanvas *canvas, uint32_t transformHandle);
-
-static inline int MovingStars_nextInt(AERandom *rng) { return rng->nextInt(); }
-
-void MovingStars_MatrixSetTranslation(Matrix *m, float x, float y, float z);
-
-void MovingStars_SetAnimVec(PaintCanvas *transform, uint32_t tf, int idx, float x, float y, float z);
-
-
 
 static float MovingStars_kSpawn = 0, MovingStars_kZ = 0, MovingStars_kZ2 = 0;
 static float MovingStars_kA = 0, MovingStars_kB = 0, MovingStars_kC = 0, MovingStars_kD = 0;
@@ -111,18 +82,18 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
             this->animActiveFlag = 0;
             for (int i = 0; i != 50; i += 1) {
                 uint32_t tf = this->billboardIds[i];
-                MovingStars_SetAnimVec(canvas, tf, 0, MovingStars_kA, 0, MovingStars_kB);
-                MovingStars_SetAnimVec(canvas, tf, 1, MovingStars_kA, 0, MovingStars_kC);
-                MovingStars_SetAnimVec(canvas, tf, 2, MovingStars_kD, 0, MovingStars_kB);
-                MovingStars_SetAnimVec(canvas, tf, 3, MovingStars_kD, 0, MovingStars_kC);
-                MovingStars_SetAnimVec(canvas, tf, 4, 0, MovingStars_kA, MovingStars_kB);
-                MovingStars_SetAnimVec(canvas, tf, 5, 0, MovingStars_kA, MovingStars_kC);
-                MovingStars_SetAnimVec(canvas, tf, 6, 0, MovingStars_kD, MovingStars_kB);
-                MovingStars_SetAnimVec(canvas, tf, 7, 0, MovingStars_kD, MovingStars_kC);
-                MovingStars_SetAnimVec(canvas, tf, 8, MovingStars_kA, MovingStars_kD, 0);
-                MovingStars_SetAnimVec(canvas, tf, 9, MovingStars_kA, MovingStars_kA, 0);
-                MovingStars_SetAnimVec(canvas, tf, 10, MovingStars_kD, MovingStars_kD, 0);
-                MovingStars_SetAnimVec(canvas, tf, 11, MovingStars_kD, MovingStars_kA, 0);
+                canvas->SpriteSystemSetPosition(tf, 0, MovingStars_kA, 0, MovingStars_kB);
+                canvas->SpriteSystemSetPosition(tf, 1, MovingStars_kA, 0, MovingStars_kC);
+                canvas->SpriteSystemSetPosition(tf, 2, MovingStars_kD, 0, MovingStars_kB);
+                canvas->SpriteSystemSetPosition(tf, 3, MovingStars_kD, 0, MovingStars_kC);
+                canvas->SpriteSystemSetPosition(tf, 4, 0, MovingStars_kA, MovingStars_kB);
+                canvas->SpriteSystemSetPosition(tf, 5, 0, MovingStars_kA, MovingStars_kC);
+                canvas->SpriteSystemSetPosition(tf, 6, 0, MovingStars_kD, MovingStars_kB);
+                canvas->SpriteSystemSetPosition(tf, 7, 0, MovingStars_kD, MovingStars_kC);
+                canvas->SpriteSystemSetPosition(tf, 8, MovingStars_kA, MovingStars_kD, 0);
+                canvas->SpriteSystemSetPosition(tf, 9, MovingStars_kA, MovingStars_kA, 0);
+                canvas->SpriteSystemSetPosition(tf, 10, MovingStars_kD, MovingStars_kD, 0);
+                canvas->SpriteSystemSetPosition(tf, 11, MovingStars_kD, MovingStars_kA, 0);
             }
         }
     } else {
@@ -133,18 +104,18 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
         float d = VectorSignedToFloat(-0x46 - (int) (param19 * -20.0f), 0);
         for (int i = 0; i != 50; i += 1) {
             uint32_t tf = this->billboardIds[i];
-            MovingStars_SetAnimVec(canvas, tf, 0, d, 0, b);
-            MovingStars_SetAnimVec(canvas, tf, 1, d, 0, a);
-            MovingStars_SetAnimVec(canvas, tf, 2, c, 0, b);
-            MovingStars_SetAnimVec(canvas, tf, 3, c, 0, a);
-            MovingStars_SetAnimVec(canvas, tf, 4, 0, d, b);
-            MovingStars_SetAnimVec(canvas, tf, 5, 0, d, a);
-            MovingStars_SetAnimVec(canvas, tf, 6, 0, c, b);
-            MovingStars_SetAnimVec(canvas, tf, 7, 0, c, a);
-            MovingStars_SetAnimVec(canvas, tf, 8, d, c, 0);
-            MovingStars_SetAnimVec(canvas, tf, 9, d, d, 0);
-            MovingStars_SetAnimVec(canvas, tf, 10, c, c, 0);
-            MovingStars_SetAnimVec(canvas, tf, 11, c, d, 0);
+            canvas->SpriteSystemSetPosition(tf, 0, d, 0, b);
+            canvas->SpriteSystemSetPosition(tf, 1, d, 0, a);
+            canvas->SpriteSystemSetPosition(tf, 2, c, 0, b);
+            canvas->SpriteSystemSetPosition(tf, 3, c, 0, a);
+            canvas->SpriteSystemSetPosition(tf, 4, 0, d, b);
+            canvas->SpriteSystemSetPosition(tf, 5, 0, d, a);
+            canvas->SpriteSystemSetPosition(tf, 6, 0, c, b);
+            canvas->SpriteSystemSetPosition(tf, 7, 0, c, a);
+            canvas->SpriteSystemSetPosition(tf, 8, d, c, 0);
+            canvas->SpriteSystemSetPosition(tf, 9, d, d, 0);
+            canvas->SpriteSystemSetPosition(tf, 10, c, c, 0);
+            canvas->SpriteSystemSetPosition(tf, 11, c, d, 0);
             this->velocityArray[i] = (int) fv + 1000;
         }
         this->animResetFlag = 0x01;
@@ -159,18 +130,18 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
         int life = this->lifeArray[i];
         if ((life > 0 || respawned) || (!flag && (int) this->tickAccumulator < 0x29)) {
             this->lifeArray[i] = life - delta;
-            memcpy(localMatrix, (const Matrix *) MovingStars_TransformGetLocal(canvas, 0), 0x3c);
+            memcpy(localMatrix, (const Matrix *) canvas->TransformGetLocal(0), 0x3c);
             float f = VectorSignedToFloat(this->velocityArray[i], 0);
 
             *(float *) (localMatrix + 0x24) -= *(float *) (localMatrix + 0x18) * f;
             *(float *) (localMatrix + 0x28) -= *(float *) (localMatrix + 0x1c) * f;
             *(float *) (localMatrix + 0x2c) -= *(float *) (localMatrix + 0x20) * f;
-            MovingStars_TransformSetLocal(canvas, this->transformHandles[i]);
+            canvas->TransformSetLocal(this->transformHandles[i], *(const Matrix *) localMatrix);
         } else {
             this->tickAccumulator = 0;
             AERandom *rng = Globals::rnd;
-            int r0 = MovingStars_nextInt(rng);
-            int r1 = MovingStars_nextInt(rng);
+            int r0 = rng->nextInt();
+            int r1 = rng->nextInt();
             Vector spawn;
             spawn.x = VectorSignedToFloat(r0 - 10000, 0);
             spawn.y = VectorSignedToFloat(r1 - 9000, 0);
@@ -178,14 +149,14 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
             *(Vector *) localMatrix =
                     AbyssEngine::AEMath::MatrixTransformVector(*(const Matrix *) localMatrix, spawn);
             spawn = *(const Vector *) localMatrix;
-            MovingStars_TransformSetLocal(canvas, this->transformHandles[i]);
-            MovingStars_TransformGetLocal(canvas, 0);
-            MovingStars_MatrixSetTranslation((Matrix *) localMatrix, spawn.z, 0.0f, 0.0f);
+            canvas->TransformSetLocal(this->transformHandles[i], *(const Matrix *) localMatrix);
+            canvas->TransformGetLocal(0);
+            AbyssEngine::AEMath::MatrixSetTranslation(*(Matrix *) localMatrix, spawn.z, 0.0f, 0.0f);
 
             int newLife;
             int newTimer;
             if (!flag) {
-                newLife = MovingStars_nextInt(rng) + 500;
+                newLife = rng->nextInt() + 500;
                 newTimer = 2000;
             } else {
                 newTimer = 500;
@@ -198,25 +169,17 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
     }
 }
 
-void MovingStars_MatrixGetPosition(Vector *out, const Matrix *m);
-
-void MovingStars_VectorAddAssign(Vector *self, const Vector &other);
-
-
 void MovingStars::translate(const Vector &v) {
-    char out[60];
-    char pos[12];
     PaintCanvas **canvas = &Globals::Canvas;
     for (int i = 0; i != 0x32; i = i + 1) {
         uint32_t tf = this->transformHandles[i];
-        uint32_t loc = MovingStars_TransformGetLocal(*canvas, tf);
-        MovingStars_MatrixGetPosition((Vector *) pos, (const Matrix *) loc);
-        MovingStars_VectorAddAssign((Vector *) pos, v);
+        Vector pos = AbyssEngine::AEMath::MatrixGetPosition(
+                *(const Matrix *) (*canvas)->TransformGetLocal(tf));
+        pos += v;
         uint32_t tf2 = this->transformHandles[i];
-        uint32_t base = MovingStars_TransformGetLocal(*canvas, tf2);
-        MovingStars_MatrixSetTranslationFrom((Matrix *) out, (const Matrix *) base,
-                                             *(float *) (pos + 0), *(float *) (pos + 4),
-                                             *(float *) (pos + 8));
+        Matrix moved = AbyssEngine::AEMath::MatrixSetTranslation(
+                *(Matrix *) (*canvas)->TransformGetLocal(tf2), pos.x, pos.y, pos.z);
+        (void) moved;
     }
 }
 

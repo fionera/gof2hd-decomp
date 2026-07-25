@@ -52,7 +52,7 @@ public:
 
     void release();
 
-    FModSound *stop(FMOD::Event *e);
+    void stop(FMOD::Event *e);
 
     void stop(int p1);
 

@@ -41,7 +41,6 @@
  },
  "void_ptr": {
   "engine/audio/FModSound.cpp": 2,
-  "engine/render/AEGeometry.cpp": 2,
   "engine/render/PaintCanvas.cpp": 15,
   "game/menu/ModStation.cpp": 8,
   "game/menu/SpaceLounge.cpp": 4,

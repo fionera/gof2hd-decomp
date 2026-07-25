@@ -2,6 +2,39 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-25f (wave 16C — psm/pss + MovingStars/_ae_ + FMOD/FModSound de-shims)
+
+Net: avg 77.31->77.33, byte 1159 (=), linked 2556->2557 (+1), imports 776->737 (-39), extra 36,
+parity 0, RATCHET PASS + locked, lint CLEAN (void_ptr 39->37 locked).
+- Three parallel workers: 21 psm/pss shims (ParticleSystemMesh/Manager), 12 MovingStars_ + 8 _ae_ shims
+  (3 mangling-load-bearing _ae_ externals kept), 6 FModSound_ externs + playWingmanRecruit_ch recovery
+  (heap Agent + getDialogueSoundId(0x139) + play) in ModStation, and the FMOD_* family in FModSound.cpp
+  now calling FMOD::EventSystem/Event directly.
+- Ratchet initially FAILED on 7 NEW imports — all verified present in the ORIGINAL's dynsym
+  (EventSystem::setLanguage/getEventBySystemID/setReverbProperties/getReverbPresetByIndex/
+  set3DListenerAttributes/load, Event::set3DAttributes) -> deliberate --update-baseline add.
+- Controller fixed 4 regressions post-merge instead of reverting TUs:
+  (1) FModSound::stop(FMOD::Event*) 100->46 — worker's `(FModSound*)(uintptr_t)(unsigned)e->stop(false)`
+  cast chain (inttoptr after call) killed the tail-call. Return type is NOT mangled: redeclared as
+  `void`, plain `e->stop(false)` -> guarded tail-call restored, back to 100 (the +1 linked_exact).
+  LEARNING: change unmangled return types instead of casting an FMOD_RESULT to a pointer.
+  (2) MovingStars::translate 82.7->38.6 — worker cached `PaintCanvas *canvas = Globals::Canvas` (hoists
+  the load; original reloads per use via `PaintCanvas **canvas = &Globals::Canvas`) and assigned sret
+  returns through `*(Vector*)charbuf` (temp+copy). Pointer idiom + direct-init typed locals
+  (`Vector pos = MatrixGetPosition(...)`) -> 88.5, above pre-wave.
+  (3) MovingStars ctor 67.5->62.2 — worker DROPPED the `loc` base arg of MatrixSetTranslationFrom
+  (semantic bug). Restored `Matrix mat = MatrixSetTranslation(*(Matrix*)TransformGetLocal(h),0,0,0)`
+  -> 72.6, above pre-wave.
+  (4) Player::StopEngineSound 71->64.5 after the stop() retype — original stores
+  engineSoundPlaying(0x108) before engineEvent(0xf0); clang emitted them swapped. Swapping the SOURCE
+  statement order made clang invert them back to the original order -> 71.0. LEARNING: clang -Oz may
+  invert adjacent-store order; if bytes show swapped stores, swap the source statements.
+- Accepted residuals: setParticle -3.3, updateEvent3DAttributes -2.7 (low-match fns mid-authoring),
+  PlayerFighter::update -0.1 (noise). Net per-function delta vs HEAD: +82.8.
+- FMOD worker ignored the drop-GOF2_MATCH correction (reported the Transform static_assert as its only
+  ModStation failure); controller re-verified both TUs exit-0 WITHOUT the flag. Worker compile commands
+  must NOT define GOF2_MATCH.
+
 ## Session 2026-07-25e (wave 16B — LensFlare/AppMgr/Engine/RB de-shims + PF_update_body merged into update)
 
 Net: avg 77.3->77.31, byte 1159 (=), linked 2556 (=), imports 820->776 (-44), extra 36,

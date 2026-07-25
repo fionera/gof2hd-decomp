@@ -3,23 +3,15 @@
 
 #include <cstring>
 
-void FMOD_setLanguage(FMOD::EventSystem *system, uint32_t lang);
-
 static inline int FMOD_Event_stop(FMOD::Event *event, int immediate) { return event->stop(immediate); }
 
 static inline int FMOD_Event_setPaused(FMOD::Event *event, int paused) { return event->setPaused(paused); }
-
-void FMOD_fade(FModSound *self, int a, int s, float v);
 
 static inline void FMOD_EventSystem_unload(FMOD::EventSystem *system) { system->unload(); }
 
 static inline void FMOD_EventSystem_release(FMOD::EventSystem *system) { system->release(); }
 
-int FMOD_EventSystem_freeEventData(FMOD::EventSystem *system, FMOD::Event *event, int waitUntilReady);
-
 class AEFile { public: static const char *GetAppRootDir(); };
-
-FModSound *FMOD_Event_stop_p(FMOD::Event *event, int immediate);
 
 static inline int FMOD_Event_setPitch(FMOD::Event *event, float pitch, int mode) { return event->setPitch(pitch, (FMOD_EVENT_PITCHUNITS)mode); }
 
@@ -29,9 +21,9 @@ static inline int FMOD_Event_getProperty(FMOD::Event *event, unsigned char *prop
 
 static inline int FMOD_EventSystem_getNumReverbPresets(FMOD::EventSystem *system, int *out) { return system->getNumReverbPresets(out); }
 
-int FMOD_EventSystem_getReverbPresetByIndex(FMOD::EventSystem *system, int idx, unsigned char *props, char **name);
+static inline int FMOD_EventSystem_getReverbPresetByIndex(FMOD::EventSystem *system, int idx, unsigned char *props, char **name) { return system->getReverbPresetByIndex(idx, (FMOD_REVERB_PROPERTIES *)props, name); }
 
-int FMOD_EventSystem_setReverbProperties(FMOD::EventSystem *system, unsigned char *props);
+static inline int FMOD_EventSystem_setReverbProperties(FMOD::EventSystem *system, unsigned char *props) { return system->setReverbProperties((const FMOD_REVERB_PROPERTIES *)props); }
 
 static inline int FMOD_Event_getParameterByIndex(FMOD::Event *event, int idx, FMOD::EventParameter **out) { return event->getParameterByIndex(idx, out); }
 
@@ -39,7 +31,7 @@ static inline int FMOD_EventParameter_setValue(FMOD::EventParameter *p, float v)
 
 static inline int FMOD_EventSystem_init(FMOD::EventSystem *system, int maxch, unsigned char *extdriver, int flags) { return system->init(maxch, (FMOD_INITFLAGS)(uintptr_t)extdriver, (void*)(uintptr_t)flags, (FMOD_EVENT_INITFLAGS)0); }
 
-int FMOD_EventSystem_load(FMOD::EventSystem *system, const char *name, FMOD::EventProject *proj);
+static inline int FMOD_EventSystem_load(FMOD::EventSystem *system, const char *name, FMOD::EventProject *proj) { return system->load(name, nullptr, proj ? &proj : nullptr); }
 
 static inline int FMOD_EventSystem_getCategory(FMOD::EventSystem *system, const char *name, FMOD::EventCategory **out) { return system->getCategory(name, out); }
 
@@ -54,18 +46,13 @@ static inline int FMOD_EventSystem_getProject(FMOD::EventSystem *system, const c
 static inline int FMOD_Event_getParentGroup(FMOD::Event *event, FMOD::EventGroup * *out) { return event->getParentGroup(out); }
 static inline int FMOD_Event_getCategory(FMOD::Event *event, FMOD::EventCategory * *out = 0) { return event->getCategory(out); }
 
-void FMOD_play(FModSound *self, int a, unsigned char *b, float v);
+static inline void FMOD_play(FModSound *self, int a, unsigned char * /*b*/, float v) { self->play(a, nullptr, nullptr, v); }
 
 static inline int FMOD_Event_getInfo(FMOD::Event *event, int *index, char **name, FMOD_EVENT_INFO *info) { return event->getInfo(index, name, info); }
 
-int FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, FMOD::Event **out);
-
-int FMOD_Event_set3DAttributes(FMOD::Event * event, Vector * pos, Vector * vel);
+static inline int FMOD_Event_set3DAttributes(FMOD::Event *event, Vector *pos, Vector *vel) { return event->set3DAttributes((const FMOD_VECTOR *)pos, (const FMOD_VECTOR *)vel, nullptr); }
 
 static inline int FMOD_Event_start(FMOD::Event *event) { return event->start(); }
-
-int FMOD_EventSystem_set3DListenerAttributes(int system, unsigned char *zero, Vector *pos, Vector *vel,
-                                             Vector *forward);
 
 static inline int FMOD_EventSystem_update(int system) { return ((FMOD::EventSystem*)(uintptr_t)system)->update(); }
 
@@ -86,10 +73,10 @@ char *property_name_purge = (char *) "purge";
 static float FModSound_defaultPitch = 0.0f;
 
 void FModSound::setAudioLanguage(int p1) {
-    static const uint32_t langTable[2] = {0, 1};
+    static const char *const kLangs[2] = {"english", "deutsch"};
     if (!this->system)
         return;
-    FMOD_setLanguage(this->system, langTable[p1 == 1]);
+    this->system->setLanguage(kLangs[p1 == 1]);
 }
 
 void FModSound::updateEvent3DAttributes(int idx, Vector *a, Vector *b, bool c) {
@@ -124,7 +111,7 @@ void FModSound::fadeOutNow() {
         return;
     if (this->fadeTargetMusicEvent == s)
         return;
-    FMOD_fade(this, 0, s, kFade);
+    this->setParamValue(0, s, kFade);
 }
 
 void FModSound::release() {
@@ -157,10 +144,10 @@ FModSound::FModSound() {
     this->listenerUp = 0;
 }
 
-FModSound *FModSound::stop(FMOD::Event *e) {
+void FModSound::stop(FMOD::Event *e) {
     if (e == 0)
-        return this;
-    return FMOD_Event_stop_p(e, 0);
+        return;
+    e->stop(false);
 }
 
 void FModSound::setVolume(int p1, float vol) {
@@ -281,7 +268,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch) {
 
     if (freshLookup) {
         FMOD::Event *ev = 0;
-        FMOD_EventSystem_getEventBySystemID((unsigned int) (uintptr_t) this->system, idx, &ev);
+        this->system->getEventBySystemID(idx, 4, &ev);
         event = ev;
     }
 
@@ -320,8 +307,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch) {
 
         if (freshLookup) {
             FMOD::Event *dummy = 0;
-            if (FMOD_EventSystem_getEventBySystemID(
-                    (unsigned int) (uintptr_t) this->system, idx, &dummy) != 0)
+            if (this->system->getEventBySystemID(idx, 0, &dummy) != 0)
                 return;
             slot = event;
         }
@@ -347,7 +333,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch) {
         if (slot != 0) {
             FMOD::EventGroup *group = 0;
             if (FMOD_Event_getParentGroup(slot, &group) == 0) {
-                FMOD_EventSystem_freeEventData(this->system, slot, 0);
+                group->freeEventData(slot, false);
                 slot = 0;
             }
         }
@@ -552,7 +538,13 @@ void FModSound::updateAll(Vector *pos, Vector *vel, Vector *forward, Vector *up)
         Vector *pPos = havePos ? this->listenerPos : 0;
         Vector *pUp = haveUp ? this->listenerUp : 0;
         Vector *pVel = haveVel ? this->listenerVel : 0;
-        FMOD_EventSystem_set3DListenerAttributes(system, 0, pPos, pUp, pVel);
+        Vector *pFwd = haveFwd ? this->listenerForward : 0;
+        ((FMOD::EventSystem *)(uintptr_t)system)->set3DListenerAttributes(
+            0,
+            (const FMOD_VECTOR *)pPos,
+            (const FMOD_VECTOR *)pUp,
+            (const FMOD_VECTOR *)pVel,
+            (const FMOD_VECTOR *)pFwd);
     }
 
 afterListener:
@@ -569,7 +561,7 @@ afterListener:
         if (slotIdx != -1 && ev != 0 && isPlaying(slotIdx) == 0) {
             FMOD::EventGroup *group = 0;
             if (FMOD_Event_getParentGroup(*evp, &group) == 0) {
-                FMOD_EventSystem_freeEventData(this->system, *evp, 0);
+                group->freeEventData(*evp, false);
                 *evp = 0;
                 this->fxSlots[i] = -1;
             }
@@ -660,8 +652,7 @@ FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vec
 
     if (event == 0 || category == 0x24) {
         FMOD::Event *ev = 0;
-        if (FMOD_EventSystem_getEventBySystemID((unsigned int) (uintptr_t) this->system,
-                                                idx, &ev) != 0)
+        if (this->system->getEventBySystemID(idx, 4, &ev) != 0)
             return event;
         if (FMOD_Event_getCategory(ev) != 0)
             return event;
@@ -692,8 +683,7 @@ FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vec
 
         if (FMOD_Event_set3DAttributes(ev, posPtr, velPtr) == 0) {
             FMOD::Event *dummy = 0;
-            if (FMOD_EventSystem_getEventBySystemID(
-                    (unsigned int) (uintptr_t) this->system, idx, &dummy) == 0)
+            if (this->system->getEventBySystemID(idx, 0, &dummy) == 0)
                 FMOD_Event_start(ev);
         }
         return ev;
