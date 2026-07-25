@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.41,
+  "avg_match": 77.44,
   "byte_exact": 1159,
-  "linked_exact": 2560,
-  "fuzzy_perfect": 2560,
+  "linked_exact": 2565,
+  "fuzzy_perfect": 2565,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1000,6 +1000,14 @@
    "usize": 160
   },
   {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 3.3,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
+  },
+  {
    "name": "_ZN9PlayerEgo10stopMiningEv",
    "pct": 3.3,
    "byte": false,
@@ -1014,14 +1022,6 @@
    "linked": false,
    "osize": 1948,
    "usize": 228
-  },
-  {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 3.4,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
   },
   {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
@@ -8864,20 +8864,20 @@
    "usize": 168
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -11040,14 +11040,6 @@
    "usize": 268
   },
   {
-   "name": "_ZN7Globals4initEPN11AbyssEngine18ApplicationManagerEPNS0_6EngineE",
-   "pct": 65.4,
-   "byte": false,
-   "linked": false,
-   "osize": 800,
-   "usize": 768
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine11AfterGLInitEv",
    "pct": 65.7,
    "byte": false,
@@ -11992,14 +11984,6 @@
    "usize": 108
   },
   {
-   "name": "_ZN7Globals24getRandomSystemForDrinksEv",
-   "pct": 72.2,
-   "byte": false,
-   "linked": false,
-   "osize": 48,
-   "usize": 40
-  },
-  {
    "name": "_ZN6Layout7initTipEv",
    "pct": 72.3,
    "byte": false,
@@ -12102,14 +12086,6 @@
    "linked": false,
    "osize": 472,
    "usize": 484
-  },
-  {
-   "name": "_ZN7Globals23replaceKeyBindingTokensERKN11AbyssEngine6StringE",
-   "pct": 72.7,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
   },
   {
    "name": "_ZN7Mission13getClientNameEv",
@@ -12552,14 +12528,6 @@
    "usize": 124
   },
   {
-   "name": "_ZN7Globals16getRandomStationEv",
-   "pct": 76.0,
-   "byte": false,
-   "linked": false,
-   "osize": 72,
-   "usize": 60
-  },
-  {
    "name": "_ZN11AbyssEngine21BumpRimCubeShader_new14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 76.1,
    "byte": false,
@@ -12734,14 +12702,6 @@
    "linked": false,
    "osize": 30,
    "usize": 32
-  },
-  {
-   "name": "_ZN7Globals19getRandomPlanetNameEv",
-   "pct": 77.8,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 100
   },
   {
    "name": "_Z19ArrayReleaseClassesIP3GunEvR5ArrayIT_E",
@@ -13064,14 +13024,6 @@
    "usize": 66
   },
   {
-   "name": "_ZN7Globals11getItemNameEi",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 40,
-   "usize": 36
-  },
-  {
    "name": "zip_source_file",
    "pct": 80.0,
    "byte": false,
@@ -13120,6 +13072,14 @@
    "usize": 98
   },
   {
+   "name": "_ZN7Globals4initEPN11AbyssEngine18ApplicationManagerEPNS0_6EngineE",
+   "pct": 80.5,
+   "byte": false,
+   "linked": false,
+   "osize": 800,
+   "usize": 784
+  },
+  {
    "name": "_Z14ArrayAddCachedIjEvT_R5ArrayIS0_E",
    "pct": 80.7,
    "byte": false,
@@ -13150,14 +13110,6 @@
    "linked": false,
    "osize": 140,
    "usize": 140
-  },
-  {
-   "name": "_ZN7Globals26getKeyBindingReplaceStringEi",
-   "pct": 81.2,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 88
   },
   {
    "name": "_ZN3Gun9setOffsetEPN11AbyssEngine6AEMath6VectorE",
@@ -15262,6 +15214,14 @@
    "linked": false,
    "osize": 162,
    "usize": 162
+  },
+  {
+   "name": "_ZN7Globals26getKeyBindingReplaceStringEi",
+   "pct": 96.7,
+   "byte": false,
+   "linked": false,
+   "osize": 76,
+   "usize": 76
   },
   {
    "name": "_ZN10AEGeometry17setLodChildMeshesEPt",
@@ -31112,6 +31072,14 @@
    "usize": 44
   },
   {
+   "name": "_ZN7Globals11getItemNameEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 40,
+   "usize": 40
+  },
+  {
    "name": "_ZN7Globals16getKeyActionNameEi",
    "pct": 100.0,
    "byte": false,
@@ -31120,12 +31088,28 @@
    "usize": 10
   },
   {
+   "name": "_ZN7Globals16getRandomStationEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 72,
+   "usize": 72
+  },
+  {
    "name": "_ZN7Globals18reportLeaderboardsEv",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 36,
    "usize": 36
+  },
+  {
+   "name": "_ZN7Globals19getRandomPlanetNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 100,
+   "usize": 100
   },
   {
    "name": "_ZN7Globals20getSoundResourceListEv",
@@ -31142,6 +31126,22 @@
    "linked": true,
    "osize": 36,
    "usize": 36
+  },
+  {
+   "name": "_ZN7Globals23replaceKeyBindingTokensERKN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
+  },
+  {
+   "name": "_ZN7Globals24getRandomSystemForDrinksEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 48,
+   "usize": 48
   },
   {
    "name": "_ZN7Globals25startNewSoundResourceListEv",

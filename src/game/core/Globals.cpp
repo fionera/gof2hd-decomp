@@ -311,11 +311,13 @@ Generator *Globals::generator;
 #include "game/ui/Layout.h"
 
 #include "game/mission/Mission.h"
+#include "game/mission/Generator.h"
 #include "game/world/Station.h"
 #include "game/mission/RecordHandler.h"
 #include "game/world/SolarSystem.h"
 #include "game/core/String.h"
 #include "engine/math/BoundingSphere.h"
+#include "engine/render/ParticleSettingsRef.h"
 
 #include <new>
 
@@ -349,27 +351,9 @@ static inline void * Achievements_dtor(void *a) { ((Achievements*)a)->~Achieveme
 
 static inline void * ImageFactory_dtor(void *f) { ((ImageFactory*)f)->~ImageFactory(); return (void *)(f); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
-void Mission_ctor(void *m); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void Galaxy_ctor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void Achievements_ctor(void *a); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void Status_ctor(void *s); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
 void FileRead_ctor(void *f); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 void *FileRead_dtor(void *f); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void AERandom_ctor(void *r) { new(r) AbyssEngine::AERandom(); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void Generator_ctor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void FModSound_ctor(void *s); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::sound->tryToStopMusicForBGMusic()); }
-
-void ParticleSettingsRef_initialize();
 
 static inline int Station_getIndex(int station) { return (int)(((Station*)(long)station)->getIndex()); }
 
@@ -430,7 +414,7 @@ void Globals::startNewSoundResourceList() {
 
 String Globals::getItemName(int item) {
     String *src = Globals::gameText->getText(item + 0x4fa);
-    return *src;
+    return String(*src, false);
 }
 
 String Globals::getKeyActionName(int action) {
@@ -446,9 +430,9 @@ float Globals::sqrt(float x) {
 
 
 void Globals::getRandomSystemForDrinks() {
-    int slot = *(int *) &Globals::galaxy;
-    int picked = nextInt_71ad0((AbyssEngine::AERandom *) *(int *) &Globals::rnd, 0x16);
-    *(int *) (long) slot = picked;
+    Galaxy *galaxy = Globals::galaxy;
+    int picked = Globals::rnd->nextInt(0x16);
+    galaxy->getSystem(picked);
 }
 
 void Globals::addSoundResourceToList(int snd) {
@@ -465,10 +449,14 @@ void Globals::addSoundResourceToList(int snd) {
 }
 
 String Globals::replaceKeyBindingTokens(const String &src) {
-    return src;
+    return String(src, false);
 }
 
 struct FileRead {
+    FileRead();
+
+    ~FileRead();
+
     Station *loadStation(int32_t id);
 
     Array<int32_t> *loadWreckCollision(int32_t id);
@@ -482,11 +470,10 @@ struct FileRead {
 
 
 Station *Globals::getRandomStation() {
-    FileRead *f = (FileRead *) ::operator new(1);
-    FileRead_ctor(f);
+    FileRead *f = new FileRead();
     int which = nextInt_71ad0(Globals::rnd, 0x87);
     Station *r = f->loadStation(which);
-    ::operator delete(FileRead_dtor(f));
+    delete f;
     return r;
 }
 
@@ -1091,14 +1078,8 @@ String Globals::getKeyBindingReplaceString(int key) {
     (void) key;
 
     String tmp;
-    {
-        if (tmp.data) delete[] tmp.data;
-        tmp.data = nullptr;
-        tmp.length = 0;
-    }
     tmp.ToUpperCase();
-    String result;
-    return result;
+    return String(tmp, false);
 }
 
 static const char gLTS_minTens[] = "";
@@ -2026,8 +2007,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     (void) engine;
     int *missionSlot = (int *) &Mission::empty;
     if (*missionSlot == 0) {
-        Mission *m = (Mission *) ::operator new(0x78);
-        Mission_ctor(m);
+        Mission *m = new Mission();
         *missionSlot = (int) (long) m;
     }
 
@@ -2050,23 +2030,19 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     *flagFFFF = -1;
     *langSettingSlot = (lang == 0) ? 6 : 0xc;
 
-    Galaxy *galaxy = (Galaxy *) ::operator new(8);
-    Galaxy_ctor(galaxy);
+    Galaxy *galaxy = new Galaxy();
     Globals::galaxy = galaxy;
-    Achievements *ach = (Achievements *) ::operator new(0x28);
-    Achievements_ctor(ach);
+    Achievements *ach = new Achievements();
     Globals::achievements = ach;
-    Status *status = (Status *) ::operator new(0x1f0);
-    Status_ctor(status);
+    Status *status = new Status();
     Globals::status = status;
     ImageFactory *imgFac = new ImageFactory();
     Globals::imageFactory = imgFac;
 
-    FileRead *fr = (FileRead *) ::operator new(1);
-    FileRead_ctor(fr);
+    FileRead *fr = new FileRead();
     Globals::items = (Array<Item *> *) (long) fr->loadItemsBinary();
     Globals::ships = (Array<Ship *> *) (long) fr->loadShipsBinary();
-    ::operator delete(FileRead_dtor(fr));
+    delete fr;
 
     int *engineSlot = (int *) &Globals::Canvas;
     if (*engineSlot == 0) {
@@ -2075,13 +2051,11 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     Globals::appManager = app;
     app->VibrateEnable(0);
 
-    AbyssEngine::AERandom *rng = (AbyssEngine::AERandom *) ::operator new(8);
-    AERandom_ctor(rng);
+    AbyssEngine::AERandom *rng = new AbyssEngine::AERandom();
     Globals::globals = this;
     Globals::rnd = rng;
 
-    Generator *gen = (Generator *) ::operator new(1);
-    Generator_ctor(gen);
+    Generator *gen = new Generator();
     Globals::generator = gen;
 
     RecordHandler *rh = new RecordHandler();
@@ -2090,8 +2064,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     Globals::status->resetGame();
     (*rhSlotP)->loadOptions();
 
-    FModSound *fmod = (FModSound *) ::operator new(0x243c);
-    FModSound_ctor(fmod);
+    FModSound *fmod = new FModSound();
     FModSound **fmodSlotP = &Globals::sound;
     *fmodSlotP = fmod;
     fmod->init();
@@ -2103,7 +2076,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     (*fmodSlotP)->setVolume(2, settings->colorG);
     (*fmodSlotP)->setVolume(3, settings->colorB);
 
-    if (FModSound_tryToStopMusicForBGMusic() != 0) {
+    if (Globals::sound->tryToStopMusicForBGMusic() != 0) {
         settings->_region[1] = 0;
     }
 
@@ -2134,7 +2107,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     Layout *layout = new Layout();
     Globals::layout = layout;
     layout->reload();
-    ParticleSettingsRef_initialize();
+    ParticleSettingsRef::initialize();
 
     Array<int> *arr = new Array<int>();
     this->soundResources = arr;
@@ -2486,13 +2459,12 @@ int Globals::getDialogueSoundId(int code, Agent *agent) {
 
 
 String Globals::getRandomPlanetName() {
-    FileRead *f = (FileRead *) ::operator new(1);
-    FileRead_ctor(f);
+    FileRead *f = new FileRead();
     int which = nextInt_71ad0(Globals::rnd, 0x64);
     Station *st = f->loadStation(which);
     String name = st->getName();
     delete st;
-    ::operator delete(FileRead_dtor(f));
+    delete f;
     return name;
 }
 
@@ -2587,5 +2559,4 @@ void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
 }
 
 #include "engine/core/AERandom.h"
-
 
