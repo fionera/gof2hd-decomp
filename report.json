@@ -2568,6 +2568,14 @@
    "usize": 1612
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 16.7,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "_ZN9RocketGun8setRadarEP5Radar",
    "pct": 16.8,
    "byte": false,
@@ -2590,14 +2598,6 @@
    "linked": false,
    "osize": 230,
    "usize": 574
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 17.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -7696,22 +7696,6 @@
    "usize": 14
   },
   {
-   "name": "_ZN14PlayerAsteroidC1EiP10AEGeometryiiRKN11AbyssEngine6AEMath6VectorEfi",
-   "pct": 46.2,
-   "byte": false,
-   "linked": false,
-   "osize": 824,
-   "usize": 632
-  },
-  {
-   "name": "_ZN14PlayerAsteroidC2EiP10AEGeometryiiRKN11AbyssEngine6AEMath6VectorEfi",
-   "pct": 46.2,
-   "byte": false,
-   "linked": false,
-   "osize": 824,
-   "usize": 632
-  },
-  {
    "name": "_ZN5MGame18maneuverTouchBeginEiiPv",
    "pct": 46.2,
    "byte": false,
@@ -7752,12 +7736,20 @@
    "usize": 112
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 46.7,
+   "name": "_ZN14PlayerAsteroidC1EiP10AEGeometryiiRKN11AbyssEngine6AEMath6VectorEfi",
+   "pct": 46.6,
    "byte": false,
    "linked": false,
-   "osize": 2696,
-   "usize": 2648
+   "osize": 824,
+   "usize": 632
+  },
+  {
+   "name": "_ZN14PlayerAsteroidC2EiP10AEGeometryiiRKN11AbyssEngine6AEMath6VectorEfi",
+   "pct": 46.6,
+   "byte": false,
+   "linked": false,
+   "osize": 824,
+   "usize": 632
   },
   {
    "name": "_ZN12StatusWindowC1Ev",
@@ -8846,6 +8838,14 @@
    "linked": false,
    "osize": 596,
    "usize": 608
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",

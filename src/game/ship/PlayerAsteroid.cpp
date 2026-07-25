@@ -13,8 +13,6 @@
 namespace AbyssEngine {
 }
 
-AbyssEngine::Transform *PlayerAsteroidTransformGetTransform(PaintCanvas *canvas, uint32_t handle);
-
 static Vector g_playerAsteroidCenter;
 static int g_playerAsteroidCenterLength = 0;
 
@@ -297,8 +295,8 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->field_0x168 = 0;
     this->field_0x16c = 0;
 
-    AbyssEngine::Transform *transform =
-            PlayerAsteroidTransformGetTransform(Globals::Canvas, geometry->transform);
+    AbyssEngine::Transform *transform = static_cast<AbyssEngine::Transform *>(
+            Globals::Canvas->TransformGetTransform(geometry->transform));
     this->player->setRadius((int) (transform->boundingRadius * scaling * 0.5f));
     this->player->setMaxHitpoints((int) (scaling * 100.0f + 30.0f));
     this->minable = quality > 3;
