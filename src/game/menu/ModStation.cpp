@@ -592,7 +592,7 @@ static int **g_rl_engineHolder = 0;
 
 static int g_rl_lightFlag = 0;
 
-int ApplicationManager_GetEngine_rl();
+static inline int ApplicationManager_GetEngine_rl() { return (int)(intptr_t) Globals::appManager->GetEngine(); }
 
 static inline int Status_getSystem_rl() { return (int)(Globals::status->getSystem()); }
 
@@ -643,11 +643,11 @@ static int **g_ou_appData = 0;
 
 static int **g_ou_module = 0;
 
-int ApplicationManager_GetElapsedTimeMillis_ou();
+static inline int ApplicationManager_GetElapsedTimeMillis_ou() { return (int) Globals::appManager->GetElapsedTimeMillis(); }
 
-int ApplicationManager_GetApplicationData_ou();
+static inline int ApplicationManager_GetApplicationData_ou() { return (int)(intptr_t) Globals::appManager->GetApplicationData(); }
 
-void ApplicationManager_SetCurrentApplicationModule_ou(int module);
+static inline void ApplicationManager_SetCurrentApplicationModule_ou(int module) { Globals::appManager->SetCurrentApplicationModule((unsigned int)module); }
 
 void FModSound_play_ou(int sound, int id, const float *p, float vol);
 
@@ -719,7 +719,7 @@ static inline void SpaceLounge_ctor_ou(SpaceLounge * l) { new ((void*)l) SpaceLo
 
 static inline void SpaceLounge_init_ou(SpaceLounge * l) { l->init(); }
 
-float EaseInOut_advance_ou(AbyssEngine::EaseInOut *e, int elapsed);
+static inline float EaseInOut_advance_ou(AbyssEngine::EaseInOut *e, int elapsed) { e->Increase((float)elapsed); return e->GetValue(); }
 
 unsigned ModStation_ou_cameraHandle();
 
@@ -1424,9 +1424,9 @@ static int **g_ote_module = 0;
 
 
 
-void ApplicationManager_SetCurrentApplicationModule_ote(int module);
+static inline void ApplicationManager_SetCurrentApplicationModule_ote(int module) { Globals::appManager->SetCurrentApplicationModule((unsigned int)module); }
 
-int ApplicationManager_GetApplicationData_ote();
+static inline int ApplicationManager_GetApplicationData_ote() { return (int)(intptr_t) Globals::appManager->GetApplicationData(); }
 
 static inline int Status_getStation_ote() { return (int)(Globals::status->getStation()); }
 

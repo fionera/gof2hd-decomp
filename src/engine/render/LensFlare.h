@@ -9,30 +9,6 @@ namespace AbyssEngine {
 
 using ::AbyssEngine::PaintCanvas;
 
-void LensFlare_Image2DCreate(AbyssEngine::PaintCanvas *canvas, short id, uint32_t *out);
-
-int LensFlare_GetWidth(AbyssEngine::PaintCanvas *canvas);
-
-int LensFlare_GetHeight(AbyssEngine::PaintCanvas *canvas);
-
-float LensFlare_sqrtf(float v);
-
-int LensFlare_imgWidth(AbyssEngine::PaintCanvas *canvas, uint32_t img);
-
-int LensFlare_imgHandle(uint32_t img);
-
-void LensFlare_setColor(AbyssEngine::PaintCanvas *canvas, uint32_t color);
-
-void LensFlare_drawScaled(AbyssEngine::PaintCanvas *canvas, uint32_t img, int x, int y);
-
-void LensFlare_pushState(AbyssEngine::PaintCanvas *canvas);
-
-void LensFlare_setBlend(AbyssEngine::PaintCanvas *canvas, uint32_t mode);
-
-void LensFlare_drawFinal(AbyssEngine::PaintCanvas *canvas, uint32_t *img, int a, int b);
-
-void LensFlare_restoreState(AbyssEngine::PaintCanvas *canvas, int saved);
-
 class LensFlare {
 public:
     float intensity;

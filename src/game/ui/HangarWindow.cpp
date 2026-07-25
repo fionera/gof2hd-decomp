@@ -30,7 +30,7 @@ unsigned char *AppManager_GetApplicationData();
 
 unsigned char *AppManager_GetApplicationModule(unsigned int id);
 
-unsigned char *ApplicationManager_GetApplicationData();
+static inline unsigned char *ApplicationManager_GetApplicationData() { return (unsigned char *)Globals::appManager->GetApplicationData(); }
 
 void Status_changeCredits(void *globals); // lint: void_ptr cross-file shim, mangled param type
 

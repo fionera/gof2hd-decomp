@@ -2,6 +2,31 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-25e (wave 16B — LensFlare/AppMgr/Engine/RB de-shims + PF_update_body merged into update)
+
+Net: avg 77.3->77.31, byte 1159 (=), linked 2556 (=), imports 820->776 (-44), extra 36,
+parity 0, RATCHET PASS + locked, lint CLEAN.
+- PF merge landed: PF_update_body inlined into PlayerFighter::update via single `update_body:`
+  semantic label (9 call+return sites -> goto; one goto-over-init fixed by hoisting
+  `Array<Player*>* enemies = nullptr;`). update 5.1->16.2 (+11.1). Now ~1518 insns vs orig
+  ~3639; remaining gap = unauthored state-8 docking approach + ded30-df040 shooting-math block.
+- LensFlare de-shim (12 shims): disasm-verified mappings incl. imgHandle/imgWidth BOTH ->
+  GetImage2DWidth (PLT 0x62d84), pushState/setBlend/drawFinal/restoreState block ->
+  GetColor/SetColor/FillRectangle. LensFlare ctor 55.6->63.9, render2D +1.0.
+- EaseInOut_advance_ou -> e->Increase((float)dt); e->GetValue() (ModStation). AppMgr shims (7)
+  -> Globals::appManager->... in ModStation + HangarWindow. ModStation::OnUpdate -0.9 accepted.
+- Engine_* shims (11) removed across all 5 shader TUs (DrawFBO/Blur/Bloom/GlowPP/PostBW);
+  every RenderEffect up: DrawFBO 84.8->92.7, PostBW +6.1, Blur +5.3, Bloom +4.7/+3.8, Glow +4.6.
+- RB_* (20 shims) RepairBeam fully de-shimmed with per-site disasm proofs (receiver kp->player;
+  GetDirVector/GetUpVector scale -300/200; damage(1,false,-1); getAttribute 0x35 range/0x36 rate;
+  sort arg 9 for shield check). update 16.2->22.5. Sound globals retyped int* -> FModSound**.
+- NOTE: worker standalone compile cmd lacks -DGOF2_MATCH -> Transform.h static_assert noise in
+  worker reports; authoritative cmake build was clean. Add -DGOF2_MATCH to future worker prompts
+  or ignore that specific assert in reports.
+Next: wave 16C (psm/pss 25, MovingStars_ 12 + _ae_ 6, FMOD_ 11 + FModSound_ 12); PE_ analyst
+(PlayerEgo::update chunk map like notes_pf_update.md); _mtw_ mechanical subset (single owner);
+PF state-8 + shooting-math authoring.
+
 ## Session 2026-07-25d (wave 16A — imports triage + mechanical de-shims + emit volatile-cache + PF chunks 9-16)
 
 Net: avg 77.3, byte 1159 (=), linked 2556 (=), imports 838->820 (-18), extra 36, parity 0,

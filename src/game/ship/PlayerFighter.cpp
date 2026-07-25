@@ -36,8 +36,6 @@ void RH_op_delete_arr(void *p); // lint: void_ptr (external symbol; generic deal
 
 void PF_update_dead(PlayerFighter * self);
 
-static void PF_update_body(PlayerFighter *self, int dt);
-
 namespace AbyssEngine {
     namespace AEMath {
         float VectorLength(const Vector &value);
@@ -531,6 +529,9 @@ void PlayerFighter::update(int dt) {
                 ((AEGeometry *)(intptr_t)this->subGeometry())->getMatrix();
     }
 
+    // Hoisted to avoid goto-over-init: enemies is used from Chunk 5b onward
+    Array<Player *> *enemies = nullptr;
+
     // Chunk 5: Wingman flag / state dispatch (dd22c..dd27e)
     {
         int s5 = this->state;
@@ -548,8 +549,7 @@ void PlayerFighter::update(int dt) {
                 // if field_0xe4 == 1: escort path (dd2e0, handled by PF_update_body)
                 // if field_0xe4 != 1: jump back to dd240 = state 3/4 check below
                 if (this->KIPlayer::field_0xe4 == 1) {
-                    PF_update_body(this, dt);
-                    return;
+                    goto update_body;
                 }
             }
         }
@@ -558,8 +558,7 @@ void PlayerFighter::update(int dt) {
         }
         if (stop5) {
             pl5->StopEngineSound();
-            PF_update_body(this, dt);
-            return;
+            goto update_body;
         }
         // Normal path: call Player::update
         int fov_p1 = this->fov() + 1;
@@ -568,10 +567,9 @@ void PlayerFighter::update(int dt) {
     }
 
     // Chunk 5b: getEnemies + aiDisabled gate (dd26c..dd27e)
-    Array<Player *> *enemies = ((Player *)(intptr_t)this->player())->getEnemies();
+    enemies = ((Player *)(intptr_t)this->player())->getEnemies();
     if (this->aiDisabled != 0) {
-        PF_update_body(this, dt);
-        return;
+        goto update_body;
     }
 
     // Chunk 6: target index validation + route follow when no enemies (dd27e..dd3c6)
@@ -580,8 +578,7 @@ void PlayerFighter::update(int dt) {
         Route *kr = this->KIPlayer::route;
         if (kr == nullptr) {
             this->KIPlayer::state = 5;
-            PF_update_body(this, dt);
-            return;
+            goto update_body;
         }
         {
             Vector pos = ((AEGeometry *)(intptr_t)this->geometry())->getPosition();
@@ -589,15 +586,13 @@ void PlayerFighter::update(int dt) {
         }
         Waypoint *wp = kr->getWaypoint();
         if (wp == nullptr) {
-            PF_update_body(this, dt);
-            return;
+            goto update_body;
         }
         this->resetVecB.x = (float)wp->x;
         this->resetVecB.y = (float)wp->y;
         this->resetVecB.z = (float)wp->z;
         this->field_0x12c = 1;
-        PF_update_body(this, dt);
-        return;
+        goto update_body;
     } else {
         // Target index validation (dd27e..dd3c6)
         int tgt = this->KIPlayer::field_0x38;
@@ -634,8 +629,7 @@ void PlayerFighter::update(int dt) {
             if (r2 <= 29 && enemies->count >= 2) {
                 // Enter target scan loop (dd426..dd50a) — handled by PF_update_body
                 this->field_0x12e = 0;
-                PF_update_body(this, dt);
-                return;
+                goto update_body;
             }
             // No scan: clear target index
             this->KIPlayer::field_0x38 = 0;
@@ -648,8 +642,7 @@ void PlayerFighter::update(int dt) {
 
     // dd544: if already have a locked target, go straight to PF_update_body (dd7ac path)
     if (this->field_0x12e != 0) {
-        PF_update_body(this, dt);
-        return;
+        goto update_body;
     }
 
     // Chunk 8: linear enemy scan when no locked target (dd55a..dd620)
@@ -671,8 +664,7 @@ void PlayerFighter::update(int dt) {
                     // found via turned-enemy: store target
                     this->field_0x12e = 1;
                     this->KIPlayer::field_0x38 = (int)i;
-                    PF_update_body(this, dt);
-                    return;
+                    goto update_body;
                 }
             }
             // Range check: AABB within attack radius R
@@ -690,9 +682,762 @@ void PlayerFighter::update(int dt) {
         }
     }
 
-    PF_update_body(this, dt);
+    // ------------ inlined PF_update_body begins here -------------------------
+    update_body:;
+    {
+    using namespace AbyssEngine;
+    using namespace AbyssEngine::AEMath;
 
-    return;
+    AEGeometry *geom = (AEGeometry *)(intptr_t)this->geometry();
+
+    // de1a8: entry gate — if aiDisabled, just spin the reference matrix and cloak
+    if (this->aiDisabled != 0) {
+        geom->updateReferenceMatrix();
+        this->handleCloaking();
+        return;
+    }
+
+    // de1bc: state dispatch (tbh, states 0-9)
+    int curState = this->state;
+    if (curState > 9) {
+        return; // de1dc: out-of-range -> epilogue
+    }
+
+    switch (curState) {
+    // -----------------------------------------------------------------------
+    // State 0: initialise — set state to 1, return
+    // -----------------------------------------------------------------------
+    case 0:
+        this->state = 1;
+        return;
+
+    // -----------------------------------------------------------------------
+    // State 2: dead / no-op — just return
+    // -----------------------------------------------------------------------
+    case 2:
+        return;
+
+    // -----------------------------------------------------------------------
+    // State 1 / State 7: active AI — handleCloaking + damage particle logic
+    // -----------------------------------------------------------------------
+    case 1:
+    case 7: {
+        this->handleCloaking();
+
+        // de204: check field_0x13d (damageEscape flag)
+        if (this->field_0x13d == 0) {
+            break; // skip to post-state movement (de9c6)
+        }
+
+        // de20e: compute accumulated damage delta
+        int newDmg = this->deltaTime;    // field_0x1d0
+        int fp_val = dt;                  // fp = dt at entry
+        if (newDmg <= fp_val) {
+            // de254: boost timer kick: field_0x1c0 = 10000
+            // de214: skip to boost section
+            break; // goto boost section via post-switch fall-through
+        }
+        // de21c: delta damage
+        int delta = this->deltaTimeHi;   // field_0x1d4
+        int newHp  = newDmg - fp_val;    // field_0x1d0 - dt
+        this->deltaTime   = 0;           // field_0x1d0 = 0
+        this->deltaTimeHi = newHp + delta; // field_0x1d4 += delta
+
+        // de230: get HP percentage
+        int maxHp = ((Player *)(intptr_t)this->player())->getMaxHitpoints();
+        float pct = ((float)(newHp + delta) / (float)maxHp) * 100.0f;
+
+        // de24c: if pct > 40.0: boost kick + break
+        if (pct > 40.0f) {
+            this->field_0x1c0 = 10000;   // de258
+            this->field_0x1dc = 0;       // de262
+            this->field_0x1e0 = 1;       // de268 (field_0x1e0 used as boostFlag)
+            break; // de26c: goto boost section
+        }
+        break;
+    }
+
+    // -----------------------------------------------------------------------
+    // State 3: dying spin + explosion
+    // de2c0-de47e
+    // -----------------------------------------------------------------------
+    case 3: {
+        // Clear death-trail flags
+        this->field_0x101 = 0;           // de2d0
+        this->field_0x13e = 0;           // de2d4
+
+        // Build identity rotation matrix on stack, then set rotation from field_0x188
+        Matrix rotMat;
+        rotMat.m[0]  = 1.0f; rotMat.m[5]  = 1.0f; rotMat.m[10] = 1.0f; // diagonal
+        rotMat.m[1]  = 0.0f; rotMat.m[2]  = 0.0f; rotMat.m[3]  = 0.0f;
+        rotMat.m[4]  = 0.0f; rotMat.m[6]  = 0.0f; rotMat.m[7]  = 0.0f;
+        rotMat.m[8]  = 0.0f; rotMat.m[9]  = 0.0f; rotMat.m[11] = 0.0f;
+        rotMat.m[12] = 0.0f; rotMat.m[13] = 0.0f; rotMat.m[14] = 0.0f;
+        AEMath::MatrixSetRotation(rotMat,
+                                  this->field_0x188.x,
+                                  this->field_0x188.y,
+                                  this->field_0x188.z);
+
+        // Apply rotation to geometry matrix if dt >= 1
+        if (dt >= 1) {
+            Matrix geoMat = geom->getMatrix();
+            Matrix newMat = geoMat * rotMat;
+            geom->setMatrix(newMat);
+        }
+
+        // Translate: direction * float(dt) * currentSpeed
+        Vector dir = this->field_0x194 * (float)dt;
+        Vector dirScaled = dir * this->currentSpeed;
+        geom->translate(dirScaled);
+        geom->updateReferenceMatrix();
+
+        // Decrement death countdown
+        this->field_0x1f8 -= dt;
+        if (this->field_0x1f8 > -1) {
+            return;
+        }
+
+        // Countdown expired: trigger explosion
+        {
+            Vector zeroVec = {0.0f, 0.0f, 0.0f};
+            this->explosion->start(zeroVec, zeroVec);
+        }
+
+        // Disable engine trail emit
+        ((Level *)(intptr_t)this->level())->field_74->enableSystemEmit(
+            this->engineTrailSystem, false);
+
+        // Disable damage particles if options[0x28] > 0
+        if (Globals::options[0x28] > 0) {
+            ((Level *)(intptr_t)this->level())->particleEmitBoolPtr->enableSystemEmit(
+                this->field_0x80, false);
+            ((Level *)(intptr_t)this->level())->particleSystemMgr->enableSystemEmit(
+                this->field_0x84, false);
+        }
+
+        // Random bomb force: 50.0 + rnd(50) * 0.01
+        int rndBomb = Globals::rnd->nextInt(50);
+        float bombForce = 50.0f + (float)rndBomb * 0.01f;
+        ((Player *)(intptr_t)this->player())->setBombForce(bombForce);
+
+        // Random spin direction: 3 * rnd(200)-100, normalize -> field_0x17c
+        {
+            int rx = Globals::rnd->nextInt(200) - 100;
+            int ry = Globals::rnd->nextInt(200) - 100;
+            int rz = Globals::rnd->nextInt(200) - 100;
+            Vector spinDir = {(float)rx, (float)ry, (float)rz};
+            Vector normDir = VectorNormalize(spinDir);
+            this->field_0x17c = normDir;
+        }
+
+        // State -> 4, reset countdown, cleanup spacePoint
+        this->field_0x1f8 = 0;
+        this->state = 4;
+
+        if (this->spacePoint != 0) {
+            SpacePoint *sp = (SpacePoint *)(intptr_t)this->spacePoint;
+            if (!sp->isFree()) {
+                sp->giveFree();
+                this->spacePoint = 0;
+            }
+        }
+
+        // de47e: hasCrateCaptured check (reached only from state 3 path)
+        if (!this->crateCaptured()) {
+            return;
+        }
+        // de488: if carriesMissionCrate != 0 && missionCrateCaptured != 0 -> special exit
+        if (this->carriesMissionCrate != 0 && this->missionCrateCaptured() != 0) {
+            // de458: clear crateCaptured, set empDisabledByte=1
+            this->crateCaptured() = 0;
+            ((Player *)(intptr_t)this->player())->empDisabledByte = 1;
+            return;
+        }
+        // de498: create crate — shipGroup == 9 ? flag=1 : flag=0
+        {
+            int flag = ((this->shipGroup - 9) == 0) ? 1 : 0;
+            this->createCrate(flag);
+        }
+        return;
+    }
+
+    // -----------------------------------------------------------------------
+    // State 4: crate float / wreck hover
+    // de4ac-de4c2
+    // -----------------------------------------------------------------------
+    case 4: {
+        // de4ac: field_0x1f8 += dt; if >= 1: clear field_0x73, fall to post-state
+        this->field_0x1f8 += dt;
+        if (this->field_0x1f8 < 1) {
+            // still floating: stay in state 4 movement
+            break;
+        }
+        this->field_0x73 = 0;
+        // fall through to post-state movement
+        break;
+    }
+
+    // -----------------------------------------------------------------------
+    // State 5: asleep proximity check
+    // de4c4-de590
+    // -----------------------------------------------------------------------
+    case 5: {
+        Player *pl5b = (Player *)(intptr_t)this->player();
+        // de4c6: if !pl5b->enemyFlagsLo: skip visibility
+        if (pl5b->enemyFlagsLo != 0) {
+            // de4cc: if status->getCurrentCampaignMission() >= 2 and geom != 0:
+            if (Globals::status->getCurrentCampaignMission() >= 2) {
+                AEGeometry *visGeom = (AEGeometry *)(intptr_t)this->subGeometry();
+                if (visGeom == nullptr) {
+                    visGeom = geom;
+                }
+                visGeom->setVisible(0);
+            }
+        }
+        // de4e4..de4f4: no target, or target hidden -> stay asleep
+        if (this->targetPlayer == nullptr) {
+            return;
+        }
+        if (this->targetPlayer->field_5e != 0) {
+            return;
+        }
+        // de4f8: proximity check: resetVecC components vs field_0x128 (radius)
+        {
+            float radius = (float)this->field_0x128;
+            float rx = this->resetVecC.x;
+            float ry = this->resetVecC.y;
+            float rz = this->resetVecC.z;
+            if (rx >= radius || rx <= -radius) { return; }
+            if (ry >= radius || ry <= -radius) { return; }
+            if (rz >= radius) { return; }
+        }
+        // In range: awaken
+        this->state = 1;
+        AEGeometry *visGeom2 = (AEGeometry *)(intptr_t)this->subGeometry();
+        if (visGeom2 == nullptr) visGeom2 = geom;
+        visGeom2->setVisible(1);
+        ((Player *)(intptr_t)this->player())->setActive(1);
+        if (this->field_0x12f != 0) {
+            ((Level *)(intptr_t)this->level())->pirateStationAction(1);
+        }
+        return;
+    }
+
+    // -----------------------------------------------------------------------
+    // State 6: jump — accelerate until > 100.0, then setDead
+    // de590-de5d8
+    // -----------------------------------------------------------------------
+    case 6: {
+        this->currentSpeed *= 1.1f;
+        float move = this->currentSpeed * (float)dt;
+        int moveInt = (int)move;
+        float movef = (float)moveInt;
+        geom->moveForward(movef);
+        if (this->currentSpeed > 100.0f) {
+            this->setDead();
+        }
+        return;
+    }
+
+    // -----------------------------------------------------------------------
+    // State 8: docking approach
+    // de5da-de8a2
+    // -----------------------------------------------------------------------
+    case 8: {
+        // Get the docking-approach route position
+        Route *dRoute = this->KIPlayer::route;
+
+        // Get docking point: route->getPosition() via vtable[10]=getPosition
+        Vector routePos;
+        {
+            KIPlayer *routeKI = (KIPlayer *)(intptr_t)0; // placeholder
+            // Actual: call vtable[10] on self = getPosition()
+            (void)routeKI;
+        }
+        // de5e0: r0 = [r4, 0x6c] = KIPlayer::route (navigation route)
+        // de5e2-de5ea: call r6 = Route::getDockingTarget getter, result -> sl
+        //              Then call r6 again -> r1 = docking route object
+        //              vtable[10] with r0=sp+0x140 -> getPosition -> sp+0x140
+        //              [r4+0x6c]->geometry->getMatrix -> rotate vector by it
+        //              sp+0x198 = sp+0x140 + (rotated docking offset)
+        //              self->getNearestDockingPoint(sp+0x198) -> r5 (dock slot idx)
+        //              sp+0x140 = getPosition again
+        //              sp+0xd8 = MatrixRotateVector([r4+0x6c]->geom->matrix, dock slot)
+        //              sp+0x198 = sp+0x140 + sp+0xd8
+        //              field_0x9c = sp+0x198
+        //              sp+0x140 = getPosition(self)
+        //              sp+0x198 = sp+0x140 - field_0x9c
+        //              distance = VectorLength(sp+0x198) as int
+        //              dockThreshold[type] = ...
+        //              if distance > threshold: go to EaseInOutMatrix -> de8a4
+        //              else: setExhaustVisible(false), clear field_0x2bc/2c0, state=9
+
+        // Simplified: route via KIPlayer::route, compute approach
+        // This is complex enough that I will stub it for now.
+        // The approach: if within docking distance, go to state 9
+        // Else: EaseInOutMatrix interpolation to approach position
+        // For now: structured but incomplete stub that compiles
+        if (dRoute != nullptr) {
+            // Check if we've reached the docking point
+            // (full logic elided — will be filled in a follow-up pass)
+        }
+        break;
+    }
+
+    // -----------------------------------------------------------------------
+    // State 9: docked waiting (timer)
+    // de714-de84f
+    // -----------------------------------------------------------------------
+    case 9: {
+        // Increment docking timer
+        this->field_0x2bc += dt;
+
+        // Mission dock logic (type 0xb8 passenger transport)
+        Mission *mission = Globals::status->getMission();
+        if (!mission->isEmpty() && mission->getType() == 0xb8) {
+            Route *r9 = this->KIPlayer::route;
+            if (r9 != nullptr) {
+                PlayerFixedObject *dockTarget =
+                    (PlayerFixedObject *)r9->getDockingTarget();
+                if (dockTarget != nullptr && dockTarget->getDockingType() == 1) {
+                    // compute field_0x2c0 = int(float(field_0x2bc) / dockDiv)
+                    // dockDiv comes from a pool constant (type-dependent)
+                    // (exact constant elided — placeholder 3000.0f matches observed behaviour)
+                    int oldC = this->field_0x2c0;
+                    float timerF = (float)this->field_0x2bc;
+                    float dockDiv = (this->wreckGeometry() != nullptr
+                                     && /* type 0x33 */ false) ? 3000.0f : 3000.0f;
+                    this->field_0x2c0 = (int)(timerF / dockDiv);
+
+                    // passenger delivery logic
+                    if (Globals::status->getCurrentCampaignMission() == 0x5e) {
+                        int sv = mission->getStatusValue();
+                        int maxPass = Globals::status->getShip()->getMaxPassengers();
+                        if (sv >= maxPass) { goto state9_skip_delivery; }
+                    }
+                    if (this->field_0x2c0 > oldC) {
+                        int lvlPass = ((Level *)(intptr_t)this->level())->getNumDeliveredPassengers();
+                        int missionAmt = mission->getProductionGoodAmount();
+                        if (lvlPass < missionAmt) {
+                            int sv2 = mission->getStatusValue();
+                            int newSv = sv2 + oldC;
+                            int diff = newSv - this->field_0x2c0;
+                            mission->setStatusValue(diff);
+                            if (mission->getStatusValue() <= -1) {
+                                mission->setStatusValue(0);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        state9_skip_delivery:;
+
+        // Check if docking time complete
+        {
+            Route *r9b = this->KIPlayer::route;
+            int dockTime = 0;
+            if (r9b != nullptr) {
+                dockTime = r9b->getDockingTime();
+            }
+            if (this->field_0x2bc <= dockTime) {
+                return;
+            }
+        }
+
+        // Docking done: setExhaustVisible, advance route, state=1
+        this->setExhaustVisible(true);
+        Route *r9c = this->KIPlayer::route;
+        if (r9c != nullptr) {
+            int cur = r9c->getCurrent();
+            r9c->reachWaypoint(cur);
+        }
+        this->state = 1;
+
+        // Re-enable engine trail if field_0x1fc != 0
+        if (this->field_0x1fc != 0) {
+            ((Level *)(intptr_t)this->level())->particleEmitBoolPtr->enableSystemEmit(
+                this->field_0x80, true);
+            ((Level *)(intptr_t)this->level())->particleSystemMgr->enableSystemEmit(
+                this->field_0x84, true);
+        }
+
+        // Clean up spacePoint
+        if (this->spacePoint != 0) {
+            SpacePoint *sp = (SpacePoint *)(intptr_t)this->spacePoint;
+            sp->giveFree();
+            this->spacePoint = 0;
+        }
+        return;
+    }
+
+    default:
+        break;
+    }
+
+    // -----------------------------------------------------------------------
+    // Post-state: boost timer (de840-de9c6)
+    // de840: if field_0x1c0 > 5000 and boost not active: maybe start boost
+    // de934: if boost active: update speed toward target
+    // -----------------------------------------------------------------------
+    // de840: only try to start a boost if not already boosting
+    if (this->field_0x1c0 > 5000 && this->field_0x1f4 == 0) {
+        bool skipBoost = false;
+        if (this->field_0x1e0 == 0) {
+            int r = Globals::rnd->nextInt(100);
+            if (r < this->boostProb) {
+                skipBoost = true;
+            }
+        }
+        if (!skipBoost) {
+            // de87a: start boost
+            int dur = Globals::rnd->nextInt(3000) + 5000;
+            this->field_0x1c4 = dur;
+            this->field_0x1f4  = 1;
+            // strd at de89e: field_0x1ec = 5.5 (speed target), currentRotate = 1.3
+            this->field_0x1ec = 5.5f;
+            this->currentRotate = 1.3f;
+        } else {
+            // de8c0: skipBoost path — reset timer
+            this->field_0x1c0 = 0;
+        }
+    }
+
+    // de934: if boost active: update currentSpeed toward target
+    if (this->field_0x1f4 != 0) {
+        if (this->field_0x1c0 > this->field_0x1c4) {
+            // Boost expired: restore pre-boost speed
+            this->field_0x1e0 = 0;
+            this->field_0x1c0 = 0;
+            this->currentSpeed = this->speed;
+            this->field_0x1ec = this->speed;
+            this->currentRotate = this->rotate;
+            this->field_0x1f4  = 0;
+        } else {
+            // Still boosting: drive speed toward 5.5 target
+            float spd    = this->currentSpeed;
+            float target = this->field_0x1ec;
+            spd *= (spd < target) ? 1.05f : 0.95f;
+            if (spd > 5.5f)        { spd = 5.5f; }
+            if (spd < this->speed) { spd = this->speed; }
+            this->currentSpeed = spd;
+            if (spd == target) {
+                this->field_0x1ec = 0.0f;
+                this->field_0x1f4 = 0;
+            }
+        }
+    }
+
+    // de9c6: post-state movement subsystem
+    // Check if commandRoute is valid and not paused
+    {
+        Player *tgt_b = this->targetPlayer;
+        if (tgt_b != nullptr && this->field_0x12c == 0) {
+            // de9da: the target's byte at +0x69 widens the follow range when the ego is docked
+            bool routeActive = tgt_b->pad_69 != 0;
+
+            // Determine range threshold: 12000 if player is docked, else 8000
+            int threshold;
+            if (routeActive) {
+                Level *lv = (Level *)(intptr_t)this->level();
+                PlayerEgo *ego = lv->getPlayer();
+                threshold = (ego != nullptr && ego->isDockedToDockingPoint()) ? 12000 : 8000;
+            } else {
+                threshold = 8000;
+            }
+
+            float threshF    = (float)threshold;
+            float negThreshF = -threshF;
+
+            // Check resetVecC components vs threshold
+            bool inRange = (this->resetVecC.x < threshF && this->resetVecC.x > negThreshF &&
+                            this->resetVecC.y < threshF && this->resetVecC.y > negThreshF &&
+                            this->resetVecC.z < threshF);
+            if (inRange) {
+                // Within range: compute normalized heading from resetVecB
+                Vector normDir = VectorNormalize(this->resetVecB);
+                this->resetVecA() = normDir;
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Movement: MatrixSetRotation + translate (de2c0 / dea08 path)
+    // -----------------------------------------------------------------------
+    // (builds identity matrix, loads field_0x188 angles, rotates geom)
+    {
+        Matrix identMat;
+        identMat.m[0]  = 1.0f; identMat.m[5]  = 1.0f; identMat.m[10] = 1.0f;
+        identMat.m[1]  = 0.0f; identMat.m[2]  = 0.0f; identMat.m[3]  = 0.0f;
+        identMat.m[4]  = 0.0f; identMat.m[6]  = 0.0f; identMat.m[7]  = 0.0f;
+        identMat.m[8]  = 0.0f; identMat.m[9]  = 0.0f; identMat.m[11] = 0.0f;
+        identMat.m[12] = 0.0f; identMat.m[13] = 0.0f; identMat.m[14] = 0.0f;
+        AEMath::MatrixSetRotation(identMat,
+                                  this->field_0x188.x,
+                                  this->field_0x188.y,
+                                  this->field_0x188.z);
+        if (dt >= 1) {
+            Matrix geoMat = geom->getMatrix();
+            Matrix newMat = geoMat * identMat;
+            geom->setMatrix(newMat);
+        }
+
+        Vector transl = this->field_0x194 * (float)dt;
+        Vector translScaled = transl * this->currentSpeed;
+        geom->translate(translScaled);
+        geom->updateReferenceMatrix();
+        geom->updateReferenceMatrix(); // called twice in asm (dea9e + deaa0)
+
+        // Explosion update
+        Level *lv = (Level *)(intptr_t)this->level();
+        TargetFollowCamera *cam = nullptr;
+        {
+            PlayerEgo *ego = lv->getPlayer();
+            if (ego != nullptr) {
+                cam = (TargetFollowCamera *)(intptr_t)ego->getTargetFollowCamera();
+            }
+        }
+        this->explosion->update(dt, cam);
+
+        // Increment death timer
+        this->deathTimer() += dt;
+
+        // de9fc: crate-wreck bomb/rotation block
+        if (this->crateCaptured()) {
+            Player *deadPl = (Player *)(intptr_t)this->player();
+            if (deadPl->isActive() && dt >= 1) {
+                AEGeometry *wGeom = this->wreckGeometry();
+                if (wGeom != nullptr) {
+                    // getBombForce > 0: apply bomb push
+                    float bombF = deadPl->getBombForce();
+                    if (bombF > 0.0f) {
+                        Vector bombDir = this->field_0x17c * bombF;
+                        this->resetVecA() = bombDir;
+                        wGeom->translate(this->resetVecA());
+                        geom->translate(this->resetVecA());
+
+                        // Decay bomb force: *= 0.98, clamp min to 0 if < 0.05
+                        float newBF = bombF * 0.98f;
+                        if (newBF < 0.05f) { newBF = 0.0f; }
+                        deadPl->setBombForce(newBF);
+                    }
+
+                    // Wreck rotation: dt>>1 * (1/65536) * 2*pi
+                    float angle = (float)(dt >> 1) * (1.0f / 65536.0f) * 6.2831855f;
+                    float fangle = (float)(int)angle;
+                    wGeom->rotate(fangle, fangle, fangle);
+
+                    // Copy wreck matrix into Player::transform for camera tracking
+                    Matrix wMat = wGeom->getMatrix();
+                    reinterpret_cast<Matrix &>(deadPl->transform[0]) = wMat;
+                }
+            }
+        }
+
+        // debc4: if death timer < 60001, skip cleanup
+        if (this->deathTimer() < 60001) {
+            goto death_done;
+        }
+        // Explosion still playing?
+        if (this->explosion->isPlaying()) { goto death_done_return; }
+
+        // Camera target cleanup: if ego's radar target is this ship, clear it
+        // debd0: [ego+0x14] = Radar* (field_0x14); [Radar+0x1c] = field_0x1c (KIPlayer*)
+        {
+            Level *lv2 = (Level *)(intptr_t)this->level();
+            PlayerEgo *ego2 = lv2->getPlayer();
+            if (ego2 != nullptr) {
+                Radar *radar = ego2->field_0x14;
+                if (radar != nullptr && radar->field_0x1c == this) {
+                    radar->field_0x1c = nullptr;
+                }
+            }
+        }
+
+        // empDisabled check
+        {
+            Player *cleanPl = (Player *)(intptr_t)this->player();
+            if (cleanPl->empDisabledByte != 0 && cleanPl->pad_69 == 0) {
+                cleanPl->empDisabledByte = 1;
+            }
+        }
+
+        // Delete wreck geometry
+        delete this->wreckGeometry();
+        this->deathTimer() = 0;
+        this->wreckGeometry() = nullptr;
+        this->setActive(false);
+        this->field_0x101 = 1;
+
+        death_done_return:
+        return;
+        death_done:;
+    }
+
+    // -----------------------------------------------------------------------
+    // Shooting math + roll samples (ded30-df040)
+    // -----------------------------------------------------------------------
+    // (will be implemented in follow-up chunk)
+
+    // -----------------------------------------------------------------------
+    // Roll subsystem (df042-df110)
+    // -----------------------------------------------------------------------
+    {
+        if (this->rollActive() != 0) {
+            this->roll(dt);
+        }
+
+        // Smooth targetRoll -> smoothRoll
+        float targetRoll = *(float *)&this->targetRoll;
+        float smoothRoll = *(float *)&this->smoothRoll;
+        if (smoothRoll != targetRoll) {
+            float step = (float)dt * 1.25f / 3.9f;
+            if (smoothRoll < targetRoll) {
+                smoothRoll += step;
+                if (smoothRoll > targetRoll) { smoothRoll = targetRoll; }
+            } else {
+                smoothRoll -= step;
+                if (smoothRoll < targetRoll) { smoothRoll = targetRoll; }
+            }
+            *(float *)&this->smoothRoll = smoothRoll;
+
+            // If still different: reset countdown to 750
+            if (smoothRoll != targetRoll) {
+                this->field_0xfc = 750;
+            } else {
+                // countdown roll timer
+                if (this->field_0xfc >= 1) {
+                    this->field_0xfc -= (uint32_t)dt;
+                    if ((int32_t)this->field_0xfc <= 0) {
+                        this->rollActive() = 1;
+                    }
+                }
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Camera matrix + particle trail (df110-df260)
+    // -----------------------------------------------------------------------
+    {
+        // df110: compute roll angle = smoothRoll * (1/4096) * pi
+        float rollAngle = *(float *)&this->smoothRoll;
+        rollAngle *= 0.000244140625f;  // 1/4096
+        rollAngle *= 3.14159265f;      // pi
+        (void)rollAngle; // used below in MatrixSetRotation if implemented
+
+        // Build identity matrix for roll
+        Matrix rollMat;
+        rollMat.m[0]  = 1.0f; rollMat.m[1]  = 0.0f; rollMat.m[2]  = 0.0f;
+        rollMat.m[3]  = 0.0f; rollMat.m[4]  = 0.0f; rollMat.m[5]  = 1.0f;
+        rollMat.m[6]  = 0.0f; rollMat.m[7]  = 0.0f; rollMat.m[8]  = 0.0f;
+        rollMat.m[9]  = 0.0f; rollMat.m[10] = 1.0f; rollMat.m[11] = 0.0f;
+        rollMat.m[12] = 0.0f; rollMat.m[13] = 0.0f; rollMat.m[14] = 0.0f;
+
+        // Player transform = rollMat * this->rollMatrix (camera view)
+        Player *camPl = (Player *)(intptr_t)this->player();
+        Matrix &camMat = reinterpret_cast<Matrix &>(camPl->transform[0]);
+        camMat = rollMat * this->rollMatrix;
+
+        // if rollActive: apply roll matrix again
+        if (this->rollActive()) {
+            camMat *= this->rollMatrix;
+        }
+
+        // Set PaintCanvas local transform from camMat (via geom->transform node ID)
+        {
+            AEGeometry *playerGeom = (AEGeometry *)(intptr_t)this->geometry();
+            Globals::Canvas->TransformSetLocal(playerGeom->transform, camMat);
+        }
+
+        // Copy geom matrix into camMat for camera tracking
+        {
+            Matrix gm = geom->getMatrix();
+            camMat = gm;
+        }
+
+        // Enable/disable particle trail based on Player::empDisabledByte
+        Level *lv3 = (Level *)(intptr_t)this->level();
+        Player *trailPl = (Player *)(intptr_t)this->player();
+        bool trailOn = (trailPl->empDisabledByte == 0);
+        lv3->field_74->enableSystemEmit(this->field_0x130, trailOn);
+        lv3->field_74->enableSystemEmit(this->field_0x134, trailOn);
+        lv3->field_74->enableSystemEmit(this->field_0x138, trailOn);
+
+        geom->updateReferenceMatrix();
+    }
+
+    // -----------------------------------------------------------------------
+    // Landmark collision (df260-df358)
+    // -----------------------------------------------------------------------
+    {
+        if (this->field_0x13e != 0) {
+            Level *lv4 = (Level *)(intptr_t)this->level();
+            Array<KIPlayer *> *landmarks = lv4->getLandmarks();
+            if (landmarks != nullptr) {
+                Vector workPos = this->workingPosition;
+                unsigned int n_lm = landmarks->count;
+                for (unsigned int i_lm = 0; i_lm < n_lm; ++i_lm) {
+                    KIPlayer *lm = (*landmarks)[i_lm];
+                    if (lm == nullptr) { continue; }
+                    if (!lm->collide(workPos.x, workPos.y, workPos.z)) { continue; }
+                    Vector normal = lm->getCollisionNormal(workPos);
+                    if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) { continue; }
+                    // Deflect: current dir + (workPos - dir)*speed*0.03, normalize, set
+                    Vector dir_lm = geom->getDirection();
+                    this->resetVecA() = dir_lm;
+                    Vector diff = workPos - this->resetVecA();
+                    diff *= this->currentSpeed * 0.03f;
+                    Vector newDir = this->resetVecA() + diff;
+                    // Store newDir in field_0x9c (reinterpreted as Vector at that offset)
+                    reinterpret_cast<Vector &>(this->field_0x9c) = newDir;
+                    this->resetVecA() = VectorNormalize(newDir);
+                    {
+                        Vector up = {0.0f, 1.0f, 0.0f};
+                        geom->setDirection(this->resetVecA(), up);
+                    }
+                    geom->moveForward(this->currentSpeed * (float)dt);
+                    break;
+                }
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Enemy collision (df358-df446)
+    // -----------------------------------------------------------------------
+    {
+        Level *lv5 = (Level *)(intptr_t)this->level();
+        Array<KIPlayer *> *enemies_ki = lv5->getEnemies();
+        if (enemies_ki != nullptr) {
+            Vector workPos2 = this->workingPosition;
+            unsigned int n2 = enemies_ki->count;
+            for (unsigned int i2 = 0; i2 < n2; ++i2) {
+                KIPlayer *en = (*enemies_ki)[i2];
+                if (en == nullptr) { continue; }
+                if (!en->collide(workPos2.x, workPos2.y, workPos2.z)) { continue; }
+                Vector normal2 = en->getCollisionNormal(workPos2);
+                if (normal2.x == 0.0f && normal2.y == 0.0f && normal2.z == 0.0f) { continue; }
+                Vector dir2 = geom->getDirection();
+                this->resetVecA() = dir2;
+                Vector diff2 = workPos2 - this->resetVecA();
+                diff2 *= this->currentSpeed * 0.03f;
+                Vector newDir2 = this->resetVecA() + diff2;
+                reinterpret_cast<Vector &>(this->field_0x9c) = newDir2;
+                this->resetVecA() = VectorNormalize(newDir2);
+                {
+                    Vector up2 = {0.0f, 1.0f, 0.0f};
+                    geom->setDirection(this->resetVecA(), up2);
+                }
+                geom->moveForward(this->currentSpeed * (float)dt);
+                break;
+            }
+        }
+    }
+
+    // df446: push(dt) via virtual dispatch
+    this->push(dt);
+    } // end update_body block
 }
 
 void PlayerFighter::setPosition(float x, float y, float z) {
@@ -1251,768 +1996,3 @@ void PlayerFighter::revive() {
 
 int PlayerFighter::stationRouteAliens;
 
-// ---------------------------------------------------------------------------
-// PF_update_body: implements the main update body from de1a8 onward.
-// Entry gate: if aiDisabled -> updateReferenceMatrix + handleCloaking -> return.
-// Otherwise: state dispatch (states 0-9) + movement subsystems.
-// ---------------------------------------------------------------------------
-
-#include "engine/audio/FModSound.h"
-#include "game/world/SpacePoint.h"
-#include "game/world/Wanted.h"
-#include "game/ship/PlayerFixedObject.h"
-
-static void PF_update_body(PlayerFighter *self, int dt) {
-    using namespace AbyssEngine;
-    using namespace AbyssEngine::AEMath;
-
-    AEGeometry *geom = (AEGeometry *)(intptr_t)self->geometry();
-
-    // de1a8: entry gate — if aiDisabled, just spin the reference matrix and cloak
-    if (self->aiDisabled != 0) {
-        geom->updateReferenceMatrix();
-        self->handleCloaking();
-        return;
-    }
-
-    // de1bc: state dispatch (tbh, states 0-9)
-    int curState = self->state;
-    if (curState > 9) {
-        return; // de1dc: out-of-range -> epilogue
-    }
-
-    switch (curState) {
-    // -----------------------------------------------------------------------
-    // State 0: initialise — set state to 1, return
-    // -----------------------------------------------------------------------
-    case 0:
-        self->state = 1;
-        return;
-
-    // -----------------------------------------------------------------------
-    // State 2: dead / no-op — just return
-    // -----------------------------------------------------------------------
-    case 2:
-        return;
-
-    // -----------------------------------------------------------------------
-    // State 1 / State 7: active AI — handleCloaking + damage particle logic
-    // -----------------------------------------------------------------------
-    case 1:
-    case 7: {
-        self->handleCloaking();
-
-        // de204: check field_0x13d (damageEscape flag)
-        if (self->field_0x13d == 0) {
-            break; // skip to post-state movement (de9c6)
-        }
-
-        // de20e: compute accumulated damage delta
-        int newDmg = self->deltaTime;    // field_0x1d0
-        int fp_val = dt;                  // fp = dt at entry
-        if (newDmg <= fp_val) {
-            // de254: boost timer kick: field_0x1c0 = 10000
-            // de214: skip to boost section
-            break; // goto boost section via post-switch fall-through
-        }
-        // de21c: delta damage
-        int delta = self->deltaTimeHi;   // field_0x1d4
-        int newHp  = newDmg - fp_val;    // field_0x1d0 - dt
-        self->deltaTime   = 0;           // field_0x1d0 = 0
-        self->deltaTimeHi = newHp + delta; // field_0x1d4 += delta
-
-        // de230: get HP percentage
-        int maxHp = ((Player *)(intptr_t)self->player())->getMaxHitpoints();
-        float pct = ((float)(newHp + delta) / (float)maxHp) * 100.0f;
-
-        // de24c: if pct > 40.0: boost kick + break
-        if (pct > 40.0f) {
-            self->field_0x1c0 = 10000;   // de258
-            self->field_0x1dc = 0;       // de262
-            self->field_0x1e0 = 1;       // de268 (field_0x1e0 used as boostFlag)
-            break; // de26c: goto boost section
-        }
-        break;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 3: dying spin + explosion
-    // de2c0-de47e
-    // -----------------------------------------------------------------------
-    case 3: {
-        // Clear death-trail flags
-        self->field_0x101 = 0;           // de2d0
-        self->field_0x13e = 0;           // de2d4
-
-        // Build identity rotation matrix on stack, then set rotation from field_0x188
-        Matrix rotMat;
-        rotMat.m[0]  = 1.0f; rotMat.m[5]  = 1.0f; rotMat.m[10] = 1.0f; // diagonal
-        rotMat.m[1]  = 0.0f; rotMat.m[2]  = 0.0f; rotMat.m[3]  = 0.0f;
-        rotMat.m[4]  = 0.0f; rotMat.m[6]  = 0.0f; rotMat.m[7]  = 0.0f;
-        rotMat.m[8]  = 0.0f; rotMat.m[9]  = 0.0f; rotMat.m[11] = 0.0f;
-        rotMat.m[12] = 0.0f; rotMat.m[13] = 0.0f; rotMat.m[14] = 0.0f;
-        AEMath::MatrixSetRotation(rotMat,
-                                  self->field_0x188.x,
-                                  self->field_0x188.y,
-                                  self->field_0x188.z);
-
-        // Apply rotation to geometry matrix if dt >= 1
-        if (dt >= 1) {
-            Matrix geoMat = geom->getMatrix();
-            Matrix newMat = geoMat * rotMat;
-            geom->setMatrix(newMat);
-        }
-
-        // Translate: direction * float(dt) * currentSpeed
-        Vector dir = self->field_0x194 * (float)dt;
-        Vector dirScaled = dir * self->currentSpeed;
-        geom->translate(dirScaled);
-        geom->updateReferenceMatrix();
-
-        // Decrement death countdown
-        self->field_0x1f8 -= dt;
-        if (self->field_0x1f8 > -1) {
-            return;
-        }
-
-        // Countdown expired: trigger explosion
-        {
-            Vector zeroVec = {0.0f, 0.0f, 0.0f};
-            self->explosion->start(zeroVec, zeroVec);
-        }
-
-        // Disable engine trail emit
-        ((Level *)(intptr_t)self->level())->field_74->enableSystemEmit(
-            self->engineTrailSystem, false);
-
-        // Disable damage particles if options[0x28] > 0
-        if (Globals::options[0x28] > 0) {
-            ((Level *)(intptr_t)self->level())->particleEmitBoolPtr->enableSystemEmit(
-                self->field_0x80, false);
-            ((Level *)(intptr_t)self->level())->particleSystemMgr->enableSystemEmit(
-                self->field_0x84, false);
-        }
-
-        // Random bomb force: 50.0 + rnd(50) * 0.01
-        int rndBomb = Globals::rnd->nextInt(50);
-        float bombForce = 50.0f + (float)rndBomb * 0.01f;
-        ((Player *)(intptr_t)self->player())->setBombForce(bombForce);
-
-        // Random spin direction: 3 * rnd(200)-100, normalize -> field_0x17c
-        {
-            int rx = Globals::rnd->nextInt(200) - 100;
-            int ry = Globals::rnd->nextInt(200) - 100;
-            int rz = Globals::rnd->nextInt(200) - 100;
-            Vector spinDir = {(float)rx, (float)ry, (float)rz};
-            Vector normDir = VectorNormalize(spinDir);
-            self->field_0x17c = normDir;
-        }
-
-        // State -> 4, reset countdown, cleanup spacePoint
-        self->field_0x1f8 = 0;
-        self->state = 4;
-
-        if (self->spacePoint != 0) {
-            SpacePoint *sp = (SpacePoint *)(intptr_t)self->spacePoint;
-            if (!sp->isFree()) {
-                sp->giveFree();
-                self->spacePoint = 0;
-            }
-        }
-
-        // de47e: hasCrateCaptured check (reached only from state 3 path)
-        if (!self->crateCaptured()) {
-            return;
-        }
-        // de488: if carriesMissionCrate != 0 && missionCrateCaptured != 0 -> special exit
-        if (self->carriesMissionCrate != 0 && self->missionCrateCaptured() != 0) {
-            // de458: clear crateCaptured, set empDisabledByte=1
-            self->crateCaptured() = 0;
-            ((Player *)(intptr_t)self->player())->empDisabledByte = 1;
-            return;
-        }
-        // de498: create crate — shipGroup == 9 ? flag=1 : flag=0
-        {
-            int flag = ((self->shipGroup - 9) == 0) ? 1 : 0;
-            self->createCrate(flag);
-        }
-        return;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 4: crate float / wreck hover
-    // de4ac-de4c2
-    // -----------------------------------------------------------------------
-    case 4: {
-        // de4ac: field_0x1f8 += dt; if >= 1: clear field_0x73, fall to post-state
-        self->field_0x1f8 += dt;
-        if (self->field_0x1f8 < 1) {
-            // still floating: stay in state 4 movement
-            break;
-        }
-        self->field_0x73 = 0;
-        // fall through to post-state movement
-        break;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 5: asleep proximity check
-    // de4c4-de590
-    // -----------------------------------------------------------------------
-    case 5: {
-        Player *pl5 = (Player *)(intptr_t)self->player();
-        // de4c6: if !pl5->enemyFlagsLo: skip visibility
-        if (pl5->enemyFlagsLo != 0) {
-            // de4cc: if status->getCurrentCampaignMission() >= 2 and geom != 0:
-            if (Globals::status->getCurrentCampaignMission() >= 2) {
-                AEGeometry *visGeom = (AEGeometry *)(intptr_t)self->subGeometry();
-                if (visGeom == nullptr) {
-                    visGeom = geom;
-                }
-                visGeom->setVisible(0);
-            }
-        }
-        // de4e4..de4f4: no target, or target hidden -> stay asleep
-        if (self->targetPlayer == nullptr) {
-            return;
-        }
-        if (self->targetPlayer->field_5e != 0) {
-            return;
-        }
-        // de4f8: proximity check: resetVecC components vs field_0x128 (radius)
-        {
-            float radius = (float)self->field_0x128;
-            float rx = self->resetVecC.x;
-            float ry = self->resetVecC.y;
-            float rz = self->resetVecC.z;
-            if (rx >= radius || rx <= -radius) { return; }
-            if (ry >= radius || ry <= -radius) { return; }
-            if (rz >= radius) { return; }
-        }
-        // In range: awaken
-        self->state = 1;
-        AEGeometry *visGeom2 = (AEGeometry *)(intptr_t)self->subGeometry();
-        if (visGeom2 == nullptr) visGeom2 = geom;
-        visGeom2->setVisible(1);
-        ((Player *)(intptr_t)self->player())->setActive(1);
-        if (self->field_0x12f != 0) {
-            ((Level *)(intptr_t)self->level())->pirateStationAction(1);
-        }
-        return;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 6: jump — accelerate until > 100.0, then setDead
-    // de590-de5d8
-    // -----------------------------------------------------------------------
-    case 6: {
-        self->currentSpeed *= 1.1f;
-        float move = self->currentSpeed * (float)dt;
-        int moveInt = (int)move;
-        float movef = (float)moveInt;
-        geom->moveForward(movef);
-        if (self->currentSpeed > 100.0f) {
-            self->setDead();
-        }
-        return;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 8: docking approach
-    // de5da-de8a2
-    // -----------------------------------------------------------------------
-    case 8: {
-        // Get the docking-approach route position
-        Route *dRoute = self->KIPlayer::route;
-
-        // Get docking point: route->getPosition() via vtable[10]=getPosition
-        Vector routePos;
-        {
-            KIPlayer *routeKI = (KIPlayer *)(intptr_t)0; // placeholder
-            // Actual: call vtable[10] on self = getPosition()
-            (void)routeKI;
-        }
-        // de5e0: r0 = [r4, 0x6c] = KIPlayer::route (navigation route)
-        // de5e2-de5ea: call r6 = Route::getDockingTarget getter, result -> sl
-        //              Then call r6 again -> r1 = docking route object
-        //              vtable[10] with r0=sp+0x140 -> getPosition -> sp+0x140
-        //              [r4+0x6c]->geometry->getMatrix -> rotate vector by it
-        //              sp+0x198 = sp+0x140 + (rotated docking offset)
-        //              self->getNearestDockingPoint(sp+0x198) -> r5 (dock slot idx)
-        //              sp+0x140 = getPosition again
-        //              sp+0xd8 = MatrixRotateVector([r4+0x6c]->geom->matrix, dock slot)
-        //              sp+0x198 = sp+0x140 + sp+0xd8
-        //              field_0x9c = sp+0x198
-        //              sp+0x140 = getPosition(self)
-        //              sp+0x198 = sp+0x140 - field_0x9c
-        //              distance = VectorLength(sp+0x198) as int
-        //              dockThreshold[type] = ...
-        //              if distance > threshold: go to EaseInOutMatrix -> de8a4
-        //              else: setExhaustVisible(false), clear field_0x2bc/2c0, state=9
-
-        // Simplified: route via KIPlayer::route, compute approach
-        // This is complex enough that I will stub it for now.
-        // The approach: if within docking distance, go to state 9
-        // Else: EaseInOutMatrix interpolation to approach position
-        // For now: structured but incomplete stub that compiles
-        if (dRoute != nullptr) {
-            // Check if we've reached the docking point
-            // (full logic elided — will be filled in a follow-up pass)
-        }
-        break;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 9: docked waiting (timer)
-    // de714-de84f
-    // -----------------------------------------------------------------------
-    case 9: {
-        // Increment docking timer
-        self->field_0x2bc += dt;
-
-        // Mission dock logic (type 0xb8 passenger transport)
-        Mission *mission = Globals::status->getMission();
-        if (!mission->isEmpty() && mission->getType() == 0xb8) {
-            Route *r9 = self->KIPlayer::route;
-            if (r9 != nullptr) {
-                PlayerFixedObject *dockTarget =
-                    (PlayerFixedObject *)r9->getDockingTarget();
-                if (dockTarget != nullptr && dockTarget->getDockingType() == 1) {
-                    // compute field_0x2c0 = int(float(field_0x2bc) / dockDiv)
-                    // dockDiv comes from a pool constant (type-dependent)
-                    // (exact constant elided — placeholder 3000.0f matches observed behaviour)
-                    int oldC = self->field_0x2c0;
-                    float timerF = (float)self->field_0x2bc;
-                    float dockDiv = (self->wreckGeometry() != nullptr
-                                     && /* type 0x33 */ false) ? 3000.0f : 3000.0f;
-                    self->field_0x2c0 = (int)(timerF / dockDiv);
-
-                    // passenger delivery logic
-                    if (Globals::status->getCurrentCampaignMission() == 0x5e) {
-                        int sv = mission->getStatusValue();
-                        int maxPass = Globals::status->getShip()->getMaxPassengers();
-                        if (sv >= maxPass) { goto state9_skip_delivery; }
-                    }
-                    if (self->field_0x2c0 > oldC) {
-                        int lvlPass = ((Level *)(intptr_t)self->level())->getNumDeliveredPassengers();
-                        int missionAmt = mission->getProductionGoodAmount();
-                        if (lvlPass < missionAmt) {
-                            int sv2 = mission->getStatusValue();
-                            int newSv = sv2 + oldC;
-                            int diff = newSv - self->field_0x2c0;
-                            mission->setStatusValue(diff);
-                            if (mission->getStatusValue() <= -1) {
-                                mission->setStatusValue(0);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        state9_skip_delivery:;
-
-        // Check if docking time complete
-        {
-            Route *r9b = self->KIPlayer::route;
-            int dockTime = 0;
-            if (r9b != nullptr) {
-                dockTime = r9b->getDockingTime();
-            }
-            if (self->field_0x2bc <= dockTime) {
-                return;
-            }
-        }
-
-        // Docking done: setExhaustVisible, advance route, state=1
-        self->setExhaustVisible(true);
-        Route *r9c = self->KIPlayer::route;
-        if (r9c != nullptr) {
-            int cur = r9c->getCurrent();
-            r9c->reachWaypoint(cur);
-        }
-        self->state = 1;
-
-        // Re-enable engine trail if field_0x1fc != 0
-        if (self->field_0x1fc != 0) {
-            ((Level *)(intptr_t)self->level())->particleEmitBoolPtr->enableSystemEmit(
-                self->field_0x80, true);
-            ((Level *)(intptr_t)self->level())->particleSystemMgr->enableSystemEmit(
-                self->field_0x84, true);
-        }
-
-        // Clean up spacePoint
-        if (self->spacePoint != 0) {
-            SpacePoint *sp = (SpacePoint *)(intptr_t)self->spacePoint;
-            sp->giveFree();
-            self->spacePoint = 0;
-        }
-        return;
-    }
-
-    default:
-        break;
-    }
-
-    // -----------------------------------------------------------------------
-    // Post-state: boost timer (de840-de9c6)
-    // de840: if field_0x1c0 > 5000 and boost not active: maybe start boost
-    // de934: if boost active: update speed toward target
-    // -----------------------------------------------------------------------
-    // de840: only try to start a boost if not already boosting
-    if (self->field_0x1c0 > 5000 && self->field_0x1f4 == 0) {
-        bool skipBoost = false;
-        if (self->field_0x1e0 == 0) {
-            int r = Globals::rnd->nextInt(100);
-            if (r < self->boostProb) {
-                skipBoost = true;
-            }
-        }
-        if (!skipBoost) {
-            // de87a: start boost
-            int dur = Globals::rnd->nextInt(3000) + 5000;
-            self->field_0x1c4 = dur;
-            self->field_0x1f4  = 1;
-            // strd at de89e: field_0x1ec = 5.5 (speed target), currentRotate = 1.3
-            self->field_0x1ec = 5.5f;
-            self->currentRotate = 1.3f;
-        } else {
-            // de8c0: skipBoost path — reset timer
-            self->field_0x1c0 = 0;
-        }
-    }
-
-    // de934: if boost active: update currentSpeed toward target
-    if (self->field_0x1f4 != 0) {
-        if (self->field_0x1c0 > self->field_0x1c4) {
-            // Boost expired: restore pre-boost speed
-            self->field_0x1e0 = 0;
-            self->field_0x1c0 = 0;
-            self->currentSpeed = self->speed;
-            self->field_0x1ec = self->speed;
-            self->currentRotate = self->rotate;
-            self->field_0x1f4  = 0;
-        } else {
-            // Still boosting: drive speed toward 5.5 target
-            float spd    = self->currentSpeed;
-            float target = self->field_0x1ec;
-            spd *= (spd < target) ? 1.05f : 0.95f;
-            if (spd > 5.5f)        { spd = 5.5f; }
-            if (spd < self->speed) { spd = self->speed; }
-            self->currentSpeed = spd;
-            if (spd == target) {
-                self->field_0x1ec = 0.0f;
-                self->field_0x1f4 = 0;
-            }
-        }
-    }
-
-    // de9c6: post-state movement subsystem
-    // Check if commandRoute is valid and not paused
-    {
-        Player *tgt = self->targetPlayer;
-        if (tgt != nullptr && self->field_0x12c == 0) {
-            // de9da: the target's byte at +0x69 widens the follow range when the ego is docked
-            bool routeActive = tgt->pad_69 != 0;
-
-            // Determine range threshold: 12000 if player is docked, else 8000
-            int threshold;
-            if (routeActive) {
-                Level *lv = (Level *)(intptr_t)self->level();
-                PlayerEgo *ego = lv->getPlayer();
-                threshold = (ego != nullptr && ego->isDockedToDockingPoint()) ? 12000 : 8000;
-            } else {
-                threshold = 8000;
-            }
-
-            float threshF    = (float)threshold;
-            float negThreshF = -threshF;
-
-            // Check resetVecC components vs threshold
-            bool inRange = (self->resetVecC.x < threshF && self->resetVecC.x > negThreshF &&
-                            self->resetVecC.y < threshF && self->resetVecC.y > negThreshF &&
-                            self->resetVecC.z < threshF);
-            if (inRange) {
-                // Within range: compute normalized heading from resetVecB
-                Vector normDir = VectorNormalize(self->resetVecB);
-                self->resetVecA() = normDir;
-            }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Movement: MatrixSetRotation + translate (de2c0 / dea08 path)
-    // -----------------------------------------------------------------------
-    // (builds identity matrix, loads field_0x188 angles, rotates geom)
-    {
-        Matrix identMat;
-        identMat.m[0]  = 1.0f; identMat.m[5]  = 1.0f; identMat.m[10] = 1.0f;
-        identMat.m[1]  = 0.0f; identMat.m[2]  = 0.0f; identMat.m[3]  = 0.0f;
-        identMat.m[4]  = 0.0f; identMat.m[6]  = 0.0f; identMat.m[7]  = 0.0f;
-        identMat.m[8]  = 0.0f; identMat.m[9]  = 0.0f; identMat.m[11] = 0.0f;
-        identMat.m[12] = 0.0f; identMat.m[13] = 0.0f; identMat.m[14] = 0.0f;
-        AEMath::MatrixSetRotation(identMat,
-                                  self->field_0x188.x,
-                                  self->field_0x188.y,
-                                  self->field_0x188.z);
-        if (dt >= 1) {
-            Matrix geoMat = geom->getMatrix();
-            Matrix newMat = geoMat * identMat;
-            geom->setMatrix(newMat);
-        }
-
-        Vector transl = self->field_0x194 * (float)dt;
-        Vector translScaled = transl * self->currentSpeed;
-        geom->translate(translScaled);
-        geom->updateReferenceMatrix();
-        geom->updateReferenceMatrix(); // called twice in asm (dea9e + deaa0)
-
-        // Explosion update
-        Level *lv = (Level *)(intptr_t)self->level();
-        TargetFollowCamera *cam = nullptr;
-        {
-            PlayerEgo *ego = lv->getPlayer();
-            if (ego != nullptr) {
-                cam = (TargetFollowCamera *)(intptr_t)ego->getTargetFollowCamera();
-            }
-        }
-        self->explosion->update(dt, cam);
-
-        // Increment death timer
-        self->deathTimer() += dt;
-
-        // de9fc: crate-wreck bomb/rotation block
-        if (self->crateCaptured()) {
-            Player *deadPl = (Player *)(intptr_t)self->player();
-            if (deadPl->isActive() && dt >= 1) {
-                AEGeometry *wGeom = self->wreckGeometry();
-                if (wGeom != nullptr) {
-                    // getBombForce > 0: apply bomb push
-                    float bombF = deadPl->getBombForce();
-                    if (bombF > 0.0f) {
-                        Vector bombDir = self->field_0x17c * bombF;
-                        self->resetVecA() = bombDir;
-                        wGeom->translate(self->resetVecA());
-                        geom->translate(self->resetVecA());
-
-                        // Decay bomb force: *= 0.98, clamp min to 0 if < 0.05
-                        float newBF = bombF * 0.98f;
-                        if (newBF < 0.05f) { newBF = 0.0f; }
-                        deadPl->setBombForce(newBF);
-                    }
-
-                    // Wreck rotation: dt>>1 * (1/65536) * 2*pi
-                    float angle = (float)(dt >> 1) * (1.0f / 65536.0f) * 6.2831855f;
-                    float fangle = (float)(int)angle;
-                    wGeom->rotate(fangle, fangle, fangle);
-
-                    // Copy wreck matrix into Player::transform for camera tracking
-                    Matrix wMat = wGeom->getMatrix();
-                    reinterpret_cast<Matrix &>(deadPl->transform[0]) = wMat;
-                }
-            }
-        }
-
-        // debc4: if death timer < 60001, skip cleanup
-        if (self->deathTimer() < 60001) {
-            goto death_done;
-        }
-        // Explosion still playing?
-        if (self->explosion->isPlaying()) { goto death_done_return; }
-
-        // Camera target cleanup: if ego's radar target is this ship, clear it
-        // debd0: [ego+0x14] = Radar* (field_0x14); [Radar+0x1c] = field_0x1c (KIPlayer*)
-        {
-            Level *lv2 = (Level *)(intptr_t)self->level();
-            PlayerEgo *ego2 = lv2->getPlayer();
-            if (ego2 != nullptr) {
-                Radar *radar = ego2->field_0x14;
-                if (radar != nullptr && radar->field_0x1c == self) {
-                    radar->field_0x1c = nullptr;
-                }
-            }
-        }
-
-        // empDisabled check
-        {
-            Player *cleanPl = (Player *)(intptr_t)self->player();
-            if (cleanPl->empDisabledByte != 0 && cleanPl->pad_69 == 0) {
-                cleanPl->empDisabledByte = 1;
-            }
-        }
-
-        // Delete wreck geometry
-        delete self->wreckGeometry();
-        self->deathTimer() = 0;
-        self->wreckGeometry() = nullptr;
-        self->setActive(false);
-        self->field_0x101 = 1;
-
-        death_done_return:
-        return;
-        death_done:;
-    }
-
-    // -----------------------------------------------------------------------
-    // Shooting math + roll samples (ded30-df040)
-    // -----------------------------------------------------------------------
-    // (will be implemented in follow-up chunk)
-
-    // -----------------------------------------------------------------------
-    // Roll subsystem (df042-df110)
-    // -----------------------------------------------------------------------
-    {
-        if (self->rollActive() != 0) {
-            self->roll(dt);
-        }
-
-        // Smooth targetRoll -> smoothRoll
-        float targetRoll = *(float *)&self->targetRoll;
-        float smoothRoll = *(float *)&self->smoothRoll;
-        if (smoothRoll != targetRoll) {
-            float step = (float)dt * 1.25f / 3.9f;
-            if (smoothRoll < targetRoll) {
-                smoothRoll += step;
-                if (smoothRoll > targetRoll) { smoothRoll = targetRoll; }
-            } else {
-                smoothRoll -= step;
-                if (smoothRoll < targetRoll) { smoothRoll = targetRoll; }
-            }
-            *(float *)&self->smoothRoll = smoothRoll;
-
-            // If still different: reset countdown to 750
-            if (smoothRoll != targetRoll) {
-                self->field_0xfc = 750;
-            } else {
-                // countdown roll timer
-                if (self->field_0xfc >= 1) {
-                    self->field_0xfc -= (uint32_t)dt;
-                    if ((int32_t)self->field_0xfc <= 0) {
-                        self->rollActive() = 1;
-                    }
-                }
-            }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Camera matrix + particle trail (df110-df260)
-    // -----------------------------------------------------------------------
-    {
-        // df110: compute roll angle = smoothRoll * (1/4096) * pi
-        float rollAngle = *(float *)&self->smoothRoll;
-        rollAngle *= 0.000244140625f;  // 1/4096
-        rollAngle *= 3.14159265f;      // pi
-        (void)rollAngle; // used below in MatrixSetRotation if implemented
-
-        // Build identity matrix for roll
-        Matrix rollMat;
-        rollMat.m[0]  = 1.0f; rollMat.m[1]  = 0.0f; rollMat.m[2]  = 0.0f;
-        rollMat.m[3]  = 0.0f; rollMat.m[4]  = 0.0f; rollMat.m[5]  = 1.0f;
-        rollMat.m[6]  = 0.0f; rollMat.m[7]  = 0.0f; rollMat.m[8]  = 0.0f;
-        rollMat.m[9]  = 0.0f; rollMat.m[10] = 1.0f; rollMat.m[11] = 0.0f;
-        rollMat.m[12] = 0.0f; rollMat.m[13] = 0.0f; rollMat.m[14] = 0.0f;
-
-        // Player transform = rollMat * self->rollMatrix (camera view)
-        Player *camPl = (Player *)(intptr_t)self->player();
-        Matrix &camMat = reinterpret_cast<Matrix &>(camPl->transform[0]);
-        camMat = rollMat * self->rollMatrix;
-
-        // if rollActive: apply roll matrix again
-        if (self->rollActive()) {
-            camMat *= self->rollMatrix;
-        }
-
-        // Set PaintCanvas local transform from camMat (via geom->transform node ID)
-        {
-            AEGeometry *playerGeom = (AEGeometry *)(intptr_t)self->geometry();
-            Globals::Canvas->TransformSetLocal(playerGeom->transform, camMat);
-        }
-
-        // Copy geom matrix into camMat for camera tracking
-        {
-            Matrix gm = geom->getMatrix();
-            camMat = gm;
-        }
-
-        // Enable/disable particle trail based on Player::empDisabledByte
-        Level *lv3 = (Level *)(intptr_t)self->level();
-        Player *trailPl = (Player *)(intptr_t)self->player();
-        bool trailOn = (trailPl->empDisabledByte == 0);
-        lv3->field_74->enableSystemEmit(self->field_0x130, trailOn);
-        lv3->field_74->enableSystemEmit(self->field_0x134, trailOn);
-        lv3->field_74->enableSystemEmit(self->field_0x138, trailOn);
-
-        geom->updateReferenceMatrix();
-    }
-
-    // -----------------------------------------------------------------------
-    // Landmark collision (df260-df358)
-    // -----------------------------------------------------------------------
-    {
-        if (self->field_0x13e != 0) {
-            Level *lv4 = (Level *)(intptr_t)self->level();
-            Array<KIPlayer *> *landmarks = lv4->getLandmarks();
-            if (landmarks != nullptr) {
-                Vector workPos = self->workingPosition;
-                unsigned int n = landmarks->count;
-                for (unsigned int i = 0; i < n; ++i) {
-                    KIPlayer *lm = (*landmarks)[i];
-                    if (lm == nullptr) { continue; }
-                    if (!lm->collide(workPos.x, workPos.y, workPos.z)) { continue; }
-                    Vector normal = lm->getCollisionNormal(workPos);
-                    if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) { continue; }
-                    // Deflect: current dir + (workPos - dir)*speed*0.03, normalize, set
-                    Vector dir = geom->getDirection();
-                    self->resetVecA() = dir;
-                    Vector diff = workPos - self->resetVecA();
-                    diff *= self->currentSpeed * 0.03f;
-                    Vector newDir = self->resetVecA() + diff;
-                    // Store newDir in field_0x9c (reinterpreted as Vector at that offset)
-                    reinterpret_cast<Vector &>(self->field_0x9c) = newDir;
-                    self->resetVecA() = VectorNormalize(newDir);
-                    {
-                        Vector up = {0.0f, 1.0f, 0.0f};
-                        geom->setDirection(self->resetVecA(), up);
-                    }
-                    geom->moveForward(self->currentSpeed * (float)dt);
-                    break;
-                }
-            }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Enemy collision (df358-df446)
-    // -----------------------------------------------------------------------
-    {
-        Level *lv5 = (Level *)(intptr_t)self->level();
-        Array<KIPlayer *> *enemies = lv5->getEnemies();
-        if (enemies != nullptr) {
-            Vector workPos2 = self->workingPosition;
-            unsigned int n2 = enemies->count;
-            for (unsigned int i = 0; i < n2; ++i) {
-                KIPlayer *en = (*enemies)[i];
-                if (en == nullptr) { continue; }
-                if (!en->collide(workPos2.x, workPos2.y, workPos2.z)) { continue; }
-                Vector normal2 = en->getCollisionNormal(workPos2);
-                if (normal2.x == 0.0f && normal2.y == 0.0f && normal2.z == 0.0f) { continue; }
-                Vector dir2 = geom->getDirection();
-                self->resetVecA() = dir2;
-                Vector diff2 = workPos2 - self->resetVecA();
-                diff2 *= self->currentSpeed * 0.03f;
-                Vector newDir2 = self->resetVecA() + diff2;
-                reinterpret_cast<Vector &>(self->field_0x9c) = newDir2;
-                self->resetVecA() = VectorNormalize(newDir2);
-                {
-                    Vector up2 = {0.0f, 1.0f, 0.0f};
-                    geom->setDirection(self->resetVecA(), up2);
-                }
-                geom->moveForward(self->currentSpeed * (float)dt);
-                break;
-            }
-        }
-    }
-
-    // df446: push(dt) via virtual dispatch
-    self->push(dt);
-}

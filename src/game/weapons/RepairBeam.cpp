@@ -7,6 +7,7 @@
 #include "game/mission/Status.h"
 #include "game/world/Level.h"
 #include "game/ship/KIPlayer.h"
+#include "engine/audio/FModSound.h"
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -22,56 +23,14 @@ static int *g_RB_dmgThresh;
 static float g_RB_scaleDiv;
 static float g_RB_healMul;
 static float g_RB_shieldMul;
-static int *g_RB_sndPlay;
+static FModSound **g_RB_sndPlay;
 static int *g_RB_sndPlayEv;
-static int **g_RB_sndStop;
-static int *g_RB_sndDead;
-static int **g_RB_sndUpd;
+static FModSound **g_RB_sndStop;
+static FModSound **g_RB_sndDead;
+static FModSound **g_RB_sndUpd;
 static int *g_RB_sndUpdEv;
 static char **g_RB_sndFlag;
 
-
-static inline int RB_PlayerEgo_isDead(PlayerEgo *ego) { return ego->isDead(); }
-
-int RB_Status_getShip();
-
-int RB_Ship_getFirstEquipmentOfSort(int ship);
-
-int RB_Ship_getIndex();
-
-int RB_Item_getAttribute(int item);
-
-static inline int RB_KIPlayer_isDead(KIPlayer *kp) { return kp->isDead(); }
-
-static inline int RB_KIPlayer_isDying(KIPlayer *kp) { return kp->isDying(); }
-
-int RB_Player_getHitpoints();
-
-int RB_Player_getMaxHitpoints();
-
-static inline int RB_Player_getShieldDamageRate(Player *pl) { return pl->getShieldDamageRate(); }
-
-void RB_Player_getPosition(Vector * out);
-void RB_PlayerEgo_getPosition(Vector * out);
-
-void RB_Player_damage(int pl, bool b, int z);
-
-void RB_Player_heal(int pl, float amt);
-
-static inline void RB_Player_regenerateShield(Player *pl, float amt) { pl->regenerateShield(amt); }
-
-float RB_PlayerEgo_GetDirVector();
-
-float RB_PlayerEgo_GetUpVector();
-
-
-int RB_FModSound_isPlaying(int snd);
-
-void RB_FModSound_play(int snd, Vector *ev, Vector *p, float f);
-
-void RB_FModSound_stop(int snd);
-
-void RB_FModSound_updateEvent3DAttributes(int *snd, int ev, Vector *pos, Vector *p, bool b);
 
 void RepairBeam::render() {
     Array<int> &ids = *this->targetIds;
@@ -133,10 +92,10 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
 
     if (enemies != nullptr) {
         PlayerEgo *ego = level->getPlayer();
-        if (RB_PlayerEgo_isDead(ego) == 0) {
-            int ship = RB_Status_getShip();
-            int equip = RB_Ship_getFirstEquipmentOfSort(ship);
-            float attrF = (float) RB_Item_getAttribute(equip);
+        if (ego->isDead() == 0) {
+            Ship *ship = Globals::status->getShip();
+            Item *equip = ship->getFirstEquipmentOfSort(this->sort);
+            float attrF = (float) equip->getAttribute(0x35);
 
             Array<int> &ids = *this->targetIds;
             Vector &beamPos = this->beamPosition;
@@ -150,20 +109,20 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
 
                 for (unsigned e = 0; e < enemies->size(); ++e) {
                     KIPlayer *kp = (*enemies)[e];
-                    if (RB_KIPlayer_isDead(kp) != 0 || RB_KIPlayer_isDying(kp) != 0)
+                    if (kp->isDead() != 0 || kp->isDying() != 0)
                         continue;
 
                     bool consider = false;
                     if (this->sort == 0x25) {
                         Player *pl = kp->player;
-                        if (pl->carriesFriendCargoFlag != 0 && RB_Player_getHitpoints() < RB_Player_getMaxHitpoints())
+                        if (pl->carriesFriendCargoFlag != 0 && kp->player->getHitpoints() < kp->player->getMaxHitpoints())
                             consider = true;
                     } else if (this->sort == 0x29) {
                         if (reinterpret_cast<uint8_t &>(kp->route) == 0 &&
                             kp->player->enemyFlagsLo != 0) {
                             Player **plp = (Player **) level->getPlayer();
-                            if (RB_Player_getShieldDamageRate(*plp) < 100 &&
-                                RB_Ship_getFirstEquipmentOfSort(RB_Status_getShip()) != 0)
+                            if ((*plp)->getShieldDamageRate() < 100 &&
+                                Globals::status->getShip()->getFirstEquipmentOfSort(9) != 0)
                                 consider = true;
                         }
                     }
@@ -171,9 +130,9 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                         continue;
 
                     Vector tmp;
-                    RB_Player_getPosition(&tmp);
+                    tmp = kp->player->getPosition();
                     beamPos = tmp;
-                    RB_PlayerEgo_getPosition(&tmp);
+                    tmp = level->getPlayer()->getPosition();
                     beamPos -= tmp;
                     if (AbyssEngine::AEMath::VectorLength(beamPos) > attrF)
                         continue;
@@ -186,12 +145,12 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                         }
                     }
                     if (!placed) {
-                        int srcHp = RB_Player_getHitpoints();
+                        int srcHp = kp->player->getHitpoints();
                         unsigned best = 0xffffffffu;
                         int bestHp = *g_RB_dmgThresh;
                         for (unsigned s = 0; s < ids.size(); ++s) {
                             if (ids[s] != -1) {
-                                int hp = RB_Player_getHitpoints();
+                                int hp = (*enemies)[ids[s]]->player->getHitpoints();
                                 if (hp < bestHp && srcHp < hp) {
                                     bestHp = hp;
                                     best = s;
@@ -220,22 +179,22 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                 tr->Update(dt, false);
 
                 Vector tmp;
-                RB_Player_getPosition(&tmp);
+                KIPlayer *enemy = (*enemies)[ids[i]];
+                tmp = enemy->player->getPosition();
                 beamPos = tmp;
 
-                KIPlayer *enemy = (*enemies)[ids[i]];
-                int kind = enemy->field_0x72;
+                int kind = enemy->shipGroupFlag;
 
                 Vector contrib;
                 if (kind == 0x2c) {
-                    Vector dir = AbyssEngine::AEMath::VectorNormalize(((AEGeometry *) enemy)->getDirection());
-                    dir *= RB_PlayerEgo_GetDirVector();
+                    Vector dir = AbyssEngine::AEMath::VectorNormalize(enemy->parentGeometry->getDirection());
+                    dir *= -300.0f;
                     contrib = dir;
                 } else if (kind == 0x31) {
-                    Vector dir = AbyssEngine::AEMath::VectorNormalize(((AEGeometry *) enemy)->getDirection());
-                    dir *= RB_PlayerEgo_GetDirVector();
-                    Vector up = AbyssEngine::AEMath::VectorNormalize(((AEGeometry *) enemy)->getUpVector());
-                    up *= RB_PlayerEgo_GetUpVector();
+                    Vector dir = AbyssEngine::AEMath::VectorNormalize(enemy->parentGeometry->getDirection());
+                    dir *= -300.0f;
+                    Vector up = AbyssEngine::AEMath::VectorNormalize(enemy->parentGeometry->getUpVector());
+                    up *= 200.0f;
                     dir += up;
                     contrib = dir;
                 } else {
@@ -244,7 +203,7 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                     contrib.z = 0;
                 }
                 beamPos += contrib;
-                RB_PlayerEgo_getPosition(&tmp);
+                tmp = level->getPlayer()->getPosition();
                 beamPos -= tmp;
 
                 float len = AbyssEngine::AEMath::VectorLength(beamPos);
@@ -257,62 +216,56 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                 beamUp.z = 0.0f;
                 geo->setDirection(ndir, beamUp);
 
-                RB_PlayerEgo_getPosition(&ndir);
-                geo->setPosition(ndir);
+                tmp = level->getPlayer()->getPosition();
+                geo->setPosition(tmp);
 
                 AbyssEngine::Transform *tr2 = (AbyssEngine::Transform *) canvas->TransformGetTransform(geo->transform);
                 tr2->Update(dt, false);
 
                 if (this->sort == 0x29) {
                     Player **plp = (Player **) level->getPlayer();
-                    if (RB_Player_getShieldDamageRate(*plp) < 100) {
-                        int eq = RB_Ship_getFirstEquipmentOfSort(RB_Status_getShip());
-                        float a = (float) RB_Item_getAttribute(eq);
+                    if ((*plp)->getShieldDamageRate() < 100) {
+                        Item *eq = Globals::status->getShip()->getFirstEquipmentOfSort(this->sort);
+                        float a = (float) eq->getAttribute(0x36);
                         float &charge = (*this->charges)[i];
                         charge += (shieldAmt * a) / scaleDiv;
                         if (charge < 1.0f) {
-                            RB_Player_damage((int) (intptr_t) enemy->player, true, 0);
+                            enemy->player->damage(1, false, -1);
                             charge -= 1.0f;
                         }
                         Player **plp2 = (Player **) level->getPlayer();
-                        int eq2 = RB_Ship_getFirstEquipmentOfSort(RB_Status_getShip());
-                        float a2 = (float) RB_Item_getAttribute(eq2);
-                        RB_Player_regenerateShield(*plp2, (shieldAmt * a2) / scaleDiv);
+                        Item *eq2 = Globals::status->getShip()->getFirstEquipmentOfSort(this->sort);
+                        float a2 = (float) eq2->getAttribute(0x36);
+                        (*plp2)->regenerateShield((shieldAmt * a2) / scaleDiv);
                     }
                 } else if (this->sort == 0x25) {
-                    int pl = (int) (intptr_t) enemy->player;
-                    int eq = RB_Ship_getFirstEquipmentOfSort(RB_Status_getShip());
-                    float a = (float) RB_Item_getAttribute(eq);
-                    RB_Player_heal(pl, (healAmt * a) / scaleDiv);
+                    Item *eq = Globals::status->getShip()->getFirstEquipmentOfSort(this->sort);
+                    float a = (float) eq->getAttribute(0x36);
+                    enemy->player->heal((healAmt * a) / scaleDiv);
                 }
 
-                int snd = *g_RB_sndPlay;
-                if (RB_FModSound_isPlaying(snd) == 0)
-                    RB_FModSound_play(snd, (Vector *) (intptr_t) g_RB_sndPlayEv[this->shipIndex], nullptr, 0.0f);
+                if ((*g_RB_sndPlay)->isPlaying(g_RB_sndPlayEv[this->shipIndex]) == 0)
+                    (*g_RB_sndPlay)->play(g_RB_sndPlayEv[this->shipIndex], nullptr, nullptr, 0.0f);
                 allInactive = false;
             }
             if (allInactive)
-                RB_FModSound_stop(**g_RB_sndStop);
+                (*g_RB_sndStop)->stop(g_RB_sndPlayEv[this->shipIndex]);
         }
     }
 
     PlayerEgo *ego2 = level->getPlayer();
-    if (RB_PlayerEgo_isDead(ego2) != 0) {
-        int snd = *g_RB_sndDead;
-        if (RB_FModSound_isPlaying(snd) != 0)
-            RB_FModSound_stop(snd);
+    if (ego2->isDead() != 0) {
+        if ((*g_RB_sndDead)->isPlaying(g_RB_sndPlayEv[this->shipIndex]) != 0)
+            (*g_RB_sndDead)->stop(g_RB_sndPlayEv[this->shipIndex]);
     }
 
     if ((*g_RB_sndFlag)[0xf] != 0) {
-        int *evArr = g_RB_sndUpdEv;
-        int *snd = *g_RB_sndUpd;
-        if (RB_FModSound_isPlaying(*snd) != 0) {
-            int shipIdx = this->shipIndex;
+        FModSound *snd = *g_RB_sndUpd;
+        if (snd->isPlaying(g_RB_sndUpdEv[this->shipIndex]) != 0) {
             Vector tmp;
-            RB_PlayerEgo_getPosition(&tmp);
+            tmp = level->getPlayer()->getPosition();
             this->beamPosition = tmp;
-            RB_FModSound_updateEvent3DAttributes(snd, evArr[shipIdx], &this->beamPosition, nullptr, false);
+            snd->updateEvent3DAttributes(g_RB_sndUpdEv[this->shipIndex], &this->beamPosition, nullptr, false);
         }
     }
 }
-
