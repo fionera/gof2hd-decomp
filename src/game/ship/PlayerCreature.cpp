@@ -16,8 +16,6 @@ static int PlayerCreature_enduranceTable[16] = {};
 static int *PlayerCreature_randomMax = nullptr;
 static FModSound **PlayerCreature_sound = nullptr;
 
-void PlayerJunk_render(PlayerJunk * self);
-
 namespace AbyssEngine {
     namespace AEMath {
         Matrix operator*(const Matrix &, const Matrix &);
@@ -56,7 +54,7 @@ void PlayerCreature::render() {
     }
 
     if ((uint32_t)(this->state - 3) >= 2) {
-        PlayerJunk_render((PlayerJunk *) this);
+        this->KIPlayer::render();
     }
 }
 

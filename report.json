@@ -1016,14 +1016,6 @@
    "usize": 228
   },
   {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 3.4,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
-  },
-  {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 3.4,
    "byte": false,
@@ -1134,6 +1126,14 @@
    "linked": false,
    "osize": 1504,
    "usize": 296
+  },
+  {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 4.6,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
   },
   {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
@@ -3960,6 +3960,22 @@
    "usize": 56
   },
   {
+   "name": "_ZN13RecordHandlerC1Ev",
+   "pct": 26.4,
+   "byte": false,
+   "linked": false,
+   "osize": 220,
+   "usize": 108
+  },
+  {
+   "name": "_ZN13RecordHandlerC2Ev",
+   "pct": 26.4,
+   "byte": false,
+   "linked": false,
+   "osize": 220,
+   "usize": 108
+  },
+  {
    "name": "_ZN11AbyssEngine9TransformC1Ev",
    "pct": 26.6,
    "byte": false,
@@ -5326,22 +5342,6 @@
    "linked": false,
    "osize": 824,
    "usize": 700
-  },
-  {
-   "name": "_ZN13RecordHandlerC1Ev",
-   "pct": 31.1,
-   "byte": false,
-   "linked": false,
-   "osize": 220,
-   "usize": 108
-  },
-  {
-   "name": "_ZN13RecordHandlerC2Ev",
-   "pct": 31.1,
-   "byte": false,
-   "linked": false,
-   "osize": 220,
-   "usize": 108
   },
   {
    "name": "_ZN11SpaceLoungeD1Ev",
@@ -8840,14 +8840,6 @@
    "usize": 608
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
@@ -8878,6 +8870,14 @@
    "linked": false,
    "osize": 36,
    "usize": 40
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",

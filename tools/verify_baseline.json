@@ -107,7 +107,6 @@
   "_Z17PE_htv_applyShakeP9PlayerEgoiPvS1_",
   "_Z17PE_um_strafeGlideP9PlayerEgo",
   "_Z17PE_upd_subsystemsP9PlayerEgoiPvS1_S1_S1_",
-  "_Z17PlayerJunk_renderP10PlayerJunk",
   "_Z17Ship_addCargo_oteP4Item",
   "_Z17Ship_getCargo_otev",
   "_Z17Ship_getIndex_otev",
