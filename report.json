@@ -1440,14 +1440,6 @@
    "usize": 282
   },
   {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
-  },
-  {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
    "pct": 7.4,
    "byte": false,
@@ -1462,6 +1454,14 @@
    "linked": false,
    "osize": 1168,
    "usize": 864
+  },
+  {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -7784,14 +7784,6 @@
    "usize": 60
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 46.9,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN9FModSound14enableCategoryEib",
    "pct": 46.9,
    "byte": false,
@@ -8846,6 +8838,14 @@
    "linked": false,
    "osize": 596,
    "usize": 608
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
@@ -14272,14 +14272,6 @@
    "usize": 196
   },
   {
-   "name": "_ZN12HangarWindow37refreshCargoAvailabilityForBlueprintsEv",
-   "pct": 91.5,
-   "byte": false,
-   "linked": false,
-   "osize": 188,
-   "usize": 188
-  },
-  {
    "name": "_ZN11AbyssEngine11CubeMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 91.6,
    "byte": false,
@@ -14518,6 +14510,14 @@
    "linked": false,
    "osize": 34,
    "usize": 34
+  },
+  {
+   "name": "_ZN12HangarWindow37refreshCargoAvailabilityForBlueprintsEv",
+   "pct": 93.0,
+   "byte": false,
+   "linked": false,
+   "osize": 188,
+   "usize": 188
   },
   {
    "name": "_ZN7MineGunC1EP3GuniiiP5Level",

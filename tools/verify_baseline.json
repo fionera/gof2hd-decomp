@@ -320,7 +320,6 @@
   "_Z26paintcanvas_ext_get_heightPv",
   "_Z26paintcanvas_ext_mat_internPvS_",
   "_Z27AEMath_MatrixSetTranslationPN11AbyssEngine6AEMath6MatrixEiii",
-  "_Z27BluePrint_getIngredientListP9BluePrint",
   "_Z27ChoiceWindow_OnTouchEnd_oteii",
   "_Z27HangarWindow_OnTouchEnd_oteP12HangarWindowii",
   "_Z27HangarWindow_initialize_otev",

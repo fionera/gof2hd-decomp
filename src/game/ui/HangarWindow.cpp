@@ -1294,8 +1294,6 @@ int HangarWindow::getCurrentTab() {
     return this->hangarList->getCurrentTab();
 }
 
-Array<int> *BluePrint_getIngredientList(BluePrint * bp);
-
 void HangarWindow::refreshCargoAvailabilityForBlueprints() {
     Array<Array<ListItem *> *> *items = this->hangarList->getItems();
     Array<ListItem *> *arr = (*items)[2];
@@ -1307,7 +1305,7 @@ void HangarWindow::refreshCargoAvailabilityForBlueprints() {
         if (it != nullptr && it->isBluePrint() != 0) {
             BluePrint *bp = it->bluePrint;
             Array<Item *> *cargo = Globals::status->getShip()->getCargo();
-            Array<int> *ingr = BluePrint_getIngredientList(bp);
+            Array<int> *ingr = bp->getIngredientList();
             if (cargo != nullptr) {
                 Array<int> *counters = bp->ingredientCounters;
                 int *amts = counters->data();
