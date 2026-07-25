@@ -7456,14 +7456,6 @@
    "usize": 132
   },
   {
-   "name": "_ZN10HangarList19fillIngredientsListEP9BluePrintb",
-   "pct": 44.9,
-   "byte": false,
-   "linked": false,
-   "osize": 376,
-   "usize": 322
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas33TransformGet2DPickedTextureRegionEjiiii",
    "pct": 45.0,
    "byte": false,
@@ -7606,6 +7598,14 @@
    "linked": false,
    "osize": 140,
    "usize": 120
+  },
+  {
+   "name": "_ZN10HangarList19fillIngredientsListEP9BluePrintb",
+   "pct": 45.7,
+   "byte": false,
+   "linked": false,
+   "osize": 376,
+   "usize": 322
   },
   {
    "name": "_ZN11AbyssEngine17ImageFontGetWidthEPNS_9ImageFontEPKtj",

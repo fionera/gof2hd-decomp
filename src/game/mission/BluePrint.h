@@ -66,9 +66,9 @@ public:
 
     void unlock();
 
-private:
     Array<int> *getIngredientList();
 
+private:
     Array<int> *getQuantityList();
 };
 #endif

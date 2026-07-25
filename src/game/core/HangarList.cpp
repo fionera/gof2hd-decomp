@@ -12,8 +12,6 @@ static Status *g_HangarList_status = nullptr;
 static GameText **g_HangarList_gameText = nullptr;
 static Array<Item *> *g_HangarList_items = nullptr;
 
-Array<int> *BluePrint_getIngredientList(BluePrint * blueprint);
-
 HangarList::HangarList() {
     this->tabs = nullptr;
     this->currentTab = 0;
@@ -153,7 +151,7 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
     Ship *ship = g_HangarList_status->getShip();
     Array<Item *> *cargo = ship->getCargo();
     Array<Item *> *allItems = g_HangarList_items;
-    Array<int> *ingredients = BluePrint_getIngredientList(blueprint);
+    Array<int> *ingredients = blueprint->getIngredientList();
     uint32_t count = ingredients->size();
 
     Array<ListItem *> *list = new Array<ListItem *>();
