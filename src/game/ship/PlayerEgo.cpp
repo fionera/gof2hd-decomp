@@ -60,7 +60,7 @@ namespace {
         static const float g_PE_rollNudge = 0.0f;
     static const float g_PE_strafeDist = 0.0f;
     static const float g_PE_cft_transformVal = 0.0f;
-    static const float g_PE_shakeDiv = 0.0f;
+    static const float g_PE_shakeDiv = 40000.0f;
         static char **g_PE_d_miningGate = nullptr;
     static const float g_PE_d_eps = 0.0f;
     static const float g_PE_d_lookK1 = 0.0f;

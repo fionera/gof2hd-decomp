@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.54,
   "byte_exact": 1160,
-  "linked_exact": 2573,
-  "fuzzy_perfect": 2573,
+  "linked_exact": 2574,
+  "fuzzy_perfect": 2574,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15430,14 +15430,6 @@
    "linked": false,
    "osize": 72,
    "usize": 68
-  },
-  {
-   "name": "_ZN9PlayerEgo5shakeEi",
-   "pct": 98.2,
-   "byte": false,
-   "linked": false,
-   "osize": 172,
-   "usize": 172
   },
   {
    "name": "_ZN15MenuTouchWindow8saveGameEi",
@@ -34430,6 +34422,14 @@
    "linked": true,
    "osize": 50,
    "usize": 50
+  },
+  {
+   "name": "_ZN9PlayerEgo5shakeEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 172,
+   "usize": 172
   },
   {
    "name": "_ZN9PlayerEgo6addGunEP3Guni",
