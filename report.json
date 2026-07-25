@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.54,
   "byte_exact": 1160,
-  "linked_exact": 2572,
-  "fuzzy_perfect": 2572,
+  "linked_exact": 2573,
+  "fuzzy_perfect": 2573,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15182,14 +15182,6 @@
    "linked": false,
    "osize": 162,
    "usize": 162
-  },
-  {
-   "name": "_ZN7Globals26getKeyBindingReplaceStringEi",
-   "pct": 96.7,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 76
   },
   {
    "name": "_ZN10AEGeometry17setLodChildMeshesEPt",
@@ -31142,6 +31134,14 @@
    "linked": true,
    "osize": 78,
    "usize": 78
+  },
+  {
+   "name": "_ZN7Globals26getKeyBindingReplaceStringEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 76,
+   "usize": 76
   },
   {
    "name": "_ZN7Globals29reportSupernovaChallengeScoreEv",

@@ -125,7 +125,7 @@ namespace AbyssEngine {
 
         void ToLowerCase();
 
-        void ToUpperCase();
+        String *ToUpperCase();
 
         void Trim();
 

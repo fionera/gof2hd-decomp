@@ -63,7 +63,7 @@ void String::Reverse() {
     }
 }
 
-void String::ToUpperCase() {
+String *String::ToUpperCase() {
     for (int i = 0; i < this->length; i++) {
         short c = (short) this->data[i];
         unsigned short u = (unsigned short) (c - 0x61);
@@ -96,6 +96,7 @@ void String::ToUpperCase() {
             }
         }
     }
+    return this;
 }
 
 int String::ValueOf() {

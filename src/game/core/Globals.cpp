@@ -1078,8 +1078,7 @@ String Globals::getKeyBindingReplaceString(int key) {
     (void) key;
 
     String tmp;
-    tmp.ToUpperCase();
-    return String(tmp, false);
+    return String(*tmp.ToUpperCase(), false);
 }
 
 static const char gLTS_minTens[] = "";
@@ -2559,4 +2558,3 @@ void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
 }
 
 #include "engine/core/AERandom.h"
-
