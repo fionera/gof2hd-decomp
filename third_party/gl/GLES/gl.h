@@ -25,6 +25,7 @@ extern "C" {
 
 void glMatrixMode(GLenum mode);
 void glLoadMatrixf(const GLfloat *m);
+void glMultMatrixf(const GLfloat *m);
 void glLoadIdentity(void);
 void glScalef(GLfloat x, GLfloat y, GLfloat z);
 void glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);

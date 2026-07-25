@@ -2028,27 +2028,27 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
     switch (mode) {
         case 1:
         case 5:
-            paintcanvas_ext_sbm_glEnable(0xb44);
-            paintcanvas_ext_sbm_glEnable(0xbe2);
-            paintcanvas_ext_sbm_glBlendFunc(0x302, 0x303);
+            glEnable(0xb44);
+            glEnable(0xbe2);
+            glBlendFunc(0x302, 0x303);
             paintcanvas_ext_sbm_setlight(0);
             return;
         case 2:
-            paintcanvas_ext_sbm_glEnable(0xb44);
-            paintcanvas_ext_sbm_glEnable(0xbe2);
-            paintcanvas_ext_sbm_glBlendFunc(1, 1);
+            glEnable(0xb44);
+            glEnable(0xbe2);
+            glBlendFunc(1, 1);
             paintcanvas_ext_sbm_setlight(0);
             return;
         case 3:
-            paintcanvas_ext_sbm_glDisable(0xb44);
-            paintcanvas_ext_sbm_glEnable(0xbe2);
-            paintcanvas_ext_sbm_glBlendFunc(1, 1);
+            glDisable(0xb44);
+            glEnable(0xbe2);
+            glBlendFunc(1, 1);
             paintcanvas_ext_sbm_setlight(0);
             return;
         case 4:
-            paintcanvas_ext_sbm_glEnable(0xb44);
-            paintcanvas_ext_sbm_glEnable(0xbe2);
-            paintcanvas_ext_sbm_glBlendFunc(0, 0x301);
+            glEnable(0xb44);
+            glEnable(0xbe2);
+            glBlendFunc(0, 0x301);
             paintcanvas_ext_sbm_setlight(0);
             return;
         case 6:
@@ -2056,59 +2056,59 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
             paintcanvas_ext_sbm_lightsetlight(this->engine, 0x4000);
         /* fallthrough */
         case 0:
-            paintcanvas_ext_sbm_glEnable(0xb44);
-            paintcanvas_ext_sbm_glDisable(0xbe2);
+            glEnable(0xb44);
+            glDisable(0xbe2);
             paintcanvas_ext_sbm_setlight(1);
             return;
         case 7:
             paintcanvas_ext_sbm_lightenable(this->engine, 1);
             paintcanvas_ext_sbm_lightsetlight(this->engine, 0x4000);
-            paintcanvas_ext_sbm_glEnable(0xb44);
-            paintcanvas_ext_sbm_glEnable(0xbe2);
-            paintcanvas_ext_sbm_glBlendFunc(1, 1);
+            glEnable(0xb44);
+            glEnable(0xbe2);
+            glBlendFunc(1, 1);
             paintcanvas_ext_sbm_setlight(0);
             return;
         case 8:
             paintcanvas_ext_sbm_lightenable(this->engine, 1);
             paintcanvas_ext_sbm_lightsetlight(this->engine, 0x4000);
-            paintcanvas_ext_sbm_glEnable(0xb44);
-            paintcanvas_ext_sbm_glEnable(0xbe2);
-            paintcanvas_ext_sbm_glBlendFunc(0x302, 0x303);
+            glEnable(0xb44);
+            glEnable(0xbe2);
+            glBlendFunc(0x302, 0x303);
             paintcanvas_ext_sbm_setlight(0);
             return;
         case 9:
             paintcanvas_ext_sbm_lightenable(this->engine, 1);
             paintcanvas_ext_sbm_lightsetlight(this->engine, 0x4000);
-            paintcanvas_ext_sbm_glEnable(0xb44);
-            paintcanvas_ext_sbm_glEnable(0xbe2);
-            paintcanvas_ext_sbm_glBlendFunc(0x302, 0x303);
+            glEnable(0xb44);
+            glEnable(0xbe2);
+            glBlendFunc(0x302, 0x303);
             paintcanvas_ext_sbm_setlight(1);
             return;
         case 10:
-            paintcanvas_ext_sbm_glEnable(0xb44);
-            paintcanvas_ext_sbm_glDisable(0xbe2);
-            paintcanvas_ext_sbm_glDepthMask(1);
+            glEnable(0xb44);
+            glDisable(0xbe2);
+            glDepthMask(1);
             paintcanvas_ext_sbm_setalpha(this->engine, 0x1000000, 1);
             if (*flag == 0) {
                 paintcanvas_ext_sbm_glAlphaFunc(0x204, 0.5f);
             }
             return;
         case 0x15:
-            paintcanvas_ext_sbm_glEnable(0xb44);
-            paintcanvas_ext_sbm_glEnable(0xbe2);
-            paintcanvas_ext_sbm_glBlendFunc(0x302, 0x303);
-            paintcanvas_ext_sbm_glDepthMask(0);
+            glEnable(0xb44);
+            glEnable(0xbe2);
+            glBlendFunc(0x302, 0x303);
+            glDepthMask(0);
             if (*flag != 0) {
                 paintcanvas_ext_sbm_setalpha(this->engine, g_sbm_const_8ce34, 1);
                 return;
             }
-            paintcanvas_ext_sbm_texcombine(0x2300, 0x2200, 0x8570);
-            paintcanvas_ext_sbm_texcombine(0x2300, 0x8571, 0x104);
-            paintcanvas_ext_sbm_texcombine(0x2300, 0x8572, 0x1e01);
-            paintcanvas_ext_sbm_texcombine(0x2300, 0x8580, 0x1702);
-            paintcanvas_ext_sbm_texcombine(0x2300, 0x8590, 0x300);
-            paintcanvas_ext_sbm_texcombine(0x2300, 0x8581, 0x8577);
-            paintcanvas_ext_sbm_texcombine(0x2300, 0x8591, 0x300);
+            glTexEnvi(0x2300, 0x2200, 0x8570);
+            glTexEnvi(0x2300, 0x8571, 0x104);
+            glTexEnvi(0x2300, 0x8572, 0x1e01);
+            glTexEnvi(0x2300, 0x8580, 0x1702);
+            glTexEnvi(0x2300, 0x8590, 0x300);
+            glTexEnvi(0x2300, 0x8581, 0x8577);
+            glTexEnvi(0x2300, 0x8591, 0x300);
             return;
         case 0x16:
             glEnable(0xb44);
@@ -2116,17 +2116,17 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
             glBlendFunc(0x302, 0x303);
             glDepthMask(0);
             if (*flag == 0) {
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x2200, 0x8570);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8571, 0x8575);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8572, 0x1e01);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8580, 0x1702);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8590, 0x300);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8588, 0x1702);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8598, 0x302);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8581, 0x8577);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8591, 0x300);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8582, 0x8577);
-                paintcanvas_ext_sbm_texcombine(0x2300, 0x8592, 0x302);
+                glTexEnvi(0x2300, 0x2200, 0x8570);
+                glTexEnvi(0x2300, 0x8571, 0x8575);
+                glTexEnvi(0x2300, 0x8572, 0x1e01);
+                glTexEnvi(0x2300, 0x8580, 0x1702);
+                glTexEnvi(0x2300, 0x8590, 0x300);
+                glTexEnvi(0x2300, 0x8588, 0x1702);
+                glTexEnvi(0x2300, 0x8598, 0x302);
+                glTexEnvi(0x2300, 0x8581, 0x8577);
+                glTexEnvi(0x2300, 0x8591, 0x300);
+                glTexEnvi(0x2300, 0x8582, 0x8577);
+                glTexEnvi(0x2300, 0x8592, 0x302);
             }
             return;
         case 0x25:
@@ -2682,26 +2682,26 @@ void PaintCanvas::BeginBG() {
     }
     paintcanvas_ext_glMatrixMode(0x1702);
     paintcanvas_ext_gl_loadidentity();
-    paintcanvas_ext_gl_ortho_persp(1.0f, -1.0f, 1.0f);
+    glScalef(1.0f, -1.0f, 1.0f);
     paintcanvas_ext_glMatrixMode(0x1701);
-    paintcanvas_ext_gl_loadmatrix(&this->projMatrix3d.m[0]);
+    glLoadMatrixf((const float*)&this->projMatrix3d.m[0]);
     paintcanvas_ext_glMatrixMode(0x1700);
-    return paintcanvas_ext_gl_done();
+    return glLoadIdentity();
 }
 
 void PaintCanvas::FontCreate(unsigned short resId, unsigned int &out,
                              bool /*unused*/) {
-    PCResourceView *res = (PCResourceView *) paintcanvas_ext_fc_findres(this, resId);
+    PCResourceView *res = (PCResourceView *) this->FindResource(resId);
     if (res == 0) {
         return;
     }
     unsigned short *info = (unsigned short *) res->payload;
-    PCResourceView *texres = (PCResourceView *) paintcanvas_ext_fc_findres(this, *info);
+    PCResourceView *texres = (PCResourceView *) this->FindResource(*info);
     if (texres == 0) {
         return;
     }
     if (texres->handle == -1) {
-        paintcanvas_ext_fc_texcreate(this, *info, true);
+        unsigned int texTmp; this->TextureCreate(*info, texTmp, false);
     }
     if (res->handle != -1) {
         out = (unsigned int) res->handle;
@@ -2796,20 +2796,20 @@ static char paintcanvas_g_use_matgl = 0;
 
 void PaintCanvas::Begin3d() {
     ((Engine *) this->engine)->statsEnabled = 0;
-    paintcanvas_ext_gl_enable(0xb71);
-    paintcanvas_ext_gl_depthmask(1);
-    paintcanvas_ext_gl_disable(0xbe2);
-    paintcanvas_ext_gl_color(this->engine, 1.0f, 1.0f, 1.0f, 1.0f);
+    glEnable(0xb71);
+    glDepthMask(1);
+    glDisable(0xbe2);
+    this->engine->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     if (paintcanvas_g_use_matgl != 0) {
         return paintcanvas_ext_matgl_load(this->engine, &this->projMatrix3d.m[0]);
     }
     paintcanvas_ext_glMatrixMode(0x1702);
     paintcanvas_ext_gl_loadidentity();
-    paintcanvas_ext_gl_ortho_persp(1.0f, -1.0f, 1.0f);
+    glScalef(1.0f, -1.0f, 1.0f);
     paintcanvas_ext_glMatrixMode(0x1701);
-    paintcanvas_ext_gl_loadmatrix(&this->projMatrix3d.m[0]);
+    glLoadMatrixf((const float*)&this->projMatrix3d.m[0]);
     paintcanvas_ext_glMatrixMode(0x1700);
-    return paintcanvas_ext_gl_done();
+    return glLoadIdentity();
 }
 
 void paintcanvas_ext_transform_addmesh(AbyssEngine::PaintCanvas *, void *, // lint: void_ptr (external symbol; mangling must match lib)
@@ -4273,21 +4273,21 @@ static char *paintcanvas_g_b2d_flag = &paintcanvas_g_b2d_flag_storage;
 
 void PaintCanvas::Begin2d() {
     ((Engine *) this->engine)->statsEnabled = 1;
-    paintcanvas_ext_gl_disable(0xb71);
-    paintcanvas_ext_gl_depthmask(0);
-    paintcanvas_ext_gl_enable(0xbe2);
-    paintcanvas_ext_gl_blendfunc(0x302, 0x303);
+    glDisable(0xb71);
+    glDepthMask(0);
+    glEnable(0xbe2);
+    glBlendFunc(0x302, 0x303);
     paintcanvas_ext_setcolor(this->engine, 1.0f, 1.0f, 1.0f, 1.0f);
-    paintcanvas_ext_glenable2(this->engine, 0xde1, true);
+    this->engine->GlEnable(0xde1, true);
     if (*paintcanvas_g_b2d_flag == 0) {
-        paintcanvas_ext_gl_texenvi(0x2300, 0x2200, 0x2100);
+        glTexEnvi(0x2300, 0x2200, 0x2100);
         paintcanvas_ext_glMatrixMode(0x1702);
         paintcanvas_ext_gl_loadidentity();
-        paintcanvas_ext_gl_scalef(1.0f, 1.0f, 1.0f);
+        glScalef(1.0f, 1.0f, 1.0f);
         paintcanvas_ext_glMatrixMode(0x1701);
-        paintcanvas_ext_gl_loadmatrix(&this->projOrthoMatrix.m[0]);
+        glLoadMatrixf((const float*)&this->projOrthoMatrix.m[0]);
         if (this->gameOrientation != 2) {
-            paintcanvas_ext_gl_multmatrix(&this->worldViewMatrix.m[0]);
+            glMultMatrixf((const float*)&this->worldViewMatrix.m[0]);
         }
         paintcanvas_ext_glMatrixMode(0x1700);
         paintcanvas_ext_gl_loadidentity();
