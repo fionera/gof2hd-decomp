@@ -2,6 +2,80 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-25h (wave 17 — GPT-5.6 Sol wrong-callee sweep)
+
+Net from the wave-16D checkpoint: avg **77.34->77.48**, byte **1159 (=)**, linked
+**2557->2566 (+9)**, imports **725->684 (-41)**, verify extra **36->35**, sodiff allowed
+extras **53->52**, stub/missing/wrong_type **0/0/0**, parity clean, every landed class
+RATCHET PASS + baseline locked. Goal lint: operator_call **431->415**, void_ptr **37->34**.
+The fleet used three disjoint internal GPT-5.6 Sol workers (medium/low); only the controller
+built, verified, ratcheted, updated baselines, and committed.
+
+Landed passes, in order:
+
+- `f5ef7408` MenuTouchWindow setup cleanup already present at session start:
+  startValkyrie **47.5->84.1**, startSupernova **42.5->82.7**, imports **725->714**.
+- `89069202` MenuTouchWindow real Galaxy/Array calls: loadPreviewRecords **86.9->88.5**,
+  startValkyrie **84.1->84.5**, startSupernova **82.7->83.1**; imports **714->712**.
+- `ccbfdc68` PaintCanvas typed matrix/perspective/mesh calls: CameraGetLocal,
+  TransformGetLocal, and MeshCreate became **100% linked**; perspective overloads
+  **85.4->92.7** and **84.6->92.3**; linked **2557->2560**, imports **712->705**.
+- `4b525a86` ModStation class de-shim: OnResume **75.7->81.0**, OnRelease
+  **73.5->99.4**, showCBSMessage **33.8->92.9**, checkPendingProducts **19.2->23.3**,
+  C2 **31.8->32.2**, showDlcMenu neutral; imports **705->697**, verify extra
+  **36->35**.
+- `eec7e73c` ObjectGun typed canvas calls (narrowed after gating): C2 **35.1->44.3**,
+  replaceGun **34.3->86.4**, render **21.0->22.7**; imports **697->692**.
+- `77ff1064` Globals typed constructors/string helpers: getItemName,
+  getRandomPlanetName, getRandomStation, replaceKeyBindingTokens, and
+  getRandomSystemForDrinks became **100% linked**; getKeyBindingReplaceString
+  **81.2->96.7**, init **65.4->80.5**; linked **2560->2565**, imports **692->685**,
+  operator_call **429->416**.
+- `2f3e0e9b` StarMap real state/globals/callees: D2 **73.4->94.2**,
+  askForJumpIntoAlienWorld **63.2->90.9**, initLights **51.3->100% linked**,
+  OnTouchMove **37.8->38.2**, depart **14.0->49.1**; linked **2565->2566**,
+  imports **685->684**, void_ptr **37->34**, operator_call **416->415**.
+
+Gate-driven rejects/requeue:
+
+- MenuTouchWindow::addButton direct `new TouchButton(...)` called the right export but
+  regressed **67.6->55.0** and grew **296->312B**. Reverted. Retry must retain the old
+  allocation/source scheduling while reaching the real constructor; do not simply repeat
+  the typed `new` expression.
+- ObjectGun::update fully typed canvas/AEMath rewrite regressed **15.0->7.6** and grew
+  **844->892B**. Reverted only that body; C2/replaceGun/render landed. Reconstruct update
+  per call cluster, preserving its current sret scratch and `PaintCanvas **` load shape.
+- PaintCanvas matrix retry learning: passing the local return buffer as the explicit
+  MatrixIdentity argument doubled the frame to 128B and cratered both functions to ~22%.
+  The matching form discards the by-value result while passing `identityMatrix` as the
+  explicit `Matrix&`; this restored the 64B frame and made both functions linked-exact.
+- StarMap layout blockers remain exclusive work: setStart observes original path/pathFinder
+  offsets **0xa0/0x50** versus current **0x94/0x44**; missionChangedFlag is original
+  **0xdc** versus current **0xd8**. OnTouchMove/depart retain broader layout/body residuals.
+  Do not mix these with another worker wave.
+- ModStation residuals: resetIdleCamForHangar needs coordinated Matrix-by-value return-slot
+  reconstruction; checkPendingProducts still lacks the notice String pipeline; C2 still
+  uses placeholder camera tables. PaintCanvas MeshSet2DMask/ReloadTextures/MeshGetTriCount/
+  TransformAddChild are scheduling/source-shape work, not wrong callees. Globals
+  getRandomEnemyFighter/playMusicAndFadeOutCurrent need literal-table recovery.
+
+Verified source-shape facts:
+
+- Always inspect per-function before/after rows even when the aggregate ratchet passes:
+  the first PaintCanvas batch and ObjectGun batch both passed globally while hiding severe
+  local regressions.
+- StarMap::depart calls byte-exact `Status::jumpgateUsed()` only for its side effect, then
+  tests `jump` and `jumpMapModeB`; no return-type/member-pointer cast is needed.
+- Correct real callees can still worsen codegen because typed `new`, hidden sret arguments,
+  receiver caching, and exception cleanup change frames/register allocation. Split those
+  sites instead of accepting them for import-count gains.
+
+Tier position: tier 1 remains exhausted (`stub_zero_size 0`). Tier 2 wrong-callee/de-shim
+work remains active with **684** pinned imports; start the next session by re-triaging the
+current import set and assigning disjoint classes/TUs. No workers are in flight. Tier 5
+StarMap layout findings above are queued but must wait for an exclusive pass; drift remains
+zero.
+
 ## Session 2026-07-25g (wave 16D — PlayerEgo ramps + PlayerFighter update + MTW de-shims)
 
 Net: avg 77.33->77.34, byte 1159 (=), linked 2557 (=), imports 737->725 (-12, locked), extra 36,
