@@ -17,8 +17,6 @@ namespace AbyssEngine {
     }
 }
 
-Transform *BeamGun_canvasTransform(PaintCanvas *canvas, uint32_t transformId);
-
 void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector);
 
 static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
@@ -98,14 +96,16 @@ void BeamGun::update(int elapsed) {
 
     if (gun->hitSmall != 0) {
         AEGeometry *geometry = this->primaryGeometry;
-        Transform *transform = BeamGun_canvasTransform(canvas, geometry->transform);
+        Transform *transform =
+            static_cast<Transform *>(canvas->TransformGetTransform(geometry->transform));
         transform->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
-        transform = BeamGun_canvasTransform(canvas, geometry->transform);
+        transform = static_cast<Transform *>(canvas->TransformGetTransform(geometry->transform));
         transform->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
         this->gun->hitSmall = 0;
     }
 
-    Transform *primaryTransform = BeamGun_canvasTransform(canvas, this->primaryGeometry->transform);
+    Transform *primaryTransform =
+        static_cast<Transform *>(canvas->TransformGetTransform(this->primaryGeometry->transform));
     primaryTransform->Update((long long) elapsed, false);
 
     gun = this->gun;
@@ -147,11 +147,12 @@ void BeamGun::update(int elapsed) {
         gun = this->gun;
         if (gun->delayActive == 0) {
             AEGeometry *secondary = this->secondaryGeometry;
-            Transform *t = BeamGun_canvasTransform(canvas, secondary->transform);
+            Transform *t =
+                static_cast<Transform *>(canvas->TransformGetTransform(secondary->transform));
             t->SetAnimationState((AbyssEngine::AnimationMode) 0, 0);
-            t = BeamGun_canvasTransform(canvas, secondary->transform);
+            t = static_cast<Transform *>(canvas->TransformGetTransform(secondary->transform));
             t->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
-            t = BeamGun_canvasTransform(canvas, secondary->transform);
+            t = static_cast<Transform *>(canvas->TransformGetTransform(secondary->transform));
             t->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
         } else {
             player = (PlayerEgo *) this->level->getPlayer();
@@ -167,7 +168,8 @@ void BeamGun::update(int elapsed) {
             this->secondaryGeometry->setPosition(*(Vector *) &playerMatrix);
 
             AEGeometry *secondary = this->secondaryGeometry;
-            Transform *t = BeamGun_canvasTransform(canvas, secondary->transform);
+            Transform *t =
+                static_cast<Transform *>(canvas->TransformGetTransform(secondary->transform));
             t->Update((long long) elapsed, false);
 
             MatrixGetDir(&rotated, (Matrix *) ((Player *) player->player)->transform);

@@ -6376,14 +6376,6 @@
    "usize": 512
   },
   {
-   "name": "_ZN7BeamGun6updateEi",
-   "pct": 37.4,
-   "byte": false,
-   "linked": false,
-   "osize": 636,
-   "usize": 640
-  },
-  {
    "name": "_ZN11ModMainMenu12OnTouchBeginEiiPv",
    "pct": 37.5,
    "byte": false,
@@ -6542,6 +6534,14 @@
    "linked": false,
    "osize": 1904,
    "usize": 1580
+  },
+  {
+   "name": "_ZN7BeamGun6updateEi",
+   "pct": 38.6,
+   "byte": false,
+   "linked": false,
+   "osize": 636,
+   "usize": 640
   },
   {
    "name": "_ZN11SpaceLounge10getSoundIdEP5Agent",
@@ -8832,20 +8832,20 @@
    "usize": 608
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",

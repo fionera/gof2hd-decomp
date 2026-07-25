@@ -237,7 +237,6 @@
   "_Z22_mtw_draw_audioOptionsPv",
   "_Z22_mtw_draw_loadSaveListPv",
   "_Z23Achievements_isUnlockedPvi",
-  "_Z23BeamGun_canvasTransformPN11AbyssEngine11PaintCanvasEj",
   "_Z23GameText_getText_oiImpli",
   "_Z23Gun_ArrayReleaseClassesP5ArrayIN11AbyssEngine6AEMath6VectorEE",
   "_Z23HangarWindow_render_r2dP10ModStation",
