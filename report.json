@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.64,
   "byte_exact": 1160,
-  "linked_exact": 2584,
-  "fuzzy_perfect": 2584,
+  "linked_exact": 2585,
+  "fuzzy_perfect": 2585,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15272,14 +15272,6 @@
    "usize": 158
   },
   {
-   "name": "_ZN3Hud8touchEndEjjPv",
-   "pct": 97.8,
-   "byte": false,
-   "linked": false,
-   "osize": 118,
-   "usize": 118
-  },
-  {
    "name": "_ZN6Sparks7explodeEiii",
    "pct": 97.8,
    "byte": false,
@@ -26262,6 +26254,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN3Hud8touchEndEjjPv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 118,
+   "usize": 118
   },
   {
    "name": "_ZN3Hud9hudActionEiP5LevelP5Radar",

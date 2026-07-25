@@ -114,8 +114,8 @@ uint8_t Hud::cargoFull() {
 
 unsigned int Hud::touchEnd(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
-    int i = 0;
     unsigned int ret = 0;
+    int i = 0;
     for (; i != 0x19; i = i + 1) {
         if ((*this->keyArray)[i] == key) {
             ret = (unsigned int) this->elementBits[i];
