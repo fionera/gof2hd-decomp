@@ -223,9 +223,9 @@ Array<ImagePart *> *ImageFactory::loadChar(int *desc) {
     return parts;
 }
 
-void ImageFactory::createChar(int race) {
+int *ImageFactory::createChar(int race) {
     int sexRoll = (*gCreateCharRng)->nextInt(2);
-    this->createChar(sexRoll == 0, race);
+    return this->createChar(sexRoll == 0, race);
 }
 
 int *ImageFactory::createChar(bool isMale, int race) {
@@ -246,4 +246,3 @@ int *ImageFactory::createChar(bool isMale, int race) {
         desc[i + 1] = (*gCreateChar2Rng2)->nextInt(partCounts[i]);
     return desc;
 }
-
