@@ -18,6 +18,7 @@
 #include "game/core/Globals.h"
 #include "game/ui/ChoiceWindow.h"
 #include "game/mission/Achievements.h"
+#include "game/world/Galaxy.h"
 #include <math.h>
 #include <cstddef>
 
@@ -152,8 +153,6 @@ static inline void _mtw_Status_resetGame() { Globals::status->resetGame(); }
 // _mtw_Ship_setRace removed: status->getShip()->setRace(0)
 // _mtw_Item_makeItem / _mtw_makeItem2 removed: dead declarations (no call sites)
 
-void *_mtw_Galaxy_getStation(void *galaxy, int idx); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 // _mtw_Status_setStation removed: status->setStation(station)
 
 void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
@@ -216,8 +215,6 @@ static inline void *_mtw_AppMgr_GetApplicationModule(void *app, int id) { return
 // _mtw_TouchButton_setVisible removed: replaced with btn->setVisible(v)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_Array_GameRecord_dtor(void *p); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 void *_mtw_RecordHandler_readAllPreviewRecords(void *rh); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -829,7 +826,7 @@ void MenuTouchWindow::startValkyrie() {
 
     (*statusHolder)->setCredits(0);
     Status *stationTarget = *statusHolder;
-    Station *station = (Station *) _mtw_Galaxy_getStation(Globals::galaxy, 0x5b);
+    Station *station = reinterpret_cast<Station *>(Globals::galaxy->getStation(0x5b));
     stationTarget->setStation(station);
     (*statusHolder)->setSystemVisibility(6, true);
     (*statusHolder)->setSystemVisibility(0x19, true);
@@ -1252,7 +1249,7 @@ void MenuTouchWindow::loadPreviewRecords() {
 
     Array<GameRecord *> *rec = this->previewRecords;
     if (rec != 0) {
-        ::operator delete(_mtw_Array_GameRecord_dtor(rec));
+        delete rec;
         this->previewRecords = 0;
     }
     RecordHandler *rh = new RecordHandler();
@@ -2109,7 +2106,7 @@ void MenuTouchWindow::startSupernova() {
 
     (*statusHolder)->setCredits(0);
     Status *stationTarget = *statusHolder;
-    Station *station = (Station *) _mtw_Galaxy_getStation(Globals::galaxy, 0x46);
+    Station *station = reinterpret_cast<Station *>(Globals::galaxy->getStation(0x46));
     stationTarget->setStation(station);
     (*statusHolder)->setSystemVisibility(6, true);
     (*statusHolder)->setSystemVisibility(0x19, true);
@@ -2156,4 +2153,3 @@ void MenuTouchWindow::startGOF2() {
     Globals::sound->play(0x8f, nullptr, nullptr, 0.0f);
     Globals::appManager->SetCurrentApplicationModule(2);
 }
-

@@ -32,7 +32,7 @@
   "game/ship/PlayerEgo.cpp": 3,
   "game/ui/HangarWindow.cpp": 21,
   "game/ui/Layout.cpp": 3,
-  "game/ui/MenuTouchWindow.cpp": 37,
+  "game/ui/MenuTouchWindow.cpp": 36,
   "game/ui/MissionsWindow.cpp": 2,
   "game/weapons/Gun.cpp": 2,
   "game/world/Level.cpp": 119,

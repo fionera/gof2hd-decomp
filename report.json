@@ -2584,14 +2584,6 @@
    "usize": 568
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.9,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN3HudC1Ev",
    "pct": 16.9,
    "byte": false,
@@ -2702,6 +2694,14 @@
    "linked": false,
    "osize": 932,
    "usize": 312
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 17.5,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas25MeshChangeShaderAnimValueEPNS_4MeshEfj",
@@ -13328,14 +13328,6 @@
    "usize": 154
   },
   {
-   "name": "_ZN15MenuTouchWindow14startSupernovaEv",
-   "pct": 82.7,
-   "byte": false,
-   "linked": false,
-   "osize": 672,
-   "usize": 676
-  },
-  {
    "name": "_ZN7Station25stationHasHiddenBlueprintEb",
    "pct": 82.8,
    "byte": false,
@@ -13358,6 +13350,14 @@
    "linked": false,
    "osize": 72,
    "usize": 76
+  },
+  {
+   "name": "_ZN15MenuTouchWindow14startSupernovaEv",
+   "pct": 83.1,
+   "byte": false,
+   "linked": false,
+   "osize": 672,
+   "usize": 676
   },
   {
    "name": "_ZN5Level16almostKillWantedEi",
@@ -13480,14 +13480,6 @@
    "usize": 40
   },
   {
-   "name": "_ZN15MenuTouchWindow13startValkyrieEv",
-   "pct": 84.1,
-   "byte": false,
-   "linked": false,
-   "osize": 612,
-   "usize": 612
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine11GlowEndGlowEv",
    "pct": 84.2,
    "byte": false,
@@ -13526,6 +13518,14 @@
    "linked": false,
    "osize": 56,
    "usize": 54
+  },
+  {
+   "name": "_ZN15MenuTouchWindow13startValkyrieEv",
+   "pct": 84.5,
+   "byte": false,
+   "linked": false,
+   "osize": 612,
+   "usize": 612
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas20CameraSetPerspectiveEjff",
@@ -13784,14 +13784,6 @@
    "usize": 44
   },
   {
-   "name": "_ZN15MenuTouchWindow18loadPreviewRecordsEv",
-   "pct": 86.9,
-   "byte": false,
-   "linked": false,
-   "osize": 188,
-   "usize": 188
-  },
-  {
    "name": "_ZN11AbyssEngine17TextureConference14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 87.0,
    "byte": false,
@@ -13974,6 +13966,14 @@
    "linked": false,
    "osize": 144,
    "usize": 144
+  },
+  {
+   "name": "_ZN15MenuTouchWindow18loadPreviewRecordsEv",
+   "pct": 88.5,
+   "byte": false,
+   "linked": false,
+   "osize": 188,
+   "usize": 188
   },
   {
    "name": "_ZN6Status11replaceHashEN11AbyssEngine6StringES1_",
