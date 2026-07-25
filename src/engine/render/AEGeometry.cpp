@@ -10,10 +10,6 @@ void _ae_MatrixSetScaling(void *out, uint32_t loc, float sx, float sy, float sz)
 
 // lint: void_ptr imported symbol, Pv mangling must match original
 
-void _ae_setPosition3(void *self, float x, float y, float z); // lint: void_ptr imported symbol, Pv mangling must match original
-
-// lint: void_ptr imported symbol, Pv mangling must match original
-
 uint32_t Transform_GetTransform(uint32_t tf);
 
 void VectorCross(Vector *out, const Vector *b);
@@ -136,7 +132,8 @@ void AEGeometry::setRotationOrder(AbyssEngine::AEMath::RotationOrder order) {
 }
 
 void AEGeometry::setPosition(float x, float y, float z) {
-    _ae_setPosition3(this, x, y, z);
+    AbyssEngine::AEMath::MatrixSetTranslation(
+        *(Matrix *) this->canvas->TransformGetLocal(this->transform), x, y, z);
 }
 
 Vector AEGeometry::getScaling() {

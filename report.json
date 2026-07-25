@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.5,
+  "avg_match": 77.52,
   "byte_exact": 1159,
-  "linked_exact": 2567,
-  "fuzzy_perfect": 2567,
+  "linked_exact": 2568,
+  "fuzzy_perfect": 2568,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -149,14 +149,6 @@
    "byte": false,
    "linked": false,
    "osize": 52,
-   "usize": 4
-  },
-  {
-   "name": "_ZN10AEGeometry11setPositionEfff",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 72,
    "usize": 4
   },
   {
@@ -1016,6 +1008,14 @@
    "usize": 228
   },
   {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 3.4,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
+  },
+  {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 3.4,
    "byte": false,
@@ -1126,14 +1126,6 @@
    "linked": false,
    "osize": 1504,
    "usize": 296
-  },
-  {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 4.6,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
   },
   {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
@@ -3960,22 +3952,6 @@
    "usize": 56
   },
   {
-   "name": "_ZN13RecordHandlerC1Ev",
-   "pct": 26.4,
-   "byte": false,
-   "linked": false,
-   "osize": 220,
-   "usize": 108
-  },
-  {
-   "name": "_ZN13RecordHandlerC2Ev",
-   "pct": 26.4,
-   "byte": false,
-   "linked": false,
-   "osize": 220,
-   "usize": 108
-  },
-  {
    "name": "_ZN11AbyssEngine9TransformC1Ev",
    "pct": 26.6,
    "byte": false,
@@ -5342,6 +5318,22 @@
    "linked": false,
    "osize": 824,
    "usize": 700
+  },
+  {
+   "name": "_ZN13RecordHandlerC1Ev",
+   "pct": 31.1,
+   "byte": false,
+   "linked": false,
+   "osize": 220,
+   "usize": 108
+  },
+  {
+   "name": "_ZN13RecordHandlerC2Ev",
+   "pct": 31.1,
+   "byte": false,
+   "linked": false,
+   "osize": 220,
+   "usize": 108
   },
   {
    "name": "_ZN11SpaceLoungeD1Ev",
@@ -8848,6 +8840,14 @@
    "usize": 128
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
    "pct": 53.3,
    "byte": false,
@@ -8870,14 +8870,6 @@
    "linked": false,
    "osize": 36,
    "usize": 40
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -14096,6 +14088,14 @@
    "usize": 584
   },
   {
+   "name": "_ZN11AbyssEngine12BumpShaderV24InitEPNS_6EngineE",
+   "pct": 90.6,
+   "byte": false,
+   "linked": false,
+   "osize": 324,
+   "usize": 324
+  },
+  {
    "name": "_zip_new",
    "pct": 90.6,
    "byte": false,
@@ -14334,14 +14334,6 @@
    "linked": false,
    "osize": 292,
    "usize": 290
-  },
-  {
-   "name": "_ZN11AbyssEngine12BumpShaderV24InitEPNS_6EngineE",
-   "pct": 92.0,
-   "byte": false,
-   "linked": false,
-   "osize": 324,
-   "usize": 324
   },
   {
    "name": "_ZN11AbyssEngine10MaskShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -17494,6 +17486,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN10AEGeometry11setPositionEfff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 72,
+   "usize": 72
   },
   {
    "name": "_ZN10AEGeometry11setRotationERKN11AbyssEngine6AEMath6VectorE",
