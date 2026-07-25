@@ -48,7 +48,7 @@ public:
     uint32_t spriteMeshId;
     uint32_t spriteSystemId;
     uint32_t spriteParticleCount;
-    uint8_t spriteUsesExtra;
+    bool spriteUsesExtra;
 
     uint32_t meshSystemCount;
     ParticleSystemMesh **meshSystems;
@@ -60,7 +60,7 @@ public:
     uint32_t meshId;
     uint32_t transformId;
     uint32_t meshParticleCount;
-    uint8_t meshUsesExtra;
+    bool meshUsesExtra;
 
     ParticleSystemManager(PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet,
                           unsigned short spriteTex, bool spriteFlag,
@@ -120,7 +120,7 @@ public:
 
     int addSystem(AbyssEngine::AEMath::Matrix const *matrix, ParticleSettings::ParticleSet set, bool flag);
 
-    int init();
+    void init();
 
     void resetSystem(int handle);
 
