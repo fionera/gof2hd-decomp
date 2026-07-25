@@ -6,6 +6,9 @@
 static bool g_transform_matrix_flag = false;
 
 namespace AbyssEngine {
+    int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius,
+                                    AEMath::Matrix *matrix, Camera *camera);
+
     void Transform::SetCurrentAnimationTime(longlong value) {
         this->currentTime = value;
     }
@@ -949,6 +952,6 @@ namespace AbyssEngine {
             x = z;
         }
 
-        return CameraIsSphereinViewFrustum(center, this->boundingRadius2 * x, camera);
+        return CameraIsSphereinViewFrustum(center, this->boundingRadius2 * x, 0, camera);
     }
 }

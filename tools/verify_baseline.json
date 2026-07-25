@@ -478,7 +478,6 @@
   "_ZN11AbyssEngine17AE_getInitGLWidthEv",
   "_ZN11AbyssEngine18AE_getInitGLHeightEv",
   "_ZN11AbyssEngine26AE_SpriteSystem_pushMatrixEjjjjjjjjjjjjjjji",
-  "_ZN11AbyssEngine27CameraIsSphereinViewFrustumERKNS_6AEMath6VectorEfPNS_6CameraE",
   "_ZN11AbyssEngine6AEMath12VectorLengthEPKNS0_6VectorE",
   "_ZN11AbyssEngine6AEMath12operator_mulEPNS0_6VectorEf",
   "_ZN11AbyssEngine6AEMath14MatrixMultiplyERNS0_6MatrixERKS1_",
