@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.49,
+  "avg_match": 77.5,
   "byte_exact": 1159,
   "linked_exact": 2567,
   "fuzzy_perfect": 2567,
@@ -7752,6 +7752,14 @@
    "usize": 112
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 46.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN12StatusWindowC1Ev",
    "pct": 46.7,
    "byte": false,
@@ -8838,22 +8846,6 @@
    "linked": false,
    "osize": 596,
    "usize": 608
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
-   "name": "_ZN10LODManager11forceUpdateEib",
-   "pct": 53.0,
-   "byte": false,
-   "linked": false,
-   "osize": 192,
-   "usize": 168
   },
   {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
@@ -12782,6 +12774,14 @@
    "linked": false,
    "osize": 356,
    "usize": 328
+  },
+  {
+   "name": "_ZN10LODManager11forceUpdateEib",
+   "pct": 79.1,
+   "byte": false,
+   "linked": false,
+   "osize": 192,
+   "usize": 184
   },
   {
    "name": "_ZN18TargetFollowCamera15setShipHandlingEf",

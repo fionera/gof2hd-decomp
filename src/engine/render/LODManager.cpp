@@ -9,12 +9,6 @@ int curTouchSize = 0;
 int maxTouchSize = 0;
 Touch *touches = nullptr;
 
-uint32_t CameraGetCurrent(void *canvas); // lint: void_ptr (free-function signature; retype changes mangling)
-
-Matrix *CameraGetLocal(void *canvas, uint32_t index); // lint: void_ptr (free-function signature; retype changes mangling)
-
-// lint: void_ptr (free-function signature; retype changes mangling)
-
 static PaintCanvas **g_LOD_canvas = nullptr;
 
 static char *cItemListID_05 = nullptr, *cItemListID_06 = nullptr, *cItemListID_07 = nullptr,
@@ -64,12 +58,13 @@ void LODManager::removeObject(AEGeometry *g) {
 }
 
 void LODManager::forceUpdate(int dt, bool useParent) {
-    PaintCanvas *canvas = *g_LOD_canvas;
+    PaintCanvas *canvas = Globals::Canvas;
     float factor = g_LOD_settings->distanceFactor;
 
-    uint32_t cam = CameraGetCurrent(canvas);
-    Matrix *m = CameraGetLocal(canvas, cam);
-    this->cameraPos = AbyssEngine::AEMath::MatrixGetPosition(*m);
+    uint32_t cam = canvas->CameraGetCurrent();
+    float *m = canvas->CameraGetLocal(cam);
+    this->cameraPos = AbyssEngine::AEMath::MatrixGetPosition(
+            *reinterpret_cast<const Matrix *>(m));
 
     for (uint32_t i = 0; i < this->objects->size(); i++) {
         AEGeometry *g = (*this->objects)[i];
