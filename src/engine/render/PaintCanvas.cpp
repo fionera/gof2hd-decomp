@@ -19,6 +19,12 @@ namespace AbyssEngine {
     typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported TextureCreateFromFile signature)
     int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, bool flag, float scale); // lint: void_ptr (exported TextureCreateFromFile signature)
     int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, float scale, AELoadedTexture *outTex, bool flag); // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+    int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triangleCount,
+                   signed char meshType, Mesh **out);
+    float CameraSetPerspective(float a, float b, float c, float width, float height,
+                               Camera *camera);
+    float CameraSetPerspective(float fov, float aspect, float width, float height,
+                               Camera *camera);
 }
 
 namespace AbyssEngine {
@@ -306,8 +312,6 @@ namespace {
 
 void paintcanvas_ext_has_vibration(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void MatrixIdentity(void *result, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_fr_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_fr_glenable(void *eng, unsigned int cap, bool on); // lint: void_ptr (external symbol; mangling must match lib)
@@ -580,16 +584,6 @@ static inline void paintcanvas_ext_dl_glVertexPointer(int a, int b, int c, void 
 
 static inline void paintcanvas_ext_dl_glDrawArrays(int a, int b, int c) { glDrawArrays(a, b, c); }
 
-int paintcanvas_ext_get_w(AbyssEngine::PaintCanvas *);
-
-int paintcanvas_ext_get_h(AbyssEngine::PaintCanvas *);
-
-void paintcanvas_ext_cam_persp4(float, float, float, float, float, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_cam_setcur(AbyssEngine::PaintCanvas *, unsigned int);
-
 void paintcanvas_ext_end3d(AbyssEngine::PaintCanvas *);
 
 void paintcanvas_ext_material_clone(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
@@ -801,10 +795,6 @@ static inline void paintcanvas_ext_di4_meshdraw(void *eng, void *mesh) { AbyssEn
 
 static inline void paintcanvas_ext_di4_glenable(unsigned int cap) { glEnable(cap); }
 
-void paintcanvas_ext_cam_persp(float, float, float, float, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_dr2_restore(unsigned int flag, void *img); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
@@ -956,8 +946,6 @@ static inline void paintcanvas_ext_di3_settexture(void *self, unsigned int tex) 
 static inline void paintcanvas_ext_di3_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_di3_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
-
-int paintcanvas_ext_meshcreate(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void *paintcanvas_ext_mc2_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1204,7 +1192,8 @@ float *PaintCanvas::CameraGetLocal(unsigned int index) {
     } else {
         char tmp[60];
         result = (float *) &this->identityMatrix;
-        MatrixIdentity(tmp, result);
+        AbyssEngine::AEMath::MatrixIdentity(
+            *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(result));
     }
     return result;
 }
@@ -1454,7 +1443,8 @@ void *PaintCanvas::TransformGetLocal(unsigned int index) { // lint: void_ptr (ex
     } else {
         char tmp[60];
         result = (char *) &this->identityMatrix;
-        MatrixIdentity(tmp, result);
+        AbyssEngine::AEMath::MatrixIdentity(
+            *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(result));
     }
     return result;
 }
@@ -2621,12 +2611,12 @@ void PaintCanvas::MeshChangeMaterial(unsigned int meshIndex, unsigned short matI
 
 void PaintCanvas::CameraSetPerspective(unsigned int index, float a, float b, float c) {
     if (index < this->cameras.count) {
-        float w = (float) paintcanvas_ext_get_w(this);
-        float h = (float) paintcanvas_ext_get_h(this);
+        float w = (float) this->GetWidth();
+        float h = (float) this->GetHeight();
         AbyssEngine::Camera *cam = (this->cameras.data_)[index];
-        paintcanvas_ext_cam_persp4(a, b, c, w, h, cam);
+        AbyssEngine::CameraSetPerspective(a, b, c, w, h, cam);
         if (this->currentCamera == index) {
-            return paintcanvas_ext_cam_setcur(this, index);
+            return this->CameraSetCurrent(index);
         }
     }
 }
@@ -3888,12 +3878,12 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
 
 void PaintCanvas::CameraSetPerspective(unsigned int index, float fov, float aspect) {
     if (index < this->cameras.count) {
-        float w = (float) paintcanvas_ext_get_w(this);
-        float h = (float) paintcanvas_ext_get_h(this);
+        float w = (float) this->GetWidth();
+        float h = (float) this->GetHeight();
         AbyssEngine::Camera *cam = (this->cameras.data_)[index];
-        paintcanvas_ext_cam_persp(fov, aspect, w, h, cam);
+        AbyssEngine::CameraSetPerspective(fov, aspect, w, h, cam);
         if (this->currentCamera == index) {
-            return paintcanvas_ext_cam_setcur(this, index);
+            return this->CameraSetCurrent(index);
         }
     }
 }
@@ -4491,7 +4481,8 @@ void PaintCanvas::MeshCreate(unsigned short a, unsigned short b,
                              signed char c, unsigned int &out) {
     char mesh[4];
     *(AbyssEngine::Mesh **) mesh = 0;
-    int result = paintcanvas_ext_meshcreate(this->engine, mesh);
+    int result = AbyssEngine::MeshCreate(
+        this->engine, a, b, c, reinterpret_cast<AbyssEngine::Mesh **>(mesh));
     if (result == 1) {
         ArrayAdd<AbyssEngine::Mesh *>(*(AbyssEngine::Mesh **) mesh,
                                       *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&this->meshCount));
