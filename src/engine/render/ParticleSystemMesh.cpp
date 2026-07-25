@@ -64,8 +64,8 @@ void ParticleSystemMesh::reset() {
     for (int i = 0; i < (int) this->maxParticles; i++)
         this->particleAges[i] = -1;
 
-    this->frameCounter = 0;
     this->currentParticle = 0;
+    this->frameCounter = 0;
     this->newSectionStarted = 1;
     this->emitTimer = 0;
     this->field_0x4 = 1;

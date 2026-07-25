@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.53,
   "byte_exact": 1160,
-  "linked_exact": 2570,
-  "fuzzy_perfect": 2570,
+  "linked_exact": 2571,
+  "fuzzy_perfect": 2571,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15288,14 +15288,6 @@
    "usize": 98
   },
   {
-   "name": "_ZN18ParticleSystemMesh5resetEv",
-   "pct": 97.4,
-   "byte": false,
-   "linked": false,
-   "osize": 94,
-   "usize": 94
-  },
-  {
    "name": "_zip_cdir_new",
    "pct": 97.4,
    "byte": false,
@@ -25526,6 +25518,14 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN18ParticleSystemMesh5resetEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 94,
+   "usize": 94
   },
   {
    "name": "_ZN18ParticleSystemMesh6renderEPN11AbyssEngine11PaintCanvasEj",
