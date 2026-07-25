@@ -2,6 +2,44 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-25b (wave 15C — monster-function fleet: 2 analysts + 4 authors, 4/5 TUs landed)
+
+Analyst→author pipeline on the low-pct monsters. Net: avg 77.27->77.28, byte 1159 (=),
+linked 2556 (=), imports 859->855 (-4), drift 0, extra 36, sodiff extra-beyond-allow 0,
+RATCHET PASS + baseline locked, lint CLEAN.
+- PaintCanvas::SetBlendMode 68.5->88.4: the 9 `sbm_setlight` shims are glDepthMask (proved by
+  decoding the ARM PLT veneer at 0x19b398 -> 0x5eec0 glDepthMask@plt); they tail-merge under
+  -Oz into the 3 machine call-sites my callee census saw — census counts MACHINE sites, not
+  source calls; don't refute a mapping on counts alone. lightenable/lightsetlight shims ->
+  real `engine->LightEnable(bool)` / `LightSetLight(0x4000)`; setalpha/glenablecap ->
+  `engine->GlEnable(..)`. `volatile` on the file-static flag storage stopped const-folding and
+  restored the original prologue + TBB switch shape (lint-clean).
+- Level::initParticleSystems 22.8->42.9: rodata tables decoded from orig (skyColors@0x1fc4d0,
+  shipTypeMap@0x1fc3d0, 4 velocity tables@0x1fdba0), field_74/field_80 system routing,
+  enableSystemEmit(false) bug fix, 520B frame reproduced with 8 named Matrix locals.
+- IParticleSystem::emitManual 27.6->34.2 (branch-order fix; single reused velBuf[12] matching
+  orig slot reuse; NEON preloads force vpush {d8-d15} exact). emit 25.6->31.0 (24-pointer
+  pre-loop def cache; frame still -56B, ~14 cache entries don't spill — residual blocker).
+- PSM::emitTrail 53.4->58.8: unnamed-temp chain `MatrixGetRight(..) * f` reuses the sret slot,
+  frame 264->248 (=orig). CEILING: r4/r5 swap — LLVM spill weight (uses/live-range) gives r4 to
+  the short-lived sret buffer over long-lived `this`; no legal C++14 source form flips it.
+  Same class: initParticleSystems `this` lands in r8 vs orig r4. Both documented in notes_*.md.
+- PlayerFighter REVERTED (not landed): author got ctor 25.6->31.8 and update 2.2->13.6 but the
+  update body was a Ghidra-style dump — 174 `goto dda88`-style address labels, 9 void_ptr casts,
+  1 __builtin_memcpy, byte-offset field reads. Lint FAILed it; quality constraints make it
+  uncommittable. Raw files saved: scratchpad/PlayerFighter.{cpp,h}.pf-author-raw + analyst map
+  notes_pf_update.md (16 chunks) + notes_pf_author.md. Successor must rebuild with real control
+  flow + typed fields. Analyst found real bugs to keep: ctor setLoop(true) not false (0xdc656),
+  missing EaseInOutMatrix docking path, 5-slot roll buffer at +0x29c..0x2b4.
+- Fleet learnings: worker prompts must state the no-cmake/ninja ban MORE prominently (one worker
+  rebuilt the shared .so mid-wave twice); authors must be told "goto labels named after asm
+  addresses = automatic reject" explicitly; nudges via SendMessage un-stalled 2 of 4 authors.
+
+Next: PF cleanup successor (from saved raw + chunk map); dtor/RAR typed-delete de-shim in
+PaintCanvas (includes in /tmp/revert.patch hunk 1; typed `delete (ResourceTexture*)p`, never
+::operator delete); remaining ~855 fake imports; IParticleSystem::emit -56B frame chase;
+Ghidra PSM/PSS struct sync when MCP reconnects.
+
 ## Session 2026-07-25 (wave 15B pt.2 + 15C starters — fleet gate, PSS/PSM authored)
 
 Gated the round-2 de-shim fleet (w08jt2rdn, 7/8 groups) + two SendMessage-resumed authors.

@@ -401,8 +401,7 @@ void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t mesh, uint32_t tex
 void ParticleSystemMesh::emitTrail(int delta) {
     int set = (int) this->particleSets.data()[this->particleSetIndex];
 
-    Vector right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix);
-    Vector rightScaled = right * (this->mirror == 0 ? 1.0f : -1.0f);
+    Vector rightScaled = AbyssEngine::AEMath::MatrixGetRight(*this->matrix) * (this->mirror == 0 ? 1.0f : -1.0f);
     Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
     Vector dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix);
 

@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 36,
-  "avg_match": 77.27,
+  "avg_match": 77.28,
   "compared": 4523
  },
  "imports": [
@@ -514,8 +514,6 @@
   "_Z28paintcanvas_ext_matc_findresPvt",
   "_Z28paintcanvas_ext_rar_gldeltexiPv",
   "_Z28paintcanvas_ext_rar_str_dtorPv",
-  "_Z28paintcanvas_ext_sbm_setalphaPvji",
-  "_Z28paintcanvas_ext_sbm_setlighti",
   "_Z28paintcanvas_ext_sgo_setperspPvfff",
   "_Z28paintcanvas_ext_smfg_pushmatPKfPv",
   "_Z29AppManager_GetApplicationDatav",
@@ -593,7 +591,6 @@
   "_Z31paintcanvas_ext_mesh_shaderanimPN11AbyssEngine11PaintCanvasEPvfj",
   "_Z31paintcanvas_ext_rar_fontreleasePvS_",
   "_Z31paintcanvas_ext_rar_meshreleasePvS_",
-  "_Z31paintcanvas_ext_sbm_lightenablePvi",
   "_Z31paintcanvas_ext_setprojmatrix3dPvfff",
   "_Z32MiningGame_Status_getShip_renderP6Status",
   "_Z32MovingStars_MatrixSetTranslationPN11AbyssEngine6AEMath6MatrixEfff",
@@ -619,7 +616,6 @@
   "_Z33paintcanvas_ext_matc_new_materialv",
   "_Z33paintcanvas_ext_mc2_new_mesh_copyPv",
   "_Z33paintcanvas_ext_rar_material_dtorPv",
-  "_Z33paintcanvas_ext_sbm_lightsetlightPvi",
   "_Z33paintcanvas_ext_transform_addmeshPN11AbyssEngine11PaintCanvasEPvtb",
   "_Z34AbyssEngine_Engine_GetDisplayWidthPN11AbyssEngine6EngineE",
   "_Z34BV_staticProjectCollisionOnSurfacePvS_",

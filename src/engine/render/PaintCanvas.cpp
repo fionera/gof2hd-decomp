@@ -2010,17 +2010,17 @@ void PaintCanvas::FontSetYOffset(unsigned int index, short yoff) {
     }
 }
 
-static char g_sbm_flag_8cb62_storage = 0;
-static char *const g_sbm_flag_8cb62 = &g_sbm_flag_8cb62_storage;
+static volatile char g_sbm_flag_8cb62_storage = 0;
+static volatile char *const g_sbm_flag_8cb62 = &g_sbm_flag_8cb62_storage;
 
 static const unsigned int g_sbm_const_8ce34 = 0;
 
 void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
-    paintcanvas_ext_sbm_lightenable(this->engine, 0);
+    this->engine->LightEnable(false);
 
-    char *flag = g_sbm_flag_8cb62;
+    volatile char *flag = g_sbm_flag_8cb62;
     if (*flag != 0) {
-        paintcanvas_ext_sbm_glenablecap(this->engine, g_sbm_const_8ce34, 0);
+        this->engine->GlEnable(g_sbm_const_8ce34, false);
     } else {
         paintcanvas_ext_sbm_glTexEnvi(0x2300, 0x2200, 0x2100);
     }
@@ -2031,64 +2031,64 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
             glEnable(0xb44);
             glEnable(0xbe2);
             glBlendFunc(0x302, 0x303);
-            paintcanvas_ext_sbm_setlight(0);
+            glDepthMask(0);
             return;
         case 2:
             glEnable(0xb44);
             glEnable(0xbe2);
             glBlendFunc(1, 1);
-            paintcanvas_ext_sbm_setlight(0);
+            glDepthMask(0);
             return;
         case 3:
             glDisable(0xb44);
             glEnable(0xbe2);
             glBlendFunc(1, 1);
-            paintcanvas_ext_sbm_setlight(0);
+            glDepthMask(0);
             return;
         case 4:
             glEnable(0xb44);
             glEnable(0xbe2);
             glBlendFunc(0, 0x301);
-            paintcanvas_ext_sbm_setlight(0);
+            glDepthMask(0);
             return;
         case 6:
-            paintcanvas_ext_sbm_lightenable(this->engine, 1);
-            paintcanvas_ext_sbm_lightsetlight(this->engine, 0x4000);
+            this->engine->LightEnable(true);
+            this->engine->LightSetLight(0x4000);
         /* fallthrough */
         case 0:
             glEnable(0xb44);
             glDisable(0xbe2);
-            paintcanvas_ext_sbm_setlight(1);
+            glDepthMask(1);
             return;
         case 7:
-            paintcanvas_ext_sbm_lightenable(this->engine, 1);
-            paintcanvas_ext_sbm_lightsetlight(this->engine, 0x4000);
+            this->engine->LightEnable(true);
+            this->engine->LightSetLight(0x4000);
             glEnable(0xb44);
             glEnable(0xbe2);
             glBlendFunc(1, 1);
-            paintcanvas_ext_sbm_setlight(0);
+            glDepthMask(0);
             return;
         case 8:
-            paintcanvas_ext_sbm_lightenable(this->engine, 1);
-            paintcanvas_ext_sbm_lightsetlight(this->engine, 0x4000);
+            this->engine->LightEnable(true);
+            this->engine->LightSetLight(0x4000);
             glEnable(0xb44);
             glEnable(0xbe2);
             glBlendFunc(0x302, 0x303);
-            paintcanvas_ext_sbm_setlight(0);
+            glDepthMask(0);
             return;
         case 9:
-            paintcanvas_ext_sbm_lightenable(this->engine, 1);
-            paintcanvas_ext_sbm_lightsetlight(this->engine, 0x4000);
+            this->engine->LightEnable(true);
+            this->engine->LightSetLight(0x4000);
             glEnable(0xb44);
             glEnable(0xbe2);
             glBlendFunc(0x302, 0x303);
-            paintcanvas_ext_sbm_setlight(1);
+            glDepthMask(1);
             return;
         case 10:
             glEnable(0xb44);
             glDisable(0xbe2);
             glDepthMask(1);
-            paintcanvas_ext_sbm_setalpha(this->engine, 0x1000000, 1);
+            this->engine->GlEnable(0x1000000, true);
             if (*flag == 0) {
                 paintcanvas_ext_sbm_glAlphaFunc(0x204, 0.5f);
             }
@@ -2099,7 +2099,7 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
             glBlendFunc(0x302, 0x303);
             glDepthMask(0);
             if (*flag != 0) {
-                paintcanvas_ext_sbm_setalpha(this->engine, g_sbm_const_8ce34, 1);
+                this->engine->GlEnable(g_sbm_const_8ce34, true);
                 return;
             }
             glTexEnvi(0x2300, 0x2200, 0x8570);
@@ -2133,7 +2133,7 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
             glEnable(0xb44);
             glEnable(0xbe2);
             glBlendFunc(0x302, 0x303);
-            paintcanvas_ext_sbm_setlight(1);
+            glDepthMask(1);
             return;
         default:
             return;
