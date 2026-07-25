@@ -7,6 +7,7 @@
 #include "engine/audio/FModSound.h"
 #include "game/menu/HackingGame.h"
 #include "game/mission/Item.h"
+#include "game/mission/OptionsRecord.h"
 #include "game/world/Level.h"
 #include "game/world/LevelScript.h"
 #include "game/menu/MiningGame.h"
@@ -77,17 +78,17 @@ namespace {
     static const float g_PE_r_loadK = 0.0f;
     static const float g_PE_r_loadB = 0.0f;
     static const float g_PE_r_rateK = 0.0f;
-    static const float g_PE_r_turK1 = 0.0f;
-    static const float g_PE_r_turK2 = 0.0f;
-    static const float g_PE_r_turK3 = 0.0f;
+    static const float g_PE_r_turK1 = 200.0f;                // pool 0xa0910
+    static const float g_PE_r_turK2 = 0.000244140625f;        // pool 0xa0914 (1/4096)
+    static const float g_PE_r_turK3 = -6.2831854820251465f;   // pool 0xa0918 (-2pi)
     static const float g_PE_r_manK1 = 0.0f;
     static const float g_PE_r_manK2 = 0.0f;
     static const float g_PE_l_loadK = 0.0f;
     static const float g_PE_l_loadB = 0.0f;
     static const float g_PE_l_rateK = 0.0f;
-    static const float g_PE_l_turK1 = 0.0f;
-    static const float g_PE_l_turK2 = 0.0f;
-    static const float g_PE_l_turK3 = 0.0f;
+    static const float g_PE_l_turK1 = 200.0f;               // pool 0xa0b54
+    static const float g_PE_l_turK2 = 0.000244140625f;       // pool 0xa0b58 (1/4096)
+    static const float g_PE_l_turK3 = 6.2831854820251465f;   // pool 0xa0b5c (+2pi)
     static const float g_PE_l_manK1 = 0.0f;
     static const float g_PE_l_manK2 = 0.0f;
     static const float g_PE_mtp_strafeEps = 0.0f;
@@ -130,6 +131,18 @@ namespace {
     static const float g_PE_ss_emDiv = 0.0f;
     static const float g_PE_ss_emBias = 0.0f;
     static int *g_PE_tc_sound = nullptr;
+    // Pitch ramp delta constants (down/up non-turret paths)
+    static const float g_PE_pitch_rampDiv = 11.999998092651367f;  // pool 0xa0de0 / 0xa1054 (12.0, mouseCursor non-null)
+    static const float g_PE_d_rampK = 1.4500000476837158f;        // pool 0xa0de4 (options[0x18] multiplier in down)
+    static const float g_PE_u_rampK = 1.25f;                      // vmov #116=0x3fa00000 (options[0x18] multiplier in up)
+    static const float g_PE_pitch_ramp3_3 = 3.299999952316284f;   // pool 0xa0de8 / 0xa1058 (3.3)
+    static const float g_PE_pitch_ramp20 = 20.0f;                 // vmov #52=0x41a00000
+    // Yaw ramp delta constants (right/left non-turret paths)
+    static const float g_PE_yaw_rampNonNull1 = 25.0f;             // vmov #57=0x41c80000 (rate multiplier, non-null)
+    static const float g_PE_yaw_rampNonNull2 = 5.999999046325684f; // pool 0xa0930 / 0xa0b74 (divisor, non-null)
+    static const float g_PE_yaw_rampCap = 280.0f;                 // pool 0xa0934 / 0xa0b78 (max cap)
+    static const float g_PE_yaw_ramp3_3 = 3.299999952316284f;     // pool 0xa0938 / 0xa0b7c (3.3)
+    static const float g_PE_yaw_ramp20 = 20.0f;                   // vmov #52=0x41a00000
 }
 
 struct PE_MatrixBuf {
@@ -179,8 +192,6 @@ void MatrixSetRotation(void *, void *, float, float, float); // lint: void_ptr (
 
 int aeabi_idiv_(int a, int b);
 
-float PE_pitchRampDelta(PlayerEgo *self, float rate, int frameTime);
-
 int PE_adp_approach(PlayerEgo *self, void *station); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
@@ -188,7 +199,6 @@ int PE_adp_approach(PlayerEgo *self, void *station); // lint: void_ptr (external
 int PE_adp_glide(PlayerEgo * self);
 void PE_adp_apply(PlayerEgo * self);
 
-float PE_yawRampDelta(float rate, int frameTime);
 
 static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1040,10 +1050,6 @@ void PlayerEgo::refillGunDelay() {
     ((Player *) this->player)->refillGunDelay(0);
 }
 
-void PE_cft_finishMaterials(void *canvas, int mesh, void *out); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
 void PE_cft_place(PlayerEgo *self, int turretIdx);
 
 void PlayerEgo::checkForTurret() {
@@ -1161,10 +1167,11 @@ void PlayerEgo::checkForTurret() {
     ((AEGeometry *) (this->gunMuzzleRoot))->addChild((uint32_t)(uintptr_t)this->gunBaseGeo);
     ((AEGeometry *) (this->gunMuzzleRoot))->addChild((uint32_t)(uintptr_t)this->gunYawGeo);
 
-    if (this->field_0x2c0 != 0 && this->turretMode != 0) {
-        ((PaintCanvas *) (long) (canvas))->MeshCloneMaterial((unsigned int) (((AEGeometry *) this->gunBaseGeo)->meshId),
-                                                             (uint32_t &) this->cloakMaterial1);
-        PE_cft_finishMaterials(canvas, ((AEGeometry *) this->gunYawGeo)->meshId, &this->cloakMaterial2);
+    if (this->cloak != 0 && this->turretMode != 0) {
+        ((PaintCanvas *) (long) (canvas))->MeshCloneMaterial(
+            ((AEGeometry *) this->rollGeometry)->meshId, this->cloakMaterial2);
+        ((PaintCanvas *) (long) (canvas))->MeshCloneMaterial(
+            ((AEGeometry *) this->turretGeometry)->meshId, this->cloakMaterial3);
     }
 }
 
@@ -1248,9 +1255,9 @@ float PlayerEgo::down(int frameTime, float delta) {
     if (this->turretActive != 0) {
         float ft = (float) frameTime;
         if (this->lookYaw < g_PE_d_eps) {
-            float ang = ft * delta + this->lookYaw;
-            this->lookYaw = ang;
-            ((AEGeometry *) this->turretGeometry)->rotate((float) (ang * g_PE_d_lookK1 * g_PE_d_lookK2), 0.0f, 0.0f);
+            float step = ft * delta;
+            this->lookYaw = step + this->lookYaw;
+            ((AEGeometry *) this->turretGeometry)->rotate((float) (step * g_PE_d_lookK1 * g_PE_d_lookK2), 0.0f, 0.0f);
         }
         float p = this->lookPitch;
         if (p < g_PE_d_eps) {
@@ -1288,7 +1295,19 @@ float PlayerEgo::down(int frameTime, float delta) {
     ((float &) this->yawAccumD) = delta;
     this->pitchRamp = -rate;
     if (((float &) this->pitchAccumD) < target) {
-        float v = ((float &) this->pitchAccumD) + PE_pitchRampDelta(this, rate, frameTime);
+        float rampDiv;
+        if (Globals::mouseCursorActivated != 0) {
+            rampDiv = g_PE_pitch_rampDiv;
+        } else {
+            OptionsRecord *opt = (OptionsRecord *) Globals::options;
+            float s8 = reinterpret_cast<const float &>(opt->field_0x18[0]);
+            float s6 = reinterpret_cast<const float &>(opt->field_0x14);
+            float s4 = s8 * g_PE_d_rampK;
+            if (opt->flag_0x11 == 0) s6 = s4;
+            rampDiv = (g_PE_pitch_ramp3_3 - s6) * g_PE_pitch_ramp20;
+        }
+        float step = rate * (float) frameTime / rampDiv;
+        float v = ((float &) this->pitchAccumD) + step;
         if (target < v) v = target;
         ((float &) this->pitchAccumD) = v;
     }
@@ -1537,7 +1556,17 @@ float PlayerEgo::right(int frameTime, float delta) {
     ((float &) this->rollAccum) = delta;
     this->yawRamp = -rate;
     if (this->yawAccumF > target) {
-        float step = PE_yawRampDelta(rate, frameTime);
+        float step;
+        if (Globals::mouseCursorActivated != 0) {
+            step = rate * g_PE_yaw_rampNonNull1 / g_PE_yaw_rampNonNull2;
+            if (step > g_PE_yaw_rampCap) step = g_PE_yaw_rampCap;
+        } else {
+            OptionsRecord *rec = (OptionsRecord *) Globals::options;
+            float opt = (rec->flag_0x11 != 0)
+                            ? reinterpret_cast<const float &>(rec->field_0x14)
+                            : reinterpret_cast<const float &>(rec->field_0x18[0]);
+            step = rate * (float) frameTime / ((g_PE_yaw_ramp3_3 - opt) * g_PE_yaw_ramp20);
+        }
         float v = this->yawAccumF - step;
         if (v < target) v = target;
         this->yawAccumF = v;
@@ -1587,7 +1616,17 @@ float PlayerEgo::left(int frameTime, float delta) {
     this->yawRamp = rate;
     ((float &) this->rollAccum) = -delta;
     if (this->yawAccumF < target) {
-        float step = PE_yawRampDelta(rate, frameTime);
+        float step;
+        if (Globals::mouseCursorActivated != 0) {
+            step = rate * g_PE_yaw_rampNonNull1 / g_PE_yaw_rampNonNull2;
+            if (step > g_PE_yaw_rampCap) step = g_PE_yaw_rampCap;
+        } else {
+            OptionsRecord *rec = (OptionsRecord *) Globals::options;
+            float opt = (rec->flag_0x11 != 0)
+                            ? reinterpret_cast<const float &>(rec->field_0x14)
+                            : reinterpret_cast<const float &>(rec->field_0x18[0]);
+            step = rate * (float) frameTime / ((g_PE_yaw_ramp3_3 - opt) * g_PE_yaw_ramp20);
+        }
         float v = this->yawAccumF + step;
         if (target < v) v = target;
         this->yawAccumF = v;
@@ -1974,9 +2013,9 @@ float PlayerEgo::up(int frameTime, float delta) {
     if (this->turretActive != 0) {
         float ft = (float) frameTime;
         if (this->lookYaw > g_PE_u_eps) {
-            float ang = this->lookYaw - ft * delta;
-            this->lookYaw = ang;
-            ((AEGeometry *) this->turretGeometry)->rotate((float) (ang * g_PE_u_lookK1 * g_PE_u_lookK2), 0.0f, 0.0f);
+            float step = ft * delta;
+            this->lookYaw = this->lookYaw - step;
+            ((AEGeometry *) this->turretGeometry)->rotate((float) (step * g_PE_u_lookK1 * g_PE_u_lookK2), 0.0f, 0.0f);
         }
         float p = this->lookPitch;
         if (p > g_PE_u_eps2) {
@@ -2014,7 +2053,19 @@ float PlayerEgo::up(int frameTime, float delta) {
     this->pitchRamp = rate;
     ((float &) this->yawAccumD) = -delta;
     if (((float &) this->pitchAccumD) > target) {
-        float v = ((float &) this->pitchAccumD) - PE_pitchRampDelta(this, rate, frameTime);
+        float rampDiv;
+        if (Globals::mouseCursorActivated != 0) {
+            rampDiv = g_PE_pitch_rampDiv;
+        } else {
+            OptionsRecord *opt = (OptionsRecord *) Globals::options;
+            float s8 = reinterpret_cast<const float &>(opt->field_0x18[0]);
+            float s6 = reinterpret_cast<const float &>(opt->field_0x14);
+            float s4 = s8 * g_PE_u_rampK;
+            if (opt->flag_0x11 == 0) s6 = s4;
+            rampDiv = (g_PE_pitch_ramp3_3 - s6) * g_PE_pitch_ramp20;
+        }
+        float step = rate * (float) frameTime / rampDiv;
+        float v = ((float &) this->pitchAccumD) - step;
         if (v < target) v = target;
         ((float &) this->pitchAccumD) = v;
     }

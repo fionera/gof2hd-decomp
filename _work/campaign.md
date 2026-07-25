@@ -2,6 +2,32 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-25g (wave 16D — PlayerEgo ramps + PlayerFighter update + MTW de-shims)
+
+Net: avg 77.33->77.34, byte 1159 (=), linked 2557 (=), imports 737->725 (-12, locked), extra 36,
+parity 0/0, RATCHET PASS, lint CLEAN. Per-function net +55.6 vs HEAD (15 gains, 3 wobble regs
+-0.5/-0.3/-0.1 in untouched TUs = GOT/pool shift from import-count change, accepted).
+- PE author (stalled twice on stream watchdog; controller finished): inlined PE_pitchRampDelta /
+  PE_yawRampDelta into down/up/right/left with pool-decoded constants (12.0 / 1.45 / 1.25 / 3.3 /
+  20.0 / 25/6 cap 280); fixed down()/up() pre-existing bug ang->step (ft*delta) per binary; turret
+  k1/k2/k3 pools (200, 1/4096, +-2pi); re-modeled PlayerEgo 0x378-0x390 (cloakMaterial1/2/3 now
+  0x388/0x38c/0x390 matching binary stores; new field_0x378, field_0x384); checkForTurret guard
+  cloak!=0 + rollGeometry/turretGeometry meshIds. up/down/right/left +9.3/+8.7/+7.5/+6.6,
+  strafe +3.1, toggleCloaking +2.6.
+- Controller cleanup of PE options reads: OptionsRecord gained flag_0x11 (split field_0x10[3]);
+  float ramp settings read via the documented reinterpret_cast-on-named-slot precedent
+  (field_0x14 / field_0x18[0]) through (OptionsRecord *) Globals::options — no raw
+  Globals::options[0xNN] byte-offset reads in new code.
+- PF author: state-8 docking + shooting-math (0xded30-0xdf040) authored inside update;
+  PlayerFighter::update 16.1->16.9 only (structural divergence remains — future deep pass).
+- MTW worker: 10 mechanical shims removed; addButton regressed -8.4 from `bpos = get()`
+  reassignment (temp+copy kills shared sret slot). NEW IDIOM: original reuses ONE sret stack slot
+  for consecutive by-value calls -> write two SCOPED direct-init locals (non-overlapping lifetimes);
+  addButton 65.7->67.6 (above pre-wave). MTW::update +13.7.
+- Worker-stall protocol: SendMessage resume worked once (agent fixed its own broken TU before
+  stalling again); controller then took over remaining sites directly. Always save the diff to
+  scratchpad before touching a stalled worker's tree.
+
 ## Session 2026-07-25f (wave 16C — psm/pss + MovingStars/_ae_ + FMOD/FModSound de-shims)
 
 Net: avg 77.31->77.33, byte 1159 (=), linked 2556->2557 (+1), imports 776->737 (-39), extra 36,

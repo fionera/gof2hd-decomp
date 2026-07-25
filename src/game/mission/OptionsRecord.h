@@ -21,8 +21,16 @@ struct OptionsRecord {
     uint8_t flag_word_0xd[2];
 
     uint8_t flag_0xf;
-    uint8_t field_0x10[3];
+    uint8_t field_0x10;
+    uint8_t flag_0x11;
+    uint8_t field_0x12;
     uint8_t flag_0x13;
+
+    // The steering-ramp code (PlayerEgo down/up/right/left) reads 4-byte floats at 0x14 and 0x18
+    // (flag_0x11 selects which), while MenuTouchWindow sets the single bytes 0x15/0x17 as flags —
+    // the original aliases both views onto this blob. As with flag_word_0xd, the bytes stay the
+    // named members; the whole-word reads are reinterpret_cast<const float &>(field_0x14) and
+    // reinterpret_cast<const float &>(field_0x18[0]).
     uint8_t field_0x14;
     uint8_t flag_0x15;
     uint8_t field_0x16;
@@ -74,6 +82,7 @@ static_assert(sizeof(OptionsRecord) == 0x50, "OptionsRecord size");
 static_assert(offsetof(OptionsRecord, flag_word_0xd) == 0xd, "flag_word_0xd");
 static_assert(offsetof(OptionsRecord, flag_0xf) == 0xf, "flag_0xf");
 static_assert(offsetof(OptionsRecord, field_0x10) == 0x10, "field_0x10");
+static_assert(offsetof(OptionsRecord, flag_0x11) == 0x11, "flag_0x11");
 static_assert(offsetof(OptionsRecord, flag_0x13) == 0x13, "flag_0x13");
 static_assert(offsetof(OptionsRecord, field_0x14) == 0x14, "field_0x14");
 static_assert(offsetof(OptionsRecord, flag_0x15) == 0x15, "flag_0x15");

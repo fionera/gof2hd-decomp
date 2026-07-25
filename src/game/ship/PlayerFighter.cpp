@@ -944,44 +944,92 @@ void PlayerFighter::update(int dt) {
     // de5da-de8a2
     // -----------------------------------------------------------------------
     case 8: {
-        // Get the docking-approach route position
-        Route *dRoute = this->KIPlayer::route;
+        // de5da-de6e8: docking approach
+        // Dock-distance threshold table, indexed by KIPlayer::type (8 ship types)
+        static const int kDockThreshold[] = {160, 150, 220, 310, 160, 180, 140, 170};
 
-        // Get docking point: route->getPosition() via vtable[10]=getPosition
-        Vector routePos;
-        {
-            KIPlayer *routeKI = (KIPlayer *)(intptr_t)0; // placeholder
-            // Actual: call vtable[10] on self = getPosition()
-            (void)routeKI;
-        }
-        // de5e0: r0 = [r4, 0x6c] = KIPlayer::route (navigation route)
-        // de5e2-de5ea: call r6 = Route::getDockingTarget getter, result -> sl
-        //              Then call r6 again -> r1 = docking route object
-        //              vtable[10] with r0=sp+0x140 -> getPosition -> sp+0x140
-        //              [r4+0x6c]->geometry->getMatrix -> rotate vector by it
-        //              sp+0x198 = sp+0x140 + (rotated docking offset)
-        //              self->getNearestDockingPoint(sp+0x198) -> r5 (dock slot idx)
-        //              sp+0x140 = getPosition again
-        //              sp+0xd8 = MatrixRotateVector([r4+0x6c]->geom->matrix, dock slot)
-        //              sp+0x198 = sp+0x140 + sp+0xd8
-        //              field_0x9c = sp+0x198
-        //              sp+0x140 = getPosition(self)
-        //              sp+0x198 = sp+0x140 - field_0x9c
-        //              distance = VectorLength(sp+0x198) as int
-        //              dockThreshold[type] = ...
-        //              if distance > threshold: go to EaseInOutMatrix -> de8a4
-        //              else: setExhaustVisible(false), clear field_0x2bc/2c0, state=9
+        // getDockingTarget() twice via cached fn-ptr (r6 in asm); result = dockingKI
+        KIPlayer *dockingKI = this->KIPlayer::route->getDockingTarget();
 
-        // Simplified: route via KIPlayer::route, compute approach
-        // This is complex enough that I will stub it for now.
-        // The approach: if within docking distance, go to state 9
-        // Else: EaseInOutMatrix interpolation to approach position
-        // For now: structured but incomplete stub that compiles
-        if (dRoute != nullptr) {
-            // Check if we've reached the docking point
-            // (full logic elided — will be filled in a follow-up pass)
+        // dockingTarget->getPosition() into routePos
+        Vector routePos = dockingKI->getPosition();
+
+        // Rotate this->spacePoint->position (offset 0) by dockingKI's geometry matrix
+        Matrix *dockMat0 = &((AEGeometry *)(intptr_t)dockingKI->geometry)->getMatrix();
+        SpacePoint *sp0   = (SpacePoint *)(intptr_t)this->spacePoint;
+        Vector rotOff0    = MatrixRotateVector(*dockMat0, sp0->position);
+
+        // approachPos0 = routePos + rotatedOffset
+        Vector approachPos0 = routePos + rotOff0;
+
+        // getNearestDockingPoint(approachPos0) -> nearest SpacePoint slot
+        SpacePoint *slot = dockingKI->getNearestDockingPoint(approachPos0);
+
+        // Second pass: re-fetch dockingTarget + its position (asm re-calls 4x)
+        KIPlayer *dockingKI2 = this->KIPlayer::route->getDockingTarget();
+        Vector routePos2     = dockingKI2->getPosition();
+        Matrix *dockMat1     = &((AEGeometry *)(intptr_t)dockingKI2->geometry)->getMatrix();
+
+        // Rotate slot position (SpacePoint at offset 0 = Vector) by matrix
+        Vector rotOff1   = MatrixRotateVector(*dockMat1, slot->position);
+        Vector targetPos = routePos2 + rotOff1;
+
+        // Store computed dock target position into field_0x9c (as Vector)
+        reinterpret_cast<Vector &>(this->KIPlayer::field_0x9c) = targetPos;
+
+        // self->getPosition() (virtual)
+        Vector selfPos1 = this->getPosition();
+
+        // Distance = length(field_0x9c - selfPos1) converted to int
+        Vector diff1 = reinterpret_cast<const Vector &>(this->KIPlayer::field_0x9c) - selfPos1;
+        int dist = (int)VectorLength(diff1);
+
+        // Threshold check: if dist >= threshold → EaseInOut path
+        // asm: ble.w de8a4 (branch if threshold <= dist, i.e. dist still too far)
+        if (kDockThreshold[this->KIPlayer::type] <= dist) {
+            // de8a4: EaseInOut interpolation approach
+            float dtF = (float)dt;
+            this->easeMatrix->Increase(dtF);
+
+            // GetValue fills a Matrix (sret)
+            Matrix easeVal = this->easeMatrix->GetValue();
+
+            // self->getPosition() twice (asm calls it twice)
+            Vector selfPos2 = this->getPosition();
+            Vector selfPos3 = this->getPosition();
+
+            // diff = field_0x9c - selfPos3
+            Vector eDir = reinterpret_cast<const Vector &>(this->KIPlayer::field_0x9c) - selfPos3;
+
+            // scale by dt and ease factor 0.0006
+            Vector moveVec  = eDir * dtF;
+            Vector moveVec2 = moveVec * 0.00060000003f;
+
+            // new position = selfPos2 + moveVec2
+            Vector newPos = selfPos2 + moveVec2;
+
+            // Set translation of easeVal matrix and push to geometry + player
+            MatrixSetTranslation(easeVal, newPos);
+            ((AEGeometry *)(intptr_t)this->geometry())->setMatrix(easeVal);
+            reinterpret_cast<Matrix &>(((Player *)(intptr_t)this->player())->transform[0]) = easeVal;
+
+            // de930: b.w df450 (landmark check — falls through to post-state)
+            break;
         }
-        break;
+
+        // Within threshold: transition to state 9
+        this->setExhaustVisible(false);
+        this->field_0x2bc = 0;
+        this->field_0x2c0 = 0;
+        this->state = 9;
+
+        // Disable particle trail if field_0x1fc set
+        if (this->field_0x1fc != 0) {
+            Level *lv8 = (Level *)(intptr_t)this->level();
+            lv8->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
+            lv8->particleSystemMgr->enableSystemEmit(this->field_0x84, false);
+        }
+        return;  // de6e8: b.n de1dc (function epilogue)
     }
 
     // -----------------------------------------------------------------------
@@ -1277,7 +1325,269 @@ void PlayerFighter::update(int dt) {
     // -----------------------------------------------------------------------
     // Shooting math + roll samples (ded30-df040)
     // -----------------------------------------------------------------------
-    // (will be implemented in follow-up chunk)
+    {
+        // ded30: entry — read player->empDisabledByte into field_0x24
+        // ded26-ded2c (just before): field_0x174 (resetVecC.y) was negated
+        {
+            Player *pl_sh = (Player *)(intptr_t)this->player();
+            this->field_0x24 = pl_sh->empDisabledByte;
+        }
+
+        // ded38: beq ded44 if field_0x12e == 0 (no locked target)
+        // ded3a-ded40: if field_0x12c != 0 (follow-route), skip to no-target path
+        if (this->field_0x12e != 0 && this->field_0x12c == 0) {
+            // No target / follow-route path → def12
+            goto shoot_no_target;
+        }
+
+        // ded44: geometry matrix copy (0x3c bytes = 15 floats)
+        shoot_geomcopy:;
+        {
+            Matrix geomMat;
+            memcpy(&geomMat, &geom->getMatrix(), sizeof(Matrix));
+
+            // ded54: check field_0x12d (roll-buffer reset flag)
+            if (this->field_0x12d != 0) {
+                // Reset roll buffer state and targetRoll
+                this->rollSampleIndex = 0;
+                *(float *)&this->targetRoll = 0.0f;  // field_0x20c = 0
+                this->rollBufferFilled = 0;
+                goto shoot_done;  // df042
+            }
+
+            // ded6e: direction computation
+            // Pre-normalized resetVecC (computed at decf4 before shooting block)
+            Vector preMod = VectorNormalize(this->resetVecC);
+            // Backup before subtraction (sp+0xd8 in asm)
+            Vector preMod_bak = preMod;
+
+            // MatrixGetDir from geometry matrix
+            Vector geomDir = MatrixGetDir(geomMat);  // sp+0x17c
+
+            // Subtract geometry dir from pre-normalized resetVecC
+            preMod -= geomDir;          // sp+0x188 -= sp+0x17c
+
+            // Normalize the difference
+            Vector normDiff = VectorNormalize(preMod);  // sp+0x140
+            preMod = normDiff;                          // sp+0x188 = sp+0x140
+
+            // Scale by 48*dt/65536
+            float angleScale = (float)(3 * dt << 4) * (1.0f / 65536.0f);
+            preMod *= angleScale;              // sp+0x188 *= scale
+
+            // Combined direction: scaled-normalized-diff + geomDir
+            Vector combined = preMod + geomDir;  // sp+0x140
+
+            // Store into resetVecC then normalize it
+            this->resetVecC = combined;
+            // Normalize resetVecC (stored via [sp+0xd0]=&resetVecC pattern)
+            this->resetVecC = VectorNormalize(this->resetVecC);
+
+            // dee00-dee2a: compute Manhattan distance of change
+            float dz = this->resetVecC.z - preMod_bak.z;
+            float dx = this->resetVecC.x - preMod_bak.x;
+            float dy = this->resetVecC.y - preMod_bak.y;
+            float manhDist = (dx >= 0.0f ? dx : -dx) + (dy >= 0.0f ? dy : -dy)
+                           + (dz >= 0.0f ? dz : -dz);
+
+            // dee32-dee3e: if < 0.0625, revert resetVecC to pre-subtract normalized
+            if (manhDist < 0.0625f) {
+                this->resetVecC = preMod_bak;
+            }
+
+            // dee44-dee52: normalize geomDir, then VectorDot(normGeomDir, resetVecC)
+            Vector normGeomDir = VectorNormalize(geomDir);  // sp+0x140
+            float dot = VectorDot(normGeomDir, this->resetVecC);
+
+            // dee56-dee7e: compute angle = acos(clamp(dot, -1.0, 1.0))
+            float angle;
+            if (dot >= 1.0f || dot <= -1.0f) {
+                angle = 0.0f;  // pool dec34 = 0.0f
+            } else {
+                angle = ACosf(dot);
+            }
+
+            // dee82-dee9e: s16 = |angle|; if zero skip sign determination
+            float signedAngle = (angle >= 0.0f ? angle : -angle);
+
+            if (signedAngle != 0.0f) {
+                // deea0-deed8: sign from right-axis projection
+                Vector rightVec = MatrixGetRight(geomMat);  // sp+0x140
+                // Dot(rightVec, resetVecC) and acos → compare with pi/2
+                float rightDot = VectorDot(rightVec, this->resetVecC);
+                float rightAngle = ACosf(rightDot);
+                // If rightAngle < pi/2: angle is negative (turn left)
+                if (rightAngle < 1.5707964f) {
+                    signedAngle = -signedAngle;
+                }
+            }
+
+            // deedc-deee4: store angle into rollSamples[rollSampleIndex]
+            int idx = this->rollSampleIndex;
+            this->rollSamples[idx] = signedAngle;
+
+            // deee8: check rollBufferFilled
+            if (this->rollBufferFilled != 0) {
+                // Buffer full: sum all 5 samples
+                float sum = 0.0f;
+                for (int i = 0; i < 5; ++i) {
+                    sum += this->rollSamples[i];
+                }
+                float avg = sum / 5.0f;
+                // def7a: s16 = avg
+                signedAngle = avg;  // reuse for targetRoll computation below
+                // Manage index and full flag
+                int newIdx = idx + 1;
+                this->rollSampleIndex = newIdx;
+                if (idx >= 4) {
+                    this->rollSampleIndex = 0;
+                    // rollBufferFilled stays 1 (already set)
+                }
+            } else {
+                // Buffer not yet full
+                if (idx == 0) {
+                    // def9c: first entry — just advance index and use single sample
+                    this->rollSampleIndex = 1;
+                    // signedAngle stays as-is (single sample)
+                } else {
+                    // def56-def72: partial sum of rollSamples[0..idx-1]
+                    float sum = 0.0f;
+                    for (int i = 0; i < idx; ++i) {
+                        sum += this->rollSamples[i];
+                    }
+                    signedAngle = sum / (float)idx;
+                }
+                // def80: advance index
+                int newIdx = idx + 1;
+                this->rollSampleIndex = newIdx;
+                if (idx >= 4) {
+                    this->rollSampleIndex = 0;
+                    if (this->rollBufferFilled == 0) {
+                        this->rollBufferFilled = 1;
+                    }
+                }
+            }
+
+            // defa2-defce: compute targetRoll = clamp(signedAngle * f294 * f298, ±f294)
+            float f294 = *(float *)&this->field_0x294;
+            float f298 = *(float *)&this->field_0x298;
+            float tRoll = signedAngle * f294 * f298;
+            *(float *)&this->targetRoll = tRoll;
+            if (tRoll > f294) {
+                *(float *)&this->targetRoll = f294;
+            } else if (tRoll < -f294) {
+                *(float *)&this->targetRoll = -f294;
+            }
+
+            // defd8-df03a: build orthonormal basis from resetVecC as forward dir
+            // MatrixGetUp → origUp (sp+0x140)
+            Vector origUp  = MatrixGetUp(geomMat);
+            // newRight = normalize(cross(origUp, resetVecC))  (sp+0x130)
+            Vector newRight = VectorNormalize(VectorCross(origUp, this->resetVecC));
+            // newUp    = normalize(cross(resetVecC, newRight)) (sp+0x124)
+            Vector newUp    = VectorNormalize(VectorCross(this->resetVecC, newRight));
+            // MatrixSetRotation: right=newRight(sp+0x130), up=newUp(sp+0x124), dir=resetVecC
+            Matrix rotMat   = MatrixSetRotation(geomMat, newRight, newUp, this->resetVecC);
+            geomMat         = rotMat;
+
+            goto shoot_done;  // df042
+        }
+
+        // def12: no-target path
+        shoot_no_target:;
+        {
+            Player *tgt = this->targetPlayer;
+            if (tgt == nullptr) {
+                goto shoot_geomcopy;  // beq.w ded44
+            }
+            if (tgt->doesNeverAttack()) {
+                goto shoot_geomcopy;  // bne.w ded44
+            }
+            // def2a-def30: check field_5e (hidden/sleep)
+            if (tgt->field_5e == 0) {
+                goto shoot_check_eligible;  // beq.w df480
+            }
+            // def34: clear field_0x12e
+            this->field_0x12e = 0;
+            // def3a: if isShooting, stopShooting
+            if (this->isShooting != 0) {
+                ((Player *)(intptr_t)this->player())->stopShooting(this->field_0x140);
+                this->isShooting = 0;
+            }
+            goto shoot_geomcopy;  // b.n ded44
+        }
+
+        shoot_done:;  // df042
+    }
+    goto shoot_after;
+
+    // df480: shoot eligibility checks
+    shoot_check_eligible:;
+    {
+        // df480-df530: check resetVecC.x/.y vs shootError and resetVecB vs renderPos ±35000
+        float sErr = this->shootError;
+        if (this->resetVecC.x >= sErr || this->resetVecC.x <= -sErr) {
+            goto shoot_skip_done;
+        }
+        if (this->resetVecC.y >= sErr || this->resetVecC.y <= -sErr) {
+            goto shoot_skip_done;
+        }
+        // World position range checks: resetVecB - renderPosition() vs ±35000
+        float rx = this->renderPosition().x;
+        float ry = this->renderPosition().y;
+        float rz = this->renderPosition().z;
+        if ((this->resetVecB.x - rx) >= 35000.0f || (this->resetVecB.x - rx) <= -35000.0f) {
+            goto shoot_skip_done;
+        }
+        if ((this->resetVecB.y - ry) >= 35000.0f || (this->resetVecB.y - ry) <= -35000.0f) {
+            goto shoot_skip_done;
+        }
+        if ((this->resetVecB.z - rz) >= 35000.0f || (this->resetVecB.z - rz) <= -35000.0f) {
+            goto shoot_skip_done;
+        }
+
+        // df534-df54c: field_0x25 / isActive / isDead checks
+        if (this->field_0x25 == 0) {
+            goto shoot_skip_done;
+        }
+        if (!((Player *)(intptr_t)this->player())->isActive()) {
+            goto shoot_skip_done;
+        }
+        {
+            Player *shootTgt = this->targetPlayer;
+            if (shootTgt == nullptr || shootTgt->isDead()) {
+                goto shoot_skip_done;
+            }
+        }
+
+        // df7bc: docking check — skip if target is ego-docked station
+        {
+            Player *shootTgt2 = this->targetPlayer;
+            if (shootTgt2 != nullptr && (shootTgt2->pad_69) != 0) {
+                Level *lvs  = (Level *)(intptr_t)this->level();
+                PlayerEgo *egos = lvs->getPlayer();
+                if (egos != nullptr && egos->isDockedToDockingPoint()) {
+                    // df7da-df7fc: compare target.y with self.y
+                    Vector tgtPos  = shootTgt2->getPosition();
+                    Vector selfPos = ((Player *)(intptr_t)this->player())->getPosition();
+                    if (tgtPos.y > selfPos.y) {
+                        goto shoot_skip_done;  // df550 via bgt
+                    }
+                }
+            }
+        }
+
+        // df800-df814: shoot!
+        ((Player *)(intptr_t)this->player())->shoot(this->field_0x140, dt, 0LL, false);
+        this->isShooting = 1;
+        goto shoot_geomcopy;  // b.w ded44
+    }
+
+    shoot_skip_done:;
+    this->field_0x12e = 0;
+    goto shoot_geomcopy;  // b.w ded44
+
+    shoot_after:;
 
     // -----------------------------------------------------------------------
     // Roll subsystem (df042-df110)

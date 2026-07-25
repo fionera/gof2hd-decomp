@@ -254,13 +254,16 @@ public:
     int cloakRechargeMax;
     int spacePoint;
     uint8_t throttleStarted;
+    // 3 bytes padding to align throttle to 4
     int throttle;
-    float strafeAccel;
-    SpacePoint *strafeNavPoint;
-    int cloakMaterial1;
-    int cloakMaterial2;
-    int cloakMaterial3;
-    uint8_t _pad_0x38c[8]; // shrunk 12->8 to absorb field_0x364 above; field_0x394 stays pinned
+    uint8_t field_0x378; // bool flag (initialized as clz(ptr)>>5 in ctor)
+    uint8_t _pad_0x379[3];
+    float strafeAccel;          // 0x37c
+    SpacePoint *strafeNavPoint; // 0x380 (also aliased as float via (float&))
+    int field_0x384;            // 0x384
+    uint32_t cloakMaterial1;    // 0x388
+    uint32_t cloakMaterial2;    // 0x38c
+    uint32_t cloakMaterial3;    // 0x390
     unsigned char *field_0x394;
     uint8_t volatileGoods;
     uint8_t lostMiningGameFlag;

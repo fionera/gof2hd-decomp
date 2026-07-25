@@ -126,6 +126,8 @@ public:
     float rollSamples[5];   // ring buffer of angle samples (+0x29c..+0x2af, 5 floats)
     int32_t rollSampleIndex;
     uint8_t rollBufferFilled;
+    uint8_t isShooting;   // 0x2b5: set to 1 after shoot(); cleared on target-lost or hidden
+    uint8_t _pad_0x2b6[2];
     AbyssEngine::EaseInOutMatrix *easeMatrix;
     // field_0x2c9/field_0x2cd were Ghidra artifacts of the ctor's overlapping unaligned
     // zero-stores (str.w [+0x2c9], str.w [+0x2cd]) spanning cloakTimer..cloakActive.

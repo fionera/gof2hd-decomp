@@ -181,7 +181,7 @@ void _mtw_TouchButton_OnTouchBeginXY(void *btn, int y, int x); // lint: void_ptr
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-float _mtw_TouchButton_setPosition(void *btn, int x, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_TouchButton_setPosition removed: replaced with btn->setPosition(x, y)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -218,11 +218,11 @@ static inline void *_mtw_AppMgr_GetApplicationModule(void *app, int id) { return
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_getPosition(void *out, void *btn); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_TouchButton_getPosition removed: replaced with btn->getPosition() sret
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_setVisible(void *btn, bool v); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_TouchButton_setVisible removed: replaced with btn->setVisible(v)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -232,15 +232,15 @@ void *_mtw_RecordHandler_readAllPreviewRecords(void *rh); // lint: void_ptr (ext
 
 static inline void *_mtw_AppMgr_GetEngine() { return GetEngine(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_ChoiceWindow_set(void *cw, void *s); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_ChoiceWindow_set(cw, s) removed: replaced with cw->set(*s)
 
-void _mtw_ChoiceWindow_update(void *cw); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_ChoiceWindow_update removed: replaced with cw->update(dt)
 
-void _mtw_TouchButton_setYPosition(void *btn, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_TouchButton_setYPosition removed: replaced with btn->setYPosition(y)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-int _mtw_TouchButton_isVisible(void *btn); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_TouchButton_isVisible removed: replaced with btn->isVisible()
 
 void _mtw_ScrollTouchWindow_update(void *w); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -250,7 +250,7 @@ void _mtw_startSupernovaChallenge_impl(void *self); // lint: void_ptr (external 
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_DlcMenu_call(void *win, void *s1, void *s2); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_DlcMenu_call removed: replaced with win->set(*s1, *s2)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -284,9 +284,9 @@ void _mtw_FModSound_setVolume(void *snd, float v); // lint: void_ptr (external s
 
 static inline void _mtw_Array_TB_ctor(void *a) { new(a) Array<TouchButton*>(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_TouchButton_draw(void *btn); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_TouchButton_draw removed: replaced with btn->draw()
 
-void _mtw_Layout_drawBox(void *layout, int mode, int x, int y, int w, int h, void *str); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+// _mtw_Layout_drawBox removed: replaced with layout->drawBox(mode, x, y, w, h, str)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -784,11 +784,10 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
         _mtw_TouchButton_ctorFull(okBtn, okLabel, 0, x, y, layout->field_0x2a4_metricA, 0x12, 0x04);
     this->okButton = okBtn;
 
-    _mtw_TouchButton_setPosition(okBtn,
-                                 (screenW - this->listX) - layout->buttonInsetX,
-                                 (layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow
-                                 + layout->field_0xc_leftMargin + extra + layout->field_0x20_top +
-                                 this->scrollOffset);
+    okBtn->setPosition((screenW - this->listX) - layout->buttonInsetX,
+                       (layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow
+                       + layout->field_0xc_leftMargin + extra + layout->field_0x20_top +
+                       this->scrollOffset);
 
     if (this->backButton != 0) {
         ::operator delete(_mtw_TouchButton_dtor(this->backButton));
@@ -928,11 +927,10 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) { // lint: void_p
                 if (row < Globals::recordSlots) {
                     int *posX = (int *) &Globals::w;
                     this->selectedRow = row;
-                    float v = _mtw_TouchButton_setPosition(this->okButton,
-                                                           (*posX - this->listX) - layout->buttonInsetX,
-                                                           row * (gap + rowH) + top + leftMargin + off +
-                                                           layout->field_0x108);
-                    _mtw_FModSound_play(Globals::sound, 0x7c, 0, v);
+                    this->okButton->setPosition((*posX - this->listX) - layout->buttonInsetX,
+                                               row * (gap + rowH) + top + leftMargin + off +
+                                               layout->field_0x108);
+                    _mtw_FModSound_play(Globals::sound, 0x7c, 0, 0.0f);
                 }
             }
             if (oldRow == this->selectedRow)
@@ -1233,13 +1231,14 @@ void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Arra
     int *posY = Globals::sub_menu_buttons_y;
     for (uint32_t i = 0; i < arr->count; i++) {
         if (i < 10) {
-            char buf[12];
-            TouchButton *b = arr->data_[i];
-            _mtw_TouchButton_getPosition(buf, b);
-            posX[i] = (int) *(float *) (buf + 0);
-            b = arr->data_[i];
-            _mtw_TouchButton_getPosition(buf, b);
-            posY[i] = (int) *(float *) (buf + 4);
+            {
+                Vector bpos = arr->data_[i]->getPosition();
+                posX[i] = (int) bpos.x;
+            }
+            {
+                Vector bpos = arr->data_[i]->getPosition();
+                posY[i] = (int) bpos.y;
+            }
         }
     }
     Globals::sub_menu_button_count = arr->count;
@@ -1375,7 +1374,7 @@ void MenuTouchWindow::update(int dt) {
             if (appData->purchaseErrorFlag != 0) {
                 ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
                 String *s = (String *) _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[0]);
-                _mtw_ChoiceWindow_set(cw, s);
+                cw->set(*s);
                 this->dlcErrorDialogShowing = 1;
                 this->messageShowing = 1;
                 this->dlcMessageShowing = 0;
@@ -1394,25 +1393,25 @@ void MenuTouchWindow::update(int dt) {
                 Status *status = Globals::status;
                 reinterpret_cast<uint8_t *>(&status->systemVisibilities)[1] = 1;
                 status->setSystemVisibility(0x19, true);
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[1]));
+                cw->set(*(String*)_mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[1]));
             }
             break;
             case 1: {
                 reinterpret_cast<int32_t &>((Globals::status)->field_120) = 3;
                 ((OptionsRecord *) Globals::options)->flag_0x36 = 1;
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[2]));
+                cw->set(*(String*)_mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[2]));
             }
             break;
             case 2: {
                 Status *status = Globals::status;
                 reinterpret_cast<uint8_t *>(&status->systemVisibilities)[3] = 1;
                 status->setSystemVisibility(0x19, true);
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[3]));
+                cw->set(*(String*)_mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[3]));
             }
             break;
             case 3: {
                 ((OptionsRecord *) Globals::options)->flag_0x38 = 1;
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[4]));
+                cw->set(*(String*)_mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[4]));
             }
             break;
             case 4: {
@@ -1422,7 +1421,7 @@ void MenuTouchWindow::update(int dt) {
                 flags->flag_0x39 = 1;
                 flags->flag_0x37 = 1;
                 status->setSystemVisibility(0x19, true);
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[5]));
+                cw->set(*(String*)_mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[5]));
             }
             break;
         }
@@ -1436,7 +1435,7 @@ void MenuTouchWindow::update(int dt) {
         Globals::recordHandler->saveOptions();
         if (this->purchaseRestorePending != 0) {
             ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-            _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[6]));
+            cw->set(*(String*)_mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[6]));
             this->purchaseRestorePending = 0;
         }
         this->dlcResultDialogShowing = 1;
@@ -1451,7 +1450,7 @@ void MenuTouchWindow::update(int dt) {
         OptionsRecord *flags = (OptionsRecord *) Globals::options;
         if (this->messageShowing == 0 && flags->flag_0x35 == 0) {
             ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-            _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[7]));
+            cw->set(*(String*)_mtw_GameText_getText(Globals::gameText, g_mtw_upTextIds[7]));
             this->supernovaPurchaseDialogShowing = 1;
             this->messageShowing = 1;
             flags->flag_0x35 = 1;
@@ -1470,16 +1469,14 @@ void MenuTouchWindow::update(int dt) {
             int total = n * layout->field_0x30_rowHeight;
             int screenH = Globals::h;
             for (unsigned int i = 0; i < n; i++) {
-                _mtw_TouchButton_setYPosition(arr->data_[i],
-                                              (layout->field_0x30_rowHeight + this->buttonRowGap) * i +
-                                              (screenH / 2 - (int) ((unsigned int) (rowGap * (n - 1) + total) >> 1)));
+                arr->data_[i]->setYPosition((layout->field_0x30_rowHeight + this->buttonRowGap) * i +
+                                            (screenH / 2 - (int) ((unsigned int) (rowGap * (n - 1) + total) >> 1)));
                 TouchButton *b = (TouchButton *) this->buttons->data_[i];
-                if (b->field_0x0 == 0x12 && b->field_0x4 == 0 && _mtw_TouchButton_isVisible(b) != 0 &&
+                if (b->field_0x0 == 0x12 && b->field_0x4 == 0 && b->isVisible() &&
                     this->cutsceneMode != 0) {
                     b = (TouchButton *) this->buttons->data_[i];
-                    char pos[12];
-                    _mtw_TouchButton_getPosition(pos, b);
-                    _mtw_TouchButton_setYPosition(b, (int) *(float *) (pos + 4));
+                    Vector bpos = b->getPosition();
+                    b->setYPosition((int) bpos.y);
                 }
                 arr = (Array<TouchButton *> *) this->buttons;
                 n = *(unsigned int *) arr;
@@ -1495,10 +1492,9 @@ void MenuTouchWindow::update(int dt) {
         int total = n * layout->field_0x30_rowHeight;
         int screenH = Globals::h;
         for (unsigned int i = 0; i < n; i++) {
-            _mtw_TouchButton_setYPosition(arr->data_[i],
-                                          (layout->field_0x30_rowHeight + this->buttonRowGap) * i +
-                                          (screenH / 2 - (int) (
-                                               (unsigned int) ((firstCount - 1) * rowGap + total) >> 1)));
+            arr->data_[i]->setYPosition((layout->field_0x30_rowHeight + this->buttonRowGap) * i +
+                                        (screenH / 2 - (int) (
+                                             (unsigned int) ((firstCount - 1) * rowGap + total) >> 1)));
             arr = (Array<TouchButton *> *) this->optionsButtons;
             n = *(unsigned int *) arr;
         }
@@ -1511,7 +1507,7 @@ void MenuTouchWindow::update(int dt) {
     }
 
     if (this->messageShowing != 0)
-        _mtw_ChoiceWindow_update(this->choiceWindow);
+        this->choiceWindow->update(dt);
 
     if (state == 0xd) {
         appData = (MtwAppData *) Globals::appManager->GetApplicationData();
@@ -1521,7 +1517,7 @@ void MenuTouchWindow::update(int dt) {
             if (r == 2 || r == 1) {
                 ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
                 int id = (r == 2) ? g_mtw_upTextIds[8] : g_mtw_upTextIds[9];
-                _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, id));
+                cw->set(*(String*)_mtw_GameText_getText(Globals::gameText, id));
                 this->storeInitDialogShowing = 0;
                 this->messageShowing = 1;
                 appData = (MtwAppData *) Globals::appManager->GetApplicationData();
@@ -1537,7 +1533,7 @@ void MenuTouchWindow::update(int dt) {
         if (r == 2 || r == 1) {
             ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
             int id = (r == 2) ? g_mtw_upTextIds[10] : g_mtw_upTextIds[11];
-            _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(Globals::gameText, id));
+            cw->set(*(String*)_mtw_GameText_getText(Globals::gameText, id));
             this->screenshotState = -1;
             this->messageShowing = 1;
             appData = (MtwAppData *) Globals::appManager->GetApplicationData();
@@ -1564,7 +1560,7 @@ void MenuTouchWindow::callDlcMenu() {
     this->dlcMessageShowing = 1;
     String *s1 = (String *) _mtw_GameText_getText(*gt, 0x47);
     String *s2 = (String *) _mtw_GameText_getText(*gt, 0x1a9);
-    return _mtw_DlcMenu_call(win, s1, s2);
+    win->set(*s1, *s2);
 }
 
 void _mtw_draw_mainMenu(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
@@ -1607,11 +1603,10 @@ void MenuTouchWindow::draw() {
     int *posY = Globals::sub_menu_buttons_y;
     for (unsigned int i = 0; i < *(unsigned int *) arr; i++) {
         if (i < 10) {
-            char buf[12];
-            _mtw_TouchButton_getPosition(buf, arr->data_[i]);
-            posX[i] = (int) *(float *) (buf + 0);
-            _mtw_TouchButton_getPosition(buf, arr->data_[i]);
-            posY[i] = (int) *(float *) (buf + 4);
+            Vector dpos = arr->data_[i]->getPosition();
+            posX[i] = (int) dpos.x;
+            dpos = arr->data_[i]->getPosition();
+            posY[i] = (int) dpos.y;
         }
     }
     Globals::sub_menu_button_count = *(unsigned int *) arr;
@@ -2034,11 +2029,10 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         margin = layout->buttonInsetX;
     }
 
-    _mtw_TouchButton_setPosition(this->okButton,
-                                 (screenBound - scrollOff) - margin,
-                                 (layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow
-                                 + this->scrollOffset
-                                 + layout->field_0x20_top + layout->field_0xc_leftMargin + layout->field_0x108);
+    this->okButton->setPosition((screenBound - scrollOff) - margin,
+                               (layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow
+                               + this->scrollOffset
+                               + layout->field_0x20_top + layout->field_0xc_leftMargin + layout->field_0x108);
 
     int rowCount = Globals::recordSlots;
     int rowMax = Globals::h;
@@ -2053,7 +2047,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         String box;
         box.ctor_char(gDlsBoxStr, false);
         int mode = (i == this->selectedRow) ? 4 : 3;
-        _mtw_Layout_drawBox(layout, mode, boxX, rowY, inner - 3, layout->field_0x70_rowHeight, &box);
+        layout->drawBox(mode, boxX, rowY, inner - 3, layout->field_0x70_rowHeight, box);
 
         int *font = (int *) Globals::font;
         int yName = strip58 + rowY;
@@ -2101,7 +2095,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
                                              rowY2 + layout->field_0x70_rowHeight / 2, (bool) 0);
 
         if (i == this->selectedRow)
-            _mtw_TouchButton_draw(this->okButton);
+            this->okButton->draw();
     }
 }
 
