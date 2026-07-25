@@ -21,8 +21,6 @@ void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
 
 void AEMath_BSphere_assign(void *dst, const void *src); // lint: void_ptr (external symbol signature)
 
-void Trail_renderTransform(AbyssEngine::PaintCanvas *canvas, uint32_t transform, int mode);
-
 static void (*const g_freeFn)(void *) = ::free; // lint: void_ptr (matches libc free signature)
 
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
@@ -229,7 +227,7 @@ void MeshMerger::setEnabled(int index, bool enabled) {
 }
 
 void MeshMerger::render() {
-    Trail_renderTransform(this->canvas, this->transformId, 0);
+    this->canvas->DrawTransform(this->transformId, nullptr);
 }
 
 void MeshMerger::update() {

@@ -4225,7 +4225,7 @@
   },
   {
    "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.2,
+   "pct": 28.3,
    "byte": false,
    "linked": false,
    "osize": 2012,
@@ -8840,6 +8840,14 @@
    "usize": 608
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
@@ -8870,14 +8878,6 @@
    "linked": false,
    "osize": 36,
    "usize": 40
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",

@@ -213,7 +213,6 @@
   "_Z21StatusWindow_draw_r2dP10ModStation",
   "_Z21Status_setMission_otei",
   "_Z21TouchButton_ctor_textPvS_iiic",
-  "_Z21Trail_renderTransformPN11AbyssEngine11PaintCanvasEji",
   "_Z21TransformGetTransformPvj",
   "_Z21_ae_MatrixSetRotationPvjfffi",
   "_Z21_ips_getParticleCountPv",
