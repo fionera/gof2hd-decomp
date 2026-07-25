@@ -1000,14 +1000,6 @@
    "usize": 160
   },
   {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 3.3,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
-  },
-  {
    "name": "_ZN9PlayerEgo10stopMiningEv",
    "pct": 3.3,
    "byte": false,
@@ -1134,6 +1126,14 @@
    "linked": false,
    "osize": 1504,
    "usize": 296
+  },
+  {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 4.6,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
   },
   {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
@@ -1440,16 +1440,8 @@
    "usize": 282
   },
   {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
-  },
-  {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.4,
+   "pct": 7.3,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -1462,6 +1454,14 @@
    "linked": false,
    "osize": 1168,
    "usize": 864
+  },
+  {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -3152,14 +3152,6 @@
    "usize": 82
   },
   {
-   "name": "_ZN11MovingStars6updateEiN11AbyssEngine6AEMath6MatrixEbf",
-   "pct": 21.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1356,
-   "usize": 1072
-  },
-  {
    "name": "_ZN11AbyssEngine15EaseInOutMatrix8DecreaseEf",
    "pct": 21.7,
    "byte": false,
@@ -3198,6 +3190,14 @@
    "linked": false,
    "osize": 1588,
    "usize": 1368
+  },
+  {
+   "name": "_ZN11MovingStars6updateEiN11AbyssEngine6AEMath6MatrixEbf",
+   "pct": 22.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1356,
+   "usize": 1068
   },
   {
    "name": "_ZN11AbyssEngine11BloomShaderD1Ev",
@@ -4208,6 +4208,14 @@
    "usize": 176
   },
   {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
+  },
+  {
    "name": "_ZN9ExplosionD1Ev",
    "pct": 28.1,
    "byte": false,
@@ -4222,14 +4230,6 @@
    "linked": false,
    "osize": 68,
    "usize": 110
-  },
-  {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
   },
   {
    "name": "_ZN13PlayerFighter8initPushERKN11AbyssEngine6AEMath6VectorEi",
@@ -7768,14 +7768,6 @@
    "usize": 696
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 46.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine13SetPostEffectEjb",
    "pct": 46.8,
    "byte": false,
@@ -8846,6 +8838,14 @@
    "linked": false,
    "osize": 596,
    "usize": 608
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",

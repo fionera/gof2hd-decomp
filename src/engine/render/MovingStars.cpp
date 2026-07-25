@@ -131,7 +131,7 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
         if ((life > 0 || respawned) || (!flag && (int) this->tickAccumulator < 0x29)) {
             this->lifeArray[i] = life - delta;
             memcpy(localMatrix, (const Matrix *) canvas->TransformGetLocal(0), 0x3c);
-            float f = VectorSignedToFloat(this->velocityArray[i], 0);
+            float f = AbyssEngine::AEMath::VectorSignedToFloat(this->velocityArray[i], 0);
 
             *(float *) (localMatrix + 0x24) -= *(float *) (localMatrix + 0x18) * f;
             *(float *) (localMatrix + 0x28) -= *(float *) (localMatrix + 0x1c) * f;
