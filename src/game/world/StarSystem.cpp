@@ -23,8 +23,6 @@ namespace AbyssEngine {
     }
 }
 
-void MatrixGetPosition(Vector *out, void *matrix); // lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
 
 static inline void MatrixGetLookAt(Matrix *out, const Vector *from, const Vector *to, const Vector *up) { *out = AbyssEngine::AEMath::MatrixGetLookAt(*from, *to, *up); }
@@ -509,7 +507,6 @@ static uint32_t *g_StarSystem_render_station_index =
         &g_StarSystem_render_station_index_storage;
 
 void StarSystem::render() {
-    Vector cameraPos;
     Matrix savedCamera;
     Matrix lookAt;
     Vector tempMatrix;
@@ -520,7 +517,7 @@ void StarSystem::render() {
     PaintCanvas *canvas = Globals::Canvas;
     unsigned current = canvas->CameraGetCurrent();
     Matrix *local = (Matrix *) canvas->CameraGetLocal(current);
-    MatrixGetPosition(&cameraPos, local);
+    Vector cameraPos = AbyssEngine::AEMath::MatrixGetPosition(*local);
 
     uint32_t count = this->planetsArray->size();
     AEGeometry **geoms = this->planetsArray->data();
