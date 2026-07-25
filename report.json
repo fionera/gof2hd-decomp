@@ -8208,14 +8208,6 @@
    "usize": 736
   },
   {
-   "name": "_ZN14PlayerGasCloud7explodeEiN11AbyssEngine6AEMath6VectorEf",
-   "pct": 49.9,
-   "byte": false,
-   "linked": false,
-   "osize": 776,
-   "usize": 764
-  },
-  {
    "name": "_ZN10HangarList13setCurrentTabEib",
    "pct": 50.0,
    "byte": false,
@@ -8542,6 +8534,14 @@
    "linked": false,
    "osize": 238,
    "usize": 300
+  },
+  {
+   "name": "_ZN14PlayerGasCloud7explodeEiN11AbyssEngine6AEMath6VectorEf",
+   "pct": 50.3,
+   "byte": false,
+   "linked": false,
+   "osize": 776,
+   "usize": 764
   },
   {
    "name": "_Z14ArrayAddCachedIN11AbyssEngine6AEMath6MatrixEEvT_R5ArrayIS3_E",
