@@ -10,8 +10,8 @@ namespace AbyssEngine {
     }
 
     ResourceTexture::ResourceTexture(const String &name, float value) {
-        char *utf8 = String_GetAEChar(const_cast<String *>(&name));
-        uint32_t len = String::GetStringLength(utf8);
+        char *utf8 = name.GetAEChar();
+        uint32_t len = name.length;
         this->name = new char[len + 1U];
         memcpy(this->name, utf8, len + 1U);
         this->value = value;

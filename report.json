@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.48,
+  "avg_match": 77.49,
   "byte_exact": 1159,
-  "linked_exact": 2566,
-  "fuzzy_perfect": 2566,
+  "linked_exact": 2567,
+  "fuzzy_perfect": 2567,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1440,6 +1440,14 @@
    "usize": 282
   },
   {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
+  },
+  {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
    "pct": 7.4,
    "byte": false,
@@ -1454,14 +1462,6 @@
    "linked": false,
    "osize": 1168,
    "usize": 864
-  },
-  {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -2568,14 +2568,6 @@
    "usize": 1612
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.8,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN9RocketGun8setRadarEP5Radar",
    "pct": 16.8,
    "byte": false,
@@ -2598,6 +2590,14 @@
    "linked": false,
    "osize": 230,
    "usize": 574
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 17.0,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -6080,14 +6080,6 @@
    "usize": 96
   },
   {
-   "name": "_ZN11AbyssEngine15ResourceTextureC2ERKNS_6StringEf",
-   "pct": 35.6,
-   "byte": false,
-   "linked": false,
-   "osize": 60,
-   "usize": 60
-  },
-  {
    "name": "_ZN21ParticleSystemManager11initSpritesEv",
    "pct": 35.6,
    "byte": false,
@@ -8848,6 +8840,14 @@
    "usize": 608
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN10LODManager11forceUpdateEib",
    "pct": 53.0,
    "byte": false,
@@ -9062,14 +9062,6 @@
    "linked": false,
    "osize": 896,
    "usize": 844
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 54.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine6StringpLERKf",
@@ -20038,6 +20030,14 @@
    "linked": true,
    "osize": 50,
    "usize": 50
+  },
+  {
+   "name": "_ZN11AbyssEngine15ResourceTextureC2ERKNS_6StringEf",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 60,
+   "usize": 60
   },
   {
    "name": "_ZN11AbyssEngine15ResourceTextureD2Ev",

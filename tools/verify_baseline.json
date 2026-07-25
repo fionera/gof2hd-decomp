@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1159,
-  "linked_exact": 2566,
+  "linked_exact": 2567,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.48,
+  "avg_match": 77.49,
   "compared": 4523
  },
  "imports": [
@@ -84,7 +84,6 @@
   "_Z16StarMap_draw_r2dP10ModStation",
   "_Z16Station_getIndexPv",
   "_Z16Station_getIndexz",
-  "_Z16String_GetAECharPN11AbyssEngine6StringE",
   "_Z16String_printImplPKc",
   "_Z16_ae_setPosition3Pvfff",
   "_Z16_liw_render_tailPviiS_",
