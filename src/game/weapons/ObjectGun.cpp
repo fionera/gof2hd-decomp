@@ -9,6 +9,8 @@
 #include "game/weapons/Gun.h"
 #include "game/ship/Player.h"
 #include "engine/render/AEGeometry.h"
+#include "engine/render/PaintCanvas.h"
+#include "game/core/Globals.h"
 
 struct MeshId {
     uint16_t id;
@@ -32,36 +34,9 @@ namespace AbyssEngine {
 
 static PaintCanvas **g_PaintCanvas = nullptr;
 
-// The following are normally-named free-function shims for the PaintCanvas
-// engine API; their void* parameters/returns are part of their mangled
-// symbol names, so retyping them would break symbol parity. Left as-is.
-void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh); // lint: void_ptr free-function signature, retype changes mangling
-
-// lint: void_ptr free-function signature, retype changes mangling
-
-void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags); // lint: void_ptr free-function signature, retype changes mangling
-
-// lint: void_ptr free-function signature, retype changes mangling
-
-void TransformCreate(void *canvas, uint32_t *transform); // lint: void_ptr free-function signature, retype changes mangling
-
-// lint: void_ptr free-function signature, retype changes mangling
-
 uint32_t TransformGetTransform(void *canvas, uint32_t transform); // lint: void_ptr free-function signature, retype changes mangling
 
-// lint: void_ptr free-function signature, retype changes mangling
-
-void TransformSetLocal(void *canvas, uint32_t transform, Matrix *matrix); // lint: void_ptr free-function signature, retype changes mangling
-
-// lint: void_ptr free-function signature, retype changes mangling
-
-void DrawTransform(void *canvas, uint32_t transform, int flags); // lint: void_ptr free-function signature, retype changes mangling
-
-// lint: void_ptr free-function signature, retype changes mangling
-
 void MatrixRotateVector(void *out, const void *matrix, const void *vec); // lint: void_ptr free-function signature, retype changes mangling
-
-// lint: void_ptr free-function signature, retype changes mangling
 
 void *CameraGetCurrent(void *canvas); // lint: void_ptr free-function signature, retype changes mangling
 
@@ -102,7 +77,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->side.z = 0.0f;
     this->orientation = AbyssEngine::AEMath::Matrix();
 
-    PaintCanvas **canvas = g_PaintCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     this->useEgoOrientation = 0;
     this->explosions = nullptr;
     this->explosionReady = nullptr;
@@ -110,9 +85,9 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->gun = gun;
     this->level = level;
     this->secondaryTransform = -1;
-    TransformCreate(*canvas, &this->transform);
+    canvas->TransformCreate(this->transform);
     this->meshId = mesh;
-    TransformAddMesh(*canvas, this->transform, (uint16_t) mesh, 0);
+    canvas->TransformAddMesh(this->transform, (uint16_t) mesh, false);
     this->rollAngle = 0.0f;
     this->scaleX = 1.0f;
     this->scaleY = 1.0f;
@@ -167,7 +142,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
 
     if (createGeometry)
         geometry = new AEGeometry((uint16_t) g_ObjectGunGeometryIds[gun->itemIndex].id,
-                                  (PaintCanvas *) *canvas, false);
+                                  canvas, false);
 
     this->wasFiring = 0;
     this->geometry = geometry;
@@ -194,10 +169,10 @@ void ObjectGun::setScaling(int x, int y, int /*z*/) {
 }
 
 void ObjectGun::replaceGun(unsigned int mesh, int /*unused*/) {
-    PaintCanvas **canvas = g_PaintCanvas;
-    TransformRemoveMesh(*canvas, this->transform, this->meshId);
+    PaintCanvas *canvas = Globals::Canvas;
+    canvas->TransformRemoveMesh(this->transform, this->meshId);
     this->meshId = (int) mesh;
-    TransformAddMesh(*canvas, this->transform, (uint16_t) mesh, 0);
+    canvas->TransformAddMesh(this->transform, (uint16_t) mesh, false);
 }
 
 void ObjectGun::setEnemies(Array<Player *> *enemies) {
@@ -389,9 +364,8 @@ void ObjectGun::render() {
         cameraLocal.m[5] = 1.0f;
         cameraLocal.m[14] = 1.0f;
         if (gun->weaponType == ITEM_SORT_TURRET) {
-            PaintCanvas **canvas = g_PaintCanvas;
-            PaintCanvas *paint = *canvas;
-            cameraLocal = *(const Matrix *) CameraGetLocal(paint, CameraGetCurrent(paint));
+            PaintCanvas *canvas = Globals::Canvas;
+            cameraLocal = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
             if (this->visible != 0) {
                 for (uint32_t mi = 0; mi < 15; ++mi)
                     rotate.m[mi] = 0.0f;
@@ -417,9 +391,8 @@ void ObjectGun::render() {
                     muzzle.y = -this->dir.y;
                     muzzle.z = -this->dir.z;
                     if ((uint32_t)(gun->itemIndex - 0xb4) > 2) {
-                        PaintCanvas **canvas = g_PaintCanvas;
-                        PaintCanvas *paint = *canvas;
-                        cameraLocal = *(const Matrix *) CameraGetLocal(paint, CameraGetCurrent(paint));
+                        PaintCanvas *canvas = Globals::Canvas;
+                        cameraLocal = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
                         MatrixGetDir(&dir, &cameraLocal);
                         muzzle = dir;
                         gun = this->gun;
@@ -499,7 +472,7 @@ void ObjectGun::render() {
                     player->empPoints = 0;
                     player->maxEmpPoints = 0;
                     MatrixSetRotation(&scaleMatrix, this->rollAngle, 0.0f, 0.0f);
-                    TransformSetLocal(*g_PaintCanvas, this->secondaryTransform, &scaleMatrix);
+                    Globals::Canvas->TransformSetLocal(this->secondaryTransform, scaleMatrix);
                 }
 
                 if (*g_ObjectGunRenderScaleFlag != 0)
@@ -519,9 +492,9 @@ void ObjectGun::render() {
                     MatrixSetScaling(&local, this->scaleX, this->scaleY, this->scaleZ);
                 }
 
-                PaintCanvas **canvas = g_PaintCanvas;
-                TransformSetLocal(*canvas, this->transform, &this->orientation);
-                DrawTransform(*canvas, this->transform, 0);
+                PaintCanvas *canvas = Globals::Canvas;
+                canvas->TransformSetLocal(this->transform, this->orientation);
+                canvas->DrawTransform(this->transform, nullptr);
             } else {
                 ++inactive;
             }

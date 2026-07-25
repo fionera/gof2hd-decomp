@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.39,
+  "avg_match": 77.41,
   "byte_exact": 1159,
   "linked_exact": 2560,
   "fuzzy_perfect": 2560,
@@ -2600,6 +2600,14 @@
    "usize": 574
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 17.0,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "ndk_iapBoughtPremium",
    "pct": 17.0,
    "byte": false,
@@ -2630,14 +2638,6 @@
    "linked": false,
    "osize": 134,
    "usize": 130
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 17.3,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "_ZN13RecordHandler21convertSDVersionSavesEv",
@@ -3096,14 +3096,6 @@
    "usize": 1664
   },
   {
-   "name": "_ZN9ObjectGun6renderEv",
-   "pct": 21.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1456,
-   "usize": 1254
-  },
-  {
    "name": "_ZN11AbyssEngine13GenericShaderC1Ev",
    "pct": 21.1,
    "byte": false,
@@ -3294,6 +3286,14 @@
    "linked": false,
    "osize": 272,
    "usize": 292
+  },
+  {
+   "name": "_ZN9ObjectGun6renderEv",
+   "pct": 22.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1456,
+   "usize": 1348
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15ResetPersMatrixEv",
@@ -5944,14 +5944,6 @@
    "usize": 36
   },
   {
-   "name": "_ZN9ObjectGun10replaceGunEji",
-   "pct": 34.3,
-   "byte": false,
-   "linked": false,
-   "osize": 56,
-   "usize": 32
-  },
-  {
    "name": "_ZN8NewsItem5cloneEv",
    "pct": 34.4,
    "byte": false,
@@ -6030,22 +6022,6 @@
    "linked": false,
    "osize": 300,
    "usize": 272
-  },
-  {
-   "name": "_ZN9ObjectGunC1EiP3GunijP5Level",
-   "pct": 35.1,
-   "byte": false,
-   "linked": false,
-   "osize": 516,
-   "usize": 492
-  },
-  {
-   "name": "_ZN9ObjectGunC2EiP3GunijP5Level",
-   "pct": 35.1,
-   "byte": false,
-   "linked": false,
-   "osize": 516,
-   "usize": 492
   },
   {
    "name": "_Z13loadingScreenPN11AbyssEngine11PaintCanvasEiPv",
@@ -7438,6 +7414,22 @@
    "linked": false,
    "osize": 560,
    "usize": 520
+  },
+  {
+   "name": "_ZN9ObjectGunC1EiP3GunijP5Level",
+   "pct": 44.3,
+   "byte": false,
+   "linked": false,
+   "osize": 516,
+   "usize": 472
+  },
+  {
+   "name": "_ZN9ObjectGunC2EiP3GunijP5Level",
+   "pct": 44.3,
+   "byte": false,
+   "linked": false,
+   "osize": 516,
+   "usize": 472
   },
   {
    "name": "_Z31SwitchToOtherMouseConifgurationi",
@@ -13702,6 +13694,14 @@
    "linked": false,
    "osize": 52,
    "usize": 52
+  },
+  {
+   "name": "_ZN9ObjectGun10replaceGunEji",
+   "pct": 86.4,
+   "byte": false,
+   "linked": false,
+   "osize": 56,
+   "usize": 56
   },
   {
    "name": "_ZN11AbyssEngine18BumpShaderParticle14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
