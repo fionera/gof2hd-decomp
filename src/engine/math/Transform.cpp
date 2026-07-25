@@ -309,7 +309,71 @@ namespace AbyssEngine {
     }
 
     void Transform::Update(longlong time, bool updateBounds) {
-        InternUpdate(time, updateBounds);
+        if (this->animating && this->animationLength >= 1) {
+            longlong current = this->currentTime +
+                               (longlong) ((float) time * this->animationSpeed);
+            this->currentTime = current;
+
+            if (this->rangeEnd < current) {
+                if (this->flags == 2) {
+                    if (this->rangeEnd != 0) {
+                        current = this->rangeStart + current % this->rangeEnd;
+                    } else {
+                        current = this->rangeStart;
+                    }
+                } else {
+                    this->animating = false;
+                    current = this->rangeEnd;
+                }
+                this->currentTime = current;
+            }
+
+            InternUpdate(current, updateBounds);
+        }
+
+        if (updateBounds) {
+            AEMath::BSphere sphere;
+            sphere.center.x = 0.0f;
+            sphere.center.y = 0.0f;
+            sphere.center.z = 0.0f;
+            sphere.radius = 0.0f;
+            sphere.radius2 = 1.0f;
+            this->bounds() = sphere;
+
+            for (uint i = 0; i < this->meshes.size(); ++i) {
+                Mesh *mesh = this->meshes[i];
+                AEMath::BSphere childSphere;
+
+                if (mesh != 0 && mesh->animation != 0) {
+                    mesh->animation->Update(time, false);
+
+                    childSphere.center.x = mesh->boundsCenterX;
+                    childSphere.center.y = mesh->boundsCenterY;
+                    childSphere.center.z = mesh->boundsCenterZ;
+                    childSphere.radius = mesh->boundsRadius;
+                    childSphere.radius2 = mesh->boundsRadiusSq;
+                    childSphere.center = AEMath::MatrixTransformVector(
+                        mesh->animation->rotationMatrix, childSphere.center);
+                } else {
+                    childSphere.center.x = mesh->boundsCenterX;
+                    childSphere.center.y = mesh->boundsCenterY;
+                    childSphere.center.z = mesh->boundsCenterZ;
+                    childSphere.radius = mesh->boundsRadius;
+                    childSphere.radius2 = mesh->boundsRadiusSq;
+                }
+                this->bounds().Merge(childSphere);
+            }
+
+            for (uint i = 0; i < this->children.size(); ++i) {
+                Transform *child = this->children[i];
+                child->Update(time, false);
+
+                AEMath::BSphere childSphere = child->bounds();
+                childSphere.center = AEMath::MatrixTransformVector(
+                    child->rotationMatrix, childSphere.center);
+                this->bounds().Merge(childSphere);
+            }
+        }
     }
 
     void Transform::DebugOut(int value) {}
