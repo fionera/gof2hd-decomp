@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1160,
-  "linked_exact": 2574,
+  "linked_exact": 2577,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.54,
+  "avg_match": 77.56,
   "compared": 4523
  },
  "imports": [
@@ -191,7 +191,6 @@
   "_Z20TouchButton_getX_oteP11TouchButton",
   "_Z20TouchButton_getY_oteP11TouchButton",
   "_Z20VectorRotateToTargetRN11AbyssEngine6AEMath6VectorERKS1_",
-  "_Z20_ae_MatrixSetScalingPvjfff",
   "_Z20_psm_addSpriteSystemPvPKvjb",
   "_Z21AEMath_BSphere_assignPvPKv",
   "_Z21ChoiceWindow_draw_r2dP10ModStation",
@@ -210,7 +209,6 @@
   "_Z21Status_setMission_otei",
   "_Z21TouchButton_ctor_textPvS_iiic",
   "_Z21TransformGetTransformPvj",
-  "_Z21_ae_MatrixSetRotationPvjfffi",
   "_Z21_mtw_TouchButton_ctorPvS_iiiicc",
   "_Z21_mtw_draw_optionsTabsPv",
   "_Z21_mtw_steerFromTouchIdPviiS_",

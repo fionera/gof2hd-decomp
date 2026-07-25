@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.54,
+  "avg_match": 77.56,
   "byte_exact": 1160,
-  "linked_exact": 2574,
-  "fuzzy_perfect": 2574,
+  "linked_exact": 2577,
+  "fuzzy_perfect": 2577,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1424,14 +1424,6 @@
    "usize": 282
   },
   {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
-  },
-  {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
    "pct": 7.4,
    "byte": false,
@@ -1446,6 +1438,14 @@
    "linked": false,
    "osize": 1168,
    "usize": 864
+  },
+  {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -6424,14 +6424,6 @@
    "usize": 392
   },
   {
-   "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
-   "pct": 37.9,
-   "byte": false,
-   "linked": false,
-   "osize": 240,
-   "usize": 228
-  },
-  {
    "name": "_ZN6Layout10drawHeaderEN11AbyssEngine6StringEb",
    "pct": 38.0,
    "byte": false,
@@ -8136,6 +8128,14 @@
    "usize": 492
   },
   {
+   "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
+   "pct": 49.4,
+   "byte": false,
+   "linked": false,
+   "osize": 240,
+   "usize": 228
+  },
+  {
    "name": "_ZN11TouchButton13touchedInsideEii",
    "pct": 49.5,
    "byte": false,
@@ -8832,6 +8832,14 @@
    "usize": 608
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
@@ -8862,14 +8870,6 @@
    "linked": false,
    "osize": 36,
    "usize": 40
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -10840,14 +10840,6 @@
    "usize": 48
   },
   {
-   "name": "_ZN10AEGeometry6rotateEfff",
-   "pct": 64.7,
-   "byte": false,
-   "linked": false,
-   "osize": 148,
-   "usize": 156
-  },
-  {
    "name": "_ZN6GalaxyD1Ev",
    "pct": 64.7,
    "byte": false,
@@ -11368,14 +11360,6 @@
    "usize": 168
   },
   {
-   "name": "_ZN10AEGeometry10setScalingEfff",
-   "pct": 67.4,
-   "byte": false,
-   "linked": false,
-   "osize": 116,
-   "usize": 120
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas19TextureCreateGlobalENS_6StringEj",
    "pct": 67.4,
    "byte": false,
@@ -11894,14 +11878,6 @@
    "linked": false,
    "osize": 50,
    "usize": 56
-  },
-  {
-   "name": "_ZN10AEGeometry11setRotationEfff",
-   "pct": 71.9,
-   "byte": false,
-   "linked": false,
-   "osize": 116,
-   "usize": 120
   },
   {
    "name": "_ZN14PlayerGasCloudC1EiP21ParticleSystemManagerP10AEGeometryRKN11AbyssEngine6AEMath6VectorE",
@@ -14088,14 +14064,6 @@
    "usize": 584
   },
   {
-   "name": "_ZN11AbyssEngine12BumpShaderV24InitEPNS_6EngineE",
-   "pct": 90.6,
-   "byte": false,
-   "linked": false,
-   "osize": 324,
-   "usize": 324
-  },
-  {
    "name": "_zip_new",
    "pct": 90.6,
    "byte": false,
@@ -14334,6 +14302,14 @@
    "linked": false,
    "osize": 292,
    "usize": 290
+  },
+  {
+   "name": "_ZN11AbyssEngine12BumpShaderV24InitEPNS_6EngineE",
+   "pct": 92.0,
+   "byte": false,
+   "linked": false,
+   "osize": 324,
+   "usize": 324
   },
   {
    "name": "_ZN11AbyssEngine10MaskShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -17408,6 +17384,14 @@
    "usize": 8
   },
   {
+   "name": "_ZN10AEGeometry10setScalingEfff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 116,
+   "usize": 116
+  },
+  {
    "name": "_ZN10AEGeometry10setVisibleEb",
    "pct": 100.0,
    "byte": true,
@@ -17454,6 +17438,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN10AEGeometry11setRotationEfff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 116,
+   "usize": 116
   },
   {
    "name": "_ZN10AEGeometry12getDirectionEv",
@@ -17566,6 +17558,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN10AEGeometry6rotateEfff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 148,
+   "usize": 148
   },
   {
    "name": "_ZN10AEGeometry7setMeshEt",

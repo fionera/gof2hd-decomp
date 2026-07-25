@@ -2,14 +2,6 @@
 #include "engine/render/LodMeshMerger.h"
 #include "engine/math/Transform.h"
 
-void _ae_MatrixSetRotation(void *out, uint32_t loc, float x, float y, float z, int order); // lint: void_ptr imported symbol, Pv mangling must match original
-
-// lint: void_ptr imported symbol, Pv mangling must match original
-
-void _ae_MatrixSetScaling(void *out, uint32_t loc, float sx, float sy, float sz); // lint: void_ptr imported symbol, Pv mangling must match original
-
-// lint: void_ptr imported symbol, Pv mangling must match original
-
 uint32_t Transform_GetTransform(uint32_t tf);
 
 void VectorCross(Vector *out, const Vector *b);
@@ -176,11 +168,12 @@ Vector AEGeometry::getParentPosition() {
 }
 
 void AEGeometry::setRotation(float x, float y, float z) {
-    char buf[60];
-    uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    _ae_MatrixSetRotation(buf, loc, x, y, z, this->rotationOrder);
-    loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    _ae_MatrixSetScaling(buf, loc, this->scalingX, this->scalingY, this->scalingZ);
+    AbyssEngine::AEMath::MatrixSetRotation(
+        *(Matrix *) this->canvas->TransformGetLocal(this->transform), x, y, z,
+        (AbyssEngine::AEMath::RotationOrder) this->rotationOrder);
+    AbyssEngine::AEMath::MatrixSetScaling(
+        *(Matrix *) this->canvas->TransformGetLocal(this->transform),
+        this->scalingX, this->scalingY, this->scalingZ);
     this->rotation.x = x;
     this->rotation.y = y;
     this->rotation.z = z;
@@ -212,15 +205,16 @@ void AEGeometry::setLodChildMeshes(uint16_t *meshes) {
 }
 
 void AEGeometry::rotate(float x, float y, float z) {
-    char buf[60];
     this->rotation.x += x;
     this->rotation.y += y;
     this->rotation.z += z;
-    uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    _ae_MatrixSetRotation(buf, loc, this->rotation.x, this->rotation.y, this->rotation.z,
-                          this->rotationOrder);
-    loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    _ae_MatrixSetScaling(buf, loc, this->scalingX, this->scalingY, this->scalingZ);
+    AbyssEngine::AEMath::MatrixSetRotation(
+        *(Matrix *) this->canvas->TransformGetLocal(this->transform),
+        this->rotation.x, this->rotation.y, this->rotation.z,
+        (AbyssEngine::AEMath::RotationOrder) this->rotationOrder);
+    AbyssEngine::AEMath::MatrixSetScaling(
+        *(Matrix *) this->canvas->TransformGetLocal(this->transform),
+        this->scalingX, this->scalingY, this->scalingZ);
 }
 
 AEGeometry::AEGeometry(PaintCanvas *canvas) {
@@ -302,12 +296,12 @@ AEGeometry::AEGeometry(uint16_t mesh, PaintCanvas *canvas, bool flag) {
 }
 
 void AEGeometry::setScaling(float x, float y, float z) {
-    char buf[60];
-    uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    _ae_MatrixSetRotation(buf, loc, this->rotation.x, this->rotation.y, this->rotation.z,
-                          this->rotationOrder);
-    loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    _ae_MatrixSetScaling(buf, loc, x, y, z);
+    AbyssEngine::AEMath::MatrixSetRotation(
+        *(Matrix *) this->canvas->TransformGetLocal(this->transform),
+        this->rotation.x, this->rotation.y, this->rotation.z,
+        (AbyssEngine::AEMath::RotationOrder) this->rotationOrder);
+    AbyssEngine::AEMath::MatrixSetScaling(
+        *(Matrix *) this->canvas->TransformGetLocal(this->transform), x, y, z);
     this->scalingX = x;
     this->scalingY = y;
     this->scalingZ = z;
@@ -395,8 +389,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
 
 void AEGeometry::setDirection(const Vector &dir, const Vector &up) {
     char local[60];
-    uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    memcpy(local, (const Matrix *) (uintptr_t) loc, 0x3c);
+    memcpy(local, this->canvas->TransformGetLocal(this->transform), 0x3c);
 
     Vector right = up;
     VectorCross(&right, &dir);
@@ -422,8 +415,9 @@ void AEGeometry::setDirection(const Vector &dir, const Vector &up) {
     m.m[8] = dir.z;
 
     AEGeomCanvas::TransformSetLocal(this->canvas, this->transform, &m);
-    loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
-    _ae_MatrixSetScaling(local, loc, this->scalingX, this->scalingY, this->scalingZ);
+    AbyssEngine::AEMath::MatrixSetScaling(
+        *(Matrix *) this->canvas->TransformGetLocal(this->transform),
+        this->scalingX, this->scalingY, this->scalingZ);
 }
 
 void AEGeometry::rotate(const Vector &v) {
