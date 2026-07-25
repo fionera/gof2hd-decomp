@@ -10,7 +10,7 @@ void Trail::update(const Vector &a, const Vector &b) {
 }
 
 void Trail::render() {
-    Trail_renderTransform(Globals::Canvas, this->transformId, 0);
+    Globals::Canvas->DrawTransform(this->transformId, nullptr);
 }
 
 void Trail::translate(const Vector &delta) {
@@ -161,25 +161,25 @@ void Trail::changeType(int type) {
         case 1:
         case 7:
         case 11:
-            Trail_transformSetColor(Globals::Canvas, this->transformId, 0xff0000ffu);
+            Globals::Canvas->TransformSetColor(this->transformId, 0xff0000ffu);
             break;
         case 2:
         case 9:
-            Trail_transformSetColor(Globals::Canvas, this->transformId, 0x00ff00ffu);
+            Globals::Canvas->TransformSetColor(this->transformId, 0x00ff00ffu);
             break;
         case 3:
         case 6:
         case 10:
-            Trail_transformSetColor(Globals::Canvas, this->transformId, 0xffff00ffu);
+            Globals::Canvas->TransformSetColor(this->transformId, 0xffff00ffu);
             break;
         case 5:
-            Trail_transformSetColor(Globals::Canvas, this->transformId, 0x00ff0000u);
+            Globals::Canvas->TransformSetColor(this->transformId, 0x00ff0000u);
             break;
         case 8:
-            Trail_transformSetColor(Globals::Canvas, this->transformId, 0xff4000ffu);
+            Globals::Canvas->TransformSetColor(this->transformId, 0xff4000ffu);
             break;
         default:
-            Trail_transformSetColor(Globals::Canvas, this->transformId, 0xffffffffu);
+            Globals::Canvas->TransformSetColor(this->transformId, 0xffffffffu);
             break;
     }
 }

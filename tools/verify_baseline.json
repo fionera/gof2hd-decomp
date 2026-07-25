@@ -256,7 +256,6 @@
   "_Z23Station_getTextureIndexPv",
   "_Z23Status_missionFailed_ouiii",
   "_Z23Status_removeMission_oui",
-  "_Z23Trail_transformSetColorPN11AbyssEngine11PaintCanvasEjj",
   "_Z23_ips_getParticleCount16Pv",
   "_Z23_mtw_ArraySetLength_StriPv",
   "_Z23_mtw_Layout_OnTouchMovePvi",
