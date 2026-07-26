@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.04,
   "byte_exact": 1164,
-  "linked_exact": 2655,
-  "fuzzy_perfect": 2655,
+  "linked_exact": 2656,
+  "fuzzy_perfect": 2656,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13280,14 +13280,6 @@
    "usize": 236
   },
   {
-   "name": "_ZN13PlayerFighter17setExhaustVisibleEb",
-   "pct": 86.4,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 52
-  },
-  {
    "name": "_ZN11AbyssEngine18BumpShaderParticle14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 86.5,
    "byte": false,
@@ -23686,6 +23678,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN13PlayerFighter17setExhaustVisibleEb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN13PlayerFighter19hasMissionCrateLostEv",

@@ -1997,11 +1997,16 @@ void PlayerFighter::setExhaustVisible(bool vis) {
     int geom = this->geometry();
     if (geom != 0) {
         int sub = this->subGeometry();
-        int id;
-        if (sub != 0)
-            id = (int) ((AEGeometry *) (intptr_t) sub)->childTransform;
-        else
-            id = (int) ((AEGeometry *) (intptr_t) geom)->childTransform;
+        if (sub != 0) {
+            int id = (int) ((AEGeometry *) (intptr_t) sub)->childTransform;
+            if (id == -1)
+                return;
+            unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
+
+            return ((AbyssEngine::Transform *) (unsigned long) t)->SetVisible(vis);
+        }
+
+        int id = (int) ((AEGeometry *) (intptr_t) geom)->childTransform;
         if (id != -1) {
             unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
 
