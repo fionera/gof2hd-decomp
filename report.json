@@ -4,9 +4,9 @@
   "ours_functions": 4559,
   "compared": 4523,
   "avg_match": 78.06,
-  "byte_exact": 1165,
-  "linked_exact": 2662,
-  "fuzzy_perfect": 2662,
+  "byte_exact": 1166,
+  "linked_exact": 2663,
+  "fuzzy_perfect": 2663,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13848,14 +13848,6 @@
    "usize": 92
   },
   {
-   "name": "_ZN4Ship18getHandlingForShopEv",
-   "pct": 91.7,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 76
-  },
-  {
    "name": "_ZN6Player6addGunEP3Guni",
    "pct": 91.7,
    "byte": false,
@@ -26782,6 +26774,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN4Ship18getHandlingForShopEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 76,
+   "usize": 76
   },
   {
    "name": "_ZN4Ship18hasCloakIntegratedEv",
