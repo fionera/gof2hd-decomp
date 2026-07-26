@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.02,
+  "avg_match": 78.03,
   "byte_exact": 1164,
-  "linked_exact": 2650,
-  "fuzzy_perfect": 2650,
+  "linked_exact": 2651,
+  "fuzzy_perfect": 2651,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12728,14 +12728,6 @@
    "usize": 176
   },
   {
-   "name": "_ZN10ModStation8OnResumeEv",
-   "pct": 81.0,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 52
-  },
-  {
    "name": "_ZN3Gun9translateERKN11AbyssEngine6AEMath6VectorE",
    "pct": 81.1,
    "byte": false,
@@ -17358,6 +17350,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN10ModStation8OnResumeEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN10ModStation8autosaveEv",

@@ -202,8 +202,7 @@ void ModStation::OnResume() {
         return;
     if (FModSound_tryToStopMusicForBGMusic() != 0)
         return;
-    float arg = *reinterpret_cast<float *>(Globals::options);
-    (*holder)->setVolume(1, arg);
+    (*holder)->setVolume(1, *reinterpret_cast<float *>(Globals::options));
 }
 
 static inline int Status_getCurrentCampaignMission_cpp() { return (int)(Globals::status->getCurrentCampaignMission()); }
