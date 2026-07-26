@@ -14,6 +14,9 @@
 #include "engine/render/Camera.h"
 #include <cstdint>
 #include <cstddef>
+
+extern int g_android_gp_is_linked;
+
 namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); }
 namespace AbyssEngine {
     typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported TextureCreateFromFile signature)
@@ -321,28 +324,6 @@ void paintcanvas_ext_fr_glenable(void *eng, unsigned int cap, bool on); // lint:
 static inline void paintcanvas_ext_fr_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_sprite_rgba(unsigned int, float, float, float, float, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dr_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dr_glLineWidth(float w) { glLineWidth(w); }
-
-void paintcanvas_ext_dr_glcap(void *eng, unsigned int cap, int on); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dr_glVertexPointer(int a, int b, int c, void *p) { glVertexPointer(a, b, c, p); } // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dr_glColorMask(void *eng, unsigned int cap, int on); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dr_glDrawArrays(int a, int b, int c) { glDrawArrays(a, b, c); }
-
-void paintcanvas_ext_dr_drawline2d(void *eng, void *p, int n, bool b); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1230,12 +1211,7 @@ void PaintCanvas::TransformCreate(unsigned int &out) {
     out = this->transformCount - 1;
 }
 
-static char g_dr_flag_79368_storage = 0;
-static char *const g_dr_flag_79368 = &g_dr_flag_79368_storage;
-
 void PaintCanvas::DrawRectangle(int x, int y, int w, int h) {
-    char abuf[60];
-
     double dw = (double) w;
     double dh = (double) h;
     double dy = (double) y;
@@ -1253,36 +1229,37 @@ void PaintCanvas::DrawRectangle(int x, int y, int w, int h) {
     v[6] = (float) (dx + 0.5);
     v[7] = bottom;
 
-    float *m = (float *) abuf;
-    m[0] = 1.0f;
-    m[1] = 0.0f;
-    m[2] = 0.0f;
-    m[3] = 0.0f;
-    m[4] = 0.0f;
-    m[5] = 1.0f;
-    m[6] = 0.0f;
-    m[7] = 0.0f;
-    m[8] = 0.0f;
-    m[9] = 0.0f;
-    m[10] = 1.0f;
-    m[11] = 0.0f;
-    m[12] = 1.0f;
-    m[13] = 1.0f;
-    m[14] = 1.0f;
+    const uint32_t one = 0x3f800000;
+    uint32_t matrix[15];
+    matrix[0] = one;
+    matrix[1] = 0;
+    matrix[2] = 0;
+    matrix[3] = 0;
+    matrix[4] = 0;
+    matrix[5] = one;
+    matrix[6] = 0;
+    matrix[7] = 0;
+    matrix[8] = 0;
+    matrix[9] = 0;
+    matrix[10] = one;
+    matrix[11] = 0;
+    matrix[12] = one;
+    matrix[13] = one;
+    matrix[14] = one;
 
-    paintcanvas_ext_dr_setwvm(this, abuf);
-    if (*g_dr_flag_79368 == 0) {
-        paintcanvas_ext_dr_glLineWidth(1.0f);
-        paintcanvas_ext_dr_glcap(this->engine, 0xde1, 0);
-        paintcanvas_ext_dr_glVertexPointer(2, 0x1406, 0, this->lineVerts);
-        paintcanvas_ext_dr_glColorMask(this->engine, 0x8074, 1);
-        paintcanvas_ext_dr_glColorMask(this->engine, 0x8078, 0);
-        paintcanvas_ext_dr_glColorMask(this->engine, 0x8075, 0);
-        paintcanvas_ext_dr_glColorMask(this->engine, 0x8076, 0);
-        paintcanvas_ext_dr_glDrawArrays(2, 0, 4);
-        paintcanvas_ext_dr_glcap(this->engine, 0xde1, 1);
+    this->SetWorldViewMatrix(reinterpret_cast<const AbyssEngine::AEMath::Matrix &>(matrix));
+    if (*reinterpret_cast<const unsigned char *>(&g_android_gp_is_linked) == 0) {
+        glLineWidth(1.0f);
+        this->engine->GlEnable(0xde1, false);
+        glVertexPointer(2, 0x1406, 0, this->lineVerts);
+        this->engine->AEClientState(0x8074, true);
+        this->engine->AEClientState(0x8078, false);
+        this->engine->AEClientState(0x8075, false);
+        this->engine->AEClientState(0x8076, false);
+        glDrawArrays(2, 0, 4);
+        this->engine->GlEnable(0xde1, true);
     } else {
-        paintcanvas_ext_dr_drawline2d(this->engine, this->lineVerts, 4, true);
+        this->engine->DrawLine2D(this->lineVerts, 4, true);
     }
 }
 

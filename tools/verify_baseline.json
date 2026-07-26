@@ -1,7 +1,7 @@
 {
  "verify": {
   "byte_exact": 1174,
-  "linked_exact": 2694,
+  "linked_exact": 2695,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
@@ -221,7 +221,6 @@
   "_Z24_mtw_FModSound_setVolumePvf",
   "_Z24_mtw_Layout_OnTouchBeginPvi",
   "_Z24liw_set_buildShipPreviewPvS_S_",
-  "_Z24paintcanvas_ext_dr_glcapPvji",
   "_Z24paintcanvas_ext_get_gravPv",
   "_Z25AEMath_MatrixRotateVectorPN11AbyssEngine6AEMath6VectorEPKS1_",
   "_Z25ChoiceWindow_setNotice_oiP12ChoiceWindowi",
@@ -341,7 +340,6 @@
   "_Z30paintcanvas_ext_dr2_mtx_assignPvS_",
   "_Z30paintcanvas_ext_dr2_setscalingPvfff",
   "_Z30paintcanvas_ext_dr3_mtx_assignPvS_",
-  "_Z30paintcanvas_ext_dr_glColorMaskPvji",
   "_Z30paintcanvas_ext_dss2_mtx_muleqPvS_",
   "_Z30paintcanvas_ext_dt2_mtx_getinvPvS_",
   "_Z30paintcanvas_ext_gsp2_mtx_muleqPvS_",

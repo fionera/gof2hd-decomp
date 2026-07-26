@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.26,
   "byte_exact": 1174,
-  "linked_exact": 2694,
-  "fuzzy_perfect": 2694,
+  "linked_exact": 2695,
+  "fuzzy_perfect": 2695,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1400,20 +1400,20 @@
    "usize": 348
   },
   {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 7.1,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
+  },
+  {
    "name": "_ZN11AbyssEngine13CurveGetValueEyPNS_5CurveE",
    "pct": 7.2,
    "byte": false,
    "linked": false,
    "osize": 398,
    "usize": 282
-  },
-  {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.3,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
   },
   {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
@@ -2448,20 +2448,20 @@
    "usize": 58
   },
   {
-   "name": "_ZN5Level8renderBGEi",
-   "pct": 16.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1320,
-   "usize": 1220
-  },
-  {
    "name": "_ZN10ModStation8OnUpdateEv",
    "pct": 16.4,
    "byte": false,
    "linked": false,
    "osize": 3652,
    "usize": 2212
+  },
+  {
+   "name": "_ZN5Level8renderBGEi",
+   "pct": 16.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1320,
+   "usize": 1220
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager12OnKeyReleaseEi",
@@ -12776,14 +12776,6 @@
    "usize": 220
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas13DrawRectangleEiiii",
-   "pct": 82.9,
-   "byte": false,
-   "linked": false,
-   "osize": 364,
-   "usize": 336
-  },
-  {
    "name": "_ZN11TouchButton19replaceTextKeepSizeERKN11AbyssEngine6StringE",
    "pct": 83.0,
    "byte": false,
@@ -17902,6 +17894,14 @@
    "linked": true,
    "osize": 36,
    "usize": 36
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas13DrawRectangleEiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 364,
+   "usize": 364
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13DrawTextLinesEjP5ArrayIPNS_6StringEEii",
