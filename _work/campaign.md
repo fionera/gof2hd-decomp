@@ -2,6 +2,109 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-26k (waves 53–54 — shader recovery and wrong-callee sweep)
+
+Net from the wave-52 checkpoint: avg **77.85->77.90**, byte
+**1161 (=)**, linked **2622->2624 (+2)**, imports **619->612 (-7)**,
+verify extra **35 (=)**, sodiff allowed extras **52 (=)**,
+stub/missing/wrong_type **0/0/0**, parity clean. Seven passes were linked,
+directly verified, ratcheted, baseline-locked, and committed serially by the
+controller. Disjoint internal GPT-5.6 Sol workers at medium reasoning did the
+Ghidra analysis and C++ authoring; workers did not build, gate, ratchet,
+change shared reports/baselines/docs, or commit.
+
+Landed passes, in order:
+
+- `df529f2e` `BumpShaderParticle::Init`: **97.0->100% linked**,
+  388/388 bytes; linked **2622->2623**. Restored six attributes, thirteen
+  uniforms, the sibling field remap, and both exact inline GLSL blobs.
+- `cf1fdbd1` `ListItemWindow::update`: **45.7->77.0%**,
+  352/300 -> 352/352 bytes; avg **77.85->77.86**, imports **619->618**.
+  Restored real Matrix-by-value rotation/scaling calls and addon transform.
+- `5807863a` Explosion class batch:
+  `render` **41.2->63.3%** (388/424 -> 388/368),
+  `start(Vector,Vector)` **48.9->49.8%** (396/384 -> 396/380), and
+  `update(int,TargetFollowCamera*)` retained **55.4%** at 440/440 with its
+  real callee; imports **618->614**.
+- `ffd8b928` CutScene batch:
+  `initialize` **27.5->47.7%** (1088/936 -> 1088/1052) and
+  `replacePlayerShip` **59.2->82.2%** (288/276 -> 288/264);
+  avg **77.86->77.87**.
+- `3ebb4319` MGame small wrong-callee batch:
+  `OnResume` **34.3->100% linked** at 52/52 and
+  `OnSuspend` **76.9->88.4%** (192/176 -> 192/196);
+  linked **2623->2624**, avg **77.87->77.89**, imports **614->612**.
+- `707856b7` `RocketGun::seekEnemy`: **40.2->73.2%**,
+  332/356 -> 332/340 bytes, with the exact original 44-byte frame and
+  three physical Vector slots.
+- `dfc9a8d4` `MovingStars::update`: **22.1->49.5%**,
+  1356/1068 -> 1356/1352 bytes; avg **77.89->77.90**. Removed all six
+  invented integer-to-float calls in the method and restored the transform
+  and respawn logic.
+
+High-value verified facts:
+
+- BumpShaderParticle's original interface is six attributes plus thirteen
+  uniforms. The linked vertex blob is 1223 bytes with SHA-256
+  `b3111eac32e811247b3a993fbd7af5755e3b0e81a501c6f69645061dfc0807e9`;
+  the fragment blob is 1181 bytes with SHA-256
+  `89dc30ae67ef2d4c5fc79861e53691b2cb6db643fef90c35655206c785bb6391`.
+- `ListItemWindow::update` uses `shipTransform @ +0x8c`,
+  `addonTransform @ +0x90`, and rotation `(0, previewAngle, 0)`. Its
+  `OnTouchBegin` residual is an exclusive layout problem: original
+  x/y/width are `+0x64/+0x68/+0x6c`, current named fields
+  `+0x5c/+0x60/+0x64`.
+- Explosion uses the real reference-return Matrix operations and
+  `AEMath::VectorLength`. Keeping `PaintCanvas**` improved register
+  allocation, but `start(Vector,Vector)` still places the Matrix hidden
+  return at `sp+12` instead of original `sp+8`; two retries were exhausted.
+- CutScene mode 2 uses perspective `0.92, 200, 200000`, random bounds
+  20000/60000, rotation `-pi/4`, and enemy Y values -30/+50. Mode 23 uses
+  `0.8, 200, 100000`, rotation `+pi/8`, and translation 300/700/3000.
+  Mode 4 uses `1.2, 200, 48000`.
+- `MGame::OnResume` is the real
+  `FModSound::tryToStopMusicForBGMusic()` / `setVolume(1,float)` path;
+  `OnSuspend` begins with `Globals::recordHandler->saveOptions()` and
+  tail-calls `Hud::releaseAllKeys()`.
+- `RocketGun::seekEnemy` calls exported `AEMath::VectorNormalize` three
+  times. Original stack slots are enemy position `sp+4`, target/final
+  velocity `sp+16`, normalized intermediates `sp+28`, and canary `sp+40`.
+- MovingStars literal-pool constants are spawn base -500, depth 4500,
+  bounds -70/500/-500/70, speed/velocity 1000, respawn depth 20000, and
+  random bounds 20000/18000/500. Its remaining 168-vs-160 frame difference
+  is backend stack-object ordering after two legal retries.
+
+Deferred and requeue findings:
+
+- New self-contained notes:
+  `_work/reconstructions/ListItemWindow-OnTouchBegin.md`,
+  `MGame-OnSuspend.md`, `RocketGun-seekEnemy.md`, and
+  `MovingStars-update.md`. Do not repeat their exhausted body-only shapes.
+- Requeue ListItemWindow only as a complete exclusive header-layout pass;
+  blind padding before x/y/width would shift already verified later fields.
+- Requeue `MGame::OnSuspend` only with exclusive reconciliation of
+  `sizeof(MenuTouchWindow)` (original 0x240, current 0x23c) and the
+  `PlayerEgo::isDead()` return declaration (original bool pass-through,
+  current int-to-bool normalization).
+- Requeue RocketGun's target-selection residual only in an exclusive
+  KIPlayer layout pass: original enemy index is `+0x38`, current named
+  `field_0x34` is `+0x34`. The 1908-byte `RocketGun::update` still owns
+  three invented `VectorRotateToTarget` calls and should be decomposed by
+  the controller rather than assigned as an ordinary worker item.
+- MovingStars' remaining eight frame bytes are allocation order, not a
+  missing second Matrix. Forcing placement with volatility, placement-new,
+  or artificial uses is rejected.
+- Likely next disjoint tier-2 candidates after fresh direct diffs:
+  the MGame `startJumpScene`/`updateJumpScene` fake `FModSound_setProp`
+  family, `Layout::reload` TouchButton constructor shims, and cautious
+  per-function ParticleSystemManager cleanup. Keep monster methods excluded.
+
+Tier position: tier 1 remains exhausted (`stub_zero_size 0`). Tier 2 remains
+active with **612** pinned imports; tier 3 same-size near misses is also
+active. No workers or stashes are in flight. The worktree is clean except
+the pre-existing untracked `.claude/`, which was not touched. Resume by
+re-triaging current fake imports and direct diffs. Run only one orchestrator.
+
 ## Session 2026-07-26j (waves 35–52 — de-shims, scheduling, and layout recovery)
 
 Net from the wave-34 checkpoint: avg **77.64->77.85**, byte
