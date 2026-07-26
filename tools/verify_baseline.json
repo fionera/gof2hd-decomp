@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1161,
-  "linked_exact": 2624,
+  "linked_exact": 2628,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.9,
+  "avg_match": 77.93,
   "compared": 4523
  },
  "imports": [
@@ -70,8 +70,6 @@
   "_Z16Station_getIndexz",
   "_Z16String_printImplPKc",
   "_Z16_liw_render_tailPviiS_",
-  "_Z16_psm_meshRender2Pvj",
-  "_Z16_psm_meshRender4Pvjjj",
   "_Z16liw_set_fillRowsPvS_S_ib",
   "_Z16ndk23_renderstepii",
   "_Z17AERandom_nextIntBii",
@@ -119,8 +117,6 @@
   "_Z18Status_replaceHashz",
   "_Z18_mtw_draw_mainMenuPv",
   "_Z18_mtw_draw_missionsPv",
-  "_Z18_psm_spriteRender2Pvj",
-  "_Z18_psm_spriteRender4Pvjjj",
   "_Z19ChoiceWindow_set_oiP12ChoiceWindowii",
   "_Z19DialogueWindow_ctorz",
   "_Z19Mission_getType_otev",
@@ -251,7 +247,6 @@
   "_Z25_mtw_TouchButton_ctorFullPvS_iiiicc",
   "_Z25_mtw_TouchSlider_getValuePv",
   "_Z25_mtw_onTouchEnd_listStatePviii",
-  "_Z25_psm_constructAfterCameraPv",
   "_Z25paintcanvas_ext_dm_getposPv",
   "_Z25paintcanvas_ext_draw_meshPvS_",
   "_Z25paintcanvas_ext_get_accelPv",

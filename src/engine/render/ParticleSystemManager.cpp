@@ -18,36 +18,24 @@ void _psm_ArrayReleaseSprites(void *arr); // lint: void_ptr
 
 void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res); // lint: void_ptr
 
-void _psm_constructAfterCamera(void *self); // lint: void_ptr
-
 void _ips_emitManual(void *sys, float x, float y, float z); // lint: void_ptr
-
-void _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigned c); // lint: void_ptr
-
-void _psm_spriteRender2(void *canvas, unsigned a); // lint: void_ptr
 
 void _psm_arraySpriteCtor(void *arr); // lint: void_ptr
 
 void _psm_arraySpriteDtor(void *arr); // lint: void_ptr
 
-void _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned c); // lint: void_ptr
-
-void _psm_meshRender2(void *canvas, unsigned a); // lint: void_ptr
-
 ParticleSystemManager::ParticleSystemManager(
     PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet, unsigned short spriteTex,
-    bool spriteFlag, unsigned short meshTex, bool meshFlag) {
-    this->cameraSet = cameraSet;
-    this->canvas = canvas;
-
-    this->spriteUvId = 0xffff;
+    bool spriteFlag, unsigned short meshTex, bool meshFlag)
+    : canvas(canvas), cameraSet(cameraSet) {
     this->spriteTextureId = spriteTex;
+    this->spriteUvId = 0xffff;
     this->spriteBlendMode = 0;
     this->spriteUsesExtra = spriteFlag;
 
     new(&meshArray()) Array<ParticleSystemMesh *>();
-    this->meshUvId = 0xffff;
     this->meshTextureId = meshTex;
+    this->meshUvId = 0xffff;
     this->meshBlendMode = 0;
     this->meshUsesExtra = meshFlag;
 
@@ -57,18 +45,16 @@ ParticleSystemManager::ParticleSystemManager(
 ParticleSystemManager::ParticleSystemManager(
     PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet, unsigned short spriteTex,
     AbyssEngine::BlendMode spriteBlend, bool spriteFlag,
-    unsigned short meshTex, AbyssEngine::BlendMode meshBlend, bool meshFlag) {
-    this->cameraSet = cameraSet;
-    this->canvas = canvas;
-
+    unsigned short meshTex, AbyssEngine::BlendMode meshBlend, bool meshFlag)
+    : canvas(canvas), cameraSet(cameraSet) {
     this->spriteUvId = spriteTex;
     this->spriteTextureId = 0xffff;
     this->spriteBlendMode = spriteBlend;
     this->spriteUsesExtra = spriteFlag;
 
     new(&meshArray()) Array<ParticleSystemMesh *>();
-    this->meshUvId = meshTex;
     this->meshTextureId = 0xffff;
+    this->meshUvId = meshTex;
     this->meshBlendMode = meshBlend;
     this->meshUsesExtra = meshFlag;
 
@@ -216,7 +202,7 @@ void ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet cam) {
         return;
     this->cameraSet = cam;
     releaseSprites();
-    _psm_constructAfterCamera(this);
+    initSprites();
 }
 
 unsigned int ParticleSystemManager::addMeshSystem(AbyssEngine::AEMath::Matrix const *matrix,
@@ -282,9 +268,11 @@ unsigned long long ParticleSystemManager::emitManual(int handle, AbyssEngine::AE
 
 void ParticleSystemManager::renderSprites() {
     if (this->spriteTextureId != -1)
-        _psm_spriteRender2(this->canvas, this->spriteSystemId);
+        ParticleSystemSprite::render(this->canvas, this->spriteSystemId);
     else if (this->spriteUvId != -1)
-        _psm_spriteRender4(this->canvas, this->spriteSystemId, this->spriteMeshId, this->spriteBlendMode);
+        ParticleSystemSprite::render(
+            this->canvas, this->spriteSystemId, this->spriteMeshId,
+            static_cast<AbyssEngine::BlendMode>(this->spriteBlendMode));
 }
 
 void ParticleSystemManager::systemSetMatrix(int handle, AbyssEngine::AEMath::Matrix const *matrix) {
@@ -501,9 +489,11 @@ void ParticleSystemManager::resetSystem(int handle) {
 
 void ParticleSystemManager::renderMeshes() {
     if (this->meshTextureId != -1)
-        _psm_meshRender2(this->canvas, this->transformId);
+        ParticleSystemMesh::render(this->canvas, this->transformId);
     else if (this->spriteUvId != -1)
-        _psm_meshRender4(this->canvas, this->transformId, this->meshExtraId, this->meshBlendMode);
+        ParticleSystemMesh::render(
+            this->canvas, this->transformId, this->meshExtraId,
+            static_cast<AbyssEngine::BlendMode>(this->meshBlendMode));
 }
 
 void ParticleSystemManager::renderPost3d() {
