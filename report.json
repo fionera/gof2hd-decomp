@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.08,
+  "avg_match": 78.09,
   "byte_exact": 1167,
-  "linked_exact": 2669,
-  "fuzzy_perfect": 2669,
+  "linked_exact": 2670,
+  "fuzzy_perfect": 2670,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12222,14 +12222,6 @@
    "linked": false,
    "osize": 920,
    "usize": 912
-  },
-  {
-   "name": "_ZN9Explosion10setScalingEf",
-   "pct": 76.6,
-   "byte": false,
-   "linked": false,
-   "osize": 288,
-   "usize": 288
   },
   {
    "name": "_ZN11AbyssEngine6AEMath6VectordVERKS1_",
@@ -33222,6 +33214,14 @@
    "linked": true,
    "osize": 42,
    "usize": 42
+  },
+  {
+   "name": "_ZN9Explosion10setScalingEf",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 288,
+   "usize": 288
   },
   {
    "name": "_ZN9Explosion11peakReachedEv",

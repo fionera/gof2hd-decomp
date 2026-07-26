@@ -129,19 +129,18 @@ void Explosion::setScaling(float scale) {
         speed = 0.7f + (float) explosionRandom()->nextInt(0x3c) * 0.01f;
     }
 
-    PaintCanvas *canvas = explosionCanvas();
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationSpeed(speed);
+    PaintCanvas **canvas = Explosion_canvas;
+    ((Transform *) (*canvas)->TransformGetTransform(this->primaryMesh->transform))->SetAnimationSpeed(speed);
 
     secondary = this->secondaryMesh;
     if (secondary != 0) {
-        ((Transform *) canvas->TransformGetTransform(secondary->transform))->SetAnimationSpeed(speed);
+        ((Transform *) (*canvas)->TransformGetTransform(secondary->transform))->SetAnimationSpeed(speed);
     }
 
-    Array<AEGeometry *> *streaks = this->fireStreaks;
-    if (streaks != 0) {
-        for (uint32_t i = 0; i < streaks->size(); i++) {
-            AEGeometry *geometry = (*streaks)[i];
-            ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationSpeed(speed);
+    if (this->fireStreaks != 0) {
+        for (uint32_t i = 0; i < this->fireStreaks->size(); i++) {
+            AEGeometry *geometry = (*this->fireStreaks)[i];
+            ((Transform *) (*canvas)->TransformGetTransform(geometry->transform))->SetAnimationSpeed(speed);
         }
     }
 
