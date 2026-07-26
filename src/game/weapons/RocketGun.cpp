@@ -179,26 +179,21 @@ non_special:
 }
 
 void RocketGun::seekEnemy(int unused, int index) {
-    Vector rotated;
-    Vector toTarget;
-    Vector enemyPos;
-
-    Gun *gun = this->gun;
-    Array<Player *> *hasEnemies = (Array<Player *> *) gun->getEnemies();
+    Array<Player *> *hasEnemies = (Array<Player *> *) this->gun->getEnemies();
     Player *enemy = nullptr;
 
-    if (gun->owner == nullptr)
+    if (this->gun->owner == nullptr)
         goto fallback;
-    if (gun->isPlayerGun() != 0)
+    if (this->gun->isPlayerGun() != 0)
         goto fallback;
-    if (gun->owner == nullptr)
+    if (this->gun->owner == nullptr)
         goto fallback;
-    enemy = gun->owner;
+    enemy = this->gun->owner;
     if (enemy->getKIPlayer()->field_0x34 < 0)
         goto fallback;
-    if (gun->owner->getEnemies() == nullptr)
+    if (this->gun->owner->getEnemies() == nullptr)
         goto fallback;
-    enemy = gun->owner;
+    enemy = this->gun->owner;
     enemy = enemy->getEnemy(enemy->getKIPlayer()->field_0x34);
     goto have_enemy;
 
@@ -221,24 +216,20 @@ fallback:
 
 have_enemy:
     if (enemy != nullptr) {
-        Gun *g = this->gun;
-        enemyPos = enemy->getPosition();
-        Vector *muzzlePositions = (Vector *) g->positions;
-        Vector *muzzleVelocities = (Vector *) g->velocities;
-
-        toTarget = enemyPos - muzzlePositions[index];
-        VectorRotateToTarget(rotated, toTarget);
-
         Vector &steer = *(Vector *) &this->steerX;
-        steer = rotated;
-
-        VectorRotateToTarget(rotated, muzzleVelocities[index]);
-        steer -= rotated;
-        steer /= (this->turnRate * 20.0f);
-        rotated += steer;
-        VectorRotateToTarget(toTarget, rotated);
-        muzzleVelocities[index] = toTarget;
-        muzzleVelocities[index] *= g->pitchRate;
+        steer = AbyssEngine::AEMath::VectorNormalize(
+            enemy->getPosition() - ((Vector *) this->gun->positions)[index]);
+        {
+            Vector normalizedVelocity = AbyssEngine::AEMath::VectorNormalize(
+                ((Vector *) this->gun->velocities)[index]);
+            steer -= normalizedVelocity;
+            steer /= (this->turnRate * 20.0f);
+            normalizedVelocity += steer;
+            Vector newVelocity =
+                AbyssEngine::AEMath::VectorNormalize(normalizedVelocity);
+            ((Vector *) this->gun->velocities)[index] = newVelocity;
+            ((Vector *) this->gun->velocities)[index] *= this->gun->pitchRate;
+        }
     }
 }
 
