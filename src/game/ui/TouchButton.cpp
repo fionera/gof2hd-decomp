@@ -747,16 +747,16 @@ TouchButton::TouchButton(String const &text,
                          int a, int b, int c, int d,
                          unsigned char flags0, unsigned char flags1,
                          unsigned int spacing, int kerning) {
-    this->fontSpacing = kerning;
     this->fontId = spacing;
+    this->fontSpacing = kerning;
 
-    PaintCanvas *canvas = Globals::Canvas;
-    short prev = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
-    ((PaintCanvas *) (canvas))->FontSetSpacing(spacing, (short) kerning);
+    PaintCanvas **canvas = &Globals::Canvas;
+    int prev = (*canvas)->FontGetSpacing(this->fontId);
+    (*canvas)->FontSetSpacing(spacing, (short) kerning);
 
     this->init(text, 0xffffffffu, a, -1, -1, b, c, d, flags0, flags1);
 
-    ((PaintCanvas *) (canvas))->FontSetSpacing(spacing, prev);
+    (*canvas)->FontSetSpacing(spacing, prev);
 }
 
 TouchButton::TouchButton(int x, int y, String const &text, int p4, int p5, unsigned char p6) {

@@ -1570,7 +1570,7 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int ImageFontGetSpacing(ImageFont *font) {
+    short ImageFontGetSpacing(ImageFont *font) {
         short v = (font == 0) ? (short) 0 : font->spacing;
         return (int) v;
     }

@@ -36,7 +36,7 @@ namespace AbyssEngine {
     void ImageFontDrawString(ImageFont *font, const unsigned short *str, unsigned int len, int x, int y, PaintCanvas *canvas, Engine *engine, bool flag);
     void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int y, PaintCanvas *canvas, Engine *engine, bool flag);
     int ImageFontGetHeight(ImageFont *font);
-    int ImageFontGetSpacing(ImageFont *font);
+    short ImageFontGetSpacing(ImageFont *font);
     void ImageFontSetSpacing(ImageFont *font, short spacing);
     int ImageFontGetYOffset(ImageFont *font);
     void ImageFontSetYOffset(ImageFont *font, short yOffset);
@@ -4464,7 +4464,7 @@ void PaintCanvas::MeshCreate(unsigned short a, unsigned short b,
     out = result;
 }
 
-int PaintCanvas::FontGetSpacing(unsigned int index) {
+short PaintCanvas::FontGetSpacing(unsigned int index) {
     if (index < this->fonts.count) {
         AbyssEngine::ImageFont *font = (this->fonts.data_)[index];
         return AbyssEngine::ImageFontGetSpacing(font);

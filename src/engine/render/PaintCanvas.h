@@ -255,7 +255,7 @@ namespace AbyssEngine {
 
         void FontCreate(unsigned short resId, unsigned int &out, bool unused);
 
-        int FontGetSpacing(unsigned int index);
+        short FontGetSpacing(unsigned int index);
 
         void FontSetSpacing(unsigned int index, short spacing);
 

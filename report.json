@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.12,
-  "byte_exact": 1170,
-  "linked_exact": 2679,
-  "fuzzy_perfect": 2679,
+  "avg_match": 78.14,
+  "byte_exact": 1171,
+  "linked_exact": 2682,
+  "fuzzy_perfect": 2682,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1424,20 +1424,20 @@
    "usize": 282
   },
   {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
-  },
-  {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
    "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 1168,
    "usize": 864
+  },
+  {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -3046,14 +3046,6 @@
    "linked": false,
    "osize": 48,
    "usize": 52
-  },
-  {
-   "name": "_ZN11TouchButton4drawEv",
-   "pct": 21.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1376,
-   "usize": 1284
   },
   {
    "name": "_ZN12StatusWindow16getMedalHintTextEi",
@@ -5334,6 +5326,14 @@
    "linked": false,
    "osize": 704,
    "usize": 640
+  },
+  {
+   "name": "_ZN11TouchButton4drawEv",
+   "pct": 31.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1376,
+   "usize": 1280
   },
   {
    "name": "_ZN11AbyssEngine10Quaternion7ConvertERNS_6AEMath6MatrixE",
@@ -11736,14 +11736,6 @@
    "usize": 616
   },
   {
-   "name": "_ZN11AbyssEngine19ImageFontGetSpacingEPNS_9ImageFontE",
-   "pct": 72.7,
-   "byte": false,
-   "linked": false,
-   "osize": 12,
-   "usize": 12
-  },
-  {
    "name": "_ZN11AbyssEngine19ImageFontGetYOffsetEPNS_9ImageFontE",
    "pct": 72.7,
    "byte": false,
@@ -12966,22 +12958,6 @@
    "linked": false,
    "osize": 52,
    "usize": 48
-  },
-  {
-   "name": "_ZN11TouchButtonC1ERKN11AbyssEngine6StringEiiiihhji",
-   "pct": 84.3,
-   "byte": false,
-   "linked": false,
-   "osize": 204,
-   "usize": 204
-  },
-  {
-   "name": "_ZN11TouchButtonC2ERKN11AbyssEngine6StringEiiiihhji",
-   "pct": 84.3,
-   "byte": false,
-   "linked": false,
-   "osize": 204,
-   "usize": 204
   },
   {
    "name": "_ZN13RecordHandler27writeByteArrayAsOptionsFileEPai",
@@ -19944,6 +19920,14 @@
    "usize": 16
   },
   {
+   "name": "_ZN11AbyssEngine19ImageFontGetSpacingEPNS_9ImageFontE",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 12,
+   "usize": 12
+  },
+  {
    "name": "_ZN11AbyssEngine19ImageFontSetSpacingEPNS_9ImageFontEs",
    "pct": 100.0,
    "byte": true,
@@ -22216,6 +22200,14 @@
    "usize": 14
   },
   {
+   "name": "_ZN11TouchButtonC1ERKN11AbyssEngine6StringEiiiihhji",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 204,
+   "usize": 204
+  },
+  {
    "name": "_ZN11TouchButtonC1EiiRKN11AbyssEngine6StringEiih",
    "pct": 100.0,
    "byte": false,
@@ -22246,6 +22238,14 @@
    "linked": true,
    "osize": 236,
    "usize": 236
+  },
+  {
+   "name": "_ZN11TouchButtonC2ERKN11AbyssEngine6StringEiiiihhji",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 204,
+   "usize": 204
   },
   {
    "name": "_ZN11TouchButtonC2EiiRKN11AbyssEngine6StringEiih",
