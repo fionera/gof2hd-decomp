@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.03,
   "byte_exact": 1164,
-  "linked_exact": 2651,
-  "fuzzy_perfect": 2651,
+  "linked_exact": 2653,
+  "fuzzy_perfect": 2653,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14464,22 +14464,6 @@
    "usize": 56
   },
   {
-   "name": "_ZN13AutoPilotListC1EP5Level",
-   "pct": 95.9,
-   "byte": false,
-   "linked": false,
-   "osize": 760,
-   "usize": 760
-  },
-  {
-   "name": "_ZN13AutoPilotListC2EP5Level",
-   "pct": 95.9,
-   "byte": false,
-   "linked": false,
-   "osize": 760,
-   "usize": 760
-  },
-  {
    "name": "_ZN15MenuTouchWindow20setSkipButtonVisibleEb",
    "pct": 96.0,
    "byte": false,
@@ -23582,6 +23566,22 @@
    "linked": true,
    "osize": 88,
    "usize": 88
+  },
+  {
+   "name": "_ZN13AutoPilotListC1EP5Level",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 760,
+   "usize": 760
+  },
+  {
+   "name": "_ZN13AutoPilotListC2EP5Level",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 760,
+   "usize": 760
   },
   {
    "name": "_ZN13AutoPilotListD1Ev",

@@ -51,14 +51,13 @@ AutoPilotList::AutoPilotList(Level *level) {
         }
     }
 
-    this->width = 0;
     this->selected = 0;
-    unsigned char *font = (unsigned char *) Globals::font;
+    this->width = 0;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         if ((*this->entries)[i] != nullptr) {
             int w = Globals::Canvas->GetTextWidth(
-                        (unsigned int) (uintptr_t) font, *(*this->entries)[i]) + 0x13;
-            if (this->width < w)
+                        (unsigned int) (uintptr_t) Globals::font, *(*this->entries)[i]) + 0x13;
+            if (w > this->width)
                 this->width = w;
         }
     }
