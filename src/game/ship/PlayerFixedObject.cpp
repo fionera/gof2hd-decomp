@@ -810,7 +810,7 @@ void PlayerFixedObject::setDeadButSelectable() {
     AEGeometry *newGeom = this->wreckGeometry;
     this->geometry = newGeom;
     AbyssEngine::Transform *t = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(newGeom->transform);
-    t->SetAnimationRangeInTime(t->animationLength, 0);
+    t->SetAnimationRangeInTime(t->animationLength, t->animationLength);
 }
 
 int PlayerFixedObject::outerCollide(float x, float y, float z) {

@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.01,
+  "avg_match": 78.02,
   "byte_exact": 1163,
-  "linked_exact": 2647,
-  "fuzzy_perfect": 2647,
+  "linked_exact": 2648,
+  "fuzzy_perfect": 2648,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13128,14 +13128,6 @@
    "usize": 116
   },
   {
-   "name": "_ZN17PlayerFixedObject20setDeadButSelectableEv",
-   "pct": 84.4,
-   "byte": false,
-   "linked": false,
-   "osize": 88,
-   "usize": 88
-  },
-  {
    "name": "_zip_memdup",
    "pct": 84.4,
    "byte": false,
@@ -24974,6 +24966,14 @@
    "linked": true,
    "osize": 64,
    "usize": 64
+  },
+  {
+   "name": "_ZN17PlayerFixedObject20setDeadButSelectableEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 88,
+   "usize": 88
   },
   {
    "name": "_ZN17PlayerFixedObject25projectCollisionOnSurfaceERKN11AbyssEngine6AEMath6VectorE",
