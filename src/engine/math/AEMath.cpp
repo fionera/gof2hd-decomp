@@ -471,12 +471,7 @@ namespace AbyssEngine {
         }
 
         Matrix MatrixSetRotation(Matrix &matrix, const Vector &dir) {
-            Vector worldUp;
-            worldUp.x = 0.0f;
-            worldUp.y = 1.0f;
-            worldUp.z = 0.0f;
-
-            Vector right = VectorNormalize(VectorCross(worldUp, dir));
+            Vector right = VectorNormalize(VectorCross(Vector{0.0f, 1.0f, 0.0f}, dir));
             Vector up = VectorNormalize(VectorCross(dir, right));
             return MatrixSetRotation(matrix, right, up, dir);
         }

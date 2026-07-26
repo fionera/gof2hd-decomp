@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.07,
+  "avg_match": 78.08,
   "byte_exact": 1167,
-  "linked_exact": 2667,
-  "fuzzy_perfect": 2667,
+  "linked_exact": 2668,
+  "fuzzy_perfect": 2668,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12160,14 +12160,6 @@
    "usize": 216
   },
   {
-   "name": "_ZN11AbyssEngine6AEMath17MatrixSetRotationERNS0_6MatrixERKNS0_6VectorE",
-   "pct": 76.0,
-   "byte": false,
-   "linked": false,
-   "osize": 124,
-   "usize": 124
-  },
-  {
    "name": "_ZN11AbyssEngine21BumpRimCubeShader_new14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 76.1,
    "byte": false,
@@ -20374,6 +20366,14 @@
    "linked": true,
    "osize": 14,
    "usize": 14
+  },
+  {
+   "name": "_ZN11AbyssEngine6AEMath17MatrixSetRotationERNS0_6MatrixERKNS0_6VectorE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 124,
+   "usize": 124
   },
   {
    "name": "_ZN11AbyssEngine6AEMath17MatrixSetRotationERNS0_6MatrixERKNS0_6VectorES5_S5_",
