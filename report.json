@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.89,
+  "avg_match": 77.9,
   "byte_exact": 1161,
   "linked_exact": 2624,
   "fuzzy_perfect": 2624,
@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.4,
+   "pct": 7.3,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -3102,14 +3102,6 @@
    "linked": false,
    "osize": 1588,
    "usize": 1368
-  },
-  {
-   "name": "_ZN11MovingStars6updateEiN11AbyssEngine6AEMath6MatrixEbf",
-   "pct": 22.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1356,
-   "usize": 1068
   },
   {
    "name": "_ZN11AbyssEngine11BloomShaderD1Ev",
@@ -8024,6 +8016,14 @@
    "usize": 492
   },
   {
+   "name": "_ZN11MovingStars6updateEiN11AbyssEngine6AEMath6MatrixEbf",
+   "pct": 49.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1356,
+   "usize": 1352
+  },
+  {
    "name": "_ZN11TouchButton13touchedInsideEii",
    "pct": 49.5,
    "byte": false,
@@ -8697,7 +8697,7 @@
   },
   {
    "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.0,
+   "pct": 53.1,
    "byte": false,
    "linked": false,
    "osize": 2696,
