@@ -137,8 +137,8 @@ void Ship::removeAllCargo() {
 }
 
 void Ship::setCargo(Array<Item *> *cargo) {
-    this->currentLoad = 0;
     this->cargo = cargo;
+    this->currentLoad = 0;
     if (cargo != 0) {
         for (unsigned int i = 0; i < this->cargo->size(); i = i + 1) {
             this->currentLoad += this->cargo->data()[i]->getAmount();
