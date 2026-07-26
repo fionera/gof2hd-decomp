@@ -4,9 +4,9 @@
   "ours_functions": 4559,
   "compared": 4523,
   "avg_match": 77.99,
-  "byte_exact": 1162,
-  "linked_exact": 2639,
-  "fuzzy_perfect": 2639,
+  "byte_exact": 1163,
+  "linked_exact": 2640,
+  "fuzzy_perfect": 2640,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14232,14 +14232,6 @@
    "usize": 228
   },
   {
-   "name": "_ZN12WantedWindow25getRelativeScrollStartPosEv",
-   "pct": 92.9,
-   "byte": false,
-   "linked": false,
-   "osize": 48,
-   "usize": 48
-  },
-  {
    "name": "_ZN18ParticleSystemMesh6renderEPN11AbyssEngine11PaintCanvasEjjNS0_9BlendModeE",
    "pct": 92.9,
    "byte": false,
@@ -23566,6 +23558,14 @@
    "linked": true,
    "osize": 100,
    "usize": 100
+  },
+  {
+   "name": "_ZN12WantedWindow25getRelativeScrollStartPosEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 48,
+   "usize": 48
   },
   {
    "name": "_ZN12WantedWindow6updateEi",

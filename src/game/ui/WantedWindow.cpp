@@ -142,7 +142,7 @@ void WantedWindow::render3D() {
 float WantedWindow::getRelativeScrollStartPos() {
     int pos = this->scrollOffset;
     if (pos > 0) {
-        uint32_t u = 0x4650a903u;
+        uint32_t u = 0x00000000u;
         float f;
         __builtin_memcpy(&f, &u, sizeof(f));
         return f;
