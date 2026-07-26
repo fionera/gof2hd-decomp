@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.99,
   "byte_exact": 1163,
-  "linked_exact": 2640,
-  "fuzzy_perfect": 2640,
+  "linked_exact": 2641,
+  "fuzzy_perfect": 2641,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14512,14 +14512,6 @@
    "usize": 132
   },
   {
-   "name": "JNI_OnLoad",
-   "pct": 95.3,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 100
-  },
-  {
    "name": "_ZN11AbyssEngine6CameraC2Efffff",
    "pct": 95.5,
    "byte": false,
@@ -15086,6 +15078,14 @@
    "linked": true,
    "osize": 20,
    "usize": 20
+  },
+  {
+   "name": "JNI_OnLoad",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 100,
+   "usize": 100
   },
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetAchievementId",

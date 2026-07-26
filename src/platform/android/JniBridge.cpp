@@ -308,8 +308,8 @@ extern "C" void ndk23_handleAcceleration(float x, float y, float z) { // lint: e
 
 extern "C" jint JNI_OnLoad(JavaVM *vm, void * /*reserved*/) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
     // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
-    g_pVM = vm;
     JNIEnv *env = nullptr;
+    g_pVM = vm;
     if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_4) != JNI_OK) // lint: void_ptr (GetEnv requires void** out-param, JNI ABI)
         // lint: void_ptr (GetEnv requires void** out-param, JNI ABI)
         return -1;
