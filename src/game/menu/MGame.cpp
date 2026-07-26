@@ -42,14 +42,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/weapons/Radar.h"
 
-class Music;
-class Cfg;
-
-static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::sound->tryToStopMusicForBGMusic()); }
-
-void Music_resume(Music *m, int one, int v);
-
-
 namespace AbyssEngine {
     namespace AEMath {
         float VectorLength(const Vector &value);
@@ -93,15 +85,14 @@ void MGame::maneuverTouchEnd(int a, int b, void *p) { // lint: void_ptr -- expor
     self->maneuverActive = 0;
 }
 
-static Music **g_music;
-
-static Cfg **g_cfg;
-
 void MGame::OnResume() {
-    Music **mp = g_music;
-    if (*mp == 0) return;
-    if (FModSound_tryToStopMusicForBGMusic() != 0) return;
-    return Music_resume(*mp, 1, **(int **) g_cfg);
+    FModSound **holder = &Globals::sound;
+    FModSound *sound = *holder;
+    if (sound == 0)
+        return;
+    if (sound->tryToStopMusicForBGMusic() != 0)
+        return;
+    (*holder)->setVolume(1, *reinterpret_cast<float *>(Globals::options));
 }
 
 void MGame::maneuverTouchMove(int a, int b, void *p) { // lint: void_ptr -- exported method signature (Pv)
@@ -728,20 +719,18 @@ void MGame::OnUpdate() {
     this->successCheck();
 }
 
-static RecordHandler **g_record;
-
 static FModSound **g_fmod = &Globals::sound;
 
-void Level_onSuspend(...);
-
 void MGame::OnSuspend() {
-    if (*g_record != 0) ((RecordHandler *) (*g_record))->saveOptions();
+    RecordHandler *record = Globals::recordHandler;
+    if (record != 0)
+        record->saveOptions();
     ((MGame *) (this))->pauseSounds();
     if (this->pauseOpen == 0) {
         if (this->menuWindow == 0)
             this->menuWindow = new MenuTouchWindow(1);
-        this->pauseSnapshot = 1;
         this->pauseOpen = 1;
+        this->pauseSnapshot = 1;
         ((FModSound *) (*g_fmod))->pauseAllPlaying();
         this->player->PauseEngineSound();
         Array<KIPlayer *> *e = this->level->getEnemies();
@@ -756,7 +745,7 @@ void MGame::OnSuspend() {
         ((MenuTouchWindow *) (w))->setCutsceneMode(mode);
         this->menuTouchOpen = 1;
     }
-    return Level_onSuspend(this->hud);
+    this->hud->releaseAllKeys();
 }
 
 static inline int Station_getIndex(Station *s) { return s->getIndex(); }
@@ -2745,4 +2734,3 @@ int MGame::nextCamId(int cur) {
     }
     return id;
 }
-

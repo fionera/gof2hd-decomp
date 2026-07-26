@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1161,
-  "linked_exact": 2623,
+  "linked_exact": 2624,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.87,
+  "avg_match": 77.89,
   "compared": 4523
  },
  "imports": [
@@ -24,7 +24,6 @@
   "_Z11VectorScalePvf",
   "_Z11aeabi_idiv_ii",
   "_Z12Mat_identityPvPKv",
-  "_Z12Music_resumeP5Musicii",
   "_Z12PE_adp_applyP9PlayerEgo",
   "_Z12PE_adp_glideP9PlayerEgo",
   "_Z12PE_cft_placeP9PlayerEgoi",
@@ -45,7 +44,6 @@
   "_Z14PF_update_deadP13PlayerFighter",
   "_Z14Radio_draw_r2dP10ModStation",
   "_Z14_mtw_buildMenuPvi",
-  "_Z15Level_onSuspendz",
   "_Z15PE_adp_approachP9PlayerEgoPv",
   "_Z15PE_um_dodgeStepP9PlayerEgo",
   "_Z15Ship_setRace_oii",
