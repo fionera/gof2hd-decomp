@@ -1081,8 +1081,8 @@ int HangarWindow::highlightItem(ListItem *item) {
         if (this->selectedItem != item) {
             flag = item->isTextButton() ^ 1;
         }
-        this->selectedItem = item;
         this->sellConfirmPending = flag;
+        this->selectedItem = item;
         if (item->isShip() != 0) {
             this->selectedItem->ship->adjustPrice();
         }
