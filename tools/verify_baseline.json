@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1174,
-  "linked_exact": 2693,
+  "linked_exact": 2694,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 78.2,
+  "avg_match": 78.26,
   "compared": 4523
  },
  "imports": [
@@ -207,7 +207,6 @@
   "_Z23_mtw_Layout_OnTouchMovePvi",
   "_Z23paintcanvas_ctor_matrixPv",
   "_Z23paintcanvas_ext_mtx_mulPvPKvS_",
-  "_Z23paintcanvas_ext_set_wvmPv",
   "_Z24AERandom_nextInt_noboundi",
   "_Z24ChoiceWindow_set1_oiImplP12ChoiceWindowi",
   "_Z24ChoiceWindow_set6_oiImplP12ChoiceWindowiiiiii",

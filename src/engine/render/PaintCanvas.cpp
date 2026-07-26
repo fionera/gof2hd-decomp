@@ -378,8 +378,6 @@ void paintcanvas_ext_sprite_uv(unsigned int, float, float, float, float, void *)
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_set_wvm(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_convert_vbo(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_di2_restore(unsigned int flag, void *img); // lint: void_ptr (external symbol; mangling must match lib)
@@ -1867,8 +1865,8 @@ void PaintCanvas::SpriteSystemSetUv(unsigned int index, unsigned short sub,
     }
 }
 
-void PaintCanvas::SetWorldViewMatrix(const AbyssEngine::AEMath::Matrix &) {
-    return paintcanvas_ext_set_wvm(this->engine);
+void PaintCanvas::SetWorldViewMatrix(const AbyssEngine::AEMath::Matrix &matrix) {
+    return this->engine->SetWorldViewMatrix(matrix);
 }
 
 void PaintCanvas::CameraSetLocal(unsigned int index, const Matrix &matrix) {
