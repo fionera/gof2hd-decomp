@@ -50,10 +50,6 @@ static_assert(__builtin_offsetof(AudioStateView, soundEnabledFlag) == 0xf,
               "AudioStateView.soundEnabledFlag must be at +0xf");
 #endif
 
-// lint: void_ptr - free function defined in another TU; retyping the param would
-// change the referenced mangled symbol and break symbol parity / linking.
-void MatrixGetPosition(void *out, float *matrix); // lint: void_ptr (external symbol; param mangling load-bearing)
-
 static int gStopSoundIds[256];
 
 static int gShootSoundsByType[256];
@@ -563,15 +559,15 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->hullHit = 0;
     self->gammaHit = 0;
 
-    float tmp[3];
-    MatrixGetPosition(tmp, self->transform);
-    *(Vector *) self->position = *(Vector *) tmp;
+    Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
+        *reinterpret_cast<const Matrix *>(self->transform));
+    *(Vector *) self->position = tmp;
     self->enginePositionVec = (Vector *) (__INTPTR_TYPE__) -1;
 }
 
 Vector Player::getPosition() {
-    Vector out;
-    MatrixGetPosition(&out, this->transform);
+    Vector out = AbyssEngine::AEMath::MatrixGetPosition(
+        *reinterpret_cast<const Matrix *>(this->transform));
     return out;
 }
 
@@ -1341,11 +1337,11 @@ void Player::shoot(int a, int b, long long pos, bool flag, Matrix mat) {
                     ((Gun *) (g))->shoot(mat, flag, false);
                     self->flShake = self->flShake + k_shoot_inc;
                     if (self->playShootSoundFlag != 0) {
-                        float tmp[3];
-                        MatrixGetPosition(tmp, self->transform);
+                        Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
+                            *reinterpret_cast<const Matrix *>(self->transform));
                         Gun *g2 = self->guns->data()[b]->data()[i];
                         self->playShootSound(g2->itemIndex, g2->weaponType,
-                                             reinterpret_cast<Vector *>(tmp),
+                                             &tmp,
                                              g2->field_0xb0);
                     }
                     g->timer = 0;
@@ -1381,11 +1377,11 @@ void Player::shoot(int a, long long pos, bool flag, Matrix mat) {
                     Gun *g2 = self->guns->data()[a]->data()[i];
                     g2->timer = 0;
                     if (self->playShootSoundFlag != 0 && g2->field_0x89 != 0) {
-                        float tmp[3];
-                        MatrixGetPosition(tmp, self->transform);
+                        Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
+                            *reinterpret_cast<const Matrix *>(self->transform));
                         Gun *g3 = self->guns->data()[a]->data()[i];
                         self->playShootSound(g3->itemIndex, g3->weaponType,
-                                             reinterpret_cast<Vector *>(tmp),
+                                             &tmp,
                                              g3->field_0xb0);
                     }
                 }
@@ -1452,10 +1448,10 @@ void Player::PlayEngineSound(int unused, Vector *vec) {
     (void) unused;
     this->enginePositionVec = vec;
     if (reinterpret_cast<AudioStateView *>(Globals::appManager)->soundEnabledFlag != 0) {
-        float pos[12];
-        MatrixGetPosition(pos, this->transform);
+        Vector pos = AbyssEngine::AEMath::MatrixGetPosition(
+            *reinterpret_cast<const Matrix *>(this->transform));
         FMOD::Event *ev = ((FModSound *) Globals::sound)->updateEvent3DAttributes(
-            this->engineEvent, 0, (Vector *) this->enginePositionVec, (Vector *) pos, false);
+            this->engineEvent, 0, (Vector *) this->enginePositionVec, &pos, false);
         this->engineEvent = ev;
         this->engineSoundPlaying = 1;
     }
