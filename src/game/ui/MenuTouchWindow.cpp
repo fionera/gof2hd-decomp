@@ -796,7 +796,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
 void MenuTouchWindow::startValkyrie() {
     Status *const *statusHolder = &Globals::status;
     Globals::status->resetGame();
-    for (int i = 0x2d; i != 0; i--)
+    for (int i = 0; i < 0x2d; ++i)
         (*statusHolder)->nextCampaignMission(false);
 
     Status *status = *statusHolder;
@@ -835,7 +835,7 @@ void MenuTouchWindow::startValkyrie() {
     OptionsRecord *opt = (OptionsRecord *) Globals::hints;
     Achievements *ach = Globals::achievements;
     OptionsRecord *optB = (OptionsRecord *) Globals::options;
-    ((Status *) *statusHolder)->field_8c = 0x1a0a;
+    ((Status *) *statusHolder)->field_84 = 0x1a0a;
     opt->flag_word_0x8 = 0x101;
     reinterpret_cast<uint16_t &>(opt->flag_word_0xd[0]) = 0x101;
     opt->flag_word_0x1c = 0x101;
@@ -858,9 +858,8 @@ void MenuTouchWindow::startValkyrie() {
     (*statusHolder)->setKills(0xc5);
     Globals::sound->stop(Globals::sound->currentMusicEvent);
 
-    ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) Globals::appManager;
     optB->fadeValue = this->fadeValue;
-    thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
+    Globals::appManager->SetCurrentApplicationModule(5);
 }
 
 

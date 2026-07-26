@@ -12976,14 +12976,6 @@
    "usize": 54
   },
   {
-   "name": "_ZN15MenuTouchWindow13startValkyrieEv",
-   "pct": 84.5,
-   "byte": false,
-   "linked": false,
-   "osize": 612,
-   "usize": 612
-  },
-  {
    "name": "_ZN11AbyssEngine16AESoundRessource4stopEv",
    "pct": 84.8,
    "byte": false,
@@ -13382,6 +13374,14 @@
    "linked": false,
    "osize": 96,
    "usize": 96
+  },
+  {
+   "name": "_ZN15MenuTouchWindow13startValkyrieEv",
+   "pct": 89.2,
+   "byte": false,
+   "linked": false,
+   "osize": 612,
+   "usize": 612
   },
   {
    "name": "_ZN6Status29getFreighterMissionStationBitEi",
