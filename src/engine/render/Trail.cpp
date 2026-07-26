@@ -145,12 +145,12 @@ void Trail::update(const Matrix &a, const Matrix &b, const Vector &v) {
 
 void Trail::setWidth(int width) {
     int delta = this->width - width;
-    PaintCanvas *canvas = Globals::Canvas;
+    PaintCanvas **canvas = &Globals::Canvas;
     for (int vertex = 0; vertex < (this->segments + 1) * 2; ++vertex) {
         int *point = this->points + vertex * 3;
         int x = point[0] + delta;
         point[0] = x;
-        canvas->MeshSetPoint(this->meshId, (uint16_t) vertex, (float) x, (float) point[1], (float) point[2]);
+        (*canvas)->MeshSetPoint(this->meshId, (uint16_t) vertex, (float) x, (float) point[1], (float) point[2]);
     }
 
     this->width = width;

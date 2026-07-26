@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.03,
+  "avg_match": 78.04,
   "byte_exact": 1164,
-  "linked_exact": 2654,
-  "fuzzy_perfect": 2654,
+  "linked_exact": 2655,
+  "fuzzy_perfect": 2655,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13110,14 +13110,6 @@
    "linked": false,
    "osize": 612,
    "usize": 612
-  },
-  {
-   "name": "_ZN5Trail8setWidthEi",
-   "pct": 84.7,
-   "byte": false,
-   "linked": false,
-   "osize": 120,
-   "usize": 120
   },
   {
    "name": "_ZN11AbyssEngine16AESoundRessource4stopEv",
@@ -28702,6 +28694,14 @@
    "linked": true,
    "osize": 44,
    "usize": 44
+  },
+  {
+   "name": "_ZN5Trail8setWidthEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 120,
+   "usize": 120
   },
   {
    "name": "_ZN5Trail9translateERKN11AbyssEngine6AEMath6VectorE",
