@@ -2,6 +2,117 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-25i (waves 18–34 — typed calls, ABI repairs, and near misses)
+
+Net from the wave-17 checkpoint: avg **77.48->77.64**, byte
+**1159->1160 (+1)**, linked **2566->2587 (+21)**, imports
+**684->653 (-31)**, verify extra **35 (=)**, sodiff allowed extras **52 (=)**,
+stub/missing/wrong_type **0/0/0**, parity clean. All 31 landed source passes
+were independently linked, directly verified, ratcheted, baseline-locked, and
+committed by the controller. The fleet used disjoint internal GPT-5.6 Sol
+workers at medium/low reasoning; workers never built, gated, ratcheted, or
+committed.
+
+Landed passes, in order:
+
+- Wrong-callee/typed-export sweep:
+  `0fc204cc` KIPlayer engine-sound calls, `492c1168` ResourceTexture String
+  construction, `7bf8c8e8` LODManager camera calls, `aa337cd7` AMeshMerger
+  canvas call, `ebcdea13` PlayerAsteroid transform call, `76d91335` Trail
+  canvas calls, `d96167ba` MovingStars velocity conversion, `b650f038`
+  HangarList BluePrint call, `6a8c9f26` StarSystem position call,
+  `6f559390` Transform four-argument frustum call, `5922fa5d` PlayerGasCloud
+  normalize call, `6fc88b7c` MeshMerger canvas call, `323ebc2e` PaintCanvas
+  real GLES/Engine clears, `ca80a343` HangarWindow BluePrint call,
+  `d383df1e` PlayerCreature base call, `648b6c0d` BeamGun canvas call, and
+  `b78d01c0` ParticleSystemManager typed operations. Together with the
+  adjacent AEGeometry reconstruction below, this phase reduced imports
+  **684->662** and added two linked-exact functions.
+- Reconstruction/source-shape passes:
+  `d8cd8374` AEGeometry::setPosition became linked-exact;
+  `700d023b` ModStation::OnRelease became linked-exact;
+  `f287777c` ScrollTouchBox::OnTouchEnd added the sole new byte-exact match;
+  `1f59a6f5` ParticleSystemMesh::reset became linked-exact;
+  `dcfd55ac` Transform::Update reconstructed timing/bounds and became
+  linked-exact; `1afe080f` String::ToUpperCase restored its receiver return
+  and became linked-exact.
+- `75e0df1b` PlayerEgo::shake used the binary literal-pool divisor
+  **40000.0f**, becoming linked-exact.
+- `76a02b61` AEGeometry typed matrix rotation/scaling calls made setRotation,
+  rotate, and setScaling linked-exact; linked **2574->2577**, imports
+  **662->660**.
+- `95d3b8ee` ParticleSystemManager reconstructed add/update/init/render paths:
+  six methods became linked-exact; linked **2577->2583**, avg
+  **77.56->77.63**, imports **660->655**. Its backing flags at
+  **+0x38/+0x60** are real `bool` fields; the type correction preserved all
+  offsets and class size.
+- `2392578f` ImageFactory::createChar(int) restored the unmangled `int *`
+  return ABI and became linked-exact; `39fe8859` Hud::touchEnd restored the
+  accumulator/index initialization order and became linked-exact.
+- `3f91c964` Mission::visible and isVisible changed from `uint8_t` to `bool`
+  at the unchanged **+0x74** offset (Mission size **120**), repairing
+  RecordHandler::writeMission **98.8->99.4** without a rounded global change.
+- `bc58bea8` SimpleRefractionShader::UpdateMeshData locally interpreted
+  framebuffer dimensions as signed 32-bit values; **98.9->100% linked**.
+- `209d8be0` PaintCanvas::GetScreenPosition restored the real Matrix-overload
+  call and its unmangled `int` return ABI. The Vector wrapper became
+  **97.6->100% linked**, the Matrix body improved **15.9->24.0**, and the two
+  obsolete shim imports disappeared (**655->653**).
+
+Verified source/ABI facts:
+
+- Unmangled return types are a recurring high-value repair: String::ToUpperCase,
+  ImageFactory::createChar(int), Mission::isVisible, and the PaintCanvas
+  Matrix overload all required the binary return ABI, not casts around a wrong
+  declaration.
+- Clang `-Oz` may emit adjacent stores or zero initializations in the reverse
+  of source order. The Hud and ParticleSystemMesh matches came from changing
+  source declaration/store order, not adding barriers.
+- The PaintCanvas Matrix overload genuinely consumes its Matrix reference:
+  original ABI is hidden Vector sret in `r0`, Matrix in `r1`, source Vector in
+  `r2`; every failure returns 0 through one result register and only the final
+  in-bounds path returns 1.
+- Literal-pool constants remain authoritative. The shake divisor and
+  ScrollTouchBox damping value were derived from the Android binary, not the
+  v1 logic oracle.
+
+Deferred/requeue findings:
+
+- Self-contained notes now exist for Item::combineItems (**99.2**),
+  StatusWindow::update (**98.5**), Ship::setMods (**98.4**),
+  Sparks::explode(int,int,int) (**97.8**), Ship::removeCargo(int,int)
+  (**97.9**), and AbyssEngine::TransformRelease (**97.1**). These are
+  scheduling-only after their legal local forms were exhausted; do not repeat
+  the attempts recorded in `_work/reconstructions/`.
+- String::ReplaceString (**99.1**), RecordHandler::writeAgent (**99.6**),
+  MGame::dialogueEvent (**98.6**), PlayerFighter::setMissionCrate (**97.3**),
+  ImageFactory::loadChar (**97.6**), and ImageFactory::createChar(bool,int)
+  (**98.1**) retain MachineSink or relocated-pool-only residuals.
+- CheatHandler remains an **exclusive TU-membership merge**: the original
+  CheatCode.cpp owns both CheatCode and CheatHandler, causing original C2/D2
+  calls where the split reconstruction emits C1/D1. Do not direct-call
+  constructors/destructors; merge per `tu_mapping.md`, drain the fleet, and
+  gate byte neutrality.
+- PaintCanvas's 604-byte Matrix GetScreenPosition body is still only
+  **24.0%** and retains several `gsp2` reconstruction shims. The real initial
+  MatrixTransformVector and return paths are now established; continue it as
+  a dedicated same-class reconstruction, never by reverting the typed wrapper.
+  Its gravity multiplier pool literal is verified as
+  **1.5707963705062866**; the current placeholder
+  `g_gsp2_gravscale_8bfa8 = 0` remains to be replaced in that dedicated pass.
+- StarMap layout blockers from the previous checkpoint remain exclusive:
+  path/pathFinder original offsets **0xa0/0x50** versus current
+  **0x94/0x44**, and missionChangedFlag original **0xdc** versus current
+  **0xd8**.
+
+All campaign-owned wave-20 through wave-33 stash candidates have now been
+individually accepted, rejected, or documented; no source result exists only
+in a stash. Tier 1 remains exhausted (`stub_zero_size 0`). Tier 2 remains
+active with **653** pinned imports, followed by tier-3 same-size near misses.
+No workers are in flight. Resume by re-triaging current imports/near misses;
+perform the CheatHandler TU merge or StarMap layout work only under an
+exclusive fleet drain.
+
 ## Session 2026-07-25h (wave 17 — GPT-5.6 Sol wrong-callee sweep)
 
 Net from the wave-16D checkpoint: avg **77.34->77.48**, byte **1159 (=)**, linked
