@@ -167,14 +167,14 @@ unsigned short TB_frameId(int useAltSkin, unsigned int kind, int slot);
 
 static const char g_TB_emptyStr[] = "";
 
-int TouchButton::init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x,
-                      int y, unsigned char flags0, unsigned char flags1) {
+int TouchButton::init(String const &text, unsigned int subId, int kind, int achId, int achStage, int x, int y,
+                      int width, unsigned char flags0, unsigned char flags1) {
     PaintCanvas *canvas = Globals::Canvas;
 
     this->kind = (int) kind;
     this->visible = 1;
     this->text = text;
-    this->subId = achStage;
+    this->subId = subId;
     this->textColor = -1;
     this->requestedWidth = width;
     this->field_0x0 = 0;
@@ -302,7 +302,7 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
         }
         case 0x10: {
             unsigned int frameH;
-            this->imgFrameL = achStage;
+            this->imgFrameL = subId;
             ((PaintCanvas *) (canvas))->Image2DCreate(0xbb9, frameH);
             this->imgFrameTL = frameH;
             {
@@ -344,7 +344,7 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
             goto wide_text_layout;
         }
         case 0x13:
-            this->imgFrameL = achStage;
+            this->imgFrameL = subId;
             this->imgFrameTL = (int) this->image;
             {
                 this->height = ((PaintCanvas *) (canvas))->GetImage2DHeight(0);
@@ -754,4 +754,3 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, unsigned char f
     String tmp(g_TB_emptyStr, false);
     this->init(tmp, kind, a, -1, -1, b, c, 0, flag, 0x44);
 }
-
