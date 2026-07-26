@@ -14488,14 +14488,6 @@
    "usize": 52
   },
   {
-   "name": "_ZN20ParticleSystemSprite6renderEPN11AbyssEngine11PaintCanvasEjjNS0_9BlendModeE",
-   "pct": 95.0,
-   "byte": false,
-   "linked": false,
-   "osize": 156,
-   "usize": 156
-  },
-  {
    "name": "_ZN12HangarWindowD1Ev",
    "pct": 95.1,
    "byte": false,
@@ -14702,6 +14694,14 @@
    "linked": false,
    "osize": 38,
    "usize": 34
+  },
+  {
+   "name": "_ZN20ParticleSystemSprite6renderEPN11AbyssEngine11PaintCanvasEjjNS0_9BlendModeE",
+   "pct": 96.7,
+   "byte": false,
+   "linked": false,
+   "osize": 156,
+   "usize": 156
   },
   {
    "name": "_ZN10AEGeometry17setLodChildMeshesEPt",

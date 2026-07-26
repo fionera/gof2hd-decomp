@@ -58,13 +58,13 @@ void ParticleSystemSprite::release() {
 }
 
 void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle, uint32_t texture, BlendMode blend) {
-    char mbuf[60];
-    float *m = (float *) mbuf;
     if (handle == 0xffffffffu)
         return;
 
     canvas->SetTexture(texture, 0xffffffffu);
     canvas->SetBlendMode(blend);
+
+    float m[15];
 
     m[0] = 1.0f;
     m[1] = 0.0f;
