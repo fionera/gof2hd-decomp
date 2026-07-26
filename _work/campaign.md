@@ -2,6 +2,92 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-26l (waves 55–57 — jump scenes, de-shims, and exact near misses)
+
+Net from the wave-54 checkpoint: avg **77.90->77.97**, byte
+**1161 (=)**, linked **2624->2630 (+6)**, imports **612->601 (-11)**,
+verify extra **35 (=)**, sodiff allowed extras **52 (=)**, and
+stub/missing/wrong_type **0/0/0**. Six passes were linked, directly
+verified, ratcheted, baseline-locked, and committed serially by the
+controller. Disjoint internal GPT-5.6 Sol workers at medium/low reasoning
+performed the Ghidra analysis and C++ authoring; no Claude Workflow was used.
+Workers did not build, gate, ratchet, update shared reports/docs/baselines, or
+commit.
+
+Landed passes, in order:
+
+- `c9a078db` ParticleSystemManager constructor/render batch: both constructor
+  aliases became **100% linked**, linked **2624->2628**, avg
+  **77.90->77.93**, imports **612->607**. Five fake imports became the real
+  `initSprites` and ParticleSystem mesh/sprite render overloads.
+- `2fead9cc` `Layout::reload`: **52.6->61.5%**,
+  896 -> 952 bytes against original 1064; avg **77.93->77.94**, imports
+  **607->604**. Three invented TouchButton constructor imports became the
+  verified real overloads.
+- `59b3c283` MGame jump-scene batch:
+  `startJumpScene` **54.6->83.0%** (832 -> 904, original 896) and
+  `updateJumpScene` **41.0->76.5%** (680 -> 912, original 920);
+  avg **77.94->77.95**, imports **604->602**. The latter is conclusively a
+  `bool` function; the real 64-bit countdown, completion paths, camera,
+  Vector, station-global, and sound calls were restored.
+- `7089a8bf` `ListItemWindow::render`: **35.9->96.5%**,
+  204 -> 172 bytes at the original 172-byte size; avg **77.95->77.96**,
+  imports **602->601**. The fake tail is the real
+  `PaintCanvas::DisableClip()` call.
+- `ead56794` `ParticleSystemSprite::reset`: **94.3->100% linked** at
+  92/92 bytes; linked **2628->2629**. Reversing two independent source
+  assignments recovered the original final store order.
+- `bf45e779` `Station::clone`: **93.3->100% linked** at 116/116 bytes;
+  linked **2629->2630**, avg **77.96->77.97**. The by-value name is
+  `String(name, false)`.
+
+Verified source and ABI facts:
+
+- `MGame::updateJumpScene` returns true only after either completed
+  transition. The original caller tests `r0`, the J2ME mapping is `()Z`,
+  and the callee establishes `r5=0/1` before returning it. The comparison
+  `1700LL - currentTime < 0` produces the original subtract-with-borrow.
+- `ListItemWindow::render` uses `SetColor(0xffffffff)`,
+  `CameraGetLocal(this->camera)`, the Matrix assignment, `End3d`, and
+  `DisableClip`. A long-lived `PaintCanvas **` holder reproduces the original
+  register set and removes the fake canary frame.
+- `Layout::reload` allocates 200-byte TouchButtons and calls the real String,
+  image, and extended image constructors. Its remaining 84-byte original
+  spill frame is fully mapped in `_work/reconstructions/Layout-reload.md`.
+- The MGame jump-scene literals and paths are recorded in
+  `_work/reconstructions/MGame-jump-scenes.md`; notably FOVs 300000/450000,
+  post effect `0x01400002`, landmark index 1, direction scale 3000, and
+  application module 2.
+
+Deferred and requeue findings:
+
+- New self-contained notes:
+  `_work/reconstructions/SpaceLounge-OnRender3D.md`,
+  `Sprite-setFrame.md`, `AEGeometry-setLodChildMeshes.md`, and
+  `Station-setAgents.md`. Their body-only legal forms were exhausted or
+  disproved; do not repeat them.
+- `SpaceLounge::OnRender3D` is an exclusive header-layout item.
+  `listVisible` is proven at original `+0x1c` across constructor, key, draw,
+  update, and touch paths, while the current header places it at `+0x1f`.
+  Testing `chatActive` merely to obtain `+0x1c` is forbidden.
+- ListItemWindow's remaining `render` and `OnTouchBegin` markers share the
+  exclusive rectangle-layout blocker: original x/y/width
+  `+0x64/+0x68/+0x6c`, current `+0x5c/+0x60/+0x64`.
+- Sprite's two residual `mul.w` operand encodings are backend-only after
+  three natural source shapes. AEGeometry's two argument/self moves remain
+  MachineSink scheduling at the positive-count guard. Station::setAgents
+  likewise remains a one-move MachineSink residual; the only form that moved
+  it grew 36 -> 42 bytes and was reverted.
+
+Tier position: tier 1 remains exhausted (`stub_zero_size 0`). Tier 2 remains
+active with **601** pinned imports; the remaining cheap wrong-callee sites
+are increasingly concentrated in monster PaintCanvas/MenuTouch/Hangar
+functions and must not be farmed wholesale. Tier 3 same-size near misses
+remains active. Exclusive layout items now include SpaceLounge and
+ListItemWindow; drain the fleet before either header pass. No workers or
+stashes are in flight. The worktree is clean except the pre-existing
+untracked `.claude/`, which was not touched. Run only one orchestrator.
+
 ## Session 2026-07-26k (waves 53–54 — shader recovery and wrong-callee sweep)
 
 Net from the wave-52 checkpoint: avg **77.85->77.90**, byte
