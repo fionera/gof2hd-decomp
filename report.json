@@ -12864,14 +12864,6 @@
    "usize": 50
   },
   {
-   "name": "_ZN9FModSound12enableReverbEi",
-   "pct": 82.6,
-   "byte": false,
-   "linked": false,
-   "osize": 116,
-   "usize": 116
-  },
-  {
    "name": "zip_add_dir",
    "pct": 82.6,
    "byte": false,
@@ -14630,6 +14622,14 @@
    "linked": false,
    "osize": 264,
    "usize": 264
+  },
+  {
+   "name": "_ZN9FModSound12enableReverbEi",
+   "pct": 97.8,
+   "byte": false,
+   "linked": false,
+   "osize": 116,
+   "usize": 116
   },
   {
    "name": "_ZN4Ship11removeCargoEii",

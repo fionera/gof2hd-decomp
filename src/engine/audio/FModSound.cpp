@@ -233,16 +233,19 @@ int FModSound::getEventPauseLength(int idx) {
 void FModSound::enableReverb(int p1) {
     if (!this->system)
         return;
-    char buf[0x54];
-    if (FMOD_EventSystem_getNumReverbPresets(this->system, (int *) (buf + 0x50)) != 0)
+    int presetCount;
+    FMOD_REVERB_PROPERTIES properties;
+    if (FMOD_EventSystem_getNumReverbPresets(this->system, &presetCount) != 0)
         return;
-    if (*(int *) (buf + 0x50) <= p1)
+    if (presetCount <= p1)
         return;
     if (this->reverbPreset == p1)
         return;
     this->reverbPreset = p1;
-    if (FMOD_EventSystem_getReverbPresetByIndex(this->system, p1, (unsigned char *) buf, 0) == 0)
-        FMOD_EventSystem_setReverbProperties(this->system, (unsigned char *) buf);
+    if (FMOD_EventSystem_getReverbPresetByIndex(
+            this->system, p1, reinterpret_cast<unsigned char *>(&properties), 0) == 0)
+        FMOD_EventSystem_setReverbProperties(
+            this->system, reinterpret_cast<unsigned char *>(&properties));
 }
 
 float FModSound::getPlayingProgress(int idx) {

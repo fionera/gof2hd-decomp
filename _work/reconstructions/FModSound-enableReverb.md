@@ -2,8 +2,8 @@
 
 Symbol: `_ZN9FModSound12enableReverbEi`
 
-Status: typed partial prepared; exactness deferred after two retries and an
-independent escalation because of one LLVM MachineSink copy.
+Status: typed partial landed at 97.8%; exactness remains deferred after two
+retries and an independent escalation because of one LLVM MachineSink copy.
 
 ## Typed reconstruction
 
@@ -32,6 +32,6 @@ Preventing the sink requires an observable false-edge use, volatile/atomic
 state, an opaque call/destructor, assembly/attributes, extra surviving CFG, or
 undefined behavior. Those choices are prohibited or change the function.
 
-Land the typed reconstruction only if the full ratchet accepts it as a
-non-regressing partial. Requeue byte exactness only if a legitimate source or
-compiler change makes `p1` live on both successors.
+The full ratchet accepted the typed reconstruction as a non-regressing partial
+(82.6% to 97.8%, with all hard counters unchanged). Requeue byte exactness only
+if a legitimate source or compiler change makes `p1` live on both successors.
