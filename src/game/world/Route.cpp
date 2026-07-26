@@ -206,8 +206,8 @@ int Route::getDockingTime() {
 }
 
 Route::Route(int *coords, int count) {
-    this->loop = 0;
     this->currentIndex = 0;
+    this->loop = false;
     this->waypoints = new Array<Waypoint *>();
     this->dockingTargets = new Array<KIPlayer *>();
     this->dockingTimes = new Array<int>();
@@ -219,8 +219,8 @@ Route::Route(int *coords, int count) {
 }
 
 Route::Route(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
-    this->loop = 0;
     this->currentIndex = 0;
+    this->loop = false;
     this->waypoints = new Array<Waypoint *>();
     this->dockingTimes = new Array<int>();
     this->dockingTargets = targets;

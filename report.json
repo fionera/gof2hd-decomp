@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.83,
+  "avg_match": 77.84,
   "byte_exact": 1161,
-  "linked_exact": 2614,
-  "fuzzy_perfect": 2614,
+  "linked_exact": 2618,
+  "fuzzy_perfect": 2618,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14920,38 +14920,6 @@
    "usize": 34
   },
   {
-   "name": "_ZN5RouteC1EPiP5ArrayIP8KIPlayerES0_i",
-   "pct": 96.6,
-   "byte": false,
-   "linked": false,
-   "osize": 154,
-   "usize": 154
-  },
-  {
-   "name": "_ZN5RouteC2EPiP5ArrayIP8KIPlayerES0_i",
-   "pct": 96.6,
-   "byte": false,
-   "linked": false,
-   "osize": 154,
-   "usize": 154
-  },
-  {
-   "name": "_ZN5RouteC1EPii",
-   "pct": 96.7,
-   "byte": false,
-   "linked": false,
-   "osize": 162,
-   "usize": 162
-  },
-  {
-   "name": "_ZN5RouteC2EPii",
-   "pct": 96.7,
-   "byte": false,
-   "linked": false,
-   "osize": 162,
-   "usize": 162
-  },
-  {
    "name": "_ZN10AEGeometry17setLodChildMeshesEPt",
    "pct": 96.8,
    "byte": false,
@@ -28734,6 +28702,38 @@
    "linked": true,
    "osize": 94,
    "usize": 94
+  },
+  {
+   "name": "_ZN5RouteC1EPiP5ArrayIP8KIPlayerES0_i",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 154,
+   "usize": 154
+  },
+  {
+   "name": "_ZN5RouteC1EPii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 162,
+   "usize": 162
+  },
+  {
+   "name": "_ZN5RouteC2EPiP5ArrayIP8KIPlayerES0_i",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 154,
+   "usize": 154
+  },
+  {
+   "name": "_ZN5RouteC2EPii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 162,
+   "usize": 162
   },
   {
    "name": "_ZN5Trail10changeTypeEi",
