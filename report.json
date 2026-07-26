@@ -4,9 +4,9 @@
   "ours_functions": 4559,
   "compared": 4523,
   "avg_match": 77.97,
-  "byte_exact": 1161,
-  "linked_exact": 2630,
-  "fuzzy_perfect": 2630,
+  "byte_exact": 1162,
+  "linked_exact": 2631,
+  "fuzzy_perfect": 2631,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13944,14 +13944,6 @@
    "usize": 28
   },
   {
-   "name": "_ZN12Achievements9setMedalsEPii",
-   "pct": 90.9,
-   "byte": false,
-   "linked": false,
-   "osize": 56,
-   "usize": 56
-  },
-  {
    "name": "_ZN13PlayerStation12outerCollideEfff",
    "pct": 90.9,
    "byte": false,
@@ -22918,6 +22910,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN12Achievements9setMedalsEPii",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 56,
+   "usize": 56
   },
   {
    "name": "_ZN12AchievementsC1Ev",

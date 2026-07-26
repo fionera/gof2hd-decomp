@@ -540,6 +540,6 @@ void Achievements::setMedals(int *src, int count) {
         unsigned v = (unsigned) src[i];
         this->medals[i] = (v < 4) ? (int) v : 0;
     }
-    for (; count < 45; ++count)
-        this->medals[count] = 0;
+    for (int i = count; i < 45; ++i)
+        this->medals[i] = 0;
 }
