@@ -65,7 +65,7 @@ Station::~Station() {
 }
 
 Station *Station::clone() {
-    return new Station(name, index, systemIndex, techLevel, textureIndex);
+    return new Station(String(name, false), index, systemIndex, techLevel, textureIndex);
 }
 
 int Station::getIndex() { return index; }

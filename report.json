@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.96,
+  "avg_match": 77.97,
   "byte_exact": 1161,
-  "linked_exact": 2629,
-  "fuzzy_perfect": 2629,
+  "linked_exact": 2630,
+  "fuzzy_perfect": 2630,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14374,14 +14374,6 @@
    "linked": false,
    "osize": 156,
    "usize": 132
-  },
-  {
-   "name": "_ZN7Station5cloneEv",
-   "pct": 93.3,
-   "byte": false,
-   "linked": false,
-   "osize": 116,
-   "usize": 116
   },
   {
    "name": "_ZN7Station9setAgentsEP5ArrayIP5AgentE",
@@ -31582,6 +31574,14 @@
    "linked": true,
    "osize": 40,
    "usize": 40
+  },
+  {
+   "name": "_ZN7Station5cloneEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 116,
+   "usize": 116
   },
   {
    "name": "_ZN7Station5visitEv",
