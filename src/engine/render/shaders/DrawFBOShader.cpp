@@ -61,10 +61,8 @@ namespace AbyssEngine {
         vst1q_u32((uint32_t *) &projMatrix[0], zero);
 
         float two = 2.0f;
-        projMatrix[0] = two / (float) engine->GetDisplayWidth();
-        unsigned int height = engine->GetDisplayHeight();
-
-        uint64x2_t tail = {0x000000003f800000ULL, 0x3f8000003f800000ULL};
+        projMatrix[0] = two / (float) (int) engine->GetDisplayWidth();
+        int height = (int) engine->GetDisplayHeight();
 
         projMatrix[10] = -0.05f;
         projMatrix[15] = 1.0f;
@@ -73,12 +71,21 @@ namespace AbyssEngine {
         projMatrix[5] = -(two / (float) height);
 
         uint32_t one = 0x3f800000;
-        uint32_t matrix[16];
-        vst1q_u32(matrix + 4, zero);
-        vst1q_u64((uint64_t *) (matrix + 6), vreinterpretq_u64_u32(zero));
-        vst1q_u64((uint64_t *) (matrix + 10), tail);
+        uint32_t matrix[15];
         matrix[0] = one;
+        matrix[1] = 0;
+        matrix[2] = 0;
+        matrix[3] = 0;
+        matrix[4] = 0;
         matrix[5] = one;
+        matrix[6] = 0;
+        matrix[7] = 0;
+        matrix[8] = 0;
+        matrix[9] = 0;
+        matrix[10] = one;
+        matrix[11] = 0;
+        matrix[12] = one;
+        matrix[13] = one;
         matrix[14] = one;
 
         engine->SetWorldViewMatrix(reinterpret_cast<const AEMath::Matrix &>(matrix));

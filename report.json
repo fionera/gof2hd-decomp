@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.2,
   "byte_exact": 1174,
-  "linked_exact": 2692,
-  "fuzzy_perfect": 2692,
+  "linked_exact": 2693,
+  "fuzzy_perfect": 2693,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13760,14 +13760,6 @@
    "usize": 128
   },
   {
-   "name": "_ZN11AbyssEngine13DrawFBOShader12RenderEffectEPNS_12FBOContainerEPNS_6EngineE",
-   "pct": 92.7,
-   "byte": false,
-   "linked": false,
-   "osize": 552,
-   "usize": 552
-  },
-  {
    "name": "_ZN14BoundingVolumeD1Ev",
    "pct": 92.7,
    "byte": false,
@@ -18798,6 +18790,14 @@
    "linked": true,
    "osize": 22,
    "usize": 22
+  },
+  {
+   "name": "_ZN11AbyssEngine13DrawFBOShader12RenderEffectEPNS_12FBOContainerEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 552,
+   "usize": 552
   },
   {
    "name": "_ZN11AbyssEngine13DrawFBOShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
