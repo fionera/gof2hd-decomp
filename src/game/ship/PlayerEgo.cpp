@@ -178,10 +178,6 @@ static_assert(__builtin_offsetof(PE_AsteroidMineTarget, miningFlag) == 0x44, "mi
 
 static inline Status *PE_status() { return Globals::status; }
 
-void stopShooting_extA(void *, int); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-void stopShooting_extB(void *, int, int); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
 void *TransformGetLocal(void *, int); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void MatrixSetRotation(void *, void *, float, float, float); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
@@ -1179,16 +1175,16 @@ void PlayerEgo::pitchAllPrimaryGuns(float pitch) {
 
 void PlayerEgo::stopShooting(int param) {
     if (this->turretActive != 0) {
-        stopShooting_extA(this->player, 2);
+        ((Player *) this->player)->stopShooting(2);
         return;
     }
     if (((PlayerEgo *) (this))->isDead() != 0) return;
     Player *p = (Player *) this->player;
     if (param == 1) {
-        stopShooting_extB(p, 1, this->currentSecondaryWeaponIndex);
+        p->stopShooting(1, this->currentSecondaryWeaponIndex);
         return;
     }
-    stopShooting_extA(p, param);
+    p->stopShooting(param);
 }
 
 void PlayerEgo::shake(int amount) {

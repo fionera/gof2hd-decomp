@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.3,
+   "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -2520,20 +2520,20 @@
    "usize": 940
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 16.8,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "_ZN9RocketGun8setRadarEP5Radar",
    "pct": 16.8,
    "byte": false,
    "linked": false,
    "osize": 608,
    "usize": 568
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.9,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "_ZN3HudC1Ev",
@@ -4112,6 +4112,14 @@
    "usize": 492
   },
   {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
+  },
+  {
    "name": "ndk_iapBoughtConsumable",
    "pct": 28.0,
    "byte": false,
@@ -4142,14 +4150,6 @@
    "linked": false,
    "osize": 172,
    "usize": 176
-  },
-  {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
   },
   {
    "name": "_ZN9ExplosionD1Ev",
@@ -8784,20 +8784,20 @@
    "usize": 608
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
