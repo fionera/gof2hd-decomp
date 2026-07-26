@@ -232,7 +232,8 @@ uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
         if (kHiddenBlueprints[i] == index) {
             if (ignoreFound)
                 return 1;
-            bool *flags = Globals::status->field_58->data_;
+            unsigned char *flags =
+                reinterpret_cast<unsigned char *>(Globals::status->field_58->data_);
             if (flags[i] == 0)
                 return 1;
         }

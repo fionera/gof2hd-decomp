@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.01,
   "byte_exact": 1163,
-  "linked_exact": 2646,
-  "fuzzy_perfect": 2646,
+  "linked_exact": 2647,
+  "fuzzy_perfect": 2647,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12934,14 +12934,6 @@
    "linked": false,
    "osize": 156,
    "usize": 154
-  },
-  {
-   "name": "_ZN7Station25stationHasHiddenBlueprintEb",
-   "pct": 82.8,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 68
   },
   {
    "name": "_ZN12WantedWindow11OnTouchMoveEii",
@@ -31550,6 +31542,14 @@
    "linked": true,
    "osize": 40,
    "usize": 40
+  },
+  {
+   "name": "_ZN7Station25stationHasHiddenBlueprintEb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 68,
+   "usize": 68
   },
   {
    "name": "_ZN7Station5cloneEv",
