@@ -198,7 +198,7 @@ int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
 static const char gInitLangStr[] = "";
 
 GameText::GameText() {
-    *g_GameText_langReset = 0xffff;
+    GameText::currentLang = 0xffff;
     this->textCount = 0;
     this->textTable = nullptr;
     String tmp(gInitLangStr);

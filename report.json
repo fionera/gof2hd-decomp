@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.83,
   "byte_exact": 1161,
-  "linked_exact": 2609,
-  "fuzzy_perfect": 2609,
+  "linked_exact": 2611,
+  "fuzzy_perfect": 2611,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -7672,14 +7672,6 @@
    "usize": 632
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 46.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN12StatusWindowC1Ev",
    "pct": 46.7,
    "byte": false,
@@ -7694,6 +7686,14 @@
    "linked": false,
    "osize": 708,
    "usize": 696
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 46.8,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine6Engine13SetPostEffectEjb",
@@ -14950,22 +14950,6 @@
    "linked": false,
    "osize": 154,
    "usize": 154
-  },
-  {
-   "name": "_ZN8GameTextC1Ev",
-   "pct": 96.6,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 152
-  },
-  {
-   "name": "_ZN8GameTextC2Ev",
-   "pct": 96.6,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 152
   },
   {
    "name": "_ZN5RouteC1EPii",
@@ -31878,6 +31862,22 @@
    "linked": true,
    "osize": 66,
    "usize": 66
+  },
+  {
+   "name": "_ZN8GameTextC1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 152,
+   "usize": 152
+  },
+  {
+   "name": "_ZN8GameTextC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 152,
+   "usize": 152
   },
   {
    "name": "_ZN8GameTextD1Ev",
