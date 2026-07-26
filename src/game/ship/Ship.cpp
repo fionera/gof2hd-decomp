@@ -671,15 +671,15 @@ void Ship::adjustPrice() {
         int race = system->getRace();
         ShipDataEntry *entry2 = (*ships_ptr)->table[this->index];
         float base = (float) entry2->basePrice;
-        float bonus = 0.1f;
+        float bonus = 0.0f;
         if (gRaceTable[cat] == race) {
-            bonus = base * 0.3f;
+            bonus = base * -0.01f;
         }
         float acc = bonus + base;
-        float diff = 0.1f;
+        float diff = 0.0f;
         int dv = Globals::globalPriceRaise;
         if (dv != 0) {
-            diff = base * (float) dv * 0.7f;
+            diff = base * (float) dv * 0.01f;
         }
         this->price = (int) (acc + diff);
     }

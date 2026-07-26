@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.82,
   "byte_exact": 1161,
-  "linked_exact": 2605,
-  "fuzzy_perfect": 2605,
+  "linked_exact": 2606,
+  "fuzzy_perfect": 2606,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14728,14 +14728,6 @@
    "usize": 100
   },
   {
-   "name": "_ZN4Ship11adjustPriceEv",
-   "pct": 95.4,
-   "byte": false,
-   "linked": false,
-   "osize": 192,
-   "usize": 192
-  },
-  {
    "name": "_ZN11AbyssEngine6CameraC2Efffff",
    "pct": 95.5,
    "byte": false,
@@ -26654,6 +26646,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN4Ship11adjustPriceEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 192,
+   "usize": 192
   },
   {
    "name": "_ZN4Ship11getBaseLoadEv",
