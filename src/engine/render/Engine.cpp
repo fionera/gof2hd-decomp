@@ -172,8 +172,8 @@ double *Engine::GetGravValue() {
     } else {
         y = this->gravRaw[1];
     }
-    this->gravValue[0] = x;
     this->gravValue[1] = y;
+    this->gravValue[0] = x;
     this->gravValue[2] = this->gravRaw[2];
     return (double *) this->gravValue;
 }

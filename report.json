@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.11,
-  "byte_exact": 1168,
-  "linked_exact": 2675,
-  "fuzzy_perfect": 2675,
+  "avg_match": 78.12,
+  "byte_exact": 1169,
+  "linked_exact": 2676,
+  "fuzzy_perfect": 2676,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12904,14 +12904,6 @@
    "usize": 304
   },
   {
-   "name": "_ZN11AbyssEngine6Engine12GetGravValueEv",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 80,
-   "usize": 80
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine13GetAccelValueEv",
    "pct": 83.3,
    "byte": false,
@@ -20598,6 +20590,14 @@
    "linked": true,
    "osize": 128,
    "usize": 128
+  },
+  {
+   "name": "_ZN11AbyssEngine6Engine12GetGravValueEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 80,
+   "usize": 80
   },
   {
    "name": "_ZN11AbyssEngine6Engine12HasVibrationEv",
