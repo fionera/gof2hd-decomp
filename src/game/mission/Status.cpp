@@ -1327,13 +1327,13 @@ String Status::replaceHash(String haystack, String needle) {
 void Status::changeRating(int delta) {
     int updated = delta + rating;
     rating = updated;
-    if (updated < 0xb) {
+    if (updated > 10) {
+        rating = 10;
+    } else {
         if (-0xb < updated) {
             return;
         }
         rating = -10;
-    } else {
-        rating = 10;
     }
 }
 

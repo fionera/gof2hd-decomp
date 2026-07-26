@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.06,
-  "byte_exact": 1166,
-  "linked_exact": 2664,
-  "fuzzy_perfect": 2664,
+  "avg_match": 78.07,
+  "byte_exact": 1167,
+  "linked_exact": 2665,
+  "fuzzy_perfect": 2665,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12246,14 +12246,6 @@
    "linked": false,
    "osize": 50,
    "usize": 50
-  },
-  {
-   "name": "_ZN6Status12changeRatingEi",
-   "pct": 76.9,
-   "byte": false,
-   "linked": false,
-   "osize": 36,
-   "usize": 36
   },
   {
    "name": "_ZN11AbyssEngine12PostBWShader12RenderEffectEPNS_12FBOContainerEPNS_6EngineE",
@@ -29974,6 +29966,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN6Status12changeRatingEi",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 36,
+   "usize": 36
   },
   {
    "name": "_ZN6Status12inAlienOrbitEv",
