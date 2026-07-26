@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.28,
   "byte_exact": 1174,
-  "linked_exact": 2696,
-  "fuzzy_perfect": 2696,
+  "linked_exact": 2698,
+  "fuzzy_perfect": 2698,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13616,14 +13616,6 @@
    "usize": 290
   },
   {
-   "name": "_ZN11AbyssEngine12BumpShaderV24InitEPNS_6EngineE",
-   "pct": 92.0,
-   "byte": false,
-   "linked": false,
-   "osize": 324,
-   "usize": 324
-  },
-  {
    "name": "_ZN11AbyssEngine10MaskShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 92.1,
    "byte": false,
@@ -14070,14 +14062,6 @@
    "linked": false,
    "osize": 148,
    "usize": 148
-  },
-  {
-   "name": "_ZN11AbyssEngine12BumpShaderV214UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
-   "pct": 95.8,
-   "byte": false,
-   "linked": false,
-   "osize": 516,
-   "usize": 516
   },
   {
    "name": "_ZN11AbyssEngine21TransformConvertToVBOEPNS_9TransformE",
@@ -18486,6 +18470,22 @@
    "linked": true,
    "osize": 62,
    "usize": 62
+  },
+  {
+   "name": "_ZN11AbyssEngine12BumpShaderV214UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 516,
+   "usize": 516
+  },
+  {
+   "name": "_ZN11AbyssEngine12BumpShaderV24InitEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 324,
+   "usize": 324
   },
   {
    "name": "_ZN11AbyssEngine12BumpShaderV2D0Ev",
