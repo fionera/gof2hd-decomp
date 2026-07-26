@@ -26,7 +26,6 @@ namespace AbyssEngine {
 
 using ::AbyssEngine::ApplicationManager;
 
-#pragma pack(push, 1)
 class MGame : public IApplicationModule {
 public:
     int loadProgress;
@@ -270,7 +269,6 @@ public:
 
     void useCloak();
 };
-#pragma pack(pop)
 
 #if __SIZEOF_POINTER__ == 4
 #include <cstddef>
