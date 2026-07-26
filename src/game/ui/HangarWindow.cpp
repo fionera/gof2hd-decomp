@@ -1100,17 +1100,19 @@ void HangarWindow::demountItem(Item *item, int slot) {
     Globals::status->getShip()->addCargo(made);
 
     Ship *ship = Globals::status->getShip();
-    if (slot < 0)
-        ship->freeSlot(item);
-    else
+    if (slot >= 0)
         ship->freeSlot(item, slot);
+    else
+        ship->freeSlot(item);
 
     {
         unsigned int i = 0;
         while (i < this->itemList->size()) {
             Item *cur = this->itemList->data()[i];
+            int curIndex = cur->getIndex();
+            int madeIndex = made->getIndex();
             i++;
-            if (cur->getIndex() == made->getIndex()) {
+            if (curIndex == madeIndex) {
                 cur->changeAmount(made->getAmount());
                 goto demount_found;
             }
@@ -1130,10 +1132,11 @@ void HangarWindow::demountItem(Item *item, int slot) {
     this->itemList = Item::mixItems(Globals::status->getShip()->getCargo(), Globals::status->getStation()->getItems());
     this->hangarList->initShipTab(Globals::status->getShip());
 
+    HangarList *hangarList = this->hangarList;
     ItemArray *items = Item::mixItems(Globals::status->getShip()->getCargo(),
                                       Globals::status->getStation()->getItems());
-    this->hangarList->initShopTab(items, Globals::status->getStation()->getShips());
-    this->hangarList->setCurrentTab(0, false);
+    hangarList->initShopTab(items, Globals::status->getStation()->getShips());
+    this->hangarList->setCurrentTab(0, true);
 
     refreshCurrentContentHeight();
     this->scrollOffset = this->savedScrollOffset;

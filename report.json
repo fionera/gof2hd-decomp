@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.82,
   "byte_exact": 1161,
-  "linked_exact": 2603,
-  "fuzzy_perfect": 2603,
+  "linked_exact": 2604,
+  "fuzzy_perfect": 2604,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14768,14 +14768,6 @@
    "usize": 148
   },
   {
-   "name": "_ZN12HangarWindow11demountItemEP4Itemi",
-   "pct": 95.7,
-   "byte": false,
-   "linked": false,
-   "osize": 404,
-   "usize": 404
-  },
-  {
    "name": "_ZN11AbyssEngine12BumpShaderV214UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 95.8,
    "byte": false,
@@ -23270,6 +23262,14 @@
    "linked": true,
    "osize": 86,
    "usize": 86
+  },
+  {
+   "name": "_ZN12HangarWindow11demountItemEP4Itemi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 404,
+   "usize": 404
   },
   {
    "name": "_ZN12HangarWindow11hideMessageEv",
