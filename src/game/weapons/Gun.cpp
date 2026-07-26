@@ -56,12 +56,6 @@ void Gun_VecArray_setLength(int n, VecArray *a);
 
 void Gun_VecPtrArray_setLength(int n, Array<int> *a);
 
-void Gun_ArrayReleaseClasses(VecArray *a);
-
-VecArray *Gun_ArrayDtor(VecArray *a);
-
-
-
 Gun::~Gun() noexcept(false) {
     delete[] this->lifetimes;
     this->lifetimes = 0;
@@ -75,13 +69,12 @@ Gun::~Gun() noexcept(false) {
     delete[] this->randomFlags;
     this->randomFlags = 0;
 
-    VecArray *arr = reinterpret_cast<VecArray *>(this->wobbleOffsets);
+    Array<Vector *> *arr = reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets);
     if (arr != 0) {
-        Gun_ArrayReleaseClasses(arr);
-        VecArray *arr2 = reinterpret_cast<VecArray *>(this->wobbleOffsets);
+        ArrayReleaseClasses(*arr);
+        Array<Vector *> *arr2 = reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets);
         if (arr2 != 0) {
-            VecArray *p = Gun_ArrayDtor(arr2);
-            ::operator delete(p);
+            delete arr2;
         }
     }
     this->wobbleOffsets = 0;

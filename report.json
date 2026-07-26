@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.64,
   "byte_exact": 1160,
-  "linked_exact": 2588,
-  "fuzzy_perfect": 2588,
+  "linked_exact": 2590,
+  "fuzzy_perfect": 2590,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2528,6 +2528,14 @@
    "usize": 1612
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 16.7,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "_ZN10StarSystem6renderEv",
    "pct": 16.8,
    "byte": false,
@@ -2558,14 +2566,6 @@
    "linked": false,
    "osize": 230,
    "usize": 574
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 17.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -8816,14 +8816,6 @@
    "usize": 128
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
    "pct": 53.3,
    "byte": false,
@@ -8846,6 +8838,14 @@
    "linked": false,
    "osize": 36,
    "usize": 40
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -14782,22 +14782,6 @@
    "linked": false,
    "osize": 136,
    "usize": 132
-  },
-  {
-   "name": "_ZN3GunD1Ev",
-   "pct": 95.1,
-   "byte": false,
-   "linked": false,
-   "osize": 120,
-   "usize": 120
-  },
-  {
-   "name": "_ZN3GunD2Ev",
-   "pct": 95.1,
-   "byte": false,
-   "linked": false,
-   "osize": 120,
-   "usize": 120
   },
   {
    "name": "JNI_OnLoad",
@@ -26182,6 +26166,22 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN3GunD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 120,
+   "usize": 120
+  },
+  {
+   "name": "_ZN3GunD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 120,
+   "usize": 120
   },
   {
    "name": "_ZN3Hud10setVisibleEb",

@@ -9,8 +9,8 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1160, linked_exact 2588, avg 77.64%, stub_zero_size
-0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 653**. Historical figures in the sections below
+mode). Current: **compared 4523, byte_exact 1160, linked_exact 2590, avg 77.64%, stub_zero_size
+0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 651**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
 `tools/verify_baseline.json` (cmake `check` target + pre-push hook). Two new prerequisites for
