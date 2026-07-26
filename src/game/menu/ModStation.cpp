@@ -268,12 +268,6 @@ static inline void Status_checkForLevelUp_okp() { Globals::status->checkForLevel
 
 void leaveStation();
 
-int GameText_getText_frag(int id);
-
-void ChoiceWindow_set1_frag(ChoiceWindow *cw, int textStr);
-
-int GameText_root_frag();
-
 void ModStation::OnKeyPress(long long, long long key) {
     if (this->stationActive == 0)
         return;
@@ -342,11 +336,11 @@ void ModStation::OnKeyPress(long long, long long key) {
 
     int which = this->selectedButton;
     if (which < 0 || which > 4) {
-        ChoiceWindow_set1_frag(this->choiceWindow, GameText_getText_frag(GameText_root_frag()));
+        this->choiceWindow->set(*Globals::gameText->getText(0x210));
         return;
     }
     if (((which >= 0 && which <= 4) ? 1 : 0) == 0)
-        ChoiceWindow_set1_frag(this->choiceWindow, GameText_getText_frag(GameText_root_frag()));
+        this->choiceWindow->set(*Globals::gameText->getText(0x210));
 }
 
 long long ModStation::OnKeyRelease(long long, long long key) {
@@ -3143,16 +3137,10 @@ void ModStation::showCBSMessage() {
     reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
 }
 
-int GameText_getText_frag(int id);
-
-void ChoiceWindow_set1_frag(ChoiceWindow *cw, int textStr);
-
 void ChoiceWindow_setNotice_frag(ChoiceWindow *cw, int textStr);
 
 void ChoiceWindow_set6_frag(ChoiceWindow *cw, int a, int b, int yesNo, int c, int d, int e);
 
 int Status_holder_frag();
-
-int GameText_root_frag();
 
 static inline int Status_getCredits_frag() { return (int)(Globals::status->getCredits()); }

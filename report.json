@@ -1144,14 +1144,6 @@
    "usize": 42
   },
   {
-   "name": "_ZN10ModStation10OnKeyPressExx",
-   "pct": 4.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2516,
-   "usize": 268
-  },
-  {
    "name": "_ZN12StatusWindow4drawEv",
    "pct": 4.8,
    "byte": false,
@@ -1278,6 +1270,14 @@
    "linked": false,
    "osize": 14,
    "usize": 68
+  },
+  {
+   "name": "_ZN10ModStation10OnKeyPressExx",
+   "pct": 6.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2516,
+   "usize": 280
   },
   {
    "name": "_ZN9Generator14getItemBuyListEP7Station",
@@ -2240,14 +2240,6 @@
    "usize": 1164
   },
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 13.9,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 39284
-  },
-  {
    "name": "_ZN7StarMap6renderEv",
    "pct": 14.0,
    "byte": false,
@@ -2270,6 +2262,14 @@
    "linked": false,
    "osize": 648,
    "usize": 680
+  },
+  {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 14.2,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 39284
   },
   {
    "name": "_ZN12WantedWindow4drawEv",
@@ -4112,14 +4112,6 @@
    "usize": 492
   },
   {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
-  },
-  {
    "name": "ndk_iapBoughtConsumable",
    "pct": 28.0,
    "byte": false,
@@ -4150,6 +4142,14 @@
    "linked": false,
    "osize": 172,
    "usize": 176
+  },
+  {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
   },
   {
    "name": "_ZN9ExplosionD1Ev",
