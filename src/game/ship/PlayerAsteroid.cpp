@@ -330,8 +330,8 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
 PlayerAsteroid::~PlayerAsteroid() {
     if (this->explosion != nullptr) {
         delete this->explosion;
-        this->explosion = nullptr;
     }
+    this->explosion = nullptr;
 }
 
 AbyssEngine::AEMath::Vector PlayerAsteroid::tmp_vector2;

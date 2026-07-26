@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.98,
   "byte_exact": 1162,
-  "linked_exact": 2636,
-  "fuzzy_perfect": 2636,
+  "linked_exact": 2638,
+  "fuzzy_perfect": 2638,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14496,22 +14496,6 @@
    "usize": 50
   },
   {
-   "name": "_ZN14PlayerAsteroidD1Ev",
-   "pct": 94.7,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 52
-  },
-  {
-   "name": "_ZN14PlayerAsteroidD2Ev",
-   "pct": 94.7,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 52
-  },
-  {
    "name": "_ZN5ArrayIbED2Ev",
    "pct": 94.7,
    "byte": false,
@@ -24294,6 +24278,22 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN14PlayerAsteroidD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
+  },
+  {
+   "name": "_ZN14PlayerAsteroidD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN14PlayerCreature12getEnduranceEv",
