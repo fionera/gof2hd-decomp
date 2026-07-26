@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.4,
+   "pct": 7.3,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -2528,14 +2528,6 @@
    "usize": 568
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.9,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN3HudC1Ev",
    "pct": 16.9,
    "byte": false,
@@ -2566,6 +2558,14 @@
    "linked": false,
    "osize": 240,
    "usize": 268
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 17.2,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "zip_replace",
@@ -3054,14 +3054,6 @@
    "linked": false,
    "osize": 48,
    "usize": 52
-  },
-  {
-   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
-   "pct": 21.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1816,
-   "usize": 1448
   },
   {
    "name": "_ZN5MGame16freeCamTouchMoveEiiPv",
@@ -4102,6 +4094,14 @@
    "linked": false,
    "osize": 60,
    "usize": 64
+  },
+  {
+   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
+   "pct": 28.0,
+   "byte": false,
+   "linked": false,
+   "osize": 1816,
+   "usize": 1468
   },
   {
    "name": "_ZN20ParticleSystemSprite12updateSingleEif",
@@ -8761,7 +8761,7 @@
   },
   {
    "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.0,
+   "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 2696,

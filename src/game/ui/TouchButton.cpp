@@ -157,10 +157,6 @@ int TouchButton::getHeight() {
     return this->height;
 }
 
-unsigned int TB_iconTexId(int eliteVariant, int stage);
-
-unsigned short TB_iconImgId(int eliteVariant, int stage);
-
 unsigned short TB_medalSmallId(int achId);
 
 unsigned short TB_frameId(int useAltSkin, unsigned int kind, int slot);
@@ -201,10 +197,33 @@ int TouchButton::init(String const &text, unsigned int subId, int kind, int achI
 
     switch (kind) {
         case 4: {
+            static const unsigned short eliteImageIds[4][2] = {
+                {0x1f6d, 0},
+                {0x1f63, 0},
+                {0x096f, 0},
+                {0x096d, 0},
+            };
+            static const unsigned short normalImageIds[4][2] = {
+                {0x0970, 0},
+                {0x096e, 0},
+                {0x096f, 0},
+                {0x096d, 0},
+            };
+            static const unsigned int eliteTextureIds[4] = {
+                0xfa792160u, 0xfa7921ffu, 0xffffffffu, 0xce8258ffu,
+            };
+            static const unsigned int normalTextureIds[4] = {
+                0x2198ff2fu, 0xfad10effu, 0xffffffffu, 0xce8258ffu,
+            };
+
             Achievements *ach = Globals::achievements;
-            int elite = (((Achievements *) (ach))->isEliteMedal(achId) != 0) ? 1 : 0;
-            this->iconTexId = TB_iconTexId(elite, achStage);
-            ((PaintCanvas *) (canvas))->Image2DCreate(TB_iconImgId(elite, achStage), this->iconImage);
+            if (((Achievements *) ach)->isEliteMedal(achId) != 0) {
+                this->iconTexId = eliteTextureIds[achStage];
+                ((PaintCanvas *) canvas)->Image2DCreate(eliteImageIds[achStage][0], this->iconImage);
+            } else {
+                this->iconTexId = normalTextureIds[achStage];
+                ((PaintCanvas *) canvas)->Image2DCreate(normalImageIds[achStage][0], this->iconImage);
+            }
             this->height = ((PaintCanvas *) (canvas))->GetImage2DHeight(0);
             int w = ((PaintCanvas *) (canvas))->GetImage2DWidth(0);
             this->layoutHeight = this->height;
