@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.97,
   "byte_exact": 1162,
-  "linked_exact": 2631,
-  "fuzzy_perfect": 2631,
+  "linked_exact": 2632,
+  "fuzzy_perfect": 2632,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13798,14 +13798,6 @@
    "linked": false,
    "osize": 52,
    "usize": 52
-  },
-  {
-   "name": "_ZN7Mission16setTargetStationEi",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 104,
-   "usize": 104
   },
   {
    "name": "_ZN9LensFlareD1Ev",
@@ -31214,6 +31206,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN7Mission16setTargetStationEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 104,
+   "usize": 104
   },
   {
    "name": "_ZN7Mission17isCampaignMissionEv",

@@ -86,8 +86,8 @@ Mission *Mission::clone() {
 
 void Mission::setTargetStation(int idx) {
     this->targetStation = idx;
-    Station *st = (Station *) (long) Globals::galaxy->getStation(idx);
-    this->targetStationName = st->getName();
+    this->targetStationName =
+        ((Station *) (long) Globals::galaxy->getStation(this->targetStation))->getName();
 }
 
 Mission::Mission(int id, AbyssEngine::String client, int *clientImage, int clientRace,
