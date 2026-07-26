@@ -1224,7 +1224,8 @@ void Player::stopShooting(int slot, int channel) {
 
 void Player::setAlwaysFriend(bool value) {
     this->alwaysFriend = value;
-    reinterpret_cast<uint16_t &>(this->enemyFlagsLo) = 0x100;
+    this->enemyFlagsLo = 0;
+    this->carriesFriendCargoFlag = 1;
     this->turnedEnemyFlag = 0;
 }
 

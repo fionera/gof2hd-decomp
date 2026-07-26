@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.17,
-  "byte_exact": 1171,
-  "linked_exact": 2686,
-  "fuzzy_perfect": 2686,
+  "avg_match": 78.18,
+  "byte_exact": 1172,
+  "linked_exact": 2687,
+  "fuzzy_perfect": 2687,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -11006,14 +11006,6 @@
    "linked": false,
    "osize": 18,
    "usize": 18
-  },
-  {
-   "name": "_ZN6Player15setAlwaysFriendEb",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 20,
-   "usize": 20
   },
   {
    "name": "_ZN6Player4healEf",
@@ -29539,6 +29531,14 @@
    "name": "_ZN6Player15regenerateArmorEv",
    "pct": 100.0,
    "byte": false,
+   "linked": true,
+   "osize": 20,
+   "usize": 20
+  },
+  {
+   "name": "_ZN6Player15setAlwaysFriendEb",
+   "pct": 100.0,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
