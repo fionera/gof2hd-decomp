@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.64,
   "byte_exact": 1160,
-  "linked_exact": 2586,
-  "fuzzy_perfect": 2586,
+  "linked_exact": 2587,
+  "fuzzy_perfect": 2587,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2464,14 +2464,6 @@
    "usize": 82
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas17GetScreenPositionERNS_6AEMath6MatrixERKNS1_6VectorERS4_",
-   "pct": 15.9,
-   "byte": false,
-   "linked": false,
-   "osize": 604,
-   "usize": 616
-  },
-  {
    "name": "_ZN9PlayerEgo14updateManeuverEv",
    "pct": 16.0,
    "byte": false,
@@ -2544,14 +2536,6 @@
    "usize": 940
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.8,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN9RocketGun8setRadarEP5Radar",
    "pct": 16.8,
    "byte": false,
@@ -2574,6 +2558,14 @@
    "linked": false,
    "osize": 230,
    "usize": 574
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 17.0,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -3446,6 +3438,14 @@
    "linked": false,
    "osize": 192,
    "usize": 212
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas17GetScreenPositionERNS_6AEMath6MatrixERKNS1_6VectorERS4_",
+   "pct": 24.0,
+   "byte": false,
+   "linked": false,
+   "osize": 604,
+   "usize": 644
   },
   {
    "name": "_ZN11AbyssEngine6String3SetEPKt",
@@ -8816,6 +8816,14 @@
    "usize": 128
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
    "pct": 53.3,
    "byte": false,
@@ -8838,14 +8846,6 @@
    "linked": false,
    "osize": 36,
    "usize": 40
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -15216,14 +15216,6 @@
    "usize": 124
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas17GetScreenPositionERKNS_6AEMath6VectorERS2_",
-   "pct": 97.6,
-   "byte": false,
-   "linked": false,
-   "osize": 108,
-   "usize": 108
-  },
-  {
    "name": "_ZN12ImageFactory8loadCharEPi",
    "pct": 97.6,
    "byte": false,
@@ -18966,6 +18958,14 @@
    "linked": true,
    "osize": 86,
    "usize": 86
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas17GetScreenPositionERKNS_6AEMath6VectorERS2_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 108,
+   "usize": 108
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17SpriteSystemSetUvEjtffff",

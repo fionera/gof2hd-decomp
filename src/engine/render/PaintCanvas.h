@@ -458,8 +458,8 @@ namespace AbyssEngine {
 
         void GetScreenPosition(const Matrix &srcMatrix, Vector &outVec);
 
-        void GetScreenPosition(Matrix &m, const Vector &worldPos,
-                               Vector &outVec);
+        int GetScreenPosition(Matrix &m, const Vector &worldPos,
+                              Vector &outVec);
     };
 
 #if __SIZEOF_POINTER__ == 4

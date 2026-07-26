@@ -372,10 +372,6 @@ unsigned int paintcanvas_ext_strlen(void *); // lint: void_ptr (external symbol;
 
 void paintcanvas_ext_clear(int);
 
-int paintcanvas_ext_getscreenpos_m(void *self, void *m, const Vector *a, Vector *b); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_setprojmatrix3d(void *, float, float, float); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
@@ -1664,7 +1660,7 @@ int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Vector &a,
     m[13] = 1.0f;
     m[14] = 1.0f;
 
-    return paintcanvas_ext_getscreenpos_m(this, buf, &a, &b);
+    return this->GetScreenPosition(*(AbyssEngine::AEMath::Matrix *) buf, a, b);
 }
 
 static char *paintcanvas_g_fog_flag = (char*)&AbyssEngine::Engine::fogEnabled;
@@ -3382,90 +3378,97 @@ void PaintCanvas::Image2DCreate(unsigned short resId, unsigned int &out) {
 
 static const double g_gsp2_gravscale_8bfa8 = 0;
 
-void PaintCanvas::GetScreenPosition(AbyssEngine::AEMath::Matrix &m,
-                                    const AbyssEngine::AEMath::Vector &worldPos,
-                                    AbyssEngine::AEMath::Vector &outVec) {
-    (void) m;
+int PaintCanvas::GetScreenPosition(AbyssEngine::AEMath::Matrix &m,
+                                   const AbyssEngine::AEMath::Vector &worldPos,
+                                   AbyssEngine::AEMath::Vector &outVec) {
+    int result = 0;
+    AbyssEngine::AEMath::Vector transformed =
+        AbyssEngine::AEMath::MatrixTransformVector(m, worldPos);
 
-    char transformed[16];
-    paintcanvas_ext_gsp2_transformvec(transformed, &worldPos);
+    {
+        if (this->currentCamera >= this->cameras.count) {
+            goto finish;
+        }
 
-    if (this->currentCamera >= this->cameras.count) {
-        return;
-    }
+        char invMat[60];
+        PCCameraView *cam = (PCCameraView *) this->cameras.data_[this->currentCamera];
+        if (this->initialized == 0) {
+            paintcanvas_ext_gsp2_invtransformvec(invMat, cam->localMatrix);
+            paintcanvas_ext_gsp2_vec_assign(&outVec, invMat);
+        } else {
+            float m[16];
+            char scratch[60];
+            memset(m, 0, sizeof(m));
+            m[0] = 1.0f;
+            m[5] = 1.0f;
+            m[14] = 1.0f;
+            paintcanvas_ext_gsp2_matidentity(scratch, m);
 
-    char invMat[60];
-    PCCameraView *cam = (PCCameraView *) this->cameras.data_[this->currentCamera];
-    if (this->initialized == 0) {
-        paintcanvas_ext_gsp2_invtransformvec(invMat, cam->localMatrix);
-        paintcanvas_ext_gsp2_vec_assign(&outVec, invMat);
-    } else {
-        float m[16];
-        char scratch[60];
-        memset(m, 0, sizeof(m));
-        m[0] = 1.0f;
-        m[5] = 1.0f;
-        m[14] = 1.0f;
-        paintcanvas_ext_gsp2_matidentity(scratch, m);
+            PCGravView *grav = (PCGravView *) paintcanvas_ext_gsp2_getgrav(this->engine);
+            double angle = grav->angle * g_gsp2_gravscale_8bfa8;
+            float a = (float) angle;
+            int orient = this->gameOrientation;
+            float rot = (orient == 1) ? a : -a;
+            float s = paintcanvas_ext_gsp2_sinf(rot);
+            float c = paintcanvas_ext_gsp2_cosf(rot);
+            m[0] = c;
+            m[5] = c;
+            *(unsigned int *) &m[1] = *(unsigned int *) &s ^ 0x80000000;
+            m[4] = s;
 
-        PCGravView *grav = (PCGravView *) paintcanvas_ext_gsp2_getgrav(this->engine);
-        double angle = grav->angle * g_gsp2_gravscale_8bfa8;
-        float a = (float) angle;
-        int orient = this->gameOrientation;
-        float rot = (orient == 1) ? a : -a;
-        float s = paintcanvas_ext_gsp2_sinf(rot);
-        float c = paintcanvas_ext_gsp2_cosf(rot);
-        m[0] = c;
-        m[5] = c;
-        *(unsigned int *) &m[1] = *(unsigned int *) &s ^ 0x80000000;
-        m[4] = s;
+            paintcanvas_ext_gsp2_memcpy(scratch, cam->localMatrix, 0x3c);
+            paintcanvas_ext_gsp2_mtx_muleq(scratch, m);
+            paintcanvas_ext_gsp2_invtransformvec(invMat, scratch);
+            paintcanvas_ext_gsp2_vec_assign(&outVec, invMat);
+        }
 
-        paintcanvas_ext_gsp2_memcpy(scratch, cam->localMatrix, 0x3c);
-        paintcanvas_ext_gsp2_mtx_muleq(scratch, m);
-        paintcanvas_ext_gsp2_invtransformvec(invMat, scratch);
-        paintcanvas_ext_gsp2_vec_assign(&outVec, invMat);
-    }
+        float z = outVec[2];
+        PCCameraView *cam2 = (PCCameraView *) ((char **) this->cameras.data_)[this->currentCamera];
+        if (z > cam2->param1) {
+            goto finish;
+        }
+        float denomX = z * cam2->factor4c;
+        if (denomX == 0.0f) {
+            goto finish;
+        }
+        float denomY = z * cam2->factor48;
+        if (denomY == 0.0f) {
+            goto finish;
+        }
 
-    float z = outVec[2];
-    PCCameraView *cam2 = (PCCameraView *) ((char **) this->cameras.data_)[this->currentCamera];
-    if (z > cam2->param1) {
-        return;
-    }
-    float denomX = z * cam2->factor4c;
-    if (denomX == 0.0f) {
-        return;
-    }
-    float denomY = z * cam2->factor48;
-    if (denomY == 0.0f) {
-        return;
-    }
+        float px = outVec[0];
+        int w0 = paintcanvas_ext_gsp2_getwidth(this);
+        int w1 = paintcanvas_ext_gsp2_getwidth(this);
+        float py = outVec[1];
+        double fw = (double) paintcanvas_ext_gsp2_signedtofloat(w0, 0);
+        double halfW = (double) paintcanvas_ext_gsp2_signedtofloat(w1 >> 1, 0);
+        outVec[0] = (float) (halfW - (((double) px * 0.5) / (double) denomX) * fw);
 
-    float px = outVec[0];
-    int w0 = paintcanvas_ext_gsp2_getwidth(this);
-    int w1 = paintcanvas_ext_gsp2_getwidth(this);
-    float py = outVec[1];
-    double fw = (double) paintcanvas_ext_gsp2_signedtofloat(w0, 0);
-    double halfW = (double) paintcanvas_ext_gsp2_signedtofloat(w1 >> 1, 0);
-    outVec[0] = (float) (halfW - (((double) px * 0.5) / (double) denomX) * fw);
+        int h0 = paintcanvas_ext_gsp2_getheight(this);
+        double fh = (double) paintcanvas_ext_gsp2_signedtofloat(h0, 0);
+        int h1 = paintcanvas_ext_gsp2_getheight(this);
+        double halfH = (double) paintcanvas_ext_gsp2_signedtofloat(h1 >> 1, 0);
+        outVec[1] = (float) (halfH + (((double) py * 0.5) / (double) denomY) * fh);
 
-    int h0 = paintcanvas_ext_gsp2_getheight(this);
-    double fh = (double) paintcanvas_ext_gsp2_signedtofloat(h0, 0);
-    int h1 = paintcanvas_ext_gsp2_getheight(this);
-    double halfH = (double) paintcanvas_ext_gsp2_signedtofloat(h1 >> 1, 0);
-    outVec[1] = (float) (halfH + (((double) py * 0.5) / (double) denomY) * fh);
-
-    float nx = outVec[0];
-    if (nx >= 0.0f) {
-        float ny = outVec[1];
-        if (ny >= 0.0f) {
-            int ww = paintcanvas_ext_gsp2_getwidth(this);
-            float fww = paintcanvas_ext_gsp2_signedtofloat(ww, 0);
-            if (nx < fww) {
-                int hh = paintcanvas_ext_gsp2_getheight(this);
-                paintcanvas_ext_gsp2_signedtofloat(hh, 0);
+        float nx = outVec[0];
+        if (nx >= 0.0f) {
+            float ny = outVec[1];
+            if (ny >= 0.0f) {
+                int ww = paintcanvas_ext_gsp2_getwidth(this);
+                float fww = paintcanvas_ext_gsp2_signedtofloat(ww, 0);
+                if (nx < fww) {
+                    int hh = paintcanvas_ext_gsp2_getheight(this);
+                    float fhh = paintcanvas_ext_gsp2_signedtofloat(hh, 0);
+                    if (ny < fhh) {
+                        result = 1;
+                    }
+                }
             }
         }
     }
+
+finish:
+    return result;
 }
 
 int PaintCanvas::ResourceLoaded(unsigned int index, AbyssEngine::ResourceType type) {

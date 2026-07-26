@@ -1,7 +1,7 @@
 {
  "verify": {
   "byte_exact": 1160,
-  "linked_exact": 2586,
+  "linked_exact": 2587,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
@@ -391,7 +391,6 @@
   "_Z30paintcanvas_ext_dr_glColorMaskPvji",
   "_Z30paintcanvas_ext_dss2_mtx_muleqPvS_",
   "_Z30paintcanvas_ext_dt2_mtx_getinvPvS_",
-  "_Z30paintcanvas_ext_getscreenpos_mPvS_PKN11AbyssEngine6AEMath6VectorEPS2_",
   "_Z30paintcanvas_ext_gsp2_mtx_muleqPvS_",
   "_Z30paintcanvas_ext_gsp_vec_assignPvS_",
   "_Z30paintcanvas_ext_matc_texcreatePvtb",
@@ -427,7 +426,6 @@
   "_Z33paintcanvas_ext_cipvf_matidentityPvS_",
   "_Z33paintcanvas_ext_cisvf_matidentityPvS_",
   "_Z33paintcanvas_ext_dm_setmodelmatrixPv",
-  "_Z33paintcanvas_ext_gsp2_transformvecPvPKv",
   "_Z33paintcanvas_ext_matc_new_materialv",
   "_Z33paintcanvas_ext_mc2_new_mesh_copyPv",
   "_Z33paintcanvas_ext_transform_addmeshPN11AbyssEngine11PaintCanvasEPvtb",
