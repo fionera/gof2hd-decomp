@@ -23,7 +23,6 @@ static float CutScene_proc_tx0, CutScene_proc_tz0;
 static float CutScene_proc_rx0, CutScene_proc_rz0, CutScene_proc_rz1;
 static float CutScene_fogColorMode17, CutScene_fogDensityMode17;
 static float CutScene_fogColorMode4, CutScene_fogDensityMode4;
-static float CutScene_initStartXRotMode2;
 static float CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar;
 static float CutScene_fogDensity_mode17;
 static float CutScene_fogDensity_mode4;
@@ -372,7 +371,7 @@ void CutScene::renderBG() {
     this->level->renderBG((int) this->frameDelta);
 }
 
-void CutScene::replacePlayerShip(int /*a*/, int b) {
+void CutScene::replacePlayerShip(int a, int b) {
     if (this->level->getEnemies() == nullptr)
         return;
 
@@ -390,7 +389,7 @@ void CutScene::replacePlayerShip(int /*a*/, int b) {
         char matrix[0x3c];
         memcpy(matrix, &oldGeom->getMatrix(), 0x3c);
 
-        AEGeometry *grp = Globals::globals->getShipGroup(b, 0, false);
+        AEGeometry *grp = Globals::globals->getShipGroup(a, b, false);
 
         Array<KIPlayer *> *en3 = this->level->getEnemies();
         (*en3)[0]->geometry = grp;
@@ -401,7 +400,7 @@ void CutScene::replacePlayerShip(int /*a*/, int b) {
 
         Array<KIPlayer *> *en5 = this->level->getEnemies();
         KIPlayer *ship = (*en5)[0];
-        float bank = VectorSignedToFloat(CutScene_shipBankTable[b], 0);
+        float bank = (float) CutScene_shipBankTable[a];
 
         ship->setPosition(0.0f, bank, 0.0f);
 
@@ -423,29 +422,29 @@ void CutScene::initialize() {
 
     this->player = (PlayerEgo *) (intptr_t) this->level->getPlayer();
     if (this->player != nullptr)
-        this->player->setActive(true);
+        this->player->setActive(false);
 
     this->level->initParticleSystems();
 
-    char localMatrix[0x3c];
     PaintCanvas *canvas = Globals::Canvas;
 
     if (this->mode == 2) {
         canvas->CameraCreate(this->cameraId74);
-        canvas->CameraSetPerspective(0, CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar);
+        canvas->CameraSetPerspective(
+            this->cameraId74, 0.9200000167f, 200.0f, 200000.0f);
         canvas->CameraSetCurrent(this->cameraId74);
         char tmp[0x3c];
-        memcpy(tmp, canvas->CameraGetLocal(0), 0x3c);
+        memcpy(tmp, canvas->CameraGetLocal(this->cameraId74), 0x3c);
 
         AERandom *rng = Globals::rnd;
-        int rx = rng->nextInt();
-        int ry = rng->nextInt();
-        float tx = VectorSignedToFloat(rx - 20000, 0);
-        float ty = VectorSignedToFloat(ry + 40000, 0);
-        MatrixSetTranslation(localMatrix, tx, ty, 0.0f);
-        this->cameraRotX = CutScene_initStartXRotMode2;
-        MatrixSetRotation(localMatrix, 0.0f, 0.0f, 0.0f);
-        canvas->CameraSetLocal(0, *(const Matrix *) (uintptr_t) this->cameraId74);
+        int rx = rng->nextInt(20000);
+        int ry = rng->nextInt(60000);
+        AbyssEngine::AEMath::MatrixSetTranslation(
+            *(Matrix *) tmp, (float) (rx - 20000), (float) (ry + 40000), 0.0f);
+        this->cameraRotX = -0.7853981853f;
+        AbyssEngine::AEMath::MatrixSetRotation(
+            *(Matrix *) tmp, 0.0f, -0.7853981853f, 0.0f);
+        canvas->CameraSetLocal(this->cameraId74, *(const Matrix *) tmp);
 
         long long pt = Globals::status->getPlayingTime();
         Array<KIPlayer *> *enemies = this->level->getEnemies();
@@ -454,37 +453,42 @@ void CutScene::initialize() {
             KIPlayer *e0 = (*enemies)[n - 2];
             if (e0 != nullptr && (*enemies)[n - 1] != nullptr) {
                 float v[3];
-                v[0] = VectorSignedToFloat(rx - 24000, 0);
-                v[1] = 0.0f;
-                v[2] = VectorSignedToFloat(ry + 0x9a4c, 0);
+                v[0] = (float) (rx - 24000);
+                v[1] = -30.0f;
+                v[2] = (float) (ry + 0x9a4c);
 
                 e0->setPosition(v[0], v[1], v[2]);
-                v[0] = VectorSignedToFloat(rx - 0x5b68, 0);
-                v[2] = VectorSignedToFloat(ry + 0x96c8, 0);
+                v[0] = (float) (rx - 0x5b68);
+                v[1] = 50.0f;
+                v[2] = (float) (ry + 0x96c8);
                 ((KIPlayer *) (*enemies)[n - 1])->setPosition(v[0], v[1], v[2]);
             }
         }
     } else if (this->mode == 0x17) {
         this->turretGeom = nullptr;
         canvas->CameraCreate(this->cameraId70);
-        canvas->CameraSetPerspective(0, CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar);
+        canvas->CameraSetPerspective(
+            this->cameraId70, 0.8000000119f, 200.0f, 100000.0f);
         canvas->CameraSetCurrent(this->cameraId70);
         char tmp[0x3c];
-        memcpy(tmp, canvas->CameraGetLocal(0), 0x3c);
-        MatrixSetRotation(localMatrix, 0.0f, 0.0f, 0.0f);
-        MatrixSetTranslation(localMatrix, 0.0f, 0.0f, 0.0f);
-        canvas->CameraSetLocal(0, *(const Matrix *) (uintptr_t) this->cameraId70);
+        memcpy(tmp, canvas->CameraGetLocal(this->cameraId70), 0x3c);
+        AbyssEngine::AEMath::MatrixSetRotation(
+            *(Matrix *) tmp, 0.0f, 0.3926990926f, 0.0f);
+        AbyssEngine::AEMath::MatrixSetTranslation(
+            *(Matrix *) tmp, 300.0f, 700.0f, 3000.0f);
+        canvas->CameraSetLocal(this->cameraId70, *(const Matrix *) tmp);
         canvas->TransformCreate(this->transformId78);
-        this->level->getEnemies();
-        ((AEGeometry *) nullptr)->getPosition();
-        canvas->TransformGetLocal(0);
-        MatrixSetTranslation(localMatrix, 0.0f, 0.0f, 0.0f);
+        Vector position = (*this->level->getEnemies())[0]->geometry->getPosition();
+        AbyssEngine::AEMath::MatrixSetTranslation(
+            *(Matrix *) canvas->TransformGetLocal(this->transformId78),
+            position.x, position.y, position.z);
         canvas->TransformAddChild(this->transformId78, this->cameraId70);
         this->resetCamera();
         this->checkForTurret();
     } else if (this->mode == 4) {
         canvas->CameraCreate(this->cameraId6c);
-        canvas->CameraSetPerspective(0, CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar);
+        canvas->CameraSetPerspective(
+            this->cameraId6c, 1.2000000477f, 200.0f, 48000.0f);
         if (this->followCamera != nullptr) {
             delete this->followCamera;
             this->followCamera = nullptr;

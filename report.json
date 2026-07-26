@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.86,
+  "avg_match": 77.87,
   "byte_exact": 1161,
   "linked_exact": 2623,
   "fuzzy_perfect": 2623,
@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.3,
+   "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -2216,14 +2216,6 @@
    "usize": 1290
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 13.4,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
    "pct": 13.6,
    "byte": false,
@@ -2534,6 +2526,14 @@
    "linked": false,
    "osize": 230,
    "usize": 574
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 17.0,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -3966,14 +3966,6 @@
    "linked": false,
    "osize": 908,
    "usize": 976
-  },
-  {
-   "name": "_ZN8CutScene10initializeEv",
-   "pct": 27.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1088,
-   "usize": 936
   },
   {
    "name": "_ZN11AbyssEngine6Engine14SetTextureSlotEjj",
@@ -7864,6 +7856,14 @@
    "usize": 888
   },
   {
+   "name": "_ZN8CutScene10initializeEv",
+   "pct": 47.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1088,
+   "usize": 1052
+  },
+  {
    "name": "_ZN20FileInterfaceAndroid5WriteEjPKv",
    "pct": 47.8,
    "byte": false,
@@ -8712,20 +8712,20 @@
    "usize": 608
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -9926,14 +9926,6 @@
    "linked": false,
    "osize": 588,
    "usize": 576
-  },
-  {
-   "name": "_ZN8CutScene17replacePlayerShipEii",
-   "pct": 59.2,
-   "byte": false,
-   "linked": false,
-   "osize": 288,
-   "usize": 276
   },
   {
    "name": "_ZN10MeshMerger4initEv",
@@ -12942,6 +12934,14 @@
    "linked": false,
    "osize": 118,
    "usize": 120
+  },
+  {
+   "name": "_ZN8CutScene17replacePlayerShipEii",
+   "pct": 82.2,
+   "byte": false,
+   "linked": false,
+   "osize": 288,
+   "usize": 264
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15MeshGetTriCountEPNS_4MeshE",
