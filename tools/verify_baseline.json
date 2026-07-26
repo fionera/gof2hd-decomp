@@ -227,7 +227,6 @@
   "_Z23_mtw_ArraySetLength_StriPv",
   "_Z23_mtw_Layout_OnTouchMovePvi",
   "_Z23paintcanvas_ctor_matrixPv",
-  "_Z23paintcanvas_ext_disablei",
   "_Z23paintcanvas_ext_mtx_mulPvPKvS_",
   "_Z23paintcanvas_ext_set_wvmPv",
   "_Z24AERandom_nextInt_noboundi",

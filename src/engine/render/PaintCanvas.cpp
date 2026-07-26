@@ -374,8 +374,6 @@ void paintcanvas_ext_camera_apply(void *, unsigned int, unsigned int, unsigned i
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_disable(int);
-
 int paintcanvas_ext_is_posteffect(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_use_refract(void *); // lint: void_ptr (external symbol; mangling must match lib)
@@ -1787,7 +1785,7 @@ void PaintCanvas::MeshSetTriangleCount(unsigned int index, unsigned short count)
 }
 
 void PaintCanvas::DisableClip() {
-    paintcanvas_ext_disable(0xc11);
+    glDisable(0xc11);
 }
 
 void PaintCanvas::TransformSetColor(unsigned int index, unsigned int color) {
