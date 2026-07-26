@@ -2,6 +2,109 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-26m (waves 58–61 — exact near misses and real virtual calls)
+
+Net from the wave-57 checkpoint: avg **77.97->77.99**, byte
+**1161->1162 (+1)**, linked **2630->2639 (+9)**, imports **601 (=)**,
+verify extra **35 (=)**, sodiff allowed extras **52 (=)**, and
+stub/missing/wrong_type **0/0/0**. Nine passes were directly verified,
+ratcheted, baseline-locked, and committed serially by the controller.
+Disjoint internal GPT-5.6 Sol workers at medium/low reasoning performed the
+Ghidra analysis and C++ authoring; no Claude Workflow was used. Workers did
+not build, gate, ratchet, update shared reports/docs/baselines, stash, or
+commit.
+
+Landed passes, in order:
+
+- `96a18cfc` `ApplicationManager::OnTouchMove`: **94.3->97.7%** at
+  104/104 bytes. Direct x/y formal parameters restored the independent
+  scalar spills and the original 44 decoded instructions; rounded globals
+  stayed at avg **77.97**, byte **1161**, linked **2630**, imports **601**.
+- `7c811aa5` `Achievements::setMedals`: **90.9->100% linked** at
+  56/56 bytes. A separate signed fill induction variable restored
+  `cmp #45; blt`; byte **1161->1162** and linked **2630->2631**.
+- `a41efb0d` `Mission::setTargetStation`: **90.0->100% linked** at
+  104/104 bytes; linked **2631->2632**. Chaining the station lookup into
+  the name assignment restored the canary/Galaxy GOT register allocation.
+- `a273fa71` `RadioMessage::RadioMessage(int,int,int,int)` C1/C2:
+  each **89.5->100% linked** at 48/48 bytes. Allocating and initializing
+  through `targetIndices` restored the exact tail for both aliases; avg
+  **77.97->77.98**, linked **2632->2634**.
+- `10dea043` `LensFlare::~LensFlare` D1/D2: each **90.0->100% linked**
+  at 22/22 bytes; linked **2634->2636**. The original calls scalar
+  `_ZdlPv`, not array `_ZdaPv`, despite the constructor's array allocation.
+- `846803b8` `PlayerAsteroid::~PlayerAsteroid` D1/D2: each
+  **94.7->100% linked** at 52/52 bytes; linked **2636->2638**. Moving the
+  `explosion = nullptr` store to the common tail repaired both aliases.
+- `91b48b90`
+  `HangarWindow::refreshCargoAvailabilityForBlueprints`:
+  **93.0->98.6%** at 188/188 bytes. Snapshotting only the counters Array
+  while reloading its data pointer per ingredient restored the loop body;
+  rounded global counts were unchanged.
+- `c569efc3` `LevelScript::resetCamera`: **90.7->100% linked** at
+  124/124 bytes. A camera snapshot used only by `setTarget` keeps
+  `m_pCamera +0x14` live across the second `Level::getPlayer`, while the
+  two offset calls retain their original member reloads; avg
+  **77.98->77.99**, linked **2638->2639**.
+- `33734a5e` `PlayerStation::outerCollide(float,float,float)`:
+  **90.9->92.4%** at 196/196 bytes. The loop now calls the verified
+  `BoundingVolume::outerCollide` vtable slot **+0x0c**, not `collide` at
+  **+0x08**; rounded global counts were unchanged.
+
+Verified source, ABI, and compiler facts:
+
+- RadioMessage fields `targetCount/targetIndices` are the adjacent
+  **+0x18/+0x1c** pair; initializing through the member lets `-Oz` defer
+  and coalesce their stores after the allocated element write.
+- BoundingVolume address-point slots in the original are
+  `getCollisionNormal/update/collide/outerCollide/project` at
+  **+0x00/+0x04/+0x08/+0x0c/+0x10**. PlayerStation's float overload
+  genuinely uses `outerCollide`.
+- `LevelScript::m_pCamera` is **+0x14** and `PlayerEgo::geometry` is
+  **+0x08**. The original snapshots the camera for only the first camera
+  call and reloads it for both Vector-offset calls.
+- LensFlare's original scalar-delete call is intentional binary evidence;
+  do not “correct” it back to `delete[]` without a new target.
+
+Deferred and requeue findings:
+
+- New self-contained notes:
+  `_work/reconstructions/ApplicationManager-OnTouchMove.md`,
+  `Station-hasItem-hasShip.md`, `FileInterfaceAndroid-Seek.md`,
+  `HackingGame-reInit.md`,
+  `HangarWindow-refreshCargoAvailabilityForBlueprints.md`, and
+  `PlayerStation-outerCollide.md`.
+- `ApplicationManager::OnTouchMove` retains only the early
+  `mov r8,touch` schedule. `Station::hasItem/hasShip` retain only the
+  pre-null-guard `this` copies at **96.0%, 58/58**. `FileInterfaceAndroid::Seek`
+  retains two pre-guard preservation copies at **93.9%, 80/80**. Natural
+  aliases and guard variants were neutral; requeue only with authentic
+  null-edge liveness.
+- `HackingGame::reInit` remains **89.8%, 420/420**. Signed, unsigned, and
+  post-decrement shuffle forms all canonicalized to the current negative
+  trip counter; the later solver-call zero-register schedule remains tied
+  to it.
+- HangarWindow's landed body has only a three-instruction MachineSink
+  schedule around the cargo null guard. A direct chained counter expression
+  regressed the register plan and was rejected.
+- PlayerStation's correct-callee body still eagerly preserves x/y/z in the
+  original but sinks those copies across the AABB guards now. Two retries
+  found no same-version source evidence for forcing those lifetimes.
+- ImageFactory's checked residuals remain as previously documented:
+  `createChar(bool,int)` has correct GOT/table relocation identities, and
+  `loadChar(int*)` is a one-move MachineSink case.
+
+Tier position: tier 1 remains exhausted (`stub_zero_size 0`). No fresh,
+provable wrong-callee family was found in the tier-2 sweep; **601** imports
+remain pinned, with larger PaintCanvas/MenuTouch/Hangar bodies requiring
+dedicated work. Tier 3 same-size near misses remains active. Exclusive
+layout/TU items from prior sessions remain parked; drain the fleet before
+touching them. Current committed metrics are **4523 compared, avg 77.99%,
+byte_exact 1162, linked_exact 2639, verify extra 35, missing/wrong_type/
+stub_zero_size 0/0/0, imports 601**. No workers or stashes are in flight.
+The worktree is clean except the pre-existing untracked `.claude/`, which
+was not touched. Run only one orchestrator.
+
 ## Session 2026-07-26l (waves 55–57 — jump scenes, de-shims, and exact near misses)
 
 Net from the wave-54 checkpoint: avg **77.90->77.97**, byte
