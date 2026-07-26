@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.06,
   "byte_exact": 1166,
-  "linked_exact": 2663,
-  "fuzzy_perfect": 2663,
+  "linked_exact": 2664,
+  "fuzzy_perfect": 2664,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13840,14 +13840,6 @@
    "usize": 68
   },
   {
-   "name": "_ZN15IParticleSystem20resetEmitterVelocityEv",
-   "pct": 91.7,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 92
-  },
-  {
    "name": "_ZN6Player6addGunEP3Guni",
    "pct": 91.7,
    "byte": false,
@@ -24582,6 +24574,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN15IParticleSystem20resetEmitterVelocityEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 92,
+   "usize": 92
   },
   {
    "name": "_ZN15IParticleSystem6updateEi",

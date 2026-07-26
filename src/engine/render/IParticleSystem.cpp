@@ -663,11 +663,14 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
 }
 
 void IParticleSystem::resetEmitterVelocity() {
-    char value[12] = {};
-    this->emitterVelocity = *(Vector *) (value);
+    {
+        Vector value = {};
+        this->emitterVelocity = value;
+    }
     this->emitterVelocityDirty = 1;
-    char *matrixValue = value;
-    new (matrixValue) Vector(AbyssEngine::AEMath::MatrixGetPosition(*this->matrix));
-    this->lastEmitterPosition = *(Vector *) (matrixValue);
+    {
+        Vector value = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
+        this->lastEmitterPosition = value;
+    }
     this->field_0x4 = 0;
 }
