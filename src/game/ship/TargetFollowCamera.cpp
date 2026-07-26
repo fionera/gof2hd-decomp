@@ -195,11 +195,12 @@ void TargetFollowCamera::translate(float dx, float dy, float dz) {
 }
 
 void TargetFollowCamera::setShipHandling(float handling) {
-    float s = handling * 0.01f;
+    float s = handling * bitsToFloat(0x3c23d70a);
     this->shipHandling = handling;
-    this->handlingDampingA = 0.003f + (1.0f - s) * 0.015f;
-    this->handlingDampingB = 0.001f + s * 0.010986f;
-    update(1);
+    this->handlingDampingA = bitsToFloat(0x3b449ba6) +
+                             (bitsToFloat(0x3f800000) - s) * bitsToFloat(0x3c75c28e);
+    this->handlingDampingB = bitsToFloat(0x3a83126f) + s * bitsToFloat(0x3c343958);
+    calculateCoefficents(bitsToFloat(0x3f800000));
 }
 
 void TargetFollowCamera::resetShipHandling() {

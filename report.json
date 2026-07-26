@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.19,
+  "avg_match": 78.2,
   "byte_exact": 1174,
-  "linked_exact": 2690,
-  "fuzzy_perfect": 2690,
+  "linked_exact": 2691,
+  "fuzzy_perfect": 2691,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1392,20 +1392,20 @@
    "usize": 716
   },
   {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.0,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
-  },
-  {
    "name": "_ZN7StarMap10OnTouchEndEii",
    "pct": 7.0,
    "byte": false,
    "linked": false,
    "osize": 2972,
    "usize": 348
+  },
+  {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 7.1,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
   },
   {
    "name": "_ZN11AbyssEngine13CurveGetValueEyPNS_5CurveE",
@@ -12374,14 +12374,6 @@
    "linked": false,
    "osize": 192,
    "usize": 184
-  },
-  {
-   "name": "_ZN18TargetFollowCamera15setShipHandlingEf",
-   "pct": 79.1,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 84
   },
   {
    "name": "_ZN11AbyssEngine12GlowPPShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -25158,6 +25150,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN18TargetFollowCamera15setShipHandlingEf",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 84,
+   "usize": 84
   },
   {
    "name": "_ZN18TargetFollowCamera15setTargetOffsetERKN11AbyssEngine6AEMath6VectorE",
