@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.7,
+  "avg_match": 77.71,
   "byte_exact": 1160,
   "linked_exact": 2594,
   "fuzzy_perfect": 2594,
@@ -4112,14 +4112,6 @@
    "usize": 492
   },
   {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
-  },
-  {
    "name": "ndk_iapBoughtConsumable",
    "pct": 28.0,
    "byte": false,
@@ -4150,6 +4142,14 @@
    "linked": false,
    "osize": 172,
    "usize": 176
+  },
+  {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
   },
   {
    "name": "_ZN9ExplosionD1Ev",
@@ -8024,14 +8024,6 @@
    "usize": 264
   },
   {
-   "name": "_ZN13PlayerFighter5cloakEib",
-   "pct": 48.9,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 56
-  },
-  {
    "name": "_ZN13PlayerStation6updateEi",
    "pct": 48.9,
    "byte": false,
@@ -8792,20 +8784,20 @@
    "usize": 608
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -14166,6 +14158,14 @@
    "linked": false,
    "osize": 700,
    "usize": 696
+  },
+  {
+   "name": "_ZN13PlayerFighter5cloakEib",
+   "pct": 91.7,
+   "byte": false,
+   "linked": false,
+   "osize": 68,
+   "usize": 68
   },
   {
    "name": "_ZN4Ship11getHandlingEv",

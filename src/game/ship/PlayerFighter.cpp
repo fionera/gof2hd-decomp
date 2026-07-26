@@ -1853,7 +1853,7 @@ void PlayerFighter::cloak(int dur, bool b) {
     if (dur > 0) {
         v = (unsigned) dur;
     } else {
-        v = PF_nextInt((int) (intptr_t) Globals::rnd) + 5000;
+        v = Globals::rnd->nextInt(5000) + 5000;
     }
     this->cloakActive = 1;
     this->cloakDuration = v + 4000;
@@ -2305,4 +2305,3 @@ void PlayerFighter::revive() {
 }
 
 int PlayerFighter::stationRouteAliens;
-
