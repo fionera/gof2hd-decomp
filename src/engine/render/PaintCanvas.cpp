@@ -360,8 +360,6 @@ char *paintcanvas_ext_find_res(void *, unsigned int); // lint: void_ptr (externa
 
 void paintcanvas_ext_change_mat(void *, void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_setcolor(void *, float, float, float, float); // lint: void_ptr (external symbol; mangling must match lib)
-
 // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_vibrate(void *); // lint: void_ptr (external symbol; mangling must match lib)
@@ -371,14 +369,6 @@ int paintcanvas_ext_strcmp(void *, void *); // lint: void_ptr (external symbol; 
 unsigned int paintcanvas_ext_strlen(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_clear(int);
-
-void paintcanvas_ext_setprojmatrix3d(void *, float, float, float); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-int paintcanvas_ext_getdisplaywidth(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-int paintcanvas_ext_getdisplayheight(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_mat_intern(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1699,7 +1689,7 @@ static float *paintcanvas_g_pom_b = &paintcanvas_g_pom_b_storage;
 void PaintCanvas::SetProjOrthoMatrix() {
     float g = *paintcanvas_g_pom_persp;
     if (g != -1.0f) {
-        paintcanvas_ext_setprojmatrix3d(this, g, *paintcanvas_g_pom_a, *paintcanvas_g_pom_b);
+        this->SetProjectionMatrix3d(g, *paintcanvas_g_pom_a, *paintcanvas_g_pom_b);
     }
     Engine *eng = this->engine;
     float *r;
@@ -1724,10 +1714,10 @@ void PaintCanvas::SetProjOrthoMatrix() {
     r[2] = 0.0f;
     r[3] = 0.0f;
 
-    int w = paintcanvas_ext_getdisplaywidth(eng);
+    int w = eng->GetDisplayWidth();
     this->projOrthoMatrix.m[0] = (float) (2.0 / (double) w);
 
-    int h = paintcanvas_ext_getdisplayheight(this->engine);
+    int h = this->engine->GetDisplayHeight();
     this->projOrthoMatrix.m[10] = -0.05f;
     this->projOrthoMatrix_m15 = 1.0f;
     this->projOrthoMatrix.m[12] = -1.0f;
@@ -4239,7 +4229,7 @@ void PaintCanvas::Begin2d() {
     glDepthMask(0);
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
-    paintcanvas_ext_setcolor(this->engine, 1.0f, 1.0f, 1.0f, 1.0f);
+    this->engine->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     this->engine->GlEnable(0xde1, true);
     if (*paintcanvas_g_b2d_flag == 0) {
         glTexEnvi(0x2300, 0x2200, 0x2100);

@@ -8808,6 +8808,14 @@
    "usize": 128
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
    "pct": 53.3,
    "byte": false,
@@ -8830,14 +8838,6 @@
    "linked": false,
    "osize": 36,
    "usize": 40
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -9960,14 +9960,6 @@
    "usize": 136
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas18SetProjOrthoMatrixEv",
-   "pct": 58.5,
-   "byte": false,
-   "linked": false,
-   "osize": 204,
-   "usize": 152
-  },
-  {
    "name": "_ZN18TargetFollowCamera18setFastForwardModeEb",
    "pct": 58.5,
    "byte": false,
@@ -10718,6 +10710,14 @@
    "linked": false,
    "osize": 232,
    "usize": 240
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas18SetProjOrthoMatrixEv",
+   "pct": 64.2,
+   "byte": false,
+   "linked": false,
+   "osize": 204,
+   "usize": 152
   },
   {
    "name": "_ZN11AbyssEngine22SimpleRefractionShader4InitEPNS_6EngineE",
@@ -12648,14 +12648,6 @@
    "usize": 60
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas7Begin2dEv",
-   "pct": 79.0,
-   "byte": false,
-   "linked": false,
-   "osize": 216,
-   "usize": 176
-  },
-  {
    "name": "_ZN11AbyssEngine17BumpRimCubeShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 79.0,
    "byte": false,
@@ -12942,6 +12934,14 @@
    "linked": false,
    "osize": 70,
    "usize": 68
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas7Begin2dEv",
+   "pct": 80.7,
+   "byte": false,
+   "linked": false,
+   "osize": 216,
+   "usize": 176
   },
   {
    "name": "_ZN10ModStation8OnResumeEv",
