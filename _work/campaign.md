@@ -2,6 +2,141 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-26j (waves 35–52 — de-shims, scheduling, and layout recovery)
+
+Net from the wave-34 checkpoint: avg **77.64->77.85**, byte
+**1160->1161 (+1)**, linked **2587->2622 (+35)**, imports
+**653->619 (-34)**, verify extra **35 (=)**, sodiff allowed extras **52 (=)**,
+stub/missing/wrong_type **0/0/0**, parity clean. All 46 landed passes were
+independently linked, directly verified, ratcheted, baseline-locked, and
+committed by the controller. The fleet used disjoint internal GPT-5.6 Sol
+workers at medium/low reasoning; workers remained read-only and never built,
+verified, ratcheted, changed baselines, or committed.
+
+Landed passes, in order:
+
+- Early exact and typed-call sweep:
+  `22a17955` MenuTouchWindow::saveGame,
+  `cbf3e938` Gun D1/D2,
+  `7f5000c4` PlayerEgo::isDockedToMiningPlant,
+  `54fc27ad` PlayerFixedObject::projectCollisionOnSurface,
+  `137c2067` PlayerFixedObject::getProjectionVector,
+  `736a7131` PaintCanvas::MeshCreate,
+  `6a0da8b6` MissionsWindow C1/C2,
+  `edcf13fc` PaintCanvas SetTexture/GetWidth/GetHeight,
+  `c68cf5b0` MissionsWindow::OnTouchEnd,
+  `7cba60f2` Player position family,
+  `f73baa67` Layout::getPulseValue,
+  `2146d23d` SpaceLounge::update, and
+  `a778c7ca` PaintCanvas Begin2d/SetProjOrthoMatrix.
+- Typed-return, random, and engine-call reconstruction:
+  `be078782` IParticleSystem::calcEmitterVelocity,
+  `54ede9ce` PlayerFighter::cloak,
+  `b416027c` PlayerEgo::stopShooting,
+  `97c6a501` MiningGame::render2D,
+  `709d1ac4` ModStation::OnKeyPress,
+  `d307159f` PlayerFighter::initPush,
+  `84dd3a04` PlayerFighter C1/C2,
+  `8d78e0bb` IParticleSystem::emit,
+  `d1e8aaab` IParticleSystem::resetEmitterVelocity,
+  `cf31ce9b` PaintCanvas::Vibrate,
+  `fbad102b` AEGeometry::setDirection,
+  `3301f9f5` TouchButton::init ABI meanings,
+  `9f745633` PaintCanvas::DisableClip,
+  `7c671754` TouchButton achievement tables,
+  `f1e11e79` AEGeometry::moveForward,
+  `7f072a35` Mission constructors,
+  `b2d8d3b7` ObjectGun::update, and
+  `721a29e7` FBOContainer::Release.
+- Exclusive and literal/source-order wins:
+  `e60cb9b7` MGame natural alignment,
+  `e7914d3f` HangarWindow::demountItem,
+  `c2b08469` Ship::clone,
+  `06e182b4` Ship::adjustPrice,
+  `e5e40246` Trail::changeType, and
+  `75eb2f50` BoundingSphere layout.
+- Final near-miss waves:
+  `8e61308c` GameText C1/C2,
+  `72fde514` setBaughtCredits,
+  `651032e3` TouchButton C1/C2,
+  `815e6ac7` both Route overloads and four C1/C2 aliases,
+  `c4dba4c9` Ship::setCargo,
+  `301fab33` Waypoint C1/C2,
+  `06f3bf93` PaintCanvas::GetReverseString,
+  `c8311c49` PaintCanvas real Mesh shader-animation overload, and
+  `f0b3daaf` PlayerEgo D1/D2 reachable cleanup.
+
+High-value verified facts:
+
+- Direct global/member expressions recover pool scheduling. GameText must
+  assign `GameText::currentLang`, not an invented volatile pointer; TouchButton
+  must load `Globals::font` before `Globals::Canvas`.
+- Store scheduling often runs opposite source order at `-Oz`. Reversing
+  independent assignments made Mission C1/C2, both Route overloads, and
+  Ship::setCargo exact. Route's `loop @ +0x04` is a real `bool`; the type
+  change is layout-neutral.
+- Waypoint writes only the low byte of inherited `KIPlayer::hasCargo @ +0x4c`.
+  The established `reinterpret_cast<uint8_t &>` overlay preserved
+  `sizeof(KIPlayer)==0x124`, `sizeof(Waypoint)==0x138`, and made both aliases
+  exact.
+- Literal pools proved Ship::clone's handling multiplier is **100.0f** and
+  adjustPrice uses **0.0f**, **-0.01f**, and **+0.01f**. Trail's original
+  source/pool clause order is red, green, default, case 5, yellow, case 8.
+- MGame is naturally aligned without packing; its verified offsets and
+  `sizeof==496` remain unchanged. BoundingSphere has real inheritance, radius
+  at **+0x38**, three typed Vector regions, and `sizeof==0x48`.
+- Normal `delete easeMatrix` removes PlayerEgo's redundant `+0x358` reload.
+  D1/D2 are now **99.5%** and every reachable instruction is structural or
+  link-only. The remaining four bytes are an unreachable catch/terminate
+  landing call; attempts to recover it from exception specifications are
+  documented rather than faked.
+- `setBaughtCredits` now maps 100k/300k/1m/3m/10m to packs 1/2/3/4/5.
+  The original endpoint bug in the reconstruction was semantic, not only a
+  literal-pool ordering issue.
+
+Deferred and requeue findings:
+
+- Self-contained notes were added or expanded for StatusWindow, CheatHandler,
+  ImageFactory, AEMath::MatrixGetInverse, PaintCanvas::CameraCreate and other
+  near misses, the MGame sound loops, Ship MachineSink methods, TouchSlider,
+  PlayerEgo D1/D2, and PaintCanvas residuals. Do not repeat their exhausted
+  source shapes.
+- MatrixGetInverse, CameraCreate, and MaterialCreate are C2/C1 ownership
+  blockers. Original constructors are weak C2-only; current constructors are
+  strong out-of-line C1/C2 aliases. Matrix also has different default values:
+  original ones at indices 0/5/10/13/14 versus current 0/5/12/14. Requeue
+  Matrix, Camera, and Material only as drained, atomic header/source ownership
+  passes with dynamic-symbol parity.
+- BumpShaderParticle::Init is a high-confidence exclusive pass. Original
+  layout is six attributes plus thirteen uniforms, not five plus fourteen,
+  and `ES2LoadProgram` receives two verified inline GLSL blobs. Exact offsets,
+  literals, hashes, and the TU-wide field remap are in
+  `_work/reconstructions/BumpShaderParticle-Init.md`.
+- MachineSink walls now include the six Ship nullable-array helpers, MGame
+  pause/resume sound loops, PaintCanvas TransformRemoveMesh and
+  TransformGetTriCount, the remaining prefix of MeshChangeShaderAnimValue,
+  ImageFactory::loadChar, CheatHandler::Update, and previously documented
+  functions. TouchSlider::OnTouchMove is signed-expression reassociation, not
+  a field-type bug.
+- StatusWindow::update exhausted four legal source attempts. Optimized IR
+  retains the recovered store order, but SelectionDAG reverses it;
+  diagnostic-only `-mllvm -pre-RA-sched=source` proves the backend lever and
+  is forbidden.
+- CheatHandler remains an exclusive authoritative TU merge with CheatCode.
+  ImageFactory::createChar(bool,int) remains a verifier delayed-PIC
+  normalization limitation. Matrix/Camera/Material ownership and
+  BumpShaderParticle layout work must not overlap a worker wave.
+- The ModStation typed OnUpdate batch and non-Vibrate/non-DisableClip
+  PaintCanvas tail batch were rejected after local or transient regressions;
+  gate those siblings individually. StarMap's previously documented
+  path/pathFinder and missionChangedFlag layout blockers remain queued.
+
+Tier position: tier 1 remains exhausted (`stub_zero_size 0`). Tier 2 remains
+active with **619** pinned imports; tier 3 same-size near misses is also
+active. No workers are in flight. Resume by re-triaging current imports and
+near misses, or drain the fleet for the fully specified BumpShaderParticle
+exclusive pass. Run only one orchestrator.
+
 ## Session 2026-07-25i (waves 18–34 — typed calls, ABI repairs, and near misses)
 
 Net from the wave-17 checkpoint: avg **77.48->77.64**, byte
