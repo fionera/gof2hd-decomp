@@ -2512,14 +2512,6 @@
    "usize": 1612
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.7,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN10StarSystem6renderEv",
    "pct": 16.8,
    "byte": false,
@@ -2534,6 +2526,14 @@
    "linked": false,
    "osize": 608,
    "usize": 568
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 16.9,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "_ZN3HudC1Ev",

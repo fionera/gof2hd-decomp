@@ -116,8 +116,6 @@ static Layout **SpaceLounge_draw_layout_slot;
 static PaintCanvas **SpaceLounge_draw_canvas_slot;
 static GameText **SpaceLounge_draw_text_slot;
 
-float Sinf(float value);
-
 static PaintCanvas **SpaceLounge_update_camera_slot_a;
 static PaintCanvas **SpaceLounge_update_camera_slot_b;
 static PaintCanvas **SpaceLounge_update_camera_slot_c;
@@ -1287,7 +1285,7 @@ void SpaceLounge::update(int dt) {
         }
         this->introDone = 1;
         this->headBobPhase = this->headBobPhase + step;
-        float wave = Sinf(this->headBobPhase);
+        float wave = AbyssEngine::AEMath::Sinf(this->headBobPhase);
         float maxRot = (float) this->headBobSteps * 0.5f;
 
         if (this->cameraAnimating == 0) {
