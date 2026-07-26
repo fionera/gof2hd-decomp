@@ -7688,14 +7688,6 @@
    "usize": 696
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 46.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine13SetPostEffectEjb",
    "pct": 46.8,
    "byte": false,
@@ -8462,6 +8454,14 @@
    "linked": false,
    "osize": 184,
    "usize": 188
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 50.5,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine16ShaderBaseStructC2Ev",
@@ -14520,14 +14520,6 @@
    "usize": 84
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas25MeshChangeShaderAnimValueEPNS_9TransformEfj",
-   "pct": 94.1,
-   "byte": false,
-   "linked": false,
-   "osize": 80,
-   "usize": 80
-  },
-  {
    "name": "_ZN9PlayerEgo17getTurretPositionEv",
    "pct": 94.1,
    "byte": false,
@@ -14934,6 +14926,14 @@
    "linked": false,
    "osize": 388,
    "usize": 388
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas25MeshChangeShaderAnimValueEPNS_9TransformEfj",
+   "pct": 97.1,
+   "byte": false,
+   "linked": false,
+   "osize": 80,
+   "usize": 80
   },
   {
    "name": "_ZN11AbyssEngine16TransformReleaseEPNS_6EngineEPPNS_9TransformE",

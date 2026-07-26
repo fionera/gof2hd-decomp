@@ -5186,7 +5186,7 @@ void PaintCanvas::MeshChangeShaderAnimValue(Transform *transform, float value, u
     if (transform) {
         for (unsigned int i = 0; i < transform->meshes.size(); ++i) {
             AbyssEngine::Mesh *m = transform->meshes[i];
-            paintcanvas_ext_mesh_shaderanim(this, m, value, mode);
+            this->MeshChangeShaderAnimValue(m, value, mode);
         }
         for (unsigned int i = 0; i < transform->children.size(); ++i) {
             AbyssEngine::Transform *c = transform->children[i];
