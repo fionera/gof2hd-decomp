@@ -20,7 +20,6 @@ namespace AbyssEngine {
     class Image2D;
     class KeyCode;
     class Material;
-    class CheatCode;
     class ImageFont;
     class TokenStruct;
     class AELoadedTexture;
@@ -97,8 +96,6 @@ template void ArrayRemoveAll<ae::Image2D *>(Array<ae::Image2D *> &);
 template void ArrayRemoveAll<ae::KeyCode *>(Array<ae::KeyCode *> &);
 
 template void ArrayRemoveAll<ae::Material *>(Array<ae::Material *> &);
-
-template void ArrayRemoveAll<ae::CheatCode *>(Array<ae::CheatCode *> &);
 
 template void ArrayRemoveAll<ae::ImageFont *>(Array<ae::ImageFont *> &);
 

@@ -1,6 +1,6 @@
 # TU mapping: our src/ vs original GoF2 layout (primary witness gof2hd_1.1.19_ios; engine witness gof2sd_1.0.1 libAbyssEngineDevice.a; secondary mac fhd / MeeGo / windows)
 
-Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 14, 'merge': 1, 'partial': 4, 'witnessed_other': 4, 'platform_analog': 4, 'no_witness': 40, 'invented': 6}, total ours=204
+Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge': 1, 'partial': 4, 'witnessed_other': 4, 'platform_analog': 4, 'no_witness': 40, 'invented': 6}, total ours=203
 
 | our TU | category | original TU | note |
 |---|---|---|---|
@@ -117,7 +117,6 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 14, 'merge
 | game/core/BumpShaderV3.cpp | no-witness(2.0.x shader) | (none) | GLES2 shader zoo, absent from all dumps |
 | game/core/BumpShaderV4.cpp | no-witness(2.0.x shader) | (none) | GLES2 shader zoo, absent from all dumps |
 | game/core/CheatCode.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/CheatCode.cpp |  |
-| game/core/CheatHandler.cpp | split | Svn_iPhone_AE2/Classes/CheatCode.cpp | orig CheatCode.cpp = CheatCode + CheatHandler |
 | game/core/CutScene.cpp | exact(HD) | Classes/Game/CutScene.cpp |  |
 | game/core/Globals.cpp | exact(HD) | Classes/Game/Globals.cpp |  |
 | game/core/HangarList.cpp | exact(HD) | Classes/Game/HangarList.cpp |  |

@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.39,
+  "avg_match": 78.4,
   "byte_exact": 1181,
-  "linked_exact": 2719,
-  "fuzzy_perfect": 2719,
+  "linked_exact": 2722,
+  "fuzzy_perfect": 2722,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14120,22 +14120,6 @@
    "usize": 96
   },
   {
-   "name": "_ZN11AbyssEngine12CheatHandlerD1Ev",
-   "pct": 97.4,
-   "byte": false,
-   "linked": false,
-   "osize": 98,
-   "usize": 98
-  },
-  {
-   "name": "_ZN11AbyssEngine12CheatHandlerD2Ev",
-   "pct": 97.4,
-   "byte": false,
-   "linked": false,
-   "osize": 98,
-   "usize": 98
-  },
-  {
    "name": "_ZN5Level13uncoverWantedEi",
    "pct": 97.4,
    "byte": false,
@@ -14350,14 +14334,6 @@
    "linked": false,
    "osize": 106,
    "usize": 102
-  },
-  {
-   "name": "_ZN11AbyssEngine12CheatHandler12AddCheatCodeERKNS_6StringEi",
-   "pct": 98.8,
-   "byte": false,
-   "linked": false,
-   "osize": 214,
-   "usize": 214
   },
   {
    "name": "_ZN11AbyssEngine6String13ReplaceStringES0_S0_",
@@ -18384,6 +18360,14 @@
    "usize": 16
   },
   {
+   "name": "_ZN11AbyssEngine12CheatHandler12AddCheatCodeERKNS_6StringEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 214,
+   "usize": 214
+  },
+  {
    "name": "_ZN11AbyssEngine12CheatHandler12SetCheatFuncEPFviPvES1_",
    "pct": 100.0,
    "byte": true,
@@ -18406,6 +18390,22 @@
    "linked": true,
    "osize": 56,
    "usize": 56
+  },
+  {
+   "name": "_ZN11AbyssEngine12CheatHandlerD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 98,
+   "usize": 98
+  },
+  {
+   "name": "_ZN11AbyssEngine12CheatHandlerD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 98,
+   "usize": 98
   },
   {
    "name": "_ZN11AbyssEngine12ConfigReader25RegisterTokenReadFunctionENS_6StringEPFvPS0_PvES3_",
