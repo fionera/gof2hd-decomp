@@ -73,8 +73,8 @@ namespace AbyssEngine {
                 glUniform3f(this->uM2Loc, engine->lightColor.x, engine->lightColor.y,
                             engine->lightColor.z);
             int loc = this->uM5Loc;
-            float w = (float) engine->GetDisplayWidth();
-            float h = (float) engine->GetDisplayHeight();
+            float w = (float) (int32_t) engine->GetDisplayWidth();
+            float h = (float) (int32_t) engine->GetDisplayHeight();
             glUniform2f(loc, 1.0f / w, 1.0f / h);
             glActiveTexture(0x84c7);
             engine->ActivateRefractFBO();
