@@ -70,6 +70,7 @@ public:
     unsigned char hasAutofireUI;
     uint8_t _hudrealign_0x210[24]; // realign field_0x228 to 0x228
     String field_0x228;
+    unsigned char field_0x234;
     unsigned char cargoFullFlag;
     Level *menuLevel;
     Item *currentSecondaryWeapon;
@@ -165,9 +166,10 @@ public:
     unsigned short field_0x41c;
     unsigned short lockBracketX;
     unsigned short lockBracketY;
+    unsigned short field_0x422;
     unsigned short reticleX;
     unsigned short reticleY;
-    uint8_t _hudrealign_0x426[6]; // realign field_0x42c to 0x42c
+    uint8_t _hudrealign_0x428[4]; // realign field_0x42c to 0x42c
     unsigned short field_0x42c;
     uint8_t _hudrealign_0x42e[10]; // realign field_0x438 to 0x438
     unsigned short field_0x438;
@@ -203,12 +205,14 @@ public:
     int menuOriginYBase;
     int touchHalfExtent;
     int touchHalfExtentSmall;
-    int analogStickRadius;
+    int field_0x494;
     int eventLineMargin;
     int eventLineMarginAlt;
     int secondaryLabelTimerSeed;
     int secondaryLabelTimer;
-    uint8_t _hudrealign_0x4a8[116]; // realign field_0x51c to 0x51c
+    uint8_t _hudrealign_0x4a8[56];
+    int analogStickRadius;
+    uint8_t _hudrealign_0x4e4[56]; // realign field_0x51c to 0x51c
     String field_0x51c;
     unsigned char hackingGameActive;
     int cargoAggregateCount;

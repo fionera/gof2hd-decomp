@@ -100,6 +100,7 @@ unsigned int Hud::firePressed() {
 
 void Hud::resetAnalogStick() {
     this->lockBracketX = this->reticleX;
+    this->lockBracketY = this->reticleY;
 }
 
 float Hud::getAnalogY() {

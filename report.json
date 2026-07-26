@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.32,
-  "byte_exact": 1174,
-  "linked_exact": 2707,
-  "fuzzy_perfect": 2707,
+  "avg_match": 78.36,
+  "byte_exact": 1178,
+  "linked_exact": 2712,
+  "fuzzy_perfect": 2712,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -5664,14 +5664,6 @@
    "usize": 132
   },
   {
-   "name": "_ZN3Hud16resetAnalogStickEv",
-   "pct": 33.3,
-   "byte": false,
-   "linked": false,
-   "osize": 10,
-   "usize": 10
-  },
-  {
    "name": "_ZN5Agent15setSellItemDataEiii",
    "pct": 33.3,
    "byte": false,
@@ -8145,14 +8137,6 @@
   },
   {
    "name": "_ZN3Hud21enableFireForTutorialEb",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 6
-  },
-  {
-   "name": "_ZN3Hud9cargoFullEv",
    "pct": 50.0,
    "byte": false,
    "linked": false,
@@ -12608,22 +12592,6 @@
    "usize": 54
   },
   {
-   "name": "_ZN3Hud10getAnalogXEv",
-   "pct": 81.8,
-   "byte": false,
-   "linked": false,
-   "osize": 40,
-   "usize": 40
-  },
-  {
-   "name": "_ZN3Hud10getAnalogYEv",
-   "pct": 81.8,
-   "byte": false,
-   "linked": false,
-   "osize": 40,
-   "usize": 40
-  },
-  {
    "name": "_ZN11AbyssEngine8MaterialC2Ev",
    "pct": 81.9,
    "byte": false,
@@ -13654,14 +13622,6 @@
    "linked": false,
    "osize": 112,
    "usize": 108
-  },
-  {
-   "name": "_ZN3Hud9touchMoveEjjPv",
-   "pct": 92.6,
-   "byte": false,
-   "linked": false,
-   "osize": 204,
-   "usize": 204
   },
   {
    "name": "_ZN4Ship13slotAvailableEi",
@@ -25848,6 +25808,22 @@
    "usize": 120
   },
   {
+   "name": "_ZN3Hud10getAnalogXEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 40,
+   "usize": 40
+  },
+  {
+   "name": "_ZN3Hud10getAnalogYEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 40,
+   "usize": 40
+  },
+  {
    "name": "_ZN3Hud10setVisibleEb",
    "pct": 100.0,
    "byte": true,
@@ -25904,6 +25880,14 @@
    "usize": 52
   },
   {
+   "name": "_ZN3Hud16resetAnalogStickEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 10,
+   "usize": 10
+  },
+  {
    "name": "_ZN3Hud19isHackingGameActiveEv",
    "pct": 100.0,
    "byte": true,
@@ -25928,6 +25912,14 @@
    "usize": 118
   },
   {
+   "name": "_ZN3Hud9cargoFullEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
    "name": "_ZN3Hud9hudActionEiP5LevelP5Radar",
    "pct": 100.0,
    "byte": true,
@@ -25942,6 +25934,14 @@
    "linked": true,
    "osize": 14,
    "usize": 14
+  },
+  {
+   "name": "_ZN3Hud9touchMoveEjjPv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 204,
+   "usize": 204
   },
   {
    "name": "_ZN3NFCC1Ev",
