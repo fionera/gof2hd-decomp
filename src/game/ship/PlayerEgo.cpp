@@ -1628,7 +1628,7 @@ float PlayerEgo::left(int frameTime, float delta) {
     return target;
 }
 
-PlayerEgo::~PlayerEgo() noexcept(false) {
+PlayerEgo::~PlayerEgo() noexcept {
     if (this->player) delete (Player *) this->player;
     this->player = 0;
     if (this->field_0x4) delete (AEGeometry *) this->field_0x4;
@@ -1661,10 +1661,7 @@ PlayerEgo::~PlayerEgo() noexcept(false) {
     this->explosion = 0;
     if (this->explosion2) delete (Explosion *) (intptr_t) this->explosion2;
     this->explosion2 = 0;
-    if (this->easeMatrix) {
-        ((AbyssEngine::EaseInOutMatrix *) this->easeMatrix)->~EaseInOutMatrix();
-        ::operator delete(this->easeMatrix);
-    }
+    delete this->easeMatrix;
     this->easeMatrix = 0;
     if (this->repairBeams) {
         ArrayReleaseClasses(*this->repairBeams);

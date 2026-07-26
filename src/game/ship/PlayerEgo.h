@@ -270,7 +270,7 @@ public:
 
     PlayerEgo(Player *player);
 
-    ~PlayerEgo() noexcept(false);
+    ~PlayerEgo() noexcept;
 
     Vec3 GetDirVector();
 
