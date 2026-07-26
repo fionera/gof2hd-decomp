@@ -3017,7 +3017,7 @@ void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int m
 }
 
 AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in) {
-    return this->GetReverseString(in, this->field_0x1c == 0);
+    return this->GetReverseString(AbyssEngine::String(in, false), this->field_0x1c == 0);
 }
 
 void PaintCanvas::GetAccelValue() {

@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.84,
   "byte_exact": 1161,
-  "linked_exact": 2621,
-  "fuzzy_perfect": 2621,
+  "linked_exact": 2622,
+  "fuzzy_perfect": 2622,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14616,14 +14616,6 @@
    "usize": 172
   },
   {
-   "name": "_ZN11AbyssEngine11PaintCanvas16GetReverseStringENS_6StringE",
-   "pct": 94.7,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 96
-  },
-  {
    "name": "_ZN11SpaceLounge10OnRender3DEv",
    "pct": 94.7,
    "byte": false,
@@ -18654,6 +18646,14 @@
    "linked": true,
    "osize": 24,
    "usize": 24
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas16GetReverseStringENS_6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 96,
+   "usize": 96
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas16MeshConvertToVBOEj",
