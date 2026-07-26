@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.28,
+  "avg_match": 78.29,
   "byte_exact": 1174,
-  "linked_exact": 2698,
-  "fuzzy_perfect": 2698,
+  "linked_exact": 2699,
+  "fuzzy_perfect": 2699,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -10792,14 +10792,6 @@
    "usize": 308
   },
   {
-   "name": "_ZN11AbyssEngine12EnergyShield4InitEPNS_6EngineE",
-   "pct": 66.2,
-   "byte": false,
-   "linked": false,
-   "osize": 340,
-   "usize": 332
-  },
-  {
    "name": "_ZN7BeamGunC1EiP3GuniP5Level",
    "pct": 66.2,
    "byte": false,
@@ -12576,6 +12568,14 @@
    "usize": 176
   },
   {
+   "name": "_ZN11AbyssEngine12EnergyShield4InitEPNS_6EngineE",
+   "pct": 80.7,
+   "byte": false,
+   "linked": false,
+   "osize": 340,
+   "usize": 332
+  },
+  {
    "name": "_ZN3Gun9translateERKN11AbyssEngine6AEMath6VectorE",
    "pct": 81.1,
    "byte": false,
@@ -14046,14 +14046,6 @@
    "linked": false,
    "osize": 332,
    "usize": 336
-  },
-  {
-   "name": "_ZN11AbyssEngine12EnergyShield14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
-   "pct": 95.6,
-   "byte": false,
-   "linked": false,
-   "osize": 452,
-   "usize": 452
   },
   {
    "name": "_ZN11AbyssEngine6Engine11SetUVMatrixERKNS_6AEMath6MatrixE",
@@ -18598,6 +18590,14 @@
    "linked": true,
    "osize": 42,
    "usize": 42
+  },
+  {
+   "name": "_ZN11AbyssEngine12EnergyShield14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 452,
+   "usize": 452
   },
   {
    "name": "_ZN11AbyssEngine12EnergyShieldD0Ev",

@@ -23,8 +23,8 @@ namespace AbyssEngine {
                 glUniform3fv(this->uM5, 1, (float *) &host->rimColor);
             int loc = this->uM6;
             if (loc >= 0) {
-                float w = (float) ((::Engine *) engine)->GetDisplayWidth();
-                float h = (float) ((::Engine *) engine)->GetDisplayHeight();
+                float w = (float) (int) ((::Engine *) engine)->GetDisplayWidth();
+                float h = (float) (int) ((::Engine *) engine)->GetDisplayHeight();
                 glUniform2f(loc, 1.0f / w, 1.0f / h);
             }
             glActiveTexture(0x84c7);
