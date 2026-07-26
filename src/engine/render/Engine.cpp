@@ -133,8 +133,8 @@ double *Engine::GetAccelValue() {
     } else {
         y = this->accelRaw[1];
     }
-    this->accelValue[0] = x;
     this->accelValue[1] = y;
+    this->accelValue[0] = x;
     this->accelValue[2] = this->accelRaw[2];
     return (double *) this->accelValue;
 }
