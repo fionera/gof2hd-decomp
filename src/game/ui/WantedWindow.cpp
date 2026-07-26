@@ -572,14 +572,14 @@ WantedWindow::WantedWindow() {
     this->detailButton = nullptr;
     this->starMap = nullptr;
     this->imageParts = nullptr;
-    PaintCanvas *canvas = Globals::Canvas;
-    int h = canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
+    PaintCanvas **canvas = &Globals::Canvas;
+    int h = (*canvas)->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
     this->wantedList = nullptr;
+    this->halfTextHeight = h / 2 - 1;
     this->mission = nullptr;
     this->scrollWindow = nullptr;
     this->buttons = nullptr;
-    this->halfTextHeight = h / 2 - 1;
-    canvas->Image2DCreate(0x454, reinterpret_cast<unsigned int &>(this->bgImage));
+    (*canvas)->Image2DCreate(0x454, reinterpret_cast<unsigned int &>(this->bgImage));
     this->init();
 }
 

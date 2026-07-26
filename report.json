@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.0,
+  "avg_match": 78.01,
   "byte_exact": 1163,
-  "linked_exact": 2644,
-  "fuzzy_perfect": 2644,
+  "linked_exact": 2646,
+  "fuzzy_perfect": 2646,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13256,22 +13256,6 @@
    "usize": 164
   },
   {
-   "name": "_ZN12WantedWindowC1Ev",
-   "pct": 85.2,
-   "byte": false,
-   "linked": false,
-   "osize": 244,
-   "usize": 244
-  },
-  {
-   "name": "_ZN12WantedWindowC2Ev",
-   "pct": 85.2,
-   "byte": false,
-   "linked": false,
-   "osize": 244,
-   "usize": 244
-  },
-  {
    "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
    "pct": 85.6,
    "byte": false,
@@ -23566,6 +23550,22 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN12WantedWindowC1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 244,
+   "usize": 244
+  },
+  {
+   "name": "_ZN12WantedWindowC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 244,
+   "usize": 244
   },
   {
    "name": "_ZN13AutoPilotList15getTargetStringEv",
