@@ -1321,8 +1321,8 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->lastSelectedStation = -1;
     this->routeStart = -1;
     this->routeTarget = -1;
-    this->field_0xe8 = 0;
     this->field_0xec = 0;
+    this->field_0xf0 = 0;
     this->cameraBaseX = 0.0f;
     this->cameraBaseZ = 0.0f;
     this->field_0x01 = 0;

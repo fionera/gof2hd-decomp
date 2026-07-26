@@ -43,6 +43,7 @@ public:
     uint32_t selectIcon;
     uint32_t cursorIcon;
     uint32_t currentMarkerIcon;
+    uint8_t _pad_0x40[12];
     TouchButton *backButton;
     SystemPathFinder *pathFinder;
     Array<SolarSystem *> *systems;
@@ -62,7 +63,6 @@ public:
     int *stationDistances;
     Array<int> *systemPath;
     AEGeometry *starSystemRoot;
-    uint8_t _pad_0x9c[12];
     uint8_t pad_0xa8_a;
     uint8_t choiceVisible;
     uint8_t jumpMapModeA;
@@ -72,10 +72,11 @@ public:
     AbyssEngine::Vector field_0xbc;
     uint8_t _pad_0xc8[4];
     AbyssEngine::Vector field_0xcc;
+    uint8_t _pad_0xd8[4];
     uint8_t missionChangedFlag;
-    uint8_t _pad_0xd9[12];
-    int32_t field_0xe8;
+    uint8_t _pad_0xdd[12];
     int32_t field_0xec;
+    int32_t field_0xf0;
     uint8_t isGalaxyMode;
     AEGeometry *markerGeom;
     int *iconBuffer;
@@ -92,7 +93,6 @@ public:
     uint32_t raceImageA;
     uint32_t raceImageB;
     uint32_t raceImageDefault;
-    uint8_t _pad_0x130[4];
     uint32_t image_0x134;
     uint8_t transitionIn;
     uint8_t transitionOut;
@@ -184,14 +184,20 @@ public:
 };
 
 #if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(StarMap, pathFinder) == 0x50, "");
+static_assert(__builtin_offsetof(StarMap, choiceWindow) == 0x5c, "");
+static_assert(__builtin_offsetof(StarMap, systemPath) == 0xa0, "");
 static_assert(__builtin_offsetof(StarMap, pad_0xa8_a) == 0xa8, "");
 static_assert(__builtin_offsetof(StarMap, choiceVisible) == 0xa9, "");
 static_assert(__builtin_offsetof(StarMap, field_0xac) == 0xac, "");
 static_assert(__builtin_offsetof(StarMap, field_0xbc) == 0xbc, "");
 static_assert(__builtin_offsetof(StarMap, field_0xcc) == 0xcc, "");
-static_assert(__builtin_offsetof(StarMap, field_0xe8) == 0xe8, "");
+static_assert(__builtin_offsetof(StarMap, missionChangedFlag) == 0xdc, "");
 static_assert(__builtin_offsetof(StarMap, field_0xec) == 0xec, "");
-static_assert(__builtin_offsetof(StarMap, isGalaxyMode) == 0xf0, "");
+static_assert(__builtin_offsetof(StarMap, field_0xf0) == 0xf0, "");
+static_assert(__builtin_offsetof(StarMap, isGalaxyMode) == 0xf4, "");
+static_assert(__builtin_offsetof(StarMap, markerGeom) == 0xf8, "");
+static_assert(__builtin_offsetof(StarMap, alienJumpPending) == 0x120, "");
 static_assert(__builtin_offsetof(StarMap, image_0x134) == 0x134, "");
 static_assert(__builtin_offsetof(StarMap, transitionIn) == 0x138, "");
 static_assert(__builtin_offsetof(StarMap, field_0x14c) == 0x14c, "");
