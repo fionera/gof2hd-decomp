@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.85,
+  "avg_match": 77.86,
   "compared": 4523
  },
  "imports": [
@@ -61,7 +61,6 @@
   "_Z16Item_setPrice_oii",
   "_Z16MatrixSetScalingPN11AbyssEngine6AEMath6MatrixES2_fff",
   "_Z16MatrixSetScalingPN11AbyssEngine6AEMath6MatrixEfff",
-  "_Z16MatrixSetScalingPvfff",
   "_Z16MovingStars_ctorPv",
   "_Z16OnCheatActivatediPv",
   "_Z16PE_dtdp_makeEasePKvS0_",

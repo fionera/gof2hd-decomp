@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.85,
+  "avg_match": 77.86,
   "byte_exact": 1161,
   "linked_exact": 2623,
   "fuzzy_perfect": 2623,
@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.4,
+   "pct": 7.3,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -2464,20 +2464,20 @@
    "usize": 58
   },
   {
-   "name": "_ZN5Level8renderBGEi",
-   "pct": 16.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1320,
-   "usize": 1220
-  },
-  {
    "name": "_ZN10ModStation8OnUpdateEv",
    "pct": 16.4,
    "byte": false,
    "linked": false,
    "osize": 3652,
    "usize": 2212
+  },
+  {
+   "name": "_ZN5Level8renderBGEi",
+   "pct": 16.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1320,
+   "usize": 1220
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager12OnKeyReleaseEi",
@@ -3176,14 +3176,6 @@
    "usize": 564
   },
   {
-   "name": "_ZN10RepairBeam6updateEiP5RadarP5LevelP3Hud",
-   "pct": 22.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1872,
-   "usize": 1232
-  },
-  {
    "name": "SHA256_Update",
    "pct": 22.7,
    "byte": false,
@@ -3286,6 +3278,14 @@
    "linked": false,
    "osize": 260,
    "usize": 292
+  },
+  {
+   "name": "_ZN10RepairBeam6updateEiP5RadarP5LevelP3Hud",
+   "pct": 23.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1872,
+   "usize": 1232
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas5End2dEv",
@@ -7550,14 +7550,6 @@
    "linked": false,
    "osize": 124,
    "usize": 130
-  },
-  {
-   "name": "_ZN14ListItemWindow6updateEi",
-   "pct": 45.7,
-   "byte": false,
-   "linked": false,
-   "osize": 352,
-   "usize": 300
   },
   {
    "name": "_ZN14PlayerWormHole6updateEi",
@@ -12342,6 +12334,14 @@
    "linked": false,
    "osize": 524,
    "usize": 500
+  },
+  {
+   "name": "_ZN14ListItemWindow6updateEi",
+   "pct": 77.0,
+   "byte": false,
+   "linked": false,
+   "osize": 352,
+   "usize": 352
   },
   {
    "name": "_ZN11AbyssEngine16AESoundRessource9setVolumeEii",
