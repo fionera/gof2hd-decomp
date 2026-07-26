@@ -257,11 +257,14 @@ Status::~Status() {
 }
 
 bool Status::inStormOrbit() {
-    if (inAlienOrbit()) return false;
-    if (currentCampaignMission < 0x5a) return false;
-    if (inSupernovaSystem() != 0) return true;
-    if (asSystem(system)->getTextureIndex() == 0x10) return true;
-    return asSystem(system)->getTextureIndex() == 0x12;
+    if (!inAlienOrbit()) {
+        if (currentCampaignMission >= 0x5a) {
+            if (inSupernovaSystem() != 0) return true;
+            if (asSystem(system)->getTextureIndex() == 0x10) return true;
+            return asSystem(system)->getTextureIndex() == 0x12;
+        }
+    }
+    return false;
 }
 
 int Status::getCapturedCrates() { return capturedCrates; }
