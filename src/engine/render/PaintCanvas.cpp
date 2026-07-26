@@ -529,16 +529,6 @@ void paintcanvas_ext_gl_str_assign(AbyssEngine::String *dst, void *src); // lint
 
 void paintcanvas_ext_gl_str_dtor(void *s); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void paintcanvas_ext_dl_glLineWidth(float w) { glLineWidth(w); }
-
-static inline float paintcanvas_ext_dl_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
-
-static inline void paintcanvas_ext_dl_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dl_glVertexPointer(int a, int b, int c, void *p) { glVertexPointer(a, b, c, p); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dl_glDrawArrays(int a, int b, int c) { glDrawArrays(a, b, c); }
-
 void paintcanvas_ext_end3d(AbyssEngine::PaintCanvas *);
 
 void paintcanvas_ext_material_clone(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
@@ -2493,48 +2483,67 @@ void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWid
     }
 }
 
-static char g_dl_flag_794ee_storage = 0;
-static char *const g_dl_flag_794ee = &g_dl_flag_794ee_storage;
-
 void PaintCanvas::DrawLine(int x0, int y0, int x1i, int y1i) {
-    char abuf[60];
+    const unsigned char isLinked =
+        *reinterpret_cast<const unsigned char *>(&g_android_gp_is_linked);
+    const uint32_t one = 0x3f800000;
+    uint32_t matrix[15];
 
-    float x1 = paintcanvas_ext_dl_signedtofloat(x0 + 1, 0);
-    float y1 = paintcanvas_ext_dl_signedtofloat(y0, 0);
-    float x2 = paintcanvas_ext_dl_signedtofloat(x1i + 1, 0);
-    float y2 = paintcanvas_ext_dl_signedtofloat(y1i, 0);
+    if (isLinked != 0) {
+        matrix[0] = one;
+        matrix[1] = 0;
+        matrix[2] = 0;
+        matrix[3] = 0;
+        matrix[4] = 0;
+        matrix[5] = one;
+        matrix[6] = 0;
+        matrix[7] = 0;
+        matrix[8] = 0;
+        matrix[9] = 0;
+        matrix[10] = one;
+        matrix[11] = 0;
+        matrix[12] = one;
+        matrix[13] = one;
+        matrix[14] = one;
+        this->SetWorldViewMatrix(reinterpret_cast<const AbyssEngine::AEMath::Matrix &>(matrix));
 
-    float *m = (float *) abuf;
-    memset(m, 0, 60);
-    m[0] = 1.0f;
-    m[5] = 1.0f;
-    m[10] = 1.0f;
-    m[14] = 1.0f;
-
-    float *v = this->lineVerts;
-
-    if (*g_dl_flag_794ee == 0) {
-        paintcanvas_ext_dl_glLineWidth(1.0f);
-        ((AbyssEngine::Engine*)this->engine)->GlEnable(0xde1, true);
-        v[0] = x1;
-        v[1] = y1;
-        v[2] = x2;
-        v[3] = y2;
-        paintcanvas_ext_dl_setwvm(this, abuf);
-        paintcanvas_ext_dl_glVertexPointer(2, 0x1406, 0, this->lineVerts);
-        ((AbyssEngine::Engine*)this->engine)->GlEnable(0x8074, true);
-        ((AbyssEngine::Engine*)this->engine)->GlEnable(0x8078, false);
-        ((AbyssEngine::Engine*)this->engine)->GlEnable(0x8075, false);
-        ((AbyssEngine::Engine*)this->engine)->GlEnable(0x8076, false);
-        paintcanvas_ext_dl_glDrawArrays(1, 0, 2);
-        ((AbyssEngine::Engine*)this->engine)->GlEnable(0xde1, true);
+        this->lineVerts[0] = (float) (x0 + 1);
+        this->lineVerts[1] = (float) y0;
+        this->lineVerts[2] = (float) (x1i + 1);
+        this->lineVerts[3] = (float) y1i;
+        this->engine->DrawLine2D(this->lineVerts, 2, false);
     } else {
-        paintcanvas_ext_dl_setwvm(this, abuf);
-        v[0] = x1;
-        v[1] = y1;
-        v[2] = x2;
-        v[3] = y2;
-        ((AbyssEngine::Engine*)this->engine)->DrawLine2D(this->lineVerts, 2, false);
+        glLineWidth(1.0f);
+        this->engine->GlEnable(0xde1, false);
+
+        this->lineVerts[0] = (float) (x0 + 1);
+        this->lineVerts[1] = (float) y0;
+        this->lineVerts[2] = (float) (x1i + 1);
+        this->lineVerts[3] = (float) y1i;
+
+        matrix[0] = one;
+        matrix[1] = 0;
+        matrix[2] = 0;
+        matrix[3] = 0;
+        matrix[4] = 0;
+        matrix[5] = one;
+        matrix[6] = 0;
+        matrix[7] = 0;
+        matrix[8] = 0;
+        matrix[9] = 0;
+        matrix[10] = one;
+        matrix[11] = 0;
+        matrix[12] = one;
+        matrix[13] = one;
+        matrix[14] = one;
+        this->SetWorldViewMatrix(reinterpret_cast<const AbyssEngine::AEMath::Matrix &>(matrix));
+        glVertexPointer(2, 0x1406, 0, this->lineVerts);
+        this->engine->AEClientState(0x8074, true);
+        this->engine->AEClientState(0x8078, false);
+        this->engine->AEClientState(0x8075, false);
+        this->engine->AEClientState(0x8076, false);
+        glDrawArrays(1, 0, 2);
+        this->engine->GlEnable(0xde1, true);
     }
 }
 

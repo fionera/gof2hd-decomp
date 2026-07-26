@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.26,
+  "avg_match": 78.28,
   "byte_exact": 1174,
   "linked_exact": 2695,
   "fuzzy_perfect": 2695,
@@ -1400,20 +1400,20 @@
    "usize": 348
   },
   {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.1,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
-  },
-  {
    "name": "_ZN11AbyssEngine13CurveGetValueEyPNS_5CurveE",
    "pct": 7.2,
    "byte": false,
    "linked": false,
    "osize": 398,
    "usize": 282
+  },
+  {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 7.3,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
   },
   {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
@@ -2448,20 +2448,20 @@
    "usize": 58
   },
   {
+   "name": "_ZN5Level8renderBGEi",
+   "pct": 16.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1320,
+   "usize": 1220
+  },
+  {
    "name": "_ZN10ModStation8OnUpdateEv",
    "pct": 16.4,
    "byte": false,
    "linked": false,
    "osize": 3652,
    "usize": 2212
-  },
-  {
-   "name": "_ZN5Level8renderBGEi",
-   "pct": 16.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1320,
-   "usize": 1220
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager12OnKeyReleaseEi",
@@ -3736,14 +3736,6 @@
    "usize": 516
   },
   {
-   "name": "_ZN5Level18updateMissionOrbitEi",
-   "pct": 26.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1160,
-   "usize": 1072
-  },
-  {
    "name": "_ZN5MGame16freeCamTouchMoveEiiPv",
    "pct": 26.0,
    "byte": false,
@@ -3766,6 +3758,14 @@
    "linked": false,
    "osize": 392,
    "usize": 448
+  },
+  {
+   "name": "_ZN5Level18updateMissionOrbitEi",
+   "pct": 26.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1160,
+   "usize": 1072
   },
   {
    "name": "_ZN11AbyssEngine6Engine14SetTexturesExtEjz",
@@ -6654,14 +6654,6 @@
    "linked": false,
    "osize": 428,
    "usize": 396
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas8DrawLineEiiii",
-   "pct": 40.5,
-   "byte": false,
-   "linked": false,
-   "osize": 436,
-   "usize": 272
   },
   {
    "name": "_ZN11AbyssEngine9Transform10InCameraVFEPNS_6AEMath6MatrixEPNS_6CameraE",
@@ -14038,6 +14030,14 @@
    "linked": false,
    "osize": 52,
    "usize": 52
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas8DrawLineEiiii",
+   "pct": 95.1,
+   "byte": false,
+   "linked": false,
+   "osize": 436,
+   "usize": 436
   },
   {
    "name": "_ZN12HangarWindowD1Ev",
