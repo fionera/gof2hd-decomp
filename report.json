@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.99,
+  "avg_match": 78.0,
   "byte_exact": 1163,
-  "linked_exact": 2642,
-  "fuzzy_perfect": 2642,
+  "linked_exact": 2643,
+  "fuzzy_perfect": 2643,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13648,14 +13648,6 @@
    "usize": 144
   },
   {
-   "name": "_ZN17PlayerFixedObject11moveForwardEi",
-   "pct": 88.7,
-   "byte": false,
-   "linked": false,
-   "osize": 172,
-   "usize": 172
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas13MeshSet2DMaskEjii",
    "pct": 88.9,
    "byte": false,
@@ -24934,6 +24926,14 @@
    "linked": true,
    "osize": 38,
    "usize": 38
+  },
+  {
+   "name": "_ZN17PlayerFixedObject11moveForwardEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 172,
+   "usize": 172
   },
   {
    "name": "_ZN17PlayerFixedObject11setPositionERKN11AbyssEngine6AEMath6VectorE",
