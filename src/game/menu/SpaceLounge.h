@@ -42,7 +42,7 @@ public:
     ListItemWindow *listWindow;
     int mode;
     int field_0x14;
-    int field_0x18;
+    uint8_t field_0x18;
     uint8_t chatActive;
     uint8_t popupActive;
     uint8_t choiceVisible;
@@ -82,6 +82,7 @@ public:
     int field_0xa0;
     String title;
     uint8_t initialized;
+    uint8_t field_0xb1;
     uint8_t touchDown;
     int touchX;
     int touchY;
