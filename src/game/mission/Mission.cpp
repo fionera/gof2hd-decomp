@@ -113,8 +113,8 @@ Mission::Mission(int id, AbyssEngine::String client, int *clientImage, int clien
 
 Mission::Mission(int id) {
     this->name = String("");
-    this->campaign = 0;
     this->visible = 0;
+    this->campaign = 0;
     this->agent = 0;
     this->id = id;
     this->clientImage = 0;
@@ -166,8 +166,8 @@ Mission::~Mission() {
 
 Mission::Mission() {
     this->name = String("");
-    this->campaign = 0;
     this->visible = 0;
+    this->campaign = 0;
     this->agent = 0;
     this->id = -1;
     this->clientImage = 0;
