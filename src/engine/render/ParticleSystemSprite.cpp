@@ -32,8 +32,8 @@ void ParticleSystemSprite::reset() {
         this->canvas->SpriteSystemSetSize(this->resource, (uint16_t)(this->idOffset + i), 0);
         this->particleAges[i] = -1;
     }
-    this->field_0x4 = 1;
     this->emitTimer = 0;
+    this->field_0x4 = 1;
 }
 
 void ParticleSystemSprite::init(uint32_t spriteId, uint16_t idOffset) {

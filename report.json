@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.96,
   "byte_exact": 1161,
-  "linked_exact": 2628,
-  "fuzzy_perfect": 2628,
+  "linked_exact": 2629,
+  "fuzzy_perfect": 2629,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14520,14 +14520,6 @@
    "usize": 104
   },
   {
-   "name": "_ZN20ParticleSystemSprite5resetEv",
-   "pct": 94.3,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 92
-  },
-  {
    "name": "_ZN8KIPlayer12setShipGroupEP10AEGeometryib",
    "pct": 94.3,
    "byte": false,
@@ -25718,6 +25710,14 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN20ParticleSystemSprite5resetEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 92,
+   "usize": 92
   },
   {
    "name": "_ZN20ParticleSystemSprite6enableEb",
