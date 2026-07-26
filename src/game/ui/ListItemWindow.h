@@ -44,6 +44,8 @@ public:
     uint8_t shows3DShipFlag;
 
     int arrowSeparator;
+    int field_0x5c;
+    int field_0x60;
     int x;
     int y;
     int width;
@@ -52,11 +54,8 @@ public:
     AbyssEngine::String str74;
     AbyssEngine::String str80;
 
-    int previewSentinel;
-    // Ghidra: field_0x88 + shipTransform@0x8c/addonTransform@0x90/camera@0x94 precede the 2 preview
-    // matrices (which live in the gap @0x98-0x110), and field_0x110 precedes baseAngle(=field_0x114).
-    // Our decomp lacked these 20 bytes, shifting baseAngle/previewAngle/dragAccum.. low.
-    int field_0x88;
+    // Ghidra: shipTransform@0x8c/addonTransform@0x90/camera@0x94 precede the 2 preview
+    // matrices at 0x98 and 0xd4, and field_0x110 precedes baseAngle(=field_0x114).
     int shipTransform;
     int addonTransform;
     int camera;
