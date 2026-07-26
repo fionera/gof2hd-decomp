@@ -532,8 +532,7 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
 
 void IParticleSystem::calcEmitterVelocity(int delta) {
     Vector position = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
-    Vector diff = position - this->lastEmitterPosition;
-    Vector scaled = diff * (1000.0f / (float) delta);
+    Vector scaled = (position - this->lastEmitterPosition) * (1000.0f / (float) delta);
     this->emitterVelocity = scaled;
     this->emitterVelocityDirty = 0;
     this->lastEmitterPosition = position;
