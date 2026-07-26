@@ -4324,11 +4324,11 @@ void Level::uncoverWanted(int index) {
     if (field_29c == 0) {
         createRadioMessage(0x12, index);
 
-        for (int i = 1;
-             i - 1 < (*Globals::status->wanted)[index]->getNumWingmen();
+        for (int i = 0;
+             i < (*Globals::status->wanted)[index]->getNumWingmen();
              i = i + 1) {
-            (*enemies)[i]->player->setAlwaysEnemy(1);
-            (*enemies)[i]->player->turnEnemy();
+            (*enemies)[i + 1]->player->setAlwaysEnemy(1);
+            (*enemies)[i + 1]->player->turnEnemy();
         }
     }
 }

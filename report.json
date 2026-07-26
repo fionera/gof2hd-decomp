@@ -13344,14 +13344,6 @@
    "usize": 78
   },
   {
-   "name": "_ZN5Level13uncoverWantedEi",
-   "pct": 89.7,
-   "byte": false,
-   "linked": false,
-   "osize": 104,
-   "usize": 104
-  },
-  {
    "name": "ndk_getCurrentApplicationModule",
    "pct": 89.7,
    "byte": false,
@@ -14326,6 +14318,14 @@
    "linked": false,
    "osize": 98,
    "usize": 98
+  },
+  {
+   "name": "_ZN5Level13uncoverWantedEi",
+   "pct": 97.4,
+   "byte": false,
+   "linked": false,
+   "osize": 104,
+   "usize": 104
   },
   {
    "name": "_zip_cdir_new",
