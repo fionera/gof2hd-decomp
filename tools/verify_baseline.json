@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.94,
+  "avg_match": 77.95,
   "compared": 4523
  },
  "imports": [
@@ -73,7 +73,6 @@
   "_Z16liw_set_fillRowsPvS_S_ib",
   "_Z16ndk23_renderstepii",
   "_Z17AERandom_nextIntBii",
-  "_Z17FModSound_setPropii",
   "_Z17Item_getAmount_oiv",
   "_Z17JNI_CallIntMethodPvS_S_S_",
   "_Z17MatrixSetRotationPN11AbyssEngine6AEMath6MatrixEfff",
@@ -187,7 +186,6 @@
   "_Z22SolarSystem_getRace_oiv",
   "_Z22SolarSystem_getRace_rlv",
   "_Z22StarMap_OnTouchEnd_oteii",
-  "_Z22TFC_useTargetsUpVectorP18TargetFollowCamerai",
   "_Z22TouchButton_footerAnimz",
   "_Z22TouchButton_setText_oui",
   "_Z22_mtw_Array_StrArr_ctorPv",

@@ -198,10 +198,6 @@ void MGame::OnRender3D() {
 
 static inline void TFC_setActive(TargetFollowCamera *c, int v) { c->setActive(v); }
 
-float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);
-
-void FModSound_setProp(int snd, int id);
-
 static inline void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z) { c->setPosition(x, y, z); }
 
 static int *g_jsSound;
@@ -225,112 +221,98 @@ static int g_jsOffsetZ;
 static int g_jsOffsetZ2;
 
 void MGame::startJumpScene() {
-    ((Player *) (this->player->player))->setVulnerable(0);
-    this->level->enableFog(0);
+    this->player->player->setVulnerable(false);
+    this->level->enableFog(false);
 
     if (this->player->isDockedToDockingPoint() != 0) {
-        this->player->dockToDockingPoint(nullptr, nullptr);
+        this->player->dockToDockingPoint(nullptr, this->radar);
         TFC_setActive(this->camera, 1);
         TFC_setLookAtCam(this->camera, 0);
-        float sp = TFC_useTargetsUpVector(this->camera, 0);
-        this->player->setSpeed(sp);
+        this->camera->useTargetsUpVector(false);
+        this->player->setSpeed(0.0f);
         this->player->setDockingState(0);
     }
     if (this->player->isInTurretMode() != 0)
         this->player->setTurretMode(0);
 
-    int *snd = g_jsSound;
-    ((FModSound *) (*snd))->stop(0x23);
-    ((MGame *) (this))->switchCamera(0);
-    this->field_0x70 = g_jsHudFlag;
+    Globals::sound->stop(0x23);
+    this->switchCamera(0);
+    this->field_0x70 = 0x3f9c28f6;
     this->hud->releaseAllKeys();
     this->field_0x110 = 0;
-    reinterpret_cast<int &>(this->_b5c) = 0;
+    this->_b5c = 0;
 
-    PaintCanvas *pc = Globals::Canvas;
-    unsigned cam = this->cameraId;
-    float fov = *(float *) &g_jsFovDefault;
+    unsigned cameraId = this->cameraId;
+    float perspective = reinterpret_cast<float &>(this->field_0x70);
+    PaintCanvas *canvas = Globals::Canvas;
+    float fov = 300000.0f;
     if (Globals::status->inAlienOrbit() != 0) {
         int cm = Globals::status->getCurrentCampaignMission();
-        fov = (cm < 0x50) ? *(float *) &g_jsFovAlienB : *(float *) &g_jsFovAlienA;
+        fov = (cm < 0x50) ? 450000.0f : 300000.0f;
     }
-    pc->CameraSetPerspective(cam, fov, *(float *) &g_jsHudFlag, 0);
-    this->player->setAutoPilot(0);
+    canvas->CameraSetPerspective(cameraId, perspective, 20.0f, fov);
+    this->player->setAutoPilot(nullptr);
     this->pauseOpen = 0;
     this->hudMenuOpen = 0;
     this->jumpDriveActive = 1;
     this->jumpActive = 1;
-    this->player->setCollide(0);
+    this->player->setCollide(false);
     TFC_setLookAtCam(this->camera, 1);
     this->player->stopBoost();
-    Engine *eng = (Engine *) this->applicationManager->GetEngine();
-    ((Engine *) (eng))->SetPostEffect(g_jsPostEffect, 0);
+    Engine *eng = static_cast<Engine *>(this->applicationManager->GetEngine());
+    eng->SetPostEffect(0x01400002, false);
 
-    float camX, camY, camZ;
+    float camX;
+    float camY;
+    float camZ;
     if (this->usingJumpDrive == 0) {
         Array<KIPlayer *> *lm = this->level->getLandmarks();
-        KIPlayer *obj = (*lm)[0];
+        KIPlayer *obj = (*lm)[1];
         this->egoJumpPos = obj->getPosition();
-        float nz = (float) reinterpret_cast<int &>(this->egoJumpPos.z) + *(float *) &g_jsOffsetZ;
-        reinterpret_cast<int &>(this->egoJumpPos.z) = (int) nz;
-        if (this->player->geometry != nullptr) {
-            Vector pos = this->player->getPosition();
-            ((AEGeometry *) (this->player->geometry))->setPosition(pos);
-        }
-        this->player->setComputerControlled(1);
-        ((AEGeometry *) this->player->geometry)->setRotation((float) 0, (float) 0, (float) 0);
-        reinterpret_cast<int &>(this->egoJumpPos.x) = (int) ((float) reinterpret_cast<int &>(this->egoJumpPos.x) + *(float *) &g_jsOffsetX);
-        reinterpret_cast<int &>(this->egoJumpPos.y) = (int) ((float) reinterpret_cast<int &>(this->egoJumpPos.y) + *(float *) &g_jsOffsetY);
-        reinterpret_cast<int &>(this->egoJumpPos.z) = (int) ((float) reinterpret_cast<int &>(this->egoJumpPos.z) + *(float *) &g_jsOffsetZ2);
-        camX = (float) reinterpret_cast<int &>(this->egoJumpPos.x);
-        camY = (float) reinterpret_cast<int &>(this->egoJumpPos.y);
-        camZ = (float) reinterpret_cast<int &>(this->egoJumpPos.z);
+        this->egoJumpPos.z += -10000.0f;
+        this->player->setPosition(this->egoJumpPos);
+        this->player->setComputerControlled(true);
+        this->player->geometry->setRotation(0.0f, 0.0f, 0.0f);
+        this->egoJumpPos.x += -2000.0f;
+        this->egoJumpPos.y += 300.0f;
+        this->egoJumpPos.z += 4000.0f;
+        camX = this->egoJumpPos.x;
+        camY = this->egoJumpPos.y;
+        camZ = this->egoJumpPos.z;
     } else {
         this->player->resetMovement();
-        this->player->setComputerControlled(1);
+        this->player->setComputerControlled(true);
         AEGeometry *geo = new AEGeometry((uint16_t) 0x3ab2, Globals::Canvas, false);
         this->jumpFlash = geo;
-        int tr = (int) (long) Globals::Canvas->TransformGetTransform((unsigned) (uintptr_t) Globals::Canvas);
-        ((AbyssEngine::Transform *) (tr))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+        AbyssEngine::Transform *tr = static_cast<AbyssEngine::Transform *>(
+            Globals::Canvas->TransformGetTransform(geo->transform));
+        tr->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
 
-        float pos[4];
-        ((PlayerEgo *) (pos))->getPosition();
-        Vector *dst = &this->egoJumpPos;
-        *(Vector *) (dst) = *(const Vector *) ((Vector *) pos);
+        this->egoJumpPos = this->player->getPosition();
+        Vector direction = this->player->geometry->getDirection();
+        Vector scaledDirection = direction * 3000.0f;
+        this->egoJumpPos += scaledDirection;
+        this->jumpFlash->setPosition(this->egoJumpPos);
 
-        float dir[4];
-        ((PlayerEgo *) (dir))->getPosition();
-        *(Vector *) ((Vector *) dir) *= (*(float *) &g_jsOffsetX);
-        *(Vector *) (dst) += *(const Vector *) ((Vector *) dir);
-        this->jumpFlash->setPosition(*dst);
+        Vector flashDirection = this->player->geometry->getDirection();
+        this->jumpFlash->setScaling(2.0f, 2.0f, 2.0f);
+        Vector up = {0.0f, 1.0f, 0.0f};
+        this->jumpFlash->setDirection(flashDirection, up);
 
-        this->jumpFlash->setScaling(2.0f);
-        float zero[4];
-        zero[0] = 0;
-        zero[1] = 1.0f;
-        zero[2] = 0;
-        this->jumpFlash->setDirection(*(Vector *) zero, *(Vector *) zero /* up: arg lost in decomp */);
+        flashDirection = {-2000.0f, 300.0f, -2000.0f};
+        Player *inner = this->player->player;
+        flashDirection = AbyssEngine::AEMath::MatrixRotateVector(
+            reinterpret_cast<const AbyssEngine::Matrix &>(inner->transform[0]), flashDirection);
+        this->egoJumpPos += flashDirection;
 
-        float off[4];
-        off[0] = (float) g_jsOffsetX;
-        off[1] = (float) g_jsOffsetY;
-        off[2] = (float) g_jsOffsetX;
-        *(Vector *) ((Vector *) off) = *(const Vector *) ((Vector *) off);
-        Vector *playerTransformPos = reinterpret_cast<Vector *>(((Player *) this->player->player)->transform);
-        *playerTransformPos = AbyssEngine::AEMath::MatrixRotateVector(
-            *(const AbyssEngine::Matrix *) (off), *playerTransformPos);
-        *(Vector *) ((Vector *) off) = *(const Vector *) ((Vector *) off);
-        *(Vector *) (dst) += *(const Vector *) ((Vector *) off);
-
-        FModSound_setProp(*snd, this->field_0x1c);
-        FModSound_setProp(*snd, 0x23);
-        FModSound_setProp(*snd, 0x8d5);
-        FModSound_setProp(*snd, 0x8d4);
-        ((FModSound *) (*snd))->play(0x20, 0, 0 /* vel: arg lost in decomp */, 0.0f);
-
-        camX = (float) reinterpret_cast<int &>(this->egoJumpPos.x);
-        camZ = (float) reinterpret_cast<int &>(this->egoJumpPos.y);
-        camY = (float) reinterpret_cast<int &>(this->egoJumpPos.z);
+        Globals::sound->stop(this->player->field_0x1c);
+        Globals::sound->stop(0x23);
+        Globals::sound->stop(0x8d5);
+        Globals::sound->stop(0x8d4);
+        Globals::sound->play(0x20, nullptr, nullptr, 0.0f);
+        camX = this->egoJumpPos.x;
+        camY = this->egoJumpPos.y;
+        camZ = this->egoJumpPos.z;
     }
     TFC_setPosition(this->camera, camX, camY, camZ);
 }
@@ -2190,90 +2172,88 @@ static uint8_t **g_ujFlagB;
 
 static int **g_ujFlagC;
 
-void MGame::updateJumpScene() {
+bool MGame::updateJumpScene() {
     MGame *self = this;
     bool fadeOut = true;
 
     if (self->usingJumpDrive != 0 && self->jumpFlash != 0) {
-        AbyssEngine::Transform *tr =
-                (AbyssEngine::Transform *) (intptr_t) Globals::Canvas->TransformGetTransform(
-                    (unsigned) (uintptr_t) Globals::Canvas);
-        long long ct = tr->currentTime;
-        int prog = (int) ((unsigned long long) ct >> 32);
-        int over = ((unsigned) ct > 0x6a4);
-        if ((0 - over) - prog < 0) goto camMove;
+        AbyssEngine::Transform *tr = static_cast<AbyssEngine::Transform *>(
+            Globals::Canvas->TransformGetTransform(self->jumpFlash->transform));
+        long long timeRemaining = 1700LL - tr->currentTime;
+        if (timeRemaining < 0) goto afterCam;
+        goto camMove;
     } else {
         Array<KIPlayer *> *lm = self->level->getLandmarks();
-        if ((int) (intptr_t)(*lm)[1] != 0) {
-            self->level->getLandmarks();
-            int jg = (int) (intptr_t)(*lm)[1];
-            if (((PlayerJumpgate *) (jg))->timeToJump() == 0) goto camMove;
-        }
+        if ((*lm)[1] == nullptr) goto afterCam;
+        lm = self->level->getLandmarks();
+        if (static_cast<PlayerJumpgate *>((*lm)[1])->timeToJump() != 0) goto afterCam;
     }
-    fadeOut = true;
-    goto afterCam;
 
-camMove: {
-        int speed = self->deltaTime;
-        Player *ego = (Player *) self->player->player;
-        float mtx[4];
-        Vector *egoTransformPos = reinterpret_cast<Vector *>(ego->transform);
-        *egoTransformPos = AbyssEngine::AEMath::MatrixRotateVector(
-            *(const AbyssEngine::Matrix *) (mtx), *egoTransformPos);
-        self->egoJumpPos = *(const Vector *) ((Vector *) mtx);
-        TFC_translate(self->camera, 0, 0, 0);
-        (void) speed;
+camMove:
+    {
+        int dt = self->deltaTime;
+        Vector movement;
         if (self->usingJumpDrive != 0) {
-            self->jumpFlash->getPosition();
+            movement.x = (float) (dt * 2);
+            movement.y = (float) (dt * 5);
+            movement.z = (float) -(dt * 5);
+        } else {
+            movement.x = (float) (dt * 2);
+            movement.y = (float) (dt * 5);
+            movement.z = (float) (dt - dt * 5);
+        }
+        Player *inner = self->player->player;
+        self->egoJumpPos = AbyssEngine::AEMath::MatrixRotateVector(
+            reinterpret_cast<const AbyssEngine::Matrix &>(inner->transform[0]), movement);
+        self->camera->translate(
+            self->egoJumpPos.x, self->egoJumpPos.y, self->egoJumpPos.z);
+        if (self->usingJumpDrive != 0) {
+            self->egoJumpPos = self->jumpFlash->getPosition();
         } else {
             Array<KIPlayer *> *lm = self->level->getLandmarks();
-            KIPlayer *obj = (*lm)[1];
-            *(Vector *) ((Vector *) mtx) = obj->getPosition();
+            self->egoJumpPos = (*lm)[1]->getPosition();
         }
-        self->egoJumpPos = *(const Vector *) ((Vector *) mtx);
         fadeOut = false;
     }
 
 afterCam:
     if (self->usingJumpDrive != 0) {
-        unsigned tr = (unsigned) (long) Globals::Canvas->TransformGetTransform((unsigned) (uintptr_t) Globals::Canvas);
-        ((AbyssEngine::Transform *) (tr))->Update(self->deltaTime, false /* updateBounds: arg lost in decomp */);
+        AbyssEngine::Transform *tr = static_cast<AbyssEngine::Transform *>(
+            Globals::Canvas->TransformGetTransform(self->jumpFlash->transform));
+        tr->Update(self->deltaTime, false);
     }
 
     Vector *camPos = self->camera->getPosition();
-    float threshold = (float) reinterpret_cast<int &>(self->egoJumpPos.z) + *(float *) &g_ujZNear;
+    float threshold = self->egoJumpPos.z + -10000.0f;
     if (camPos->z < threshold && self->usingJumpDrive == 0) {
         Array<KIPlayer *> *lm = self->level->getLandmarks();
-        ((PlayerJumpgate *) ((int) (intptr_t)(*lm)[1]))->activate();
-        float p[4];
-        ((PlayerEgo *) (p))->getPosition();
-        float t2 = (float) reinterpret_cast<int &>(self->egoJumpPos.z) + *(float *) &g_ujZSound;
-        if (t2 <= p[2] && self->jumpGateSoundStarted == 0) {
-            int *snd = g_ujSound;
-            FModSound_setProp(*snd, self->player->field_0x1c);
-            FModSound_setProp(*snd, 0x8d5);
-            FModSound_setProp(*snd, 0x8d4);
-            FModSound_setProp(*snd, 0x23);
-            ((FModSound *) (*snd))->play(0x1f, 0, 0 /* vel: arg lost in decomp */, 0.0f);
+        static_cast<PlayerJumpgate *>((*lm)[1])->activate();
+        Vector playerPosition = self->player->getPosition();
+        float soundThreshold = self->egoJumpPos.z + -16500.0f;
+        if (soundThreshold <= playerPosition.z && self->jumpGateSoundStarted == 0) {
+            Globals::sound->stop(self->player->field_0x1c);
+            Globals::sound->stop(0x8d5);
+            Globals::sound->stop(0x8d4);
+            Globals::sound->stop(0x23);
+            Globals::sound->play(0x1f, nullptr, nullptr, 0.0f);
             self->jumpGateSoundStarted = 1;
         }
     }
 
     if (fadeOut) {
-        self->player->setSpeed(*(float *) &g_ujSpeed);
-        self->player->setVisible(0);
-        self->player->setExhaustVisible(0);
+        self->player->setSpeed(90.0f);
+        self->player->setVisible(false);
+        self->player->setExhaustVisible(false);
     }
 
     bool ended;
     if (self->usingJumpDrive != 0) {
-        AbyssEngine::Transform *tr =
-                (AbyssEngine::Transform *) (intptr_t) Globals::Canvas->TransformGetTransform(
-                    (unsigned) (uintptr_t) Globals::Canvas);
-        ended = tr->animating != 0;
+        AbyssEngine::Transform *tr = static_cast<AbyssEngine::Transform *>(
+            Globals::Canvas->TransformGetTransform(self->jumpFlash->transform));
+        ended = tr->animating == 0;
     } else {
         Array<KIPlayer *> *lm = self->level->getLandmarks();
-        ended = ((PlayerJumpgate *) ((int) (intptr_t)(*lm)[1]))->animationEnded() != 0;
+        ended = static_cast<PlayerJumpgate *>((*lm)[1])->animationEnded() != 0;
     }
     if (!ended) goto done;
 
@@ -2283,44 +2263,42 @@ afterCam:
             self->player->setSpeed(0.0f);
             Array<KIPlayer *> *lm = self->level->getLandmarks();
             KIPlayer *node = (*lm)[3];
-            node->setPosition(*(float *) &g_ujPos0, *(float *) &g_ujPos1, *(float *) &g_ujPos2);
+            node->setPosition(25000.0f, 20000.0f, -55000.0f);
             lm = self->level->getLandmarks();
             KIPlayer *node2 = (*lm)[3];
             self->egoJumpPos = node2->getPosition();
-            if (self->player->geometry != nullptr) {
-                Vector pos = self->player->getPosition();
-                ((AEGeometry *) (self->player->geometry))->setPosition(pos);
-            }
+            self->player->setPosition(self->egoJumpPos);
             PlayerEgo *p = self->player;
             p->inWormhole = 1;
             self->jumpDriveActive = 0;
-            ((PlayerEgo *) (p))->resetChargingDrive();
+            p->resetChargingDrive();
         } else {
-            int **stationPtr = g_ujStation;
-            ((Status *) ((Station *) Globals::status))->departStation((Station *) *stationPtr);
+            Station *station = Level::programmedStation;
+            Globals::status->departStation(station);
             self->level->setInitStreamOut();
             if (self->usingJumpDrive == 0)
-                ((Status *) ((Station *) Globals::status))->jumpgateUsed();
-            if (((Station *) ((Station *) *stationPtr))->equals(Globals::status->playerStation) != 0) {
-                **g_ujFlagA = 1;
-                **g_ujFlagB = 1;
-                ((Status *) ((Station *) Globals::status))->setStation(
-                    (Station *) *stationPtr /* station: arg lost in decomp */);
+                Globals::status->jumpgateUsed();
+            if (station->equals(Globals::status->playerStation) != 0) {
+                Level::comingFromAlienWorld = 1;
+                Level::initStreamOutPosition = 1;
+                Globals::status->setStation(Globals::status->playerStation);
             }
-            *stationPtr = 0;
-            Globals::status->field_64 = ((Player *) (self->player->player))->getHitpoints();
-            Globals::status->field_5c = ((Player *) (self->player->player))->getShieldHP();
-            Globals::status->field_60 = ((Player *) (self->player->player))->getArmorHP();
-            Globals::status->field_68 = ((Player *) (self->player->player))->getGammaHP();
+            Level::programmedStation = nullptr;
+            Globals::status->field_64 = self->player->player->getHitpoints();
+            Globals::status->field_5c = self->player->player->getShieldHP();
+            Globals::status->field_60 = self->player->player->getArmorHP();
+            Globals::status->field_68 = self->player->player->getGammaHP();
             Globals::status->field_f4 = self->player->getCurrentSecondaryWeaponIndex();
-            **g_ujFlagC = 1;
+            Globals::switch_to_target_setting = 1;
             self->active = 0;
-            self->applicationManager->SetCurrentApplicationModule(5);
+            self->applicationManager->SetCurrentApplicationModule(2);
         }
     }
 
+    return true;
+
 done:
-    ;
+    return false;
 }
 
 static int g_mgameInitVal;

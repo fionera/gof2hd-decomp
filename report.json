@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.94,
+  "avg_match": 77.95,
   "byte_exact": 1161,
   "linked_exact": 2628,
   "fuzzy_perfect": 2628,
@@ -1416,6 +1416,14 @@
    "usize": 282
   },
   {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
+  },
+  {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
    "pct": 7.3,
    "byte": false,
@@ -1430,14 +1438,6 @@
    "linked": false,
    "osize": 1168,
    "usize": 864
-  },
-  {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -2800,20 +2800,20 @@
    "usize": 148
   },
   {
-   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
-   "pct": 19.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1896,
-   "usize": 1740
-  },
-  {
    "name": "_ZN15MenuTouchWindow16drawLoadSaveMenuEb",
    "pct": 19.6,
    "byte": false,
    "linked": false,
    "osize": 1188,
    "usize": 1100
+  },
+  {
+   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
+   "pct": 19.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1896,
+   "usize": 1740
   },
   {
    "name": "_ZN5ArrayIN11AbyssEngine6AEMath6MatrixEEC2Ev",
@@ -6840,14 +6840,6 @@
    "usize": 152
   },
   {
-   "name": "_ZN5MGame15updateJumpSceneEv",
-   "pct": 41.0,
-   "byte": false,
-   "linked": false,
-   "osize": 920,
-   "usize": 680
-  },
-  {
    "name": "_ZN9Explosion6updateEiRKN11AbyssEngine6AEMath6VectorE",
    "pct": 41.2,
    "byte": false,
@@ -8688,20 +8680,20 @@
    "usize": 608
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -8846,14 +8838,6 @@
    "linked": false,
    "osize": 408,
    "usize": 280
-  },
-  {
-   "name": "_ZN5MGame14startJumpSceneEv",
-   "pct": 54.6,
-   "byte": false,
-   "linked": false,
-   "osize": 896,
-   "usize": 832
   },
   {
    "name": "_ZN11SpaceLounge12OnTouchBeginEii",
@@ -12248,6 +12232,14 @@
    "usize": 192
   },
   {
+   "name": "_ZN5MGame15updateJumpSceneEv",
+   "pct": 76.5,
+   "byte": false,
+   "linked": false,
+   "osize": 920,
+   "usize": 912
+  },
+  {
    "name": "_ZN9Explosion10setScalingEf",
    "pct": 76.6,
    "byte": false,
@@ -12974,6 +12966,14 @@
    "linked": false,
    "osize": 72,
    "usize": 76
+  },
+  {
+   "name": "_ZN5MGame14startJumpSceneEv",
+   "pct": 83.0,
+   "byte": false,
+   "linked": false,
+   "osize": 896,
+   "usize": 904
   },
   {
    "name": "_ZN15MenuTouchWindow14startSupernovaEv",

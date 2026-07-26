@@ -265,7 +265,7 @@ public:
 
     void switchCamera(int id);
 
-    void updateJumpScene();
+    bool updateJumpScene();
 
     void useCloak();
 };
