@@ -766,8 +766,8 @@ TouchButton::TouchButton(int x, int y, String const &text, int p4, int p5, unsig
 }
 
 TouchButton::TouchButton(unsigned int kind, int a, int b, int c, unsigned char flag) {
-    PaintCanvas *canvas = Globals::Canvas;
     this->fontId = (uint32_t) (uintptr_t) Globals::font;
+    PaintCanvas *canvas = Globals::Canvas;
     this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
 
     String tmp(g_TB_emptyStr, false);

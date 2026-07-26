@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.83,
   "byte_exact": 1161,
-  "linked_exact": 2612,
-  "fuzzy_perfect": 2612,
+  "linked_exact": 2614,
+  "fuzzy_perfect": 2614,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14888,22 +14888,6 @@
    "usize": 208
   },
   {
-   "name": "_ZN11TouchButtonC1Ejiiih",
-   "pct": 96.5,
-   "byte": false,
-   "linked": false,
-   "osize": 236,
-   "usize": 236
-  },
-  {
-   "name": "_ZN11TouchButtonC2Ejiiih",
-   "pct": 96.5,
-   "byte": false,
-   "linked": false,
-   "osize": 236,
-   "usize": 236
-  },
-  {
    "name": "_Z19ArrayReleaseClassesIP14BoundingVolumeEvR5ArrayIT_E",
    "pct": 96.6,
    "byte": false,
@@ -22648,12 +22632,28 @@
    "usize": 164
   },
   {
+   "name": "_ZN11TouchButtonC1Ejiiih",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 236,
+   "usize": 236
+  },
+  {
    "name": "_ZN11TouchButtonC2EiiRKN11AbyssEngine6StringEiih",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 164,
    "usize": 164
+  },
+  {
+   "name": "_ZN11TouchButtonC2Ejiiih",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 236,
+   "usize": 236
   },
   {
    "name": "_ZN11TouchButtonD1Ev",
