@@ -165,10 +165,10 @@ void ObjectGun::setScaling(int x, int y, int /*z*/) {
 }
 
 void ObjectGun::replaceGun(unsigned int mesh, int /*unused*/) {
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->TransformRemoveMesh(this->transform, this->meshId);
+    PaintCanvas **canvas = &Globals::Canvas;
+    (*canvas)->TransformRemoveMesh(this->transform, this->meshId);
     this->meshId = (int) mesh;
-    canvas->TransformAddMesh(this->transform, (uint16_t) mesh, false);
+    (*canvas)->TransformAddMesh(this->transform, (uint16_t) mesh, false);
 }
 
 void ObjectGun::setEnemies(Array<Player *> *enemies) {

@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.0,
   "byte_exact": 1163,
-  "linked_exact": 2643,
-  "fuzzy_perfect": 2643,
+  "linked_exact": 2644,
+  "fuzzy_perfect": 2644,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13358,14 +13358,6 @@
    "linked": false,
    "osize": 52,
    "usize": 52
-  },
-  {
-   "name": "_ZN9ObjectGun10replaceGunEji",
-   "pct": 86.4,
-   "byte": false,
-   "linked": false,
-   "osize": 56,
-   "usize": 56
   },
   {
    "name": "_ZN11AbyssEngine18BumpShaderParticle14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -33614,6 +33606,14 @@
    "linked": true,
    "osize": 22,
    "usize": 22
+  },
+  {
+   "name": "_ZN9ObjectGun10replaceGunEji",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 56,
+   "usize": 56
   },
   {
    "name": "_ZN9ObjectGun10setEnemiesEP5ArrayIP6PlayerE",
