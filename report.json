@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.04,
   "byte_exact": 1164,
-  "linked_exact": 2656,
-  "fuzzy_perfect": 2656,
+  "linked_exact": 2657,
+  "fuzzy_perfect": 2657,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1424,20 +1424,20 @@
    "usize": 282
   },
   {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
+  },
+  {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
    "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 1168,
    "usize": 864
-  },
-  {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -8672,20 +8672,20 @@
    "usize": 608
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -12638,14 +12638,6 @@
    "linked": false,
    "osize": 184,
    "usize": 180
-  },
-  {
-   "name": "_ZN18TargetFollowCamera17resetShipHandlingEv",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 24,
-   "usize": 24
   },
   {
    "name": "_ZN4Ship16replaceEquipmentEP5ArrayIP4ItemE",
@@ -25262,6 +25254,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN18TargetFollowCamera17resetShipHandlingEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 24,
+   "usize": 24
   },
   {
    "name": "_ZN18TargetFollowCamera17translateNoUpdateEfff",

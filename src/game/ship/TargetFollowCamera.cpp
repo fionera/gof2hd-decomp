@@ -205,7 +205,7 @@ void TargetFollowCamera::setShipHandling(float handling) {
 void TargetFollowCamera::resetShipHandling() {
     this->handlingDampingA = bitsToFloat(0x3ba3d70a);
     this->handlingDampingB = bitsToFloat(0x3bc49ba6);
-    update(1);
+    calculateCoefficents(1.0f);
 }
 
 void TargetFollowCamera::calculateCoefficents(float t) {
