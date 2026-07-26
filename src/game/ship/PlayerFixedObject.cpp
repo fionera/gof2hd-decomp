@@ -28,8 +28,6 @@ namespace AbyssEngine {
     }
 }
 
-V3 BV_getProjectionVector(void *bv); // lint: void_ptr (external, Pv-mangled import)
-
 int PlayerFixedObject::getDockingType() {
     return this->dockingType;
 }
@@ -573,17 +571,16 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
 }
 
 V3 PlayerFixedObject::getProjectionVector(const Vector &vec) {
-    (void) vec;
     PlayerFixedObject *self = this;
     Array<BoundingVolume *> *bv = self->wreckCollision;
     if (bv != 0 && self->state == 4) {
         int idx = self->collisionIndex;
-        return BV_getProjectionVector((*bv)[idx]);
+        return (*bv)[idx]->getProjectionVector(vec);
     }
     Array<BoundingVolume *> *bv2 = self->boundingVolumes;
     if (bv2 != 0) {
         int idx = self->collisionIndex;
-        return BV_getProjectionVector((*bv2)[idx]);
+        return (*bv2)[idx]->getProjectionVector(vec);
     }
     V3 z = {0.0f, 0.0f, 0.0f};
     return z;

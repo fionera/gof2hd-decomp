@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.64,
+  "avg_match": 77.66,
   "byte_exact": 1160,
-  "linked_exact": 2592,
-  "fuzzy_perfect": 2592,
+  "linked_exact": 2593,
+  "fuzzy_perfect": 2593,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2536,20 +2536,20 @@
    "usize": 940
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 16.8,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "_ZN9RocketGun8setRadarEP5Radar",
    "pct": 16.8,
    "byte": false,
    "linked": false,
    "osize": 608,
    "usize": 568
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.9,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "_ZN3HudC1Ev",
@@ -4128,14 +4128,6 @@
    "usize": 492
   },
   {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
-  },
-  {
    "name": "ndk_iapBoughtConsumable",
    "pct": 28.0,
    "byte": false,
@@ -4166,6 +4158,14 @@
    "linked": false,
    "osize": 172,
    "usize": 176
+  },
+  {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
   },
   {
    "name": "_ZN9ExplosionD1Ev",
@@ -8246,14 +8246,6 @@
    "linked": false,
    "osize": 48,
    "usize": 38
-  },
-  {
-   "name": "_ZN17PlayerFixedObject19getProjectionVectorERKN11AbyssEngine6AEMath6VectorE",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 64,
-   "usize": 50
   },
   {
    "name": "_ZN17PlayerFixedObject7setNameEN11AbyssEngine6StringE",
@@ -25230,6 +25222,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN17PlayerFixedObject19getProjectionVectorERKN11AbyssEngine6AEMath6VectorE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 64,
+   "usize": 64
   },
   {
    "name": "_ZN17PlayerFixedObject25projectCollisionOnSurfaceERKN11AbyssEngine6AEMath6VectorE",

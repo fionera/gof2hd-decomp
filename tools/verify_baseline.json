@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1160,
-  "linked_exact": 2592,
+  "linked_exact": 2593,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.64,
+  "avg_match": 77.66,
   "compared": 4523
  },
  "imports": [
@@ -209,7 +209,6 @@
   "_Z21_mtw_draw_optionsTabsPv",
   "_Z21_mtw_steerFromTouchIdPviiS_",
   "_Z21paintcanvas_ext_end3dPN11AbyssEngine11PaintCanvasE",
-  "_Z22BV_getProjectionVectorPv",
   "_Z22ChoiceWindow_set1_fragP12ChoiceWindowi",
   "_Z22CutScene_initialize_oiP8CutScene",
   "_Z22CutScene_initialize_ouP8CutScene",
