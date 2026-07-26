@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.04,
+  "avg_match": 78.05,
   "byte_exact": 1164,
-  "linked_exact": 2657,
-  "fuzzy_perfect": 2657,
+  "linked_exact": 2658,
+  "fuzzy_perfect": 2658,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -9184,6 +9184,14 @@
    "usize": 34
   },
   {
+   "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
+   "pct": 57.4,
+   "byte": false,
+   "linked": false,
+   "osize": 1332,
+   "usize": 1288
+  },
+  {
    "name": "_ZN6AEFile9FileExistERKN11AbyssEngine6StringE",
    "pct": 57.5,
    "byte": false,
@@ -9902,14 +9910,6 @@
    "linked": false,
    "osize": 80,
    "usize": 80
-  },
-  {
-   "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
-   "pct": 59.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1332,
-   "usize": 1288
   },
   {
    "name": "_ZN11ModMainMenu10OnTouchEndEiiPv",
@@ -13462,14 +13462,6 @@
    "linked": false,
    "osize": 88,
    "usize": 84
-  },
-  {
-   "name": "_ZN11AbyssEngine6Engine16LightSetRimColorEfff",
-   "pct": 88.2,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 52
   },
   {
    "name": "_ZN11AbyssEngine20CameraSetPerspectiveEffffPNS_6CameraE",
@@ -20782,6 +20774,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN11AbyssEngine6Engine16LightSetRimColorEfff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN11AbyssEngine6Engine18ActivateRefractFBOEv",

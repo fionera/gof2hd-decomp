@@ -183,7 +183,7 @@ uint32_t Engine::GetDisplayHeight() {
 }
 
 void Engine::LightSetRimColor(float red, float green, float blue) {
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return;
     }
     this->rimColor.x = red;
