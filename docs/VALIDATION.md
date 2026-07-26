@@ -39,26 +39,27 @@ irreducible delta (machine-checked via `tools/sodiff_allow.txt`).
 `objdump`; `layout.py`/`drift_scan.py` use the NDK clang (never the host compiler — host `-m32`
 is i386, which aligns 8-byte scalars to 4 and reports wrong offsets for ARM).
 
-## Current state — symbol parity (2026-07-25)
+## Current state — symbol parity (2026-07-26)
 
 ```
-original: 5370   ours: 5423   extra: 53 (all allowlisted)   missing: 0   (wrong_type: 0   absent: 0)
+original: 5370   ours: 5421   extra: 51 (all allowlisted)   missing: 0   (wrong_type: 0   absent: 0)
 ```
 
 **Zero missing, zero wrong_type** — every function and object the original exports, with the correct
 signature, is present. The 12 formerly broken zero-size UB stubs have all been reconstructed (see
 the fidelity section).
-The **53 extra** symbols are all documented in `tools/sodiff_allow.txt`, so the `diff` target exits
-0; any extra beyond the list is a hard failure. They break down as 36 ctor/dtor aliases (below),
+The **51 extra** symbols are all documented in `tools/sodiff_allow.txt`, so the `diff` target exits
+0; any extra beyond the list is a hard failure. They break down as 34 ctor/dtor aliases (below),
 15 engine flag globals (below), `SHA256_version`, and `gof2::kJNIEnvCallAnchors`:
 
 ### Reducible (already fixed)
 Moving an empty/simple **out-of-line** ctor/dtor **inline into the header** makes clang emit it weak
 and fold the redundant complete-object variant (C1/D1) into the base-object variant (C2/D2) the
 original exports. Done for `GameData`, `EaseInOutMatrix::~EaseInOutMatrix`, `KeyFrame::KeyFrame`
-(40 → 36). This is the template for any further reductions.
+(40 → 36), `Array<Radio*>::~Array` through its TU merge, and `AEMath::Matrix::Matrix` (36 → 34).
+This is the template for any further reductions.
 
-### Irreducible under the "no linker scripts" rule (33 symbols)
+### Irreducible under the "no linker scripts" rule (34 symbols)
 **Compiler-emitted C1/C2 & D1/D2 constructor/destructor alias duplicates.** clang emits both the
 complete-object (C1/D1) and base-object (C2/D2) variant; for a class with no virtual bases they are
 identical and the original's link kept only one name. The inline trick above removes the duplicate
@@ -72,15 +73,14 @@ both forbidden. These are therefore left as a documented delta:
 - `AbyssEngine::ResourceTexture` C1`(const char*,float)`, C1`(const String&,float)`, D1
 - `AbyssEngine::ResourceMaterial` C1`(u16,BlendMode)`, C1`(u16,u16,BlendMode)`
 - `AbyssEngine::ResourceTransform` D1
-- `AbyssEngine::AEMath::Matrix` C1`()`
 - `AbyssEngine::Camera` C1`(float×5)`
 - `AbyssEngine::Material` C1`(Material*)`, C1`()`, D1
 - `AbyssEngine::String` C1`(char)`, C1`(int)`, C1`(float)`, C1`(long long)`, C2`(const String&)`
 - `ParticleSettings` D1
-- `SpriteGun` C1`(Gun*,int)`
-- 11 `Array<T>` instantiations (`Array<TouchSlider*>`, `Array<BluePrint*>`, `Array<GameRecord*>`,
-  `Array<PendingProduct*>`, `Array<KeyCode*>`, `Array<Array<ImagePart*>>`,
-  `Array<Array<String*>>`, `Array<signed char*>`, `Array<void*>`, `Array<bool>`) — C1 and/or D1/D2.
+- 11 `Array<T>` instantiations (`Array<String>`, `Array<TouchSlider*>`, `Array<BluePrint*>`,
+  `Array<GameRecord*>`, `Array<PendingProduct*>`, `Array<KeyCode*>`, `Array<Array<String>*>`,
+  `Array<Array<ImagePart*>>`, `Array<Array<String*>>`, `Array<signed char*>`, `Array<bool>`) —
+  C1 and/or D1/D2.
 
 `AbyssEngine::String` is additionally the polymorphic `{vtable,data,length}` class noted as needing
 a full re-model; its copy-ctor delta (`C2(const String&)` vs the original's `C2(const String&,bool)`)
@@ -174,7 +174,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1181, linked_exact 2722, avg 78.40%**.
+Current numbers (of **4523** compared): **byte_exact 1182, linked_exact 2725, avg 78.44%**.
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
 monotone, linked_exact within a ±1 transient band, stubs/missing/extra frozen, exports pinned to
