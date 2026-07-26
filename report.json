@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.71,
+  "avg_match": 77.72,
   "byte_exact": 1160,
   "linked_exact": 2594,
   "fuzzy_perfect": 2594,
@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.3,
+   "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -2280,14 +2280,6 @@
    "usize": 1956
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 14.2,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN5Radio4drawExP9PlayerEgoP11LevelScript",
    "pct": 14.3,
    "byte": false,
@@ -2550,6 +2542,14 @@
    "linked": false,
    "osize": 230,
    "usize": 574
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 17.0,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -4112,6 +4112,14 @@
    "usize": 492
   },
   {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
+  },
+  {
    "name": "ndk_iapBoughtConsumable",
    "pct": 28.0,
    "byte": false,
@@ -4142,14 +4150,6 @@
    "linked": false,
    "osize": 172,
    "usize": 176
-  },
-  {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
   },
   {
    "name": "_ZN9ExplosionD1Ev",
@@ -8086,14 +8086,6 @@
    "linked": false,
    "osize": 408,
    "usize": 492
-  },
-  {
-   "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
-   "pct": 49.4,
-   "byte": false,
-   "linked": false,
-   "osize": 240,
-   "usize": 228
   },
   {
    "name": "_ZN11TouchButton13touchedInsideEii",
@@ -13414,6 +13406,14 @@
    "linked": false,
    "osize": 92,
    "usize": 92
+  },
+  {
+   "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
+   "pct": 85.6,
+   "byte": false,
+   "linked": false,
+   "osize": 240,
+   "usize": 240
   },
   {
    "name": "_ZN9FModSound13freeAllEventsEv",

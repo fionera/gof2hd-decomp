@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.71,
+  "avg_match": 77.72,
   "compared": 4523
  },
  "imports": [
@@ -21,7 +21,6 @@
   "_Z10Array_dtorPv",
   "_Z10TB_frameIdiji",
   "_Z11PE_upd_postP9PlayerEgoiPvS1_S1_i",
-  "_Z11VectorCrossPN11AbyssEngine6AEMath6VectorEPKS1_",
   "_Z11VectorScalePvf",
   "_Z11aeabi_idiv_ii",
   "_Z12Mat_identityPvPKv",

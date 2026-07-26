@@ -4,8 +4,6 @@
 
 uint32_t Transform_GetTransform(uint32_t tf);
 
-void VectorCross(Vector *out, const Vector *b);
-
 Vector AEGeometry::getPosition() {
     Matrix &loc = *(Matrix *) this->canvas->TransformGetLocal(this->transform);
     return MatrixGetPosition(loc);
@@ -391,30 +389,24 @@ void AEGeometry::setDirection(const Vector &dir, const Vector &up) {
     char local[60];
     memcpy(local, this->canvas->TransformGetLocal(this->transform), 0x3c);
 
-    Vector right = up;
-    VectorCross(&right, &dir);
-    Vector tmp;
-    VectorNormalize(&tmp, &right);
-    right = tmp;
-
-    Vector rUp;
-    VectorCross(&tmp, &dir);
-    rUp = tmp;
-    VectorNormalize(&tmp, &rUp);
-    rUp = tmp;
+    Vector newUp = up;
+    Vector newRight = AbyssEngine::AEMath::VectorCross(newUp, dir);
+    newRight = AbyssEngine::AEMath::VectorNormalize(newRight);
+    newUp = AbyssEngine::AEMath::VectorCross(dir, newRight);
+    newUp = AbyssEngine::AEMath::VectorNormalize(newUp);
 
     Matrix &m = *(Matrix *) local;
-    m.m[0] = right.x;
-    m.m[1] = right.y;
-    m.m[2] = right.z;
-    m.m[3] = rUp.x;
-    m.m[4] = rUp.y;
-    m.m[5] = rUp.z;
-    m.m[6] = dir.x;
-    m.m[7] = dir.y;
-    m.m[8] = dir.z;
+    m.m[0] = newRight.x;
+    m.m[4] = newRight.y;
+    m.m[8] = newRight.z;
+    m.m[1] = newUp.x;
+    m.m[5] = newUp.y;
+    m.m[9] = newUp.z;
+    m.m[2] = dir.x;
+    m.m[6] = dir.y;
+    m.m[10] = dir.z;
 
-    AEGeomCanvas::TransformSetLocal(this->canvas, this->transform, &m);
+    this->canvas->TransformSetLocal(this->transform, m);
     AbyssEngine::AEMath::MatrixSetScaling(
         *(Matrix *) this->canvas->TransformGetLocal(this->transform),
         this->scalingX, this->scalingY, this->scalingZ);
