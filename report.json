@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.98,
+  "avg_match": 77.99,
   "byte_exact": 1162,
-  "linked_exact": 2638,
-  "fuzzy_perfect": 2638,
+  "linked_exact": 2639,
+  "fuzzy_perfect": 2639,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13848,14 +13848,6 @@
    "usize": 76
   },
   {
-   "name": "_ZN11LevelScript11resetCameraEP5Level",
-   "pct": 90.7,
-   "byte": false,
-   "linked": false,
-   "osize": 124,
-   "usize": 124
-  },
-  {
    "name": "_ZN11AbyssEngine6AEMatheqERKNS0_6VectorES3_",
    "pct": 90.9,
    "byte": false,
@@ -21878,6 +21870,14 @@
    "linked": true,
    "osize": 96,
    "usize": 96
+  },
+  {
+   "name": "_ZN11LevelScript11resetCameraEP5Level",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 124,
+   "usize": 124
   },
   {
    "name": "_ZN11LevelScript13startSequenceEv",

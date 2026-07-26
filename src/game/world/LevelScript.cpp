@@ -106,8 +106,9 @@ uint8_t LevelScript::startSequenceOver() {
 
 void LevelScript::resetCamera(Level *level) {
     if (level->getPlayer() != 0) {
+        TargetFollowCamera *camera = m_pCamera;
         PlayerEgo *player = (PlayerEgo *) level->getPlayer();
-        m_pCamera->setTarget(player->geometry);
+        camera->setTarget(player->geometry);
         m_pCamera->setTargetOffset(Vector{0.0f, 600.0f, -650.0f});
         m_pCamera->setCamOffset(Vector{0.0f, 600.0f, -1338.0f});
     }
