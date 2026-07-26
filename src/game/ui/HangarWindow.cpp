@@ -1311,9 +1311,8 @@ void HangarWindow::refreshCargoAvailabilityForBlueprints() {
             Array<int> *ingr = bp->getIngredientList();
             if (cargo != nullptr) {
                 Array<int> *counters = bp->ingredientCounters;
-                int *amts = counters->data();
                 for (uint32_t j = 0; j < ingr->size(); j++) {
-                    if (amts[j] > 0) {
+                    if (counters->data()[j] > 0) {
                         for (uint32_t k = 0; k < cargo->size(); k++) {
                             if (cargo->data()[k]->getIndex() == ingr->data()[j]) {
                                 it->craftable = 1;

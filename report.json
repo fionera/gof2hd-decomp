@@ -14264,14 +14264,6 @@
    "usize": 34
   },
   {
-   "name": "_ZN12HangarWindow37refreshCargoAvailabilityForBlueprintsEv",
-   "pct": 93.0,
-   "byte": false,
-   "linked": false,
-   "osize": 188,
-   "usize": 188
-  },
-  {
    "name": "_ZN7MineGunC1EP3GuniiiP5Level",
    "pct": 93.2,
    "byte": false,
@@ -14974,6 +14966,14 @@
    "linked": false,
    "osize": 202,
    "usize": 202
+  },
+  {
+   "name": "_ZN12HangarWindow37refreshCargoAvailabilityForBlueprintsEv",
+   "pct": 98.6,
+   "byte": false,
+   "linked": false,
+   "osize": 188,
+   "usize": 188
   },
   {
    "name": "_ZN4ShipD1Ev",
