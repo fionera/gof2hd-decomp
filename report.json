@@ -13792,14 +13792,6 @@
    "usize": 62
   },
   {
-   "name": "_ZN6Sprite8setFrameEi",
-   "pct": 92.6,
-   "byte": false,
-   "linked": false,
-   "osize": 72,
-   "usize": 72
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas20CameraSetPerspectiveEjfff",
    "pct": 92.7,
    "byte": false,
@@ -14262,6 +14254,14 @@
    "linked": false,
    "osize": 66,
    "usize": 66
+  },
+  {
+   "name": "_ZN6Sprite8setFrameEi",
+   "pct": 96.3,
+   "byte": false,
+   "linked": false,
+   "osize": 72,
+   "usize": 72
   },
   {
    "name": "_ZN11TouchSlider11OnTouchMoveEii",
