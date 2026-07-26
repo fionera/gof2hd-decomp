@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.12,
   "byte_exact": 1170,
-  "linked_exact": 2677,
-  "fuzzy_perfect": 2677,
+  "linked_exact": 2679,
+  "fuzzy_perfect": 2679,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13376,22 +13376,6 @@
    "usize": 144
   },
   {
-   "name": "_ZN11TouchButtonC1Ejjiiih",
-   "pct": 88.5,
-   "byte": false,
-   "linked": false,
-   "osize": 236,
-   "usize": 236
-  },
-  {
-   "name": "_ZN11TouchButtonC2Ejjiiih",
-   "pct": 88.5,
-   "byte": false,
-   "linked": false,
-   "osize": 236,
-   "usize": 236
-  },
-  {
    "name": "_ZN6Status11replaceHashEN11AbyssEngine6StringES1_",
    "pct": 88.5,
    "byte": false,
@@ -22256,6 +22240,14 @@
    "usize": 232
   },
   {
+   "name": "_ZN11TouchButtonC1Ejjiiih",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 236,
+   "usize": 236
+  },
+  {
    "name": "_ZN11TouchButtonC2EiiRKN11AbyssEngine6StringEiih",
    "pct": 100.0,
    "byte": false,
@@ -22278,6 +22270,14 @@
    "linked": true,
    "osize": 232,
    "usize": 232
+  },
+  {
+   "name": "_ZN11TouchButtonC2Ejjiiih",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 236,
+   "usize": 236
   },
   {
    "name": "_ZN11TouchButtonD1Ev",

@@ -728,13 +728,13 @@ bool TouchButton::touchedInside(int px, int py) {
 
 TouchButton::TouchButton(unsigned int kind, unsigned int image,
                          int a, int b, int c, unsigned char flag) {
-    PaintCanvas *canvas = Globals::Canvas;
-    this->image = image;
+    PaintCanvas **canvas = &Globals::Canvas;
     this->fontId = (uint32_t) (uintptr_t) Globals::font;
-    this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
+    this->image = image;
+    this->fontSpacing = (*canvas)->FontGetSpacing(this->fontId);
 
     String tmp(g_TB_emptyStr, false);
-    this->init(tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
+    this->init(tmp, kind, a, -1, -1, b, c, 0, flag, 0x44);
 }
 
 TouchButton::TouchButton(String const &text, int x, int y, int p4, unsigned char p5) {
