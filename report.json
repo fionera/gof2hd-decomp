@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.97,
+  "avg_match": 77.98,
   "byte_exact": 1162,
-  "linked_exact": 2632,
-  "fuzzy_perfect": 2632,
+  "linked_exact": 2634,
+  "fuzzy_perfect": 2634,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13704,22 +13704,6 @@
    "usize": 44
   },
   {
-   "name": "_ZN12RadioMessageC1Eiiii",
-   "pct": 89.5,
-   "byte": false,
-   "linked": false,
-   "osize": 48,
-   "usize": 48
-  },
-  {
-   "name": "_ZN12RadioMessageC2Eiiii",
-   "pct": 89.5,
-   "byte": false,
-   "linked": false,
-   "osize": 48,
-   "usize": 48
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine22LightSetLightDirectionEfffj",
    "pct": 89.6,
    "byte": false,
@@ -23520,6 +23504,14 @@
    "usize": 38
   },
   {
+   "name": "_ZN12RadioMessageC1Eiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 48,
+   "usize": 48
+  },
+  {
    "name": "_ZN12RadioMessageC1Eiiiii",
    "pct": 100.0,
    "byte": false,
@@ -23534,6 +23526,14 @@
    "linked": true,
    "osize": 38,
    "usize": 38
+  },
+  {
+   "name": "_ZN12RadioMessageC2Eiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 48,
+   "usize": 48
   },
   {
    "name": "_ZN12RadioMessageC2Eiiiii",

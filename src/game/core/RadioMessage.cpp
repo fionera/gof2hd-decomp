@@ -42,10 +42,9 @@ RadioMessage::RadioMessage(int textID, int imageID, int conditionType, int condi
     this->conditionType = conditionType;
     this->conditionValue = conditionValue;
 
-    int *values = new int[1];
-    values[0] = conditionValue;
+    this->targetIndices = new int[1];
+    this->targetIndices[0] = conditionValue;
     this->targetCount = 1;
-    this->targetIndices = values;
 
     this->triggeredFlag = 0;
     this->over = 0;
