@@ -12040,14 +12040,6 @@
    "usize": 80
   },
   {
-   "name": "_ZN6Layout13getPulseValueEf",
-   "pct": 73.5,
-   "byte": false,
-   "linked": false,
-   "osize": 112,
-   "usize": 116
-  },
-  {
    "name": "deflateCopy",
    "pct": 73.6,
    "byte": false,
@@ -12734,6 +12726,14 @@
    "linked": false,
    "osize": 1184,
    "usize": 1096
+  },
+  {
+   "name": "_ZN6Layout13getPulseValueEf",
+   "pct": 79.4,
+   "byte": false,
+   "linked": false,
+   "osize": 112,
+   "usize": 116
   },
   {
    "name": "_ZN11AbyssEngine17BumpRimCubeShader4InitEPNS_6EngineE",

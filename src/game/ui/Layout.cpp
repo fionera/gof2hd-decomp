@@ -71,12 +71,10 @@ int Layout::OnTouchBegin(int x, int y) {
     return btn->OnTouchBegin(x, y);
 }
 
-float Sinf(float);
-
 float Layout::getPulseValue(float speed) {
     Status *status = Globals::status;
-    float a = Sinf((float) status->getPlayingTime() * speed);
-    float b = Sinf((float) status->getPlayingTime() * speed);
+    float a = AbyssEngine::AEMath::Sinf((float) status->getPlayingTime() * speed);
+    float b = AbyssEngine::AEMath::Sinf((float) status->getPlayingTime() * speed);
     return a > 0.0f ? b : -b;
 }
 
@@ -1420,4 +1418,3 @@ void Layout::drawWindow(String title, bool drawBG) {
     int p5 = *gW3 - ((int *) gW1)[2];
     this->drawWindow(tmp, 0, 0, p4, p5, drawBG);
 }
-
