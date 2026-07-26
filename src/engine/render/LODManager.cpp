@@ -34,8 +34,8 @@ LODManager::LODManager() {
     this->cameraPos.x = 0;
     this->cameraPos.y = 0;
     this->cameraPos.z = 0;
-    this->timer = 0x3e9;
     this->objects = new Array<AEGeometry *>();
+    this->timer = 0x3e9;
 }
 
 LODManager::~LODManager() {

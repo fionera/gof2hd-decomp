@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.05,
   "byte_exact": 1164,
-  "linked_exact": 2658,
-  "fuzzy_perfect": 2658,
+  "linked_exact": 2660,
+  "fuzzy_perfect": 2660,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13328,22 +13328,6 @@
    "usize": 58
   },
   {
-   "name": "_ZN10LODManagerC1Ev",
-   "pct": 87.2,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 52
-  },
-  {
-   "name": "_ZN10LODManagerC2Ev",
-   "pct": 87.2,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 52
-  },
-  {
    "name": "_ZN12PlayerTurret8setLevelEP5Level",
    "pct": 87.2,
    "byte": false,
@@ -17078,6 +17062,22 @@
    "linked": true,
    "osize": 30,
    "usize": 30
+  },
+  {
+   "name": "_ZN10LODManagerC1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
+  },
+  {
+   "name": "_ZN10LODManagerC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN10LODManagerD1Ev",
