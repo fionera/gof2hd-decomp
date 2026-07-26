@@ -1982,10 +1982,9 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
     AbyssEngine::AEMath::VectorNormalize((Vector *) norm, (Vector *) dir);
     this->pushNormal() = *(Vector *) norm;
 
-    int rngObj = (int) (intptr_t) Globals::rnd;
-    float rx = VectorSignedToFloat(AERandom_nextIntB(rngObj, 200) - 100, 0);
-    float ry = VectorSignedToFloat(AERandom_nextIntB(rngObj, 200) - 100, 0);
-    float rz = VectorSignedToFloat(AERandom_nextIntB(rngObj, 200) - 100, 0);
+    float rx = (float) (Globals::rnd->nextInt(200) - 100);
+    float ry = (float) (Globals::rnd->nextInt(200) - 100);
+    float rz = (float) (Globals::rnd->nextInt(200) - 100);
     float rvec[3] = {rx, ry, rz};
     float rnorm[3];
     AbyssEngine::AEMath::VectorNormalize((Vector *) rnorm, (Vector *) rvec);

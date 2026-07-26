@@ -4168,14 +4168,6 @@
    "usize": 110
   },
   {
-   "name": "_ZN13PlayerFighter8initPushERKN11AbyssEngine6AEMath6VectorEi",
-   "pct": 28.4,
-   "byte": false,
-   "linked": false,
-   "osize": 320,
-   "usize": 384
-  },
-  {
    "name": "_ZN7Globals7getLineEjN11AbyssEngine6StringEiPS1_",
    "pct": 28.5,
    "byte": false,
@@ -7440,6 +7432,14 @@
    "usize": 92
   },
   {
+   "name": "_ZN13PlayerFighter8initPushERKN11AbyssEngine6AEMath6VectorEi",
+   "pct": 45.2,
+   "byte": false,
+   "linked": false,
+   "osize": 320,
+   "usize": 388
+  },
+  {
    "name": "_ZN15PlayerStaticFar7collideEfff",
    "pct": 45.2,
    "byte": false,
@@ -8785,7 +8785,7 @@
   },
   {
    "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.2,
+   "pct": 53.1,
    "byte": false,
    "linked": false,
    "osize": 2696,
