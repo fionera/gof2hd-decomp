@@ -178,8 +178,6 @@ static_assert(__builtin_offsetof(PE_AsteroidMineTarget, miningFlag) == 0x44, "mi
 
 static inline Status *PE_status() { return Globals::status; }
 
-int Station_getIndex(void *); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
 void stopShooting_extA(void *, int); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void stopShooting_extB(void *, int, int); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
@@ -819,7 +817,7 @@ bool PlayerEgo::isDockedToMiningPlant() {
     if (this->dockedFlag != 0 && this->dockingPointIndex == 1) {
         if (((Mission *) (Globals::status->getMission()))->isEmpty() != 0
             && Globals::status->inAlienOrbit() == 0) {
-            return Station_getIndex(Globals::status->getStation()) == 0x67;
+            return Globals::status->getStation()->getIndex() == 0x67;
         }
     }
     return false;
@@ -1223,7 +1221,7 @@ void PlayerEgo::StopEngineSound() {
     if (this->dockedFlag == 0 || this->dockingPointIndex != 1) {
         if (((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x26) != 0
             && Globals::status->inAlienOrbit() == 0) {
-            int idx = Station_getIndex(Globals::status->getStation());
+            int idx = Globals::status->getStation()->getIndex();
             int cm = Globals::status->getCurrentCampaignMission();
             float g = Globals::status->getGammaRayDamagePerSecond(idx, cm);
             if (0.0f < g && this->engineSoundId != -1) {
@@ -1732,7 +1730,7 @@ PlayerEgo::PlayerEgo(Player *player) {
 void PlayerEgo::PlayEngineSound() {
     if (((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x26) != 0
         && Globals::status->inAlienOrbit() == 0) {
-        int idx = Station_getIndex(Globals::status->getStation());
+        int idx = Globals::status->getStation()->getIndex();
         int cm = Globals::status->getCurrentCampaignMission();
         float g = Globals::status->getGammaRayDamagePerSecond(idx, cm);
         if (0.0f < g && this->engineSoundId != -1) {
