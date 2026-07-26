@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.38,
-  "byte_exact": 1179,
-  "linked_exact": 2716,
-  "fuzzy_perfect": 2716,
+  "avg_match": 78.39,
+  "byte_exact": 1181,
+  "linked_exact": 2719,
+  "fuzzy_perfect": 2719,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -6792,14 +6792,6 @@
    "usize": 596
   },
   {
-   "name": "_ZN11AbyssEngine10BlurShader12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineEfNS_6AEMath6VectorE",
-   "pct": 41.4,
-   "byte": false,
-   "linked": false,
-   "osize": 784,
-   "usize": 728
-  },
-  {
    "name": "_ZN14PlayerAsteroid4pushEi",
    "pct": 41.4,
    "byte": false,
@@ -6878,6 +6870,14 @@
    "linked": false,
    "osize": 256,
    "usize": 212
+  },
+  {
+   "name": "_ZN11AbyssEngine10BlurShader12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineEfNS_6AEMath6VectorE",
+   "pct": 42.2,
+   "byte": false,
+   "linked": false,
+   "osize": 784,
+   "usize": 728
   },
   {
    "name": "_ZN11AbyssEngine17ImageFontGetWidthEPNS_9ImageFontEPKtjj",
@@ -10792,22 +10792,6 @@
    "usize": 6
   },
   {
-   "name": "_ZN11AbyssEngine16ShaderBaseStruct12RenderEffectEPNS_12FBOContainerEPNS_6EngineEfNS_6AEMath6VectorE",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2,
-   "usize": 4
-  },
-  {
-   "name": "_ZN11AbyssEngine16ShaderBaseStruct12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineEfNS_6AEMath6VectorE",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2,
-   "usize": 4
-  },
-  {
    "name": "_ZN11AbyssEngine18ApplicationManager13ResetKeyStateEv",
    "pct": 66.7,
    "byte": false,
@@ -13294,14 +13278,6 @@
    "linked": false,
    "osize": 162,
    "usize": 138
-  },
-  {
-   "name": "_ZN11AbyssEngine10BlurShader12RenderEffectEPNS_12FBOContainerEPNS_6EngineEfNS_6AEMath6VectorE",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 72,
-   "usize": 72
   },
   {
    "name": "_ZN6Player17ResumeEngineSoundEb",
@@ -17192,6 +17168,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN11AbyssEngine10BlurShader12RenderEffectEPNS_12FBOContainerEPNS_6EngineEfNS_6AEMath6VectorE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 72,
+   "usize": 72
+  },
+  {
    "name": "_ZN11AbyssEngine10BlurShaderD0Ev",
    "pct": 100.0,
    "byte": false,
@@ -19104,7 +19088,23 @@
    "usize": 2
   },
   {
+   "name": "_ZN11AbyssEngine16ShaderBaseStruct12RenderEffectEPNS_12FBOContainerEPNS_6EngineEfNS_6AEMath6VectorE",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 2,
+   "usize": 2
+  },
+  {
    "name": "_ZN11AbyssEngine16ShaderBaseStruct12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineE",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 2,
+   "usize": 2
+  },
+  {
+   "name": "_ZN11AbyssEngine16ShaderBaseStruct12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineEfNS_6AEMath6VectorE",
    "pct": 100.0,
    "byte": true,
    "linked": true,

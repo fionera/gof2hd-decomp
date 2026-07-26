@@ -44,12 +44,12 @@ namespace AbyssEngine {
         // The 4-arg and 5-arg RenderEffect are VIRTUAL (slots 6 & 8), interleaved — were non-virtual in ours.
         virtual void RenderEffect(FBOContainer *source, Engine *engine);
 
-        virtual FBOContainer *RenderEffect(FBOContainer *source, Engine *engine, float strength, AEMath::Vector tint);
+        virtual void RenderEffect(FBOContainer *source, Engine *engine, float strength, AEMath::Vector tint);
 
         virtual void RenderEffect(FBOContainer *source, FBOContainer *&target, AbyssEngine::Engine *engine);
 
-        virtual FBOContainer *RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine, float strength,
-                                           AEMath::Vector tint);
+        virtual void RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine, float strength,
+                                  AEMath::Vector tint);
 
         virtual void DeleteShader();
 
