@@ -2216,6 +2216,14 @@
    "usize": 1290
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 13.4,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
    "pct": 13.6,
    "byte": false,
@@ -2526,14 +2534,6 @@
    "linked": false,
    "osize": 230,
    "usize": 574
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 17.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -3176,6 +3176,14 @@
    "usize": 564
   },
   {
+   "name": "_ZN10RepairBeam6updateEiP5RadarP5LevelP3Hud",
+   "pct": 22.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1872,
+   "usize": 1232
+  },
+  {
    "name": "SHA256_Update",
    "pct": 22.7,
    "byte": false,
@@ -3278,14 +3286,6 @@
    "linked": false,
    "osize": 260,
    "usize": 292
-  },
-  {
-   "name": "_ZN10RepairBeam6updateEiP5RadarP5LevelP3Hud",
-   "pct": 23.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1872,
-   "usize": 1232
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas5End2dEv",
@@ -6880,14 +6880,6 @@
    "usize": 680
   },
   {
-   "name": "_ZN9Explosion6renderEv",
-   "pct": 41.2,
-   "byte": false,
-   "linked": false,
-   "osize": 388,
-   "usize": 424
-  },
-  {
    "name": "_ZN9Explosion6updateEiRKN11AbyssEngine6AEMath6VectorE",
    "pct": 41.2,
    "byte": false,
@@ -8000,14 +7992,6 @@
    "usize": 236
   },
   {
-   "name": "_ZN9Explosion5startERKN11AbyssEngine6AEMath6VectorES4_",
-   "pct": 48.9,
-   "byte": false,
-   "linked": false,
-   "osize": 396,
-   "usize": 384
-  },
-  {
    "name": "_ZN13RecordHandler7addHashEi",
    "pct": 49.0,
    "byte": false,
@@ -8118,6 +8102,14 @@
    "linked": false,
    "osize": 716,
    "usize": 736
+  },
+  {
+   "name": "_ZN9Explosion5startERKN11AbyssEngine6AEMath6VectorES4_",
+   "pct": 49.8,
+   "byte": false,
+   "linked": false,
+   "osize": 396,
+   "usize": 380
   },
   {
    "name": "_ZN10HangarList13setCurrentTabEib",
@@ -8720,6 +8712,14 @@
    "usize": 608
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
@@ -8750,14 +8750,6 @@
    "linked": false,
    "osize": 36,
    "usize": 40
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -10470,6 +10462,14 @@
    "linked": false,
    "osize": 212,
    "usize": 212
+  },
+  {
+   "name": "_ZN9Explosion6renderEv",
+   "pct": 63.3,
+   "byte": false,
+   "linked": false,
+   "osize": 388,
+   "usize": 368
   },
   {
    "name": "loadAPKAndZip",

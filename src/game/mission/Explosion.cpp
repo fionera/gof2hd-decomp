@@ -10,21 +10,7 @@
 using AbyssEngine::Matrix;
 using AbyssEngine::Transform;
 
-void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
-
-float VectorLength(const Vector *self);
-
 static inline void MatrixGetPosition(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetPosition(*matrix); }
-
-void MatrixSetTranslation(Matrix *out, Matrix *base, float x, float y, float z);
-
-void MatrixSetScaling(Matrix *out, Matrix *base, float x, float y, float z);
-
-static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
-
-static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
-
-static inline void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up) { *out = AbyssEngine::AEMath::MatrixGetLookAt(*position, *target, *up); }
 
 static PaintCanvas **Explosion_canvas = &Globals::Canvas;
 static AbyssEngine::AERandom **Explosion_random = &Globals::rnd;
@@ -169,25 +155,25 @@ bool Explosion::peakReached() {
 void Explosion::start(const Vector &position, const Vector &direction) {
     this->primaryMesh->setPosition(position);
 
-    PaintCanvas *canvas = explosionCanvas();
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->animating = true;
+    PaintCanvas **canvas = Explosion_canvas;
+    ((Transform *) (*canvas)->TransformGetTransform(this->primaryMesh->transform))->animating = true;
 
     uint32_t lodTransform = this->primaryMesh->altTransform;
     if (lodTransform != 0xffffffffu) {
-        ((Transform *) canvas->TransformGetTransform(lodTransform))->animating = true;
+        ((Transform *) (*canvas)->TransformGetTransform(lodTransform))->animating = true;
     }
 
     AEGeometry *secondary = this->secondaryMesh;
     if (secondary != 0) {
         secondary->setPosition(position);
-        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->animating = true;
+        ((Transform *) (*canvas)->TransformGetTransform(this->secondaryMesh->transform))->animating = true;
     }
 
     int type = this->type;
     if ((uint32_t)(type - 8) < 3) {
-        Matrix rotation;
         float angle = (float) explosionRandom()->nextInt(0xc45) / 1000.0f;
-        MatrixSetRotation(&rotation, &this->rotation, 0, 0, angle);
+        Matrix rotation =
+            AbyssEngine::AEMath::MatrixSetRotation(this->rotation, 0.0f, 0.0f, angle);
 
         float scale = 0.6f + (float) explosionRandom()->nextInt(0x28) * 0.01f;
         this->setScaling(scale);
@@ -208,7 +194,7 @@ void Explosion::start(const Vector &position, const Vector &direction) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
             geometry->setPosition(position);
-            ((Transform *) canvas->TransformGetTransform(geometry->transform))->animating = true;
+            ((Transform *) (*canvas)->TransformGetTransform(geometry->transform))->animating = true;
         }
     }
 
@@ -251,7 +237,7 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
         unsigned int current = canvas->CameraGetCurrent();
         MatrixGetPosition(&cameraPosition, (const Matrix *) canvas->CameraGetLocal(current));
         Vector diff = position - cameraPosition;
-        float distance = VectorLength(&diff);
+        float distance = AbyssEngine::AEMath::VectorLength(diff);
 
         Transform *transform = ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform));
         int anim = (int) transform->currentTime;
@@ -509,37 +495,30 @@ void Explosion::start(const Matrix &matrix) {
 }
 
 void Explosion::render() {
-    Matrix cameraLocal;
-    Matrix work;
-    Vector position;
-    Vector cameraPosition;
-    Vector up;
-
     if (this->playing != 0) {
-        uint32_t type = (uint32_t) this->type;
-        if ((type > 0xd || ((1u << (type & 0xff)) & 0x2780u) == 0) && this->secondaryMesh != 0) {
+        if (((uint32_t) this->type > 0xd || ((1u << this->type) & 0x2780u) == 0) &&
+            this->secondaryMesh != 0) {
             this->secondaryMesh->render();
         }
 
         PaintCanvas *canvas = explosionCanvas();
         unsigned int current = canvas->CameraGetCurrent();
-        memcpy(&cameraLocal, canvas->CameraGetLocal(current), 0x3c);
+        Matrix cameraLocal = *(const Matrix *) canvas->CameraGetLocal(current);
 
-        position = this->primaryMesh->getPosition();
+        Vector position = this->primaryMesh->getPosition();
 
-        if (type < 0xd && ((1u << (type & 0xff)) & 0x1804u) != 0) {
-            MatrixSetTranslation(&work, &cameraLocal, position.x, position.y, position.z);
+        if ((uint32_t) this->type < 0xd && ((1u << this->type) & 0x1804u) != 0) {
+            AbyssEngine::AEMath::MatrixSetTranslation(cameraLocal, position.x, position.y, position.z);
         } else {
-            MatrixGetPosition(&cameraPosition, &cameraLocal);
-            MatrixGetUp(&up, &cameraLocal);
-            MatrixGetLookAt(&work, &cameraPosition, &position, &up);
-            cameraLocal = work;
+            Vector cameraPosition = AbyssEngine::AEMath::MatrixGetPosition(cameraLocal);
+            Vector up = AbyssEngine::AEMath::MatrixGetUp(cameraLocal);
+            cameraLocal = AbyssEngine::AEMath::MatrixGetLookAt(cameraPosition, position, up);
         }
 
         float scale = this->scale;
-        MatrixSetScaling(&work, &cameraLocal, scale, scale, scale);
+        AbyssEngine::AEMath::MatrixSetScaling(cameraLocal, scale, scale, scale);
 
-        if (type - 8 < 3) {
+        if ((uint32_t) this->type - 8 < 3) {
             AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) &cameraLocal, *(const Matrix *) &this->rotation);
         }
 
@@ -548,10 +527,9 @@ void Explosion::render() {
 
         current = canvas->CameraGetCurrent();
         cameraLocal = *(const Matrix *) canvas->CameraGetLocal(current);
-        Vector direction;
-        MatrixGetDir(&direction, &cameraLocal);
-        MatrixGetUp(&cameraPosition, &cameraLocal);
-        this->primaryMesh->setDirection(direction, cameraPosition);
+        Vector direction = AbyssEngine::AEMath::MatrixGetDir(cameraLocal);
+        Vector cameraUp = AbyssEngine::AEMath::MatrixGetUp(cameraLocal);
+        this->primaryMesh->setDirection(direction, cameraUp);
         this->primaryMesh->render();
 
         Array<AEGeometry *> *streaks = this->fireStreaks;
