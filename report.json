@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.64,
   "byte_exact": 1160,
-  "linked_exact": 2591,
-  "fuzzy_perfect": 2591,
+  "linked_exact": 2592,
+  "fuzzy_perfect": 2592,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2528,14 +2528,6 @@
    "usize": 1612
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.7,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN10StarSystem6renderEv",
    "pct": 16.8,
    "byte": false,
@@ -2550,6 +2542,14 @@
    "linked": false,
    "osize": 608,
    "usize": 568
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 16.9,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "_ZN3HudC1Ev",
@@ -14088,14 +14088,6 @@
    "usize": 196
   },
   {
-   "name": "_ZN17PlayerFixedObject25projectCollisionOnSurfaceERKN11AbyssEngine6AEMath6VectorE",
-   "pct": 90.9,
-   "byte": false,
-   "linked": false,
-   "osize": 58,
-   "usize": 58
-  },
-  {
    "name": "_ZN6Player14refillGunDelayEi",
    "pct": 90.9,
    "byte": false,
@@ -25238,6 +25230,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN17PlayerFixedObject25projectCollisionOnSurfaceERKN11AbyssEngine6AEMath6VectorE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 58,
+   "usize": 58
   },
   {
    "name": "_ZN17PlayerFixedObject5setBVEP14BoundingVolume",

@@ -1,7 +1,7 @@
 {
  "verify": {
   "byte_exact": 1160,
-  "linked_exact": 2591,
+  "linked_exact": 2592,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
@@ -427,7 +427,6 @@
   "_Z33paintcanvas_ext_matc_new_materialv",
   "_Z33paintcanvas_ext_mc2_new_mesh_copyPv",
   "_Z33paintcanvas_ext_transform_addmeshPN11AbyssEngine11PaintCanvasEPvtb",
-  "_Z34BV_staticProjectCollisionOnSurfacePvS_",
   "_Z34ParticleSystemManager_emitManual_vPviPKfS_S1_f",
   "_Z34_mtw_ScrollTouchWindow_OnTouchMovePvi",
   "_Z34paintcanvas_ext_dsc_releaseclassesPv",

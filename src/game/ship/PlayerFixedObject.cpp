@@ -28,8 +28,6 @@ namespace AbyssEngine {
     }
 }
 
-V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray); // lint: void_ptr (external, Pv-mangled import)
-
 V3 BV_getProjectionVector(void *bv); // lint: void_ptr (external, Pv-mangled import)
 
 int PlayerFixedObject::getDockingType() {
@@ -79,11 +77,15 @@ void PlayerFixedObject::setMoving(bool v) {
 V3 PlayerFixedObject::projectCollisionOnSurface(const Vector &vec) {
     Array<BoundingVolume *> *bv = this->wreckCollision;
     if (bv != 0 && this->state == 4) {
-        return BV_staticProjectCollisionOnSurface((void *) &vec, bv); // lint: void_ptr (Pv-mangled import param)
+        V3 result;
+        reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(vec, bv);
+        return result;
     }
     Array<BoundingVolume *> *bv2 = this->boundingVolumes;
     if (bv2 != 0) {
-        return BV_staticProjectCollisionOnSurface((void *) &vec, bv2); // lint: void_ptr (Pv-mangled import param)
+        V3 result;
+        reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(vec, bv2);
+        return result;
     }
     V3 z = {0.0f, 0.0f, 0.0f};
     return z;
