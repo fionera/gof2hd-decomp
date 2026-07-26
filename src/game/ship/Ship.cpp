@@ -278,7 +278,7 @@ void Ship::setEquipment(Array<Item *> *items) {
 void Ship::replaceEquipment(Array<Item *> *equipment) {
     if (equipment != 0) {
         int *slots = this->slots;
-        unsigned int total = slots[0] + slots[1] + slots[2] + slots[3];
+        unsigned int total = slots[0] + slots[3] + slots[1] + slots[2];
         if (total < equipment->size()) {
             int extra = equipment->size() - total;
             this->numAddedDeviceSlots = extra;

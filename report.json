@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.09,
+  "avg_match": 78.1,
   "byte_exact": 1167,
-  "linked_exact": 2671,
-  "fuzzy_perfect": 2671,
+  "linked_exact": 2672,
+  "fuzzy_perfect": 2672,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12614,14 +12614,6 @@
    "linked": false,
    "osize": 184,
    "usize": 180
-  },
-  {
-   "name": "_ZN4Ship16replaceEquipmentEP5ArrayIP4ItemE",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 52
   },
   {
    "name": "_ZN6Player11setShieldHPEi",
@@ -26742,6 +26734,14 @@
    "linked": true,
    "osize": 34,
    "usize": 34
+  },
+  {
+   "name": "_ZN4Ship16replaceEquipmentEP5ArrayIP4ItemE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN4Ship17getFireRateFactorEv",
