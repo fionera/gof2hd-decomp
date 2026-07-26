@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.29,
+  "avg_match": 78.31,
   "byte_exact": 1174,
-  "linked_exact": 2702,
-  "fuzzy_perfect": 2702,
+  "linked_exact": 2705,
+  "fuzzy_perfect": 2705,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -3064,6 +3064,14 @@
    "usize": 1368
   },
   {
+   "name": "_ZN10RepairBeam6updateEiP5RadarP5LevelP3Hud",
+   "pct": 22.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1872,
+   "usize": 1232
+  },
+  {
    "name": "_ZN11AbyssEngine11BloomShaderD1Ev",
    "pct": 22.2,
    "byte": false,
@@ -3126,14 +3134,6 @@
    "linked": false,
    "osize": 648,
    "usize": 564
-  },
-  {
-   "name": "_ZN10RepairBeam6updateEiP5RadarP5LevelP3Hud",
-   "pct": 22.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1872,
-   "usize": 1232
   },
   {
    "name": "SHA256_Update",
@@ -3736,6 +3736,14 @@
    "usize": 516
   },
   {
+   "name": "_ZN5Level18updateMissionOrbitEi",
+   "pct": 26.0,
+   "byte": false,
+   "linked": false,
+   "osize": 1160,
+   "usize": 1072
+  },
+  {
    "name": "_ZN5MGame16freeCamTouchMoveEiiPv",
    "pct": 26.0,
    "byte": false,
@@ -3758,14 +3766,6 @@
    "linked": false,
    "osize": 392,
    "usize": 448
-  },
-  {
-   "name": "_ZN5Level18updateMissionOrbitEi",
-   "pct": 26.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1160,
-   "usize": 1072
   },
   {
    "name": "_ZN11AbyssEngine6Engine14SetTexturesExtEjz",
@@ -10232,14 +10232,6 @@
    "usize": 208
   },
   {
-   "name": "_ZN11AbyssEngine12GlowPPShader12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineE",
-   "pct": 62.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1264,
-   "usize": 1164
-  },
-  {
    "name": "_ZN11AbyssEngine6AEMath4AbsfEf",
    "pct": 62.5,
    "byte": false,
@@ -11128,14 +11120,6 @@
    "usize": 564
   },
   {
-   "name": "_ZN11AbyssEngine12GlowPPShader4InitEPNS_6EngineE",
-   "pct": 68.1,
-   "byte": false,
-   "linked": false,
-   "osize": 432,
-   "usize": 428
-  },
-  {
    "name": "_ZN12WantedWindowD1Ev",
    "pct": 68.1,
    "byte": false,
@@ -11286,6 +11270,14 @@
    "linked": false,
    "osize": 140,
    "usize": 136
+  },
+  {
+   "name": "_ZN11AbyssEngine12GlowPPShader12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineE",
+   "pct": 69.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1264,
+   "usize": 1172
   },
   {
    "name": "_ZN10HangarList4initEP4ShipP5ArrayIP4ItemEPS2_IS1_EPS2_IP9BluePrintE",
@@ -11944,14 +11936,6 @@
    "usize": 22
   },
   {
-   "name": "_ZN11AbyssEngine12GlowPPShader11SetInActiveEv",
-   "pct": 75.0,
-   "byte": false,
-   "linked": false,
-   "osize": 26,
-   "usize": 26
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine30LightSetMaterialColorShininessEf",
    "pct": 75.0,
    "byte": false,
@@ -12334,14 +12318,6 @@
    "linked": false,
    "osize": 192,
    "usize": 184
-  },
-  {
-   "name": "_ZN11AbyssEngine12GlowPPShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
-   "pct": 79.2,
-   "byte": false,
-   "linked": false,
-   "osize": 166,
-   "usize": 156
   },
   {
    "name": "_ZN11AbyssEngine16AESoundRessource12getSoundInfoEiRNS_11AESoundInfoERi",
@@ -13256,6 +13232,14 @@
    "usize": 148
   },
   {
+   "name": "_ZN11AbyssEngine12GlowPPShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
+   "pct": 88.7,
+   "byte": false,
+   "linked": false,
+   "osize": 166,
+   "usize": 158
+  },
+  {
    "name": "_ZN11AbyssEngine12PostBWShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 88.7,
    "byte": false,
@@ -13870,14 +13854,6 @@
    "linked": false,
    "osize": 80,
    "usize": 80
-  },
-  {
-   "name": "_ZN11AbyssEngine12GlowPPShader12InternalInitEPNS_6EngineE",
-   "pct": 94.0,
-   "byte": false,
-   "linked": false,
-   "osize": 356,
-   "usize": 356
   },
   {
    "name": "_Z12ArrayReleaseIbEvR5ArrayIT_E",
@@ -18648,12 +18624,36 @@
    "usize": 38
   },
   {
+   "name": "_ZN11AbyssEngine12GlowPPShader11SetInActiveEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 26,
+   "usize": 26
+  },
+  {
+   "name": "_ZN11AbyssEngine12GlowPPShader12InternalInitEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 356,
+   "usize": 356
+  },
+  {
    "name": "_ZN11AbyssEngine12GlowPPShader12RenderEffectEPNS_12FBOContainerEPNS_6EngineE",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 48,
    "usize": 48
+  },
+  {
+   "name": "_ZN11AbyssEngine12GlowPPShader4InitEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 432,
+   "usize": 432
   },
   {
    "name": "_ZN11AbyssEngine12GlowPPShaderD0Ev",
