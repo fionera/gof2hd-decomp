@@ -21,10 +21,10 @@ namespace AbyssEngine {
 
         int aPosition;
         int aTexCoord;
-        int sTexture;
-        int uMvpMatrix;
         int uColor;
+        int uMvpMatrix;
         int uOffset;
+        int sTexture;
         long long animTime;
 
         TextureConference();

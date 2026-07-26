@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.29,
   "byte_exact": 1174,
-  "linked_exact": 2699,
-  "fuzzy_perfect": 2699,
+  "linked_exact": 2700,
+  "fuzzy_perfect": 2700,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13104,14 +13104,6 @@
    "usize": 44
   },
   {
-   "name": "_ZN11AbyssEngine17TextureConference14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
-   "pct": 87.0,
-   "byte": false,
-   "linked": false,
-   "osize": 192,
-   "usize": 188
-  },
-  {
    "name": "zip_source_function",
    "pct": 87.0,
    "byte": false,
@@ -13382,6 +13374,14 @@
    "linked": false,
    "osize": 52,
    "usize": 52
+  },
+  {
+   "name": "_ZN11AbyssEngine17TextureConference14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
+   "pct": 90.1,
+   "byte": false,
+   "linked": false,
+   "osize": 192,
+   "usize": 188
   },
   {
    "name": "_ZN6Status9isOnStackEP7Station",
@@ -13854,14 +13854,6 @@
    "linked": false,
    "osize": 76,
    "usize": 76
-  },
-  {
-   "name": "_ZN11AbyssEngine17TextureConference4InitEPNS_6EngineE",
-   "pct": 93.7,
-   "byte": false,
-   "linked": false,
-   "osize": 156,
-   "usize": 156
   },
   {
    "name": "_ZN21ParticleSystemManagerD1Ev",
@@ -19342,6 +19334,14 @@
    "linked": true,
    "osize": 22,
    "usize": 22
+  },
+  {
+   "name": "_ZN11AbyssEngine17TextureConference4InitEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 156,
+   "usize": 156
   },
   {
    "name": "_ZN11AbyssEngine17TextureConferenceD0Ev",
