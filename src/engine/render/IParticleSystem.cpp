@@ -117,7 +117,6 @@ void IParticleSystem::emit(int delta) {
         return;
     }
 
-    char matrixPos[12];
     char right[12];
     char up[12];
     char dir[12];
@@ -126,7 +125,7 @@ void IParticleSystem::emit(int delta) {
     char uv[16];
     char rotated[16];
 
-    MatrixGetPosition(matrixPos, this->matrix);
+    Vector matrixPos = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
     MatrixGetRight(right, this->matrix);
     if (this->mirror != 0) {
         char negTmp[12];
@@ -172,7 +171,7 @@ void IParticleSystem::emit(int delta) {
         return;
     }
 
-    *(Vector *) baseDelta = *(const Vector *) matrixPos - *(const Vector *) travelDiv;
+    *(Vector *) baseDelta = matrixPos - *(const Vector *) travelDiv;
     float pathScale = 0.0f;
     if ((this->flags & 0xc0) == 0) {
         int speedBits = float_bits(speed2);
@@ -288,12 +287,12 @@ void IParticleSystem::emit(int delta) {
                 *(Vector *) tmp2 = *(const Vector *) baseDelta + *(const Vector *) particlePos;
                 *(Vector *) (particlePos) = *(Vector *) (tmp2);
             } else {
-                *(Vector *) (particlePos) = *(Vector *) (matrixPos);
+                *(Vector *) (particlePos) = matrixPos;
                 phase = (float) (i + 1);
                 emitCount = i + 1;
             }
         } else {
-            *(Vector *) (particlePos) = *(Vector *) (matrixPos);
+            *(Vector *) (particlePos) = matrixPos;
             phase = 0.0f;
         }
 
@@ -545,15 +544,12 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
 }
 
 void IParticleSystem::calcEmitterVelocity(int delta) {
-    char position[12];
-    char scaled[12];
-    char diff[12];
-    MatrixGetPosition(position, this->matrix);
-    *(Vector *) diff = *(const Vector *) position - this->lastEmitterPosition;
-    *(Vector *) scaled = *(const Vector *) diff * (1000.0f / (float) delta);
-    this->emitterVelocity = *(Vector *) (scaled);
+    Vector position = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
+    Vector diff = position - this->lastEmitterPosition;
+    Vector scaled = diff * (1000.0f / (float) delta);
+    this->emitterVelocity = scaled;
     this->emitterVelocityDirty = 0;
-    this->lastEmitterPosition = *(Vector *) (position);
+    this->lastEmitterPosition = position;
 }
 
 void IParticleSystem::emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime) {
