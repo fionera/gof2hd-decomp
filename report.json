@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.2,
   "byte_exact": 1174,
-  "linked_exact": 2691,
-  "fuzzy_perfect": 2691,
+  "linked_exact": 2692,
+  "fuzzy_perfect": 2692,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13808,14 +13808,6 @@
    "usize": 142
   },
   {
-   "name": "_ZN10ModStation14showCBSMessageEv",
-   "pct": 92.9,
-   "byte": false,
-   "linked": false,
-   "osize": 228,
-   "usize": 228
-  },
-  {
    "name": "_ZN18ParticleSystemMesh6renderEPN11AbyssEngine11PaintCanvasEjjNS0_9BlendModeE",
    "pct": 92.9,
    "byte": false,
@@ -17038,6 +17030,14 @@
    "linked": true,
    "osize": 128,
    "usize": 128
+  },
+  {
+   "name": "_ZN10ModStation14showCBSMessageEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 228,
+   "usize": 228
   },
   {
    "name": "_ZN10ModStation17ShowLoadingScreenEv",

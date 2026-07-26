@@ -3125,15 +3125,17 @@ void ModStation::showCBSMessage() {
     String purchase("In-App Purchase", false);
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
     String *title = Globals::gameText->getText(390);
-    String message(
-            "Zum Weiterspielen musst Du Galaxy on Fire 2 freischalten. Moechtest Du die "
-            "Vollversion mit einen COMPUTERBILD SPIELE Freischalt-Code oder via "
-            "In-App-Purchase freischalten?",
-            false);
-    cw->set(*title, message, true, code, purchase, code, -1, -1);
+    cw->set(
+            *title,
+            String(
+                    "Zum Weiterspielen musst Du Galaxy on Fire 2 freischalten. Moechtest Du die "
+                    "Vollversion mit einen COMPUTERBILD SPIELE Freischalt-Code oder via "
+                    "In-App-Purchase freischalten?",
+                    false),
+            true, code, purchase, code, -1, -1);
 
-    reinterpret_cast<uint8_t*>(&this->hintFlags)[1] = 1;
     reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+    reinterpret_cast<uint8_t*>(&this->hintFlags)[1] = 1;
 }
 
 void ChoiceWindow_setNotice_frag(ChoiceWindow *cw, int textStr);
