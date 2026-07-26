@@ -88,7 +88,6 @@
   "_Z17FModSound_setPropii",
   "_Z17Item_getAmount_oiv",
   "_Z17JNI_CallIntMethodPvS_S_S_",
-  "_Z17MatrixGetPositionPcPKN11AbyssEngine6AEMath6MatrixE",
   "_Z17MatrixSetRotationPN11AbyssEngine6AEMath6MatrixES2_iif",
   "_Z17MatrixSetRotationPN11AbyssEngine6AEMath6MatrixEfff",
   "_Z17MatrixSetRotationPvS_fff",

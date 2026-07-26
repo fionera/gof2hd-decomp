@@ -2216,6 +2216,14 @@
    "usize": 1290
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 13.4,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
    "pct": 13.6,
    "byte": false,
@@ -2542,14 +2550,6 @@
    "linked": false,
    "osize": 230,
    "usize": 574
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 17.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -8784,20 +8784,20 @@
    "usize": 608
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -13776,14 +13776,6 @@
    "usize": 26
   },
   {
-   "name": "_ZN15IParticleSystem20resetEmitterVelocityEv",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 92
-  },
-  {
    "name": "_Z10SetKeyCodePKcii",
    "pct": 89.2,
    "byte": false,
@@ -14166,6 +14158,14 @@
    "linked": false,
    "osize": 68,
    "usize": 68
+  },
+  {
+   "name": "_ZN15IParticleSystem20resetEmitterVelocityEv",
+   "pct": 91.7,
+   "byte": false,
+   "linked": false,
+   "osize": 92,
+   "usize": 92
   },
   {
    "name": "_ZN4Ship11getHandlingEv",

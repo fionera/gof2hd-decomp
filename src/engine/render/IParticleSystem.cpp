@@ -5,8 +5,6 @@
 namespace AbyssEngine {
 }
 
-char *MatrixGetPosition(char *out, Matrix const *matrix);
-
 namespace AbyssEngine {
     namespace AEMath {
         Vector operator-(const Vector &);
@@ -669,7 +667,7 @@ void IParticleSystem::resetEmitterVelocity() {
     this->emitterVelocity = *(Vector *) (value);
     this->emitterVelocityDirty = 1;
     char *matrixValue = value;
-    MatrixGetPosition(matrixValue, this->matrix);
+    new (matrixValue) Vector(AbyssEngine::AEMath::MatrixGetPosition(*this->matrix));
     this->lastEmitterPosition = *(Vector *) (matrixValue);
     this->field_0x4 = 0;
 }
