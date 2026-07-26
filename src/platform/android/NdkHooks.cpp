@@ -30,7 +30,7 @@ int gi_iap_buy_credit_pack5_pressed;
 extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 int setBaughtCredits(int amount) {
     int *packFlag;
-    if (amount == 10000000) {
+    if (amount == 100000) {
         Globals::status->changeCredits(amount);
         packFlag = &gi_iap_buy_credit_pack1_pressed;
     } else if (amount == 300000) {
@@ -42,7 +42,7 @@ int setBaughtCredits(int amount) {
     } else if (amount == 3000000) {
         Globals::status->changeCredits(amount);
         packFlag = &gi_iap_buy_credit_pack4_pressed;
-    } else if (amount == 100000) {
+    } else if (amount == 10000000) {
         Globals::status->changeCredits(amount);
         packFlag = &gi_iap_buy_credit_pack5_pressed;
     } else {

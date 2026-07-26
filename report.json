@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.83,
   "byte_exact": 1161,
-  "linked_exact": 2611,
-  "fuzzy_perfect": 2611,
+  "linked_exact": 2612,
+  "fuzzy_perfect": 2612,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15110,14 +15110,6 @@
    "linked": false,
    "osize": 50,
    "usize": 46
-  },
-  {
-   "name": "setBaughtCredits",
-   "pct": 97.7,
-   "byte": false,
-   "linked": false,
-   "osize": 220,
-   "usize": 220
   },
   {
    "name": "_ZN11AbyssEngine6AEMath16MatrixGetInverseERKNS0_6MatrixE",
@@ -36054,6 +36046,14 @@
    "linked": true,
    "osize": 48,
    "usize": 48
+  },
+  {
+   "name": "setBaughtCredits",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 220,
+   "usize": 220
   },
   {
    "name": "sha256_block_data_order",
