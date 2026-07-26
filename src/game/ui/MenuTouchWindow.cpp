@@ -1283,8 +1283,8 @@ void MenuTouchWindow::saveGame(int slot) {
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
     String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x32);
     cw->set(*s, false);
-    this->saveDialogShowing = 0;
     this->messageShowing = 1;
+    this->saveDialogShowing = 0;
 }
 
 

@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.64,
   "byte_exact": 1160,
-  "linked_exact": 2587,
-  "fuzzy_perfect": 2587,
+  "linked_exact": 2588,
+  "fuzzy_perfect": 2588,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15336,14 +15336,6 @@
    "usize": 68
   },
   {
-   "name": "_ZN15MenuTouchWindow8saveGameEi",
-   "pct": 98.4,
-   "byte": false,
-   "linked": false,
-   "osize": 184,
-   "usize": 184
-  },
-  {
    "name": "_ZN4Ship7setModsEP5ArrayIiE",
    "pct": 98.4,
    "byte": false,
@@ -25062,6 +25054,14 @@
    "linked": true,
    "osize": 22,
    "usize": 22
+  },
+  {
+   "name": "_ZN15MenuTouchWindow8saveGameEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 184,
+   "usize": 184
   },
   {
    "name": "_ZN15MenuTouchWindow9startGOF2Ev",
