@@ -852,12 +852,12 @@ int Ship::getCombinedHP() {
 }
 
 float Ship::getHandling() {
-    float h = 1.3f;
+    float h = 0.0f;
     Array<int> *m = this->mods;
     if (m != 0) {
         for (unsigned int i = 0; i < m->size(); i = i + 1) {
             if (m->data()[i] == 3) {
-                h += 0.1f;
+                h += 0.2f;
             }
         }
     }
