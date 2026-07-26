@@ -1925,8 +1925,8 @@ done:
 }
 
 void PlayerFighter::setSpeed(float v) {
-    this->speed = v;
     this->field_0x13d = 0;
+    this->speed = v;
     this->currentSpeed = v;
 }
 

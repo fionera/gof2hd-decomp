@@ -4,9 +4,9 @@
   "ours_functions": 4559,
   "compared": 4523,
   "avg_match": 78.18,
-  "byte_exact": 1172,
-  "linked_exact": 2687,
-  "fuzzy_perfect": 2687,
+  "byte_exact": 1173,
+  "linked_exact": 2688,
+  "fuzzy_perfect": 2688,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12560,14 +12560,6 @@
    "usize": 12
   },
   {
-   "name": "_ZN13PlayerFighter8setSpeedEf",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 16,
-   "usize": 16
-  },
-  {
    "name": "_ZN17PlayerFixedObject16setWreckedMeshIdEi",
    "pct": 80.0,
    "byte": false,
@@ -23630,6 +23622,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN13PlayerFighter8setSpeedEf",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 16,
+   "usize": 16
   },
   {
    "name": "_ZN13PlayerFighter9setRotateEi",
