@@ -825,7 +825,7 @@ void ApplicationManager::SoundResume() {
 }
 
 void ApplicationManager::SoundResume(int soundId) {
-    if (this->soundResource != 0 && (this->soundFxEnabled || this->musicEnabled)) {
+    if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
         this->soundResource->resume(soundId);
     }
 }

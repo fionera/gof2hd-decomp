@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.99,
   "byte_exact": 1163,
-  "linked_exact": 2641,
-  "fuzzy_perfect": 2641,
+  "linked_exact": 2642,
+  "fuzzy_perfect": 2642,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13664,14 +13664,6 @@
    "usize": 48
   },
   {
-   "name": "_ZN11AbyssEngine18ApplicationManager11SoundResumeEi",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 26,
-   "usize": 26
-  },
-  {
    "name": "_Z10SetKeyCodePKcii",
    "pct": 89.2,
    "byte": false,
@@ -19814,6 +19806,14 @@
    "linked": true,
    "osize": 10,
    "usize": 10
+  },
+  {
+   "name": "_ZN11AbyssEngine18ApplicationManager11SoundResumeEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 26,
+   "usize": 26
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager12CheatAddCodeERKNS_6StringEi",
