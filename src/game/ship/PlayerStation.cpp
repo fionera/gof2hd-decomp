@@ -366,7 +366,7 @@ int PlayerStation::outerCollide(float x, float y, float z) {
         if (volumes != nullptr) {
             for (uint32_t i = 0; i < volumes->size(); ++i) {
                 BoundingVolume *volume = (*volumes)[i];
-                if (volume->collide(x, y, z)) {
+                if (volume->outerCollide(x, y, z)) {
                     this->collisionIndex = i;
                     return true;
                 }

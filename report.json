@@ -13896,14 +13896,6 @@
    "usize": 28
   },
   {
-   "name": "_ZN13PlayerStation12outerCollideEfff",
-   "pct": 90.9,
-   "byte": false,
-   "linked": false,
-   "osize": 196,
-   "usize": 196
-  },
-  {
    "name": "_ZN6Player14refillGunDelayEi",
    "pct": 90.9,
    "byte": false,
@@ -14126,6 +14118,14 @@
    "linked": false,
    "osize": 64,
    "usize": 64
+  },
+  {
+   "name": "_ZN13PlayerStation12outerCollideEfff",
+   "pct": 92.4,
+   "byte": false,
+   "linked": false,
+   "osize": 196,
+   "usize": 196
   },
   {
    "name": "_ZN5Level19pirateStationActionEb",
