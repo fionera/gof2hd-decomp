@@ -46,8 +46,6 @@ namespace AbyssEngine {
     }
 }
 
-int AERandom_nextIntB(int rng, int bound);
-
 uint8_t PlayerFighter::hasMissionCrateLost() {
     return this->missionCrateLost();
 }
@@ -209,36 +207,34 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->easeBaseMatrix = AbyssEngine::AEMath::Matrix();
     self->rollMatrix = AbyssEngine::AEMath::Matrix();
 
-    int rng = (int) (intptr_t) Globals::rnd;
-
     float wp[12];
     int r;
-    r = AERandom_nextIntB(rng, 25000);
+    r = Globals::rnd->nextInt(25000);
     wp[0] = (float)(r - 30000);
-    int r1 = AERandom_nextIntB(rng, 10000);
-    int r2 = AERandom_nextIntB(rng, 25000);
+    int r1 = Globals::rnd->nextInt(10000);
+    int r2 = Globals::rnd->nextInt(25000);
     wp[2] = (float)(r2 + 20000);
     wp[1] = (float)(r1 - 10000);
-    r = AERandom_nextIntB(rng, 25000);
+    r = Globals::rnd->nextInt(25000);
     wp[3] = (float)(r + 5000);
-    r1 = AERandom_nextIntB(rng, 10000);
-    r2 = AERandom_nextIntB(rng, 25000);
+    r1 = Globals::rnd->nextInt(10000);
+    r2 = Globals::rnd->nextInt(25000);
     wp[5] = (float)(r2 + 20000);
     wp[4] = (float)(r1 - 10000);
-    r = AERandom_nextIntB(rng, 25000);
+    r = Globals::rnd->nextInt(25000);
     wp[6] = (float)(r + 5000);
-    r1 = AERandom_nextIntB(rng, 10000);
-    r2 = AERandom_nextIntB(rng, 25000);
+    r1 = Globals::rnd->nextInt(10000);
+    r2 = Globals::rnd->nextInt(25000);
     wp[8] = (float)(r2 + 55000);
     wp[7] = (float)(r1 - 10000);
-    r = AERandom_nextIntB(rng, 25000);
+    r = Globals::rnd->nextInt(25000);
     wp[9] = (float)(r - 30000);
-    r1 = AERandom_nextIntB(rng, 10000);
-    r2 = AERandom_nextIntB(rng, 25000);
+    r1 = Globals::rnd->nextInt(10000);
+    r2 = Globals::rnd->nextInt(25000);
     wp[10] = (float)(r1 - 10000);
     wp[11] = (float)(r2 + 55000);
 
-    int count = AERandom_nextIntB(rng, 3) * 3 + 6;
+    int count = Globals::rnd->nextInt(3) * 3 + 6;
     char used[4] = {0, 0, 0, 0};
     unsigned long long bytes = (unsigned long long) (unsigned) count * 4;
     unsigned sz = (int) (bytes >> 32) != 0 ? 0xffffffff : (unsigned) bytes;
@@ -246,7 +242,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     for (int i = 0; i < count; i += 3) {
         int idx;
         do {
-            idx = AERandom_nextIntB(rng, 4);
+            idx = Globals::rnd->nextInt(4);
         } while (used[idx] != 0);
         used[idx] = 1;
         pts[i] = (int) wp[idx * 3];

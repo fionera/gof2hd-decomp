@@ -5896,22 +5896,6 @@
    "usize": 86
   },
   {
-   "name": "_ZN13PlayerFighterC1EiiP6PlayerP10AEGeometryfffb",
-   "pct": 34.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1324,
-   "usize": 1416
-  },
-  {
-   "name": "_ZN13PlayerFighterC2EiiP6PlayerP10AEGeometryfffb",
-   "pct": 34.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1324,
-   "usize": 1416
-  },
-  {
    "name": "_ZN9PlayerEgo14turnHorizontalEif",
    "pct": 34.8,
    "byte": false,
@@ -6806,6 +6790,22 @@
    "linked": false,
    "osize": 84,
    "usize": 76
+  },
+  {
+   "name": "_ZN13PlayerFighterC1EiiP6PlayerP10AEGeometryfffb",
+   "pct": 40.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1324,
+   "usize": 1448
+  },
+  {
+   "name": "_ZN13PlayerFighterC2EiiP6PlayerP10AEGeometryfffb",
+   "pct": 40.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1324,
+   "usize": 1448
   },
   {
    "name": "_ZN6Layout9tagStringEN11AbyssEngine6StringE",
@@ -8785,7 +8785,7 @@
   },
   {
    "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.1,
+   "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 2696,
