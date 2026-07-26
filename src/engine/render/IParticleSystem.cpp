@@ -7,12 +7,6 @@ namespace AbyssEngine {
 
 char *MatrixGetPosition(char *out, Matrix const *matrix);
 
-char *MatrixGetRight(char *out, Matrix const *matrix);
-
-char *MatrixGetUp(char *out, Matrix const *matrix);
-
-char *MatrixGetDir(char *out, Matrix const *matrix);
-
 namespace AbyssEngine {
     namespace AEMath {
         Vector operator-(const Vector &);
@@ -117,23 +111,18 @@ void IParticleSystem::emit(int delta) {
         return;
     }
 
-    char right[12];
-    char up[12];
-    char dir[12];
     char travelDiv[12];
     char baseDelta[12];
     char uv[16];
     char rotated[16];
 
     Vector matrixPos = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
-    MatrixGetRight(right, this->matrix);
+    Vector right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix);
     if (this->mirror != 0) {
-        char negTmp[12];
-        *(Vector *) negTmp = -*(const Vector *) right;
-        *(Vector *) (right) = *(Vector *) (negTmp);
+        right = -right;
     }
-    MatrixGetUp(up, this->matrix);
-    MatrixGetDir(dir, this->matrix);
+    Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
+    Vector dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix);
 
     char *def = ParticleSet_definitions + (set + set * 4) * 32;
     float speed2 = AbyssEngine::AEMath::VectorDot(this->emitterVelocity, this->emitterVelocity);
@@ -250,17 +239,17 @@ void IParticleSystem::emit(int delta) {
         }
         float rightVel = *pRightVel;
         if (rightVel != 0.0f) {
-            *(Vector *) velocity = *(const Vector *) right * rightVel;
+            *(Vector *) velocity = right * rightVel;
             slot += *(Vector *) (velocity);
         }
         float upVel = *pUpVel;
         if (upVel != 0.0f) {
-            *(Vector *) velocity = *(const Vector *) up * upVel;
+            *(Vector *) velocity = up * upVel;
             slot += *(Vector *) (velocity);
         }
         float dirVel = *pDirVel;
         if (dirVel != 0.0f) {
-            *(Vector *) velocity = *(const Vector *) dir * dirVel;
+            *(Vector *) velocity = dir * dirVel;
             slot += *(Vector *) (velocity);
         }
 
@@ -307,22 +296,22 @@ void IParticleSystem::emit(int delta) {
         } else {
             float posRange = *pPosRange;
             if (posRange != 0.0f) {
-                *(Vector *) tmp = *(const Vector *) right * posRange;
+                *(Vector *) tmp = right * posRange;
                 *(Vector *) (particlePos) += *(Vector *) (tmp);
             }
             float upOffset = *pUpOffset;
             if (upOffset != 0.0f) {
-                *(Vector *) tmp = *(const Vector *) up * upOffset;
+                *(Vector *) tmp = up * upOffset;
                 *(Vector *) (particlePos) += *(Vector *) (tmp);
             }
             float dirOffset = *pDirOffset;
             if (dirOffset != 0.0f) {
-                *(Vector *) tmp = *(const Vector *) dir * dirOffset;
+                *(Vector *) tmp = dir * dirOffset;
                 *(Vector *) (particlePos) += *(Vector *) (tmp);
             }
             float randDir = *pRandDir;
             if (randDir != 0.0f) {
-                *(Vector *) tmp = *(const Vector *) dir * (float) pRandom->nextInt(
+                *(Vector *) tmp = dir * (float) pRandom->nextInt(
                                       (int) randDir);
                 *(Vector *) (particlePos) += *(Vector *) (tmp);
             }
