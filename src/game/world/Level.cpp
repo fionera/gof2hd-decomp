@@ -4228,10 +4228,10 @@ void Level::updateOrbit(int dt) {
     }
 }
 
-void Level::friendTurnedEnemy(int /*race*/) {
+void Level::friendTurnedEnemy(int race) {
     if (field_188 == 0) {
         field_188 = 1;
-        createRadioMessage(0, 0);
+        createRadioMessage(0, race);
     }
 }
 

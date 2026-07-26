@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.19,
   "byte_exact": 1174,
-  "linked_exact": 2689,
-  "fuzzy_perfect": 2689,
+  "linked_exact": 2690,
+  "fuzzy_perfect": 2690,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12038,14 +12038,6 @@
    "linked": false,
    "osize": 48,
    "usize": 48
-  },
-  {
-   "name": "_ZN5Level17friendTurnedEnemyEi",
-   "pct": 75.0,
-   "byte": false,
-   "linked": false,
-   "osize": 22,
-   "usize": 22
   },
   {
    "name": "_ZN6Player9damageEmpEib",
@@ -28078,6 +28070,14 @@
    "linked": true,
    "osize": 18,
    "usize": 18
+  },
+  {
+   "name": "_ZN5Level17friendTurnedEnemyEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 22,
+   "usize": 22
   },
   {
    "name": "_ZN5Level18getNumDeliveredOreEv",
