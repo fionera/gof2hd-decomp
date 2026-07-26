@@ -587,18 +587,18 @@ void FModSound::freeAllEvents() {
         FMOD::EventProject *proj[1];
         proj[0] = 0;
         FMOD_EventSystem_getProject(this->system, kProjName, proj);
-        if (proj[0] != 0) {
-            for (unsigned i = 0; i < 0x8f5u; ++i) {
-                FMOD::Event *e = this->events[i];
-                if (e) {
-                    FMOD::EventGroup *grp[1];
-                    if (FMOD_Event_getParentGroup(e, grp) == 0) {
-                        unsigned st[1];
-                        FMOD_Event_getState(this->events[i], st);
-                        if ((st[0] & 0x0a) == 0) {
-                            grp[0]->freeEventData(this->events[i], false);
-                            this->events[i] = 0;
-                        }
+        if (proj[0] == 0)
+            return;
+        for (unsigned i = 0; i < 0x8f5u; ++i) {
+            FMOD::Event *e = this->events[i];
+            if (e) {
+                FMOD::EventGroup *grp[1];
+                if (FMOD_Event_getParentGroup(e, grp) == 0) {
+                    unsigned st[1];
+                    FMOD_Event_getState(this->events[i], st);
+                    if ((st[0] & 0x0a) == 0) {
+                        grp[0]->freeEventData(this->events[i], false);
+                        this->events[i] = 0;
                     }
                 }
             }

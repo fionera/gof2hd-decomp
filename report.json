@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.07,
   "byte_exact": 1167,
-  "linked_exact": 2665,
-  "fuzzy_perfect": 2665,
+  "linked_exact": 2666,
+  "fuzzy_perfect": 2666,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13182,14 +13182,6 @@
    "linked": false,
    "osize": 240,
    "usize": 240
-  },
-  {
-   "name": "_ZN9FModSound13freeAllEventsEv",
-   "pct": 85.6,
-   "byte": false,
-   "linked": false,
-   "osize": 260,
-   "usize": 260
   },
   {
    "name": "_ZN11AbyssEngine12BumpShaderV314UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -33286,6 +33278,14 @@
    "linked": true,
    "osize": 92,
    "usize": 92
+  },
+  {
+   "name": "_ZN9FModSound13freeAllEventsEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 260,
+   "usize": 260
   },
   {
    "name": "_ZN9FModSound13setParamValueEPKcif",
