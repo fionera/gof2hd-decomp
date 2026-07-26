@@ -13272,14 +13272,6 @@
    "usize": 244
   },
   {
-   "name": "_ZN8GameText17isNonArabicStringEPKtj",
-   "pct": 85.4,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 92
-  },
-  {
    "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
    "pct": 85.6,
    "byte": false,
@@ -14814,6 +14806,14 @@
    "linked": false,
    "osize": 96,
    "usize": 96
+  },
+  {
+   "name": "_ZN8GameText17isNonArabicStringEPKtj",
+   "pct": 97.6,
+   "byte": false,
+   "linked": false,
+   "osize": 92,
+   "usize": 92
   },
   {
    "name": "_ZN9ObjectiveD1Ev",

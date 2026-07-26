@@ -177,7 +177,7 @@ static unsigned gArabicTable[0x29 * 5] = {0};
 
 int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
     unsigned short i = 0;
-    bool keep;
+    int keep;
     do {
         if (count <= i) return 1;
         keep = true;
@@ -187,8 +187,8 @@ int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
         while (r != 0x29) {
             for (int c = 0; c != 5; ++c)
                 keep = keep & (row[c] != ch);
-            row += 5;
             ++r;
+            row += 5;
         }
         ++i;
     } while (keep);
