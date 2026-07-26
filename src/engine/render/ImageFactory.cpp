@@ -127,9 +127,10 @@ void ImageFactory::reload() {
     }
     this->sprite = nullptr;
 
-    int w = (*canvasHolder)->GetImage2DWidth(ids[0]);
-    int h = (*canvasHolder)->GetImage2DHeight(ids[0]);
-    this->sprite = new Sprite((uint32_t *)ids, 6, w, h);
+    this->sprite = new Sprite(
+        (uint32_t *) ids, 6,
+        (*canvasHolder)->GetImage2DWidth(ids[0]),
+        (*canvasHolder)->GetImage2DHeight(ids[0]));
 
     (*canvasHolder)->Image2DCreate(0x485, this->itemImage);
     (*canvasHolder)->Image2DCreate(0x511, this->shipImage);

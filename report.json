@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.08,
   "byte_exact": 1167,
-  "linked_exact": 2668,
-  "fuzzy_perfect": 2668,
+  "linked_exact": 2669,
+  "fuzzy_perfect": 2669,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13016,14 +13016,6 @@
    "usize": 116
   },
   {
-   "name": "_ZN12ImageFactory6reloadEv",
-   "pct": 83.8,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 224
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas10DrawStringEjRKNS_6StringEiib",
    "pct": 83.9,
    "byte": false,
@@ -22974,6 +22966,14 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN12ImageFactory6reloadEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 224,
+   "usize": 224
   },
   {
    "name": "_ZN12ImageFactory8drawCharEP5ArrayIP9ImagePartEiib",
