@@ -127,7 +127,6 @@
   "_Z18PE_cc_destructibleP9PlayerEgoPv",
   "_Z18PE_roll_bankFactorP9PlayerEgoffPf",
   "_Z18PE_um_strafeTargetP9PlayerEgoPf",
-  "_Z18StarMap_OnTouchEndP7StarMapii",
   "_Z18Station_addItem_oiP4Item",
   "_Z18Station_addShip_oiP4Ship",
   "_Z18Station_getName_oiv",

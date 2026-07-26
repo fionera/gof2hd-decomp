@@ -2152,6 +2152,14 @@
    "usize": 364
   },
   {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 13.1,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 39284
+  },
+  {
    "name": "_ZN12ImageFactoryC1Ev",
    "pct": 13.1,
    "byte": false,
@@ -2262,14 +2270,6 @@
    "linked": false,
    "osize": 648,
    "usize": 680
-  },
-  {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 14.2,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 39284
   },
   {
    "name": "_ZN12WantedWindow4drawEv",
@@ -2504,20 +2504,20 @@
    "usize": 222
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 16.6,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "_ZN12RadioMessage9triggeredExP9PlayerEgoP11LevelScript",
    "pct": 16.7,
    "byte": false,
    "linked": false,
    "osize": 1684,
    "usize": 1612
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.7,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "_ZN10StarSystem6renderEv",
@@ -6952,14 +6952,6 @@
    "usize": 728
   },
   {
-   "name": "_ZN14MissionsWindow10OnTouchEndEii",
-   "pct": 41.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1088,
-   "usize": 1080
-  },
-  {
    "name": "_ZN14PlayerAsteroid4pushEi",
    "pct": 41.4,
    "byte": false,
@@ -6982,6 +6974,14 @@
    "linked": false,
    "osize": 184,
    "usize": 136
+  },
+  {
+   "name": "_ZN14MissionsWindow10OnTouchEndEii",
+   "pct": 41.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1088,
+   "usize": 1080
   },
   {
    "name": "_ZN9PlayerEgo12dockToPlanetEv",

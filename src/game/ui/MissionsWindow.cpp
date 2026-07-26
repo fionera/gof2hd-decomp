@@ -53,8 +53,6 @@ void TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char fl
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-int StarMap_OnTouchEnd(StarMap *map, int x, int y);
-
 int MissionsWindow::OnTouchMove(int p1, int p2) {
     if (this->m_mode == 1)
         return this->m_pWantedWindow->OnTouchMove(p1, p2);
@@ -575,7 +573,7 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
             }
         }
     } else {
-        if (StarMap_OnTouchEnd(this->m_pStarMap, y, z) != 0) {
+        if (this->m_pStarMap->OnTouchEnd(y, z) != 0) {
             int wantW, wantH, posX;
             if (Globals::iPad == 0) {
                 this->m_x = 0;
