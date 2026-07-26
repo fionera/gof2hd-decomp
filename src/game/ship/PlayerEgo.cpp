@@ -438,11 +438,12 @@ void PlayerEgo::dockToStream(bool param) {
         return;
     }
     this->speed = 0x40000000;
-    ((PlayerEgo *) (this))->setPosition(this->rotX, this->rotY, this->rotZ);
-    this->freeze = 0;
+    AbyssEngine::AEMath::Vector position = {this->rotX, this->rotY, this->rotZ};
+    this->setPosition(position);
     this->field_0x145 = 0;
+    this->freeze = 0;
     this->docked = 0;
-    ((PlayerEgo *) (this))->setExhaustVisible(false);
+    this->setAutoPilot(nullptr);
 }
 
 void PlayerEgo::hackingShuffle() {

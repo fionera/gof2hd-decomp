@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.28,
   "byte_exact": 1174,
-  "linked_exact": 2695,
-  "fuzzy_perfect": 2695,
+  "linked_exact": 2696,
+  "fuzzy_perfect": 2696,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13414,14 +13414,6 @@
    "linked": false,
    "osize": 50,
    "usize": 50
-  },
-  {
-   "name": "_ZN9PlayerEgo12dockToStreamEb",
-   "pct": 90.5,
-   "byte": false,
-   "linked": false,
-   "osize": 64,
-   "usize": 64
   },
   {
    "name": "_ZN11AbyssEngine11PulseShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -33830,6 +33822,14 @@
    "linked": true,
    "osize": 96,
    "usize": 96
+  },
+  {
+   "name": "_ZN9PlayerEgo12dockToStreamEb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 64,
+   "usize": 64
   },
   {
    "name": "_ZN9PlayerEgo12endExplosionEv",
