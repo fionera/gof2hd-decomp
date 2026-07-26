@@ -14504,14 +14504,6 @@
    "usize": 224
   },
   {
-   "name": "_ZN11AbyssEngine18ApplicationManager11OnTouchMoveEiiPv",
-   "pct": 94.3,
-   "byte": false,
-   "linked": false,
-   "osize": 104,
-   "usize": 104
-  },
-  {
    "name": "_ZN8KIPlayer12setShipGroupEP10AEGeometryib",
    "pct": 94.3,
    "byte": false,
@@ -14950,6 +14942,14 @@
    "linked": false,
    "osize": 50,
    "usize": 46
+  },
+  {
+   "name": "_ZN11AbyssEngine18ApplicationManager11OnTouchMoveEiiPv",
+   "pct": 97.7,
+   "byte": false,
+   "linked": false,
+   "osize": 104,
+   "usize": 104
   },
   {
    "name": "_ZN11AbyssEngine6AEMath16MatrixGetInverseERKNS0_6MatrixE",

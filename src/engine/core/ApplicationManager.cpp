@@ -568,11 +568,8 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) { // lint
     }
 }
 
-void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) { // lint: void_ptr (exported OnTouchMove touch handle param, baked ABI)
+void ApplicationManager::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr (exported OnTouchMove touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchMove touch handle param, baked ABI)
-    int x = xArg;
-    int y = yArg;
-
     IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
