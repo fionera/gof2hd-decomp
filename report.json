@@ -13768,14 +13768,6 @@
    "usize": 100
   },
   {
-   "name": "_ZN5Level12attackWantedEi",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 108,
-   "usize": 108
-  },
-  {
    "name": "_ZN6Player17ResumeEngineSoundEb",
    "pct": 90.0,
    "byte": false,
@@ -14814,6 +14806,14 @@
    "linked": false,
    "osize": 98,
    "usize": 98
+  },
+  {
+   "name": "_ZN5Level12attackWantedEi",
+   "pct": 97.5,
+   "byte": false,
+   "linked": false,
+   "osize": 108,
+   "usize": 108
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas12CameraCreateERj",
