@@ -362,8 +362,6 @@ void paintcanvas_ext_change_mat(void *, void *, void *); // lint: void_ptr (exte
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_vibrate(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
 int paintcanvas_ext_strcmp(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 unsigned int paintcanvas_ext_strlen(void *); // lint: void_ptr (external symbol; mangling must match lib)
@@ -1506,8 +1504,8 @@ void PaintCanvas::SetColor(unsigned int color) {
     return this->engine->SetColor(c0, c1, c2, c3);
 }
 
-void PaintCanvas::Vibrate(unsigned short) {
-    return paintcanvas_ext_vibrate(this->engine);
+void PaintCanvas::Vibrate(unsigned short duration) {
+    this->engine->Vibrate(duration);
 }
 
 void PaintCanvas::SpriteSystemAddSize(unsigned int index, unsigned short sub, short delta) {

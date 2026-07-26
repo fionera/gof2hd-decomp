@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.4,
+   "pct": 7.3,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -2216,14 +2216,6 @@
    "usize": 1290
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 13.4,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
    "pct": 13.6,
    "byte": false,
@@ -2286,6 +2278,14 @@
    "linked": false,
    "osize": 1928,
    "usize": 1956
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 14.2,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "_ZN5Radio4drawExP9PlayerEgoP11LevelScript",
@@ -4112,14 +4112,6 @@
    "usize": 492
   },
   {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
-  },
-  {
    "name": "ndk_iapBoughtConsumable",
    "pct": 28.0,
    "byte": false,
@@ -4150,6 +4142,14 @@
    "linked": false,
    "osize": 172,
    "usize": 176
+  },
+  {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
   },
   {
    "name": "_ZN9ExplosionD1Ev",
