@@ -4,9 +4,9 @@
   "ours_functions": 4559,
   "compared": 4523,
   "avg_match": 78.02,
-  "byte_exact": 1163,
-  "linked_exact": 2648,
-  "fuzzy_perfect": 2648,
+  "byte_exact": 1164,
+  "linked_exact": 2649,
+  "fuzzy_perfect": 2649,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13094,14 +13094,6 @@
    "linked": false,
    "osize": 52,
    "usize": 48
-  },
-  {
-   "name": "_ZNK11AbyssEngine10Quaternion7InverseEv",
-   "pct": 84.2,
-   "byte": false,
-   "linked": false,
-   "osize": 74,
-   "usize": 74
   },
   {
    "name": "_ZN11TouchButtonC1ERKN11AbyssEngine6StringEiiiihhji",
@@ -34734,6 +34726,14 @@
    "linked": true,
    "osize": 60,
    "usize": 60
+  },
+  {
+   "name": "_ZNK11AbyssEngine10Quaternion7InverseEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 74,
+   "usize": 74
   },
   {
    "name": "_ZNK11AbyssEngine10QuaternioncvPKfEv",

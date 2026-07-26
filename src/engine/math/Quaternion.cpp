@@ -103,9 +103,9 @@ namespace AbyssEngine {
     Quaternion Quaternion::Inverse() const {
         float inv = 1.0f / (x * x + y * y + z * z + w * w);
         Quaternion result;
-        result.x = -(inv * x);
-        result.y = -(inv * y);
-        result.z = -(inv * z);
+        result.x = -inv * x;
+        result.y = -inv * y;
+        result.z = -inv * z;
         result.w = w * inv;
         return result;
     }
