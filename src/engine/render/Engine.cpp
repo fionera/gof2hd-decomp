@@ -518,11 +518,8 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
         }
         this->lightCount = count;
 
-        Vector input;
-        input.x = x;
-        input.y = y;
-        input.z = z;
-        Vector normalized = AbyssEngine::AEMath::VectorNormalize(input);
+        Vector normalized =
+                AbyssEngine::AEMath::VectorNormalize(Vector{x, y, z});
         (&this->field_0x468)[index] = normalized;
         this->lightDirty[index] = 0.0f;
     }

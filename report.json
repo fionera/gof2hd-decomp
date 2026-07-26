@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.14,
   "byte_exact": 1171,
-  "linked_exact": 2682,
-  "fuzzy_perfect": 2682,
+  "linked_exact": 2683,
+  "fuzzy_perfect": 2683,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13408,14 +13408,6 @@
    "usize": 44
   },
   {
-   "name": "_ZN11AbyssEngine6Engine22LightSetLightDirectionEfffj",
-   "pct": 89.6,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 140
-  },
-  {
    "name": "_ZN3Hud10clearQueueEv",
    "pct": 89.7,
    "byte": false,
@@ -20734,6 +20726,14 @@
    "linked": true,
    "osize": 14,
    "usize": 14
+  },
+  {
+   "name": "_ZN11AbyssEngine6Engine22LightSetLightDirectionEfffj",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
   },
   {
    "name": "_ZN11AbyssEngine6Engine22SaveImageToPhotosAlbumEv",
