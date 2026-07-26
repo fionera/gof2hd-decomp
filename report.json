@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.98,
   "byte_exact": 1162,
-  "linked_exact": 2634,
-  "fuzzy_perfect": 2634,
+  "linked_exact": 2636,
+  "fuzzy_perfect": 2636,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13782,22 +13782,6 @@
    "linked": false,
    "osize": 52,
    "usize": 52
-  },
-  {
-   "name": "_ZN9LensFlareD1Ev",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 22,
-   "usize": 22
-  },
-  {
-   "name": "_ZN9LensFlareD2Ev",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 22,
-   "usize": 22
   },
   {
    "name": "_ZN6Status9isOnStackEP7Station",
@@ -33614,6 +33598,22 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN9LensFlareD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 22,
+   "usize": 22
+  },
+  {
+   "name": "_ZN9LensFlareD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 22,
+   "usize": 22
   },
   {
    "name": "_ZN9ObjectGun10setEnemiesEP5ArrayIP6PlayerE",

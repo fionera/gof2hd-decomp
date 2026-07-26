@@ -18,7 +18,7 @@ LensFlare::LensFlare(PaintCanvas *canvas) {
 }
 
 LensFlare::~LensFlare() {
-    delete[] this->images;
+    delete this->images;
     this->images = nullptr;
 }
 
