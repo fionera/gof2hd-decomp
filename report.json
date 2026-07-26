@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.78,
+  "avg_match": 77.79,
   "byte_exact": 1160,
   "linked_exact": 2596,
   "fuzzy_perfect": 2596,
@@ -2544,6 +2544,14 @@
    "usize": 574
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 17.0,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
+  },
+  {
    "name": "ndk_iapBoughtPremium",
    "pct": 17.0,
    "byte": false,
@@ -2558,14 +2566,6 @@
    "linked": false,
    "osize": 240,
    "usize": 268
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 17.2,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
   },
   {
    "name": "zip_replace",
@@ -4144,14 +4144,6 @@
    "usize": 176
   },
   {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
-  },
-  {
    "name": "_ZN9ExplosionD1Ev",
    "pct": 28.1,
    "byte": false,
@@ -4166,6 +4158,14 @@
    "linked": false,
    "osize": 68,
    "usize": 110
+  },
+  {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
   },
   {
    "name": "_ZN7Globals7getLineEjN11AbyssEngine6StringEiPS1_",
@@ -7504,14 +7504,6 @@
    "usize": 164
   },
   {
-   "name": "_ZN10AEGeometry11moveForwardEf",
-   "pct": 45.5,
-   "byte": false,
-   "linked": false,
-   "osize": 136,
-   "usize": 160
-  },
-  {
    "name": "_ZN13LodMeshMergerD1Ev",
    "pct": 45.5,
    "byte": false,
@@ -8504,6 +8496,14 @@
    "usize": 236
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 50.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN17PlayerFixedObjectC1EiiP6PlayerP10AEGeometryfff",
    "pct": 50.6,
    "byte": false,
@@ -8758,14 +8758,6 @@
    "linked": false,
    "osize": 596,
    "usize": 608
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
@@ -10926,6 +10918,14 @@
    "linked": false,
    "osize": 206,
    "usize": 272
+  },
+  {
+   "name": "_ZN10AEGeometry11moveForwardEf",
+   "pct": 66.0,
+   "byte": false,
+   "linked": false,
+   "osize": 136,
+   "usize": 136
   },
   {
    "name": "_ZN11AbyssEngine12BumpShaderV34InitEPNS_6EngineE",

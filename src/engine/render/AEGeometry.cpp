@@ -306,11 +306,9 @@ void AEGeometry::setScaling(float x, float y, float z) {
 }
 
 void AEGeometry::moveForward(float dist) {
-    Vector pos;
-    Vector n;
-    pos = this->getDirection();
-    VectorNormalize(&n, &pos);
-    pos = this->getPosition();
+    Vector direction = this->getDirection();
+    Vector n = AbyssEngine::AEMath::VectorNormalize(direction);
+    Vector pos = this->getPosition();
     pos.x = pos.x + n.x * dist;
     pos.y = pos.y + n.y * dist;
     pos.z = pos.z + n.z * dist;
