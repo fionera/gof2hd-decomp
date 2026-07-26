@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.02,
   "byte_exact": 1164,
-  "linked_exact": 2649,
-  "fuzzy_perfect": 2649,
+  "linked_exact": 2650,
+  "fuzzy_perfect": 2650,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13024,14 +13024,6 @@
    "usize": 64
   },
   {
-   "name": "_ZN11HackingGame16solvableInNStepsEiiiiPi",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 220,
-   "usize": 220
-  },
-  {
    "name": "_ZN11SolarSystem17stationIsInSystemEP7Station",
    "pct": 83.3,
    "byte": false,
@@ -21758,6 +21750,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN11HackingGame16solvableInNStepsEiiiiPi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 220,
+   "usize": 220
   },
   {
    "name": "_ZN11HackingGame6updateEi",

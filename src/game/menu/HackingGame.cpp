@@ -349,8 +349,8 @@ int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int right
 
     for (int i = 0; i != 6; ++i) {
         int value = state[i];
-        rightState[i] = value;
         leftState[i] = value;
+        rightState[i] = value;
     }
 
     unsigned i = 0;
