@@ -167,19 +167,19 @@ void Trail::changeType(int type) {
         case 9:
             Globals::Canvas->TransformSetColor(this->transformId, 0x00ff00ffu);
             break;
+        default:
+            Globals::Canvas->TransformSetColor(this->transformId, 0xffffffffu);
+            break;
+        case 5:
+            Globals::Canvas->TransformSetColor(this->transformId, 0x00ff0000u);
+            break;
         case 3:
         case 6:
         case 10:
             Globals::Canvas->TransformSetColor(this->transformId, 0xffff00ffu);
             break;
-        case 5:
-            Globals::Canvas->TransformSetColor(this->transformId, 0x00ff0000u);
-            break;
         case 8:
             Globals::Canvas->TransformSetColor(this->transformId, 0xff4000ffu);
-            break;
-        default:
-            Globals::Canvas->TransformSetColor(this->transformId, 0xffffffffu);
             break;
     }
 }

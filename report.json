@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.82,
+  "avg_match": 77.83,
   "byte_exact": 1161,
-  "linked_exact": 2606,
-  "fuzzy_perfect": 2606,
+  "linked_exact": 2607,
+  "fuzzy_perfect": 2607,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14672,14 +14672,6 @@
    "usize": 52
   },
   {
-   "name": "_ZN5Trail10changeTypeEi",
-   "pct": 94.8,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 152
-  },
-  {
    "name": "_ZN14BoundingSphereC1Efffffff",
    "pct": 95.0,
    "byte": false,
@@ -28766,6 +28758,14 @@
    "linked": true,
    "osize": 94,
    "usize": 94
+  },
+  {
+   "name": "_ZN5Trail10changeTypeEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 152,
+   "usize": 152
   },
   {
    "name": "_ZN5Trail5resetEN11AbyssEngine6AEMath6VectorE",
