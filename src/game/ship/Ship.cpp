@@ -500,7 +500,7 @@ Ship *Ship::clone() {
     Ship * s = new Ship(this->index, this->baseHP, this->baseLoad, this->price,
                         this->slots[0], this->slots[1], this->slots[2],
                         this->slots[3] - this->numAddedDeviceSlots,
-                        this->handling * 1.6f);
+                        this->handling * 100.0f);
     Array<int> *m = this->mods;
     if (m != 0) {
         for (unsigned int i = 0; i < m->size(); i = i + 1) {
