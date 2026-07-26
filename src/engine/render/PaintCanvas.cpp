@@ -4087,20 +4087,14 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
     paintcanvas_ext_sgo_setpersp(this, cam[0], cam[1], cam[2]);
 }
 
-int paintcanvas_ext_mc_meshcreate(void *eng, unsigned short a, unsigned short b, // lint: void_ptr (external symbol; mangling must match lib)
-                                  // lint: void_ptr (external symbol; mangling must match lib)
-                                  signed char c,
-                                  void **out); // lint: void_ptr (external symbol; mangling must match lib)
-
 void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangleCount,
                              signed char meshType, unsigned short matResId, unsigned int &out) {
     int result = -1;
     unsigned int mat = 0xffffffff;
     AbyssEngine::Mesh *mesh = 0;
     paintcanvas_ext_mc_matcreate(this, matResId, &mat);
-    int ok = paintcanvas_ext_mc_meshcreate(this->engine, vertexCount, triangleCount,
-                                           meshType, (void **) &mesh); // lint: void_ptr (out-param shim signature is void**; mangling must match lib)
-    // lint: void_ptr (out-param shim signature is void**; mangling must match lib)
+    int ok = AbyssEngine::MeshCreate(this->engine, vertexCount, triangleCount,
+                                     meshType, &mesh);
     if (ok == 1) {
         if (0xfffffffe < this->materials.count) {
             AbyssEngine::Material *m = this->materials.data_[-4];
