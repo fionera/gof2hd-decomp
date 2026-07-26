@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.79,
   "byte_exact": 1160,
-  "linked_exact": 2600,
-  "fuzzy_perfect": 2600,
+  "linked_exact": 2601,
+  "fuzzy_perfect": 2601,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -992,6 +992,14 @@
    "usize": 228
   },
   {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 3.4,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
+  },
+  {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 3.4,
    "byte": false,
@@ -1102,14 +1110,6 @@
    "linked": false,
    "osize": 1504,
    "usize": 296
-  },
-  {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 4.6,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
   },
   {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.4,
+   "pct": 7.3,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -14888,14 +14888,6 @@
    "usize": 66
   },
   {
-   "name": "_ZN11AbyssEngine12FBOContainer7ReleaseEv",
-   "pct": 96.3,
-   "byte": false,
-   "linked": false,
-   "osize": 108,
-   "usize": 108
-  },
-  {
    "name": "_ZN9PlayerEgoD1Ev",
    "pct": 96.3,
    "byte": false,
@@ -19318,6 +19310,14 @@
    "linked": true,
    "osize": 32,
    "usize": 32
+  },
+  {
+   "name": "_ZN11AbyssEngine12FBOContainer7ReleaseEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 108,
+   "usize": 108
   },
   {
    "name": "_ZN11AbyssEngine12FBOContainer8ActivateEv",

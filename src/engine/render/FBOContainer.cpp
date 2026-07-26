@@ -63,7 +63,7 @@ namespace AbyssEngine {
         glDeleteRenderbuffers(1, &this->extraRenderbuffer1);
         glDeleteRenderbuffers(1, &this->extraRenderbuffer2);
         glBindFramebuffer(0x8d40, 0);
-        glDeleteRenderbuffers(1, &this->extraRenderbuffer0);
+        glDeleteBuffers(1, &this->extraRenderbuffer0);
     }
 
     void FBOContainer::Activate() {
