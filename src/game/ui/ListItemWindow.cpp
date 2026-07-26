@@ -473,24 +473,23 @@ void ListItemWindow::update(int frameTime) {
     int idx = this->item->ship->getIndex();
 
     float baseAngle = this->baseAngle;
-    float angle = (float) this->dragAccum / g_liw_u_angleScale;
-    this->previewAngle = angle;
+    this->previewAngle = (float) this->dragAccum / g_liw_u_angleScale;
 
-    PaintCanvas *canvas = Globals::Canvas;
-    Matrix *loc = (Matrix *) canvas->TransformGetLocal(this->shipTransform);
-    AbyssEngine::AEMath::MatrixSetRotation(*loc, 0.0f, angle, 0.0f);
-    loc = (Matrix *) canvas->TransformGetLocal(this->shipTransform);
+    PaintCanvas **canvas = &Globals::Canvas;
+    Matrix *loc = (Matrix *) (*canvas)->TransformGetLocal(this->shipTransform);
+    AbyssEngine::AEMath::MatrixSetRotation(*loc, 0.0f, this->previewAngle, 0.0f);
     float tableAngle = g_liw_u_angleTable[idx] + baseAngle;
+    loc = (Matrix *) (*canvas)->TransformGetLocal(this->shipTransform);
     AbyssEngine::AEMath::MatrixSetScaling(*loc, tableAngle, tableAngle, tableAngle);
 
     if (this->addonTransform != -1) {
-        loc = (Matrix *) canvas->TransformGetLocal(this->addonTransform);
-        AbyssEngine::AEMath::MatrixSetRotation(*loc, 0.0f, angle, 0.0f);
-        loc = (Matrix *) canvas->TransformGetLocal(this->addonTransform);
+        loc = (Matrix *) (*canvas)->TransformGetLocal(this->addonTransform);
+        AbyssEngine::AEMath::MatrixSetRotation(*loc, 0.0f, this->previewAngle, 0.0f);
+        loc = (Matrix *) (*canvas)->TransformGetLocal(this->addonTransform);
         AbyssEngine::AEMath::MatrixSetScaling(*loc, tableAngle, tableAngle, tableAngle);
     }
 
-    this->previewGeometry->setRotation(0.0f, angle, 0.0f);
+    this->previewGeometry->setRotation(0.0f, this->previewAngle, 0.0f);
 }
 
 
