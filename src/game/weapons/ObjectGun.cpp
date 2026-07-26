@@ -38,10 +38,6 @@ uint32_t TransformGetTransform(void *canvas, uint32_t transform); // lint: void_
 
 void MatrixRotateVector(void *out, const void *matrix, const void *vec); // lint: void_ptr free-function signature, retype changes mangling
 
-void *CameraGetCurrent(void *canvas); // lint: void_ptr free-function signature, retype changes mangling
-
-void *CameraGetLocal(void *canvas, void *camera); // lint: void_ptr free-function signature, retype changes mangling
-
 static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
 
 static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
@@ -188,10 +184,7 @@ void ObjectGun::translate(const Vector & /*v*/) {
 void ObjectGun::update(int dt) {
     Matrix playerMatrix;
     Matrix workMatrix;
-    Matrix cameraMatrix;
     Vector position;
-    Vector dir;
-    Vector up;
     Vector offsets;
     Vector zero = {0.0f, 0.0f, 0.0f};
 
@@ -259,9 +252,11 @@ void ObjectGun::update(int dt) {
 
         if (this->gun->weaponType != ITEM_SORT_TURRET) {
             PaintCanvas *paint = *canvas;
-            cameraMatrix = *(const Matrix *) CameraGetLocal(paint, CameraGetCurrent(paint));
-            MatrixGetDir(&dir, &cameraMatrix);
-            MatrixGetUp(&up, &cameraMatrix);
+            unsigned int cameraIndex = paint->CameraGetCurrent();
+            Matrix cameraMatrix = *reinterpret_cast<const Matrix *>(
+                paint->CameraGetLocal(cameraIndex));
+            Vector dir = AbyssEngine::AEMath::MatrixGetDir(playerMatrix);
+            Vector up = AbyssEngine::AEMath::MatrixGetUp(cameraMatrix);
             this->geometry->setDirection(dir, up);
             goto after_geometry;
         }
@@ -305,9 +300,10 @@ void ObjectGun::update(int dt) {
                 offsets.y = gun->field_0xa7 == 0 ? 2.5f : -2.5f;
             }
         }
-        MatrixRotateVector(&cameraMatrix, &workMatrix, &offsets);
+        Vector rotatedOffset;
+        MatrixRotateVector(&rotatedOffset, &workMatrix, &offsets);
         this->geometry->setMatrix(workMatrix);
-        this->geometry->translate(*(Vector *) &cameraMatrix);
+        this->geometry->translate(rotatedOffset);
     }
 
 after_geometry:

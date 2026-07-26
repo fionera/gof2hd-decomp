@@ -992,14 +992,6 @@
    "usize": 228
   },
   {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 3.4,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
-  },
-  {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 3.4,
    "byte": false,
@@ -1110,6 +1102,14 @@
    "linked": false,
    "osize": 1504,
    "usize": 296
+  },
+  {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 4.6,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
   },
   {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.3,
+   "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -2352,14 +2352,6 @@
    "usize": 872
   },
   {
-   "name": "_ZN9ObjectGun6updateEi",
-   "pct": 15.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1092,
-   "usize": 844
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine14SetPerspMatrixEPf",
    "pct": 15.1,
    "byte": false,
@@ -2870,6 +2862,14 @@
    "linked": false,
    "osize": 212,
    "usize": 220
+  },
+  {
+   "name": "_ZN9ObjectGun6updateEi",
+   "pct": 20.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1092,
+   "usize": 828
   },
   {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
@@ -7696,6 +7696,14 @@
    "usize": 632
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 46.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN12StatusWindowC1Ev",
    "pct": 46.7,
    "byte": false,
@@ -8494,14 +8502,6 @@
    "linked": false,
    "osize": 244,
    "usize": 236
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 50.6,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN17PlayerFixedObjectC1EiiP6PlayerP10AEGeometryfff",
