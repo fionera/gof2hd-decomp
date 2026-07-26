@@ -993,9 +993,9 @@ Vec3 PlayerEgo::getPosition() {
 }
 
 Vec3 PlayerEgo::getTurretPosition() {
-    Matrix &turret = ((AEGeometry *) (this->turretGeometry))->getMatrix();
     Matrix &ship = ((AEGeometry *) (this->geometry))->getMatrix();
-    Matrix world = turret * ship;
+    Matrix &turret = ((AEGeometry *) (this->turretGeometry))->getMatrix();
+    Matrix world = ship * turret;
     return MatrixGetPosition(world);
 }
 

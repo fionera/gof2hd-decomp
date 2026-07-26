@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.17,
   "byte_exact": 1171,
-  "linked_exact": 2685,
-  "fuzzy_perfect": 2685,
+  "linked_exact": 2686,
+  "fuzzy_perfect": 2686,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14009,14 +14009,6 @@
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas20TransformGetTriCountEPNS_9TransformE",
-   "pct": 94.1,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 84
-  },
-  {
-   "name": "_ZN9PlayerEgo17getTurretPositionEv",
    "pct": 94.1,
    "byte": false,
    "linked": false,
@@ -34150,6 +34142,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN9PlayerEgo17getTurretPositionEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 84,
+   "usize": 84
   },
   {
    "name": "_ZN9PlayerEgo17isDockingToStreamEv",
