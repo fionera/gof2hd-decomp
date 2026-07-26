@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.66,
+  "avg_match": 77.67,
   "compared": 4523
  },
  "imports": [
@@ -281,7 +281,6 @@
   "_Z25paintcanvas_ext_dm_getposPv",
   "_Z25paintcanvas_ext_draw_meshPvS_",
   "_Z25paintcanvas_ext_get_accelPv",
-  "_Z25paintcanvas_ext_get_widthPv",
   "_Z25paintcanvas_ext_mtx_muleqPvS_",
   "_Z26ChoiceWindow_setFee_oiImplP12ChoiceWindowii",
   "_Z26ChoiceWindow_setNotice_cppP12ChoiceWindow",
@@ -300,7 +299,6 @@
   "_Z26paintcanvas_ext_change_matPvS_S_",
   "_Z26paintcanvas_ext_di_restorejPv",
   "_Z26paintcanvas_ext_dsc_sscanfPKcS0_Pv",
-  "_Z26paintcanvas_ext_get_heightPv",
   "_Z26paintcanvas_ext_mat_internPvS_",
   "_Z27AEMath_MatrixSetTranslationPN11AbyssEngine6AEMath6MatrixEiii",
   "_Z27ChoiceWindow_OnTouchEnd_oteii",
@@ -327,7 +325,6 @@
   "_Z27paintcanvas_ext_mc2_findresPvt",
   "_Z27paintcanvas_ext_meshcreate5PvttaS_",
   "_Z27paintcanvas_ext_set_reslistPKPN11AbyssEngine8ResourceEjPv",
-  "_Z27paintcanvas_ext_set_texturePv",
   "_Z27paintcanvas_ext_shader_animPvS_",
   "_Z27paintcanvas_ext_tg2d_errmsgPv",
   "_Z28AEMath_MatrixTransformVectorPN11AbyssEngine6AEMath6VectorEPKS1_",

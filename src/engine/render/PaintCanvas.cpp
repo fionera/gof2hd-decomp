@@ -484,8 +484,6 @@ void paintcanvas_ext_transform_dirty(void *); // lint: void_ptr (external symbol
 
 void paintcanvas_ext_add_resource(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_get_height(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_gl_a(unsigned int);
 
 void paintcanvas_ext_gl_bind(unsigned int, unsigned int);
@@ -686,8 +684,6 @@ static inline float paintcanvas_ext_cipvf_cosf(float v) { return cosf(v); }
 int paintcanvas_ext_cipvf_inner(const float *pt, void *m, void *cam); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_set_texture(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1026,8 +1022,6 @@ static inline float paintcanvas_ext_dt2_cosf(float v) { return cosf(v); }
 void paintcanvas_ext_dt2_mtx_getinv(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
-
-int paintcanvas_ext_get_width(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline int pc_GetWidth(AbyssEngine::PaintCanvas *self) { return self->GetWidth(); }
 static inline int pc_GetHeight(AbyssEngine::PaintCanvas *self) { return self->GetHeight(); }
@@ -2185,7 +2179,7 @@ void PaintCanvas::TransformRemoveMeshId(unsigned int transformIndex, unsigned in
 }
 
 int PaintCanvas::GetHeight() {
-    return paintcanvas_ext_get_height(this->engine);
+    return this->engine->GetDisplayHeight();
 }
 
 static char paintcanvas_g_cube_enabled = 0;
@@ -3147,8 +3141,8 @@ int PaintCanvas::CameraIsPointinViewFrustum(const AbyssEngine::AEMath::Vector &p
     return paintcanvas_ext_cipvf_inner(point, m, cam);
 }
 
-void PaintCanvas::SetTexture(unsigned int, unsigned int) {
-    return paintcanvas_ext_set_texture(this->engine);
+void PaintCanvas::SetTexture(unsigned int first, unsigned int second) {
+    return this->engine->SetTextures(first, second);
 }
 
 PaintCanvas::~PaintCanvas() {
@@ -5108,7 +5102,7 @@ void PaintCanvas::FontSetSpacing(unsigned int index, short spacing) {
 }
 
 int PaintCanvas::GetWidth() {
-    return paintcanvas_ext_get_width(this->engine);
+    return this->engine->GetDisplayWidth();
 }
 
 void PaintCanvas::CameraCreate(unsigned int &out) {
