@@ -2,6 +2,155 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-26n (waves 62–72 — exact near misses, global reloads, and typed locals)
+
+Net from the wave-61 checkpoint: avg **77.99->78.02**, byte
+**1162->1164 (+2)**, linked **2639->2649 (+10)**, imports **601 (=)**,
+verify extra **35 (=)**, sodiff allowed extras **52 (=)**, and
+stub/missing/wrong_type **0/0/0**. Thirteen source passes were linked,
+directly verified, ratcheted, baseline-locked, and committed serially by the
+controller. Disjoint internal GPT-5.6 Sol workers at medium/low reasoning
+performed the Ghidra analysis and C++ authoring; no Claude Workflow was used.
+Workers did not build, gate, ratchet, update reports/docs/baselines, stash, or
+commit.
+
+Landed passes, in order:
+
+- `4e367225` `WantedWindow::getRelativeScrollStartPos`: **0.0->100% byte
+  exact**, 48/48 bytes. The literal pool at original `0xe17d4` is
+  `+0.0f`; byte **1162->1163**, linked **2639->2640**.
+- `3eee8384` `Level::attackWanted`: **90.0->97.5%**, 80/80 bytes.
+  Logical induction now starts at zero while physical enemy access uses
+  `i+1`, recovering the original `subs r1,r6,#1`; rounded counts unchanged.
+- `7187929b` `JNI_OnLoad`: **95.3->100% linked**, 64/64 bytes. Declaring
+  `JNIEnv *env` before assigning `g_pVM` restored the original store/load
+  schedule; linked **2640->2641**.
+- `02ff27de` `ParticleSystemSprite::render`: **95.0->96.7%**, 240/240
+  bytes. A typed `float m[15]` declared after setup restored the matrix
+  literal/load order; rounded counts unchanged.
+- `15dffbfa` `ApplicationManager::SoundResume(int)`: **88.9->100%
+  linked**, 26/26 bytes. The binary-authentic grouping is
+  `(soundResource && soundFxEnabled) || musicEnabled`; linked
+  **2641->2642**.
+- `81fd9e9e` `PlayerFixedObject::moveForward`: **88.7->100% linked**,
+  172/172 bytes. Replacing the UB raw buffer/fake receiver with the real
+  typed `Vector` sret restored the 16-byte frame; linked **2642->2643** and
+  avg rounded to **78.0**.
+- `0a12b127` `GameText::isNonArabicString`: **85.4->97.6%**, 92/92
+  bytes. An integer bitwise accumulator and recovered row-update source order
+  align every instruction except the final truth test; rounded globals
+  unchanged.
+- `f1c25e08` `ObjectGun::replaceGun`: **86.4->100% linked**, 56/56
+  bytes. Holding `&Globals::Canvas` and dereferencing it at both calls
+  reproduces the original global-slot reloads; linked **2643->2644**.
+- `98612156` `WantedWindow::WantedWindow` C1/C2: each **85.2->100%
+  linked**, 244/244 bytes. The constructor uses the canvas global-slot
+  address and the original post-text-height store order; linked
+  **2644->2646**, avg **78.0->78.01**.
+- `5d9574c5` `HangarWindow::highlightItem`: **90.0->92.5%**, 100/100
+  bytes. Reversing two source assignments emits the original
+  selected-item/pending-flag store order; rounded globals unchanged.
+- `5b166a51` `Station::stationHasHiddenBlueprint`: **82.8->100%
+  linked**, 68/68 bytes. Viewing the recovered flag array through
+  `unsigned char *` restores the original any-nonzero test; linked
+  **2646->2647**.
+- `8d2343d2` `PlayerFixedObject::setDeadButSelectable`: **84.4->100%
+  linked**, 88/88 bytes. Both AAPCS32 64-bit animation-range endpoints are
+  the Transform's `animationLength`; linked **2647->2648**, avg
+  **78.01->78.02**.
+- `6b2278db` `Quaternion::Inverse`: **84.2->100% byte exact**, 74/74
+  bytes. Spelling each component as `-inv * component` preserves reciprocal
+  `s8` as the first `vnmul` operand; byte **1163->1164**, linked
+  **2648->2649**.
+
+Verified source, ABI, and compiler facts:
+
+- The original `ApplicationManager::SoundResume(int)` intentionally permits
+  the music-enabled path to call through a null `soundResource`; the unusual
+  Boolean grouping is direct binary evidence and matches its siblings.
+- `PlayerFixedObject::moveForward` calls `AEGeometry::getPosition` with a
+  `Vector` hidden return at `sp`, then assigns it to `this+0x2c`. The old
+  `char[12]` and casted fake receiver were both UB and wrong.
+- Original global access frequently retains the address stored in a GOT slot,
+  not the global value. `ObjectGun::replaceGun` and the WantedWindow
+  constructor both require `PaintCanvas ** = &Globals::Canvas` and a fresh
+  dereference per call.
+- `Station::stationHasHiddenBlueprint` reads five one-byte flags and treats
+  every nonzero value as found. A `bool *` view enabled strict `==1`
+  normalization and was semantically wrong; an unsigned-character
+  object-representation view is defined and layout-neutral.
+- `Transform::animationLength` is a signed 64-bit value at `+0xf8`.
+  `SetAnimationRangeInTime(long long,long long)` receives it in both the
+  aligned `r2:r3` first argument and the stack-passed second argument.
+- Quaternion's target operand identity is source-tree-sensitive despite
+  multiplication being commutative: `-(inv*x)` and `inv*-x` both commute to
+  the wrong encoding, while `-inv*x` is byte exact.
+- `MaterialCreate`'s remaining mismatch is definitive constructor ownership:
+  original calls weak `MaterialC2`, while current code calls a strong C1/C2
+  alias from the wrong TU. It is not a legal function-body fix.
+
+Deferred and requeue findings:
+
+- New self-contained notes:
+  `_work/reconstructions/AEMath-VectorComparisons.md`,
+  `FModSound-stopAllSoundFXEvents.md`, `GameText-isNonArabicString.md`,
+  `HangarWindow-highlightItem.md`, `IParticleSystem-resetEmitterVelocity.md`,
+  `Level-attackWanted.md`, `Level-collideStation.md`,
+  `PaintCanvas-MaterialCreate.md`, `ParticleSystemSprite-render.md`,
+  `Player-ResumeEngineSound.md`, `Player-resetGunDelay.md`,
+  `PlayerFighter-cloak.md`, `ScrollTouchBox-touchIsInside.md`,
+  `Sparks-update.md`, and `Status-getFreighterMissionStationBit.md`.
+  Do not repeat the exhausted source shapes recorded there.
+- `Status::getFreighterMissionStationBit` exhausted early-check/switch,
+  ordered PHI, and conditional-expression shapes. LLVM canonicalizes all
+  mappings and moves station 95 to the tail; requeue only with a real
+  control/data dependency.
+- `FModSound::stopAllSoundFXEvents` exhausted three one/two-index loop
+  lifetimes. All retain `r5` as the persistent counter; do not force
+  registers.
+- `Level::collideStation` requires the by-value Vector words live before both
+  null guards. Landmark snapshots, a success-only reload, and a typed Vector
+  copy were all scalarized/sunk.
+- GameText's landed residual is only `lsls r0,r4,#31` versus `cmp r4,#0`.
+  `bool` or an integer low-bit condition recovers the test but swaps the
+  character/accumulator registers, so the integer ordinary-truth form is the
+  best legal partial.
+- HangarWindow's landed residual is only the pre-null-guard `this`/item save.
+  Explicit aliases and nested guards are codegen-neutral.
+- ScrollTouchBox's synthetic locals, rejection, positive conjunction, and
+  nested guards all compile to the same branchy lower-bound sequence instead
+  of the original conditional `ldrle/cmple` IT block.
+- Directly screened scheduler-only skips remain:
+  `SpriteSystemRelease`, `AEGeometry::setLodChildTransform`,
+  `MenuTouchWindow::setSkipButtonVisible`, `ParticleSystemMesh::render`,
+  `PlayerFighter::collide`, and `Player::addGun`.
+
+Exclusive work remains parked:
+
+- `TextureConference::Init` stores correct results at wrong member offsets.
+  `Hud::touchMove`, `PlayerEgo::setTurretPosition`, and
+  `ListItemWindow::render` likewise expose verified field-offset drift.
+- `Engine::ShaderSetInActive` has the wrong shader container pointer/Array
+  level. `Engine::SetUVMatrix` has a suspicious global-indirection mismatch.
+- JNI `setEnvironmentVariables` appears to map env/class through swapped
+  global slots and must be audited as a cross-cutting global-provenance pass.
+- Material constructor ownership belongs to original PaintCanvas.cpp, while
+  the current out-of-line definition is in Material.cpp. Drain the fleet and
+  gate all construction sites/dynsym parity before changing it.
+- All previously recorded layout and TU-merge items remain exclusive; never
+  combine them with an ordinary worker wave.
+
+Tier position: tier 1 is exhausted (`stub_zero_size 0`). The fresh tier-2
+sweep found no remaining cheap provable wrong-callee family; imports remain
+**601**. Tier 3 same-size near misses remains active. Strong fresh candidates
+not yet attempted are `HackingGame::solvableInNSteps` and
+`ModStation::OnResume`; the JNI global mapping and all listed field/TU work
+are exclusive. Current committed metrics are **4523 compared, avg 78.02%,
+byte_exact 1164, linked_exact 2649, verify extra 35,
+missing/wrong_type/stub_zero_size 0/0/0, imports 601**. No workers or stashes
+are in flight. The worktree is clean except the pre-existing untracked
+`.claude/`, which was not touched. Run only one orchestrator.
+
 ## Session 2026-07-26m (waves 58–61 — exact near misses and real virtual calls)
 
 Net from the wave-57 checkpoint: avg **77.97->77.99**, byte
