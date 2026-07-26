@@ -27,10 +27,6 @@ void liw_set_fillRows(void *self, void *item, void *layout, int isShip, bool par
 
 // lint: void_ptr (imported symbol; param mangling must match lib)
 
-void _liw_render_tail(void *c, int a, int h, void *sp); // lint: void_ptr (imported symbol; param mangling must match lib)
-
-// lint: void_ptr (imported symbol; param mangling must match lib)
-
 char *LISTITEMWINDOW_UNITS[62] = {
     (char *) "", (char *) "", (char *) "", (char *) "", (char *) "",
     (char *) "", (char *) "", (char *) "", (char *) "", (char *) "",
@@ -100,24 +96,23 @@ void ListItemWindow::render() {
     if (!this->shows3DShipFlag)
         return;
 
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->Begin3d();
+    PaintCanvas **canvas = &Globals::Canvas;
+    (*canvas)->Begin3d();
 
     Layout *obj = Globals::layout;
     int s = obj->field_0x128;
     int h = this->previewHeight - s * 2;
-    canvas->EnableClip(
+    (*canvas)->EnableClip(
         this->x + s + (this->width >> 1) + obj->field_0x2c_rowHeight,
         this->y + s + obj->field_0xc_leftMargin + obj->field_0x20_top,
         ((this->width >> 1) - (obj->field_0x2c_rowHeight + s * 2)) - obj->buttonInsetX,
         h);
-    canvas->SetColor((unsigned int) (long) canvas);
-    Matrix *m = (Matrix *) canvas->CameraGetLocal((unsigned int) (long) canvas);
+    (*canvas)->SetColor((unsigned int) -1);
+    Matrix *m = (Matrix *) (*canvas)->CameraGetLocal(this->camera);
     this->previewTransform = *m;
     this->previewGeometry->render();
-    canvas->End3d();
-    int dummy;
-    _liw_render_tail(canvas, 0, h, &dummy);
+    (*canvas)->End3d();
+    (*canvas)->DisableClip();
 }
 
 

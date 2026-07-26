@@ -1,9 +1,11 @@
-# `ListItemWindow::OnTouchBegin` layout blocker
+# `ListItemWindow` layout blocker
 
-## Target
+## Affected targets
 
 - `_ZN14ListItemWindow12OnTouchBeginEii`
 - 92.1%, 96/96 bytes
+- `_ZN14ListItemWindow6renderEv`
+- 96.5%, 172/172 bytes
 - TU: `src/game/ui/ListItemWindow.cpp`
 
 The original and current bodies have the same instruction count and control
@@ -26,3 +28,10 @@ binary struct layout and all class methods as witnesses.
 The adjacent `update(int)` pass is independent of this blocker: its recovered
 Matrix-by-value calls and addon-transform path compile to the original
 352-byte size and improve the function from 45.7% to 77.0%.
+
+The landed `render()` body replaces the invented `_liw_render_tail` import
+with the real `PaintCanvas::DisableClip()` tail call. It also restores
+`SetColor(0xffffffff)`, `CameraGetLocal(this->camera)`, the Matrix assignment,
+and direct `Globals::Canvas` holder reloads. Its original size and instruction
+count now match; the only structural differences are its loads of `x` and
+`width` at the same current-versus-original offsets listed above.
