@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.85,
   "byte_exact": 1161,
-  "linked_exact": 2622,
-  "fuzzy_perfect": 2622,
+  "linked_exact": 2623,
+  "fuzzy_perfect": 2623,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -2464,20 +2464,20 @@
    "usize": 58
   },
   {
+   "name": "_ZN5Level8renderBGEi",
+   "pct": 16.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1320,
+   "usize": 1220
+  },
+  {
    "name": "_ZN10ModStation8OnUpdateEv",
    "pct": 16.4,
    "byte": false,
    "linked": false,
    "osize": 3652,
    "usize": 2212
-  },
-  {
-   "name": "_ZN5Level8renderBGEi",
-   "pct": 16.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1320,
-   "usize": 1220
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager12OnKeyReleaseEi",
@@ -4088,14 +4088,6 @@
    "usize": 492
   },
   {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
-  },
-  {
    "name": "ndk_iapBoughtConsumable",
    "pct": 28.0,
    "byte": false,
@@ -4142,6 +4134,14 @@
    "linked": false,
    "osize": 68,
    "usize": 110
+  },
+  {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
   },
   {
    "name": "_ZN7Globals7getLineEjN11AbyssEngine6StringEiPS1_",
@@ -8736,14 +8736,6 @@
    "usize": 128
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
    "pct": 53.3,
    "byte": false,
@@ -8766,6 +8758,14 @@
    "linked": false,
    "osize": 36,
    "usize": 40
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -14904,14 +14904,6 @@
    "usize": 76
   },
   {
-   "name": "_ZN11AbyssEngine18BumpShaderParticle4InitEPNS_6EngineE",
-   "pct": 97.0,
-   "byte": false,
-   "linked": false,
-   "osize": 388,
-   "usize": 388
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas25MeshChangeShaderAnimValueEPNS_9TransformEfj",
    "pct": 97.1,
    "byte": false,
@@ -20270,6 +20262,14 @@
    "linked": true,
    "osize": 72,
    "usize": 72
+  },
+  {
+   "name": "_ZN11AbyssEngine18BumpShaderParticle4InitEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 388,
+   "usize": 388
   },
   {
    "name": "_ZN11AbyssEngine18BumpShaderParticleD0Ev",

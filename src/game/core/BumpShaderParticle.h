@@ -22,6 +22,7 @@ namespace AbyssEngine {
         int attribA2;
         int attribA3;
         int attribA4;
+        int attribA5;
         int uniformU0;
         int uniformU1;
         int uniformU2;
@@ -35,7 +36,6 @@ namespace AbyssEngine {
         int uniformU10;
         int uniformU11;
         int uniformU12;
-        int uniformU13;
 
         static int ShaderIndex;
 

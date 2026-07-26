@@ -56,11 +56,12 @@ filenames:
 - fragment blob `0x1e8b98`, 1181 bytes,
   SHA-256 `89dc30ae67ef2d4c5fc79861e53691b2cb6db643fef90c35655206c785bb6391`.
 
-## Exclusive requeue
+## Landed reconstruction
 
-Drain the fleet. Change the header to six attribute fields and thirteen
-uniform fields, add `a_VertexColor`, remove `uniformU13`, and start the sampler
-pair at `uniformU4`. Preserve behavior throughout the TU by remapping current
+Implemented under an exclusive fleet drain on 2026-07-26. The header now has
+six attribute fields and thirteen uniform fields, `a_VertexColor` is the sixth
+attribute, `uniformU13` is gone, and the sampler pair starts at `uniformU4`.
+Behavior throughout the TU was preserved by remapping current
 `uniformU0` color/attribute uses to the sixth attribute and decrementing the
 subsequent true uniform indices:
 
@@ -69,6 +70,8 @@ U1->U0 U2->U1 U3->U2 U4->U3
 U7->U6 U8->U7 U9->U8 U10->U9 U11->U10 U12->U11 U13->U12
 ```
 
-Extract and add the two verified inline GLSL blobs in the same pass. Gate the
-entire class, layout, shader call sites, exports, and parity before landing.
-Confidence is high on the call/field/literal mapping.
+Both verified inline GLSL blobs were extracted into the call site. Their
+linked copies retain the exact content lengths, trailing NUL bytes, and SHA-256
+hashes listed above. The controller gate made `Init` **97.0% -> 100% linked**
+at **388/388 bytes**; aggregate linked-exact rose **2622 -> 2623** with byte,
+stub, missing, wrong-type, extra, import, lint, and symbol-parity counts held.
