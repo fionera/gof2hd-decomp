@@ -25,9 +25,9 @@ int WantedWindow::OnTouchMove(int x, int y) {
         return 0;
     }
 
-    Layout *layout = Globals::layout;
-    if (((layout->field_0xc_leftMargin < y) &&
-         (y < Globals::h - layout->field_0x10_rightMargin) &&
+    Layout **layout = &Globals::layout;
+    if ((((*layout)->field_0xc_leftMargin < y) &&
+         (y < Globals::h - (*layout)->field_0x10_rightMargin) &&
          (x < Globals::w / 2)) ||
         (Globals::mouse_wheel != 0)) {
         int delta = y - this->lastDragY;
@@ -45,7 +45,7 @@ int WantedWindow::OnTouchMove(int x, int y) {
         (*this->buttons)[i]->OnTouchMove(x, y);
     }
 
-    layout->OnTouchMove(x, y);
+    (*layout)->OnTouchMove(x, y);
     if (this->detailButton != nullptr) {
         Wanted *wanted = (*this->wantedList)[this->selectedWanted];
         if (wanted->isActive() != 0) {

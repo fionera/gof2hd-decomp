@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.09,
   "byte_exact": 1167,
-  "linked_exact": 2670,
-  "fuzzy_perfect": 2670,
+  "linked_exact": 2671,
+  "fuzzy_perfect": 2671,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12880,14 +12880,6 @@
    "usize": 154
   },
   {
-   "name": "_ZN12WantedWindow11OnTouchMoveEii",
-   "pct": 82.9,
-   "byte": false,
-   "linked": false,
-   "osize": 268,
-   "usize": 268
-  },
-  {
    "name": "_ZN11TouchButton19replaceTextKeepSizeERKN11AbyssEngine6StringE",
    "pct": 83.0,
    "byte": false,
@@ -23358,6 +23350,14 @@
    "linked": true,
    "osize": 48,
    "usize": 48
+  },
+  {
+   "name": "_ZN12WantedWindow11OnTouchMoveEii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 268,
+   "usize": 268
   },
   {
    "name": "_ZN12WantedWindow12OnTouchBeginEii",
