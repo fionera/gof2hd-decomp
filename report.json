@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.14,
+  "avg_match": 78.17,
   "byte_exact": 1171,
-  "linked_exact": 2683,
-  "fuzzy_perfect": 2683,
+  "linked_exact": 2684,
+  "fuzzy_perfect": 2684,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -189,14 +189,6 @@
    "byte": false,
    "linked": false,
    "osize": 104,
-   "usize": 2
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas19CheckNUseRefractFBOEb",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 56,
    "usize": 2
   },
   {
@@ -1400,20 +1392,20 @@
    "usize": 716
   },
   {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 7.0,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
+  },
+  {
    "name": "_ZN7StarMap10OnTouchEndEii",
    "pct": 7.0,
    "byte": false,
    "linked": false,
    "osize": 2972,
    "usize": 348
-  },
-  {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.1,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
   },
   {
    "name": "_ZN11AbyssEngine13CurveGetValueEyPNS_5CurveE",
@@ -1424,20 +1416,20 @@
    "usize": 282
   },
   {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
+  },
+  {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
    "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 1168,
    "usize": 864
-  },
-  {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -4024,14 +4016,6 @@
    "usize": 648
   },
   {
-   "name": "zip_close",
-   "pct": 27.9,
-   "byte": false,
-   "linked": false,
-   "osize": 2532,
-   "usize": 2684
-  },
-  {
    "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU",
    "pct": 28.0,
    "byte": false,
@@ -4134,6 +4118,14 @@
    "linked": false,
    "osize": 340,
    "usize": 364
+  },
+  {
+   "name": "zip_close",
+   "pct": 28.5,
+   "byte": false,
+   "linked": false,
+   "osize": 2532,
+   "usize": 2684
   },
   {
    "name": "_Z10SlowMotionv",
@@ -8673,7 +8665,7 @@
   },
   {
    "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.1,
+   "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 2696,
@@ -9182,14 +9174,6 @@
    "linked": false,
    "osize": 30,
    "usize": 34
-  },
-  {
-   "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
-   "pct": 57.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1332,
-   "usize": 1288
   },
   {
    "name": "_ZN6AEFile9FileExistERKN11AbyssEngine6StringE",
@@ -9910,6 +9894,14 @@
    "linked": false,
    "osize": 80,
    "usize": 80
+  },
+  {
+   "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
+   "pct": 59.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1332,
+   "usize": 1288
   },
   {
    "name": "_ZN11ModMainMenu10OnTouchEndEiiPv",
@@ -18302,6 +18294,14 @@
    "linked": true,
    "osize": 132,
    "usize": 132
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas19CheckNUseRefractFBOEb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 56,
+   "usize": 56
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas19MaterialGetMaterialEj",

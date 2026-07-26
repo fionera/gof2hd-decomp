@@ -374,10 +374,6 @@ void paintcanvas_ext_camera_apply(void *, unsigned int, unsigned int, unsigned i
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_is_posteffect(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_use_refract(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_sprite_uv(unsigned int, float, float, float, float, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
@@ -1851,13 +1847,10 @@ void PaintCanvas::MeshTranslatePoint(unsigned int index, unsigned short sub,
     }
 }
 
-static char paintcanvas_g_refract1 = 0;
-static char paintcanvas_g_refract2 = 0;
-
 void PaintCanvas::CheckNUseRefractFBO(bool) {
-    if (paintcanvas_g_refract1 != 0 && paintcanvas_g_refract2 != 0 &&
-        paintcanvas_ext_is_posteffect(this->engine) == 0) {
-        return paintcanvas_ext_use_refract(this->engine);
+    if (Engine::enableShader != 0 && Engine::EnableRefract != 0 &&
+        this->engine->IsPostEffectActivated() == 0) {
+        return this->engine->ActivateRender2FracFBO();
     }
 }
 
