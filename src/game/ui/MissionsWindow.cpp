@@ -49,10 +49,6 @@ void Status_replaceHash(void *out, void *key, void *a, void *b, void *c); // lin
 
 int ApplicationManager_GetCurrentApplicationModule(void *appMgr); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-int _mw_GetTextHeight(void *canvas); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 void TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char flags); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
@@ -123,7 +119,7 @@ MissionsWindow::MissionsWindow() {
     this->m_pWantedWindow = nullptr;
     this->m_pTabButtons = nullptr;
     this->m_pAgentImageParts = nullptr;
-    int h = _mw_GetTextHeight(canvas);
+    int h = canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
     this->m_textHalfHeight = h / 2 - 1;
     this->init();
 }

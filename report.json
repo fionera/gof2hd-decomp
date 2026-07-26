@@ -1417,7 +1417,7 @@
   },
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.3,
+   "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 171316,
@@ -2544,14 +2544,6 @@
    "usize": 568
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.9,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN3HudC1Ev",
    "pct": 16.9,
    "byte": false,
@@ -2566,6 +2558,14 @@
    "linked": false,
    "osize": 230,
    "usize": 574
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 17.0,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "ndk_iapBoughtPremium",
@@ -4128,6 +4128,14 @@
    "usize": 492
   },
   {
+   "name": "_ZN5Level9createGunEiiiiiiii",
+   "pct": 28.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2012,
+   "usize": 1696
+  },
+  {
    "name": "ndk_iapBoughtConsumable",
    "pct": 28.0,
    "byte": false,
@@ -4158,14 +4166,6 @@
    "linked": false,
    "osize": 172,
    "usize": 176
-  },
-  {
-   "name": "_ZN5Level9createGunEiiiiiiii",
-   "pct": 28.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2012,
-   "usize": 1696
   },
   {
    "name": "_ZN9ExplosionD1Ev",
@@ -7208,6 +7208,14 @@
    "usize": 1444
   },
   {
+   "name": "_ZN5Level19initParticleSystemsEv",
+   "pct": 43.6,
+   "byte": false,
+   "linked": false,
+   "osize": 1872,
+   "usize": 1980
+  },
+  {
    "name": "_ZN6AEFile12SetInterfaceEP13FileInterface",
    "pct": 43.6,
    "byte": false,
@@ -7222,14 +7230,6 @@
    "linked": false,
    "osize": 336,
    "usize": 320
-  },
-  {
-   "name": "_ZN5Level19initParticleSystemsEv",
-   "pct": 43.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1872,
-   "usize": 1980
   },
   {
    "name": "_ZN8FileRead18loadStationsBinaryEPsi",
@@ -8926,22 +8926,6 @@
    "linked": false,
    "osize": 580,
    "usize": 552
-  },
-  {
-   "name": "_ZN14MissionsWindowC1Ev",
-   "pct": 54.2,
-   "byte": false,
-   "linked": false,
-   "osize": 88,
-   "usize": 76
-  },
-  {
-   "name": "_ZN14MissionsWindowC2Ev",
-   "pct": 54.2,
-   "byte": false,
-   "linked": false,
-   "osize": 88,
-   "usize": 76
   },
   {
    "name": "_Z13loadPortraitsPN11AbyssEngine6EngineE",
@@ -11830,6 +11814,22 @@
    "linked": false,
    "osize": 50,
    "usize": 56
+  },
+  {
+   "name": "_ZN14MissionsWindowC1Ev",
+   "pct": 71.9,
+   "byte": false,
+   "linked": false,
+   "osize": 88,
+   "usize": 88
+  },
+  {
+   "name": "_ZN14MissionsWindowC2Ev",
+   "pct": 71.9,
+   "byte": false,
+   "linked": false,
+   "osize": 88,
+   "usize": 88
   },
   {
    "name": "_ZN14PlayerGasCloudC1EiP21ParticleSystemManagerP10AEGeometryRKN11AbyssEngine6AEMath6VectorE",

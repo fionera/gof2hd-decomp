@@ -178,7 +178,7 @@ Current numbers (of **4523** compared): **byte_exact 1160, linked_exact 2593, av
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
 monotone, linked_exact within a ±1 transient band, stubs/missing/extra frozen, exports pinned to
-`tools/sodiff_allow.txt`, undefined-import set pinned (648 names; a typo'd callee is a hard
+`tools/sodiff_allow.txt`, undefined-import set pinned (647 names; a typo'd callee is a hard
 failure), lint clean. `cmake --build … --target check` runs it; the pre-push hook
 (`git config core.hooksPath tools/hooks`) makes it unavoidable. Improvements are locked with
 `tools/ratchet.py --update-baseline` in the same commit.
