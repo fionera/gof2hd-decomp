@@ -2240,6 +2240,14 @@
    "usize": 1164
   },
   {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 13.9,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 39284
+  },
+  {
    "name": "_ZN7StarMap6renderEv",
    "pct": 14.0,
    "byte": false,
@@ -2262,14 +2270,6 @@
    "linked": false,
    "osize": 648,
    "usize": 680
-  },
-  {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 14.2,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 39284
   },
   {
    "name": "_ZN12WantedWindow4drawEv",
@@ -2520,20 +2520,20 @@
    "usize": 940
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 16.8,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6232
-  },
-  {
    "name": "_ZN9RocketGun8setRadarEP5Radar",
    "pct": 16.8,
    "byte": false,
    "linked": false,
    "osize": 608,
    "usize": 568
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 16.9,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6232
   },
   {
    "name": "_ZN3HudC1Ev",
@@ -6048,14 +6048,6 @@
    "usize": 580
   },
   {
-   "name": "_ZN10MiningGame8render2DEv",
-   "pct": 35.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1456,
-   "usize": 1428
-  },
-  {
    "name": "_ZN21ParticleSystemManager15systemSetMatrixEiPKN11AbyssEngine6AEMath6MatrixE",
    "pct": 35.7,
    "byte": false,
@@ -6166,6 +6158,14 @@
    "linked": false,
    "osize": 412,
    "usize": 468
+  },
+  {
+   "name": "_ZN10MiningGame8render2DEv",
+   "pct": 36.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1456,
+   "usize": 1428
   },
   {
    "name": "_ZN12WantedWindow4initEv",
@@ -8784,20 +8784,20 @@
    "usize": 608
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",

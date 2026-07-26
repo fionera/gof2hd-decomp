@@ -1,5 +1,7 @@
 #include "game/menu/MiningGame.h"
 
+#include <new>
+
 #include "engine/render/PaintCanvas.h"
 #include "game/core/String.h"
 #include "game/ui/Hud.h"
@@ -54,8 +56,6 @@ Ship *MiningGame_Status_getShip_render(Status * status);
 static inline int MiningGame_Ship_getFreeSpace(Ship *ship) { return ship->getFreeSpace(); }
 
 int MiningGame_Status_getCurrentCampaignMission_render(Status * status);
-
-String *MiningGame_GameText_getText(GameText *gameText, int id);
 
 static inline float &F(Layout *p, unsigned off) { return *(float *) ((char *) p + off); }
 
@@ -507,8 +507,8 @@ void MiningGame::render2D() {
         }
         canvas->SetColor((unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) 0xff,
                          (unsigned char) (uint8_t) promptAlpha);
-        String *prompt = MiningGame_GameText_getText(Globals::gameText, 0x268);
-        amountText->Set((prompt)->data);
+        String *prompt = Globals::gameText->getText(0x268);
+        new (amountText) String(*prompt, false);
         int promptWidth = canvas->GetTextWidth((unsigned int) (long) font, *amountText);
         canvas->DrawString((unsigned int) (long) font, *amountText,
                            Globals::w / 2 - promptWidth / 2,

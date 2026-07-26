@@ -299,7 +299,6 @@
   "_Z27ChoiceWindow_OnTouchEnd_oteii",
   "_Z27HangarWindow_OnTouchEnd_oteP12HangarWindowii",
   "_Z27HangarWindow_initialize_otev",
-  "_Z27MiningGame_GameText_getTextP8GameTexti",
   "_Z27Mission_getTargetStation_oiv",
   "_Z27StatusWindow_OnTouchEnd_oteiii",
   "_Z27Status_getPlayingTime_lo_oiv",
