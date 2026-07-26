@@ -36,7 +36,7 @@ Waypoint::Waypoint(int x, int y, int z, Route *route)
     this->posZ = (float) z;
     this->state = 0;
     this->field_0x72 = 1;
-    this->hasCargo = 0;
+    reinterpret_cast<uint8_t &>(this->hasCargo) = 0;
 }
 
 Waypoint::~Waypoint() {

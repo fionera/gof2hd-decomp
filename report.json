@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 77.84,
   "byte_exact": 1161,
-  "linked_exact": 2619,
-  "fuzzy_perfect": 2619,
+  "linked_exact": 2621,
+  "fuzzy_perfect": 2621,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -14870,22 +14870,6 @@
    "linked": false,
    "osize": 72,
    "usize": 72
-  },
-  {
-   "name": "_ZN8WaypointC1EiiiP5Route",
-   "pct": 96.4,
-   "byte": false,
-   "linked": false,
-   "osize": 208,
-   "usize": 208
-  },
-  {
-   "name": "_ZN8WaypointC2EiiiP5Route",
-   "pct": 96.4,
-   "byte": false,
-   "linked": false,
-   "osize": 208,
-   "usize": 208
   },
   {
    "name": "_Z19ArrayReleaseClassesIP14BoundingVolumeEvR5ArrayIT_E",
@@ -32958,6 +32942,22 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN8WaypointC1EiiiP5Route",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 208,
+   "usize": 208
+  },
+  {
+   "name": "_ZN8WaypointC2EiiiP5Route",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 208,
+   "usize": 208
   },
   {
    "name": "_ZN8WaypointD0Ev",
