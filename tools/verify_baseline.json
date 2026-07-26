@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 35,
-  "avg_match": 77.93,
+  "avg_match": 77.94,
   "compared": 4523
  },
  "imports": [
@@ -128,8 +128,6 @@
   "_Z19Station_getTecLevelPv",
   "_Z19Station_hasShip_oteP7Station",
   "_Z19Station_setShips_oiP7Stationi",
-  "_Z19TouchButton_ctorImgz",
-  "_Z19TouchButton_ctorStrz",
   "_Z19TouchButton_ctorTabPvS_iiic",
   "_Z19VectorSignedToFloatii",
   "_Z19_mtw_FModSound_playPviS_f",
@@ -158,7 +156,6 @@
   "_Z20Ship_setEquipment_oiP4Itemi",
   "_Z20SpaceLounge_draw_r2dP10ModStation",
   "_Z20Status_changeCreditsPv",
-  "_Z20TouchButton_ctorImg2z",
   "_Z20TouchButton_getX_oteP11TouchButton",
   "_Z20TouchButton_getY_oteP11TouchButton",
   "_Z20VectorRotateToTargetRN11AbyssEngine6AEMath6VectorERKS1_",

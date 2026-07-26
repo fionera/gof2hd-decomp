@@ -12,12 +12,6 @@
 
 void TouchButton_footerAnim(...);
 
-void TouchButton_ctorStr(...);
-
-void TouchButton_ctorImg(...);
-
-void TouchButton_ctorImg2(...);
-
 void Globals_drawLines(...);
 
 uint8_t Layout::isFading() {
@@ -1023,11 +1017,6 @@ String Layout::tagString(String in) {
 
 
 
-static int *g_rlBackText = nullptr;
-
-
-static int *g_rlMenuY = nullptr;
-
 void Layout::reload() {
     this->bgPatternImage = -1;
     this->headerPatternImage = -1;
@@ -1087,33 +1076,31 @@ void Layout::reload() {
     canvas->Image2DCreate(static_cast<unsigned short>(0x50c), reinterpret_cast<unsigned int &>(this->field_0x3a0));
     canvas->Image2DCreate(static_cast<unsigned short>(0x50d), reinterpret_cast<unsigned int &>(this->field_0x39c));
 
-    TouchButton *bBack = (TouchButton *) ::operator new(sizeof(TouchButton));
-    String *txt = Globals::gameText->getText(*g_rlBackText);
-    int sh = Globals::h;
-    TouchButton_ctorStr(bBack, txt, 2, this->buttonInsetX, sh - 3, '!');
+    TouchButton *bBack = new TouchButton(
+        *Globals::gameText->getText(0xaa), 2, this->buttonInsetX, Globals::h - 3, 0x21);
     this->backButton = bBack;
     this->backButtonWidth = bBack->getWidth();
 
     unsigned img535 = 0xffffffff;
     (Globals::Canvas)->Image2DCreate(0x535, img535);
-    TouchButton *b2 = (TouchButton *) ::operator new(sizeof(TouchButton));
+    TouchButton *b2;
     if (img535 == 0xffffffff) {
-        String *t = Globals::gameText->getText(*g_rlBackText);
-        TouchButton_ctorStr(b2, t, 2, this->buttonInsetX,
-                            Globals::h - this->footerButtonOffset, '!');
+        b2 = new TouchButton(*Globals::gameText->getText(0xab), 2, this->buttonInsetX,
+                             Globals::h - this->footerButtonOffset, 0x21);
     } else {
-        TouchButton_ctorImg(b2, img535, 2, this->buttonInsetX,
-                            Globals::h - this->footerButtonOffset, '!');
+        b2 = new TouchButton(img535, 2, this->buttonInsetX,
+                             Globals::h - this->footerButtonOffset, 0x21);
     }
     this->secondaryButton = b2;
 
     unsigned img471 = 0xffffffff;
     (Globals::Canvas)->Image2DCreate(0x471, img471);
-    TouchButton *bHelp = (TouchButton *) ::operator new(sizeof(TouchButton));
-    TouchButton_ctorImg2(bHelp, img471, 1, *g_rlMenuY, 0, this->field_0x3c, 0x12, 0x04);
+    TouchButton *bHelp =
+        new TouchButton(img471, 1, Globals::w, 0, this->field_0x3c, 0x12, 0x04);
     this->helpButton = bHelp;
 
-    int th = (Globals::Canvas)->GetTextHeight(0);
+    int th = (Globals::Canvas)->GetTextHeight(
+        static_cast<unsigned int>(reinterpret_cast<unsigned long>(Globals::font)));
     this->choiceWindowOpen = 0;
     this->choiceWindow = nullptr;
     this->tipLines = nullptr;
@@ -1124,10 +1111,12 @@ void Layout::reload() {
     this->helpButtonEnabled = 0;
     this->field_0x3d8 = 0;
     this->fading = 0;
+    this->fadeOut = 0;
     this->field_0x3dc = 0;
     this->fadeColor = 0;
     this->fadeProgress = 0;
     this->rewardMessageActive = 0;
+    this->rewardMessageFlag = 0;
     reinterpret_cast<int &>(reinterpret_cast<uint8_t *>(&this->fadeProgress)[5]) = 0;
     reinterpret_cast<int &>(reinterpret_cast<uint8_t *>(&this->fadeProgress)[1]) = 0;
 }

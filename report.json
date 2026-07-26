@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 77.93,
+  "avg_match": 77.94,
   "byte_exact": 1161,
   "linked_exact": 2628,
   "fuzzy_perfect": 2628,
@@ -7640,14 +7640,6 @@
    "usize": 696
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 46.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine13SetPostEffectEjb",
    "pct": 46.8,
    "byte": false,
@@ -8664,14 +8656,6 @@
    "usize": 180
   },
   {
-   "name": "_ZN6Layout6reloadEv",
-   "pct": 52.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1064,
-   "usize": 896
-  },
-  {
    "name": "_ZN8FileRead15loadShipsBinaryEv",
    "pct": 52.7,
    "byte": false,
@@ -8710,6 +8694,14 @@
    "linked": false,
    "osize": 104,
    "usize": 128
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -10198,6 +10190,14 @@
    "linked": false,
    "osize": 52,
    "usize": 48
+  },
+  {
+   "name": "_ZN6Layout6reloadEv",
+   "pct": 61.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1064,
+   "usize": 952
   },
   {
    "name": "deflateSetHeader",
