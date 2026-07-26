@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.03,
   "byte_exact": 1164,
-  "linked_exact": 2653,
-  "fuzzy_perfect": 2653,
+  "linked_exact": 2654,
+  "fuzzy_perfect": 2654,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12758,14 +12758,6 @@
    "linked": false,
    "osize": 264,
    "usize": 252
-  },
-  {
-   "name": "_ZN3Gun9setOffsetEPN11AbyssEngine6AEMath6VectorE",
-   "pct": 81.6,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 68
   },
   {
    "name": "_ZN6StatusC1Ev",
@@ -25934,6 +25926,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN3Gun9setOffsetEPN11AbyssEngine6AEMath6VectorE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 68,
+   "usize": 68
   },
   {
    "name": "_ZN3GunD1Ev",

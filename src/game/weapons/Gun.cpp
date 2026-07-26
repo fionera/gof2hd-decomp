@@ -380,13 +380,14 @@ void Gun::setEnemy(Player *enemy) {
     this->enemies = reinterpret_cast<Array<Player *> *>(enemy);
 }
 
-static const float kZOffset = 0.1f;
+static const float kZOffset = 100.0f;
 
 void Gun::setOffset(Vector *v) {
+    float z = v->z;
     Vector local;
     local.x = v->x;
     local.y = v->y;
-    local.z = v->z + kZOffset;
+    local.z = z + kZOffset;
     this->offset = local;
 }
 
