@@ -30,8 +30,9 @@ Galaxy::~Galaxy() {
 }
 
 void Galaxy::reset() {
+    uint8_t *visited = this->visited;
     for (int i = 0; i < kStationCount; ++i)
-        this->visited[i] = 0;
+        visited[i] = 0;
 }
 
 int Galaxy::distancePercent(int x1, int y1, int x2, int y2) {

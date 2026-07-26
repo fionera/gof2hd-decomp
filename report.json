@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4559,
   "compared": 4523,
-  "avg_match": 78.18,
-  "byte_exact": 1173,
-  "linked_exact": 2688,
-  "fuzzy_perfect": 2688,
+  "avg_match": 78.19,
+  "byte_exact": 1174,
+  "linked_exact": 2689,
+  "fuzzy_perfect": 2689,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -10998,14 +10998,6 @@
    "linked": false,
    "osize": 152,
    "usize": 152
-  },
-  {
-   "name": "_ZN6Galaxy5resetEv",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 18,
-   "usize": 18
   },
   {
    "name": "_ZN6Player4healEf",
@@ -28958,6 +28950,14 @@
    "linked": true,
    "osize": 20,
    "usize": 20
+  },
+  {
+   "name": "_ZN6Galaxy5resetEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 18,
+   "usize": 18
   },
   {
    "name": "_ZN6Galaxy9getSystemEi",
