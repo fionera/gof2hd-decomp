@@ -1232,6 +1232,7 @@ void MenuTouchWindow::loadPreviewRecords() {
     this->scrollOffset = 0;
 
     this->dragLastX = 0;
+    memset(this->pad_0x210, 0, sizeof(this->pad_0x210));
     this->dragVelocity = 0;
     this->inertiaDecay = 0;
     this->inertiaVel = 0.0f;
