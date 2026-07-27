@@ -267,9 +267,11 @@ int Layout::OnTouchMove(int x, int y) {
         this->choiceWindow->OnTouchMove(x, y);
         return 0;
     }
-    TouchButton *btn = this->backButton->isVisible() == 0
-                           ? this->secondaryButton
-                           : this->backButton;
+    TouchButton *btn;
+    if (this->backButton->isVisible() != 0)
+        btn = this->backButton;
+    else
+        btn = this->secondaryButton;
     return static_cast<int>(btn->OnTouchMove(x, y));
 }
 
@@ -278,9 +280,11 @@ int Layout::OnTouchEnd(int x, int y) {
         this->helpPressedFlag = this->helpButton->OnTouchEnd(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0)
         return this->choiceWindow->OnTouchEnd(x, y) == 0;
-    TouchButton *btn = this->backButton->isVisible() == 0
-                           ? this->secondaryButton
-                           : this->backButton;
+    TouchButton *btn;
+    if (this->backButton->isVisible() != 0)
+        btn = this->backButton;
+    else
+        btn = this->secondaryButton;
     return static_cast<int>(btn->OnTouchEnd(x, y));
 }
 
@@ -953,7 +957,7 @@ void Layout::drawTip() {
 }
 
 void Layout::drawHeader(String title) {
-    this->drawHeader(title, true);
+    this->drawHeader(String(title, false), true);
 }
 
 void Layout::drawHelpWindow() {
@@ -1299,7 +1303,7 @@ void Layout::drawMissionRewardMessage(bool transition) {
 }
 
 void Layout::drawWindow(String title, int x, int y, int w, int h) {
-    this->drawWindow(title, x, y, w, h, true);
+    this->drawWindow(String(title, false), x, y, w, h, true);
 }
 
 void Layout::drawMask() {

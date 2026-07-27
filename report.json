@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.52,
+  "avg_match": 78.53,
   "byte_exact": 1182,
-  "linked_exact": 2739,
-  "fuzzy_perfect": 2739,
+  "linked_exact": 2741,
+  "fuzzy_perfect": 2741,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1408,20 +1408,20 @@
    "usize": 282
   },
   {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
+  },
+  {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
    "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 1168,
    "usize": 864
-  },
-  {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -12912,14 +12912,6 @@
    "usize": 58
   },
   {
-   "name": "_ZN6Layout10drawWindowEN11AbyssEngine6StringEiiii",
-   "pct": 87.2,
-   "byte": false,
-   "linked": false,
-   "osize": 104,
-   "usize": 100
-  },
-  {
    "name": "_ZN7MissionC1EiN11AbyssEngine6StringEPiiiii",
    "pct": 87.2,
    "byte": false,
@@ -13302,14 +13294,6 @@
    "linked": false,
    "osize": 80,
    "usize": 80
-  },
-  {
-   "name": "_ZN6Layout10drawHeaderEN11AbyssEngine6StringE",
-   "pct": 91.2,
-   "byte": false,
-   "linked": false,
-   "osize": 88,
-   "usize": 84
   },
   {
    "name": "_ZN11AbyssEngine17BumpShaderRefract14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
@@ -28928,12 +28912,28 @@
    "usize": 16
   },
   {
+   "name": "_ZN6Layout10drawHeaderEN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 88,
+   "usize": 88
+  },
+  {
    "name": "_ZN6Layout10drawHeaderEv",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 96,
    "usize": 96
+  },
+  {
+   "name": "_ZN6Layout10drawWindowEN11AbyssEngine6StringEiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 104,
+   "usize": 104
   },
   {
    "name": "_ZN6Layout11helpPressedEv",
