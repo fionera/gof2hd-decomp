@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.5,
+  "avg_match": 78.52,
   "byte_exact": 1182,
-  "linked_exact": 2738,
-  "fuzzy_perfect": 2738,
+  "linked_exact": 2739,
+  "fuzzy_perfect": 2739,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -992,6 +992,14 @@
    "usize": 228
   },
   {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 3.4,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
+  },
+  {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 3.4,
    "byte": false,
@@ -1096,6 +1104,14 @@
    "usize": 296
   },
   {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 4.6,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
+  },
+  {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
    "pct": 4.7,
    "byte": false,
@@ -1110,14 +1126,6 @@
    "linked": false,
    "osize": 6820,
    "usize": 612
-  },
-  {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 4.7,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
   },
   {
    "name": "_ZN7StationC1EN11AbyssEngine6StringEiiii",
@@ -1142,14 +1150,6 @@
    "linked": false,
    "osize": 6280,
    "usize": 2808
-  },
-  {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 4.9,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
   },
   {
    "name": "_tr_align",
@@ -1832,14 +1832,6 @@
    "usize": 192
   },
   {
-   "name": "inflateBack",
-   "pct": 10.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2568,
-   "usize": 2752
-  },
-  {
    "name": "_ZN11AbyssEngine18ApplicationManager27SetCurrentApplicationModuleEj",
    "pct": 11.0,
    "byte": false,
@@ -1862,6 +1854,14 @@
    "linked": false,
    "osize": 552,
    "usize": 176
+  },
+  {
+   "name": "inflateBack",
+   "pct": 11.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2568,
+   "usize": 2752
   },
   {
    "name": "_ZN7Globals18getDialogueSoundIdEiP5Agent",
@@ -2366,14 +2366,6 @@
    "linked": false,
    "osize": 32,
    "usize": 2
-  },
-  {
-   "name": "_ZN12HangarWindow27refreshCurrentContentHeightEv",
-   "pct": 15.4,
-   "byte": false,
-   "linked": false,
-   "osize": 48,
-   "usize": 16
   },
   {
    "name": "_ZN8GameText11setLanguageEsi",
@@ -8560,20 +8552,20 @@
    "usize": 316
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -13208,14 +13200,6 @@
    "usize": 68
   },
   {
-   "name": "_ZN12HangarWindow9mountItemEP4Item",
-   "pct": 90.5,
-   "byte": false,
-   "linked": false,
-   "osize": 384,
-   "usize": 384
-  },
-  {
    "name": "_ZN6Player13resetGunDelayEi",
    "pct": 90.5,
    "byte": false,
@@ -13744,22 +13728,6 @@
    "usize": 436
   },
   {
-   "name": "_ZN12HangarWindowD1Ev",
-   "pct": 95.1,
-   "byte": false,
-   "linked": false,
-   "osize": 136,
-   "usize": 132
-  },
-  {
-   "name": "_ZN12HangarWindowD2Ev",
-   "pct": 95.1,
-   "byte": false,
-   "linked": false,
-   "osize": 136,
-   "usize": 132
-  },
-  {
    "name": "_ZN9FModSound4initEv",
    "pct": 95.5,
    "byte": false,
@@ -14206,6 +14174,30 @@
    "linked": false,
    "osize": 106,
    "usize": 102
+  },
+  {
+   "name": "_ZN12HangarWindow9mountItemEP4Item",
+   "pct": 99.0,
+   "byte": false,
+   "linked": false,
+   "osize": 384,
+   "usize": 384
+  },
+  {
+   "name": "_ZN12HangarWindowD1Ev",
+   "pct": 99.0,
+   "byte": false,
+   "linked": false,
+   "osize": 136,
+   "usize": 132
+  },
+  {
+   "name": "_ZN12HangarWindowD2Ev",
+   "pct": 99.0,
+   "byte": false,
+   "linked": false,
+   "osize": 136,
+   "usize": 132
   },
   {
    "name": "_ZN11AbyssEngine6String13ReplaceStringES0_S0_",
@@ -22691,6 +22683,14 @@
    "name": "_ZN12HangarWindow25getRelativeScrollStartPosEv",
    "pct": 100.0,
    "byte": true,
+   "linked": true,
+   "osize": 48,
+   "usize": 48
+  },
+  {
+   "name": "_ZN12HangarWindow27refreshCurrentContentHeightEv",
+   "pct": 100.0,
+   "byte": false,
    "linked": true,
    "osize": 48,
    "usize": 48

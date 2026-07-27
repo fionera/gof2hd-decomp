@@ -119,7 +119,7 @@ void HangarWindow::refreshCurrentContentHeight() {
     if (items != 0) {
         int n = (int) items->size();
 
-        int rowH = (*(int *) ((char *) (*g_hw_globals) + (0x70)));
+        int rowH = reinterpret_cast<int *>(Globals::layout)[0x70 / 4];
         this->currentContentHeight = this->field_0x100.d * (n - 1) + n * rowH;
     }
 }
@@ -176,8 +176,8 @@ HangarWindow::~HangarWindow() {
         ArrayReleaseClasses(*this->buttons);
         delete this->buttons;
     }
-    this->active = 0;
     this->buttons = nullptr;
+    this->active = 0;
     delete[] (uint32_t *) this->tabIcons;
     this->tabIcons = nullptr;
 }
@@ -1848,10 +1848,11 @@ void HangarWindow::mountItem(Item *item) {
     Globals::status->getShip()->setCargo(Item::extractItems(this->itemList, true));
     this->hangarList->initShipTab(Globals::status->getShip());
 
+    HangarList *hangarList = this->hangarList;
     ItemArray *items = Item::mixItems(Globals::status->getShip()->getCargo(),
                                       Globals::status->getStation()->getItems());
-    this->hangarList->initShopTab(items, Globals::status->getStation()->getShips());
-    this->hangarList->setCurrentTab(0, false);
+    hangarList->initShopTab(items, Globals::status->getStation()->getShips());
+    hangarList->setCurrentTab(0, true);
 
     refreshCurrentContentHeight();
     this->scrollOffset = this->savedScrollOffset;
