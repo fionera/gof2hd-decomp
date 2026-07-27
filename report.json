@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.49,
+  "avg_match": 78.5,
   "byte_exact": 1182,
-  "linked_exact": 2737,
-  "fuzzy_perfect": 2737,
+  "linked_exact": 2738,
+  "fuzzy_perfect": 2738,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -10846,14 +10846,6 @@
    "linked": false,
    "osize": 84,
    "usize": 60
-  },
-  {
-   "name": "_ZN15PlayerStaticFar6renderEv",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 6
   },
   {
    "name": "_ZN5Agent7getNameEv",
@@ -24590,6 +24582,14 @@
    "linked": true,
    "osize": 30,
    "usize": 30
+  },
+  {
+   "name": "_ZN15PlayerStaticFar6renderEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
   },
   {
    "name": "_ZN15PlayerStaticFarD0Ev",

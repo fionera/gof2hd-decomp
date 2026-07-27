@@ -33,7 +33,7 @@ Vector PlayerStaticFar::getProjectionVector(const Vector &value) {
 }
 
 void PlayerStaticFar::render() {
-    this->geometry->render();
+    this->KIPlayer::render();
 }
 
 Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value) {
