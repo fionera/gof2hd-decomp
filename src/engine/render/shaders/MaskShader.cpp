@@ -58,7 +58,7 @@ namespace AbyssEngine {
         if (this->a_color >= 0)
             glEnableVertexAttribArray(this->a_color);
 
-        char *texBase = (char *) engine->appManager;
+        char *texBase = *(char **) engine->appManager;
         int *tex = *(int **) (texBase + 0x20);
         if (tex != 0)
             ((::Engine *) engine)->SetTextureSlot(tex[1], 1);

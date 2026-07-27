@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.46,
   "byte_exact": 1182,
-  "linked_exact": 2730,
-  "fuzzy_perfect": 2730,
+  "linked_exact": 2731,
+  "fuzzy_perfect": 2731,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13464,14 +13464,6 @@
    "usize": 290
   },
   {
-   "name": "_ZN11AbyssEngine10MaskShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
-   "pct": 92.1,
-   "byte": false,
-   "linked": false,
-   "osize": 290,
-   "usize": 288
-  },
-  {
    "name": "_ZN10HangarListD1Ev",
    "pct": 92.3,
    "byte": false,
@@ -17174,6 +17166,14 @@
    "linked": true,
    "osize": 42,
    "usize": 42
+  },
+  {
+   "name": "_ZN11AbyssEngine10MaskShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 290,
+   "usize": 290
   },
   {
    "name": "_ZN11AbyssEngine10MaskShader4InitEPNS_6EngineE",
