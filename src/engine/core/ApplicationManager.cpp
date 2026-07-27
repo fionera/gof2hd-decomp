@@ -926,7 +926,7 @@ String ApplicationManager::GetApplicationVersionString() {
 void ApplicationManager::ConfigReadFile(String name) {
     ConfigReader *reader = this->configReader;
     if (reader != 0) {
-        reader->ParseFile(name);
+        reader->ParseFile(String(name, false));
     }
 }
 
@@ -935,7 +935,7 @@ void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigToke
     // lint: void_ptr (exported ConfigRegisterTokenReadFunction opaque context param, baked ABI)
     ConfigReader *reader = this->configReader;
     if (reader != 0) {
-        reader->RegisterTokenReadFunction(name, read, context);
+        reader->RegisterTokenReadFunction(String(name, false), read, context);
     }
 }
 
