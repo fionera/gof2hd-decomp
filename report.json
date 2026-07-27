@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.66,
+  "avg_match": 78.68,
   "byte_exact": 1182,
-  "linked_exact": 2750,
-  "fuzzy_perfect": 2750,
+  "linked_exact": 2751,
+  "fuzzy_perfect": 2751,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -222,14 +222,6 @@
    "linked": false,
    "osize": 44,
    "usize": 56
-  },
-  {
-   "name": "_ZN11AbyssEngine16ShaderBaseStruct13GetShaderNameEv",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 36
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager21EnablePerformanceTestEi",
@@ -1384,20 +1376,20 @@
    "usize": 282
   },
   {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
-  },
-  {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
    "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 1168,
    "usize": 864
+  },
+  {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -2960,6 +2952,14 @@
    "usize": 1180
   },
   {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 22.0,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6156
+  },
+  {
    "name": "_ZN5Level15createAsteroidsEv",
    "pct": 22.0,
    "byte": false,
@@ -2974,14 +2974,6 @@
    "linked": false,
    "osize": 1908,
    "usize": 1892
-  },
-  {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 22.1,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6156
   },
   {
    "name": "_ZN11AbyssEngine11BloomShaderD1Ev",
@@ -8520,14 +8512,6 @@
    "usize": 128
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
    "pct": 53.3,
    "byte": false,
@@ -8550,6 +8534,14 @@
    "linked": false,
    "osize": 36,
    "usize": 40
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -12352,6 +12344,14 @@
    "usize": 52
   },
   {
+   "name": "_ZN7Globals4initEPN11AbyssEngine18ApplicationManagerEPNS0_6EngineE",
+   "pct": 80.1,
+   "byte": false,
+   "linked": false,
+   "osize": 800,
+   "usize": 784
+  },
+  {
    "name": "_ZN13AutoPilotList4drawEv",
    "pct": 80.2,
    "byte": false,
@@ -12366,14 +12366,6 @@
    "linked": false,
    "osize": 106,
    "usize": 98
-  },
-  {
-   "name": "_ZN7Globals4initEPN11AbyssEngine18ApplicationManagerEPNS0_6EngineE",
-   "pct": 80.5,
-   "byte": false,
-   "linked": false,
-   "osize": 800,
-   "usize": 784
   },
   {
    "name": "_Z14ArrayAddCachedIjEvT_R5ArrayIS0_E",
@@ -18934,6 +18926,14 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN11AbyssEngine16ShaderBaseStruct13GetShaderNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
   },
   {
    "name": "_ZN11AbyssEngine16ShaderBaseStruct6UpdateEv",

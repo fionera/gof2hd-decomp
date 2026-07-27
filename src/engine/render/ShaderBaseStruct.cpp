@@ -20,9 +20,7 @@ namespace AbyssEngine {
     }
 
     String ShaderBaseStruct::GetShaderName() {
-        String copy;
-        copy = this->name;
-        return copy;
+        return String(this->name, false);
     }
 
     void ShaderBaseStruct::UseShader(bool /*useExtra*/) {
