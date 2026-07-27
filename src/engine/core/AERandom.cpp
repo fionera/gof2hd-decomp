@@ -37,7 +37,7 @@ namespace AbyssEngine {
     }
 
     int AERandom::nextInt() {
-        return static_cast<int>(next(31));
+        return static_cast<int>(next(32));
     }
 
     int AERandom::nextInt(int bound) {
