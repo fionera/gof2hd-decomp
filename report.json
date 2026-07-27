@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.46,
   "byte_exact": 1182,
-  "linked_exact": 2728,
-  "fuzzy_perfect": 2728,
+  "linked_exact": 2729,
+  "fuzzy_perfect": 2729,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1857,7 +1857,7 @@
   },
   {
    "name": "inflateBack",
-   "pct": 11.1,
+   "pct": 11.2,
    "byte": false,
    "linked": false,
    "osize": 2568,
@@ -2441,7 +2441,7 @@
   },
   {
    "name": "_ZN5Level8renderBGEi",
-   "pct": 16.5,
+   "pct": 16.3,
    "byte": false,
    "linked": false,
    "osize": 1320,
@@ -8568,6 +8568,14 @@
    "usize": 128
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
    "pct": 53.3,
    "byte": false,
@@ -8590,14 +8598,6 @@
    "linked": false,
    "osize": 36,
    "usize": 40
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -12438,14 +12438,6 @@
    "linked": false,
    "osize": 52,
    "usize": 52
-  },
-  {
-   "name": "_ZN11AbyssEngine18TextureLightShader4InitEPNS_6EngineE",
-   "pct": 80.1,
-   "byte": false,
-   "linked": false,
-   "osize": 392,
-   "usize": 380
   },
   {
    "name": "_ZN13AutoPilotList4drawEv",
@@ -19702,6 +19694,14 @@
    "linked": true,
    "osize": 36,
    "usize": 36
+  },
+  {
+   "name": "_ZN11AbyssEngine18TextureLightShader4InitEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 392,
+   "usize": 392
   },
   {
    "name": "_ZN11AbyssEngine18TextureLightShaderD0Ev",

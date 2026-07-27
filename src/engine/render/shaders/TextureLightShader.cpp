@@ -20,7 +20,7 @@ namespace AbyssEngine {
         this->aPosition = glGetAttribLocation(this->program, "a0");
         this->aTexCoord = glGetAttribLocation(this->program, "a1");
 
-        this->aNormal = glGetUniformLocation(this->program, "u2");
+        this->aNormal = glGetAttribLocation(this->program, "a2");
         this->uMvpMatrix = glGetUniformLocation(this->program, "u3");
         this->uModelViewMatrix = glGetUniformLocation(this->program, "u4");
         this->uNormalMatrix = glGetUniformLocation(this->program, "u5");
