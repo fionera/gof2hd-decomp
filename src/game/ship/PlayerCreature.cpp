@@ -211,6 +211,7 @@ int PlayerCreature::outerCollide(float /*x*/, float /*y*/, float /*z*/) {
 void PlayerCreature::reset() {
     KIPlayer::reset();
     this->state = 0;
+    this->setActive(true);
     this->endurance = this->maxEndurance;
     this->lastHitpoints = this->player->getHitpoints();
     this->rageMatrix = AbyssEngine::AEMath::Matrix();
