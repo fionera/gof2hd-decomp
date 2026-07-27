@@ -1852,7 +1852,7 @@ void HangarWindow::mountItem(Item *item) {
     ItemArray *items = Item::mixItems(Globals::status->getShip()->getCargo(),
                                       Globals::status->getStation()->getItems());
     hangarList->initShopTab(items, Globals::status->getStation()->getShips());
-    hangarList->setCurrentTab(0, true);
+    this->hangarList->setCurrentTab(0, true);
 
     refreshCurrentContentHeight();
     this->scrollOffset = this->savedScrollOffset;
