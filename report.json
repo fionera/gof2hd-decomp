@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.48,
+  "avg_match": 78.49,
   "byte_exact": 1182,
-  "linked_exact": 2734,
-  "fuzzy_perfect": 2734,
+  "linked_exact": 2736,
+  "fuzzy_perfect": 2736,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12832,22 +12832,6 @@
    "usize": 120
   },
   {
-   "name": "_ZN12PlayerStaticC1EiP10AEGeometryfff",
-   "pct": 85.2,
-   "byte": false,
-   "linked": false,
-   "osize": 160,
-   "usize": 164
-  },
-  {
-   "name": "_ZN12PlayerStaticC2EiP10AEGeometryfff",
-   "pct": 85.2,
-   "byte": false,
-   "linked": false,
-   "osize": 160,
-   "usize": 164
-  },
-  {
    "name": "_ZN10AEGeometry12setDirectionERKN11AbyssEngine6AEMath6VectorES4_",
    "pct": 85.6,
    "byte": false,
@@ -22894,6 +22878,22 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN12PlayerStaticC1EiP10AEGeometryfff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 160,
+   "usize": 160
+  },
+  {
+   "name": "_ZN12PlayerStaticC2EiP10AEGeometryfff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 160,
+   "usize": 160
   },
   {
    "name": "_ZN12PlayerStaticD0Ev",
