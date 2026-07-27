@@ -426,8 +426,16 @@ namespace AbyssEngine {
         }
     }
 
-    void Transform::SetAnimationState(AnimationMode, void *) { // lint: void_ptr method parameter baked into mangled symbol
+    void Transform::SetAnimationState(AnimationMode mode, void *) { // lint: void_ptr method parameter baked into mangled symbol
         // lint: void_ptr method parameter baked into mangled symbol
+        if (mode == AnimationMode_0) {
+            this->animating = false;
+        } else if (mode == static_cast<AnimationMode>(3)) {
+            this->animating = true;
+            this->currentTime = this->rangeStart;
+            return;
+        }
+        this->flags = mode;
     }
 
     Transform::Transform() {

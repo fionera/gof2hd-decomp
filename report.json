@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.65,
+  "avg_match": 78.66,
   "byte_exact": 1182,
   "linked_exact": 2749,
   "fuzzy_perfect": 2749,
@@ -1384,20 +1384,20 @@
    "usize": 282
   },
   {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
+  },
+  {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
    "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 1168,
    "usize": 864
-  },
-  {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -2326,14 +2326,6 @@
    "linked": false,
    "osize": 538,
    "usize": 496
-  },
-  {
-   "name": "_ZN11AbyssEngine9Transform17SetAnimationStateENS_13AnimationModeEPv",
-   "pct": 15.4,
-   "byte": false,
-   "linked": false,
-   "osize": 32,
-   "usize": 2
   },
   {
    "name": "_ZN8GameText11setLanguageEsi",
@@ -7982,6 +7974,14 @@
    "linked": false,
    "osize": 36,
    "usize": 14
+  },
+  {
+   "name": "_ZN11AbyssEngine9Transform17SetAnimationStateENS_13AnimationModeEPv",
+   "pct": 50.0,
+   "byte": false,
+   "linked": false,
+   "osize": 32,
+   "usize": 32
   },
   {
    "name": "_ZN11ModMainMenu10OnKeyPressExx",
