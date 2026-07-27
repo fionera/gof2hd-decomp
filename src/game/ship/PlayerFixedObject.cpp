@@ -65,7 +65,7 @@ String PlayerFixedObject::getName() {
 
 void *PlayerFixedObject::setName(String name) { // lint: void_ptr (exported method return type)
     // lint: void_ptr (exported method return type)
-    return this->name = name;
+    return &(this->name = name);
 }
 
 void PlayerFixedObject::setMoving(bool v) {

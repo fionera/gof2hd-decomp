@@ -1072,6 +1072,14 @@
    "usize": 296
   },
   {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 4.6,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
+  },
+  {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
    "pct": 4.7,
    "byte": false,
@@ -1304,14 +1312,6 @@
    "usize": 1480
   },
   {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 6.6,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
-  },
-  {
    "name": "_ZN11AbyssEngine6String7CompareERKS0_",
    "pct": 6.6,
    "byte": false,
@@ -1376,20 +1376,20 @@
    "usize": 282
   },
   {
+   "name": "_ZN14PlayerGasCloud6updateEi",
+   "pct": 7.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1124,
+   "usize": 1168
+  },
+  {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
    "pct": 7.4,
    "byte": false,
    "linked": false,
    "osize": 1168,
    "usize": 864
-  },
-  {
-   "name": "_ZN14PlayerGasCloud6updateEi",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1124,
-   "usize": 1168
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -2385,7 +2385,7 @@
   },
   {
    "name": "_ZN5Level8renderBGEi",
-   "pct": 16.5,
+   "pct": 16.3,
    "byte": false,
    "linked": false,
    "osize": 1320,
@@ -2952,14 +2952,6 @@
    "usize": 1180
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 22.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 6156
-  },
-  {
    "name": "_ZN5Level15createAsteroidsEv",
    "pct": 22.0,
    "byte": false,
@@ -2974,6 +2966,14 @@
    "linked": false,
    "osize": 1908,
    "usize": 1892
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 22.1,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 6156
   },
   {
    "name": "_ZN11AbyssEngine11BloomShaderD1Ev",
@@ -4070,6 +4070,14 @@
    "linked": false,
    "osize": 1228,
    "usize": 1136
+  },
+  {
+   "name": "_ZN17PlayerFixedObject7setNameEN11AbyssEngine6StringE",
+   "pct": 28.6,
+   "byte": false,
+   "linked": false,
+   "osize": 8,
+   "usize": 14
   },
   {
    "name": "_ZN20FileInterfaceAndroid4ReadEjPv",
@@ -8008,14 +8016,6 @@
    "usize": 38
   },
   {
-   "name": "_ZN17PlayerFixedObject7setNameEN11AbyssEngine6StringE",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 8,
-   "usize": 20
-  },
-  {
    "name": "_ZN18TargetFollowCamera11setPositionERKN11AbyssEngine6AEMath6VectorE",
    "pct": 50.0,
    "byte": false,
@@ -8512,6 +8512,14 @@
    "usize": 128
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
    "pct": 53.3,
    "byte": false,
@@ -8534,14 +8542,6 @@
    "linked": false,
    "osize": 36,
    "usize": 40
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -12344,14 +12344,6 @@
    "usize": 52
   },
   {
-   "name": "_ZN7Globals4initEPN11AbyssEngine18ApplicationManagerEPNS0_6EngineE",
-   "pct": 80.1,
-   "byte": false,
-   "linked": false,
-   "osize": 800,
-   "usize": 784
-  },
-  {
    "name": "_ZN13AutoPilotList4drawEv",
    "pct": 80.2,
    "byte": false,
@@ -12366,6 +12358,14 @@
    "linked": false,
    "osize": 106,
    "usize": 98
+  },
+  {
+   "name": "_ZN7Globals4initEPN11AbyssEngine18ApplicationManagerEPNS0_6EngineE",
+   "pct": 80.5,
+   "byte": false,
+   "linked": false,
+   "osize": 800,
+   "usize": 784
   },
   {
    "name": "_Z14ArrayAddCachedIjEvT_R5ArrayIS0_E",
