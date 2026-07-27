@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.46,
+  "avg_match": 78.48,
   "byte_exact": 1182,
-  "linked_exact": 2731,
-  "fuzzy_perfect": 2731,
+  "linked_exact": 2734,
+  "fuzzy_perfect": 2734,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -10016,14 +10016,6 @@
    "usize": 60
   },
   {
-   "name": "_ZN12PlayerTurret6reviveEv",
-   "pct": 61.2,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 68
-  },
-  {
    "name": "_ZN4Item4initEv",
    "pct": 61.3,
    "byte": false,
@@ -10848,14 +10840,6 @@
    "usize": 30
   },
   {
-   "name": "_ZN12PlayerTurret10setScalingEf",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 12,
-   "usize": 8
-  },
-  {
    "name": "_ZN14PlayerAsteroid17setAsteroidCenterEN11AbyssEngine6AEMath6VectorE",
    "pct": 66.7,
    "byte": false,
@@ -11392,14 +11376,6 @@
    "usize": 66
   },
   {
-   "name": "_ZN12PlayerTurret5resetEv",
-   "pct": 70.6,
-   "byte": false,
-   "linked": false,
-   "osize": 28,
-   "usize": 18
-  },
-  {
    "name": "_ZN17PlayerFixedObject12outerCollideEfff",
    "pct": 70.6,
    "byte": false,
@@ -11686,6 +11662,14 @@
    "linked": false,
    "osize": 188,
    "usize": 184
+  },
+  {
+   "name": "_ZN12PlayerTurret6reviveEv",
+   "pct": 73.1,
+   "byte": false,
+   "linked": false,
+   "osize": 76,
+   "usize": 76
   },
   {
    "name": "_ZN9RocketGun9seekEnemyEii",
@@ -12958,14 +12942,6 @@
    "linked": false,
    "osize": 58,
    "usize": 58
-  },
-  {
-   "name": "_ZN12PlayerTurret8setLevelEP5Level",
-   "pct": 87.2,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 50
   },
   {
    "name": "_ZN6Layout10drawWindowEN11AbyssEngine6StringEiiii",
@@ -22944,6 +22920,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN12PlayerTurret10setScalingEf",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 12,
+   "usize": 12
+  },
+  {
    "name": "_ZN12PlayerTurret11setPositionERKN11AbyssEngine6AEMath6VectorE",
    "pct": 100.0,
    "byte": false,
@@ -22984,6 +22968,14 @@
    "usize": 54
   },
   {
+   "name": "_ZN12PlayerTurret5resetEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 28,
+   "usize": 28
+  },
+  {
    "name": "_ZN12PlayerTurret6renderEv",
    "pct": 100.0,
    "byte": false,
@@ -23014,6 +23006,14 @@
    "linked": true,
    "osize": 14,
    "usize": 14
+  },
+  {
+   "name": "_ZN12PlayerTurret8setLevelEP5Level",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN12PlayerTurretD0Ev",

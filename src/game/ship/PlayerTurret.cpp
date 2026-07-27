@@ -94,7 +94,8 @@ void PlayerTurret::revive() {
     this->player->reset();
     this->crateGeometry = nullptr;
     this->state = 1;
-    this->reviveFlag() = 0;
+    this->field_0xd8 = 0;
+    this->setActive(true);
     this->explosion->reset();
     AEGeometry *geometry = this->parentGeometry;
     this->spawnInvulnTimer = 0;
@@ -115,6 +116,7 @@ void PlayerTurret::setPosition(const Vector &position) {
 void PlayerTurret::reset() {
     this->KIPlayer::reset();
     this->state = 0;
+    this->setActive(true);
 }
 
 void PlayerTurret::setLevel(Level *level) {
@@ -122,7 +124,7 @@ void PlayerTurret::setLevel(Level *level) {
     ParticleSystemManager *manager = (ParticleSystemManager *) this->level->field_74;
     int system = manager->addSystem(&this->geometry->getReferenceMatrix(), ParticleSettings::ParticleSet_9, false);
     this->particleSystemId = system;
-    manager->enableSystemEmit(system, false);
+    ((ParticleSystemManager *) this->level->field_74)->enableSystemEmit(system, false);
 }
 
 KIPlayer *PlayerTurret::getHost() {
@@ -130,7 +132,7 @@ KIPlayer *PlayerTurret::getHost() {
 }
 
 void PlayerTurret::setScaling(float scale) {
-    this->helperGeometry->setScaling(scale);
+    this->helperGeometry->setScaling(scale, scale, scale);
 }
 
 void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometry *turretGeometry) {
