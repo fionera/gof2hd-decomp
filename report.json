@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.45,
   "byte_exact": 1182,
-  "linked_exact": 2726,
-  "fuzzy_perfect": 2726,
+  "linked_exact": 2727,
+  "fuzzy_perfect": 2727,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12824,14 +12824,6 @@
    "usize": 36
   },
   {
-   "name": "_ZN14DialogueWindow8nextPageEv",
-   "pct": 84.8,
-   "byte": false,
-   "linked": false,
-   "osize": 38,
-   "usize": 36
-  },
-  {
    "name": "_ZN6MTitle12OnInitializeEv",
    "pct": 84.8,
    "byte": false,
@@ -23782,6 +23774,14 @@
    "linked": true,
    "osize": 10,
    "usize": 10
+  },
+  {
+   "name": "_ZN14DialogueWindow8nextPageEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 38,
+   "usize": 38
   },
   {
    "name": "_ZN14DialogueWindow8setLevelEP5Level",

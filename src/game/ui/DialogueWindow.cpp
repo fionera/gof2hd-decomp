@@ -67,7 +67,7 @@ int DialogueWindow::nextPage() {
     int currentPage = this->page;
     int len = this->length();
     if (currentPage < len - 1) {
-        this->page = currentPage + 1;
+        this->page += 1;
         this->loadContent();
         return 1;
     }
