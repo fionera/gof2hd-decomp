@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.44,
+  "avg_match": 78.45,
   "byte_exact": 1182,
-  "linked_exact": 2725,
-  "fuzzy_perfect": 2725,
+  "linked_exact": 2726,
+  "fuzzy_perfect": 2726,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13456,14 +13456,6 @@
    "usize": 140
   },
   {
-   "name": "_ZN11AbyssEngine11CubeMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
-   "pct": 91.6,
-   "byte": false,
-   "linked": false,
-   "osize": 380,
-   "usize": 380
-  },
-  {
    "name": "_ZN20ParticleSystemSprite22updateAreaExitParticleEif",
    "pct": 91.6,
    "byte": false,
@@ -17454,6 +17446,14 @@
    "linked": true,
    "osize": 36,
    "usize": 36
+  },
+  {
+   "name": "_ZN11AbyssEngine11CubeMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 380,
+   "usize": 380
   },
   {
    "name": "_ZN11AbyssEngine11CubeMapping4InitEPNS_6EngineE",

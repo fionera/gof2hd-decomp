@@ -45,9 +45,9 @@ namespace AbyssEngine {
     void CubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (this->dirty != 0) {
             glUniform4fv(this->uniform11, 1, engine->glColor);
-            glUniform4fv(this->uniform7, 1, (const float *) &engine->lightAmbientShaded);
-            glUniform4fv(this->uniform8, 1, (const float *) &engine->field_0x2fc);
-            glUniform4fv(this->uniform9, 1, (const float *) &engine->lightDiffuseShaded);
+            glUniform3fv(this->uniform7, 1, (const float *) &engine->lightAmbientShaded);
+            glUniform3fv(this->uniform8, 1, (const float *) &engine->field_0x2fc);
+            glUniform3fv(this->uniform9, 1, (const float *) &engine->lightDiffuseShaded);
             glUniform1f(this->uniform10, engine->materialShininess);
             this->dirty = 0;
         }
