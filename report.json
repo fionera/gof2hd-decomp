@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.62,
+  "avg_match": 78.63,
   "byte_exact": 1182,
   "linked_exact": 2748,
   "fuzzy_perfect": 2748,
@@ -624,22 +624,6 @@
    "usize": 2
   },
   {
-   "name": "_ZN7Mission13setTargetNameEN11AbyssEngine6StringE",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 18
-  },
-  {
-   "name": "_ZN7Mission19setTargetSystemNameERKN11AbyssEngine6StringE",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 18
-  },
-  {
    "name": "_ZN8CutScene6updateEv",
    "pct": 0.0,
    "byte": false,
@@ -1104,14 +1088,6 @@
    "usize": 296
   },
   {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 4.7,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
-  },
-  {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
    "pct": 4.7,
    "byte": false,
@@ -1342,6 +1318,14 @@
    "linked": false,
    "osize": 972,
    "usize": 1480
+  },
+  {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 6.6,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
   },
   {
    "name": "_ZN11AbyssEngine6String7CompareERKS0_",
@@ -1832,6 +1816,14 @@
    "usize": 192
   },
   {
+   "name": "inflateBack",
+   "pct": 10.8,
+   "byte": false,
+   "linked": false,
+   "osize": 2568,
+   "usize": 2752
+  },
+  {
    "name": "_ZN11AbyssEngine18ApplicationManager27SetCurrentApplicationModuleEj",
    "pct": 11.0,
    "byte": false,
@@ -1854,14 +1846,6 @@
    "linked": false,
    "osize": 552,
    "usize": 176
-  },
-  {
-   "name": "inflateBack",
-   "pct": 11.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2568,
-   "usize": 2752
   },
   {
    "name": "_ZN7Globals18getDialogueSoundIdEiP5Agent",
@@ -4134,6 +4118,22 @@
    "linked": false,
    "osize": 520,
    "usize": 596
+  },
+  {
+   "name": "_ZN7Mission13setTargetNameEN11AbyssEngine6StringE",
+   "pct": 28.6,
+   "byte": false,
+   "linked": false,
+   "osize": 6,
+   "usize": 12
+  },
+  {
+   "name": "_ZN7Mission19setTargetSystemNameERKN11AbyssEngine6StringE",
+   "pct": 28.6,
+   "byte": false,
+   "linked": false,
+   "osize": 6,
+   "usize": 12
   },
   {
    "name": "_ZN8ListItem4initEv",

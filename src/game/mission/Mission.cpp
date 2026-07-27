@@ -42,8 +42,7 @@ void Mission::setProductionGoods(int a, int b) {
 
 void *Mission::setTargetName(String rhs) { // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
     // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
-    this->targetName = rhs;
-    return &this->targetName;
+    return &(this->targetName = rhs);
 }
 
 String Mission::getClientName() {
@@ -68,8 +67,7 @@ void Mission::setInstantActionMission(bool v) {
 
 void *Mission::setTargetSystemName(const String &rhs) { // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
     // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
-    this->targetSystemName = rhs;
-    return &this->targetSystemName;
+    return &(this->targetSystemName = rhs);
 }
 
 void Mission::setVisible(bool v) {
