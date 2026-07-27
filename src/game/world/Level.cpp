@@ -469,7 +469,7 @@ void Level::pirateStationAction(bool param) {
         if (field_68 != 0) {
             return;
         }
-        if (Globals::status->getStation()->getPirateStationIndex() < 0) {
+        if ((int) Globals::status->getStation()->getPirateStationIndex() < 0) {
             return;
         }
         Array<bool> *tbl = Globals::status->field_4c;

@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.73,
   "byte_exact": 1183,
-  "linked_exact": 2756,
-  "fuzzy_perfect": 2756,
+  "linked_exact": 2757,
+  "fuzzy_perfect": 2757,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1304,14 +1304,6 @@
    "usize": 1480
   },
   {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 6.6,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
-  },
-  {
    "name": "_ZN11AbyssEngine6String7CompareERKS0_",
    "pct": 6.6,
    "byte": false,
@@ -1366,6 +1358,14 @@
    "linked": false,
    "osize": 1204,
    "usize": 716
+  },
+  {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 7.1,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
   },
   {
    "name": "_ZN11AbyssEngine13CurveGetValueEyPNS_5CurveE",
@@ -8496,14 +8496,6 @@
    "usize": 316
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
-  },
-  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
@@ -8534,6 +8526,14 @@
    "linked": false,
    "osize": 36,
    "usize": 40
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -13310,14 +13310,6 @@
    "linked": false,
    "osize": 100,
    "usize": 100
-  },
-  {
-   "name": "_ZN5Level19pirateStationActionEb",
-   "pct": 92.5,
-   "byte": false,
-   "linked": false,
-   "osize": 112,
-   "usize": 108
   },
   {
    "name": "_ZN4Ship13slotAvailableEi",
@@ -28038,6 +28030,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN5Level19pirateStationActionEb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 112,
+   "usize": 112
   },
   {
    "name": "_ZN5Level20friendCargoWasStolenEv",
