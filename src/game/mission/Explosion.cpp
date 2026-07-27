@@ -80,13 +80,9 @@ Explosion::~Explosion() {
     }
     this->secondaryMesh = 0;
 
-    Array<AEGeometry *> *streaks = this->fireStreaks;
-    if (streaks != 0) {
-        for (AEGeometry *e: *streaks) {
-            delete e;
-        }
-        ArrayReleaseClasses(*streaks);
-        delete streaks;
+    if (this->fireStreaks != 0) {
+        ArrayReleaseClasses(*this->fireStreaks);
+        delete this->fireStreaks;
     }
     this->fireStreaks = 0;
 }

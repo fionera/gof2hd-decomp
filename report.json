@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.58,
+  "avg_match": 78.62,
   "byte_exact": 1182,
   "linked_exact": 2746,
   "fuzzy_perfect": 2746,
@@ -4006,22 +4006,6 @@
    "linked": false,
    "osize": 172,
    "usize": 176
-  },
-  {
-   "name": "_ZN9ExplosionD1Ev",
-   "pct": 28.1,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 110
-  },
-  {
-   "name": "_ZN9ExplosionD2Ev",
-   "pct": 28.1,
-   "byte": false,
-   "linked": false,
-   "osize": 68,
-   "usize": 110
   },
   {
    "name": "_ZN5Level9createGunEiiiiiiii",
@@ -14025,6 +14009,22 @@
   },
   {
    "name": "_ZN5RouteD2Ev",
+   "pct": 98.0,
+   "byte": false,
+   "linked": false,
+   "osize": 68,
+   "usize": 64
+  },
+  {
+   "name": "_ZN9ExplosionD1Ev",
+   "pct": 98.0,
+   "byte": false,
+   "linked": false,
+   "osize": 68,
+   "usize": 64
+  },
+  {
+   "name": "_ZN9ExplosionD2Ev",
    "pct": 98.0,
    "byte": false,
    "linked": false,
