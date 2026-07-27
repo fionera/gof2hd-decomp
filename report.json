@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.68,
   "byte_exact": 1182,
-  "linked_exact": 2751,
-  "fuzzy_perfect": 2751,
+  "linked_exact": 2752,
+  "fuzzy_perfect": 2752,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -12710,14 +12710,6 @@
    "linked": false,
    "osize": 34,
    "usize": 36
-  },
-  {
-   "name": "_ZN6MTitle12OnInitializeEv",
-   "pct": 84.8,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 88
   },
   {
    "name": "_ZN11AbyssEngine16ShaderBaseStruct14LoadBindShaderEPKcS2_",
@@ -29062,6 +29054,14 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN6MTitle12OnInitializeEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 84,
+   "usize": 84
   },
   {
    "name": "_ZN6MTitle12OnTouchBeginEii",
