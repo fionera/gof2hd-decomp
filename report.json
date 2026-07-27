@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.66,
   "byte_exact": 1182,
-  "linked_exact": 2749,
-  "fuzzy_perfect": 2749,
+  "linked_exact": 2750,
+  "fuzzy_perfect": 2750,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13304,14 +13304,6 @@
    "usize": 84
   },
   {
-   "name": "_ZN11AbyssEngine12FBOContainer6CreateEiibb",
-   "pct": 91.9,
-   "byte": false,
-   "linked": false,
-   "osize": 292,
-   "usize": 290
-  },
-  {
    "name": "_ZN10HangarListD1Ev",
    "pct": 92.3,
    "byte": false,
@@ -18294,6 +18286,14 @@
    "linked": true,
    "osize": 32,
    "usize": 32
+  },
+  {
+   "name": "_ZN11AbyssEngine12FBOContainer6CreateEiibb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 292,
+   "usize": 292
   },
   {
    "name": "_ZN11AbyssEngine12FBOContainer7ReleaseEv",
