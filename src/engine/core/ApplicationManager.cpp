@@ -474,6 +474,7 @@ void ApplicationManager::OnKeyRelease(int key) {
 
 void ApplicationManager::ResetKeyState() {
     this->keyState = 0;
+    this->keyStateHigh = 0;
 }
 
 uint64_t ApplicationManager::GetKeyState() {
@@ -819,7 +820,7 @@ void ApplicationManager::SoundPauseSounds() {
 }
 
 void ApplicationManager::SoundResume() {
-    if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
+    if (this->soundResource != 0) {
         this->soundResource->resume();
     }
 }

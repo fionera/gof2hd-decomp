@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.7,
-  "byte_exact": 1182,
-  "linked_exact": 2753,
-  "fuzzy_perfect": 2753,
+  "avg_match": 78.73,
+  "byte_exact": 1183,
+  "linked_exact": 2755,
+  "fuzzy_perfect": 2755,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -4022,14 +4022,6 @@
    "linked": false,
    "osize": 12,
    "usize": 4
-  },
-  {
-   "name": "_ZN11AbyssEngine18ApplicationManager11SoundResumeEv",
-   "pct": 28.6,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 26
   },
   {
    "name": "_ZN11AbyssEngine20CameraSetPerspectiveEfffffPNS_6CameraE",
@@ -8504,20 +8496,20 @@
    "usize": 316
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 53.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2648
+  },
+  {
    "name": "_ZN6AEFile16SetSaveDirectoryEN11AbyssEngine6StringE",
    "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 128
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2648
   },
   {
    "name": "_ZN11AbyssEngine19SpriteSystemSetRGBAEtffffPNS_12SpriteSystemE",
@@ -10702,14 +10694,6 @@
    "linked": false,
    "osize": 2,
    "usize": 6
-  },
-  {
-   "name": "_ZN11AbyssEngine18ApplicationManager13ResetKeyStateEv",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 8,
-   "usize": 8
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager25RegisterApplicationModuleEjPNS_18IApplicationModuleE",
@@ -19152,6 +19136,14 @@
    "usize": 26
   },
   {
+   "name": "_ZN11AbyssEngine18ApplicationManager11SoundResumeEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
+  },
+  {
    "name": "_ZN11AbyssEngine18ApplicationManager12CheatAddCodeERKNS_6StringEi",
    "pct": 100.0,
    "byte": false,
@@ -19166,6 +19158,14 @@
    "linked": true,
    "osize": 14,
    "usize": 14
+  },
+  {
+   "name": "_ZN11AbyssEngine18ApplicationManager13ResetKeyStateEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 8,
+   "usize": 8
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager13SoundFxEnableEb",
