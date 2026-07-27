@@ -2,6 +2,213 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-27 (linked 2649->2751 — exact families, layout recovery, and ABI audits)
+
+Net from checkpoint `6b2278db` through HEAD `b56b79d7`: avg
+**78.02->78.68 (+0.66)**, byte **1164->1182 (+18)**, linked
+**2649->2751 (+102)**, imports **601->598 (-3)**, verify extra
+**35->34 (-1)**, ours functions **4559->4558 (-1)**, and sodiff allowed
+extras **52->51 (-1)**. Compared functions remain **4523** and
+stub/missing/wrong_type remain **0/0/0**. The function-count reduction is
+intentional: `CheatHandler.cpp` was folded back into the binary-authentic
+`CheatCode.cpp` translation unit. The current global source gate is **PASS**,
+and the committed validation report was confirmed equal to the accepted
+baseline/report state at HEAD.
+
+The fleet model was disjoint GPT-5.6 Sol workers at low/medium reasoning for
+parallel analysis and authoring, with one serialized gate/ratchet/commit
+agent. Workers did not gate, ratchet, alter reports/baselines, stash, or
+commit. No Claude Workflow was used.
+
+Landed passes, chronologically:
+
+- `ee92520e` `HackingGame::solvableInNSteps` **83.3->100%**;
+  `04ef002c` `ModStation::OnResume` **81->100%**; `8d1977a9`
+  `AutoPilotList` C1/C2 **95.9->100%**; `fa9d9db2` `Gun::setOffset`
+  **81.6->100%**; `212b3421` `Trail::setWidth` **84.7->100%**;
+  `e97e9b78` `PlayerFighter::setExhaustVisible` **86.4->100%**; and
+  `b8229b2f` `TargetFollowCamera::resetShipHandling` **80->100%**.
+  These raised linked **2649->2657**.
+- `d59730ce` `Engine::LightSetRimColor` **88.2->100%**; `97c8293b`
+  `LODManager` C1/C2 **87.2->100%**; `e8bd314b`
+  `Status::inStormOrbit` **80->100%**; `a4292b22`
+  `Ship::getHandling` byte exact; `6efa6481`
+  `Ship::getHandlingForShop` byte exact; `aa71bb23`
+  `IParticleSystem::resetEmitterVelocity` **91.7->100%**; `9c36b175`
+  `Status::changeRating` byte exact; and `ba40152e`
+  `FModSound::freeAllEvents` **85.6->100%**. Linked reached **2666** and
+  byte reached **1167**.
+- `e2ba1063` `MenuTouchWindow::loadPreviewRecords` **88.5->100%**;
+  `00a8b410` `AEMath::MatrixSetRotation` **76->100%**; `c75c4394`
+  `ImageFactory::reload` **83.8->100%**; `cfe0a6c8`
+  `Explosion::setScaling` **76.6->100%**; `73f7f674`
+  `WantedWindow::OnTouchMove` **82.9->100%**; `446314a9`
+  `FModSound::enableReverb` **82.6->97.8%** partial; `1bdef47d`
+  `Ship::replaceEquipment` **80->100%**; and `cd0a2a5a`
+  `ListItemWindow::update` **77->99.1%** partial. Linked reached **2672**.
+- `c8d7403c` `AEMath::Vector::operator/=` **76.9->100%**; `b0152955`
+  `TouchButton(kind)` C1/C2 **90.5->100%**; `349ea677`
+  `Engine::GetGravValue` **83.3->100%**; `f19e28d3`
+  `Engine::GetAccelValue` **83.3->100%**; `3ed726f3`
+  `TouchButton(image)` C1/C2 **88.5->100%**; and `5bacfaf5`
+  `TouchButton(custom)` C1/C2 **84.3->100%** plus
+  `ImageFontGetSpacing` exact. Linked reached **2682**.
+- `0e4efe04` `MenuTouchWindow::startValkyrie` **84.5->89.2%**
+  partial; `3d1c2072` `Engine::LightSetLightDirection`
+  **89.6->100%**; `bc51445b` `PaintCanvas::CheckNUseRefractFBO`
+  **0->100%**; `3cf5ab8d` `IParticleSystem::calcEmitterVelocity`
+  **92.8->100%**; `c4a19e79` `Sprite::setFrame` **92.6->96.3%**
+  partial; and `ee416e2a` `PlayerEgo::getTurretPosition`
+  **94.1->100%**. Linked reached **2686**.
+- `b582d8c3` `Player::setAlwaysFriend`, `6e57a39d`
+  `PlayerFighter::setSpeed`, and `b83886bb` `Galaxy::reset` were byte
+  exact; `1ae91b35` `Level::friendTurnedEnemy` **87.5->100%**;
+  `498e9d80` `TargetFollowCamera::setShipHandling` **79.1->100%**;
+  `cb42b832` `ModStation::showCBSMessage` **92.9->100%**; and
+  `7085ca4a` `DrawFBOShader::RenderEffect` **92.7->100%**. Linked
+  reached **2693**, with byte at least **1174** after this run.
+- `baa01326` `PaintCanvas::SetWorldViewMatrix` **0->100%** and removed
+  one import; `5db57fb0` `PaintCanvas::DrawRectangle` **63.3->100%**
+  and removed two more imports; `74877204` `PaintCanvas::DrawLine`
+  **40.5->95.1%** partial; `7d9e94ae` `PlayerEgo::dockToStream`
+  **90.5->100%**; and `82330557` `Level::uncoverWanted`
+  **89.7->97.4%** partial. Linked reached **2696**, imports **598**.
+- `0f0f2f09` `BumpShaderV2::Init/Update`, `b0955b21`
+  `EnergyShield::UpdateMeshData`, and `b70eb5c6`
+  `TextureConference::Init` were exact; `d5f65028`
+  `ListItemWindow::render/OnTouchBegin` were exact; `44b412f0`
+  `GlowPPShader::Init/InternalInit/SetInActive` were exact; and
+  `68f74323` `SpaceLounge::OnRender3D/draw3DShip` were exact.
+  Linked reached **2707**.
+- `226efa0c` made `Hud::cargoFull/resetAnalogStick/getAnalogX/getAnalogY/
+  touchMove` exact; `2dcc398f` made `StarMap::missionChanged/askForJump`
+  and its destructor exact; `55674814` made the
+  `ShaderBaseStruct`/`BlurShader` `RenderEffect` family exact; and
+  `01e1a67b` made `CheatHandler::AddCheatCode` and its destructor exact
+  while restoring TU ownership. Linked reached **2722**; extra became
+  **34**, ours functions **4558**, and allowed extras **51**.
+- `fb7edd3d` made the `AEMath::Matrix` constructor and
+  `MatrixGetInverse` exact using binary-authentic inline/weak C2 ownership;
+  `ede28edb` `CubeMapping::Update`, `7330f091`
+  `DialogueWindow::nextPage`, `bed35c7b` `TextureLightShader::Init`,
+  `3881a3b9` `BumpMapping::Update`, `84a461f9` `MaskShader::Update`,
+  `5fdd5bd9` `PlayerCreature::reset`, `9971dee9`
+  `PlayerStaticFar::render`, and `2c4f2e78` `PlayerStatic` C1/C2 were
+  exact. `02ff34de` linked the `ApplicationManager::Config` wrappers:
+  `ConfigReadFile` is exact, while `RegisterToken` remains a same-size
+  register-schedule partial. `d9893b2e` linked three `PlayerTurret`
+  methods: `setLevel/setScaling/reset` are exact and `revive` is a
+  same-size store/register-order partial. Linked reached **2738**, byte
+  **1182**.
+- `4a36c110` linked `HangarWindow::refreshWindowHeight` exact and
+  `mountItem` partial; its D1/D2 reachable bodies are exact, with only an
+  unreachable EH landing-call size residual. `100d9a13` linked layout
+  wrappers: `drawHeader/drawWindow` exact and two touch handlers 2-byte
+  partials. `a86dde37` linked `ModMainMenu::OnResume/OnSuspend/
+  OnTouchEnd` exact and `OnTouchMove` tail-call partial. `e80f194e`
+  made `TouchButton::getText/replaceTextKeepSize` exact. Linked reached
+  **2746**.
+- `376ffaaa` improved `Explosion` D1/D2 with exact reachable code and the
+  same honest unreachable landing-call residual; `ef5c27d3` made
+  `NewsTicker` D1/D2 exact; `a77c8d51` improved the two `Mission` target
+  setters to 12-byte partial thunks versus the original 6; `760a97cb`
+  made `Level::setInitStreamOut` exact by directly addressing its exported
+  class static; and `8c129339` rebuilt `Transform::SetAnimationState`
+  from a 2-byte stub to a semantic 32-byte partial whose branch schedule
+  still differs. Linked reached **2749**.
+- `0f711858` made `FBOContainer::Create` exact; `b25a3faf` made the
+  14-byte `ShaderBaseStruct::GetShaderName` exact; and `b56b79d7`
+  improved `PlayerFixedObject::setName` from 20 to 14 bytes against the
+  original 8-byte thunk. Final linked is **2751**, avg **78.68**.
+
+Binary/compiler learnings:
+
+- Field recovery unlocked whole families. `TextureConference` uses
+  `uColor/uMvpMatrix/uOffset/sTexture`; `ListItemWindow` needs fields at
+  `0x5c/0x60` before geometry and has no invented preview sentinel;
+  `GlowPPShader` needs fields at `0x34/0x38` and `0x94/0x9c`;
+  `SpaceLounge` has a byte at `0x18` plus `0xb1`; `StarMap` needs the
+  inserted block at `0x40`, `pathFinder@0x50`, `systemPath@0xa0`, and
+  `missionChanged@0xdc`. The Hud offset repairs likewise produced five
+  exact methods.
+- Source declaration order, local lifetime, store reversal, and scope can
+  determine the `-Oz` schedule. Correct semantics may still remain a
+  scheduling partial, as in `Transform::SetAnimationState`,
+  `PlayerTurret::revive`, and several tail thunks.
+- `String(member, false)` gives the binary-authentic hidden-sret shape;
+  explicitly destroying a member causes double destruction. GOT holder
+  address versus held value matters, and some originals reload the global
+  on every use. Exported class statics such as `Level::initStreamOut`
+  must be addressed directly.
+- Virtual return types are not mangled but are vtable/ABI-sensitive:
+  `ShaderBaseStruct`/`BlurShader` `RenderEffect` overloads return `void`.
+  Pointer/reference-return wrappers currently declared as `void *` can
+  prevent original tail thunks, so the Mission and PlayerFixedObject
+  residuals require exclusive return-type audits rather than body tricks.
+- TU membership controls weak/strong constructor/destructor ownership.
+  Folding `CheatHandler` into `CheatCode.cpp` and making the Matrix
+  constructor inline recovered the original ownership. Unreachable EH
+  landing calls can remain after reachable code is exact; these are
+  recorded limitations, not invitations for dummy/volatile/asm hacks.
+
+Exhausted or exclusive investigations:
+
+- `Station::setAgents` remains **36/36 bytes, 93.3%**. The sole residual
+  is LLVM MachineSink moving `mov r4,r1` from entry to the unequal branch.
+  Nested inequalities, early returns, aliases, reversed operands, and
+  common-tail forms were tried; the latter grew to 42 bytes. Leave the
+  natural code and only requeue with authentic source/compiler evidence.
+- `Status::isOnStack` is misdeclared as `bool`; the original returns the
+  matched `Station *`. Return types are not mangled, and the current
+  68-byte bool normalization explains the original 62-byte shape.
+  This needs an exclusive header/definition/all-caller pass; in
+  `departStation`, preserve the actual matched pointer rather than call
+  twice or substitute `dest`. No layout change is indicated.
+- `GameRecord` almost certainly contains `String` members at the fields
+  currently modeled as `killsText@0x20` and `pilotName@0x194` integers.
+  Original D1/D2 are 26 bytes versus current 2, and the constructor is
+  212 versus 164. Reconstruct header/layout, constructor/destructor, and
+  `RecordHandler`/`MenuTouchWindow` callers together; packed size changes
+  make this exclusive. Do not body-hack the destructors.
+- `Engine::SetEyePosition` is not the current fabricated `uint64_t`
+  return. The original builds a stack `Vector`, assigns it through
+  `Vector::operator=` to `this+0x3fc`, and carries the stack canary;
+  current code merely stores three scalars and returns x/y bits
+  (**48 vs 12 bytes, 8.3%**). Audit header, callers, return ABI, and
+  temporary shape exclusively before retyping it.
+- Additional scheduling notes are preserved for
+  `ShaderBaseStruct::ES2LoadShader`, `FModSound::enableReverb`,
+  `MovingStars::translate`, `GameText`, `ListItemWindow::update`,
+  `MenuTouchWindow::startValkyrie`, `Sprite::setFrame`, and
+  `PaintCanvas::DrawLine`; do not repeat their exhausted source-shape
+  experiments without new evidence.
+
+Ranked next queue:
+
+1. `AERandom::nextInt()`/next32: current is a 6-byte `next(31)` tail;
+   original is 44 bytes, and Java semantics point to `next(32)`. Verify
+   authentic source/inlining and the constructor cascade.
+2. `MTitle` global reload family: recover the direct GOT/global reload
+   schedule in `OnRelease`, then the tiny key handlers and partial
+   `OnRender2D`.
+3. `FileInterfaceAndroid` JNI family (`OpenRead` 552/176, `Read`
+   360/196, `Write` equal-size 172, `Close` 70, constructors). Preserve
+   the original variadic `JNI_Call*Method` import shape; direct JniTable
+   calls already regressed.
+4. Remaining PostBW/Glow shader work: PostBW `Render` 77%, constructor
+   29.5%, destructor 22.2%, `Update` 88.7%; Glow main `Render` 69.5%,
+   constructor 29.5%, `Update` 88.7%. Reuse the exact Glow init and
+   simpler-render evidence.
+5. `MeshMerger`: `transformMesh` is functionally incomplete/wrong and
+   ctor/update/init/destructors remain partial. Respect original
+   MeshMerger/Simple/Lod TU mapping; this is not a routine small pass.
+6. Station work, beginning from the preserved `setAgents` blocker note,
+   then broader Station methods. Do not repeat the exhausted schedule
+   search.
+7. Run the exclusive `Status::isOnStack`, `GameRecord` String-layout,
+   and `Engine::SetEyePosition` ABI passes one at a time, draining the
+   fleet around each. Then return to other large low-similarity families.
+
 ## Session 2026-07-26n (waves 62–72 — exact near misses, global reloads, and typed locals)
 
 Net from the wave-61 checkpoint: avg **77.99->78.02**, byte
