@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 78.46,
   "byte_exact": 1182,
-  "linked_exact": 2729,
-  "fuzzy_perfect": 2729,
+  "linked_exact": 2730,
+  "fuzzy_perfect": 2730,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -13352,14 +13352,6 @@
    "usize": 116
   },
   {
-   "name": "_ZN11AbyssEngine11BumpMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
-   "pct": 91.0,
-   "byte": false,
-   "linked": false,
-   "osize": 216,
-   "usize": 212
-  },
-  {
    "name": "_ZN13PlayerFighter12outerCollideEfff",
    "pct": 91.2,
    "byte": false,
@@ -17374,6 +17366,14 @@
    "linked": true,
    "osize": 44,
    "usize": 44
+  },
+  {
+   "name": "_ZN11AbyssEngine11BumpMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 216,
+   "usize": 216
   },
   {
    "name": "_ZN11AbyssEngine11BumpMapping4InitEPNS_6EngineE",

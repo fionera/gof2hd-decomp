@@ -31,7 +31,8 @@ namespace AbyssEngine {
     }
 
     void BumpMapping::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        this->dirty = 0;
+        if (this->dirty != 0)
+            this->dirty = 0;
 
         glUniformMatrix4fv(this->u0Loc, 1, 0, engine->worldViewProjMatrix);
         glUniform3f(this->u1Loc, engine->lightDir.x, engine->lightDir.y, engine->lightDir.z);
