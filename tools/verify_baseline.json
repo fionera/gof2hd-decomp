@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1182,
-  "linked_exact": 2752,
+  "linked_exact": 2753,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 34,
-  "avg_match": 78.68,
+  "avg_match": 78.7,
   "compared": 4523
  },
  "imports": [
@@ -73,7 +73,6 @@
   "_Z16ndk23_renderstepii",
   "_Z17AERandom_nextIntBii",
   "_Z17Item_getAmount_oiv",
-  "_Z17JNI_CallIntMethodPvS_S_S_",
   "_Z17MatrixSetRotationPN11AbyssEngine6AEMath6MatrixEfff",
   "_Z17MatrixSetRotationPvS_fff",
   "_Z17MatrixSetRotationPvfff",
@@ -94,7 +93,6 @@
   "_Z18EaseInOut_GetValuePv",
   "_Z18Hud_buildQuickMenuP3Hudi",
   "_Z18Item_getAmount_otev",
-  "_Z18JNI_CallVoidMethodPvS_S_z",
   "_Z18MatrixRotateVectorPN11AbyssEngine6AEMath6VectorEPKNS0_6MatrixEPKS1_",
   "_Z18MatrixRotateVectorPvPKvS1_",
   "_Z18MatrixRotateVectorRN11AbyssEngine6AEMath6VectorERKNS0_6MatrixERKS1_",
