@@ -108,13 +108,13 @@ void ModMainMenu::OnRelease() {
 }
 
 void ModMainMenu::OnResume() {
-    int *holder = g_ModMainMenu_resumeObj;
-    if (*holder == 0)
+    FModSound **holder = &Globals::sound;
+    FModSound *sound = *holder;
+    if (sound == nullptr)
         return;
-    if (FModSound_tryToStopMusicForBGMusic() != 0)
+    if (sound->tryToStopMusicForBGMusic() != 0)
         return;
-    int arg = *g_ModMainMenu_resumeArg;
-    ((FModSound *) (intptr_t) * holder)->setVolume(1, (float) arg);
+    (*holder)->setVolume(1, *reinterpret_cast<float *>(Globals::options));
 }
 
 void ModMainMenu::OnRender3D() {
@@ -127,10 +127,9 @@ void ModMainMenu::OnRender3D() {
 
 void ModMainMenu::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
     // lint: void_ptr (exported virtual signature)
-    (void) touch;
     if (this->logoActive != 0)
         return;
-    this->touchWindow->OnTouchMove(x, y, nullptr);
+    this->touchWindow->OnTouchMove(x, y, touch);
 }
 
 void ModMainMenu::OnTouchMove(int x, int y) {
@@ -139,23 +138,21 @@ void ModMainMenu::OnTouchMove(int x, int y) {
 }
 
 void ModMainMenu::OnSuspend() {
-    int obj = *g_ModMainMenu_suspendObj;
-    if (obj != 0)
-        ((RecordHandler *) (intptr_t) obj)->saveOptions();
+    if (Globals::recordHandler != nullptr)
+        Globals::recordHandler->saveOptions();
 }
 
 void ModMainMenu::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
     // lint: void_ptr (exported virtual signature)
-    (void) touch;
     if (this->logoActive == 0) {
-        this->touchWindow->OnTouchEnd(x, y, nullptr);
+        this->touchWindow->OnTouchEnd(x, y, touch);
         Level *level = *(Level **) this->cutScene;
         ((StarSystem *) (intptr_t) level->getStarSystem())->initLight();
         return;
     }
 
     this->logoActive = 0;
-    *g_ModMainMenu_touchEndFlag = 0;
+    Globals::logoIsShown = 0;
 }
 
 void ModMainMenu::OnTouchEnd(int x, int y) {
