@@ -275,7 +275,7 @@ void Level::enableMovingStars(bool enable) {
 }
 
 void Level::setInitStreamOut() {
-    *g_initStreamOut = 1;
+    Level::initStreamOutPosition = 1;
 }
 
 int Level::getMiningPlant() {

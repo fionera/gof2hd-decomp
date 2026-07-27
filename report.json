@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.63,
+  "avg_match": 78.65,
   "byte_exact": 1182,
-  "linked_exact": 2748,
-  "fuzzy_perfect": 2748,
+  "linked_exact": 2749,
+  "fuzzy_perfect": 2749,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -542,14 +542,6 @@
    "linked": false,
    "osize": 88,
    "usize": 6
-  },
-  {
-   "name": "_ZN5Level16setInitStreamOutEv",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 16,
-   "usize": 2
   },
   {
    "name": "_ZN5MGame16setCinematicModeEb",
@@ -1816,14 +1808,6 @@
    "usize": 192
   },
   {
-   "name": "inflateBack",
-   "pct": 10.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2568,
-   "usize": 2752
-  },
-  {
    "name": "_ZN11AbyssEngine18ApplicationManager27SetCurrentApplicationModuleEj",
    "pct": 11.0,
    "byte": false,
@@ -1846,6 +1830,14 @@
    "linked": false,
    "osize": 552,
    "usize": 176
+  },
+  {
+   "name": "inflateBack",
+   "pct": 11.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2568,
+   "usize": 2752
   },
   {
    "name": "_ZN7Globals18getDialogueSoundIdEiP5Agent",
@@ -27998,6 +27990,14 @@
    "linked": true,
    "osize": 8,
    "usize": 8
+  },
+  {
+   "name": "_ZN5Level16setInitStreamOutEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 16,
+   "usize": 16
   },
   {
    "name": "_ZN5Level16stealFriendCargoEv",
