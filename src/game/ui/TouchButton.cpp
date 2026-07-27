@@ -70,14 +70,14 @@ uint8_t TouchButton::isTouched() {
 }
 
 String TouchButton::getText() {
-    return this->text;
+    return String(this->text, false);
 }
 
 void TouchButton::replaceTextKeepSize(String const &text) {
     this->text = text;
     if (this->kind == 10) {
         int w = this->width;
-        int tw = Globals::Canvas->GetTextWidth(this->fontId, this->text);
+        int tw = Globals::Canvas->GetTextWidth(this->fontId, text);
         this->textOffsetX = w / 2 - tw / 2;
     }
 }

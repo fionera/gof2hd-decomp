@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.57,
+  "avg_match": 78.58,
   "byte_exact": 1182,
-  "linked_exact": 2744,
-  "fuzzy_perfect": 2744,
+  "linked_exact": 2746,
+  "fuzzy_perfect": 2746,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -11544,14 +11544,6 @@
    "usize": 12
   },
   {
-   "name": "_ZN11TouchButton7getTextEv",
-   "pct": 72.7,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
-  },
-  {
    "name": "_ZN17PlayerFixedObject7getNameEv",
    "pct": 72.7,
    "byte": false,
@@ -12590,14 +12582,6 @@
    "linked": false,
    "osize": 220,
    "usize": 220
-  },
-  {
-   "name": "_ZN11TouchButton19replaceTextKeepSizeERKN11AbyssEngine6StringE",
-   "pct": 83.0,
-   "byte": false,
-   "linked": false,
-   "osize": 72,
-   "usize": 76
   },
   {
    "name": "_ZN5MGame14startJumpSceneEv",
@@ -21904,6 +21888,14 @@
    "usize": 6
   },
   {
+   "name": "_ZN11TouchButton19replaceTextKeepSizeERKN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 72,
+   "usize": 72
+  },
+  {
    "name": "_ZN11TouchButton21setGamePadButtonImageEj",
    "pct": 100.0,
    "byte": true,
@@ -21918,6 +21910,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN11TouchButton7getTextEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
   },
   {
    "name": "_ZN11TouchButton8getWidthEv",
