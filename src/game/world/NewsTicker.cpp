@@ -116,9 +116,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     delete allItems;
 }
 
-NewsTicker::~NewsTicker() {
-    this->tickerText.~String();
-}
+NewsTicker::~NewsTicker() {}
 
 void NewsTicker::draw() {
     PaintCanvas *canvas = Globals::Canvas;
