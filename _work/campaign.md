@@ -2,6 +2,114 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-07-28 (Fable wave — linked 2751->2779; PostRA experiment queued)
+
+Net from the prior checkpoint at `b56b79d7` through HEAD `5b7d1ee5`:
+avg **78.68->79.01 (+0.33)**, byte **1182->1185 (+3)**, linked
+**2751->2779 (+28)**, and imports **598->595 (-3)**. Compared functions
+remain **4523**, verify extras remain **34**, and
+stub/missing/wrong_type remain **0/0/0**. The committed source/report/
+baseline gate is PASS. The worktree is clean except the preserved untracked
+`.claude/`.
+
+Fleet policy for this run was exactly three external Claude Fable 5 workers:
+one sole mutable build/gate/report/baseline/commit owner and two disjoint
+read-only analysts. No GPT workers remained active. The pool was deliberately
+drained before the repo-wide compiler-state experiment. The attempted
+exclusive Fable launch then hit the Claude account session limit
+(`resets 10am Europe/Berlin`), so **no worker or build is currently running**.
+
+Landed since the prior checkpoint, chronologically:
+
+- `c5150c54` restored `AERandom::nextInt()` 32-bit semantics;
+  `2ddaed7f` restored the MTitle Canvas reload schedule; `716ec787`
+  restored the FileInterfaceAndroid JNI stream dispatch; `5947acf0`
+  linked the ApplicationManager key-reset/sound-resume work; and
+  `352097aa` restored the HangarWindow mountItem receiver reload.
+- `ef63e5a0` made `Level::pirateStationAction` linked exact;
+  `d7ce9a9c` made both DrawFBOShader constructors linked exact;
+  `b1200857` made `TouchButton::getPosition` byte exact; and
+  `8e476dd5` retained the non-regressing FModSound pause partial.
+- `7ddebcc7` made four Mission String getters exact; `df791881` made
+  both Dialogue predicates exact and raised `length()` to a size-exact
+  95.5%; `4676359a` made three Station table readers/setters exact; and
+  `e47db6bd` replaced 20 invented ParticleSettings aggregate-shim calls
+  with the real aggregate assignment, reducing imports **596->595**.
+- `1bcd4eaf` restored the authentic 600-byte Gun offset table and real
+  enemy ownership: `Gun::setOffset(int,int)`, `setEnemy`, and `translate`
+  all became linked exact (**2769->2772**).
+- `7ecc9315` restored the non-const `Vector::operator float*()` fog-color
+  conversion in `TextureShader::UpdateMeshData`, making it linked exact
+  (**2772->2773**).
+- `1d7b085a` restored the narrow String temporary constructor, fog-vector
+  conversion, and attribute-field reloads in TextureAlphaTestShader.
+  C1, C2, and UpdateMeshData all became linked exact (**2773->2776**).
+- `5b7d1ee5` manually inlined the authentic AERandom LCG steps. C1/C2 are
+  linked exact, `nextInt()` is byte exact, and `nextInt(int)` is now
+  size-exact **95.1%** (148/148). Net: byte **1184->1185**, linked
+  **2776->2779**, avg **78.95->79.01**.
+
+Important new compiler finding — run this FIRST after the 10am Fable reset,
+in exclusive mode with no analysts:
+
+- Three independent read-only audits (`FModSound::enableReverb`,
+  `Sparks::explode`, and `String::ReplaceString`) proved that the recurring
+  entry-argument-copy residue is LLVM **PostRA Machine Sinking**, not a
+  missing source construct. The original always keeps these copies in the
+  entry block; our build sinks them past null/active early exits.
+- The FMod worker reproduced the original schedule with authentic `-g`
+  (debug info later stripped), and both FMod/Sparks workers reproduced it
+  with `-mllvm -disable-postra-machine-sink`. The preferred experiment is
+  global `-g` at the narrowest C++ flag point in `cmake/toolchain.cmake`;
+  force a true full rebuild and full ratchet. If it regresses any protected
+  row, revert/full-rebuild baseline and try the narrower LLVM flag. Never
+  keep either flag unless the full ratchet passes.
+- Direct anchor rows for the exclusive gate:
+  `FModSound::enableReverb`, `Sparks::explode`,
+  `String::ReplaceString`, `Station::setAgents`, `Item::combineItems`,
+  the five Ship near misses, `ApplicationManager::OnTouchMove`,
+  `CheatHandler::Update`, `TransformRelease`, and
+  `MeshChangeShaderAnimValue`. Expected gain is at least the first three
+  and plausibly 5–30 exact rows. Re-triage the entire report afterward
+  because this may clear much of tier 3 at once.
+
+Screened/failed work from this wave:
+
+- `StatusWindow::update`: swapping the two clamp assignments grew the
+  function **202->208** because clang stopped sharing the integer zero with
+  the float store. The mutable owner reverted it and confirmed the baseline
+  ratchet; no commit. Current 98.5% residue remains the mixed int/float
+  store order.
+- Five Ship near misses, `Item::combineItems`, `ImageFactory::loadChar`,
+  and `String::ReplaceString` are fully explained PostRA/Greedy-RA copy
+  placement blockers under the current flags. `ImageFactory::createChar`
+  is a metric PIC-lookahead artifact. Do not repeat source-shape probes;
+  re-score them after the exclusive compiler experiment.
+- The AERandom worker exhausted several bounded-overload shapes before
+  landing the current 95.1% size-exact form. Requeue only with a fresh
+  instruction-level hypothesis.
+
+Apply-ready dossiers after the exclusive experiment (re-triage first):
+
+- `DialogueWindow::init`: use the already-committed const briefing/success
+  count tables for the prefix sums, signed `/2`, reload `Globals::gameText`,
+  and keep Layout reads inline. Dossier:
+  `/tmp/gof2-fable-refill20.cbxyN7/dialogue_init.txt`.
+- TextureLightShader (+3 predicted), Layout touch handlers (+3),
+  EnergyShield (+3), MaskShader constructors (+2),
+  ShaderBaseStruct constructors (+2), PostBW (+2), GlowPP (+1), Status,
+  and ParticleSettings stage 2 remain ready from their plan files recorded
+  by the previous controller.
+- Exclusive high-value layout/ownership dossiers remain:
+  AESoundRessource (predicted +18..24), GameRecord, BombGun, and BlurShader.
+  Drain the fleet around each.
+
+Resume order: (1) exclusive PostRA/debug-info full-build gate; (2) re-triage
+fresh `report.json`; (3) land newly exact scheduler family members or revert
+the flag honestly; (4) return to DialogueWindow/init and the cheap shader
+constructor/conversion batches; (5) run one exclusive layout dossier at a
+time. Preserve `.claude/`.
+
 ## Session 2026-07-27 (linked 2649->2751 — exact families, layout recovery, and ABI audits)
 
 Net from checkpoint `6b2278db` through HEAD `b56b79d7`: avg
