@@ -186,18 +186,31 @@ void Gun::setIndex(int index) {
     }
 }
 
-static int *const gSO_holder = nullptr;
-static short *const gSO_table = nullptr;
+static const short gSO_table[10][10][3] = {
+        {{0,   0,    0},   {0,   0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0}},
+        {{270, 0,    100}, {-270, 0,   100}, {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0}},
+        {{320, 0,    100}, {0,   0,    100}, {-320, 0,    100}, {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0}},
+        {{370, 0,    100}, {170, 100,  150}, {-170, 100,  150}, {-370, 0,    100}, {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0}},
+        {{350, 100,  200}, {270, -100, 150}, {0,    0,    100}, {-270, -100, 150}, {-350, 100,  200}, {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0}},
+        {{500, 100,  150}, {500, -100, 150}, {200,  0,    100}, {-200, 0,    100}, {-500, -100, 150}, {-500, 100,  150}, {0,    0,    0},   {0,    0,    0},   {0,    0,    0},   {0,    0,    0}},
+        {{500, -100, 150}, {400, 100,  150}, {200,  -50,  100}, {0,    0,    150}, {-200, -50,  100}, {-400, 100,  150}, {-500, -100, 150}, {0,    0,    0},   {0,    0,    0},   {0,    0,    0}},
+        {{550, -100, 100}, {550, 100,  100}, {300,  0,    100}, {100,  0,    150}, {-100, 0,    150}, {-300, 0,    100}, {-550, 100,  100}, {-550, -100, 100}, {0,    0,    0},   {0,    0,    0}},
+        {{550, -100, 100}, {550, 100,  100}, {300,  0,    100}, {100,  100,  150}, {0,    -100, 100}, {-100, 100,  150}, {-300, 0,    100}, {-550, 100,  100}, {-550, -100, 100}, {0,    0,    0}},
+        {{600, -120, 100}, {600, 120,  100}, {400,  0,    100}, {200,  100,  150}, {200,  -100, 100}, {-200, -100, 100}, {-200, 100,  150}, {-400, 0,    100}, {-600, 120,  100}, {-600, -120, 100}},
+};
 
 void Gun::setOffset(int a, int b) {
-    short *row = &gSO_table[b * 0x1e + a * 3];
+    const short *row = gSO_table[b - 1][a];
+    float fx = (float) row[0];
+    float fy = (float) row[1];
+    float fz = (float) row[2];
+    float sx = this->offset.x + fx;
+    float sy = this->offset.y + fy;
+    float sz = this->offset.z + fz;
     Vector local;
-    local.x = (float) (int) row[0];
-    local.y = (float) (int) row[1];
-    local.z = (float) (int) row[2];
-    local.x = this->offset.x + local.x;
-    local.y = this->offset.y + local.y;
-    local.z = this->offset.z + local.z;
+    local.x = sx;
+    local.y = sy;
+    local.z = sz;
     this->offset = local;
 }
 
@@ -377,7 +390,11 @@ void Gun::shoot(Matrix m, int n, bool b) {
 }
 
 void Gun::setEnemy(Player *enemy) {
-    this->enemies = reinterpret_cast<Array<Player *> *>(enemy);
+    delete this->enemies;
+    this->enemies = 0;
+    Array<Player *> *a = new Array<Player *>();
+    this->enemies = a;
+    ArrayAdd(enemy, *a);
 }
 
 static const float kZOffset = 100.0f;
@@ -480,9 +497,8 @@ void Gun::update(int dt) {
 }
 
 void Gun::translate(const Vector &v) {
-    Vector *positions = reinterpret_cast<Vector *>(this->positions);
     for (unsigned i = 0; i < this->count; i = i + 1) {
-        positions[i] += v;
+        reinterpret_cast<Vector *>(this->positions)[i] += v;
     }
 }
 

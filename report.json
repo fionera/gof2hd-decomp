@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.85,
+  "avg_match": 78.9,
   "byte_exact": 1184,
-  "linked_exact": 2769,
-  "fuzzy_perfect": 2769,
+  "linked_exact": 2772,
+  "fuzzy_perfect": 2772,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -310,22 +310,6 @@
    "linked": false,
    "osize": 1788,
    "usize": 18
-  },
-  {
-   "name": "_ZN3Gun8setEnemyEP6Player",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 78,
-   "usize": 6
-  },
-  {
-   "name": "_ZN3Gun9setOffsetEii",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 136,
-   "usize": 2
   },
   {
    "name": "_ZN3Hud14drawEventQueueEv",
@@ -1072,6 +1056,14 @@
    "usize": 296
   },
   {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 4.6,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
+  },
+  {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
    "pct": 4.7,
    "byte": false,
@@ -1238,14 +1230,6 @@
    "linked": false,
    "osize": 2516,
    "usize": 280
-  },
-  {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 6.2,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
   },
   {
    "name": "_ZN9Generator14getItemBuyListEP7Station",
@@ -12262,14 +12246,6 @@
    "linked": false,
    "osize": 340,
    "usize": 332
-  },
-  {
-   "name": "_ZN3Gun9translateERKN11AbyssEngine6AEMath6VectorE",
-   "pct": 81.1,
-   "byte": false,
-   "linked": false,
-   "osize": 44,
-   "usize": 42
   },
   {
    "name": "_ZN12ImageFactory8drawShipEiii",
@@ -25640,6 +25616,14 @@
    "usize": 14
   },
   {
+   "name": "_ZN3Gun8setEnemyEP6Player",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 78,
+   "usize": 78
+  },
+  {
    "name": "_ZN3Gun8setLevelEP5Level",
    "pct": 100.0,
    "byte": true,
@@ -25662,6 +25646,22 @@
    "linked": true,
    "osize": 68,
    "usize": 68
+  },
+  {
+   "name": "_ZN3Gun9setOffsetEii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 136,
+   "usize": 136
+  },
+  {
+   "name": "_ZN3Gun9translateERKN11AbyssEngine6AEMath6VectorE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 44,
+   "usize": 44
   },
   {
    "name": "_ZN3GunD1Ev",
