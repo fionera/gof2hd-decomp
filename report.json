@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.9,
+  "avg_match": 78.91,
   "byte_exact": 1184,
-  "linked_exact": 2772,
-  "fuzzy_perfect": 2772,
+  "linked_exact": 2773,
+  "fuzzy_perfect": 2773,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1056,6 +1056,14 @@
    "usize": 296
   },
   {
+   "name": "_ZN12StatusWindow4drawEv",
+   "pct": 4.5,
+   "byte": false,
+   "linked": false,
+   "osize": 6280,
+   "usize": 2808
+  },
+  {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
    "pct": 4.6,
    "byte": false,
@@ -1094,14 +1102,6 @@
    "linked": false,
    "osize": 74,
    "usize": 42
-  },
-  {
-   "name": "_ZN12StatusWindow4drawEv",
-   "pct": 4.8,
-   "byte": false,
-   "linked": false,
-   "osize": 6280,
-   "usize": 2808
   },
   {
    "name": "_tr_align",
@@ -9808,14 +9808,6 @@
    "usize": 236
   },
   {
-   "name": "_ZN11AbyssEngine13TextureShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
-   "pct": 60.4,
-   "byte": false,
-   "linked": false,
-   "osize": 352,
-   "usize": 340
-  },
-  {
    "name": "_ZN17PlayerFixedObject11setPositionEfff",
    "pct": 60.4,
    "byte": false,
@@ -18478,6 +18470,14 @@
    "linked": true,
    "osize": 42,
    "usize": 42
+  },
+  {
+   "name": "_ZN11AbyssEngine13TextureShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 352,
+   "usize": 352
   },
   {
    "name": "_ZN11AbyssEngine13TextureShader23ConnectShaderComponentsEji",

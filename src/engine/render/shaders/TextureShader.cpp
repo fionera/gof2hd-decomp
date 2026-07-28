@@ -62,7 +62,7 @@ namespace AbyssEngine {
 
             location = this->lightUniform[slot];
             if (location >= 0) {
-                glUniform3fv(location, 1, (float *) &engine->fogColor);
+                glUniform3fv(location, 1, engine->fogColor);
             }
 
             location = this->fogFarUniform[slot];
