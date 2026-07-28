@@ -6,10 +6,6 @@ ParticleSettings::ParticleSettings() {
 ParticleSettings::~ParticleSettings() {
 }
 
-void ParticleSettings_initSub(void *dst, void *parent); // lint: void_ptr external symbol, signature baked into mangled name
-
-// lint: void_ptr external symbol, signature baked into mangled name
-
 static const char ParticleSettings_str[401401] = {0};
 
 static inline float &asFloat(uint32_t &slot) {
@@ -67,16 +63,16 @@ int ParticleSettings::init() {
     asFloat(this->sets[0].posUp) = 30.0f;
     asFloat(this->sets[0].posDir) = -900.0f;
     this->sets[0].speedThreshold = 1;
-    ParticleSettings_initSub(&this->sets[29], &this->sets[0]);
-    ParticleSettings_initSub(&this->sets[30], &this->sets[0]);
-    ParticleSettings_initSub(&this->sets[31], &this->sets[0]);
-    ParticleSettings_initSub(&this->sets[32], &this->sets[0]);
-    ParticleSettings_initSub(&this->sets[33], &this->sets[0]);
-    ParticleSettings_initSub(&this->sets[34], &this->sets[0]);
-    ParticleSettings_initSub(&this->sets[35], &this->sets[0]);
-    ParticleSettings_initSub(&this->sets[36], &this->sets[0]);
-    ParticleSettings_initSub(&this->sets[37], &this->sets[0]);
-    ParticleSettings_initSub(&this->sets[38], &this->sets[0]);
+    this->sets[29] = this->sets[0];
+    this->sets[30] = this->sets[0];
+    this->sets[31] = this->sets[0];
+    this->sets[32] = this->sets[0];
+    this->sets[33] = this->sets[0];
+    this->sets[34] = this->sets[0];
+    this->sets[35] = this->sets[0];
+    this->sets[36] = this->sets[0];
+    this->sets[37] = this->sets[0];
+    this->sets[38] = this->sets[0];
 
     buf.ctor_char(ParticleSettings_str + 401182, false);
     asFloat(this->sets[4].flLifetime) = 200.0f;
@@ -546,7 +542,7 @@ int ParticleSettings::init() {
     this->sets[24].posSpread = 1000;
     this->sets[24].ySpread = 3000;
 
-    ParticleSettings_initSub(ringEmitter, muzzleFlash);
+    *ringEmitter = *muzzleFlash;
     this->sets[25].posRight = 0;
     this->sets[25].posUp = 0;
     this->sets[25].posDir = 0;
@@ -562,28 +558,28 @@ int ParticleSettings::init() {
     this->sets[25].color1 = 0;
     this->sets[25].fadeFrames = 0;
 
-    ParticleSettings_initSub(&this->sets[26], ringEmitter);
+    this->sets[26] = *ringEmitter;
     asFloat(this->sets[26].lifeBase) = 100.0f;
     asFloat(this->sets[26].uvU0) = 0.125f;
     asFloat(this->sets[26].uvV0) = 0.875f;
     asFloat(this->sets[26].uvU1) = 0.25f;
     asFloat(this->sets[26].uvV1) = 0.625f;
 
-    ParticleSettings_initSub(&this->sets[27], ringEmitter);
+    this->sets[27] = *ringEmitter;
     asFloat(this->sets[27].lifeBase) = 150.0f;
     asFloat(this->sets[27].uvU0) = 0.25f;
     asFloat(this->sets[27].uvV0) = 0.875f;
     asFloat(this->sets[27].uvU1) = 0.375f;
     asFloat(this->sets[27].uvV1) = 0.625f;
 
-    ParticleSettings_initSub(&this->sets[28], ringEmitter);
+    this->sets[28] = *ringEmitter;
     asFloat(this->sets[28].lifeBase) = 70.0f;
     asFloat(this->sets[28].uvU0) = 0.75f;
     asFloat(this->sets[28].uvV0) = 0.5f;
     asFloat(this->sets[28].uvU1) = 0.87109375f;
     asFloat(this->sets[28].uvV1) = 0.0f;
 
-    ParticleSettings_initSub(&this->sets[39], ringEmitter);
+    this->sets[39] = *ringEmitter;
     SetDefinition *plume = &this->sets[43];
     this->sets[39].flags = (uint32_t)(176146 + 0x100000);
     asFloat(this->sets[39].lifeBase) = 100.0f;
@@ -600,7 +596,7 @@ int ParticleSettings::init() {
     asFloat(this->sets[39].uvU1) = 0.998046875f;
     this->sets[39].uvV1 = 0x3b000000;
 
-    ParticleSettings_initSub(plume, dustCloud);
+    *plume = *dustCloud;
     this->sets[43].posDir = 0;
     this->sets[43].posUp = 0;
     this->sets[43].posRight = 0;
@@ -621,25 +617,25 @@ int ParticleSettings::init() {
     asFloat(this->sets[43].uvU1) = 0.499f;
     asFloat(this->sets[43].uvV1) = 0.499f;
 
-    ParticleSettings_initSub(&this->sets[44], plume);
+    this->sets[44] = *plume;
     asFloat(this->sets[44].uvU0) = 0.501f;
     asFloat(this->sets[44].uvV0) = 0.001f;
     asFloat(this->sets[44].uvU1) = 0.999f;
     asFloat(this->sets[44].uvV1) = 0.499f;
 
-    ParticleSettings_initSub(&this->sets[45], plume);
+    this->sets[45] = *plume;
     asFloat(this->sets[45].uvU0) = 0.001f;
     asFloat(this->sets[45].uvV0) = 0.501f;
     asFloat(this->sets[45].uvU1) = 0.499f;
     asFloat(this->sets[45].uvV1) = 0.999f;
 
-    ParticleSettings_initSub(&this->sets[46], plume);
+    this->sets[46] = *plume;
     asFloat(this->sets[46].uvU0) = 0.501f;
     asFloat(this->sets[46].uvV0) = 0.501f;
     asFloat(this->sets[46].uvU1) = 0.999f;
     asFloat(this->sets[46].uvV1) = 0.999f;
 
-    ParticleSettings_initSub(&this->sets[47], &this->sets[12]);
+    this->sets[47] = this->sets[12];
     buf.ctor_char(ParticleSettings_str + 397416, false);
     this->sets[47].frames = 0x10;
     asFloat(this->sets[47].uvU0) = 0.0f;

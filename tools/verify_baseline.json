@@ -212,7 +212,6 @@
   "_Z24Engine_resetStationLightii",
   "_Z24MenuTouchWindow_draw_r2dP10ModStation",
   "_Z24ModStation_ote_buttonRowP10ModStation",
-  "_Z24ParticleSettings_initSubPvS_",
   "_Z24SolarSystem_getRoutes_oiv",
   "_Z24Status_removeMission_otei",
   "_Z24Status_setPassengers_oteii",
