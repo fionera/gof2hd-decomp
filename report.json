@@ -5424,14 +5424,6 @@
    "usize": 184
   },
   {
-   "name": "_ZN9FModSound5pauseEPN4FMOD5EventE",
-   "pct": 32.9,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 84
-  },
-  {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjiihh",
    "pct": 33.0,
    "byte": false,
@@ -7806,6 +7798,14 @@
    "linked": false,
    "osize": 172,
    "usize": 172
+  },
+  {
+   "name": "_ZN9FModSound5pauseEPN4FMOD5EventE",
+   "pct": 49.3,
+   "byte": false,
+   "linked": false,
+   "osize": 92,
+   "usize": 84
   },
   {
    "name": "_ZN11MovingStars6updateEiN11AbyssEngine6AEMath6MatrixEbf",

@@ -623,8 +623,8 @@ void FModSound::freeAllEvents() {
 
 uint8_t FModSound::IsCategoryEnabled(int p1) {
     uint8_t r = 0;
-    if (p1 <= 3 && this->system != 0 && this->categoryEnabled[p1] != 0)
-        r = 1;
+    if (p1 <= 3 && this->system != 0)
+        r = this->categoryEnabled[p1] != 0;
     return r;
 }
 
@@ -639,9 +639,8 @@ void FModSound::setParamValue(const char *name, int idx, float val) {
 int FModSound::pause(FMOD::Event *e) {
     unsigned r = 0;
     if (e != 0 && this->system != 0) {
-        unsigned s[2];
-        int st = FMOD_Event_getState(e, s);
-        if (st == 0 && (int) (s[0] << 0x1c) < 0)
+        unsigned state;
+        if (FMOD_Event_getState(e, &state) == 0 && (int) (state << 0x1c) < 0)
             r = FMOD_Event_setPaused(e, 1) == 0;
     }
     return r;
