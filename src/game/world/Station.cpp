@@ -8,8 +8,8 @@
 #include "game/ship/Agent.h"
 #include "game/core/String.h"
 
-static const int kHiddenBlueprints[5] = {0, 0, 0, 0, 0};
-static const int kPirateStations[4] = {0, 0, 0, 0};
+static const int kHiddenBlueprints[5] = {132, 133, 134, 129, 123};
+static const int kPirateStations[4] = {1, 33, 47, 86};
 
 Station::Station()
     : name("Station"),
@@ -156,7 +156,7 @@ void Station::setItems(Array<Item *> *items, bool deep) {
         this->items = copy;
         ArraySetLength(items->size(), *copy);
         for (uint32_t i = 0; i < items->size(); i++)
-            (*copy)[i] = (*items)[i]->clone();
+            (*this->items)[i] = (*items)[i]->clone();
     }
 }
 
@@ -173,7 +173,7 @@ void Station::setShips(Array<Ship *> *ships, bool deep) {
         this->ships = copy;
         ArraySetLength(ships->size(), *copy);
         for (uint32_t i = 0; i < ships->size(); i++)
-            (*copy)[i] = (*ships)[i]->clone();
+            (*this->ships)[i] = (*ships)[i]->clone();
     }
 }
 
@@ -244,7 +244,8 @@ uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
 uint32_t Station::stationHasPirateBase() {
     for (uint32_t i = 0; i < 4; i++) {
         if (kPirateStations[i] == index) {
-            bool *flags = Globals::status->field_4c->data_;
+            unsigned char *flags =
+                reinterpret_cast<unsigned char *>(Globals::status->field_4c->data_);
             if (flags[i] == 0)
                 return 1;
         }
