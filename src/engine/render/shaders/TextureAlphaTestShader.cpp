@@ -9,7 +9,7 @@ namespace AbyssEngine {
 
     TextureAlphaTestShader::TextureAlphaTestShader() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"TextureAlphaTestShader";
+        this->name = String("TextureAlphaTestShader");
     }
 
     void TextureAlphaTestShader::Init(Engine *) {
@@ -40,7 +40,7 @@ namespace AbyssEngine {
 
             location = this->uLightPosLoc[programIndex];
             if (location >= 0) {
-                glUniform3fv(location, 1, (float *) &engine->fogColor);
+                glUniform3fv(location, 1, engine->fogColor);
             }
 
             location = this->uDiffuseLoc[programIndex];
@@ -71,19 +71,17 @@ namespace AbyssEngine {
             return;
         }
 
-        int position = this->aPositionLoc[programIndex];
-        int texcoord = this->aTexCoordLoc[programIndex];
-        glEnableVertexAttribArray(position);
-        glEnableVertexAttribArray(texcoord);
+        glEnableVertexAttribArray(this->aPositionLoc[programIndex]);
+        glEnableVertexAttribArray(this->aTexCoordLoc[programIndex]);
 
         if (mesh->uploaded == 0) {
-            glVertexAttribPointer(position, 3, 0x1406, 0, 0, mesh->positions);
-            glVertexAttribPointer(texcoord, 2, 0x1406, 0, 0, mesh->texCoords);
+            glVertexAttribPointer(this->aPositionLoc[programIndex], 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->aTexCoordLoc[programIndex], 2, 0x1406, 0, 0, mesh->texCoords);
         } else {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(position, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc[programIndex], 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(texcoord, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTexCoordLoc[programIndex], 2, 0x1406, 0, 0, 0);
         }
     }
 
