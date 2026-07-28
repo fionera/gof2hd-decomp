@@ -87,9 +87,11 @@ void TouchButton::setSplitText(String const &value) {
 }
 
 Vector TouchButton::getPosition() {
+    float fx = static_cast<float>(this->x);
+    float fy = static_cast<float>(this->y);
     Vector pos;
-    pos.y = static_cast<float>(this->y);
-    pos.x = static_cast<float>(this->x);
+    pos.x = fx;
+    pos.y = fy;
     pos.z = 0.0f;
     return pos;
 }

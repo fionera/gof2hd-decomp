@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.76,
-  "byte_exact": 1183,
-  "linked_exact": 2759,
-  "fuzzy_perfect": 2759,
+  "avg_match": 78.77,
+  "byte_exact": 1184,
+  "linked_exact": 2760,
+  "fuzzy_perfect": 2760,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -10734,14 +10734,6 @@
    "linked": false,
    "osize": 12,
    "usize": 10
-  },
-  {
-   "name": "_ZN11TouchButton11getPositionEv",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 30,
-   "usize": 30
   },
   {
    "name": "_ZN14PlayerAsteroid17setAsteroidCenterEN11AbyssEngine6AEMath6VectorE",
@@ -21766,6 +21758,14 @@
    "linked": true,
    "osize": 44,
    "usize": 44
+  },
+  {
+   "name": "_ZN11TouchButton11getPositionEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 30,
+   "usize": 30
   },
   {
    "name": "_ZN11TouchButton11setPositionEii",
