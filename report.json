@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.73,
+  "avg_match": 78.76,
   "byte_exact": 1183,
-  "linked_exact": 2757,
-  "fuzzy_perfect": 2757,
+  "linked_exact": 2759,
+  "fuzzy_perfect": 2759,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -960,14 +960,6 @@
    "usize": 228
   },
   {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 3.4,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
-  },
-  {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 3.4,
    "byte": false,
@@ -1086,6 +1078,14 @@
    "linked": false,
    "osize": 6820,
    "usize": 612
+  },
+  {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 4.7,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
   },
   {
    "name": "_ZN7StationC1EN11AbyssEngine6StringEiiii",
@@ -3094,22 +3094,6 @@
    "linked": false,
    "osize": 1296,
    "usize": 1424
-  },
-  {
-   "name": "_ZN11AbyssEngine13DrawFBOShaderC1Ev",
-   "pct": 23.1,
-   "byte": false,
-   "linked": false,
-   "osize": 48,
-   "usize": 84
-  },
-  {
-   "name": "_ZN11AbyssEngine13DrawFBOShaderC2Ev",
-   "pct": 23.1,
-   "byte": false,
-   "linked": false,
-   "osize": 48,
-   "usize": 84
   },
   {
    "name": "_ZN11AbyssEngine6String3SetEPKc",
@@ -18446,6 +18430,22 @@
    "linked": true,
    "osize": 116,
    "usize": 116
+  },
+  {
+   "name": "_ZN11AbyssEngine13DrawFBOShaderC1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 48,
+   "usize": 48
+  },
+  {
+   "name": "_ZN11AbyssEngine13DrawFBOShaderC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 48,
+   "usize": 48
   },
   {
    "name": "_ZN11AbyssEngine13DrawFBOShaderD0Ev",
