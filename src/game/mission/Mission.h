@@ -70,13 +70,11 @@ public:
 
     void setProductionGoods(int a, int b);
 
-    void *setTargetName(String rhs); // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
+    String &setTargetName(String rhs);
 
     void setTargetStation(int idx);
 
-    void *setTargetSystemName(const String &rhs); // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
-
-    // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
+    String &setTargetSystemName(const String &rhs);
 
     void setVisible(bool v);
 

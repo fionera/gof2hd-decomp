@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 78.77,
+  "avg_match": 78.8,
   "byte_exact": 1184,
-  "linked_exact": 2760,
-  "fuzzy_perfect": 2760,
+  "linked_exact": 2764,
+  "fuzzy_perfect": 2764,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -960,6 +960,14 @@
    "usize": 228
   },
   {
+   "name": "_ZN5Level19createRadioMessagesEi",
+   "pct": 3.4,
+   "byte": false,
+   "linked": false,
+   "osize": 12282,
+   "usize": 2708
+  },
+  {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 3.4,
    "byte": false,
@@ -1080,14 +1088,6 @@
    "usize": 612
   },
   {
-   "name": "_ZN5Level19createRadioMessagesEi",
-   "pct": 4.7,
-   "byte": false,
-   "linked": false,
-   "osize": 12282,
-   "usize": 2708
-  },
-  {
    "name": "_ZN7StationC1EN11AbyssEngine6StringEiiii",
    "pct": 4.7,
    "byte": false,
@@ -1110,6 +1110,14 @@
    "linked": false,
    "osize": 6280,
    "usize": 2808
+  },
+  {
+   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
+   "pct": 4.9,
+   "byte": false,
+   "linked": false,
+   "osize": 171316,
+   "usize": 135898
   },
   {
    "name": "_tr_align",
@@ -1358,14 +1366,6 @@
    "linked": false,
    "osize": 1204,
    "usize": 716
-  },
-  {
-   "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
-   "pct": 7.1,
-   "byte": false,
-   "linked": false,
-   "osize": 171316,
-   "usize": 135898
   },
   {
    "name": "_ZN11AbyssEngine13CurveGetValueEyPNS_5CurveE",
@@ -11486,38 +11486,6 @@
    "linked": false,
    "osize": 472,
    "usize": 484
-  },
-  {
-   "name": "_ZN7Mission13getClientNameEv",
-   "pct": 72.7,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
-  },
-  {
-   "name": "_ZN7Mission13getTargetNameEv",
-   "pct": 72.7,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
-  },
-  {
-   "name": "_ZN7Mission19getTargetSystemNameEv",
-   "pct": 72.7,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
-  },
-  {
-   "name": "_ZN7Mission20getTargetStationNameEv",
-   "pct": 72.7,
-   "byte": false,
-   "linked": false,
-   "osize": 14,
-   "usize": 12
   },
   {
    "name": "_ZN9BluePrint19getIngredientsValueEv",
@@ -31032,6 +31000,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN7Mission13getClientNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
+  },
+  {
    "name": "_ZN7Mission13getClientRaceEv",
    "pct": 100.0,
    "byte": true,
@@ -31046,6 +31022,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN7Mission13getTargetNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
   },
   {
    "name": "_ZN7Mission13setDifficultyEi",
@@ -31134,6 +31118,22 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN7Mission19getTargetSystemNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
+  },
+  {
+   "name": "_ZN7Mission20getTargetStationNameEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14,
+   "usize": 14
   },
   {
    "name": "_ZN7Mission22getProductionGoodIndexEv",

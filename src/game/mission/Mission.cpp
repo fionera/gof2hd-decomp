@@ -13,7 +13,7 @@ uint8_t Mission::isInstantActionMission() {
 }
 
 String Mission::getTargetStationName() {
-    return this->targetStationName;
+    return String(this->targetStationName, false);
 }
 
 bool Mission::isCampaignMission() {
@@ -25,7 +25,7 @@ String Mission::getDescription() {
 }
 
 String Mission::getTargetSystemName() {
-    return this->targetSystemName;
+    return String(this->targetSystemName, false);
 }
 
 String Mission::getName() {
@@ -40,13 +40,12 @@ void Mission::setProductionGoods(int a, int b) {
     this->productionGoodsB = b;
 }
 
-void *Mission::setTargetName(String rhs) { // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
-    // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
-    return &(this->targetName = rhs);
+String &Mission::setTargetName(String rhs) {
+    return this->targetName = rhs;
 }
 
 String Mission::getClientName() {
-    return this->name;
+    return String(this->name, false);
 }
 
 bool Mission::isVisible() {
@@ -58,16 +57,15 @@ bool Mission::isEmpty() {
 }
 
 String Mission::getTargetName() {
-    return this->targetName;
+    return String(this->targetName, false);
 }
 
 void Mission::setInstantActionMission(bool v) {
     this->instantAction = v;
 }
 
-void *Mission::setTargetSystemName(const String &rhs) { // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
-    // lint: void_ptr (ABI method return type; mangling-neutral but rule-locked)
-    return &(this->targetSystemName = rhs);
+String &Mission::setTargetSystemName(const String &rhs) {
+    return this->targetSystemName = rhs;
 }
 
 void Mission::setVisible(bool v) {
