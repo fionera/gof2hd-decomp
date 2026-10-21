@@ -46,6 +46,7 @@ namespace AbyssEngine {
             this->ambientColor.y = 0;
             this->ambientColor.z = 0;
 
+            int defaultTextureIndex;
             if (other != 0) {
                 for (int i = 0; i != 8; ++i)
                     this->textures[i] = other->textures[i];
@@ -60,8 +61,8 @@ namespace AbyssEngine {
                 this->blendMode = 0;
                 AEMath::Vector defaultColor = {-10.0f, 0, 0};
                 this->ambientColor = defaultColor;
-                for (int i = 0; i != 8; ++i)
-                    this->textures[i] = -1;
+                for (defaultTextureIndex = 0; defaultTextureIndex != 8; ++defaultTextureIndex)
+                    this->textures[defaultTextureIndex] = -1;
             }
         }
 
