@@ -341,16 +341,6 @@ static inline void paintcanvas_ext_di2_glenable(unsigned int cap) { glEnable(cap
 
 void paintcanvas_ext_add_resource(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_gl_a(unsigned int);
-
-void paintcanvas_ext_gl_bind(unsigned int, unsigned int);
-
-void paintcanvas_ext_gl_c(unsigned int);
-
-void *paintcanvas_ext_cube_restore(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_cube_tail(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_set_wvm2(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
@@ -828,7 +818,6 @@ unsigned short PaintCanvas::GetImage2DHeight(unsigned int index) {
     return 0;
 }
 
-static char paintcanvas_g_flipv = 0;
 
 void PaintCanvas::MeshSetUv(unsigned int index, unsigned short sub,
                             float u, float v) {
@@ -837,7 +826,7 @@ void PaintCanvas::MeshSetUv(unsigned int index, unsigned short sub,
         if ((unsigned int) sub < (unsigned int) mesh->vertexCount) {
             float *p = (float *) (mesh->uvs + sub * 8);
             p[0] = u;
-            if (paintcanvas_g_flipv != 0) {
+            if (Engine::enableShader != 0) {
                 p[1] = 1.0f - v;
                 return;
             }
@@ -1682,20 +1671,20 @@ int PaintCanvas::GetHeight() {
     return this->engine->GetDisplayHeight();
 }
 
-static char paintcanvas_g_cube_enabled = 0;
-static int paintcanvas_g_cube_slot = 0;
-
 void PaintCanvas::ChangeCubeTexture(unsigned int idx) {
-    if (paintcanvas_g_cube_enabled != 0 && idx < this->cubeTextures.count) {
+    if (Engine::enableShader != 0 && idx < this->cubeTextures.count) {
         PCCubeTexView *tex = (PCCubeTexView *) (this->cubeTextures.data_)[idx];
         if (tex->restoreFlag == 0) {
-            return paintcanvas_ext_cube_tail(paintcanvas_ext_cube_restore(tex->pathField));
+            // The original fetches the texture name (for a log line compiled out of release).
+            char *name = reinterpret_cast<AbyssEngine::String *>(tex->pathField)->GetAEChar();
+            delete[] name;
+            return;
         }
-        paintcanvas_g_cube_slot = idx;
-        paintcanvas_ext_gl_a(0x84c7);
+        AbyssEngine::CubeMapSetIndex = idx;
+        glActiveTexture(0x84c7);
         PCCubeTexView *tex2 = (PCCubeTexView *) (this->cubeTextures.data_)[idx];
-        paintcanvas_ext_gl_bind(0x8513, (unsigned int) tex2->glTexId);
-        return paintcanvas_ext_gl_c(0x84c0);
+        glBindTexture(0x8513, (unsigned int) tex2->glTexId);
+        return glActiveTexture(0x84c0);
     }
 }
 
@@ -2445,25 +2434,22 @@ void PaintCanvas::MeshChangeShaderAnimValue(AbyssEngine::Mesh *mesh, float value
     return paintcanvas_ext_shader_anim(this, mesh->animation);
 }
 
-static int *const g_resume_curtex_7e828 = &paintcanvas_g_cube_slot;
-
 void PaintCanvas::Resume() {
-    unsigned int out = 0;
     for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
+        unsigned int out = 0;
         PCCubeTexView *res = (PCCubeTexView *) (this->cubeTextures.data_)[i];
         char *path = reinterpret_cast<AbyssEngine::String *>(res->pathField)->GetAEChar();
         float f = ((PCCubeTexView *) (this->cubeTextures.data_)[i])->scale;
         int ok = AbyssEngine::TextureCreateFromFile(this->engine, path, nullptr, nullptr,
                                                     &out, false, f);
         if (ok == 1) {
-            ((PCCubeTexView *) (this->cubeTextures.data_)[i])->glTexId = 0;
+            ((PCCubeTexView *) (this->cubeTextures.data_)[i])->glTexId = out;
         }
         delete[] path;
     }
-    int *cur = g_resume_curtex_7e828;
-    if (*cur != 0) {
+    if (AbyssEngine::CubeMapSetIndex != 0) {
         glActiveTexture(0x84c7);
-        PCCubeTexView *res = (PCCubeTexView *) (this->cubeTextures.data_)[*cur];
+        PCCubeTexView *res = (PCCubeTexView *) (this->cubeTextures.data_)[AbyssEngine::CubeMapSetIndex];
         glBindTexture(0x8513, (unsigned int) res->glTexId);
         glActiveTexture(0x84c0);
     }
@@ -3373,14 +3359,12 @@ void PaintCanvas::MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
                                   unsigned short v0, unsigned short v1, unsigned short v2) {
     if (meshIndex < this->meshCount) {
         PCMeshView *mesh = (PCMeshView *) (this->meshes)[meshIndex];
-        unsigned int t3 = tri * 3;
-        if (t3 >= mesh->indexCount) {
-            return;
+        if (tri * 3 < mesh->indexCount) {
+            unsigned short *buf = (unsigned short *) mesh->indexBuffer;
+            buf[tri * 3] = v0;
+            buf[tri * 3 + 1] = v1;
+            buf[tri * 3 + 2] = v2;
         }
-        unsigned short *buf = (unsigned short *) mesh->indexBuffer;
-        buf[t3] = v0;
-        buf[t3 + 1] = v1;
-        buf[t3 + 2] = v2;
     }
 }
 
