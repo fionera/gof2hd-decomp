@@ -698,7 +698,7 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
             this->field_0x110 = 0;
             this->_b5c = 0;
             this->hud->enableFireForTutorial(false);
-            reinterpret_cast<uint8_t *>(&this->levelScript->m_nFlags)[1] = 1;
+            this->levelScript->m_bCinematicBreak = 1;
             this->jumpActive = 1;
             return;
         } else if (!this->player->isMining() && !this->player->isDockedToDockingPoint()) {
@@ -4174,7 +4174,7 @@ void MGame::OnRender2D() {
         this->field_0x110 = 0;
         this->_b5c = 0;
     } else if (this->jumpActive || this->jumpDriveActive) {
-        if (Globals::status->getCurrentCampaignMission() >= 8 && !(uint8_t) this->levelScript->m_nFlags &&
+        if (Globals::status->getCurrentCampaignMission() >= 8 && !this->levelScript->field_0x10 &&
             !this->jumpDriveActive && !this->player->isDockingToPlanet() && !this->levelScript->getEvent())
             this->hud->drawOrbitInformation();
         if (this->levelScript->startSequenceOver() || !this->levelScript->startSequence())

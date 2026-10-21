@@ -19,7 +19,8 @@ public:
     int m_nTimeLimit;
     int field_0x4;
     long long m_nScriptTime;
-    uint16_t m_nFlags;
+    uint8_t field_0x10;
+    uint8_t m_bCinematicBreak; // returned by process(): a cutscene is running
     uint16_t field_0x12;
     TargetFollowCamera *m_pCamera;
     Level *m_pLevel;
