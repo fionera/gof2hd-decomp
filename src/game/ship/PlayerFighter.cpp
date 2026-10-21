@@ -1489,12 +1489,16 @@ void PlayerFighter::roll(int angle) {
         bank = 0.00035f;
     } else if (rightX < 0.0f && rightY < 0.0f) {
         bank = 0.00075f;
+    } else if (rightX < 0.0f && rightY >= 0.0f) {
+        bank = rightX > -0.3f ? 0.00025f : 0.00035f;
     } else if (rightX >= 0.0f && rightY < 0.0f) {
         bank = -0.00075f;
     } else if (rightX > 0.0f && rightY > 0.0f) {
-        bank = rightX > 0.3f ? -0.00035f : -0.00025f;
-    } else if (rightX < 0.0f && rightY >= 0.0f) {
-        bank = rightX > -0.3f ? 0.00025f : 0.00035f;
+        if (rightX <= 0.3f) {
+            bank = -0.00025f;
+        } else {
+            bank = -0.00035f;
+        }
     }
 
     if (rightX < 0.0f || rightX > 0.0f) {

@@ -93,15 +93,16 @@ void AutoPilotList::up() {
 }
 
 int AutoPilotList::touch(int px, int py) {
-    int row;
-    if (px < this->x ||
-        this->x + this->width <= px ||
-        (row = (py - this->y - 0xe) / 0xf, py - this->y < -0xf) ||
-        (uint32_t)(row + 1) >= this->entries->size()) {
+    if (px < this->x || this->x + this->width <= px) {
+        return -1;
+    }
+    int dy = py - this->y;
+    int row = (dy - 0xe) / 0xf + 1;
+    if (dy < -0xf || (uint32_t)row >= this->entries->size()) {
         return -1;
     }
     this->selected = 0;
-    for (int i = 0; i <= row; i++)
+    for (int i = 0; i < row; i++)
         this->down();
     return this->selected;
 }

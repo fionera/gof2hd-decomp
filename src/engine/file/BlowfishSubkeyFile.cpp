@@ -42,7 +42,8 @@ extern "C" void Blowfish_decipher(unsigned int *xl, unsigned int *xr) { // lint:
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
     unsigned int temp;
-    for (unsigned int i = 17; i > 1; --i) {
+    short i;
+    for (i = 17; i > 1; --i) {
         Xl = Xl ^ P[i];
         Xr = F(Xl) ^ Xr;
         temp = Xl;
@@ -86,10 +87,11 @@ extern "C" short InitializeBlowfish(unsigned char key[], short keybytes) { // li
     }
     std::fclose(SubkeyFile);
 
+    short k;
     short j = 0;
     for (short i = 0; i < 18; ++i) {
         data = 0;
-        for (unsigned short k = 0; k < 4; ++k) {
+        for (k = 0; k < 4; ++k) {
             data = (data << 8) | key[j];
             j = j + 1;
             if (j >= keybytes)

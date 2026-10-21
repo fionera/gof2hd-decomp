@@ -352,8 +352,8 @@ void ndk_iapBoughtConsumable(unsigned int consumable) {
     if (consumable > 4 || gEngine == nullptr)
         return;
 
-    // TODO(decomp): the original shares one non-tail call after a tbb switch (with a second
-    // range check); clang folds this to tail calls here.
+    // setBaughtCredits returns bool: the zeroext return keeps these calls out of tail position,
+    // so the five cases share one call.
     switch (consumable) {
     case 0:
         setBaughtCredits(100000);
@@ -373,7 +373,7 @@ void ndk_iapBoughtConsumable(unsigned int consumable) {
     }
 }
 
-int setBaughtCredits(int amount) {
+bool setBaughtCredits(int amount) {
     int *packFlag;
     if (amount == 100000) {
         Globals::status->changeCredits(amount);
@@ -391,7 +391,7 @@ int setBaughtCredits(int amount) {
         Globals::status->changeCredits(amount);
         packFlag = &gi_iap_buy_credit_pack5_pressed;
     } else {
-        return 0;
+        return false;
     }
 
     if (*packFlag != 0) {
@@ -399,7 +399,7 @@ int setBaughtCredits(int amount) {
         checkFirstCreditPackBoughtWriteAction();
     }
     ndk_autosave();
-    return 1;
+    return true;
 }
 
 void checkFirstCreditPackBoughtWriteAction() {

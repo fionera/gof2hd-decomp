@@ -1421,15 +1421,13 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
             uint16_t *lodMeshes = new uint16_t[lodCount];
             uint32_t *lodMeshIds = new uint32_t[lodCount];
             int *lodDists = new int[lodCount];
-            int dist = 5000;
             for (int i = 0; i < lodCount; i++) {
                 lodMeshes[i] = gShipLodMeshes[kind][i];
-                lodDists[i] = dist;
+                lodDists[i] = 5000 + i * 8000;
                 if (!wireframe) {
                     Globals::Canvas->MeshCreate(gShipLodMeshes[kind][i], lodMeshIds[i], true);
                     Globals::Canvas->MeshChangeResourceMaterial(lodMeshIds[i], 32200 + kind);
                 }
-                dist += 8000;
             }
             if (wireframe) {
                 geom->setLodMeshes(lodMeshes, lodDists, lodCount);

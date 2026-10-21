@@ -239,24 +239,24 @@ ListItem::ListItem(AbyssEngine::String *src, bool b, int v) {
 void *ListItem::init() { // lint: void_ptr (exported signature; return type baked into ABI)
     // lint: void_ptr (exported signature; return type baked into ABI)
     // NOTE: lines (offset 0) is intentionally NOT zeroed here; each ctor sets it directly.
+    this->itemId = -1;
+    this->name2 = 0;
+    this->imageIndex = -1;
     this->selectable = 0;
     this->slot = -1;
-    this->itemId = -1;
-    this->buttonKind = -1;
-    this->imageIndex = -1;
-    this->textButton = 0;
-    this->inTabIndex = -1;
-    this->subTabIndex = -1;
-    this->mission = 0;
-    this->pendingProduct = 0;
-    this->name = 0;
-    this->name2 = 0;
-    this->text = 0;
-    this->craftable = 0;
     this->agent = 0;
     this->bluePrint = 0;
-    this->ship = 0;
     this->item = 0;
+    this->ship = 0;
+    this->subTabIndex = -1;
+    this->buttonKind = -1;
+    this->textButton = 0;
+    this->text = 0;
+    this->pendingProduct = 0;
+    this->inTabIndex = -1;
+    this->mission = 0;
+    this->name = 0;
+    this->craftable = 0;
     return &this->agent;
 }
 

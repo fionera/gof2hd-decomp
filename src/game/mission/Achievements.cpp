@@ -336,9 +336,10 @@ void Achievements::initCheckEquipmentAndWeapons() {
 
 void Achievements::countMedals() {
     int *medals = this->medals;
+    int i = 0;
     this->medalCount = 0;
     int golds = 0;
-    for (int i = 0; i < 36; i++) {
+    for (; i < 36; i++) {
         switch (medals[i]) {
             case 0:
                 break;
