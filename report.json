@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 98.9,
+  "avg_match": 98.91,
   "byte_exact": 1337,
   "linked_exact": 4314,
   "fuzzy_perfect": 4314,
@@ -1096,14 +1096,6 @@
    "usize": 182
   },
   {
-   "name": "_ZN11SpaceLounge4initEv",
-   "pct": 85.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2256,
-   "usize": 2272
-  },
-  {
    "name": "_ZN3Hud8drawMenuEi",
    "pct": 85.3,
    "byte": false,
@@ -1136,28 +1128,20 @@
    "usize": 1008
   },
   {
+   "name": "_ZN11SpaceLounge4initEv",
+   "pct": 86.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2256,
+   "usize": 2264
+  },
+  {
    "name": "_ZN13RecordHandler11readMissionEj",
    "pct": 86.2,
    "byte": false,
    "linked": false,
    "osize": 668,
    "usize": 668
-  },
-  {
-   "name": "_ZN14MissionsWindow10OnTouchEndEii",
-   "pct": 87.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1088,
-   "usize": 1080
-  },
-  {
-   "name": "_ZN7StarMap16drawOnScreenInfoEib",
-   "pct": 87.3,
-   "byte": false,
-   "linked": false,
-   "osize": 3488,
-   "usize": 3480
   },
   {
    "name": "_ZN9PlayerEgo20approachDockingPointEP3HudiP5Radar",
@@ -1182,6 +1166,14 @@
    "linked": false,
    "osize": 1244,
    "usize": 1244
+  },
+  {
+   "name": "_ZN7StarMap16drawOnScreenInfoEib",
+   "pct": 88.6,
+   "byte": false,
+   "linked": false,
+   "osize": 3488,
+   "usize": 3476
   },
   {
    "name": "_ZN15MenuTouchWindow14startSupernovaEv",
@@ -1256,14 +1248,6 @@
    "usize": 772
   },
   {
-   "name": "_ZN12WantedWindow10OnTouchEndEii",
-   "pct": 90.1,
-   "byte": false,
-   "linked": false,
-   "osize": 924,
-   "usize": 920
-  },
-  {
    "name": "_ZN8FileRead10loadWantedEv",
    "pct": 90.5,
    "byte": false,
@@ -1318,22 +1302,6 @@
    "linked": false,
    "osize": 1064,
    "usize": 1064
-  },
-  {
-   "name": "_ZN10MiningGameC1EiiP3Hud",
-   "pct": 93.2,
-   "byte": false,
-   "linked": false,
-   "osize": 972,
-   "usize": 972
-  },
-  {
-   "name": "_ZN10MiningGameC2EiiP3Hud",
-   "pct": 93.2,
-   "byte": false,
-   "linked": false,
-   "osize": 972,
-   "usize": 972
   },
   {
    "name": "_ZN13RecordHandler16recordStoreWriteEi",
@@ -1600,6 +1568,22 @@
    "usize": 704
   },
   {
+   "name": "_ZN12WantedWindow10OnTouchEndEii",
+   "pct": 97.9,
+   "byte": false,
+   "linked": false,
+   "osize": 924,
+   "usize": 924
+  },
+  {
+   "name": "_ZN14MissionsWindow10OnTouchEndEii",
+   "pct": 97.9,
+   "byte": false,
+   "linked": false,
+   "osize": 1088,
+   "usize": 1088
+  },
+  {
    "name": "_ZN14PlayerGasCloud6updateEi",
    "pct": 98.2,
    "byte": false,
@@ -1654,6 +1638,22 @@
    "linked": false,
    "osize": 584,
    "usize": 584
+  },
+  {
+   "name": "_ZN10MiningGameC1EiiP3Hud",
+   "pct": 99.4,
+   "byte": false,
+   "linked": false,
+   "osize": 972,
+   "usize": 972
+  },
+  {
+   "name": "_ZN10MiningGameC2EiiP3Hud",
+   "pct": 99.4,
+   "byte": false,
+   "linked": false,
+   "osize": 972,
+   "usize": 972
   },
   {
    "name": "_ZN10HangarList11initShipTabEP4Ship",
