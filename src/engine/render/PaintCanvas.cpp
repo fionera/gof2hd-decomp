@@ -345,16 +345,6 @@ static inline void paintcanvas_ext_set_wvm2(void *self, void *m) { ((PaintCanvas
 
 static inline void paintcanvas_ext_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_init_setorientation(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline int paintcanvas_ext_init_dispwidth(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayWidth(); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline int paintcanvas_ext_init_dispheight(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayHeight(); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline float paintcanvas_ext_init_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
-
-void paintcanvas_ext_init_setpersp(void *self, float a, float b, float c); // lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_draw_mesh(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void *paintcanvas_ext_dss1_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); } // lint: void_ptr (external symbol; mangling must match lib)
@@ -486,8 +476,6 @@ static inline int paintcanvas_ext_sgo_dispheight(void *eng) { return ((AbyssEngi
 static inline float paintcanvas_ext_sgo_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_sgo_setpersp(void *self, float a, float b, float c); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_mc_matcreate(void *self, unsigned short id, unsigned int *out) { unsigned int o; ((PaintCanvas*)self)->MaterialCreate(id, o); *out = o; } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_dm_memcpy(void *dst, const void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -3332,21 +3320,16 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
 
 void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangleCount,
                              signed char meshType, unsigned short matResId, unsigned int &out) {
-    int result = -1;
     unsigned int mat = 0xffffffff;
+    this->MaterialCreate(matResId, mat);
     AbyssEngine::Mesh *mesh = 0;
-    paintcanvas_ext_mc_matcreate(this, matResId, &mat);
-    int ok = AbyssEngine::MeshCreate(this->engine, vertexCount, triangleCount,
-                                     meshType, &mesh);
+    int ok = AbyssEngine::MeshCreate(this->engine, vertexCount, triangleCount, meshType, &mesh);
+    int result = -1;
     if (ok == 1) {
-        if (0xfffffffe < this->materials.count) {
-            AbyssEngine::Material *m = this->materials.data_[-4];
-            if (mesh) {
-                ((AbyssEngine::Mesh *) mesh)->material = m;
-            }
+        if (mat <= this->materials.count) {
+            mesh->material = this->materials.data_[mat];
         }
-        ArrayAdd<AbyssEngine::Mesh *>((AbyssEngine::Mesh *) mesh,
-                                      this->meshes);
+        ArrayAdd<AbyssEngine::Mesh *>(mesh, this->meshes);
         result = this->meshes.count - 1;
     }
     out = (unsigned int) result;
