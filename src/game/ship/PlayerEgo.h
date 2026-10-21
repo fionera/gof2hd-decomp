@@ -144,7 +144,8 @@ public:
     TractorBeam *tractorBeam;
     Array<RepairBeam *> *repairBeams;
     int asteroidTarget;
-    int dockingState;
+    uint8_t dockingState;
+    uint8_t pad_0x1c1[3];
     int dockingPointIndex;
 
     AbyssEngine::AEMath::Vector miningUpVec;
