@@ -6906,126 +6906,100 @@ void Level::createScene() {
     }
 }
 
-void Level::renderBG(int t) {
-    uintptr_t canvas = (uintptr_t) Globals::Canvas;
-
-    ((PaintCanvas *) (long) (canvas))->SetColor(0xffffffffu);
-    ((PaintCanvas *) (long) (canvas))->BeginBG();
-    ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
-    ((PaintCanvas *) (long) (canvas))->CameraGetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent());
-
-    Matrix *sky = &this->skyMatrix;
-    (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-    sky->m[7] = 0;
-    sky->m[3] = 0;
-    sky->m[11] = 0;
-
-    Matrix *cloudMtx = &this->cloudMatrix;
-    if (Globals::status->inAlienOrbit() == 0 &&
-        ((SolarSystem *) Globals::status->getSystem())->getIndex() == 0x1b) {
-        Vector dir = AbyssEngine::AEMath::VectorNormalize(this->starSystem->getLightDirection());
-        Vector right = AbyssEngine::AEMath::VectorNormalize(
-            AbyssEngine::AEMath::VectorCross(Vector{1.0f, 0.0f, 0.0f}, dir));
-        Vector up = AbyssEngine::AEMath::VectorNormalize(
-            AbyssEngine::AEMath::VectorCross(right, dir));
-        AbyssEngine::AEMath::MatrixSetRotation(*cloudMtx, -up, dir, right);
+void Level::renderBG(int dt) {
+    using namespace AbyssEngine::AEMath;
+    Globals::Canvas->SetColor(0xffffffff);
+    Globals::Canvas->BeginBG();
+    skyMatrix = MatrixGetInverse(*(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
+    skyMatrix.m[3] = 0;
+    skyMatrix.m[7] = 0;
+    skyMatrix.m[11] = 0;
+    if (!Globals::status->inAlienOrbit() && ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 27) {
+        // align the skybox with the star's light direction
+        Vector side = {1.0f, 0.0f, 0.0f};
+        Vector dir = VectorNormalize(starSystem->getLightDirection());
+        Vector right = VectorNormalize(VectorCross(side, dir));
+        Vector up = VectorNormalize(VectorCross(right, dir));
+        side = -up;
+        MatrixSetRotation(cloudMatrix, side, dir, right);
     } else {
-        AbyssEngine::AEMath::MatrixSetRotation(*cloudMtx, this->skyRotX, this->skyRotY, this->skyRotZ);
+        MatrixSetRotation(cloudMatrix, skyRotX, skyRotY, skyRotZ);
     }
-    *sky *= *cloudMtx;
+    skyMatrix *= cloudMatrix;
+    Globals::Canvas->SetWorldViewMatrix(skyMatrix);
+    Globals::Canvas->SetTexture(field_19c, 0xffffffff);
+    Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_dummy);
+    Globals::Canvas->DrawMesh(field_08);
+    Globals::Canvas->SetTexture(field_198, 0xffffffff);
+    Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_2);
+    Globals::Canvas->DrawMesh(skyboxMesh);
 
-    ((PaintCanvas *) (long) (canvas))->SetWorldViewMatrix(this->skyMatrix);
-    ((PaintCanvas *) (long) (canvas))->SetTexture((unsigned int) (*(unsigned *) &this->field_19c), 0);
-    ((PaintCanvas *) (long) (canvas))->SetBlendMode(AbyssEngine::BlendMode_dummy);
-    ((PaintCanvas *) (long) (canvas))->DrawMesh((unsigned int) (*(unsigned *) &this->field_08));
-    ((PaintCanvas *) (long) (canvas))->SetTexture((unsigned int) (*(unsigned *) &this->field_198), 0);
-    ((PaintCanvas *) (long) (canvas))->SetBlendMode(AbyssEngine::BlendMode_2);
-    ((PaintCanvas *) (long) (canvas))->DrawMesh((unsigned int) (*(unsigned *) &this->skyboxMesh));
-
-    if (this->field_1b4 != -1) {
-        ((PaintCanvas *) (long) (canvas))->SetTexture((unsigned int) (*(unsigned *) &this->field_1b8), 0);
-        ((PaintCanvas *) (long) (canvas))->SetBlendMode(AbyssEngine::BlendMode_1);
-        ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
-        ((PaintCanvas *) (long) (canvas))->CameraGetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent());
-        (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-        (*sky = *sky);
-        sky->m[7] = 0;
-        sky->m[3] = 0;
-        sky->m[11] = 0;
-        (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-        ((PaintCanvas *) (long) (canvas))->
-                DrawTransform((unsigned int) (long) (*(Matrix **) &this->field_1b4), nullptr);
+    if (field_1b4 != -1) {
+        Globals::Canvas->SetTexture(field_1b8, 0xffffffff);
+        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_1);
+        skyMatrix = MatrixGetInverse(*(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
+        skyMatrix.m[3] = 0;
+        skyMatrix.m[7] = 0;
+        skyMatrix.m[11] = 0;
+        Matrix view = MatrixGetInverse(skyMatrix);
+        Globals::Canvas->DrawTransform(field_1b4, &view);
     }
 
-    (*(StarSystem **) &this->starSystem)->render();
+    starSystem->render();
 
-    if (Globals::status->inSupernovaSystem() != 0 && this->skyboxTexture != -1) {
-        int camp = Globals::status->getCurrentCampaignMission();
-        ((PaintCanvas *) (long) (canvas))->SetTexture((unsigned int) (*(unsigned *) &this->field_1a0), 0);
-        ((PaintCanvas *) (long) (canvas))->SetBlendMode(AbyssEngine::BlendMode_2);
-        float scale = (0x6a < camp) ? 1.5f : 1.0f;
-        int flag = (int) (scale * t);
-        int xf = (int) (long) ((PaintCanvas *) (long) (canvas))->TransformGetTransform(0);
-        ((AbyssEngine::Transform *) (intptr_t) xf)->Update((int64_t) flag, true);
-        (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-        ((PaintCanvas *) (long) (canvas))->DrawTransform((unsigned int) (long) (*(Matrix **) &this->field_10), nullptr);
-        xf = (int) (long) ((PaintCanvas *) (long) (canvas))->TransformGetTransform(0);
-        ((AbyssEngine::Transform *) (intptr_t) xf)->Update((int64_t) flag, true);
-        ((PaintCanvas *) (long) (canvas))->DrawTransform((unsigned int) (long) (*(Matrix **) &this->field_18), nullptr);
+    if (Globals::status->inSupernovaSystem() && skyboxTexture != -1) {
+        int mission = Globals::status->getCurrentCampaignMission();
+        Globals::Canvas->SetTexture(field_1a0, 0xffffffff);
+        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_2);
+        long long time = (long long) ((mission > 0x6a ? 1.5f : 1.0f) * (float) dt);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_10))->Update(time, false);
+        Matrix view = MatrixGetInverse(skyMatrix);
+        Globals::Canvas->DrawTransform(field_10, &view);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_18))->Update(time, false);
+        Globals::Canvas->DrawTransform(field_18, &view);
     }
 
-    if (this->field_1bc != -1) {
-        ((PaintCanvas *) (long) (canvas))->SetTexture((unsigned int) (*(unsigned *) &this->field_1c0), 0);
-        ((PaintCanvas *) (long) (canvas))->SetBlendMode(AbyssEngine::BlendMode_2);
-        ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
-        ((PaintCanvas *) (long) (canvas))->CameraGetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent());
-        (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-        (*sky = *sky);
-        int xf = (int) (long) ((PaintCanvas *) (long) (canvas))->TransformGetTransform(0);
-        int before = *(int *) (xf + 0x110);
-        int xf2 = (int) (long) ((PaintCanvas *) (long) (canvas))->TransformGetTransform(0);
-        ((AbyssEngine::Transform *) (intptr_t) xf2)->Update((int64_t)(int)t, true);
-        if (*(int *) (xf + 0x110) < before) {
-            AbyssEngine::AERandom *rng = Globals::rnd;
-            const float toAngle = (1.0f / 65536.0f) * 6.2831855f;
-            float ax = (float) rng->nextInt(0x10000) * toAngle;
-            float ay = (float) rng->nextInt(0x10000) * toAngle;
-            float az = (float) rng->nextInt(0x10000) * toAngle;
-            AbyssEngine::AEMath::MatrixSetRotation(this->reversalMatrix, ax, ay, az);
+    if (field_1bc != -1) {
+        Globals::Canvas->SetTexture(field_1c0, 0xffffffff);
+        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_2);
+        skyMatrix = MatrixGetInverse(*(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
+        AbyssEngine::Transform *transform = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_1bc);
+        int before = (int) transform->currentTime;
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_1bc))->Update(dt, false);
+        if ((int) transform->currentTime < before) {
+            // the animation wrapped around: pick a new random orientation
+            float x = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
+            float y = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
+            float z = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
+            MatrixSetRotation(reversalMatrix, x, y, z);
         }
-        (*sky *= this->reversalMatrix);
-        sky->m[3] = 0;
-        sky->m[7] = 0;
-        sky->m[11] = 0;
-        (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-        ((PaintCanvas *) (long) (canvas))->
-                DrawTransform((unsigned int) (long) (*(Matrix **) &this->field_1bc), nullptr);
+        skyMatrix *= reversalMatrix;
+        skyMatrix.m[7] = 0;
+        skyMatrix.m[3] = 0;
+        skyMatrix.m[11] = 0;
+        Matrix view = MatrixGetInverse(skyMatrix);
+        Globals::Canvas->DrawTransform(field_1bc, &view);
     }
 
-    if (this->supernovaFlareActive != 0 &&
-        1.0f <= gEngine->explosionTimeline) {
-        ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
-        ((PaintCanvas *) (long) (canvas))->CameraGetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent());
-        (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-        (*sky = *sky);
-        sky->m[7] = 0;
-        sky->m[3] = 0;
-        sky->m[11] = 0;
-        ((PaintCanvas *) (long) (canvas))->SetWorldViewMatrix(this->skyMatrix);
-        ((PaintCanvas *) (long) (canvas))->SetColor(0xffffffffu);
-        const AbyssEngine::AEMath::Matrix *eng =
-                (const AbyssEngine::AEMath::Matrix *) Globals::Canvas->engine;
-        gEngine->SetModelMatrix(*eng);
-        ((PaintCanvas *) (long) (canvas))->SetTexture((unsigned int) (unsigned) this->supernovaFlareTexture, 0);
-        ((PaintCanvas *) (long) (canvas))->SetBlendMode(AbyssEngine::BlendMode_8);
-        ((Engine *) Globals::Canvas->engine)->LightSetLight(0x4000);
-        gEngine->GlEnable((unsigned) (uintptr_t) Globals::Canvas->engine, 0);
-        ((PaintCanvas *) (long) (canvas))->DrawMesh((unsigned int) (unsigned) this->supernovaFlareMesh);
-        gEngine->GlEnable((unsigned) (uintptr_t) Globals::Canvas->engine, 0);
-        ((Engine *) Globals::Canvas->engine)->LightEnable(false);
+    if (supernovaFlareActive && *reinterpret_cast<float *>(&Globals::options[0x28]) >= 1.0f) {
+        skyMatrix = MatrixGetInverse(*(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
+        skyMatrix.m[3] = 0;
+        skyMatrix.m[7] = 0;
+        skyMatrix.m[11] = 0;
+        Globals::Canvas->SetWorldViewMatrix(skyMatrix);
+        Globals::Canvas->SetColor(0xffffffff);
+        Matrix identity;
+        Globals::Canvas->engine->SetModelMatrix(identity);
+        Globals::Canvas->SetTexture(supernovaFlareTexture, field_1c8);
+        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_8);
+        Globals::Canvas->engine->LightSetLight(0x4000);
+        Globals::Canvas->engine->GlEnable(0x1100013, true);
+        Globals::Canvas->DrawMesh(supernovaFlareMesh);
+        Globals::Canvas->engine->GlEnable(0x1100013, false);
+        Globals::Canvas->engine->LightEnable(false);
     }
 
-    ((PaintCanvas *) (long) (canvas))->EndBG();
+    Globals::Canvas->EndBG();
 }
 
 static inline void levelSpawnFar(Level *self, int *kiPlayer) {
