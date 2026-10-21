@@ -1,4 +1,5 @@
 #include "engine/render/LodMeshMerger.h"
+#include "engine/math/BSphere.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
 #include <cstdlib>
@@ -181,65 +182,47 @@ void LodMeshMerger::init() {
     update();
 }
 
-Mesh *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
-    Mesh *out = (Mesh *) ::operator new(sizeof(Mesh));
+Mesh *LodMeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
+    Mesh *out = new Mesh();
+    out->vertexCount = mesh->vertexCount;
+    out->indexCount = mesh->indexCount;
+    out->vertexFormat = mesh->vertexFormat;
+    if (mesh->vertexFormat & 2)
+        out->texCoords = mesh->texCoords;
+    if (mesh->vertexFormat & 8)
+        out->colors = mesh->colors;
+    if (mesh->vertexFormat & 0x10)
+        out->indices = mesh->indices;
 
-    memset(out, 0, sizeof(Mesh));
-    out->boundsRadiusSq = 1.0f;
-
-    uint32_t vcount = src->vertexCount;
-    out->vertexCount = src->vertexCount;
-    out->indexCount = src->indexCount;
-    uint8_t f = src->vertexFormat;
-    out->vertexFormat = f;
-
-    if (f & 0x2)
-        out->texCoords = src->texCoords;
-    if (f & 0x10)
-        out->colors = src->colors;
-    if (f & 0x20)
-        out->indices = src->indices;
-
-    if (f & 0x1) {
-        out->positions = (unsigned char *) new char[vcount * 0xc];
-        int o = 0;
-        for (uint32_t i = 0; i < vcount; i++) {
-            *(Vector *) ((char *) out->positions + o) =
-                    AbyssEngine::AEMath::MatrixTransformVector(m, *(Vector *) ((char *) src->positions + o));
-            o += 0xc;
-            vcount = src->vertexCount;
+    if (mesh->vertexFormat & 1) {
+        out->positions = new unsigned char[mesh->vertexCount * 12];
+        for (unsigned int i = 0; i < mesh->vertexCount; i++) {
+            ((Vector *) out->positions)[i] =
+                    AbyssEngine::AEMath::MatrixTransformVector(m, ((const Vector *) mesh->positions)[i]);
         }
-        f = src->vertexFormat;
     }
-
-    if (f & 0x4) {
-        out->normals = (unsigned char *) new char[vcount * 0xc];
-        int o = 0;
-        for (uint32_t i = 0; i < vcount; i++) {
-            Vector rot = AbyssEngine::AEMath::MatrixRotateVector(m, *(Vector *) ((char *) src->normals + o));
-            *(Vector *) ((char *) out->normals + o) = AbyssEngine::AEMath::VectorNormalize(rot);
-            o += 0xc;
-            vcount = src->vertexCount;
+    if (mesh->vertexFormat & 4) {
+        out->normals = new unsigned char[mesh->vertexCount * 12];
+        for (unsigned int i = 0; i < mesh->vertexCount; i++) {
+            ((Vector *) out->normals)[i] = AbyssEngine::AEMath::VectorNormalize(
+                    AbyssEngine::AEMath::MatrixRotateVector(m, ((const Vector *) mesh->normals)[i]));
         }
     }
 
-    float r = src->boundsRadius;
-    Vector ext = {r, r, r};
-    Vector tExt = AbyssEngine::AEMath::MatrixTransformVector(m, ext);
-    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, *(Vector *) &src->boundsCenterX);
-
-    float ax = tExt.x < 0.0f ? -tExt.x : tExt.x;
-    float ay = tExt.y < 0.0f ? -tExt.y : tExt.y;
-    float az = tExt.z < 0.0f ? -tExt.z : tExt.z;
-    float rad = ax;
-    if (ay > rad) rad = ay;
-    if (az > rad) rad = az;
-
-    out->boundsCenterX = center.x;
-    out->boundsCenterY = center.y;
-    out->boundsCenterZ = center.z;
-    out->boundsRadius = rad;
-
+    // The original transforms the radius vector but then measures the untransformed one.
+    Vector extent = {mesh->boundsRadius, mesh->boundsRadius, mesh->boundsRadius};
+    AbyssEngine::AEMath::MatrixTransformVector(m, extent);
+    float ax = extent.x > 0.0f ? extent.x : -extent.x;
+    float ay = extent.y > 0.0f ? extent.y : -extent.y;
+    float az = extent.z > 0.0f ? extent.z : -extent.z;
+    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, *(const Vector *) &mesh->boundsCenterX);
+    float radius = az;
+    if (ay > radius)
+        radius = ay;
+    if (ax > radius)
+        radius = ax;
+    AbyssEngine::AEMath::BSphere bounds = {center, radius, 1.0f};
+    *reinterpret_cast<AbyssEngine::AEMath::BSphere *>(&out->boundsCenterX) = bounds;
     return out;
 }
 
