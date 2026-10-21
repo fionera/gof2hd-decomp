@@ -244,21 +244,23 @@ public:
     unsigned short field_0x462;
     int field_0x464;
     int field_0x468;
-    int hitFlashTimer;
+    int field_0x46c;
     int field_0x470;
     unsigned char field_0x474;
     unsigned char field_0x475;
     unsigned char field_0x476;
-    uint8_t _pad_0x477[9];
+    unsigned char field_0x477;
+    int field_0x478;
+    int field_0x47c;
     unsigned char messageActive;
     uint8_t _pad_0x481[3];
-    int menuOriginX;
-    int menuOriginYBase;
-    int touchHalfExtent;
-    int touchHalfExtentSmall;
+    int field_0x484;
+    int field_0x488;
+    int field_0x48c;
+    int field_0x490;
     int field_0x494;
-    int eventLineMargin;
-    int eventLineMarginAlt;
+    int field_0x498;
+    int field_0x49c;
     unsigned char autofireEnabled;
     unsigned char field_0x4a1;
     unsigned char field_0x4a2;
@@ -285,14 +287,8 @@ public:
     int field_0x4e8;
     int field_0x4ec;
     int field_0x4f0;
-    unsigned int image_0x4f4;
-    unsigned int image_0x4f8;
-    unsigned int image_0x4fc;
-    unsigned int image_0x500;
-    unsigned int image_0x504;
-    unsigned int image_0x508;
-    unsigned int image_0x50c;
-    unsigned int image_0x510;
+    unsigned int fireButtonImages[4];        // 0x4f4, indexed by fire mode
+    unsigned int fireButtonPressedImages[4]; // 0x504
     int secondaryLabelTimerSeed;
     int secondaryLabelTimer;
     String field_0x51c;
@@ -424,5 +420,5 @@ static_assert(__builtin_offsetof(Hud, letterbox) == 0x1ec, "Hud::letterbox offse
 static_assert(__builtin_offsetof(Hud, field_0x1f0) == 0x1f0, "Hud::field_0x1f0 offset");
 static_assert(__builtin_offsetof(Hud, field_0x45c) == 0x45c, "Hud::field_0x45c offset");
 static_assert(__builtin_offsetof(Hud, field_0x464) == 0x464, "Hud::field_0x464 offset");
-static_assert(__builtin_offsetof(Hud, hitFlashTimer) == 0x46c, "Hud::hitFlashTimer offset");
+static_assert(__builtin_offsetof(Hud, field_0x46c) == 0x46c, "Hud::field_0x46c offset");
 #endif
