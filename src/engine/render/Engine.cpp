@@ -82,7 +82,7 @@ static String *g_Engine_vendorString = nullptr;
 static String *g_Engine_rendererString = nullptr;
 
 namespace {
-    bool g_Engine_useShaders;
+
     bool g_Engine_supportsFBO;
 
     int g_Engine_defaultShader;
@@ -197,7 +197,7 @@ bool Engine::IsPostEffectActivated() {
 }
 
 void Engine::SetUVMatrix(const Matrix &matrix) {
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         glMatrixMode(0x1702);
         MatrixGetGL(matrix, this->uvMatrixGL);
         glLoadMatrixf(this->uvMatrixGL);
@@ -270,7 +270,7 @@ void Engine::SetAccelValue(double x, double y, double z) {
 }
 
 void Engine::ResetUVMatrix() {
-    if (g_Engine_useShaders != 0) {
+    if (Engine::enableShader != 0) {
         uint32_t one = 0x3f800000;
         uint32x4_t zero = vdupq_n_u32(0);
         uint32_t *uv = (uint32_t *) this->uvMatrix;
@@ -298,7 +298,7 @@ void Engine::ActivateTextureFBO() {
 }
 
 void Engine::GlowEndGlow() {
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return;
     }
     this->glowActive = 0;
@@ -366,7 +366,7 @@ DeviceInfo Engine::GetDeviceInfo() {
 }
 
 void Engine::CopyFBO() {
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return;
     }
 
@@ -449,7 +449,7 @@ bool Engine::IsExtensionSupported(const char *extension) {
 
 void Engine::LightSetMaterialColorShininess(float shininess) {
     this->materialShininess = shininess;
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return glMaterialf(0x408, 0x1601, shininess);
     }
 }
@@ -481,7 +481,7 @@ void Engine::DeactivateRender2FracFBO() {
 }
 
 void Engine::SetPerspMatrix(float *matrix) {
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return;
     }
     float *proj = this->projMatrix;
@@ -531,7 +531,7 @@ void Engine::RenderMesh(Mesh *mesh) {
         goto done;
     }
 
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         glVertexPointer(3, 0x1406, 0, mesh->positions);
         this->AEClientState(0x8074, true);
         bool tex = ((uint32_t) mesh->vertexFormat << 30) < 0;
@@ -637,7 +637,7 @@ void Engine::SetColor(float red, float green, float blue, float alpha) {
     self->packedColor =
             (int) (green * 255.0f) * 0x10000 + (int) (red * 255.0f) * 0x1000000 +
             (int) (blue * 255.0f) * 0x100 + (int) (alpha * 255.0f);
-    if (g_Engine_useShaders != 0) {
+    if (Engine::enableShader != 0) {
         return this->ShaderUpdate();
     }
     self->LightSetMaterialColorAlpha(alpha);
@@ -690,7 +690,7 @@ void Engine::AfterGLInit() {
 }
 
 void Engine::DrawCloakFBO(FBOContainer *fbo) {
-    if (g_Engine_useShaders != 0) {
+    if (Engine::enableShader != 0) {
         ShaderBaseStruct *shader = (*this->shaders)[g_Engine_cloakShader];
         shader->RenderEffect(fbo, this);
     }
@@ -725,7 +725,7 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
     float env = textureEntry->texEnv;
     if (g_Engine_texEnv != env) {
         g_Engine_texEnv = env;
-        if (g_Engine_useShaders == 0) {
+        if (Engine::enableShader == 0) {
             glTexEnvf(0x8500, 0x8501, env);
             textureEntry = (TextureEntry *) manager->cubeTextures.data_[textureIndex];
         } else if (g_Engine_texEnvDirty != 0) {
@@ -771,7 +771,7 @@ void Engine::GlowBeginGlow(int depthFunc) {
     if (this->glowActive != 0) {
         return;
     }
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return;
     }
     glColorMask(0, 0, 0, 1);
@@ -823,7 +823,7 @@ void Engine::DoPostEffect() {
     uint32_t flags = this->postEffectFlags;
     FBOContainer *current = this->postEffectFBO;
     FBOContainer *other = this->refractFBO;
-    if (g_Engine_useShaders != 0) {
+    if (Engine::enableShader != 0) {
         FBOContainer *slot = other;
         if ((flags & 2) != 0) {
             ShaderBaseStruct *shader = (*this->shaders)[g_Engine_shaderPostA];
@@ -867,7 +867,7 @@ void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
     this->materialSpecular[2] = blue;
     this->materialSpecular[3] = this->materialAlpha;
 
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return glMaterialfv(0x408, 0x1202, this->materialSpecular);
     }
 
@@ -888,7 +888,7 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
     this->sceneAmbient[2] = blue;
     this->sceneAmbient[3] = 1.0f;
 
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return glLightModelfv(0xb53, this->sceneAmbient);
     }
 
@@ -949,7 +949,7 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
     this->materialDiffuse[2] = blue;
     this->materialDiffuse[3] = this->materialAlpha;
 
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return glMaterialfv(0x408, 0x1201, this->materialDiffuse);
     }
 
@@ -971,7 +971,7 @@ void Engine::initFileInterface() {
 }
 
 void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
-    if (g_Engine_useShaders != 0) {
+    if (Engine::enableShader != 0) {
         float *proj = this->projMatrix;
         for (int i = 0; i < 16; i += 1) {
             proj[i] = projection[i];
@@ -999,12 +999,12 @@ int Engine::InitGL(bool shaders, int width, int height) {
     this->lastGlError = 0;
     this->vibrationSupported = 0;
     this->hasVibration = 0;
-    g_Engine_useShaders = shaders;
+    Engine::enableShader = shaders;
     this->viewFramebuffer = 0;
 
     this->ResetLightParam();
     glViewport(0, 0, this->viewportHeight, this->viewportWidth);
-    if (g_Engine_useShaders != 0) {
+    if (Engine::enableShader != 0) {
         this->ShaderInit();
     } else {
         glEnable(0x803a);
@@ -1031,7 +1031,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
     this->maxTextureSize = 0;
     glGetIntegerv(0xd33, (GLint *) &this->maxTextureSize);
 
-    if (g_Engine_useShaders != 0 && g_Engine_supportsFBO != 0) {
+    if (Engine::enableShader != 0 && g_Engine_supportsFBO != 0) {
         FBOContainer *fbo = new FBOContainer(this, String("refract"));
         this->refractFBO = fbo;
         fbo->Create(this->displayWidth, this->displayHeight, false, true);
@@ -1087,7 +1087,7 @@ void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsig
     src.g = green;
     src.b = blue;
     src.a = 1.0f;
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return glLightfv(light, 0x1200, &src.r);
     }
     Vector &dst = (&this->lightAmbientShaded)[index];
@@ -1119,7 +1119,7 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
     src.g = green;
     src.b = blue;
     src.a = 1.0f;
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return glLightfv(light, 0x1201, &src.r);
     }
     Vector &dst = (&this->lightDiffuseShaded)[index];
@@ -1214,7 +1214,7 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
     this->SetTextureSlot(first, 0);
     if (second > count - 1) {
         if (this->boundTextures[1] != -1) {
-            if (g_Engine_useShaders == 0) {
+            if (Engine::enableShader == 0) {
                 glActiveTexture(0x84c1);
                 glDisable(0xde1);
                 glActiveTexture(0x84c0);
@@ -1228,7 +1228,7 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
     if (this->boundTextures[1] != texture) {
         glActiveTexture(0x84c1);
         this->GlEnable(0xde1, true);
-        unsigned int target = (g_Engine_useShaders != 0 &&
+        unsigned int target = (Engine::enableShader != 0 &&
                                (this->glEnableFlags & 0x80008) != 0)
                                   ? 0x8513
                                   : 0xde1;
@@ -1300,7 +1300,7 @@ uint64_t Engine::SetEyePosition(float x, float y, float z) {
 void Engine::SetModelMatrix(const Matrix &matrix) {
     Engine * self = this;
     const float *m = matrix;
-    if (g_Engine_useShaders != 0) {
+    if (Engine::enableShader != 0) {
         self->normalMatrix[0] = m[0];
         self->normalMatrix[1] = m[4];
         self->normalMatrix[2] = m[8];
@@ -1363,7 +1363,7 @@ void Engine::LightSetLight(unsigned int light) {
         values[1] = *(const uint32_t *) &dir.y;
         values[2] = *(const uint32_t *) &dir.z;
         values[3] = *(const uint32_t *) &this->lightDirty[index];
-        if (g_Engine_useShaders == 0) {
+        if (Engine::enableShader == 0) {
             glLightfv(light, 0x1203, reinterpret_cast<const float *>(values));
         }
     }
@@ -1426,7 +1426,7 @@ void Engine::Vibrate(unsigned short duration) {
 
 void Engine::SetWorldViewMatrix(const Matrix &matrix) {
     const float *m = matrix.m;
-    if (g_Engine_useShaders != 0) {
+    if (Engine::enableShader != 0) {
         float gl[16] = {
             m[0], m[4], m[8], 0.0f,
             m[1], m[5], m[9], 0.0f,
@@ -1470,7 +1470,7 @@ void Engine::ResetLightParam() {
     this->lightDirty[0] = 0.0f;
     this->lightDirty[1] = 0.0f;
 
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         glLightfv(0x4000, 0x1200, &this->lightAmbient.r);
         glLightfv(0x4000, 0x1201, &this->lightDiffuse.r);
         glLightfv(0x4000, 0x1202, &this->lightSpecular.r);
@@ -1499,7 +1499,7 @@ void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsi
     src.g = green;
     src.b = blue;
     src.a = 1.0f;
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return glLightfv(light, 0x1202, &src.r);
     }
     Vector &dst = (&this->lightSpecularShaded)[index];
@@ -1510,7 +1510,7 @@ void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsi
 }
 
 void Engine::GlEnable(unsigned int cap, bool enable) {
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         unsigned int glCap = cap == 0x1000000 ? 0xbc0 : cap;
         if (enable) {
             return glEnable(glCap);
@@ -1546,7 +1546,7 @@ void Engine::LightEnable(bool enabled) {
     if (!enabled) {
         this->LightSetMaterialColorAlpha(1.0f);
     }
-    if (g_Engine_useShaders) return;
+    if (Engine::enableShader) return;
     if (enabled) {
         glEnable(0xb50);  // GL_LIGHTING
         glEnable(0x4000); // GL_LIGHT0
@@ -1562,7 +1562,7 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     this->materialAmbient[2] = blue;
     this->materialAmbient[3] = this->materialAlpha;
 
-    if (g_Engine_useShaders == 0) {
+    if (Engine::enableShader == 0) {
         return glMaterialfv(0x408, 0x1200, this->materialAmbient);
     }
 
