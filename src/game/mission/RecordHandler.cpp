@@ -745,94 +745,79 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
 }
 
 void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
-    Mission *mission = 0;
-
     int type = 0;
-    AEFile::Read(reinterpret_cast<int32_t &>(type), fd);
-    if (type != -1) {
-        String clientName, targetName, targetStation, targetSystem;
-        {
-            if (clientName.data) delete[] clientName.data;
-            clientName.data = nullptr;
-            clientName.length = 0;
-        }
-        AEFile::Read(clientName, fd, (bool)true);
-        {
-            if (targetName.data) delete[] targetName.data;
-            targetName.data = nullptr;
-            targetName.length = 0;
-        }
-        AEFile::Read(targetName, fd, (bool)true);
-        {
-            if (targetStation.data) delete[] targetStation.data;
-            targetStation.data = nullptr;
-            targetStation.length = 0;
-        }
-        AEFile::Read(targetStation, fd, (bool)true);
-        {
-            if (targetSystem.data) delete[] targetSystem.data;
-            targetSystem.data = nullptr;
-            targetSystem.length = 0;
-        }
-        AEFile::Read(targetSystem, fd, (bool)true);
-
-        bool isEmpty = false;
-        AEFile::Read(isEmpty, fd);
-
-        unsigned imgCount = 0;
-        AEFile::Read(imgCount, fd);
-        int *img = 0;
-        if ((int) imgCount >= 1) {
-            img = new int[imgCount];
-            int *p = img;
-            for (int i = 0; i < (int) imgCount; i++) {
-                AEFile::Read(reinterpret_cast<int32_t &>(*p), fd);
-                p++;
-            }
-        }
-
-        int clientRace = 0, costs = 0, bonus = 0, reward = 0, targetStationIdx = 0;
-        int difficulty = 0, prodIdx = 0, prodAmt = 0, statusValue = 0;
-        bool visible = false;
-        AEFile::Read(reinterpret_cast<int32_t &>(clientRace), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(costs), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(bonus), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(reward), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(targetStationIdx), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(difficulty), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(prodIdx), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(prodAmt), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(statusValue), fd);
-        AEFile::Read(visible, fd);
-
-        int hasAgent = 0;
-        AEFile::Read(reinterpret_cast<int32_t &>(hasAgent), fd);
-        Agent *agent = (hasAgent < 1) ? 0 : (Agent *) this->readAgent(fd);
-
-        if (!isEmpty) {
-            String nameCopy;
-            nameCopy.Set((clientName).data);
-            mission = new Mission(type, nameCopy, img, clientRace, reward, targetStationIdx, difficulty);
-        } else {
-            mission = new Mission(type, reward, targetStationIdx);
-        }
-        ((Mission *) (mission))->setCosts(costs);
-        ((Mission *) (mission))->setBonus(bonus);
-        ((Mission *) (mission))->setProductionGoods(prodIdx, prodAmt);
-        ((Mission *) (mission))->setStatusValue(statusValue);
-        ((Mission *) (mission))->setVisible(visible);
-        ((Mission *) (mission))->setAgent((Agent *) agent);
-
-        String tgtNameCopy;
-        tgtNameCopy.Set((targetName).data);
-        ((Mission *) (mission))->setTargetName(tgtNameCopy);
-
-        if (agent != 0) {
-            ((Agent *) (agent))->setMission((Mission *) mission);
+    AEFile::Read(type, fd);
+    if (type == -1) {
+        return Mission::empty;
+    }
+    String clientName;
+    AEFile::Read(clientName, fd, true);
+    String targetName;
+    AEFile::Read(targetName, fd, true);
+    String targetStationName;
+    AEFile::Read(targetStationName, fd, true);
+    String targetSystemName;
+    AEFile::Read(targetSystemName, fd, true);
+    bool isEmpty = false;
+    AEFile::Read(isEmpty, fd);
+    int imageCount = 0;
+    AEFile::Read(imageCount, fd);
+    int *imageParts = 0;
+    if (imageCount >= 1) {
+        imageParts = new int[imageCount];
+        int *part = imageParts;
+        for (int i = 0; i < imageCount; i++) {
+            AEFile::Read(*part, fd);
+            part++;
         }
     }
 
+    int clientRace = 0;
+    int costs = 0;
+    int bonus = 0;
+    int reward = 0;
+    int targetStation = 0;
+    int difficulty = 0;
+    int productionItem = 0;
+    int productionAmount = 0;
+    int statusValue = 0;
+    bool visible = false;
+    AEFile::Read(clientRace, fd);
+    AEFile::Read(costs, fd);
+    AEFile::Read(bonus, fd);
+    AEFile::Read(reward, fd);
+    AEFile::Read(targetStation, fd);
+    AEFile::Read(difficulty, fd);
+    AEFile::Read(productionItem, fd);
+    AEFile::Read(productionAmount, fd);
+    AEFile::Read(statusValue, fd);
+    AEFile::Read(visible, fd);
+
+    Agent *agent;
+    int hasAgent = 0;
+    AEFile::Read(hasAgent, fd);
+    if (hasAgent >= 1) {
+        agent = (Agent *) this->readAgent(fd);
+    } else {
+        agent = 0;
+    }
+
+    Mission *mission;
+    if (isEmpty) {
+        mission = new Mission(type, reward, targetStation);
+    } else {
+        mission = new Mission(type, clientName, imageParts, clientRace, reward, targetStation, difficulty);
+    }
+    mission->setCosts(costs);
+    mission->setBonus(bonus);
+    mission->setProductionGoods(productionItem, productionAmount);
+    mission->setStatusValue(statusValue);
+    mission->setVisible(visible);
+    mission->setAgent(agent);
+    mission->setTargetName(targetName);
+    if (agent != 0) {
+        agent->setMission(mission);
+    }
     return mission;
 }
 
