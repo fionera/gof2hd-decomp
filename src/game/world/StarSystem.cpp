@@ -127,9 +127,6 @@ static inline float clampLightComponent(float v) {
 }
 
 StarSystem::StarSystem(int mode) {
-    this->lightDirection.x = 0.0f;
-    this->lightDirection.y = 0.0f;
-    this->lightDirection.z = 0.0f;
     this->stationIdxArray = nullptr;
     this->texturesArray = nullptr;
     this->playerTargets = nullptr;
@@ -154,7 +151,7 @@ StarSystem::StarSystem(int mode) {
         (*this->planetsArray)[1] = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
         float scale = (float) (Globals::rnd->nextInt(20000) + 20000) * (1.0f / 65536.0f);
         (*this->planetsArray)[1]->setScaling(Vector{scale, scale, scale});
-        (*this->planetsArray)[1]->setRotation(Vector{0.0f, 5.2347136f, 0.0f});
+        (*this->planetsArray)[1]->setRotation(Vector{0.0f, 5.234709739685059f, 0.0f});
         (*this->planetsArray)[1]->moveForward(-20000.0f);
 
         this->texturesArray = new Array<uint32_t>();
