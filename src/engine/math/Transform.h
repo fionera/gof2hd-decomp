@@ -43,9 +43,7 @@ namespace AbyssEngine {
 
         AEMath::Matrix rotationMatrix;
         AEMath::Matrix localMatrix;
-        AEMath::Vector boundingCenter;
-        float boundingRadius;
-        float boundingRadius2;
+        AEMath::BSphere boundingSphere;
         int animationStart;
         bool visible;
         bool animating;
@@ -66,8 +64,6 @@ namespace AbyssEngine {
         float alpha;
         bool vfcEnabled;
         bool keyFramesShared;
-
-        AEMath::BSphere &bounds() { return *(AEMath::BSphere *) &boundingCenter; }
 
         Transform();
 
@@ -132,7 +128,7 @@ namespace AbyssEngine {
     static_assert(__builtin_offsetof(Transform, flags) == 0x58, "Transform::flags");
     static_assert(__builtin_offsetof(Transform, rotationMatrix) == 0x5c, "Transform::rotationMatrix");
     static_assert(__builtin_offsetof(Transform, localMatrix) == 0x98, "Transform::localMatrix");
-    static_assert(__builtin_offsetof(Transform, boundingCenter) == 0xd4, "Transform::boundingCenter");
+    static_assert(__builtin_offsetof(Transform, boundingSphere) == 0xd4, "Transform::boundingSphere");
     static_assert(__builtin_offsetof(Transform, animationLength) == 0xf8, "Transform::animationLength");
     static_assert(__builtin_offsetof(Transform, rangeStart) == 0x100, "Transform::rangeStart");
     static_assert(__builtin_offsetof(Transform, currentKeyFrameIndex) == 0x118, "Transform::currentKeyFrameIndex");

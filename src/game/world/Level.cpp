@@ -6813,61 +6813,21 @@ void Level::initParticleSystems() {
 
     {
         AbyssEngine::AEMath::Matrix mat_0xa;
-        mat_0xa.m[0]  = 1.0f; mat_0xa.m[1]  = 0.0f; mat_0xa.m[2]  = 0.0f;
-        mat_0xa.m[3]  = 0.0f; mat_0xa.m[4]  = 0.0f; mat_0xa.m[5]  = 1.0f;
-        mat_0xa.m[6]  = 0.0f; mat_0xa.m[7]  = 0.0f; mat_0xa.m[8]  = 0.0f;
-        mat_0xa.m[9]  = 0.0f; mat_0xa.m[10] = 1.0f; mat_0xa.m[11] = 0.0f;
-        mat_0xa.m[12] = 1.0f; mat_0xa.m[13] = 1.0f; mat_0xa.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_0xb;
-        mat_0xb.m[0]  = 1.0f; mat_0xb.m[1]  = 0.0f; mat_0xb.m[2]  = 0.0f;
-        mat_0xb.m[3]  = 0.0f; mat_0xb.m[4]  = 0.0f; mat_0xb.m[5]  = 1.0f;
-        mat_0xb.m[6]  = 0.0f; mat_0xb.m[7]  = 0.0f; mat_0xb.m[8]  = 0.0f;
-        mat_0xb.m[9]  = 0.0f; mat_0xb.m[10] = 1.0f; mat_0xb.m[11] = 0.0f;
-        mat_0xb.m[12] = 1.0f; mat_0xb.m[13] = 1.0f; mat_0xb.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_14;
-        mat_14.m[0]  = 1.0f; mat_14.m[1]  = 0.0f; mat_14.m[2]  = 0.0f;
-        mat_14.m[3]  = 0.0f; mat_14.m[4]  = 0.0f; mat_14.m[5]  = 1.0f;
-        mat_14.m[6]  = 0.0f; mat_14.m[7]  = 0.0f; mat_14.m[8]  = 0.0f;
-        mat_14.m[9]  = 0.0f; mat_14.m[10] = 1.0f; mat_14.m[11] = 0.0f;
-        mat_14.m[12] = 1.0f; mat_14.m[13] = 1.0f; mat_14.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_15;
-        mat_15.m[0]  = 1.0f; mat_15.m[1]  = 0.0f; mat_15.m[2]  = 0.0f;
-        mat_15.m[3]  = 0.0f; mat_15.m[4]  = 0.0f; mat_15.m[5]  = 1.0f;
-        mat_15.m[6]  = 0.0f; mat_15.m[7]  = 0.0f; mat_15.m[8]  = 0.0f;
-        mat_15.m[9]  = 0.0f; mat_15.m[10] = 1.0f; mat_15.m[11] = 0.0f;
-        mat_15.m[12] = 1.0f; mat_15.m[13] = 1.0f; mat_15.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_16;
-        mat_16.m[0]  = 1.0f; mat_16.m[1]  = 0.0f; mat_16.m[2]  = 0.0f;
-        mat_16.m[3]  = 0.0f; mat_16.m[4]  = 0.0f; mat_16.m[5]  = 1.0f;
-        mat_16.m[6]  = 0.0f; mat_16.m[7]  = 0.0f; mat_16.m[8]  = 0.0f;
-        mat_16.m[9]  = 0.0f; mat_16.m[10] = 1.0f; mat_16.m[11] = 0.0f;
-        mat_16.m[12] = 1.0f; mat_16.m[13] = 1.0f; mat_16.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_17;
-        mat_17.m[0]  = 1.0f; mat_17.m[1]  = 0.0f; mat_17.m[2]  = 0.0f;
-        mat_17.m[3]  = 0.0f; mat_17.m[4]  = 0.0f; mat_17.m[5]  = 1.0f;
-        mat_17.m[6]  = 0.0f; mat_17.m[7]  = 0.0f; mat_17.m[8]  = 0.0f;
-        mat_17.m[9]  = 0.0f; mat_17.m[10] = 1.0f; mat_17.m[11] = 0.0f;
-        mat_17.m[12] = 1.0f; mat_17.m[13] = 1.0f; mat_17.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_18a;
-        mat_18a.m[0]  = 1.0f; mat_18a.m[1]  = 0.0f; mat_18a.m[2]  = 0.0f;
-        mat_18a.m[3]  = 0.0f; mat_18a.m[4]  = 0.0f; mat_18a.m[5]  = 1.0f;
-        mat_18a.m[6]  = 0.0f; mat_18a.m[7]  = 0.0f; mat_18a.m[8]  = 0.0f;
-        mat_18a.m[9]  = 0.0f; mat_18a.m[10] = 1.0f; mat_18a.m[11] = 0.0f;
-        mat_18a.m[12] = 1.0f; mat_18a.m[13] = 1.0f; mat_18a.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_18b;
-        mat_18b.m[0]  = 1.0f; mat_18b.m[1]  = 0.0f; mat_18b.m[2]  = 0.0f;
-        mat_18b.m[3]  = 0.0f; mat_18b.m[4]  = 0.0f; mat_18b.m[5]  = 1.0f;
-        mat_18b.m[6]  = 0.0f; mat_18b.m[7]  = 0.0f; mat_18b.m[8]  = 0.0f;
-        mat_18b.m[9]  = 0.0f; mat_18b.m[10] = 1.0f; mat_18b.m[11] = 0.0f;
-        mat_18b.m[12] = 1.0f; mat_18b.m[13] = 1.0f; mat_18b.m[14] = 1.0f;
         this->field_38 = this->field_74->addSystem(&mat_0xa, ParticleSettings::ParticleSet_0xa, false);
+        AbyssEngine::AEMath::Matrix mat_0xb;
         this->field_3c = this->field_74->addSystem(&mat_0xb, ParticleSettings::ParticleSet_0xb, false);
+        AbyssEngine::AEMath::Matrix mat_14;
         this->field_48 = this->field_74->addSystem(&mat_14, ParticleSettings::ParticleSet_0x14, false);
+        AbyssEngine::AEMath::Matrix mat_15;
         this->field_34 = this->field_74->addSystem(&mat_15, ParticleSettings::ParticleSet_0x15, false);
+        AbyssEngine::AEMath::Matrix mat_16;
         this->field_50 = this->field_74->addSystem(&mat_16, ParticleSettings::ParticleSet_0x16, false);
+        AbyssEngine::AEMath::Matrix mat_17;
         this->field_54 = this->field_74->addSystem(&mat_17, ParticleSettings::ParticleSet_0x17, false);
         if (Globals::status->getCurrentCampaignMission() == 0x50) {
+            AbyssEngine::AEMath::Matrix mat_18a;
             this->field_58 = this->field_74->addSystem(&mat_18a, ParticleSettings::ParticleSet_0x18, false);
+            AbyssEngine::AEMath::Matrix mat_18b;
             this->field_5c = this->field_74->addSystem(&mat_18b, ParticleSettings::ParticleSet_0x18, false);
         }
     }

@@ -80,7 +80,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
 
     this->helperGeometry = new AEGeometry(Globals::Canvas);
     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->helperGeometry->transform))
-            ->boundingRadius = 1000000.0f;
+            ->boundingSphere.radius = 1000000.0f;
     Vector position = {x, y, z};
     this->setPosition(position);
 

@@ -1326,7 +1326,7 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
                 AbyssEngine::AEMath::MatrixSetTranslation(*(AbyssEngine::AEMath::Matrix *) Globals::Canvas->TransformGetLocal(right), 0, 0, z);
             }
             if (firstLeft != 0xffffffff) {
-                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(firstLeft))->boundingRadius = 100000.0f;
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(firstLeft))->boundingSphere.radius = 100000.0f;
                 geom->addChild(firstLeft);
             }
             unsigned tail = 0xffffffff;

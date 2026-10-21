@@ -289,7 +289,7 @@ PlayerStation::PlayerStation(Station *station)
     this->rootGeometry->setRotation(0.0f, 3.1415927f, 0.0f);
     this->collisionRadius =
             (int) (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->rootGeometry->transform))
-                           ->boundingRadius +
+                           ->boundingSphere.radius +
                    5000.0f);
 }
 

@@ -431,14 +431,14 @@ void PlayerEgo::setShip(int race, int group) {
         this->field_0xac = (int) (intptr_t) new AEGeometry((uint16_t) 14374, Globals::Canvas, false);
         this->emergencyVal1 = Globals::status->getShip()->getFirstEquipmentOfSort(27)->getAttribute(41);
         this->emergencyVec = ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            this->field_0x4->transform))->boundingCenter;
+            this->field_0x4->transform))->boundingSphere.center;
         this->emergencyVal2 = ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            this->field_0x4->transform))->boundingRadius / 500.0f + 0.1f;
+            this->field_0x4->transform))->boundingSphere.radius / 500.0f + 0.1f;
     }
 
     if (Globals::status->inSupernovaSystem() || Globals::status->inSupernovaOrbit()) {
         this->shieldRadius = ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            this->field_0x4->transform))->boundingRadius * 1.75f;
+            this->field_0x4->transform))->boundingSphere.radius * 1.75f;
     }
 
     if (this->cloak != nullptr)
@@ -1026,7 +1026,7 @@ void PlayerEgo::checkForTurret() {
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretExtraGeo->transform))
             ->SetVisible(this->turretActive);
     }
-    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretRoot->transform))->boundingRadius =
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretRoot->transform))->boundingSphere.radius =
         1000000.0f;
     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretGeometry->transform))
         ->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);

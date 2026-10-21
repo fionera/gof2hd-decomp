@@ -190,8 +190,8 @@ void MeshMerger::render() {
 void MeshMerger::update() {
     for (int i = 0; i < this->rows; i++) {
         Mesh *mesh = this->transformedMeshes[i];
-        bool visible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
-                                                                 mesh->boundsRadius);
+        bool visible = this->canvas->CameraIsSphereinViewFrustum(mesh->bounds.center,
+                                                                 mesh->bounds.radius);
         if (visible != this->visibleFlags[i]) {
             this->visibleFlags[i] = visible;
             if (this->enabledFlags[i] != 0)
@@ -297,8 +297,8 @@ MeshMerger::Mesh *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
         }
     }
 
-    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, *(const Vector *) &mesh->boundsCenterX);
-    AbyssEngine::AEMath::BSphere bounds = {center, mesh->boundsRadius, 1.0f};
-    *reinterpret_cast<AbyssEngine::AEMath::BSphere *>(&out->boundsCenterX) = bounds;
+    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, mesh->bounds.center);
+    AbyssEngine::AEMath::BSphere bounds = {center, mesh->bounds.radius, 1.0f};
+    out->bounds = bounds;
     return out;
 }
