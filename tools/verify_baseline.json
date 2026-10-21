@@ -1,12 +1,12 @@
 {
  "verify": {
-  "byte_exact": 1325,
-  "linked_exact": 4146,
+  "byte_exact": 1327,
+  "linked_exact": 4152,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 13,
-  "avg_match": 97.69,
+  "avg_match": 97.71,
   "compared": 4523
  },
  "data": {
