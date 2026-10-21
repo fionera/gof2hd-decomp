@@ -889,7 +889,7 @@ void Globals::longToTimeString(long long ms, String &out) {
     int seconds = (int) (ms / 1000 % 60);
     int minutes = (int) (ms / 60000 % 60);
     int hours = (int) (ms / 3600000 % 24);
-    String secondText = String(seconds < 10 ? "0" : "", false) + String(seconds);
+    String secondText = (seconds < 10 ? String("0", false) : String("", false)) + String(seconds);
     String minuteText = (minutes < 10 ? String("0", false) : String("", false)) + String(minutes);
     if (hours == 0) {
         out = minuteText + String(":", false) + secondText;
