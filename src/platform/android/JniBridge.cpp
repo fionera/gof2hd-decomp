@@ -38,45 +38,16 @@ jobject g_pActivity;
 char *ndk_APK_Path;
 char *ndk_ZIP_Path;
 
-extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits(); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+// main.c's own prototype of the touch hook: it drops the clazz slot the NdkHooks definition
+// takes, so the shipped wrapper passes (touch, phase, x, y) one register early.
+extern "C" void ndk23_handleTouchScreenEvent(int touch, int phase, float x, float y); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
-extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-                                  int width, int height);
-
-extern "C" void ndk23_setRootDirectory(const char *path); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
-extern "C" void ndk23_setZipDirectory(const char *path); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
+// Local render step of the original glue (not exported there).
 void ndk23_renderstep(int width, int height);
 
-extern "C" int ndk23_getExitFlag(); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
-extern "C" int ndk23_getScreenshotFlag(); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
-extern "C" void ndk23_resetScreenshotFlag(); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
-extern "C" void ndk23_setCountryCode(unsigned int code); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
-extern "C" void ndk23_handleAcceleration(float x, float y, float z); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
-int gRealWidth;
-int gRealHeight;
-
-char *rootDirectory;
-char *ZIPDirectory;
 char *flstat_rootPath;
 
-int forceExit;
-
-unsigned int hrwhs_country_code;
-
-int gb_android_offerwallCreditAmount;
-
 int AccIndex;
-
-const char *ndkEntrance;
-
-extern "C" int loadAPKAndZip(const char *apkPath, const char *patchPath); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
 void OnCreateApplication(AbyssEngine::Engine * engine);
 
@@ -202,103 +173,6 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
 }
 
-extern "C" void ndk23_setRootDirectory(const char *path) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    rootDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
-    std::strcpy(rootDirectory, path);
-}
-
-extern "C" void ndk23_setZipDirectory(const char *path) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    ZIPDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
-    std::strcpy(ZIPDirectory, path);
-}
-
-extern "C" void ndk23_setCountryCode(unsigned int code) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    AbyssEngine::Engine::countryCode = (code < 16) ? code : 0u;
-}
-
-extern "C" int ndk23_getExitFlag() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    return forceExit;
-}
-
-extern "C" int ndk23_getScreenshotFlag() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    return 0;
-}
-
-extern "C" void ndk23_resetScreenshotFlag() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-}
-
-extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    if (Globals::status->getPlayingTime() >= 1) {
-        int amount = gb_android_offerwallCreditAmount;
-        if (amount > 0) {
-            Globals::status->changeCredits(amount);
-            ndk_autosave();
-            gb_android_offerwallCreditAmount = 0;
-        }
-    }
-}
-
-// Low-pass filtered gravity and its negation as handed to the engine.
-static double gGravity[3];
-static double gNegGravity[3];
-
-extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-                                  int width, int height) {
-    ndkEntrance = "ndkInit";
-    glViewport(0, 0, width, height);
-    gGravity[0] = 0.0;
-    gGravity[1] = 0.0;
-    gGravity[2] = 0.0;
-    gRealHeight = width;
-    gRealWidth = height;
-    loadAPKAndZip(apkPath, zipPath);
-
-    gEngine = new AbyssEngine::Engine();
-    gEngine->str_0x3c = String("2.0.16", false);
-    gEngine->InitGL(true, width, height);
-    if (rootDirectory != nullptr)
-        AEFile::SetAppRootDir(rootDirectory);
-    gEngine->Initialize(&OnCreateApplication);
-    gEngine->SetOnDestroyApp(&OnDestroyApplication);
-    gEngine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
-}
-
-int rotateAccelValues;
-
-extern "C" void ndk23_handleAcceleration(float x, float y, float z) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    double ax = x;
-    double ay = y;
-    double tiltA, tiltB;
-    if (rotateAccelValues != 0) {
-        tiltA = -ax;
-        tiltB = ay;
-    } else {
-        tiltA = ay;
-        tiltB = ax;
-    }
-    if (gEngine == nullptr)
-        return;
-
-    double az = z;
-    double accelX = -tiltB;
-    double accelY = -tiltA;
-    double accelZ = -az;
-    if (gEngine->appManager->paintCanvas->initialized) {
-        gGravity[0] = gGravity[0] * 0.95 + tiltB * 0.05;
-        gGravity[1] = gGravity[1] * 0.95 + tiltA * 0.05;
-        gGravity[2] = gGravity[2] * 0.95 + az * 0.05;
-    } else {
-        gGravity[0] = tiltB * 0.95;
-        gGravity[1] = tiltB * 0.95;
-        gGravity[2] = tiltB * 0.95;
-    }
-    gNegGravity[0] = -gGravity[0];
-    gNegGravity[1] = -gGravity[1];
-    gNegGravity[2] = -gGravity[2];
-    gEngine->SetAccelValue(accelX, accelY, accelZ);
-    gEngine->SetGravValue(gNegGravity[0], gNegGravity[1], gNegGravity[2]);
-}
-
 extern "C" jint JNI_OnLoad(JavaVM *vm, void * /*reserved*/) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
     // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
     JNIEnv *env = nullptr;
@@ -376,7 +250,7 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_STARTUP( // lint: e
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_initialize( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/, jint width, jint height) {
-    ndk23_InitWithZip(ndk_APK_Path, ndk_ZIP_Path, width, height);
+    ndk23_InitWithZip(ndk_APK_Path, ndk_ZIP_Path, width, height, 1.0f);
     ndk23_renderstep(width, height);
 }
 
@@ -385,14 +259,15 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_renderstep( // lint
     ndk23_renderstep(width, height);
 }
 
-extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getExitFlag( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+// The flag getters hand the ndk23 int straight through (the original tail-calls them).
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getExitFlag( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk23_getExitFlag() != 0;
+    return ndk23_getExitFlag();
 }
 
-extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getScreenshotFlag( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getScreenshotFlag( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk23_getScreenshotFlag() != 0;
+    return ndk23_getScreenshotFlag();
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_resetScreenshotFlag( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
@@ -418,86 +293,6 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setCountryCodeOfDev
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleAccelerometer( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/, jfloat x, jfloat y, jfloat z) {
     ndk23_handleAcceleration(-x, y, z);
-}
-
-extern "C" void ExitFunction() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    forceExit = -1;
-}
-
-extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    gEngine->appManager->SetExitCallback(&ExitFunction);
-
-    int touchCount = GetTouchCount();
-    for (int i = 0; i < touchCount; ++i) {
-        // Touch record layout: {handle, phase, x, y}.
-        Touch rec = GetTouch(i);
-        void *touch = reinterpret_cast<void *>(rec.x); // lint: void_ptr (opaque touch handle for OnTouch* void* params, baked ABI)
-        if (rec.y == 2) {
-            gEngine->appManager->OnTouchMove(rec.id, rec.action, touch);
-        } else if (rec.y == 1) {
-            gEngine->appManager->OnTouchEnd(rec.id, rec.action, touch);
-            gEngine->appManager->OnTouchEnd();
-        } else if (rec.y == 0) {
-            gEngine->appManager->OnTouchBegin(rec.id, rec.action, touch);
-        }
-    }
-
-    if (g_android_back_button_pressed != 0) {
-        keyPressed(gEngine, 0x35);
-        keyReleased(gEngine, 0x35);
-        g_android_back_button_pressed = 0;
-    }
-
-    RemoveTouches();
-    gEngine->appManager->OnUpdate(now);
-
-    char *appData = static_cast<char *>(gEngine->appManager->GetApplicationData());
-    if (appData[0x3d] != 0) {
-        appData[0x40] = 1;
-        appData[0x3d] = 0;
-    } else if (appData[0x3c] != 0) {
-        appData[0x3c] = 0;
-    } else if (appData[0x3e] != 0) {
-        appData[0x3e] = 0;
-    } else if (appData[0x3f] != 0) {
-        appData[0x3f] = 0;
-    } else if (appData[0xa0] != 0) {
-        appData[0xa0] = 0;
-    } else if (appData[0xa1] != 0) {
-        appData[0xa1] = 0;
-    } else if (appData[0xa2] != 0) {
-        appData[0xa2] = 0;
-    } else if (appData[0xa3] != 0) {
-        appData[0xa3] = 0;
-    }
-
-    ndk_checkPlaytimeAndSpendOfferwallCredits();
-}
-
-extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
-                                          float x, float y) {
-    if (phase == 2) {
-        gEngine->appManager->OnTouchMove(static_cast<int>(x), static_cast<int>(y), touch);
-    } else if (phase == 1) {
-        gEngine->appManager->OnTouchEnd(static_cast<int>(x), static_cast<int>(y), touch);
-        gEngine->appManager->OnTouchEnd();
-    } else if (phase == 0) {
-        gEngine->appManager->OnTouchBegin(static_cast<int>(x), static_cast<int>(y), touch);
-    }
-}
-
-extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
-                                             // lint: void_ptr (ndk* touch handle param, baked ABI)
-                                             float x, float y) {
-    ndk23_handleTouchPadEvent(clazz, touch, phase, x, y);
-}
-
-extern "C" void ndk23_ndkDone() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    if (gEngine != nullptr) {
-        gEngine->Release();
-        delete gEngine;
-        gEngine = nullptr;
-    }
 }
 
 extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC1BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
@@ -630,9 +425,8 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_resize( // lint: ex
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleTouchEvent( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass clazz, jint touch, jint phase, jfloat x, jfloat y) {
-    ndk23_handleTouchScreenEvent(clazz, reinterpret_cast<void *>(touch), phase, x, y); // lint: void_ptr (opaque touch handle for ndk* void* param, baked ABI)
-    // lint: void_ptr (opaque touch handle for ndk* void* param, baked ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/, jint touch, jint phase, jfloat x, jfloat y) {
+    ndk23_handleTouchScreenEvent(touch, phase, x, y);
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_testPurchase( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
@@ -703,42 +497,3 @@ extern "C" void Java_net_fishlabs_tapjoy_ToJNI_spentAmountOfCredits( // lint: ex
     ndk_checkPlaytimeAndSpendOfferwallCredits();
 }
 
-extern "C" int loadAPK(const char *path); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
-extern "C" void ndk23_Init(const char *apkPath, int width, int height) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    ndkEntrance = "ndkInit";
-    glViewport(0, 0, width, height);
-    gGravity[0] = 0.0;
-    gGravity[1] = 0.0;
-    gGravity[2] = 0.0;
-    gRealHeight = width;
-    gRealWidth = height;
-    loadAPK(apkPath);
-
-    gEngine = new AbyssEngine::Engine();
-    gEngine->str_0x3c = String("2.0.16", false);
-    gEngine->InitGL(true, width, height);
-    if (rootDirectory != nullptr)
-        AEFile::SetAppRootDir(rootDirectory);
-    gEngine->Initialize(&OnCreateApplication);
-    gEngine->SetOnDestroyApp(&OnDestroyApplication);
-    gEngine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
-}
-
-extern "C" void ndk23_resize(int width, int height) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    glViewport(0, 0, width, height);
-
-    gRealWidth = width;
-    gRealHeight = height;
-
-    simulateTouch(gEngine);
-}
-
-extern "C" void ndk23_setDisplayHeightAndWidth(int height, int width) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    (void) height;
-    (void) width;
-}
-
-extern "C" int ndk23_getCurrentFiredStatus() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    return 0;
-}
