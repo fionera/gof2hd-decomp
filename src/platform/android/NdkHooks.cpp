@@ -355,10 +355,25 @@ void ndk_iapBoughtConsumable(unsigned int consumable) {
     if (consumable > 4 || gEngine == nullptr)
         return;
 
-    static const int kCreditPackValue[5] = {
-        100000, 300000, 1000000, 3000000, 10000000
-    };
-    setBaughtCredits(kCreditPackValue[consumable]);
+    // TODO(decomp): the original shares one non-tail call after a tbb switch (with a second
+    // range check); clang folds this to tail calls here.
+    switch (consumable) {
+    case 0:
+        setBaughtCredits(100000);
+        break;
+    case 1:
+        setBaughtCredits(300000);
+        break;
+    case 2:
+        setBaughtCredits(1000000);
+        break;
+    case 3:
+        setBaughtCredits(3000000);
+        break;
+    case 4:
+        setBaughtCredits(10000000);
+        break;
+    }
 }
 
 int setBaughtCredits(int amount) {
