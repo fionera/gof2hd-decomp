@@ -589,177 +589,79 @@ void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int 
 static const char gCrbDash[] = "";
 
 void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
-    Array<Array<String *> *> *rows = this->recordRows;
-    if (rows != 0) {
-        for (uint32_t i = 0; i < rows->count; i++) {
-            Array<String *> *row = rows->data_[i];
-            if (row != 0) {
-                _mtw_ArrayReleaseClasses_Str(row);
-                Array<String *> *r2 = this->recordRows->data_[i];
-                if (r2 != 0) ::operator delete(_mtw_Array_Str_dtor(r2));
-                this->recordRows->data_[i] = 0;
-                rows = this->recordRows;
+    if (this->recordRows != 0) {
+        for (unsigned int i = 0; i < this->recordRows->size(); i++) {
+            if ((*this->recordRows)[i] != 0) {
+                ArrayReleaseClasses(*(*this->recordRows)[i]);
+                delete (*this->recordRows)[i];
+                (*this->recordRows)[i] = 0;
             }
         }
-        _mtw_ArrayReleaseClasses_StrArr(rows);
-        if (this->recordRows != 0) ::operator delete(_mtw_Array_StrArr_dtor(this->recordRows));
+        ArrayReleaseClasses(*this->recordRows);
+        delete this->recordRows;
         this->recordRows = 0;
     }
+    this->recordRows = new Array<Array<String *> *>();
+    ArraySetLength(Globals::recordSlots, *this->recordRows);
 
-    Array<Array<String *> *> *outer = (Array<Array<String *> *> *) ::operator new(0xc);
-    _mtw_Array_StrArr_ctor(outer);
-    this->recordRows = outer;
-    int rowCount = Globals::recordSlots;
-    _mtw_ArraySetLength_StrArr(rowCount, outer);
-
-    long *timeHolder = (long *) Globals::globals;
-    GameText *const *gtHolder = &Globals::gameText;
-
-    for (int i = 0; i < rowCount; i++) {
-        Array<String *> *row = (Array<String *> *) ::operator new(0xc);
-        _mtw_Array_Str_ctor(row);
-        this->recordRows->data_[i] = row;
-        _mtw_ArraySetLength_Str(6, this->recordRows->data_[i]);
-
-        String s48;
-        {
-            if (s48.data) delete[] s48.data;
-            s48.data = nullptr;
-            s48.length = 0;
-        }
-        String s54;
-
-        Array<GameRecord *> *rec = (Array<GameRecord *> *) this->previewRecords;
-        bool empty = (rec == 0) || (rec->data_[i] == 0);
-
-        if (empty) {
-            {
-                if (s54.data) delete[] s54.data;
-                s54.data = nullptr;
-                s54.length = 0;
-            }
-            _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) timeHolder, 0);
-            String *e;
-            String **rowData = this->recordRows->data_[i]->data_;
-
-            e = (String *) ::operator new(0xc);
-            e->Set((s54).data);
-            rowData[0] = e;
-            e = (String *) ::operator new(0xc);
-            e->Set(((String *) _mtw_GameText_getText(*gtHolder, 0xae))->data);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[1] = e;
-
-            e = (String *) ::operator new(0xc);
-            if (i == 0) e->Set(((String *) _mtw_GameText_getText(*gtHolder, 0x1e6))->data);
-            else e->ctor_char(gCrbDash, false);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[2] = e;
-
-            e = (String *) ::operator new(0xc);
-            e->ctor_char(gCrbDash, false);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[3] = e;
-
-            e = (String *) ::operator new(0xc);
-            e->ctor_char(gCrbDash, false);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[4] = e;
-
-            e = (String *) ::operator new(0xc);
-            e->ctor_char(gCrbDash, false);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[5] = e;
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        (*this->recordRows)[i] = new Array<String *>();
+        ArraySetLength(6, *(*this->recordRows)[i]);
+        String unused;
+        if (this->previewRecords != 0 && (*this->previewRecords)[i] != 0) {
+            String time;
+            Globals::globals->longToTimeStringNoSeconds((*this->previewRecords)[i]->playTime, time);
+            (*(*this->recordRows)[i])[0] = new String(time);
+            (*(*this->recordRows)[i])[1] = new String(reinterpret_cast<String &>((*this->previewRecords)[i]->pilotName));
+            (*(*this->recordRows)[i])[2] = new String(i == 0 ? *Globals::gameText->getText(486) : String(""));
+            (*(*this->recordRows)[i])[3] =
+                new String(Globals::layout->formatCredits((*this->previewRecords)[i]->field_0x08));
+            (*(*this->recordRows)[i])[4] =
+                new String(*Globals::gameText->getText(321) + String(": ") +
+                           String((int) (*this->previewRecords)[i]->killsText));
+            float rank = (*this->previewRecords)[i]->rank;
+            (*(*this->recordRows)[i])[5] = new String(rank <= 0.0f   ? *Globals::gameText->getText(519)
+                                                      : rank <= 0.5f ? *Globals::gameText->getText(519)
+                                                      : rank <= 1.0f ? *Globals::gameText->getText(519)
+                                                                     : *Globals::gameText->getText(25));
         } else {
-            {
-                if (s54.data) delete[] s54.data;
-                s54.data = nullptr;
-                s54.length = 0;
-            }
-            GameRecord *slot = rec->data_[i];
-            _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) slot, (void *) (intptr_t) slot->playTime); // lint: void_ptr (shim param)
-            String *e;
-            String **rowData;
-
-            e = (String *) ::operator new(0xc);
-            e->Set((s54).data);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[0] = e;
-
-            e = (String *) ::operator new(0xc);
-            e->Set(((String *) &slot->pilotName)->data);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[1] = e;
-
-            e = (String *) ::operator new(0xc);
-            if (i == 0) e->Set(((String *) _mtw_GameText_getText(*gtHolder, 0x1e6))->data);
-            else e->ctor_char(gCrbDash, false);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[2] = e;
-
-            String *credits = (String *) ::operator new(0xc);
-            _mtw_Layout_formatCredits(credits);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[3] = credits;
-
-            String *combined = (String *) ::operator new(0xc);
-            String *label = (String *) _mtw_GameText_getText(*gtHolder, 0x141);
-            String s6c;
-            s6c.ctor_char(gCrbDash, false);
-            String s60;
-            _mtw_String_op_plus(&s60, label);
-            String s78;
-            s78.Set(((String *) &slot->killsText)->data);
-            _mtw_String_op_plus(combined, &s60);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[4] = combined;
-
-            e = (String *) ::operator new(0xc);
-            float rank = slot->rank;
-            String *rankTxt;
-            if (rank <= 0.0f) rankTxt = (String *) _mtw_GameText_getText(*gtHolder, 0x207);
-            else if (rank <= 0.5f) rankTxt = (String *) _mtw_GameText_getText(*gtHolder, 0x207);
-            else if (rank <= 1.0f) rankTxt = (String *) _mtw_GameText_getText(*gtHolder, 0x207);
-            else rankTxt = (String *) _mtw_GameText_getText(*gtHolder, 0x19);
-            e->Set(((String *) rankTxt)->data);
-            rowData = this->recordRows->data_[i]->data_;
-            rowData[5] = e;
+            String time;
+            Globals::globals->longToTimeStringNoSeconds(0, time);
+            (*(*this->recordRows)[i])[0] = new String(time);
+            (*(*this->recordRows)[i])[1] = new String(*Globals::gameText->getText(174));
+            (*(*this->recordRows)[i])[2] = new String(i == 0 ? *Globals::gameText->getText(486) : String(""));
+            (*(*this->recordRows)[i])[3] = new String("");
+            (*(*this->recordRows)[i])[4] = new String("");
+            (*(*this->recordRows)[i])[5] = new String("");
         }
     }
 
     if (this->okButton != 0) {
-        ::operator delete(_mtw_TouchButton_dtor(this->okButton));
+        delete this->okButton;
         this->okButton = 0;
     }
-    Layout *layout = Globals::layout;
-    char backForm = Globals::iPad;
-    int extra = layout->field_0x108;
-    TouchButton *okBtn = (TouchButton *) ::operator new(0xc8);
-    int screenW = Globals::w;
-    int x = (screenW - this->listX) - layout->buttonInsetX;
-    int y = layout->field_0x20_top + layout->field_0xc_leftMargin + extra;
-    String *okLabel = (String *) _mtw_GameText_getText(*gtHolder, inSaveMode ? 0x1fa : 0x1f9);
-    if (backForm)
-        _mtw_TouchButton_ctor7(okBtn, okLabel, 7, x, y, 0x12);
-    else
-        _mtw_TouchButton_ctorFull(okBtn, okLabel, 0, x, y, layout->field_0x2a4_metricA, 0x12, 0x04);
-    this->okButton = okBtn;
-
-    okBtn->setPosition((screenW - this->listX) - layout->buttonInsetX,
-                       (layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow
-                       + layout->field_0xc_leftMargin + extra + layout->field_0x20_top +
-                       this->scrollOffset);
-
+    int y = Globals::layout->field_0x108;
+    if (Globals::iPad) {
+        this->okButton = new TouchButton(*Globals::gameText->getText(inSaveMode ? 506 : 505), 7,
+                                         Globals::w - this->listX - Globals::layout->buttonInsetX,
+                                         Globals::layout->field_0xc_leftMargin + y + Globals::layout->field_0x20_top, 18);
+    } else {
+        this->okButton = new TouchButton(*Globals::gameText->getText(inSaveMode ? 506 : 505), 0,
+                                         Globals::w - this->listX - Globals::layout->buttonInsetX,
+                                         Globals::layout->field_0xc_leftMargin + y + Globals::layout->field_0x20_top,
+                                         Globals::layout->field_0x2a4_metricA, 18, 4);
+    }
+    this->okButton->setPosition(Globals::w - this->listX - Globals::layout->buttonInsetX,
+                                (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
+                                (Globals::layout->field_0xc_leftMargin + y + Globals::layout->field_0x20_top +
+                                 this->scrollOffset));
     if (this->backButton != 0) {
-        ::operator delete(_mtw_TouchButton_dtor(this->backButton));
+        delete this->backButton;
         this->backButton = 0;
     }
-    TouchButton *backBtn = (TouchButton *) ::operator new(0xc8);
-    String *backLabel = (String *) _mtw_GameText_getText(*gtHolder, 0x41);
-    _mtw_TouchButton_ctor7(backBtn, backLabel, 7,
-                           (screenW - this->listX) - layout->buttonInsetX,
-                           layout->field_0xc_leftMargin + extra + layout->field_0x20_top, 0x12);
-    this->backButton = backBtn;
+    this->backButton = new TouchButton(*Globals::gameText->getText(65), 7,
+                                       Globals::w - this->listX - Globals::layout->buttonInsetX,
+                                       Globals::layout->field_0xc_leftMargin + y + Globals::layout->field_0x20_top, 18);
 }
 
 // _mtw_Status_getShip / _mtw_Item_make / _mtw_Item_makeQty / _mtw_Ship_setItem removed:
