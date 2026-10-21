@@ -1712,69 +1712,60 @@ int LevelScript::process(int delta) {
                 break;
             }
             case 73: { // 0x139834 (tbh on m_nState 0..3)
-                if (m_nState > 3) {
-                    break; // -> post-switch tail (0x144e36)
-                }
-                if (m_nState == 0) {
-                    // Proximity gate: once the player closes to within 49999 units of enemies[8],
-                    // advance to state 1 (via tail 0x1438d4 -> m_nState = 1). FP const @ 49999.
-                    Vector playerPos = player->getPosition();
-                    Vector enemyPos = (*enemies)[8]->getPosition(); // vtable+0x28
-                    if ((int) AbyssEngine::AEMath::VectorLength(playerPos - enemyPos) <= 49999) {
-                        m_nState = 1;
-                    }
-                    break;
-                }
-                if (m_nState == 1) { // 0x13db3c
-                    // Wait for any late escort (enemies[8+]) whose EMP shield has been knocked below
-                    // its max, then advance to state 2 (via shared tail 0x1438d2 -> m_nState = 2).
-                    for (unsigned int i = 8; i < enemies->count; ++i) {
-                        if ((*enemies)[i]->field_0x40 != 0 &&
-                            (*enemies)[i]->player->getEmpPoints() < (*enemies)[i]->player->getMaxEmpPoints()) {
-                            m_nState = 2;
-                            break;
+                switch (m_nState) {
+                    case 0: {
+                        // Proximity gate: once the player closes to within 49999 units of enemies[8].
+                        Vector playerPos = player->getPosition();
+                        Vector enemyPos = (*enemies)[8]->getPosition(); // vtable+0x28
+                        if ((int) AbyssEngine::AEMath::VectorLength(playerPos - enemyPos) <= 49999) {
+                            m_nState = 1;
                         }
+                        break;
                     }
-                    break;
-                }
-                if (m_nState == 2) { // 0x13db76
-                    // Once any EMP-disabled escort (enemies[8+]) is found, disarm and stop the first
-                    // live escort (shared tail 0x142f0c) and advance to state 3 (0x144c0c -> m_nState = 3).
-                    for (unsigned int i = 8; i < enemies->count; ++i) {
-                        if ((*enemies)[i]->field_0x40 != 0 && (*enemies)[i]->player->empDisabledByte != 0) {
-                            for (unsigned int j = 8; j < enemies->count; ++j) {
-                                if ((*enemies)[j]->field_0x40 != 0) {
-                                    (*enemies)[j]->field_0x24 = 1;
-                                    ((PlayerFixedObject *) (*enemies)[j])->setMoving(false);
-                                    break;
-                                }
+                    case 1:
+                        // Wait for any escort (enemies[8+]) whose EMP points dropped below max.
+                        for (unsigned int i = 8; i < enemies->count; ++i) {
+                            if ((*enemies)[i]->field_0x40 != 0 &&
+                                (*enemies)[i]->player->getEmpPoints() < (*enemies)[i]->player->getMaxEmpPoints()) {
+                                m_nState = 2;
+                                break;
                             }
-                            m_nState = 3;
-                            break;
                         }
-                    }
-                    break;
+                        break;
+                    case 2:
+                        // Once any EMP-disabled escort is found, stop the first live escort.
+                        for (unsigned int i = 8; i < enemies->count; ++i) {
+                            if ((*enemies)[i]->field_0x40 != 0 && (*enemies)[i]->player->empDisabledByte != 0) {
+                                for (unsigned int j = 8; j < enemies->count; ++j) {
+                                    if ((*enemies)[j]->field_0x40 != 0) {
+                                        (*enemies)[j]->field_0x24 = 1;
+                                        ((PlayerFixedObject *) (*enemies)[j])->setMoving(false);
+                                        break;
+                                    }
+                                }
+                                m_nState = 3;
+                                break;
+                            }
+                        }
+                        break;
+                    case 3:
+                        // Once radio message #7 fires, scatter enemies[4..7] around the player.
+                        if (((RadioMessage *) ((*messages)[7]))->isTriggered()) {
+                            Vector scatterOrigin = player->getPosition();
+                            for (int i = 4; i != 8; ++i) {
+                                int magX = 35000 + Globals::rnd->nextInt(10000);
+                                int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+                                int y = Globals::rnd->nextInt(10000) - 5000;
+                                int magZ = 35000 + Globals::rnd->nextInt(10000);
+                                int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+                                Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
+                                (*enemies)[i]->setPosition(scatterOrigin + offset); // vtable+0x44
+                                (*enemies)[i]->awake();                             // vtable+0xc
+                            }
+                            m_nState = 4;
+                        }
+                        break;
                 }
-                // state 3 (0x13dbd8): once radio message #7 fires, scatter the late escorts
-                // (enemies[4..7]) to random positions far around the player -- magnitude
-                // 35000..44999 on ±X/±Z, -5000..4999 on Y (Globals::rnd->nextInt) -- wake each one,
-                // then advance to state 4 (shared tail 0x13e80c -> 0x1438d4). No FP immediates: the
-                // components are integer arithmetic converted with vcvt.f32.s32.
-                if (!((RadioMessage *) ((*messages)[7]))->isTriggered()) {
-                    break; // -> post-switch tail (0x144e36)
-                }
-                Vector scatterOrigin = player->getPosition();
-                for (int i = 4; i != 8; ++i) {
-                    int magX = 35000 + Globals::rnd->nextInt(10000);
-                    int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
-                    int y = Globals::rnd->nextInt(10000) - 5000;
-                    int magZ = 35000 + Globals::rnd->nextInt(10000);
-                    int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
-                    Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
-                    (*enemies)[i]->setPosition(scatterOrigin + offset); // vtable+0x44
-                    (*enemies)[i]->awake();                             // vtable+0xc
-                }
-                m_nState = 4;
                 break;
             }
             case 67: {
@@ -2006,10 +1997,7 @@ int LevelScript::process(int delta) {
                     Vector camPos = *m_pCamera->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(14, &camPos, &zero, false);
-                    // -> shared geometry-6 advance tail (0x144e18)
-                    break;
-                }
-                if (((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 1) {
+                } else if (((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 1) {
                     // Cutscene over: retarget the camera to the player, restore the HUD/radar and
                     // player controls, drop the intro geometry and spawn the follow-up objective.
                     m_nState = 2;
@@ -2028,7 +2016,9 @@ int LevelScript::process(int delta) {
                     m_pGeometry6 = nullptr;
                     m_pLevel->objectivesA = new Objective(3, 180000, m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    // -> shared tail 0x13e3bc
+                }
+                if (m_pGeometry6 != nullptr) {
+                    m_pGeometry6->moveForward((float) (delta * 3));
                 }
                 break;
             }
