@@ -374,25 +374,23 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         uvp = rotateUVs(uv, this->currentParticle, rotated);
 
     int spread = def.velSpread;
-    Vector tmp = spread != 0
-                 ? Vector{(float) (this->random.nextInt(spread * 2) - spread),
-                          def.velBaseY +
-                          (float) (this->random.nextInt(spread * 2) - spread),
-                          (float) (this->random.nextInt(spread * 2) - spread)}
-                 : Vector{0.0f, 0.0f, 0.0f};
-    this->particleVelocities[this->currentParticle] = tmp;
-
-    if (velocity != nullptr && def.drag != 0.0f) {
-        tmp = *velocity * def.drag;
-        this->particleVelocities[this->currentParticle] -= tmp;
+    if (spread != 0) {
+        this->particleVelocities[this->currentParticle] =
+                Vector((float) (this->random.nextInt(spread * 2) - spread),
+                       (float) (this->random.nextInt(spread * 2) - spread) + def.velBaseY,
+                       (float) (this->random.nextInt(spread * 2) - spread));
+    } else {
+        this->particleVelocities[this->currentParticle] = Vector();
     }
 
+    if (velocity != nullptr && def.drag != 0.0f)
+        this->particleVelocities[this->currentParticle] -= *velocity * def.drag;
+
     if (def.posSpread != 0) {
-        int spread = def.posSpread;
-        tmp.x = (float) (this->random.nextInt(spread * 2) - spread);
-        tmp.y = 0.0f;
-        tmp.z = (float) (this->random.nextInt(spread * 2) - spread);
-        position += tmp;
+        int range = def.posSpread;
+        float x = (float) (this->random.nextInt(range * 2) - range);
+        float z = (float) (this->random.nextInt(range * 2) - range);
+        position += Vector(x, 0.0f, z);
     }
 
     if (def.ySpread != 0)
@@ -411,10 +409,10 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         int fadeFrames = def.fadeFrames;
         float size0 = def.startSize + (float) this->random.nextInt(def.lifeRandom);
         float size1 = def.endSize + (float) this->random.nextInt(def.lifeRandom);
-        Vector vel = def.velocityFromSlot != 0.0f
-                     ? def.velocityFromSlot * this->particleVelocities[this->currentParticle]
-                     : Vector{0.0f, 0.0f, 0.0f};
-        this->setParticle(position, life, color, uA, vA, uB, vB, fadeFrames > 0, size0, size1, vel);
+        this->setParticle(position, life, color, uA, vA, uB, vB, fadeFrames > 0, size0, size1,
+                          def.velocityFromSlot != 0.0f
+                          ? def.velocityFromSlot * this->particleVelocities[this->currentParticle]
+                          : Vector());
     } else {
         float velocityFromSlot = def.velocityFromSlot;
         float size0 = def.startSize;
@@ -425,16 +423,14 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         float uB = uvp[1];
         float vA = uvp[2];
         float vB = uvp[3];
-        Vector vel = velocityFromSlot != 0.0f
-                     ? velocityFromSlot * this->particleVelocities[this->currentParticle]
-                     : Vector{0.0f, 0.0f, 0.0f};
-        this->setParticle(position, lifetime, color, uA, vA, uB, vB, fadeFrames > 0, size0, size1, vel);
+        this->setParticle(position, lifetime, color, uA, vA, uB, vB, fadeFrames > 0, size0, size1,
+                          velocityFromSlot != 0.0f
+                          ? velocityFromSlot * this->particleVelocities[this->currentParticle]
+                          : Vector());
     }
 
-    if (def.drag != 0.0f) {
-        tmp = this->emitterVelocity * def.drag * 2.0f;
-        this->particleVelocities[this->currentParticle] += tmp;
-    }
+    if (def.drag != 0.0f)
+        this->particleVelocities[this->currentParticle] += this->emitterVelocity * def.drag * 2.0f;
 
     int next = this->currentParticle + 1;
     if (next >= this->maxParticles)
