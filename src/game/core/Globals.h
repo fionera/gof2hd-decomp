@@ -13,6 +13,7 @@ class AEGeometry;
 class Agent;
 class BoundingVolume;
 class Station;
+class SolarSystem;
 class Status;
 class FModSound;
 class Galaxy;
@@ -90,7 +91,7 @@ public:
 
     String getKeyActionName(int action);
 
-    void getRandomSystemForDrinks();
+    SolarSystem *getRandomSystemForDrinks();
 
     String replaceKeyBindingTokens(const String &src);
 

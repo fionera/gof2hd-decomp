@@ -429,10 +429,10 @@ float Globals::sqrt(float x) {
 }
 
 
-void Globals::getRandomSystemForDrinks() {
+SolarSystem *Globals::getRandomSystemForDrinks() {
     Galaxy *galaxy = Globals::galaxy;
     int picked = Globals::rnd->nextInt(0x16);
-    galaxy->getSystem(picked);
+    return (SolarSystem *) (intptr_t) galaxy->getSystem(picked);
 }
 
 void Globals::addSoundResourceToList(int snd) {
