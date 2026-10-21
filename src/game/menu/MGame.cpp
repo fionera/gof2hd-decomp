@@ -1796,8 +1796,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 uint8_t &soundsMuted = reinterpret_cast<uint8_t *>(&this->field_0x1a4)[0];
                 if (this->menuWindow->OnTouchEnd(x, y, touchId)) {
                     // Pause menu closed.
-                    this->pauseSnapshot = 0;
                     this->pauseOpen = 0;
+                    this->pauseSnapshot = 0;
                     resumeSounds();
                     if (Globals::sound->IsCategoryEnabled(2)) {
                         if (soundsMuted) {
@@ -1987,8 +1987,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                                (Globals::status->getMission() == nullptr ||
                                 Globals::status->getMission()->getType() != 183)) {
                         // Open the auto pilot target menu.
-                        this->pauseOpen = 1;
                         this->hudMenuOpen = 1;
+                        this->pauseOpen = 1;
                         pauseSounds();
                         this->hud->initHudMenu(3, this->level);
                         this->_bc8 = 1;

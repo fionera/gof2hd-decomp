@@ -1390,8 +1390,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         return;
                     }
                     Globals::status->changeCredits(-this->field_0xd4);
-                    this->flag_0x6b = 0;
                     this->flag_0xd8 = 1;
+                    this->flag_0x6b = 0;
                     Globals::status->getStation()->setAttackedFriends(false);
                     this->flag_0x101 = 1;
                     enterStation();
@@ -1589,8 +1589,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             this->hangarWindow = new HangarWindow();
         }
         this->hangarWindow->initialize();
-        this->pendingHangarClose = 1;
         this->flag_0x66 = 1;
+        this->pendingHangarClose = 1;
         this->hangarWindow->showCreditsBuyWindow();
     }
     this->selectedButton = -1;
