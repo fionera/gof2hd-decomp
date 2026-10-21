@@ -368,8 +368,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     if (!this->enabled) {
         return;
     }
-    this->lockConfirmed = 0;
     this->plasmaInRange = 0;
+    this->lockConfirmed = 0;
     Globals::Canvas->SetColor(0xffffffff);
 
     Mission *mission = Globals::status->getMission();
