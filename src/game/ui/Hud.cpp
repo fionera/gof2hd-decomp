@@ -859,31 +859,7 @@ void Hud::drawEventString(String text, bool rightAlign) {
 
 void Hud::setCurrentSecondaryWeapon(Item *item) {
     this->currentSecondaryWeapon = item;
-
-    updateSecondaryWeaponString();
-
-    Ship *ship = Globals::status->getShip();
-    Array<Item *> *equip = ship->getEquipment(1);
-    this->equipmentArray = equip;
-
-    bool hasSecondary = false;
-    if (equip != 0) {
-        for (unsigned int i = 0; i < equip->size(); i++) {
-            if ((*equip)[i] != 0) {
-                hasSecondary = true;
-                break;
-            }
-        }
-    }
-    unsigned char empty;
-    if (hasSecondary) {
-        empty = 0;
-    } else if (ship->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0) {
-        empty = (unsigned char) (ship->hasCloak() == 0);
-    } else {
-        empty = 0;
-    }
-    this->quickMenuEmpty = empty;
+    this->updateSecondaryWeaponString();
 }
 
 int Hud::sameHudEventAsBeforeAggregate(String str) {
@@ -906,63 +882,12 @@ static const char g_Hud_swSep[1] = {0};
 static const char g_Hud_swEnd[1] = {0};
 
 void Hud::updateSecondaryWeaponString() {
-    Item *item = this->currentSecondaryWeapon;
-    if (item == 0) return;
-
-    GameText *gt = Globals::gameText;
-    int idx = ((Item *) (item))->getIndex();
-    String *name = gt->getText(idx + 0x4fa);
-
-    char sep[12], acc1[12], amount[12], acc2[12], end[12], acc3[12];
-    ((String *) (sep))->ctor_char(g_Hud_swSep, false);
-    *(String *) acc1 = *(String *) name + *(String *) sep;
-    int amt = ((Item *) (item))->getAmount();
-    ((String *) (amount))->Set((long long) (amt));
-    *(String *) acc2 = *(String *) acc1 + *(String *) amount;
-    ((String *) (end))->ctor_char(g_Hud_swEnd, false);
-    *(String *) acc3 = *(String *) acc2 + *(String *) end;
-
-    *((String *) (&this->field_0x3b4)) = *((String *) (acc3));
-    {
-        String *_s = ((String *) (acc3));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (end));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (acc2));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (amount));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (acc1));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (sep));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    int screenW = *(int *) &Globals::w;
-    int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) ((String *) Globals::font));
-    this->secondaryLabelX = (screenW >> 1) - (w >> 1);
+    if (this->currentSecondaryWeapon == 0)
+        return;
+    this->field_0x3b4 = *Globals::gameText->getText(this->currentSecondaryWeapon->getIndex() + 0x4fa) + String(" (") +
+                        String(this->currentSecondaryWeapon->getAmount()) + String(")");
+    this->secondaryLabelX = (Globals::w >> 1) -
+                            (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x3b4) >> 1);
 }
 
 
@@ -1642,19 +1567,19 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
 }
 
 Hud::~Hud() {
-    delete this->equipmentArray;
+    if (this->equipmentArray != 0)
+        delete this->equipmentArray;
     this->equipmentArray = 0;
-
-    delete this->eventQueue;
+    if (this->eventQueue != 0)
+        delete this->eventQueue;
     this->eventQueue = 0;
-
     if (this->menuButtons != 0) {
         ArrayReleaseClasses(*this->menuButtons);
         delete this->menuButtons;
     }
     this->menuButtons = 0;
-
-    delete this->uintArray;
+    if (this->uintArray != 0)
+        delete this->uintArray;
     this->uintArray = 0;
 }
 

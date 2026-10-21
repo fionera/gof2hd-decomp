@@ -30,26 +30,7 @@ public:
     uint8_t _pad_0x4[20];
     Array<TouchButton *> *menuButtons;
 
-    String field_0x1c;
-    String field_0x28;
-    String field_0x34;
-    String field_0x40;
-    String field_0x4c;
-    String field_0x58;
-    String field_0x64;
-    String field_0x70;
-    String field_0x7c;
-    String field_0x88;
-    String field_0x94;
-    String field_0xa0;
-    String field_0xac;
-    String field_0xb8;
-    String field_0xc4;
-    String field_0xd0;
-    String field_0xdc;
-    String field_0xe8;
-    String field_0xf4;
-    String field_0x100;
+    String eventLines[20]; // ctor/dtor construct/destroy 0x1c..0x10c as a loop
     int eventLineX;
     int eventLineY;
     int factionLogoImage;
