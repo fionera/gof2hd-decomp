@@ -319,9 +319,7 @@ void DialogueWindow::update(int dt) {
 int DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->choiceActive != 0) {
         int result = this->choiceWindow->OnTouchEnd(x, y);
-        if (result == 1) {
-            this->choiceActive = 0;
-        } else if (result == 0) {
+        if (result == 0) {
             this->choiceActive = 0;
             if (Globals::status->getCurrentCampaignMission() == 0x0f) {
                 Globals::sound->play(0xa2, 0, 0, 0);
@@ -331,6 +329,8 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
             if (this->voiceSound != -1)
                 Globals::sound->stop(this->voiceSound);
             return 1;
+        } else if (result == 1) {
+            this->choiceActive = 0;
         }
         return 0;
     }
@@ -347,8 +347,7 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
         }
     }
     if (this->moreButton->OnTouchEnd(x, y) != 0) {
-        String *text = (Globals::gameText)->getText(0x18c);
-        this->choiceWindow->set(*text, true);
+        this->choiceWindow->set(*Globals::gameText->getText(0x18c), true);
         this->choiceActive = 1;
     }
     return 0;
