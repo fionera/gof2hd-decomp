@@ -46,6 +46,9 @@ public:
     int animTimer80;
     int fogTimer84;
     int mode;
+    // Both original allocation sites (SpaceLounge ctor, ModMainMenu) do operator new(0xa0): the
+    // object is 0xa0 bytes; the members past `mode` (0x8c..0x9f) are not yet identified.
+    uint8_t _unknown_0x8c[0x14];
 
     CutScene(int mode);
 
@@ -73,5 +76,7 @@ public:
 
     void checkForTurret();
 };
+
+static_assert(sizeof(CutScene) == 0xa0, "CutScene size (operator new(0xa0) at both sites)");
 
 #endif

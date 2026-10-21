@@ -972,34 +972,17 @@ int SpaceLounge::init() {
     return 0;
 }
 
-SpaceLounge::SpaceLounge() {
-    char from[60];
-    char to[60];
+// Lounge camera fly-in per lounge race: start/end translations and Y rotations.
+static const int SpaceLounge_cameraStartPos[4 * 3] = {
+        -1315, 1160, -2728, 1484, 2980, -1626, -2472, 734, -3000, -2598, 400, 1813};
+static const int SpaceLounge_cameraEndPos[4 * 3] = {
+        -1800, 620, 1805, 607, 610, 2362, 136, 444, 1122, 2222, 450, 1227};
+static const float SpaceLounge_cameraStartRot[4] = {0.03f, 0.03f, 0.21f, 1.87f};
+static const float SpaceLounge_cameraEndRot[4] = {0.04f, 0.43f, 0.6f, 0.46f};
 
-    this->field_0x8c = 0;
-    this->field_0x90 = 0;
-    this->field_0x94 = 0;
-    this->field_0x98 = 0;
-    this->silhouettePos.x = 0;
-    this->silhouettePos.y = 0;
-    this->silhouettePos.z = 0;
-    this->field_0x9c = 0;
-    this->field_0xa0 = 0;
-    this->baseMatrix = AbyssEngine::AEMath::Matrix();
-
-    this->initialized = 0;
-    this->starMap = 0;
-    this->choiceWindow = 0;
-    this->listWindow = 0;
-    this->mapVisible = 0;
-    this->singleOffer = 0;
-    this->agentVisited = 0;
-    this->buttons = 0;
-    this->headEase = 0;
-    this->listVisible = 0;
-    this->mode = 0;
-    this->field_0x18 = 0;
-    this->cameraEase = 0;
+SpaceLounge::SpaceLounge()
+        : silhouettePos(), field_0x8c(0), field_0x90(0), field_0x94(0), field_0x98(0), field_0x9c(0),
+          field_0xa0(0) {
     this->selectedAgent = 0;
     this->agents = 0;
     this->agentTexts = 0;
@@ -1008,47 +991,81 @@ SpaceLounge::SpaceLounge() {
     this->agentImageParts = 0;
     this->agentRects = 0;
     this->cutScene = 0;
+    this->initialized = 0;
+    this->starMap = 0;
+    this->choiceWindow = 0;
+    this->listWindow = 0;
+    this->mapVisible = 0;
+    this->hangarUpdate = 0;
+    this->singleOffer = 0;
+    this->agentVisited = 0;
+    this->buttons = 0;
+    this->headEase = 0;
+    this->listVisible = 0;
+    this->mode = 0;
+    this->field_0x18 = 0;
+    this->chatActive = 0;
+    this->popupActive = 0;
+    this->choiceVisible = 0;
+    this->cameraEase = 0;
 
     this->init();
 
-    Array<Agent *> *agents = this->agents;
-    if (agents != 0) {
-        for (unsigned i = 0; i < agents->size(); ++i) {
-            Agent *agent = (*agents)[i];
-            int offer = agent->getOffer();
-            if ((offer == 6 || offer == 0) && agent->getMission() != 0) {
-                Mission *mission = agent->getMission();
-                if (mission->getType() == 0xc && agent->hasAcceptedOffer() != 0) {
-                    ArrayRemove_AgentPtr(agent, this->agents);
-                    this->init();
-                    break;
-                }
+    // A finished "rescue" mission agent leaves the lounge: drop it and rebuild.
+    if (this->agents != 0) {
+        for (unsigned i = 0; i < this->agents->size(); ++i) {
+            Agent *agent = (*this->agents)[i];
+            if ((agent->getOffer() == 6 || agent->getOffer() == 0) && agent->getMission() != 0 &&
+                agent->getMission()->getType() == 12 && agent->hasAcceptedOffer()) {
+                ArrayRemove((*this->agents)[i], *this->agents);
+                this->init();
+                break;
             }
-            agents = this->agents;
         }
     }
 
     if (this->cutScene == 0) {
         this->cutScene = new CutScene(4);
     }
-    while (this->cutScene->isInitialized() == 0) {
+    while (!this->cutScene->isInitialized()) {
         this->cutScene->initialize();
     }
 
-    int race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-    MatrixSetTranslation(from, (float) race, 0.0f, 0.0f);
-    MatrixSetRotation(from, 0.0f, 0.0f, 0.0f);
-    MatrixSetTranslation(to, (float) race, 0.0f, 0.0f);
-    MatrixSetRotation(to, 0.0f, 0.0f, 0.0f);
-    this->cameraEase = new AbyssEngine::EaseInOutMatrix(*(Matrix *) from, *(Matrix *) to, 3000);
+    // Turn every agent (and its seat partner) towards the camera.
+    Array<KIPlayer *> *figures = this->cutScene->level->getEnemies();
+    if (this->agents != 0) {
+        for (unsigned i = 0; i < this->agents->size(); ++i) {
+            Vector pos = (*figures)[i]->getPosition();
+            PaintCanvas *canvas = Globals::Canvas;
+            Matrix look = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
+            look = AbyssEngine::AEMath::MatrixGetLookAt(AbyssEngine::AEMath::MatrixGetPosition(look), pos,
+                                                        AbyssEngine::AEMath::MatrixGetUp(look));
+            (*figures)[i]->geometry->setMatrix(look);
+            (*figures)[i]->setPosition(pos);
+            (*figures)[i + this->agents->size()]->geometry->setMatrix(look);
+            pos.x += AbyssEngine::AEMath::MatrixGetDir(look).x * -100.0f;
+            pos.z += AbyssEngine::AEMath::MatrixGetDir(look).z * -100.0f;
+            (*figures)[i + this->agents->size()]->setPosition(pos);
+        }
+    }
 
-    PaintCanvas **cameraSlot = SpaceLounge_ctor_camera_slot;
-    PaintCanvas *camera = *cameraSlot;
-    const AbyssEngine::AEMath::Matrix *current =
-            (const AbyssEngine::AEMath::Matrix *) (long) camera->CameraGetCurrent();
-    camera->CameraSetLocal((unsigned int) (long) camera, *current);
-    this->initialized = 1;
+    Matrix from;
+    int race = ((SolarSystem *) Globals::status->getSystem())->getRace();
+    AbyssEngine::AEMath::MatrixSetTranslation(from, (float) SpaceLounge_cameraStartPos[race * 3],
+                                              (float) SpaceLounge_cameraStartPos[race * 3 + 1],
+                                              (float) SpaceLounge_cameraStartPos[race * 3 + 2]);
+    AbyssEngine::AEMath::MatrixSetRotation(from, 0.0f, SpaceLounge_cameraStartRot[race], 0.0f);
+    Matrix to;
+    AbyssEngine::AEMath::MatrixSetTranslation(to, (float) SpaceLounge_cameraEndPos[race * 3],
+                                              (float) SpaceLounge_cameraEndPos[race * 3 + 1],
+                                              (float) SpaceLounge_cameraEndPos[race * 3 + 2]);
+    AbyssEngine::AEMath::MatrixSetRotation(to, 0.0f, SpaceLounge_cameraEndRot[race], 0.0f);
+    this->cameraEase = new AbyssEngine::EaseInOutMatrix(from, to, 3000);
+
+    PaintCanvas *canvas = Globals::Canvas;
+    canvas->CameraSetLocal(canvas->CameraGetCurrent(), from);
     this->introDone = 0;
+    this->initialized = 1;
 }
 
 void SpaceLounge::startChat() {
