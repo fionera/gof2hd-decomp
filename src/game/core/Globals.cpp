@@ -6,7 +6,7 @@
 namespace {
 #pragma pack(push, 1)
 
-    struct GameSettingsRecord {
+    struct alignas(4) GameSettingsRecord {
         float colorR;
         float colorG;
         float colorB;
@@ -2016,6 +2016,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     char *langFlag = (char *) &Globals::iPad;
     char *zeroByte = (char *) &Globals::startLiteVersionWithMoreCredits;
 
+    char lang = *langFlag;
     settings->_region[5] = 1;
     settings->enableFlag30 = 1;
     settings->colorR = 0.5f;
@@ -2023,9 +2024,12 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     settings->colorB = 0.5f;
     settings->tintB = 0.5f;
     settings->brightness = 1.0f;
-    *zeroByte = 0;
-    char lang = *langFlag;
+    settings->glowR = 1.0f;
+    settings->glowG = 1.0f;
+    settings->tintR = 0.6f;
+    settings->tintG = 0.6f;
     reinterpret_cast<int16_t &>(settings->_region[3]) = 0x101;
+    *zeroByte = 0;
     *flagFFFF = -1;
     *langSettingSlot = (lang == 0) ? 6 : 0xc;
 

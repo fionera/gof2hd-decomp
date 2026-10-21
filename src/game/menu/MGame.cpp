@@ -57,12 +57,10 @@ static inline void TFC_setFastForwardMode(TargetFollowCamera *c, int v) { c->set
 
 static inline void TFC_setLookAtCam(TargetFollowCamera *c, int v) { c->setLookAtCam(v); }
 
-void Cam_setCinematic(TargetFollowCamera *c, int on);
 
 void FModSound_restoreState();
 
 
-static inline void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on) { c->enableFirstPersonCam(on); }
 
 static int *g_maneuverScale = &Globals::w;
 
@@ -300,96 +298,55 @@ void MGame::startJumpScene() {
     TFC_setPosition(this->camera, this->egoJumpPos.x, this->egoJumpPos.y, this->egoJumpPos.z);
 }
 
-static inline void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v) { c->setRotationAroundTarget(v); }
 
-static inline int TFC_hideShipForFirstPersonCam(TargetFollowCamera *c) { return c->hideShipForFirstPersonCam(); }
 
 void MGame::switchCamera(int id) {
-    int turretArg;
-    int savedMode;
-
-restart:
-
-    savedMode = this->cameraMode;
-    if (id == 2) id = 3;
+    int prevMode = this->cameraMode;
+    if (id == 2) id++;
     this->cameraMode = id;
     if (id == 1) {
-        if (this->player->isDockingToAsteroid() != 0) {
-            this->turretMode = 0;
-        } else {
-            ((PlayerEgo *) this->player)->setTurretMode(1);
-            int t = 1;
-            this->turretMode = (uint8_t) t;
-            if (t != 0) {
-                id = this->cameraMode;
-                turretArg = 1;
-                goto afterTurret;
-            }
-        }
-        id = this->cameraMode + 1;
-        this->cameraMode = id;
-        turretArg = 0;
+        this->turretMode = this->player->isDockingToAsteroid() ? false : this->player->setTurretMode(true);
+        if (!this->turretMode)
+            this->cameraMode++;
     } else {
-        this->turretMode = 0;
-        turretArg = 0;
+        this->turretMode = false;
     }
-
-afterTurret:
-    if (id == 2) {
+    if (this->cameraMode == 2)
         this->cameraMode = 3;
-    } else if (id >= 4) {
+    else if (this->cameraMode >= 4)
         this->cameraMode = 0;
-    }
     this->field_0x18 = 0;
-    this->player->setTurretMode(turretArg);
+    this->player->setTurretMode(this->turretMode);
 
-    int mode = this->cameraMode;
-    switch (mode) {
+    switch (this->cameraMode) {
         case 0:
-
-            if (this->player->isDockedToDockingPoint() != 0) {
-                id = 1;
-                goto restart;
+            if (this->player->isDockedToDockingPoint()) {
+                switchCamera(1);
+                return;
             }
             this->levelScript->resetCamera(this->level);
-            TFC_setRotationAroundTarget(this->camera, 0);
-            this->player->setFreeLookMode(0);
-            {
-                Engine *eng = (Engine *) this->applicationManager->GetEngine();
-                eng->autoPilotEngaged = 0;
-            }
-            goto firstPerson;
+            this->camera->setRotationAroundTarget(false);
+            this->player->setFreeLookMode(false);
+            static_cast<Engine *>(this->applicationManager->GetEngine())->autoPilotEngaged = 0;
+            break;
         case 1:
-        case 3: {
-            if (this->player->isDockedToDockingPoint() != 0)
-                TFC_setLookAtCam(this->camera, 0);
+        case 3:
+            if (this->player->isDockedToDockingPoint())
+                this->camera->setLookAtCam(false);
             this->levelScript->lookBehind();
-            TFC_setRotationAroundTarget(this->camera, 1);
-            this->player->setFreeLookMode(1);
-            goto firstPerson;
-        }
-        case 2: {
+            this->camera->setRotationAroundTarget(true);
+            this->player->setFreeLookMode(true);
+            break;
+        case 2:
             this->levelScript->resetCamera(this->level);
-            TFC_setRotationAroundTarget(this->camera, 0);
-            this->player->setFreeLookMode(0);
-            if (savedMode == 1)
+            this->camera->setRotationAroundTarget(false);
+            this->player->setFreeLookMode(false);
+            if (prevMode == 1)
                 this->field_0x18 = 1;
-            goto firstPerson;
-        }
-        default:
-            goto firstPerson;
+            break;
     }
-
-firstPerson: {
-        TFC_enableFirstPersonCam(this->camera, this->cameraMode == 2);
-        PlayerEgo *ego = this->player;
-        int v;
-        if (this->field_0x18 == 0)
-            v = TFC_hideShipForFirstPersonCam(this->camera);
-        else
-            v = 1;
-        ((PlayerEgo *) (ego))->hideShipForFirstPersonCameraView(v != 0);
-    }
+    this->camera->enableFirstPersonCam(this->cameraMode == 2);
+    this->player->hideShipForFirstPersonCameraView(this->field_0x18 ? true : this->camera->hideShipForFirstPersonCam());
 }
 
 static int *g_fcb_guard;
@@ -484,7 +441,7 @@ void MGame::gameOverCheck() {
             this->player->setTurretMode(0);
             this->levelScript->resetCamera(this->level);
             this->player->setFreeLookMode(0);
-            TFC_enableFirstPersonCam(this->camera, 0);
+            this->camera->enableFirstPersonCam(false);
             this->player->hideShipForFirstPersonCameraView(0);
             this->needsRedraw = 1;
             this->player->explode();
@@ -1624,7 +1581,7 @@ deliverFollowup:
         this->player->setTurretMode(0);
         this->levelScript->resetCamera((Level *) this->level);
         this->player->setFreeLookMode(false);
-        TFC_enableFirstPersonCam(this->camera, 0);
+        this->camera->enableFirstPersonCam(false);
         this->player->hideShipForFirstPersonCameraView(false);
 
         this->needsRedraw = 1;
@@ -2099,28 +2056,23 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
     }
 }
 
-static uint8_t *g_cinFlagA;
-
-static uint8_t **g_cinFlagB;
-
 void MGame::setCinematicMode(bool on) {
-    MGame *self = this;
-    self->freeCamMode = on;
-    *g_cinFlagA = on;
-    uint8_t *flag = *g_cinFlagB;
-    if (!on) {
-        *flag = self->field_0x1dd;
-        ((MGame *) (self))->switchCamera(self->cinematicPrevCamMode);
-        return Cam_setCinematic(self->camera, self->cinematicPrevLookAt);
-    }
-    self->field_0x1dd = *flag;
-    *flag = 1;
-    if (self->jumpDriveActive == 0 && self->jumpActive == 0) {
-        self->cinematicPrevCamMode = self->cameraMode;
-        self->cinematicPrevLookAt = self->camera->isInLookAtMode();
-        TFC_setLookAtCam(self->camera, 0);
-        ((MGame *) (self))->switchCamera(3);
-        return self->level->lodManager->forceUpdate(self->deltaTime, true);
+    this->freeCamMode = on;
+    Globals::isCinematicModeActive = on;
+    if (on) {
+        this->field_0x1dd = AbyssEngine::Engine::UseAdvancedShader;
+        AbyssEngine::Engine::UseAdvancedShader = 1;
+        if (this->jumpDriveActive == 0 && this->jumpActive == 0) {
+            this->cinematicPrevCamMode = this->cameraMode;
+            this->cinematicPrevLookAt = this->camera->isInLookAtMode();
+            this->camera->setLookAtCam(false);
+            switchCamera(3);
+            this->level->lodManager->forceUpdate(this->deltaTime, true);
+        }
+    } else {
+        AbyssEngine::Engine::UseAdvancedShader = this->field_0x1dd;
+        switchCamera(this->cinematicPrevCamMode);
+        this->camera->setLookAtCam(this->cinematicPrevLookAt);
     }
 }
 
@@ -2646,7 +2598,7 @@ void MGame::dialogueEvent() {
     this->player->setTurretMode(0);
     this->levelScript->resetCamera((Level *) (this->level) /* level: arg lost in decomp */);
     this->player->setFreeLookMode(0);
-    TFC_enableFirstPersonCam(this->camera, 0);
+    this->camera->enableFirstPersonCam(false);
     this->player->hideShipForFirstPersonCameraView(0);
     LevelScript *cam = this->levelScript;
     this->needsRedraw = 1;

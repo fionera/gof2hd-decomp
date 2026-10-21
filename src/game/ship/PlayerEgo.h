@@ -556,7 +556,7 @@ public:
 
     void setThrust(float v);
 
-    void setTurretMode(bool enable);
+    bool setTurretMode(bool enable);
 
     void setTurretPosition(AbyssEngine::AEMath::Vector v);
 

@@ -2105,14 +2105,14 @@ void PlayerEgo::stopMining() {
     }
 }
 
-void PlayerEgo::setTurretMode(bool enable) {
+bool PlayerEgo::setTurretMode(bool enable) {
     if (this->turretMode == 0 || ((intptr_t) this->miningGame) != 0 || this->autoTurretEquipped != 0) {
         if (((intptr_t) this->rocketControlGun) != 0) {
             Globals::Canvas->CameraSetCurrent(
                 (unsigned int) (((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id));
             ((LevelScript *) (this->level))->resetCamera(((LevelScript *) this->level)->m_pLevel);
         }
-        return;
+        return false;
     }
 
     this->turretActive = (unsigned char) enable;
@@ -2123,7 +2123,7 @@ void PlayerEgo::setTurretMode(bool enable) {
         ((LevelScript *) (this->level))->resetCamera(((LevelScript *) this->level)->m_pLevel);
     } else {
         if (((intptr_t) this->rocketControlGun) != 0)
-            return;
+            return false;
         if (this->dockCameraNode == 0) {
             Globals::Canvas->CameraCreate(this->turretCamera);
             unsigned int cam = (unsigned int) (unsigned long) Globals::Canvas;
@@ -2166,6 +2166,7 @@ void PlayerEgo::setTurretMode(bool enable) {
         else
             ((FModSound *) (*g_PE_tm_hum))->play(0x8cf, (Vector *) 0, (Vector *) 0, (float) v);
     }
+    return true;
 }
 
 void PlayerEgo::rotate(float rx, float ry, float rz) {
