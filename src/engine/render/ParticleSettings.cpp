@@ -86,14 +86,14 @@ int ParticleSettings::init() {
     this->sets[4].lifetime = 2000;
     this->sets[4].velDir = -30000.0f;
     this->sets[4].uvU1 = 1.0f;
-    this->sets[4].lifeBase = 20.0f;
     this->sets[4].flags = 0x81;
+    this->sets[4].count = 500;
+    this->sets[4].lifeBase = 20.0f;
     this->sets[4].velSpread = 5;
     this->sets[4].uvV1 = 0.0f;
     this->sets[4].velocityFromSlot = 0.0f;
     this->sets[4].oneShot = 0;
     this->sets[4].field_0x54 = 0;
-    this->sets[4].count = 500;
     this->sets[4].color1 = 0;
     this->sets[4].velBaseY = 0.0f;
     this->sets[4].ySpread = 10000;
