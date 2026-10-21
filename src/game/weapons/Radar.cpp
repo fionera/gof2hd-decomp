@@ -921,15 +921,19 @@ enemies:
             if (sparks != nullptr && Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {
                 for (uint32_t s = 0; s < sparks->size(); ++s) {
                     this->update(sparks->data()[s]->getPosition());
-                    int size = this->turretScopeHalfWidth;
-                    int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
-                    int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
-                    if (this->onScreen && this->screenX > left && this->screenX < left + size * 2 &&
-                        this->screenY > top && this->screenY < top + size * 2) {
+                    bool inSight = false;
+                    if (this->onScreen) {
+                        int size = this->turretScopeHalfWidth;
+                        int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
+                        int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
+                        inSight = this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
+                                  this->screenY < top + size * 2;
+                    }
+                    if (inSight) {
                         float distance = AbyssEngine::AEMath::VectorLength(
                                 sparks->data()[s]->getPosition() - this->level->getPlayer()->getPosition());
                         float range = (float) Globals::status->getShip()->getFirstEquipmentOfSort(35)->getAttribute(51);
-                        if (!(distance > range) && cloud->isSparkAlive(s)) {
+                        if (distance <= range && cloud->isSparkAlive(s)) {
                             this->plasmaInRange = 1;
                         }
                         cloud->setSparkInSight(s, turretMode && distance <= range);
