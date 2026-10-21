@@ -3,6 +3,20 @@
 
 #include <cstdlib>
 #include <cstring>
+#include "engine/core/AbyssEngine.h"
+#include "engine/file/AEFile.h"
+#include "engine/file/FileInterfaceAndroid.h"
+#include "engine/math/AEMath.h"
+#include "engine/math/Transform.h"
+#include "engine/render/Mesh.h"
+#include "engine/render/Engine.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/core/ApplicationManager.h"
+#include "engine/render/FBOContainer.h"
+#include "engine/math/Quaternion.h"
+#include <GLES2/gl2.h>
+#include <cmath>
+#include <cstdint>
 
 void String_printImpl(const char *s);
 
@@ -660,3 +674,168 @@ String &String::operator+=(const long long &v) {
 }
 
 unsigned short AbyssEngine::String::termChar;
+
+namespace AbyssEngine {
+    String operator+(const String &a, const String &b) {
+        String result(a);
+        result += b;
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const String &a, const long long &b) {
+        String result(a);
+        result += String(b);
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const float &a, const String &b) {
+        String result(a);
+        result += b;
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const String &a, const int &b) {
+        String result(a);
+        result += String(b);
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const String &a) {
+        return String(a);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const int &a, const String &b) {
+        String result(a);
+        result += b;
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    float MODF(float value, float *intPart) {
+        float ip = (float) (int) value;
+        *intPart = ip;
+        return value - ip;
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const long long &a, const String &b) {
+        String result(a);
+        result += b;
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    bool operator==(const String &a, const String &b) {
+        String copy(a);
+        return copy.Compare(b) == 0;
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const String &a, const float &b) {
+        String result(a);
+        result += String(b);
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    unsigned short *computeFloatString(float value, int precision, int *decimalPoint, int *negative, int fixed) {
+        unsigned short *buf = new unsigned short[33];
+        if (precision < 0)
+            precision = 0;
+        if (precision >= 30)
+            precision = 30;
+        *negative = 0;
+        if (value < 0.0f) {
+            *negative = 1;
+            value = -value;
+        }
+        float integral;
+        int exponent = 0;
+        unsigned short *out;
+
+        float fraction = MODF(value, &integral);
+        if (integral != 0.0f) {
+            unsigned short *end = buf + 32;
+            unsigned short *p = buf + 31;
+            while (integral != 0.0f) {
+                float digit = MODF(integral / 10.0f, &integral);
+                exponent++;
+                *p-- = (unsigned short) ((int) ((digit + 0.03) * 10.0) + '0');
+            }
+            unsigned short *src = p + 1;
+            out = buf;
+            while (src < end)
+                *out++ = *src++;
+        } else {
+            if (fraction > 0.0f) {
+                // Scale the fraction up until its first digit is non-zero.
+                float prev;
+                exponent = 1;
+                do {
+                    prev = fraction;
+                    exponent--;
+                    fraction *= 10.0f;
+                } while (fraction < 1.0f);
+                fraction = prev;
+            }
+            out = buf;
+        }
+        *decimalPoint = exponent;
+
+        unsigned short *limit = buf + precision;
+        if (fixed == 0)
+            limit += exponent;
+        if (limit < buf) {
+            *buf = 0;
+            return buf;
+        }
+        while (out <= limit && out < buf + 32) {
+            float digit;
+            fraction = MODF(fraction * 10.0f, &digit);
+            *out++ = (unsigned short) ((int) digit + '0');
+        }
+        if (limit >= buf + 32) {
+            buf[31] = 0;
+            return buf;
+        }
+
+        unsigned short *p = limit;
+        unsigned short v = (unsigned short) (*limit + 5);
+        *limit = v;
+        while (v > '9') {
+            *p = '0';
+            if (p > buf) {
+                p--;
+                v = (unsigned short) (*p + 1);
+                *p = v;
+            } else {
+                *p = '1';
+                exponent++;
+                *decimalPoint = exponent;
+                if (fixed == 0) {
+                    if (limit > buf)
+                        *limit = '0';
+                    limit++;
+                }
+                v = *p;
+            }
+        }
+        *limit = 0;
+        return buf;
+    }
+}

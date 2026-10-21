@@ -240,42 +240,30 @@ int MiningGame::update(int delta) {
 
 
 MiningGame::MiningGame(int layer, int station, Hud *hud) {
-    int imageId[2];
-    imageId[0] = -1;
-
-    int *screenW = &Globals::w;
-    int *screenH = &Globals::h;
-    Layout **layoutHolder = &Globals::layout;
-    Status **statusHolder = &Globals::status;
-
     this->layer = layer;
     this->station = station;
     this->hud = hud;
-
-    Layout *layout = *layoutHolder;
-    int centerX = *screenW >> 1;
-    this->centerX = centerX;
-    int centerY = layout->centerYBase + (*screenH >> 1);
-    this->centerY = centerY;
-    this->marqueeWidth = layout->marqueeWidth;
+    this->centerX = Globals::w >> 1;
+    this->centerY = Globals::layout->centerYBase + (Globals::h >> 1);
+    this->marqueeWidth = Globals::layout->marqueeWidth;
     this->isCoreLayer = layer == 7;
     this->lossTimer = 0;
     this->oreAmount = 0.0f;
     this->oreRate = 0.0f;
     this->driftTimer = 0;
-    this->failThreshold = 0x9c4;
+    this->failThreshold = 2500;
     this->layerTimer = 0;
     this->currentLayer = 0;
     this->targetLayer = layer;
     this->gameWonFlag = 0;
     this->gameLostFlag = 0;
     this->gotCoreFlag = 0;
-    this->posX = (float) centerX;
+    this->posX = (float) this->centerX;
     this->inputX = 0.0f;
     this->inputY = 0.0f;
     this->driftX = 0.0f;
     this->driftY = 0.0f;
-    this->posY = (float) centerY;
+    this->posY = (float) this->centerY;
 
     Item *drill = Globals::status->getShip()->getFirstEquipmentOfSort(19);
     if (drill != 0) {
@@ -283,56 +271,44 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
         this->oreRate = (float) drill->getAttribute(33) / 100.0f;
     }
 
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->Image2DCreate(0x4e6, (unsigned int &) imageId[0]);
-    int imageHeight = canvas->GetImage2DHeight(imageId[0]);
-    Sprite *sprite = new Sprite((uint32_t) imageId[0], imageHeight, imageHeight);
-    this->drillSprite = sprite;
-    sprite->defineReferencePixel(imageHeight / 2, imageHeight / 2);
+    unsigned int drillImage = (unsigned int) -1;
+    Globals::Canvas->Image2DCreate(0x4e6, drillImage);
+    int drillHeight = Globals::Canvas->GetImage2DHeight(drillImage);
+    this->drillSprite = new Sprite(drillImage, drillHeight, drillHeight);
+    this->drillSprite->defineReferencePixel(drillHeight >> 1, drillHeight >> 1);
 
     this->animAccumulator = 0.0f;
-    canvas->Image2DCreate(0x4e2, (unsigned int &) this->ringEvenNear);
-    canvas->Image2DCreate(0x4dd, (unsigned int &) this->ringEvenFar);
-    canvas->Image2DCreate(0x4de, (unsigned int &) this->ringEvenMid);
-    canvas->Image2DCreate(0x4e1, (unsigned int &) this->ringOddNear);
-    canvas->Image2DCreate(0x4df, (unsigned int &) this->ringOddMid);
-    canvas->Image2DCreate(0x4e0, (unsigned int &) this->ringOddFar);
-    canvas->Image2DCreate(0x4e5, (unsigned int &) this->oreLabelImageId);
-    canvas->Image2DCreate(0x4e4, (unsigned int &) this->oreTextImageId);
-    canvas->Image2DCreate(0x4e7, (unsigned int &) this->oreIconImageId);
-    canvas->Image2DCreate(0x4e3, (unsigned int &) this->cornerImageId);
-    canvas->Image2DCreate(0x4e8, (unsigned int &) this->progressBarImageId);
-    canvas->Image2DCreate(0x4ed, (unsigned int &) this->progressLabelImageId);
+    Globals::Canvas->Image2DCreate(0x4e2, (unsigned int &) this->ringEvenNear);
+    Globals::Canvas->Image2DCreate(0x4dd, (unsigned int &) this->ringEvenFar);
+    Globals::Canvas->Image2DCreate(0x4de, (unsigned int &) this->ringEvenMid);
+    Globals::Canvas->Image2DCreate(0x4e1, (unsigned int &) this->ringOddNear);
+    Globals::Canvas->Image2DCreate(0x4df, (unsigned int &) this->ringOddMid);
+    Globals::Canvas->Image2DCreate(0x4e0, (unsigned int &) this->ringOddFar);
+    Globals::Canvas->Image2DCreate(0x4e5, (unsigned int &) this->oreLabelImageId);
+    Globals::Canvas->Image2DCreate(0x4e4, (unsigned int &) this->oreTextImageId);
+    Globals::Canvas->Image2DCreate(0x4e7, (unsigned int &) this->oreIconImageId);
+    Globals::Canvas->Image2DCreate(0x4e3, (unsigned int &) this->cornerImageId);
+    Globals::Canvas->Image2DCreate(0x4e8, (unsigned int &) this->progressBarImageId);
+    Globals::Canvas->Image2DCreate(0x4ed, (unsigned int &) this->progressLabelImageId);
+    if (this->isCoreLayer)
+        Globals::Canvas->Image2DCreate(station == 164 ? 0x522 : 0x523, (unsigned int &) this->coreImageId);
 
-    if (this->isCoreLayer != 0) {
-        int coreImage = 0x523;
-        if (station == 0xa4) {
-            coreImage = 0x522;
-        }
-        canvas->Image2DCreate(coreImage, (unsigned int &) this->coreImageId);
-    }
-
-    this->progressBarWidth = canvas->GetImage2DWidth(this->progressBarImageId);
-    this->progressBarHeight = canvas->GetImage2DHeight(this->progressBarImageId);
-    int x = *screenW / 2 - this->progressBarWidth / 2;
-    this->progressBarX = x;
-    int y = layout->progressBarYBase;
-    this->progressBarY = y;
-
-    this->leftMarquee = new MarqueeImage(0x4eb, this->marqueeWidth, x, this->progressBarHeight + y + 5, 20.0f);
-
+    this->progressBarWidth = Globals::Canvas->GetImage2DWidth(this->progressBarImageId);
+    this->progressBarHeight = Globals::Canvas->GetImage2DHeight(this->progressBarImageId);
+    this->progressBarX = Globals::w / 2 - this->progressBarWidth / 2;
+    this->progressBarY = Globals::layout->progressBarYBase;
+    this->leftMarquee = new MarqueeImage(0x4eb, this->marqueeWidth, this->progressBarX,
+                                         this->progressBarHeight + this->progressBarY + 5, 20.0f);
     this->rightMarquee = new MarqueeImage(0x4ec, this->marqueeWidth,
                                           (this->progressBarX - this->marqueeWidth) + this->progressBarWidth,
                                           this->progressBarHeight + this->progressBarY + 5, 32.0f);
 
-    this->oreIconOffsetX = canvas->GetImage2DWidth(this->oreIconImageId) / 2 + 5;
-    this->oreIconOffsetY = canvas->GetImage2DWidth(this->oreLabelImageId) / 2;
-    this->oreImageHeight = canvas->GetImage2DHeight(this->oreTextImageId);
-
-    MarqueeImage *oreMarquee =
-            new MarqueeImage(0x4e4, canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0, F(layout, 0xdc));
-    this->oreMarquee = oreMarquee;
-    oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
+    this->oreIconOffsetX = Globals::Canvas->GetImage2DWidth(this->oreIconImageId) / 2 + 5;
+    this->oreIconOffsetY = Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) >> 1;
+    this->oreImageHeight = Globals::Canvas->GetImage2DHeight(this->oreTextImageId);
+    this->oreMarquee = new MarqueeImage(0x4e4, Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0,
+                                        F(Globals::layout, 0xdc));
+    this->oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
 
     this->promptPulseTimer = 0;
     this->textAlpha = 1.0f;
@@ -340,160 +316,88 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
 }
 
 
-static const int g_MiningGame_layerTableRender[49] = {250,210,170,140,110,80,50, 250,210,170,140,110,80,0, 250,200,150,100,70,0,0, 250,170,120,80,0,0,0, 250,160,80,0,0,0,0, 250,120,0,0,0,0,0, 250,0,0,0,0,0,0};
-
-
-static void MG_drawLayer(PaintCanvas *canvas, int image, int x, int y,
-                         int w, int h, int align, int anchor, int flip) {
-    canvas->DrawImage2D((unsigned int) image, x, y, w, h,
-                        (unsigned char) align, (unsigned char) anchor, (unsigned char) flip);
-}
-
-
-static char g_MiningGame_oreSuffix[1] = {};
-
-
-
-
 void MiningGame::render2D() {
-    String amountStorage;
-    String suffixStorage;
-    String oreStorage;
-    String *amountText = &amountStorage;
-    String *suffixText = &suffixStorage;
-    String *oreText = &oreStorage;
-
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->SetColor((unsigned int) -1);
-
-    const int *layerTable = g_MiningGame_layerTableRender;
-    Layout **layoutHolder = &Globals::layout;
-    Layout *layout = *layoutHolder;
-    void(*drawLayer)(PaintCanvas *, int, int, int, int, int, int, int, int) = MG_drawLayer;
-
-    for (int layerIndex = this->currentLayer; layerIndex < this->targetLayer; layerIndex++) {
-        int raw = layerTable[(layerIndex - this->targetLayer * 7) + 0x31];
-        int radius = (int) (layout->ringRadiusScale * (float) raw);
-        int *imageSlot;
-        if ((layerIndex & 1) == 0) {
-            imageSlot = &this->ringEvenNear;
-            if (layout->ringNearMidThreshold < radius) {
-                imageSlot = &this->ringEvenMid;
-                if (radius < layout->ringMidFarThreshold) {
-                    imageSlot = &this->ringEvenFar;
-                }
+    Globals::Canvas->SetColor(0xffffffffu);
+    for (int layer = this->currentLayer; layer < this->targetLayer; layer++) {
+        int radius = (int) (Globals::layout->ringRadiusScale *
+                            (float) LAYER_DIAMETERS[(7 - this->targetLayer) * 7 + layer]);
+        int *image;
+        if ((layer & 1) == 0) {
+            image = &this->ringEvenNear;
+            if (Globals::layout->ringNearMidThreshold < radius) {
+                image = &this->ringEvenMid;
+                if (radius < Globals::layout->ringMidFarThreshold)
+                    image = &this->ringEvenFar;
             }
         } else {
-            imageSlot = &this->ringOddNear;
-            if (layout->ringNearMidThreshold < radius) {
-                imageSlot = &this->ringOddFar;
-                if (radius < layout->ringMidFarThreshold) {
-                    imageSlot = &this->ringOddMid;
-                }
+            image = &this->ringOddNear;
+            if (Globals::layout->ringNearMidThreshold < radius) {
+                image = &this->ringOddFar;
+                if (radius < Globals::layout->ringMidFarThreshold)
+                    image = &this->ringOddMid;
             }
         }
-        int image = *imageSlot;
+        int ringImage = *image;
         int half = radius / 2;
-        drawLayer(canvas, image, this->centerX, this->centerY, half, half, 0x11, 0x22, 0);
-        drawLayer(canvas, image, this->centerX, this->centerY, half, half, 0x11, 0x21, 1);
-        drawLayer(canvas, image, this->centerX, this->centerY, half, half, 0x11, 0x12, 2);
-        drawLayer(canvas, image, this->centerX, this->centerY, half, half, 0x11, 0x11, 3);
+        // The ring is drawn as four mirrored quarters around the centre.
+        Globals::Canvas->DrawImage2D(ringImage, this->centerX, this->centerY, half, half, 0x11, 0x22, 0);
+        Globals::Canvas->DrawImage2D(ringImage, this->centerX, this->centerY, half, half, 0x11, 0x21, 1);
+        Globals::Canvas->DrawImage2D(ringImage, this->centerX, this->centerY, half, half, 0x11, 0x12, 2);
+        Globals::Canvas->DrawImage2D(ringImage, this->centerX, this->centerY, half, half, 0x11, 0x11, 3);
     }
 
-    if (this->isCoreLayer != 0) {
-        canvas->DrawImage2D(this->coreImageId, this->centerX, this->centerY, (unsigned char) 0x4411);
-    }
-
-    canvas->DrawImage2D(this->oreIconImageId, (int) this->posX, (int) this->posY, (unsigned char) 0x4411);
+    if (this->isCoreLayer)
+        Globals::Canvas->DrawImage2D(this->coreImageId, this->centerX, this->centerY, 0x11, 0x44);
+    Globals::Canvas->DrawImage2D(this->oreIconImageId, (int) this->posX, (int) this->posY, 0x11, 0x44);
     this->drillSprite->setRefPixelPosition((int) this->posX, (int) this->posY);
     this->drillSprite->draw(1.0f, 1.0f);
 
-    canvas->DrawImage2D(this->cornerImageId, this->progressBarX - layout->hudInset,
-                        this->progressBarY - layout->hudInset);
-
-    int lossTimer = this->lossTimer;
-    if (lossTimer > 0x341) {
-        float red = MiningGame_Layout_getPulseValue(layout, 10.0f) * 255.0f;
-        float green = MiningGame_Layout_getPulseValue(layout, 10.0f) * 255.0f;
-        canvas->SetColor((unsigned char) 0xff, (unsigned char) (int) red, (unsigned char) (int) green,
-                         (unsigned char) 0xff);
+    Globals::Canvas->DrawImage2D(this->cornerImageId, this->progressBarX - Globals::layout->hudInset,
+                                 this->progressBarY - Globals::layout->hudInset);
+    if (this->lossTimer >= 834) {
+        // Flash the progress bar while the drill is about to break off.
+        Globals::Canvas->SetColor(255, (unsigned char) (Globals::layout->getPulseValue(10.0f) * 255.0f),
+                                  (unsigned char) (Globals::layout->getPulseValue(10.0f) * 255.0f), 255);
     }
-
-    int width = (int) (((2500.0f - (float) lossTimer) / 2500.0f) * (float) this->progressBarWidth);
-    canvas->DrawRegion2D(this->progressBarImageId, 0, 0, width, this->progressBarHeight, (float) width, 0, 0, 0,
-                         this->progressBarX);
-    canvas->SetColor((unsigned int) -1);
-    canvas->DrawImage2D(this->progressLabelImageId, this->centerX, this->progressBarY - 3, (unsigned char) 0x2411);
+    int width = (int) ((2500.0f - (float) this->lossTimer) / 2500.0f * (float) this->progressBarWidth);
+    Globals::Canvas->DrawRegion2D(this->progressBarImageId, 0, 0, width, this->progressBarHeight, 0.0f, 0, 0,
+                                  this->progressBarX, this->progressBarY);
+    Globals::Canvas->SetColor(0xffffffffu);
+    Globals::Canvas->DrawImage2D(this->progressLabelImageId, this->centerX, this->progressBarY - 3, 0x11, 0x24);
 
     this->leftMarquee->draw();
     this->rightMarquee->draw();
     this->oreMarquee->draw((int) (this->posX + (float) this->oreIconOffsetX),
                            (int) (this->posY - (float) this->oreImageHeight));
+    Globals::Canvas->DrawImage2D(this->oreLabelImageId,
+                                 (int) (this->posX + (float) this->oreIconOffsetX -
+                                        (float) Globals::layout->hudInset),
+                                 (int) (this->posY - (float) Globals::layout->oreLabelYOffset));
 
-    canvas->DrawImage2D(this->oreLabelImageId,
-                        (int) ((this->posX + (float) this->oreIconOffsetX) - (float) layout->hudInset),
-                        (int) (this->posY - (float) layout->oreLabelYOffset));
+    String oreText = String((int) this->oreAmount) + String("t", false);
+    if (Globals::status->getShip()->getFreeSpace() < (int) this->oreAmount)
+        Globals::Canvas->SetColor(255, 42, 0, (unsigned char) (this->textAlpha * 255.0f));
+    else
+        Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->textAlpha * 255.0f));
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, oreText,
+                                (int) (this->posX + (float) this->oreIconOffsetX + (float) this->oreIconOffsetY -
+                                       (float) Globals::layout->hudInset -
+                                       (float) (Globals::Canvas->GetTextWidth(
+                                               (unsigned int) (uintptr_t) Globals::font, oreText) >> 1)),
+                                (int) (this->posY + (float) Globals::layout->oreTextYOffset), false);
+    Globals::Canvas->SetColor(0xffffffffu);
 
-    amountText->Set((long long) (int) this->oreAmount);
-    suffixText->ctor_char(g_MiningGame_oreSuffix, false);
-    *oreText = *amountText + *suffixText;
-    {
-        String *_s = suffixText;
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = amountText;
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    Ship *ship = MiningGame_Status_getShip_render(Globals::status);
-    int freeSpace = MiningGame_Ship_getFreeSpace(ship);
-    int alpha = (int) (this->textAlpha * 255.0f);
-    if (freeSpace < (int) this->oreAmount) {
-        canvas->SetColor((unsigned char) 0xff, (unsigned char) 0x2a, (unsigned char) 0, (unsigned char) alpha);
-    } else {
-        canvas->SetColor((unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) alpha);
-    }
-
-    unsigned int font = (unsigned int) (unsigned long) Globals::font;
-    int textWidth = canvas->GetTextWidth((unsigned int) (long) font, *oreText);
-    int textX = (int) (((this->posX + (float) this->oreIconOffsetX + (float) this->oreIconOffsetY) -
-                        (float) layout->hudInset) -
-                       (float) (textWidth / 2));
-    int textY = (int) (this->posY + (float) layout->oreTextYOffset);
-    canvas->DrawString((unsigned int) (long) font, *oreText, textX, textY, false);
-    canvas->SetColor((unsigned int) -1);
-
-    if (MiningGame_Status_getCurrentCampaignMission_render(Globals::status) < 5) {
-        int promptAlpha = (int) (((float) this->promptPulseTimer / 2500.0f) * 255.0f);
-        if (promptAlpha > 255) {
-            promptAlpha = 255 - promptAlpha;
-        }
-        canvas->SetColor((unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) 0xff,
-                         (unsigned char) (uint8_t) promptAlpha);
-        String *prompt = Globals::gameText->getText(0x268);
-        new (amountText) String(*prompt, false);
-        int promptWidth = canvas->GetTextWidth((unsigned int) (long) font, *amountText);
-        canvas->DrawString((unsigned int) (long) font, *amountText,
-                           Globals::w / 2 - promptWidth / 2,
-                           layout->field_0x70_rowHeight + this->progressBarY, false);
-        canvas->SetColor((unsigned int) -1);
-        {
-            String *_s = amountText;
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-    }
-
-    {
-        String *_s = oreText;
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
+    if (Globals::status->getCurrentCampaignMission() < 5) {
+        // Tutorial prompt, pulsing in and out.
+        int alpha = (int) ((float) this->promptPulseTimer / 1000.0f * 255.0f);
+        if (alpha > 255)
+            alpha = 255 - alpha;
+        Globals::Canvas->SetColor(255, 255, 255, (unsigned char) alpha);
+        String prompt(*Globals::gameText->getText(616), false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, prompt,
+                                    Globals::w / 2 -
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, prompt) / 2,
+                                    Globals::layout->field_0x70_rowHeight + this->progressBarY, false);
+        Globals::Canvas->SetColor(0xffffffffu);
     }
 }

@@ -177,7 +177,7 @@ public:
     void ResumeEngineSound();
     void StopEngineSound();
     void captureCrate(Hud *hud);
-    int cargoAvailable();
+    bool cargoAvailable();
     void createCrate(int type);
     SpacePoint *getNearestDockingPoint(const Vector &dir);
     SpacePoint *getNearestNavigationPoint(const Vector &dir, SpacePoint *target);

@@ -7,8 +7,6 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 
-static float g_galaxyDistanceScale = 0.0f;
-
 static const int kStationCount = 0x87;
 
 Galaxy::Galaxy() {
@@ -16,8 +14,9 @@ Galaxy::Galaxy() {
     for (int i = 0; i < kStationCount; ++i)
         this->visited[i] = 0;
 
-    FileRead loader;
-    this->systems = loader.loadSystemsBinary();
+    FileRead *loader = new FileRead();
+    this->systems = loader->loadSystemsBinary();
+    delete loader;
 }
 
 Galaxy::~Galaxy() {
@@ -46,11 +45,13 @@ int Galaxy::getSystem(int index) {
 }
 
 int Galaxy::getStation(int index) {
-    if (index < 0)
-        return (int) (intptr_t) Globals::status->playerStation;
-
-    FileRead loader;
-    return (int) (intptr_t) loader.loadStation(index);
+    if (index >= 0) {
+        FileRead *loader = new FileRead();
+        Station *station = loader->loadStation(index);
+        delete loader;
+        return (int) (intptr_t) station;
+    }
+    return (int) (intptr_t) Globals::status->playerStation;
 }
 
 void Galaxy::setVisited(bool *src, int count) {
@@ -83,18 +84,19 @@ float Galaxy::distance(SolarSystem *a, SolarSystem *b) {
     if (a->getIndex() == b->getIndex())
         return 0.0f;
 
-    Vector pa;
-    Vector pb;
-    pa.x = (float) a->getX();
-    pa.y = (float) a->getY();
-    pa.z = (float) (a->getZ() / 10);
-    pb.x = (float) b->getX();
-    pb.y = (float) b->getY();
-    pb.z = (float) (b->getZ() / 10);
+    // The galaxy map is flattened: z is scaled down by 10.
+    int ax = a->getX();
+    int ay = a->getY();
+    int az = a->getZ() / 10;
+    Vector pa = {(float) ax, (float) ay, (float) az};
+    int bx = b->getX();
+    int by = b->getY();
+    int bz = b->getZ() / 10;
+    Vector pb = {(float) bx, (float) by, (float) bz};
 
     pa -= pb;
     float sq = pa.x * pa.x + pa.y * pa.y + pa.z * pa.z;
-    return Globals::globals->sqrt(sq) * g_galaxyDistanceScale;
+    return Globals::globals->sqrt(sq) * 18.85f;
 }
 
 int *Galaxy::getAsteroidProbabilities(Station *station) {
@@ -106,8 +108,7 @@ int *Galaxy::getAsteroidProbabilities(Station *station) {
     int *probs = new int[11];
     int *ids = new int[11];
 
-    int slot = 0;
-    for (int id = 0x9a; id != 0xa4; ++id) {
+    for (int id = 0x9a, slot = 0; id != 0xa4; ++id) {
         ids[slot] = id;
         int prob;
         int next;
@@ -135,8 +136,8 @@ int *Galaxy::getAsteroidProbabilities(Station *station) {
     ids[10] = 0xa4;
     probs[10] = alien != 0 ? 100 : 0;
 
-    bool sorted = true;
     int i = 1;
+    bool sorted = true;
     do {
         for (; i != 0xb; ++i) {
             int prev = i - 1;
@@ -159,12 +160,10 @@ int *Galaxy::getAsteroidProbabilities(Station *station) {
             break;
     } while (true);
 
-    int sub = 0;
-    for (int k = 0; k != 0xb; ++k) {
-        int v = probs[k];
-        if (0 < v)
-            probs[k] = v + sub;
-        sub = sub - 2;
+    // Each later (lower ranked) entry loses another 2 percent.
+    for (int penalty = 0, k = 0; k != 0xb; ++k, penalty -= 2) {
+        if (probs[k] > 0)
+            probs[k] += penalty;
     }
 
     int *out = new int[22];
@@ -188,8 +187,7 @@ int *Galaxy::getPlasmaProbabilities(Station *station) {
     int *probs = new int[4];
     int *ids = new int[4];
 
-    int slot = 0;
-    for (int id = 0xc9; id != 0xcd; ++id) {
+    for (int id = 0xc9, slot = 0; id != 0xcd; ++id) {
         ids[slot] = id;
         int prob;
         int next;
@@ -214,8 +212,8 @@ int *Galaxy::getPlasmaProbabilities(Station *station) {
         slot = next;
     }
 
-    bool sorted = true;
     int i = 1;
+    bool sorted = true;
     do {
         for (; i != 4; ++i) {
             int prev = i - 1;
@@ -238,12 +236,10 @@ int *Galaxy::getPlasmaProbabilities(Station *station) {
             break;
     } while (true);
 
-    int sub = 0;
-    for (int k = 0; k != 4; ++k) {
-        int v = probs[k];
-        if (0 < v)
-            probs[k] = v + sub;
-        sub = sub - 2;
+    // Each later (lower ranked) entry loses another 2 percent.
+    for (int penalty = 0, k = 0; k != 4; ++k, penalty -= 2) {
+        if (probs[k] > 0)
+            probs[k] += penalty;
     }
 
     int *out = new int[8];

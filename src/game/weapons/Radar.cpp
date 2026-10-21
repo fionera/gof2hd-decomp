@@ -213,7 +213,7 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     Globals::Canvas->Image2DCreate(8034, this->image_0xc0);
     Globals::Canvas->Image2DCreate(1220, this->image_0xcc);
     this->lockLabelX = Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->image_0xcc) / 2;
-    this->field_0x214 = reinterpret_cast<int *>(Globals::layout->_pad_0xb0)[0];
+    this->field_0x214 = Globals::layout->field_0xb0;
 
     unsigned int *lockFrames = new unsigned int[10];
     Globals::Canvas->Image2DCreate(1185, lockFrames[0]);
@@ -233,8 +233,8 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
 
     unsigned int qualityImage = 0;
     Globals::Canvas->Image2DCreate(1102, qualityImage);
-    this->qualitySprite = new Sprite(qualityImage, reinterpret_cast<int *>(Globals::layout->_pad_0xb0)[2],
-                                    reinterpret_cast<int *>(Globals::layout->_pad_0xb0)[1]);
+    this->qualitySprite = new Sprite(qualityImage, Globals::layout->field_0xb8,
+                                    Globals::layout->field_0xb4);
 
     Item *scanner = Globals::status->getShip()->getFirstEquipmentOfSort(19);
     Item *radarItem = Globals::status->getShip()->getFirstEquipmentOfSort(17);

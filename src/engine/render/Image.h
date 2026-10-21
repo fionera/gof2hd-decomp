@@ -11,6 +11,10 @@ namespace AbyssEngine {
         uint8_t pad0x9[3];
         unsigned char *data;
         uint32_t dataLen;
+
+        // Inline: the original emits Image::Image() in Image.cpp; dataLen is left unset.
+        Image() : width(0), height(0), format(0), hasMipmaps(0), data(0) {
+        }
     };
 }
 

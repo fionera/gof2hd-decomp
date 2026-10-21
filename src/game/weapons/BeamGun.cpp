@@ -1,4 +1,5 @@
 #include "game/weapons/BeamGun.h"
+#include "game/core/Globals.h"
 #include "game/world/Level.h"
 #include "game/world/LevelScript.h"
 #include "engine/math/Transform.h"
@@ -9,50 +10,55 @@
 
 using ::AbyssEngine::Transform;
 
-namespace AbyssEngine {
-    namespace AEMath {
-        Vector operator+(const Vector &lhs, const Vector &rhs);
+#include "engine/math/AEMath.h"
 
-        Matrix operator*(const Matrix &lhs, const Matrix &rhs);
-    }
-}
+using AbyssEngine::AEMath::operator+;
+using AbyssEngine::AEMath::operator*;
+using AbyssEngine::AEMath::operator!=;
 
-void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector);
-
-static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
-
-static PaintCanvas **BeamGun_canvas = nullptr;
-
-static int32_t BeamGun_secondaryMeshes[256] = {};
+// Muzzle-effect mesh shown with the beam of each player weapon item (-1 = none).
+static const int kSecondaryMeshes[233] = {
+    14500, 14500, 14500, 14501, 14501, 14502, 14502, 14503, 14503, 14500, 14503, 14502,
+    14501, 14501, 14501, 14501, 14504, 14504, 14504, 14505, 14505, 14505, 14506, 14506,
+    14507, 14507, 14508, 14508, 14506, 14505, 14502, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14503,
+    14505, 14501, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 14506, 14503, 14502, -1,
+    14509, 14510, 14506, 14503, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, 14500, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 14505, -1, -1, -1,
+    14501, 14501, 14508, 14502, -1,
+};
 
 BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
-    int type = meshKind;
-    int kind = type - 9;
-    if (type == 0xe4)
-        kind = 2;
-
+    int kind = meshKind == 0xe4 ? 2 : meshKind - 9;
     this->field_0x4 = 0;
     this->gun = gun;
     this->level = level;
     this->owner = owner;
     this->meshKind = kind;
-
-    PaintCanvas *canvas = *BeamGun_canvas;
-    uint16_t primaryMesh = (uint16_t)(kind + 0x3795);
-    if (type == 0xe4)
-        primaryMesh = 0x4a92;
-    this->primaryGeometry = new AEGeometry(primaryMesh, canvas, false);
+    this->primaryGeometry =
+            new AEGeometry((uint16_t) (meshKind == 0xe4 ? 0x4a92 : kind + 0x3795), Globals::Canvas, false);
 
     AEGeometry *secondary = nullptr;
-    int mesh = gun->isPlayerGun();
-    if (mesh != 0 && (mesh = BeamGun_secondaryMeshes[gun->itemIndex]) >= 0) {
+    int mesh;
+    if (gun->isPlayerGun() && (mesh = kSecondaryMeshes[gun->itemIndex]) > -1) {
         this->hasSecondary = gun->weaponType != ITEM_SORT_MINE;
-        if (gun->weaponType != ITEM_SORT_MINE)
-            secondary = new AEGeometry((uint16_t) mesh, canvas, false);
+        if (this->hasSecondary)
+            secondary = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
     } else {
         this->hasSecondary = 0;
     }
-
     this->secondaryVisible = 0;
     this->secondaryGeometry = secondary;
 }
@@ -78,115 +84,57 @@ void BeamGun::render() {
 }
 
 void BeamGun::update(int elapsed) {
-    Vector back;
-    Vector rotated;
-    Matrix playerMatrix;
-    Vector transformed;
-    Vector position;
-
     this->gun->update(elapsed);
-
-    Gun *gun = this->gun;
-    if (gun->active == 0) {
+    if (!this->gun->active) {
         this->primaryGeometry->setVisible(false);
         return;
     }
-
-    PaintCanvas *canvas = *BeamGun_canvas;
-
-    if (gun->hitSmall != 0) {
-        AEGeometry *geometry = this->primaryGeometry;
-        Transform *transform =
-            static_cast<Transform *>(canvas->TransformGetTransform(geometry->transform));
-        transform->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
-        transform = static_cast<Transform *>(canvas->TransformGetTransform(geometry->transform));
-        transform->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+    if (this->gun->hitSmall) {
+        // Restart the beam animation.
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryGeometry->transform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryGeometry->transform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
         this->gun->hitSmall = 0;
     }
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryGeometry->transform))
+            ->Update((long long) elapsed, false);
 
-    Transform *primaryTransform =
-        static_cast<Transform *>(canvas->TransformGetTransform(this->primaryGeometry->transform));
-    primaryTransform->Update((long long) elapsed, false);
+    // The beam is stretched along its length to the current range.
+    this->primaryGeometry->setScaling(1.0f, 1.0f, (float) this->gun->field_0x8c);
+    this->primaryGeometry->setDirection(*(Vector *) &this->gun->field_0x90, Vector{0.0f, 1.0f, 0.0f});
 
-    gun = this->gun;
-    this->primaryGeometry->setScaling(1.0f);
-
-    Vector up;
-    up.x = 0.0f;
-    up.y = 1.0f;
-    up.z = 0.0f;
-    this->primaryGeometry->setDirection(*(Vector *) &gun->field_0x90, up);
-
-    PlayerEgo *player = (PlayerEgo *) this->level->getPlayer();
-    position = player->getPosition();
-
-    Vector zero;
-    zero.x = 0.0f;
-    zero.y = 0.0f;
-    zero.z = 0.0f;
-    if (memcmp(&this->gun->offset, &zero, sizeof(float) * 3) != 0) {
-        player = (PlayerEgo *) this->level->getPlayer();
-        Matrix &firstMatrix = player->geometry->getMatrix();
-        player = (PlayerEgo *) this->level->getPlayer();
-        Matrix &secondMatrix = player->field_0x4->getMatrix();
-        playerMatrix = firstMatrix * secondMatrix;
-
-        gun = this->gun;
-        back.x = 0.0f;
-        back.y = 0.0f;
-        back.z = -100.0f;
-        rotated = gun->offset + back;
-        MatrixRotateVector(&transformed, &playerMatrix, &rotated);
-        position = position + transformed;
+    Vector position = this->level->getPlayer()->getPosition();
+    if (this->gun->offset != Vector{0.0f, 0.0f, 0.0f}) {
+        Matrix rotation = this->level->getPlayer()->geometry->getMatrix() *
+                          this->level->getPlayer()->field_0x4->getMatrix();
+        position += AbyssEngine::AEMath::MatrixRotateVector(rotation, this->gun->offset + Vector{0.0f, 0.0f, -100.0f});
     }
-
     this->primaryGeometry->setPosition(position);
     this->primaryGeometry->setVisible(true);
 
-    if (this->hasSecondary != 0) {
-        gun = this->gun;
-        if (gun->delayActive == 0) {
-            AEGeometry *secondary = this->secondaryGeometry;
-            Transform *t =
-                static_cast<Transform *>(canvas->TransformGetTransform(secondary->transform));
-            t->SetAnimationState((AbyssEngine::AnimationMode) 0, 0);
-            t = static_cast<Transform *>(canvas->TransformGetTransform(secondary->transform));
-            t->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
-            t = static_cast<Transform *>(canvas->TransformGetTransform(secondary->transform));
-            t->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+    if (this->hasSecondary) {
+        if (this->gun->delayActive) {
+            PlayerEgo *player = this->level->getPlayer();
+            Vector muzzle = player->getPosition();
+            Vector offset = this->gun->offset;
+            offset.z += -100.0f;
+            muzzle += AbyssEngine::AEMath::MatrixRotateVector(player->player->transform, offset);
+            this->secondaryGeometry->setPosition(muzzle);
+            ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryGeometry->transform))
+                    ->Update((long long) elapsed, false);
+            this->secondaryGeometry->setDirection(AbyssEngine::AEMath::MatrixGetDir(player->player->transform),
+                                                  Vector{0.0f, 1.0f, 0.0f});
         } else {
-            player = (PlayerEgo *) this->level->getPlayer();
-            Vector playerPos = player->getPosition();
-            playerMatrix = *(Matrix *) &playerPos;
-
-            gun = this->gun;
-            transformed = gun->offset;
-            transformed.z = gun->offset.z + -100.0f;
-
-            MatrixRotateVector(&rotated, &((Player *) player->player)->transform, &transformed);
-            *(Vector *) &playerMatrix = *(Vector *) &playerMatrix + rotated;
-            this->secondaryGeometry->setPosition(*(Vector *) &playerMatrix);
-
-            AEGeometry *secondary = this->secondaryGeometry;
-            Transform *t =
-                static_cast<Transform *>(canvas->TransformGetTransform(secondary->transform));
-            t->Update((long long) elapsed, false);
-
-            MatrixGetDir(&rotated, &((Player *) player->player)->transform);
-            back.x = 0.0f;
-            back.y = 1.0f;
-            back.z = 0.0f;
-            this->secondaryGeometry->setDirection(rotated, back);
+            ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryGeometry->transform))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
+            ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryGeometry->transform))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+            ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryGeometry->transform))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
         }
     }
-
     this->secondaryVisible = this->gun->delayActive;
-}
-
-void BeamGun::replaceGun(unsigned int /*mesh*/, int /*unused*/) {
-}
-
-void BeamGun::translate(const Vector & /*v*/) {
 }
 
 void BeamGun::setEnemies(Array<Player *> *enemies) {
@@ -195,4 +143,10 @@ void BeamGun::setEnemies(Array<Player *> *enemies) {
 
 void BeamGun::setEnemy(Player *enemy) {
     this->gun->setEnemy(enemy);
+}
+
+void BeamGun::translate(const Vector & /*v*/) {
+}
+
+void BeamGun::replaceGun(unsigned int /*mesh*/, int /*unused*/) {
 }
