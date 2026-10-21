@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1308,
-  "linked_exact": 3936,
+  "linked_exact": 3942,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 16,
-  "avg_match": 94.75,
+  "avg_match": 94.85,
   "compared": 4523
  },
  "data": {
@@ -26,9 +26,7 @@
   "_Z11VectorScalePvf",
   "_Z13FileRead_ctorPv",
   "_Z13FileRead_dtorPv",
-  "_Z13RH_op_new_arrj",
   "_Z14CameraGetLocalPvj",
-  "_Z14PF_update_deadP13PlayerFighter",
   "_Z14_mtw_buildMenuPvi",
   "_Z15Ship_setRace_oii",
   "_Z15_mtw_draw_storePv",
@@ -37,7 +35,6 @@
   "_Z16Item_setPrice_oii",
   "_Z16MatrixSetScalingPN11AbyssEngine6AEMath6MatrixEfff",
   "_Z16OnCheatActivatediPv",
-  "_Z16RH_op_delete_arrPv",
   "_Z16Ship_getIndex_oiv",
   "_Z16Ship_hasCargo_oiii",
   "_Z16Ship_makeShip_oii",
@@ -80,7 +77,6 @@
   "_Z19Station_hasShip_oteP7Station",
   "_Z19Station_setShips_oiP7Stationi",
   "_Z19TouchButton_ctorTabPvS_iiic",
-  "_Z19VectorSignedToFloatii",
   "_Z19_mtw_draw_buttonsB0Pv",
   "_Z19_mtw_draw_buttonsB4Pv",
   "_Z19_mtw_draw_buttonsB8Pv",
@@ -228,7 +224,6 @@
   "_ZN11AbyssEngine16AE_getInitGLThisEv",
   "_ZN11AbyssEngine17AE_getInitGLWidthEv",
   "_ZN11AbyssEngine18AE_getInitGLHeightEv",
-  "_ZN11AbyssEngine6AEMath15VectorNormalizeEPNS0_6VectorEPKS1_",
   "_ZN11AbyssEngine6AEMath24MatrixSetRotationOrderedERKNS0_6MatrixEfffi",
   "_ZN11AbyssEngine6Engine16VibrateSupportedEv",
   "_ZN4FMOD11EventSystem10getProjectEPKcPPNS_12EventProjectE",
