@@ -195,7 +195,12 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
 }
 
 // Legend entries measured for the key box width (also the drawKey texts).
+static const int StarMap_planetTextures[19] = {10031, 10032, 10033, 10034, 10035, 10036, 10037, 10038, 10039, 10040,
+                                               10041, 10032, 10039, 10035, 10031, 11741, 10038, 10033, 10037};
 static const int StarMap_keyTextIds[6] = {400, 401, 547, 556, 555, 274};
+static const int StarMap_stationScales[28] = {320, 192, 256, 256, 192, 256, 192, 192, 320, 256, 192, 192, 320, 256,
+                                              320, 256, 256, 256, 320, 192, 320, 256, 256, 0, 256, 256, 192, 256};
+static const int StarMap_raceImages[10] = {1190, 1187, 1189, 1188, -1, -1, -1, -1, -1, -1};
 
 int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     using namespace AbyssEngine::AEMath;
@@ -435,111 +440,148 @@ StarMap::~StarMap() {
 }
 
 void StarMap::initStarSystem() {
-    SolarSystem *system = (*this->systems)[this->selectedSystem];
-    uint32_t count = ((Array<int> *) system->getStations())->size();
-
-    Array<Station *> *stations = new Array<Station *>();
-    this->stations = stations;
-    ArraySetLength(count, *stations);
-    FileRead *reader = (FileRead *) operator new(1);
-    FileRead_ctor(reader);
-    this->stations = (Array<Station *> *) reader->loadStationsBinary();
-    operator delete(FileRead_dtor(reader));
+    unsigned int count = *(*this->systems)[this->selectedSystem]->getStations();
+    this->stations = new Array<Station *>();
+    ArraySetLength(count, *this->stations);
+    FileRead *reader = new FileRead();
+    this->stations = reader->loadStationsBinary((*this->systems)[this->selectedSystem]);
+    delete reader;
 
     this->stationAngles = new int[count];
     this->stationDistances = new int[count];
     this->centeredStation = -1;
-    Globals::rnd->setSeed((long long) system->getIndex() * 1000);
+    Globals::rnd->setSeed((long long) ((*this->systems)[this->selectedSystem]->getIndex() * 1000));
 
-    Array<AEGeometry *> *stationGeoms = new Array<AEGeometry *>();
-    this->stationGeoms = stationGeoms;
-    ArraySetLength(count + 1, *stationGeoms);
+    this->stationGeoms = new Array<AEGeometry *>();
+    ArraySetLength(count + 1, *this->stationGeoms);
+    this->starSystemRoot = new AEGeometry(Globals::Canvas);
+    this->usedFlags = new Array<bool>();
+    ArraySetLength(this->stationGeoms->size(), *this->usedFlags);
+    for (unsigned int i = 0; i < this->usedFlags->size(); i++)
+        (*this->usedFlags)[i] = false;
 
-    AEGeometry *root = new AEGeometry(Globals::Canvas);
-    this->starSystemRoot = root;
-
-    Array<bool> *used = new Array<bool>();
-    this->usedFlags = used;
-    ArraySetLength(stationGeoms->size(), *used);
-    for (uint32_t i = 0; i < used->size(); i++) {
-        (*used)[i] = false;
-    }
-
-    for (uint32_t i = 1; i < stationGeoms->size(); i++) {
-        uint32_t stationIndex = i - 1;
-        int tex = Station_getTextureIndex((*this->stations)[stationIndex]);
-        AEGeometry *geom = new AEGeometry((uint16_t)(tex + 0x4704), Globals::Canvas, false);
-        (*stationGeoms)[i] = geom;
-        this->stationAngles[stationIndex] =
-                Globals::rnd->nextInt(used->size()) *
-                (0x10000 / (int) used->size());
-        int dist = (i == 1) ? 0x1900 : this->stationDistances[i - 2];
-        dist += Globals::rnd->nextInt(0x15e0) + 0x640;
-        this->stationDistances[stationIndex] = dist;
-        Vector pos = {0.0f, 0.0f, (float) dist};
-        geom->translate(pos);
-        float scale = (float) (tex << 4) * 0.001f;
-        geom->setScaling(scale);
-        root->addChild(geom->transform);
-        if (this->markerGeom != 0 && this->selectedSystem == Globals::status->field_7c &&
-            Station_getIndex((*this->stations)[stationIndex]) == Globals::status->field_80) {
-            this->centeredStation = i;
+    // Stations orbit the sun on random, non-overlapping angles.
+    for (unsigned int i = 0; i < this->stationGeoms->size(); i++) {
+        if (i != 0) {
+            AEGeometry *geom = new AEGeometry((uint16_t) ((*this->stations)[i - 1]->getTextureIndex() + 18180),
+                                              Globals::Canvas, false);
+            (*this->stationGeoms)[i] = geom;
+            Matrix rotation;
+            bool found = false;
+            int angle = 0;
+            while (!found) {
+                int slot = Globals::rnd->nextInt(this->usedFlags->size());
+                if (!(*this->usedFlags)[slot]) {
+                    (*this->usedFlags)[slot] = true;
+                    found = true;
+                    angle = slot * (0x10000 / this->usedFlags->size());
+                }
+            }
+            this->stationAngles[i - 1] = angle;
+            MatrixSetRotation(rotation, 0.0f, (float) angle * (1.0f / 65536.0f) * 6.2831855f, 0.0f);
+            int distance = i == 1 ? 6400 : this->stationDistances[i - 2];
+            distance = distance + Globals::rnd->nextInt(5600) + 1600;
+            this->stationDistances[i - 1] = distance;
+            Vector offset = {0.0f, 0.0f, (float) distance};
+            Vector position = {0.0f, 0.0f, 0.0f};
+            position = MatrixTransformVector(rotation, offset);
+            (*this->stationGeoms)[i]->translate(position);
+            int texture = (*this->stations)[i - 1]->getTextureIndex();
+            float scale = (float) (StarMap_stationScales[texture] << 4) * (1.0f / 65536.0f);
+            (*this->stationGeoms)[i]->setScaling(scale, scale, scale);
+            Vector direction = (*this->stationGeoms)[i]->getPosition();
+            direction = VectorNormalize(direction);
+            this->starSystemRoot->addChild((*this->stationGeoms)[i]->transform);
+            if (texture == 9 || texture == 16 || texture == 21 ||
+                Globals::status->orbitHasPlanetRing((*this->stations)[i - 1]->getIndex())) {
+                unsigned int ring = 0xffffffffu;
+                Globals::Canvas->TransformCreate(ring);
+                Globals::Canvas->TransformAddMesh(ring, 16853, false);
+                Globals::Canvas->TransformSetLocal(ring, (*this->stationGeoms)[i]->getMatrix());
+                this->starSystemRoot->addChild(ring);
+            }
+            if (this->markerGeom != 0 && this->selectedSystem == Globals::status->field_7c &&
+                (*this->stations)[i - 1]->getIndex() == Globals::status->field_80) {
+                this->centeredStation = i;
+            }
         }
+        if ((*this->stationGeoms)[i] != 0)
+            this->starSystemRoot->addChild((*this->stationGeoms)[i]->transform);
+    }
+    (*this->stationGeoms)[1]->setVisible(false);
+
+    // Orbit rings.
+    this->ringGeoms = new Array<AEGeometry *>();
+    ArraySetLength(count, *this->ringGeoms);
+    for (unsigned int i = 0; i < this->ringGeoms->size(); i++) {
+        (*this->ringGeoms)[i] = new AEGeometry(6779, Globals::Canvas, false);
+        this->starSystemRoot->addChild((*this->ringGeoms)[i]->transform);
+        float distance = (float) this->stationDistances[i];
+        (*this->ringGeoms)[i]->setRotation(0.0f, (float) Globals::rnd->nextInt(3141) / 1000.0f, 0.0f);
+        float scale = (float) ((int) distance * 2) * (1.0f / 65536.0f);
+        (*this->ringGeoms)[i]->setScaling(scale, scale, scale);
     }
 
-    (*stationGeoms)[1]->setVisible(false);
-
-    Array<AEGeometry *> *rings = new Array<AEGeometry *>();
-    this->ringGeoms = rings;
-    ArraySetLength(count, *rings);
-    for (uint32_t i = 0; i < rings->size(); i++) {
-        AEGeometry *ring = new AEGeometry((uint16_t) 0x1a7b, Globals::Canvas, false);
-        (*rings)[i] = ring;
-        root->addChild(ring->transform);
-        float scale = (float) (this->stationDistances[i] << 1) * 0.001f;
-        ring->setScaling(scale);
-    }
-
-    Vector selected;
-    ((AEGeometry *) (&selected))->getPosition();
-    root->setPosition(selected);
-    root->setScaling(0.0078125f);
-    root->setRotation(0.0f, 0.0f, 0.0f);
+    this->starSystemRoot->setPosition((*this->systemGeoms)[this->selectedSystem]->getPosition());
+    this->starSystemRoot->setScaling(0.0078125f, 0.0078125f, 0.0078125f);
+    this->starSystemRoot->setRotation(0.0f, 90.0f, 0.0f);
     this->yaw = 4096.0f;
-    this->pitch = 0.0f;
+    this->pitch = -4096.0f;
+    this->starSystemRoot->setRotation(-0.3926991f, 0.3926991f, -0.09817477f);
     this->selectedStation = -1;
-    Globals::Canvas->Image2DCreate((unsigned short) ((uint16_t)(0x4500 + system->getRace())), this->systemNameImage);
+    Globals::Canvas->Image2DCreate(
+        (uint16_t) StarMap_raceImages[(*this->systems)[this->selectedSystem]->getRace()], this->systemNameImage);
 
     if (this->stationPositions != 0) {
         ArrayReleaseClasses(*this->stationPositions);
         delete this->stationPositions;
-        this->stationPositions = 0;
     }
-    Array<Vector *> *stationPositions = new Array<Vector *>();
-    this->stationPositions = stationPositions;
-    ArraySetLength(this->stations->size(), *stationPositions);
-    for (uint32_t i = 0; i < stationPositions->size(); i++) {
-        Vector *p = new Vector{0.0f, 0.0f, 0.0f};
-        (*stationPositions)[i] = p;
+    this->stationPositions = 0;
+    this->stationPositions = new Array<Vector *>();
+    ArraySetLength(this->stations->size(), *this->stationPositions);
+    for (unsigned int i = 0; i < this->stationPositions->size(); i++) {
+        Vector *position = new Vector();
+        position->x = 0.0f;
+        position->y = 0.0f;
+        position->z = 0.0f;
+        (*this->stationPositions)[i] = position;
     }
 
-    gEngine->LightSetLightDirection(0.0f, 0.0f, 1.0f, 1);
-    if (this->planetGeom != 0) {
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(0.0f, -1.0f, -1.0f, 0x4000);
+    if (this->planetGeom != 0)
         delete this->planetGeom;
-    }
+    this->planetGeom = 0;
     this->planetTexture = 0xffffffffu;
-    this->planetGeom = (AEGeometry *) 0;
-    uint16_t texture = (uint16_t)(0x2700 + system->getTextureIndex());
-    if (this->selectedSystem == 0x1b) {
-        texture = 0x2734;
+    int planetTexture = StarMap_planetTextures[(*this->systems)[this->selectedSystem]->getTextureIndex()];
+    if (this->selectedSystem == 27)
+        planetTexture = 10036;
+    Globals::Canvas->TextureCreate((uint16_t) planetTexture, this->planetTexture, false);
+    this->planetGeom = new AEGeometry(6768, Globals::Canvas, false);
+    this->planetGeom->setPosition((*this->systemGeoms)[this->selectedSystem]->getPosition());
+    this->planetGeom->setRotation(0.0f, 0.0f, 0.0f);
+    if ((*this->systems)[this->selectedSystem]->getTextureIndex() == 15) {
+        // The void planet grows during the campaign.
+        if (Globals::status->getCurrentCampaignMission() <= 105)
+            this->planetGeom->setScaling(0.007f, 0.007f, 0.007f);
+        else if (Globals::status->getCurrentCampaignMission() <= 157)
+            this->planetGeom->setScaling(0.01f, 0.01f, 0.01f);
+        else
+            this->planetGeom->setScaling(0.004f, 0.004f, 0.004f);
+    } else {
+        this->planetGeom->setScaling(0.004f, 0.004f, 0.004f);
     }
-    Globals::Canvas->TextureCreate((unsigned short) (texture), nullptr, nullptr, this->planetTexture, false);
-    AEGeometry *planet = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
-    this->planetGeom = planet;
-    planet->setPosition(selected);
-    planet->setRotation(0.0f, 0.0f, 0.0f);
-    planet->setScaling(1.0f);
     (*this->systemGeoms)[this->selectedSystem]->setVisible(false);
+
+    Vector sun = this->planetGeom->getPosition();
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightPosition(sun.x, sun.y, sun.z, 0x4000);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorAmbient(0.2f, 0.2f, 0.2f, 0x4000);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorDiffuse(2.0f, 2.0f, 2.0f, 0x4000);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorAmbient(1.0f, 1.0f, 1.0f);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorDiffuse(1.0f, 1.0f, 1.0f);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorSpecular(0.0f, 0.0f, 0.0f);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorShininess(10.0f);
+    ((Engine *) Globals::appManager->GetEngine())->lightCount = 1;
+    Globals::rnd->setSeed(Globals::status->getPlayingTime());
 }
 
 void StarMap::initLights() {
