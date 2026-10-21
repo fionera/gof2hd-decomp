@@ -120,11 +120,11 @@ namespace AbyssEngine {
             if (uGlColorLoc >= 0)
                 glUniform4fv(uGlColorLoc, 1, engine->glColor);
             if (uAmbientColorLoc >= 0)
-                glUniform3fv(uAmbientColorLoc, 1, (float *) &engine->field_0x314);
+                glUniform3fv(uAmbientColorLoc, 1, (float *) engine->particleAmbientColor);
             if (uDiffuseColorLoc >= 0)
-                glUniform3fv(uDiffuseColorLoc, 1, (float *) &engine->field_0x2fc);
+                glUniform3fv(uDiffuseColorLoc, 1, (float *) engine->diffuseShaded[0]);
             if (uSpecularColorLoc >= 0)
-                glUniform3fv(uSpecularColorLoc, 1, (float *) &engine->lightDiffuseShaded);
+                glUniform3fv(uSpecularColorLoc, 1, (float *) engine->specularShaded[0]);
             if (uSpecularPowerLoc >= 0)
                 glUniform1f(uSpecularPowerLoc, engine->materialShininess);
             this->dirty = 0;

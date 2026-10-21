@@ -124,20 +124,15 @@ namespace AbyssEngine {
 
         float materialShininess;
 
-        // NOTE (verified against Engine::Light* in the binary): 0x2cc..0x31f is really three
-        // per-light Vector[2] arrays -- ambient-shaded @0x2cc, specular-shaded @0x2e4,
-        // diffuse-shaded @0x2fc -- followed by the particle ambient colour @0x314. The member
-        // names below predate that and are kept only because shader TUs reference them.
-        Vector lightAmbientShaded;
-        Vector lightSpecularShaded;
-        Vector lightDiffuseShaded;
-        Vector particleAmbient;
+        // 0x2cc..0x32b: per-light material-shaded colours (verified against Engine::Light*) plus the
+        // particle ambient and rim colours. Raw floats, not Vectors: the original ctor runs no
+        // Vector ctor over this range (it is only assigned later, in the body / Light* setup).
+        float ambientShaded[2][3];   // 0x2cc, per light
+        float specularShaded[2][3];  // 0x2e4, per light
+        float diffuseShaded[2][3];   // 0x2fc, per light
+        float particleAmbientColor[3]; // 0x314
 
-        Vector field_0x2fc;
-        Vector field_0x308;
-        Vector field_0x314;
-
-        Vector rimColor;
+        float rimColor[3];
 
         int lightCount;
 
