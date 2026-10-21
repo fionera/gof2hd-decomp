@@ -66,7 +66,7 @@ public:
 
     bool hasLevel();
 
-    int init();
+    void init();
 
     bool isFirstPage();
 

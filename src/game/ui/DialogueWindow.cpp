@@ -353,33 +353,19 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
     return 0;
 }
 
-static int g_dw_briefingPartCounts[0xa2];
-
-static int g_dw_successPartCounts[0xa2];
-
 static const char g_dw_defaultAgentName[] = "";
 
-
-
-
-
-static inline int half_round_to_zero(int v) {
-    return (v + ((unsigned) v >> 31)) >> 1;
-}
-
-int DialogueWindow::init() {
+void DialogueWindow::init() {
     this->briefingOffsets = new int[0xa2];
     this->successOffsets = new int[0xa2];
 
     int briefingSum = 0;
     int successSum = 0;
-    for (int i = 0; i != 0xa2; ++i) {
-        int successCount = g_dw_successPartCounts[i];
-        int briefingCount = g_dw_briefingPartCounts[i];
+    for (int i = 0; i < 0xa2; i++) {
         this->briefingOffsets[i] = briefingSum;
         this->successOffsets[i] = successSum;
-        successSum += successCount;
-        briefingSum += briefingCount;
+        briefingSum += g_dw_briefingCounts[i];
+        successSum += g_dw_successCounts[i];
     }
 
     this->agentName = String(g_dw_defaultAgentName, false);
@@ -391,48 +377,40 @@ int DialogueWindow::init() {
     this->faceParts = 0;
     this->voiceSound = -1;
     this->autoAdvanceTimer = 0;
-    this->mirrorFace = 0;
+    this->mirrorFace = false;
 
-    Layout *layout = Globals::layout;
-    int frameW = layout->field_0x54;
-    int frameH = layout->field_0x58;
-    this->frameWidth = frameW;
-    this->frameHeight = frameH;
-    this->frameX = half_round_to_zero(Globals::w) - half_round_to_zero(frameW);
-    this->frameY = half_round_to_zero(Globals::h) - half_round_to_zero(frameH);
+    this->frameWidth = Globals::layout->field_0x54;
+    this->frameHeight = Globals::layout->field_0x58;
+    this->frameX = Globals::w / 2 - this->frameWidth / 2;
+    this->frameY = Globals::h / 2 - this->frameHeight / 2;
 
-    int margin = layout->field_0x4c;
     this->scrollWindow = new ScrollTouchWindow(
-        this->frameX + margin * 2 + layout->field_0x2d4,
-        layout->windowTopInset + this->frameY,
-        frameW - margin * 2 - layout->field_0x2d4,
-        frameH - margin * 2 - layout->windowTopInset - layout->field_0x30_rowHeight,
+        this->frameX + Globals::layout->field_0x4c * 2 + Globals::layout->field_0x2d4,
+        Globals::layout->windowTopInset + this->frameY,
+        this->frameWidth - Globals::layout->field_0x4c * 2 - Globals::layout->field_0x2d4,
+        this->frameHeight - Globals::layout->field_0x4c * 2 - Globals::layout->windowTopInset -
+            Globals::layout->field_0x30_rowHeight,
         false);
 
     this->choiceWindow = new ChoiceWindow();
 
-    GameText *gameText = Globals::gameText;
-    layout = Globals::layout;
-    margin = layout->field_0x4c;
-    this->prevButton = new TouchButton(*gameText->getText(0xb3), 5,
-                                       this->frameX + margin, this->frameY - margin + this->frameHeight,
-                                       layout->field_0x50, 0x21, 4);
+    this->prevButton = new TouchButton(*Globals::gameText->getText(0xb3), 5,
+                                       this->frameX + Globals::layout->field_0x4c,
+                                       this->frameY - Globals::layout->field_0x4c + this->frameHeight,
+                                       Globals::layout->field_0x50, 0x21, 4);
 
-    layout = Globals::layout;
-    margin = layout->field_0x4c;
-    this->nextButton = new TouchButton(*gameText->getText(0xb4), 6,
-                                       this->frameX + this->frameWidth - margin,
-                                       this->frameY - margin + this->frameHeight,
-                                       layout->field_0x50, 0x22, 4);
+    this->nextButton = new TouchButton(*Globals::gameText->getText(0xb4), 6,
+                                       this->frameX + this->frameWidth - Globals::layout->field_0x4c,
+                                       this->frameY - Globals::layout->field_0x4c + this->frameHeight,
+                                       Globals::layout->field_0x50, 0x22, 4);
 
-    layout = Globals::layout;
-    margin = layout->field_0x4c;
-    this->moreButton = new TouchButton(*gameText->getText(0x18b), 0,
-                                       this->frameX + half_round_to_zero(this->frameWidth),
-                                       this->frameY + this->frameHeight - margin,
-                                       this->frameWidth - margin * 4 - layout->field_0x50 * 2, 0x24, 4);
+    this->moreButton = new TouchButton(*Globals::gameText->getText(0x18b), 0,
+                                       this->frameX + this->frameWidth / 2,
+                                       this->frameY + this->frameHeight - Globals::layout->field_0x4c,
+                                       this->frameWidth - Globals::layout->field_0x4c * 4 -
+                                           Globals::layout->field_0x50 * 2,
+                                       0x24, 4);
     this->choiceActive = 0;
-    return 0;
 }
 
 static const char g_dw_emptyString[] = "";
