@@ -2949,10 +2949,10 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
 
         unsigned int animColor = (unsigned int) mesh->animation->color;
         uv = mesh->animation->localMatrix;
-        meshColor = ((((animColor >> 24) * (color >> 24)) >> 8) << 24) |
-                    (((((animColor >> 16) & 0xff) * ((color >> 16) & 0xff)) >> 8) << 16) |
+        meshColor = (((animColor & 0xff) * (color & 0xff)) >> 8) |
                     (((((animColor >> 8) & 0xff) * ((color >> 8) & 0xff)) >> 8) << 8) |
-                    (((animColor & 0xff) * (color & 0xff)) >> 8);
+                    (((((animColor >> 16) & 0xff) * ((color >> 16) & 0xff)) >> 8) << 16) |
+                    ((((animColor >> 24) * (color >> 24)) >> 8) << 24);
     }
 
     AbyssEngine::AEMath::Vector center = AbyssEngine::AEMath::MatrixTransformVector(
@@ -2993,7 +2993,7 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
     }
 
     if (mesh->animation != 0) {
-        for (int i = (int) mesh->animation->meshes.count - 1; i > -1; i--) {
+        for (int i = (int) (mesh->animation->meshes.count - 1); i > -1; i--) {
             this->DrawMesh(mesh->animation->meshes.data_[i], world, viewMatrix, color, uv);
         }
         for (unsigned int i = 0; i < mesh->animation->children.count; i++) {
@@ -3108,13 +3108,12 @@ void PaintCanvas::EnableClip(int x, int y, int w, int h) {
             break;
         }
         case 1: {
-            int nx = this->GetHeight() - (y + h);
-            int ny = this->GetWidth() - (x + w);
-            int t = h;
+            int t = x;
+            x = this->GetHeight() - (y + h);
+            y = this->GetWidth() - (t + w);
+            t = h;
             h = w;
             w = t;
-            x = nx;
-            y = ny;
             break;
         }
         case 2:

@@ -227,10 +227,9 @@ bool LevelScript::process(int delta) {
     // the mission==1 intro state machine (0x137d82-0x137e82) and the shared "active" tail
     // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
     // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
-    Level *level = m_pLevel;
-    Array<RadioMessage *> *messages = level->getMessages();
-    PlayerEgo *player = level->getPlayer();
-    Array<KIPlayer *> *enemies = level->getEnemies();
+    Array<RadioMessage *> *messages = m_pLevel->getMessages();
+    PlayerEgo *player = m_pLevel->getPlayer();
+    Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
     if (Globals::status->getCurrentCampaignMission() == 0) {
         // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
         // stages three "enemy" ships in front of a repositioned player/camera while radio
@@ -782,8 +781,7 @@ bool LevelScript::process(int delta) {
                 if (m_nScriptTimerA >= 5001) {
                     m_pCamera->setTarget(player->geometry);
                     m_pHud->visible = 1;
-                    // DEFERRED 0x13b876: m_pRadar byte @0x48 = 1 -- lands inside imageWidth in our
-                    //   Radar model (no clean named 1-byte field there yet).
+                    m_pRadar->enabled = 1;
                     m_bCinematicBreak = 0; // field_0x11 = 0 (m_nFlags high byte)
                     m_pCamera->setLookAtCam(false);
                     player->setComputerControlled(false);
@@ -1626,7 +1624,7 @@ bool LevelScript::process(int delta) {
                     // straight into the shared conclusion tail below).
                     if (player->isDockedToDockingPoint() && player->hackingWon() &&
                         player->getHackingGameDockIndex() >= 0) {
-                        ((PlayerFixedObject *) level->getDockingTarget(player->getHackingGameDockIndex()))
+                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                             ->setName(String("", false));
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                             ->setDockingType(0);
@@ -1640,7 +1638,7 @@ bool LevelScript::process(int delta) {
                     if (!(*enemies)[0]->player->isAlwaysEnemy() &&
                         ((RadioMessage *) ((*messages)[1]))->isTriggered()) {
                         // Turn every non-wingman, non-flagged escort hostile (count re-fetched each pass).
-                        for (unsigned int i = 0; i < level->getEnemies()->count; ++i) {
+                        for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; ++i) {
                             if (!(*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x3f_b == 0) {
                                 (*enemies)[i]->player->turnEnemy();
                             }
@@ -1649,7 +1647,7 @@ bool LevelScript::process(int delta) {
                     if (player->isDockedToDockingPoint() && player->hackingWon() &&
                         player->getHackingGameDockIndex() >= 0) {
                         PlayerFixedObject *target =
-                            (PlayerFixedObject *) level->getDockingTarget(player->getHackingGameDockIndex());
+                            (PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex());
                         if (dockingCount == 1 && target->getDockingType() == 3) {
                             ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                                 ->setDockingType(2);
@@ -2561,7 +2559,8 @@ bool LevelScript::process(int delta) {
                     m_dirVec = leader->getUpVector();
                     m_tempVec += m_dirVec * ((float) delta * 0.05f * 0.004f);
                     m_pCamera->setFixed(true);
-                    m_pCamera->setLocal(AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec));
+                    AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
+                    m_pCamera->setLocal(local);
                     for (int i = 0; i < 3; i++) {
                         float speed = (i == 0) ? 2.0f : (i == 1 ? 2.3f : 2.2f);
                         (*enemies)[i]->geometry->moveForward(speed * (float) delta);
@@ -2589,7 +2588,8 @@ bool LevelScript::process(int delta) {
                     m_dirVec = leader->getUpVector();
                     m_tempVec += m_dirVec * ((float) delta * 0.05f * 0.004f);
                     m_pCamera->setFixed(true);
-                    m_pCamera->setLocal(AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec));
+                    AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
+                    m_pCamera->setLocal(local);
                     for (int i = 0; i < 3; i++) {
                         float speed = (i == 0) ? 2.0f : (i == 1 ? 2.3f : 2.2f);
                         (*enemies)[i]->geometry->moveForward(speed * (float) delta);
@@ -3794,7 +3794,7 @@ bool LevelScript::process(int delta) {
                     ((PlayerWormHole *) (*landmarks)[3])->reset(false);
                     landmarks = m_pLevel->getLandmarks();
                     ((PlayerWormHole *) (*landmarks)[3])->open();
-                    // FModSound::play(0x22, ...) DEFERRED @0x13a9a2
+                    Globals::sound->play(34, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
                     m_nState = 2;
                 } else if (m_nState == 2) {
@@ -3905,11 +3905,11 @@ bool LevelScript::process(int delta) {
                 if (m_nState == 0) {
                     int i = 1;
                     while (i <= 3) {
-                        Player *ship = (*level->getEnemies())[i]->player;
+                        Player *ship = (*m_pLevel->getEnemies())[i]->player;
                         ++i;
                         if (ship->enemyFlagsLo != 0) {
                             for (int j = 1; j != 4; ++j) {
-                                (*level->getEnemies())[j]->player->setAlwaysEnemy(true);
+                                (*m_pLevel->getEnemies())[j]->player->setAlwaysEnemy(true);
                             }
                             break;
                         }
@@ -3918,7 +3918,7 @@ bool LevelScript::process(int delta) {
                 // Once radio message #2 fires (still in state 0), commit enemies[1..3] as enemies.
                 if (((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 0) {
                     for (int j = 1; j != 4; ++j) {
-                        (*level->getEnemies())[j]->player->setAlwaysEnemy(true);
+                        (*m_pLevel->getEnemies())[j]->player->setAlwaysEnemy(true);
                     }
                     m_nState = 1; // shared tail 0x13aba4 -> 0x13edde
                 }
@@ -4410,7 +4410,8 @@ bool LevelScript::process(int delta) {
                         *tmp = geo->getUpVector();
                         *acc += *tmp * ((float) delta * 0.05f * 0.004f);
                         m_pCamera->setFixed(true);
-                        m_pCamera->setLocal(AbyssEngine::AEMath::MatrixSetTranslation(local, *acc));
+                        AbyssEngine::AEMath::MatrixSetTranslation(local, *acc);
+                        m_pCamera->setLocal(local);
                     }
                     if (m_nScriptTimerA >= 10001) {
                         for (int i = 2; i < 5; ++i) {
@@ -4586,11 +4587,18 @@ bool LevelScript::process(int delta) {
                 if (m_nState != 0) {
                     break; // -> post-switch tail (0x144e36)
                 }
-                // Look for an active docked/type-8 escort among enemies[].
+                // once any group-8 ship is active, wake the whole group with a long sight range
                 for (unsigned int i = 0; i < enemies->count; ++i) {
                     KIPlayer *e = (*enemies)[i];
                     if (e->shipGroup == 8 && e->player->isActive()) {
-                        // DEFERRED 0x1405c8: active escort found -> sub-branch.
+                        for (unsigned int k = 0; k < enemies->count; ++k) {
+                            KIPlayer *member = (*enemies)[k];
+                            if (member->shipGroup == 8) {
+                                ((PlayerFighter *) member)->field_0x128 = 50000;
+                                member->awake();
+                            }
+                        }
+                        m_nState++;
                         break;
                     }
                 }

@@ -97,9 +97,9 @@ void IParticleSystem::emit(int delta) {
     int set = this->particleSets[this->particleSetIndex];
     if (set == -1)
         return;
-    if ((this->flags & 0x100) != 0)
-        return;
     if ((this->flags & 0x80) != 0 && this->particleAges[0] != -1)
+        return;
+    if ((this->flags & 0x100) != 0)
         return;
 
     Vector position = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
@@ -224,9 +224,10 @@ void IParticleSystem::emit(int delta) {
                 pos.y += (float) (this->random.nextInt(def.ySpread * 2) - def.ySpread);
         }
 
+        int lifeRandom = def.lifeRandom;
         float life = def.lifeBase;
-        if (def.lifeRandom != 0) {
-            life += (float) this->random.nextInt(def.lifeRandom);
+        if (lifeRandom != 0) {
+            life += (float) this->random.nextInt(lifeRandom);
             float uA = uvp[0];
             float uB = uvp[1];
             float vA = uvp[2];
@@ -393,6 +394,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
     if (def.ySpread != 0)
         position.y += (float) (this->random.nextInt(def.ySpread * 2) - def.ySpread);
 
+    const float &drag = def.drag;
     if (!(lifetime >= 0.0f))
         lifetime = def.lifeBase;
 
@@ -411,23 +413,15 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                           ? def.velocityFromSlot * this->particleVelocities[this->currentParticle]
                           : Vector());
     } else {
-        float velocityFromSlot = def.velocityFromSlot;
-        float size0 = def.startSize;
-        float size1 = def.endSize;
-        int fadeFrames = def.fadeFrames;
-        uint32_t color = def.color0;
-        float uA = uvp[0];
-        float uB = uvp[1];
-        float vA = uvp[2];
-        float vB = uvp[3];
-        this->setParticle(position, lifetime, color, uA, vA, uB, vB, fadeFrames > 0, size0, size1,
-                          velocityFromSlot != 0.0f
-                          ? velocityFromSlot * this->particleVelocities[this->currentParticle]
+        this->setParticle(position, lifetime, def.color0, uvp[0], uvp[2], uvp[1], uvp[3], def.fadeFrames > 0,
+                          def.startSize, def.endSize,
+                          def.velocityFromSlot != 0.0f
+                          ? def.velocityFromSlot * this->particleVelocities[this->currentParticle]
                           : Vector());
     }
 
-    if (def.drag != 0.0f)
-        this->particleVelocities[this->currentParticle] += this->emitterVelocity * def.drag * 2.0f;
+    if (drag != 0.0f)
+        this->particleVelocities[this->currentParticle] += this->emitterVelocity * drag * 2.0f;
 
     int next = this->currentParticle + 1;
     if (next >= this->maxParticles)

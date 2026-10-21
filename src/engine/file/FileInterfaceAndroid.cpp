@@ -239,25 +239,22 @@ uint32_t FileInterfaceAndroid::FileExist(String name) {
     zip_file *apkFile = zip_fopen(APKArchive, apkPath.GetAEChar(), 0);
     zip_file *zipFile = zip_fopen(ZIPArchive, zipPath.GetAEChar(), 0);
 
-    bool exists;
     if (apkFile != 0) {
         zip_fclose(apkFile);
-        exists = true;
-    } else if (zipFile != 0) {
-        zip_fclose(zipFile);
-        exists = true;
-    } else {
-        String dir(this->appRootDir);
-        String full = dir + name;
-        FILE *f = fopen(full.GetAEChar(), "rb");
-        if (f != 0) {
-            fclose(f);
-            exists = true;
-        } else {
-            exists = false;
-        }
+        return true;
     }
-    return exists;
+    if (zipFile != 0) {
+        zip_fclose(zipFile);
+        return true;
+    }
+    String dir(this->appRootDir);
+    String full = dir + name;
+    FILE *f = fopen(full.GetAEChar(), "rb");
+    if (f != 0) {
+        fclose(f);
+        return true;
+    }
+    return false;
 }
 
 uint32_t FileInterfaceAndroid::FileDelete(String name) {

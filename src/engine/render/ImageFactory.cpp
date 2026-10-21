@@ -104,11 +104,12 @@ static const int kRetinaOffsets[13][4][2] = {
     {{32, 125}, {32, 0}, {32, 0}, {32, 0}},
 };
 
-// Portrait part offset table of the current screen class.
-#define PART_OFFSETS                                                                        \
-    (Globals::iPadHD ? IMAGE_OFFSETS_IPAD_HD                                                \
-                     : Globals::iPadLarge ? IMAGE_OFFSETS_IPAD_LARGE                        \
-                                          : Globals::iPad ? IMAGE_OFFSETS_IPAD : IMAGE_OFFSETS)
+// Portrait part offset of the current screen class (component k: 0 = x, 1 = y).
+#define PART_OFFSET(row, part, k)                                                           \
+    (Globals::iPadHD ? IMAGE_OFFSETS_IPAD_HD[row][part][k]                                  \
+                     : Globals::iPadLarge ? IMAGE_OFFSETS_IPAD_LARGE[row][part][k]          \
+                                          : Globals::iPad ? IMAGE_OFFSETS_IPAD[row][part][k] \
+                                                          : IMAGE_OFFSETS[row][part][k])
 
 static AbyssEngine::AERandom **gCreateChar2Rng1 = &Globals::rnd;
 static const int gCreateChar2Table[] = {
@@ -213,7 +214,7 @@ void *ImageFactory::loadImage(int row, int part, int frame) { // lint: void_ptr 
         return nullptr;
     unsigned int image = 0;
     Globals::Canvas->Image2DCreate((unsigned short) (kPartImageIds[row][part] + frame), image);
-    return new ImagePart(image, PART_OFFSETS[row][part][0], PART_OFFSETS[row][part][1]);
+    return new ImagePart(image, PART_OFFSET(row, part, 0), PART_OFFSET(row, part, 1));
 }
 
 void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, bool flag) {

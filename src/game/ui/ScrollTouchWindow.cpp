@@ -68,9 +68,10 @@ void ScrollTouchWindow::draw() {
     int sizePx = (int) (size * scale);
     if (startPx > 0 || sizePx >= 1) {
         Layout *layout = Globals::layout;
+        int barX = this->x + this->width - layout->field_0x48 - layout->field_0x2c_rowHeight;
+        int y = this->y;
         int topInset = this->hasFrame ? layout->windowTopInset : 0;
-        layout->drawScrollBar(this->x + this->width - layout->field_0x48 - layout->field_0x2c_rowHeight,
-                              this->y + layout->field_0x2c_rowHeight + topInset, trackHeight, startPx, sizePx);
+        layout->drawScrollBar(barX, y + layout->field_0x2c_rowHeight + topInset, trackHeight, startPx, sizePx);
     }
     Globals::Canvas->SetColor((unsigned int) color);
 }

@@ -803,9 +803,12 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             if (idx == 181) {
                 z = -300.0f;
                 x = 0.0f;
+            } else if (idx == 48) {
+                z = 300.0f;
+                x = 80.0f;
             } else {
                 z = 300.0f;
-                x = idx == 48 ? 80.0f : 0.0f;
+                x = 0.0f;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
@@ -825,9 +828,12 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             if (idx == 181) {
                 z = -300.0f;
                 x = 0.0f;
+            } else if (idx == 48) {
+                z = 300.0f;
+                x = 80.0f;
             } else {
                 z = 300.0f;
-                x = idx == 48 ? 80.0f : 0.0f;
+                x = 0.0f;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
@@ -1482,7 +1488,7 @@ void Level::createFighterTurrets() {
         if (ship == nullptr) {
             continue;
         }
-        PlayerTurret *turret;
+        PlayerTurret *turret = nullptr;
         switch (ship->shipGroupFlag) {
             case 0x33: {
                 turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
@@ -1502,11 +1508,11 @@ void Level::createFighterTurrets() {
                 ship->field_0x10 = (int) (intptr_t) turret;
                 turret->shipGroup = 8;
                 break;
-            default:
-                continue;
         }
-        turret->field_0x74 = 1;
-        ArrayAdd((KIPlayer *) turret, *enemies);
+        if (turret != nullptr) {
+            turret->field_0x74 = 1;
+            ArrayAdd((KIPlayer *) turret, *enemies);
+        }
     }
 }
 
@@ -4670,11 +4676,10 @@ void Level::enemyDied(int /*index*/, bool killedByFriend) {
     // medal 40: kills without a scanner
     if (!static_cast<Radar *>(player->field_0x14)->hasScanner()
         && !Globals::achievements->hasMedal(0x28, 1)) {
-        int count = Globals::status->field_11c;
         if (!Globals::status->field_120) {
-            Globals::status->field_11c = ++count;
+            Globals::status->field_11c++;
         }
-        if ((int) ((float) count / (float) Globals::achievements->getValue(0x28, 1) * 100.0f) % 10 == 0) {
+        if ((int) ((float) Globals::status->field_11c / (float) Globals::achievements->getValue(0x28, 1) * 100.0f) % 10 == 0) {
             ((Hud *) player->getHUD())->hudEventMedal(0x28,
                     (int) ((float) Globals::status->field_11c
                            / (float) Globals::achievements->getValue(0x28, 1) * 100.0f));
@@ -5483,6 +5488,8 @@ Level::Level(int mission)
     flashColor[2] = 0;
     flashDurationA = 0;
     flashDurationB = 0;
+    field_18a = 0;
+    field_188 = 0;
     flashActive = 0;
     asteroidWaypoint = nullptr;
     field_dc = 0;
@@ -5518,8 +5525,6 @@ Level::Level(int mission)
     friendCount = 0;
     field_164 = 0;
     field_168 = 0;
-    field_18a = 0;
-    field_188 = 0;
     alarmRequested = 0;
     movingStarsIndex = -1;
     field_284 = -1;
@@ -6289,7 +6294,7 @@ void Level::assignGuns() {
                 || campaignMission == 56) {
                 damage = 5;
             }
-            if (campaignMission == 80 && (*enemies)[i]->field_0x3e) {
+            if ((*enemies)[i]->field_0x3e && campaignMission == 80) {
                 damage = (int) (damage * 1.7f);
             }
             if (Globals::status->getCurrentCampaignMission() == 70 && !(*enemies)[i]->isWingMan()) {

@@ -889,7 +889,7 @@ void Globals::longToTimeString(long long ms, String &out) {
     int seconds = (int) (ms / 1000 % 60);
     int minutes = (int) (ms / 60000 % 60);
     int hours = (int) (ms / 3600000 % 24);
-    String secondText = String(seconds < 10 ? "0" : "", false) + String(seconds);
+    String secondText = (seconds < 10 ? String("0", false) : String("", false)) + String(seconds);
     String minuteText = (minutes < 10 ? String("0", false) : String("", false)) + String(minutes);
     if (hours == 0) {
         out = minuteText + String(":", false) + secondText;
@@ -1116,9 +1116,14 @@ void Globals::loadFont(int language) {
                 Globals::Canvas->FontSetSpacing(mainFont, Globals::iPadHD ? -7 : (Globals::retinaDisplay ? -10 : -5));
             } else {
                 Globals::Canvas->FontCreate(0x457, mainFont, true);
-                Globals::Canvas->FontSetSpacing(mainFont, Globals::retinaDisplay ? -5
-                                                          : Globals::n9 ? -4
-                                                          : Globals::iPadHD ? -4 : -2);
+                if (Globals::retinaDisplay)
+                    Globals::Canvas->FontSetSpacing(mainFont, -5);
+                else if (Globals::n9)
+                    Globals::Canvas->FontSetSpacing(mainFont, -4);
+                else if (Globals::iPadHD)
+                    Globals::Canvas->FontSetSpacing(mainFont, -4);
+                else
+                    Globals::Canvas->FontSetSpacing(mainFont, -2);
             }
             break;
     }
@@ -2553,12 +2558,13 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
             big = 243;
             small = 187;
             knobPos = (unsigned) ((float) knobPos - (top + -2.8125f));
+            o12 = knobPos;
         } else {
+            knobPos = (unsigned) ((float) knobPos - (top - (!Globals::iPadLarge ? 2.0f : 4.0f)));
+            o12 = knobPos;
             big = !Globals::iPadLarge ? 173 : 346;
             small = !Globals::iPadLarge ? 133 : 266;
-            knobPos = (unsigned) ((float) knobPos - (top - (!Globals::iPadLarge ? 2.0f : 4.0f)));
         }
-        o12 = knobPos;
         float t = (float) knobPos / 54.0f;
         o11 = (unsigned short) ((float) small + (t < 1.0f ? t : 1.0f) * (float) (big - small));
         o12 = (unsigned short) (top - (Globals::iPadHD ? 2.8125f : (!Globals::iPadLarge ? 2.0f : 4.0f)));
