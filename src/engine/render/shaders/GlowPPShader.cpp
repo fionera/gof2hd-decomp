@@ -5,6 +5,86 @@
 #include "engine/render/Mesh.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/ApplicationManager.h"
+
+static const char *const kGlowPPVertexSource =
+    "attribute highp vec4 a_position;\n"
+    "attribute mediump vec2 a_texCoord;\n"
+    "varying lowp vec2 v_texCoord;\n"
+    "uniform highp mat4 u_WorldMatrix;\n"
+    "void main()\n"
+    "{\n"
+    "\tgl_Position = u_WorldMatrix * a_position;\n"
+    "\tv_texCoord = a_texCoord;\n"
+    "}\n";
+
+static const char *const kGlowPPCopyFragmentSource =
+    "precision lowp float;\n"
+    "varying lowp vec2 v_texCoord;\n"
+    "uniform sampler2D s_texture_base;\n"
+    "void main(void)\n"
+    "{\n"
+    "   gl_FragColor.rgb = texture2D(s_texture_base, v_texCoord).rgb * texture2D(s_texture_base, v_texCoord).a;\n"
+    "}\n";
+
+static const char *const kGlowPPBlurHFragmentSource =
+    "precision lowp float;\n"
+    "varying lowp vec2 v_texCoord;\n"
+    "uniform sampler2D s_texture_base;\n"
+    "uniform float texSize; \n"
+    "mediump float offset[3];// = float[]( 0.0, 1.3846153846, 3.2307692308 ); \n"
+    "float weight[3];\n"
+    "void main()\n"
+    "{\n"
+    "\toffset[0] = 0.0; \n"
+    "\toffset[1] = 1.3846153846; \n"
+    "\toffset[2] = 3.2307692308; \n"
+    "\tweight[0] = 0.6; //0.5 \n"
+    "\tweight[1] = 0.2; \n"
+    "\tweight[2] = 0.05; \n"
+    "\tvec2 uv = v_texCoord;\n"
+    "\tmediump vec3 tc = texture2D(s_texture_base, uv).rgb * weight[0];\n"
+    "\tfor (int i=1; i<3; i++) {\n"
+    "\t\ttc += texture2D(s_texture_base, uv + vec2(offset[i] * texSize, 0.0)).rgb * weight[i];\n"
+    "\t\ttc += texture2D(s_texture_base, uv - vec2(offset[i] * texSize, 0.0)).rgb * weight[i];\n"
+    "\t}\n"
+    "\tgl_FragColor = vec4(tc, 1.0);\n"
+    "}\n";
+
+static const char *const kGlowPPBlurVFragmentSource =
+    "precision lowp float;\n"
+    "varying lowp vec2 v_texCoord;\n"
+    "uniform sampler2D s_texture_base;\n"
+    "uniform float texSize; \n"
+    "mediump float offset[3];// = float[]( 0.0, 1.3846153846, 3.2307692308 ); \n"
+    "float weight[3];\n"
+    "void main()\n"
+    "{\n"
+    "\toffset[0] = 0.0; \n"
+    "\toffset[1] = 1.3846153846; \n"
+    "\toffset[2] = 3.2307692308; \n"
+    "\tweight[0] = 0.6; //0.5 \n"
+    "\tweight[1] = 0.2; \n"
+    "\tweight[2] = 0.05; \n"
+    "\tvec2 uv = v_texCoord;\n"
+    "\tmediump vec3 tc = texture2D(s_texture_base, uv).rgb * weight[0];\n"
+    "\tfor (int i=1; i<3; i++) {\n"
+    "\t\ttc += texture2D(s_texture_base, uv + vec2(0.0, offset[i] * texSize)).rgb * weight[i];\n"
+    "\t\ttc += texture2D(s_texture_base, uv - vec2(0.0, offset[i] * texSize)).rgb * weight[i];\n"
+    "\t}\n"
+    "\tgl_FragColor = vec4(tc, 1.0);\n"
+    "}\n";
+
+static const char *const kGlowPPCombineFragmentSource =
+    "precision lowp float;\n"
+    "varying lowp vec2 v_texCoord;\n"
+    "uniform sampler2D s_texture_base;\n"
+    "uniform sampler2D s_texture_glow;\n"
+    "void main(void)\n"
+    "{\n"
+    "\tvec2 TexCoord = v_texCoord;\n"
+    "\tgl_FragColor.rgb = texture2D(s_texture_base, v_texCoord).rgb + texture2D(s_texture_glow, v_texCoord).rgb;\n"
+    "}\n";
+
 #include <GLES2/gl2.h>
 #include <cstring>
 
@@ -174,32 +254,32 @@ namespace AbyssEngine {
     }
 
     void GlowPPShader::InternalInit(Engine *engine) {
-        this->copyTarget = new FBOContainer(engine, String("GlowPPShader0"));
+        this->copyTarget = new FBOContainer(engine, String("GlowPPShader fboMasked"));
         this->copyTarget->Create(0x200, 0x200, true, false);
 
-        this->blurXTarget = new FBOContainer(engine, String("GlowPPShader1"));
+        this->blurXTarget = new FBOContainer(engine, String("GlowPPShader fboBlurH"));
         this->blurXTarget->Create(0x200, 0x200, true, false);
 
-        this->blurYTarget = new FBOContainer(engine, String("GlowPPShader2"));
+        this->blurYTarget = new FBOContainer(engine, String("GlowPPShader fboBlurV"));
         this->blurYTarget->Create(0x200, 0x200, true, false);
 
-        this->backgroundTarget = new FBOContainer(engine, String("GlowPPShader3"));
+        this->backgroundTarget = new FBOContainer(engine, String("GlowPPShader fboBlack"));
         this->backgroundTarget->Create(0x200, 0x200, true, false);
     }
 
     void GlowPPShader::Init(Engine *) {
-        const char *vertex = "GlowPPShader.vert";
-        this->copyProgram = this->ES2LoadProgram(vertex, "GlowPPShader.copy.frag");
-        this->blurXProgram = this->ES2LoadProgram(vertex, "GlowPPShader.blurX.frag");
-        this->blurYProgram = this->ES2LoadProgram(vertex, "GlowPPShader.blurY.frag");
-        this->combineProgram = this->ES2LoadProgram(vertex, "GlowPPShader.combine.frag");
+        const char *vertex = kGlowPPVertexSource;
+        this->copyProgram = this->ES2LoadProgram(vertex, kGlowPPCopyFragmentSource);
+        this->blurXProgram = this->ES2LoadProgram(vertex, kGlowPPBlurHFragmentSource);
+        this->blurYProgram = this->ES2LoadProgram(vertex, kGlowPPBlurVFragmentSource);
+        this->combineProgram = this->ES2LoadProgram(vertex, kGlowPPCombineFragmentSource);
 
-        const char *position = "position";
-        const char *texcoord = "texcoord";
-        const char *worldView = "worldView";
-        const char *texture = "texture";
-        const char *sampleSize = "sampleSize";
-        const char *texture2 = "texture2";
+        const char *position = "a_position";
+        const char *texcoord = "a_texCoord";
+        const char *worldView = "u_WorldMatrix";
+        const char *texture = "s_texture_base";
+        const char *sampleSize = "texSize";
+        const char *texture2 = "s_texture_glow";
 
         this->copyAttribPosition = glGetAttribLocation(this->copyProgram, position);
         this->copyAttribTexCoord = glGetAttribLocation(this->copyProgram, texcoord);

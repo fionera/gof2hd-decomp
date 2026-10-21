@@ -410,59 +410,59 @@ Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second
 
     switch (type) {
         case 0: {
-            const char *text = "names_0_ab";
+            const char *text = "names_terran_0_m.bin";
             if (!first) {
-                text = "names_0_b";
+                text = "names_terran_0_w.bin";
             }
             if (!second) {
-                text = "names_0_a";
+                text = "names_terran_1.bin";
             }
             path = text;
             break;
         }
         case 1: {
-            path = second ? "names_1_b" : "names_1_a";
+            path = second ? "names_vossk_0.bin" : "names_vossk_1.bin";
             break;
         }
         case 2: {
-            path = second ? "names_2_b" : "names_2_a";
+            path = second ? "names_nivelian_0.bin" : "names_nivelian_1.bin";
             break;
         }
         case 3: {
             if (second) {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_3_b" : "names_3_a";
+                path = Globals::rnd->nextInt(2) != 0 ? "names_nivelian_0.bin" : "names_terran_0_m.bin";
             } else {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_3_d" : "names_3_c";
+                path = Globals::rnd->nextInt(2) != 0 ? "names_nivelian_1.bin" : "names_terran_1.bin";
             }
             break;
         }
         case 4: {
-            path = second ? "names_4_b" : "names_4_a";
+            path = second ? "names_multipod_0.bin" : "names_multipod_1.bin";
             break;
         }
         case 5: {
             if (!second) {
                 return names;
             }
-            path = "names_5";
+            path = "names_cyborg_0.bin";
             break;
         }
         case 6: {
-            path = second ? "names_6_b" : "names_6_a";
+            path = second ? "names_bobolan_0.bin" : "names_bobolan_1.bin";
             break;
         }
         case 7: {
             if (!second) {
                 return names;
             }
-            path = "names_7";
+            path = "names_grey_0.bin";
             break;
         }
         case 8: {
             if (second) {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_8_b" : "names_8_a";
+                path = Globals::rnd->nextInt(2) != 0 ? "names_nivelian_0.bin" : "names_terran_0_m.bin";
             } else {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_8_d" : "names_8_c";
+                path = Globals::rnd->nextInt(2) != 0 ? "names_nivelian_1.bin" : "names_terran_1.bin";
             }
             break;
         }
@@ -470,7 +470,7 @@ Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second
             return names;
     }
 
-    path = String(".bin") + path;
+    path = String("data/bin/") + path;
 
     if (AEFile::FileExist(path) != 0) {
         uint32_t handle;
