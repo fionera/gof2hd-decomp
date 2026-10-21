@@ -47,11 +47,11 @@ public:
 
     void openPrivacyPolicy();
 
-    bool isPad();
+    static bool isPad();
 
-    int getWidth();
+    static int getWidth();
 
-    int getHeight();
+    static int getHeight();
 
     static const char *interface_path;
 };

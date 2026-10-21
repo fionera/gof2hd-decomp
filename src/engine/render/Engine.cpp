@@ -78,16 +78,11 @@ namespace AbyssEngine {
     void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b);
 }
 
-
 namespace {
-
-    bool g_Engine_supportsFBO;
-
 
     int g_Engine_shaderPostA;
     int g_Engine_shaderPostB;
     int g_Engine_shaderPostC;
-
 
     // Post-effect ids (0x1400000 base) and the black/white effect's switch-off bookkeeping.
     const uint32_t kPostEffectBase = 0x1400000;
@@ -127,13 +122,6 @@ double *Engine::GetAccelValue() {
     this->accelValue[0] = x;
     this->accelValue[2] = this->accelRaw[2];
     return (double *) this->accelValue;
-}
-
-void Engine::ActivateRender2FracFBO() {
-    FBOContainer *fbo = this->refractFBO;
-    if (fbo != 0) {
-        return fbo->BeginCapture();
-    }
 }
 
 uint32_t Engine::Resume() {
@@ -227,13 +215,6 @@ void Engine::SetUVMatrix(const Matrix &matrix) {
     uv[15] = 1.0f;
 }
 
-void Engine::ActivateRender2TextureFBO() {
-    FBOContainer *fbo = this->postEffectFBO;
-    if (fbo != 0) {
-        return fbo->BeginCapture();
-    }
-}
-
 void Engine::LightSetMaterialColorAlpha(float alpha) {
     if (this->lightingEnabled == 0) {
         return;
@@ -282,13 +263,6 @@ void Engine::ResetUVMatrix() {
     return glMatrixMode(0x1700);
 }
 
-void Engine::ActivateTextureFBO() {
-    FBOContainer *fbo = this->postEffectFBO;
-    if (fbo != 0) {
-        return fbo->Activate();
-    }
-}
-
 void Engine::GlowEndGlow() {
     if (Engine::EnableGlow == 0) {
         return;
@@ -296,11 +270,6 @@ void Engine::GlowEndGlow() {
     this->glowActive = 0;
     glColorMask(1, 1, 1, 1);
     return glDepthFunc(0x201);
-}
-
-void Engine::ActivateViewBuffer() {
-    glBindFramebuffer(0x8d40, this->viewFramebuffer);
-    return glViewport(0, 0, this->viewportWidth, this->viewportHeight);
 }
 
 void Engine::GlowEnableGlow() {
@@ -322,14 +291,6 @@ void Engine::SetGravValue(double x, double y, double z) {
     this->gravRaw[2] = z;
 }
 
-void Engine::SwapBuffer() {
-    uint32_t index = 0;
-    while (index < this->triangleCounts.size()) {
-        this->triangleCounts[index] = 0;
-        index += 1;
-    }
-}
-
 void Engine::ReloadShaders() {
     uint32_t index = 0;
     while (index < this->shaders.size()) {
@@ -340,43 +301,6 @@ void Engine::ReloadShaders() {
         shader->Init(this);
         index += 1;
     }
-}
-
-void Engine::DeactivateRender2TextureFBO() {
-    FBOContainer *fbo = this->postEffectFBO;
-    if (fbo != 0) {
-        return fbo->EndCapture();
-    }
-}
-
-DeviceInfo Engine::GetDeviceInfo() {
-    DeviceInfo info;
-    info.isPad = NFC().isPad();
-    info.width = NFC().getWidth();
-    info.height = NFC().getHeight();
-    return info;
-}
-
-void Engine::CopyFBO() {
-    if (Engine::enableShader == 0) {
-        return;
-    }
-
-    if (this->IsPostEffectActivated()) {
-        this->DeactivateRender2TextureFBO();
-        this->DrawCloakFBO(this->postEffectFBO);
-        this->ActivateRender2TextureFBO();
-    } else {
-        this->DeactivateRender2FracFBO();
-        this->DrawCloakFBO(this->refractFBO);
-        this->ActivateViewBuffer();
-    }
-
-    glEnable(0xb71);
-    glDepthMask(1);
-    glDisable(0xbe2);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    return glClear(0x100);
 }
 
 bool Engine::HasVibration() {
@@ -452,24 +376,10 @@ void Engine::Initialize(InitializeCallback *callback) {
     }
 }
 
-void Engine::ActivateRefractFBO() {
-    FBOContainer *fbo = this->refractFBO;
-    if (fbo != 0) {
-        return fbo->Activate();
-    }
-}
-
 void Engine::LightSetParticleAmbient(float red, float green, float blue) {
     this->field_0x314.x = red;  // particle ambient @0x314
     this->field_0x314.y = green;
     this->field_0x314.z = blue;
-}
-
-void Engine::DeactivateRender2FracFBO() {
-    FBOContainer *fbo = this->refractFBO;
-    if (fbo != 0) {
-        return fbo->EndCapture();
-    }
 }
 
 void Engine::SetPerspMatrix(float *matrix) {
@@ -745,9 +655,6 @@ Engine::~Engine() {
 
     AbyssEngine::MeshRelease(this, &this->quadMesh);
     this->ReleaseGL();
-}
-
-void Engine::ReleaseGL() {
 }
 
 void Engine::AfterGLInit() {
@@ -1075,12 +982,6 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
     return this->ShaderUpdate();
 }
 
-void Engine::initFileInterface() {
-    FileInterfaceAndroid *fileInterface = new(operator new(0x38)) FileInterfaceAndroid();
-    this->fileInterface = fileInterface;
-    return AEFile::SetInterface((FileInterface *) fileInterface);
-}
-
 void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
     if (Engine::enableShader != 0) {
         float *proj = this->projMatrix;
@@ -1111,61 +1012,6 @@ void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
                                           (AbyssEngine::ESMatrix *) this->projMatrix);
         }
     }
-}
-
-int Engine::InitGL(bool shaders, int width, int height) {
-    this->refractFBO = 0;
-    this->displayWidth = width;
-    this->displayHeight = height;
-    this->viewportWidth = width;
-    this->viewportHeight = height;
-
-    FileInterfaceAndroid *fileInterface = new(operator new(0x38)) FileInterfaceAndroid();
-    this->fileInterface = fileInterface;
-    AEFile::SetInterface((FileInterface *) fileInterface);
-
-    this->lastGlError = 0;
-    this->vibrationSupported = 0;
-    this->hasVibration = 0;
-    Engine::enableShader = shaders;
-    this->viewFramebuffer = 0;
-
-    this->ResetLightParam();
-    glViewport(0, 0, this->viewportHeight, this->viewportWidth);
-    if (Engine::enableShader != 0) {
-        this->ShaderInit();
-    } else {
-        glEnable(0x803a);
-        glDisable(0xb50);
-        glLineWidth(1.0f);
-    }
-
-    Vector value;
-    value.x = 0.0f;
-    value.y = 1.0f;
-    value.z = 0.0f;
-    this->field_0x468 = value;
-    this->lightDirty[0] = 0.0f;
-    this->field_0x474 = value;
-    this->lightDirty[1] = 0.0f;
-
-    glEnable(0xb71);
-    this->GlEnable(0xde1, true);
-    glDisable(0xbe2);
-    glCullFace(0x405);
-    glEnable(0xb44);
-    this->AfterGLInit();
-    this->appManager->paintCanvas->Initialize(false);
-    this->maxTextureSize = 0;
-    glGetIntegerv(0xd33, (GLint *) &this->maxTextureSize);
-
-    if (Engine::enableShader != 0 && g_Engine_supportsFBO != 0) {
-        FBOContainer *fbo = new FBOContainer(this, String("refract"));
-        this->refractFBO = fbo;
-        fbo->Create(this->displayWidth, this->displayHeight, false, true);
-    }
-
-    return 1;
 }
 
 void Engine::ClearBuffer(uint32_t color) {
@@ -1536,30 +1382,7 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
     }
 }
 
-void Engine::PreUpdate() {
-}
-
 void Engine::Release() {
-}
-
-void Engine::ActivateFrameBuffer(int slot) {
-}
-
-void Engine::SetFrameBufferScaleFactor(float factor, int slot) {
-}
-
-void Engine::GrabFrameBuffer() {
-}
-
-void *Engine::GetJPEGImageData(float quality) { // lint: void_ptr return type fixed by Engine.h declaration
-    // lint: void_ptr return type fixed by Engine.h declaration
-    return nullptr;
-}
-
-void Engine::SaveImageToPhotosAlbum() {
-}
-
-void Engine::SetScreenOrientation(AbyssEngine::LandscapeMode orientation) {
 }
 
 bool Engine::IsRefractActivated() {
