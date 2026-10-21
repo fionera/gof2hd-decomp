@@ -21,91 +21,80 @@ Generator::~Generator() {
 }
 
 void Generator::computerTradeGoods(Station *station) {
-    if (station->getIndex() != 0x6c) {
-        Array<Item *> *items = station->getItems();
-        if (items != nullptr) {
-            AbyssEngine::AERandom *random = Globals::rnd;
-            for (uint32_t i = 0; i < items->size(); ++i) {
-                Item *item = items->data()[i];
-                int take = random->nextInt();
-                if (take < item->getAmount()) {
-                    item->changeAmount(-take);
-                }
-            }
+    if (station->getIndex() == 108) {
+        return;
+    }
+    Array<Item *> *items = station->getItems();
+    if (items == nullptr) {
+        return;
+    }
+    for (uint32_t i = 0; i < items->size(); ++i) {
+        int amount = (*items)[i]->getAmount();
+        int take = Globals::rnd->nextInt(3);
+        if (take < amount) {
+            (*items)[i]->changeAmount(-take);
         }
     }
 }
 
-static int g_Generator_stationBlockList[0x34];
+// Stations that can never be picked as a mission destination.
+static const int kBlockedMissionStations[52] = {
+    10, 22, 27, 29, 30, 48, 55, 56, 76, 79, 91, 98, 1, 33, 47, 86, 58, 65, 66, 74, 81, 100, 101, 102, 103, 104,
+    105, 106, 107, 108, 83, 85, 92, 109, 110, 11, 113, 121, 126, 131, 38, 90, 91, 93, 94, 82, 40, 15, 60, 95, 70, 80,
+};
 
 int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) {
-    AbyssEngine::AERandom *random = Globals::rnd;
-    Status *status = Globals::status;
     bool accepted = false;
     int selected = 0;
-
-    do {
-        if (accepted) {
-            return selected;
-        }
-
-        int roll = random->nextInt();
+    while (!accepted) {
         selected = station;
-        if (roll >= 20) {
-            roll = random->nextInt();
-            if (roll < 40) {
-                int currentIndex = status->getSystem();
-                Array<int> *stations =
-                        (Array<int> *) systems->data()[currentIndex]->getStations();
-                int pick = random->nextInt();
-                selected = stations->data()[pick];
+        if (Globals::rnd->nextInt(100) >= 20) {
+            if (Globals::rnd->nextInt(100) < 40) {
+                Array<int> *stations = (Array<int> *) (*systems)[((SolarSystem *) (intptr_t) Globals::status->getSystem())
+                                                                          ->getIndex()]->getStations();
+                selected = (*stations)[Globals::rnd->nextInt(stations->size())];
             } else {
-                selected = random->nextInt();
+                selected = Globals::rnd->nextInt(135);
             }
         }
-
-        if (status->getSystem() == 0xf) {
-            Array<int> *stations =
-                    (Array<int> *) systems->data()[status->getSystem()]->getStations();
-            int pick = random->nextInt();
-            selected = stations->data()[pick];
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
+            Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
+            selected = (*stations)[Globals::rnd->nextInt(
+                    ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())->size())];
         }
 
-        uint32_t blocked = 0;
-        while (blocked <= 0x33) {
-            if (selected == g_Generator_stationBlockList[blocked]) {
+        accepted = true;
+        for (unsigned k = 0; k <= 51; ++k) {
+            if (selected == kBlockedMissionStations[k]) {
+                accepted = false;
                 break;
             }
-            ++blocked;
         }
-        accepted = blocked > 0x33;
 
-        uint32_t systemIndex = 0;
-        while (systemIndex < systems->size()) {
-            if (systems->data()[systemIndex]->stationIsInSystem(selected) != 0) {
+        unsigned systemIndex = 0;
+        while (true) {
+            if (systemIndex >= systems->size()) {
+                systemIndex = 0;
+                break;
+            }
+            if ((*systems)[systemIndex]->stationIsInSystem(selected)) {
                 break;
             }
             ++systemIndex;
         }
-        if (systemIndex >= systems->size()) {
-            systemIndex = 0;
-        }
-
-        if ((uint32_t)(selected - 0x6d) < 5) {
+        if ((unsigned) (selected - 109) < 5) {
             accepted = false;
         }
-
-        Array<bool> *visibilities = status->getSystemVisibilities();
-        if (visibilities != nullptr && systemIndex < visibilities->size()) {
+        Array<bool> *visibilities = Globals::status->getSystemVisibilities();
+        if (visibilities != nullptr && visibilities->size() > systemIndex) {
             accepted = (*visibilities)[systemIndex];
         }
-
-        if (systems->data()[systemIndex]->getRoutes() == nullptr) {
-            if (systemIndex != (uint32_t) status->getSystem()) {
-                accepted = false;
-            }
+        if ((*systems)[systemIndex]->getRoutes() == nullptr &&
+            systemIndex != (unsigned) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex()) {
+            accepted = false;
         }
-    } while (true);
+    }
+    return selected;
 }
 
 static Array<Item *> **g_Generator_agentsItems;
@@ -980,7 +969,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 }
 
 // Chance (in %) that a randomly drawn loot item of each Item type is accepted.
-static const int kLootTypeChance[6] = {10, 40, 2, 10, 100, 10};
+static const int kLootTypeChance[5] = {10, 40, 2, 10, 100};
 
 Array<int> *Generator::getLootList(int itemIndex, int amount) {
     if (itemIndex >= 0) {
