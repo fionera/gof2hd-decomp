@@ -18,8 +18,7 @@ class LevelScript {
 public:
     int m_nTimeLimit;
     int field_0x4;
-    int field_0x8;
-    int field_0xc;
+    long long m_nScriptTime;
     uint16_t m_nFlags;
     uint16_t field_0x12;
     TargetFollowCamera *m_pCamera;

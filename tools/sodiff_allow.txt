@@ -65,7 +65,6 @@ _ZN11AbyssEngine28g_GameText_arabicEnabledFlagE
 #
 # -- Vendored / not-yet-wired (docs/VALIDATION.md)
 # libcrypto data symbol the original's static link garbage-collected.
-SHA256_version
 # odr-use anchor keeping the five _JNIEnv::Call*Method exports alive until the real JNI dispatch
 # consumer is decompiled.
 _ZN4gof218kJNIEnvCallAnchorsE

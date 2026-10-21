@@ -1,11 +1,12 @@
 #include "game/core/Globals.h"
+#include "engine/math/AEMath.h"
 #include <arm_neon.h>
 #include <cstdint>
 
 namespace {
 #pragma pack(push, 1)
 
-    struct GameSettingsRecord {
+    struct alignas(4) GameSettingsRecord {
         float colorR;
         float colorG;
         float colorB;
@@ -164,7 +165,7 @@ unsigned char Globals::enterSpaceLounge = 0;
 int Globals::switch_to_target_setting = 0;
 
 Status *Globals::status = nullptr;
-unsigned char Globals::options[100] = {};
+alignas(4) unsigned char Globals::options[100] = {};
 FModSound *Globals::sound = nullptr;
 int Globals::logoIsShown = 0;
 int Globals::isInMainMenu = 0;
@@ -424,8 +425,7 @@ String Globals::getKeyActionName(int action) {
 }
 
 float Globals::sqrt(float x) {
-    (void) this;
-    return __builtin_sqrtf(x);
+    return AbyssEngine::AEMath::Sqrtf(x);
 }
 
 
@@ -1058,7 +1058,7 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
                     String suf, full;
                     suf.ctor_char(suffix, false);
                     full = prefix + suf;
-                    int cmp = entry->Compare_str(&full);
+                    int cmp = entry->Compare(full);
                     if (cmp == 0) {
                         result = (int) i;
                         keepGoing = false;
@@ -1320,16 +1320,17 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
     }
 }
 
-static const int gREF_table = 0;
+static const int gRaceTable[64] = {
+    3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
+    2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
+    8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3,
+    3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
 
 unsigned Globals::getRandomEnemyFighter(int kind) {
     (void) this;
     int t = kind;
-    if ((unsigned) (kind - 9) > 1) {
+    if (kind > 3 && kind != 9 && kind != 10) {
         t = 8;
-    }
-    if (kind <= 3) {
-        t = kind;
     }
     unsigned r;
     if (t == 1) {
@@ -1350,13 +1351,12 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
     } else if (t == 0xa) {
         r = 0x2c;
     } else {
-        const int *table = &gREF_table;
         do {
             do {
                 r = nextInt_71ad0(Globals::rnd, 0x25);
             } while ((unsigned) ((r & ~4u) - 9) < 2);
         } while (((r < 0x10) && ((1u << r & 0x8101u) != 0)) ||
-                 (table[r] != t));
+                 (gRaceTable[r] != t));
     }
     return r;
 }
@@ -2016,6 +2016,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     char *langFlag = (char *) &Globals::iPad;
     char *zeroByte = (char *) &Globals::startLiteVersionWithMoreCredits;
 
+    char lang = *langFlag;
     settings->_region[5] = 1;
     settings->enableFlag30 = 1;
     settings->colorR = 0.5f;
@@ -2023,9 +2024,12 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     settings->colorB = 0.5f;
     settings->tintB = 0.5f;
     settings->brightness = 1.0f;
-    *zeroByte = 0;
-    char lang = *langFlag;
+    settings->glowR = 1.0f;
+    settings->glowG = 1.0f;
+    settings->tintR = 0.6f;
+    settings->tintG = 0.6f;
     reinterpret_cast<int16_t &>(settings->_region[3]) = 0x101;
+    *zeroByte = 0;
     *flagFFFF = -1;
     *langSettingSlot = (lang == 0) ? 6 : 0xc;
 

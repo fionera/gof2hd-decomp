@@ -107,6 +107,7 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     this->visibleFlag = 1;
     this->wingmanTarget = 0;
     this->field_0x70 = 0;
+    this->field_0x71 = 0;
     reinterpret_cast<int &>(this->field_0x40) = 0;
     this->field_0xd8 = 0;
     this->field_0x80 = -1;

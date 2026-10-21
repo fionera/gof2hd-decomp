@@ -36,9 +36,7 @@ void glError();
 namespace AbyssEngine {
     class Engine {
     public:
-        uint32_t deviceWidth;
-        uint32_t deviceHeight;
-        uint8_t isPad;
+        String str_0x0;
 
         uint32_t maxTextureSize;
 
@@ -63,9 +61,11 @@ namespace AbyssEngine {
         ApplicationManager *appManager;
 
         uint32_t field_0x34;
-        uint8_t _pad0x38[4];
+        uint8_t field_0x38;
+        uint8_t _pad0x39[3];
         String str_0x3c;
-        uint8_t _pad0x48[4];
+        uint8_t field_0x48;
+        uint8_t _pad0x49[3];
         String str_0x4c;
         uint64_t field_0x58;
 
@@ -95,6 +95,7 @@ namespace AbyssEngine {
         // field from 0xfd to 0xfe (no static_assert caught it). statsEnabled is read in AbyssEngine.
         unsigned char statsEnabled;  // 0xfd
         unsigned char field_0xfe;    // 0xfe
+        unsigned char field_0xff;    // 0xff
 
         uint32_t field_0x100;
         float worldViewProjMatrix[16];
@@ -123,6 +124,10 @@ namespace AbyssEngine {
 
         float materialShininess;
 
+        // NOTE (verified against Engine::Light* in the binary): 0x2cc..0x31f is really three
+        // per-light Vector[2] arrays -- ambient-shaded @0x2cc, specular-shaded @0x2e4,
+        // diffuse-shaded @0x2fc -- followed by the particle ambient colour @0x314. The member
+        // names below predate that and are kept only because shader TUs reference them.
         Vector lightAmbientShaded;
         Vector lightSpecularShaded;
         Vector lightDiffuseShaded;
@@ -165,12 +170,8 @@ namespace AbyssEngine {
         uint8_t field_0x3c4;
         uint32_t field_0x3c8;
 
-        uint32_t field_0x3cc;
-        uint32_t field_0x3d0;
-        uint32_t field_0x3d4;
-        uint32_t field_0x3d8;
-        Array<int> *triangleCounts;
-        uint32_t field_0x3e0;
+        Vector field_0x3cc;
+        Array<int> triangleCounts;
 
         int currentProgram;
 
@@ -213,8 +214,7 @@ namespace AbyssEngine {
         double gravRaw[3];
         double gravValue[3];
 
-        uint32_t shaderCount;
-        Array<ShaderBaseStruct *> *shaders;
+        Array<ShaderBaseStruct *> shaders;
 
         Engine();
 

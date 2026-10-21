@@ -18,7 +18,7 @@ namespace AbyssEngine {
         int blendMode;
 
         unsigned char *addData;
-        uint32_t addDataSize;
+        int addDataSize;
         Array<AEMath::Matrix> arr_2c;
         Array<AEMath::Matrix> arr_38;
         Array<Mesh *> meshes;
@@ -26,11 +26,47 @@ namespace AbyssEngine {
         Array<AEMath::Matrix> arr_5c;
         AEMath::Vector ambientColor;
 
-        Material();
+        // The constructors/destructor are inline: the original emits them weak (C2/D2 only) in
+        // PaintCanvas.cpp, next to their callers.
+        Material() : blendMode(0) {
+            this->ambientColor.x = -10.0f;
+            this->ambientColor.y = 0;
+            this->ambientColor.z = 0;
 
-        Material(Material *other);
+            for (int i = 0; i != 8; ++i)
+                this->textures[i] = -1;
+            this->textures[0] = 0;
 
-        ~Material();
+            this->addData = 0;
+            this->addDataSize = 0;
+        }
+
+        Material(Material *other) {
+            this->ambientColor.x = 0;
+            this->ambientColor.y = 0;
+            this->ambientColor.z = 0;
+
+            if (other != 0) {
+                for (int i = 0; i != 8; ++i)
+                    this->textures[i] = other->textures[i];
+                this->blendMode = other->blendMode;
+                this->addDataSize = other->addDataSize;
+                if (this->addDataSize != 0)
+                    this->addData = new unsigned char[this->addDataSize];
+                else
+                    this->addData = 0;
+                this->ambientColor = other->ambientColor;
+            } else {
+                this->blendMode = 0;
+                AEMath::Vector defaultColor = {-10.0f, 0, 0};
+                this->ambientColor = defaultColor;
+                for (int i = 0; i != 8; ++i)
+                    this->textures[i] = -1;
+            }
+        }
+
+        ~Material() {
+        }
     };
 
 #if __SIZEOF_POINTER__ == 4
