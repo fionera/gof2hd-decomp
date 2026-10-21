@@ -1,5 +1,22 @@
 # Byte-matching campaign log
 
+## Session 2026-10-21 (wave 11 — linked 4348->4357, byte 1338)
+
+- Continued from wave 10: byte 1338, linked 4348, avg 99.09.
+- Landed exactness gains: Transform::InternUpdate, Material ctor (header-owned inline loop
+  index), PlayerEgo C1/C2, AEFile::Open, Hud::init (corrected to `void`), SpriteSystemCreate,
+  WantedWindow::OnTouchEnd, and SpaceLounge::updateScreenPositions.
+- Pct-only gains: StarMap::OnTouchEnd 81.8->96.5, OnCreateApplication 88.5->97.1,
+  PlayerFighter::update 73.6->79.2, ObjectGun::update 98.2->98.4, MiningGame ctors 99.4->99.7.
+- End: byte 1338, linked 4357, avg 99.10, stubs 0, missing/extra 0, imports 207, data 843/843.
+- Fleet note: the wave-11 `codex exec` workers were launched without `-p dsv41`, so they used
+  the default `gpt-6.1-sol` config. Future worker launches should pass `-p dsv41` to use the
+  local DeepSeek/SGLang profile.
+- Remaining near misses are still dominated by compiler scheduling/register allocation:
+  NewsTicker ctor, BombGun, MiningGame ctors, FModSound, TextureCreateFromFileIntern,
+  Missions/StatusWindow touch handlers, Status::resetGame, Engine ctors, String::Compare,
+  Radar ctor, TargetFollowCamera, Level creators, PlayerEgo methods, and large UI functions.
+
 ## Session 2026-10-21 (wave 9/10 — linked 4334->4348, byte 1337->1338)
 
 - Started from the wave7/8 end state: byte 1337, linked 4334, avg 99.02.
