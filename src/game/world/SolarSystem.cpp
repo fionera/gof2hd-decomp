@@ -5,6 +5,16 @@
 #include "game/mission/Status.h"
 #include "game/core/String.h"
 
+static const int kPirateBaseStations[4] = {1, 33, 47, 86};
+
+static char **gPirateBaseRoot = nullptr;
+
+static const int kAttackRaceTable[4] = {0, 0, 0, 0};
+
+static const int kBlueprintStations[5] = {132, 133, 134, 129, 123};
+
+static char **gBlueprintRoot = nullptr;
+
 SolarSystem::SolarSystem(int unk0, String displayName, int security,
                          bool isVisible, int factionId, int x, int y, int z,
                          int jumpgateId, int texture, int *starRGB,
@@ -46,13 +56,6 @@ SolarSystem::~SolarSystem() {
     this->linkedSystemIds = nullptr;
 }
 
-
-bool SolarSystem::currentOrbitHasWarpGate() {
-    int orbit = this->jumpgateStationId;
-    Station *st = (Globals::status)->getStation();
-    return orbit == st->getIndex();
-}
-
 int SolarSystem::getIndex() { return systemId; }
 int SolarSystem::getRace() { return (int) faction; }
 int SolarSystem::getSecurityLevel() { return securityLevel; }
@@ -70,6 +73,29 @@ bool SolarSystem::isVisible() {
     return this->visible;
 }
 
+String SolarSystem::getName() {
+    return this->name;
+}
+
+int SolarSystem::getAttackRace() {
+    uint32_t r = this->faction;
+    if (r < 4)
+        return kAttackRaceTable[r];
+    return 8;
+}
+
+int SolarSystem::hasPirateBase() {
+    char *base = *gPirateBaseRoot;
+    for (uint32_t i = 0; i <= 3; i++) {
+        if (stationIsInSystem(kPirateBaseStations[i]) != 0) {
+            char *flags = *(char **) (*(char **) (base + 0x4c) + 4);
+            if (flags[i] == 0)
+                return 1;
+        }
+    }
+    return 0;
+}
+
 int SolarSystem::stationIsInSystem(int idx) {
     Array<int> *arr = this->stationIds;
     uint32_t n = arr->size();
@@ -78,6 +104,64 @@ int SolarSystem::stationIsInSystem(int idx) {
             return 1;
     }
     return 0;
+}
+
+int SolarSystem::hasHiddenBlueprint() {
+    char *base = *gBlueprintRoot;
+    for (uint32_t i = 0; i <= 4; i++) {
+        if (stationIsInSystem(kBlueprintStations[i]) != 0) {
+            char *flags = *(char **) (*(char **) (base + 0x58) + 4);
+            if (flags[i] == 0)
+                return 1;
+        }
+    }
+    return 0;
+}
+
+int SolarSystem::getWarpGateEnumIndex() {
+    return (int) getStationEnumIndex(this->jumpgateStationId);
+}
+
+uint32_t SolarSystem::getStationEnumIndex(int idx) {
+    Array<int> *arr = this->stationIds;
+    for (uint32_t i = 0; i < arr->size(); i++) {
+        if ((*arr)[i] == idx)
+            return i;
+    }
+    return 0xffffffff;
+}
+
+bool SolarSystem::currentOrbitHasWarpGate() {
+    int orbit = this->jumpgateStationId;
+    Station *st = (Globals::status)->getStation();
+    return orbit == st->getIndex();
+}
+
+int SolarSystem::stationIsInSystem(Station *station) {
+    if (station == nullptr)
+        return 0;
+    return stationIsInSystem(station->getIndex());
+}
+
+int SolarSystem::isFullyDiscovered() {
+    Array<int> *arr = this->stationIds;
+    uint32_t i = 0;
+    Galaxy *gal = Globals::galaxy;
+    while (true) {
+        if (i >= arr->size())
+            return 1;
+        char *visited = (char *) gal->getVisited();
+        arr = this->stationIds;
+        uint32_t flagIdx = (*arr)[i];
+        i++;
+        if (visited[flagIdx] == 0)
+            return 0;
+    }
+}
+
+void SolarSystem::setCoords(int x, int y) {
+    this->mapX = x;
+    this->mapY = y;
 }
 
 int SolarSystem::systemIsInSystemRoutes(int sys) {
@@ -99,95 +183,9 @@ void SolarSystem::setVisible(bool v) {
     this->visible = v;
 }
 
-uint32_t SolarSystem::getStationEnumIndex(int idx) {
-    Array<int> *arr = this->stationIds;
-    for (uint32_t i = 0; i < arr->size(); i++) {
-        if ((*arr)[i] == idx)
-            return i;
-    }
-    return 0xffffffff;
-}
-
-String SolarSystem::getName() {
-    return this->name;
-}
-
-static const int kPirateBaseStations[4] = {1, 33, 47, 86};
-
-static char **gPirateBaseRoot = nullptr;
-
-int SolarSystem::hasPirateBase() {
-    char *base = *gPirateBaseRoot;
-    for (uint32_t i = 0; i <= 3; i++) {
-        if (stationIsInSystem(kPirateBaseStations[i]) != 0) {
-            char *flags = *(char **) (*(char **) (base + 0x4c) + 4);
-            if (flags[i] == 0)
-                return 1;
-        }
-    }
-    return 0;
-}
-
-static const int kAttackRaceTable[4] = {0, 0, 0, 0};
-
-int SolarSystem::getAttackRace() {
-    uint32_t r = this->faction;
-    if (r < 4)
-        return kAttackRaceTable[r];
-    return 8;
-}
-
 uint32_t SolarSystem::hasNoOwner() {
     uint32_t x = this->systemId - 0x17;
     if (x < 0xb)
         return (0x60bU >> (x & 0x7ff)) & 1;
     return 0;
-}
-
-static const int kBlueprintStations[5] = {132, 133, 134, 129, 123};
-
-static char **gBlueprintRoot = nullptr;
-
-int SolarSystem::hasHiddenBlueprint() {
-    char *base = *gBlueprintRoot;
-    for (uint32_t i = 0; i <= 4; i++) {
-        if (stationIsInSystem(kBlueprintStations[i]) != 0) {
-            char *flags = *(char **) (*(char **) (base + 0x58) + 4);
-            if (flags[i] == 0)
-                return 1;
-        }
-    }
-    return 0;
-}
-
-void SolarSystem::setCoords(int x, int y) {
-    this->mapX = x;
-    this->mapY = y;
-}
-
-int SolarSystem::getWarpGateEnumIndex() {
-    return (int) getStationEnumIndex(this->jumpgateStationId);
-}
-
-
-int SolarSystem::isFullyDiscovered() {
-    Array<int> *arr = this->stationIds;
-    uint32_t i = 0;
-    Galaxy *gal = Globals::galaxy;
-    while (true) {
-        if (i >= arr->size())
-            return 1;
-        char *visited = (char *) gal->getVisited();
-        arr = this->stationIds;
-        uint32_t flagIdx = (*arr)[i];
-        i++;
-        if (visited[flagIdx] == 0)
-            return 0;
-    }
-}
-
-int SolarSystem::stationIsInSystem(Station *station) {
-    if (station == nullptr)
-        return 0;
-    return stationIsInSystem(station->getIndex());
 }

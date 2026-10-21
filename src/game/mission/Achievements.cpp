@@ -4,148 +4,7 @@
 #include "game/mission/Status.h"
 #include "game/ship/Ship.h"
 
-uint8_t Achievements::hasMedal(int index, int value) {
-    return this->medals[index] == value;
-}
-
-int *Achievements::getMedals() {
-    return this->medals;
-}
-
-int *Achievements::getNewMedals() {
-    return this->newMedals;
-}
-
-Achievements::~Achievements() {
-    delete[] this->medals;
-    this->medals = nullptr;
-    delete[] this->newMedals;
-    this->newMedals = nullptr;
-}
-
-uint8_t Achievements::gotAllSupernovaMedals() {
-    return this->gotAllSupernovaMedals_;
-}
-
-bool Achievements::gotAllMedals() {
-    return this->gotAllMedals_;
-}
-
-void Achievements::updateCredits(int value) {
-    if (this->credits < value)
-        this->credits = value;
-}
-
-void Achievements::setMedal(int index, int value) {
-    this->medals[index] = value;
-}
-
-void Achievements::incPirateKills() {
-    this->pirateKills += 1;
-}
-
-int Achievements::init() {
-    for (int i = 0; i < 0x2d; ++i)
-        this->medals[i] = 0;
-    this->medals[0] = 1;
-    for (int i = 0; i < 0x2d; ++i)
-        this->newMedals[i] = 0;
-    this->hasTurretAndWeapon = 0;
-    this->credits = 0;
-    this->kills = 0;
-    this->catches = 0;
-    this->pirateKills = 0;
-    this->weaponCount = 0;
-    return (int) (intptr_t) & this->kills;
-}
-
-uint8_t Achievements::isEliteMedal(int index) {
-    return index > 0x23;
-}
-
-Achievements::Achievements() {
-    this->medals = new int[45];
-    this->newMedals = new int[45];
-    this->gotAllSupernovaMedals_ = 0;
-    this->gotAllMedals_ = false;
-    this->gotAllGoldMedals_ = 0;
-}
-
-void Achievements::resetNewMedals() {
-    for (int i = 0; i < 0x2d; ++i)
-        this->newMedals[i] = 0;
-    this->hasTurretAndWeapon = 0;
-    this->kills = 0;
-    this->catches = 0;
-    this->pirateKills = 0;
-    this->weaponCount = 0;
-}
-
-int Achievements::getKills() {
-    return this->kills;
-}
-
-int Achievements::getCatches() {
-    return this->catches;
-}
-
-int Achievements::getPirateKills() {
-    return this->pirateKills;
-}
-
-void Achievements::incCatches() {
-    this->catches += 1;
-}
-
-void Achievements::incKills() {
-    this->kills += 1;
-}
-
 static const int gAchievementValues[135] = {0};
-
-int Achievements::getValue(int index, int sub) {
-    const int *row = gAchievementValues + index * 3;
-    return row[sub - 1];
-}
-
-void Achievements::resetPirateKills() {
-    this->pirateKills = 0;
-}
-
-uint8_t Achievements::gotAllGoldMedals() {
-    return this->gotAllGoldMedals_;
-}
-
-void Achievements::countMedals() {
-    int *r3 = this->medals;
-    int total = 0;
-    int golds = 0;
-    this->medalCount = total;
-    for (int i = 0; i < 36; ++i) {
-        int v = r3[i];
-        if (v != 0) {
-            total++;
-            if (v == 1) {
-                this->medalCount = total;
-                golds++;
-            } else {
-                this->medalCount = total;
-            }
-        }
-    }
-    const int *base2 = r3 + 36;
-    int j = 0;
-    int supers = 0;
-    for (; j < 9; ++j) {
-        if (base2[j] != 0)
-            supers++;
-    }
-    int sOk = (supers == 9);
-    int gOk = (golds == 36);
-    this->gotAllSupernovaMedals_ = (uint8_t)(sOk & gOk);
-    this->gotAllGoldMedals_ = (uint8_t)gOk;
-    this->gotAllMedals_ = total == 36;
-}
 
 static const int gCFN_req[135] = {
     // medal  0: (never)
@@ -239,6 +98,21 @@ static const int gCFN_req[135] = {
     // medal 44: field_148 (byte) != 0
     8, -1, -1,
 };
+
+Achievements::Achievements() {
+    this->medals = new int[45];
+    this->newMedals = new int[45];
+    this->gotAllSupernovaMedals_ = 0;
+    this->gotAllMedals_ = false;
+    this->gotAllGoldMedals_ = 0;
+}
+
+Achievements::~Achievements() {
+    delete[] this->medals;
+    this->medals = nullptr;
+    delete[] this->newMedals;
+    this->newMedals = nullptr;
+}
 
 void Achievements::checkForNewMedal(PlayerEgo *ego) {
     initCheckEquipmentAndWeapons();
@@ -491,24 +365,6 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
     }
 }
 
-void Achievements::applyNewMedals() {
-    for (int i = 0; i < 0x2d; ++i) {
-        int nv = this->newMedals[i];
-        if (nv > 0) {
-            int cur = this->medals[i];
-            if (nv < cur || cur == 0)
-                this->medals[i] = nv;
-        }
-    }
-    countMedals();
-    if (this->medalCount == 0x23) {
-        this->newMedals[0x23] = 1;
-        this->medals[0x23] = 1;
-        countMedals();
-    }
-}
-
-
 void Achievements::initCheckEquipmentAndWeapons() {
     int r = Globals::status->getCurrentCampaignMission();
     if (r >= 8) {
@@ -535,6 +391,90 @@ void Achievements::initCheckEquipmentAndWeapons() {
     this->hasTurretAndWeapon = (uint8_t)r;
 }
 
+void Achievements::countMedals() {
+    int *r3 = this->medals;
+    int total = 0;
+    int golds = 0;
+    this->medalCount = total;
+    for (int i = 0; i < 36; ++i) {
+        int v = r3[i];
+        if (v != 0) {
+            total++;
+            if (v == 1) {
+                this->medalCount = total;
+                golds++;
+            } else {
+                this->medalCount = total;
+            }
+        }
+    }
+    const int *base2 = r3 + 36;
+    int j = 0;
+    int supers = 0;
+    for (; j < 9; ++j) {
+        if (base2[j] != 0)
+            supers++;
+    }
+    int sOk = (supers == 9);
+    int gOk = (golds == 36);
+    this->gotAllSupernovaMedals_ = (uint8_t)(sOk & gOk);
+    this->gotAllGoldMedals_ = (uint8_t)gOk;
+    this->gotAllMedals_ = total == 36;
+}
+
+bool Achievements::gotAllMedals() {
+    return this->gotAllMedals_;
+}
+
+uint8_t Achievements::gotAllGoldMedals() {
+    return this->gotAllGoldMedals_;
+}
+
+uint8_t Achievements::gotAllSupernovaMedals() {
+    return this->gotAllSupernovaMedals_;
+}
+
+int *Achievements::getMedals() {
+    return this->medals;
+}
+
+int *Achievements::getNewMedals() {
+    return this->newMedals;
+}
+
+void Achievements::incKills() {
+    this->kills += 1;
+}
+
+int Achievements::getKills() {
+    return this->kills;
+}
+
+void Achievements::incPirateKills() {
+    this->pirateKills += 1;
+}
+
+int Achievements::getPirateKills() {
+    return this->pirateKills;
+}
+
+void Achievements::resetPirateKills() {
+    this->pirateKills = 0;
+}
+
+void Achievements::incCatches() {
+    this->catches += 1;
+}
+
+int Achievements::getCatches() {
+    return this->catches;
+}
+
+void Achievements::updateCredits(int value) {
+    if (this->credits < value)
+        this->credits = value;
+}
+
 void Achievements::setMedals(int *src, int count) {
     for (int i = 0; i < count; ++i) {
         unsigned v = (unsigned) src[i];
@@ -542,4 +482,63 @@ void Achievements::setMedals(int *src, int count) {
     }
     for (int i = count; i < 45; ++i)
         this->medals[i] = 0;
+}
+
+void Achievements::setMedal(int index, int value) {
+    this->medals[index] = value;
+}
+
+int Achievements::init() {
+    for (int i = 0; i < 0x2d; ++i)
+        this->medals[i] = 0;
+    this->medals[0] = 1;
+    for (int i = 0; i < 0x2d; ++i)
+        this->newMedals[i] = 0;
+    this->hasTurretAndWeapon = 0;
+    this->credits = 0;
+    this->kills = 0;
+    this->catches = 0;
+    this->pirateKills = 0;
+    this->weaponCount = 0;
+    return (int) (intptr_t) & this->kills;
+}
+
+void Achievements::resetNewMedals() {
+    for (int i = 0; i < 0x2d; ++i)
+        this->newMedals[i] = 0;
+    this->hasTurretAndWeapon = 0;
+    this->kills = 0;
+    this->catches = 0;
+    this->pirateKills = 0;
+    this->weaponCount = 0;
+}
+
+void Achievements::applyNewMedals() {
+    for (int i = 0; i < 0x2d; ++i) {
+        int nv = this->newMedals[i];
+        if (nv > 0) {
+            int cur = this->medals[i];
+            if (nv < cur || cur == 0)
+                this->medals[i] = nv;
+        }
+    }
+    countMedals();
+    if (this->medalCount == 0x23) {
+        this->newMedals[0x23] = 1;
+        this->medals[0x23] = 1;
+        countMedals();
+    }
+}
+
+uint8_t Achievements::hasMedal(int index, int value) {
+    return this->medals[index] == value;
+}
+
+int Achievements::getValue(int index, int sub) {
+    const int *row = gAchievementValues + index * 3;
+    return row[sub - 1];
+}
+
+uint8_t Achievements::isEliteMedal(int index) {
+    return index > 0x23;
 }

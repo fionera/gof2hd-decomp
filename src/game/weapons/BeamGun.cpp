@@ -183,16 +183,16 @@ void BeamGun::update(int elapsed) {
     this->secondaryVisible = this->gun->delayActive;
 }
 
-void BeamGun::replaceGun(unsigned int /*mesh*/, int /*unused*/) {
-}
-
-void BeamGun::translate(const Vector & /*v*/) {
-}
-
 void BeamGun::setEnemies(Array<Player *> *enemies) {
     this->gun->setEnemies(enemies);
 }
 
 void BeamGun::setEnemy(Player *enemy) {
     this->gun->setEnemy(enemy);
+}
+
+void BeamGun::translate(const Vector & /*v*/) {
+}
+
+void BeamGun::replaceGun(unsigned int /*mesh*/, int /*unused*/) {
 }

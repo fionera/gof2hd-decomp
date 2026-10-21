@@ -31,61 +31,6 @@ void *ParticleSystemManager_emitManual_v( // lint: void_ptr external free fn; Pv
     void *self, int handle, const float *pos, void *ret, const float *vel, // lint: void_ptr external free fn; Pv signature fixed in original .so
     float p5); // lint: void_ptr external free fn; Pv signature fixed in original .so
 
-uint8_t PlayerCreature::isHooked() {
-    return this->hooked;
-}
-
-void PlayerCreature::calmDown() {
-    this->raging = 0;
-    this->rageTimer = 0;
-    this->endurance = this->maxEndurance;
-}
-
-void PlayerCreature::unhook() {
-    this->rageTimer = 0;
-    this->caught = 0;
-    this->raging = 0;
-    this->endurance = this->maxEndurance;
-}
-
-void PlayerCreature::render() {
-    if (this->renderGeometry() != nullptr) {
-        this->renderGeometry()->render();
-    }
-
-    if ((uint32_t)(this->state - 3) >= 2) {
-        this->KIPlayer::render();
-    }
-}
-
-int PlayerCreature::getEndurance() {
-    return this->endurance;
-}
-
-int PlayerCreature::getWeight() {
-    return PlayerCreature_weightTable[this->creatureType()];
-}
-
-uint8_t PlayerCreature::isCaught() {
-    return this->caught;
-}
-
-void PlayerCreature::rage(int amount) {
-    float amountScale = (float) amount / -100.0f;
-    float typeScale = (float) PlayerCreature_rageTable[this->creatureType()];
-    this->rageTimer = 0;
-    this->raging = 0x101;
-    this->rageScale = (amountScale + 1.0f) * (typeScale + 1.0f);
-}
-
-int PlayerCreature::getMaxEndurance() {
-    return this->maxEndurance;
-}
-
-int PlayerCreature::getItemIndex() {
-    return this->itemIndex;
-}
-
 PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                                float x, float y, float z)
     : KIPlayer(0, 0, player, geometry, x, y, z, true) {
@@ -105,13 +50,51 @@ PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeomet
     reset();
 }
 
+void PlayerCreature::calmDown() {
+    this->raging = 0;
+    this->rageTimer = 0;
+    this->endurance = this->maxEndurance;
+}
+
+void PlayerCreature::reset() {
+    KIPlayer::reset();
+    this->state = 0;
+    this->setActive(true);
+    this->endurance = this->maxEndurance;
+    this->lastHitpoints = this->player->getHitpoints();
+    this->rageMatrix = AbyssEngine::AEMath::Matrix();
+}
+
 PlayerCreature::~PlayerCreature() {
+}
+
+void PlayerCreature::rage(int amount) {
+    float amountScale = (float) amount / -100.0f;
+    float typeScale = (float) PlayerCreature_rageTable[this->creatureType()];
+    this->rageTimer = 0;
+    this->raging = 0x101;
+    this->rageScale = (amountScale + 1.0f) * (typeScale + 1.0f);
+}
+
+uint8_t PlayerCreature::isHooked() {
+    return this->hooked;
+}
+
+uint8_t PlayerCreature::isCaught() {
+    return this->caught;
 }
 
 void PlayerCreature::hook(int value) {
     this->hooked = 1;
 
     this->rage(value);
+}
+
+void PlayerCreature::unhook() {
+    this->rageTimer = 0;
+    this->caught = 0;
+    this->raging = 0;
+    this->endurance = this->maxEndurance;
 }
 
 void PlayerCreature::update(int elapsed) {
@@ -200,6 +183,16 @@ void PlayerCreature::update(int elapsed) {
     memcpy(this->player->transform, &current, sizeof(this->player->transform));
 }
 
+void PlayerCreature::render() {
+    if (this->renderGeometry() != nullptr) {
+        this->renderGeometry()->render();
+    }
+
+    if ((uint32_t)(this->state - 3) >= 2) {
+        this->KIPlayer::render();
+    }
+}
+
 int PlayerCreature::collide(float /*x*/, float /*y*/, float /*z*/) {
     return 0;
 }
@@ -208,11 +201,18 @@ int PlayerCreature::outerCollide(float /*x*/, float /*y*/, float /*z*/) {
     return 0;
 }
 
-void PlayerCreature::reset() {
-    KIPlayer::reset();
-    this->state = 0;
-    this->setActive(true);
-    this->endurance = this->maxEndurance;
-    this->lastHitpoints = this->player->getHitpoints();
-    this->rageMatrix = AbyssEngine::AEMath::Matrix();
+int PlayerCreature::getWeight() {
+    return PlayerCreature_weightTable[this->creatureType()];
+}
+
+int PlayerCreature::getItemIndex() {
+    return this->itemIndex;
+}
+
+int PlayerCreature::getMaxEndurance() {
+    return this->maxEndurance;
+}
+
+int PlayerCreature::getEndurance() {
+    return this->endurance;
 }

@@ -127,18 +127,6 @@ static const int gCreateChar2Table[] = {
 static AbyssEngine::AERandom **gCreateChar2Rng2 = &Globals::rnd;
 static AbyssEngine::AERandom **gCreateCharRng = &Globals::rnd;
 
-
-int ImageFactory::getItemImageId(int itemId) {
-    int base = 0xef0;
-    if (itemId < 0xb0) base = 0x898;
-    return base + itemId;
-}
-
-ImageFactory::~ImageFactory() {
-    delete this->sprite;
-    this->sprite = nullptr;
-}
-
 ImageFactory::ImageFactory() {
     this->sprite = nullptr;
     if (Globals::retinaDisplay || Globals::n9) {
@@ -174,67 +162,9 @@ void ImageFactory::reload() {
     (*canvasHolder)->Image2DCreate(0x511, this->shipImage);
 }
 
-void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, bool flag) {
-    PaintCanvas **sl = g_drawChar_canvas;
-    (*sl)->SetColor(0xffffffffu);
-    (*sl)->DrawImage2D(this->itemImage, x, y);
-    for (unsigned i = 0; i < parts->size(); ++i) {
-        ImagePart *part = (*parts)[i];
-        if (part != nullptr) part->draw(x, y, flag);
-    }
-    (*sl)->DrawImage2D(this->shipImage, x, y);
-}
-
-void ImageFactory::drawShip(int shipId, int x, int y) {
-    Globals::Canvas->SetColor(0xffffffffu);
-    this->sprite->setFrame(5);
-    this->sprite->setPosition(x, y);
-    this->sprite->draw(1.0f, 1.0f);
-    unsigned int image = 0xffffffffu;
-    Globals::Canvas->Image2DCreate((unsigned short) (shipId + 0x971), image);
-    Globals::Canvas->DrawImage2D(image, x, y);
-}
-
-void ImageFactory::drawItem(int itemId, int x, int y) {
-    Globals::Canvas->SetColor(0xffffffffu);
-    unsigned int image = 0xffffffffu;
-    Globals::Canvas->Image2DCreate((unsigned short) getItemImageId(itemId), image);
-    Globals::Canvas->DrawImage2D(image, x, y);
-}
-
-void *ImageFactory::loadImage(int row, int part, int frame) { // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
-    if (kPartImageIds[row][part] < 0)
-        return nullptr;
-    unsigned int image = 0;
-    Globals::Canvas->Image2DCreate((unsigned short) (kPartImageIds[row][part] + frame), image);
-    return new ImagePart(image, PART_OFFSETS[row][part][0], PART_OFFSETS[row][part][1]);
-}
-
-void ImageFactory::drawItem(int itemId, int frame, int x, int y) {
-    Globals::Canvas->SetColor(0xffffffffu);
-    this->sprite->setFrame(frame);
-    this->sprite->setPosition(x, y);
-    this->sprite->draw(1.0f, 1.0f);
-    unsigned int image = 0xffffffffu;
-    Globals::Canvas->Image2DCreate((unsigned short) getItemImageId(itemId), image);
-    Globals::Canvas->DrawImage2D(image, x, y);
-}
-
-Array<ImagePart *> *ImageFactory::loadChar(int *desc) {
-    if (desc == nullptr) return nullptr;
-    Array<ImagePart *> *parts = new Array<ImagePart *>();
-    ArraySetLength<ImagePart *>(4, *parts);
-    int race = *desc++;
-    for (int col = 0; col != 4; ++col) {
-        int frameBase = desc[col];
-        if (frameBase != -1) {
-            (*parts)[col] = (ImagePart *) this->loadImage(race, col, frameBase);
-        }
-    }
-    ImagePart *tmp = (*parts)[0];
-    (*parts)[0] = (*parts)[2];
-    (*parts)[2] = tmp;
-    return parts;
+ImageFactory::~ImageFactory() {
+    delete this->sprite;
+    this->sprite = nullptr;
 }
 
 int *ImageFactory::createChar(int race) {
@@ -259,4 +189,73 @@ int *ImageFactory::createChar(bool isMale, int race) {
     for (int i = 0; i != 4; ++i)
         desc[i + 1] = (*gCreateChar2Rng2)->nextInt(partCounts[i]);
     return desc;
+}
+
+Array<ImagePart *> *ImageFactory::loadChar(int *desc) {
+    if (desc == nullptr) return nullptr;
+    Array<ImagePart *> *parts = new Array<ImagePart *>();
+    ArraySetLength<ImagePart *>(4, *parts);
+    int race = *desc++;
+    for (int col = 0; col != 4; ++col) {
+        int frameBase = desc[col];
+        if (frameBase != -1) {
+            (*parts)[col] = (ImagePart *) this->loadImage(race, col, frameBase);
+        }
+    }
+    ImagePart *tmp = (*parts)[0];
+    (*parts)[0] = (*parts)[2];
+    (*parts)[2] = tmp;
+    return parts;
+}
+
+void *ImageFactory::loadImage(int row, int part, int frame) { // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
+    if (kPartImageIds[row][part] < 0)
+        return nullptr;
+    unsigned int image = 0;
+    Globals::Canvas->Image2DCreate((unsigned short) (kPartImageIds[row][part] + frame), image);
+    return new ImagePart(image, PART_OFFSETS[row][part][0], PART_OFFSETS[row][part][1]);
+}
+
+void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, bool flag) {
+    PaintCanvas **sl = g_drawChar_canvas;
+    (*sl)->SetColor(0xffffffffu);
+    (*sl)->DrawImage2D(this->itemImage, x, y);
+    for (unsigned i = 0; i < parts->size(); ++i) {
+        ImagePart *part = (*parts)[i];
+        if (part != nullptr) part->draw(x, y, flag);
+    }
+    (*sl)->DrawImage2D(this->shipImage, x, y);
+}
+
+void ImageFactory::drawItem(int itemId, int frame, int x, int y) {
+    Globals::Canvas->SetColor(0xffffffffu);
+    this->sprite->setFrame(frame);
+    this->sprite->setPosition(x, y);
+    this->sprite->draw(1.0f, 1.0f);
+    unsigned int image = 0xffffffffu;
+    Globals::Canvas->Image2DCreate((unsigned short) getItemImageId(itemId), image);
+    Globals::Canvas->DrawImage2D(image, x, y);
+}
+
+int ImageFactory::getItemImageId(int itemId) {
+    int base = 0xef0;
+    if (itemId < 0xb0) base = 0x898;
+    return base + itemId;
+}
+
+void ImageFactory::drawItem(int itemId, int x, int y) {
+    Globals::Canvas->SetColor(0xffffffffu);
+    unsigned int image = 0xffffffffu;
+    Globals::Canvas->Image2DCreate((unsigned short) getItemImageId(itemId), image);
+    Globals::Canvas->DrawImage2D(image, x, y);
+}
+
+void ImageFactory::drawShip(int shipId, int x, int y) {
+    Globals::Canvas->SetColor(0xffffffffu);
+    this->sprite->setFrame(5);
+    this->sprite->setPosition(x, y);
+    this->sprite->draw(1.0f, 1.0f);
+    unsigned int image = 0xffffffffu;
+    Globals::Canvas->Image2DCreate((unsigned short) (shipId + 0x971), image);
+    Globals::Canvas->DrawImage2D(image, x, y);
 }

@@ -65,10 +65,6 @@ Station::~Station() {
     }
 }
 
-Station *Station::clone() {
-    return new Station(String(name, false), index, systemIndex, techLevel, textureIndex);
-}
-
 int Station::getIndex() { return index; }
 int Station::getSystem() { return systemIndex; }
 int Station::getTecLevel() { return techLevel; }
@@ -92,100 +88,6 @@ void Station::addItem(Item *item) {
         }
     }
     ArrayAdd(item, *items);
-}
-
-void Station::addShip(Ship *ship) {
-    if (ships == nullptr) {
-        ships = new Array<Ship *>();
-    } else {
-        for (uint32_t i = 0; i < ships->size(); i++) {
-            if ((*ships)[i]->equals(ship))
-                return;
-        }
-    }
-    ArrayAdd(ship, *ships);
-}
-
-void Station::removeShip(Ship *ship) {
-    if (ships == nullptr)
-        return;
-    ArrayRemove(ship, *ships);
-}
-
-void Station::removeShips() {
-    if (ships != nullptr) {
-        ArrayReleaseClasses(*ships);
-        delete ships;
-    }
-    ships = nullptr;
-}
-
-bool Station::equals(Station *other) {
-    return other != nullptr && index == other->index;
-}
-
-uint32_t Station::hasItem(int index) {
-    if (items != nullptr) {
-        for (uint32_t i = 0; i < items->size(); i++) {
-            Item *it = (*items)[i];
-            if (it != nullptr && it->getIndex() == index)
-                return 1;
-        }
-    }
-    return 0;
-}
-
-uint32_t Station::hasShip(int index) {
-    if (ships != nullptr) {
-        for (uint32_t i = 0; i < ships->size(); i++) {
-            Ship *sh = (*ships)[i];
-            if (sh != nullptr && sh->getIndex() == index)
-                return 1;
-        }
-    }
-    return 0;
-}
-
-void Station::setItems(Array<Item *> *items, bool deep) {
-    if (this->items != nullptr)
-        delete this->items;
-    this->items = nullptr;
-    if (items == nullptr || !deep) {
-        this->items = items;
-    } else {
-        Array<Item *> *copy = new Array<Item *>();
-        this->items = copy;
-        ArraySetLength(items->size(), *copy);
-        for (uint32_t i = 0; i < items->size(); i++)
-            (*this->items)[i] = (*items)[i]->clone();
-    }
-}
-
-void Station::setShips(Array<Ship *> *ships, bool deep) {
-    if (this->ships != nullptr) {
-        ArrayReleaseClasses(*this->ships);
-        delete this->ships;
-    }
-    this->ships = nullptr;
-    if (ships == nullptr || !deep) {
-        this->ships = ships;
-    } else {
-        Array<Ship *> *copy = new Array<Ship *>();
-        this->ships = copy;
-        ArraySetLength(ships->size(), *copy);
-        for (uint32_t i = 0; i < ships->size(); i++)
-            (*this->ships)[i] = (*ships)[i]->clone();
-    }
-}
-
-void Station::setAgents(Array<Agent *> *agents) {
-    if (this->agents == agents)
-        return;
-    if (this->agents != nullptr) {
-        ArrayReleaseClasses(*this->agents);
-        delete this->agents;
-    }
-    this->agents = agents;
 }
 
 void Station::setAttackedFriends(bool v) {
@@ -212,12 +114,106 @@ void Station::visit() {
     Globals::galaxy->visitStation(index);
 }
 
-uint32_t Station::getHiddenBlueprintIndex() {
-    for (uint32_t i = 0; i < 5; i++) {
-        if (kHiddenBlueprints[i] == index)
-            return i;
+void Station::removeShips() {
+    if (ships != nullptr) {
+        ArrayReleaseClasses(*ships);
+        delete ships;
     }
-    return 0xffffffff;
+    ships = nullptr;
+}
+
+void Station::removeShip(Ship *ship) {
+    if (ships == nullptr)
+        return;
+    ArrayRemove(ship, *ships);
+}
+
+void Station::setShips(Array<Ship *> *ships, bool deep) {
+    if (this->ships != nullptr) {
+        ArrayReleaseClasses(*this->ships);
+        delete this->ships;
+    }
+    this->ships = nullptr;
+    if (ships == nullptr || !deep) {
+        this->ships = ships;
+    } else {
+        Array<Ship *> *copy = new Array<Ship *>();
+        this->ships = copy;
+        ArraySetLength(ships->size(), *copy);
+        for (uint32_t i = 0; i < ships->size(); i++)
+            (*this->ships)[i] = (*ships)[i]->clone();
+    }
+}
+
+void Station::setItems(Array<Item *> *items, bool deep) {
+    if (this->items != nullptr)
+        delete this->items;
+    this->items = nullptr;
+    if (items == nullptr || !deep) {
+        this->items = items;
+    } else {
+        Array<Item *> *copy = new Array<Item *>();
+        this->items = copy;
+        ArraySetLength(items->size(), *copy);
+        for (uint32_t i = 0; i < items->size(); i++)
+            (*this->items)[i] = (*items)[i]->clone();
+    }
+}
+
+void Station::setAgents(Array<Agent *> *agents) {
+    if (this->agents == agents)
+        return;
+    if (this->agents != nullptr) {
+        ArrayReleaseClasses(*this->agents);
+        delete this->agents;
+    }
+    this->agents = agents;
+}
+
+uint32_t Station::hasItem(int index) {
+    if (items != nullptr) {
+        for (uint32_t i = 0; i < items->size(); i++) {
+            Item *it = (*items)[i];
+            if (it != nullptr && it->getIndex() == index)
+                return 1;
+        }
+    }
+    return 0;
+}
+
+uint32_t Station::hasShip(int index) {
+    if (ships != nullptr) {
+        for (uint32_t i = 0; i < ships->size(); i++) {
+            Ship *sh = (*ships)[i];
+            if (sh != nullptr && sh->getIndex() == index)
+                return 1;
+        }
+    }
+    return 0;
+}
+
+void Station::addShip(Ship *ship) {
+    if (ships == nullptr) {
+        ships = new Array<Ship *>();
+    } else {
+        for (uint32_t i = 0; i < ships->size(); i++) {
+            if ((*ships)[i]->equals(ship))
+                return;
+        }
+    }
+    ArrayAdd(ship, *ships);
+}
+
+uint32_t Station::stationHasPirateBase() {
+    for (uint32_t i = 0; i < 4; i++) {
+        if (kPirateStations[i] == index) {
+            unsigned char *flags =
+                reinterpret_cast<unsigned char *>(Globals::status->field_4c->data_);
+            if (flags[i] == 0)
+                return 1;
+        }
+    }
+    return 0;
 }
 
 uint32_t Station::getPirateStationIndex() {
@@ -242,14 +238,18 @@ uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
     return 0;
 }
 
-uint32_t Station::stationHasPirateBase() {
-    for (uint32_t i = 0; i < 4; i++) {
-        if (kPirateStations[i] == index) {
-            unsigned char *flags =
-                reinterpret_cast<unsigned char *>(Globals::status->field_4c->data_);
-            if (flags[i] == 0)
-                return 1;
-        }
+uint32_t Station::getHiddenBlueprintIndex() {
+    for (uint32_t i = 0; i < 5; i++) {
+        if (kHiddenBlueprints[i] == index)
+            return i;
     }
-    return 0;
+    return 0xffffffff;
+}
+
+Station *Station::clone() {
+    return new Station(String(name, false), index, systemIndex, techLevel, textureIndex);
+}
+
+bool Station::equals(Station *other) {
+    return other != nullptr && index == other->index;
 }

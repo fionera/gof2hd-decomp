@@ -7,63 +7,6 @@
 
 static Status *&status = Globals::status;
 
-int Item::getAttribute(int attribute) {
-    int *data = attributes->data();
-    uint32_t size = attributes->size();
-    for (uint32_t index = 0; index < size; index += 2) {
-        if (data[index] == attribute) {
-            return data[index + 1];
-        }
-    }
-    return static_cast<int>(0xc5997825);
-}
-
-IntArray *Item::getQuantities() {
-    return quantities;
-}
-
-int Item::getMissingIngredients() {
-    return missingIngredients;
-}
-
-void Item::adjustPrice(Station *station) {
-    int basePrice = minPrice;
-    price = basePrice + static_cast<int>((static_cast<float>(10 - station->getTecLevel()) / 10.0f) *
-                                         static_cast<float>(maxPrice - minPrice));
-}
-
-int Item::getTecLevel() {
-    return tecLevel;
-}
-
-void Item::setUnsaleable(bool value) {
-    unsaleable = value;
-}
-
-void Item::setMaxPrice(int value) {
-    maxPrice = value;
-}
-
-bool Item::checkCredits() {
-    return status->getCredits() >= price;
-}
-
-int Item::getOccurence() {
-    return occurence;
-}
-
-void Item::setMissingIngredients(int value) {
-    missingIngredients = value;
-}
-
-Item *Item::makeItem(int amount) {
-    int savedPrice = price;
-    Item *item = clone();
-    item->price = savedPrice;
-    item->amount = amount;
-    return item;
-}
-
 static const bool canBeInstalledMultipleTimesBySort[] = {
     true, true, true, true, true, true, true, true,
     false, false, false, true, true, false, false, false,
@@ -73,8 +16,172 @@ static const bool canBeInstalledMultipleTimesBySort[] = {
     true, false, true,
 };
 
+Item::Item(IntArray *ingredients_, IntArray *quantities_, IntArray *attributes_)
+    : ingredients(ingredients_), quantities(quantities_), attributes(attributes_) {
+    init();
+}
+
+void Item::init() {
+    if (attributes == nullptr) {
+        return;
+    }
+
+    int *data = attributes->data();
+
+    index = data[1];
+    type = data[3];
+    sort = data[5];
+    tecLevel = data[7];
+    minPriceSystem = data[9];
+    maxPriceSystem = data[11];
+    occurence = data[13];
+    minPrice = data[15];
+    maxPrice = data[17];
+    amount = 0;
+    stationAmount = 0;
+    blueprintAmount = 0;
+    missingIngredients = 0;
+    unsaleable = false;
+    price = minPrice + (maxPrice - minPrice) / 2;
+}
+
+Item::~Item() {
+}
+
+void Item::setUnsaleable(bool value) {
+    unsaleable = value;
+}
+
 bool Item::canBeInstalledMultipleTimes() {
     return canBeInstalledMultipleTimesBySort[sort];
+}
+
+int Item::getIndex() {
+    return index;
+}
+
+int Item::getType() {
+    return type;
+}
+
+int Item::getTecLevel() {
+    return tecLevel;
+}
+
+int Item::getSort() {
+    return sort;
+}
+
+int Item::getSinglePrice() {
+    return price;
+}
+
+int Item::getTotalPrice() {
+    return price * amount;
+}
+
+int Item::getMaxPrice() {
+    return maxPrice;
+}
+
+int Item::getMinPrice() {
+    return minPrice;
+}
+
+int Item::getMaxPriceSystem() {
+    return maxPriceSystem;
+}
+
+int Item::getMinPriceSystem() {
+    return minPriceSystem;
+}
+
+void Item::setPrice(int value) {
+    price = value;
+}
+
+void Item::setMinPrice(int value) {
+    minPrice = value;
+}
+
+void Item::setMaxPrice(int value) {
+    maxPrice = value;
+}
+
+float Item::getPriceRate() {
+    return static_cast<float>(price - minPrice) /
+           static_cast<float>(maxPrice - minPrice);
+}
+
+void Item::setAmount(int value) {
+    amount = value;
+}
+
+int Item::getOccurence() {
+    return occurence;
+}
+
+int Item::getAmount() {
+    return amount;
+}
+
+void Item::changeAmount(int delta) {
+    amount += delta;
+}
+
+int Item::getMissingIngredients() {
+    return missingIngredients;
+}
+
+void Item::setMissingIngredients(int value) {
+    missingIngredients = value;
+}
+
+void Item::setStationAmount(int value) {
+    stationAmount = value;
+}
+
+int Item::getStationAmount() {
+    return stationAmount;
+}
+
+void Item::changeStationAmount(int delta) {
+    stationAmount += delta;
+}
+
+void Item::setBlueprintAmount(int value) {
+    blueprintAmount = value;
+}
+
+int Item::getBlueprintAmount() {
+    return blueprintAmount;
+}
+
+void Item::changeBlueprintAmount(int delta) {
+    blueprintAmount += delta;
+}
+
+IntArray *Item::getIngredients() {
+    return ingredients;
+}
+
+IntArray *Item::getQuantities() {
+    return quantities;
+}
+
+IntArray *Item::getAttributes() {
+    return attributes;
+}
+
+int Item::getAttribute(int attribute) {
+    int *data = attributes->data();
+    uint32_t size = attributes->size();
+    for (uint32_t index = 0; index < size; index += 2) {
+        if (data[index] == attribute) {
+            return data[index + 1];
+        }
+    }
+    return static_cast<int>(0xc5997825);
 }
 
 int Item::transaction(bool buy, int, bool useCredits) {
@@ -103,64 +210,6 @@ int Item::transaction(bool buy, int, bool useCredits) {
     return 0;
 }
 
-void Item::setStationAmount(int value) {
-    stationAmount = value;
-}
-
-IntArray *Item::getIngredients() {
-    return ingredients;
-}
-
-int Item::getMaxPrice() {
-    return maxPrice;
-}
-
-int Item::getType() {
-    return type;
-}
-
-void Item::setAmount(int value) {
-    amount = value;
-}
-
-bool Item::isInList(Item *item, ItemArray *items) {
-    return isInList(item->index, items);
-}
-
-void Item::changeBlueprintAmount(int delta) {
-    blueprintAmount += delta;
-}
-
-void Item::setMinPrice(int value) {
-    minPrice = value;
-}
-
-int Item::getMinPriceSystem() {
-    return minPriceSystem;
-}
-
-int Item::getStationAmount() {
-    return stationAmount;
-}
-
-int Item::getTotalPrice() {
-    return price * amount;
-}
-
-void Item::changeAmount(int delta) {
-    amount += delta;
-}
-
-Item *Item::makeItem(int amount, int price) {
-    Item *item = clone();
-    item->price = price;
-    item->amount = amount;
-    return item;
-}
-
-Item::~Item() {
-}
-
 int Item::transactionBlueprint(bool fabricate, int mode) {
     if (fabricate) {
         if (blueprintAmount >= 1) {
@@ -177,39 +226,6 @@ int Item::transactionBlueprint(bool fabricate, int mode) {
     return 0;
 }
 
-void Item::setPrice(int value) {
-    price = value;
-}
-
-int Item::getSort() {
-    return sort;
-}
-
-int Item::getBlueprintAmount() {
-    return blueprintAmount;
-}
-
-Item *Item::makeItem() {
-    int savedPrice = price;
-    Item *item = clone();
-    item->price = savedPrice;
-    item->amount = 1;
-    return item;
-}
-
-int Item::getSinglePrice() {
-    return price;
-}
-
-int Item::getIndex() {
-    return index;
-}
-
-float Item::getPriceRate() {
-    return static_cast<float>(price - minPrice) /
-           static_cast<float>(maxPrice - minPrice);
-}
-
 bool Item::isInList(int index, int amount, ItemArray *items) {
     if (items != nullptr) {
         uint32_t size = items->size();
@@ -223,90 +239,49 @@ bool Item::isInList(int index, int amount, ItemArray *items) {
     return false;
 }
 
+bool Item::isInList(Item *item, ItemArray *items) {
+    return isInList(item->index, items);
+}
+
 bool Item::isInList(int index, ItemArray *items) {
     return isInList(index, 1, items);
 }
 
-bool Item::equals(Item *other) {
-    if (other != nullptr) {
-        return index == other->index;
-    }
-    return false;
-}
+void Item::fabricate(Item *item, ItemArray *items, int amount) {
+    int *ingredientIds = item->ingredients->data();
+    int *ingredientQuantities = item->quantities->data();
+    uint32_t ingredientCount = ingredientIds[0];
 
-Item *Item::clone() {
-    Item *copy = new Item(ingredients, quantities, attributes);
-    copy->price = price;
-    copy->unsaleable = unsaleable;
-    copy->amount = amount;
-    copy->stationAmount = stationAmount;
-    return copy;
-}
-
-IntArray *Item::getAttributes() {
-    return attributes;
-}
-
-int Item::getMinPrice() {
-    return minPrice;
-}
-
-void Item::init() {
-    if (attributes == nullptr) {
-        return;
+    for (uint32_t i = 0; i < ingredientCount; i++) {
+        int wantedId = ingredientIds[i + 1];
+        for (uint32_t j = 0; j < items->size(); j++) {
+            Item * candidate = (*items)[j];
+            if (candidate->index == wantedId) {
+                candidate->amount -= ingredientQuantities[i + 1] * amount;
+                break;
+            }
+        }
     }
 
-    int *data = attributes->data();
+    ItemArray *made = new ItemArray();
+    ArrayAdd(item->makeItem(amount), *made);
+    for (Item * element
 
-    index = data[1];
-    type = data[3];
-    sort = data[5];
-    tecLevel = data[7];
-    minPriceSystem = data[9];
-    maxPriceSystem = data[11];
-    occurence = data[13];
-    minPrice = data[15];
-    maxPrice = data[17];
-    amount = 0;
-    stationAmount = 0;
-    blueprintAmount = 0;
-    missingIngredients = 0;
-    unsaleable = false;
-    price = minPrice + (maxPrice - minPrice) / 2;
+
+    :
+    *items
+    )
+    {
+        ArrayAdd(element, *made);
+    }
 }
 
-bool Item::isUnsaleable() {
-    return unsaleable;
-}
-
-Item::Item(IntArray *ingredients_, IntArray *quantities_, IntArray *attributes_)
-    : ingredients(ingredients_), quantities(quantities_), attributes(attributes_) {
-    init();
-}
-
-void Item::changeStationAmount(int delta) {
-    stationAmount += delta;
-}
-
-int Item::getAmount() {
-    return amount;
-}
-
-int Item::getMaxPriceSystem() {
-    return maxPriceSystem;
-}
-
-void Item::setBlueprintAmount(int value) {
-    blueprintAmount = value;
-}
-
-bool Item::checkCargoSpace() {
-    int requiredLoad = amount + status->getShip()->getCurrentLoad();
-    return requiredLoad <= status->getShip()->getMaxLoad();
-}
-
-bool Item::isWeapon() {
-    return static_cast<uint32_t>(type) < 3;
+Item *Item::makeItem(int amount) {
+    int savedPrice = price;
+    Item *item = clone();
+    item->price = savedPrice;
+    item->amount = amount;
+    return item;
 }
 
 ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems) {
@@ -362,35 +337,6 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems) {
         }
     }
     return result;
-}
-
-void Item::fabricate(Item *item, ItemArray *items, int amount) {
-    int *ingredientIds = item->ingredients->data();
-    int *ingredientQuantities = item->quantities->data();
-    uint32_t ingredientCount = ingredientIds[0];
-
-    for (uint32_t i = 0; i < ingredientCount; i++) {
-        int wantedId = ingredientIds[i + 1];
-        for (uint32_t j = 0; j < items->size(); j++) {
-            Item * candidate = (*items)[j];
-            if (candidate->index == wantedId) {
-                candidate->amount -= ingredientQuantities[i + 1] * amount;
-                break;
-            }
-        }
-    }
-
-    ItemArray *made = new ItemArray();
-    ArrayAdd(item->makeItem(amount), *made);
-    for (Item * element
-
-
-    :
-    *items
-    )
-    {
-        ArrayAdd(element, *made);
-    }
 }
 
 ItemArray *Item::extractItems(ItemArray *items, bool station) {
@@ -515,4 +461,58 @@ ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems) {
     }
 
     return mixed;
+}
+
+bool Item::equals(Item *other) {
+    if (other != nullptr) {
+        return index == other->index;
+    }
+    return false;
+}
+
+bool Item::isWeapon() {
+    return static_cast<uint32_t>(type) < 3;
+}
+
+Item *Item::makeItem(int amount, int price) {
+    Item *item = clone();
+    item->price = price;
+    item->amount = amount;
+    return item;
+}
+
+Item *Item::clone() {
+    Item *copy = new Item(ingredients, quantities, attributes);
+    copy->price = price;
+    copy->unsaleable = unsaleable;
+    copy->amount = amount;
+    copy->stationAmount = stationAmount;
+    return copy;
+}
+
+Item *Item::makeItem() {
+    int savedPrice = price;
+    Item *item = clone();
+    item->price = savedPrice;
+    item->amount = 1;
+    return item;
+}
+
+bool Item::checkCredits() {
+    return status->getCredits() >= price;
+}
+
+void Item::adjustPrice(Station *station) {
+    int basePrice = minPrice;
+    price = basePrice + static_cast<int>((static_cast<float>(10 - station->getTecLevel()) / 10.0f) *
+                                         static_cast<float>(maxPrice - minPrice));
+}
+
+bool Item::checkCargoSpace() {
+    int requiredLoad = amount + status->getShip()->getCurrentLoad();
+    return requiredLoad <= status->getShip()->getMaxLoad();
+}
+
+bool Item::isUnsaleable() {
+    return unsaleable;
 }

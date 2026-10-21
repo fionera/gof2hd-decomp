@@ -30,57 +30,6 @@ static_assert(__builtin_offsetof(LODSettings, distanceFactor) == 0x28,
 
 static LODSettings *g_LOD_settings = nullptr;
 
-LODManager::LODManager() {
-    this->cameraPos.x = 0;
-    this->cameraPos.y = 0;
-    this->cameraPos.z = 0;
-    this->objects = new Array<AEGeometry *>();
-    this->timer = 0x3e9;
-}
-
-LODManager::~LODManager() {
-    delete this->objects;
-    this->objects = nullptr;
-}
-
-void LODManager::addObject(AEGeometry *g) {
-    if (!g->hasLod())
-        return;
-    ArrayAdd(g, *this->objects);
-}
-
-void LODManager::removeObject(AEGeometry *g) {
-    for (uint32_t i = 0; i < this->objects->size(); i++) {
-        Array<AEGeometry *> *arr = this->objects;
-        if ((*arr)[i] == g)
-            ArrayRemove(g, *arr);
-    }
-}
-
-void LODManager::forceUpdate(int dt, bool useParent) {
-    PaintCanvas *canvas = Globals::Canvas;
-    float factor = g_LOD_settings->distanceFactor;
-
-    uint32_t cam = canvas->CameraGetCurrent();
-    float *m = canvas->CameraGetLocal(cam);
-    this->cameraPos = AbyssEngine::AEMath::MatrixGetPosition(
-            *reinterpret_cast<const Matrix *>(m));
-
-    for (uint32_t i = 0; i < this->objects->size(); i++) {
-        AEGeometry *g = (*this->objects)[i];
-        Vector ref = useParent ? g->getParentPosition() : this->cameraPos;
-        g->updateLod(ref, factor);
-    }
-}
-
-void LODManager::update(int dt) {
-    this->timer += dt;
-    if (this->timer > 1000) {
-        this->timer = 0;
-        forceUpdate(0, false);
-    }
-}
-
 void AddTouch(int x, int y, int id, int action) {
     int index = curTouchSize;
     curTouchSize = index + 1;
@@ -183,5 +132,56 @@ extern "C" void ndk_resetNativeItemInformationList() { // lint: extern_c (native
         cItemListID_22 = nullptr;
         cItemListID_23 = nullptr;
         cItemListID_24 = nullptr;
+    }
+}
+
+LODManager::LODManager() {
+    this->cameraPos.x = 0;
+    this->cameraPos.y = 0;
+    this->cameraPos.z = 0;
+    this->objects = new Array<AEGeometry *>();
+    this->timer = 0x3e9;
+}
+
+LODManager::~LODManager() {
+    delete this->objects;
+    this->objects = nullptr;
+}
+
+void LODManager::addObject(AEGeometry *g) {
+    if (!g->hasLod())
+        return;
+    ArrayAdd(g, *this->objects);
+}
+
+void LODManager::removeObject(AEGeometry *g) {
+    for (uint32_t i = 0; i < this->objects->size(); i++) {
+        Array<AEGeometry *> *arr = this->objects;
+        if ((*arr)[i] == g)
+            ArrayRemove(g, *arr);
+    }
+}
+
+void LODManager::forceUpdate(int dt, bool useParent) {
+    PaintCanvas *canvas = Globals::Canvas;
+    float factor = g_LOD_settings->distanceFactor;
+
+    uint32_t cam = canvas->CameraGetCurrent();
+    float *m = canvas->CameraGetLocal(cam);
+    this->cameraPos = AbyssEngine::AEMath::MatrixGetPosition(
+            *reinterpret_cast<const Matrix *>(m));
+
+    for (uint32_t i = 0; i < this->objects->size(); i++) {
+        AEGeometry *g = (*this->objects)[i];
+        Vector ref = useParent ? g->getParentPosition() : this->cameraPos;
+        g->updateLod(ref, factor);
+    }
+}
+
+void LODManager::update(int dt) {
+    this->timer += dt;
+    if (this->timer > 1000) {
+        this->timer = 0;
+        forceUpdate(0, false);
     }
 }

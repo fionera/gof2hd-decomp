@@ -12,11 +12,21 @@
 #include "game/weapons/Radar.h"
 #include "game/ship/Player.h"
 
+TractorBeam::TractorBeam(AEGeometry * /*unused*/, int kind) {
+    this->direction.x = 0.0f;
+    this->direction.y = 0.0f;
+    this->direction.z = 0.0f;
+    this->grabbedCrate = nullptr;
+    this->active = 0;
+    this->soundPlaying = 0;
 
-void TractorBeam::render() {
-    if (!this->active)
-        return;
-    this->beamGeometry->render();
+    this->beamGeometry = new AEGeometry((uint16_t) (kind + 0x3798), Globals::Canvas, false);
+    this->storedHitpoints = 0;
+}
+
+TractorBeam::~TractorBeam() {
+    delete this->beamGeometry;
+    this->beamGeometry = nullptr;
 }
 
 void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
@@ -87,19 +97,8 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     }
 }
 
-TractorBeam::TractorBeam(AEGeometry * /*unused*/, int kind) {
-    this->direction.x = 0.0f;
-    this->direction.y = 0.0f;
-    this->direction.z = 0.0f;
-    this->grabbedCrate = nullptr;
-    this->active = 0;
-    this->soundPlaying = 0;
-
-    this->beamGeometry = new AEGeometry((uint16_t) (kind + 0x3798), Globals::Canvas, false);
-    this->storedHitpoints = 0;
-}
-
-TractorBeam::~TractorBeam() {
-    delete this->beamGeometry;
-    this->beamGeometry = nullptr;
+void TractorBeam::render() {
+    if (!this->active)
+        return;
+    this->beamGeometry->render();
 }

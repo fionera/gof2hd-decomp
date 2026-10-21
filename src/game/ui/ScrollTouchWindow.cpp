@@ -5,22 +5,33 @@
 #include "game/core/String.h"
 #include "engine/render/PaintCanvas.h"
 
-void ScrollTouchWindow::OnTouchEnd(int x, int y) {
-    this->scrollBox->OnTouchEnd(x, y);
+ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame) {
+    this->x = x;
+    this->y = y;
+    this->width = w;
+    this->height = h;
+
+    this->scrollBox = new ScrollTouchBox(
+        Globals::layout->field_0x4c + x,
+        Globals::layout->field_0x4c + y + (hasFrame ? Globals::layout->windowTopInset : 0),
+        w - Globals::layout->field_0x4c * 2,
+        h - Globals::layout->field_0x4c * 2 - (hasFrame ? Globals::layout->windowTopInset : 0));
     this->touchActive = 0;
+    this->hasFrame = hasFrame;
 }
 
-void ScrollTouchWindow::OnTouchMove(int x, int y) {
-    this->scrollBox->OnTouchMove(x, y);
-    this->touchActive = 1;
-}
+ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h) {
+    this->x = x;
+    this->y = y;
+    this->width = w;
+    this->height = h;
 
-void ScrollTouchWindow::setTextCentered(bool centered) {
-    this->scrollBox->setTextCentered(centered);
-}
-
-void ScrollTouchWindow::setYPosition(int y) {
-    this->scrollBox->setYPosition(y);
+    this->scrollBox = new ScrollTouchBox(Globals::layout->field_0x4c + x,
+                                         Globals::layout->field_0x4c + y + Globals::layout->windowTopInset,
+                                         w - Globals::layout->field_0x4c * 2,
+                                         h - Globals::layout->windowTopInset - Globals::layout->field_0x4c * 2);
+    this->touchActive = 0;
+    this->hasFrame = 1;
 }
 
 ScrollTouchWindow::~ScrollTouchWindow() {
@@ -28,14 +39,19 @@ ScrollTouchWindow::~ScrollTouchWindow() {
     this->scrollBox = nullptr;
 }
 
-void ScrollTouchWindow::update(int dt) {
-    this->scrollBox->update(dt);
+void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text) {
+    this->scrollBox->setText(text);
+    this->title = title;
 }
 
-void ScrollTouchWindow::OnTouchBegin(int x, int y) {
-    this->scrollBox->OnTouchBegin(x, y);
+void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text, int color) {
+    this->scrollBox->setText(text, color);
+    this->title = title;
 }
 
+void ScrollTouchWindow::setYPosition(int y) {
+    this->scrollBox->setYPosition(y);
+}
 
 void ScrollTouchWindow::draw() {
     int color = Globals::Canvas->GetColor();
@@ -59,6 +75,10 @@ void ScrollTouchWindow::draw() {
     Globals::Canvas->SetColor((unsigned int) color);
 }
 
+void ScrollTouchWindow::setTextCentered(bool centered) {
+    this->scrollBox->setTextCentered(centered);
+}
+
 void ScrollTouchWindow::drawTextBG() {
     Layout *layout = Globals::layout;
     int x = this->x;
@@ -76,43 +96,20 @@ void ScrollTouchWindow::drawTextBG() {
     layout->drawBox(5, x, top, width - widthInset, this->height - heightInset, String(""));
 }
 
-void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text) {
-    this->scrollBox->setText(text);
-    this->title = title;
+void ScrollTouchWindow::update(int dt) {
+    this->scrollBox->update(dt);
 }
 
+void ScrollTouchWindow::OnTouchBegin(int x, int y) {
+    this->scrollBox->OnTouchBegin(x, y);
+}
 
-ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame) {
-    this->x = x;
-    this->y = y;
-    this->width = w;
-    this->height = h;
+void ScrollTouchWindow::OnTouchMove(int x, int y) {
+    this->scrollBox->OnTouchMove(x, y);
+    this->touchActive = 1;
+}
 
-    this->scrollBox = new ScrollTouchBox(
-        Globals::layout->field_0x4c + x,
-        Globals::layout->field_0x4c + y + (hasFrame ? Globals::layout->windowTopInset : 0),
-        w - Globals::layout->field_0x4c * 2,
-        h - Globals::layout->field_0x4c * 2 - (hasFrame ? Globals::layout->windowTopInset : 0));
+void ScrollTouchWindow::OnTouchEnd(int x, int y) {
+    this->scrollBox->OnTouchEnd(x, y);
     this->touchActive = 0;
-    this->hasFrame = hasFrame;
-}
-
-void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text, int color) {
-    this->scrollBox->setText(text, color);
-    this->title = title;
-}
-
-
-ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h) {
-    this->x = x;
-    this->y = y;
-    this->width = w;
-    this->height = h;
-
-    this->scrollBox = new ScrollTouchBox(Globals::layout->field_0x4c + x,
-                                         Globals::layout->field_0x4c + y + Globals::layout->windowTopInset,
-                                         w - Globals::layout->field_0x4c * 2,
-                                         h - Globals::layout->windowTopInset - Globals::layout->field_0x4c * 2);
-    this->touchActive = 0;
-    this->hasFrame = 1;
 }

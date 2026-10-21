@@ -39,11 +39,12 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
     this->scale = 0x1000;
 }
 
-PlayerWormHole::~PlayerWormHole() {
+void PlayerWormHole::reset(bool shrinking) {
+    this->timer = shrinking ? 59000 : 0;
+    this->scale = 0x1000;
 }
 
-bool PlayerWormHole::isShrinking() {
-    return this->timer > 60000;
+PlayerWormHole::~PlayerWormHole() {
 }
 
 int PlayerWormHole::open() {
@@ -52,30 +53,8 @@ int PlayerWormHole::open() {
     return (int) (intptr_t) this;
 }
 
-Vector PlayerWormHole::getPosition() {
-    float fy = (float) this->positionY;
-    float fx = (float) this->positionX;
-    float fz = (float) this->positionZ;
-    Vector result;
-    result.x = fx;
-    result.y = fy;
-    result.z = fz;
-    return result;
-}
-
-void PlayerWormHole::freeMissionLock() {
-    this->missionLock = 0;
-}
-
-void PlayerWormHole::render() {
-    if (!this->visibleFlag)
-        return;
-    this->geometry->render();
-}
-
-void PlayerWormHole::reset(bool shrinking) {
-    this->timer = shrinking ? 59000 : 0;
-    this->scale = 0x1000;
+bool PlayerWormHole::isShrinking() {
+    return this->timer > 60000;
 }
 
 void PlayerWormHole::setPosition(float x, float y, float z) {
@@ -86,6 +65,16 @@ void PlayerWormHole::setPosition(float x, float y, float z) {
     this->positionX = (int) x;
     this->positionZ = (int) z;
     this->geometry->setPosition(x, y, z);
+}
+
+void PlayerWormHole::render() {
+    if (!this->visibleFlag)
+        return;
+    this->geometry->render();
+}
+
+void PlayerWormHole::freeMissionLock() {
+    this->missionLock = 0;
 }
 
 void PlayerWormHole::update(int elapsed) {
@@ -193,4 +182,15 @@ void PlayerWormHole::update(int elapsed) {
 
     Vector up = {0.0f, 1.0f, 0.0f};
     this->geometry->setDirection(this->cameraPosition(), up);
+}
+
+Vector PlayerWormHole::getPosition() {
+    float fy = (float) this->positionY;
+    float fx = (float) this->positionX;
+    float fz = (float) this->positionZ;
+    Vector result;
+    result.x = fx;
+    result.y = fy;
+    result.z = fz;
+    return result;
 }

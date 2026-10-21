@@ -11,7 +11,6 @@
 #include "engine/math/AEMath.h"
 #include "engine/math/Transform.h"
 
-
 MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
     : ObjectGun(param, gun, mesh, 0, level) {
     this->field_0xc0 = 0;
@@ -48,8 +47,8 @@ MineGun::~MineGun() {
     this->geometry = nullptr;
 }
 
-int MineGun::isMineGun() {
-    return 1;
+void MineGun::setPlayer(PlayerEgo *player) {
+    this->player = player;
 }
 
 void MineGun::render() {
@@ -59,10 +58,6 @@ void MineGun::render() {
             (*this->explosions)[i]->render();
         }
     }
-}
-
-void MineGun::setPlayer(PlayerEgo *player) {
-    this->player = player;
 }
 
 void MineGun::update(int delta) {
@@ -127,4 +122,8 @@ void MineGun::update(int delta) {
             explosion->reset();
         }
     }
+}
+
+int MineGun::isMineGun() {
+    return 1;
 }
