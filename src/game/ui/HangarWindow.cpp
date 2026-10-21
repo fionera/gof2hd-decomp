@@ -302,7 +302,7 @@ void HangarWindow::render() {
                                                               ? 0xa35b5bffu
                                                               : 0x7aa35bffu;
                             ((PaintCanvas *) canvas)->SetColor(shipPriceColor);
-                            String price = Layout::formatCredits(((ListItem *) li)->ship->getPrice());
+                            String price = Globals::layout->formatCredits(((ListItem *) li)->ship->getPrice());
                             ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, price,
                                                                  contentBase + layout->buttonInsetX + this->hintOffsetX,
                                                                  0, (bool) 1);
@@ -407,7 +407,7 @@ void HangarWindow::render() {
                             ((PaintCanvas *) canvas)->SetColor(0x777777ffu);
                         }
                         if (this->upgradeMode == 0) {
-                            String price = Layout::formatCredits(((Item *) ((ListItem *) li)->item)->getSinglePrice());
+                            String price = Globals::layout->formatCredits(((Item *) ((ListItem *) li)->item)->getSinglePrice());
                             ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, price,
                                                                  contentBase + layout->buttonInsetX + this->hintOffsetX,
                                                                  0, (bool) 1);
@@ -453,7 +453,7 @@ void HangarWindow::render() {
     (*btns)[(0x2c) >> 2]->setVisible(true);
     (*btns)[(0x2c) >> 2]->setAlwaysPressed(g_hw_optionFlags[0x4e] == 0);
     {
-        String credits = Layout::formatCredits(Globals::status->getCredits());
+        String credits = Globals::layout->formatCredits(Globals::status->getCredits());
         (*btns)[(0x2c) >> 2]->setText(credits);
     }
     (*btns)[(0x2c) >> 2]->draw();
@@ -604,7 +604,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             if ((*self->buttons)[(0x5c) >> 2]->OnTouchEnd(touch, coord) != 0) {
                 self->bluePrint->getAutoCompletionPrice();
                 String line, priceStr, fmt, msg;
-                priceStr = Layout::formatCredits(0);
+                priceStr = Globals::layout->formatCredits(0);
                 Status_replaceHash(&msg, globals, &line, &priceStr);
                 self->dialog->set(*(String *) &msg, true);
                 self->autoCompletePending = 1;
@@ -679,7 +679,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             int price = self->bluePrint->getAutoCompletionPrice();
             if (Globals::status->getCredits() < price) {
                 String line, priceStr, fmt, msg, suffix, combined;
-                priceStr = Layout::formatCredits(Globals::status->getCredits());
+                priceStr = Globals::layout->formatCredits(Globals::status->getCredits());
                 Status_replaceHash(&msg, globals, &line, &priceStr);
                 Globals::gameText->getText(*g_hw_notEnoughTextId);
                 combined = suffix + suffix;
@@ -815,7 +815,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->buyMode = 0;
                 if (Globals::status->getCredits() < cost && self->localBluePrint == 0) {
                     String line, priceStr, fmt, msg;
-                    priceStr = Layout::formatCredits(Globals::status->getCredits());
+                    priceStr = Globals::layout->formatCredits(Globals::status->getCredits());
                     Status_replaceHash(&msg, globals, &line, &priceStr);
                     self->dialog->set(g_HangarWindow_emptyDialogText);
                     self->dialogActive = 1;
@@ -854,7 +854,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 if (Globals::status->getCredits() < price) {
                     String line, priceStr, fmt, msg, suffix, combined;
                     ((ListItem *) self->selectedItem)->ship->getPrice();
-                    priceStr = Layout::formatCredits(Globals::status->getCredits());
+                    priceStr = Globals::layout->formatCredits(Globals::status->getCredits());
                     Status_replaceHash(&msg, globals, &line, &priceStr);
                     Globals::gameText->getText(*g_hw_sellShipTextId);
                     combined = suffix + suffix;
@@ -1201,7 +1201,7 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
 
                 String copy2, priceStr, fmt2, result2;
                 ((String *) &copy2)->Set((msg).data);
-                priceStr = Layout::formatCredits(
+                priceStr = Globals::layout->formatCredits(
                     ((Item *) ((ListItem *) self->bluePrintItem)->item)->getBlueprintAmount());
                 Status_replaceHash(&result2, globals, &copy2, &priceStr, &fmt2);
             }
@@ -1549,7 +1549,7 @@ void HangarWindow::selectItem(ListItem *item) {
         int oldPrice = Globals::status->getShip()->getPrice();
         if (oldPrice + credits < price && self->upgradeMode == 0) {
             String line, priceStr, fmt, msg, suffix, combined;
-            priceStr = Layout::formatCredits(
+            priceStr = Globals::layout->formatCredits(
                 ((ListItem *) (item))->getPrice() - Globals::status->getCredits() - Globals::status->getShip()->
                 getPrice());
             ((String *) &line)->Set((priceStr).data);
@@ -1698,79 +1698,68 @@ float HangarWindow::getRelativeScrollHeight() {
 
 void HangarWindow::transaction(bool buy) {
     unsigned int tab = this->hangarList->getCurrentTab();
-    Item *cur = ((ListItem *) this->selectedItem)->item;
 
     if (tab < 2) {
-        if (((Item *) (cur))->isUnsaleable() != 0) {
-            this->dialog->set(*(String *) Globals::gameText->getText(*g_hw_unsaleableTextId));
-            this->buyMode = 0;
+        if (this->selectedItem->item->isUnsaleable()) {
+            this->dialog->set(*Globals::gameText->getText(323));
             this->dialogActive = 1;
+            this->buyMode = 0;
             return;
         }
 
-        unsigned int result = ((Item *) cur)->transaction(buy, this->currentLoad, this->upgradeMode);
-        unsigned int idx = ((Item *) (cur))->getIndex();
-        Globals *globals = (Globals *) *g_hw_globals;
+        int result = this->selectedItem->item->transaction(buy, this->currentLoad, this->upgradeMode);
+        unsigned int itemIndex = this->selectedItem->item->getIndex();
+        Array<bool> *seenItems = Globals::status->field_54;
+        if (itemIndex < seenItems->size()) {
+            (*seenItems)[this->selectedItem->item->getIndex()] = true;
+        }
 
-        unsigned int *avail = globals->field_0x54;
-        if (idx < avail[0])
-            *((uint8_t *) avail[1] + ((Item *) (cur))->getIndex()) = 1;
-
-        if (result >= 0x80000000 && buy) {
+        if (buy && result < 0) {
             this->currentLoad = this->currentLoad + 1;
             Globals::status->getShip()->changeLoad(1);
-            int li = ((ListItem *) (this->selectedItem))->getIndex();
-            if (li >= 0x84 && ((ListItem *) (this->selectedItem))->getIndex() < 0x9a) {
-                int base = globals->field_0xac;
-                *((uint8_t *) (*(int *) ((char *) (uintptr_t) base + (4))) +
-                  ((ListItem *) (this->selectedItem))->getIndex() - 0x84) = 1;
+            if (this->selectedItem->getIndex() >= 132 && this->selectedItem->getIndex() <= 153) {
+                (*Globals::status->field_ac)[this->selectedItem->getIndex() - 132] = true;
             }
-        } else if (result == 0 && buy) {
-            if (Globals::status->getCredits() < ((Item *) (cur))->getSinglePrice()) {
+        } else if (buy && result == 0) {
+            if (Globals::status->getCredits() < this->selectedItem->item->getSinglePrice()) {
                 if (this->upgradeMode != 0)
                     return;
-                String line, priceStr, fmt, msg, suffix, combined;
-                priceStr = Layout::formatCredits(((Item *) (cur))->getSinglePrice());
-                ((String *) &line)->Set((priceStr).data);
-                Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
-                Globals::gameText->getText(*g_hw_notEnoughTextId);
-                combined = suffix + suffix;
-                *((String *) &msg) += combined;
-                this->dialog->set(*(String *) &msg, true);
-                this->dialogActive = 1;
+                String msg = Globals::status->replaceHash(
+                        *Globals::gameText->getText(203),
+                        String(Globals::layout->formatCredits(this->selectedItem->item->getSinglePrice() -
+                                                              Globals::status->getCredits()), false),
+                        String("#C"));
+                msg += String("\n\n") + *Globals::gameText->getText(124);
+                this->dialog->set(msg, true);
                 this->notEnoughCredits = 1;
-                (*this->buttons)[(0x20) >> 2]->resetTouch();
-                (*this->buttons)[(0x24) >> 2]->resetTouch();
+                this->dialogActive = 1;
+                (*this->buttons)[8]->resetTouch();
+                (*this->buttons)[9]->resetTouch();
             }
-        } else if ((int) result > 0 && !buy) {
+        } else if (!buy && result > 0) {
             this->currentLoad = this->currentLoad - 1;
             Globals::status->getShip()->changeLoad(-1);
         }
 
         if (this->upgradeMode == 0)
-            Status_changeCredits(globals);
+            Globals::status->changeCredits(result);
     } else if (tab == 4) {
-        if (buy) {
-            int bpAmt = ((Item *) (cur))->getBlueprintAmount();
-            BluePrint *bp = this->bluePrint;
-            int remaining = ((BluePrint *) (bp))->getRemainingAmount(((Item *) (cur))->getIndex());
-            if (bpAmt < remaining) {
-                int r = ((Item *) (cur))->transactionBlueprint(false, 0);
-                if (r < 0) {
-                    this->currentLoad = this->currentLoad + 1;
-                } else if (r != 0) {
-                    this->bluePrintBuyCount = this->bluePrintBuyCount + 1;
-                    Globals::status->getShip()->changeLoad(-1);
-                }
+        if (buy && this->selectedItem->item->getBlueprintAmount() <
+                   this->bluePrint->getRemainingAmount(this->selectedItem->item->getIndex())) {
+            int r = this->selectedItem->item->transactionBlueprint(false, this->currentLoad);
+            if (r < 0) {
+                this->currentLoad = this->currentLoad + 1;
+            } else if (r != 0) {
+                this->bluePrintBuyCount = this->bluePrintBuyCount + 1;
+                Globals::status->getShip()->changeLoad(-1);
             }
         }
         Array<Item *> *cargo = Globals::status->getShip()->getCargo();
         if (cargo != 0) {
-            Array<Item *> *arr = cargo;
-            for (unsigned int i = 0; i < arr->size(); i++) {
-                if (((Item *) (arr->data()[i]))->getIndex() == ((Item *) (cur))->getIndex()) {
-                    ((Item *) (arr->data()[i]))->setAmount(((Item *) (arr->data()[i]))->getAmount());
-                    ((Item *) (arr->data()[i]))->setBlueprintAmount(((Item *) (cur))->getBlueprintAmount());
+            for (unsigned int i = 0; i < cargo->size(); i++) {
+                if ((*cargo)[i]->getIndex() == this->selectedItem->item->getIndex()) {
+                    (*cargo)[i]->setAmount(this->selectedItem->item->getAmount());
+                    (*cargo)[i]->setBlueprintAmount(this->selectedItem->item->getBlueprintAmount());
                 }
             }
         }
@@ -2070,7 +2059,7 @@ void HangarWindow::initialize() {
     {
         String credits;
         TouchButton *e11 = (TouchButton *) ::operator new(200);
-        credits = Layout::formatCredits(Globals::status->getCredits());
+        credits = Globals::layout->formatCredits(Globals::status->getCredits());
         TouchButton_ctor_img(e11, &credits, 0xb, *g_hw_screenWidth, *g_hw_screenHeight,
                              layout->getFooterTransitionWidth(), 0x22, 4);
         (*self->buttons)[(0x2c) >> 2] = (TouchButton *) (e11);

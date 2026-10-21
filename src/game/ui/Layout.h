@@ -333,11 +333,11 @@ public:
 
     void enableFillScreen(bool v);
 
-    static String formatNumber(int n);
+    String formatNumber(int n);
 
     String tagString(String in);
 
-    static String formatCredits(int n);
+    String formatCredits(int n);
 
     int getFooterTransitionWidth();
 

@@ -454,7 +454,7 @@ void StatusWindow::draw() {
         lbl.ctor_char("", false);
         layout->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         (Globals::imageFactory)->drawChar(this->imageParts, layout->field_0x4c + x0, y, false);
-        String credTmp = Layout::formatCredits(Globals::status->getCredits());
+        String credTmp = Globals::layout->formatCredits(Globals::status->getCredits());
         creditStr = credTmp;
         int tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, creditStr);
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
