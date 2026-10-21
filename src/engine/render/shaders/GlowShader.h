@@ -19,11 +19,11 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int a_positionLoc;
-        int a_texCoordLoc;
-        int u_mvpLoc;
-        int u_colorLoc;
-        int u_textureLoc;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int uModelViewProjectionMatrixLoc;
+        int uModelMatrixLoc;
+        int sTextureLoc;
 
         GlowShader();
 

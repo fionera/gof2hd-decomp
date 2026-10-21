@@ -45,6 +45,7 @@ namespace AbyssEngine {
 
         static int ShaderIndex;
 
+
         BumpShaderCloak();
 
         void Init(Engine *engine) override;
@@ -53,6 +54,10 @@ namespace AbyssEngine {
 
         void UpdateMeshData(Mesh *mesh, Engine *engine) override;
     };
+
+#if __SIZEOF_POINTER__ == 4
+    static_assert(sizeof(BumpShaderCloak) == 0x98, "BumpShaderCloak size (Engine::ShaderInit operator new)");
+#endif
 }
 
 #endif

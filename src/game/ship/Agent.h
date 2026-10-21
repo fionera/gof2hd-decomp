@@ -15,8 +15,8 @@ public:
     int wingmanCount;
     AbyssEngine::String systemName;
 
-    uint8_t wasAskedForDifficulty;
-    uint8_t wasAskedForLocation;
+    bool wasAskedForDifficulty;
+    bool wasAskedForLocation;
 
     int field_0x28;
     int field_0x2c;
@@ -28,7 +28,7 @@ public:
     int station;
     int system;
     int race;
-    uint8_t male;
+    bool male;
     int eventCount;
     int category;
     int offer;
@@ -37,8 +37,8 @@ public:
     int sellBlueprintIndex;
     AbyssEngine::String missionString;
     AbyssEngine::String stationName;
-    uint8_t offerAccepted;
-    uint8_t rewardAtNextChat;
+    bool offerAccepted;
+    bool rewardAtNextChat;
     int *imageParts;
     Mission *mission;
     Array<AbyssEngine::String *> *wingmanNames;
@@ -72,15 +72,15 @@ public:
 
     void giveRewardAtNextChat(bool v);
 
-    uint8_t hasAcceptedOffer();
+    bool hasAcceptedOffer();
 
-    uint8_t hasReward();
+    bool hasReward();
 
     bool isGenericAgent();
 
     bool isKnown();
 
-    uint8_t isMale();
+    bool isMale();
 
     bool isStoryAgent();
 

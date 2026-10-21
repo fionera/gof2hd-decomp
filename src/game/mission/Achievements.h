@@ -16,7 +16,7 @@ public:
     int weaponCount;
     uint8_t hasTurretAndWeapon;
     int credits;
-    uint8_t gotAllMedals_;
+    bool gotAllMedals_;
     uint8_t gotAllGoldMedals_;
     uint8_t gotAllSupernovaMedals_;
     int medalCount;
@@ -41,7 +41,7 @@ public:
 
     uint8_t gotAllGoldMedals();
 
-    uint8_t gotAllMedals();
+    bool gotAllMedals();
 
     uint8_t gotAllSupernovaMedals();
 

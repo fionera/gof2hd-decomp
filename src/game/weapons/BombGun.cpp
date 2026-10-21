@@ -14,21 +14,7 @@
 #include "game/mission/Status.h"
 #include "game/mission/Explosion.h"
 
-static PaintCanvas **g_PaintCanvas = nullptr;
-static FModSound **g_FMod_singleton = nullptr;
-static Status *g_mining_status = nullptr;
-
-static inline PaintCanvas *activeCanvas() {
-    return *g_PaintCanvas;
-}
-
-static inline FModSound *sound() {
-    return *g_FMod_singleton;
-}
-
-static inline Status *gameStatus() {
-    return g_mining_status;
-}
+#include "game/core/Globals.h"
 
 BombGun::~BombGun() {
     delete this->explosion;
@@ -41,79 +27,55 @@ int BombGun::isBombGun() {
 
 BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool simpleMesh,
                  Level *level)
-    : RocketGun(rocketArg, gun, meshId, 0, 0, bombType, false, level) {
-    this->detonationPosition = Vector{0.0f, 0.0f, 0.0f};
-    this->cameraTargetOffset = Vector{0.0f, 0.0f, 0.0f};
+    : RocketGun(rocketArg, gun, meshId, 0, 0, bombType, false, level), cameraOffset(),
+      cameraTargetOffset() {
+    this->detonationPosition.x = 0.0f;
+    this->detonationPosition.y = 0.0f;
+    this->detonationPosition.z = 0.0f;
 
-    int explosionType;
-    if (bombType == ITEM_SORT_EMP_BOMB) {
-        explosionType = 7;
-    } else if (bombType == ITEM_SORT_SHOCK_BLAST) {
-        explosionType = 0xb;
-    } else if (gun->itemIndex == 0xe8) {
-        explosionType = 0xd;
-    } else {
-        explosionType = 0;
-    }
-
-    this->explosion = new Explosion(explosionType);
+    this->explosion = new Explosion(bombType == ITEM_SORT_EMP_BOMB       ? 7
+                                    : bombType == ITEM_SORT_SHOCK_BLAST ? 0xb
+                                    : gun->itemIndex == 0xe8            ? 0xd
+                                                                        : 0);
     this->explosion->setWeaponIndex(gun->itemIndex);
 
-    this->playerControlled = simpleMesh ? 1 : 0;
     this->detonationPending = 1;
+    this->useEgoOrientation = simpleMesh;
     this->bombType = bombType;
     this->geometryTransformId = 0xffffffff;
-
-    if (bombType == ITEM_SORT_SHOCK_BLAST) {
+    if (bombType == ITEM_SORT_SHOCK_BLAST)
         this->explosion->setScaling(50000.0f);
-    }
 
-    PaintCanvas *canvas = activeCanvas();
+    if (simpleMesh) {
+        Globals::Canvas->TransformCreate(this->secondaryTransform);
+        Globals::Canvas->TransformAddMesh(this->secondaryTransform, this->meshId, false);
+        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->secondaryTransform))->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
 
-    if (!simpleMesh) {
-        int item = gun->itemIndex;
-        bool customWeapon = item != 0xe8;
-        int sel = customWeapon ? gun->weaponType : item;
-        if (customWeapon && sel != ITEM_SORT_IONIZING_MISSILE) {
-            uint16_t geomMesh = 0x395d;
-            if (meshId == 0x395a) geomMesh = 0x395b;
-            if (meshId == 0x3958) geomMesh = 0x3959;
-
-            AEGeometry *geo = new AEGeometry(geomMesh, canvas, false);
-
-            this->geometryTransformId = geo->transform;
-            canvas->TransformAddChild(this->transform, geo->transform);
-
-            AbyssEngine::Transform *transform =
-                    (AbyssEngine::Transform *) canvas->TransformGetTransform(geo->transform);
-            AbyssEngine::AnimationMode mode =
-                    (meshId == 0x395c) ? (AbyssEngine::AnimationMode) 2 : (AbyssEngine::AnimationMode) 1;
-            transform->SetAnimationState(mode, nullptr);
-
-            delete geo;
-        }
-    } else {
-        canvas->TransformCreate(this->meshTransformId);
-        canvas->TransformAddMesh(this->meshTransformId, this->meshId, false);
-
-        AbyssEngine::Transform *transform =
-                (AbyssEngine::Transform *) canvas->TransformGetTransform(this->meshTransformId);
-        transform->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-
-        AEGeometry *geo = new AEGeometry((uint16_t) 0x37d6, canvas, false);
-        canvas->TransformAddChild(this->meshTransformId, geo->transform);
-        canvas->TransformRemoveMesh(this->transform, this->meshTransformId);
-        canvas->TransformAddChild(this->transform, this->meshTransformId);
-
+        AEGeometry *geo = new AEGeometry((uint16_t) 0x37d6, Globals::Canvas, false);
+        Globals::Canvas->TransformAddChild(this->secondaryTransform, geo->transform);
+        Globals::Canvas->TransformRemoveMesh(this->transform, this->meshId);
+        Globals::Canvas->TransformAddChild(this->transform, this->secondaryTransform);
+        delete geo;
+    } else if (gun->itemIndex != 0xe8 && gun->weaponType != ITEM_SORT_IONIZING_MISSILE) {
+        uint16_t geomMesh = 0x395d;
+        if (meshId == 0x395a)
+            geomMesh = 0x395b;
+        if (meshId == 0x3958)
+            geomMesh = 0x3959;
+        AEGeometry *geo = new AEGeometry(geomMesh, Globals::Canvas, false);
+        this->geometryTransformId = geo->transform;
+        Globals::Canvas->TransformAddChild(this->transform, geo->transform);
+        if (meshId == 0x395c)
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometryTransformId))->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
+        else
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
         delete geo;
     }
 
     this->cameraOffset = Vector{0.0f, 450.0f, -1400.0f};
     this->cameraTargetOffset = Vector{0.0f, 0.0f, 1700.0f};
-
     this->player = nullptr;
-
-    this->trailGeometry = new AEGeometry(canvas);
+    this->trailGeometry = new AEGeometry(Globals::Canvas);
 }
 
 void BombGun::setPlayer(PlayerEgo *player) {
@@ -131,131 +93,98 @@ void BombGun::update(int elapsed) {
     if (player == nullptr)
         return;
 
-    Gun *gun = this->gun;
-    if (gun->ignited == 0) {
-        if (this->bombType == ITEM_SORT_SHOCK_BLAST) {
-            this->detonationPosition = player->getPosition();
-        } else {
-            this->detonationPosition = *(const Vector *) gun->positions;
-        }
+    if (this->gun->ignited == 0) {
+        this->detonationPosition = (this->bombType == ITEM_SORT_SHOCK_BLAST)
+                                           ? player->getPosition()
+                                           : *reinterpret_cast<const Vector *>(this->gun->positions);
     }
 
-    gun = this->gun;
-    bool steerable = this->playerControlled != 0;
-    bool updateTransforms = false;
-
-    if (!steerable) {
-        updateTransforms = gun->active != 0;
-    } else if (gun->active != 0) {
-        if (gun->ignited != 0) {
-            updateTransforms = true;
-        } else {
-            PaintCanvas *canvas = activeCanvas();
-
+    Gun *gun = this->gun;
+    if (this->useEgoOrientation != 0) {
+        if (gun->active != 0) {
+            if (gun->ignited != 0) {
+                goto updateTransforms;
+            }
             if (gun->hitSmall != 0) {
                 gun->hitSmall = 0;
-                AbyssEngine::Transform *transform =
-                        (AbyssEngine::Transform *) canvas->TransformGetTransform(this->transform);
-                transform->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                transform = (AbyssEngine::Transform *) canvas->TransformGetTransform(this->transform);
-                transform->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-
-                reinterpret_cast<AbyssEngine::AEMath::Matrix &>(player->levelScript) = reinterpret_cast<AbyssEngine::AEMath::Matrix &>(((Player *) player->player)->transform[0]);
-                sound()->play(0x45c, nullptr, nullptr, 0.0f);
+                static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->transform))->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+                static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                this->player->rollMatrix =
+                        reinterpret_cast<AbyssEngine::AEMath::Matrix &>(this->player->player->transform[0]);
+                Globals::sound->play(0x45c, nullptr, nullptr, 0.0f);
             }
 
             AEGeometry *geometry = this->trailGeometry;
-            geometry->setMatrix(*(const Matrix *) canvas->TransformGetLocal(this->transform));
-            Vector offset = 350.0f * *(const Vector *) gun->velocities;
-            geometry->setPosition(*(const Vector *) gun->positions + offset);
-            geometry->updateReferenceMatrix();
+            geometry->setMatrix(*(const Matrix *) Globals::Canvas->TransformGetLocal(this->transform));
+            this->trailGeometry->setPosition(*reinterpret_cast<const Vector *>(this->gun->positions) +
+                                             350.0f * *reinterpret_cast<const Vector *>(this->gun->velocities));
+            this->trailGeometry->updateReferenceMatrix();
 
-            TargetFollowCamera *camera =
-                    (TargetFollowCamera *) (intptr_t) player->getTargetFollowCamera();
-            camera->setTarget(geometry);
-            camera->setCamOffset(this->cameraOffset);
-            camera->setTargetOffset(this->cameraTargetOffset);
-            camera->useTargetsUpVector(false);
-            player->setRocketControl(gun, geometry);
+            this->player->getTargetFollowCamera()->setTarget(this->trailGeometry);
+            this->player->getTargetFollowCamera()->setCamOffset(this->cameraOffset);
+            this->player->getTargetFollowCamera()->setTargetOffset(this->cameraTargetOffset);
+            this->player->getTargetFollowCamera()->useTargetsUpVector(false);
+            this->player->setRocketControl(this->gun, this->trailGeometry);
 
-            if (*(int *) gun->lifetimes < gun->initialLifetime - 500) {
-                AbyssEngine::Transform *transform =
-                        (AbyssEngine::Transform *) canvas->TransformGetTransform(this->transform);
-                transform->Update((int64_t) elapsed, false);
-            }
+            if (*this->gun->lifetimes < this->gun->initialLifetime - 500)
+                static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->transform))->Update((int64_t) elapsed, false);
 
-            float bank = player->getRocketBanking() * 0.2f;
-            this->bankingAngle = bank;
-            sound()->setParamValue(0, 0x45c, bank * 0.5f);
+            this->rollAngle = this->player->getRocketBanking() * 0.2f;
+            Globals::sound->setParamValue(0, 0x45c, this->rollAngle * 0.5f);
         }
-    }
-
-    if (updateTransforms) {
-        PaintCanvas *canvas = activeCanvas();
-        AbyssEngine::Transform *transform =
-                (AbyssEngine::Transform *) canvas->TransformGetTransform(this->transform);
-        transform->Update((int64_t) elapsed, false);
-        if (this->geometryTransformId != 0xffffffff) {
-            transform = (AbyssEngine::Transform *) canvas->TransformGetTransform(this->geometryTransformId);
-            transform->Update((int64_t) elapsed, false);
-        }
+    } else if (gun->active != 0) {
+    updateTransforms:
+        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->transform))->Update((int64_t) elapsed, false);
+        if (this->geometryTransformId != 0xffffffff)
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometryTransformId))->Update((int64_t) elapsed, false);
     }
 
     RocketGun::update(elapsed);
-    gun = this->gun;
-    if (gun->ignited == 0)
+    if (this->gun->ignited == 0)
         return;
 
     if (this->detonationPending != 0) {
-        if (this->playerControlled != 0) {
-            player = this->player;
-            player->levelScript->resetCamera(player->level);
-            player->setRocketControl(nullptr, this->trailGeometry);
-            sound()->stop(0x45c);
+        if (this->useEgoOrientation != 0) {
+            this->player->levelScript->resetCamera(this->player->level);
+            this->player->setRocketControl(nullptr, this->trailGeometry);
+            Globals::sound->stop(0x45c);
         }
 
         this->rumbleTimer = 0;
-        player = this->player;
-        Vector toPlayer = this->detonationPosition - player->getPosition();
-        float distance = AbyssEngine::AEMath::VectorLength(toPlayer);
-        float magnitude = (float) this->gun->getMagnitude();
-        float force = (((magnitude * 0.5f) - distance) / (magnitude * 0.5f)) * 0.5f;
+        float distance = AbyssEngine::AEMath::VectorLength(this->detonationPosition - this->player->getPosition());
+        float halfRange = (float) this->gun->getMagnitude() * 0.5f;
+        float force = ((halfRange - distance) / ((float) this->gun->getMagnitude() * 0.5f)) * 0.5f;
         if (force > 1.0f)
             force = 1.0f;
-        if (force < 0.0f)
+        else if (force < 0.0f)
             force = 0.0f;
         if (this->bombType == ITEM_SORT_SHOCK_BLAST)
             force *= 0.2f;
-        if (gameStatus()->hardCoreMode() != 0) {
-            ((Player *) player->player)->damage((int) (force * (float) this->gun->damage));
-        }
-        player->addNukeVolatileForce(force);
+        if (Globals::status->hardCoreMode())
+            this->player->player->damage((int) (force * (float) this->gun->damage), false, -1);
+        this->player->addNukeVolatileForce(force);
 
         float capped = (distance < 30000.0f) ? distance : 30000.0f;
         this->rumbleStrength = 1.0f - capped / 30000.0f;
-        ((TargetFollowCamera *) (intptr_t) player->getTargetFollowCamera())
-                ->setRumblePercentage(this->rumbleStrength, 0x32);
+        this->player->getTargetFollowCamera()->setRumblePercentage(this->rumbleStrength, 0x32);
 
-        Vector direction =
-                (this->bombType == ITEM_SORT_SHOCK_BLAST) ? player->GetDirVector() : Vector{0.0f, 0.0f, 0.0f};
-        this->explosion->start(this->detonationPosition, direction);
+        if (this->bombType == ITEM_SORT_SHOCK_BLAST)
+            this->explosion->start(this->detonationPosition, this->player->GetDirVector());
+        else
+            this->explosion->start(this->detonationPosition, Vector{0.0f, 0.0f, 0.0f});
         this->detonationPending = 0;
     }
 
-    this->explosion->update(elapsed, *static_cast<const Vector *>(nullptr));
+    this->explosion->update(elapsed, static_cast<TargetFollowCamera *>(nullptr));
     int timer = this->rumbleTimer + elapsed;
     if (timer > 2000)
         timer = 2000;
     this->rumbleTimer = timer;
+    this->player->getTargetFollowCamera()->setRumblePercentage(
+            this->rumbleStrength * ((float) this->rumbleTimer / -2000.0f + 1.0f), 0x32);
 
-    player = this->player;
-    float rumble = this->rumbleStrength * ((float) timer / -2000.0f + 1.0f);
-    ((TargetFollowCamera *) (intptr_t) player->getTargetFollowCamera())
-            ->setRumblePercentage(rumble, 0x32);
-
-    if (this->explosion->isPlaying() == 0) {
-        ((TargetFollowCamera *) (intptr_t) player->getTargetFollowCamera())
-                ->setRumblePercentage(0.0f, 0);
+    if (!this->explosion->isPlaying()) {
+        this->player->getTargetFollowCamera()->setRumblePercentage(0.0f, 0);
         this->rumbleTimer = 0;
         this->gun->ignited = 0;
         this->detonationPending = 1;

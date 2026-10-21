@@ -15,26 +15,21 @@ class Gun;
 class Level;
 class PlayerEgo;
 
+// Steerable/plain bomb. Reuses ObjectGun::secondaryTransform (steerable bomb mesh), rollAngle (rocket
+// banking) and useEgoOrientation (player-steered flag) from the base.
 class BombGun : public RocketGun {
 public:
-    uint32_t meshTransformId;
-    float bankingAngle;
-    // ASM (BombGun::render + ctor stores @240/@244/@256): explosion@240 sits right after bankingAngle,
-    // before playerControlled — not 4 fields later. Reordering shifts explosion 0x252->0x240 (-12).
-    Explosion *explosion;
-    uint8_t playerControlled;
-    uint16_t meshId;
-
-    AEGeometry *trailGeometry;
-    PlayerEgo *player;
-    uint32_t geometryTransformId;
-    Vector detonationPosition;
-    uint8_t detonationPending;
-    int rumbleTimer;
-    float rumbleStrength;
-    Vector cameraOffset;
-    Vector cameraTargetOffset;
-    int bombType;
+    AEGeometry *trailGeometry;      // 0xe8 camera target for the steered bomb
+    PlayerEgo *player;              // 0xec
+    Explosion *explosion;           // 0xf0
+    uint32_t geometryTransformId;   // 0xf4
+    Vector detonationPosition;      // 0xf8
+    uint8_t detonationPending;      // 0x104
+    int rumbleTimer;                // 0x108
+    float rumbleStrength;           // 0x10c
+    Vector cameraOffset;            // 0x110
+    Vector cameraTargetOffset;      // 0x11c
+    int bombType;                   // 0x128
 
     BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool simpleMesh, Level *level);
 

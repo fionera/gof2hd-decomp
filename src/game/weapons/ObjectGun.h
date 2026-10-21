@@ -23,7 +23,7 @@ public:
     Gun *gun;
     Level *level;
     uint32_t transform;
-    int secondaryTransform;
+    uint32_t secondaryTransform;
     AEGeometry *geometry;
     uint8_t hasGeometry;
     uint8_t wasFiring;

@@ -95,16 +95,16 @@ public:
     uint8_t turnedEnemyFlag;
     uint8_t pad_e1[3];
     int32_t empData;
-    uint8_t pad_e8[4];
+    int32_t empTimer;
     uint8_t alwaysEnemy;
     uint8_t alwaysFriend;
     uint8_t neverAttack;
     uint8_t pad_ef;
     FMOD::Event *engineEvent;
-    Vector *enginePositionVec;
+    int32_t engineSoundId;
     uint8_t enginePaused;
     uint8_t pad_f9[3];
-    float position[3];
+    Vector lastPosition; // engine-sound position of the previous frame (velocity source)
     uint8_t engineSoundPlaying;
     uint8_t pad_109[3];
     int32_t playShootSoundId;
@@ -120,9 +120,9 @@ public:
 
     void damage(int amount);
 
-    void damage(int amount, bool flag, int missionId);
+    void damage(int amount, bool ownFire, int weaponId);
 
-    void damageEmp(int amount, bool flag);
+    void damageEmp(int amount, bool ownFire);
 
     void damageShip(int damage);
 
@@ -240,7 +240,7 @@ public:
 
     unsigned char turnedEnemy();
 
-    Vector *update(int dt, bool doSound);
+    void update(int dt, bool doSound);
 
     void updateDamageRate();
 
@@ -300,7 +300,7 @@ public:
 
     void stopShootSound(int index, int channel);
 
-    void PlayEngineSound(int unused, Vector *vec);
+    void PlayEngineSound(int soundId, Vector *position);
 
     void PauseEngineSound();
 
@@ -308,7 +308,7 @@ public:
 
     void StopEngineSound();
 
-    static Vector *velocity;
+    static int velocity;
 };
 
 #if __SIZEOF_POINTER__ == 4

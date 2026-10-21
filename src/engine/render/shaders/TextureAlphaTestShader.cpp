@@ -4,20 +4,82 @@
 #include <GLES2/gl2.h>
 
 
+static const char *const kTextureAlphaTestShaderVertexSource =
+    "attribute highp vec4 a_position;   \n"
+    "attribute mediump vec2 a_texCoord;   \n"
+    "varying mediump vec2 v_texCoord;     \n"
+    "uniform highp mat4 u_WorldMatrix;  \n"
+    "uniform highp float u_fogMaxDist; \n"
+    "uniform highp float u_fogMinDist;\n"
+    "varying lowp float v_FogFactor;\n"
+    "uniform highp vec3 u_eyeposmodel;  \n"
+    "uniform bool u_EnableFog; \n"
+    "lowp float computeLinearFogFactor(highp float eyeDist) { \n"
+    "    highp float factor; \n"
+    "    // Compute linear fog equation \n"
+    "    factor = (u_fogMaxDist - eyeDist) / (u_fogMaxDist - u_fogMinDist);\n"
+    "    // Clamp in the [0,1] range \n"
+    "    factor = (1.0 - clamp(factor, 0.0, 1.0));\n"
+    "    return factor; \n"
+    "}    \n"
+    "void main()                  \n"
+    "{                            \n"
+    "   gl_Position = u_WorldMatrix * a_position;\t\t\n"
+    "   v_texCoord = a_texCoord;  \n"
+    "    if ( u_EnableFog ) { \n"
+    "       highp float eyeDist = distance(u_eyeposmodel, a_position.xyz); \n"
+    "       v_FogFactor = computeLinearFogFactor(eyeDist); \n"
+    "    } else { \n"
+    "       v_FogFactor = 1.0; \n"
+    "    } \n"
+    "}                            \n";
+
+static const char *const kTextureAlphaTestShaderFragmentSource =
+    "precision lowp float;                            \n"
+    "varying mediump vec2 v_texCoord;                            \n"
+    "uniform sampler2D s_texture;                        \n"
+    "uniform lowp vec4 glColor;\t\t\t\t\t\t\t\t \n"
+    "void main()                                         \n"
+    "{                                                   \n"
+    "\t\tvec4 textureColor = texture2D( s_texture, v_texCoord );\t\n"
+    "\t\tif ( textureColor.a < 0.5)\t\n"
+    "\t\t\tdiscard;\t\n"
+    "\t\tgl_FragColor = glColor * textureColor;\t\t\n"
+    "}   \t\t  \n";
+
+static const char *const kTextureAlphaTestShaderFogFragmentSource =
+    "precision lowp float;                            \n"
+    "varying mediump vec2 v_texCoord;                            \n"
+    "uniform sampler2D s_texture;                        \n"
+    "uniform lowp vec4 glColor;\t\t\t\t\t\t\t\t \n"
+    "uniform vec3 u_fogColor; \n"
+    "varying lowp float v_FogFactor;\n"
+    "void main()                                         \n"
+    "{                                                   \n"
+    "\t\tvec4 textureColor = texture2D( s_texture, v_texCoord );\t\n"
+    "\t\tif ( textureColor.a < 0.5)\t\n"
+    "\t\t\tdiscard;\t\n"
+    "       vec4 outColor = glColor * textureColor;\t\t\n"
+    "       gl_FragColor.rgb = mix(outColor.rgb, u_fogColor, v_FogFactor); \n"
+    "\t\tgl_FragColor.a = outColor.a;\t\t\n"
+    "}   \t\t  \n";
+
 namespace AbyssEngine {
     int TextureAlphaTestShader::ShaderIndex;
 
     TextureAlphaTestShader::TextureAlphaTestShader() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("TextureAlphaTestShader");
+        this->name = String("TextureAlphaTestShader", false);
     }
 
     void TextureAlphaTestShader::Init(Engine *) {
-        this->program = this->ES2LoadProgram("TextureAlphaTestShader.vsh", "TextureAlphaTestShader.fsh");
+        this->program = this->ES2LoadProgram(kTextureAlphaTestShaderVertexSource,
+                                             kTextureAlphaTestShaderFragmentSource);
         ConnectShaderComponents(this->program, 0);
 
-        this->alphaProgram = this->ES2LoadProgram("TextureAlphaTestShader.vsh", "TextureAlphaTestShaderAlpha.fsh");
-        ConnectShaderComponents(this->alphaProgram, 1);
+        this->fogProgram = this->ES2LoadProgram(kTextureAlphaTestShaderVertexSource,
+                                                  kTextureAlphaTestShaderFogFragmentSource);
+        ConnectShaderComponents(this->fogProgram, 1);
     }
 
     void TextureAlphaTestShader::SetInActive() {
@@ -30,35 +92,35 @@ namespace AbyssEngine {
     void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
         uint8_t programIndex = AbyssEngine::Engine::fogEnabled;
 
-        glUniformMatrix4fv(this->uMVPMatrixLoc[programIndex], 1, 0, engine->worldViewProjMatrix);
+        glUniformMatrix4fv(this->uWorldMatrixLoc[programIndex], 1, 0, engine->worldViewProjMatrix);
 
         if (this->dirty != 0) {
-            int location = this->uColorLoc[programIndex];
+            int location = this->uGlColorLoc[programIndex];
             if (location >= 0) {
                 glUniform4fv(location, 1, engine->glColor);
             }
 
-            location = this->uLightPosLoc[programIndex];
+            location = this->uFogColorLoc[programIndex];
             if (location >= 0) {
                 glUniform3fv(location, 1, engine->fogColor);
             }
 
-            location = this->uDiffuseLoc[programIndex];
+            location = this->uFogMinDistLoc[programIndex];
             if (location >= 0) {
                 glUniform1f(location, engine->fogMinDist);
             }
 
-            location = this->uAmbientLoc[programIndex];
+            location = this->uFogMaxDistLoc[programIndex];
             if (location >= 0) {
                 glUniform1f(location, engine->fogMaxDist);
             }
 
-            location = this->uSamplerLoc[programIndex];
+            location = this->uEnableFogLoc[programIndex];
             if (location >= 0) {
                 glUniform1i(location, AbyssEngine::Engine::fogEnabled);
             }
 
-            location = this->uFogColorLoc[programIndex];
+            location = this->uEyePosModelLoc[programIndex];
             if (location >= 0) {
                 glUniform3f(location, engine->lightColor.x, engine->lightColor.y,
                             engine->lightColor.z);
@@ -86,24 +148,24 @@ namespace AbyssEngine {
     }
 
     void TextureAlphaTestShader::ConnectShaderComponents(unsigned int program, int index) {
-        this->uTextureLoc[index] = glGetUniformLocation(program, "u_Texture");
-        this->aPositionLoc[index] = glGetAttribLocation(program, "a_Position");
-        this->aTexCoordLoc[index] = glGetAttribLocation(program, "a_TexCoord");
-        this->uMVPMatrixLoc[index] = glGetUniformLocation(program, "u_MVPMatrix");
-        this->uColorLoc[index] = glGetUniformLocation(program, "u_Color");
-        this->uLightPosLoc[index] = glGetUniformLocation(program, "u_LightPos");
-        this->uAmbientLoc[index] = glGetUniformLocation(program, "u_Ambient");
-        this->uDiffuseLoc[index] = glGetUniformLocation(program, "u_Diffuse");
-        this->uSamplerLoc[index] = glGetUniformLocation(program, "u_Sampler");
-        this->uFogColorLoc[index] = glGetUniformLocation(program, "u_FogColor");
+        this->sTextureLoc[index] = glGetUniformLocation(program, "s_texture");
+        this->aPositionLoc[index] = glGetAttribLocation(program, "a_position");
+        this->aTexCoordLoc[index] = glGetAttribLocation(program, "a_texCoord");
+        this->uWorldMatrixLoc[index] = glGetUniformLocation(program, "u_WorldMatrix");
+        this->uGlColorLoc[index] = glGetUniformLocation(program, "glColor");
+        this->uFogColorLoc[index] = glGetUniformLocation(program, "u_fogColor");
+        this->uFogMaxDistLoc[index] = glGetUniformLocation(program, "u_fogMaxDist");
+        this->uFogMinDistLoc[index] = glGetUniformLocation(program, "u_fogMinDist");
+        this->uEnableFogLoc[index] = glGetUniformLocation(program, "u_EnableFog");
+        this->uEyePosModelLoc[index] = glGetUniformLocation(program, "u_eyeposmodel");
 
         glUseProgram(program);
-        glUniform1i(this->uTextureLoc[index], 0);
+        glUniform1i(this->sTextureLoc[index], 0);
     }
 
     void TextureAlphaTestShader::UseShader(bool) {
         if (AbyssEngine::Engine::fogEnabled != 0) {
-            int program = this->alphaProgram;
+            int program = this->fogProgram;
             if (program != 0) {
                 glUseProgram(program);
                 return;

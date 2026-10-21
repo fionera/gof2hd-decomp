@@ -106,13 +106,13 @@ namespace AbyssEngine {
         float normalMatrix[9];
 
         LightColor lightDiffuse;
-        uint8_t _pad0x238[16];
+        LightColor lightDiffuse1;   // 0x238: second light (GL_LIGHT1)
 
         LightColor lightSpecular;
-        uint8_t _pad0x258[16];
+        LightColor lightSpecular1;  // 0x258
 
         LightColor lightAmbient;
-        uint8_t _pad0x278[16];
+        LightColor lightAmbient1;   // 0x278
 
         float sceneAmbient[4];
 
@@ -168,7 +168,7 @@ namespace AbyssEngine {
 
         float projMatrix[16];
         uint8_t field_0x3c4;
-        uint32_t field_0x3c8;
+        float blurStrength;  // 0x3c8 (BlurShader pass strength)
 
         Vector field_0x3cc;
         Array<int> triangleCounts;
@@ -414,7 +414,7 @@ namespace AbyssEngine {
         static unsigned char EnableRefract;
         static float LodDistShader;
         static unsigned char DisableRefract;
-        static int AnisotropyValue;
+        static float AnisotropyValue;
         static unsigned char KeepRawMeshData;
         static unsigned char backupSaveGames;
         static int MultiSampleValue;

@@ -64,11 +64,11 @@ public:
     uint8_t shieldVisible;
     float shieldRadius;
 
-    AbyssEngine::AEMath::Matrix rollMatrix;  // 0x40..0x7c (ctor calls Matrix::Matrix() on this+0x40)
+    AbyssEngine::AEMath::Matrix field_0x40;  // 0x40..0x7c (ctor calls Matrix::Matrix() on this+0x40)
     float rocketPitch;                       // 0x7c (up/down in rocket control)
     float rocketYaw;                         // 0x80 (left/right in rocket control)
     uint8_t field_0x84;
-    int targetFollowCamera;
+    TargetFollowCamera *targetFollowCamera;
 
     Explosion *explosion;
     Explosion *explosion2;
@@ -88,12 +88,8 @@ public:
     int boostSoundId;
     int field_0xd8;
     AEGeometry *turretBaseGeo;
-    float rotX;
-    float rotY;
-    float rotZ;
-    float waypointX;
-    float waypointY;
-    float waypointZ;
+    AbyssEngine::AEMath::Vector moveDirection; // 0xe0
+    AbyssEngine::AEMath::Vector moveTarget;    // 0xec
     // Ghidra: movingStars@0xf8 sits between gunBaseGeo@0xf4 and route@0xfc. Our decomp lacked it; the
     // route..collide block was 4 low. Added here and the _pad_0x126 below shrinks by 4 to keep the
     // downstream asserts (field_0x145@0x145) pinned.
@@ -135,7 +131,7 @@ public:
     KIPlayer *autoTurretTarget;
     KIPlayer *autoTurretPrevTarget;
     int rocketControlGun;
-    int rocketBanking;
+    float rocketBanking;
     AEGeometry *dockCameraMid;
     bool turretActive;
     uint8_t field_0x1a1;
@@ -172,7 +168,7 @@ public:
     int cloakDischargeMax;
     float shieldRegenRate;
     int field_0x21c;
-    int hud;
+    Hud *hud;
     AbyssEngine::AEMath::Vector turretOffsetVec;
     int field_0x230;
     uint8_t collidesWithStationFlag;
@@ -196,14 +192,14 @@ public:
     float pitchAccumD;
     float yawAccumF;
     int field_0x280;
-    float field_0x284;
-    float field_0x288;
+    float maxBank;    // 0x284
+    float bankFactor; // 0x288
     int field_0x28c;
-    int field_0x290[5];
-    int field_0x2a4;
-    uint8_t field_0x2a8;
+    float bankHistory[5];   // 0x290
+    int bankHistoryIndex;   // 0x2a4
+    bool bankHistoryFilled; // 0x2a8
     uint8_t rollDirection;
-    AbyssEngine::AEMath::Matrix turretHudMatrix;
+    AbyssEngine::AEMath::Matrix rollMatrix; // 0x2ac (bank applied to the cockpit view)
     float rotateX;
     float rotateY;
     float rotateZ;
@@ -249,7 +245,7 @@ public:
     uint8_t field_0x378; // bool flag (initialized as clz(ptr)>>5 in ctor)
     uint8_t _pad_0x379[3];
     float strafeAccel;          // 0x37c
-    SpacePoint *strafeNavPoint; // 0x380 (also aliased as float via (float&))
+    float strafeFactor;         // 0x380
     int field_0x384;            // 0x384
     uint32_t cloakMaterial1;    // 0x388
     uint32_t cloakMaterial2;    // 0x38c
@@ -356,7 +352,7 @@ public:
 
     float getDriveChargeRate();
 
-    int getHUD();
+    Hud *getHUD();
 
     int getHackingGameDockIndex();
 
@@ -368,7 +364,7 @@ public:
 
     Vec3 getPosition();
 
-    int getRocketBanking();
+    float getRocketBanking();
 
     int getRoute();
 
@@ -376,7 +372,7 @@ public:
 
     int getSpeed();
 
-    int getTargetFollowCamera();
+    TargetFollowCamera *getTargetFollowCamera();
 
     Vec3 getTurretPosition();
 
@@ -617,8 +613,8 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x145) == 0x145, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x146) == 0x146, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x1a1) == 0x1a1, "");
 static_assert(__builtin_offsetof(PlayerEgo, miningUpVec) == 0x1c8, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x2a4) == 0x2a4, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x2a8) == 0x2a8, "");
+static_assert(__builtin_offsetof(PlayerEgo, bankHistoryIndex) == 0x2a4, "");
+static_assert(__builtin_offsetof(PlayerEgo, bankHistoryFilled) == 0x2a8, "");
 static_assert(__builtin_offsetof(PlayerEgo, collide) == 0x144, "");
 static_assert(__builtin_offsetof(PlayerEgo, dockScaling) == 0x1d8, "");
 static_assert(__builtin_offsetof(PlayerEgo, dockingToPlanet) == 0x1ee, "");
@@ -633,8 +629,8 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x309) == 0x309, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x32d) == 0x32d, "");
 static_assert(__builtin_offsetof(PlayerEgo, originalBlendMode) == 0x394, "");
 // Relocated matrices and the field immediately after the last drift field, to pin the tail.
-static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x40, "");
-static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x2ac, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x40) == 0x40, "");
+static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x2ac, "");
 static_assert(__builtin_offsetof(PlayerEgo, volatileGoods) == 0x398, "");
 static_assert(sizeof(PlayerEgo) == 0x3a0, "");
 // (sizeof==924 assert dropped: it was host-clang-calibrated and rounds differently under the NDK

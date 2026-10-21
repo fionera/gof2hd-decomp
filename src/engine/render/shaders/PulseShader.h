@@ -19,21 +19,21 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int a0Loc;
-        int a1Loc;
-        int a2Loc;
-        int a3Loc;
-        int a4Loc;
-        int u0Loc;
-        int u1Loc;
-        int u2Loc;
-        int u3Loc;
-        int u5Loc;
-        int u6Loc;
-        int u7Loc;
-        int u8Loc;
-        int u9Loc;
-        int u4Loc;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int aTangentLoc;
+        int aBitangentLoc;
+        int uModelViewProjectionMatrixLoc;
+        int uModelMatrixLoc;
+        int uLightdirmodelLoc;
+        int uEyeposmodelLoc;
+        int sTextureLoc;
+        int uGlColorLoc;
+        int uAmbientColorLoc;
+        int uDiffuseColorLoc;
+        int uSpecularColorLoc;
+        int uTimevalueLoc;
 
         PulseShader();
 

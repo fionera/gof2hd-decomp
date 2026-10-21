@@ -19,22 +19,22 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int aPosition;
-        int aNormal;
-        int aTexCoord;
-        int aTangent;
-        int aBinormal;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int aTangentLoc;
+        int aBitangentLoc;
         int field_0x34;
-        int uMvpMatrix;
-        int uNormalMatrix;
-        int uLightDir;
-        int uEyePos;
-        int uTexture0;
-        int uTexture1;
-        int uAmbient;
-        int uDiffuse;
-        int uSpecular;
-        int uEmissive;
+        int uModelViewProjectionMatrixLoc;
+        int uModelMatrixLoc;
+        int uLightdirmodelLoc;
+        int uEyeposmodelLoc;
+        int sTexture0Loc;
+        int sTexture1Loc;
+        int uGlColorLoc;
+        int uAmbientColorLoc;
+        int uDiffuseColorLoc;
+        int uSpecularColorLoc;
 
         BumpShaderV2();
 

@@ -16,17 +16,18 @@ class Level;
 
 class PlayerTurret : public KIPlayer {
 public:
-    bool turretEnabled;
-    bool isSentryGun;
+    int lastDelta; // 0x124
     // ASM ground truth: our PlayerTurret was 404 vs 360 (Ghidra). These five fields duplicated KIPlayer
     // base fields (cachedPosition@0x58=posX, hostWorldOffset@0x90, aimPoint@0x9c, reviveFlag@0xa8=
     // rotationSpeed, frameDelta@0xac=type), adding 0x2c=44 bytes and shifting everything below. They
     // become accessors aliasing the real KIPlayer fields; spawnInvulnTimer.. now land at their offsets.
-    Vector &cachedPosition() { return reinterpret_cast<Vector &>(this->posX); }
+    Vector &cachedPosition() { return reinterpret_cast<Vector &>(this->autoPilotState); }
     Vector &hostWorldOffset() { return reinterpret_cast<Vector &>(this->field_0x90); }
     Vector &aimPoint() { return reinterpret_cast<Vector &>(this->field_0x9c); }
     int &reviveFlag() { return reinterpret_cast<int &>(this->rotationSpeed); }
-    int &frameDelta() { return reinterpret_cast<int &>(this->type); }
+    // KIPlayer flag bytes reused by the turret: 0x25 = turret barrel enabled, 0x3f = sentry gun.
+    uint8_t &turretEnabled() { return this->field_0x25; }
+    char &isSentryGun() { return this->field_0x3f_b; }
 
     int spawnInvulnTimer;
     int explosionTimer;
@@ -40,7 +41,7 @@ public:
     Player *currentEnemy;
     Player *previousEnemy;
     KIPlayer *turretHost;
-    Vector hostOffset;
+    Vector hostOffset = {0.0f, 0.0f, 0.0f};
     int turretRange;
 
     PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float x, float y, float z);
@@ -81,7 +82,7 @@ public:
 };
 
 #if __SIZEOF_POINTER__ == 4
-static_assert(__builtin_offsetof(PlayerTurret, isSentryGun) == 0x125, "PlayerTurret::isSentryGun offset");
+static_assert(__builtin_offsetof(PlayerTurret, lastDelta) == 0x124, "PlayerTurret::lastDelta offset");
 static_assert(__builtin_offsetof(PlayerTurret, spawnInvulnTimer) == 0x128, "PlayerTurret::spawnInvulnTimer offset");
 static_assert(__builtin_offsetof(PlayerTurret, explosion) == 0x13c, "PlayerTurret::explosion offset");
 static_assert(__builtin_offsetof(PlayerTurret, turretHost) == 0x154, "PlayerTurret::turretHost offset");

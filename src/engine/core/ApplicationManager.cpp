@@ -6,6 +6,8 @@
 #include "engine/render/Engine.h"
 #include "game/core/CheatHandler.h"
 #include "engine/render/PaintCanvas.h"
+#include "engine/render/AELoadedTexture.h"
+#include "engine/render/ShaderBaseStruct.h"
 #include "engine/core/KeyCode.h"
 #include "engine/core/AbyssEngine.h"
 #include <cstddef>
@@ -217,10 +219,16 @@ void ApplicationManager::Suspend() {
     }
 }
 
+namespace AbyssEngine {
+    int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *), // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    void *user, unsigned int *outIds, float aniso, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    AELoadedTexture *outTex, bool flag);
+}
+
 void ApplicationManager::OnUpdate(long long now) {
     this->engine->PreUpdate();
 
-    if (this->orientationTrackingEnabled) {
+    if (Engine::CheckForOrientationChange) {
         this->CheckForOrientationChange();
     }
     if (this->soundResource != 0 && this->soundFxEnabled) {
@@ -228,72 +236,274 @@ void ApplicationManager::OnUpdate(long long now) {
     }
 
     switch (this->state) {
-        case 0: {
-            IApplicationModule *next = this->pendingModule;
-            IApplicationModule *module = next != 0 ? next : this->currentModule;
-            if (next != 0) {
-                this->pendingModule = 0;
-                this->currentModule = next;
-            }
-            if (module != 0) {
-                int loading = module->OnInitialize();
-                LoadingCallback_t *callback = this->loadingCallback;
-                if (callback != 0) {
-                    callback(this->paintCanvas, loading, this->loadingCallbackData);
+        case 0:
+            if (AbyssEngine::SwapCounter > 0) {
+                AbyssEngine::SwapCounter--;
+                this->engine->ClearBuffer(0);
+                this->engine->SwapBuffer();
+                return;
+            } else {
+                IApplicationModule *next = this->pendingModule;
+                if (next != 0) {
+                    this->currentModule = next;
+                    this->pendingModule = 0;
+                    if (this->loadingCallback != 0 && next->ShowLoadingScreen()) {
+                        this->loadingCallback(this->paintCanvas, -1, this->loadingCallbackData);
+                    }
                 }
-                if (loading == 0) {
-                    this->actionState = 0;
-                    this->state = 5;
-                    this->currentTimeMs = 0;
-                    this->frameTimeMs = now;
-                    this->previousFrameTimeMs = now - 1;
-                    this->keyState = 0;
-                } else {
-                    uint64_t previous = this->frameTimeMs;
-                    this->currentTimeMs += (uint64_t) now - previous;
-                    this->previousFrameTimeMs = previous;
-                    this->frameTimeMs = now;
+                if (this->currentModule != 0) {
+                    int loading = this->currentModule->OnInitialize();
+                    if (this->loadingCallback != 0 && this->currentModule->ShowLoadingScreen()) {
+                        this->loadingCallback(this->paintCanvas, loading, this->loadingCallbackData);
+                    }
+                    if (loading == 0) {
+                        this->actionState = 0;
+                        this->state = 5;
+                        this->currentTimeMs = 0;
+                        this->frameTimeMs = now;
+                        this->previousFrameTimeMs = now - 1;
+                        this->keyState = 0;
+                        loadMesh = 0;
+                        loadTexture = 0;
+                    } else {
+                        uint64_t previous = this->frameTimeMs;
+                        this->currentTimeMs += (uint64_t) now - previous;
+                        this->frameTimeMs = now;
+                        this->previousFrameTimeMs = previous;
+                    }
                 }
             }
             break;
-        }
-        case 1: {
-            IApplicationModule *module = this->currentModule;
-            if (module != 0) {
-                module->OnRelease();
+        case 1:
+            if (this->currentModule != 0) {
+                this->currentModule->OnRelease();
                 this->engine->ResetLightParam();
-                this->state = 0;
+                AbyssEngine::SwapCounter = Engine::SwapCounter;
                 this->currentModule = 0;
+                this->state = 0;
             }
             break;
-        }
         case 4:
-            this->actionState = 0;
-            this->state = this->savedState;
-            this->currentTimeMs += 1;
-            this->frameTimeMs = now;
-            this->previousFrameTimeMs = now - 1;
             this->keyState = 0;
+            this->previousFrameTimeMs = now - 1;
+            this->frameTimeMs = now;
+            this->currentTimeMs += 1;
+            this->state = this->savedState;
+            this->actionState = 0;
             break;
         case 5: {
-            IApplicationModule *module = this->currentModule;
-            if (module != 0) {
-                module->OnUpdate();
-                Engine *engine = this->engine;
-                engine->triangleCountA = 0;
-                engine->field_0x58 = 0;
-                this->paintCanvas->culledCount = 0;
-                module->OnRender3D();
-                ResumeCallback_t *resume = this->resumeCallback;
-                if (resume == 0 || !resume(this->paintCanvas, this->resumeCallbackData)) {
-                    module->OnRender2D();
+            if (performanceTest) {
+                performanceFrameCounter++;
+                performanceTime += this->frameTimeMs - this->previousFrameTimeMs;
+            }
+            if (this->currentModule == 0) {
+                break;
+            }
+            fpsTimer += (int) (this->frameTimeMs - this->previousFrameTimeMs);
+            fpsCounter++;
+            if (fpsTimer > 1000) {
+                currentFps = fpsCounter;
+                fpsCounter = 0;
+                fpsTimer -= 1000;
+            }
+            if (Engine::enableShader) {
+                if (this->engine->IsPostEffectActivated()) {
+                    PostEffectFlag = true;
+                    this->paintCanvas->StartDraw2FBO();
+                }
+                if (Engine::enableShader) {
+                    this->paintCanvas->CheckNUseRefractFBO(true);
                 }
             }
+            this->currentModule->OnUpdate();
+            Engine *engine = this->engine;
+            engine->triangleCountA = 0;
+            engine->triangleCountB = 0;
+            engine->field_0x58 = 0;
+            engine->drawCallCountB = 0;
+            engine->drawCallCountA = 0;
+            this->paintCanvas->culledCount = 0;
+            this->currentModule->OnRender3D();
+            if (PostEffectFlag && Engine::enableShader && this->engine->IsPostEffectActivated()) {
+                PostEffectFlag = false;
+                this->paintCanvas->StopDraw2FBO();
+            }
+            if (this->resumeCallback == 0 || !this->resumeCallback(this->paintCanvas, this->resumeCallbackData)) {
+                this->currentModule->OnRender2D();
+            }
+
+            if (this->engine->field_0x74) {
+                this->engine->statsBucketFlag = 0;
+                this->engine->field_0xfe = 0;
+                this->paintCanvas->SetColor(0, 255, 0, 255);
+                this->paintCanvas->DrawString(this->engine->field_0x78, String("fps: ") + String(currentFps), 5, 5,
+                                              false);
+                this->paintCanvas->DrawString(this->engine->field_0x78,
+                                              String("t3D: ") + String((int) this->engine->field_0x58), 5,
+                                              this->paintCanvas->GetTextHeight(this->engine->field_0x78) + 10, false);
+                this->paintCanvas->DrawString(this->engine->field_0x78,
+                                              String("t2D: ") + String((int) (this->engine->field_0x58 >> 32)), 5,
+                                              this->paintCanvas->GetTextHeight(this->engine->field_0x78) * 2 + 15,
+                                              false);
+                this->paintCanvas->DrawString(this->engine->field_0x78,
+                                              String("d3D: ") + String(this->engine->drawCallCountA), 5,
+                                              this->paintCanvas->GetTextHeight(this->engine->field_0x78) * 3 + 20,
+                                              false);
+                this->paintCanvas->DrawString(this->engine->field_0x78,
+                                              String("d2D: ") + String(this->engine->drawCallCountB), 5,
+                                              this->paintCanvas->GetTextHeight(this->engine->field_0x78) * 4 + 25,
+                                              false);
+                this->paintCanvas->DrawString(this->engine->field_0x78,
+                                              String("vfC: ") + String(this->paintCanvas->culledCount), 5,
+                                              this->paintCanvas->GetTextHeight(this->engine->field_0x78) * 5 + 30,
+                                              false);
+                this->paintCanvas->DrawString(this->engine->field_0x78,
+                                              String("T: ") + String(this->lastTouchX) + String("  ") +
+                                                      String(this->lastTouchY),
+                                              5, this->paintCanvas->GetTextHeight(this->engine->field_0x78) * 6 + 35,
+                                              false);
+                this->paintCanvas->DrawString(this->engine->field_0x78,
+                                              String("vbo3D: ") + String(this->engine->triangleCountA), 5,
+                                              this->paintCanvas->GetTextHeight(this->engine->field_0x78) * 7 + 35,
+                                              false);
+                this->paintCanvas->DrawString(this->engine->field_0x78,
+                                              String("vRam: ") + String(this->engine->textureByteCounter / 1048576) +
+                                                      String(" + ") + String(Engine::vboSize / 1024),
+                                              5, this->paintCanvas->GetTextHeight(this->engine->field_0x78) * 8 + 35,
+                                              false);
+                this->paintCanvas->DrawString(this->engine->field_0x78,
+                                              String("lodDist: ") + String(Engine::LodDistShader), 5,
+                                              this->paintCanvas->GetTextHeight(this->engine->field_0x78) * 9 + 35,
+                                              false);
+                this->paintCanvas->DrawString(
+                        this->engine->field_0x78, Engine::vendor,
+                        (this->paintCanvas->GetWidth() -
+                         this->paintCanvas->GetTextWidth(this->engine->field_0x78, Engine::vendor)) /
+                                2,
+                        5, false);
+                this->paintCanvas->DrawString(
+                        this->engine->field_0x78, Engine::renderer,
+                        (this->paintCanvas->GetWidth() -
+                         this->paintCanvas->GetTextWidth(this->engine->field_0x78, Engine::renderer)) /
+                                2,
+                        this->paintCanvas->GetTextHeight(this->engine->field_0x78) + 10, false);
+                if (Engine::enableShader) {
+                    this->paintCanvas->DrawString(
+                            this->engine->field_0x78, String("ES2"),
+                            this->paintCanvas->GetWidth() -
+                                    this->paintCanvas->GetTextWidth(this->engine->field_0x78, String("ES2 ")),
+                            5, false);
+                    int y = this->paintCanvas->GetTextHeight(this->engine->field_0x78) + 10;
+                    for (uint32_t i = 0; i < this->engine->triangleCounts.size(); ++i) {
+                        if (this->engine->triangleCounts.data()[i] != 0) {
+                            this->paintCanvas->DrawString(
+                                    this->engine->field_0x78,
+                                    String(this->engine->triangleCounts.data()[i]) + String(" ") +
+                                            this->engine->shaders.data()[i]->GetShaderName(),
+                                    this->paintCanvas->GetWidth() - 300, y, false);
+                            y += this->paintCanvas->GetTextHeight(this->engine->field_0x78) + 5;
+                        }
+                    }
+                }
+                this->engine->field_0xfe = 1;
+                this->engine->statsBucketFlag = 1;
+            }
+
+            if (performanceTestEnded) {
+                this->paintCanvas->SetColor(0, 255, 0, 255);
+                long long tris = triDrawn;
+                long long frames = performanceFrameCounter;
+                long long time = performanceTime;
+                int seconds = (int) (time / 1000);
+                String text = String("PerfTest ended: ") + String((int) (frames * 1000 / time)) + String(" / ") +
+                              String(seconds) + String(" / ") + String(tris / seconds);
+                this->paintCanvas->DrawString(this->engine->field_0x78, text,
+                                              this->paintCanvas->GetWidth() / 2 -
+                                                      this->paintCanvas->GetTextWidth(this->engine->field_0x78, text) / 2,
+                                              5, false);
+            }
+            if (performanceTest) {
+                triDrawn += (int) this->engine->field_0x58 + this->engine->triangleCountA;
+                triDrawn += (int) (this->engine->field_0x58 >> 32) + this->engine->triangleCountB;
+                this->paintCanvas->SetColor(0, 255, 0, 255);
+                String text = String("PerfTest (") + String(performanceModulSwitches) + String("/") +
+                              String(performanceOverallModulSwitches) + String(") : ") +
+                              String((int) (performanceTime / 1000)) + String("   ") + String(triDrawn);
+                this->paintCanvas->DrawString(this->engine->field_0x78, text, this->paintCanvas->GetWidth() / 2, 5,
+                                              false);
+                text = String(this->paintCanvas->GetWidth()) + String(" / ") + String(this->paintCanvas->GetHeight());
+                this->paintCanvas->DrawString(this->engine->field_0x78, text, this->paintCanvas->GetWidth() / 2,
+                                              this->paintCanvas->GetTextHeight(this->engine->field_0x78) + 10, false);
+            }
+            uint64_t previous = this->frameTimeMs;
+            this->previousFrameTimeMs = previous;
+            this->frameTimeMs = now;
+            this->currentTimeMs += (uint64_t) now - previous;
+            break;
+        }
+        case 6: {
+            if (this->currentTimeMs == 0 && this->paintCanvas->WarmUpTexture()) {
+                this->state = 5;
+                this->currentTimeMs = 0;
+                this->actionState = 0;
+                this->frameTimeMs = now;
+                this->previousFrameTimeMs = now - 1;
+                this->keyState = 0;
+            }
+            uint64_t previous = this->frameTimeMs;
+            this->frameTimeMs = now;
+            this->previousFrameTimeMs = previous;
+            long long elapsed = this->currentTimeMs + ((uint64_t) now - previous);
+            if (elapsed > 500) {
+                elapsed = 0;
+            }
+            this->currentTimeMs = elapsed;
+            break;
+        }
+        case 7: {
+            if ((uint32_t) loadTexture < this->paintCanvas->cubeTextures.size() ||
+                (uint32_t) loadMesh < this->paintCanvas->meshes.size()) {
+                if (loadTexture == 0 && this->loadingCallback != 0 && this->currentModule->ShowLoadingScreen()) {
+                    this->loadingCallback(this->paintCanvas, 0, this->loadingCallbackData);
+                }
+                if ((uint32_t) loadTexture < this->paintCanvas->cubeTextures.size()) {
+                    AELoadedTexture *texture = this->paintCanvas->cubeTextures.data()[loadTexture];
+                    if (texture != 0 && !texture->valid) {
+                        char *path = texture->name.GetAEChar();
+                        unsigned int id;
+                        TextureCreateFromFileIntern(this->engine, path, 0, 0, &id, texture->scale, texture, true);
+                        delete[] path;
+                    }
+                    loadTexture++;
+                }
+                for (int i = 0; i < 10; ++i) {
+                    if ((uint32_t) loadMesh < this->paintCanvas->meshes.size()) {
+                        this->paintCanvas->MeshConvertToVBO(loadMesh);
+                        loadMesh++;
+                    }
+                }
+            } else {
+                this->state = 5;
+                this->currentTimeMs = 0;
+                this->actionState = 0;
+                this->frameTimeMs = now;
+                this->previousFrameTimeMs = now - 1;
+                this->keyState = 0;
+            }
+            uint64_t previous = this->frameTimeMs;
+            this->previousFrameTimeMs = previous;
+            this->frameTimeMs = now;
+            long long elapsed = this->currentTimeMs + ((uint64_t) now - previous);
+            if (elapsed > 500) {
+                elapsed = 0;
+            }
+            this->currentTimeMs = elapsed;
             break;
         }
         default:
             break;
     }
+    this->engine->SwapBuffer();
 }
 
 void ApplicationManager::OnKeyPress(int key) {
@@ -775,9 +985,9 @@ void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigToke
 void ApplicationManager::EnablePerformanceTest(int count) {
     AbyssEngine::performanceOverallModulSwitches = count;
     AbyssEngine::performanceModulSwitches = 0;
-    AbyssEngine::triDrawn = 0;
-    AbyssEngine::performanceTime = 0;
     AbyssEngine::performanceFrameCounter = 0;
+    AbyssEngine::performanceTime = 0;
+    AbyssEngine::triDrawn = 0;
     AbyssEngine::performanceTest = 1;
     AbyssEngine::performanceTestEnded = 0;
 }

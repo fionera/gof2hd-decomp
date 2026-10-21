@@ -63,11 +63,8 @@ typedef Array<Vector> VecArray;
 
 static inline void Gun_VecArray_ctor(VecArray *a) { new(a) VecArray(); }
 
-void Gun_VecPtrArray_ctor(Array<int> * a);
 
-void Gun_VecArray_setLength(int n, VecArray *a);
 
-void Gun_VecPtrArray_setLength(int n, Array<int> *a);
 
 Gun::~Gun() noexcept(false) {
     delete[] this->lifetimes;
@@ -340,7 +337,7 @@ void Gun::render() {
     }
 }
 
-Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
+Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay, float speed, Vector dir, Vector vel) {
     Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->count));
     Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->velocitiesCount));
     Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->upVectorsCount));
@@ -351,16 +348,15 @@ Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector d
     this->field_0x90 = 0;
     this->field_0x94 = 0;
     this->field_0x98 = 0;
-    this->hitPositionsCap = 0;
     this->level = nullptr;
-    this->lifetimes = 0;
-    this->enemies = 0;
-    this->impact = 0;
-    this->geometries = 0;
-    this->randomFlags = 0;
+    this->lifetimes = nullptr;
+    this->enemies = nullptr;
+    this->impact = nullptr;
+    this->geometries = nullptr;
+    this->randomFlags = nullptr;
     this->slotIndex = kind;
-    this->damage = p2;
-    this->pitchRate = p7;
+    this->damage = damage;
+    this->pitchRate = speed;
     this->targetDir.z = 0;
     this->velocity.x = 0;
     this->velocity.y = 0;
@@ -379,44 +375,43 @@ Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector d
     this->field_0xa8 = 0;
 
     this->offset = dir;
-    vel *= p7;
+    vel *= 0.15339f;
     this->velocity = vel;
-    this->initialLifetime = p5;
-    this->fireDelay = p6;
-    this->timer = p6;
-    this->fireIndex = 0;
+    this->initialLifetime = lifetime;
+    this->fireDelay = fireDelay;
+    this->timer = fireDelay;
+    this->currentProjectile = 0;
     this->ignited = 0;
     this->delayActive = 0;
-    this->ammoCount = p4;
-    this->field_0x78 = p4 << 1;
+    this->ammoCount = ammo;
+    this->field_0x78 = ammo << 1;
     this->lifetimes = new int[count];
     this->hitFlags = new uint8_t[count];
-    Array<int> *arr = static_cast<Array<int> *>(::operator new(0xc));
-    Gun_VecPtrArray_ctor(arr);
-    this->wobbleOffsets = arr;
-    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->count));
-    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->velocitiesCount));
-    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->upVectorsCount));
-    Gun_VecArray_setLength(count, reinterpret_cast<VecArray *>(&this->hitPositionsCount));
-    Gun_VecPtrArray_setLength(count, this->wobbleOffsets);
-    Vector *positions = reinterpret_cast<Vector *>(this->positions);
-    for (int i = 0; i < (int) count; i = i + 1) {
-        positions[i].x = 0;
-        this->lifetimes[i] = 0;
+    this->wobbleOffsets = reinterpret_cast<Array<int> *>(new Array<Vector *>());
+    ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->count));
+    ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->velocitiesCount));
+    ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->upVectorsCount));
+    ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->hitPositionsCount));
+    ArraySetLength(count, *reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets));
+    for (int i = 0; i < count; ++i) {
+        reinterpret_cast<Vector *>(this->positions)[i].x = 50000.0f;
+        this->lifetimes[i] = -1000000;
         this->hitFlags[i] = 0;
-        this->wobbleOffsets->data_[i] = 0;
+        reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets)->data()[i] = nullptr;
     }
-    this->impact = 0;
+    this->impact = nullptr;
     this->field_0x54 = 0;
     this->active = 0;
-    this->enemies = 0;
+    this->hitSmall = 0;
+    this->enemies = nullptr;
     this->itemIndex = -1;
-    this->weaponType = static_cast<ItemSort>(-1);
+    this->weaponType = -1;
     this->useCustomRadius = 0;
     this->levelCollision = 1;
+    this->friendGun = false;
     this->errorMagnitudePercentage = 0;
     this->field_0x89 = 0;
-    this->owner = 0;
+    this->owner = nullptr;
     this->field_0xb0 = 0;
     this->empDamage = 0;
     reinterpret_cast<int &>(this->field_0xa4_b0) = 0;

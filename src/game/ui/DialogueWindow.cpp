@@ -65,14 +65,13 @@ int DialogueWindow::getMode() {
 int DialogueWindow::length() {
     Mission *mission = this->mission;
     if (mission != 0 && mission->isCampaignMission() != 0) {
-        const int *counts;
-        if (this->kind == 1) {
-            counts = g_dw_successCounts;
-        } else {
-            if (this->kind != 0) return 1;
-            counts = g_dw_briefingCounts;
+        if (this->kind == 0) {
+            return g_dw_briefingCounts[this->campaignMission] / 2;
         }
-        return counts[this->campaignMission] / 2;
+        if (this->kind == 1) {
+            return g_dw_successCounts[this->campaignMission] / 2;
+        }
+        return 1;
     }
     if (this->kind == 0 && this->mission != 0 &&
         this->mission->getTargetStation() == 0x6c) {
@@ -320,9 +319,7 @@ void DialogueWindow::update(int dt) {
 int DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->choiceActive != 0) {
         int result = this->choiceWindow->OnTouchEnd(x, y);
-        if (result == 1) {
-            this->choiceActive = 0;
-        } else if (result == 0) {
+        if (result == 0) {
             this->choiceActive = 0;
             if (Globals::status->getCurrentCampaignMission() == 0x0f) {
                 Globals::sound->play(0xa2, 0, 0, 0);
@@ -332,6 +329,8 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
             if (this->voiceSound != -1)
                 Globals::sound->stop(this->voiceSound);
             return 1;
+        } else if (result == 1) {
+            this->choiceActive = 0;
         }
         return 0;
     }
@@ -348,40 +347,25 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
         }
     }
     if (this->moreButton->OnTouchEnd(x, y) != 0) {
-        String *text = (Globals::gameText)->getText(0x18c);
-        this->choiceWindow->set(*text, true);
+        this->choiceWindow->set(*Globals::gameText->getText(0x18c), true);
         this->choiceActive = 1;
     }
     return 0;
 }
 
-static int g_dw_briefingPartCounts[0xa2];
-
-static int g_dw_successPartCounts[0xa2];
-
 static const char g_dw_defaultAgentName[] = "";
 
-
-
-
-
-static inline int half_round_to_zero(int v) {
-    return (v + ((unsigned) v >> 31)) >> 1;
-}
-
-int DialogueWindow::init() {
+void DialogueWindow::init() {
     this->briefingOffsets = new int[0xa2];
     this->successOffsets = new int[0xa2];
 
     int briefingSum = 0;
     int successSum = 0;
-    for (int i = 0; i != 0xa2; ++i) {
-        int successCount = g_dw_successPartCounts[i];
-        int briefingCount = g_dw_briefingPartCounts[i];
+    for (int i = 0; i < 0xa2; i++) {
         this->briefingOffsets[i] = briefingSum;
         this->successOffsets[i] = successSum;
-        successSum += successCount;
-        briefingSum += briefingCount;
+        briefingSum += g_dw_briefingCounts[i];
+        successSum += g_dw_successCounts[i];
     }
 
     this->agentName = String(g_dw_defaultAgentName, false);
@@ -393,48 +377,40 @@ int DialogueWindow::init() {
     this->faceParts = 0;
     this->voiceSound = -1;
     this->autoAdvanceTimer = 0;
-    this->mirrorFace = 0;
+    this->mirrorFace = false;
 
-    Layout *layout = Globals::layout;
-    int frameW = layout->field_0x54;
-    int frameH = layout->field_0x58;
-    this->frameWidth = frameW;
-    this->frameHeight = frameH;
-    this->frameX = half_round_to_zero(Globals::w) - half_round_to_zero(frameW);
-    this->frameY = half_round_to_zero(Globals::h) - half_round_to_zero(frameH);
+    this->frameWidth = Globals::layout->field_0x54;
+    this->frameHeight = Globals::layout->field_0x58;
+    this->frameX = Globals::w / 2 - this->frameWidth / 2;
+    this->frameY = Globals::h / 2 - this->frameHeight / 2;
 
-    int margin = layout->field_0x4c;
     this->scrollWindow = new ScrollTouchWindow(
-        this->frameX + margin * 2 + layout->field_0x2d4,
-        layout->windowTopInset + this->frameY,
-        frameW - margin * 2 - layout->field_0x2d4,
-        frameH - margin * 2 - layout->windowTopInset - layout->field_0x30_rowHeight,
+        this->frameX + Globals::layout->field_0x4c * 2 + Globals::layout->field_0x2d4,
+        Globals::layout->windowTopInset + this->frameY,
+        this->frameWidth - Globals::layout->field_0x4c * 2 - Globals::layout->field_0x2d4,
+        this->frameHeight - Globals::layout->field_0x4c * 2 - Globals::layout->windowTopInset -
+            Globals::layout->field_0x30_rowHeight,
         false);
 
     this->choiceWindow = new ChoiceWindow();
 
-    GameText *gameText = Globals::gameText;
-    layout = Globals::layout;
-    margin = layout->field_0x4c;
-    this->prevButton = new TouchButton(*gameText->getText(0xb3), 5,
-                                       this->frameX + margin, this->frameY - margin + this->frameHeight,
-                                       layout->field_0x50, 0x21, 4);
+    this->prevButton = new TouchButton(*Globals::gameText->getText(0xb3), 5,
+                                       this->frameX + Globals::layout->field_0x4c,
+                                       this->frameY - Globals::layout->field_0x4c + this->frameHeight,
+                                       Globals::layout->field_0x50, 0x21, 4);
 
-    layout = Globals::layout;
-    margin = layout->field_0x4c;
-    this->nextButton = new TouchButton(*gameText->getText(0xb4), 6,
-                                       this->frameX + this->frameWidth - margin,
-                                       this->frameY - margin + this->frameHeight,
-                                       layout->field_0x50, 0x22, 4);
+    this->nextButton = new TouchButton(*Globals::gameText->getText(0xb4), 6,
+                                       this->frameX + this->frameWidth - Globals::layout->field_0x4c,
+                                       this->frameY - Globals::layout->field_0x4c + this->frameHeight,
+                                       Globals::layout->field_0x50, 0x22, 4);
 
-    layout = Globals::layout;
-    margin = layout->field_0x4c;
-    this->moreButton = new TouchButton(*gameText->getText(0x18b), 0,
-                                       this->frameX + half_round_to_zero(this->frameWidth),
-                                       this->frameY + this->frameHeight - margin,
-                                       this->frameWidth - margin * 4 - layout->field_0x50 * 2, 0x24, 4);
+    this->moreButton = new TouchButton(*Globals::gameText->getText(0x18b), 0,
+                                       this->frameX + this->frameWidth / 2,
+                                       this->frameY + this->frameHeight - Globals::layout->field_0x4c,
+                                       this->frameWidth - Globals::layout->field_0x4c * 4 -
+                                           Globals::layout->field_0x50 * 2,
+                                       0x24, 4);
     this->choiceActive = 0;
-    return 0;
 }
 
 static const char g_dw_emptyString[] = "";
@@ -445,9 +421,7 @@ static const char g_dw_emptyString[] = "";
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     this->init();
 
-    String blank(g_dw_emptyString, false);
-    String copy(*text, false);
-    this->scrollWindow->setText(blank, copy);
+    this->scrollWindow->setText(String(g_dw_emptyString, false), String(*text, false));
 
     this->moreButton->setVisible(false);
     this->prevButton->setVisible(false);
@@ -456,17 +430,14 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     delete this->nextButton;
     this->nextButton = 0;
 
-    GameText *gameText = Globals::gameText;
-    Layout *layout = Globals::layout;
-    int margin = layout->field_0x4c;
-    int x = this->frameX + this->frameWidth / 2;
-    int y = this->frameY + this->frameHeight - margin;
-    int width = this->frameWidth - margin * 4 - layout->field_0x50 * 2;
-    this->nextButton = new TouchButton(*gameText->getText(0x20c), 0, x, y, width, 0x24, 4);
+    this->nextButton = new TouchButton(*Globals::gameText->getText(0x20c), 0, this->frameX + this->frameWidth / 2,
+                                       this->frameY + this->frameHeight - Globals::layout->field_0x4c,
+                                       this->frameWidth - Globals::layout->field_0x4c * 4 - Globals::layout->field_0x50 * 2,
+                                       0x24, 4);
 
     this->agentName = *(agentName);
-    this->voiceSound = -1;
     this->page = 0;
+    this->voiceSound = -1;
     this->pauseLength = 0;
 }
 
@@ -476,25 +447,36 @@ DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
     this->set(mission, kind, -1);
 }
 
-static int g_dw_germanBriefingTexts[64];
+// Generic German dialogue text ids, one table per dialogue kind: two variants per
+// male agent race (races 0..8), then two female variants. Races >= 10 are clamped
+// to row 10, which (as in the original) reads past the male rows.
+static const DialogueWindowGermanTextTable g_dw_germanBriefingTexts = {
+    {{379, 380}, {379, 380}, {380, 383}, {380, 383}, {379, 380}, {379, 380}, {379, 381}, {380, 382}, {379, 380}},
+    {379, 380},
+};
 
-static int g_dw_germanSuccessTexts[64];
+static const DialogueWindowGermanTextTable g_dw_germanSuccessTexts = {
+    {{387, 388}, {384, 385}, {384, 385}, {384, 385}, {385, 387}, {384, 385}, {384, 386}, {385, 386}, {384, 385}},
+    {384, 385},
+};
 
-static int g_dw_germanOtherTexts[64];
+static const DialogueWindowGermanTextTable g_dw_germanOtherTexts = {
+    {{373, 376}, {373, 374}, {374, 376}, {374, 376}, {373, 374}, {373, 374}, {373, 375}, {373, 375}, {373, 374}},
+    {373, 374},
+};
 
 int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent) {
-    int race = agent->getRace();
+    int race;
     int male;
-    if (race < 10) {
+    if (agent->getRace() < 10) {
         race = agent->getRace();
         male = agent->isMale();
         if (race == 3) {
             if (agent->getImageParts() == 0) {
                 race = 3;
             } else {
-                int *parts = agent->getImageParts();
                 race = 0;
-                if (*parts == 2) race = 3;
+                if (*agent->getImageParts() == 2) race = 3;
             }
         }
     } else {
@@ -503,22 +485,20 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     }
 
     int index;
-    DialogueWindowGermanTextTable *texts;
+    const DialogueWindowGermanTextTable *texts;
     if (kind == 2) {
         index = Globals::rnd->nextInt(2);
-        texts = (DialogueWindowGermanTextTable *) g_dw_germanSuccessTexts;
+        texts = &g_dw_germanSuccessTexts;
     } else if (kind != 0) {
         index = Globals::rnd->nextInt(2);
-        texts = (DialogueWindowGermanTextTable *) g_dw_germanOtherTexts;
+        texts = &g_dw_germanOtherTexts;
     } else {
         index = Globals::rnd->nextInt(2);
-        texts = (DialogueWindowGermanTextTable *) g_dw_germanBriefingTexts;
+        texts = &g_dw_germanBriefingTexts;
     }
-
-    int *picked = &(&texts->femaleVariantBase)[index];
-    if (male != 0) {
-        picked = &(&texts->maleRaceRow)[race * 2 + index];
-    }
+    const int *picked = &texts->female[index];
+    if (male != 0)
+        picked = &texts->male[race][index];
     return *picked;
 }
 
@@ -533,20 +513,15 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
 
 void DialogueWindow::draw() {
     Globals::Canvas->SetColor((unsigned int) -1);
-    Layout *layout = Globals::layout;
-    layout->drawMask();
-    {
-        String title(this->agentName, false);
-        layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, title);
-    }
+    Globals::layout->drawMask();
+    Globals::layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight,
+                             String(this->agentName, false));
 
     this->scrollWindow->draw();
 
-    layout = Globals::layout;
-    int margin = layout->field_0x4c;
-    (Globals::imageFactory)->drawChar(this->faceParts,
-                                       this->frameX + margin, this->frameY + margin + layout->windowTopInset,
-                                       this->mirrorFace);
+    Layout *layout = Globals::layout;
+    Globals::imageFactory->drawChar(this->faceParts, this->frameX + layout->field_0x4c,
+                                    layout->field_0x4c + this->frameY + layout->windowTopInset, this->mirrorFace);
 
     this->prevButton->draw();
     this->nextButton->draw();

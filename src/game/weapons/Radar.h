@@ -13,6 +13,7 @@ class Player;
 class Hud;
 class KIPlayer;
 class Level;
+class Sprite;
 
 class Radar {
 public:
@@ -46,11 +47,49 @@ public:
     uint8_t field_0x54;
     int field_0x58;
 
-    uint8_t pad_0x5c_to_0x70[0x70 - 0x5c];
+    unsigned int image_0x5c;
+    unsigned int image_0x60;
+    unsigned int image_0x64;
+    unsigned int image_0x68;
+    unsigned int image_0x6c;
+    // 0x70 / 0x8c are image handles in the ctor; PlayerEgo reads their low byte as flags.
     uint8_t hasReservation;
-    uint8_t pad_0x71_to_0x8c[0x8c - 0x71];
+    uint8_t pad_0x71[3];
+    unsigned int image_0x74;
+    unsigned int image_0x78;
+    unsigned int image_0x7c;
+    unsigned int image_0x80;
+    unsigned int image_0x84;
+    unsigned int image_0x88;
     uint8_t reservationDirty;
-    uint8_t pad_0x8d_to_0xfc[0xfc - 0x8d]; // Ghidra: gap+field_0xa0/a4+gap+raceSprite/blipSprite/qualitySprite
+    uint8_t pad_0x8d[3];
+    unsigned int image_0x90;
+    unsigned int image_0x94;
+    unsigned int image_0x98;
+    unsigned int image_0x9c;
+    unsigned int image_0xa0;
+    unsigned int image_0xa4;
+    unsigned int image_0xa8;
+    unsigned int image_0xac;
+    unsigned int image_0xb0;
+    unsigned int image_0xb4;
+    unsigned int image_0xb8;
+    unsigned int image_0xbc;
+    unsigned int image_0xc0;
+    unsigned int image_0xc4;
+    unsigned int image_0xc8;
+    unsigned int image_0xcc;
+    unsigned int image_0xd0;
+    unsigned int image_0xd4;
+    unsigned int image_0xd8;
+    unsigned int image_0xdc;
+    unsigned int image_0xe0;
+    unsigned int image_0xe4;
+    unsigned int image_0xe8;
+    unsigned int image_0xec;
+    Sprite *lockSprite;
+    Sprite *blipSprite;
+    Sprite *qualitySprite;
     int screenX;
     int screenY;
     int centerX;
@@ -100,18 +139,22 @@ public:
     uint8_t field_0x1a9;
     uint8_t field_0x1aa;
     uint8_t scannerAvailable;
-    int field_0x1ac;
-    int field_0x1b0;
+    uint8_t hasScanner19;
+    uint8_t hasTractor13;
+    uint8_t tractorAuto;
+    uint8_t tractorMode2;
+    uint8_t field_0x1b0;
+    uint8_t pad_0x1b1[3];
     int field_0x1b4;
     int field_0x1b8;
     int field_0x1bc;
     int radarImage;
-    int field_0x1c4;
+    unsigned int field_0x1c4; // radar background image
     int field_0x1c8;
     int field_0x1cc;
     AbyssEngine::AEMath::Matrix transform;
     int field_0x20c;
-    uint8_t drawMode;
+    int lockLabelX; // centred x of the lock label background
     int field_0x214;
     int field_0x218;
     int screenWidth;

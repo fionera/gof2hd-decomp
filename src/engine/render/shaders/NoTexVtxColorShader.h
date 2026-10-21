@@ -19,10 +19,10 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int aPosition;
-        int aColor;
-        int uMvpMatrix;
-        int uColor;
+        int aPositionLoc;
+        int aVertexColorLoc;
+        int uWorldMatrixLoc;
+        int uGlColorLoc;
 
         NoTexVtxColorShader();
 

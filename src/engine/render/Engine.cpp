@@ -14,7 +14,7 @@ bool AbyssEngine::Engine::clampTextures = false;
 bool AbyssEngine::Engine::vfc = false;
 float AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
 float AbyssEngine::Engine::lodBiasNormal = 0.0f;
-unsigned int AbyssEngine::Engine::countryCode = 0;
+unsigned int AbyssEngine::Engine::countryCode = 0xffffffff;
 bool AbyssEngine::Engine::EnablePostEffect = false;
 bool AbyssEngine::Engine::CheckForOrientationChange;
 bool AbyssEngine::Engine::fogEnabled = false;
@@ -78,24 +78,15 @@ namespace AbyssEngine {
     void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b);
 }
 
-
 namespace {
-
-    bool g_Engine_supportsFBO;
-
-
-    int g_Engine_shaderPostA;
-    int g_Engine_shaderPostB;
-    int g_Engine_shaderPostC;
 
 
     // Post-effect ids (0x1400000 base) and the black/white effect's switch-off bookkeeping.
     const uint32_t kPostEffectBase = 0x1400000;
     const uint32_t kPostEffectBlur = 0x1400001;
     const uint32_t kPostEffectBW = 0x1400002;
-    bool g_Engine_postEffectFlag;
-    int g_Engine_postEffectCounter;
-    int g_Engine_postEffectPending;
+    unsigned char g_Engine_postEffectFlag;
+    int g_Engine_postEffectCounter = 1;
 
     struct TextureEntry {
         uint32_t glTexture;
@@ -127,13 +118,6 @@ double *Engine::GetAccelValue() {
     this->accelValue[0] = x;
     this->accelValue[2] = this->accelRaw[2];
     return (double *) this->accelValue;
-}
-
-void Engine::ActivateRender2FracFBO() {
-    FBOContainer *fbo = this->refractFBO;
-    if (fbo != 0) {
-        return fbo->BeginCapture();
-    }
 }
 
 uint32_t Engine::Resume() {
@@ -227,13 +211,6 @@ void Engine::SetUVMatrix(const Matrix &matrix) {
     uv[15] = 1.0f;
 }
 
-void Engine::ActivateRender2TextureFBO() {
-    FBOContainer *fbo = this->postEffectFBO;
-    if (fbo != 0) {
-        return fbo->BeginCapture();
-    }
-}
-
 void Engine::LightSetMaterialColorAlpha(float alpha) {
     if (this->lightingEnabled == 0) {
         return;
@@ -282,13 +259,6 @@ void Engine::ResetUVMatrix() {
     return glMatrixMode(0x1700);
 }
 
-void Engine::ActivateTextureFBO() {
-    FBOContainer *fbo = this->postEffectFBO;
-    if (fbo != 0) {
-        return fbo->Activate();
-    }
-}
-
 void Engine::GlowEndGlow() {
     if (Engine::EnableGlow == 0) {
         return;
@@ -296,11 +266,6 @@ void Engine::GlowEndGlow() {
     this->glowActive = 0;
     glColorMask(1, 1, 1, 1);
     return glDepthFunc(0x201);
-}
-
-void Engine::ActivateViewBuffer() {
-    glBindFramebuffer(0x8d40, this->viewFramebuffer);
-    return glViewport(0, 0, this->viewportWidth, this->viewportHeight);
 }
 
 void Engine::GlowEnableGlow() {
@@ -322,14 +287,6 @@ void Engine::SetGravValue(double x, double y, double z) {
     this->gravRaw[2] = z;
 }
 
-void Engine::SwapBuffer() {
-    uint32_t index = 0;
-    while (index < this->triangleCounts.size()) {
-        this->triangleCounts[index] = 0;
-        index += 1;
-    }
-}
-
 void Engine::ReloadShaders() {
     uint32_t index = 0;
     while (index < this->shaders.size()) {
@@ -340,43 +297,6 @@ void Engine::ReloadShaders() {
         shader->Init(this);
         index += 1;
     }
-}
-
-void Engine::DeactivateRender2TextureFBO() {
-    FBOContainer *fbo = this->postEffectFBO;
-    if (fbo != 0) {
-        return fbo->EndCapture();
-    }
-}
-
-DeviceInfo Engine::GetDeviceInfo() {
-    DeviceInfo info;
-    info.isPad = NFC().isPad();
-    info.width = NFC().getWidth();
-    info.height = NFC().getHeight();
-    return info;
-}
-
-void Engine::CopyFBO() {
-    if (Engine::enableShader == 0) {
-        return;
-    }
-
-    if (this->IsPostEffectActivated()) {
-        this->DeactivateRender2TextureFBO();
-        this->DrawCloakFBO(this->postEffectFBO);
-        this->ActivateRender2TextureFBO();
-    } else {
-        this->DeactivateRender2FracFBO();
-        this->DrawCloakFBO(this->refractFBO);
-        this->ActivateViewBuffer();
-    }
-
-    glEnable(0xb71);
-    glDepthMask(1);
-    glDisable(0xbe2);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    return glClear(0x100);
 }
 
 bool Engine::HasVibration() {
@@ -452,24 +372,10 @@ void Engine::Initialize(InitializeCallback *callback) {
     }
 }
 
-void Engine::ActivateRefractFBO() {
-    FBOContainer *fbo = this->refractFBO;
-    if (fbo != 0) {
-        return fbo->Activate();
-    }
-}
-
 void Engine::LightSetParticleAmbient(float red, float green, float blue) {
     this->field_0x314.x = red;  // particle ambient @0x314
     this->field_0x314.y = green;
     this->field_0x314.z = blue;
-}
-
-void Engine::DeactivateRender2FracFBO() {
-    FBOContainer *fbo = this->refractFBO;
-    if (fbo != 0) {
-        return fbo->EndCapture();
-    }
 }
 
 void Engine::SetPerspMatrix(float *matrix) {
@@ -577,18 +483,20 @@ void Engine::RenderMesh(Mesh *mesh) {
             this->ShaderSetActive(CubeNormalMapping::ShaderIndex, mesh);
         } else if ((flags & 0x2) != 0) {
             this->ShaderSetActive(TextureAlphaTestShader::ShaderIndex, mesh);
-        } else if ((flags & 0x1) == 0) {
-            this->ShaderSetActive(NoTexShader::ShaderIndex, mesh);
-        } else if ((mesh->vertexFormat & 0xa) == 8) {
-            this->ShaderSetActive(NoTexVtxColorShader::ShaderIndex, mesh);
-        } else if (this->lightingEnabled) {
-            this->ShaderSetActive(TextureLightShader::ShaderIndex, mesh);
-        } else if ((mesh->vertexFormat & 8) != 0) {
-            this->ShaderSetActive(TextureVtxColorShader::ShaderIndex, mesh);
-        } else if ((flags & 0x800000) != 0) {
-            this->ShaderSetActive(ColorMixAdd::ShaderIndex, mesh);
+        } else if ((flags & 0x1) != 0) {
+            if ((mesh->vertexFormat & 0xa) == 8) {
+                this->ShaderSetActive(NoTexVtxColorShader::ShaderIndex, mesh);
+            } else if (this->lightingEnabled) {
+                this->ShaderSetActive(TextureLightShader::ShaderIndex, mesh);
+            } else if ((mesh->vertexFormat & 8) != 0) {
+                this->ShaderSetActive(TextureVtxColorShader::ShaderIndex, mesh);
+            } else if ((flags & 0x800000) != 0) {
+                this->ShaderSetActive(ColorMixAdd::ShaderIndex, mesh);
+            } else {
+                this->ShaderSetActive(TextureShader::ShaderIndex, mesh);
+            }
         } else {
-            this->ShaderSetActive(TextureShader::ShaderIndex, mesh);
+            this->ShaderSetActive(NoTexShader::ShaderIndex, mesh);
         }
 
         if (ShaderSet != 0) {
@@ -650,21 +558,16 @@ void Engine::RenderMesh(Mesh *mesh) {
     if ((mesh->vertexFormat & 0x10) == 0) {
         glDrawArrays(4, 0, mesh->vertexCount);
     } else {
-        unsigned int count;
         if (this->field_0xfe != 0) {
-            count = mesh->indexCount;
-            unsigned int triangles = count / 3;
             if (this->statsEnabled != 0) {
-                indexedTriangles[1] += triangles;
+                indexedTriangles[1] += mesh->indexCount / 3;
                 this->drawCallCountB += 1;
             } else {
-                indexedTriangles[0] += triangles;
+                indexedTriangles[0] += mesh->indexCount / 3;
                 this->drawCallCountA += 1;
             }
-        } else {
-            count = mesh->indexCount;
         }
-        glDrawElements(4, count, 0x1403, mesh->indices);
+        glDrawElements(4, mesh->indexCount, 0x1403, mesh->indices);
     }
     if ((mesh->vertexFormat & 2) != 0 && mesh->material != 0 &&
         ((Material *) mesh->material)->textures[1] != -1) {
@@ -747,9 +650,6 @@ Engine::~Engine() {
     this->ReleaseGL();
 }
 
-void Engine::ReleaseGL() {
-}
-
 void Engine::AfterGLInit() {
     this->ResetLightParam();
     AbyssEngine::MeshCreate(this, 4, 2, 0x13, &this->quadMesh);
@@ -808,9 +708,11 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
             glTexEnvf(0x8500, 0x8501, env);
         }
     }
-    glBindTexture(((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube
-                          ? 0x8513 : 0xde1,
-                  texture);
+    if (((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0) {
+        glBindTexture(0x8513, texture);
+    } else {
+        glBindTexture(0xde1, texture);
+    }
     *bound = texture;
 }
 
@@ -927,44 +829,51 @@ void Engine::ShaderSetActive(int shaderIndex, Mesh *mesh) {
 
 void Engine::DoPostEffect() {
     uint32_t flags = this->postEffectFlags;
-    FBOContainer *current = this->postEffectFBO;
-    FBOContainer *other = this->refractFBO;
+    FBOContainer *source = this->postEffectFBO;
+    FBOContainer *target = this->refractFBO;
     if (Engine::enableShader != 0) {
-        FBOContainer *slot = other;
+        // Each active pass renders source -> target; when another pass follows, the two FBOs swap.
         if ((flags & 2) != 0) {
-            ShaderBaseStruct *shader = this->shaders[g_Engine_shaderPostA];
-            if ((flags & ~2u) == 0) {
-                shader->RenderEffect(current, this);
-                flags = 0;
+            ShaderBaseStruct *shader = this->shaders[GlowPPShader::ShaderIndex];
+            flags &= ~2u;
+            if (flags != 0) {
+                shader->RenderEffect(source, target, this);
+                FBOContainer *swap = source;
+                source = target;
+                target = swap;
             } else {
-                shader->RenderEffect(current, other, this);
-                slot = other;
-                other = current;
+                shader->RenderEffect(source, this);
+                flags = 0;
             }
         }
         if ((this->postEffectFlags & 1) != 0) {
-            ShaderBaseStruct *shader = this->shaders[g_Engine_shaderPostB];
-            if ((flags & ~1u) == 0) {
-                shader->RenderEffect(slot, this);
-                flags = 0;
+            ShaderBaseStruct *shader = this->shaders[BloomShader::ShaderIndex];
+            flags &= ~1u;
+            if (flags != 0) {
+                shader->RenderEffect(source, target, this);
+                FBOContainer *swap = source;
+                source = target;
+                target = swap;
             } else {
-                shader->RenderEffect(slot, other, this);
-                slot = other;
+                shader->RenderEffect(source, this);
+                flags = 0;
             }
         }
         if ((this->postEffectFlags & 4) != 0) {
-            ShaderBaseStruct *shader = this->shaders[g_Engine_shaderPostC];
-            if ((flags & ~4u) == 0) {
-                shader->RenderEffect(slot, this);
+            ShaderBaseStruct *shader = this->shaders[BlurShader::ShaderIndex];
+            if ((flags & ~4u) != 0) {
+                shader->RenderEffect(source, target, this, this->blurStrength, this->field_0x3cc);
+                FBOContainer *swap = source;
+                source = target;
+                target = swap;
             } else {
-                shader->RenderEffect(slot, other, this);
+                shader->RenderEffect(source, this, this->blurStrength, this->field_0x3cc);
             }
         }
         if (g_Engine_postEffectFlag == 1) {
             this->SetPostEffect(kPostEffectBW, false);
         }
     }
-    return;
 }
 
 void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
@@ -1012,31 +921,18 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
 void Engine::SetPostEffect(uint32_t effect, bool enable) {
     if (this->postEffectFBO == 0 && enable) {
         this->postEffectFBO = new FBOContainer(this, String("posteffect"));
-        int width;
-        int height;
         if (this->appManager->paintCanvas->gameOrientation == 2) {
-            width = this->displayWidth;
-            height = this->displayHeight;
+            this->postEffectFBO->Create(this->displayWidth, this->displayHeight, true, false);
         } else {
-            width = this->displayHeight;
-            height = this->displayWidth;
+            this->postEffectFBO->Create(this->displayHeight, this->displayWidth, true, false);
         }
-        this->postEffectFBO->Create(width, height, true, false);
     }
 
-    if (effect == kPostEffectBW) {
+    if (effect == kPostEffectBase) {
         if (enable) {
-            if (g_Engine_postEffectCounter > 0) {
-                g_Engine_postEffectCounter -= 1;
-            } else {
-                this->postEffectFlags |= 4;
-            }
-        } else if (g_Engine_postEffectFlag == 1) {
-            this->postEffectFlags &= ~4u;
-            g_Engine_postEffectFlag = 0;
-            g_Engine_postEffectPending = 1;
+            this->postEffectFlags |= 1;
         } else {
-            g_Engine_postEffectFlag = g_Engine_postEffectCounter <= 0;
+            this->postEffectFlags &= ~1u;
         }
     } else if (effect == kPostEffectBlur) {
         Engine::EnableGlow = enable;
@@ -1045,11 +941,19 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
         } else {
             this->postEffectFlags &= ~2u;
         }
-    } else if (effect == kPostEffectBase) {
+    } else if (effect == kPostEffectBW) {
         if (enable) {
-            this->postEffectFlags |= 1;
+            if (g_Engine_postEffectCounter <= 0) {
+                this->postEffectFlags |= 4;
+            } else {
+                g_Engine_postEffectCounter -= 1;
+            }
+        } else if (g_Engine_postEffectFlag == 1) {
+            this->postEffectFlags &= ~4u;
+            g_Engine_postEffectFlag = 0;
+            g_Engine_postEffectCounter = 1;
         } else {
-            this->postEffectFlags &= ~1u;
+            g_Engine_postEffectFlag = g_Engine_postEffectCounter <= 0;
         }
     }
 }
@@ -1073,12 +977,6 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
         dst.z = src.b * blue;
     }
     return this->ShaderUpdate();
-}
-
-void Engine::initFileInterface() {
-    FileInterfaceAndroid *fileInterface = new(operator new(0x38)) FileInterfaceAndroid();
-    this->fileInterface = fileInterface;
-    return AEFile::SetInterface((FileInterface *) fileInterface);
 }
 
 void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
@@ -1111,61 +1009,6 @@ void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
                                           (AbyssEngine::ESMatrix *) this->projMatrix);
         }
     }
-}
-
-int Engine::InitGL(bool shaders, int width, int height) {
-    this->refractFBO = 0;
-    this->displayWidth = width;
-    this->displayHeight = height;
-    this->viewportWidth = width;
-    this->viewportHeight = height;
-
-    FileInterfaceAndroid *fileInterface = new(operator new(0x38)) FileInterfaceAndroid();
-    this->fileInterface = fileInterface;
-    AEFile::SetInterface((FileInterface *) fileInterface);
-
-    this->lastGlError = 0;
-    this->vibrationSupported = 0;
-    this->hasVibration = 0;
-    Engine::enableShader = shaders;
-    this->viewFramebuffer = 0;
-
-    this->ResetLightParam();
-    glViewport(0, 0, this->viewportHeight, this->viewportWidth);
-    if (Engine::enableShader != 0) {
-        this->ShaderInit();
-    } else {
-        glEnable(0x803a);
-        glDisable(0xb50);
-        glLineWidth(1.0f);
-    }
-
-    Vector value;
-    value.x = 0.0f;
-    value.y = 1.0f;
-    value.z = 0.0f;
-    this->field_0x468 = value;
-    this->lightDirty[0] = 0.0f;
-    this->field_0x474 = value;
-    this->lightDirty[1] = 0.0f;
-
-    glEnable(0xb71);
-    this->GlEnable(0xde1, true);
-    glDisable(0xbe2);
-    glCullFace(0x405);
-    glEnable(0xb44);
-    this->AfterGLInit();
-    this->appManager->paintCanvas->Initialize(false);
-    this->maxTextureSize = 0;
-    glGetIntegerv(0xd33, (GLint *) &this->maxTextureSize);
-
-    if (Engine::enableShader != 0 && g_Engine_supportsFBO != 0) {
-        FBOContainer *fbo = new FBOContainer(this, String("refract"));
-        this->refractFBO = fbo;
-        fbo->Create(this->displayWidth, this->displayHeight, false, true);
-    }
-
-    return 1;
 }
 
 void Engine::ClearBuffer(uint32_t color) {
@@ -1264,7 +1107,7 @@ Engine::Engine()
     this->viewFramebuffer = 0;
     this->postEffectFlags = 0;
     this->field_0x3c4 = 0;
-    this->field_0x3c8 = 0;
+    this->blurStrength = 0;
     this->field_0x3cc = Vector{0.5f, 0.3f, 0.0f};
     this->addData = 0;
     this->postEffectFBO = 0;
@@ -1372,50 +1215,45 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
 }
 
 uint32_t Engine::ShaderInit() {
-#define MAKE_SHADER(Type, size) do { \
-        auto *s = new(operator new(size)) AbyssEngine::Type(); \
-        this->ShaderRegister(s); \
-    } while(0)
-    MAKE_SHADER(TextureShader, 0x8c);
-    MAKE_SHADER(SimpleShader, 0x2c);
-    MAKE_SHADER(TextureVtxColorShader, 0x94);
-    MAKE_SHADER(NoTexShader, 0x2c);
-    MAKE_SHADER(NoTexVtxColorShader, 0x30);
-    MAKE_SHADER(TextureAlphaTestShader, 0x74);
-    MAKE_SHADER(CubeMapping, 0x5c);
-    MAKE_SHADER(CubeNormalMapping, 0x68);
-    MAKE_SHADER(BumpMapping, 0x44);
-    MAKE_SHADER(SandboxShader, 0x50);
-    MAKE_SHADER(GenericShader, 0x64);
-    MAKE_SHADER(GenericShader1, 0x58);
-    MAKE_SHADER(GenericShader2, 0x58);
-    MAKE_SHADER(TexOnlyShader, 0x30);
-    MAKE_SHADER(BumpShaderV2, 0x60);
-    MAKE_SHADER(BumpShaderV3, 0x84);
-    MAKE_SHADER(VertexColorShader, 0x5c);
-    MAKE_SHADER(VertexColorAlphaTextureShader, 0x5c);
-    MAKE_SHADER(PulseShader, 0x5c);
-    MAKE_SHADER(BumpShader, 0x84);
-    MAKE_SHADER(BumpShaderV4, 0x5c);
-    MAKE_SHADER(BloomShader, 0xa0);
-    MAKE_SHADER(BlurShader, 0x64);
-    MAKE_SHADER(PostBWShader, 0x34);
-    MAKE_SHADER(TextureLightShader, 0x70);
-    MAKE_SHADER(BumpRimCubeShader, 0x98);
-    MAKE_SHADER(BumpShaderCloak, 0x98);
-    MAKE_SHADER(SpecCubeMapping, 0x5c);
-    MAKE_SHADER(SpecCubeAlphaMapping, 0x5c);
-    MAKE_SHADER(EnergyShield, 0x60);
-    MAKE_SHADER(SimpleRefractionShader, 0x58);
-    MAKE_SHADER(GlowShader, 0x34);
-    MAKE_SHADER(GlowPPShader, 0xa8);
-    MAKE_SHADER(DrawFBOShader, 0x60);
-    MAKE_SHADER(ColorMixAdd, 0x40);
-    MAKE_SHADER(BumpShaderParticle, 0x6c);
-    MAKE_SHADER(DNSShader, 0x64);
-    MAKE_SHADER(BumpShaderRefract, 0x4c);
-    MAKE_SHADER(BumpRimCubeShader_new, 0x98);
-#undef MAKE_SHADER
+    this->ShaderRegister(new TextureShader());
+    this->ShaderRegister(new SimpleShader());
+    this->ShaderRegister(new TextureVtxColorShader());
+    this->ShaderRegister(new NoTexShader());
+    this->ShaderRegister(new NoTexVtxColorShader());
+    this->ShaderRegister(new TextureAlphaTestShader());
+    this->ShaderRegister(new CubeMapping());
+    this->ShaderRegister(new CubeNormalMapping());
+    this->ShaderRegister(new BumpMapping());
+    this->ShaderRegister(new SandboxShader());
+    this->ShaderRegister(new GenericShader());
+    this->ShaderRegister(new GenericShader1());
+    this->ShaderRegister(new GenericShader2());
+    this->ShaderRegister(new TexOnlyShader());
+    this->ShaderRegister(new BumpShaderV2());
+    this->ShaderRegister(new BumpShaderV3());
+    this->ShaderRegister(new VertexColorShader());
+    this->ShaderRegister(new VertexColorAlphaTextureShader());
+    this->ShaderRegister(new PulseShader());
+    this->ShaderRegister(new BumpShader());
+    this->ShaderRegister(new BumpShaderV4());
+    this->ShaderRegister(new BloomShader());
+    this->ShaderRegister(new BlurShader());
+    this->ShaderRegister(new PostBWShader());
+    this->ShaderRegister(new TextureLightShader());
+    this->ShaderRegister(new BumpRimCubeShader());
+    this->ShaderRegister(new BumpShaderCloak());
+    this->ShaderRegister(new SpecCubeMapping());
+    this->ShaderRegister(new SpecCubeAlphaMapping());
+    this->ShaderRegister(new EnergyShield());
+    this->ShaderRegister(new SimpleRefractionShader());
+    this->ShaderRegister(new GlowShader());
+    this->ShaderRegister(new GlowPPShader());
+    this->ShaderRegister(new DrawFBOShader());
+    this->ShaderRegister(new ColorMixAdd());
+    this->ShaderRegister(new BumpShaderParticle());
+    this->ShaderRegister(new DNSShader());
+    this->ShaderRegister(new BumpShaderRefract());
+    this->ShaderRegister(new BumpRimCubeShader_new());
     glGetError();
     return 1;
 }
@@ -1425,53 +1263,54 @@ void Engine::SetEyePosition(float x, float y, float z) {
 }
 
 void Engine::SetModelMatrix(const Matrix &matrix) {
-    Engine * self = this;
-    const float *m = matrix;
     if (Engine::enableShader != 0) {
-        self->normalMatrix[0] = m[0];
-        self->normalMatrix[1] = m[4];
-        self->normalMatrix[2] = m[8];
-        self->normalMatrix[3] = m[1];
-        self->normalMatrix[4] = m[5];
-        self->normalMatrix[5] = m[9];
-        self->normalMatrix[6] = m[2];
-        self->normalMatrix[7] = m[6];
-        self->normalMatrix[8] = m[10];
-        float gl[16] = {
-            m[0], m[4], m[8], 0.0f,
-            m[1], m[5], m[9], 0.0f,
-            m[2], m[6], m[10], 0.0f,
-            m[3], m[7], m[11], 1.0f,
-        };
-        memcpy(self->modelMatrixGL, gl, 0x40);
-        Vector tmp;
-        if (self->lightDirty[0] == 0.0f) {
-            tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
-                matrix, self->field_0x468);
-            tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
-            self->lightDir = tmp;
+        const float *m = matrix.m;
+        this->normalMatrix[0] = m[0];
+        this->normalMatrix[1] = m[4];
+        this->normalMatrix[2] = m[8];
+        this->normalMatrix[3] = m[1];
+        this->normalMatrix[4] = m[5];
+        this->normalMatrix[5] = m[9];
+        this->normalMatrix[6] = m[2];
+        this->normalMatrix[7] = m[6];
+        this->normalMatrix[8] = m[10];
+        float *gl = this->modelMatrixGL;
+        gl[0] = m[0];
+        gl[1] = m[4];
+        gl[2] = m[8];
+        gl[3] = 0.0f;
+        gl[4] = m[1];
+        gl[5] = m[5];
+        gl[6] = m[9];
+        gl[7] = 0.0f;
+        gl[8] = m[2];
+        gl[9] = m[6];
+        gl[10] = m[10];
+        gl[11] = 0.0f;
+        gl[12] = m[3];
+        gl[13] = m[7];
+        gl[14] = m[11];
+        gl[15] = 1.0f;
+        if (this->lightDirty[0] == 0.0f) {
+            this->lightDir = AbyssEngine::AEMath::VectorNormalize(
+                    AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->field_0x468));
         } else {
-            self->lightDir = self->field_0x468;
+            this->lightDir = this->field_0x468;
         }
-        if (self->lightCount > 1) {
-            if (self->lightDirty[1] == 0.0f) {
-                tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
-                    matrix, self->field_0x474);
-                tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
-                self->field_0x33c = tmp;
+        if (this->lightCount > 1) {
+            if (this->lightDirty[1] == 0.0f) {
+                this->field_0x33c = AbyssEngine::AEMath::VectorNormalize(
+                        AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->field_0x474));
             } else {
-                self->field_0x33c = self->field_0x474;
+                this->field_0x33c = this->field_0x474;
             }
         }
-        self->ShaderUpdate();
-        tmp = AbyssEngine::AEMath::MatrixInverseTransformVector(
-            matrix, self->eyePosition);
-        self->lightColor = tmp;
-        self->lightColor.x /= m[12];
-        self->lightColor.y /= m[13];
-        self->lightColor.z /= m[14];
+        this->ShaderUpdate();
+        this->lightColor = AbyssEngine::AEMath::MatrixInverseTransformVector(matrix, this->eyePosition);
+        this->lightColor.x /= m[12];
+        this->lightColor.y /= m[13];
+        this->lightColor.z /= m[14];
     }
-    return;
 }
 
 void Engine::LightSetLight(unsigned int light) {
@@ -1524,8 +1363,11 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
                     glTexEnvf(0x8500, 0x8501, env);
                 }
             }
-            bool isCube = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0;
-            glBindTexture(isCube ? 0x8513 : 0xde1, texture);
+            if (((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0) {
+                glBindTexture(0x8513, texture);
+            } else {
+                glBindTexture(0xde1, texture);
+            }
             this->boundTextures[slot] = texture;
         }
         va_end(args);
@@ -1536,30 +1378,7 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
     }
 }
 
-void Engine::PreUpdate() {
-}
-
 void Engine::Release() {
-}
-
-void Engine::ActivateFrameBuffer(int slot) {
-}
-
-void Engine::SetFrameBufferScaleFactor(float factor, int slot) {
-}
-
-void Engine::GrabFrameBuffer() {
-}
-
-void *Engine::GetJPEGImageData(float quality) { // lint: void_ptr return type fixed by Engine.h declaration
-    // lint: void_ptr return type fixed by Engine.h declaration
-    return nullptr;
-}
-
-void Engine::SaveImageToPhotosAlbum() {
-}
-
-void Engine::SetScreenOrientation(AbyssEngine::LandscapeMode orientation) {
 }
 
 bool Engine::IsRefractActivated() {
@@ -1593,27 +1412,66 @@ void Engine::ResetLightParam() {
     this->materialDiffuse[0] = 0.8f;
     this->materialDiffuse[1] = 0.8f;
     this->materialDiffuse[2] = 0.8f;
-    this->materialDiffuse[3] = 0x3f800000;
+    this->materialDiffuse[3] = 1.0f;
     this->materialAmbient[0] = 0.2f;
     this->materialAmbient[1] = 0.2f;
     this->materialAmbient[2] = 0.2f;
-    this->materialAmbient[3] = 0x3f800000;
-    this->materialSpecular[0] = 0;
-    this->materialSpecular[2] = 0x3f800000ULL;
-    this->materialShininess = 0;
+    this->materialAmbient[3] = 1.0f;
+    this->materialSpecular[0] = 0.0f;
+    this->materialSpecular[1] = 0.0f;
+    this->materialSpecular[2] = 0.0f;
+    this->materialSpecular[3] = 1.0f;
+    this->materialShininess = 0.0f;
+
     this->lightAmbient.r = 0.0f;
     this->lightAmbient.g = 0.0f;
     this->lightAmbient.b = 0.0f;
     this->lightAmbient.a = 1.0f;
-
-    Vector up;
-    up.x = 0.0f;
-    up.y = 1.0f;
-    up.z = 0.0f;
-    this->field_0x468 = up;
-    this->field_0x474 = up;
-    this->lightDirty[0] = 0.0f;
-    this->lightDirty[1] = 0.0f;
+    this->lightDiffuse.r = 1.0f;
+    this->lightDiffuse.g = 1.0f;
+    this->lightDiffuse.b = 1.0f;
+    this->lightDiffuse.a = 1.0f;
+    this->lightSpecular.r = 1.0f;
+    this->lightSpecular.g = 1.0f;
+    this->lightSpecular.b = 1.0f;
+    this->lightSpecular.a = 1.0f;
+    this->lightAmbient1.r = 0.0f;
+    this->lightAmbient1.g = 0.0f;
+    this->lightAmbient1.b = 0.0f;
+    this->lightAmbient1.a = 1.0f;
+    this->lightDiffuse1.r = 0.0f;
+    this->lightDiffuse1.g = 0.0f;
+    this->lightDiffuse1.b = 0.0f;
+    this->lightDiffuse1.a = 1.0f;
+    this->lightSpecular1.r = 0.0f;
+    this->lightSpecular1.g = 0.0f;
+    this->lightSpecular1.b = 0.0f;
+    this->lightSpecular1.a = 1.0f;
+    this->sceneAmbient[0] = 0.0f;
+    this->sceneAmbient[1] = 0.0f;
+    this->sceneAmbient[2] = 0.0f;
+    this->sceneAmbient[3] = 1.0f;
+    this->lightAmbientShaded.x = 0.0f;
+    this->lightAmbientShaded.y = 0.0f;
+    this->lightAmbientShaded.z = 0.0f;
+    this->lightSpecularShaded.x = 0.0f;
+    this->lightSpecularShaded.y = 0.0f;
+    this->lightSpecularShaded.z = 0.0f;
+    this->lightDiffuseShaded.x = 0.0f;
+    this->lightDiffuseShaded.y = 0.0f;
+    this->lightDiffuseShaded.z = 0.0f;
+    this->particleAmbient.x = 0.0f;
+    this->particleAmbient.y = 0.0f;
+    this->particleAmbient.z = 0.0f;
+    this->field_0x2fc.x = 0.8f;
+    this->field_0x2fc.y = 0.8f;
+    this->field_0x2fc.z = 0.8f;
+    this->field_0x308.x = 0.0f;
+    this->field_0x308.y = 0.0f;
+    this->field_0x308.z = 0.0f;
+    this->field_0x314.x = 0.0f;
+    this->field_0x314.y = 0.0f;
+    this->field_0x314.z = 0.0f;
 
     if (Engine::enableShader == 0) {
         glLightfv(0x4000, 0x1200, &this->lightAmbient.r);
@@ -1624,7 +1482,23 @@ void Engine::ResetLightParam() {
         glMaterialfv(0x408, 0x1202, this->materialSpecular);
         glMaterialf(0x408, 0x1601, this->materialShininess);
     }
-    return;
+
+    {
+        Vector up;
+        up.x = 0.0f;
+        up.y = 1.0f;
+        up.z = 0.0f;
+        this->field_0x468 = up;
+    }
+    this->lightDirty[0] = 0.0f;
+    {
+        Vector up;
+        up.x = 0.0f;
+        up.y = 1.0f;
+        up.z = 0.0f;
+        this->field_0x474 = up;
+    }
+    this->lightDirty[1] = 0.0f;
 }
 
 void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsigned int light) {
@@ -1909,7 +1783,7 @@ unsigned char AbyssEngine::Engine::enableShader;
 unsigned char AbyssEngine::Engine::EnableRefract;
 float AbyssEngine::Engine::LodDistShader;
 unsigned char AbyssEngine::Engine::DisableRefract;
-int AbyssEngine::Engine::AnisotropyValue;
+float AbyssEngine::Engine::AnisotropyValue;
 unsigned char AbyssEngine::Engine::KeepRawMeshData;
 unsigned char AbyssEngine::Engine::backupSaveGames;
 int AbyssEngine::Engine::MultiSampleValue;

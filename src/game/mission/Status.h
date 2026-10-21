@@ -168,7 +168,8 @@ public:
     int32_t field_174;
     int32_t field_178;
     uint8_t field_0x17c;
-    uint8_t _pad_0x17d[7];
+    uint8_t _pad_0x17d[3];
+    int32_t field_0x180;
     int32_t field_0x184;
     int32_t field_0x188;
     int32_t field_0x18c;

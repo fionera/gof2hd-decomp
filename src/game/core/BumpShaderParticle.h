@@ -17,25 +17,25 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class BumpShaderParticle : public ShaderBaseStruct {
     public:
-        int attribA0;
-        int attribA1;
-        int attribA2;
-        int attribA3;
-        int attribA4;
-        int attribA5;
-        int uniformU0;
-        int uniformU1;
-        int uniformU2;
-        int uniformU3;
-        int uniformU4;
-        int uniformU5;
-        int uniformU6;
-        int uniformU7;
-        int uniformU8;
-        int uniformU9;
-        int uniformU10;
-        int uniformU11;
-        int uniformU12;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int aTangentLoc;
+        int aBitangentLoc;
+        int aVertexColorLoc;
+        int uModelViewProjectionMatrixLoc;
+        int uModelMatrixLoc;
+        int uLightdirmodelLoc;
+        int uEyeposmodelLoc;
+        int sTexture0Loc;
+        int sTexture1Loc;
+        int uGlColorLoc;
+        int uAmbientColorLoc;
+        int uDiffuseColorLoc;
+        int uSpecularColorLoc;
+        int uSpecularPowerLoc;
+        int uTexBiasDiffuseLoc;
+        int uTexBiasNormalLoc;
 
         static int ShaderIndex;
 

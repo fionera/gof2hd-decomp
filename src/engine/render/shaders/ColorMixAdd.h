@@ -19,14 +19,14 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int a0Loc;
-        int a1Loc;
-        int u1Loc;
-        int u2Loc;
-        int u0Loc;
-        int u4Loc;
-        int u3Loc;
-        int u5Loc;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int uWorldMatrixLoc;
+        int uGlColorLoc;
+        int sTextureLoc;
+        int uUvMatrixLoc;
+        int uDarkenValueLoc;
+        int uUVAnimationLoc;
 
         ColorMixAdd();
 

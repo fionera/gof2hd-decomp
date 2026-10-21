@@ -27,24 +27,16 @@ public:
     uint8_t m_bStartSequence; // ASM (resetStartSequenceOver): m_bStartSequenceOver is at 0x21, so this is 1 byte
     uint8_t m_bStartSequenceOver;
     int field_0x24;
-    int field_0x28;
-    int field_0x2c;
-    int field_0x30;
-    int field_0x34;
-    int field_0x38;
-    int field_0x3c;
-    int field_0x40;
-    int field_0x44;
-    int field_0x48;
+    Vector m_tempVec; // scratch vector (camera seats, wormhole placement)
+    Vector m_camVec;  // camera position derived from m_tempVec
+    Vector m_dirVec;  // scratch direction
     Matrix m_matrix;
     // Original reserves 0x40 for the matrix region (0x4c..0x8b); our AEMath::Matrix is 0x3c, so the
     // trailing 4 bytes are explicit padding -- keeps field_0x8c.. at their Ghidra-named offsets.
     uint8_t _pad_0x88[4];
     int field_0x8c;
-    int m_nScriptTimerA;
-    int m_nScriptCounterA;
-    int m_nScriptTimerB;
-    int m_nScriptCounterB;
+    long long m_nScriptTimerA;
+    long long m_nScriptTimerB;
     int field_0xa0;
     int field_0xa4;
     uint8_t m_bRenderParticles;

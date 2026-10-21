@@ -59,3 +59,8 @@ function or violate `AGENTS.md`.
 Revisit only if a legitimate reconstruction or TU-pressure change elsewhere
 naturally changes register allocation. Do not add artificial source
 contortions solely to pin the copy.
+
+## Resolved (wave2-w15)
+
+After the shader-TU string/literal pass the function is linked-exact with the
+plain spelling `glShaderSource(shader, 1, &source, 0)` (no `localSource` copy).

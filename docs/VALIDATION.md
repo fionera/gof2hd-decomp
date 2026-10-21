@@ -7,7 +7,7 @@ How the decompiled `libgof2hdaa.so` is checked against the original Android rele
 
 `cmake/toolchain.cmake` compiles every TU in `src/` with the original's toolchain — NDK r18b clang
 7.0.2, `-target armv7-none-linux-androideabi21 -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp
--fPIC -frtti -fstack-protector -Oz -stdlib=libc++`. The `link_so` target links those objects plus
+-std=c++11 -fPIC -frtti -fstack-protector-strong -Oz -g -stdlib=libc++`. The `link_so` target links those objects plus
 the vendored static libs the original statically linked (libcrypto subset, zlib 1.2.3, libzip 0.9.3 —
 `third_party/match_libs.cmake`; libcrypto is OpenSSL 1.1.0l built with real GCC 4.9 (NDK r13b,
 fetched once — the original's `.comment` names `GCC: (GNU) 4.9.x 20150123`) at -O3 ARM;
@@ -196,7 +196,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1291, linked_exact 3541, avg 89.11%**
+Current numbers (of **4523** compared): **byte_exact 1300, linked_exact 3791, avg 92.33%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

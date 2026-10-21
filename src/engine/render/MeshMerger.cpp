@@ -128,7 +128,7 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags) 
     this->transformedMeshes = (Mesh **) new unsigned char[req];
     memset(this->transformedMeshes, 0, bytes);
 
-    this->lods = (int8_t *) new unsigned char[rows | (rows >> 31)];
+    this->lods = (int8_t *) new unsigned char[rows];
     memset(this->lods, 0, rows);
 
     long long mneed = (long long) (unsigned) rows * 0x3c;
@@ -144,11 +144,11 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags) 
         *(Matrix *) (matrices + off) = ident;
 
     n = this->rows;
-    uint8_t *en = new uint8_t[n | (n >> 31)];
+    uint8_t *en = new uint8_t[n];
     this->enabledFlags = en;
     for (int i = 0; i < n; i++) en[i] = 1;
 
-    uint8_t *vis = new uint8_t[n | (n >> 31)];
+    uint8_t *vis = new uint8_t[n];
     this->visibleFlags = vis;
     for (int i = 0; i < n; i++) vis[i] = 1;
 

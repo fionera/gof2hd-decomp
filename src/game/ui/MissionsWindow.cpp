@@ -41,7 +41,20 @@ static int g_mwi_actionColor = 0;
 
 
 
-static int *g_mw_titleTable = nullptr;
+// Objective text id of each campaign mission (original .rodata @ 0x20285c).
+static const int CAMPAIGN_GOAL_TEXT[164] = {
+    749, 749, 749, 749, 749, 749, 749, 749, 749, 749, 652, 653, 654, 655, 656, 749,
+    657, 749, 658, 749, 659, 659, 749, 660, 661, 749, 749, 749, 662, 749, 749, 749,
+    663, 664, 665, 666, 667, 749, 668, 749, 669, 749, 749, 749, 670, 670, 671, 749,
+    672, 672, 672, 672, 672, 672, 672, 673, 674, 749, 675, 676, 749, 677, 678, 679,
+    680, 749, 681, 682, 683, 684, 684, 685, 686, 687, 688, 749, 749, 689, 690, 690,
+    691, 691, 749, 749, 692, 692, 693, 694, 694, 694, 694, 695, 696, 697, 698, 698,
+    699, 700, 701, 701, 702, 702, 703, 704, 705, 706, 707, 708, 709, 710, 710, 711,
+    712, 713, 714, 715, 716, 717, 718, 718, 719, 719, 720, 721, 721, 722, 722, 723,
+    724, 724, 725, 726, 726, 726, 727, 728, 729, 730, 731, 732, 733, 734, 735, 736,
+    736, 737, 738, 739, 740, 740, 740, 740, 741, 742, 743, 743, 744, 745, 746, 747,
+    748, 748, 748, 0,
+};
 
 void Status_replaceHash(void *out, void *key, void *a, void *b, void *c); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
@@ -106,7 +119,6 @@ uint8_t MissionsWindow::hangarNeedsUpdate() {
 }
 
 MissionsWindow::MissionsWindow() {
-    PaintCanvas *canvas = Globals::Canvas;
     this->m_pAcceptButton = nullptr;
     this->m_pRejectButton = nullptr;
     this->m_pMapButton = nullptr;
@@ -117,8 +129,7 @@ MissionsWindow::MissionsWindow() {
     this->m_pWantedWindow = nullptr;
     this->m_pTabButtons = nullptr;
     this->m_pAgentImageParts = nullptr;
-    int h = canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
-    this->m_textHalfHeight = h / 2 - 1;
+    this->m_textHalfHeight = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 - 1;
     this->init();
 }
 
@@ -608,52 +619,34 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
 
 void MissionsWindow::update(int dt) {
     if (this->m_mode == 1) {
-        this->m_pWantedWindow->update(0);
+        this->m_pWantedWindow->update(dt);
         return;
     }
-
-    if (this->m_starMapActive != 0) {
-        this->m_pStarMap->update(0);
+    if (this->m_starMapActive) {
+        this->m_pStarMap->update(dt);
         return;
     }
 
     this->m_pCampaignWindow->update(dt);
     this->m_pFreelanceWindow->update(dt);
 
-    Mission *cm = (Mission *) (intptr_t) Globals::status->getCampaignMission();
-    int type = cm->getType();
-    bool relevant = (type == 0xa7) || (cm->getType() == 0xae);
-
-    if (relevant) {
-        CampaignMissionFlags *camp = (CampaignMissionFlags *) Globals::options;
-        bool show = (Globals::status->gameWon() == 0) ||
-                    (camp->campaignVisibleFlagB != 0 || camp->campaignVisibleFlagA != 0);
-        if (show) {
-            String text("", false);
-            if (Globals::status->getCurrentCampaignMission() < 0xa4) {
-                String *titleTxt = Globals::gameText->getText(
-                    g_mw_titleTable[Globals::status->getCurrentCampaignMission()]);
-                text = *titleTxt;
-
-                Status *key = Globals::status;
-                String hdr(text);
-                int need = cm->getProductionGoodAmount();
-                int have = cm->getStatusValue();
-                String amount;
-                amount.Set((long long) (need - have));
-                String suffix("", false);
-                String merged;
-                Status_replaceHash(&merged, key, &hdr, &amount, &suffix);
-                text = merged;
-
-                String a("", false);
-                String b(text);
-                this->m_pCampaignWindow->setText(a, b);
-            }
+    // Production missions show the remaining amount of goods in the campaign text.
+    CampaignMissionFlags *flags = (CampaignMissionFlags *) Globals::options;
+    if ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 ||
+         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 174) &&
+        (!Globals::status->gameWon() || flags->campaignVisibleFlagA || flags->campaignVisibleFlagB)) {
+        String text("");
+        if (Globals::status->getCurrentCampaignMission() < 164) {
+            text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[Globals::status->getCurrentCampaignMission()]);
+            text = Globals::status->replaceHash(
+                    text,
+                    String(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getProductionGoodAmount() -
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue()),
+                    String("#Q"));
+            this->m_pCampaignWindow->setText(String(""), text);
         }
     }
 
-    Array<TouchButton *> *tabs = this->m_pTabButtons;
-    for (unsigned int i = 0; i < tabs->size(); i++)
-        (*tabs)[i]->setAlwaysPressed((int) i == this->m_mode);
+    for (unsigned int i = 0; i < this->m_pTabButtons->size(); i++)
+        (*this->m_pTabButtons)[i]->setAlwaysPressed((int) i == this->m_mode);
 }
