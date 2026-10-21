@@ -27,7 +27,7 @@ public:
     uint32_t mergedMeshId;
     uint32_t transformId;
     Mesh **transformedMeshes;
-    char *matrices;
+    Matrix *matrices;
     Mesh *mergedMesh;
     int8_t *lods;
     uint8_t *enabledFlags;

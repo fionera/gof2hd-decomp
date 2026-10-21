@@ -213,13 +213,10 @@ bool Ship::hasVolatileGoods() {
 
 int Ship::getCargoValue() {
     int total = 0;
-    Array<Item *> *c = this->cargo;
-    if (c != 0) {
-        for (unsigned int i = 0; i < c->size(); i = i + 1) {
-            Item *it = c->data()[i];
-            if (it != 0) {
-                total += it->getTotalPrice();
-            }
+    if (this->cargo != nullptr) {
+        for (unsigned int i = 0; i < this->cargo->size(); i++) {
+            if ((*this->cargo)[i] != nullptr)
+                total += (*this->cargo)[i]->getTotalPrice();
         }
     }
     return total;
@@ -339,22 +336,18 @@ Item *Ship::getFirstEquipmentOfSort(int sort) {
 
 int Ship::getEquipmentValue() {
     int total = 0;
-    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
-        Item *it = this->equipment->data()[i];
-        if (it != 0) {
-            total += it->getTotalPrice();
-        }
+    for (unsigned int i = 0; i < this->equipment->size(); i++) {
+        if ((*this->equipment)[i] != nullptr)
+            total += (*this->equipment)[i]->getTotalPrice();
     }
     return total;
 }
 
 int Ship::getUsedSlots(int type) {
     int n = 0;
-    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
-        Item *it = this->equipment->data()[i];
-        if (it != 0 && it->getType() == type) {
-            n = n + 1;
-        }
+    for (unsigned int i = 0; i < this->equipment->size(); i++) {
+        if ((*this->equipment)[i] != nullptr && (*this->equipment)[i]->getType() == type)
+            n++;
     }
     return n;
 }
@@ -700,38 +693,23 @@ Ship *Ship::makeShip(int price) {
 }
 
 void Ship::addMod(int mod) {
-    Array<int> *m = this->mods;
-    if (m == 0) {
-        m = new Array<int>();
-        this->mods = m;
-    }
-    unsigned int sz = m->size();
-    int found = 0;
-    for (unsigned int i = 0; i < sz; i = i + 1) {
-        found += (m->data()[i] == mod);
-        if (found) {
-            break;
-        }
-    }
-    if (found) {
+    if (this->mods == nullptr)
+        this->mods = new Array<int>();
+
+    int known = 0;
+    for (unsigned int i = 0; i < this->mods->size() && !known; i++)
+        known = (*this->mods)[i] == mod;
+    if (known)
         return;
-    }
-    ArrayAdd<int>(mod, *m);
-    int dev = 0;
-    if (mod == 2) {
-        dev = this->numAddedDeviceSlots;
-    }
-    if (mod == 2 && dev == 0) {
-        this->slots[3] += 1;
-        this->numAddedDeviceSlots += 1;
-        Item *it = new Item(nullptr, nullptr, nullptr);
-        ArrayAdd<Item *>(it, *this->equipment);
-        Item **slot = &this->equipment->data()[this->equipment->size() - 1];
-        if (*slot != 0) {
-            delete *slot;
-            slot = &this->equipment->data()[this->equipment->size() - 1];
-        }
-        *slot = 0;
+
+    ArrayAdd<int>(mod, *this->mods);
+    if (mod == 2 && this->numAddedDeviceSlots == 0) {
+        this->slots[3]++;
+        this->numAddedDeviceSlots++;
+        ArrayAdd<Item *>(new Item(nullptr, nullptr, nullptr), *this->equipment);
+        if (this->equipment->back() != nullptr)
+            delete this->equipment->back();
+        this->equipment->back() = nullptr;
     }
     refreshValue();
 }

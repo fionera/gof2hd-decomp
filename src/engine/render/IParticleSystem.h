@@ -68,7 +68,7 @@ public:
     virtual void updateSingle(int index, float delta) = 0;
 
     virtual void setParticle(AbyssEngine::AEMath::Vector const &pos, float scale, uint32_t color,
-                             float u0, float u1, float v0, float v1, bool maskedColor,
+                             float u0, float v0, float u1, float v1, bool maskedColor,
                              float size0, float size1, AbyssEngine::AEMath::Vector const &velocity) = 0;
 
     int getParticleCount();
