@@ -24,16 +24,10 @@ public:
     AEGeometry *geom30;
     AEGeometry *geom34;
     Array<AEGeometry *> *geometries;
-    uint32_t renderAtTimeLo;
-    uint32_t renderAtTimeHi;
-    uint32_t prevTimeLo;
-    uint32_t prevTimeHi;
-    uint32_t accumLo;
-    uint32_t accumHi;
-    uint32_t field_0x54;
-    // ASM ground truth: the original's time-tracking region has 8 uint32 slots before initialized@0x5c;
-    // ours had 7, shifting initialized/turretGeom/followCamera.. 4 bytes low.
-    uint32_t frameDelta;
+    int64_t currentTime;   // 0x40
+    int64_t lastTime;      // 0x48
+    int64_t totalTime;     // 0x50
+    int frameDelta;        // 0x58
     uint8_t initialized;
     PlayerEgo *player;
     AEGeometry *turretGeom;
@@ -65,7 +59,7 @@ public:
 
     void process(int delta);
 
-    void replacePlayerShip(int a, int b);
+    void replacePlayerShip(int shipIndex, int race);
 
     void initialize();
 
