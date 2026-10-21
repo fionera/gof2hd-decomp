@@ -1424,9 +1424,9 @@ void SpaceLounge::updateScreenPositions() {
     }
 
     Array<KIPlayer *> *figures = this->cutScene->level->getEnemies();
-    Vector pos = Vector();
-    Vector screen = Vector();
-    Vector offset = Vector();
+    Vector screen = {0.0f, 0.0f, 0.0f};
+    Vector pos = {0.0f, 0.0f, 0.0f};
+    Vector offset = {0.0f, 0.0f, 0.0f};
     PaintCanvas *canvas = Globals::Canvas;
     offset = 150.0f * MatrixGetRight(*(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
 
