@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); void SpriteSystemSetAllSize(short, SpriteSystem*); }
+namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); void SpriteSystemSetAllSize(short, SpriteSystem*); int MeshConvertToVBO(Mesh*); }
 namespace AbyssEngine {
     typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported TextureCreateFromFile signature)
     int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, bool flag, float scale); // lint: void_ptr (exported TextureCreateFromFile signature)
@@ -174,10 +174,6 @@ namespace {
         float factor4c;
     };
 
-    struct PCCameraParamsView {
-        uint32_t raw[3];
-    };
-
     struct PCCameraEyeView {
         uint8_t pad00[0x18];
         float eyeX;
@@ -315,13 +311,9 @@ namespace {
 
 
 
-void paintcanvas_ext_change_mat(void *, void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_mat_intern(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_camera_apply(void *, unsigned int, unsigned int, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_convert_vbo(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 
 static inline void paintcanvas_ext_set_wvm2(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
@@ -656,7 +648,7 @@ void PaintCanvas::MeshChangeResourceMaterial(unsigned int meshIndex, unsigned sh
         if (idx + 1 != 0) {
             PCMeshView *mesh = (PCMeshView *) this->meshes.data_[meshIndex];
             AbyssEngine::Material *mat = (this->materials.data_)[idx];
-            return paintcanvas_ext_change_mat(this, mesh, mat);
+            return this->MeshChangeMaterialIntern((AbyssEngine::Mesh *) mesh, mat);
         }
     }
 }
@@ -862,7 +854,7 @@ void PaintCanvas::SetProjOrthoMatrix() {
 void PaintCanvas::MeshChangeMaterialIntern(AbyssEngine::Mesh *mesh, AbyssEngine::Material *mat) {
     if (mesh && mat) {
         mesh->material = mat;
-        return paintcanvas_ext_mat_intern(this, mesh->animation);
+        return this->MeshChangeMaterialIntern(mesh->animation, mat);
     }
 }
 
@@ -906,8 +898,8 @@ unsigned int PaintCanvas::GetColor() {
 void PaintCanvas::CameraSetCurrent(unsigned int index) {
     this->currentCamera = index;
     if (index < this->cameras.count) {
-        PCCameraParamsView *cam = (PCCameraParamsView *) (this->cameras.data_)[index];
-        return paintcanvas_ext_camera_apply(this, cam->raw[0], cam->raw[1], cam->raw[2]);
+        AbyssEngine::Camera *cam = (this->cameras.data_)[index];
+        return this->SetProjectionMatrix3d(cam->position[0], cam->position[1], cam->position[2]);
     }
 }
 
@@ -1026,8 +1018,7 @@ void PaintCanvas::SetShaderMode(int mode) {
 
 void PaintCanvas::MeshConvertToVBO(unsigned int index) {
     if (index < this->meshes.count) {
-        return paintcanvas_ext_convert_vbo(
-            this->meshes.data_[index]);
+        AbyssEngine::MeshConvertToVBO(this->meshes.data_[index]);
     }
 }
 
@@ -1564,7 +1555,7 @@ void PaintCanvas::MeshChangeMaterial(unsigned int meshIndex, unsigned short matI
         meshIndex < this->meshes.count) {
         PCMeshView *mesh = (PCMeshView *) this->meshes.data_[meshIndex];
         AbyssEngine::Material *mat = (this->materials.data_)[matIndex];
-        return paintcanvas_ext_change_mat(this, mesh, mat);
+        return this->MeshChangeMaterialIntern((AbyssEngine::Mesh *) mesh, mat);
     }
 }
 
