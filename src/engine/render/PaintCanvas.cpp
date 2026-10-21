@@ -4,6 +4,7 @@
 #include <GLES2/gl2.h>
 #include <GLES/gl.h>
 #include "engine/core/AbyssEngine.h"
+#include "engine/render/AELoadedTexture.h"
 #include "engine/render/Material.h"
 #include "engine/core/Array.h"
 #include "engine/core/Node.h"
@@ -4217,39 +4218,23 @@ void PaintCanvas::MeshSet2DMask(unsigned int index, int, int) {
     reinterpret_cast<char *&>(this->field_0x20) = arr[i];
 }
 
-static int g_rar_curtex_87c98_storage = 0;
-static int *const g_rar_curtex_87c98 = &g_rar_curtex_87c98_storage;
-
-static int g_rar_texcount_87cce_storage = 0;
-static int *const g_rar_texcount_87cce = &g_rar_texcount_87cce_storage;
-
-static int g_rar_tricount_87d96_storage = 0;
-static int *const g_rar_tricount_87d96 = &g_rar_tricount_87d96_storage;
-
 void PaintCanvas::ReleaseAllResources() {
-    *g_rar_curtex_87c98 = 0;
+    AbyssEngine::CubeMapSetIndex = 0;
 
-    for (int i = 0; i < this->resources.count; i++) {
-        PCResourceView *res = (PCResourceView *) ((char **) this->resources.data_)[i];
-        res->handle = -1;
+    for (unsigned int i = 0; i < this->resources.count; i++) {
+        ((PCResourceView *) this->resources.data_[i])->handle = -1;
     }
 
     for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
-        PCCubeTexView *tex = (PCCubeTexView *) ((char **) this->cubeTextures.data_)[i];
-        if (tex->glTexId != -1) {
-            unsigned int id = (unsigned int) tex->glTexId;
-            glDeleteTextures(1, (GLuint *) &id);
-            *g_rar_texcount_87cce = *g_rar_texcount_87cce - 1;
-            Engine *eng = (Engine *) this->engine;
-            PCCubeTexView *texEntry = (PCCubeTexView *) ((char **) this->cubeTextures.data_)[i];
-            eng->textureByteCounter = eng->textureByteCounter - texEntry->memSize;
-            tex = (PCCubeTexView *) ((char **) this->cubeTextures.data_)[i];
+        AbyssEngine::AELoadedTexture *tex = this->cubeTextures.data_[i];
+        if (tex->glId != 0xffffffff) {
+            unsigned int id = tex->glId;
+            glDeleteTextures(1, &id);
+            Engine::ImageCount -= 1;
+            this->engine->textureByteCounter -= this->cubeTextures.data_[i]->byteSize;
         }
-        if (tex != 0) {
-            reinterpret_cast<AbyssEngine::String *>(tex->pathField)->~String();
-            delete tex;
-        }
-        ((int **) this->cubeTextures.data_)[i] = 0;
+        delete this->cubeTextures.data_[i];
+        this->cubeTextures.data_[i] = 0;
     }
     this->cubeTextures.count = 0;
 
@@ -4258,58 +4243,54 @@ void PaintCanvas::ReleaseAllResources() {
             AbyssEngine::ImageFontRelease(this->engine, &this->fonts.data_[i]);
         }
     }
-    PCArrayRemoveAll((PCArrayHeader *) &this->fonts);
+    ArrayRemoveAll(this->fonts);
 
     for (unsigned int i = 0; i < this->images.count; i++) {
         if (this->images.data_[i] != 0) {
             AbyssEngine::Image2DRelease(this->engine, &this->images.data_[i]);
         }
     }
-    PCArrayRemoveAll((PCArrayHeader *) &this->images);
+    ArrayRemoveAll(this->images);
 
     for (unsigned int i = 0; i < this->meshes.count; i++) {
-        PCMeshView *mesh = (PCMeshView *) ((char **) this->meshes.data_)[i];
-        if (mesh != 0) {
-            *g_rar_tricount_87d96 = *g_rar_tricount_87d96 - mesh->triCountContribution;
-            AbyssEngine::MeshRelease(this->engine, (AbyssEngine::Mesh **) &this->meshes.data_[i]);
+        if (this->meshes.data_[i] != 0) {
+            Engine::vboSize -= this->meshes.data_[i]->vboByteSize;
+            AbyssEngine::MeshRelease(this->engine, &this->meshes.data_[i]);
         }
     }
-    PCArrayRemoveAll((PCArrayHeader *) &this->meshes);
+    ArrayRemoveAll(this->meshes);
 
     for (unsigned int i = 0; i < this->transforms.count; i++) {
-        char *tf = (char *) this->transforms.data_[i];
-        if (tf != 0) {
-            delete (AbyssEngine::Transform *) tf;
+        if (this->transforms.data_[i] != 0) {
+            delete this->transforms.data_[i];
             this->transforms.data_[i] = 0;
         }
     }
-    PCArrayRemoveAll((PCArrayHeader *) &this->transforms);
+    ArrayRemoveAll(this->transforms);
 
     for (unsigned int i = 0; i < this->cameras.count; i++) {
-        AbyssEngine::Camera *cam = this->cameras.data_[i];
-        if (cam != 0) {
-            delete cam;
+        if (this->cameras.data_[i] != 0) {
+            delete this->cameras.data_[i];
             this->cameras.data_[i] = 0;
         }
     }
-    PCArrayRemoveAll((PCArrayHeader *) &this->cameras);
+    ArrayRemoveAll(this->cameras);
     this->currentCamera = -1;
 
     for (unsigned int i = 0; i < this->materials.count; i++) {
-        AbyssEngine::Material *mat = this->materials.data_[i];
-        if (mat != 0) {
-            delete mat;
+        if (this->materials.data_[i] != 0) {
+            delete this->materials.data_[i];
             this->materials.data_[i] = 0;
         }
     }
-    PCArrayRemoveAll((PCArrayHeader *) &this->materials);
+    ArrayRemoveAll(this->materials);
 
     for (unsigned int i = 0; i < this->spriteSystems.count; i++) {
         if (this->spriteSystems.data_[i] != 0) {
             AbyssEngine::SpriteSystemRelease(this->engine, &this->spriteSystems.data_[i]);
         }
     }
-    PCArrayRemoveAll((PCArrayHeader *) &this->spriteSystems);
+    ArrayRemoveAll(this->spriteSystems);
     this->field_0x1cc = 0;
 }
 
