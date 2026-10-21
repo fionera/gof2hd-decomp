@@ -1674,7 +1674,21 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->loadPreviewRecords();
 
     bool showLanguages = true;
-    if (menuType == 0) {
+    switch (menuType) {
+    case 2: {
+        this->addButton(0, *Globals::gameText->getText(28), 0, this->buttons, 0);
+        this->addButton(1, *Globals::gameText->getText(29), 1, this->buttons, 0);
+        this->addButton(2, *Globals::gameText->getText(30), 2, this->buttons, 0);
+        this->addButton(3, *Globals::gameText->getText(31), 3, this->buttons, 0);
+        int row = 4;
+        if (Globals::iPad) {
+            this->addButton(25, *Globals::gameText->getText(0), 4, this->buttons, 0);
+            row = 5;
+        }
+        this->addButton(4, *Globals::gameText->getText(43), row, this->buttons, 0);
+        break;
+    }
+    case 0: {
         // Main menu.
         Globals::Canvas->Image2DCreate(7002, *(unsigned int *) &this->field_0x120);
         this->addButton(0, *Globals::gameText->getText(28), 0, this->buttons, mainButtonOffset);
@@ -1692,7 +1706,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             next = row + 3;
         }
         this->addButton(4, *Globals::gameText->getText(43), next, this->buttons, mainButtonOffset);
-    } else if (menuType == 1) {
+        break;
+    }
+    case 1: {
         // In-game pause menu.
         Globals::Canvas->Image2DCreate(1332, *(unsigned int *) &this->field_0x120);
         this->addButton(3, *Globals::gameText->getText(31), 0, this->buttons, 0);
@@ -1724,28 +1740,16 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         save->setPosition(Globals::w - Globals::layout->field_0x2c_rowHeight,
                           Globals::h - Globals::layout->field_0x2c_rowHeight);
         showLanguages = false;
-    } else {
-        if (menuType == 2) {
-            this->addButton(0, *Globals::gameText->getText(28), 0, this->buttons, 0);
-            this->addButton(1, *Globals::gameText->getText(29), 1, this->buttons, 0);
-            this->addButton(2, *Globals::gameText->getText(30), 2, this->buttons, 0);
-            this->addButton(3, *Globals::gameText->getText(31), 3, this->buttons, 0);
-            int row = 4;
-            if (Globals::iPad) {
-                this->addButton(25, *Globals::gameText->getText(0), 4, this->buttons, 0);
-                row = 5;
-            }
-            this->addButton(4, *Globals::gameText->getText(43), row, this->buttons, 0);
-        }
-        if (Globals::layout->field_0x285) {
-            TouchButton *dlc = new TouchButton(*Globals::gameText->getText(33), 0,
-                                               Globals::w - Globals::layout->field_0x2c_rowHeight,
-                                               Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
-            dlc->id = 17;
-            ArrayAdd(dlc, *this->scrollEntries);
-        }
+        break;
     }
-
+    }
+    if (showLanguages && Globals::layout->field_0x285) {
+        TouchButton *dlc = new TouchButton(*Globals::gameText->getText(33), 0,
+                                           Globals::w - Globals::layout->field_0x2c_rowHeight,
+                                           Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
+        dlc->id = 17;
+        ArrayAdd(dlc, *this->scrollEntries);
+    }
     TouchButton *back = new TouchButton(*Globals::gameText->getText(62), 0,
                                         Globals::w - Globals::layout->field_0x2c_rowHeight,
                                         Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
