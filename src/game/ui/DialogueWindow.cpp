@@ -447,25 +447,36 @@ DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
     this->set(mission, kind, -1);
 }
 
-static int g_dw_germanBriefingTexts[64];
+// Generic German dialogue text ids, one table per dialogue kind: two variants per
+// male agent race (races 0..8), then two female variants. Races >= 10 are clamped
+// to row 10, which (as in the original) reads past the male rows.
+static const DialogueWindowGermanTextTable g_dw_germanBriefingTexts = {
+    {{379, 380}, {379, 380}, {380, 383}, {380, 383}, {379, 380}, {379, 380}, {379, 381}, {380, 382}, {379, 380}},
+    {379, 380},
+};
 
-static int g_dw_germanSuccessTexts[64];
+static const DialogueWindowGermanTextTable g_dw_germanSuccessTexts = {
+    {{387, 388}, {384, 385}, {384, 385}, {384, 385}, {385, 387}, {384, 385}, {384, 386}, {385, 386}, {384, 385}},
+    {384, 385},
+};
 
-static int g_dw_germanOtherTexts[64];
+static const DialogueWindowGermanTextTable g_dw_germanOtherTexts = {
+    {{373, 376}, {373, 374}, {374, 376}, {374, 376}, {373, 374}, {373, 374}, {373, 375}, {373, 375}, {373, 374}},
+    {373, 374},
+};
 
 int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent) {
-    int race = agent->getRace();
+    int race;
     int male;
-    if (race < 10) {
+    if (agent->getRace() < 10) {
         race = agent->getRace();
         male = agent->isMale();
         if (race == 3) {
             if (agent->getImageParts() == 0) {
                 race = 3;
             } else {
-                int *parts = agent->getImageParts();
                 race = 0;
-                if (*parts == 2) race = 3;
+                if (*agent->getImageParts() == 2) race = 3;
             }
         }
     } else {
@@ -474,22 +485,20 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     }
 
     int index;
-    DialogueWindowGermanTextTable *texts;
+    const DialogueWindowGermanTextTable *texts;
     if (kind == 2) {
         index = Globals::rnd->nextInt(2);
-        texts = (DialogueWindowGermanTextTable *) g_dw_germanSuccessTexts;
+        texts = &g_dw_germanSuccessTexts;
     } else if (kind != 0) {
         index = Globals::rnd->nextInt(2);
-        texts = (DialogueWindowGermanTextTable *) g_dw_germanOtherTexts;
+        texts = &g_dw_germanOtherTexts;
     } else {
         index = Globals::rnd->nextInt(2);
-        texts = (DialogueWindowGermanTextTable *) g_dw_germanBriefingTexts;
+        texts = &g_dw_germanBriefingTexts;
     }
-
-    int *picked = &(&texts->femaleVariantBase)[index];
-    if (male != 0) {
-        picked = &(&texts->maleRaceRow)[race * 2 + index];
-    }
+    const int *picked = &texts->female[index];
+    if (male != 0)
+        picked = &texts->male[race][index];
     return *picked;
 }
 

@@ -10,9 +10,7 @@
 #include "game/world/Level.h"
 
 struct DialogueWindowGermanTextTable {
-    int maleRaceRow;
-    int field_0x4[17];
-    int femaleVariantBase;
-    int field_0x4c[1];
+    int male[9][2];
+    int female[2];
 };
 #endif
