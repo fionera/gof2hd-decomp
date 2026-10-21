@@ -20,9 +20,6 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
                  Level *level)
     : RocketGun(rocketArg, gun, meshId, 0, 0, bombType, false, level), cameraOffset(),
       cameraTargetOffset() {
-    this->detonationPosition.x = 0.0f;
-    this->detonationPosition.y = 0.0f;
-    this->detonationPosition.z = 0.0f;
 
     this->explosion = new Explosion(bombType == ITEM_SORT_EMP_BOMB       ? 7
                                     : bombType == ITEM_SORT_SHOCK_BLAST ? 0xb
