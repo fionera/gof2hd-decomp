@@ -270,7 +270,7 @@ void PlayerEgo::setRocketControl(Gun *gun, AEGeometry *geo) {
     int psm_arg = lvl->movingStarsIndex;
     ParticleSystemManager *psm = (ParticleSystemManager *) (intptr_t) lvl->skybox2Mesh;
     if (gun == 0) {
-        ((ParticleSystemManager *) (psm))->systemSetMatrix(psm_arg, (Matrix *) ((Player *) this->player)->transform);
+        ((ParticleSystemManager *) (psm))->systemSetMatrix(psm_arg, &((Player *) this->player)->transform);
         this->rocketBanking = 0.0f;
         return;
     }

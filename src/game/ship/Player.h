@@ -17,9 +17,8 @@ class Player {
 public:
     Array<Array<Gun *> *> *guns;
 
-    // Canonical raw matrix storage; the AEMath::Matrix view is taken via
-    // reinterpret_cast<AbyssEngine::AEMath::Matrix &>(transform[0]) at the few sites that need it.
-    float transform[15];
+    // World transform (constructed by the out-of-line Matrix::Matrix()).
+    AbyssEngine::AEMath::Matrix transform;
 
     int32_t radius;
 

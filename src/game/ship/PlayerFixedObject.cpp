@@ -626,7 +626,7 @@ void PlayerFixedObject::moveForward(int amount) {
     this->intPosZ = amount + this->intPosZ;
     ((AEGeometry *) (this->geometry))->moveForward(d);
     const Matrix *m = &((AEGeometry *) (this->geometry))->getMatrix();
-    *(Matrix *) ((Player *) this->player)->transform = *m;
+    ((Player *) this->player)->transform = *m;
     Vector position = ((AEGeometry *) this->geometry)->getPosition();
     this->position() = position;
     if (this->wreckGeometry != 0) {
