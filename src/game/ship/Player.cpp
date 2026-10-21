@@ -559,12 +559,11 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->neverAttack = 0;
     self->healAccumulator = 0;
     self->engineEvent = 0;
-    self->engineSoundPlaying = 0;
     self->enginePaused = 0;
-    self->shieldHit = 0;
-    self->armorHit = 0;
-    self->hullHit = 0;
-    self->gammaHit = 0;
+    self->engineSoundPlaying = 0;
+    // The four hit flags are cleared as one 32-bit store (str [r4,#100]) scheduled after the
+    // engine fields; four byte stores merge but schedule differently.
+    reinterpret_cast<uint32_t &>(self->shieldHit) = 0;
 
     Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
         self->transform);
