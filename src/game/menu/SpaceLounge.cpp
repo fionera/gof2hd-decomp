@@ -424,7 +424,7 @@ int SpaceLounge::init() {
     return 0;
 }
 
-unsigned char SpaceLounge::introFinished() {
+bool SpaceLounge::introFinished() {
     return this->introDone;
 }
 
@@ -837,9 +837,8 @@ void SpaceLounge::startChat() {
                 message = *Globals::gameText->getText(agent->field_0x28);
                 message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 message += String(" ") + *Globals::gameText->getText(877);
-                message = Globals::status->replaceHash(
-                    message, String(((SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex()))->getName(), false),
-                    String("#S"));
+                SolarSystem *system = (SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex());
+                message = Globals::status->replaceHash(message, String(system->getName(), false), String("#S"));
                 message = Globals::status->replaceHash(
                     message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false), String("#C"));
             } else {
@@ -1161,6 +1160,7 @@ int SpaceLounge::onKeyPress(int key) {
                 // Accept the offer.
                 int offer = agent->getOffer();
                 String message("");
+                bool fits = true;
                 switch (offer) {
                 case 7:
                     if (Globals::status->getCredits() < agent->getCosts()) {
@@ -1177,8 +1177,6 @@ int SpaceLounge::onKeyPress(int key) {
                     message = *Globals::gameText->getText(885);
                     message = Globals::status->replaceHash(
                         message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
-                    this->choiceWindow->set(message, true);
-                    this->chatActive = 1;
                     break;
                 case 0:
                 case 5:
@@ -1187,8 +1185,7 @@ int SpaceLounge::onKeyPress(int key) {
                         if (!Globals::status->getShip()->spaceAvailable(amount)) {
                             message = *Globals::gameText->getText(337);
                             message = Globals::status->replaceHash(message, String(String(amount), false), String("#Q"));
-                            this->choiceWindow->set(message, false);
-                            this->choiceVisible = 1;
+                            fits = false;
                             break;
                         }
                     } else if (agent->getMission()->getType() == 11) {
@@ -1196,8 +1193,7 @@ int SpaceLounge::onKeyPress(int key) {
                         if (amount > Globals::status->getShip()->getMaxPassengers()) {
                             message = *Globals::gameText->getText(338);
                             message = Globals::status->replaceHash(message, String(String(amount), false), String("#Q"));
-                            this->choiceWindow->set(message, false);
-                            this->choiceVisible = 1;
+                            fits = false;
                             break;
                         }
                     }
@@ -1214,10 +1210,11 @@ int SpaceLounge::onKeyPress(int key) {
                     } else {
                         message = *Globals::gameText->getText(863);
                     }
-                    if (Globals::status->getFreelanceMission() != 0 && !Globals::status->getFreelanceMission()->isEmpty())
-                        message += String(" ") + *Globals::gameText->getText(864);
-                    this->choiceWindow->set(message, true);
-                    this->chatActive = 1;
+                    {
+                        Mission *freelance = Globals::status->getFreelanceMission();
+                        if (freelance != 0 && !freelance->isEmpty())
+                            message += String(" ") + *Globals::gameText->getText(864);
+                    }
                     break;
                 case 2:
                 case 3:
@@ -1294,8 +1291,6 @@ int SpaceLounge::onKeyPress(int key) {
                             String("#C"));
                         break;
                     }
-                    this->choiceWindow->set(message, true);
-                    this->chatActive = 1;
                     break;
                 }
                 case 6:
@@ -1321,16 +1316,19 @@ int SpaceLounge::onKeyPress(int key) {
                         message, String(String(agent->getWingmanFriendsCount() + 1), false), String("#Q"));
                     message = Globals::status->replaceHash(
                         message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
-                    this->choiceWindow->set(message, true);
-                    this->chatActive = 1;
                     break;
                 case 1:
                     this->mode = 0;
                     return 1;
                 default:
+                    break;
+                }
+                if (fits) {
                     this->choiceWindow->set(message, true);
                     this->chatActive = 1;
-                    break;
+                } else {
+                    this->choiceWindow->set(message, false);
+                    this->choiceVisible = 1;
                 }
                 break;
             }
@@ -1607,18 +1605,14 @@ void SpaceLounge::drawLounge() {
         String name = agent->isKnown() || agent->isStoryAgent()
                               ? agent->getName()
                               : String(*Globals::gameText->getText(agent->getRace() + 406), false);
-        String role;
-        if (agent->getMission() != 0) {
-            role = String(*Globals::gameText->getText(agent->getMission()->getType() + 354), false);
-        } else if (agent->getOffer() == 6) {
-            role = String(*Globals::gameText->getText(306), false);
-        } else if (agent->getOffer() == 2) {
-            role = String(*Globals::gameText->getText(305), false);
-        } else if (agent->getOffer() == 7) {
-            role = String(*Globals::gameText->getText(884), false);
-        } else {
-            role = String("");
-        }
+        String role = agent->getMission() != 0
+                          ? String(*Globals::gameText->getText(agent->getMission()->getType() + 354), false)
+                          : agent->getOffer() == 6
+                                ? String(*Globals::gameText->getText(306), false)
+                                : agent->getOffer() == 2
+                                      ? String(*Globals::gameText->getText(305), false)
+                                      : agent->getOffer() == 7 ? String(*Globals::gameText->getText(884), false)
+                                                               : String("");
 
         int width = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name);
         if (agent->isKnown()) {
@@ -1716,21 +1710,21 @@ void SpaceLounge::drawLounge() {
     if (offer == 1 || this->singleOffer != 0 || this->mode == 3) {
         (*this->buttons)[0]->setVisible(true);
         (*this->buttons)[0]->draw();
-        return;
-    }
-    (*this->buttons)[0]->setVisible(true);
-    (*this->buttons)[1]->setVisible(true);
-    (*this->buttons)[0]->draw();
-    (*this->buttons)[1]->draw();
-    if (offer == 2 || offer == 3 || offer == 9 || offer == 10) {
-        (*this->buttons)[2]->setVisible(true);
-        (*this->buttons)[2]->draw();
-    } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
-               (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
-        (*this->buttons)[3]->setVisible(true);
-        (*this->buttons)[4]->setVisible(true);
-        (*this->buttons)[3]->draw();
-        (*this->buttons)[4]->draw();
+    } else {
+        (*this->buttons)[0]->setVisible(true);
+        (*this->buttons)[1]->setVisible(true);
+        (*this->buttons)[0]->draw();
+        (*this->buttons)[1]->draw();
+        if (offer == 2 || offer == 3 || offer == 9 || offer == 10) {
+            (*this->buttons)[2]->setVisible(true);
+            (*this->buttons)[2]->draw();
+        } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
+                   (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
+            (*this->buttons)[3]->setVisible(true);
+            (*this->buttons)[4]->setVisible(true);
+            (*this->buttons)[3]->draw();
+            (*this->buttons)[4]->draw();
+        }
     }
 }
 
@@ -1984,7 +1978,7 @@ bool SpaceLounge::OnTouchMove(int x, int y) {
     return false;
 }
 
-int SpaceLounge::OnTouchEnd(int x, int y) {
+bool SpaceLounge::OnTouchEnd(int x, int y) {
     this->touchDown = 0;
     if (this->choiceVisible || this->chatActive) {
         int choice = this->choiceWindow->OnTouchEnd(x, y);
@@ -1992,35 +1986,35 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
             this->onKeyPress(0x10000);
         else if (choice == 1)
             this->chatActive = 0;
-        return 0;
+        return false;
     }
     if (this->mapVisible) {
         if (this->starMap->OnTouchEnd(x, y)) {
             this->cutScene->resetCamera();
             this->mapVisible = 0;
         }
-        return 0;
+        return false;
     }
     if (Globals::layout->OnTouchEnd(x, y)) {
         // Back button.
         if (this->listVisible) {
             Globals::layout->resetWindowDimensions();
             this->listVisible = 0;
-            return 0;
+            return false;
         }
         if (this->mode == 0)
-            return 1;
+            return true;
         if (this->selectedAgent >= 0 && (*this->agents)[this->selectedAgent]->isGenericAgent())
             (*this->agents)[this->selectedAgent]->setEvent(1);
         this->singleOffer = 0;
         this->mode = 0;
-        return 0;
+        return false;
     }
     if (this->listVisible) {
         this->listWindow->OnTouchEnd(x, y);
         if (Globals::layout->helpPressed())
             Globals::layout->initHelpWindow(*Globals::gameText->getText(643));
-        return 0;
+        return false;
     }
 
     switch (this->mode) {
@@ -2038,7 +2032,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                 this->cameraEase->SetRange(camera, camera);
             this->introDone = 1;
             this->headBobPhase = 0;
-            return 0;
+            return false;
         }
         if (this->agents != 0) {
             this->selectedAgent = -1;
@@ -2050,7 +2044,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                     bottomRight->y < (float) y) {
                     this->selectedAgent = i;
                     this->onKeyPress(0x10000);
-                    return 0;
+                    return false;
                 }
             }
         }
@@ -2069,6 +2063,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                 // Accept the offer.
                 int offer = agent->getOffer();
                 String message("");
+                bool fits = true;
                 switch (offer) {
                 case 7:
                     if (Globals::status->getCredits() < agent->getCosts()) {
@@ -2077,13 +2072,11 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                                                                          String("#C")),
                                            false);
                     this->choiceVisible = 1;
-                    return 0;
+                    return false;
                     }
                     message = *Globals::gameText->getText(885);
                     message = Globals::status->replaceHash(
                         message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
-                    this->choiceWindow->set(message, true);
-                    this->chatActive = 1;
                     break;
                 case 0:
                 case 5:
@@ -2101,15 +2094,14 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                         }
                         this->scrollWindow->setText(agent->getName(), text);
                         this->chatScroll = 0;
-                        return 0;
+                        return false;
                     }
                     if (agent->getMission()->getType() == 0) {
                         int amount = agent->getMission()->getProductionGoodAmount();
                         if (!Globals::status->getShip()->spaceAvailable(amount)) {
                             message = *Globals::gameText->getText(337);
                             message = Globals::status->replaceHash(message, String(String(amount), false), String("#Q"));
-                            this->choiceWindow->set(message, false);
-                            this->choiceVisible = 1;
+                            fits = false;
                             break;
                         }
                     } else if (agent->getMission()->getType() == 11) {
@@ -2117,8 +2109,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                         if (amount > Globals::status->getShip()->getMaxPassengers()) {
                             message = *Globals::gameText->getText(338);
                             message = Globals::status->replaceHash(message, String(String(amount), false), String("#Q"));
-                            this->choiceWindow->set(message, false);
-                            this->choiceVisible = 1;
+                            fits = false;
                             break;
                         }
                     }
@@ -2141,10 +2132,11 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                     } else {
                         message = *Globals::gameText->getText(863);
                     }
-                    if (Globals::status->getFreelanceMission() != 0 && !Globals::status->getFreelanceMission()->isEmpty())
-                        message += String(" ") + *Globals::gameText->getText(864);
-                    this->choiceWindow->set(message, true);
-                    this->chatActive = 1;
+                    {
+                        Mission *freelance = Globals::status->getFreelanceMission();
+                        if (freelance != 0 && !freelance->isEmpty())
+                            message += String(" ") + *Globals::gameText->getText(864);
+                    }
                     break;
                 case 2:
                 case 3:
@@ -2161,7 +2153,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                                                                          String("#C")),
                                            false);
                     this->choiceVisible = 1;
-                    return 0;
+                    return false;
                     }
                     switch (offer) {
                     case 8:
@@ -2216,8 +2208,6 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                             String("#C"));
                         break;
                     }
-                    this->choiceWindow->set(message, true);
-                    this->chatActive = 1;
                     break;
                 }
                 case 6:
@@ -2225,7 +2215,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                     if (Globals::status->getWingmen() != 0) {
                         this->choiceWindow->set(*Globals::gameText->getText(785), false);
                         this->choiceVisible = 1;
-                        return 0;
+                        return false;
                     }
                     if (Globals::status->getCredits() < agent->getCosts()) {
                         this->choiceWindow->set(Globals::status->replaceHash(*Globals::gameText->getText(203),
@@ -2233,23 +2223,26 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                                                                          String("#C")),
                                            false);
                     this->choiceVisible = 1;
-                    return 0;
+                    return false;
                     }
                     message = *Globals::gameText->getText(Globals::achievements->gotAllMedals() ? 867 : 866);
                     message = Globals::status->replaceHash(
                         message, String(String(agent->getWingmanFriendsCount() + 1), false), String("#Q"));
                     message = Globals::status->replaceHash(
                         message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
-                    this->choiceWindow->set(message, true);
-                    this->chatActive = 1;
                     break;
                 case 1:
                     this->mode = 0;
-                    return 0;
+                    return false;
                 default:
+                    break;
+                }
+                if (fits) {
                     this->choiceWindow->set(message, true);
                     this->chatActive = 1;
-                    break;
+                } else {
+                    this->choiceWindow->set(message, false);
+                    this->choiceVisible = 1;
                 }
                 break;
             }
@@ -2277,7 +2270,6 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                         new ListItem((*Globals::ships)[(*this->agents)[this->selectedAgent]->getSellItemIndex()]), 0, 0,
                         0, 0, false);
                 } else {
-                    Array<BluePrint *> *bluePrints = (Array<BluePrint *> *) Globals::status->getBluePrints();
                     for (unsigned int b = 0; b < ((Array<BluePrint *> *) Globals::status->getBluePrints())->size(); b++) {
                         if ((*(Array<BluePrint *> *) Globals::status->getBluePrints())[b]->getIndex() ==
                             (*this->agents)[this->selectedAgent]->getSellBlueprintIndex()) {
@@ -2288,7 +2280,6 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                             break;
                         }
                     }
-                    (void) bluePrints;
                 }
                 this->listVisible = 1;
                 break;
@@ -2345,7 +2336,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
     this->scrollWindow->OnTouchEnd(x, y);
     if (Globals::layout->helpPressed())
         Globals::layout->initHelpWindow(*Globals::gameText->getText(627));
-    return 0;
+    return false;
 }
 
 void SpaceLounge::OnRender3D() {

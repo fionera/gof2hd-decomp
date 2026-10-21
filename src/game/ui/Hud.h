@@ -21,7 +21,7 @@ class Sprite;
 
 class Hud {
 public:
-    unsigned char field_0x0;
+    bool field_0x0;
     unsigned char visible;
     unsigned char field_0x2;
     unsigned char field_0x3;

@@ -17,7 +17,7 @@ public:
 
     void addCargo(Item *item);
 
-    int removeCargo(int index, int amount);
+    bool removeCargo(int index, int amount);
 
     void removeCargo(int index);
 

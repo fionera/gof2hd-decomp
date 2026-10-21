@@ -444,13 +444,12 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     Vector anchor = this->buttons != 0
                         ? (*this->buttons)[this->buttons->size() - 1 >= 4 ? 4 : this->buttons->size() - 1]->getPosition()
                         : Vector();
-    TouchButton *leaderboards =
-        new TouchButton(String("Leaderboards"), 17,
-                        (int) (anchor.x + (float) this->buttonWidth + (float) (this->buttonWidth / 3)), (int) anchor.y, 68);
+    int leaderboardsX = (int) (anchor.x + (float) this->buttonWidth + (float) (this->buttonWidth / 3));
+    TouchButton *leaderboards = new TouchButton(String("Leaderboards"), 17, leaderboardsX, (int) anchor.y, 68);
     leaderboards->id = 23;
     ArrayAdd(leaderboards, *this->scrollEntries);
-    TouchButton *achievements = new TouchButton(String("Achievements"), 17,
-                                                (int) (anchor.x - (float) (this->buttonWidth / 3)), (int) anchor.y, 68);
+    int achievementsX = (int) (anchor.x - (float) (this->buttonWidth / 3));
+    TouchButton *achievements = new TouchButton(String("Achievements"), 17, achievementsX, (int) anchor.y, 68);
     achievements->id = 24;
     ArrayAdd(achievements, *this->scrollEntries);
     TouchButton *facebook = new TouchButton(*Globals::gameText->getText(5000), 0,
@@ -476,18 +475,16 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         int rowHeight = (int) (Globals::iPad ? (float) Globals::layout->field_0x34
                                              : (float) Globals::layout->field_0x34 * 0.9f) + 2;
         for (unsigned int i = 0; i < 10; i++) {
-            int x;
-            int y;
+            // Phone: two columns; iPad: one centred column.
+            int x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +
+                           (float) this->buttonWidth * -0.5f);
+            int y = (rowHeight + Globals::layout->field_0x30_rowHeight) * (i >> 1) +
+                    (Globals::h / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap);
             if (Globals::iPad) {
                 x = Globals::w / 2 - this->buttonWidth / 2;
                 y = (rowHeight + Globals::layout->field_0x30_rowHeight) * i +
                     (Globals::h / 2 - this->buttonYBias - Globals::layout->field_0x29c_buttonRowGap -
                      Globals::layout->field_0x30_rowHeight);
-            } else {
-                x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +
-                           (float) this->buttonWidth * -0.5f);
-                y = (rowHeight + Globals::layout->field_0x30_rowHeight) * (i >> 1) +
-                    (Globals::h / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap);
             }
             bool special = (i | 1) == 9;
             int spacing = Globals::Canvas->FontGetSpacing(
@@ -514,7 +511,10 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     Globals::Canvas->Image2DCreate(3013, this->heapBufA[3]);
     Globals::Canvas->Image2DCreate(3015, this->heapBufA[4]);
     Globals::Canvas->Image2DCreate(3003, this->heapBufB[0]);
-    Globals::Canvas->Image2DCreate(Globals::iPad ? 3014 : 3005, this->heapBufB[1]);
+    if (Globals::iPad)
+        Globals::Canvas->Image2DCreate(3014, this->heapBufB[1]);
+    else
+        Globals::Canvas->Image2DCreate(3005, this->heapBufB[1]);
     Globals::Canvas->Image2DCreate(3012, this->heapBufB[2]);
     Globals::Canvas->Image2DCreate(3014, this->heapBufB[3]);
     Globals::Canvas->Image2DCreate(3016, this->heapBufB[4]);
@@ -557,11 +557,10 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->slotTextWidth, windowHeight, false);
     this->scrollWindowB->setText(String(""), *Globals::gameText->getText(87 + this->field_0x1e0));
 
+    int storeX = (int) (anchor.x + (float) this->buttonWidth + (float) (this->buttonWidth / 3));
     Vector first = (*this->buttons)[0]->getPosition();
-    TouchButton *store = new TouchButton(
-        *Globals::gameText->getText(97), 17,
-        (int) (anchor.x + (float) this->buttonWidth + (float) (this->buttonWidth / 3)),
-        (int) (first.y - (float) (Globals::layout->field_0x2c_rowHeight * 3)), 20);
+    int storeY = (int) (first.y - (float) (Globals::layout->field_0x2c_rowHeight * 3));
+    TouchButton *store = new TouchButton(*Globals::gameText->getText(97), 17, storeX, storeY, 20);
     store->id = 53;
     ArrayAdd(store, *this->scrollEntries);
     if (!Globals::inAppPurchaseSupported)
@@ -1281,19 +1280,15 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         if (Globals::iPadHD) {
             nameY = 8;
             infoY = 5;
-        } else if (Globals::iPadLarge) {
-            nameY = 12;
-            infoY = 8;
         } else {
-            nameY = 6;
-            infoY = 4;
+            nameY = !Globals::iPadLarge ? 6 : 12;
+            infoY = !Globals::iPadLarge ? 4 : 8;
         }
         // Side borders.
         int borderWidth = Globals::Canvas->GetImage2DWidth(this->scrollbarImageId);
         int borderHeight = Globals::Canvas->GetImage2DHeight(this->scrollbarImageId);
         int count = Globals::h / borderHeight;
-        int y = 0;
-        for (int i = 0; i <= count; i++) {
+        for (int i = 0, y = 0; i <= count; i++) {
             Globals::Canvas->DrawImage2D(this->scrollbarImageId,
                                          Globals::layout->buttonInsetX - borderWidth + this->listX, y, 1);
             Globals::Canvas->DrawImage2D(this->scrollbarImageId, Globals::layout->buttonInsetX + width + this->listX,
@@ -1302,9 +1297,9 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         }
     }
     this->okButton->setPosition(Globals::w - this->listX - Globals::layout->buttonInsetX,
-                                (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
+                                (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top) +
                                 this->scrollOffset +
-                                (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin) +
+                                (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
                                 Globals::layout->field_0x108);
 
     for (int i = 0; i < Globals::recordSlots; i++) {
@@ -1316,7 +1311,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
                                  width - 3, Globals::layout->field_0x70_rowHeight, String(""));
         int nameLineY = y + nameY;
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[0],
-                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
+                                    this->listX + Globals::layout->buttonInsetX + Globals::layout->field_0x2c_rowHeight,
                                     nameLineY, false);
         GameRecord *record = (*this->previewRecords)[i];
         if (record != 0 && record->shipId < 64)
@@ -1332,10 +1327,10 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         Globals::Canvas->SetColor(0x777777ffu);
         int infoLineY = y + infoY;
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[2],
-                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
+                                    this->listX + Globals::layout->buttonInsetX + Globals::layout->field_0x2c_rowHeight,
                                     infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[3],
-                                    Globals::layout->buttonInsetX + this->listX +
+                                    this->listX + Globals::layout->buttonInsetX +
                                     Globals::layout->field_0x2c_rowHeight * 2 + this->metricB +
                                     Globals::layout->field_0x2c4,
                                     infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
@@ -2141,9 +2136,9 @@ void MenuTouchWindow::update(int dt) {
                               Globals::layout->field_0x24;
         this->contentHeightCache = Globals::Canvas->GetImage2DHeight(this->heapBufA[0]);
         this->menuState = 15;
+        this->pageHeight = (this->contentHeightCache + Globals::layout->field_0x2c_rowHeight) * 5;
         this->messageShowing = 0;
         this->dlcMessageShowing = 0;
-        this->pageHeight = (this->contentHeightCache + Globals::layout->field_0x2c_rowHeight) * 5;
         appData->purchaseReadyFlag = 0;
         Globals::options[59] = 1;
         Globals::recordHandler->saveOptions();

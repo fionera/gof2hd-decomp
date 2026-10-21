@@ -407,17 +407,22 @@ int MGame::OnInitialize() {
         this->player->pitchAllPrimaryGuns(pitch);
 
     if (!Globals::status->inAlienOrbit()) {
-        int station = Globals::status->getStation()->getIndex();
-        unsigned slot = (unsigned) (station - 109);
-        bool visit;
-        if (slot <= 25 && ((1u << slot) & 0x3800003)) // stations 109, 110, 132, 133, 134
-            visit = true;
-        else if (slot == 2) // station 111
-            visit = Globals::status->getCurrentCampaignMission() >= 94;
-        else
-            visit = (unsigned) (station - 102) < 3;
-        if (visit)
+        switch (Globals::status->getStation()->getIndex()) {
+        case 111:
+            if (Globals::status->getCurrentCampaignMission() < 94)
+                break;
+            // fall through: station 111 is visited once campaign mission 94 is reached
+        case 102:
+        case 103:
+        case 104:
+        case 109:
+        case 110:
+        case 132:
+        case 133:
+        case 134:
             Globals::status->getStation()->visit();
+            break;
+        }
     }
 
     if (Globals::switch_to_target_setting != -1)
@@ -440,13 +445,13 @@ void MGame::reset() {
     this->dragLastY = 0;
     this->dragDeltaX = 0;
     this->activeTouchId = nullptr;
-    this->touch1Id = 0;
+    this->touch1Id = nullptr;
     this->dragLastX = 0;
     this->menuTime = 0;
     this->dragRotIntY = 0;
     this->flShakeX = 25.0f;
     this->flCameraRoll = 0;
-    this->touch0Id = 0;
+    this->touch0Id = nullptr;
     this->flShakeY = -50.0f;
     this->dragStartX = 0;
     this->dragStartY = 0;
@@ -629,18 +634,17 @@ void MGame::maneuverTouchEnd(int a, int b, void *p) { // lint: void_ptr -- expor
 }
 
 void MGame::freeCamTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- exported method signature (Pv)
-    int id = (int) (intptr_t) touch;
-    if (this->touch0Id != 0) {
+    if (this->touch0Id != nullptr) {
         if (this->menuTime < 1000) {
             this->flCameraRoll = 0;
             this->flCameraRoll = AbyssEngine::AEMath::VectorLength(*this->camera->getCamOffset());
-            this->touch1Id = id;
+            this->touch1Id = touch;
             this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
         }
     } else {
-        if (this->touch1Id == 0)
+        if (this->touch1Id == nullptr)
             this->menuTime = 0;
-        this->touch0Id = id;
+        this->touch0Id = touch;
         this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
     }
     this->dragLastX = x;
@@ -653,14 +657,13 @@ void MGame::freeCamTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- 
 }
 
 void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- exported method signature (Pv)
-    int id = (int) (intptr_t) touch;
     if (this->player->isMining()) {
         this->needsRedraw = 1;
         freeCamTouchEnd(x, y, touch);
         return;
     }
     this->needsRedraw = 0;
-    if (this->touch0Id == 0 || this->touch1Id == 0) {
+    if (this->touch0Id == nullptr || this->touch1Id == nullptr) {
         int dx = x - this->dragLastX;
         int dy = y - this->dragLastY;
         this->dragLastX = x;
@@ -672,19 +675,19 @@ void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- e
         this->flShakeX += (float) dx;
         this->flShakeY += (float) dy;
     }
-    if (this->touch0Id == 0) {
+    if (this->touch0Id == nullptr) {
         this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
-    } else if (this->touch1Id == 0) {
+    } else if (this->touch1Id == nullptr) {
         this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
     } else {
         float oldLen = AbyssEngine::AEMath::VectorLength(this->freeCamFinger1 - this->freeCamFinger0);
         float newLen = oldLen;
-        if (this->touch0Id == id) {
+        if (this->touch0Id == touch) {
             float fx = (float) x;
             float fy = (float) y;
             newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger0);
             this->freeCamFinger1 = Vector{fx, fy, 0.0f};
-        } else if (this->touch1Id == id) {
+        } else if (this->touch1Id == touch) {
             float fx = (float) x;
             float fy = (float) y;
             newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger1);
@@ -702,14 +705,13 @@ void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- e
 
 void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) { // lint: void_ptr -- exported method signature (Pv)
     // lint: void_ptr -- exported method signature (Pv)
-    int id = (int) (intptr_t) idPtr;
     (void) p1;
     (void) p2;
-    if (this->touch0Id == id) {
-        this->touch0Id = 0;
+    if (this->touch0Id == idPtr) {
+        this->touch0Id = nullptr;
         this->menuTime = 0;
-    } else if (this->touch1Id == id) {
-        this->touch1Id = 0;
+    } else if (this->touch1Id == idPtr) {
+        this->touch1Id = nullptr;
         this->menuTime = 0;
     }
     {
@@ -722,13 +724,13 @@ void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) { // lint: void_ptr -- 
         if (iy < 0) iy = -iy;
         if (ix < 0) ix = -ix;
 
-        float ox = 0.001f;
+        float ox = 0.0f;
         if (ix > 3) ox = fx;
-        float oy = 0.001f;
+        float oy = 0.0f;
         if (iy > 3) oy = fy;
         this->needsRedraw = 1;
-        this->flShakeAmpX = 0.002f;
-        this->flShakeAmpY = 0.002f;
+        this->flShakeAmpX = 0.9f;
+        this->flShakeAmpY = 0.9f;
         this->freeCamDragging = 0;
         this->flShakePhaseX = ox;
         this->flShakePhaseY = oy;
@@ -1116,9 +1118,9 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
                         }
                         if (apply) {
                             self->thrustEngaged = 1;
-                            float divisor = reinterpret_cast<float &>(Globals::layout->field_0x2f8);
                             float t = ((float) self->thrustStartY - (float) y -
-                                       (float) self->thrustResetX) / divisor +
+                                       (float) self->thrustResetX) /
+                                          reinterpret_cast<float &>(Globals::layout->field_0x2f8) +
                                       self->thrustBase;
                             if (t < 0.0f) t = 0.0f;
                             t = t < 1.0f ? t : 1.0f;
@@ -1828,8 +1830,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         }
                     }
                     this->menuTouchOpen = 0;
-                    this->touch0Id = 0;
-                    this->touch1Id = 0;
+                    this->touch0Id = nullptr;
+                    this->touch1Id = nullptr;
                     this->activeTouchId = nullptr;
                     this->level->getStarSystem()->initLight();
                     float particleQuality = reinterpret_cast<const float &>(Globals::options[40]);
@@ -1879,8 +1881,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
 
     this->hudTouchFlags = this->hud->touchEnd(x, y, touchId);
     if (this->hudTouchFlags != 0) {
-        this->touch0Id = 0;
-        this->touch1Id = 0;
+        this->touch0Id = nullptr;
+        this->touch1Id = nullptr;
         if (this->hudTouchFlags & 1) {
             // Pause button.
             pauseSounds();
@@ -2117,8 +2119,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
             if (this->hudTouchFlags == 0) {
                 this->hud->closeHudMenu();
                 this->hudMenuOpen = 0;
-                this->touch0Id = 0;
-                this->touch1Id = 0;
+                this->touch0Id = nullptr;
+                this->touch1Id = nullptr;
                 this->pauseOpen = 0;
                 resumeSounds();
                 if (this->_bc8) {
@@ -2317,10 +2319,7 @@ int MGame::nextCamId(int cur) {
             Globals::status->getShip()->getFirstEquipmentOfSort(35) == nullptr) {
             return 3;
         }
-        id = 1;
-        if (this->player->hasAutoTurret()) {
-            id = 3;
-        }
+        return this->player->hasAutoTurret() ? 3 : 1;
     }
     return id;
 }
@@ -2544,8 +2543,8 @@ void MGame::OnUpdate() {
                     this->timeWarpState = -1;
                 } else if (this->timeWarpState > 0) {
                     int realDelta = this->deltaTime;
-                    this->deltaTime = (int) ((float) realDelta * 0.3f);
                     this->field_0x44 = (int) ((float) realDelta * 0.7f);
+                    this->deltaTime = (int) ((float) realDelta * 0.3f);
                     this->hud->setTimeExtender(true, false, true, true);
                 }
             } else {
@@ -3219,7 +3218,7 @@ void MGame::OnUpdate() {
         screen[0] /= (float) (int) static_cast<Engine *>(this->applicationManager->GetEngine())->GetDisplayWidth();
         screen[1] = 1.0f - screen[1] / (float) (int) static_cast<Engine *>(this->applicationManager->GetEngine())->GetDisplayHeight();
         static_cast<Engine *>(this->applicationManager->GetEngine())->field_0x3cc = screen;
-        float fov = 1.22f + this->player->getBoostPercentage() * 0.35f;
+        float fov = 1.22f + this->player->getBoostPercentage() * (1.57f - 1.22f); // boost widens FOV from 1.22 to 1.57 rad
         reinterpret_cast<float &>(this->field_0x70) = fov;
         Globals::Canvas->CameraSetPerspective(
             this->cameraId, fov, 20.0f,
@@ -3251,8 +3250,8 @@ void MGame::OnUpdate() {
             Globals::sound->setDownPitch(false);
             this->hud->setTimeExtender(this->hud->field_0x0, false, false, false);
         }
-        this->touch0Id = 0;
-        this->touch1Id = 0;
+        this->touch0Id = nullptr;
+        this->touch1Id = nullptr;
         this->menuTime = 0;
         this->freeCamDragging = 0;
         this->_b5c = 0;
@@ -3696,7 +3695,7 @@ bool MGame::successCheck() {
 
     Mission *completed = Globals::status->missionCompleted(false, false, this->levelScript->m_nScriptTime);
     bool objectiveDone = this->level->checkObjective((int) this->levelScript->m_nScriptTime);
-    if (!completed && !objectiveDone)
+    if (!objectiveDone && !completed)
         return success;
 
     if (Globals::status->getMission()->getType() == 5 || Globals::status->getMission()->getType() == 3) {
@@ -3748,74 +3747,73 @@ bool MGame::successCheck() {
     if (!Globals::status->getMission()->isCampaignMission())
         Globals::status->incMissionCount();
 
-    if (Globals::status->getMission()->isCampaignMission() &&
-        !(Globals::status->getMission()->isCampaignMission() &&
-          DialogueWindow::hasSuccessDialogue(Globals::status->getCurrentCampaignMission()))) {
-        if (Globals::status->getCurrentCampaignMission() >= 46 && Globals::status->getMission()->isCampaignMission() &&
-            !DialogueWindow::hasSuccessDialogue(Globals::status->getCurrentCampaignMission())) {
-            Globals::status->nextCampaignMission(true);
-            this->level->removeObjectives();
-            Globals::status->setMission(Mission::empty);
+    if (!Globals::status->getMission()->isCampaignMission() ||
+        (Globals::status->getMission()->isCampaignMission() &&
+         DialogueWindow::hasSuccessDialogue(Globals::status->getCurrentCampaignMission()))) {
+        if (this->dialogueWindow != nullptr) {
+            if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
+                this->dialogueWindow->setLevel(this->level);
+            }
+        } else {
+            this->dialogueWindow = new DialogueWindow();
+            if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
         }
+        this->dialogueWindow->set(completed ? completed : Globals::status->getMission(), 1, -1);
+        this->pauseOpen = 1;
+        this->cutsceneActive = 1;
+        pauseSounds();
+
+        if (Globals::status->getMission()->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 38) {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            for (unsigned i = 0; i < enemies->size(); i++) {
+                KIPlayer *enemy = (*enemies)[i];
+                if (enemy->field_0x40 && !enemy->isDead())
+                    enemy->player->setHitpoints(9999999);
+            }
+        } else if (Globals::status->getMission()->isCampaignMission() &&
+                   Globals::status->getCurrentCampaignMission() == 56) {
+            Array<AEGeometry *> *planets = static_cast<Array<AEGeometry *> *>(this->level->getStarSystem()->getPlanets());
+            Vector target = (*planets)[2]->getPosition() * 100.0f;
+            int coords[3] = {(int) target.x, (int) target.y, (int) target.z};
+            Route *route = new Route(coords, 3);
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            for (unsigned i = 0; i < enemies->size(); i++) {
+                KIPlayer *enemy = (*enemies)[i];
+                if (enemy->shipGroup == 1)
+                    enemy->setRoute(route->clone());
+            }
+            delete route;
+        } else if (Globals::status->getMission()->isCampaignMission() &&
+                   Globals::status->getCurrentCampaignMission() == 63) {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            for (unsigned i = 0; i < enemies->size(); i++) {
+                KIPlayer *enemy = (*enemies)[i];
+                if (enemy->shipGroup == 8)
+                    enemy->player->removeAllGuns();
+            }
+        } else if (Globals::status->getMission()->isCampaignMission() &&
+                   Globals::status->getCurrentCampaignMission() == 73) {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            for (unsigned i = 0; i < enemies->size(); i++) {
+                KIPlayer *enemy = (*enemies)[i];
+                if (enemy->field_0x40 && !enemy->isDead()) {
+                    enemy->player->setHitpoints(9999999);
+                    static_cast<PlayerFixedObject *>(enemy)->setMoving(true);
+                }
+            }
+        } else if (Globals::status->getStation()->getIndex() == 112 &&
+                   Globals::status->getCurrentCampaignMission() == 143) {
+            Level::initStreamOutPositionAfterCutscene = 1;
+        }
+        success = true;
         return success;
     }
-
-    if (this->dialogueWindow != nullptr) {
-        if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
-            this->dialogueWindow->setLevel(this->level);
-        }
-    } else {
-        this->dialogueWindow = new DialogueWindow();
-        if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
+    if (Globals::status->getCurrentCampaignMission() >= 46 && Globals::status->getMission()->isCampaignMission() &&
+        !DialogueWindow::hasSuccessDialogue(Globals::status->getCurrentCampaignMission())) {
+        Globals::status->nextCampaignMission(true);
+        this->level->removeObjectives();
+        Globals::status->setMission(Mission::empty);
     }
-    this->dialogueWindow->set(completed ? completed : Globals::status->getMission(), 1, -1);
-    this->pauseOpen = 1;
-    this->cutsceneActive = 1;
-    pauseSounds();
-
-    if (Globals::status->getMission()->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 38) {
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        for (unsigned i = 0; i < enemies->size(); i++) {
-            KIPlayer *enemy = (*enemies)[i];
-            if (enemy->field_0x40 && !enemy->isDead())
-                enemy->player->setHitpoints(9999999);
-        }
-    } else if (Globals::status->getMission()->isCampaignMission() &&
-               Globals::status->getCurrentCampaignMission() == 56) {
-        Array<AEGeometry *> *planets = static_cast<Array<AEGeometry *> *>(this->level->getStarSystem()->getPlanets());
-        Vector target = (*planets)[2]->getPosition() * 100.0f;
-        int coords[3] = {(int) target.x, (int) target.y, (int) target.z};
-        Route *route = new Route(coords, 3);
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        for (unsigned i = 0; i < enemies->size(); i++) {
-            KIPlayer *enemy = (*enemies)[i];
-            if (enemy->shipGroup == 1)
-                enemy->setRoute(route->clone());
-        }
-        delete route;
-    } else if (Globals::status->getMission()->isCampaignMission() &&
-               Globals::status->getCurrentCampaignMission() == 63) {
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        for (unsigned i = 0; i < enemies->size(); i++) {
-            KIPlayer *enemy = (*enemies)[i];
-            if (enemy->shipGroup == 8)
-                enemy->player->removeAllGuns();
-        }
-    } else if (Globals::status->getMission()->isCampaignMission() &&
-               Globals::status->getCurrentCampaignMission() == 73) {
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        for (unsigned i = 0; i < enemies->size(); i++) {
-            KIPlayer *enemy = (*enemies)[i];
-            if (enemy->field_0x40 && !enemy->isDead()) {
-                enemy->player->setHitpoints(9999999);
-                static_cast<PlayerFixedObject *>(enemy)->setMoving(true);
-            }
-        }
-    } else if (Globals::status->getStation()->getIndex() == 112 &&
-               Globals::status->getCurrentCampaignMission() == 143) {
-        Level::initStreamOutPositionAfterCutscene = 1;
-    }
-    success = true;
     return success;
 }
 
@@ -3983,16 +3981,20 @@ void MGame::OnRender2D() {
         this->field_0x110 = 0;
     } else if (this->gameOverActive) {
         if (this->elapsedTime >= 3001) {
-            this->paintCanvas->SetColor(this->loadingTime < 4000
-                                            ? (int) ((float) this->loadingTime / 4000.0f * 255.0f) - 256
-                                            : -1);
+            int fadeColor = this->loadingTime < 4000 ? (int) ((float) this->loadingTime / 4000.0f * 255.0f) - 256 : -1;
+            this->paintCanvas->SetColor(fadeColor);
             Globals::Canvas->DrawImage2D(this->loadingImage, 0, 0, 68, 68);
             if (this->loadingTime >= 4000) {
-                float wave = AbyssEngine::AEMath::Sinf(
-                    (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f);
-                float pulse = AbyssEngine::AEMath::Sinf(
-                    (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f);
-                Globals::Canvas->SetColor(255, 255, 255, (unsigned char) ((wave > 0.0f ? pulse : -pulse) * 255.0f));
+                // |sin(t)| pulse, written as the usual abs-macro expansion (sin evaluated twice).
+                Globals::Canvas->SetColor(
+                    255, 255, 255,
+                    (unsigned char) ((AbyssEngine::AEMath::Sinf(
+                                          (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f) > 0.0f
+                                          ? AbyssEngine::AEMath::Sinf(
+                                                (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f)
+                                          : -AbyssEngine::AEMath::Sinf(
+                                                (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f)) *
+                                     255.0f));
                 String text(*Globals::gameText->getText(199), false);
                 if (this->gameRecord != nullptr) {
                     Globals::globals->drawLines(reinterpret_cast<unsigned int &>(Globals::font), this->missionInfoLines,

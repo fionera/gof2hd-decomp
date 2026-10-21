@@ -81,7 +81,7 @@ public:
 
     void skipCutscene();
 
-    int process(int delta);
+    bool process(int delta);
 
     void lookBehind();
 

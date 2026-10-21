@@ -83,7 +83,7 @@ void Status_replaceHash(void *out, void *key, void *a, void *b); // lint: void_p
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 
-int StatusWindow::OnTouchEnd(int x, int y) {
+bool StatusWindow::OnTouchEnd(int x, int y) {
     int velocity = this->scrollVelocity;
     int offset = this->scrollOffset + velocity;
     this->scrollDamping = 0.9f;
@@ -92,7 +92,7 @@ int StatusWindow::OnTouchEnd(int x, int y) {
     this->scrollTarget = offset;
     this->scrollVelocityF = (velocity < 0 ? -velocity : velocity) > 3 ? (float) velocity : 0.0f;
     if (Globals::layout->OnTouchEnd(x, y))
-        return 1;
+        return true;
 
     if (!Globals::iPad) {
         for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
@@ -138,7 +138,7 @@ int StatusWindow::OnTouchEnd(int x, int y) {
         else if (this->activeTab == 1)
             Globals::layout->initHelpWindow(String(*Globals::gameText->getText(647), false));
     }
-    return 0;
+    return false;
 }
 
 bool StatusWindow::OnTouchBegin(int x, int y) {
@@ -193,12 +193,12 @@ void StatusWindow::update(int frameTime) {
     int bottom = this->viewportHeight - this->contentHeight;
     if (bottom < 0) {
         if (off < bottom) {
-            this->scrollDamping = 1.0f;
             this->scrollVelocityF = (float) (bottom - off) * 0.5f;
+            this->scrollDamping = 1.0f;
         }
     } else {
-        this->scrollVelocityF = 0.0f;
         this->scrollOffset = 0;
+        this->scrollVelocityF = 0.0f;
     }
 
     for (unsigned int idx = 0; idx < this->tabButtons->size(); idx++) {
