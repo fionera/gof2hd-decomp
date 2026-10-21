@@ -340,15 +340,10 @@ void CutScene::initialize() {
             Array<KIPlayer *> *enemies = this->level->getEnemies();
             if (enemies != nullptr && enemies->size() >= 2 && (*enemies)[enemies->size() - 2] != nullptr &&
                 (*enemies)[enemies->size() - 1] != nullptr) {
-                Vector position;
-                position.x = (float) (offsetX - 24000);
-                position.y = -30.0f;
-                position.z = (float) (offsetZ + 39500);
-                (*enemies)[enemies->size() - 2]->setPosition(position);
-                position.x = (float) (offsetX - 23400);
-                position.y = 50.0f;
-                position.z = (float) (offsetZ + 38600);
-                (*enemies)[enemies->size() - 1]->setPosition(position);
+                (*enemies)[enemies->size() - 2]->setPosition(
+                        Vector{(float) (offsetX - 24000), -30.0f, (float) (offsetZ + 39500)});
+                (*enemies)[enemies->size() - 1]->setPosition(
+                        Vector{(float) (offsetX - 23400), 50.0f, (float) (offsetZ + 38600)});
             }
         }
     } else if (this->mode == 23) {
@@ -516,7 +511,7 @@ void CutScene::checkForTurret() {
     base->setPosition(*(*(*positions)[2])[0]);
     barrel->setPosition(*(*(*positions)[2])[0]);
     barrel->translate(offsetX, offsetY, offsetZ);
-    if ((*turrets)[0]->getIndex() >= 198 && (*turrets)[0]->getIndex() < 201) {
+    if ((*turrets)[0]->getIndex() < 198 || (*turrets)[0]->getIndex() > 200) {
         base->rotate(0.0f, 3.1415927f, 0.0f);
         barrel->rotate(0.0f, 3.1415927f, 0.0f);
     }

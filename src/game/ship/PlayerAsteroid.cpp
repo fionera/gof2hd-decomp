@@ -15,47 +15,80 @@ namespace AbyssEngine {
 
 
 
+PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType,
+                               int asteroidIndex, const Vector &position, float scaling,
+                               int quality)
+    : KIPlayer(playerId, -1, new Player(1500, 30, 0, 0, 0), geometry,
+               position.x, position.y, position.z, false) {
+    float randomX, randomY, randomZ;
+    float spinX, spinY, spinZ, size;
+    this->player->setKIPlayer(this);
+    this->asteroidIndex = asteroidIndex;
+    this->asteroidFlag = 0;
+    this->scaling = scaling;
+    this->quality = quality;
+    this->player->setRadius((int) (static_cast<AbyssEngine::Transform *>(
+            Globals::Canvas->TransformGetTransform(geometry->transform))->boundingRadius * scaling * 0.7f));
+    this->player->setMaxHitpoints((int) (scaling * 100.0f + 30.0f));
+    this->lastHitpoints = this->player->getHitpoints();
+    this->minable = quality > 3;
+
+    this->explosion = new Explosion(explosionType + 2);
+    this->explosion->setScaling(scaling);
+    this->geometry->setScaling(scaling, scaling, scaling);
+    this->setPosition(position);
+
+    randomX = (float) (Globals::rnd->nextInt(8192) - 4096);
+    randomY = (float) (Globals::rnd->nextInt(8192) - 4096);
+    randomZ = (float) (Globals::rnd->nextInt(8192) - 4096);
+    tmp_vector2 = Vector{randomX * 0.00024414062f, randomY * 0.00024414062f, randomZ * 0.00024414062f};
+
+    this->geometry->setRotation((float) Globals::rnd->nextInt(100) * 0.01f * 6.2831855f,
+                                (float) Globals::rnd->nextInt(100) * 0.01f * 6.2831855f,
+                                (float) Globals::rnd->nextInt(100) * 0.01f * 6.2831855f);
+    this->rotationEnabled = 1;
+    this->secondaryGeometry() = nullptr;
+
+    spinX = (float) (Globals::rnd->nextInt(3) - 1);
+    spinY = (float) (Globals::rnd->nextInt(3) - 1);
+    spinZ = (float) (Globals::rnd->nextInt(3) - 1);
+    size = scaling < 0.9f ? 0.9f : scaling;
+    size = size < 1.0f ? size : 1.0f;
+    this->spin = Vector{spinX, spinY, spinZ} * (1.0f - size);
+
+    this->state = 0;
+    this->stealFlagByte = 1;
+    this->dropsLoot() = 1;
+    emitTime = 0.0f;
+    this->hitFlashTimer = 0.0f;
+    this->field_0x160 = 0.0001f;
+}
+
+PlayerAsteroid::~PlayerAsteroid() {
+    if (this->explosion != nullptr) {
+        delete this->explosion;
+    }
+    this->explosion = nullptr;
+}
+
 void PlayerAsteroid::setAsteroidIndex(int asteroidIndex) {
     this->asteroidIndex = asteroidIndex;
-}
-
-void PlayerAsteroid::translate(const Vector &delta) {
-    this->geometry->translate(delta);
-}
-
-void PlayerAsteroid::render() {
-    if (this->visibleFlag == 0)
-        return;
-    if (this->secondaryGeometry() != nullptr)
-        this->secondaryGeometry()->render();
-    if (this->state == 3)
-        this->explosion->render();
-    else if (this->state == 0)
-        this->geometry->render();
-}
-
-void PlayerAsteroid::setPosition(const Vector &position) {
-    this->geometry->setPosition(position);
 }
 
 Vector PlayerAsteroid::getPosition() {
     return this->geometry->getPosition();
 }
 
-void PlayerAsteroid::setRotationEnabled(bool enabled) {
-    this->rotationEnabled = enabled;
+void PlayerAsteroid::setPosition(const Vector &position) {
+    this->geometry->setPosition(position);
 }
 
-int PlayerAsteroid::getQualityFrameIndex() {
-    return 7 - this->quality;
+void PlayerAsteroid::translate(const Vector &delta) {
+    this->geometry->translate(delta);
 }
 
-int PlayerAsteroid::outerCollide(float x, float y, float z) {
-    return this->collide(x, y, z);
-}
-
-int PlayerAsteroid::outerCollide(Vector point) {
-    return this->collide(point.x, point.y, point.z);
+uint8_t PlayerAsteroid::isMinable() {
+    return this->minable;
 }
 
 int PlayerAsteroid::getQuality() {
@@ -66,8 +99,8 @@ float PlayerAsteroid::getScaling() {
     return this->scaling;
 }
 
-uint8_t PlayerAsteroid::isMinable() {
-    return this->minable;
+int PlayerAsteroid::getQualityFrameIndex() {
+    return 7 - this->quality;
 }
 
 String PlayerAsteroid::getQualityString() {
@@ -87,6 +120,46 @@ String PlayerAsteroid::getQualityString() {
             break;
     }
     return String(grade);
+}
+
+void PlayerAsteroid::setAsteroidCenter(Vector center) {
+    asteroidCenter = center;
+    asteroidDistance = (int) VectorLength(center);
+}
+
+void PlayerAsteroid::setRotationEnabled(bool enabled) {
+    this->rotationEnabled = enabled;
+}
+
+void PlayerAsteroid::initPush(const Vector &target, int duration) {
+    float ratio = VectorLength(target - this->getPosition()) / (float) duration;
+    float clamped = (ratio < 1.0f) ? ratio : 1.0f;
+    int pushTime = (int) ((1.0f - clamped) * 5000.0f);
+    this->pushTimer() = pushTime;
+    this->pushDuration() = pushTime;
+    this->pushDirection() = VectorNormalize(this->getPosition() - target);
+
+    float spinX = (float) (Globals::rnd->nextInt(200) - 100);
+    float spinY = (float) (Globals::rnd->nextInt(200) - 100);
+    float spinZ = (float) (Globals::rnd->nextInt(200) - 100);
+    this->pushSpin() = 0.2f * VectorNormalize(Vector{spinX, spinY, spinZ});
+}
+
+void PlayerAsteroid::push(int delta) {
+    if (this->pushTimer() <= 0)
+        return;
+
+    this->pushTimer() -= delta;
+    float t = (float) this->pushTimer() / (float) this->pushDuration();
+
+    Matrix rotation;
+    MatrixSetRotation(rotation, t * this->pushSpin().x, t * this->pushSpin().y, t * this->pushSpin().z);
+    if (this->lastDelta > 0)
+        this->geometry->setMatrix(this->geometry->getMatrix() * rotation);
+    float speed = (float) this->lastDelta;
+    AEGeometry *geometry = this->geometry;
+    float duration = (float) this->pushDuration();
+    geometry->translate(this->pushDirection() * speed * ((2.0f - t) * 3.0f * (duration / 5000.0f)));
 }
 
 void PlayerAsteroid::update(int delta) {
@@ -159,6 +232,25 @@ void PlayerAsteroid::update(int delta) {
     }
 }
 
+void PlayerAsteroid::render() {
+    if (this->visibleFlag == 0)
+        return;
+    if (this->secondaryGeometry() != nullptr)
+        this->secondaryGeometry()->render();
+    if (this->state == 3)
+        this->explosion->render();
+    else if (this->state == 0)
+        this->geometry->render();
+}
+
+int PlayerAsteroid::outerCollide(float x, float y, float z) {
+    return this->collide(x, y, z);
+}
+
+int PlayerAsteroid::outerCollide(Vector point) {
+    return this->collide(point.x, point.y, point.z);
+}
+
 Vector PlayerAsteroid::getProjectionVector(const Vector &value) {
     Vector projection = value;
     pos = this->geometry->getPosition();
@@ -166,11 +258,6 @@ Vector PlayerAsteroid::getProjectionVector(const Vector &value) {
     projection = pos;
     projection = VectorNormalize(projection);
     return projection;
-}
-
-void PlayerAsteroid::setAsteroidCenter(Vector center) {
-    asteroidCenter = center;
-    asteroidDistance = (int) VectorLength(center);
 }
 
 int PlayerAsteroid::collide(float x, float y, float z) {
@@ -186,93 +273,6 @@ int PlayerAsteroid::collide(float x, float y, float z) {
         z - pz < (float) radius && z - pz > (float) -radius)
         return true;
     return false;
-}
-
-void PlayerAsteroid::push(int delta) {
-    if (this->pushTimer() <= 0)
-        return;
-
-    this->pushTimer() -= delta;
-    float t = (float) this->pushTimer() / (float) this->pushDuration();
-
-    Matrix rotation;
-    MatrixSetRotation(rotation, t * this->pushSpin().x, t * this->pushSpin().y, t * this->pushSpin().z);
-    if (this->lastDelta > 0)
-        this->geometry->setMatrix(this->geometry->getMatrix() * rotation);
-    float speed = (float) this->lastDelta;
-    AEGeometry *geometry = this->geometry;
-    float duration = (float) this->pushDuration();
-    geometry->translate(this->pushDirection() * speed * ((2.0f - t) * 3.0f * (duration / 5000.0f)));
-}
-
-void PlayerAsteroid::initPush(const Vector &target, int duration) {
-    float ratio = VectorLength(target - this->getPosition()) / (float) duration;
-    float clamped = (ratio < 1.0f) ? ratio : 1.0f;
-    int pushTime = (int) ((1.0f - clamped) * 5000.0f);
-    this->pushTimer() = pushTime;
-    this->pushDuration() = pushTime;
-    this->pushDirection() = VectorNormalize(this->getPosition() - target);
-
-    float spinX = (float) (Globals::rnd->nextInt(200) - 100);
-    float spinY = (float) (Globals::rnd->nextInt(200) - 100);
-    float spinZ = (float) (Globals::rnd->nextInt(200) - 100);
-    this->pushSpin() = 0.2f * VectorNormalize(Vector{spinX, spinY, spinZ});
-}
-
-PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType,
-                               int asteroidIndex, const Vector &position, float scaling,
-                               int quality)
-    : KIPlayer(playerId, -1, new Player(1500, 30, 0, 0, 0), geometry,
-               position.x, position.y, position.z, false) {
-    float randomX, randomY, randomZ;
-    float spinX, spinY, spinZ, size;
-    this->player->setKIPlayer(this);
-    this->asteroidIndex = asteroidIndex;
-    this->asteroidFlag = 0;
-    this->scaling = scaling;
-    this->quality = quality;
-    this->player->setRadius((int) (static_cast<AbyssEngine::Transform *>(
-            Globals::Canvas->TransformGetTransform(geometry->transform))->boundingRadius * scaling * 0.7f));
-    this->player->setMaxHitpoints((int) (scaling * 100.0f + 30.0f));
-    this->lastHitpoints = this->player->getHitpoints();
-    this->minable = quality > 3;
-
-    this->explosion = new Explosion(explosionType + 2);
-    this->explosion->setScaling(scaling);
-    this->geometry->setScaling(scaling, scaling, scaling);
-    this->setPosition(position);
-
-    randomX = (float) (Globals::rnd->nextInt(8192) - 4096);
-    randomY = (float) (Globals::rnd->nextInt(8192) - 4096);
-    randomZ = (float) (Globals::rnd->nextInt(8192) - 4096);
-    tmp_vector2 = Vector{randomX * 0.00024414062f, randomY * 0.00024414062f, randomZ * 0.00024414062f};
-
-    this->geometry->setRotation((float) Globals::rnd->nextInt(100) * 0.01f * 6.2831855f,
-                                (float) Globals::rnd->nextInt(100) * 0.01f * 6.2831855f,
-                                (float) Globals::rnd->nextInt(100) * 0.01f * 6.2831855f);
-    this->rotationEnabled = 1;
-    this->secondaryGeometry() = nullptr;
-
-    spinX = (float) (Globals::rnd->nextInt(3) - 1);
-    spinY = (float) (Globals::rnd->nextInt(3) - 1);
-    spinZ = (float) (Globals::rnd->nextInt(3) - 1);
-    size = scaling < 0.9f ? 0.9f : scaling;
-    size = size < 1.0f ? size : 1.0f;
-    this->spin = Vector{spinX, spinY, spinZ} * (1.0f - size);
-
-    this->state = 0;
-    this->stealFlagByte = 1;
-    this->dropsLoot() = 1;
-    emitTime = 0.0f;
-    this->hitFlashTimer = 0.0f;
-    this->field_0x160 = 0.0001f;
-}
-
-PlayerAsteroid::~PlayerAsteroid() {
-    if (this->explosion != nullptr) {
-        delete this->explosion;
-    }
-    this->explosion = nullptr;
 }
 
 AbyssEngine::AEMath::Vector PlayerAsteroid::tmp_vector2;

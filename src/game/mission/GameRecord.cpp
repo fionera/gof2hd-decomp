@@ -81,10 +81,10 @@ GameRecord::GameRecord() {
     this->field_0x118 = 0;
     this->field_0x119 = 0;
     this->field_0x11a = 0;
-    this->field_0x100 = 0;
-    this->field_0x101 = 0;
-    this->field_0x102 = 0;
-    this->field_0x103 = 0;
+    this->hintFlags[28] = 0;
+    this->hintFlags[29] = 0;
+    this->hintFlags[30] = 0;
+    this->hintFlags[31] = 0;
     this->field_0x104 = 0;
     this->field_0x105 = 0;
     this->field_0x106 = 0;
@@ -92,14 +92,35 @@ GameRecord::GameRecord() {
     this->field_0x108 = 0;
     this->field_0x109 = 0;
     this->field_0x10a = 0;
-    this->field_0xf0 = 0;
-    this->field_0xf4 = 0;
-    this->field_0xf8 = 0;
-    this->field_0xfc = 0;
+    this->hintFlags[12] = 0;
+    this->hintFlags[13] = 0;
+    this->hintFlags[14] = 0;
+    this->hintFlags[15] = 0;
+    this->hintFlags[16] = 0;
+    this->hintFlags[17] = 0;
+    this->hintFlags[18] = 0;
+    this->hintFlags[19] = 0;
+    this->hintFlags[20] = 0;
+    this->hintFlags[21] = 0;
+    this->hintFlags[22] = 0;
+    this->hintFlags[23] = 0;
+    this->hintFlags[24] = 0;
+    this->hintFlags[25] = 0;
+    this->hintFlags[26] = 0;
+    this->hintFlags[27] = 0;
     this->field_0xe0 = 0;
-    this->field_0xe4 = 0;
-    this->field_0xe8 = 0;
-    this->field_0xec = 0;
+    this->hintFlags[0] = 0;
+    this->hintFlags[1] = 0;
+    this->hintFlags[2] = 0;
+    this->hintFlags[3] = 0;
+    this->hintFlags[4] = 0;
+    this->hintFlags[5] = 0;
+    this->hintFlags[6] = 0;
+    this->hintFlags[7] = 0;
+    this->hintFlags[8] = 0;
+    this->hintFlags[9] = 0;
+    this->hintFlags[10] = 0;
+    this->hintFlags[11] = 0;
 
     this->shipId = 0xffffffff;
     this->field_0xc8 = 0;
@@ -115,7 +136,7 @@ GameRecord::GameRecord() {
     this->field_0x134 = 0;
     this->field_0x138 = 0;
     this->field_0x13c = 0;
-    this->field_0x140 = 0;
+    this->field_0x140 = nullptr;
     this->field_0x144 = 0;
     this->field_0x148 = 0;
     this->field_0x14c = 0;
@@ -142,50 +163,9 @@ GameRecord::GameRecord() {
 
 typedef uint32_t uint;
 
-long Array_dtor(void *self); // lint: void_ptr (external symbol; heterogeneous Array<T>* callers, mangled signature is fixed)
 
-// lint: void_ptr (external symbol; heterogeneous Array<T>* callers, mangled signature is fixed)
 
-long Station_getIndex(...);
 
-long Station_getSystem(...);
-
-struct PlayerEgoSaveBlock {
-    uint8_t _pad_0x00[0x8];
-    uint32_t restored_0x08;
-    uint32_t restored_0x0c;
-    uint32_t restored_0x10;
-    uint32_t restored_0x14;
-    uint32_t restored_0x18;
-    uint32_t restored_0x1c;
-    uint32_t restored_0x20;
-    uint32_t restored_0x24;
-    uint8_t flag_0x28;
-    uint8_t flag_0x29;
-    uint8_t flag_0x2a;
-    uint8_t flag_0x2b;
-    uint8_t flag_0x2c;
-    uint8_t flag_0x2d;
-    uint8_t flag_0x2e;
-    uint8_t flag_0x2f;
-    uint8_t flag_0x30;
-    uint8_t flag_0x31;
-    uint8_t flag_0x32;
-    uint8_t flag_0x33;
-    uint8_t flag_0x34;
-    uint8_t flag_0x35;
-    uint8_t flag_0x36;
-    uint8_t flag_0x37;
-    uint8_t flag_0x38;
-    uint8_t flag_0x39;
-    uint8_t flag_0x3a;
-};
-
-static PlayerEgoSaveBlock *const *const kPlayerEgoSlot =
-        (PlayerEgoSaveBlock *const *const) 0x220290;
-
-static Mission *const *const *const kCampaignMissionSlot =
-        (Mission *const *const *const) 0x2202bc;
 
 struct MissionFlags {
     uint8_t _pad_0x00[0x2c];
@@ -195,7 +175,6 @@ struct MissionFlags {
     uint8_t versionGuardFlag;
 };
 
-static MissionFlags *const *const kMissionFlagsSlot = (MissionFlags *const *const) 0x22016c;
 
 static const uint32_t kRecordExtendedTag = 0x6e6a78;
 
@@ -237,137 +216,84 @@ void GameRecord::load() {
     st->field_7c = this->field_0x48;
     st->field_84 = this->field_0x4c;
     st->field_88 = this->field_0x50;
-    if (this->dlcRequiredFlag == '\0') {
-        if (this->versionMismatchFlag == '\0') {
-            if (0x2d < (long) this->field_0x40) {
-                this->field_0x40 = 0x2d;
-            }
-            goto applyMissionCap;
-        }
-    LAB_dlcUnlocked:
-        campaignLocked = true;
-    } else {
-        if (this->versionMismatchFlag != '\0') goto LAB_dlcUnlocked;
-    applyMissionCap:
-        if (0x54 < (long) this->field_0x40) {
-            this->field_0x40 = 0x54;
-        }
-        campaignLocked = false;
-    }
-    if (((this->dlcRequiredFlag != '\0' || campaignLocked) && (this->field_0x40 == 0x2e)) &&
-        (campaignStage = ((Mission *) this->field_0x58)->isEmpty(), campaignStage != 0)) {
-        this->field_0x40 = 0x2d;
-    }
+    // Saves from older versions are capped to the campaign part they contain.
+    if (!this->dlcRequiredFlag && !this->versionMismatchFlag && this->field_0x40 > 45)
+        this->field_0x40 = 45;
+    if (!this->versionMismatchFlag && this->field_0x40 > 84)
+        this->field_0x40 = 84;
+    if ((this->dlcRequiredFlag || this->versionMismatchFlag) && this->field_0x40 == 46 &&
+        ((Mission *) this->field_0x58)->isEmpty())
+        this->field_0x40 = 45;
     Globals::status->setCurrentCampaignMission(this->field_0x40);
-    this->field_0x102 = 0x2d < (long) this->field_0x40;
-    this->field_0x119 = 0x55 < (long) this->field_0x40;
+    this->hintFlags[30] = this->field_0x40 > 45;
+    this->field_0x119 = this->field_0x40 > 85;
     Globals::status->setFreelanceMission((Mission *) this->field_0x54);
     Globals::status->setCampaignMission((Mission *) this->field_0x58);
     Globals::status->setStationStack((Array<Station *> *) this->field_0x5c);
-    campaignStage = this->field_0x40;
-    if (campaignStage == 0x23) {
-        targetStation = ((Mission *) this->field_0x58)->getTargetStation();
-        if (targetStation != 0x1d) {
-            Mission *m = new Mission(0xb, 0, 0x1d);
-            Globals::status->setCampaignMission(m);
-        }
-        campaignStage = this->field_0x40;
+
+    // Repair campaign states broken by earlier versions.
+    if (this->field_0x40 == 35 && ((Mission *) this->field_0x58)->getTargetStation() != 29)
+        Globals::status->setCampaignMission(new Mission(11, 0, 29));
+    if (this->field_0x40 == 29) {
+        this->field_0x44 = 91;
+        this->field_0x48 = 18;
+        Globals::status->setCurrentCampaignMission(28);
+        Globals::status->setCampaignMission(new Mission(4, 0, 91));
     }
-    if (campaignStage == 0x1d) {
-        this->field_0x44 = 0x5b;
-        this->field_0x48 = 0x12;
-        Globals::status->setCurrentCampaignMission(0x1c);
-        Mission *m = new Mission(4, 0, 0x5b);
-        Globals::status->setCampaignMission(m);
-        campaignStage = this->field_0x40;
-    }
-    if (campaignStage == 0x19) {
-        this->field_0x44 = 0x30;
+    if (this->field_0x40 == 25) {
+        this->field_0x44 = 48;
         this->field_0x48 = 9;
-        Globals::status->setCurrentCampaignMission(0x18);
-        Mission *m = new Mission(4, 0, 0x30);
-        Globals::status->setCampaignMission(m);
-        campaignStage = this->field_0x40;
+        Globals::status->setCurrentCampaignMission(24);
+        Globals::status->setCampaignMission(new Mission(4, 0, 48));
     }
-    if (campaignStage == 0x29) {
-        Globals::status->setCurrentCampaignMission(0x27);
-        Mission *m = new Mission(0xb, 0, 0x1e);
-        Globals::status->setCampaignMission(m);
+    if (this->field_0x40 == 41) {
+        Globals::status->setCurrentCampaignMission(39);
+        Globals::status->setCampaignMission(new Mission(11, 0, 30));
     }
-    if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-        ((this->field_0x40 == 0x56 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
-                                       != 100)))) {
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
-        Mission *m = new Mission(0xb, 0, 100);
-        Globals::status->setCampaignMission(m);
+    if ((this->versionMismatchFlag || this->field_0x118) && this->field_0x40 == 86 &&
+        ((Mission *) this->field_0x58)->getTargetStation() != 100) {
+        Globals::hints[49] = 1;
+        Globals::status->setCampaignMission(new Mission(11, 0, 100));
     }
-    if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-        ((this->field_0x40 == 0x57 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
-                                       != 10)))) {
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
-        Mission *m = new Mission(4, 0, 10);
-        Globals::status->setCampaignMission(m);
+    if ((this->versionMismatchFlag || this->field_0x118) && this->field_0x40 == 87 &&
+        ((Mission *) this->field_0x58)->getTargetStation() != 10) {
+        Globals::hints[49] = 1;
+        Globals::status->setCampaignMission(new Mission(4, 0, 10));
     }
-    if ((((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-         (this->field_0x40 == 0x58)) && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(),
-                                         targetStation != 10)) {
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
-        Mission *m = new Mission(0xb, 0, 10);
-        Globals::status->setCampaignMission(m);
+    if ((this->versionMismatchFlag || this->field_0x118) && this->field_0x40 == 88 &&
+        ((Mission *) this->field_0x58)->getTargetStation() != 10) {
+        Globals::hints[49] = 1;
+        Globals::status->setCampaignMission(new Mission(11, 0, 10));
     }
-    if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-        ((this->field_0x40 == 0x59 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
-                                       != 10)))) {
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
-        Globals::status->setCurrentCampaignMission(0x56);
-        Mission *m = new Mission(0xb, 0, 100);
-        Globals::status->setCampaignMission(m);
+    if ((this->versionMismatchFlag || this->field_0x118) && this->field_0x40 == 89 &&
+        ((Mission *) this->field_0x58)->getTargetStation() != 10) {
+        Globals::hints[49] = 1;
+        Globals::status->setCurrentCampaignMission(86);
+        Globals::status->setCampaignMission(new Mission(11, 0, 100));
     }
-    if ((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) {
-        campaignStage = this->field_0x40;
-        if (campaignStage == 0x5b) {
-            targetStation = ((Mission *) this->field_0x58)->getTargetStation();
-            if (targetStation == 0x6e) {
-                campaignStage = this->field_0x40;
-                goto LAB_checkStageRange;
-            }
-        } else {
-        LAB_checkStageRange:
-            if ((0xc < campaignStage - 0x5bU) ||
-                (((Array<uint8_t> *) this->field_0x160)->data_[0x1b] != '\0'))
-                goto stationStackLoaded;
-        }
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
-        this->field_0x40 = 0x56;
+    if ((this->versionMismatchFlag || this->field_0x118) &&
+        ((this->field_0x40 == 91 && ((Mission *) this->field_0x58)->getTargetStation() != 110) ||
+         ((unsigned int) (this->field_0x40 - 91) <= 12 && !((Array<uint8_t> *) this->field_0x160)->data_[27]))) {
+        Globals::hints[49] = 1;
+        this->field_0x40 = 86;
         Globals::status->setCurrentCampaignMission(this->field_0x40);
-        Mission *m = new Mission(0xb, 0, 100);
-        Globals::status->setCampaignMission(m);
+        Globals::status->setCampaignMission(new Mission(11, 0, 100));
     }
-stationStackLoaded:
     ((Station *) Globals::status->voidStation)->setItems((Array<Item *> *) this->field_0x180, true);
     ((Station *) Globals::status->voidStation)->setShips((Array<Ship *> *) this->field_0x184, true);
     st = Globals::status;
-    if (st->field_94 != (Array<bool> *) 0x0) {
-        deadArray = (unsigned char *) Array_dtor(st->field_94);
-        ::operator delete(deadArray);
-        st = Globals::status;
-    }
+    delete st->field_94;
+    st = Globals::status;
     st->field_94 = (Array<bool> *) this->field_0x68;
-    if (st->field_98 != (Array<bool> *) 0x0) {
-        deadArray = (unsigned char *) Array_dtor(st->field_98);
-        ::operator delete(deadArray);
-        st = Globals::status;
-    }
+    delete st->field_98;
+    st = Globals::status;
     st->field_98 = (Array<bool> *) this->field_0x6c;
-    if (st->field_90 != (Array<int> *) 0x0) {
-        deadArray = (unsigned char *) Array_dtor(st->field_90);
-        ::operator delete(deadArray);
-        st = Globals::status;
-    }
+    delete st->field_90;
+    st = Globals::status;
     st->field_90 = (Array<int> *) this->field_0x70;
     st->field_10c = this->field_0xd0;
 
-    MissionFlags *missionFlags = *kMissionFlagsSlot;
+    MissionFlags *missionFlags = (MissionFlags *) Globals::options;
     st->field_110 = this->field_0xd4;
     st->field_0x111 = this->field_0xdc;
     if (missionFlags->versionGuardFlag == '\0') {
@@ -381,11 +307,8 @@ stationStackLoaded:
     st->field_a0 = this->field_0x78;
     st->field_a4 = this->field_0x7c;
     st->field_a8 = this->field_0x80;
-    if (st->field_ac != (Array<bool> *) 0x0) {
-        deadArray = (unsigned char *) Array_dtor(st->field_ac);
-        ::operator delete(deadArray);
-        st = Globals::status;
-    }
+    delete st->field_ac;
+    st = Globals::status;
     st->field_ac = (Array<bool> *) this->field_0x84;
     st->field_b0 = this->field_0x88;
     srcByteArray = (Array<uint8_t> *) this->field_0x8c;
@@ -433,7 +356,7 @@ afterDlcUnsaleable:
             }
         }
     }
-    if (0x79 < (long) this->field_0x40) {
+    if (this->field_0x40 > 121) {
         Array<Item *> *cargo = ((Ship *) (Globals::status->getShip()))->getCargo();
         if (cargo != (Array<Item *> *) 0x0) {
             for (i = 0; i < cargo->size(); i = i + 1) {
@@ -444,46 +367,32 @@ afterDlcUnsaleable:
             }
         }
     }
-    Array<BluePrint *> *bluePrintArray = (Array<BluePrint *> *) this->field_0x140;
-    if (bluePrintArray != (Array<BluePrint *> *) 0x0) {
-        for (i = 0; i < bluePrintArray->count; i = i + 1) {
-            blueprint = bluePrintArray->data_[i];
-            if ((blueprint != (BluePrint *) 0x0) &&
-                (((blueprint->getIndex() == 0xdf ||
-                   (bluePrintArray->data_[i]->getIndex() == 0xd2)) &&
-                  (bluePrintArray->data_[i]->isEmpty() == 0)))) {
-                station = (Station *) Globals::galaxy->getStation(
-                    (int) bluePrintArray->data_[i]->getStationIndex());
-                if (station != (Station *) 0x0) {
-                    int sysIndex = Station_getSystem(station);
-                    SolarSystem *sys = (SolarSystem *) Globals::galaxy->getSystem(sysIndex);
-                    if (sys->getRoutes() == nullptr) {
-                        ((BluePrint *) bluePrintArray->data_[i])->stationIndex = 10;
-                        delete station;
-                        station = (Station *) Globals::galaxy->getStation(
-                            (int) bluePrintArray->data_[i]->getStationIndex());
-                        bluePrintArray->data_[i]->stationName =
-                                ((Station *) (station))->getName();
-                        if (station == (Station *) 0x0) goto LAB_blueprintLoopTail;
-                    }
-                    delete station;
-                }
+    // Blueprints whose station lies in a system without routes are moved to station 10.
+    if (this->field_0x140 != nullptr) {
+        for (unsigned int k = 0; k < (*this->field_0x140).size(); k++) {
+            if ((*this->field_0x140)[k] == nullptr ||
+                ((*this->field_0x140)[k]->getIndex() != 223 && (*this->field_0x140)[k]->getIndex() != 210) ||
+                (*this->field_0x140)[k]->isEmpty())
+                continue;
+            Station *bpStation = (Station *) (intptr_t) Globals::galaxy->getStation((*this->field_0x140)[k]->getStationIndex());
+            if (bpStation == nullptr)
+                continue;
+            if (((SolarSystem *) (intptr_t) Globals::galaxy->getSystem(bpStation->getSystem()))->getRoutes() == nullptr) {
+                (*this->field_0x140)[k]->stationIndex = 10;
+                delete bpStation;
+                bpStation = (Station *) (intptr_t) Globals::galaxy->getStation(10);
+                (*this->field_0x140)[k]->stationName = bpStation->getName();
             }
-        LAB_blueprintLoopTail:
-            bluePrintArray = (Array<BluePrint *> *) this->field_0x140;
+            delete bpStation;
         }
     }
     st = Globals::status;
     st->field_8c = this->field_0x134;
     st->setStation((Station *) this->field_0x138);
-    Globals::status->setMission(**kCampaignMissionSlot);
+    Globals::status->setMission(Mission::empty);
     st->standing = (Standing *) this->field_0x13c;
-    {
-        Array<uint32_t> *bpVec = (Array<uint32_t> *) this->field_0x140;
-        for (i = 0; i < bpVec->count; i = i + 1) {
-            ((Array<uint32_t> *) Globals::status->bluePrints)->data_[i] = bpVec->data_[i];
-        }
-    }
+    for (i = 0; i < this->field_0x140->size(); i++)
+        (*Globals::status->bluePrints)[i] = (*this->field_0x140)[i];
     Globals::status->pendingProducts = (Array<PendingProduct *> *) this->field_0x144;
     {
         Array<uint32_t> *agVec = (Array<uint32_t> *) this->field_0x148;
@@ -536,43 +445,35 @@ afterDlcUnsaleable:
         }
     }
 
-    PlayerEgoSaveBlock *ego = *kPlayerEgoSlot;
-
-    ego->restored_0x08 = this->field_0xe4;
-    ego->restored_0x0c = this->field_0xe8;
-    ego->restored_0x10 = this->field_0xec;
-    ego->restored_0x14 = this->field_0xf0;
-
+    for (int k = 0; k < 16; k++)
+        Globals::hints[8 + k] = this->hintFlags[k];
     missionFlags->field_0x2c = reinterpret_cast<uint32_t &>(this->rank);
     scalar = this->field_0xcc;
     st->field_0x100 = this->field_0xc8;
     st->field_0x104 = scalar;
-
-    ego->restored_0x18 = this->field_0xf4;
-    ego->restored_0x1c = this->field_0xf8;
-    ego->restored_0x20 = this->field_0xfc;
-    ego->restored_0x24 = this->field_0x100;
+    for (int k = 16; k < 32; k++)
+        Globals::hints[8 + k] = this->hintFlags[k];
     if (this->field_0x1bc == kRecordExtendedTag) {
-        ego->flag_0x29 = this->field_0x105;
-        ego->flag_0x28 = this->field_0x104;
-        ego->flag_0x2a = this->field_0x106;
-        ego->flag_0x2b = this->field_0x107;
-        ego->flag_0x2c = this->field_0x108;
-        ego->flag_0x2d = this->field_0x109;
-        ego->flag_0x2e = this->field_0x10a;
-        ego->flag_0x2f = this->field_0x10b;
-        ego->flag_0x30 = this->field_0x10c;
+        Globals::hints[41] = this->field_0x105;
+        Globals::hints[40] = this->field_0x104;
+        Globals::hints[42] = this->field_0x106;
+        Globals::hints[43] = this->field_0x107;
+        Globals::hints[44] = this->field_0x108;
+        Globals::hints[45] = this->field_0x109;
+        Globals::hints[46] = this->field_0x10a;
+        Globals::hints[47] = this->field_0x10b;
+        Globals::hints[48] = this->field_0x10c;
         st->field_178 = this->field_0x1b8;
-        ego->flag_0x31 = this->field_0x119;
-        ego->flag_0x32 = this->field_0x11a;
-        ego->flag_0x33 = this->field_0x10d;
-        ego->flag_0x34 = this->field_0x10e;
-        ego->flag_0x35 = this->field_0x10f;
-        ego->flag_0x36 = this->field_0x110;
-        ego->flag_0x37 = this->field_0x111;
-        ego->flag_0x38 = this->field_0x113;
-        ego->flag_0x39 = this->field_0x112;
-        ego->flag_0x3a = this->field_0x114;
+        Globals::hints[49] = this->field_0x119;
+        Globals::hints[50] = this->field_0x11a;
+        Globals::hints[51] = this->field_0x10d;
+        Globals::hints[52] = this->field_0x10e;
+        Globals::hints[53] = this->field_0x10f;
+        Globals::hints[54] = this->field_0x110;
+        Globals::hints[55] = this->field_0x111;
+        Globals::hints[56] = this->field_0x113;
+        Globals::hints[57] = this->field_0x112;
+        Globals::hints[58] = this->field_0x114;
         st->field_58 = (Array<bool> *) this->field_0x17c;
         srcVec = (Array<uint32_t> *) this->field_0x1b4;
         if ((srcVec != (Array<uint32_t> *) 0x0) && (i = srcVec->count, i != 0)) {
@@ -588,7 +489,7 @@ afterDlcUnsaleable:
         st->collectedBounties[2] = this->collectedBounties[2];
         st->collectedBounties[3] = this->collectedBounties[3];
         station = Globals::status->getStation();
-        if (Station_getIndex(station) == 0x6c) {
+        if (station->getIndex() == 0x6c) {
             Station *stStation = Globals::status->getStation();
             Array<Ship *> *stationShips = (Array<Ship *> *) stStation->getShips();
             if (stationShips != (Array<Ship *> *) 0x0) {

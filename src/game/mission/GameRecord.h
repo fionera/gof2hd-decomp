@@ -5,6 +5,8 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 
+class BluePrint;
+
 class GameRecord {
 public:
     uint8_t *data;
@@ -24,7 +26,7 @@ public:
     uint32_t field_0x34;
     uint32_t field_0x38;
     uint32_t field_0x3c;
-    uint32_t field_0x40;
+    int32_t field_0x40;
     uint32_t field_0x44;
     uint32_t field_0x48;
     uint32_t field_0x4c;
@@ -71,18 +73,7 @@ public:
     uint8_t field_0xde;
     uint8_t field_0xdf;
     uint32_t field_0xe0;
-    uint32_t field_0xe4;
-    uint32_t field_0xe8;
-    uint32_t field_0xec;
-    uint32_t field_0xf0;
-    uint32_t field_0xf4;
-    uint32_t field_0xf8;
-    uint32_t field_0xfc;
-
-    uint8_t field_0x100;
-    uint8_t field_0x101;
-    uint8_t field_0x102;
-    uint8_t field_0x103;
+    uint8_t hintFlags[32]; // 0xe4: Globals::hints[8..39]
     uint8_t field_0x104;
     uint8_t field_0x105;
     uint8_t field_0x106;
@@ -100,9 +91,9 @@ public:
     uint8_t field_0x112;
     uint8_t field_0x113;
     uint8_t field_0x114;
-    uint8_t dlcRequiredFlag;
+    bool dlcRequiredFlag;
     uint8_t field_0x116;
-    uint8_t versionMismatchFlag;
+    bool versionMismatchFlag;
     uint8_t field_0x118;
     uint8_t field_0x119;
     uint8_t field_0x11a;
@@ -120,7 +111,7 @@ public:
     uint32_t field_0x134;
     uint32_t field_0x138;
     uint32_t field_0x13c;
-    uint32_t field_0x140;
+    Array<BluePrint *> *field_0x140;
     uint32_t field_0x144;
     uint32_t field_0x148;
     uint32_t field_0x14c;
@@ -164,8 +155,8 @@ static_assert(offsetof(GameRecord, field_0xd4) == 0xd4, "");
 static_assert(offsetof(GameRecord, field_0xd8) == 0xd8, "");
 static_assert(offsetof(GameRecord, field_0xdc) == 0xdc, "");
 static_assert(offsetof(GameRecord, field_0xe0) == 0xe0, "");
-static_assert(offsetof(GameRecord, field_0x100) == 0x100, "");
-static_assert(offsetof(GameRecord, field_0x102) == 0x102, "");
+static_assert(offsetof(GameRecord, hintFlags) == 0xe4, "");
+static_assert(offsetof(GameRecord, field_0x104) == 0x104, "");
 static_assert(offsetof(GameRecord, dlcRequiredFlag) == 0x115, "dlcRequiredFlag");
 static_assert(offsetof(GameRecord, versionMismatchFlag) == 0x117, "versionMismatchFlag");
 static_assert(offsetof(GameRecord, playTime) == 0x10, "playTime");
