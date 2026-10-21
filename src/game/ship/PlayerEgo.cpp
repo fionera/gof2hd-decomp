@@ -2708,10 +2708,11 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                 this->StopEngineSound();
                 return false;
             }
+            Vector target = this->moveTarget;
             float speed = 4.0f;
             if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
                 speed = Globals::status->getShip()->getHandling() + 2.7f;
-            this->moveToPosition(this->moveTarget, true, speed);
+            this->moveToPosition(target, true, speed);
             if (distance <= 19999)
                 this->aboutToReachAutoTargetFlag = 1;
             return false;
@@ -2735,8 +2736,7 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
             if (kShipDockRadius[Globals::status->getShip()->getIndex()] > (int) distance) {
                 Mission *mission = Globals::status->getMission();
                 Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                PlayerFixedObject *fixed = (PlayerFixedObject *) (intptr_t) this->asteroidTarget;
-                if (!mission->isEmpty() && mission->getType() == 15 && fixed->getDockingType() == 1) {
+                if (!mission->isEmpty() && mission->getType() == 15 && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 1) {
                     if (Globals::status->getShip()->hasCargo(mission->getProductionGoodIndex(), 1)) {
                         this->dockTotalAmount =
                             Globals::status->getShip()->getCargo(mission->getProductionGoodIndex())->getAmount();
@@ -2749,7 +2749,7 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                             hud->hudEvent(41, this, 0);
                     }
                 } else if (!mission->isEmpty() && (mission->getType() == 184 || mission->getType() == 168)
-                           && fixed->getDockingType() == 2) {
+                           && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 2) {
                     if ((Globals::status->getShip()->getMaxPassengers() >= 1
                          && Globals::status->field_178 < Globals::status->getShip()->getMaxPassengers())
                         || mission->getType() == 168) {
@@ -2758,14 +2758,14 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                         this->dockTotalAmount = capacity - Globals::status->field_178;
                         if (this->dockTotalAmount > mission->getStatusValue() - Globals::status->field_178)
                             this->dockTotalAmount = mission->getStatusValue() - Globals::status->field_178;
-                        this->dockTransferedAmount = 0;
                         this->field_0x35c = 0;
+                        this->dockTransferedAmount = 0;
                         if (this->dockTotalAmount >= 1)
                             hud->hudEvent(35, this, 0);
                     } else if (Globals::status->getShip()->getMaxPassengers() == 0) {
                         hud->hudEvent(43, this, 0);
                     }
-                } else if (!mission->isEmpty() && mission->getType() == 184 && fixed->getDockingType() == 1) {
+                } else if (!mission->isEmpty() && mission->getType() == 184 && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 1) {
                     if (Globals::status->field_178 >= 1) {
                         this->field_0x35c = 0;
                         this->dockTotalAmount = Globals::status->field_178;
@@ -2773,7 +2773,7 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                         hud->hudEvent(37, this, 0);
                     }
                 } else if (campaign != nullptr && !campaign->isEmpty()
-                           && (campaign->getType() == 167 || campaign->getType() == 174) && fixed->getDockingType() == 1
+                           && (campaign->getType() == 167 || campaign->getType() == 174) && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 1
                            && Globals::status->getShip()->hasCargo(campaign->getProductionGoodIndex(), 1)) {
                     this->dockTotalAmount =
                         Globals::status->getShip()->getCargo(campaign->getProductionGoodIndex())->getAmount();
@@ -2796,7 +2796,8 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
             AbyssEngine::AEMath::MatrixSetTranslation(
                 eased, this->getPosition()
                            + (this->moveTarget - this->getPosition()) * (float) this->shakeIntensity * 0.0006f);
-            this->field_0x4->setMatrix(Matrix());
+            Matrix identity;
+            this->field_0x4->setMatrix(identity);
             this->geometry->setMatrix(eased);
             reinterpret_cast<Matrix &>(this->player->transform[0]) = this->geometry->getMatrix();
             this->dockOffsetVec = this->geometry->getPosition();
@@ -2809,40 +2810,41 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                 ((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition()
                 + AbyssEngine::AEMath::MatrixRotateVector(((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(),
                                                           exit->position);
-            if ((int) AbyssEngine::AEMath::VectorLength(this->moveTarget - this->getPosition()) < 200) {
-                this->field_0x145 = 0;
-                this->dockedFlag = 0;
-                this->asteroidTarget = 0;
-                radar->lockedEnemy = nullptr;
-                radar->dockNavPtr = nullptr;
-                this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
-                this->targetFollowCamera->setActive(true);
-                this->targetFollowCamera->setLookAtCam(false);
-                this->targetFollowCamera->useTargetsUpVector(false);
-                this->levelScript->resetCamera(this->level);
-                this->player->resetGunDelay(0);
-                this->dockingPointIndex = 0;
-                this->field_0xb0 = 1;
-                if (this->spacePoint != 0) {
-                    ((SpacePoint *) (intptr_t) this->spacePoint)->giveFree();
-                    this->spacePoint = 0;
-                }
-                if (this->hackingGame != 0) {
-                    delete (HackingGame *) (intptr_t) this->hackingGame;
-                    this->hackingGame = 0;
-                    hud->setHackingGameActive(false);
-                }
+            if ((int) AbyssEngine::AEMath::VectorLength(this->moveTarget - this->getPosition()) >= 200) {
+                this->easeMatrix->Increase((float) this->shakeIntensity);
+                Matrix eased = this->easeMatrix->GetValue();
+                AbyssEngine::AEMath::MatrixSetTranslation(
+                    eased, this->getPosition()
+                               + (this->moveTarget - this->getPosition()) * (float) this->shakeIntensity * 0.0012f);
+                Matrix identity;
+                this->field_0x4->setMatrix(identity);
+                this->geometry->setMatrix(eased);
+                reinterpret_cast<Matrix &>(this->player->transform[0]) = this->geometry->getMatrix();
+                this->dockOffsetVec = this->geometry->getPosition();
                 return false;
             }
-            this->easeMatrix->Increase((float) this->shakeIntensity);
-            Matrix eased = this->easeMatrix->GetValue();
-            AbyssEngine::AEMath::MatrixSetTranslation(
-                eased, this->getPosition()
-                           + (this->moveTarget - this->getPosition()) * (float) this->shakeIntensity * 0.0012f);
-            this->field_0x4->setMatrix(Matrix());
-            this->geometry->setMatrix(eased);
-            reinterpret_cast<Matrix &>(this->player->transform[0]) = this->geometry->getMatrix();
-            this->dockOffsetVec = this->geometry->getPosition();
+            this->dockedFlag = 0;
+            this->field_0x145 = 0;
+            this->asteroidTarget = 0;
+            radar->lockedEnemy = nullptr;
+            radar->dockNavPtr = nullptr;
+            this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
+            this->targetFollowCamera->setActive(true);
+            this->targetFollowCamera->setLookAtCam(false);
+            this->targetFollowCamera->useTargetsUpVector(false);
+            this->levelScript->resetCamera(this->level);
+            this->player->resetGunDelay(0);
+            this->field_0xb0 = 1;
+            this->dockingPointIndex = 0;
+            if (this->spacePoint != 0) {
+                ((SpacePoint *) (intptr_t) this->spacePoint)->giveFree();
+                this->spacePoint = 0;
+            }
+            if (this->hackingGame != 0) {
+                delete (HackingGame *) (intptr_t) this->hackingGame;
+                this->hackingGame = 0;
+                hud->setHackingGameActive(false);
+            }
             return false;
         }
         default:
