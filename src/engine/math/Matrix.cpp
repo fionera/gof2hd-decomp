@@ -14,9 +14,18 @@ namespace AbyssEngine {
         Matrix::operator const float *() const { return m; }
 
         Matrix &Matrix::operator=(const Matrix &other) {
-            for (int i = 0; i < 12; ++i) {
-                m[i] = other.m[i];
-            }
+            m.e0 = other.m.e0;
+            m.e1 = other.m.e1;
+            m.e2 = other.m.e2;
+            m.e3 = other.m.e3;
+            m.e4 = other.m.e4;
+            m.e5 = other.m.e5;
+            m.e6 = other.m.e6;
+            m.e7 = other.m.e7;
+            m.e8 = other.m.e8;
+            m.e9 = other.m.e9;
+            m.e10 = other.m.e10;
+            m.e11 = other.m.e11;
             scaleVector() = other.scaleVector();
             return *this;
         }
@@ -117,15 +126,19 @@ namespace AbyssEngine {
         }
 
         Matrix MatrixIdentity(Matrix &matrix) {
-            for (int i = 0; i < 16; ++i) {
-                matrix.m[i] = 0.0f;
-            }
             matrix.m[0] = 1.0f;
+            matrix.m[1] = 0.0f;
+            matrix.m[2] = 0.0f;
+            matrix.m[3] = 0.0f;
+            matrix.m[4] = 0.0f;
             matrix.m[5] = 1.0f;
+            matrix.m[6] = 0.0f;
+            matrix.m[7] = 0.0f;
+            matrix.m[8] = 0.0f;
+            matrix.m[9] = 0.0f;
             matrix.m[10] = 1.0f;
-            matrix.m[12] = 1.0f;
-            matrix.m[13] = 1.0f;
-            matrix.m[14] = 1.0f;
+            matrix.m[11] = 0.0f;
+            matrix.scaleVector() = Vector{1.0f, 1.0f, 1.0f};
             return matrix;
         }
 
