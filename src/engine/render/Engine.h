@@ -194,7 +194,7 @@ namespace AbyssEngine {
 
         uint8_t glowActive;
         uint32_t glEnableFlags;
-        uint8_t lightingEnabled;
+        bool lightingEnabled;
         float uvMatrixGL[16];
         Vector field_0x468;
 
@@ -328,7 +328,7 @@ namespace AbyssEngine {
 
         void SetColor(float red, float green, float blue, float alpha);
 
-        uint64_t SetEyePosition(float x, float y, float z);
+        void SetEyePosition(float x, float y, float z);
 
         void SetFrameBufferTexture(int slot0, int slot1);
 
@@ -422,13 +422,13 @@ namespace AbyssEngine {
         static unsigned char enableReverseFlag;
         static int tv_h;
         static int tv_w;
-        static AbyssEngine::AEMath::Vector vendor;
+        static AbyssEngine::String vendor;
         static unsigned char DrawFBO;
         static int vboSize;
         static unsigned char DEBUGKEY;
         static unsigned char TVEnable;
         static float farPlane;
-        static AbyssEngine::AEMath::Vector renderer;
+        static AbyssEngine::String renderer;
         static AbyssEngine::AEMath::Vector tv_modes;
         static unsigned char WireFrame;
         static float nearPlane;

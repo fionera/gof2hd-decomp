@@ -259,7 +259,7 @@ void StarSystem::initLight() {
             this->fogEnabled = 1;
             for (uint32_t i = 1; i < this->planetsArray->size(); ++i) {
                 ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[i]->transform))
-                        ->id = (int) 0x82441fff;
+                        ->color = (int) 0x82441fff;
             }
             return;
         case 16:
@@ -285,7 +285,7 @@ void StarSystem::initLight() {
     int b = (int) ((float) (int) ((fogColor >> 8) & 0xff) * 0.7f);
     uint32_t planetFog = (r << 24) | (g << 16) | (b << 8) | 0xff;
     for (uint32_t i = 1; i < this->planetsArray->size(); ++i) {
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[i]->transform))->id =
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[i]->transform))->color =
                 (int) planetFog;
     }
 }

@@ -69,7 +69,7 @@ public:
 
     void multiplyAll(float scale);
 
-    void Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out);
+    static void Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out);
 
     static int particleMultiply;
     static int pCounter;
