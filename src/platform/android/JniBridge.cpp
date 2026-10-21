@@ -62,7 +62,13 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     data->field_0x10 = -1;
     data->field_0x44 = 0;
     data->field_0x3c = 0;
+    data->field_0x3d = 0;
+    data->field_0x3e = 0;
+    data->field_0x3f = 0;
     data->field_0x40 = 0;
+    data->field_0x41 = 0;
+    data->field_0x42 = 0;
+    data->field_0x43 = 0;
     data->field_0x48 = -1;
     data->field_0x4c = 1;
     data->field_0x08 = 0;
@@ -109,6 +115,9 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     data->field_0x94 = AbyssEngine::String("", false);
     data->field_0xa4 = 0;
     data->field_0xa0 = 0;
+    data->field_0xa1 = 0;
+    data->field_0xa2 = 0;
+    data->field_0xa3 = 0;
 
     Globals::iPad = (dev.height == 480) && (dev.width == 864);
 
@@ -483,7 +492,15 @@ extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getPremiumSKU( /
 
 extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv *env, jclass /*clazz*/) {
-    return env->NewStringUTF("net.fishlabs.gof2hdallandroid2012");
+    // Google Play licensing public key (base64 RSA SubjectPublicKeyInfo) of the shipped APK.
+    return env->NewStringUTF(
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiSfBidMj3fOEJih9J4/2"
+        "RUjqwsjbcl1O1gbHSVB9LpKh5G5ds0rLsVGw52j44szFre/CinNDST/OjnDBkMlr"
+        "ewUxZwXPrYycO3JTE3BjS9Fl8kADtN2aU4LvdVGZBSk32TVgqBLLGDNUFfda3fv+"
+        "MTQmcXDCFmTRbZwjHFhGOd56L3RO35KUszkak9ST5UL2nNJL9yOqcQ2BWkT+oI3a"
+        "hALETTUCE6VdHEoliW9Mb+E9BaU2hOmowkJIWQhkbw+d4d44Y9dqVSwNS7N453IV"
+        "wifLXANv7MY+9nIO7qHtGTNQC1VKgcHEs/slbpqahUBcsifJP3xgD6/pNbOzGHpY"
+        "VQIDAQAB");
 }
 
 extern "C" jint Java_net_fishlabs_playhaven_ToJNI_getCurrentApplicationModule( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)

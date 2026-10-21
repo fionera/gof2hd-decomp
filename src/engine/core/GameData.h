@@ -21,8 +21,16 @@ public:
     AbyssEngine::String field_0x24;
     AbyssEngine::String field_0x30;
 
-    int32_t field_0x3c;
-    int32_t field_0x40;
+    // 0x3c..0x43: one-frame request flags, cleared one per frame by ndk23_newrender
+    // (0x3d also raises 0x40); OnCreateApplication zeroes the run with one strd.
+    uint8_t field_0x3c;
+    uint8_t field_0x3d;
+    uint8_t field_0x3e;
+    uint8_t field_0x3f;
+    uint8_t field_0x40;
+    uint8_t field_0x41;
+    uint8_t field_0x42;
+    uint8_t field_0x43;
     uint8_t field_0x44;
     int32_t field_0x48;
     uint8_t field_0x4c;
@@ -53,7 +61,11 @@ public:
     AbyssEngine::String field_0x7c;
     AbyssEngine::String field_0x88;
     AbyssEngine::String field_0x94;
-    int32_t field_0xa0;
+    // 0xa0..0xa3: more one-frame flags cleared by ndk23_newrender.
+    uint8_t field_0xa0;
+    uint8_t field_0xa1;
+    uint8_t field_0xa2;
+    uint8_t field_0xa3;
     uint8_t field_0xa4;
     uint8_t field_0xa5;
     AbyssEngine::String field_0xa8;
@@ -78,6 +90,9 @@ static_assert(__builtin_offsetof(GameData, field_0x75) == 0x75, "GameData::field
 static_assert(__builtin_offsetof(GameData, field_0x78) == 0x78, "GameData::field_0x78 offset");
 static_assert(__builtin_offsetof(GameData, field_0x7c) == 0x7c, "GameData::field_0x7c offset");
 static_assert(__builtin_offsetof(GameData, field_0xa0) == 0xa0, "GameData::field_0xa0 offset");
+static_assert(__builtin_offsetof(GameData, field_0x3c) == 0x3c, "GameData::field_0x3c offset");
+static_assert(__builtin_offsetof(GameData, field_0x44) == 0x44, "GameData::field_0x44 offset");
+static_assert(__builtin_offsetof(GameData, field_0xa4) == 0xa4, "GameData::field_0xa4 offset");
 static_assert(__builtin_offsetof(GameData, field_0xb8) == 0xb8, "GameData::field_0xb8 offset");
 static_assert(__builtin_offsetof(GameData, field_0xc4) == 0xc4, "GameData::field_0xc4 offset");
 static_assert(sizeof(GameData) == 0xc8, "GameData size");

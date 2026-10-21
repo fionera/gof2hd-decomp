@@ -605,10 +605,7 @@ void FModSound::freeAllEvents() {
 }
 
 uint8_t FModSound::IsCategoryEnabled(int p1) {
-    uint8_t r = 0;
-    if (p1 <= 3 && this->system != 0)
-        r = this->categoryEnabled[p1] != 0;
-    return r;
+    return p1 <= 3 && this->system != 0 && this->categoryEnabled[p1] != 0;
 }
 
 void FModSound::setParamValue(const char *name, int idx, float val) {

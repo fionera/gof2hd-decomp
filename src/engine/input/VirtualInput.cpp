@@ -413,11 +413,12 @@ void MouseWheel(float delta, float residual) {
 void MouseInput(int dx, int dy) {
     if (g_input.mouseCaptured == 0)
         return;
-    if (g_mouse.config != 0) {
-        stackX = dx;
-    } else {
+    if (g_mouse.config == 0) {
+        // Relative mode: accumulate the deltas.
         stackX += dx;
         dy += stackY;
+    } else {
+        stackX = dx;
     }
     stackY = dy;
 }
