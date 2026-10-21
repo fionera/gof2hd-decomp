@@ -409,71 +409,57 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count) {
 
 Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second) {
     Array<String *> *names = 0;
-    String path;
+    String path("");
 
     switch (type) {
         case 0: {
-            const char *text = "names_0_ab";
-            if (!first) {
-                text = "names_0_b";
-            }
-            if (!second) {
-                text = "names_0_a";
-            }
-            path = text;
+            const char *file = "names_terran_0_m.bin";
+            if (!first)
+                file = "names_terran_0_w.bin";
+            if (!second)
+                file = "names_terran_1.bin";
+            path = String(file);
             break;
         }
-        case 1: {
-            path = second ? "names_1_b" : "names_1_a";
+        case 1:
+            path = String(second ? "names_vossk_0.bin" : "names_vossk_1.bin");
             break;
-        }
-        case 2: {
-            path = second ? "names_2_b" : "names_2_a";
+        case 2:
+            path = String(second ? "names_nivelian_0.bin" : "names_nivelian_1.bin");
             break;
-        }
-        case 3: {
-            if (second) {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_3_b" : "names_3_a";
-            } else {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_3_d" : "names_3_c";
-            }
+        case 3:
+            if (second)
+                path = String(Globals::rnd->nextInt(2) != 0 ? "names_nivelian_0.bin" : "names_terran_0_m.bin");
+            else
+                path = String(Globals::rnd->nextInt(2) != 0 ? "names_nivelian_1.bin" : "names_terran_1.bin");
             break;
-        }
-        case 4: {
-            path = second ? "names_4_b" : "names_4_a";
+        case 4:
+            path = String(second ? "names_multipod_0.bin" : "names_multipod_1.bin");
             break;
-        }
-        case 5: {
-            if (!second) {
+        case 5:
+            if (!second)
                 return names;
-            }
-            path = "names_5";
+            path = String("names_cyborg_0.bin");
             break;
-        }
-        case 6: {
-            path = second ? "names_6_b" : "names_6_a";
+        case 6:
+            path = String(second ? "names_bobolan_0.bin" : "names_bobolan_1.bin");
             break;
-        }
-        case 7: {
-            if (!second) {
+        case 7:
+            if (!second)
                 return names;
-            }
-            path = "names_7";
+            path = String("names_grey_0.bin");
             break;
-        }
-        case 8: {
-            if (second) {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_8_b" : "names_8_a";
-            } else {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_8_d" : "names_8_c";
-            }
+        case 8:
+            if (second)
+                path = String(Globals::rnd->nextInt(2) != 0 ? "names_nivelian_0.bin" : "names_terran_0_m.bin");
+            else
+                path = String(Globals::rnd->nextInt(2) != 0 ? "names_nivelian_1.bin" : "names_terran_1.bin");
             break;
-        }
         default:
             return names;
     }
 
-    path = String(".bin") + path;
+    path = String("data/bin/") + path;
 
     if (AEFile::FileExist(path) != 0) {
         uint32_t handle;
