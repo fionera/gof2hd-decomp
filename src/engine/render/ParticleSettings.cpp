@@ -11,24 +11,41 @@ static inline float &asFloat(uint32_t &slot) {
 }
 
 int ParticleSettings::init() {
-    for (uint32_t i = 0; i < 0x30; i = i + 1) {
+    for (int i = 0; i < 48; i++) {
         this->sets[i].name = String("not initialized");
+        this->sets[i].flags = 0x10;
+        this->sets[i].count = 1;
+        asFloat(this->sets[i].lifeBase) = 100.0f;
         this->sets[i].lifeRandom = 0;
         asFloat(this->sets[i].startSize) = 0.0f;
         asFloat(this->sets[i].endSize) = 0.0f;
         asFloat(this->sets[i].velocityFromSlot) = 0.0f;
+        this->sets[i].lifetime = 100;
+        asFloat(this->sets[i].flLifetime) = 500.0f;
         this->sets[i].oneShot = 0;
         this->sets[i].color0 = 0x00ff00ff;
         this->sets[i].color1 = 0x00ff00ff;
         this->sets[i].fadeFrames = 0;
-        this->sets[i].flags = 0x10;
-        this->sets[i].count = 1;
-        asFloat(this->sets[i].lifeBase) = 100.0f;
-        this->sets[i].lifetime = 100;
-        asFloat(this->sets[i].flLifetime) = 500.0f;
         asFloat(this->sets[i].colorFlag) = 0.0f;
         this->sets[i].posBase = 500;
-        memset(&this->sets[i].posSpread, 0, 0x48);
+        this->sets[i].posSpread = 0;
+        this->sets[i].ySpread = 0;
+        this->sets[i].velSpread = 0;
+        this->sets[i].field_0x54 = 0;
+        this->sets[i].velBaseX = 0;
+        this->sets[i].velBaseY = 0;
+        this->sets[i].velBaseZ = 0;
+        this->sets[i].drag = 0;
+        this->sets[i].velRight = 0;
+        this->sets[i].velUp = 0;
+        this->sets[i].velDir = 0;
+        this->sets[i].field_0x74 = 0;
+        this->sets[i].posRight = 0;
+        this->sets[i].posUp = 0;
+        this->sets[i].posDir = 0;
+        this->sets[i].posDirRandom = 0;
+        this->sets[i].uvU0 = 0;
+        this->sets[i].uvV0 = 0;
         asFloat(this->sets[i].uvU1) = 63.0f;
         asFloat(this->sets[i].uvV1) = 63.0f;
         this->sets[i].speedThreshold = 0;
