@@ -3,10 +3,6 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 
-static float g_rimnGlobalA = 0.0f;
-static float g_rimnGlobalB = 0.0f;
-static float g_rimnGlobalC = 0.0f;
-static unsigned char g_rimnByteGlobal = 0;
 
 static const char *const kBumpRimCubeShader_newVertexSource =
     "attribute highp vec3 \ta_position;  \n"
@@ -182,11 +178,11 @@ namespace AbyssEngine {
         if (this->uniform2 >= 0)
             glUniformMatrix4fv(this->uniform2, 1, 0, eng->modelMatrixGL);
         if (this->uniform17 >= 0)
-            glUniform1f(this->uniform17, g_rimnGlobalA);
+            glUniform1f(this->uniform17, Engine::lodBiasDiffuse);
         if (this->uniform18 >= 0)
-            glUniform1f(this->uniform18, g_rimnGlobalB);
+            glUniform1f(this->uniform18, Engine::lodBiasNormal);
         if (this->uniform24 >= 0)
-            glUniform1f(this->uniform24, g_rimnGlobalC);
+            glUniform1f(this->uniform24, Engine::LodDistShader);
 
         if (this->dirty != 0) {
             glUniform3f(this->uniform3, eng->lightDir.x,
@@ -211,17 +207,14 @@ namespace AbyssEngine {
                 glUniform1f(this->uniform15, eng->materialShininess);
             if (this->uniform16 >= 0)
                 glUniform3fv(this->uniform16, 1, (float *) &eng->rimColor);
-            int loc84 = this->uniform20;
-            if (loc84 >= 0) {
-                float *v = (float *) &eng->fogColor;
-                glUniform3fv(loc84, 1, v);
-            }
+            if (this->uniform20 >= 0)
+                glUniform3fv(this->uniform20, 1, eng->fogColor);
             if (this->uniform22 >= 0)
                 glUniform1f(this->uniform22, eng->fogMinDist);
             if (this->uniform21 >= 0)
                 glUniform1f(this->uniform21, eng->fogMaxDist);
             if (this->uniform23 >= 0)
-                glUniform1i(this->uniform23, g_rimnByteGlobal);
+                glUniform1i(this->uniform23, Engine::fogEnabled);
             if (this->uniform19 >= 0) {
                 float v = 0.0f;
                 int *m30 = (int *) mesh->material;

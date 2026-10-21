@@ -3,10 +3,6 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static float gBumpFloatAStorage = 0.0f;
-static float gBumpFloatBStorage = 0.0f;
-static float *const gBumpFloatA = &gBumpFloatAStorage;
-static float *const gBumpFloatB = &gBumpFloatBStorage;
 
 static const char *const kBumpShaderVertexSource =
     "attribute highp vec3 \ta_position;  \n"
@@ -166,9 +162,9 @@ namespace AbyssEngine {
         if (this->u1Loc >= 0)
             glUniformMatrix3fv(this->u1Loc, 1, 0, ctx->normalMatrix);
         if (this->u16Loc >= 0)
-            glUniform1f(this->u16Loc, *gBumpFloatA);
+            glUniform1f(this->u16Loc, Engine::lodBiasDiffuse);
         if (this->u17Loc >= 0)
-            glUniform1f(this->u17Loc, *gBumpFloatB);
+            glUniform1f(this->u17Loc, Engine::lodBiasNormal);
 
         if (this->dirty != 0) {
             glUniform3f(this->u2Loc, ctx->lightDir.x, ctx->lightDir.y, ctx->lightDir.z);
@@ -186,10 +182,8 @@ namespace AbyssEngine {
                 glUniform1f(this->u14Loc, ctx->materialShininess);
             if (this->u15Loc >= 0)
                 glUniform3fv(this->u15Loc, 1, (const float *) &ctx->rimColor);
-            if (this->u18Loc >= 0) {
-                float *v = reinterpret_cast<float *>(&ctx->fogColor);
-                glUniform3fv(this->u18Loc, 1, v);
-            }
+            if (this->u18Loc >= 0)
+                glUniform3fv(this->u18Loc, 1, ctx->fogColor);
             if (this->u20Loc >= 0)
                 glUniform1f(this->u20Loc, ctx->fogMinDist);
             if (this->u19Loc >= 0)
@@ -197,16 +191,16 @@ namespace AbyssEngine {
             if (this->u21Loc >= 0)
                 glUniform1i(this->u21Loc, AbyssEngine::Engine::fogEnabled);
 
-            if (ctx->lightCount < 2) {
-                glUniform3f(this->u11Loc, 0, 0, 0);
-                glUniform3f(this->u12Loc, 0, 0, 0);
-                glUniform3f(this->u13Loc, 0, 0, 0);
-                glUniform3f(this->u3Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
-                            ctx->field_0x33c.z);
-            } else {
+            if (ctx->lightCount >= 2) {
                 glUniform3fv(this->u11Loc, 1, (const float *) &ctx->lightSpecularShaded);
                 glUniform3fv(this->u12Loc, 1, (const float *) &ctx->field_0x308);
                 glUniform3fv(this->u13Loc, 1, (const float *) &ctx->particleAmbient);
+                glUniform3f(this->u3Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
+                            ctx->field_0x33c.z);
+            } else {
+                glUniform3f(this->u11Loc, 0, 0, 0);
+                glUniform3f(this->u12Loc, 0, 0, 0);
+                glUniform3f(this->u13Loc, 0, 0, 0);
                 glUniform3f(this->u3Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
                             ctx->field_0x33c.z);
             }

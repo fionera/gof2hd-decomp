@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static float g_particleGlobalA;
-static float g_particleGlobalB;
 
 namespace AbyssEngine {
     int BumpShaderParticle::ShaderIndex;
@@ -109,9 +107,9 @@ namespace AbyssEngine {
         if (uniformU1 >= 0)
             glUniformMatrix3fv(uniformU1, 1, 0, engine->normalMatrix);
         if (uniformU11 >= 0)
-            glUniform1f(uniformU11, g_particleGlobalA);
+            glUniform1f(uniformU11, Engine::lodBiasDiffuse);
         if (uniformU12 >= 0)
-            glUniform1f(uniformU12, g_particleGlobalB);
+            glUniform1f(uniformU12, Engine::lodBiasNormal);
 
         if (this->dirty != 0) {
             glUniform3f(uniformU2, engine->lightDir.x,
