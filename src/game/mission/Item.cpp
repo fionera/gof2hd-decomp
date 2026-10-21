@@ -361,80 +361,73 @@ void Item::combineDuplicates(ItemArray *items) {
 }
 
 ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems) {
-    uint32_t itemCount = items ? static_cast<uint32_t>(items->size()) : 0;
-    int stationCount = stationItems ? static_cast<int>(stationItems->size()) : 0;
+    int itemCount = items != nullptr ? (int) items->size() : 0;
+    int stationCount = stationItems != nullptr ? (int) stationItems->size() : 0;
 
     ItemArray *mixed = new ItemArray();
     ArraySetLength(stationCount + itemCount, *mixed);
 
-    if (static_cast<int>(itemCount) >= 1 && stationCount == 0) {
-        for (uint32_t i = 0; i < items->size(); i++) {
-            Item * item = (*items)[i];
-            (*mixed)[i] = item->makeItem(item->amount);
-        }
-    } else if (itemCount == 0 && stationCount > 0) {
+    if (itemCount > 0 && stationCount == 0) {
+        for (uint32_t i = 0; i < items->size(); i++)
+            (*mixed)[i] = (*items)[i]->makeItem((*items)[i]->amount);
+        return mixed;
+    }
+    if (itemCount == 0 && stationCount > 0) {
         for (uint32_t i = 0; i < stationItems->size(); i++) {
-            Item * item = (*stationItems)[i];
-            Item * copy = item->makeItem(0);
-            (*mixed)[i] = copy;
-            copy->stationAmount = item->amount;
+            (*mixed)[i] = (*stationItems)[i]->makeItem(0);
+            (*mixed)[i]->stationAmount = (*stationItems)[i]->amount;
         }
-    } else if ((stationCount | static_cast<int>(itemCount)) == 0) {
-        mixed = nullptr;
-    } else {
-        for (uint32_t i = 0; i < items->size(); i++) {
-            Item * item = (*items)[i];
-            (*mixed)[i] = item->makeItem(item->amount);
-        }
+        return mixed;
+    }
+    if (itemCount == 0 && stationCount == 0)
+        return nullptr;
 
-        for (uint32_t stationIndex = 0; stationIndex < stationItems->size(); stationIndex++) {
-            for (uint32_t mixedIndex = 0; mixedIndex < mixed->size(); mixedIndex++) {
-                Item * mixedItem = (*mixed)[mixedIndex];
-                Item * stationItem = (*stationItems)[stationIndex];
-                if (mixedItem == nullptr) {
-                    Item * copy = stationItem->makeItem(0);
-                    itemCount++;
-                    (*mixed)[mixedIndex] = copy;
-                    copy->stationAmount = stationItem->amount;
-                    break;
-                }
-                if (stationItem->index == mixedItem->index) {
-                    Item * copy = stationItem->makeItem(mixedItem->amount);
-                    (*mixed)[mixedIndex] = copy;
-                    copy->stationAmount = stationItem->amount;
-                    break;
-                }
+    // Own items first, then merge the station items into them (or append new entries).
+    for (uint32_t i = 0; i < items->size(); i++)
+        (*mixed)[i] = (*items)[i]->makeItem((*items)[i]->amount);
+
+    for (uint32_t s = 0; s < stationItems->size(); s++) {
+        for (uint32_t m = 0; m < mixed->size(); m++) {
+            Item *mixedItem = (*mixed)[m];
+            Item *stationItem = (*stationItems)[s];
+            if (mixedItem == nullptr) {
+                (*mixed)[m] = stationItem->makeItem(0);
+                itemCount++;
+                (*mixed)[m]->stationAmount = (*stationItems)[s]->amount;
+                break;
+            }
+            if (stationItem->index == mixedItem->index) {
+                (*mixed)[m] = stationItem->makeItem(mixedItem->amount);
+                (*mixed)[m]->stationAmount = (*stationItems)[s]->amount;
+                break;
             }
         }
-
-        ItemArray *trimmed = new ItemArray();
-        ArraySetLength(itemCount, *trimmed);
-        for (uint32_t i = 0; i < itemCount; i++) {
-            (*trimmed)[i] = (*mixed)[i];
-        }
-
-        delete mixed;
-
-        uint32_t size = static_cast<uint32_t>(trimmed->size());
-        bool swapped;
-        do {
-            swapped = false;
-            for (uint32_t i = 1; i < size; i++) {
-                Item * right = (*trimmed)[i];
-                Item * left = (*trimmed)[i - 1];
-                if (right->index < left->index) {
-                    (*trimmed)[i - 1] = right;
-                    (*trimmed)[i] = left;
-                    swapped = true;
-                }
-            }
-        } while (swapped);
-
-        Item::combineDuplicates(trimmed);
-        mixed = trimmed;
     }
 
-    return mixed;
+    ItemArray *result = new ItemArray();
+    ArraySetLength(itemCount, *result);
+    for (int i = 0; i < itemCount; i++)
+        (*result)[i] = (*mixed)[i];
+    delete mixed;
+
+    // Bubble sort by item index.
+    uint32_t size = result->size();
+    bool sorted;
+    do {
+        sorted = true;
+        for (uint32_t i = 1; i < size; i++) {
+            Item *left = (*result)[i - 1];
+            Item *right = (*result)[i];
+            if (left->index > right->index) {
+                (*result)[i - 1] = right;
+                sorted = false;
+                (*result)[i] = left;
+            }
+        }
+    } while (!sorted);
+
+    combineDuplicates(result);
+    return result;
 }
 
 bool Item::equals(Item *other) {
