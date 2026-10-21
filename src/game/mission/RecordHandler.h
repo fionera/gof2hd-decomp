@@ -57,7 +57,7 @@ public:
 
     void loadOptions();
 
-    void loadResolutionValue(float resolution);
+    float loadResolutionValue(float resolution);
 
     void *readAgent(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
 

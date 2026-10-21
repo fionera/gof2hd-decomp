@@ -670,69 +670,55 @@ void RecordHandler::loadOptions() {
     AEFile::Read(options->byte_0x62, fd);
 }
 
-void RecordHandler::loadResolutionValue(float resolution) {
-    (void) resolution;
-    String &path = this->optionsPath;
-    if (AEFile::FileExist(path) != 0) {
+float RecordHandler::loadResolutionValue(float resolution) {
+    if (AEFile::FileExist(this->optionsPath) != 0) {
         unsigned int fd;
-        AEFile::OpenRead(path, &fd);
-
-        OptionsBuffer buf;
-        OptionsBuffer *r = &buf;
-
-        AEFile::Read(r->byte_0x10, fd);
-        AEFile::Read(r->byte_0x11, fd);
-        AEFile::Read(r->f_0x14, fd);
-        AEFile::Read(r->f_0x18, fd);
-        AEFile::Read(r->f_0x1c, fd);
-        AEFile::Read(r->f_0x00, fd);
-        AEFile::Read(r->byte_0x0c, fd);
-        AEFile::Read(r->byte_0x0d, fd);
-        AEFile::Read(r->f_0x04, fd);
-        AEFile::Read(r->f_0x24, fd);
-        AEFile::Read(r->f_0x28, fd);
-
+        AEFile::OpenRead(this->optionsPath, &fd);
+        OptionsBuffer options;
+        AEFile::Read(options.byte_0x10, fd);
+        AEFile::Read(options.byte_0x11, fd);
+        AEFile::Read(options.f_0x14, fd);
+        AEFile::Read(options.f_0x18, fd);
+        AEFile::Read(options.f_0x1c, fd);
+        AEFile::Read(options.f_0x00, fd);
+        AEFile::Read(options.byte_0x0c, fd);
+        AEFile::Read(options.byte_0x0d, fd);
+        AEFile::Read(options.f_0x04, fd);
+        AEFile::Read(options.f_0x24, fd);
+        AEFile::Read(options.f_0x28, fd);
         String name;
-        {
-            if (name.data) delete[] name.data;
-            name.data = nullptr;
-            name.length = 0;
-        }
-        AEFile::Read(name, fd, (bool)false);
-
-        int iv9c;
-        bool b9d;
-        AEFile::Read(reinterpret_cast<int32_t &>(iv9c), fd);
-        AEFile::Read(b9d, fd);
-        AEFile::Read(r->i32_0x54, fd);
-        AEFile::Read(r->i32_0x58, fd);
-        AEFile::Read(r->volumeSfx, fd);
-        AEFile::Read(r->byte_0x0e, fd);
-        AEFile::Read(r->byte_0x32, fd);
-        AEFile::Read(r->byte_0x33, fd);
-        AEFile::Read(r->byte_0x34, fd);
-        AEFile::Read(r->volumeMusic, fd);
-
-        short resVal = -1;
-        AEFile::Read(reinterpret_cast<int16_t &>(resVal), fd);
-        AEFile::Read(b9d, fd);
-        AEFile::Read(r->byte_0x35, fd);
-        AEFile::Read(r->byte_0x36, fd);
-        AEFile::Read(r->byte_0x3a, fd);
-        AEFile::Read(r->byte_0x3b, fd);
-        AEFile::Read(r->byte_0x3c, fd);
-        AEFile::Read(r->byte_0x37, fd);
-        AEFile::Read(r->byte_0x3d, fd);
-        AEFile::Read(r->byte_0x3e, fd);
-        AEFile::Read(r->byte_0x3f, fd);
-        AEFile::Read(r->byte_0x40, fd);
-        AEFile::Read(r->byte_0x41, fd);
-        AEFile::Read(r->volumeAmbient, fd);
-
+        AEFile::Read(name, fd, false);
+        int lastRecord;
+        bool flag;
+        AEFile::Read(lastRecord, fd);
+        AEFile::Read(flag, fd);
+        AEFile::Read(options.i32_0x54, fd);
+        AEFile::Read(options.i32_0x58, fd);
+        AEFile::Read(options.volumeSfx, fd);
+        AEFile::Read(options.byte_0x0e, fd);
+        AEFile::Read(options.byte_0x32, fd);
+        AEFile::Read(options.byte_0x33, fd);
+        AEFile::Read(options.byte_0x34, fd);
+        AEFile::Read(options.volumeMusic, fd);
+        short language = -1;
+        AEFile::Read(language, fd);
+        AEFile::Read(flag, fd);
+        AEFile::Read(options.byte_0x35, fd);
+        AEFile::Read(options.byte_0x36, fd);
+        AEFile::Read(options.byte_0x3a, fd);
+        AEFile::Read(options.byte_0x3b, fd);
+        AEFile::Read(options.byte_0x3c, fd);
+        AEFile::Read(options.byte_0x37, fd);
+        AEFile::Read(options.byte_0x3d, fd);
+        AEFile::Read(options.byte_0x3e, fd);
+        AEFile::Read(options.byte_0x3f, fd);
+        AEFile::Read(options.byte_0x40, fd);
+        AEFile::Read(options.byte_0x41, fd);
+        AEFile::Read(options.volumeAmbient, fd);
+        resolution = options.volumeAmbient;
         AEFile::Close(fd);
     }
-
-    return;
+    return resolution;
 }
 
 int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup) {
@@ -838,18 +824,6 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
 
     return mission;
 }
-
-static unsigned char *g_SO_settings = nullptr;
-
-static String **g_SO_playerName = nullptr;
-
-static const char g_SO_defName[] = "";
-
-static int *g_SO_extraInt = nullptr;
-
-static unsigned char *g_SO_flag1 = nullptr;
-
-static unsigned char *g_SO_flag2 = nullptr;
 
 void RecordHandler::saveOptions() {
     if (AEFile::FileExist(this->optionsPath) != 0) {
