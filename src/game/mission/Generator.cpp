@@ -191,14 +191,14 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
             }
             if (Globals::status->hardCoreMode() && (item->getSort() == 23 || item->getSort() == 24)) goto next;
             switch (stationId) {
-                case 107:
-                    if (item->getType() != 3) goto next;
+                case 101:
+                    if (!item->isWeapon()) goto next;
                     break;
                 case 105:
                     if (!item->isWeapon() && item->getSort() != 28) goto next;
                     break;
-                case 101:
-                    if (!item->isWeapon()) goto next;
+                case 107:
+                    if (item->getType() != 3) goto next;
                     break;
             }
             if (stationId == 106 && item->getType() != 4) goto next;

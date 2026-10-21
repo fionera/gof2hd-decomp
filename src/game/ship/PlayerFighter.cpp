@@ -587,11 +587,11 @@ void PlayerFighter::update(int dt) {
         this->tempVector = this->level->getPlayer()->geometry->getPosition();
         if (this->field_0xe4 == 1) {
             switch (this->wingmanCommand) {
-                case 0:
-                    this->auxVector = this->level->getPlayer()->geometry->getRightVector();
-                    this->auxVector *= 4000.0f;
-                    this->tempVector -= this->auxVector;
-                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 3000.0f;
+                case 2:
+                    this->auxVector = this->level->getPlayer()->geometry->getUpVector();
+                    this->auxVector *= 2000.0f;
+                    this->tempVector += this->auxVector;
+                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 2000.0f;
                     break;
                 case 1:
                     this->auxVector = this->level->getPlayer()->geometry->getRightVector();
@@ -599,11 +599,11 @@ void PlayerFighter::update(int dt) {
                     this->tempVector += this->auxVector;
                     this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 3000.0f;
                     break;
-                case 2:
-                    this->auxVector = this->level->getPlayer()->geometry->getUpVector();
-                    this->auxVector *= 2000.0f;
-                    this->tempVector += this->auxVector;
-                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 2000.0f;
+                case 0:
+                    this->auxVector = this->level->getPlayer()->geometry->getRightVector();
+                    this->auxVector *= 4000.0f;
+                    this->tempVector -= this->auxVector;
+                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 3000.0f;
                     break;
             }
             if (this->KIPlayer::route->length() > 1) {
@@ -946,14 +946,14 @@ void PlayerFighter::update(int dt) {
                 Globals::status->incCollectedBounties((*Globals::status->wanted)[this->field_0x48]->getBoard());
             }
             if (this->player->enemyFlagsLo) {
-                if (this->shipGroup == 9) {
-                    this->cargo = new Array<int>();
-                    ArrayAdd(131, *this->cargo);
-                    ArrayAdd(Globals::rnd->nextInt(3) + 1, *this->cargo);
-                } else if (this->shipGroup == 8) {
+                if (this->shipGroup == 8) {
                     if (!this->player->destroyedByte) {
                         Globals::status->incPirateKills();
                     }
+                } else if (this->shipGroup == 9) {
+                    this->cargo = new Array<int>();
+                    ArrayAdd(131, *this->cargo);
+                    ArrayAdd(Globals::rnd->nextInt(3) + 1, *this->cargo);
                 } else if (!this->carriesMissionCrate && this->crateCaptured() && Globals::options[53] &&
                            Globals::rnd->nextInt(100) < 0 && this->shipGroup <= 3) {
                     delete this->cargo;
