@@ -115,7 +115,7 @@ GameRecord::GameRecord() {
     this->field_0x134 = 0;
     this->field_0x138 = 0;
     this->field_0x13c = 0;
-    this->field_0x140 = 0;
+    this->field_0x140 = nullptr;
     this->field_0x144 = 0;
     this->field_0x148 = 0;
     this->field_0x14c = 0;
@@ -142,13 +142,9 @@ GameRecord::GameRecord() {
 
 typedef uint32_t uint;
 
-long Array_dtor(void *self); // lint: void_ptr (external symbol; heterogeneous Array<T>* callers, mangled signature is fixed)
 
-// lint: void_ptr (external symbol; heterogeneous Array<T>* callers, mangled signature is fixed)
 
-long Station_getIndex(...);
 
-long Station_getSystem(...);
 
 struct PlayerEgoSaveBlock {
     uint8_t _pad_0x00[0x8];
@@ -347,23 +343,14 @@ stationStackLoaded:
     ((Station *) Globals::status->voidStation)->setItems((Array<Item *> *) this->field_0x180, true);
     ((Station *) Globals::status->voidStation)->setShips((Array<Ship *> *) this->field_0x184, true);
     st = Globals::status;
-    if (st->field_94 != (Array<bool> *) 0x0) {
-        deadArray = (unsigned char *) Array_dtor(st->field_94);
-        ::operator delete(deadArray);
-        st = Globals::status;
-    }
+    delete st->field_94;
+    st = Globals::status;
     st->field_94 = (Array<bool> *) this->field_0x68;
-    if (st->field_98 != (Array<bool> *) 0x0) {
-        deadArray = (unsigned char *) Array_dtor(st->field_98);
-        ::operator delete(deadArray);
-        st = Globals::status;
-    }
+    delete st->field_98;
+    st = Globals::status;
     st->field_98 = (Array<bool> *) this->field_0x6c;
-    if (st->field_90 != (Array<int> *) 0x0) {
-        deadArray = (unsigned char *) Array_dtor(st->field_90);
-        ::operator delete(deadArray);
-        st = Globals::status;
-    }
+    delete st->field_90;
+    st = Globals::status;
     st->field_90 = (Array<int> *) this->field_0x70;
     st->field_10c = this->field_0xd0;
 
@@ -381,11 +368,8 @@ stationStackLoaded:
     st->field_a0 = this->field_0x78;
     st->field_a4 = this->field_0x7c;
     st->field_a8 = this->field_0x80;
-    if (st->field_ac != (Array<bool> *) 0x0) {
-        deadArray = (unsigned char *) Array_dtor(st->field_ac);
-        ::operator delete(deadArray);
-        st = Globals::status;
-    }
+    delete st->field_ac;
+    st = Globals::status;
     st->field_ac = (Array<bool> *) this->field_0x84;
     st->field_b0 = this->field_0x88;
     srcByteArray = (Array<uint8_t> *) this->field_0x8c;
@@ -444,33 +428,23 @@ afterDlcUnsaleable:
             }
         }
     }
-    Array<BluePrint *> *bluePrintArray = (Array<BluePrint *> *) this->field_0x140;
-    if (bluePrintArray != (Array<BluePrint *> *) 0x0) {
-        for (i = 0; i < bluePrintArray->count; i = i + 1) {
-            blueprint = bluePrintArray->data_[i];
-            if ((blueprint != (BluePrint *) 0x0) &&
-                (((blueprint->getIndex() == 0xdf ||
-                   (bluePrintArray->data_[i]->getIndex() == 0xd2)) &&
-                  (bluePrintArray->data_[i]->isEmpty() == 0)))) {
-                station = (Station *) Globals::galaxy->getStation(
-                    (int) bluePrintArray->data_[i]->getStationIndex());
-                if (station != (Station *) 0x0) {
-                    int sysIndex = Station_getSystem(station);
-                    SolarSystem *sys = (SolarSystem *) Globals::galaxy->getSystem(sysIndex);
-                    if (sys->getRoutes() == nullptr) {
-                        ((BluePrint *) bluePrintArray->data_[i])->stationIndex = 10;
-                        delete station;
-                        station = (Station *) Globals::galaxy->getStation(
-                            (int) bluePrintArray->data_[i]->getStationIndex());
-                        bluePrintArray->data_[i]->stationName =
-                                ((Station *) (station))->getName();
-                        if (station == (Station *) 0x0) goto LAB_blueprintLoopTail;
-                    }
-                    delete station;
-                }
+    // Blueprints whose station lies in a system without routes are moved to station 10.
+    if (this->field_0x140 != nullptr) {
+        for (unsigned int k = 0; k < (*this->field_0x140).size(); k++) {
+            if ((*this->field_0x140)[k] == nullptr ||
+                ((*this->field_0x140)[k]->getIndex() != 223 && (*this->field_0x140)[k]->getIndex() != 210) ||
+                (*this->field_0x140)[k]->isEmpty())
+                continue;
+            Station *bpStation = (Station *) (intptr_t) Globals::galaxy->getStation((*this->field_0x140)[k]->getStationIndex());
+            if (bpStation == nullptr)
+                continue;
+            if (((SolarSystem *) (intptr_t) Globals::galaxy->getSystem(bpStation->getSystem()))->getRoutes() == nullptr) {
+                (*this->field_0x140)[k]->stationIndex = 10;
+                delete bpStation;
+                bpStation = (Station *) (intptr_t) Globals::galaxy->getStation(10);
+                (*this->field_0x140)[k]->stationName = bpStation->getName();
             }
-        LAB_blueprintLoopTail:
-            bluePrintArray = (Array<BluePrint *> *) this->field_0x140;
+            delete bpStation;
         }
     }
     st = Globals::status;
@@ -478,12 +452,8 @@ afterDlcUnsaleable:
     st->setStation((Station *) this->field_0x138);
     Globals::status->setMission(**kCampaignMissionSlot);
     st->standing = (Standing *) this->field_0x13c;
-    {
-        Array<uint32_t> *bpVec = (Array<uint32_t> *) this->field_0x140;
-        for (i = 0; i < bpVec->count; i = i + 1) {
-            ((Array<uint32_t> *) Globals::status->bluePrints)->data_[i] = bpVec->data_[i];
-        }
-    }
+    for (i = 0; i < this->field_0x140->size(); i++)
+        (*Globals::status->bluePrints)[i] = (*this->field_0x140)[i];
     Globals::status->pendingProducts = (Array<PendingProduct *> *) this->field_0x144;
     {
         Array<uint32_t> *agVec = (Array<uint32_t> *) this->field_0x148;
@@ -588,7 +558,7 @@ afterDlcUnsaleable:
         st->collectedBounties[2] = this->collectedBounties[2];
         st->collectedBounties[3] = this->collectedBounties[3];
         station = Globals::status->getStation();
-        if (Station_getIndex(station) == 0x6c) {
+        if (station->getIndex() == 0x6c) {
             Station *stStation = Globals::status->getStation();
             Array<Ship *> *stationShips = (Array<Ship *> *) stStation->getShips();
             if (stationShips != (Array<Ship *> *) 0x0) {

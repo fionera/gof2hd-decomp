@@ -5,6 +5,8 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 
+class BluePrint;
+
 class GameRecord {
 public:
     uint8_t *data;
@@ -120,7 +122,7 @@ public:
     uint32_t field_0x134;
     uint32_t field_0x138;
     uint32_t field_0x13c;
-    uint32_t field_0x140;
+    Array<BluePrint *> *field_0x140;
     uint32_t field_0x144;
     uint32_t field_0x148;
     uint32_t field_0x14c;
