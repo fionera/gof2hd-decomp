@@ -19,9 +19,9 @@ public:
     AEGeometry *&renderGeometry() { return this->crateGeometry; }
     int &creatureType() { return this->type; }
     int lastElapsed;
-    uint16_t raging;
-    uint8_t caught; // ASM (unhook): caught written at [this,#298]=0x12a, before hooked@0x12b
-    uint8_t hooked;
+    bool raging;  // @0x128
+    bool hooked;  // @0x129 (cleared together with raging by a single halfword store)
+    bool caught;  // @0x12a
     float rageScale;
     int rageTimer;
     int maxEndurance;

@@ -801,127 +801,123 @@ void Status::resetGame() {
     this->field_158 = -1;
 }
 
-static int g_anwSysMask = 0;
 
 int Status::activateNewWanted() {
-    Status * slot = Globals::status;
-    Array<Wanted *> *w = slot->wanted;
-    if (w == 0) {
+    Array<Wanted *> *wanted = Globals::status->wanted;
+    if (wanted == 0) {
         return 0;
     }
+    SystemPathFinder *pathFinder = 0;
     Array<SolarSystem *> *systems = 0;
     int activated = 0;
-    SystemPathFinder *pf = 0;
-    for (unsigned i = 0; i < w->size(); i = i + 1) {
-        Wanted *cur = (*w)[i];
+    for (unsigned i = 0; i < wanted->size(); i++) {
+        Wanted *cur = (*wanted)[i];
         if (cur == 0) {
             continue;
         }
-        unsigned lo, hi;
+        unsigned minJumps;
+        unsigned maxJumps;
         if (i < 2) {
-            hi = 4;
-            lo = 2;
+            maxJumps = 4;
+            minJumps = 2;
         } else {
-            int rem = (i - 1) % 6;
-            lo = rem / 3 + 2;
-            hi = rem / 2 + 4;
+            int step = (int) (i - 1) % 6;
+            minJumps = step / 3 + 2;
+            maxJumps = 4 + step / 2;
         }
-        if (asSystem(slot->system)->getRace() != cur->getBoard()) {
+        if (asSystem(Globals::status->system)->getRace() != cur->getBoard()) {
             continue;
         }
-        if (slot->currentCampaignMission < cur->getRequiredMission()) {
+        if (Globals::status->currentCampaignMission < cur->getRequiredMission()) {
             continue;
         }
-        if (i < 2 && slot->currentCampaignMission > cur->getRequiredMission()) {
+        if (i < 2 && Globals::status->currentCampaignMission > cur->getRequiredMission()) {
             continue;
         }
-        if (slot->inAlienOrbit() != 0) {
+        if (Globals::status->inAlienOrbit()) {
             continue;
         }
-        if (slot->station->getIndex() == 0x6c) {
+        if (Globals::status->station->getIndex() == 108) {
             continue;
         }
-        if (cur->isActive() != 0) {
+        if (cur->isActive()) {
             continue;
         }
-        if (cur->isTerminated() != 0) {
+        if (cur->isTerminated()) {
             continue;
         }
-        int board = cur->getBoard();
-        int avail = (board < 4) ? slot->collectedBounties[board] : 0;
-        if (avail < cur->getRequiredBounties()) {
+        if (Globals::status->getCollectedBounties(cur->getBoard()) < cur->getRequiredBounties()) {
             continue;
         }
         cur->setActive(true);
-        if (pf == 0) {
-            pf = new SystemPathFinder();
-            FileRead fr;
-            systems = fr.loadSystemsBinary();
+        activated++;
+        if (pathFinder == 0) {
+            pathFinder = new SystemPathFinder();
+            FileRead *fileRead = new FileRead();
+            systems = fileRead->loadSystemsBinary();
+            delete fileRead;
         }
-        activated = activated + 1;
         Array<int> *path;
-        int fromSys, toSys;
         do {
-            Station *a = Globals::globals->getRandomStation();
-            unsigned asys = a->getSystem();
-            Array<bool> *vis = slot->systemVisibilities;
-            while (true) {
-                bool ok = false;
-                if (vis != 0 && asys < vis->size()) {
-                    ok = (*vis)[asys] != 0;
-                }
-                if (asSystem((int) asys)->getRoutes() != 0 && ok &&
-                    !(asys < 0x1d && (1 << (asys & 0xff) & g_anwSysMask) != 0)) {
-                    break;
-                }
-                if (a != 0) {
-                    delete a;
-                }
-                a = Globals::globals->getRandomStation();
-                asys = a->getSystem();
+            Station *from = Globals::globals->getRandomStation();
+            unsigned fromSystem = from->getSystem();
+            Array<bool> *visibilities = Globals::status->systemVisibilities;
+            bool visible = false;
+            if (visibilities != 0 && visibilities->size() > fromSystem) {
+                visible = (*visibilities)[fromSystem];
             }
-            Station *b = Globals::globals->getRandomStation();
-            unsigned bsys = b->getSystem();
-            while (true) {
-                bool ok2 = false;
-                if (vis != 0 && bsys < vis->size()) {
-                    ok2 = (*vis)[bsys] != 0;
+            while ((*systems)[fromSystem]->getRoutes() == 0 || !visible || fromSystem == 27 || fromSystem == 28 ||
+                   fromSystem == 25 || fromSystem == 26 || fromSystem == 6) {
+                if (from != 0) {
+                    delete from;
                 }
-                if (asSystem((int) bsys)->getRoutes() != 0 && ok2 &&
-                    !(bsys < 0x1d && (1 << (bsys & 0xff) & g_anwSysMask) != 0) && asys != bsys) {
-                    break;
+                from = Globals::globals->getRandomStation();
+                fromSystem = from->getSystem();
+                visible = false;
+                if (visibilities != 0 && visibilities->size() > fromSystem) {
+                    visible = (*visibilities)[fromSystem];
                 }
-                if (b != 0) {
-                    delete b;
+            }
+            Station *to = Globals::globals->getRandomStation();
+            unsigned toSystem = to->getSystem();
+            visible = false;
+            if (visibilities != 0 && visibilities->size() > toSystem) {
+                visible = (*visibilities)[toSystem];
+            }
+            while ((*systems)[toSystem]->getRoutes() == 0 || !visible || toSystem == 27 || toSystem == 28 ||
+                   toSystem == 25 || toSystem == 26 || toSystem == 6 || fromSystem == toSystem) {
+                if (to != 0) {
+                    delete to;
                 }
-                b = Globals::globals->getRandomStation();
-                bsys = b->getSystem();
+                to = Globals::globals->getRandomStation();
+                toSystem = to->getSystem();
+                visible = false;
+                if (visibilities != 0 && visibilities->size() > toSystem) {
+                    visible = (*visibilities)[toSystem];
+                }
             }
-            cur->setLastSeen(a->getIndex());
-            cur->setTravelsTo(b->getIndex());
-            fromSys = a->getSystem();
-            toSys = b->getSystem();
-            if (a != 0) {
-                delete a;
+            cur->setLastSeen(from->getIndex());
+            cur->setTravelsTo(to->getIndex());
+            int fromIndex = from->getSystem();
+            int toIndex = to->getSystem();
+            if (from != 0) {
+                delete from;
             }
-            if (b != 0) {
-                delete b;
+            if (to != 0) {
+                delete to;
             }
-            path = pf->getSystemPath(systems, fromSys, toSys);
-        } while (path == 0 || (unsigned) (*path)[0] < lo || hi < (unsigned) (*path)[0]);
-        AbyssEngine::AERandom *rnd = Globals::rnd;
-        int pick = (*path)[rnd->nextInt(path->size())];
-        SolarSystem *dst = (*systems)[pick];
-        Array<int> *dstStations = (Array<int> *) dst->getStations();
-        if (dstStations != 0) {
-            int idx = rnd->nextInt(dstStations->size());
-            int st = (*dstStations)[idx];
-            cur->setCurrentLocation(st);
+            path = pathFinder->getSystemPath(systems, fromIndex, toIndex);
+        } while (path == 0 || path->size() < minJumps || path->size() > maxJumps);
+        int target = (*path)[Globals::rnd->nextInt(path->size())];
+        if ((*systems)[target]->getStations() != 0) {
+            int pick = Globals::rnd->nextInt(
+                reinterpret_cast<Array<int> *>((*systems)[target]->getStations())->size());
+            cur->setCurrentLocation((*reinterpret_cast<Array<int> *>((*systems)[target]->getStations()))[pick]);
         }
         delete path;
     }
-    if (pf != 0) {
-        delete pf;
+    if (pathFinder != 0) {
+        delete pathFinder;
     }
     if (systems != 0) {
         ArrayReleaseClasses(*systems);
@@ -948,7 +944,7 @@ void Status::addPendingProduct(BluePrint *bp) {
 
 bool Status::inEmptyOrbit() {
     int idx = station->getIndex();
-    if (idx == 78 && currentCampaignMission < 2) {
+    if (currentCampaignMission < 2 && idx == 78) {
         return true;
     }
     if (inAlienOrbit() && currentCampaignMission >= 43 && currentCampaignMission <= 83) {
@@ -1925,113 +1921,98 @@ void Status::changeRating(int delta) {
     }
 }
 
-static int g_dsTypeMask = 0;
 
 void Status::departStation(Station *dest) {
-    if (!inAlienOrbit()) {
-        bool hub = station->getIndex() == 0x6c;
-        if (hub && field_114 == 3) {
-            Station *scratch = voidStation;
-            scratch->setItems(station->getItems(), true);
-            scratch->setShips(station->getShips(), true);
-        }
+    if (!inAlienOrbit() && station->getIndex() == 108 && field_114 == 3) {
+        voidStation->setItems(station->getItems(), true);
+        voidStation->setShips(station->getShips(), true);
     }
-
-    bool wantedMove = false;
+    bool moveWantedTargets = false;
     if (!inAlienOrbit() && playerStation != dest) {
-        wantedMove = dest->getIndex() != station->getIndex();
+        moveWantedTargets = dest->getIndex() != station->getIndex();
     }
-
     if (playerStation != dest) {
-        bool wasOnStack = isOnStack(dest);
-        Station *prev = isOnStack(dest) ? dest : 0;
+        Station *stacked = isOnStack(dest);
         addStationToStack(dest);
-        bool hub = dest->getIndex() == 0x6c;
-        if (hub && field_114 == 3) {
-            dest->setItems(dest->getItems(), true);
-            dest->setShips(dest->getShips(), true);
-            if (prev != 0 && prev != dest) {
-                prev->setItems(prev->getItems(), true);
-                prev->setShips(prev->getShips(), true);
+        if (dest->getIndex() == 108 && field_114 == 3) {
+            dest->setItems(voidStation->getItems(), true);
+            dest->setShips(voidStation->getShips(), true);
+            if (stacked != 0 && stacked != dest) {
+                stacked->setItems(voidStation->getItems(), true);
+                stacked->setShips(voidStation->getShips(), true);
             }
-            if (!wasOnStack) {
-                Generator g;
-                dest->setAgents(g.createAgents(dest));
+            if (stacked == 0) {
+                Generator *generator = new Generator();
+                dest->setAgents(generator->createAgents(dest));
             }
-        } else if (!wasOnStack) {
-            Generator g;
-            dest->setItems(g.getItemBuyList(dest), false);
-            dest->setShips(g.getShipBuyList(dest), false);
-            dest->setAgents(g.createAgents(dest));
+        } else if (stacked == 0) {
+            Generator *generator = new Generator();
+            dest->setItems(generator->getItemBuyList(dest), false);
+            dest->setShips(generator->getShipBuyList(dest), false);
+            dest->setAgents(generator->createAgents(dest));
         }
-        field_70 = (int) playingTime;
-        field_74 = (int) (playingTime >> 32);
+        field_70 = (int32_t) playingTime;
+        field_74 = (int32_t) (playingTime >> 32);
     }
 
-    Status * st = Globals::status;
-    this->mission = 0;
-    for (unsigned i = 0; i < missions->size(); i = i + 1) {
-        Mission *mi = (*missions)[i];
-        if (mi == 0)
+    this->mission = Mission::empty;
+    for (unsigned i = 0; i < missions->size(); i++) {
+        if ((*missions)[i] == 0) {
             continue;
-        int type = mi->getType();
-        bool camp = mi->isCampaignMission();
-
-        if (type == 0xad && camp) {
-            int good = mi->getProductionGoodIndex();
-            if (st->ship->hasCargo(good, 1)) {
-                this->mission = mi;
-                break;
-            }
         }
-        if (st->currentCampaignMission < 0x2d && type == 0xa1 && camp &&
-            dest->getIndex() == field_80 && !inAlienOrbit()) {
-            this->mission = mi;
+        int type = (*missions)[i]->getType();
+        if ((*missions)[i]->isCampaignMission() && type == 0xad &&
+            Globals::status->ship->hasCargo((*missions)[i]->getProductionGoodIndex(), 1)) {
+            this->mission = (*missions)[i];
             break;
         }
-        if (!mi->isEmpty()) {
-            int tgt = mi->getTargetStation();
-            if (tgt == dest->getIndex() &&
-                ((unsigned) (type - 0x96) > 0x17 || ((1 << ((type - 0x96) & 0xff)) & g_dsTypeMask) == 0) &&
-                type != 8 && type != 0xe) {
-                if (camp || (type != 0xb && type != 0xd)) {
-                    this->mission = mi;
+        if (Globals::status->currentCampaignMission < 45 && (*missions)[i]->isCampaignMission() && type == 0xa1 &&
+            dest->getIndex() == field_80 && !Globals::status->inAlienOrbit()) {
+            this->mission = (*missions)[i];
+            break;
+        }
+        if (!(*missions)[i]->isEmpty() && (*missions)[i]->getTargetStation() == dest->getIndex()) {
+            bool deliveryType = type != 0x96 && type != 0x97 && type != 0x99 && type != 0x9b && type != 0xa1 &&
+                                type != 0xa2 && type != 0xa3 && type != 0xa4 && type != 0xa6 && type != 0xa7 &&
+                                type != 0xa9 && type != 0xad && type != 8 && type != 0xe;
+            if (deliveryType) {
+                if ((*missions)[i]->isCampaignMission()) {
+                    this->mission = (*missions)[i];
                     break;
                 }
+                if (type == 0xb || type == 0xd) {
+                    break;
+                }
+                this->mission = (*missions)[i];
+                break;
             }
         }
-        if (!mi->isEmpty() && camp) {
-            if (type == 0xa0 && mi->getTargetStation() != dest->getIndex()) {
-                this->mission = mi;
+        if (!(*missions)[i]->isEmpty() && (*missions)[i]->isCampaignMission()) {
+            if ((*missions)[i]->getTargetStation() != dest->getIndex() && type == 0xa0) {
+                this->mission = (*missions)[i];
                 break;
             }
         }
     }
 
-    if (currentCampaignMission < 0x2d) {
-        if (currentCampaignMission >= 0x20) {
-            bool same = false;
-            if (mission != 0)
-                same = dest->getIndex() == mission->getTargetStation();
-            same = same || dest->getIndex() == field_80;
-            if (!same) {
-                if (field_8c + 1 >= 10) {
-                    field_8c = 0;
-                    AbyssEngine::AERandom *rng = Globals::rnd;
-                    int sys;
+    if (currentCampaignMission < 45) {
+        if (currentCampaignMission >= 32 && dest->getIndex() != (*missions)[0]->getTargetStation() &&
+            dest->getIndex() != field_80) {
+            if (field_88++ >= 10) {
+                field_88 = 0;
+                int system;
+                do {
                     do {
                         do {
-                            sys = rng->nextInt(0x16);
-                            field_7c = sys;
-                        } while ((*systemVisibilities)[sys] == 0);
-                    } while (sys == 10 || sys == 0xf);
-                    SolarSystem *ss = Globals::galaxy->getSystems()->at(field_7c);
-                    Array<int> *sids = (Array<int> *) ss->getStations();
-                    int n = rng->nextInt(sids->size());
-                    field_80 = (*sids)[n];
-                } else {
-                    field_8c = field_8c + 1;
-                }
+                            system = Globals::rnd->nextInt(22);
+                            field_7c = system;
+                        } while (!(*systemVisibilities)[system]);
+                    } while (system == 10 || system == 15);
+                } while (this->mission->isCampaignMission() && this->mission->getTargetStation() == field_80);
+                SolarSystem *solarSystem = asSystem(Globals::galaxy->getSystem(field_7c));
+                Array<int> *stations = reinterpret_cast<Array<int> *>(solarSystem->getStations());
+                field_80 = (*stations)[Globals::rnd->nextInt(
+                    reinterpret_cast<Array<int> *>(solarSystem->getStations())->size())];
             }
         }
     } else {
@@ -2039,214 +2020,254 @@ void Status::departStation(Station *dest) {
         field_80 = -10;
     }
 
-    if (wantedMove)
+    if (moveWantedTargets) {
         moveWanted();
-
+    }
     Array<Item *> *cargo = ship->getCargo();
     if (cargo != 0) {
-        for (unsigned i = 0; i < cargo->size(); i = i + 1) {
-            Item *it = (*cargo)[i];
-            if (it != 0)
-                it->setStationAmount(0);
+        for (unsigned i = 0; i < cargo->size(); i++) {
+            if ((*cargo)[i] != 0) {
+                (*cargo)[i]->setStationAmount(0);
+            }
         }
     }
     field_0x108 = 0;
+    ship->refreshValue();
 }
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
-    unsigned which = (unsigned) docked;
-    unsigned both = which & (unsigned) extra;
-
-    for (unsigned i = 0; i < missions->size(); i = i + 1) {
+    for (unsigned i = 0; i < missions->size(); i++) {
         Mission *m = (*missions)[i];
-        if (m->hasWon() != 0)
+        if (m->hasWon()) {
             return 0;
-
-        if (m == 0 ||
-            (!m->isCampaignMission() && m->getAgent() == 0 &&
-             m->getClientImage() == 0 && m->getTargetStation() == 0))
+        }
+        if (m == 0) {
             continue;
-
-        int type = m->getType();
-        switch (type) {
+        }
+        // The original queries the target station twice here.
+        if (!m->isCampaignMission() && m->getAgent() == 0 && m->getClientImage() == 0 &&
+            m->getTargetStation() == 0 && m->getTargetStation() == 0) {
+            continue;
+        }
+        switch (m->getType()) {
+            case 0xa7:
+            case 0xae:
+                if (m->getStatusValue() >= m->getProductionGoodAmount()) {
+                    m->setWon(true);
+                    return m;
+                }
+                break;
+            case 8:
+                if (m->isCampaignMission() && Globals::status->currentCampaignMission == 0x8f && !atStation) {
+                    if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
+                        for (unsigned j = 0; j < pendingProducts->size(); j++) {
+                            PendingProduct *pp = (*pendingProducts)[j];
+                            if (pp != 0 && pp->blueprintIndex == 0xd2) {
+                                return m;
+                            }
+                        }
+                    }
+                }
+                if (atStation && station->getIndex() == m->getTargetStation()) {
+                    int index = m->getProductionGoodIndex();
+                    int amount = m->getProductionGoodAmount();
+                    if (Item::isInList(index, amount, ship->getCargo())) {
+                        return m;
+                    }
+                }
+                break;
+            case 0:
+            case 0xb:
+                if (atStation && station->getIndex() == m->getTargetStation()) {
+                    return m;
+                }
+                break;
+            case 0xd:
+                if (atStation && field_0xf0) {
+                    return m;
+                }
+                break;
+            case 0xe:
+                if (atStation && station->getIndex() == m->getAgent()->getStation() &&
+                    Item::isInList(0x73, ship->getCargo())) {
+                    return m;
+                }
+                break;
             case 0x96:
-                if (m->getStatusValue() <= missionCount) {
+                if (missionCount >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
             case 0x97:
-                if (m->getStatusValue() <= kills) {
-                    m->setWon(true);
-                    return m;
-                }
-                break;
-            case 0x99:
-                if (m->getStatusValue() <= stationsVisited) {
-                    m->setWon(true);
-                    return m;
-                }
-                break;
-            case 0x9b:
-                if (m->getStatusValue() <= goodsProduced) {
+                if (kills >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
             case 0x98: {
-                Array<Item *> *eq = ship->getEquipment();
-                for (unsigned j = 0; j < eq->size(); j = j + 1) {
-                    Item *it = (*eq)[j];
-                    if (it != 0 && it->getIndex() == m->getStatusValue())
+                Array<Item *> *equipment = ship->getEquipment();
+                for (unsigned j = 0; j < equipment->size(); j++) {
+                    if ((*equipment)[j] != 0 && (*equipment)[j]->getIndex() == m->getStatusValue()) {
                         return m;
-                }
-                break;
-            }
-            case 0x9a:
-                if (m->getProductionGoodAmount() <= ship->getCurrentLoad()) {
-                    m->setWon(true);
-                    return m;
-                }
-                break;
-            case 0xa7:
-            case 0xae:
-                if (m->getProductionGoodAmount() <= m->getStatusValue()) {
-                    m->setWon(true);
-                    return m;
-                }
-                break;
-            case 0x9c:
-                if (!docked) {
-                    if (extra >= 0x2711 && station->getIndex() == m->getTargetStation()) return m;
-                }
-                break;
-            case 0xa0:
-                if (docked) return m;
-                if (extra < 0x2711 && station->getIndex() != m->getTargetStation()) return m;
-                break;
-            case 0x9d: {
-                Array<Item *> *eq = ship->getEquipment();
-                for (unsigned j = 0; j < eq->size(); j = j + 1) {
-                    Item *it = (*eq)[j];
-                    if (it != 0 && it->getType() == m->getStatusValue())
-                        return m;
-                }
-                break;
-            }
-            case 0x9e: {
-                Array<Item *> *eq = ship->getEquipment();
-                bool hasGood = false, hasSpecial = false;
-                for (unsigned j = 0; j < eq->size(); j = j + 1) {
-                    Item *it = (*eq)[j];
-                    if (it != 0) {
-                        if (it->getType() == 0)
-                            hasGood = true;
-                        else if (it->getSort() == 10)
-                            hasSpecial = true;
                     }
                 }
-                if (hasGood && hasSpecial) return m;
+                break;
+            }
+            case 0x99:
+                if (stationsVisited >= m->getStatusValue()) {
+                    m->setWon(true);
+                    return m;
+                }
+                break;
+            case 0x9a:
+                if (ship->getCurrentLoad() >= m->getStatusValue()) {
+                    m->setWon(true);
+                    return m;
+                }
+                break;
+            case 0x9b:
+                if (goodsProduced >= m->getStatusValue()) {
+                    m->setWon(true);
+                    return m;
+                }
+                break;
+            case 0x9e: {
+                Array<Item *> *equipment = ship->getEquipment();
+                bool hasSpecial = false;
+                bool hasGood = false;
+                for (unsigned j = 0; j < equipment->size(); j++) {
+                    if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == 0) {
+                        hasGood = true;
+                    } else if ((*equipment)[j] != 0 && (*equipment)[j]->getSort() == 10) {
+                        hasSpecial = true;
+                    }
+                }
+                if (hasGood && hasSpecial) {
+                    return m;
+                }
                 break;
             }
             case 0xa2:
-                if (docked && station->getIndex() == m->getTargetStation()) {
-                    BluePrint *bp = (*bluePrints)[m->getStatusValue()];
-                    if (bp->getCompletionRate() >= 1.0f) return m;
-                }
-                break;
-            case 0xa3: {
-                Array<int> *arr = field_90;
-                bool all = true;
-                for (unsigned j = 0; j < arr->size(); j = j + 1) {
-                    if ((*arr)[j] < 0) {
-                        all = false;
-                        break;
+                if (atStation && station->getIndex() == m->getTargetStation()) {
+                    BluePrint *bluePrint = (*bluePrints)[m->getStatusValue()];
+                    Array<int> *ingredients = bluePrint->getIngredientList();
+                    Array<int> *quantities = bluePrint->getQuantityList();
+                    bool complete = true;
+                    for (unsigned j = 0; j < ingredients->size(); j++) {
+                        if (!ship->hasCargo((*ingredients)[j], (*quantities)[j])) {
+                            complete = false;
+                            break;
+                        }
+                    }
+                    if (complete) {
+                        return m;
                     }
                 }
-                if (all) return m;
                 break;
-            }
-            case 0xa8: {
-                Status * s = Globals::status;
-                if (m->getStatusValue() <= s->field_178) {
-                    m->setWon(true);
-                    s->field_178 = 0;
-                    return m;
+            case 0xa6:
+                if (atStation && station->getIndex() == m->getTargetStation()) {
+                    int index = m->getProductionGoodIndex();
+                    int amount = m->getProductionGoodAmount();
+                    if (Item::isInList(index, amount, ship->getCargo())) {
+                        return m;
+                    }
+                    if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) {
+                        return m;
+                    }
                 }
                 break;
-            }
             case 0xaa:
                 if (m->getStatusValue() == 1) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 0xab:
-                if (docked && station->getIndex() == m->getTargetStation()) return m;
-                break;
-            case 0xac:
-                if (both != 0 && station->getIndex() == m->getTargetStation()) {
-                    int idx = m->getProductionGoodIndex();
-                    int amt = m->getProductionGoodAmount();
-                    if (Item::isInList(idx, amt, ship->getCargo())) return m;
-                }
-                break;
-            case 0xa6:
-                if (docked && station->getIndex() == m->getTargetStation()) {
-                    int idx = m->getProductionGoodIndex();
-                    int amt = m->getProductionGoodAmount();
-                    if (Item::isInList(idx, amt, ship->getCargo())) return m;
-                    if (!Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) return m;
-                }
-                break;
             case 0xb8:
                 if (m->getStatusValue() == 0) {
-                    Status * s = Globals::status;
-                    if (s->currentCampaignMission != 0x5c || s->inAlienOrbit() ||
-                        s->station->getIndex() != 0x71) {
+                    if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
+                        Globals::status->station->getIndex() != 0x71) {
                         m->setWon(true);
                         return m;
                     }
                 }
                 break;
             case 0xbd:
-                if (docked) {
-                    Array<Item *> *eq = ship->getEquipment();
-                    for (unsigned j = 0; j < eq->size(); j = j + 1) {
-                        Item *it = (*eq)[j];
-                        if (it != 0 && it->getSort() == m->getStatusValue())
+                if (atStation) {
+                    Array<Item *> *equipment = ship->getEquipment();
+                    for (unsigned j = 0; j < equipment->size(); j++) {
+                        if ((*equipment)[j] != 0 && (*equipment)[j]->getSort() == m->getStatusValue()) {
                             return m;
+                        }
                     }
                 }
                 break;
-            default:
-
-                if (type == 8) {
-                    if (m->isCampaignMission() && Globals::status->currentCampaignMission == 0x8f && !docked) {
-                        if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
-                            for (unsigned j = 0; j < pendingProducts->size(); j = j + 1) {
-                                PendingProduct *pp = (*pendingProducts)[j];
-                                if (pp != 0 && pp->blueprintIndex == 0xd2)
-                                    return m;
-                            }
-                        }
+            case 0x9c:
+                if (!atStation && station->getIndex() == m->getTargetStation() && extra > 10000) {
+                    return m;
+                }
+                break;
+            case 0x9d: {
+                Array<Item *> *equipment = ship->getEquipment();
+                for (unsigned j = 0; j < equipment->size(); j++) {
+                    if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == m->getStatusValue()) {
+                        return m;
                     }
-                    if (docked && station->getIndex() == m->getTargetStation()) {
-                        int idx = m->getProductionGoodIndex();
-                        int amt = m->getProductionGoodAmount();
-                        if (Item::isInList(idx, amt, ship->getCargo())) return m;
+                }
+                break;
+            }
+            case 0xa0:
+                if (atStation) {
+                    return m;
+                }
+                if (extra > 10000 && station->getIndex() != m->getTargetStation()) {
+                    return m;
+                }
+                break;
+            case 0xa3: {
+                bool none = true;
+                for (unsigned j = 0; j < field_90->size(); j++) {
+                    if ((*field_90)[j] >= 0) {
+                        none = false;
+                        break;
                     }
-                } else if (type == 0xd) {
-                    if (docked && field_0xf0 != 0) return m;
-                } else if (type == 0xe) {
-                    if (docked) {
-                        Agent *ag = m->getAgent();
-                        if (station->getIndex() == ag->getStation()) {
-                            if (Item::isInList(0x73, ship->getCargo())) return m;
-                        }
+                }
+                if (none) {
+                    return m;
+                }
+                break;
+            }
+            case 0xa4:
+                if (!atStation && extra > 10000) {
+                    return m;
+                }
+                break;
+            case 0xa5:
+                return m;
+            case 0xa8:
+                if (Globals::status->field_178 >= m->getStatusValue()) {
+                    m->setWon(true);
+                    Globals::status->field_178 = 0;
+                    return m;
+                }
+                break;
+            case 0xa9:
+                if (!atStation && extra > 2000) {
+                    return m;
+                }
+                break;
+            case 0xab:
+                if (atStation && docked && station->getIndex() == m->getTargetStation()) {
+                    return m;
+                }
+                break;
+            case 0xac:
+                if (atStation && docked && station->getIndex() == m->getTargetStation()) {
+                    int index = m->getProductionGoodIndex();
+                    int amount = m->getProductionGoodAmount();
+                    if (Item::isInList(index, amount, ship->getCargo())) {
+                        return m;
                     }
-                } else if (type == 0xb || type == 0) {
-                    if (docked && station->getIndex() == m->getTargetStation()) return m;
                 }
                 break;
         }
@@ -2278,8 +2299,8 @@ void Status::checkForLevelUp() {
 
 void Status::moveWanted() {
     bool initialized = false;
-    Array<SolarSystem *> *systems = 0;
     SystemPathFinder *pathFinder = 0;
+    Array<SolarSystem *> *systems = 0;
     for (unsigned i = 0; i < this->wanted->size(); i++) {
         if (!(*this->wanted)[i]->isActive() || (*this->wanted)[i]->isTerminated() ||
             Globals::status->inAlienOrbit() ||
@@ -2341,7 +2362,8 @@ void Status::moveWanted() {
             path = 0;
         } else {
             path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
-            (*this->wanted)[i]->setCurrentLocation((*systems)[(*path)[1]]->getWarpGateIndex());
+            int gateIndex = (*systems)[(*path)[1]]->getWarpGateIndex();
+            (*this->wanted)[i]->setCurrentLocation(gateIndex);
         }
         if (to != 0) {
             delete to;

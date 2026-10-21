@@ -315,16 +315,16 @@ void KIPlayer::setJumper(bool b) {
     this->jumperFlag = b;
 }
 
-int KIPlayer::cargoAvailable() {
+bool KIPlayer::cargoAvailable() {
     Array<int> *arr = this->cargo;
     if (arr != 0) {
         unsigned int len = arr->size();
         for (unsigned int i = 0; i < len; i += 2) {
             if ((*arr)[i + 1] > 0)
-                return 1;
+                return true;
         }
     }
-    return 0;
+    return false;
 }
 
 void KIPlayer::setDead() {

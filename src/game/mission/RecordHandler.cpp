@@ -130,7 +130,6 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ReleaseOrigami
 
 
 
-
 Array<GameRecord *> *RecordHandler::readAllRecords() {
     Array<GameRecord *> *records = new Array<GameRecord *>();
     ArraySetLength(Globals::recordSlots, *records);
@@ -1117,7 +1116,9 @@ int RecordHandler::recordStoreWrite(int slot) {
     if (pending != 0) {
         int count = 0;
         for (unsigned i = 0; i < pending->size(); i++) {
-            count += (*pending)[i] != 0 ? 1 : 0;
+            if ((*pending)[i] != 0) {
+                count++;
+            }
         }
         if (count != 0) {
             AEFile::Write((int32_t) count, fd);
@@ -1334,7 +1335,12 @@ int RecordHandler::recordStoreWrite(int slot) {
         AEFile::Write((int32_t) 0, fd);
     }
     for (unsigned i = 0; i < stack->size() + 1; i++) {
-        Station *station = i == stack->size() ? Globals::status->getStation() : (*stack)[i];
+        Station *station;
+        if (i == stack->size()) {
+            station = Globals::status->getStation();
+        } else {
+            station = (*stack)[i];
+        }
         if (station == 0) {
             continue;
         }
@@ -1922,16 +1928,18 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         }
         int voidShipCount = 0;
         AEFile::Read(voidShipCount, fd);
-        for (int k = 0; k < voidShipCount; k++) {
-            modCount = 0;
-            AEFile::Read(modCount, fd);
-            if (modCount >= 1) {
-                Array<int> *mods = new Array<int>();
-                ArraySetLength(modCount, *mods);
-                for (int i = 0; i < modCount; i++) {
-                    AEFile::Read((*mods)[i], fd);
+        if (voidShipCount >= 1) {
+            for (int k = 0; k < voidShipCount; k++) {
+                modCount = 0;
+                AEFile::Read(modCount, fd);
+                if (modCount >= 1) {
+                    Array<int> *mods = new Array<int>();
+                    ArraySetLength(modCount, *mods);
+                    for (int i = 0; i < modCount; i++) {
+                        AEFile::Read((*mods)[i], fd);
+                    }
+                    (*reinterpret_cast<Array<Ship *> *&>(rec->field_0x184))[k]->setMods(mods);
                 }
-                (*reinterpret_cast<Array<Ship *> *&>(rec->field_0x184))[k]->setMods(mods);
             }
         }
         for (unsigned s = 0; s < stack->size() + 1; s++) {
@@ -1941,23 +1949,25 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
             }
             int shipCount = 0;
             AEFile::Read(shipCount, fd);
-            for (int j = 0; j < shipCount; j++) {
-                int count2 = 0;
-                AEFile::Read(count2, fd);
-                for (int m = 0; m < count2; m++) {
-                    int mod;
-                    AEFile::Read(mod, fd);
-                    (*station->getShips())[j]->addMod(mod);
+            if (shipCount >= 1) {
+                for (int j = 0; j < shipCount; j++) {
+                    int count2 = 0;
+                    AEFile::Read(count2, fd);
+                    for (int m = 0; m < count2; m++) {
+                        int mod;
+                        AEFile::Read(mod, fd);
+                        (*station->getShips())[j]->addMod(mod);
+                    }
                 }
             }
         }
 
-        int wantedCount = 0;
-        AEFile::Read(wantedCount, fd);
-        if (wantedCount >= 1) {
+        count = 0;
+        AEFile::Read(count, fd);
+        if (count >= 1) {
             reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4) = new Array<Wanted *>();
-            ArraySetLength(wantedCount, *reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4));
-            for (int i = 0; i < wantedCount; i++) {
+            ArraySetLength(count, *reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4));
+            for (int i = 0; i < count; i++) {
                 (*reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4))[i] = (Wanted *)this->readWanted(fd);
             }
         }

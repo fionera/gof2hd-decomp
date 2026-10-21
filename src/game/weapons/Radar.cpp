@@ -46,9 +46,7 @@ using ::AbyssEngine::gRadarCanvasForDraw;
 using ::AbyssEngine::gRadarCanvasSlot;
 using ::AbyssEngine::gRadarLayoutSlot;
 
-int Radar_GetMissionState(void *mission); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-int Radar_GetMissionType(void *mission); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 static inline int layout_i32(unsigned char *layout, unsigned off) {
     return *reinterpret_cast<int *>(layout + off);
@@ -58,23 +56,22 @@ static inline uint8_t station_u8(unsigned char *station, unsigned off) {
     return *reinterpret_cast<uint8_t *>(station + off);
 }
 
-int Radar::getTurretScopeWidth() {
-    return this->turretScopeHalfWidth << 1;
+
+static const int kRaceMusic[4] = {134, 139, 138, 137};
+
+static inline unsigned int radarFont() {
+    return (unsigned int) (uintptr_t) Globals::font;
 }
 
-Radar::Radar(Level *level) {
-    this->egoPos.z = 0;
-    this->targetPos.x = 0;
-    this->targetPos.y = 0;
-    this->targetPos.z = 0;
-    this->playerPos.y = 0;
-    this->playerPos.z = 0;
-    this->egoPos.x = 0;
-    this->egoPos.y = 0;
-    this->radarPos.x = 0;
-    this->radarPos.y = 0;
-    this->radarPos.z = 0;
-    this->playerPos.x = 0;
+
+static inline int layoutField(int offset) {
+    return reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(Globals::layout) + offset)[0];
+}
+
+
+unsigned char Radar::drawTarget;
+
+Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
 
     this->lockedEnemy = nullptr;
     this->dockNavPtr = nullptr;
@@ -115,6 +112,9 @@ Radar::Radar(Level *level) {
     this->plasmaInRange = 0;
     this->field_0x120 = 0;
     this->onScreen = 0;
+    this->field_0x11d = 0;
+    this->field_0x11e = 0;
+    this->field_0x11f = 0;
     this->field_0x1a8 = 0;
     this->level = level;
 
@@ -213,7 +213,7 @@ Radar::Radar(Level *level) {
     Globals::Canvas->Image2DCreate(8034, this->image_0xc0);
     Globals::Canvas->Image2DCreate(1220, this->image_0xcc);
     this->lockLabelX = Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->image_0xcc) / 2;
-    this->field_0x214 = reinterpret_cast<int *>(Globals::layout->_pad_0xb0)[0];
+    this->field_0x214 = Globals::layout->field_0xb0;
 
     unsigned int *lockFrames = new unsigned int[10];
     Globals::Canvas->Image2DCreate(1185, lockFrames[0]);
@@ -233,8 +233,8 @@ Radar::Radar(Level *level) {
 
     unsigned int qualityImage = 0;
     Globals::Canvas->Image2DCreate(1102, qualityImage);
-    this->qualitySprite = new Sprite(qualityImage, reinterpret_cast<int *>(Globals::layout->_pad_0xb0)[2],
-                                    reinterpret_cast<int *>(Globals::layout->_pad_0xb0)[1]);
+    this->qualitySprite = new Sprite(qualityImage, Globals::layout->field_0xb8,
+                                    Globals::layout->field_0xb4);
 
     Item *scanner = Globals::status->getShip()->getFirstEquipmentOfSort(19);
     Item *radarItem = Globals::status->getShip()->getFirstEquipmentOfSort(17);
@@ -274,8 +274,8 @@ Radar::Radar(Level *level) {
     this->field_0x124 = Globals::w / 16;
     this->field_0x128 = Globals::w / 6;
     this->turretScopeHalfWidth = Globals::w / 8;
-    if (Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr &&
-        Globals::status->getShip()->getFirstEquipmentOfSort(35)->getAttribute(50) != 0) {
+    Item *turret = Globals::status->getShip()->getFirstEquipmentOfSort(35);
+    if (turret != nullptr && turret->getAttribute(50) != 0) {
         this->turretScopeHalfWidth = (int) (
                 (float) Globals::status->getShip()->getFirstEquipmentOfSort(35)->getAttribute(50) / 100.0f *
                 (float) this->turretScopeHalfWidth);
@@ -286,7 +286,6 @@ Radar::Radar(Level *level) {
         ArraySetLength(autoTurret->getAttribute(55), *this->players);
     }
 }
-
 Radar::~Radar() {
     Array<KIPlayer *> *players = this->players;
     if (players != nullptr) {
@@ -294,51 +293,10 @@ Radar::~Radar() {
     }
     this->players = nullptr;
 }
-
-uint8_t Radar::hasScanner() {
-    return this->scannerAvailable;
-}
-
-uint8_t Radar::isPlasmaInRange() {
-    return this->plasmaInRange;
-}
-
-bool Radar::stationLocked() {
-    unsigned char *station = reinterpret_cast<unsigned char *>(this->lockedStation);
-    if (station != nullptr) {
-        return station_u8(station, 0x71) != 0;
-    }
-    return false;
-}
-
-KIPlayer *Radar::getLockedEnemy() {
-    return this->lockedEnemy;
-}
-
-KIPlayer *Radar::getLockedAsteroid() {
-    return this->lockedAsteroid;
-}
-
-KIPlayer *Radar::getLockedGasCloud() {
-    return this->lockedGasCloud;
-}
-
-void Radar::unlockAsteroid() {
-    this->lockedAsteroid = nullptr;
-}
-
-int Radar::getPlanetDockIndex() {
-    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
-        static_cast<intptr_t>(Globals::status->getSystem()));
-    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
-    return (*stations)[this->planetDockIndex];
-}
-
 void Radar::update(KIPlayer *player) {
     Vector position = player->getPosition();
     update(position);
 }
-
 void Radar::update(Vector value) {
     Vector *current = &this->radarPos;
     *current = AbyssEngine::AEMath::MatrixTransformVector(this->transform, value);
@@ -357,13 +315,21 @@ void Radar::update(Vector value) {
         this->screenY = static_cast<int>(current->y);
     }
 }
+Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
+    float dx = static_cast<float>(this->centerX - x);
+    float dy = static_cast<float>(this->centerY - y);
+    float distance = this->weightX * (dx * dx) + this->weightY * (dy * dy);
 
-static const int kRaceMusic[4] = {134, 139, 138, 137};
+    if (distance >= 0.0f) {
+        float scale = (distance - Globals::globals->sqrt(distance)) / distance;
+        if (scale >= 0.0f && scale <= 1.0f) {
+            value.x = static_cast<float>(static_cast<int>(static_cast<float>(x) + scale * dx));
+            value.y = static_cast<float>(static_cast<int>(static_cast<float>(y) + scale * dy));
+        }
+    }
 
-static inline unsigned int radarFont() {
-    return (unsigned int) (uintptr_t) Globals::font;
+    return value;
 }
-
 void Radar::draw(Player *player, Hud *hud, int mode) {
     if (!this->enabled) {
         return;
@@ -1298,33 +1264,33 @@ music:
     }
     this->field_0x1bc = 0;
 }
+String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
+    long long dx = static_cast<long long>(x1 * 0.5f - x2 * 0.5f);
+    long long dz = static_cast<long long>(z1 * 0.5f - z2 * 0.5f);
+    long long dy = static_cast<long long>(y1 * 0.5f - y2 * 0.5f);
+    long long squared = dy * dy + dx * dx + dz * dz;
+    int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
+    int meters = distance << 3;
 
-Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
-    int centerY = this->centerY;
-    float dy = static_cast<float>(centerY - y);
-    float dy2 = dy * dy;
-    int centerX = this->centerX;
-    float dx = static_cast<float>(centerX - x);
-    float dx2 = dx * dx;
-    float weightY = this->weightY;
-    float weightX = this->weightX;
-    float distance = weightY * dy2 + weightX * dx2;
-
-    if (distance >= 0.0f) {
-        float scale = (distance - Globals::globals->sqrt(distance)) / distance;
-        if (scale >= 0.0f && scale <= 1.0f) {
-            value.x = static_cast<float>(static_cast<int>(static_cast<float>(x) + scale * dx));
-            value.y = static_cast<float>(static_cast<int>(static_cast<float>(y) + scale * dy));
+    String text = String(meters) + String("m", false);
+    if (distance >= 125) {
+        int remainder = meters % 1000;
+        if (remainder >= 100) {
+            text = String(remainder);
+        } else {
+            text = String("0", false);
         }
+        text = text.SubString(0, 1);
+        text = String((int) ((unsigned int) distance / 125u)) + String(".", false) + text + String("km", false);
     }
-
-    return value;
+    return text;
 }
-
-static inline int layoutField(int offset) {
-    return reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(Globals::layout) + offset)[0];
+int Radar::getPlanetDockIndex() {
+    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
+        static_cast<intptr_t>(Globals::status->getSystem()));
+    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
+    return (*stations)[this->planetDockIndex];
 }
-
 void Radar::drawCurrentLock(Hud *) {
     if (this->enabled == 0) {
         return;
@@ -1372,7 +1338,7 @@ void Radar::drawCurrentLock(Hud *) {
         String text(*Globals::gameText->getText(3236), false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
                                     (Globals::w >> 1) -
-                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2,
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1,
                                     this->field_0x214 + layoutField(0xc4), false);
         return;
     }
@@ -1380,8 +1346,8 @@ void Radar::drawCurrentLock(Hud *) {
         String text(*Globals::gameText->getText(((PlayerAsteroid *) target)->asteroidIndex + 1274), false);
         int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
         this->qualitySprite->setFrame(((PlayerAsteroid *) target)->getQualityFrameIndex());
-        int x = (Globals::w >> 1) - textWidth / 2;
-        this->qualitySprite->setPosition(x - Globals::layout->buttonInsetX - this->qualitySprite->getFrameWidth(),
+        int x = (Globals::w >> 1) - (textWidth >> 1);
+        this->qualitySprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->qualitySprite->getFrameWidth(),
                                          this->field_0x214 + layoutField(0xc0));
         this->qualitySprite->draw(1.0f, 1.0f);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
@@ -1400,23 +1366,25 @@ void Radar::drawCurrentLock(Hud *) {
         }
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
                                     (Globals::w >> 1) -
-                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2,
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1,
                                     this->field_0x214 + layoutField(0xc4), false);
         Globals::Canvas->SetColor(0xffffffff);
         return;
     }
 
     int x;
+    const String *label;
     if (target == station) {
-        text = title;
+        label = &title;
     } else if (target->name.length == 0) {
-        text = *Globals::gameText->getText(target->shipGroup + 406);
+        label = Globals::gameText->getText(target->shipGroup + 406);
     } else {
-        text = target->name;
+        label = &target->name;
     }
+    text = *label;
     if (target != station) {
         text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
-        x = (Globals::w >> 1) - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
+        x = (Globals::w >> 1) - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1;
     } else {
         if (Globals::status->inAlienOrbit()) {
             if (Globals::status->dlc1Won()) {
@@ -1428,8 +1396,8 @@ void Radar::drawCurrentLock(Hud *) {
             this->lockSprite->setFrame(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
         }
         int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
-        x = (Globals::w >> 1) - textWidth / 2;
-        this->lockSprite->setPosition(x - Globals::layout->buttonInsetX - this->lockSprite->getFrameWidth(),
+        x = (Globals::w >> 1) - (textWidth >> 1);
+        this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
                                       this->field_0x214 + layoutField(0xc8));
         this->lockSprite->draw(1.0f, 1.0f);
     }
@@ -1437,32 +1405,36 @@ void Radar::drawCurrentLock(Hud *) {
                                 this->field_0x214 + layoutField(0xc4), false);
     if (target != station && target->shipGroup != 10) {
         this->lockSprite->setFrame(target->shipGroup);
-        this->lockSprite->setPosition(x - Globals::layout->buttonInsetX - this->lockSprite->getFrameWidth(),
+        this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
                                       this->field_0x214 + layoutField(0xc8));
         this->lockSprite->draw(1.0f, 1.0f);
     }
 }
-
-String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
-    long long dx = static_cast<long long>(x1 * 0.5f - x2 * 0.5f);
-    long long dz = static_cast<long long>(z1 * 0.5f - z2 * 0.5f);
-    long long dy = static_cast<long long>(y1 * 0.5f - y2 * 0.5f);
-    long long squared = dy * dy + dx * dx + dz * dz;
-    int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
-    int meters = distance << 3;
-
-    String text = String(meters) + String("m", false);
-    if (distance >= 125) {
-        int remainder = meters % 1000;
-        if (remainder >= 100) {
-            text = String(remainder);
-        } else {
-            text = String("0", false);
-        }
-        text = text.SubString(0, 1);
-        text = String((int) ((unsigned int) distance / 125u)) + String(".", false) + text + String("km", false);
-    }
-    return text;
+KIPlayer *Radar::getLockedGasCloud() {
+    return this->lockedGasCloud;
 }
-
-unsigned char Radar::drawTarget;
+KIPlayer *Radar::getLockedAsteroid() {
+    return this->lockedAsteroid;
+}
+void Radar::unlockAsteroid() {
+    this->lockedAsteroid = nullptr;
+}
+KIPlayer *Radar::getLockedEnemy() {
+    return this->lockedEnemy;
+}
+bool Radar::stationLocked() {
+    unsigned char *station = reinterpret_cast<unsigned char *>(this->lockedStation);
+    if (station != nullptr) {
+        return station_u8(station, 0x71) != 0;
+    }
+    return false;
+}
+int Radar::getTurretScopeWidth() {
+    return this->turretScopeHalfWidth << 1;
+}
+uint8_t Radar::isPlasmaInRange() {
+    return this->plasmaInRange;
+}
+uint8_t Radar::hasScanner() {
+    return this->scannerAvailable;
+}
