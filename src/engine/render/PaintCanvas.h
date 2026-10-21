@@ -6,6 +6,7 @@
 #include "../core/AEString.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
+#include "engine/render/Resource.h"
 #include "engine/core/Node.h"
 #include "engine/math/Transform.h"
 
@@ -389,7 +390,18 @@ namespace AbyssEngine {
 
         void SetResourceList(AbyssEngine::Resource *const *list, unsigned int count);
 
-        void *FindResource(unsigned short id); // lint: void_ptr (ABI method return; mangling must match lib)
+        // Inline in the original's PaintCanvas.h (weak symbol in the binary): callers therefore
+        // see no inferred readonly attribute and reload resource payload fields after the call.
+        void *FindResource(unsigned short id) { // lint: void_ptr (ABI method return; mangling must match lib)
+            unsigned int count = this->resources.count;
+            for (unsigned int i = 0; i < count; ++i) {
+                Resource *res = this->resources.data_[i];
+                if (res && res->id == id) {
+                    return res;
+                }
+            }
+            return 0;
+        }
 
         int ResourceLoaded(unsigned int index, ResourceType type);
 

@@ -764,19 +764,6 @@ void PaintCanvas::EndBG() {
     Engine::vfc = this->bgFlagSaved;
 }
 
-void *PaintCanvas::FindResource(unsigned short id) { // lint: void_ptr (external symbol; mangling must match lib)
-    unsigned int count = this->resources.count;
-    char *found = 0;
-    for (unsigned int i = 0; i < count; ++i) {
-        char *res = (char *) (this->resources.data_)[i];
-        if (res && ((PCResourceView *) res)->id == id) {
-            found = res;
-            break;
-        }
-    }
-    return found;
-}
-
 AbyssEngine::Mesh *PaintCanvas::MeshGetPointer(unsigned int index) {
     if (index < this->meshes.count) {
         AbyssEngine::Mesh *mesh;
@@ -3702,8 +3689,8 @@ void PaintCanvas::RestoreImage2D(AbyssEngine::Image2D *image) {
     s[10] = h;
     s[11] = 0.0f;
 
-    float invW = (float) (1.0 / (double) (unsigned int) img->regionB);
     float invH = (float) (1.0 / (double) (unsigned int) img->regionA);
+    float invW = (float) (1.0 / (double) (unsigned int) img->regionB);
     float u0 = (float) (unsigned int) img->u0;
     float v0 = (float) (unsigned int) img->v0;
 
