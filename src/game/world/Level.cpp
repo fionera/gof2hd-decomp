@@ -4549,7 +4549,7 @@ void Level::connectPlayers() {
         unsigned int count = 0;
         for (unsigned int k = 0; k < enemies->size(); k++) {
             KIPlayer *other = (*enemies)[k];
-            if (other == ship || (!wingman & (other->shipGroup == group))) {
+            if (other == ship || (other->shipGroup == group && !wingman)) {
                 continue;
             }
             if (firstOfMission24) {
@@ -4580,7 +4580,7 @@ void Level::connectPlayers() {
         ArraySetLength(count, *targets);
 
         Mission *mission = Globals::status->getMission();
-        if (((i & 1) && mission->getType() == 12) || mission->getType() == 2 || mission->getType() == 9
+        if ((mission->getType() == 12 && (i & 1)) || mission->getType() == 2 || mission->getType() == 9
             || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x10
                 && ship->shipGroup == 9)
             || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x18
@@ -4596,7 +4596,7 @@ void Level::connectPlayers() {
                 int slot = 0;
                 for (unsigned int k = 0; k < enemies->size(); k++) {
                     KIPlayer *other = (*enemies)[k];
-                    if (other == ship || other->stealFlagByte || (!wingman & (other->shipGroup == group))) {
+                    if (other == ship || other->stealFlagByte || (other->shipGroup == group && !wingman)) {
                         continue;
                     }
                     if (firstOfMission24) {
@@ -4626,7 +4626,7 @@ void Level::connectPlayers() {
             }
             for (unsigned int k = 0; k < enemies->size(); k++) {
                 KIPlayer *other = (*enemies)[k];
-                if (other == ship || (!wingman & (other->shipGroup == group))) {
+                if (other == ship || (other->shipGroup == group && !wingman)) {
                     continue;
                 }
                 if (firstOfMission24) {
