@@ -61,7 +61,8 @@ public:
     int field_0x5c;
     int field_0x60;
     int field_0x64;
-    uint8_t _pad_0x68[8];
+    int field_0x68;   // lounge panel width
+    int field_0x6c;   // lounge panel height
 
     int field_0x70_rowHeight;
 

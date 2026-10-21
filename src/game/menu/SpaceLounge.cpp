@@ -862,87 +862,6 @@ void SpaceLounge::drawLounge() {
     button_at(this, 0)->draw();
 }
 
-int SpaceLounge::init() {
-    char matrix[60];
-
-    this->touchDown = 0;
-    this->initialized = 0;
-    this->cameraAnimating = 0;
-    this->agents = (Array<Agent *> *) Station_getAgents(Globals::status->getStation());
-
-    if (this->choiceWindow != 0) {
-        delete this->choiceWindow;
-        this->choiceWindow = 0;
-    }
-    this->choiceWindow = new ChoiceWindow();
-    this->hangarUpdate = 0;
-
-    if (this->cutScene != 0) {
-        this->cutScene->resetCamera();
-    }
-
-    this->field_0x18 = 0;
-    this->agentVisited = new char[0x15];
-    for (int i = 0; i != 0x15; ++i) {
-        this->agentVisited[i] = 0;
-    }
-
-    Layout **layoutSlot = SpaceLounge_init_layout_slot;
-    Layout *layout = *layoutSlot;
-    int panelW = layoutMetric(layout, 0x68);
-    this->panelX = panelW / 2;
-    this->panelY = layout->field_0x20_top + layout->field_0xc_leftMargin;
-    this->panelWidth = panelW - layout->field_0x4c * 3 - layout->field_0x2d4;
-
-    this->scrollWindow = new ScrollTouchWindow(
-        this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4,
-        this->panelY, this->panelWidth, layoutMetric(layout, 0x6c), false);
-
-    this->mode = 0;
-    this->buttonPanelY = this->panelY + layoutMetric(layout, 0x6c) + layout->field_0x2c_rowHeight;
-    this->buttonsHeight = (layout->field_0x34 + layout->field_0x30_rowHeight) * 5;
-
-    if (this->buttons != 0) {
-        Array<TouchButton *> *oldButtons = this->buttons;
-        ArrayReleaseClasses(*oldButtons);
-        delete oldButtons;
-    }
-    Array<TouchButton *> *buttons = new Array<TouchButton *>();
-    this->buttons = buttons;
-    ArraySetLength(5, *buttons);
-
-    GameText **textsSlot = SpaceLounge_init_text_slot;
-    String *text = (*textsSlot)->getText(0);
-    int baseY = this->buttonPanelY + layout->field_0x4c;
-    this->buttonX = this->panelX + layoutMetric(layout, 0x68) - layout->field_0x4c - this->panelWidth;
-    this->buttonY1 = (baseY + layout->field_0x2d8 / 2) - layout->field_0x30_rowHeight / 2;
-    this->buttonY0 = baseY;
-
-    for (unsigned i = 0; i < 5; ++i) {
-        TouchButton *button = new TouchButton(*text, 0, this->buttonX,
-                                              baseY + (int) i * (layout->field_0x30_rowHeight + layout->field_0x34),
-                                              this->panelWidth, 0x11, 4);
-        (*buttons)[i] = button;
-        button->setTextColor(-1);
-    }
-
-    this->hoverAgent = -1;
-    MatrixSetTranslation(matrix, 0.0f, 0.0f, 0.0f);
-    MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
-    PaintCanvas **cameraSlot = SpaceLounge_init_camera_slot;
-    PaintCanvas *camera = *cameraSlot;
-    const AbyssEngine::AEMath::Matrix *current =
-            (const AbyssEngine::AEMath::Matrix *) (long) camera->CameraGetCurrent();
-    camera->CameraSetLocal((unsigned int) (long) camera, *current);
-    if (this->cameraEase != 0) {
-        this->cameraEase->SetRange(*(AbyssEngine::AEMath::Matrix *) matrix, *(AbyssEngine::AEMath::Matrix *) matrix);
-    }
-    this->introDone = 1;
-    this->headBobPhase = 0;
-    ((SpaceLounge *) (this))->updateScreenPositions();
-    return 0;
-}
-
 // Lounge camera fly-in per lounge race: start/end translations and Y rotations.
 static const int SpaceLounge_cameraStartPos[4 * 3] = {
         -1315, 1160, -2728, 1484, 2980, -1626, -2472, 734, -3000, -2598, 400, 1813};
@@ -950,6 +869,172 @@ static const int SpaceLounge_cameraEndPos[4 * 3] = {
         -1800, 620, 1805, 607, 610, 2362, 136, 444, 1122, 2222, 450, 1227};
 static const float SpaceLounge_cameraStartRot[4] = {0.03f, 0.03f, 0.21f, 1.87f};
 static const float SpaceLounge_cameraEndRot[4] = {0.04f, 0.43f, 0.6f, 0.46f};
+
+// Character descriptor for the anonymous silhouette (all parts default).
+static int SpaceLounge_silhouetteChar[8];
+
+int SpaceLounge::init() {
+    this->touchDown = 0;
+    this->initialized = 0;
+    this->cameraAnimating = 0;
+    this->agents = Globals::status->getStation()->getAgents();
+
+    if (this->silhouetteGrid == 0 && this->agents != 0 && this->agentRects == 0) {
+        this->silhouetteGrid = new Array<Array<ImagePart *> *>();
+        ArraySetLength(this->agents->size(), *this->silhouetteGrid);
+        this->agentRects = new Array<Vector *>();
+        ArraySetLength(this->agents->size() * 2, *this->agentRects);
+        for (unsigned int i = 0; i < this->agents->size(); i++) {
+            (*this->silhouetteGrid)[i] = Globals::imageFactory->loadChar((*this->agents)[i]->getImageParts());
+            (*this->agentRects)[i] = new Vector();
+            (*this->agentRects)[this->agents->size() + i] = new Vector();
+        }
+        this->agentImageParts = new Array<ImagePart *>();
+        this->agentImageParts = Globals::imageFactory->loadChar(SpaceLounge_silhouetteChar);
+    }
+
+    if (this->choiceWindow != 0) {
+        delete this->choiceWindow;
+        this->choiceWindow = 0;
+    }
+    this->choiceWindow = new ChoiceWindow();
+    this->hangarUpdate = 0;
+    if (this->cutScene != 0) {
+        this->cutScene->resetCamera();
+    }
+    this->field_0x18 = 0;
+    this->agentVisited = new char[21];
+    for (int i = 0; i != 21; ++i) {
+        this->agentVisited[i] = 0;
+    }
+
+    // Agent list panel + buttons.
+    Layout *layout = Globals::layout;
+    this->panelX = Globals::w / 2 - layout->field_0x68 / 2;
+    this->panelY = layout->field_0x20_top + layout->field_0xc_leftMargin;
+    this->panelWidth = layout->field_0x68 - layout->field_0x4c * 3 - layout->field_0x2d4;
+    this->scrollWindow = new ScrollTouchWindow(this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4, this->panelY,
+                                               this->panelWidth, layout->field_0x6c, false);
+    this->mode = 0;
+    this->buttonPanelY = this->panelY + Globals::layout->field_0x6c + Globals::layout->field_0x2c_rowHeight;
+    this->buttonsHeight = (Globals::layout->field_0x34 + Globals::layout->field_0x30_rowHeight) * 5;
+
+    if (this->buttons != 0) {
+        ArrayReleaseClasses(*this->buttons);
+        delete this->buttons;
+    }
+    this->buttons = 0;
+    this->buttons = new Array<TouchButton *>();
+    ArraySetLength(5, *this->buttons);
+
+    layout = Globals::layout;
+    this->buttonX = this->panelX + layout->field_0x68 - layout->field_0x4c - this->panelWidth;
+    int y = this->buttonPanelY + layout->field_0x4c;
+    int rowHeight = layout->field_0x30_rowHeight;
+    int rowGap = layout->field_0x34;
+    (*this->buttons)[0] = new TouchButton(*Globals::gameText->getText(860), 0, this->buttonX, y,
+                                          this->panelWidth / 2 - Globals::layout->field_0x4c / 2, 17, 4);
+    (*this->buttons)[0]->setTextColor(0xed00ff);
+    (*this->buttons)[1] = new TouchButton(*Globals::gameText->getText(861), 0,
+                                          this->panelX + Globals::layout->field_0x68 - Globals::layout->field_0x4c, y,
+                                          this->panelWidth / 2 - Globals::layout->field_0x4c, 18, 4);
+    (*this->buttons)[1]->setTextColor(0xff2a00ff);
+    int y2 = y + rowHeight + rowGap;
+    (*this->buttons)[2] = new TouchButton(*Globals::gameText->getText(776), 0, this->buttonX, y2, this->panelWidth, 17, 4);
+    (*this->buttons)[3] = new TouchButton(*Globals::gameText->getText(804), 0, this->buttonX, y2, this->panelWidth, 17, 4);
+    (*this->buttons)[4] = new TouchButton(*Globals::gameText->getText(807), 0, this->buttonX,
+                                          y2 + Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34,
+                                          this->panelWidth, 17, 4);
+    this->hoverAgent = -1;
+    this->buttonY1 = y + Globals::layout->field_0x2d8 / 2 - Globals::layout->field_0x30_rowHeight / 2;
+    this->buttonY0 = y;
+
+    // Camera at the lounge's resting view.
+    int race = ((SolarSystem *) Globals::status->getSystem())->getRace();
+    Matrix rest;
+    AbyssEngine::AEMath::MatrixSetTranslation(rest, (float) SpaceLounge_cameraEndPos[race * 3],
+                                              (float) SpaceLounge_cameraEndPos[race * 3 + 1],
+                                              (float) SpaceLounge_cameraEndPos[race * 3 + 2]);
+    AbyssEngine::AEMath::MatrixSetRotation(rest, 0.0f, SpaceLounge_cameraEndRot[race], 0.0f);
+    PaintCanvas *canvas = Globals::Canvas;
+    canvas->CameraSetLocal(canvas->CameraGetCurrent(), rest);
+    if (this->cameraEase != 0) {
+        this->cameraEase->SetRange(rest, rest);
+    }
+    this->introDone = 1;
+    this->headBobPhase = 0.0f;
+    if (this->cutScene != 0) {
+        this->cutScene->level->getStarSystem()->initLight();
+    }
+    ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(0.5f, 0.5f, 0.5f, 0x4000);
+
+    if (Globals::iPad) {
+        // iPad: place the agent panel next to the selected agent.
+        float margin = Globals::iPadHD ? 14.0f : (Globals::iPadLarge ? 20.0f : 10.0f);
+        if (this->agentRects != 0 && this->selectedAgent >= 0 &&
+            (unsigned int) (this->selectedAgent * 2) < this->agentRects->size()) {
+            Vector *rect = (*this->agentRects)[this->selectedAgent * 2];
+            layout = Globals::layout;
+            float x;
+            if (rect->x - margin - (float) layout->field_0x68 < (float) layout->buttonInsetX) {
+                x = this->field_0x98 + margin;
+                float right = (float) (Globals::w - layout->buttonInsetX);
+                if (x >= right) {
+                    x = right;
+                }
+            } else {
+                x = this->field_0x8c - margin - (float) layout->field_0x68;
+                if (x < (float) layout->buttonInsetX) {
+                    x = (float) layout->buttonInsetX;
+                }
+            }
+            this->panelX = (int) x;
+            int panelHeight = layout->field_0x6c;
+            float top = this->field_0x9c - (float) (panelHeight / 3);
+            float bottom = (float) (Globals::h - layout->field_0x10_rightMargin - layout->field_0x24 - panelHeight);
+            float minTop = (float) (layout->field_0x20_top + layout->field_0xc_leftMargin);
+            if (top < bottom) {
+                bottom = top;
+            }
+            if (bottom < minTop) {
+                bottom = minTop;
+            }
+            this->panelY = (int) bottom;
+            delete this->scrollWindow;
+            this->scrollWindow = 0;
+            this->scrollWindow = new ScrollTouchWindow(this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4,
+                                                       this->panelY, this->panelWidth, layout->field_0x6c, false);
+            layout = Globals::layout;
+            this->buttonPanelY = this->panelY + layout->field_0x6c + layout->field_0x2c_rowHeight;
+            this->buttonX = this->panelX + layout->field_0x68 - layout->field_0x4c - this->panelWidth;
+            int y0 = layout->field_0x4c + this->buttonPanelY;
+            float extra = Globals::iPadHD ? 15.46875f : (Globals::iPadLarge ? 22.0f : 11.0f);
+            int spacing = (int) (extra + (float) layout->field_0x34);
+            this->buttonY1 = y0 - layout->field_0x30_rowHeight / 2 + layout->field_0x2d8 / 2;
+            this->buttonY0 = y0;
+            int y1 = layout->field_0x30_rowHeight + y0 + spacing;
+            (*this->buttons)[2]->setPosition(this->buttonX, y1);
+            (*this->buttons)[3]->setPosition(this->buttonX, y1);
+            (*this->buttons)[4]->setPosition(this->buttonX, y1 + spacing + Globals::layout->field_0x30_rowHeight);
+        }
+    }
+
+    this->field_0xb1 = ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated();
+    if (Globals::status->getCurrentCampaignMission() == 24 && Globals::status->getStation()->getIndex() == 10) {
+        // Campaign: the arms dealer opens the conversation by himself.
+        for (unsigned int i = 0; i < this->agents->size(); i++) {
+            Agent *agent = (*this->agents)[i];
+            if (agent->getOffer() == 2 && agent->getSellItemIndex() == 68 && !agent->isKnown()) {
+                this->selectedAgent = i;
+                this->startChat();
+                break;
+            }
+        }
+    }
+    this->initialized = 1;
+    return 0;
+}
+
 
 SpaceLounge::SpaceLounge()
         : silhouettePos(), field_0x8c(0), field_0x90(0), field_0x94(0), field_0x98(0), field_0x9c(0),
