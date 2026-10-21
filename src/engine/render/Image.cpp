@@ -338,94 +338,71 @@ namespace AbyssEngine {
 
         if (format & 2)
             (*out)->hasMipmaps = 1;
+        if (format == 0x40)
+            (*out)->hasMipmaps = 0;
 
         {
-            switch (format) {
-                case 13:
-                case 15:
-                    if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
-                        goto fail;
-                    (*out)->data = new unsigned char[size];
-                    if (AEFile::Read(size, (*out)->data, handle) == 0)
-                        goto fail;
-                    (*out)->format = 4;
-                    (*out)->dataLen = size;
-                    break;
-                case 20:
-                case 22:
-                case 23:
-                case 0x40:
-                case 0x42:
-                    if (format == 0x40)
-                        (*out)->hasMipmaps = 0;
-                    if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
-                        goto fail;
-                    (*out)->data = new unsigned char[size];
-                    if (AEFile::Read(size, (*out)->data, handle) == 0)
-                        goto fail;
-                    (*out)->format = 11;
-                    (*out)->dataLen = size;
-                    if (format == 23)
-                        (*out)->hasMipmaps = 0;
-                    break;
-                case 1:
-                case 3:
-                case 0x81:
-                    // Uncompressed RGBA; the high bit selects the alternate pixel order.
-                    (*out)->data = new unsigned char[(*out)->width * (*out)->height * 4];
-                    if (AEFile::Read((uint32_t) ((*out)->width * (*out)->height * 4), (*out)->data, handle) == 0)
-                        goto fail;
-                    (*out)->dataLen = (*out)->width * (*out)->height * 4;
-                    (*out)->format = (signed char) format > -1 ? 3 : 6;
-                    break;
-                case 32:
-                case 34:
-                    if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
-                        goto fail;
-                    (*out)->format = 8;
-                    (*out)->data = new unsigned char[(*out)->dataLen];
-                    if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
-                        goto fail;
-                    break;
-                case 33:
-                case 35:
-                    if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
-                        goto fail;
-                    (*out)->format = 9;
-                    (*out)->data = new unsigned char[(*out)->dataLen];
-                    if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
-                        goto fail;
-                    break;
-                case 36:
-                case 38:
-                    if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
-                        goto fail;
-                    (*out)->format = 10;
-                    (*out)->data = new unsigned char[(*out)->dataLen];
-                    if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
-                        goto fail;
-                    break;
-                case 16:
-                case 18:
-                    if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
-                        goto fail;
-                    (*out)->data = new unsigned char[size];
-                    if (AEFile::Read(size, (*out)->data, handle) == 0)
-                        goto fail;
-                    (*out)->format = 5;
-                    (*out)->dataLen = size;
-                    break;
-                case 17:
-                case 19:
-                    if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
-                        goto fail;
-                    (*out)->format = 7;
-                    (*out)->data = new unsigned char[(*out)->dataLen];
-                    if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
-                        goto fail;
-                    break;
-                default:
-                    break;
+            if (format == 13 || format == 15) {
+                if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                    goto fail;
+                (*out)->data = new unsigned char[size];
+                if (AEFile::Read(size, (*out)->data, handle) == 0)
+                    goto fail;
+                (*out)->dataLen = size;
+                (*out)->format = 4;
+            } else if (format == 20 || format == 22 || format == 23 || format == 0x40 || format == 0x42) {
+                if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                    goto fail;
+                (*out)->data = new unsigned char[size];
+                if (AEFile::Read(size, (*out)->data, handle) == 0)
+                    goto fail;
+                (*out)->dataLen = size;
+                (*out)->format = 11;
+                if (format == 23)
+                    (*out)->hasMipmaps = 0;
+            } else if (format == 1 || format == 3 || format == 0x81) {
+                // Uncompressed RGBA; the high bit selects the alternate pixel order.
+                (*out)->data = new unsigned char[(*out)->width * (*out)->height * 4];
+                if (AEFile::Read((uint32_t) ((*out)->width * (*out)->height * 4), (*out)->data, handle) == 0)
+                    goto fail;
+                (*out)->dataLen = (*out)->width * (*out)->height * 4;
+                if ((signed char) format < 0) (*out)->format = 6; else (*out)->format = 3;
+            } else if (format == 32 || format == 34) {
+                if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                    goto fail;
+                (*out)->format = 8;
+                (*out)->data = new unsigned char[(*out)->dataLen];
+                if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
+                    goto fail;
+            } else if (format == 33 || format == 35) {
+                if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                    goto fail;
+                (*out)->format = 9;
+                (*out)->data = new unsigned char[(*out)->dataLen];
+                if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
+                    goto fail;
+            } else if (format == 36 || format == 38) {
+                if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                    goto fail;
+                (*out)->format = 10;
+                (*out)->data = new unsigned char[(*out)->dataLen];
+                if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
+                    goto fail;
+            } else if (format == 16 || format == 18) {
+                if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                    goto fail;
+                (*out)->data = new unsigned char[size];
+                if (AEFile::Read(size, (*out)->data, handle) == 0)
+                    goto fail;
+                (*out)->dataLen = size;
+                (*out)->format = 5;
+            } else if (format == 17 || format == 19) {
+                if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                    goto fail;
+                (*out)->format = 7;
+                (*out)->data = new unsigned char[(*out)->dataLen];
+                if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
+                    goto fail;
             }
         }
 
