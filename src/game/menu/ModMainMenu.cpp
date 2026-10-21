@@ -211,53 +211,39 @@ void ModMainMenu::OnRelease() {
     if (this->cutScene != nullptr)
         delete this->cutScene;
     this->cutScene = nullptr;
-
     if (this->touchWindow != nullptr)
         delete this->touchWindow;
     this->touchWindow = nullptr;
 
     Globals::Canvas->ReleaseAllResources();
-
     Globals::globals->loadFont(GameText::getLanguage());
-
-    Layout **reload = g_ModMainMenu_releaseReload;
-    if (*reload != nullptr) {
-        (*reload)->reload();
-        (*g_ModMainMenu_releaseImageFactory)->reload();
-        (*reload)->initTip();
+    if (Globals::layout != nullptr) {
+        Globals::layout->reload();
+        Globals::imageFactory->reload();
+        Globals::layout->initTip();
     }
-
-    FModSound *sound = *g_ModMainMenu_releaseSound;
-    if (sound != nullptr)
-        sound->freeAllEvents();
+    if (Globals::sound != nullptr)
+        Globals::sound->freeAllEvents();
 }
 
 void ModMainMenu::OnUpdate() {
-    ApplicationManager *app = this->appManager;
-    int elapsed = (int) app->GetElapsedTimeMillis();
+    // Frame time clamped to [0, 150] ms.
     int frameTime;
-    if (elapsed < 0x97 && (elapsed = (int) app->GetElapsedTimeMillis()) < 0) {
+    if ((int) this->appManager->GetElapsedTimeMillis() <= 150 && (int) this->appManager->GetElapsedTimeMillis() < 0)
         frameTime = 0;
-    } else {
-        elapsed = (int) app->GetElapsedTimeMillis();
-        if (elapsed > 0x96)
-            frameTime = 0x96;
-        else
-            frameTime = (int) app->GetElapsedTimeMillis();
-    }
-
+    else if ((int) this->appManager->GetElapsedTimeMillis() > 150)
+        frameTime = 150;
+    else
+        frameTime = (int) this->appManager->GetElapsedTimeMillis();
     this->frameTime = frameTime;
 
-    Layout **layout = g_ModMainMenu_updateLayout;
-    (*layout)->update(frameTime);
-    this->cutScene->update();
-    if (this->logoActive == 0)
+    Globals::layout->update(this->frameTime);
+    this->cutScene->update(this->frameTime);
+    if (!this->logoActive)
         this->touchWindow->update(this->frameTime);
-    (*layout)->update(this->frameTime);
-
-    FModSound **listener = g_ModMainMenu_updateListener;
-    this->fadeTimer = this->frameTime + this->fadeTimer;
-    (*listener)->updateAll(nullptr, nullptr, nullptr, nullptr);
+    Globals::layout->update(this->frameTime);
+    this->fadeTimer += this->frameTime;
+    Globals::sound->updateAll(nullptr, nullptr, nullptr, nullptr);
 }
 
 void ModMainMenu::OnRender2D() {
