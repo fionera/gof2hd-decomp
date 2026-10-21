@@ -697,7 +697,6 @@ void MGame::dockEvent(int p1, int p2) {
             if (*autoFlag == 0 || autop == 0) {
                 if (this->starMapOpen != 0) {
                     this->frameTime = 0;
-                    this->frameTimeHigh = 0;
 
                     return;
                 }
@@ -1067,9 +1066,7 @@ int MGame::OnInitialize() {
     self->field_0x1ac = 0;
     self->cloakAttributeMax = 0;
     self->startTime = t & 0xffff;
-    self->startTimeHigh = 0;
     self->lastTime = t & 0xffff;
-    self->lastTimeHigh = 0;
 
     if (static_cast<Radar *>(self->player->field_0x14)->hasScanner() != 0)
         Globals::status->field_11c = 0;
@@ -1565,136 +1562,91 @@ void MGame::pauseSounds() {
     }
 }
 
-static inline void Radio_ctor(Radio *r) { new(r) Radio(); }
-
-static inline unsigned char * TargetFollowCamera_dtor(TargetFollowCamera * c) { c->~TargetFollowCamera(); return (unsigned char *)(c); }
-
-static int g_resAspectA;
-
-static int g_resAspectB;
-
-static int g_resAspectC;
-
-static int g_fovDefault;
-
-static int g_fovOrbitHigh;
-
-static int g_fovOrbitLow;
-
-static int g_resInitB;
-
-static int **g_resShipTune;
-
-static uint8_t **g_resPauseSrc;
-
 void MGame::reset() {
-    this->flCameraRoll = 0;
-    this->activeTouchId = 0;
-    this->touch0Id = 0;
+    this->dragLastY = 0;
+    this->dragDeltaX = 0;
+    this->activeTouchId = nullptr;
     this->touch1Id = 0;
+    this->dragLastX = 0;
     this->menuTime = 0;
+    this->dragRotIntY = 0;
+    this->flShakeX = 25.0f;
+    this->flCameraRoll = 0;
+    this->touch0Id = 0;
+    this->flShakeY = -50.0f;
     this->dragStartX = 0;
     this->dragStartY = 0;
     this->dragDeltaY = 0;
     this->freeCamDragging = 0;
-
-    *(int *) &this->flShakeX = g_resAspectC;
-    *(int *) &this->flShakeY = g_resAspectA;
-    this->field_0x120 = g_resAspectB;
-    this->dragLastX = 0;
-    this->dragLastY = 0;
+    this->field_0x120 = 2500.0f;
     this->dragRotIntX = 0;
-    this->dragRotIntY = 0;
-    this->dragDeltaX = 0;
-
-    this->player = (PlayerEgo *) (intptr_t)((Level *) (this))->getPlayer();
-
+    this->player = this->level->getPlayer();
     this->hud = new Hud();
+    this->radio = new Radio();
+    this->radio->setMessages(this->level->getMessages());
 
-    Radio *radio = (Radio *) ::operator new(0x48);
-    Radio_ctor(radio);
-    this->radio = radio;
-    ((Radio *) (radio))->setMessages((Array<RadioMessage *> *) this->level->getMessages());
-
-    PaintCanvas *pc = Globals::Canvas;
-    pc->CameraCreate(this->cameraId);
-    unsigned cam = (unsigned) (uintptr_t) Globals::Canvas;
-
-    float fov = *(float *) &g_fovDefault;
-    if (Globals::status->inAlienOrbit() != 0) {
-        int cm = Globals::status->getCurrentCampaignMission();
-        fov = (cm < 0x50) ? *(float *) &g_fovOrbitLow : *(float *) &g_fovOrbitHigh;
+    Globals::Canvas->CameraCreate(this->cameraId);
+    Globals::Canvas->CameraSetPerspective(this->cameraId, 1.22f, 20.0f,
+                                          Globals::status->inAlienOrbit()
+                                              ? (Globals::status->getCurrentCampaignMission() < 0x50 ? 450000.0f
+                                                                                                     : 300000.0f)
+                                              : 300000.0f);
+    if (this->camera != nullptr) {
+        delete this->camera;
+        this->camera = nullptr;
     }
-    pc->CameraSetPerspective(cam, fov, 0, 0);
-
-    if (this->camera != 0) {
-        ::operator delete(TargetFollowCamera_dtor(this->camera));
-        this->camera = 0;
-    }
-    TargetFollowCamera *tfc = new TargetFollowCamera(
-        (unsigned) this->cameraId, this->player->geometry,
-        AbyssEngine::Vector{0, 0, 0}, AbyssEngine::Vector{0, 0, 0});
-    this->camera = tfc;
-    pc->CameraSetCurrent(this->cameraId);
+    this->camera = new TargetFollowCamera(this->cameraId, this->player->geometry, Vector{0.0f, 0.0f, 0.0f},
+                                          Vector{0.0f, 0.0f, 0.0f});
+    Globals::Canvas->CameraSetCurrent(this->cameraId);
     this->player->setTargetFollowCamera(this->camera);
     this->camera->resetShipHandling();
-
-    Radar *radar = new Radar(this->level);
-    this->radar = radar;
-
-    if (Globals::status->getMission() != 0)
-        this->campaignMission = (uint8_t)((Mission *) (Globals::status->getMission()))->isCampaignMission();
-
-    LevelScript *script = new LevelScript(this->level, this->hud,
-                                          this->radar, this->camera);
-    this->levelScript = script;
-    ((LevelScript *) (script))->lookBehind();
+    this->radar = new Radar(this->level);
+    if (Globals::status->getMission() != nullptr)
+        this->campaignMission = Globals::status->getMission()->isCampaignMission();
+    this->levelScript = new LevelScript(this->level, this->hud, this->radar, this->camera);
+    this->levelScript->resetCamera(this->level);
     this->level->initParticleSystems();
-
-    ChoiceWindow *cw = new ChoiceWindow();
-    this->choiceWindow = cw;
+    this->choiceWindow = new ChoiceWindow();
 
     this->elapsedTime = 0;
     this->cameraMode = 0;
     this->field_0x18 = 0;
-    reinterpret_cast<int &>(this->_b5c) = 0;
+    this->_b5c = 0;
+    this->pauseOpen = 0;
     this->jumpActive = 0;
-    reinterpret_cast<int &>(this->field_0xc4) = 0;
+    this->gameOverActive = 0;
+    this->field_0xc4 = 0;
+    this->autopilotMenuOpen = 0;
     this->field_0xc6 = 0;
-    reinterpret_cast<uint16_t &>(this->_bc8) = 0;
+    this->_bc8 = 0;
+    this->menuTouchOpen = 0;
     this->field_0xe0 = 0;
     this->freeCamMode = 0;
     this->field_0x110 = 0;
-    this->flFastForwardFactor = 0x3f800000;
-    this->cloakAttribute = 0;
-    this->cloakAttributeMax = g_resInitB;
     this->lastTapTime = 0;
-    this->lastTapTimeHigh = 0;
     this->lastAlignTime = 0;
-    this->lastAlignTimeHigh = 0;
-    reinterpret_cast<uint16_t &>(this->_b1b8) = 0;
-    this->thrustThreshold = (*g_resShipTune)[0x2f4 / 4];
+    this->flFastForwardWeight = 1.0f;
+    this->field_0x1b0 = 0;
+    this->field_0x1b4 = 100.0f;
+    this->_b1b8 = 0;
+    this->thrustEngaged = 0;
+    this->thrustThreshold = Globals::layout->field_0x2f4;
     this->thrustBase = 0;
-    this->gameRecord = 0;
+    this->gameRecord = nullptr;
     this->maneuverHoldTime = 0;
     this->maneuverActive = 0;
     this->maneuverStartX = 0;
     this->maneuverStartY = 0;
-
-    unsigned t = this->applicationManager->GetCurrentTimeMillis();
-
-    *(uint16_t *) &this->needsRedraw = 0x101;
+    this->startTime = this->lastTime = Globals::appManager->GetCurrentTimeMillis();
+    this->needsRedraw = 1;
+    this->field_0x112 = 1;
     this->field_0xcf = 0;
     this->choiceItemCount = 0;
     this->field_0xd4 = 0;
     this->field_0x1e4 = 0;
+    this->field_0x1e5 = 0;
     this->field_0x1e6 = 0;
-    this->startTime = t & 0xffff;
-    this->startTimeHigh = 0;
-    this->lastTime = t & 0xffff;
-    this->lastTimeHigh = 0;
-    this->field_0x1dd = **g_resPauseSrc;
-
+    this->field_0x1dd = AbyssEngine::Engine::UseAdvancedShader;
     Globals::status->field_0x184 = 0;
     Globals::status->field_0x188 = 1;
     Globals::status->field_0x18c = 1;
@@ -1867,7 +1819,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
                         }
                         if (apply) {
                             self->thrustEngaged = 1;
-                            float divisor = *(float *) &(*g_resShipTune)[0x2f8 / 4];
+                            float divisor = reinterpret_cast<float &>(Globals::layout->field_0x2f8);
                             float t = ((float) self->thrustStartY - (float) y -
                                        (float) self->thrustResetX) / divisor +
                                       (float) self->thrustBase;
@@ -2073,84 +2025,81 @@ done:
 }
 
 MGame::MGame() {
-    this->loadProgress = 100;
-    this->field_0x198 = 0;
-    this->choiceWindowOpen = 0;
-    this->camera = nullptr;
-    this->field_0x190 = 0;
-    this->loadingImage = -1;
-    this->levelScript = nullptr;
-    this->field_0xdf = 0;
-    this->field_0x3c = 0;
-    this->freeCamFinger1.z = 0.0f;
-    this->startTimeHigh = 0;
-    this->starMap = nullptr;
     this->freeCamFinger1.x = 0.0f;
-    this->flShakePhaseX = 0;
-    this->field_0x144 = 0;
-    this->flShakePhaseY = 0;
-    this->player = nullptr;
-    this->choiceWindow = nullptr;
+    this->freeCamFinger1.y = 0.0f;
+    this->freeCamFinger1.z = 0.0f;
+    this->freeCamFinger0.x = 0.0f;
     this->flShakeAmpX = 0;
-    this->jumpDriveActive = 0;
-    this->field_0x1c4 = 0;
-    this->field_0x150 = 0;
-    this->egoJumpPos.x = 0.0f;
-    this->touchesStream = 0;
-    this->field_0x194 = 0;
-    this->field_0xde = 0;
-    this->startTime = 0;
-    this->freeCamFinger0.y = 0.0f;
-    this->thrustStartY = 0;
-    this->cutsceneActive = 0;
-    this->field_0xd8 = 0;
+    this->flShakeAmpY = 0;
+    this->field_0x144 = 0;
+    this->flShakePhaseX = 0;
     this->field_0x18c = 0;
-    this->field_0x70 = 0;
-    this->field_0x38 = 0;
-    this->pauseSnapshot = 0;
-    this->jumpGateSoundStarted = 0;
+    this->field_0x190 = 0;
+    this->field_0x194 = 0;
+    this->field_0x198 = 0;
+    this->elapsedTime = 0;
+    this->egoJumpPos.x = 0.0f;
+    this->egoJumpPos.y = 0.0f;
     this->egoJumpPos.z = 0.0f;
     this->field_0x1bc = 0;
-    this->campaignMission = 0;
-    this->cameraMode = 0;
-    this->field_0x1e4 = 0;
-    this->starMapOpen = 0;
-    this->frameTime = 0;
-    this->freeCamFinger0.x = 0.0f;
-    this->autopilotMenuOpen = 0;
-    this->level = nullptr;
-    this->dialogueWindow = nullptr;
-    this->field_0x1d4 = 0;
-    this->radio = nullptr;
-    this->touchesStation = 0;
-    this->usingJumpDrive = 0;
-    this->elapsedTime = 0;
-    this->egoJumpPos.y = 0.0f;
-    this->_b5c = 0;
-    this->jumpActive = 0;
-    this->_bc8 = 0;
-    this->field_0x19c = 0;
-    this->gameOverActive = 0;
-    this->field_0x1a0 = 0;
-    this->jumpFlash = nullptr;
-    this->freeCamFinger1.y = 0.0f;
-    this->hudMenuOpen = 0;
-    this->_bca = 0;
-    this->menuWindow = nullptr;
-    this->field_0xc4 = 0;
-    this->lastTime = 0;
-    this->hud = nullptr;
-    this->lastTimeHigh = 0;
-    this->pauseOpen = 0;
-    this->flShakeAmpY = 0;
-    this->deltaTime = 0;
-    this->field_0xc6 = 0;
-    this->field_0xcf = 0;
-    this->radar = nullptr;
+    this->thrustStartY = 0;
+    this->field_0x1c4 = 0;
+    this->freeCamFinger0.y = 0.0f;
     this->freeCamFinger0.z = 0.0f;
-    this->turretMode = 0;
+    this->flShakePhaseY = 0;
+    this->field_0x150 = 0;
+    this->field_0x19c = 0;
+    this->field_0x1a0 = 0;
+    this->loadProgress = 100;
+    this->loadingImage = -1;
+    this->cameraMode = 0;
+    this->frameTime = 0;
+    this->field_0x38 = 0;
+    this->field_0x3c = 0;
+    this->startTime = 0;
+    this->lastTime = 0;
+    this->radar = nullptr;
+    this->radio = nullptr;
+    this->menuWindow = nullptr;
+    this->dialogueWindow = nullptr;
+    this->field_0x70 = 0;
+    this->hud = nullptr;
+    this->level = nullptr;
+    this->levelScript = nullptr;
     this->active = 0;
-    this->frameTimeHigh = 0;
+    this->pauseSnapshot = 0;
+    this->turretMode = 0;
+    this->hudMenuOpen = 0;
+    this->jumpFlash = nullptr;
+    this->camera = nullptr;
+    this->field_0x1e4 = 0;
+    this->field_0x1d4 = 0;
+    this->deltaTime = 0;
+    this->player = nullptr;
+    this->_b5c = 0;
+    this->pauseOpen = 0;
+    this->cutsceneActive = 0;
+    this->jumpActive = 0;
+    this->gameOverActive = 0;
+    this->campaignMission = 0;
+    this->starMap = nullptr;
+    this->choiceWindow = nullptr;
+    this->_bc8 = 0;
+    this->field_0xc4 = 0;
+    this->autopilotMenuOpen = 0;
+    this->field_0xc6 = 0;
+    this->starMapOpen = 0;
+    this->choiceWindowOpen = 0;
+    this->field_0xcf = 0;
+    this->_bca = 0;
+    this->touchesStream = 0;
+    this->touchesStation = 0;
+    this->jumpGateSoundStarted = 0;
+    this->field_0xd8 = 0;
+    this->jumpDriveActive = 0;
+    this->usingJumpDrive = 0;
+    this->field_0xde = 0;
+    this->field_0xdf = 0;
     this->field_0x1d8 = 100.0f;
     this->field_0x1e0 = 0;
 }
@@ -2178,11 +2127,8 @@ void MGame::OnRelease() {
     this->gameOverActive = 0;
     this->campaignMission = 0;
     this->startTime = 0;
-    this->startTimeHigh = 0;
     this->lastTime = 0;
-    this->lastTimeHigh = 0;
     this->frameTime = 0;
-    this->frameTimeHigh = 0;
     this->field_0x38 = 0;
     this->field_0x3c = 0;
 

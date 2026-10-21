@@ -35,12 +35,9 @@ public:
     uint8_t field_0x18;
     uint8_t _pad_0x19[3];
     int field_0x1c;
-    unsigned startTime;
-    unsigned startTimeHigh;
-    unsigned lastTime;
-    unsigned lastTimeHigh;
-    int frameTime;
-    int frameTimeHigh;
+    long long startTime;
+    long long lastTime;
+    long long frameTime;
     int field_0x38;
     int field_0x3c;
     int deltaTime;
@@ -109,17 +106,16 @@ public:
     TargetFollowCamera *camera;
     int hudTouchFlags;
     uint8_t _pad_0xfc[4];
-    int lastTapTime;
-    int lastTapTimeHigh;
-    int lastAlignTime;
-    int lastAlignTimeHigh;
+    long long lastTapTime;
+    long long lastAlignTime;
     uint8_t field_0x110;
     uint8_t needsRedraw;
-    uint8_t _pad_0x112[2];
+    uint8_t field_0x112;
+    uint8_t _pad_0x113[1];
     AEGeometry *jumpFlash;
     float flShakeX;
     float flShakeY;
-    int field_0x120;
+    float field_0x120;
     int dragLastX;
     int dragLastY;
     int dragRotIntX;
@@ -163,7 +159,7 @@ public:
     float flFastForwardFactor;
     int field_0x1ac;
     int field_0x1b0;
-    int field_0x1b4;
+    float field_0x1b4;
 
     uint8_t _b1b8; // thrustActive (uint16_t) = reinterpret_cast<uint16_t &>(_b1b8)
     uint8_t thrustEngaged;
