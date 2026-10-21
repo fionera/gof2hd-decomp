@@ -748,10 +748,8 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
     int *imageParts = 0;
     if (imageCount >= 1) {
         imageParts = new int[imageCount];
-        int *part = imageParts;
         for (int i = 0; i < imageCount; i++) {
-            AEFile::Read(*part, fd);
-            part++;
+            AEFile::Read(imageParts[i], fd);
         }
     }
 
