@@ -66,8 +66,8 @@ public:
     DialogueWindow *dialogueWindow;
     StarMap *starMap;
     ChoiceWindow *choiceWindow;
-    int touch0Id;
-    int touch1Id;
+    void *touch0Id; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
+    void *touch1Id; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
     int menuTime;
 
     Vector freeCamFinger1;

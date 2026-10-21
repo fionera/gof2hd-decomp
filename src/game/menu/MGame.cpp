@@ -440,13 +440,13 @@ void MGame::reset() {
     this->dragLastY = 0;
     this->dragDeltaX = 0;
     this->activeTouchId = nullptr;
-    this->touch1Id = 0;
+    this->touch1Id = nullptr;
     this->dragLastX = 0;
     this->menuTime = 0;
     this->dragRotIntY = 0;
     this->flShakeX = 25.0f;
     this->flCameraRoll = 0;
-    this->touch0Id = 0;
+    this->touch0Id = nullptr;
     this->flShakeY = -50.0f;
     this->dragStartX = 0;
     this->dragStartY = 0;
@@ -629,18 +629,17 @@ void MGame::maneuverTouchEnd(int a, int b, void *p) { // lint: void_ptr -- expor
 }
 
 void MGame::freeCamTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- exported method signature (Pv)
-    int id = (int) (intptr_t) touch;
-    if (this->touch0Id != 0) {
+    if (this->touch0Id != nullptr) {
         if (this->menuTime < 1000) {
             this->flCameraRoll = 0;
             this->flCameraRoll = AbyssEngine::AEMath::VectorLength(*this->camera->getCamOffset());
-            this->touch1Id = id;
+            this->touch1Id = touch;
             this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
         }
     } else {
-        if (this->touch1Id == 0)
+        if (this->touch1Id == nullptr)
             this->menuTime = 0;
-        this->touch0Id = id;
+        this->touch0Id = touch;
         this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
     }
     this->dragLastX = x;
@@ -653,14 +652,13 @@ void MGame::freeCamTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- 
 }
 
 void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- exported method signature (Pv)
-    int id = (int) (intptr_t) touch;
     if (this->player->isMining()) {
         this->needsRedraw = 1;
         freeCamTouchEnd(x, y, touch);
         return;
     }
     this->needsRedraw = 0;
-    if (this->touch0Id == 0 || this->touch1Id == 0) {
+    if (this->touch0Id == nullptr || this->touch1Id == nullptr) {
         int dx = x - this->dragLastX;
         int dy = y - this->dragLastY;
         this->dragLastX = x;
@@ -672,19 +670,19 @@ void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- e
         this->flShakeX += (float) dx;
         this->flShakeY += (float) dy;
     }
-    if (this->touch0Id == 0) {
+    if (this->touch0Id == nullptr) {
         this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
-    } else if (this->touch1Id == 0) {
+    } else if (this->touch1Id == nullptr) {
         this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
     } else {
         float oldLen = AbyssEngine::AEMath::VectorLength(this->freeCamFinger1 - this->freeCamFinger0);
         float newLen = oldLen;
-        if (this->touch0Id == id) {
+        if (this->touch0Id == touch) {
             float fx = (float) x;
             float fy = (float) y;
             newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger0);
             this->freeCamFinger1 = Vector{fx, fy, 0.0f};
-        } else if (this->touch1Id == id) {
+        } else if (this->touch1Id == touch) {
             float fx = (float) x;
             float fy = (float) y;
             newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger1);
@@ -702,14 +700,13 @@ void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- e
 
 void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) { // lint: void_ptr -- exported method signature (Pv)
     // lint: void_ptr -- exported method signature (Pv)
-    int id = (int) (intptr_t) idPtr;
     (void) p1;
     (void) p2;
-    if (this->touch0Id == id) {
-        this->touch0Id = 0;
+    if (this->touch0Id == idPtr) {
+        this->touch0Id = nullptr;
         this->menuTime = 0;
-    } else if (this->touch1Id == id) {
-        this->touch1Id = 0;
+    } else if (this->touch1Id == idPtr) {
+        this->touch1Id = nullptr;
         this->menuTime = 0;
     }
     {
@@ -722,13 +719,13 @@ void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) { // lint: void_ptr -- 
         if (iy < 0) iy = -iy;
         if (ix < 0) ix = -ix;
 
-        float ox = 0.001f;
+        float ox = 0.0f;
         if (ix > 3) ox = fx;
-        float oy = 0.001f;
+        float oy = 0.0f;
         if (iy > 3) oy = fy;
         this->needsRedraw = 1;
-        this->flShakeAmpX = 0.002f;
-        this->flShakeAmpY = 0.002f;
+        this->flShakeAmpX = 0.9f;
+        this->flShakeAmpY = 0.9f;
         this->freeCamDragging = 0;
         this->flShakePhaseX = ox;
         this->flShakePhaseY = oy;
@@ -1828,8 +1825,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         }
                     }
                     this->menuTouchOpen = 0;
-                    this->touch0Id = 0;
-                    this->touch1Id = 0;
+                    this->touch0Id = nullptr;
+                    this->touch1Id = nullptr;
                     this->activeTouchId = nullptr;
                     this->level->getStarSystem()->initLight();
                     float particleQuality = reinterpret_cast<const float &>(Globals::options[40]);
@@ -1879,8 +1876,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
 
     this->hudTouchFlags = this->hud->touchEnd(x, y, touchId);
     if (this->hudTouchFlags != 0) {
-        this->touch0Id = 0;
-        this->touch1Id = 0;
+        this->touch0Id = nullptr;
+        this->touch1Id = nullptr;
         if (this->hudTouchFlags & 1) {
             // Pause button.
             pauseSounds();
@@ -2117,8 +2114,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
             if (this->hudTouchFlags == 0) {
                 this->hud->closeHudMenu();
                 this->hudMenuOpen = 0;
-                this->touch0Id = 0;
-                this->touch1Id = 0;
+                this->touch0Id = nullptr;
+                this->touch1Id = nullptr;
                 this->pauseOpen = 0;
                 resumeSounds();
                 if (this->_bc8) {
@@ -3248,8 +3245,8 @@ void MGame::OnUpdate() {
             Globals::sound->setDownPitch(false);
             this->hud->setTimeExtender(this->hud->field_0x0, false, false, false);
         }
-        this->touch0Id = 0;
-        this->touch1Id = 0;
+        this->touch0Id = nullptr;
+        this->touch1Id = nullptr;
         this->menuTime = 0;
         this->freeCamDragging = 0;
         this->_b5c = 0;
