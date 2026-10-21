@@ -379,23 +379,18 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->positions.data()[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
 
         Vector direction = {0, 0, 0};
-        if (this->offset != direction) {
-            if (this->weaponType == ITEM_SORT_SHOCK_BLAST) {
-                direction = Vector{0, 0, 0};
-                goto aim;
-            }
+        if (this->offset != direction && this->weaponType != ITEM_SORT_SHOCK_BLAST) {
             if (!this->field_0xa5 && !this->field_0xa4_b0) {
-                this->positions.data()[i] +=
-                        AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
+                this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
             } else {
-                if (!this->field_0xa5 || this->field_0xa4_b0) {
+                // alternate the muzzle between the mirrored offsets
+                if (this->field_0xa4_b0) {
                     this->targetDir = this->offset;
                     if (this->field_0xa6) {
                         this->targetDir.x = -this->targetDir.x;
                     }
                     this->field_0xa6 = !this->field_0xa6;
-                    this->positions.data()[i] +=
-                            AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
+                    this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
                 }
                 if (this->field_0xa5 && this->field_0xa6) {
                     this->targetDir = this->offset;
@@ -403,8 +398,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
                         this->targetDir.y = -this->targetDir.y;
                     }
                     this->field_0xa7 = !this->field_0xa7;
-                    this->positions.data()[i] +=
-                            AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
+                    this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
                 }
             }
         }
@@ -422,7 +416,6 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             (*reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets))[i]->z =
                     (float) (Globals::rnd->nextInt(200) - 100) / 50.0f;
         } else {
-        aim:
             direction = AbyssEngine::AEMath::MatrixGetDir(m);
         }
         direction += AbyssEngine::AEMath::MatrixRotateVector(m, this->velocity);
