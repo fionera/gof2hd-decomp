@@ -1892,31 +1892,34 @@ void PlayerFighter::setBV(BoundingVolume *bv) {
 
 void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
     int saved = this->field_0xe4;
-    ((KIPlayer *) (this))->setWingmanCommand(cmd, target);
-    if ((unsigned) (cmd - 2) < 2) {
-        this->maneuverTimer = 0x1389;
-        if (this->currentSpeed != 5.5f) {
-            this->field_0x1c0 = 0x1389;
-        }
-        if (cmd == 2) {
-            if (((Level *) (this->level()))->getPlayerRoute() != 0) {
-                Route *r = ((Level *) (this->level()))->getPlayerRoute();
-                this->commandRoute = r->getExactClone();
-                this->field_0x1e4 = this->commandRoute->getCurrent();
-                goto done;
+    KIPlayer::setWingmanCommand(cmd, target);
+    switch (cmd) {
+        case 2:
+        case 3:
+            this->maneuverTimer = 0x1389;
+            if (this->currentSpeed != 5.5f) {
+                this->field_0x1c0 = 0x1389;
             }
-        } else if (target != 0) {
-            goto done;
-        }
-        this->field_0xe4 = saved;
-    } else if (cmd == 0) {
-        this->field_0xe4 = saved;
-        this->field_0x140 = (this->field_0x140 == 0);
-    } else if (cmd == 1) {
-        this->field_0x13d = 0;
-        this->field_0x1e0 = 0;
+            if (cmd == 2) {
+                if (((Level *) (this->level()))->getPlayerRoute() != 0) {
+                    this->commandRoute = ((Level *) (this->level()))->getPlayerRoute()->getExactClone();
+                    this->field_0x1e4 = this->commandRoute->getCurrent();
+                    break;
+                }
+            } else if (target != 0) {
+                break;
+            }
+            this->field_0xe4 = saved;
+            break;
+        case 1:
+            this->field_0x1e0 = 0;
+            this->field_0x13d = 0;
+            break;
+        case 0:
+            this->field_0xe4 = saved;
+            this->field_0x140 = (this->field_0x140 == 0);
+            break;
     }
-done:
     this->currentSpeed = this->speed;
     this->currentRotate = this->rotate;
 }
