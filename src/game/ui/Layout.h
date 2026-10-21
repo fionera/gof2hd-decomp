@@ -70,9 +70,9 @@ public:
     int field_0x7c;
     int field_0x80_touchMargin;
     int field_0x84;
-    uint8_t _pad_0x88[4];
+    int field_0x88;   // StarMap ctor: hitRadius = layout->field_0x88
     int field_0x8c;
-    int field_0x90;
+    float field_0x90;   // StarMap drag scale (copied raw into StarMap::dragScale, a float)
     int field_0x94;
     int field_0x98;
     int field_0x9c;

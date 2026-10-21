@@ -69,14 +69,13 @@ public:
     uint8_t choiceVisible;
     uint8_t jumpMapModeA;
     uint8_t jumpMapModeB;
-    AbyssEngine::Vector field_0xac;
-    uint8_t _pad_0xb8[4];
-    AbyssEngine::Vector field_0xbc;
-    uint8_t _pad_0xc8[4];
-    AbyssEngine::Vector field_0xcc;
-    uint8_t _pad_0xd8[4];
+    // Three EaseInOut objects (default-constructed in place by the ctor at +0xac/+0xbc/+0xcc).
+    AbyssEngine::EaseInOut field_0xac;
+    AbyssEngine::EaseInOut field_0xbc;
+    AbyssEngine::EaseInOut field_0xcc;
     uint8_t missionChangedFlag;
-    uint8_t _pad_0xdd[12];
+    uint8_t _pad_0xdd[11];
+    int32_t field_0xe8;
     int32_t field_0xec;
     int32_t field_0xf0;
     uint8_t isGalaxyMode;
