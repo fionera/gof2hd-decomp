@@ -2036,8 +2036,8 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
             }
             pull = AbyssEngine::AEMath::VectorNormalize(pull);
             Vector &drift = this->moveDirection;
-            drift = pull;
-            drift *= (float) ((unsigned int) strength >> 8);
+            drift = Vector(pull);
+            drift *= (float) (strength >> 8);
             this->geometry->translate(drift);
             this->hitCamera();
             if (distance < 1000)
