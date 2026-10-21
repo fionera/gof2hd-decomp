@@ -2119,12 +2119,14 @@ void MenuTouchWindow::update(int dt) {
             this->inertiaVel = (float) -this->scrollOffset * 0.5f;
         }
         int limit = this->contentHeight - this->pageHeight;
-        if (limit > -1) {
+        if (limit <= -1) {
+            if (limit > this->scrollOffset) {
+                this->inertiaDecay = 1.0f;
+                this->inertiaVel = (float) (limit - this->scrollOffset) * 0.5f;
+            }
+        } else {
             this->scrollOffset = 0;
             this->inertiaVel = 0.0f;
-        } else if (limit > this->scrollOffset) {
-            this->inertiaDecay = 1.0f;
-            this->inertiaVel = (float) (limit - this->scrollOffset) * 0.5f;
         }
     }
 
@@ -2135,8 +2137,8 @@ void MenuTouchWindow::update(int dt) {
                               Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
                               Globals::layout->field_0x24;
         this->contentHeightCache = Globals::Canvas->GetImage2DHeight(this->heapBufA[0]);
-        this->menuState = 15;
         this->pageHeight = (this->contentHeightCache + Globals::layout->field_0x2c_rowHeight) * 5;
+        this->menuState = 15;
         this->messageShowing = 0;
         this->dlcMessageShowing = 0;
         appData->purchaseReadyFlag = 0;
@@ -2244,29 +2246,29 @@ void MenuTouchWindow::update(int dt) {
     if (this->menuState == 13) {
         if (((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag) {
             int state = ((Engine *) Globals::appManager->GetEngine())->field_0x100;
-            if (state == 2) {
-                this->choiceWindow->set(*Globals::gameText->getText(56));
-                this->storeInitDialogShowing = 0;
-                this->messageShowing = 1;
-                ((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag = 0;
-            } else if (state == 1) {
+            if (state == 1) {
                 this->choiceWindow->set(*Globals::gameText->getText(55));
-                this->storeInitDialogShowing = 0;
                 this->messageShowing = 1;
+                this->storeInitDialogShowing = 0;
+                ((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag = 0;
+            } else if (state == 2) {
+                this->choiceWindow->set(*Globals::gameText->getText(56));
+                this->messageShowing = 1;
+                this->storeInitDialogShowing = 0;
                 ((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag = 0;
             }
         }
         if (((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag) {
             int result = ((MtwAppData *) Globals::appManager->GetApplicationData())->storeResultCode;
-            if (result == 2) {
-                this->choiceWindow->set(*Globals::gameText->getText(58));
-                this->screenshotState = -1;
-                this->messageShowing = 1;
-                ((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag = 0;
-            } else if (result == 1) {
+            if (result == 1) {
                 this->choiceWindow->set(*Globals::gameText->getText(57));
-                this->screenshotState = -1;
                 this->messageShowing = 1;
+                this->screenshotState = -1;
+                ((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag = 0;
+            } else if (result == 2) {
+                this->choiceWindow->set(*Globals::gameText->getText(58));
+                this->messageShowing = 1;
+                this->screenshotState = -1;
                 ((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag = 0;
             }
         }
