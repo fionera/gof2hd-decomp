@@ -243,18 +243,12 @@ void ParticleSystemMesh::updateUsualEdges(int id, int delta) {
     int start = (int) this->idOffset;
     int stride = (int) this->stride;
     Vector move = {0.0f, 0.0f, 0.0f};
-    const Vector *velocity;
-    float scale;
-    if ((int) (this->flags << 12) < 0) {
-        velocity = &this->emitterVelocity;
-        scale = (float) delta * 0.001f * this->particleVelocities[id].y;
-    } else {
-        velocity = &this->particleVelocities[id];
-        scale = (float) delta * 0.001f;
-    }
-    move = *velocity * scale;
+    if ((int) (this->flags << 12) < 0)
+        move = this->emitterVelocity * ((float) delta * 0.001f * this->particleVelocities[id].y);
+    else
+        move = this->particleVelocities[id] * ((float) delta * 0.001f);
 
-    int point = start + stride * id * 4;
+    int point = start + id * 4 * stride;
     for (int i = 0; i < (int) this->stride * 4; i++)
         this->canvas->MeshTranslatePoint(this->resource, (uint16_t) (point + i), move.x, move.y, move.z);
 }
