@@ -161,25 +161,19 @@ void Radar::update(KIPlayer *player) {
 }
 
 void Radar::update(Vector value) {
-    Vector transformed = AbyssEngine::AEMath::MatrixTransformVector(this->transform, value);
     Vector *current = reinterpret_cast<Vector *>(&this->radarPosX);
-    *current = transformed;
+    *current = AbyssEngine::AEMath::MatrixTransformVector(this->transform, value);
 
     this->radarPosY = -this->radarPosY;
     this->radarPosZ = -this->radarPosZ;
 
-    Vector screen = value;
-
-    int visible = (gPaintCanvas->GetScreenPosition(value, screen) != 0);
+    int visible = Globals::Canvas->GetScreenPosition(value, value);
     this->onScreen = static_cast<uint8_t>(visible);
-
-    int screenX = static_cast<int>(screen.x);
-    this->screenX = screenX;
-    int screenY = static_cast<int>(screen.y);
-    this->screenY = screenY;
+    this->screenX = static_cast<int>(value.x);
+    this->screenY = static_cast<int>(value.y);
 
     if (visible == 0) {
-        *current = this->elipsoidIntersect(screenX, screenY, *current);
+        *current = this->elipsoidIntersect(static_cast<int>(value.x), static_cast<int>(value.y), *current);
         this->screenX = static_cast<int>(current->x);
         this->screenY = static_cast<int>(current->y);
     }
@@ -205,22 +199,22 @@ long long Radar::draw(Player *, Hud *, int mode) {
     return 0;
 }
 
-Vector Radar::elipsoidIntersect(int y, int x, Vector value) {
+Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
     int centerY = this->centerY;
-    float dy = static_cast<float>(centerY - x);
+    float dy = static_cast<float>(centerY - y);
     float dy2 = dy * dy;
     int centerX = this->centerX;
-    float dx = static_cast<float>(centerX - y);
+    float dx = static_cast<float>(centerX - x);
     float dx2 = dx * dx;
     float weightY = this->weightY;
     float weightX = this->weightX;
     float distance = weightY * dy2 + weightX * dx2;
 
     if (distance >= 0.0f) {
-        float scale = (distance - std::sqrt(distance)) / distance;
+        float scale = (distance - Globals::globals->sqrt(distance)) / distance;
         if (scale >= 0.0f && scale <= 1.0f) {
-            value.y = static_cast<float>(static_cast<int>(static_cast<float>(x) + scale * dy));
-            value.x = static_cast<float>(static_cast<int>(static_cast<float>(y) + scale * dx));
+            value.x = static_cast<float>(static_cast<int>(static_cast<float>(x) + scale * dx));
+            value.y = static_cast<float>(static_cast<int>(static_cast<float>(y) + scale * dy));
         }
     }
 
