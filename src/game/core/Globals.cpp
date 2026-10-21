@@ -1989,6 +1989,9 @@ int Globals::getDialogueSoundId(int code, Agent *agent) {
         break;
     case 4:
         switch (code) {
+        case 378:
+            soundId = 597;
+            break;
         case 389:
             soundId = 618;
             break;
@@ -2015,9 +2018,6 @@ int Globals::getDialogueSoundId(int code, Agent *agent) {
             break;
         case 377:
             soundId = 614;
-            break;
-        case 378:
-            soundId = 597;
             break;
         case 379:
             soundId = 604;
