@@ -109,7 +109,7 @@ float Hud::getAnalogY() {
     return num / den;
 }
 
-uint8_t Hud::cargoFull() {
+bool Hud::cargoFull() {
     return this->cargoFullFlag;
 }
 
@@ -170,7 +170,7 @@ void Hud::setAutofireEnabled(bool value) {
     this->autofireEnabled = value;
 }
 
-uint8_t Hud::isHackingGameActive() {
+bool Hud::isHackingGameActive() {
     return this->hackingGameActive;
 }
 
@@ -182,7 +182,7 @@ void Hud::setJumpMapSelected(bool value) {
     this->jumpMapSelectedFlag = value;
 }
 
-uint8_t Hud::jumpMapSelected() {
+bool Hud::jumpMapSelected() {
     return this->jumpMapSelectedFlag;
 }
 
@@ -825,7 +825,7 @@ void Hud::updateQueue(int dt) {
         if ((*this->eventQueue)[1] == 0)
             this->eventQueueDirty = 0;
         this->eventQueuePaused = 0;
-    } else if (this->eventQueueTimer > 2000 && this->eventQueuePaused == 0) {
+    } else if (this->eventQueuePaused == 0 && this->eventQueueTimer > 2000) {
         this->eventQueuePaused = 1;
     }
 }
@@ -1183,13 +1183,13 @@ unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lin
     return this->touchFlags;
 }
 
-unsigned int Hud::sameHudEventAsBefore(String str) {
+bool Hud::sameHudEventAsBefore(String str) {
     for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
         ListItem *e = (*this->eventQueue)[i];
         if (e != 0 && ((String *) e->name)->Compare(str) == 0)
-            return 1;
+            return true;
     }
-    return 0;
+    return false;
 }
 
 
@@ -1282,21 +1282,21 @@ int Hud::init() {
     Globals::Canvas->Image2DCreate(8031, this->image_0x384);
     Globals::Canvas->Image2DCreate(8028, this->image_0x340);
 
-    this->field_0x4ac = 0;
-    this->field_0x4b0 = 0;
-    this->field_0x4b4 = 0;
-    this->field_0x4b8 = 0;
-    this->field_0x4a1 = 0;
     this->field_0x4a2 = 0;
+    this->field_0x4ac = 0;
+    this->field_0x4b4 = 0;
+    this->field_0x4b0 = 0;
     this->field_0x4a3 = 0;
+    this->field_0x4a1 = 0;
+    this->field_0x4b8 = 0;
     this->field_0x4a4 = 0;
-    this->field_0x4d4 = Globals::layout->field_0x12c;
     this->field_0x4d8 = Globals::layout->field_0x130;
     this->field_0x4dc = Globals::layout->field_0x134;
     this->analogStickRadius = Globals::layout->field_0x138;
+    this->field_0x4d4 = Globals::layout->field_0x12c;
     this->field_0x4e4 = Globals::layout->field_0x13c;
-    this->field_0x4e8 = Globals::layout->field_0x140;
     this->field_0x4ec = Globals::layout->field_0x144;
+    this->field_0x4e8 = Globals::layout->field_0x140;
     this->field_0x4f0 = Globals::layout->field_0x148;
     this->field_0x434 = Globals::w - Globals::layout->field_0x14c;
     this->field_0x436 = Globals::h - this->field_0x4d4 - Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) - Globals::layout->field_0x150;
@@ -1331,10 +1331,10 @@ int Hud::init() {
     this->field_0x45c = Globals::Canvas->GetImage2DWidth(this->image_0x3a4);
     this->field_0x454 = Globals::w / 2 - this->field_0x45c / 2 - Globals::layout->helpWindowX;
     this->field_0x458 = Globals::layout->helpWindowX + Globals::w / 2 - this->field_0x45c / 2;
-    this->field_0x460 = this->field_0x3ee;
-    this->field_0x45e = Globals::w / 2 - this->field_0x45c / 2;
     this->field_0x45a = Globals::h / 2 - Globals::layout->helpWindowY;
+    this->field_0x45e = Globals::w / 2 - this->field_0x45c / 2;
     this->field_0x456 = Globals::h / 2 - Globals::layout->helpWindowY;
+    this->field_0x460 = this->field_0x3ee;
     this->field_0x42c = Globals::layout->field_0x1a4;
     this->field_0x42e = Globals::h - Globals::layout->field_0x1a8 - Globals::Canvas->GetImage2DHeight(this->image_0x31c);
     this->field_0x422 = Globals::Canvas->GetImage2DWidth(this->image_0x304);
@@ -1371,24 +1371,24 @@ int Hud::init() {
         this->menuOriginY = Globals::layout->field_0x1b4;
     }
     this->menuRowHeight = Globals::Canvas->GetImage2DHeight(this->quickMenuTopImage);
-    this->field_0x3d0 = Globals::Canvas->GetImage2DHeight(this->quickMenuMiddleImage);
-    this->field_0x3d4 = this->field_0x3c4 + Globals::layout->field_0x1b8;
     this->menuBaseY = this->menuOriginY + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x1bc;
-    this->field_0x3dc = Globals::Canvas->GetImage2DWidth(this->quickMenuMiddleImage) - Globals::layout->field_0x1c0;
-    this->field_0x43c = Globals::layout->field_0x1c4;
-    this->field_0x43e = Globals::Canvas->GetImage2DWidth(this->shieldFrameImage) + Globals::layout->field_0x1c4;
-    this->field_0x444 = Globals::layout->field_0x1c8;
     this->field_0x448 = Globals::layout->field_0x1cc;
+    this->field_0x3d4 = this->field_0x3c4 + Globals::layout->field_0x1b8;
+    this->field_0x3d0 = Globals::Canvas->GetImage2DHeight(this->quickMenuMiddleImage);
+    this->field_0x3dc = Globals::Canvas->GetImage2DWidth(this->quickMenuMiddleImage) - Globals::layout->field_0x1c0;
     this->field_0x442 = Globals::layout->field_0x1d0;
+    this->field_0x444 = Globals::layout->field_0x1c8;
+    this->field_0x43e = Globals::Canvas->GetImage2DWidth(this->shieldFrameImage) + Globals::layout->field_0x1c4;
+    this->field_0x43c = Globals::layout->field_0x1c4;
     this->field_0x44a = Globals::layout->field_0x1d4;
     this->field_0x446 = Globals::Canvas->GetImage2DWidth(this->shieldBarFillImage);
     this->field_0x440 = this->field_0x43e;
     this->field_0x44c = Globals::Canvas->GetImage2DHeight(this->shieldBarFillImage);
-    this->field_0x484 = 0;
-    this->field_0x488 = 0;
     this->field_0x48c = 0;
-    this->field_0x490 = 0;
     this->autofireEnabled = 0;
+    this->field_0x488 = 0;
+    this->field_0x490 = 0;
+    this->field_0x484 = 0;
     this->field_0x476 = 1;
     this->field_0x474 = 1;
     this->field_0x498 = 0;
@@ -1404,16 +1404,16 @@ int Hud::init() {
     this->field_0x164 = Globals::h - this->field_0x4e4;
     Hud::RADAR_WIDTH = Globals::w - 28;
     Hud::RADAR_HEIGHT = Globals::h - 33 - this->field_0x4e4 - this->field_0x4ec - Globals::layout->field_0x1d8;
-    this->field_0x1d0 = 10000;
     this->field_0x1dc[2] = 0;
+    this->field_0x1d0 = 10000;
     this->field_0x218 = Globals::w - 5;
     this->hasBoostButton = Globals::status->getShip()->getBoostDelay() > 0;
     this->hasShieldBar = Globals::status->getShip()->getMaxShieldHP() > 0;
     this->hasArmorRegen = Globals::status->getShip()->getMaxArmorHP() > 0;
     this->hasAutofireUI = Globals::status->getShip()->getFirePower() > 0.0f;
     this->hasCloak = Globals::status->getShip()->hasCloak();
-    this->eventQueueDirty = 0;
     this->field_0x234 = 0;
+    this->eventQueueDirty = 0;
     this->cargoFullFlag = 0;
     this->field_0x236 = 0;
     this->visible = 1;
@@ -1421,20 +1421,20 @@ int Hud::init() {
     this->eventQueueTimer = 0;
     this->eventQueuePaused = 0;
     this->shieldHitFlash = 0;
+    this->field_0x276 = 0;
     this->field_0x46c = 0;
+    this->field_0x4cc = 0;
     this->currentSecondaryWeapon = 0;
     this->menuButtons = 0;
-    this->field_0x4cc = 0;
     this->field_0x4d0 = 0;
-    this->field_0x276 = 0;
     this->field_0x277 = 0;
     this->weaponSelectState = 0;
-    this->fuelGaugeValue = 0;
     this->factionLogoImage = -1;
-    this->field_0x0 = 0;
-    this->field_0x280 = 1;
-    this->field_0x281 = 0;
+    this->fuelGaugeValue = 0;
     this->timeExtenderTimer = -1;
+    this->field_0x280 = 1;
+    this->field_0x0 = 0;
+    this->field_0x281 = 0;
     this->timeExtenderDuration = -1;
     this->cargoAggregateCount = 0;
     this->field_0x4c8 = 0;
@@ -1712,7 +1712,7 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->clearQueue();
             break;
     }
-    if (this->sameHudEventAsBefore(this->field_0x1e0) != 0)
+    if (this->sameHudEventAsBefore(this->field_0x1e0))
         return;
     ListItem *item;
     if (eventId == 27 || eventId == 30 || eventId == 31 || eventId == 47)
@@ -1798,7 +1798,7 @@ void Hud::hudEventMedal(int medalId, int percent) {
     if (percent >= 100)
         percent = 100;
     this->field_0x1e0 = *Globals::gameText->getText(medalId + 1507) + String(":") + String(percent) + String("%");
-    if (this->sameHudEventAsBefore(String(this->field_0x1e0, false)) != 0)
+    if (this->sameHudEventAsBefore(String(this->field_0x1e0, false)))
         return;
     this->addToEventQueue(new ListItem(new String(this->field_0x1e0, false), 3));
     bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >

@@ -723,9 +723,8 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA =
                         (long long) ((float) delta * 0.3f +
                                      (float) m_nScriptTimerA); // 0.3 @0x13b93c
-                Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
                 (*enemies)[1]->geometry->translate(Vector{(float) delta * 0.3f, 0.0f, 0.0f});
-                (*enemies)[1]->geometry->rotate(Vector{-(float) delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
+                (*enemies)[1]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
                 if (m_nScriptTimerA >= 1100 - delta) {
                     m_nState = 7;
                     m_nScriptTimerA = 0;
@@ -737,9 +736,8 @@ bool LevelScript::process(int delta) {
                         (long long) ((float) delta * 0.3f +
                                      (float) m_nScriptTimerA); // 0.3 @0x13b93c
                 if (m_nScriptTimerA < 1100 - delta) {
-                    Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
-                    (*enemies)[0]->geometry->translate(Vector{-(float) delta * 0.3f, 0.0f, 0.0f});
-                    (*enemies)[0]->geometry->rotate(Vector{-(float) delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
+                    (*enemies)[0]->geometry->translate(Vector{-((float) delta * 0.3f), 0.0f, 0.0f});
+                    (*enemies)[0]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
                 } else if (m_nScriptTimerA >= 2001) {
                     m_nState = 9;
                     m_nScriptTimerA = 0;
@@ -1459,8 +1457,7 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 1001) {
                         (*enemies)[0]->player->shoot(0, delta, false);
                         m_pGeometry4 = new AEGeometry(Globals::Canvas);
-                        m_tempVec = (*enemies)[0]->player->getPosition();
-                        m_pGeometry4->setPosition(m_tempVec);
+                        m_pGeometry4->setPosition((*enemies)[0]->getPosition());
                         Gun *leadGun = (*(*(*enemies)[0]->player->guns)[0])[0];
                         m_tempVec = *reinterpret_cast<Vector *>(reinterpret_cast<char *>(leadGun) + 0x18);
                         m_pGeometry4->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
@@ -1500,17 +1497,17 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 5) {
                     m_nScriptTimerA += delta;
-                    long long elapsed = m_nScriptTimerA;
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*enemies)[13]->geometry->transform))
                             ->Update((long long) ((float) delta * 0.3f), false);
                     for (int i = 0; i < 13; i++) {
-                        AEGeometry *ship = (*enemies)[i]->geometry;
-                        m_tempVec = ship->getDirection();
-                        if (elapsed > 2000 && elapsed < 5000) {
-                            m_tempVec -= ship->getRightVector() * ((float) elapsed / 100000.0f);
+                        m_tempVec = (*enemies)[i]->geometry->getDirection();
+                        if (m_nScriptTimerA > 2000 && m_nScriptTimerA < 5000) {
+                            m_tempVec -= (*enemies)[i]->geometry->getRightVector()
+                                         * ((float) m_nScriptTimerA / 100000.0f);
                         }
-                        ship->setDirection(AbyssEngine::AEMath::VectorNormalize(m_tempVec), Vector{0.0f, 1.0f, 0.0f});
-                        ship->moveForward((float) (elapsed * (long long) delta) * 0.001f);
+                        (*enemies)[i]->geometry->setDirection(AbyssEngine::AEMath::VectorNormalize(m_tempVec),
+                                                              Vector{0.0f, 1.0f, 0.0f});
+                        (*enemies)[i]->geometry->moveForward((float) (m_nScriptTimerA * delta) * 0.001f);
                     }
                     m_pExplosion->update((int) ((float) delta * 0.5f), nullptr);
                     if (m_nScriptTimerA > 9999) {
@@ -1681,7 +1678,9 @@ bool LevelScript::process(int delta) {
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos += dir * 10000.0f;
-                    camPos += Vector{600.0f, 300.0f, 1000.0f};
+                    camPos.x += 600.0f;
+                    camPos.y += 300.0f;
+                    camPos.z += 1000.0f;
                     m_pCamera->setPosition(camPos);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
@@ -1894,7 +1893,9 @@ bool LevelScript::process(int delta) {
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos += dir * 3000.0f;
-                    camPos += Vector{-600.0f, -300.0f, -1000.0f};
+                    camPos.x += -600.0f;
+                    camPos.y += -300.0f;
+                    camPos.z += -1000.0f;
                     m_pCamera->setPosition(camPos);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     player->freeze = 1; // PlayerEgo+0x24
@@ -1940,7 +1941,9 @@ bool LevelScript::process(int delta) {
                         Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();          // vtable+0x28
                         Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                         camPos += dir * 2000.0f;
-                        camPos += Vector{-600.0f, 800.0f, -1000.0f};
+                        camPos.x += -600.0f;
+                        camPos.y += 800.0f;
+                        camPos.z += -1000.0f;
                         m_pCamera->setPosition(camPos);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nState = 2;
@@ -4337,19 +4340,16 @@ bool LevelScript::process(int delta) {
                         (*enemies)[2]->setPosition(playerPos.x + lightDir.x * 100000.0f, 0.0f,
                                                    playerPos.z + lightDir.z * 100000.0f);
                         (*enemies)[2]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
-                        {
-                            AEGeometry *ref = (*enemies)[2]->geometry;
-                            Vector pos2 = (*enemies)[2]->getPosition();
-                            (*enemies)[3]->setPosition(pos2 + ref->getRightVector() * 2200.0f +
-                                                       ref->getUpVector() * -200.0f +
-                                                       ref->getDirection() * -2200.0f);
-                            (*enemies)[3]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
-                            pos2 = (*enemies)[2]->getPosition();
-                            (*enemies)[4]->setPosition(pos2 + ref->getRightVector() * -2200.0f +
-                                                       ref->getUpVector() * -200.0f +
-                                                       ref->getDirection() * -2200.0f);
-                            (*enemies)[4]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
-                        }
+                        (*enemies)[3]->setPosition((*enemies)[2]->getPosition()
+                                                   + (*enemies)[2]->geometry->getRightVector() * 2200.0f
+                                                   + (*enemies)[2]->geometry->getUpVector() * -200.0f
+                                                   + (*enemies)[2]->geometry->getDirection() * -2200.0f);
+                        (*enemies)[3]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
+                        (*enemies)[4]->setPosition((*enemies)[2]->getPosition()
+                                                   + (*enemies)[2]->geometry->getRightVector() * -2200.0f
+                                                   + +(*enemies)[2]->geometry->getUpVector() * -200.0f
+                                                   + (*enemies)[2]->geometry->getDirection() * -2200.0f);
+                        (*enemies)[4]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
                         for (int i = 2; i < 5; ++i) {
                             (*enemies)[i]->geometry->translate(
                                     (*enemies)[i]->geometry->getRightVector() * -30000.0f);
@@ -4497,8 +4497,13 @@ bool LevelScript::process(int delta) {
                     Vector *camPos = &m_tempVec; // LevelScript tempVec @0x28
                     *camPos = player->geometry->getDirection();
                     *camPos *= 8000.0f;                                        // @0x142e1c
-                    *camPos += player->geometry->getRightVector() * 1000.0f;   // @0x142e20
-                    *camPos += player->geometry->getUpVector() * 1000.0f;
+                    Vector offset = {0.0f, 0.0f, 0.0f};
+                    offset = player->geometry->getRightVector();
+                    offset *= 1000.0f;                                         // @0x142e20
+                    *camPos += offset;
+                    offset = player->geometry->getUpVector();
+                    offset *= 1000.0f;
+                    *camPos += offset;
                     *camPos += player->geometry->getPosition();
                     m_pCamera->setPosition(camPos->x, camPos->y, camPos->z);
                     m_pLevel->lodManager->forceUpdate(delta, false);

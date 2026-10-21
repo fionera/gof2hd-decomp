@@ -453,10 +453,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + Globals::layout->field_0x4 * 2, false);
                     }
                 }
-            } else if (i == 1) {
-                Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX, this->screenY, 17, 68);
             } else if (i == 3) {
                 Globals::Canvas->DrawImage2D(this->image_0xb8, this->screenX, this->screenY, 17, 68);
+            } else if (i == 1) {
+                Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX, this->screenY, 17, 68);
             }
         }
         if (!turretMode) {
@@ -1043,7 +1043,7 @@ asteroids:
         bool otherLock3 = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) ||
                           this->field_0x1c != nullptr || this->lockedStation != nullptr || this->field_0x14 != 0;
         if (!this->level->getPlayer()->isInDockingProcedure() && this->asteroids != nullptr) {
-            bool inCenter = false;
+            int inCenter = 0;
             if (this->field_0x1aa) {
                 Level *level = this->level;
                 inCenter = level->isInAsteroidCenterRange(level->getPlayer()->getPosition());
@@ -1173,22 +1173,23 @@ asteroids:
                         }
                     }
                     if (this->asteroidLockTimer > 500) {
-                        KIPlayer *target = this->field_0x10;
-                        if (target == nullptr || target == *(candidateWreck ? &this->field_0x1c : &this->lockedAsteroid)) {
-                            Sprite *blip = this->blipSprite;
-                            blip->setFrame(blip->getRawFrameCount() - 1);
-                        } else {
+                        if (this->field_0x10 != nullptr &&
+                            this->field_0x10 != *(candidateWreck ? &this->field_0x1c : &this->lockedAsteroid)) {
                             int frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
                                                ((float) (this->asteroidLockTimer - 500) /
                                                 (float) (this->field_0x1b8 - 500)));
-                            if (frame >= this->blipSprite->getRawFrameCount() - 1) {
-                                goto music;
+                            if (frame < this->blipSprite->getRawFrameCount() - 1) {
+                                this->blipSprite->setFrame(frame);
+                                this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
+                                                                      (int) PlayerEgo::crosshairPos.y);
+                                this->blipSprite->draw(1.0f, 1.0f);
                             }
-                            this->blipSprite->setFrame(frame);
+                        } else {
+                            this->blipSprite->setFrame(this->blipSprite->getRawFrameCount() - 1);
+                            this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
+                                                                  (int) PlayerEgo::crosshairPos.y);
+                            this->blipSprite->draw(1.0f, 1.0f);
                         }
-                        this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
-                                                              (int) PlayerEgo::crosshairPos.y);
-                        this->blipSprite->draw(1.0f, 1.0f);
                     }
                 }
             }
@@ -1202,7 +1203,6 @@ asteroids:
         }
     }
 
-music:
     int current = Globals::sound->currentMusicEvent;
     if (current == 143) {
         return;
@@ -1229,8 +1229,18 @@ music:
         this->field_0x54 = 0;
         if (Globals::status->getCurrentCampaignMission() != 145) {
             current = Globals::sound->currentMusicEvent;
-            if (((uint32_t) (current - 127) > 25 || ((1 << (current - 127)) & 0x23c1c8f) == 0) &&
-                (uint32_t) (current - 2238) >= 5) {
+            bool ambient;
+            switch (current) {
+                case 127: case 128: case 129: case 130: case 134: case 137: case 138: case 139:
+                case 145: case 146: case 147: case 148: case 152:
+                case 2238: case 2239: case 2240: case 2241: case 2242:
+                    ambient = true;
+                    break;
+                default:
+                    ambient = false;
+                    break;
+            }
+            if (!ambient) {
                 Globals::sound->stop(current);
                 int music;
                 if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens()) {

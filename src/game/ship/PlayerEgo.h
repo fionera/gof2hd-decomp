@@ -444,7 +444,7 @@ public:
 
     bool isDockingToDockingPoint();
 
-    unsigned char isDockingToPlanet();
+    bool isDockingToPlanet();
 
     bool isDockingToStream();
 
@@ -456,7 +456,7 @@ public:
 
     bool isInRocketControl();
 
-    unsigned char isInTurretMode();
+    bool isInTurretMode();
 
     bool isInWormhole();
 

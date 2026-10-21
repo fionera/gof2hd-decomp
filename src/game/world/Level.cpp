@@ -800,15 +800,19 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
         case ITEM_SORT_TURRET: {
             float z;
             float x;
-            if (idx == 181) {
-                z = -300.0f;
-                x = 0.0f;
-            } else if (idx == 48) {
-                z = 300.0f;
-                x = 80.0f;
-            } else {
-                z = 300.0f;
-                x = 0.0f;
+            switch (idx) {
+                case 181:
+                    z = -300.0f;
+                    x = 0.0f;
+                    break;
+                case 48:
+                    z = 300.0f;
+                    x = 80.0f;
+                    break;
+                default:
+                    z = 300.0f;
+                    x = 0.0f;
+                    break;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
@@ -825,15 +829,19 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
         case ITEM_SORT_PLASMA_COLLECTOR: {
             float z;
             float x;
-            if (idx == 181) {
-                z = -300.0f;
-                x = 0.0f;
-            } else if (idx == 48) {
-                z = 300.0f;
-                x = 80.0f;
-            } else {
-                z = 300.0f;
-                x = 0.0f;
+            switch (idx) {
+                case 181:
+                    z = -300.0f;
+                    x = 0.0f;
+                    break;
+                case 48:
+                    z = 300.0f;
+                    x = 80.0f;
+                    break;
+                default:
+                    z = 300.0f;
+                    x = 0.0f;
+                    break;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
@@ -2322,7 +2330,7 @@ void Level::createMission() {
     bool alienWave = false;
     bool bigAlienWave = false;
     bool pirateFortress = false;
-    if (localRace == 0 && this->field_168 > 0) {
+    if (this->field_168 > 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
                 bigAlienWave = Globals::status->getCurrentCampaignMission() > 103;
@@ -4253,7 +4261,7 @@ void Level::updateOrbit(int dt) {
                     if ((int) i < friendCount + field_164) {
                         ship->setPosition(0.0f, 0.0f, 0.0f);
                     } else {
-                        ship->setPosition(10000.0f, 0.0f, -70000.0f);
+                        ((PlayerFighter *) ship)->setPosition(10000.0f, 0.0f, -70000.0f);
                     }
                     break;
                 }
@@ -4549,7 +4557,7 @@ void Level::connectPlayers() {
         unsigned int count = 0;
         for (unsigned int k = 0; k < enemies->size(); k++) {
             KIPlayer *other = (*enemies)[k];
-            if (other == ship || (!wingman & (other->shipGroup == group))) {
+            if (other == ship || (other->shipGroup == group && !wingman)) {
                 continue;
             }
             if (firstOfMission24) {
@@ -4580,7 +4588,7 @@ void Level::connectPlayers() {
         ArraySetLength(count, *targets);
 
         Mission *mission = Globals::status->getMission();
-        if (((i & 1) && mission->getType() == 12) || mission->getType() == 2 || mission->getType() == 9
+        if ((mission->getType() == 12 && (i & 1)) || mission->getType() == 2 || mission->getType() == 9
             || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x10
                 && ship->shipGroup == 9)
             || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x18
@@ -4596,7 +4604,7 @@ void Level::connectPlayers() {
                 int slot = 0;
                 for (unsigned int k = 0; k < enemies->size(); k++) {
                     KIPlayer *other = (*enemies)[k];
-                    if (other == ship || other->stealFlagByte || (!wingman & (other->shipGroup == group))) {
+                    if (other == ship || other->stealFlagByte || (other->shipGroup == group && !wingman)) {
                         continue;
                     }
                     if (firstOfMission24) {
@@ -4626,7 +4634,7 @@ void Level::connectPlayers() {
             }
             for (unsigned int k = 0; k < enemies->size(); k++) {
                 KIPlayer *other = (*enemies)[k];
-                if (other == ship || (!wingman & (other->shipGroup == group))) {
+                if (other == ship || (other->shipGroup == group && !wingman)) {
                     continue;
                 }
                 if (firstOfMission24) {
@@ -5459,12 +5467,13 @@ Level::Level(int mission)
         : playerPosition(),
           stationPosition(),
           spawnPosition() {
-    field_1c = 0;
-    killCountA = 0;
-    killCountB = 0;
-    objectivesA = nullptr;
-    objectivesB = nullptr;
-    field_30 = 0;
+    skyboxMesh = -1;
+    field_08 = -1;
+    skyboxTexture = -1;
+    field_10 = -1;
+    missionPtr = mission;
+    collisionVolume = nullptr;
+    field_b0 = nullptr;
     field_90 = nullptr;
     field_94 = nullptr;
     field_98 = nullptr;
@@ -5476,13 +5485,12 @@ Level::Level(int mission)
     particleEmitBoolPtr = nullptr;
     particleSystemMgr = nullptr;
     field_80 = nullptr;
-    skyboxMesh = -1;
-    field_08 = -1;
-    skyboxTexture = -1;
-    field_10 = -1;
-    missionPtr = mission;
-    collisionVolume = nullptr;
-    field_b0 = nullptr;
+    field_1c = 0;
+    killCountA = 0;
+    killCountB = 0;
+    objectivesA = nullptr;
+    objectivesB = nullptr;
+    field_30 = 0;
     flashColor[0] = 0;
     flashColor[1] = 0;
     flashColor[2] = 0;
@@ -5526,6 +5534,8 @@ Level::Level(int mission)
     field_164 = 0;
     field_168 = 0;
     alarmRequested = 0;
+    field_188 = 0; // assigned twice in the original too (field_188 and field_288 below): the
+                   // repeated zero stores are what make clang fold these bytes into memsets
     movingStarsIndex = -1;
     field_284 = -1;
     field_34 = -1;
@@ -5543,6 +5553,7 @@ Level::Level(int mission)
     field_a0 = nullptr;
     field_a4 = nullptr;
     field_a8 = nullptr;
+    field_288 = 0;
     miningPlantIndex = -1;
     miningPlant = 0;
     numDeliveredOre = 0;
@@ -6089,12 +6100,16 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
 
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
-    if (type == 0x2c) {
-        hitpoints = (int) ((float) hitpoints * 2.25f);
-    } else if (type == 0x33) {
-        hitpoints = (int) ((float) hitpoints * 1.7f);
-    } else if (type == 0x31) {
-        hitpoints = (int) ((float) hitpoints * 17.0f);
+    switch (type) {
+        case 0x2c:
+            hitpoints = (int) ((float) hitpoints * 2.25f);
+            break;
+        case 0x33:
+            hitpoints = (int) ((float) hitpoints * 1.7f);
+            break;
+        case 0x31:
+            hitpoints = (int) ((float) hitpoints * 17.0f);
+            break;
     }
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
@@ -6868,9 +6883,6 @@ static const int kHangarSpotsNivelian[3][3] = {{-4096, 0, 0}, {0, 0, 4096}, {-40
 static const int kHangarSpotsVoid[1][3] = {{4096, 0, 0}};
 static const int kHangarSpotsKhador[3][3] = {{-1961, 0, 8512}, {-1961, 0, 5562}, {-1961, 0, 2610}};
 static const int kHangarSpotsDefault[2][3] = {{4096, 0, 0}, {4096, 0, 4096}};
-static const int *const kHangarSpots[9] = {kHangarSpotsTerran[0], kHangarSpotsVossk[0], kHangarSpotsTerran[0],
-                                           kHangarSpotsNivelian[0], kHangarSpotsTerran[0], kHangarSpotsTerran[0],
-                                           kHangarSpotsTerran[0], kHangarSpotsTerran[0], kHangarSpotsVoid[0]};
 
 void Level::createScene() {
     static const int kBarChildCounts[4] = {11, 0, 10, 12};
@@ -6953,7 +6965,6 @@ void Level::createScene() {
             for (int i = 0; i < capacity; i++)
                 spotUsed[i] = 0;
             const int *spots = sceneRace == 7 ? kHangarSpotsKhador[0] : kHangarSpotsDefault[0];
-            bool customSpots = sceneRace == 0 || sceneRace == 1 || sceneRace == 3 || sceneRace == 8;
             for (int i = 0; i < shipCount; i++) {
                 int race = sceneRace;
                 if (Globals::rnd->nextInt(100) <= 29) {
@@ -6970,10 +6981,27 @@ void Level::createScene() {
                     type = (*Globals::status->voidStation->getShips())[i]->getIndex();
                 KIPlayer *ship = this->createShip(0, 0, type, nullptr, false, false);
                 int spot = Globals::rnd->nextInt(capacity);
-                for (int tries = -100; tries != 0 && spotUsed[spot] != 0; tries++)
+                for (int tries = 100; tries != 0 && spotUsed[spot] != 0; tries--)
                     spot = Globals::rnd->nextInt(capacity);
                 spotUsed[spot] = 1;
-                const int *table = (sceneRace <= 8 && customSpots) ? kHangarSpots[sceneRace] : spots;
+                const int *table;
+                switch (sceneRace) {
+                    case 0:
+                        table = kHangarSpotsTerran[0];
+                        break;
+                    case 1:
+                        table = kHangarSpotsVossk[0];
+                        break;
+                    case 3:
+                        table = kHangarSpotsNivelian[0];
+                        break;
+                    case 8:
+                        table = kHangarSpotsVoid[0];
+                        break;
+                    default:
+                        table = spots;
+                        break;
+                }
                 ship->setPosition((float) table[spot * 3], (float) (table[spot * 3 + 1] + kShipHangarHeights[type]),
                                   (float) table[spot * 3 + 2]);
                 ship->player->setAlwaysFriend(true);

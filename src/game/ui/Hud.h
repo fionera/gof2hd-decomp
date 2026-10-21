@@ -56,14 +56,14 @@ public:
     int field_0x218;
     uint8_t _pad_0x21c[1];
     unsigned char hasCloak;
-    unsigned char hasBoostButton;
+    bool hasBoostButton;
     unsigned char hasShieldBar;
     unsigned char hasArmorRegen;
     unsigned char hasAutofireUI;
     uint8_t _pad_0x222[6];
     String field_0x228;
     unsigned char field_0x234;
-    unsigned char cargoFullFlag;
+    bool cargoFullFlag;
     unsigned char field_0x236;
     uint8_t _pad_0x237[1];
     int menuType;
@@ -78,7 +78,7 @@ public:
     unsigned char eventQueueDirty;
     uint8_t _pad_0x26d[3];
     int eventQueuePaused;
-    unsigned char jumpMapSelectedFlag;
+    bool jumpMapSelectedFlag;
     unsigned char field_0x275;
     unsigned char field_0x276;
     unsigned char field_0x277;
@@ -89,8 +89,8 @@ public:
     int fuelGaugeValue;
     unsigned char field_0x280;
     unsigned char field_0x281;
-    unsigned char quickMenuOpen;
-    unsigned char quickMenuEmpty;
+    bool quickMenuOpen;
+    bool quickMenuEmpty;
     unsigned int touchFlags;
     int field_0x288;
     Array<void *> * keyArray; // lint: void_ptr (opaque touch-handle element type; matches exported void* touchId);
@@ -292,7 +292,7 @@ public:
     int secondaryLabelTimerSeed;
     int secondaryLabelTimer;
     String field_0x51c;
-    unsigned char hackingGameActive;
+    bool hackingGameActive;
     uint8_t _pad_0x529[3];
     int cargoAggregateCount;
     Array<unsigned int> * uintArray;
@@ -305,7 +305,7 @@ public:
 
     void addToEventQueue(ListItem *item);
 
-    uint8_t cargoFull();
+    bool cargoFull();
 
     void catchCargo(int itemId, int count, bool cargoFull, bool missionDelivery, bool extender, bool slotMode,
                     bool aggregate);
@@ -352,9 +352,9 @@ public:
 
     void initHudMenu(int menuType, Level *lvl);
 
-    uint8_t isHackingGameActive();
+    bool isHackingGameActive();
 
-    uint8_t jumpMapSelected();
+    bool jumpMapSelected();
 
     void playerHit();
 
@@ -362,7 +362,7 @@ public:
 
     void resetAnalogStick();
 
-    unsigned int sameHudEventAsBefore(String str);
+    bool sameHudEventAsBefore(String str);
 
     int sameHudEventAsBeforeAggregate(String str);
 
