@@ -190,15 +190,12 @@ static const int gMedalCreditReward[4] = {0, 5000, 2500, 1000};
 
 
 
-static int **g_ou_appData = 0;
-
-
-static int **g_ou_module = 0;
 
 
 
 
-static int **g_ModStation_ric_chk = 0;
+
+
 
 static const float gHangarCamPitch[10] = {-0.27f, -0.3f, -0.18f, -0.2f, 0.0f, 0.0f, 0.0f, -0.2f, -0.2f, 0.0f};
 static const float gHangarCamYaw[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0f, 0.0f, 3.0f, 2.5f, 0.0f};
@@ -209,7 +206,6 @@ static const float gHangarCamYaw[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0
 
 
 
-static int **g_ote_module = 0;
 
 
 
@@ -242,7 +238,6 @@ static const int gCampaignRewardOverride[7] = {200000, 6666, 6666, 100000, 6666,
 
 
 
-static int *g_oi_musicId = 0;
 
 
 

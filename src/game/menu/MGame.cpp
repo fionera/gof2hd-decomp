@@ -99,7 +99,6 @@ static inline void *keyboardTouchId() { return reinterpret_cast<void *>(12345); 
 // Campaign missions after which the "your wingmen are leaving" radio messages are no longer due.
 static const int gWingmenRadioMissions[3] = {93, 111, 143};
 
-static FModSound **g_fmod = &Globals::sound;
 
 struct ParticleSystemGlobal {
     uint8_t _pad0[0xf];
@@ -751,7 +750,7 @@ void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) { // lint: void_ptr -- 
 
 void MGame::pauseSounds() {
     this->pauseSnapshot = this->pauseOpen;
-    ((FModSound *) (*g_fmod))->pauseAllPlayingSoundFXEvents();
+    Globals::sound->pauseAllPlayingSoundFXEvents();
     this->player->PauseEngineSound();
     Array<KIPlayer *> *e = this->level->getEnemies();
     if (e != nullptr) {
@@ -761,7 +760,7 @@ void MGame::pauseSounds() {
 }
 
 void MGame::resumeSounds() {
-    ((FModSound *) (*g_fmod))->resumeAll();
+    Globals::sound->resumeAll();
     this->player->ResumeEngineSound();
     Array<KIPlayer *> *e = this->level->getEnemies();
     if (e == nullptr) return;
@@ -3921,7 +3920,7 @@ void MGame::OnSuspend() {
             this->menuWindow = new MenuTouchWindow(1);
         this->pauseOpen = 1;
         this->pauseSnapshot = 1;
-        ((FModSound *) (*g_fmod))->pauseAllPlaying();
+        Globals::sound->pauseAllPlaying();
         this->player->PauseEngineSound();
         Array<KIPlayer *> *e = this->level->getEnemies();
         if (e != nullptr) {
