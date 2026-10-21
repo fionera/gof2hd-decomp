@@ -88,7 +88,7 @@ static const char *const kTextureLightShaderFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int TextureLightShader::ShaderIndex;
+    int TextureLightShader::ShaderIndex = -1;
 
     TextureLightShader::TextureLightShader() {
         TextureLightShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

@@ -5,7 +5,7 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
-    int BumpShaderV3::ShaderIndex;
+    int BumpShaderV3::ShaderIndex = -1;
 
     BumpShaderV3::BumpShaderV3() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

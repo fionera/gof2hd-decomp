@@ -5,7 +5,7 @@
 
 
 namespace AbyssEngine {
-    int BumpShaderParticle::ShaderIndex;
+    int BumpShaderParticle::ShaderIndex = -1;
 
     BumpShaderParticle::BumpShaderParticle() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

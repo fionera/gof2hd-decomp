@@ -18,7 +18,7 @@ static const char *const kVertexColorAlphaTextureShaderFragmentSource =
     "}";
 
 namespace AbyssEngine {
-    int VertexColorAlphaTextureShader::ShaderIndex;
+    int VertexColorAlphaTextureShader::ShaderIndex = -1;
 
     static int g_shaderIndexSrc;
     static int g_shaderIndexDst;

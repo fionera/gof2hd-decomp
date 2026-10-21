@@ -46,7 +46,7 @@ static const char *const kEnergyShieldFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int EnergyShield::ShaderIndex;
+    int EnergyShield::ShaderIndex = -1;
 
     void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine) {
         ::Engine *host = (::Engine *) engine;

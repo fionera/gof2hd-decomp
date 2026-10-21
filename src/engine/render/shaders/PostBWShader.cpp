@@ -34,7 +34,7 @@ static const char *const kPostBWShaderFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int PostBWShader::ShaderIndex;
+    int PostBWShader::ShaderIndex = -1;
 
     PostBWShader::PostBWShader() {
         PostBWShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

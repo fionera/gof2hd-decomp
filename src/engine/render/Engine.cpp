@@ -12,10 +12,10 @@ AbyssEngine::Engine *gEngine = nullptr;
 bool AbyssEngine::Engine::vboSupported = false;
 bool AbyssEngine::Engine::clampTextures = false;
 bool AbyssEngine::Engine::vfc = false;
-float AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
+float AbyssEngine::Engine::lodBiasDiffuse = -1.0f;
 float AbyssEngine::Engine::lodBiasNormal = 0.0f;
 unsigned int AbyssEngine::Engine::countryCode = 0xffffffff;
-bool AbyssEngine::Engine::EnablePostEffect = false;
+bool AbyssEngine::Engine::EnablePostEffect = true;
 bool AbyssEngine::Engine::CheckForOrientationChange;
 bool AbyssEngine::Engine::fogEnabled = false;
 bool AbyssEngine::PostEffectFlag;
@@ -918,7 +918,7 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
 
 void Engine::SetPostEffect(uint32_t effect, bool enable) {
     if (this->postEffectFBO == 0 && enable) {
-        this->postEffectFBO = new FBOContainer(this, String("posteffect"));
+        this->postEffectFBO = new FBOContainer(this, String("render2TextureFBO"));
         if (this->appManager->paintCanvas->gameOrientation == 2) {
             this->postEffectFBO->Create(this->displayWidth, this->displayHeight, true, false);
         } else {
@@ -1145,7 +1145,7 @@ Engine::Engine()
     this->gravRaw[0] = 0;
     this->gravRaw[1] = 0;
     this->gravRaw[2] = 0;
-    reinterpret_cast<int &>(this->explosionTimeline) = 0x14;  // raw-int placeholder (see Engine.h)
+    this->timerInterval = 20;
     this->linearFilterFlag = 1;
     this->field_0xcc = 0.7f;
     this->appManager = new ApplicationManager(this);
@@ -1772,19 +1772,19 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
 
 unsigned char AbyssEngine::Engine::EnableGlow;
 int AbyssEngine::Engine::ImageCount;
-int AbyssEngine::Engine::switchGlow;
+int AbyssEngine::Engine::switchGlow = 3;
 int AbyssEngine::Engine::SwapCounter;
-int AbyssEngine::Engine::switchBloom;
+int AbyssEngine::Engine::switchBloom = 3;
 unsigned char AbyssEngine::Engine::enableShader;
 unsigned char AbyssEngine::Engine::EnableRefract;
-float AbyssEngine::Engine::LodDistShader;
+float AbyssEngine::Engine::LodDistShader = 5000.0f;
 unsigned char AbyssEngine::Engine::DisableRefract;
 float AbyssEngine::Engine::AnisotropyValue;
 unsigned char AbyssEngine::Engine::KeepRawMeshData;
 unsigned char AbyssEngine::Engine::backupSaveGames;
 int AbyssEngine::Engine::MultiSampleValue;
-unsigned char AbyssEngine::Engine::UseAdvancedShader;
-unsigned char AbyssEngine::Engine::enableReverseFlag;
+unsigned char AbyssEngine::Engine::UseAdvancedShader = 1;
+unsigned char AbyssEngine::Engine::enableReverseFlag = 1;
 int AbyssEngine::Engine::tv_h;
 int AbyssEngine::Engine::tv_w;
 AbyssEngine::String AbyssEngine::Engine::vendor;

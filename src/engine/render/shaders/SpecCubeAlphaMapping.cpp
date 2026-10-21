@@ -60,7 +60,7 @@ static const char *const kSpecCubeAlphaMappingFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int SpecCubeAlphaMapping::ShaderIndex;
+    int SpecCubeAlphaMapping::ShaderIndex = -1;
 
     SpecCubeAlphaMapping::SpecCubeAlphaMapping() {
         SpecCubeAlphaMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

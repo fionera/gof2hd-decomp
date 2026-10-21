@@ -61,7 +61,7 @@ static const char *const kGenericShaderFragmentSource =
     "}  \n";
 
 namespace AbyssEngine {
-    int GenericShader::ShaderIndex;
+    int GenericShader::ShaderIndex = -1;
 
     void GenericShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kGenericShaderVertexSource, kGenericShaderFragmentSource);

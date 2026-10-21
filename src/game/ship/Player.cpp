@@ -78,7 +78,7 @@ struct HitVec3 {
 
 static const int kRaceShootSounds[11] = {52, 55, 54, 53, 61, 61, 61, 61, 61, 62, 2276};
 
-int Player::velocity;
+int Player::velocity = 100;
 
 Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
     Player * self = this;

@@ -23,7 +23,7 @@ static const char *const kGreenShaderFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int GreenShader::ShaderIndex;
+    int GreenShader::ShaderIndex = -1;
 
     GreenShader::GreenShader() {
         GreenShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

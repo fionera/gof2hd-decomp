@@ -6,7 +6,7 @@
 #include "engine/core/ApplicationManager.h"
 
 namespace AbyssEngine {
-    int BumpShaderCloak::ShaderIndex;
+    int BumpShaderCloak::ShaderIndex = -1;
 
     BumpShaderCloak::BumpShaderCloak() {
         BumpShaderCloak::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

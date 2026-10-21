@@ -231,4 +231,4 @@ int NFC::getHeight() {
     return value;
 }
 
-const char *NFC::interface_path;
+const char *NFC::interface_path = "net/fishlabs/gof2hdallandroid2012/NativeFunctionCalls";
