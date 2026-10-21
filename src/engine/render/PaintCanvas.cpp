@@ -1621,17 +1621,21 @@ void PaintCanvas::TransformCreate(unsigned short resId, unsigned int &out) {
     unsigned int idx = this->transforms.count - 1;
     res->handle = (int) idx;
     out = idx;
-    tf->worldMatrix = *(const AbyssEngine::AEMath::Matrix*)info;
+    tf->worldMatrix = *(const AbyssEngine::AEMath::Matrix *) info;
 
-    unsigned int childMesh = 0xffffffff;
     for (unsigned int i = 0; i < info->childMeshCount; i++) {
-        unsigned short mid = ((unsigned short *) info->childMeshIds)[i];
-        this->MeshCreate(mid, childMesh, false);
+        unsigned int meshId = 0xffffffff;
+        this->MeshCreate(((unsigned short *) info->childMeshIds)[i], meshId, false);
+        if (meshId != 0xffffffff) {
+            ArrayAdd<AbyssEngine::Mesh *>(this->meshes.data_[meshId], tf->meshes);
+        }
     }
-    unsigned int childTf = 0xffffffff;
     for (unsigned int i = 0; i < info->childTfCount; i++) {
-        unsigned short tid = ((unsigned short *) info->childTfIds)[i];
-        this->TransformCreate(tid, childTf);
+        unsigned int childId = 0xffffffff;
+        this->TransformCreate(((unsigned short *) info->childTfIds)[i], childId);
+        if (childId != 0xffffffff) {
+            ArrayAdd<AbyssEngine::Transform *>(this->transforms.data_[childId], tf->children);
+        }
     }
 }
 
