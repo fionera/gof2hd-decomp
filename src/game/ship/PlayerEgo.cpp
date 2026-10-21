@@ -1503,9 +1503,9 @@ float PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
 
 void PlayerEgo::handleAutoTurret(int dt) {
     this->autoTurretTimer += dt;
-    if (this->autoTurretTimer >= 3001) {
-        this->autoTurretTimer = 0;
+    if (this->autoTurretTimer > 3000) {
         this->autoTurretTarget = nullptr;
+        this->autoTurretTimer = 0;
         Array<KIPlayer *> *enemies = this->level->getEnemies();
         if (enemies != nullptr) {
             int nearest = 60000;
@@ -2484,17 +2484,69 @@ void PlayerEgo::dockToAsteroid(KIPlayer *asteroid, Radar *radar) {
 int PlayerEgo::approachAsteroid(Hud *hud, int /*unused*/, Radar * /*radar*/) {
     if (((KIPlayer *) (intptr_t) this->asteroidTarget)->isDying())
         return 0;
-    if (this->dockingPointIndex == 1) {
+    if (this->dockingPointIndex == 0) {
+
+        if (this->turretActive)
+            this->setTurretMode(false);
+        this->moveTarget = ((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition();
+        this->moveTarget -= this->geometry->getPosition();
+        int distance = (int) AbyssEngine::AEMath::VectorLength(this->moveTarget);
+        if (this->dockScaling > distance) {
+            if (this->field_0x1d4) {
+                PlayerAsteroid *asteroid = (PlayerAsteroid *) (intptr_t) this->asteroidTarget;
+                if (asteroid->stealFlagByte)
+                    asteroid->setRotationEnabled(false);
+                this->dockingPointIndex = 1;
+            }
+        } else {
+            Vector target = ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getPosition();
+            float speed = 4.0f;
+            if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
+                speed = Globals::status->getShip()->getHandling() + 2.7f;
+            this->moveToPosition(target, true, speed);
+            if ((int) AbyssEngine::AEMath::VectorLength(((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition()
+                                                        - this->getPosition()) <= 19999)
+                this->aboutToReachAutoTargetFlag = 1;
+        }
+        if (this->dockScaling + 2000 > distance) {
+            this->thrust = 1.0f;
+            if (!this->field_0x2f5) {
+                this->setExhaustVisible(false);
+                Globals::sound->play(2, nullptr, nullptr, 0.0f);
+                this->boostTimer = this->boostTime - this->boostTime / 6;
+                this->targetFollowCamera->setActive(false);
+                this->miningUpVec = this->field_0x4->getUpVector();
+                this->miningUpVec = AbyssEngine::AEMath::VectorNormalize(this->miningUpVec);
+                this->field_0x2f5 = 1;
+            }
+            Vector &heading = this->moveDirection;
+            heading = this->field_0x4->getDirection();
+            heading = AbyssEngine::AEMath::VectorNormalize(heading);
+            if (AbyssEngine::AEMath::ACosf(AbyssEngine::AEMath::VectorDot(heading, this->miningUpVec)) > 0.2f
+                && (float &) this->miningSettleTimer > -1024.0f) {
+                (float &) this->miningSettleTimer += (float) this->shakeIntensity * -0.35f;
+                Matrix pitch;
+                AbyssEngine::AEMath::MatrixSetRotation(pitch, (float &) this->miningSettleTimer * (1.0f / 65536.0f) * 6.2831855f,
+                                                       0.0f, 0.0f);
+                Matrix local = *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
+                local *= pitch;
+                this->field_0x4->setMatrix(local);
+            } else {
+                this->field_0x1d4 = 1;
+                this->rolling = 0;
+                this->field_0x2f5 = 0;
+            }
+        }
+    } else if (this->dockingPointIndex == 1) {
         if ((float &) this->miningSettleTimer > -1024.0f) {
             (float &) this->miningSettleTimer += (float) (-this->shakeIntensity >> 1);
             return 0;
         }
         if (this->miningGame == 0) {
-            this->field_0x2f5 = 0;
             this->lostMiningGameFlag = 0;
+            this->field_0x2f5 = 0;
             Globals::hints[55] = 0;
-            PlayerAsteroid *asteroid = (PlayerAsteroid *) (intptr_t) this->asteroidTarget;
-            this->miningGame = (int) (intptr_t) new MiningGame(asteroid->getQuality(),
+            this->miningGame = (int) (intptr_t) new MiningGame(((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->getQuality(),
                                                                ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->asteroidIndex,
                                                                hud);
             ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->player->radius = 0;
@@ -2524,60 +2576,6 @@ int PlayerEgo::approachAsteroid(Hud *hud, int /*unused*/, Radar * /*radar*/) {
             hud->hudEvent(8, this, 0);
         }
         return 1;
-    }
-    if (this->dockingPointIndex != 0)
-        return 0;
-
-    if (this->turretActive)
-        this->setTurretMode(false);
-    this->moveTarget = ((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition();
-    this->moveTarget -= this->geometry->getPosition();
-    int distance = (int) AbyssEngine::AEMath::VectorLength(this->moveTarget);
-    if (this->dockScaling > distance) {
-        if (this->field_0x1d4) {
-            PlayerAsteroid *asteroid = (PlayerAsteroid *) (intptr_t) this->asteroidTarget;
-            if (asteroid->stealFlagByte)
-                asteroid->setRotationEnabled(false);
-            this->dockingPointIndex = 1;
-        }
-    } else {
-        Vector target = ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getPosition();
-        float speed = 4.0f;
-        if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
-            speed = Globals::status->getShip()->getHandling() + 2.7f;
-        this->moveToPosition(target, true, speed);
-        if ((int) AbyssEngine::AEMath::VectorLength(((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition()
-                                                    - this->getPosition()) <= 19999)
-            this->aboutToReachAutoTargetFlag = 1;
-    }
-    if (this->dockScaling + 2000 > distance) {
-        this->thrust = 1.0f;
-        if (!this->field_0x2f5) {
-            this->setExhaustVisible(false);
-            Globals::sound->play(2, nullptr, nullptr, 0.0f);
-            this->boostTimer = this->boostTime - this->boostTime / 6;
-            this->targetFollowCamera->setActive(false);
-            this->miningUpVec = this->field_0x4->getUpVector();
-            this->miningUpVec = AbyssEngine::AEMath::VectorNormalize(this->miningUpVec);
-            this->field_0x2f5 = 1;
-        }
-        Vector &heading = this->moveDirection;
-        heading = this->field_0x4->getDirection();
-        heading = AbyssEngine::AEMath::VectorNormalize(heading);
-        if (AbyssEngine::AEMath::ACosf(AbyssEngine::AEMath::VectorDot(heading, this->miningUpVec)) > 0.2f
-            && (float &) this->miningSettleTimer > -1024.0f) {
-            (float &) this->miningSettleTimer += (float) this->shakeIntensity * -0.35f;
-            Matrix pitch;
-            AbyssEngine::AEMath::MatrixSetRotation(pitch, (float &) this->miningSettleTimer * (1.0f / 65536.0f) * 6.2831855f,
-                                                   0.0f, 0.0f);
-            Matrix local = *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
-            local *= pitch;
-            this->field_0x4->setMatrix(local);
-        } else {
-            this->field_0x1d4 = 1;
-            this->rolling = 0;
-            this->field_0x2f5 = 0;
-        }
     }
     return 0;
 }
