@@ -349,25 +349,8 @@ static_assert(sizeof(HintsBuffer) == 0x40, "HintsBuffer size");
 
 
 
-static const float gSCS_f86f8 = 210.9375f;
-static const float gSCS_f86fc = 300.0f;
-static const float gSCS_f8700 = 150.0f;
-static const float gSCS_f8704 = -126.5625f;
-static const float gSCS_f8708 = 92.8125f;
-static const float gSCS_f870c = 180.0f;
-static const float gSCS_f8710 = 90.0f;
-static const float gSCS_f8714 = 132.0f;
-static const float gSCS_f8718 = 66.0f;
-static const float gSCS_f871c = 313.59375f;
-static const float gSCS_f8720 = 2.8125f;
-static const float gSCS_f8724 = 446.0f;
-static const float gSCS_f8728 = 223.0f;
-static const float gSCS_f872c = -2.8125f;
-static const float gSCS_f8730 = 54.0f;
 
 
-static inline char rdflag(char *const g) { return *g; }
-static inline CoordsObject *rdcoords(CoordsObject *const g) { return g; }
 
 
 
@@ -432,41 +415,8 @@ static const int gRaceTable[64] = {
     8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3,
     3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
 
-static const float gSCF_b90 = 56.25f;
-static const float gSCF_b10 = 63.28125f;
-static const float gSCF_b14 = 210.9375f;
-static const float gSCF_b7c = 63.28125f;
-static const float gSCF_b80 = 90.0f;
-static const float gSCF_b84 = 45.0f;
-static const float gSCF_b88 = 300.0f;
-static const float gSCF_b8c = 150.0f;
-static const float gSCF_b94 = 80.0f;
-static const float gSCF_b98 = 40.0f;
-static const float gSCF_b9c = 107.28125f;
-static const float gSCF_ba0 = 5.625f;
-static const float gSCF_ba4 = 18.09375f;
-static const float gSCF_ba8 = 19.28125f;
-static const float gSCF_bac = 112.5f;
-static const float gSCF_bb0 = 94.21875f;
-static const float gSCF_bb4 = 152.0f;
-static const float gSCF_bb8 = 77.0f;
-static const float gSCF_bbc = 160.0f;
-static const float gSCF_bc0 = 80.0f;
-static const float gSCF_bc4 = 134.0f;
-static const float gSCF_bc8 = 67.0f;
-static const float gSCF_bcc = 100.0625f;
-static const float gSCF_bd0 = 209.53125f;
-static const float gSCF_bd4 = 144.0f;
-static const float gSCF_bd8 = 74.0f;
-static const float gSCF_bdc = 298.0f;
-static const float gSCF_be0 = 149.0f;
-static const float gSCF_be4 = 132.1875f;
-static const float gSCF_be8 = 0.0f;
-static const float gSCF_bec = 189.0f;
-static const float gSCF_bf0 = 94.0f;
 
 
-static inline char rf(char *const g) { return *g; }
 static inline int rint(int *const g) { return *g; }
 static inline CoordsObject *rcoords(CoordsObject *const g) { return g; }
 
@@ -2623,127 +2573,66 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
                             unsigned short &o11, unsigned short &o12, unsigned short &o13,
                             unsigned short &o14, unsigned short &o15, unsigned short &o16,
                             unsigned short &o17) {
-    char isPhone = rf((char *) &Globals::iPadHD);
-    float fbase = gSCF_b14;
-    float fwid = gSCF_b10;
-    if (isPhone == 0) {
-        bool b = (rf((char *) &Globals::iPadLarge) == 0);
-        fwid = b ? gSCF_b84 : gSCF_b80;
-        fbase = b ? gSCF_b8c : gSCF_b88;
+    CoordsObject *coords = (CoordsObject *) Globals::options;
+    float margin = Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f);
+    float minFire = Globals::iPadHD ? 210.9375f : (Globals::iPadLarge ? 300.0f : 150.0f);
+    int bottom = Globals::h - p2;
+    float requested = (float) p1;
+    float fire = requested;
+    if (margin + (float) bottom < requested) {
+        fire = (Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f)) + (float) bottom;
     }
-
-    int colDelta = rint((int *) &Globals::h) - p2;
-    float fcol = static_cast<float>(colDelta);
-    float fp1 = static_cast<float>(p1);
-    float fmax = fp1;
-    if (fwid + fcol < fp1) {
-        fmax = gSCF_b7c;
-        if (isPhone == 0) {
-            fmax = (rf((char *) &Globals::iPadLarge) == 0) ? gSCF_b84 : gSCF_b80;
-        }
-        fmax = fmax + fcol;
-    }
-
-    int iv;
-    float adj13 = gSCF_b90;
-    float wField;
-    if (fbase < fmax) {
-        float t = gSCF_b7c;
-        if (isPhone == 0) {
-            t = (rf((char *) &Globals::iPadLarge) == 0) ? gSCF_b84 : gSCF_b80;
-        }
-        float fp1b = fp1;
-        if (t + fcol < fp1) {
-            fp1b = gSCF_b7c;
-            if (isPhone == 0) {
-                fp1b = (rf((char *) &Globals::iPadLarge) == 0) ? gSCF_b84 : gSCF_b80;
-            }
-            fp1b = fp1b + fcol;
-        }
-        wField = static_cast<float>(rint((int *) &Globals::w) - p2);
-        iv = (int) fp1b;
-        rcoords((CoordsObject *) Globals::options)->fireValue = (int) fp1b;
-        adj13 = gSCF_b90;
-        if (isPhone == 0) {
-            char flag6 = rf((char *) &Globals::iPadLarge);
-            adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
-        }
+    if (minFire > fire) {
+        coords->fireValue = Globals::iPadHD ? 210 : (Globals::iPadLarge ? 300 : 150);
     } else {
-        if (isPhone == 0) {
-            wField = static_cast<float>(rint((int *) &Globals::w) - p2);
-            char flag6 = rf((char *) &Globals::iPadLarge);
-            iv = (flag6 == 0) ? 0x96 : 0x12c;
-            rcoords((CoordsObject *) Globals::options)->fireValue = iv;
-            adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
-        } else {
-            iv = 0xd2;
-            wField = static_cast<float>(rint((int *) &Globals::w) - p2);
-            rcoords((CoordsObject *) Globals::options)->fireValue = 0xd2;
+        float clamped = requested;
+        if ((Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f)) + (float) bottom < requested) {
+            clamped = (Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f)) + (float) bottom;
         }
+        coords->fireValue = (int) clamped;
     }
-
-    o6 = clampU(wField + adj13);
-    o7 = (unsigned short) iv;
-    o8 = (unsigned short) (o6 + (short) (p2 >> 1));
-    o9 = (unsigned short) (o7 + (short) (p2 >> 1));
-
-    float tail;
-    unsigned short u16;
-    if (isPhone == 0) {
-        char flag6 = rf((char *) &Globals::iPadLarge);
-        float a10 = (flag6 == 0) ? gSCF_bb8 : gSCF_bb4;
-        o10 = clampU(a10 + static_cast<float>(o6));
-        float a11 = (flag6 == 0) ? 4.0f : 8.0f;
-        o11 = clampU(a11 + static_cast<float>(o7));
-        float a12 = (flag6 == 0) ? 15.0f : 28.0f;
-        o12 = clampU(a12 + static_cast<float>(o6));
-        float a13 = (flag6 == 0) ? 13.0f : 27.0f;
-        o13 = clampU(a13 + static_cast<float>(o7));
-        float a16 = (flag6 == 0) ? gSCF_bc0 : gSCF_bbc;
-        u16 = clampU(a16 + static_cast<float>(o6));
-        tail = (flag6 == 0) ? gSCF_bc8 : gSCF_bc4;
+    o6 = (unsigned short) ((float) (Globals::w - p2) + (Globals::iPadHD ? 56.25f : (Globals::iPadLarge ? 80.0f : 40.0f)));
+    o7 = coords->fireValue;
+    o8 = o6 + (unsigned) p2 / 2;
+    o9 = o7 + (unsigned) p2 / 2;
+    float last;
+    if (Globals::iPadHD) {
+        o10 = (unsigned short) ((float) o6 + 107.28125f);
+        o11 = (unsigned short) ((float) o7 + 5.625f);
+        o12 = (unsigned short) ((float) o6 + 18.09375f);
+        o13 = (unsigned short) ((float) o7 + 19.28125f);
+        o16 = (unsigned short) ((float) o6 + 112.5f);
+        last = 94.21875f;
     } else {
-        o10 = clampU(static_cast<float>(o6) + gSCF_b9c);
-        o11 = clampU(static_cast<float>(o7) + gSCF_ba0);
-        o12 = clampU(static_cast<float>(o6) + gSCF_ba4);
-        o13 = clampU(static_cast<float>(o7) + gSCF_ba8);
-        u16 = clampU(static_cast<float>(o6) + gSCF_bac);
-        tail = gSCF_bb0;
+        o10 = (unsigned short) ((Globals::iPadLarge ? 152.0f : 77.0f) + (float) o6);
+        o11 = (unsigned short) ((Globals::iPadLarge ? 8.0f : 4.0f) + (float) o7);
+        o12 = (unsigned short) ((Globals::iPadLarge ? 28.0f : 15.0f) + (float) o6);
+        o13 = (unsigned short) ((Globals::iPadLarge ? 27.0f : 13.0f) + (float) o7);
+        o16 = (unsigned short) ((Globals::iPadLarge ? 160.0f : 80.0f) + (float) o6);
+        last = Globals::iPadLarge ? 134.0f : 67.0f;
     }
-
-    o16 = u16;
-    o17 = clampU(static_cast<float>(o7) - tail);
-
-    unsigned short u14;
-    float t15;
-    if (colDelta < iv) {
+    o17 = (unsigned short) ((float) o7 - last);
+    float trigger;
+    if (coords->fireValue > bottom) {
         o5 = p3;
-        float w = static_cast<float>(o6);
-        if (isPhone != 0) {
-            u14 = clampU(w + -2.0f);
-            t15 = gSCF_be4;
+        if (Globals::iPadHD) {
+            o14 = (unsigned short) ((float) o6 + -2.0f);
+            trigger = 132.1875f;
         } else {
-            char flag = rf((char *) &Globals::iPadLarge);
-            float a = (flag == 0) ? gSCF_be8 : -2.0f;
-            u14 = clampU(a + gSCF_be4);
-            t15 = (flag == 0) ? gSCF_bf0 : gSCF_bec;
+            o14 = (unsigned short) ((Globals::iPadLarge ? -2.0f : 0.0f) + (float) o6);
+            trigger = Globals::iPadLarge ? 189.0f : 94.0f;
         }
     } else {
         o5 = p4;
-        float w = static_cast<float>(o6);
-        if (isPhone != 0) {
-            u14 = clampU(w + gSCF_bcc);
-            t15 = gSCF_bd0;
+        if (Globals::iPadHD) {
+            o14 = (unsigned short) ((float) o6 + 100.0625f);
+            trigger = 209.53125f;
         } else {
-            char flag = rf((char *) &Globals::iPadLarge);
-            float a = (flag == 0) ? gSCF_bd8 : gSCF_bd4;
-            u14 = clampU(a + gSCF_bd0);
-            t15 = (flag == 0) ? gSCF_be0 : gSCF_bdc;
+            o14 = (unsigned short) ((Globals::iPadLarge ? 144.0f : 74.0f) + (float) o6);
+            trigger = Globals::iPadLarge ? 298.0f : 149.0f;
         }
     }
-
-    o14 = u14;
-    o15 = clampU(t15 + static_cast<float>(o7));
+    o15 = (unsigned short) (trigger + (float) o7);
 }
 
 String Globals::getKeyBindingReplaceString(int key) {
