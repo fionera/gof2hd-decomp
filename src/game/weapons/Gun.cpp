@@ -177,9 +177,9 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
         this->lifetimes[i] = -1000000;
         this->hitFlags[i] = 0;
         (*reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets))[i] = nullptr;
-    this->impact = nullptr;
     }
     this->field_0x54 = 0;
+    this->impact = nullptr;
     this->active = 0;
     this->hitSmall = 0;
     this->enemies = nullptr;
