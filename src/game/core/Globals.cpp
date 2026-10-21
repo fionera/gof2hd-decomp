@@ -238,7 +238,7 @@ unsigned char Globals::isIOS6Installed;
 int Globals::other_buttons_x[10];
 int Globals::other_buttons_y[10];
 unsigned char Globals::showWingmanMenu;
-unsigned char Globals::first_start_ever;
+bool Globals::first_start_ever;
 int Globals::globalPriceRaise;
 unsigned char Globals::initMemoryWarning;
 int Globals::instantActionType;
@@ -263,14 +263,14 @@ unsigned char Globals::inAppPurchaseSupported;
 int Globals::lastStationMusicPlayed;
 int Globals::menu_touch_window_type;
 unsigned char Globals::useLowResTexturesForHD;
-char *Globals::instantActionPlayerName;
+AbyssEngine::String *Globals::instantActionPlayerName;
 unsigned char Globals::isRunningHDonWeakDevice;
 float Globals::quickmenu_button_start_x;
 float Globals::quickmenu_button_start_y;
 int Globals::lastCampaignMissionFailed;
 int Globals::secondaryWeaponsProbChange;
 int Globals::lastCampaignMissionFailCount;
-unsigned char Globals::startLiteVersionWithMoreCredits;
+bool Globals::startLiteVersionWithMoreCredits;
 AbyssEngine::AERandom *Globals::rnd;
 void *Globals::font; // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
 // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
@@ -2084,7 +2084,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     }
 
     Globals::instantActionPoints = 0;
-    Globals::first_start_ever = 1;
+    Globals::first_start_ever = true;
     InitZeroObject *obj = (InitZeroObject *) Globals::hints;
     obj->slots[0] = 0;
     obj->slots[1] = 0;

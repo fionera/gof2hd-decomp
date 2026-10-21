@@ -247,7 +247,7 @@ public:
     static int other_buttons_x[10];
     static int other_buttons_y[10];
     static unsigned char showWingmanMenu;
-    static unsigned char first_start_ever;
+    static bool first_start_ever;
     static int globalPriceRaise;
     static unsigned char initMemoryWarning;
     static int instantActionType;
@@ -272,14 +272,14 @@ public:
     static int lastStationMusicPlayed;
     static int menu_touch_window_type;
     static unsigned char useLowResTexturesForHD;
-    static char *instantActionPlayerName;
+    static AbyssEngine::String *instantActionPlayerName;
     static unsigned char isRunningHDonWeakDevice;
     static float quickmenu_button_start_x;
     static float quickmenu_button_start_y;
     static int lastCampaignMissionFailed;
     static int secondaryWeaponsProbChange;
     static int lastCampaignMissionFailCount;
-    static unsigned char startLiteVersionWithMoreCredits;
+    static bool startLiteVersionWithMoreCredits;
     static AbyssEngine::AERandom *rnd;
     static void *font; // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
     // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
