@@ -12,6 +12,7 @@
 #include "engine/math/Transform.h"
 #include "game/core/Globals.h"
 #include "game/weapons/Gun.h"
+#include <algorithm>
 #include <new>
 #include "engine/core/AERandom.h"
 #include <cstdint>
@@ -475,9 +476,10 @@ void Gun::update(int dt) {
             if (lifetime > (isRocketLike(this->weaponType) ? -2000 : 0)) {
                 this->lifetimes[i] = lifetime - dt;
                 if (this->weaponType == ITEM_SORT_MINE) {
-                    Vector step = reinterpret_cast<Vector *>(this->velocities)[i] * fdt;
-                    float damping = (float) (this->initialLifetime - this->lifetimes[i]) / -500.0f + 1.0f;
-                    reinterpret_cast<Vector *>(this->positions)[i] += step * (damping > 0.0f ? damping : 0.0f);
+                    // mines decelerate over their first 500 ms of flight
+                    reinterpret_cast<Vector *>(this->positions)[i] +=
+                            reinterpret_cast<Vector *>(this->velocities)[i] * fdt *
+                            std::max((float) (this->initialLifetime - this->lifetimes[i]) / -500.0f + 1.0f, 0.0f);
                 } else {
                     reinterpret_cast<Vector *>(this->positions)[i] += reinterpret_cast<Vector *>(this->velocities)[i] * fdt;
                 }
@@ -494,12 +496,12 @@ void Gun::update(int dt) {
                     this->ignite();
                 }
             } else {
-                reinterpret_cast<Vector *>(this->positions)[i].x = 50000.0f;
-                reinterpret_cast<Vector *>(this->positions)[i].y = 50000.0f;
                 reinterpret_cast<Vector *>(this->positions)[i].z = 50000.0f;
-                reinterpret_cast<Vector *>(this->velocities)[i].x = 0.0f;
-                reinterpret_cast<Vector *>(this->velocities)[i].y = 0.0f;
+                reinterpret_cast<Vector *>(this->positions)[i].y = 50000.0f;
+                reinterpret_cast<Vector *>(this->positions)[i].x = 50000.0f;
                 reinterpret_cast<Vector *>(this->velocities)[i].z = 0.0f;
+                reinterpret_cast<Vector *>(this->velocities)[i].y = 0.0f;
+                reinterpret_cast<Vector *>(this->velocities)[i].x = 0.0f;
             }
         }
     }
