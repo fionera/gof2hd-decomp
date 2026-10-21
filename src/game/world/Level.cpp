@@ -6880,9 +6880,6 @@ static const int kHangarSpotsNivelian[3][3] = {{-4096, 0, 0}, {0, 0, 4096}, {-40
 static const int kHangarSpotsVoid[1][3] = {{4096, 0, 0}};
 static const int kHangarSpotsKhador[3][3] = {{-1961, 0, 8512}, {-1961, 0, 5562}, {-1961, 0, 2610}};
 static const int kHangarSpotsDefault[2][3] = {{4096, 0, 0}, {4096, 0, 4096}};
-static const int *const kHangarSpots[9] = {kHangarSpotsTerran[0], kHangarSpotsVossk[0], kHangarSpotsTerran[0],
-                                           kHangarSpotsNivelian[0], kHangarSpotsTerran[0], kHangarSpotsTerran[0],
-                                           kHangarSpotsTerran[0], kHangarSpotsTerran[0], kHangarSpotsVoid[0]};
 
 void Level::createScene() {
     static const int kBarChildCounts[4] = {11, 0, 10, 12};
@@ -6965,7 +6962,6 @@ void Level::createScene() {
             for (int i = 0; i < capacity; i++)
                 spotUsed[i] = 0;
             const int *spots = sceneRace == 7 ? kHangarSpotsKhador[0] : kHangarSpotsDefault[0];
-            bool customSpots = sceneRace == 0 || sceneRace == 1 || sceneRace == 3 || sceneRace == 8;
             for (int i = 0; i < shipCount; i++) {
                 int race = sceneRace;
                 if (Globals::rnd->nextInt(100) <= 29) {
@@ -6982,10 +6978,27 @@ void Level::createScene() {
                     type = (*Globals::status->voidStation->getShips())[i]->getIndex();
                 KIPlayer *ship = this->createShip(0, 0, type, nullptr, false, false);
                 int spot = Globals::rnd->nextInt(capacity);
-                for (int tries = -100; tries != 0 && spotUsed[spot] != 0; tries++)
+                for (int tries = 100; tries != 0 && spotUsed[spot] != 0; tries--)
                     spot = Globals::rnd->nextInt(capacity);
                 spotUsed[spot] = 1;
-                const int *table = (sceneRace <= 8 && customSpots) ? kHangarSpots[sceneRace] : spots;
+                const int *table;
+                switch (sceneRace) {
+                    case 0:
+                        table = kHangarSpotsTerran[0];
+                        break;
+                    case 1:
+                        table = kHangarSpotsVossk[0];
+                        break;
+                    case 3:
+                        table = kHangarSpotsNivelian[0];
+                        break;
+                    case 8:
+                        table = kHangarSpotsVoid[0];
+                        break;
+                    default:
+                        table = spots;
+                        break;
+                }
                 ship->setPosition((float) table[spot * 3], (float) (table[spot * 3 + 1] + kShipHangarHeights[type]),
                                   (float) table[spot * 3 + 2]);
                 ship->player->setAlwaysFriend(true);
