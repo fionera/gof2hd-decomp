@@ -1,6 +1,7 @@
 #include "game/menu/ModStation.h"
 #include <cstddef>
 #include "game/core/Globals.h"
+#include "engine/core/AERandom.h"
 extern int g_android_current_achievements[3];
 #include "engine/core/GameText.h"
 #include "game/ship/Ship.h"
@@ -2768,512 +2769,521 @@ void ChoiceWindow_set1_oiImpl(ChoiceWindow *cw, int textStr);
 void NewsTicker_build_oiImpl(ModStation * self);
 void DlcMenu_build_oiImpl(ModStation * self);
 
+// Hangar camera key positions per station race (non-iPad layout).
+static const int gHangarCamPos[30] = {1076, 900, -2273, 1787, 1086, -1632, -2247, 1010, -1845, 1800,
+                                      800, -1778, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 1200, 800, -2678, 2200, 800, -1678, 0, 0, 0};
+static const float gHangarCamYawIPad[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0f, 0.0f, 3.0f, 2.35f, 0.0f};
+// Station background image resource per race.
+static const unsigned gStationImageByRace[10] = {1190, 1187, 1189, 1188, 0xffffffff, 0xffffffff,
+                                                 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
+
 int ModStation::OnInitialize() {
-    int *status = (int *) Globals::status;
-
     this->introTimer = 0;
-
-    if ((int) (intptr_t) this->cutScene == 0) {
-        CutScene *cs = (CutScene *) ::operator new(0xa0);
-        CutScene_ctor_oi(cs, 0x17);
-        this->cutScene = cs;
-        CutScene_initialize_oi(cs);
+    if (this->cutScene == nullptr) {
+        this->cutScene = new CutScene(23);
+        this->cutScene->initialize();
     }
 
-    int state = this->state;
-    int next;
-
-    if (state == 0x14) {
-        if (this->flag_0xb1 == 0 && this->flag_0xb0 == 0 &&
-            this->flag_0x101 != 0) {
-            bool skip = false;
-            if (Status_getCurrentCampaignMission_oi() == 0x4d) {
-                Station *st = (Station *) Status_getStation_oi();
-                if (st->getIndex() == 0x65)
-                    skip = true;
+    switch (this->state) {
+        case 100: {
+            Globals::globals->startNewSoundResourceList();
+            Globals::globals->addSoundResourceToList(95);
+            Globals::globals->addSoundResourceToList(122);
+            Globals::globals->addSoundResourceToList(108);
+            Globals::globals->addSoundResourceToList(96);
+            Globals::globals->addSoundResourceToList(97);
+            Globals::globals->addSoundResourceToList(98);
+            Globals::globals->addSoundResourceToList(99);
+            Globals::globals->addSoundResourceToList(101);
+            Globals::globals->addSoundResourceToList(100);
+            Globals::globals->addSoundResourceToList(102);
+            Globals::globals->addSoundResourceToList(104);
+            Globals::globals->addSoundResourceToList(105);
+            Globals::globals->addSoundResourceToList(106);
+            Globals::globals->addSoundResourceToList(107);
+            Globals::globals->addSoundResourceToList(103);
+            Globals::globals->addSoundResourceToList(126);
+            this->introCountdown = 50;
+            this->flag_0x101 = 1;
+            this->stationName = Globals::status->getStation()->getName();
+            if (Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_70) > 30000 &&
+                Globals::status->getStation()->getIndex() != 108) {
+                // Restock the trade goods after a while away.
+                Generator *generator = new Generator();
+                generator->computerTradeGoods(Globals::status->getStation());
             }
-            if (!skip)
-                this->autosave();
+            this->state = 80;
+            break;
         }
+        case 80: {
+            this->flag_0x62 = 0;
+            this->flag_0x63 = 0;
+            this->flag_0x64 = 0;
+            this->flag_0x65 = 0;
+            this->flag_0x6e = 0;
+            this->flag_0x6c = 0;
+            this->flag_0x6d = 0;
+            this->flag_0x68 = 0;
+            this->flag_0x69 = 0;
+            this->flag_0x6a = 0;
+            this->flag_0x6b = 0;
+            this->flag_0x66 = 0;
+            this->flag_0x67 = 0;
+            this->flag_0x60 = 0;
+            this->flag_0x61 = 1;
+            this->flag_0xdc = 0;
+            this->flag_0xde = 0;
+            this->flag_0xdf = 0;
+            this->savedPostEffect = false;
+            this->pendingHangarClose = 0;
+            this->flag_0x63 = 0;
 
-        int *shipTbl = (int *) Globals::ships;
+            this->infoBoxW = Globals::layout->field_0xcc;
+            this->infoBoxH = Globals::h - Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x10_rightMargin;
+            this->infoBoxY = Globals::layout->field_0xc_leftMargin;
+            this->infoBoxX = 0;
+            this->buttonLaunch = new TouchButton(String(""), 12, Globals::w, Globals::h, 34);
+            this->buttonCredits = new TouchButton(Globals::layout->formatCredits(Globals::status->getCredits()), 11,
+                                                  Globals::w - this->buttonLaunch->getWidth(), Globals::h, 34);
+            Array<TouchButton *> *row = new Array<TouchButton *>();
+            this->buttonRow = reinterpret_cast<int *>(row);
+            ArraySetLength<TouchButton *>(5, *row);
 
-        if (Status_getCurrentCampaignMission_oi() == 1) {
-            Ship *ship = (Ship *) *shipTbl;
-            Ship_makeShip_oi((*(Array<int> *) (intptr_t) *(int *) &Globals::ships)[0]);
-            Status_setShip_oi(ship);
-            Ship_setRace_oi(Ship_getIndex_oi());
-            int eq = Item_makeItem_oi();
-            Item_setUnsaleable_oi(eq);
-            Ship_setEquipment_oi((Item *) *shipTbl, eq);
-            int eq2 = Item_makeItem_oi();
-            Ship_setEquipment_oi((Item *) *shipTbl, eq2);
-            Item_setUnsaleable_oi(eq2);
-            CutScene_replacePlayerShip_oi((int) (intptr_t) this->cutScene, Ship_getIndex_oi());
+            Layout *layout = Globals::layout;
+            int y = layout->field_0xcc - layout->buttonInsetX - layout->field_0x4c;
+            int x = Globals::h - layout->field_0x10_rightMargin - layout->field_0x24 - 5 * layout->field_0x30_rowHeight -
+                    4 * layout->field_0x34;
+            (*row)[0] = new TouchButton(*Globals::gameText->getText(167), 0, Globals::layout->buttonInsetX, x, y, 17, 1);
+            (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[1] =
+                new TouchButton(*Globals::gameText->getText(398), 0, Globals::layout->buttonInsetX,
+                                x + Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34, y, 17, 1);
+            (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[2] =
+                new TouchButton(*Globals::gameText->getText(177), 0, Globals::layout->buttonInsetX,
+                                x + 2 * (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), y, 17,
+                                1);
+            (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[3] =
+                new TouchButton(*Globals::gameText->getText(129), 0, Globals::layout->buttonInsetX,
+                                x + 3 * (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), y, 17,
+                                1);
+            (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[4] =
+                new TouchButton(*Globals::gameText->getText(169), 0, Globals::layout->buttonInsetX,
+                                x + 4 * (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), y, 17,
+                                1);
+            this->state = 60;
+            break;
         }
-
-        int camp = Status_getCurrentCampaignMission_oi();
-        bool special = false;
-        if (camp < 5) {
-            TouchButton_setHalfTransparent_oi(((int *) (intptr_t) this->buttonRow[1])[0]);
-            TouchButton_setHalfTransparent_oi(((int *) (intptr_t) this->buttonRow[1])[(8) / 4]);
-            TouchButton_setHalfTransparent_oi(((int *) (intptr_t) this->buttonRow[1])[(0xc) / 4]);
-        } else if (camp < 9 || camp == 0xf) {
-            special = camp == 0xf;
-            TouchButton_setHalfTransparent_oi(((int *) (intptr_t) this->buttonRow[1])[(8) / 4]);
-            TouchButton_setHalfTransparent_oi(((int *) (intptr_t) this->buttonRow[1])[(0xc) / 4]);
-        }
-        bool showShop = camp < 0xc || special;
-        if (!showShop) {
-            Station *st = (Station *) Status_getStation_oi();
-            if (st->getIndex() == 100) showShop = true;
-            else {
-                st = (Station *) Status_getStation_oi();
-                if (st->getIndex() == 0x65) showShop = true;
+        case 60: {
+            this->flag_0x100 = 0;
+            this->camScrollPos = 0;
+            this->field_0xe0 = 0;
+            this->camScrollVel = 0;
+            this->field_0xf4 = 0;
+            this->field_0xf8 = 0;
+            this->field_0xfc = 0;
+            this->camAngle = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 2 ? -200 : 270;
+            if (this->cutScene != nullptr) {
+                this->cutScene->cameraRotX = (float) this->camAngle / 120.0f;
             }
+            this->field_0xec = 0;
+            this->flag_0xb0 = this->flag_0xb3;
+            this->newsTicker = new NewsTicker(
+                this->infoBoxW,
+                Globals::h - Globals::layout->field_0x10_rightMargin -
+                Globals::Canvas->GetTextHeight((unsigned) (intptr_t) Globals::font),
+                Globals::w - this->infoBoxW, ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace(),
+                Globals::status->getCurrentCampaignMission());
+            this->accumTime = 0;
+            this->flag_0xb1 = 0;
+            this->flag_0xb2 = 0;
+            this->field_0xd0 = 0;
+            this->field_0xd4 = 0;
+            this->flag_0xd8 = 0;
+            this->flag_0xd9 = 0;
+            this->flag_0xda = 0;
+            this->flag_0xdb = 0;
+            this->choiceWindow = new ChoiceWindow();
+            Globals::Canvas->Image2DCreate(
+                gStationImageByRace[((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()],
+                reinterpret_cast<unsigned &>(this->departPending));
+            this->state = 40;
+            break;
         }
-        if (showShop)
-            TouchButton_setHalfTransparent_oi(((int *) (intptr_t) this->buttonRow[1])[(4) / 4]);
-
-        int race;
-        Station *st = (Station *) Status_getStation_oi();
-        if (st->getIndex() == 0x65) {
-            race = 8;
-        } else {
-            st = (Station *) Status_getStation_oi();
-            if (st->getIndex() == 100) {
-                race = 7;
-            } else {
-                Status_getSystem_oi();
-                race = SolarSystem_getRace_oi();
+        case 40: {
+            if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 120 &&
+                (Globals::status->getCurrentCampaignMission() == 98 ||
+                 Globals::status->getCurrentCampaignMission() == 100)) {
+                this->flag_0xd8 = 1;
             }
-        }
-        {
-            const int *coord = ModStation_msc_camCoordTable();
-            const int *rot = ModStation_msc_camRotTable();
-            float kx = VectorSignedToFloat(coord[race * 3 + 0], 0);
-            float ky = VectorSignedToFloat(coord[race * 3 + 1], 0);
-            float kz = VectorSignedToFloat(coord[race * 3 + 2], 0);
-            float yaw = VectorSignedToFloat(rot[race], 0);
-            this->camCoordX = kx;
-            this->camCoordY = ky;
-            this->camCoordZ = kz;
-            Matrix key;
-            MatrixSetTranslation(key, kx, ky, kz);
-            MatrixSetRotation(key, 0.0f, yaw, 0.0f);
-            ModStation_oi_setCameraLocal(ModStation_oi_cameraHandle(), key);
-        }
-        this->resetLight();
-        if (this->flag_0x101 != 0)
-            this->enterStation();
+            if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 58 &&
+                Globals::status->getCurrentCampaignMission() == 138) {
+                this->flag_0xd8 = 1;
+            }
+            if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 126 &&
+                Globals::status->getCurrentCampaignMission() == 120) {
+                this->flag_0xd8 = 1;
+            }
+            if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 78 &&
+                Globals::status->getCurrentCampaignMission() == 141) {
+                this->flag_0xd8 = 1;
+            }
+            if (Globals::status->inSupernovaSystem()) {
+                this->flag_0xd8 = 1;
+            }
+            if (Globals::enterSpaceLounge) {
+                this->flag_0xd8 = 1;
+                this->flag_0xd9 = 1;
+            }
 
-        if (Status_getCurrentCampaignMission_oi() == 0x4d) {
-            Station *st2 = (Station *) Status_getStation_oi();
-            if (st2->getIndex() == 100) {
-                Status_getStation_oi();
-                Array<Ship *> *ships = (Array<Ship *> *) (intptr_t) Station_getShips_oi();
-                if (ships != 0) {
-                    for (unsigned i = 0; i < ships->size(); i = i + 1) {
-                        if (Ship_getIndex_oi() == 0x25)
-                            Ship_setPrice_oi((int) (intptr_t)(*ships)[i]);
+            if (!this->flag_0xb0) {
+                if (Globals::status->getStation()->getIndex() != 4 && Globals::status->getStation()->getIndex() != 88 &&
+                    Globals::status->getStation()->stationHasPirateBase()) {
+                    // Pirate base: the pirates greet the player.
+                    if (this->dialogueWindow == nullptr) {
+                        this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(434),
+                                                                  Globals::gameText->getText(1609),
+                                                                  gPirateGreetingFaceA);
+                        Agent *agent = new Agent(0, String(""), 0, 0, 2, true, 0, 0, 0, 0);
+                        Globals::sound->play(Globals::globals->getDialogueSoundId(434, agent), nullptr, nullptr, 0.0f);
+                        delete agent;
+                        this->flag_0x101 = 0;
+                        this->flag_0x69 = 1;
+                    }
+                } else if (Globals::status->getCurrentCampaignMission() != 48 &&
+                           !Globals::status->inBlackMarketSystem() &&
+                           Globals::status->getStation()->getIndex() != 108 &&
+                           Globals::status->getStation()->getIndex() != 100 &&
+                           Globals::status->getStation()->getIndex() != 101 && !this->flag_0x6a &&
+                           !this->flag_0x63 && !this->flag_0xd8 && !Globals::status->field_0x108 &&
+                           (Globals::status->getStation()->hasAttackedFriends() ||
+                            ((Standing *) (intptr_t) Globals::status->getStanding())
+                                ->isEnemy(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()))) {
+                    // Hostile station: pay a landing fee.
+                    String text;
+                    if (((Standing *) (intptr_t) Globals::status->getStanding())
+                            ->isEnemy(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace())) {
+                        Standing *standing = (Standing *) (intptr_t) Globals::status->getStanding();
+                        int faction = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() > 1 ? 1 : 0;
+                        int value = standing->getStanding(faction) >= 1 ? standing->getStanding(faction)
+                                                                         : -standing->getStanding(faction);
+                        this->field_0xd4 = (int) ((float) value / 100.0f * 2800.0f);
+                        this->field_0xd4 = Globals::rnd->nextInt(200) + this->field_0xd4 - 100;
+                        if (Globals::status->hardCoreMode()) {
+                            this->field_0xd4 *= 10;
+                        }
+                        text = *Globals::gameText->getText(205);
+                    } else {
+                        this->field_0xd4 = Globals::status->getLevel() * 150 + 1000;
+                        if (Globals::status->hardCoreMode()) {
+                            this->field_0xd4 *= 10;
+                        }
+                        text = *Globals::gameText->getText(206);
+                    }
+                    text = Globals::status->replaceHash(String(text, false),
+                                                        Globals::layout->formatCredits(this->field_0xd4),
+                                                        String("#C"));
+                    this->choiceWindow->set(text, true);
+                    this->flag_0x63 = 1;
+                    this->flag_0x6b = 1;
+                    this->flag_0x101 = 0;
+                }
+            }
+
+            int stationIndex = Globals::status->getStation()->getIndex();
+            Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
+            if (Globals::status->getCurrentCampaignMission() == 20 && campaign->getTargetStation() == stationIndex) {
+                Array<Item *> *items = Globals::status->getStation()->getItems();
+                if (items != nullptr) {
+                    for (unsigned i = 0; i < items->size(); i++) {
+                        if ((*items)[i]->getIndex() == 41) {
+                            (*items)[i]->setPrice(0);
+                        }
+                    }
+                }
+                Globals::status->getStation()->addItem((*Globals::items)[41]->makeItem(10, 0));
+            }
+            if (Globals::status->getCurrentCampaignMission() == 27 && campaign->getTargetStation() == stationIndex) {
+                Globals::status->getShip()->removeCargo(131);
+            }
+            if ((Globals::status->getCurrentCampaignMission() == 43 && stationIndex == 10) ||
+                (Globals::status->getCurrentCampaignMission() == 44 && stationIndex == 10)) {
+                this->flag_0xd9 = 1;
+            }
+            if (Globals::status->gameWon() && stationIndex == 10 &&
+                !Globals::status->getShip()->hasEquipment(85, 1) && !Globals::status->getShip()->hasCargo(85, 1) &&
+                !Globals::status->getStation()->hasItem(85) && !Globals::status->getStation()->hasItem(164)) {
+                Globals::status->getStation()->addItem((*Globals::items)[164]->makeItem(50));
+            }
+            bool atLab = stationIndex == 100;
+            if (stationIndex == 100 || stationIndex == 101 || stationIndex == 10) {
+                // Keep some fuel for sale where the story needs it.
+                Item *fuel = Globals::status->getShip()->getCargo(122);
+                int fuelAmount = fuel != nullptr ? fuel->getAmount() : 0;
+                if (fuelAmount <= 5 && !Globals::status->getStation()->hasItem(122)) {
+                    Globals::status->getStation()->addItem((*Globals::items)[122]->makeItem(10));
+                }
+            }
+            if (Globals::status->getStation()->getIndex() == 10 && Globals::achievements->gotAllGoldMedals()) {
+                Array<Ship *> *ships = Globals::status->getStation()->getShips();
+                bool hasReward = false;
+                if (ships != nullptr) {
+                    for (unsigned i = 0; i < ships->size(); i++) {
+                        if ((*ships)[i]->getIndex() == 8) {
+                            hasReward = true;
+                            break;
+                        }
+                    }
+                }
+                if (!hasReward) {
+                    Generator *generator = new Generator();
+                    Globals::status->getStation()->setShips(generator->getShipBuyList(Globals::status->getStation()),
+                                                            false);
+                    delete generator;
+                }
+            }
+            if (atLab && (Globals::status->dlc1Won() || Globals::status->getCurrentCampaignMission() == 80 ||
+                          Globals::status->getCurrentCampaignMission() == 81 ||
+                          Globals::status->getCurrentCampaignMission() == 82 ||
+                          Globals::status->getCurrentCampaignMission() == 83 ||
+                          Globals::status->getCurrentCampaignMission() == 84)) {
+                Station *station = Globals::status->getStation();
+                if (station->hasShip(37)) {
+                    Array<Ship *> *ships = station->getShips();
+                    Ship *prototype = nullptr;
+                    for (unsigned i = 0; i < ships->size(); i++) {
+                        if ((*ships)[i]->getIndex() == 37) {
+                            prototype = (*ships)[i];
+                            break;
+                        }
+                    }
+                    station->removeShip(prototype);
+                }
+                if (!station->hasShip(38)) {
+                    station->addShip((*Globals::ships)[38]->makeShip(-1));
+                }
+                if (!station->hasShip(40)) {
+                    station->addShip((*Globals::ships)[40]->makeShip(-1));
+                }
+            }
+            if (Globals::status->getStation()->getIndex() == 108 && Globals::status->field_114 == 1) {
+                delete this->dialogueWindow;
+                this->dialogueWindow = nullptr;
+                Mission *mission = new Mission(-1, String(*Globals::gameText->getText(1601), false),
+                                               gPirateGreetingFaceA + 5, 4, 0, 108, 0);
+                mission->setWon(true);
+                Globals::status->field_114 = 2;
+                this->dialogueWindow = new DialogueWindow(mission, nullptr, 0);
+                this->flag_0x69 = 1;
+            } else if (Globals::status->getStation()->getIndex() == 108 && Globals::status->field_114 == 2) {
+                if (Globals::status->getCredits() > 30000000 && Globals::status->getShip()->hasCargo(109, 50)) {
+                    this->choiceWindow->set(*Globals::gameText->getText(477), true);
+                    this->flag_0x6c = 1;
+                } else {
+                    this->choiceWindow->set(*Globals::gameText->getText(476));
+                }
+                this->flag_0x63 = 1;
+            }
+            Mission *freelance = Globals::status->getFreelanceMission();
+            if (freelance != nullptr && freelance->getType() == 14 &&
+                freelance->getTargetStation() == Globals::status->getStation()->getIndex() &&
+                !Globals::status->getStation()->hasItem(115)) {
+                Item *item = (*Globals::items)[115]->makeItem(1);
+                Globals::status->getStation()->addItem(item);
+            }
+            if (Globals::status->getCurrentCampaignMission() == 162 && !Globals::hints[43]) {
+                this->choiceWindow->set(*Globals::gameText->getText(613));
+                this->flag_0x63 = 1;
+                Globals::hints[43] = 1;
+            }
+            if (Globals::status->gameWon() && !(Globals::options[53] || Globals::hints[56])) {
+                this->choiceWindow->set(*Globals::gameText->getText(110));
+                this->flag_0x63 = 1;
+                Globals::hints[56] = 1;
+            }
+            if (Globals::status->dlc1Won() && !(Globals::options[55] || Globals::hints[57])) {
+                this->choiceWindow->set(*Globals::gameText->getText(111));
+                this->flag_0x63 = 1;
+                Globals::hints[57] = 1;
+            }
+            int newWanted = Globals::status->activateNewWanted();
+            if (newWanted >= 1 && !this->flag_0x63) {
+                if (newWanted == 1) {
+                    this->choiceWindow->set(*Globals::gameText->getText(3230));
+                } else {
+                    String text(*Globals::gameText->getText(3231), false);
+                    text = Globals::status->replaceHash(String(text, false), String(String(newWanted), false),
+                                                        String("#N"));
+                    this->choiceWindow->set(text);
+                }
+                this->flag_0x63 = 1;
+            }
+            this->state = 20;
+            break;
+        }
+        case 20: {
+            if (!this->flag_0xb1 && !this->flag_0xb0 && this->flag_0x101 &&
+                !(Globals::status->getCurrentCampaignMission() == 77 &&
+                  Globals::status->getStation()->getIndex() == 101)) {
+                autosave();
+            }
+            if (Globals::status->getCurrentCampaignMission() == 1) {
+                // Tutorial: the player starts in the Khador ship.
+                Globals::status->setShip((*Globals::ships)[0]->makeShip(-1));
+                Globals::status->getShip()->setRace(8);
+                Item *primary = (*Globals::items)[90]->makeItem();
+                primary->setUnsaleable(true);
+                Globals::status->getShip()->setEquipment(primary, 0);
+                Item *secondary = (*Globals::items)[81]->makeItem();
+                Globals::status->getShip()->setEquipment(secondary, 1);
+                secondary->setUnsaleable(true);
+                this->cutScene->replacePlayerShip(Globals::status->getShip()->getIndex(), 3);
+            }
+            Array<TouchButton *> &row = *reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
+            int mission = Globals::status->getCurrentCampaignMission();
+            bool mission15 = false;
+            if (mission <= 4) {
+                row[0]->setHalfTransparent(true);
+                row[2]->setHalfTransparent(true);
+                row[3]->setHalfTransparent(true);
+            } else if (mission < 9 || mission == 15) {
+                mission15 = mission == 15;
+                row[2]->setHalfTransparent(true);
+                row[3]->setHalfTransparent(true);
+            }
+            if (mission < 12 || mission15 || Globals::status->getStation()->getIndex() == 100 ||
+                Globals::status->getStation()->getIndex() == 101) {
+                row[1]->setHalfTransparent(true);
+            }
+
+            Vector lightDir = AbyssEngine::AEMath::MatrixGetDir(*reinterpret_cast<AbyssEngine::AEMath::Matrix *>(
+                Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent())));
+            lightDir.y += -0.3f;
+            lightDir.x += -0.2f;
+            this->lightDirection = lightDir;
+            resetLight();
+            if (this->flag_0x101) {
+                enterStation();
+            }
+            if (Globals::status->getCurrentCampaignMission() == 77 &&
+                Globals::status->getStation()->getIndex() == 100) {
+                Array<Ship *> *ships = Globals::status->getStation()->getShips();
+                if (ships != nullptr) {
+                    for (unsigned i = 0; i < ships->size(); i++) {
+                        if ((*ships)[i]->getIndex() == 37) {
+                            (*ships)[i]->setPrice(0);
+                        }
                     }
                 }
             }
-        }
 
-        if (this->flag_0x69 == 0 && this->flag_0x6a == 0 &&
-            this->flag_0x63 == 0 &&
-            ((TextRootRecord *) (intptr_t) *(int *) &Globals::gameText)->noRoutesHintShown == 0) {
-            Station *st2 = (Station *) Status_getStation_oi();
-            if (st2->getIndex() != 0x65) {
-                Status_getShip_oi();
-                int hasJump = Ship_hasJumpDrive_oi();
-                int hasFuel = Ship_hasCargo_oi(Status_getShip_oi(), 0x55);
-                Status_getSystem_oi();
-                int routes = SolarSystem_getRoutes_oi();
-                if (routes == 0 && hasJump == 0 && hasFuel == 0 &&
-                    0x10 < Status_getCurrentCampaignMission_oi()) {
-                    ChoiceWindow_set_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText), 1);
+            int race;
+            if (Globals::status->getStation()->getIndex() == 101) {
+                race = 8;
+            } else if (Globals::status->getStation()->getIndex() == 100) {
+                race = 7;
+            } else {
+                race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            }
+            AbyssEngine::AEMath::Matrix camera;
+            float camX = (float) gHangarCamPos[race * 3];
+            float camY = (float) gHangarCamPos[race * 3 + 1];
+            float camZ = (float) gHangarCamPos[race * 3 + 2];
+            this->camKeyX = camX;
+            this->camKeyY = camY;
+            this->camKeyZ = camZ;
+            if (this->easeX != nullptr) {
+                this->easeX->SetRange(this->camKeyX, this->camKeyX);
+            } else {
+                this->easeX = new AbyssEngine::EaseInOut(this->camKeyX, this->camKeyX);
+            }
+            if (this->easeY != nullptr) {
+                this->easeY->SetRange(this->camKeyY, this->camKeyY);
+            } else {
+                this->easeY = new AbyssEngine::EaseInOut(this->camKeyY, this->camKeyY);
+            }
+            if (this->easeZ != nullptr) {
+                this->easeZ->SetRange(this->camKeyZ, this->camKeyZ);
+            } else {
+                this->easeZ = new AbyssEngine::EaseInOut(this->camKeyZ, this->camKeyZ);
+            }
+            if (this->cutScene != nullptr) {
+                AbyssEngine::AEMath::MatrixSetTranslation(camera, camX, camY, camZ);
+                float pitch = gHangarCamPitch[race];
+                AbyssEngine::AEMath::MatrixSetRotation(camera, pitch,
+                                                       (Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw)[race],
+                                                       -0.03f, (AbyssEngine::AEMath::RotationOrder) 2);
+                Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), camera);
+                this->cutScene->vec8 = Vector{camX, camY, camZ};
+                reinterpret_cast<Vector &>(this->cutScene->vec8w) =
+                    Vector{pitch, (Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw)[race], -0.03f};
+                this->cutScene->rootGeom->setMatrix(camera);
+
+                // Random offset of the idle camera.
+                uint8_t *flipAxis = &this->_pad_0x12d[0];
+                flipAxis[0] = Globals::rnd->nextInt(20) < 10;
+                flipAxis[1] = Globals::rnd->nextInt(20) > 10;
+                flipAxis[2] = Globals::rnd->nextInt(20) < 10;
+                int offset = Globals::rnd->nextInt(150);
+                this->cutScene->vec8.x += (float) (flipAxis[1] ? -offset : offset);
+                offset = Globals::rnd->nextInt(150);
+                this->cutScene->vec8.y += (float) (flipAxis[0] ? -offset : offset);
+                offset = Globals::rnd->nextInt(150);
+                this->cutScene->vec8.z += (float) (flipAxis[2] ? -offset : offset);
+                AbyssEngine::AEMath::MatrixSetTranslation(camera, this->cutScene->vec8.x, this->cutScene->vec8.y,
+                                                          this->cutScene->vec8.z);
+                if (this->cameraTween != nullptr) {
+                    this->cameraTween->SetRange(camera, camera);
+                } else {
+                    this->cameraTween = new AbyssEngine::EaseInOutMatrix(camera, camera, 3000);
+                }
+            }
+
+            if (!this->flag_0x69 && !this->flag_0x6a && !this->flag_0x63 &&
+                !Globals::layout->rewardMessageActive && Globals::status->getStation()->getIndex() != 101) {
+                bool hasJumpDrive = Globals::status->getShip()->hasJumpDrive();
+                bool hasFuel = Globals::status->getShip()->hasCargo(85, 1);
+                if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRoutes() == nullptr &&
+                    !(hasJumpDrive || hasFuel) && Globals::status->getCurrentCampaignMission() >= 17) {
+                    this->choiceWindow->set(*Globals::gameText->getText(335), true);
                     this->flag_0x6d = 1;
                     this->flag_0x63 = 1;
                 }
             }
+            reinterpret_cast<uint8_t &>(Globals::status->field_f8) = 1;
+            this->flag_0x118 = 0;
+            this->activeTouch = nullptr;
+            this->flag_0xb3 = 0;
+            this->loadTick = 0;
+            reinterpret_cast<uint8_t &>(this->field_0x148) = 0;
+            this->state = 1;
+            break;
         }
-
-        ((Status *) (intptr_t) *(int *) &Globals::status)->field_f8 = 1;
-        this->flag_0x118 = 0;
-        this->activeTouch = 0;
-        this->flag_0xb3 = 0;
-        this->loadTick = 0;
-        reinterpret_cast<uint8_t*>(&this->field_0x148)[0] = 0;
-        next = 1;
-    } else if (state == 0x28) {
-        if (Status_inAlienOrbit_oi() == 0) {
-            Station *st = (Station *) Status_getStation_oi();
-            if (st->getIndex() == 0x78) {
-                int camp = Status_getCurrentCampaignMission_oi();
-                if (camp == 0x62 || Status_getCurrentCampaignMission_oi() == 100)
-                    this->flag_0xd8 = 1;
+        default: {
+            Globals::sound->play(122, nullptr, nullptr, 0.0f);
+            Globals::sound->enableReverb(0);
+            Globals::sound->setDownPitch(false);
+            if (Globals::switch_to_target_setting != -1) {
+                Globals::globals->playMusicAndFadeOutCurrent(Globals::switch_to_target_setting);
             }
-        }
-        if (Status_inAlienOrbit_oi() == 0) {
-            Station *st = (Station *) Status_getStation_oi();
-            if (st->getIndex() == 0x3a && Status_getCurrentCampaignMission_oi() == 0x8a)
-                this->flag_0xd8 = 1;
-        }
-        if (Status_inAlienOrbit_oi() == 0) {
-            Station *st = (Station *) Status_getStation_oi();
-            if (st->getIndex() == 0x7e && Status_getCurrentCampaignMission_oi() == 0x78)
-                this->flag_0xd8 = 1;
-        }
-        if (Status_inAlienOrbit_oi() == 0) {
-            Station *st = (Station *) Status_getStation_oi();
-            if (st->getIndex() == 0x4e && Status_getCurrentCampaignMission_oi() == 0x8d)
-                this->flag_0xd8 = 1;
-        }
-        if (Status_inSupernovaSystem_oi() != 0)
-            this->flag_0xd8 = 1;
-        if (Globals::iPad != 0)
-            this->flag_0xd8 = 1;
-            this->flag_0xd9 = 1;
-
-        if (this->flag_0xb0 == 0) {
-            bool gate = false;
-            Station *st = (Station *) Status_getStation_oi();
-            if (st->getIndex() == 4) gate = true;
-            else {
-                st = (Station *) Status_getStation_oi();
-                if (st->getIndex() == 0x58) gate = true;
-                else {
-                    Status_getStation_oi();
-                    if (Station_stationHasPirateBase_oi() != 0) {
-                        if (this->dialogueWindow == 0) {
-                            ChoiceWindow *cw = this->choiceWindow;
-                            ChoiceWindow_set6_oiImpl(cw,
-                                                     GameText_getText_oiImpl(0x3e), GameText_getText_oiImpl(0x49),
-                                                     GameText_getText_oiImpl(0x7e), GameText_getText_oiImpl(0x7f),
-                                                     GameText_getText_oiImpl(0x20c), GameText_getText_oiImpl(0x20d));
-                            this->flag_0x6d = 1;
-                        }
-                        goto afterGate;
-                    }
-                    gate = true;
-                }
-            }
-            (void) gate;
-            if (Status_getCurrentCampaignMission_oi() != 0x30 &&
-                Status_inBlackMarketSystem_oi() == 0) {
-                Station *s1 = (Station *) Status_getStation_oi();
-                if (s1->getIndex() != 0x6c) {
-                    Station *s2 = (Station *) Status_getStation_oi();
-                    if (s2->getIndex() != 100) {
-                        Station *s3 = (Station *) Status_getStation_oi();
-                        if (s3->getIndex() != 0x65 && this->flag_0x6a == 0 &&
-                            this->flag_0x63 == 0 &&
-                            this->flag_0xd8 == 0 /* RAWREAD: alarmActive (+0xd8) */ &&
-                            ((Status *) (intptr_t) *(int *) &Globals::status)->field_0x108 == 0) {
-                            Status_getStation_oi();
-                            bool enemy = false;
-                            if (Station_hasAttackedFriends_oi() != 0) {
-                                enemy = true;
-                            } else {
-                                int st0 = Status_getStanding_oi();
-                                Status_getSystem_oi();
-                                SolarSystem_getRace_oi();
-                                if (Standing_isEnemy_oi(st0) != 0)
-                                    enemy = true;
-                            }
-                            if (enemy) {
-                                int standing = Status_getStanding_oi();
-                                int credits = Status_getCredits_oi();
-                                if (standing < 0) {
-                                    ChoiceWindow_setFee_oiImpl(this->choiceWindow, credits, 0);
-                                    this->flag_0x6d = 1;
-                                }
-                            }
-                        }
+            Globals::switch_to_target_setting = -1;
+            this->stationActive = 1;
+            this->state = 100;
+            Array<TouchButton *> *row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
+            if (row != nullptr) {
+                // Remember the sub menu button positions for the touch overlay.
+                for (unsigned i = 0; i < row->size(); i++) {
+                    if (i < 10) {
+                        Globals::sub_menu_buttons_x[i] = (int) (*row)[i]->getPosition().x;
+                        Globals::sub_menu_buttons_y[i] = (int) (*row)[i]->getPosition().y;
+                        row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
                     }
                 }
+                Globals::sub_menu_button_count = row->size();
             }
-        afterGate:;
+            return 0;
         }
-
-        Station *here = (Station *) Status_getStation_oi();
-        int hereIdx = here->getIndex();
-        Status_getCampaignMission_oi();
-
-        if (Status_getCurrentCampaignMission_oi() == 0x14 &&
-            Mission_getTargetStation_oi() == hereIdx) {
-            Status_getStation_oi();
-            Array<Item *> *items = (Array<Item *> *) (intptr_t) Station_getItems_oi();
-            if (items != 0) {
-                for (unsigned i = 0; i < items->size(); i = i + 1) {
-                    if ((*items)[i]->getIndex() == 0x29)
-                        Item_setPrice_oi((int) (intptr_t)(*items)[i]);
-                }
-            }
-            Item *it = (Item *) Status_getStation_oi();
-            Item_makeItemDescAmt_oi((*(Array<int> *) (intptr_t) *(int *) &Globals::items)[(0xa4) / 4], 10);
-            Station_addItem_oi(it);
-        }
-        if (Status_getCurrentCampaignMission_oi() == 0x1b &&
-            Mission_getTargetStation_oi() == hereIdx) {
-            Ship_removeCargo_oi(Status_getShip_oi());
-        }
-
-        if (Status_getCurrentCampaignMission_oi() == 0x2b) {
-            if (hereIdx == 10) this->flag_0xd9 = 1;
-        } else if (hereIdx == 10 && Status_getCurrentCampaignMission_oi() == 0x2c) {
-            this->flag_0xd9 = 1;
-        }
-
-        bool isS100;
-        if (hereIdx == 10 && Status_gameWon_oi() != 0) {
-            int ship = Status_getShip_oi();
-            if (Ship_hasEquipment_oi(ship, 0x55) == 0) {
-                ship = Status_getShip_oi();
-                if (Ship_hasCargo_oi(ship, 0x55) == 0) {
-                    int st0 = Status_getStation_oi();
-                    if (Station_hasItem_oi(st0) == 0 && Station_hasItem_oi(Status_getStation_oi()) == 0) {
-                        Item *it = (Item *) Status_getStation_oi();
-                        Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) *(int *) &Globals::items)[(0x290) / 4]);
-                        Station_addItem_oi(it);
-                    }
-                }
-            }
-            isS100 = false;
-            goto fuelTop;
-        } else {
-            isS100 = hereIdx == 100;
-            if ((unsigned) (hereIdx - 100) < 2 || hereIdx == 10) {
-            fuelTop:
-                int amt;
-                int cargo = (int) (intptr_t) ((Ship *) (long) Status_getShip_oi())->getCargo();
-                amt = (cargo == 0) ? 0 : Item_getAmount_oi();
-                if (amt < 6 && Station_hasItem_oi(Status_getStation_oi()) == 0) {
-                    Item *it = (Item *) Status_getStation_oi();
-                    Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) *(int *) &Globals::items)[(0x1e8) / 4]);
-                    Station_addItem_oi(it);
-                }
-            }
-        }
-
-        Station *st10 = (Station *) Status_getStation_oi();
-        if (st10->getIndex() == 10 && Achievements_gotAllGoldMedals_oi() != 0) {
-            Status_getStation_oi();
-            Array<Ship *> *ships = (Array<Ship *> *) (intptr_t) Station_getShips_oi();
-            bool needNew = ships == 0;
-            if (ships != 0) {
-                unsigned i = 0;
-                bool found = false;
-                while (i < ships->size()) {
-                    if (Ship_getIndex_oi() == 8) {
-                        found = true;
-                        break;
-                    }
-                    i = i + 1;
-                }
-                needNew = !found;
-            }
-            if (needNew) {
-                Generator *g = (Generator *) ::operator new(1);
-                Generator_ctor_oi(g);
-                Station *station = (Station *) (intptr_t) Status_getStation_oi();
-                Status_getStation_oi();
-                int list = Generator_getShipBuyList_oi((Station *) g);
-                Station_setShips_oi(station, list);
-                Generator_dtor_oi(g);
-                ::operator delete(g);
-            }
-        }
-
-        if (isS100 &&
-            (Status_dlc1Won_oi() != 0 ||
-             Status_getCurrentCampaignMission_oi() == 0x50 ||
-             Status_getCurrentCampaignMission_oi() == 0x51 ||
-             Status_getCurrentCampaignMission_oi() == 0x52 ||
-             Status_getCurrentCampaignMission_oi() == 0x53 ||
-             Status_getCurrentCampaignMission_oi() == 0x54)) {
-            Ship *st = (Ship *) Status_getStation_oi();
-            if (Station_hasShip_oi((Station *) st) != 0) {
-                Array<Ship *> *ships = (Array<Ship *> *) (intptr_t) Station_getShips_oi();
-                unsigned i = 0;
-                while (i < ships->size() && Ship_getIndex_oi() != 0x25) i = i + 1;
-                Station_removeShip_oi(st);
-            }
-            if (Station_hasShip_oi((Station *) st) == 0) {
-                Ship_makeShip_oi((*(Array<int> *) (intptr_t) *(int *) &Globals::ships)[(0x98) / 4]);
-                Station_addShip_oi(st);
-            }
-            if (Station_hasShip_oi((Station *) st) == 0) {
-                Ship_makeShip_oi((*(Array<int> *) (intptr_t) *(int *) &Globals::ships)[(0xa0) / 4]);
-                Station_addShip_oi(st);
-            }
-        }
-
-        Station *st6c = (Station *) Status_getStation_oi();
-        bool atReward = st6c->getIndex() == 0x6c;
-        int rewardState = atReward ? ((Status *) (intptr_t) *(int *) &Globals::status)->field_114 : 0;
-        if (atReward && rewardState == 1) {
-            if (this->dialogueWindow != 0) {
-            }
-            this->dialogueWindow = 0;
-            ChoiceWindow_set1_oiImpl(this->choiceWindow, GameText_getText_oiImpl(0x6c));
-            this->flag_0x6d = 1;
-        } else {
-            Station *st = (Station *) Status_getStation_oi();
-            if (st->getIndex() == 0x6c && ((Status *) (intptr_t) *(int *) &Globals::status)->field_114 == 2) {
-                if (Status_getCredits_oi() < 100000 ||
-                    Ship_hasCargo_oi(Status_getShip_oi(), 0x6d) == 0) {
-                    ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
-                } else {
-                    ChoiceWindow_set_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText), 1);
-                    this->flag_0x6c = 1;
-                }
-                this->flag_0x63 = 1;
-            }
-        }
-
-        if (Status_getFreelanceMission_oi() != 0 && Mission_getType_oi() == 0xe) {
-            Station *st = (Station *) Status_getStation_oi();
-            if (Mission_getTargetStation_oi() == st->getIndex() &&
-                Station_hasItem_oi(Status_getStation_oi()) == 0) {
-                Item_makeItemDesc_oi((*(Array<int> *) (intptr_t) *(int *) &Globals::items)[(0x1cc) / 4]);
-                Item *it = (Item *) Status_getStation_oi();
-                Station_addItem_oi(it);
-            }
-        }
-
-        SettingsBlock *settings = (SettingsBlock *) (intptr_t) (int) (intptr_t) Globals::options;
-        int rec = *(int *) &Globals::gameText;
-        (void) rec;
-        if (Status_getCurrentCampaignMission_oi() == 0xa2 && (unsigned char) settings->wantedActivatedShown == 0) {
-            ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
-            this->flag_0x63 = 1;
-            settings->wantedActivatedShown = 1;
-        }
-        SettingsBlock *settings2 = (SettingsBlock *) (intptr_t) (int) (intptr_t) Globals::options;
-        if (Status_gameWon_oi() != 0 && ((Status *) (intptr_t) *(int *) &Globals::status)->byte_0x35 == 0 &&
-            settings->gameWonShown == 0) {
-            ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
-            this->flag_0x63 = 1;
-            settings->gameWonShown = 1;
-        }
-        if (Status_dlc1Won_oi() != 0 && ((Status *) (intptr_t) *(int *) &Globals::status)->byte_0x37 == 0 &&
-            settings->dlc1WonShown == 0) {
-            ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
-            this->flag_0x63 = 1;
-            settings->dlc1WonShown = 1;
-        }
-        (void) settings2;
-
-        int wanted = Status_activateNewWanted_oi();
-        if (wanted > 0 && this->flag_0x63 == 0) {
-            if (wanted == 1)
-                ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
-            else {
-                ChoiceWindow_set1_oiImpl(this->choiceWindow, GameText_getText_oiImpl(0x2c5));
-                this->flag_0x6d = 1;
-            }
-            this->flag_0x63 = 1;
-        }
-        next = 0x14;
-    } else if (state == 0x3c) {
-        this->flag_0x100 = 0;
-        this->camScrollPos = 0;
-        this->field_0xe0 = 0;
-        this->camScrollVel = 0;
-        this->field_0xf4 = 0;
-        this->field_0xf8 = 0;
-        this->field_0xfc = 0;
-        Status_getSystem_oi();
-        int angle = (SolarSystem_getRace_oi() == 2) ? (int) 0xffffff38 : 0x10e;
-        this->camAngle = angle;
-        if (this->cutScene != 0)
-            this->cutScene->cameraRotX = (float) angle / 120.0f;
-        this->field_0xec = 0;
-        this->flag_0xb0 =
-                this->flag_0xb3;
-        NewsTicker_build_oiImpl(this);
-        next = 0x28;
-    } else if (state == 0x50) {
-        this->flag_0x62 = 0;
-        this->flag_0x63 = 0;
-        this->flag_0x64 = 0;
-        this->flag_0x65 = 0;
-        this->flag_0x6e = 0;
-        this->flag_0x6c = 0;
-        this->flag_0x6d = 0;
-        this->flag_0x68 = 0;
-        this->flag_0x69 = 0;
-        this->flag_0x6a = 0;
-        this->flag_0x6b = 0;
-        this->flag_0x66 = 0;
-        this->flag_0x67 = 0;
-        this->flag_0x60 = 0;
-        this->flag_0x61 = 1;
-        this->flag_0xdc = 0;
-        this->flag_0xde = 0;
-        this->flag_0xdf = 0;
-        this->savedPostEffect = 0;
-        this->pendingHangarClose = 0;
-        this->flag_0x63 = 0;
-        DlcMenu_build_oiImpl(this);
-        next = 0x3c;
-    } else if (state == 100) {
-        int *sound = (int *) Globals::sound;
-        reinterpret_cast<Globals *>(*sound)->startNewSoundResourceList();
-        static const int snd[] = {
-            0x5f, 0x7a, 0x6c, 0x60, 0x61, 0x62, 99, 0x65, 100,
-            0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e
-        };
-        for (unsigned i = 0; i < sizeof(snd) / sizeof(snd[0]); i = i + 1)
-            ((Globals *) (*sound))->addSoundResourceToList(snd[i]);
-
-        this->introCountdown = 0x32;
-        int *st = (int *) Globals::status;
-        this->flag_0x101 = 1;
-        Status_getStation_oi();
-        Station_getName_oi();
-
-        Status *stRec = (Status *) (intptr_t) * st;
-        long long enterTime = (long long) (uint32_t) stRec->field_70 |
-                              ((long long) stRec->field_74 << 32);
-        long long now = (long long) (unsigned) Status_getPlayingTime_lo_oi();
-        if (now - enterTime >= 0x7531) {
-            Station *here = (Station *) Status_getStation_oi();
-            if (here->getIndex() != 0x6c) {
-                Generator *g = (Generator *) ::operator new(1);
-                Generator_ctor_oi(g);
-                Status_getStation_oi();
-                Generator_computerTradeGoods_oi(g, (Station *) g);
-            }
-        }
-        next = 0x50;
-    } else {
-        int *sound = (int *) Globals::sound;
-        Globals::sound->play(0x7a, nullptr, nullptr, 0.0f);
-        FModSound_enableReverb_oi(*sound);
-        FModSound_setDownPitch_oi(*sound);
-
-        int *music = g_oi_musicId;
-        if (*music != -1)
-            Globals::globals->playMusicAndFadeOutCurrent(*(int *) &Globals::sound);
-        *music = -1;
-        this->stationActive = 1;
-        this->state = 100;
-
-        Array<TouchButton *> *btns = (Array<TouchButton *> *) (intptr_t) this->buttonRow;
-        if (btns != 0) {
-            for (unsigned i = 0; i < btns->size(); i = i + 1) {
-                (void) i;
-            }
-        }
-        return this->state;
     }
-
-    this->state = next;
-    return next;
+    return this->state;
 }
 
 static int *g_dlc_stack = 0;
