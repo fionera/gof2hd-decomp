@@ -116,8 +116,8 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     this->pitch = 0.0f;
     this->field_0x190 = 0;
 
-    this->mode = 0;
     this->hitRadius = Globals::layout->field_0x88;
+    this->mode = 0;
     this->selectedSystem = -1;
     this->starSystemRoot = (AEGeometry *) 0;
     this->stations = (Array<Station *> *) 0;
@@ -152,13 +152,14 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
         }
         (*this->systemGeoms)[i] = new AEGeometry((uint16_t) image, Globals::Canvas, false);
 
-        float scale;
         if ((*this->systems)[i]->getTextureIndex() == 15 && Globals::status->getCurrentCampaignMission() <= 157) {
-            scale = Globals::status->getCurrentCampaignMission() > 105 ? 0.025f : 0.018f;
+            if (Globals::status->getCurrentCampaignMission() <= 105)
+                (*this->systemGeoms)[i]->setScaling(0.018f, 0.018f, 0.018f);
+            else
+                (*this->systemGeoms)[i]->setScaling(0.025f, 0.025f, 0.025f);
         } else {
-            scale = 0.012f;
+            (*this->systemGeoms)[i]->setScaling(0.012f, 0.012f, 0.012f);
         }
-        (*this->systemGeoms)[i]->setScaling(scale, scale, scale);
 
         (*this->systemGeoms)[i]->setPosition(
                 (float) ((int) ((float) (100 - (*this->systems)[i]->getX()) / 100.0f * 14000.0f) - 10000),
@@ -169,8 +170,8 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     }
 
     Globals::rnd->reset();
-    this->markerGeom = (AEGeometry *) 0;
     this->choiceVisible = 0;
+    this->markerGeom = (AEGeometry *) 0;
     if (Globals::status->getCurrentCampaignMission() > 31 && Globals::status->field_7c >= 0) {
         this->markerGeom = new AEGeometry((uint16_t) 0x4262, Globals::Canvas, false);
         this->markerGeom->setPosition((*this->systemGeoms)[Globals::status->field_7c]->getPosition());
@@ -1316,25 +1317,25 @@ static inline float absf_local(float v) {
     return v > 0.0f ? v : -v;
 }
 
-uint32_t StarMap::OnTouchBegin(int x, int y) {
+bool StarMap::OnTouchBegin(int x, int y) {
     if (this->choiceVisible != 0) {
         this->choiceWindow->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
     if (this->transitionIn != 0 || this->transitionOut != 0) {
-        return 0;
+        return false;
     }
 
     Globals::layout->OnTouchBegin(x, y);
     if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) || this->stationCenterAnim != 0) {
-        return 0;
+        return false;
     }
     this->backButton->OnTouchBegin(x, y);
     if (Globals::layout->field_0xc_leftMargin >= y || y >= Globals::h - Globals::layout->field_0x10_rightMargin) {
-        return 0;
+        return false;
     }
     if (this->autoMode != 0 && this->autoTimer < 4000) {
-        return 0;
+        return false;
     }
 
     Globals::sound->stop(0x66);
@@ -1387,7 +1388,7 @@ uint32_t StarMap::OnTouchBegin(int x, int y) {
                 if (Globals::status->hardCoreMode()) {
                     this->jumpCost <<= 1;
                 }
-                return 0;
+                return false;
             }
         }
     } else if (this->mode == 3) {
@@ -1397,28 +1398,28 @@ uint32_t StarMap::OnTouchBegin(int x, int y) {
                 absf_local(this->scratchVector.y - fy) < (float) this->hitRadius) {
                 this->selectedStation = i;
                 Globals::sound->play(0x68, 0, 0, 0.0f);
-                return 0;
+                return false;
             }
         }
     }
-    return 0;
+    return false;
 }
 
-int StarMap::OnTouchMove(int x, int y) {
+bool StarMap::OnTouchMove(int x, int y) {
     if (this->choiceVisible != 0) {
         this->choiceWindow->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
     if (this->transitionIn != 0 || this->transitionOut != 0) {
-        return 0;
+        return false;
     }
     Globals::layout->OnTouchMove(x, y);
     if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) || this->stationCenterAnim != 0) {
-        return 0;
+        return false;
     }
     this->backButton->OnTouchMove(x, y);
     if (this->dragging == 0) {
-        return 0;
+        return false;
     }
 
     float fx = (float) x;
@@ -1436,7 +1437,7 @@ int StarMap::OnTouchMove(int x, int y) {
     if (this->mode == 0) {
         // Galaxy map: pan the camera.
         float speed = absf_local(dx + dy);
-        if (speed >= 10.0f) {
+        if (!(speed < 10.0f)) {
             speed = 10.0f;
         }
         this->panX = (int) (dx + (float) this->panX);
@@ -1446,15 +1447,15 @@ int StarMap::OnTouchMove(int x, int y) {
             this->spin = 0.0f;
         }
         if (absf_local(this->touchStartX - fx) > 3.0f || absf_local(this->touchStartY - fy) > 3.0f) {
-            this->lastSelectedSystem = -1;
             this->selectedSystem = -1;
+            this->lastSelectedSystem = -1;
             this->jumpCost = 0;
         }
         PaintCanvas *canvas = Globals::Canvas;
         Matrix local = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
         canvas = Globals::Canvas;
         canvas->CameraSetLocal(canvas->CameraGetCurrent(), local);
-        return 0;
+        return false;
     }
 
     // Star system view: rotate the system (angles in 1/65536 turns).
@@ -1465,11 +1466,7 @@ int StarMap::OnTouchMove(int x, int y) {
     float rotY = dx * 50.0f;
     float rotX = dy * -50.0f;
     float pitch = rotX + this->pitch;
-    if (pitch > 8192.0f) {
-        pitch = 8192.0f;
-    } else if (pitch < -8192.0f) {
-        pitch = -8192.0f;
-    }
+    pitch = pitch > 8192.0f ? 8192.0f : (pitch > -8192.0f ? pitch : -8192.0f);
     float yaw = (float) ((int) (rotY + this->yaw) % 65536);
     this->touchDeltaX = rotY;
     this->touchDeltaY = rotX;
@@ -1478,7 +1475,7 @@ int StarMap::OnTouchMove(int x, int y) {
     this->yaw = yaw;
     this->pitch = pitch;
     this->starSystemRoot->setRotation(pitch / 65536.0f * 6.28318548f, yaw / 65536.0f * 6.28318548f, -0.0981747732f);
-    return 0;
+    return false;
 }
 
 static inline float absf_end(float v) {
@@ -1490,23 +1487,23 @@ static const int StarMap_shipRaces[64] = {
         3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0, 2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
         8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3, 3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
 
-int StarMap::OnTouchEnd(int x, int y) {
+bool StarMap::OnTouchEnd(int x, int y) {
     if (this->choiceVisible != 0) {
         int answer = this->choiceWindow->OnTouchEnd(x, y);
         if (answer == 1) {
             this->choiceVisible = 0;
             this->alienJumpPending = 0;
-            return 0;
+            return false;
         }
         if (answer != 0) {
-            return 0;
+            return false;
         }
         this->choiceVisible = 0;
         if (this->suppressNextClose != 0 ||
             (this->mode == 3 && (*this->stations)[this->selectedStation]->getIndex() ==
                                 Globals::status->getStation()->getIndex())) {
             this->suppressNextClose = 0;
-            return 0;
+            return false;
         }
         if (this->alienJumpPending != 0 && this->mode == 0 && this->pad_0xa8_a == 0 && this->autoMode == 0) {
             // Confirmed jump into the alien world.
@@ -1516,28 +1513,28 @@ int StarMap::OnTouchEnd(int x, int y) {
             Level::doInstantJump = 1;
             Level::energyCellsForNextJump = this->jumpCost;
             Globals::Canvas->CameraSetCurrent(this->prevCamera);
-            return 1;
+            return true;
         }
         if (this->pad_0xa8_a != 0 || this->mode != 3) {
-            return 0;
+            return false;
         }
         if (this->jumpMapModeB != 0 && this->cargoAmount < this->jumpCost) {
             if (this->jumpCost != 1) {
-                return 0;
+                return false;
             }
             if (this->jumpMapModeA == 0) {
                 this->depart(false);
-                return 0;
+                return false;
             }
             Level::doInstantJump = 0;
             Level::programmedStation = (*this->stations)[this->selectedStation];
             this->exitRequested = 1;
             Globals::Canvas->CameraSetCurrent(this->prevCamera);
-            return 1;
+            return true;
         }
         if (this->jumpMapModeA == 0) {
             this->depart(true);
-            return 0;
+            return false;
         }
         Level::programmedStation = (*this->stations)[this->selectedStation];
         if (this->jumpMapModeB == 0) {
@@ -1552,11 +1549,11 @@ int StarMap::OnTouchEnd(int x, int y) {
         }
         this->exitRequested = 1;
         Globals::Canvas->CameraSetCurrent(this->prevCamera);
-        return 1;
+        return true;
     }
 
     if (this->transitionIn != 0 || this->transitionOut != 0) {
-        return 0;
+        return false;
     }
 
     if (Globals::layout->choiceWindowOpen == 0 && Globals::layout->OnTouchEnd(x, y) != 0) {
@@ -1570,15 +1567,15 @@ int StarMap::OnTouchEnd(int x, int y) {
             this->easeY->SetRange(this->easeY->GetMaxValue(), this->easeY->GetMinValue());
             this->easeZ->SetRange(this->easeZ->GetMaxValue(), this->easeZ->GetMinValue());
             Globals::sound->play(0x6b, 0, 0, 0.0f);
-            return 0;
+            return false;
         }
         Globals::Canvas->CameraSetCurrent(this->prevCamera);
         Globals::sound->stop(0x66);
-        return 1;
+        return true;
     }
 
     if (this->pad_0xa8_a != 0 && this->pathAnim != 0) {
-        return 0;
+        return false;
     }
     if (this->backButton->OnTouchEnd(x, y)) {
         this->showKey = this->showKey ^ 1;
@@ -1601,14 +1598,14 @@ int StarMap::OnTouchEnd(int x, int y) {
                                  ->systemIsInSystemRoutes((*this->systems)[this->selectedSystem]->getIndex())) {
                         this->choiceWindow->set(*Globals::gameText->getText(420), false);
                         this->choiceVisible = 1;
-                        return 0;
+                        return false;
                     }
                     if (this->jumpMapModeB != 0 && Globals::status->getShip()->hasVolatileGoods() &&
                         !((SolarSystem *) Globals::status->getSystem())
                                  ->systemIsInSystemRoutes((*this->systems)[this->selectedSystem]->getIndex())) {
                         this->choiceWindow->set(*Globals::gameText->getText(612), false);
                         this->choiceVisible = 1;
-                        return 0;
+                        return false;
                     }
                     // Zoom into the selected system.
                     Globals::sound->play(0x6a, 0, 0, 0.0f);
@@ -1625,7 +1622,7 @@ int StarMap::OnTouchEnd(int x, int y) {
                     this->momentumFactor = 0.0f;
                     this->velocityX = 0.0f;
                     this->velocityY = 0.0f;
-                    return 0;
+                    return false;
                 }
             }
         } else {
@@ -1712,5 +1709,5 @@ int StarMap::OnTouchEnd(int x, int y) {
     if (Globals::layout->helpPressed()) {
         Globals::layout->initHelpWindow(String(*Globals::gameText->getText(this->mode == 0 ? 628 : 631), false));
     }
-    return 0;
+    return false;
 }

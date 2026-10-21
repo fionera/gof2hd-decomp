@@ -25,7 +25,7 @@ void PlayerStaticFar::setYRotation(int /*yRotation*/) {
 }
 
 void PlayerStaticFar::render() {
-    this->KIPlayer::render();
+    this->PlayerStatic::render();
 }
 
 void PlayerStaticFar::update(int /*delta*/) {
@@ -35,7 +35,10 @@ void PlayerStaticFar::update(int /*delta*/) {
     PaintCanvas *canvas = Globals::Canvas;
     this->cameraPosition() = MatrixGetPosition(
         *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
-    this->objectPosition() = {(float) this->positionX, (float) this->positionY, (float) this->positionZ};
+    float x = (float) this->positionX;
+    float y = (float) this->positionY;
+    float z = (float) this->positionZ;
+    this->objectPosition() = {x, y, z};
     this->viewDirection = this->objectPosition() - this->cameraPosition();
 
     // Far objects are projected onto a sphere of radius 295000 around the camera and scaled down

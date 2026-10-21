@@ -120,26 +120,26 @@ void Layout::drawFooter() {
     this->drawFooter(false, true);
 }
 
-int Layout::OnTouchMove(int x, int y) {
+bool Layout::OnTouchMove(int x, int y) {
     if (this->helpButtonEnabled != 0)
         this->helpButton->OnTouchMove(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0) {
         this->choiceWindow->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
     if (this->backButton->isVisible() != 0)
-        return static_cast<int>(this->backButton->OnTouchMove(x, y));
-    return static_cast<int>(this->secondaryButton->OnTouchMove(x, y));
+        return this->backButton->OnTouchMove(x, y);
+    return this->secondaryButton->OnTouchMove(x, y);
 }
 
-int Layout::OnTouchEnd(int x, int y) {
+bool Layout::OnTouchEnd(int x, int y) {
     if (this->choiceWindowOpen == 0 && this->helpButtonEnabled != 0)
         this->helpPressedFlag = this->helpButton->OnTouchEnd(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0)
         return this->choiceWindow->OnTouchEnd(x, y) == 0;
     if (this->backButton->isVisible() != 0)
-        return static_cast<int>(this->backButton->OnTouchEnd(x, y));
-    return static_cast<int>(this->secondaryButton->OnTouchEnd(x, y));
+        return this->backButton->OnTouchEnd(x, y);
+    return this->secondaryButton->OnTouchEnd(x, y);
 }
 
 void Layout::startFade(bool fadeOut, int color, int duration) {
@@ -540,9 +540,11 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     int iw = Globals::Canvas->GetImage2DWidth(img);
     int cols = w / iw;
     int fullW = cols * iw;
+    int remW = w - fullW;
     int ih = Globals::Canvas->GetImage2DHeight(img);
     int rows = h / ih;
     int fullH = rows * ih;
+    int remH = h - fullH;
 
     for (int r = 0; r < rows; r++) {
         int px = x;
@@ -552,8 +554,6 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
         }
     }
 
-    int remH = h - fullH;
-    int remW = w - fullW;
     if (remW > 0) {
         int py = y;
         for (int r = 0; r < rows; r++) {
@@ -639,6 +639,10 @@ void Layout::showMissionRewardMessage(int show, bool flag) {
 }
 
 
+void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h) {
+    this->drawBGBorder(corner, edge, x, y, w, h, 0, 0);
+}
+
 void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
     int cornerW = Globals::Canvas->GetImage2DWidth(corner);
     int cornerH = Globals::Canvas->GetImage2DHeight(corner);
@@ -658,13 +662,11 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     int cols = spanW / edgeW;
     int topY = pad + y;
     int bottomEdgeY = h - inset + topY;
-    int edgeX = cornerW + pad + x;
-    for (int i = 0; i < cols; i++) {
-        Globals::Canvas->DrawImage2D(edge, edgeX, topY);
-        Globals::Canvas->DrawImage2D(edge, edgeX, bottomEdgeY, 2);
-        edgeX += edgeW;
-    }
     int remW = spanW - cols * edgeW;
+    for (int i = 0; i < cols; i++) {
+        Globals::Canvas->DrawImage2D(edge, cornerW + pad + x + i * edgeW, topY);
+        Globals::Canvas->DrawImage2D(edge, cornerW + pad + x + i * edgeW, bottomEdgeY, 2);
+    }
     if (remW > 0) {
         Globals::Canvas->DrawRegion2D(edge, 0, 0, remW, edgeH, 0.0f, 0, 0, cols * edgeW + (pad + x + cornerW), topY);
         Globals::Canvas->DrawRegion2D(edge, 0, 0, remW, edgeH, 3.14159274f, 0, 0, spanW + (pad + x + cornerW),
@@ -674,19 +676,19 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     // Left and right edges (the edge image rotated by -90/+90 degrees).
     int spanH = h - cornerH * 2 - inset * 2;
     int rows = spanH / edgeW;
-    int rightEdgeX = w + x + pad;
     int edgeTop = pad + y + cornerH;
-    int edgeY = cornerH + pad + y;
-    for (int i = 0; i < rows; i++) {
-        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, -1.57079637f, 0, 0, pad + x, edgeW + edgeY);
-        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, 1.57079637f, 0, 0, rightEdgeX, edgeY);
-        edgeY += rows * edgeW;
-    }
     int remH = spanH - rows * edgeW;
+    for (int i = 0; i < rows; i++) {
+        // Note: the original steps by rows * edgeW per tile, not edgeW.
+        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, -1.57079637f, 0, 0, pad + x,
+                                      edgeW + cornerH + pad + y + i * rows * edgeW);
+        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, 1.57079637f, 0, 0, w + x + pad,
+                                      cornerH + pad + y + i * rows * edgeW);
+    }
     if (remH > 0) {
         Globals::Canvas->DrawRegion2D(edge, 0, 0, remH, edgeH, -1.57079637f, 0, 0, pad + x, spanH + edgeTop);
-        Globals::Canvas->DrawRegion2D(edge, 0, 0, remH, edgeH, 1.57079637f, 0, 0, rightEdgeX - inset * 2,
-                                      edgeTop + rows * edgeW);
+        Globals::Canvas->DrawRegion2D(edge, 0, 0, remH, edgeH, 1.57079637f, 0, 0, w + x + pad - inset * 2,
+                                      cornerH + pad + y + rows * edgeW);
     }
 }
 
@@ -760,22 +762,6 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
     unsigned int savedColor = Globals::Canvas->GetColor();
     Globals::Canvas->SetColor(this->drawColor);
     switch (style) {
-    case 0: {
-            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x348);
-            Globals::Canvas->DrawImage2D(this->field_0x348, x, y);
-            this->drawBGPattern(this->field_0x34c, capW + x, y, w - capW * 2, h);
-            Globals::Canvas->DrawImage2D(this->field_0x348, w + x - capW, y, 1);
-            if (text.size() == 0)
-                break;
-            int textX = Globals::layout->field_0x44;
-            if (flags & 2)
-                textX = w - textX - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
-            else if (flags & 4)
-                textX = w / 2 - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, textX + x, y + (Globals::layout->field_0x1c >> 1) + 1 - this->textBaselineAdjust,
-                                        false);
-            break;
-    }
     case 1: {
             int capW = Globals::Canvas->GetImage2DWidth(this->field_0x350);
             Globals::Canvas->DrawImage2D(this->field_0x350, x, y);
@@ -789,6 +775,22 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             else if (flags & 4)
                 textX = w / 2 - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, textX + x, y + (Globals::layout->field_0x5c >> 1) + 1 - this->textBaselineAdjust,
+                                        false);
+            break;
+    }
+    case 0: {
+            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x348);
+            Globals::Canvas->DrawImage2D(this->field_0x348, x, y);
+            this->drawBGPattern(this->field_0x34c, capW + x, y, w - capW * 2, h);
+            Globals::Canvas->DrawImage2D(this->field_0x348, w + x - capW, y, 1);
+            if (text.size() == 0)
+                break;
+            int textX = Globals::layout->field_0x44;
+            if (flags & 2)
+                textX = w - textX - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+            else if (flags & 4)
+                textX = w / 2 - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, textX + x, y + (Globals::layout->field_0x1c >> 1) + 1 - this->textBaselineAdjust,
                                         false);
             break;
     }
@@ -950,60 +952,85 @@ void Layout::reload() {
     this->bgPatternImage = -1;
     this->headerPatternImage = -1;
     this->headerIconImage = -1;
+    this->footerImageLeft = -1;
+    this->footerFillImage = -1;
+    this->footerImageRight = -1;
+    this->field_0x340 = -1;
+    this->footerPatternImage = -1;
+    this->field_0x348 = -1;
+    this->field_0x34c = -1;
+    this->scrollBarImage = -1;
+    this->scrollBarFillImage = -1;
+    this->field_0x37c = -1;
+    this->tipBoxImage = -1;
     this->field_0x3a8 = -1;
+    this->field_0x354 = -1;
+    this->field_0x350 = -1;
+    this->field_0x36c = -1;
+    this->field_0x35c = -1;
+    this->field_0x368 = -1;
+    this->field_0x364 = -1;
+    this->field_0x358 = -1;
+    this->field_0x360 = -1;
+    this->field_0x370 = -1;
+    this->field_0x384 = -1;
+    this->field_0x380 = -1;
+    this->field_0x38c = -1;
+    this->field_0x388 = -1;
+    this->field_0x394 = -1;
+    this->field_0x390 = -1;
+    this->field_0x3a0 = -1;
+    this->field_0x39c = -1;
 
-    memset(&this->footerImageLeft, 0xff, 0x70);
-
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->Image2DCreate(static_cast<unsigned short>(0x503), reinterpret_cast<unsigned int &>(this->tipBoxImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47e), reinterpret_cast<unsigned int &>(this->bgPatternImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x4ff),
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x503), reinterpret_cast<unsigned int &>(this->tipBoxImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47e), reinterpret_cast<unsigned int &>(this->bgPatternImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x4ff),
                           reinterpret_cast<unsigned int &>(this->headerPatternImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x500), reinterpret_cast<unsigned int &>(this->headerCapImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x474), reinterpret_cast<unsigned int &>(this->headerIconImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x502), reinterpret_cast<unsigned int &>(this->footerImageLeft));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x506), reinterpret_cast<unsigned int &>(this->field_0x340));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x501), reinterpret_cast<unsigned int &>(this->footerFillImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x507),
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x500), reinterpret_cast<unsigned int &>(this->headerCapImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x474), reinterpret_cast<unsigned int &>(this->headerIconImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x502), reinterpret_cast<unsigned int &>(this->footerImageLeft));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x506), reinterpret_cast<unsigned int &>(this->field_0x340));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x501), reinterpret_cast<unsigned int &>(this->footerFillImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x507),
                           reinterpret_cast<unsigned int &>(this->footerPatternImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x4fe), reinterpret_cast<unsigned int &>(this->footerImageRight));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x482), reinterpret_cast<unsigned int &>(this->field_0x348));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x481), reinterpret_cast<unsigned int &>(this->field_0x34c));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x486),
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x4fe), reinterpret_cast<unsigned int &>(this->footerImageRight));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x482), reinterpret_cast<unsigned int &>(this->field_0x348));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x481), reinterpret_cast<unsigned int &>(this->field_0x34c));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x486),
                           reinterpret_cast<unsigned int &>(this->scrollBarFillImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x487), reinterpret_cast<unsigned int &>(this->scrollBarImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x48b), reinterpret_cast<unsigned int &>(this->field_0x37c));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x52d), reinterpret_cast<unsigned int &>(this->rewardIconImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x487), reinterpret_cast<unsigned int &>(this->scrollBarImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x48b), reinterpret_cast<unsigned int &>(this->field_0x37c));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x52d), reinterpret_cast<unsigned int &>(this->rewardIconImage));
 
     if (Globals::iPad == 0) {
-        canvas->Image2DCreate(static_cast<unsigned short>(0x480), reinterpret_cast<unsigned int &>(this->field_0x350));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x47f), reinterpret_cast<unsigned int &>(this->field_0x354));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x479), reinterpret_cast<unsigned int &>(this->field_0x358));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x478), reinterpret_cast<unsigned int &>(this->field_0x35c));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x489), reinterpret_cast<unsigned int &>(this->field_0x36c));
-        (Globals::Canvas)->Image2DCreate(static_cast<unsigned short>(0x488),
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x480), reinterpret_cast<unsigned int &>(this->field_0x350));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47f), reinterpret_cast<unsigned int &>(this->field_0x354));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x479), reinterpret_cast<unsigned int &>(this->field_0x358));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x478), reinterpret_cast<unsigned int &>(this->field_0x35c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x489), reinterpret_cast<unsigned int &>(this->field_0x36c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x488),
                                      reinterpret_cast<unsigned int &>(this->field_0x370));
     } else {
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6bb), reinterpret_cast<unsigned int &>(this->field_0x350));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6ba), reinterpret_cast<unsigned int &>(this->field_0x354));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6b9), reinterpret_cast<unsigned int &>(this->field_0x358));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6b8), reinterpret_cast<unsigned int &>(this->field_0x35c));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6b7), reinterpret_cast<unsigned int &>(this->field_0x36c));
-        (Globals::Canvas)->Image2DCreate(static_cast<unsigned short>(0x6bc),
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6bb), reinterpret_cast<unsigned int &>(this->field_0x350));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6ba), reinterpret_cast<unsigned int &>(this->field_0x354));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6b9), reinterpret_cast<unsigned int &>(this->field_0x358));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6b8), reinterpret_cast<unsigned int &>(this->field_0x35c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6b7), reinterpret_cast<unsigned int &>(this->field_0x36c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6bc),
                                      reinterpret_cast<unsigned int &>(this->field_0x370));
     }
 
-    canvas->Image2DCreate(static_cast<unsigned short>(0x530), reinterpret_cast<unsigned int &>(this->field_0x360));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x531), reinterpret_cast<unsigned int &>(this->field_0x364));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x52f), reinterpret_cast<unsigned int &>(this->field_0x368));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47c), reinterpret_cast<unsigned int &>(this->field_0x384));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47d), reinterpret_cast<unsigned int &>(this->field_0x380));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47b), reinterpret_cast<unsigned int &>(this->field_0x388));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47a), reinterpret_cast<unsigned int &>(this->field_0x38c));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x484), reinterpret_cast<unsigned int &>(this->field_0x390));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x483), reinterpret_cast<unsigned int &>(this->field_0x394));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x50c), reinterpret_cast<unsigned int &>(this->field_0x3a0));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x50d), reinterpret_cast<unsigned int &>(this->field_0x39c));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x530), reinterpret_cast<unsigned int &>(this->field_0x360));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x531), reinterpret_cast<unsigned int &>(this->field_0x364));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x52f), reinterpret_cast<unsigned int &>(this->field_0x368));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47c), reinterpret_cast<unsigned int &>(this->field_0x384));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47d), reinterpret_cast<unsigned int &>(this->field_0x380));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47b), reinterpret_cast<unsigned int &>(this->field_0x388));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47a), reinterpret_cast<unsigned int &>(this->field_0x38c));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x484), reinterpret_cast<unsigned int &>(this->field_0x390));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x483), reinterpret_cast<unsigned int &>(this->field_0x394));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x50c), reinterpret_cast<unsigned int &>(this->field_0x3a0));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x50d), reinterpret_cast<unsigned int &>(this->field_0x39c));
 
     TouchButton *bBack = new TouchButton(
         *Globals::gameText->getText(0xaa), 2, this->buttonInsetX, Globals::h - 3, 0x21);
@@ -1011,7 +1038,7 @@ void Layout::reload() {
     this->backButtonWidth = bBack->getWidth();
 
     unsigned img535 = 0xffffffff;
-    (Globals::Canvas)->Image2DCreate(0x535, img535);
+    Globals::Canvas->Image2DCreate(0x535, img535);
     TouchButton *b2;
     if (img535 == 0xffffffff) {
         b2 = new TouchButton(*Globals::gameText->getText(0xab), 2, this->buttonInsetX,
@@ -1023,12 +1050,12 @@ void Layout::reload() {
     this->secondaryButton = b2;
 
     unsigned img471 = 0xffffffff;
-    (Globals::Canvas)->Image2DCreate(0x471, img471);
+    Globals::Canvas->Image2DCreate(0x471, img471);
     TouchButton *bHelp =
         new TouchButton(img471, 1, Globals::w, 0, this->field_0x3c, 0x12, 0x04);
     this->helpButton = bHelp;
 
-    int th = (Globals::Canvas)->GetTextHeight(
+    int th = Globals::Canvas->GetTextHeight(
         static_cast<unsigned int>(reinterpret_cast<unsigned long>(Globals::font)));
     this->choiceWindowOpen = 0;
     this->choiceWindow = nullptr;
@@ -1036,8 +1063,8 @@ void Layout::reload() {
     this->textBaselineAdjust = th / 2 - 1;
     this->drawColor = -1;
     this->resetWindowDimensions();
-    this->rewardMessageTimer = 0;
     this->helpButtonEnabled = 0;
+    this->rewardMessageTimer = 0;
     this->field_0x3d8 = 0;
     this->fading = 0;
     this->fadeOut = 0;
@@ -1133,10 +1160,6 @@ void Layout::drawWindow(String title, int x, int y, int w, int h) {
 
 void Layout::drawMask() {
     this->drawMask(0, 0, Globals::w, Globals::h);
-}
-
-void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h) {
-    this->drawBGBorder(corner, edge, x, y, w, h, 0, 0);
 }
 
 void Layout::drawBox(int style, int x, int y, int w, int h, String text) {

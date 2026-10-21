@@ -36,13 +36,13 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
         for (uint32_t v = 0; v < (mesh = this->meshes[i])->vertexCount; v++) {
             if (mesh->vertexFormat & 1) {
                 Vector p = AbyssEngine::AEMath::MatrixTransformVector(
-                        transforms.data()[i], *(Vector *) (mesh->positions + positionOffset));
+                        transforms.data()[i], *(Vector *) ((unsigned char *) mesh->positions + positionOffset));
                 canvas->MeshSetPoint(this->mergedMeshId, (uint16_t) (vertexBase + v), p.x, p.y, p.z);
                 mesh = this->meshes[i];
             }
             if (mesh->vertexFormat & 4) {
                 Vector n = AbyssEngine::AEMath::MatrixRotateVector(
-                        transforms.data()[i], *(Vector *) (mesh->normals + positionOffset));
+                        transforms.data()[i], *(Vector *) ((unsigned char *) mesh->normals + positionOffset));
                 canvas->MeshSetNormal(this->mergedMeshId, (uint16_t) (vertexBase + v), n);
                 mesh = this->meshes[i];
             }

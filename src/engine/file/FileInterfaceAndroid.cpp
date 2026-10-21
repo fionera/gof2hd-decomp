@@ -145,7 +145,7 @@ void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) { //
     return new FileInterfaceAndroid(f, true);
 }
 
-uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
+bool FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
     if (this->zipFile != 0)
         return zip_fread(this->zipFile, buf, n) == n;
     if (this->file != 0)

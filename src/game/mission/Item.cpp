@@ -325,8 +325,12 @@ ItemArray *Item::extractItems(ItemArray *items, bool station) {
     ItemArray *extracted = new ItemArray();
     for (uint32_t i = 0; i < items->size(); i++) {
         Item *item = (*items)[i];
-        if ((station ? item->amount : item->stationAmount) > 0)
-            ArrayAdd(item->makeItem(), *extracted);
+        if (station) {
+            if (item->amount > 0)
+                ArrayAdd(item->makeItem(item->amount), *extracted);
+        } else if (item->stationAmount > 0) {
+            ArrayAdd(item->makeItem(item->stationAmount), *extracted);
+        }
     }
     if (extracted->size() == 0)
         extracted = nullptr;

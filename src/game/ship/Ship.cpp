@@ -82,11 +82,11 @@ void Ship::refreshValue() {
     this->agility = 0;
     this->maxPassengers = 0;
     this->firePower = 0;
-    this->signatureRace = -1;
     this->radarType = 0;
     this->boostSpeed = 0;
     this->boostDelay = 0;
     this->boostTime = 0;
+    this->signatureRace = -1;
     if (Globals::status != nullptr && Globals::status->getStanding() != 0)
         ((Standing *) (intptr_t) Globals::status->getStanding())->setPlayerSignatureRace(-1);
     this->value = this->price;
@@ -141,13 +141,11 @@ void Ship::refreshValue() {
                 this->hasEmergency = 1;
                 break;
             case 28: {
-                float rate = 1.0f - (float) (*this->equipment)[i]->getAttribute(39) / 100.0f;
-                if (rate == -979797952.0f)
-                    rate = 1.0f;
-                this->fireRateFactor = rate;
-                float damage = (float) (*this->equipment)[i]->getAttribute(40) / 100.0f + 1.0f;
-                this->damageFactor = damage;
-                if (damage == -979797952.0f)
+                this->fireRateFactor = 1.0f - (float) (*this->equipment)[i]->getAttribute(39) / 100.0f;
+                if (this->fireRateFactor == -979797952.0f)
+                    this->fireRateFactor = 1.0f;
+                this->damageFactor = (float) (*this->equipment)[i]->getAttribute(40) / 100.0f + 1.0f;
+                if (this->damageFactor == -979797952.0f)
                     this->damageFactor = 1.0f;
                 break;
             }
@@ -446,22 +444,22 @@ void Ship::removeCargo(int index) {
     removeCargo(index, 9999999);
 }
 
-int Ship::removeCargo(int index, int amount) {
+bool Ship::removeCargo(int index, int amount) {
     if (this->cargo == 0) {
-        return 0;
+        return false;
     }
     for (unsigned int i = 0; i < this->cargo->size(); i = i + 1) {
         if (this->cargo->data()[i]->getIndex() == index) {
             this->cargo->data()[i]->changeAmount(-amount);
             if (this->cargo->data()[i]->getAmount() < 1) {
                 setCargo(Item::extractItems(this->cargo, true));
-                return 1;
+                return true;
             }
             break;
         }
     }
     setCargo(this->cargo);
-    return 0;
+    return false;
 }
 
 void Ship::removeAllCargo() {
@@ -514,7 +512,7 @@ void Ship::addCargo(Array<Item *> *items) {
 void Ship::addCargo(Item *item) {
     Array<Item *> *a = new Array<Item *>();
     ArrayAdd<Item *>(item, *a);
-    setCargo(a);
+    addCargo(a);
 }
 
 void Ship::replaceEquipment(Array<Item *> *equipment) {

@@ -60,13 +60,13 @@ int TouchSlider::OnTouchBegin(int x, int y) {
     return inside;
 }
 
-int TouchSlider::OnTouchEnd(int x, int y) {
+bool TouchSlider::OnTouchEnd(int x, int y) {
     if (this->isDisabled != 0)
-        return 0;
+        return false;
 
-    int result;
+    bool result;
     if (this->isDragging == 0) {
-        result = 0;
+        result = false;
     } else {
         int steps = this->numSteps;
         if (steps > 0) {
@@ -87,7 +87,7 @@ int TouchSlider::OnTouchEnd(int x, int y) {
             }
             setValue(snappedValue);
         }
-        result = 1;
+        result = true;
     }
     this->isDragging = 0;
     return result;

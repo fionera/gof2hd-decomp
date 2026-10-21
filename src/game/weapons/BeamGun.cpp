@@ -52,10 +52,10 @@ BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
     uint16_t primaryMesh = (uint16_t) (kind + 0x3795);
     if (meshKind == 0xe4)
         primaryMesh = 0x4a92;
-    this->primaryGeometry = new AEGeometry(primaryMesh, Globals::Canvas, false);
-
     AEGeometry *secondary = nullptr;
     int mesh;
+    this->primaryGeometry = new AEGeometry(primaryMesh, Globals::Canvas, false);
+
     if (!gun->isPlayerGun() || (mesh = kSecondaryMeshes[gun->itemIndex]) < 0) {
         this->hasSecondary = 0;
     } else {
@@ -63,8 +63,8 @@ BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
         if (this->hasSecondary)
             secondary = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
     }
-    this->secondaryVisible = 0;
     this->secondaryGeometry = secondary;
+    this->secondaryVisible = 0;
 }
 
 BeamGun::~BeamGun() {
@@ -110,9 +110,9 @@ void BeamGun::update(int elapsed) {
 
     Vector position = this->level->getPlayer()->getPosition();
     if (this->gun->offset != Vector{0.0f, 0.0f, 0.0f}) {
-        Matrix rotation = this->level->getPlayer()->geometry->getMatrix() *
-                          this->level->getPlayer()->field_0x4->getMatrix();
-        position += AbyssEngine::AEMath::MatrixRotateVector(rotation, this->gun->offset + Vector{0.0f, 0.0f, -100.0f});
+        position += AbyssEngine::AEMath::MatrixRotateVector(
+                this->level->getPlayer()->geometry->getMatrix() * this->level->getPlayer()->field_0x4->getMatrix(),
+                this->gun->offset + Vector{0.0f, 0.0f, -100.0f});
     }
     this->primaryGeometry->setPosition(position);
     this->primaryGeometry->setVisible(true);

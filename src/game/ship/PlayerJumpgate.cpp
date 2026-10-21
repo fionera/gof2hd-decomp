@@ -14,8 +14,9 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
     this->setVisible(visible);
 
     if (visible) {
-        this->boundingVolumes = new Array<BoundingVolume *>();
-        ArraySetLength(1, *(this->boundingVolumes));
+        Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
+        this->boundingVolumes = volumes;
+        ArraySetLength(1, *volumes);
 
         int radius;
         if (Globals::status->inAlienOrbit()) {

@@ -22,7 +22,7 @@ public:
 
     // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
-    virtual uint32_t Read(uint32_t bytes, void *buffer) = 0; // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
+    virtual bool Read(uint32_t bytes, void *buffer) = 0; // lint: void_ptr (exported virtual; opaque file handle return, ABI-mandated)
 
     // lint: void_ptr (exported virtual; raw buffer param, ABI-mandated)
 

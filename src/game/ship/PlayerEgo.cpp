@@ -892,9 +892,8 @@ void PlayerEgo::shoot(int weapon, int type) {
     }
 }
 
-unsigned char PlayerEgo::hasAutoTurret() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->autoTurretEquipped);
+bool PlayerEgo::hasAutoTurret() {
+    return this->autoTurretEquipped;
 }
 
 void PlayerEgo::setAutoTurret(bool on) {
@@ -1057,7 +1056,7 @@ void PlayerEgo::addGun(Array<Gun *> *arr, int x) {
 }
 
 int PlayerEgo::getHullDamageRate() {
-    return ((Player *) this->player)->getArmorDamageRate();
+    return ((Player *) this->player)->getDamageRate();
 }
 
 int PlayerEgo::getShieldDamageRate() {
@@ -1676,10 +1675,10 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             this->player->flShake += (float) dt * 0.001f * shake;
         }
         if (this->level->field_a4 != nullptr) {
-            ParticleSettings &settings = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur);
+            ParticleSettings &settings = ParticleSettingsRef::cur;
             for (unsigned int i = 0; i < this->level->field_a4->size(); i++) {
                 float scale = (*this->level->field_a4)[i]->getScaling().x;
-                reinterpret_cast<float &>(settings.sets[29 + i].lifeBase) =
+                settings.sets[29 + i].lifeBase =
                     scale * 250.0f * (this->getBoostPercentage() * 0.5f + 1.0f);
             }
         }
@@ -2216,9 +2215,9 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         ParticleSettings::Interpolate((ParticleSettings::ParticleSet) 4, (ParticleSettings::ParticleSet) 6,
                                       this->getBoostPercentage(), (ParticleSettings::ParticleSet) 4);
     } else {
-        ParticleSettings &current = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur);
+        ParticleSettings &current = ParticleSettingsRef::cur;
         uint32_t color = current.sets[4].color0;
-        current.sets[4] = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::init).sets[4];
+        current.sets[4] = ParticleSettingsRef::init.sets[4];
         current.sets[4].color0 = color;
     }
 

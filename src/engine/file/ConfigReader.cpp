@@ -111,11 +111,8 @@ namespace AbyssEngine {
         String line;
         char c = 0;
         while (line.length == 0) {
-            uint32_t read;
-            while (true) {
-                read = AEFile::Read(c, this->file_handle);
-                if (!read || c == '\n')
-                    break;
+            bool read;
+            while ((read = AEFile::Read(c, this->file_handle)) && c != '\n') {
                 if (c != '\r')
                     line += c;
             }

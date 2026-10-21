@@ -71,6 +71,9 @@ set(GOF2_NDK_LIBCXXABI_SRC "${_root}/sources/cxx-stl/llvm-libc++abi/src"        
 # ndk-build does: the helpers libfmodex.so re-exports (__aeabi_idiv, _Unwind_*, ...) bind to it
 # dynamically; only what it lacks (__aeabi_ldivmod) is pulled from here.
 set(GOF2_NDK_LIBGCC_A "${_gcc}/lib/gcc/arm-linux-androideabi/4.9.x/armv7-a/thumb/libgcc.a" CACHE FILEPATH "" FORCE)
+# libandroid_support.a: linked after libc++abi.a by ndk-build for libc++ (supplies the hidden
+# posix_memalign wrapper over memalign the original contains).
+set(GOF2_NDK_ANDROID_SUPPORT_A "${_root}/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libandroid_support.a" CACHE FILEPATH "" FORCE)
 set(GOF2_NDK_LIBCXXABI_A   "${_root}/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++abi.a" CACHE FILEPATH "" FORCE)
 set(GOF2_NDK_CRT_LIBDIR    "${_root}/platforms/android-16/arch-arm/usr/lib"          CACHE PATH "" FORCE)
 

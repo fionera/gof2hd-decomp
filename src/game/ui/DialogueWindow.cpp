@@ -22,7 +22,7 @@ struct EngineSoundConfig {
     uint8_t autoAdvanceEnabled;
 };
 
-int DialogueWindow::OnTouchBegin(int x, int y) {
+bool DialogueWindow::OnTouchBegin(int x, int y) {
     if (this->choiceActive != 0) {
         this->choiceWindow->OnTouchBegin(x, y);
     } else {
@@ -31,7 +31,7 @@ int DialogueWindow::OnTouchBegin(int x, int y) {
         this->nextButton->OnTouchBegin(x, y);
         this->moreButton->OnTouchBegin(x, y);
     }
-    return 0;
+    return false;
 }
 
 static const int g_dw_briefingCounts[0xa2] = {
@@ -120,7 +120,7 @@ DialogueWindow::~DialogueWindow() {
     this->moreButton = 0;
 }
 
-int DialogueWindow::OnTouchMove(int x, int y) {
+bool DialogueWindow::OnTouchMove(int x, int y) {
     if (this->choiceActive != 0) {
         this->choiceWindow->OnTouchMove(x, y);
     } else {
@@ -129,7 +129,7 @@ int DialogueWindow::OnTouchMove(int x, int y) {
         this->nextButton->OnTouchMove(x, y);
         this->moreButton->OnTouchMove(x, y);
     }
-    return 0;
+    return false;
 }
 
 bool DialogueWindow::isFirstPage() {
@@ -648,7 +648,7 @@ void DialogueWindow::update(int dt) {
 
 
 
-int DialogueWindow::OnTouchEnd(int x, int y) {
+bool DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->choiceActive != 0) {
         int result = this->choiceWindow->OnTouchEnd(x, y);
         if (result == 0) {
@@ -660,11 +660,11 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
             }
             if (this->voiceSound != -1)
                 Globals::sound->stop(this->voiceSound);
-            return 1;
+            return true;
         } else if (result == 1) {
             this->choiceActive = 0;
         }
-        return 0;
+        return false;
     }
 
     this->scrollWindow->OnTouchEnd(x, y);
@@ -675,14 +675,14 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->nextButton->OnTouchEnd(x, y) != 0) {
         (Globals::sound)->stop(this->voiceSound);
         if (this->nextPage() == 0) {
-            return 1;
+            return true;
         }
     }
     if (this->moreButton->OnTouchEnd(x, y) != 0) {
         this->choiceWindow->set(*Globals::gameText->getText(0x18c), true);
         this->choiceActive = 1;
     }
-    return 0;
+    return false;
 }
 
 static const char g_dw_defaultAgentName[] = "";
@@ -798,40 +798,22 @@ static const DialogueWindowGermanTextTable g_dw_germanOtherTexts = {
 };
 
 int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent) {
-    int race;
-    int male;
-    if (agent->getRace() < 10) {
-        race = agent->getRace();
-        male = agent->isMale();
-        if (race == 3) {
-            if (agent->getImageParts() == 0) {
-                race = 3;
-            } else {
-                race = 0;
-                if (*agent->getImageParts() == 2) race = 3;
-            }
-        }
-    } else {
-        male = agent->isMale();
-        race = 10;
-    }
+    int race = agent->getRace() < 10 ? agent->getRace() : 10;
+    bool male = agent->isMale();
+    // Race 3 agents only use the race-3 lines when their portrait's first part is 2.
+    if (race == 3 && agent->getImageParts() != 0)
+        race = *agent->getImageParts() == 2 ? 3 : 0;
 
-    int index;
-    const DialogueWindowGermanTextTable *texts;
-    if (kind == 2) {
-        index = Globals::rnd->nextInt(2);
-        texts = &g_dw_germanSuccessTexts;
-    } else if (kind == 0) {
-        index = Globals::rnd->nextInt(2);
-        texts = &g_dw_germanBriefingTexts;
-    } else {
-        index = Globals::rnd->nextInt(2);
-        texts = &g_dw_germanOtherTexts;
+    if (kind == 0) {
+        int index = Globals::rnd->nextInt(2);
+        return male ? g_dw_germanBriefingTexts.male[race][index] : g_dw_germanBriefingTexts.female[index];
     }
-    const int *picked = &texts->female[index];
-    if (male != 0)
-        picked = &texts->male[race][index];
-    return *picked;
+    if (kind == 2) {
+        int index = Globals::rnd->nextInt(2);
+        return male ? g_dw_germanSuccessTexts.male[race][index] : g_dw_germanSuccessTexts.female[index];
+    }
+    int index = Globals::rnd->nextInt(2);
+    return male ? g_dw_germanOtherTexts.male[race][index] : g_dw_germanOtherTexts.female[index];
 }
 
 

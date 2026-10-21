@@ -59,7 +59,7 @@ static const int CAMPAIGN_GOAL_TEXT[164] = {
 
 
 
-int MissionsWindow::OnTouchMove(int p1, int p2) {
+bool MissionsWindow::OnTouchMove(int p1, int p2) {
     if (this->m_mode == 1)
         return this->m_pWantedWindow->OnTouchMove(p1, p2);
     if (this->m_choiceActive) {
@@ -78,10 +78,10 @@ int MissionsWindow::OnTouchMove(int p1, int p2) {
         if (this->m_pMapButton) this->m_pMapButton->OnTouchMove(p1, p2);
         if (this->m_pRejectButton) this->m_pRejectButton->OnTouchMove(p1, p2);
     }
-    return 0;
+    return false;
 }
 
-int MissionsWindow::OnTouchBegin(int p1, int p2) {
+bool MissionsWindow::OnTouchBegin(int p1, int p2) {
     if (this->m_mode == 1)
         return this->m_pWantedWindow->OnTouchBegin(p1, p2);
     if (this->m_choiceActive) {
@@ -100,7 +100,7 @@ int MissionsWindow::OnTouchBegin(int p1, int p2) {
         if (this->m_pMapButton) this->m_pMapButton->OnTouchBegin(p1, p2);
         if (this->m_pRejectButton) this->m_pRejectButton->OnTouchBegin(p1, p2);
     }
-    return 0;
+    return false;
 }
 
 void MissionsWindow::setHangarUpdate(bool v) {
@@ -412,7 +412,7 @@ void MissionsWindow::render3D() {
         this->m_pStarMap->render();
 }
 
-int MissionsWindow::OnTouchEnd(int x, int y) {
+bool MissionsWindow::OnTouchEnd(int x, int y) {
     if (this->m_mode == 1) {
         int result = this->m_pWantedWindow->OnTouchEnd(x, y);
         // The wanted board's first button leads back to the mission list.
@@ -449,11 +449,11 @@ int MissionsWindow::OnTouchEnd(int x, int y) {
             uint8_t hangarNeedsUpdate = this->m_hangarNeedsUpdate;
             this->init();
             this->m_hangarNeedsUpdate = hangarNeedsUpdate;
-            return 0;
+            return false;
         }
         if (choice == 1) {
             this->m_choiceActive = 0;
-            return 0;
+            return false;
         }
     }
 
@@ -490,7 +490,7 @@ int MissionsWindow::OnTouchEnd(int x, int y) {
             this->m_height = height;
             this->m_starMapActive = 0;
         }
-        return 0;
+        return false;
     }
 
     if (Globals::status->wantedBoardAccessible()) {
@@ -514,7 +514,7 @@ int MissionsWindow::OnTouchEnd(int x, int y) {
         }
         this->m_starMapActive = 1;
         Globals::layout->resetWindowDimensions();
-        return 0;
+        return false;
     }
     if (this->m_pMapButton != nullptr && this->m_pMapButton->OnTouchEnd(x, y)) {
         this->m_pChoiceWindow->set(*Globals::gameText->getText(418), true);
@@ -532,16 +532,16 @@ int MissionsWindow::OnTouchEnd(int x, int y) {
         }
         this->m_starMapActive = 1;
         Globals::layout->resetWindowDimensions();
-        return 0;
+        return false;
     }
 
     if (Globals::layout->OnTouchEnd(x, y)) {
         Globals::layout->resetWindowDimensions();
-        return 1;
+        return true;
     }
     if (Globals::layout->helpPressed())
         Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
-    return 0;
+    return false;
 }
 
 void MissionsWindow::update(int dt) {

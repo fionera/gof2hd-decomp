@@ -9,6 +9,7 @@
 #include "engine/math/Vector.h"
 
 class Player;
+class PlayerAsteroid;
 
 class Hud;
 class KIPlayer;
@@ -25,7 +26,7 @@ public:
     KIPlayer *dockNavPtr;
 
     KIPlayer *lockedAsteroid;
-    KIPlayer *field_0x10;
+    PlayerAsteroid *field_0x10; // asteroid lock candidate (own pointer type: no 4-wide zero store in the ctor)
     KIPlayer *field_0x14;
     KIPlayer *field_0x18;
     KIPlayer *field_0x1c;
@@ -162,7 +163,10 @@ public:
     int originY;
     int field_0x234;
     int field_0x238;
-    AbyssEngine::AEMath::Vector cameraPos; // 0x23c
+    // 0x23c: camera position cached by update(); plain floats, the ctor leaves them unset
+    float cameraX;
+    float cameraY;
+    float cameraZ;
 
     static_assert(sizeof(AbyssEngine::String) == 0xc, "lockLabel must be 12 bytes");
 
@@ -214,7 +218,7 @@ static_assert(offsetof(Radar, lockLabel) == 0x18c, "ctor String @0x18c");
 static_assert(offsetof(Radar, scannerAvailable) == 0x1ab, "");
 static_assert(offsetof(Radar, transform) == 0x1d0, "ctor Matrix @0x1d0");
 static_assert(offsetof(Radar, screenWidth) == 0x21c, "ctor display block @0x21c-0x230");
-static_assert(offsetof(Radar, cameraPos) == 0x23c, "");
+static_assert(offsetof(Radar, cameraX) == 0x23c, "");
 static_assert(sizeof(Radar) == 0x248, "MGame news Radar with 584 bytes");
 
 #endif

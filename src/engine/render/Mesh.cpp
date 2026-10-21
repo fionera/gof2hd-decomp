@@ -442,7 +442,7 @@ namespace AbyssEngine {
         m->field_0x2a = triCount;
 
         float *f = new float[vertexCount * 3];
-        m->positions = (unsigned char *) f;
+        m->positions = f;
         memset(f, 0, vertexCount * 3 * sizeof(float));
 
         if (vertexFormat & 0x10) {
@@ -457,7 +457,7 @@ namespace AbyssEngine {
         }
         if (vertexFormat & 4) {
             f = new float[vertexCount * 3];
-            m->normals = (unsigned char *) f;
+            m->normals = f;
             memset(f, 0, vertexCount * 3 * sizeof(float));
             if (Engine::enableShader) {
                 f = new float[vertexCount * 3];
@@ -517,7 +517,7 @@ namespace AbyssEngine {
                 return -1;
             }
             mesh = *slot;
-            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh->positions = new float[mesh->vertexCount * 3];
             mesh = *slot;
             unsigned int count = mesh->vertexCount * 3;
             for (unsigned int i = 0; i != count; i++) {
@@ -538,7 +538,7 @@ namespace AbyssEngine {
                 return -1;
             }
             mesh = *slot;
-            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh->positions = new float[mesh->vertexCount * 3];
             mesh = *slot;
             unsigned int count = mesh->vertexCount * 3;
             for (unsigned int i = 0; i != count; i++) {
@@ -553,7 +553,7 @@ namespace AbyssEngine {
             delete[] (unsigned char *) raw;
         } else if ((flags & 0x18) != 0) {
             Mesh *mesh = *slot;
-            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh->positions = new float[mesh->vertexCount * 3];
             if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
                 return -1;
         }
@@ -608,7 +608,7 @@ namespace AbyssEngine {
                     return -1;
                 }
                 mesh = *slot;
-                mesh->normals = new unsigned char[mesh->vertexCount * 12];
+                mesh->normals = new float[mesh->vertexCount * 3];
                 for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount * 3); i += 3) {
                     float x = (float) ((double) raw[i] * (1.0 / 32768.0));
                     float y = (float) ((double) raw[i + 1] * (1.0 / 32768.0));
@@ -640,7 +640,7 @@ namespace AbyssEngine {
                 delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
                 Mesh *mesh = *slot;
-                mesh->normals = new unsigned char[mesh->vertexCount * 12];
+                mesh->normals = new float[mesh->vertexCount * 3];
                 if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->normals, handle) == 0)
                     return -1;
             }
@@ -904,10 +904,10 @@ namespace AbyssEngine {
         if (m->uploaded != 0 || (short) m->indexCount == 0)
             return -4;
 
-        unsigned char *pos = m->positions;
+        float *pos = m->positions;
         unsigned char *tex = m->texCoords;
         unsigned char *col = m->colors;
-        unsigned char *nrm = m->normals;
+        float *nrm = m->normals;
         unsigned char *tan = m->tangents;
         unsigned char *bin = m->binormals;
 

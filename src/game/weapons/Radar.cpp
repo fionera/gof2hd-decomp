@@ -356,9 +356,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     this->planetTargets = (Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets();
 
     this->transform = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-    this->cameraPos.x = this->transform.m[3];
-    this->cameraPos.y = this->transform.m[7];
-    this->cameraPos.z = this->transform.m[11];
+    this->cameraX = this->transform.m[3];
+    this->cameraY = this->transform.m[7];
+    this->cameraZ = this->transform.m[11];
     this->transform = AbyssEngine::AEMath::MatrixGetInverse(this->transform);
 
     if (this->level->getPlayer()->goingToPlanet()) {
@@ -389,7 +389,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         if (waypoint != nullptr) {
             this->update(waypoint);
             this->lockLabel = this->calcDistance((float) waypoint->x, (float) waypoint->y, (float) waypoint->z,
-                                                 this->cameraPos.x, this->cameraPos.y, this->cameraPos.z);
+                                                 this->cameraX, this->cameraY, this->cameraZ);
             if (this->onScreen) {
                 Globals::Canvas->DrawImage2D(this->image_0x6c, this->screenX, this->screenY, 17, 68);
                 Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
@@ -441,8 +441,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     if (i != 0 || alienOrbit) {
                         KIPlayer *landmark = this->landmarks->data()[i];
                         this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
-                                                             this->cameraPos.x, this->cameraPos.y,
-                                                             this->cameraPos.z);
+                                                             this->cameraX, this->cameraY,
+                                                             this->cameraZ);
                         Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
                                                     this->screenY + Globals::layout->field_0x4, false);
                     } else {
@@ -453,8 +453,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                 this->screenX + this->originX, this->screenY + Globals::layout->field_0x4, false);
                         KIPlayer *landmark = this->landmarks->data()[i];
                         this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
-                                                             this->cameraPos.x, this->cameraPos.y,
-                                                             this->cameraPos.z);
+                                                             this->cameraX, this->cameraY,
+                                                             this->cameraZ);
                         Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + this->originX,
                                                     this->screenY + Globals::layout->field_0x4 * 2, false);
                     }
@@ -767,7 +767,7 @@ enemies:
                     enemy->field_0x73 = inSight;
                     if (enemy == locked) {
                         this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
-                                                             this->cameraPos.x, this->cameraPos.y, this->cameraPos.z);
+                                                             this->cameraX, this->cameraY, this->cameraZ);
                         Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
                                                     this->screenY + this->halfScreenWidth, false);
                     }
@@ -967,7 +967,7 @@ enemies:
                 cloud->field_0x73 = 0;
                 if (cloud == locked) {
                     this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
-                                                         this->cameraPos.x, this->cameraPos.y, this->cameraPos.z);
+                                                         this->cameraX, this->cameraY, this->cameraZ);
                     Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
                                                 this->screenY + this->halfScreenWidth, false);
                 }
@@ -1131,7 +1131,7 @@ asteroids:
                 if (this->field_0x10 != this->asteroids->data()[best]) {
                     this->asteroidLockTimer = 0;
                 }
-                this->field_0x10 = this->asteroids->data()[best];
+                this->field_0x10 = static_cast<PlayerAsteroid *>(this->asteroids->data()[best]);
                 asteroidHit = true;
             }
 
@@ -1195,8 +1195,8 @@ asteroids:
             }
         } else if (this->level->getPlayer()->isDockingToAsteroid() && this->lockedAsteroid != nullptr) {
             this->egoPos = this->lockedAsteroid->getPosition();
-            this->lockLabel = this->calcDistance(this->egoPos.x, this->egoPos.y, this->egoPos.z, this->cameraPos.x,
-                                                 this->cameraPos.y, this->cameraPos.z);
+            this->lockLabel = this->calcDistance(this->egoPos.x, this->egoPos.y, this->egoPos.z, this->cameraX,
+                                                 this->cameraY, this->cameraZ);
             Globals::Canvas->DrawString(radarFont(), this->lockLabel,
                                         (int) (PlayerEgo::crosshairPos.x - (float) this->halfScreenHeight),
                                         (int) (PlayerEgo::crosshairPos.y + (float) this->halfScreenWidth), false);
@@ -1265,11 +1265,18 @@ music:
     this->field_0x1bc = 0;
 }
 String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
-    long long dx = static_cast<long long>(x1 * 0.5f - x2 * 0.5f);
+    // positions are halved first so the squared 64-bit sum stays in range
+    x1 *= 0.5f;
+    y1 *= 0.5f;
+    z1 *= 0.5f;
+    x2 *= 0.5f;
+    y2 *= 0.5f;
+    z2 *= 0.5f;
+    long long dx = static_cast<long long>(x1 - x2);
     long long dx2 = dx * dx;
-    long long dz = static_cast<long long>(z1 * 0.5f - z2 * 0.5f);
+    long long dz = static_cast<long long>(z1 - z2);
     long long dz2 = dz * dz;
-    long long dy = static_cast<long long>(y1 * 0.5f - y2 * 0.5f);
+    long long dy = static_cast<long long>(y1 - y2);
     long long squared = dy * dy + dx2 + dz2;
     int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
     int meters = distance << 3;
@@ -1340,7 +1347,7 @@ void Radar::drawCurrentLock(Hud *) {
         String text(*Globals::gameText->getText(3236), false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
                                     (Globals::w >> 1) -
-                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1,
+                                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
                                     this->field_0x214 + layoutField(0xc4), false);
         return;
     }
@@ -1368,7 +1375,7 @@ void Radar::drawCurrentLock(Hud *) {
         }
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
                                     (Globals::w >> 1) -
-                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1,
+                                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
                                     this->field_0x214 + layoutField(0xc4), false);
         Globals::Canvas->SetColor(0xffffffff);
         return;
@@ -1386,7 +1393,7 @@ void Radar::drawCurrentLock(Hud *) {
     text = *label;
     if (target != station) {
         text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
-        x = (Globals::w >> 1) - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1;
+        x = (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
     } else {
         if (Globals::status->inAlienOrbit()) {
             if (Globals::status->dlc1Won()) {

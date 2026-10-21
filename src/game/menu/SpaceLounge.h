@@ -83,7 +83,7 @@ public:
     int touchX;
     int touchY;
     uint8_t cameraAnimating;
-    uint8_t introDone;
+    bool introDone;
     AbyssEngine::EaseInOut *headEase;
     uint8_t headBobReverse;
     AbyssEngine::Matrix baseMatrix;
@@ -98,11 +98,11 @@ public:
 
     void OnRenderBG();
 
-    int OnTouchBegin(int x, int y);
+    bool OnTouchBegin(int x, int y);
 
-    int OnTouchEnd(int x, int y);
+    bool OnTouchEnd(int x, int y);
 
-    int OnTouchMove(int x, int y);
+    bool OnTouchMove(int x, int y);
 
     bool checkLocationMode();
 
@@ -120,7 +120,7 @@ public:
 
     int init();
 
-    unsigned char introFinished();
+    bool introFinished();
 
     bool listMode();
 

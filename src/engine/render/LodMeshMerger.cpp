@@ -132,7 +132,7 @@ void LodMeshMerger::init() {
 
     for (int i = 0; i < rows; i++) {
         int c = 0;
-        if (lodLevels[i] >= -1 && cols <= lodLevels[i]) {
+        if (lodLevels[i] < -1 || cols <= lodLevels[i]) {
             lodLevels[i] = 0;
         }
         for (; c < cols; c++) {
@@ -176,14 +176,14 @@ Mesh *LodMeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
         out->indices = mesh->indices;
 
     if (mesh->vertexFormat & 1) {
-        out->positions = new unsigned char[mesh->vertexCount * 12];
+        out->positions = new float[mesh->vertexCount * 3];
         for (unsigned int i = 0; i < mesh->vertexCount; i++) {
             ((Vector *) out->positions)[i] =
                     AbyssEngine::AEMath::MatrixTransformVector(m, ((const Vector *) mesh->positions)[i]);
         }
     }
     if (mesh->vertexFormat & 4) {
-        out->normals = new unsigned char[mesh->vertexCount * 12];
+        out->normals = new float[mesh->vertexCount * 3];
         for (unsigned int i = 0; i < mesh->vertexCount; i++) {
             ((Vector *) out->normals)[i] = AbyssEngine::AEMath::VectorNormalize(
                     AbyssEngine::AEMath::MatrixRotateVector(m, ((const Vector *) mesh->normals)[i]));

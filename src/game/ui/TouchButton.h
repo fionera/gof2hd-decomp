@@ -69,9 +69,9 @@ public:
 
     bool OnTouchBegin(int px, int py);
 
-    unsigned int OnTouchEnd(int px, int py);
+    bool OnTouchEnd(int px, int py);
 
-    unsigned int OnTouchMove(int px, int py);
+    bool OnTouchMove(int px, int py);
 
     void draw();
 

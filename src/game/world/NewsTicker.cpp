@@ -42,7 +42,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     int added = 0;
     int attempts = 0;
     bool repeatLast = false;
-    while (added < wanted && attempts < 100) {
+    while (attempts < 100 && added < wanted) {
         NewsItem *item = (*allItems)[Globals::rnd->nextInt(allItems->size())];
         SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
         if (system->getIndex() > 21 && item->id == 13) {
@@ -341,10 +341,10 @@ bool NewsTicker::OnTouchMove(int x, int) {
     }
     return this->touched != 0;
 }
-uint32_t NewsTicker::OnTouchEnd(int, int) {
+bool NewsTicker::OnTouchEnd(int, int) {
     if (this->touched == 0) {
-        return 0;
+        return false;
     }
     this->touched = 0;
-    return 1;
+    return true;
 }
