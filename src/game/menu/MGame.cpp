@@ -3981,16 +3981,20 @@ void MGame::OnRender2D() {
         this->field_0x110 = 0;
     } else if (this->gameOverActive) {
         if (this->elapsedTime >= 3001) {
-            this->paintCanvas->SetColor(this->loadingTime < 4000
-                                            ? (int) ((float) this->loadingTime / 4000.0f * 255.0f) - 256
-                                            : -1);
+            int fadeColor = this->loadingTime < 4000 ? (int) ((float) this->loadingTime / 4000.0f * 255.0f) - 256 : -1;
+            this->paintCanvas->SetColor(fadeColor);
             Globals::Canvas->DrawImage2D(this->loadingImage, 0, 0, 68, 68);
             if (this->loadingTime >= 4000) {
-                float wave = AbyssEngine::AEMath::Sinf(
-                    (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f);
-                float pulse = AbyssEngine::AEMath::Sinf(
-                    (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f);
-                Globals::Canvas->SetColor(255, 255, 255, (unsigned char) ((wave > 0.0f ? pulse : -pulse) * 255.0f));
+                // |sin(t)| pulse, written as the usual abs-macro expansion (sin evaluated twice).
+                Globals::Canvas->SetColor(
+                    255, 255, 255,
+                    (unsigned char) ((AbyssEngine::AEMath::Sinf(
+                                          (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f) > 0.0f
+                                          ? AbyssEngine::AEMath::Sinf(
+                                                (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f)
+                                          : -AbyssEngine::AEMath::Sinf(
+                                                (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f)) *
+                                     255.0f));
                 String text(*Globals::gameText->getText(199), false);
                 if (this->gameRecord != nullptr) {
                     Globals::globals->drawLines(reinterpret_cast<unsigned int &>(Globals::font), this->missionInfoLines,

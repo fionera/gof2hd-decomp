@@ -48,7 +48,7 @@ public:
     uint8_t _pad_0x55[3];
     PlayerEgo *player;
 
-    uint8_t _b5c; // field_0x5c (int) = reinterpret_cast<int &>(_b5c)
+    bool _b5c; // field_0x5c: fire-button held
     bool pauseOpen;
     uint8_t cutsceneActive;
     bool jumpActive;
