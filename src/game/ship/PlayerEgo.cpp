@@ -2663,7 +2663,7 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                                        ->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint);
             if (approach == nullptr)
                 return false;
-            if ((SpacePoint *) (intptr_t) this->spacePoint != approach) {
+            if (approach != (SpacePoint *) (intptr_t) this->spacePoint) {
                 if (this->spacePoint != 0)
                     ((SpacePoint *) (intptr_t) this->spacePoint)->giveFree();
                 this->spacePoint = (int) (intptr_t) approach;
