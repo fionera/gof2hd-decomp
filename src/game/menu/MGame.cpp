@@ -450,10 +450,7 @@ tail:
 static GameText **g_gameText = &Globals::gameText;
 
 void MGame::useCloak() {
-    void (::PlayerEgo::*pmf)() = &::PlayerEgo::toggleCloaking;
-    int(*toggleCloaking)(::PlayerEgo *);
-    __builtin_memcpy(&toggleCloaking, &pmf, sizeof(toggleCloaking));
-    if (toggleCloaking((::PlayerEgo *) (this->player)) != 0) return;
+    if (((::PlayerEgo *) (this->player))->toggleCloaking()) return;
     if (this->choiceWindow == 0)
         this->choiceWindow = new ChoiceWindow();
     Item *eq = ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x15);

@@ -59,9 +59,6 @@ namespace {
     static const float g_PE_mtp_strafeK = 0.0f;
     static const float g_PE_rollLevelEps = 0.0f;
     static const float g_PE_cc_alarmDist = 0.0f;
-    static int *g_PE_tm_hum = nullptr;
-    static const float g_PE_tm_fovNormal = 0.0f;
-    static const float g_PE_tm_fovAlien = 0.0f;
     static const float g_PE_strafeLoadK = 0.4f;
     static const float g_PE_strafeLoadB = 0.6f;
     static const float g_PE_strafeAccelK = 0.002f;
@@ -81,7 +78,6 @@ namespace {
     static MiningHostObject **g_PE_aa_winHolder2 = nullptr;
     static const float g_PE_aa_settleEps = 0.0f;
         static const float g_PE_hs_throttleBias = 0.0f;
-    static int *g_PE_tc_sound = nullptr;
     // Pitch ramp delta constants (down/up non-turret paths)
     // Yaw ramp delta constants (right/left non-turret paths)
 }
@@ -1946,67 +1942,51 @@ void PlayerEgo::stopMining() {
     }
 }
 
-void PlayerEgo::setTurretMode(bool enable) {
-    if (this->turretMode == 0 || ((intptr_t) this->miningGame) != 0 || this->autoTurretEquipped != 0) {
-        if (((intptr_t) this->rocketControlGun) != 0) {
-            Globals::Canvas->CameraSetCurrent(
-                (unsigned int) (((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id));
-            ((LevelScript *) (this->level))->resetCamera(((LevelScript *) this->level)->m_pLevel);
+bool PlayerEgo::setTurretMode(bool enable) {
+    if (this->turretMode == 0 || this->miningGame != 0 || this->autoTurretEquipped != 0) {
+        if (this->rocketControlGun != 0) {
+            Globals::Canvas->CameraSetCurrent(((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id);
+            this->levelScript->resetCamera(this->level);
         }
-        return;
+        return false;
     }
-
-    this->turretActive = (unsigned char) enable;
-    if (enable == 0) {
-        ((PlayerEgo *) (this))->stopShooting(0);
-        Globals::Canvas->CameraSetCurrent(
-            (unsigned int) (((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id));
-        ((LevelScript *) (this->level))->resetCamera(((LevelScript *) this->level)->m_pLevel);
-    } else {
-        if (((intptr_t) this->rocketControlGun) != 0)
-            return;
-        if (this->dockCameraNode == 0) {
+    this->turretActive = enable;
+    if (enable) {
+        if (this->rocketControlGun != 0)
+            return false;
+        if (this->dockCameraNode == nullptr) {
             Globals::Canvas->CameraCreate(this->turretCamera);
-            unsigned int cam = (unsigned int) (unsigned long) Globals::Canvas;
-            float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_tm_fovAlien : g_PE_tm_fovNormal;
-            Globals::Canvas->CameraSetPerspective((unsigned int) (cam), fov, 0.0f, g_PE_tm_fovAlien);
-
-            AEGeometry *node = new AEGeometry(Globals::Canvas);
-            this->dockCameraNode = node;
-            ((AEGeometry *) node)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-            ((AEGeometry *) (node))->translate(this->turretOffsetVec);
-
-            AEGeometry *mid = new AEGeometry(Globals::Canvas);
-            this->dockCameraMid = mid;
-            ((AEGeometry *) (mid))->translate(*(Vector *) &((AEGeometry *) mid)->transform);
-            ((AEGeometry *) (this->dockCameraNode))->
-                    addChild((uint32_t)((AEGeometry *) this->dockCameraMid)->transform);
-
-            AEGeometry *leaf = new AEGeometry(Globals::Canvas);
-            this->dockCameraLeaf = leaf;
-            ((AEGeometry *) (this->dockCameraNode))->addChild(
-                (uint32_t)((AEGeometry *) this->dockCameraNode)->transform);
-
-            if (((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x23) != 0)
-                ((AEGeometry *) (this->dockCameraNode))->rotate(this->turretOffsetVec);
+            Globals::Canvas->CameraSetPerspective(this->turretCamera, 1.22f, 20.0f,
+                                                  Globals::status->inAlienOrbit() ? 450000.0f : 300000.0f);
+            this->dockCameraNode = new AEGeometry(Globals::Canvas);
+            this->dockCameraNode->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
+            this->dockCameraNode->translate(this->turretOffsetVec);
+            this->dockCameraMid = new AEGeometry(Globals::Canvas);
+            this->dockCameraMid->translate(0.0f, 200.0f, 500.0f);
+            this->dockCameraNode->addChild(this->dockCameraMid->transform);
+            this->dockCameraLeaf = new AEGeometry(Globals::Canvas);
+            this->dockCameraLeaf->addChild(this->dockCameraNode->transform);
+            if (Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr)
+                this->dockCameraNode->rotate(Vector{0.0f, 3.1415927f, 0.0f});
         }
-        ((AEGeometry *) (this->dockCameraLeaf))->setPosition(this->dockOffsetVec);
-        AEGeometry *leaf = (AEGeometry *) this->dockCameraLeaf;
-        ((AEGeometry *) leaf)->setMatrix(((AEGeometry *) (this->geometry))->getMatrix());
-        Globals::Canvas->CameraSetCurrent((unsigned int) (this->turretCamera));
-        ((Player *) (this->player))->stopShooting(0);
+        this->dockCameraLeaf->setPosition(this->dockOffsetVec);
+        this->dockCameraLeaf->setMatrix(this->geometry->getMatrix());
+        Globals::Canvas->CameraSetCurrent(this->turretCamera);
+        this->player->stopShooting(0);
+    } else {
+        this->stopShooting(2);
+        Globals::Canvas->CameraSetCurrent(((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id);
+        this->levelScript->resetCamera(this->level);
     }
-
-    if (this->turretExtraGeo != 0) {
-        AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            (unsigned int) (reinterpret_cast<unsigned int &>(Globals::Canvas->initialized)));
-        ((AbyssEngine::Transform *) (tf))->SetVisible(enable != 0);
-        int v = (enable != 0);
-        if (enable == 0)
-            ((FModSound *) (*g_PE_tm_hum))->stop(0);
+    if (this->turretExtraGeo != nullptr) {
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretExtraGeo->transform))
+            ->SetVisible(enable);
+        if (enable)
+            Globals::sound->play(2255, nullptr, nullptr, 0.0f);
         else
-            ((FModSound *) (*g_PE_tm_hum))->play(0x8cf, (Vector *) 0, (Vector *) 0, (float) v);
+            Globals::sound->stop(2255);
     }
+    return true;
 }
 
 void PlayerEgo::rotate(float rx, float ry, float rz) {
@@ -2708,88 +2688,63 @@ void PlayerEgo::render(bool allowHud) {
     }
 }
 
-void PlayerEgo::toggleCloaking() {
-    if (this->chargingCloak == 0) {
-        if (this->cloaked != 0 || this->cloakRechargeTimer > 0)
-            return;
-        int need = ((Item *) (this->cloak))->getAttribute(0);
-        Item *cargo = (Item *) ((Ship *) (PE_status()->getShip()))->getCargo(0x7a);
-        int have = (cargo == 0) ? 0 : ((Item *) (cargo))->getAmount();
-        if (need <= have) {
-            ((Ship *) (PE_status()->getShip()))->removeCargo(0x7a);
-            this->chargingCloak = 1;
-            ((Hud *) (((intptr_t) this->hud)))->hudEvent(0x1e, this, 0);
-            ((Hud *) (((intptr_t) this->hud)))->hudEvent(0x1c, this, 0);
-        }
-        return;
-    }
-
-    if (this->cloakDischargeMax > this->cloakCharge)
-        return;
-
-    ((FModSound *) (*g_PE_tc_sound))->play(0x1e, (Vector *) 0, (Vector *) 0, 0);
-    PaintCanvas *canvas = Globals::Canvas;
-    ((Player *) this->player)->field_5e = 1;
-    this->cloakCharge = 0;
-    this->cloaked = 1;
-
-    ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial((unsigned int) (this->cloakMaterial1));
-
-    ((AbyssEngine::Material *) ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial(
-        (unsigned int) (this->cloakMaterial1)))->blendMode = 0xe;
-    ((PaintCanvas *) (long) (canvas))->MeshChangeMaterial((unsigned int) (this->field_0x4->meshId),
-                                                          (unsigned int) (this->cloakMaterial1));
-    ((PaintCanvas *) (long) (canvas))->MeshChangeShaderAnimValue(
-        ((PaintCanvas *) (long) (canvas))->MeshGetPointer((unsigned int) (this->field_0x4->meshId)), 0.0f,
-        (unsigned int) (0));
-    ((PaintCanvas *) (long) (canvas))->MeshChangeShaderAnimValue(
-        ((PaintCanvas *) (long) (canvas))->MeshGetPointer((unsigned int) (this->field_0x4->meshId)), 0.0f,
-        (unsigned int) (0));
-
-    if (this->turretMode != 0) {
-        ((AbyssEngine::Material *) ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial(
-            (unsigned int) (this->cloakMaterial2)))->blendMode = 0xe;
-        ((AbyssEngine::Material *) ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial(
-            (unsigned int) (this->cloakMaterial3)))->blendMode = 0xe;
-        ((PaintCanvas *) (long) (canvas))->MeshChangeMaterial(
-            (unsigned int) (((AEGeometry *) this->turretBaseGeo)->meshId), (unsigned int) (this->cloakMaterial2));
-        ((PaintCanvas *) (long) (canvas))->MeshChangeMaterial(
-            (unsigned int) (((AEGeometry *) this->turretGeometry)->meshId), (unsigned int) (this->cloakMaterial3));
-
-        AbyssEngine::Mesh *m;
-        m = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
-            (unsigned int) (((AEGeometry *) this->turretBaseGeo)->meshId));
-        ((PaintCanvas *) (long) (canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int) (1));
-        m = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
-            (unsigned int) (((AEGeometry *) this->turretBaseGeo)->meshId));
-        ((PaintCanvas *) (long) (canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int) (2));
-        m = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
-            (unsigned int) (((AEGeometry *) this->turretGeometry)->meshId));
-        ((PaintCanvas *) (long) (canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int) (1));
-        m = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
-            (unsigned int) (((AEGeometry *) this->turretGeometry)->meshId));
-        ((PaintCanvas *) (long) (canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int) (2));
-
-        if (this->turretMode != 0) {
-            unsigned short mat = 0x4e8e;
-            Item *it = (Item *) ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(8);
-            if (it != 0 && ((Item *) (it))->getIndex() == 0xe0)
-                mat = 0x5e17;
-            it = (Item *) ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x23);
-            if (it != 0) {
-                int idx = ((Item *) (it))->getIndex();
-                mat = 0x716d;
-                if (idx == 0xc7) mat = 0x7167;
-                if (idx == 0xc6) mat = 0x7161;
+bool PlayerEgo::toggleCloaking() {
+    if (this->chargingCloak != 0) {
+        if (this->cloakCharge >= this->cloakDischargeMax) {
+            Globals::sound->play(30, nullptr, nullptr, 0.0f);
+            this->player->field_5e = 1;
+            this->cloaked = 1;
+            this->cloakCharge = 0;
+            unsigned int material = 0;
+            ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial1))->blendMode = 14;
+            Globals::Canvas->MeshChangeMaterial(this->field_0x4->meshId, this->cloakMaterial1);
+            Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->field_0x4->meshId), 0.0f, 1);
+            Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->field_0x4->meshId), 0.0f, 2);
+            if (this->turretMode != 0) {
+                ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial2))->blendMode = 14;
+                ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial3))->blendMode = 14;
+                Globals::Canvas->MeshChangeMaterial(this->turretBaseGeo->meshId, this->cloakMaterial2);
+                Globals::Canvas->MeshChangeMaterial(this->turretGeometry->meshId, this->cloakMaterial3);
+                Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->turretBaseGeo->meshId),
+                                                           0.0f, 1);
+                Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->turretBaseGeo->meshId),
+                                                           0.0f, 2);
+                Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->turretGeometry->meshId),
+                                                           0.0f, 1);
+                Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->turretGeometry->meshId),
+                                                           0.0f, 2);
+                if (this->turretMode != 0) {
+                    unsigned short resId = 20110;
+                    Item *item = Globals::status->getShip()->getFirstEquipmentOfSort(8);
+                    if (item != nullptr && item->getIndex() == 224)
+                        resId = 24087;
+                    item = Globals::status->getShip()->getFirstEquipmentOfSort(35);
+                    if (item != nullptr) {
+                        int index = item->getIndex();
+                        resId = 29037;
+                        if (index == 199)
+                            resId = 29031;
+                        if (index == 198)
+                            resId = 29025;
+                    }
+                    Globals::Canvas->MaterialCreate(resId, material);
+                    Globals::Canvas->MeshChangeResourceMaterial(this->turretBaseGeo->meshId, resId);
+                    Globals::Canvas->MeshChangeResourceMaterial(this->turretGeometry->meshId, resId);
+                }
             }
-            unsigned int out;
-            ((PaintCanvas *) (long) (canvas))->MaterialCreate((unsigned short) (mat), out);
-            ((PaintCanvas *) (long) (canvas))->MeshChangeResourceMaterial(
-                (unsigned int) (((AEGeometry *) this->turretBaseGeo)->meshId), (unsigned int) (mat));
-            ((PaintCanvas *) (long) (canvas))->MeshChangeResourceMaterial(
-                (unsigned int) (((AEGeometry *) this->turretGeometry)->meshId), (unsigned int) (mat));
         }
+    } else if (this->cloaked == 0 && this->cloakRechargeTimer <= 0) {
+        int energy = this->cloak->getAttribute(38);
+        Item *cells = Globals::status->getShip()->getCargo(122);
+        if ((cells != nullptr ? cells->getAmount() : 0) < energy)
+            return false;
+        Globals::status->getShip()->removeCargo(122, energy);
+        this->chargingCloak = 1;
+        ((Hud *) (intptr_t) this->hud)->hudEvent(30, this, energy);
+        ((Hud *) (intptr_t) this->hud)->hudEvent(28, this, 0);
+        return true;
     }
+    return this->cloaked != 0;
 }
 
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairPos;

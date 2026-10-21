@@ -546,7 +546,7 @@ public:
 
     void setThrust(float v);
 
-    void setTurretMode(bool enable);
+    bool setTurretMode(bool enable);
 
     void setTurretPosition(AbyssEngine::AEMath::Vector v);
 
@@ -576,7 +576,7 @@ public:
 
     void throttleChanged();
 
-    void toggleCloaking();
+    bool toggleCloaking();
 
     int tryToStartEmergencySystem();
 
