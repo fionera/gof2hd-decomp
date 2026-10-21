@@ -111,8 +111,8 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
 
     this->field_0x130 = -1;
     this->field_0x134 = -1;
-    this->field_0x138 = -1;
     this->field_0x128 = 50000;
+    this->field_0x138 = -1;
     this->rotate = 2.0f;
     this->shootError = 500.0f / 65536.0f;
     this->speed = 2.0f;
@@ -128,12 +128,12 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     this->deathTimer() = 0;
     this->field_0x12f = 0;
     this->smoking = 0;
-    this->trailTick = 0;
     this->damageEscape = 0;
+    this->trailTick = 0;
     this->boosting = 0;
     this->field_0x1f5 = 0;
-    this->shipGroup = wingmanCmd;
     this->behaviourChangeTick = 0;
+    this->shipGroup = wingmanCmd;
     this->field_0x1bc = 0;
     this->boostTick = 0;
     this->boostTimeLimit = 0;
@@ -150,19 +150,16 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     this->currentRotate = 0;
 
     this->workingPosition = Vector{x, y, z};
-    this->field_0x13d = 1;
     this->crateCaptured() = 1;
+    this->field_0x13d = 1;
     this->currentSpeed = this->speed;
     this->currentRotate = this->rotate;
     this->defaultRoute->setLoop(true);
     ((Route *) (intptr_t) PlayerFighter::stationRouteAliens)->setLoop(true);
     this->routeClone() = nullptr;
     if (Globals::status->getCurrentCampaignMission() != 41) {
-        if (wingmanCmd == 9) {
-            this->routeClone() = ((Route *) (intptr_t) PlayerFighter::stationRouteAliens)->clone();
-        } else {
-            this->routeClone() = this->defaultRoute->clone();
-        }
+        this->routeClone() = wingmanCmd == 9 ? ((Route *) (intptr_t) PlayerFighter::stationRouteAliens)->clone()
+                                             : this->defaultRoute->clone();
     }
     this->field_0x12d = 0;
     if (wingmanCmd == 9) {
@@ -195,8 +192,8 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     for (int i = 0; i < 5; ++i) {
         this->rollSamples[i] = 0;
     }
-    this->rollBufferFilled = 0;
     this->rollSampleIndex = 0;
+    this->rollBufferFilled = 0;
     this->rollActive() = 0;
     this->field_0x254 = 0;
     this->field_0x255 = 0;
@@ -487,10 +484,7 @@ void PlayerFighter::handleCloaking() {
                     Globals::Canvas->MeshGetPointer(this->parentGeometry->meshId),
                     ((float) this->cloakTimer - (float) (this->cloakDuration - 2000)) / -2000.0f + 1.0f, 1u);
         }
-        return;
-    }
-
-    if (this->damageEscape != 0 && Globals::rnd->nextInt(100) < 50) {
+    } else if (this->damageEscape != 0 && Globals::rnd->nextInt(100) < 50) {
         this->cloak(-1, false);
     } else {
         this->cloakCooldown += this->frameTime;
