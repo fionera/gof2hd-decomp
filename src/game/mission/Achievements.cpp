@@ -6,7 +6,7 @@
 
 static const int gAchievementValues[135] = {0};
 
-static const int gCFN_req[135] = {
+static const int gCFN_req[45][3] = {
     // medal  0: (never)
     0, -1, -1,
     // medal  1: hull damage rate (<=, lower is better → checked via ble)
@@ -124,7 +124,7 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
             continue;
         }
         for (int tier = 0; tier <= 2; ++tier) {
-            int req = gCFN_req[m * 3 + tier];
+            int req = gCFN_req[m][tier];
             if (req < 0)
                 continue;
             if (got > 0)
@@ -169,19 +169,19 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
                     reached = Globals::status->getStationsVisited() >= req;
                     break;
                 case 12: {
-                    bool *p12 = Globals::status->field_b4->data_;
-                    int cnt = 0, k12 = 0;
-                    do {
-                        cnt += (int)p12[k12++];
-                    } while (k12 < 22);
+                    // 22 visited-system flags.
+                    bool *visited = Globals::status->field_b4->data_;
+                    int cnt = 0;
+                    for (int k = 0; k < 22; k++)
+                        cnt += (int) visited[k];
                     reached = cnt >= req;
                     break;
                 }
                 case 13: {
+                    unsigned k = 0;
                     int cnt = 0;
-                    Array<BluePrint *> *bp = Globals::status->bluePrints;
-                    for (unsigned k = 0; k < bp->size(); ++k)
-                        cnt += (int)(*bp)[k]->isUnlocked();
+                    for (; k < Globals::status->bluePrints->size(); ++k)
+                        cnt += (int) (*Globals::status->bluePrints)[k]->isUnlocked();
                     reached = cnt >= req;
                     break;
                 }
