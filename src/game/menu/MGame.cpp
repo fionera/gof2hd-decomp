@@ -239,8 +239,8 @@ void MGame::startJumpScene() {
     this->switchCamera(0);
     this->field_0x70 = 0x3f9c28f6;
     this->hud->releaseAllKeys();
-    this->field_0x110 = 0;
     this->_b5c = 0;
+    this->field_0x110 = 0;
 
     unsigned cameraId = this->cameraId;
     float perspective = reinterpret_cast<float &>(this->field_0x70);
@@ -252,8 +252,8 @@ void MGame::startJumpScene() {
     }
     canvas->CameraSetPerspective(cameraId, perspective, 20.0f, fov);
     this->player->setAutoPilot(nullptr);
-    this->pauseOpen = 0;
     this->hudMenuOpen = 0;
+    this->pauseOpen = 0;
     this->jumpDriveActive = 1;
     this->jumpActive = 1;
     this->player->setCollide(false);
@@ -262,13 +262,33 @@ void MGame::startJumpScene() {
     Engine *eng = static_cast<Engine *>(this->applicationManager->GetEngine());
     eng->SetPostEffect(0x01400002, false);
 
-    float camX;
-    float camY;
-    float camZ;
-    if (this->usingJumpDrive == 0) {
-        Array<KIPlayer *> *lm = this->level->getLandmarks();
-        KIPlayer *obj = (*lm)[1];
-        this->egoJumpPos = obj->getPosition();
+    if (this->usingJumpDrive) {
+        this->player->resetMovement();
+        this->player->setComputerControlled(true);
+        this->jumpFlash = new AEGeometry((uint16_t) 0x3ab2, Globals::Canvas, false);
+        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->jumpFlash->transform))
+            ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+
+        this->egoJumpPos = this->player->getPosition();
+        this->egoJumpPos += this->player->geometry->getDirection() * 3000.0f;
+        this->jumpFlash->setPosition(this->egoJumpPos);
+
+        Vector offset = this->player->geometry->getDirection();
+        this->jumpFlash->setScaling(2.0f, 2.0f, 2.0f);
+        this->jumpFlash->setDirection(offset, Vector{0.0f, 1.0f, 0.0f});
+
+        offset = Vector{-2000.0f, 300.0f, -2000.0f};
+        offset = AbyssEngine::AEMath::MatrixRotateVector(
+            reinterpret_cast<const AbyssEngine::Matrix &>(this->player->player->transform[0]), offset);
+        this->egoJumpPos += offset;
+
+        Globals::sound->stop(this->player->field_0x1c);
+        Globals::sound->stop(0x23);
+        Globals::sound->stop(0x8d5);
+        Globals::sound->stop(0x8d4);
+        Globals::sound->play(0x20, nullptr, nullptr, 0.0f);
+    } else {
+        this->egoJumpPos = (*this->level->getLandmarks())[1]->getPosition();
         this->egoJumpPos.z += -10000.0f;
         this->player->setPosition(this->egoJumpPos);
         this->player->setComputerControlled(true);
@@ -276,45 +296,8 @@ void MGame::startJumpScene() {
         this->egoJumpPos.x += -2000.0f;
         this->egoJumpPos.y += 300.0f;
         this->egoJumpPos.z += 4000.0f;
-        camX = this->egoJumpPos.x;
-        camY = this->egoJumpPos.y;
-        camZ = this->egoJumpPos.z;
-    } else {
-        this->player->resetMovement();
-        this->player->setComputerControlled(true);
-        AEGeometry *geo = new AEGeometry((uint16_t) 0x3ab2, Globals::Canvas, false);
-        this->jumpFlash = geo;
-        AbyssEngine::Transform *tr = static_cast<AbyssEngine::Transform *>(
-            Globals::Canvas->TransformGetTransform(geo->transform));
-        tr->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-
-        this->egoJumpPos = this->player->getPosition();
-        Vector direction = this->player->geometry->getDirection();
-        Vector scaledDirection = direction * 3000.0f;
-        this->egoJumpPos += scaledDirection;
-        this->jumpFlash->setPosition(this->egoJumpPos);
-
-        Vector flashDirection = this->player->geometry->getDirection();
-        this->jumpFlash->setScaling(2.0f, 2.0f, 2.0f);
-        Vector up = {0.0f, 1.0f, 0.0f};
-        this->jumpFlash->setDirection(flashDirection, up);
-
-        flashDirection = {-2000.0f, 300.0f, -2000.0f};
-        Player *inner = this->player->player;
-        flashDirection = AbyssEngine::AEMath::MatrixRotateVector(
-            reinterpret_cast<const AbyssEngine::Matrix &>(inner->transform[0]), flashDirection);
-        this->egoJumpPos += flashDirection;
-
-        Globals::sound->stop(this->player->field_0x1c);
-        Globals::sound->stop(0x23);
-        Globals::sound->stop(0x8d5);
-        Globals::sound->stop(0x8d4);
-        Globals::sound->play(0x20, nullptr, nullptr, 0.0f);
-        camX = this->egoJumpPos.x;
-        camY = this->egoJumpPos.y;
-        camZ = this->egoJumpPos.z;
     }
-    TFC_setPosition(this->camera, camX, camY, camZ);
+    TFC_setPosition(this->camera, this->egoJumpPos.x, this->egoJumpPos.y, this->egoJumpPos.z);
 }
 
 static inline void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v) { c->setRotationAroundTarget(v); }
@@ -1690,13 +1673,7 @@ done:
 }
 
 MGame::~MGame() {
-    MGame *self = this;
-    ((MGame *) (self))->OnRelease();
-    {
-        if (this->gameOverTitle.data) delete[] this->gameOverTitle.data;
-        this->gameOverTitle.data = nullptr;
-        this->gameOverTitle.length = 0;
-    }
+    OnRelease();
 }
 
 void MGame::resumeSounds() {
@@ -2191,28 +2168,19 @@ bool MGame::updateJumpScene() {
 
 camMove:
     {
-        int dt = self->deltaTime;
-        Vector movement;
         if (self->usingJumpDrive != 0) {
-            movement.x = (float) (dt * 2);
-            movement.y = (float) (dt * 5);
-            movement.z = (float) -(dt * 5);
+            self->egoJumpPos = AbyssEngine::AEMath::MatrixRotateVector(
+                reinterpret_cast<const AbyssEngine::Matrix &>(self->player->player->transform[0]),
+                Vector{(float) (self->deltaTime * 5), (float) (self->deltaTime * 2), (float) -(self->deltaTime * 5)});
         } else {
-            movement.x = (float) (dt * 2);
-            movement.y = (float) (dt * 5);
-            movement.z = (float) (dt - dt * 5);
+            self->egoJumpPos = AbyssEngine::AEMath::MatrixRotateVector(
+                reinterpret_cast<const AbyssEngine::Matrix &>(self->player->player->transform[0]),
+                Vector{(float) (self->deltaTime * 5), (float) (self->deltaTime * 2), (float) (self->deltaTime * -3)});
         }
-        Player *inner = self->player->player;
-        self->egoJumpPos = AbyssEngine::AEMath::MatrixRotateVector(
-            reinterpret_cast<const AbyssEngine::Matrix &>(inner->transform[0]), movement);
         self->camera->translate(
             self->egoJumpPos.x, self->egoJumpPos.y, self->egoJumpPos.z);
-        if (self->usingJumpDrive != 0) {
-            self->egoJumpPos = self->jumpFlash->getPosition();
-        } else {
-            Array<KIPlayer *> *lm = self->level->getLandmarks();
-            self->egoJumpPos = (*lm)[1]->getPosition();
-        }
+        self->egoJumpPos = self->usingJumpDrive != 0 ? self->jumpFlash->getPosition()
+                                                     : (*self->level->getLandmarks())[1]->getPosition();
         fadeOut = false;
     }
 
@@ -2230,7 +2198,7 @@ afterCam:
         static_cast<PlayerJumpgate *>((*lm)[1])->activate();
         Vector playerPosition = self->player->getPosition();
         float soundThreshold = self->egoJumpPos.z + -16500.0f;
-        if (soundThreshold <= playerPosition.z && self->jumpGateSoundStarted == 0) {
+        if (playerPosition.z >= soundThreshold && self->jumpGateSoundStarted == 0) {
             Globals::sound->stop(self->player->field_0x1c);
             Globals::sound->stop(0x8d5);
             Globals::sound->stop(0x8d4);
@@ -2273,12 +2241,11 @@ afterCam:
             self->jumpDriveActive = 0;
             p->resetChargingDrive();
         } else {
-            Station *station = Level::programmedStation;
-            Globals::status->departStation(station);
+            Globals::status->departStation(Level::programmedStation);
             self->level->setInitStreamOut();
             if (self->usingJumpDrive == 0)
                 Globals::status->jumpgateUsed();
-            if (station->equals(Globals::status->playerStation) != 0) {
+            if (Level::programmedStation->equals(Globals::status->playerStation) != 0) {
                 Level::comingFromAlienWorld = 1;
                 Level::initStreamOutPosition = 1;
                 Globals::status->setStation(Globals::status->playerStation);
@@ -2692,23 +2659,21 @@ void MGame::dialogueEvent() {
 
 int MGame::nextCamId(int cur) {
     int id = cur + 1;
-    if (id == 2) id = cur + 2;
+    if (id == 2) id++;
     if (id == 1) {
-        if (((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(8) != 0 ||
-            ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
-            id = this->player->hasAutoTurret() == 0 ? 1 : 2;
-        } else {
-            id = 2;
-        }
+        id = (Globals::status->getShip()->getFirstEquipmentOfSort(8) != 0 ||
+              Globals::status->getShip()->getFirstEquipmentOfSort(0x23) != 0) &&
+             !this->player->hasAutoTurret() ? 1 : 2;
     }
-    if (id == 2) id = 3;
+    if (id == 2) id++;
     if (id >= 4) {
-        if (this->player->isDockedToDockingPoint() == 0) return 0;
-        if (((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(8) == 0 &&
-            ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x23) == 0) {
+        if (!this->player->isDockedToDockingPoint()) return 0;
+        if (Globals::status->getShip()->getFirstEquipmentOfSort(8) == 0 &&
+            Globals::status->getShip()->getFirstEquipmentOfSort(0x23) == 0) {
             return 3;
         }
-        id = this->player->hasAutoTurret() != 0 ? 3 : 1;
+        id = 1;
+        if (this->player->hasAutoTurret()) id = 3;
     }
     return id;
 }
