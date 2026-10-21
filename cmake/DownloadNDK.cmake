@@ -19,12 +19,16 @@
 include_guard(GLOBAL)
 
 set(_ndk "android-ndk-r18b")
-set(_host "darwin-x86_64")
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    set(_host "linux-x86_64")
+else()
+    set(_host "darwin-x86_64")
+endif()
 set(_cache "${CMAKE_SOURCE_DIR}/.cache/ndk")
 set(_root "${_cache}/${_ndk}")
 
 # Sentinel: the libc++ headers only exist after a complete extraction.
-if(NOT EXISTS "${_root}/sources/cxx-stl/llvm-libc++/include")
+if(NOT EXISTS "${_root}/toolchains/llvm/prebuilt/${_host}/bin/clang++")
     set(_zip "${_cache}/${_ndk}-${_host}.zip")
     set(_url "https://dl.google.com/android/repository/${_ndk}-${_host}.zip")
     message(STATUS "Downloading ${_ndk}-${_host} (~500MB, one time) ...")

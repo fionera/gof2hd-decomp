@@ -16,7 +16,8 @@ import argparse, os, subprocess, sys
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NDK_OBJDUMP = os.path.join(
     REPO, ".cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/"
-    "prebuilt/darwin-x86_64/bin/arm-linux-androideabi-objdump")
+    "prebuilt/" + ("linux-x86_64" if sys.platform.startswith("linux") else "darwin-x86_64") +
+    "/bin/arm-linux-androideabi-objdump")
 
 def main():
     ap = argparse.ArgumentParser()
