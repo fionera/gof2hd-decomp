@@ -4625,496 +4625,583 @@ void Level::enemyDied(int /*index*/, bool killedByFriend) {
     }
 }
 
-struct RMSpec {
-    int id, speaker, kind, delay;
-};
-
-void Level::createRadioMessages(int set) {
+Array<RadioMessage *> *Level::createRadioMessages(int set) {
     this->messages = nullptr;
 
     switch (set) {
-        case 0: {
-            static const RMSpec t[] = {
-                {0x684, 0x11, 5, 0x5dc}, {0x685, 0, 6, 0}, {0x686, 0, 6, 1}, {0x687, 10, 6, 2}, {0x688, 0xb, 6, 3},
-                {0x689, 9, 6, 4}, {0x68a, 9, 6, 5}, {0x68b, 9, 6, 6}, {0x68c, 0, 6, 7}, {0x693, 0, 9, 0},
-                {0x694, 0, 6, 9},
-                {0x695, 0, 6, 10}, {0x696, 0xf, 6, 0xb}, {0x697, 0, 6, 0xc}, {0x698, 0, 6, 0xd}, {0x699, 0, 6, 0xe},
-                {0x69a, 0, 0x1b, 0xc}, {0x69b, 0xf, 6, 0x10}, {0x69c, 0, 6, 0x11}, {0x69d, 0xf, 6, 0x12},
-                {0x69e, 0, 6, 0x13}, {0x69f, 0, 6, 0x14}, {0x6a0, 0xf, 6, 0x15},
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(0x17, *(this->messages));
-                for (unsigned i = 0; i < 0x17; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 0:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(23, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1668, 17, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(1669, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(1670, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(1671, 10, 6, 2);
+            (*this->messages)[4] = new RadioMessage(1672, 11, 6, 3);
+            (*this->messages)[5] = new RadioMessage(1673, 9, 6, 4);
+            (*this->messages)[6] = new RadioMessage(1674, 9, 6, 5);
+            (*this->messages)[7] = new RadioMessage(1675, 9, 6, 6);
+            (*this->messages)[8] = new RadioMessage(1676, 0, 6, 7);
+            (*this->messages)[9] = new RadioMessage(1683, 0, 9, 0, 3);
+            (*this->messages)[10] = new RadioMessage(1684, 0, 6, 9);
+            (*this->messages)[11] = new RadioMessage(1685, 0, 6, 10);
+            (*this->messages)[12] = new RadioMessage(1686, 15, 6, 11);
+            (*this->messages)[13] = new RadioMessage(1687, 0, 6, 12);
+            (*this->messages)[14] = new RadioMessage(1688, 0, 6, 13);
+            (*this->messages)[15] = new RadioMessage(1689, 0, 6, 14);
+            (*this->messages)[16] = new RadioMessage(1690, 0, 27, 12);
+            (*this->messages)[17] = new RadioMessage(1691, 15, 6, 16);
+            (*this->messages)[18] = new RadioMessage(1692, 0, 6, 17);
+            (*this->messages)[19] = new RadioMessage(1693, 15, 6, 18);
+            (*this->messages)[20] = new RadioMessage(1694, 0, 6, 19);
+            (*this->messages)[21] = new RadioMessage(1695, 0, 6, 20);
+            (*this->messages)[22] = new RadioMessage(1696, 15, 6, 21);
             break;
-        }
-        case 1: {
-            static const RMSpec t[] = {{0x6a1, 2, 5, 10000}, {0x6a2, 2, 6, 0}, {0x6a3, 2, 6, 1}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(3, *(this->messages));
-                for (unsigned i = 0; i < 3; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 1:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(3, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1697, 2, 5, 10000);
+            (*this->messages)[1] = new RadioMessage(1698, 2, 6, 0);
+            (*this->messages)[2] = new RadioMessage(1699, 2, 6, 1);
             break;
-        }
-        case 7: {
-            static const RMSpec t[] = {{0x6dc, 2, 0x10, 0}, {0x6dd, 0, 6, 0}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(2, *(this->messages));
-                for (unsigned i = 0; i < 2; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 7:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(2, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1756, 2, 16, 0);
+            (*this->messages)[1] = new RadioMessage(1757, 0, 6, 0);
             break;
-        }
-        case 0x10: {
-            static const RMSpec t[] = {
-                {0x72e, 0x13, 5, 10000}, {0x72f, 0, 6, 0}, {0x730, 0, 9, 0},
-                {0x731, 1, 6, 2}, {0x732, 0, 6, 3}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(5, *(this->messages));
-                for (unsigned i = 0; i < 5; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 14:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(5, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1820, 18, 5, 10000);
+            (*this->messages)[1] = new RadioMessage(1821, 18, 20, 1);
+            (*this->messages)[2] = new RadioMessage(1822, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(1823, 18, 6, 2);
+            (*this->messages)[4] = new RadioMessage(1824, 17, 6, 3);
             break;
-        }
-        case 0x15: {
-            static const RMSpec t[] = {
-                {0x759, 10, 0x10, 0}, {0x75a, 0, 6, 0}, {0x75b, 10, 0x19, 2},
-                {0x75c, 0xe, 8, 0}, {0x75d, 0xe, 0x15, 0}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(5, *(this->messages));
-                for (unsigned i = 0; i < 5; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 16:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(5, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1838, 19, 5, 10000);
+            (*this->messages)[1] = new RadioMessage(1839, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(1840, 0, 9, 0, 3);
+            (*this->messages)[3] = new RadioMessage(1841, 1, 6, 2);
+            (*this->messages)[4] = new RadioMessage(1842, 0, 6, 3);
             break;
-        }
-        case 0x18: {
-            static const RMSpec t[] = {
-                {0x77d, 0x13, 5, 12000}, {0x77e, 6, 6, 0}, {0x77f, 0, 6, 1},
-                {0x780, 6, 0x16, 3}, {0x781, 6, 6, 3}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(5, *(this->messages));
-                for (unsigned i = 0; i < 5; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 21:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(5, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1881, 10, 16, 0);
+            (*this->messages)[1] = new RadioMessage(1882, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(1883, 10, 25, 2);
+            (*this->messages)[3] = new RadioMessage(1884, 14, 8, 0);
+            (*this->messages)[4] = new RadioMessage(1885, 14, 21, 0);
             break;
-        }
-        case 0x19: {
-            static const RMSpec t[] = {{0x785, 0, 5, 20000}, {0x786, 6, 6, 0}, {0x787, 0, 6, 1}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(3, *(this->messages));
-                for (unsigned i = 0; i < 3; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 24:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(5, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1917, 19, 5, 12000);
+            (*this->messages)[1] = new RadioMessage(1918, 6, 6, 0);
+            (*this->messages)[2] = new RadioMessage(1919, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(1920, 6, 22, 3);
+            (*this->messages)[4] = new RadioMessage(1921, 6, 6, 3);
             break;
-        }
-        case 0x26: {
-            static const RMSpec t[] = {{0x7ed, 0x15, 5, 15000}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(1, *(this->messages));
-                for (unsigned i = 0; i < 1; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 25:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(3, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1925, 0, 5, 20000);
+            (*this->messages)[1] = new RadioMessage(1926, 6, 6, 0);
+            (*this->messages)[2] = new RadioMessage(1927, 0, 6, 1);
             break;
-        }
-        case 0x28: {
-            static const RMSpec t[] = {
-                {0x7fa, 0, 5, 10000}, {0x7fb, 8, 6, 0}, {0x7fc, 0, 6, 1}, {0x7fd, 7, 5, 40000},
-                {0x7fe, 0, 6, 3}, {0x7ff, 7, 0xc, 0}, {0x800, 0, 0x18, 0}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(7, *(this->messages));
-                for (unsigned i = 0; i < 7; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 28:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(3, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1944, 0, 5, 20000);
+            (*this->messages)[1] = new RadioMessage(1945, 19, 6, 0);
+            (*this->messages)[2] = new RadioMessage(1946, 0, 6, 1);
             break;
-        }
-        case 0x29: {
-            RMSpec t[] = {
-                {0x804, 0, 5, 80000}, {0x805, 7, 6, 0}, {0x806, 0, 6, 1},
-                {0x807, 7, 6, 2}, {0x808, 7, 0x1a, -100000}, {0x809, 7, 6, 4},
-                {0x80f, 0, 1, 0}, {0x810, 0, 6, 6}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(8, *(this->messages));
-                for (unsigned i = 0; i < 8; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 29:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(6, *this->messages);
+            (*this->messages)[0] = new RadioMessage(1948, 0, 23, 0);
+            (*this->messages)[1] = new RadioMessage(1949, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(1950, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(1951, 0, 6, 2);
+            (*this->messages)[4] = new RadioMessage(1952, 19, 5, 120000);
+            (*this->messages)[5] = new RadioMessage(1953, 0, 6, 4);
             break;
-        }
-        case 0x31: {
-            static const RMSpec t[] = {{0x848, 0, 5, 8000}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(1, *(this->messages));
-                for (unsigned i = 0; i < 1; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 38:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2029, 21, 5, 15000);
             break;
-        }
-        case 0x32: {
-            static const RMSpec t[] = {{0x849, 0x3f, 5, 8000}, {0x84a, 0, 6, 0}, {0x84b, 0x3f, 6, 1}, {0x84c, 0, 6, 2}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(4, *(this->messages));
-                for (unsigned i = 0; i < 4; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 40:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(7, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2042, 0, 5, 10000);
+            (*this->messages)[1] = new RadioMessage(2043, 8, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2044, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2045, 7, 5, 40000);
+            (*this->messages)[4] = new RadioMessage(2046, 0, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2047, 7, 12, 0);
+            (*this->messages)[6] = new RadioMessage(2048, 0, 24, 0);
             break;
-        }
-        case 0x33: {
-            static const RMSpec t[] = {{0x84d, 0x3f, 5, 8000}, {0x84e, 0, 6, 0}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(2, *(this->messages));
-                for (unsigned i = 0; i < 2; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 41:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(8, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2052, 0, 5, 80000);
+            (*this->messages)[1] = new RadioMessage(2053, 7, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2054, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2055, 7, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2056, 7, 26, 4294867296);
+            (*this->messages)[5] = new RadioMessage(2057, 7, 6, 4);
+            (*this->messages)[6] = new RadioMessage(2063, 0, 1, 0);
+            (*this->messages)[7] = new RadioMessage(2064, 0, 6, 6);
             break;
-        }
-        case 0x34: {
-            static const RMSpec t[] = {{0x84f, 0x3f, 5, 8000}, {0x850, 0, 6, 0}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(2, *(this->messages));
-                for (unsigned i = 0; i < 2; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 49:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2120, 0, 5, 8000);
             break;
-        }
-        case 0x36: {
-            static const RMSpec t[] = {{0x851, 0, 5, 8000}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(1, *(this->messages));
-                for (unsigned i = 0; i < 1; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 50:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(4, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2121, 63, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2122, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2123, 63, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2124, 0, 6, 2);
             break;
-        }
-        case 0x37: {
-            static const RMSpec t[] = {{0x85a, 0, 5, 8000}, {0x85b, 0, 6, 0}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(2, *(this->messages));
-                for (unsigned i = 0; i < 2; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 51:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(2, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2125, 63, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2126, 0, 6, 0);
             break;
-        }
-        case 0x38: {
-            static const RMSpec t[] = {
-                {0x86a, 0x1b, 5, 8000}, {0x86b, 0, 6, 0}, {0x86c, 0x1c, 0x10, 0},
-                {0x86d, 0, 0x14, 3}, {0x86e, 0, 6, 3}, {0x86f, 0x1b, 0x1c, 0}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(6, *(this->messages));
-                for (unsigned i = 0; i < 6; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 52:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(2, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2127, 63, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2128, 0, 6, 0);
             break;
-        }
-        case 0x40: {
-            static const RMSpec t[] = {
-                {0x8b4, 0, 5, 8000}, {0x8b5, 0x14, 6, 0}, {0x8b6, 0, 6, 1}, {0x8b7, 0x1e, 6, 2},
-                {0x8b8, 0, 6, 3}, {0x8b9, 0x1e, 0x14, 5}, {0x8ba, 0, 6, 5}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(7, *(this->messages));
-                for (unsigned i = 0; i < 7; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 53:
+        case 54:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2129, 0, 5, 8000);
             break;
-        }
-        case 0x41: {
-            static const RMSpec t[] = {{0x8cb, 0, 5, 12000}, {0x8cc, 0x14, 6, 0}, {0x8cd, 0, 6, 1}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(3, *(this->messages));
-                for (unsigned i = 0; i < 3; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 55:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(2, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2138, 0, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2139, 0, 6, 0);
             break;
-        }
-        case 0x43: {
-            static const RMSpec t[] = {
-                {0x8ef, 0, 0x10, 0}, {0x8f0, 0x1f, 6, 0}, {0x8f1, 0x1e, 6, 1},
-                {0x8f2, 0, 0x14, 2}, {0x8f3, 0x1f, 6, 3}, {0x8f4, 0, 6, 4}, {0x8f5, 0, 0x14, 8},
-                {0x8f6, 0x1f, 6, 6}, {0x8f7, 0, 6, 7}, {0x8f8, 0x1f, 6, 8}, {0x8f9, 0, 6, 9},
-                {0x8fa, 0x1f, 6, 10}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(0xc, *(this->messages));
-                for (unsigned i = 0; i < 0xc; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 56:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(6, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2154, 27, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2155, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2156, 28, 16, 0);
+            (*this->messages)[3] = new RadioMessage(2157, 0, 20, 3);
+            (*this->messages)[4] = new RadioMessage(2158, 0, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2159, 27, 28, 0);
             break;
-        }
-        case 0x45: {
-            static const RMSpec t[] = {{0x90e, 0, 5, 8000}, {0x90f, 0, 6, 0}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(2, *(this->messages));
-                for (unsigned i = 0; i < 2; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 62:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2209, 0, 5, 8000);
             break;
-        }
-        case 0x46: {
-            static const RMSpec t[] = {{0x910, 0, 5, 8000}, {0x911, 0, 6, 0}, {0x912, 0x22, 6, 1}, {0x913, 0, 6, 2}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(4, *(this->messages));
-                for (unsigned i = 0; i < 4; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 63:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(3, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2223, 0, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2224, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2225, 29, 6, 1);
             break;
-        }
-        case 0x49: {
-            static const RMSpec t[] = {
-                {0x92b, 0, 5, 8000}, {0x92c, 0, 0x10, 0}, {0x92d, 0xb, 6, 1}, {0x92e, 0, 6, 2},
-                {0x92f, 0, 0x1b, 1}, {0x930, 0x21, 0x1b, 2}, {0x931, 0, 0x1b, 3},
-                {0x932, 0, 6, 6}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(8, *(this->messages));
-                for (unsigned i = 0; i < 8; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 64:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(7, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2228, 0, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2229, 20, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2230, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2231, 30, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2232, 0, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2233, 30, 20, 5);
+            (*this->messages)[6] = new RadioMessage(2234, 0, 6, 5);
             break;
-        }
-        case 0x77: {
-            static const RMSpec t[] = {{0xab9, 0x11, 0x1b, 1}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(1, *(this->messages));
-                for (unsigned i = 0; i < 1; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 65:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(3, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2251, 0, 5, 12000);
+            (*this->messages)[1] = new RadioMessage(2252, 20, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2253, 0, 6, 1);
             break;
-        }
-        case 0x78: {
-            static const RMSpec t[] = {{0xac5, 0, 5, 0x5dc}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(1, *(this->messages));
-                for (unsigned i = 0; i < 1; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 67:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(12, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2287, 0, 16, 0);
+            (*this->messages)[1] = new RadioMessage(2288, 31, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2289, 30, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2290, 0, 20, 2);
+            (*this->messages)[4] = new RadioMessage(2291, 31, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2292, 0, 6, 4);
+            (*this->messages)[6] = new RadioMessage(2293, 0, 20, 8);
+            (*this->messages)[7] = new RadioMessage(2294, 31, 6, 6);
+            (*this->messages)[8] = new RadioMessage(2295, 0, 6, 7);
+            (*this->messages)[9] = new RadioMessage(2296, 31, 6, 8);
+            (*this->messages)[10] = new RadioMessage(2297, 0, 6, 9);
+            (*this->messages)[11] = new RadioMessage(2298, 31, 6, 10);
             break;
-        }
-        case 0x83: {
-            static const RMSpec t[] = {{0xb2b, 0, 0x1b, 2}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(1, *(this->messages));
-                for (unsigned i = 0; i < 1; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 69:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(2, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2318, 0, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2319, 0, 6, 0);
             break;
-        }
-        case 0x85: {
-            static const RMSpec t[] = {{0xb33, 0x11, 0x1b, 1}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(1, *(this->messages));
-                for (unsigned i = 0; i < 1; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 70:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(4, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2320, 0, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2321, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2322, 34, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2323, 0, 6, 2);
             break;
-        }
-        case 0x87: {
-            static const RMSpec t[] = {
-                {0xb43, 0x31, 0x1b, 1}, {0xb44, 0, 6, 0}, {0xb45, 0, 0x1b, 2},
-                {0xb46, 0, 0x1b, 3}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(4, *(this->messages));
-                for (unsigned i = 0; i < 4; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 73:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(8, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2347, 0, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2348, 0, 16, 0);
+            (*this->messages)[2] = new RadioMessage(2349, 11, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2350, 0, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2351, 0, 27, 1);
+            (*this->messages)[5] = new RadioMessage(2352, 33, 27, 2);
+            (*this->messages)[6] = new RadioMessage(2353, 0, 27, 3);
+            (*this->messages)[7] = new RadioMessage(2354, 0, 6, 6);
             break;
-        }
-        case 0x89: {
-            static const RMSpec t[] = {
-                {0xb4f, 0x32, 5, 0x5dc}, {0xb50, 0, 6, 0}, {0xb51, 0x32, 6, 1},
-                {0xb52, 0, 6, 2}, {0xb53, 0x32, 6, 3}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(5, *(this->messages));
-                for (unsigned i = 0; i < 5; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 78:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(4, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2409, 0, 5, 2000);
+            (*this->messages)[1] = new RadioMessage(2410, 0, 27, 9);
+            (*this->messages)[2] = new RadioMessage(2411, 0, 27, 11);
+            (*this->messages)[3] = new RadioMessage(2412, 11, 6, 2);
             break;
-        }
-        case 0x90: {
-            static const RMSpec t[] = {
-                {0xb98, 0x27, 5, 7000}, {0xb99, 0x27, 6, 0}, {0xb9a, 0, 6, 1},
-                {0xb9b, 0x27, 6, 2}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(4, *(this->messages));
-                for (unsigned i = 0; i < 4; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 79:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2413, 0, 5, 6000);
             break;
-        }
-        case 0x91: {
-            static const RMSpec t[] = {{0xb9c, 0, 5, 7000}, {0xb9d, 0x27, 6, 0}, {0xb9e, 0x27, 0x1b, 5}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(3, *(this->messages));
-                for (unsigned i = 0; i < 3; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 80:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(12, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2414, 0, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2415, 6, 5, 25000);
+            (*this->messages)[2] = new RadioMessage(2416, 26, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2417, 0, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2418, 6, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2419, 26, 6, 4);
+            (*this->messages)[6] = new RadioMessage(2420, 6, 6, 5);
+            (*this->messages)[7] = new RadioMessage(2421, 26, 6, 6);
+            (*this->messages)[8] = new RadioMessage(2422, 0, 6, 7);
+            (*this->messages)[9] = new RadioMessage(2423, 26, 9, 1, 18);
+            (*this->messages)[10] = new RadioMessage(2424, 26, 27, 12);
+            (*this->messages)[11] = new RadioMessage(2425, 26, 6, 10);
             break;
-        }
-        case 0x93: {
-            static const RMSpec t[] = {{0xbac, 0, 5, 7000}, {0xbad, 0, 6, 0}};
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(2, *(this->messages));
-                for (unsigned i = 0; i < 2; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 81:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(4, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2432, 26, 5, 16000);
+            (*this->messages)[1] = new RadioMessage(2433, 31, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2434, 26, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2435, 26, 6, 2);
             break;
-        }
-        case 0x50: {
-            static const RMSpec t[] = {
-                {0x96e, 0, 5, 8000}, {0x96f, 6, 5, 25000}, {0x970, 0x1a, 6, 1},
-                {0x971, 0, 6, 2}, {0x972, 6, 6, 3}
-            };
-            {
-                this->messages = new Array<RadioMessage *>();
-                ArraySetLength(5, *(this->messages));
-                for (unsigned i = 0; i < 5; i = i + 1) {
-                    RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                    new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
-                    (*this->messages)[i] = m;
-                }
-            }
+        case 87:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(6, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2480, 6, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2481, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2482, 6, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2483, 0, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2484, 6, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2485, 0, 6, 4);
             break;
-        }
+        case 89:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2494, 17, 5, 2000);
+            break;
+        case 91:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(7, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2504, 0, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2505, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2506, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2507, 60, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2508, 0, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2509, 0, 27, 2);
+            (*this->messages)[6] = new RadioMessage(2510, 60, 27, 4);
+            break;
+        case 92:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(10, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2513, 59, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2514, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2515, 59, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2516, 0, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2517, 0, 27, 2);
+            (*this->messages)[5] = new RadioMessage(2518, 0, 6, 4);
+            (*this->messages)[6] = new RadioMessage(2519, 0, 27, 6);
+            (*this->messages)[7] = new RadioMessage(2520, 0, 6, 6);
+            (*this->messages)[8] = new RadioMessage(2521, 0, 9, 0, 3);
+            (*this->messages)[9] = new RadioMessage(2522, 59, 27, 10);
+            break;
+        case 94:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(6, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2541, 0, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2542, 59, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2543, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2544, 0, 27, 1);
+            (*this->messages)[4] = new RadioMessage(2545, 0, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2546, 0, 6, 4);
+            break;
+        case 95:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2555, 17, 27, 1);
+            break;
+        case 97:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(3, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2582, 0, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2583, 22, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2584, 0, 6, 1);
+            break;
+        case 99:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2600, 17, 27, 1);
+            break;
+        case 100:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(2, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2613, 0, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2614, 0, 6, 0);
+            break;
+        case 102:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(9, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2625, 18, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2626, 18, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2627, 18, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2628, 18, 27, 3);
+            (*this->messages)[4] = new RadioMessage(2629, 0, 30, 1);
+            (*this->messages)[5] = new RadioMessage(2630, 0, 30, 2);
+            (*this->messages)[6] = new RadioMessage(2631, 0, 30, 3);
+            (*this->messages)[7] = new RadioMessage(2632, 18, 27, 5);
+            (*this->messages)[8] = new RadioMessage(2633, 0, 27, 7);
+            break;
+        case 105:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(9, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2657, 20, 5, 0);
+            (*this->messages)[1] = new RadioMessage(2658, 61, 27, 2);
+            (*this->messages)[2] = new RadioMessage(2659, 0, 27, 5);
+            (*this->messages)[3] = new RadioMessage(2660, 20, 27, 6);
+            (*this->messages)[4] = new RadioMessage(2661, 0, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2662, 0, 27, 7);
+            (*this->messages)[6] = new RadioMessage(2663, 20, 6, 5);
+            (*this->messages)[7] = new RadioMessage(2664, 0, 27, 9);
+            (*this->messages)[8] = new RadioMessage(2665, 0, 27, 10);
+            break;
+        case 106:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(6, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2666, 0, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2667, 20, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2668, 20, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2669, 0, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2670, 0, 6, 3);
+            (*this->messages)[5] = new RadioMessage(2671, 0, 27, 6);
+            break;
+        case 109:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2687, 17, 27, 1);
+            break;
+        case 114:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(3, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2708, 0, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2709, 10, 27, 1);
+            (*this->messages)[2] = new RadioMessage(2710, 0, 6, 1);
+            break;
+        case 119:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2745, 17, 27, 1);
+            break;
+        case 120:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2757, 0, 5, 1500);
+            break;
+        case 123:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(4, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2785, 22, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2786, 38, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2787, 22, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2788, 0, 6, 2);
+            break;
+        case 125:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(8, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2804, 0, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2814, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2815, 0, 27, 2);
+            (*this->messages)[3] = new RadioMessage(2816, 10, 27, 3);
+            (*this->messages)[4] = new RadioMessage(2817, 0, 27, 4);
+            (*this->messages)[5] = new RadioMessage(2818, 0, 27, 5);
+            (*this->messages)[6] = new RadioMessage(2820, 0, 27, 6);
+            (*this->messages)[7] = new RadioMessage(2821, 0, 27, 7);
+            break;
+        case 126:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2828, 17, 27, 1);
+            break;
+        case 131:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2859, 0, 27, 2);
+            break;
+        case 133:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2867, 17, 27, 1);
+            break;
+        case 135:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(4, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2883, 49, 27, 1);
+            (*this->messages)[1] = new RadioMessage(2884, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2885, 0, 27, 2);
+            (*this->messages)[3] = new RadioMessage(2886, 0, 27, 3);
+            break;
+        case 137:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(5, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2895, 50, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2896, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2897, 50, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2898, 0, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2899, 50, 6, 3);
+            break;
+        case 139:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(6, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2924, 0, 5, 8000);
+            (*this->messages)[1] = new RadioMessage(2925, 0, 27, 1);
+            (*this->messages)[2] = new RadioMessage(2926, 50, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2927, 50, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2928, 0, 27, 2);
+            (*this->messages)[5] = new RadioMessage(2929, 0, 27, 3);
+            break;
+        case 142:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(5, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2952, 2, 5, 1500);
+            (*this->messages)[1] = new RadioMessage(2953, 2, 27, 1);
+            (*this->messages)[2] = new RadioMessage(2954, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2955, 2, 6, 2);
+            (*this->messages)[4] = new RadioMessage(2956, 2, 27, 3);
+            break;
+        case 144:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(4, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2968, 39, 5, 7000);
+            (*this->messages)[1] = new RadioMessage(2969, 39, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2970, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(2971, 39, 6, 2);
+            break;
+        case 145:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(3, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2972, 0, 5, 7000);
+            (*this->messages)[1] = new RadioMessage(2973, 39, 6, 0);
+            (*this->messages)[2] = new RadioMessage(2974, 39, 27, 5);
+            break;
+        case 147:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(2, *this->messages);
+            (*this->messages)[0] = new RadioMessage(2988, 0, 5, 7000);
+            (*this->messages)[1] = new RadioMessage(2989, 0, 6, 0);
+            break;
+        case 154:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(12, *this->messages);
+            (*this->messages)[0] = new RadioMessage(3039, 0, 5, 9000);
+            (*this->messages)[1] = new RadioMessage(3040, 26, 6, 0);
+            (*this->messages)[2] = new RadioMessage(3041, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(3042, 26, 6, 2);
+            (*this->messages)[4] = new RadioMessage(3043, 0, 6, 3);
+            (*this->messages)[5] = new RadioMessage(3044, 26, 6, 4);
+            (*this->messages)[6] = new RadioMessage(3045, 0, 6, 5);
+            (*this->messages)[7] = new RadioMessage(3046, 26, 27, 9);
+            (*this->messages)[8] = new RadioMessage(3047, 0, 27, 10);
+            (*this->messages)[9] = new RadioMessage(3048, 55, 6, 8);
+            (*this->messages)[10] = new RadioMessage(3049, 0, 6, 9);
+            (*this->messages)[11] = new RadioMessage(3050, 0, 27, 11);
+            break;
+        case 157:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(17, *this->messages);
+            (*this->messages)[0] = new RadioMessage(3077, 0, 5, 7000);
+            (*this->messages)[1] = new RadioMessage(3078, 38, 6, 0);
+            (*this->messages)[2] = new RadioMessage(3079, 0, 6, 1);
+            (*this->messages)[3] = new RadioMessage(3080, 39, 6, 2);
+            (*this->messages)[4] = new RadioMessage(3081, 1, 27, 5);
+            (*this->messages)[5] = new RadioMessage(3082, 0, 6, 4);
+            (*this->messages)[6] = new RadioMessage(3083, 6, 12, 21);
+            (*this->messages)[7] = new RadioMessage(3084, 0, 6, 6);
+            (*this->messages)[8] = new RadioMessage(3085, 6, 27, 6);
+            (*this->messages)[9] = new RadioMessage(3086, 26, 6, 8);
+            (*this->messages)[10] = new RadioMessage(3087, 6, 6, 9);
+            (*this->messages)[11] = new RadioMessage(3088, 1, 6, 10);
+            (*this->messages)[12] = new RadioMessage(3089, 39, 27, 8);
+            (*this->messages)[13] = new RadioMessage(3090, 0, 27, 9);
+            (*this->messages)[14] = new RadioMessage(3091, 26, 6, 13);
+            (*this->messages)[15] = new RadioMessage(3092, 0, 6, 14);
+            (*this->messages)[16] = new RadioMessage(3093, 26, 6, 15);
+            break;
+        case 158:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(11, *this->messages);
+            (*this->messages)[0] = new RadioMessage(3094, 0, 5, 10000);
+            (*this->messages)[1] = new RadioMessage(3095, 0, 6, 0);
+            (*this->messages)[2] = new RadioMessage(3096, 39, 6, 1);
+            (*this->messages)[3] = new RadioMessage(3097, 0, 6, 2);
+            (*this->messages)[4] = new RadioMessage(3098, 39, 6, 3);
+            (*this->messages)[5] = new RadioMessage(3099, 39, 31, 0);
+            (*this->messages)[6] = new RadioMessage(3100, 0, 6, 5);
+            (*this->messages)[7] = new RadioMessage(3101, 39, 12, 0);
+            (*this->messages)[8] = new RadioMessage(3102, 0, 6, 7);
+            (*this->messages)[9] = new RadioMessage(3103, 39, 19, 0);
+            (*this->messages)[10] = new RadioMessage(3104, 0, 1, 0);
+            break;
+        case 160:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(3121, 17, 27, 1);
+            break;
+        case 161:
+            this->messages = new Array<RadioMessage *>();
+            ArraySetLength(1, *this->messages);
+            (*this->messages)[0] = new RadioMessage(3125, 17, 27, 1);
+            break;
         default:
             break;
     }
+    return this->messages;
 }
 
 static inline float clampChannel(float scaled) {

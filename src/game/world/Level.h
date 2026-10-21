@@ -238,7 +238,7 @@ public:
 
     void setPlayerRoute(Route *route);
 
-    void createRadioMessages(int set);
+    Array<RadioMessage *> *createRadioMessages(int set);
 
     Array<BoundingVolume *> *getBoundingVolume(int id, AEGeometry *geometry);
 
