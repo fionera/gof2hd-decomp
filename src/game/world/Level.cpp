@@ -206,7 +206,6 @@ static inline void levelSpawnFar(Level *self, int *kiPlayer);
 
 static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit);
 
-static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned i, Vector *out);
 
 
 bool Level::hasMiningPlant() {
@@ -6336,50 +6335,38 @@ void Level::assignGuns() {
 }
 
 void Level::createGasClouds() {
-    Galaxy *gal = Globals::galaxy;
-    Station *st = (Station *) Globals::status->getStation();
-    int *prob = (int *) gal->getPlasmaProbabilities(st);
-
-    int ship = (int) (intptr_t) Globals::status->getShip();
-    if ((int) (intptr_t)((Ship *) (intptr_t) ship)->getFirstEquipmentOfSort(0x21) == 0 || Globals::status->
-        inAlienOrbit() != 0)
+    int *plasma = Globals::galaxy->getPlasmaProbabilities(Globals::status->getStation());
+    if (Globals::status->getShip()->getFirstEquipmentOfSort(0x21) == nullptr || Globals::status->inAlienOrbit()) {
         return;
-
-    Globals::status->getSystem();
-    if (((SolarSystem *) Globals::status->getSystem())->getIndex() != 10 && *prob == 0xcc) {
-        Globals::status->getSystem();
-        if (((SolarSystem *) Globals::status->getSystem())->getRoutes() == 0)
-            return;
+    }
+    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() != 10 && plasma[0] == 0xcc
+        && ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRoutes() == nullptr) {
+        return;
     }
 
-    this->gasClouds = new Array<KIPlayer *>();
-
-    bool boss = false;
-    if (Globals::status->getCurrentCampaignMission() == 0x8e) {
-        Station *s2 = (Station *) Globals::status->getStation();
-        boss = ((Station *) s2)->getIndex() == 0x4f;
-    }
-
-    AbyssEngine::AERandom *rng = Globals::rnd;
-    int roll = rng->nextInt();
-
-    float countF = (float) (boss ? 3.0f : 0.0f) + ((float) prob[1] / 1.0f) * (float) (roll + 4);
-    int count = (countF > 0.0f) ? (int) countF : 0;
-    ArraySetLength((unsigned) count, *(this->gasClouds));
-
-    PaintCanvas *canvas = Globals::Canvas;
-    for (unsigned i = 0; i < this->gasClouds->size(); i = i + 1) {
-        int kind = *prob;
-        Vector pos;
-        levelCloudRandomPos(this, (int) (intptr_t) rng, boss, i, &pos);
-
-        AEGeometry *geo = (AEGeometry *) ::operator new(0xc0);
-        new(geo) AEGeometry((uint16_t) 0x37d1, canvas, 0);
-        PlayerGasCloud *cloud = (PlayerGasCloud *) ::operator new(0x16c);
-        new(cloud) PlayerGasCloud(kind, this->field_94, geo, pos);
-        (*this->gasClouds)[i] = cloud;
-
-        (*this->gasClouds)[i]->setLevel(this);
+    Vector position = {0.0f, 0.0f, 0.0f};
+    gasClouds = new Array<KIPlayer *>();
+    bool bossOrbit = Globals::status->getCurrentCampaignMission() == 0x8e
+                     && Globals::status->getStation()->getIndex() == 0x4f;
+    ArraySetLength((unsigned int) ((bossOrbit ? 3.0f : 0.0f)
+                                   + (float) plasma[1] / 100.0f * (float) (Globals::rnd->nextInt(4) + 4)),
+                   *gasClouds);
+    for (unsigned int i = 0; i < gasClouds->size(); i++) {
+        int kind = plasma[0];
+        do {
+            position.x = (float) (Globals::rnd->nextInt(160000) - 80000);
+            position.y = (float) (Globals::rnd->nextInt(160000) - 80000);
+            position.z = (float) (Globals::rnd->nextInt(160000) - 80000);
+        } while (AbyssEngine::AEMath::VectorLength(position) <= 25000.0f
+                 || AbyssEngine::AEMath::VectorLength(position - reinterpret_cast<Vector &>(field_c8)) <= 30000.0f);
+        if (i == 0 && bossOrbit) {
+            position.y = 0.0f;
+            position.x = 92000.0f;
+            position.z = 36000.0f;
+        }
+        AEGeometry *geometry = new AEGeometry(0x37d1, Globals::Canvas, false);
+        (*gasClouds)[i] = new PlayerGasCloud(kind, field_94, geometry, position);
+        (*gasClouds)[i]->setLevel(this);
     }
 }
 
@@ -7132,18 +7119,6 @@ static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit)
     ((KIPlayer *) kiPlayer)->setPosition(base.x + ox, base.y + oy, base.z + oz);
 }
 
-static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned i, Vector *out) {
-    Vector p = (self->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : self->player->getPosition());
-    if (boss && i == 0) {
-        out->x = p.x;
-        out->y = p.y;
-        out->z = p.z + 30000.0f;
-        return;
-    }
-    out->x = p.x + (float) (((AbyssEngine::AERandom *) (intptr_t) rng)->nextInt() % 160000 - 80000);
-    out->y = p.y + (float) (((AbyssEngine::AERandom *) (intptr_t) rng)->nextInt() % 100000 - 50000);
-    out->z = p.z + (float) (((AbyssEngine::AERandom *) (intptr_t) rng)->nextInt() % 160000 - 80000);
-}
 
 
 unsigned char Level::doInstantJump;
