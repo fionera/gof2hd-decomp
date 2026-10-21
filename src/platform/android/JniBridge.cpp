@@ -528,12 +528,12 @@ void setValuesForGamepad(float x, float y) {
     g_gamepadAxisY = y;
 }
 
-extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC1BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC1BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
     return ndk_getDLC_1_BOUGHT();
 }
 
-extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC2BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC2BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
     return ndk_getDLC_2_BOUGHT();
 }
@@ -627,29 +627,29 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetGPIsLinked(
     g_android_gp_is_linked = linked;
 }
 
-extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC3BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC3BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
     return ndk_getDLC_3_BOUGHT();
 }
 
-extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC4BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC4BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
     return ndk_getDLC_4_BOUGHT();
 }
 
-extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC5BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC5BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
     return ndk_getDLC_5_BOUGHT();
 }
 
-extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getLogoShown( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getLogoShown( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk_getLogoShown() != 0;
+    return ndk_getLogoShown();
 }
 
-extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_isInMainMenu( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_isInMainMenu( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk_isInMainMenu() != 0;
+    return ndk_isInMainMenu();
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_resize( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)

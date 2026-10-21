@@ -466,8 +466,7 @@ bool keyIsPressed() {
 
 namespace {
     inline bool currentModuleIs(int id) {
-        return reinterpret_cast<std::intptr_t>(
-                   Globals::appManager->GetCurrentApplicationModule()) == id;
+        return Globals::appManager->GetCurrentApplicationModule() == static_cast<unsigned int>(id);
     }
 
     inline bool noBlockingOverlay() {
@@ -723,7 +722,7 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         g_stick.easedY = g_stick.savedY;
     }
 
-    if (reinterpret_cast<std::intptr_t>(Globals::appManager->GetCurrentApplicationModule()) == 2) {
+    if (Globals::appManager->GetCurrentApplicationModule() == 2) {
         const float dim = VectorSignedToFloat(Globals::smallButton_dim, 0);
         const float cy = VectorSignedToFloat(Globals::touch_stick_y, 0);
         const float cx = VectorSignedToFloat(Globals::touch_stick_x, 0);

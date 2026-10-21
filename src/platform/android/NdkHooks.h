@@ -24,7 +24,7 @@ int setBaughtCredits(int amount);
 
 void checkFirstCreditPackBoughtWriteAction();
 
-const char *getStringUTFChars(JNIEnv *env, jstring str);
+const char *getStringUTFChars(JNIEnv *env, jstring str, jboolean *isCopy);
 
 void releaseStringUTFChars(JNIEnv *env, jstring str, const char *chars);
 
@@ -42,15 +42,15 @@ int ndk_getLogoShown();
 
 int ndk_isInMainMenu();
 
-bool ndk_getDLC_1_BOUGHT();
+int ndk_getDLC_1_BOUGHT();
 
-bool ndk_getDLC_2_BOUGHT();
+int ndk_getDLC_2_BOUGHT();
 
-bool ndk_getDLC_3_BOUGHT();
+int ndk_getDLC_3_BOUGHT();
 
-bool ndk_getDLC_4_BOUGHT();
+int ndk_getDLC_4_BOUGHT();
 
-bool ndk_getDLC_5_BOUGHT();
+int ndk_getDLC_5_BOUGHT();
 
 void ndk_iapBoughtConsumable(unsigned int consumable);
 
