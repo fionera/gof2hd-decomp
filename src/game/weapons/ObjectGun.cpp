@@ -1,4 +1,5 @@
 #include "game/weapons/ObjectGun.h"
+#include "engine/core/ArrayReleaseClasses.h"
 
 #include <cstddef>
 

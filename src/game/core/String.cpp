@@ -690,14 +690,6 @@ String::String(const String &other, bool reverse) : data(nullptr) {
     if (reverse) Reverse();
 }
 
-String::String(char c) : data(nullptr) { Set((long long) c); }
-
-String::String(int v) : data(nullptr) { Set((long long) v); }
-
-String::String(float v) : data(nullptr) { ctor_float(v); }
-
-String::String(long long v) : data(nullptr) { ctor_longlong(v); }
-
 String &String::operator+=(const String &other) {
     const unsigned short *src = other.data;
     int n = other.length;

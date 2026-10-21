@@ -1,4 +1,5 @@
 #include "game/ship/Player.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/ship/Ship.h"
 #include "game/mission/Mission.h"
 #include "engine/audio/FModSound.h"

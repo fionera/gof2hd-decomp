@@ -1,4 +1,5 @@
 #include "game/weapons/MineGun.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/Globals.h"
 #include "game/weapons/ObjectGun.h"
 #include "game/weapons/Gun.h"

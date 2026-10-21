@@ -335,7 +335,7 @@ public:
 
     static String formatNumber(int n);
 
-    static String tagString(String in);
+    String tagString(String in);
 
     static String formatCredits(int n);
 
