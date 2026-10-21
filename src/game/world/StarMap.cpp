@@ -1303,140 +1303,235 @@ int StarMap::OnTouchMove(int x, int y) {
 }
 
 static inline float absf_end(float v) {
-    return v < 0.0f ? -v : v;
+    return v > 0.0f ? v : -v;
 }
 
-int StarMap::OnTouchEnd(int x, int y) {
-    String help;
+// Race of each ship hull (indexed by Ship::getIndex()); a campaign mission needs a race-1 hull.
+static const int StarMap_shipRaces[64] = {
+        3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0, 2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
+        8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3, 3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
 
+int StarMap::OnTouchEnd(int x, int y) {
     if (this->choiceVisible != 0) {
-        int result = this->choiceWindow->OnTouchEnd(x, y);
-        if (result == 1) {
+        int answer = this->choiceWindow->OnTouchEnd(x, y);
+        if (answer == 1) {
             this->choiceVisible = 0;
             this->alienJumpPending = 0;
             return 0;
         }
-        if (result != 0) {
+        if (answer != 0) {
             return 0;
         }
         this->choiceVisible = 0;
-        if (this->suppressNextClose != 0) {
+        if (this->suppressNextClose != 0 ||
+            (this->mode == 3 && (*this->stations)[this->selectedStation]->getIndex() ==
+                                Globals::status->getStation()->getIndex())) {
             this->suppressNextClose = 0;
             return 0;
         }
-        if (this->mode == 3) {
-            Station *station = (*this->stations)[this->selectedStation];
-            if (Station_getIndex(station) == Station_getIndex(Globals::status->getStation())) {
-                this->suppressNextClose = 0;
-                return 0;
-            }
-        }
-        if (this->alienJumpPending != 0 && this->mode == 0 &&
-            this->pad_0xa8_a == 0 && this->autoMode == 0) {
+        if (this->alienJumpPending != 0 && this->mode == 0 && this->pad_0xa8_a == 0 && this->autoMode == 0) {
+            // Confirmed jump into the alien world.
+            Level::programmedStation = Globals::status->playerStation;
             this->alienJumpPending = 0;
             this->exitRequested = 1;
-            Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
+            Level::doInstantJump = 1;
+            Level::energyCellsForNextJump = this->jumpCost;
+            Globals::Canvas->CameraSetCurrent(this->prevCamera);
+            return 1;
+        }
+        if (this->pad_0xa8_a != 0 || this->mode != 3) {
             return 0;
         }
-        if (this->pad_0xa8_a == 0 && this->mode == 3) {
-            if (this->jumpMapModeB == 0 ||
-                this->jumpCost <= this->cargoAmount) {
-                if (this->jumpMapModeA == 0) {
-                    depart(true);
-                    return 0;
-                }
-            } else if (this->jumpCost == 1 && this->jumpMapModeA == 0) {
-                depart(false);
+        if (this->jumpMapModeB != 0 && this->cargoAmount < this->jumpCost) {
+            if (this->jumpCost != 1) {
                 return 0;
             }
+            if (this->jumpMapModeA == 0) {
+                this->depart(false);
+                return 0;
+            }
+            Level::doInstantJump = 0;
+            Level::programmedStation = (*this->stations)[this->selectedStation];
             this->exitRequested = 1;
-            Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
+            Globals::Canvas->CameraSetCurrent(this->prevCamera);
+            return 1;
         }
-        return 0;
+        if (this->jumpMapModeA == 0) {
+            this->depart(true);
+            return 0;
+        }
+        Level::programmedStation = (*this->stations)[this->selectedStation];
+        if (this->jumpMapModeB == 0) {
+            Level::doInstantJump = 0;
+        } else {
+            int toSystem = (*this->stations)[this->selectedStation]->getSystem();
+            int current = ((SolarSystem *) Globals::status->getSystem())->getIndex();
+            Level::doInstantJump = toSystem != current;
+            if (toSystem != current) {
+                Level::energyCellsForNextJump = this->jumpCost;
+            }
+        }
+        this->exitRequested = 1;
+        Globals::Canvas->CameraSetCurrent(this->prevCamera);
+        return 1;
     }
 
     if (this->transitionIn != 0 || this->transitionOut != 0) {
         return 0;
     }
-    Layout *layout = *g_StarMap_end_layout;
-    if (layout->choiceWindowOpen == 0 && layout->OnTouchEnd(x, y) != 0) {
-        if (this->mode == 3 && this->isGalaxyMode != 0) {
+
+    if (Globals::layout->choiceWindowOpen == 0 && Globals::layout->OnTouchEnd(x, y) != 0) {
+        // Back: leave the star system view, or leave the map.
+        if (this->mode == 3 && this->isGalaxyMode) {
             this->transitionOut = 1;
             this->momentumFactor = 0.0f;
             this->velocityX = 0.0f;
             this->velocityY = 0.0f;
-            this->easeX->SetRange(this->scratchVector.x, this->scratchVector.x);
-            this->easeY->SetRange(this->scratchVector.y, this->scratchVector.y);
-            this->easeZ->SetRange(this->scratchVector.z, this->scratchVector.z);
-            ((FModSound *) (*g_StarMap_end_sound))->play(0x6b, 0, 0, 0.0f);
+            this->easeX->SetRange(this->easeX->GetMaxValue(), this->easeX->GetMinValue());
+            this->easeY->SetRange(this->easeY->GetMaxValue(), this->easeY->GetMinValue());
+            this->easeZ->SetRange(this->easeZ->GetMaxValue(), this->easeZ->GetMinValue());
+            Globals::sound->play(0x6b, 0, 0, 0.0f);
             return 0;
         }
-
-        Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
-        ((FModSound *) (*g_StarMap_end_sound))->stop(0x66);
+        Globals::Canvas->CameraSetCurrent(this->prevCamera);
+        Globals::sound->stop(0x66);
         return 1;
     }
+
     if (this->pad_0xa8_a != 0 && this->pathAnim != 0) {
         return 0;
     }
-    if (this->backButton->OnTouchEnd(x, y) != 0) {
-        this->showKey ^= 1;
+    if (this->backButton->OnTouchEnd(x, y)) {
+        this->showKey = this->showKey ^ 1;
     }
+
     if (this->dragging != 0) {
-        float dx = this->touchDeltaX;
-        float dy = this->touchDeltaY;
         this->momentumFactor = 0.9f;
         this->dragging = 0;
-        this->velocityX = absf_end(dx) > 3.0f ? dx : 0.0f;
-        this->velocityY = absf_end(dy) > 3.0f ? dy : 0.0f;
+        this->velocityX = absf_end(this->touchDeltaX) > 3.0f ? this->touchDeltaX : 0.0f;
+        this->velocityY = absf_end(this->touchDeltaY) > 3.0f ? this->touchDeltaY : 0.0f;
+
         if (this->mode == 0) {
-            if (this->selectedSystem >= 0 &&
-                this->autoMode == 0 &&
-                this->pad_0xa8_a == 0 &&
-                this->lastSelectedSystem == this->selectedSystem) {
-                if (this->jumpMapModeB == 0 &&
-                    ((SolarSystem *) (long) (Globals::status->getSystem()))->systemIsInSystemRoutes(
-                        Globals::status->getSystem()) ==
-                    0) {
-                    this->choiceWindow->set(*(String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a4), false);
-                    this->choiceVisible = 1;
+            if (this->selectedSystem >= 0) {
+                if (this->autoMode != 0 || this->pad_0xa8_a != 0 || this->lastSelectedSystem != this->selectedSystem) {
+                    this->lastSelectedSystem = -1;
+                    this->pathAnim = 1;
+                } else {
+                    if (this->jumpMapModeB == 0 &&
+                        !((SolarSystem *) Globals::status->getSystem())
+                                 ->systemIsInSystemRoutes((*this->systems)[this->selectedSystem]->getIndex())) {
+                        this->choiceWindow->set(*Globals::gameText->getText(420), false);
+                        this->choiceVisible = 1;
+                        return 0;
+                    }
+                    if (this->jumpMapModeB != 0 && Globals::status->getShip()->hasVolatileGoods() &&
+                        !((SolarSystem *) Globals::status->getSystem())
+                                 ->systemIsInSystemRoutes((*this->systems)[this->selectedSystem]->getIndex())) {
+                        this->choiceWindow->set(*Globals::gameText->getText(612), false);
+                        this->choiceVisible = 1;
+                        return 0;
+                    }
+                    // Zoom into the selected system.
+                    Globals::sound->play(0x6a, 0, 0, 0.0f);
+                    this->initStarSystem();
+                    this->transitionIn = 1;
+                    this->scratchVector = (*this->systemGeoms)[this->selectedSystem]->getPosition();
+                    this->scratchVector.z += -500.0f;
+                    PaintCanvas *canvas = Globals::Canvas;
+                    this->scratchVector2 = AbyssEngine::AEMath::MatrixGetPosition(
+                            *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                    this->easeX->SetRange(this->scratchVector2.x, this->scratchVector.x);
+                    this->easeY->SetRange(this->scratchVector2.y, this->scratchVector.y);
+                    this->easeZ->SetRange(this->scratchVector2.z, this->scratchVector.z);
+                    this->momentumFactor = 0.0f;
+                    this->velocityX = 0.0f;
+                    this->velocityY = 0.0f;
                     return 0;
                 }
-                ((FModSound *) (*g_StarMap_end_sound))->play(0x6a, 0, 0, 0.0f);
-                initStarSystem();
-                this->transitionIn = 1;
-                Vector p;
-                ((AEGeometry *) (&p))->getPosition();
-                this->scratchVector = p;
-                this->scratchVector.z += 20.0f;
-                MatrixGetPosition(&p, Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
-                this->scratchVector2 = p;
-                this->easeX->SetRange(this->scratchVector2.x, this->scratchVector.x);
-                this->easeY->SetRange(this->scratchVector2.y, this->scratchVector.y);
-                this->easeZ->SetRange(this->scratchVector2.z, this->scratchVector.z);
-                this->momentumFactor = 0.0f;
-                this->velocityX = 0.0f;
-                this->velocityY = 0.0f;
-            } else if (this->selectedSystem >= 0) {
-                this->lastSelectedSystem = -1;
-                this->pathAnim = 1;
             }
-        } else if (this->selectedStation >= 0) {
-            if (this->lastSelectedStation == this->selectedStation) {
-                if (this->choiceWindow == 0) {
-                    this->choiceWindow = new ChoiceWindow();
+        } else {
+            if (this->selectedStation >= 0) {
+                if (this->lastSelectedStation != this->selectedStation) {
+                    Globals::sound->play(0x69, 0, 0, 0.0f);
+                    this->stationCenterAnim = 1;
+                } else if (this->pad_0xa8_a == 0) {
+                    if ((*this->stations)[this->selectedStation]->getIndex() ==
+                        Globals::status->getStation()->getIndex()) {
+                        if (this->choiceWindow == 0) {
+                            this->choiceWindow = new ChoiceWindow();
+                        }
+                        this->choiceWindow->set(*Globals::gameText->getText(419));
+                        this->choiceVisible = 1;
+                    } else {
+                        if (this->choiceWindow == 0) {
+                            this->choiceWindow = new ChoiceWindow();
+                        }
+                        // Campaign missions refuse to leave without the required gear.
+#define STARMAP_AT_CAMPAIGN_TARGET(n)                                                                      \
+    (Globals::status->getCurrentCampaignMission() == (n) &&                                                \
+     (*this->stations)[this->selectedStation]->getIndex() ==                                               \
+             ((Mission *) Globals::status->getCampaignMission())->getTargetStation())
+                        int refusal = -1;
+                        if (STARMAP_AT_CAMPAIGN_TARGET(24) &&
+                            (!Globals::status->getShip()->getFirstEquipmentOfSort(13) ||
+                             !Globals::status->getShip()->getFirstEquipmentOfSort(17))) {
+                            refusal = 532;
+                        } else if (STARMAP_AT_CAMPAIGN_TARGET(135) &&
+                                   !Globals::status->getShip()->getFirstEquipmentOfSort(19)) {
+                            refusal = 3213;
+                        } else if (STARMAP_AT_CAMPAIGN_TARGET(91) &&
+                                   Globals::status->getShip()->getMaxPassengers() <= 9) {
+                            refusal = 3214;
+                        } else if (STARMAP_AT_CAMPAIGN_TARGET(94) &&
+                                   Globals::status->getShip()->getMaxPassengers() == 0) {
+                            refusal = 3214;
+                        } else if (STARMAP_AT_CAMPAIGN_TARGET(105) &&
+                                   !Globals::status->getShip()->hasEquipment(206, 1)) {
+                            refusal = 3217;
+                        } else if (STARMAP_AT_CAMPAIGN_TARGET(139) && Globals::status->getShip()->getIndex() != 42 &&
+                                   (StarMap_shipRaces[Globals::status->getShip()->getIndex()] != 1 ||
+                                    !Globals::status->getShip()->hasEquipment(190, 1))) {
+                            refusal = 3215;
+                        } else if (STARMAP_AT_CAMPAIGN_TARGET(142) &&
+                                   (!Globals::status->getShip()->getFirstEquipmentOfSort(33) ||
+                                    !Globals::status->getShip()->hasEquipment(197, 15) ||
+                                    !Globals::status->getShip()->getFirstEquipmentOfSort(35))) {
+                            refusal = 3216;
+                        } else if (STARMAP_AT_CAMPAIGN_TARGET(142) && Globals::status->getShip()->getFreeSpace() == 0) {
+                            refusal = 3218;
+                        }
+#undef STARMAP_AT_CAMPAIGN_TARGET
+                        if (refusal >= 0) {
+                            this->choiceWindow->set(*Globals::gameText->getText(refusal));
+                            this->suppressNextClose = 1;
+                        } else if (this->jumpMapModeB != 0 && this->cargoAmount < this->jumpCost &&
+                                   !Globals::status->getShip()->hasVolatileGoods()) {
+                            if (this->jumpCost == 1) {
+                                this->choiceWindow->set(*Globals::gameText->getText(582), true);
+                            } else {
+                                this->choiceWindow->set(*Globals::gameText->getText(579));
+                            }
+                        } else if (this->jumpMapModeB != 0 && this->noRoute != 0 &&
+                                   this->cargoAmount < this->jumpCost * 2 &&
+                                   !Globals::status->getShip()->hasVolatileGoods()) {
+                            this->choiceWindow->set(*Globals::gameText->getText(581), true);
+                        } else {
+                            this->choiceWindow->set(*Globals::gameText->getText(574) + String(": ") +
+                                                            (*this->stations)[this->selectedStation]->getName() +
+                                                            String("\n") + *Globals::gameText->getText(421),
+                                                    true);
+                        }
+                        this->choiceVisible = 1;
+                    }
                 }
-                this->choiceWindow->set(*(String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a3), true);
-                this->choiceVisible = 1;
-            } else {
-                ((FModSound *) (*g_StarMap_end_sound))->play(0x69, 0, 0, 0.0f);
-                this->stationCenterAnim = 1;
             }
+            this->velocityX = absf_end(this->touchDeltaX) > 150.0f ? this->touchDeltaX : 0.0f;
+            this->velocityY = absf_end(this->touchDeltaY) > 150.0f ? this->touchDeltaY : 0.0f;
         }
     }
-    if (((Layout *) (layout))->helpPressed() != 0) {
-        help.copy((String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a5), false);
-        ((Layout *) (layout))->initHelpWindow(help);
+
+    if (Globals::layout->helpPressed()) {
+        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(this->mode == 0 ? 628 : 631), false));
     }
     return 0;
 }
