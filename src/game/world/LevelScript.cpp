@@ -206,8 +206,8 @@ uint32_t LevelScript::canSkipCutsceneNow() {
 }
 
 void LevelScript::resetStartSequenceOver() {
-    field_0x24 = 0;
     m_bStartSequenceOver = 0;
+    field_0x24 = 0;
 }
 
 void LevelScript::skipCutscene() {
