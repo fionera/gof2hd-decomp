@@ -87,56 +87,44 @@ Trail::~Trail() {
 }
 
 void Trail::update(float ax, float ay, float az, float bx, float by, float bz) {
+    // The newest segment: a pair of points width apart around a and around b.
     int *points = this->points;
-    float width = (float) this->width;
-
-    points[0] = (int) (ax - width);
+    points[0] = (int) (ax - (float) this->width);
     points[1] = (int) ay;
     points[2] = (int) az;
-
-    width = (float) this->width;
-    points[3] = (int) (width + ax);
+    points[3] = (int) ((float) this->width + ax);
     points[4] = (int) ay;
     points[5] = (int) az;
-
-    width = (float) this->width;
-    points[6] = (int) (bx - width);
+    points[6] = (int) (bx - (float) this->width);
     points[7] = (int) by;
     points[8] = (int) bz;
-
-    width = (float) this->width;
-    points[9] = (int) (width + bx);
+    points[9] = (int) ((float) this->width + bx);
     points[10] = (int) by;
     points[11] = (int) bz;
 
-    int *copy = points + this->pointCount;
-    for (int i = this->pointCount - 1; 10 < i; i -= 6) {
-        copy[-2] = copy[-8];
-        copy[-1] = copy[-7];
-        *(uint64_t *) (copy - 6) = *(uint64_t *) (copy - 12);
-        *(uint64_t *) (copy - 4) = *(uint64_t *) (copy - 10);
-        copy -= 6;
+    // Age the older segments by one slot.
+    for (int i = this->pointCount - 1; i > 10; i -= 6) {
+        points[i] = points[i - 6];
+        points[i - 1] = points[i - 7];
+        points[i - 2] = points[i - 8];
+        points[i - 3] = points[i - 9];
+        points[i - 4] = points[i - 10];
+        points[i - 5] = points[i - 11];
     }
 
+    // The mesh is placed at a, its vertices are relative to it.
     for (int i = 0; i < this->pointCount; i += 3) {
-        int *source = points + i;
-        int *relative = this->relativePoints + i;
-        relative[0] = (int) ((float) source[0] - ax);
-        relative[1] = (int) ((float) source[1] - ay);
-        relative[2] = (int) ((float) source[2] - az);
+        this->relativePoints[i] = (int) ((float) points[i] - ax);
+        this->relativePoints[i + 1] = (int) ((float) points[i + 1] - ay);
+        this->relativePoints[i + 2] = (int) ((float) points[i + 2] - az);
     }
-
-    PaintCanvas *canvas = Globals::Canvas;
     for (int vertex = 0; vertex < (this->segments + 1) * 2; ++vertex) {
-        int *point = this->relativePoints + vertex * 3;
-        float x = (float) point[0];
-        float y = (float) point[1];
-        float z = (float) point[2];
-        canvas->MeshSetPoint(this->meshId, (uint16_t) vertex, x, y, z);
+        PaintCanvas *canvas = Globals::Canvas;
+        int *point = &this->relativePoints[vertex * 3];
+        canvas->MeshSetPoint(this->meshId, (uint16_t) vertex, (float) point[0], (float) point[1], (float) point[2]);
     }
-
-    Matrix *local = static_cast<Matrix *>(canvas->TransformGetLocal(this->transformId));
-    AEMath::MatrixSetTranslation(*local, ax, ay, az);
+    AEMath::MatrixSetTranslation(*static_cast<Matrix *>(Globals::Canvas->TransformGetLocal(this->transformId)),
+                                 ax, ay, az);
 }
 
 void Trail::setWidth(int width) {
