@@ -467,6 +467,8 @@ void AEFile::collectFilesInPakFiles(String &path) {
     OpenRead(path, nullptr);
 
     int8_t nameLength;
+    uint32_t packedSize;
+    uint32_t size;
     uint32_t offset = 1;
     uint32_t readResult = Read(1, &nameLength, 0);
     while ((readResult & 1) != 0) {
@@ -474,8 +476,6 @@ void AEFile::collectFilesInPakFiles(String &path) {
         Read(nameLength, name, 0);
         name[nameLength] = 0;
 
-        uint32_t packedSize;
-        uint32_t size;
         Read(4, &packedSize, 0);
         Read(4, &size, 0);
 
@@ -484,8 +484,8 @@ void AEFile::collectFilesInPakFiles(String &path) {
         entry->name = path;
         offset = offset + nameLength + 8;
         entry->offset = offset;
-        entry->packedSize = packedSize;
         entry->size = size;
+        entry->packedSize = packedSize;
         ArrayAdd(entry, *AEFile::pakFileEntryList);
         delete[] name;
 
@@ -523,49 +523,46 @@ void AEFile::sortPakFileEntryList() {
     }
 }
 
+namespace {
+    // The original re-reads the entry through the global list at every use.
+    inline AEPakFileEntry *pakEntry(int32_t index) { return AEFile::pakFileEntryList->data()[index]; }
+}
+
 AELowLevelFile *AEFile::findPakFile(const String &path) {
-    Array<AEPakFileEntry *> *entries = AEFile::pakFileEntryList;
-    if (entries->size() == 0) {
+    if (AEFile::pakFileEntryList->size() == 0)
         return nullptr;
-    }
 
     uint32_t wantedCrc = crc32_ccitt(path);
     int32_t low = 0;
-    int32_t high = (int32_t) entries->size();
-
+    int32_t high = (int32_t) AEFile::pakFileEntryList->size();
     while (low < high) {
-        int32_t index = low + ((high - low) >> 1);
-        AEPakFileEntry *entry = entries->data()[index];
-        uint32_t entryCrc = entry->crc;
-
+        int32_t half = (high - low) >> 1;
+        int32_t mid = low + half;
+        uint32_t entryCrc = AEFile::pakFileEntryList->data()[mid]->crc;
         if (entryCrc == wantedCrc) {
-            uint16_t *name = AEStr_wchar(entry->name);
+            unsigned short *name = (unsigned short *) AEFile::pakFileEntryList->data()[mid]->name;
             FileInterface *fileInterface = AEFile::fileInterface;
-            String entryName;
-            entryName.Set((const unsigned short *) (name));
             FileInterface *handle;
-
-            if (entry->size == 0xffffffff) {
+            if (pakEntry(mid)->size != 0xffffffff) {
                 handle = reinterpret_cast<FileInterface *>(fileInterface->OpenRead(
-                    entryName, entry->name.size(), 0, 0, 0, entry->offset));
+                        String(name, false), pakEntry(mid)->name.size(), 1, pakEntry(mid)->packedSize, pakEntry(mid)->size,
+                        pakEntry(mid)->offset));
             } else {
                 handle = reinterpret_cast<FileInterface *>(fileInterface->OpenRead(
-                    entryName, entry->name.size(), 1,
-                    entry->packedSize, entry->size, entry->offset));
+                        String(name, false), pakEntry(mid)->name.size(), 0, 0, 0, pakEntry(mid)->offset));
             }
-
-            return new AEPakFile(handle,
-                                 static_cast<int>(entry->packedSize),
-                                 static_cast<int>(entry->offset));
+            return new AEPakFile(handle, (int) pakEntry(mid)->packedSize, (int) pakEntry(mid)->size);
         }
-
-        if (wantedCrc < entryCrc) {
-            high = index;
-        } else {
-            low = index + 1;
+        if (entryCrc > wantedCrc) {
+            if (high == mid)
+                return nullptr;
+            high = mid;
+        } else if (entryCrc < wantedCrc) {
+            if (half == 0)
+                return nullptr;
+            low = mid;
         }
     }
-
     return nullptr;
 }
 
