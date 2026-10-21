@@ -333,8 +333,8 @@ void ApplicationManager::OnUpdate(long long now) {
             }
 
             if (this->engine->field_0x74) {
-                this->engine->statsBucketFlag = 0;
                 this->engine->field_0xfe = 0;
+                this->engine->statsBucketFlag = 0;
                 this->paintCanvas->SetColor(0, 255, 0, 255);
                 this->paintCanvas->DrawString(this->engine->field_0x78, String("fps: ") + String(currentFps), 5, 5,
                                               false);

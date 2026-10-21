@@ -165,101 +165,72 @@ int MiningGame::update(int delta) {
         this->driftY = ((float) this->centerY - this->posY) * 0.03f;
     }
 
-    Layout *layout = Globals::layout;
     float frameScale = (float) delta;
-    this->posX += ((this->inputX + this->driftX) / layout->driftSpeedDivisor) * frameScale;
-    this->posY += ((this->inputY + this->driftY) / layout->driftSpeedDivisor) * frameScale;
-
+    this->posX += ((this->inputX + this->driftX) / Globals::layout->driftSpeedDivisor) * frameScale;
+    this->posY += ((this->inputY + this->driftY) / Globals::layout->driftSpeedDivisor) * frameScale;
     this->leftMarquee->update(delta);
     this->rightMarquee->update(delta);
-
-    float *layerSpeed = LAYER_SPEEDS;
-    FModSound **soundHolder = &Globals::sound;
-    MiningGame_FModSound_setParamValue(*soundHolder, 0, 1,
-                                       ((layerSpeed[this->currentLayer] - 5.0f) / 33.0f) * 3.0f);
+    Globals::sound->setParamValue(0, 1, (LAYER_SPEEDS[this->currentLayer] - 5.0f) / 33.0f * 3.0f);
 
     if (isInCurrentLayer()) {
-        if (wasInLayer == 0) {
-            (*soundHolder)->play(1, nullptr, nullptr, 0.0f);
-            (*soundHolder)->stop(3);
+        if (!wasInLayer) {
+            Globals::sound->play(1, nullptr, nullptr, 0.0f);
+            Globals::sound->stop(3);
         }
-
-        float anim = this->animAccumulator +
-                     (frameScale / 1000.0f) * layout->animSpeedScale * layerSpeed[this->currentLayer] * 3.0f;
-        this->animAccumulator = anim;
-        if (!(anim < 1.0f)) {
+        this->animAccumulator += frameScale / 1000.0f *
+                                 (Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]) * 3.0f;
+        if (this->animAccumulator >= 1.0f) {
             this->drillSprite->nextFrame();
             this->animAccumulator = 0.0f;
         }
 
         this->oreMarquee->update(delta);
-        int nextLayer = this->currentLayer + 1;
-        float oldOre = this->oreAmount;
-        int oldOreInt = (int) oldOre;
-        float layerFactor = 0.15f + ((float) nextLayer / 7.0f) * 2.35f;
-        float newOre = oldOre + ((this->oreRate * layerFactor) / 1000.0f) * frameScale;
-        this->oreAmount = newOre;
-        float alpha;
-        if ((int) newOre > oldOreInt) {
-            alpha = 0.0f;
+        int oldOre = (int) this->oreAmount;
+        this->oreAmount += this->oreRate * (0.15f + (float) (this->currentLayer + 1) / 7.0f * 2.35f) / 1000.0f *
+                           frameScale;
+        if ((int) this->oreAmount > oldOre)
             this->textAlpha = 0.0f;
-        } else {
-            alpha = this->textAlpha;
-        }
-        int layerTimer = this->layerTimer + delta;
-        this->layerTimer = layerTimer;
-        alpha += frameScale / 500.0f;
-        if (alpha > 1.0f) {
-            alpha = 1.0f;
-        }
-        this->textAlpha = alpha;
+        this->layerTimer += delta;
+        this->textAlpha += frameScale / 500.0f;
+        if (this->textAlpha > 1.0f)
+            this->textAlpha = 1.0f;
 
-        if (layerTimer > 6000) {
+        if (this->layerTimer > 6000) {
             this->layerTimer = 0;
-            this->currentLayer = nextLayer;
-            if (nextLayer >= this->targetLayer) {
+            this->currentLayer++;
+            if (this->currentLayer >= this->targetLayer) {
                 this->gameWonFlag = 1;
                 this->gotCoreFlag = this->targetLayer == 7;
-                Achievements **achHolder = &Globals::achievements;
-                if (MiningGame_Achievements_hasMedal(*achHolder, 0x26, 1) == 0) {
-                    Status *status = Globals::status;
-                    int count = status->field_124 + 1;
-                    status->field_124 = count;
-                    int goal = MiningGame_Achievements_getValue(*achHolder, 0x26, 1);
-                    int percent = (int) (((float) count / (float) goal) * 100.0f);
-                    if (percent % 10 == 0) {
-                        int shown = (int) (((float) status->field_124 /
-                                            (float) MiningGame_Achievements_getValue(*achHolder, 0x26, 1)) *
-                                           100.0f);
-                        if (shown > 29) {
-                            MiningGame_Hud_hudEventMedal(this->hud, 0x26, shown);
-                        }
-                    }
-                    if (MiningGame_Achievements_getValue(*achHolder, 0x26, 1) <= status->field_124) {
-                        status->field_128 = 1;
-                    }
+                if (!Globals::achievements->hasMedal(38, 1)) {
+                    Globals::status->field_124++;
+                    if ((int) ((float) Globals::status->field_124 / (float) Globals::achievements->getValue(38, 1) *
+                               100.0f) % 10 == 0 &&
+                        (int) ((float) Globals::status->field_124 / (float) Globals::achievements->getValue(38, 1) *
+                               100.0f) >= 30)
+                        this->hud->hudEventMedal(38, (int) ((float) Globals::status->field_124 /
+                                                            (float) Globals::achievements->getValue(38, 1) * 100.0f));
+                    if (Globals::status->field_124 >= Globals::achievements->getValue(38, 1))
+                        Globals::status->field_128 = 1;
                 }
                 return 0;
             }
-            this->oreMarquee->speed = layout->animSpeedScale * layerSpeed[nextLayer];
+            this->oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
         }
     } else {
-        if (wasInLayer != 0) {
-            (*soundHolder)->stop(1);
-            (*soundHolder)->play(3, nullptr, nullptr, 0.0f);
+        if (wasInLayer) {
+            Globals::sound->stop(1);
+            Globals::sound->play(3, nullptr, nullptr, 0.0f);
         }
-        int lossTimer = this->lossTimer + delta;
-        this->lossTimer = lossTimer;
-        if (lossTimer >= 2501) {
-            this->lossTimer = 0x9c4;
+        this->lossTimer += delta;
+        if (this->lossTimer > 2500) {
+            this->lossTimer = 2500;
             this->oreAmount = 0.0f;
             this->gameLostFlag = 1;
-            (Globals::status)->field_124 = 0;
+            Globals::status->field_124 = 0;
             return 0;
         }
         this->textAlpha = 1.0f;
     }
-
     return 1;
 }
 
@@ -306,13 +277,10 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
     this->driftY = 0.0f;
     this->posY = (float) centerY;
 
-    Ship *ship = MiningGame_Status_getShip(*statusHolder);
-    Item *equipment = MiningGame_Ship_getFirstEquipmentOfSort(ship, 0x13);
-    if (equipment != 0) {
-        int value = MiningGame_Item_getAttribute(equipment, 0x20);
-        this->controlDivisor = 0.3f + ((float) value / 100.0f) * 1.5f;
-        value = MiningGame_Item_getAttribute(equipment, 0x21);
-        this->oreRate = (float) value / 100.0f;
+    Item *drill = Globals::status->getShip()->getFirstEquipmentOfSort(19);
+    if (drill != 0) {
+        this->controlDivisor = 0.3f + ((float) drill->getAttribute(32) / 100.0f) * 1.5f;
+        this->oreRate = (float) drill->getAttribute(33) / 100.0f;
     }
 
     PaintCanvas *canvas = Globals::Canvas;
@@ -364,11 +332,11 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
     MarqueeImage *oreMarquee =
             new MarqueeImage(0x4e4, canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0, F(layout, 0xdc));
     this->oreMarquee = oreMarquee;
-    oreMarquee->speed = layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer];
+    oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
 
     this->promptPulseTimer = 0;
     this->textAlpha = 1.0f;
-    this->campaignFlag = MiningGame_Status_getCurrentCampaignMission(*statusHolder) > 4;
+    this->campaignFlag = Globals::status->getCurrentCampaignMission() > 4;
 }
 
 
