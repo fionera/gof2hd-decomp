@@ -21,38 +21,55 @@ public:
 
     ModMainMenu();
 
-    ~ModMainMenu() override;
+    virtual ~ModMainMenu();
 
-    int OnInitialize() override;
+    virtual int OnInitialize();
 
-    void OnRelease() override;
+    virtual void OnRelease();
 
-    void OnKeyPress(long long key, long long mod) override;
+    virtual void OnKeyPress(long long key, long long mod) {
+        (void) key;
+        (void) mod;
+    }
 
-    void OnKeyRelease(long long key, long long mod) override;
+    virtual void OnKeyRelease(long long key, long long mod) {
+        (void) key;
+        (void) mod;
+    }
 
-    void OnTouchBegin(int x, int y) override;
+    virtual void OnTouchBegin(int x, int y) {
+        (void) x;
+        (void) y;
+    }
 
-    void OnTouchMove(int x, int y) override;
+    virtual void OnTouchMove(int x, int y) {
+        (void) x;
+        (void) y;
+    }
 
-    void OnTouchEnd(int x, int y) override;
+    virtual void OnTouchEnd(int x, int y) {
+        (void) x;
+        (void) y;
+    }
 
-    void OnTouchBegin(int x, int y, void *touch) override; // lint: void_ptr (exported virtual signature)
+    virtual void OnTouchBegin(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
 
-    void OnTouchMove(int x, int y, void *touch) override; // lint: void_ptr (exported virtual signature)
+    virtual void OnTouchMove(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
 
-    void OnTouchEnd(int x, int y, void *touch) override; // lint: void_ptr (exported virtual signature)
+    virtual void OnTouchEnd(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
 
-    void OnUpdate() override;
+    virtual void OnUpdate();
 
-    void OnRender3D() override;
+    virtual void OnRender3D();
 
-    void OnRender2D() override;
+    virtual void OnRender2D();
 
-    void OnSuspend() override;
+    virtual void OnSuspend();
 
-    void OnResume() override;
+    virtual void OnResume();
 
-    int ShowLoadingScreen() override;
+    virtual int ShowLoadingScreen() {
+        return 1;
+    }
 };
 #endif

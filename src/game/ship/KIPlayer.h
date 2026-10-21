@@ -152,19 +152,53 @@ public:
     virtual void translate(const Vector &v);
     virtual void render();
     virtual Vector getPosition();
-    virtual void initPush(const Vector &target, int radius);
-    virtual void push(int dt);
-    virtual void update(int dt);
-    virtual int collide(float x, float y, float z);
-    virtual int outerCollide(float x, float y, float z);
-    virtual int outerCollide(const Vector &v);
+    virtual void initPush(const Vector &, int) {
+    }
+    virtual void push(int) {
+    }
+    virtual void update(int) {
+    }
+    virtual int collide(float, float, float) {
+        return 0;
+    }
+    virtual int outerCollide(float, float, float) {
+        return 0;
+    }
+    virtual int outerCollide(const Vector &v) {
+        return this->outerCollide(v.x, v.y, v.z);
+    }
     virtual void setPosition(const Vector &v);
     virtual void setPosition(float x, float y, float z);
-    virtual int getSpeed();
-    virtual Vector getProjectionVector(const Vector &v);
-    virtual Vector getCollisionNormal(const Vector &position);
-    virtual Vector projectCollisionOnSurface(const Vector &position);
-    virtual void setState(int state);
+    virtual int getSpeed() {
+        return 0;
+    }
+    virtual Vector getProjectionVector(const Vector &v) {
+        (void) v;
+        Vector out;
+        out.x = 0.0f;
+        out.y = 0.0f;
+        out.z = 0.0f;
+        return out;
+    }
+    virtual Vector getCollisionNormal(const Vector &position) {
+        (void) position;
+        Vector out;
+        out.x = 0.0f;
+        out.y = 0.0f;
+        out.z = 0.0f;
+        return out;
+    }
+    virtual Vector projectCollisionOnSurface(const Vector &position) {
+        (void) position;
+        Vector out;
+        out.x = 0.0f;
+        out.y = 0.0f;
+        out.z = 0.0f;
+        return out;
+    }
+    virtual void setState(int state) {
+        this->state = state;
+    }
 
     void PauseEngineSound();
     void PlayEngineSound();

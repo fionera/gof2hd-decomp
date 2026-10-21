@@ -1,4 +1,3 @@
 #include "engine/render/ResourceMesh.h"
 
-// ResourceMesh::~ResourceMesh lives in PaintCanvas.cpp (original TU membership: the Resource* classes were
-// part of the PaintCanvas.cpp kitchen-sink TU; the dtor sits right after ReleaseAllResources).
+// ResourceMesh::~ResourceMesh is inline in ResourceMesh.h (original: WEAK D2 emitted by the PaintCanvas TU).

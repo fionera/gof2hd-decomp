@@ -193,13 +193,13 @@ public:
 
     void OnKeyPress(long long key, long long mod) override;
 
-    void OnKeyRelease(long long key, long long mod) override;
+    void OnKeyRelease(long long /*key*/, long long /*mod*/) override {}
 
-    void OnTouchBegin(int p1, int p2) override;
+    void OnTouchBegin(int /*p1*/, int /*p2*/) override {}
 
-    void OnTouchMove(int p1, int p2) override;
+    void OnTouchMove(int /*p1*/, int /*p2*/) override {}
 
-    void OnTouchEnd(int p1, int p2) override;
+    void OnTouchEnd(int /*p1*/, int /*p2*/) override {}
 
     void OnTouchBegin(int p1, int p2, void *touchId) override; // lint: void_ptr -- exported override signature (Pv)
 
@@ -217,7 +217,7 @@ public:
 
     void OnResume() override;
 
-    int ShowLoadingScreen() override;
+    int ShowLoadingScreen() override { return 1; }
 
     void showLiteScreen();
 

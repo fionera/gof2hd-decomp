@@ -147,10 +147,6 @@ KIPlayer::~KIPlayer() {
     }
 }
 
-int KIPlayer::getSpeed() {
-    return 0;
-}
-
 int KIPlayer::getType() {
     return this->type;
 }
@@ -229,10 +225,6 @@ void KIPlayer::setToSleep() {
     this->sleepFlag = 1;
 }
 
-void KIPlayer::setState(int state) {
-    this->state = state;
-}
-
 void KIPlayer::jump() {
     this->jumpDone = 0;
     this->jumperFlag = 1;
@@ -283,32 +275,11 @@ uint8_t KIPlayer::isJumper() {
     return this->jumperFlag;
 }
 
-int KIPlayer::collide(float, float, float) {
-    return 0;
-}
-
-void KIPlayer::update(int) {
-}
-
 void KIPlayer::setSpeed(float v) {
     this->speed = v;
 }
 
 void KIPlayer::revive() {
-}
-
-void KIPlayer::push(int) {
-}
-
-void KIPlayer::initPush(const Vector &, int) {
-}
-
-int KIPlayer::outerCollide(const Vector &v) {
-    return this->outerCollide(v.x, v.y, v.z);
-}
-
-int KIPlayer::outerCollide(float, float, float) {
-    return 0;
 }
 
 void KIPlayer::setJumper(bool b) {
@@ -547,33 +518,6 @@ Array<SpacePoint *> *KIPlayer::getSpacePoints() {
 
 void KIPlayer::setLevel(Level *lvl) {
     this->level = lvl;
-}
-
-Vector KIPlayer::getProjectionVector(const Vector &v) {
-    (void) v;
-    Vector out;
-    out.x = 0.0f;
-    out.y = 0.0f;
-    out.z = 0.0f;
-    return out;
-}
-
-Vector KIPlayer::getCollisionNormal(const Vector &position) {
-    (void) position;
-    Vector out;
-    out.x = 0.0f;
-    out.y = 0.0f;
-    out.z = 0.0f;
-    return out;
-}
-
-Vector KIPlayer::projectCollisionOnSurface(const Vector &position) {
-    (void) position;
-    Vector out;
-    out.x = 0.0f;
-    out.y = 0.0f;
-    out.z = 0.0f;
-    return out;
 }
 
 void KIPlayer::addGun(Gun *gun, int slot) {

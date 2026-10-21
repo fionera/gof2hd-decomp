@@ -51,11 +51,18 @@ namespace AbyssEngine {
         float operator[](int i) const;
     };
 
-    Quaternion operator+(const Quaternion &lhs, const Quaternion &rhs);
+    // Inline: the original exports these WEAK.
+    inline Quaternion operator+(const Quaternion &a, const Quaternion &b) {
+        return Quaternion(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    }
 
-    Quaternion operator-(const Quaternion &lhs, const Quaternion &rhs);
+    inline Quaternion operator-(const Quaternion &a, const Quaternion &b) {
+        return Quaternion(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    }
 
-    Quaternion operator*(const Quaternion &lhs, float rhs);
+    inline Quaternion operator*(const Quaternion &a, float s) {
+        return Quaternion(a.x * s, a.y * s, a.z * s, a.w * s);
+    }
 
     static_assert(sizeof(Quaternion) == 0x10, "Quaternion layout");
     static_assert(__builtin_offsetof(Quaternion, x) == 0x0, "Quaternion::x offset");

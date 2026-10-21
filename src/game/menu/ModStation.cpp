@@ -3205,15 +3205,3 @@ void ModStation::OnSuspend() {
         obj->saveOptions();
 }
 
-void ModStation::OnKeyRelease(long long, long long) {
-}
-
-void ModStation::OnTouchBegin(int x, int y) {}
-
-void ModStation::OnTouchMove(int x, int y) {}
-
-void ModStation::OnTouchEnd(int x, int y) {}
-
-int ModStation::ShowLoadingScreen() {
-    return 1;
-}

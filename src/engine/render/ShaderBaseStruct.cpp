@@ -20,31 +20,12 @@ namespace AbyssEngine {
     ShaderBaseStruct::~ShaderBaseStruct() {
     }
 
-    String ShaderBaseStruct::GetShaderName() {
-        return String(this->name, false);
-    }
-
     void ShaderBaseStruct::UseShader(bool /*useExtra*/) {
         glUseProgram(this->program);
     }
 
     void ShaderBaseStruct::DeleteShader() {
         glDeleteProgram(this->program);
-    }
-
-    void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, ::Engine * /*engine*/) {
-    }
-
-    void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, FBOContainer *& /*target*/,
-                                        AbyssEngine::Engine * /*engine*/) {
-    }
-
-    void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, Engine * /*engine*/, float /*strength*/,
-                                        AEMath::Vector /*tint*/) {
-    }
-
-    void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, FBOContainer *& /*target*/, Engine * /*engine*/,
-                                        float /*strength*/, AEMath::Vector /*tint*/) {
     }
 
     void ShaderBaseStruct::Update() {

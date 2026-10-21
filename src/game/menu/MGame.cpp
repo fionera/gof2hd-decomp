@@ -249,10 +249,6 @@ static int **g_r2dRewardLayout;
 static Layout ***g_r2dFadeLayout;
 
 MGame::MGame() {
-    this->freeCamFinger1.x = 0.0f;
-    this->freeCamFinger1.y = 0.0f;
-    this->freeCamFinger1.z = 0.0f;
-    this->freeCamFinger0.x = 0.0f;
     this->flShakeAmpX = 0;
     this->flShakeAmpY = 0;
     this->field_0x144 = 0;
@@ -262,14 +258,9 @@ MGame::MGame() {
     this->field_0x194 = 0;
     this->field_0x198 = 0;
     this->elapsedTime = 0;
-    this->egoJumpPos.x = 0.0f;
-    this->egoJumpPos.y = 0.0f;
-    this->egoJumpPos.z = 0.0f;
     this->thrustStartX = 0;
     this->thrustStartY = 0;
     this->field_0x1c4 = 0;
-    this->freeCamFinger0.y = 0.0f;
-    this->freeCamFinger0.z = 0.0f;
     this->flShakePhaseY = 0;
     this->field_0x150 = 0;
     this->field_0x19c = 0;
@@ -4191,15 +4182,3 @@ void MGame::pause() {
 void MGame::showLiteScreen() {
 }
 
-void MGame::OnKeyRelease(long long /*key*/, long long /*mod*/) {}
-
-void MGame::OnTouchBegin(int /*p1*/, int /*p2*/) {
-}
-
-void MGame::OnTouchMove(int /*p1*/, int /*p2*/) {
-}
-
-void MGame::OnTouchEnd(int /*p1*/, int /*p2*/) {
-}
-
-int MGame::ShowLoadingScreen() { return 1; }
