@@ -426,7 +426,7 @@ public:
 
     unsigned char isCloaked();
 
-    int isDead();
+    bool isDead();
 
     bool isDockedToAsteroid();
 

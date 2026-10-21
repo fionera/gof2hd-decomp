@@ -183,9 +183,8 @@ void PlayerEgo::forceBoost() {
     this->boostDelay = 0;
 }
 
-int PlayerEgo::isDead() {
-    PlayerEgo *self = this;
-    return ((PlayerEgo *) (self))->getHitpoints() < 1;
+bool PlayerEgo::isDead() {
+    return this->getHitpoints() < 1;
 }
 
 int PlayerEgo::getAutoPilotTarget() {
@@ -2414,83 +2413,43 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
 }
 
 void PlayerEgo::draw(bool allowHud) {
-    if (((intptr_t) this->rocketControlGun) != 0)
+    if (this->rocketControlGun)
         return;
-
-    if (((intptr_t) this->hackingGame) != 0 && this->turretActive == 0) {
+    if (this->hackingGame && !this->turretActive) {
         ((HackingGame *) (intptr_t) this->hackingGame)->render2D();
         return;
     }
-
-    if (((intptr_t) this->miningGame) != 0) {
+    if (this->miningGame) {
         ((MiningGame *) (intptr_t) this->miningGame)->render2D();
         return;
     }
-
-    bool full;
-    if (this->computerControlled != 0 || ((PlayerEgo *) (this))->isDead() != 0 || this->freeze != 0
-        || allowHud == 0 || ((char &) this->dockingState) != 0 || this->dockingToPlanet != 0 || this->dockedToStream !=
-        0) {
-        full = false;
-    } else {
-        full = true;
-    }
-
-    if (!full) {
-        if (this->autoPilot != 0) {
+    if (this->computerControlled || this->isDead() || this->freeze || !allowHud || (char &) this->dockingState
+        || this->dockingToPlanet || this->dockedToStream || (this->dockedFlag && !this->turretActive)
+        || (this->autoPilot && !this->turretActive)) {
+        if (this->autoPilot || (this->dockedFlag && (unsigned) (this->dockingPointIndex - 1) >= 3))
             this->drawThrottle();
-            return;
-        }
-        if (this->dockedFlag == 0)
-            return;
-        if ((unsigned) (this->dockingPointIndex - 1) < 3)
-            return;
-        this->drawThrottle();
         return;
     }
 
-    PE_MatrixBuf m;
-    for (unsigned i = 0; i < sizeof(m); i++) ((unsigned char *) &m)[i] = 0;
-    m.m00 = 1.0f;
-    m.m11 = 1.0f;
-    m.m22 = 1.0f;
-
-    bool aligned = (this->autoPilot != 0 && this->turretActive != 0);
-    if (!aligned)
-        Mat_assign(&m, ((AEGeometry *) (this->geometry))->getMatrix());
-
-    PaintCanvas *canvas = Globals::Canvas;
-    Globals::Canvas->SetColor((unsigned int) (0xffffffff));
-
-    if (this->turretActive != 0
-        && ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
-        if (((Radar *) (this->field_0x14))->isPlasmaInRange() != 0) {
-            float *p = g_PE_dr_posLock;
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->radarBlipImage3), (int) p[0],
-                                                           (int) p[1], (unsigned char) (0x11), (unsigned char) (0x44));
-        } else {
-            float *p = g_PE_dr_posNoLock;
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->radarBlipImage2), (int) p[0],
-                                                           (int) p[1], (unsigned char) (0x11), (unsigned char) (0x44));
-        }
+    Matrix view;
+    if (!this->autoPilot && !this->turretActive)
+        view = this->geometry->getMatrix();
+    Globals::Canvas->SetColor(0xffffffff);
+    if (this->turretActive && Globals::status->getShip()->getFirstEquipmentOfSort(35)) {
+        Globals::Canvas->DrawImage2D(this->field_0x14->isPlasmaInRange() ? this->radarBlipImage3 : this->radarBlipImage2,
+                                     (int) PlayerEgo::crosshairPos.x, (int) PlayerEgo::crosshairPos.y, 17, 68);
+    } else if (this->level->field_30) {
+        Globals::Canvas->DrawImage2D(this->radarBlipImage1, (int) PlayerEgo::crosshairPos.x,
+                                     (int) PlayerEgo::crosshairPos.y, 17, 68);
+        this->shakeAccum += this->shakeIntensity;
+        if (this->shakeAccum > 200)
+            this->level->field_30 = 0;
     } else {
-        if ((char &) this->level->field_30 != 0) {
-            float *p = g_PE_dr_posBlink;
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->radarBlipImage1), (int) p[0],
-                                                           (int) p[1], (unsigned char) (0x11), (unsigned char) (0x44));
-            int t = this->shakeAccum + this->shakeIntensity;
-            this->shakeAccum = t;
-            if (t >= 0xc9)
-                (char &) this->level->field_30 = 0;
-        } else {
-            float *p = g_PE_dr_posNormal;
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->dockArrowImage), (int) p[0],
-                                                           (int) p[1], (unsigned char) (0x11), (unsigned char) (0x44));
-            this->shakeAccum = 0;
-        }
+        Globals::Canvas->DrawImage2D(this->dockArrowImage, (int) PlayerEgo::crosshairPos.x,
+                                     (int) PlayerEgo::crosshairPos.y, 17, 68);
+        this->shakeAccum = 0;
     }
-
-    ((PlayerEgo *) (this))->drawThrottle();
+    this->drawThrottle();
 }
 
 // Blueprint unlocked by the hidden blueprint of the station (rodata 0x1fba34).
