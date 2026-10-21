@@ -137,13 +137,22 @@ elseif(GOF2_LIB STREQUAL "openssl")
     # Configure once to generate opensslconf.h / buildinf.h. Invoke through `perl` explicitly:
     # OpenSSL's Configure is a `:`/`eval exec perl` self-execing script with no #! shebang, which
     # posix_spawn (execute_process) cannot exec directly -- only a shell/perl can launch it.
+    find_program(PERL_EXECUTABLE perl REQUIRED)
     if(NOT EXISTS "${SRC}/include/openssl/opensslconf.h")  # tarball ships a Makefile; links are made by Configure
-        find_program(PERL_EXECUTABLE perl REQUIRED)
         execute_process(COMMAND ${PERL_EXECUTABLE} Configure android-armv7 no-shared
                         WORKING_DIRECTORY "${SRC}"
                         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _rc)
         if(NOT _rc EQUAL 0)
             message(FATAL_ERROR "[openssl] perl Configure android-armv7 failed")
+        endif()
+    endif()
+    # sha256-armv4.S is perlasm output, not shipped in the tarball.
+    if(NOT EXISTS "${SRC}/crypto/sha/sha256-armv4.S")
+        execute_process(COMMAND ${PERL_EXECUTABLE} crypto/sha/asm/sha256-armv4.pl
+                        WORKING_DIRECTORY "${SRC}" RESULT_VARIABLE _rc
+                        OUTPUT_FILE "${SRC}/crypto/sha/sha256-armv4.S")
+        if(NOT _rc EQUAL 0)
+            message(FATAL_ERROR "[openssl] sha256-armv4.pl failed")
         endif()
     endif()
     set(OBJDIR "${SRC}/_obj_gof2")
