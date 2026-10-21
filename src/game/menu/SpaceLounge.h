@@ -82,7 +82,7 @@ public:
     int field_0xa0;
     String title;
     uint8_t initialized;
-    uint8_t field_0xb1;
+    bool postEffectWasActive; // @0xb1
     uint8_t touchDown;
     int touchX;
     int touchY;
@@ -130,7 +130,7 @@ public:
 
     unsigned char mapMode();
 
-    void onKeyPress(int key);
+    int onKeyPress(int key);
 
     void refresh();
 

@@ -33,6 +33,7 @@
 #include "game/ship/Ship.h"
 #include "game/mission/Item.h"
 #include "game/ui/ListItem.h"
+#include "game/world/Standing.h"
 
 static inline int pc_GetWidth(PaintCanvas *self) { return self->GetWidth(); }
 static inline int pc_GetHeight(PaintCanvas *self) { return self->GetHeight(); }
@@ -407,7 +408,7 @@ int SpaceLounge::init() {
         }
     }
 
-    this->field_0xb1 = ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated();
+    this->postEffectWasActive = ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated();
     if (Globals::status->getCurrentCampaignMission() == 24 && Globals::status->getStation()->getIndex() == 10) {
         // Campaign: the arms dealer opens the conversation by himself.
         for (unsigned int i = 0; i < this->agents->size(); i++) {
@@ -542,88 +543,538 @@ void SpaceLounge::startChat() {
 void SpaceLounge::refresh() {
 }
 
-void SpaceLounge::onKeyPress(int key) {
-    char scratch[960];
-    (void) scratch;
-
-    if (this->choiceVisible != 0) {
-        if (key == 0x1000) {
-            this->choiceWindow->left();
-        } else if (key == 0x2000) {
-            this->choiceWindow->right();
-        } else if (key == 0x10000) {
+int SpaceLounge::onKeyPress(int key) {
+    if (this->choiceVisible) {
+        if (key == 0x10000)
             this->choiceVisible = 0;
-        }
-        return;
+        else if (key == 0x2000)
+            this->choiceWindow->right();
+        else if (key == 0x1000)
+            this->choiceWindow->left();
+        return 1;
     }
 
-    int mode = this->mode;
-    if (mode == 0) {
-        if (key == 0x1000 || key == 0x8000) {
-            unsigned next = this->selectedAgent + 1;
-            if (this->agents != 0 && next >= this->agents->size()) {
-                next = 0;
-            }
-            this->selectedAgent = next;
-        } else if (key == 0x2000 || key == 0x4000) {
-            int current = this->selectedAgent;
-            if (current < 1 && this->agents != 0) {
-                current = (int) this->agents->size();
-            }
-            this->selectedAgent = current - 1;
+    switch (this->mode) {
+    case 0:
+        // Agent selection.
+        if (key == 0x4000 || key == 0x2000) {
+            this->selectedAgent--;
+            if (this->selectedAgent < 0)
+                this->selectedAgent = this->agents->size() - 1;
         } else if (key == 0x10000 || key == 0x20000) {
-            ((SpaceLounge *) (this))->startChat();
+            this->startChat();
+        } else if (key == 0x8000 || key == 0x1000) {
+            this->selectedAgent++;
+            if ((unsigned) this->selectedAgent >= this->agents->size())
+                this->selectedAgent = 0;
+        } else if (key == 0x40000) {
+            return 0;
         }
-        return;
-    }
-
-    if (mode == 1 || mode == 3) {
-        if (key == 0x10000 || key == 0x20000) {
+        break;
+    case 1:
+    case 3:
+        if (key == 0x40000) {
+            if (this->chatScroll >= 3) {
+                this->chatScroll -= 40;
+            } else if (this->mode == 1) {
+                this->mode = 0;
+                this->chatScroll = 0;
+            }
+        } else if (key == 0x10000 || key == 0x20000) {
             this->chatAnswer = 0;
             Agent *agent = key_agent(this);
             if (agent->getOffer() == 1) {
                 this->mode = 2;
             } else {
-                this->mode = mode == 1 ? 2 : 0;
-            }
-        } else if (key == 0x40000) {
-            if (this->chatScroll < 3) {
-                if (mode == 1) {
-                    this->chatScroll = 0;
-                    this->mode = 0;
+                this->mode = this->mode == 1 ? 2 : 0;
+                if (this->mode == 0 && this->field_0x18) {
+                    // Show the system whose coordinates were just bought.
+                    this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+                    if (this->starMap != 0) {
+                        this->starMap->init(false, 0, true, agent->getSellSystemIndex());
+                    } else {
+                        StarMap *map = new StarMap(false, 0, true, agent->getSellSystemIndex());
+                        ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap = map;
+                        this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+                    }
+                    this->mapVisible = 1;
+                    this->field_0x18 = 0;
                 }
-            } else {
-                this->chatScroll -= 0x28;
             }
         }
-        return;
-    }
+        break;
+    case 2: {
+        int answers = 3;
+        if (key_agent(this)->getMission() != 0 && key_agent(this)->getMission()->isOutsideMission())
+            answers = 5;
+        else if (key_agent(this)->getOffer() == 2 || key_agent(this)->getOffer() == 3 ||
+                 key_agent(this)->getOffer() == 8 || key_agent(this)->getOffer() == 9 ||
+                 key_agent(this)->getOffer() == 10)
+            answers = 4;
 
-    if (mode == 2) {
-        Agent *agent = key_agent(this);
-        if (key == 0x40000) {
-            this->mode = 1;
-        } else if (key == 0x10000 || key == 0x20000) {
-            if (agent->getMission() == 0 && agent->isGenericAgent() != 0) {
-                agent->setEvent(1);
+        if (this->listVisible) {
+            if (key == 0x40000) {
+                this->listVisible = 0;
+                ((Engine *) Globals::appManager->GetEngine())->SetPostEffect(0x1400000, this->postEffectWasActive);
             }
-            this->mode = 0;
-        } else if (key == 0x8000) {
-            if (ScrollTouchBox *box = this->scrollWindow->scrollBox) {
-                if (box->contentHeight - box->height > 0) {
-                    box->scrollOffset -= box->height;
-                    box->update(0);
-                }
-            }
-        } else if (key == 0x4000) {
-            if (ScrollTouchBox *box = this->scrollWindow->scrollBox) {
-                if (box->contentHeight - box->height > 0) {
-                    box->scrollOffset += box->height;
-                    box->update(0);
-                }
-            }
+            break;
         }
+
+        if (this->chatActive) {
+            if (key == 0x1000) {
+                this->choiceWindow->left();
+            } else if (key == 0x2000) {
+                this->choiceWindow->right();
+            } else if (key == 0x10000) {
+                // The player confirmed the deal.
+                String message = *Globals::gameText->getText(850 + Globals::rnd->nextInt(3));
+                Agent *agent = key_agent(this);
+                switch (agent->getOffer()) {
+                case 0:
+                case 5:
+                    if (Globals::status->hardCoreMode()) {
+                        int fee = (agent->getMission()->getReward() + agent->getMission()->getBonus()) / 10;
+                        if (fee > Globals::status->getCredits()) {
+                            String text = *Globals::gameText->getText(203);
+                            text = Globals::status->replaceHash(
+                                text,
+                                String(Globals::layout->formatCredits(fee - Globals::status->getCredits()), false),
+                                String("#C"));
+                            this->choiceWindow->set(text, false);
+                            this->choiceVisible = 1;
+                            this->chatActive = 0;
+                            return 0;
+                        }
+                        Globals::status->changeCredits(-fee);
+                    }
+                    if (Globals::status->getFreelanceMission() != 0 &&
+                        !Globals::status->getFreelanceMission()->isEmpty()) {
+                        // Drop the previous freelance job.
+                        if (Globals::status->getFreelanceMission()->getType() == 0 ||
+                            Globals::status->getFreelanceMission()->getType() == 3 ||
+                            Globals::status->getFreelanceMission()->getType() == 5) {
+                            Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+                            if (cargo != 0) {
+                                for (unsigned int i = 0; i < cargo->size(); i++) {
+                                    if ((*cargo)[i]->isUnsaleable() && (*cargo)[i]->getIndex() == 116) {
+                                        Globals::status->getShip()->removeCargo((*cargo)[i]);
+                                        this->hangarUpdate = 1;
+                                        break;
+                                    }
+                                }
+                            }
+                        } else if (Globals::status->getFreelanceMission()->getType() == 11) {
+                            Globals::status->setPassengers(0);
+                        }
+                        if (!Globals::status->getFreelanceMission()->getAgent()->isGenericAgent())
+                            Globals::status->getFreelanceMission()->getAgent()->setOfferAccepted(false);
+                        Globals::status->setFreelanceMission(Mission::empty);
+                    }
+                    if (agent->getMission()->getType() == 0) {
+                        Item *goods = (*Globals::items)[116]->makeItem(agent->getMission()->getProductionGoodAmount());
+                        goods->setUnsaleable(true);
+                        Globals::status->getShip()->addCargo(goods);
+                    } else if (agent->getMission()->getType() == 11) {
+                        Globals::status->setPassengers(agent->getMission()->getProductionGoodAmount());
+                    }
+                    if (agent->getMission()->getType() == 12)
+                        message = *Globals::gameText->getText(856);
+                    else
+                        message += String(" ") + *Globals::gameText->getText(853 + Globals::rnd->nextInt(3));
+                    if (agent->getMission()->isOutsideMission()) {
+                        if (!agent->wasAskedForDifficulty)
+                            Globals::status->field_e8++;
+                        if (!agent->wasAskedForLocation)
+                            Globals::status->field_ec++;
+                    }
+                    Globals::status->setFreelanceMission(agent->getMission());
+                    Globals::status->getFreelanceMission()->setAgent(agent);
+                    this->init();
+                    this->hangarUpdate = 1;
+                    break;
+                case 2: {
+                    Globals::status->changeCredits(-agent->getSellItemPrice());
+                    Item *item = (*Globals::items)[agent->getSellItemIndex()]->makeItem(agent->getSellItemQuantity());
+                    bool merged = false;
+                    if (item->getType() == 1) {
+                        Array<Item *> *equipment = Globals::status->getShip()->getEquipment();
+                        if (equipment != 0) {
+                            for (unsigned int i = 0; i < equipment->size(); i++) {
+                                if ((*equipment)[i] != 0 && (*equipment)[i]->getIndex() == item->getIndex()) {
+                                    (*equipment)[i]->changeAmount(item->getAmount());
+                                    merged = true;
+                                }
+                            }
+                        }
+                    }
+                    if (!merged)
+                        Globals::status->getShip()->addCargo(item);
+                    if (agent->getSellItemIndex() >= 132 && agent->getSellItemIndex() <= 153)
+                        (*Globals::status->field_ac)[agent->getSellItemIndex() - 132] = true;
+                    this->hangarUpdate = 1;
+                    break;
+                }
+                case 3: {
+                    Globals::status->changeCredits(-agent->getSellItemPrice());
+                    for (unsigned int i = 0; i < ((Array<BluePrint *> *) Globals::status->getBluePrints())->size(); i++) {
+                        if ((*(Array<BluePrint *> *) Globals::status->getBluePrints())[i]->getIndex() ==
+                            agent->getSellBlueprintIndex()) {
+                            (*(Array<BluePrint *> *) Globals::status->getBluePrints())[i]->unlock();
+                            break;
+                        }
+                    }
+                    Array<Agent *> *stationAgents = (Array<Agent *> *) Globals::status->getAgents();
+                    if ((unsigned) agent->getIndex() < stationAgents->size())
+                        (*stationAgents)[agent->getIndex()]->setOfferAccepted(true);
+                    this->hangarUpdate = 1;
+                    break;
+                }
+                case 4: {
+                    Globals::status->changeCredits(-agent->getSellItemPrice());
+                    Globals::status->setSystemVisibility(agent->getSellSystemIndex(), true);
+                    this->hangarUpdate = 1;
+                    this->field_0x18 = 1;
+                    Array<Agent *> *stationAgents = (Array<Agent *> *) Globals::status->getAgents();
+                    if ((unsigned) agent->getIndex() < stationAgents->size())
+                        (*stationAgents)[agent->getIndex()]->setOfferAccepted(true);
+                    break;
+                }
+                case 6: {
+                    // Hire the wingmen.
+                    Globals::status->field_d4 += agent->getWingmanFriendsCount() + 1;
+                    Globals::status->setWingmen(agent->getWingmanNames());
+                    Globals::status->field_0x2c = agent->getRace();
+                    Globals::status->fadeValue = 600000;
+                    int *parts = new int[5];
+                    for (unsigned int i = 0; i < 5; i++)
+                        parts[i] = agent->getImageParts()[i];
+                    reinterpret_cast<int *&>(Globals::status->_byte_0x28) = parts;
+                    if (Globals::achievements->gotAllMedals())
+                        Globals::status->changeCredits(agent->getCosts());
+                    else
+                        Globals::status->changeCredits(-agent->getCosts());
+                    break;
+                }
+                case 7:
+                    ((Standing *) (intptr_t) Globals::status->getStanding())->rehabilitate(agent->getRace());
+                    Globals::status->changeCredits(-agent->getCosts());
+                    break;
+                case 8:
+                    Globals::status->changeCredits(Globals::options[56] ? -agent->getSellItemPrice() * 1.0f
+                                                                           : -agent->getSellItemPrice() * 2.0f);
+                    Globals::status->getShip()->addMod(agent->getSellModIndex());
+                    this->hangarUpdate = 1;
+                    break;
+                case 9: {
+                    Globals::status->changeCredits(Globals::options[56] ? -agent->getSellItemPrice() * 1.0f
+                                                                           : -agent->getSellItemPrice() * 2.0f);
+                    Item *item = (*Globals::items)[agent->getSellItemIndex()]->makeItem(agent->getSellItemQuantity());
+                    bool merged = false;
+                    if (item->getType() == 1) {
+                        Array<Item *> *equipment = Globals::status->getShip()->getEquipment();
+                        if (equipment != 0) {
+                            for (unsigned int i = 0; i < equipment->size(); i++) {
+                                if ((*equipment)[i] != 0 && (*equipment)[i]->getIndex() == item->getIndex()) {
+                                    (*equipment)[i]->changeAmount(item->getAmount());
+                                    merged = true;
+                                }
+                            }
+                        }
+                    }
+                    if (!merged)
+                        Globals::status->getShip()->addCargo(item);
+                    this->hangarUpdate = 1;
+                    break;
+                }
+                case 10:
+                    Globals::status->changeCredits(Globals::options[56] ? -agent->getSellItemPrice() * 1.0f
+                                                                           : -agent->getSellItemPrice() * 2.0f);
+                    Globals::status->voidStation->addShip((*Globals::ships)[agent->getSellItemIndex()]->makeShip(-1));
+                    Globals::status->getStation()->addShip((*Globals::ships)[agent->getSellItemIndex()]->makeShip(-1));
+                    this->hangarUpdate = 1;
+                    break;
+                }
+                if (agent->getOffer() != 8)
+                    agent->setOfferAccepted(true);
+                this->scrollWindow->setText(agent->getName(), message);
+                this->chatActive = 0;
+                this->mode = 3;
+                this->chatScroll = 0;
+            }
+            break;
+        }
+
+        if (key == 0x4000) {
+            this->chatAnswer--;
+            if (this->chatAnswer < 0)
+                this->chatAnswer = answers - 1;
+        }
+        if (key == 0x8000) {
+            this->chatAnswer++;
+            if (this->chatAnswer >= answers)
+                this->chatAnswer = 0;
+        }
+        if (key == 0x10000 || key == 0x20000) {
+            Agent *agent = key_agent(this);
+            switch (this->chatAnswer) {
+            case 0: {
+                // Accept the offer.
+                int offer = agent->getOffer();
+                String message("");
+                switch (offer) {
+                case 7:
+                    if (Globals::status->getCredits() < agent->getCosts()) {
+                        this->choiceWindow->set(
+                            Globals::status->replaceHash(
+                                *Globals::gameText->getText(203),
+                                String(Globals::layout->formatCredits(agent->getCosts() - Globals::status->getCredits()),
+                                       false),
+                                String("#C")),
+                            false);
+                        this->choiceVisible = 1;
+                        return 1;
+                    }
+                    message = *Globals::gameText->getText(885);
+                    message = Globals::status->replaceHash(
+                        message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                case 0:
+                case 5:
+                    if (agent->getMission()->getType() == 0) {
+                        int amount = agent->getMission()->getProductionGoodAmount();
+                        if (!Globals::status->getShip()->spaceAvailable(amount)) {
+                            message = *Globals::gameText->getText(337);
+                            message = Globals::status->replaceHash(message, String(String(amount), false), String("#Q"));
+                            this->choiceWindow->set(message, false);
+                            this->choiceVisible = 1;
+                            break;
+                        }
+                    } else if (agent->getMission()->getType() == 11) {
+                        int amount = agent->getMission()->getProductionGoodAmount();
+                        if (amount > Globals::status->getShip()->getMaxPassengers()) {
+                            message = *Globals::gameText->getText(338);
+                            message = Globals::status->replaceHash(message, String(String(amount), false), String("#Q"));
+                            this->choiceWindow->set(message, false);
+                            this->choiceVisible = 1;
+                            break;
+                        }
+                    }
+                    if (agent->isGenericAgent()) {
+                        message = *Globals::gameText->getText(865);
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(Globals::layout->formatCredits(agent->getMission()->getReward() +
+                                                                  agent->getMission()->getBonus()),
+                                   false),
+                            String("#C"));
+                        message = Globals::status->replaceHash(
+                            message, *Globals::gameText->getText(354 + agent->getMission()->getType()), String("#M"));
+                    } else {
+                        message = *Globals::gameText->getText(863);
+                    }
+                    if (Globals::status->getFreelanceMission() != 0 && !Globals::status->getFreelanceMission()->isEmpty())
+                        message += String(" ") + *Globals::gameText->getText(864);
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                case 2:
+                case 3:
+                case 4:
+                case 8:
+                case 9:
+                case 10: {
+                    float premium = Globals::options[56] ? 1.0f : 2.0f;
+                    float factor = offer >= 8 && offer <= 10 ? premium : 1.0f;
+                    int credits = Globals::status->getCredits();
+                    if (factor * (float) agent->getSellItemPrice() > (float) credits) {
+                        this->choiceWindow->set(
+                            Globals::status->replaceHash(
+                                *Globals::gameText->getText(203),
+                                String(Globals::layout->formatCredits(
+                                           (int) (factor * (float) agent->getSellItemPrice() -
+                                                  (float) Globals::status->getCredits())),
+                                       false),
+                                String("#C")),
+                            false);
+                        this->choiceVisible = 1;
+                        return 1;
+                    }
+                    switch (offer) {
+                    case 8:
+                        message = *Globals::gameText->getText(871);
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
+                                   false),
+                            String("#C"));
+                        break;
+                    case 10:
+                        message = *Globals::gameText->getText(873);
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
+                                   false),
+                            String("#C"));
+                        break;
+                    case 3:
+                        message = *Globals::gameText->getText(869);
+                        message = Globals::status->replaceHash(
+                            message,
+                            *Globals::gameText->getText(1274 +
+                                                        (*Globals::items)[agent->getSellBlueprintIndex()]->getIndex()),
+                            String("#P"));
+                        message = Globals::status->replaceHash(
+                            message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false),
+                            String("#C"));
+                        break;
+                    case 4:
+                        message = *Globals::gameText->getText(870);
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(((SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex()))->getName(),
+                                   false),
+                            String("#S"));
+                        message = Globals::status->replaceHash(
+                            message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false),
+                            String("#C"));
+                        break;
+                    case 2:
+                    case 9:
+                        message = *Globals::gameText->getText(868);
+                        message = Globals::status->replaceHash(message, String(String(agent->getSellItemQuantity()), false),
+                                                               String("#Q"));
+                        message = Globals::status->replaceHash(
+                            message, *Globals::gameText->getText(1274 + agent->getSellItemIndex()), String("#P"));
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
+                                   false),
+                            String("#C"));
+                        break;
+                    }
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                }
+                case 6:
+                    // Hire a wingman.
+                    if (!Globals::achievements->gotAllMedals() && Globals::status->getCredits() < agent->getCosts()) {
+                        this->choiceWindow->set(
+                            Globals::status->replaceHash(
+                                *Globals::gameText->getText(203),
+                                String(Globals::layout->formatCredits(agent->getCosts() - Globals::status->getCredits()),
+                                       false),
+                                String("#C")),
+                            false);
+                        this->choiceVisible = 1;
+                        return 1;
+                    }
+                    if (Globals::status->getWingmen() != 0) {
+                        this->choiceWindow->set(*Globals::gameText->getText(785), false);
+                        this->choiceVisible = 1;
+                        return 1;
+                    }
+                    message = *Globals::gameText->getText(Globals::achievements->gotAllMedals() ? 867 : 866);
+                    message = Globals::status->replaceHash(
+                        message, String(String(agent->getWingmanFriendsCount() + 1), false), String("#Q"));
+                    message = Globals::status->replaceHash(
+                        message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                case 1:
+                    this->mode = 0;
+                    return 1;
+                default:
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                }
+                break;
+            }
+            case 1:
+                // Decline.
+                this->scrollWindow->setText(agent->getName(),
+                                            *Globals::gameText->getText(845 + Globals::rnd->nextInt(5)));
+                this->mode = 3;
+                this->chatScroll = 0;
+                Globals::status->field_e0++;
+                break;
+            case 2:
+                // Repeat the offer.
+                this->mode = 2;
+                this->scrollWindow->setText(agent->getName(), Globals::globals->getAgentMissionText(agent));
+                this->chatScroll = 0;
+                Globals::status->field_e4++;
+                break;
+            case 3:
+                if (agent->getOffer() == 2 || key_agent(this)->getOffer() == 3) {
+                    // Show the offered item.
+                    if (this->listWindow == 0)
+                        this->listWindow = new ListItemWindow();
+                    if (key_agent(this)->getOffer() == 2) {
+                        this->listWindow->set(new ListItem((*Globals::items)[key_agent(this)->getSellItemIndex()]), 0,
+                                              0, 0, 0, false);
+                    } else {
+                        for (unsigned int b = 0; b < ((Array<BluePrint *> *) Globals::status->getBluePrints())->size();
+                             b++) {
+                            if ((*(Array<BluePrint *> *) Globals::status->getBluePrints())[b]->getIndex() ==
+                                key_agent(this)->getSellBlueprintIndex()) {
+                                this->listWindow->set(
+                                    new ListItem(
+                                        (*Globals::items)[(*(Array<BluePrint *> *) Globals::status->getBluePrints())[b]
+                                                              ->getIndex()]),
+                                    0, 0, 0, 0, false);
+                                break;
+                            }
+                        }
+                    }
+                    this->listVisible = 1;
+                } else {
+                    // Where is the target?
+                    key_agent(this)->wasAskedForLocation = 1;
+                    if (key_agent(this)->getMission()->getTargetStation() == Globals::status->getStation()->getIndex()) {
+                        this->scrollWindow->setText(agent->getName(), *Globals::gameText->getText(805));
+                        this->mode = 2;
+                        this->chatScroll = 0;
+                    } else if (((SolarSystem *) Globals::status->getSystem())
+                                   ->stationIsInSystem(key_agent(this)->getMission()->getTargetStation())) {
+                        this->scrollWindow->setText(agent->getName(), *Globals::gameText->getText(806));
+                        this->mode = 2;
+                        this->chatScroll = 0;
+                    } else {
+                        this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+                        if (this->starMap != 0) {
+                            this->starMap->init(true, key_agent(this)->getMission(), false, -1);
+                        } else {
+                            StarMap *map = new StarMap(true, key_agent(this)->getMission(), false, -1);
+                            ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap = map;
+                            this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+                        }
+                        this->mapVisible = 1;
+                    }
+                }
+                break;
+            case 4: {
+                // How difficult is it?
+                agent->wasAskedForDifficulty = 1;
+                int difficulty = agent->getMission()->getDifficulty();
+                this->scrollWindow->setText(
+                    agent->getName(), *Globals::gameText->getText(808 + (int) ((float) difficulty / 10.0f * 5.0f)));
+                this->mode = 2;
+                this->chatScroll = 0;
+                break;
+            }
+            }
+            if (key_agent(this)->isGenericAgent())
+                key_agent(this)->setEvent(1);
+        }
+        break;
     }
+    }
+    return 1;
 }
 
 void SpaceLounge::updateScreenPositions() {
@@ -1483,7 +1934,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                         new ListItem((*Globals::items)[(*this->agents)[this->selectedAgent]->getSellItemIndex()]), 0, 0,
                         0, 0, false);
                 } else if ((*this->agents)[this->selectedAgent]->getOffer() == 10) {
-                    this->field_0xb1 = ((Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated();
+                    this->postEffectWasActive = ((Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated();
                     ((Engine *) Globals::appManager->GetEngine())->SetPostEffect(0x1400000, false);
                     this->listWindow->set(
                         new ListItem((*Globals::ships)[(*this->agents)[this->selectedAgent]->getSellItemIndex()]), 0, 0,
