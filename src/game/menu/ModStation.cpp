@@ -2265,7 +2265,21 @@ void ModStation::OnUpdate() {
         if (Globals::status->getCurrentCampaignMission() >= 148 &&
             Globals::status->getCurrentCampaignMission() <= 151) {
             int stationIndex = Globals::status->getStation()->getIndex();
-            int visitBit = stationIndex == 66 ? 2 : stationIndex == 55 ? 1 : stationIndex == 9 ? 4 : 0;
+            int visitBit;
+            switch (stationIndex) {
+            case 66:
+                visitBit = 2;
+                break;
+            case 9:
+                visitBit = 4;
+                break;
+            case 55:
+                visitBit = 1;
+                break;
+            default:
+                visitBit = 0;
+                break;
+            }
             if (completed != nullptr) {
                 if (this->flag_0x65 && this->spaceLounge->introFinished() &&
                     Globals::status->getCurrentCampaignMission() >= 148 && stationIndex == 96 &&
@@ -2286,8 +2300,9 @@ void ModStation::OnUpdate() {
                 ((Mission *) (intptr_t) Globals::status->getCampaignMission())
                     ->setStatusValue(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() |
                                      visitBit);
-                int textId = Globals::status->getStation()->getIndex() == 66 ? 149 : 148;
-                if (Globals::status->getStation()->getIndex() == 9) {
+                int here = Globals::status->getStation()->getIndex();
+                int textId = here == 66 ? 149 : 148;
+                if (here == 9) {
                     textId = 150;
                 }
                 this->dialogueWindow = new DialogueWindow();
@@ -2301,8 +2316,8 @@ void ModStation::OnUpdate() {
         }
 
         if (reachedBeacon) {
-            int beacon = Globals::status->getStation()->getIndex() == 94 ? 3
-                                                                         : Globals::status->getStation()->getIndex() - 90;
+            int beaconStation = Globals::status->getStation()->getIndex();
+            int beacon = beaconStation == 94 ? 3 : beaconStation - 90;
             Globals::sound->play(1561 + beacon, nullptr, nullptr, 0.0f);
             bool firstVoice = beacon == 0 || beacon == 2;
             int textId = 2716 + beacon;
