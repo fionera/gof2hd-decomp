@@ -6582,7 +6582,7 @@ void Level::updateMissionOrbit(int dt) {
         if (orbitWaveTimer > 50000) {
             orbitWaveTimer = 0;
             bool allDead = true;
-            for (unsigned int i = 0; allDead && i < enemies->size() - 1; i++) {
+            for (unsigned int i = 0; i < enemies->size() - 1 && allDead; i++) {
                 allDead = (*enemies)[i]->isDead();
             }
             if (allDead) {
