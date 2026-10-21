@@ -511,8 +511,6 @@ void *paintcanvas_ext_dsc_arr_dtor(void *arr); // lint: void_ptr (external symbo
 
 void paintcanvas_ext_dsc_op_delete(void *p); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_smfg_pushmat(const float *m, void *array); // lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_ec_glEnable(unsigned int cap) { glEnable(cap); }
 
 static inline void paintcanvas_ext_ec_glScissor(int x, int y, int w, int h) { glScissor(x, y, w, h); }
@@ -3847,12 +3845,10 @@ void PaintCanvas::SetMatForGlow(AbyssEngine::Material *glowSource) {
         ArrayAdd<AbyssEngine::Mesh *>(glowSource->meshes.data_[i],
                                       this->glowMeshes);
 
-        paintcanvas_ext_smfg_pushmat(glowSource->arr_2c.data_[i], &this->glowMatA);
-        paintcanvas_ext_smfg_pushmat(glowSource->arr_38.data_[i], &this->glowMatB);
-
-        PCArrayAdd<unsigned int>(glowSource->arr_50.data_[i], (PCArrayHeader *) &this->glowUints);
-
-        paintcanvas_ext_smfg_pushmat(glowSource->arr_5c.data_[i], &this->glowMatC);
+        ArrayAdd<AbyssEngine::AEMath::Matrix>(glowSource->arr_2c.data_[i], this->glowMatA);
+        ArrayAdd<AbyssEngine::AEMath::Matrix>(glowSource->arr_38.data_[i], this->glowMatB);
+        ArrayAdd<unsigned int>(glowSource->arr_50.data_[i], this->glowUints);
+        ArrayAdd<AbyssEngine::AEMath::Matrix>(glowSource->arr_5c.data_[i], this->glowMatC);
     }
 }
 
