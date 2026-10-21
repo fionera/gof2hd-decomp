@@ -3452,7 +3452,8 @@ void Level::createCampaignMission() {
             (*this->enemies)[0] = this->createStaticObject(nullptr, 16992, false);
             ((PlayerFixedObject *) (*this->enemies)[0])->setMoving(false);
 
-            (*this->enemies)[1] = new PlayerFixedObject(18781, 0, new Player(7500, 9999999, 0, 0, 0), nullptr, 0.0f, 0.0f, 0.0f);
+            Player *gatePlayer = new Player(7500, 9999999, 0, 0, 0);
+            (*this->enemies)[1] = new PlayerFixedObject(18781, 0, gatePlayer, nullptr, 0.0f, 0.0f, 0.0f);
             AEGeometry *gate = new AEGeometry(21076, Globals::Canvas, false);
             AEGeometry *part0 = new AEGeometry(21876, Globals::Canvas, false);
             AEGeometry *part1 = new AEGeometry(22076, Globals::Canvas, false);
@@ -3464,7 +3465,8 @@ void Level::createCampaignMission() {
             (*this->enemies)[1]->setPosition(Vector{-77000.0f, -3000.0f, 90000.0f});
             (*this->enemies)[1]->geometry->setRotation(0.0f, 1.5707964f, 0.0f);
 
-            (*this->enemies)[2] = new PlayerFixedObject(18781, 0, new Player(7500, 9999999, 0, 0, 0), nullptr, 0.0f, 0.0f, 0.0f);
+            Player *brokenGatePlayer = new Player(7500, 9999999, 0, 0, 0);
+            (*this->enemies)[2] = new PlayerFixedObject(18781, 0, brokenGatePlayer, nullptr, 0.0f, 0.0f, 0.0f);
             AEGeometry *brokenGate = new AEGeometry(21076, Globals::Canvas, false);
             AEGeometry *part2 = new AEGeometry(21876, Globals::Canvas, false);
             AEGeometry *part3 = new AEGeometry(18832, Globals::Canvas, false);
@@ -3988,12 +3990,12 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
                 KIPlayer *attacker = (*this->enemies)[i];
                 if (i <= 10) {
-                    int x = (Globals::rnd->nextInt(100) + 900) * (i % 2 == 0 ? 1 : -1);
-                    attacker->setPosition(center + (float) i * Vector{(float) x, (float) (Globals::rnd->nextInt(200) - 200),
+                    attacker->setPosition(center + (float) i * Vector{(float) ((Globals::rnd->nextInt(100) + 900) * (i % 2 == 0 ? 1 : -1)),
+                                                                      (float) (Globals::rnd->nextInt(200) - 200),
                                                                       (float) (Globals::rnd->nextInt(400) - 200)});
                 } else {
-                    int x = (Globals::rnd->nextInt(100) + 1600) * (i % 2 == 0 ? 1 : -1);
-                    attacker->setPosition(center + (float) i * Vector{(float) x, (float) (Globals::rnd->nextInt(100) - 200),
+                    attacker->setPosition(center + (float) i * Vector{(float) ((Globals::rnd->nextInt(100) + 1600) * (i % 2 == 0 ? 1 : -1)),
+                                                                      (float) (Globals::rnd->nextInt(100) - 200),
                                                                       (float) (Globals::rnd->nextInt(500) + 1000)});
                 }
                 (*this->enemies)[i]->geometry->setDirection(
@@ -4179,11 +4181,11 @@ void Level::createCampaignMission() {
             ArraySetLength(15, *this->enemies);
             for (int i = 0; i < 8; i++) {
                 int type = Globals::globals->getRandomEnemyFighter(8);
-                if (i < 2) {
-                    (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(0), true, false);
-                } else {
+                if (i >= 2) {
                     (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(1), true, false);
                     (*this->enemies)[i]->setToSleep();
+                } else {
+                    (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(0), true, false);
                 }
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
             }
