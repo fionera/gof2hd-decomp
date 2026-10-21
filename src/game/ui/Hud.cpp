@@ -1325,7 +1325,7 @@ void Hud::drawMenu(int unused) {
         }
     }
 
-    if (this->menuLevel != 0) return;
+    if (this->menuType != 0) return;
 
     Ship *ship = Globals::status->getShip();
     if (!ship->hasCloak() && ship->hasJumpDrive() == 0) return;
@@ -1686,59 +1686,225 @@ static CargoBay **g_Hud_imCargoB = nullptr;
 
 
 
-void Hud::initHudMenu(int menuType, Level *lvl) {
+void Hud::initHudMenu(int menuType, Level *level) {
     if (this->menuButtons != 0) {
         ArrayReleaseClasses(*this->menuButtons);
         delete this->menuButtons;
         this->menuButtons = 0;
     }
-    this->menuLevel = lvl;
     this->menuButtons = new Array<TouchButton *>();
-
-    delete this->equipmentArray;
+    this->menuType = menuType;
+    if (this->equipmentArray != 0)
+        delete this->equipmentArray;
+    this->equipmentArray = 0;
     this->equipmentArray = Globals::status->getShip()->getEquipment(1);
-    updateSecondaryWeaponString();
-
-    this->menuOriginX = 0;
-    int *layout = (int *) Globals::layout;
-    int rowH = *(int *) (layout[0] + 0x1dc);
-
-    char letterbox = *(char *) &Globals::iPad;
-
-    int yOrigin;
-    if (letterbox == 0) {
-        yOrigin = this->menuBaseY;
+    this->updateSecondaryWeaponString();
+    this->field_0x4cc = 0;
+    int rowGap = Globals::layout->field_0x1dc;
+    int y;
+    if (Globals::iPad != 0) {
+        float top = (this->menuType == 3 ? (float) *(int *) &Globals::options[84]
+                                         : (float) *(int *) &Globals::options[88] -
+                                           (Globals::iPadHD != 0 ? 112.5f : Globals::iPadLarge != 0 ? 160.0f : 80.0f)) < 0.0f
+                        ? 0.0f
+                        : (this->menuType == 3 ? (float) *(int *) &Globals::options[84]
+                                               : (float) *(int *) &Globals::options[88] -
+                                                 (Globals::iPadHD != 0 ? 112.5f : Globals::iPadLarge != 0 ? 160.0f : 80.0f));
+        this->menuOriginY = (int) top;
+        y = (int) top + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + 1;
+        this->menuBaseY = y;
     } else {
-        CargoBay *cargoA = (CargoBay *) *g_Hud_imCargoA;
-        float v;
-        if ((long) this->menuLevel == 3)
-            v = (float) cargoA->cargoCurrent;
-        else {
-            v = (float) cargoA->cargoMax;
-            float adj = 0.0f;
-            if (*(char *) (char *) (Globals::options + 0x11) == 0)
-                adj = (*(char *) (char *) (Globals::hints + 0x11) == 0) ? 1.0f : 0.0f;
-            v = v - adj;
+        y = this->menuBaseY;
+    }
+
+    switch (menuType) {
+        case 0: {
+            bool hasSecondary = false;
+            if (this->equipmentArray != 0) {
+                for (unsigned int i = 0; i < this->equipmentArray->size(); i++) {
+                    if ((*this->equipmentArray)[i] != 0) {
+                        hasSecondary = true;
+                        break;
+                    }
+                }
+            }
+            if (hasSecondary) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(266), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                button->id = 0x200;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            if (Globals::status->getWingmen() != 0 && Globals::status->inSupernovaSystem() == 0 &&
+                Globals::status->getCurrentCampaignMission() != 158) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(306), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                button->id = 0x400;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            if (Globals::status->getShip()->hasCloak()) {
+                Item *cloak = Globals::status->getShip()->getFirstEquipmentOfSort(21);
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(cloak->getIndex() + 1274), 0,
+                                                      this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
+                button->setPressProgressHighlight(false);
+                if (level->getPlayer()->isCloaked() || level->getPlayer()->isChargingCloak() ||
+                    level->getPlayer()->isRechargingCloak()) {
+                    if (level->getPlayer()->isRechargingCloak())
+                        button->setPressProgress(level->getPlayer()->getCloakRechargeRate());
+                    button->setHalfTransparent(true);
+                }
+                button->id = 0x800;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            if (Globals::status->getShip()->hasJumpDrive()) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(1359), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                if (level->getPlayer()->isChargingDrive() || level->getPlayer()->emergencySystemActive())
+                    button->setHalfTransparent(true);
+                button->id = 0x1000;
+                ArrayAdd(button, *this->menuButtons);
+            }
+            Item *fuel = Globals::status->getShip()->getCargo(122);
+            this->fuelGaugeValue = fuel != 0 ? fuel->getAmount() : 0;
+            Globals::Canvas->Image2DCreate(1269, this->image_0x35c);
+            break;
         }
-        float yf = 0.0f;
-        if (v >= 0.0f) {
-            if ((long) this->menuLevel == 3)
-                yf = (float) ((CargoBay *) *g_Hud_imCargoA)->cargoCurrent;
-            else {
-                float v2 = (float) ((CargoBay *) *g_Hud_imCargoB)->cargoMax;
-                float adj = (*(char *) (char *) (Globals::options + 0x11) == 0)
-                                ? ((*(char *) (char *) (Globals::hints + 0x11) == 0) ? 1.0f : 0.0f)
-                                : 0.0f;
-                yf = v2 - adj;
+        case 1:
+            for (unsigned int i = 0; i < this->equipmentArray->size(); i++) {
+                if ((*this->equipmentArray)[i] == 0)
+                    continue;
+                TouchButton *button = new TouchButton(
+                        *Globals::gameText->getText((*this->equipmentArray)[i]->getIndex() + 1274) +
+                        String(String(" (") + String((*this->equipmentArray)[i]->getAmount()) + String(")")),
+                        0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
+                switch (i) {
+                    case 0:
+                        button->id = 0x2000;
+                        break;
+                    case 1:
+                        button->id = 0x4000;
+                        break;
+                    case 2:
+                        button->id = 0x8000;
+                        break;
+                    default:
+                        button->id = 0x10000;
+                        break;
+                }
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            Globals::Canvas->Image2DCreate(1270, this->image_0x35c);
+            break;
+        case 2: {
+            int textIds[4] = {307, 308, 309, (unsigned char) Globals::status->field_f8 != 0 ? 311 : 310};
+            int keys[4] = {0x20000, 0x40000, 0x80000, 0x100000};
+            for (unsigned int i = 0; i < 4; i++) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(textIds[i]), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                button->id = keys[i];
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            Globals::Canvas->Image2DCreate(1267, this->image_0x35c);
+            break;
+        }
+        case 3: {
+            if (Globals::iPad != 0)
+                this->field_0x4cc = Globals::layout->buttonInsetX - this->field_0x3c4;
+            if (Globals::status->inAlienOrbit() == 0) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(549), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                button->id = 0x1000000;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+                if (!Globals::status->inEmptyOrbit()) {
+                    TouchButton *dock = new TouchButton(
+                            String(Globals::status->getStation()->getName()) +
+                            (Globals::status->getStation()->getIndex() == 101
+                                     ? String("")
+                                     : String(" ") + *Globals::gameText->getText(136)),
+                            0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
+                    dock->id = 0x800000;
+                    ArrayAdd(dock, *this->menuButtons);
+                    y += rowGap + Globals::layout->field_0x30_rowHeight;
+                }
+                if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate()) {
+                    TouchButton *gate = new TouchButton(*Globals::gameText->getText(547), 0, this->field_0x3d4, y,
+                                                        this->field_0x3dc, 0x11, 4);
+                    gate->id = 0x400000;
+                    ArrayAdd(gate, *this->menuButtons);
+                    y += rowGap + Globals::layout->field_0x30_rowHeight;
+                }
+                if (level->getPlayer()->getRoute() != 0 &&
+                    (unsigned char) ((Route *) (intptr_t) level->getPlayer()->getRoute())->getLastWaypoint()->state == 0) {
+                    TouchButton *route = new TouchButton(*Globals::gameText->getText(573), 0, this->field_0x3d4, y,
+                                                         this->field_0x3dc, 0x11, 4);
+                    route->id = 0x2000000;
+                    ArrayAdd(route, *this->menuButtons);
+                    y += rowGap + Globals::layout->field_0x30_rowHeight;
+                }
+                if (Level::programmedStation != 0) {
+                    TouchButton *autopilot = new TouchButton(
+                            *Globals::gameText->getText(546) + String(": ") +
+                            String(Level::programmedStation->getName()),
+                            0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
+                    autopilot->id = 0x200000;
+                    ArrayAdd(autopilot, *this->menuButtons);
+                    y += rowGap + Globals::layout->field_0x30_rowHeight;
+                }
+            }
+            int targets = level->getNumDockingTargets();
+            for (int i = 0; i < targets; i++) {
+                if (((PlayerFixedObject *) (intptr_t) level->getDockingTarget(i))->getName().length == 0)
+                    continue;
+                TouchButton *button = new TouchButton(
+                        ((PlayerFixedObject *) (intptr_t) level->getDockingTarget(i))->getName(), 0, this->field_0x3d4,
+                        y, this->field_0x3dc, 0x11, 4);
+                button->id = 0x4000000 << i;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            if (Globals::iPad == 0 && this->menuButtons->size() >= 5) {
+                for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
+                    TouchButton *button = (*this->menuButtons)[i];
+                    float x = button->getPosition().x;
+                    (*this->menuButtons)[i]->getPosition();
+                    button->setPosition((int) x, (int) ((*this->menuButtons)[i]->getPosition().y -
+                                                        (float) Globals::layout->field_0x30_rowHeight));
+                }
+            }
+            Globals::Canvas->Image2DCreate(1268, this->image_0x35c);
+            break;
+        }
+    }
+
+    unsigned int count = this->menuButtons->size();
+    if (Globals::iPad != 0) {
+        if (count != 0) {
+            int shift = (4 - count) * (rowGap + Globals::layout->field_0x30_rowHeight);
+            if (menuType == 3)
+                shift -= Globals::layout->field_0x30_rowHeight;
+            this->field_0x4d0 = shift;
+            for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
+                (*this->menuButtons)[i]->translate(this->field_0x4cc, this->field_0x4d0);
+                if (i < 10) {
+                    Globals::sub_menu_buttons_x[i] = (int) (*this->menuButtons)[i]->getPosition().x;
+                    Globals::sub_menu_buttons_y[i] = (int) (*this->menuButtons)[i]->getPosition().y;
+                }
             }
         }
-        this->menuOriginY = (int) yf;
-        yOrigin = ((this->menuRowHeight + (int) yf) - rowH / 2) + 1;
-        this->menuBaseY = yOrigin;
+    } else {
+        this->field_0x4d0 = count >= 5 ? -Globals::layout->field_0x30_rowHeight : 0;
+        for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
+            if (i < 10) {
+                Globals::sub_menu_buttons_x[i] = (int) (*this->menuButtons)[i]->getPosition().x;
+                Globals::sub_menu_buttons_y[i] = (int) (*this->menuButtons)[i]->getPosition().y;
+            }
+        }
     }
-    (void) yOrigin;
-
-    Hud_buildQuickMenu(this, menuType);
     this->quickMenuOpen = 1;
 }
 

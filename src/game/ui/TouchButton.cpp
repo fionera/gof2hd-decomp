@@ -175,8 +175,7 @@ int TouchButton::init(String const &text, unsigned int subId, int kind, int achI
     this->subId = subId;
     this->textColor = -1;
     this->requestedWidth = width;
-    this->field_0x0 = 0;
-    this->field_0x4 = 0;
+    this->id = 0;
     this->flags1 = flags1;
     this->flags0 = flags0;
     this->touched = 0;

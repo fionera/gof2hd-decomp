@@ -66,7 +66,7 @@ public:
     unsigned char cargoFullFlag;
     unsigned char field_0x236;
     uint8_t _pad_0x237[1];
-    Level * menuLevel;
+    int menuType;
     uint8_t _pad_0x23c[8];
     unsigned char shieldHitFlash;
     uint8_t _pad_0x245[19];

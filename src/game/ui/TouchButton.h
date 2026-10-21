@@ -8,8 +8,7 @@
 
 class TouchButton {
 public:
-    int field_0x0;
-    int field_0x4;
+    long long id; // 64-bit action key (Hud quick menu: 0x200, 0x400, ... 1 << n)
     uint32_t fontId;
     String text;
     String splitText;
