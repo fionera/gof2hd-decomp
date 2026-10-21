@@ -696,16 +696,192 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
     return true;
 }
 
-static int *const gCC_status = nullptr;
-
 void Gun::calcCharacterCollision() {
-    Array<Player *> *enemies = this->enemies;
-    if (enemies == 0)
+    if (this->enemies == nullptr) {
         return;
+    }
+    bool explosive;
+    bool explodeOnContact;
+    bool scatter;
+    bool mine;
+    switch (this->weaponType) {
+        case ITEM_SORT_EMP_BOMB:
+        case ITEM_SORT_NUKE:
+        case ITEM_SORT_IONIZING_MISSILE:
+        case ITEM_SORT_SHOCK_BLAST:
+            scatter = this->weaponType == ITEM_SORT_SCATTER_GUN;
+            mine = this->weaponType == ITEM_SORT_MINE;
+            explosive = true;
+            explodeOnContact = true;
+            break;
+        default:
+            scatter = this->weaponType == ITEM_SORT_SCATTER_GUN;
+            mine = this->weaponType == ITEM_SORT_MINE;
+            explosive = isRocketLike(this->weaponType);
+            explodeOnContact = mine;
+            break;
+    }
+    this->lastHitKIPlayer = 0;
 
-    for (unsigned ei = 0; ei < enemies->size(); ei = ei + 1) {
-        Player *target = enemies->data()[ei];
-        this->target = target;
+    for (unsigned e = 0; e < this->enemies->size(); ++e) {
+        Player *enemy = (*this->enemies)[e];
+        if (mine) {
+            if (!enemy->enemyFlagsLo) continue;
+            if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->deadFlag) continue;
+        }
+        if (!enemy->isActive()) continue;
+        if (enemy->getHitpoints() < 1) continue;
+
+        for (unsigned i = 0; i < this->count; ++i) {
+            Vector position = reinterpret_cast<Vector *>(this->positions)[i];
+            Vector velocity = reinterpret_cast<Vector *>(this->velocities)[i];
+            Vector enemyPosition =
+                    AbyssEngine::AEMath::MatrixGetPosition(reinterpret_cast<Matrix &>(enemy->transform[0]));
+            int radius = this->useCustomRadius ? this->customRadius : enemy->radius;
+            if (mine) {
+                radius *= 5;
+            } else if (scatter) {
+                int distance = (int) AbyssEngine::AEMath::VectorLength(
+                        enemyPosition - ((Level *) this->level)->getPlayer()->getPosition());
+                if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->field_0x71) {
+                    radius = (int) ((float) radius * 0.5f);
+                } else if (distance > 20000) {
+                    radius = (int) (float) (radius * 3);
+                } else {
+                    radius = (int) (distance > 10000 ? (float) (radius * 2) : (float) radius * 1.5f);
+                }
+            }
+
+            KIPlayer *ki = enemy->getKIPlayer();
+            if (!enemy->pad_69 && (ki == nullptr || !(uint8_t) ki->field_0x8c)) {
+                continue;
+            }
+            bool hit;
+            if (ki != nullptr && ki->field_0x40) {
+                hit = ki->outerCollide(position) != 0;
+            } else {
+                float r = (float) radius;
+                float dx = enemyPosition.x - position.x + velocity.x;
+                float dy = enemyPosition.y - position.y + velocity.y;
+                float dz = enemyPosition.z - position.z + velocity.z;
+                hit = dx < r && dx > (float) -radius && dy < r && dy > (float) -radius && dz < r &&
+                      dz > (float) -radius;
+            }
+            if (!hit) {
+                continue;
+            }
+
+            if (enemy->isAsteroid()) {
+                if (mine) {
+                    continue;
+                }
+                enemy->setBombForce(0.0f);
+                if (explosive) {
+                    enemy->damage(9999, false, this->itemIndex);
+                    if (!Globals::achievements->hasMedal(41, 1) &&
+                        (isRocketLike(this->weaponType) || this->weaponType == ITEM_SORT_IONIZING_MISSILE)) {
+                        int count = ++Globals::status->field_12c;
+                        if (count >= Globals::achievements->getValue(41, 1)) {
+                            ((Hud *) ((Level *) this->level)->getPlayer()->getHUD())->hudEventMedal(41, 100);
+                            Globals::status->field_130 = 1;
+                        }
+                    } else if (this->itemIndex == 179 && !Globals::achievements->hasMedal(44, 1)) {
+                        int count = ++Globals::status->field_144;
+                        if (count >= Globals::achievements->getValue(44, 1)) {
+                            ((Hud *) ((Level *) this->level)->getPlayer()->getHUD())->hudEventMedal(44, 100);
+                            Globals::status->field_148 = 1;
+                        }
+                    }
+                    return;
+                }
+            } else if (mine) {
+                float r = (float) enemy->radius;
+                float dx = enemyPosition.x - position.x + velocity.x;
+                float dy = enemyPosition.y - position.y + velocity.y;
+                float dz = enemyPosition.z - position.z + velocity.z;
+                if (dx < r && dx > (float) -enemy->radius && dy < r && dy > (float) -enemy->radius && dz < r &&
+                    dz > (float) -enemy->radius) {
+                    this->ignite();
+                    return;
+                }
+                reinterpret_cast<Vector *>(this->velocities)[i] =
+                        AbyssEngine::AEMath::VectorNormalize(enemyPosition - position);
+                reinterpret_cast<Vector *>(this->positions)[i] +=
+                        reinterpret_cast<Vector *>(this->velocities)[i] * this->pitchRate * 100.0f;
+                return;
+            }
+            if (explodeOnContact) {
+                this->ignite();
+                return;
+            }
+
+            if (this->empDamage != kNoAttribute) {
+                enemy->damageEmp(this->empDamage, this->friendGun);
+            }
+            int amount;
+            if (this->owner == nullptr || this->owner->enemyFlagsLo) {
+                if (enemy->pad_69 && ((Level *) this->level)->getPlayer() != nullptr &&
+                    ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
+                    amount = (int) ((float) this->damage * 3.0f * 0.25f);
+                } else {
+                    amount = this->damage;
+                }
+            } else if (enemy->pad_69) {
+                amount = (int) ((float) this->damage * 0.2f);
+            } else {
+                amount = this->damage;
+            }
+            enemy->damage(amount, this->friendGun, this->itemIndex);
+            reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
+            if (this->playerGun) {
+                ((Level *) this->level)->field_30 = 1;
+            }
+            enemy->setHitVector(-velocity.x, -velocity.y, -velocity.z);
+            this->lifetimes[i] = -1000000;
+            this->lastHitKIPlayer = (int) (intptr_t) enemy->getKIPlayer();
+            if (explosive) {
+                ((Level *) this->level)->field_74->emitManual(((Level *) this->level)->field_3c, position, 0, velocity,
+                                                              -1.0f);
+            } else if (this->geometries != nullptr) {
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometries[i]))
+                        ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometries[i]))
+                        ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                Matrix view = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+                AbyssEngine::AEMath::MatrixSetTranslation(view, position.x, position.y, position.z);
+                Globals::Canvas->TransformSetLocal(this->geometries[i], view);
+            }
+            if (this->impact != nullptr) {
+                if (this->impact->isRocket()) {
+                    reinterpret_cast<uint8_t *>(&enemy->field_54)[1] = 1;
+                }
+                if (this->impact != nullptr) {
+                    this->impact->explode(position);
+                }
+            }
+            if (scatter) {
+                this->hitFlags[i] = 1;
+                reinterpret_cast<Vector *>(this->hitPositions)[i] = position;
+                for (unsigned k = 0; k < this->enemies->size(); ++k) {
+                    Player *other = (*this->enemies)[k];
+                    this->targetDir = other->getPosition();
+                    this->targetDir -= position;
+                    int distance = (int) AbyssEngine::AEMath::VectorLength(this->targetDir);
+                    if (distance < this->magnitude) {
+                        float falloff = (float) (this->magnitude - distance) / (float) this->magnitude;
+                        if (falloff > 1.0f) {
+                            falloff = 1.0f;
+                        } else if (falloff < 0.0f) {
+                            falloff = 0.0f;
+                        }
+                        other->damage((int) (falloff * (float) this->damage), this->friendGun, this->itemIndex);
+                        if (this->empDamage >= 1) {
+                            other->damageEmp((int) (falloff * (float) this->empDamage), this->friendGun);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
