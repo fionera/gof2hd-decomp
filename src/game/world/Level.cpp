@@ -150,13 +150,9 @@ static float *g_up_clampW = nullptr;
 
 
 
-static int **g_cso_textA = nullptr;
 
-static int **g_cso_textB = nullptr;
 
-static float g_cso_posX = 0;
 
-static float g_cso_posZ = 0;
 
 static int *g_cs_diffRec = nullptr;
 
@@ -1352,27 +1348,34 @@ int Level::init() {
 }
 
 void Level::createFighterTurrets() {
-    if (this->enemies == nullptr)
+    if (enemies == nullptr) {
         return;
-
-    for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
-        KIPlayer *ki = (*this->enemies)[i];
-        if (ki != 0) {
-            int kind = ki->shipGroupFlag;
-            if (kind == 0x2d || kind == 0x33) {
-                PlayerTurret *t = (PlayerTurret *) this->createStaticObject((Waypoint *) (intptr_t) 0, 0x1a74, 1);
-                t->player->setVulnerable(0);
-                Player *pp = t->player;
-                int hp = pp->getMaxHitpoints();
-                pp->setMaxHitpoints(hp);
-                char offset[12] = {0};
-                t->setHost(ki, *(Vector *) offset);
-                *(PlayerTurret **) &ki->field_0x10 = t;
-                t->shipGroup = (kind == 0x2d) ? 8 : 0;
-                reinterpret_cast<uint8_t &>(t->route) = 1;
-                ArrayAdd((KIPlayer *) t, *(this->enemies));
-            }
+    }
+    for (unsigned int i = 0; i < enemies->size(); i++) {
+        KIPlayer *ship = (*enemies)[i];
+        if (ship == nullptr) {
+            continue;
         }
+        PlayerTurret *turret;
+        if (ship->shipGroupFlag == 0x2d) {
+            turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
+            turret->player->setVulnerable(false);
+            turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
+            turret->setHost(ship, Vector{0.0f, 172.25f, -460.7f});
+            ship->field_0x10 = (int) (intptr_t) turret;
+            turret->shipGroup = 8;
+        } else if (ship->shipGroupFlag == 0x33) {
+            turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
+            turret->player->setVulnerable(false);
+            turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
+            turret->setHost(ship, Vector{0.0f, 470.0f, -83.0f});
+            ship->field_0x10 = (int) (intptr_t) turret;
+            turret->shipGroup = 0;
+        } else {
+            continue;
+        }
+        turret->field_0x74 = 1;
+        ArrayAdd((KIPlayer *) turret, *enemies);
     }
 }
 
@@ -5387,66 +5390,56 @@ Level::Level(int mission)
 }
 
 void Level::createStaticObjects() {
-    if (Globals::status->inAlienOrbit() == 0) {
-        Station *st = (Station *) Globals::status->getStation();
-        if (((Station *) st)->getIndex() == 0x70 &&
-            0x7f < Globals::status->getCurrentCampaignMission()) {
-            int type;
-            if (Globals::status->getCurrentCampaignMission() < 0x83) type = 0x493e;
-            else if (Globals::status->getCurrentCampaignMission() < 0x87) type = 0x4941;
-            else if (Globals::status->getCurrentCampaignMission() < 0x8a) type = 0x4944;
-            else if (Globals::status->getCurrentCampaignMission() < 0x8e) type = 0x4947;
-            else if (0x91 < Globals::status->getCurrentCampaignMission()) type = -1;
-            else type = 0x494a;
-
-            if (type != -1) {
-                KIPlayer *o = (KIPlayer *) this->createStaticObject((Waypoint *) (intptr_t) 0, type, 0);
-                ((PlayerFixedObject *) o)->setPosition(g_cso_posX, 0, g_cso_posZ);
-                ((PlayerFixedObject *) o)->setMoving(0);
-                AEGeometry *geo = o->geometry;
-                o->field_0x70 = 0;
-
-                Vector dir = this->starSystem->getLightDirection();
-
-                Vector up = {0.0f, 1.0f, 0.0f};
-                geo->setDirection(dir, up);
-                String *txt = Globals::gameText->getText(**g_cso_textA);
-                o->name = *txt;
-                o->player->setAlwaysFriend(1);
-                if (this->enemies == nullptr) {
-                    this->enemies = new Array<KIPlayer *>();
-                }
-                ArrayAdd(o, *(this->enemies));
-                if (o->cargo != 0)
-                    delete o->cargo;
-                o->cargo = 0;
+    // the station-under-construction at station 0x70 grows with the campaign
+    if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 0x70
+        && Globals::status->getCurrentCampaignMission() >= 0x80) {
+        int type;
+        if (Globals::status->getCurrentCampaignMission() < 0x83) {
+            type = 0x493e;
+        } else if (Globals::status->getCurrentCampaignMission() < 0x87) {
+            type = 0x4941;
+        } else if (Globals::status->getCurrentCampaignMission() < 0x8a) {
+            type = 0x4944;
+        } else if (Globals::status->getCurrentCampaignMission() < 0x8e) {
+            type = 0x4947;
+        } else if (Globals::status->getCurrentCampaignMission() <= 0x91) {
+            type = 0x494a;
+        } else {
+            type = -1;
+        }
+        if (type != -1) {
+            KIPlayer *object = createStaticObject(nullptr, type, false);
+            object->setPosition(-50000.0f, 0.0f, 50000.0f);
+            ((PlayerFixedObject *) object)->setMoving(false);
+            AEGeometry *geometry = object->geometry;
+            object->field_0x70 = 0;
+            geometry->setDirection(starSystem->getLightDirection(), Vector{0.0f, 1.0f, 0.0f});
+            object->name = *Globals::gameText->getText(0xc87);
+            object->player->setAlwaysFriend(true);
+            if (enemies == nullptr) {
+                enemies = new Array<KIPlayer *>();
             }
+            ArrayAdd(object, *enemies);
+            delete object->cargo;
+            object->cargo = nullptr;
         }
     }
 
-    if (0x54 < Globals::status->getCurrentCampaignMission() &&
-        Globals::status->getCurrentCampaignMission() != 0x87 &&
-        Globals::status->inAlienOrbit() == 0) {
-        Station *st = (Station *) Globals::status->getStation();
-        if (((Station *) st)->getIndex() == 0x67) {
-            KIPlayer *o = (KIPlayer *) this->createStaticObject((Waypoint *) (intptr_t) 0, 0x4a88, 0);
-            ((PlayerFixedObject *) o)->setPosition(0, 0, 0);
-            ((PlayerFixedObject *) o)->setMoving(0);
-            o->field_0x70 = 1;
-            String *txt = Globals::gameText->getText(**g_cso_textB);
-            String name;
-            name.Set((txt)->data);
-            ((PlayerFixedObject *) o)->setName(name);
-            ((PlayerFixedObject *) o)->setDockingType(1);
-            if (o->cargo != 0)
-                delete o->cargo;
-            o->cargo = 0;
-            o->player->setAlwaysFriend(1);
-            if (this->enemies == nullptr) {
-                this->enemies = new Array<KIPlayer *>();
-            }
-            ArrayAdd(o, *(this->enemies));
+    if (Globals::status->getCurrentCampaignMission() >= 0x55 && Globals::status->getCurrentCampaignMission() != 0x87
+        && !Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 0x67) {
+        KIPlayer *object = createStaticObject(nullptr, 0x4a88, false);
+        object->setPosition(0.0f, 0.0f, 0.0f);
+        ((PlayerFixedObject *) object)->setMoving(false);
+        object->field_0x70 = 1;
+        ((PlayerFixedObject *) object)->setName(*Globals::gameText->getText(0xc8a));
+        ((PlayerFixedObject *) object)->setDockingType(1);
+        delete object->cargo;
+        object->cargo = nullptr;
+        object->player->setAlwaysFriend(true);
+        if (enemies == nullptr) {
+            enemies = new Array<KIPlayer *>();
         }
+        ArrayAdd(object, *enemies);
     }
 }
 
