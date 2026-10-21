@@ -63,8 +63,8 @@ BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
         if (this->hasSecondary)
             secondary = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
     }
-    this->secondaryVisible = 0;
     this->secondaryGeometry = secondary;
+    this->secondaryVisible = 0;
 }
 
 BeamGun::~BeamGun() {
