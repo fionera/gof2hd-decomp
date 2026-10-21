@@ -28,15 +28,30 @@ public:
 
     virtual void OnRelease();
 
-    virtual void OnKeyPress(long long key, long long mod);
+    virtual void OnKeyPress(long long key, long long mod) {
+        (void) key;
+        (void) mod;
+    }
 
-    virtual void OnKeyRelease(long long key, long long mod);
+    virtual void OnKeyRelease(long long key, long long mod) {
+        (void) key;
+        (void) mod;
+    }
 
-    virtual void OnTouchBegin(int x, int y);
+    virtual void OnTouchBegin(int x, int y) {
+        (void) x;
+        (void) y;
+    }
 
-    virtual void OnTouchMove(int x, int y);
+    virtual void OnTouchMove(int x, int y) {
+        (void) x;
+        (void) y;
+    }
 
-    virtual void OnTouchEnd(int x, int y);
+    virtual void OnTouchEnd(int x, int y) {
+        (void) x;
+        (void) y;
+    }
 
     virtual void OnTouchBegin(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
 
@@ -54,6 +69,8 @@ public:
 
     virtual void OnResume();
 
-    virtual int ShowLoadingScreen();
+    virtual int ShowLoadingScreen() {
+        return 1;
+    }
 };
 #endif

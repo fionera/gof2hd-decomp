@@ -4219,15 +4219,3 @@ void MGame::pause() {
 void MGame::showLiteScreen() {
 }
 
-void MGame::OnKeyRelease(long long /*key*/, long long /*mod*/) {}
-
-void MGame::OnTouchBegin(int /*p1*/, int /*p2*/) {
-}
-
-void MGame::OnTouchMove(int /*p1*/, int /*p2*/) {
-}
-
-void MGame::OnTouchEnd(int /*p1*/, int /*p2*/) {
-}
-
-int MGame::ShowLoadingScreen() { return 1; }
