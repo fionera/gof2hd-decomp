@@ -297,7 +297,26 @@ namespace AbyssEngine {
 
         void TransformRemoveMeshId(unsigned int transformIndex, unsigned int meshIndex);
 
-        void DrawTransform(Transform *tf, const Matrix &m2, Matrix &m3);
+        // Inline: the original exports this WEAK.
+        void DrawTransform(Transform *tf, const Matrix &m2, Matrix &m3) {
+            if (tf && tf->visible) {
+                AbyssEngine::AEMath::Matrix world = m2 * tf->worldMatrix;
+                if (tf->keyFrames.size() != 0) {
+                    world *= tf->rotationMatrix;
+                }
+                for (unsigned int i = 0; i < tf->meshes.size(); i++) {
+                    this->DrawMesh(tf->meshes[i], world, m3, tf->color, tf->localMatrix);
+                }
+                for (unsigned int i = 0; i < tf->children.size(); i++) {
+                    if (this->currentCamera < this->cameras.count &&
+                        tf->children[i]->InCameraVF(&world, (this->cameras.data_)[this->currentCamera])) {
+                        this->DrawTransform(tf->children[i], world, m3);
+                    } else {
+                        this->culledCount += 1;
+                    }
+                }
+            }
+        }
 
         void DrawTransform(unsigned int index, const Matrix *viewMatrix);
 

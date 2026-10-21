@@ -302,17 +302,6 @@ void IParticleSystem::interpolateColor(int index, float &alpha, float &red, floa
     }
 }
 
-float *IParticleSystem::rotateUVs(float *src, int seed, float *dst) {
-    AbyssEngine::AERandom random((long long) seed);
-    int flip = random.nextInt(40000) & 3;
-    int other = ~flip;
-    dst[0] = src[flip & 1];
-    dst[1] = src[other & 1];
-    dst[2] = src[2 + ((flip >> 1) & 1)];
-    dst[3] = src[2 + ((other >> 1) & 1)];
-    return dst;
-}
-
 IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
                                  Array<ParticleSettings::ParticleSet> const &sets,
                                  bool mirror, bool alphaFade)
