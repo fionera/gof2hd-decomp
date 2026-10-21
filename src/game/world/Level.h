@@ -231,7 +231,7 @@ public:
 
     Gun *createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color);
 
-    int createStaticObject(Waypoint *wp, int type, bool jitter);
+    KIPlayer *createStaticObject(Waypoint *waypoint, int type, bool scatter);
 
     PlayerFixedObject *createShip(int race, int shipClass, int type, Waypoint *wp, bool hostile, bool group);
 
