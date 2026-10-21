@@ -542,7 +542,7 @@ void TouchButton::draw() {
             Globals::Canvas->SetColor(0xffffff80);
             Globals::layout->setDrawColor(0xffffff80);
             int filled =
-                (int) (this->pressProgress * (float) (this->rightWidth + (this->midStretch + this->leftWidth)));
+                (int) (this->pressProgress * (float) (this->leftWidth + this->midStretch + this->rightWidth));
             Globals::Canvas->DrawRegion2D((this->progressHighlight ? this->frameImages[0][0] : this->frameImages[1][0]), 0, 0,
                                           this->leftWidth > filled ? filled : this->leftWidth, this->height, 0.0f, 0,
                                           0, this->x, this->y);
