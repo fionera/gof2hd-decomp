@@ -403,10 +403,9 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         if (Globals::status->getCurrentCampaignMission() == 102 && !Globals::status->inAlienOrbit() &&
             Globals::status->getStation()->getIndex() == 113)
             passengers = false;
-        else if (Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit())
-            passengers = Globals::status->getStation()->getIndex() != 131;
         else
-            passengers = true;
+            passengers = !(Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit() &&
+                           Globals::status->getStation()->getIndex() == 131);
         String count = String(Globals::status->field_178) + String(" / ") +
                        String(Globals::status->getShip()->getMaxPassengers());
         if (passengers)
