@@ -414,48 +414,25 @@ namespace AbyssEngine {
         }
     }
 
-    Transform::Transform() {
-        this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
-        this->boundingRadius = 0.0f;
-        this->boundingRadius2 = 1.0f;
-        this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
-        this->scale.x = 0.0f;
-        this->scale.y = 0.0f;
-
+    Transform::Transform()
+        : boundingCenter(), boundingRadius(0.0f), boundingRadius2(1.0f), translation(), scale(), localTranslation(),
+          localScale() {
         this->animationLength = 0;
-        this->localScale.y = 0.0f;
         this->color = -1;
         this->animating = true;
         this->animationSpeed = 1.0f;
-        this->currentTime = 0;
-        this->currentKeyFrameIndex = 0;
         this->rangeStart = 0;
         this->rangeEnd = 0;
+        this->currentTime = 0;
+        this->currentKeyFrameIndex = 0;
 
-        Quaternion q;
-        this->localRotation = q;
-        this->rotation = q;
-
-        AEMath::Vector zero = {0.0f, 0.0f, 0.0f};
-        this->localTranslation = zero;
-        this->translation = zero;
-        AEMath::Vector one = {1.0f, 1.0f, 1.0f};
-        this->localScale = one;
-        this->scale = one;
-
-        AEMath::Matrix identity;
-        for (int i = 0; i < 15; ++i) {
-            identity.m[i] = 0.0f;
-        }
-        identity.m[0] = 1.0f;
-        identity.m[5] = 1.0f;
-        identity.m[10] = 1.0f;
-        identity.m[14] = 1.0f;
-        this->localMatrix = identity;
-        this->rotationMatrix = identity;
+        this->rotation = this->localRotation = Quaternion();
+        this->translation = this->localTranslation = AEMath::Vector{0.0f, 0.0f, 0.0f};
+        this->scale = this->localScale = AEMath::Vector{1.0f, 1.0f, 1.0f};
+        this->rotationMatrix = this->localMatrix = AEMath::Matrix();
 
         this->flags = 2;
-        this->localMatrix.m[5] = 1.0f;
+        this->localMatrix.m[5] = -1.0f;
         this->vfcEnabled = true;
         this->keyFramesShared = false;
         this->visible = true;
