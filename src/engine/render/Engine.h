@@ -168,7 +168,7 @@ namespace AbyssEngine {
 
         float projMatrix[16];
         uint8_t field_0x3c4;
-        uint32_t field_0x3c8;
+        float blurStrength;  // 0x3c8 (BlurShader pass strength)
 
         Vector field_0x3cc;
         Array<int> triangleCounts;

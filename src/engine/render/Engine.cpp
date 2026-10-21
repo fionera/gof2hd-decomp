@@ -14,7 +14,7 @@ bool AbyssEngine::Engine::clampTextures = false;
 bool AbyssEngine::Engine::vfc = false;
 float AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
 float AbyssEngine::Engine::lodBiasNormal = 0.0f;
-unsigned int AbyssEngine::Engine::countryCode = 0;
+unsigned int AbyssEngine::Engine::countryCode = 0xffffffff;
 bool AbyssEngine::Engine::EnablePostEffect = false;
 bool AbyssEngine::Engine::CheckForOrientationChange;
 bool AbyssEngine::Engine::fogEnabled = false;
@@ -80,17 +80,13 @@ namespace AbyssEngine {
 
 namespace {
 
-    int g_Engine_shaderPostA;
-    int g_Engine_shaderPostB;
-    int g_Engine_shaderPostC;
 
     // Post-effect ids (0x1400000 base) and the black/white effect's switch-off bookkeeping.
     const uint32_t kPostEffectBase = 0x1400000;
     const uint32_t kPostEffectBlur = 0x1400001;
     const uint32_t kPostEffectBW = 0x1400002;
-    bool g_Engine_postEffectFlag;
-    int g_Engine_postEffectCounter;
-    int g_Engine_postEffectPending;
+    unsigned char g_Engine_postEffectFlag;
+    int g_Engine_postEffectCounter = 1;
 
     struct TextureEntry {
         uint32_t glTexture;
@@ -833,44 +829,51 @@ void Engine::ShaderSetActive(int shaderIndex, Mesh *mesh) {
 
 void Engine::DoPostEffect() {
     uint32_t flags = this->postEffectFlags;
-    FBOContainer *current = this->postEffectFBO;
-    FBOContainer *other = this->refractFBO;
+    FBOContainer *source = this->postEffectFBO;
+    FBOContainer *target = this->refractFBO;
     if (Engine::enableShader != 0) {
-        FBOContainer *slot = other;
+        // Each active pass renders source -> target; when another pass follows, the two FBOs swap.
         if ((flags & 2) != 0) {
-            ShaderBaseStruct *shader = this->shaders[g_Engine_shaderPostA];
-            if ((flags & ~2u) == 0) {
-                shader->RenderEffect(current, this);
-                flags = 0;
+            ShaderBaseStruct *shader = this->shaders[GlowPPShader::ShaderIndex];
+            flags &= ~2u;
+            if (flags != 0) {
+                shader->RenderEffect(source, target, this);
+                FBOContainer *swap = source;
+                source = target;
+                target = swap;
             } else {
-                shader->RenderEffect(current, other, this);
-                slot = other;
-                other = current;
+                shader->RenderEffect(source, this);
+                flags = 0;
             }
         }
         if ((this->postEffectFlags & 1) != 0) {
-            ShaderBaseStruct *shader = this->shaders[g_Engine_shaderPostB];
-            if ((flags & ~1u) == 0) {
-                shader->RenderEffect(slot, this);
-                flags = 0;
+            ShaderBaseStruct *shader = this->shaders[BloomShader::ShaderIndex];
+            flags &= ~1u;
+            if (flags != 0) {
+                shader->RenderEffect(source, target, this);
+                FBOContainer *swap = source;
+                source = target;
+                target = swap;
             } else {
-                shader->RenderEffect(slot, other, this);
-                slot = other;
+                shader->RenderEffect(source, this);
+                flags = 0;
             }
         }
         if ((this->postEffectFlags & 4) != 0) {
-            ShaderBaseStruct *shader = this->shaders[g_Engine_shaderPostC];
-            if ((flags & ~4u) == 0) {
-                shader->RenderEffect(slot, this);
+            ShaderBaseStruct *shader = this->shaders[BlurShader::ShaderIndex];
+            if ((flags & ~4u) != 0) {
+                shader->RenderEffect(source, target, this, this->blurStrength, this->field_0x3cc);
+                FBOContainer *swap = source;
+                source = target;
+                target = swap;
             } else {
-                shader->RenderEffect(slot, other, this);
+                shader->RenderEffect(source, this, this->blurStrength, this->field_0x3cc);
             }
         }
         if (g_Engine_postEffectFlag == 1) {
             this->SetPostEffect(kPostEffectBW, false);
         }
     }
-    return;
 }
 
 void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
@@ -918,31 +921,18 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
 void Engine::SetPostEffect(uint32_t effect, bool enable) {
     if (this->postEffectFBO == 0 && enable) {
         this->postEffectFBO = new FBOContainer(this, String("posteffect"));
-        int width;
-        int height;
         if (this->appManager->paintCanvas->gameOrientation == 2) {
-            width = this->displayWidth;
-            height = this->displayHeight;
+            this->postEffectFBO->Create(this->displayWidth, this->displayHeight, true, false);
         } else {
-            width = this->displayHeight;
-            height = this->displayWidth;
+            this->postEffectFBO->Create(this->displayHeight, this->displayWidth, true, false);
         }
-        this->postEffectFBO->Create(width, height, true, false);
     }
 
-    if (effect == kPostEffectBW) {
+    if (effect == kPostEffectBase) {
         if (enable) {
-            if (g_Engine_postEffectCounter > 0) {
-                g_Engine_postEffectCounter -= 1;
-            } else {
-                this->postEffectFlags |= 4;
-            }
-        } else if (g_Engine_postEffectFlag == 1) {
-            this->postEffectFlags &= ~4u;
-            g_Engine_postEffectFlag = 0;
-            g_Engine_postEffectPending = 1;
+            this->postEffectFlags |= 1;
         } else {
-            g_Engine_postEffectFlag = g_Engine_postEffectCounter <= 0;
+            this->postEffectFlags &= ~1u;
         }
     } else if (effect == kPostEffectBlur) {
         Engine::EnableGlow = enable;
@@ -951,11 +941,19 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
         } else {
             this->postEffectFlags &= ~2u;
         }
-    } else if (effect == kPostEffectBase) {
+    } else if (effect == kPostEffectBW) {
         if (enable) {
-            this->postEffectFlags |= 1;
+            if (g_Engine_postEffectCounter <= 0) {
+                this->postEffectFlags |= 4;
+            } else {
+                g_Engine_postEffectCounter -= 1;
+            }
+        } else if (g_Engine_postEffectFlag == 1) {
+            this->postEffectFlags &= ~4u;
+            g_Engine_postEffectFlag = 0;
+            g_Engine_postEffectCounter = 1;
         } else {
-            this->postEffectFlags &= ~1u;
+            g_Engine_postEffectFlag = g_Engine_postEffectCounter <= 0;
         }
     }
 }
@@ -1109,7 +1107,7 @@ Engine::Engine()
     this->viewFramebuffer = 0;
     this->postEffectFlags = 0;
     this->field_0x3c4 = 0;
-    this->field_0x3c8 = 0;
+    this->blurStrength = 0;
     this->field_0x3cc = Vector{0.5f, 0.3f, 0.0f};
     this->addData = 0;
     this->postEffectFBO = 0;
