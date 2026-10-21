@@ -102,21 +102,26 @@ namespace AbyssEngine {
         }
 
         Matrix &Matrix::operator*=(const Matrix &other) {
-            const float r00 = m[0], r01 = m[1], r02 = m[2];
-            m[0] = r00 * other.m[0] + r01 * other.m[4] + r02 * other.m[8];
-            m[1] = r00 * other.m[1] + r01 * other.m[5] + r02 * other.m[9];
-            m[2] = r00 * other.m[2] + r01 * other.m[6] + r02 * other.m[10];
-            m[3] = m[3] + (r00 * other.m[3] + r01 * other.m[7] + r02 * other.m[11]);
-            const float r10 = m[4], r11 = m[5], r12 = m[6];
-            m[4] = r10 * other.m[0] + r11 * other.m[4] + r12 * other.m[8];
-            m[5] = r10 * other.m[1] + r11 * other.m[5] + r12 * other.m[9];
-            m[6] = r10 * other.m[2] + r11 * other.m[6] + r12 * other.m[10];
-            m[7] = m[7] + (r10 * other.m[3] + r11 * other.m[7] + r12 * other.m[11]);
-            const float r20 = m[8], r21 = m[9], r22 = m[10];
-            m[8] = r20 * other.m[0] + r21 * other.m[4] + r22 * other.m[8];
-            m[9] = r20 * other.m[1] + r21 * other.m[5] + r22 * other.m[9];
-            m[10] = r20 * other.m[2] + r21 * other.m[6] + r22 * other.m[10];
-            m[11] = m[11] + (r20 * other.m[3] + r21 * other.m[7] + r22 * other.m[11]);
+            const MatrixElements &o = other.m;
+            float r0 = m.e0, r1 = m.e1, r2 = m.e2;
+            m.e0 = r0 * o.e0 + r1 * o.e4 + r2 * o.e8;
+            m.e1 = r0 * o.e1 + r1 * o.e5 + r2 * o.e9;
+            m.e2 = r0 * o.e2 + r1 * o.e6 + r2 * o.e10;
+            m.e3 = m.e3 + (r0 * o.e3 + r1 * o.e7 + r2 * o.e11);
+            r0 = m.e4;
+            r1 = m.e5;
+            r2 = m.e6;
+            m.e4 = r0 * o.e0 + r1 * o.e4 + r2 * o.e8;
+            m.e5 = r0 * o.e1 + r1 * o.e5 + r2 * o.e9;
+            m.e6 = r0 * o.e2 + r1 * o.e6 + r2 * o.e10;
+            m.e7 = m.e7 + (r0 * o.e3 + r1 * o.e7 + r2 * o.e11);
+            r0 = m.e8;
+            r1 = m.e9;
+            r2 = m.e10;
+            m.e8 = r0 * o.e0 + r1 * o.e4 + r2 * o.e8;
+            m.e9 = r0 * o.e1 + r1 * o.e5 + r2 * o.e9;
+            m.e10 = r0 * o.e2 + r1 * o.e6 + r2 * o.e10;
+            m.e11 = m.e11 + (r0 * o.e3 + r1 * o.e7 + r2 * o.e11);
             scaleVector() *= other.scaleVector();
             return *this;
         }
@@ -247,73 +252,73 @@ namespace AbyssEngine {
                     matrix.m[0] = cy * cz;
                     matrix.m[1] = -(sz * cy);
                     matrix.m[2] = sy;
-                    matrix.m[8] = sx * sz - sy * cx * cz;
-                    matrix.m[9] = sx * cz + sz * sy * cx;
+                    matrix.m[8] = sx * sz - sy * (cx * cz);
+                    matrix.m[9] = sx * cz + sz * (sy * cx);
                     matrix.m[10] = cx * cy;
-                    matrix.m[4] = sy * sx * cz + sz * cx;
-                    matrix.m[5] = cx * cz - sx * sy * sz;
+                    matrix.m[4] = sy * (sx * cz) + sz * cx;
+                    matrix.m[5] = cx * cz - (sx * sy) * sz;
                     matrix.m[6] = -(sx * cy);
-                    break;
+                    return matrix;
 
                 case ROTATION_ORDER_XZY:
                     matrix.m[0] = cy * cz;
                     matrix.m[1] = -sz;
                     matrix.m[2] = sy * cz;
-                    matrix.m[4] = sx * sy + sz * cx * cy;
+                    matrix.m[4] = sx * sy + sz * (cx * cy);
                     matrix.m[5] = cx * cz;
-                    matrix.m[6] = sz * sy * cx - sx * cy;
-                    matrix.m[8] = sz * sx * cy - sy * cx;
+                    matrix.m[6] = sz * (sy * cx) - sx * cy;
+                    matrix.m[8] = sz * (sx * cy) - sy * cx;
                     matrix.m[9] = sx * cz;
-                    matrix.m[10] = cx * cy + sx * sy * sz;
-                    break;
+                    matrix.m[10] = cx * cy + (sx * sy) * sz;
+                    return matrix;
 
                 case ROTATION_ORDER_YXZ:
                     matrix.m[4] = sz * cx;
                     matrix.m[5] = cx * cz;
                     matrix.m[6] = -sx;
-                    matrix.m[0] = cy * cz + sx * sy * sz;
-                    matrix.m[1] = sy * sx * cz - sz * cy;
+                    matrix.m[0] = cy * cz + sx * (sy * sz);
+                    matrix.m[1] = sy * (sx * cz) - sz * cy;
                     matrix.m[2] = sy * cx;
-                    matrix.m[8] = sz * sx * cy - sy * cz;
-                    matrix.m[9] = sy * sz + sx * cy * cz;
+                    matrix.m[8] = sz * (sx * cy) - sy * cz;
+                    matrix.m[9] = sy * sz + sx * (cy * cz);
                     matrix.m[10] = cx * cy;
-                    break;
+                    return matrix;
 
                 case ROTATION_ORDER_YZX:
                     matrix.m[4] = sz;
                     matrix.m[5] = cx * cz;
                     matrix.m[6] = -(sx * cz);
                     matrix.m[8] = -(sy * cz);
-                    matrix.m[9] = sx * cy + cx * sy * sz;
-                    matrix.m[10] = cx * cy - sx * sy * sz;
+                    matrix.m[9] = sx * cy + cx * (sy * sz);
+                    matrix.m[10] = cx * cy - (sx * sy) * sz;
                     matrix.m[0] = cy * cz;
-                    matrix.m[1] = sx * sy - cx * sz * cy;
-                    matrix.m[2] = sx * sz * cy + sy * cx;
-                    break;
+                    matrix.m[1] = sx * sy - cx * (sz * cy);
+                    matrix.m[2] = (sx * sz) * cy + sy * cx;
+                    return matrix;
 
                 case ROTATION_ORDER_ZXY:
                     matrix.m[8] = -(sy * cx);
                     matrix.m[9] = sx;
                     matrix.m[10] = cx * cy;
-                    matrix.m[0] = cy * cz - sx * sy * sz;
+                    matrix.m[0] = cy * cz - sx * (sy * sz);
                     matrix.m[1] = -(sz * cx);
-                    matrix.m[2] = sy * cz + sx * sz * cy;
-                    matrix.m[4] = sy * sx * cz + sz * cy;
+                    matrix.m[2] = sy * cz + (sx * sz) * cy;
+                    matrix.m[4] = sy * (sx * cz) + sz * cy;
                     matrix.m[5] = cx * cz;
-                    matrix.m[6] = sy * sz - sx * cy * cz;
-                    break;
+                    matrix.m[6] = sy * sz - sx * (cy * cz);
+                    return matrix;
 
                 case ROTATION_ORDER_ZYX:
                     matrix.m[8] = -sy;
                     matrix.m[9] = sx * cy;
                     matrix.m[10] = cx * cy;
                     matrix.m[4] = sz * cy;
-                    matrix.m[5] = cx * cz + sx * sy * sz;
-                    matrix.m[6] = cx * sy * sz - sx * cz;
+                    matrix.m[5] = cx * cz + sx * (sy * sz);
+                    matrix.m[6] = cx * (sy * sz) - sx * cz;
                     matrix.m[0] = cy * cz;
-                    matrix.m[1] = sy * sx * cz - sz * cx;
-                    matrix.m[2] = sy * cx * cz + sx * sz;
-                    break;
+                    matrix.m[1] = sy * (sx * cz) - sz * cx;
+                    matrix.m[2] = sy * (cx * cz) + sx * sz;
+                    return matrix;
             }
 
             return matrix;
