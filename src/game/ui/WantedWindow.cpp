@@ -171,7 +171,7 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
 }
 
 
-int WantedWindow::OnTouchEnd(int x, int y) {
+bool WantedWindow::OnTouchEnd(int x, int y) {
     if (this->showingMap) {
         if (this->starMap->OnTouchEnd(x, y)) {
             // Back from the star map: restore the window frame.
@@ -206,7 +206,7 @@ int WantedWindow::OnTouchEnd(int x, int y) {
             this->windowHeight = height;
             this->showingMap = 0;
         }
-        return 0;
+        return false;
     }
 
     int delta = this->dragDelta;
@@ -253,16 +253,16 @@ int WantedWindow::OnTouchEnd(int x, int y) {
         delete station;
         this->showingMap = 1;
         Globals::layout->resetWindowDimensions();
-        return 0;
+        return false;
     }
 
     if (Globals::layout->OnTouchEnd(x, y)) {
         Globals::layout->resetWindowDimensions();
-        return 1;
+        return true;
     }
     if (Globals::layout->helpPressed())
         Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
-    return 0;
+    return false;
 }
 
 

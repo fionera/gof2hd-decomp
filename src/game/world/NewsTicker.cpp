@@ -341,10 +341,10 @@ bool NewsTicker::OnTouchMove(int x, int) {
     }
     return this->touched != 0;
 }
-uint32_t NewsTicker::OnTouchEnd(int, int) {
+bool NewsTicker::OnTouchEnd(int, int) {
     if (this->touched == 0) {
-        return 0;
+        return false;
     }
     this->touched = 0;
-    return 1;
+    return true;
 }

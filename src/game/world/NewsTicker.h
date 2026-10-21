@@ -31,7 +31,7 @@ public:
 
     bool OnTouchMove(int x, int unused);
 
-    uint32_t OnTouchEnd(int x, int unused);
+    bool OnTouchEnd(int x, int unused);
 
     String replaceTokens(String text);
 };

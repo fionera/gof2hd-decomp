@@ -120,17 +120,17 @@ bool TouchButton::OnTouchBegin(int px, int py) {
     return this->touched != 0;
 }
 
-unsigned int TouchButton::OnTouchEnd(int px, int py) {
-    unsigned int res;
+bool TouchButton::OnTouchEnd(int px, int py) {
+    bool res;
     if (this->visible == 0 || this->halfTransparent != 0) {
-        res = 0;
+        res = false;
     } else if (this->touched == 0 || touchedInside(px, py) == 0) {
-        res = 0;
+        res = false;
         this->touched = 0;
     } else {
         this->touched = 0;
         Globals::sound->play(0x7b, 0, 0, 0.0f);
-        res = 1;
+        res = true;
     }
     return res;
 }
