@@ -1232,12 +1232,10 @@ void Hud::drawPauseButton() {
         Globals::Canvas->DrawImage2D(this->pauseButtonImage, this->field_0x40a, this->field_0x40c);
 }
 
-Hud *Hud::checkIfQuickMenuIsEmpty() {
-    Ship *ship = Globals::status->getShip();
-    Array<Item *> *equip = ship->getEquipment(1);
+void Hud::checkIfQuickMenuIsEmpty() {
+    Array<Item *> *equip = Globals::status->getShip()->getEquipment(1);
     this->equipmentArray = equip;
 
-    unsigned char empty;
     bool hasSecondary = false;
     if (equip != 0) {
         for (unsigned int i = 0; i < equip->size(); i++) {
@@ -1247,41 +1245,11 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
             }
         }
     }
-    if (hasSecondary) {
-        empty = 0;
-    } else if (ship->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0) {
-        empty = (unsigned char) ship->hasCloak();
-    } else {
-        empty = 0;
-    }
-    this->quickMenuEmpty = empty;
-
+    if (!hasSecondary && Globals::status->getShip()->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0)
+        this->quickMenuEmpty = !Globals::status->getShip()->hasCloak();
+    else
+        this->quickMenuEmpty = 0;
     updateSecondaryWeaponString();
-    {
-        Ship *ship2 = Globals::status->getShip();
-        Array<Item *> *equip2 = ship2->getEquipment(1);
-        this->equipmentArray = equip2;
-
-        bool hasSecondary2 = false;
-        if (equip2 != 0) {
-            for (unsigned int i = 0; i < equip2->size(); i++) {
-                if ((*equip2)[i] != 0) {
-                    hasSecondary2 = true;
-                    break;
-                }
-            }
-        }
-        unsigned char empty2;
-        if (hasSecondary2) {
-            empty2 = 0;
-        } else if (ship2->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0) {
-            empty2 = (unsigned char) (ship2->hasCloak() == 0);
-        } else {
-            empty2 = 0;
-        }
-        this->quickMenuEmpty = empty2;
-    }
-    return this;
 }
 
 
