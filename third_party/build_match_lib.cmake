@@ -88,8 +88,12 @@ elseif(GOF2_LIB STREQUAL "libzip")
     ensure_source("${ZSRC}" "https://zlib.net/fossils/zlib-1.2.3.tar.gz")
     ensure_source("${SRC}" "https://libzip.org/download/libzip-0.9.3.tar.gz")
     # Minimal config.h matching the Android (NDK r18b / API 16) feature set; replaces the
-    # autotools-generated header. HAVE_MKSTEMP is intentionally unset so zip_replace.c uses
-    # libzip's bundled _zip_mkstemp (which the original .so exports).
+    # autotools-generated header. NOTE: the original zip_close calls libc mkstemp@plt (i.e. it was
+    # built WITH HAVE_MKSTEMP; mkstemp.c is still compiled, so _zip_mkstemp is exported anyway).
+    # Defining it adds `mkstemp` to our import set, which the ratchet only accepts via a
+    # deliberate --update-baseline, so it is left unset until that is done.
+    # HAVE_STRUCT_TM_TM_ZONE: the original _zip_dirent_torrent_normalize calls time() +
+    # localtime() and copies tm_gmtoff/tm_zone (bionic struct tm has both).
     file(WRITE "${SRC}/lib/config.h"
 "/* Hand-written config.h for the GOF2 armeabi-v7a build (NDK r18b / API 16). */
 #define HAVE_DLFCN_H 1
@@ -103,6 +107,7 @@ elseif(GOF2_LIB STREQUAL "libzip")
 #define HAVE_STRINGS_H 1
 #define HAVE_STRING_H 1
 #define HAVE_SYS_STAT_H 1
+#define HAVE_STRUCT_TM_TM_ZONE 1
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_UNISTD_H 1
 #define STDC_HEADERS 1
@@ -132,7 +137,7 @@ elseif(GOF2_LIB STREQUAL "openssl")
     # Configure once to generate opensslconf.h / buildinf.h. Invoke through `perl` explicitly:
     # OpenSSL's Configure is a `:`/`eval exec perl` self-execing script with no #! shebang, which
     # posix_spawn (execute_process) cannot exec directly -- only a shell/perl can launch it.
-    if(NOT EXISTS "${SRC}/Makefile")
+    if(NOT EXISTS "${SRC}/include/openssl/opensslconf.h")  # tarball ships a Makefile; links are made by Configure
         find_program(PERL_EXECUTABLE perl REQUIRED)
         execute_process(COMMAND ${PERL_EXECUTABLE} Configure android-armv7 no-shared
                         WORKING_DIRECTORY "${SRC}"
