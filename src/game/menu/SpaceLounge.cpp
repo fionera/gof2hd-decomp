@@ -597,6 +597,53 @@ void SpaceLounge::startChat() {
             greeting = Globals::status->replaceHash(greeting, String(agent->getName(), false), String("#N"));
             Generator *generator = new Generator();
             switch (agent->getOffer()) {
+            case 7: {
+                // Standing rehabilitation.
+                int race = agent->getRace();
+                int standing = ((Standing *) (intptr_t) Globals::status->getStanding())
+                                   ->getStanding(race != 2 && race != 3 ? 0 : 1);
+                if (!((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(race)) {
+                    body = *Globals::gameText->getText(883);
+                    this->scrollWindow->setText(agent->getName(), body);
+                    this->chatScroll = 0;
+                    this->mode = 3;
+                    return;
+                }
+                int costs = (int) ((float) (standing < 0 ? -standing : standing) / 100.0f * 16000.0f);
+                body = *Globals::gameText->getText(race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882);
+                body = Globals::status->replaceHash(body, String(Globals::layout->formatCredits(costs), false), String("#C"));
+                agent->setCosts(costs);
+                break;
+            }
+            case 5:
+                // Freelance job.
+                agent->setMission(generator->createMission(agent, Globals::galaxy->getSystems()));
+                agent->field_0x28 = 777 + Globals::rnd->nextInt(2);
+                body += *Globals::gameText->getText(agent->field_0x28);
+                body = Globals::status->replaceHash(
+                    body, String(String(agent->getMission()->getProductionGoodAmount()), false), String("#Q"));
+                body = Globals::status->replaceHash(
+                    body, *Globals::gameText->getText(1274 + agent->getMission()->getProductionGoodIndex()), String("#P"));
+                body = Globals::status->replaceHash(
+                    body, String(Globals::layout->formatCredits(agent->getMission()->getReward()), false), String("#C"));
+                break;
+            case 1: {
+                // Ore rumours.
+                int ore;
+                do {
+                    ore = Globals::rnd->nextInt(21);
+                } while (this->agentVisited[ore]);
+                this->agentVisited[ore] = 1;
+                if (agent->getRace() != 0 && ore == 16)
+                    ore = 4;
+                agent->field_0x28 = !agent->isMale() && ore == 13 ? 824 : 820 + ore;
+                body = *Globals::gameText->getText(agent->field_0x28);
+                body = Globals::status->replaceHash(body, String(Globals::globals->getRandomPlanetName(), false), String("#S"));
+                body = Globals::status->replaceHash(body, String(agent->getName(), false), String("#N"));
+                body = Globals::status->replaceHash(body, *Globals::gameText->getText(1428 + Globals::rnd->nextInt(10)),
+                                                    String("#ORE"));
+                break;
+            }
             case 0: {
                 Mission *mission = agent->getMission();
                 body += *Globals::gameText->getText(786 + mission->getType());
@@ -633,23 +680,6 @@ void SpaceLounge::startChat() {
                     String("#C"));
                 break;
             }
-            case 1: {
-                // Ore rumours.
-                int ore;
-                do {
-                    ore = Globals::rnd->nextInt(21);
-                } while (this->agentVisited[ore]);
-                this->agentVisited[ore] = 1;
-                if (agent->getRace() != 0 && ore == 16)
-                    ore = 4;
-                agent->field_0x28 = !agent->isMale() && ore == 13 ? 824 : 820 + ore;
-                body = *Globals::gameText->getText(agent->field_0x28);
-                body = Globals::status->replaceHash(body, String(Globals::globals->getRandomPlanetName(), false), String("#S"));
-                body = Globals::status->replaceHash(body, String(agent->getName(), false), String("#N"));
-                body = Globals::status->replaceHash(body, *Globals::gameText->getText(1428 + Globals::rnd->nextInt(10)),
-                                                    String("#ORE"));
-                break;
-            }
             case 2:
                 // Goods.
                 agent->field_0x28 = 768 + Globals::rnd->nextInt(5);
@@ -674,18 +704,6 @@ void SpaceLounge::startChat() {
                         String("#C"));
                 }
                 break;
-            case 5:
-                // Freelance job.
-                agent->setMission(generator->createMission(agent, Globals::galaxy->getSystems()));
-                agent->field_0x28 = 777 + Globals::rnd->nextInt(2);
-                body += *Globals::gameText->getText(agent->field_0x28);
-                body = Globals::status->replaceHash(
-                    body, String(String(agent->getMission()->getProductionGoodAmount()), false), String("#Q"));
-                body = Globals::status->replaceHash(
-                    body, *Globals::gameText->getText(1274 + agent->getMission()->getProductionGoodIndex()), String("#P"));
-                body = Globals::status->replaceHash(
-                    body, String(Globals::layout->formatCredits(agent->getMission()->getReward()), false), String("#C"));
-                break;
             case 6:
                 // Wingmen.
                 body += *Globals::gameText->getText((Globals::achievements->gotAllMedals() ? 782 : 779) +
@@ -695,24 +713,6 @@ void SpaceLounge::startChat() {
                 if (agent->getWingmanFriendsCount() > 0)
                     body = Globals::status->replaceHash(body, String(agent->getWingmanName(1), false), String("#W"));
                 break;
-            case 7: {
-                // Standing rehabilitation.
-                int race = agent->getRace();
-                int standing = ((Standing *) (intptr_t) Globals::status->getStanding())
-                                   ->getStanding(race != 2 && race != 3 ? 0 : 1);
-                if (!((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(race)) {
-                    body = *Globals::gameText->getText(883);
-                    this->scrollWindow->setText(agent->getName(), body);
-                    this->chatScroll = 0;
-                    this->mode = 3;
-                    return;
-                }
-                int costs = (int) ((float) (standing < 0 ? -standing : standing) / 100.0f * 16000.0f);
-                body = *Globals::gameText->getText(race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882);
-                body = Globals::status->replaceHash(body, String(Globals::layout->formatCredits(costs), false), String("#C"));
-                agent->setCosts(costs);
-                break;
-            }
             }
             delete generator;
             if (agent->getOffer() != 0 || agent->getMission()->getType() == 8)
