@@ -2167,7 +2167,6 @@ namespace AbyssEngine {
     void glTexEnvi(unsigned int t, unsigned int p, int v);
     }
 
-    static char *g_labelObjectsFlag;
 
     int ImageCreateFromFile(Engine *engine, const char *path, Image **out);
 
