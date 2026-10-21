@@ -370,7 +370,7 @@ bool Achievements::gotAllMedals() {
     return this->gotAllMedals_;
 }
 
-uint8_t Achievements::gotAllGoldMedals() {
+bool Achievements::gotAllGoldMedals() {
     return this->gotAllGoldMedals_;
 }
 

@@ -96,8 +96,8 @@ public:
     int32_t empData;
     int32_t empTimer;
     uint8_t alwaysEnemy;
-    uint8_t alwaysFriend;
-    uint8_t neverAttack;
+    bool alwaysFriend;
+    bool neverAttack;
     uint8_t pad_ef;
     FMOD::Event *engineEvent;
     int32_t engineSoundId;
@@ -125,7 +125,7 @@ public:
 
     void damageShip(int damage);
 
-    unsigned char doesNeverAttack();
+    bool doesNeverAttack();
 
     int getArmorDamageRate();
 
@@ -173,7 +173,7 @@ public:
 
     unsigned char isAlwaysEnemy();
 
-    unsigned char isAlwaysFriend();
+    bool isAlwaysFriend();
 
     unsigned char isDamaged();
 
