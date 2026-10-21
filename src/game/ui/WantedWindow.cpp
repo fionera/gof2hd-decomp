@@ -413,137 +413,100 @@ int WantedWindow::init() {
     this->lastDragY = 0;
     this->scrollOffsetSnapshot = 0;
     this->dragDelta = 0;
+    this->scrollDamping = 0.0f;
+    this->scrollVelocity = 0.0f;
+    this->touchStartY = 0;
+    this->dragging = 0;
 
+    // Only the wanted persons posted on this system's board are listed.
     this->wantedList = new Array<Wanted *>();
-
-    Status *status = Globals::status;
-    Array<Wanted *> *allWanted = status->getWanted();
-    Layout *layout = Globals::layout;
-
-    for (uint32_t i = 0; i < allWanted->size(); ++i) {
-        int race = ((SolarSystem *) (long) status->getSystem())->getRace();
-        Wanted *wanted = (*allWanted)[i];
-        if (race == wanted->getBoard()) {
-            race = ((SolarSystem *) (long) status->getSystem())->getRace();
-            if (race != 0 || status->getCurrentCampaignMission() < 0x80) {
-                race = ((SolarSystem *) (long) status->getSystem())->getRace();
-                if (race == 0 && status->getCurrentCampaignMission() >= 0xa2) {
-                    ArrayAdd(wanted, *(this->wantedList));
-                }
-            } else {
-                ArrayAdd(wanted, *(this->wantedList));
-            }
-        }
+    Array<Wanted *> *allWanted = Globals::status->getWanted();
+    int detailWidth = Globals::layout->field_0xcc - Globals::layout->buttonInsetX - Globals::layout->field_0x4c;
+    for (unsigned int i = 0; i < allWanted->size(); i++) {
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() != (*allWanted)[i]->getBoard())
+            continue;
+        if ((((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 0 &&
+             Globals::status->getCurrentCampaignMission() > 127) ||
+            (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() != 0 &&
+             Globals::status->getCurrentCampaignMission() >= 162))
+            ArrayAdd((*allWanted)[i], *this->wantedList);
     }
 
-    uint32_t h;
-    uint32_t w;
-    uint32_t halfW = 0;
-    if (Globals::iPad == 0) {
-        h = Globals::h;
-        w = Globals::w;
+    int width;
+    int height;
+    if (!Globals::iPad) {
         this->windowX = 0;
         this->windowY = 0;
+        height = Globals::h;
+        width = Globals::w;
     } else {
-        if (Globals::iPadHD == 0) {
-            h = 1000;
-            w = 0x514;
-            if (Globals::iPadLarge == 0) {
-                h = 500;
-                w = 0x28a;
-            }
-            halfW = w >> 1;
+        int halfWidth;
+        if (Globals::iPadHD) {
+            height = 703;
+            halfWidth = 457;
+            width = 914;
         } else {
-            h = 0x2bf;
-            halfW = 0x1c9;
-            w = 0x392;
+            height = 1000;
+            width = 1300;
+            if (!Globals::iPadLarge) {
+                height = 500;
+                width = 650;
+            }
+            halfWidth = (unsigned int) width >> 1;
         }
-        this->windowX = (Globals::w >> 1) - halfW;
-        this->windowY = (Globals::h >> 1) - (h >> 1);
+        this->windowX = (Globals::w >> 1) - halfWidth;
+        this->windowY = (Globals::h >> 1) - ((unsigned int) height >> 1);
     }
+    this->windowWidth = width;
+    this->windowHeight = height;
 
-    this->windowWidth = w;
-    this->windowHeight = h;
+    // Preselect the first active wanted person.
     this->selectedWanted = 0;
-
-    uint32_t selected = 0;
-    for (;;) {
-        Array<Wanted *> *arr = this->wantedList;
-        uint32_t count = arr->size();
-        if (selected >= count) {
-            selected = this->selectedWanted;
-            if (selected == count - 1 && (*arr)[selected]->isActive() == 0) {
-                selected = 0;
-                this->selectedWanted = 0;
-            } else {
-                selected = this->selectedWanted;
-            }
+    for (unsigned int i = 0; i < this->wantedList->size(); i++) {
+        if ((*this->wantedList)[i]->isActive()) {
+            this->selectedWanted = i;
             break;
         }
-        if ((*arr)[selected]->isActive() != 0) {
-            this->selectedWanted = selected;
-            arr = this->wantedList;
-            count = arr->size();
-            if (selected == count - 1 && (*arr)[selected]->isActive() == 0) {
-                selected = 0;
-                this->selectedWanted = 0;
-            } else {
-                selected = this->selectedWanted;
-            }
-            break;
-        }
-        ++selected;
     }
+    if (this->selectedWanted == this->wantedList->size() - 1 &&
+        !(*this->wantedList)[this->selectedWanted]->isActive())
+        this->selectedWanted = 0;
+    this->highlightedWanted = this->selectedWanted;
+    this->selectWanted(this->selectedWanted);
 
-    this->highlightedWanted = selected;
-    this->selectWanted((int) selected);
+    this->buttons = new Array<TouchButton *>();
+    ArraySetLength(2, *this->buttons);
+    (*this->buttons)[1] = new TouchButton(*Globals::gameText->getText(3219), 3,
+                                          this->windowX + this->windowWidth -
+                                          Globals::layout->getHelpButtonOffset(),
+                                          this->windowY, 18);
+    (*this->buttons)[0] = new TouchButton(*Globals::gameText->getText(129), 3,
+                                          this->windowX + this->windowWidth -
+                                          Globals::layout->getHelpButtonOffset() -
+                                          (*this->buttons)[1]->getWidth() + Globals::layout->field_0x38,
+                                          this->windowY, 18);
+    (*this->buttons)[1]->setAlwaysPressed(true);
+    Globals::layout->setWindowDimensions(this->windowX, this->windowY, this->windowWidth, this->windowHeight);
 
-    Array<TouchButton *> *buttons = new Array<TouchButton *>();
-    this->buttons = buttons;
-    ArraySetLength(2, *buttons);
+    this->contentHeight = (Globals::layout->field_0x34 + Globals::layout->field_0x70_rowHeight) *
+                          this->wantedList->size();
+    this->visibleHeight = this->windowHeight - Globals::layout->field_0x10_rightMargin -
+                          Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
+                          Globals::layout->field_0x24 - Globals::layout->field_0x5c +
+                          Globals::layout->field_0x2c_rowHeight;
 
-    GameText *text = Globals::gameText;
-    {
-        String *label = text->getText(0xc93);
-        int helpOff = layout->getHelpButtonOffset();
-        (*buttons)[1] = new TouchButton(this->windowX + (int) this->windowWidth - helpOff,
-                                        this->windowY, *label, 3, 0x12, 0);
-    }
-    {
-        String *label = text->getText(0x81);
-        int helpOff = layout->getHelpButtonOffset();
-        int width = (*buttons)[1]->getWidth();
-        (*buttons)[0] = new TouchButton(this->windowX + (int) this->windowWidth - helpOff -
-                                        width + layout->field_0x38,
-                                        this->windowY, *label, 3, 0x12, 0);
-    }
-
-    (*buttons)[1]->setAlwaysPressed(true);
-    layout->setWindowDimensions(this->windowX, this->windowY, this->windowWidth, this->windowHeight);
-
-    layout = Globals::layout;
-    this->contentHeight = (layout->field_0x34 + layout->field_0x70_rowHeight) *
-                          (int) this->wantedList->size();
-    this->visibleHeight =
-            (((((this->windowHeight - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin) -
-               layout->field_0x20_top) - layout->field_0x24) - layout->field_0x5c) +
-            layout->field_0x2c_rowHeight;
-
-    delete this->detailButton;
+    if (this->detailButton != nullptr)
+        delete this->detailButton;
     this->starMap = nullptr;
     this->detailButton = nullptr;
     this->showingMap = 0;
-
-    int activeWidth = layout->field_0xcc - layout->buttonInsetX - layout->field_0x4c;
-    {
-        String *label = text->getText(0x1a8);
-        this->detailButton = new TouchButton(
-            *label, 0,
-            this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight,
-            (((this->windowY - layout->field_0x2c_rowHeight) + this->windowHeight) -
-             layout->field_0x10_rightMargin) - layout->field_0x24,
-            activeWidth, 0x21, 4);
-    }
+    this->hangarUpdate = 0;
+    this->detailButton = new TouchButton(
+            *Globals::gameText->getText(424), 0,
+            this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight,
+            this->windowY - Globals::layout->field_0x2c_rowHeight + this->windowHeight -
+            Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+            detailWidth, 33, 4);
     this->hangarUpdate = 0;
     this->lastButtonHit = 1;
     return 1;
@@ -611,74 +574,59 @@ float WantedWindow::getRelativeScrollHeight() {
 void WantedWindow::selectWanted(int idx) {
     delete this->imageParts;
     this->imageParts = nullptr;
-
     delete this->scrollWindow;
     this->scrollWindow = nullptr;
 
-    Wanted *wanted = (*this->wantedList)[idx];
-    this->imageParts = (Globals::imageFactory)->loadChar(wanted->getImageParts());
+    this->imageParts = Globals::imageFactory->loadChar((*this->wantedList)[idx]->getImageParts());
+    this->nameText = (*this->wantedList)[idx]->getName();
 
-    this->nameText = wanted->getName();
-
-    if (wanted->isActive() != 0) {
-        Galaxy *galaxy = Globals::galaxy;
-        Station *last = (Station *) (long) galaxy->getStation(wanted->getLastSeen());
-        Station *travel = (Station *) (long) galaxy->getStation(wanted->getTravelsTo());
-        Station *current = (Station *) (long) galaxy->getStation(wanted->getCurrentLocation());
-
-        this->fromText = last->getName() + String("from ", false) + String(" ", false);
-        this->toText = travel->getName() + String("to ", false) + String(" ", false);
-        this->atText = current->getName() + String("at ", false) + String(" ", false);
-
-        String reward;
-        reward.Set((long long) (wanted->getReward()));
-        this->rewardText = reward + String("reward ", false);
-
-        delete last;
-        delete travel;
+    if ((*this->wantedList)[idx]->isActive()) {
+        Station *lastSeen = (Station *) (intptr_t) Globals::galaxy->getStation((*this->wantedList)[idx]->getLastSeen());
+        Station *travelsTo =
+                (Station *) (intptr_t) Globals::galaxy->getStation((*this->wantedList)[idx]->getTravelsTo());
+        Station *current =
+                (Station *) (intptr_t) Globals::galaxy->getStation((*this->wantedList)[idx]->getCurrentLocation());
+        SolarSystem *lastSeenSystem = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(lastSeen->getSystem());
+        SolarSystem *travelsToSystem = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(travelsTo->getSystem());
+        SolarSystem *currentSystem = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(current->getSystem());
+        this->fromText = lastSeen->getName() + String(" (", false) + lastSeenSystem->getName() + String(")", false);
+        this->toText = travelsTo->getName() + String(" (", false) + travelsToSystem->getName() + String(")", false);
+        this->atText = current->getName() + String(" (", false) + currentSystem->getName() + String(")", false);
+        this->rewardText = String((*this->wantedList)[idx]->getReward()) + String("$", false);
+        delete lastSeen;
+        delete travelsTo;
         delete current;
-    } else if (wanted->isTerminated() != 0) {
-        this->fromText = String("terminated", false);
-        this->toText = String("", false);
-        this->atText = String("", false);
-        this->rewardText = String("", false);
+    } else if ((*this->wantedList)[idx]->isTerminated()) {
+        this->fromText = String(" -- ", false);
+        this->toText = String(" --", false);
+        this->atText = String(" --", false);
+        this->rewardText = String(" --", false);
     } else {
-        this->fromText = *(Globals::gameText)->getText(0xc9d);
-        this->toText = *(Globals::gameText)->getText(0xc9d);
-        String reward;
-        reward.Set((long long) (wanted->getReward()));
-        this->rewardText = reward + String("reward ", false);
-        this->atText = *(Globals::gameText)->getText(0xc9d);
+        this->fromText = *Globals::gameText->getText(3229);
+        this->toText = *Globals::gameText->getText(3229);
+        this->rewardText = String((*this->wantedList)[idx]->getReward()) + String("$", false);
+        this->atText = *Globals::gameText->getText(3229);
     }
+    int detailId = (*this->wantedList)[idx]->isTerminated() ? 3227 : 3228;
+    this->detailText = *Globals::gameText->getText(detailId);
 
-    this->detailText = *(Globals::gameText)->getText(0xc9d);
-
-    Layout *layout = Globals::layout;
-    int y = this->windowY;
-    int h = this->windowHeight;
-    int top = y + layout->field_0xc_leftMargin + layout->field_0x20_top +
-              layout->field_0x5c + layout->field_0x2c_rowHeight;
-    int height = (((((y - layout->field_0x2c_rowHeight) + h) - top) -
-                   layout->field_0x10_rightMargin) - layout->field_0x2d8) -
-                 layout->field_0x24;
-    if (wanted->isActive() != 0) {
-        height = (height - layout->field_0x4c) - layout->field_0x30_rowHeight;
-    }
-
-    int pad = layout->field_0x2c_rowHeight;
+    int top = this->windowY + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+              Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight;
+    int height = this->windowY - Globals::layout->field_0x2c_rowHeight + this->windowHeight - top -
+                 Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x2d8 - Globals::layout->field_0x24;
+    if ((*this->wantedList)[idx]->isActive())
+        height = height - Globals::layout->field_0x4c - Globals::layout->field_0x30_rowHeight;
     this->scrollWindow = new ScrollTouchWindow(
-        this->windowX + (this->windowWidth >> 1) + pad,
-        layout->field_0x2d8 + pad + top,
-        ((this->windowWidth >> 1) - pad) - layout->buttonInsetX,
-        height, false);
+            this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight,
+            Globals::layout->field_0x2d8 + (Globals::layout->field_0x2c_rowHeight + top),
+            (this->windowWidth >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
+            height, false);
 
-    String body;
-    body = *(Globals::gameText)->getText(0xc9d);
+    String body("", false);
+    body = *Globals::gameText->getText(3223);
     body += String("\n", false) + this->fromText;
+    body += String("\n\n", false) + *Globals::gameText->getText(3224);
     body += String("\n", false) + this->toText;
-    body += String("\n", false) + this->atText;
-    body += String("\n", false) + this->rewardText;
-
-    String title("", false);
-    this->scrollWindow->setText(title, body);
+    body += String("\n\n", false) + *Globals::gameText->getText((*this->wantedList)[idx]->getIndex() + 3174);
+    this->scrollWindow->setText("", body);
 }
