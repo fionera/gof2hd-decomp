@@ -937,212 +937,120 @@ void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
 }
 
 
-static const float k_damage_full = 0.0f;
-static const float k_damage_hc = 0.0f;
-static const float k_damage_full2 = 0.0f;
-static const float k_damage_hc2 = 0.0f;
-static const float k_damage_regen = 0.0f;
 
-void Player::damage(int amount, bool flag, int missionId) {
-    Player * self = this;
-    if (self->vulnerable == 0) return;
-    if (self->active == 0) return;
-    if (self->hitpoints < 1) return;
+void Player::damage(int amount, bool ownFire, int weaponId) {
+    if (!this->vulnerable || !this->active || this->hitpoints < 1)
+        return;
 
-    if (flag == 0 && self->kiPlayer != 0) {
-        KIPlayer *ki = self->kiPlayer;
-        if (self->alwaysEnemy == 0 &&
-            (unsigned int) (ki->shipGroup - 9) > 1 &&
-            Globals::status->getSystem() != 0 &&
-            ((reinterpret_cast<uint16_t &>(self->enemyFlagsLo) == 0) || (self->turnedEnemyFlag != 0))) {
-            ki = self->kiPlayer;
-            if (ki->field_0x42 != 0) {
-                if (amount > 0) {
-                    self->damageDoneByPlayer = self->damageDoneByPlayer + amount;
-                    ((Level *) (ki->level))->attackWanted(ki->field_0x48);
-                }
-                goto LAB_3488;
+    if (!ownFire) {
+        if (this->kiPlayer && !this->alwaysEnemy && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2
+            && Globals::status->getSystem() && (!this->enemyFlagsLo || this->turnedEnemyFlag)
+            && this->kiPlayer->field_0x42) {
+            if (amount > 0) {
+                this->damageDoneByPlayer += amount;
+                this->kiPlayer->level->attackWanted(this->kiPlayer->field_0x48);
             }
-        } else {
-            ki = self->kiPlayer;
-        }
-
-        if (ki != 0 && self->alwaysEnemy == 0 &&
-            (unsigned int) (ki->shipGroup - 9) > 1 &&
-            self->kiPlayer->isWingMan() == 0 && Globals::status->getSystem() != 0 &&
-            ((reinterpret_cast<uint16_t &>(self->enemyFlagsLo) == 0) || (self->turnedEnemyFlag != 0))) {
-            int race = self->kiPlayer->shipGroup;
-            Globals::status->getSystem();
-            bool sameRace = (race == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
-            if (!sameRace) {
-                int race2 = self->kiPlayer->shipGroup;
-                SolarSystem *sys = (SolarSystem *) (long) Globals::status->getSystem();
-                if (race2 != sys->getAttackRace()) {
-                    goto LAB_342a;
-                }
-            }
-            self->damageDoneByPlayer = self->damageDoneByPlayer + amount;
-            int hc = Globals::status->hardCoreMode();
-            float thr1 = (hc != 0) ? k_damage_hc : k_damage_full;
-            float f1 = thr1 * (float) self->maxHitpoints;
-            float dmgF = (float) self->damageDoneByPlayer;
-            float frac2 = (hc != 0) ? 0.25f : 0.5f;
-            float thr3 = (hc != 0) ? k_damage_hc2 : k_damage_full2;
-
-            if (f1 < dmgF) {
-                ((Level *) (self->kiPlayer->level))->friendTurnedEnemy(0);
-                Ship *ship = (Ship *) Globals::status->getShip();
-                Standing *standing = (Standing *) (long) Globals::status->getStanding();
-                if (ship->getSignatureRace() >= 0) {
-                    bool match = ((unsigned int) ship->getSignatureRace() ==
-                                  (unsigned int) self->kiPlayer->shipGroup);
-                    unsigned int dis = 0;
-                    if (match) dis = (unsigned char) self->kiPlayer->field_0x42;
-                    if (match && dis == 0) {
-                        Item *item = ship->getFirstEquipmentOfSort(0x1d);
-                        ship->removeEquipment(item);
-                        Standing *st2 = (Standing *) (long) Globals::status->getStanding();
-                        st2->applyDelict(ship->getSignatureRace(), 100);
-                        standing->setPlayerSignatureRace(-1);
-                        PlayerEgo *ego = ((Level *) (self->kiPlayer->level))->getPlayer();
-                        int hud = (int) (__INTPTR_TYPE__) ego->getHUD();
-                        PlayerEgo *p = ((Level *) (self->kiPlayer->level))->getPlayer();
-                        ((Hud *) (intptr_t) hud)->hudEvent(0x1f, p, 0);
-                    }
-                }
-            }
-
-            float f3 = (float) self->maxHitpoints;
-            float dmgF3 = (float) self->damageDoneByPlayer;
-            if (frac2 * f3 < dmgF3) {
-                Ship *ship = (Ship *) Globals::status->getShip();
-                Standing *standing = (Standing *) (long) Globals::status->getStanding();
-                if (ship->getSignatureRace() >= 0 &&
-                    self->kiPlayer->shipGroup < 4 &&
-                    self->kiPlayer->field_0x42 == 0) {
-                    Item *item = ship->getFirstEquipmentOfSort(0x1d);
-                    ship->removeEquipment(item);
-                    Standing *st2 = (Standing *) (long) Globals::status->getStanding();
-                    st2->applyDelict(ship->getSignatureRace(), 100);
+        } else if (this->kiPlayer && !this->alwaysEnemy && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2
+                   && !this->kiPlayer->isWingMan() && Globals::status->getSystem()
+                   && (!this->enemyFlagsLo || this->turnedEnemyFlag)
+                   && (this->kiPlayer->shipGroup == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()
+                       || this->kiPlayer->shipGroup == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getAttackRace())) {
+            this->damageDoneByPlayer += amount;
+            bool hardCore = Globals::status->hardCoreMode();
+            float turnLimit = hardCore ? 0.1f : 0.33f;
+            float hostileLimit = hardCore ? 0.25f : 0.5f;
+            float alarmLimit = hardCore ? 0.4f : 0.66f;
+            if (turnLimit * (float) this->maxHitpoints < (float) this->damageDoneByPlayer) {
+                this->kiPlayer->level->friendTurnedEnemy(this->kiPlayer->shipGroup);
+                Ship *ship = Globals::status->getShip();
+                Standing *standing = ((Standing *) (intptr_t) Globals::status->getStanding());
+                if (ship->getSignatureRace() >= 0 && ship->getSignatureRace() == this->kiPlayer->shipGroup
+                    && !this->kiPlayer->field_0x42) {
+                    ship->removeEquipment(ship->getFirstEquipmentOfSort(29));
+                    ((Standing *) (intptr_t) Globals::status->getStanding())->applyDelict(ship->getSignatureRace(), 100);
                     standing->setPlayerSignatureRace(-1);
-                    PlayerEgo *ego = ((Level *) (self->kiPlayer->level))->getPlayer();
-                    int hud = (int) (__INTPTR_TYPE__) ego->getHUD();
-                    PlayerEgo *p = ((Level *) (self->kiPlayer->level))->getPlayer();
-                    ((Hud *) (intptr_t) hud)->hudEvent(0x1f, p, 0);
+                    this->kiPlayer->level->getPlayer()->getHUD()->hudEvent(31, this->kiPlayer->level->getPlayer(), 0);
                 }
-                self->turnedEnemyFlag = 1;
             }
-
-            float f4a = (float) self->maxHitpoints;
-            float dmgF4 = (float) self->damageDoneByPlayer;
-            if (thr3 * f4a < dmgF4) {
-                ((Level *) (self->kiPlayer->level))->alarmAllFriends(self->kiPlayer->shipGroup, true);
+            if ((float) this->damageDoneByPlayer > hostileLimit * (float) this->maxHitpoints) {
+                Ship *ship = Globals::status->getShip();
+                Standing *standing = ((Standing *) (intptr_t) Globals::status->getStanding());
+                if (ship->getSignatureRace() >= 0 && this->kiPlayer->shipGroup <= 3 && !this->kiPlayer->field_0x42) {
+                    ship->removeEquipment(ship->getFirstEquipmentOfSort(29));
+                    ((Standing *) (intptr_t) Globals::status->getStanding())->applyDelict(ship->getSignatureRace(), 100);
+                    standing->setPlayerSignatureRace(-1);
+                    this->kiPlayer->level->getPlayer()->getHUD()->hudEvent(31, this->kiPlayer->level->getPlayer(), 0);
+                }
+                this->turnedEnemyFlag = 1;
             }
-            goto LAB_3488;
+            if ((float) this->damageDoneByPlayer > alarmLimit * (float) this->maxHitpoints)
+                this->kiPlayer->level->alarmAllFriends(this->kiPlayer->shipGroup, true);
+        } else if (Globals::status->inBlackMarketSystem() && this->kiPlayer && this->kiPlayer->shipGroup == 8) {
+            this->turnedEnemyFlag = 1;
+            this->kiPlayer->level->alarmAllFriends(8, true);
+            Array<KIPlayer *> *enemies = this->kiPlayer->level->getEnemies();
+            if (enemies) {
+                for (unsigned i = 0; i < enemies->size(); i++) {
+                    KIPlayer *enemy = (*enemies)[i];
+                    if (enemy->shipGroup == 8)
+                        enemy->field_0x25 = 1;
+                }
+            }
+            Globals::status->field_110 = false;
+            Globals::status->field_0x111 = true;
         }
     }
 
-LAB_342a: {
-        if (Globals::status->inBlackMarketSystem() != 0) {
-            KIPlayer *ki = self->kiPlayer;
-            if (ki != 0 && ki->shipGroup == 8) {
-                self->turnedEnemyFlag = 1;
-                ((Level *) (ki->level))->alarmAllFriends(8, true);
-                Array<KIPlayer *> *enemies = ((Level *) (ki->level))->getEnemies();
-                if (enemies != nullptr) {
-                    unsigned count = enemies->size();
-                    unsigned i = 0;
-                    while (count != i) {
-                        KIPlayer *e = (*enemies)[i];
-                        i++;
-                        if (e->shipGroup == 8) {
-                            e->field_0x25 = 1;
-                        }
-                    }
-                }
-                reinterpret_cast<uint16_t &>(Globals::status->field_110) = 0x100;
-            }
-        }
-    }
-
-LAB_3488: {
-        int shieldI = (int) self->shieldHP - amount;
-        if (shieldI < 0) {
-            self->shieldHP = 0.0f;
-            shieldI = shieldI + self->armorHP;
-            if (shieldI < 0) {
-                self->armorHP = 0;
-                self->hullHit = 1;
-                self->hitpoints = shieldI + self->hitpoints;
-            } else {
-                self->armorHit = 1;
-                self->armorHP = shieldI;
-            }
+    int remaining = (int) this->shieldHP - amount;
+    if (remaining < 0) {
+        this->shieldHP = 0.0f;
+        remaining += this->armorHP;
+        if (remaining < 0) {
+            this->hullHit = 1;
+            this->armorHP = 0;
+            this->hitpoints += remaining;
         } else {
-            self->shieldHit = 1;
-            self->shieldHP = (float) shieldI;
+            this->armorHP = remaining;
+            this->armorHit = 1;
+        }
+    } else {
+        this->shieldHit = 1;
+        this->shieldHP = (float) remaining;
+    }
+
+    KIPlayer *ki = this->kiPlayer;
+    if (ki && !ki->stealFlagByte && !ki->countsAsEnemyExcludeFlag && ki->field_0x42
+        && this->hitpoints < this->maxHitpoints / 3)
+        ki->level->almostKillWanted(ki->field_0x48);
+
+    if (this->hitpoints <= 0) {
+        this->hitpoints = 0;
+        if (ownFire) {
+            this->destroyedByte = 1;
+        } else if (this->kiPlayer && !this->kiPlayer->stealFlagByte && !this->kiPlayer->countsAsEnemyExcludeFlag
+                   && !Globals::status->inBlackMarketSystem()) {
+            if (!this->kiPlayer->field_0x42)
+                ((Standing *) (intptr_t) Globals::status->getStanding())->applyKill(this->kiPlayer->shipGroup);
+            Mission *mission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
+            int other = this->kiPlayer->name.Compare(*Globals::gameText->getText(1664));
+            if (weaponId == 179 && other == 0)
+                mission->setStatusValue(mission->getStatusValue() + 1);
+            if (this->kiPlayer->field_0x42)
+                this->kiPlayer->level->killWanted(this->kiPlayer->field_0x48);
         }
     }
 
-    {
-        int hp;
-        KIPlayer *ki = self->kiPlayer;
-        if (ki != 0 && reinterpret_cast<int &>(ki->stealFlagByte) == 0 && ki->countsAsEnemyExcludeFlag == 0 &&
-
-            ki->field_0x42 != 0) {
-            hp = self->hitpoints;
-            if (self->maxHitpoints / 3 > hp) {
-                ((Level *) (ki->level))->almostKillWanted(ki->field_0x48);
-            } else {
-                goto LAB_34f8_hp;
-            }
-        }
-        hp = self->hitpoints;
-    LAB_34f8_hp:
-        if (hp < 1) {
-            self->hitpoints = 0;
-            if (flag != 0) {
-                reinterpret_cast<uint16_t &>(self->destroyedByte) = 1;
-            } else {
-                KIPlayer *ki2 = self->kiPlayer;
-                if (ki2 != 0 && reinterpret_cast<int &>(ki2->stealFlagByte) == 0 && ki2->countsAsEnemyExcludeFlag == 0 &&
-
-                    Globals::status->inBlackMarketSystem() == 0) {
-                    if (self->kiPlayer->field_0x42 == 0) {
-                        Standing *st = (Standing *) (long) Globals::status->getStanding();
-                        st->applyKill(self->kiPlayer->shipGroup);
-                    }
-                    int mission = Globals::status->getCampaignMission();
-                    KIPlayer *ki3 = self->kiPlayer;
-
-                    String *txt = (Globals::gameText)->getText(missionId);
-                    int cmp = (&ki3->name)->Compare(*txt);
-                    if (missionId == 0xb3 && cmp == 0) {
-                        ((Mission *) (intptr_t) mission)->setStatusValue(
-                            ((Mission *) (intptr_t) mission)->getStatusValue() + 1);
-                    }
-                    if (self->kiPlayer->field_0x42 != 0) {
-                        ((Level *) (self->kiPlayer->level))->killWanted(0);
-                    }
-                }
-            }
-        }
-    }
-
-    self->damaged = 1;
-    self->flShake = self->flShake + k_damage_regen;
-    ((Player *) (self))->updateDamageRate();
-    if (self->kiPlayer != 0) {
-        SlaveLink *slave = reinterpret_cast<SlaveLink *>(self->kiPlayer->field_0x10);
-        if (slave != 0) {
-            Player * other = slave->player;
-
-            other->vulnerable = 1;
-            other->damage(amount);
-            other->vulnerable = 0;
-        }
+    this->damaged = 1;
+    this->flShake += 0.065f;
+    this->updateDamageRate();
+    if (this->kiPlayer && this->kiPlayer->field_0x10) {
+        KIPlayer *linked = (KIPlayer *) (intptr_t) this->kiPlayer->field_0x10;
+        linked->player->vulnerable = 1;
+        linked->player->damage(amount);
+        ((KIPlayer *) (intptr_t) this->kiPlayer->field_0x10)->player->vulnerable = 0;
     }
 }
+
 
 void Player::setEnemy(Player *enemy) {
     Array<Player *> *tmp = new Array<Player *>();

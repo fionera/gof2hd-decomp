@@ -168,7 +168,7 @@ public:
     int cloakDischargeMax;
     float shieldRegenRate;
     int field_0x21c;
-    int hud;
+    Hud *hud;
     AbyssEngine::AEMath::Vector turretOffsetVec;
     int field_0x230;
     uint8_t collidesWithStationFlag;
@@ -352,7 +352,7 @@ public:
 
     float getDriveChargeRate();
 
-    int getHUD();
+    Hud *getHUD();
 
     int getHackingGameDockIndex();
 

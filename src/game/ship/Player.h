@@ -120,7 +120,7 @@ public:
 
     void damage(int amount);
 
-    void damage(int amount, bool flag, int missionId);
+    void damage(int amount, bool ownFire, int weaponId);
 
     void damageEmp(int amount, bool flag);
 

@@ -586,7 +586,7 @@ unsigned char PlayerEgo::isInTurretMode() {
 void PlayerEgo::startJumpDrive() {
     if (this->chargingDrive != 0) return;
     Globals::sound->play(0x21, nullptr, nullptr, 0.0f);
-    ((Hud *) (this->hud))->hudEvent(0x19, this, 0);
+    this->hud->hudEvent(0x19, this, 0);
     this->chargingDrive = 1;
     this->driveCharge = 0;
 }
@@ -725,7 +725,7 @@ void PlayerEgo::setFreeze(bool v) {
     this->freeze = v;
 }
 
-int PlayerEgo::getHUD() {
+Hud *PlayerEgo::getHUD() {
     PlayerEgo *self = this;
     return this->hud;
 }
@@ -2221,12 +2221,12 @@ void PlayerEgo::stopMining() {
     if (freeSpace <= amount)
         amount = freeSpace;
     if (freeSpace < 1) {
-        ((Hud *) (intptr_t) this->hud)->catchCargo(oreIndex, 0, true, false, true, false, false);
+        this->hud->catchCargo(oreIndex, 0, true, false, true, false, false);
     } else {
         if (((MiningGame *) (intptr_t) this->miningGame)->gotCore()) {
             Item *core = (*Globals::items)[coreIndex]->makeItem(1);
             Globals::status->getShip()->addCargo(core);
-            ((Hud *) (intptr_t) this->hud)->catchCargo(coreIndex, 1, false, false, false, false, false);
+            this->hud->catchCargo(coreIndex, 1, false, false, false, false, false);
             Globals::status->field_a4++;
             if (coreIndex != 218)
                 (*Globals::status->field_98)[coreIndex - 165] = true;
@@ -2237,13 +2237,13 @@ void PlayerEgo::stopMining() {
         if (amount > 0) {
             Item *ore = (*Globals::items)[oreIndex]->makeItem(amount);
             Globals::status->getShip()->addCargo(ore);
-            ((Hud *) (intptr_t) this->hud)->catchCargo(oreIndex, amount, false, false, true, false, false);
+            this->hud->catchCargo(oreIndex, amount, false, false, true, false, false);
             Globals::status->field_a0 += amount;
             if (oreIndex != 217)
                 (*Globals::status->field_94)[oreIndex - 154] = true;
         }
         if (Globals::status->getShip()->getFreeSpace() <= 0)
-            ((Hud *) (intptr_t) this->hud)->catchCargo(oreIndex, amount, true, false, true, false, false);
+            this->hud->catchCargo(oreIndex, amount, true, false, true, false, false);
     }
     this->setExhaustVisible(true);
     ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->hasCargo = 0;
@@ -2409,7 +2409,7 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
     if (((intptr_t) this->hackingGame) != 0) {
         delete (HackingGame *) ((intptr_t) this->hackingGame);
         this->hackingGame = 0;
-        ((Hud *) (((intptr_t) this->hud)))->setHackingGameActive(false);
+        this->hud->setHackingGameActive(false);
     }
 }
 
@@ -2501,7 +2501,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     (void) arg5;
     this->levelScript = script;
     if (this->hud == 0) {
-        this->hud = (int) (intptr_t) hud;
+        this->hud = hud;
         this->field_0x14 = radar;
         this->radioRef = radio;
     }
@@ -3778,8 +3778,8 @@ bool PlayerEgo::toggleCloaking() {
             return false;
         Globals::status->getShip()->removeCargo(122, energy);
         this->chargingCloak = 1;
-        ((Hud *) (intptr_t) this->hud)->hudEvent(30, this, energy);
-        ((Hud *) (intptr_t) this->hud)->hudEvent(28, this, 0);
+        this->hud->hudEvent(30, this, energy);
+        this->hud->hudEvent(28, this, 0);
         return true;
     }
     return this->cloaked != 0;

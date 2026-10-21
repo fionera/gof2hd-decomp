@@ -112,7 +112,7 @@ public:
     int carriesMissionCrate;
     uint32_t jumpSphere;
     int field_0xd8;
-    uint8_t wingmanFlag;
+    bool wingmanFlag;
     uint8_t _pad_0xdd[3];
     int wingmanCommand;
     int field_0xe4;
@@ -184,7 +184,7 @@ public:
     uint8_t isEnemy();
     uint8_t isJumper();
     uint8_t isVisible();
-    uint8_t isWingMan();
+    bool isWingMan();
     void jump();
     void reset();
     void setActive(bool active);

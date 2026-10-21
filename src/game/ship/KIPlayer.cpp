@@ -190,7 +190,7 @@ void KIPlayer::setJumpSphere(uint32_t sphere) {
     this->jumpSphere = sphere;
 }
 
-uint8_t KIPlayer::isWingMan() {
+bool KIPlayer::isWingMan() {
     return this->wingmanFlag;
 }
 
