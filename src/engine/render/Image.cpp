@@ -556,14 +556,14 @@ namespace AbyssEngine {
                     break;
                 }
                 
-                unsigned int level = 0;
-                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                unsigned int offset = 0;
+                for (unsigned int level = 0; offset < image->dataLen; level++) {
                     unsigned int blocks = width < 16 ? 2 : width >> 3;
                     unsigned int rows = height < 8 ? 16 : (height << 1) & ~7u;
                     unsigned int blockBytes = rows * blocks;
                     glCompressedTexImage2D(0xde1, level, 0x8c03, width, height, 0, blockBytes, image->data + offset);
-                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     offset += blockBytes;
                     height = nextHeight;
                     width = nextWidth;
@@ -578,14 +578,14 @@ namespace AbyssEngine {
                     break;
                 }
                 
-                unsigned int level = 0;
-                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                unsigned int offset = 0;
+                for (unsigned int level = 0; offset < image->dataLen; level++) {
                     unsigned int blocks = height < 8 ? 2 : height >> 2;
                     unsigned int rows = width < 8 ? 16 : (width << 1) & ~7u;
                     unsigned int blockBytes = rows * blocks;
                     glCompressedTexImage2D(0xde1, level, 0x8c02, width, height, 0, blockBytes, image->data + offset);
-                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     offset += blockBytes;
                     height = nextHeight;
                     width = nextWidth;
@@ -600,14 +600,14 @@ namespace AbyssEngine {
                     break;
                 }
                 
-                unsigned int level = 0;
-                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                unsigned int offset = 0;
+                for (unsigned int level = 0; offset < image->dataLen; level++) {
                     unsigned int blockBytes = width * height;
                     if (blockBytes <= 16)
                         blockBytes = 16;
                     glCompressedTexImage2D(0xde1, level, 0x8c93, width, height, 0, blockBytes, image->data + offset);
-                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     offset += blockBytes;
                     height = nextHeight;
                     width = nextWidth;
@@ -629,8 +629,8 @@ namespace AbyssEngine {
                     break;
                 }
                 
-                unsigned int level = 0;
-                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                unsigned int offset = 0;
+                for (unsigned int level = 0; offset < image->dataLen; level++) {
                     unsigned int blockBytes = height * width;
                     if (image->format - 9 <= 1) {
                         if ((int) blockBytes <= 16)
@@ -641,8 +641,8 @@ namespace AbyssEngine {
                         blockBytes >>= 1;
                     }
                     glCompressedTexImage2D(0xde1, level, format, width, height, 0, blockBytes, image->data + offset);
-                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     offset += blockBytes;
                     height = nextHeight;
                     width = nextWidth;
@@ -657,14 +657,14 @@ namespace AbyssEngine {
                     break;
                 }
                 
-                unsigned int level = 0;
-                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                unsigned int offset = 0;
+                for (unsigned int level = 0; offset < image->dataLen; level++) {
                     unsigned int blockBytes = (width * height) >> 1;
                     if (width < 8)
                         blockBytes = 8;
                     glCompressedTexImage2D(0xde1, level, 0x8d64, width, height, 0, blockBytes, image->data + offset);
-                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     offset += blockBytes;
                     height = nextHeight;
                     width = nextWidth;
