@@ -130,8 +130,8 @@ void MGame::OnTouchEnd(int /*p1*/, int /*p2*/) {
 void MGame::OnTouchMove(int /*p1*/, int /*p2*/) {
 }
 
-long long MGame::OnKeyPress(long long key, long long /*mod*/) { return key; }
-long long MGame::OnKeyRelease(long long key, long long /*mod*/) { return key; }
+void MGame::OnKeyPress(long long /*key*/, long long /*mod*/) {}
+void MGame::OnKeyRelease(long long /*key*/, long long /*mod*/) {}
 
 void MGame::showLiteScreen() {
 }

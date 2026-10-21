@@ -1,4 +1,5 @@
 #include "game/core/Globals.h"
+#include "engine/math/AEMath.h"
 #include <arm_neon.h>
 #include <cstdint>
 
@@ -424,8 +425,7 @@ String Globals::getKeyActionName(int action) {
 }
 
 float Globals::sqrt(float x) {
-    (void) this;
-    return __builtin_sqrtf(x);
+    return AbyssEngine::AEMath::Sqrtf(x);
 }
 
 

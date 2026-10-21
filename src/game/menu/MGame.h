@@ -193,9 +193,9 @@ public:
 
     void OnRelease() override;
 
-    long long OnKeyPress(long long key, long long mod) override;
+    void OnKeyPress(long long key, long long mod) override;
 
-    long long OnKeyRelease(long long key, long long mod) override;
+    void OnKeyRelease(long long key, long long mod) override;
 
     void OnTouchBegin(int p1, int p2) override;
 
