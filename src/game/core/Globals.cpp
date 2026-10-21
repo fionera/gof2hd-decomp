@@ -134,7 +134,7 @@ bool Globals::isStarMapVisible = false;
 unsigned char Globals::isCinematicModeActive = 0;
 int Globals::mouseCursorActivated = 0;
 unsigned char Globals::showMouseDuringGameOver = 0;
-unsigned char Globals::keyBindings[8] = {};
+unsigned char *Globals::keyBindings = nullptr;
 
 int Globals::left_edge = 0;
 int Globals::right_edge = 0;
@@ -268,8 +268,8 @@ bool Globals::startLiteVersionWithMoreCredits;
 AbyssEngine::AERandom *Globals::rnd;
 void *Globals::font; // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
 // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
-unsigned char Globals::keys[1020];
-void *Globals::bankZ; // lint: void_ptr (unknown audio-bank handle, never referenced)
+int Globals::keys[255];
+float Globals::bankZ;
 unsigned char Globals::hints[59];
 Array<Item *> *Globals::items;
 Array<Ship *> *Globals::ships;

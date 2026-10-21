@@ -80,7 +80,7 @@ int gb_android_offerwallCreditAmount;
 
 int AccIndex;
 
-void (*ndkEntrance)();
+const char *ndkEntrance;
 
 extern "C" int loadAPKAndZip(const char *apkPath, const char *patchPath); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
@@ -244,66 +244,65 @@ extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() { // lint: extern_c 
     }
 }
 
-static double gAccelFilterState[6];
+// Low-pass filtered gravity and its negation as handed to the engine.
+static double gGravity[3];
+static double gNegGravity[3];
 
 extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
                                   int width, int height) {
+    ndkEntrance = "ndkInit";
     glViewport(0, 0, width, height);
-
-    for (int i = 0; i < 6; ++i)
-        gAccelFilterState[i] = 0.0;
-
-    gRealWidth = width;
-    gRealHeight = height;
-
+    gGravity[0] = 0.0;
+    gGravity[1] = 0.0;
+    gGravity[2] = 0.0;
+    gRealHeight = width;
+    gRealWidth = height;
     loadAPKAndZip(apkPath, zipPath);
 
-    AbyssEngine::Engine *engine = new AbyssEngine::Engine();
-    gEngine = engine;
-    engine->str_0x3c = String("2.0.16", false);
-
+    gEngine = new AbyssEngine::Engine();
+    gEngine->str_0x3c = String("2.0.16", false);
+    gEngine->InitGL(true, width, height);
     if (rootDirectory != nullptr)
         AEFile::SetAppRootDir(rootDirectory);
-
-    engine->Initialize(&OnCreateApplication);
-    engine->SetOnDestroyApp(&OnDestroyApplication);
-    engine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
+    gEngine->Initialize(&OnCreateApplication);
+    gEngine->SetOnDestroyApp(&OnDestroyApplication);
+    gEngine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
 }
 
 int rotateAccelValues;
 
 extern "C" void ndk23_handleAcceleration(float x, float y, float z) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    double ax = x;
+    double ay = y;
     double tiltA, tiltB;
     if (rotateAccelValues != 0) {
-        tiltA = -x;
-        tiltB = y;
+        tiltA = -ax;
+        tiltB = ay;
     } else {
-        tiltA = y;
-        tiltB = x;
+        tiltA = ay;
+        tiltB = ax;
     }
-
-    AbyssEngine::Engine *engine = gEngine;
-    if (engine == nullptr)
+    if (gEngine == nullptr)
         return;
 
-    double *gravity = gAccelFilterState;
-    double gz;
-    if (engine->appManager->paintCanvas->initialized) {
-        gravity[0] = gravity[0] * 0.95 + tiltB * 0.05;
-        gravity[1] = gravity[1] * 0.95 + tiltA * 0.05;
-        gz = gravity[2] * 0.95 + z * 0.05;
+    double az = z;
+    double accelX = -tiltB;
+    double accelY = -tiltA;
+    double accelZ = -az;
+    if (gEngine->appManager->paintCanvas->initialized) {
+        gGravity[0] = gGravity[0] * 0.95 + tiltB * 0.05;
+        gGravity[1] = gGravity[1] * 0.95 + tiltA * 0.05;
+        gGravity[2] = gGravity[2] * 0.95 + az * 0.05;
     } else {
-        gravity[0] = tiltB * 0.95;
-        gravity[1] = tiltB * 0.95;
-        gz = tiltB * 0.95;
+        gGravity[0] = tiltB * 0.95;
+        gGravity[1] = tiltB * 0.95;
+        gGravity[2] = tiltB * 0.95;
     }
-    gravity[2] = gz;
-    gravity[3] = -gravity[0];
-    gravity[4] = -gravity[1];
-    gravity[5] = -gz;
-
-    engine->SetAccelValue(-tiltB, -tiltA, -z);
-    engine->SetGravValue(gravity[3], gravity[4], gravity[5]);
+    gNegGravity[0] = -gGravity[0];
+    gNegGravity[1] = -gGravity[1];
+    gNegGravity[2] = -gGravity[2];
+    gEngine->SetAccelValue(accelX, accelY, accelZ);
+    gEngine->SetGravValue(gNegGravity[0], gNegGravity[1], gNegGravity[2]);
 }
 
 extern "C" jint JNI_OnLoad(JavaVM *vm, void * /*reserved*/) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
@@ -352,27 +351,28 @@ char *zipDirectory;
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_SetDirectories( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv *env, jclass /*clazz*/, jstring rootDir, jstring zipDir) {
-    jboolean isCopy;
-    const char *utf = env->GetStringUTFChars(rootDir, &isCopy);
-    dataDirectory = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
-    zipDirectory = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
-    if (isCopy) {
-        std::strcpy(dataDirectory, utf);
-        std::strcpy(zipDirectory, utf);
-        flstat_rootPath = dataDirectory;
+    jboolean rootCopied;
+    const char *root = env->GetStringUTFChars(rootDir, &rootCopied);
+    size_t rootLength = std::strlen(root) + 1;
+    dataDirectory = static_cast<char *>(std::malloc(rootLength));
+    flstat_rootPath = static_cast<char *>(std::malloc(rootLength));
+    if (rootCopied) {
+        std::strcpy(dataDirectory, root);
+        std::strcpy(flstat_rootPath, root);
         ndk23_setRootDirectory(dataDirectory);
-        __android_log_print(ANDROID_LOG_ERROR, "gof2", "rootDir: %s", dataDirectory);
-        __android_log_print(ANDROID_LOG_ERROR, "gof2", "zipDir: %s", zipDirectory);
-        env->ReleaseStringUTFChars(rootDir, utf);
+        __android_log_print(ANDROID_LOG_ERROR, "GOF2_NATIVE", "dataDirectory in main.c: %s", dataDirectory);
+        __android_log_print(ANDROID_LOG_ERROR, "GOF2_NATIVE", "rootPath in main.c: %s", flstat_rootPath);
+        env->ReleaseStringUTFChars(rootDir, root);
     }
 
-    utf = env->GetStringUTFChars(zipDir, &isCopy);
-    zipDirectory = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
-    if (isCopy) {
-        std::strcpy(zipDirectory, utf);
+    jboolean zipCopied;
+    const char *zip = env->GetStringUTFChars(zipDir, &zipCopied);
+    zipDirectory = static_cast<char *>(std::malloc(std::strlen(zip) + 1));
+    if (zipCopied) {
+        std::strcpy(zipDirectory, zip);
         ndk23_setZipDirectory(zipDirectory);
-        __android_log_print(ANDROID_LOG_ERROR, "gof2", "zipDir: %s", zipDirectory);
-        env->ReleaseStringUTFChars(zipDir, utf);
+        __android_log_print(ANDROID_LOG_ERROR, "GOF2_NATIVE", "zipDirectory in main.c: %s", zipDirectory);
+        env->ReleaseStringUTFChars(zipDir, zip);
     }
 }
 
@@ -431,24 +431,20 @@ extern "C" void ExitFunction() { // lint: extern_c (native ABI boundary; origina
 }
 
 extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    ApplicationManager *manager = (gEngine)->appManager;
-    manager->SetExitCallback(&ExitFunction);
+    gEngine->appManager->SetExitCallback(&ExitFunction);
 
     int touchCount = GetTouchCount();
     for (int i = 0; i < touchCount; ++i) {
+        // Touch record layout: {handle, phase, x, y}.
         Touch rec = GetTouch(i);
         void *touch = reinterpret_cast<void *>(rec.x); // lint: void_ptr (opaque touch handle for OnTouch* void* params, baked ABI)
-        // lint: void_ptr (opaque touch handle for OnTouch* void* params, baked ABI)
-        int phase = rec.y;
-        int x = rec.id;
-        int y = rec.action;
-        if (phase == 2) {
-            manager->OnTouchMove(x, y, touch);
-        } else if (phase == 1) {
-            manager->OnTouchEnd(x, y, touch);
-            manager->OnTouchEnd();
-        } else if (phase == 0) {
-            manager->OnTouchBegin(x, y, touch);
+        if (rec.y == 2) {
+            gEngine->appManager->OnTouchMove(rec.id, rec.action, touch);
+        } else if (rec.y == 1) {
+            gEngine->appManager->OnTouchEnd(rec.id, rec.action, touch);
+            gEngine->appManager->OnTouchEnd();
+        } else if (rec.y == 0) {
+            gEngine->appManager->OnTouchBegin(rec.id, rec.action, touch);
         }
     }
 
@@ -459,9 +455,9 @@ extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI b
     }
 
     RemoveTouches();
-    manager->OnUpdate(now);
+    gEngine->appManager->OnUpdate(now);
 
-    char *appData = static_cast<char *>(manager->GetApplicationData());
+    char *appData = static_cast<char *>(gEngine->appManager->GetApplicationData());
     if (appData[0x3d] != 0) {
         appData[0x40] = 1;
         appData[0x3d] = 0;
@@ -485,18 +481,14 @@ extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI b
 }
 
 extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
-                                          // lint: void_ptr (ndk* touch handle param, baked ABI)
                                           float x, float y) {
-    ApplicationManager *manager = (gEngine)->appManager;
-    int px = static_cast<int>(x);
-    int py = static_cast<int>(y);
     if (phase == 2) {
-        manager->OnTouchMove(px, py, touch);
+        gEngine->appManager->OnTouchMove(static_cast<int>(x), static_cast<int>(y), touch);
     } else if (phase == 1) {
-        manager->OnTouchEnd(px, py, touch);
-        manager->OnTouchEnd();
+        gEngine->appManager->OnTouchEnd(static_cast<int>(x), static_cast<int>(y), touch);
+        gEngine->appManager->OnTouchEnd();
     } else if (phase == 0) {
-        manager->OnTouchBegin(px, py, touch);
+        gEngine->appManager->OnTouchBegin(static_cast<int>(x), static_cast<int>(y), touch);
     }
 }
 
@@ -690,34 +682,28 @@ extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapResetNativeItemInformation
     ndk_resetNativeItemInformationList();
 }
 
-static const char *const kConsumableSKU[5] = {
-    "net.fishlabs.gof2hd2012.creditpack1",
-    "net.fishlabs.gof2hd2012.creditpack2",
-    "net.fishlabs.gof2hd2012.creditpack3",
-    "net.fishlabs.gof2hd2012.creditpack4",
-    "net.fishlabs.gof2hd2012.creditpack5",
-};
-
-static const char *const kPremiumSKU[5] = {
-    "net.fishlabs.gof2hd2012.dlc1",
-    "net.fishlabs.gof2hd2012.dlc2",
-    "net.fishlabs.gof2hd2012.dlc3",
-    "net.fishlabs.gof2hd2012.dlc4",
-    "net.fishlabs.gof2hd2012.dlc5",
-};
-
 extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv *env, jclass /*clazz*/, jint index) {
-    if (index < 0 || index > 4)
-        return nullptr;
-    return env->NewStringUTF(kConsumableSKU[index]);
+    switch (index) {
+        case 0: return env->NewStringUTF("iap_managed_credits_100_000");
+        case 1: return env->NewStringUTF("iap_managed_credits_300_000");
+        case 2: return env->NewStringUTF("iap_managed_credits_1_000_000");
+        case 3: return env->NewStringUTF("iap_managed_credits_3_000_000");
+        case 4: return env->NewStringUTF("iap_managed_10_000_000");
+    }
+    return nullptr;
 }
 
 extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getPremiumSKU( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv *env, jclass /*clazz*/, jint index) {
-    if (index < 0 || index > 4)
-        return nullptr;
-    return env->NewStringUTF(kPremiumSKU[index]);
+    switch (index) {
+        case 0: return env->NewStringUTF("iap_managed_valkyrie");
+        case 1: return env->NewStringUTF("iap_managed_kaamo_club");
+        case 2: return env->NewStringUTF("iap_managed_supernova");
+        case 3: return env->NewStringUTF("iap_managed_vip");
+        case 4: return env->NewStringUTF("iap_managed_full_package");
+    }
+    return nullptr;
 }
 
 extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
@@ -739,26 +725,23 @@ extern "C" void Java_net_fishlabs_tapjoy_ToJNI_spentAmountOfCredits( // lint: ex
 extern "C" int loadAPK(const char *path); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
 extern "C" void ndk23_Init(const char *apkPath, int width, int height) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    ndkEntrance = "ndkInit";
     glViewport(0, 0, width, height);
-
-    for (int i = 0; i < 6; ++i)
-        gAccelFilterState[i] = 0.0;
-
-    gRealWidth = width;
-    gRealHeight = height;
-
+    gGravity[0] = 0.0;
+    gGravity[1] = 0.0;
+    gGravity[2] = 0.0;
+    gRealHeight = width;
+    gRealWidth = height;
     loadAPK(apkPath);
 
-    AbyssEngine::Engine *engine = new AbyssEngine::Engine();
-    gEngine = engine;
-    engine->str_0x3c = String("2.0.16", false);
-
+    gEngine = new AbyssEngine::Engine();
+    gEngine->str_0x3c = String("2.0.16", false);
+    gEngine->InitGL(true, width, height);
     if (rootDirectory != nullptr)
         AEFile::SetAppRootDir(rootDirectory);
-
-    engine->Initialize(&OnCreateApplication);
-    engine->SetOnDestroyApp(&OnDestroyApplication);
-    engine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
+    gEngine->Initialize(&OnCreateApplication);
+    gEngine->SetOnDestroyApp(&OnDestroyApplication);
+    gEngine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
 }
 
 extern "C" void ndk23_resize(int width, int height) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
