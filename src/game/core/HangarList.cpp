@@ -287,7 +287,7 @@ void HangarList::initShipTab(Ship *ship) {
     Array<ListItem *> *items = new Array<ListItem *>();
     Array<Item *> *equipment = ship->getEquipment();
     Array<Item *> *cargo = ship->getCargo();
-    int baseLength = 2;
+    int baseLength = 0;
     Array<Item *> *available = nullptr;
     bool cargoEmpty = true;
     if (cargo != nullptr) {
@@ -298,12 +298,12 @@ void HangarList::initShipTab(Ship *ship) {
             }
         }
         cargoEmpty = false;
-        baseLength = available->size() + 2;
+        baseLength = available->size();
     }
 
     uint32_t equipmentLength = equipment->size();
     int slotTypes = ship->getSlotTypes();
-    ArraySetLength(slotTypes + baseLength + equipmentLength, *items);
+    ArraySetLength(slotTypes + baseLength + equipmentLength + 2, *items);
 
 
     GameText **texts = &Globals::gameText;
