@@ -17,7 +17,7 @@ class Level;
 
 class RepairBeam {
 public:
-    int shipIndex;
+    int itemIndex;
     AbyssEngine::AEMath::Vector beamPosition;
     Array<AEGeometry *> *geometries;
     Array<int> *targetIds;
@@ -25,7 +25,7 @@ public:
     int sort;
     int timer;
 
-    RepairBeam(int shipIndex, int sort);
+    RepairBeam(int itemIndex, int sort);
 
     ~RepairBeam();
 
