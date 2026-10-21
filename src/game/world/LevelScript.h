@@ -25,8 +25,8 @@ public:
     TargetFollowCamera *m_pCamera;
     Level *m_pLevel;
     int m_nState;
-    uint8_t m_bStartSequence; // ASM (resetStartSequenceOver): m_bStartSequenceOver is at 0x21, so this is 1 byte
-    uint8_t m_bStartSequenceOver;
+    bool m_bStartSequence; // ASM (resetStartSequenceOver): m_bStartSequenceOver is at 0x21, so this is 1 byte
+    bool m_bStartSequenceOver;
     int field_0x24;
     Vector m_tempVec; // scratch vector (camera seats, wormhole placement)
     Vector m_camVec;  // camera position derived from m_tempVec
@@ -65,13 +65,13 @@ public:
 
     void render3D();
 
-    uint8_t startSequenceOver();
+    bool startSequenceOver();
 
     void resetCamera(Level *level);
 
     void skipSequence();
 
-    uint8_t startSequence();
+    bool startSequence();
 
     void setAutoPilotToProgrammedStation();
 

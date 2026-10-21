@@ -14,27 +14,24 @@ void BoundingSphere::update(float x, float y, float z) {
     BoundingVolume::update(x, y, z);
 }
 
-Vector BoundingSphere::projectCollisionOnSurface(const Vector &position) {
-    Vector center = Vector{centerX + extentsX, centerY + extentsY, centerZ + extentsZ};
-    Vector delta = center - position;
+Vector BoundingSphere::projectCollisionOnSurface(const Vector &point) {
+    Vector delta = (position + offset) - point;
     float length = VectorLength(delta);
-
-    if (length >= radius) {
+    float radius = this->radius;
+    if (length >= radius)
         return Vector{0.0f, 0.0f, 0.0f};
-    }
-    return center - delta * (radius / length);
+    return (position + offset) - (radius / length) * delta;
 }
 
 int BoundingSphere::outerCollide(float x, float y, float z) {
-    Vector delta = Vector{x, y, z}
-                   - Vector{centerX + extentsX, centerY + extentsY, centerZ + extentsZ};
-    float distanceSq = VectorDot(delta, delta);
-    return distanceSq < radius * radius ? 1 : 0;
+    Vector delta = Vector{x, y, z} - (position + offset);
+    return VectorDot(delta, delta) < radius * radius ? 1 : 0;
 }
 
-Vector BoundingSphere::getCollisionNormal(const Vector &position) {
-    return VectorNormalize(
-        Vector{centerX + extentsX, centerY + extentsY, centerZ + extentsZ} - position);
+Vector BoundingSphere::getCollisionNormal(const Vector &point) {
+    Vector normal = (position + offset) - point;
+    normal = VectorNormalize(normal);
+    return normal;
 }
 
 int BoundingSphere::collide(float x, float y, float z) {

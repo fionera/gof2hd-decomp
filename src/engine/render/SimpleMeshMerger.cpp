@@ -8,8 +8,8 @@
 SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
                                    Array<Matrix> transforms,
                                    PaintCanvas *canvas, unsigned short flags) {
-    this->flags = flags;
     this->canvas = canvas;
+    this->flags = flags;
     this->rows = (int) transforms.size();
     ArraySetLength(meshIds.size(), this->meshes);
 

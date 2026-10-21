@@ -19,6 +19,7 @@ class Explosion;
 class KIPlayer;
 class Level;
 class Route;
+class SpacePoint;
 class Trail;
 
 namespace AbyssEngine {
@@ -27,17 +28,10 @@ namespace AbyssEngine {
 
 class PlayerFighter : public KIPlayer {
 public:
-    // ASM ground truth: these duplicated KIPlayer base fields (Ghidra offset = KIPlayer offset). Same-
-    // named ones inherit; differently-named ones alias the real KIPlayer field. explosion+ then land at
-    // their real offsets (explosion@0x124). player/geometry/field_0x24/field_0x25/field_0x38/level/posX/
-    // posY/posZ/field_0x80/field_0x84/state/field_0xdc/field_0xe4/field_0xf0 inherit by name.
-    int32_t &player() { return reinterpret_cast<int32_t &>(this->KIPlayer::player); }
-    int32_t &geometry() { return reinterpret_cast<int32_t &>(this->KIPlayer::geometry); }
-    int32_t &level() { return reinterpret_cast<int32_t &>(this->KIPlayer::level); }
+    // Views of KIPlayer storage that PlayerFighter uses with its own meaning (offsets are the
+    // KIPlayer ones). KIPlayer::shipGroup (0x28) is the fighter's race; KIPlayer::field_0xe4 is the
+    // current wingman command and KIPlayer::wingmanCommand (0xe0) the wingman's formation slot.
     signed char &field_0xdc() { return reinterpret_cast<signed char &>(this->wingmanFlag); }
-    int32_t &subGeometry() { return reinterpret_cast<int32_t &>(this->parentGeometry); }
-    int32_t &wingmanCommand() { return this->shipGroup; }
-    Vector &renderPosition() { return reinterpret_cast<Vector &>(this->autoPilotState); }
     signed char &field_0x43() { return reinterpret_cast<signed char &>(this->reviveLockFlag); }
     uint8_t &crateCaptured() { return reinterpret_cast<uint8_t &>(this->hasCargo); }
     Array<int> *&lootList() { return this->cargo; }
@@ -47,7 +41,6 @@ public:
     Route *&routeClone() { return this->KIPlayer::route; }
     uint8_t &exhaustHidden() { return this->field_0x74; }
     AEGeometry *&wreckGeometry() { return this->crateGeometry; }
-    Vector &resetVecA() { return reinterpret_cast<Vector &>(this->field_0x90); }
     uint8_t &isMissionCrate() { return reinterpret_cast<uint8_t &>(this->carriesMissionCrate); }
     int32_t &deathTimer() { return this->field_0xd8; }
     uint8_t &field_0xf5() { return this->visibleFlag; }
@@ -58,12 +51,10 @@ public:
     Vector &pushNormal() { return reinterpret_cast<Vector &>(this->field_0x10c); }
     Vector &pushImpulse() { return reinterpret_cast<Vector &>(this->field_0x118); }
     Explosion *explosion;
-    int32_t field_0x128;
-    uint8_t field_0x12c;
-    // field_0x12d is a short@0x12d in the original (0x12d-0x12f); modeled as two bytes so the packed
-    // layout matches (a `short` here forces 2-byte alignment -> a pad at 0x12d that shifts field_0x130+).
-    uint8_t field_0x12d;
-    uint8_t field_0x12e;
+    int32_t field_0x128; // sight range
+    uint8_t field_0x12c; // following its route
+    uint8_t field_0x12d; // stray from target (no steering)
+    uint8_t targetIsActive;
     signed char field_0x12f;
     int32_t field_0x130;
     int32_t field_0x134;
@@ -71,8 +62,8 @@ public:
     signed char field_0x13c;
     uint8_t field_0x13d;
     signed char field_0x13e;
-    int32_t field_0x140;
-    Route *route;
+    int32_t field_0x140; // active weapon slot (0/1)
+    Route *defaultRoute;
     // Escort/attack target (`target__` in the Java lineage); its `field_5e` is the
     // hidden/sleep flag checked by the proximity-awaken and movement subsystems.
     Player *targetPlayer;
@@ -80,39 +71,40 @@ public:
     Array<BoundingVolume *> *boundingVolumes;
     Trail *trail;
     Vector workingPosition;
-    Vector resetVecB;
-    Vector resetVecC;
+    Vector targetPos;
+    Vector distanceToTarget;
     Vector field_0x17c;
-    Vector field_0x188;
-    Vector field_0x194;
+    Vector dyingSpin;
+    Vector dyingDirection;
     int32_t engineTrailSystem;
     float rotate;
     float shootError;
     float speed;
     int32_t field_0x1b0;
     int32_t boostProb;
-    int32_t maneuverTimer;
+    int32_t behaviourChangeTick;
     int32_t field_0x1bc;
-    int32_t field_0x1c0;
-    int32_t field_0x1c4;
-    int32_t field_0x1c8;
+    int32_t boostTick;
+    int32_t boostTimeLimit;
+    int32_t trailTick;
     int32_t field_0x1cc;
-    long long deltaTime; // frame time (64-bit, from update(dt))
+    long long frameTime; // frame time (64-bit, from update(dt))
     int32_t hitpoints;
-    int32_t field_0x1dc;
-    signed char field_0x1e0;
-    int32_t field_0x1e4;
+    int32_t damageAccumulator;
+    signed char damageEscape;
+    int32_t initialWaypoint;
     float currentSpeed;
-    float field_0x1ec;
+    float targetSpeed;
     float currentRotate;
-    short field_0x1f4;
-    int32_t field_0x1f8;
-    signed char field_0x1fc;
+    uint8_t boosting;
+    uint8_t field_0x1f5;
+    int32_t dyingTimer;
+    signed char smoking;
     int32_t field_0x200;
     int32_t field_0x204;
     int32_t field_0x208;
-    int32_t targetRoll;
-    int32_t smoothRoll;
+    float targetRoll;
+    float smoothRoll;
     int32_t field_0x214;
     AbyssEngine::Matrix easeBaseMatrix;
     // roll() strh.w [this,#0x254] writes this pair right where easeBaseMatrix ends;
@@ -120,8 +112,8 @@ public:
     signed char field_0x254;
     signed char field_0x255;
     AbyssEngine::Matrix rollMatrix;
-    int32_t field_0x294;
-    int32_t field_0x298;
+    float maxRoll;
+    float rollFactor;
     float rollSamples[5];   // ring buffer of angle samples (+0x29c..+0x2af, 5 floats)
     int32_t rollSampleIndex;
     uint8_t rollBufferFilled;
@@ -130,9 +122,9 @@ public:
     AbyssEngine::EaseInOutMatrix *easeMatrix;
     // field_0x2c9/field_0x2cd were Ghidra artifacts of the ctor's overlapping unaligned
     // zero-stores (str.w [+0x2c9], str.w [+0x2cd]) spanning cloakTimer..cloakActive.
-    int32_t field_0x2bc;
-    int32_t field_0x2c0;
-    int32_t spacePoint;
+    int32_t dockTimer;
+    int32_t passengersMoved;
+    SpacePoint *spacePoint;
     int32_t cloakTimer;
     int32_t cloakDuration;
     uint8_t cloakActive;
@@ -220,11 +212,11 @@ public:
 static_assert(__builtin_offsetof(PlayerFighter, field_0x17c) == 0x17c, "PlayerFighter::field_0x17c offset");
 static_assert(__builtin_offsetof(PlayerFighter, engineTrailSystem) == 0x1a0, "PlayerFighter::engineTrailSystem offset");
 static_assert(__builtin_offsetof(PlayerFighter, field_0x1bc) == 0x1bc, "PlayerFighter::field_0x1bc offset");
-static_assert(__builtin_offsetof(PlayerFighter, deltaTime) == 0x1d0, "PlayerFighter::deltaTime offset");
+static_assert(__builtin_offsetof(PlayerFighter, frameTime) == 0x1d0, "PlayerFighter::frameTime offset");
 static_assert(__builtin_offsetof(PlayerFighter, hitpoints) == 0x1d8, "PlayerFighter::hitpoints offset");
 static_assert(__builtin_offsetof(PlayerFighter, field_0x254) == 0x254, "PlayerFighter::field_0x254 offset");
 static_assert(__builtin_offsetof(PlayerFighter, rollMatrix) == 0x258, "PlayerFighter::rollMatrix offset");
-static_assert(__builtin_offsetof(PlayerFighter, field_0x2bc) == 0x2bc, "PlayerFighter::field_0x2bc offset");
+static_assert(__builtin_offsetof(PlayerFighter, dockTimer) == 0x2bc, "PlayerFighter::dockTimer offset");
 static_assert(__builtin_offsetof(PlayerFighter, spacePoint) == 0x2c4, "PlayerFighter::spacePoint offset");
 static_assert(__builtin_offsetof(PlayerFighter, cloakTimer) == 0x2c8, "PlayerFighter::cloakTimer offset");
 static_assert(__builtin_offsetof(PlayerFighter, cloakDuration) == 0x2cc, "PlayerFighter::cloakDuration offset");

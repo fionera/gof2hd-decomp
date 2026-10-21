@@ -42,6 +42,7 @@ namespace AbyssEngine {
     }
 
     PostBWShader::~PostBWShader() {
+        ; // non-empty body in the original (compiled-out statement): clang keeps the vptr store
     }
 
     void PostBWShader::Init(Engine *) {

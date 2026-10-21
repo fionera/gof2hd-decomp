@@ -28,8 +28,6 @@ namespace AbyssEngine {
 
 static const float kRocketTurnRate = 0.3f;
 
-int RocketGun::isRocketGun() { return 1; }
-
 RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
                      uint32_t flags, int rocketKind, bool homing, Level *level)
     : ObjectGun(meshVariantId, gun, mesh, flags, level) {

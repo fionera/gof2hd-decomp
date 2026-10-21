@@ -426,12 +426,14 @@ void HangarWindow::update(int delta) {
 
     if (this->hangarList->getCurrentTabItems() != 0) {
         int minOffset = this->visibleHeight - this->currentContentHeight;
-        if (minOffset > -1) {
+        if (minOffset < 0) {
+            if (minOffset > this->scrollOffset) {
+                this->damping = 1.0f;
+                this->velocity = (float) (minOffset - this->scrollOffset) * 0.5f;
+            }
+        } else {
             this->scrollOffset = 0;
             this->velocity = 0;
-        } else if (minOffset > this->scrollOffset) {
-            this->damping = 1.0f;
-            this->velocity = (float) (minOffset - this->scrollOffset) * 0.5f;
         }
     }
 
@@ -996,8 +998,8 @@ int HangarWindow::OnTouchBegin(int touch, int coord) {
                     String("#C"));
         }
         this->dialog->set(msg, !this->localBluePrint);
-        this->dialogActive = 1;
         this->bluePrintPurchasePending = 1;
+        this->dialogActive = 1;
         this->suppressTouchEnd = 1;
         return 0;
     }

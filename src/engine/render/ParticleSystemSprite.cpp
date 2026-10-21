@@ -137,24 +137,6 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
                                           step.x, step.y, step.z);
 }
 
-void ParticleSystemSprite::setAlpha(int index, uint32_t color, float alpha) {
-    float a = (float) (color & 0xff) * 0.003921569f;
-    float b = (float) ((color >> 8) & 0xff) * 0.003921569f;
-    float g = (float) ((color >> 16) & 0xff) * 0.003921569f;
-    float r = (float) (color >> 24) * 0.003921569f;
-
-    if (this->alphaFade == 0) {
-        a *= alpha;
-    } else {
-        b *= alpha;
-        g *= alpha;
-        r *= alpha;
-    }
-
-    this->canvas->SpriteSystemSetRGBA(this->resource,
-                                      (uint16_t)(this->idOffset + index), r, g, b, a);
-}
-
 void ParticleSystemSprite::enable(bool enabled) {
     (void) enabled;
 }

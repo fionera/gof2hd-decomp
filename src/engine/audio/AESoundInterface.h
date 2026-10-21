@@ -7,7 +7,7 @@
 namespace AbyssEngine {
     class AESoundInterface {
     public:
-        virtual char *loadSound(const char *name) = 0;
+        virtual void loadSound(const char *name) = 0;
 
         virtual void unloadSound() = 0;
 

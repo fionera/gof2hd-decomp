@@ -50,12 +50,6 @@ namespace AbyssEngine {
 
         AEMath::Matrix GetMaxValue();
     };
-
-    Quaternion operator+(const Quaternion &lhs, const Quaternion &rhs);
-
-    Quaternion operator-(const Quaternion &lhs, const Quaternion &rhs);
-
-    Quaternion operator*(const Quaternion &lhs, float rhs);
 }
 
 #endif

@@ -5,12 +5,6 @@
 #include "game/weapons/AbstractGun.h"
 #include "engine/core/Array.h"
 
-typedef void (*GetPosFn)(float *out);
-
-static inline void getPos(KIPlayer *kip, float *out) {
-    (*(*(GetPosFn **) kip + 0xa))(out);
-}
-
 bool Route::waypointDefined() {
     return this->waypoints != nullptr;
 }
@@ -64,18 +58,14 @@ int Route::getDockingTime(int index) {
 }
 
 Waypoint *Route::getWaypoint(int index) {
-    char pos[12];
     Waypoint *wp = nullptr;
     if ((int) this->waypoints->size() > index &&
         (wp = (*this->waypoints)[index]) != nullptr) {
         KIPlayer *k = (*this->dockingTargets)[index];
         if (k != nullptr) {
-            getPos(k, (float *) pos);
-            wp->x = (int) *(float *) (pos + 0);
-            getPos((*this->dockingTargets)[index], (float *) pos);
-            wp->y = (int) *(float *) (pos + 4);
-            getPos((*this->dockingTargets)[index], (float *) pos);
-            wp->z = (int) *(float *) (pos + 8);
+            wp->x = (int) k->getPosition().x;
+            wp->y = (int) (*this->dockingTargets)[index]->getPosition().y;
+            wp->z = (int) (*this->dockingTargets)[index]->getPosition().z;
         }
     }
     return wp;
@@ -128,37 +118,35 @@ Route *Route::clone() {
     Array<Waypoint *> *wps = this->waypoints;
     int n = (int) wps->size();
     int *coords = new int[n * 3];
-    int *p = coords;
+    int j = 0;
     for (int i = 0; i != n; i++) {
-        Waypoint *wp = (*wps)[i];
-        p[0] = wp->x;
-        p[1] = wp->y;
-        p[2] = wp->z;
-        p += 3;
+        coords[j++] = (*wps)[i]->x;
+        coords[j++] = (*wps)[i]->y;
+        coords[j++] = (*wps)[i]->z;
     }
+    bool any = false;
     Array<KIPlayer *> *tgt = this->dockingTargets;
     if (tgt != nullptr) {
-        bool any = false;
         for (uint32_t k = 0; k < tgt->size(); k++)
             if ((*tgt)[k] != nullptr)
                 any = true;
-        if (any) {
-            Array<int> *times = this->dockingTimes;
-            int *timesCopy = new int[times->size()];
-            for (uint32_t k = 0; k < times->size(); k++)
-                timesCopy[k] = (*times)[k];
-            Array<KIPlayer *> *targetsArr = new Array<KIPlayer *>();
-            ArraySetLength(this->dockingTargets->size(), *targetsArr);
-            for (uint32_t k = 0; k < this->dockingTargets->size(); k++)
-                (*targetsArr)[k] = (*this->dockingTargets)[k];
-            Route *r = new Route(coords, targetsArr, timesCopy, (int) this->waypoints->size() * 3);
-            r->loop = this->loop;
-            delete[] timesCopy;
-            return r;
-        }
     }
-    Route *r = new Route(coords, (int) wps->size() * 3);
+    if (!any) {
+        Route *r = new Route(coords, (int) wps->size() * 3);
+        r->loop = this->loop;
+        return r;
+    }
+    Array<int> *times = this->dockingTimes;
+    int *timesCopy = new int[times->size()];
+    for (uint32_t k = 0; k < times->size(); k++)
+        timesCopy[k] = (*times)[k];
+    Array<KIPlayer *> *targetsArr = new Array<KIPlayer *>();
+    ArraySetLength(this->dockingTargets->size(), *targetsArr);
+    for (uint32_t k = 0; k < this->dockingTargets->size(); k++)
+        (*targetsArr)[k] = (*this->dockingTargets)[k];
+    Route *r = new Route(coords, targetsArr, timesCopy, (int) this->waypoints->size() * 3);
     r->loop = this->loop;
+    delete[] timesCopy;
     return r;
 }
 

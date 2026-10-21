@@ -166,6 +166,8 @@ namespace AbyssEngine {
 
     String operator+(const String &a, const String &b);
 
+    String operator+(const String &a);
+
     String operator+(const int &a, const String &b);
 
     String operator+(const String &a, const int &b);

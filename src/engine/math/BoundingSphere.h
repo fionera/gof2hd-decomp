@@ -8,10 +8,12 @@
 
 class BoundingSphere : public BoundingVolume {
 public:
-    AbyssEngine::AEMath::Vector field_0x20;
-    AbyssEngine::AEMath::Vector field_0x2c;
+    // Unreferenced scratch storage; the original ctor leaves it uninitialised (no Vector ctor runs),
+    // so it is raw float storage, not Vector members.
+    float field_0x20[3];
+    float field_0x2c[3];
     float radius;
-    AbyssEngine::AEMath::Vector field_0x3c;
+    float field_0x3c[3];
 
     BoundingSphere(float x, float y, float z, float ex, float ey, float ez, float radius);
 

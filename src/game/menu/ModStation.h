@@ -175,9 +175,12 @@ public:
 
     void OnKeyPress(long long unused, long long key) override;
 
-    void OnKeyRelease(long long unused, long long key) override;
+    void OnKeyRelease(long long, long long) override {
+    }
 
-    int ShowLoadingScreen() override;
+    int ShowLoadingScreen() override {
+        return 1;
+    }
 
     void OnRelease() override;
 
@@ -195,11 +198,11 @@ public:
 
     void OnTouchMove(int x, int y, void *touch) override; // lint: void_ptr
 
-    void OnTouchBegin(int x, int y) override;
+    void OnTouchBegin(int x, int y) override {}
 
-    void OnTouchEnd(int x, int y) override;
+    void OnTouchEnd(int x, int y) override {}
 
-    void OnTouchMove(int x, int y) override;
+    void OnTouchMove(int x, int y) override {}
 
     void OnUpdate() override;
 
