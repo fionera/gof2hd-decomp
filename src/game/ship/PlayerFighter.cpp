@@ -782,7 +782,9 @@ void PlayerFighter::update(int dt) {
                                     }
                                     this->auxVector = this->KIPlayer::route->getDockingTarget()->getPosition() +
                                                           MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), nav->position);
-                                    if ((int) VectorLength(this->auxVector - this->getPosition()) < 2000) {
+                                    if ((int) VectorLength(this->auxVector - this->getPosition()) >= 2000) {
+                                        this->targetPos = this->auxVector;
+                                    } else {
                                         // close enough: ease into the docking point
                                         this->state = 8;
                                         delete this->easeMatrix;
@@ -800,8 +802,6 @@ void PlayerFighter::update(int dt) {
                                         Matrix dockMatrix;
                                         MatrixSetRotation(dockMatrix, right, up, dockDir);
                                         this->easeMatrix = new AbyssEngine::EaseInOutMatrix(this->player->transform, dockMatrix, 3000);
-                                    } else {
-                                        this->targetPos = this->auxVector;
                                     }
                                 }
                             }
@@ -813,7 +813,9 @@ void PlayerFighter::update(int dt) {
                     this->targetPlayer = this->player->getEnemy(0);
                     if (this->targetPlayer) {
                         this->tempVector = this->targetPlayer->getPosition();
-                        this->targetPos = this->tempVector;
+                        this->targetPos.x = this->tempVector.x;
+                        this->targetPos.y = this->tempVector.y;
+                        this->targetPos.z = this->tempVector.z;
                     }
                 }
             } else {
