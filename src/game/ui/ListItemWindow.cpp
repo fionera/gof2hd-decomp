@@ -264,185 +264,104 @@ static String **g_liw_d_arrowR = nullptr;
 
 
 void ListItemWindow::draw() {
-    Layout *layout = Globals::layout;
-    uint32_t canvasHandle = (uint32_t)(unsigned long) Globals::Canvas;
-    PaintCanvas *canvas = (PaintCanvas *) (long) canvasHandle;
-    bool masked = Globals::iPad != 0;
+    if (Globals::iPad)
+        Globals::layout->drawMask();
+    Globals::Canvas->SetColor(0xff);
+    Globals::Canvas->FillRectangle(this->x, this->y, this->width, this->height);
+    Globals::layout->drawBox(2, this->x, this->y, this->width, this->height, String(""));
+    if (Globals::iPad)
+        Globals::layout->drawBox(7, this->x, this->y, this->width, this->height, String(""));
+    Globals::layout->drawHeader(String(*Globals::gameText->getText(390), false));
+    bool isShip = this->item->isShip();
+    Globals::Canvas->SetColor(0xffffffff);
 
-    if (masked)
-        layout->drawMask();
-
-    canvas->SetColor(canvasHandle);
-    canvas->FillRectangle((int) canvasHandle, this->x, this->y, this->width);
-
-    {
-        String s("", false);
-        layout->drawBox(2, this->x, this->y, this->width, this->height, s, 0);
-    }
-    if (masked) {
-        String s("", false);
-        layout->drawBox(7, this->x, this->y, this->width, this->height, s, 0);
-    }
-
-    {
-        String s;
-        s.Set(((Globals::gameText)->getText(0x186))->data);
-        layout->drawHeader(s);
-    }
-
-    ListItem *li = this->item;
-    int isShip = li->isShip();
-    canvas->SetColor(canvasHandle);
-
-    int isItemish = li->isItem();
-    if (isItemish == 0 && li->isBluePrint() == 0 && li->isPendingProduct() == 0) {
-        if (isShip != 0) {
-            int boxX = this->x, boxY = this->y, w = this->width;
-            int c0c = layout->field_0xc_leftMargin, c20 = layout->field_0x20_top, c28 = layout->buttonInsetX, c2c = layout->field_0x2c_rowHeight;
-            int color = layout->field_0x5c;
-            int textId = 0x186;
-            li->ship->getIndex();
-            String s;
-            s.Set(((Globals::gameText)->getText(textId))->data);
-            {
-                unsigned savedColor = layout->drawColor;
-                layout->drawColor = static_cast<unsigned>(color);
-                layout->drawBox(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), 2, s, 0u);
-                layout->drawColor = savedColor;
-            }
-
-            ImageFactory *fac = Globals::imageFactory;
-            int shipIdx = li->ship->getIndex();
-            fac->drawShip(shipIdx, this->x + layout->buttonInsetX + layout->field_0x2c_rowHeight,
-                          ((this->y + layout->field_0xc_leftMargin + layout->field_0x20_top + layout->field_0x5c / 2) - layout->
-                           field_0x2c8 /
-                           2) + layout->field_0x124);
-        }
-    } else {
-        int boxX = this->x, boxY = this->y, w = this->width;
-        int c0c = layout->field_0xc_leftMargin, c20 = layout->field_0x20_top, c28 = layout->buttonInsetX, c2c = layout->field_0x2c_rowHeight;
-        int color = layout->field_0x5c;
-        int textId = 0x186;
-        li->getIndex();
-        String s;
-        s.Set(((Globals::gameText)->getText(textId))->data);
-        {
-            unsigned savedColor = layout->drawColor;
-            layout->drawColor = static_cast<unsigned>(color);
-            layout->drawBox(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), 2, s, 0u);
-            layout->drawColor = savedColor;
-        }
-
-        Item *itemPtr;
-        if (li->isItem() == 0) {
-            int idx;
-            ItemDatabase *db = (ItemDatabase *) Globals::items;
-            if (li->isBluePrint() == 0)
-                idx = li->pendingProduct->blueprintIndex;
-            else
-                idx = li->bluePrint->getIndex();
-            itemPtr = db->itemTable[idx];
-        } else {
-            itemPtr = li->item;
-        }
-
-        ImageFactory *fac = Globals::imageFactory;
-        int idx = itemPtr->getIndex();
-        int type = itemPtr->getType();
-        fac->drawItem(idx, type,
-                      layout->buttonInsetX + this->x + layout->field_0x2c_rowHeight,
-                      layout->field_0x124 + ((this->y + layout->field_0xc_leftMargin + layout->field_0x20_top + layout->field_0x5c / 2)
-                                             -
-                                             layout->field_0x2c8 / 2));
+    // Title box with the item / ship image.
+    if (this->item->isItem() || this->item->isBluePrint() || this->item->isPendingProduct()) {
+        Globals::layout->drawBox(1, this->x + Globals::layout->buttonInsetX, this->y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+                     (this->width >> 1) - (Globals::layout->field_0x2c_rowHeight + Globals::layout->buttonInsetX), Globals::layout->field_0x5c,
+                     String(*Globals::gameText->getText(this->item->getIndex() + 1274), false), 2);
+        Item *shown;
+        if (this->item->isItem())
+            shown = this->item->item;
+        else if (this->item->isBluePrint())
+            shown = (*Globals::items)[this->item->bluePrint->getIndex()];
+        else
+            shown = (*Globals::items)[this->item->pendingProduct->blueprintIndex];
+        Globals::imageFactory->drawItem(shown->getIndex(), shown->getType(),
+                                        this->x + Globals::layout->buttonInsetX + Globals::layout->field_0x2c_rowHeight,
+                                        this->y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                            Globals::layout->field_0x5c / 2 - Globals::layout->field_0x2c8 / 2 + Globals::layout->field_0x124);
+    } else if (isShip) {
+        Globals::layout->drawBox(1, this->x + Globals::layout->buttonInsetX, this->y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+                     (this->width >> 1) - (Globals::layout->field_0x2c_rowHeight + Globals::layout->buttonInsetX), Globals::layout->field_0x5c,
+                     String(*Globals::gameText->getText(this->item->ship->getIndex() + 913), false), 2);
+        Globals::imageFactory->drawShip(this->item->ship->getIndex(),
+                                        this->x + Globals::layout->buttonInsetX + Globals::layout->field_0x2c_rowHeight,
+                                        this->y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                            Globals::layout->field_0x5c / 2 - Globals::layout->field_0x2c8 / 2 + Globals::layout->field_0x124);
     }
 
-    Array<String *> *rows = this->labels;
-    if (rows != 0) {
-        uint32_t n = rows->size();
-        int rowH = layout->field_0x2c_rowHeight;
-        int yTop = layout->field_0x5c + layout->field_0xc_leftMargin + this->y + layout->field_0x20_top + rowH;
-        if ((uint32_t)(Globals::h - layout->field_0x10_rightMargin) < (uint32_t)((layout->field_0x1c + rowH) * n + yTop))
-            rowH = 2;
-        int ycur = yTop;
-        for (uint32_t i = 0; i < n; i++) {
-            canvas->SetColor(canvasHandle);
-            int color = layout->field_0x1c;
-            String s;
-            s.Set(((*rows)[i])->data);
-            layout->drawBox(6, layout->buttonInsetX + this->x, ycur,
-                            (this->width >> 1) - (layout->field_0x2c_rowHeight + layout->buttonInsetX), color, s, 0);
-            canvas->SetColor(canvasHandle);
-
-            int textX, textY;
-            String *valStr;
-            bool centered;
-            bool drewArrow = false;
-            if (isShip != 0) {
-                uint32_t cur = this->statsCur->size();
-                if (i < cur) {
-                    if (i < cur - 1) {
-                        int a = (*this->statsCur)[i];
-                        int b = (*this->statsPrev)[i];
-                        int trendImage = this->arrowEqualImage;
-                        if (a < b) trendImage = this->arrowDownImage;
-                        if (b < a) trendImage = this->arrowUpImage;
-                        canvas->DrawImage2D(trendImage,
-                                            ((this->x + (this->width >> 1)) - layout->field_0x2c_rowHeight) - this->
-                                            arrowSeparator, 0);
-                    }
-                    int sep = this->arrowSeparator;
-                    valStr = (*this->values)[i];
-                    String *arrowStr = *g_liw_d_arrowR;
-                    int tw = canvas->GetTextWidth(canvasHandle, *arrowStr);
-                    centered = (char) ((char) ycur + (char) (layout->field_0x1c / 2) - (char) this->textHalfHeight);
-                    textX = (((this->x + (this->width >> 1) + 10) - layout->field_0x2c_rowHeight) - sep) - tw;
-                    textY = layout->field_0x1c;
-                    drewArrow = true;
+    // Attribute rows.
+    if (this->labels != 0) {
+        int rowY = this->y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + Globals::layout->field_0x5c +
+                   Globals::layout->field_0x2c_rowHeight;
+        int rowGap = Globals::layout->field_0x2c_rowHeight;
+        if ((unsigned int) ((Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight) * this->labels->size() + rowY) >
+            (unsigned int) (Globals::h - Globals::layout->field_0x10_rightMargin))
+            rowGap = 2;
+        for (unsigned int i = 0; i < this->labels->size(); i++) {
+            Globals::Canvas->SetColor(0x255d8dff);
+            Globals::layout->drawBox(6, this->x + Globals::layout->buttonInsetX, rowY,
+                         (this->width >> 1) - (Globals::layout->field_0x2c_rowHeight + Globals::layout->buttonInsetX), Globals::layout->field_0x1c,
+                         String(*(*this->labels)[i], false));
+            Globals::Canvas->SetColor(0xffffffff);
+            if (isShip && i < this->statsCur->size()) {
+                if (i < this->statsCur->size() - 1) {
+                    int cur = (*this->statsCur)[i];
+                    int prev = (*this->statsPrev)[i];
+                    Globals::Canvas->DrawImage2D(cur > prev ? this->arrowUpImage
+                                                            : (cur < prev ? this->arrowDownImage : this->arrowEqualImage),
+                                                 this->x + (this->width >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                                     this->field_0x60,
+                                                 rowY);
                 }
+                Globals::Canvas->DrawString(
+                    (unsigned int) (uintptr_t) Globals::font, *(*this->values)[i],
+                    this->x + (this->width >> 1) + 10 - Globals::layout->field_0x2c_rowHeight - this->field_0x60 -
+                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, *(*this->values)[i]),
+                    rowY + Globals::layout->field_0x1c / 2 - this->textHalfHeight, false);
+            } else {
+                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*this->values)[i],
+                                            this->x + (this->width >> 1) - Globals::layout->field_0x2c_rowHeight * 2 -
+                                                Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, *(*this->values)[i]),
+                                            rowY + Globals::layout->field_0x1c / 2 - this->textHalfHeight, false);
             }
-            if (!drewArrow) {
-                valStr = (*this->values)[i];
-                String *arrowStr = *g_liw_d_arrowL;
-                int tw = canvas->GetTextWidth(canvasHandle, *arrowStr);
-                centered = (char) ((char) ycur + (char) (layout->field_0x1c / 2) - (char) this->textHalfHeight);
-                textX = (this->x + (this->width >> 1) + layout->field_0x2c_rowHeight * -2) - tw;
-                textY = layout->field_0x1c;
-            }
-            canvas->DrawString(canvasHandle, *valStr, textX, textY, centered);
-            ycur = ycur + rowH + layout->field_0x1c;
+            rowY = rowY + rowGap + Globals::layout->field_0x1c;
         }
     }
 
-    if (this->previewHeight < 1) {
-        String s;
-        s.Set(((Globals::gameText)->getText(0x186))->data);
-        layout->drawBox(1, this->x + (this->width >> 1) + layout->field_0x2c_rowHeight,
-                        this->y + layout->field_0xc_leftMargin + layout->field_0x20_top,
-                        ((this->width >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX, layout->field_0x5c, s, 0);
+    // 3D preview / description area.
+    if (this->previewHeight >= 1) {
+        Globals::Canvas->SetColor(0x255d8dff);
+        Globals::layout->drawBox(8, this->x + (this->width >> 1) + Globals::layout->field_0x2c_rowHeight,
+                     this->y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+                     (this->width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX, this->previewHeight, String(""));
+        Globals::layout->drawBox(0, this->x + (this->width >> 1) + Globals::layout->field_0x2c_rowHeight,
+                     this->y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                         (this->previewHeight > 0 ? this->previewHeight + Globals::layout->field_0x2c_rowHeight : 0),
+                     (this->width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX, Globals::layout->field_0x1c,
+                     String(*Globals::gameText->getText(280), false));
+        Globals::Canvas->SetColor(0xffffffff);
+        Globals::Canvas->DrawImage2D(this->scrollThumbImage, this->scrollBarX - this->scrollBarOffsetX,
+                                     this->scrollBarY - this->scrollBarTrackLength / 3);
+        Globals::Canvas->DrawImage2D(this->scrollThumbImage, this->scrollBarX,
+                                     this->scrollBarY - this->scrollBarTrackLength / 3, 1);
     } else {
-        canvas->SetColor(canvasHandle);
-        {
-            String s("", false);
-            layout->drawBox(8, this->x + (this->width >> 1) + layout->field_0x2c_rowHeight,
-                            this->y + layout->field_0xc_leftMargin + layout->field_0x20_top,
-                            ((this->width >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX, this->previewHeight, s,
-                            0);
-        }
-        int prog = this->previewHeight;
-        int yBox = this->y + layout->field_0xc_leftMargin + layout->field_0x20_top;
-        if (prog > 0) yBox = yBox + prog + layout->field_0x2c_rowHeight;
-        {
-            String s;
-            s.Set(((Globals::gameText)->getText(0x186))->data);
-            layout->drawBox(0, this->x + (this->width >> 1) + layout->field_0x2c_rowHeight, yBox,
-                            ((this->width >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX, layout->field_0x1c, s, 0);
-        }
-        canvas->SetColor(canvasHandle);
-        canvas->DrawImage2D(this->scrollThumbImage, this->scrollBarX - this->scrollBarOffsetX, 0);
-        int half = this->scrollBarTrackLength / 3;
-        canvas->DrawImage2D(this->scrollThumbImage, this->scrollBarX, this->scrollBarY - half, (unsigned char) 1);
+        Globals::layout->drawBox(1, this->x + (this->width >> 1) + Globals::layout->field_0x2c_rowHeight,
+                     this->y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+                     (this->width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX, Globals::layout->field_0x5c,
+                     String(*Globals::gameText->getText(280), false));
     }
-
     this->scrollWindow->drawTextBG();
     this->scrollWindow->draw();
 }

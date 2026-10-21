@@ -748,10 +748,8 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
     int *imageParts = 0;
     if (imageCount >= 1) {
         imageParts = new int[imageCount];
-        int *part = imageParts;
         for (int i = 0; i < imageCount; i++) {
-            AEFile::Read(*part, fd);
-            part++;
+            AEFile::Read(imageParts[i], fd);
         }
     }
 
@@ -1193,7 +1191,7 @@ int RecordHandler::recordStoreWrite(int slot) {
     }
 
     Array<PendingProduct *> *pending =
-        reinterpret_cast<Array<PendingProduct *> *>(Globals::status->getPendingProducts());
+        Globals::status->getPendingProducts();
     if (pending != 0) {
         int count = 0;
         for (unsigned i = 0; i < pending->size(); i++) {

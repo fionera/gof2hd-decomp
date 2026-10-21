@@ -134,7 +134,7 @@ bool Status::inPirateLootOrbit() {
 
 void Status::setPlayingTime(int64_t v) { playingTime = v; }
 
-int Status::getPendingProducts() { return (int) (intptr_t) pendingProducts; }
+Array<PendingProduct *> *Status::getPendingProducts() { return pendingProducts; }
 
 Array<bool> *Status::getSystemVisibilities() { return systemVisibilities; }
 
@@ -1027,26 +1027,23 @@ int Status::addStationToStack(Station *s) {
         return 0;
     }
     if ((*stationStack)[0] == 0) {
-        int j;
-        int i = 0;
-        do {
-            j = i;
-            if (j + 2 < 0) {
-                return 0;
+        for (int i = 2; i >= 0; i--) {
+            if ((*stationStack)[i] == 0) {
+                (*stationStack)[i] = s;
+                setStation(s);
+                return 1;
             }
-            i = j - 1;
-        } while ((*stationStack)[j + 2] != 0);
-        (*stationStack)[j + 2] = s;
-    } else {
-        if ((*stationStack)[2] != 0) {
-            delete (*stationStack)[2];
         }
-        (*stationStack)[2] = 0;
-        for (int i = 2; i != 0; i = i - 1) {
-            (*stationStack)[i] = (*stationStack)[i - 1];
-        }
-        (*stationStack)[0] = s;
+        return 0;
     }
+    if ((*stationStack)[2] != 0) {
+        delete (*stationStack)[2];
+    }
+    (*stationStack)[2] = 0;
+    for (int i = 2; i != 0; i = i - 1) {
+        (*stationStack)[i] = (*stationStack)[i - 1];
+    }
+    (*stationStack)[0] = s;
     setStation(s);
     return 1;
 }
