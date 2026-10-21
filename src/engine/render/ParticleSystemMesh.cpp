@@ -10,10 +10,10 @@ int ParticleSystemMesh::getPrevId(int id) {
     return id - 1;
 }
 
-void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t color, float u0, float u1,
-                                     float v0, float v1, bool useMaskedColor, float upScale, float dirScale,
+void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t color, float u0, float v0,
+                                     float u1, float v1, bool useMaskedColor, float upScale, float dirScale,
                                      const Vector &delta) {
-    return setParticle(pos, scale, color, u0, u1, v0, v1, useMaskedColor, upScale, dirScale, delta, false);
+    return setParticle(pos, scale, color, u0, v0, u1, v1, useMaskedColor, upScale, dirScale, delta, false);
 }
 
 void ParticleSystemMesh::emit(int id) {
@@ -148,72 +148,55 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     this->field_0x7c = 0;
 }
 
-void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t color, float u0, float u1, float v0,
+void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t color, float u0, float v0, float u1,
                                      float v1, bool useMaskedColor, float upScale, float dirScale,
                                      const Vector &delta, bool finish) {
-    Vector right;
-    Vector rightScaled;
-    Vector up;
-    Vector upScaled;
-    Vector dir;
-    Vector dirScaled;
-    Vector tmpA;
-    Vector tmpB;
+    Vector right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix) * scale;
+    if (this->mirror != 0)
+        right = -right;
+    Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix) * (upScale != 0.0f ? upScale : scale);
+    Vector dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix) * (dirScale != 0.0f ? dirScale : scale);
 
-    right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix);
-    rightScaled = right * scale;
-    if (this->mirror != 0) {
-        rightScaled = rightScaled * -1.0f;
-    }
-
-    up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
-    upScaled = up * (upScale == 0.0f ? (float) useMaskedColor : upScale);
-    dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix);
-    dirScaled = dir * (dirScale == 0.0f ? scale : dirScale);
-
-    uint32_t flags = this->flags;
-    if ((flags & 0x20000) != 0) {
-        dirScaled = (upScaled - rightScaled) * 0.70710677f;
-        rightScaled = (rightScaled + upScaled) * 0.70710677f;
-        flags = this->flags;
+    if ((this->flags & 0x20000) != 0) {
+        Vector diagUp = (up - right) * 0.70710677f;
+        Vector diagRight = (right + up) * 0.70710677f;
+        right = diagRight;
+        up = diagUp;
     }
 
     int point = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
-    if ((int) (flags << 19) < 0) {
-        setQuadEdge((pos - upScaled) - delta, point, rightScaled);
-        setQuadEdge((pos + upScaled) + delta, point + 2, rightScaled);
-        point += this->wide == 0 ? 4 : 8;
-        flags = this->flags;
+    if ((this->flags & 0x1000) != 0) {
+        setQuadEdge((pos - dir) - delta, point, right);
+        setQuadEdge((pos + dir) + delta, point + 2, right);
+        point += this->wide != 0 ? 8 : 4;
     }
-    if ((int) (flags << 18) < 0) {
-        setQuadEdge((pos - upScaled) + delta, point, dirScaled);
-        setQuadEdge((pos + upScaled) - delta, point + 2, dirScaled);
-        point += this->wide == 0 ? 4 : 8;
-        flags = this->flags;
+    if ((this->flags & 0x2000) != 0) {
+        setQuadEdge((pos - dir) + delta, point, up);
+        setQuadEdge((pos + dir) - delta, point + 2, up);
+        point += this->wide != 0 ? 8 : 4;
     }
-    if ((int) (flags << 17) < 0) {
-        setQuadEdge(pos + rightScaled, point, upScaled);
-        setQuadEdge(pos - rightScaled, point + 2, upScaled);
+    if ((this->flags & 0x4000) != 0) {
+        setQuadEdge(pos + up, point, right);
+        setQuadEdge(pos - up, point + 2, right);
     }
 
     uint32_t frontColor = color;
-    uint32_t backColor = color;
-    uint32_t mask = this->alphaFade == 0 ? 0xffffff00u : 0xffu;
     if (useMaskedColor && !finish)
-        frontColor &= mask;
+        frontColor = color & (this->alphaFade == 0 ? 0xffffff00u : 0xffu);
+    uint32_t backColor = color;
     if (finish)
-        backColor &= mask;
+        backColor = color & (this->alphaFade == 0 ? 0xffffff00u : 0xffu);
 
     int base = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
     for (int i = 0; i < (int) this->stride; i++) {
         this->canvas->MeshSetColor(this->resource, (uint16_t) base, backColor);
-        this->canvas->MeshSetColor(this->resource, (uint16_t)(base + 1), backColor);
-        this->canvas->MeshSetColor(this->resource, (uint16_t)(base + 2), frontColor);
-        this->canvas->MeshSetColor(this->resource, (uint16_t)(base + 3), frontColor);
+        this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 1), backColor);
+        this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 2), frontColor);
+        this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 3), frontColor);
         this->canvas->MeshSetUv(this->resource, (uint16_t) base, u0, v0);
-        this->canvas->MeshSetUv(this->resource, (uint16_t)(base + 1), u1, v0);
-        this->canvas->MeshSetUv(this->resource, (uint16_t)(base + 2), u0, v1);
-        this->canvas->MeshSetUv(this->resource, (uint16_t)(base + 3), u1, v1);
+        this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 1), u1, v0);
+        this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 2), u0, v1);
+        this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 3), u1, v1);
         base += 4;
     }
 }

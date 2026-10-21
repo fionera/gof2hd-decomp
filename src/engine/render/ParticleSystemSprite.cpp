@@ -232,7 +232,7 @@ void ParticleSystemSprite::updateAreaExitParticle(int index, float dt) {
 }
 
 void ParticleSystemSprite::setParticle(const Vector &pos, float scale, uint32_t color, float u0,
-                                       float u1, float v0, float v1, bool maskedColor, float size0,
+                                       float v0, float u1, float v1, bool maskedColor, float size0,
                                        float size1, const Vector &velocity) {
     (void) size0;
     (void) size1;
@@ -243,7 +243,7 @@ void ParticleSystemSprite::setParticle(const Vector &pos, float scale, uint32_t 
     this->canvas->SpriteSystemSetSize(this->resource, (uint16_t) (this->idOffset + this->currentParticle),
                                       (short) scale);
     this->canvas->SpriteSystemSetUv(this->resource, (uint16_t) (this->idOffset + this->currentParticle),
-                                    u0, u1, v0, v1);
+                                    u0, v0, u1, v1);
     if (maskedColor)
         color &= 0xffffff00;
     this->canvas->SpriteSystemSetRGBA(this->resource, (uint16_t) (this->idOffset + this->currentParticle),
