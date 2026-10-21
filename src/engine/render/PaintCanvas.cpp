@@ -1658,7 +1658,6 @@ void PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
     }
 }
 
-static const char g_getline_empty_7c428[] = "";
 
 void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWidth,
                           AbyssEngine::String *out) {
@@ -1697,7 +1696,7 @@ void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWid
     }
 
     if ((int) len < 2) {
-        *out = AbyssEngine::String(g_getline_empty_7c428, false);
+        *out = AbyssEngine::String("", false);
     } else {
         *out = str.SubString(0, len);
     }

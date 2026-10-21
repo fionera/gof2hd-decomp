@@ -79,7 +79,6 @@ void ScrollTouchWindow::draw() {
     (*canvasHolder)->SetColor((unsigned int) color);
 }
 
-static const char g_STW_empty_drawTextBG[] = "";
 
 void ScrollTouchWindow::drawTextBG() {
     Layout *layout = Globals::layout;
@@ -98,7 +97,7 @@ void ScrollTouchWindow::drawTextBG() {
         heightInset = pad * 2;
     }
     int h = this->height;
-    layout->drawBox(5, x, pad + y, w - widthInset, h - heightInset, AbyssEngine::String(g_STW_empty_drawTextBG), 0);
+    layout->drawBox(5, x, pad + y, w - widthInset, h - heightInset, AbyssEngine::String(""), 0);
 }
 
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text) {

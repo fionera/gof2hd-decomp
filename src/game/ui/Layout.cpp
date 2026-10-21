@@ -372,13 +372,9 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
         Globals::Canvas->DrawRegion2D(img, 0, 0, remW, remH, 0, 0, 0, x + fullW, y + fullH);
 }
 
-static const char g_fnEmpty[] = "";
 
-static const char g_fnSepA[] = "";
 
-static const char g_fnSepB[] = "";
 
-static const char g_fnOverflow[] = "";
 
 String Layout::formatNumber(int value) {
     String digits(value < 0 ? -value : value);

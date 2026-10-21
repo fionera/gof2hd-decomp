@@ -588,7 +588,6 @@ void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int 
                                // lint: void_ptr (external symbol; param type is mangling-load-bearing)
                                char type, char id);
 
-static const char gCrbDash[] = "";
 
 void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
     if (this->recordRows != 0) {

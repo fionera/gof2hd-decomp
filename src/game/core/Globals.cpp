@@ -513,60 +513,19 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
     }
 }
 
-static const char gLTS2_secTens[] = "";
-static const char gLTS2_secEmpty[] = "";
-static const char gLTS2_minTens[] = "";
-static const char gLTS2_minEmpty[] = "";
-static const char gLTS2_zeroPrefix[] = "";
-static const char gLTS2_hrTens[] = "";
-static const char gLTS2_hrEmpty[] = "";
-static const char gLTS2_sep1[] = "";
-static const char gLTS2_sep2[] = "";
-
 void Globals::longToTimeString(long long ms, String &out) {
-    long long secQ = ms / 1000;
-    int seconds = (int) (secQ % 0x3c);
-
-    long long minQ = ms / 0xea60;
-    int minute = (int) (minQ % 0x3c);
-
-    long long hrQ = ms / 0xea60;
-    int hours = (int) (hrQ % 0x18);
-
-    String secPart, secNum, secStr;
-    secPart.ctor_char(seconds < 10 ? gLTS2_secTens : gLTS2_secEmpty, false);
-    secNum.Set((long long) (seconds));
-    secStr = secPart + secNum;
-
-    String minPart, minNum, minStr;
-    minPart.ctor_char(minute < 10 ? gLTS2_minTens : gLTS2_minEmpty, false);
-    minNum.Set((long long) (minute));
-    minStr = minPart + minNum;
-
+    int seconds = (int) (ms / 1000 % 60);
+    int minutes = (int) (ms / 60000 % 60);
+    int hours = (int) (ms / 3600000 % 24);
+    String secondText = (seconds < 10 ? String("0", false) : String("", false)) + String(seconds);
+    String minuteText = (minutes < 10 ? String("0", false) : String("", false)) + String(minutes);
     if (hours == 0) {
-        String prefix, left;
-        prefix.ctor_char(gLTS2_zeroPrefix, false);
-        left = prefix + minStr;
-        out = left + secStr;
+        out = minuteText + String(":", false) + secondText;
     } else {
-        long long h = ms / 0xea60;
-        int hv = (int) h * 0x18 + hours;
-
-        String hrPart, hrNum, hrStr;
-        hrPart.ctor_char(hv < 10 ? gLTS2_hrTens : gLTS2_hrEmpty, false);
-        hrNum.Set((long long) (hv));
-        hrStr = hrPart + hrNum;
-
-        String s1, a, b, s2, c;
-        s1.ctor_char(gLTS2_sep1, false);
-        a = s1 + hrStr;
-        b = a + minStr;
-        s2.ctor_char(gLTS2_sep2, false);
-        c = b + s2;
-        out = c + secStr;
+        hours += (int) (ms / 86400000) * 24;
+        String hourText = (hours < 10 ? String("0", false) : String("", false)) + String(hours);
+        out = hourText + String(":", false) + minuteText + String(":", false) + secondText;
     }
-
-    return;
 }
 
 
@@ -1160,11 +1119,6 @@ String Globals::getKeyBindingReplaceString(int key) {
     return String(*tmp.ToUpperCase(), false);
 }
 
-static const char gLTS_minTens[] = "";
-static const char gLTS_minEmpty[] = "";
-static const char gLTS_hrTens[] = "";
-static const char gLTS_hrEmpty[] = "";
-static const char gLTS_sep[] = "";
 
 void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
     int minutes = (int) (ms / 60000 % 60);
@@ -2745,9 +2699,6 @@ String Globals::getRandomPlanetName() {
     return name;
 }
 
-static const char gGRN_noFirst[] = "";
-static const char gGRN_noLast[] = "";
-static const char gGRN_space[] = "";
 
 String Globals::getRandomName(int race, bool female) {
     FileRead *reader = new FileRead();
