@@ -2330,7 +2330,7 @@ void Level::createMission() {
     bool alienWave = false;
     bool bigAlienWave = false;
     bool pirateFortress = false;
-    if (localRace == 0 && this->field_168 > 0) {
+    if (this->field_168 > 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
                 bigAlienWave = Globals::status->getCurrentCampaignMission() > 103;
