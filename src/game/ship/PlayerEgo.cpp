@@ -58,7 +58,6 @@ namespace {
     static const float g_PE_mtp_strafeEps = 0.0f;
     static const float g_PE_mtp_strafeReset = 0.0f;
     static const float g_PE_mtp_strafeK = 0.0f;
-    static const float g_PE_rollLevelEps = 0.0f;
     static const float g_PE_strafeLoadK = 0.4f;
     static const float g_PE_strafeLoadB = 0.6f;
     static const float g_PE_strafeAccelK = 0.002f;
@@ -97,7 +96,6 @@ static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;
 
 void PE_mtp_steer(PlayerEgo *self, const float *target, int steer, float speed);
 
-float PE_roll_bankFactor(PlayerEgo *self, float rx, float ry, float *outZ);
 
 void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1989,42 +1987,51 @@ bool PlayerEgo::killLiberator() {
     return true;
 }
 
-void Mat_identity(void *out, const void *src); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-static inline void Mat_setRotation(void *out, float x, float y, float z) { AbyssEngine::AEMath::MatrixSetRotation(*(AbyssEngine::AEMath::Matrix*)out, x, y, z); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
 void PlayerEgo::roll(int amount) {
-    if (this->rolling == 0)
+    if (!this->rolling)
         return;
 
-    AbyssEngine::AEMath::Matrix &m = ((AEGeometry *) (this->geometry))->getMatrix();
+    AbyssEngine::AEMath::Matrix &m = this->geometry->getMatrix();
     float rx = m.m[4];
     float ry = m.m[5];
     float mag = rx > 0.0f ? rx : -rx;
+    if (amount >= 60)
+        amount = 60;
 
-    if (amount > 0x3b)
-        amount = 0x3c;
-
-    unsigned char rollMat[0x30];
-
-    if (ry >= 0.0f && mag < g_PE_rollLevelEps) {
-        Mat_identity(rollMat, &this->rollMatrix);
-        Mat_assign(&this->rollMatrix, rollMat);
-        this->rollDirection = 0;
+    if (ry > 0.0f && mag < 0.015f) {
+        this->rollMatrix = AbyssEngine::AEMath::MatrixIdentity(this->rollMatrix);
         this->rolling = 0;
+        this->rollDirection = 0;
         this->autoLevel = 0;
         return;
     }
 
-    float zAxis = 0.0f;
-    float xScale = PE_roll_bankFactor(this, rx, ry, &zAxis);
+    float step;
+    if (this->autoLevel) {
+        // Level out slowly towards the upright position (left or right half).
+        step = -0.0002f;
+        if (rx < 0.0f && (ry >= 0.0f || ry < 0.0f))
+            step = 0.0002f;
+    } else if (rx > 0.0f && this->rollDirection == 1) {
+        this->autoLevel = 1;
+        step = -0.00035f;
+    } else if (rx < 0.0f && this->rollDirection == 2) {
+        this->autoLevel = 1;
+        step = 0.00035f;
+    } else if (rx < 0.0f && ry < 0.0f) {
+        step = 0.00075f;
+    } else if (rx >= 0.0f && ry < 0.0f) {
+        step = -0.00075f;
+    } else if (rx > 0.0f && ry > 0.0f) {
+        step = rx > 0.3f ? -0.00035f : -0.00025f;
+    } else if (rx < 0.0f && ry >= 0.0f) {
+        step = rx > -0.3f ? 0.00025f : 0.00035f;
+    }
 
-    if (rx != 0.0f)
-        this->rollDirection = (rx < 0.0f) ? 1 : 2;
-
+    if (rx < 0.0f || rx > 0.0f)
+        this->rollDirection = rx < 0.0f ? 1 : 2;
     this->rolling = 1;
-    Mat_setRotation(rollMat, xScale * (float) amount, 0.0f, zAxis);
-    Mat_assign(&this->rollMatrix, rollMat);
+    this->rollMatrix = AbyssEngine::AEMath::MatrixSetRotation(this->rollMatrix, 0.0f, 0.0f, step * (float) amount);
 }
 
 void PlayerEgo::setTargetFollowCamera(TargetFollowCamera *cam) {
@@ -3573,7 +3580,7 @@ void PlayerEgo::handleShip(int dt) {
     this->field_0x280 = (int &) this->yawAccumF;
     local *= rotation;
     if (this->rolling)
-        local *= this->turretHudMatrix;
+        local *= this->rollMatrix;
 
     float distance = this->thrust * frameTime * ((float &) this->speed);
     local.m[3] += local.m[2] * distance;

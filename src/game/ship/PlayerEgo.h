@@ -64,7 +64,7 @@ public:
     uint8_t shieldVisible;
     float shieldRadius;
 
-    AbyssEngine::AEMath::Matrix rollMatrix;  // 0x40..0x7c (ctor calls Matrix::Matrix() on this+0x40)
+    AbyssEngine::AEMath::Matrix field_0x40;  // 0x40..0x7c (ctor calls Matrix::Matrix() on this+0x40)
     float rocketPitch;                       // 0x7c (up/down in rocket control)
     float rocketYaw;                         // 0x80 (left/right in rocket control)
     uint8_t field_0x84;
@@ -199,7 +199,7 @@ public:
     int bankHistoryIndex;   // 0x2a4
     bool bankHistoryFilled; // 0x2a8
     uint8_t rollDirection;
-    AbyssEngine::AEMath::Matrix turretHudMatrix;
+    AbyssEngine::AEMath::Matrix rollMatrix; // 0x2ac (bank applied to the cockpit view)
     float rotateX;
     float rotateY;
     float rotateZ;
@@ -629,8 +629,8 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x309) == 0x309, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x32d) == 0x32d, "");
 static_assert(__builtin_offsetof(PlayerEgo, originalBlendMode) == 0x394, "");
 // Relocated matrices and the field immediately after the last drift field, to pin the tail.
-static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x40, "");
-static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x2ac, "");
+static_assert(__builtin_offsetof(PlayerEgo, field_0x40) == 0x40, "");
+static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x2ac, "");
 static_assert(__builtin_offsetof(PlayerEgo, volatileGoods) == 0x398, "");
 static_assert(sizeof(PlayerEgo) == 0x3a0, "");
 // (sizeof==924 assert dropped: it was host-clang-calibrated and rounds differently under the NDK
