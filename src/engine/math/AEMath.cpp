@@ -300,8 +300,8 @@ namespace AbyssEngine {
             return *this;
         }
 
-        void MatrixMultiply(const Matrix &lhs, const Matrix &rhs) {
-            lhs * rhs;
+        Matrix MatrixMultiply(const Matrix &lhs, const Matrix &rhs) {
+            return lhs * rhs;
         }
 
         Matrix MatrixIdentity(Matrix &matrix) {
