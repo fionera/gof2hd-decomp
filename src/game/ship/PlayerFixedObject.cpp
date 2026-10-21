@@ -316,7 +316,10 @@ void PlayerFixedObject::update(int dt) {
             this->explosion = new Explosion(0);
             this->explosion->addFireStreaks();
             this->explosion->start(this->wreckGeometry->getPosition(), Vector{0.0f, 0.0f, 0.0f});
-        } else {
+            // Keep the explosion branches joined before station medal handling.
+            goto wreckExplosionStarted;
+        }
+        {
             this->level->field_74->systemSetMatrix(
                 this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50,
                 &this->geometry->getMatrix());
@@ -328,6 +331,7 @@ void PlayerFixedObject::update(int dt) {
             this->explosion->start(this->geometry->getPosition(), Vector{0.0f, 0.0f, 0.0f});
         }
 
+    wreckExplosionStarted:
         if (this->kind() == 14) {
             for (unsigned int i = 0; i < this->level->getEnemies()->size(); i++) {
                 if ((*this->level->getEnemies())[i]->field_0x3e)
