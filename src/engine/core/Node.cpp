@@ -7,6 +7,6 @@ Node::Node(int value) {
 }
 
 Node::~Node() {
-    delete this->children;
+    ArrayRelease(*this->children);
 }
 
