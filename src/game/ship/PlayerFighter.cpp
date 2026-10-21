@@ -46,100 +46,6 @@ namespace AbyssEngine {
     }
 }
 
-uint8_t PlayerFighter::hasMissionCrateLost() {
-    return this->missionCrateLost();
-}
-
-uint8_t PlayerFighter::hasMissionCrateCaptured() {
-    return this->missionCrateCaptured();
-}
-
-void PlayerFighter::setShootError(int v) {
-    this->shootError = (float) v;
-}
-
-void PlayerFighter::setAIDisabled(bool v) {
-    this->aiDisabled = v;
-}
-
-void PlayerFighter::setShipGroup(AEGeometry *geom, int group, bool flag) {
-    KIPlayer::setShipGroup(geom, group, flag);
-}
-
-void PlayerFighter::awake() {
-    this->state = 1;
-    ((Player *) (this->player()))->setActive(1);
-    ((PlayerFighter *) (this))->setExhaustVisible(true);
-    int geom = this->subGeometry();
-    this->field_0xf5() = 1;
-    if (geom == 0) {
-        geom = this->geometry();
-    }
-
-    return ((AEGeometry *) (intptr_t) geom)->setVisible(true);
-}
-
-void PlayerFighter::setBV(Array<BoundingVolume *> *v) {
-    this->boundingVolumes = v;
-}
-
-void PlayerFighter::setBoostProb(int v) {
-    this->boostProb = v;
-}
-
-void PlayerFighter::setCloakingPossible(bool v) {
-    PlayerFighter *self = this;
-    self->cloakingPossible = v;
-    if (!v && self->field_0x13c != 0) {
-        self->cloakTimer = self->cloakDuration + 1;
-
-        return self->handleCloaking();
-    }
-}
-
-void PlayerFighter::removeTrail() {
-    delete this->trail;
-    this->trail = 0;
-}
-
-PlayerFighter::~PlayerFighter() {
-    delete this->route;
-    this->route = 0;
-
-    if (this->boundingVolumes != 0) {
-        ArrayReleaseClasses(*this->boundingVolumes);
-        delete this->boundingVolumes;
-    }
-    this->boundingVolumes = 0;
-
-    delete this->trail;
-    this->trail = 0;
-
-    delete this->explosion;
-    this->explosion = 0;
-
-    delete this->easeMatrix;
-    this->easeMatrix = 0;
-}
-
-uint8_t PlayerFighter::hasCrateCaptured() {
-    return this->crateCaptured() == 0;
-}
-
-void PlayerFighter::setPosition(const Vector &v) {
-    this->setPosition(v.x, v.y, v.z);
-}
-
-void PlayerFighter::setRotate(int v) {
-    float f = (float) v;
-    this->field_0x13d = 0;
-    this->rotate = f;
-    this->currentRotate = f;
-}
-
-uint8_t PlayerFighter::hasCrateLost() {
-    return this->crateLost();
-}
 
 
 
@@ -156,35 +62,29 @@ static inline void PF_enableEmit(int base, int handle, int enable) {
     ((ParticleSystemManager *) (intptr_t) base)->enableSystemEmit(handle, enable);
 }
 
-void PlayerFighter::setLevel(Level *lvl) {
-    KIPlayer::setLevel(lvl);
 
-    int handle = this->KIPlayer::level->field_74->addSystem(
-            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 9, false);
-    this->engineTrailSystem = handle;
-    this->KIPlayer::level->field_74->enableSystemEmit(handle, false);
-
-    handle = this->KIPlayer::level->particleEmitBoolPtr->addSystem(
-            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 15, false);
-    this->field_0x80 = handle;
-    this->KIPlayer::level->particleEmitBoolPtr->enableSystemEmit(handle, false);
-
-    handle = this->KIPlayer::level->particleRenderBoolPtr->addSystem(
-            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 42, false);
-    this->field_0x84 = handle;
-    this->KIPlayer::level->particleRenderBoolPtr->enableSystemEmit(handle, false);
-
-    handle = this->KIPlayer::level->field_8c->addSystem(
-            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 17, false);
-    this->field_0x134 = handle;
-    this->KIPlayer::level->field_8c->enableSystemEmit(handle, false);
-
-    handle = this->KIPlayer::level->field_8c->addSystem(
-            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 18, false);
-    this->field_0x138 = handle;
-    this->KIPlayer::level->field_8c->enableSystemEmit(handle, false);
+static inline void AEMath_VectorScale(AbyssEngine::AEMath::Vector *out, float s,
+                                      const AbyssEngine::AEMath::Vector *v) {
+    *out = s * *v;
 }
 
+
+static const float gIP_strength = 5000.0f;
+
+
+static unsigned **const gR_g3 = nullptr;
+static unsigned **const gR_g4 = nullptr;
+static unsigned **const gR_g5 = nullptr;
+
+
+static const float gPush_div = 5000.0f;
+
+
+static const float gHC_divIn = 2000.0f;
+static const float gHC_divOut = -2000.0f;
+
+
+int PlayerFighter::stationRouteAliens;
 
 PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeometry *geom,
                              float x, float y, float z, bool flag)
@@ -398,8 +298,300 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
 
     return;
 }
+PlayerFighter::~PlayerFighter() {
+    delete this->route;
+    this->route = 0;
 
+    if (this->boundingVolumes != 0) {
+        ArrayReleaseClasses(*this->boundingVolumes);
+        delete this->boundingVolumes;
+    }
+    this->boundingVolumes = 0;
 
+    delete this->trail;
+    this->trail = 0;
+
+    delete this->explosion;
+    this->explosion = 0;
+
+    delete this->easeMatrix;
+    this->easeMatrix = 0;
+}
+void PlayerFighter::reset() {
+    KIPlayer::reset();
+    this->crateCaptured() = 1;
+
+    this->workingPosition = Vector{this->posX, this->posY, this->posZ};
+    this->renderPosition() = Vector(this->workingPosition);
+
+    this->deltaTime = 0;
+    this->field_0x38 = 0;
+    this->field_0x12e = 0;
+    this->targetPlayer = nullptr;
+    this->field_0x12c = 0;
+    this->maneuverTimer = 0;
+    this->field_0x1c0 = 0;
+    this->field_0x1c4 = 0;
+    this->field_0x1c8 = 0;
+    if (this->state != 5) {
+        this->state = 0;
+    }
+
+    this->resetVecA() = Vector{0, 0, 0};
+    this->resetVecB = Vector{0, 0, 0};
+    this->resetVecC = Vector{0, 0, 0};
+
+    this->isMissionCrate() = 0;
+    this->missionCrateLost() = 0;
+    this->missionCrateCaptured() = 0;
+    this->crateLost() = 0;
+    this->crateCaptured() = 1;
+    this->field_0x140 = 0;
+    this->field_0x1fc = 0;
+    this->field_0x13c = 0;
+    this->cloakActive = 0;
+    this->cloakTimer = 0;
+    this->cloakDuration = 0;
+    this->cloakCooldown = 0;
+    this->cloakingPossible = 1;
+    this->aiDisabled = 0;
+}
+void PlayerFighter::setLevel(Level *lvl) {
+    KIPlayer::setLevel(lvl);
+
+    int handle = this->KIPlayer::level->field_74->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 9, false);
+    this->engineTrailSystem = handle;
+    this->KIPlayer::level->field_74->enableSystemEmit(handle, false);
+
+    handle = this->KIPlayer::level->particleEmitBoolPtr->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 15, false);
+    this->field_0x80 = handle;
+    this->KIPlayer::level->particleEmitBoolPtr->enableSystemEmit(handle, false);
+
+    handle = this->KIPlayer::level->particleRenderBoolPtr->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 42, false);
+    this->field_0x84 = handle;
+    this->KIPlayer::level->particleRenderBoolPtr->enableSystemEmit(handle, false);
+
+    handle = this->KIPlayer::level->field_8c->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 17, false);
+    this->field_0x134 = handle;
+    this->KIPlayer::level->field_8c->enableSystemEmit(handle, false);
+
+    handle = this->KIPlayer::level->field_8c->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 18, false);
+    this->field_0x138 = handle;
+    this->KIPlayer::level->field_8c->enableSystemEmit(handle, false);
+}
+void PlayerFighter::setMissionCrate(bool on) {
+    this->isMissionCrate() = on;
+    if (on) {
+        this->lootList() = nullptr;
+        this->lootList() = new Array<int>();
+        int mission = (int) (intptr_t) Globals::status->getMission();
+        int type = ((Mission *) (mission))->getType();
+        int item = (type == 5) ? 0x74 : 0x75;
+        ArrayAdd(item, *(this->lootList()));
+
+        ArrayAdd<int>(1, *this->lootList());
+    }
+}
+uint8_t PlayerFighter::hasMissionCrateCaptured() {
+    return this->missionCrateCaptured();
+}
+uint8_t PlayerFighter::hasMissionCrateLost() {
+    return this->missionCrateLost();
+}
+void PlayerFighter::setShipGroup(AEGeometry *geom, int group, bool flag) {
+    KIPlayer::setShipGroup(geom, group, flag);
+}
+uint8_t PlayerFighter::hasCrateCaptured() {
+    return this->crateCaptured() == 0;
+}
+uint8_t PlayerFighter::hasCrateLost() {
+    return this->crateLost();
+}
+void PlayerFighter::setPosition(const Vector &v) {
+    this->setPosition(v.x, v.y, v.z);
+}
+void PlayerFighter::setPosition(float x, float y, float z) {
+    this->posX = x;
+    this->posY = y;
+    this->posZ = z;
+
+    ((AEGeometry *) (intptr_t) this->geometry())->setPosition(x, y, z);
+    this->workingPosition = Vector{x, y, z};
+    if (this->trail != 0) {
+        this->trail->reset(this->workingPosition);
+    }
+    reinterpret_cast<AbyssEngine::AEMath::Matrix &>(
+            ((Player *) (intptr_t) this->player())->transform[0]) =
+            ((AEGeometry *) (intptr_t) this->geometry())->getMatrix();
+
+    return;
+}
+void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
+    int saved = this->field_0xe4;
+    KIPlayer::setWingmanCommand(cmd, target);
+    switch (cmd) {
+        case 2:
+        case 3:
+            this->maneuverTimer = 0x1389;
+            if (this->currentSpeed != 5.5f) {
+                this->field_0x1c0 = 0x1389;
+            }
+            if (cmd == 2) {
+                if (((Level *) (this->level()))->getPlayerRoute() != 0) {
+                    this->commandRoute = ((Level *) (this->level()))->getPlayerRoute()->getExactClone();
+                    this->field_0x1e4 = this->commandRoute->getCurrent();
+                    break;
+                }
+            } else if (target != 0) {
+                break;
+            }
+            this->field_0xe4 = saved;
+            break;
+        case 1:
+            this->field_0x1e0 = 0;
+            this->field_0x13d = 0;
+            break;
+        case 0:
+            this->field_0xe4 = saved;
+            this->field_0x140 = (this->field_0x140 == 0);
+            break;
+    }
+    this->currentSpeed = this->speed;
+    this->currentRotate = this->rotate;
+}
+void PlayerFighter::setSpeed(float v) {
+    this->field_0x13d = 0;
+    this->speed = v;
+    this->currentSpeed = v;
+}
+void PlayerFighter::setRotate(int v) {
+    float f = (float) v;
+    this->field_0x13d = 0;
+    this->rotate = f;
+    this->currentRotate = f;
+}
+void PlayerFighter::setShootError(int v) {
+    this->shootError = (float) v;
+}
+void PlayerFighter::setBoostProb(int v) {
+    this->boostProb = v;
+}
+void PlayerFighter::removeTrail() {
+    delete this->trail;
+    this->trail = 0;
+}
+void PlayerFighter::setExhaustVisible(bool vis) {
+    int geom = this->geometry();
+    if (geom != 0) {
+        int sub = this->subGeometry();
+        if (sub != 0) {
+            int id = (int) ((AEGeometry *) (intptr_t) sub)->childTransform;
+            if (id == -1)
+                return;
+            unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
+
+            return ((AbyssEngine::Transform *) (unsigned long) t)->SetVisible(vis);
+        }
+
+        int id = (int) ((AEGeometry *) (intptr_t) geom)->childTransform;
+        if (id != -1) {
+            unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
+
+            return ((AbyssEngine::Transform *) (unsigned long) t)->SetVisible(vis);
+        }
+    }
+}
+void PlayerFighter::cloak(int dur, bool b) {
+    if (dur <= 0) {
+        dur = Globals::rnd->nextInt(5000) + 5000;
+    }
+    this->cloakDuration = dur + 4000;
+    this->cloakActive = 1;
+    this->field_0x2d9 = b;
+}
+void PlayerFighter::setCloakingPossible(bool v) {
+    PlayerFighter *self = this;
+    self->cloakingPossible = v;
+    if (!v && self->field_0x13c != 0) {
+        self->cloakTimer = self->cloakDuration + 1;
+
+        return self->handleCloaking();
+    }
+}
+void PlayerFighter::handleCloaking() {
+    if (this->wingmanCommand() != 10) return;
+    if (this->geometry() == 0) return;
+    if (KIPlayer::isDead()) return;
+    if (((Player *) (intptr_t) this->player())->empDisabledByte != 0) return;
+    if (this->cloakingPossible == 0) return;
+
+    if (this->cloakActive != 0) {
+        if (this->cloakTimer == 0) {
+            this->field_0x13c = 1;
+            if (this->cloakMaterial == 0xffffffff) {
+                Globals::Canvas->MeshCloneMaterial(((AEGeometry *) (intptr_t) this->subGeometry())->meshId,
+                                                   this->cloakMaterial);
+                this->cloakSavedMode =
+                        ((AbyssEngine::Material *) Globals::Canvas
+                                 ->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId)
+                                 ->material)
+                                ->blendMode;
+            }
+            ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial))->blendMode = 14;
+            Globals::Canvas->MeshChangeMaterial(((AEGeometry *) (intptr_t) this->subGeometry())->meshId,
+                                                (unsigned short) this->cloakMaterial);
+            if (this->field_0x2d9 != 0) {
+                this->cloakTimer = 2000;
+                this->field_0x2d9 = 0;
+            }
+        }
+        this->cloakTimer += this->deltaTime;
+
+        if (this->cloakTimer - this->deltaTime <= 2000) {
+            if (this->cloakTimer >= 2000) {
+                this->setExhaustVisible(false);
+                this->exhaustHidden() = 1;
+            }
+            Globals::Canvas->MeshChangeShaderAnimValue(
+                    Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId),
+                    (float) this->cloakTimer / 2000.0f, 1u);
+        } else if (this->cloakTimer > this->cloakDuration) {
+            int material = this->cloakMaterial;
+            int savedMode = this->cloakSavedMode;
+            this->cloakTimer = 0;
+            this->cloakActive = 0;
+            this->field_0x13c = 0;
+            ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(material))->blendMode = savedMode;
+            this->setExhaustVisible(true);
+        } else if (this->cloakTimer > this->cloakDuration - 2000) {
+            this->exhaustHidden() = 0;
+            Globals::Canvas->MeshChangeShaderAnimValue(
+                    Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId),
+                    ((float) this->cloakTimer - (float) (this->cloakDuration - 2000)) / -2000.0f + 1.0f, 1u);
+        }
+        return;
+    }
+
+    if (this->field_0x1e0 != 0 && Globals::rnd->nextInt(100) < 50) {
+        this->cloak(-1, false);
+    } else {
+        this->cloakCooldown += this->deltaTime;
+        if (this->cloakCooldown > 8000) {
+            this->cloakCooldown = 0;
+            if (Globals::rnd->nextInt(100) < 30) {
+                this->cloak(-1, false);
+            }
+        }
+    }
+}
+void PlayerFighter::setAIDisabled(bool v) {
+    this->aiDisabled = v;
+}
 void PlayerFighter::update(int dt) {
     // Chunk 1: Entry guard — dead state with explosion finished
     if (this->state == 4 && this->explosion->isPlaying() == 0 &&
@@ -1745,25 +1937,6 @@ void PlayerFighter::update(int dt) {
     this->push(dt);
     } // end update_body block
 }
-
-void PlayerFighter::setPosition(float x, float y, float z) {
-    this->posX = x;
-    this->posY = y;
-    this->posZ = z;
-
-    ((AEGeometry *) (intptr_t) this->geometry())->setPosition(x, y, z);
-    this->workingPosition = Vector{x, y, z};
-    if (this->trail != 0) {
-        this->trail->reset(this->workingPosition);
-    }
-    reinterpret_cast<AbyssEngine::AEMath::Matrix &>(
-            ((Player *) (intptr_t) this->player())->transform[0]) =
-            ((AEGeometry *) (intptr_t) this->geometry())->getMatrix();
-
-    return;
-}
-
-
 void PlayerFighter::roll(int angle) {
     if (this->rollActive() == 0) {
         return;
@@ -1808,182 +1981,6 @@ void PlayerFighter::roll(int angle) {
     this->rollActive() = 1;
     this->rollMatrix = AbyssEngine::AEMath::MatrixSetRotation(this->rollMatrix, 0.0f, 0.0f, bank * (float) angle);
 }
-
-void PlayerFighter::cloak(int dur, bool b) {
-    if (dur <= 0) {
-        dur = Globals::rnd->nextInt(5000) + 5000;
-    }
-    this->cloakDuration = dur + 4000;
-    this->cloakActive = 1;
-    this->field_0x2d9 = b;
-}
-
-void PlayerFighter::setMissionCrate(bool on) {
-    this->isMissionCrate() = on;
-    if (on) {
-        this->lootList() = nullptr;
-        this->lootList() = new Array<int>();
-        int mission = (int) (intptr_t) Globals::status->getMission();
-        int type = ((Mission *) (mission))->getType();
-        int item = (type == 5) ? 0x74 : 0x75;
-        ArrayAdd(item, *(this->lootList()));
-
-        ArrayAdd<int>(1, *this->lootList());
-    }
-}
-
-int PlayerFighter::collide(float x, float y, float z) {
-    if ((unsigned) (this->state - 3) > 1) {
-        Array<BoundingVolume *> *a = this->boundingVolumes;
-        if (a != 0) {
-            for (unsigned i = 0; i < a->size(); i++) {
-                BoundingVolume *e = a->data()[i];
-                if (e->collide(x, y, z) != 0) {
-                    return 1;
-                }
-                a = this->boundingVolumes;
-            }
-        }
-    }
-    return 0;
-}
-
-void PlayerFighter::setBV(BoundingVolume *bv) {
-    Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
-    this->boundingVolumes = a;
-
-    ArrayAdd<BoundingVolume *>(bv, *a);
-}
-
-void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
-    int saved = this->field_0xe4;
-    KIPlayer::setWingmanCommand(cmd, target);
-    switch (cmd) {
-        case 2:
-        case 3:
-            this->maneuverTimer = 0x1389;
-            if (this->currentSpeed != 5.5f) {
-                this->field_0x1c0 = 0x1389;
-            }
-            if (cmd == 2) {
-                if (((Level *) (this->level()))->getPlayerRoute() != 0) {
-                    this->commandRoute = ((Level *) (this->level()))->getPlayerRoute()->getExactClone();
-                    this->field_0x1e4 = this->commandRoute->getCurrent();
-                    break;
-                }
-            } else if (target != 0) {
-                break;
-            }
-            this->field_0xe4 = saved;
-            break;
-        case 1:
-            this->field_0x1e0 = 0;
-            this->field_0x13d = 0;
-            break;
-        case 0:
-            this->field_0xe4 = saved;
-            this->field_0x140 = (this->field_0x140 == 0);
-            break;
-    }
-    this->currentSpeed = this->speed;
-    this->currentRotate = this->rotate;
-}
-
-void PlayerFighter::setSpeed(float v) {
-    this->field_0x13d = 0;
-    this->speed = v;
-    this->currentSpeed = v;
-}
-
-int PlayerFighter::outerCollide(float x, float y, float z) {
-    if ((unsigned) (this->state - 3) > 1) {
-        Array<BoundingVolume *> *a = this->boundingVolumes;
-        if (a != 0) {
-            for (unsigned i = 0; i < a->size(); i++) {
-                BoundingVolume *e = a->data()[i];
-                if (e->outerCollide(x, y, z) != 0) {
-                    return 1;
-                }
-                a = this->boundingVolumes;
-            }
-        }
-    }
-    return 0;
-}
-
-static inline void AEMath_VectorScale(AbyssEngine::AEMath::Vector *out, float s,
-                                      const AbyssEngine::AEMath::Vector *v) {
-    *out = s * *v;
-}
-
-
-static const float gIP_strength = 5000.0f;
-
-void PlayerFighter::initPush(const Vector &target, int radius) {
-
-    AbyssEngine::AEMath::Vector gp = this->getPosition();
-    float pos[3] = {gp.x, gp.y, gp.z};
-
-    float diff[3];
-    *reinterpret_cast<Vector *>(diff) = target - *reinterpret_cast<const Vector *>(pos);
-    float len = AbyssEngine::AEMath::VectorLength(*reinterpret_cast<const AbyssEngine::AEMath::Vector *>(diff));
-    float r = VectorSignedToFloat(radius, 0);
-    float t = 1.0f;
-    if (len / r < 1.0f) t = len / r;
-    int strength = (int) ((1.0f - t) * gIP_strength);
-    this->pushTimer() = strength;
-    this->pushDuration() = strength;
-
-    AbyssEngine::AEMath::Vector gp2 = this->getPosition();
-    float pos2[3] = {gp2.x, gp2.y, gp2.z};
-    float dir[3];
-    *reinterpret_cast<Vector *>(dir) =
-            *reinterpret_cast<const Vector *>(pos) - *reinterpret_cast<const Vector *>(pos2);
-    float norm[3];
-    AbyssEngine::AEMath::VectorNormalize((Vector *) norm, (Vector *) dir);
-    this->pushNormal() = *(Vector *) norm;
-
-    float rx = (float) (Globals::rnd->nextInt(200) - 100);
-    float ry = (float) (Globals::rnd->nextInt(200) - 100);
-    float rz = (float) (Globals::rnd->nextInt(200) - 100);
-    float rvec[3] = {rx, ry, rz};
-    float rnorm[3];
-    AbyssEngine::AEMath::VectorNormalize((Vector *) rnorm, (Vector *) rvec);
-    float scaled[3];
-    AEMath_VectorScale((AbyssEngine::AEMath::Vector *) scaled, (float) strength,
-                       (const AbyssEngine::AEMath::Vector *) rnorm);
-    this->pushImpulse() = *(Vector *) scaled;
-
-    return;
-}
-
-
-void PlayerFighter::setExhaustVisible(bool vis) {
-    int geom = this->geometry();
-    if (geom != 0) {
-        int sub = this->subGeometry();
-        if (sub != 0) {
-            int id = (int) ((AEGeometry *) (intptr_t) sub)->childTransform;
-            if (id == -1)
-                return;
-            unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
-
-            return ((AbyssEngine::Transform *) (unsigned long) t)->SetVisible(vis);
-        }
-
-        int id = (int) ((AEGeometry *) (intptr_t) geom)->childTransform;
-        if (id != -1) {
-            unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
-
-            return ((AbyssEngine::Transform *) (unsigned long) t)->SetVisible(vis);
-        }
-    }
-}
-
-static unsigned **const gR_g3 = nullptr;
-static unsigned **const gR_g4 = nullptr;
-static unsigned **const gR_g5 = nullptr;
-
 void PlayerFighter::render() {
     if (this->wreckGeometry() != 0) {
         this->wreckGeometry()->render();
@@ -2026,9 +2023,82 @@ void PlayerFighter::render() {
         }
     }
 }
+void PlayerFighter::setBV(Array<BoundingVolume *> *v) {
+    this->boundingVolumes = v;
+}
+void PlayerFighter::setBV(BoundingVolume *bv) {
+    Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
+    this->boundingVolumes = a;
 
-static const float gPush_div = 5000.0f;
+    ArrayAdd<BoundingVolume *>(bv, *a);
+}
+int PlayerFighter::collide(float x, float y, float z) {
+    if ((unsigned) (this->state - 3) > 1) {
+        Array<BoundingVolume *> *a = this->boundingVolumes;
+        if (a != 0) {
+            for (unsigned i = 0; i < a->size(); i++) {
+                BoundingVolume *e = a->data()[i];
+                if (e->collide(x, y, z) != 0) {
+                    return 1;
+                }
+                a = this->boundingVolumes;
+            }
+        }
+    }
+    return 0;
+}
+int PlayerFighter::outerCollide(float x, float y, float z) {
+    if ((unsigned) (this->state - 3) > 1) {
+        Array<BoundingVolume *> *a = this->boundingVolumes;
+        if (a != 0) {
+            for (unsigned i = 0; i < a->size(); i++) {
+                BoundingVolume *e = a->data()[i];
+                if (e->outerCollide(x, y, z) != 0) {
+                    return 1;
+                }
+                a = this->boundingVolumes;
+            }
+        }
+    }
+    return 0;
+}
+void PlayerFighter::initPush(const Vector &target, int radius) {
 
+    AbyssEngine::AEMath::Vector gp = this->getPosition();
+    float pos[3] = {gp.x, gp.y, gp.z};
+
+    float diff[3];
+    *reinterpret_cast<Vector *>(diff) = target - *reinterpret_cast<const Vector *>(pos);
+    float len = AbyssEngine::AEMath::VectorLength(*reinterpret_cast<const AbyssEngine::AEMath::Vector *>(diff));
+    float r = VectorSignedToFloat(radius, 0);
+    float t = 1.0f;
+    if (len / r < 1.0f) t = len / r;
+    int strength = (int) ((1.0f - t) * gIP_strength);
+    this->pushTimer() = strength;
+    this->pushDuration() = strength;
+
+    AbyssEngine::AEMath::Vector gp2 = this->getPosition();
+    float pos2[3] = {gp2.x, gp2.y, gp2.z};
+    float dir[3];
+    *reinterpret_cast<Vector *>(dir) =
+            *reinterpret_cast<const Vector *>(pos) - *reinterpret_cast<const Vector *>(pos2);
+    float norm[3];
+    AbyssEngine::AEMath::VectorNormalize((Vector *) norm, (Vector *) dir);
+    this->pushNormal() = *(Vector *) norm;
+
+    float rx = (float) (Globals::rnd->nextInt(200) - 100);
+    float ry = (float) (Globals::rnd->nextInt(200) - 100);
+    float rz = (float) (Globals::rnd->nextInt(200) - 100);
+    float rvec[3] = {rx, ry, rz};
+    float rnorm[3];
+    AbyssEngine::AEMath::VectorNormalize((Vector *) rnorm, (Vector *) rvec);
+    float scaled[3];
+    AEMath_VectorScale((AbyssEngine::AEMath::Vector *) scaled, (float) strength,
+                       (const AbyssEngine::AEMath::Vector *) rnorm);
+    this->pushImpulse() = *(Vector *) scaled;
+
+    return;
+}
 void PlayerFighter::push(int dt) {
     if (this->pushTimer() > 0) {
         this->pushTimer() -= dt;
@@ -2048,119 +2118,18 @@ void PlayerFighter::push(int dt) {
                         ((2.0f - frac) * 3.0f * (duration / gPush_div)));
     }
 }
-
-
-
-void PlayerFighter::reset() {
-    KIPlayer::reset();
-    this->crateCaptured() = 1;
-
-    this->workingPosition = Vector{this->posX, this->posY, this->posZ};
-    this->renderPosition() = Vector(this->workingPosition);
-
-    this->deltaTime = 0;
-    this->field_0x38 = 0;
-    this->field_0x12e = 0;
-    this->targetPlayer = nullptr;
-    this->field_0x12c = 0;
-    this->maneuverTimer = 0;
-    this->field_0x1c0 = 0;
-    this->field_0x1c4 = 0;
-    this->field_0x1c8 = 0;
-    if (this->state != 5) {
-        this->state = 0;
+void PlayerFighter::awake() {
+    this->state = 1;
+    ((Player *) (this->player()))->setActive(1);
+    ((PlayerFighter *) (this))->setExhaustVisible(true);
+    int geom = this->subGeometry();
+    this->field_0xf5() = 1;
+    if (geom == 0) {
+        geom = this->geometry();
     }
 
-    this->resetVecA() = Vector{0, 0, 0};
-    this->resetVecB = Vector{0, 0, 0};
-    this->resetVecC = Vector{0, 0, 0};
-
-    this->isMissionCrate() = 0;
-    this->missionCrateLost() = 0;
-    this->missionCrateCaptured() = 0;
-    this->crateLost() = 0;
-    this->crateCaptured() = 1;
-    this->field_0x140 = 0;
-    this->field_0x1fc = 0;
-    this->field_0x13c = 0;
-    this->cloakActive = 0;
-    this->cloakTimer = 0;
-    this->cloakDuration = 0;
-    this->cloakCooldown = 0;
-    this->cloakingPossible = 1;
-    this->aiDisabled = 0;
+    return ((AEGeometry *) (intptr_t) geom)->setVisible(true);
 }
-
-static const float gHC_divIn = 2000.0f;
-static const float gHC_divOut = -2000.0f;
-
-void PlayerFighter::handleCloaking() {
-    if (this->wingmanCommand() != 10) return;
-    if (this->geometry() == 0) return;
-    if (KIPlayer::isDead()) return;
-    if (((Player *) (intptr_t) this->player())->empDisabledByte != 0) return;
-    if (this->cloakingPossible == 0) return;
-
-    if (this->cloakActive != 0) {
-        if (this->cloakTimer == 0) {
-            this->field_0x13c = 1;
-            if (this->cloakMaterial == 0xffffffff) {
-                Globals::Canvas->MeshCloneMaterial(((AEGeometry *) (intptr_t) this->subGeometry())->meshId,
-                                                   this->cloakMaterial);
-                this->cloakSavedMode =
-                        ((AbyssEngine::Material *) Globals::Canvas
-                                 ->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId)
-                                 ->material)
-                                ->blendMode;
-            }
-            ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial))->blendMode = 14;
-            Globals::Canvas->MeshChangeMaterial(((AEGeometry *) (intptr_t) this->subGeometry())->meshId,
-                                                (unsigned short) this->cloakMaterial);
-            if (this->field_0x2d9 != 0) {
-                this->cloakTimer = 2000;
-                this->field_0x2d9 = 0;
-            }
-        }
-        this->cloakTimer += this->deltaTime;
-
-        if (this->cloakTimer - this->deltaTime <= 2000) {
-            if (this->cloakTimer >= 2000) {
-                this->setExhaustVisible(false);
-                this->exhaustHidden() = 1;
-            }
-            Globals::Canvas->MeshChangeShaderAnimValue(
-                    Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId),
-                    (float) this->cloakTimer / 2000.0f, 1u);
-        } else if (this->cloakTimer > this->cloakDuration) {
-            int material = this->cloakMaterial;
-            int savedMode = this->cloakSavedMode;
-            this->cloakTimer = 0;
-            this->cloakActive = 0;
-            this->field_0x13c = 0;
-            ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(material))->blendMode = savedMode;
-            this->setExhaustVisible(true);
-        } else if (this->cloakTimer > this->cloakDuration - 2000) {
-            this->exhaustHidden() = 0;
-            Globals::Canvas->MeshChangeShaderAnimValue(
-                    Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId),
-                    ((float) this->cloakTimer - (float) (this->cloakDuration - 2000)) / -2000.0f + 1.0f, 1u);
-        }
-        return;
-    }
-
-    if (this->field_0x1e0 != 0 && Globals::rnd->nextInt(100) < 50) {
-        this->cloak(-1, false);
-    } else {
-        this->cloakCooldown += this->deltaTime;
-        if (this->cloakCooldown > 8000) {
-            this->cloakCooldown = 0;
-            if (Globals::rnd->nextInt(100) < 30) {
-                this->cloak(-1, false);
-            }
-        }
-    }
-}
-
 void PlayerFighter::revive() {
     unsigned char enemy = ((Player *) (this->player()))->turnedEnemy();
     ((Player *) (this->player()))->reset();
@@ -2201,5 +2170,3 @@ void PlayerFighter::revive() {
         delete g;
     }
 }
-
-int PlayerFighter::stationRouteAliens;

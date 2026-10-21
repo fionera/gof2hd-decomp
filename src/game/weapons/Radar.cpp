@@ -58,9 +58,20 @@ static inline uint8_t station_u8(unsigned char *station, unsigned off) {
     return *reinterpret_cast<uint8_t *>(station + off);
 }
 
-int Radar::getTurretScopeWidth() {
-    return this->turretScopeHalfWidth << 1;
+
+static const int kRaceMusic[4] = {134, 139, 138, 137};
+
+static inline unsigned int radarFont() {
+    return (unsigned int) (uintptr_t) Globals::font;
 }
+
+
+static inline int layoutField(int offset) {
+    return reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(Globals::layout) + offset)[0];
+}
+
+
+unsigned char Radar::drawTarget;
 
 Radar::Radar(Level *level) {
     this->egoPos.z = 0;
@@ -286,7 +297,6 @@ Radar::Radar(Level *level) {
         ArraySetLength(autoTurret->getAttribute(55), *this->players);
     }
 }
-
 Radar::~Radar() {
     Array<KIPlayer *> *players = this->players;
     if (players != nullptr) {
@@ -294,51 +304,10 @@ Radar::~Radar() {
     }
     this->players = nullptr;
 }
-
-uint8_t Radar::hasScanner() {
-    return this->scannerAvailable;
-}
-
-uint8_t Radar::isPlasmaInRange() {
-    return this->plasmaInRange;
-}
-
-bool Radar::stationLocked() {
-    unsigned char *station = reinterpret_cast<unsigned char *>(this->lockedStation);
-    if (station != nullptr) {
-        return station_u8(station, 0x71) != 0;
-    }
-    return false;
-}
-
-KIPlayer *Radar::getLockedEnemy() {
-    return this->lockedEnemy;
-}
-
-KIPlayer *Radar::getLockedAsteroid() {
-    return this->lockedAsteroid;
-}
-
-KIPlayer *Radar::getLockedGasCloud() {
-    return this->lockedGasCloud;
-}
-
-void Radar::unlockAsteroid() {
-    this->lockedAsteroid = nullptr;
-}
-
-int Radar::getPlanetDockIndex() {
-    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
-        static_cast<intptr_t>(Globals::status->getSystem()));
-    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
-    return (*stations)[this->planetDockIndex];
-}
-
 void Radar::update(KIPlayer *player) {
     Vector position = player->getPosition();
     update(position);
 }
-
 void Radar::update(Vector value) {
     Vector *current = &this->radarPos;
     *current = AbyssEngine::AEMath::MatrixTransformVector(this->transform, value);
@@ -357,13 +326,21 @@ void Radar::update(Vector value) {
         this->screenY = static_cast<int>(current->y);
     }
 }
+Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
+    float dx = static_cast<float>(this->centerX - x);
+    float dy = static_cast<float>(this->centerY - y);
+    float distance = this->weightX * (dx * dx) + this->weightY * (dy * dy);
 
-static const int kRaceMusic[4] = {134, 139, 138, 137};
+    if (distance >= 0.0f) {
+        float scale = (distance - Globals::globals->sqrt(distance)) / distance;
+        if (scale >= 0.0f && scale <= 1.0f) {
+            value.x = static_cast<float>(static_cast<int>(static_cast<float>(x) + scale * dx));
+            value.y = static_cast<float>(static_cast<int>(static_cast<float>(y) + scale * dy));
+        }
+    }
 
-static inline unsigned int radarFont() {
-    return (unsigned int) (uintptr_t) Globals::font;
+    return value;
 }
-
 void Radar::draw(Player *player, Hud *hud, int mode) {
     if (!this->enabled) {
         return;
@@ -1298,27 +1275,33 @@ music:
     }
     this->field_0x1bc = 0;
 }
+String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
+    long long dx = static_cast<long long>(x1 * 0.5f - x2 * 0.5f);
+    long long dz = static_cast<long long>(z1 * 0.5f - z2 * 0.5f);
+    long long dy = static_cast<long long>(y1 * 0.5f - y2 * 0.5f);
+    long long squared = dy * dy + dx * dx + dz * dz;
+    int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
+    int meters = distance << 3;
 
-Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
-    float dx = static_cast<float>(this->centerX - x);
-    float dy = static_cast<float>(this->centerY - y);
-    float distance = this->weightX * (dx * dx) + this->weightY * (dy * dy);
-
-    if (distance >= 0.0f) {
-        float scale = (distance - Globals::globals->sqrt(distance)) / distance;
-        if (scale >= 0.0f && scale <= 1.0f) {
-            value.x = static_cast<float>(static_cast<int>(static_cast<float>(x) + scale * dx));
-            value.y = static_cast<float>(static_cast<int>(static_cast<float>(y) + scale * dy));
+    String text = String(meters) + String("m", false);
+    if (distance >= 125) {
+        int remainder = meters % 1000;
+        if (remainder >= 100) {
+            text = String(remainder);
+        } else {
+            text = String("0", false);
         }
+        text = text.SubString(0, 1);
+        text = String((int) ((unsigned int) distance / 125u)) + String(".", false) + text + String("km", false);
     }
-
-    return value;
+    return text;
 }
-
-static inline int layoutField(int offset) {
-    return reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(Globals::layout) + offset)[0];
+int Radar::getPlanetDockIndex() {
+    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
+        static_cast<intptr_t>(Globals::status->getSystem()));
+    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
+    return (*stations)[this->planetDockIndex];
 }
-
 void Radar::drawCurrentLock(Hud *) {
     if (this->enabled == 0) {
         return;
@@ -1436,27 +1419,31 @@ void Radar::drawCurrentLock(Hud *) {
         this->lockSprite->draw(1.0f, 1.0f);
     }
 }
-
-String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
-    long long dx = static_cast<long long>(x1 * 0.5f - x2 * 0.5f);
-    long long dz = static_cast<long long>(z1 * 0.5f - z2 * 0.5f);
-    long long dy = static_cast<long long>(y1 * 0.5f - y2 * 0.5f);
-    long long squared = dy * dy + dx * dx + dz * dz;
-    int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
-    int meters = distance << 3;
-
-    String text = String(meters) + String("m", false);
-    if (distance >= 125) {
-        int remainder = meters % 1000;
-        if (remainder >= 100) {
-            text = String(remainder);
-        } else {
-            text = String("0", false);
-        }
-        text = text.SubString(0, 1);
-        text = String((int) ((unsigned int) distance / 125u)) + String(".", false) + text + String("km", false);
-    }
-    return text;
+KIPlayer *Radar::getLockedGasCloud() {
+    return this->lockedGasCloud;
 }
-
-unsigned char Radar::drawTarget;
+KIPlayer *Radar::getLockedAsteroid() {
+    return this->lockedAsteroid;
+}
+void Radar::unlockAsteroid() {
+    this->lockedAsteroid = nullptr;
+}
+KIPlayer *Radar::getLockedEnemy() {
+    return this->lockedEnemy;
+}
+bool Radar::stationLocked() {
+    unsigned char *station = reinterpret_cast<unsigned char *>(this->lockedStation);
+    if (station != nullptr) {
+        return station_u8(station, 0x71) != 0;
+    }
+    return false;
+}
+int Radar::getTurretScopeWidth() {
+    return this->turretScopeHalfWidth << 1;
+}
+uint8_t Radar::isPlasmaInRange() {
+    return this->plasmaInRange;
+}
+uint8_t Radar::hasScanner() {
+    return this->scannerAvailable;
+}

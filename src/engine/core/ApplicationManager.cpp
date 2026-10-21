@@ -17,6 +17,24 @@ static_assert(sizeof(AbyssEngine::KeyCode) == 0x10, "KeyCode entry size");
 static_assert(offsetof(AbyssEngine::KeyCode, name) == 0x04, "KeyCode name offset");
 #endif
 
+
+namespace AbyssEngine {
+    int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *), // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    void *user, unsigned int *outIds, float aniso, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    AELoadedTexture *outTex, bool flag);
+}
+
+
+static bool update_orientation_timer(ApplicationManager *self) {
+    AbyssEngine::orientationChangeTimer += (int) (self->frameTimeMs - self->previousFrameTimeMs);
+    return AbyssEngine::orientationChangeTimer > 250;
+}
+
+
+Engine *GetEngine() {
+    return gEngine;
+}
+
 ApplicationManager::ApplicationManager(Engine *engine) {
     AbyssEngine::debugTouch[0] = 0.0f;
     AbyssEngine::debugTouch[1] = 0.0f;
@@ -106,7 +124,6 @@ ApplicationManager::ApplicationManager(Engine *engine) {
     this->lastTouchX = -1;
     this->lastTouchY = -1;
 }
-
 ApplicationManager::~ApplicationManager() {
     IApplicationModule *module = this->currentModule;
     if (module != 0) {
@@ -139,13 +156,137 @@ ApplicationManager::~ApplicationManager() {
     this->keyMappingTable = 0;
 
 }
-
-void ApplicationManager::SetApplicationModule(IApplicationModule *module) {
-    IApplicationModule *current = this->currentModule;
-    this->pendingModule = module;
-    this->state = current != 0;
+void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {
+    if (info != 0 && this->soundResource != 0) {
+        this->soundResource->SetSound(info, count);
+        for (int i = 0; i < count; ++i) {
+            this->soundResource->init(i);
+        }
+    }
 }
-
+void ApplicationManager::SoundRelease(int soundId) {
+    if (this->soundResource != 0) {
+        this->soundResource->release(soundId);
+    }
+}
+void ApplicationManager::SoundPlayMusic(int soundId) {
+    if (this->soundResource != 0 && this->musicEnabled) {
+        this->soundResource->playMusic(soundId);
+    }
+}
+void ApplicationManager::SoundPlayMusicLoop(int soundId) {
+    if (this->soundResource != 0 && this->musicEnabled) {
+        this->soundResource->playMusicLoop(soundId);
+    }
+}
+void ApplicationManager::SoundPlay(int soundId) {
+    if (this->soundResource != 0 && this->soundFxEnabled) {
+        this->soundResource->play(soundId);
+    }
+}
+void ApplicationManager::SoundPlay(int soundId, float volume) {
+    if (this->soundResource != 0 && this->soundFxEnabled) {
+        this->soundResource->play(soundId, volume);
+    }
+}
+void ApplicationManager::SoundPlayLoop(int soundId) {
+    if (this->soundResource != 0 && this->soundFxEnabled) {
+        this->soundResource->playLoop(soundId);
+    }
+}
+void ApplicationManager::SoundStop(int soundId) {
+    if (this->soundResource != 0) {
+        this->soundResource->stop(soundId);
+    }
+}
+void ApplicationManager::SoundStopSounds() {
+    if (this->soundResource != 0) {
+        this->soundResource->stop();
+    }
+}
+void ApplicationManager::SoundPauseSounds() {
+    if (this->soundResource != 0) {
+        this->soundResource->pause();
+    }
+}
+void ApplicationManager::SoundPause(int soundId) {
+    if (this->soundResource != 0) {
+        this->soundResource->pause(soundId);
+    }
+}
+void ApplicationManager::SoundResume() {
+    if (this->soundResource != 0) {
+        this->soundResource->resume();
+    }
+}
+void ApplicationManager::SoundResume(int soundId) {
+    if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
+        this->soundResource->resume(soundId);
+    }
+}
+void ApplicationManager::SoundResumeSounds() {
+    if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
+        this->soundResource->resume();
+    }
+}
+void ApplicationManager::SoundEnable(bool enable) {
+    this->musicEnabled = enable;
+    this->soundFxEnabled = enable;
+}
+void ApplicationManager::SoundFxEnable(bool enable) {
+    this->soundFxEnabled = enable;
+}
+void ApplicationManager::SoundMusicEnable(bool enable) {
+    this->musicEnabled = enable;
+}
+void ApplicationManager::SoundSetVolume(int soundId, int volume) {
+    if (this->soundResource != 0) {
+        this->soundResource->setVolume(soundId, volume);
+    }
+}
+void ApplicationManager::SoundSetFXVolume(int volume) {
+    if (this->soundResource != 0) {
+        this->soundResource->setSoundVolume(volume);
+    }
+}
+void ApplicationManager::SoundSetMusicVolume(int volume) {
+    if (this->soundResource != 0) {
+        this->soundResource->setMusicVolume(volume);
+    }
+}
+bool ApplicationManager::SoundIsPlaying(int soundId) {
+    if (this->soundResource == 0) {
+        return false;
+    }
+    return this->soundResource->isPlaying(soundId);
+}
+void ApplicationManager::VibrateEnable(bool enable) {
+    this->vibrateEnabled = enable;
+}
+void ApplicationManager::VibrateSupported() {
+    this->engine->VibrateSupported();
+}
+void ApplicationManager::Vibrate(unsigned short duration) {
+    if (this->vibrateEnabled) {
+        this->engine->Vibrate(duration);
+    }
+}
+void ApplicationManager::RegisterApplicationModule(unsigned int id, IApplicationModule *module) {
+    if (module != 0) {
+        module->SetApplicationManager(this);
+        ArrayAdd(module, this->modules);
+        ArrayAdd(id, this->moduleIds);
+    }
+}
+void ApplicationManager::EnablePerformanceTest(int count) {
+    AbyssEngine::performanceOverallModulSwitches = count;
+    AbyssEngine::performanceModulSwitches = 0;
+    AbyssEngine::performanceFrameCounter = 0;
+    AbyssEngine::performanceTime = 0;
+    AbyssEngine::triDrawn = 0;
+    AbyssEngine::performanceTest = 1;
+    AbyssEngine::performanceTestEnded = 0;
+}
 void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
     if (AbyssEngine::performanceTest) {
         AbyssEngine::performanceModulSwitches++;
@@ -166,7 +307,14 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
         }
     }
 }
-
+void ApplicationManager::SetApplicationModule(IApplicationModule *module) {
+    IApplicationModule *current = this->currentModule;
+    this->pendingModule = module;
+    this->state = current != 0;
+}
+unsigned int ApplicationManager::GetCurrentApplicationModule() const {
+    return this->currentModuleId;
+}
 void *ApplicationManager::GetApplicationModule(unsigned int id) { // lint: void_ptr (exported GetApplicationModule return type, baked ABI)
     // lint: void_ptr (exported GetApplicationModule return type, baked ABI)
     unsigned int count = this->moduleIds.size();
@@ -177,30 +325,28 @@ void *ApplicationManager::GetApplicationModule(unsigned int id) { // lint: void_
     }
     return 0;
 }
-
+void ApplicationManager::Quit() {
+    QuitCallback_t *callback = this->quitCallback;
+    if (callback != 0) {
+        callback();
+    }
+}
+String ApplicationManager::GetApplicationVersionString() {
+    // The 2.0.16 binary returns an empty string here (literal pool -> ""), not a version number.
+    return String("");
+}
+void ApplicationManager::SetApplicationData(void *data) { // lint: void_ptr (exported SetApplicationData param, opaque app data, baked ABI)
+    // lint: void_ptr (exported SetApplicationData param, opaque app data, baked ABI)
+    this->applicationData = data;
+}
+void *ApplicationManager::GetApplicationData() { // lint: void_ptr (exported GetApplicationData return type, baked ABI)
+    // lint: void_ptr (exported GetApplicationData return type, baked ABI)
+    return this->applicationData;
+}
 void *ApplicationManager::GetEngine() { // lint: void_ptr (exported GetEngine return type, header-declared ABI)
     // lint: void_ptr (exported GetEngine return type, header-declared ABI)
     return this->engine;
 }
-
-void ApplicationManager::Resume(bool arg) {
-    (void) arg;
-    if (this->state != 3) {
-        return;
-    }
-
-    IApplicationModule *module = this->currentModule;
-    if (module != 0) {
-        module->OnResume();
-        if (this->engine != 0) {
-            this->engine->Resume();
-        }
-        this->keyState = 0;
-        this->actionState = 0;
-        this->state = 4;
-    }
-}
-
 void ApplicationManager::Suspend() {
     unsigned int currentState = this->state;
     if (currentState - 3 < 2) {
@@ -218,13 +364,123 @@ void ApplicationManager::Suspend() {
         this->savedState = oldState;
     }
 }
+void ApplicationManager::Resume(bool arg) {
+    (void) arg;
+    if (this->state != 3) {
+        return;
+    }
 
-namespace AbyssEngine {
-    int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *), // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    void *user, unsigned int *outIds, float aniso, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    AELoadedTexture *outTex, bool flag);
+    IApplicationModule *module = this->currentModule;
+    if (module != 0) {
+        module->OnResume();
+        if (this->engine != 0) {
+            this->engine->Resume();
+        }
+        this->keyState = 0;
+        this->actionState = 0;
+        this->state = 4;
+    }
 }
+void ApplicationManager::SetExitCallback(QuitCallback_t *callback) {
+    this->quitCallback = callback;
+}
+void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) { // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
+    // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
+    this->loadingCallback = callback;
+    this->loadingCallbackData = data;
+}
+void ApplicationManager::LoadingCallbackShow(int mode, void *data) { // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
+    // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
+    LoadingCallback_t *callback = this->loadingCallback;
+    if (callback != 0) {
+        callback(this->paintCanvas, mode, data);
+    }
+}
+void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) { // lint: void_ptr (opaque user data forwarded to ResumeCallback_t, baked ABI)
+    // lint: void_ptr (opaque user data forwarded to ResumeCallback_t, baked ABI)
+    this->resumeCallback = callback;
+    this->resumeCallbackData = data;
+}
+void ApplicationManager::CheatSetCallback(void (*callback)(int, void *), void *data) { // lint: void_ptr (exported CheatSetCallback signature, opaque cheat callback + data, baked ABI)
+    // lint: void_ptr (exported CheatSetCallback signature, opaque cheat callback + data, baked ABI)
+    if (this->cheatHandler != 0) {
+        this->cheatHandler->SetCheatFunc(callback, data);
+    }
+}
+void ApplicationManager::CheatAddCode(const String &code, int value) {
+    if (this->cheatHandler != 0) {
+        this->cheatHandler->AddCheatCode(code, value);
+    }
+}
+void ApplicationManager::CheatEnable(bool enable) {
+    this->cheatsEnabled = enable;
+}
+void ApplicationManager::CheatUpdate(unsigned short key) {
+    if (this->cheatsEnabled && this->cheatHandler != 0) {
+        this->cheatHandler->Update(key);
+    }
+}
+void ApplicationManager::ConfigReadFile(String name) {
+    ConfigReader *reader = this->configReader;
+    if (reader != 0) {
+        reader->ParseFile(String(name, false));
+    }
+}
+void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigTokenReadFunction read,
+                                                         void *context) { // lint: void_ptr (exported ConfigRegisterTokenReadFunction opaque context param, baked ABI)
+    // lint: void_ptr (exported ConfigRegisterTokenReadFunction opaque context param, baked ABI)
+    ConfigReader *reader = this->configReader;
+    if (reader != 0) {
+        reader->RegisterTokenReadFunction(String(name, false), read, context);
+    }
+}
+void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
+    ArrayAdd(value, this->actionTable);
+    ArrayAdd(key, this->actionTable);
+}
+void *ApplicationManager::ConfigGetKeysForAction(long long action) { // lint: void_ptr (exported ConfigGetKeysForAction return type, header-declared ABI)
+    // lint: void_ptr (exported ConfigGetKeysForAction return type, header-declared ABI)
+    Array<String *> *result = 0;
+    for (unsigned int i = 0; i < this->actionTable.size(); i += 2) {
+        if (this->actionTable[i] == action) {
+            if (result == 0) {
+                result = new Array<String *>();
+            }
+            ArrayAdd(new String(this->keyMappingTable[this->actionTable[i + 1]].name, false), *result);
+        }
+    }
+    return result;
+}
+void ApplicationManager::CheckForOrientationChange() {
+    double tilt = this->engine->accelRaw[0];
 
+    if (tilt < -0.5 && this->paintCanvas->gameOrientation == 0) {
+        if (update_orientation_timer(this)) {
+            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_1);
+            AbyssEngine::orientationChangeTimer = 0;
+        }
+    } else if (tilt > 0.5 && this->paintCanvas->gameOrientation == 1) {
+        if (update_orientation_timer(this)) {
+            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_dummy);
+            AbyssEngine::orientationChangeTimer = 0;
+        }
+    } else if (tilt > 0.5 && this->paintCanvas->gameOrientation == 3) {
+        if (update_orientation_timer(this)) {
+            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
+            AbyssEngine::orientationChangeTimer = 0;
+        }
+    } else if (tilt < -0.5 && this->paintCanvas->gameOrientation == 2) {
+        if (update_orientation_timer(this)) {
+            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_3);
+            AbyssEngine::orientationChangeTimer = 0;
+        }
+    } else {
+        AbyssEngine::orientationChangeTimer = 0;
+    }
+}
+uint64_t ApplicationManager::GetElapsedTimeMillis() {
+    return this->frameTimeMs - this->previousFrameTimeMs;
+}
 void ApplicationManager::OnUpdate(long long now) {
     this->engine->PreUpdate();
 
@@ -505,82 +761,6 @@ void ApplicationManager::OnUpdate(long long now) {
     }
     this->engine->SwapBuffer();
 }
-
-void ApplicationManager::OnKeyPress(int key) {
-    this->actionMask = 0;
-    this->currentKey = key;
-
-    long long keys = 0;
-    long long actions = 0;
-    for (unsigned int i = 0; i < 0x40; ++i) {
-        if (this->keyMappingTable[i].code == key) {
-            keys = 1LL << i;
-            this->keyState |= keys;
-            for (unsigned int j = 0; j < this->actionTable.size(); j += 2) {
-                if (this->actionTable[j + 1] == i) {
-                    actions |= this->actionTable[j];
-                    this->actionMask = actions;
-                    this->actionState |= actions;
-                }
-            }
-            break;
-        }
-    }
-
-    IApplicationModule *module = this->currentModule;
-    if (module != 0 && this->state == 5) {
-        module->OnKeyPress(keys, actions);
-    }
-}
-
-void ApplicationManager::OnKeyRelease(int key) {
-    this->actionMask = 0;
-
-    long long keys = 0;
-    long long actions = 0;
-    for (unsigned int i = 0; i < 0x40; ++i) {
-        if (this->keyMappingTable[i].code == key) {
-            keys = 1LL << i;
-            this->keyState &= ~keys;
-            for (unsigned int j = 0; j < this->actionTable.size(); j += 2) {
-                if (this->actionTable[j + 1] == i) {
-                    actions |= this->actionTable[j];
-                    this->actionMask = actions;
-                    this->actionState &= ~actions;
-                }
-            }
-            break;
-        }
-    }
-
-    IApplicationModule *module = this->currentModule;
-    if (module != 0 && this->state == 5) {
-        module->OnKeyRelease(keys, actions);
-    }
-}
-
-void ApplicationManager::ResetKeyState() {
-    this->keyState = 0;
-}
-
-uint64_t ApplicationManager::GetKeyState() {
-    return this->keyState;
-}
-
-uint64_t ApplicationManager::GetActionState() {
-    return this->actionState;
-}
-
-void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode *> *array) {
-    if (array->size() == 0x40) {
-        for (unsigned int i = 0; i < array->size(); ++i) {
-            AbyssEngine::KeyCode *mapping = (*array)[i];
-            this->keyMappingTable[i].code = mapping->code;
-            this->keyMappingTable[i].name = mapping->name;
-        }
-    }
-}
-
 void ApplicationManager::ConvertTouchCoords(int &x, int &y) {
     int old;
     switch (this->paintCanvas->gameOrientation) {
@@ -600,7 +780,6 @@ void ApplicationManager::ConvertTouchCoords(int &x, int &y) {
             break;
     }
 }
-
 void ApplicationManager::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
     IApplicationModule *module = this->currentModule;
@@ -663,7 +842,6 @@ void ApplicationManager::OnTouchBegin(int x, int y, void *touch) { // lint: void
         }
     }
 }
-
 void ApplicationManager::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr (exported OnTouchMove touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchMove touch handle param, baked ABI)
     IApplicationModule *module = this->currentModule;
@@ -677,7 +855,6 @@ void ApplicationManager::OnTouchMove(int x, int y, void *touch) { // lint: void_
         this->lastTouchY = y;
     }
 }
-
 void ApplicationManager::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
     AbyssEngine::debugModusIndex = 0;
@@ -693,329 +870,88 @@ void ApplicationManager::OnTouchEnd(int x, int y, void *touch) { // lint: void_p
         this->lastTouchY = y;
     }
 }
-
 void ApplicationManager::OnTouchEnd() {
     this->keyState = 0;
     this->currentKey = 0;
     this->actionMask = 0;
     this->actionState = 0;
 }
+void ApplicationManager::OnKeyPress(int key) {
+    this->actionMask = 0;
+    this->currentKey = key;
 
-uint64_t ApplicationManager::GetSystemTimeMillis() {
-    return this->currentTimeMs;
+    long long keys = 0;
+    long long actions = 0;
+    for (unsigned int i = 0; i < 0x40; ++i) {
+        if (this->keyMappingTable[i].code == key) {
+            keys = 1LL << i;
+            this->keyState |= keys;
+            for (unsigned int j = 0; j < this->actionTable.size(); j += 2) {
+                if (this->actionTable[j + 1] == i) {
+                    actions |= this->actionTable[j];
+                    this->actionMask = actions;
+                    this->actionState |= actions;
+                }
+            }
+            break;
+        }
+    }
+
+    IApplicationModule *module = this->currentModule;
+    if (module != 0 && this->state == 5) {
+        module->OnKeyPress(keys, actions);
+    }
 }
+void ApplicationManager::OnKeyRelease(int key) {
+    this->actionMask = 0;
 
+    long long keys = 0;
+    long long actions = 0;
+    for (unsigned int i = 0; i < 0x40; ++i) {
+        if (this->keyMappingTable[i].code == key) {
+            keys = 1LL << i;
+            this->keyState &= ~keys;
+            for (unsigned int j = 0; j < this->actionTable.size(); j += 2) {
+                if (this->actionTable[j + 1] == i) {
+                    actions |= this->actionTable[j];
+                    this->actionMask = actions;
+                    this->actionState &= ~actions;
+                }
+            }
+            break;
+        }
+    }
+
+    IApplicationModule *module = this->currentModule;
+    if (module != 0 && this->state == 5) {
+        module->OnKeyRelease(keys, actions);
+    }
+}
+uint64_t ApplicationManager::GetKeyState() {
+    return this->keyState;
+}
+uint64_t ApplicationManager::GetActionState() {
+    return this->actionState;
+}
+void ApplicationManager::ResetKeyState() {
+    this->keyState = 0;
+}
 uint64_t ApplicationManager::GetCurrentTimeMillis() {
     return this->currentTimeMs;
 }
-
-uint64_t ApplicationManager::GetElapsedTimeMillis() {
-    return this->frameTimeMs - this->previousFrameTimeMs;
+uint64_t ApplicationManager::GetSystemTimeMillis() {
+    return this->currentTimeMs;
 }
-
-static bool update_orientation_timer(ApplicationManager *self) {
-    AbyssEngine::orientationChangeTimer += (int) (self->frameTimeMs - self->previousFrameTimeMs);
-    return AbyssEngine::orientationChangeTimer > 250;
-}
-
-void ApplicationManager::CheckForOrientationChange() {
-    double tilt = this->engine->accelRaw[0];
-
-    if (tilt < -0.5 && this->paintCanvas->gameOrientation == 0) {
-        if (update_orientation_timer(this)) {
-            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_1);
-            AbyssEngine::orientationChangeTimer = 0;
-        }
-    } else if (tilt > 0.5 && this->paintCanvas->gameOrientation == 1) {
-        if (update_orientation_timer(this)) {
-            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_dummy);
-            AbyssEngine::orientationChangeTimer = 0;
-        }
-    } else if (tilt > 0.5 && this->paintCanvas->gameOrientation == 3) {
-        if (update_orientation_timer(this)) {
-            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
-            AbyssEngine::orientationChangeTimer = 0;
-        }
-    } else if (tilt < -0.5 && this->paintCanvas->gameOrientation == 2) {
-        if (update_orientation_timer(this)) {
-            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_3);
-            AbyssEngine::orientationChangeTimer = 0;
-        }
-    } else {
-        AbyssEngine::orientationChangeTimer = 0;
-    }
-}
-
-void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
-    ArrayAdd(value, this->actionTable);
-    ArrayAdd(key, this->actionTable);
-}
-
-void *ApplicationManager::ConfigGetKeysForAction(long long action) { // lint: void_ptr (exported ConfigGetKeysForAction return type, header-declared ABI)
-    // lint: void_ptr (exported ConfigGetKeysForAction return type, header-declared ABI)
-    Array<String *> *result = 0;
-    for (unsigned int i = 0; i < this->actionTable.size(); i += 2) {
-        if (this->actionTable[i] == action) {
-            if (result == 0) {
-                result = new Array<String *>();
-            }
-            ArrayAdd(new String(this->keyMappingTable[this->actionTable[i + 1]].name, false), *result);
+void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode *> *array) {
+    if (array->size() == 0x40) {
+        for (unsigned int i = 0; i < array->size(); ++i) {
+            AbyssEngine::KeyCode *mapping = (*array)[i];
+            this->keyMappingTable[i].code = mapping->code;
+            this->keyMappingTable[i].name = mapping->name;
         }
     }
-    return result;
 }
-
-void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) { // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
-    // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
-    this->loadingCallback = callback;
-    this->loadingCallbackData = data;
-}
-
-void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) { // lint: void_ptr (opaque user data forwarded to ResumeCallback_t, baked ABI)
-    // lint: void_ptr (opaque user data forwarded to ResumeCallback_t, baked ABI)
-    this->resumeCallback = callback;
-    this->resumeCallbackData = data;
-}
-
-void ApplicationManager::LoadingCallbackShow(int mode, void *data) { // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
-    // lint: void_ptr (opaque user data forwarded to LoadingCallback_t, baked ABI)
-    LoadingCallback_t *callback = this->loadingCallback;
-    if (callback != 0) {
-        callback(this->paintCanvas, mode, data);
-    }
-}
-
-void ApplicationManager::Quit() {
-    QuitCallback_t *callback = this->quitCallback;
-    if (callback != 0) {
-        callback();
-    }
-}
-
-void ApplicationManager::CheatUpdate(unsigned short key) {
-    if (this->cheatsEnabled && this->cheatHandler != 0) {
-        this->cheatHandler->Update(key);
-    }
-}
-
-void ApplicationManager::CheatAddCode(const String &code, int value) {
-    if (this->cheatHandler != 0) {
-        this->cheatHandler->AddCheatCode(code, value);
-    }
-}
-
-void ApplicationManager::CheatSetCallback(void (*callback)(int, void *), void *data) { // lint: void_ptr (exported CheatSetCallback signature, opaque cheat callback + data, baked ABI)
-    // lint: void_ptr (exported CheatSetCallback signature, opaque cheat callback + data, baked ABI)
-    if (this->cheatHandler != 0) {
-        this->cheatHandler->SetCheatFunc(callback, data);
-    }
-}
-
-void ApplicationManager::CheatEnable(bool enable) {
-    this->cheatsEnabled = enable;
-}
-
-void ApplicationManager::SoundPlay(int soundId) {
-    if (this->soundResource != 0 && this->soundFxEnabled) {
-        this->soundResource->play(soundId);
-    }
-}
-
-void ApplicationManager::SoundPlay(int soundId, float volume) {
-    if (this->soundResource != 0 && this->soundFxEnabled) {
-        this->soundResource->play(soundId, volume);
-    }
-}
-
-void ApplicationManager::SoundPlayLoop(int soundId) {
-    if (this->soundResource != 0 && this->soundFxEnabled) {
-        this->soundResource->playLoop(soundId);
-    }
-}
-
-void ApplicationManager::SoundPlayMusic(int soundId) {
-    if (this->soundResource != 0 && this->musicEnabled) {
-        this->soundResource->playMusic(soundId);
-    }
-}
-
-void ApplicationManager::SoundPlayMusicLoop(int soundId) {
-    if (this->soundResource != 0 && this->musicEnabled) {
-        this->soundResource->playMusicLoop(soundId);
-    }
-}
-
-void ApplicationManager::SoundStop(int soundId) {
-    if (this->soundResource != 0) {
-        this->soundResource->stop(soundId);
-    }
-}
-
-void ApplicationManager::SoundStopSounds() {
-    if (this->soundResource != 0) {
-        this->soundResource->stop();
-    }
-}
-
-void ApplicationManager::SoundPause(int soundId) {
-    if (this->soundResource != 0) {
-        this->soundResource->pause(soundId);
-    }
-}
-
-void ApplicationManager::SoundPauseSounds() {
-    if (this->soundResource != 0) {
-        this->soundResource->pause();
-    }
-}
-
-void ApplicationManager::SoundResume() {
-    if (this->soundResource != 0) {
-        this->soundResource->resume();
-    }
-}
-
-void ApplicationManager::SoundResume(int soundId) {
-    if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
-        this->soundResource->resume(soundId);
-    }
-}
-
-void ApplicationManager::SoundResumeSounds() {
-    if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
-        this->soundResource->resume();
-    }
-}
-
-void ApplicationManager::SoundRelease(int soundId) {
-    if (this->soundResource != 0) {
-        this->soundResource->release(soundId);
-    }
-}
-
-bool ApplicationManager::SoundIsPlaying(int soundId) {
-    if (this->soundResource == 0) {
-        return false;
-    }
-    return this->soundResource->isPlaying(soundId);
-}
-
-void ApplicationManager::SoundSetVolume(int soundId, int volume) {
-    if (this->soundResource != 0) {
-        this->soundResource->setVolume(soundId, volume);
-    }
-}
-
-void ApplicationManager::SoundSetFXVolume(int volume) {
-    if (this->soundResource != 0) {
-        this->soundResource->setSoundVolume(volume);
-    }
-}
-
-void ApplicationManager::SoundSetMusicVolume(int volume) {
-    if (this->soundResource != 0) {
-        this->soundResource->setMusicVolume(volume);
-    }
-}
-
-void ApplicationManager::SoundEnable(bool enable) {
-    this->musicEnabled = enable;
-    this->soundFxEnabled = enable;
-}
-
-void ApplicationManager::SoundFxEnable(bool enable) {
-    this->soundFxEnabled = enable;
-}
-
-void ApplicationManager::SoundMusicEnable(bool enable) {
-    this->musicEnabled = enable;
-}
-
-void ApplicationManager::Vibrate(unsigned short duration) {
-    if (this->vibrateEnabled) {
-        this->engine->Vibrate(duration);
-    }
-}
-
-void ApplicationManager::VibrateEnable(bool enable) {
-    this->vibrateEnabled = enable;
-}
-
-void ApplicationManager::VibrateSupported() {
-    this->engine->VibrateSupported();
-}
-
 bool ApplicationManager::CheckCrack(const char *path) {
     (void) path;
     return false;
-}
-
-void *ApplicationManager::GetApplicationData() { // lint: void_ptr (exported GetApplicationData return type, baked ABI)
-    // lint: void_ptr (exported GetApplicationData return type, baked ABI)
-    return this->applicationData;
-}
-
-void ApplicationManager::SetApplicationData(void *data) { // lint: void_ptr (exported SetApplicationData param, opaque app data, baked ABI)
-    // lint: void_ptr (exported SetApplicationData param, opaque app data, baked ABI)
-    this->applicationData = data;
-}
-
-void ApplicationManager::SetExitCallback(QuitCallback_t *callback) {
-    this->quitCallback = callback;
-}
-
-unsigned int ApplicationManager::GetCurrentApplicationModule() const {
-    return this->currentModuleId;
-}
-
-String ApplicationManager::GetApplicationVersionString() {
-    // The 2.0.16 binary returns an empty string here (literal pool -> ""), not a version number.
-    return String("");
-}
-
-void ApplicationManager::ConfigReadFile(String name) {
-    ConfigReader *reader = this->configReader;
-    if (reader != 0) {
-        reader->ParseFile(String(name, false));
-    }
-}
-
-void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigTokenReadFunction read,
-                                                         void *context) { // lint: void_ptr (exported ConfigRegisterTokenReadFunction opaque context param, baked ABI)
-    // lint: void_ptr (exported ConfigRegisterTokenReadFunction opaque context param, baked ABI)
-    ConfigReader *reader = this->configReader;
-    if (reader != 0) {
-        reader->RegisterTokenReadFunction(String(name, false), read, context);
-    }
-}
-
-void ApplicationManager::EnablePerformanceTest(int count) {
-    AbyssEngine::performanceOverallModulSwitches = count;
-    AbyssEngine::performanceModulSwitches = 0;
-    AbyssEngine::performanceFrameCounter = 0;
-    AbyssEngine::performanceTime = 0;
-    AbyssEngine::triDrawn = 0;
-    AbyssEngine::performanceTest = 1;
-    AbyssEngine::performanceTestEnded = 0;
-}
-
-void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {
-    if (info != 0 && this->soundResource != 0) {
-        this->soundResource->SetSound(info, count);
-        for (int i = 0; i < count; ++i) {
-            this->soundResource->init(i);
-        }
-    }
-}
-
-void ApplicationManager::RegisterApplicationModule(unsigned int id, IApplicationModule *module) {
-    if (module != 0) {
-        module->SetApplicationManager(this);
-        ArrayAdd(module, this->modules);
-        ArrayAdd(id, this->moduleIds);
-    }
-}
-
-Engine *GetEngine() {
-    return gEngine;
 }
