@@ -4403,13 +4403,13 @@ void Level::update(long long dt, bool skipLod) {
             flashActive = 0;
         }
         float fade = (float) flashDurationA / (float) flashDurationB;
-        float red = flashColor.x * fade;
-        float green = flashColor.y * fade;
-        float blue = flashColor.z * fade;
+        float red = flashColor[0] * fade;
+        float green = flashColor[1] * fade;
+        float blue = flashColor[2] * fade;
         float alpha = flashAlpha * fade;
-        flashColor.x = i_r > red ? i_r : red;
-        flashColor.y = i_g > green ? i_g : green;
-        flashColor.z = i_b > blue ? i_b : blue;
+        flashColor[0] = i_r > red ? i_r : red;
+        flashColor[1] = i_g > green ? i_g : green;
+        flashColor[2] = i_b > blue ? i_b : blue;
         flashAlpha = i_a > alpha ? i_a : alpha;
     }
 
@@ -5291,23 +5291,23 @@ void Level::flashScreen(int type) {
     flashDurationA = dur;
     flashDurationB = dur;
     if (flashType == 2) {
-        flashColor.x = i_r * 1.5f;
-        flashColor.y = i_g * 1.5f;
-        flashColor.z = i_b * 1.5f;
+        flashColor[0] = i_r * 1.5f;
+        flashColor[1] = i_g * 1.5f;
+        flashColor[2] = i_b * 1.5f;
     } else if (flashType == 4) {
-        flashColor.x = 0;
-        flashColor.y = 0;
-        flashColor.z = 255.0f;
+        flashColor[0] = 0;
+        flashColor[1] = 0;
+        flashColor[2] = 255.0f;
     } else if (flashType == 3) {
-        flashColor.x = 0;
-        flashColor.y = 0;
-        flashColor.z = 0;
+        flashColor[0] = 0;
+        flashColor[1] = 0;
+        flashColor[2] = 0;
         player->hitCamera();
     } else {
         float k = (flashType == 1) ? 8.0f : 5.0f;
-        flashColor.x = clampChannel(k * i_r);
-        flashColor.y = clampChannel(k * i_g);
-        flashColor.z = clampChannel(k * i_b);
+        flashColor[0] = clampChannel(k * i_r);
+        flashColor[1] = clampChannel(k * i_g);
+        flashColor[2] = clampChannel(k * i_b);
     }
     flashAlpha = 255.0f;
 }
@@ -5461,9 +5461,9 @@ Level::Level(int mission)
     missionPtr = mission;
     collisionVolume = nullptr;
     field_b0 = nullptr;
-    flashColor.x = 0;
-    flashColor.y = 0;
-    flashColor.z = 0;
+    flashColor[0] = 0;
+    flashColor[1] = 0;
+    flashColor[2] = 0;
     flashDurationA = 0;
     flashDurationB = 0;
     flashActive = 0;
