@@ -171,116 +171,98 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
 }
 
 
-void WantedWindow::OnTouchEnd(int x, int y) {
-    if (this->showingMap != 0) {
-        this->starMap->OnTouchEnd(x, y);
-        uint32_t h;
-        uint32_t w;
-        uint32_t halfW = 0;
-        if (Globals::iPad == 0) {
-            h = Globals::h;
-            w = Globals::w;
-            this->windowX = 0;
-            this->windowY = 0;
-        } else {
-            if (Globals::iPadHD == 0) {
-                h = 1000;
-                w = 0x514;
-                if (Globals::iPadLarge == 0) {
-                    h = 500;
-                    w = 0x28a;
-                }
-                halfW = w >> 1;
+int WantedWindow::OnTouchEnd(int x, int y) {
+    if (this->showingMap) {
+        if (this->starMap->OnTouchEnd(x, y)) {
+            // Back from the star map: restore the window frame.
+            int width;
+            int height;
+            if (!Globals::iPad) {
+                height = Globals::h;
+                width = Globals::w;
+                this->windowX = 0;
+                this->windowY = 0;
             } else {
-                h = 0x2bf;
-                halfW = 0x1c9;
-                w = 0x392;
+                int halfWidth;
+                if (Globals::iPadHD) {
+                    height = 703;
+                    halfWidth = 457;
+                    width = 914;
+                } else {
+                    height = 1000;
+                    width = 1300;
+                    if (!Globals::iPadLarge) {
+                        height = 500;
+                        width = 650;
+                    }
+                    halfWidth = (unsigned int) width >> 1;
+                }
+                int x = (Globals::w >> 1) - halfWidth;
+                int y = (Globals::h >> 1) - ((unsigned int) height >> 1);
+                this->windowX = x;
+                this->windowY = y;
             }
-            this->windowX = (Globals::w >> 1) - halfW;
-            this->windowY = (Globals::h >> 1) - (h >> 1);
+            this->windowWidth = width;
+            this->windowHeight = height;
+            this->showingMap = 0;
         }
-        this->windowWidth = w;
-        this->windowHeight = h;
-        this->showingMap = 0;
-        return;
+        return 0;
     }
 
     int delta = this->dragDelta;
-    int pos = this->scrollOffset + delta;
-    float velocity = 0.0f;
-    int mag = delta < 0 ? -delta : delta;
-    if (mag > 3) {
-        velocity = (float) delta;
-    }
-    this->scrollDamping = 0.95f;
+    this->scrollDamping = 0.9f;
     this->dragging = 0;
-    this->scrollOffset = pos;
-    this->scrollOffsetSnapshot = pos;
-    this->scrollVelocity = velocity;
-
+    this->scrollOffset += delta;
+    this->scrollOffsetSnapshot = this->scrollOffset;
+    this->scrollVelocity = (delta < 0 ? -delta : delta) > 3 ? (float) delta : 0.0f;
     this->scrollWindow->OnTouchEnd(x, y);
-    for (uint32_t i = 0; i < this->buttons->size(); ++i) {
-        if ((*this->buttons)[i]->OnTouchEnd(x, y) != 0) {
+    for (unsigned int i = 0; i < this->buttons->size(); ++i) {
+        if ((*this->buttons)[i]->OnTouchEnd(x, y))
             this->lastButtonHit = i;
-        }
+    }
+    if ((int) this->highlightedWanted > -1) {
+        int index = this->getWantedAtPosition(x, y);
+        this->selectedWanted = index;
+        this->highlightedWanted = index;
+        this->selectWanted(index);
     }
 
-    {
-        uint32_t idx = this->getWantedAtPosition(x, y);
-        this->selectedWanted = idx;
-        this->highlightedWanted = idx;
-        this->selectWanted((int) idx);
-    }
-
-    bool openMap = false;
-    if (this->detailButton != nullptr) {
-        Wanted *wanted = (*this->wantedList)[this->selectedWanted];
-        if (wanted->isActive() != 0 &&
-            this->detailButton->OnTouchEnd(x, y) != 0) {
-            openMap = true;
-        }
-    }
-
-    if (openMap) {
-        ApplicationManager *app = Globals::appManager;
-        ModStation *module = (ModStation *) app->GetApplicationModule(5);
-        this->starMap = module->starMap;
-        Wanted *wanted = (*this->wantedList)[this->selectedWanted];
-        int lastSeen = wanted->getLastSeen();
-        int stationIndex = Globals::galaxy->getStation(lastSeen);
-        Station *station = (Station *) (long) stationIndex;
-        delete this->mission;
-        this->mission = nullptr;
-
-        Mission *mission = new Mission(0, 0, wanted->getTravelsTo());
-        this->mission = mission;
-
-        StarMap *map = this->starMap;
-        if (map == nullptr) {
-            map = new StarMap(true, mission, false, -1);
-            ((ModStation *) app->GetApplicationModule(5))->starMap = map;
-            map = ((ModStation *) app->GetApplicationModule(5))->starMap;
-            this->starMap = map;
+    if (this->detailButton != nullptr && (*this->wantedList)[this->selectedWanted]->isActive() &&
+        this->detailButton->OnTouchEnd(x, y)) {
+        // Show the wanted person's last known position on the star map.
+        this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+        Station *station = (Station *) (intptr_t) Globals::galaxy->getStation(
+                (*this->wantedList)[this->selectedWanted]->getLastSeen());
+        StarMap *map;
+        if (this->starMap != nullptr) {
+            delete this->mission;
+            this->mission = nullptr;
+            this->mission = new Mission(0, 0, (*this->wantedList)[this->selectedWanted]->getTravelsTo());
+            this->starMap->init(true, this->mission, false, -1);
+            map = this->starMap;
         } else {
-            map->init(true, mission, false, -1);
+            delete this->mission;
+            this->mission = nullptr;
+            this->mission = new Mission(0, 0, (*this->wantedList)[this->selectedWanted]->getTravelsTo());
+            ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap =
+                    new StarMap(true, this->mission, false, -1);
+            map = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+            this->starMap = map;
         }
-
-        int system = station->getSystem();
-        lastSeen = wanted->getLastSeen();
-        map->setStart(system, lastSeen);
+        map->setStart(station->getSystem(), (*this->wantedList)[this->selectedWanted]->getLastSeen());
         delete station;
         this->showingMap = 1;
-        (Globals::layout)->resetWindowDimensions();
-    } else {
-        Layout *layout = Globals::layout;
-        if (layout->OnTouchEnd(x, y) != 0) {
-            layout->resetWindowDimensions();
-        } else if (layout->helpPressed() != 0) {
-            String help;
-            help.copy((Globals::gameText)->getText(0x27b), false);
-            layout->initHelpWindow(help);
-        }
+        Globals::layout->resetWindowDimensions();
+        return 0;
     }
+
+    if (Globals::layout->OnTouchEnd(x, y)) {
+        Globals::layout->resetWindowDimensions();
+        return 1;
+    }
+    if (Globals::layout->helpPressed())
+        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
+    return 0;
 }
 
 

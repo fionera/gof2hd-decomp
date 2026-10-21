@@ -15,6 +15,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # compile_commands.json for clangd/CLion
 # The original release .so we are matching (ELF 32-bit ARM, armeabi-v7a softfp, stripped).
 set(GOF2_ORIGINAL_SO "${CMAKE_SOURCE_DIR}/../_work/bins/android_2.0.16_libgof2hdaa.so"
     CACHE FILEPATH "The original libgof2hdaa.so to match against")
+# The app's prebuilt FMOD Ex / FMOD Event shared libraries from the original APK
+# (lib/armeabi-v7a/libfmodex.so, libfmodevent.so): link inputs only, as in the original link.
+get_filename_component(_orig_dir "${GOF2_ORIGINAL_SO}" DIRECTORY)
+set(GOF2_FMOD_LIBDIR "${_orig_dir}/apk_libs" CACHE PATH "Directory holding the APK's libfmodex.so/libfmodevent.so")
 
 # One OBJECT library feeds both the per-function ASM verify (diff vs the original) and the whole-.so
 # link (gold link below). The original .so is -fPIC, so these objects match it and link cleanly.
@@ -60,6 +64,7 @@ if(GOF2_MATCH_LAYOUT)
         COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
                 "${GOF2_ORIGINAL_SO}" ${GOF2_NDK_NM} "${_order}"
                 $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_libzip_out} ${_zlib_out} ${GOF2_NDK_LIBCXXABI_A}
+                ${GOF2_NDK_LIBGCC_A}
         DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
                 gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_libzip_out} ${_zlib_out}
         COMMENT "Generating section-ordering file from the original .so + object source order"
@@ -75,14 +80,18 @@ add_custom_command(OUTPUT "${_so}"
     COMMAND ${GOF2_NDK_GOLD}
             -shared -soname libgof2hdaa.so --build-id
             --unresolved-symbols=ignore-all
+            --exclude-libs=libgcc.a
             ${_order_flag}
             -o "${_so}"
             ${_libdir}/crtbegin_so.o -L ${_libdir}
-            -l log -l GLESv2 -l GLESv1_CM -l EGL -l android -l m -l dl -l c
+            -l log -l GLESv2 -l GLESv1_CM -l EGL -l android
+            ${GOF2_FMOD_LIBDIR}/libfmodex.so ${GOF2_FMOD_LIBDIR}/libfmodevent.so
+            -l m -l dl -l c
             $<TARGET_OBJECTS:gof2>
             ${_openssl_out}
             --whole-archive ${_libzip_out} ${_zlib_out} --no-whole-archive
             ${GOF2_NDK_LIBCXXABI_A}
+            ${GOF2_NDK_LIBGCC_A}
             ${_libdir}/crtend_so.o
     # The original release .so is stripped (only .dynsym; no .symtab/.strtab/.debug_*). Strip ours the
     # same way so the section set matches -- a prerequisite for byte/hash identicality. Keeps .dynsym
