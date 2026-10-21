@@ -154,95 +154,98 @@ namespace AbyssEngine {
         return 0;
     }
 
-    static float lerp_float(float from, float to, float t) {
-        return from + t * (to - from);
-    }
-
     void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
-        KeyFrame *key = keyFrame;
-
-        Array<KeyFrame *> &items = this->keyFrames;
-        int i = 0;
-        while (i + 1 < index) {
-            KeyFrame *next = items[i + 1];
-            KeyFrame *prev = items[i];
-            longlong keyTime = key->timestamp;
-            float a = (float) (keyTime - next->timestamp);
-            float b = (float) (keyTime - prev->timestamp);
-            float t = 1.0f - a / b;
-            ulonglong flags0 = key->channels;
-            ulonglong next0 = next->channels;
-
-            if ((flags0 & 0x40) && !(next0 & 0x40))
-                next->rotation.x = lerp_float(prev->rotation.x, key->rotation.x, t);
-            if ((flags0 & 0x80) && !(next0 & 0x80))
-                next->rotation.y = lerp_float(prev->rotation.y, key->rotation.y, t);
-            if ((flags0 & 0x100) && !(next0 & 0x100))
-                next->rotation.z = lerp_float(prev->rotation.z, key->rotation.z, t);
-            if ((flags0 & 0x1) && !(next0 & 0x1))
-                next->translation.x = lerp_float(prev->translation.x, key->translation.x, t);
-            if ((flags0 & 0x2) && !(next0 & 0x2))
-                next->translation.y = lerp_float(prev->translation.y, key->translation.y, t);
-            if ((flags0 & 0x4) && !(next0 & 0x4))
-                next->translation.z = lerp_float(prev->translation.z, key->translation.z, t);
-            if ((flags0 & 0x8) && !(next0 & 0x8))
-                next->scale.x = lerp_float(prev->scale.x, key->scale.x, t);
-            if ((flags0 & 0x10) && !(next0 & 0x10))
-                next->scale.y = lerp_float(prev->scale.y, key->scale.y, t);
-            if ((flags0 & 0x20) && !(next0 & 0x20))
-                next->scale.z = lerp_float(prev->scale.z, key->scale.z, t);
-            if ((flags0 & 0x200) && !(next0 & 0x200))
-                next->alpha = lerp_float(prev->alpha, key->alpha, t);
-            if ((flags0 & 0x10000) && !(next0 & 0x10000))
-                next->localRotation.x = lerp_float(prev->localRotation.x, key->localRotation.x, t);
-            if ((flags0 & 0x20000) && !(next0 & 0x20000))
-                next->localRotation.y = lerp_float(prev->localRotation.y, key->localRotation.y, t);
-            if ((flags0 & 0x40000) && !(next0 & 0x40000))
-                next->localRotation.z = lerp_float(prev->localRotation.z, key->localRotation.z, t);
-            if ((flags0 & 0x400) && !(next0 & 0x400))
-                next->localTranslation.x = lerp_float(prev->localTranslation.x, key->localTranslation.x, t);
-            if ((flags0 & 0x800) && !(next0 & 0x800))
-                next->localTranslation.y = lerp_float(prev->localTranslation.y, key->localTranslation.y, t);
-            if ((flags0 & 0x1000) && !(next0 & 0x1000))
-                next->localTranslation.z = lerp_float(prev->localTranslation.z, key->localTranslation.z, t);
-            if ((flags0 & 0x2000) && !(next0 & 0x2000))
-                next->localScale.x = lerp_float(prev->localScale.x, key->localScale.x, t);
-            if ((flags0 & 0x4000) && !(next0 & 0x4000))
-                next->localScale.y = lerp_float(prev->localScale.y, key->localScale.y, t);
-            if ((flags0 & 0x8000) && !(next0 & 0x8000))
-                next->localScale.z = lerp_float(prev->localScale.z, key->localScale.z, t);
-            next->channels = next0 | flags0;
-            ++i;
+        // Re-blend the keys before the edited one for every channel it sets...
+        for (int i = 0; i + 1 < index; i++) {
+            KeyFrame *next = this->keyFrames[i + 1];
+            longlong keyTime = keyFrame->timestamp;
+            float toNext = (float) (keyTime - next->timestamp);
+            KeyFrame *prev = this->keyFrames[i];
+            float toPrev = (float) (keyTime - prev->timestamp);
+            float t = 1.0f - toNext / toPrev;
+            ulonglong channels = keyFrame->channels;
+            if ((channels & 0x40) != 0 && (next->channels & 0x40) == 0)
+                next->rotation.x = prev->rotation.x + t * (keyFrame->rotation.x - prev->rotation.x);
+            if ((channels & 0x80) != 0 && (next->channels & 0x80) == 0)
+                next->rotation.y = prev->rotation.y + t * (keyFrame->rotation.y - prev->rotation.y);
+            if ((channels & 0x100) != 0 && (next->channels & 0x100) == 0)
+                next->rotation.z = prev->rotation.z + t * (keyFrame->rotation.z - prev->rotation.z);
+            if ((channels & 0x1) != 0 && (next->channels & 0x1) == 0)
+                next->translation.x = prev->translation.x + t * (keyFrame->translation.x - prev->translation.x);
+            if ((channels & 0x2) != 0 && (next->channels & 0x2) == 0)
+                next->translation.y = prev->translation.y + t * (keyFrame->translation.y - prev->translation.y);
+            if ((channels & 0x4) != 0 && (next->channels & 0x4) == 0)
+                next->translation.z = prev->translation.z + t * (keyFrame->translation.z - prev->translation.z);
+            if ((channels & 0x8) != 0 && (next->channels & 0x8) == 0)
+                next->scale.x = prev->scale.x + t * (keyFrame->scale.x - prev->scale.x);
+            if ((channels & 0x10) != 0 && (next->channels & 0x10) == 0)
+                next->scale.y = prev->scale.y + t * (keyFrame->scale.y - prev->scale.y);
+            if ((channels & 0x20) != 0 && (next->channels & 0x20) == 0)
+                next->scale.z = prev->scale.z + t * (keyFrame->scale.z - prev->scale.z);
+            if ((channels & 0x200) != 0 && (next->channels & 0x200) == 0)
+                next->alpha = prev->alpha + t * (keyFrame->alpha - prev->alpha);
+            if ((channels & 0x10000) != 0 && (next->channels & 0x10000) == 0)
+                next->localRotation.x = prev->localRotation.x + t * (keyFrame->localRotation.x - prev->localRotation.x);
+            if ((channels & 0x20000) != 0 && (next->channels & 0x20000) == 0)
+                next->localRotation.y = prev->localRotation.y + t * (keyFrame->localRotation.y - prev->localRotation.y);
+            if ((channels & 0x40000) != 0 && (next->channels & 0x40000) == 0)
+                next->localRotation.z = prev->localRotation.z + t * (keyFrame->localRotation.z - prev->localRotation.z);
+            if ((channels & 0x400) != 0 && (next->channels & 0x400) == 0)
+                next->localTranslation.x = prev->localTranslation.x + t * (keyFrame->localTranslation.x - prev->localTranslation.x);
+            if ((channels & 0x800) != 0 && (next->channels & 0x800) == 0)
+                next->localTranslation.y = prev->localTranslation.y + t * (keyFrame->localTranslation.y - prev->localTranslation.y);
+            if ((channels & 0x1000) != 0 && (next->channels & 0x1000) == 0)
+                next->localTranslation.z = prev->localTranslation.z + t * (keyFrame->localTranslation.z - prev->localTranslation.z);
+            if ((channels & 0x2000) != 0 && (next->channels & 0x2000) == 0)
+                next->localScale.x = prev->localScale.x + t * (keyFrame->localScale.x - prev->localScale.x);
+            if ((channels & 0x4000) != 0 && (next->channels & 0x4000) == 0)
+                next->localScale.y = prev->localScale.y + t * (keyFrame->localScale.y - prev->localScale.y);
+            if ((channels & 0x8000) != 0 && (next->channels & 0x8000) == 0)
+                next->localScale.z = prev->localScale.z + t * (keyFrame->localScale.z - prev->localScale.z);
+            next->channels |= channels;
         }
 
-        uint count = (uint) this->keyFrames.size();
-        while ((uint)++index < count
-        )
-        {
-            KeyFrame *dst = items[index];
-            ulonglong flags0 = key->channels;
-            if ((flags0 & 0x40) && !(dst->channels & 0x40)) dst->rotation.x = key->rotation.x;
-            if ((flags0 & 0x80) && !(dst->channels & 0x80)) dst->rotation.y = key->rotation.y;
-            if ((flags0 & 0x100) && !(dst->channels & 0x100)) dst->rotation.z = key->rotation.z;
-            if ((flags0 & 0x1) && !(dst->channels & 0x1)) dst->translation.x = key->translation.x;
-            if ((flags0 & 0x2) && !(dst->channels & 0x2)) dst->translation.y = key->translation.y;
-            if ((flags0 & 0x4) && !(dst->channels & 0x4)) dst->translation.z = key->translation.z;
-            if ((flags0 & 0x8) && !(dst->channels & 0x8)) dst->scale.x = key->scale.x;
-            if ((flags0 & 0x10) && !(dst->channels & 0x10)) dst->scale.y = key->scale.y;
-            if ((flags0 & 0x20) && !(dst->channels & 0x20)) dst->scale.z = key->scale.z;
-            if ((flags0 & 0x200) && !(dst->channels & 0x200)) dst->alpha = key->alpha;
-            if ((flags0 & 0x10000) && !(dst->channels & 0x10000))
-                dst->localRotation.x = key->localRotation.x;
-            if ((flags0 & 0x20000) && !(dst->channels & 0x20000))
-                dst->localRotation.y = key->localRotation.y;
-            if ((flags0 & 0x40000) && !(dst->channels & 0x40000))
-                dst->localRotation.z = key->localRotation.z;
-            if ((flags0 & 0x400) && !(dst->channels & 0x400)) dst->localTranslation.x = key->localTranslation.x;
-            if ((flags0 & 0x800) && !(dst->channels & 0x800)) dst->localTranslation.y = key->localTranslation.y;
-            if ((flags0 & 0x1000) && !(dst->channels & 0x1000)) dst->localTranslation.z = key->localTranslation.z;
-            if ((flags0 & 0x2000) && !(dst->channels & 0x2000)) dst->localScale.x = key->localScale.x;
-            if ((flags0 & 0x4000) && !(dst->channels & 0x4000)) dst->localScale.y = key->localScale.y;
-            if ((flags0 & 0x8000) && !(dst->channels & 0x8000)) dst->localScale.z = key->localScale.z;
+        // ...and copy them into the later keys that do not animate them yet.
+        for (uint j = index + 1; j < this->keyFrames.size(); j++) {
+            ulonglong channels = keyFrame->channels;
+            if ((channels & 0x40) != 0 && (this->keyFrames[j]->channels & 0x40) == 0)
+                this->keyFrames[j]->rotation.x = keyFrame->rotation.x;
+            if ((channels & 0x80) != 0 && (this->keyFrames[j]->channels & 0x80) == 0)
+                this->keyFrames[j]->rotation.y = keyFrame->rotation.y;
+            if ((channels & 0x100) != 0 && (this->keyFrames[j]->channels & 0x100) == 0)
+                this->keyFrames[j]->rotation.z = keyFrame->rotation.z;
+            if ((channels & 0x1) != 0 && (this->keyFrames[j]->channels & 0x1) == 0)
+                this->keyFrames[j]->translation.x = keyFrame->translation.x;
+            if ((channels & 0x2) != 0 && (this->keyFrames[j]->channels & 0x2) == 0)
+                this->keyFrames[j]->translation.y = keyFrame->translation.y;
+            if ((channels & 0x4) != 0 && (this->keyFrames[j]->channels & 0x4) == 0)
+                this->keyFrames[j]->translation.z = keyFrame->translation.z;
+            if ((channels & 0x8) != 0 && (this->keyFrames[j]->channels & 0x8) == 0)
+                this->keyFrames[j]->scale.x = keyFrame->scale.x;
+            if ((channels & 0x10) != 0 && (this->keyFrames[j]->channels & 0x10) == 0)
+                this->keyFrames[j]->scale.y = keyFrame->scale.y;
+            if ((channels & 0x20) != 0 && (this->keyFrames[j]->channels & 0x20) == 0)
+                this->keyFrames[j]->scale.z = keyFrame->scale.z;
+            if ((channels & 0x200) != 0 && (this->keyFrames[j]->channels & 0x200) == 0)
+                this->keyFrames[j]->alpha = keyFrame->alpha;
+            if ((channels & 0x10000) != 0 && (this->keyFrames[j]->channels & 0x10000) == 0)
+                this->keyFrames[j]->localRotation.x = keyFrame->localRotation.x;
+            if ((channels & 0x20000) != 0 && (this->keyFrames[j]->channels & 0x20000) == 0)
+                this->keyFrames[j]->localRotation.y = keyFrame->localRotation.y;
+            if ((channels & 0x40000) != 0 && (this->keyFrames[j]->channels & 0x40000) == 0)
+                this->keyFrames[j]->localRotation.z = keyFrame->localRotation.z;
+            if ((channels & 0x400) != 0 && (this->keyFrames[j]->channels & 0x400) == 0)
+                this->keyFrames[j]->localTranslation.x = keyFrame->localTranslation.x;
+            if ((channels & 0x800) != 0 && (this->keyFrames[j]->channels & 0x800) == 0)
+                this->keyFrames[j]->localTranslation.y = keyFrame->localTranslation.y;
+            if ((channels & 0x1000) != 0 && (this->keyFrames[j]->channels & 0x1000) == 0)
+                this->keyFrames[j]->localTranslation.z = keyFrame->localTranslation.z;
+            if ((channels & 0x2000) != 0 && (this->keyFrames[j]->channels & 0x2000) == 0)
+                this->keyFrames[j]->localScale.x = keyFrame->localScale.x;
+            if ((channels & 0x4000) != 0 && (this->keyFrames[j]->channels & 0x4000) == 0)
+                this->keyFrames[j]->localScale.y = keyFrame->localScale.y;
+            if ((channels & 0x8000) != 0 && (this->keyFrames[j]->channels & 0x8000) == 0)
+                this->keyFrames[j]->localScale.z = keyFrame->localScale.z;
         }
     }
 
