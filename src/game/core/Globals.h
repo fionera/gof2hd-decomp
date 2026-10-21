@@ -272,7 +272,7 @@ public:
     static int lastStationMusicPlayed;
     static int menu_touch_window_type;
     static unsigned char useLowResTexturesForHD;
-    static char *instantActionPlayerName;
+    static AbyssEngine::String *instantActionPlayerName;
     static unsigned char isRunningHDonWeakDevice;
     static float quickmenu_button_start_x;
     static float quickmenu_button_start_y;

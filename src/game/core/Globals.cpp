@@ -263,7 +263,7 @@ unsigned char Globals::inAppPurchaseSupported;
 int Globals::lastStationMusicPlayed;
 int Globals::menu_touch_window_type;
 unsigned char Globals::useLowResTexturesForHD;
-char *Globals::instantActionPlayerName;
+AbyssEngine::String *Globals::instantActionPlayerName;
 unsigned char Globals::isRunningHDonWeakDevice;
 float Globals::quickmenu_button_start_x;
 float Globals::quickmenu_button_start_y;
@@ -484,75 +484,37 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
 void Globals::reportSupernovaChallengeScore() {
 }
 
-static const char gGLA_newline[] = "";
 
 void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
                            Array<String *> *out) {
-    String *line = static_cast<String *>(::operator new(sizeof(String)));
-    {
-        String *_s = line;
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    String work;
-    work.Set((const_cast<String *>(&text))->data);
-    String nl;
-    nl.ctor_char(gGLA_newline, false);
-    work += nl;
-
-    const int total = static_cast<int>(work.size());
+    String *line = new String();
+    String work(text, false);
+    work += String("\n", false);
 
     unsigned count = 0;
-    for (int consumed = 0; consumed < total;) {
-        String rest;
-        rest = work.SubString(consumed, total);
-        getLine(font, rest, maxWidth, line);
-        consumed += static_cast<int>(line->size());
-        count++;
+    for (int consumed = 0; consumed < work.length; count++) {
+        String rest = work.SubString(consumed, work.length);
+        getLine(font, String(rest, false), maxWidth, line);
+        consumed += line->length;
     }
-    {
-        String *_s = line;
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    ::operator delete(line);
+    delete line;
 
     ArraySetLength(count, *out);
-    for (unsigned i = 0; i < count; i++) {
-        String *s = static_cast<String *>(::operator new(sizeof(String)));
-        {
-            String *_s = s;
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        (*out)[i] = s;
-    }
+    for (unsigned i = 0; i < count; i++)
+        (*out)[i] = new String();
 
     int consumed = 0;
     for (unsigned i = 0; i < count; i++) {
-        String *slot = (*out)[i];
-        String rest;
-        rest = work.SubString(consumed, total);
-        getLine(font, rest, maxWidth, slot);
-        consumed += static_cast<int>(slot->size());
-
-        int lo = 0;
-        int hi = static_cast<int>(slot->size());
-        while (*slot->index(lo) == 0x20) {
-            lo++;
-        }
-        hi++;
-        do {
-            hi--;
-        } while (*slot->index(hi - 2) == 0x20);
-
-        String trimmed;
-        trimmed = slot->SubString(lo, hi);
-        *slot = trimmed;
+        String rest = work.SubString(consumed, work.length);
+        getLine(font, String(rest, false), maxWidth, (*out)[i]);
+        int end = (*out)[i]->length;
+        consumed += end;
+        int start = 0;
+        while (*(*(*out)[i])[start] == ' ')
+            start++;
+        while (*(*(*out)[i])[end - 1] == ' ')
+            end--;
+        *(*out)[i] = (*out)[i]->SubString(start, end);
     }
 }
 
@@ -612,65 +574,33 @@ void Globals::longToTimeString(long long ms, String &out) {
     return;
 }
 
-static int **const gGBS_guardHolder = nullptr;
-static String ***const gGBS_strPtr = nullptr;
-static int ***const gGBS_canvas = nullptr;
-static const char gGBS_prefix[] = "";
 
 String Globals::getBoundedString(const String &text, int width) {
-    int *guardP = *gGBS_guardHolder;
-    int saved = *guardP;
-
-    String result;
-    result.Set((const_cast<String *>(&text))->data);
-
-    String **strPtr = *gGBS_strPtr;
-    int **canvas = *gGBS_canvas;
-    int w = ((PaintCanvas *) (long) **canvas)->GetTextWidth(0, **strPtr);
-    if (width < w) {
-        String *line = (String *) ::operator new(0xc);
-        {
-            String *_s = line;
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-
-        int font = (int) (long) *strPtr;
-        String tmpText;
-        tmpText.Set((const_cast<String *>(&text))->data);
-        Globals::globals->getLine((unsigned) font, tmpText, width - 3, line);
-
-        String prefix;
-        prefix.ctor_char(gGBS_prefix, false);
-        result = prefix + *line;
-
-        {
-            String *_s = line;
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
+    String result(text, false);
+    if (Globals::Canvas->GetTextWidth(reinterpret_cast<unsigned int &>(Globals::font), text) > width) {
+        String *line = new String();
+        getLine(reinterpret_cast<unsigned int &>(Globals::font), String(text, false), width - 3, line);
+        result = *line + String("...", false);
+        delete line;
     }
-
     return result;
 }
 
-static const float gSCS_f86f8 = 0;
-static const float gSCS_f86fc = 0;
-static const float gSCS_f8700 = 0;
-static const float gSCS_f8704 = 0;
-static const float gSCS_f8708 = 0;
-static const float gSCS_f870c = 0;
-static const float gSCS_f8710 = 0;
-static const float gSCS_f8714 = 0;
-static const float gSCS_f8718 = 0;
-static const float gSCS_f871c = 0;
-static const float gSCS_f8720 = 0;
-static const float gSCS_f8724 = 0;
-static const float gSCS_f8728 = 0;
-static const float gSCS_f872c = 0;
-static const float gSCS_f8730 = 0;
+static const float gSCS_f86f8 = 210.9375f;
+static const float gSCS_f86fc = 300.0f;
+static const float gSCS_f8700 = 150.0f;
+static const float gSCS_f8704 = -126.5625f;
+static const float gSCS_f8708 = 92.8125f;
+static const float gSCS_f870c = 180.0f;
+static const float gSCS_f8710 = 90.0f;
+static const float gSCS_f8714 = 132.0f;
+static const float gSCS_f8718 = 66.0f;
+static const float gSCS_f871c = 313.59375f;
+static const float gSCS_f8720 = 2.8125f;
+static const float gSCS_f8724 = 446.0f;
+static const float gSCS_f8728 = 223.0f;
+static const float gSCS_f872c = -2.8125f;
+static const float gSCS_f8730 = 54.0f;
 
 
 static inline char rdflag(char *const g) { return *g; }
@@ -1088,31 +1018,12 @@ static const char gLTS_hrEmpty[] = "";
 static const char gLTS_sep[] = "";
 
 void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
-    long long q = ms / 0xea60;
-    int minute = (int) (q % 0x3c);
-
-    long long q2 = ms / 0xea60;
-    int hours = (int) (q2 % 0x18);
-
-    String mPart, mNum, minStr;
-    mPart.ctor_char(minute < 10 ? gLTS_minTens : gLTS_minEmpty, false);
-    mNum.Set((long long) (minute));
-    minStr = mPart + mNum;
-
-    long long h = ms / 0xea60;
-    int hv = (int) h * 0x18 + hours;
-
-    String hPart, hNum, hrStr;
-    hPart.ctor_char(hv < 10 ? gLTS_hrTens : gLTS_hrEmpty, false);
-    hNum.Set((long long) (hv));
-    hrStr = hPart + hNum;
-
-    String sep, left;
-    sep.ctor_char(gLTS_sep, false);
-    left = sep + hrStr;
-    out = left + minStr;
-
-    return;
+    int minutes = (int) (ms / 60000 % 60);
+    int hours = (int) (ms / 3600000 % 24);
+    String minuteText = (minutes < 10 ? String("0", false) : String("", false)) + String(minutes);
+    hours += (int) (ms / 86400000) * 24;
+    String hourText = (hours < 10 ? String("0", false) : String("", false)) + String(hours);
+    out = hourText + String(":", false) + minuteText;
 }
 
 static const unsigned short gGSG_resTable[1] = {};
@@ -1605,115 +1516,51 @@ Globals::Globals() {
     self->soundResources = 0;
 }
 
-struct PolymorphicSingleton {
-    virtual ~PolymorphicSingleton() {
-    }
-};
-
-static RecordHandler **const gG_recordHandler = nullptr;
-static Galaxy **const gG_galaxy = nullptr;
-static Status **const gG_status = nullptr;
-static GameText **const gG_gameText = nullptr;
-static AbyssEngine::AERandom **const gG_random = nullptr;
-static Layout **const gG_layout = nullptr;
-static Generator **const gG_generator = nullptr;
-static PolymorphicSingleton **const gG_polyObj = nullptr;
-static FModSound **const gG_fmod = nullptr;
-static Array<Item *> **const gG_items = nullptr;
-static Array<Ship *> **const gG_ships = nullptr;
-static Achievements **const gG_achievements = nullptr;
-static ImageFactory **const gG_imageFactory = nullptr;
-static int **const gG_tail = nullptr;
-
 Globals::~Globals() {
-    RecordHandler **rhSlot = gG_recordHandler;
-    if (*rhSlot != 0) {
-        (*rhSlot)->saveOptions();
+    if (Globals::recordHandler != nullptr)
+        Globals::recordHandler->saveOptions();
+    delete Globals::galaxy;
+    Globals::galaxy = nullptr;
+    delete Globals::status;
+    Globals::status = nullptr;
+    delete Globals::gameText;
+    Globals::gameText = nullptr;
+    delete Globals::rnd;
+    Globals::rnd = nullptr;
+    delete Globals::layout;
+    Globals::layout = nullptr;
+    delete Globals::generator;
+    Globals::generator = nullptr;
+    delete Globals::recordHandler;
+    Globals::recordHandler = nullptr;
+    delete Globals::instantActionPlayerName;
+    Globals::instantActionPlayerName = nullptr;
+    delete Globals::sound;
+    Globals::sound = nullptr;
+    if (Globals::items != nullptr) {
+        ArrayReleaseClasses(*Globals::items);
+        delete Globals::items;
     }
-    Galaxy **galSlot = gG_galaxy;
-    if (*galSlot != 0) {
-        ::operator delete(Galaxy_dtor(*galSlot));
+    Globals::items = nullptr;
+    if (Globals::ships != nullptr) {
+        ArrayReleaseClasses(*Globals::ships);
+        delete Globals::ships;
     }
-    *galSlot = 0;
-    Status **statSlot = gG_status;
-    if (*statSlot != 0) {
-        ::operator delete(Status_dtor(*statSlot));
-    }
-    *statSlot = 0;
-    GameText **gtSlot = gG_gameText;
-    if (*gtSlot != 0) {
-        delete *gtSlot;
-    }
-    *gtSlot = 0;
-    AbyssEngine::AERandom **rngSlot = gG_random;
-    if (*rngSlot != 0) {
-        ::operator delete(AERandom_dtor(*rngSlot));
-    }
-    *rngSlot = 0;
-    Layout **laySlot = gG_layout;
-    if (*laySlot != 0) {
-        ::operator delete(Layout_dtor(*laySlot));
-    }
-    *laySlot = 0;
-    Generator **genSlot = gG_generator;
-    if (*genSlot != 0) {
-        ::operator delete(Generator_dtor(*genSlot));
-    }
-    *genSlot = 0;
-    if (*rhSlot != 0) {
-        delete *rhSlot;
-    }
-    *rhSlot = 0;
-    PolymorphicSingleton **polySlot = gG_polyObj;
-    PolymorphicSingleton *poly = *polySlot;
-    if (poly != 0) {
-        delete poly;
-    }
-    *polySlot = 0;
-    FModSound **fmodSlot = gG_fmod;
-    if (*fmodSlot != 0) {
-        ::operator delete(FModSound_dtor(*fmodSlot));
-    }
-    *fmodSlot = 0;
-    Array<Item *> **itemSlot = gG_items;
-    if (*itemSlot != 0) {
-        Array<Item *> *items = *itemSlot;
-        ArrayReleaseClasses(*items);
-        delete items;
-    }
-    *itemSlot = 0;
-    Array<Ship *> **shipSlot = gG_ships;
-    if (*shipSlot != 0) {
-        Array<Ship *> *ships = *shipSlot;
-        ArrayReleaseClasses(*ships);
-        delete ships;
-    }
-    *shipSlot = 0;
-    if (*galSlot != 0) {
-        ::operator delete(Galaxy_dtor(*galSlot));
-    }
-    *galSlot = 0;
-    Achievements **achSlot = gG_achievements;
-    if (*achSlot != 0) {
-        ::operator delete(Achievements_dtor(*achSlot));
-    }
-    *achSlot = 0;
-    if (*statSlot != 0) {
-        ::operator delete(Status_dtor(*statSlot));
-    }
-    *statSlot = 0;
-    ImageFactory **ifSlot = gG_imageFactory;
-    if (*ifSlot != 0) {
-        ::operator delete(ImageFactory_dtor(*ifSlot));
-    }
-    *ifSlot = 0;
-
-    if (this->soundResources != 0) {
-        ArrayRelease(*(this->soundResources));
+    Globals::ships = nullptr;
+    delete Globals::galaxy;
+    Globals::galaxy = nullptr;
+    delete Globals::achievements;
+    Globals::achievements = nullptr;
+    delete Globals::status;
+    Globals::status = nullptr;
+    delete Globals::imageFactory;
+    Globals::imageFactory = nullptr;
+    if (this->soundResources != nullptr) {
+        ArrayRelease(*this->soundResources);
         delete this->soundResources;
     }
-    this->soundResources = 0;
-    **gG_tail = 0;
+    this->soundResources = nullptr;
+    Globals::globals = nullptr;
 }
 
 
@@ -1733,38 +1580,38 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
     }
 }
 
-static const float gSCF_b90 = 0;
-static const float gSCF_b10 = 0;
-static const float gSCF_b14 = 0;
-static const float gSCF_b7c = 0;
-static const float gSCF_b80 = 0;
-static const float gSCF_b84 = 0;
-static const float gSCF_b88 = 0;
-static const float gSCF_b8c = 0;
-static const float gSCF_b94 = 0;
-static const float gSCF_b98 = 0;
-static const float gSCF_b9c = 0;
-static const float gSCF_ba0 = 0;
-static const float gSCF_ba4 = 0;
-static const float gSCF_ba8 = 0;
-static const float gSCF_bac = 0;
-static const float gSCF_bb0 = 0;
-static const float gSCF_bb4 = 0;
-static const float gSCF_bb8 = 0;
-static const float gSCF_bbc = 0;
-static const float gSCF_bc0 = 0;
-static const float gSCF_bc4 = 0;
-static const float gSCF_bc8 = 0;
-static const float gSCF_bcc = 0;
-static const float gSCF_bd0 = 0;
-static const float gSCF_bd4 = 0;
-static const float gSCF_bd8 = 0;
-static const float gSCF_bdc = 0;
-static const float gSCF_be0 = 0;
-static const float gSCF_be4 = 0;
-static const float gSCF_be8 = 0;
-static const float gSCF_bec = 0;
-static const float gSCF_bf0 = 0;
+static const float gSCF_b90 = 56.25f;
+static const float gSCF_b10 = 63.28125f;
+static const float gSCF_b14 = 210.9375f;
+static const float gSCF_b7c = 63.28125f;
+static const float gSCF_b80 = 90.0f;
+static const float gSCF_b84 = 45.0f;
+static const float gSCF_b88 = 300.0f;
+static const float gSCF_b8c = 150.0f;
+static const float gSCF_b94 = 80.0f;
+static const float gSCF_b98 = 40.0f;
+static const float gSCF_b9c = 107.28125f;
+static const float gSCF_ba0 = 5.625f;
+static const float gSCF_ba4 = 18.09375f;
+static const float gSCF_ba8 = 19.28125f;
+static const float gSCF_bac = 112.5f;
+static const float gSCF_bb0 = 94.21875f;
+static const float gSCF_bb4 = 152.0f;
+static const float gSCF_bb8 = 77.0f;
+static const float gSCF_bbc = 160.0f;
+static const float gSCF_bc0 = 80.0f;
+static const float gSCF_bc4 = 134.0f;
+static const float gSCF_bc8 = 67.0f;
+static const float gSCF_bcc = 100.0625f;
+static const float gSCF_bd0 = 209.53125f;
+static const float gSCF_bd4 = 144.0f;
+static const float gSCF_bd8 = 74.0f;
+static const float gSCF_bdc = 298.0f;
+static const float gSCF_be0 = 149.0f;
+static const float gSCF_be4 = 132.1875f;
+static const float gSCF_be8 = 0.0f;
+static const float gSCF_bec = 189.0f;
+static const float gSCF_bf0 = 94.0f;
 
 
 static inline char rf(char *const g) { return *g; }
@@ -1905,95 +1752,61 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     o15 = clampU(t15 + static_cast<float>(o7));
 }
 
-static PaintCanvas **const gRR_arg = nullptr;
 
 void Globals::releaseResources() {
     Globals::Canvas->ReleaseAllResources();
-
-    PaintCanvas *secondaryCanvas = *gRR_arg;
-    if (secondaryCanvas != nullptr) {
-        secondaryCanvas->ReleaseAllResources();
-    }
+    Globals::layout->reload();
 }
 
 
 
 static inline char flag(char *const g) { return *g; }
 
-void Globals::loadFont(int kind) {
-    unsigned glyph;
-    short spacing;
-    unsigned char isMainFontPersian = 1;
-
-    switch (kind) {
-        case 9: {
-            Globals::Canvas->FontCreate((unsigned short) 0x2d74, *(unsigned int *) &Globals::font, false);
-            if (flag((char *) &Globals::iPadHD) != 0) {
-                spacing = -6;
-            } else {
-                spacing = flag((char *) &Globals::retinaDisplay) != 0 ? -8 : -4;
-            }
-            Globals::Canvas->FontSetSpacing(*(unsigned int *) &Globals::font, spacing);
-            isMainFontPersian = 0;
-            goto epilogue;
-        }
+void Globals::loadFont(int language) {
+    // The font handles are stored in pointer-typed statics shared with other TUs.
+    unsigned int &mainFont = reinterpret_cast<unsigned int &>(Globals::font);
+    unsigned int &alienFont = reinterpret_cast<unsigned int &>(Globals::fontAlien);
+    unsigned int &langSelectFont = reinterpret_cast<unsigned int &>(Globals::fontLangSelect);
+    bool latinFont = true;
+    switch (language) {
+        case 9:
+            Globals::Canvas->FontCreate(0x2d74, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
+            latinFont = false;
+            break;
         case 10:
-            glyph = 0x2d78;
+            Globals::Canvas->FontCreate(0x2d78, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
             break;
-        case 0xb:
-            glyph = 0x2d76;
+        case 11:
+            Globals::Canvas->FontCreate(0x2d76, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
             break;
-        case 0xe:
-            glyph = 0x2d7c;
+        case 14:
+            Globals::Canvas->FontCreate(0x2d7c, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
             break;
-        default: {
-            if (kind == 0xf) {
-                Globals::Canvas->FontCreate((unsigned short) 0x2d7e, *(unsigned int *) &Globals::font, false);
-                if (flag((char *) &Globals::iPadHD) != 0) {
-                    spacing = -7;
-                } else {
-                    spacing = flag((char *) &Globals::retinaDisplay) != 0 ? -10 : -5;
-                }
+        default:
+            if (language == 15) {
+                Globals::Canvas->FontCreate(0x2d7e, mainFont, true);
+                Globals::Canvas->FontSetSpacing(mainFont, Globals::iPadHD ? -7 : (Globals::retinaDisplay ? -10 : -5));
             } else {
-                Globals::Canvas->FontCreate((unsigned short) 0x457, *(unsigned int *) &Globals::font, false);
-                if (flag((char *) &Globals::retinaDisplay) != 0) {
-                    spacing = -5;
-                } else if (flag((char *) &Globals::n9) != 0) {
-                    spacing = -4;
-                } else if (flag((char *) &Globals::iPadHD) != 0) {
-                    spacing = -4;
-                } else {
-                    spacing = -2;
-                }
+                Globals::Canvas->FontCreate(0x457, mainFont, true);
+                Globals::Canvas->FontSetSpacing(mainFont, Globals::retinaDisplay ? -5
+                                                          : Globals::n9 ? -4
+                                                          : Globals::iPadHD ? -4 : -2);
             }
-            Globals::Canvas->FontSetSpacing(*(unsigned int *) &Globals::font, spacing);
-            goto setMain;
-        }
+            break;
     }
-
-    Globals::Canvas->FontCreate((unsigned short) glyph, *(unsigned int *) &Globals::font, false);
-    if (flag((char *) &Globals::iPadHD) != 0) {
-        spacing = -6;
-    } else {
-        spacing = flag((char *) &Globals::retinaDisplay) != 0 ? -8 : -4;
-    }
-    Globals::Canvas->FontSetSpacing(*(unsigned int *) &Globals::font, spacing);
-
-setMain:
-    isMainFontPersian = 1;
-epilogue: {
-        int *mainCanvas = (int *) &Globals::Canvas;
-        unsigned *mainFont = (unsigned *) &Globals::fontAlien;
-        int cv = *mainCanvas;
-
-        ((PaintCanvas *) (long) cv)->field_0x1c = isMainFontPersian;
-        ((PaintCanvas *) (long) cv)->FontCreate((unsigned short) 0x51e, *mainFont, false);
-        ((PaintCanvas *) (long) *mainCanvas)->FontSetSpacing(*mainFont, 0);
-        unsigned *extra = (unsigned *) &Globals::fontLangSelect;
-        ((PaintCanvas *) (long) *mainCanvas)->FontCreate((unsigned short) 0x2d7a, *extra, false);
-
-        ((PaintCanvas *) (long) *mainCanvas)->FontSetSpacing(*extra, 0);
-    }
+    Globals::Canvas->field_0x1c = latinFont;
+    Globals::Canvas->FontCreate(0x51e, alienFont, true);
+    Globals::Canvas->FontSetSpacing(alienFont, 0);
+    Globals::Canvas->FontCreate(0x2d7a, langSelectFont, true);
+    Globals::Canvas->FontSetSpacing(langSelectFont, 0);
 }
 
 // Globals::init below accesses these engine globals directly (Mission::empty,
@@ -2117,108 +1930,73 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     return (int) (long) arr;
 }
 
-static const int gPM_table0 = 0;
-static const int gPM_table1 = 0;
+static const int gStationMusicByRace[4] = {128, 127, 129, 130};
+static const int gSpaceMusicByRace[4] = {134, 139, 138, 137};
 
 void Globals::playMusicAndFadeOutCurrent(int mode) {
-    int snd;
-    int track;
-    int vol = 0;
-
-    if (mode == 2) {
-        int *sndP = (int *) &Globals::sound;
-        ((FModSound *) (*sndP))->stop(0);
-        snd = *sndP;
-        track = 0x91;
-        ((FModSound *) (snd))->play(track, 0, 0, (float) vol);
-        return;
-    }
-    if (mode == 1) {
-        int *statSnd = (int *) &Globals::status;
-        if (Globals::status->inAlienOrbit() != 0) {
-            int *sndP = (int *) &Globals::sound;
-            ((FModSound *) (*sndP))->stop(0);
-            snd = *sndP;
-            track = 0x88;
-            int m = Globals::status->getCurrentCampaignMission();
-            if (m > 0x92 && Globals::status->getCurrentCampaignMission() < 0x9a) {
-                track = 0x91;
+    switch (mode) {
+        case 0: {
+            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            Globals::sound->stop(Globals::sound->currentMusicEvent);
+            if (Globals::status->getStation()->getIndex() == 108) {
+                Globals::sound->play(132, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 101) {
+                Globals::sound->play(131, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 10 ||
+                       Globals::status->getStation()->getIndex() == 100) {
+                if (Globals::status->getStation()->getIndex() == 10 &&
+                    Globals::status->getCurrentCampaignMission() == 159)
+                    Globals::sound->play(144, nullptr, nullptr, 0.0f);
+                else
+                    Globals::sound->play(133, nullptr, nullptr, 0.0f);
+            } else {
+                int track = gStationMusicByRace[race];
+                Globals::sound->play(track, nullptr, nullptr, 0.0f);
             }
-            ((FModSound *) (snd))->play(track, 0, 0, (float) vol);
-            return;
+            break;
         }
-        ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-        int *sndP = (int *) &Globals::sound;
-        ((FModSound *) (*sndP))->stop(0);
-        if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x6c) {
-            ((FModSound *) (*sndP))->play(0x92, 0, 0, (float) vol);
-            return;
-        }
-        if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x65) {
-            ((FModSound *) (*sndP))->play(0x93, 0, 0, (float) vol);
-            return;
-        }
-        if (Globals::status->inSupernovaSystem() != 0) {
-            if (Globals::status->getCurrentCampaignMission() == 0x59) {
-                ((FModSound *) (*sndP))->play(0x8be, 0, 0, (float) vol);
-                return;
+        case 1: {
+            if (Globals::status->inAlienOrbit()) {
+                Globals::sound->stop(Globals::sound->currentMusicEvent);
+                Globals::sound->play(Globals::status->getCurrentCampaignMission() >= 147 &&
+                                     Globals::status->getCurrentCampaignMission() < 154 ? 145 : 136,
+                                     nullptr, nullptr, 0.0f);
+                break;
             }
-            if (Globals::status->getMission() != 0 && ((Mission *) (long) Globals::status->getMission())->isEmpty() ==
-                0) {
-                int tgt = ((Mission *) (long) Globals::status->getMission())->getTargetStation();
-                if (tgt == Station_getIndex((int) (long) Globals::status->getStation())) {
-                    int cm = Globals::status->getCurrentCampaignMission();
-                    track = cm < 0x6a ? 0x8c1 : 0x8c2;
-                    ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
-                    return;
+            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            Globals::sound->stop(Globals::sound->currentMusicEvent);
+            if (Globals::status->getStation()->getIndex() == 108) {
+                Globals::sound->play(146, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 101) {
+                Globals::sound->play(147, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->inSupernovaSystem()) {
+                if (Globals::status->getCurrentCampaignMission() == 89) {
+                    Globals::sound->play(2238, nullptr, nullptr, 0.0f);
+                } else if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
+                           Globals::status->getMission()->getTargetStation() ==
+                           Globals::status->getStation()->getIndex()) {
+                    Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242, nullptr,
+                                         nullptr, 0.0f);
+                } else {
+                    Globals::sound->play(148, nullptr, nullptr, 0.0f);
                 }
+            } else if (Globals::status->inDeepScienceOrbit()) {
+                Globals::sound->play(152, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 120 &&
+                       (Globals::status->getCurrentCampaignMission() == 126 ||
+                        Globals::status->getCurrentCampaignMission() == 133)) {
+                Globals::sound->play(2239, nullptr, nullptr, 0.0f);
+            } else {
+                int track = gSpaceMusicByRace[race];
+                Globals::sound->play(track, nullptr, nullptr, 0.0f);
             }
-            ((FModSound *) (*sndP))->play(0x94, 0, 0, (float) vol);
-            return;
+            break;
         }
-        if (Globals::status->inDeepScienceOrbit() != 0) {
-            ((FModSound *) (*sndP))->play(0x98, 0, 0, (float) vol);
-            return;
-        }
-        if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x78 &&
-            (Globals::status->getCurrentCampaignMission() == 0x7e ||
-             Globals::status->getCurrentCampaignMission() == 0x85)) {
-            ((FModSound *) (*sndP))->play(0x8bf, 0, 0, (float) vol);
-            return;
-        }
-        const int *table = &gPM_table1;
-        track = table[((SolarSystem *) (long) Globals::status->getSystem())->getRace()];
-        ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
-        return;
+        case 2:
+            Globals::sound->stop(Globals::sound->currentMusicEvent);
+            Globals::sound->play(145, nullptr, nullptr, 0.0f);
+            break;
     }
-    if (mode != 0) {
-        return;
-    }
-
-    int race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-    int *sndP = (int *) &Globals::sound;
-    ((FModSound *) (*sndP))->stop(0);
-    if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x6c) {
-        ((FModSound *) (*sndP))->play(0x84, 0, 0, (float) vol);
-        return;
-    }
-    if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x65) {
-        ((FModSound *) (*sndP))->play(0x83, 0, 0, (float) vol);
-        return;
-    }
-    int idx = Station_getIndex((int) (long) Globals::status->getStation());
-    if (idx == 10 || Station_getIndex((int) (long) Globals::status->getStation()) == 100) {
-        if (Station_getIndex((int) (long) Globals::status->getStation()) == 10 &&
-            Globals::status->getCurrentCampaignMission() == 0x9f) {
-            ((FModSound *) (*sndP))->play(0x90, 0, 0, (float) vol);
-            return;
-        }
-        ((FModSound *) (*sndP))->play(0x85, 0, 0, (float) vol);
-        return;
-    }
-    const int *table = &gPM_table0;
-    track = table[race];
-    ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
 }
 
 static const int gGDS_pairTable[1] = {};
@@ -2475,90 +2253,56 @@ static const char gGRN_noFirst[] = "";
 static const char gGRN_noLast[] = "";
 static const char gGRN_space[] = "";
 
-String Globals::getRandomName(int kind, bool both) {
-
-    FileRead *fr = (FileRead *) ::operator new(1);
-    FileRead_ctor(fr);
-    Array<String *> *first = fr->loadNamesBinary(kind, both, 1);
-    Array<String *> *last = fr->loadNamesBinary(kind, both, 0);
-
-    String firstStr, lastStr;
-    if (first == 0) {
-        firstStr.ctor_char(gGRN_noFirst, false);
-    } else {
-        int idx = nextInt_71aa4(Globals::rnd);
-        firstStr.Set(((*first)[idx])->data);
+String Globals::getRandomName(int race, bool female) {
+    FileRead *reader = new FileRead();
+    Array<String *> *firstNames = reader->loadNamesBinary(race, female, true);
+    Array<String *> *lastNames = reader->loadNamesBinary(race, female, false);
+    String firstName = firstNames == nullptr
+                           ? String("", false)
+                           : String(*(*firstNames)[Globals::rnd->nextInt(firstNames->size())], false);
+    String lastName = lastNames == nullptr
+                          ? String("", false)
+                          : String(*(*lastNames)[Globals::rnd->nextInt(lastNames->size())], false);
+    if (firstNames != nullptr) {
+        ArrayReleaseClasses(*firstNames);
+        delete firstNames;
     }
-    if (last == 0) {
-        lastStr.ctor_char(gGRN_noLast, false);
-    } else {
-        int idx = nextInt_71aa4(Globals::rnd);
-        lastStr.Set(((*last)[idx])->data);
+    if (lastNames != nullptr) {
+        ArrayReleaseClasses(*lastNames);
+        delete lastNames;
     }
-
-    if (first != 0) {
-        ArrayReleaseClasses(*first);
-        delete first;
-    }
-    if (last != 0) {
-        ArrayReleaseClasses(*last);
-        delete last;
-    }
-    ::operator delete(FileRead_dtor(fr));
-
-    String result;
-    if (firstStr.size() == 0) {
-        result.Set((firstStr).data);
-    } else {
-        String space, mid;
-        space.ctor_char(gGRN_space, false);
-        mid = firstStr + space;
-        result = mid + lastStr;
-    }
-
-    return result;
+    delete reader;
+    if (lastName.length != 0)
+        return firstName + String(" ", false) + lastName;
+    return String(firstName, false);
 }
 
-static const char gGL_empty[] = "";
 
 void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
     int lang = GameText::getLanguage();
-    int width = 5;
-    if (((unsigned) (lang | 1)) == 0xb) width = 0xf;
-    if ((unsigned) lang == 0xf) width = 0xf;
-
-    int *canvas = (int *) &Globals::Canvas;
+    int width = (lang | 1) == 11 ? 15 : 5;
+    if (lang == 15) width = lang;
     unsigned lastSpace = 0;
-    unsigned len = text.size();
-
-    String tmp;
-    for (unsigned i = 0; i < len;) {
-        short ch = *text.index(i);
-        width += ((PaintCanvas *) (long) *canvas)->GetTextWidth(font, text, i, i + 1);
-        if (ch == 0x20) {
-            lastSpace = i;
-        }
-        if (maxWidth <= width) {
-            if (ch == 0x0a || ch == 0x0d) {
-                tmp = text.SubString(0, i + 1);
-            } else if ((int) lastSpace < 1) {
-                tmp = text.SubString(0, i + 1);
-            } else {
-                tmp = text.SubString(0, lastSpace + 1);
-            }
-            *out = tmp;
+    for (unsigned i = 0; i < (unsigned) text.length; i++) {
+        unsigned short c = *text[i];
+        width += Globals::Canvas->GetTextWidth(font, text, i, i + 1);
+        if (c == ' ') lastSpace = i;
+        if (width >= maxWidth) {
+            if ((int) lastSpace >= 1)
+                *out = text.SubString(0, lastSpace + 1);
+            else
+                *out = text.SubString(0, i + 1);
             return;
         }
-        i++;
-        len = text.size();
+        if (*text[i] == '\n' || *text[i] == '\r') {
+            *out = text.SubString(0, i + 1);
+            return;
+        }
     }
-
-    if ((int) len < 2) {
-        tmp.ctor_char(gGL_empty, false);
-    } else {
-        tmp = text.SubString(0, len);
-    }
-    *out = tmp;
+    if (text.length >= 2)
+        *out = text.SubString(0, text.length);
+    else
+        *out = String("", false);
 }
 
 #include "engine/core/AERandom.h"
