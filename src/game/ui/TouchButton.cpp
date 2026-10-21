@@ -638,57 +638,39 @@ void TouchButton::draw() {
 TouchButton::TouchButton(String const &text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7) {
     this->fontId = (uint32_t) (uintptr_t) Globals::font;
     this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
-    init(text, (unsigned int) type, x, y, p5, 0, 0, 0, p6, p7);
+    init(text, 0xffffffff, type, -1, -1, x, y, p5, p6, p7);
 }
 
 void TouchButton::setText(String const &text) {
     this->text = text;
-    int w = Globals::Canvas->GetTextWidth(this->fontId, this->text);
+    int textW = Globals::Canvas->GetTextWidth(this->fontId, text);
     if (this->subId != -1)
-        w = Globals::Canvas->GetImage2DWidth(0);
-    int a94 = this->leftWidth;
-    int x;
+        textW = Globals::Canvas->GetImage2DWidth(this->subId);
     if (this->requestedWidth < 1)
-        x = w;
+        this->midStretch = textW;
     else
-        x = (this->requestedWidth - a94) - this->rightWidth;
-    this->midStretch = x;
-    x = this->rightWidth + x + a94;
-    this->width = x;
-    unsigned char fl = this->flags1;
-    if ((fl & 2) == 0) {
-        if ((fl & 1) != 0) {
-            this->textOffsetX = a94;
-            goto height;
-        }
-        x = (x - w) / 2;
-        this->textOffsetX = x;
-        if (this->kind == 6) {
-            x = x + -5;
-        } else {
-            if (this->kind != 5)
-                goto height;
-            x = x + 5;
-        }
+        this->midStretch = this->requestedWidth - this->leftWidth - this->rightWidth;
+    this->width = this->midStretch + this->leftWidth + this->rightWidth;
+    if ((this->flags1 & 2) != 0) {
+        this->textOffsetX = this->width - (textW + this->leftWidth);
+    } else if ((this->flags1 & 1) != 0) {
+        this->textOffsetX = this->leftWidth;
     } else {
-        x = x - (w + a94);
+        this->textOffsetX = (this->width - textW) / 2;
+        if (this->kind == 5)
+            this->textOffsetX = (this->width - textW) / 2 + 5;
+        else if (this->kind == 6)
+            this->textOffsetX = (this->width - textW) / 2 - 5;
     }
-    this->textOffsetX = x;
-height:
-    int h = this->height;
-    int th = Globals::Canvas->GetTextHeight(this->fontId);
-    th = (h - th) / 2;
-    this->textOffsetY = th;
+    this->textOffsetY = (this->height - Globals::Canvas->GetTextHeight(this->fontId)) / 2;
     if (this->kind == 3)
-        this->textOffsetY = th + 2;
+        this->textOffsetY = this->textOffsetY + 2;
     if (this->subId != -1) {
-        h = this->height;
-        int ih = Globals::Canvas->GetImage2DHeight(0);
-        this->textOffsetY = (h - ih) / 2;
+        this->textOffsetY = (this->height - Globals::Canvas->GetImage2DHeight(this->subId)) / 2;
         if (this->kind == 1)
             this->textOffsetX = this->textOffsetX + 3;
     }
-    setPosition(this->initX, this->initY, this->flags0);
+    this->setPosition(this->initX, this->initY, this->flags0);
 }
 
 void TouchButton::setYPosition(int y) {
@@ -732,7 +714,7 @@ TouchButton::TouchButton(unsigned int kind, unsigned int image,
 TouchButton::TouchButton(String const &text, int x, int y, int p4, unsigned char p5) {
     this->fontId = (uint32_t) (uintptr_t) Globals::font;
     this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
-    init(text, 0xffffffff, 4, x, y, p4, 0, 0, p5, 0x44);
+    init(text, 0xffffffff, x, -1, -1, y, p4, 0, p5, 0x44);
 }
 
 TouchButton::TouchButton(String const &text,
