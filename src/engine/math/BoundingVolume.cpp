@@ -55,29 +55,19 @@ BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey,
     extentsZ = ez;
 }
 
-void BoundingVolume::staticProjectCollisionOnSurface(const Vector &v, Array<BoundingVolume *> *vols) {
-    centerX = v.x;
-    centerY = v.y;
-    centerZ = v.z;
-
+// Static: r0 = returned Vector (sret), r1 = start point, r2 = volume list. The point is pushed out
+// of every volume it lies in; two passes settle points pushed into a neighbouring volume.
+Vector BoundingVolume::staticProjectCollisionOnSurface(const Vector &v, Array<BoundingVolume *> *vols) {
+    Vector result = v;
     if (vols != nullptr) {
         for (int pass = 0; pass != 2; pass++) {
-            for (BoundingVolume * bv
-
-
-            :
-            *vols
-            )
-            {
-                if (bv->outerCollide(centerX, centerY, centerZ) != 0) {
-                    Vector out = bv->projectCollisionOnSurface(Vector{centerX, centerY, centerZ});
-                    centerX = out.x;
-                    centerY = out.y;
-                    centerZ = out.z;
-                }
+            for (unsigned int i = 0; i < vols->count; i++) {
+                if ((*vols)[i]->outerCollide(result.x, result.y, result.z) != 0)
+                    result = (*vols)[i]->projectCollisionOnSurface(result);
             }
         }
     }
+    return result;
 }
 
 void BoundingVolume::update(float x, float y, float z) {
