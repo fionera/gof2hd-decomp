@@ -119,15 +119,10 @@ static int *g_crm_counts8 = nullptr;
 
 static int *g_crm_table8 = nullptr;
 
-static PaintCanvas ***g_init_canvas = nullptr;
 
-static char **g_init_flagStack = nullptr;
 
-static int **g_init_missionDef = nullptr;
 
-static int **g_init_settings = nullptr;
 
-static char **g_init_bmFlag = nullptr;
 
 static char **g_ca_lowDetail = nullptr;
 
@@ -1149,192 +1144,152 @@ void Level::createRadioMessage(int type, int sub) {
 }
 
 int Level::init() {
-    Level *thisptr = this;
+    using namespace AbyssEngine::AEMath;
+    if (field_134 == 0) {
+        field_1b0 = 0;
+        field_68 = 0;
+        alarmRequested = 0;
+        field_18a = 0;
+        delete playerRoute;
+        playerRoute = nullptr;
+        delete enemyRoute;
+        enemyRoute = nullptr;
+        delete friendRoute;
+        friendRoute = nullptr;
+        delete objectivesB;
+        objectivesB = nullptr;
+        delete objectivesA;
+        objectivesA = nullptr;
+        lodManager = new LODManager();
 
-    int stage = this->field_134;
-    if (stage == 0) {
-        this->field_68 = 0;
-        this->field_1b0 = 0;
-        this->alarmRequested = 0;
-        this->field_18a = 0;
-        if (this->playerRoute != nullptr)
-            (this->playerRoute->~Route(), ::operator delete(this->playerRoute));
-        this->playerRoute = nullptr;
-        if (this->enemyRoute != nullptr)
-            (this->enemyRoute->~Route(), ::operator delete(this->enemyRoute));
-        this->enemyRoute = nullptr;
-        if (this->friendRoute != nullptr)
-            (this->friendRoute->~Route(), ::operator delete(this->friendRoute));
-        this->friendRoute = nullptr;
-        if (this->objectivesB != 0)
-            ((this->objectivesB)->~Objective(), ::operator delete(this->objectivesB));
-        this->objectivesB = nullptr;
-        if (this->objectivesA != 0)
-            ((this->objectivesA)->~Objective(), ::operator delete(this->objectivesA));
-        this->objectivesA = nullptr;
+        particleEmitBoolPtr = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1, 0x4e85,
+                                                        false, 0xffff, false);
+        bool dustSystem = !Globals::status->inAlienOrbit()
+                          && ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() == 12;
+        particleRenderBoolPtr = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1, 0x6a72,
+                                                          false, 0xffff, false);
+        field_74 = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1, 0x4e83, true, 0xffff,
+                                             false);
+        field_80 = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1, 0x4e7a, true, 0x4e7a,
+                                             true);
+        field_98 = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1, 0x5e20, true, 0x5e20,
+                                             true);
+        particleSystemMgr = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1,
+                                                      dustSystem ? 0x4ea9 : 0x4e7f, true, 0, false);
+        skybox2Mesh = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1, 0x4e7c, false, 0x4e7c,
+                                                false);
+        field_8c = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1, 0x6a7c, true, 0x6a7c,
+                                             true);
+        field_9c = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1, 0x6ab9, true, 0xffff,
+                                             false);
+        field_94 = new ParticleSystemManager(Globals::Canvas, ParticleSettings::CameraSet_1, 0x6aaf, true, 0xffff,
+                                             false);
+        createSpace();
 
-        LODManager *lod = (LODManager *) ::operator new(0x14);
-        new(lod) LODManager();
-        this->lodManager = lod;
-
-        PaintCanvas *canvas = **g_init_canvas;
-
-        bool dustVariant = false;
-        if (Globals::status->inAlienOrbit() == 0) {
-            Globals::status->getSystem();
-            dustVariant = ((SolarSystem *) Globals::status->getSystem())->getTextureIndex() == 0xc;
-        }
-
-        ParticleSystemManager *psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x4e85, false, 0xffff, false);
-        this->particleEmitBoolPtr = psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x6a72, false, 0xffff, false);
-        this->particleRenderBoolPtr = psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x4e83, true, 0xffff, false);
-        this->field_74 = psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x4e7a, true, 0x4e7a, true);
-        this->field_80 = psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x5e20, true, 0x5e20, true);
-        this->field_98 = psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1,
-                                       (unsigned short) (dustVariant ? 0x4ea9 : 0x4e7f), true, 0, false);
-        this->particleSystemMgr = psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x4e7c, false, 0x4e7c, false);
-        this->skybox2Mesh = psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x6a7c, true, 0x6a7c, true);
-        this->field_8c = psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x6ab9, true, 0xffff, false);
-        this->field_9c = psm;
-        psm = (ParticleSystemManager *) ::operator new(100);
-        new(psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x6aaf, true, 0xffff, false);
-        this->field_94 = psm;
-
-        thisptr->createSpace();
-
-        if (this->missionPtr == 3) {
-            thisptr->createPlayer();
-            int stk = 0;
-            if (**g_init_flagStack != 0 && this->player->geometry != 0)
-                stk = (int) (intptr_t) Globals::status->getStationStack();
-            if (thisptr->player != nullptr) {
-                PlayerEgoPolymorphic *ego = (PlayerEgoPolymorphic *) thisptr->player;
-                ego->vtable->placeAtStation(ego, stk);
+        if (missionPtr == 3) {
+            createPlayer();
+            if (initStreamOutPosition && player->geometry != nullptr) {
+                Array<Station *> *stationStack = Globals::status->getStationStack();
+                if (stationStack == nullptr || (*stationStack)[1] == nullptr || Globals::status->getSystem() == 0
+                    || ((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate()) {
+                    Vector position = (*landmarks)[2]->getPosition();
+                    player->setPosition(position.x, position.y, position.z);
+                } else {
+                    // leaving a station: start in front of its planet, facing away from it
+                    Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
+                    int planet;
+                    for (planet = 0; (unsigned int) planet < stations->size(); planet++) {
+                        if ((*stations)[planet] == (*stationStack)[1]->getIndex()) {
+                            break;
+                        }
+                    }
+                    if ((unsigned int) planet >= stations->size()) {
+                        planet = -1;
+                    }
+                    Vector position = {0.0f, 0.0f, 25000.0f};
+                    if (planet >= 0) {
+                        position = (*(Array<AEGeometry *> *) starSystem->getPlanets())[planet + 1]->getPosition();
+                    }
+                    position *= 4.0f;
+                    player->setPosition(position);
+                    position.x = -position.x;
+                    position.y = -position.y;
+                    position.z = -position.z;
+                    position = VectorNormalize(position);
+                    player->geometry->setDirection(position, Vector{0.0f, 1.0f, 0.0f});
+                }
+            } else {
+                player->setPosition(10.0f, 10.0f, 10000.0f);
+            }
+            if (Globals::status->getCurrentCampaignMission() == 1) {
+                player->setPosition(0.0f, 0.0f, -110000.0f);
             }
         }
-        stage = this->field_134;
     }
 
-    if (stage != 1) {
-        this->field_134 = stage + 1;
+    if (field_134 != 1) {
+        field_134++;
         return 0;
     }
 
-    if (this->missionPtr != 4 && this->missionPtr != 0x17) {
-        thisptr->createAsteroids();
-        thisptr->createGasClouds();
+    if (missionPtr != 4 && missionPtr != 23) {
+        createAsteroids();
+        createGasClouds();
     }
-
-    Mission *m = (Mission *) Globals::status->getMission();
-    if (m == 0)
-        Globals::status->setMission((Mission *) **g_init_missionDef);
-
-    int mode = this->missionPtr;
-    if (mode == 3) {
-        bool campaign = ((Mission *) Globals::status->getMission())->isEmpty() == 0 && m->isCampaignMission() != 0;
-        bool madeScene = false;
-        if (campaign) {
-            if (this->missionPtr != 3) { madeScene = true; } else {
-                int won = Globals::status->gameWon();
-                GameSettings *settings = (GameSettings *) *g_init_settings;
-                bool skip = won != 0 && settings->settingSkipIntroFlag == 0 &&
-                            settings->blackMarketUnlockedFlag == 0;
-                if (skip) {
-                    thisptr->createMission();
-                    if (**g_init_bmFlag != 0 && Globals::status->inBlackMarketSystem() != 0) {
-                        if (thisptr->player != nullptr) {
-                            PlayerEgoPolymorphic *ego = (PlayerEgoPolymorphic *) thisptr->player;
-                            ego->vtable->placeAtStation(ego, 0);
-                        }
-                    }
-                } else if (this->missionPtr != 3) {
-                    madeScene = true;
-                } else {
-                    Globals::status->getMission();
-                    if (((Mission *) Globals::status->getMission())->isEmpty() == 0) {
-                        Mission *mm = (Mission *) Globals::status->getMission();
-                        if (mm->isCampaignMission() != 0)
-                            thisptr->createCampaignMission();
-                    }
-                }
-            }
-        } else {
-            thisptr->createMission();
-            if (**g_init_bmFlag != 0 && Globals::status->inBlackMarketSystem() != 0) {
-                if (thisptr->player != nullptr) {
-                    PlayerEgoPolymorphic *ego = (PlayerEgoPolymorphic *) thisptr->player;
-                    ego->vtable->placeAtStation(ego, 0);
-                }
-            }
+    Mission *mission = Globals::status->getMission();
+    if (mission == nullptr) {
+        Globals::status->setMission(Mission::empty);
+    }
+    int mode = missionPtr;
+    if (mode != 3) {
+        createScene();
+        missionPtr = mode;
+    } else if (mission->isEmpty() || !mission->isCampaignMission()
+               || (Globals::status->gameWon() && !(Globals::options[0x35] | Globals::options[0x37]))) {
+        createMission();
+        bool blackMarket = Globals::status->inBlackMarketSystem();
+        if (initStreamOutPosition && blackMarket) {
+            player->setPosition(player->getPosition() + Vector{0.0f, 0.0f, 40000.0f});
         }
-        if (madeScene) {
-            thisptr->createScene();
-            this->missionPtr = mode;
-        }
-    } else {
-        thisptr->createScene();
-        this->missionPtr = mode;
+    } else if (!Globals::status->getMission()->isEmpty() && Globals::status->getMission()->isCampaignMission()) {
+        createCampaignMission();
     }
 
-    thisptr->createStaticObjects();
-    mode = this->missionPtr;
-    if (mode != 0x17 && mode != 4 &&
-        (mode != 2 || Globals::status->getCurrentCampaignMission() != 0x2b)) {
-        thisptr->createSentryGuns();
-        thisptr->createFighterTurrets();
-        thisptr->createWingmen();
+    createStaticObjects();
+    if (missionPtr != 23 && missionPtr != 4
+        && (missionPtr != 2 || Globals::status->getCurrentCampaignMission() != 0x2b)) {
+        createSentryGuns();
+        createFighterTurrets();
+        createWingmen();
     }
-    thisptr->assignGuns();
-    if (this->missionPtr != 3)
-        this->missionPtr = 3;
-    thisptr->connectPlayers();
-    if (this->player != nullptr)
-        this->player->setRoute(this->playerRoute);
+    assignGuns();
+    if (missionPtr != 3) {
+        missionPtr = 3;
+    }
+    connectPlayers();
+    if (player != nullptr) {
+        player->setRoute(playerRoute);
+    }
 
-    int initial = 0;
-    int enemies = 0;
-    if (this->enemies != nullptr) {
-        for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
-            KIPlayer *e = (*this->enemies)[i];
-            if (e->deadFlag == 0 && e->lostMissionCrateToEgo == 0 && e->field_0x40 == 0) {
-                int wm = e->isWingMan();
-                if (wm == 0) {
-                    if ((char) e->field_0x44 == 0 && e->stealFlagByte == 0)
-                        enemies = enemies + (e->countsAsEnemyExcludeFlag ^ 1);
-                }
+    int count = 0;
+    if (enemies != nullptr) {
+        for (unsigned int i = 0; i < enemies->size(); i++) {
+            if ((*enemies)[i]->deadFlag == 0 && (*enemies)[i]->field_0x71 == 0
+                && (*enemies)[i]->field_0x3f_b == 0 && !(*enemies)[i]->isWingMan()
+                && (char) (*enemies)[i]->field_0x44 == 0 && (*enemies)[i]->stealFlagByte == 0) {
+                count += (*enemies)[i]->countsAsEnemyExcludeFlag ^ 1;
             }
         }
-        enemies = enemies - this->field_120;
     }
-    this->asteroidsLeft = 0;
-    this->enemiesLeft = enemies;
-    if (this->asteroids != nullptr)
-        initial = (int) this->asteroids->size();
-    this->field_184 = 0;
-    this->field_188 = 0;
-    this->field_1c = 0;
-    this->asteroidsLeft = initial;
-    this->kills = 0;
-    this->friendCargoStolen = 0;
-    this->field_70 = 1;
+    asteroidsLeft = 0;
+    enemiesLeft = enemies != nullptr ? count - field_120 : 0;
+    field_184 = 0;
+    field_188 = 0;
+    field_1c = 0;
+    asteroidsLeft = asteroids != nullptr ? (int) asteroids->size() : 0;
+    kills = 0;
+    friendCargoStolen = 0;
+    field_70 = 1;
     return 1;
 }
 

@@ -73,7 +73,8 @@ public:
     uint8_t field_69;
     uint8_t pad_6a[2];
     int field_6c;
-    int field_70;
+    uint8_t field_70;
+    uint8_t pad_71[3];
     ParticleSystemManager *field_74;
     ParticleSystemManager *particleEmitBoolPtr;
     ParticleSystemManager *particleSystemMgr;
