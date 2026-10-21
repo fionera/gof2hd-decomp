@@ -144,47 +144,34 @@ bool Explosion::peakReached() {
 
 void Explosion::start(const Vector &position, const Vector &direction) {
     this->primaryMesh->setPosition(position);
-
-    PaintCanvas **canvas = Explosion_canvas;
-    ((Transform *) (*canvas)->TransformGetTransform(this->primaryMesh->transform))->animating = true;
-
-    uint32_t lodTransform = this->primaryMesh->childTransform;
-    if (lodTransform != 0xffffffffu) {
-        ((Transform *) (*canvas)->TransformGetTransform(lodTransform))->animating = true;
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->animating = true;
+    if (this->primaryMesh->childTransform != 0xffffffffu) {
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->childTransform))->animating = true;
+    }
+    if (this->secondaryMesh != 0) {
+        this->secondaryMesh->setPosition(position);
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->animating = true;
     }
 
-    AEGeometry *secondary = this->secondaryMesh;
-    if (secondary != 0) {
-        secondary->setPosition(position);
-        ((Transform *) (*canvas)->TransformGetTransform(this->secondaryMesh->transform))->animating = true;
+    switch (this->type) {
+        case 8:
+        case 9:
+        case 10:
+            AbyssEngine::AEMath::MatrixSetRotation(this->rotation, 0.0f, 0.0f,
+                                                   (float) Globals::rnd->nextInt(3141) / 1000.0f);
+            this->setScaling(0.6f + (float) Globals::rnd->nextInt(40) * 0.01f);
+            break;
+        case 11:
+            this->primaryMesh->setDirection(direction, Vector{0.0f, 1.0f, 0.0f});
+            this->secondaryMesh->setDirection(direction, Vector{0.0f, 1.0f, 0.0f});
+            break;
     }
 
-    int type = this->type;
-    if ((uint32_t)(type - 8) < 3) {
-        float angle = (float) explosionRandom()->nextInt(0xc45) / 1000.0f;
-        Matrix rotation =
-            AbyssEngine::AEMath::MatrixSetRotation(this->rotation, 0.0f, 0.0f, angle);
-
-        float scale = 0.6f + (float) explosionRandom()->nextInt(0x28) * 0.01f;
-        this->setScaling(scale);
-    } else if (type == 0xb) {
-        Vector up;
-        up.x = 0.0f;
-        up.y = 1.0f;
-        up.z = 0.0f;
-        this->primaryMesh->setDirection(direction, up);
-        up.x = 0.0f;
-        up.y = 1.0f;
-        up.z = 0.0f;
-        this->secondaryMesh->setDirection(direction, up);
-    }
-
-    Array<AEGeometry *> *streaks = this->fireStreaks;
-    if (streaks != 0) {
-        for (uint32_t i = 0; i < streaks->size(); i++) {
-            AEGeometry *geometry = (*streaks)[i];
+    if (this->fireStreaks != 0) {
+        for (uint32_t i = 0; i < this->fireStreaks->size(); i++) {
+            AEGeometry *geometry = (*this->fireStreaks)[i];
             geometry->setPosition(position);
-            ((Transform *) (*canvas)->TransformGetTransform(geometry->transform))->animating = true;
+            ((Transform *) Globals::Canvas->TransformGetTransform(geometry->transform))->animating = true;
         }
     }
 
@@ -325,194 +312,128 @@ Explosion::Explosion(int type) {
     this->reset();
 }
 
-static int Explosion_soundDefault;
-static int Explosion_soundFallback;
-static int Explosion_soundSpecial;
-static char Explosion_soundSettings[0x10];
-
 void Explosion::playSound(Vector *pos) {
-    Vector *soundPos = pos;
-    int soundId = this->weaponIndex;
     int cue;
-    int sound;
-    int enabled;
-
-    if (soundId >= 0) {
-        uint32_t offset = (uint32_t)(soundId - 0x29);
-        if (offset <= 0x15) {
-            cue = 0xf;
-            switch (soundId) {
-                case 0x29:
-                    break;
-                case 0x2a:
-                    cue = 0x10;
-                    break;
-                case 0x2b:
-                    cue = 0x11;
-                    break;
-                case 0x2c:
-                    cue = 0xe;
-                    break;
-                case 0x2d:
-                    cue = 0xd;
-                    break;
-                case 0x2e:
-                    cue = 0xc;
-                    break;
-                case 0x2f:
-                case 0x30:
-                case 0x31:
-                case 0x32:
-                case 0x33:
-                case 0x34:
-                case 0x35:
-                case 0x36:
-                case 0x37:
-                case 0x38:
-                case 0x39:
-                case 0x3a:
-                case 0x3b:
-                    return;
-                case 0x3c:
-                case 0x3d:
-                case 0x3e:
-                    cue = 0x16;
-                    break;
-            }
-        } else {
-            offset = (uint32_t)(soundId - 0xb0);
-            if (offset < 3) {
-                cue = 0x16;
-            } else if (soundId == 0xb3) {
-                cue = 0xc;
-            } else if (soundId == 0xc5 || soundId == 0xdd) {
-                cue = 0x8cd;
-            } else {
-                if (soundId != 0xe8) {
-                    return;
-                }
-                cue = 0x8e7;
-            }
+    if (this->weaponIndex >= 0) {
+        switch (this->weaponIndex) {
+            case 41: cue = 15; break;
+            case 42: cue = 16; break;
+            case 43: cue = 17; break;
+            case 44: cue = 14; break;
+            case 45: cue = 13; break;
+            case 46: cue = 12; break;
+            case 60:
+            case 61:
+            case 62:
+            case 176:
+            case 177:
+            case 178:
+                cue = 22;
+                break;
+            case 179: cue = 12; break;
+            case 197:
+            case 221:
+                cue = 2253;
+                break;
+            case 232: cue = 2279; break;
+            default:
+                return;
         }
-        sound = Explosion_soundDefault;
-        enabled = Explosion_soundSettings[0xf];
+        Globals::sound->play(cue, Globals::options[0xf] != 0 ? pos : 0, 0, 0.0f);
     } else {
-        int type = this->type;
-        uint32_t typeOffset = (uint32_t)(type - 2);
-        if (typeOffset < 4) {
-            sound = Explosion_soundSpecial;
-            enabled = Explosion_soundSettings[0xf];
-            if (enabled == 0) {
-                soundPos = 0;
-            }
-            ((FModSound *) (intptr_t) sound)->play(0x15, soundPos, 0, 0);
-            return;
-        }
-        if (type != 0) {
-            return;
-        }
-        sound = Explosion_soundFallback;
-        int random = explosionRandom()->nextInt(2);
-        enabled = Explosion_soundSettings[0xf];
-        cue = 0x13;
-        if (random == 0) {
-            cue = 0x12;
+        switch (this->type) {
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                Globals::sound->play(21, Globals::options[0xf] != 0 ? pos : 0, 0, 0.0f);
+                break;
+            case 0:
+                Globals::sound->play(Globals::rnd->nextInt(2) == 0 ? 18 : 19,
+                                     Globals::options[0xf] != 0 ? pos : 0, 0, 0.0f);
+                break;
         }
     }
-
-    if (enabled == 0) {
-        soundPos = 0;
-    }
-    ((FModSound *) (intptr_t) sound)->play(cue, soundPos, 0, 0);
 }
 
 void Explosion::start(const Matrix &matrix) {
-    Vector position;
-
-    int type = this->type;
-    if (type == 6 || type == 0) {
-        MatrixGetPosition(&position, &matrix);
-        this->primaryMesh->setPosition(position);
-        MatrixGetPosition(&position, &matrix);
-        this->secondaryMesh->setPosition(position);
+    if (this->type == 6 || this->type == 0) {
+        this->primaryMesh->setPosition(AbyssEngine::AEMath::MatrixGetPosition(matrix));
+        this->secondaryMesh->setPosition(AbyssEngine::AEMath::MatrixGetPosition(matrix));
     } else {
-        this->primaryMesh->setMatrix(*(const AbyssEngine::AEMath::Matrix *) &matrix);
-        AEGeometry *secondary = this->secondaryMesh;
-        if (secondary != 0) {
-            secondary->setMatrix(*(const AbyssEngine::AEMath::Matrix *) &matrix);
+        this->primaryMesh->setMatrix(matrix);
+        if (this->secondaryMesh != 0) {
+            this->secondaryMesh->setMatrix(matrix);
         }
     }
 
-    PaintCanvas *canvas = explosionCanvas();
-    Array<AEGeometry *> *streaks = this->fireStreaks;
-    if (streaks != 0) {
-        for (uint32_t i = 0; i < streaks->size(); i++) {
-            AEGeometry *geometry = (*streaks)[i];
-            MatrixGetPosition(&position, &matrix);
-            geometry->setPosition(position);
-            ((Transform *) canvas->TransformGetTransform(geometry->transform))->animating = true;
+    if (this->fireStreaks != 0) {
+        for (uint32_t i = 0; i < this->fireStreaks->size(); i++) {
+            AEGeometry *geometry = (*this->fireStreaks)[i];
+            geometry->setPosition(AbyssEngine::AEMath::MatrixGetPosition(matrix));
+            ((Transform *) Globals::Canvas->TransformGetTransform(geometry->transform))->animating = true;
         }
     }
 
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->animating = true;
-    uint32_t lodTransform = this->primaryMesh->childTransform;
-    if (lodTransform != 0xffffffffu) {
-        ((Transform *) canvas->TransformGetTransform(lodTransform))->animating = true;
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->animating = true;
+    if (this->primaryMesh->childTransform != 0xffffffffu) {
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->childTransform))->animating = true;
     }
-    AEGeometry *secondary = this->secondaryMesh;
-    if (secondary != 0) {
-        ((Transform *) canvas->TransformGetTransform(secondary->transform))->animating = true;
+    if (this->secondaryMesh != 0) {
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->animating = true;
     }
 
     this->playing = 1;
-    MatrixGetPosition(&position, &matrix);
+    Vector position = AbyssEngine::AEMath::MatrixGetPosition(matrix);
     this->playSound(&position);
 }
 
 void Explosion::render() {
-    if (this->playing != 0) {
-        if (((uint32_t) this->type > 0xd || ((1u << this->type) & 0x2780u) == 0) &&
-            this->secondaryMesh != 0) {
-            this->secondaryMesh->render();
-        }
+    if (this->playing == 0) {
+        return;
+    }
 
-        PaintCanvas *canvas = explosionCanvas();
-        unsigned int current = canvas->CameraGetCurrent();
-        Matrix cameraLocal = *(const Matrix *) canvas->CameraGetLocal(current);
-
-        Vector position = this->primaryMesh->getPosition();
-
-        if ((uint32_t) this->type < 0xd && ((1u << this->type) & 0x1804u) != 0) {
-            AbyssEngine::AEMath::MatrixSetTranslation(cameraLocal, position.x, position.y, position.z);
-        } else {
-            Vector cameraPosition = AbyssEngine::AEMath::MatrixGetPosition(cameraLocal);
-            Vector up = AbyssEngine::AEMath::MatrixGetUp(cameraLocal);
-            cameraLocal = AbyssEngine::AEMath::MatrixGetLookAt(cameraPosition, position, up);
-        }
-
-        float scale = this->scale;
-        AbyssEngine::AEMath::MatrixSetScaling(cameraLocal, scale, scale, scale);
-
-        if ((uint32_t) this->type - 8 < 3) {
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) &cameraLocal, *(const Matrix *) &this->rotation);
-        }
-
-        this->primaryMesh->setMatrix(*(const AbyssEngine::AEMath::Matrix *) &cameraLocal);
-        this->primaryMesh->setPosition(position);
-
-        current = canvas->CameraGetCurrent();
-        cameraLocal = *(const Matrix *) canvas->CameraGetLocal(current);
-        Vector direction = AbyssEngine::AEMath::MatrixGetDir(cameraLocal);
-        Vector cameraUp = AbyssEngine::AEMath::MatrixGetUp(cameraLocal);
-        this->primaryMesh->setDirection(direction, cameraUp);
-        this->primaryMesh->render();
-
-        Array<AEGeometry *> *streaks = this->fireStreaks;
-        if (streaks != 0) {
-            for (uint32_t i = 0; i < streaks->size(); i++) {
-                AEGeometry *geometry = (*streaks)[i];
-                geometry->render();
+    switch (this->type) {
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 13:
+            break;
+        default:
+            if (this->secondaryMesh != 0) {
+                this->secondaryMesh->render();
             }
+            break;
+    }
+
+    Matrix matrix = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+    Vector position = this->primaryMesh->getPosition();
+
+    if ((uint32_t) this->type <= 12 && ((1u << this->type) & 0x1804u) != 0) {
+        AbyssEngine::AEMath::MatrixSetTranslation(matrix, position.x, position.y, position.z);
+    } else {
+        Vector cameraPosition = AbyssEngine::AEMath::MatrixGetPosition(matrix);
+        Vector up = AbyssEngine::AEMath::MatrixGetUp(matrix);
+        matrix = AbyssEngine::AEMath::MatrixGetLookAt(cameraPosition, position, up);
+    }
+
+    AbyssEngine::AEMath::MatrixSetScaling(matrix, this->scale, this->scale, this->scale);
+    if ((uint32_t) (this->type - 8) <= 2) {
+        matrix *= this->rotation;
+    }
+
+    this->primaryMesh->setMatrix(matrix);
+    this->primaryMesh->setPosition(position);
+
+    matrix = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+    this->primaryMesh->setDirection(AbyssEngine::AEMath::MatrixGetDir(matrix),
+                                    AbyssEngine::AEMath::MatrixGetUp(matrix));
+    this->primaryMesh->render();
+
+    if (this->fireStreaks != 0) {
+        for (uint32_t i = 0; i < this->fireStreaks->size(); i++) {
+            (*this->fireStreaks)[i]->render();
         }
     }
 }
@@ -549,29 +470,18 @@ void Explosion::addFireStreaks() {
     }
 
     this->fireStreaks = new Array<AEGeometry *>();
-
-    int length = explosionRandom()->nextInt(7) + 3;
-    ArraySetLength(length, *(this->fireStreaks));
-
-    PaintCanvas *canvas = explosionCanvas();
+    ArraySetLength(Globals::rnd->nextInt(7) + 3, *this->fireStreaks);
 
     for (uint32_t i = 0; i < this->fireStreaks->size(); i++) {
-        AEGeometry *geometry = new AEGeometry((uint16_t) 0x37d4, canvas, false);
-        (*this->fireStreaks)[i] = geometry;
-
-        ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationState(
+        (*this->fireStreaks)[i] = new AEGeometry((uint16_t) 0x37d4, Globals::Canvas, false);
+        ((Transform *) Globals::Canvas->TransformGetTransform((*this->fireStreaks)[i]->transform))->SetAnimationState(
             (AbyssEngine::AnimationMode) 1, 0);
-        ((Transform *) canvas->TransformGetTransform(geometry->transform))->boundingRadius = 10000.0f;
-
-        float x = (float) explosionRandom()->nextInt(0x168);
-        float y = (float) explosionRandom()->nextInt(0x168);
-        float z = (float) explosionRandom()->nextInt(0x168);
-        geometry->setRotation((x / 180.0f) * 3.1415927f,
-                              (y / 180.0f) * 3.1415927f,
-                              (z / 180.0f) * 3.1415927f);
-
-        int scaleInt = explosionRandom()->nextInt(0x32) + 0x32;
-        float scale = (float) scaleInt / 100.0f;
-        geometry->setScaling(scale, scale, scale);
+        ((Transform *) Globals::Canvas->TransformGetTransform((*this->fireStreaks)[i]->transform))->boundingRadius =
+            10000.0f;
+        (*this->fireStreaks)[i]->setRotation((float) Globals::rnd->nextInt(360) / 180.0f * 3.1415927f,
+                                             (float) Globals::rnd->nextInt(360) / 180.0f * 3.1415927f,
+                                             (float) Globals::rnd->nextInt(360) / 180.0f * 3.1415927f);
+        float scale = (float) (Globals::rnd->nextInt(50) + 50) / 100.0f;
+        (*this->fireStreaks)[i]->setScaling(scale, scale, scale);
     }
 }
