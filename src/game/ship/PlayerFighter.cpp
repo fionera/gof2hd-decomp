@@ -1178,7 +1178,7 @@ void PlayerFighter::update(int dt) {
         Player *tgt_b = this->targetPlayer;
         if (tgt_b != nullptr && this->field_0x12c == 0) {
             // de9da: the target's byte at +0x69 widens the follow range when the ego is docked
-            bool routeActive = tgt_b->pad_69 != 0;
+            bool routeActive = tgt_b->egoFlag != 0;
 
             // Determine range threshold: 12000 if player is docked, else 8000
             int threshold;
@@ -1301,7 +1301,7 @@ void PlayerFighter::update(int dt) {
         // empDisabled check
         {
             Player *cleanPl = (Player *)(intptr_t)this->player();
-            if (cleanPl->empDisabledByte != 0 && cleanPl->pad_69 == 0) {
+            if (cleanPl->empDisabledByte != 0 && cleanPl->egoFlag == 0) {
                 cleanPl->empDisabledByte = 1;
             }
         }
@@ -1559,7 +1559,7 @@ void PlayerFighter::update(int dt) {
         // df7bc: docking check — skip if target is ego-docked station
         {
             Player *shootTgt2 = this->targetPlayer;
-            if (shootTgt2 != nullptr && (shootTgt2->pad_69) != 0) {
+            if (shootTgt2 != nullptr && (shootTgt2->egoFlag) != 0) {
                 Level *lvs  = (Level *)(intptr_t)this->level();
                 PlayerEgo *egos = lvs->getPlayer();
                 if (egos != nullptr && egos->isDockedToDockingPoint()) {

@@ -5117,107 +5117,106 @@ void Level::flashScreen(int type) {
 }
 
 void Level::createPlayer() {
-    Ship *ship = (Ship *) Globals::status->getShip();
-    Array<Item *> *equip = ship->getEquipment();
+    Ship *ship = Globals::status->getShip();
+    Array<Item *> *equipment = Globals::status->getShip()->getEquipment();
+    int *freeSlots = new int[3];
+    int primarySlots = freeSlots[0] = ship->getUsedSlots(0);
+    int secondarySlots = freeSlots[1] = ship->getUsedSlots(1);
+    int turretSlots = freeSlots[2] = ship->getUsedSlots(2);
 
-    int slots[3];
-    slots[0] = ship->getUsedSlots(0);
-    slots[1] = ship->getUsedSlots(1);
-    slots[2] = ship->getUsedSlots(2);
+    Player *egoPlayer = new Player(1200, Globals::status->getShip()->getMaxHP(), primarySlots, secondarySlots,
+                                   turretSlots);
+    egoPlayer->setMaxShieldHP(Globals::status->getShip()->getMaxShieldHP());
+    egoPlayer->setMaxArmorHP(Globals::status->getShip()->getMaxArmorHP());
+    egoPlayer->egoFlag = 1;
+    PlayerEgo *ego = new PlayerEgo(egoPlayer);
+    player = ego;
+    ego->setShip(Globals::status->getShip()->getIndex(), Globals::status->getShip()->getRace());
+    player->setLevel(this);
+    player->geometry->setRotation(Vector{0.0f, (float) field_138 * (1.0f / 65536.0f) * 6.2831855f, 0.0f});
 
-    Player *pl = (Player *) ::operator new(0x114);
-    new(pl) Player(0x4b0, ship->getMaxHP(), slots[0], slots[1], slots[2]);
-    pl->setMaxShieldHP(ship->getMaxShieldHP());
-    pl->setMaxArmorHP(ship->getMaxArmorHP());
-    *((uint8_t *) pl + 0x69) = 1;
-
-    PlayerEgo *ego = (PlayerEgo *) ::operator new(0x3a0);
-    new(ego) PlayerEgo(pl);
-    this->player = ego;
-    ego->setShip(ship->getIndex(), ship->getRace());
-    ego->setLevel(this);
-
-    float yaw = (float) this->field_138 * (1.0f / 65536.0f) * 6.2831855f;
-    Vector rot = {0.0f, 0.0f, yaw};
-    this->player->geometry->setRotation(rot);
-
-    Array<Array<Gun *> *> *buckets = new Array<Array<Gun *> *>();
-    ArraySetLength(3, *buckets);
-    for (int t = 0; t < 3; t++) {
-        if (slots[t] > 0) {
-            Array<Gun *> *b = new Array<Gun *>();
-            (*buckets)[t] = b;
-            ArraySetLength(slots[t], *b);
+    Array<Array<Gun *> *> *guns = new Array<Array<Gun *> *>();
+    ArraySetLength(3, *guns);
+    for (unsigned int i = 0; i < 3; i++) {
+        if (freeSlots[i] > 0) {
+            (*guns)[i] = new Array<Gun *>();
+            ArraySetLength(freeSlots[i], *(*guns)[i]);
         }
     }
 
-    if (equip != nullptr) {
-        FileRead *fr = new FileRead();
-        Array<Array<Vector *> *> *wpos = fr->loadWeaponPositions(ship->getIndex());
-        delete fr;
+    if (equipment != nullptr) {
+        FileRead *fileRead = new FileRead();
+        Array<Array<Vector *> *> *weaponPositions = fileRead->loadWeaponPositions(Globals::status->getShip()->getIndex());
+        delete fileRead;
 
-        if ((*wpos)[3] != nullptr) {
-            this->field_a4 = new Array<AEGeometry *>();
-            for (unsigned k = 0; k < (*wpos)[3]->size(); k += 2) {
-                AEGeometry *g = new AEGeometry(Globals::Canvas);
-                ArrayAdd(g, *(this->field_a4));
-                g->setPosition(*(*(*wpos)[3])[k]);
-                g->setScaling(*(*(*wpos)[3])[k + 1]);
+        if ((*weaponPositions)[3] != nullptr) {
+            // engine flare anchors: position/scale pairs
+            field_a4 = new Array<AEGeometry *>();
+            for (unsigned int k = 0; k < (*weaponPositions)[3]->size(); k += 2) {
+                ArrayAdd(new AEGeometry(Globals::Canvas), *field_a4);
+                (*field_a4)[k / 2]->setPosition(*(*(*weaponPositions)[3])[k]);
+                (*field_a4)[k / 2]->setScaling(*(*(*weaponPositions)[3])[k + 1]);
             }
         }
 
-        for (unsigned i = 0; i < equip->size(); i++) {
-            Item *it = (*equip)[i];
-            if (it == nullptr || !it->isWeapon())
+        for (unsigned int i = 0; i < equipment->size(); i++) {
+            if ((*equipment)[i] == nullptr || !(*equipment)[i]->isWeapon()) {
                 continue;
-
-            int amount = (it->getType() == 1) ? it->getAmount() : -1;
-            int dmg = it->getAttribute(0x9);
-            int rate = it->getAttribute(0xb);
-
-            if (it->getType() == 0) {
-                float dmgFactor = (float) ship->getDamageFactor();
-                float fireFactor;
-                if (dmg > 9 || dmgFactor >= 0.0f) {
-                    dmg = (int) (dmgFactor * (float) dmg);
-                    fireFactor = (float) ship->getFireRateFactor();
+            }
+            int ammo = (*equipment)[i]->getType() == 1 ? (*equipment)[i]->getAmount() : -1;
+            int damage = (*equipment)[i]->getAttribute(9);
+            int loadingTime = (*equipment)[i]->getAttribute(11);
+            if ((*equipment)[i]->getType() == 0) {
+                float damageFactor = Globals::status->getShip()->getDamageFactor();
+                if (damage <= 9 && damageFactor < 0.0f) {
+                    loadingTime = (int) (Globals::status->getShip()->getFireRateFactor() * 0.7f * (float) loadingTime);
                 } else {
-                    fireFactor = (float) ship->getFireRateFactor() * 0.7f;
+                    damage = (int) (damageFactor * (float) damage);
+                    loadingTime = (int) (Globals::status->getShip()->getFireRateFactor() * (float) loadingTime);
                 }
-                rate = (int) (fireFactor * (float) rate);
             }
-
-            Gun *gun = createGun(it->getIndex(), i, it->getSort(), amount,
-                                 dmg, rate, it->getAttribute(0xc), it->getAttribute(0xd));
-            gun->itemIndex = it->getIndex();
-            gun->weaponType = static_cast<ItemSort>(it->getSort());
-            gun->setMagnitude(it->getAttribute(0xe));
-
-            int type = it->getType();
-            if (type == 2) {
-                (*(*buckets)[2])[--slots[2]] = gun;
-                Vector *pos = (*(*wpos)[2])[ship->getSlotPos(it)];
-                ego->setTurretPosition(*pos);
-            } else if (type == 0 || type == 1) {
-                (*(*buckets)[type])[--slots[type]] = gun;
-                gun->setOffset((*(*wpos)[type])[ship->getSlotPos(it)]);
-            }
-        }
-
-        for (unsigned k = 0; k < wpos->size(); k++) {
-            if ((*wpos)[k] != nullptr) {
-                for (Vector *v: *(*wpos)[k])
-                    delete v;
-                delete (*wpos)[k];
+            Gun *gun = createGun((*equipment)[i]->getIndex(), i, (*equipment)[i]->getSort(), ammo, damage, loadingTime,
+                                 (*equipment)[i]->getAttribute(12), (*equipment)[i]->getAttribute(13));
+            gun->itemIndex = (*equipment)[i]->getIndex();
+            gun->weaponType = static_cast<ItemSort>((*equipment)[i]->getSort());
+            gun->setMagnitude((*equipment)[i]->getAttribute(14));
+            switch ((*equipment)[i]->getType()) {
+                case 0:
+                    (*(*guns)[0])[--freeSlots[0]] = gun;
+                    gun->setOffset((*(*weaponPositions)[0])[ship->getSlotPos((*equipment)[i])]);
+                    break;
+                case 1:
+                    (*(*guns)[1])[--freeSlots[1]] = gun;
+                    gun->setOffset((*(*weaponPositions)[1])[ship->getSlotPos((*equipment)[i])]);
+                    break;
+                case 2:
+                    (*(*guns)[2])[--freeSlots[2]] = gun;
+                    player->setTurretPosition(*(*(*weaponPositions)[2])[0]);
+                    break;
+                default:
+                    break;
             }
         }
-        delete wpos;
+
+        if (weaponPositions != nullptr) {
+            for (unsigned int k = 0; k < weaponPositions->size(); k++) {
+                if ((*weaponPositions)[k] != nullptr) {
+                    ArrayReleaseClasses(*(*weaponPositions)[k]);
+                    delete (*weaponPositions)[k];
+                    (*weaponPositions)[k] = nullptr;
+                }
+            }
+            ArrayReleaseClasses(*weaponPositions);
+            delete weaponPositions;
+        }
     }
 
-    for (unsigned t = 0; t < buckets->size(); t++) {
-        if ((*buckets)[t] != nullptr)
-            this->player->addGun((*buckets)[t], (int) t);
+    for (unsigned int i = 0; i < guns->size(); i++) {
+        if ((*guns)[i] != nullptr) {
+            player->addGun((*guns)[i], i);
+        }
     }
+    delete[] freeSlots;
 }
 
 void Level::wingmanDied(AbyssEngine::String const &name) {
