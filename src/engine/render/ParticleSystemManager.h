@@ -50,9 +50,7 @@ public:
     uint32_t spriteParticleCount;
     bool spriteUsesExtra;
 
-    uint32_t meshSystemCount;
-    ParticleSystemMesh **meshSystems;
-    uint32_t meshSystemCapacity;
+    ::Array<ParticleSystemMesh *> meshSystems;
     int16_t meshTextureId;
     int16_t meshUvId;
     uint32_t meshBlendMode;
@@ -96,9 +94,9 @@ public:
     unsigned int addMeshSystem(AbyssEngine::AEMath::Matrix const *matrix,
                                Array<ParticleSettings::ParticleSet> const &sets, bool flag);
 
-    unsigned long long emitManual(int handle, AbyssEngine::AEMath::Vector const &pos, int ret, float p4);
+    void emitManual(int handle, AbyssEngine::AEMath::Vector const &pos, int ret, float p4);
 
-    unsigned long long emitManual(int handle, AbyssEngine::AEMath::Vector const &pos, int ret,
+    void emitManual(int handle, AbyssEngine::AEMath::Vector const &pos, int ret,
                                   AbyssEngine::AEMath::Vector const &velocity, float p5);
 
     void renderSprites();
@@ -127,12 +125,19 @@ public:
     void renderMeshes();
 
 private:
+    // Handles with bit 14 set address the mesh array, others the sprite array.
+    IParticleSystem *getSystem(int handle) {
+        if (handle & 0x4000)
+            return reinterpret_cast<IParticleSystem **>(meshSystems.data_)[handle & 0x3fffbfff];
+        return reinterpret_cast<IParticleSystem **>(spriteSystems.data_)[handle];
+    }
+
     Array<ParticleSystemSprite *> &spriteArray() {
         return spriteSystems;
     }
 
     Array<ParticleSystemMesh *> &meshArray() {
-        return *reinterpret_cast<Array<ParticleSystemMesh *> *>(&meshSystemCount);
+        return meshSystems;
     }
 };
 

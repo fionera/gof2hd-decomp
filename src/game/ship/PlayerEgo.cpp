@@ -93,9 +93,8 @@ float PlayerEgo::getDriveChargeRate() {
     return d >= 0.0f ? d : 1.0f;
 }
 
-unsigned char PlayerEgo::isAutoPilot() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->autoPilot);
+bool PlayerEgo::isAutoPilot() {
+    return this->autoPilot;
 }
 
 bool PlayerEgo::goingToWormhole() {
@@ -292,9 +291,8 @@ void PlayerEgo::turnHorizontal(int a, float v) {
     }
 }
 
-int PlayerEgo::getThrust() {
-    PlayerEgo *self = this;
-    return ((int &) this->thrust);
+float PlayerEgo::getThrust() {
+    return this->thrust;
 }
 
 float PlayerEgo::getCloakRate() {
@@ -669,9 +667,8 @@ unsigned char PlayerEgo::aboutToReachAutoTarget() {
     return ((uint8_t &) this->aboutToReachAutoTargetFlag);
 }
 
-unsigned char PlayerEgo::autoTurretIsEnabled() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->autoTurretEnabled);
+bool PlayerEgo::autoTurretIsEnabled() {
+    return this->autoTurretEnabled;
 }
 
 bool PlayerEgo::readyToBoost() {
@@ -3256,7 +3253,7 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     }
     if (kip->field_0x72 != 0) this->goingToWaypointFlag = 1;
     AbyssEngine::Engine *eng = (AbyssEngine::Engine *) Globals::appManager->GetEngine();
-    ((AbyssEngine::Engine *) eng)->autoPilotEngaged = 0;
+    ((AbyssEngine::Engine *) eng)->wheelDelta = 0.0f;
     ((int &) this->thrust) = 0x3f800000;
 }
 

@@ -19,7 +19,51 @@ extern int gi_iap_buy_credit_pack3_pressed;
 extern int gi_iap_buy_credit_pack4_pressed;
 extern int gi_iap_buy_credit_pack5_pressed;
 
+// Device language code handed in from Java (read by OnCreateApplication).
+extern unsigned int hrwhs_country_code;
+
+// Offerwall credits waiting to be paid out (set by the tapjoy wrapper).
+extern int gb_android_offerwallCreditAmount;
+
 extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+void ExitFunction();
+
+int ndk23_getScreenshotFlag();
+
+void ndk23_resetScreenshotFlag();
+
+int ndk23_getExitFlag();
+
+void ndk23_setDisplayHeightAndWidth(int height, int width);
+
+int ndk23_getCurrentFiredStatus();
+
+void ndk23_Init(const char *apkPath, int width, int height);
+
+void ndk23_InitWithZip(const char *apkPath, const char *zipPath, int width, int height, float scale);
+
+void ndk23_resize(int width, int height);
+
+void ndk23_ndkDone();
+
+void ndk23_handleAcceleration(float x, float y, float z);
+
+void ndk23_newrender(long long now);
+
+void ndk_checkPlaytimeAndSpendOfferwallCredits();
+
+void ndk23_handleTouchPadEvent(jclass clazz, void *touch, int phase, float x, float y); // lint: void_ptr (ndk* touch handle param, baked ABI)
+
+void ndk23_setRootDirectory(const char *path);
+
+void ndk23_setZipDirectory(const char *path);
+
+void ndk23_setCountryCode(unsigned int code);
+
+int loadAPK(const char *path);
+
+int loadAPKAndZip(const char *apkPath, const char *patchPath);
+
 int setBaughtCredits(int amount);
 
 void checkFirstCreditPackBoughtWriteAction();

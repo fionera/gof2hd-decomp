@@ -1,3 +1,4 @@
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/ship/TargetFollowCamera.h"
 #include "game/ship/Ship.h"
 #include "game/ship/KIPlayer.h"
@@ -66,34 +67,6 @@ static inline void Gun_VecArray_ctor(VecArray *a) { new(a) VecArray(); }
 
 
 
-Gun::~Gun() noexcept(false) {
-    delete[] this->lifetimes;
-    this->lifetimes = 0;
-
-    delete[] this->hitFlags;
-    this->hitFlags = 0;
-
-    delete[] this->geometries;
-    this->geometries = 0;
-
-    delete[] this->randomFlags;
-    this->randomFlags = 0;
-
-    Array<Vector *> *arr = reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets);
-    if (arr != 0) {
-        ArrayReleaseClasses(*arr);
-        Array<Vector *> *arr2 = reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets);
-        if (arr2 != 0) {
-            delete arr2;
-        }
-    }
-    this->wobbleOffsets = 0;
-
-    reinterpret_cast<VecArray *>(&this->hitPositionsCount)->~VecArray();
-    reinterpret_cast<VecArray *>(&this->upVectorsCount)->~VecArray();
-    reinterpret_cast<VecArray *>(&this->velocitiesCount)->~VecArray();
-    reinterpret_cast<VecArray *>(&this->count)->~VecArray();
-}
 
 void Gun::setFriendGun(bool v) {
     this->friendGun = v;
@@ -397,7 +370,7 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
         reinterpret_cast<Vector *>(this->positions)[i].x = 50000.0f;
         this->lifetimes[i] = -1000000;
         this->hitFlags[i] = 0;
-        reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets)->data()[i] = nullptr;
+        (*reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets))[i] = nullptr;
     }
     this->impact = nullptr;
     this->field_0x54 = 0;
@@ -415,6 +388,35 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->field_0xb0 = 0;
     this->empDamage = 0;
     reinterpret_cast<int &>(this->field_0xa4_b0) = 0;
+}
+
+Gun::~Gun() {
+    delete[] this->lifetimes;
+    this->lifetimes = 0;
+
+    delete[] this->hitFlags;
+    this->hitFlags = 0;
+
+    delete[] this->geometries;
+    this->geometries = 0;
+
+    delete[] this->randomFlags;
+    this->randomFlags = 0;
+
+    Array<Vector *> *arr = reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets);
+    if (arr != 0) {
+        ArrayReleaseClasses(*arr);
+        Array<Vector *> *arr2 = reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets);
+        if (arr2 != 0) {
+            delete arr2;
+        }
+    }
+    this->wobbleOffsets = 0;
+
+    reinterpret_cast<VecArray *>(&this->hitPositionsCount)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->upVectorsCount)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->velocitiesCount)->~VecArray();
+    reinterpret_cast<VecArray *>(&this->count)->~VecArray();
 }
 
 bool Gun::shoot(Matrix m, int n, bool b) {

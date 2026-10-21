@@ -701,3 +701,7 @@ void ParticleSettings::Interpolate(ParticleSet a, ParticleSet b, float t, Partic
 
 int ParticleSettings::particleMultiply;
 int ParticleSettings::pCounter;
+
+int ParticleSettingsRef::assertInit;
+unsigned char ParticleSettingsRef::cur[7680];
+unsigned char ParticleSettingsRef::init[7680];

@@ -21,7 +21,7 @@ public:
 
     ~LensFlare();
 
-    void render2D(float srcX, float srcY, float alpha, int colorIndex);
+    void render2D(float x, float y, float depth, int colorIndex);
 
     void update(int);
 };

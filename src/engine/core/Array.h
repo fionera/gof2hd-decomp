@@ -77,9 +77,9 @@ public:
 
 template<class T>
 Array<T>::Array() {
-    T *p = static_cast<T *>(::operator new[](sizeof(T)));
+    T *p = new T[1];
     capacity_ = 1;
-    *p = T();
+    memset(p, 0, sizeof(T));
     count = 0;
     data_ = p;
 }
@@ -197,14 +197,12 @@ void ArrayReleaseArrays(Array<T> &a) {
 template<class T>
 void ArrayAddCached(T item, Array<T> &a) {
     if (a.count >= a.capacity_) {
-        unsigned int oldCap = a.capacity_;
-        a.data_ = static_cast<T *>(realloc(a.data_, static_cast<size_t>(oldCap) * 2 * sizeof(T)));
-        memset(reinterpret_cast<char *>(a.data_) + static_cast<size_t>(oldCap) * sizeof(T),
-               0, static_cast<size_t>(oldCap) * sizeof(T));
-        a.capacity_ = oldCap * 2;
+        a.data_ = static_cast<T *>(realloc(a.data_, a.capacity_ * 2 * sizeof(T)));
+        memset(a.data_ + a.capacity_, 0, a.capacity_ * sizeof(T));
+        a.capacity_ *= 2;
     }
     a.data_[a.count] = item;
-    a.count = a.count + 1;
+    a.count++;
 }
 
 #endif
