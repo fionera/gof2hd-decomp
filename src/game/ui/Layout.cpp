@@ -535,10 +535,8 @@ uint8_t Layout::drawFade() {
         float t = (float) this->fadeProgress / (float) this->fadeDuration;
         float alpha = this->fadeOut != 0 ? t : 1.0f - t;
         alpha = alpha < 1.0f ? alpha : 1.0f;
-        unsigned int color = this->fadeColor;
-        if (alpha > 0.0f)
-            color += (int) (alpha * 255.0f);
-        Globals::Canvas->SetColor(color);
+        int a = (int) (alpha * 255.0f);
+        Globals::Canvas->SetColor(this->fadeColor + (alpha > 0.0f ? a : 0));
         Globals::Canvas->FillRectangle(0, 0, Globals::w, Globals::h);
         Globals::Canvas->SetColor(saved);
     }
