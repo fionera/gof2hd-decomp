@@ -64,7 +64,6 @@ static inline void TFC_setLookAtCam(TargetFollowCamera *c, int v) { c->setLookAt
 
 
 
-static int *g_maneuverScale = &Globals::w;
 
 static inline void TFC_setActive(TargetFollowCamera *c, int v) { c->setActive(v); }
 
@@ -608,7 +607,7 @@ void MGame::maneuverTouchMove(int a, int b, void *p) { // lint: void_ptr -- expo
     (void) a;
     (void) p;
     if (this->maneuverActive != 0) {
-        float f2 = (float) (*g_maneuverScale);
+        float f2 = (float) Globals::h;
         int d = b - this->maneuverStartY;
         if (d < 0) d = -d;
         float f3 = (float) d;
@@ -626,7 +625,7 @@ void MGame::maneuverTouchEnd(int a, int b, void *p) { // lint: void_ptr -- expor
     (void) b;
     (void) p;
     if (self->maneuverActive != 0 && self->maneuverHoldTime <= 0x258) {
-        float f2 = (float) (*g_maneuverScale);
+        float f2 = (float) Globals::w;
         int d = a - self->maneuverStartX;
         if (d < 0) d = -d;
         float f3 = (float) d;
