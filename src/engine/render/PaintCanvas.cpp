@@ -1644,44 +1644,33 @@ static const char g_getline_empty_7c428[] = "";
 
 void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWidth,
                           AbyssEngine::String *out) {
-    unsigned int lastSpace = 0;
-    int width = 5;
     unsigned int i = 0;
-    unsigned int len = str.size();
-
-    while (i < len) {
-        unsigned short *ch = str[i];
-        unsigned short c = *ch;
-        unsigned int next = i + 1;
-        width += this->GetTextWidth(font, str, i, next);
-        if (c == 0x20) {
-            lastSpace = i;
+    int width = 5;
+    int lastSpace = 0;
+    for (; i < str.size(); i++) {
+        unsigned short c = *str[i];
+        width += this->GetTextWidth(font, str, i, i + 1);
+        if (c == ' ') {
+            lastSpace = (int) i;
         }
         if (width >= maxWidth) {
-            if ((int) lastSpace < 1) {
-                *out = str.SubString(0, next);
-            } else {
+            if (lastSpace > 0) {
                 *out = str.SubString(0, lastSpace + 1);
+            } else {
+                *out = str.SubString(0, i + 1);
             }
             return;
         }
-        unsigned short *ch2 = str[i];
-        if (*ch2 == 0xa) {
-            *out = str.SubString(0, next);
-            return;
-        }
-        unsigned short *ch3 = str[i];
-        i = next;
-        if (*ch3 == 0xd) {
-            *out = str.SubString(0, next);
+        if (*str[i] == '\n' || *str[i] == '\r') {
+            *out = str.SubString(0, i + 1);
             return;
         }
     }
 
-    if ((int) len < 2) {
-        *out = AbyssEngine::String(g_getline_empty_7c428, false);
+    if ((int) str.size() > 1) {
+        *out = str.SubString(0, str.size());
     } else {
-        *out = str.SubString(0, len);
+        *out = AbyssEngine::String(g_getline_empty_7c428, false);
     }
 }
 
@@ -2228,14 +2217,14 @@ void PaintCanvas::TransformAddMesh(unsigned int transformIndex,
 }
 
 AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in, bool reverse) {
-    if (!reverse) {
-        return in;
+    if (reverse) {
+        String out("");
+        for (unsigned int i = in.size() - 1; (int) i >= 0; --i) {
+            out += in.SubString(i, i + 1);
+        }
+        return out;
     }
-    String out("");
-    for (int i = (int) in.size() - 1; i >= 0; --i) {
-        out += in.SubString((unsigned) i, (unsigned) (i + 1));
-    }
-    return out;
+    return in;
 }
 
 void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
