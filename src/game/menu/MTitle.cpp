@@ -59,42 +59,35 @@ void MTitle::OnRender2D() {
     this->paintCanvas->Begin2d();
     Globals::Canvas->SetColor((unsigned int) -1);
 
-    (*g_currentLayout)->drawBG();
-    (*g_currentLayout)->drawHeader();
-    (*g_currentLayout)->drawEmptyFooter(0);
+    Globals::layout->drawBG();
+    Globals::layout->drawHeader();
+    Globals::layout->drawEmptyFooter(false);
 
-    int delta = (int) this->applicationManager->GetElapsedTimeMillis();
-    if (delta > 50)
-        delta = 50;
-    this->timer += delta;
-    int t = this->timer;
-
-    int image;
-    float fade;
-    if (t > 4000) {
-        this->step += 1;
+    this->timer += (int) this->applicationManager->GetElapsedTimeMillis() > 50
+                           ? 50
+                           : (int) this->applicationManager->GetElapsedTimeMillis();
+    if (this->timer > 4000) {
         this->timer = 0;
+        this->step += 1;
         if (this->step == 2) {
-            this->applicationManager->SetCurrentApplicationModule(1);
+            Globals::appManager->SetCurrentApplicationModule(1);
             return;
         }
-        image = (int) (this->step == 0 ? this->logoImage2 : this->logoImage);
-        fade = 0.0f;
+    }
+    unsigned int image = this->step == 0 ? this->logoImage2 : this->logoImage;
+    float fade;
+    if (this->timer < 1000) {
+        fade = (float) this->timer / 1000.0f;
+    } else if (this->timer > 3000) {
+        fade = (float) (this->timer - 3000) / -1000.0f + 1.0f;
     } else {
-        image = (int) (this->step == 0 ? this->logoImage2 : this->logoImage);
-        if (t < 1000) {
-            fade = (float) t / 1000.0f;
-        } else if (t < 3001) {
-            fade = 1.0f;
-        } else {
-            fade = (float) (t - 3000) / -1000.0f + 1.0f;
-        }
+        fade = 1.0f;
     }
 
-    int color = (int) (fade * 255.0f) - 0x100;
-    this->paintCanvas->SetColor((unsigned int) color);
-    Globals::Canvas->DrawImage2D((unsigned int) image, 0, 0, (unsigned char) 0x44, (unsigned char) 0x44);
+    this->paintCanvas->SetColor((unsigned int) ((int) (fade * 255.0f) - 0x100));
+    Globals::Canvas->DrawImage2D(image, 0, 0, (unsigned char) 0x44, (unsigned char) 0x44);
     this->paintCanvas->End2d();
+    this->paintCanvas->SwapBuffer();
 }
 
 void MTitle::OnRender3D() {

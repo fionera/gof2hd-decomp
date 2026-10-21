@@ -20,8 +20,6 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
                                int quality)
     : KIPlayer(playerId, -1, new Player(1500, 30, 0, 0, 0), geometry,
                position.x, position.y, position.z, false) {
-    float randomX, randomY, randomZ;
-    float spinX, spinY, spinZ, size;
     this->player->setKIPlayer(this);
     this->asteroidIndex = asteroidIndex;
     this->asteroidFlag = 0;
@@ -38,10 +36,9 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->geometry->setScaling(scaling, scaling, scaling);
     this->setPosition(position);
 
-    randomX = (float) (Globals::rnd->nextInt(8192) - 4096);
-    randomY = (float) (Globals::rnd->nextInt(8192) - 4096);
-    randomZ = (float) (Globals::rnd->nextInt(8192) - 4096);
-    tmp_vector2 = Vector{randomX * 0.00024414062f, randomY * 0.00024414062f, randomZ * 0.00024414062f};
+    tmp_vector2 = Vector((float) (Globals::rnd->nextInt(8192) - 4096) * 0.00024414062f,
+                         (float) (Globals::rnd->nextInt(8192) - 4096) * 0.00024414062f,
+                         (float) (Globals::rnd->nextInt(8192) - 4096) * 0.00024414062f);
 
     this->geometry->setRotation((float) Globals::rnd->nextInt(100) * 0.01f * 6.2831855f,
                                 (float) Globals::rnd->nextInt(100) * 0.01f * 6.2831855f,
@@ -49,12 +46,9 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->rotationEnabled = 1;
     this->secondaryGeometry() = nullptr;
 
-    spinX = (float) (Globals::rnd->nextInt(3) - 1);
-    spinY = (float) (Globals::rnd->nextInt(3) - 1);
-    spinZ = (float) (Globals::rnd->nextInt(3) - 1);
-    size = scaling < 0.9f ? 0.9f : scaling;
-    size = size < 1.0f ? size : 1.0f;
-    this->spin = Vector{spinX, spinY, spinZ} * (1.0f - size);
+    float size = scaling < 0.9f ? 0.9f : scaling;
+    this->spin = Vector((float) (Globals::rnd->nextInt(3) - 1), (float) (Globals::rnd->nextInt(3) - 1),
+                        (float) (Globals::rnd->nextInt(3) - 1)) * (1.0f - (size < 1.0f ? size : 1.0f));
 
     this->state = 0;
     this->stealFlagByte = 1;
