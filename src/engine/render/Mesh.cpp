@@ -375,53 +375,58 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     void MeshReleaseIntern(Engine * /*engine*/, Mesh **slot) {
-        Mesh *m = *slot;
-        if (m == 0)
+        if (*slot == 0)
             return;
 
-        if (m->shared == 0) {
-            if (m->uploaded != 0) {
-                glDeleteBuffers(1, &m->positionVBO);
-                glDeleteBuffers(1, &m->indexVBO);
-                unsigned char flags = m->vertexFormat;
-                if (flags & 2) {
-                    glDeleteBuffers(1, &m->texCoordVBO);
-                    flags = m->vertexFormat;
-                }
-                if (flags & 4) {
-                    glDeleteBuffers(1, &m->normalVBO);
+        if ((*slot)->shared == 0) {
+            if ((*slot)->uploaded != 0) {
+                glDeleteBuffers(1, &(*slot)->positionVBO);
+                glDeleteBuffers(1, &(*slot)->indexVBO);
+                if ((*slot)->vertexFormat & 2)
+                    glDeleteBuffers(1, &(*slot)->texCoordVBO);
+                if ((*slot)->vertexFormat & 4) {
+                    glDeleteBuffers(1, &(*slot)->normalVBO);
                     if (Engine::enableShader != 0) {
-                        glDeleteBuffers(1, &m->tangentVBO);
-                        glDeleteBuffers(1, &m->binormalVBO);
+                        glDeleteBuffers(1, &(*slot)->tangentVBO);
+                        glDeleteBuffers(1, &(*slot)->binormalVBO);
                     }
                 }
-                if (m->vertexFormat & 8)
-                    glDeleteBuffers(1, &m->colorVBO);
+                if ((*slot)->vertexFormat & 8)
+                    glDeleteBuffers(1, &(*slot)->colorVBO);
             }
 
-            if (m->indices != 0) operator delete[](m->indices); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->indices = 0;
-            if (m->positions != 0) operator delete[](m->positions); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->positions = 0;
-            if (m->texCoords != 0) operator delete[](m->texCoords); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->texCoords = 0;
-            if (m->colors != 0) operator delete[](m->colors); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->colors = 0;
-            if (m->normals != 0) operator delete[](m->normals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->normals = 0;
+            if ((*slot)->indices != 0)
+                operator delete[]((*slot)->indices); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            (*slot)->indices = 0;
+            if ((*slot)->positions != 0)
+                operator delete[]((*slot)->positions); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            (*slot)->positions = 0;
+            if ((*slot)->texCoords != 0)
+                operator delete[]((*slot)->texCoords); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            (*slot)->texCoords = 0;
+            if ((*slot)->colors != 0)
+                operator delete[]((*slot)->colors); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            (*slot)->colors = 0;
+            if ((*slot)->normals != 0)
+                operator delete[]((*slot)->normals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            (*slot)->normals = 0;
 
             if (Engine::enableShader != 0) {
-                if (m->tangents != 0) operator delete[](m->tangents); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->tangents = 0;
-                if (m->binormals != 0) operator delete[](m->binormals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->binormals = 0;
+                if ((*slot)->tangents != 0)
+                    operator delete[]((*slot)->tangents); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+                (*slot)->tangents = 0;
+                if ((*slot)->binormals != 0)
+                    operator delete[]((*slot)->binormals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+                (*slot)->binormals = 0;
             }
         }
 
-        delete m->animation;
-        m->animation = 0;
+        if ((*slot)->animation != 0)
+            delete (*slot)->animation;
+        (*slot)->animation = 0;
 
-        operator delete(m); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+        if (*slot != 0)
+            operator delete(*slot); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
         *slot = 0;
     }
 }
