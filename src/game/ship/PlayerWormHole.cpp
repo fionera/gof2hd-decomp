@@ -16,12 +16,6 @@
 #include "game/core/String.h"
 #include "engine/core/AERandom.h"
 
-
-
-
-
-
-
 static inline int wormholeSign(int value) {
     return value == 0 ? 1 : -1;
 }
@@ -78,110 +72,73 @@ void PlayerWormHole::freeMissionLock() {
 }
 
 void PlayerWormHole::update(int elapsed) {
-    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-    AbyssEngine::Transform *transform =
-            (AbyssEngine::Transform *) canvas->TransformGetTransform(this->geometry->transform);
-    transform->Update((long long) elapsed, false);
-
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometry->transform))
+            ->Update((long long) elapsed, false);
     if (!this->visibleFlag)
         return;
 
     this->timer += elapsed;
-    int time = this->timer;
-
-    if (time < 0) {
-        this->scale = 0x1000 - (int) (((float) -time / 3000.0f) * 4096.0f);
-    } else if (time > 60000) {
-        Status *status = Globals::status;
-        int mission = status->getCurrentCampaignMission();
-        int current = time;
-
-        if (this->missionLock != 0) {
-            bool keepOpen = false;
-            if (mission == 0x2a) {
-                keepOpen = status->inAlienOrbit();
-            } else if (mission == 0x28 && !status->inAlienOrbit()) {
-                keepOpen = true;
-            }
-            if (keepOpen) {
-                current = 60000;
+    if (this->timer < 0) {
+        // Opening: grow over 3 seconds.
+        this->scale = 0x1000 - (int) ((float) -this->timer / 3000.0f * 4096.0f);
+    } else if (this->timer > 60000) {
+        int mission = Globals::status->getCurrentCampaignMission();
+        if (this->missionLock) {
+            // Story missions keep the wormhole open.
+            if (mission == 40) {
+                if (!Globals::status->inAlienOrbit())
+                    this->timer = 60000;
+            } else if (mission == 42 && Globals::status->inAlienOrbit()) {
                 this->timer = 60000;
             }
         }
-
-        this->scale = 0x1000 - (int) (((float) (current - 60000) / 3000.0f) * 4096.0f);
-
-        if (current > 63000) {
-            bool stationUnderAttack =
-                    status->inAlienOrbit() || status->getStation()->isAttackedByAliens();
-            if (!stationUnderAttack) {
+        // Closing: shrink over 3 seconds, then reappear elsewhere.
+        this->scale = 0x1000 - (int) ((float) (this->timer - 60000) / 3000.0f * 4096.0f);
+        if (this->timer > 63000) {
+            if ((!Globals::status->inAlienOrbit() && !Globals::status->getStation()->isAttackedByAliens()) ||
+                (this->missionLock && !Globals::status->inAlienOrbit() && mission == 42)) {
                 this->visibleFlag = 0;
                 this->geometry->setVisible(false);
-                return;
-            }
-
-            bool closeWormhole =
-                    this->missionLock != 0 && mission == 0x2a && !status->inAlienOrbit();
-            if (closeWormhole) {
-                this->visibleFlag = 0;
-                this->geometry->setVisible(false);
-                return;
-            }
-
-            this->timer = -3000;
-
-            AERandom *random = Globals::rnd;
-            int x, y, z;
-            if (!status->inAlienOrbit()) {
-                x = (random->nextInt(40000) + 20000) * wormholeSign(random->nextInt(2));
-                y = (random->nextInt(40000) + 20000) * wormholeSign(random->nextInt(2));
-                z = (random->nextInt(40000) + 20000) * wormholeSign(random->nextInt(2));
             } else {
-                x = (random->nextInt(60000) + 30000) * wormholeSign(random->nextInt(2));
-                y = random->nextInt(40000) + 20000;
-                z = -60000 - random->nextInt(40000);
-            }
-
-            if (mission == 0x1d || mission == 0x29) {
-                PlayerEgo *ego = (PlayerEgo *) (intptr_t) this->level->getPlayer();
-                this->cameraPosition() = ego->getPosition();
-                x = (int) (this->cameraPosition().x + (float) x * 1.7f + (float) x);
-                y = (int) (this->cameraPosition().y + (float) y * 1.7f + (float) y);
-                z = (int) (this->cameraPosition().z + (float) z * 1.7f + (float) z);
-            }
-
-            this->setPosition((float) x, (float) y, (float) z);
-
-            PlayerEgo *ego = (PlayerEgo *) (intptr_t) this->level->getPlayer();
-            if (ego->goingToWormhole()) {
-                PlayerEgo *target = this->level->getPlayer();
-                Hud *hud = (Hud *) (intptr_t) target->getHUD();
-                target = this->level->getPlayer();
-                hud->hudEvent(6, target, 0);
-                target = this->level->getPlayer();
-                target->setAutoPilot(nullptr);
+                this->timer = -3000;
+                int x, y, z;
+                if (Globals::status->inAlienOrbit()) {
+                    x = (Globals::rnd->nextInt(60000) + 30000) * wormholeSign(Globals::rnd->nextInt(2));
+                    y = Globals::rnd->nextInt(40000) + 20000;
+                    z = -60000 - Globals::rnd->nextInt(40000);
+                } else {
+                    x = (Globals::rnd->nextInt(40000) + 20000) * wormholeSign(Globals::rnd->nextInt(2));
+                    y = (Globals::rnd->nextInt(40000) + 20000) * wormholeSign(Globals::rnd->nextInt(2));
+                    z = (Globals::rnd->nextInt(40000) + 20000) * wormholeSign(Globals::rnd->nextInt(2));
+                }
+                if (mission == 29 || mission == 41) {
+                    this->cameraPosition() = this->level->getPlayer()->getPosition();
+                    x = (int) (this->cameraPosition().x + (float) x * 1.7f + (float) x);
+                    y = (int) (this->cameraPosition().y + (float) y * 1.7f + (float) y);
+                    z = (int) (this->cameraPosition().z + (float) z * 1.7f + (float) z);
+                }
+                this->setPosition((float) x, (float) y, (float) z);
+                if (this->level->getPlayer()->goingToWormhole()) {
+                    this->level->getPlayer()->getHUD()->hudEvent(6, this->level->getPlayer(), 0);
+                    this->level->getPlayer()->setAutoPilot(nullptr);
+                }
             }
         }
     }
 
     this->PlayerStaticFar::update(elapsed);
 
-    canvas = Globals::Canvas;
-    unsigned int currentCamera = canvas->CameraGetCurrent();
-    this->cameraPosition() =
-            AbyssEngine::AEMath::MatrixGetPosition(
-                *(AbyssEngine::AEMath::Matrix *) canvas->CameraGetLocal(currentCamera));
-
-    float scale = (float) (this->scale << 4) * 0.0000152587890625f;
-    this->geometry->setScaling(scale);
-
+    // Face the camera.
+    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+    this->cameraPosition() = AbyssEngine::AEMath::MatrixGetPosition(
+            *(AbyssEngine::AEMath::Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+    float scale = (float) (this->scale << 4) * (1.0f / 65536.0f);
+    this->geometry->setScaling(scale, scale, scale);
     this->viewDirection = this->geometry->getPosition();
     this->cameraPosition() -= this->viewDirection;
     this->cameraPosition() = AbyssEngine::AEMath::VectorNormalize(this->cameraPosition());
     this->cameraPosition().x += 0.5f;
-
-    Vector up = {0.0f, 1.0f, 0.0f};
-    this->geometry->setDirection(this->cameraPosition(), up);
+    this->geometry->setDirection(this->cameraPosition(), Vector{0.0f, 1.0f, 0.0f});
 }
 
 Vector PlayerWormHole::getPosition() {
