@@ -782,8 +782,7 @@ bool LevelScript::process(int delta) {
                 if (m_nScriptTimerA >= 5001) {
                     m_pCamera->setTarget(player->geometry);
                     m_pHud->visible = 1;
-                    // DEFERRED 0x13b876: m_pRadar byte @0x48 = 1 -- lands inside imageWidth in our
-                    //   Radar model (no clean named 1-byte field there yet).
+                    m_pRadar->enabled = 1;
                     m_bCinematicBreak = 0; // field_0x11 = 0 (m_nFlags high byte)
                     m_pCamera->setLookAtCam(false);
                     player->setComputerControlled(false);
@@ -3794,7 +3793,7 @@ bool LevelScript::process(int delta) {
                     ((PlayerWormHole *) (*landmarks)[3])->reset(false);
                     landmarks = m_pLevel->getLandmarks();
                     ((PlayerWormHole *) (*landmarks)[3])->open();
-                    // FModSound::play(0x22, ...) DEFERRED @0x13a9a2
+                    Globals::sound->play(34, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
                     m_nState = 2;
                 } else if (m_nState == 2) {
@@ -4586,11 +4585,18 @@ bool LevelScript::process(int delta) {
                 if (m_nState != 0) {
                     break; // -> post-switch tail (0x144e36)
                 }
-                // Look for an active docked/type-8 escort among enemies[].
+                // once any group-8 ship is active, wake the whole group with a long sight range
                 for (unsigned int i = 0; i < enemies->count; ++i) {
                     KIPlayer *e = (*enemies)[i];
                     if (e->shipGroup == 8 && e->player->isActive()) {
-                        // DEFERRED 0x1405c8: active escort found -> sub-branch.
+                        for (unsigned int k = 0; k < enemies->count; ++k) {
+                            KIPlayer *member = (*enemies)[k];
+                            if (member->shipGroup == 8) {
+                                ((PlayerFighter *) member)->field_0x128 = 50000;
+                                member->awake();
+                            }
+                        }
+                        m_nState++;
                         break;
                     }
                 }
