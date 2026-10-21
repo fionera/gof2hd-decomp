@@ -34,85 +34,67 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
 }
 
 void LodMeshMerger::update() {
-    for (int i = 0; i < rows; i++) {
-        Mesh *sph = transformedMeshes[i];
-        uint8_t vis = (uint8_t) canvas->CameraIsSphereinViewFrustum(
-            *(const Vector *) &sph->boundsCenterX, sph->boundsRadius);
-        if (vis != visible[i]) {
-            visible[i] = vis;
-            if (enabled[i] != 0) {
-                dirty = 1;
-            }
+    for (int i = 0; i < this->rows; i++) {
+        Mesh *mesh = this->transformedMeshes[i];
+        int isVisible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
+                                                                   mesh->boundsRadius);
+        if (isVisible != this->visible[i]) {
+            this->visible[i] = (uint8_t) isVisible;
+            if (this->enabled[i] != 0)
+                this->dirty = 1;
         }
     }
-
-    if (dirty == 0) {
+    if (this->dirty == 0)
         return;
-    }
 
-    int indexBudget = 0;
-    for (int j = 0; j < rows; j++) {
-        if (enabled[j] != 0 && visible[j] != 0) {
-            signed char lod = lodLevels[j];
-            Mesh *src = transformedMeshes[rows * lod + j];
-            indexBudget += src->indexCount;
+    // Keep the merged index count addressable by 16-bit indices: coarsen LODs until it fits.
+    int indexTotal = 0;
+    for (int i = 0; i < this->rows; i++) {
+        if (this->enabled[i] != 0 && this->visible[i] != 0)
+            indexTotal += this->transformedMeshes[this->rows * this->lodLevels[i] + i]->indexCount;
+    }
+    for (int i = 0; indexTotal >= 0x10000 && i < this->rows; i++) {
+        if (this->enabled[i] == 0 || this->visible[i] == 0)
+            continue;
+        signed char lod = this->lodLevels[i];
+        if (lod < this->cols - 1) {
+            Mesh *previous = this->transformedMeshes[this->rows * lod + i];
+            setLod(i, (signed char) (lod + 1));
+            Mesh *current = this->transformedMeshes[this->rows * this->lodLevels[i] + i];
+            indexTotal = indexTotal - previous->indexCount + current->indexCount;
         }
     }
 
-    for (int j = 0; indexBudget >= 0x10000 && j < rows; j++) {
-        if (enabled[j] != 0 && visible[j] != 0) {
-            signed char lod = lodLevels[j];
-            if (lod < cols - 1) {
-                Mesh *prev = transformedMeshes[rows * lod + j];
-                setLod(j, (signed char) (lod + 1));
-                signed char newLod = lodLevels[j];
-                Mesh *cur = transformedMeshes[rows * newLod + j];
-                indexBudget += cur->indexCount - prev->indexCount;
-            }
+    int vertexBase = 0;
+    int indexBase = 0;
+    for (int i = 0; i < this->rows; i++) {
+        if (this->enabled[i] == 0 || this->visible[i] == 0)
+            continue;
+        Mesh *src = this->transformedMeshes[this->rows * this->lodLevels[i] + i];
+        if (this->mergedMesh->vertexFormat & 1)
+            memcpy((Vector *) this->mergedMesh->positions + vertexBase, (const Vector *) src->positions,
+                   src->vertexCount * 12);
+        if (this->mergedMesh->vertexFormat & 4)
+            memcpy((Vector *) this->mergedMesh->normals + vertexBase, (const Vector *) src->normals,
+                   src->vertexCount * 12);
+        if (this->mergedMesh->vertexFormat & 8)
+            memcpy((uint32_t *) this->mergedMesh->colors + vertexBase * 4, (const uint32_t *) src->colors,
+                   src->vertexCount * 16);
+        if (this->mergedMesh->vertexFormat & 2)
+            memcpy((float *) this->mergedMesh->texCoords + vertexBase * 2, (const float *) src->texCoords,
+                   src->vertexCount * 8);
+        if (this->mergedMesh->vertexFormat & 0x10) {
+            uint16_t *dst = (uint16_t *) this->mergedMesh->indices + indexBase;
+            const uint16_t *idx = (const uint16_t *) src->indices;
+            for (int k = src->indexCount; k != 0; k--)
+                *dst++ = (uint16_t) (*idx++ + vertexBase);
         }
+        vertexBase += src->vertexCount;
+        indexBase += src->indexCount;
     }
-
-    Mesh *out = mergedMesh;
-    int vtxOffset = 0;
-    int idxOffset = 0;
-    for (int j = 0; j < rows; j++) {
-        if (enabled[j] != 0 && visible[j] != 0) {
-            uint8_t mask = out->vertexFormat;
-            signed char lod = lodLevels[j];
-            Mesh *src = transformedMeshes[rows * lod + j];
-
-            if (mask & 1) {
-                memcpy((char *) out->positions + vtxOffset * 0xc,
-                       src->positions, src->vertexCount * 0xc);
-            }
-            if (mask & 4) {
-                memcpy((char *) out->normals + vtxOffset * 0xc,
-                       src->normals, src->vertexCount * 0xc);
-            }
-            if (mask & 8) {
-                memcpy((char *) out->colors + vtxOffset * 0x10,
-                       src->colors, (uint32_t) src->vertexCount << 4);
-            }
-            if (mask & 2) {
-                memcpy((char *) out->texCoords + vtxOffset * 8,
-                       src->texCoords, (uint32_t) src->vertexCount << 3);
-            }
-            if (mask & 0x10) {
-                int16_t *si = (int16_t *) src->indices;
-                int16_t *di = (int16_t *) out->indices + idxOffset;
-                for (int k = -(int)(uint16_t)src->indexCount; k != 0; k++) {
-                    *di = (int16_t)(*si + (int16_t) vtxOffset);
-                    si++;
-                    di++;
-                }
-            }
-            idxOffset += src->indexCount;
-            vtxOffset += src->vertexCount;
-        }
-    }
-    out->indexCount = (uint16_t) idxOffset;
-    out->vertexCount = (uint16_t) vtxOffset;
-    dirty = 0;
+    this->mergedMesh->vertexCount = (uint16_t) vertexBase;
+    this->mergedMesh->indexCount = (uint16_t) indexBase;
+    this->dirty = 0;
 }
 
 LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
