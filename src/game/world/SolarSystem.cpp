@@ -145,19 +145,19 @@ void SolarSystem::setCoords(int x, int y) {
     this->mapY = y;
 }
 
-int SolarSystem::systemIsInSystemRoutes(int sys) {
+bool SolarSystem::systemIsInSystemRoutes(int sys) {
     if (this->systemId != sys) {
         Array<int> *arr = this->linkedSystemIds;
         if (arr == nullptr)
-            return 0;
+            return false;
         uint32_t n = arr->size();
         for (uint32_t i = 0; i < n; i++) {
             if ((*arr)[i] == sys)
-                return 1;
+                return true;
         }
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
 
 void SolarSystem::setVisible(bool v) {

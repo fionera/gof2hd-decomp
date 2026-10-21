@@ -84,6 +84,6 @@ public:
 
     int stationIsInSystem(int idx);
 
-    int systemIsInSystemRoutes(int sys);
+    bool systemIsInSystemRoutes(int sys);
 };
 #endif

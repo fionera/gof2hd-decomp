@@ -1589,16 +1589,16 @@ bool StarMap::OnTouchEnd(int x, int y) {
                     this->lastSelectedSystem = -1;
                 } else {
                     if (this->jumpMapModeB == 0 &&
-                        !(((SolarSystem *) Globals::status->getSystem())->*
-                          reinterpret_cast<bool (SolarSystem::*)(int)>(&SolarSystem::systemIsInSystemRoutes))(
-                                  (*this->systems)[this->selectedSystem]->getIndex())) {
+                        !((SolarSystem *) Globals::status->getSystem())
+                                 ->systemIsInSystemRoutes(
+                                         (*this->systems)[this->selectedSystem]->getIndex())) {
                         this->choiceWindow->set(*Globals::gameText->getText(420), false);
                         this->choiceVisible = 1;
                         return false;
                     } else if (this->jumpMapModeB != 0 && Globals::status->getShip()->hasVolatileGoods() &&
-                               !(((SolarSystem *) Globals::status->getSystem())->*
-                                 reinterpret_cast<bool (SolarSystem::*)(int)>(&SolarSystem::systemIsInSystemRoutes))(
-                                         (*this->systems)[this->selectedSystem]->getIndex())) {
+                               !((SolarSystem *) Globals::status->getSystem())
+                                        ->systemIsInSystemRoutes(
+                                                (*this->systems)[this->selectedSystem]->getIndex())) {
                         this->choiceWindow->set(*Globals::gameText->getText(612), false);
                     } else {
                         // Zoom into the selected system.
