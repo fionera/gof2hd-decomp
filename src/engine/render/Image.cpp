@@ -140,134 +140,152 @@ namespace AbyssEngine {
 
     void ImageFontRelease(Engine * engine, ImageFont * *slot);
 
-    static void buildGlyphQuad(Mesh *mesh, unsigned int offX, unsigned int offY, unsigned int sizeX,
-                               unsigned int sizeY, unsigned int atlasW, unsigned int atlasH,
-                               unsigned char mode) {
-        float *pos = (float *) mesh->positions;
-        float halfW = AbyssEngine::AEMath::VectorUnsignedToFloat(sizeX, mode);
-        pos[0] = 0;
-        pos[1] = 0;
-        pos[2] = 0;
-        pos[4] = 0;
-        pos[5] = 0;
-        pos[3] = halfW;
-        pos[6] = halfW;
-        float halfH = AbyssEngine::AEMath::VectorUnsignedToFloat(offY, mode);
-        pos[8] = 0;
-        pos[9] = 0;
-        pos[11] = 0;
-        pos[7] = halfH;
-        pos[10] = halfH;
-
-        double aH = (double) AbyssEngine::AEMath::VectorUnsignedToFloat(atlasW, mode);
-        double aW = (double) AbyssEngine::AEMath::VectorUnsignedToFloat(atlasH, mode);
-        float offYs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) sizeY, mode);
-        float offXs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) sizeX, mode);
-        float u0 = AbyssEngine::AEMath::VectorUnsignedToFloat(offX, mode) * (float) (1.0 / aW);
-        float v0 = AbyssEngine::AEMath::VectorUnsignedToFloat(offX, mode) * (float) (1.0 / aH);
-
-        float *uv = (float *) mesh->texCoords;
-        float v1 = (halfH + offYs) * (float) (1.0 / aH);
-        float u1 = (halfW + offXs) * (float) (1.0 / aW);
-        uv[0] = u0;
-        uv[1] = v0;
-        uv[2] = u1;
-        uv[3] = v0;
-        uv[4] = u1;
-        uv[5] = v1;
-        uv[6] = u0;
-        uv[7] = v1;
-
-        unsigned int *draw = (unsigned int *) mesh->indices;
-        draw[0] = 0x20000;
-        draw[1] = 1;
-        draw[2] = 0;
-    }
 
     int ImageCreateFontFromFile(Engine *engine, const char *path, unsigned short index, ImageFont **out) {
         if (engine == 0 || path == 0)
             return -4;
 
         unsigned int handle = 0;
-        if (AEFile::OpenRead(path, (uint32_t *) (&handle)) == 0)
+        unsigned short fontCount = 0;
+        unsigned short regionCount = 0;
+        unsigned short atlasW = 0;
+        unsigned short atlasH = 0;
+        unsigned char format = 0;
+        if (AEFile::OpenRead(path, (uint32_t *) &handle) == 0)
             return -1;
 
-        char magic[8];
-        for (int i = 0; i < 4; ++i) magic[i] = '*';
-        if (AEFile::Read((uint32_t)(8), magic, handle) == 0) {
-            ImageFontRelease(engine, out);
-            return -1;
-        }
-        static const char want[8] = {'*', '*', '*', '*', 0, 0, 0, 0};
-        for (unsigned int k = 0; k < 8; ++k)
-            if (want[k] != magic[k]) {
-                ImageFontRelease(engine, out);
-                return -1;
-            }
-
-        unsigned char mode = 0;
-        unsigned char fmt = 0;
-        unsigned short atlasH = 0, atlasW = 0, fontCount = 0;
-        unsigned short glyphCount = 0;
-        if (AEFile::Read((uint32_t)(1), &fmt, handle) == 0) goto fail;
-        if (AEFile::Read((uint32_t)(2), &atlasH, handle) == 0) goto fail;
-        if (AEFile::Read((uint32_t)(2), &atlasW, handle) == 0) goto fail;
-        if (AEFile::Read((uint32_t)(2), &fontCount, handle) == 0) goto fail;
-        if (AEFile::Skip((uint32_t)((unsigned int) fontCount << 3), handle) == 0) goto fail;
-
+        char magic[8] = "*******";
+        if (AEFile::Read((uint32_t) 8, magic, handle) == 0)
+            goto fail;
         {
-            unsigned int fb = (unsigned int) fmt - 3;
-            if (fb < 0x1f) {
-                unsigned int extra = 0;
-                if (((1u << (fb & 0xff)) & 0u) != 0 || (fmt >= 0x24)) {
-                    if (AEFile::Read((uint32_t)(4), &extra, handle) == 0) goto fail;
-                } else if (fb == 0) {
-                    extra = (unsigned int) atlasW * (unsigned int) atlasH * 4;
-                }
-                if (AEFile::Skip((uint32_t)(extra), handle) == 0) goto fail;
-            }
+            static const char want[8] = "AEimage";
+            for (unsigned int k = 0; k < 8; ++k)
+                if (want[k] != magic[k])
+                    return -1;
         }
 
-        if (AEFile::Read((uint32_t)(2), &glyphCount, handle) == 0) goto fail;
-        if (glyphCount <= index) goto fail;
+        if (AEFile::Read((uint32_t) 1, &format, handle) == 0)
+            goto fail;
+        if (AEFile::Read((uint32_t) 2, &atlasW, handle) == 0)
+            goto fail;
+        if (AEFile::Read((uint32_t) 2, &atlasH, handle) == 0)
+            goto fail;
+        if (AEFile::Read((uint32_t) 2, &regionCount, handle) == 0)
+            goto fail;
+        if (AEFile::Skip((uint32_t) regionCount * 8, handle) == 0)
+            goto fail;
 
-        {
-            ImageFont *font = new ImageFont;
-            font->glyphCount = 0;
-            *(unsigned long long *) &font->codes = 0;
-            *(unsigned long long *) &font->glyphMeshes = 0;
-            *out = font;
-        }
-
-        for (unsigned short g = 0; g < glyphCount; ++g) {
-            if (g == index) {
-                ImageFont *font = *out;
-                if (AEFile::Read((uint32_t)(2), &font->glyphCount, handle) == 0) goto fail;
-                unsigned char *codes = new unsigned char[(unsigned int) font->glyphCount << 1];
-                font->codes = (uint16_t *) codes;
-                if (AEFile::Read((uint32_t)((unsigned int) (*out)->glyphCount << 1), (*out)->codes,
-                                 handle) == 0)
+        // Skip the embedded pixel data: a length-prefixed compressed block or raw RGBA.
+        switch (format) {
+            case 13:
+            case 15:
+            case 16:
+            case 17:
+            case 18:
+            case 19:
+            case 20:
+            case 22:
+            case 23:
+            case 32:
+            case 33:
+            case 36:
+            case 64:
+            case 66: {
+                unsigned int size;
+                if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
                     goto fail;
-                font = *out;
-                unsigned char *meshes = new unsigned char[(unsigned int) font->glyphCount << 2];
-                font->glyphMeshes = (Mesh **) meshes;
+                if (AEFile::Skip(size, handle) == 0)
+                    goto fail;
+                break;
+            }
+            case 1:
+            case 3:
+                if (AEFile::Skip((uint32_t) atlasH * atlasW * 4, handle) == 0)
+                    goto fail;
+                break;
+            default:
+                break;
+        }
 
-                unsigned int n = (*out)->glyphCount;
-                for (unsigned int gi = 0; gi < n; ++gi) {
-                    if (MeshCreate(engine, 4, 2, 0x13, &(*out)->glyphMeshes[gi]) != 1)
-                        goto fail;
-                    unsigned short sizeY = 0, sizeX = 0, offX = 0, offY = 0;
-                    if (AEFile::Read((uint32_t)(2), &sizeY, handle) == 0) goto fail;
-                    if (AEFile::Read((uint32_t)(2), &sizeX, handle) == 0) goto fail;
-                    if (AEFile::Read((uint32_t)(2), &offX, handle) == 0) goto fail;
-                    if (AEFile::Read((uint32_t)(2), &offY, handle) == 0) goto fail;
-                    Mesh *mesh = (*out)->glyphMeshes[gi];
-                    buildGlyphQuad(mesh, offX, offY, sizeX, sizeY, atlasW, atlasH, mode);
-                }
-            } else {
-                unsigned short subCount = 0;
-                if (AEFile::Read((uint32_t)(2), &subCount, handle) == 0) goto fail;
-                if (AEFile::Skip((uint32_t)((unsigned int) subCount * 10), handle) == 0) goto fail;
+        if (AEFile::Read((uint32_t) 2, &fontCount, handle) == 0)
+            goto fail;
+        if (fontCount <= index)
+            goto fail;
+
+        *out = new ImageFont();
+        for (unsigned short f = 0; f < fontCount; ++f) {
+            if (f != index) {
+                unsigned short glyphs = 0;
+                if (AEFile::Read((uint32_t) 2, &glyphs, handle) == 0)
+                    goto fail;
+                if (AEFile::Skip((uint32_t) glyphs * 10, handle) == 0)
+                    goto fail;
+                continue;
+            }
+
+            if (AEFile::Read((uint32_t) 2, &(*out)->glyphCount, handle) == 0)
+                goto fail;
+            (*out)->codes = new uint16_t[(*out)->glyphCount];
+            if (AEFile::Read((uint32_t) (*out)->glyphCount * 2, (*out)->codes, handle) == 0)
+                goto fail;
+            (*out)->glyphMeshes = new Mesh *[(*out)->glyphCount];
+
+            for (unsigned int g = 0; g < (*out)->glyphCount; ++g) {
+                if (MeshCreate(engine, 4, 2, 0x13, &(*out)->glyphMeshes[g]) != 1)
+                    goto fail;
+                unsigned short u = 0;
+                unsigned short v = 0;
+                unsigned short sizeX = 0;
+                unsigned short sizeY = 0;
+                if (AEFile::Read((uint32_t) 2, &u, handle) == 0)
+                    goto fail;
+                if (AEFile::Read((uint32_t) 2, &v, handle) == 0)
+                    goto fail;
+                if (AEFile::Read((uint32_t) 2, &sizeX, handle) == 0)
+                    goto fail;
+                if (AEFile::Read((uint32_t) 2, &sizeY, handle) == 0)
+                    goto fail;
+
+                Mesh *mesh = (*out)->glyphMeshes[g];
+                float *pos = (float *) mesh->positions;
+                pos[0] = 0;
+                pos[1] = 0;
+                pos[2] = 0;
+                float w = (float) sizeX;
+                pos[3] = w;
+                pos[4] = 0;
+                pos[5] = 0;
+                pos[6] = w;
+                float h = (float) sizeY;
+                pos[7] = h;
+                pos[8] = 0;
+                pos[9] = 0;
+                pos[10] = h;
+                pos[11] = 0;
+
+                float invH = (float) (1.0 / (double) atlasH);
+                float invW = (float) (1.0 / (double) atlasW);
+                float u0 = (float) u * invW;
+                float v0 = (float) v * invH;
+                float u1 = (w + (float) u) * invW;
+                float v1 = (h + (float) v) * invH;
+                float *uv = (float *) mesh->texCoords;
+                uv[0] = u0;
+                uv[1] = v0;
+                uv[2] = u1;
+                uv[3] = v0;
+                uv[4] = u1;
+                uv[5] = v1;
+                uv[6] = u0;
+                uv[7] = v1;
+
+                unsigned short *tri = (unsigned short *) mesh->indices;
+                tri[0] = 0;
+                tri[1] = 2;
+                tri[2] = 1;
+                tri[3] = 0;
+                tri[4] = 3;
+                tri[5] = 2;
             }
         }
 
