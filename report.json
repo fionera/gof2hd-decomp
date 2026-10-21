@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4540,
   "compared": 4523,
-  "avg_match": 96.89,
+  "avg_match": 96.91,
   "byte_exact": 1314,
   "linked_exact": 4078,
   "fuzzy_perfect": 4078,
@@ -222,14 +222,6 @@
    "linked": false,
    "osize": 57232,
    "usize": 55236
-  },
-  {
-   "name": "_ZN18TargetFollowCamera6updateEi",
-   "pct": 26.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2104,
-   "usize": 1780
   },
   {
    "name": "_ZN3Hud10touchBeginEjjPv",
@@ -3182,6 +3174,14 @@
    "linked": false,
    "osize": 412,
    "usize": 412
+  },
+  {
+   "name": "_ZN18TargetFollowCamera6updateEi",
+   "pct": 96.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2104,
+   "usize": 2104
   },
   {
    "name": "_ZN11AbyssEngine6EngineC1Ev",

@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 16,
-  "avg_match": 96.89,
+  "avg_match": 96.91,
   "compared": 4523
  },
  "data": {
@@ -61,11 +61,9 @@
   "_Z30_mtw_onTouchEnd_genericButtonsPviii",
   "_Z30paintcanvas_ext_sprite_allsizejPv",
   "_Z31AppManager_GetApplicationModulej",
-  "_Z8AERandomPvi",
   "_ZN11AbyssEngine16AE_getInitGLThisEv",
   "_ZN11AbyssEngine17AE_getInitGLWidthEv",
   "_ZN11AbyssEngine18AE_getInitGLHeightEv",
-  "_ZN11AbyssEngine6AEMath24MatrixSetRotationOrderedERKNS0_6MatrixEfffi",
   "_ZN11AbyssEngine6Engine16VibrateSupportedEv",
   "_ZN4FMOD11EventSystem10getProjectEPKcPPNS_12EventProjectE",
   "_ZN4FMOD11EventSystem11getCategoryEPKcPPNS_13EventCategoryE",
@@ -99,6 +97,7 @@
   "__aeabi_f2ulz",
   "__aeabi_idiv",
   "__aeabi_idivmod",
+  "__aeabi_l2d",
   "__aeabi_l2f",
   "__aeabi_memclr",
   "__aeabi_memclr4",
