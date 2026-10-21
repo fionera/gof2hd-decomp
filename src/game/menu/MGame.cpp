@@ -193,14 +193,6 @@ static float g_fcZoomMax;
 
 static float g_fcZoomMin;
 
-static int *g_jumpFlag;
-
-static int **g_alienAmt;
-
-static int **g_jumpCost;
-
-static int **g_alienCost;
-
 static int g_accelTune;
 
 struct AccelTune {
@@ -1422,54 +1414,48 @@ jump:
 }
 
 void MGame::startChargingJumpDrive() {
-    if (this->usingJumpDrive == 0) return;
-    int needed = 1;
-    if (((Ship *) (Globals::status->getShip()))->hasCargo(0x7a, 1) == 0) {
-        ChoiceWindow *w = this->choiceWindow;
-        if (w == 0) {
-            w = new ChoiceWindow();
-            this->choiceWindow = w;
-        }
-        String *txt = ((GameText *) (*(int *) Globals::status))->getText(0x243);
-        ((ChoiceWindow *) (w))->set(*(String *) txt);
-        this->pauseOpen = 1;
-        this->choiceWindowOpen = 1;
-        ((MGame *) (this))->pauseSounds();
-        **g_jumpCost = 0;
+    if (!this->usingJumpDrive) {
         return;
     }
-    int hc = Globals::status->hardCoreMode();
-    int *jf = g_jumpFlag;
-    if (hc != 0) needed = 2;
-    int cost;
-    if (*jf == (int) (intptr_t) Globals::status->playerStation) {
-        cost = needed << 1;
-    } else {
-        cost = **g_alienAmt;
-        if (Globals::status->inAlienOrbit() != 0) cost = needed;
-    }
-    ((Ship *) (Globals::status->getShip()))->getCargo(0x7a);
-    if (((Item *) (0))->getAmount() < cost) {
-        ChoiceWindow *w = this->choiceWindow;
-        if (w == 0) {
-            w = new ChoiceWindow();
-            this->choiceWindow = w;
+    int cells = 1;
+    if (!Globals::status->getShip()->hasCargo(122, 1)) {
+        if (this->choiceWindow == nullptr) {
+            this->choiceWindow = new ChoiceWindow();
         }
-        int hc2 = Globals::status->hardCoreMode();
-        String *txt = ((GameText *) (*(int *) Globals::status))->getText(hc2 != 0 ? 0x243 : 0x244);
-        ((ChoiceWindow *) (w))->set(*(String *) txt);
-        this->pauseOpen = 1;
+        this->choiceWindow->set(*Globals::gameText->getText(579));
         this->choiceWindowOpen = 1;
-        ((MGame *) (this))->pauseSounds();
-        *jf = 0;
+        this->pauseOpen = 1;
+        this->pauseSounds();
+        Level::programmedStation = nullptr;
+        return;
+    }
+    if (Globals::status->hardCoreMode()) {
+        cells = 2;
+    }
+    int needed;
+    if (Level::programmedStation == Globals::status->playerStation) {
+        needed = cells * 2;
+    } else {
+        needed = Globals::status->inAlienOrbit() ? cells : Level::energyCellsForNextJump;
+    }
+    if (needed > Globals::status->getShip()->getCargo(122)->getAmount()) {
+        if (this->choiceWindow == nullptr) {
+            this->choiceWindow = new ChoiceWindow();
+        }
+        int textId = Globals::status->hardCoreMode() ? 579 : 580;
+        this->choiceWindow->set(*Globals::gameText->getText(textId));
+        this->choiceWindowOpen = 1;
+        this->pauseOpen = 1;
+        this->pauseSounds();
+        Level::programmedStation = nullptr;
         return;
     }
     this->player->startJumpDrive();
-    if (*jf != (int) (intptr_t) Globals::status->playerStation) {
-        if (Globals::status->inAlienOrbit() == 0) needed = **g_alienCost;
+    if (Level::programmedStation != Globals::status->playerStation && !Globals::status->inAlienOrbit()) {
+        cells = Level::energyCellsForNextJump;
     }
-    this->hud->hudEvent(0x1e, this->player, needed);
-    ((Ship *) (Globals::status->getShip()))->removeCargo(0x7a, needed);
+    this->hud->hudEvent(30, this->player, cells);
+    Globals::status->getShip()->removeCargo(122, cells);
 }
 
 void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- exported override signature (Pv)
