@@ -1,4 +1,5 @@
 #include "game/menu/ModStation.h"
+#include "game/core/CharacterImages.h"
 #include <cstddef>
 #include "game/core/Globals.h"
 extern int g_android_current_achievements[3];
@@ -219,9 +220,6 @@ static inline void Status_checkForLevelUp_okp() { Globals::status->checkForLevel
 
 void leaveStation();
 
-// Portrait part descriptors for the pirate-base greeting dialogues.
-static int gPirateGreetingFaceA[10] = {2, 0, 0, 0, 0, 4, 2, 0, 2, 2};
-static int gPirateGreetingFaceB[5];
 
 void ModStation::OnKeyPress(long long, long long key) {
     if (!this->stationActive)
@@ -270,7 +268,7 @@ void ModStation::OnKeyPress(long long, long long key) {
                         if (this->dialogueWindow == nullptr) {
                             this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(432),
                                                                       Globals::gameText->getText(1609),
-                                                                      gPirateGreetingFaceA);
+                                                                      CHAR_AGENT);
                             this->flag_0x69 = 1;
                             Agent *agent = new Agent(0, String("", false), 0, 0, 2, true, 0, 0, 0, 0);
                             Globals::sound->play(Globals::globals->getDialogueSoundId(432, agent), nullptr, nullptr,
@@ -336,7 +334,7 @@ void ModStation::OnKeyPress(long long, long long key) {
                         if (this->dialogueWindow == nullptr) {
                             this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(433),
                                                                       Globals::gameText->getText(1597),
-                                                                      gPirateGreetingFaceB);
+                                                                      CHAR_BRENT);
                             this->flag_0x69 = 1;
                             Agent *agent = new Agent(0, String("", false), 0, 0, 0, true, 0, 0, 0, 0);
                             Globals::sound->play(Globals::globals->getDialogueSoundId(433, agent), nullptr, nullptr,
@@ -1041,7 +1039,7 @@ void ModStation::OnUpdate() {
                 DialogueWindow *dw = new DialogueWindow(
                     (String *) (intptr_t) GameText_getText_ou(*(int *) &Globals::gameText),
                     (String *) (intptr_t) GameText_getText_ou(*(int *) &Globals::gameText),
-                    (int *) (long) kind);
+                    CHAR_IMAGES[kind]);
                 this->flag_0x69 = 1;
                 this->dialogueWindow = dw;
             } else if (m == 0) {
@@ -1309,7 +1307,7 @@ wingmen:
         delete this->dialogueWindow;
         this->dialogueWindow = nullptr;
         this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(442), Globals::gameText->getText(1662),
-                                                  gPirateGreetingFaceA);
+                                                  CHAR_AGENT);
         Globals::sound->play(589, nullptr, nullptr, 0.0f);
         this->flag_0x69 = 1;
         reinterpret_cast<uint8_t *>(&Globals::status->field_f8)[1] = 0;
