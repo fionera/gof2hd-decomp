@@ -220,74 +220,41 @@ bool RecordHandler::notEnoughMemory() {
     return (int)AEFile::GetDeviceFreeSpace() < 900;
 }
 
-static int *g_CSV_count = nullptr;
-
 void RecordHandler::convertSDVersionSaves() {
-    Array<signed char *> *a0 = new Array<signed char *>();
-    int *cnt = g_CSV_count;
-    ArraySetLength(*cnt, *a0);
-    Array<signed char *> *a1 = new Array<signed char *>();
-    ArraySetLength(*cnt, *a1);
+    Array<signed char *> *records = new Array<signed char *>();
+    ArraySetLength(Globals::recordSlots, *records);
+    Array<signed char *> *previews = new Array<signed char *>();
+    ArraySetLength(Globals::recordSlots, *previews);
 
-    unsigned n = *cnt;
-    int *sizes0 = new int[n];
-    int *sizes1 = new int[n];
-
-    for (int i = 0; i < (int) n; i++) {
-        sizes0[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
-        sizes1[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
-
-        String num, path;
-        num.Set((long long) (i));
-        path = this->recordDir + num;
-        AEFile::FileDelete(path);
-
-        num.Set((long long) (i));
-        path = this->backupDir + num;
-        AEFile::FileDelete(path);
-        n = *cnt;
+    int *recordSizes = new int[Globals::recordSlots];
+    int *previewSizes = new int[Globals::recordSlots];
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        recordSizes[i] = this->readRecordAsByteArray(&(*records)[i], i, false);
+        previewSizes[i] = this->readRecordAsByteArray(&(*previews)[i], i, true);
+        AEFile::FileDelete(this->recordDir + String(i));
+        AEFile::FileDelete(this->backupDir + String(i));
     }
 
-    int i = 0;
-    while (true) {
-        int last = (int) n - 1;
-        int j = i;
-        signed char *rec = 0;
-        bool found = false;
-        while (j < last) {
-            rec = (*a0)[j];
-            if (rec != 0) {
-                found = true;
-                break;
-            }
-            j++;
+    // SD-version slots are shifted up by one; the last slot wraps to slot 0.
+    for (int i = 0; i < Globals::recordSlots - 1; i++) {
+        if ((*records)[i] != 0) {
+            this->writeByteArrayAsRecord((*records)[i], recordSizes[i], i + 1, false);
+            this->addHash(i + 1);
+            this->writeByteArrayAsRecord((*previews)[i], previewSizes[i], i + 1, true);
         }
-        if (!found) {
-            signed char *lastRec = (*a0)[last];
-            if (lastRec != 0) {
-                this->writeByteArrayAsRecord(lastRec, sizes0[last], 0, false);
-                this->addHash(0);
-                int idx = (int) (*cnt) - 1;
-                this->writeByteArrayAsRecord((*a1)[idx], sizes1[idx], 0, true);
-            }
-            break;
-        }
-        int next = j + 1;
-        this->writeByteArrayAsRecord(rec, sizes0[j], next, false);
-        this->addHash(next);
-        this->writeByteArrayAsRecord((*a1)[j], sizes1[j], next, true);
-        i = next;
-        n = *cnt;
+    }
+    int last = Globals::recordSlots - 1;
+    if ((*records)[last] != 0) {
+        this->writeByteArrayAsRecord((*records)[last], recordSizes[last], 0, false);
+        this->addHash(0);
+        this->writeByteArrayAsRecord((*previews)[Globals::recordSlots - 1], previewSizes[Globals::recordSlots - 1], 0,
+                                     true);
     }
 
-    ArrayReleaseArrays(*a0);
-    ArrayReleaseArrays(*a1);
-    delete a0;
-    delete a1;
-    delete[] sizes0;
-    delete[] sizes1;
-
-    return;
+    ArrayReleaseArrays(*records);
+    ArrayReleaseArrays(*previews);
+    delete[] recordSizes;
+    delete[] previewSizes;
 }
 
 void RecordHandler::addHash(int slot) {
@@ -391,49 +358,32 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     return w;
 }
 
-static int *g_RH_csd_count = nullptr;
-
-static char **g_RH_csd_flag = nullptr;
-
 void RecordHandler::changeSaveDirectoryToBackupDirectory() {
-    Array<signed char *> *a0 = new Array<signed char *>();
-    int *cnt = g_RH_csd_count;
-    ArraySetLength(*cnt, *a0);
-    Array<signed char *> *a1 = new Array<signed char *>();
-    ArraySetLength(*cnt, *a1);
+    Array<signed char *> *records = new Array<signed char *>();
+    ArraySetLength(Globals::recordSlots, *records);
+    Array<signed char *> *previews = new Array<signed char *>();
+    ArraySetLength(Globals::recordSlots, *previews);
 
-    unsigned int n = *cnt;
-    int *sizes0 = new int[n];
-    int *sizes1 = new int[n];
-
-    for (int i = 0; i < (int) n; i++) {
-        sizes0[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
-        sizes1[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
-        n = *cnt;
+    int *recordSizes = new int[Globals::recordSlots];
+    int *previewSizes = new int[Globals::recordSlots];
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        recordSizes[i] = this->readRecordAsByteArray(&(*records)[i], i, false);
+        previewSizes[i] = this->readRecordAsByteArray(&(*previews)[i], i, true);
     }
 
-    **g_RH_csd_flag = 1;
-    int i = 0;
-    while (i < (int) n) {
-        signed char *rec = (*a0)[i];
-        if (rec == 0) {
-            i++;
-        } else {
-            this->writeByteArrayAsRecord(rec, sizes0[i], i, false);
-            int next = i + 1;
-            this->addHash(next);
-            this->writeByteArrayAsRecord((*a1)[i], sizes1[i], i, true);
-            n = *cnt;
-            i = next;
+    AbyssEngine::Engine::backupSaveGames = 1;
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        if ((*records)[i] != 0) {
+            this->writeByteArrayAsRecord((*records)[i], recordSizes[i], i, false);
+            this->addHash(i + 1);
+            this->writeByteArrayAsRecord((*previews)[i], previewSizes[i], i, true);
         }
     }
 
-    ArrayReleaseArrays(*a0);
-    ArrayReleaseArrays(*a1);
-    delete a0;
-    delete a1;
-    delete[] sizes0;
-    delete[] sizes1;
+    ArrayReleaseArrays(*records);
+    ArrayReleaseArrays(*previews);
+    delete[] recordSizes;
+    delete[] previewSizes;
 }
 
 GameRecord *RecordHandler::recordStoreReadPreview(int slot) {
