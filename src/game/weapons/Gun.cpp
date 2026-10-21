@@ -566,27 +566,12 @@ void Gun::calcCharacterCollision() {
     if (this->enemies == nullptr) {
         return;
     }
-    bool explosive;
-    bool explodeOnContact;
-    bool scatter;
-    bool mine;
-    switch (this->weaponType) {
-        case ITEM_SORT_EMP_BOMB:
-        case ITEM_SORT_NUKE:
-        case ITEM_SORT_IONIZING_MISSILE:
-        case ITEM_SORT_SHOCK_BLAST:
-            scatter = this->weaponType == ITEM_SORT_SCATTER_GUN;
-            mine = this->weaponType == ITEM_SORT_MINE;
-            explosive = true;
-            explodeOnContact = true;
-            break;
-        default:
-            scatter = this->weaponType == ITEM_SORT_SCATTER_GUN;
-            mine = this->weaponType == ITEM_SORT_MINE;
-            explosive = isRocketLike(this->weaponType);
-            explodeOnContact = mine;
-            break;
-    }
+    bool bomb = (this->weaponType == ITEM_SORT_EMP_BOMB || this->weaponType == ITEM_SORT_NUKE ||
+                 this->weaponType == ITEM_SORT_IONIZING_MISSILE || this->weaponType == ITEM_SORT_SHOCK_BLAST);
+    bool scatter = this->weaponType == ITEM_SORT_SCATTER_GUN;
+    bool mine = this->weaponType == ITEM_SORT_MINE;
+    bool explosive = bomb || isRocketLike(this->weaponType);
+    bool explodeOnContact = bomb || mine;
     this->lastHitKIPlayer = 0;
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {

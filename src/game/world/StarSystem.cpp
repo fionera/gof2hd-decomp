@@ -244,7 +244,6 @@ StarSystem::StarSystem(int mode) {
         }
 
         int flip;
-        bool tilted;
         if (i == 0) {
             int randomSlot = Globals::rnd->nextInt(14);
             switch (Globals::status->getStation()->getTextureIndex()) {
@@ -285,13 +284,16 @@ StarSystem::StarSystem(int mode) {
             usedSlots[slot] = 1;
             flip = 0x8000;
             sunSlot = slot;
-            tilted = true;
         } else {
             if (stations->data()[i - 1] == Globals::status->getStation()->getIndex()) {
                 (*this->playerTargets)[i - 1] = new PlayerStatic(0, (*this->planetsArray)[i], 0.0f, 0.0f, 0.0f);
-                // the orbited planet: slot 0, size depends on the station
-                slot = 0;
-                flip = sunSlot < 12 ? 0 : 0x8000;
+                // the orbited planet keeps slot 0; the slot search is a leftover of the J2ME placement loop
+                bool placed = false;
+                while (!placed) {
+                    slot = 0;
+                    placed = true;
+                }
+                flip = sunSlot - slot < 12 ? 0 : 0x8000;
                 StarSystem::orbitPlanetIndex = i - 1;
                 int size = Globals::rnd->nextInt(20000) + 20000;
                 if (Globals::status->getCurrentCampaignMission() == 0) {
@@ -336,16 +338,17 @@ StarSystem::StarSystem(int mode) {
                 }
             }
             usedSlots[slot] = 1;
-            tilted = slot != sunSlot && stations->data()[i - 1] != Globals::status->getStation()->getIndex();
         }
 
         const float kTwoPi = 6.2831855f;
-        if (tilted) {
+        if (slot == sunSlot && i != 0) {
+            (*this->planetsArray)[i]->setRotation(Vector{0.0f, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
+        } else if (i > 0 && stations->data()[i - 1] == Globals::status->getStation()->getIndex()) {
+            (*this->planetsArray)[i]->setRotation(Vector{0.0f, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
+        } else {
             float tilt = (float) (Globals::rnd->nextInt(4096) - 2048) * (1.0f / 65536.0f) * kTwoPi;
             (*this->planetsArray)[i]->setRotation(
                     Vector{tilt, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
-        } else {
-            (*this->planetsArray)[i]->setRotation(Vector{0.0f, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
         }
         (*this->planetsArray)[i]->moveForward(-20000.0f);
         if (i == 0) {
@@ -374,17 +377,17 @@ void StarSystem::initLight() {
         normalSystem = !this->abstractSystem;
     }
     float ambientScale = 0.15f;
-    this->sunLightColor.x = kSunLightColors[sunIndex];
-    this->sunLightColor.y = kSunLightColors[sunIndex + 1];
-    this->sunLightColor.z = kSunLightColors[sunIndex + 2];
+    this->sunLightColor[0] = kSunLightColors[sunIndex];
+    this->sunLightColor[1] = kSunLightColors[sunIndex + 1];
+    this->sunLightColor[2] = kSunLightColors[sunIndex + 2];
 
     if (normalSystem) {
         if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() == 15 &&
             (Globals::status->getCurrentCampaignMission() == 89 ||
              Globals::status->getCurrentCampaignMission() >= 158)) {
-            this->sunLightColor.x *= 0.5f;
-            this->sunLightColor.y *= 0.5f;
-            this->sunLightColor.z *= 0.5f;
+            this->sunLightColor[0] *= 0.5f;
+            this->sunLightColor[1] *= 0.5f;
+            this->sunLightColor[2] *= 0.5f;
         }
     }
     if (!this->abstractSystem) {
@@ -406,12 +409,12 @@ void StarSystem::initLight() {
         sunScale = Globals::status->getCurrentCampaignMission() < 158 ? 30.0f : 15.0f;
     }
 
-    float sunR = this->sunLightColor.x;
-    float sunG = this->sunLightColor.y;
-    float sunB = this->sunLightColor.z;
+    float sunR = this->sunLightColor[0];
+    float sunG = this->sunLightColor[1];
+    float sunB = this->sunLightColor[2];
     ((Engine *) Globals::appManager->GetEngine())->LightSetGlobalSceneColorAmbient(
-            ambientScale * this->sunLightColor.x, ambientScale * this->sunLightColor.y,
-            ambientScale * this->sunLightColor.z);
+            ambientScale * this->sunLightColor[0], ambientScale * this->sunLightColor[1],
+            ambientScale * this->sunLightColor[2]);
     ((Engine *) Globals::appManager->GetEngine())->LightSetRimColor(kRimLightColors[sunIndex] * 3.0f,
                                                                     kRimLightColors[sunIndex + 1] * 3.0f,
                                                                     kRimLightColors[sunIndex + 2] * 3.0f);
@@ -433,7 +436,7 @@ void StarSystem::initLight() {
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(
             stationR * 1.5f, stationG * 1.5f, stationB * 1.5f, 0x4001);
     ((Engine *) Globals::appManager->GetEngine())->LightSetParticleAmbient(
-            this->sunLightColor.x, this->sunLightColor.y, this->sunLightColor.z);
+            this->sunLightColor[0], this->sunLightColor[1], this->sunLightColor[2]);
 
     Globals::Canvas->FogEnable(false, AbyssEngine::FogMode_1);
     this->fogEnabled = 0;

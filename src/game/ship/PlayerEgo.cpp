@@ -601,9 +601,8 @@ void PlayerEgo::addNukeVolatileForce(float v) {
     p->flShake = p->flShake + v * 3.0f;
 }
 
-unsigned char PlayerEgo::isInTurretMode() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->turretActive);
+bool PlayerEgo::isInTurretMode() {
+    return this->turretActive;
 }
 
 void PlayerEgo::setDockingCamera() {
@@ -2454,9 +2453,8 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
     }
 }
 
-unsigned char PlayerEgo::isDockingToPlanet() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->dockingToPlanet);
+bool PlayerEgo::isDockingToPlanet() {
+    return reinterpret_cast<bool &>(this->dockingToPlanet);
 }
 
 unsigned char PlayerEgo::isDockingToStream() {

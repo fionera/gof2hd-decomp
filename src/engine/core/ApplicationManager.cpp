@@ -513,14 +513,14 @@ void ApplicationManager::OnUpdate(long long now) {
                         this->loadingCallback(this->paintCanvas, loading, this->loadingCallbackData);
                     }
                     if (loading == 0) {
-                        this->actionState = 0;
-                        this->state = 5;
-                        this->currentTimeMs = 0;
                         this->frameTimeMs = now;
-                        this->previousFrameTimeMs = now - 1;
-                        this->keyState = 0;
                         loadMesh = 0;
+                        this->actionState = 0;
+                        this->keyState = 0;
+                        this->state = 5;
                         loadTexture = 0;
+                        this->previousFrameTimeMs = now - 1;
+                        this->currentTimeMs = 0;
                     } else {
                         uint64_t previous = this->frameTimeMs;
                         this->currentTimeMs += (uint64_t) now - previous;
@@ -661,18 +661,19 @@ void ApplicationManager::OnUpdate(long long now) {
                         }
                     }
                 }
-                this->engine->field_0xfe = 1;
                 this->engine->statsBucketFlag = 1;
+                this->engine->field_0xfe = 1;
             }
 
             if (performanceTestEnded) {
                 this->paintCanvas->SetColor(0, 255, 0, 255);
-                long long tris = triDrawn;
                 long long frames = performanceFrameCounter;
+                long long tris = triDrawn;
                 long long time = performanceTime;
                 int seconds = (int) (time / 1000);
+                long long trisPerSecond = tris / seconds;
                 String text = String("PerfTest ended: ") + String((int) (frames * 1000 / time)) + String(" / ") +
-                              String(seconds) + String(" / ") + String(tris / seconds);
+                              String(seconds) + String(" / ") + String(trisPerSecond);
                 this->paintCanvas->DrawString(this->engine->field_0x78, text,
                                               this->paintCanvas->GetWidth() / 2 -
                                                       this->paintCanvas->GetTextWidth(this->engine->field_0x78, text) / 2,

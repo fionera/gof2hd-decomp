@@ -39,7 +39,7 @@ public:
 
     int getValue(int index, int sub);
 
-    uint8_t gotAllGoldMedals();
+    bool gotAllGoldMedals();
 
     bool gotAllMedals();
 

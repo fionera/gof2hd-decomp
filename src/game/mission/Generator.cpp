@@ -191,14 +191,14 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
             }
             if (Globals::status->hardCoreMode() && (item->getSort() == 23 || item->getSort() == 24)) goto next;
             switch (stationId) {
-                case 107:
-                    if (item->getType() != 3) goto next;
+                case 101:
+                    if (!item->isWeapon()) goto next;
                     break;
                 case 105:
                     if (!item->isWeapon() && item->getSort() != 28) goto next;
                     break;
-                case 101:
-                    if (!item->isWeapon()) goto next;
+                case 107:
+                    if (item->getType() != 3) goto next;
                     break;
             }
             if (stationId == 106 && item->getType() != 4) goto next;
@@ -301,7 +301,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     }
 
     int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-    bool allGold = station->getIndex() == 10 ? Globals::achievements->gotAllGoldMedals() != 0 : false;
+    bool allGold = station->getIndex() == 10 ? Globals::achievements->gotAllGoldMedals() : false;
     int stationIndex = station->getIndex();
     int stationId = station->getIndex();
     int count;
@@ -357,13 +357,12 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     bool terranExtras = false;
     bool vossExtras = false;
     switch (race) {
-        case 0:
-            if (Globals::rnd->nextInt(7) == 0) {
-                ArrayAdd((*Globals::ships)[62]->makeShip(-1), *list);
-                list->data()[list->size() - 1]->setRace(3);
+        case 2:
+            if (Globals::rnd->nextInt(8) == 0) {
+                ArrayAdd((*Globals::ships)[61]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(1);
                 list->data()[list->size() - 1]->adjustPrice();
             }
-            terranExtras = true;
             break;
         case 1:
             if (Globals::rnd->nextInt(5) == 0) {
@@ -373,12 +372,13 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             }
             vossExtras = true;
             break;
-        case 2:
-            if (Globals::rnd->nextInt(8) == 0) {
-                ArrayAdd((*Globals::ships)[61]->makeShip(-1), *list);
-                list->data()[list->size() - 1]->setRace(1);
+        case 0:
+            if (Globals::rnd->nextInt(7) == 0) {
+                ArrayAdd((*Globals::ships)[62]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(3);
                 list->data()[list->size() - 1]->adjustPrice();
             }
+            terranExtras = true;
             break;
     }
     if (Globals::options[53] && (Globals::status->dlc1Won() & vossExtras)) {
@@ -896,17 +896,17 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                      1200.0f +
              1.0f) *
             (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
-    if (type == 9) {
-        reward *= 1.2f;
-    } else if (type == 7) {
+    if (type == 7) {
         reward *= 0.7f;
+    } else if (type == 9) {
+        reward *= 1.2f;
     } else if (type == 8) {
         reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
-    } else if (type == 3 || type == 5) {
-        reward *= 2.0f;
     } else if (type == 11) {
         reward *= 0.6f;
         reward += reward / 5.0f * (float) amount;
+    } else if (type == 5 || type == 3) {
+        reward *= 2.0f;
     }
 
     int level = Globals::status->getLevel();
