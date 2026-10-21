@@ -104,18 +104,20 @@ void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
         unlocked += (*blueprints)[i]->isUnlocked();
     }
 
-    Array<PendingProduct *> *pending = Globals::status->getPendingProducts();
-    uint32_t length = unlocked;
     bool noPending = true;
+    uint32_t length = unlocked;
+    Array<PendingProduct *> *pending = Globals::status->getPendingProducts();
     if (pending != nullptr) {
         for (uint32_t i = 0; i < pending->size(); ++i) {
             if ((*pending)[i] != nullptr) {
                 ++length;
             }
         }
-        noPending = length <= unlocked;
-        if (unlocked < length) {
+        if (length > unlocked) {
             ++length;
+            noPending = false;
+        } else {
+            noPending = true;
         }
     }
 
