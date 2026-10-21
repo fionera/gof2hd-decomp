@@ -19,10 +19,9 @@
 
 namespace {
     struct CurveKeyframe {
-        uint8_t tag;
+        int8_t tag;  // 1 = step, 2 = linear, 3 = cubic Hermite
         uint8_t pad0x1[7];
-        uint32_t timeLo;
-        uint32_t timeHi;
+        unsigned long long time;
         int32_t value;
         int32_t c0;
         int32_t c1;
@@ -31,8 +30,7 @@ namespace {
 #if __SIZEOF_POINTER__ == 4
 #include <cstddef>
     static_assert(offsetof(CurveKeyframe, tag) == 0x0, "CurveKeyframe.tag");
-    static_assert(offsetof(CurveKeyframe, timeLo) == 0x8, "CurveKeyframe.timeLo");
-    static_assert(offsetof(CurveKeyframe, timeHi) == 0xc, "CurveKeyframe.timeHi");
+    static_assert(offsetof(CurveKeyframe, time) == 0x8, "CurveKeyframe.time");
     static_assert(offsetof(CurveKeyframe, value) == 0x10, "CurveKeyframe.value");
     static_assert(offsetof(CurveKeyframe, c0) == 0x14, "CurveKeyframe.c0");
     static_assert(offsetof(CurveKeyframe, c1) == 0x18, "CurveKeyframe.c1");
@@ -2717,82 +2715,40 @@ namespace AbyssEngine {
         Curve *curve;
     };
 
-    long long CurveGetValue(unsigned long long time, Curve *curve) {
-        CurveKeyframe **entries = (CurveKeyframe **) curve->entries;
-        unsigned short count = curve->count;
+    int CurveGetValue(unsigned long long time, Curve *curve) {
+        CurveKeyframe **keys = (CurveKeyframe **) curve->entries;
+        if (keys[0]->time >= time)
+            return keys[0]->value;
+        int last = curve->count - 1;
+        if (time >= keys[last]->time)
+            return keys[last]->value;
 
-        unsigned int qlo = (unsigned int) time;
-        unsigned int qhi = (unsigned int) (time >> 32);
+        unsigned short index;
+        CurveKeyframe *key;
+        do {
+            index = (unsigned short) last;
+            key = keys[index];
+            last--;
+        } while (time < key->time);
 
-        auto keyTimeHi = [&](CurveKeyframe *kf) -> unsigned int { return kf->timeHi; };
-        auto keyTimeLo = [&](CurveKeyframe *kf) -> unsigned int { return kf->timeLo; };
-        auto keyVal = [&](CurveKeyframe *kf) -> int { return kf->value; };
-
-        if (count == 0)
-            return 0;
-
-        CurveKeyframe *first = entries[0];
-        if ((unsigned long long) time <
-            (((unsigned long long) keyTimeHi(first) << 32) | keyTimeLo(first))) {
-            return keyVal(first);
+        if (key->tag == 3) {
+            CurveKeyframe *next = keys[index + 1];
+            int endValue = next->value;
+            long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
+            long long t2 = (t * t) >> 12;
+            long long t3 = (t2 * t) >> 12;
+            int startValue = key->value;
+            return (int) (((t - 2 * t2 + t3) * key->c0) >> 12) + (int) (((t3 - t2) * key->c1) >> 12) +
+                   (int) (((3 * t2 - 2 * t3) * (endValue - startValue)) >> 12) + startValue;
         }
-
-        unsigned int idx = (unsigned int) (unsigned short) (count - 1);
-        CurveKeyframe *last = entries[idx];
-        if ((unsigned long long) time >
-            (((unsigned long long) keyTimeHi(last) << 32) | keyTimeLo(last))) {
-            return keyVal(last);
+        if (key->tag == 2) {
+            CurveKeyframe *next = keys[index + 1];
+            long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
+            return (int) ((t * (next->value - key->value)) >> 12) + key->value;
         }
-
-        CurveKeyframe *seg = last;
-        unsigned int segIdx = idx;
-        while (segIdx > 0) {
-            seg = entries[segIdx];
-            unsigned long long st = ((unsigned long long) keyTimeHi(seg) << 32) | keyTimeLo(seg);
-            if (st <= (unsigned long long) time)
-                break;
-            --segIdx;
-        }
-
-        char tag = (char) seg->tag;
-        unsigned long long segStart =
-                ((unsigned long long) keyTimeHi(seg) << 32) | keyTimeLo(seg);
-        int v0 = keyVal(seg);
-
-        if (tag == 1) {
-            return v0;
-        }
-
-        CurveKeyframe *nextKf = entries[segIdx + 1];
-        unsigned long long segEnd =
-                ((unsigned long long) keyTimeHi(nextKf) << 32) | keyTimeLo(nextKf);
-        int v1 = keyVal(nextKf);
-
-        unsigned int num = (unsigned int) ((time - segStart)) << 12;
-        unsigned int numHi = (unsigned int) (((time - segStart)) >> 20);
-        unsigned int den = (unsigned int) (segEnd - segStart);
-        long long tq = (((unsigned long long) (numHi) << 32 | (unsigned) (num)) /
-                        ((unsigned long long) ((unsigned int) ((segEnd - segStart) >> 32)) << 32 |
-                         (unsigned) (den)));
-        unsigned int t = (unsigned int) tq;
-
-        if (tag == 2) {
-            long long d = (long long) (v1 - v0) * (unsigned int) t;
-            return (int) ((unsigned int) (d >> 12)) + v0;
-        }
-
-        int c0 = seg->c0;
-        int c1 = seg->c1;
-        unsigned long long t2_64 = (unsigned long long) t * t;
-        unsigned int t2 = (unsigned int) (t2_64 >> 12);
-        unsigned long long t3_64 = (unsigned long long) t2 * t;
-        unsigned int t3 = (unsigned int) (t3_64 >> 12);
-
-        long long term0 = (long long) c0 * (int) (t - 2 * t2 + t3);
-        long long term1 = (long long) c1 * (int) (t3 - t2);
-        long long term2 = (long long) (v1 - v0) * (int) (3 * t2 - 2 * t3);
-        int value = v0 + (int) (term0 >> 12) + (int) (term1 >> 12) + (int) (term2 >> 12);
-        return value;
+        if (key->tag == 1)
+            return key->value;
+        return 0;
     }
 }
 
