@@ -1335,13 +1335,14 @@ namespace AbyssEngine {
             return 1;
         }
 
+        const AEMath::Vector &bc = this->boundingCenter;
         AEMath::Vector center = {0.0f, 0.0f, 0.0f};
         AEMath::Vector extent = {this->boundingRadius, this->boundingRadius, this->boundingRadius};
         if (matrix != 0) {
-            center = AEMath::MatrixTransformVector(*matrix * this->worldMatrix, this->boundingCenter);
+            center = AEMath::MatrixTransformVector(*matrix * this->worldMatrix, bc);
             extent = AEMath::MatrixRotateVector(*matrix * this->worldMatrix, extent);
         } else {
-            center = AEMath::MatrixTransformVector(this->worldMatrix, this->boundingCenter);
+            center = AEMath::MatrixTransformVector(this->worldMatrix, bc);
             extent = AEMath::MatrixRotateVector(this->worldMatrix, extent);
         }
 
