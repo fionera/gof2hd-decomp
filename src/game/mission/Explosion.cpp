@@ -224,90 +224,91 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
 }
 
 Explosion::Explosion(int type) {
-    this->rotation = AbyssEngine::AEMath::Matrix();
     this->scale = 1.0f;
     this->type = type;
     this->primaryMesh = 0;
     this->secondaryMesh = 0;
     this->fireStreaks = 0;
 
-    PaintCanvas *canvas = explosionCanvas();
-
     switch (type) {
         case 0:
         case 6: {
-            this->primaryMesh = new AEGeometry((uint16_t) 0x41b5, canvas, false);
-            AEGeometry *geometry = new AEGeometry((uint16_t) 0x41b4, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41b5, Globals::Canvas, false);
+            AEGeometry *geometry = new AEGeometry((uint16_t) 0x41b4, Globals::Canvas, false);
             this->primaryMesh->addChild(geometry->transform);
             delete geometry;
             break;
         }
         default:
             if (type == 13) {
-                this->primaryMesh = new AEGeometry((uint16_t) 0x41a9, canvas, false);
+                this->primaryMesh = new AEGeometry((uint16_t) 0x41a9, Globals::Canvas, false);
                 this->setScaling(0.25f);
-                ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationSpeed(1.0f);
+                ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationSpeed(1.0f);
             } else {
-                this->primaryMesh = new AEGeometry((uint16_t) 0x4213, canvas, false);
-                this->secondaryMesh = new AEGeometry((uint16_t) 0x4211, canvas, false);
+                this->primaryMesh = new AEGeometry((uint16_t) 0x4213, Globals::Canvas, false);
+                this->secondaryMesh = new AEGeometry((uint16_t) 0x4211, Globals::Canvas, false);
             }
             break;
         case 3:
-            this->primaryMesh = new AEGeometry((uint16_t) 0x4213, canvas, false);
-            this->secondaryMesh = new AEGeometry((uint16_t) 0x421d, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x4213, Globals::Canvas, false);
+            this->secondaryMesh = new AEGeometry((uint16_t) 0x421d, Globals::Canvas, false);
             break;
         case 4:
-            this->primaryMesh = new AEGeometry((uint16_t) 0x420d, canvas, false);
-            this->secondaryMesh = new AEGeometry((uint16_t) 0x420c, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x420d, Globals::Canvas, false);
+            this->secondaryMesh = new AEGeometry((uint16_t) 0x420c, Globals::Canvas, false);
             break;
         case 5:
-            this->primaryMesh = new AEGeometry((uint16_t) 0x4999, canvas, false);
-            this->secondaryMesh = new AEGeometry((uint16_t) 0x4998, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x4999, Globals::Canvas, false);
+            this->secondaryMesh = new AEGeometry((uint16_t) 0x4998, Globals::Canvas, false);
             break;
         case 7:
-            this->primaryMesh = new AEGeometry((uint16_t) 0x41a5, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41a5, Globals::Canvas, false);
             break;
         case 8:
-            this->primaryMesh = new AEGeometry((uint16_t) 0x41a6, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41a6, Globals::Canvas, false);
             break;
         case 9:
-            this->primaryMesh = new AEGeometry((uint16_t) 0x41a7, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41a7, Globals::Canvas, false);
             break;
         case 10:
-            this->primaryMesh = new AEGeometry((uint16_t) 0x41a8, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41a8, Globals::Canvas, false);
             break;
         case 11:
-            this->primaryMesh = new AEGeometry((uint16_t) 0x4a34, canvas, false);
-            this->secondaryMesh = new AEGeometry((uint16_t) 0x4a33, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x4a34, Globals::Canvas, false);
+            this->secondaryMesh = new AEGeometry((uint16_t) 0x4a33, Globals::Canvas, false);
             break;
         case 12:
-            this->primaryMesh = new AEGeometry((uint16_t) 0x4a7e, canvas, false);
+            this->primaryMesh = new AEGeometry((uint16_t) 0x4a7e, Globals::Canvas, false);
             break;
     }
 
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
         (AbyssEngine::AnimationMode) 1, 0);
 
     if (this->secondaryMesh != 0) {
-        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState(
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState(
             (AbyssEngine::AnimationMode) 1, 0);
-        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->boundingRadius = 10000.0f;
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->boundingRadius = 10000.0f;
     }
 
-    uint64_t primaryDuration =
-            (uint64_t)((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->animationLength;
-    uint64_t duration = 0;
+    long long primaryLength =
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->animationLength;
+    long long secondaryLength = 0;
     if (this->secondaryMesh != 0) {
-        uint64_t secondaryDuration =
-                (uint64_t)((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->
-                animationLength;
-        duration = secondaryDuration < primaryDuration ? primaryDuration : secondaryDuration;
-    } else if (primaryDuration != 0) {
-        duration = primaryDuration;
+        secondaryLength =
+            ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->animationLength;
     }
-    this->duration = duration;
+    if (secondaryLength < primaryLength) {
+        this->duration =
+            ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->animationLength;
+    } else if (this->secondaryMesh != 0) {
+        this->duration =
+            ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->animationLength;
+    } else {
+        this->duration = 0;
+    }
 
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->boundingRadius = 10000.0f;
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->boundingRadius = 10000.0f;
     this->weaponIndex = -1;
     this->reset();
 }
