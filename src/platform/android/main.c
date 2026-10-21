@@ -237,6 +237,11 @@ void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_testPurchase(JNIEnv *env, jcla
     ndk_iapBoughtConsumable(0);
 }
 
+/* Placeholder hook between the IAP wrappers and the licensing key (original .text 0x6b8ca). */
+void *decrypt(void *ctx) { // lint: void_ptr (exported C ABI signature, opaque ctx in/out)
+    return ctx;
+}
+
 jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk(JNIEnv *env, jclass clazz) {
     /* Google Play licensing public key (base64 RSA SubjectPublicKeyInfo) of the shipped APK. */
     return (*env)->NewStringUTF(env,
