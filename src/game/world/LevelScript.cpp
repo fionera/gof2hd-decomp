@@ -446,7 +446,7 @@ int LevelScript::process(int delta) {
             AbyssEngine::Transform *t = (AbyssEngine::Transform *)
                     Globals::Canvas->TransformGetTransform(dockModel->transform);
             t->Update((long long) delta, false);
-            if (reinterpret_cast<long long &>(field_0x8) >= 14001) {
+            if (m_nScriptTime >= 14001) {
                 m_pCamera->setRumblePercentage(0.0f, 0);
                 m_nState = 2;
             }
@@ -481,7 +481,7 @@ int LevelScript::process(int delta) {
                 rumble = 1.0f;
             }
             m_pCamera->setRumblePercentage(rumble, 100); // 0x138262
-            if (reinterpret_cast<long long &>(field_0x8) >= 10001) {
+            if (m_nScriptTime >= 10001) {
                 // The station model lives at this+0xd8 (named m_pGeometry5 in the header).
                 m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f}); // 0x138278, z=10000.0f @0x138540
                 AbyssEngine::Transform *t = (AbyssEngine::Transform *)
@@ -503,7 +503,7 @@ int LevelScript::process(int delta) {
         // approach choreography substates s1..s12. Substate epilogues re-share the mission tail at
         // 0x13c88c in the original; here they fall through to the shared active tail below (pass-2
         // structural approximation, kept consistent).
-        if (reinterpret_cast<long long &>(field_0x8) >= 7901) {
+        if (m_nScriptTime >= 7901) {
             // 0x13834e: advance landmarks[0]'s station-root transform animation this frame.
             // landmarks[0]'s [+0x140] field is PlayerStation::rootGeometry (offset 0x140).
             PlayerStation *station = (PlayerStation *) (*m_pLevel->getLandmarks())[0];
@@ -524,25 +524,25 @@ int LevelScript::process(int delta) {
             }
             case 2: { // s2 @0x13ba5c: pan the camera in; once counter>=7001 reframe it.
                 m_pCamera->translate(-(float) delta * 0.5f, (float) delta * 0.3f, (float) delta); // 0.3 @0x13b93c
-                if (reinterpret_cast<long long &>(field_0x8) >= 7001) {
+                if (m_nScriptTime >= 7001) {
                     m_nState = 3;
                     m_pCamera->setPosition(20000.0f, 5000.0f, 30000.0f); // pool @0x13bda0/a4/a8
                 }
                 break;
             }
             case 3: { // s3 @0x13b8dc: start the approach music (1122), advance at counter>=9001.
-                if (reinterpret_cast<long long &>(field_0x8) >= 7901) {
+                if (m_nScriptTime >= 7901) {
                     if (!Globals::sound->isPlaying(1122)) {
                         Globals::sound->play(1122, nullptr, nullptr, 0.0f);
                     }
-                    if (reinterpret_cast<long long &>(field_0x8) >= 9001) {
+                    if (m_nScriptTime >= 9001) {
                         m_nState = 4;
                     }
                 }
                 break;
             }
             case 4: { // s4 @0x13baba: at counter>=18001 reframe the camera and hide the player ship.
-                if (reinterpret_cast<long long &>(field_0x8) >= 18001) {
+                if (m_nScriptTime >= 18001) {
                     m_nState = 5;
                     m_pCamera->setPosition(8000.0f, 31000.0f, -9000.0f); // pool @0x13bdac/b0/b4
                     player->freeze = 1;       // player+0x24
@@ -551,14 +551,14 @@ int LevelScript::process(int delta) {
                 break;
             }
             case 5: { // s5 @0x13b8c0: at counter>=18001 reset the frame timer and advance.
-                if (reinterpret_cast<long long &>(field_0x8) >= 18001) {
+                if (m_nScriptTime >= 18001) {
                     reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
                     m_nState = 6;
                 }
                 break;
             }
             case 7: { // s7 @0x13bc18: at counter>=27001 advance.
-                if (reinterpret_cast<long long &>(field_0x8) >= 27001) {
+                if (m_nScriptTime >= 27001) {
                     m_nState = 8;
                 }
                 break;
@@ -982,7 +982,7 @@ int LevelScript::process(int delta) {
                     // group-8 escort into a widening formation ahead of the player, re-aim it at the
                     // player and wipe its cargo list.
                     if (!player->isDockedToDockingPoint() &&
-                        *reinterpret_cast<long long *>(&field_0x8) < 60001) {
+                        m_nScriptTime < 60001) {
                         // Not-yet-progressed: 0x13c524 branches to the trampoline 0x141198, which
                         // reloads m_nState and falls into the shared state tail at 0x1391ca. For
                         // m_nState==0 that tail immediately returns via `if (m_nState < 1) break`, so
@@ -1951,8 +1951,7 @@ int LevelScript::process(int delta) {
                     if (m_pGeometry6 != nullptr) {
                         delete m_pGeometry6;
                     }
-                    field_0x8 = 0;
-                    field_0xc = 0;
+                    m_nScriptTime = 0;
                     m_nTimeLimit = 180000;
                     m_pGeometry6 = nullptr;
                     m_pLevel->objectivesA = new Objective(3, 180000, m_pLevel);
@@ -2190,8 +2189,7 @@ int LevelScript::process(int delta) {
                 if (messages != nullptr && m_nState == 5 &&
                     ((RadioMessage *) ((*messages)[7]))->isOver()) {
                     // FModSound::play(0x99, ...) DEFERRED @0x13abe2
-                    field_0x8 = 0;
-                    field_0xc = 0;
+                    m_nScriptTime = 0;
                     if (level->objectivesB != nullptr) {
                         delete level->objectivesB;
                     }
@@ -3246,7 +3244,7 @@ int LevelScript::process(int delta) {
                 // state 0 (0x13acc2): cutscene-exit body. Guard -- only run once the mission has
                 // progressed (level->field_178 > 6) or the 64-bit script counter (field_0x8:field_0xc)
                 // has reached 60001.
-                long long counter94 = *reinterpret_cast<long long *>(&field_0x8);
+                long long counter94 = m_nScriptTime;
                 if (!(m_pLevel->field_178 > 6) && counter94 < 60001) {
                     break; // -> post-switch tail (0x144e36)
                 }
@@ -4583,8 +4581,7 @@ int LevelScript::process(int delta) {
                         // enemy list, and clear the mission timer.
                         if (((RadioMessage *) ((*messages)[8]))->isOver()) { // 0x14354c
                             if (m_nTimeLimit <= 0) { // 0x14355e (m_nTimeLimit @this+0, cmp >0 skips)
-                                field_0x8 = 0;      // 0x143568 strd 0,0,[this+8]
-                                field_0xc = 0;
+                                m_nScriptTime = 0;      // 0x143568 strd 0,0,[this+8]
                                 m_nTimeLimit = 91000; // 0x143570 str 0x16378 -> [this+0]
                                 // new Objective(type=3, value=91000, m_pLevel) -> objectivesB, 0x143580
                                 m_pLevel->objectivesB = new Objective(3, 91000, m_pLevel); // 0x143588
@@ -4971,8 +4968,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     m_pGeometry3 = 0;
     m_pExplosion = 0;
     m_pGeometry4 = 0;
-    field_0x8 = 0;
-    field_0xc = 0;
+    m_nScriptTime = 0;
     m_nTimeLimit = level->getTimeLimit();
     field_0x24 = 0;
     m_pGeometry5 = 0;

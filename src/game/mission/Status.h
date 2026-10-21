@@ -23,7 +23,6 @@ class Wanted;
 
 using AbyssEngine::String;
 
-#pragma pack(push, 4)
 class Status {
 public:
     Array<Wanted *> *wanted;
@@ -32,7 +31,7 @@ public:
     Array<BluePrint *> *bluePrints;
     Array<PendingProduct *> *pendingProducts;
     Array<Agent *> *agents;
-    int32_t wingmen;
+    Array<String *> *wingmen;
 
     // former union: int32 field_0x28 overlaid with these bytes.
     // wide view: reinterpret_cast<int32_t &>(_byte_0x28)
@@ -214,7 +213,7 @@ public:
 
     int addStationToStack(Station *station);
 
-    bool isOnStack(Station *station);
+    Station *isOnStack(Station *station);
 
     void setStation(Station *station);
 
@@ -380,7 +379,7 @@ public:
 
     void unlockBluePrint(int index);
 
-    int isBlueprintUnlocked(int index);
+    unsigned char isBlueprintUnlocked(int index);
 
     int getAgents();
 
@@ -400,13 +399,13 @@ public:
 
     void loadAgents();
 
-    Array<int> *loadAgents(Array<int> *agents);
+    void loadAgents(Array<int> *agents);
 
     int getCollectedBounties(int index);
 
     void incCollectedBounties(int index);
 
-    int getGammaRayDamagePerSecond(int station, int system);
+    float getGammaRayDamagePerSecond(int station, int system);
 
     void loadWanted();
 
@@ -424,10 +423,10 @@ public:
 
     int getFreighterMissionStationBit(int station);
 };
-#pragma pack(pop)
+
 
 #if __SIZEOF_POINTER__ == 4
-static_assert(sizeof(Status) == 492, "Status must be 492 bytes");
+static_assert(sizeof(Status) == 496, "Status must be 496 bytes");
 static_assert(offsetof(Status, wanted) == 0x0, "");
 static_assert(offsetof(Status, standing) == 0x14, "");
 static_assert(offsetof(Status, bluePrints) == 0x18, "");

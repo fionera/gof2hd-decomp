@@ -1,4 +1,5 @@
 #include "game/mission/Objective.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/RadioMessage.h"
 #include "game/world/Level.h"
 #include "game/world/Route.h"

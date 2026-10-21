@@ -44,8 +44,7 @@ public:
     int field_0x3c;
     int deltaTime;
     int field_0x44;
-    unsigned elapsedTime;
-    int elapsedTimeHigh;
+    long long elapsedTime;
     int loadingTime;
     uint8_t active;
     uint8_t _pad_0x55[3];
@@ -138,7 +137,7 @@ public:
     uint8_t freeCamMode;
     uint8_t _pad_0x15f[1];
     int cinematicPrevCamMode;
-    uint8_t cinematicPrevLookAt;
+    bool cinematicPrevLookAt;
     uint8_t _pad_0x165[3];
     float flFastForwardWeight;
     int timeWarpState;
@@ -193,9 +192,9 @@ public:
 
     void OnRelease() override;
 
-    long long OnKeyPress(long long key, long long mod) override;
+    void OnKeyPress(long long key, long long mod) override;
 
-    long long OnKeyRelease(long long key, long long mod) override;
+    void OnKeyRelease(long long key, long long mod) override;
 
     void OnTouchBegin(int p1, int p2) override;
 
@@ -261,7 +260,7 @@ public:
 
     void startJumpScene();
 
-    void successCheck();
+    bool successCheck();
 
     void switchCamera(int id);
 

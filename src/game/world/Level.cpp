@@ -4362,8 +4362,7 @@ void Level::update(long long /*time*/, bool param) {
     Station *st2 = (Station *) Globals::status->getStation();
     int idx = ((Station *) st2)->getIndex();
     Globals::status->getCurrentCampaignMission();
-    int gammaBits = ((Status *) (intptr_t) aPtr)->getGammaRayDamagePerSecond(aPtr, idx);
-    float gamma = *(float *) &gammaBits;
+    float gamma = ((Status *) (intptr_t) aPtr)->getGammaRayDamagePerSecond(aPtr, idx);
     PlayerEgo *ego = this->player;
     if (gamma > 0.0f && ego != nullptr) {
         int ship = (int) (intptr_t) Globals::status->getShip();

@@ -342,8 +342,7 @@ void ModStation::OnKeyPress(long long, long long key) {
         this->choiceWindow->set(*Globals::gameText->getText(0x210));
 }
 
-long long ModStation::OnKeyRelease(long long, long long key) {
-    return key;
+void ModStation::OnKeyRelease(long long, long long) {
 }
 
 int ModStation::ShowLoadingScreen() {
