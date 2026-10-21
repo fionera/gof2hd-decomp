@@ -85,8 +85,6 @@ namespace {
                   "entries must live at table offset 0x1254");
 }
 
-Matrix *CameraGetLocal(void *canvas, uint32_t index); // lint: void_ptr (free-function signature; retype changes mangling)
-
 // lint: void_ptr (free-function signature; retype changes mangling)
 
 static unsigned char *g_initStreamOut = nullptr;
@@ -6728,9 +6726,7 @@ void Level::initParticleSystems() {
             }
         }
 
-        PaintCanvas *canvas = Globals::Canvas;
-        canvas->CameraGetCurrent();
-        Matrix *local = CameraGetLocal(canvas, canvas->CameraGetCurrent());
+        Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
         int sys = (this->skybox2Mesh)->addSystem(local, ParticleSettings::ParticleSet_4, false);
         this->movingStarsIndex = sys;
 
@@ -6750,8 +6746,7 @@ void Level::initParticleSystems() {
             }
         }
 
-        canvas->CameraGetCurrent();
-        local = CameraGetLocal(canvas, canvas->CameraGetCurrent());
+        local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
         sys = this->particleSystemMgr->addSystem(local, ParticleSettings::ParticleSet_7, false);
         this->field_284 = sys;
 

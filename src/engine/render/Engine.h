@@ -360,7 +360,6 @@ namespace AbyssEngine {
 
         void Vibrate(unsigned short duration);
 
-        void VibrateSupported();
 
         void SetUVMatrix(const AbyssEngine::AEMath::Matrix &matrix);
 
