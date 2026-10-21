@@ -289,8 +289,8 @@ float Globals::boost_x;
 float Globals::boost_y;
 float Globals::boost_z;
 Globals *Globals::globals;
-float Globals::pause_x;
-float Globals::pause_y;
+int Globals::pause_x;
+int Globals::pause_y;
 float Globals::pause_z;
 GameText *Globals::gameText;
 void *Globals::fontAlien; // lint: void_ptr (unknown alien-font handle, never referenced)

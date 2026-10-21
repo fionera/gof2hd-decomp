@@ -1150,8 +1150,7 @@ void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Arra
                                        (yOff - this->buttonYBias) + Globals::h / 2 +
                                        (Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * row,
                                        this->buttonWidth, 0x11, 0x04);
-    btn->field_0x0 = id;
-    btn->field_0x4 = id >> 31;
+    btn->id = id;
     ArrayAdd<TouchButton *>(btn, *arr);
 
     int *posX = Globals::sub_menu_buttons_x;
@@ -1176,7 +1175,7 @@ void MenuTouchWindow::setCutsceneMode(bool mode) {
     bool notMode = !mode;
     for (uint32_t i = 0; i < this->buttons->count; i++) {
         TouchButton *btn = this->buttons->data_[i];
-        if (!((uint32_t)(btn->field_0x0 ^ 0x13) | (uint32_t)btn->field_0x4)) {
+        if (btn->id == 0x13) {
             btn->setVisible(notMode);
         }
     }
@@ -1400,7 +1399,7 @@ void MenuTouchWindow::update(int dt) {
                 arr->data_[i]->setYPosition((layout->field_0x30_rowHeight + this->buttonRowGap) * i +
                                             (screenH / 2 - (int) ((unsigned int) (rowGap * (n - 1) + total) >> 1)));
                 TouchButton *b = (TouchButton *) this->buttons->data_[i];
-                if (b->field_0x0 == 0x12 && b->field_0x4 == 0 && b->isVisible() &&
+                if (b->id == 0x12 && b->isVisible() &&
                     this->cutsceneMode != 0) {
                     b = (TouchButton *) this->buttons->data_[i];
                     Vector bpos = b->getPosition();
@@ -1962,7 +1961,7 @@ void MenuTouchWindow::setSkipButtonVisible(bool visible) {
     if (arr != 0) {
         for (uint32_t i = 0; i < this->buttons->count; i++) {
             TouchButton *btn = this->buttons->data_[i];
-            if (btn != 0 && !((uint32_t)(btn->field_0x0 ^ 0x12) | (uint32_t)btn->field_0x4)) {
+            if (btn != 0 && btn->id == 0x12) {
                 btn->setVisible(visible);
             }
         }

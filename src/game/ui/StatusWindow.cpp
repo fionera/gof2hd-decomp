@@ -41,8 +41,8 @@ StatusWindow::~StatusWindow() {
 }
 
 int StatusWindow::OnTouchMove(int x, int y) {
-    Layout *layout = Globals::layout;
-    if ((layout->field_0xc_leftMargin < y && y < Globals::h - layout->field_0x10_rightMargin) || Globals::mouse_wheel != 0) {
+    if ((Globals::layout->field_0xc_leftMargin < y && y < Globals::h - Globals::layout->field_0x10_rightMargin) ||
+        Globals::mouse_wheel != 0) {
         int delta = y - this->lastTouchY;
         this->scrollVelocity = delta;
         this->scrollDamping = 1.0f;
@@ -52,22 +52,20 @@ int StatusWindow::OnTouchMove(int x, int y) {
             int dragDist = this->touchStartY - y;
             if (dragDist < 0) dragDist = -dragDist;
             if (dragDist > 3) {
-                (*this->medalButtons)[this->selectedMedal]->setAlwaysPressed(0);
+                (*this->medalButtons)[this->selectedMedal]->setAlwaysPressed(false);
                 this->selectedMedal = -1;
-                layout = Globals::layout;
             }
         }
     }
-    layout->OnTouchMove(x, y);
+    Globals::layout->OnTouchMove(x, y);
     if (Globals::iPad == 0) {
         for (unsigned i = 0; i < this->tabButtons->size(); ++i)
             (*this->tabButtons)[i]->OnTouchMove(x, y);
     }
     if (this->activeTab == 1) {
-        Achievements *ach = Globals::achievements;
-        int *medals = ach->getMedals();
+        int *medals = Globals::achievements->getMedals();
         for (int i = 0; i < this->medalCount; ++i) {
-            if (medals[i] != 0 || ach->isEliteMedal(i) != 0)
+            if (medals[i] != 0 || Globals::achievements->isEliteMedal(i) != 0)
                 (*this->medalButtons)[i]->OnTouchMove(x, y);
         }
     }
@@ -169,21 +167,19 @@ void StatusWindow::OnTouchEnd(int x, int y) {
 }
 
 int StatusWindow::OnTouchBegin(int x, int y) {
-    Layout *layout = Globals::layout;
-    this->touchStartY = y;
     this->lastTouchY = y;
+    this->touchStartY = y;
     this->scrollVelocity = 0;
     this->isDragging = 1;
-    layout->OnTouchBegin(x, y);
+    Globals::layout->OnTouchBegin(x, y);
     if (Globals::iPad == 0) {
         for (unsigned i = 0; i < this->tabButtons->size(); ++i)
             (*this->tabButtons)[i]->OnTouchBegin(x, y);
     }
     if (this->activeTab == 1) {
-        Achievements *ach = Globals::achievements;
-        int *medals = ach->getMedals();
+        int *medals = Globals::achievements->getMedals();
         for (int i = 0; i < this->medalCount; ++i) {
-            if (medals[i] != 0 || ach->isEliteMedal(i) != 0)
+            if (medals[i] != 0 || Globals::achievements->isEliteMedal(i) != 0)
                 (*this->medalButtons)[i]->OnTouchBegin(x, y);
         }
     }
@@ -191,19 +187,13 @@ int StatusWindow::OnTouchBegin(int x, int y) {
 }
 
 float StatusWindow::getRelativeScrollHeight() {
-    int a = this->contentHeight;
-    int b = this->viewportHeight;
-    if (b > a) return 0.0f;
-    int range = this->scrollOffset;
-    int num;
-    if (range >= 1) {
-        num = b - range;
-    } else if (range < b - a) {
-        num = range + a;
-    } else {
-        num = b;
-    }
-    return (float) num / (float) a;
+    if (this->viewportHeight > this->contentHeight)
+        return 0.0f;
+    if (this->scrollOffset > 0)
+        return (float) (this->viewportHeight - this->scrollOffset) / (float) this->contentHeight;
+    if (this->scrollOffset < this->viewportHeight - this->contentHeight)
+        return (float) (this->scrollOffset + this->contentHeight) / (float) this->contentHeight;
+    return (float) this->viewportHeight / (float) this->contentHeight;
 }
 
 void StatusWindow::update(int frameTime) {
@@ -345,46 +335,27 @@ String StatusWindow::getMedalHintText(int medalIndex) {
     return out;
 }
 
-Achievements *Achievements_get();
 
-int Achievements_isUnlocked(void *ach, int index); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 static int g_sw_charDef = 0;
 
 void StatusWindow::reInit() {
-    this->imageParts = (Globals::imageFactory)->loadChar(&g_sw_charDef);
+    this->imageParts = Globals::imageFactory->loadChar(&g_sw_charDef);
 
-    int a0 = Achievements_isUnlocked(Achievements_get(), 0);
-    int a1 = Achievements_isUnlocked(Achievements_get(), 1);
-    int a2 = Achievements_isUnlocked(Achievements_get(), 2);
-    int a3 = Achievements_isUnlocked(Achievements_get(), 3);
+    bool enemy0 = ((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(0);
+    bool enemy1 = ((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(1);
+    bool enemy2 = ((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(2);
+    bool enemy3 = ((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(3);
 
-    PaintCanvas *canvas = Globals::Canvas;
+    Globals::Canvas->Image2DCreate(enemy0 ? 0x495 : enemy1 ? 0x494 : 0x493, this->rankImage0);
+    Globals::Canvas->Image2DCreate(enemy1 ? 0x497 : enemy0 ? 0x496 : 0x492, this->rankImage1);
+    Globals::Canvas->Image2DCreate(enemy2 ? 0x499 : enemy3 ? 0x498 : 0x490, this->rankImage2);
+    Globals::Canvas->Image2DCreate(enemy3 ? 0x49b : enemy2 ? 0x49a : 0x491, this->rankImage3);
 
-    int id = 0x493;
-    if (a1) id = 0x494;
-    if (a0) id = 0x495;
-    canvas->Image2DCreate((unsigned short) id, this->rankImage0);
-
-    id = 0x492;
-    if (a0) id = 0x496;
-    if (a1) id = 0x497;
-    canvas->Image2DCreate((unsigned short) id, this->rankImage1);
-
-    id = 0x490;
-    if (a3) id = 0x498;
-    if (a2) id = 0x499;
-    canvas->Image2DCreate((unsigned short) id, this->rankImage2);
-
-    id = 0x491;
-    if (a2) id = 0x49a;
-    if (a3) id = 0x49b;
-    canvas->Image2DCreate((unsigned short) id, this->rankImage3);
-
-    this->charImageWidth = canvas->GetImage2DWidth(this->rankImage0);
-    this->charImageHeight = canvas->GetImage2DHeight(this->rankImage0);
+    this->charImageWidth = Globals::Canvas->GetImage2DWidth(this->rankImage0);
+    this->charImageHeight = Globals::Canvas->GetImage2DHeight(this->rankImage0);
 }
 
 static int *g_swd_textId = nullptr;
@@ -613,80 +584,52 @@ void StatusWindow::draw() {
 
 StatusWindow::StatusWindow() {
     this->tabButtons = new Array<TouchButton *>();
-    ArraySetLength(2, *(this->tabButtons));
-
-    Layout *layout = Globals::layout;
-    int layoutW = Globals::w;
-
-    String *t0 = (Globals::gameText)->getText(0xa8);
-    int helpOff = layout->getHelpButtonOffset();
-    TouchButton *b0 = new TouchButton(*t0, 3, layoutW - helpOff, 0, 0x12);
-    (*this->tabButtons)[1] = b0;
-
-    String *t1 = (Globals::gameText)->getText(0x241);
-    int helpOff2 = layout->getHelpButtonOffset();
-    TouchButton *b1 = new TouchButton(*t1, 3, 0, 0, 0x12);
-    int w1 = b1->getWidth();
-    b1->setPosition(((layoutW - helpOff2) - w1) + layout->field_0x38, 0, 0x12);
-    (*this->tabButtons)[0] = b1;
-
-    unsigned int defTab = Globals::iPad;
-    this->activeTab = defTab;
-    (*this->tabButtons)[defTab]->setAlwaysPressed(true);
-
+    ArraySetLength(2, *this->tabButtons);
+    (*this->tabButtons)[1] = new TouchButton(*Globals::gameText->getText(0xa8), 3,
+                                             Globals::w - Globals::layout->getHelpButtonOffset(), 0, 0x12);
+    (*this->tabButtons)[0] = new TouchButton(*Globals::gameText->getText(0x241), 3,
+                                             Globals::w - Globals::layout->getHelpButtonOffset() -
+                                             (*this->tabButtons)[1]->getWidth() + Globals::layout->field_0x38,
+                                             0, 0x12);
+    this->activeTab = Globals::iPad;
+    (*this->tabButtons)[this->activeTab]->setAlwaysPressed(true);
+    this->medalRowHeight = Globals::layout->field_0x84;
     this->detailLines = 0;
-    this->medalRowHeight = layout->field_0x84;
     this->selectedMedal = -1;
 
     this->medalButtons = new Array<TouchButton *>();
-    this->medalCount = 0x2d;
-    ArraySetLength(0x2d, *(this->medalButtons));
-
-    int *medalIds = Globals::achievements->getMedals();
-    for (int i = 0; i < this->medalCount; i++) {
-        int medal = medalIds[i];
-        String *txt = (Globals::gameText)->getText(0x5e3 + i);
-        TouchButton *btn = new TouchButton(i, medal, *txt, 0, 0, 'D');
-        (*this->medalButtons)[i] = btn;
-    }
+    this->medalCount = 45;
+    ArraySetLength(45, *this->medalButtons);
+    int *medals = Globals::achievements->getMedals();
+    for (int i = 0; i < this->medalCount; i++)
+        (*this->medalButtons)[i] = new TouchButton(i, medals[i], *Globals::gameText->getText(0x5e3 + i), 0, 0, 0x44);
 
     this->reInit();
-
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->Image2DCreate((unsigned short) 0x48e, this->standingEmblemImage);
-    canvas->Image2DCreate((unsigned short) 0x48f, this->standingBarImage);
-    canvas->Image2DCreate((unsigned short) 0x48d, this->standingFrameImage);
-    this->standingBarWidth = canvas->GetImage2DWidth(this->standingEmblemImage) / 2;
-    int img3h = canvas->GetImage2DHeight(this->standingEmblemImage);
-
-    this->scrollDamping = 0.0f;
-    this->scrollVelocityF = 0.0f;
-    this->touchStartY = 0;
-    this->isDragging = 0;
+    Globals::Canvas->Image2DCreate(0x48e, this->standingEmblemImage);
+    Globals::Canvas->Image2DCreate(0x48f, this->standingBarImage);
+    Globals::Canvas->Image2DCreate(0x48d, this->standingFrameImage);
+    this->standingBarWidth = Globals::Canvas->GetImage2DWidth(this->standingEmblemImage) / 2;
+    this->standingBarHeight = Globals::Canvas->GetImage2DHeight(this->standingEmblemImage);
     this->scrollOffset = 0;
     this->lastTouchY = 0;
     this->scrollTarget = 0;
     this->scrollVelocity = 0;
-    this->standingBarHeight = img3h;
+    this->scrollDamping = 0.0f;
+    this->scrollVelocityF = 0.0f;
+    this->touchStartY = 0;
+    this->isDragging = 0;
 
-    int *heights = new int[3];
-    this->tabHeights = heights;
-    int row = ((layout->field_0x1c * 3 + layout->field_0x2d8) +
-               layout->field_0x2c_rowHeight * 8) + this->charImageHeight +
-              layout->field_0x4 * 7;
-    heights[0] = row;
-
-    int lineH;
-    if (Globals::iPad == 0) {
-        lineH = this->medalRowHeight * (this->medalCount / 3);
-    } else {
-        lineH = (this->medalCount / 3) * this->medalRowHeight +
-                layout->field_0x1c + layout->field_0x2c_rowHeight;
-    }
-    heights[1] = lineH + 10;
-
-    this->contentHeight = heights[this->activeTab];
-    this->viewportHeight =
-    (((Globals::h - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin) -
-     layout->field_0x20_top) - layout->field_0x24;
+    this->tabHeights = new int[3];
+    Layout *layout = Globals::layout;
+    this->tabHeights[0] = layout->field_0x1c * 3 + layout->field_0x2d8 + layout->field_0x2c_rowHeight * 2 +
+                          this->charImageHeight + layout->field_0x4 +
+                          (layout->field_0x4 + layout->field_0x2c_rowHeight) * 6;
+    if (Globals::iPad != 0)
+        this->tabHeights[1] = layout->field_0x1c + layout->field_0x2c_rowHeight +
+                              this->medalCount / 3 * this->medalRowHeight + 10;
+    else
+        this->tabHeights[1] = this->medalCount / 3 * this->medalRowHeight + 10;
+    this->contentHeight = this->tabHeights[this->activeTab];
+    this->viewportHeight = Globals::h - layout->field_0x10_rightMargin - layout->field_0xc_leftMargin -
+                           layout->field_0x20_top - layout->field_0x24;
 }
