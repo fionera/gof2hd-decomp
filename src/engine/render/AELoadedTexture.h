@@ -1,14 +1,14 @@
 #ifndef GOF2_AELOADEDTEXTURE_H
 #define GOF2_AELOADEDTEXTURE_H
 #include <cstdint>
+#include "engine/core/AEString.h"
 
 namespace AbyssEngine {
     struct AELoadedTexture {
         uint32_t glId;
-        uint32_t field_0x4;
-        uint32_t field_0x8;
-        uint32_t field_0xc;
-        uint32_t field_0x10;
+        String path;  // 0x4: source file, reloaded by ApplicationManager state 7
+        float aniso;  // 0x10
+
         uint8_t isCube;
         uint8_t valid;
         uint16_t pad0x16;

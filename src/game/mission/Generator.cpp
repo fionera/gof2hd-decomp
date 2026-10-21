@@ -450,9 +450,6 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     return mission;
 }
 
-static int *g_Generator_nameSource;
-static ImageFactory **g_Generator_imageFactory;
-static Array<Item *> **g_Generator_agentItems;
 
 Agent *Generator::createAgent(Station *station) {
     int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
