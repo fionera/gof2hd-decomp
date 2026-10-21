@@ -97,9 +97,9 @@ void IParticleSystem::emit(int delta) {
     int set = this->particleSets[this->particleSetIndex];
     if (set == -1)
         return;
-    if ((this->flags & 0x100) != 0)
-        return;
     if ((this->flags & 0x80) != 0 && this->particleAges[0] != -1)
+        return;
+    if ((this->flags & 0x100) != 0)
         return;
 
     Vector position = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
