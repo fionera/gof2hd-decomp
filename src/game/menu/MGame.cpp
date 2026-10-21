@@ -2754,7 +2754,7 @@ void MGame::OnUpdate() {
             this->flShakeX = -98.0f;
             this->flShakeY = 35.0f;
             this->flCameraRoll = 3800.0f;
-            this->camera->rotateAroundTarget(-0.175f, 0.49f, 0.0f);
+            this->camera->rotateAroundTarget(-0.175f, 0.48999998f, 0.0f);
             this->camera->zoomTarget(this->flCameraRoll);
         }
 
