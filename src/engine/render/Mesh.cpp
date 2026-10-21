@@ -1065,72 +1065,61 @@ namespace AbyssEngine {
 
     Vec2 MeshIntersect(float qx, float qz, Mesh *mesh) {
         Vec2 out;
-        unsigned int i = 0;
-
-        for (;;) {
-            if ((unsigned int) mesh->indexCount <= i) {
-                out.u = -1.0f;
-                out.v = -1.0f;
-                return out;
-            }
-
+        for (unsigned int i = 0; i < mesh->indexCount; i += 3) {
             float *pos = (float *) mesh->positions;
-            unsigned short *idx = (unsigned short *) mesh->indices + i;
-            float *a = pos + (unsigned int) idx[0] * 3;
-            float *b = pos + (unsigned int) idx[1] * 3;
-            float *c = pos + (unsigned int) idx[2] * 3;
-
+            unsigned short *tri = (unsigned short *) mesh->indices + i;
+            float *a = pos + tri[0] * 3;
+            float *b = pos + tri[1] * 3;
+            float *c = pos + tri[2] * 3;
             float ax = a[0], az = a[2];
             float bx = b[0], bz = b[2];
             float cx = c[0], cz = c[2];
 
-            float minZ = az, maxZ = bz;
-            if (bz < az) {
-                minZ = bz;
-                maxZ = az;
-            }
-            float minX = ax, maxX = bx;
-            if (bx < ax) {
-                minX = bx;
-                maxX = ax;
-            }
-            if (cz > maxZ) maxZ = cz;
-            if (cz < minZ) minZ = cz;
-            if (cx > maxX) maxX = cx;
-            if (cx < minX) minX = cx;
+            // Reject by the triangle's XZ bounding box.
+            float maxZ = az > bz ? az : bz;
+            float minZ = az > bz ? bz : az;
+            float maxX = ax > bx ? ax : bx;
+            float minX = ax > bx ? bx : ax;
+            maxZ = maxZ > cz ? maxZ : cz;
+            minZ = minZ > cz ? cz : minZ;
+            maxX = maxX > cx ? maxX : cx;
+            minX = minX > cx ? cx : minX;
+            if (maxZ < qz || minX > qx || maxX < qx || minZ > qz)
+                continue;
 
-            if (maxZ >= qz && minX <= qx && maxX >= qx && minZ <= qz) {
-                float ex = bx - ax, ez = bz - az;
-                float len = sqrtf(ez * ez + ex * ex);
-                float side = (ex / len) * qz + (-ez / len) * qx -
-                             (az * (ex / len) + ax * (-ez / len));
-                if (side <= 0.0f) {
-                    ex = cx - bx;
-                    ez = cz - bz;
-                    len = sqrtf(ez * ez + ex * ex);
-                    side = (ex / len) * qz + (-ez / len) * qx -
-                           (bz * (ex / len) + bx * (-ez / len));
-                    if (side <= 0.0f) {
-                        ez = az - cz;
-                        ex = ax - cx;
-                        len = sqrtf(ez * ez + ex * ex);
-                        side = (ex / len) * qz + (-ez / len) * qx -
-                               (cz * (ex / len) + cx * (-ez / len));
-                        if (side <= 0.0f) {
-                            float *uv = (float *) mesh->texCoords;
-                            unsigned int i0 = idx[0], i1 = idx[1], i2 = idx[2];
-                            out.u = (uv[i0 * 2] + uv[i1 * 2] + uv[i2 * 2]) / 3.0f;
-                            float vv = (uv[i0 * 2 + 1] + uv[i1 * 2 + 1] + uv[i2 * 2 + 1]) / 3.0f;
-                            out.v = vv;
-                            if (Engine::enableShader != 0)
-                                out.v = 1.0f - vv;
-                            return out;
-                        }
-                    }
-                }
-            }
-            i += 3;
+            // The point must lie on the inner side of all three edges.
+            float ez = bz - az, ex = bx - ax;
+            float len = sqrtf(ez * ez + ex * ex);
+            float nx = ex / len, nz = -ez / len;
+            if (nx * qz + nz * qx - (az * nx + ax * nz) > 0.0f)
+                continue;
+            ez = cz - bz;
+            ex = cx - bx;
+            len = sqrtf(ez * ez + ex * ex);
+            nx = ex / len;
+            nz = -ez / len;
+            if (nx * qz + nz * qx - (bz * nx + bx * nz) > 0.0f)
+                continue;
+            ez = az - cz;
+            ex = ax - cx;
+            len = sqrtf(ez * ez + ex * ex);
+            nx = ex / len;
+            nz = -ez / len;
+            if (nx * qz + nz * qx - (cz * nx + cx * nz) > 0.0f)
+                continue;
+
+            // Hit: return the averaged texture coordinate of the triangle.
+            float *uv = (float *) mesh->texCoords;
+            unsigned short *hit = (unsigned short *) mesh->indices + i;
+            out.u = (uv[hit[0] * 2] + uv[hit[1] * 2] + uv[hit[2] * 2]) / 3.0f;
+            out.v = (uv[hit[0] * 2 + 1] + uv[hit[1] * 2 + 1] + uv[hit[2] * 2 + 1]) / 3.0f;
+            if (Engine::enableShader != 0)
+                out.v = 1.0f - out.v;
+            return out;
         }
+        out.u = -1.0f;
+        out.v = -1.0f;
+        return out;
     }
 }
 
