@@ -9,11 +9,12 @@ namespace AbyssEngine {
 
     ShaderBaseStruct::ShaderBaseStruct() {
         this->program = -1;
-        reinterpret_cast<uint16_t &>(this->flagsLow) = 0x100;
+        this->flagsLow = 0;
+        this->dirty = 1;
         ++shaderIndexIntern;
         this->vertexPath = 0;
         this->fragmentPath = 0;
-        this->name = "";
+        this->name = String("ShaderBaseStruct", false);
     }
 
     ShaderBaseStruct::~ShaderBaseStruct() {

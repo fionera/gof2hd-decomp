@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
     GreenShader::GreenShader() {
         GreenShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"GreenShader";
+        this->name = String("GreenShader", false);
     }
 
     void GreenShader::Init(Engine *) {

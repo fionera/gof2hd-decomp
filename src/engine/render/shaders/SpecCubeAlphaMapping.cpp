@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
     SpecCubeAlphaMapping::SpecCubeAlphaMapping() {
         SpecCubeAlphaMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"SpecCubeAlphaMapping";
+        this->name = String("SpecCubeAlphaMapping", false);
     }
 
     void SpecCubeAlphaMapping::Init(Engine *) {

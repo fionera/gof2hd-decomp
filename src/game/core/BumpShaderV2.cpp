@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
     BumpShaderV2::BumpShaderV2() {
         BumpShaderV2::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"BumpShaderV2";
+        this->name = String("BumpShaderV2", false);
     }
 
     void BumpShaderV2::Init(Engine *) {

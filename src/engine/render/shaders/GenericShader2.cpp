@@ -89,6 +89,6 @@ namespace AbyssEngine {
 
     GenericShader2::GenericShader2() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"GenericShader2";
+        this->name = String("GenericShader2", false);
     }
 }

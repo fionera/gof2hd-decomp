@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
     CubeMapping::CubeMapping() {
         CubeMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"CubeMapping";
+        this->name = String("CubeMapping", false);
     }
 
     void CubeMapping::Init(Engine *) {

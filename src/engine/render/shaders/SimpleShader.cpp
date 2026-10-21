@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
     SimpleShader::SimpleShader() {
         SimpleShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"SimpleShader";
+        this->name = String("SimpleShader", false);
     }
 
     void SimpleShader::Init(Engine *) {

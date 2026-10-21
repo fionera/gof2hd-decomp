@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
     TexOnlyShader::TexOnlyShader() {
         TexOnlyShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"TexOnlyShader";
+        this->name = String("TexOnlyShader", false);
     }
 
     void TexOnlyShader::Init(Engine *) {

@@ -25,7 +25,7 @@ namespace AbyssEngine {
 
     NoTexVtxColorShader::NoTexVtxColorShader() {
         NoTexVtxColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"NoTexVtxColorShader";
+        this->name = String("NoTexVtxColorShader", false);
     }
 
     void NoTexVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine) {

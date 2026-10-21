@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
     ColorMixAdd::ColorMixAdd() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"ColorMixAdd";
+        this->name = String("ColorMixAdd", false);
     }
 
     void ColorMixAdd::Init(Engine *) {

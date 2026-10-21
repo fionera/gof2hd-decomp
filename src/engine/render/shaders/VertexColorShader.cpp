@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
     VertexColorShader::VertexColorShader() {
         VertexColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"VertexColorShader";
+        this->name = String("VertexColorShader", false);
     }
 
     void VertexColorShader::Init(Engine *) {

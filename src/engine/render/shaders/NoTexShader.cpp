@@ -45,6 +45,6 @@ namespace AbyssEngine {
 
     NoTexShader::NoTexShader() {
         NoTexShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"NoTexShader";
+        this->name = String("NoTexShader", false);
     }
 }
