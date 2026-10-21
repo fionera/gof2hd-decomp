@@ -1169,9 +1169,7 @@ void PaintCanvas::MeshConvertToVBO(unsigned int index) {
     }
 }
 
-static const float g_di2_one_88d90 = 1.0f;
 
-static const float g_di2_def_88d94 = 0.0f;
 
 void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
                               unsigned char flipFlags) {
@@ -1617,7 +1615,6 @@ void PaintCanvas::SetProjectionMatrix3d(float fov, float nearPlane,
     m[14] = (float) ((2.0 * (double) farPlane * (double) nearPlane) / (double) (nearPlane - farPlane));
 }
 
-static const double g_dss1_gravscale_8ac10 = 0;
 
 void PaintCanvas::DrawSpriteSystem(unsigned int index) {
     if (index >= this->spriteSystems.count || this->spriteSystems.data_[index] == 0) {
@@ -2587,7 +2584,6 @@ void PaintCanvas::Image2DCreate(unsigned short resId, unsigned int &out) {
     out = idx;
 }
 
-static const double g_gsp2_gravscale_8bfa8 = 0;
 
 int PaintCanvas::GetScreenPosition(AbyssEngine::AEMath::Matrix &m,
                                    const AbyssEngine::AEMath::Vector &worldPos,
@@ -3064,9 +3060,7 @@ void PaintCanvas::MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
     }
 }
 
-static const unsigned int g_sgo_const_8e6b4 = 0;
 
-static const unsigned int g_sgo_const_8e6b8 = 0;
 
 static void zero16(void *p) { // lint: void_ptr (external symbol; mangling must match lib)
     memset(p, 0, 0x10);
@@ -4077,7 +4071,6 @@ void PaintCanvas::CameraCreate(unsigned int &out) {
     out = this->cameras.count - 1;
 }
 
-static const double g_dss_gravscale_8ada0 = 0;
 
 void PaintCanvas::DrawSpriteSystem(unsigned int index, AbyssEngine::AEMath::Matrix mat) {
     if (index >= this->spriteSystems.count || this->spriteSystems.data_[index] == 0) {
