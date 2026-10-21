@@ -267,7 +267,7 @@ void PlayerEgo::setComputerControlled(bool v) {
     this->computerControlled = v;
 }
 
-int PlayerEgo::getRocketBanking() {
+float PlayerEgo::getRocketBanking() {
     PlayerEgo *self = this;
     return this->rocketBanking;
 }
@@ -404,7 +404,7 @@ void PlayerEgo::setRocketControl(Gun *gun, AEGeometry *geo) {
     ParticleSystemManager *psm = (ParticleSystemManager *) (intptr_t) lvl->skybox2Mesh;
     if (gun == 0) {
         ((ParticleSystemManager *) (psm))->systemSetMatrix(psm_arg, (Matrix *) ((Player *) this->player)->transform);
-        this->rocketBanking = 0;
+        this->rocketBanking = 0.0f;
         return;
     }
     Matrix *m = &geo->getReferenceMatrix();
@@ -1458,7 +1458,7 @@ void PlayerEgo::right(int frameTime, float delta) {
     }
     if (this->rocketControlGun != 0) {
         this->rocketYaw = delta * -0.003f * ((Gun *) (intptr_t) this->rocketControlGun)->pitchRate;
-        ((float &) this->rocketBanking) += (float) frameTime * delta * 0.01f;
+        this->rocketBanking += (float) frameTime * delta * 0.01f;
         return;
     }
     if (this->autoPilot != 0)
@@ -1511,7 +1511,7 @@ void PlayerEgo::left(int frameTime, float delta) {
     }
     if (this->rocketControlGun != 0) {
         this->rocketYaw = delta * 0.003f * ((Gun *) (intptr_t) this->rocketControlGun)->pitchRate;
-        ((float &) this->rocketBanking) += (float) frameTime * delta * -0.01f;
+        this->rocketBanking += (float) frameTime * delta * -0.01f;
         return;
     }
     if (this->autoPilot != 0)
@@ -1671,7 +1671,7 @@ PlayerEgo::PlayerEgo(Player *player) {
     this->autoTurretTarget = nullptr;
     this->autoTurretPrevTarget = nullptr;
     this->rocketControlGun = 0;
-    this->rocketBanking = 0;
+    this->rocketBanking = 0.0f;
     this->dockCameraMid = nullptr;
     this->turretActive = false;
     this->field_0x1a1 = 0;

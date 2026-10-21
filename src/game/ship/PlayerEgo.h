@@ -135,7 +135,7 @@ public:
     KIPlayer *autoTurretTarget;
     KIPlayer *autoTurretPrevTarget;
     int rocketControlGun;
-    int rocketBanking;
+    float rocketBanking;
     AEGeometry *dockCameraMid;
     bool turretActive;
     uint8_t field_0x1a1;
@@ -368,7 +368,7 @@ public:
 
     Vec3 getPosition();
 
-    int getRocketBanking();
+    float getRocketBanking();
 
     int getRoute();
 
