@@ -86,13 +86,7 @@ namespace {
     bool g_Engine_supportsFBO;
 
     int g_Engine_defaultShader;
-    int g_Engine_altShader;
-    int g_Engine_lineShader;
-    int g_Engine_cloakShader;
-    int g_Engine_currentShader;
-    int g_Engine_activeShader;
     int g_Engine_shaderDrew;
-    int g_Engine_shaderDirty;
 
     int g_Engine_shaderPostA;
     int g_Engine_shaderPostB;
@@ -332,19 +326,19 @@ void Engine::SetGravValue(double x, double y, double z) {
 
 void Engine::SwapBuffer() {
     uint32_t index = 0;
-    while (index < this->triangleCounts->size()) {
-        (*this->triangleCounts)[index] = 0;
+    while (index < this->triangleCounts.size()) {
+        this->triangleCounts[index] = 0;
         index += 1;
     }
 }
 
 void Engine::ReloadShaders() {
     uint32_t index = 0;
-    while (index < this->shaders->size()) {
-        ShaderBaseStruct *shader = (*this->shaders)[index];
+    while (index < this->shaders.size()) {
+        ShaderBaseStruct *shader = this->shaders[index];
         shader->DeleteShader();
 
-        shader = (*this->shaders)[index];
+        shader = this->shaders[index];
         shader->Init(this);
         index += 1;
     }
@@ -410,8 +404,8 @@ void Engine::SetAddData(void *data, int size) { // lint: void_ptr exported metho
 
 void Engine::ShaderUpdate() {
     uint32_t index = 0;
-    while (index < this->shaders->size()) {
-        (*this->shaders)[index]->Update();
+    while (index < this->shaders.size()) {
+        this->shaders[index]->Update();
         index += 1;
     }
 }
@@ -657,7 +651,7 @@ Engine::~Engine() {
     this->fileInterface = 0;
 
     AEFile::Release();
-    ArrayReleaseClasses(*this->shaders);
+    ArrayReleaseClasses(this->shaders);
 
     delete this->postEffectFBO;
     this->postEffectFBO = 0;
@@ -667,8 +661,6 @@ Engine::~Engine() {
 
     AbyssEngine::MeshRelease(this, &this->quadMesh);
     this->ReleaseGL();
-    delete this->shaders;
-    delete this->triangleCounts;
 }
 
 void Engine::ReleaseGL() {
@@ -691,7 +683,7 @@ void Engine::AfterGLInit() {
 
 void Engine::DrawCloakFBO(FBOContainer *fbo) {
     if (Engine::enableShader != 0) {
-        ShaderBaseStruct *shader = (*this->shaders)[g_Engine_cloakShader];
+        ShaderBaseStruct *shader = this->shaders[DrawFBOShader::ShaderIndex];
         shader->RenderEffect(fbo, this);
     }
 }
@@ -702,8 +694,8 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
         char *text = name.GetAEChar();
 
         shader->Init(this);
-        ArrayAdd(shader, *(this->shaders));
-        ArrayAdd(0, *(this->triangleCounts));
+        ArrayAdd(shader, this->shaders);
+        ArrayAdd(0, this->triangleCounts);
         ::operator delete(text);
     }
 }
@@ -783,39 +775,40 @@ void Engine::GlowBeginGlow(int depthFunc) {
 
 void Engine::DrawLine2D(float *verts, int count, bool strip) {
     this->lineVertexBase = (int)(uintptr_t)verts;
-    this->ShaderSetActive(g_Engine_lineShader, 0);
-    unsigned int mode = strip != 0 ? 2 : 1;
-    return glDrawArrays(mode, 0, count);
+    this->ShaderSetActive(NoTexShader::ShaderIndex, 0);
+    if (strip) {
+        return glDrawArrays(GL_LINE_LOOP, 0, count);
+    }
+    return glDrawArrays(GL_LINES, 0, count);
 }
 
 void Engine::ShaderSetActive(int shaderIndex, Mesh *mesh) {
     while (shaderIndex == -1) {
-        shaderIndex = g_Engine_defaultShader;
-        if ((((uint32_t) mesh->vertexFormat) << 30) >= 0) {
-            shaderIndex = g_Engine_altShader;
+        shaderIndex = TextureShader::ShaderIndex;
+        if ((mesh->vertexFormat & 2) == 0) {
+            shaderIndex = SimpleShader::ShaderIndex;
         }
     }
 
     bool hasExtra = mesh != 0 && mesh->hasAnimation != 0;
-    ShaderBaseStruct *shader = (*this->shaders)[shaderIndex];
+    ShaderBaseStruct *shader = this->shaders[shaderIndex];
     if (shader == 0) {
         return;
     }
-    g_Engine_shaderDirty = 1;
+    ShaderSet = 1;
 
     if (shader->program != this->currentProgram) {
         shader->UseShader(hasExtra);
-        shader = (*this->shaders)[shaderIndex];
+        shader = this->shaders[shaderIndex];
         this->currentProgram = shader->program;
-        g_Engine_currentShader = shaderIndex;
+        currentUsedShaderIndex = shaderIndex;
     }
     shader->UseShader(hasExtra);
-    shader = (*this->shaders)[shaderIndex];
-    g_Engine_activeShader = shaderIndex;
+    shader = this->shaders[shaderIndex];
     shader->UpdateMeshData(mesh, this);
     if (mesh != 0) {
         uint32_t triangles = ((unsigned) (mesh->indexCount) / (unsigned) (3));
-        (*this->triangleCounts)[shaderIndex] += triangles;
+        this->triangleCounts[shaderIndex] += triangles;
     }
 }
 
@@ -826,7 +819,7 @@ void Engine::DoPostEffect() {
     if (Engine::enableShader != 0) {
         FBOContainer *slot = other;
         if ((flags & 2) != 0) {
-            ShaderBaseStruct *shader = (*this->shaders)[g_Engine_shaderPostA];
+            ShaderBaseStruct *shader = this->shaders[g_Engine_shaderPostA];
             if ((flags & ~2u) == 0) {
                 shader->RenderEffect(current, this);
                 flags = 0;
@@ -837,7 +830,7 @@ void Engine::DoPostEffect() {
             }
         }
         if ((this->postEffectFlags & 1) != 0) {
-            ShaderBaseStruct *shader = (*this->shaders)[g_Engine_shaderPostB];
+            ShaderBaseStruct *shader = this->shaders[g_Engine_shaderPostB];
             if ((flags & ~1u) == 0) {
                 shader->RenderEffect(slot, this);
                 flags = 0;
@@ -847,7 +840,7 @@ void Engine::DoPostEffect() {
             }
         }
         if ((this->postEffectFlags & 4) != 0) {
-            ShaderBaseStruct *shader = (*this->shaders)[g_Engine_shaderPostC];
+            ShaderBaseStruct *shader = this->shaders[g_Engine_shaderPostC];
             if ((flags & ~4u) == 0) {
                 shader->RenderEffect(slot, this);
             } else {
@@ -1098,7 +1091,7 @@ void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsig
 }
 
 void Engine::ShaderSetInActive() {
-    ShaderBaseStruct *shader = (*this->shaders)[g_Engine_activeShader];
+    ShaderBaseStruct *shader = this->shaders[currentUsedShaderIndex];
     shader->SetInActive();
 }
 
@@ -1129,80 +1122,66 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
     return this->ShaderUpdate();
 }
 
-Engine::Engine() {
-    Engine * self = this;
-
-    self->field_0x33c.y = 0;
-    self->lightColor.x = 0;
-    self->lightColor.z = 0;
-    self->field_0x3cc = 0;
-    self->field_0x3d4 = 0;
-    Vector up;
-    up.x = 0.0f;
-    up.y = 0.0f;
-    up.z = 0.0f;
-    self->lightDir = up;
-    self->triangleCounts = new Array<int>();
-    self->field_0x474.y = 0;
-    self->eyePosition.y = 0;
-    self->field_0x468 = up;
-    self->fogColor = up;
-    self->shaders = new Array<ShaderBaseStruct *>();
-    self->quadMesh = nullptr;
-    self->viewFramebuffer = 0;
-    self->postEffectFlags = 0;
-    self->field_0x3c4 = 0;
-    self->field_0x3c8 = 0;
-    up.x = 0.5f;
-    up.y = 0.0f;
-    up.z = 0.0f;
-    *(Vector *) &self->field_0x3cc = up;
-    self->addData = 0;
-    self->postEffectFBO = 0;
-    self->refractFBO = 0;
-    self->glowActive = 0;
-    self->autoPilotEngaged = 0;
-    self->field_0x4a8 = 0;
-    self->textureByteCounter = 0;
-    self->field_0x100 = 0;
-    self->currentProgram = -1;
+Engine::Engine()
+        : lightDir(), field_0x33c(), lightColor(), field_0x3cc(), fogColor(), eyePosition(),
+          field_0x468(), field_0x474() {
+    this->quadMesh = nullptr;
+    this->viewFramebuffer = 0;
+    this->postEffectFlags = 0;
+    this->field_0x3c4 = 0;
+    this->field_0x3c8 = 0;
+    this->field_0x3cc = Vector{0.5f, 0.3f, 0.0f};
+    this->addData = 0;
+    this->postEffectFBO = 0;
+    this->refractFBO = 0;
+    this->glowActive = 0;
+    this->autoPilotEngaged = 0;
+    this->field_0x4a8 = 0;
+    this->textureByteCounter = 0;
+    this->field_0x100 = 0;
+    this->currentProgram = -1;
     for (int i = 0; i != 0x14; i += 1) {
-        self->boundTextures[i] = -1;
+        this->boundTextures[i] = -1;
     }
-    self->frameBufferTextures[0] = -1;
-    self->frameBufferTextures[1] = -1;
-    self->clientStateFlagsAE = 0;
-    reinterpret_cast<uint16_t &>(self->statsEnabled) = 0x100;  // strh: statsEnabled(0xfd)=0, field_0xfe=1
-    self->field_0x78 = -1;
-    self->glEnableFlags = 0;
-    self->lightingEnabled = 0;
-    self->onDestroyCallback = 0;
-    self->rimColor.x = 0;
-    self->rimColor.z = 0;
-    self->field_0x34 = 0;
-    self->accelRaw[2] = 0;
-    self->displayWidth = 0;
-    self->viewportWidth = 0;
-    self->accelRaw[0] = 0;
-    self->accelRaw[1] = 0;
-    self->gravRaw[0] = 0;
-    self->gravRaw[1] = 0;
-    self->gravRaw[2] = 0;
-    reinterpret_cast<int &>(self->explosionTimeline) = 0x14;  // raw-int placeholder (see Engine.h)
-    self->linearFilterFlag = 1;
-    self->appManager = new ApplicationManager(self);
-    self->fogMinDist = 0;
-    self->fogMaxDist = 0;
-    self->glColor[0] = -1.0f;
-    self->glColor[1] = -1.0f;
-    self->glColor[2] = -1.0f;
-    self->glColor[3] = -1.0f;
-    up.x = 1.0f;
-    up.y = 0.0f;
-    up.z = 0.0f;
-    self->fogColor = up;
-    self->initFileInterface();
-    return;
+    this->frameBufferTextures[0] = -1;
+    this->frameBufferTextures[1] = -1;
+    this->field_0xff = 0;
+    this->clientStateFlagsAE = 0;
+    this->statsEnabled = 0;
+    this->field_0xfe = 1;
+    this->field_0x78 = -1;
+    this->displayWidth = 0;
+    this->displayHeight = 0;
+    this->viewportWidth = 0;
+    this->viewportHeight = 0;
+    this->field_0x74 = 0;
+    this->glEnableFlags = 0;
+    this->lightingEnabled = 0;
+    this->field_0x48 = 0;
+    this->onDestroyCallback = 0;
+    this->rimColor.x = 0;
+    this->rimColor.y = 0;
+    this->rimColor.z = 0;
+    this->field_0x34 = 0;
+    this->field_0x38 = 0;
+    this->accelRaw[0] = 0;
+    this->accelRaw[1] = 0;
+    this->accelRaw[2] = 0;
+    this->gravRaw[0] = 0;
+    this->gravRaw[1] = 0;
+    this->gravRaw[2] = 0;
+    reinterpret_cast<int &>(this->explosionTimeline) = 0x14;  // raw-int placeholder (see Engine.h)
+    this->linearFilterFlag = 1;
+    this->field_0xcc = 0.7f;
+    this->appManager = new ApplicationManager(this);
+    this->fogMinDist = 0;
+    this->fogMaxDist = 50000.0f;
+    this->glColor[0] = -1.0f;
+    this->glColor[1] = -1.0f;
+    this->glColor[2] = -1.0f;
+    this->glColor[3] = -1.0f;
+    this->fogColor = Vector{1.0f, 0.0f, 0.0f};
+    this->initFileInterface();
 }
 
 void Engine::SetTextures(uint32_t first, uint32_t second) {
