@@ -4,7 +4,12 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-07-26 — current truth (supersedes the numbers below)
+## Update 2026-10-21
+
+Current: **byte_exact 1194, linked_exact 2857, avg 79.22%** (adds `-g`, authentic ndk-build
+default; keeps entry-block argument copies from PostRA sinking). See docs/VALIDATION.md.
+
+## Update 2026-07-26 — historical (superseded by the update above)
 
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the

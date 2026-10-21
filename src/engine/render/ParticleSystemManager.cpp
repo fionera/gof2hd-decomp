@@ -62,9 +62,9 @@ ParticleSystemManager::ParticleSystemManager(
 }
 
 void ParticleSystemManager::update(long long dt) {
-    int d = (int) dt;
     if (this->enabled == 0)
         return;
+    int d = (int) dt;
     int accum = this->accumulatedDt + d;
     this->accumulatedDt = accum;
 

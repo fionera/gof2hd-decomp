@@ -25,11 +25,15 @@ set(GOF2_MATCH_OPT "-Oz" CACHE STRING "Optimization level for the matching build
 # -fpic emits R_ARM_REL32 the original lacks. API 21 only gates libc declarations (libc++ <cmath>
 # needs bionic's C99 math; 16 fails to compile), not the recovered functions' codegen. All include
 # paths are absolute (CMake compiles from the build dir).
+# -g: ndk-build compiles with -g by default and strips at packaging. Debug info is not just
+# metadata at clang 7 -Oz: it keeps PostRA machine sinking from moving entry-block argument copies
+# past early exits (DBG_VALUE users pin them), which is the schedule the original shows. Measured:
+# linked 2779->2856, byte 1185->1194. The link output is stripped, so no debug bytes ship.
 set(_match_api 21)
 set(CMAKE_CXX_FLAGS
     "-target armv7-none-linux-androideabi${_match_api} \
 -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp \
--fPIC -frtti -fstack-protector-strong ${GOF2_MATCH_OPT} \
+-fPIC -frtti -fstack-protector-strong ${GOF2_MATCH_OPT} -g \
 -stdlib=libc++ \
 -isystem ${GOF2_NDK_LIBCXX_INC} \
 -isystem ${GOF2_NDK_LIBCXXABI_INC} \
