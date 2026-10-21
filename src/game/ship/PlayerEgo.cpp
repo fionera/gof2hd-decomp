@@ -53,7 +53,6 @@ namespace AbyssEngine {
 
 namespace {
 
-    static const float g_PE_cft_transformVal = 0.0f;
     static const float g_PE_shakeDiv = 40000.0f;
     static const float g_PE_mtp_strafeEps = 0.0f;
     static const float g_PE_mtp_strafeReset = 0.0f;
@@ -818,128 +817,133 @@ void PlayerEgo::refillGunDelay() {
     ((Player *) this->player)->refillGunDelay(0);
 }
 
-void PE_cft_place(PlayerEgo *self, int turretIdx);
 
 void PlayerEgo::checkForTurret() {
-    if (this->turretMode != 0)
+    if (this->turretMode)
         return;
-    int avail = ((Player *) (this->player))->gunAvailable(0);
-    this->turretMode = (unsigned char) avail;
-    if (avail == 0)
+    this->turretMode = this->player->gunAvailable(2);
+    if (!this->turretMode)
         return;
 
     this->autoTurretEquipped = 0;
-    Array<Item *> *equip = ((Ship *) (Globals::status->getShip()))->getEquipment(2);
-    Item **item = equip->data_;
-    this->turretPitch = (int) ((double) item[0]->getAttribute(0) * 1.5);
+    Array<Item *> *equipment = Globals::status->getShip()->getEquipment(2);
+    this->turretPitch = (int) ((double) (*equipment)[0]->getAttribute(17) * 1.5);
 
-    int idx = item[0]->getIndex();
-    unsigned short base = 0xffff, barrel = 0xffff;
-    int muzzle = -1, child = -1, extra = -1, extra2 = -1;
-
-    if (idx == 0xe0) {
-        base = 0x499a;
-        barrel = 0x499b;
-        muzzle = 0x499c;
-        child = 0x499d;
-    } else if (idx == 0x30) {
-        base = 0x1a74;
-        barrel = 0x1a75;
-    } else if (idx == 0x31) {
-        base = 0x1a76;
-        barrel = 0x1a77;
-    } else if (idx == 0xb4) {
+    unsigned short baseMesh;
+    unsigned short barrelMesh;
+    int baseExtraMesh = -1;
+    int barrelExtraMesh = -1;
+    int barrelExtraMesh2 = -1;
+    int glowMesh = -1;
+    float offsetX = 0.0f;
+    float offsetY;
+    float offsetZ = 0.0f;
+    int turretIndex = (*equipment)[0]->getIndex();
+    if (turretIndex == 48) {
+        baseMesh = 0x1a74;
+        barrelMesh = 0x1a75;
+        offsetY = 55.0f;
+    } else if (turretIndex == 47) {
+        baseMesh = 0x1a72;
+        barrelMesh = 0x1a73;
+        offsetY = 60.0f;
+    } else if (turretIndex == 49) {
+        baseMesh = 0x1a76;
+        barrelMesh = 0x1a77;
+        offsetY = 60.0f;
+    } else if (turretIndex == 180) {
         this->autoTurretEquipped = 1;
-        base = 0x1a95;
-        barrel = 0x1a96;
-    } else if (idx == 0xb5) {
+        baseMesh = 0x1a95;
+        barrelMesh = 0x1a96;
+        offsetY = 84.0f;
+    } else if (turretIndex == 181) {
         this->autoTurretEquipped = 1;
-        base = 0x1a97;
-        barrel = 0x1a98;
-    } else if (idx == 0xb6) {
+        baseMesh = 0x1a97;
+        barrelMesh = 0x1a98;
+        offsetY = 88.0f;
+        offsetZ = -11.0f;
+    } else if (turretIndex == 182) {
         this->autoTurretEquipped = 1;
-        base = 0x1a99;
-        barrel = 0x1a9a;
-    } else if (idx == 0xc6) {
-        base = 0x4963;
-        barrel = 0x4964;
-        muzzle = 0x4966;
-        child = 0x4967;
-        extra = -1;
-        extra2 = 0x4a7f;
-    } else if (idx == 0xc7) {
-        base = 0x4968;
-        barrel = 0x4969;
-        muzzle = 0x496a;
-        child = 0x496b;
-        extra = -1;
-        extra2 = 0x4a7f;
-    } else if (idx == 0xc8) {
-        base = 0x496c;
-        barrel = 0x496d;
-        muzzle = 0x496e;
-        child = 0x496f;
-        extra = 0x4970;
-        extra2 = 0x4a7f;
-    } else if (idx == 0x2f) {
-        base = 0x1a72;
-        barrel = 0x1a73;
+        baseMesh = 0x1a99;
+        barrelMesh = 0x1a9a;
+        offsetX = 34.0f;
+        offsetY = 88.0f;
+        offsetZ = 1.6f;
+    } else if (turretIndex == 198) {
+        baseMesh = 0x4963;
+        barrelMesh = 0x4967;
+        baseExtraMesh = 0x4964;
+        barrelExtraMesh = 0x4966;
+        glowMesh = 0x4a7f;
+        offsetY = 80.0f;
+    } else if (turretIndex == 199) {
+        baseMesh = 0x4968;
+        barrelMesh = 0x496b;
+        baseExtraMesh = 0x4969;
+        barrelExtraMesh = 0x496a;
+        glowMesh = 0x4a7f;
+        offsetY = 38.0f;
+    } else if (turretIndex == 200) {
+        baseMesh = 0x496c;
+        barrelMesh = 0x496f;
+        baseExtraMesh = 0x496d;
+        barrelExtraMesh = 0x496e;
+        barrelExtraMesh2 = 0x4970;
+        glowMesh = 0x4a7f;
+        offsetY = 75.0f;
+    } else if (turretIndex == 224) {
+        baseMesh = 0x499a;
+        barrelMesh = 0x499b;
+        baseExtraMesh = 0x499c;
+        barrelExtraMesh = 0x499d;
+        offsetY = 82.0f;
+    } else {
+        baseMesh = 0xffff;
+        barrelMesh = 0xffff;
+        offsetY = 0.0f;
     }
 
-    PaintCanvas *canvas = Globals::Canvas;
-
-    AEGeometry *baseGeo = new AEGeometry((uint16_t) base, (PaintCanvas *) canvas, false);
-    this->turretBaseGeo = baseGeo;
-    AEGeometry *yawGeo = new AEGeometry((uint16_t) barrel, (PaintCanvas *) canvas, false);
-    this->turretGeometry = yawGeo;
-    ((AEGeometry *) yawGeo)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-    AEGeometry *muzzleRoot = new AEGeometry((PaintCanvas *) canvas);
-    this->turretRoot = muzzleRoot;
-
-    if (muzzle != -1) {
-        AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)muzzle, (PaintCanvas *) canvas, false);
-        ((AEGeometry *) (this->turretBaseGeo))->addChild((uint32_t)(uintptr_t)g);
-        delete (AEGeometry *) g;
+    this->turretBaseGeo = new AEGeometry(baseMesh, Globals::Canvas, false);
+    this->turretGeometry = new AEGeometry(barrelMesh, Globals::Canvas, false);
+    this->turretGeometry->setRotationOrder((AbyssEngine::AEMath::RotationOrder) 2);
+    this->turretRoot = new AEGeometry(Globals::Canvas);
+    if (baseExtraMesh != -1) {
+        AEGeometry *part = new AEGeometry((unsigned short) baseExtraMesh, Globals::Canvas, false);
+        this->turretBaseGeo->addChild(part->transform);
+        delete part;
     }
-    if (child != -1) {
-        AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)child, (PaintCanvas *) canvas, false);
-        ((AEGeometry *) (this->turretGeometry))->addChild((uint32_t)(uintptr_t)g);
-        delete (AEGeometry *) g;
+    if (barrelExtraMesh != -1) {
+        AEGeometry *part = new AEGeometry((unsigned short) barrelExtraMesh, Globals::Canvas, false);
+        this->turretGeometry->addChild(part->transform);
+        delete part;
     }
-    if (extra != -1) {
-        AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)extra, (PaintCanvas *) canvas, false);
-        ((AEGeometry *) (this->turretGeometry))->addChild((uint32_t)(uintptr_t)g);
-        delete (AEGeometry *) g;
+    if (barrelExtraMesh2 != -1) {
+        AEGeometry *part = new AEGeometry((unsigned short) barrelExtraMesh2, Globals::Canvas, false);
+        this->turretGeometry->addChild(part->transform);
+        delete part;
     }
-    if (extra2 != -1) {
-        AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)extra2, (PaintCanvas *) canvas, false);
-        this->turretExtraGeo = g;
-        ((AEGeometry *) (this->turretGeometry))->addChild((uint32_t)(uintptr_t)g);
-        AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            (unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
-        ((AbyssEngine::Transform *) (tf))->SetVisible(this->turretActive != 0);
+    if (glowMesh != -1) {
+        this->turretExtraGeo = new AEGeometry((unsigned short) glowMesh, Globals::Canvas, false);
+        this->turretGeometry->addChild(this->turretExtraGeo->transform);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretExtraGeo->transform))
+            ->SetVisible(this->turretActive);
     }
-
-    AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-        (unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
-    ((AbyssEngine::Transform *) tf)->boundingRadius = g_PE_cft_transformVal;
-    tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-        (unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
-    ((AbyssEngine::Transform *) (tf))->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
-
-    ((AEGeometry *) (this->turretBaseGeo))->setPosition(*(Vector *) &this->dockArrowImage);
-    ((AEGeometry *) (this->turretGeometry))->setPosition(*(Vector *) &this->dockArrowImage);
-
-    PE_cft_place(this, idx);
-
-    ((AEGeometry *) (this->turretRoot))->addChild((uint32_t)(uintptr_t)this->turretBaseGeo);
-    ((AEGeometry *) (this->turretRoot))->addChild((uint32_t)(uintptr_t)this->turretGeometry);
-
-    if (this->cloak != 0 && this->turretMode != 0) {
-        ((PaintCanvas *) (long) (canvas))->MeshCloneMaterial(
-            ((AEGeometry *) this->turretBaseGeo)->meshId, this->cloakMaterial2);
-        ((PaintCanvas *) (long) (canvas))->MeshCloneMaterial(
-            ((AEGeometry *) this->turretGeometry)->meshId, this->cloakMaterial3);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretRoot->transform))->boundingRadius =
+        1000000.0f;
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretGeometry->transform))
+        ->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
+    this->turretBaseGeo->setPosition(this->turretOffsetVec);
+    this->turretGeometry->setPosition(this->turretOffsetVec);
+    this->turretGeometry->translate(offsetX, offsetY, offsetZ);
+    if (!((*equipment)[0]->getIndex() >= 198 && (*equipment)[0]->getIndex() < 201)) {
+        this->turretBaseGeo->rotate(0.0f, 3.1415927f, 0.0f);
+        this->turretGeometry->rotate(0.0f, 3.1415927f, 0.0f);
+    }
+    this->turretRoot->addChild(this->turretBaseGeo->transform);
+    this->turretRoot->addChild(this->turretGeometry->transform);
+    if (this->cloak && this->turretMode) {
+        Globals::Canvas->MeshCloneMaterial(this->turretBaseGeo->meshId, this->cloakMaterial2);
+        Globals::Canvas->MeshCloneMaterial(this->turretGeometry->meshId, this->cloakMaterial3);
     }
 }
 
