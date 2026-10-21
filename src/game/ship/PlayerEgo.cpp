@@ -3557,8 +3557,12 @@ void PlayerEgo::draw(bool allowHud) {
         view = this->geometry->getMatrix();
     Globals::Canvas->SetColor(0xffffffff);
     if (this->turretActive && Globals::status->getShip()->getFirstEquipmentOfSort(35)) {
-        Globals::Canvas->DrawImage2D(this->field_0x14->isPlasmaInRange() ? this->radarBlipImage3 : this->radarBlipImage2,
-                                     (int) PlayerEgo::crosshairPos.x, (int) PlayerEgo::crosshairPos.y, 17, 68);
+        if (this->field_0x14->isPlasmaInRange())
+            Globals::Canvas->DrawImage2D(this->radarBlipImage3, (int) PlayerEgo::crosshairPos.x,
+                                         (int) PlayerEgo::crosshairPos.y, 17, 68);
+        else
+            Globals::Canvas->DrawImage2D(this->radarBlipImage2, (int) PlayerEgo::crosshairPos.x,
+                                         (int) PlayerEgo::crosshairPos.y, 17, 68);
     } else if (this->level->field_30) {
         Globals::Canvas->DrawImage2D(this->radarBlipImage1, (int) PlayerEgo::crosshairPos.x,
                                      (int) PlayerEgo::crosshairPos.y, 17, 68);
