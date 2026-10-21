@@ -1433,7 +1433,7 @@ int Level::init() {
         Globals::status->setMission(Mission::empty);
     }
     if ((missionPtr == 3 && (mission->isEmpty() || !mission->isCampaignMission()))
-        || (missionPtr == 3 && Globals::status->gameWon() && !(Globals::options[0x35] || Globals::options[0x37]))) {
+        || (missionPtr == 3 && Globals::status->gameWon() && Globals::options[0x35] == 0 && Globals::options[0x37] == 0)) {
         createMission();
         bool blackMarket = Globals::status->inBlackMarketSystem();
         if (initStreamOutPosition && blackMarket) {
