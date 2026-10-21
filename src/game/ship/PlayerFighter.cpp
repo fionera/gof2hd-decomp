@@ -2264,33 +2264,35 @@ void PlayerFighter::handleCloaking() {
 }
 
 void PlayerFighter::revive() {
-    int enemy = ((Player *) (intptr_t) this->player())->turnedEnemyFlag;
+    unsigned char enemy = ((Player *) (this->player()))->turnedEnemy();
     ((Player *) (this->player()))->reset();
     if (enemy != 0) {
         ((Player *) (this->player()))->turnEnemy();
     }
-    this->wreckGeometry() = 0;
+    this->name = String();
     this->state = 1;
+    this->wreckGeometry() = 0;
     this->field_0x12e = 0;
     this->field_0x38 = -1;
-    this->routeClone()->reset();
+    this->KIPlayer::route->reset();
     this->hitpoints = ((Player *) (this->player()))->getHitpoints();
     this->field_0x1dc = 0;
     this->field_0x1e0 = 0;
     this->deathTimer() = 0;
+    this->setActive(true);
     this->field_0xf0 = 0;
     this->currentSpeed = this->speed;
     this->explosion->reset();
-    this->pushTimer() = 0;
     this->field_0x24 = 0;
+    this->pushTimer() = 0;
     this->setExhaustVisible(true);
 
-    int geom = this->subGeometry();
+    AEGeometry *visibleGeometry = (AEGeometry *) this->subGeometry();
     this->field_0xf5() = 1;
-    if (geom == 0) {
-        geom = this->geometry();
+    if (visibleGeometry == nullptr) {
+        visibleGeometry = (AEGeometry *) this->geometry();
     }
-    ((AEGeometry *) (geom))->setVisible(1);
+    visibleGeometry->setVisible(true);
 
     if ((unsigned) (this->wingmanCommand() - 9) < 2) {
         delete this->lootList();
