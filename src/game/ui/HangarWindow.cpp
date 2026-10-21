@@ -1909,320 +1909,199 @@ void HangarWindow::showFreeCreditsWindow() {
 }
 
 void HangarWindow::initialize() {
-    HangarWindow *self = this;
-    Globals *status = (Globals *) *g_hw_globals;
+    this->upgradeMode = Globals::status->getStation()->getIndex() == 108 && Globals::status->field_114 == 3;
+    Globals::status->calcCargoPrices();
 
-    uint8_t special = 0;
-    if (Globals::status->getStation()->getIndex() == 0x6c)
-        special = (status->field_0x114 == 3);
-    self->upgradeMode = special;
-    ((Status *) (status))->calcCargoPrices();
+    this->hangarList = new HangarList();
+    this->itemList = Item::mixItems(Globals::status->getShip()->getCargo(), Globals::status->getStation()->getItems());
+    this->hangarList->init(Globals::status->getShip(), this->itemList, Globals::status->getStation()->getShips(),
+                           (Array<BluePrint *> *) Globals::status->getBluePrints());
 
-    HangarList *list = new HangarList();
-    self->hangarList = list;
-    self->itemList = Item::mixItems(Globals::status->getShip()->getCargo(), Globals::status->getStation()->getItems());
-    list->init(Globals::status->getShip(), 0, Globals::status->getStation()->getShips(),
-               (Array<BluePrint *> *) (long) ((Status *) (*g_hw_globals))->getBluePrints());
-
-    self->tabButtons = new Array<TouchButton *>();
-    ArraySetLength(3, *(self->tabButtons));
-
-    int scrW = *g_hw_screenWidth;
-    Layout *layout = *g_hw_layout;
-
-    TouchButton *b0 = (TouchButton *) ::operator new(200);
-    TouchButton_ctor_text(b0, Globals::gameText->getText(*g_hw_helpTextId), 3,
-                          scrW - layout->getHelpButtonOffset(), 0, 0x12);
-    (*self->tabButtons)[(8) >> 2] = (TouchButton *) (b0);
-
-    TouchButton *b1 = (TouchButton *) ::operator new(200);
-    int w0 = ((TouchButton *) (b0))->getWidth();
-    TouchButton_ctor_text(b1, Globals::gameText->getText(*g_hw_helpTextId), 3,
-                          (scrW - layout->getHelpButtonOffset() - w0) + layout->field_0x38, 0, 0x12);
-    (*self->tabButtons)[(4) >> 2] = (TouchButton *) (b1);
-
-    TouchButton *b2 = (TouchButton *) ::operator new(200);
-    int w0b = ((TouchButton *) (b0))->getWidth();
-    int w1b = ((TouchButton *) (b1))->getWidth();
-    TouchButton_ctor_text(b2, Globals::gameText->getText(*g_hw_helpTextId), 3,
-                          (scrW - layout->getHelpButtonOffset() - w0b - w1b) + layout->field_0x38 * 2,
-                          0, 0x12);
-    (*self->tabButtons)[(0) >> 2] = (TouchButton *) (b2);
-    self->listModeFlag = *g_hw_listModeFlag;
-
-    unsigned int *icons = (unsigned int *) ::operator new[](0x18);
-    self->tabIcons = icons;
-    for (int i = 0; i != 6; i++)
-
-        Globals::Canvas->Image2DCreate((unsigned short) (i + 0x232a), *(unsigned int *) ((char *) icons + i * 4));
-
-    int *posX = (int *) *g_hw_posXArray;
-    int *posY = (int *) *g_hw_posYArray;
-    Array<TouchButton *> *tabArr = self->tabButtons;
-    for (unsigned int i = 0; i < tabArr->size(); i++) {
+    // Tabs (right-aligned next to the help button).
+    this->tabButtons = new Array<TouchButton *>();
+    ArraySetLength(3, *this->tabButtons);
+    (*this->tabButtons)[2] = new TouchButton(*Globals::gameText->getText(272), 3,
+                                             Globals::w - Globals::layout->getHelpButtonOffset(), 0, 18);
+    (*this->tabButtons)[1] = new TouchButton(*Globals::gameText->getText(this->upgradeMode ? 186 : 185), 3,
+                                             Globals::w - Globals::layout->getHelpButtonOffset() -
+                                             (*this->tabButtons)[2]->getWidth() + Globals::layout->field_0x38,
+                                             0, 18);
+    (*this->tabButtons)[0] = new TouchButton(*Globals::gameText->getText(183), 3,
+                                             Globals::w - Globals::layout->getHelpButtonOffset() -
+                                             (*this->tabButtons)[2]->getWidth() -
+                                             (*this->tabButtons)[1]->getWidth() + Globals::layout->field_0x38 * 2,
+                                             0, 18);
+    this->listModeFlag = Globals::showNewCreditsMenu;
+    this->tabIcons = new unsigned int[6];
+    for (int i = 0; i != 6; i++) {
+        Globals::Canvas->Image2DCreate((uint16_t) (9002 + i), this->tabIcons[i]);
+    }
+    for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
         if (i < 10) {
-            float x = 0, y = 0;
-            TouchButton_getPosition(tabArr->data()[i], &x, &y);
-            posX[i] = (int) x;
-            TouchButton_getPosition(tabArr->data()[i], &x, &y);
-            posY[i] = (int) y;
+            Globals::sub_menu_buttons_x[i] = (int) (*this->tabButtons)[i]->getPosition().x;
+            Globals::sub_menu_buttons_y[i] = (int) (*this->tabButtons)[i]->getPosition().y;
         }
     }
+    Globals::sub_menu_button_count = this->tabButtons->size();
+    Globals::Canvas->Image2DCreate(1326, this->blueprintIconImage);
+    Globals::Canvas->Image2DCreate(1348, this->pendingIconImage);
 
-    *(unsigned int *) *g_hw_imageCountSlot = tabArr->size();
-    Globals::Canvas->Image2DCreate((unsigned short) (0x52e), self->blueprintIconImage);
-    Globals::Canvas->Image2DCreate((unsigned short) (0x544), self->pendingIconImage);
-
-    self->buttons = new Array<TouchButton *>();
-    ArraySetLength(0x18, *(self->buttons));
-
-    unsigned int img;
-    img = 0xffffffff;
-    Globals::Canvas->Image2DCreate((unsigned short) (0x470), img);
-    TouchButton *e0 = (TouchButton *) ::operator new(200);
-    TouchButton_ctor_img(e0, (unsigned char *) (uintptr_t) img, 7, 0, 0, layout->field_0x60, 0x11, 4);
-    (*self->buttons)[(0) >> 2] = (TouchButton *) (e0);
-
-    if (Globals::status->getCurrentCampaignMission() == 0x4d)
-        Globals::status->getStation()->getIndex();
-
-    TouchButton *e1 = (TouchButton *) ::operator new(200);
-    TouchButton_ctor_text(e1, Globals::gameText->getText(*g_hw_helpTextId), 7, 0, 0, 0x11);
-    (*self->buttons)[(4) >> 2] = (TouchButton *) (e1);
-    TouchButton *e2 = (TouchButton *) ::operator new(200);
-    TouchButton_ctor_text(e2, Globals::gameText->getText(*g_hw_helpTextId), 7, 0, 0, 0x11);
-    (*self->buttons)[(8) >> 2] = (TouchButton *) (e2);
-
-    img = 0xffffffff;
-    Globals::Canvas->Image2DCreate((unsigned short) (0x533), img);
-    TouchButton *e3 = (TouchButton *) ::operator new(200);
-    TouchButton_ctor_img(e3, (unsigned char *) (uintptr_t) img, 7, 0, 0, layout->field_0x64, 0x11, 4);
-    (*self->buttons)[(0xc) >> 2] = (TouchButton *) (e3);
-
-    img = 0xffffffff;
-    Globals::Canvas->Image2DCreate((unsigned short) (0x532), img);
-    TouchButton *e4 = (TouchButton *) ::operator new(200);
-    TouchButton_ctor_img(e4, (unsigned char *) (uintptr_t) img, 7, 0, 0, layout->field_0x64, 0x11, 4);
-    (*self->buttons)[(0x10) >> 2] = (TouchButton *) (e4);
-
-    TouchButton *e5 = (TouchButton *) ::operator new(200);
-    TouchButton_ctor_text2(e5, Globals::gameText->getText(*g_hw_helpTextId), 7, 0, 0, self->buttonHeight, 0x11);
-    (*self->buttons)[(0x14) >> 2] = (TouchButton *) (e5);
-    TouchButton *e6 = (TouchButton *) ::operator new(200);
-    TouchButton_ctor_text2(e6, Globals::gameText->getText(*g_hw_helpTextId), 7, 0, 0, self->buttonHeight, 0x11);
-    (*self->buttons)[(0x18) >> 2] = (TouchButton *) (e6);
-    TouchButton *e7 = (TouchButton *) ::operator new(200);
-    TouchButton_ctor_text(e7, Globals::gameText->getText(*g_hw_helpTextId), 7, 0, 0, 0x11);
-    (*self->buttons)[(0x1c) >> 2] = (TouchButton *) (e7);
-
-    {
-        String lbl;
-        TouchButton *e8 = (TouchButton *) ::operator new(200);
-        TouchButton_ctor_img(e8, &lbl, 8, 0, 0, layout->field_0x50, 0x11, 4);
-        (*self->buttons)[(0x20) >> 2] = (TouchButton *) (e8);
-    }
-    {
-        String lbl;
-        TouchButton *e9 = (TouchButton *) ::operator new(200);
-        TouchButton_ctor_img(e9, &lbl, 9, 0, 0, layout->field_0x50, 0x11, 4);
-        (*self->buttons)[(0x24) >> 2] = (TouchButton *) (e9);
-    }
-    {
-        TouchButton *e10 = (TouchButton *) ::operator new(200);
-        TouchButton_ctor_img(e10, Globals::gameText->getText(*g_hw_helpTextId), 7, 0, 0,
-                             layout->field_0x50, 0x11, 4);
-        (*self->buttons)[(0x28) >> 2] = (TouchButton *) (e10);
-    }
-    {
-        String credits;
-        TouchButton *e11 = (TouchButton *) ::operator new(200);
-        credits = Globals::layout->formatCredits(Globals::status->getCredits());
-        TouchButton_ctor_img(e11, &credits, 0xb, *g_hw_screenWidth, *g_hw_screenHeight,
-                             layout->getFooterTransitionWidth(), 0x22, 4);
-        (*self->buttons)[(0x2c) >> 2] = (TouchButton *) (e11);
-    }
-
-    uint8_t listMode = self->listModeFlag;
-    int row = 0;
-    for (int slot = 0xc; (unsigned int) (slot - 0xc) < 5; slot++) {
-        String lbl;
-        TouchButton *btn = (TouchButton *) ::operator new(200);
-        int visIdx;
-        if (listMode == 0) {
-            TouchButton_ctor_img(btn, &lbl, 0, 0, 0, layout->field_0x264, 0x11, 1);
-            visIdx = row + 0xc;
+    // Action buttons.
+    this->buttons = new Array<TouchButton *>();
+    ArraySetLength(24, *this->buttons);
+    unsigned int image = 0xffffffffu;
+    Globals::Canvas->Image2DCreate(1136, image);
+    (*this->buttons)[0] = new TouchButton(image, 7, 0, 0, Globals::layout->field_0x60, 17, 4);
+    bool alienStation = Globals::status->getCurrentCampaignMission() == 77 &&
+                        Globals::status->getStation()->getIndex() == 100;
+    (*this->buttons)[1] = new TouchButton(*Globals::gameText->getText(this->upgradeMode || alienStation ? 332 : 301), 7,
+                                          0, 0, 17);
+    (*this->buttons)[2] = new TouchButton(*Globals::gameText->getText(302), 7, 0, 0, 17);
+    unsigned int upImage = 0xffffffffu;
+    Globals::Canvas->Image2DCreate(1331, upImage);
+    (*this->buttons)[3] = new TouchButton(upImage, 7, 0, 0, Globals::layout->field_0x64, 17, 4);
+    unsigned int downImage = 0xffffffffu;
+    Globals::Canvas->Image2DCreate(1330, downImage);
+    (*this->buttons)[4] = new TouchButton(downImage, 7, 0, 0, Globals::layout->field_0x64, 17, 4);
+    (*this->buttons)[5] = new TouchButton(*Globals::gameText->getText(279), 7, 0, 0, this->buttonHeight, 17, 1);
+    (*this->buttons)[6] = new TouchButton(*Globals::gameText->getText(282), 7, 0, 0, this->buttonHeight, 17, 1);
+    (*this->buttons)[7] = new TouchButton(*Globals::gameText->getText(283), 7, 0, 0, 17);
+    (*this->buttons)[8] = new TouchButton(String(""), 8, 0, 0, Globals::layout->field_0x50, 17, 4);
+    (*this->buttons)[9] = new TouchButton(String(""), 9, 0, 0, Globals::layout->field_0x50, 17, 4);
+    (*this->buttons)[10] = new TouchButton(*Globals::gameText->getText(330), 7, 0, 0, Globals::layout->field_0x50, 17, 4);
+    (*this->buttons)[11] = new TouchButton(Globals::layout->formatCredits(Globals::status->getCredits()), 11, Globals::w,
+                                           Globals::h, Globals::layout->getFooterTransitionWidth(), 34, 4);
+    for (int i = 0; i < 5; i++) {
+        if (this->listModeFlag) {
+            (*this->buttons)[12 + i] = new TouchButton(String(""), 10, 0, 0, 1);
         } else {
-            TouchButton_ctor_text(btn, &lbl, 10, 0, 0, 1);
-            visIdx = slot;
+            (*this->buttons)[12 + i] = new TouchButton(String(""), 0, 0, 0, Globals::layout->field_0x264, 17, 1);
         }
-        (*self->buttons)[(slot * 4) >> 2] = (TouchButton *) (btn);
-        (*self->buttons)[(visIdx * 4) >> 2]->setVisible(false);
-        row++;
+        (*this->buttons)[12 + i]->setVisible(false);
     }
-    {
-        String lbl;
-        TouchButton *btn = (TouchButton *) ::operator new(200);
-        if (listMode == 0)
-            TouchButton_ctor_img(btn, &lbl, 0, 0, 0, layout->field_0x264, 0x11, 1);
-        else
-            TouchButton_ctor_text(btn, &lbl, 10, 0, 0, 1);
-        (*self->buttons)[(0x44) >> 2] = (TouchButton *) (btn);
-        (*self->buttons)[(0x44) >> 2]->setVisible(false);
+    if (this->listModeFlag) {
+        (*this->buttons)[17] = new TouchButton(String(""), 10, 0, 0, 1);
+    } else {
+        (*this->buttons)[17] = new TouchButton(String(""), 0, 0, 0, Globals::layout->field_0x264, 17, 1);
     }
+    (*this->buttons)[17]->setVisible(false);
+    Globals::Canvas->Image2DCreate(9022, this->scrollHintImageA);
+    Globals::Canvas->Image2DCreate(9023, this->scrollHintImageB);
+    (*this->buttons)[23] = new TouchButton(String("Autocomplete"), 7, 0, 0, 17);
 
-    Globals::Canvas->Image2DCreate((unsigned short) (0x233e), self->scrollHintImageA);
-    Globals::Canvas->Image2DCreate((unsigned short) (0x233f), self->scrollHintImageB);
-    {
-        String lbl;
-        TouchButton *btn = (TouchButton *) ::operator new(200);
-        TouchButton_ctor_text(btn, &lbl, 7, 0, 0, 0x11);
-        (*self->buttons)[(0x5c) >> 2] = (TouchButton *) (btn);
-    }
-
-    unsigned int imgA, imgB;
-    for (int i = 0x12; (unsigned int) (i - 0x12) < 5; i++) {
-        imgB = 0xffffffff;
-        if (i == 0x12) {
-            Globals::Canvas->Image2DCreate((unsigned short) (0x233c), imgA);
-            Globals::Canvas->Image2DCreate((unsigned short) (0x233d), imgB);
+    // Credit packages.
+    unsigned int packImage = 0xffffffffu;
+    unsigned int packImagePressed = 0xffffffffu;
+    for (int i = 0; i < 5; i++) {
+        if (i + 18 == 18) {
+            Globals::Canvas->Image2DCreate(9020, packImage);
+            Globals::Canvas->Image2DCreate(9021, packImagePressed);
         } else {
-            short s = (short) (i - 0x12);
-            Globals::Canvas->Image2DCreate((unsigned short) (s * 2 + 0x2330), imgA);
-            Globals::Canvas->Image2DCreate((unsigned short) (s * 2 + 0x2331), imgB);
+            Globals::Canvas->Image2DCreate((uint16_t) (9008 + i * 2), packImage);
+            Globals::Canvas->Image2DCreate((uint16_t) (9009 + i * 2), packImagePressed);
         }
-        TouchButton *btn = (TouchButton *) ::operator new(200);
-        TouchButton_ctor_img2(btn, (unsigned char *) (uintptr_t) imgA, (unsigned char *) (uintptr_t) imgB, 0x13, 0, 0,
-                              1);
-        (*self->buttons)[(i * 4) >> 2] = (TouchButton *) (btn);
-        (*self->buttons)[(i * 4) >> 2]->setVisible(false);
+        (*this->buttons)[i + 18] = new TouchButton(packImage, packImagePressed, 19, 0, 0, 1);
+        (*this->buttons)[i + 18]->setVisible(false);
     }
 
-    self->buttonWidth = ((TouchButton *) (0))->getWidth();
-    int h = (*self->buttons)[(0x30) >> 2]->getHeight();
-    self->gridButtonHeight = h;
-    self->gridSpacingX = (int) ((float) (-self->buttonWidth) * g_hw_posScale);
-    self->gridSpacingY = (int) ((float) (-h) * g_hw_posScale);
+    this->buttonWidth = (*this->buttons)[12]->getWidth();
+    this->gridButtonHeight = (*this->buttons)[12]->getHeight();
+    this->gridSpacingX = (int) ((float) -this->buttonWidth * 0.1f);
+    this->gridSpacingY = (int) ((float) -this->gridButtonHeight * 0.1f);
+    Globals::Canvas->Image2DCreate(1141, *(unsigned int *) &this->progressBarBgImage);
+    Globals::Canvas->Image2DCreate(1142, this->progressBarFillImage);
+    Globals::Canvas->Image2DCreate(1143, this->progressBarBorderImage);
+    this->progressBarWidth = Globals::Canvas->GetImage2DWidth(this->progressBarFillImage);
+    this->progressBarHeight = Globals::Canvas->GetImage2DHeight(this->progressBarFillImage);
 
-    unsigned int progressBarBgImageHandle;
-    Globals::Canvas->Image2DCreate((unsigned short) (0x475), progressBarBgImageHandle);
-    self->progressBarBgImage = progressBarBgImageHandle;
-    Globals::Canvas->Image2DCreate((unsigned short) (0x476), self->progressBarFillImage);
-    Globals::Canvas->Image2DCreate((unsigned short) (0x477), self->progressBarBorderImage);
-    self->progressBarWidth = Globals::Canvas->GetImage2DWidth(0);
-    self->progressBarHeight = Globals::Canvas->GetImage2DHeight(0);
-
-    if (self->itemList != 0 && Globals::status->inBlackMarketSystem() == 0 &&
-        self->upgradeMode == 0) {
-        Array<Item *> *equip = ((Ship *) (Globals::status->getShip()))->getEquipment();
-        Array<Item *> *cargo = self->itemList;
-        unsigned int n = cargo->size() + (equip ? equip->size() : 0);
-        for (unsigned int i = 0; i < n; i++) {
-            Item *itemPtr;
-            if (i < cargo->size())
-                itemPtr = cargo->data()[i];
-            else
-                itemPtr = equip->data()[i - cargo->size()];
-            if (itemPtr != 0) {
-                int price = ((Item *) (itemPtr))->getSinglePrice();
-                int idx = ((Item *) (itemPtr))->getIndex();
-                Globals *globals = (Globals *) *g_hw_globals;
-
-                int *buyTbl = (int *) (*(int *) ((char *) (globals->field_0x40) + (4)));
-                if (buyTbl[idx] < price || buyTbl[idx] == 0) {
-                    buyTbl[idx] = price;
-                    int sysIdx = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
-                    *(int *) ((*(int *) ((char *) (globals->field_0x48) + (4))) + idx * 4) = sysIdx;
-                }
-                int *sellTbl = (int *) (*(int *) ((char *) (globals->field_0x3c) + (4)));
-                if (price < sellTbl[idx] || sellTbl[idx] == 0) {
-                    sellTbl[idx] = price;
-                    int sysIdx = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
-                    *(int *) ((*(int *) ((char *) ((*(unsigned char * *) ((char *) (*g_hw_globals) + (0x44)))) + (4))) +
-                              idx * 4)
-                            = sysIdx;
-                }
+    // Remember best buy/sell prices seen for every item.
+    if (this->itemList != 0 && !Globals::status->inBlackMarketSystem() && !this->upgradeMode) {
+        Array<Item *> *equipment = Globals::status->getShip()->getEquipment();
+        for (unsigned int i = 0; i < this->itemList->size() + (equipment != 0 ? equipment->size() : 0); i++) {
+            Item *item = i < this->itemList->size() ? (*this->itemList)[i]
+                                                    : (*equipment)[i - this->itemList->size()];
+            if (item == 0)
+                continue;
+            int price = item->getSinglePrice();
+            int index = item->getIndex();
+            if (price > (*Globals::status->field_0x40)[index] || (*Globals::status->field_0x40)[index] == 0) {
+                (*Globals::status->field_0x40)[index] = price;
+                (*Globals::status->field_0x48)[index] = ((SolarSystem *) Globals::status->getSystem())->getIndex();
+            }
+            if (price < (*Globals::status->field_0x3c)[index] || (*Globals::status->field_0x3c)[index] == 0) {
+                (*Globals::status->field_0x3c)[index] = price;
+                (*Globals::status->field_0x44)[index] = ((SolarSystem *) Globals::status->getSystem())->getIndex();
             }
         }
     }
+    Globals::status->getShip()->adjustPrice();
 
-    ((Ship *) ((Ship *) (Globals::status->getShip())))->adjustPrice();
-
-    self->listItemWindow = new ListItemWindow();
-    self->viewMode = 0;
-    self->choiceWindow = new ChoiceWindow();
-    self->dialogActive = 0;
-    self->dialog = new ChoiceWindow();
-
-    self->replaceEquipPending = 0;
-    self->holdTime = 0;
-    self->repeatTimer = 0;
-    self->pendingMountItem = 0;
-    self->pendingDemountItem = 0;
-    self->routeWarningPending = 0;
-    self->suppressTouchEnd = 0;
-    self->autoCompletePending = 0;
-    self->autoEquipped = 0;
-
-    int scrH = *g_hw_screenHeight;
-    int contentW = *g_hw_screenWidth - 10;
-    self->field_0x40 = 0x10;
-    self->field_0x44 = 5;
-    self->field_0x48 = 5;
-    self->contentWidth = contentW;
-    self->contentHeight = scrH - 10;
-
-    int *cols = (int *) ::operator new[](0xc);
-    self->columnWidths = cols;
-    int third = IDIV(contentW, 3) - 2;
-    cols[0] = third;
-    cols[1] = third;
-    cols[2] = (*g_hw_screenWidth - 0xe) + third * -2;
-
-    self->hangarList->setCurrentTab(0, *g_hw_specialModeFlag != 0);
-    self->refreshCurrentContentHeight();
-
-    self->currentLoad = Globals::status->getShip()->getCurrentLoad();
-    Layout *lay2 = *g_hw_layout;
-    self->visibleHeight = ((*g_hw_screenHeight - lay2->field_0x10_rightMargin - lay2->field_0xc_leftMargin) -
-                           lay2->field_0x20_top) - lay2->field_0x24;
-
-    int extra = 0;
-    if (*g_hw_blackMarketHintFlag != 0 && *g_hw_introHintFlag == 0) {
-        unsigned int hintImageHandle;
-        Globals::Canvas->Image2DCreate((unsigned short) (0x6a4), hintImageHandle);
-        self->hintImage = hintImageHandle;
-        extra = (int) ((float) (*g_hw_screenWidth) * g_hw_posScale);
+    this->listItemWindow = new ListItemWindow();
+    this->choiceWindow = new ChoiceWindow();
+    this->viewMode = 0;
+    this->dialog = new ChoiceWindow();
+    this->dialogActive = 0;
+    this->replaceEquipPending = 0;
+    this->holdTime = 0;
+    this->repeatTimer = 0;
+    this->pendingMountItem = 0;
+    this->pendingDemountItem = 0;
+    this->routeWarningPending = 0;
+    this->suppressTouchEnd = 0;
+    this->sellConfirmPending = 0;
+    this->autoCompletePending = 0;
+    this->autoEquipped = 0;
+    this->buyCreditsActive = 0;
+    this->notEnoughCredits = 0;
+    this->freeCreditsActive = 0;
+    this->field_0x40 = 16;
+    this->field_0x44 = 5;
+    this->field_0x48 = 5;
+    this->contentWidth = Globals::w - 10;
+    this->contentHeight = Globals::h - 10;
+    this->columnWidths = new int[3];
+    int column = (Globals::w - 10) / 3 - 2;
+    this->columnWidths[0] = column;
+    this->columnWidths[1] = column;
+    this->columnWidths[2] = Globals::w - 14 - this->columnWidths[0] - this->columnWidths[1];
+    this->hangarList->setCurrentTab(HangarWindow::lastTab, false);
+    this->refreshCurrentContentHeight();
+    this->currentLoad = Globals::status->getShip()->getCurrentLoad();
+    Layout *layout = Globals::layout;
+    this->visibleHeight = Globals::h - layout->field_0x10_rightMargin - layout->field_0xc_leftMargin -
+                          layout->field_0x20_top - layout->field_0x24;
+    int hintX = 0;
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
+        Globals::Canvas->Image2DCreate(1700, *(unsigned int *) &this->hintImage);
+        hintX = (int) ((float) Globals::w * 0.2f);
     }
-    self->selectedItem = 0;
-    self->hintOffsetX = extra;
-    self->buyMode = 0;
-    self->bluePrintPurchasePending = 0;
-    self->shipSwapPending = 0;
-    self->dlcMenuPending = 0;
+    this->hintOffsetX = hintX;
+    this->selectedItem = 0;
+    this->buyMode = 0;
+    this->specialMode = 0;
+    this->bluePrintPurchasePending = 0;
+    this->shipSwapPending = 0;
+    this->dlcMenuPending = 0;
+    this->scrollOffset = 0;
+    this->lastTouchY = 0;
+    this->scrollOffsetBackup = 0;
+    this->scrollDelta = 0;
+    this->damping = 0.0f;
+    this->velocity = 0.0f;
+    this->touchStartY = 0;
+    this->dragging = 0;
+    this->savedScrollOffset = 0;
+    this->field_0x0 = 0;
+    this->active = 1;
+    this->autoEquipPending = 0;
+    this->autoEquipIndex = 0xffffffffu;
 
-    self->scrollDelta = 0;
-    self->damping = 0;
-    self->velocity = 0;
-    self->touchStartY = 0;
-    self->savedScrollOffset = 0;
-    self->field_0x0 = 0;
-    self->active = 1;
-    self->autoEquipPending = 0;
-    self->autoEquipIndex = 0xffffffff;
-    self->scrollOffset = 0;
-    self->lastTouchY = 0;
-    self->scrollOffsetBackup = 0;
-    self->scrollDelta = 0;
-
-    if (Globals::status->getCurrentCampaignMission() > 0xd) {
-        uint8_t *introFlag = g_hw_introHintFlag;
-        if (introFlag[0x4e] == 0) {
-            Globals::gameText->getText(*g_hw_helpTextId);
-            self->dialog->set(g_HangarWindow_emptyDialogText);
-            introFlag[0x4e] = 1;
-            (*g_hw_recordHandler)->saveOptions();
-            self->dialogActive = 1;
-        }
+    if (Globals::status->getCurrentCampaignMission() >= 14 && Globals::options[78] == 0) {
+        // First visit: hangar tutorial message.
+        this->dialog->set(*Globals::gameText->getText(109));
+        Globals::options[78] = 1;
+        Globals::recordHandler->saveOptions();
+        this->dialogActive = 1;
     }
 }
 
