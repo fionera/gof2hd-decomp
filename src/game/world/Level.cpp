@@ -86,7 +86,6 @@ Matrix *CameraGetLocal(void *canvas, uint32_t index); // lint: void_ptr (free-fu
 
 static unsigned char *g_initStreamOut = nullptr;
 
-static int *g_engineColorBase = nullptr;
 
 static const int g_cg_meshTable[233] = {6754, 6755, 6756, 6760, 6761, 6762, 6763, 6764, 6765, -1, -1, -1, 6788, 6789, 6790, 6791, 6792, 6793, 6794, 6795, 6796, 6797, 6798, 6799, 6800, 6801, 6802, 6803, 14236, 14237, 14238, 14247, 14247, 14247, 14247, 14247, 14249, 14249, 14249, 14249, 14249, 14684, 14684, 14684, 14680, 14680, 14682, 6792, 6797, 6789, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14050, 14052, 14054, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6900, 6901, 6902, 14293, 6905, 6906, 6799, 14297, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14239, 14235, -1, -1, 14247, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6788, 6788, 6788, 14247, 14247, 14247, -1, -1, -1, -1, 14247, -1, -1, 6796, -1, -1, -1, -1, 19091, 6803, 19094, 27338};
 static const int g_cg_soundTable[233] = {52, 53, 54, 56, 55, 57, 58, 59, 60, 50, 49, 50, 78, 75, 79, 77, 72, 73, 74, 76, 80, 81, 66, 67, 63, 64, 68, 65, 69, 70, 71, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 6, 7, 8, 9, 10, 11, 92, 93, 94, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1098, 1100, 1099, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1111, 1113, 1112, 1117, 1095, 1096, 1097, 1101, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1118, -1, -1, -1, 2254, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2271, 2272, -1, -1, 2263, 2263, 2263, 2265, 2265, 2265, -1, -1, -1, -1, 2254, 2267, 2268, 2252, -1, 2269, -1, 2275, 2276, 2278, 2277, 2280};
@@ -143,19 +142,12 @@ static float *g_up_clampZ = nullptr;
 
 static float *g_up_clampW = nullptr;
 
-static float *g_flash2_a = nullptr;
 
-static float *g_flash2_b = nullptr;
 
-static float *g_flash2_c = nullptr;
 
-static float *g_flashCol_r = nullptr;
 
-static float *g_flashCol_g = nullptr;
 
-static float *g_flashCol_b = nullptr;
 
-static void (**g_levelSubCtor)(Matrix *) = nullptr;
 
 static int **g_cso_textA = nullptr;
 
@@ -221,8 +213,6 @@ static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit)
 static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned i, Vector *out);
 
 static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i);
-
-static inline void levelWingmanDiedOne(String *name, unsigned int *list);
 
 bool Level::hasMiningPlant() {
     return miningPlant > 0;
@@ -361,10 +351,12 @@ void Level::switchSkyboxForIntro() {
 }
 
 void Level::switchSkyboxForSupernovaReversal() {
-    int tex = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
-    Globals::Canvas->MeshCreate((unsigned short) ((unsigned short) (tex + 0x4588)), (unsigned int &) skyboxMesh, false);
-    int tex2 = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
-    Globals::Canvas->TextureCreate((unsigned short) ((unsigned short) (tex2 + 0x2751)), (unsigned int &) field_198, false);
+    Globals::Canvas->MeshCreate(
+            (unsigned short) (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() + 0x4588),
+            (unsigned int &) skyboxMesh, false);
+    Globals::Canvas->TextureCreate(
+            (unsigned short) (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() + 0x2751),
+            (unsigned int &) field_198, false);
     skyboxTexture = -1;
 }
 
@@ -403,9 +395,8 @@ uint8_t Level::friendCargoWasStolen() {
     return friendCargoStolen;
 }
 
-Array<void *> *Level::getMessages() { // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
-    // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
-    return (Array<void *> *) messages; // lint: void_ptr (exported return type)
+Array<RadioMessage *> *Level::getMessages() {
+    return messages;
 }
 
 Route *Level::getEnemyRoute() {
@@ -643,61 +634,60 @@ Level::~Level() {
     field_9c = nullptr;
     if (field_a4) {
         ArrayReleaseClasses(*field_a4);
-        delete field_a4;
-        field_a4 = nullptr;
     }
+    delete field_a4;
+    field_a4 = nullptr;
     if (field_a8) {
-        delete field_a8;
-        field_a8 = nullptr;
+        ArrayRelease(*field_a8);
     }
+    delete field_a8;
+    field_a8 = nullptr;
     if (playerGuns) {
         ArrayReleaseClasses(*playerGuns);
-        delete playerGuns;
-        playerGuns = nullptr;
     }
+    delete playerGuns;
+    playerGuns = nullptr;
     if (enemyGuns) {
         ArrayReleaseClasses(*enemyGuns);
-        delete enemyGuns;
-        enemyGuns = nullptr;
     }
+    delete enemyGuns;
+    enemyGuns = nullptr;
     if (enemies) {
         ArrayReleaseClasses(*enemies);
-        delete enemies;
-        enemies = nullptr;
     }
+    delete enemies;
+    enemies = nullptr;
     if (asteroids) {
         ArrayReleaseClasses(*asteroids);
-        delete asteroids;
-        asteroids = nullptr;
     }
+    delete asteroids;
+    asteroids = nullptr;
     if (gasClouds) {
         ArrayReleaseClasses(*gasClouds);
-        delete gasClouds;
-        gasClouds = nullptr;
     }
+    delete gasClouds;
+    gasClouds = nullptr;
     if (landmarks) {
         ArrayReleaseClasses(*landmarks);
-        delete landmarks;
-        landmarks = nullptr;
     }
+    delete landmarks;
+    landmarks = nullptr;
     if (messages) {
         ArrayReleaseClasses(*messages);
-        delete messages;
-        messages = nullptr;
     }
+    delete messages;
+    messages = nullptr;
     if (field_104) {
         ArrayReleaseClasses(*field_104);
-        delete field_104;
-        field_104 = nullptr;
     }
+    delete field_104;
+    field_104 = nullptr;
     delete lodManager;
     lodManager = nullptr;
     delete field_a0;
     field_a0 = nullptr;
-    if (field_b0) {
-        delete field_b0;
-        field_b0 = nullptr;
-    }
+    delete field_b0;
+    field_b0 = nullptr;
 }
 
 void Level::incNumDeliveredPassengers(int delta) {
@@ -712,21 +702,18 @@ Route *Level::createRoute(int count) {
     unsigned int n = count * 3;
     int *pts = new int[n];
     int *p = pts + 1;
-    for (int i = -1; i + 1 < (int) n; i = i + 3) {
+    for (int i = -1; i + 1 < (int) n; i = i + 3, p = p + 3) {
         int sign = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
         p[-1] = (Globals::rnd->nextInt(30000) + 50000) * sign;
         p[0] = Globals::rnd->nextInt(20000) - 10000;
         if (i == -1) {
-            pts[2] = Globals::rnd->nextInt() + 50000;
+            pts[2] = Globals::rnd->nextInt(30000) + 50000;
         } else {
             int prev = p[-2];
-            p[1] = Globals::rnd->nextInt() + prev + 50000;
+            p[1] = Globals::rnd->nextInt(30000) + prev + 50000;
         }
-        p = p + 3;
     }
-    Route *r = (Route *) ::operator new(0x18);
-    new(r) Route(pts, n);
-    return r;
+    return new Route(pts, n);
 }
 
 void Level::alarmAllFriends(int race, bool message) {
@@ -753,12 +740,11 @@ void Level::alarmAllFriends(int race, bool message) {
 }
 
 void Level::setPlayerEngineColor(short color) {
-    int c = color;
     if (player != nullptr && field_a4 != nullptr) {
-        EngineColorTable *table = (EngineColorTable *) g_engineColorBase;
-        int count = (int) field_a4->size();
-        for (int i = 0; i < count; i = i + 1) {
-            table->entries[i].color = c << 0x10 | c << 0x18 | c << 8 | 0xff;
+        // engine-trail particle sets start at set 29; 0x34 is the set's second colour word
+        EngineColorTable *table = reinterpret_cast<EngineColorTable *>(ParticleSettingsRef::cur);
+        for (unsigned int i = 0; i < field_a4->size(); i++) {
+            table->entries[i].color = color << 0x18 | color << 0x10 | color << 8 | 0xff;
         }
     }
 }
@@ -4259,24 +4245,17 @@ void Level::reset() {
         }
     }
     player->setRoute(playerRoute);
-    int count;
+    int count = 0;
     if (this->enemies != nullptr) {
-        count = 0;
-        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
-            KIPlayer *e = (*this->enemies)[i];
-            if (e->deadFlag == 0 && e->lostMissionCrateToEgo == 0 && e->field_0x40 == 0) {
-                int wm = e->isWingMan();
-                if (wm == 0) {
-                    if ((char) e->field_0x44 == 0 && e->stealFlagByte == 0) {
-                        count = count + (e->countsAsEnemyExcludeFlag ^ 1);
-                    }
-                }
+        for (unsigned int i = 0; i < this->enemies->size(); i++) {
+            if ((*this->enemies)[i]->deadFlag == 0 && (*this->enemies)[i]->field_0x71 == 0
+                && (*this->enemies)[i]->field_0x3f_b == 0 && !(*this->enemies)[i]->isWingMan()
+                && (char) (*this->enemies)[i]->field_0x44 == 0 && (*this->enemies)[i]->stealFlagByte == 0) {
+                count += (*this->enemies)[i]->countsAsEnemyExcludeFlag ^ 1;
             }
         }
-        count = count - field_120;
-    } else {
-        count = 0;
     }
+    count = this->enemies != nullptr ? count - field_120 : 0;
     enemiesLeft = count;
     int ast;
     if (asteroids == nullptr) {
@@ -4382,8 +4361,7 @@ void Level::update(long long /*time*/, bool param) {
     Station *st2 = (Station *) Globals::status->getStation();
     int idx = ((Station *) st2)->getIndex();
     Globals::status->getCurrentCampaignMission();
-    int gammaBits = ((Status *) (intptr_t) aPtr)->getGammaRayDamagePerSecond(aPtr, idx);
-    float gamma = *(float *) &gammaBits;
+    float gamma = ((Status *) (intptr_t) aPtr)->getGammaRayDamagePerSecond(aPtr, idx);
     PlayerEgo *ego = this->player;
     if (gamma > 0.0f && ego != nullptr) {
         int ship = (int) (intptr_t) Globals::status->getShip();
@@ -4601,65 +4579,48 @@ void Level::connectPlayers() {
     }
 }
 
-void Level::enemyDied(int r1, bool r2arg) {
-    Level *thisptr = this;
-    int r2 = (int) r2arg;
-    (void) r1;
-
-    this->enemiesLeft = this->enemiesLeft - 1;
-    this->kills = this->kills + 1;
-
-    if (r2 != 0) {
-        this->killCountA = this->killCountA + 1;
+void Level::enemyDied(int /*index*/, bool killedByFriend) {
+    enemiesLeft--;
+    kills++;
+    if (killedByFriend) {
+        killCountA++;
         return;
     }
 
-    Status **statusHolder = &Globals::status;
-    (*statusHolder)->incKills();
-    this->killCountB = this->killCountB + 1;
-    if (this->player == nullptr)
+    Globals::status->incKills();
+    killCountB++;
+    if (player == nullptr) {
         return;
+    }
 
-    if ((static_cast<Radar *>(this->player->field_0x14))->hasScanner() == 0) {
-        Achievements **achA = &Globals::achievements;
-        if (((Achievements *) (*achA))->hasMedal(0x28, 1) == 0) {
-            Status *st = *statusHolder;
-            int v = st->field_11c;
-            if ((char) st->field_120 == 0) {
-                v = v + 1;
-                st->field_11c = v;
-            }
-            int goal = ((Achievements *) (*achA))->getValue(0x28, 1);
-            int prog = (int) (((float) v / (float) goal) * 100.0f);
-            if ((prog % 10) == 0) {
-                int hud = this->player->getHUD();
-                int cur = (*statusHolder)->field_11c;
-                int g2 = ((Achievements *) (*achA))->getValue(0x28, 1);
-                ((Hud *) (hud))->hudEventMedal(0x28, (int) (((float) cur / (float) g2) * 100.0f));
-            }
-            int cur2 = (*statusHolder)->field_11c;
-            if (((Achievements *) (*achA))->getValue(0x28, 1) <= cur2)
-                (*statusHolder)->field_120 = 1;
+    // medal 40: kills without a scanner
+    if (!static_cast<Radar *>(player->field_0x14)->hasScanner()
+        && !Globals::achievements->hasMedal(0x28, 1)) {
+        int count = Globals::status->field_11c;
+        if (!Globals::status->field_120) {
+            Globals::status->field_11c = ++count;
+        }
+        if ((int) ((float) count / (float) Globals::achievements->getValue(0x28, 1) * 100.0f) % 10 == 0) {
+            ((Hud *) player->getHUD())->hudEventMedal(0x28,
+                    (int) ((float) Globals::status->field_11c
+                           / (float) Globals::achievements->getValue(0x28, 1) * 100.0f));
+        }
+        if (Globals::status->field_11c >= Globals::achievements->getValue(0x28, 1)) {
+            Globals::status->field_120 = 1;
         }
     }
 
-    if (this->player != nullptr &&
-        this->player->emergencySystemActive() != 0) {
-        Achievements **achB = &Globals::achievements;
-        if (((Achievements *) (*achB))->hasMedal(0x2b, 1) == 0) {
-            Status *st = *statusHolder;
-            int v = st->field_13c + 1;
-            st->field_13c = v;
-            int goal = ((Achievements *) (*achB))->getValue(0x2b, 1);
-            if (0 < (int) ((float) v / (float) goal)) {
-                int hud = this->player->getHUD();
-                int cur = (*statusHolder)->field_13c;
-                int g2 = ((Achievements *) (*achB))->getValue(0x2b, 1);
-                ((Hud *) (hud))->hudEventMedal(0x2b, (int) (((float) cur / (float) g2) * 100.0f));
-            }
-            int cur2 = (*statusHolder)->field_13c;
-            if (((Achievements *) (*achB))->getValue(0x2b, 1) <= cur2)
-                (*statusHolder)->field_140 = 1;
+    // medal 43: kills while the emergency system is active
+    if (player != nullptr && player->emergencySystemActive()
+        && !Globals::achievements->hasMedal(0x2b, 1)) {
+        int count = ++Globals::status->field_13c;
+        if ((int) ((float) count / (float) Globals::achievements->getValue(0x2b, 1)) > 0) {
+            ((Hud *) player->getHUD())->hudEventMedal(0x2b,
+                    (int) ((float) Globals::status->field_13c
+                           / (float) Globals::achievements->getValue(0x2b, 1) * 100.0f));
+        }
+        if (Globals::status->field_13c >= Globals::achievements->getValue(0x2b, 1)) {
+            Globals::status->field_140 = 1;
         }
     }
 }
@@ -5179,26 +5140,26 @@ void Level::flashScreen(int type) {
     }
     flashDurationA = dur;
     flashDurationB = dur;
-    if (type == 2) {
-        flashColor.x = *g_flash2_a * 1.5f;
-        flashColor.y = *g_flash2_b * 1.5f;
-        flashColor.z = *g_flash2_c * 1.5f;
-    } else if (type == 4) {
+    if (flashType == 2) {
+        flashColor.x = i_r * 1.5f;
+        flashColor.y = i_g * 1.5f;
+        flashColor.z = i_b * 1.5f;
+    } else if (flashType == 4) {
         flashColor.x = 0;
         flashColor.y = 0;
         flashColor.z = 255.0f;
-    } else if (type == 3) {
+    } else if (flashType == 3) {
         flashColor.x = 0;
         flashColor.y = 0;
         flashColor.z = 0;
         player->hitCamera();
     } else {
-        float k = (type == 1) ? 8.0f : 5.0f;
-        flashColor.x = clampChannel(k * *g_flashCol_r);
-        flashColor.y = clampChannel(k * *g_flashCol_g);
-        flashColor.z = clampChannel(k * *g_flashCol_b);
+        float k = (flashType == 1) ? 8.0f : 5.0f;
+        flashColor.x = clampChannel(k * i_r);
+        flashColor.y = clampChannel(k * i_g);
+        flashColor.z = clampChannel(k * i_b);
     }
-    *(float *) &flashField = 255.0f;
+    flashAlpha = 255.0f;
 }
 
 void Level::createPlayer() {
@@ -5306,54 +5267,50 @@ void Level::createPlayer() {
 }
 
 void Level::wingmanDied(AbyssEngine::String const &name) {
-    unsigned int *list = (unsigned int *) (intptr_t) Globals::status->getWingmen();
-    if (list == 0) {
+    Array<String *> *wingmen = (Array<String *> *) (intptr_t) Globals::status->getWingmen();
+    if (wingmen == nullptr) {
         return;
     }
-    if (__builtin_expect(*list < 2, 0)) {
-        return Globals::status->setWingmen((Array<String *> *) 0);
-    }
-    String key = name;
-    for (unsigned int i = 0; i < *list; i = i + 1) {
-        String *w = ((String **) list[1])[i];
-        if (w->Compare_str(&key) == 0) {
-            levelWingmanDiedOne(((String **) list[1])[i], list);
-            return;
+    if (wingmen->count > 1) {
+        for (unsigned int i = 0; i < wingmen->count; i++) {
+            if (wingmen->data_[i]->Compare(name) == 0) {
+                ArrayRemove(wingmen->data_[i], *wingmen);
+                return;
+            }
         }
+    } else {
+        Globals::status->setWingmen(nullptr);
     }
 }
 
-static inline void zero16(unsigned char *p) {
-    ((int *) p)[0] = 0;
-    ((int *) p)[1] = 0;
-    ((int *) p)[2] = 0;
-    ((int *) p)[3] = 0;
-}
 
-Level::Level(int mission) {
-    void(*ctor)(Matrix *) = *g_levelSubCtor;
-    field_b4 = 0;
-    field_b8 = 0;
-    field_bc = 0;
-    field_c8 = 0;
-    field_cc = 0;
-    field_d0 = 0;
-    field_18c = 0;
-    field_190 = 0;
-    field_194 = 0;
-    ctor(&this->skyMatrix);
-    ctor(&this->cloudMatrix);
-    ctor(&this->reversalMatrix);
-    zero16((unsigned char *) &field_1c);
-    zero16((unsigned char *) &this->field_90);
-    zero16((unsigned char *) &this->particleRenderBoolPtr);
-    zero16((unsigned char *) &this->field_74);
+Level::Level(int mission)
+        : field_b4(0), field_b8(0), field_bc(0),
+          field_c8(0), field_cc(0), field_d0(0),
+          field_18c(0), field_190(0), field_194(0) {
+    field_1c = 0;
+    killCountA = 0;
+    killCountB = 0;
+    objectivesA = nullptr;
+    objectivesB = nullptr;
+    field_30 = 0;
+    field_90 = nullptr;
+    field_94 = nullptr;
+    field_98 = nullptr;
+    field_9c = nullptr;
+    particleRenderBoolPtr = nullptr;
+    skybox2Mesh = nullptr;
+    field_8c = nullptr;
+    field_74 = nullptr;
+    particleEmitBoolPtr = nullptr;
+    particleSystemMgr = nullptr;
+    field_80 = nullptr;
     skyboxMesh = -1;
     field_08 = -1;
     skyboxTexture = -1;
     field_10 = -1;
     missionPtr = mission;
-    collisionVolume = 0;
+    collisionVolume = nullptr;
     field_b0 = nullptr;
     flashColor.x = 0;
     flashColor.y = 0;
@@ -5361,14 +5318,43 @@ Level::Level(int mission) {
     flashDurationA = 0;
     flashDurationB = 0;
     flashActive = 0;
-
-    objectivesA = nullptr;
-    objectivesB = nullptr;
-    memset(&this->asteroidWaypoint, 0, 0x65);
-    zero16((unsigned char *) &this->hostileCount);
-    zero16((unsigned char *) &this->flashType);
+    asteroidWaypoint = nullptr;
+    field_dc = 0;
+    field_e0 = 0;
+    playerGuns = nullptr;
+    enemyGuns = nullptr;
+    starSystem = nullptr;
+    player = nullptr;
+    gasClouds = nullptr;
+    enemies = nullptr;
+    asteroids = nullptr;
+    landmarks = nullptr;
+    field_104 = nullptr;
+    playerRoute = nullptr;
+    friendRoute = nullptr;
+    enemyRoute = nullptr;
+    messages = nullptr;
+    enemiesLeft = 0;
+    friendsLeft = 0;
+    field_120 = 0;
+    field_124 = 0;
+    asteroidsLeft = 0;
+    kills = 0;
+    timeLimit = 0;
+    field_134 = 0;
+    field_138 = 0;
+    friendCargoStolen = 0;
+    hostileCount = 0;
+    alienAttackTimer = 0;
+    orbitWaveTimer = 0;
+    field_178 = 0;
+    flashType = 0;
+    friendCount = 0;
+    field_164 = 0;
+    field_168 = 0;
     field_18a = 0;
     field_188 = 0;
+    alarmRequested = 0;
     movingStarsIndex = -1;
     field_284 = -1;
     field_34 = -1;
@@ -5377,28 +5363,21 @@ Level::Level(int mission) {
     field_48 = -1;
     field_4c = -1;
     field_17c = 0;
-    field_180 = 0;
+    field_180 = nullptr;
     field_184 = 0;
     field_69 = 0;
     field_6c = 0;
     field_288 = 0;
-    field_a0 = 0;
+    supernovaFlareActive = 0;
+    field_a0 = nullptr;
     field_a4 = nullptr;
     field_a8 = nullptr;
-
-    playerGuns = nullptr;
-    enemyGuns = nullptr;
-    gasClouds = nullptr;
-    enemies = nullptr;
-    asteroids = nullptr;
-    landmarks = nullptr;
-    field_104 = nullptr;
-    messages = nullptr;
     miningPlantIndex = -1;
     miningPlant = 0;
     numDeliveredOre = 0;
     numDeliveredPassengers = 0;
     field_29c = 0;
+    field_29d = 0;
     field_29e = 0;
     field_1b4 = -1;
     field_1b8 = -1;
@@ -5499,53 +5478,58 @@ int Level::createStaticObject(Waypoint *wp, int type, bool jitter) {
     return 0;
 }
 
-void *Level::getBoundingVolume(int /*unused*/, AEGeometry *kind) { // lint: void_ptr (method return type is symbol-baked)
-    // lint: void_ptr (method return type is symbol-baked)
-    int index = (int) (intptr_t) kind;
-    FileRead *fr = (FileRead *) ::operator new(1);
-    new(fr) FileRead();
-
-    int *coll;
-    if (index < 2000)
-        coll = (int *) fr->loadStationCollision(index);
-    else
-        coll = (int *) fr->loadStaticCollision(index);
-    (fr->~FileRead(), ::operator delete(fr));
-
-    Array<BoundingVolume *> *result = nullptr;
-    if (coll != 0) {
-        unsigned n = *(unsigned *) coll[1];
-        Array<BoundingVolume *> *arr = new Array<BoundingVolume *>();
-        ArraySetLength(n, *arr);
-        result = arr;
-
-        int cursor = 1;
-        for (unsigned i = 0; i < n; i = i + 1) {
-            const int *data = (const int *) (intptr_t) coll[1];
-            const int *r = data + cursor;
-            int shape = data[cursor];
-            BoundingVolume *bv = 0;
-            if (shape == 1) {
-                bv = new BoundingAAB(0.0f, 0.0f, 0.0f,
-                                     (float) r[1], (float) r[3], -(float) r[2],
-                                     2.4f * (float) r[4], 2.4f * (float) r[6], 2.4f * (float) r[5]);
-                cursor = cursor + 7;
-            } else if (shape == 0) {
-                float radius = 0.6f * (float) r[4];
-                if (radius < 0.0f) radius = -radius;
-                bv = new BoundingSphere(0.0f, 0.0f, 0.0f,
-                                        (float) r[1], (float) r[3], -(float) r[2], radius);
-                cursor = cursor + 5;
-            } else {
-                cursor = cursor + 1;
-            }
-            (*arr)[i] = bv;
-        }
-
-        ::operator delete((int *) (intptr_t) coll[1]);
-        ::operator delete(coll);
+Array<BoundingVolume *> *Level::getBoundingVolume(int id, AEGeometry * /*geometry*/) {
+    FileRead *fileRead = new FileRead();
+    Array<int> *collision;
+    if (id >= 2000) {
+        collision = fileRead->loadStaticCollision(id);
+    } else {
+        collision = fileRead->loadStationCollision(id);
     }
-    return result;
+    delete fileRead;
+
+    Array<BoundingVolume *> *volumes = nullptr;
+    if (collision != nullptr) {
+        int count = (*collision)[0];
+        Vector size = {0.0f, 0.0f, 0.0f};
+        volumes = new Array<BoundingVolume *>();
+        ArraySetLength(count, *volumes);
+        for (int i = 0, cursor = 1; i < count; i++) {
+            switch ((*collision)[cursor++]) {
+                case 0: {
+                    Vector pos = {(float) -(*collision)[cursor], (float) (*collision)[cursor + 1],
+                                  (float) (*collision)[cursor + 2]};
+                    size.x = (float) (*collision)[cursor + 3];
+                    cursor += 4;
+                    size *= 0.6f;
+                    if (size.x < 0.0f) {
+                        size *= -1.0f;
+                    }
+                    Vector center = {-pos.x, pos.z, -pos.y};
+                    (*volumes)[i] = new BoundingSphere(0.0f, 0.0f, 0.0f, center.x, center.y, center.z, size.x);
+                    break;
+                }
+                case 1: {
+                    Vector pos = {(float) -(*collision)[cursor], (float) (*collision)[cursor + 1],
+                                  (float) (*collision)[cursor + 2]};
+                    size.x = (float) (*collision)[cursor + 3];
+                    size.z = (float) (*collision)[cursor + 4];
+                    size.y = (float) (*collision)[cursor + 5];
+                    cursor += 6;
+                    size *= 1.2f;
+                    Vector center = {-pos.x, pos.z, -pos.y};
+                    (*volumes)[i] = new BoundingAAB(0.0f, 0.0f, 0.0f, center.x, center.y, center.z,
+                                                    size.x * 2.0f, size.y * 2.0f, size.z * 2.0f);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+        ArrayRelease(*collision);
+        delete collision;
+    }
+    return volumes;
 }
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *wp, bool hostile, bool group) {
@@ -5646,22 +5630,19 @@ void Level::almostKillWanted(int index) {
     if (Globals::status->isStorylineWanted(index) == 0) {
         return;
     }
-    int m = (int) (intptr_t) ::operator new(0x78);
-    new((Mission *) (intptr_t) m) Mission(4, 0, Globals::status->getStation()->getIndex());
-    ((Mission *) (m))->setCampaignMission(true);
-    ((Mission *) (m))->setWon(1);
-    Globals::status->setMission((Mission *) (intptr_t) m);
-    Globals::status->setCampaignMission((Mission *) (intptr_t) m);
+    Mission *mission = new Mission(4, 0, Globals::status->getStation()->getIndex());
+    mission->setCampaignMission(true);
+    mission->setWon(1);
+    Globals::status->setMission(mission);
+    Globals::status->setCampaignMission(mission);
     delete objectivesA;
     objectivesA = nullptr;
     objectivesA = new Objective(3, 0, 0, this);
-    KIPlayer *e = (*this->enemies)[0];
-    e->player->setAlwaysEnemy(0);
-    ((Player *) (int) (intptr_t)(*this->enemies)[1])->resetDamageDoneByPlayer();
-    e->player->enemyFlagsLo = 0;
-    e->reviveLockFlag = 1;
-    Array<Wanted *> *w = Globals::status->getWanted();
-    return w->data_[index]->setActive(0 != 0);
+    (*enemies)[0]->player->setAlwaysEnemy(false);
+    (*enemies)[0]->player->resetDamageDoneByPlayer();
+    (*enemies)[0]->player->enemyFlagsLo = 0;
+    (*enemies)[0]->reviveLockFlag = 1;
+    (*Globals::status->getWanted())[index]->setActive(false);
 }
 
 void Level::assignGuns() {
@@ -6763,17 +6744,6 @@ void Level::renderBG(int t) {
     }
 
     ((PaintCanvas *) (long) (canvas))->EndBG();
-}
-
-static inline void levelWingmanDiedOne(String *name, unsigned int *list) {
-    unsigned int n = list[0];
-    String **data = (String **) (intptr_t) list[1];
-    unsigned int w = 0;
-    for (unsigned int r = 0; r < n; ++r) {
-        if (data[r] != name)
-            data[w++] = data[r];
-    }
-    list[0] = w;
 }
 
 static inline void levelSpawnFar(Level *self, int *kiPlayer) {

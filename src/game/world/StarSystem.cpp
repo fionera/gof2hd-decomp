@@ -1,4 +1,5 @@
 #include "game/world/StarSystem.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/Globals.h"
 #include "engine/math/Transform.h"
 #include "engine/render/PaintCanvas.h"

@@ -23,8 +23,8 @@ HangarList::~HangarList() {
 }
 
 void HangarList::setCurrentTab(int tab, bool blueprintIngredients) {
-    (void) tab;
-    this->currentTab = blueprintIngredients;
+    (void) blueprintIngredients;
+    this->currentTab = tab;
 }
 
 void HangarList::setCurrentItemIndex(int index) {
@@ -77,13 +77,9 @@ ListItem *HangarList::getCurrentItemAt(int index) {
     if (tabs != nullptr) {
         Array<ListItem *> *items = (*tabs)[this->currentTab];
         if (items != nullptr) {
-            if (index < 0) {
-                return nullptr;
-            }
-            if (static_cast<int>(items->size()) > index) {
+            if (index >= 0 && static_cast<int>(items->size()) > index) {
                 return (*items)[index];
             }
-            return nullptr;
         }
     }
     return nullptr;
@@ -433,7 +429,7 @@ void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
     (*this->tabs)[1] = list;
 }
 
-int HangarList::init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
+void HangarList::init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
                      Array<BluePrint *> *blueprints) {
     release();
     Array<Array<ListItem *> *> *tabs = new Array<Array<ListItem *> *>();
@@ -442,6 +438,5 @@ int HangarList::init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
     initShipTab(ship);
     initShopTab(items, ships);
     initBlueprintTab(blueprints);
-    return 0;
 }
 

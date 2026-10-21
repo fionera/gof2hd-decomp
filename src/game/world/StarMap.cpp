@@ -1,4 +1,5 @@
 #include "game/world/StarMap.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/Globals.h"
 #include "game/world/SystemPathFinder.h"
 #include "game/world/Level.h"

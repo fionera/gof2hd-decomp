@@ -43,12 +43,10 @@ void MTitle::OnRelease() {
     }
 }
 
-long long MTitle::OnKeyPress(long long key, long long mod) {
-    return 0LL;
+void MTitle::OnKeyPress(long long key, long long mod) {
 }
 
-long long MTitle::OnKeyRelease(long long key, long long mod) {
-    return 0LL;
+void MTitle::OnKeyRelease(long long key, long long mod) {
 }
 
 void MTitle::OnTouchBegin(int x, int y) {
