@@ -78,10 +78,10 @@ public:
 template<class T>
 Array<T>::Array() {
     T *p = static_cast<T *>(::operator new[](sizeof(T)));
-    *p = T();
     count = 0;
-    data_ = p;
     capacity_ = 1;
+    *p = T();
+    data_ = p;
 }
 
 template<class T>
