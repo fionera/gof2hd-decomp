@@ -2573,6 +2573,7 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
         o13 = 28;
         o14 = (unsigned short) ((float) o6 + -126.5625f);
         stickGap = 92.8125f;
+        o7 = 20;
     } else {
         unsigned short margin = Globals::iPadLarge ? 40 : 20;
         o5 = margin;
@@ -2580,18 +2581,18 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
         o13 = margin;
         o14 = (unsigned short) ((float) o6 - (Globals::iPadLarge ? 180.0f : 90.0f));
         stickGap = Globals::iPadLarge ? 132.0f : 66.0f;
+        o7 = 20;
     }
-    o7 = 20;
     o8 = (unsigned short) (stickGap + (float) o6);
     o9 = o7 + p2 / 2;
     o10 = o8 + p2 / 2;
-    float knob;
+    float knob = (float) o6;
     float edge;
     if (Globals::iPadHD) {
-        knob = (float) o6 + 313.59375f;
+        knob = knob + 313.59375f;
         edge = 2.8125f;
     } else {
-        knob = (Globals::iPadLarge ? 446.0f : 223.0f) + (float) o6;
+        knob = (Globals::iPadLarge ? 446.0f : 223.0f) + knob;
         edge = Globals::iPadLarge ? 4.0f : 2.0f;
     }
     o12 = (unsigned short) knob;
