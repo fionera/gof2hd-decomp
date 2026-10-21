@@ -22,7 +22,7 @@
 #include "game/core/Globals.h"
 
 // Android NDK entry layer (original TU starting at GetEngine, .text 0x93c88..0x950dc): the
-// ndk23_* lifecycle/input hooks the Java_* wrappers in JniBridge.cpp tail-call, and the IAP glue.
+// ndk23_* lifecycle/input hooks the Java_* wrappers in main.c tail-call, and the IAP glue.
 
 using AbyssEngine::Engine;
 
