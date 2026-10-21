@@ -106,29 +106,23 @@ int String::ValueOf() {
 
 void *String::Split(String sep) { // lint: void_ptr exported String method return type, signature must not change
     // lint: void_ptr exported String method return type, signature must not change
-    if (this->length != 0 && sep.length != 0) {
+    if (this->data != nullptr && this->length != 0 && sep.length != 0) {
         Array<String *> *arr = new Array<String *>();
 
         unsigned int pos = 0;
         unsigned int idx;
-        while ((idx = ((String *) (this))->IndexOf(pos, sep)) != 0xffffffff) {
-            if (pos < idx) {
-                String *piece = new String();
-                *piece = this->SubString(pos, idx);
-                ArrayAdd(piece, *arr);
-            }
+        while ((idx = IndexOf(pos, sep)) != 0xffffffff) {
+            if (pos < idx)
+                ArrayAdd(new String(SubString(pos, idx)), *arr);
             pos = (unsigned int) sep.length + idx;
         }
-        if (pos != 0 && pos < (unsigned int) this->length) {
-            String *piece = new String();
-            *piece = this->SubString(pos, (unsigned int) this->length);
-            ArrayAdd(piece, *arr);
-        }
+        if (pos != 0 && pos < (unsigned int) this->length)
+            ArrayAdd(new String(SubString(pos, (unsigned int) this->length)), *arr);
 
         if (arr->size() != 0)
             return arr;
 
-        ArrayReleaseClasses(*arr);
+        ArrayRemoveAll(*arr);
         delete arr;
     }
     return 0;
@@ -369,57 +363,34 @@ void String::ConvertFromUTF8() {
     delete[] wide;
 }
 
-static const char kOpen[] = "<";
-static const char kClose[] = ">";
-static const char kSlash[] = "</";
+Array<String *> *String::SplitTags(String tag) {
+    if (this->data != nullptr && this->length != 0 && tag.length != 0) {
+        tag = String("<") + tag + String(">");
+        Array<String *> *arr = new Array<String *>();
 
-void String::SplitTags(String tag) {
-    if (this->length == 0 || tag.length == 0)
-        return;
-
-    {
-        String open(kOpen, false);
-        String close(kClose, false);
-        tag = open + tag + close;
-    }
-
-    Array<String *> *arr = new Array<String *>();
-
-    int endPos = 0;
-    unsigned int pos = 0;
-    unsigned int idx;
-    while ((idx = ((String *) (this))->IndexOf(pos, tag)) != 0xffffffff) {
-        if (pos <= idx) {
-            String *piece = new String();
-            *piece = this->SubString(pos, idx);
-            ArrayAdd(piece, *arr);
-
-            unsigned int afterTag = (unsigned int) tag.length + idx;
-            String closer;
-            ((String *) (&closer))->ctor_char(kSlash, false);
-            endPos = (int) ((String *) (this))->IndexOf(afterTag, closer);
-            if (endPos == -1)
-                goto done;
-
-            String *piece2 = new String();
-            *piece2 = this->SubString(afterTag, (unsigned int) endPos);
-            ArrayAdd(piece2, *arr);
+        unsigned int endPos = 0;
+        unsigned int pos = 0;
+        unsigned int idx;
+        while ((idx = IndexOf(pos, tag)) != 0xffffffff) {
+            if (pos <= idx) {
+                ArrayAdd(new String(SubString(pos, idx)), *arr);
+                endPos = IndexOf(tag.length + idx, String("</"));
+                if (endPos == 0xffffffff)
+                    return arr;
+                ArrayAdd(new String(SubString(tag.length + idx, endPos)), *arr);
+            }
+            pos = endPos + 1;
         }
-        pos = endPos + 1;
-    }
+        if (pos != 0 && pos < (unsigned int) this->length)
+            ArrayAdd(new String(SubString(pos, (unsigned int) this->length)), *arr);
 
-    if (pos != 0 && pos < (unsigned int) this->length) {
-        String *piece = new String();
-        *piece = this->SubString(pos, (unsigned int) this->length);
-        ArrayAdd(piece, *arr);
-    }
+        if (arr->size() != 0)
+            return arr;
 
-    if (arr->size() == 0) {
-        ArrayReleaseClasses(*arr);
+        ArrayRemoveAll(*arr);
         delete arr;
     }
-done:
-    ;
+    return nullptr;
 }
 
 
