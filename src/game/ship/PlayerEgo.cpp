@@ -601,9 +601,8 @@ void PlayerEgo::addNukeVolatileForce(float v) {
     p->flShake = p->flShake + v * 3.0f;
 }
 
-unsigned char PlayerEgo::isInTurretMode() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->turretActive);
+bool PlayerEgo::isInTurretMode() {
+    return this->turretActive;
 }
 
 void PlayerEgo::setDockingCamera() {
