@@ -137,8 +137,7 @@ uint32_t AEFile::OpenRead(String &path, uint32_t *handle) {
 }
 
 uint32_t AEFile::OpenRead(const char *path, uint32_t *handle) {
-    String string;
-    string.ctor_char(path, false);
+    String string(path);
     return OpenRead(string, handle);
 }
 
@@ -147,8 +146,7 @@ uint32_t AEFile::OpenWrite(String &path, uint32_t *handle) {
 }
 
 uint32_t AEFile::OpenWrite(const char *path, uint32_t *handle) {
-    String string;
-    string.ctor_char(path, false);
+    String string(path);
     return OpenWrite(string, handle);
 }
 
@@ -157,8 +155,7 @@ uint32_t AEFile::OpenAppend(String &path, uint32_t *handle) {
 }
 
 uint32_t AEFile::OpenAppend(const char *path, uint32_t *handle) {
-    String string;
-    string.ctor_char(path, false);
+    String string(path);
     return OpenAppend(string, handle);
 }
 
@@ -283,16 +280,16 @@ uint32_t AEFile::Write(uint32_t bytes, void *buffer, uint32_t handle) { // lint:
     return 0;
 }
 
-void AEFile::Write(bool value, uint32_t handle) { Write(1, &value, handle); }
-void AEFile::Write(char value, uint32_t handle) { Write(1, &value, handle); }
-void AEFile::Write(int8_t value, uint32_t handle) { Write(1, &value, handle); }
-void AEFile::Write(uint8_t value, uint32_t handle) { Write(1, &value, handle); }
-void AEFile::Write(int16_t value, uint32_t handle) { Write(2, &value, handle); }
-void AEFile::Write(uint16_t value, uint32_t handle) { Write(2, &value, handle); }
-void AEFile::Write(int32_t value, uint32_t handle) { Write(4, &value, handle); }
-void AEFile::Write(uint32_t value, uint32_t handle) { Write(4, &value, handle); }
-void AEFile::Write(int64_t value, uint32_t handle) { Write(8, &value, handle); }
-void AEFile::Write(float value, uint32_t handle) { Write(4, &value, handle); }
+uint32_t AEFile::Write(bool value, uint32_t handle) { return Write(1, &value, handle); }
+uint32_t AEFile::Write(char value, uint32_t handle) { return Write(1, &value, handle); }
+uint32_t AEFile::Write(int8_t value, uint32_t handle) { return Write(1, &value, handle); }
+uint32_t AEFile::Write(uint8_t value, uint32_t handle) { return Write(1, &value, handle); }
+uint32_t AEFile::Write(int16_t value, uint32_t handle) { return Write(2, &value, handle); }
+uint32_t AEFile::Write(uint16_t value, uint32_t handle) { return Write(2, &value, handle); }
+uint32_t AEFile::Write(int32_t value, uint32_t handle) { return Write(4, &value, handle); }
+uint32_t AEFile::Write(uint32_t value, uint32_t handle) { return Write(4, &value, handle); }
+uint32_t AEFile::Write(int64_t value, uint32_t handle) { return Write(8, &value, handle); }
+uint32_t AEFile::Write(float value, uint32_t handle) { return Write(4, &value, handle); }
 
 uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide) {
     uint32_t result;
