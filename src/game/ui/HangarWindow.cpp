@@ -2228,7 +2228,23 @@ bool HangarWindow::selectItem(ListItem *item) {
             break;
         if (item->isShip()) {
             int price = item->ship->getPrice();
-            if (price > Globals::status->getCredits() + Globals::status->getShip()->getPrice() && !this->upgradeMode) {
+            if (price <= Globals::status->getCredits() + Globals::status->getShip()->getPrice() || this->upgradeMode) {
+                if (reinterpret_cast<int32_t &>(Globals::status->_byte_0x34) >= 1) {
+                    this->dialog->set(*Globals::gameText->getText(336));
+                    this->dialogActive = 1;
+                    break;
+                } else if (Globals::status->getCurrentCampaignMission() == 77 &&
+                           Globals::status->getShip()->getIndex() == 37) {
+                    this->dialog->set(*Globals::gameText->getText(325));
+                    this->dialogActive = 1;
+                    break;
+                } else if (Globals::status->getShip()->getIndex() != item->ship->getIndex()) {
+                    this->shipSwapPending = 1;
+                    this->dialog->set(*Globals::gameText->getText(this->upgradeMode ? 333 : 304), true);
+                    this->dialogActive = 1;
+                    break;
+                }
+            } else {
                 String message = Globals::status->replaceHash(
                     *Globals::gameText->getText(203),
                     String(Globals::layout->formatCredits(item->getPrice() - Globals::status->getCredits() -
@@ -2238,21 +2254,10 @@ bool HangarWindow::selectItem(ListItem *item) {
                 this->dialog->set(message, true);
                 this->notEnoughCredits = 1;
                 this->dialogActive = 1;
-            } else if (reinterpret_cast<int32_t &>(Globals::status->_byte_0x34) >= 1) {
-                this->dialog->set(*Globals::gameText->getText(336));
-                this->dialogActive = 1;
-            } else if (Globals::status->getCurrentCampaignMission() == 77 &&
-                       Globals::status->getShip()->getIndex() == 37) {
-                this->dialog->set(*Globals::gameText->getText(325));
-                this->dialogActive = 1;
-            } else if (Globals::status->getShip()->getIndex() != item->ship->getIndex()) {
-                this->shipSwapPending = 1;
-                this->dialog->set(*Globals::gameText->getText(this->upgradeMode ? 333 : 304), true);
-                this->dialogActive = 1;
-            } else {
-                this->dialog->set(*Globals::gameText->getText(329));
-                this->dialogActive = 1;
+                break;
             }
+            this->dialog->set(*Globals::gameText->getText(329));
+            this->dialogActive = 1;
             break;
         }
         if (item->item->isUnsaleable())
