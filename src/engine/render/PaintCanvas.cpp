@@ -357,16 +357,6 @@ void paintcanvas_ext_init_setpersp(void *self, float a, float b, float c); // li
 
 void paintcanvas_ext_draw_mesh(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline int paintcanvas_ext_spm_dispwidth(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayWidth(); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline int paintcanvas_ext_spm_dispheight(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayHeight(); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline float paintcanvas_ext_spm_sinf(float v) { return sinf(v); }
-
-static inline float paintcanvas_ext_spm_cosf(float v) { return cosf(v); }
-
-static inline float paintcanvas_ext_spm_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
-
 static inline void *paintcanvas_ext_dss1_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline float paintcanvas_ext_dss1_sinf(float v) { return sinf(v); }
@@ -380,8 +370,6 @@ void paintcanvas_ext_end3d(AbyssEngine::PaintCanvas *);
 void paintcanvas_ext_get_grav(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_set_reslist(AbyssEngine::Resource * const *, unsigned int, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-
 
 namespace AbyssEngine {
     int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, SpriteSystem **out);
@@ -408,28 +396,6 @@ int paintcanvas_ext_cisvf_inner(const float *pt, float radius, void *m, void *ca
 void paintcanvas_ext_shader_anim(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline int paintcanvas_ext_rpm_dispwidth(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayWidth(); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline int paintcanvas_ext_rpm_dispheight(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayHeight(); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline float paintcanvas_ext_rpm_sinf(float v) { return sinf(v); }
-
-static inline float paintcanvas_ext_rpm_cosf(float v) { return cosf(v); }
-
-static inline float paintcanvas_ext_rpm_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
-
-static inline void paintcanvas_ext_rpm_glMatrixMode(unsigned int mode) { glMatrixMode(mode); }
-
-static inline void paintcanvas_ext_rpm_glLoadIdentity() { glLoadIdentity(); }
-
-static inline void paintcanvas_ext_rpm_glScalef(float x, float y, float z) { glScalef(x, y, z); }
-
-static inline void paintcanvas_ext_rpm_glLoadMatrixf(void *m) { glLoadMatrixf((const float*)m); }
-
-static inline void paintcanvas_ext_rpm_glFinish() { glFinish(); }
-
-void paintcanvas_ext_rpm_loadproj(void *eng, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_cipvf_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -816,7 +782,6 @@ unsigned short PaintCanvas::GetImage2DHeight(unsigned int index) {
     return 0;
 }
 
-
 void PaintCanvas::MeshSetUv(unsigned int index, unsigned short sub,
                             float u, float v) {
     if (index < this->meshes.count) {
@@ -1153,7 +1118,6 @@ int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Vector &a,
     return this->GetScreenPosition(*(AbyssEngine::AEMath::Matrix *) buf, a, b);
 }
 
-
 void PaintCanvas::FogEnable(bool enable, AbyssEngine::FogMode mode) {
     this->fogEnableFlag = mode;
     if (mode == 0) {
@@ -1183,50 +1147,20 @@ void PaintCanvas::MeshSetColor(unsigned int index, unsigned short sub,
     }
 }
 
-static float paintcanvas_g_pom_persp_storage = 0.0f;
-static float paintcanvas_g_pom_a_storage = 0.0f;
-static float paintcanvas_g_pom_b_storage = 0.0f;
-static float *paintcanvas_g_pom_persp = &paintcanvas_g_pom_persp_storage;
-static float *paintcanvas_g_pom_a = &paintcanvas_g_pom_a_storage;
-static float *paintcanvas_g_pom_b = &paintcanvas_g_pom_b_storage;
-
 void PaintCanvas::SetProjOrthoMatrix() {
-    float g = *paintcanvas_g_pom_persp;
-    if (g != -1.0f) {
-        this->SetProjectionMatrix3d(g, *paintcanvas_g_pom_a, *paintcanvas_g_pom_b);
+    if (AbyssEngine::i_fov != -1.0f) {
+        this->SetProjectionMatrix3d(AbyssEngine::i_fov, AbyssEngine::i_zNear, AbyssEngine::i_zFar);
     }
-    Engine *eng = this->engine;
-    float *r;
-    r = &this->projOrthoMatrix[12];
-    r[0] = 0.0f;
-    r[1] = 0.0f;
-    r[2] = 0.0f;
-    r[3] = 0.0f;
-    r = &this->projOrthoMatrix[8];
-    r[0] = 0.0f;
-    r[1] = 0.0f;
-    r[2] = 0.0f;
-    r[3] = 0.0f;
-    r = &this->projOrthoMatrix[4];
-    r[0] = 0.0f;
-    r[1] = 0.0f;
-    r[2] = 0.0f;
-    r[3] = 0.0f;
-    r = &this->projOrthoMatrix[0];
-    r[0] = 0.0f;
-    r[1] = 0.0f;
-    r[2] = 0.0f;
-    r[3] = 0.0f;
-
-    int w = eng->GetDisplayWidth();
-    this->projOrthoMatrix[0] = (float) (2.0 / (double) w);
-
+    float *m = this->projOrthoMatrix;
+    memset(m, 0, sizeof(this->projOrthoMatrix));
+    int w = this->engine->GetDisplayWidth();
+    m[0] = (float) (2.0 / (double) w);
     int h = this->engine->GetDisplayHeight();
-    this->projOrthoMatrix[10] = -0.05f;
-    this->projOrthoMatrix[15] = 1.0f;
-    this->projOrthoMatrix[12] = -1.0f;
-    this->projOrthoMatrix[13] = 1.0f;
-    this->projOrthoMatrix[5] = -(float) (2.0 / (double) h);
+    m[10] = -0.05f;
+    m[15] = 1.0f;
+    m[12] = -1.0f;
+    m[13] = 1.0f;
+    m[5] = -(float) (2.0 / (double) h);
 }
 
 void PaintCanvas::MeshChangeMaterialIntern(AbyssEngine::Mesh *mesh, AbyssEngine::Material *mat) {
@@ -1832,70 +1766,45 @@ int PaintCanvas::FontGetYOffset(unsigned int index) {
     return 0;
 }
 
-static float g_spm_p0_7b826_storage = 0.0f;
-static float *const g_spm_p0_7b826 = &g_spm_p0_7b826_storage;
-
-static float g_spm_p1_7b82a_storage = 0.0f;
-static float *const g_spm_p1_7b82a = &g_spm_p1_7b82a_storage;
-
-static float g_spm_p2_7b82c_storage = 0.0f;
-static float *const g_spm_p2_7b82c = &g_spm_p2_7b82c_storage;
-
-static float g_spm_p3_7b82e_storage = 0.0f;
-static float *const g_spm_p3_7b82e = &g_spm_p3_7b82e_storage;
-
-static float g_spm_p4_7b830_storage = 0.0f;
-static float *const g_spm_p4_7b830 = &g_spm_p4_7b830_storage;
-
-static const unsigned int g_spm_const_7b950 = 0;
-
 void PaintCanvas::SetProjectionMatrix3d(float fov, float nearPlane,
                                         float farPlane) {
-    *g_spm_p0_7b826 = farPlane;
-    *g_spm_p1_7b82a = nearPlane;
-    *g_spm_p4_7b830 = fov;
-    *g_spm_p2_7b82c = nearPlane;
-    *g_spm_p3_7b82e = farPlane;
+    Engine::nearPlane = nearPlane;
+    Engine::farPlane = farPlane;
+    AbyssEngine::i_fov = fov;
+    AbyssEngine::i_zNear = nearPlane;
+    AbyssEngine::i_zFar = farPlane;
 
-    int w = paintcanvas_ext_spm_dispwidth(this->engine);
-    int h = paintcanvas_ext_spm_dispheight(this->engine);
     float half = fov * 0.5f;
-    float s = paintcanvas_ext_spm_sinf(half);
-    float c = paintcanvas_ext_spm_cosf(half);
-    float fw = paintcanvas_ext_spm_signedtofloat(w, 0);
-    float fh = paintcanvas_ext_spm_signedtofloat(h, 0);
+    int w = this->engine->GetDisplayWidth();
+    int h = this->engine->GetDisplayHeight();
+    float s = AbyssEngine::AEMath::Sinf(half);
+    float c = AbyssEngine::AEMath::Cosf(half);
+    float aspect = (float) w / (float) h;
+    float f = 1.0f / (s / c);
 
-    memset(&this->projMatrix3d[12], 0, 0x10);
-    memset(&this->projMatrix3d[8], 0, 0x10);
-    memset(&this->projMatrix3d[4], 0, 0x10);
-    memset(&this->projMatrix3d[0], 0, 0x10);
-
-    if (this->gameOrientation <= 3) {
-        float aspect = fw / fh;
-        float f = 1.0f / (s / c);
-        switch (this->gameOrientation) {
-            case 0:
-                this->projMatrix3d[4] = -f;
-                this->projMatrix3d[1] = f / aspect;
-                break;
-            case 1:
-                this->projMatrix3d[4] = f;
-                this->projMatrix3d[1] = -(f / aspect);
-                break;
-            case 2:
-                this->projMatrix3d[5] = f;
-                this->projMatrix3d[0] = f / aspect;
-                break;
-            case 3:
-                this->projMatrix3d[5] = -f;
-                this->projMatrix3d[0] = -(f / aspect);
-                break;
-        }
+    float *m = this->projMatrix3d;
+    memset(m, 0, sizeof(this->projMatrix3d));
+    switch (this->gameOrientation) {
+        case 0:
+            m[4] = -f;
+            m[1] = f / aspect;
+            break;
+        case 1:
+            m[4] = f;
+            m[1] = -(f / aspect);
+            break;
+        case 2:
+            m[5] = f;
+            m[0] = f / aspect;
+            break;
+        case 3:
+            m[5] = -f;
+            m[0] = -(f / aspect);
+            break;
     }
-
-    this->projMatrix3d[11] = g_spm_const_7b950;
-    this->projMatrix3d[10] = (nearPlane + farPlane) / (nearPlane - farPlane);
-    this->projMatrix3d[14] = ((farPlane + farPlane) * nearPlane) / (nearPlane - farPlane);
+    m[11] = -1.0f;
+    m[10] = (nearPlane + farPlane) / (nearPlane - farPlane);
+    m[14] = (float) ((2.0 * (double) farPlane * (double) nearPlane) / (double) (nearPlane - farPlane));
 }
 
 static const double g_dss1_gravscale_8ac10 = 0;
@@ -2195,7 +2104,6 @@ void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child) {
     }
 }
 
-
 void PaintCanvas::TextureCreateGlobal(AbyssEngine::String name, unsigned int unit) {
     unsigned int outId = 0;
     char *path = name.GetAEChar();
@@ -2477,76 +2385,50 @@ void PaintCanvas::GetAccelValue() {
     return paintcanvas_ext_get_accel(this->engine);
 }
 
-static float g_rpm_fov_8d0dc_storage = 0.0f;
-static float *const g_rpm_fov_8d0dc = &g_rpm_fov_8d0dc_storage;
-
-static const unsigned int g_rpm_const_8d234 = 0;
-
-static float g_rpm_near_8d196_storage = 0.0f;
-static float *const g_rpm_near_8d196 = &g_rpm_near_8d196_storage;
-
-static float g_rpm_far_8d1a4_storage = 0.0f;
-static float *const g_rpm_far_8d1a4 = &g_rpm_far_8d1a4_storage;
-
-static char g_rpm_flag_8d1b8_storage = 0;
-static char *const g_rpm_flag_8d1b8 = &g_rpm_flag_8d1b8_storage;
-
 void PaintCanvas::ResetPersMatrix() {
-    int w = paintcanvas_ext_rpm_dispwidth(this->engine);
-    int h = paintcanvas_ext_rpm_dispheight(this->engine);
-    float fov = *g_rpm_fov_8d0dc;
-    float s = paintcanvas_ext_rpm_sinf(fov * 0.5f);
-    float c = paintcanvas_ext_rpm_cosf(fov * 0.5f);
-    float fw = paintcanvas_ext_rpm_signedtofloat(w, 0);
-    float fh = paintcanvas_ext_rpm_signedtofloat(h, 0);
+    int w = this->engine->GetDisplayWidth();
+    int h = this->engine->GetDisplayHeight();
+    float s = AbyssEngine::AEMath::Sinf(AbyssEngine::i_fov * 0.5f);
+    float c = AbyssEngine::AEMath::Cosf(AbyssEngine::i_fov * 0.5f);
+    float aspect = (float) w / (float) h;
+    float f = 1.0f / (s / c);
 
-    memset(&this->projMatrix3d[12], 0, 0x10);
-    memset(&this->projMatrix3d[0], 0, 0x10);
-    memset(&this->projMatrix3d[8], 0, 0x10);
-    memset(&this->projMatrix3d[4], 0, 0x10);
-
-    if (this->gameOrientation <= 3) {
-        float aspect = fw / fh;
-        float f = 1.0f / (s / c);
-        switch (this->gameOrientation) {
-            case 0:
-                this->projMatrix3d[4] = -f;
-                this->projMatrix3d[1] = f / aspect;
-                break;
-            case 1:
-                this->projMatrix3d[4] = f;
-                this->projMatrix3d[1] = -(f / aspect);
-                break;
-            case 2:
-                this->projMatrix3d[5] = f;
-                this->projMatrix3d[0] = f / aspect;
-                break;
-            case 3:
-                this->projMatrix3d[5] = -f;
-                this->projMatrix3d[0] = -(f / aspect);
-                break;
-        }
+    float *m = this->projMatrix3d;
+    memset(m, 0, sizeof(this->projMatrix3d));
+    switch (this->gameOrientation) {
+        case 0:
+            m[4] = -f;
+            m[1] = f / aspect;
+            break;
+        case 1:
+            m[4] = f;
+            m[1] = -(f / aspect);
+            break;
+        case 2:
+            m[5] = f;
+            m[0] = f / aspect;
+            break;
+        case 3:
+            m[5] = -f;
+            m[0] = -(f / aspect);
+            break;
     }
+    float zFar = AbyssEngine::i_zFar;
+    float zNear = AbyssEngine::i_zNear;
+    m[11] = -1.0f;
+    m[10] = (zFar + zNear) / (zNear - zFar);
+    m[14] = (float) ((2.0 * (double) zFar * (double) zNear) / (double) (zNear - zFar));
 
-    float n = *g_rpm_near_8d196;
-    float fr = *g_rpm_far_8d1a4;
-    this->projMatrix3d[11] = g_rpm_const_8d234;
-    this->projMatrix3d[10] = (n + fr) / (fr - n);
-    this->projMatrix3d[14] = ((n + n) * fr) / (fr - n);
-
-    if (*g_rpm_flag_8d1b8 == 0) {
-        paintcanvas_ext_rpm_glMatrixMode(0x1702);
-        paintcanvas_ext_rpm_glLoadIdentity();
-        float sc;
-        *(unsigned int *) &sc = g_rpm_const_8d234;
-        paintcanvas_ext_rpm_glScalef(1.0f, sc, 1.0f);
-        paintcanvas_ext_rpm_glMatrixMode(0x1701);
-        paintcanvas_ext_rpm_glLoadMatrixf(&this->projMatrix3d[0]);
-        paintcanvas_ext_rpm_glMatrixMode(0x1700);
-        paintcanvas_ext_rpm_glFinish();
-    } else {
-        paintcanvas_ext_rpm_loadproj(this->engine, &this->projMatrix3d[0]);
+    if (Engine::enableShader != 0) {
+        return this->engine->SetPerspMatrix(m);
     }
+    glMatrixMode(0x1702);
+    glLoadIdentity();
+    glScalef(1.0f, -1.0f, 1.0f);
+    glMatrixMode(0x1701);
+    glLoadMatrixf(m);
+    glMatrixMode(0x1700);
+    return glLoadIdentity();
 }
 
 static const double g_cipvf_gravscale_7bba8 = 0;
@@ -2971,11 +2853,6 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y) {
         glEnable(0xb44);
     }
 }
-
-void paintcanvas_ctor_matrix(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_meshcreate5(void *, unsigned short, unsigned short, // lint: void_ptr (external symbol; mangling must match lib)
-                                 signed char, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
     this->field_0x20 = 0;
