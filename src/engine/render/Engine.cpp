@@ -479,12 +479,24 @@ void Engine::DeactivateRender2FracFBO() {
 }
 
 void Engine::SetPerspMatrix(float *matrix) {
-    if (Engine::enableShader == 0) {
-        return;
-    }
-    float *proj = this->projMatrix;
-    for (int i = 0; i < 16; i += 1) {
-        proj[i] = matrix[i];
+    if (Engine::enableShader != 0) {
+        float *proj = this->projMatrix;
+        proj[0] = matrix[0];
+        proj[1] = matrix[1];
+        proj[2] = matrix[2];
+        proj[3] = matrix[3];
+        proj[4] = matrix[4];
+        proj[5] = matrix[5];
+        proj[6] = matrix[6];
+        proj[7] = matrix[7];
+        proj[8] = matrix[8];
+        proj[9] = matrix[9];
+        proj[10] = matrix[10];
+        proj[11] = matrix[11];
+        proj[12] = matrix[12];
+        proj[13] = matrix[13];
+        proj[14] = matrix[14];
+        proj[15] = matrix[15];
     }
 }
 
@@ -962,16 +974,33 @@ void Engine::initFileInterface() {
 void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
     if (Engine::enableShader != 0) {
         float *proj = this->projMatrix;
-        for (int i = 0; i < 16; i += 1) {
-            proj[i] = projection[i];
-        }
+        proj[0] = projection[0];
+        proj[1] = projection[1];
+        proj[2] = projection[2];
+        proj[3] = projection[3];
+        proj[4] = projection[4];
+        proj[5] = projection[5];
+        proj[6] = projection[6];
+        proj[7] = projection[7];
+        proj[8] = projection[8];
+        proj[9] = projection[9];
+        proj[10] = projection[10];
+        proj[11] = projection[11];
+        proj[12] = projection[12];
+        proj[13] = projection[13];
+        proj[14] = projection[14];
+        proj[15] = projection[15];
         if (multiply) {
             float local[16];
-            memcpy(local, view, 0x40);
-            AbyssEngine::esMatrixMultiply((AbyssEngine::ESMatrix *) this->projMatrix, (AbyssEngine::ESMatrix *) local, (AbyssEngine::ESMatrix *) this->projMatrix);
+            vst1q_f32(&local[0], vld1q_f32(&view[0]));
+            vst1q_f32(&local[4], vld1q_f32(&view[4]));
+            vst1q_f32(&local[8], vld1q_f32(&view[8]));
+            vst1q_f32(&local[12], vld1q_f32(&view[12]));
+            AbyssEngine::esMatrixMultiply((AbyssEngine::ESMatrix *) this->projMatrix,
+                                          (AbyssEngine::ESMatrix *) local,
+                                          (AbyssEngine::ESMatrix *) this->projMatrix);
         }
     }
-    return;
 }
 
 int Engine::InitGL(bool shaders, int width, int height) {
