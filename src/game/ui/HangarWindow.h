@@ -56,7 +56,8 @@ public:
     bool buyMode;
     uint8_t specialMode;
     int savedStationAmount;
-    uint16_t shipSwapPending;
+    uint8_t shipSwapPending;
+    uint8_t swapChoicePending;
     uint8_t dlcMenuPending;
     uint8_t sellShipPending;
     int bluePrintBuyCount;
@@ -112,7 +113,7 @@ public:
 
     int OnTouchBegin(int touch, int coord);
 
-    void OnTouchEnd(int touch, int coord);
+    bool OnTouchEnd(int x, int y);
 
     unsigned int OnTouchMove(int touch, int coord);
 

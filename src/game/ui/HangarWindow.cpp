@@ -18,6 +18,7 @@
 #include "game/ship/Ship.h"
 #include "engine/core/NFC.h"
 #include "engine/core/GameText.h"
+#include "game/menu/ModStation.h"
 
 static const String g_HangarWindow_emptyDialogText;
 
@@ -541,460 +542,605 @@ void HangarWindow::render() {
     }
 }
 
-void HangarWindow::OnTouchEnd(int touch, int coord) {
-    HangarWindow *self = this;
-    Globals *globals = (Globals *) *g_hw_globals;
-    self->holdTime = 0;
-    self->repeatTimer = 0;
-    self->dragging = 0;
-    if (self->suppressTouchEnd != 0) {
-        self->suppressTouchEnd = 0;
-        return;
+bool HangarWindow::OnTouchEnd(int x, int y) {
+    this->holdTime = 0;
+    this->repeatTimer = 0;
+    this->dragging = 0;
+    if (this->suppressTouchEnd) {
+        this->suppressTouchEnd = 0;
+        return false;
     }
 
-    if (self->dialogActive == 0) {
-        if (self->viewMode == 1)
-            self->listItemWindow->OnTouchEnd(touch, coord);
-
-        Layout *layout = *g_hw_layout;
-        int handled = ((Layout *) (layout))->OnTouchEnd(touch, coord);
-        if (handled == 0) {
-            int delta = self->scrollDelta;
-            int newScroll = self->scrollOffset + delta;
-            float vel = (float) delta;
-            int absd = delta < 0 ? -delta : delta;
-            self->velocity = (absd > 3) ? (int) vel : 0;
-            self->damping = 0;
-            self->scrollOffset = newScroll;
-            self->scrollOffsetBackup = newScroll;
-
-            Array<TouchButton *> *tabs = self->tabButtons;
-            for (unsigned int i = 0; i < tabs->size(); i++) {
-                if (((TouchButton *) (tabs->data()[i]))->OnTouchEnd(touch, coord) != 0) {
-                    self->setSellMode(true);
-                    self->selectedItem = 0;
-                    self->hangarList->setCurrentTab(0, i != 0);
-                    if (i == 2)
-                        self->refreshCargoAvailabilityForBlueprints();
-                    self->refreshCurrentContentHeight();
-                    self->scrollOffset = 0;
-                    self->scrollOffsetBackup = 0;
-                    self->hangarList->setCurrentItemIndex(-1);
-                }
-            }
-
-            if (layout->field_0xc_leftMargin < coord) {
-                int row = IDIV(
-                    (((coord - layout->field_0xc_leftMargin) - layout->field_0x20_top) - self->field_0x100.d) -
-                    self->scrollOffset,
-                    layout->field_0x70_rowHeight + self->field_0x100.d);
-                if (row < self->hangarList->getCurrentLength()) {
-                    self->hangarList->setCurrentItemIndex(row);
-                    if (self->currentItemIsHighlighted() != 0 &&
-                        self->sellConfirmPending != 0) {
-                        self->setSellMode(true);
-                    }
-                }
-            }
-            if (self->sellConfirmPending != 0) {
-                self->sellConfirmPending = 0;
-                return;
-            }
-
-            if ((*self->buttons)[(0x5c) >> 2]->OnTouchEnd(touch, coord) != 0) {
-                self->bluePrint->getAutoCompletionPrice();
-                String line, priceStr, fmt, msg;
-                priceStr = Globals::layout->formatCredits(0);
-                Status_replaceHash(&msg, globals, &line, &priceStr);
-                self->dialog->set(*(String *) &msg, true);
-                self->autoCompletePending = 1;
-                self->dialogActive = 1;
-            }
-
-            if (self->currentItemIsHighlighted() != 0) {
-                Array<TouchButton *> *btns = self->buttons;
-                for (unsigned int i = 0; i < btns->size(); i++) {
-                    if (((TouchButton *) (btns->data()[i]))->OnTouchEnd(touch, coord) != 0) {
-                        if ((i & 0x7fffffff) < 0xc)
-                            return;
-                    }
-                }
-            }
-
-            if (((Layout *) (layout))->helpPressed() != 0) {
-                String help;
-                if (self->viewMode == 1) {
-                    ((Layout *) (layout))->initHelpWindow(help);
+    if (this->dialogActive) {
+        if (this->autoCompletePending) {
+            int choice = this->dialog->OnTouchEnd(x, y);
+            if (choice == 0) {
+                int price = this->bluePrint->getAutoCompletionPrice();
+                if (price > Globals::status->getCredits()) {
+                    String message = Globals::status->replaceHash(
+                        *Globals::gameText->getText(203),
+                        String(Globals::layout->formatCredits(price - Globals::status->getCredits()), false),
+                        String("#C"));
+                    message += String("\n\n") + *Globals::gameText->getText(124);
+                    this->dialog->set(message, true);
+                    this->notEnoughCredits = 1;
                 } else {
-                    unsigned int t = self->hangarList->getCurrentTab();
-                    if (t <= 4) {
-                        ((Layout *) (layout))->initHelpWindow(help);
-                    }
-                }
-            }
-
-            if ((*self->buttons)[(0x2c) >> 2]->OnTouchEnd(touch, coord) != 0) {
-                g_hw_optionFlags[0x4e] = 1;
-                (*g_hw_recordHandler)->saveOptions();
-                self->showCreditsBuyWindow();
-            }
-            return;
-        }
-
-        if (self->viewMode == 1) {
-            ((Layout *) (layout))->resetWindowDimensions();
-            self->viewMode = 0;
-            return;
-        }
-
-        unsigned int tab = self->hangarList->getCurrentTab();
-        if (tab == 4) {
-            self->setSellMode(true);
-            self->selectedItem = 0;
-            self->hangarList->setCurrentTab(0, true);
-            self->refreshCargoAvailabilityForBlueprints();
-            self->refreshCurrentContentHeight();
-            self->scrollOffset = 0;
-            self->scrollOffsetBackup = 0;
-            self->hangarList->setCurrentItemIndex(-1);
-            return;
-        }
-        if (self->hangarList->getCurrentTab() == 3) {
-            self->hangarList->setCurrentTab(0, false);
-            self->refreshCargoAvailabilityForBlueprints();
-            self->refreshCurrentContentHeight();
-        } else if (self->readyToClose() != 0) {
-            self->setSellMode(true);
-            self->selectedItem = 0;
-            self->hangarList->setCurrentItemIndex(-1);
-        }
-        return;
-    }
-
-    if (self->autoCompletePending != 0) {
-        int r = self->dialog->OnTouchEnd(touch, coord);
-        if (r == 1) {
-            self->dialogActive = 0;
-        } else if (r == 0) {
-            int price = self->bluePrint->getAutoCompletionPrice();
-            if (Globals::status->getCredits() < price) {
-                String line, priceStr, fmt, msg, suffix, combined;
-                priceStr = Globals::layout->formatCredits(Globals::status->getCredits());
-                Status_replaceHash(&msg, globals, &line, &priceStr);
-                Globals::gameText->getText(*g_hw_notEnoughTextId);
-                combined = suffix + suffix;
-                *((String *) &msg) += combined;
-                self->dialog->set(*(String *) &msg, true);
-                self->notEnoughCredits = 1;
-            } else {
-                self->dialogActive = 0;
-                if (self->bluePrint != 0) {
-                    if (self->bluePrint->isEmpty() != 0) {
-                        ((BluePrint *) self->bluePrint)->stationIndex = Globals::status->getStation()->getIndex();
-                        Globals::status->getStation()->getName();
-                    }
-                    self->bluePrint->complete();
-                    self->highlightItem(self->hangarList->getCurrentItemAt(1));
-                    self->buyMode = 1;
-                    self->setSellMode(true);
-                    Status_changeCredits(globals);
-                }
-            }
-        }
-        self->autoCompletePending = 0;
-        return;
-    }
-
-    if (self->replaceEquipPending != 0) {
-        int r = self->dialog->OnTouchEnd(touch, coord);
-        if (r == 1) {
-            self->dialogActive = 0;
-            self->replaceEquipPending = 0;
-            self->scrollOffset = self->savedScrollOffset;
-        } else if (r == 0 && self->pendingMountItem != 0 && self->pendingDemountItem != 0) {
-            self->demountItem(self->pendingDemountItem, -1);
-            self->savedScrollOffset = self->scrollOffset;
-            self->mountItem(self->pendingMountItem);
-            self->dialogActive = 0;
-            self->replaceEquipPending = 0;
-        }
-    } else if (self->notEnoughCredits != 0) {
-        int r = self->dialog->OnTouchEnd(touch, coord);
-        if (r == 1) {
-            self->notEnoughCredits = 0;
-            self->dialogActive = 0;
-        } else if (r == 0) {
-            g_hw_optionFlags[0x4e] = 1;
-            (*g_hw_recordHandler)->saveOptions();
-            self->showCreditsBuyWindow();
-        }
-    } else if (self->buyCreditsActive == 0) {
-        if (self->freeCreditsActive != 0) {
-            int r = self->dialog->OnTouchEnd(touch, coord);
-            if (r == 0) {
-                for (int i = 0x12; i != 0x17; i++)
-                    (*self->buttons)[(i * 4) >> 2]->setVisible(false);
-                self->freeCreditsActive = 0;
-                self->showCreditsBuyWindow();
-            }
-
-            unsigned char *appData = AppManager_GetApplicationData();
-            RecordHandler *rh = *g_hw_recordHandler;
-            for (unsigned int i = 0; i != 5; i++) {
-                if ((*self->buttons)[(i * 4 + 0x48) >> 2]->OnTouchEnd(touch, coord) != 0) {
-                    switch (i) {
-                        case 0:
-                            ((RecordHandler *) (rh))->recordStoreWrite(0);
-                            ((RecordHandler *) (rh))->recordStoreWritePreview(0);
-                            break;
-                        case 1:
-                            (*(uint8_t *) ((char *) (appData) + (0xa0))) = 1;
-                            NFC().free_credits_likeGOF2OnFacebook();
-                            Status_changeCredits(globals);
-                            g_hw_optionFlags[0x49] = 1;
-                            break;
-                        case 2:
-                            (*(uint8_t *) ((char *) (appData) + (0xa1))) = 1;
-                            NFC().free_credits_likeFishlabsOnFacebook();
-                            Status_changeCredits(globals);
-                            g_hw_optionFlags[0x4a] = 1;
-                            break;
-                        case 3:
-                            (*(uint8_t *) ((char *) (appData) + (0xa2))) = 1;
-                            NFC().free_credits_subscribeToYoutubeChannel();
-                            Status_changeCredits(globals);
-                            g_hw_optionFlags[0x4b] = 1;
-                            break;
-                        case 4:
-                            (*(uint8_t *) ((char *) (appData) + (0xa3))) = 1;
-                            NFC().free_credits_followOnTwitter();
-                            Status_changeCredits(globals);
-                            g_hw_optionFlags[0x4c] = 1;
-                            break;
-                        case 5:
-                            (*(uint8_t *) ((char *) (appData) + (0xd))) = 1;
-                            NFC().free_credits_rateGame();
-                            Status_changeCredits(globals);
-                            g_hw_optionFlags[0x4d] = 1;
-                            break;
-                    }
-                }
-            }
-            return;
-        }
-
-        if (self->bluePrintPurchasePending != 0) {
-            int r = self->dialog->OnTouchEnd(touch, coord);
-            int cost = ((Item *) ((ListItem *) self->bluePrintItem)->item)->getBlueprintAmount() * 200;
-            bool revert = true;
-            if (r == 0 && Globals::status->getCredits() >= cost && self->localBluePrint == 0) {
-                Status_changeCredits(globals);
-                self->setSellMode(true);
-                self->selectedItem = 0;
-                self->hangarList->setCurrentItemIndex(-1);
-                self->localBluePrint = 0;
-                self->bluePrintPurchasePending = 0;
-                revert = false;
-            } else if (r == 1 && Globals::status->getCredits() >= cost && self->localBluePrint == 0) {
-                revert = false;
-            }
-            if (revert) {
-                ((Item *) ((ListItem *) self->bluePrintItem)->item)->setStationAmount(self->savedStationAmount);
-                ((Item *) ((ListItem *) self->bluePrintItem)->item)->setAmount(self->savedAmount);
-                ((Item *) ((ListItem *) self->bluePrintItem)->item)->setBlueprintAmount(self->savedBlueprintAmount);
-                ((Status *) (globals))->setCredits(self->savedCredits);
-                self->savedStationAmount = 0;
-                self->bluePrintBuyCount = 0;
-                self->selectedItem = 0;
-                self->savedAmount = 0;
-                self->savedBlueprintAmount = 0;
-                self->currentLoad = self->savedLoad;
-                self->hangarList->setCurrentItemIndex(-1);
-                self->dialogActive = 0;
-                self->bluePrintPurchasePending = 0;
-                self->buyMode = 0;
-                if (Globals::status->getCredits() < cost && self->localBluePrint == 0) {
-                    String line, priceStr, fmt, msg;
-                    priceStr = Globals::layout->formatCredits(Globals::status->getCredits());
-                    Status_replaceHash(&msg, globals, &line, &priceStr);
-                    self->dialog->set(g_HangarWindow_emptyDialogText);
-                    self->dialogActive = 1;
-                }
-                self->localBluePrint = 0;
-            }
-            self->refreshCurrentContentHeight();
-            return;
-        }
-
-        if (self->sellShipPending != 0) {
-            int r = self->dialog->OnTouchEnd(touch, coord);
-            if (r == 1) {
-                self->sellShipPending = 0;
-                self->dialogActive = 0;
-            } else if (r == 0) {
-                self->sellShipPending = 0;
-                self->dialogActive = 0;
-                ((ListItem *) (self->selectedItem))->getPrice();
-                Status_changeCredits(globals);
-                Globals::status->getStation()->removeShip((Ship *) Globals::status->getShip());
-                self->hangarList->initShopTab((Array<Item *> *) (self->itemList),
-                                              Globals::status->getStation()->getShips());
-                self->refreshCurrentContentHeight();
-            }
-            return;
-        }
-
-        int r = self->dialog->OnTouchEnd(touch, coord);
-        bool special = globals->field_0x114 == 3 && self->upgradeMode == 0;
-        if (special && self->dlcMenuPending != 0 && r == 1) {
-            int idx = globals->field_0x14c;
-            Globals::status->getShip()->getIndex();
-            if (((Station *) (uintptr_t) idx)->hasShip(Globals::status->getShip()->getIndex()) == 0) {
-                int price = ((ListItem *) self->selectedItem)->ship->getPrice();
-                if (Globals::status->getCredits() < price) {
-                    String line, priceStr, fmt, msg, suffix, combined;
-                    ((ListItem *) self->selectedItem)->ship->getPrice();
-                    priceStr = Globals::layout->formatCredits(Globals::status->getCredits());
-                    Status_replaceHash(&msg, globals, &line, &priceStr);
-                    Globals::gameText->getText(*g_hw_sellShipTextId);
-                    combined = suffix + suffix;
-                    *((String *) &msg) += combined;
-                    self->dialog->set(*(String *) &msg, true);
-                    self->dialogActive = 1;
-                    self->notEnoughCredits = 1;
-                    self->shipSwapPending = 0;
-                    return;
-                }
-            }
-        }
-
-        {
-            ChoiceWindow *swapDialog = self->dialog;
-
-            int swapResult = swapDialog->OnTouchEnd(touch, coord);
-            if (swapResult == 1) {
-                self->dialogActive = 0;
-                self->replaceEquipPending = 0;
-                self->scrollOffset = self->savedScrollOffset;
-            } else if (swapResult == 0 && self->pendingMountItem != 0 &&
-                       self->pendingDemountItem != 0) {
-                self->demountItem(self->pendingDemountItem, -1);
-                self->savedScrollOffset = self->scrollOffset;
-                self->mountItem(self->pendingMountItem);
-                self->dialogActive = 0;
-                self->replaceEquipPending = 0;
-            }
-
-            uint8_t buying = self->buyMode;
-            int buyResult = swapDialog->OnTouchEnd(touch, coord);
-            if (buying != 0) {
-                if (buyResult == 1) {
-                    self->buyMode = 0;
-                    self->dialogActive = 0;
-                } else {
-                    if (buyResult != 0)
-                        return;
-                    if (self->routeWarningPending == 0) {
-                        self->dialogActive = 0;
-                        if (self->autoEquipped == 0) {
-                            self->buyMode = 1;
-                        } else {
-                            Array<TouchButton *> *tabs = self->tabButtons;
-                            for (unsigned int i = 0; i < tabs->size(); i++)
-                                ((TouchButton *) (tabs->data()[i]))->resetTouch();
+                    this->dialogActive = 0;
+                    if (this->bluePrint != 0) {
+                        if (this->bluePrint->isEmpty()) {
+                            this->bluePrint->stationIndex = Globals::status->getStation()->getIndex();
+                            this->bluePrint->stationName = Globals::status->getStation()->getName();
                         }
-                        return;
+                        this->bluePrint->complete();
+                        this->highlightItem(this->hangarList->getCurrentItemAt(1));
+                        this->buyMode = 1;
+                        this->setSellMode(false);
+                        Globals::status->changeCredits(-price);
                     }
-                    self->dialogActive = 0;
-                    self->routeWarningPending = 0;
-                    self->buyMode = 0;
                 }
-                self->selectedItem = 0;
-                self->hangarList->setCurrentItemIndex(-1);
+            } else if (choice == 1) {
+                this->dialogActive = 0;
             }
+            this->autoCompletePending = 0;
+            return false;
         }
-        return;
-    } else {
-        int r = self->dialog->OnTouchEnd(touch, coord);
-        if (r != 0) {
-            Array<TouchButton *> *btns = self->buttons;
-            for (unsigned int i = 0; i < 5; i++) {
-                if ((*btns)[(i * 4 + 0x30) >> 2]->OnTouchEnd(touch, coord) != 0) {
+
+        if (this->replaceEquipPending) {
+            int choice = this->dialog->OnTouchEnd(x, y);
+            if (choice == 0) {
+                if (this->pendingMountItem != 0 && this->pendingDemountItem != 0) {
+                    this->demountItem(this->pendingDemountItem, -1);
+                    this->savedScrollOffset = this->scrollOffset;
+                    this->mountItem(this->pendingMountItem);
+                    this->replaceEquipPending = 0;
+                    this->dialogActive = 0;
+                }
+            } else if (choice == 1) {
+                this->dialogActive = 0;
+                this->replaceEquipPending = 0;
+                this->scrollOffset = this->savedScrollOffset;
+            }
+        } else if (this->notEnoughCredits) {
+            int choice = this->dialog->OnTouchEnd(x, y);
+            if (choice == 0) {
+                Globals::options[78] = 1;
+                Globals::recordHandler->saveOptions();
+                this->showCreditsBuyWindow();
+            } else if (choice == 1) {
+                this->dialogActive = 0;
+                this->notEnoughCredits = 0;
+            }
+        } else if (this->buyCreditsActive) {
+            if (this->dialog->OnTouchEnd(x, y) == 0) {
+                this->dialogActive = 0;
+                this->buyCreditsActive = 0;
+                for (int i = 12; i != 17; i++)
+                    (*this->buttons)[i]->setVisible(false);
+                (*this->buttons)[17]->setVisible(false);
+                ((uint8_t *) Globals::appManager->GetApplicationData())[64] = 0;
+                ModStation *station = (ModStation *) Globals::appManager->GetApplicationModule(5);
+                if (station != 0 && station->pendingHangarClose) {
+                    station->pendingHangarClose = 0;
+                    return true;
+                }
+            }
+            for (int i = 0; i < 5; i++) {
+                if ((*this->buttons)[12 + i]->OnTouchEnd(x, y)) {
                     switch (i) {
-                        case 0: NFC().iap_buy_credits_300_000();
-                            break;
-                        case 1: NFC().iap_buy_credits_1_000_000();
-                            break;
-                        case 2: NFC().iap_buy_credits_3_000_000();
-                            break;
-                        case 3: NFC().iap_buy_credits_10_000_000();
-                            break;
-                        default: NFC().iap_buy_credits_100_000();
-                            break;
+                    case 0:
+                        NFC::iap_buy_credits_100_000();
+                        break;
+                    case 1:
+                        NFC::iap_buy_credits_300_000();
+                        break;
+                    case 2:
+                        NFC::iap_buy_credits_1_000_000();
+                        break;
+                    case 3:
+                        NFC::iap_buy_credits_3_000_000();
+                        break;
+                    case 4:
+                        NFC::iap_buy_credits_10_000_000();
+                        break;
+                    }
+                    break;
+                }
+            }
+            if ((*this->buttons)[17]->OnTouchEnd(x, y)) {
+                bool offersLeft = true;
+                if (Globals::options[74] && Globals::options[73] && Globals::options[77] && Globals::options[76])
+                    offersLeft = !Globals::options[75];
+                uint8_t *appData = (uint8_t *) Globals::appManager->GetApplicationData();
+                if (offersLeft || !appData[21]) {
+                    for (int i = 12; i != 17; i++)
+                        (*this->buttons)[i]->setVisible(false);
+                    this->showFreeCreditsWindow();
+                }
+            }
+        } else if (this->freeCreditsActive) {
+            if (this->dialog->OnTouchEnd(x, y) == 0) {
+                for (int i = 18; i != 23; i++)
+                    (*this->buttons)[i]->setVisible(false);
+                this->freeCreditsActive = 0;
+                this->showCreditsBuyWindow();
+            }
+            static const int freeCreditsReward[6] = {0, 7500, 5000, 5000, 5000, 7500};
+            uint8_t *appData = (uint8_t *) Globals::appManager->GetApplicationData();
+            for (int i = 0; i != 5; i++) {
+                if ((*this->buttons)[18 + i]->OnTouchEnd(x, y)) {
+                    switch (i) {
+                    case 0:
+                        Globals::recordHandler->recordStoreWrite(0);
+                        Globals::recordHandler->recordStoreWritePreview(0);
+                        break;
+                    case 1:
+                        appData[160] = 1;
+                        NFC::free_credits_likeGOF2OnFacebook();
+                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::options[73] = 1;
+                        break;
+                    case 2:
+                        appData[161] = 1;
+                        NFC::free_credits_likeFishlabsOnFacebook();
+                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::options[74] = 1;
+                        break;
+                    case 3:
+                        appData[162] = 1;
+                        NFC::free_credits_subscribeToYoutubeChannel();
+                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::options[75] = 1;
+                        break;
+                    case 4:
+                        appData[163] = 1;
+                        NFC::free_credits_followOnTwitter();
+                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::options[76] = 1;
+                        break;
+                    case 5:
+                        appData[13] = 1;
+                        NFC::free_credits_rateGame();
+                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::options[77] = 1;
+                        break;
                     }
                 }
             }
-            if ((*btns)[(0x44) >> 2]->OnTouchEnd(touch, coord) != 0) {
-                bool show = true;
-                if (g_hw_optionFlags[0x4a] && g_hw_optionFlags[0x49] &&
-                    g_hw_optionFlags[0x4d] && g_hw_optionFlags[0x4c])
-                    show = (g_hw_optionFlags[0x4b] == 0);
-                unsigned char *appData = AppManager_GetApplicationData();
-                if (show || (*(uint8_t *) ((char *) (appData) + (0x15))) == 0) {
-                    for (int i = 0xc; i != 0x11; i++)
-                        (*btns)[(i * 4) >> 2]->setVisible(false);
-                    self->showFreeCreditsWindow();
+        } else if (this->bluePrintPurchasePending) {
+            int choice = this->dialog->OnTouchEnd(x, y);
+            int cost = this->bluePrintItem->item->getBlueprintAmount() * 200;
+            if (choice == 0 && Globals::status->getCredits() >= cost && !this->localBluePrint) {
+                Globals::status->changeCredits(-cost);
+                this->setSellMode(false);
+                this->selectedItem = 0;
+                this->hangarList->setCurrentItemIndex(-1);
+                this->localBluePrint = 0;
+                this->bluePrintPurchasePending = 0;
+            } else if (choice == 1 || Globals::status->getCredits() < cost || (choice == 0 && this->localBluePrint)) {
+                // Undo the pending ingredient purchase.
+                this->bluePrintItem->item->setStationAmount(this->savedStationAmount);
+                this->bluePrintItem->item->setAmount(this->savedAmount);
+                this->bluePrintItem->item->setBlueprintAmount(this->savedBlueprintAmount);
+                Globals::status->setCredits(this->savedCredits);
+                this->savedStationAmount = 0;
+                this->bluePrintBuyCount = 0;
+                this->selectedItem = 0;
+                this->savedAmount = 0;
+                this->savedBlueprintAmount = 0;
+                this->currentLoad = this->savedLoad;
+                this->hangarList->setCurrentItemIndex(-1);
+                this->dialogActive = 0;
+                this->bluePrintPurchasePending = 0;
+                this->buyMode = 0;
+                if (Globals::status->getCredits() < cost && !this->localBluePrint) {
+                    this->dialog->set(Globals::status->replaceHash(
+                        *Globals::gameText->getText(203),
+                        String(Globals::layout->formatCredits(cost - Globals::status->getCredits()), false),
+                        String("#C")));
+                    this->dialogActive = 1;
+                }
+                this->localBluePrint = 0;
+            }
+            this->refreshCurrentContentHeight();
+            return false;
+        } else if (this->sellShipPending) {
+            int choice = this->dialog->OnTouchEnd(x, y);
+            if (choice == 0) {
+                this->sellShipPending = 0;
+                this->dialogActive = 0;
+                Globals::status->changeCredits(this->selectedItem->getPrice());
+                Globals::status->getStation()->removeShip(this->selectedItem->ship);
+                this->hangarList->initShopTab(this->itemList, Globals::status->getStation()->getShips());
+                this->refreshCurrentContentHeight();
+            } else if (choice == 1) {
+                this->sellShipPending = 0;
+                this->dialogActive = 0;
+            }
+        } else if (this->shipSwapPending) {
+            int choice = this->dialog->OnTouchEnd(x, y);
+            bool buyAdditional;
+            if (Globals::status->field_114 == 3 && !this->upgradeMode) {
+                if (!this->swapChoicePending) {
+                    if (choice == 1) {
+                        this->dialogActive = 0;
+                        this->shipSwapPending = 0;
+                        this->swapChoicePending = 0;
+                        return false;
+                    }
+                    if (choice != 0)
+                        goto common;
+                    this->dialog->set(String(""), *Globals::gameText->getText(327), true, *Globals::gameText->getText(330),
+                                      *Globals::gameText->getText(331), *Globals::gameText->getText(330), -1, -1);
+                    this->swapChoicePending = 1;
+                    return false;
+                }
+                if (choice == 0) {
+                    buyAdditional = false;
+                } else {
+                    if (choice != 1)
+                        goto common;
+                    if (Globals::status->voidStation->hasShip(Globals::status->getShip()->getIndex())) {
+                        this->dialog->set(*Globals::gameText->getText(328));
+                        this->dialogActive = 1;
+                        this->shipSwapPending = 0;
+                        this->swapChoicePending = 0;
+                        return false;
+                    }
+                    if (this->selectedItem->ship->getPrice() > Globals::status->getCredits()) {
+                        String message = Globals::status->replaceHash(
+                            *Globals::gameText->getText(203),
+                            String(Globals::layout->formatCredits(this->selectedItem->ship->getPrice() -
+                                                                  Globals::status->getCredits()), false),
+                            String("#C"));
+                        message += String("\n\n") + *Globals::gameText->getText(124);
+                        this->dialog->set(message, true);
+                        this->dialogActive = 1;
+                        this->notEnoughCredits = 1;
+                        this->shipSwapPending = 0;
+                        this->swapChoicePending = 0;
+                        return false;
+                    }
+                    buyAdditional = true;
+                }
+            } else if (!this->upgradeMode) {
+                if (!this->dlcMenuPending) {
+                    if (choice == 1) {
+                        this->dialogActive = 0;
+                        this->shipSwapPending = 0;
+                        this->swapChoicePending = 0;
+                        return false;
+                    }
+                    if (choice != 0)
+                        goto common;
+                    this->dialog->set(String(""), *Globals::gameText->getText(189), true);
+                    this->dlcMenuPending = 1;
+                    return false;
+                }
+                if (choice == 0) {
+                    ((ModStation *) Globals::appManager->GetApplicationModule(5))->showDlcMenu();
+                    this->dialogActive = 0;
+                    this->dlcMenuPending = 0;
+                    this->shipSwapPending = 0;
+                    this->swapChoicePending = 0;
+                    return false;
+                }
+                if (choice != 1)
+                    goto common;
+                this->dlcMenuPending = 0;
+                buyAdditional = false;
+            } else {
+                if (choice == 1) {
+                    this->dialogActive = 0;
+                    this->shipSwapPending = 0;
+                    this->swapChoicePending = 0;
+                    return false;
+                }
+                if (choice != 0)
+                    goto common;
+                buyAdditional = false;
+            }
+
+            // Swap the current ship for the selected one.
+            Globals::status->getShip()->setCargo(Item::extractItems(this->itemList, true));
+            if (buyAdditional)
+                Globals::status->changeCredits(-this->selectedItem->ship->getPrice());
+            else if (!this->upgradeMode)
+                Globals::status->changeCredits(Globals::status->getShip()->getPrice() - this->selectedItem->ship->getPrice());
+
+            Ship *oldShip = Globals::status->getShip();
+            Array<Item *> *equipment = oldShip->getEquipment();
+            Array<Item *> *cargo = oldShip->getCargo();
+            Ship *newShip = (*Globals::ships)[this->selectedItem->ship->getIndex()]->makeShip(-1);
+            newShip->setRace(this->selectedItem->ship->getRace());
+            newShip->adjustPrice();
+            if (cargo != 0) {
+                for (unsigned int i = 0; i < cargo->size(); i++) {
+                    if ((*cargo)[i] != 0)
+                        newShip->addCargo((*cargo)[i]->clone());
                 }
             }
-            return;
+            if (equipment != 0) {
+                for (unsigned int i = 0; i < equipment->size(); i++) {
+                    if ((*equipment)[i] != 0) {
+                        Item *copy = (*equipment)[i]->clone();
+                        if (!newShip->addEquipment(copy))
+                            newShip->addCargo(copy);
+                    }
+                }
+            }
+            if (this->selectedItem->ship->getMods() != 0) {
+                for (unsigned int i = 0; i < this->selectedItem->ship->getMods()->size(); i++)
+                    newShip->addMod((*this->selectedItem->ship->getMods())[i]);
+            }
+
+            Array<Ship *> *ships = Globals::status->getStation()->getShips();
+            int slot = -1;
+            for (unsigned int i = 0; i < ships->size(); i++) {
+                if ((*ships)[i]->getIndex() == this->selectedItem->ship->getIndex()) {
+                    if (buyAdditional) {
+                        ArrayRemove((*ships)[i], *ships);
+                    } else {
+                        // The old ship takes the place of the bought one in the station.
+                        delete (*ships)[i];
+                        (*ships)[i] = 0;
+                        (*ships)[i] = (*Globals::ships)[oldShip->getIndex()]->makeShip(-1);
+                        (*ships)[i]->adjustPrice();
+                        (*ships)[i]->setRace(oldShip->getRace());
+                        slot = i;
+                    }
+                    break;
+                }
+            }
+            if (buyAdditional) {
+                Globals::status->voidStation->addShip((*Globals::ships)[oldShip->getIndex()]->makeShip(-1));
+                if (oldShip->getMods() != 0) {
+                    for (unsigned int i = 0; i < oldShip->getMods()->size(); i++) {
+                        Array<Ship *> *stored = Globals::status->voidStation->getShips();
+                        (*stored)[stored->size() - 1]->addMod((*oldShip->getMods())[i]);
+                    }
+                }
+            }
+            if (slot >= 0 && oldShip->getMods() != 0) {
+                for (unsigned int i = 0; i < oldShip->getMods()->size(); i++) {
+                    if (this->upgradeMode)
+                        (*Globals::status->voidStation->getShips())[slot]->addMod((*oldShip->getMods())[i]);
+                    (*ships)[slot]->addMod((*oldShip->getMods())[i]);
+                }
+            }
+            if (this->upgradeMode)
+                Globals::status->voidStation->setShips(Globals::status->getStation()->getShips(), true);
+            Globals::status->setShip(newShip);
+            Globals::status->getShip()->refreshValue();
+            this->hangarList->initShipTab(Globals::status->getShip());
+            if (this->itemList != 0) {
+                ArrayReleaseClasses(*this->itemList);
+                delete this->itemList;
+            }
+            this->itemList = 0;
+            this->itemList = Item::mixItems(Globals::status->getShip()->getCargo(), Globals::status->getStation()->getItems());
+            this->hangarList->initShopTab(this->itemList, Globals::status->getStation()->getShips());
+            this->hangarList->setCurrentTab(0, true);
+            this->refreshCurrentContentHeight();
+            this->dialogActive = 0;
+            if (!this->upgradeMode) {
+                String message = *Globals::gameText->getText(303);
+                message = Globals::status->replaceHash(message, *Globals::gameText->getText(913 + newShip->getIndex()),
+                                                       String("#N"));
+                this->dialog->set(message);
+                this->dialogActive = 1;
+            }
+            this->field_0x0 = 1;
+            this->shipSwapPending = 0;
+            this->swapChoicePending = 0;
+            return false;
         }
-        self->buyCreditsActive = 0;
-        self->dialogActive = 0;
-        for (int i = 0xc; i != 0x11; i++)
-            (*self->buttons)[(i * 4) >> 2]->setVisible(false);
-        (*self->buttons)[(0x44) >> 2]->setVisible(false);
-        unsigned char *appData = AppManager_GetApplicationData();
-        (*(uint8_t *) ((char *) (appData) + (0x40))) = 0;
-        unsigned char *mod = AppManager_GetApplicationModule(*g_hw_modStationId);
-        if (mod != 0 && (*(uint8_t *) ((char *) (mod) + (0x18))) != 0)
-            (*(uint8_t *) ((char *) (mod) + (0x18))) = 0;
-        return;
+
+common:
+        bool buying = this->buyMode;
+        int choice = this->dialog->OnTouchEnd(x, y);
+        if (buying) {
+            if (choice == 1) {
+                this->dialogActive = 0;
+                this->buyMode = 0;
+            } else {
+                if (choice != 0)
+                    return false;
+                if (!this->routeWarningPending) {
+                    this->dialogActive = 0;
+                    if (this->autoEquipped) {
+                        for (unsigned int i = 0; i < this->tabButtons->size(); i++)
+                            (*this->tabButtons)[i]->resetTouch();
+                    } else {
+                        this->buyMode = 1;
+                    }
+                    return false;
+                }
+                this->buyMode = 0;
+                this->routeWarningPending = 0;
+                this->dialogActive = 0;
+            }
+            this->selectedItem = 0;
+            this->hangarList->setCurrentItemIndex(-1);
+            return false;
+        }
+        if (choice != 0)
+            return false;
+        this->dialogActive = 0;
+        ModStation *station = (ModStation *) Globals::appManager->GetApplicationModule(5);
+        if (station->pendingHangarClose) {
+            station->pendingHangarClose = 0;
+            return true;
+        }
+        return false;
     }
 
-    uint8_t buying = self->buyMode;
-    int r2 = self->dialog->OnTouchEnd(touch, coord);
-    if (buying != 0) {
-        if (r2 == 1) {
-            self->buyMode = 0;
-            self->dialogActive = 0;
-        } else if (r2 == 0) {
-            if (self->routeWarningPending == 0) {
-                self->dialogActive = 0;
-                if (self->autoEquipped == 0) {
-                    self->buyMode = 1;
-                } else {
-                    Array<TouchButton *> *tabs = self->tabButtons;
-                    for (unsigned int i = 0; i < tabs->size(); i++)
-                        ((TouchButton *) (tabs->data()[i]))->resetTouch();
-                }
-                return;
-            }
-            self->dialogActive = 0;
-            self->routeWarningPending = 0;
-            self->buyMode = 0;
-        } else {
-            return;
+    if (this->viewMode == 1)
+        this->listItemWindow->OnTouchEnd(x, y);
+    if (Globals::layout->OnTouchEnd(x, y)) {
+        // Back button.
+        if (this->viewMode == 1) {
+            Globals::layout->resetWindowDimensions();
+            this->viewMode = 0;
+            return false;
         }
-        self->selectedItem = 0;
-        self->hangarList->setCurrentItemIndex(-1);
-        return;
+        if (this->hangarList->getCurrentTab() == 4) {
+            this->setSellMode(false);
+            this->selectedItem = 0;
+            this->hangarList->setCurrentTab(2, true);
+            this->refreshCargoAvailabilityForBlueprints();
+            this->refreshCurrentContentHeight();
+            this->scrollOffsetBackup = 0;
+            this->scrollOffset = 0;
+            this->hangarList->setCurrentItemIndex(-1);
+            return false;
+        }
+        if (this->hangarList->getCurrentTab() == 3) {
+            this->hangarList->setCurrentTab(0, true);
+            this->refreshCargoAvailabilityForBlueprints();
+            this->refreshCurrentContentHeight();
+            return false;
+        }
+        if (this->readyToClose()) {
+            this->setSellMode(false);
+            this->selectedItem = 0;
+            this->hangarList->setCurrentItemIndex(-1);
+            return true;
+        }
+        return false;
     }
-    if (r2 != 0)
-        return;
-    self->dialogActive = 0;
-    unsigned char *mod = AppManager_GetApplicationModule(*g_hw_dlcModuleId);
-    if ((*(uint8_t *) ((char *) (mod) + (0x18))) != 0)
-        (*(uint8_t *) ((char *) (mod) + (0x18))) = 0;
+
+    this->scrollOffset += this->scrollDelta;
+    this->scrollOffsetBackup = this->scrollOffset;
+    this->velocity = (this->scrollDelta < 0 ? -this->scrollDelta : this->scrollDelta) > 3
+                         ? (float) this->scrollDelta : 0.0f;
+    this->damping = 0.9f;
+
+    for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
+        if ((*this->tabButtons)[i]->OnTouchEnd(x, y)) {
+            this->setSellMode(false);
+            this->setSellMode(true);
+            this->setSellMode(false);
+            this->selectedItem = 0;
+            this->hangarList->setCurrentTab(i, true);
+            if (i == 2)
+                this->refreshCargoAvailabilityForBlueprints();
+            this->refreshCurrentContentHeight();
+            this->scrollOffsetBackup = 0;
+            this->scrollOffset = 0;
+            this->hangarList->setCurrentItemIndex(-1);
+        }
+    }
+
+    if (y > Globals::layout->field_0xc_leftMargin) {
+        int row = (y - Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
+                   this->field_0x100.d - this->scrollOffset) /
+                  (Globals::layout->field_0x70_rowHeight + this->field_0x100.d);
+        if (row < (int) this->hangarList->getCurrentLength()) {
+            this->hangarList->setCurrentItemIndex(row);
+            if (this->currentItemIsHighlighted() && this->sellConfirmPending) {
+                this->setSellMode(false);
+                this->setSellMode(true);
+            }
+        }
+    }
+    if (this->sellConfirmPending) {
+        this->sellConfirmPending = 0;
+        return false;
+    }
+
+    if ((*this->buttons)[23]->OnTouchEnd(x, y)) {
+        int price = this->bluePrint->getAutoCompletionPrice();
+        this->dialog->set(Globals::status->replaceHash(*Globals::gameText->getText(195),
+                                                       Globals::layout->formatCredits(price), String("#C")),
+                          true);
+        this->dialogActive = 1;
+        this->autoCompletePending = 1;
+    }
+
+    if (this->currentItemIsHighlighted()) {
+        for (int i = 0; i < this->buttons->size(); i++) {
+            if (!(*this->buttons)[i]->OnTouchEnd(x, y))
+                continue;
+            int row = (y - Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
+                       this->field_0x100.d - this->scrollOffset) /
+                      (Globals::layout->field_0x70_rowHeight + this->field_0x100.d);
+            switch (i) {
+            case 0:
+                // Info button: open the item details.
+                this->hangarList->setCurrentItemIndex(row);
+                this->listItemWindow->set(this->hangarList->getCurrentItem(), 0, 0, 0, 0, true);
+                this->viewMode = 1;
+                Globals::sound->play(97, 0, 0, 0.0f);
+                return false;
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+                this->hangarList->setCurrentItemIndex(row);
+                this->selectItem(this->selectedItem);
+                break;
+            case 8:
+                this->hangarList->setCurrentItemIndex(row);
+                this->transaction(false);
+                Globals::sound->play(100, 0, 0, 0.0f);
+                break;
+            case 9:
+                this->hangarList->setCurrentItemIndex(row);
+                this->transaction(true);
+                Globals::sound->play(101, 0, 0, 0.0f);
+                if (this->hangarList->getCurrentItem()->isItem() &&
+                    this->hangarList->getCurrentItem()->item->getType() == 1) {
+                    this->autoEquipPending = 1;
+                    this->autoEquipIndex = this->hangarList->getCurrentItemIndex();
+                }
+                break;
+            case 10:
+                this->dialog->set(*Globals::gameText->getText(334), true);
+                this->dialogActive = 1;
+                this->sellShipPending = 1;
+                break;
+            case 11:
+                Globals::options[78] = 1;
+                Globals::recordHandler->saveOptions();
+                this->showCreditsBuyWindow();
+                break;
+            }
+        }
+    }
+
+    if (Globals::layout->helpPressed()) {
+        if (this->viewMode == 1) {
+            Globals::layout->initHelpWindow(*Globals::gameText->getText(643));
+        } else {
+            switch (this->hangarList->getCurrentTab()) {
+            case 0:
+                Globals::layout->initHelpWindow(*Globals::gameText->getText(623));
+                break;
+            case 1:
+                Globals::layout->initHelpWindow(*Globals::gameText->getText(622));
+                break;
+            case 2:
+                Globals::layout->initHelpWindow(*Globals::gameText->getText(625));
+                break;
+            case 3:
+                Globals::layout->initHelpWindow(*Globals::gameText->getText(624));
+                break;
+            case 4:
+                Globals::layout->initHelpWindow(*Globals::gameText->getText(626));
+                break;
+            }
+        }
+    }
+    if ((*this->buttons)[11]->OnTouchEnd(x, y)) {
+        Globals::options[78] = 1;
+        Globals::recordHandler->saveOptions();
+        this->showCreditsBuyWindow();
+    }
+    return false;
+
 }
 
 void HangarWindow::update(int delta) {
@@ -1970,6 +2116,7 @@ void HangarWindow::initialize() {
     this->specialMode = 0;
     this->bluePrintPurchasePending = 0;
     this->shipSwapPending = 0;
+    this->swapChoicePending = 0;
     this->dlcMenuPending = 0;
     this->scrollOffset = 0;
     this->lastTouchY = 0;
@@ -2010,6 +2157,7 @@ HangarWindow::HangarWindow() {
     this->tabButtons = nullptr;
     this->buttons = nullptr;
     this->shipSwapPending = 0;
+    this->swapChoicePending = 0;
     this->dlcMenuPending = 0;
     this->sellShipPending = 0;
     this->buyCreditsActive = 0;
