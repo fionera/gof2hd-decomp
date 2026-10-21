@@ -12,7 +12,7 @@ static PaintCanvas **g_IF_drawShip_canvas = &Globals::Canvas;
 static PaintCanvas **g_drawItem_canvas = &Globals::Canvas;
 static PaintCanvas **g_IF_drawItem4_canvas = &Globals::Canvas;
 
-int IMAGE_OFFSETS[104] = {
+int IMAGE_OFFSETS[13][4][2] = {
     16, 45, 16, 26, 32, 75, 16, 0,
     16, 52, 16, 25, 32, 75, 16, 0,
     16, 45, 16, 24, 32, 75, 16, 0,
@@ -27,7 +27,7 @@ int IMAGE_OFFSETS[104] = {
     16, 0, 16, 0, 16, 0, 16, 0,
     32, 75, 32, 0, 32, 0, 32, 0,
 };
-int IMAGE_OFFSETS_IPAD[104] = {
+int IMAGE_OFFSETS_IPAD[13][4][2] = {
     16, 75, 16, 43, 32, 125, 16, 0,
     16, 86, 16, 41, 32, 125, 16, 0,
     16, 74, 16, 40, 32, 125, 16, 0,
@@ -42,7 +42,7 @@ int IMAGE_OFFSETS_IPAD[104] = {
     16, 0, 16, 0, 16, 0, 16, 0,
     32, 125, 32, 0, 32, 0, 32, 0,
 };
-int IMAGE_OFFSETS_IPAD_HD[104] = {
+int IMAGE_OFFSETS_IPAD_HD[13][4][2] = {
     16, 84, 16, 48, 32, 141, 16, 0,
     16, 96, 16, 45, 32, 141, 16, 0,
     16, 82, 16, 44, 32, 141, 16, 0,
@@ -57,7 +57,7 @@ int IMAGE_OFFSETS_IPAD_HD[104] = {
     32, 141, 32, 0, 32, 0, 32, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
 };
-int IMAGE_OFFSETS_IPAD_LARGE[104] = {
+int IMAGE_OFFSETS_IPAD_LARGE[13][4][2] = {
     16, 120, 16, 68, 32, 200, 16, 0,
     16, 137, 16, 65, 32, 200, 16, 0,
     16, 118, 16, 64, 32, 200, 16, 0,
@@ -73,7 +73,6 @@ int IMAGE_OFFSETS_IPAD_LARGE[104] = {
     32, 200, 32, 0, 32, 0, 32, 0,
 };
 
-static int *g_IF_idTable = IMAGE_OFFSETS;
 
 static AbyssEngine::AERandom **gCreateChar2Rng1 = &Globals::rnd;
 static const int gCreateChar2Table[] = {
@@ -92,14 +91,6 @@ static const int gCreateChar2Table[] = {
 static AbyssEngine::AERandom **gCreateChar2Rng2 = &Globals::rnd;
 static AbyssEngine::AERandom **gCreateCharRng = &Globals::rnd;
 
-static PaintCanvas **g_IF_li_canvas = &Globals::Canvas;
-static char *g_IF_flagA = (char *)&Globals::iPadHD;
-static char *g_IF_flagB = (char *)&Globals::iPadLarge;
-static int *g_IF_posTableA = IMAGE_OFFSETS_IPAD_HD;
-static int *g_IF_posTableB = IMAGE_OFFSETS_IPAD_LARGE;
-static int *g_IF_posTableC = IMAGE_OFFSETS;
-static char *g_IF_flagC = (char *)&Globals::iPad;
-static int *g_IF_posTableD = IMAGE_OFFSETS_IPAD;
 
 int ImageFactory::getItemImageId(int itemId) {
     int base = 0xef0;
@@ -114,14 +105,27 @@ ImageFactory::~ImageFactory() {
 
 ImageFactory::ImageFactory() {
     this->sprite = nullptr;
-    if (Globals::iPad != 0) {
-        const int *src = IMAGE_OFFSETS_IPAD;
-        if (Globals::iPadHD != 0)
-            src = IMAGE_OFFSETS_IPAD_HD;
-        else if (Globals::iPadLarge != 0)
-            src = IMAGE_OFFSETS_IPAD_LARGE;
-        for (int i = 0; i < 104; ++i)
-            IMAGE_OFFSETS[i] = src[i];
+    if (Globals::retinaDisplay || Globals::n9) {
+        // Large-screen layout: 13 image slots x 4 parts x (x, y).
+        const int largeScreenOffsets[13][4][2] = {
+            {{16, 75}, {16, 43}, {32, 125}, {16, 0}},
+            {{16, 86}, {16, 41}, {32, 125}, {16, 0}},
+            {{16, 74}, {16, 40}, {32, 125}, {16, 0}},
+            {{32, -33}, {32, -33}, {32, 0}, {16, -125}},
+            {{32, 125}, {16, 28}, {32, 125}, {16, 0}},
+            {{16, -33}, {32, -33}, {32, 0}, {16, -125}},
+            {{32, 125}, {16, 72}, {16, 0}, {16, 0}},
+            {{16, 65}, {16, 35}, {32, 125}, {16, 0}},
+            {{16, -33}, {32, -33}, {32, 0}, {16, -125}},
+            {{32, 125}, {32, 0}, {32, 0}, {32, 0}},
+            {{16, 76}, {16, 43}, {32, 125}, {16, 0}},
+            {{16, 0}, {16, 0}, {16, 0}, {16, 0}},
+            {{32, 125}, {32, 0}, {32, 0}, {32, 0}},
+        };
+        for (int i = 0; i < 13; ++i)
+            for (int j = 0; j < 4; ++j)
+                for (int k = 0; k < 2; ++k)
+                    IMAGE_OFFSETS[i][j][k] = largeScreenOffsets[i][j][k];
     }
     this->reload();
 }
@@ -183,29 +187,37 @@ void ImageFactory::drawItem(int itemId, int x, int y) {
 }
 
 void *ImageFactory::loadImage(int row, int col, int frameBase) { // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
-    int id = g_IF_idTable[row * 4 + col];
+    // First image id of each portrait part (row: face type, col: part); -1 = part not used.
+    const int imageIds[13][4] = {
+        {5000, 5011, 5022, 5033},
+        {5044, 5048, 5053, 5059},
+        {5068, 5073, 5078, 5083},
+        {-1, -1, -1, -1},
+        {5088, 5091, 5094, 5099},
+        {-1, -1, -1, -1},
+        {5103, 5105, 5108, -1},
+        {5113, 5115, 5117, 5120},
+        {-1, -1, -1, -1},
+        {5122, -1, -1, -1},
+        {5126, 5130, 5134, 5139},
+        {5146, -1, -1, -1},
+        {5148, -1, -1, -1},
+    };
+    int id = imageIds[row][col];
     if (id < 0)
         return nullptr;
 
     unsigned image = 0;
-    (*g_IF_li_canvas)->Image2DCreate((unsigned short) ((short)id + (short)frameBase), image);
-
-    int *posBase;
-
-    int cell = row * 8 + col * 2;
-    if (*g_IF_flagA != 0) {
-        posBase = g_IF_posTableA;
-    } else if (*g_IF_flagB != 0) {
-        posBase = g_IF_posTableB;
-    } else {
-        posBase = g_IF_posTableC;
-        if (*g_IF_flagC == 0)
-            posBase = g_IF_posTableD;
-    }
-
-    int px = posBase[cell];
-    int py = posBase[cell + 1];
-    return new ImagePart(image, px, py);
+    Globals::Canvas->Image2DCreate((unsigned short) (id + frameBase), image);
+    return new ImagePart(image,
+                         Globals::iPadHD ? IMAGE_OFFSETS_IPAD_HD[row][col][0]
+                         : Globals::iPadLarge ? IMAGE_OFFSETS_IPAD_LARGE[row][col][0]
+                         : Globals::iPad ? IMAGE_OFFSETS_IPAD[row][col][0]
+                         : IMAGE_OFFSETS[row][col][0],
+                         Globals::iPadHD ? IMAGE_OFFSETS_IPAD_HD[row][col][1]
+                         : Globals::iPadLarge ? IMAGE_OFFSETS_IPAD_LARGE[row][col][1]
+                         : Globals::iPad ? IMAGE_OFFSETS_IPAD[row][col][1]
+                         : IMAGE_OFFSETS[row][col][1]);
 }
 
 void ImageFactory::drawItem(int itemId, int frame, int x, int y) {
