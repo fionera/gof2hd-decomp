@@ -7052,8 +7052,7 @@ void Level::renderBG(int dt) {
         Vector side = {1.0f, 0.0f, 0.0f};
         Vector dir = VectorNormalize(starSystem->getLightDirection());
         Vector right = VectorNormalize(VectorCross(side, dir));
-        Vector up = VectorNormalize(VectorCross(right, dir));
-        side = -up;
+        side = -VectorNormalize(VectorCross(right, dir));
         MatrixSetRotation(cloudMatrix, side, dir, right);
     } else {
         MatrixSetRotation(cloudMatrix, skyRotX, skyRotY, skyRotZ);
@@ -7084,11 +7083,11 @@ void Level::renderBG(int dt) {
         int mission = Globals::status->getCurrentCampaignMission();
         Globals::Canvas->SetTexture(field_1a0, 0xffffffff);
         Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_2);
-        long long time = (long long) ((mission > 0x6a ? 1.5f : 1.0f) * (float) dt);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_10))->Update(time, false);
+        float time = (mission > 0x6a ? 1.5f : 1.0f) * (float) dt;
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_10))->Update((long long) time, false);
         Matrix view = MatrixGetInverse(skyMatrix);
         Globals::Canvas->DrawTransform(field_10, &view);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_18))->Update(time, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_18))->Update((long long) time, false);
         Globals::Canvas->DrawTransform(field_18, &view);
     }
 
@@ -7099,16 +7098,17 @@ void Level::renderBG(int dt) {
         AbyssEngine::Transform *transform = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_1bc);
         int before = (int) transform->currentTime;
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_1bc))->Update(dt, false);
+        Matrix &reversal = reversalMatrix;
         if ((int) transform->currentTime < before) {
             // the animation wrapped around: pick a new random orientation
             float x = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
             float y = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
             float z = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
-            MatrixSetRotation(reversalMatrix, x, y, z);
+            MatrixSetRotation(reversal, x, y, z);
         }
-        skyMatrix *= reversalMatrix;
-        skyMatrix.m[7] = 0;
+        skyMatrix *= reversal;
         skyMatrix.m[3] = 0;
+        skyMatrix.m[7] = 0;
         skyMatrix.m[11] = 0;
         Matrix view = MatrixGetInverse(skyMatrix);
         Globals::Canvas->DrawTransform(field_1bc, &view);
@@ -7121,8 +7121,7 @@ void Level::renderBG(int dt) {
         skyMatrix.m[11] = 0;
         Globals::Canvas->SetWorldViewMatrix(skyMatrix);
         Globals::Canvas->SetColor(0xffffffff);
-        Matrix identity;
-        Globals::Canvas->engine->SetModelMatrix(identity);
+        Globals::Canvas->engine->SetModelMatrix(Matrix());
         Globals::Canvas->SetTexture(supernovaFlareTexture, field_1c8);
         Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_8);
         Globals::Canvas->engine->LightSetLight(0x4000);
