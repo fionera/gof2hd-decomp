@@ -3508,58 +3508,42 @@ void Mat_mul(void *out, const void *a, const void *b); // lint: void_ptr (extern
 void Mat_mulEq(void *acc, const void *b); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void PlayerEgo::handleTurretView(int dt) {
-    bool move = true;
-    if (((intptr_t) this->autoPilotTarget) != 0 && this->dockedToStream == 0)
-        move = true;
-    if (this->dockedFlag != 0 && this->dockingPointIndex == 1)
-        move = false;
-    if (((intptr_t) this->autoPilotTarget) == 0)
-        move = true;
-    if (move) {
-        float d = (float) dt;
-        ((AEGeometry *) (this->geometry))->moveForward(this->thrust * d * ((float &) this->speed));
-    }
-
-    unsigned char look[0x30];
-    Mat_mul(look, ((AEGeometry *) (this->geometry))->getMatrix(), ((AEGeometry *) (this->dockCameraNode))->getMatrix());
-    Mat_mulEq(look, ((AEGeometry *) (this->dockCameraMid))->getMatrix());
-
-    if (this->hitShake != 0 || this->boostingFlag != 0) {
-        unsigned char eye[12], up[12], dir[12], rel[12];
-        Mat_getPosition(eye, look);
-        Mat_getUp(up, look);
-        Mat_getDir(dir, look);
-        Vec_sub(rel, dir, eye);
-
-        if (this->hitShake != 0) {
-            int t = this->hitShakeTimer + dt;
-            this->hitShakeTimer = t;
-            if (t > 1000)
+    if ((this->autoPilotTarget == 0 || this->dockedToStream) && !(this->dockedFlag && this->dockingPointIndex == 1))
+        this->geometry->moveForward(this->thrust * (float) dt * ((float &) this->speed));
+    Matrix view = this->geometry->getMatrix() * this->dockCameraNode->getMatrix();
+    view *= this->dockCameraMid->getMatrix();
+    if (this->hitShake || this->boostingFlag) {
+        Vector eye = AbyssEngine::AEMath::MatrixGetPosition(view);
+        Vector up = AbyssEngine::AEMath::MatrixGetUp(view);
+        Vector target = eye - AbyssEngine::AEMath::MatrixGetDir(view);
+        if (this->hitShake) {
+            this->hitShakeTimer += dt;
+            if (this->hitShakeTimer > 1000)
                 this->hitShake = 0;
+            eye.x += (float) (Globals::rnd->nextInt(12) - 6) * 0.001f;
+            eye.y += (float) (Globals::rnd->nextInt(12) - 6) * 0.001f;
+            eye.z += (float) (Globals::rnd->nextInt(12) - 6) * 0.001f;
         }
-        PE_htv_applyShake(this, dt, eye, rel);
-
-        unsigned char lookAt[0x30];
-        Mat_getLookAt(lookAt, eye, rel, up);
-        Mat_assign(look, lookAt);
+        if (this->boostingFlag) {
+            float boost = this->getBoostPercentage();
+            int amplitude = this->boostSpeed;
+            if (amplitude <= 2)
+                amplitude = 2;
+            if (amplitude >= 8)
+                amplitude = 8;
+            target.x += boost * (float) (Globals::rnd->nextInt(amplitude * 2) - amplitude) * 0.0015f;
+            target.y += boost * (float) (Globals::rnd->nextInt(amplitude * 2) - amplitude) * 0.0015f;
+            target.z += boost * (float) (Globals::rnd->nextInt(amplitude * 2) - amplitude) * 0.0015f;
+        }
+        view = AbyssEngine::AEMath::MatrixGetLookAt(eye, target, up);
     }
-
-    unsigned int cam = (unsigned int) (unsigned long) Globals::Canvas;
-    Globals::Canvas->CameraSetLocal((unsigned int) (cam),
-                                    *(const AbyssEngine::AEMath::Matrix *) &this->turretCamera);
-
+    Globals::Canvas->CameraSetLocal(this->turretCamera, view);
     this->pitchAccumDir = 0;
     this->yawAccumDir = 0;
-    ((PlayerEgo *) (this))->roll(this->shakeIntensity);
-
-    unsigned int hull = (unsigned int) (long) Globals::Canvas->TransformGetLocal(
-        (unsigned int) (this->geometry->transform));
-    unsigned int ret = (unsigned int) (long) Globals::Canvas->TransformGetLocal(
-        (unsigned int) (this->field_0x4->transform));
-    unsigned char tmp[0x30];
-    Mat_mul(tmp, (AbyssEngine::AEMath::Matrix *) (unsigned long) hull,
-            (AbyssEngine::AEMath::Matrix *) (unsigned long) ret);
-    Mat_assign(((Player *) this->player)->transform, tmp);
+    this->roll(this->shakeIntensity);
+    reinterpret_cast<Matrix &>(this->player->transform[0]) =
+        *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
+        * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
 }
 
 int PlayerEgo::approachAsteroid(Hud *hud, int /*unused*/, Radar * /*radar*/) {
