@@ -10,9 +10,8 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/weapons/Radar.h"
 
-static int PlayerCreature_weightTable[16] = {};
-static int PlayerCreature_rageTable[16] = {};
-static int PlayerCreature_enduranceTable[16] = {};
+// Per creature type: carry weight, also the rage multiplier bonus.
+static const int PlayerCreature_weightTable[4] = {1, 1, 1, 0};
 static int *PlayerCreature_randomMax = nullptr;
 static FModSound **PlayerCreature_sound = nullptr;
 
@@ -72,7 +71,7 @@ uint8_t PlayerCreature::isCaught() {
 
 void PlayerCreature::rage(int amount) {
     float amountScale = (float) amount / -100.0f;
-    float typeScale = (float) PlayerCreature_rageTable[this->creatureType()];
+    float typeScale = (float) PlayerCreature_weightTable[this->creatureType()];
     this->rageTimer = 0;
     this->raging = 0x101;
     this->rageScale = (amountScale + 1.0f) * (typeScale + 1.0f);
@@ -88,20 +87,16 @@ int PlayerCreature::getItemIndex() {
 
 PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                                float x, float y, float z)
-    : KIPlayer(0, 0, player, geometry, x, y, z, true) {
-    this->rageMatrix = AbyssEngine::AEMath::Matrix();
-
+    : KIPlayer(kind, -1, player, geometry, x, y, z, false) {
     this->caught = 0;
-    this->itemIndex = itemIndex;
     this->rageScale = 1.0f;
+    this->itemIndex = itemIndex;
+    this->endurance = this->maxEndurance;
     this->rageTimer = 0;
     this->raging = 0;
-
-    int hitpoints = this->player->getHitpoints();
-    int endurance = (int) (((float) PlayerCreature_enduranceTable[kind] / 10.0f) * 8000.0f) + 8000;
-    this->maxEndurance = endurance;
-    this->endurance = endurance;
-    this->lastHitpoints = hitpoints;
+    this->lastHitpoints = this->player->getHitpoints();
+    this->maxEndurance = (int) (((float) PlayerCreature_weightTable[kind] / 10.0f) * 8000.0f) + 8000;
+    this->endurance = this->maxEndurance;
     reset();
 }
 
