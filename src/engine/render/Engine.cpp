@@ -2,6 +2,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES/gl.h>
+extern "C" void glClientActiveTexture(GLenum texture); // lint: extern_c (GLES1 C ABI entry point, defined in GLES1Compat.cpp)
 #include "engine/core/AbyssEngine.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
@@ -82,8 +83,6 @@ namespace {
 
     bool g_Engine_supportsFBO;
 
-    int g_Engine_defaultShader;
-    int g_Engine_shaderDrew;
 
     int g_Engine_shaderPostA;
     int g_Engine_shaderPostB;
@@ -525,66 +524,153 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
 }
 
 void Engine::RenderMesh(Mesh *mesh) {
+    // Triangle statistics: [0]/[1] = indexed 2D/3D (field_0x58 holds two counters),
+    // triangleCountA/B = VBO-indexed 2D/3D; drawCallCountA/B = 2D/3D draw calls.
+    int *indexedTriangles = (int *) &this->field_0x58;
     if (mesh == 0 || mesh->indexCount == 0) {
-        goto done;
+        return;
     }
 
-    if (Engine::enableShader == 0) {
-        glVertexPointer(3, 0x1406, 0, mesh->positions);
-        this->AEClientState(0x8074, true);
-        bool tex = ((uint32_t) mesh->vertexFormat << 30) < 0;
-
-        if (tex && (mesh->material == 0 ||
-                    ((Material *) mesh->material)->textures[1] == -1)) {
-            glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
-        }
-        this->AEClientState(0x8078, tex);
-        bool normals = ((uint32_t) mesh->vertexFormat << 29) < 0;
-        if (normals) {
-            glNormalPointer(0x1406, 0, mesh->normals);
-        }
-        this->AEClientState(0x8075, normals);
-        bool colors = ((uint32_t) mesh->vertexFormat << 28) < 0;
-        if (colors) {
-            glColorPointer(4, 0x1406, 0, (unsigned char *) (uintptr_t) mesh->colors);
-        }
-        this->AEClientState(0x8076, colors);
-        if (((uint32_t) mesh->vertexFormat << 27) < 0) {
-            glDrawElements(4, mesh->indexCount, 0x1403,
-                           mesh->indices);
+    if (Engine::enableShader != 0) {
+        ShaderSet = 0;
+        uint32_t flags = this->glEnableFlags;
+        if ((flags & 0x1000) != 0) {
+            this->ShaderSetActive(GenericShader::ShaderIndex, mesh);
+        }         else if ((flags & 0x2000) != 0) {
+            this->ShaderSetActive(GenericShader1::ShaderIndex, mesh);
+        }         else if ((flags & 0x4000) != 0) {
+            this->ShaderSetActive(GenericShader2::ShaderIndex, mesh);
+        }         else if ((flags & 0x400) != 0) {
+            this->ShaderSetActive(SandboxShader::ShaderIndex, mesh);
+        }         else if ((flags & 0x4) != 0) {
+            this->ShaderSetActive(BumpMapping::ShaderIndex, mesh);
+        }         else if ((flags & 0x10000) != 0) {
+            this->ShaderSetActive(BumpShaderV3::ShaderIndex, mesh);
+        }         else if ((flags & 0x1000000) != 0) {
+            this->ShaderSetActive(BumpShaderParticle::ShaderIndex, mesh);
+        }         else if ((flags & 0x40000) != 0) {
+            this->ShaderSetActive(BumpShaderCloak::ShaderIndex, mesh);
+        }         else if ((flags & 0x8000000) != 0) {
+            this->ShaderSetActive(BumpShaderRefract::ShaderIndex, mesh);
+        }         else if ((flags & 0x200000) != 0) {
+            this->ShaderSetActive(EnergyShield::ShaderIndex, mesh);
+        }         else if ((flags & 0x400000) != 0) {
+            this->ShaderSetActive(SimpleRefractionShader::ShaderIndex, mesh);
+        }         else if ((flags & 0x100000) != 0) {
+            this->ShaderSetActive(GlowShader::ShaderIndex, mesh);
+        }         else if ((flags & 0x4000000) != 0) {
+            this->ShaderSetActive(DNSShader::ShaderIndex, mesh);
+        } 
+        else if ((flags & 0x20000) != 0) {
+            if (Engine::UseAdvancedShader != 0) {
+                this->ShaderSetActive(BumpRimCubeShader::ShaderIndex, mesh);
+            } else {
+                this->ShaderSetActive(BumpRimCubeShader_new::ShaderIndex, mesh);
+            }
+        } else if ((flags & 0x2000000) != 0) {
+            // shader already bound by the caller
+        } else if ((flags & 0x8) != 0) {
+            this->ShaderSetActive(SpecCubeMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x80000) != 0) {
+            this->ShaderSetActive(SpecCubeAlphaMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x8000) != 0) {
+            this->ShaderSetActive(CubeNormalMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x2) != 0) {
+            this->ShaderSetActive(TextureAlphaTestShader::ShaderIndex, mesh);
+        } else if ((flags & 0x1) == 0) {
+            this->ShaderSetActive(NoTexShader::ShaderIndex, mesh);
+        } else if ((mesh->vertexFormat & 0xa) == 8) {
+            this->ShaderSetActive(NoTexVtxColorShader::ShaderIndex, mesh);
+        } else if (this->lightingEnabled) {
+            this->ShaderSetActive(TextureLightShader::ShaderIndex, mesh);
+        } else if ((mesh->vertexFormat & 8) != 0) {
+            this->ShaderSetActive(TextureVtxColorShader::ShaderIndex, mesh);
+        } else if ((flags & 0x800000) != 0) {
+            this->ShaderSetActive(ColorMixAdd::ShaderIndex, mesh);
         } else {
-            glDrawArrays(4, 0, mesh->vertexCount);
+            this->ShaderSetActive(TextureShader::ShaderIndex, mesh);
         }
 
-        if (tex && mesh->material != 0 &&
-            ((Material *) mesh->material)->textures[1] != -1) {
-            this->AEClientState(0x8078, false);
-        }
-    } else {
-        g_Engine_shaderDrew = 0;
-        this->ShaderSetActive(g_Engine_defaultShader, mesh);
-        if (g_Engine_shaderDrew != 0) {
-            int oldBuffer = 0;
+        if (ShaderSet != 0) {
+            int oldBuffer;
             glGetIntegerv(0x8ca6, &oldBuffer);
-            if (((uint32_t) mesh->vertexFormat << 27) < 0) {
-                if (mesh->uploaded == 0) {
-                    glDrawElements(4, mesh->indexCount, 0x1403,
-                                   mesh->indices);
-                } else {
+            if ((mesh->vertexFormat & 0x10) == 0) {
+                glDrawArrays(4, 0, mesh->vertexCount);
+            } else {
+                unsigned int count = mesh->indexCount;
+                unsigned int triangles = count / 3;
+                if (mesh->uploaded != 0) {
+                    if (this->statsEnabled != 0) {
+                        this->triangleCountB += triangles;
+                        this->drawCallCountB += 1;
+                    } else {
+                        this->triangleCountA += triangles;
+                        this->drawCallCountA += 1;
+                    }
                     glBindBuffer(0x8893, mesh->indexVBO);
                     glDrawElements(4, mesh->indexCount, 0x1403, 0);
                     glBindBuffer(0x8892, 0);
                     glBindBuffer(0x8893, 0);
+                } else {
+                    if (this->statsEnabled != 0) {
+                        indexedTriangles[1] += triangles;
+                        this->drawCallCountB += 1;
+                    } else {
+                        indexedTriangles[0] += triangles;
+                        this->drawCallCountA += 1;
+                    }
+                    glDrawElements(4, count, 0x1403, mesh->indices);
                 }
-            } else {
-                glDrawArrays(4, 0, mesh->vertexCount);
             }
-            this->ShaderSetInActive();
+            this->shaders[currentUsedShaderIndex]->SetInActive();
         }
+        return;
     }
 
-done:
-    return;
+    glVertexPointer(3, 0x1406, 0, mesh->positions);
+    this->AEClientState(0x8074, true);
+    if ((mesh->vertexFormat & 2) == 0) {
+        this->AEClientState(0x8078, false);
+    } else if (mesh->material == 0 || ((Material *) mesh->material)->textures[1] == -1) {
+        glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
+        this->AEClientState(0x8078, true);
+    }
+    if ((mesh->vertexFormat & 4) == 0) {
+        this->AEClientState(0x8075, false);
+    } else {
+        glNormalPointer(0x1406, 0, mesh->normals);
+        this->AEClientState(0x8075, true);
+    }
+    if ((mesh->vertexFormat & 8) == 0) {
+        this->AEClientState(0x8076, false);
+    } else {
+        glColorPointer(4, 0x1406, 0, mesh->colors);
+        this->AEClientState(0x8076, true);
+    }
+    if ((mesh->vertexFormat & 0x10) == 0) {
+        glDrawArrays(4, 0, mesh->vertexCount);
+    } else {
+        unsigned int count;
+        if (this->field_0xfe != 0) {
+            count = mesh->indexCount;
+            unsigned int triangles = count / 3;
+            if (this->statsEnabled != 0) {
+                indexedTriangles[1] += triangles;
+                this->drawCallCountB += 1;
+            } else {
+                indexedTriangles[0] += triangles;
+                this->drawCallCountA += 1;
+            }
+        } else {
+            count = mesh->indexCount;
+        }
+        glDrawElements(4, count, 0x1403, mesh->indices);
+    }
+    if ((mesh->vertexFormat & 2) != 0 && mesh->material != 0 &&
+        ((Material *) mesh->material)->textures[1] != -1) {
+        this->AEClientState(0x8078, false);
+        return glClientActiveTexture(0x84c0);
+    }
 }
 
 void Engine::DrawQuad(int x, int y, int width, int height) {
