@@ -129,7 +129,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     }
     if (type == 0x19) {
         this->explosions = new Array<Explosion *>();
-        ArraySetLength(gun->count, *this->explosions);
+        ArraySetLength(gun->positions.count, *this->explosions);
         this->explosionReady = new uint8_t[this->explosions->size()];
         for (uint32_t i = 0; i < this->explosions->size(); ++i) {
             (*this->explosions)[i] =
@@ -272,11 +272,11 @@ void ObjectGun::update(int dt) {
 tail:
     this->wasFiring = this->gun->delayActive;
     if (this->gun->weaponType == ITEM_SORT_SCATTER_GUN) {
-        for (uint32_t i = 0; i < this->gun->count; ++i) {
+        for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
             if (this->gun->hitFlags[i] == 0)
                 continue;
             if (this->explosionReady[i] != 0) {
-                (*this->explosions)[i]->start(reinterpret_cast<Vector *>(this->gun->hitPositions)[i],
+                (*this->explosions)[i]->start(this->gun->hitPositions.data()[i],
                                               Vector{0.0f, 0.0f, 0.0f});
                 this->explosionReady[i] = 0;
             }
@@ -298,7 +298,7 @@ void ObjectGun::render() {
 
     Gun *gun = this->gun;
     if (gun->weaponType == ITEM_SORT_SCATTER_GUN) {
-        for (uint32_t i = 0; i < gun->count; ++i) {
+        for (uint32_t i = 0; i < gun->positions.count; ++i) {
             if (gun->hitFlags[i] != 0) {
                 this->explosions->data()[i]->render();
                 gun = this->gun;
@@ -320,15 +320,15 @@ void ObjectGun::render() {
         }
 
         int inactive = 0;
-        for (uint32_t i = 0; i < this->gun->count; ++i) {
-            const Vector &position = ((const Vector *) this->gun->positions)[i];
+        for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
+            const Vector &position = this->gun->positions.data()[i];
             if (position.x == 50000.0f) {
                 // Parked slot (no live projectile).
                 ++inactive;
                 continue;
             }
             MatrixSetTranslation(this->orientation, position.x, position.y, position.z);
-            this->dir = VectorNormalize(((const Vector *) this->gun->velocities)[i]);
+            this->dir = VectorNormalize(this->gun->velocities.data()[i]);
 
             if (this->visible != 0) {
                 // Camera-facing projectile (beam heads, flares): billboard along the flight direction.
@@ -364,11 +364,11 @@ void ObjectGun::render() {
                 MatrixSetRotation(steer, player->rocketPitch, player->rocketYaw, 0.0f);
                 player->field_0x40 *= steer;
                 this->orientation = player->field_0x40;
-                const Vector &rocket = ((const Vector *) this->gun->positions)[i];
+                const Vector &rocket = this->gun->positions.data()[i];
                 MatrixSetTranslation(this->orientation, rocket.x, rocket.y, rocket.z);
                 const Vector heading = MatrixGetDir(this->orientation);
                 const Vector unit = VectorNormalize(heading);
-                ((Vector *) this->gun->velocities)[i] = unit * this->gun->pitchRate;
+                this->gun->velocities.data()[i] = unit * this->gun->pitchRate;
                 player->rocketPitch = 0.0f;
                 player->rocketYaw = 0.0f;
                 MatrixSetRotation(steer, 0.0f, 0.0f, this->rollAngle);
@@ -378,7 +378,7 @@ void ObjectGun::render() {
                 const Vector *upSource;
                 Vector worldUp;
                 if (this->level != nullptr && this->level->getPlayer() != nullptr && this->gun->isPlayerGun() != 0) {
-                    upSource = &((const Vector *) this->gun->upVectors)[i];
+                    upSource = &this->gun->upVectors.data()[i];
                 } else {
                     worldUp.y = 1.0f;
                     worldUp.x = 0.0f;
@@ -435,7 +435,7 @@ void ObjectGun::render() {
         }
 
         gun = this->gun;
-        if (inactive >= (int) gun->velocitiesCount)
+        if (inactive >= (int) gun->velocities.count)
             gun->active = 0;
     }
 
