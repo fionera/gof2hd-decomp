@@ -44,8 +44,7 @@ namespace AbyssEngine {
         // Ghidra ground truth: a 4-byte field sits at 0x4 between paintCanvas and currentKey@0x8;
         // our decomp lacked it, shifting currentKey..savedState 4 bytes low.
         uint32_t field_0x4;
-        uint32_t currentKey;
-        uint32_t currentKeyHigh;
+        long long currentKey;
         AbyssEngine::KeyCode *keyMappingTable; // new KeyCode[0x40]
         bool orientationTrackingEnabled;
         IApplicationModule *currentModule;
@@ -70,15 +69,11 @@ namespace AbyssEngine {
         uint64_t currentTimeMs;
         uint64_t frameTimeMs;
         uint64_t previousFrameTimeMs;
-        uint32_t keyState;
-        uint32_t keyStateHigh;
+        long long keyState;
         Array<long long> actionTable; // inline Array (see modules/moduleIds above)
-        // Ghidra: a 4-byte field sits between actionTable (ends 0x94) and actionMask@0x98; ours lacked it.
-        uint32_t field_0x94;
-        uint32_t actionMask;
-        uint32_t actionMaskHigh;
-        uint32_t actionState;
-        uint32_t actionStateHigh;
+        // 0x94: alignment padding before the 64-bit masks
+        long long actionMask;
+        long long actionState;
         Engine *engine;
         AESoundRessource *soundResource;
         bool soundFxEnabled;

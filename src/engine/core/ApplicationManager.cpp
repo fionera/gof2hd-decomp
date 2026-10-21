@@ -10,85 +10,10 @@
 #include "engine/core/AbyssEngine.h"
 #include <cstddef>
 
-namespace {
-    struct ModuleVTable {
-        void (*slot0)();
-
-        void (*destroy)(IApplicationModule *self);
-
-        int (*showLoading)(IApplicationModule *self);
-
-        void (*release)(IApplicationModule *self);
-
-        void (*onKeyPress)(IApplicationModule *self, IApplicationModule *self2,
-                           unsigned int, unsigned int, unsigned int, unsigned int);
-
-        void (*onKeyRelease)(IApplicationModule *self, IApplicationModule *self2,
-                             unsigned int, unsigned int, unsigned int, unsigned int);
-
-        void (*onTouchBegin2)(IApplicationModule *self, int x, int y);
-
-        void (*onTouchMove2)(IApplicationModule *self, int x, int y);
-
-        void (*onTouchEnd2)(IApplicationModule *self, int x, int y);
-
-        void (*onTouchBegin3)(IApplicationModule *self, int x, int y, void *data); // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-
-        // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-        void (*onTouchMove3)(IApplicationModule *self, int x, int y, void *data); // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-
-        // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-        void (*onTouchEnd3)(IApplicationModule *self, int x, int y, void *data); // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-
-        // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-        void (*onRender3D)(IApplicationModule *self);
-
-        void (*onRender2D)(IApplicationModule *self);
-
-        void (*onUpdate)(IApplicationModule *self);
-
-        void (*onSuspend)(IApplicationModule *self);
-
-        void (*onResume)(IApplicationModule *self);
-    };
-
-    inline ModuleVTable *module_vtable(IApplicationModule *module) {
-        return *reinterpret_cast<ModuleVTable **>(module);
-    }
-
-    struct ActionEntry {
-        unsigned int actionLow;
-        unsigned int actionHigh;
-        unsigned int keyIndex;
-        int flags;
-    };
-
-    inline ActionEntry *action_entries(Array<long long> *table) {
-        return reinterpret_cast<ActionEntry *>(table->data());
-    }
-}
-
 #if __SIZEOF_POINTER__ == 4
-static_assert(offsetof(ModuleVTable, destroy) == 0x04, "vtable destroy slot");
-static_assert(offsetof(ModuleVTable, showLoading) == 0x08, "vtable showLoading slot");
-static_assert(offsetof(ModuleVTable, release) == 0x0c, "vtable release slot");
-static_assert(offsetof(ModuleVTable, onKeyPress) == 0x10, "vtable onKeyPress slot");
-static_assert(offsetof(ModuleVTable, onKeyRelease) == 0x14, "vtable onKeyRelease slot");
-static_assert(offsetof(ModuleVTable, onTouchBegin2) == 0x18, "vtable onTouchBegin2 slot");
-static_assert(offsetof(ModuleVTable, onTouchEnd2) == 0x20, "vtable onTouchEnd2 slot");
-static_assert(offsetof(ModuleVTable, onTouchBegin3) == 0x24, "vtable onTouchBegin3 slot");
-static_assert(offsetof(ModuleVTable, onRender3D) == 0x30, "vtable onRender3D slot");
-static_assert(offsetof(ModuleVTable, onUpdate) == 0x38, "vtable onUpdate slot");
-static_assert(offsetof(ModuleVTable, onSuspend) == 0x3c, "vtable onSuspend slot");
-static_assert(offsetof(ModuleVTable, onResume) == 0x40, "vtable onResume slot");
 static_assert(sizeof(AbyssEngine::KeyCode) == 0x10, "KeyCode entry size");
 static_assert(offsetof(AbyssEngine::KeyCode, name) == 0x04, "KeyCode name offset");
-static_assert(sizeof(ActionEntry) == 0x10, "action entry size");
 #endif
-
-namespace {
-
-}
 
 ApplicationManager::ApplicationManager(Engine *engine) {
     AbyssEngine::debugTouch[0] = 0.0f;
@@ -101,12 +26,10 @@ ApplicationManager::ApplicationManager(Engine *engine) {
     this->applicationData = 0;
     this->currentTimeMs = 0;
     this->currentKey = 0;
-    this->currentKeyHigh = 0;
     this->state = 5;
     this->currentModule = 0;
     this->quitCallback = 0;
     this->keyState = 0;
-    this->keyStateHigh = 0;
     this->engine = engine;
 
     this->paintCanvas = new PaintCanvas(engine);
@@ -185,13 +108,13 @@ ApplicationManager::ApplicationManager(Engine *engine) {
 ApplicationManager::~ApplicationManager() {
     IApplicationModule *module = this->currentModule;
     if (module != 0) {
-        module_vtable(module)->release(module);
+        module->OnRelease();
     }
 
     for (unsigned int i = 0; i < this->modules.size(); ++i) {
         IApplicationModule *entry = this->modules[i];
         if (entry != 0) {
-            module_vtable(entry)->destroy(entry);
+            delete entry;
         }
         this->modules[i] = 0;
     }
@@ -266,14 +189,12 @@ void ApplicationManager::Resume(bool arg) {
 
     IApplicationModule *module = this->currentModule;
     if (module != 0) {
-        module_vtable(module)->onResume(module);
+        module->OnResume();
         if (this->engine != 0) {
             this->engine->Resume();
         }
         this->actionState = 0;
-        this->actionStateHigh = 0;
         this->keyState = 0;
-        this->keyStateHigh = 0;
         this->state = 4;
     }
 }
@@ -286,7 +207,7 @@ void ApplicationManager::Suspend() {
 
     IApplicationModule *module = this->currentModule;
     if (module != 0) {
-        module_vtable(module)->onSuspend(module);
+        module->OnSuspend();
         if (this->engine != 0) {
             this->engine->Suspend();
         }
@@ -315,7 +236,7 @@ void ApplicationManager::OnUpdate(long long now) {
                 this->currentModule = next;
             }
             if (module != 0) {
-                int loading = module_vtable(module)->showLoading(module);
+                int loading = module->OnInitialize();
                 LoadingCallback_t *callback = this->loadingCallback;
                 if (callback != 0) {
                     callback(this->paintCanvas, loading, this->loadingCallbackData);
@@ -339,7 +260,7 @@ void ApplicationManager::OnUpdate(long long now) {
         case 1: {
             IApplicationModule *module = this->currentModule;
             if (module != 0) {
-                module_vtable(module)->release(module);
+                module->OnRelease();
                 this->engine->ResetLightParam();
                 this->state = 0;
                 this->currentModule = 0;
@@ -357,16 +278,15 @@ void ApplicationManager::OnUpdate(long long now) {
         case 5: {
             IApplicationModule *module = this->currentModule;
             if (module != 0) {
-                ModuleVTable *vtable = module_vtable(module);
-                vtable->onRender3D(module);
+                module->OnUpdate();
                 Engine *engine = this->engine;
                 engine->triangleCountA = 0;
                 engine->field_0x58 = 0;
                 this->paintCanvas->culledCount = 0;
-                vtable->onRender2D(module);
+                module->OnRender3D();
                 ResumeCallback_t *resume = this->resumeCallback;
                 if (resume == 0 || !resume(this->paintCanvas, this->resumeCallbackData)) {
-                    vtable->onUpdate(module);
+                    module->OnRender2D();
                 }
             }
             break;
@@ -379,112 +299,66 @@ void ApplicationManager::OnUpdate(long long now) {
 void ApplicationManager::OnKeyPress(int key) {
     this->actionMask = 0;
     this->currentKey = key;
-    this->currentKeyHigh = key >> 31;
-    this->actionMaskHigh = 0;
 
-    unsigned int keyLow = 0;
-    unsigned int keyHigh = 0;
-    unsigned int actionLow = 0;
-    unsigned int actionHigh = 0;
-    unsigned int keyIndex = 0;
-    AbyssEngine::KeyCode *mapping = this->keyMappingTable;
-    while (keyIndex <= 0x3f) {
-        if (mapping->code == key) {
-            int highIndex = (int) keyIndex - 0x20;
-            keyLow = 1u << keyIndex;
-            if (highIndex >= 0) {
-                keyLow = 0;
-            }
-            keyHigh = 1u >> (0x20 - keyIndex);
-            if (highIndex >= 0) {
-                keyHigh = 1u << highIndex;
-            }
-            this->keyState |= keyLow;
-            this->keyStateHigh |= keyHigh;
-
-            ActionEntry *entries = action_entries(&this->actionTable);
-            for (unsigned int i = 0; i < this->actionTable.size(); i += 2) {
-                ActionEntry *entry = &entries[i / 2];
-                if (entry->keyIndex == keyIndex && entry->flags == 0) {
-                    actionLow |= entry->actionLow;
-                    actionHigh |= entry->actionHigh;
-                    this->actionMask = actionLow;
-                    this->actionMaskHigh = actionHigh;
-                    this->actionState |= actionLow;
-                    this->actionStateHigh |= actionHigh;
+    long long keys = 0;
+    long long actions = 0;
+    for (unsigned int i = 0; i < 0x40; ++i) {
+        if (this->keyMappingTable[i].code == key) {
+            keys = 1LL << i;
+            this->keyState |= keys;
+            for (unsigned int j = 0; j < this->actionTable.size(); j += 2) {
+                if (this->actionTable[j + 1] == i) {
+                    actions |= this->actionTable[j];
+                    this->actionMask = actions;
+                    this->actionState |= actions;
                 }
             }
             break;
         }
-        ++mapping;
-        ++keyIndex;
     }
 
     IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
-        module_vtable(module)->onKeyPress(module, module, keyLow, keyHigh, actionLow, actionHigh);
+        module->OnKeyPress(keys, actions);
     }
 }
 
 void ApplicationManager::OnKeyRelease(int key) {
     this->actionMask = 0;
-    this->actionMaskHigh = 0;
 
-    unsigned int keyLow = 0;
-    unsigned int keyHigh = 0;
-    unsigned int actionLow = 0;
-    unsigned int actionHigh = 0;
-    unsigned int keyIndex = 0;
-    AbyssEngine::KeyCode *mapping = this->keyMappingTable;
-    while (keyIndex <= 0x3f) {
-        if (mapping->code == key) {
-            int highIndex = (int) keyIndex - 0x20;
-            keyLow = 1u << keyIndex;
-            if (highIndex >= 0) {
-                keyLow = 0;
-            }
-            keyHigh = 1u >> (0x20 - keyIndex);
-            if (highIndex >= 0) {
-                keyHigh = 1u << highIndex;
-            }
-            this->keyState &= ~keyLow;
-            this->keyStateHigh &= ~keyHigh;
-
-            ActionEntry *entries = action_entries(&this->actionTable);
-            for (unsigned int i = 0; i < this->actionTable.size(); i += 2) {
-                ActionEntry *entry = &entries[i / 2];
-                if (entry->keyIndex == keyIndex && entry->flags == 0) {
-                    actionLow |= entry->actionLow;
-                    actionHigh |= entry->actionHigh;
-                    this->actionMask = actionLow;
-                    this->actionMaskHigh = actionHigh;
-                    this->actionState &= ~actionLow;
-                    this->actionStateHigh &= ~actionHigh;
+    long long keys = 0;
+    long long actions = 0;
+    for (unsigned int i = 0; i < 0x40; ++i) {
+        if (this->keyMappingTable[i].code == key) {
+            keys = 1LL << i;
+            this->keyState &= ~keys;
+            for (unsigned int j = 0; j < this->actionTable.size(); j += 2) {
+                if (this->actionTable[j + 1] == i) {
+                    actions |= this->actionTable[j];
+                    this->actionMask = actions;
+                    this->actionState &= ~actions;
                 }
             }
             break;
         }
-        ++mapping;
-        ++keyIndex;
     }
 
     IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
-        module_vtable(module)->onKeyRelease(module, module, keyLow, keyHigh, actionLow, actionHigh);
+        module->OnKeyRelease(keys, actions);
     }
 }
 
 void ApplicationManager::ResetKeyState() {
     this->keyState = 0;
-    this->keyStateHigh = 0;
 }
 
 uint64_t ApplicationManager::GetKeyState() {
-    return ((uint64_t)this->keyStateHigh << 32) | this->keyState;
+    return this->keyState;
 }
 
 uint64_t ApplicationManager::GetActionState() {
-    return ((uint64_t)this->actionStateHigh << 32) | this->actionState;
+    return this->actionState;
 }
 
 void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode *> *array) {
@@ -523,9 +397,9 @@ void ApplicationManager::OnTouchBegin(int x, int y, void *touch) { // lint: void
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
-        module_vtable(module)->onTouchBegin3(module, x, y, touch);
+        module->OnTouchBegin(x, y, touch);
         module = this->currentModule;
-        module_vtable(module)->onTouchBegin2(module, x, y);
+        module->OnTouchBegin(x, y);
         this->lastTouchX = x;
         this->lastTouchY = y;
 
@@ -580,9 +454,9 @@ void ApplicationManager::OnTouchMove(int x, int y, void *touch) { // lint: void_
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
-        module_vtable(module)->onTouchMove3(module, x, y, touch);
+        module->OnTouchMove(x, y, touch);
         module = this->currentModule;
-        module_vtable(module)->onTouchMove2(module, x, y);
+        module->OnTouchMove(x, y);
         this->lastTouchX = x;
         this->lastTouchY = y;
     }
@@ -596,9 +470,9 @@ void ApplicationManager::OnTouchEnd(int x, int y, void *touch) { // lint: void_p
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
-        module_vtable(module)->onTouchEnd3(module, x, y, touch);
+        module->OnTouchEnd(x, y, touch);
         module = this->currentModule;
-        module_vtable(module)->onTouchEnd2(module, x, y);
+        module->OnTouchEnd(x, y);
         this->lastTouchX = x;
         this->lastTouchY = y;
     }
@@ -606,13 +480,9 @@ void ApplicationManager::OnTouchEnd(int x, int y, void *touch) { // lint: void_p
 
 void ApplicationManager::OnTouchEnd() {
     this->currentKey = 0;
-    this->currentKeyHigh = 0;
     this->keyState = 0;
-    this->keyStateHigh = 0;
     this->actionMask = 0;
-    this->actionMaskHigh = 0;
     this->actionState = 0;
-    this->actionStateHigh = 0;
 }
 
 uint64_t ApplicationManager::GetSystemTimeMillis() {
