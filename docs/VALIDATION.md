@@ -161,7 +161,8 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
 - **Literal-pool words are compared as data**, not garbage-decoded instructions: constants by
   exact value (mission timers/coordinates now diff for real), function-pointer words by
   entry-exact symbol, link-dependent address words masked neutrally. Pool words consumed by the
-  PIC idiom (`ldr rX, [pc, #N]` … `add rX, pc`) are always masked: they are PC-to-GOT deltas that
+  PIC idiom (`ldr rX, [pc, #N]` … `add rX, pc`, rX followed forward up to 16 instructions until
+  consumed or overwritten) are always masked: they are PC-to-GOT deltas that
   change value on every relink, and before this rule one that accidentally equalled a function
   entry address was "named" and produced phantom linked_exact flips on untouched functions
   whenever unrelated code shifted the layout (±2-5 noise per relink, observed on BeamGun dtors /
@@ -177,7 +178,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1212, linked_exact 2955, avg 80.39%**
+Current numbers (of **4523** compared): **byte_exact 1212, linked_exact 2958, avg 80.39%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4558,
   "compared": 4523,
-  "avg_match": 80.22,
-  "byte_exact": 1209,
-  "linked_exact": 2945,
-  "fuzzy_perfect": 2945,
+  "avg_match": 80.39,
+  "byte_exact": 1212,
+  "linked_exact": 2958,
+  "fuzzy_perfect": 2958,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -118,14 +118,6 @@
    "linked": false,
    "osize": 6,
    "usize": 20
-  },
-  {
-   "name": "SHA224_Update",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 4,
-   "usize": 292
   },
   {
    "name": "_Z10keyPressedPN11AbyssEngine6EngineEi",
@@ -848,22 +840,6 @@
    "usize": 322
   },
   {
-   "name": "SHA224_Init",
-   "pct": 3.1,
-   "byte": false,
-   "linked": false,
-   "osize": 132,
-   "usize": 128
-  },
-  {
-   "name": "SHA256_Init",
-   "pct": 3.1,
-   "byte": false,
-   "linked": false,
-   "osize": 132,
-   "usize": 128
-  },
-  {
    "name": "_ZN12HangarWindow10OnTouchEndEii",
    "pct": 3.1,
    "byte": false,
@@ -926,14 +902,6 @@
    "linked": false,
    "osize": 8852,
    "usize": 616
-  },
-  {
-   "name": "SHA256_Final",
-   "pct": 3.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1048,
-   "usize": 796
   },
   {
    "name": "_ZN18TargetFollowCamera55aproximateCooefficientsForAproximationOfDampingFunktionEfRdS0_S0_S0_S0_",
@@ -1584,28 +1552,12 @@
    "usize": 208
   },
   {
-   "name": "SHA256",
-   "pct": 10.1,
-   "byte": false,
-   "linked": false,
-   "osize": 104,
-   "usize": 292
-  },
-  {
    "name": "_ZN5Level11createSpaceEv",
    "pct": 10.1,
    "byte": false,
    "linked": false,
    "osize": 3076,
    "usize": 432
-  },
-  {
-   "name": "SHA224",
-   "pct": 10.2,
-   "byte": false,
-   "linked": false,
-   "osize": 100,
-   "usize": 292
   },
   {
    "name": "_ZN8CutSceneC1Ei",
@@ -1952,14 +1904,6 @@
    "usize": 648
   },
   {
-   "name": "CRYPTO_memcmp",
-   "pct": 13.3,
-   "byte": false,
-   "linked": false,
-   "osize": 56,
-   "usize": 64
-  },
-  {
    "name": "_ZN11AbyssEngine20ImageFontCheckStringEPNS_9ImageFontEPKtj",
    "pct": 13.3,
    "byte": false,
@@ -2032,14 +1976,6 @@
    "usize": 276
   },
   {
-   "name": "_ZN12WantedWindow4drawEv",
-   "pct": 14.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1928,
-   "usize": 1956
-  },
-  {
    "name": "_ZN11LevelScript7processEi",
    "pct": 14.2,
    "byte": false,
@@ -2048,20 +1984,28 @@
    "usize": 39284
   },
   {
+   "name": "_ZN12WantedWindow4drawEv",
+   "pct": 14.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1928,
+   "usize": 1956
+  },
+  {
+   "name": "_ZN11AbyssEngine9Transform14InsertKeyFrameEPKfxi",
+   "pct": 14.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1276,
+   "usize": 1776
+  },
+  {
    "name": "_ZN5Radio4drawExP9PlayerEgoP11LevelScript",
    "pct": 14.3,
    "byte": false,
    "linked": false,
    "osize": 600,
    "usize": 92
-  },
-  {
-   "name": "_ZN11AbyssEngine9Transform14InsertKeyFrameEPKfxi",
-   "pct": 14.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1276,
-   "usize": 1776
   },
   {
    "name": "_ZN21ParticleSystemManager10emitManualEiRKN11AbyssEngine6AEMath6VectorEif",
@@ -2854,14 +2798,6 @@
    "linked": false,
    "osize": 1872,
    "usize": 1232
-  },
-  {
-   "name": "SHA256_Update",
-   "pct": 22.7,
-   "byte": false,
-   "linked": false,
-   "osize": 272,
-   "usize": 292
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15ResetPersMatrixEv",
@@ -5920,6 +5856,14 @@
    "usize": 924
   },
   {
+   "name": "_ZN12WantedWindow12selectWantedEi",
+   "pct": 38.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1904,
+   "usize": 1580
+  },
+  {
    "name": "_ZN12ChoiceWindow4drawEv",
    "pct": 38.3,
    "byte": false,
@@ -5966,14 +5910,6 @@
    "linked": false,
    "osize": 38,
    "usize": 28
-  },
-  {
-   "name": "_ZN12WantedWindow12selectWantedEi",
-   "pct": 38.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1904,
-   "usize": 1580
   },
   {
    "name": "_ZN10AEGeometryC1EtPN11AbyssEngine11PaintCanvasEb",
@@ -7432,14 +7368,6 @@
    "usize": 84
   },
   {
-   "name": "_zip_dirent_torrent_normalize",
-   "pct": 49.3,
-   "byte": false,
-   "linked": false,
-   "osize": 216,
-   "usize": 148
-  },
-  {
    "name": "_ZN11MovingStars6updateEiN11AbyssEngine6AEMath6MatrixEbf",
    "pct": 49.5,
    "byte": false,
@@ -8056,14 +7984,6 @@
    "usize": 100
   },
   {
-   "name": "_Z13loadPortraitsPN11AbyssEngine6EngineE",
-   "pct": 53.0,
-   "byte": false,
-   "linked": false,
-   "osize": 21562,
-   "usize": 20934
-  },
-  {
    "name": "_ZN9PlayerEgo5rightEif",
    "pct": 53.1,
    "byte": false,
@@ -8118,6 +8038,14 @@
    "linked": false,
    "osize": 276,
    "usize": 210
+  },
+  {
+   "name": "_Z13loadPortraitsPN11AbyssEngine6EngineE",
+   "pct": 53.7,
+   "byte": false,
+   "linked": false,
+   "osize": 21562,
+   "usize": 20934
   },
   {
    "name": "_ZN13PlayerFighter4pushEi",
@@ -9424,14 +9352,6 @@
    "usize": 74
   },
   {
-   "name": "_ZN9Explosion14addFireStreaksEv",
-   "pct": 61.3,
-   "byte": false,
-   "linked": false,
-   "osize": 392,
-   "usize": 368
-  },
-  {
    "name": "_ZN10StarSystem8render2DEv",
    "pct": 61.5,
    "byte": false,
@@ -9478,6 +9398,14 @@
    "linked": false,
    "osize": 296,
    "usize": 292
+  },
+  {
+   "name": "_ZN9Explosion14addFireStreaksEv",
+   "pct": 62.1,
+   "byte": false,
+   "linked": false,
+   "osize": 392,
+   "usize": 368
   },
   {
    "name": "Blowfish_encipher",
@@ -12584,14 +12512,6 @@
    "usize": 162
   },
   {
-   "name": "zip_fopen_index",
-   "pct": 99.4,
-   "byte": false,
-   "linked": false,
-   "osize": 476,
-   "usize": 476
-  },
-  {
    "name": "_ZN9PlayerEgoD1Ev",
    "pct": 99.5,
    "byte": false,
@@ -12608,36 +12528,20 @@
    "usize": 334
   },
   {
-   "name": "__cxa_demangle",
-   "pct": 99.5,
+   "name": "inflate",
+   "pct": 99.6,
    "byte": false,
    "linked": false,
-   "osize": 568,
-   "usize": 568
+   "osize": 4360,
+   "usize": 4360
   },
   {
-   "name": "zip_close",
-   "pct": 99.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2532,
-   "usize": 2532
-  },
-  {
-   "name": "zip_open",
-   "pct": 99.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1200,
-   "usize": 1200
-  },
-  {
-   "name": "sha256_block_data_order_neon",
-   "pct": 99.9,
-   "byte": false,
-   "linked": false,
-   "osize": 3056,
-   "usize": 3056
+   "name": "CRYPTO_memcmp",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 56,
+   "usize": 56
   },
   {
    "name": "ExitFunction",
@@ -12976,6 +12880,14 @@
    "usize": 88
   },
   {
+   "name": "SHA224",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 100,
+   "usize": 100
+  },
+  {
    "name": "SHA224_Final",
    "pct": 100.0,
    "byte": false,
@@ -12984,12 +12896,60 @@
    "usize": 4
   },
   {
+   "name": "SHA224_Init",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 132,
+   "usize": 132
+  },
+  {
+   "name": "SHA224_Update",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 4,
+   "usize": 4
+  },
+  {
+   "name": "SHA256",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 104,
+   "usize": 104
+  },
+  {
+   "name": "SHA256_Final",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1048,
+   "usize": 1048
+  },
+  {
+   "name": "SHA256_Init",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 132,
+   "usize": 132
+  },
+  {
    "name": "SHA256_Transform",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 8,
    "usize": 8
+  },
+  {
+   "name": "SHA256_Update",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 272,
+   "usize": 272
   },
   {
    "name": "_Z10OpenAppendPtibj",
@@ -34704,6 +34664,14 @@
    "usize": 16
   },
   {
+   "name": "__cxa_demangle",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 568,
+   "usize": 568
+  },
+  {
    "name": "__cxa_end_catch",
    "pct": 100.0,
    "byte": false,
@@ -34998,6 +34966,14 @@
    "linked": true,
    "osize": 724,
    "usize": 724
+  },
+  {
+   "name": "_zip_dirent_torrent_normalize",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 216,
+   "usize": 216
   },
   {
    "name": "_zip_dirent_write",
@@ -35576,14 +35552,6 @@
    "usize": 2
   },
   {
-   "name": "inflate",
-   "pct": 100.0,
-   "byte": false,
-   "linked": true,
-   "osize": 4360,
-   "usize": 4360
-  },
-  {
    "name": "inflateBack",
    "pct": 100.0,
    "byte": false,
@@ -35850,10 +35818,18 @@
   {
    "name": "sha256_block_data_order",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 3576,
    "usize": 3576
+  },
+  {
+   "name": "sha256_block_data_order_neon",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 3056,
+   "usize": 3056
   },
   {
    "name": "uncompress",
@@ -35902,6 +35878,14 @@
    "linked": true,
    "osize": 156,
    "usize": 156
+  },
+  {
+   "name": "zip_close",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 2532,
+   "usize": 2532
   },
   {
    "name": "zip_delete",
@@ -35984,6 +35968,14 @@
    "usize": 34
   },
   {
+   "name": "zip_fopen_index",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 476,
+   "usize": 476
+  },
+  {
    "name": "zip_fread",
    "pct": 100.0,
    "byte": false,
@@ -36038,6 +36030,14 @@
    "linked": true,
    "osize": 8,
    "usize": 8
+  },
+  {
+   "name": "zip_open",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1200,
+   "usize": 1200
   },
   {
    "name": "zip_rename",
