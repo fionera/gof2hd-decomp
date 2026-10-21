@@ -1,5 +1,6 @@
 #include "game/world/NewsTicker.h"
 #include "game/core/Globals.h"
+#include "game/ui/Layout.h"
 #include "engine/core/AbyssEngine.h"
 #include "game/world/SolarSystem.h"
 #include "game/world/NewsItem.h"
@@ -10,104 +11,83 @@
 #include "game/core/String.h"
 #include "engine/render/PaintCanvas.h"
 
-static const char g_NewsTicker_ctor_empty[1] = {0};
-static const char g_NewsTicker_ctor_separator[1] = {0};
 
 NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
-    {
-        if (this->tickerText.data) delete[] this->tickerText.data;
-        this->tickerText.data = nullptr;
-        this->tickerText.length = 0;
-    }
     this->x = x;
     this->y = y;
     this->width = width;
-    this->tickerText = String(g_NewsTicker_ctor_empty);
+    this->tickerText = String("", false);
     this->textWidth = 0;
 
-    FileRead reader;
-    Array<NewsItem *> *allItems = reader.loadTicker();
+    FileRead *reader = new FileRead();
+    Array<NewsItem *> *allItems = reader->loadTicker();
+    delete reader;
 
     Array<NewsItem *> *items = new Array<NewsItem *>();
-
-    AbyssEngine::AERandom *random = Globals::rnd;
-    int wanted = random->nextInt(1) + 2;
+    int wanted = Globals::rnd->nextInt(1) + 2;
 
     for (uint32_t i = 0; i < allItems->size(); ++i) {
         NewsItem *item = (*allItems)[i];
-        if (item->minLevel > 0 && item->minLevel <= level && level <= item->maxLevel) {
-            if (((uint8_t *) item->data)[faction] != 0) {
-                ArrayAdd((NewsItem *) item->clone(), *items);
-            }
+        if (item->minLevel > 0 && item->minLevel <= level && item->maxLevel >= level && item->data[faction]) {
+            ArrayAdd(item->clone(), *items);
         }
     }
 
-    Status *status = Globals::status;
     int added = 0;
     int attempts = 0;
+    bool repeatLast = false;
     while (added < wanted && attempts < 100) {
-        ++attempts;
-        if (allItems->size() == 0) {
-            break;
-        }
-        NewsItem *item = (*allItems)[random->nextInt(allItems->size())];
-        if (status->getSystem() > 0x15 && item->id == 0x0d) {
+        NewsItem *item = (*allItems)[Globals::rnd->nextInt(allItems->size())];
+        SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
+        if (system->getIndex() > 21 && item->id == 13) {
             continue;
         }
-        if (item->maxLevel < 0xa1 || item->minLevel > level) {
-            continue;
-        }
-        if (random->nextInt(100) > 0x31) {
-            continue;
-        }
-        if (((uint8_t *) item->data)[faction] == 0 || item->used != 0) {
-            continue;
-        }
-        if (item->flag != 0) {
-            int64_t now = status->getPlayingTime();
-            int64_t *lastShown = (int64_t *) &status->field_160;
-            if ((uint32_t)(now - *lastShown) <= 0x493e0) {
-                continue;
+        if (item->maxLevel > 160 && item->minLevel <= level && Globals::rnd->nextInt(100) < 50 &&
+            item->data[faction] && !item->used) {
+            if (item->flag) {
+                // field_160/field_164 hold the 64-bit time the last flagged news item was shown
+                if (Globals::status->getPlayingTime() - *(int64_t *) &Globals::status->field_160 < 600000) {
+                    repeatLast = true;
+                    continue;
+                }
+                *(int64_t *) &Globals::status->field_160 = Globals::status->getPlayingTime();
+                Globals::status->field_174 = item->id;
             }
-            *lastShown = now;
-            status->field_174 = item->id;
+            ArrayAdd(item->clone(), *items);
+            item->used = 1;
+            ++added;
         }
-        ArrayAdd((NewsItem *) item->clone(), *items);
-        item->used = 1;
-        ++added;
+        ++attempts;
+    }
+    if (repeatLast) {
+        ArrayAdd((*allItems)[Globals::status->field_174]->clone(), *items);
     }
 
-    String separator(g_NewsTicker_ctor_separator);
-    GameText *gameText = Globals::gameText;
+    String separator("    +++    ", false);
     for (uint32_t i = 0; i < items->size(); ++i) {
         NewsItem *item = (*items)[i];
-        String line(*gameText->getText(item->id + 0x0cbe));
-        String replaced = replaceTokens(line);
-
-        if (item->flag != 0) {
-            if (item->used == 0) {
-                replaced = status->string_168;
+        String replaced = replaceTokens(String(*Globals::gameText->getText(item->id + 3262), false));
+        if (item->flag) {
+            if (item->used) {
+                Globals::status->string_168 = replaced;
             } else {
-                status->string_168 = replaced;
+                replaced = Globals::status->string_168;
             }
         }
-
         this->tickerText += replaced + separator;
     }
 
-    PaintCanvas *canvas = Globals::Canvas;
-    unsigned int font = (unsigned int) (unsigned long) Globals::font;
-    this->textWidth = canvas->GetTextWidth(font, this->tickerText);
+    this->textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->tickerText);
     if (this->textWidth < width) {
-        this->tickerText += String(this->tickerText);
-        this->textWidth = canvas->GetTextWidth(font, this->tickerText);
+        this->tickerText += String(this->tickerText, false);
+        this->textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->tickerText);
     }
 
     if (GameText::getLanguage() == 9) {
         width = -this->textWidth;
     }
-    this->lastTouchX = 0;
     this->touched = 0;
+    this->lastTouchX = 0;
     this->scrollOffset = (float) width;
 
     ArrayReleaseClasses(*items);
@@ -119,37 +99,26 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
 NewsTicker::~NewsTicker() {}
 
 void NewsTicker::draw() {
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->SetColor(0x6f);
+    Globals::Canvas->SetColor(0x6f);
+    Globals::Canvas->FillRectangle(this->x, this->y - 2, this->width,
+                                   Globals::h - this->y + 2 - Globals::layout->field_0x10_rightMargin);
+    Globals::Canvas->EnableClip(this->x, this->y, this->width, Globals::h);
+    Globals::Canvas->SetColor(0x777777ff);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->tickerText,
+                                (int) (this->scrollOffset + (float) this->x), this->y, false);
 
-    int *fontMetrics = (int *) Globals::font;
-    int screenHeight = Globals::h;
-    int fontHeight = fontMetrics[4];
-    int fillHeight = (2 - this->y) + screenHeight - fontHeight;
-    canvas->FillRectangle(this->x, this->y - 2, this->width, fillHeight);
-
-    canvas->EnableClip(this->x, this->y, this->width, screenHeight);
-    canvas->SetColor(0x777777ff);
-
-    unsigned int font = (unsigned int) (unsigned long) Globals::font;
-    canvas->DrawString(font, this->tickerText,
-                       (int) (this->scrollOffset + (float) this->x), this->y, false);
-
-    float x = this->scrollOffset;
     if (GameText::getLanguage() == 9) {
-        if (x > (float) this->textWidth) {
-            canvas->DrawString(font, this->tickerText,
-                               (int) (x + (float) this->x), this->y, false);
+        if (this->scrollOffset > (float) this->textWidth) {
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->tickerText,
+                                        (int) (this->scrollOffset + (float) this->x), this->y, false);
         }
-    } else {
-        if (x < (float) (this->textWidth - this->width)) {
-            canvas->DrawString(font, this->tickerText,
-                               (int) (x + (float) this->x + (float) this->textWidth),
-                               this->y, false);
-        }
+    } else if (this->scrollOffset < (float) (this->textWidth - this->width)) {
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->tickerText,
+                                    (int) (this->scrollOffset + (float) this->x + (float) this->textWidth),
+                                    this->y, false);
     }
 
-    canvas->DisableClip();
+    Globals::Canvas->DisableClip();
 }
 
 void NewsTicker::update(int dt) {
@@ -172,18 +141,14 @@ void NewsTicker::update(int dt) {
 }
 
 int NewsTicker::getHeight() {
-    int fontHeight = ((int *) Globals::font)[4];
-    int bottom = (Globals::h + 2) - fontHeight;
-    return bottom - this->y;
+    return Globals::h + 2 - Globals::layout->field_0x10_rightMargin - this->y;
 }
 
 uint8_t NewsTicker::OnTouchBegin(int x, int y) {
     if (this->x <= x && x <= this->x + this->width && this->y <= y) {
-        int fontHeight = ((int *) Globals::font)[4];
-        int bottom = (Globals::h + 2) - fontHeight;
-        if (y <= bottom) {
-            this->lastTouchX = x;
+        if (y <= Globals::h + 2 - Globals::layout->field_0x10_rightMargin) {
             this->touched = 1;
+            this->lastTouchX = x;
         }
     }
     return this->touched;
