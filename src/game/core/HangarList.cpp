@@ -89,10 +89,11 @@ ListItem *HangarList::getCurrentItemAt(int index) {
 }
 
 void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
-    Array<ListItem *> *old = (*this->tabs)[2];
-    if (old != nullptr) {
-        ArrayReleaseClasses(*old);
-        delete old;
+    if ((*this->tabs)[2] != nullptr) {
+        if ((*this->tabs)[2]->size() != 0) {
+            ArrayReleaseClasses(*(*this->tabs)[2]);
+        }
+        delete (*this->tabs)[2];
     }
     (*this->tabs)[2] = nullptr;
 
@@ -188,10 +189,11 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
 }
 
 void HangarList::fillBuyList(ListItem *item) {
-    Array<ListItem *> *old = (*this->tabs)[3];
-    if (old != nullptr) {
-        ArrayReleaseClasses(*old);
-        delete old;
+    if ((*this->tabs)[3] != nullptr) {
+        if ((*this->tabs)[3]->size() != 0) {
+            ArrayReleaseClasses(*(*this->tabs)[3]);
+        }
+        delete (*this->tabs)[3];
     }
     (*this->tabs)[3] = nullptr;
 
@@ -272,10 +274,11 @@ void HangarList::fillBuyList(ListItem *item) {
 }
 
 void HangarList::initShipTab(Ship *ship) {
-    Array<ListItem *> *old = (*this->tabs)[0];
-    if (old != nullptr) {
-        ArrayReleaseClasses(*old);
-        delete old;
+    if ((*this->tabs)[0] != nullptr) {
+        if ((*this->tabs)[0]->size() != 0) {
+            ArrayReleaseClasses(*(*this->tabs)[0]);
+        }
+        delete (*this->tabs)[0];
     }
     (*this->tabs)[0] = nullptr;
 
@@ -368,10 +371,11 @@ static int shopTypeTextId(uint32_t type) {
 void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
     int counts[5] = {};
 
-    Array<ListItem *> *old = (*this->tabs)[1];
-    if (old != nullptr) {
-        ArrayReleaseClasses(*old);
-        delete old;
+    if ((*this->tabs)[1] != nullptr) {
+        if ((*this->tabs)[1]->size() != 0) {
+            ArrayReleaseClasses(*(*this->tabs)[1]);
+        }
+        delete (*this->tabs)[1];
     }
     (*this->tabs)[1] = nullptr;
 
