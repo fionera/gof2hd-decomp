@@ -305,8 +305,8 @@ int SpaceLounge::init() {
     this->panelWidth = layout->field_0x68 - layout->field_0x4c * 3 - layout->field_0x2d4;
     this->scrollWindow = new ScrollTouchWindow(this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4, this->panelY,
                                                this->panelWidth, layout->field_0x6c, false);
-    this->mode = 0;
     this->buttonPanelY = this->panelY + Globals::layout->field_0x6c + Globals::layout->field_0x2c_rowHeight;
+    this->mode = 0;
     this->buttonsHeight = (Globals::layout->field_0x34 + Globals::layout->field_0x30_rowHeight) * 5;
 
     if (this->buttons != 0) {
@@ -367,22 +367,17 @@ int SpaceLounge::init() {
             layout = Globals::layout;
             float x;
             if (rect->x - margin - (float) layout->field_0x68 < (float) layout->buttonInsetX) {
-                x = this->agentBottomRight.x + margin;
-                float right = (float) (Globals::w - layout->buttonInsetX);
-                if (x >= right) {
-                    x = right;
-                }
+                x = SPACELOUNGE_MIN(this->agentBottomRight.x + margin,
+                                     (float) (Globals::w - layout->buttonInsetX));
             } else {
-                x = this->agentTopLeft.x - margin - (float) layout->field_0x68;
-                if (x < (float) layout->buttonInsetX) {
-                    x = (float) layout->buttonInsetX;
-                }
+                x = SPACELOUNGE_MAX(this->agentTopLeft.x - margin - (float) layout->field_0x68,
+                                     (float) layout->buttonInsetX);
             }
             this->panelX = (int) x;
             int panelHeight = layout->field_0x6c;
             float top = this->agentBottomRight.y - (float) (panelHeight / 3);
             float bottom = (float) (Globals::h - layout->field_0x10_rightMargin - layout->field_0x24 - panelHeight);
-            float minTop = (float) (layout->field_0x20_top + layout->field_0xc_leftMargin);
+            float minTop = (float) (layout->field_0xc_leftMargin + layout->field_0x20_top);
             if (top < bottom) {
                 bottom = top;
             }
@@ -391,6 +386,7 @@ int SpaceLounge::init() {
             }
             this->panelY = (int) bottom;
             delete this->scrollWindow;
+            layout = Globals::layout;
             this->scrollWindow = 0;
             this->scrollWindow = new ScrollTouchWindow(this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4,
                                                        this->panelY, this->panelWidth, layout->field_0x6c, false);
@@ -398,8 +394,9 @@ int SpaceLounge::init() {
             this->buttonPanelY = this->panelY + layout->field_0x6c + layout->field_0x2c_rowHeight;
             this->buttonX = this->panelX + layout->field_0x68 - layout->field_0x4c - this->panelWidth;
             int y0 = layout->field_0x4c + this->buttonPanelY;
+            float gap = (float) layout->field_0x34;
             float extra = Globals::iPadHD ? 15.46875f : (Globals::iPadLarge ? 22.0f : 11.0f);
-            int spacing = (int) (extra + (float) layout->field_0x34);
+            int spacing = (int) (extra + gap);
             this->buttonY1 = y0 - layout->field_0x30_rowHeight / 2 + layout->field_0x2d8 / 2;
             this->buttonY0 = y0;
             int y1 = layout->field_0x30_rowHeight + y0 + spacing;
@@ -422,7 +419,7 @@ int SpaceLounge::init() {
         }
     }
     this->initialized = 1;
-    return 0;
+    return 1;
 }
 
 bool SpaceLounge::introFinished() {
