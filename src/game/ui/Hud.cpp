@@ -1373,15 +1373,15 @@ int Hud::init() {
         this->menuOriginY = Globals::layout->field_0x1b4;
     }
     this->menuRowHeight = Globals::Canvas->GetImage2DHeight(this->quickMenuTopImage);
-    this->menuBaseY = this->menuOriginY + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x1bc;
-    this->field_0x448 = Globals::layout->field_0x1cc;
-    this->field_0x3d4 = this->field_0x3c4 + Globals::layout->field_0x1b8;
     this->field_0x3d0 = Globals::Canvas->GetImage2DHeight(this->quickMenuMiddleImage);
+    this->field_0x3d4 = this->field_0x3c4 + Globals::layout->field_0x1b8;
+    this->menuBaseY = this->menuOriginY + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x1bc;
     this->field_0x3dc = Globals::Canvas->GetImage2DWidth(this->quickMenuMiddleImage) - Globals::layout->field_0x1c0;
-    this->field_0x442 = Globals::layout->field_0x1d0;
-    this->field_0x444 = Globals::layout->field_0x1c8;
-    this->field_0x43e = Globals::Canvas->GetImage2DWidth(this->shieldFrameImage) + Globals::layout->field_0x1c4;
     this->field_0x43c = Globals::layout->field_0x1c4;
+    this->field_0x43e = Globals::layout->field_0x1c4 + Globals::Canvas->GetImage2DWidth(this->shieldFrameImage);
+    this->field_0x444 = Globals::layout->field_0x1c8;
+    this->field_0x448 = Globals::layout->field_0x1cc;
+    this->field_0x442 = Globals::layout->field_0x1d0;
     this->field_0x44a = Globals::layout->field_0x1d4;
     this->field_0x446 = Globals::Canvas->GetImage2DWidth(this->shieldBarFillImage);
     this->field_0x440 = this->field_0x43e;
@@ -1459,7 +1459,8 @@ int Hud::init() {
     this->checkIfQuickMenuIsEmpty();
     this->releaseAllKeys();
     this->uintArray = 0;
-    Globals::pause_x = Globals::w - Globals::Canvas->GetImage2DWidth(this->pauseButtonPressedImage) - Globals::layout->field_0x194;
+    int pauseWidth = Globals::Canvas->GetImage2DWidth(this->pauseButtonPressedImage);
+    Globals::pause_x = Globals::w - pauseWidth - Globals::layout->field_0x194;
     Globals::pause_y = Globals::layout->field_0x198;
     return 0;
 }
