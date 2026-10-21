@@ -512,92 +512,71 @@ static ImageFactory **g_Generator_imageFactory;
 static Array<Item *> **g_Generator_agentItems;
 
 Agent *Generator::createAgent(Station *station) {
-    Status *status = Globals::status;
-    AbyssEngine::AERandom *random = Globals::rnd;
-
-    int race = ((SolarSystem *) (intptr_t) status->getSystem())->getRace();
-    if (random->nextInt() < 20) {
-        race = random->nextInt();
+    int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+    if (Globals::rnd->nextInt(100) < 20) {
+        race = Globals::rnd->nextInt(8);
     }
 
     int offer = -1;
     bool valid = false;
-    do {
-        offer = random->nextInt();
-        if (race == 1) {
-            valid = false;
-        }
+    while (!valid) {
+        offer = Globals::rnd->nextInt(7);
+        valid = false;
         if (race != 1 || offer != 6) {
             valid = true;
-            if ((uint32_t)(offer - 3) < 8) {
-                valid = ((0x1cU >> (uint8_t)(offer - 3)) & 1) != 0;
+            if ((uint32_t) (offer - 3) <= 7) {
+                valid = ((0x1cU >> (uint8_t) (offer - 3)) & 1) != 0;
             }
         }
-    } while (!valid);
-
-    if (random->nextInt() < 0x21) {
+    }
+    if (Globals::rnd->nextInt(100) < 33) {
         offer = 0;
-    } else if ((uint32_t)(offer - 5) < 2 &&
-               status->getCurrentCampaignMission() < 0x10) {
+    } else if ((uint32_t) (offer - 5) <= 1 && !(Globals::status->getCurrentCampaignMission() > 15)) {
         offer = 0;
     }
 
-    int male = 1;
+    bool male = true;
     if (race == 0 && offer != 6) {
-        male = 0;
-        if (random->nextInt() < 0x3c) {
-            male = 1;
-        }
+        male = Globals::rnd->nextInt(100) < 60;
     }
 
-    AbyssEngine::String name = Globals::globals->getRandomName(race, male != 0);
-    Agent *agent = new Agent(-1, name, station->getIndex(), status->getSystem(),
-                             race, male, -1, -1, -1, -1);
+    Agent *agent = new Agent(-1, Globals::globals->getRandomName(race, male), station->getIndex(),
+                             ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex(), race, male, -1, -1,
+                             -1, -1);
     agent->setOffer(offer);
-    agent->setImageParts((*g_Generator_imageFactory)->createChar(male, race));
+    agent->setImageParts(Globals::imageFactory->createChar(male, race));
 
     if (agent->getOffer() == 6) {
-        uint32_t count = random->nextInt();
-        Array<AbyssEngine::String *> *friendNames =
-                new Array<AbyssEngine::String *>();
+        int count = Globals::rnd->nextInt(3);
+        Array<AbyssEngine::String *> *friendNames = new Array<AbyssEngine::String *>();
         ArraySetLength(count, *friendNames);
-        for (int i = 0; i < (int) count; ++i) {
-            AbyssEngine::String *friendName = new AbyssEngine::String(
-                Globals::globals->getRandomName(agent->getRace(), true));
-            friendNames->data()[i] = friendName;
+        for (int i = 0; i < count; ++i) {
+            friendNames->data()[i] = new AbyssEngine::String(Globals::globals->getRandomName(agent->getRace(), true));
         }
         agent->setWingmanFriendNames(friendNames);
-        int costRoll = random->nextInt();
-        agent->setCosts((costRoll + 700) * (count + 1));
-        if (status->hardCoreMode()) {
+        agent->setCosts((Globals::rnd->nextInt(1300) + 700) * (count + 1));
+        if (Globals::status->hardCoreMode()) {
             agent->setCosts(agent->getCosts() * 7);
         }
     } else if (agent->getOffer() == 2) {
-        Array<Item *> *items = *g_Generator_agentItems;
+        Array<Item *> *items = Globals::items;
         int selected;
         do {
-            do {
-                selected = random->nextInt();
-            } while ((uint32_t)(selected - 0xd9) < 2);
-        } while (selected == 0x83 || selected == 0xa4 || selected == 0xaf ||
-                 items->data()[selected]->getIngredients() != nullptr ||
-                 items->data()[selected]->getSinglePrice() == 0 ||
-                 items->data()[selected]->getOccurence() == 0);
-
-        Item *item = items->data()[selected];
-        int amount = random->nextInt();
-        int type = item->getType();
-        if (type == 3 || type == 0 || type == 2) {
-            amount = 1;
-        } else {
+            selected = Globals::rnd->nextInt(items->size());
+        } while ((uint32_t) (selected - 217) < 2 || selected == 131 || selected == 164 || selected == 175 ||
+                 (*items)[selected]->getIngredients() != nullptr || (*items)[selected]->getSinglePrice() == 0 ||
+                 (*items)[selected]->getOccurence() == 0);
+        Item *item = (*items)[selected];
+        int amount = Globals::rnd->nextInt(15);
+        if (item->getType() != 3 && item->getType() != 0 && item->getType() != 2) {
             amount += 5;
+        } else {
+            amount = 1;
         }
-        float factor = (float) (random->nextInt() + 0x28) / 100.0f;
-        int price = item->getSinglePrice();
+        float factor = (float) (Globals::rnd->nextInt(120) + 40) / 100.0f;
         agent->setSellItemData(selected, amount,
-                               amount * (int) (factor * (float) price));
+                               amount * (int) (factor * (float) (*Globals::items)[selected]->getSinglePrice()));
     }
-
     return agent;
 }
 
