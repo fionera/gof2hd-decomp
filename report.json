@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.1,
+  "avg_match": 99.11,
   "byte_exact": 1338,
-  "linked_exact": 4357,
-  "fuzzy_perfect": 4357,
+  "linked_exact": 4360,
+  "fuzzy_perfect": 4360,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -744,14 +744,6 @@
    "usize": 524
   },
   {
-   "name": "ndk23_handleAcceleration",
-   "pct": 80.2,
-   "byte": false,
-   "linked": false,
-   "osize": 276,
-   "usize": 276
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine15ResetLightParamEv",
    "pct": 80.4,
    "byte": false,
@@ -1264,28 +1256,12 @@
    "usize": 1088
   },
   {
-   "name": "_ZN12WantedWindow4initEv",
-   "pct": 98.4,
-   "byte": false,
-   "linked": false,
-   "osize": 908,
-   "usize": 908
-  },
-  {
    "name": "_ZN9ObjectGun6updateEi",
    "pct": 98.4,
    "byte": false,
    "linked": false,
    "osize": 1092,
    "usize": 1092
-  },
-  {
-   "name": "_ZN11AbyssEngine27TextureCreateFromFileInternEPNS_6EngineEPKcPFvPNS_5ImageEPvES6_PjfPNS_15AELoadedTextureEb",
-   "pct": 98.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2036,
-   "usize": 2036
   },
   {
    "name": "_ZN9FModSound23updateEvent3DAttributesEPN4FMOD5EventEiPN11AbyssEngine6AEMath6VectorES6_b",
@@ -10440,6 +10416,14 @@
    "usize": 436
   },
   {
+   "name": "_ZN11AbyssEngine27TextureCreateFromFileInternEPNS_6EngineEPKcPFvPNS_5ImageEPvES6_PjfPNS_15AELoadedTextureEb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 2036,
+   "usize": 2036
+  },
+  {
    "name": "_ZN11AbyssEngine29VertexColorAlphaTextureShader11SetInActiveEv",
    "pct": 100.0,
    "byte": false,
@@ -15822,6 +15806,14 @@
    "linked": true,
    "osize": 1928,
    "usize": 1928
+  },
+  {
+   "name": "_ZN12WantedWindow4initEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 908,
+   "usize": 908
   },
   {
    "name": "_ZN12WantedWindow6updateEi",
@@ -35574,6 +35566,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "ndk23_handleAcceleration",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 276,
+   "usize": 276
   },
   {
    "name": "ndk23_handleTouchPadEvent",

@@ -382,7 +382,7 @@ void WantedWindow::draw() {
 }
 
 
-int WantedWindow::init() {
+void WantedWindow::init() {
     this->scrollOffset = 0;
     this->lastDragY = 0;
     this->scrollOffsetSnapshot = 0;
@@ -485,7 +485,6 @@ int WantedWindow::init() {
             detailWidth, 33, 4);
     this->hangarUpdate = 0;
     this->lastButtonHit = 1;
-    return this->lastButtonHit;
 }
 
 

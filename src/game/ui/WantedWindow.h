@@ -77,7 +77,7 @@ public:
 
     uint32_t getWantedAtPosition(int x, int y);
 
-    int init();
+    void init();
 
     void render3D();
 
