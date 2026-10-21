@@ -762,8 +762,8 @@ void Player::calcWeaponSounds(int count) {
             order[i] = this->guns->data()[0]->data()[i]->itemIndex;
         }
 
-        bool sorted = true;
         int i = 1;
+        bool sorted = true;
         Array<Item *> **itemTablePtr = reinterpret_cast<Array<Item *> **>(&Globals::items);
         do {
             for (; i < (int) n; i++) {
@@ -784,7 +784,7 @@ void Player::calcWeaponSounds(int count) {
             if (!again) break;
         } while (true);
 
-        for (unsigned int x = 0; x < n; x++) {
+        for (int x = 0; x < (int) n; x++) {
             for (unsigned int y = 0; y != n; y++) {
                 if (x != y && order[x] == order[y]) {
                     order[y] = -1;
@@ -794,7 +794,7 @@ void Player::calcWeaponSounds(int count) {
 
         int idx = 0;
         do {
-            if ((int) n <= idx) break;
+            if (idx >= (int) n) break;
             if (order[idx] >= 0) {
                 Gun *gun = this->guns->data()[0]->data()[idx];
                 gun->field_0x89 = 1;
