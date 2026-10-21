@@ -531,8 +531,8 @@ static const char g_Hud_ccUnit2[1] = {0};
 
 void Hud::catchCargo(int itemId, int count, bool cargoFull, bool missionDelivery, bool extender,
                      bool slotMode, bool aggregate) {
-    this->field_0x1d0 = 0;
     this->cargoFullFlag = cargoFull;
+    this->field_0x1d0 = 0;
     ListItem *item;
     if (missionDelivery) {
         this->field_0x1f4 = *Globals::gameText->getText(537);
