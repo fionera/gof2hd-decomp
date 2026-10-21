@@ -27,6 +27,7 @@ bool AbyssEngine::PostEffectFlag;
 #include "engine/render/Mesh.h"
 #include "engine/render/Material.h"
 #include "engine/render/PaintCanvas.h"
+#include "engine/render/AELoadedTexture.h"
 #include "engine/render/ShaderBaseStruct.h"
 #include "engine/render/shaders/TextureShader.h"
 #include "engine/render/shaders/SimpleShader.h"
@@ -88,17 +89,6 @@ namespace {
     unsigned char g_Engine_postEffectFlag;
     int g_Engine_postEffectCounter = 1;
 
-    struct TextureEntry {
-        uint32_t glTexture;
-        unsigned char pad_04[0x10 - 0x04];
-        float texEnv;
-        unsigned char isCube;
-    };
-#if __SIZEOF_POINTER__ == 4
-    static_assert(__builtin_offsetof(TextureEntry, glTexture) == 0x00, "TextureEntry::glTexture");
-    static_assert(__builtin_offsetof(TextureEntry, texEnv) == 0x10, "TextureEntry::texEnv");
-    static_assert(__builtin_offsetof(TextureEntry, isCube) == 0x14, "TextureEntry::isCube");
-#endif
 }
 
 void glError() {
@@ -692,23 +682,23 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
         return;
     }
     uint32_t *bound = (uint32_t *) &this->boundTextures[slot];
-    uint32_t texture = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->glTexture;
+    uint32_t texture = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->glId;
     if (*bound == texture) {
         return;
     }
     glActiveTexture(slot + 0x84c0);
-    float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->texEnv;
+    float env = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->scale;
     if (currentLODBias != env) {
         currentLODBias = env;
         if (Engine::enableShader != 0) {
-            if (BiasErrorOutputFlag != 0) {
-                BiasErrorOutputFlag = 0;
+            if (BiasErrorOutputFlag) {
+                BiasErrorOutputFlag = false;
             }
         } else {
             glTexEnvf(0x8500, 0x8501, env);
         }
     }
-    if (((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0) {
+    if (this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->isCube != 0) {
         glBindTexture(0x8513, texture);
     } else {
         glBindTexture(0xde1, texture);
@@ -920,7 +910,7 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
 
 void Engine::SetPostEffect(uint32_t effect, bool enable) {
     if (this->postEffectFBO == 0 && enable) {
-        this->postEffectFBO = new FBOContainer(this, String("posteffect"));
+        this->postEffectFBO = new FBOContainer(this, String("render2TextureFBO"));
         if (this->appManager->paintCanvas->gameOrientation == 2) {
             this->postEffectFBO->Create(this->displayWidth, this->displayHeight, true, false);
         } else {
@@ -950,10 +940,12 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
             }
         } else if (g_Engine_postEffectFlag == 1) {
             this->postEffectFlags &= ~4u;
-            g_Engine_postEffectFlag = 0;
             g_Engine_postEffectCounter = 1;
+            g_Engine_postEffectFlag = 0;
+        } else if (g_Engine_postEffectCounter <= 0) {
+            g_Engine_postEffectFlag = 1;
         } else {
-            g_Engine_postEffectFlag = g_Engine_postEffectCounter <= 0;
+            g_Engine_postEffectFlag = 0;
         }
     }
 }
@@ -1168,15 +1160,15 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
         return;
     }
     uint32_t texture =
-            ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[first])->glTexture;
+            this->appManager->paintCanvas->cubeTextures.data_[first]->glId;
     if ((uint32_t) this->boundTextures[0] != texture) {
         glActiveTexture(0x84c0);
-        float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[first])->texEnv;
+        float env = this->appManager->paintCanvas->cubeTextures.data_[first]->scale;
         if (currentLODBias != env) {
             currentLODBias = env;
             if (Engine::enableShader != 0) {
-                if (BiasErrorOutputFlag != 0) {
-                    BiasErrorOutputFlag = 0;
+                if (BiasErrorOutputFlag) {
+                    BiasErrorOutputFlag = false;
                 }
             } else {
                 glTexEnvf(0x8500, 0x8501, env);
@@ -1199,7 +1191,7 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
     }
 
     uint32_t texture2 =
-            ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[second])->glTexture;
+            this->appManager->paintCanvas->cubeTextures.data_[second]->glId;
     if ((uint32_t) this->boundTextures[1] != texture2) {
         glActiveTexture(0x84c1);
         this->GlEnable(0xde1, true);
@@ -1347,23 +1339,23 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
                 continue;
             }
             uint32_t texture =
-                    ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->glTexture;
+                    this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->glId;
             if ((uint32_t) this->boundTextures[slot] == texture) {
                 continue;
             }
             glActiveTexture(slot + 0x84c0);
-            float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->texEnv;
+            float env = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->scale;
             if (currentLODBias != env) {
                 currentLODBias = env;
                 if (Engine::enableShader != 0) {
-                    if (BiasErrorOutputFlag != 0) {
-                        BiasErrorOutputFlag = 0;
+                    if (BiasErrorOutputFlag) {
+                        BiasErrorOutputFlag = false;
                     }
                 } else {
                     glTexEnvf(0x8500, 0x8501, env);
                 }
             }
-            if (((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0) {
+            if (this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->isCube != 0) {
                 glBindTexture(0x8513, texture);
             } else {
                 glBindTexture(0xde1, texture);

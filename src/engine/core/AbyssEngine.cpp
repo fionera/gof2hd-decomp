@@ -72,7 +72,7 @@ namespace AbyssEngine {
     unsigned char performanceTest;
     long long performanceTime;
     float timeBetweenFrames;
-    unsigned char BiasErrorOutputFlag;
+    bool BiasErrorOutputFlag;
     unsigned char performanceTestEnded;
     int orientationChangeTimer;
     long long performanceFrameCounter;
