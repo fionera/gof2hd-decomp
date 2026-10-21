@@ -278,7 +278,8 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script) {
             Player *ship = (*ego->player->getEnemies())[0];
             if (!ship->isActive() || ship->isDead())
                 goto reject;
-            if (ship->getPosition().z - (float) this->conditionValue > 0.0f)
+            Vector position = ship->getPosition();
+            if (position.z - (float) this->conditionValue > 0.0f)
                 this->triggeredFlag = ship->getPosition().z - (float) this->conditionValue < 5000.0f;
             else
                 this->triggeredFlag = ship->getPosition().z - (float) this->conditionValue > -5000.0f;

@@ -222,8 +222,8 @@ void HangarList::fillBuyList(ListItem *item) {
     }
 
     uint32_t isSlot = item->isSlot();
-    Array<ListItem *> *list = new Array<ListItem *>();
     uint32_t special = isShip | isSlot;
+    Array<ListItem *> *list = new Array<ListItem *>();
     int base = 3;
     if (count == 0) {
         base = 4;

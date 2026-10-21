@@ -379,13 +379,13 @@ int Status::isFreighterMissionStation(int station) {
     }
 }
 
-unsigned char Status::isBlueprintUnlocked(int index) {
+bool Status::isBlueprintUnlocked(int index) {
     for (unsigned i = 0; i < bluePrints->size(); i++) {
         if ((*bluePrints)[i]->getIndex() == index) {
             return (*bluePrints)[i]->isUnlocked();
         }
     }
-    return 0;
+    return false;
 }
 
 Status::Status() {

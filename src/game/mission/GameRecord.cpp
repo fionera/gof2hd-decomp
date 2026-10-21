@@ -499,10 +499,8 @@ void GameRecord::load() {
             }
         }
         st = Globals::status;
-        st->collectedBounties[0] = this->collectedBounties[0];
-        st->collectedBounties[1] = this->collectedBounties[1];
-        st->collectedBounties[2] = this->collectedBounties[2];
-        st->collectedBounties[3] = this->collectedBounties[3];
+        for (int k = 0; k < 4; k++)
+            st->collectedBounties[k] = this->collectedBounties[k];
         station = Globals::status->getStation();
         if (station->getIndex() == 0x6c) {
             Station *stStation = Globals::status->getStation();

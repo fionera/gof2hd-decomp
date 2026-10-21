@@ -405,11 +405,11 @@ void CutScene::checkForTurret() {
     int index = (*turrets)[0]->getIndex();
     int baseMesh = 0xffff;
     int barrelMesh = 0xffff;
-    int baseChild = -1;
-    int barrelChild = -1;
-    int barrelChild2 = -1;
     float offsetX = 0.0f;
+    int barrelChild2 = -1;
+    int baseChild = -1;
     float offsetY = 0.0f;
+    int barrelChild = -1;
     float offsetZ = 0.0f;
     switch (index) {
         case 47:
@@ -418,10 +418,10 @@ void CutScene::checkForTurret() {
             offsetY = 60.0f;
             break;
         case 224:
+            barrelChild = 18845;
             baseMesh = 18842;
             barrelMesh = 18843;
             baseChild = 18844;
-            barrelChild = 18845;
             offsetY = 82.0f;
             break;
         case 48:
@@ -467,11 +467,11 @@ void CutScene::checkForTurret() {
             offsetY = 38.0f;
             break;
         case 200:
-            baseMesh = 18796;
-            barrelMesh = 18799;
-            baseChild = 18797;
-            barrelChild = 18798;
             barrelChild2 = 18800;
+            barrelChild = 18798;
+            baseChild = 18797;
+            barrelMesh = 18799;
+            baseMesh = 18796;
             offsetY = 75.0f;
             break;
         default:

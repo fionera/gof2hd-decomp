@@ -474,7 +474,7 @@ void Achievements::applyNewMedals() {
     }
 }
 
-uint8_t Achievements::hasMedal(int index, int value) {
+bool Achievements::hasMedal(int index, int value) {
     return this->medals[index] == value;
 }
 

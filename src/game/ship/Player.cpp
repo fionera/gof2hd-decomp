@@ -76,7 +76,6 @@ struct HitVec3 {
     float z;
 };
 
-static const int kRaceShootSounds[11] = {52, 55, 54, 53, 61, 61, 61, 61, 61, 62, 2276};
 
 int Player::velocity = 100;
 
@@ -980,11 +979,20 @@ void Player::stopShootSound(int index, int channel) {
 }
 
 void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
-    int soundId = 61;
-    if (this->kiPlayer == nullptr)
-        soundId = kWeaponSounds[type];
-    else if ((unsigned int) this->kiPlayer->shipGroup <= 10)
-        soundId = kRaceShootSounds[this->kiPlayer->shipGroup];
+    int soundId = kWeaponSounds[type];
+    if (this->kiPlayer != nullptr) {
+        // per-race shoot sound (clang turns this switch into a lookup table)
+        switch (this->kiPlayer->shipGroup) {
+            case 0: soundId = 52; break;
+            case 1: soundId = 55; break;
+            case 2: soundId = 54; break;
+            case 3: soundId = 53; break;
+            case 9: soundId = 62; break;
+            case 10: soundId = 2276; break;
+            default: soundId = 61; break;
+        }
+    }
+
     if (channel == 2 || channel == 3 || channel == 8) {
         if (Globals::sound->isPlaying(soundId)) {
             if (Globals::options[15])

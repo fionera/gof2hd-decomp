@@ -60,7 +60,7 @@ int BluePrint::getStationIndex() { return stationIndex; }
 
 int BluePrint::getQuantity() { return remainingBatch; }
 
-unsigned char BluePrint::isUnlocked() { return locked; }
+bool BluePrint::isUnlocked() { return locked; }
 
 void BluePrint::unlock() {
     locked = 1;

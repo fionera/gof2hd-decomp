@@ -46,7 +46,7 @@ public:
 
     void setMoneySpent(int value);
 
-    unsigned char isUnlocked();
+    bool isUnlocked();
 
     int getIngredientsValue();
 
