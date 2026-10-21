@@ -68,7 +68,7 @@ public:
     float rocketPitch;                       // 0x7c (up/down in rocket control)
     float rocketYaw;                         // 0x80 (left/right in rocket control)
     uint8_t field_0x84;
-    int targetFollowCamera;
+    TargetFollowCamera *targetFollowCamera;
 
     Explosion *explosion;
     Explosion *explosion2;
@@ -88,12 +88,8 @@ public:
     int boostSoundId;
     int field_0xd8;
     AEGeometry *turretBaseGeo;
-    float rotX;
-    float rotY;
-    float rotZ;
-    float waypointX;
-    float waypointY;
-    float waypointZ;
+    AbyssEngine::AEMath::Vector moveDirection; // 0xe0
+    AbyssEngine::AEMath::Vector moveTarget;    // 0xec
     // Ghidra: movingStars@0xf8 sits between gunBaseGeo@0xf4 and route@0xfc. Our decomp lacked it; the
     // route..collide block was 4 low. Added here and the _pad_0x126 below shrinks by 4 to keep the
     // downstream asserts (field_0x145@0x145) pinned.
@@ -196,12 +192,12 @@ public:
     float pitchAccumD;
     float yawAccumF;
     int field_0x280;
-    float field_0x284;
-    float field_0x288;
+    float maxBank;    // 0x284
+    float bankFactor; // 0x288
     int field_0x28c;
-    int field_0x290[5];
-    int field_0x2a4;
-    uint8_t field_0x2a8;
+    float bankHistory[5];   // 0x290
+    int bankHistoryIndex;   // 0x2a4
+    bool bankHistoryFilled; // 0x2a8
     uint8_t rollDirection;
     AbyssEngine::AEMath::Matrix turretHudMatrix;
     float rotateX;
@@ -249,7 +245,7 @@ public:
     uint8_t field_0x378; // bool flag (initialized as clz(ptr)>>5 in ctor)
     uint8_t _pad_0x379[3];
     float strafeAccel;          // 0x37c
-    SpacePoint *strafeNavPoint; // 0x380 (also aliased as float via (float&))
+    float strafeFactor;         // 0x380
     int field_0x384;            // 0x384
     uint32_t cloakMaterial1;    // 0x388
     uint32_t cloakMaterial2;    // 0x38c
@@ -376,7 +372,7 @@ public:
 
     int getSpeed();
 
-    int getTargetFollowCamera();
+    TargetFollowCamera *getTargetFollowCamera();
 
     Vec3 getTurretPosition();
 
@@ -617,8 +613,8 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x145) == 0x145, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x146) == 0x146, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x1a1) == 0x1a1, "");
 static_assert(__builtin_offsetof(PlayerEgo, miningUpVec) == 0x1c8, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x2a4) == 0x2a4, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x2a8) == 0x2a8, "");
+static_assert(__builtin_offsetof(PlayerEgo, bankHistoryIndex) == 0x2a4, "");
+static_assert(__builtin_offsetof(PlayerEgo, bankHistoryFilled) == 0x2a8, "");
 static_assert(__builtin_offsetof(PlayerEgo, collide) == 0x144, "");
 static_assert(__builtin_offsetof(PlayerEgo, dockScaling) == 0x1d8, "");
 static_assert(__builtin_offsetof(PlayerEgo, dockingToPlanet) == 0x1ee, "");
