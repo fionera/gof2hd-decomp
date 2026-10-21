@@ -1314,8 +1314,7 @@ namespace AbyssEngine {
             return -1;
         }
 
-        char magic[7];
-        for (int i = 0; i < 4; ++i) magic[i] = '*';
+        char magic[8] = "*******";
         if (AEFile::Read((uint32_t)(7), magic, handle) == 0) {
             MeshRelease(engine, out);
             AEFile::Close(handle);
@@ -1327,11 +1326,11 @@ namespace AbyssEngine {
         // against "AEMesh\0" and the first 7 bytes of the version-tagged variants;
         // each full match keeps its fmt bit set. Bits: AEMesh=0x4, V2=0x1, V3=0x2,
         // V4=0x8, V5=0x10 (downstream: 0x1b => read version short, 0x1a => submeshes).
-        static const char sigMesh[7] = {'A', 'E', 'M', 'e', 's', 'h', 0};
-        static const char sigV2[7] = {'V', '2', 'A', 'E', 'M', 'e', 's'};
-        static const char sigV3[7] = {'V', '3', 'A', 'E', 'M', 'e', 's'};
-        static const char sigV4[7] = {'V', '4', 'A', 'E', 'M', 'e', 's'};
-        static const char sigV5[7] = {'V', '5', 'A', 'E', 'M', 'e', 's'};
+        const char *sigMesh = "AEMesh";
+        const char *sigV2 = "V2AEMesh";
+        const char *sigV3 = "V3AEMesh";
+        const char *sigV4 = "V4AEMesh";
+        const char *sigV5 = "V5AEMesh";
         unsigned int fmt = 0x1f;
         for (int i = 0; i < 7; ++i) {
             char ch = magic[i];

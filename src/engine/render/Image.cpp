@@ -44,11 +44,10 @@ namespace AbyssEngine {
         if (AEFile::OpenRead(path, (uint32_t *) (&handle)) == 0)
             return -1;
 
-        char magic[8];
-        for (int i = 0; i < 4; ++i) magic[i] = '*';
+        char magic[8] = "*******";
         if (AEFile::Read((uint32_t)(8), magic, handle) == 0)
             return -1;
-        static const char want[8] = {'*', '*', '*', '*', 0, 0, 0, 0};
+        const char *want = "AEimage";
         for (unsigned int k = 0; k < 8; ++k)
             if (want[k] != magic[k])
                 return -1;
@@ -191,13 +190,12 @@ namespace AbyssEngine {
         if (AEFile::OpenRead(path, (uint32_t *) (&handle)) == 0)
             return -1;
 
-        char magic[8];
-        for (int i = 0; i < 4; ++i) magic[i] = '*';
+        char magic[8] = "*******";
         if (AEFile::Read((uint32_t)(8), magic, handle) == 0) {
             ImageFontRelease(engine, out);
             return -1;
         }
-        static const char want[8] = {'*', '*', '*', '*', 0, 0, 0, 0};
+        const char *want = "AEimage";
         for (unsigned int k = 0; k < 8; ++k)
             if (want[k] != magic[k]) {
                 ImageFontRelease(engine, out);
@@ -302,9 +300,8 @@ namespace AbyssEngine {
             return -1;
         }
 
-        static const char magic[8] = {'*', '*', '*', '*', 0, 0, 0, 0};
-        char hdr[8];
-        for (int i = 0; i < 4; ++i) hdr[i] = '*';
+        const char *magic = "AEimage";
+        char hdr[8] = "*******";
         if (AEFile::Read((uint32_t)(8), hdr, handle) == 0)
             goto fail;
         for (unsigned int k = 0; k < 8; ++k) {
