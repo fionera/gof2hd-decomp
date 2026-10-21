@@ -3,12 +3,6 @@
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 
-static PaintCanvas **g_Sprite_canvas = &Globals::Canvas;
-
-static PaintCanvas **g_Sprite_draw_image_canvas = &Globals::Canvas;
-
-static PaintCanvas **g_Sprite_draw_region_canvas = &Globals::Canvas;
-
 void Sprite::setPosition(int x, int y) {
     this->posX = x;
     this->posY = y;
@@ -33,58 +27,41 @@ void Sprite::nextFrame() {
     return setFrame(this->currentFrame + 1);
 }
 
+// Note: the original uses refPixelX for both the x and the y reference offset.
 void Sprite::draw(float scaleX, float scaleY) {
-    uint32_t *frames = this->frames;
+    if (this->frames != nullptr) {
+        uint32_t image = this->frames[this->currentFrame];
+        int x = this->posX - this->refPixelX;
+        PaintCanvas *canvas = Globals::Canvas;
+        if (scaleX == 1.0f || scaleY == 1.0f)
+            return canvas->DrawImage2D(image, x, this->posY - this->refPixelX);
 
-    if (frames == nullptr) {
-        int refX = this->refPixelX;
-        int x = this->posX - refX;
-        int y = this->posY - refX;
-        (*g_Sprite_draw_region_canvas)->DrawRegion2D(
-            this->image, this->frameSrcX, this->frameSrcY,
-            this->frameWidth, this->frameHeight, 0.0f, 0, 0, x, y);
-        return;
+        float frameWidth = (float) this->frameWidth;
+        float frameHeight = (float) this->frameHeight;
+        canvas->DrawImage2D(
+            image, (int) ((float) x - (scaleX - 1.0f) * frameWidth * 0.5f),
+            (int) ((float) (this->posY - this->refPixelX) - (scaleY - 1.0f) * frameHeight * 0.5f),
+            (int) (frameWidth * scaleX), (int) (frameHeight * scaleY), 0x11, 0x11, 0);
+    } else {
+        Globals::Canvas->DrawRegion2D(this->image, this->frameSrcX, this->frameSrcY, this->frameWidth,
+                                      this->frameHeight, 0.0f, 0, 0, this->posX - this->refPixelX,
+                                      this->posY - this->refPixelX);
     }
-
-    PaintCanvas *canvas = *g_Sprite_draw_image_canvas;
-    uint32_t image = frames[this->currentFrame];
-    int refX = this->refPixelX;
-    int x = this->posX - refX;
-    int y = this->posY - refX;
-
-    if (scaleX == 1.0f || scaleY == 1.0f) {
-        return canvas->DrawImage2D(image, x, y);
-    }
-
-    float frameWidth = (float) this->frameWidth;
-    float frameHeight = (float) this->frameHeight;
-    int scaledWidth = (int) (frameWidth * scaleX);
-    int scaledHeight = (int) (frameHeight * scaleY);
-    int drawX = (int) ((float) x - ((scaleX - 1.0f) * frameWidth) * 0.5f);
-    int drawY = (int) ((float) y - ((scaleY - 1.0f) * frameHeight) * 0.5f);
-
-    canvas->DrawImage2D(image, drawX, drawY, scaledWidth, scaledHeight,
-                        (unsigned char) 0x11, (unsigned char) 0x11, (unsigned char) 0);
 }
 
 Sprite::Sprite(uint32_t image, int frameWidth, int frameHeight) {
-    PaintCanvas *canvas = *g_Sprite_canvas;
-
     this->frames = nullptr;
     this->image = image;
     this->frameWidth = frameWidth;
     this->frameHeight = frameHeight;
-
-    this->imageWidth = canvas->GetImage2DWidth(image);
-    this->imageHeight = canvas->GetImage2DHeight(image);
-
+    this->imageWidth = Globals::Canvas->GetImage2DWidth(this->image);
+    this->imageHeight = Globals::Canvas->GetImage2DHeight(this->image);
+    this->columns = this->imageWidth / this->frameWidth;
+    this->rows = this->imageHeight / this->frameHeight;
     this->refPixelX = 0;
     this->refPixelY = 0;
     this->posX = 0;
     this->posY = 0;
-
-    this->columns = this->imageWidth / frameWidth;
-    this->rows = this->imageHeight / frameHeight;
     this->frameCount = this->rows * this->columns;
     setFrame(0);
 }
@@ -94,37 +71,26 @@ void Sprite::prevFrame() {
 }
 
 void Sprite::drawRegion(int srcX, int srcY, int w, int h) {
-    PaintCanvas *canvas = *g_Sprite_canvas;
-    int refX = this->refPixelX;
-    int x = this->posX + srcX - refX;
-    int y = this->posY + srcY - refX;
-
     if (this->frames != nullptr) {
-        uint32_t image = this->frames[this->currentFrame];
-        canvas->DrawRegion2D(image, srcX, srcY, w, h, 0.0f, 0, 0, x, y);
-        return;
+        Globals::Canvas->DrawRegion2D(this->frames[this->currentFrame], srcX, srcY, w, h, 0.0f, 0, 0,
+                                      this->posX + srcX - this->refPixelX, srcY - this->refPixelX + this->posY);
+    } else {
+        Globals::Canvas->DrawRegion2D(this->image, this->frameSrcX + srcX, this->frameSrcY + srcY, w, h, 0.0f, 0, 0,
+                                      this->posX + srcX - this->refPixelX, srcY - this->refPixelX + this->posY);
     }
-
-    canvas->DrawRegion2D(this->image, srcX + this->frameSrcX, srcY + this->frameSrcY,
-                         w, h, 0.0f, 0, 0, x, y);
 }
 
 Sprite::Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight) {
-    PaintCanvas *canvas = *g_Sprite_canvas;
-
     this->frames = frames;
-    this->image = (uint32_t) - 1;
+    this->image = (uint32_t) -1;
     this->frameWidth = frameWidth;
     this->frameHeight = frameHeight;
-
-    this->imageWidth = canvas->GetImage2DWidth(frames[0]);
-    this->imageHeight = canvas->GetImage2DHeight(frames[0]);
-
+    this->imageWidth = Globals::Canvas->GetImage2DWidth(this->frames[0]);
+    this->imageHeight = Globals::Canvas->GetImage2DHeight(this->frames[0]);
     this->refPixelX = 0;
     this->refPixelY = 0;
     this->posX = 0;
     this->posY = 0;
-
     this->columns = 1;
     this->rows = 1;
     this->frameCount = frameCount;
