@@ -230,7 +230,7 @@ namespace AbyssEngine {
                 goto fail;
             (*out)->glyphMeshes = new Mesh *[(*out)->glyphCount];
 
-            for (unsigned int g = 0; g < (*out)->glyphCount; ++g) {
+            for (unsigned short g = 0; g < (*out)->glyphCount; ++g) {
                 if (MeshCreate(engine, 4, 2, 0x13, &(*out)->glyphMeshes[g]) != 1)
                     goto fail;
                 unsigned short u = 0;
