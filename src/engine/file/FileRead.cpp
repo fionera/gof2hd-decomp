@@ -260,9 +260,8 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
                 }
             }
 
-            SolarSystem *system = new SolarSystem((int32_t) i, name, faction, flag == 1, a, b, c, d, e, f,
-                                                  routes, stations, wrecks, statics);
-            systems->data()[i] = system;
+            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, flag == 1, a, b, c, d, e, f,
+                                                 routes, stations, wrecks, statics);
             delete[] routes;
         }
         AEFile::Close(handle);
@@ -314,8 +313,7 @@ Array<Wanted *> *FileRead::loadWanted() {
             AEFile::ReadSwitched(k, handle);
             AEFile::ReadSwitched(l, handle);
 
-            Wanted *entry = new Wanted(id, name, a, b, c == 1, d, e, f, g, h, i, j, k, l);
-            wanted->data()[index] = entry;
+            wanted->data()[index] = new Wanted(id, name, a, b, c == 1, d, e, f, g, h, i, j, k, l);
 
             AEFile::ReadSwitched(imageCount, handle);
             uint32_t oldIndex = index++;
@@ -383,11 +381,11 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count) {
 
     String name;
     int32_t out = 0;
+    int32_t a;
+    int32_t b;
+    int32_t c;
+    int32_t d;
     for (uint32_t stationId = 0; stationId < 0x87; stationId++) {
-        int32_t a;
-        int32_t b;
-        int32_t c;
-        int32_t d;
         AEFile::ReadSwitched(name, handle);
         name.ConvertFromUTF8();
         AEFile::ReadSwitched(a, handle);
@@ -396,8 +394,7 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count) {
         AEFile::ReadSwitched(d, handle);
         for (int32_t i = 0; i < count; i++) {
             if (stationId == (uint32_t) ids[i]) {
-                Station *station = new Station(name, a, b, c, d);
-                stations->data()[out] = station;
+                stations->data()[out] = new Station(name, a, b, c, d);
                 out++;
             }
         }
@@ -523,8 +520,7 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system) {
         AEFile::ReadSwitched(d, handle);
         for (uint32_t i = 0; i < ids->size(); i++) {
             if ((uint32_t) ids->data()[i] == stationId) {
-                Station *station = new Station(name, a, b, c, d);
-                stations->data()[out++] = station;
+                stations->data()[out++] = new Station(name, a, b, c, d);
             }
             if (out == ids->size()) {
                 AEFile::Close(handle);
@@ -572,8 +568,7 @@ Array<Agent *> *FileRead::loadAgents() {
             AEFile::ReadSwitched(f, handle);
             AEFile::ReadSwitched(g, handle);
 
-            Agent *agent = new Agent(id, name, a, b, c, flag == 1, d, e, f, g);
-            agents->data()[index] = agent;
+            agents->data()[index] = new Agent(id, name, a, b, c, flag == 1, d, e, f, g);
 
             AEFile::ReadSwitched(imageCount, handle);
             uint32_t oldIndex = index++;
@@ -862,16 +857,16 @@ Array<Ship *> *FileRead::loadShipsBinary() {
         ships = new Array<Ship *>();
         ArraySetLength<Ship *>(0x40, *ships);
 
+        int32_t a;
+        int32_t b;
+        int32_t c;
+        int32_t d;
+        int32_t e;
+        int32_t f;
+        int32_t g;
+        int32_t h;
+        int32_t speed;
         for (uint32_t i = 0; i < 0x40; i++) {
-            int32_t a;
-            int32_t b;
-            int32_t c;
-            int32_t d;
-            int32_t e;
-            int32_t f;
-            int32_t g;
-            int32_t h;
-            int32_t speed;
             AEFile::ReadSwitched(a, handle);
             AEFile::ReadSwitched(b, handle);
             AEFile::ReadSwitched(c, handle);
