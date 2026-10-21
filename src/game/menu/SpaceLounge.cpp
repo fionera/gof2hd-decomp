@@ -263,8 +263,8 @@ SpaceLounge::SpaceLounge()
 }
 
 int SpaceLounge::init() {
-    this->touchDown = 0;
     this->initialized = 0;
+    this->touchDown = 0;
     this->cameraAnimating = 0;
     this->agents = Globals::status->getStation()->getAgents();
 
@@ -292,15 +292,16 @@ int SpaceLounge::init() {
         this->cutScene->resetCamera();
     }
     this->field_0x18 = 0;
-    this->agentVisited = new char[21];
+    char *visited = new char[21];
+    this->agentVisited = visited;
     for (int i = 0; i != 21; ++i) {
-        this->agentVisited[i] = 0;
+        visited[i] = 0;
     }
 
     // Agent list panel + buttons.
     Layout *layout = Globals::layout;
     this->panelX = Globals::w / 2 - layout->field_0x68 / 2;
-    this->panelY = layout->field_0x20_top + layout->field_0xc_leftMargin;
+    this->panelY = layout->field_0xc_leftMargin + layout->field_0x20_top;
     this->panelWidth = layout->field_0x68 - layout->field_0x4c * 3 - layout->field_0x2d4;
     this->scrollWindow = new ScrollTouchWindow(this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4, this->panelY,
                                                this->panelWidth, layout->field_0x6c, false);
