@@ -28,9 +28,29 @@ namespace AbyssEngine {
     }
 }
 
-static const int g_cws_sound[32] = {
-    180,150,310,390,480,200,300,300, 170,200,170,370,370,300,440,340,
-    170,470,170,170,170,170,200,170, 250,150,170,250,270,170,0,0};
+// Weapon sound event per item index (rodata 0x1fbb50 in the original).
+static const int kWeaponSounds[233] = {
+    52, 53, 54, 56, 55, 57, 58, 59, 60, 50, 49, 50,
+    78, 75, 79, 77, 72, 73, 74, 76, 80, 81, 66, 67,
+    63, 64, 68, 65, 69, 70, 71, 82, 83, 84, 85, 86,
+    87, 88, 89, 90, 91, 6, 7, 8, 9, 10, 11, 92,
+    93, 94, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    1098, 1100, 1099, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 1111, 1113, 1112, 1117,
+    1095, 1096, 1097, 1101, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, 1118, -1, -1, -1, 2254, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, 2271, 2272, -1, -1, 2263, 2263, 2263, 2265, 2265,
+    2265, -1, -1, -1, -1, 2254, 2267, 2268, 2252, -1, 2269, -1,
+    2275, 2276, 2278, 2277, 2280,
+};
 static unsigned int g_shoot_mask = 0x10000003;
 static float **g_update_speed = nullptr;
 
@@ -51,10 +71,6 @@ static_assert(__builtin_offsetof(AudioStateView, soundEnabledFlag) == 0xf,
               "AudioStateView.soundEnabledFlag must be at +0xf");
 #endif
 
-static int gStopSoundIds[256];
-
-static int gShootSoundsByType[256];
-static int gShootSoundsByIndex[256];
 
 void FloatVectorMax(void *out, float a, float b, int c, int d); // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
@@ -706,8 +722,8 @@ void Player::addGun(Array<Gun *> *gunsIn, int slot) {
 }
 
 void Player::setAlwaysEnemy(bool value) {
-    this->alwaysEnemy = value;
     reinterpret_cast<uint16_t &>(this->enemyFlagsLo) = 1;
+    this->alwaysEnemy = value;
     this->turnedEnemyFlag = 1;
 }
 
@@ -756,20 +772,11 @@ void Player::setGammaHP(int value) {
 }
 
 void Player::stopShootSound(int index, int channel) {
-    if ((unsigned int) channel > 8) {
-        return;
-    }
-    if (((1 << channel) & 0x10c) != 0) {
-        FModSound *sound;
-        int id;
-        if (this->kiPlayer != 0 && this->kiPlayer->shipGroup == 9) {
-            id = 0x3e;
-            sound = Globals::sound;
-        } else {
-            id = gStopSoundIds[index];
-            sound = Globals::sound;
-        }
-        sound->stop(id);
+    if (channel == 2 || channel == 3 || channel == 8) {
+        if (this->kiPlayer != nullptr && this->kiPlayer->shipGroup == 9)
+            Globals::sound->stop(62);
+        else
+            Globals::sound->stop(kWeaponSounds[index]);
     }
 }
 
@@ -858,12 +865,12 @@ void Player::calcWeaponSounds(int count) {
         }
 
         int idx = 0;
-        const int *sound = g_cws_sound;
         do {
             if ((int) n <= idx) break;
             if (order[idx] >= 0) {
-                this->guns->data()[0]->data()[idx]->field_0x89 = 1;
-                Globals::globals->addSoundResourceToList(*sound);
+                Gun *gun = this->guns->data()[0]->data()[idx];
+                gun->field_0x89 = 1;
+                Globals::globals->addSoundResourceToList(kWeaponSounds[gun->itemIndex]);
                 count--;
             }
             idx++;
@@ -878,10 +885,8 @@ void Player::calcWeaponSounds(int count) {
         if (slot2 != 0 && slot2->size() != 0) {
             Gun *g = slot2->data()[0];
             if (g != 0) {
-                int sid = g_cws_sound[g->itemIndex];
                 g->field_0x89 = 1;
-                (void) sid;
-                Globals::globals->addSoundResourceToList(g_cws_sound[0]);
+                Globals::globals->addSoundResourceToList(kWeaponSounds[g->itemIndex]);
                 return;
             }
         }
@@ -916,34 +921,22 @@ void Player::setEnemies(Array<Player *> *enemies) {
     }
 }
 
-void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
-    int soundId;
-    if (this->kiPlayer == 0) {
-        soundId = gShootSoundsByIndex[type];
-    } else {
-        unsigned int kind = static_cast<unsigned int>(this->kiPlayer->shipGroup);
-        if (kind < 0xb) {
-            soundId = gShootSoundsByType[kind];
-        } else {
-            soundId = 0x3d;
-        }
-    }
+static const int kRaceShootSounds[11] = {52, 55, 54, 53, 61, 61, 61, 61, 61, 62, 2276};
 
-    FModSound *sound = reinterpret_cast<FModSound *>(Globals::sound);
-    if (static_cast<unsigned int>(channel) < 9 && ((1 << (channel & 0xff)) & 0x10c) != 0) {
-        if (sound->isPlaying(soundId) != 0) {
-            if (reinterpret_cast<AudioStateView *>(Globals::options)->soundEnabledFlag != 0) {
-                sound->updateEvent3DAttributes(soundId, pos, 0, false);
-            }
-            return;
-        }
-        if (reinterpret_cast<AudioStateView *>(Globals::options)->soundEnabledFlag == 0) {
-            pos = 0;
-        }
-    } else if (reinterpret_cast<AudioStateView *>(Globals::options)->soundEnabledFlag == 0) {
-        pos = 0;
+void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
+    int soundId = 61;
+    if (this->kiPlayer == nullptr)
+        soundId = kWeaponSounds[type];
+    else if ((unsigned int) this->kiPlayer->shipGroup <= 10)
+        soundId = kRaceShootSounds[this->kiPlayer->shipGroup];
+    FModSound *sound = Globals::sound;
+    AudioStateView *options = reinterpret_cast<AudioStateView *>(Globals::options);
+    if ((channel == 2 || channel == 3 || channel == 8) && sound->isPlaying(soundId)) {
+        if (options->soundEnabledFlag)
+            Globals::sound->updateEvent3DAttributes(soundId, pos, nullptr, false);
+        return;
     }
-    sound->play(soundId, pos, 0, volume);
+    Globals::sound->play(soundId, options->soundEnabledFlag ? pos : nullptr, nullptr, volume);
 }
 
 static const float k_shootAt_inc = 0.0f;
