@@ -348,7 +348,7 @@ public:
 
     int hudAction(int action, Level *lvl, Radar *radar);
 
-    int init();
+    void init();
 
     void initHudMenu(int menuType, Level *lvl);
 
