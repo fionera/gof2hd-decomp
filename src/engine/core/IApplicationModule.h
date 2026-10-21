@@ -32,9 +32,9 @@ namespace AbyssEngine {
 
         virtual void OnRelease() = 0;
 
-        virtual long long OnKeyPress(long long key, long long) = 0;
+        virtual void OnKeyPress(long long key, long long) = 0;
 
-        virtual long long OnKeyRelease(long long key, long long) = 0;
+        virtual void OnKeyRelease(long long key, long long) = 0;
 
         virtual void OnTouchBegin(int, int) = 0;
 
