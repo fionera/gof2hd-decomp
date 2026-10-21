@@ -463,7 +463,7 @@ void Player::setShieldHP(int value) {
 }
 
 void Player::refillGunDelay(int slot) {
-    if (slot >= 0 && this->guns != nullptr && (unsigned int) slot < this->guns->size()
+    if (this->guns != nullptr && (unsigned int) slot < this->guns->size() && slot >= 0
         && (*this->guns)[slot] != nullptr) {
         for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
             Gun *gun = (*(*this->guns)[slot])[i];
@@ -477,11 +477,13 @@ void Player::addEnemies(Array<Player *> *enemies) {
         this->setEnemies(enemies);
         return;
     }
-    Array<Player *> *tmp = new Array<Player *>();
-    ArrayAdd(*this->enemies, *tmp);
-    ArrayAdd(*enemies, *tmp);
-    ((Player *) (this))->setEnemies(tmp);
-    delete tmp;
+    Array<Player *> *merged = new Array<Player *>();
+    for (unsigned int i = 0; i < this->enemies->size(); i++)
+        ArrayAdd((*this->enemies)[i], *merged);
+    for (unsigned int i = 0; i < enemies->size(); i++)
+        ArrayAdd((*enemies)[i], *merged);
+    this->setEnemies(merged);
+    delete merged;
 }
 
 Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
@@ -588,118 +590,54 @@ void Player::damageGamma(float amount) {
     }
 }
 
-void Player::damageEmp(int amount, bool flag) {
-    Player * self = this;
-    if (self->vulnerable == 0 || self->active == 0) {
+void Player::damageEmp(int amount, bool ownFire) {
+    if (!this->vulnerable || !this->active || this->empPoints < 1 || this->hitpoints < 1)
         return;
-    }
-    int hp = self->empPoints;
-    if (hp > 0) {
-        hp = self->hitpoints;
-    }
-    if (hp < 1) {
-        return;
-    }
 
-    if (!flag && self->kiPlayer != 0 && self->alwaysEnemy == 0) {
-        KIPlayer *ki = self->kiPlayer;
-        bool runLab = true;
-        if ((unsigned int) (ki->shipGroup - 9) >= 2) {
-            int sys = Globals::status->getSystem();
-            ki = self->kiPlayer;
-            if (sys != 0 && ki->field_0x42 != 0) {
-                if (amount > 0) {
-                    ((Level *) (ki->level))->attackWanted(ki->field_0x48);
-                }
-                runLab = false;
-            } else if (self->kiPlayer == 0) {
-                runLab = false;
-            }
-        }
-
-        if (runLab && self->alwaysEnemy == 0 && self->kiPlayer->isWingMan() == 0 &&
-            (unsigned int) (self->kiPlayer->shipGroup - 9) > 1 &&
-            Globals::status->getSystem() != 0) {
-            int race = self->kiPlayer->shipGroup;
-            Globals::status->getSystem();
-            if (race == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()) {
-                int prev = self->field_dc;
-                self->field_dc = prev + amount;
-                if (self->maxEmpPoints / 3 < prev + amount) {
-                    self->turnedEnemyFlag = 1;
-                    ((Level *) (self->kiPlayer->level))->friendTurnedEnemy(0);
-                }
+    if (!ownFire) {
+        if (this->kiPlayer && !this->alwaysEnemy && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2
+            && Globals::status->getSystem() && this->kiPlayer->field_0x42) {
+            if (amount > 0)
+                this->kiPlayer->level->attackWanted(this->kiPlayer->field_0x48);
+        } else if (this->kiPlayer && !this->alwaysEnemy && !this->kiPlayer->isWingMan()
+                   && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2 && Globals::status->getSystem()
+                   && this->kiPlayer->shipGroup
+                          == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()) {
+            this->field_dc += amount;
+            if (this->field_dc > this->maxEmpPoints / 3) {
+                this->turnedEnemyFlag = 1;
+                this->kiPlayer->level->friendTurnedEnemy(this->kiPlayer->shipGroup);
             }
         }
     }
 
-    {
-        int ep = self->empPoints - amount;
-        self->empPoints = ep;
-        if (ep > 0) {
-            self->updateDamageRate();
-            return;
-        }
-    }
-    if (!flag && self->kiPlayer != 0) {
-        if (self->alwaysEnemy == 0 &&
-            (unsigned int) (self->kiPlayer->shipGroup - 9) > 1 &&
-            Globals::status->getSystem() != 0) {
-            int race = self->kiPlayer->shipGroup;
-            Globals::status->getSystem();
-            if (race == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()) {
-                ((Level *) (self->kiPlayer->level))->alarmAllFriends(self->kiPlayer->shipGroup, false);
-            }
-        }
-        KIPlayer *ki = self->kiPlayer;
-        if (reinterpret_cast<int &>(ki->stealFlagByte) != 0) {
-            goto lab_30e2;
-        }
-        if (ki->countsAsEnemyExcludeFlag != 0) {
-            goto lab_30f4;
-        }
-        if (ki->field_0x42 != 0) {
-            goto lab_30f4;
-        }
-        {
-            Standing *st = (Standing *) (long) Globals::status->getStanding();
-            st->applyDisable(self->kiPlayer->shipGroup);
-            ki = self->kiPlayer;
-        }
-    lab_30e2:
-        if (ki == 0) {
-            goto lab_3164;
-        }
-    lab_30f4:
-        if (reinterpret_cast<uint16_t &>(self->empDisabledByte) != 0) {
-            goto lab_3164;
-        }
-        {
-            if ((unsigned int) Globals::status->field_134 > 0x7fffffff) {
-                Globals::status->field_134 = 0;
-            }
-            if (Globals::achievements->hasMedal(0x2a, 1) == 0) {
-                int cnt = Globals::status->field_134 + 1;
-                Globals::status->field_134 = cnt;
-                if (Globals::achievements->getValue(0x2a, 1) <= cnt) {
-                    PlayerEgo *ego = ((Level *) (self->kiPlayer->level))->getPlayer();
-                    Hud *hud = (Hud *) (__INTPTR_TYPE__) ego->getHUD();
-                    hud->hudEventMedal(0x2a, 100);
-                    Globals::status->field_138 = 1;
+    this->empPoints -= amount;
+    if (this->empPoints <= 0) {
+        if (!ownFire && this->kiPlayer) {
+            if (!this->alwaysEnemy && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2 && Globals::status->getSystem()
+                && this->kiPlayer->shipGroup
+                       == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace())
+                this->kiPlayer->level->alarmAllFriends(this->kiPlayer->shipGroup, false);
+            if (!this->kiPlayer->stealFlagByte && !this->kiPlayer->countsAsEnemyExcludeFlag
+                && !this->kiPlayer->field_0x42)
+                ((Standing *) (intptr_t) Globals::status->getStanding())->applyDisable(this->kiPlayer->shipGroup);
+            if (this->kiPlayer && !this->empDisabledByte) {
+                if (Globals::status->field_134 < 0)
+                    Globals::status->field_134 = 0;
+                if (!Globals::achievements->hasMedal(42, 1)) {
+                    if (++Globals::status->field_134 >= Globals::achievements->getValue(42, 1)) {
+                        this->kiPlayer->level->getPlayer()->getHUD()->hudEventMedal(42, 100);
+                        Globals::status->field_138 = 1;
+                    }
                 }
             }
         }
+        this->empPoints = 0;
+        this->empDisabledByte = 1;
+        this->empTimer = 0;
+        this->empForce = (float) this->empData;
     }
-
-lab_3164:
-
-    float f = (float) self->empData;
-    reinterpret_cast<uint16_t &>(self->empDisabledByte) = 1;
-    self->empPoints = 0;
-    self->empTimer = 0;
-    self->empForce = f;
-    self->updateDamageRate();
-    return;
+    this->updateDamageRate();
 }
 
 void Player::addGun(Array<Gun *> *gunsIn, int slot) {
@@ -778,31 +716,28 @@ void Player::stopShootSound(int index, int channel) {
 }
 
 void Player::reset() {
-    Player * self = this;
-    float shield = (float) self->maxShieldHP;
-    int maxHp = self->maxHitpoints;
-    int maxEmp = self->maxEmpPoints;
-    self->gammaHP = 100.0f;
-    self->hitpoints = maxHp;
-    self->empPoints = maxEmp;
-    self->shieldHP = shield;
-    ((Player *) (self))->updateDamageRate();
-    self->vulnerable = 1;
-    self->active = 1;
-    self->field_54 = 0;
-    reinterpret_cast<uint16_t &>(self->destroyedByte) = 0;
-    self->damageDoneByPlayer = 0;
-    self->field_5e = 0;
-    self->damageTimer = 0;
-    reinterpret_cast<uint16_t &>(self->empDisabledByte) = 0;
-    self->shieldHit = 0;
-    self->armorHit = 0;
-    self->hullHit = 0;
-    self->gammaHit = 0;
-    self->bombForce = 0;
-    self->empForce = 0;
-    (((uint8_t *) &self->field_dc)[1]) = 0; // byte @0xdd (field_dc is int@0xdc)
-    (((uint8_t *) &self->empForce)[1]) = 0;
+    this->gammaHP = 100.0f;
+    this->hitpoints = this->maxHitpoints;
+    this->empPoints = this->maxEmpPoints;
+    this->shieldHP = (float) this->maxShieldHP;
+    this->updateDamageRate();
+    this->vulnerable = 1;
+    this->active = 1;
+    this->damaged = 0;
+    this->field_54 = 0;
+    this->destroyedByte = 0;
+    this->damageDoneByPlayer = 0;
+    this->field_5e = 0;
+    this->damageTimer = 0;
+    this->empDisabledByte = 0;
+    this->shieldHit = 0;
+    this->armorHit = 0;
+    this->hullHit = 0;
+    this->gammaHit = 0;
+    this->bombForce = 0.0f;
+    this->empForce = 0.0f;
+    this->field_dc = 0;
+    this->turnedEnemyFlag = 0;
 }
 
 void Player::addGun(Gun *gun, int slot) {
@@ -1064,15 +999,12 @@ void Player::addEnemy(Player *enemy) {
         this->setEnemy(enemy);
         return;
     }
-    Array<Player *> *tmp = new Array<Player *>();
-    if (this->enemies->size() != 0) {
-        for (unsigned int i = 0; i < this->enemies->size(); i++) {
-            ArrayAdd(this->enemies->data()[i], *tmp);
-        }
-    }
-    ArrayAdd(enemy, *tmp);
-    ((Player *) (this))->setEnemies(tmp);
-    delete tmp;
+    Array<Player *> *merged = new Array<Player *>();
+    if (this->enemies->size() != 0)
+        ArrayAdd(*this->enemies, *merged);
+    ArrayAdd(enemy, *merged);
+    this->setEnemies(merged);
+    delete merged;
 }
 
 void Player::damage(int amount) {
@@ -1080,27 +1012,11 @@ void Player::damage(int amount) {
 }
 
 void Player::stopShooting(int slot, int channel) {
-    if ((unsigned int) (channel - 0x16) >= 9) {
-        return;
-    }
-    Array<Array<Gun *> *> *guns = this->guns;
-    if (guns == 0) {
-        return;
-    }
-    if (slot < 0) {
-        return;
-    }
-    if ((unsigned int) slot >= guns->size()) {
-        return;
-    }
-    Array<Gun *> *arr = guns->data()[slot];
-    if (arr == 0) {
-        return;
-    }
-    for (unsigned int i = 0; i < arr->size(); i++) {
-        Gun *gun = arr->data()[i];
-        ((Player *) (this))->stopShootSound(gun->itemIndex, gun->weaponType);
-        arr = this->guns->data()[slot];
+    if ((unsigned int) (channel - 22) < 9 && this->guns && (unsigned int) slot < this->guns->size() && slot >= 0 && (*this->guns)[slot]) {
+        for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
+            Gun *gun = (*(*this->guns)[slot])[i];
+            this->stopShootSound(gun->itemIndex, gun->weaponType);
+        }
     }
 }
 
@@ -1221,24 +1137,11 @@ bool Player::shoot(int slot, long long target, bool flag, Matrix mat) {
 }
 
 void Player::stopShooting(int slot) {
-    Array<Array<Gun *> *> *guns = this->guns;
-    if (guns == 0) {
-        return;
-    }
-    if (slot < 0) {
-        return;
-    }
-    if ((unsigned int) slot >= guns->size()) {
-        return;
-    }
-    Array<Gun *> *arr = guns->data()[slot];
-    if (arr == 0) {
-        return;
-    }
-    for (unsigned int i = 0; i < arr->size(); i++) {
-        Gun *gun = arr->data()[i];
-        ((Player *) (this))->stopShootSound(gun->itemIndex, gun->weaponType);
-        arr = this->guns->data()[slot];
+    if (this->guns && (unsigned int) slot < this->guns->size() && slot >= 0 && (*this->guns)[slot]) {
+        for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
+            Gun *gun = (*(*this->guns)[slot])[i];
+            this->stopShootSound(gun->itemIndex, gun->weaponType);
+        }
     }
 }
 
@@ -1249,7 +1152,7 @@ void Player::setHitVector(float x, float y, float z) {
 }
 
 void Player::resetGunDelay(int slot) {
-    if (slot >= 0 && this->guns != nullptr && (unsigned int) slot < this->guns->size()
+    if (this->guns != nullptr && (unsigned int) slot < this->guns->size() && slot >= 0
         && (*this->guns)[slot] != nullptr) {
         for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++)
             (*(*this->guns)[slot])[i]->timer = 0;
