@@ -9,8 +9,7 @@ namespace AbyssEngine {
     public:
         int code;
         String name;
-
-        KeyCode &operator=(const KeyCode &other);
+        // copy assignment is implicit: the original emits it WEAK in the ApplicationManager TU
     };
 }
 

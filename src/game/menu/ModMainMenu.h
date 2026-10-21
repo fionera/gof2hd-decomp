@@ -28,9 +28,9 @@ public:
 
     virtual void OnRelease();
 
-    virtual long long OnKeyPress(long long key, long long mod);
+    virtual void OnKeyPress(long long key, long long mod);
 
-    virtual long long OnKeyRelease(long long key, long long mod);
+    virtual void OnKeyRelease(long long key, long long mod);
 
     virtual void OnTouchBegin(int x, int y);
 

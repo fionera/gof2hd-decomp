@@ -5,6 +5,9 @@
 
 #define AESTRING_SHIM inline
 
+template<class T>
+class Array;
+
 namespace AbyssEngine {
     class String {
     public:
@@ -15,19 +18,17 @@ namespace AbyssEngine {
 
         String(const char *cstr, bool reverse = false);
 
-        AESTRING_SHIM String(const String &other) : data(nullptr), length(0) { Set(other.data); }
-
         String(const uint16_t *wstr, bool reverse);
 
-        String(const String &other, bool reverse);
+        String(const String &other, bool reverse = false);
 
-        explicit String(char c);
+        explicit String(char c) : data(nullptr) { Set((long long) c); }
 
-        explicit String(int v);
+        explicit String(int v) : data(nullptr) { Set((long long) v); }
 
-        explicit String(float v);
+        explicit String(float v) : data(nullptr) { Set(v); }
 
-        explicit String(long long v);
+        explicit String(long long v) : data(nullptr) { Set(v); }
 
         virtual ~String();
 
@@ -69,13 +70,13 @@ namespace AbyssEngine {
 
         void Set(long long v);
 
-        static int StrLen(const char *s);
+        int StrLen(const char *s);
 
-        static int StrLen(const unsigned short *s);
+        int StrLen(const unsigned short *s);
 
         static int GetStringLength(const char *s);
 
-        int Compare(const String &other);
+        signed char Compare(const String &other);
 
         unsigned int Compare(const char *s);
 
@@ -90,7 +91,6 @@ namespace AbyssEngine {
         const unsigned short *operator[](int i) const;
 
         AESTRING_SHIM unsigned int Compare_char(const char *s) { return Compare(s); }
-        AESTRING_SHIM int Compare_str(String *other) { return Compare(*other); }
 
         void ConvertFromUTF8();
 
@@ -102,7 +102,7 @@ namespace AbyssEngine {
 
         void PrintOut();
 
-        void ReplaceChar(char from, char to);
+        String *ReplaceChar(char from, char to);
 
         void ReplaceString(String find, String repl);
 
@@ -116,18 +116,18 @@ namespace AbyssEngine {
 
         void *Split(String sep); // lint: void_ptr String method return type, signature must not change
 
-        void SplitTags(String tag);
+        Array<String *> *SplitTags(String tag);
 
         AESTRING_SHIM int StrLen_char(const char *s) { return StrLen(s); }
         AESTRING_SHIM int StrLen_wchar(const uint16_t *s) { return StrLen((const unsigned short *) s); }
 
         String SubString(unsigned int start, unsigned int end);
 
-        void ToLowerCase();
+        String *ToLowerCase();
 
         String *ToUpperCase();
 
-        void Trim();
+        String *Trim();
 
         int ValueOf();
 
@@ -159,8 +159,10 @@ namespace AbyssEngine {
 
         static uint16_t *getWCharFromUtf8(char *utf8, int len);
 
-        static char16_t termChar;
+        static unsigned short termChar;
     };
+
+    unsigned short *computeFloatString(float value, int precision, int *decimalPoint, int *negative, int fixed);
 
     String operator+(const String &a, const String &b);
 

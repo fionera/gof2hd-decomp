@@ -11,7 +11,8 @@
 #   TP_DIR                absolute path of third_party/
 #
 # The source trees are downloaded + extracted on first use (pinned versions/URLs below);
-# the hand-written helpers (openssl/crypto_memcmp.c, libzip lib/config.h) are committed.
+# the hand-written libzip lib/config.h is generated below. libcrypto is compiled with the real
+# GCC 4.9 from NDK r13b (fetched once next to the r18b NDK), see the openssl branch.
 
 cmake_minimum_required(VERSION 3.20)
 
@@ -88,8 +89,11 @@ elseif(GOF2_LIB STREQUAL "libzip")
     ensure_source("${ZSRC}" "https://zlib.net/fossils/zlib-1.2.3.tar.gz")
     ensure_source("${SRC}" "https://libzip.org/download/libzip-0.9.3.tar.gz")
     # Minimal config.h matching the Android (NDK r18b / API 16) feature set; replaces the
-    # autotools-generated header. HAVE_MKSTEMP is intentionally unset so zip_replace.c uses
-    # libzip's bundled _zip_mkstemp (which the original .so exports).
+    # autotools-generated header. HAVE_MKSTEMP is set: the original zip_close calls libc
+    # mkstemp@plt (mkstemp.c is still compiled, so _zip_mkstemp is exported regardless; the
+    # original imports mkstemp@LIBC).
+    # HAVE_STRUCT_TM_TM_ZONE: the original _zip_dirent_torrent_normalize calls time() +
+    # localtime() and copies tm_gmtoff/tm_zone (bionic struct tm has both).
     file(WRITE "${SRC}/lib/config.h"
 "/* Hand-written config.h for the GOF2 armeabi-v7a build (NDK r18b / API 16). */
 #define HAVE_DLFCN_H 1
@@ -98,11 +102,13 @@ elseif(GOF2_LIB STREQUAL "libzip")
 #define HAVE_INTTYPES_H 1
 #define HAVE_LIBZ 1
 #define HAVE_MEMORY_H 1
+#define HAVE_MKSTEMP 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDLIB_H 1
 #define HAVE_STRINGS_H 1
 #define HAVE_STRING_H 1
 #define HAVE_SYS_STAT_H 1
+#define HAVE_STRUCT_TM_TM_ZONE 1
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_UNISTD_H 1
 #define STDC_HEADERS 1
@@ -125,36 +131,97 @@ elseif(GOF2_LIB STREQUAL "libzip")
 
 # ==========================================================================================
 elseif(GOF2_LIB STREQUAL "openssl")
-    # OpenSSL 1.0.2 libcrypto subset: SHA-224/256 (+ ARMv4 asm), CRYPTO_memcmp, OPENSSL_cleanse,
-    # ARMv7/ARMv8 cpuid probes -- the symbols the game statically linked from libcrypto.
-    set(SRC "${TP_DIR}/openssl/openssl-1.0.2u")
-    ensure_source("${SRC}" "https://www.openssl.org/source/openssl-1.0.2u.tar.gz")
-    # Configure once to generate opensslconf.h / buildinf.h. Invoke through `perl` explicitly:
-    # OpenSSL's Configure is a `:`/`eval exec perl` self-execing script with no #! shebang, which
-    # posix_spawn (execute_process) cannot exec directly -- only a shell/perl can launch it.
-    if(NOT EXISTS "${SRC}/Makefile")
-        find_program(PERL_EXECUTABLE perl REQUIRED)
-        execute_process(COMMAND ${PERL_EXECUTABLE} Configure android-armv7 no-shared
-                        WORKING_DIRECTORY "${SRC}"
-                        OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _rc)
-        if(NOT _rc EQUAL 0)
-            message(FATAL_ERROR "[openssl] perl Configure android-armv7 failed")
+    # OpenSSL 1.1.0 libcrypto subset: SHA-224/256 (+ ARMv4 asm), and armv4cpuid.S
+    # (OPENSSL_atomic_add/cleanse, CRYPTO_memcmp, ARMv7/ARMv8 probes, wipe_cpu, instrument_bus).
+    #
+    # Version evidence: CRYPTO_memcmp sits between OPENSSL_cleanse and _armv7_neon_probe in the
+    # original .text and is the 56-byte armv4cpuid.pl routine -- CRYPTO_memcmp only moved into
+    # armv4cpuid in 1.1.0 (1.0.2 has it in C in cryptlib.c). 1.1.0a..1.1.0l and 1.1.1w produce
+    # identical code for this subset; 1.1.0l (last 1.1.0) is pinned.
+    #
+    # Compiler evidence: the original's libcrypto objects are ARM-mode GCC code (subs rX,rY,#0 /
+    # rsb idioms, push {r3,...}) and the .so's .comment carries "GCC: (GNU) 4.9.x 20150123
+    # (prerelease)" next to clang 7.0.2. r18b's arm-linux-androideabi-gcc is only a clang wrapper,
+    # so the real GCC 4.9 is fetched from NDK r13b (toolchain dir only). GCC builds differ between
+    # NDKs: r11c/r13b reproduce SHA256_Update exactly, r16b/r17c do not (jump-threading change).
+    # Flags = OpenSSL 1.1.0 `Configure android-armeabi` CFLAGS + -march=armv7-a (GCC defaults
+    # to armv5te; the original uses movw/movt).
+    string(REGEX MATCH "prebuilt/([^/]+)/bin" _m "${GOF2_NDK_CLANG}")
+    set(_host "${CMAKE_MATCH_1}")
+    get_filename_component(_ndkcache "${GOF2_NDK_ROOT}" DIRECTORY)
+    set(_gccndk "android-ndk-r13b")
+    set(_gcctc "${_ndkcache}/${_gccndk}/toolchains/arm-linux-androideabi-4.9/prebuilt/${_host}")
+    set(GCC "${_gcctc}/bin/arm-linux-androideabi-gcc")
+    if(NOT EXISTS "${GCC}")
+        set(_zip "${_ndkcache}/${_gccndk}-${_host}.zip")
+        message(STATUS "[openssl] fetching ${_gccndk} GCC 4.9 toolchain (~650MB zip, one time)")
+        file(DOWNLOAD "https://dl.google.com/android/repository/${_gccndk}-${_host}.zip" "${_zip}"
+             STATUS _st)
+        list(GET _st 0 _code)
+        if(NOT _code EQUAL 0)
+            file(REMOVE "${_zip}")
+            message(FATAL_ERROR "[openssl] ${_gccndk} download failed: ${_st}")
         endif()
+        file(ARCHIVE_EXTRACT INPUT "${_zip}" DESTINATION "${_ndkcache}"
+             PATTERNS "${_gccndk}/toolchains/arm-linux-androideabi-4.9/*")
+        file(REMOVE "${_zip}")
+        if(NOT EXISTS "${GCC}")
+            message(FATAL_ERROR "[openssl] ${_gccndk} extraction incomplete: ${GCC}")
+        endif()
+    endif()
+
+    set(SRC "${TP_DIR}/openssl/openssl-1.1.0l")
+    ensure_source("${SRC}" "https://www.openssl.org/source/old/1.1.0/openssl-1.1.0l.tar.gz")
+    find_program(PERL_EXECUTABLE perl REQUIRED)
+    # Configure once (writes configdata.pm), then render opensslconf.h from its template the way
+    # the generated Makefile does. Invoke through `perl` explicitly (no usable shebang).
+    if(NOT EXISTS "${SRC}/include/openssl/opensslconf.h")
+        execute_process(COMMAND ${PERL_EXECUTABLE} Configure android-armeabi no-shared
+                        WORKING_DIRECTORY "${SRC}" OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _rc)
+        if(NOT _rc EQUAL 0)
+            message(FATAL_ERROR "[openssl] perl Configure android-armeabi failed")
+        endif()
+        execute_process(COMMAND ${PERL_EXECUTABLE} -I. -Mconfigdata util/dofile.pl -oMakefile
+                                include/openssl/opensslconf.h.in
+                        WORKING_DIRECTORY "${SRC}" RESULT_VARIABLE _rc
+                        OUTPUT_FILE "${SRC}/include/openssl/opensslconf.h.tmp")
+        if(NOT _rc EQUAL 0)
+            message(FATAL_ERROR "[openssl] opensslconf.h generation failed")
+        endif()
+        file(RENAME "${SRC}/include/openssl/opensslconf.h.tmp" "${SRC}/include/openssl/opensslconf.h")
     endif()
     set(OBJDIR "${SRC}/_obj_gof2")
     file(MAKE_DIRECTORY "${OBJDIR}")
-    set(OSSL_INC "-O3;-I.;-Icrypto;-Iinclude;-Icrypto/sha")
-    # .S cpuid probe + SHA-256 asm assemble only in ARM mode; sha256-armv4.S's `adrl` needs GNU as.
-    # -marm on the C files too: the original's libcrypto objects are all ARM-mode
-    # (SHA224*/SHA256*/CRYPTO_memcmp are ARM in the original .so's dynsym).
-    compile("${OBJDIR}/armv4cpuid.o"   "${SRC}" "${OSSL_INC};-marm"  "${SRC}/crypto/armv4cpuid.S")
-    compile("${OBJDIR}/sha256.o"       "${SRC}" "${OSSL_INC};-marm;-DSHA256_ASM" "${SRC}/crypto/sha/sha256.c")
-    compile("${OBJDIR}/sha256-armv4.o" "${SRC}" "${OSSL_INC};-marm;-fno-integrated-as;-B${GOF2_NDK_GCC_BINDIR}" "${SRC}/crypto/sha/sha256-armv4.S")
-    compile("${OBJDIR}/crypto_memcmp.o" "${SRC}" "${OSSL_INC};-marm" "${TP_DIR}/openssl/crypto_memcmp.c")
-    compile("${OBJDIR}/armcap.o"       "${SRC}" "${OSSL_INC};-marm" "${SRC}/crypto/armcap.c")
-    archive("${TP_DIR}/openssl/libcrypto_gof2.a"
-        "${OBJDIR}/armv4cpuid.o" "${OBJDIR}/sha256.o" "${OBJDIR}/sha256-armv4.o"
-        "${OBJDIR}/crypto_memcmp.o" "${OBJDIR}/armcap.o")
+    # perlasm -> .S (linux32 flavour), as the 1.1.0 build does.
+    foreach(_pl "crypto/armv4cpuid.pl;armv4cpuid.S" "crypto/sha/asm/sha256-armv4.pl;sha256-armv4.S")
+        list(GET _pl 0 _in)
+        list(GET _pl 1 _out)
+        execute_process(COMMAND ${PERL_EXECUTABLE} ${_in} linux32 ${OBJDIR}/${_out}
+                        WORKING_DIRECTORY "${SRC}" OUTPUT_QUIET RESULT_VARIABLE _rc)
+        if(NOT _rc EQUAL 0 OR NOT EXISTS "${OBJDIR}/${_out}")
+            message(FATAL_ERROR "[openssl] perlasm failed: ${_in}")
+        endif()
+    endforeach()
+    set(OSSL_FLAGS
+        --sysroot=${SYSROOT}
+        -isystem ${GOF2_NDK_ROOT}/sysroot/usr/include
+        -isystem ${GOF2_NDK_ROOT}/sysroot/usr/include/arm-linux-androideabi
+        -D__ANDROID_API__=16 -march=armv7-a
+        -DDSO_DLFCN -DHAVE_DLFCN_H -DNDEBUG -DOPENSSL_THREADS -DOPENSSL_NO_DYNAMIC_ENGINE
+        -DOPENSSL_PIC -DSHA256_ASM -DOPENSSL_USE_NODELETE
+        -Wall -O3 -pthread -mandroid -fPIC -Wa,--noexecstack
+        -I. -Icrypto/include -Iinclude -Icrypto -w)
+    set(objs "")
+    foreach(_s "${OBJDIR}/armv4cpuid.S" "${SRC}/crypto/sha/sha256.c" "${OBJDIR}/sha256-armv4.S")
+        get_filename_component(_n "${_s}" NAME_WE)
+        execute_process(COMMAND ${GCC} ${OSSL_FLAGS} -c ${_s} -o ${OBJDIR}/${_n}.o
+                        WORKING_DIRECTORY "${SRC}" RESULT_VARIABLE _rc)
+        if(NOT _rc EQUAL 0)
+            message(FATAL_ERROR "[openssl] compile failed: ${_s}")
+        endif()
+        list(APPEND objs "${OBJDIR}/${_n}.o")
+    endforeach()
+    archive("${TP_DIR}/openssl/libcrypto_gof2.a" ${objs})
 
 else()
     message(FATAL_ERROR "unknown GOF2_LIB '${GOF2_LIB}'")

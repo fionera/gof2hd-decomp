@@ -153,7 +153,7 @@ public:
 
     void OnKeyPress(long long unused, long long key);
 
-    long long OnKeyRelease(long long unused, long long key);
+    void OnKeyRelease(long long unused, long long key);
 
     int ShowLoadingScreen();
 

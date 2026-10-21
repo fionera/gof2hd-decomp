@@ -2,6 +2,7 @@
 
 #define GOF2_ARRAY_INSTANTIATIONS
 #include "engine/core/Array.h"
+#include "engine/core/ArrayReleaseClasses.h"
 
 #include "engine/math/Vector.h"
 #include "engine/math/Matrix.h"

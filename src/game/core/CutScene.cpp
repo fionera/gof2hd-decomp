@@ -1,3 +1,4 @@
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/CutScene.h"
 #include "engine/core/AERandom.h"
 #include "game/ship/TargetFollowCamera.h"
