@@ -1197,82 +1197,42 @@ void Hud::checkIfQuickMenuIsEmpty() {
 }
 
 
-static const char g_Hud_dmPrefix[1] = {0};
-
 void Hud::drawMenu(int unused) {
     (void) unused;
-    int *layout = (int *) Globals::layout;
-    ((Layout *) (layout))->drawMask();
-
-    Globals::Canvas->DrawImage2D((unsigned) this->quickMenuTopImage, this->field_0x3c4 + this->menuOriginX, 0);
-
-    int hx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
-    char hy = (char) ((char) this->menuOriginYBase + (char) this->menuOriginY + (char) (this->menuRowHeight / 2)
-                      - (char) layout[0x8b]);
-    Globals::Canvas->DrawImage2D((unsigned) this->pauseButtonImage, hx, hy, (unsigned char) 0x11);
-
-    int y = this->menuOriginY + this->menuOriginYBase + this->menuRowHeight;
-
+    Globals::layout->drawMask();
+    Globals::Canvas->DrawImage2D(this->quickMenuTopImage, this->field_0x3c4 + this->field_0x4cc,
+                                 this->field_0x4d0 + this->menuOriginY);
+    Globals::Canvas->DrawImage2D(this->image_0x35c, this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2,
+                                 this->menuOriginY + this->field_0x4d0 + this->menuRowHeight / 2 -
+                                     Globals::layout->quickMenuHeaderLift,
+                                 0x11, 0x44);
+    int y = this->menuOriginY + this->field_0x4d0 + this->menuRowHeight;
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
-        unsigned int count = (unsigned int) this->menuButtons->size();
-        for (unsigned int i = 0; i < count - 1; i++) {
-            Globals::Canvas->DrawImage2D((unsigned) this->quickMenuMiddleImage, this->field_0x3c4 + this->menuOriginX,
-                                         0);
+        for (unsigned int i = 0; i < this->menuButtons->size() - 1; i++) {
+            Globals::Canvas->DrawImage2D(this->quickMenuMiddleImage, this->field_0x3c4 + this->field_0x4cc, y);
             y += this->field_0x3d0;
-            count = (unsigned int) this->menuButtons->size();
         }
     }
-
-    Globals::Canvas->DrawImage2D((unsigned) this->quickMenuBottomImage, this->field_0x3c4 + this->menuOriginX, 0);
-
+    Globals::Canvas->DrawImage2D(this->quickMenuBottomImage, this->field_0x3c4 + this->field_0x4cc, y);
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
-        unsigned int n = (unsigned int) this->menuButtons->size();
-        for (unsigned int i = 0; i < n; i++) {
+        for (unsigned int i = 0; i < this->menuButtons->size(); i++)
             (*this->menuButtons)[i]->draw();
-            n = (unsigned int) this->menuButtons->size();
-        }
     }
-
-    if (this->menuType != 0) return;
-
-    Ship *ship = Globals::status->getShip();
-    if (!ship->hasCloak() && ship->hasJumpDrive() == 0) return;
-
-    char prefix[12], num[12], label[12];
-    ((String *) (prefix))->ctor_char(g_Hud_dmPrefix, false);
-    ((String *) (num))->Set((long long) (this->fuelGaugeValue));
-    *(String *) label = *(String *) prefix + *(String *) num;
-    {
-        String *_s = ((String *) (num));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (prefix));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    int gx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
-    unsigned char gy = (unsigned char) ((char) y + (char) (layout[0xc] / 2)
-                                        + (char) layout[0xa2]);
-    Globals::Canvas->DrawImage2D((unsigned) this->fuelGaugeBarImage, gx, gy, (unsigned char) 0x11);
-    Globals::Canvas->DrawImage2D((unsigned) this->fuelGaugeIconImage, gx - layout[0x8c],
-                                 (char) layout[0xc] + (char) gy + (char) layout[0xa3], (unsigned char) 0x11);
-
-    int barW = layout[0x8c];
-    String *font = (String *) Globals::font;
-    int ih = Globals::Canvas->GetImage2DHeight((unsigned) (0));
-    int th = Globals::Canvas->GetTextHeight(0);
-    char ty = (char) (((gy + (char) (ih / 2)) - (char) (th / 2)) + (char) layout[0x8d]);
-    Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (label), (barW + gx), (ty), false);
-    {
-        String *_s = ((String *) (label));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
+    if (this->menuType != 0)
+        return;
+    if (Globals::status->getShip()->hasCloak() || Globals::status->getShip()->hasJumpDrive()) {
+        String label = String("X ") + String(this->fuelGaugeValue);
+        int gx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
+        int gy = y + Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x288;
+        Globals::Canvas->DrawImage2D(this->image_0x374, gx, gy, 0x11, 0x14);
+        Globals::Canvas->DrawImage2D(this->image_0x370, gx - Globals::layout->quickMenuIconGap,
+                                     Globals::layout->field_0x30_rowHeight + gy + Globals::layout->field_0x28c, 0x11,
+                                     0x12);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, label, Globals::layout->quickMenuIconGap + gx,
+                                    gy + Globals::Canvas->GetImage2DHeight(this->image_0x374) / 2 -
+                                        Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
+                                        Globals::layout->field_0x234,
+                                    false);
     }
 }
 

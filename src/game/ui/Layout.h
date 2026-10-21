@@ -167,7 +167,8 @@ public:
     int orbitInfoStationY;  // 0x220
     int orbitInfoSystemY;   // 0x224
     int orbitInfoSecurityY; // 0x228
-    uint8_t _pad_0x22c[8];
+    int quickMenuHeaderLift; // 0x22c: quick-menu header icon y lift
+    int quickMenuIconGap;    // 0x230: gauge icon / label x spacing
     int field_0x234;
 
     Blk16 field_0x238_blk16;
