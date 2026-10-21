@@ -7,10 +7,8 @@
 #include "game/mission/PendingProduct.h"
 #include "game/ui/ListItem.h"
 #include "game/ship/Ship.h"
+#include "game/core/Globals.h"
 
-static Status *g_HangarList_status = nullptr;
-static GameText **g_HangarList_gameText = nullptr;
-static Array<Item *> *g_HangarList_items = nullptr;
 
 HangarList::HangarList() {
     this->tabs = nullptr;
@@ -105,7 +103,7 @@ void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
         unlocked += (*blueprints)[i]->isUnlocked();
     }
 
-    Array<PendingProduct *> *pending = g_HangarList_status->pendingProducts;
+    Array<PendingProduct *> *pending = Globals::status->pendingProducts;
     uint32_t length = unlocked;
     bool noPending = true;
     if (pending != nullptr) {
@@ -122,7 +120,7 @@ void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
 
     ArraySetLength(length, *list);
 
-    GameText **texts = g_HangarList_gameText;
+    GameText **texts = &Globals::gameText;
     (*list)[0] = new ListItem((*texts)->getText(0x111));
 
     uint32_t out = 1;
@@ -149,16 +147,16 @@ void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
 
 void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
     (void) flag;
-    Ship *ship = g_HangarList_status->getShip();
+    Ship *ship = Globals::status->getShip();
     Array<Item *> *cargo = ship->getCargo();
-    Array<Item *> *allItems = g_HangarList_items;
+    Array<Item *> *allItems = Globals::items;
     Array<int> *ingredients = blueprint->getIngredientList();
     uint32_t count = ingredients->size();
 
     Array<ListItem *> *list = new Array<ListItem *>();
     ArraySetLength(count + 1, *list);
 
-    GameText **texts = g_HangarList_gameText;
+    GameText **texts = &Globals::gameText;
     (*list)[0] = new ListItem((*texts)->getText(blueprint->getIndex() + 0x4fa));
 
     uint32_t out = 1;
@@ -204,7 +202,7 @@ void HangarList::fillBuyList(ListItem *item) {
         if (!item->isSlot()) {
             type = item->item->getType();
         }
-        Ship *ship = g_HangarList_status->getShip();
+        Ship *ship = Globals::status->getShip();
         Array<Item *> *cargo = ship->getCargo();
         if (cargo != nullptr) {
             for (uint32_t i = 0; i < cargo->size(); ++i) {
@@ -214,7 +212,7 @@ void HangarList::fillBuyList(ListItem *item) {
             }
         }
     } else {
-        Station *station = g_HangarList_status->getStation();
+        Station *station = Globals::status->getStation();
         Array<Ship *> *ships = station->getShips();
         if (ships != nullptr) {
             count = ships->size();
@@ -234,7 +232,7 @@ void HangarList::fillBuyList(ListItem *item) {
     }
     ArraySetLength(length, *list);
 
-    GameText **texts = g_HangarList_gameText;
+    GameText **texts = &Globals::gameText;
     (*list)[0] = new ListItem((*texts)->getText(0x115));
     (*list)[1] = new ListItem(item);
 
@@ -254,7 +252,7 @@ void HangarList::fillBuyList(ListItem *item) {
     if (count < 1) {
         (*list)[next] = new ListItem(static_cast<int>(next));
     } else if (isShip == 0) {
-        Ship *ship = g_HangarList_status->getShip();
+        Ship *ship = Globals::status->getShip();
         Array<Item *> *cargo = ship->getCargo();
         for (uint32_t i = 0; i < cargo->size(); ++i) {
             if ((*cargo)[i]->getType() == type) {
@@ -263,7 +261,7 @@ void HangarList::fillBuyList(ListItem *item) {
             }
         }
     } else {
-        Station *station = g_HangarList_status->getStation();
+        Station *station = Globals::status->getStation();
         Array<Ship *> *ships = station->getShips();
         for (uint32_t i = 0; i < ships->size(); ++i) {
             (*list)[out + 1 + i] = new ListItem((*ships)[i]);
@@ -310,7 +308,7 @@ void HangarList::initShipTab(Ship *ship) {
     int slotTypes = ship->getSlotTypes();
     ArraySetLength(slotTypes + baseLength + equipmentLength, *items);
 
-    GameText **texts = g_HangarList_gameText;
+    GameText **texts = &Globals::gameText;
     (*items)[0] = new ListItem((*texts)->getText(0xb7));
     (*items)[1] = new ListItem(ship);
     uint32_t out = 2;
@@ -403,7 +401,7 @@ void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
     ArraySetLength(length, *list);
 
     uint32_t out;
-    GameText **texts = g_HangarList_gameText;
+    GameText **texts = &Globals::gameText;
     if (ships != nullptr && ships->size() != 0) {
         AbyssEngine::String *shipsLabel = (*texts)->getText(0xad);
         (*list)[0] = new ListItem(shipsLabel, -1);
