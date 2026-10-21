@@ -49,9 +49,9 @@ public:
     PlayerEgo *player;
 
     uint8_t _b5c; // field_0x5c (int) = reinterpret_cast<int &>(_b5c)
-    uint8_t pauseOpen;
+    bool pauseOpen;
     uint8_t cutsceneActive;
-    uint8_t jumpActive;
+    bool jumpActive;
     uint8_t gameOverActive;
     uint8_t campaignMission;
     uint8_t _pad_0x62[2];

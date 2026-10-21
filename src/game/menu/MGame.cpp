@@ -830,12 +830,13 @@ static inline void *keyboardTouchId() { return reinterpret_cast<void *>(12345); 
 static const int gWingmenRadioMissions[3] = {93, 111, 143};
 
 void MGame::OnUpdate() {
-    int delta = (this->applicationManager->GetElapsedTimeMillis() > 150 ? 150
-                                                                         : this->applicationManager->GetElapsedTimeMillis()) < 0
+    int delta = ((int) this->applicationManager->GetElapsedTimeMillis() > 150
+                     ? 150
+                     : (int) this->applicationManager->GetElapsedTimeMillis()) < 0
                     ? 0
-                    : (this->applicationManager->GetElapsedTimeMillis() > 150
+                    : ((int) this->applicationManager->GetElapsedTimeMillis() > 150
                            ? 150
-                           : this->applicationManager->GetElapsedTimeMillis());
+                           : (int) this->applicationManager->GetElapsedTimeMillis());
     this->deltaTime = delta;
     this->frameTime += delta;
     reinterpret_cast<long long &>(this->field_0x38) += delta;
@@ -872,14 +873,14 @@ void MGame::OnUpdate() {
         freeCamTouchEnd(400, 400, keyboardTouchId());
         mouseX = 0;
         mouseY = 0;
-        Globals::mouseDeltaY = 0;
         Globals::mouseDeltaX = 0;
+        Globals::mouseDeltaY = 0;
     }
     this->lastMouseX = mouseX;
     this->lastMouseY = mouseY;
     if (this->player->isDockingToAsteroid()) {
-        Globals::mouseDeltaY = 0;
         Globals::mouseDeltaX = 0;
+        Globals::mouseDeltaY = 0;
     }
 
     if (Globals::showWingmanMenu) {
