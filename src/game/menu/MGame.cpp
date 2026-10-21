@@ -349,35 +349,21 @@ void MGame::switchCamera(int id) {
     this->player->hideShipForFirstPersonCameraView(this->field_0x18 ? true : this->camera->hideShipForFirstPersonCam());
 }
 
-static int *g_fcb_guard;
-
-void MGame::freeCamTouchBegin(int x, int y, void *idPtr) { // lint: void_ptr -- exported method signature (Pv)
-    // lint: void_ptr -- exported method signature (Pv)
-    int id = (int) (intptr_t) idPtr;
-    char buf[12];
-    float fy = (float) y;
-    float fx = (float) x;
-    Vector *fingerSlot;
-    if (this->touch0Id == 0) {
-        if (this->touch1Id == 0) this->menuTime = 0;
-        *(float *) (buf + 4) = fy;
-        *(float *) (buf + 0) = fx;
-        *(int *) (buf + 8) = 0;
-        this->touch0Id = id;
-        fingerSlot = &this->freeCamFinger1;
+void MGame::freeCamTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- exported method signature (Pv)
+    int id = (int) (intptr_t) touch;
+    if (this->touch0Id != 0) {
+        if (this->menuTime < 1000) {
+            this->flCameraRoll = 0;
+            this->flCameraRoll = AbyssEngine::AEMath::VectorLength(*this->camera->getCamOffset());
+            this->touch1Id = id;
+            this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
+        }
     } else {
-        if (this->menuTime >= 1000) goto tail;
-        this->flCameraRoll = 0;
-        float len = AbyssEngine::AEMath::VectorLength(*this->camera->getCamOffset());
-        *(float *) (buf + 4) = fy;
-        *(float *) (buf + 0) = fx;
-        this->flCameraRoll = len;
-        fingerSlot = &this->freeCamFinger0;
-        this->touch1Id = id;
+        if (this->touch1Id == 0)
+            this->menuTime = 0;
+        this->touch0Id = id;
+        this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
     }
-
-    *fingerSlot = *(const Vector *) (buf);
-tail:
     this->dragLastX = x;
     this->dragLastY = y;
     this->dragStartX = x;
@@ -1252,77 +1238,50 @@ static float g_fcZoomMax;
 
 static float g_fcZoomMin;
 
-void MGame::freeCamTouchMove(int x, int y, void *touchId) { // lint: void_ptr -- exported method signature (Pv)
-    // lint: void_ptr -- exported method signature (Pv)
-    int ty = (int) (intptr_t) touchId;
-    if (this->player->isMining() != 0) {
+void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- exported method signature (Pv)
+    int id = (int) (intptr_t) touch;
+    if (this->player->isMining()) {
         this->needsRedraw = 1;
+        freeCamTouchEnd(x, y, touch);
         return;
     }
     this->needsRedraw = 0;
-
-    int t0 = this->touch0Id;
-    int t1 = this->touch1Id;
-    if (t0 == 0 || t1 == 0) {
-        int dy = y - this->dragLastX;
-        int dx = ty - this->dragLastY;
+    if (this->touch0Id != 0 && this->touch1Id != 0) {
+    float oldLen = AbyssEngine::AEMath::VectorLength(this->freeCamFinger1 - this->freeCamFinger0);
+    float newLen = oldLen;
+    if (this->touch0Id == id) {
+        float fx = (float) x;
+        float fy = (float) y;
+        newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger0);
+        this->freeCamFinger1 = Vector{fx, fy, 0.0f};
+    } else if (this->touch1Id == id) {
+        float fx = (float) x;
+        float fy = (float) y;
+        newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger1);
+        this->freeCamFinger0 = Vector{fx, fy, 0.0f};
+    }
+    this->flCameraRoll += (newLen - oldLen) * -50.0f;
+    if (this->flCameraRoll > 20000.0f)
+        this->flCameraRoll = 20000.0f;
+    else if (this->flCameraRoll < 1500.0f)
+        this->flCameraRoll = 1500.0f;
+    this->camera->zoomTarget(this->flCameraRoll);
+    } else {
+        int dx = x - this->dragLastX;
+        int dy = y - this->dragLastY;
         this->dragLastX = x;
-        this->dragLastY = ty;
-        this->dragDeltaX = dy;
-        this->dragDeltaY = dx;
+        this->dragLastY = y;
+        this->dragDeltaX = dx;
+        this->dragDeltaY = dy;
         this->flShakeAmpX = 1.0f;
         this->flShakeAmpY = 1.0f;
-        this->flShakeX += (float) dy;
-        this->flShakeY += (float) dx;
-
-        if (t0 == 0) {
-            float v[4];
-            v[0] = (float) x;
-            v[1] = (float) ty;
-            v[2] = 0;
-            this->freeCamFinger0 = *(const Vector *) ((Vector *) v);
-        } else if (t1 == 0) {
-            float v[4];
-            v[0] = (float) x;
-            v[1] = (float) ty;
-            v[2] = 0;
-            this->freeCamFinger1 = *(const Vector *) ((Vector *) v);
-        }
-
-        return;
+        this->flShakeX += (float) dx;
+        this->flShakeY += (float) dy;
+        if (this->touch0Id == 0)
+            this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
+        else if (this->touch1Id == 0)
+            this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
     }
-
-    Vector *base = &this->freeCamFinger1;
-    float tmp[4];
-    *(Vector *) ((Vector *) tmp) = *(const Vector *) (base) - *(const Vector *) (&this->freeCamFinger0);
-    float oldLen = AbyssEngine::AEMath::VectorLength(*(const Vector *) ((Vector *) tmp));
-    float newLen = oldLen;
-
-    if (this->touch0Id == ty) {
-        float v[4];
-        v[0] = (float) x;
-        v[1] = (float) ty;
-        v[2] = 0;
-        *(Vector *) ((Vector *) tmp) = *(const Vector *) (base) - *(const Vector *) ((Vector *) v);
-        newLen = AbyssEngine::AEMath::VectorLength(*(const Vector *) ((Vector *) tmp));
-        *(Vector *) (base) = *(const Vector *) ((Vector *) v);
-    } else if (this->touch1Id == ty) {
-        float v[4];
-        v[0] = (float) x;
-        v[1] = (float) ty;
-        v[2] = 0;
-        *(Vector *) ((Vector *) tmp) = *(const Vector *) (base) - *(const Vector *) ((Vector *) v);
-        newLen = AbyssEngine::AEMath::VectorLength(*(const Vector *) ((Vector *) tmp));
-        this->freeCamFinger0 = *(const Vector *) ((Vector *) v);
-    }
-
-    float zoom = this->flCameraRoll + (newLen - oldLen) * g_fcRotScale;
-    this->flCameraRoll = zoom;
-    if (zoom > g_fcZoomMax || zoom < g_fcZoomMin) {
-        zoom = (zoom > g_fcZoomMax) ? g_fcZoomMax : g_fcZoomMin;
-        this->flCameraRoll = zoom;
-    }
-    TFC_zoomTarget(this->camera, zoom);
 }
 
 void MGame::OnTouchEnd(int p1, int p2, void *touchId) { // lint: void_ptr -- exported override signature (Pv)
