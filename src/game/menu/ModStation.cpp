@@ -1491,8 +1491,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
     if (this->activeTouch != touch) {
         return;
     }
-    this->flag_0x118 = 0;
     this->activeTouch = nullptr;
+    this->flag_0x118 = 0;
     if (this->flag_0x60) {
         return;
     }
