@@ -355,18 +355,12 @@ namespace AbyssEngine {
 
     void Transform::DebugOut(int value) {}
 
-    Transform::Transform(Transform *other) {
-        this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
-        this->boundingRadius = 0.0f;
-        this->boundingRadius2 = 1.0f;
-        this->scale.y = 0.0f;
-        this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
-        this->localScale.y = 0.0f;
-        this->localTranslation = AEMath::Vector{0.0f, 0.0f, 0.0f};
-
+    Transform::Transform(Transform *other)
+        : boundingCenter(), boundingRadius(0.0f), boundingRadius2(1.0f), translation(), scale(), localTranslation(),
+          localScale() {
         if (other == 0) {
-            Transform temp;
-            temp.~Transform();
+            // The original "delegates" by constructing (and immediately destroying) a temporary.
+            Transform();
         } else {
             this->animating = true;
             this->animationStart = other->animationStart;
