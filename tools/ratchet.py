@@ -105,6 +105,13 @@ def main():
     sod_missing = so_orig - so_ours
     imports = undef_imports(str(so))
 
+    sys.path.insert(0, str(ROOT / "tools"))
+    import datadiff  # noqa: E402
+    do_, du_ = datadiff.Side(str(Path(original))), datadiff.Side(str(so))
+    data_common = sorted(set(do_.objs) & set(du_.objs))
+    data_exact = sum(1 for n in data_common
+                     if do_.norm(n) == du_.norm(n) and do_.objs[n][1] == du_.objs[n][1])
+
     lint = run([sys.executable, ROOT / "tools" / "goal_lint.py", str(ROOT / "src")],
                capture_output=True, text=True)
 
@@ -112,6 +119,7 @@ def main():
         verify={k: summary[k] for k in ("byte_exact", "linked_exact", "stub_zero_size",
                                         "missing", "wrong_type", "extra", "avg_match",
                                         "compared")},
+        data=dict(data_exact=data_exact, data_common=len(data_common)),
         sodiff=dict(extra_beyond_allow=sorted(sod_extra), missing=sorted(sod_missing),
                     allowed=len(allow & (so_ours - so_orig))),
         imports=imports,
@@ -125,7 +133,7 @@ def main():
                 print(f"  {n}")
             return 1
         BASELINE.write_text(json.dumps(
-            dict(verify=state["verify"], imports=imports), indent=1) + "\n")
+            dict(verify=state["verify"], data=state["data"], imports=imports), indent=1) + "\n")
         print(f"baseline updated: {BASELINE.relative_to(ROOT)}")
         print(json.dumps(state["verify"], indent=1))
         return 0
@@ -154,6 +162,12 @@ def main():
         elif cv[key] < bv[key]:
             gains.append(f"{key} {bv[key]} -> {cv[key]}")
 
+    bd = base.get("data", {}).get("data_exact")
+    if bd is not None and data_exact < bd:
+        fails.append(f"data_exact {bd} -> {data_exact} (exported data objects, tools/datadiff.py)")
+    elif bd is not None and data_exact > bd:
+        gains.append(f"data_exact {bd} -> {data_exact}")
+
     if sod_missing:
         fails.append(f"sodiff missing exports: {len(sod_missing)} "
                      f"(e.g. {sorted(sod_missing)[:3]})")
@@ -176,6 +190,7 @@ def main():
     print(f"verify: byte {cv['byte_exact']}  linked {cv['linked_exact']}  "
           f"stubs {cv['stub_zero_size']}  missing {cv['missing']}  extra {cv['extra']}  "
           f"avg {cv['avg_match']}")
+    print(f"data:   exact {data_exact} of {len(data_common)} exported objects")
     print(f"sodiff: extra-beyond-allow {len(sod_extra)}  missing {len(sod_missing)}  "
           f"allowed {state['sodiff']['allowed']}   imports: {len(imports)}")
     for g in gains:

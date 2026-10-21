@@ -172,7 +172,21 @@ int MiningGame::update(int delta) {
     this->rightMarquee->update(delta);
     Globals::sound->setParamValue(0, 1, (LAYER_SPEEDS[this->currentLayer] - 5.0f) / 33.0f * 3.0f);
 
-    if (isInCurrentLayer()) {
+    if (!isInCurrentLayer()) {
+        if (wasInLayer) {
+            Globals::sound->stop(1);
+            Globals::sound->play(3, nullptr, nullptr, 0.0f);
+        }
+        this->lossTimer += delta;
+        if (this->lossTimer > 2500) {
+            this->lossTimer = 2500;
+            this->oreAmount = 0.0f;
+            this->gameLostFlag = 1;
+            Globals::status->field_124 = 0;
+            return 0;
+        }
+        this->textAlpha = 1.0f;
+    } else {
         if (!wasInLayer) {
             Globals::sound->play(1, nullptr, nullptr, 0.0f);
             Globals::sound->stop(3);
@@ -216,20 +230,6 @@ int MiningGame::update(int delta) {
             }
             this->oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
         }
-    } else {
-        if (wasInLayer) {
-            Globals::sound->stop(1);
-            Globals::sound->play(3, nullptr, nullptr, 0.0f);
-        }
-        this->lossTimer += delta;
-        if (this->lossTimer > 2500) {
-            this->lossTimer = 2500;
-            this->oreAmount = 0.0f;
-            this->gameLostFlag = 1;
-            Globals::status->field_124 = 0;
-            return 0;
-        }
-        this->textAlpha = 1.0f;
     }
     return 1;
 }

@@ -58,30 +58,6 @@ public:
 
 extern int g_android_back_button_pressed;
 
-int IsDialogVisible(int);
-
-int IsDialogNotVisible(int);
-
-int IsDialogNotVisible2(int);
-
-int IsStarMapNotVisible(int);
-
-int IsInGameSubMenuNotActive(int);
-
-int IsInGameSubMenuActive(int);
-
-int IsInPrimaryMenu(int);
-
-int HideMouse();
-
-void CaptureMouse(int capture);
-
-int SwitchToOtherMouseConifguration(int config);
-
-void UseJoystick(int use);
-
-int GetUseJoystick();
-
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed(); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
 #endif

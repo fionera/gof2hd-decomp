@@ -1113,7 +1113,7 @@ Engine::Engine()
     this->postEffectFBO = 0;
     this->refractFBO = 0;
     this->glowActive = 0;
-    this->autoPilotEngaged = 0;
+    this->wheelDelta = 0.0f;
     this->field_0x4a8 = 0;
     this->textureByteCounter = 0;
     this->field_0x100 = 0;

@@ -75,7 +75,7 @@ public:
 
     void setAutoPilotToProgrammedStation();
 
-    uint32_t canSkipCutsceneNow();
+    bool canSkipCutsceneNow();
 
     void resetStartSequenceOver();
 

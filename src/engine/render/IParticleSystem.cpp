@@ -1,6 +1,8 @@
 #include "engine/render/IParticleSystem.h"
 #include <new>
+#include <cstring>
 #include "engine/core/AERandom.h"
+#include "engine/render/ParticleSettingsRef.h"
 
 namespace AbyssEngine {
 }
@@ -21,7 +23,7 @@ namespace AbyssEngine {
     }
 }
 
-static char *ParticleSet_definitions = nullptr;
+
 
 void IParticleSystem::enableUpdate(bool enabled) {
     this->updateEnabled = enabled;
@@ -72,394 +74,230 @@ void IParticleSystem::enableRender(bool enabled) {
     this->renderEnabled = enabled;
 }
 
-static inline int float_bits(float v) {
-    int i;
-    __builtin_memcpy(&i, &v, sizeof(i));
-    return i;
-}
+namespace {
+    inline Vector makeVector(float x, float y, float z) {
+        Vector v = {x, y, z};
+        return v;
+    }
 
-static inline float bits_float(int v) {
-    float f;
-    __builtin_memcpy(&f, &v, sizeof(f));
-    return f;
-}
-
-static inline void zero_vec(char *v) {
-    *(uint32_t *) (v + 0) = 0;
-    *(uint32_t *) (v + 4) = 0;
-    *(uint32_t *) (v + 8) = 0;
+    // Quake-style fast reciprocal square root (one Newton step).
+    inline float invSqrt(float x) {
+        int bits;
+        memcpy(&bits, &x, sizeof(bits));
+        bits = 0x5f3759df - (bits >> 1);
+        float y;
+        memcpy(&y, &bits, sizeof(y));
+        return (x * -0.5f * y * y + 1.5f) * y;
+    }
 }
 
 void IParticleSystem::emit(int delta) {
-    if (this->emitEnabled == 0 || this->renderEnabled == 0) {
+    if (this->emitEnabled == 0 || this->renderEnabled == 0)
         return;
-    }
-
     int set = this->particleSets[this->particleSetIndex];
-    if (set == -1) {
+    if (set == -1)
         return;
-    }
-
-    uint32_t flags = this->flags;
-    if ((flags & 0x80) == 0) {
-        if ((flags & 0x100) != 0) {
+    if ((this->flags & 0x80) != 0) {
+        if ((this->flags & 0x100) != 0 || this->particleAges[0] != -1)
             return;
-        }
-    } else if ((flags & 0x100) != 0 || this->particleAges[0] != -1) {
+    } else if ((this->flags & 0x100) != 0) {
         return;
     }
 
-    char travelDiv[12];
-    char baseDelta[12];
-    char uv[16];
-    char rotated[16];
-
-    Vector matrixPos = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
+    Vector position = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
     Vector right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix);
-    if (this->mirror != 0) {
+    if (this->mirror != 0)
         right = -right;
-    }
     Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
     Vector dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix);
 
-    char *def = ParticleSet_definitions + (set + set * 4) * 32;
-    float speed2 = AbyssEngine::AEMath::VectorDot(this->emitterVelocity, this->emitterVelocity);
-    if (speed2 < (float) *(int *) (def + 0x98)) {
+    const ParticleSettings::SetDefinition &def = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+    float speedSq = AbyssEngine::AEMath::VectorDot(this->emitterVelocity, this->emitterVelocity);
+    if (speedSq < (float) def.speedThreshold)
         return;
-    }
 
     float fdelta = (float) delta;
-    float elapsed = this->emitTimer + fdelta;
-    *(Vector *) travelDiv = this->emitterVelocity * elapsed;
-    *(Vector *) travelDiv /= 1000.0f;
-    float travelLen2 = AbyssEngine::AEMath::VectorDot(*(const Vector *) travelDiv, *(const Vector *) travelDiv);
-    int travelBits = float_bits(travelLen2);
-    float invGuess = bits_float(0x5f3759df - (travelBits >> 1));
-    float invLen = (travelLen2 * -0.5f * invGuess * invGuess + 1.5f) * invGuess;
-    float distance = 1.0f / invLen;
+    Vector travel = this->emitterVelocity * (this->emitTimer + fdelta) / 1000.0f;
+    float invTravel = invSqrt(AbyssEngine::AEMath::VectorDot(travel, travel));
+    float distance = 1.0f / invTravel;
 
-    int emitCount;
-    if ((flags & 0x10) != 0) {
-        float countf = distance / *(float *) (def + 0x2c);
-        emitCount = (int) countf;
-        this->emitTimer = (elapsed * (countf - (float) emitCount)) / countf;
-    } else if ((flags & 0x20) != 0) {
-        int cycles = (int) (*(float *) (def + 0x2c) * elapsed * 0.001f);
-        this->emitTimer = elapsed + ((float) cycles * -1000.0f) / *(float *) (def + 0x2c);
-        emitCount = cycles;
+    int count;
+    if ((this->flags & 0x10) != 0) {
+        float n = distance / reinterpret_cast<const float &>(def.flLifetime);
+        count = (int) n;
+        this->emitTimer = (this->emitTimer + fdelta) * (n - (float) count) / n;
+    } else if ((this->flags & 0x20) != 0) {
+        float elapsed = this->emitTimer + fdelta;
+        count = (int) (reinterpret_cast<const float &>(def.flLifetime) * elapsed * 0.001f);
+        this->emitTimer = elapsed + (float) count * -1000.0f / reinterpret_cast<const float &>(def.flLifetime);
     } else {
-        emitCount = *(int *) (def + 0x10);
-        if ((flags & 0x40) != 0) {
+        count = def.count;
+        if ((this->flags & 0x40) != 0)
             this->emitEnabled = 0;
-        }
     }
-
-    if (emitCount <= 0) {
+    if (count < 1)
         return;
-    }
 
-    *(Vector *) baseDelta = matrixPos - *(const Vector *) travelDiv;
-    float pathScale = 0.0f;
-    if ((this->flags & 0xc0) == 0) {
-        int speedBits = float_bits(speed2);
-        float y = bits_float(0x5f3759df - (speedBits >> 1));
-        pathScale = (speed2 * -0.5f * y * y + 1.5f) * y;
-    }
+    Vector start = position - travel;
+    float invSpeed = 0.0f;
+    if ((this->flags & 0xc0) == 0)
+        invSpeed = invSqrt(speedSq);
 
-    // Cache UV data
-    ((uint32_t *) uv)[0] = *(uint32_t *) (def + 0x88);
-    ((uint32_t *) uv)[1] = *(uint32_t *) (def + 0x90);
-    ((uint32_t *) uv)[2] = *(uint32_t *) (def + 0x8c);
-    ((uint32_t *) uv)[3] = *(uint32_t *) (def + 0x94);
+    float uv[4];
+    float rotated[4];
+    uv[0] = reinterpret_cast<const float &>(def.uvU0);
+    uv[1] = reinterpret_cast<const float &>(def.uvU1);
+    uv[2] = reinterpret_cast<const float &>(def.uvV0);
+    uv[3] = reinterpret_cast<const float &>(def.uvV1);
+    float *uvp = uv;
 
-    // Pre-loop: cache pointers to def fields (forces compiler to hoist address computations)
-    const int   *volatile pYSpread    = (const int *)   (def + 0x4c);
-    const int   *volatile pPosSpread  = (const int *)   (def + 0x48);
-    const float *volatile pRandDir    = (const float *) (def + 0x84);
-    const float *volatile pFadeFloat  = (const float *) (def + 0x40);
-    const float *volatile pVelScale   = (const float *) (def + 0x24);
-    const float *volatile pSize1      = (const float *) (def + 0x20);
-    const float *volatile pSize0      = (const float *) (def + 0x1c);
-    const float *volatile pDirOffset  = (const float *) (def + 0x80);
-    const int   *volatile pFadeFrames = (const int *)   (def + 0x3c);
-    const uint32_t *volatile pColor0  = (const uint32_t *)(def + 0x34);
-    const float *volatile pUpOffset   = (const float *) (def + 0x7c);
-    const float *volatile pInterval   = (const float *) (def + 0x2c);
-    const float *volatile pLife       = (const float *) (def + 0x14);
-    const int   *volatile pRandomLife = (const int *)   (def + 0x18);
-    const float *volatile pPosRange   = (const float *) (def + 0x78);
-    const int   *volatile pPhaseMode  = (const int *)   (def + 0x30);
-    const float *volatile pDirVel     = (const float *) (def + 0x70);
-    const float *volatile pUpVel      = (const float *) (def + 0x6c);
-    const float *volatile pRightVel   = (const float *) (def + 0x68);
-    const float *volatile pVelBaseZ   = (const float *) (def + 0x60);
-    const float *volatile pVelBaseY   = (const float *) (def + 0x5c);
-    const float *volatile pVelBaseX   = (const float *) (def + 0x58);
-    const float *volatile pDrag       = (const float *) (def + 0x64);
-    const int   *volatile pVelSpread  = (const int *)   (def + 0x50);
-    AbyssEngine::AERandom *volatile pRandom = &this->random;
-    uint32_t *volatile uvp = (uint32_t *) uv;
+    float step = 1.5f;
+    for (int i = 0; i < count; i++) {
+        this->particleSetIds[this->currentParticle] = (int8_t) set;
+        this->particleAges[this->currentParticle] = 0;
+        if (((this->flags >> 24) & 0x2) != 0)
+            uvp = rotateUVs(uv, this->currentParticle, rotated);
 
-    for (int i = 0; i < emitCount; ++i) {
-        char particlePos[12];
-        char velocity[12];
-        int current = this->currentParticle;
-        this->particleSetIds[current] = (int8_t) set;
-        this->particleAges[current] = 0;
-        if (((this->flags >> 24) & 0x2) != 0) {
-            uvp = (uint32_t *) rotateUVs((float *) uv, current, (float *) rotated);
-        }
-
-        int velSpread = *pVelSpread;
-        if (velSpread == 0) {
-            zero_vec(velocity);
+        int spread = def.velSpread;
+        if (spread != 0) {
+            float x = (float) (this->random.nextInt(spread * 2) - spread) + reinterpret_cast<const float &>(def.velBaseX);
+            float y = (float) (this->random.nextInt(spread * 2) - spread) + reinterpret_cast<const float &>(def.velBaseY);
+            float z = (float) (this->random.nextInt(spread * 2) - spread) + reinterpret_cast<const float &>(def.velBaseZ);
+            this->particleVelocities[this->currentParticle] = makeVector(x, y, z);
         } else {
-            int range = velSpread << 1;
-            AbyssEngine::AERandom *rnd = pRandom;
-            float randX = (float) (rnd->nextInt(range) - velSpread);
-            float velBaseX = *pVelBaseX;
-            float randY = (float) (rnd->nextInt(range) - velSpread);
-            float velBaseY = *pVelBaseY;
-            float randZ = (float) (rnd->nextInt(range) - velSpread);
-            float velBaseZ = *pVelBaseZ;
-            ((float *) velocity)[0] = velBaseX + randX;
-            ((float *) velocity)[1] = velBaseY + randY;
-            ((float *) velocity)[2] = velBaseZ + randZ;
+            this->particleVelocities[this->currentParticle] = makeVector(0.0f, 0.0f, 0.0f);
         }
-
-        Vector &slot = this->particleVelocities[current];
-        slot = *(Vector *) (velocity);
-
-        float drag = *pDrag;
-        if (drag != 0.0f) {
-            *(Vector *) velocity = this->emitterVelocity * drag;
-            slot -= *(Vector *) (velocity);
-        }
-        float rightVel = *pRightVel;
-        if (rightVel != 0.0f) {
-            *(Vector *) velocity = right * rightVel;
-            slot += *(Vector *) (velocity);
-        }
-        float upVel = *pUpVel;
-        if (upVel != 0.0f) {
-            *(Vector *) velocity = up * upVel;
-            slot += *(Vector *) (velocity);
-        }
-        float dirVel = *pDirVel;
-        if (dirVel != 0.0f) {
-            *(Vector *) velocity = dir * dirVel;
-            slot += *(Vector *) (velocity);
-        }
+        if (reinterpret_cast<const float &>(def.drag) != 0.0f)
+            this->particleVelocities[this->currentParticle] -= this->emitterVelocity * reinterpret_cast<const float &>(def.drag);
+        if (reinterpret_cast<const float &>(def.velRight) != 0.0f)
+            this->particleVelocities[this->currentParticle] += right * reinterpret_cast<const float &>(def.velRight);
+        if (reinterpret_cast<const float &>(def.velUp) != 0.0f)
+            this->particleVelocities[this->currentParticle] += up * reinterpret_cast<const float &>(def.velUp);
+        if (reinterpret_cast<const float &>(def.velDir) != 0.0f)
+            this->particleVelocities[this->currentParticle] += dir * reinterpret_cast<const float &>(def.velDir);
 
         float phase;
-        if (*pPhaseMode == 1) {
-            phase = (float) i;
-        } else {
-            phase = (float) i + (float) pRandom->nextInt(10000) * 0.0001f;
-        }
+        if (def.oneShot == 1)
+            phase = (float) (i + 1);
+        else
+            phase = (float) i + (float) this->random.nextInt(10000) * 0.0001f;
 
-        zero_vec(particlePos);
-        float step = 1.5f;
-        {
-        char tmp[12];
-        char tmp2[12];
-        if ((this->flags & 0xc0) == 0) {
-            if (distance >= 1.0f) {
-                step = ((this->flags & 0x10) != 0)
-                           ? *pInterval
-                           : distance / (float) emitCount;
-                *(Vector *) tmp = *(const Vector *) travelDiv * (phase * step);
-                *(Vector *) tmp2 = *(const Vector *) tmp * pathScale;
-                *(Vector *) (particlePos) = *(Vector *) (tmp2);
-                *(Vector *) tmp2 = *(const Vector *) baseDelta + *(const Vector *) particlePos;
-                *(Vector *) (particlePos) = *(Vector *) (tmp2);
-            } else {
-                *(Vector *) (particlePos) = matrixPos;
-                phase = (float) (i + 1);
-                emitCount = i + 1;
-            }
-        } else {
-            *(Vector *) (particlePos) = matrixPos;
+        Vector pos = {0.0f, 0.0f, 0.0f};
+        if ((this->flags & 0xc0) != 0) {
+            pos = position;
             phase = 0.0f;
+        } else if (distance < 1.0f) {
+            pos = position;
+            count = i + 1;
+            phase = (float) (i + 1);
+        } else {
+            step = (this->flags & 0x10) != 0 ? reinterpret_cast<const float &>(def.flLifetime)
+                                              : distance / (float) count;
+            pos = travel * (phase * step) * invTravel;
+            pos = start + pos;
         }
 
         if ((this->flags & 0x80) != 0) {
-            int posRange = (int) *pPosRange;
-            int range = posRange << 1;
-            AbyssEngine::AERandom *rnd = pRandom;
-            ((float *) tmp)[0] = (float) (rnd->nextInt(range) - posRange);
-            ((float *) tmp)[1] = (float) (rnd->nextInt(range) - posRange);
-            ((float *) tmp)[2] = (float) (rnd->nextInt(range) - posRange);
-            *(Vector *) (particlePos) += *(Vector *) (tmp);
+            int range = (int) reinterpret_cast<const float &>(def.posRight);
+            float x = (float) (this->random.nextInt(range * 2) - range);
+            float y = (float) (this->random.nextInt(range * 2) - range);
+            float z = (float) (this->random.nextInt(range * 2) - range);
+            pos += makeVector(x, y, z);
         } else {
-            float posRange = *pPosRange;
-            if (posRange != 0.0f) {
-                *(Vector *) tmp = right * posRange;
-                *(Vector *) (particlePos) += *(Vector *) (tmp);
+            if (reinterpret_cast<const float &>(def.posRight) != 0.0f) {
+                pos += right * reinterpret_cast<const float &>(def.posRight);
             }
-            float upOffset = *pUpOffset;
-            if (upOffset != 0.0f) {
-                *(Vector *) tmp = up * upOffset;
-                *(Vector *) (particlePos) += *(Vector *) (tmp);
+            if (reinterpret_cast<const float &>(def.posUp) != 0.0f) {
+                pos += up * reinterpret_cast<const float &>(def.posUp);
             }
-            float dirOffset = *pDirOffset;
-            if (dirOffset != 0.0f) {
-                *(Vector *) tmp = dir * dirOffset;
-                *(Vector *) (particlePos) += *(Vector *) (tmp);
+            if (reinterpret_cast<const float &>(def.posDir) != 0.0f) {
+                pos += dir * reinterpret_cast<const float &>(def.posDir);
             }
-            float randDir = *pRandDir;
-            if (randDir != 0.0f) {
-                *(Vector *) tmp = dir * (float) pRandom->nextInt(
-                                      (int) randDir);
-                *(Vector *) (particlePos) += *(Vector *) (tmp);
+            if (reinterpret_cast<const float &>(def.posDirRandom) != 0.0f) {
+                pos += dir * (float) this->random.nextInt((int) reinterpret_cast<const float &>(def.posDirRandom));
             }
-            int posSpread = *pPosSpread;
-            if (posSpread != 0) {
-                AbyssEngine::AERandom *rnd = pRandom;
-                ((float *) tmp)[0] = (float) (rnd->nextInt(posSpread << 1) -
-                                              posSpread);
-                ((float *) tmp)[1] = 0.0f;
-                ((float *) tmp)[2] = (float) (rnd->nextInt(posSpread << 1) -
-                                              posSpread);
-                *(Vector *) (particlePos) += *(Vector *) (tmp);
+            if (def.posSpread != 0) {
+                int range = def.posSpread;
+                float x = (float) (this->random.nextInt(range * 2) - range);
+                float z = (float) (this->random.nextInt(range * 2) - range);
+                pos += Vector{x, 0.0f, z};
             }
-            int ySpread = *pYSpread;
-            if (ySpread != 0) {
-                ((float *) particlePos)[1] +=
-                        (float) (pRandom->nextInt(ySpread << 1) - ySpread);
-            }
-        }
+            if (def.ySpread != 0)
+                pos.y += (float) (this->random.nextInt(def.ySpread * 2) - def.ySpread);
         }
 
-        {
-        char emitVelocity[12];
-        float life = *pLife;
-        int randomLife = *pRandomLife;
-        if (randomLife != 0) {
-            float lifeRand = (float) pRandom->nextInt(randomLife);
-            uint32_t *u = uvp;
-            int uvp0 = u[0];
-            int uvp1 = u[1];
-            int uvp2 = u[2];
-            int uvp3 = u[3];
-            uint32_t color0 = *pColor0;
-            int fadeFrames = *pFadeFrames;
-            int colorFlag;
-            if (fadeFrames > 0) {
-                colorFlag = 1;
-            } else {
-                colorFlag = (*pFadeFloat > 0.0f) ? 1 : 0;
-            }
-
-            float size0base = *pSize0;
-            AbyssEngine::AERandom *rnd = pRandom;
-            const int *lifeBound = pRandomLife;
-            life += lifeRand;
-            float size0 = size0base + (float) rnd->nextInt(*lifeBound);
-            float size1 = *pSize1 + (float) rnd->nextInt(*lifeBound);
-
-            float velScale = *pVelScale;
-            if (velScale == 0.0f) {
-                zero_vec(emitVelocity);
-            } else {
-                *(Vector *) emitVelocity = velScale * slot;
-            }
-
-            this->setParticle(*(const Vector *) particlePos, life, color0,
-                              bits_float(uvp0), bits_float(uvp2), bits_float(uvp1),
-                              bits_float(uvp3), colorFlag != 0, size0, size1,
-                              *(const Vector *) emitVelocity);
+        float life = reinterpret_cast<const float &>(def.lifeBase);
+        if (def.lifeRandom != 0) {
+            float extra = (float) this->random.nextInt(def.lifeRandom);
+            float uA = uvp[0];
+            float uB = uvp[1];
+            float vA = uvp[2];
+            float vB = uvp[3];
+            uint32_t color = def.color0;
+            bool masked = def.fadeFrames > 0 || reinterpret_cast<const float &>(def.colorFlag) > 0.0f;
+            life += extra;
+            float size0 = reinterpret_cast<const float &>(def.startSize) + (float) this->random.nextInt(def.lifeRandom);
+            float size1 = reinterpret_cast<const float &>(def.endSize) + (float) this->random.nextInt(def.lifeRandom);
+            Vector vel = reinterpret_cast<const float &>(def.velocityFromSlot) != 0.0f
+                         ? reinterpret_cast<const float &>(def.velocityFromSlot) * this->particleVelocities[this->currentParticle]
+                         : makeVector(0.0f, 0.0f, 0.0f);
+            this->setParticle(pos, life, color, uA, vA, uB, vB, masked, size0, size1, vel);
         } else {
-            uint32_t *u = uvp;
-            int uvp0 = u[0];
-            int uvp1 = u[1];
-            int uvp2 = u[2];
-            int uvp3 = u[3];
-            uint32_t color0 = *pColor0;
-            int fadeFrames = *pFadeFrames;
-            int colorFlag;
-            if (fadeFrames > 0) {
-                colorFlag = 1;
-            } else {
-                colorFlag = (*pFadeFloat > 0.0f) ? 1 : 0;
-            }
-
-            float size0 = *pSize0;
-            float size1 = *pSize1;
-            float velScale = *pVelScale;
-            if (velScale == 0.0f) {
-                zero_vec(emitVelocity);
-            } else {
-                *(Vector *) emitVelocity = velScale * slot;
-            }
-
-            this->setParticle(*(const Vector *) particlePos, life, color0,
-                              bits_float(uvp0), bits_float(uvp2), bits_float(uvp1),
-                              bits_float(uvp3), colorFlag != 0, size0, size1,
-                              *(const Vector *) emitVelocity);
-        }
+            float uA = uvp[0];
+            float uB = uvp[1];
+            float vA = uvp[2];
+            float vB = uvp[3];
+            uint32_t color = def.color0;
+            bool masked = def.fadeFrames > 0 || reinterpret_cast<const float &>(def.colorFlag) > 0.0f;
+            float size1 = reinterpret_cast<const float &>(def.endSize);
+            float size0 = reinterpret_cast<const float &>(def.startSize);
+            Vector vel = reinterpret_cast<const float &>(def.velocityFromSlot) != 0.0f
+                         ? reinterpret_cast<const float &>(def.velocityFromSlot) * this->particleVelocities[this->currentParticle]
+                         : makeVector(0.0f, 0.0f, 0.0f);
+            this->setParticle(pos, life, color, uA, vA, uB, vB, masked, size0, size1, vel);
         }
 
-        float endDrag = *pDrag;
-        if (endDrag != 0.0f) {
-            char tmp[12];
-            char tmp2[12];
-            *(Vector *) tmp = this->emitterVelocity * endDrag;
-            *(Vector *) tmp2 = *(const Vector *) tmp * 2.0f;
-            slot += *(Vector *) (tmp2);
+        if (reinterpret_cast<const float &>(def.drag) != 0.0f) {
+            this->particleVelocities[this->currentParticle] +=
+                    this->emitterVelocity * reinterpret_cast<const float &>(def.drag) * 2.0f;
         }
 
-        float remaining = pathScale * step * ((float) emitCount - phase) * 1000.0f;
-        if (remaining > fdelta) {
+        float remaining = invSpeed * (step * ((float) count - phase) * 1000.0f);
+        if (remaining > fdelta)
             remaining = fdelta;
-        }
-        this->updateSingle(current, remaining);
+        this->updateSingle(this->currentParticle, remaining);
 
-        current = this->currentParticle + 1;
-        if (this->maxParticles <= current) {
-            current = 0;
-        }
-        this->currentParticle = current;
+        int next = this->currentParticle + 1;
+        if (next >= this->maxParticles)
+            next = 0;
+        this->currentParticle = next;
     }
 }
 
 void IParticleSystem::interpolateColor(int index, float &alpha, float &red, float &green, float &blue) {
     int age = this->particleAges[index];
     int setIndex = this->particleSetIds[index];
-    char *def = ParticleSet_definitions + (setIndex + setIndex * 4) * 32;
+    char *def = (char *) ParticleSettingsRef::cur + (setIndex + setIndex * 4) * 32;
 
     float t = (float) age / (float) *(int *) (def + 0x28);
-    if (t > 1.0f) {
-        t = 1.0f;
-    }
+    t = t > 1.0f ? 1.0f : t;
     float inv = 1.0f - t;
     uint32_t c0 = *(uint32_t *) (def + 0x34);
     uint32_t c1 = *(uint32_t *) (def + 0x38);
-
-    float a0 = (float) (c0 >> 24);
-    float r0 = (float) ((c0 >> 16) & 0xff);
-    float g0 = (float) ((c0 >> 8) & 0xff);
-    float b0 = (float) (c0 & 0xff);
-    float a1 = (float) (c1 >> 24);
-    float r1 = (float) ((c1 >> 16) & 0xff);
-    float g1 = (float) ((c1 >> 8) & 0xff);
-    float b1 = (float) (c1 & 0xff);
-
-    const float scale = 0.003921568859368563f;
-    alpha = (inv * a0 + t * a1) * scale;
-    red = (inv * r0 + t * r1) * scale;
-    green = (inv * g0 + t * g1) * scale;
-    blue = (inv * b0 + t * b1) * scale;
+    alpha = (inv * (float) (c0 >> 24) + t * (float) (c1 >> 24)) * 0.003921569f;
+    red = (inv * (float) ((c0 >> 16) & 0xff) + t * (float) ((c1 >> 16) & 0xff)) * 0.003921569f;
+    green = (inv * (float) ((c0 >> 8) & 0xff) + t * (float) ((c1 >> 8) & 0xff)) * 0.003921569f;
+    blue = (inv * (float) (c0 & 0xff) + t * (float) (c1 & 0xff)) * 0.003921569f;
 
     int fadeFrames = *(int *) (def + 0x3c);
     if (age < fadeFrames) {
         float fade = (float) age / (float) fadeFrames;
         if (this->alphaFade != 0) {
-            alpha *= fade;
-            red *= fade;
-            green *= fade;
+            alpha = fade * alpha;
+            red = fade * red;
+            green = fade * green;
         } else {
-            blue *= fade;
+            blue = fade * blue;
         }
     }
 }
@@ -480,8 +318,8 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
                                  bool mirror, bool alphaFade)
     : canvas(canvas), random(), matrix(matrix), emitterVelocity(),
       lastEmitterPosition(), particleSets() {
-    this->mirror = mirror;
     this->alphaFade = alphaFade;
+    this->mirror = mirror;
     ArraySet(sets, this->particleSets);
 
     this->currentParticle = 0;
@@ -500,7 +338,7 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
     while (count != 0) {
         int set = *src;
         if (set != -1) {
-            char *def = ParticleSet_definitions + (set + set * 4) * 32;
+            char *def = (char *) ParticleSettingsRef::cur + (set + set * 4) * 32;
             uint32_t particles = *(uint32_t *) (def + 0x10);
             if ((int) maxParticles <= (int) particles) {
                 maxParticles = particles;
@@ -511,14 +349,14 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
                 this->flags = firstFlags;
             }
         }
-        ++src;
         --count;
+        ++src;
     }
 
-    this->emitTimer = 0;
     this->particleSetIndex = 0;
+    this->emitTimer = 0;
     this->particleAges = new int[maxParticles];
-    this->particleSetIds = new int8_t[maxParticles];
+    this->particleSetIds = new int8_t[(int) maxParticles];
 
     for (int i = 0; i < (int) maxParticles; ++i) {
         this->particleSetIds[i] = (int8_t) 200;
@@ -539,126 +377,91 @@ void IParticleSystem::calcEmitterVelocity(int delta) {
 }
 
 void IParticleSystem::emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime) {
-    if (particleSet != -1) {
-        int current = this->currentParticle;
-        int set = this->particleSets[particleSet];
-        this->particleSetIds[current] = (int8_t) set;
-        char *def = ParticleSet_definitions + (set + set * 4) * 32;
-        this->particleAges[current] = 0;
+    if (particleSet == -1)
+        return;
 
-        uint32_t uv[4];
-        uint32_t rotated[4];
-        uv[0] = *(uint32_t *) (def + 0x88);
-        uv[1] = *(uint32_t *) (def + 0x90);
-        uv[2] = *(uint32_t *) (def + 0x8c);
-        uv[3] = *(uint32_t *) (def + 0x94);
-        uint32_t *uvp = uv;
-        if (((this->flags >> 24) & 0x2) != 0) {
-            uvp = (uint32_t *) rotateUVs((float *) uv, current, (float *) rotated);
-        }
+    int set = this->particleSets[particleSet];
+    this->particleSetIds[this->currentParticle] = (int8_t) set;
+    const ParticleSettings::SetDefinition &def = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+    this->particleAges[this->currentParticle] = 0;
 
-        char velBuf[12];
-        int spread = *(int *) (def + 0x50);
-        if (spread == 0) {
-            *(uint32_t *) (velBuf + 0) = 0;
-            *(uint32_t *) (velBuf + 4) = 0;
-            *(uint32_t *) (velBuf + 8) = 0;
-        } else {
-            int range = spread << 1;
-            ((float *) velBuf)[0] = (float) (
-                this->random.nextInt(range) - spread);
-            ((float *) velBuf)[1] = *(float *) (def + 0x5c) +
-                                            (float) (this->random.nextInt(range) -
-                                                     spread);
-            ((float *) velBuf)[2] = (float) (
-                this->random.nextInt(range) - spread);
-        }
+    float uv[4];
+    float rotated[4];
+    uv[0] = reinterpret_cast<const float &>(def.uvU0);
+    uv[1] = reinterpret_cast<const float &>(def.uvU1);
+    uv[2] = reinterpret_cast<const float &>(def.uvV0);
+    uv[3] = reinterpret_cast<const float &>(def.uvV1);
+    float *uvp = uv;
+    if (((this->flags >> 24) & 0x2) != 0)
+        uvp = rotateUVs(uv, this->currentParticle, rotated);
 
-        Vector &slot = this->particleVelocities[current];
-        slot = *(Vector *) (velBuf);
+    int spread = def.velSpread;
+    Vector tmp = spread != 0
+                 ? Vector{(float) (this->random.nextInt(spread * 2) - spread),
+                          reinterpret_cast<const float &>(def.velBaseY) +
+                          (float) (this->random.nextInt(spread * 2) - spread),
+                          (float) (this->random.nextInt(spread * 2) - spread)}
+                 : Vector{0.0f, 0.0f, 0.0f};
+    this->particleVelocities[this->currentParticle] = tmp;
 
-        if (velocity != 0) {
-            float drag = *(float *) (def + 0x64);
-            if (drag != 0.0f) {
-                char tmp[12];
-                *(Vector *) tmp = *(const Vector *) velocity * drag;
-                slot -= *(Vector *) (tmp);
-            }
-        }
-
-        int posSpread = *(int *) (def + 0x48);
-        if (posSpread != 0) {
-            ((float *) velBuf)[0] =
-                    (float) (this->random.nextInt(posSpread << 1) - posSpread);
-            ((float *) velBuf)[1] = 0.0f;
-            ((float *) velBuf)[2] =
-                    (float) (this->random.nextInt(posSpread << 1) - posSpread);
-            *(Vector *) (&position) += *(Vector *) (velBuf);
-        }
-
-        int ySpread = *(int *) (def + 0x4c);
-        if (ySpread != 0) {
-            position.y += (float) (this->random.nextInt(ySpread << 1) - ySpread);
-        }
-
-        if (lifetime < 0.0f) {
-            lifetime = *(float *) (def + 0x14);
-        }
-
-        int randomLife = *(int *) (def + 0x18);
-        if (randomLife != 0) {
-            float uv0 = bits_float(uvp[0]);
-            float uv1 = bits_float(uvp[1]);
-            float uv2 = bits_float(uvp[2]);
-            float uv3 = bits_float(uvp[3]);
-            float size0base = *(float *) (def + 0x1c);
-            float life = lifetime + (float) this->random.nextInt(randomLife);
-            float size1base = *(float *) (def + 0x20);
-            float size0 = size0base + (float) this->random.nextInt(randomLife);
-            float size1 = size1base + (float) this->random.nextInt(randomLife);
-            float velocityScale = *(float *) (def + 0x24);
-            if (velocityScale == 0.0f) {
-                *(uint32_t *) (velBuf + 0) = 0;
-                *(uint32_t *) (velBuf + 4) = 0;
-                *(uint32_t *) (velBuf + 8) = 0;
-            } else {
-                *(Vector *) velBuf = velocityScale * slot;
-            }
-
-            this->setParticle(position, life, *(uint32_t *) (def + 0x34),
-                              uv0, uv2, uv1, uv3, *(int *) (def + 0x3c) > 0,
-                              size0, size1, *(const Vector *) velBuf);
-        } else {
-            float velocityScale = *(float *) (def + 0x24);
-            if (velocityScale == 0.0f) {
-                *(uint32_t *) (velBuf + 0) = 0;
-                *(uint32_t *) (velBuf + 4) = 0;
-                *(uint32_t *) (velBuf + 8) = 0;
-            } else {
-                *(Vector *) velBuf = velocityScale * slot;
-            }
-
-            this->setParticle(position, lifetime, *(uint32_t *) (def + 0x34),
-                              bits_float(uvp[0]), bits_float(uvp[2]), bits_float(uvp[1]),
-                              bits_float(uvp[3]), *(int *) (def + 0x3c) > 0,
-                              *(float *) (def + 0x1c), *(float *) (def + 0x20),
-                              *(const Vector *) velBuf);
-        }
-
-        float drag = *(float *) (def + 0x64);
-        if (drag != 0.0f) {
-            char tmp[12];
-            *(Vector *) tmp = this->emitterVelocity * drag;
-            *(Vector *) velBuf = *(const Vector *) tmp * 2.0f;
-            slot += *(Vector *) (velBuf);
-        }
-
-        current = this->currentParticle + 1;
-        if (this->maxParticles <= current) {
-            current = 0;
-        }
-        this->currentParticle = current;
+    if (velocity != nullptr && reinterpret_cast<const float &>(def.drag) != 0.0f) {
+        tmp = *velocity * reinterpret_cast<const float &>(def.drag);
+        this->particleVelocities[this->currentParticle] -= tmp;
     }
+
+    if (def.posSpread != 0) {
+        int spread = def.posSpread;
+        tmp.x = (float) (this->random.nextInt(spread * 2) - spread);
+        tmp.y = 0.0f;
+        tmp.z = (float) (this->random.nextInt(spread * 2) - spread);
+        position += tmp;
+    }
+
+    if (def.ySpread != 0)
+        position.y += (float) (this->random.nextInt(def.ySpread * 2) - def.ySpread);
+
+    if (!(lifetime >= 0.0f))
+        lifetime = reinterpret_cast<const float &>(def.lifeBase);
+
+    if (def.lifeRandom != 0) {
+        float life = lifetime + (float) this->random.nextInt(def.lifeRandom);
+        float uA = uvp[0];
+        float uB = uvp[1];
+        float vA = uvp[2];
+        float vB = uvp[3];
+        uint32_t color = def.color0;
+        int fadeFrames = def.fadeFrames;
+        float size0 = reinterpret_cast<const float &>(def.startSize) + (float) this->random.nextInt(def.lifeRandom);
+        float size1 = reinterpret_cast<const float &>(def.endSize) + (float) this->random.nextInt(def.lifeRandom);
+        Vector vel = reinterpret_cast<const float &>(def.velocityFromSlot) != 0.0f
+                     ? reinterpret_cast<const float &>(def.velocityFromSlot) * this->particleVelocities[this->currentParticle]
+                     : Vector{0.0f, 0.0f, 0.0f};
+        this->setParticle(position, life, color, uA, vA, uB, vB, fadeFrames > 0, size0, size1, vel);
+    } else {
+        float velocityFromSlot = reinterpret_cast<const float &>(def.velocityFromSlot);
+        float size0 = reinterpret_cast<const float &>(def.startSize);
+        float size1 = reinterpret_cast<const float &>(def.endSize);
+        int fadeFrames = def.fadeFrames;
+        uint32_t color = def.color0;
+        float uA = uvp[0];
+        float uB = uvp[1];
+        float vA = uvp[2];
+        float vB = uvp[3];
+        Vector vel = velocityFromSlot != 0.0f
+                     ? velocityFromSlot * this->particleVelocities[this->currentParticle]
+                     : Vector{0.0f, 0.0f, 0.0f};
+        this->setParticle(position, lifetime, color, uA, vA, uB, vB, fadeFrames > 0, size0, size1, vel);
+    }
+
+    if (reinterpret_cast<const float &>(def.drag) != 0.0f) {
+        tmp = this->emitterVelocity * reinterpret_cast<const float &>(def.drag) * 2.0f;
+        this->particleVelocities[this->currentParticle] += tmp;
+    }
+
+    int next = this->currentParticle + 1;
+    if (next >= this->maxParticles)
+        next = 0;
+    this->currentParticle = next;
 }
 
 void IParticleSystem::resetEmitterVelocity() {
