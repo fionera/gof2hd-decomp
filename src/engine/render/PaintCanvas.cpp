@@ -3165,111 +3165,83 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
         return;
     }
     this->gameOrientation = orientation;
-    paintcanvas_ext_sgo_setorientation(this->engine, orientation);
+    this->engine->SetScreenOrientation(orientation);
 
     this->projMatrix3d[1] = -this->projMatrix3d[1];
     this->projMatrix3d[4] = -this->projMatrix3d[4];
 
-    int w = paintcanvas_ext_sgo_dispwidth(this->engine);
-    float fw = paintcanvas_ext_sgo_signedtofloat(w, 0);
-    int h = paintcanvas_ext_sgo_dispheight(this->engine);
-    float fh = paintcanvas_ext_sgo_signedtofloat(h, 0);
-
-    if (orientation == 3) {
-        zero16(&this->projOrthoMatrix[9]);
-        zero16(&this->worldViewMatrix[8]);
-        zero16(&this->worldViewMatrix[4]);
-        zero16(&this->projOrthoMatrix[5]);
-        zero16(&this->projOrthoMatrix[1]);
-        zero16(&this->worldViewMatrix[11]);
-        zero16(&this->worldViewMatrix[0]);
-        this->projOrthoMatrix[14] = 0;
-        this->projOrthoMatrix[13] = 1.0f;
-        this->worldViewMatrix[13] = 0;
-        this->worldViewMatrix[14] = 0;
-        this->projOrthoMatrix[15] = 1.0f;
-        this->worldViewMatrix[0] = g_sgo_const_8e6b8;
-        this->worldViewMatrix[1] = g_sgo_const_8e6b8;
-        this->projOrthoMatrix[10] = g_sgo_const_8e6b4;
-        this->projOrthoMatrix[12] = g_sgo_const_8e6b8;
-        this->worldViewMatrix[10] = 1.0f;
-        this->worldViewMatrix[4] = 1.0f;
-        this->projOrthoMatrix[0] = 2.0f / fw;
-        this->projOrthoMatrix[5] = -(2.0f / fh);
-        this->worldViewMatrix[15] = 1.0f;
-        int w2 = paintcanvas_ext_sgo_dispwidth(this->engine);
-        this->worldViewMatrix[12] = paintcanvas_ext_sgo_signedtofloat(w2, 0);
-        int h2 = paintcanvas_ext_sgo_dispheight(this->engine);
-        this->worldViewMatrix[13] = paintcanvas_ext_sgo_signedtofloat(h2, 0);
-    } else if (orientation == 1) {
-        zero16(&this->projOrthoMatrix[9]);
-        zero16(&this->worldViewMatrix[8]);
-        zero16(&this->worldViewMatrix[4]);
-        zero16(&this->projOrthoMatrix[5]);
-        zero16(&this->projOrthoMatrix[1]);
-        zero16(&this->worldViewMatrix[11]);
-        zero16(&this->worldViewMatrix[1]);
-        this->projOrthoMatrix[14] = 0;
-        this->projOrthoMatrix[13] = 1.0f;
-        this->projOrthoMatrix[15] = 1.0f;
-        this->worldViewMatrix[1] = 1.0f;
-        this->projOrthoMatrix[10] = g_sgo_const_8e6b4;
-        this->projOrthoMatrix[12] = g_sgo_const_8e6b8;
-        this->worldViewMatrix[10] = 1.0f;
-        this->worldViewMatrix[4] = g_sgo_const_8e6b8;
-        this->projOrthoMatrix[0] = 2.0f / fh;
-        this->projOrthoMatrix[5] = -(2.0f / fw);
-        this->worldViewMatrix[15] = 1.0f;
-        int h2 = paintcanvas_ext_sgo_dispheight(this->engine);
-        this->worldViewMatrix[12] = paintcanvas_ext_sgo_signedtofloat(h2, 0);
-    } else if (orientation != 0) {
-        zero16(&this->projOrthoMatrix[9]);
-        zero16(&this->worldViewMatrix[8]);
-        zero16(&this->worldViewMatrix[4]);
-        zero16(&this->projOrthoMatrix[5]);
-        zero16(&this->projOrthoMatrix[1]);
-        zero16(&this->worldViewMatrix[1]);
-        this->projOrthoMatrix[14] = 0;
-        this->projOrthoMatrix[13] = 1.0f;
-        this->worldViewMatrix[13] = 0;
-        this->worldViewMatrix[14] = 0;
-        this->projOrthoMatrix[15] = 1.0f;
-        this->worldViewMatrix[0] = 1.0f;
-        this->projOrthoMatrix[10] = g_sgo_const_8e6b4;
-        this->projOrthoMatrix[12] = g_sgo_const_8e6b8;
-        this->worldViewMatrix[10] = 1.0f;
-        this->worldViewMatrix[5] = 1.0f;
-        this->projOrthoMatrix[0] = 2.0f / fw;
-        this->projOrthoMatrix[5] = -(2.0f / fh);
-        this->worldViewMatrix[15] = 1.0f;
-    } else {
-        zero16(&this->projOrthoMatrix[9]);
-        zero16(&this->worldViewMatrix[8]);
-        zero16(&this->worldViewMatrix[4]);
-        zero16(&this->projOrthoMatrix[5]);
-        zero16(&this->projOrthoMatrix[1]);
-        zero16(&this->worldViewMatrix[11]);
-        zero16(&this->worldViewMatrix[1]);
-        this->projOrthoMatrix[14] = 0;
-        this->projOrthoMatrix[13] = 1.0f;
-        this->projOrthoMatrix[15] = 1.0f;
-        this->worldViewMatrix[1] = g_sgo_const_8e6b8;
-        this->projOrthoMatrix[10] = g_sgo_const_8e6b4;
-        this->projOrthoMatrix[12] = g_sgo_const_8e6b8;
-        this->worldViewMatrix[10] = 1.0f;
-        this->worldViewMatrix[4] = 1.0f;
-        this->projOrthoMatrix[0] = 2.0f / fh;
-        this->projOrthoMatrix[5] = -(2.0f / fw);
-        this->worldViewMatrix[15] = 1.0f;
-        int w2 = paintcanvas_ext_sgo_dispwidth(this->engine);
-        this->worldViewMatrix[13] = paintcanvas_ext_sgo_signedtofloat(w2, 0);
+    float fw = (float) (int) this->engine->GetDisplayWidth();
+    float fh = (float) (int) this->engine->GetDisplayHeight();
+    float *proj = this->projOrthoMatrix;
+    float *view = this->worldViewMatrix;
+    // 2D ortho projection plus a view matrix that rotates the canvas into the device orientation.
+    switch (orientation) {
+        case 0:
+            memset(proj, 0, sizeof(this->projOrthoMatrix));
+            proj[13] = 1.0f;
+            proj[15] = 1.0f;
+            memset(view, 0, sizeof(this->worldViewMatrix));
+            view[1] = -1.0f;
+            proj[10] = -0.05f;
+            proj[12] = -1.0f;
+            view[10] = 1.0f;
+            view[4] = 1.0f;
+            proj[0] = 2.0f / fh;
+            proj[5] = -(2.0f / fw);
+            view[15] = 1.0f;
+            view[13] = (float) (int) this->engine->GetDisplayWidth();
+            break;
+        case 1:
+            memset(proj, 0, sizeof(this->projOrthoMatrix));
+            proj[13] = 1.0f;
+            proj[15] = 1.0f;
+            memset(view, 0, sizeof(this->worldViewMatrix));
+            view[1] = 1.0f;
+            proj[10] = -0.05f;
+            proj[12] = -1.0f;
+            view[10] = 1.0f;
+            view[4] = -1.0f;
+            proj[0] = 2.0f / fh;
+            proj[5] = -(2.0f / fw);
+            view[15] = 1.0f;
+            view[12] = (float) (int) this->engine->GetDisplayHeight();
+            break;
+        case 3:
+            memset(proj, 0, sizeof(this->projOrthoMatrix));
+            proj[13] = 1.0f;
+            proj[15] = 1.0f;
+            proj[10] = -0.05f;
+            proj[12] = -1.0f;
+            proj[0] = 2.0f / fw;
+            proj[5] = -(2.0f / fh);
+            memset(view, 0, sizeof(this->worldViewMatrix));
+            view[0] = -1.0f;
+            view[5] = -1.0f;
+            view[10] = 1.0f;
+            view[15] = 1.0f;
+            view[12] = (float) (int) this->engine->GetDisplayWidth();
+            view[13] = (float) (int) this->engine->GetDisplayHeight();
+            break;
+        default:
+            memset(proj, 0, sizeof(this->projOrthoMatrix));
+            proj[13] = 1.0f;
+            proj[15] = 1.0f;
+            proj[10] = -0.05f;
+            proj[12] = -1.0f;
+            proj[0] = 2.0f / fw;
+            proj[5] = -(2.0f / fh);
+            memset(view, 0, sizeof(this->worldViewMatrix));
+            view[0] = 1.0f;
+            view[5] = 1.0f;
+            view[10] = 1.0f;
+            view[15] = 1.0f;
+            break;
     }
 
-    if (this->currentCamera == -1) {
-        return;
+    if (this->currentCamera != 0xffffffff) {
+        AbyssEngine::Camera *camera = this->cameras.data_[this->currentCamera];
+        this->SetProjectionMatrix3d(camera->position[0], camera->position[1], camera->position[2]);
     }
-    float *cam = ((float **) this->cameras.data_)[this->currentCamera];
-    paintcanvas_ext_sgo_setpersp(this, cam[0], cam[1], cam[2]);
 }
 
 void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangleCount,
