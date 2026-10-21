@@ -169,12 +169,10 @@ Wanted *Status::getWantedInCurrentOrbit() {
     Wanted *best = 0;
     if (wanted != 0) {
         for (unsigned i = 0; i < wanted->size(); i = i + 1) {
-            Wanted *w = (*wanted)[i];
-            if (w->isActive() != 0 && w->isTerminated() == 0) {
-                if (w->getCurrentLocation() == station->getIndex()) {
-                    if (best == 0 || best->getRequiredBounties() < w->getRequiredBounties()) {
-                        best = w;
-                    }
+            if ((*wanted)[i]->isActive() && !(*wanted)[i]->isTerminated() &&
+                (*wanted)[i]->getCurrentLocation() == station->getIndex()) {
+                if (best == 0 || best->getRequiredBounties() < (*wanted)[i]->getRequiredBounties()) {
+                    best = (*wanted)[i];
                 }
             }
         }
@@ -948,10 +946,9 @@ void Status::addPendingProduct(BluePrint *bp) {
         pendingProducts = new Array<PendingProduct *>();
     } else {
         for (unsigned i = 0; i < pendingProducts->size(); i = i + 1) {
-            PendingProduct *e = (*pendingProducts)[i];
-            if (e != 0 && e->blueprintIndex == bp->getIndex() &&
-                e->stationIndex == bp->getStationIndex()) {
-                e->quantity = bp->getQuantity() + e->quantity;
+            if ((*pendingProducts)[i] != 0 && (*pendingProducts)[i]->blueprintIndex == bp->getIndex() &&
+                (*pendingProducts)[i]->stationIndex == bp->getStationIndex()) {
+                (*pendingProducts)[i]->quantity += bp->getQuantity();
                 return;
             }
         }
@@ -960,35 +957,38 @@ void Status::addPendingProduct(BluePrint *bp) {
     ArrayAdd(pp, *pendingProducts);
 }
 
-static int g_emptyOrbitMask = 0;
-
 bool Status::inEmptyOrbit() {
     int idx = station->getIndex();
-    if (idx == 0x4e && currentCampaignMission < 2) {
+    if (idx == 78 && currentCampaignMission < 2) {
         return true;
     }
-    if (inAlienOrbit() != 0 && (unsigned) (currentCampaignMission - 0x2b) < 0x29) {
+    if (inAlienOrbit() && currentCampaignMission >= 43 && currentCampaignMission <= 83) {
         return true;
     }
-    if (inAlienOrbit() != 0 && currentCampaignMission > 0x99) {
+    if (inAlienOrbit() && currentCampaignMission > 153) {
         return true;
     }
-    unsigned d = idx - 0x66;
-    if (d < 0x20) {
-        if ((1 << (d & 0xff) & g_emptyOrbitMask) != 0) {
+    switch (idx) {
+        case 102:
+        case 103:
+        case 104:
+        case 109:
+        case 110:
+        case 132:
+        case 133:
             return true;
-        }
-        if (d == 9) {
-            if (currentCampaignMission > 0x5d) {
+        case 111:
+            if (currentCampaignMission > 93) {
                 return true;
             }
-            return idx == 0x86;
-        }
+            break;
+        case 101:
+            if (currentCampaignMission > 83) {
+                return true;
+            }
+            break;
     }
-    if (idx != 0x65 || currentCampaignMission < 0x54) {
-        return idx == 0x86;
-    }
-    return true;
+    return idx == 134;
 }
 
 void Status::loadWanted() {
@@ -1032,12 +1032,12 @@ float Status::getGammaRayDamagePerSecond(int station, int system) {
 }
 
 int Status::addStationToStack(Station *s) {
-    if (isOnStack(s)) {
-        setStation(s);
+    Station *found = isOnStack(s);
+    if (found != 0) {
+        setStation(found);
         return 0;
     }
-    Station **base = stationStack->data();
-    if (base[0] == 0) {
+    if ((*stationStack)[0] == 0) {
         int j;
         int i = 0;
         do {
@@ -1046,42 +1046,37 @@ int Status::addStationToStack(Station *s) {
                 return 0;
             }
             i = j - 1;
-        } while (base[j + 2] != 0);
-        base[j + 2] = s;
+        } while ((*stationStack)[j + 2] != 0);
+        (*stationStack)[j + 2] = s;
     } else {
-        if (base[2] != 0) {
-            delete base[2];
+        if ((*stationStack)[2] != 0) {
+            delete (*stationStack)[2];
         }
-        base[2] = 0;
-        for (int i = 0; i != -2; i = i - 1) {
-            base[i + 2] = base[i + 1];
+        (*stationStack)[2] = 0;
+        for (int i = 2; i != 0; i = i - 1) {
+            (*stationStack)[i] = (*stationStack)[i - 1];
         }
-        base[0] = s;
+        (*stationStack)[0] = s;
     }
     setStation(s);
     return 1;
 }
 
-static int *g_missionSentinel = nullptr;
-
 void Status::removeMission(Mission *mission) {
-    int *sentinel = g_missionSentinel;
-    Mission **slots = missions->data();
     for (unsigned i = 0; i < missions->size(); i = i + 1) {
-        if (slots[i] == mission) {
-            Mission *target = mission;
+        if ((*missions)[i] == mission) {
             if (this->mission == mission) {
                 mission = 0;
                 this->mission = 0;
-                target = slots[i];
             }
-            if (target->getAgent() != 0) {
-                slots[i]->getAgent()->setMission(0);
+            if ((*missions)[i]->getAgent() != 0) {
+                (*missions)[i]->getAgent()->setMission(0);
             }
-            if (slots[i] != 0) {
-                delete slots[i];
+            if ((*missions)[i] != 0) {
+                delete (*missions)[i];
             }
-            slots[i] = (Mission *) (intptr_t) * sentinel;
+            (*missions)[i] = 0;
+            (*missions)[i] = Mission::empty;
         }
     }
 }
