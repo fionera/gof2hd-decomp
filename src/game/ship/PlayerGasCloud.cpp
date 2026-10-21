@@ -37,14 +37,6 @@ static_assert(offsetof(PgcCampaign, rescueMissionFlag) == 0x2d,
 
 
 
-static float g_pgcu_velScale = 0.08f;
-static float g_pgcu_catchDist = 800.0f;
-static int g_pgcu_minTimer = -1499;
-static int g_pgcu_resetTimer = -1500;
-static float g_pgcu_fadeLo = 3500.0f;
-static float g_pgcu_fadeAdd = -800.0f;
-static float g_pgcu_fadeDiv = 2700.0f;
-static float g_pgcu_growDiv = 1500.0f;
 
 PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/,
                                AEGeometry *geometry, const Vector &position)
@@ -201,143 +193,77 @@ void PlayerGasCloud::update(int dt) {
     if (dt == 0)
         return;
 
-    Array<AEGeometry *> *arr = this->sparkGeometries;
-    if (this->exploded == 0 || this->settled != 0 || arr == 0) {
-        AbyssEngine::Transform *t = (AbyssEngine::Transform *)
-                (Globals::Canvas)->TransformGetTransform(
-                    this->modelGeometry->transform);
-        t->Update(1, (bool) dt);
+    if (!this->exploded || this->settled || this->sparkGeometries == nullptr) {
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->modelGeometry->transform))
+                ->Update(dt, true);
         return;
     }
 
-    float dtf = (float) dt;
-    this->settled = 1;
+    float time = (float) dt;
     this->elapsedSinceExplosion += dt;
-    float velStep = dtf * g_pgcu_velScale;
+    this->settled = 1;
+    float decay = time * 0.08f;
+    for (unsigned int i = 0; i < this->sparkGeometries->size(); i++) {
+        (*this->sparkTimers)[i] -= dt;
+        (*this->sparkLife)[i] -= decay;
+        if ((*this->sparkLife)[i] < (*this->sparkLifeMin)[i])
+            (*this->sparkLife)[i] = (*this->sparkLifeMin)[i];
 
-    unsigned int i = 0;
-    while (i < arr->size()) {
-        int *timer = &(*this->sparkTimers)[i];
-        *timer -= dt;
-
-        float *life = &(*this->sparkLife)[i];
-        float newLife = *life - velStep;
-        *life = newLife;
-        float lifeMin = (*this->sparkLifeMin)[i];
-        if (newLife < lifeMin)
-            *life = lifeMin;
-
-        PlayerEgo *player = (PlayerEgo *) (intptr_t) this->level->getPlayer();
-        Vector turretPos = player->getTurretPosition();
-        Vector shardPos;
-        Vector delta;
-        AEGeometry *geom = (*this->sparkGeometries)[i];
-        shardPos = geom->getPosition();
-        delta = turretPos - shardPos;
-        float dist = VectorLength(delta);
-
-        bool collected = false;
-        if (dist < g_pgcu_catchDist && this->elapsedSinceExplosion >= 2000) {
-            PlayerEgo *p2 = (PlayerEgo *) (intptr_t) this->level->getPlayer();
-            if (p2->isInTurretMode() != 0 &&
-                (*this->sparkTimers)[i] >= g_pgcu_minTimer) {
-                (*this->sparkTimers)[i] = g_pgcu_resetTimer;
-                Ship *ship = Globals::status->getShip();
-                int itemId = this->itemId;
-                if (ship->getFreeSpace() < 1) {
-                    if (this->level->getPlayer() != 0) {
-                        Globals::sound->stop(0x8d0);
-                        Globals::sound->play(0x8d0, 0, 0, 0.0f);
-                        PlayerEgo *ego = (PlayerEgo *) (intptr_t) this->level->getPlayer();
-                        Hud *hud = (Hud *) (intptr_t) ego->getHUD();
-                        hud->catchCargo(this->itemId, false, true, false, true, false, 0);
+        Vector turret = this->level->getPlayer()->getTurretPosition();
+        Vector spark = (*this->sparkGeometries)[i]->getPosition();
+        float distance = VectorLength(turret - spark);
+        if (distance < 800.0f && this->elapsedSinceExplosion >= 2000 &&
+            this->level->getPlayer()->isInTurretMode() && (*this->sparkTimers)[i] > -1500) {
+            // Collected by the ego's turret.
+            (*this->sparkTimers)[i] = -1500;
+            if (Globals::status->getShip()->getFreeSpace() > 0) {
+                Item *item = (*Globals::items)[this->itemId]->makeItem(1);
+                if (this->level->getPlayer() != nullptr) {
+                    ((Hud *) (intptr_t) this->level->getPlayer()->getHUD())
+                            ->catchCargo(this->itemId, 1, false, false, false, false, true);
+                    if (!Globals::hints[45] && Globals::status->getCurrentCampaignMission() >= 143 &&
+                        Globals::status->getMission()->isEmpty() && this->itemId == 204) {
+                        Globals::hints[45] = 1;
+                        this->level->createRadioMessage(26, 0);
                     }
-                } else {
-                    Item *def = (*(Globals::items))[itemId];
-                    def->makeItem();
-                    if (this->level->getPlayer() != 0) {
-                        PlayerEgo *ego = (PlayerEgo *) (intptr_t) this->level->getPlayer();
-                        Hud *hud = (Hud *) (intptr_t) ego->getHUD();
-                        hud->catchCargo(this->itemId, true, false, false, false, false, 0);
-
-                        PgcCampaign *camp = (PgcCampaign *) Globals::hints;
-                        if (camp->rescueMissionFlag == 0 &&
-                            Globals::status->getCurrentCampaignMission() > 0x8e) {
-                            Mission *mission = Globals::status->getMission();
-                            if (mission->isEmpty() != 0 && this->itemId == 0xcc) {
-                                camp->rescueMissionFlag = 1;
-                                this->level->createRadioMessage(0x1a, 0);
-                            }
-                        }
-                    }
-                    Globals::sound->stop(0x8d0);
-                    Globals::sound->play(0x8d0, 0, 0, 0.0f);
-                    Ship *ship2 = Globals::status->getShip();
-                    ship2->addCargo(def);
                 }
-                (*this->sparkScale)[i] = 0.0f;
-                collected = true;
+                Globals::sound->stop(2256);
+                Globals::sound->play(2256, nullptr, nullptr, 0.0f);
+                Globals::status->getShip()->addCargo(item);
+            } else if (this->level->getPlayer() != nullptr) {
+                Globals::sound->stop(2256);
+                Globals::sound->play(2256, nullptr, nullptr, 0.0f);
+                ((Hud *) (intptr_t) this->level->getPlayer()->getHUD())
+                        ->catchCargo(this->itemId, 0, true, false, true, false, false);
             }
-        }
-
-        if (!collected) {
-            int tval = (*this->sparkTimers)[i];
-            float *scale = &(*this->sparkScale)[i];
-            if (tval <= 0) {
-                float sc = (float) tval / g_pgcu_growDiv + 1.0f;
-                *scale = sc;
-                if (sc < 0.0f)
-                    *scale = 0.0f;
-            } else if (dist < g_pgcu_fadeLo) {
-                *scale = (dist + g_pgcu_fadeAdd) / g_pgcu_fadeDiv;
+            (*this->sparkScale)[i] = 0.0f;
+        } else {
+            if ((*this->sparkTimers)[i] <= 0) {
+                (*this->sparkScale)[i] = (float) (*this->sparkTimers)[i] / 1500.0f + 1.0f;
+                if ((*this->sparkScale)[i] < 0.0f)
+                    (*this->sparkScale)[i] = 0.0f;
+            } else if (distance < 3500.0f) {
+                (*this->sparkScale)[i] = (distance + -800.0f) / 2700.0f;
             }
-            AbyssEngine::Transform *t = (AbyssEngine::Transform *)
-                    (Globals::Canvas)->TransformGetTransform(
-                        geom->transform);
-            t->Update(1, (bool) dt);
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->sparkGeometries)[i]->transform))
+                    ->Update(dt, true);
         }
 
-        AEGeometry *moveGeom;
-        Vector moved;
-        bool homing = (*this->sparkInSight)[i] != 0 &&
-                      this->elapsedSinceExplosion >= 2000;
-        bool steered = false;
-        if (homing) {
-            Ship *ship = Globals::status->getShip();
-            if (ship->getFirstEquipmentOfSort(0x23) != 0) {
-                Vector dir = turretPos - shardPos;
-                Vector dn = AbyssEngine::AEMath::VectorNormalize(dir);
-                *(*this->sparkVelocities)[i] = dn;
-                moveGeom = (*this->sparkGeometries)[i];
-
-                Ship *ship2 = Globals::status->getShip();
-                Item *eq = ship2->getFirstEquipmentOfSort(0x23);
-                int attr = eq->getAttribute(0);
-                float step = (float) (attr * dt);
-                Vector vel = turretPos;
-                vel *= step;
-                vel += shardPos;
-                moved = vel;
-                moveGeom->setPosition(moved);
-                steered = true;
-            }
+        if ((*this->sparkInSight)[i] && this->elapsedSinceExplosion >= 2000 &&
+            Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {
+            // A gas collector pulls the sparks towards the turret.
+            Vector direction = VectorNormalize(turret - spark);
+            *(*this->sparkVelocities)[i] = direction;
+            (*this->sparkGeometries)[i]->setPosition(
+                    spark + (float) (Globals::status->getShip()->getFirstEquipmentOfSort(35)->getAttribute(49) * dt) *
+                            direction);
+        } else {
+            (*this->sparkGeometries)[i]->setPosition(spark + (*this->sparkLife)[i] * time * *(*this->sparkVelocities)[i]);
         }
-        if (!steered) {
-            moveGeom = (*this->sparkGeometries)[i];
-            Vector vel = *(*this->sparkVelocities)[i];
-            vel *= (*this->sparkLife)[i] * dtf;
-            vel += shardPos;
-            moved = vel;
-            moveGeom->setPosition(moved);
-        }
-
-        if (g_pgcu_minTimer <= (*this->sparkTimers)[i])
+        if ((*this->sparkTimers)[i] > -1500)
             this->settled = 0;
-        i++;
-        arr = this->sparkGeometries;
     }
-
-    if (this->settled != 0)
+    if (this->settled)
         this->visibleFlag = 0;
 }
 
