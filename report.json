@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 98.51,
   "byte_exact": 1330,
-  "linked_exact": 4246,
-  "fuzzy_perfect": 4246,
+  "linked_exact": 4247,
+  "fuzzy_perfect": 4247,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1136,14 +1136,6 @@
    "usize": 488
   },
   {
-   "name": "_ZN11TouchButton4drawEv",
-   "pct": 79.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1376,
-   "usize": 1372
-  },
-  {
    "name": "_ZN9PlayerEgo10stopMiningEv",
    "pct": 80.1,
    "byte": false,
@@ -1158,6 +1150,14 @@
    "linked": false,
    "osize": 276,
    "usize": 276
+  },
+  {
+   "name": "_ZN11TouchButton4drawEv",
+   "pct": 80.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1376,
+   "usize": 1372
   },
   {
    "name": "_ZN11AbyssEngine18ApplicationManager8OnUpdateEx",
@@ -1688,14 +1688,6 @@
    "usize": 2360
   },
   {
-   "name": "_ZN6Layout6reloadEv",
-   "pct": 91.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1064,
-   "usize": 1064
-  },
-  {
    "name": "_ZN9PlayerEgo16approachAsteroidEP3HudiP5Radar",
    "pct": 91.2,
    "byte": false,
@@ -1742,6 +1734,14 @@
    "linked": false,
    "osize": 244,
    "usize": 244
+  },
+  {
+   "name": "_ZN6Layout6reloadEv",
+   "pct": 92.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1064,
+   "usize": 1064
   },
   {
    "name": "_ZN6Sparks6updateEi",
@@ -2102,14 +2102,6 @@
    "linked": false,
    "osize": 208,
    "usize": 208
-  },
-  {
-   "name": "_ZN12StatusWindow6updateEi",
-   "pct": 98.5,
-   "byte": false,
-   "linked": false,
-   "osize": 202,
-   "usize": 202
   },
   {
    "name": "_ZN17PlayerFixedObject6updateEi",
@@ -16230,6 +16222,14 @@
    "linked": true,
    "osize": 288,
    "usize": 288
+  },
+  {
+   "name": "_ZN12StatusWindow6updateEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 202,
+   "usize": 202
   },
   {
    "name": "_ZN12StatusWindowC1Ev",
