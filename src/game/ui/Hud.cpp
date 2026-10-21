@@ -816,31 +816,25 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 }
 
 void Hud::drawEventString(String text, bool rightAlign) {
-    String *font = (String *) Globals::font;
     PaintCanvas *canvas = Globals::Canvas;
-    int x;
-    if (this->letterbox == 0) {
-        int base = this->eventLineMargin;
-        int yBase = this->eventLineX;
-        if (rightAlign == 0) {
-            int w = Globals::Canvas->GetTextWidth((unsigned) (long) (canvas), *(String *) (font));
-            x = (base + 3) - w;
-        } else {
-            x = -3 - base;
-        }
-        x = x + yBase;
+    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
+    if (this->letterbox != 0) {
+        int x;
+        if (rightAlign)
+            x = this->field_0x4f0 + 1;
+        else
+            x = Globals::w - 1 - this->field_0x4f0 - canvas->GetTextWidth(font, text);
+        canvas->DrawString(font, text, x, this->field_0x164 - 1, false);
     } else {
-        if (rightAlign == 0) {
-            int margin = this->eventLineMarginAlt;
-            int screenW = *(int *) &Globals::w;
-            int w = Globals::Canvas->GetTextWidth((unsigned) (long) (canvas), *(String *) (font));
-            x = ((screenW - 1) - margin) - w;
-        } else {
-            x = this->eventLineMarginAlt + 1;
-        }
+        int baseX = this->field_0x160;
+        int margin = this->field_0x4e8;
+        int x;
+        if (rightAlign)
+            x = -3 - margin;
+        else
+            x = margin + 3 - canvas->GetTextWidth(font, text);
+        canvas->DrawString(font, text, x + baseX, this->field_0x164 - 1, false);
     }
-    char y = (char) (this->eventLineY - 1);
-    Globals::Canvas->DrawString((unsigned) (long) (font), text, (x), (y), false);
 }
 
 void Hud::setCurrentSecondaryWeapon(Item *item) {
