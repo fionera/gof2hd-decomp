@@ -8,7 +8,7 @@
 
 namespace AbyssEngine {
     class Camera;
-    float CameraSetPerspective(float fov, float aspect, float nearPlane, float farPlane, float param5,
+    void CameraSetPerspective(float fov, float aspect, float nearPlane, float farPlane, float param5,
                                Camera *cam);
 
     class Camera {

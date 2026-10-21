@@ -246,7 +246,7 @@ int Galaxy::getStation(int index) {
         return (int) (intptr_t) Globals::status->playerStation;
 
     FileRead loader;
-    return loader.loadStation(index);
+    return (int) (intptr_t) loader.loadStation(index);
 }
 
 Array<SolarSystem *> *Galaxy::getSystems() {
