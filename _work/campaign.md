@@ -2,6 +2,22 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-10-21 (wave 7/8 — linked 4324->4334, byte 1337)
+
+- Started from a clean gate: byte 1337, linked 4324, avg 98.99, imports 207, data 843/843.
+- Landed gated passes: Level::init (wave6-w31), PlayerAsteroid clamp + PlayerEgo aimTarget
+  (wave6-w32), Player::playShootSound + PlayerFixedObject state order, MGame::OnTouchBegin,
+  CutScene::checkForTurret, GameText::ReadLangFile, TractorBeam::update, ModStation pending
+  products/hints/camera, PlayerAsteroid/PlayerFighter clamp/evaluation order,
+  ParticleSystemMesh ctor trail allocation order, RecordHandler pending-product count.
+- End: byte 1337, linked 4334, avg 99.02, stubs 0, missing/extra 0, imports 207, data 843/843.
+- Neutral/blocked (not landed or landed as pct-only): FModSound play/update3D, AbyssEngine
+  TextureCreate/FontCreate/Engine ctor/SpriteSystemCreate/String::Compare, HangarList/HangarWindow/
+  WantedWindow/MissionsWindow/StatusWindow, StarSystem, Generator, SpaceLounge/Hud, StarMap,
+  Level/LevelScript, PlayerEgo, Status/GameRecord, FileInterfaceAndroid.
+- Fleet: 14 codex workers in disjoint worktrees; the orchestrator serialized every build/gate/
+  baseline/commit. Workers did not edit tools, docs, baselines, or generated reports.
+
 ## Session 2026-10-21 (Linux host; -g experiment landed — linked 2779->2857)
 
 - Host moved to Linux x86_64: NDK r18b linux prebuilts added to `.cache/ndk` and
