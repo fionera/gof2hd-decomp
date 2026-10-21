@@ -2338,7 +2338,7 @@ void Layout_drawCredits_r2d(Layout * layout);
 
 void ModStation::OnRender2D() {
     Globals::Canvas->Begin2d();
-    Globals::Canvas->SetColor(this->fadeColor);
+    Globals::Canvas->SetColor((unsigned) (uintptr_t) this->paintCanvas);
 
     if (this->stationActive == 0) {
         return;
@@ -2549,7 +2549,7 @@ void ChoiceWindow_set1_oiImpl(ChoiceWindow *cw, int textStr);
 void NewsTicker_build_oiImpl(ModStation * self);
 void DlcMenu_build_oiImpl(ModStation * self);
 
-void ModStation::OnInitialize() {
+int ModStation::OnInitialize() {
     int *status = (int *) Globals::status;
 
     this->introTimer = 0;
@@ -3050,10 +3050,11 @@ void ModStation::OnInitialize() {
                 (void) i;
             }
         }
-        return;
+        return this->state;
     }
 
     this->state = next;
+    return next;
 }
 
 static int *g_dlc_stack = 0;

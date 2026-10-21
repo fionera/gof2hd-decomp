@@ -7,6 +7,7 @@
 #include "game/ui/DialogueWindow.h"
 #include "game/world/NewsTicker.h"
 #include "game/world/StarMap.h"
+#include "engine/core/IApplicationModule.h"
 
 class CutScene;
 class DialogueWindow;
@@ -29,10 +30,8 @@ namespace AbyssEngine {
     class EaseInOut;
 }
 
-class ModStation {
+class ModStation : public IApplicationModule {
 public:
-    unsigned fadeColor;
-    int *field_0x08;
     int state;
     StarMap *starMap;
     CutScene *cutScene;
@@ -168,39 +167,39 @@ public:
 
     ModStation();
 
-    virtual ~ModStation();
+    ~ModStation() override;
 
-    void OnInitialize();
+    int OnInitialize() override;
 
-    void OnKeyPress(long long unused, long long key);
+    void OnKeyPress(long long unused, long long key) override;
 
-    void OnKeyRelease(long long unused, long long key);
+    void OnKeyRelease(long long unused, long long key) override;
 
-    int ShowLoadingScreen();
+    int ShowLoadingScreen() override;
 
-    void OnRelease();
+    void OnRelease() override;
 
-    void OnRender2D();
+    void OnRender2D() override;
 
-    void OnRender3D();
+    void OnRender3D() override;
 
-    void OnResume();
+    void OnResume() override;
 
-    void OnSuspend();
+    void OnSuspend() override;
 
-    void OnTouchBegin(int x, int y, void *touch); // lint: void_ptr
+    void OnTouchBegin(int x, int y, void *touch) override; // lint: void_ptr
 
-    void OnTouchEnd(int x, int y, void *touch); // lint: void_ptr
+    void OnTouchEnd(int x, int y, void *touch) override; // lint: void_ptr
 
-    void OnTouchMove(int x, int y, void *touch); // lint: void_ptr
+    void OnTouchMove(int x, int y, void *touch) override; // lint: void_ptr
 
-    void OnTouchBegin(int x, int y);
+    void OnTouchBegin(int x, int y) override;
 
-    void OnTouchEnd(int x, int y);
+    void OnTouchEnd(int x, int y) override;
 
-    void OnTouchMove(int x, int y);
+    void OnTouchMove(int x, int y) override;
 
-    void OnUpdate();
+    void OnUpdate() override;
 
     void addAchievement(int medalId, int kind);
 
