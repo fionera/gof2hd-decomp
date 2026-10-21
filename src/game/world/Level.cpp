@@ -6345,90 +6345,67 @@ void Level::createGasClouds() {
 }
 
 void Level::updateMissionOrbit(int dt) {
-    if (this->field_288 != 0) {
-        Globals::status->getMission();
-        if (((Mission *) Globals::status->getMission())->isEmpty() == 0) {
-            int t = this->orbitWaveTimer;
-            this->orbitWaveTimer = t + dt;
-            if (0x57e4 < t + dt) {
-                this->orbitWaveTimer = 0;
-                int aliveCore = 0;
-                for (int j = 0; j != 4; j = j + 1)
-                    aliveCore = aliveCore + (((*this->enemies)[j])->isDead() ^ 1);
-                if (aliveCore != 0 && this->enemies != nullptr) {
-                    for (unsigned i = 4; i < this->enemies->size(); i = i + 1) {
-                        int *ki = (int *) (*this->enemies)[i];
-                        if (((KIPlayer *) ki)->isDead() != 0 && ((KIPlayer *) ki)->player->isActive() == 0) {
-                            AbyssEngine::AERandom *rng = Globals::rnd;
-                            Vector p = (this->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : this->player->getPosition());
-                            int span = 0 ? 40000 : 120000;
-                            float ox = (float) (rng->nextInt() % span - span / 2);
-                            float oy = (float) (rng->nextInt() % (span * 2 / 3) - span / 3);
-                            float oz = (float) (rng->nextInt() % span - span / 2);
-                            ((KIPlayer *) ki)->setPosition(p.x + ox, p.y + oy, p.z + oz);
-                        }
+    if (field_288 && !Globals::status->getMission()->isEmpty()) {
+        orbitWaveTimer += dt;
+        if (orbitWaveTimer > 22500) {
+            orbitWaveTimer = 0;
+            int coreAlive = 0;
+            for (int j = 0; j != 4; j++) {
+                coreAlive += (*enemies)[j]->isDead() ^ 1;
+            }
+            if (coreAlive != 0) {
+                for (unsigned int i = 4; i < enemies->size(); i++) {
+                    KIPlayer *ship = (*enemies)[i];
+                    if (ship->isDead() && !ship->player->isActive()) {
+                        ship->revive();
+                        Vector position = player->getPosition();
+                        position.x += (float) ((Globals::rnd->nextInt(40000) + 40000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                        position.y += (float) ((Globals::rnd->nextInt(5000) + 5000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                        position.z += (float) ((Globals::rnd->nextInt(40000) + 40000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                        ship->setPosition(position.x, position.y, position.z);
                     }
                 }
             }
         }
     }
 
-    if (Globals::status->getMission() != 0) {
-        Globals::status->getMission();
-        if (((Mission *) Globals::status->getMission())->getType() == 0xb7) {
-            int t = this->orbitWaveTimer;
-            this->orbitWaveTimer = t + dt;
-            if (0x1d4c < t + dt) {
-                this->orbitWaveTimer = 0;
-                if (this->enemies != nullptr)
-                    for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
-                        int *ki = (int *) (*this->enemies)[i];
-                        if (((KIPlayer *) ki)->isDead() != 0 && ((KIPlayer *) ki)->player->isActive() == 0 &&
-                            ((KIPlayer *) ki)->shipGroupFlag != 0x33) {
-                            AbyssEngine::AERandom *rng = Globals::rnd;
-                            Vector p = (this->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : this->player->getPosition());
-                            int span = 1 ? 40000 : 120000;
-                            float ox = (float) (rng->nextInt() % span - span / 2);
-                            float oy = (float) (rng->nextInt() % (span * 2 / 3) - span / 3);
-                            float oz = (float) (rng->nextInt() % span - span / 2);
-                            ((KIPlayer *) ki)->setPosition(p.x + ox, p.y + oy, p.z + oz);
-                            ((KIPlayer *) ki)->cargo = nullptr;
-                        }
-                    }
+    if (Globals::status->getMission() != nullptr && Globals::status->getMission()->getType() == 0xb7) {
+        orbitWaveTimer += dt;
+        if (orbitWaveTimer > 7500) {
+            orbitWaveTimer = 0;
+            for (unsigned int i = 0; i < enemies->size(); i++) {
+                KIPlayer *ship = (*enemies)[i];
+                if (ship->isDead() && !ship->player->isActive() && ship->shipGroupFlag != 0x33) {
+                    ship->revive();
+                    Vector position = player->getPosition();
+                    position.x += (float) ((Globals::rnd->nextInt(30000) + 50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                    position.y += (float) ((Globals::rnd->nextInt(10000) + 10000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                    position.z += (float) ((Globals::rnd->nextInt(30000) + 50000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                    ship->setPosition(position.x, position.y, position.z);
+                    ship->cargo = nullptr;
+                }
             }
         }
     }
 
-    Globals::status->getMission();
-    if (((Mission *) Globals::status->getMission())->isEmpty() == 0) {
-        Globals::status->getMission();
-        if (((Mission *) Globals::status->getMission())->getType() == 0xf) {
-            int t = this->orbitWaveTimer;
-            this->orbitWaveTimer = t + dt;
-            if (50000 < t + dt && this->enemies != nullptr) {
-                this->orbitWaveTimer = 0;
-                unsigned count = this->enemies->size();
-
-                bool anyAlive = false;
-                for (unsigned i = 0; i + 1 < count; i = i + 1) {
-                    if (((*this->enemies)[i])->isDead() == 0) {
-                        anyAlive = true;
-                        break;
-                    }
-                }
-                if (anyAlive) {
-                    for (unsigned i = 0; i + 1 < count; i = i + 1) {
-                        int *ki = (int *) (*this->enemies)[i];
-                        if (((KIPlayer *) ki)->isDead() != 0 && ((KIPlayer *) ki)->player->isActive() == 0) {
-                            AbyssEngine::AERandom *rng = Globals::rnd;
-                            Vector p = (this->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : this->player->getPosition());
-                            int span = 0 ? 40000 : 120000;
-                            float ox = (float) (rng->nextInt() % span - span / 2);
-                            float oy = (float) (rng->nextInt() % (span * 2 / 3) - span / 3);
-                            float oz = (float) (rng->nextInt() % span - span / 2);
-                            ((KIPlayer *) ki)->setPosition(p.x + ox, p.y + oy, p.z + oz);
-                        }
-                        count = this->enemies->size();
+    if (!Globals::status->getMission()->isEmpty() && Globals::status->getMission()->getType() == 15) {
+        orbitWaveTimer += dt;
+        if (orbitWaveTimer > 50000) {
+            orbitWaveTimer = 0;
+            bool allDead = true;
+            for (unsigned int i = 0; allDead && i < enemies->size() - 1; i++) {
+                allDead = (*enemies)[i]->isDead();
+            }
+            if (allDead) {
+                for (unsigned int i = 0; i < enemies->size() - 1; i++) {
+                    KIPlayer *ship = (*enemies)[i];
+                    if (ship->isDead() && !ship->player->isActive()) {
+                        ship->revive();
+                        Vector position = player->getPosition();
+                        position.x += (float) ((Globals::rnd->nextInt(40000) + 40000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                        position.y += (float) ((Globals::rnd->nextInt(5000) + 5000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                        position.z += (float) ((Globals::rnd->nextInt(40000) + 40000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                        ship->setPosition(position.x, position.y, position.z);
                     }
                 }
             }
