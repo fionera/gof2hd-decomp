@@ -20,7 +20,7 @@ public:
     uint8_t dragging;
     int scrollOffset;
     uint8_t centered;
-    String *font;
+    unsigned int font;
 
     ScrollTouchBox(int x, int y, int width, int height);
 

@@ -34,12 +34,9 @@ static const int kWeaponSounds[233] = {
     2275, 2276, 2278, 2277, 2280,
 };
 
-void RepairBeam::render() {
-    for (unsigned i = 0; i < this->targetIds->size(); ++i) {
-        if ((*this->targetIds)[i] != -1)
-            (*this->geometries)[i]->render();
-    }
-}
+
+
+
 
 RepairBeam::RepairBeam(int itemIndex, int sort) {
     this->beamPosition.x = 0;
@@ -155,31 +152,26 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
                     ->Update(dt, false);
 
             this->beamPosition = (*enemies)[(*this->targetIds)[i]]->player->getPosition();
+            // Aim point on the target (big hulls get the beam on their flank).
             KIPlayer *target = (*enemies)[(*this->targetIds)[i]];
-            Vector targetOffset;
-            if (target->shipGroupFlag == 0x2c) {
-                targetOffset = AbyssEngine::AEMath::VectorNormalize(target->geometry->getDirection()) * -300.0f;
-            } else if (target->shipGroupFlag == 0x31) {
-                targetOffset =
-                        AbyssEngine::AEMath::VectorNormalize(target->geometry->getDirection()) * -300.0f +
-                        AbyssEngine::AEMath::VectorNormalize(
-                                (*enemies)[(*this->targetIds)[i]]->geometry->getUpVector()) * 200.0f;
-            } else {
-                targetOffset = Vector{0.0f, 0.0f, 0.0f};
-            }
+            Vector targetOffset =
+                    target->shipGroupFlag == 0x2c
+                            ? AbyssEngine::AEMath::VectorNormalize(target->geometry->getDirection()) * -300.0f
+                    : target->shipGroupFlag == 0x31
+                            ? AbyssEngine::AEMath::VectorNormalize(target->geometry->getDirection()) * -300.0f +
+                                      AbyssEngine::AEMath::VectorNormalize(
+                                              (*enemies)[(*this->targetIds)[i]]->geometry->getUpVector()) * 200.0f
+                            : Vector{0.0f, 0.0f, 0.0f};
             this->beamPosition += targetOffset;
             this->beamPosition -= level->getPlayer()->getPosition();
 
             // Emitter offset on our own ship (rear-mounted on these two hulls).
-            Vector egoOffset;
-            if (Globals::status->getShip()->getIndex() == 0x2c) {
-                egoOffset = level->getPlayer()->GetDirVector() * -300.0f;
-            } else if (Globals::status->getShip()->getIndex() == 0x31) {
-                egoOffset = level->getPlayer()->GetDirVector() * -300.0f +
-                            level->getPlayer()->GetUpVector() * 200.0f;
-            } else {
-                egoOffset = Vector{0.0f, 0.0f, 0.0f};
-            }
+            Vector egoOffset =
+                    Globals::status->getShip()->getIndex() == 0x2c
+                            ? level->getPlayer()->GetDirVector() * -300.0f
+                    : Globals::status->getShip()->getIndex() == 0x31
+                            ? level->getPlayer()->GetDirVector() * -300.0f + level->getPlayer()->GetUpVector() * 200.0f
+                            : Vector{0.0f, 0.0f, 0.0f};
 
             (*this->geometries)[i]->setScaling(0.5f, 0.5f, AbyssEngine::AEMath::VectorLength(this->beamPosition));
             (*this->geometries)[i]->setDirection(
@@ -228,3 +220,11 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
         Globals::sound->updateEvent3DAttributes(sound, &this->beamPosition, nullptr, false);
     }
 }
+
+void RepairBeam::render() {
+    for (unsigned i = 0; i < this->targetIds->size(); ++i) {
+        if ((*this->targetIds)[i] != -1)
+            (*this->geometries)[i]->render();
+    }
+}
+

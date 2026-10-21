@@ -19,7 +19,8 @@ public:
     int m_nTimeLimit;
     int field_0x4;
     long long m_nScriptTime;
-    uint16_t m_nFlags;
+    uint8_t field_0x10;
+    uint8_t m_bCinematicBreak; // returned by process(): a cutscene is running
     uint16_t field_0x12;
     TargetFollowCamera *m_pCamera;
     Level *m_pLevel;
@@ -37,8 +38,7 @@ public:
     int field_0x8c;
     long long m_nScriptTimerA;
     long long m_nScriptTimerB;
-    int field_0xa0;
-    int field_0xa4;
+    long long m_nFlashCountdown; // 0xa0: delay before the station-shield flash (mission 157)
     uint8_t m_bRenderParticles;
     uint8_t field_0xa9; // fail-check enable flag (read by process() mission-fail tail @0x144e36)
     uint8_t field_0xaa; // cutscene-exit save of PlayerEgo::autoTurretIsEnabled() (process() case 154 @0x13a802)
@@ -93,7 +93,6 @@ public:
 #if __SIZEOF_POINTER__ == 4
 #include <cstddef>
 static_assert(__builtin_offsetof(LevelScript, field_0x8c) == 0x8c, "LevelScript::field_0x8c");
-static_assert(__builtin_offsetof(LevelScript, field_0xa0) == 0xa0, "LevelScript::field_0xa0");
-static_assert(__builtin_offsetof(LevelScript, field_0xa4) == 0xa4, "LevelScript::field_0xa4");
+static_assert(__builtin_offsetof(LevelScript, m_nFlashCountdown) == 0xa0, "LevelScript::m_nFlashCountdown");
 #endif
 #endif

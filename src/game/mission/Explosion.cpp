@@ -468,8 +468,8 @@ void Explosion::render() {
     this->primaryMesh->setPosition(position);
 
     matrix = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-    this->primaryMesh->setDirection(AbyssEngine::AEMath::MatrixGetDir(matrix),
-                                    AbyssEngine::AEMath::MatrixGetUp(matrix));
+    Vector direction = AbyssEngine::AEMath::MatrixGetDir(matrix);
+    this->primaryMesh->setDirection(direction, AbyssEngine::AEMath::MatrixGetUp(matrix));
     this->primaryMesh->render();
 
     if (this->fireStreaks != 0) {

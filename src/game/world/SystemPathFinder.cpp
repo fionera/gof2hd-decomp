@@ -2,6 +2,15 @@
 #include "game/core/Globals.h"
 #include "engine/render/LODManager.h"
 
+Node::Node(int value) {
+    this->parent = nullptr;
+    this->value = value;
+    this->children = new Array<Node *>();
+}
+
+Node::~Node() {
+    ArrayRelease(*this->children);
+}
 
 SystemPathFinder::SystemPathFinder() {
 }
@@ -9,13 +18,51 @@ SystemPathFinder::SystemPathFinder() {
 SystemPathFinder::~SystemPathFinder() {
 }
 
-int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
-    for (uint32_t i = 0; i < nodes->size(); ++i) {
-        if (nodes->data()[i] == node) {
-            return 1;
+int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from, int to) {
+    Array<int> *path = getSystemPath(systems, from, to);
+    if (path == nullptr)
+        return 0;
+    int length = (int) path->size();
+    ArrayRelease(*path);
+    delete path;
+    return length - 1;
+}
+
+Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems, int from, int to) {
+    Array<Node *> *nodes = new Array<Node *>;
+    ArraySetLength(systems->size(), *nodes);
+    for (uint32_t i = 0; i < systems->size(); ++i)
+        (*nodes)[i] = new Node((int) i);
+
+    // Link every system to the visible systems its jump routes lead to.
+    for (uint32_t s = 0; s < systems->size(); ++s) {
+        Array<int> *routes = (Array<int> *) (*systems)[s]->getRoutes();
+        if (routes == nullptr)
+            continue;
+        for (uint32_t j = 0; j < routes->size(); ++j) {
+            Array<uint8_t> *visible = (Array<uint8_t> *) Globals::status->getSystemVisibilities();
+            if (visible != nullptr && visible->size() > (uint32_t) (*systems)[(*routes)[j]]->getIndex() &&
+                (*visible)[(*systems)[(*routes)[j]]->getIndex()])
+                ArrayAdd((*nodes)[(*routes)[j]], *(*nodes)[s]->children);
         }
     }
-    return 0;
+
+    Array<Node *> *nodePath = search((*nodes)[from], (*nodes)[to]);
+    if (nodePath == nullptr)
+        return nullptr;
+
+    Array<int> *path = nullptr;
+    if (nodePath->size() != 0) {
+        path = new Array<int>;
+        ArraySetLength(nodePath->size() + 1, *path);
+        int *out = path->data();
+        *out++ = from;
+        for (uint32_t i = 0; i + 1 < path->size(); i++)
+            out[i] = (*nodePath)[i]->value;
+    }
+    ArrayReleaseClasses(*nodePath);
+    delete nodePath;
+    return path;
 }
 
 Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
@@ -25,106 +72,43 @@ Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
     start->parent = nullptr;
 
     while (!open->empty()) {
-        Node *current = open->data()[0];
+        Node *current = (*open)[0];
         ArrayRemove(current, *open);
-        if (current == goal) {
+        if (current == goal)
             return constructPath(goal);
-        }
 
         ArrayAdd(current, *closed);
-        Array<Node *> *neighbours = current->children;
-        for (uint32_t i = 0; i < neighbours->size(); ++i) {
-            Node *next = neighbours->data()[i];
-
-            if (contains(closed, next) != 0 || contains(open, next) != 0) {
+        for (uint32_t i = 0; i < current->children->size(); ++i) {
+            Node *next = (*current->children)[i];
+            if (contains(closed, next) || contains(open, next))
                 continue;
-            }
-
             next->parent = current;
             ArrayAdd(next, *open);
         }
     }
-
     return nullptr;
-}
-
-int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from,
-                                      int to) {
-    Array<int> *path = getSystemPath(systems, from, to);
-    if (path != nullptr) {
-        int length = (int) path->size();
-        delete path;
-        return length - 1;
-    }
-    return 0;
 }
 
 Array<Node *> *SystemPathFinder::constructPath(Node *node) {
     Array<Node *> *backwards = new Array<Node *>;
-    for (; node->parent != nullptr; node = node->parent) {
+    for (; node->parent != nullptr; node = node->parent)
         ArrayAdd(node, *backwards);
-    }
 
     Array<Node *> *path = new Array<Node *>;
     ArraySetLength(backwards->size(), *path);
+    int out = 0;
+    for (int i = backwards->size() - 1; i >= 0; i--)
+        (*path)[out++] = (*backwards)[i];
 
-    uint32_t count = (uint32_t) backwards->size();
-    for (uint32_t out = 0; out < count; ++out) {
-        path->data()[out] = backwards->data()[count - 1 - out];
-    }
-
-    delete backwards;
+    ArrayRelease(*backwards);
     return path;
 }
 
-Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
-                                            int from, int to) {
-    int start = from;
-    Array<Node *> *nodes = new Array<Node *>;
-    ArraySetLength(systems->size(), *nodes);
-
-    for (uint32_t i = 0; i < systems->size(); ++i) {
-        nodes->data()[i] = new Node((int) i);
-    }
-
-    Status **statusPtr = &Globals::status;
-    for (uint32_t s = 0; s < systems->size(); ++s) {
-        Array<int> *routes = (Array<int> *) systems->data()[s]->getRoutes();
-        if (routes == nullptr) {
-            continue;
-        }
-        for (uint32_t j = 0; j < routes->size(); ++j) {
-            Array<uint8_t> *visibilities =
-                    (Array<uint8_t> *) (*statusPtr)->getSystemVisibilities();
-            if (visibilities == nullptr) {
-                continue;
-            }
-            int routeIndex = routes->data()[j];
-            int targetIndex = systems->data()[routeIndex]->getIndex();
-            if (visibilities->size() > (uint32_t) targetIndex &&
-                visibilities->data()[targetIndex] != 0) {
-                ArrayAdd(nodes->data()[routeIndex], *nodes->data()[s]->children);
-            }
+int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
+    for (uint32_t i = 0; i < nodes->size(); ++i) {
+        if (nodes->data()[i] == node) {
+            return 1;
         }
     }
-
-    Array<Node *> *nodePath =
-            search(nodes->data()[start], nodes->data()[to]);
-    Array<int> *path = nullptr;
-    if (nodePath != nullptr) {
-        if (!nodePath->empty()) {
-            path = new Array<int>;
-            ArraySetLength(nodePath->size() + 1, *path);
-            int *out = path->data();
-            out[0] = start;
-            for (uint32_t i = 0; i + 1 < path->size(); ++i) {
-                out[i + 1] = nodePath->data()[i]->value;
-            }
-        }
-        for (uint32_t i = 0; i < nodePath->size(); ++i) {
-            delete nodePath->data()[i];
-        }
-        delete nodePath;
-    }
-    return path;
+    return 0;
 }
