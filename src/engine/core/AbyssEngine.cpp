@@ -279,28 +279,33 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, SpriteSystem *sys) {
+    void SpriteSystemSetUv(unsigned short idx, float u0, float v0, float u1, float v1, SpriteSystem *sys) {
         unsigned int count = 0;
         if (sys != 0)
             count = sys->count;
         if (sys == 0 || idx >= count)
             return;
 
-        char flag = Engine::enableShader;
+        unsigned char shader = Engine::enableShader;
         float *p = (float *) sys->mesh->texCoords + (unsigned int) idx * 8;
-
-        if (flag == 0) {
-            c = 1.0f - c;
-            d = 1.0f - d;
+        p[0] = u0;
+        if (shader) {
+            p[1] = v0;
+            p[2] = u1;
+            p[3] = v0;
+            p[4] = u1;
+            p[5] = v1;
+            p[6] = u0;
+            p[7] = v1;
+        } else {
+            p[1] = 1.0f - v0;
+            p[2] = u1;
+            p[3] = 1.0f - v0;
+            p[4] = u1;
+            p[5] = 1.0f - v1;
+            p[6] = u0;
+            p[7] = 1.0f - v1;
         }
-        p[0] = a;
-        p[1] = c;
-        p[2] = b;
-        p[3] = c;
-        p[4] = b;
-        p[5] = d;
-        p[6] = a;
-        p[7] = d;
     }
 }
 
@@ -613,12 +618,22 @@ namespace AbyssEngine {
             return;
 
         float *p = (float *) sys->mesh->colors + (unsigned int) idx * 16;
-        for (int v = 0; v < 4; ++v) {
-            p[v * 4 + 0] = r;
-            p[v * 4 + 1] = g;
-            p[v * 4 + 2] = b;
-            p[v * 4 + 3] = a;
-        }
+        p[0] = r;
+        p[1] = g;
+        p[2] = b;
+        p[3] = a;
+        p[4] = r;
+        p[5] = g;
+        p[6] = b;
+        p[7] = a;
+        p[8] = r;
+        p[9] = g;
+        p[10] = b;
+        p[11] = a;
+        p[12] = r;
+        p[13] = g;
+        p[14] = b;
+        p[15] = a;
     }
 }
 
