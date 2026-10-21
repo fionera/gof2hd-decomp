@@ -52,10 +52,10 @@ BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
     uint16_t primaryMesh = (uint16_t) (kind + 0x3795);
     if (meshKind == 0xe4)
         primaryMesh = 0x4a92;
-    this->primaryGeometry = new AEGeometry(primaryMesh, Globals::Canvas, false);
-
     AEGeometry *secondary = nullptr;
     int mesh;
+    this->primaryGeometry = new AEGeometry(primaryMesh, Globals::Canvas, false);
+
     if (!gun->isPlayerGun() || (mesh = kSecondaryMeshes[gun->itemIndex]) < 0) {
         this->hasSecondary = 0;
     } else {
