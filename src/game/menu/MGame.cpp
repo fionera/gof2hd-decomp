@@ -390,10 +390,7 @@ tail:
 static GameText **g_gameText = &Globals::gameText;
 
 void MGame::useCloak() {
-    void (::PlayerEgo::*pmf)() = &::PlayerEgo::toggleCloaking;
-    int(*toggleCloaking)(::PlayerEgo *);
-    __builtin_memcpy(&toggleCloaking, &pmf, sizeof(toggleCloaking));
-    if (toggleCloaking((::PlayerEgo *) (this->player)) != 0) return;
+    if (((::PlayerEgo *) (this->player))->toggleCloaking()) return;
     if (this->choiceWindow == 0)
         this->choiceWindow = new ChoiceWindow();
     Item *eq = ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x15);
@@ -1055,7 +1052,7 @@ int MGame::OnInitialize() {
 
             int stIdx = ((Station *) (Globals::status->getStation()))->getIndex();
             int cm = Globals::status->getCurrentCampaignMission();
-            if ((float) Globals::status->getGammaRayDamagePerSecond(stIdx, cm) == 0.0f)
+            if (Globals::status->getGammaRayDamagePerSecond(stIdx, cm) == 0.0f)
                 pl->setGammaHP(100);
         }
     }
@@ -1343,7 +1340,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) { // lint: void_ptr -- exp
     int wasAutoPilot = this->player->isAutoPilot();
     this->flFastForwardWeight = 1.0f;
     TFC_setFastForwardMode(this->camera, 0);
-    reinterpret_cast<uint8_t &>(this->player->dockApproachDist) = 1;
+    reinterpret_cast<uint8_t &>(this->player->miningUpVec) = 1; // TODO(decomp): byte @0x1c8 of PlayerEgo, unverified
 
     unsigned hr = 0;
     if (this->pauseOpen == 0) {

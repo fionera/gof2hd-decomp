@@ -40,8 +40,8 @@ public:
     StarMap *starMap;
     ChoiceWindow *choiceWindow;
     ListItemWindow *listWindow;
-    int mode;
-    int field_0x14;
+    int field_0x10;
+    int mode;   // @0x14: every original reader (OnTouchBegin/OnTouchMove/draw/drawLounge/update) loads [this,#20]
     uint8_t field_0x18;
     uint8_t chatActive;
     uint8_t popupActive;

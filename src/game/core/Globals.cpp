@@ -165,7 +165,7 @@ unsigned char Globals::enterSpaceLounge = 0;
 int Globals::switch_to_target_setting = 0;
 
 Status *Globals::status = nullptr;
-unsigned char Globals::options[100] = {};
+alignas(4) unsigned char Globals::options[100] = {};
 FModSound *Globals::sound = nullptr;
 int Globals::logoIsShown = 0;
 int Globals::isInMainMenu = 0;
@@ -1058,7 +1058,7 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
                     String suf, full;
                     suf.ctor_char(suffix, false);
                     full = prefix + suf;
-                    int cmp = entry->Compare_str(&full);
+                    int cmp = entry->Compare(full);
                     if (cmp == 0) {
                         result = (int) i;
                         keepGoing = false;
