@@ -120,7 +120,7 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
     for (int m = 0; m < 45; ++m) {
         int got = 0;
         if (this->medals[m] == 1) {
-            this->newMedals[m] = 0;
+            this->newMedals[m] = got;
             continue;
         }
         for (int tier = 0; tier <= 2; ++tier) {
@@ -130,232 +130,172 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
             if (got > 0)
                 break;
 
-            // Clear the bic: use m as unsigned for switch
-            unsigned um = (unsigned)m;
-            if (um - 1 > 43)
-                continue;
-
-            Status *st = Globals::status;
-
-            switch (um) {
+            bool reached = false;
+            switch (m) {
             case 1:
-                if (ego->getHullDamageRate() <= req)
-                    got = tier + 1;
+                reached = ego->getHullDamageRate() <= req;
                 break;
-                case 2: {
-                    Array<bool> *arr = (Array<bool> *)(st->field_94);
+                case 2:
+                case 3:
+                case 9: {
+                    // Number of different ores / cores / ... collected.
+                    Array<bool> *found = m == 2 ? Globals::status->field_94
+                                                : m == 3 ? Globals::status->field_98 : Globals::status->field_ac;
                     int cnt = 0;
-                    for (unsigned k = 0; k < arr->size(); ++k)
-                        cnt += (int)(*arr)[k];
-                    if (cnt >= req)
-                        got = tier + 1;
-                    break;
-                }
-                case 3: {
-                    Array<bool> *arr = (Array<bool> *)(st->field_98);
-                    int cnt = 0;
-                    for (unsigned k = 0; k < arr->size(); ++k)
-                        cnt += (int)(*arr)[k];
-                    if (cnt >= req)
-                        got = tier + 1;
+                    for (unsigned k = 0; k < found->size(); ++k)
+                        cnt += (int) (*found)[k];
+                    reached = cnt >= req;
                     break;
                 }
                 case 4:
-                    if (st->getKills() >= req)
-                        got = tier + 1;
+                    reached = Globals::status->getKills() >= req;
                     break;
                 case 5:
-                    if (st->field_9c > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_9c > req;
                     break;
                 case 6:
-                    if (st->field_a0 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_a0 > req;
                     break;
                 case 7:
-                    if (st->field_a4 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_a4 > req;
                     break;
                 case 8:
-                    if (st->field_a8 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_a8 > req;
                     break;
-                case 9: {
-                    Array<bool> *arr = (Array<bool> *)(st->field_ac);
-                    int cnt = 0;
-                    for (unsigned k = 0; k < arr->size(); ++k)
-                        cnt += (int)(*arr)[k];
-                    if (cnt >= req)
-                        got = tier + 1;
-                    break;
-                }
                 case 10:
-                    if (st->field_b0 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_b0 > req;
                     break;
                 case 11:
-                    if (st->getStationsVisited() >= req)
-                        got = tier + 1;
+                    reached = Globals::status->getStationsVisited() >= req;
                     break;
                 case 12: {
-                    bool *p12 = st->field_b4->data_;
+                    bool *p12 = Globals::status->field_b4->data_;
                     int cnt = 0, k12 = 0;
                     do {
                         cnt += (int)p12[k12++];
                     } while (k12 < 22);
-                    if (cnt >= req)
-                        got = tier + 1;
+                    reached = cnt >= req;
                     break;
                 }
                 case 13: {
                     int cnt = 0;
-                    Array<BluePrint *> *bp = st->bluePrints;
+                    Array<BluePrint *> *bp = Globals::status->bluePrints;
                     for (unsigned k = 0; k < bp->size(); ++k)
                         cnt += (int)(*bp)[k]->isUnlocked();
-                    if (cnt >= req)
-                        got = tier + 1;
+                    reached = cnt >= req;
                     break;
                 }
                 case 14: {
                     int cnt = 0;
-                    Array<BluePrint *> *bp = st->bluePrints;
+                    Array<BluePrint *> *bp = Globals::status->bluePrints;
                     for (unsigned k = 0; k < bp->size(); ++k)
                         if ((*bp)[k]->productionCount > 0)
                             cnt += 1;
-                    if (cnt >= req)
-                        got = tier + 1;
+                    reached = cnt >= req;
                     break;
                 }
                 case 15:
-                    if (st->getPlayingTime() > (int64_t)((int32_t)req * (int32_t)3600000))
-                        got = tier + 1;
+                    reached = Globals::status->getPlayingTime() > (int64_t)((int32_t)req * (int32_t)3600000);
                     break;
                 case 16:
-                    if (st->getMissionCount() > req)
-                        got = tier + 1;
+                    reached = Globals::status->getMissionCount() > req;
                     break;
                 case 17:
-                    if (st->getJumpgateUsed() >= req)
-                        got = tier + 1;
+                    reached = Globals::status->getJumpgateUsed() >= req;
                     break;
                 case 18:
-                    if (st->field_b8 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_b8 > req;
                     break;
                 case 19:
-                    if (reinterpret_cast<int64_t &>(st->field_c0) / 60000LL >= (int64_t)req)
-                        got = tier + 1;
+                    reached = reinterpret_cast<int64_t &>(Globals::status->field_c0) / 60000LL >= (int64_t)req;
                     break;
                 case 20:
-                    if (st->field_c8 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_c8 > req;
                     break;
                 case 21:
-                    if (st->field_cc > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_cc > req;
                     break;
                 case 22:
-                    if (this->hasTurretAndWeapon == 0)
-                        got = tier + 1;
+                    reached = this->hasTurretAndWeapon == 0;
                     break;
                 case 23:
-                    if (this->weaponCount >= req)
-                        got = tier + 1;
+                    reached = this->weaponCount >= req;
                     break;
                 case 24:
-                    if (st->getCapturedCrates() >= req)
-                        got = tier + 1;
+                    reached = Globals::status->getCapturedCrates() >= req;
                     break;
                 case 25:
-                    if (this->credits >= req)
-                        got = tier + 1;
+                    reached = this->credits >= req;
                     break;
                 case 26:
-                    if (st->field_d0 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_d0 > req;
                     break;
                 case 27:
-                    if (st->field_d4 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_d4 > req;
                     break;
                 case 28:
-                    if (st->standing->isEnemyWithAnyone())
-                        got = tier + 1;
+                    reached = ((Standing *) (intptr_t) Globals::status->getStanding())->isEnemyWithAnyone();
                     break;
                 case 29:
-                    if (st->field_d8 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_d8 > req;
                     break;
                 case 30:
-                    if (st->gameWon())
-                        got = tier + 1;
+                    reached = Globals::status->gameWon();
                     break;
                 case 31:
-                    if (st->field_dc > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_dc > req;
                     break;
                 case 32:
-                    if (st->field_e0 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_e0 > req;
                     break;
                 case 33:
-                    if (st->field_e8 > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_e8 > req;
                     break;
                 case 34:
-                    if (st->field_ec > req)
-                        got = tier + 1;
+                    reached = Globals::status->field_ec > req;
                     break;
                 case 35: {
                     int *md = this->medals;
                     int k = 0;
                     while (k <= 43 && md[k] != 0)
                         k++;
-                    if (k > 43)
-                        got = tier + 1;
+                    reached = k > 43;
                     break;
                 }
                 case 36:
-                    if (st->getShip()->getMaxLoad() > req)
-                        got = tier + 1;
+                    reached = Globals::status->getShip()->getMaxLoad() > req;
                     break;
                 case 37: {
-                    Array<Ship *> *ships = st->voidStation->getShips();
-                    if (ships != nullptr && ships->count >= (unsigned)req)
-                        got = tier + 1;
+                    Array<Ship *> *ships = Globals::status->voidStation->getShips();
+                    reached = ships != nullptr && ships->count >= (unsigned)req;
                     break;
                 }
                 case 38:
-                    if ((uint8_t)st->field_128 != 0)
-                        got = tier + 1;
+                    reached = (uint8_t)Globals::status->field_128 != 0;
                     break;
                 case 39:
-                    if (st->field_118 >= req)
-                        got = tier + 1;
+                    reached = Globals::status->field_118 >= req;
                     break;
                 case 40:
-                    if (st->field_120 != 0)
-                        got = tier + 1;
+                    reached = Globals::status->field_120 != 0;
                     break;
                 case 41:
-                    if ((uint8_t)st->field_130 != 0)
-                        got = tier + 1;
+                    reached = (uint8_t)Globals::status->field_130 != 0;
                     break;
                 case 42:
-                    if ((uint8_t)st->field_138 != 0)
-                        got = tier + 1;
+                    reached = (uint8_t)Globals::status->field_138 != 0;
                     break;
                 case 43:
-                    if ((uint8_t)st->field_140 != 0)
-                        got = tier + 1;
+                    reached = (uint8_t)Globals::status->field_140 != 0;
                     break;
                 case 44:
-                    if ((uint8_t)st->field_148 != 0)
-                        got = tier + 1;
+                    reached = (uint8_t)Globals::status->field_148 != 0;
                     break;
                 default:
                     break;
                 }
+            if (reached)
+                got = tier + 1;
             }
 
         int cur = this->medals[m];
