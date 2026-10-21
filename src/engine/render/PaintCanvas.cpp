@@ -26,6 +26,9 @@ namespace AbyssEngine {
                                Camera *camera);
     float CameraSetPerspective(float fov, float aspect, float width, float height,
                                Camera *camera);
+    int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, AEMath::Matrix *view,
+                                    Camera *camera);
+    int CameraIsPointinViewFrustum(const AEMath::Vector &point, AEMath::Matrix *view, Camera *camera);
 }
 
 namespace AbyssEngine {
@@ -373,29 +376,9 @@ static inline int paintcanvas_ext_gsp_getheight(void *self) { return ((PaintCanv
 
 static inline float paintcanvas_ext_gsp_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
-void paintcanvas_ext_cisvf_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void *paintcanvas_ext_cisvf_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline float paintcanvas_ext_cisvf_sinf(float v) { return sinf(v); }
-
-static inline float paintcanvas_ext_cisvf_cosf(float v) { return cosf(v); }
-
-int paintcanvas_ext_cisvf_inner(const float *pt, float radius, void *m, void *cam); // lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_shader_anim(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_cipvf_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void *paintcanvas_ext_cipvf_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline float paintcanvas_ext_cipvf_sinf(float v) { return sinf(v); }
-
-static inline float paintcanvas_ext_cipvf_cosf(float v) { return cosf(v); }
-
-int paintcanvas_ext_cipvf_inner(const float *pt, void *m, void *cam); // lint: void_ptr (external symbol; mangling must match lib)
 
 void *paintcanvas_ext_i2d_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -2264,36 +2247,26 @@ void PaintCanvas::MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode,
     out = this->materials.count - 1;
 }
 
-static const double g_cisvf_gravscale_7bcd8 = 0;
-
 int PaintCanvas::CameraIsSphereinViewFrustum(const AbyssEngine::AEMath::Vector &point, float radius) {
-    if (radius == 0.0f ||
-        this->cameras.count <= this->currentCamera) {
+    if (radius == 0.0f || this->currentCamera >= this->cameras.count) {
         return 1;
     }
-
-    float m[16];
-    memset(m, 0, sizeof(m));
-    m[0] = 1.0f;
-    m[5] = 1.0f;
-    m[14] = 1.0f;
-    char scratch[60];
-    paintcanvas_ext_cisvf_matidentity(scratch, m);
-
-    PCGravView *grav = (PCGravView *) paintcanvas_ext_cisvf_getgrav(this->engine);
-    double angle = grav->angle * g_cisvf_gravscale_7bcd8;
-    float a = (float) angle;
-    int orient = this->gameOrientation;
-    float rot = (orient == 1) ? a : -a;
-    float s = paintcanvas_ext_cisvf_sinf(rot);
-    float c = paintcanvas_ext_cisvf_cosf(rot);
-    m[0] = c;
-    m[5] = c;
-    *(unsigned int *) &m[1] = *(unsigned int *) &s ^ 0x80000000;
-    m[4] = s;
-
-    AbyssEngine::Camera *cam = this->cameras.data_[this->currentCamera];
-    return paintcanvas_ext_cisvf_inner(point, radius, m, cam);
+    if (this->initialized == 0) {
+        return AbyssEngine::CameraIsSphereinViewFrustum(point, radius, nullptr,
+                                                        this->cameras.data_[this->currentCamera]);
+    }
+    AbyssEngine::AEMath::Matrix m;
+    AbyssEngine::AEMath::MatrixIdentity(m);
+    double *grav = this->engine->GetGravValue();
+    float angle = (float) (grav[1] * (double) 1.57079637f);
+    float rot = (this->gameOrientation == 1) ? angle : -angle;
+    float s = AbyssEngine::AEMath::Sinf(rot);
+    float c = AbyssEngine::AEMath::Cosf(rot);
+    m.m[0] = c;
+    m.m[5] = c;
+    m.m[1] = -s;
+    m.m[4] = s;
+    return AbyssEngine::CameraIsSphereinViewFrustum(point, radius, &m, this->cameras.data_[this->currentCamera]);
 }
 
 void PaintCanvas::MeshChangeShaderAnimValue(AbyssEngine::Mesh *mesh, float value, unsigned int mode) {
@@ -2415,35 +2388,26 @@ void PaintCanvas::ResetPersMatrix() {
     return glLoadIdentity();
 }
 
-static const double g_cipvf_gravscale_7bba8 = 0;
-
 int PaintCanvas::CameraIsPointinViewFrustum(const AbyssEngine::AEMath::Vector &point) {
     if (this->currentCamera >= this->cameras.count) {
         return 1;
     }
-
-    float m[16];
-    memset(m, 0, sizeof(m));
-    m[0] = 1.0f;
-    m[5] = 1.0f;
-    m[14] = 1.0f;
-    char scratch[60];
-    paintcanvas_ext_cipvf_matidentity(scratch, m);
-
-    PCGravView *grav = (PCGravView *) paintcanvas_ext_cipvf_getgrav(this->engine);
-    double angle = grav->angle * g_cipvf_gravscale_7bba8;
-    float a = (float) angle;
-    int orient = this->gameOrientation;
-    float rot = (orient == 1) ? a : -a;
-    float s = paintcanvas_ext_cipvf_sinf(rot);
-    float c = paintcanvas_ext_cipvf_cosf(rot);
-    m[0] = c;
-    m[5] = c;
-    *(unsigned int *) &m[1] = *(unsigned int *) &s ^ 0x80000000;
-    m[4] = s;
-
-    AbyssEngine::Camera *cam = this->cameras.data_[this->currentCamera];
-    return paintcanvas_ext_cipvf_inner(point, m, cam);
+    if (this->initialized == 0) {
+        return AbyssEngine::CameraIsPointinViewFrustum(point, nullptr,
+                                                       this->cameras.data_[this->currentCamera]);
+    }
+    AbyssEngine::AEMath::Matrix m;
+    AbyssEngine::AEMath::MatrixIdentity(m);
+    double *grav = this->engine->GetGravValue();
+    float angle = (float) (grav[1] * (double) 1.57079637f);
+    float rot = (this->gameOrientation == 1) ? angle : -angle;
+    float s = AbyssEngine::AEMath::Sinf(rot);
+    float c = AbyssEngine::AEMath::Cosf(rot);
+    m.m[0] = c;
+    m.m[5] = c;
+    m.m[1] = -s;
+    m.m[4] = s;
+    return AbyssEngine::CameraIsPointinViewFrustum(point, &m, this->cameras.data_[this->currentCamera]);
 }
 
 void PaintCanvas::SetTexture(unsigned int first, unsigned int second) {
