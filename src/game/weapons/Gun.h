@@ -40,7 +40,7 @@ public:
     // strd pair at 0x44/0x48. setLevel stores here (0x38).
     Level *level;
     int *lifetimes;
-    uint8_t *hitFlags;
+    bool *hitFlags;
     int initialLifetime;
     int fireDelay;
     uint8_t active;

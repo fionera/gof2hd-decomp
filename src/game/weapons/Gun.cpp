@@ -171,7 +171,7 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->ammoCount = ammo;
     this->field_0x78 = ammo << 1;
     this->lifetimes = new int[count];
-    this->hitFlags = new uint8_t[count];
+    this->hitFlags = new bool[count];
     this->wobbleOffsets = reinterpret_cast<Array<int> *>(new Array<Vector *>());
     ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->count));
     ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->velocitiesCount));
