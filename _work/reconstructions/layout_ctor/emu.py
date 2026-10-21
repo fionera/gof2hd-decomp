@@ -1,7 +1,7 @@
 # emu.py: tiny Thumb2/VFP/NEON emulator over capstone for straight-line-ish leaf functions.
 # usage: emu.py SYM flag=val ... -> prints stores to this (r0) as offset:size:value
 import sys,struct
-sys.path.insert(0,'/home/debian/GalaxyOnFire2/wt/w4c/tools/verify')
+sys.path.insert(0,'/home/debian/GalaxyOnFire2/wt/w4e/tools/verify')
 import verify as V
 from capstone import *
 from capstone.arm import *
@@ -94,7 +94,7 @@ def run(sym,flags):
         mn=mn2
         def opv(o):
             if o.type==ARM_OP_REG:
-                x=rid(o.reg); v=R[x] if x!=15 else ((pc+4)&~3 if (mn in('add','addw','adr') and ops[-1].type==ARM_OP_IMM) else pc+4)
+                x=rid(o.reg); v=R[x] if x!=15 else ((pc+4)&~3 if (mn in('add','addw','adr','sub','subw') and ops[-1].type==ARM_OP_IMM) else pc+4)
                 if o.shift.type!=0:
                     st,sv=o.shift.type,o.shift.value
                     if st==ARM_SFT_LSL: v=(v<<sv)&0xffffffff
@@ -251,10 +251,15 @@ def run(sym,flags):
                 import re as _re
                 lane=int(_re.search(r'\[(\d+)\]',i.op_str).group(1))
                 a,b=ops; na=md.reg_name(a.reg)
+                es=4
+                for t,n in (('8',1),('16',2),('32',4)):
+                    if i.mnemonic.endswith(t): es=n
                 if na[0] in 'dq':
-                    buf=bytearray(vget(a.reg)); buf[4*lane:4*lane+4]=struct.pack('<I',R[rid(b.reg)]); vset(a.reg,bytes(buf))
+                    buf=bytearray(vget(a.reg)); buf[es*lane:es*lane+es]=(R[rid(b.reg)]&((1<<(8*es))-1)).to_bytes(es,'little'); vset(a.reg,bytes(buf))
                 else:
-                    R[rid(a.reg)]=struct.unpack('<I',vget(b.reg)[4*lane:4*lane+4])[0]
+                    v=int.from_bytes(vget(b.reg)[es*lane:es*lane+es],'little')
+                    if '.s' in i.mnemonic and v>>(8*es-1): v-=1<<(8*es)
+                    R[rid(a.reg)]=v&0xffffffff
             elif len(ops)==2:
                 a,b=ops
                 na=md.reg_name(a.reg); nb=md.reg_name(b.reg)
@@ -270,6 +275,25 @@ def run(sym,flags):
             else: raise Exception(i.mnemonic+' '+i.op_str)
         elif mn=='vorr' and len(ops)==3:
             a=vget(ops[1].reg); b=vget(ops[2].reg); vset(ops[0].reg,bytes(x|y for x,y in zip(a,b)))
+        elif mn in ('vbic','vorr') and len(ops)==2 and ops[1].type==ARM_OP_IMM:
+            d=vget(ops[0].reg); es=int(i.mnemonic.split('.')[1][1:])//8
+            imm=(ops[1].imm&((1<<(8*es))-1)).to_bytes(es,'little')*(len(d)//es)
+            vset(ops[0].reg,bytes(((x&~y) if mn=='vbic' else (x|y))&0xff for x,y in zip(d,imm)))
+        elif mn in ('vceq','vand','veor','vmvn','vbic','vorr','vorn') :
+            es=int(i.mnemonic.split('.')[1][1:])//8 if '.' in i.mnemonic else 1
+            d=vget(ops[1].reg) if len(ops)>1 and ops[1].type==ARM_OP_REG else vget(ops[0].reg)
+            if mn=='vmvn': vset(ops[0].reg,bytes((~x)&0xff for x in d))
+            else:
+                o2=ops[-1]
+                if o2.type==ARM_OP_IMM: b=(o2.imm&((1<<(8*es))-1)).to_bytes(es,'little')*(len(d)//es)
+                else: b=vget(o2.reg)
+                if mn=='vceq':
+                    out=b''
+                    for k in range(0,len(d),es): out+=(b'\xff'*es if d[k:k+es]==b[k:k+es] else b'\0'*es)
+                    vset(ops[0].reg,out)
+                else:
+                    fn={'vand':lambda x,y:x&y,'veor':lambda x,y:x^y,'vbic':lambda x,y:x&~y,'vorr':lambda x,y:x|y,'vorn':lambda x,y:x|~y}[mn]
+                    vset(ops[0].reg,bytes(fn(x,y)&0xff for x,y in zip(d,b)))
         elif mn=='vbsl':
             d=vget(ops[0].reg); a=vget(ops[1].reg); b=vget(ops[2].reg)
             vset(ops[0].reg,bytes((x&y)|(~x&z)&0xff for x,y,z in zip(d,a,b)))

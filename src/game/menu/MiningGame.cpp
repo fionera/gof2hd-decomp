@@ -240,27 +240,27 @@ int MiningGame::update(int delta) {
 
 
 MiningGame::MiningGame(int layer, int station, Hud *hud) {
-    this->layer = layer;
     this->station = station;
+    this->layer = layer;
     this->hud = hud;
     this->centerX = Globals::w >> 1;
     this->centerY = Globals::layout->centerYBase + (Globals::h >> 1);
     this->marqueeWidth = Globals::layout->marqueeWidth;
-    this->isCoreLayer = layer == 7;
     this->lossTimer = 0;
     this->oreAmount = 0.0f;
-    this->oreRate = 0.0f;
     this->driftTimer = 0;
-    this->layerTimer = 0;
+    this->gameLostFlag = 0;
+    this->isCoreLayer = layer == 7;
+    this->oreRate = 0.0f;
+    this->failThreshold = 2500;
     this->currentLayer = 0;
     this->targetLayer = layer;
-    this->gameWonFlag = 0;
-    this->gameLostFlag = 0;
     this->gotCoreFlag = 0;
-    this->failThreshold = 2500;
+    this->layerTimer = 0;
+    this->gameWonFlag = 0;
+    this->inputY = 0.0f;
     this->posX = (float) this->centerX;
     this->inputX = 0.0f;
-    this->inputY = 0.0f;
     this->driftX = 0.0f;
     this->driftY = 0.0f;
     this->posY = (float) this->centerY;
