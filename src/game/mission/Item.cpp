@@ -237,32 +237,21 @@ bool Item::isInList(int index, ItemArray *items) {
 }
 
 void Item::fabricate(Item *item, ItemArray *items, int amount) {
-    int *ingredientIds = item->ingredients->data();
-    int *ingredientQuantities = item->quantities->data();
-    uint32_t ingredientCount = ingredientIds[0];
-
-    for (uint32_t i = 0; i < ingredientCount; i++) {
-        int wantedId = ingredientIds[i + 1];
+    // Consume the ingredients ...
+    IntArray *ingredients = item->ingredients;
+    IntArray *quantities = item->quantities;
+    for (uint32_t i = 0; i < ingredients->size(); i++) {
         for (uint32_t j = 0; j < items->size(); j++) {
-            Item * candidate = (*items)[j];
-            if (candidate->index == wantedId) {
-                candidate->amount -= ingredientQuantities[i + 1] * amount;
+            if ((*items)[j]->index == (*ingredients)[i]) {
+                (*items)[j]->amount -= (*quantities)[i] * amount;
                 break;
             }
         }
     }
-
+    // ... and add the product.
     ItemArray *made = new ItemArray();
     ArrayAdd(item->makeItem(amount), *made);
-    for (Item * element
-
-
-    :
-    *items
-    )
-    {
-        ArrayAdd(element, *made);
-    }
+    combineItems(items, made);
 }
 
 Item *Item::makeItem(int amount) {
