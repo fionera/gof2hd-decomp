@@ -536,7 +536,7 @@ void TouchButton::draw() {
                 Globals::layout->drawBGPattern((this->progressHighlight ? this->frameImages[0][1] : this->frameImages[1][1]),
                                                this->leftWidth + this->x, this->y,
                                                this->midStretch > rest ? rest : this->midStretch, this->height);
-                if (this->midStretch + this->leftWidth < filled) {
+                if (this->leftWidth + this->midStretch < filled) {
                     int right = filled - this->leftWidth - this->midStretch;
                     Globals::Canvas->DrawRegion2D(this->frameImages[this->progressHighlight ? 0 : 1][2], 0, 0,
                                                   this->rightWidth > right ? right : this->rightWidth, this->height,
