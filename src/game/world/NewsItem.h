@@ -5,7 +5,7 @@
 class NewsItem {
 public:
     int id;
-    uint8_t flag;
+    bool flag;
     bool *data;
     int length;
     int minLevel;

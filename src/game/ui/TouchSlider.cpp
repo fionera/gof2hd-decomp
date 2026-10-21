@@ -4,14 +4,6 @@
 #include "engine/render/PaintCanvas.h"
 #include <cstddef>
 
-struct TouchSliderAppConfig {
-    char _reserved[0x7c];
-    int touchPadding;
-};
-#if __SIZEOF_POINTER__ == 4
-static_assert(offsetof(TouchSliderAppConfig, touchPadding) == 0x7c,
-              "touchPadding must sit at app offset 0x7c");
-#endif
 
 void TouchSlider::setPosition(int x, int y) {
     float trackRange = (float) (this->trackWidth - this->knobWidth);
@@ -22,37 +14,31 @@ void TouchSlider::setPosition(int x, int y) {
     this->knobX = (int) (knobBase + this->value * trackRange);
 }
 
-static PaintCanvas **g_TouchSlider_canvas = &Globals::Canvas;
 
 
 TouchSlider::TouchSlider(int type, int x, int y, float value) {
     this->type = type;
     this->value = value;
-    PaintCanvas **canvas = g_TouchSlider_canvas;
-    unsigned int knobImageOut;
-    (*canvas)->Image2DCreate(0x51a, knobImageOut);
-    this->knobImage = knobImageOut;
+    Globals::Canvas->Image2DCreate(0x51a, this->knobImage);
 
     unsigned short trackImageId = 0x51b;
     if (type == 1)
         trackImageId = 0x51c;
     if (type == 0)
         trackImageId = 0x519;
-    unsigned int trackImageOut;
-    (*canvas)->Image2DCreate(trackImageId, trackImageOut);
-    this->trackImage = trackImageOut;
+    Globals::Canvas->Image2DCreate(trackImageId, this->trackImage);
 
-    this->knobWidth = (*canvas)->GetImage2DWidth(this->knobImage);
-    this->knobHeight = (*canvas)->GetImage2DHeight(this->knobImage);
-    this->trackWidth = (*canvas)->GetImage2DWidth(this->trackImage);
-    this->trackHeight = (*canvas)->GetImage2DHeight(this->trackImage);
+    this->knobWidth = Globals::Canvas->GetImage2DWidth(this->knobImage);
+    this->knobHeight = Globals::Canvas->GetImage2DHeight(this->knobImage);
+    this->trackWidth = Globals::Canvas->GetImage2DWidth(this->trackImage);
+    this->trackHeight = Globals::Canvas->GetImage2DHeight(this->trackImage);
 
     this->isDragging = 0;
     this->isDisabled = 0;
     setPosition(x, y);
     this->numSteps = 0;
 
-    this->touchPadding = ((TouchSliderAppConfig *) Globals::layout)->touchPadding;
+    this->touchPadding = Globals::layout->field_0x7c;
 }
 
 TouchSlider::~TouchSlider() {
@@ -108,20 +94,18 @@ int TouchSlider::OnTouchEnd(int x, int y) {
 }
 
 void TouchSlider::draw() {
-    PaintCanvas **canvas = g_TouchSlider_canvas;
     int color = this->isDisabled != 0 ? 0xFFFFFF2F : -1;
-    (*canvas)->SetColor((unsigned int) color);
-    (*canvas)->DrawImage2D(this->trackImage, this->x, this->y);
-    (*canvas)->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char) 0x11, (unsigned char) 0x44);
+    Globals::Canvas->SetColor((unsigned int) color);
+    Globals::Canvas->DrawImage2D(this->trackImage, this->x, this->y);
+    Globals::Canvas->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char) 0x11, (unsigned char) 0x44);
 }
 
 bool TouchSlider::OnTouchMove(int x, int y) {
     if (this->isDisabled != 0)
         return false;
     if (this->isDragging != 0) {
-        int halfKnob = this->knobWidth / 2;
-        int minX = this->x + halfKnob;
-        int maxX = (this->x + this->trackWidth) - halfKnob;
+        int maxX = this->x + this->trackWidth - this->knobWidth / 2;
+        int minX = this->x + this->knobWidth / 2;
         int clampedX = maxX;
         if (x < clampedX)
             clampedX = x;

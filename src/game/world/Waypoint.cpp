@@ -10,10 +10,13 @@ void Waypoint::reached() {
 }
 
 Vector Waypoint::getPosition() {
+    float x = (float) this->x;
+    float y = (float) this->y;
+    float z = (float) this->z;
     Vector result;
-    result.x = (float) this->x;
-    result.y = (float) this->y;
-    result.z = (float) this->z;
+    result.x = x;
+    result.y = y;
+    result.z = z;
     return result;
 }
 
