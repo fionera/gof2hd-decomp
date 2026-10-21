@@ -64,7 +64,7 @@ int loadAPK(const char *path);
 
 int loadAPKAndZip(const char *apkPath, const char *patchPath);
 
-int setBaughtCredits(int amount);
+bool setBaughtCredits(int amount);
 
 void checkFirstCreditPackBoughtWriteAction();
 

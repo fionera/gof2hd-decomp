@@ -103,8 +103,7 @@ String GameText::convertStringFromArabic(String in) {
                     buf[i] = ligature;
                     String merged(buf, false);
                     String head = merged.SubString(0, i - 1);
-                    String tail = merged.SubString(i, merged.length);
-                    head += tail;
+                    head += merged.SubString(i, merged.length);
                     delete[] buf;
                     buf = new unsigned short[head.length + 1];
                     memcpy(buf, static_cast<unsigned short *>(head), head.length * 2 + 2);
@@ -138,15 +137,24 @@ String GameText::convertStringFromArabic(String in) {
                 continue;
             int form;
             if (i == 0) {
-                form = (length != 1 && IS_ARABIC_JOINING(buf[i + 1])) ? 4 : 1;
+                form = 1;
+                if (length != 1 && IS_ARABIC_JOINING(buf[i + 1]))
+                    form = 4;
             } else if (i < last) {
                 // Medial position: initial/medial/final/isolated from both neighbours.
-                if (IS_ARABIC_JOINING(buf[i + 1]))
-                    form = IS_ARABIC_JOINING(buf[i - 1]) ? 3 : 4;
+                if (IS_ARABIC_JOINING(buf[i + 1]) && !IS_ARABIC_JOINING(buf[i - 1]))
+                    form = 4;
+                else if (!IS_ARABIC_JOINING(buf[i + 1]) && !IS_ARABIC_JOINING(buf[i - 1]))
+                    form = 1;
+                else if (IS_ARABIC_JOINING(buf[i - 1]) && !IS_ARABIC_JOINING(buf[i + 1]))
+                    form = 2;
                 else
-                    form = IS_ARABIC_JOINING(buf[i - 1]) ? 2 : 1;
+                    form = 3;
             } else {
-                form = IS_ARABIC_JOINING(buf[i - 1]) ? 2 : 1;
+                if (IS_ARABIC_JOINING(buf[i - 1]))
+                    form = 2;
+                else
+                    form = 1;
             }
             buf[i] = kArabicForms[r][form];
         }
