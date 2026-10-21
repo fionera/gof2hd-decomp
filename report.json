@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4540,
   "compared": 4523,
-  "avg_match": 97.04,
+  "avg_match": 97.06,
   "byte_exact": 1314,
-  "linked_exact": 4088,
-  "fuzzy_perfect": 4088,
+  "linked_exact": 4090,
+  "fuzzy_perfect": 4090,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -208,14 +208,6 @@
    "usize": 168
   },
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 26.2,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 55236
-  },
-  {
    "name": "_ZN3Hud10touchBeginEjjPv",
    "pct": 27.3,
    "byte": false,
@@ -326,6 +318,14 @@
    "linked": false,
    "osize": 1092,
    "usize": 1080
+  },
+  {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 32.8,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 56640
   },
   {
    "name": "_ZN5Agent15setSellItemDataEiii",
@@ -702,14 +702,6 @@
    "linked": false,
    "osize": 24,
    "usize": 22
-  },
-  {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 47.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2760
   },
   {
    "name": "_ZN5Level9createGunEiiiiiiii",
@@ -1142,6 +1134,14 @@
    "linked": false,
    "osize": 6396,
    "usize": 6392
+  },
+  {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 61.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2788
   },
   {
    "name": "_ZN6Layout6reloadEv",
@@ -1638,14 +1638,6 @@
    "linked": false,
    "osize": 592,
    "usize": 592
-  },
-  {
-   "name": "_ZN5Level13createWingmenEv",
-   "pct": 71.3,
-   "byte": false,
-   "linked": false,
-   "osize": 660,
-   "usize": 656
   },
   {
    "name": "_ZN5MGame12successCheckEv",
@@ -2152,28 +2144,12 @@
    "usize": 4552
   },
   {
-   "name": "_ZN5Level20createFighterTurretsEv",
-   "pct": 80.6,
-   "byte": false,
-   "linked": false,
-   "osize": 272,
-   "usize": 272
-  },
-  {
    "name": "_ZN7Globals26playMusicAndFadeOutCurrentEi",
    "pct": 80.6,
    "byte": false,
    "linked": false,
    "osize": 588,
    "usize": 584
-  },
-  {
-   "name": "_ZN5Level11flashScreenEi",
-   "pct": 80.9,
-   "byte": false,
-   "linked": false,
-   "osize": 336,
-   "usize": 340
   },
   {
    "name": "_ZN7StarMap4initEbP7Missionbi",
@@ -2838,6 +2814,14 @@
    "linked": false,
    "osize": 332,
    "usize": 332
+  },
+  {
+   "name": "_ZN5Level20createFighterTurretsEv",
+   "pct": 92.2,
+   "byte": false,
+   "linked": false,
+   "osize": 272,
+   "usize": 272
   },
   {
    "name": "_ZN12HangarWindow12OnTouchBeginEii",
@@ -24240,6 +24224,14 @@
    "usize": 232
   },
   {
+   "name": "_ZN5Level11flashScreenEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 336,
+   "usize": 336
+  },
+  {
    "name": "_ZN5Level11getMessagesEv",
    "pct": 100.0,
    "byte": true,
@@ -24334,6 +24326,14 @@
    "linked": true,
    "osize": 24,
    "usize": 24
+  },
+  {
+   "name": "_ZN5Level13createWingmenEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 660,
+   "usize": 660
   },
   {
    "name": "_ZN5Level13getEnemyRouteEv",
