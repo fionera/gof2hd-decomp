@@ -5875,8 +5875,8 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             Globals::Canvas->TransformCreate(core);
             Globals::Canvas->TransformAddMesh(core, 0x429f, false);
             root->addChild(core);
-            unsigned int firstRing = -1;
             unsigned int firstLights = -1;
+            unsigned int firstRing = -1;
             for (int i = 0; i < 3; i++) {
                 unsigned int ring = -1;
                 unsigned int lights = -1;
@@ -5890,8 +5890,8 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
                 AbyssEngine::AEMath::MatrixSetTranslation(
                         *(Matrix *) Globals::Canvas->TransformGetLocal(lights), 0.0f, 0.0f, offset);
                 if (firstRing == (unsigned int) -1) {
-                    firstRing = ring;
                     firstLights = lights;
+                    firstRing = ring;
                 } else {
                     Globals::Canvas->TransformAddChild(firstRing, ring);
                     Globals::Canvas->TransformAddChild(firstLights, lights);
