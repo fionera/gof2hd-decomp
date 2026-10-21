@@ -737,7 +737,7 @@ namespace AbyssEngine {
         if (AEFile::Read(2, &children, handle) == 0)
             return -1;
         if ((*slot)->animation != 0)
-            ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge((*slot)->animation->bounds());
+            ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge((*slot)->animation->boundingSphere);
         for (unsigned int c = 0; c < children; c++) {
             Mesh *child = new Mesh();
             child->vboEligible = 1;

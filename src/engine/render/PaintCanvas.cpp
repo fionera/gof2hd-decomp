@@ -2018,7 +2018,7 @@ void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child) {
             arr = (char **) this->transforms.data_;
             p = (AbyssEngine::Transform *) arr[parent];
             c = (AbyssEngine::Transform *) arr[child];
-            p->bounds().Merge(*c);
+            p->boundingSphere.Merge(*c);
             arr = (char **) this->transforms.data_;
             return ((AbyssEngine::Transform*)arr[parent])->CollectAnimationData();
         }
@@ -2066,7 +2066,7 @@ void PaintCanvas::TransformAddMesh(unsigned int transformIndex,
         }
         ArrayAdd<AbyssEngine::Mesh *>(this->meshes.data_[meshIndex],
                                       this->transforms.data_[transformIndex]->meshes);
-        this->transforms.data_[transformIndex]->bounds().Merge(
+        this->transforms.data_[transformIndex]->boundingSphere.Merge(
                 *(const AbyssEngine::AEMath::BSphere *) &this->meshes.data_[meshIndex]->boundsCenterX);
         AbyssEngine::Transform *anim = this->meshes.data_[meshIndex]->animation;
         if (anim != 0) {
@@ -2251,7 +2251,7 @@ void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int m
         return;
     }
     ArrayAdd<AbyssEngine::Mesh *>(this->meshes.data_[meshIndex], this->transforms.data_[transformIndex]->meshes);
-    this->transforms.data_[transformIndex]->bounds().Merge(
+    this->transforms.data_[transformIndex]->boundingSphere.Merge(
             *(const AbyssEngine::AEMath::BSphere *) &this->meshes.data_[meshIndex]->boundsCenterX);
 
     AbyssEngine::Transform *animation = this->meshes.data_[meshIndex]->animation;

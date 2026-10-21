@@ -195,7 +195,7 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     this->wreckMeshId = (uint16_t) meshId;
     this->wreckGeometry = new AEGeometry((uint16_t) meshId, Globals::Canvas, true);
     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))
-        ->boundingRadius = 500000.0f;
+        ->boundingSphere.radius = 500000.0f;
     switch (this->kind()) {
         case 13:
             this->wreckType = 4;

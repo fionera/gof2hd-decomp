@@ -11,6 +11,11 @@ namespace AbyssEngine {
             float radius;
             float radius2;
 
+            BSphere() : center(), radius(0.0f), radius2(1.0f) {}
+
+            BSphere(const Vector &center, float radius, float radius2)
+                : center(center), radius(radius), radius2(radius2) {}
+
             BSphere &operator=(const BSphere &other);
 
             void Merge(const BSphere &other);

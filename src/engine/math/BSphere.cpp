@@ -13,9 +13,9 @@ namespace AbyssEngine {
 
         void BSphere::Merge(const Transform &t) {
             // World-space bounds of the transform: moved centre, radius scaled by the largest axis.
-            Vector center = MatrixTransformVector(t.worldMatrix, t.boundingCenter);
+            Vector center = MatrixTransformVector(t.worldMatrix, t.boundingSphere.center);
             BSphere sphere = {center, 0.0f, 1.0f};
-            Vector extent = {t.boundingRadius, t.boundingRadius, t.boundingRadius};
+            Vector extent = {t.boundingSphere.radius, t.boundingSphere.radius, t.boundingSphere.radius};
             Vector rotated = MatrixRotateVector(t.worldMatrix, extent);
             float ax = rotated.x > 0.0f ? rotated.x : -rotated.x;
             float ay = rotated.y > 0.0f ? rotated.y : -rotated.y;
