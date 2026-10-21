@@ -1172,95 +1172,148 @@ static inline void FModSound_playWingmanRecruit_ch() {
 }
 
 void ModStation::checkHints() {
-    if (this->flag_0x60 != 0)
+    if (this->flag_0x60)
         return;
-
-    HintRecord *hintRec = (HintRecord *) (intptr_t) (int) (intptr_t) Globals::hints;
-
-    if (this->flag_0x6a == 0 && this->flag_0x63 == 0 &&
-        hintRec->flags[0x34] == 0 &&
-        0x12 < Status_getCurrentCampaignMission_ch()) {
-        ChoiceWindow_set6_ch(this->choiceWindow,
-                             GameText_getText_ch(0x3e), GameText_getText_ch(0x49),
-                             GameText_getText_ch(0x7e), GameText_getText_ch(0x7f),
-                             GameText_getText_ch(0x20c));
-        hintRec->flags[0x34] = 1;
+    if (!this->flag_0x6a && !(this->flag_0x63 | Globals::options[52]) &&
+        Globals::status->getCurrentCampaignMission() >= 19) {
+        this->choiceWindow->set(*Globals::gameText->getText(62), *Globals::gameText->getText(73), true,
+                                *Globals::gameText->getText(126), *Globals::gameText->getText(127),
+                                *Globals::gameText->getText(524), -1, -1);
+        Globals::options[52] = 1;
         this->flag_0x63 = 1;
         this->flag_0xdc = 1;
     }
 
-    int **status = (int **) &Globals::status;
-
-    static const int wantedOff[4] = {0x18, 0x30, 0x48, 0x60};
-    static const int wantedFlag[4] = {0x33, 0x34, 0x35, 0x36};
-    if (this->flag_0x69 == 0) {
-        for (int k = 0; k < 4; k = k + 1) {
-            if (this->flag_0x6a != 0) return;
-            if (this->flag_0x63 == 0 && hintRec->flags[wantedFlag[k]] == 0) {
-                Status *st = (Status *) (intptr_t) * status;
-                Wanted *w = (*st->wanted)[wantedOff[k] / 4];
-                if (Wanted_isTerminated_ch(w) != 0) {
-                    ChoiceWindow_set1_ch(this->choiceWindow, GameText_getText_ch(wantedOff[k]));
-                    this->flag_0x63 = 1;
-                    hintRec->flags[wantedFlag[k]] = 1;
-                }
-            }
+    // Bounty hunter hints: one per terminated wanted pilot (4 targets).
+    if (!this->flag_0x69) {
+        if (this->flag_0x6a)
+            return;
+        if (!(this->flag_0x63 | Globals::hints[51]) && (*Globals::status->wanted)[6]->isTerminated()) {
+            String text(*Globals::gameText->getText(3232), false);
+            text = Globals::status->replaceHash(
+                String(text, false),
+                String(*Globals::gameText->getText((*Globals::status->wanted)[6]->getShip() + 913), false),
+                String("#SHIP_NAME", false));
+            text = Globals::status->replaceHash(String(text, false), (*Globals::status->wanted)[6]->getName(),
+                                                String("#WANTED_NAME", false));
+            this->choiceWindow->set(text);
+            this->flag_0x63 = 1;
+            Globals::hints[51] = 1;
+        }
+    }
+    if (!this->flag_0x69) {
+        if (this->flag_0x6a)
+            return;
+        if (!(this->flag_0x63 | Globals::hints[52]) && (*Globals::status->wanted)[12]->isTerminated()) {
+            String text(*Globals::gameText->getText(3232), false);
+            text = Globals::status->replaceHash(
+                String(text, false),
+                String(*Globals::gameText->getText((*Globals::status->wanted)[12]->getShip() + 913), false),
+                String("#SHIP_NAME", false));
+            text = Globals::status->replaceHash(String(text, false), (*Globals::status->wanted)[12]->getName(),
+                                                String("#WANTED_NAME", false));
+            this->choiceWindow->set(text);
+            this->flag_0x63 = 1;
+            Globals::hints[52] = 1;
+        }
+    }
+    if (!this->flag_0x69) {
+        if (this->flag_0x6a)
+            return;
+        if (!(this->flag_0x63 | Globals::hints[53]) && (*Globals::status->wanted)[18]->isTerminated()) {
+            String text(*Globals::gameText->getText(3232), false);
+            text = Globals::status->replaceHash(
+                String(text, false),
+                String(*Globals::gameText->getText((*Globals::status->wanted)[18]->getShip() + 913), false),
+                String("#SHIP_NAME", false));
+            text = Globals::status->replaceHash(String(text, false), (*Globals::status->wanted)[18]->getName(),
+                                                String("#WANTED_NAME", false));
+            this->choiceWindow->set(text);
+            this->flag_0x63 = 1;
+            Globals::hints[53] = 1;
+        }
+    }
+    if (!this->flag_0x69) {
+        if (this->flag_0x6a)
+            return;
+        if (!(this->flag_0x63 | Globals::hints[54]) && (*Globals::status->wanted)[24]->isTerminated()) {
+            String text(*Globals::gameText->getText(3232), false);
+            text = Globals::status->replaceHash(
+                String(text, false),
+                String(*Globals::gameText->getText((*Globals::status->wanted)[24]->getShip() + 913), false),
+                String("#SHIP_NAME", false));
+            text = Globals::status->replaceHash(String(text, false), (*Globals::status->wanted)[24]->getName(),
+                                                String("#WANTED_NAME", false));
+            this->choiceWindow->set(text);
+            this->flag_0x63 = 1;
+            Globals::hints[54] = 1;
         }
     }
 
-    if (this->flag_0x6a == 0) {
-        if (this->flag_0x63 == 0 && hintRec->flags[0x1a] == 0 &&
-            Achievements_gotAllMedals_ch(*&Globals::achievements) != 0) {
-            ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x1a));
-            hintRec->flags[0x1a] = 1;
+    if (!this->flag_0x6a) {
+        if (!(this->flag_0x63 | Globals::hints[26]) && Globals::achievements->gotAllMedals()) {
+            this->choiceWindow->set(*Globals::gameText->getText(649));
+            Globals::hints[26] = 1;
             this->flag_0x63 = 1;
         }
-        if (this->flag_0x6a == 0 && this->flag_0x63 == 0 &&
-            hintRec->flags[0x1b] == 0 &&
-            Achievements_gotAllGoldMedals_ch() != 0) {
-            ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x1b));
-            hintRec->flags[0x1b] = 1;
+        if (this->flag_0x6a)
+            goto wingmen;
+        if (!(this->flag_0x63 | Globals::hints[27]) && Globals::achievements->gotAllGoldMedals()) {
+            this->choiceWindow->set(*Globals::gameText->getText(650));
+            Globals::hints[27] = 1;
             this->flag_0x63 = 1;
         }
-
-        if (this->flag_0x6a == 0 && this->flag_0x63 == 0) {
-            Status *statPtr = (Status *) *status;
-            if (Status_isBlueprintUnlocked_ch(statPtr, 0xe8) == 0 &&
-                Achievements_gotAllGoldMedals_ch() != 0 &&
-                Achievements_gotAllSupernovaMedals_ch(*&Globals::achievements) != 0) {
-                ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x3b));
-                Status_unlockBluePrint_ch(statPtr, 0xe8);
-                this->autosave();
+        if (this->flag_0x6a)
+            goto wingmen;
+        if (!this->flag_0x63) {
+            if (!Globals::status->isBlueprintUnlocked(232) && Globals::achievements->gotAllGoldMedals() &&
+                Globals::achievements->gotAllSupernovaMedals()) {
+                this->choiceWindow->set(*Globals::gameText->getText(651));
+                Globals::status->unlockBluePrint(232);
+                autosave();
                 this->flag_0x63 = 1;
             }
+            if (this->flag_0x6a)
+                goto wingmen;
         }
-
-        if (this->flag_0x6a == 0 && this->flag_0x63 == 0 &&
-            hintRec->flags[0x3a] == 0 &&
-            0xa1 < Status_getCurrentCampaignMission_ch()) {
-            bool ok = (Achievements_gotAllGoldMedals_ch() != 0 &&
-                       Achievements_gotAllSupernovaMedals_ch(*&Globals::achievements) != 0 &&
-                       Status_hardCoreMode_ch() == 0) ||
-                      Status_hardCoreMode_ch() != 0;
-            if (ok) {
-                hintRec->flags[0x3a] = 1;
-                ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x3c));
-                this->autosave();
-                this->flag_0x63 = 1;
-            }
+        if (!(this->flag_0x63 | Globals::hints[58]) && Globals::status->getCurrentCampaignMission() >= 162 &&
+            ((Globals::achievements->gotAllGoldMedals() && Globals::achievements->gotAllSupernovaMedals() &&
+              !Globals::status->hardCoreMode()) ||
+             Globals::status->hardCoreMode())) {
+            Globals::hints[58] = 1;
+            this->choiceWindow->set(*Globals::gameText->getText(3233));
+            autosave();
+            this->flag_0x63 = 1;
         }
     }
 
-    if (this->flag_0x69 == 0 && this->flag_0x6a == 0 &&
-        this->flag_0x63 == 0) {
+wingmen:
+    if (this->flag_0x69 || this->flag_0x6a || this->flag_0x63)
+        return;
+    if (Globals::status->wingmen != nullptr && !this->flag_0xdb && (int) Globals::status->fadeValue <= 0 &&
+        !Globals::layout->rewardMessageActive) {
         delete this->dialogueWindow;
         this->dialogueWindow = nullptr;
-        DialogueWindow *dw = (DialogueWindow *) ::operator new(0x74);
-        DialogueWindow_initWingman_ch(dw, 0);
-        this->dialogueWindow = dw;
-        FModSound_playWingmanRecruit_ch();
-        this->flag_0x69 = 1;
+        this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(313), (*Globals::status->wingmen)[0],
+                                                  reinterpret_cast<int *&>(Globals::status->_byte_0x28));
+        Agent *agent = new Agent(0, String("", false), 0, 0, Globals::status->field_0x2c, true, 0, 0, 0, 0);
+        Globals::sound->play(Globals::globals->getDialogueSoundId(313, agent), nullptr, nullptr, 0.0f);
+        delete agent;
         this->flag_0xdb = 1;
+        this->flag_0x69 = 1;
+        Globals::status->setWingmen(nullptr);
+        return;
+    }
+    // Pending pirate reward (the freighter rescue pays 20000 credits).
+    if (reinterpret_cast<uint8_t *>(&Globals::status->field_f8)[1] && !Globals::layout->rewardMessageActive) {
+        delete this->dialogueWindow;
+        this->dialogueWindow = nullptr;
+        this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(442), Globals::gameText->getText(1662),
+                                                  gPirateGreetingFaceA);
+        Globals::sound->play(589, nullptr, nullptr, 0.0f);
+        this->flag_0x69 = 1;
+        reinterpret_cast<uint8_t *>(&Globals::status->field_f8)[1] = 0;
+        Globals::status->changeCredits(20000);
     }
 }
 
