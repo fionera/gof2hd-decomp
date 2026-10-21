@@ -46,27 +46,27 @@ public:
 
     static void Close(uint32_t handle);
 
-    static uint32_t Read(uint32_t bytes, void *buffer, uint32_t handle); // lint: void_ptr ABI signature (Pv mangled)
+    static bool Read(uint32_t bytes, void *buffer, uint32_t handle); // lint: void_ptr ABI signature (Pv mangled)
 
-    static uint32_t Read(bool &value, uint32_t handle);
+    static bool Read(bool &value, uint32_t handle);
 
-    static uint32_t Read(char &value, uint32_t handle);
+    static bool Read(char &value, uint32_t handle);
 
-    static uint32_t Read(int8_t &value, uint32_t handle);
+    static bool Read(int8_t &value, uint32_t handle);
 
-    static uint32_t Read(uint8_t &value, uint32_t handle);
+    static bool Read(uint8_t &value, uint32_t handle);
 
-    static uint32_t Read(int16_t &value, uint32_t handle);
+    static bool Read(int16_t &value, uint32_t handle);
 
-    static uint32_t Read(uint16_t &value, uint32_t handle);
+    static bool Read(uint16_t &value, uint32_t handle);
 
-    static uint32_t Read(int32_t &value, uint32_t handle);
+    static bool Read(int32_t &value, uint32_t handle);
 
-    static uint32_t Read(uint32_t &value, uint32_t handle);
+    static bool Read(uint32_t &value, uint32_t handle);
 
-    static uint32_t Read(int64_t &value, uint32_t handle);
+    static bool Read(int64_t &value, uint32_t handle);
 
-    static uint32_t Read(float &value, uint32_t handle);
+    static bool Read(float &value, uint32_t handle);
 
     static uint32_t Read(String &value, uint32_t handle, bool wide);
 

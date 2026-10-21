@@ -47,7 +47,7 @@ Objective *Objective::addObjective(Objective *objective) {
     return this;
 }
 
-unsigned int Objective::achieved(int value) {
+bool Objective::achieved(int value) {
     Array<KIPlayer *> *enemies = this->level->getEnemies();
     unsigned int result = 0;
 

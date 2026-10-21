@@ -121,7 +121,7 @@ public:
     int timeLimit;
     int field_134;
     int field_138;
-    uint8_t friendCargoStolen;
+    bool friendCargoStolen;
     uint8_t pad_13d[3];
     float flashColor[3]; // rgb; raw floats (orig ctor assigns them in the body, no Vector ctor)
     float flashAlpha;
@@ -308,11 +308,11 @@ public:
 
     void update(long long dt, bool skipLod);
 
-    int checkObjective(int param);
+    bool checkObjective(int param);
 
     void stealFriendCargo();
 
-    uint8_t friendCargoWasStolen();
+    bool friendCargoWasStolen();
 
     void removeObjectives();
 
@@ -320,7 +320,7 @@ public:
 
     Array<AbstractGun *> *getEnemyGuns();
 
-    int checkGameOver(int param);
+    bool checkGameOver(int param);
 
     void pirateStationAction(bool param);
 

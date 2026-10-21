@@ -72,7 +72,7 @@ void RadioMessage::finish() {
     this->over = 1;
 }
 
-uint8_t RadioMessage::isOver() {
+bool RadioMessage::isOver() {
     return this->over;
 }
 

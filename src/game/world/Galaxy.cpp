@@ -44,14 +44,14 @@ int Galaxy::getSystem(int index) {
     return (int) (intptr_t)(*this->systems)[index];
 }
 
-int Galaxy::getStation(int index) {
+Station *Galaxy::getStation(int index) {
     if (index >= 0) {
         FileRead *loader = new FileRead();
         Station *station = loader->loadStation(index);
         delete loader;
-        return (int) (intptr_t) station;
+        return station;
     }
-    return (int) (intptr_t) Globals::status->playerStation;
+    return Globals::status->playerStation;
 }
 
 void Galaxy::setVisited(bool *src, int count) {

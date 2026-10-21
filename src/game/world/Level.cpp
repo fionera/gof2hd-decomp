@@ -207,13 +207,13 @@ void Level::render2D() {
     starSystem->render2D();
 }
 
-int Level::checkGameOver(int param) {
+bool Level::checkGameOver(int param) {
     Objective *objective = objectivesB;
     if (objective == nullptr) {
-        return 0;
+        return false;
     }
 
-    return (int) objective->achieved(param);
+    return objective->achieved(param);
 }
 
 void Level::updateAsteroidCluster() {
@@ -261,12 +261,12 @@ void Level::asteroidDied() {
     asteroidsLeft -= 1;
 }
 
-int Level::checkObjective(int param) {
+bool Level::checkObjective(int param) {
     Objective *objective = objectivesA;
     if (objective != nullptr) {
-        return (int) objective->achieved(param);
+        return objective->achieved(param);
     }
-    return 0;
+    return false;
 }
 
 int Level::getNumDeliveredOre() {
@@ -368,7 +368,7 @@ void Level::applyKills() {
     }
 }
 
-uint8_t Level::friendCargoWasStolen() {
+bool Level::friendCargoWasStolen() {
     return friendCargoStolen;
 }
 

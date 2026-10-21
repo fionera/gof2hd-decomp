@@ -98,21 +98,21 @@ void ScrollTouchBox::draw() {
         for (unsigned int i = 0; i < this->lines->size(); i++) {
             unsigned int count = this->lines->size();
             int lastOffset = 0;
-            if (i == count - 1 && tallGlyphs)
+            if (tallGlyphs && i == count - 1)
                 lastOffset = Globals::retinaDisplay ? -8 : -4;
 
             int lineY = Globals::layout->field_0x4 * (int) i + this->y + this->scrollOffset;
             if (count == 1 ||
-                (this->y <= lineY &&
+                (lineY >= this->y &&
                  lineY + lastOffset <= this->height + this->y - Globals::Canvas->GetTextHeight(this->font))) {
                 int x;
                 if (GameText::getLanguage() == 9) {
                     AbyssEngine::Engine::enableReverseFlag = 0;
                     int left = this->x;
                     int width = this->width;
-                    unsigned int font = this->font;
                     String *line = (*this->lines)[i];
                     PaintCanvas *canvas = Globals::Canvas;
+                    unsigned int font = this->font;
                     if (this->centered)
                         x = left + (width >> 1) - (canvas->GetTextWidth(font, *line) >> 1);
                     else
