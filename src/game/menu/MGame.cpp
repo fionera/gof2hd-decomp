@@ -3690,7 +3690,7 @@ bool MGame::successCheck() {
 
     Mission *completed = Globals::status->missionCompleted(false, false, this->levelScript->m_nScriptTime);
     bool objectiveDone = this->level->checkObjective((int) this->levelScript->m_nScriptTime);
-    if (!completed && !objectiveDone)
+    if (!objectiveDone && !completed)
         return success;
 
     if (Globals::status->getMission()->getType() == 5 || Globals::status->getMission()->getType() == 3) {
@@ -3742,74 +3742,73 @@ bool MGame::successCheck() {
     if (!Globals::status->getMission()->isCampaignMission())
         Globals::status->incMissionCount();
 
-    if (Globals::status->getMission()->isCampaignMission() &&
-        !(Globals::status->getMission()->isCampaignMission() &&
-          DialogueWindow::hasSuccessDialogue(Globals::status->getCurrentCampaignMission()))) {
-        if (Globals::status->getCurrentCampaignMission() >= 46 && Globals::status->getMission()->isCampaignMission() &&
-            !DialogueWindow::hasSuccessDialogue(Globals::status->getCurrentCampaignMission())) {
-            Globals::status->nextCampaignMission(true);
-            this->level->removeObjectives();
-            Globals::status->setMission(Mission::empty);
+    if (!Globals::status->getMission()->isCampaignMission() ||
+        (Globals::status->getMission()->isCampaignMission() &&
+         DialogueWindow::hasSuccessDialogue(Globals::status->getCurrentCampaignMission()))) {
+        if (this->dialogueWindow != nullptr) {
+            if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
+                this->dialogueWindow->setLevel(this->level);
+            }
+        } else {
+            this->dialogueWindow = new DialogueWindow();
+            if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
         }
+        this->dialogueWindow->set(completed ? completed : Globals::status->getMission(), 1, -1);
+        this->pauseOpen = 1;
+        this->cutsceneActive = 1;
+        pauseSounds();
+
+        if (Globals::status->getMission()->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 38) {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            for (unsigned i = 0; i < enemies->size(); i++) {
+                KIPlayer *enemy = (*enemies)[i];
+                if (enemy->field_0x40 && !enemy->isDead())
+                    enemy->player->setHitpoints(9999999);
+            }
+        } else if (Globals::status->getMission()->isCampaignMission() &&
+                   Globals::status->getCurrentCampaignMission() == 56) {
+            Array<AEGeometry *> *planets = static_cast<Array<AEGeometry *> *>(this->level->getStarSystem()->getPlanets());
+            Vector target = (*planets)[2]->getPosition() * 100.0f;
+            int coords[3] = {(int) target.x, (int) target.y, (int) target.z};
+            Route *route = new Route(coords, 3);
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            for (unsigned i = 0; i < enemies->size(); i++) {
+                KIPlayer *enemy = (*enemies)[i];
+                if (enemy->shipGroup == 1)
+                    enemy->setRoute(route->clone());
+            }
+            delete route;
+        } else if (Globals::status->getMission()->isCampaignMission() &&
+                   Globals::status->getCurrentCampaignMission() == 63) {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            for (unsigned i = 0; i < enemies->size(); i++) {
+                KIPlayer *enemy = (*enemies)[i];
+                if (enemy->shipGroup == 8)
+                    enemy->player->removeAllGuns();
+            }
+        } else if (Globals::status->getMission()->isCampaignMission() &&
+                   Globals::status->getCurrentCampaignMission() == 73) {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            for (unsigned i = 0; i < enemies->size(); i++) {
+                KIPlayer *enemy = (*enemies)[i];
+                if (enemy->field_0x40 && !enemy->isDead()) {
+                    enemy->player->setHitpoints(9999999);
+                    static_cast<PlayerFixedObject *>(enemy)->setMoving(true);
+                }
+            }
+        } else if (Globals::status->getStation()->getIndex() == 112 &&
+                   Globals::status->getCurrentCampaignMission() == 143) {
+            Level::initStreamOutPositionAfterCutscene = 1;
+        }
+        success = true;
         return success;
     }
-
-    if (this->dialogueWindow != nullptr) {
-        if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
-            this->dialogueWindow->setLevel(this->level);
-        }
-    } else {
-        this->dialogueWindow = new DialogueWindow();
-        if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
+    if (Globals::status->getCurrentCampaignMission() >= 46 && Globals::status->getMission()->isCampaignMission() &&
+        !DialogueWindow::hasSuccessDialogue(Globals::status->getCurrentCampaignMission())) {
+        Globals::status->nextCampaignMission(true);
+        this->level->removeObjectives();
+        Globals::status->setMission(Mission::empty);
     }
-    this->dialogueWindow->set(completed ? completed : Globals::status->getMission(), 1, -1);
-    this->pauseOpen = 1;
-    this->cutsceneActive = 1;
-    pauseSounds();
-
-    if (Globals::status->getMission()->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 38) {
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        for (unsigned i = 0; i < enemies->size(); i++) {
-            KIPlayer *enemy = (*enemies)[i];
-            if (enemy->field_0x40 && !enemy->isDead())
-                enemy->player->setHitpoints(9999999);
-        }
-    } else if (Globals::status->getMission()->isCampaignMission() &&
-               Globals::status->getCurrentCampaignMission() == 56) {
-        Array<AEGeometry *> *planets = static_cast<Array<AEGeometry *> *>(this->level->getStarSystem()->getPlanets());
-        Vector target = (*planets)[2]->getPosition() * 100.0f;
-        int coords[3] = {(int) target.x, (int) target.y, (int) target.z};
-        Route *route = new Route(coords, 3);
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        for (unsigned i = 0; i < enemies->size(); i++) {
-            KIPlayer *enemy = (*enemies)[i];
-            if (enemy->shipGroup == 1)
-                enemy->setRoute(route->clone());
-        }
-        delete route;
-    } else if (Globals::status->getMission()->isCampaignMission() &&
-               Globals::status->getCurrentCampaignMission() == 63) {
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        for (unsigned i = 0; i < enemies->size(); i++) {
-            KIPlayer *enemy = (*enemies)[i];
-            if (enemy->shipGroup == 8)
-                enemy->player->removeAllGuns();
-        }
-    } else if (Globals::status->getMission()->isCampaignMission() &&
-               Globals::status->getCurrentCampaignMission() == 73) {
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        for (unsigned i = 0; i < enemies->size(); i++) {
-            KIPlayer *enemy = (*enemies)[i];
-            if (enemy->field_0x40 && !enemy->isDead()) {
-                enemy->player->setHitpoints(9999999);
-                static_cast<PlayerFixedObject *>(enemy)->setMoving(true);
-            }
-        }
-    } else if (Globals::status->getStation()->getIndex() == 112 &&
-               Globals::status->getCurrentCampaignMission() == 143) {
-        Level::initStreamOutPositionAfterCutscene = 1;
-    }
-    success = true;
     return success;
 }
 
