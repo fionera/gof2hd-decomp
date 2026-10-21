@@ -1270,175 +1270,128 @@ void HangarWindow::refreshCargoAvailabilityForBlueprints() {
 }
 
 void HangarWindow::setSellMode(bool buy) {
-    HangarWindow *self = this;
-    ListItem *item = (ListItem *) self->selectedItem;
-
-    if (item == 0 ||
-        ((ListItem *) (item))->isShip() != 0 || ((ListItem *) (item))->isSlot() != 0 ||
-        ((ListItem *) (item))->isTextButton() != 0 || ((ListItem *) (item))->isSelectable() == 0 ||
-        ((ListItem *) (item))->isBluePrint() != 0) {
-        self->buyMode = 0;
+    ListItem *item = this->selectedItem;
+    if ((!this->buyMode && !buy) || item == 0 || item->isShip() || item->isSlot() || item->isTextButton() ||
+        !item->isSelectable() || item->isBluePrint()) {
+        this->buyMode = 0;
         return;
     }
+    this->buyMode = buy;
 
-    self->buyMode = buy;
-
-    int tab = self->hangarList->getCurrentTab();
-    if (tab == 1) {
-        if (self->buyMode == 0) {
-            if (((ListItem *) (item))->isItem() != 0 && ((Item *) (item->item))->getType() != 4) {
-                unsigned char *flags = *g_hw_itemFlags;
-                if ((*(uint8_t *) ((char *) (flags) + (0x1e))) == 0) {
-                    Globals::gameText->getText(*g_hw_sellTextId1);
-                    self->dialog->set(g_HangarWindow_emptyDialogText);
-                    (*(uint8_t *) ((char *) (flags) + (0x1e))) = 1;
-                    self->dialogActive = 1;
-                }
+    if (this->hangarList->getCurrentTab() == 1) {
+        if (this->buyMode) {
+            if (!Globals::hints[29]) {
+                this->dialog->set(*Globals::gameText->getText(588));
+                Globals::hints[29] = 1;
+                this->dialogActive = 1;
             }
-            self->autoEquipPending = 1;
-            self->autoEquipIndex = self->hangarList->getCurrentItemIndex();
+            this->savedStationAmount = item->item->getStationAmount();
+            this->savedAmount = item->item->getAmount();
+            this->savedCredits = Globals::status->getCredits();
+            this->savedLoad = this->currentLoad;
         } else {
-            unsigned char *flags = *g_hw_itemFlags;
-            if ((*(uint8_t *) ((char *) (flags) + (0x1d))) == 0) {
-                Globals::gameText->getText(*g_hw_sellTextId2);
-                self->dialog->set(g_HangarWindow_emptyDialogText);
-                (*(uint8_t *) ((char *) (flags) + (0x1d))) = 1;
-                self->dialogActive = 1;
+            if (item->isItem() && item->item->getType() != 4 && !Globals::hints[30]) {
+                this->dialog->set(*Globals::gameText->getText(589));
+                Globals::hints[30] = 1;
+                this->dialogActive = 1;
             }
-            self->savedStationAmount = ((Item *) (item->item))->getStationAmount();
-            self->savedAmount = ((Item *) (item->item))->getAmount();
-            self->savedCredits = Globals::status->getCredits();
-            self->savedLoad = self->currentLoad;
+            this->autoEquipPending = 1;
+            this->autoEquipIndex = this->hangarList->getCurrentItemIndex();
         }
-
-        Globals::status->getShip()->setCargo(Item::extractItems((ItemArray *) (self->itemList), true));
-        Globals::status->getStation()->setItems(Item::extractItems(self->itemList, false), false);
-        if (self->itemList != 0) {
-            ArrayReleaseClasses(*self->itemList);
-            delete self->itemList;
+        Globals::status->getShip()->setCargo(Item::extractItems(this->itemList, true));
+        Globals::status->getStation()->setItems(Item::extractItems(this->itemList, false), false);
+        if (this->itemList != 0) {
+            ArrayReleaseClasses(*this->itemList);
+            delete this->itemList;
         }
-        self->itemList = 0;
-
-        ItemArray *mixed = Item::mixItems((ItemArray *) (Globals::status->getShip()->getCargo()),
-                                          (ItemArray *) (Globals::status->getStation()->getItems()));
-        self->itemList = mixed;
-        self->hangarList->initShopTab((Array<Item *> *) (mixed), Globals::status->getStation()->getShips());
-        self->hangarList->initShipTab(Globals::status->getShip());
-
-        ListItem *ci = self->hangarList->getCurrentItem();
-        self->selectedItem = ci;
-        if (ci != nullptr && ci->isShip() != 0)
-            self->selectedItem->ship->adjustPrice();
-        refreshCurrentContentHeight();
-        return;
-    }
-
-    if (self->hangarList->getCurrentTab() != 4)
-        return;
-
-    if (self->buyMode == 0) {
-        if (self->bluePrintItem != 0 && self->bluePrint != 0) {
-            Item *bpItem = ((ListItem *) self->bluePrintItem)->item;
-            self->bluePrint->addItem(bpItem, bpItem->getBlueprintAmount(),
-                                     Globals::status->getStation()->getIndex());
-        }
-
-        uint8_t completedFlag = 0;
-        if (self->bluePrint->isCompleted() != 0) {
-            Globals *globals = (Globals *) *g_hw_globals;
-            if (self->bluePrint->getStationIndex() == Globals::status->getStation()->getIndex()) {
-                String line, copy, name, fmt, result;
-                ((String *) &copy)->Set((line).data);
-                Status_replaceHash(&result, globals, &copy, &name, &fmt);
-                self->dialog->set(g_HangarWindow_emptyDialogText);
-
-                int *stations = g_hw_bpStations;
-                int idx = stations[self->bluePrint->getIndex()];
-                self->bluePrint->getQuantity();
-                Item *made = ((Item *) (uintptr_t) idx)->makeItem();
-                Globals::status->getShip()->addCargo(made);
-                ArrayAdd(made, *(self->itemList));
-                self->hangarList->setCurrentTab(0, true);
-                self->refreshCurrentContentHeight();
-            } else {
-                String line, copy, name, fmt, result, line2, sname, fmt2;
-                ((String *) &copy)->Set((line).data);
-                Status_replaceHash(&result, globals, &copy, &name, &fmt);
-
-                ((String *) &line2)->Set((line).data);
-                self->bluePrint->getStationName();
-                String result2;
-                Status_replaceHash(&result2, globals, &line2, &sname, &fmt2);
-
-                self->dialog->set(g_HangarWindow_emptyDialogText);
-                ((Status *) (globals))->addPendingProduct((BluePrint *) self->bluePrint);
-                self->hangarList->setCurrentTab(0, true);
-                self->refreshCargoAvailabilityForBlueprints();
+        this->itemList = 0;
+        this->itemList = Item::mixItems(Globals::status->getShip()->getCargo(), Globals::status->getStation()->getItems());
+        this->hangarList->initShopTab(this->itemList, Globals::status->getStation()->getShips());
+        this->hangarList->initShipTab(Globals::status->getShip());
+        this->selectedItem = this->hangarList->getCurrentItem();
+        if (this->selectedItem != 0 && this->selectedItem->isShip())
+            this->selectedItem->ship->adjustPrice();
+        this->refreshCurrentContentHeight();
+    } else if (this->hangarList->getCurrentTab() == 4) {
+        if (!this->buyMode) {
+            // Deliver the selected ingredient to the blueprint.
+            if (this->bluePrintItem != 0 && this->bluePrint != 0) {
+                Item *ingredient = this->bluePrintItem->item;
+                this->bluePrint->addItem(ingredient, ingredient->getBlueprintAmount(),
+                                         Globals::status->getStation()->getIndex());
             }
-            self->bluePrint->reset();
-            completedFlag = 1;
-        }
-
-        Globals *globals = (Globals *) *g_hw_globals;
-        ((Ship *) (Globals::status->getShip()))->setCargo(
-            Item::extractItems((ItemArray *) (((Ship *) (0))->getCargo()), true));
-        Globals::status->getShip();
-        ItemArray *items = Item::mixItems((ItemArray *) (((Ship *) (0))->getCargo()),
-                                          (ItemArray *) (Globals::status->getStation()->getItems()));
-        self->hangarList->initShopTab((Array<Item *> *) (items), Globals::status->getStation()->getShips());
-        self->hangarList->initBlueprintTab((Array<BluePrint *> *) (long) ((Status *) (globals))->getBluePrints());
-        ItemArray *mix = Item::mixItems((ItemArray *) (((Ship *) (0))->getCargo()),
-                                        (ItemArray *) (Globals::status->getStation()->getItems()));
-        self->itemList = mix;
-        self->dialogActive = completedFlag;
-
-        if (completedFlag) {
-            Array<ListItem *> *items2 = ((HangarList *) self->hangarList)->getCurrentTabItems();
-            for (unsigned int i = 0; i < items2->size(); i++) {
-                ListItem *li = items2->data()[i];
-                if (li != 0 && ((ListItem *) (li))->isItem() != 0 &&
-                    ((Item *) ((ListItem *) li)->item)->getIndex() == self->bluePrint->getIndex()) {
-                    if (Globals::status->getShip()->hasEquipment(((Item *) ((ListItem *) li)->item)->getIndex(), 1) !=
-                        0) {
-                        self->autoEquipIndex = i;
-                        self->autoEquipPending = 1;
-                        self->autoEquipSecondaryWeapons(i);
-                        self->autoEquipPending = 0;
+            bool completed = false;
+            if (this->bluePrint->isCompleted()) {
+                if (this->bluePrint->getStationIndex() != Globals::status->getStation()->getIndex()) {
+                    String message = *Globals::gameText->getText(210);
+                    message = Globals::status->replaceHash(
+                        message, *Globals::gameText->getText(1274 + this->bluePrint->getIndex()), String("#N"));
+                    message = Globals::status->replaceHash(message, String(this->bluePrint->getStationName(), false),
+                                                           String("#S"));
+                    this->dialog->set(message);
+                    Globals::status->addPendingProduct(this->bluePrint);
+                    this->hangarList->setCurrentTab(2, true);
+                    this->refreshCargoAvailabilityForBlueprints();
+                } else {
+                    String message = *Globals::gameText->getText(211);
+                    message = Globals::status->replaceHash(
+                        message, *Globals::gameText->getText(1274 + this->bluePrint->getIndex()), String("#N"));
+                    this->dialog->set(message);
+                    Item *product = (*Globals::items)[this->bluePrint->getIndex()]->makeItem(
+                        this->bluePrint->getQuantity());
+                    Globals::status->getShip()->addCargo(product);
+                    ArrayAdd(product, *this->itemList);
+                    this->hangarList->setCurrentTab(1, true);
+                    this->refreshCurrentContentHeight();
+                }
+                this->bluePrint->reset();
+                completed = true;
+            }
+            Globals::status->getShip()->setCargo(Item::extractItems(Globals::status->getShip()->getCargo(), true));
+            this->hangarList->initShopTab(
+                Item::mixItems(Globals::status->getShip()->getCargo(), Globals::status->getStation()->getItems()),
+                Globals::status->getStation()->getShips());
+            this->hangarList->initBlueprintTab((Array<BluePrint *> *) Globals::status->getBluePrints());
+            this->itemList = Item::mixItems(Globals::status->getShip()->getCargo(),
+                                            Globals::status->getStation()->getItems());
+            this->dialogActive = completed;
+            if (completed) {
+                // Auto-mount the freshly produced item if the ship already carries one.
+                Array<ListItem *> *items = this->hangarList->getCurrentTabItems();
+                for (unsigned int i = 0; i < items->size(); i++) {
+                    ListItem *listItem = (*items)[i];
+                    if (listItem != 0 && listItem->isItem() &&
+                        listItem->item->getIndex() == this->bluePrint->getIndex() &&
+                        Globals::status->getShip()->hasEquipment(listItem->item->getIndex(), 1)) {
+                        this->autoEquipIndex = i;
+                        this->autoEquipPending = 1;
+                        this->autoEquipSecondaryWeapons(i);
+                        this->autoEquipPending = 0;
                         break;
                     }
                 }
             }
+            return;
         }
-        return;
-    }
-
-    self->bluePrintBuyCount = 0;
-    if (self->bluePrint->isEmpty() != 0 && ((Item *) (item->item))->getAmount() > 0) {
-        int idx = self->bluePrint->getIndex();
-        bool flag;
-        AbyssEngine::String *text;
-        if (idx == 0xd2 || self->bluePrint->getIndex() == 0xdf) {
-            if (((SolarSystem *) (long) Globals::status->getSystem())->getRoutes() != 0) {
-                text = Globals::gameText->getText(*g_hw_sellTextId2);
-                flag = true;
+        this->bluePrintBuyCount = 0;
+        if (this->bluePrint->isEmpty() && this->selectedItem->item->getAmount() >= 1) {
+            if ((this->bluePrint->getIndex() == 210 || this->bluePrint->getIndex() == 223) &&
+                ((SolarSystem *) Globals::status->getSystem())->getRoutes() == 0) {
+                this->routeWarningPending = 1;
+                this->dialog->set(*Globals::gameText->getText(528), false);
+                this->dialogActive = 1;
             } else {
-                self->routeWarningPending = 1;
-                text = Globals::gameText->getText(*g_hw_routesTextId);
-                flag = false;
+                this->dialog->set(*Globals::gameText->getText(212), true);
+                this->dialogActive = 1;
             }
-        } else {
-            text = Globals::gameText->getText(*g_hw_sellTextId2);
-            flag = true;
         }
-        self->dialog->set(*(String *) text, flag);
-        self->dialogActive = 1;
+        this->savedBlueprintAmount = item->item->getBlueprintAmount();
+        this->savedAmount = item->item->getAmount();
+        this->savedCredits = Globals::status->getCredits();
+        this->savedLoad = this->currentLoad;
+        this->bluePrintItem = this->selectedItem;
     }
-
-    self->savedBlueprintAmount = ((Item *) (item->item))->getBlueprintAmount();
-    self->savedAmount = ((Item *) (item->item))->getAmount();
-    self->savedCredits = Globals::status->getCredits();
-    self->savedLoad = self->currentLoad;
-    self->bluePrintItem = self->selectedItem;
+    this->refreshCurrentContentHeight();
 }
 
 bool HangarWindow::selectItem(ListItem *item) {
