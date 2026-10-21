@@ -281,21 +281,21 @@ Array<Wanted *> *FileRead::loadWanted() {
 
         String name;
         uint32_t index = 0;
+        int32_t id;
+        int32_t a;
+        int32_t b;
+        int32_t c;
+        int32_t d;
+        int32_t e;
+        int32_t f;
+        int32_t g;
+        int32_t h;
+        int32_t i;
+        int32_t j;
+        int32_t k;
+        int32_t l;
+        int32_t imageCount;
         while (index < wanted->size()) {
-            int32_t id;
-            int32_t a;
-            int32_t b;
-            int32_t c;
-            int32_t d;
-            int32_t e;
-            int32_t f;
-            int32_t g;
-            int32_t h;
-            int32_t i;
-            int32_t j;
-            int32_t k;
-            int32_t l;
-            int32_t imageCount;
 
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
@@ -319,8 +319,8 @@ Array<Wanted *> *FileRead::loadWanted() {
             uint32_t oldIndex = index++;
             if (imageCount > 0) {
                 int32_t *parts = new int32_t[5];
+                int8_t part;
                 for (uint32_t n = 0; n < 5; n++) {
-                    int8_t part;
                     AEFile::Read(part, handle);
                     parts[n] = part;
                 }
@@ -342,16 +342,16 @@ Array<NewsItem *> *FileRead::loadTicker() {
         items = new Array<NewsItem *>();
         ArraySetLength<NewsItem *>(0x3b, *items);
 
+        int32_t active;
+        int32_t flags[4];
+        int32_t a;
+        int32_t b;
         for (uint32_t i = 0; i < 0x3b; i++) {
-            int32_t active;
-            int32_t flags[4];
-            int32_t a;
-            int32_t b;
             AEFile::ReadSwitched(active, handle);
-            AEFile::ReadSwitched(flags[0], handle);
-            AEFile::ReadSwitched(flags[1], handle);
-            AEFile::ReadSwitched(flags[2], handle);
-            AEFile::ReadSwitched(flags[3], handle);
+            AEFile::Read(flags[0], handle);
+            AEFile::Read(flags[1], handle);
+            AEFile::Read(flags[2], handle);
+            AEFile::Read(flags[3], handle);
             AEFile::ReadSwitched(a, handle);
             AEFile::ReadSwitched(b, handle);
 
@@ -544,17 +544,17 @@ Array<Agent *> *FileRead::loadAgents() {
 
         String name;
         uint32_t index = 0;
+        int32_t id;
+        int32_t a;
+        int32_t b;
+        int32_t c;
+        int32_t d;
+        int32_t e;
+        int32_t g;
+        int32_t flag;
+        int32_t imageCount;
+        int32_t f = -1;
         while (index < agents->size()) {
-            int32_t id;
-            int32_t a;
-            int32_t b;
-            int32_t c;
-            int32_t flag;
-            int32_t d;
-            int32_t e;
-            int32_t f;
-            int32_t g;
-            int32_t imageCount;
 
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
@@ -563,19 +563,20 @@ Array<Agent *> *FileRead::loadAgents() {
             AEFile::ReadSwitched(b, handle);
             AEFile::ReadSwitched(c, handle);
             AEFile::ReadSwitched(flag, handle);
+            bool male = flag == 1;
             AEFile::ReadSwitched(d, handle);
             AEFile::ReadSwitched(e, handle);
             AEFile::ReadSwitched(f, handle);
             AEFile::ReadSwitched(g, handle);
 
-            agents->data()[index] = new Agent(id, name, a, b, c, flag == 1, d, e, f, g);
+            agents->data()[index] = new Agent(id, name, a, b, c, male, d, e, f, g);
 
             AEFile::ReadSwitched(imageCount, handle);
             uint32_t oldIndex = index++;
             if (imageCount > 0) {
                 int32_t *parts = new int32_t[5];
+                int8_t part;
                 for (uint32_t i = 0; i < 5; i++) {
-                    int8_t part;
                     AEFile::Read(part, handle);
                     parts[i] = part;
                 }
@@ -798,10 +799,10 @@ Array<Item *> *FileRead::loadItemsBinary() {
         items = new Array<Item *>();
         ArraySetLength<Item *>(0xe9, *items);
 
+        uint32_t count0 = 0;
+        uint32_t count1 = 0;
+        uint32_t count2 = 0;
         for (uint32_t i = 0; i < 0xe9; i++) {
-            uint32_t count0 = 0;
-            uint32_t count1 = 0;
-            uint32_t count2 = 0;
             Array<int> *a0;
             Array<int> *a1;
             Array<int> *a2;
