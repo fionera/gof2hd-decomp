@@ -51,7 +51,6 @@ static const int kWeaponSounds[233] = {
     2265, -1, -1, -1, -1, 2254, 2267, 2268, 2252, -1, 2269, -1,
     2275, 2276, 2278, 2277, 2280,
 };
-static unsigned int g_shoot_mask = 0x10000003;
 static float **g_update_speed = nullptr;
 
 struct SlaveLink {
@@ -939,7 +938,6 @@ void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
     Globals::sound->play(soundId, options->soundEnabledFlag ? pos : nullptr, nullptr, volume);
 }
 
-static const float k_shootAt_inc = 0.0f;
 
 static const float k_damage_full = 0.0f;
 static const float k_damage_hc = 0.0f;
@@ -1213,7 +1211,6 @@ void Player::setMaxArmorHP(int value) {
     this->updateDamageRate();
 }
 
-static const float k_shoot_inc = 0.0f;
 
 static void (**g_update_transform)(float *, float *, int) = nullptr;
 
@@ -1327,33 +1324,26 @@ bool Player::shoot(int slot, long long target, bool flag) {
     return true;
 }
 
-void Player::shoot(int a, long long pos, bool flag, Matrix mat) {
-    Player * self = this;
-
-    Array<Array<Gun *> *> *guns = self->guns;
-    if (guns != 0 && self->shootingEnabled != 0 && a >= 0 &&
-        (unsigned int) a < guns->size()) {
-        Array<Gun *> *arr = guns->data()[a];
-        if (arr != 0) {
-            for (unsigned int i = 0; i < arr->size(); i++) {
-                Gun *g = self->guns->data()[a]->data()[i];
-                if (g->fireDelay < g->timer) {
-                    ((Gun *) (g))->shootAt(mat, (int) pos, self, flag);
-                    self->flShake = self->flShake + k_shootAt_inc;
-                    Gun *g2 = self->guns->data()[a]->data()[i];
-                    g2->timer = 0;
-                    if (self->playShootSoundFlag != 0 && g2->field_0x89 != 0) {
-                        Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
-                            *reinterpret_cast<const Matrix *>(self->transform));
-                        Gun *g3 = self->guns->data()[a]->data()[i];
-                        self->playShootSound(g3->itemIndex, g3->weaponType,
-                                             &tmp,
-                                             g3->field_0xb0);
-                    }
+bool Player::shoot(int slot, long long target, bool flag, Matrix mat) {
+    Matrix transform = mat;
+    if (this->guns != nullptr && this->shootingEnabled != 0 && slot >= 0
+        && (unsigned int) slot < this->guns->size() && (*this->guns)[slot] != nullptr) {
+        for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
+            Gun *gun = (*(*this->guns)[slot])[i];
+            if (gun->timer > gun->fireDelay && gun->shootAt(transform, (int) target, this, flag)) {
+                this->flShake += 0.008f;
+                Gun *fired = (*(*this->guns)[slot])[i];
+                fired->timer = 0;
+                if (this->playShootSoundFlag && fired->field_0x89) {
+                    Vector position = AbyssEngine::AEMath::MatrixGetPosition(transform);
+                    Gun *sounding = (*(*this->guns)[slot])[i];
+                    this->playShootSound(sounding->itemIndex, sounding->weaponType, &position,
+                                         sounding->field_0xb0);
                 }
             }
         }
     }
+    return true;
 }
 
 void Player::stopShooting(int slot) {

@@ -234,7 +234,7 @@ public:
 
     bool shoot(int a, long long pos, bool flag);
 
-    void shoot(int a, long long pos, bool flag, Matrix mat);
+    bool shoot(int a, long long pos, bool flag, Matrix mat);
 
     void turnEnemy();
 
