@@ -4088,8 +4088,8 @@ void MGame::OnRender2D() {
         this->radio->draw(this->levelScript->m_nScriptTime, this->player, this->levelScript);
         if (this->cutsceneActive)
             this->dialogueWindow->draw();
-        this->field_0x110 = 0;
         this->_b5c = 0;
+        this->field_0x110 = 0;
     } else if (this->jumpActive || this->jumpDriveActive) {
         if (Globals::status->getCurrentCampaignMission() >= 8 && !this->levelScript->field_0x10 &&
             !this->jumpDriveActive && !this->player->isDockingToPlanet() && !this->levelScript->getEvent())
@@ -4098,8 +4098,8 @@ void MGame::OnRender2D() {
             this->radio->draw(this->levelScript->m_nScriptTime, this->player, this->levelScript);
         if (this->cutsceneActive)
             this->dialogueWindow->draw();
-        this->field_0x110 = 0;
         this->_b5c = 0;
+        this->field_0x110 = 0;
     } else if (this->gameOverActive) {
         if (this->elapsedTime >= 3001) {
             this->paintCanvas->SetColor(this->loadingTime < 4000
