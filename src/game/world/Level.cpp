@@ -4261,7 +4261,7 @@ void Level::updateOrbit(int dt) {
                     if ((int) i < friendCount + field_164) {
                         ship->setPosition(0.0f, 0.0f, 0.0f);
                     } else {
-                        ship->setPosition(10000.0f, 0.0f, -70000.0f);
+                        ((PlayerFighter *) ship)->setPosition(10000.0f, 0.0f, -70000.0f);
                     }
                     break;
                 }
