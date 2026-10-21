@@ -948,16 +948,14 @@ void StarMap::draw() {
             Array<int> *routes = (Array<int> *) (*this->systems)[i]->getRoutes();
             if (routes == 0)
                 continue;
-            Vector from = *(*this->systemPositions)[i];
-            this->scratchVector = from;
+            this->scratchVector = Vector(*(*this->systemPositions)[i]);
             for (uint32_t j = 0; j < routes->size(); j++) {
                 uint32_t to = (*routes)[j];
                 if (visible->size() <= to || !(*visible)[to] || to >= this->systemPositions->size())
                     continue;
                 if (this->autoMode != 0 && this->pulseSystem == (int) to && this->autoTimer < 4000)
                     continue;
-                Vector dest = *(*this->systemPositions)[to];
-                this->scratchVector2 = dest;
+                this->scratchVector2 = Vector(*(*this->systemPositions)[to]);
                 if (this->scratchVector.z < 0.0f && this->scratchVector2.z < 0.0f)
                     continue;
                 Globals::Canvas->DrawLine((int) this->scratchVector.x, (int) this->scratchVector.y,
@@ -967,15 +965,13 @@ void StarMap::draw() {
 
         // Routes out of the current system pulse.
         Globals::Canvas->SetColor(255, 255, 255, (uint8_t) this->alpha);
-        Vector here = *(*this->systemPositions)[((SolarSystem *) Globals::status->getSystem())->getIndex()];
-        this->scratchVector2 = here;
+        this->scratchVector2 = Vector(*(*this->systemPositions)[((SolarSystem *) Globals::status->getSystem())->getIndex()]);
         Array<int> *routes = (Array<int> *) ((SolarSystem *) Globals::status->getSystem())->getRoutes();
         for (uint32_t i = 0; i < this->systems->size(); i++) {
             Array<bool> *visible = Globals::status->getSystemVisibilities();
             if (visible == 0 || i >= this->systemPositions->size() || visible->size() <= i || !(*visible)[i])
                 continue;
-            Vector there = *(*this->systemPositions)[i];
-            this->scratchVector = there;
+            this->scratchVector = Vector(*(*this->systemPositions)[i]);
             bool hidden = this->scratchVector.z < 0.0f && this->scratchVector2.z < 0.0f;
             if (routes != 0 && !hidden && this->jumpMapModeB == 0) {
                 for (uint32_t j = 0; j < routes->size(); j++) {
@@ -1013,18 +1009,14 @@ void StarMap::draw() {
                 Globals::Canvas->SetColor(0xffff00ffu);
             }
             for (int i = 0; i < this->field_0xe8; i++) {
-                Vector a1 = *(*this->systemPositions)[(*this->systemPath)[i]];
-                this->scratchVector2 = a1;
-                Vector b1 = *(*this->systemPositions)[(*this->systemPath)[i + 1]];
-                this->scratchVector = b1;
+                this->scratchVector2 = Vector(*(*this->systemPositions)[(*this->systemPath)[i]]);
+                this->scratchVector = Vector(*(*this->systemPositions)[(*this->systemPath)[i + 1]]);
                 Globals::Canvas->DrawLine((int) this->scratchVector2.x, (int) this->scratchVector2.y,
                                           (int) this->scratchVector.x, (int) this->scratchVector.y);
             }
             if ((uint32_t) this->field_0xe8 < this->systemPath->size() - 1) {
-                Vector a2 = *(*this->systemPositions)[(*this->systemPath)[this->field_0xe8]];
-                this->scratchVector2 = a2;
-                Vector b2 = *(*this->systemPositions)[(*this->systemPath)[this->field_0xe8 + 1]];
-                this->scratchVector = b2;
+                this->scratchVector2 = Vector(*(*this->systemPositions)[(*this->systemPath)[this->field_0xe8]]);
+                this->scratchVector = Vector(*(*this->systemPositions)[(*this->systemPath)[this->field_0xe8 + 1]]);
                 Globals::Canvas->DrawLine(
                         (int) this->scratchVector2.x, (int) this->scratchVector2.y,
                         (int) (this->scratchVector.x + pulse * (this->scratchVector2.x - this->scratchVector.x)),
@@ -1125,7 +1117,7 @@ void StarMap::update(int dt) {
         for (unsigned int i = 0; i < this->systemPositions->size(); i++) {
             int onScreen = Globals::Canvas->GetScreenPosition((*this->systemGeoms)[i]->getPosition(),
                                                                *(*this->systemPositions)[i]);
-            (*this->systemPositions)[i]->z = onScreen == 0 ? -1.0f : 1.0f;
+            (*this->systemPositions)[i]->z = onScreen != 0 ? 1.0f : -1.0f;
         }
     }
     if (this->mode == 3 || this->transitionIn || this->transitionOut) {
@@ -1133,7 +1125,7 @@ void StarMap::update(int dt) {
             this->scratchVector2 = MatrixGetPosition(this->starSystemRoot->getMatrix() *
                                                      (*this->stationGeoms)[i + 1]->getMatrix());
             int onScreen = Globals::Canvas->GetScreenPosition(this->scratchVector2, *(*this->stationPositions)[i]);
-            (*this->stationPositions)[i]->z = onScreen == 0 ? -1.0f : 1.0f;
+            (*this->stationPositions)[i]->z = onScreen != 0 ? 1.0f : -1.0f;
         }
     }
 
@@ -1148,9 +1140,9 @@ void StarMap::update(int dt) {
         this->markerGeom->setScaling(scale, scale, scale);
         if (this->starSystemRoot != 0 && this->centeredStation >= 0) {
             Vector system = (*this->systemGeoms)[Globals::status->field_7c]->getPosition();
-            Vector station = MatrixGetPosition(this->starSystemRoot->getMatrix() *
-                                               (*this->stationGeoms)[this->centeredStation]->getMatrix());
-            this->markerGeom->setPosition(system + t * (station - system));
+            this->markerGeom->setPosition(system + t *
+                (MatrixGetPosition(this->starSystemRoot->getMatrix() *
+                    (*this->stationGeoms)[this->centeredStation]->getMatrix()) - system));
         }
         this->scratchVector = MatrixGetPosition(
             *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
@@ -1166,8 +1158,7 @@ void StarMap::update(int dt) {
         this->easeX->Increase(step);
         this->easeY->Increase(step);
         this->easeZ->Increase(step);
-        Vector position = {this->easeX->GetValue(), this->easeY->GetValue(), this->easeZ->GetValue()};
-        this->scratchVector = position;
+        this->scratchVector = Vector{this->easeX->GetValue(), this->easeY->GetValue(), this->easeZ->GetValue()};
         Matrix camera = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
         MatrixSetTranslation(camera, this->scratchVector.x, this->scratchVector.y, this->scratchVector.z);
         Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), camera);
@@ -1248,9 +1239,13 @@ void StarMap::update(int dt) {
                 float centerX = (float) (Globals::w >> 1);
                 float vx = 0.0f;
                 float vy = 0.0f;
-                if (this->scratchVector.x != centerX)
+                if (this->scratchVector.x < centerX)
                     vx = (this->scratchVector.x - centerX) / -30.0f;
-                if (this->scratchVector.y != centerY)
+                else if (this->scratchVector.x > centerX)
+                    vx = (this->scratchVector.x - centerX) / -30.0f;
+                if (this->scratchVector.y > centerY)
+                    vy = (this->scratchVector.y - centerY) / -30.0f;
+                else if (this->scratchVector.y < centerY)
                     vy = (this->scratchVector.y - centerY) / -30.0f;
                 if (STARMAP_ABS((int) vx) > STARMAP_ABS((int) (this->scratchVector.x - centerX)))
                     vx = vx * 0.5f;
@@ -1272,7 +1267,7 @@ void StarMap::update(int dt) {
             int target = 0x8000 - this->stationAngles[this->selectedStation];
             int pitch = (int) this->pitch;
             int yaw = (int) this->yaw;
-            int pitchDiff = STARMAP_ABS(-3096 - pitch);
+            int pitchDiff = -3096 - pitch;
             int yawDiff = STARMAP_ABS(yaw - target);
             if (target > yaw)
                 this->yaw += (float) (target - yaw) * 0.25f;
@@ -1501,9 +1496,12 @@ bool StarMap::OnTouchEnd(int x, int y) {
             return false;
         }
         this->choiceVisible = 0;
-        if (this->suppressNextClose != 0 ||
-            (this->mode == 3 && (*this->stations)[this->selectedStation]->getIndex() ==
-                                Globals::status->getStation()->getIndex())) {
+        if (this->suppressNextClose != 0) {
+            this->suppressNextClose = 0;
+            return false;
+        }
+        if (this->mode == 3 && (*this->stations)[this->selectedStation]->getIndex() ==
+                                  Globals::status->getStation()->getIndex()) {
             this->suppressNextClose = 0;
             return false;
         }
@@ -1528,8 +1526,8 @@ bool StarMap::OnTouchEnd(int x, int y) {
                 this->depart(false);
                 return false;
             }
-            Level::doInstantJump = 0;
             Level::programmedStation = (*this->stations)[this->selectedStation];
+            Level::doInstantJump = 0;
             this->exitRequested = 1;
             Globals::Canvas->CameraSetCurrent(this->prevCamera);
             return true;
@@ -1649,38 +1647,40 @@ bool StarMap::OnTouchEnd(int x, int y) {
     (Globals::status->getCurrentCampaignMission() == (n) &&                                                \
      (*this->stations)[this->selectedStation]->getIndex() ==                                               \
              ((Mission *) Globals::status->getCampaignMission())->getTargetStation())
-                        int refusal = -1;
                         if (STARMAP_AT_CAMPAIGN_TARGET(24) &&
                             (!Globals::status->getShip()->getFirstEquipmentOfSort(13) ||
                              !Globals::status->getShip()->getFirstEquipmentOfSort(17))) {
-                            refusal = 532;
+                            this->choiceWindow->set(*Globals::gameText->getText(532));
+                            this->suppressNextClose = 1;
                         } else if (STARMAP_AT_CAMPAIGN_TARGET(135) &&
                                    !Globals::status->getShip()->getFirstEquipmentOfSort(19)) {
-                            refusal = 3213;
+                            this->choiceWindow->set(*Globals::gameText->getText(3213));
+                            this->suppressNextClose = 1;
                         } else if (STARMAP_AT_CAMPAIGN_TARGET(91) &&
                                    Globals::status->getShip()->getMaxPassengers() <= 9) {
-                            refusal = 3214;
+                            this->choiceWindow->set(*Globals::gameText->getText(3214));
+                            this->suppressNextClose = 1;
                         } else if (STARMAP_AT_CAMPAIGN_TARGET(94) &&
                                    Globals::status->getShip()->getMaxPassengers() == 0) {
-                            refusal = 3214;
+                            this->choiceWindow->set(*Globals::gameText->getText(3214));
+                            this->suppressNextClose = 1;
                         } else if (STARMAP_AT_CAMPAIGN_TARGET(105) &&
                                    !Globals::status->getShip()->hasEquipment(206, 1)) {
-                            refusal = 3217;
+                            this->choiceWindow->set(*Globals::gameText->getText(3217));
+                            this->suppressNextClose = 1;
                         } else if (STARMAP_AT_CAMPAIGN_TARGET(139) && Globals::status->getShip()->getIndex() != 42 &&
                                    (StarMap_shipRaces[Globals::status->getShip()->getIndex()] != 1 ||
                                     !Globals::status->getShip()->hasEquipment(190, 1))) {
-                            refusal = 3215;
+                            this->choiceWindow->set(*Globals::gameText->getText(3215));
+                            this->suppressNextClose = 1;
                         } else if (STARMAP_AT_CAMPAIGN_TARGET(142) &&
                                    (!Globals::status->getShip()->getFirstEquipmentOfSort(33) ||
                                     !Globals::status->getShip()->hasEquipment(197, 15) ||
                                     !Globals::status->getShip()->getFirstEquipmentOfSort(35))) {
-                            refusal = 3216;
+                            this->choiceWindow->set(*Globals::gameText->getText(3216));
+                            this->suppressNextClose = 1;
                         } else if (STARMAP_AT_CAMPAIGN_TARGET(142) && Globals::status->getShip()->getFreeSpace() == 0) {
-                            refusal = 3218;
-                        }
-#undef STARMAP_AT_CAMPAIGN_TARGET
-                        if (refusal >= 0) {
-                            this->choiceWindow->set(*Globals::gameText->getText(refusal));
+                            this->choiceWindow->set(*Globals::gameText->getText(3218));
                             this->suppressNextClose = 1;
                         } else if (this->jumpMapModeB != 0 && this->cargoAmount < this->jumpCost &&
                                    !Globals::status->getShip()->hasVolatileGoods()) {
@@ -1699,6 +1699,7 @@ bool StarMap::OnTouchEnd(int x, int y) {
                                                             String("\n") + *Globals::gameText->getText(421),
                                                     true);
                         }
+#undef STARMAP_AT_CAMPAIGN_TARGET
                         this->choiceVisible = 1;
                     }
                 }
