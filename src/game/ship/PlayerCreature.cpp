@@ -73,8 +73,8 @@ void PlayerCreature::hook(int value) {
 
 void PlayerCreature::unhook() {
     this->caught = false;
-    this->rageTimer = 0;
     this->raging = false;
+    this->rageTimer = 0;
     this->hooked = false;
     this->endurance = this->maxEndurance;
 }

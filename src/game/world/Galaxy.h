@@ -30,7 +30,7 @@ public:
 
     int *getAsteroidProbabilities(Station *station);
 
-    int getStation(int index);
+    Station *getStation(int index);
 
     float distance(SolarSystem *a, SolarSystem *b);
 
