@@ -81,7 +81,7 @@ public:
 
     GameRecord *recordStoreReadPreview(int slot);
 
-    void recordStoreWrite(int slot);
+    int recordStoreWrite(int slot);
 
     int recordStoreWritePreview(GameRecord *rec, int slot);
 

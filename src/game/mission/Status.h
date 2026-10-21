@@ -125,8 +125,8 @@ public:
     // former union: this sub-struct overlaid with int64 field_10c_q.
     // wide view: reinterpret_cast<int64_t &>(field_10c)
     int32_t field_10c;
-    uint8_t field_110;
-    uint8_t field_0x111;
+    bool field_110;
+    bool field_0x111;
     uint8_t _pad_0x112[2];
 
     int32_t field_114;

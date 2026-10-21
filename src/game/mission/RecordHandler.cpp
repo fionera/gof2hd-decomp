@@ -27,6 +27,11 @@
 #include <cstddef>
 
 namespace {
+    // View of Globals::hints as raw boolean flags.
+    struct HintFlags {
+        bool flag[59];
+    };
+
     // View of Globals::options as the options file serializes it (floats = volumes/sensitivities,
     // bools = toggles).
     struct OptionsBuffer {
@@ -46,7 +51,8 @@ namespace {
         float volumeMusic;
         float f_0x24;
         float f_0x28;
-        uint8_t pad_0x2c[6];
+        float difficulty;
+        uint8_t pad_0x30[2];
         bool byte_0x32;
         bool byte_0x33;
         bool byte_0x34;
@@ -1025,7 +1031,6 @@ void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method sign
 }
 
 void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
-    (void) this;
     AEFile::Write(w->isActive(), fd);
     AEFile::Write(w->isTerminated(), fd);
     AEFile::Write((int32_t)w->getCurrentLocation(), fd);
@@ -1078,515 +1083,456 @@ int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
     return 1;
 }
 
-#pragma pack(push, 1)
-struct OptFlagsBlob {
-    uint8_t flag[0x3b];
-};
-
-struct UiFlagsBlob {
-    uint8_t flag[0x38];
-};
-#pragma pack(pop)
-
-static OptFlagsBlob *g_RSW_optFlags = nullptr;
-
-static UiFlagsBlob *g_RSW_uiFlags = nullptr;
-
-static int g_RSW_modVersion = 0;
-
-void RecordHandler::recordStoreWrite(int slot) {
-    String num, path;
-    num.Set((long long) (slot));
-    path = this->recordDir + num;
-
+int RecordHandler::recordStoreWrite(int slot) {
+    String path = this->recordDir + String(slot);
     if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
     }
     unsigned int fd;
     AEFile::OpenWrite(path, &fd);
 
-    uint8_t *visited = Globals::galaxy->getVisited();
-    AEFile::Write((int32_t)0x87, fd);
-    for (unsigned i = 0; i < 0x87; i++) {
-        AEFile::Write((bool)(visited[i] != 0), fd);
+    bool *visited = Globals::galaxy->getVisited();
+    AEFile::Write((int32_t) 135, fd);
+    for (unsigned i = 0; i < 135; i++) {
+        AEFile::Write(visited[i], fd);
     }
 
-    AEFile::Write((int32_t)Globals::status->getCredits(), fd);
-    AEFile::Write((int32_t)Globals::status->getRating(), fd);
+    AEFile::Write((int32_t) Globals::status->getCredits(), fd);
+    AEFile::Write((int32_t) Globals::status->getRating(), fd);
     AEFile::Write(Globals::status->getPlayingTime(), fd);
-    AEFile::Write((int32_t)Globals::status->getKills(), fd);
-    AEFile::Write((int32_t)Globals::status->getMissionCount(), fd);
-    AEFile::Write((int32_t)Globals::status->getLevel(), fd);
-    AEFile::Write((int32_t)Globals::status->getLastXP(), fd);
-    AEFile::Write((int32_t)Globals::status->getGoodsProduced(), fd);
-    AEFile::Write((int32_t)Globals::status->getStationsVisited(), fd);
-    AEFile::Write((int32_t)Globals::status->getCurrentCampaignMission(), fd);
+    AEFile::Write((int32_t) Globals::status->getKills(), fd);
+    AEFile::Write((int32_t) Globals::status->getMissionCount(), fd);
+    AEFile::Write((int32_t) Globals::status->getLevel(), fd);
+    AEFile::Write((int32_t) Globals::status->getLastXP(), fd);
+    AEFile::Write((int32_t) Globals::status->getGoodsProduced(), fd);
+    AEFile::Write((int32_t) Globals::status->getStationsVisited(), fd);
+    AEFile::Write((int32_t) Globals::status->getCurrentCampaignMission(), fd);
     this->writeMission(Globals::status->getFreelanceMission(), fd);
     this->writeMission(reinterpret_cast<Mission *>(Globals::status->getCampaignMission()), fd);
-    AEFile::Write((int32_t)Globals::status->getJumpgateUsed(), fd);
-    AEFile::Write((int32_t)Globals::status->getCapturedCrates(), fd);
-    AEFile::Write((int32_t)Globals::status->getBoughtEquipment(), fd);
-    AEFile::Write((int32_t)Globals::status->getPirateKills(), fd);
-    AEFile::Write((int32_t)Globals::status->field_80, fd);
+    AEFile::Write((int32_t) Globals::status->getJumpgateUsed(), fd);
+    AEFile::Write((int32_t) Globals::status->getCapturedCrates(), fd);
+    AEFile::Write((int32_t) Globals::status->getBoughtEquipment(), fd);
+    AEFile::Write((int32_t) Globals::status->getPirateKills(), fd);
+    AEFile::Write((int32_t) Globals::status->field_80, fd);
+    AEFile::Write((int32_t) Globals::status->field_7c, fd);
+    AEFile::Write((int32_t) Globals::status->field_84, fd);
+    AEFile::Write((int32_t) Globals::status->field_88, fd);
+    AEFile::Write((int32_t) Globals::status->field_94->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_94->size(); i++) {
+        AEFile::Write((*Globals::status->field_94)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_98->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_98->size(); i++) {
+        AEFile::Write((*Globals::status->field_98)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_9c, fd);
+    AEFile::Write((int32_t) Globals::status->field_a0, fd);
+    AEFile::Write((int32_t) Globals::status->field_a4, fd);
+    AEFile::Write((int32_t) Globals::status->field_a8, fd);
+    AEFile::Write((int32_t) Globals::status->field_ac->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_ac->size(); i++) {
+        AEFile::Write((*Globals::status->field_ac)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_b0, fd);
+    AEFile::Write((int32_t) Globals::status->field_b4->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_b4->size(); i++) {
+        AEFile::Write((*Globals::status->field_b4)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_b8, fd);
+    AEFile::Write(reinterpret_cast<int64_t &>(Globals::status->field_c0), fd);
+    AEFile::Write((int32_t) Globals::status->field_c8, fd);
+    AEFile::Write((int32_t) Globals::status->field_cc, fd);
+    AEFile::Write((int32_t) Globals::status->field_d0, fd);
+    AEFile::Write((int32_t) Globals::status->field_d4, fd);
+    AEFile::Write((int32_t) Globals::status->field_d8, fd);
+    AEFile::Write((int32_t) Globals::status->field_dc, fd);
+    AEFile::Write((int32_t) Globals::status->field_e0, fd);
+    AEFile::Write((int32_t) Globals::status->field_e4, fd);
+    AEFile::Write((int32_t) Globals::status->field_e8, fd);
+    AEFile::Write((int32_t) Globals::status->field_ec, fd);
 
-    {
-        Status *status = Globals::status;
-        OptFlagsBlob *flags = reinterpret_cast<OptFlagsBlob *>(g_RSW_optFlags);
-        UiFlagsBlob *ui = reinterpret_cast<UiFlagsBlob *>(g_RSW_uiFlags);
-
-        AEFile::Write(status->field_7c, fd);
-        AEFile::Write((int32_t)status->field_84, fd);
-        AEFile::Write((int32_t)(intptr_t)status->field_90, fd);
-
-        {
-            Array<bool> *arr = status->field_94;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<bool> *arr = status->field_98;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write((int32_t)status->field_9c, fd);
-        AEFile::Write((int32_t)status->field_a0, fd);
-        AEFile::Write((int32_t)status->field_a4, fd);
-        AEFile::Write((int32_t)status->field_a8, fd);
-        {
-            Array<bool> *arr = status->field_ac;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write((int32_t)status->field_b0, fd);
-        {
-            Array<bool> *arr = status->field_b4;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write((int32_t)status->field_b8, fd);
-        AEFile::Write(reinterpret_cast<int64_t &>(status->field_c8), fd);
-
-        AEFile::Write(status->field_c8, fd);
-        AEFile::Write((int32_t)status->field_cc, fd);
-        AEFile::Write((int32_t)status->field_d0, fd);
-        AEFile::Write((int32_t)status->field_d4, fd);
-        AEFile::Write((int32_t)status->field_d8, fd);
-        AEFile::Write((int32_t)status->field_dc, fd);
-        AEFile::Write((int32_t)status->field_e0, fd);
-        AEFile::Write((int32_t)status->field_e4, fd);
-        AEFile::Write((int32_t)status->field_e8, fd);
-        AEFile::Write((int32_t)status->field_ec, fd);
-
-        int *medals = Globals::achievements->getMedals();
-        AEFile::Write((int32_t)0x2d, fd);
-        for (unsigned i = 0; i < 0x2d; i++) {
-            AEFile::Write((int32_t)medals[i], fd);
-        }
-
-        Ship *ship = status->getShip();
-        AEFile::Write((int32_t)((Ship *) ship)->getIndex(), fd);
-        AEFile::Write((int32_t)((Ship *) ship)->getRace(), fd);
-        {
-            Array<Item *> *eq = ((Ship *) ship)->getEquipment();
-            if (eq == 0) {
-                AEFile::Write((int32_t)0, fd);
-            } else {
-                AEFile::Write((int32_t)eq->size(), fd);
-                for (unsigned i = 0; i < eq->size(); i++) {
-                    Item *it = (*eq)[i];
-                    if (it == 0) {
-                        AEFile::Write((int32_t)-1, fd);
-                        continue;
-                    }
-                    AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                    AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                }
-            }
-        }
-        {
-            Array<Item *> *cg = ((Ship *) ship)->getCargo();
-            if (cg == 0) {
-                AEFile::Write((int32_t)0, fd);
-            } else {
-                AEFile::Write((int32_t)cg->size(), fd);
-                for (unsigned i = 0; i < cg->size(); i++) {
-                    Item *it = (*cg)[i];
-                    AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getSinglePrice(), fd);
-                    AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                }
-            }
-        }
-
-        Array<Station *> *stack = status->getStationStack();
-        AEFile::Write((int32_t)3, fd);
-        for (unsigned i = 0; i < stack->size() + 1; i++) {
-            Station *cur = (i == stack->size())
-                               ? (Station *) status->getStation()
-                               : (*stack)[i];
-            if (cur == 0) {
-                AEFile::Write((int32_t)-1, fd);
-                continue;
-            }
-            AEFile::Write((int32_t)((Station *) cur)->getIndex(), fd);
-
-            Array<Item *> *items = (Array<Item *> *) ((Station *) cur)->getItems();
-            if (items == 0) { AEFile::Write((int32_t)0, fd); } else {
-                AEFile::Write((int32_t)items->size(), fd);
-                for (unsigned j = 0; j < items->size(); j++) {
-                    Item *it = (*items)[j];
-                    AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getSinglePrice(), fd);
-                    AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                }
-            }
-            Array<Ship *> *ships = (Array<Ship *> *) ((Station *) cur)->getShips();
-            if (ships == 0) { AEFile::Write((int32_t)0, fd); } else {
-                AEFile::Write((int32_t)ships->size(), fd);
-                for (unsigned j = 0; j < ships->size(); j++) {
-                    Ship *s = (*ships)[j];
-                    AEFile::Write((int32_t)((Ship *) s)->getIndex(), fd);
-                    AEFile::Write((int32_t)((Ship *) s)->getRace(), fd);
-                }
-            }
-            Array<Agent *> *agents = (Array<Agent *> *) ((Station *) cur)->getAgents();
-            if (agents == 0) { AEFile::Write((int32_t)0, fd); } else {
-                AEFile::Write((int32_t)agents->size(), fd);
-                for (unsigned j = 0; j < agents->size(); j++) {
-                    this->writeAgent((*agents)[j], fd);
-                }
-            }
-            AEFile::Write((bool)((Station *) cur)->hasAttackedFriends(), fd);
-        }
-
-        int *standings = ((Standing *) (status->getStanding()))->getStandings();
-        AEFile::Write((int32_t)2, fd);
-        for (unsigned i = 0; i < 2; i++) {
-            AEFile::Write((int32_t)standings[i], fd);
-        }
-
-        Array<BluePrint *> *bps = status->bluePrints;
-        AEFile::Write((int32_t)bps->size(), fd);
-        for (unsigned i = 0; i < bps->size(); i++) {
-            BluePrint *bp = (*bps)[i];
-            Array<int> *ingredients = bp->ingredientCounters;
-            for (unsigned j = 0; j < ingredients->size(); j++) {
-                AEFile::Write((int32_t)(*ingredients)[j], fd);
-            }
-            AEFile::Write(bp->spentValue, fd);
-            AEFile::Write((bool)(bp->locked != 0), fd);
-            AEFile::Write(bp->productionCount, fd);
-            AEFile::Write(bp->stationIndex, fd);
-            AEFile::Write(bp->stationName, fd, (bool)true);
-        }
-
-        Array<PendingProduct *> *pending = status->pendingProducts;
-        if (pending == 0) { AEFile::Write((int32_t)-1, fd); } else {
-            int count = 0;
-            for (unsigned i = 0; i < pending->size(); i++) {
-                if ((*pending)[i] != 0) count++;
-            }
-            if (count == 0) { AEFile::Write((int32_t)-1, fd); } else {
-                AEFile::Write((int32_t)count, fd);
-                for (unsigned i = 0; i < pending->size(); i++) {
-                    PendingProduct *pp = (*pending)[i];
-                    if (pp == 0) continue;
-
-                    AEFile::Write((int32_t)pp->blueprintIndex, fd);
-                    AEFile::Write((int32_t)pp->quantity, fd);
-                    AEFile::Write((int32_t)pp->stationIndex, fd);
-                    AEFile::Write(pp->stationName, fd, (bool)true);
-                }
-            }
-        }
-
-        Array<String *> *wingmen = status->wingmen;
-
-        if (wingmen == 0) { AEFile::Write((int32_t)-1, fd); } else {
-            AEFile::Write((int32_t)wingmen->size(), fd);
-            for (unsigned i = 0; i < wingmen->size(); i++) {
-                AEFile::Write(*(*wingmen)[i], fd, (bool)true);
-            }
-            AEFile::Write((int32_t)status->fadeValue, fd);
-
-            AEFile::Write((int32_t)status->fadeValue, fd);
-            AEFile::Write((int32_t)5, fd);
-
-            int *wingmenStats = reinterpret_cast<int *>((intptr_t) reinterpret_cast<int32_t &>(status->_byte_0x28));
-            for (unsigned i = 0; i < 5; i++) {
-                AEFile::Write((int32_t)wingmenStats[i], fd);
-            }
-        }
-
-        AEFile::Write(reinterpret_cast<int32_t &>(status->_byte_0x34), fd);
-        {
-            Array<bool> *arr = status->systemVisibilities;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<int> *arr = status->field_0x40;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<int> *arr = status->field_0x3c;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<int> *arr = status->field_0x48;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<int> *arr = status->field_0x44;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<bool> *arr = status->field_4c;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-
-        Array<Agent *> *agents = status->agents;
-        AEFile::Write((int32_t)agents->size(), fd);
-        for (unsigned i = 0; i < agents->size(); i++) {
-            this->writeAgent((*agents)[i], fd);
-        }
-
-        for (int off = 0x8; off <= 0x20; off++) {
-            if (off == 0x21) continue;
-            AEFile::Write((bool)(flags->flag[off] != 0), fd);
-        }
-        AEFile::Write((bool)(flags->flag[0x22] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x21] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x23] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x24] != 0), fd);
-
-        AEFile::Write(reinterpret_cast<int64_t &>(status->field_10c), fd);
-
-        AEFile::Write((bool)(flags->flag[0x25] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x26] != 0), fd);
-
-        Ship *wingShip = reinterpret_cast<Ship *>(status->field_94);
-
-        if (wingShip == 0) { AEFile::Write((int32_t)0, fd); } else {
-            AEFile::Write((int32_t)1, fd);
-            AEFile::Write((int32_t)((Ship *) wingShip)->getIndex(), fd);
-            AEFile::Write((int32_t)((Ship *) wingShip)->getRace(), fd);
-            {
-                Array<Item *> *eq = ((Ship *) wingShip)->getEquipment();
-                if (eq == 0) {
-                    AEFile::Write((int32_t)0, fd);
-                } else {
-                    AEFile::Write((int32_t)eq->size(), fd);
-                    for (unsigned i = 0; i < eq->size(); i++) {
-                        Item *it = (*eq)[i];
-                        if (it == 0) {
-                            AEFile::Write((int32_t)-1, fd);
-                            continue;
-                        }
-                        AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                        AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                        AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                    }
-                }
-            }
-            {
-                Array<Item *> *cg = ((Ship *) wingShip)->getCargo();
-                if (cg == 0) {
-                    AEFile::Write((int32_t)0, fd);
-                } else {
-                    AEFile::Write((int32_t)cg->size(), fd);
-                    for (unsigned i = 0; i < cg->size(); i++) {
-                        Item *it = (*cg)[i];
-                        AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                        AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                        AEFile::Write((int32_t)((Item *) (it))->getSinglePrice(), fd);
-                        AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                    }
-                }
-            }
-        }
-
-        {
-            Array<int> *arr = status->field_90;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write(status->field_10c, fd);
-        AEFile::Write((bool)status->field_110, fd);
-        AEFile::Write(status->field_114, fd);
-        AEFile::Write((bool)status->field_0x111, fd);
-
-        Station *station = (Station *) status->getStation();
-        Array<Item *> *sItems = (Array<Item *> *) ((Station *) station)->getItems();
-        if (sItems == 0) { AEFile::Write((int32_t)0, fd); } else {
-            AEFile::Write((int32_t)sItems->size(), fd);
-            for (unsigned i = 0; i < sItems->size(); i++) {
-                Item *it = (*sItems)[i];
-                AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                AEFile::Write((int32_t)((Item *) (it))->getSinglePrice(), fd);
-                AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-            }
-        }
-        Array<Ship *> *sShips = (Array<Ship *> *) ((Station *) station)->getShips();
-        if (sShips == 0) { AEFile::Write((int32_t)0, fd); } else {
-            AEFile::Write((int32_t)sShips->size(), fd);
-            for (unsigned i = 0; i < sShips->size(); i++) {
-                Ship *s = (*sShips)[i];
-                AEFile::Write((int32_t)((Ship *) s)->getIndex(), fd);
-                AEFile::Write((int32_t)((Ship *) s)->getRace(), fd);
-            }
-        }
-
-        AEFile::Write((bool)(flags->flag[0x27] != 0), fd);
-        AEFile::Write((bool)(ui->flag[0x35] != 0), fd);
-        AEFile::Write((bool)(ui->flag[0x36] != 0), fd);
-        {
-            Array<bool> *arr = status->field_54;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-
-        AEFile::Write((int32_t)g_RSW_modVersion, fd);
-        {
-            Ship *mShip = ship;
-            Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
-            if (mShip == 0 || mods == 0) {
-                AEFile::Write((int32_t)0, fd);
-            } else {
-                AEFile::Write((int32_t)mods->size(), fd);
-                for (unsigned i = 0; i < mods->size(); i++) {
-                    AEFile::Write((int32_t)(*mods)[i], fd);
-                }
-            }
-        }
-        {
-            Ship *mShip = wingShip;
-            Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
-            if (mShip == 0 || mods == 0) {
-                AEFile::Write((int32_t)0, fd);
-            } else {
-                AEFile::Write((int32_t)mods->size(), fd);
-                for (unsigned i = 0; i < mods->size(); i++) {
-                    AEFile::Write((int32_t)(*mods)[i], fd);
-                }
-            }
-        }
-        if (sShips == 0) { AEFile::Write((int32_t)0, fd); } else {
-            AEFile::Write((int32_t)sShips->size(), fd);
-            for (unsigned i = 0; i < sShips->size(); i++) {
-                Ship *mShip = (*sShips)[i];
-                Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
-                if (mShip == 0 || mods == 0) {
-                    AEFile::Write((int32_t)0, fd);
-                } else {
-                    AEFile::Write((int32_t)mods->size(), fd);
-                    for (unsigned k = 0; k < mods->size(); k++) {
-                        AEFile::Write((int32_t)(*mods)[k], fd);
-                    }
-                }
-            }
-        }
-        for (unsigned i = 0; i < stack->size() + 1; i++) {
-            Station *cur = (i == stack->size())
-                               ? (Station *) status->getStation()
-                               : (*stack)[i];
-            if (cur == 0) continue;
-            Array<Ship *> *cShips = (Array<Ship *> *) ((Station *) cur)->getShips();
-            if (cShips == 0) {
-                AEFile::Write((int32_t)0, fd);
-                continue;
-            }
-            AEFile::Write((int32_t)cShips->size(), fd);
-            for (unsigned j = 0; j < cShips->size(); j++) {
-                Ship *mShip = (*cShips)[j];
-                Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
-                if (mShip == 0 || mods == 0) {
-                    AEFile::Write((int32_t)0, fd);
-                } else {
-                    AEFile::Write((int32_t)mods->size(), fd);
-                    for (unsigned k = 0; k < mods->size(); k++) {
-                        AEFile::Write((int32_t)(*mods)[k], fd);
-                    }
-                }
-            }
-        }
-
-        Array<Wanted *> *wanted = status->wanted;
-        AEFile::Write((int32_t)wanted->size(), fd);
-        for (unsigned i = 0; i < wanted->size(); i++) {
-            this->writeWanted((*wanted)[i], fd);
-        }
-        for (unsigned i = 0; i < 4; i++) {
-            AEFile::Write((int32_t)status->getCollectedBounties(i), fd);
-        }
-        AEFile::Write((bool)(ui->flag[0x37] != 0), fd);
-        AEFile::Write((int32_t)status->field_178, fd);
-        AEFile::Write((bool)(flags->flag[0x28] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x29] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2c] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2a] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2b] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2e] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2f] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x30] != 0), fd);
-        {
-            Array<bool> *arr = status->field_58;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write((bool)(flags->flag[0x31] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2d] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x32] != 0), fd);
-        AEFile::Write((int32_t)status->field_118, fd);
-        AEFile::Write((bool)(flags->flag[0x33] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x34] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x35] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x36] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x37] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x38] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x39] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x3a] != 0), fd);
+    int *medals = Globals::achievements->getMedals();
+    AEFile::Write((int32_t) 45, fd);
+    for (unsigned i = 0; i < 45; i++) {
+        AEFile::Write((int32_t) medals[i], fd);
     }
 
+    AEFile::Write((int32_t) Globals::status->getShip()->getIndex(), fd);
+    AEFile::Write((int32_t) Globals::status->getShip()->getRace(), fd);
+    Array<Item *> *items = Globals::status->getShip()->getEquipment();
+    if (items != 0) {
+        AEFile::Write((int32_t) items->size(), fd);
+        for (unsigned i = 0; i < items->size(); i++) {
+            if ((*items)[i] != 0) {
+                AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+                AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+                AEFile::Write((*items)[i]->isUnsaleable(), fd);
+            } else {
+                AEFile::Write((int32_t) -1, fd);
+            }
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    items = Globals::status->getShip()->getCargo();
+    if (items != 0) {
+        AEFile::Write((int32_t) items->size(), fd);
+        for (unsigned i = 0; i < items->size(); i++) {
+            AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+            AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+            AEFile::Write((int32_t) (*items)[i]->getSinglePrice(), fd);
+            AEFile::Write((*items)[i]->isUnsaleable(), fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+
+    Array<Station *> *stack = Globals::status->getStationStack();
+    AEFile::Write((int32_t) 3, fd);
+    for (unsigned i = 0; i < stack->size() + 1; i++) {
+        Station *station = i == stack->size() ? Globals::status->getStation() : (*stack)[i];
+        if (station == 0) {
+            AEFile::Write((int32_t) -1, fd);
+            continue;
+        }
+        AEFile::Write((int32_t) station->getIndex(), fd);
+        Array<Item *> *stationItems = station->getItems();
+        if (stationItems != 0) {
+            AEFile::Write((int32_t) stationItems->size(), fd);
+            for (unsigned j = 0; j < stationItems->size(); j++) {
+                AEFile::Write((int32_t) (*stationItems)[j]->getIndex(), fd);
+                AEFile::Write((int32_t) (*stationItems)[j]->getAmount(), fd);
+                AEFile::Write((int32_t) (*stationItems)[j]->getSinglePrice(), fd);
+                AEFile::Write((*stationItems)[j]->isUnsaleable(), fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+        Array<Ship *> *ships = station->getShips();
+        if (ships != 0) {
+            AEFile::Write((int32_t) ships->size(), fd);
+            for (unsigned j = 0; j < ships->size(); j++) {
+                AEFile::Write((int32_t) (*ships)[j]->getIndex(), fd);
+                AEFile::Write((int32_t) (*ships)[j]->getRace(), fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+        Array<Agent *> *agents = station->getAgents();
+        if (agents != 0) {
+            AEFile::Write((int32_t) agents->size(), fd);
+            for (unsigned j = 0; j < agents->size(); j++) {
+                this->writeAgent((*agents)[j], fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+        AEFile::Write(station->hasAttackedFriends(), fd);
+    }
+
+    int *standings = reinterpret_cast<Standing *>(Globals::status->getStanding())->getStandings();
+    AEFile::Write((int32_t) 2, fd);
+    for (unsigned i = 0; i < 2; i++) {
+        AEFile::Write((int32_t) standings[i], fd);
+    }
+
+    Array<BluePrint *> *bluePrints = reinterpret_cast<Array<BluePrint *> *>(Globals::status->getBluePrints());
+    AEFile::Write((int32_t) bluePrints->size(), fd);
+    for (unsigned i = 0; i < bluePrints->size(); i++) {
+        BluePrint *bluePrint = (*bluePrints)[i];
+        for (unsigned j = 0; j < bluePrint->ingredientCounters->size(); j++) {
+            AEFile::Write((int32_t) (*bluePrint->ingredientCounters)[j], fd);
+        }
+        AEFile::Write((int32_t) bluePrint->spentValue, fd);
+        AEFile::Write(bluePrint->locked, fd);
+        AEFile::Write((int32_t) bluePrint->productionCount, fd);
+        AEFile::Write((int32_t) bluePrint->stationIndex, fd);
+        AEFile::Write(bluePrint->stationName, fd, true);
+    }
+
+    Array<PendingProduct *> *pending =
+        reinterpret_cast<Array<PendingProduct *> *>(Globals::status->getPendingProducts());
+    if (pending != 0) {
+        int count = 0;
+        for (unsigned i = 0; i < pending->size(); i++) {
+            count += (*pending)[i] != 0 ? 1 : 0;
+        }
+        if (count != 0) {
+            AEFile::Write((int32_t) count, fd);
+            for (unsigned i = 0; i < pending->size(); i++) {
+                if ((*pending)[i] != 0) {
+                    AEFile::Write((int32_t) (*pending)[i]->blueprintIndex, fd);
+                    AEFile::Write((int32_t) (*pending)[i]->quantity, fd);
+                    AEFile::Write((int32_t) (*pending)[i]->stationIndex, fd);
+                    AEFile::Write((*pending)[i]->stationName, fd, true);
+                }
+            }
+        } else {
+            AEFile::Write((int32_t) -1, fd);
+        }
+    } else {
+        AEFile::Write((int32_t) -1, fd);
+    }
+
+    if (Globals::status->wingmen != 0) {
+        AEFile::Write((int32_t) Globals::status->wingmen->size(), fd);
+        for (unsigned i = 0; i < Globals::status->wingmen->size(); i++) {
+            AEFile::Write(*(*Globals::status->wingmen)[i], fd, true);
+        }
+        AEFile::Write((int32_t) Globals::status->field_0x2c, fd);
+        AEFile::Write((int32_t) Globals::status->fadeValue, fd);
+        AEFile::Write((int32_t) 5, fd);
+        for (unsigned i = 0; i <= 4; i++) {
+            AEFile::Write((int32_t) ((int *) (intptr_t) reinterpret_cast<int32_t &>(Globals::status->_byte_0x28))[i],
+                          fd);
+        }
+    } else {
+        AEFile::Write((int32_t) -1, fd);
+    }
+    AEFile::Write(reinterpret_cast<int32_t &>(Globals::status->_byte_0x34), fd);
+    AEFile::Write((int32_t) Globals::status->systemVisibilities->size(), fd);
+    for (unsigned i = 0; i < Globals::status->systemVisibilities->size(); i++) {
+        AEFile::Write((*Globals::status->systemVisibilities)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_0x40->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_0x40->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_0x40)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_0x3c->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_0x3c->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_0x3c)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_0x48->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_0x48->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_0x48)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_0x44->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_0x44->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_0x44)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_4c->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_4c->size(); i++) {
+        AEFile::Write((*Globals::status->field_4c)[i], fd);
+    }
+    Array<Agent *> *agents = reinterpret_cast<Array<Agent *> *>(Globals::status->getAgents());
+    AEFile::Write((int32_t) agents->size(), fd);
+    for (unsigned i = 0; i < agents->size(); i++) {
+        this->writeAgent((*agents)[i], fd);
+    }
+
+    HintFlags *hints = reinterpret_cast<HintFlags *>(Globals::hints);
+    AEFile::Write(hints->flag[8], fd);
+    AEFile::Write(hints->flag[9], fd);
+    AEFile::Write(hints->flag[10], fd);
+    AEFile::Write(hints->flag[11], fd);
+    AEFile::Write(hints->flag[12], fd);
+    AEFile::Write(hints->flag[13], fd);
+    AEFile::Write(hints->flag[14], fd);
+    AEFile::Write(hints->flag[15], fd);
+    AEFile::Write(hints->flag[16], fd);
+    AEFile::Write(hints->flag[17], fd);
+    AEFile::Write(hints->flag[18], fd);
+    AEFile::Write(hints->flag[19], fd);
+    AEFile::Write(hints->flag[20], fd);
+    AEFile::Write(hints->flag[21], fd);
+    AEFile::Write(hints->flag[22], fd);
+    AEFile::Write(hints->flag[23], fd);
+    AEFile::Write(hints->flag[24], fd);
+    AEFile::Write(hints->flag[25], fd);
+    AEFile::Write(hints->flag[26], fd);
+    AEFile::Write(hints->flag[27], fd);
+    AEFile::Write(hints->flag[28], fd);
+    AEFile::Write(hints->flag[29], fd);
+    AEFile::Write(hints->flag[30], fd);
+    AEFile::Write(hints->flag[31], fd);
+    AEFile::Write(hints->flag[32], fd);
+    AEFile::Write(hints->flag[34], fd);
+    AEFile::Write(hints->flag[33], fd);
+    AEFile::Write(hints->flag[35], fd);
+    AEFile::Write(hints->flag[36], fd);
+    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
+    AEFile::Write(options->difficulty, fd);
+    AEFile::Write(reinterpret_cast<int64_t &>(Globals::status->field_0x100), fd);
+    AEFile::Write(hints->flag[37], fd);
+    AEFile::Write(hints->flag[38], fd);
+
+    Ship *wingman = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c);
+    if (wingman != 0) {
+        AEFile::Write((int32_t) 1, fd);
+        AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getIndex(), fd);
+        AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getRace(), fd);
+        items = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getEquipment();
+        if (items != 0) {
+            AEFile::Write((int32_t) items->size(), fd);
+            for (unsigned i = 0; i < items->size(); i++) {
+                if ((*items)[i] != 0) {
+                    AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+                    AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+                    AEFile::Write((*items)[i]->isUnsaleable(), fd);
+                } else {
+                    AEFile::Write((int32_t) -1, fd);
+                }
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+        items = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getCargo();
+        if (items != 0) {
+            AEFile::Write((int32_t) items->size(), fd);
+            for (unsigned i = 0; i < items->size(); i++) {
+                AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+                AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+                AEFile::Write((int32_t) (*items)[i]->getSinglePrice(), fd);
+                AEFile::Write((*items)[i]->isUnsaleable(), fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+
+    AEFile::Write((int32_t) Globals::status->field_90->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_90->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_90)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_10c, fd);
+    AEFile::Write(Globals::status->field_110, fd);
+    AEFile::Write((int32_t) Globals::status->field_114, fd);
+    AEFile::Write(Globals::status->field_0x111, fd);
+
+    items = Globals::status->voidStation->getItems();
+    if (items != 0) {
+        AEFile::Write((int32_t) items->size(), fd);
+        for (unsigned i = 0; i < items->size(); i++) {
+            AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+            AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+            AEFile::Write((int32_t) (*items)[i]->getSinglePrice(), fd);
+            AEFile::Write((*items)[i]->isUnsaleable(), fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    Array<Ship *> *voidShips = Globals::status->voidStation->getShips();
+    if (voidShips != 0) {
+        AEFile::Write((int32_t) voidShips->size(), fd);
+        for (unsigned i = 0; i < voidShips->size(); i++) {
+            AEFile::Write((int32_t) (*voidShips)[i]->getIndex(), fd);
+            AEFile::Write((int32_t) (*voidShips)[i]->getRace(), fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+
+    AEFile::Write(hints->flag[39], fd);
+    AEFile::Write(options->byte_0x35, fd);
+    AEFile::Write(options->byte_0x36, fd);
+    AEFile::Write((int32_t) Globals::status->field_54->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_54->size(); i++) {
+        AEFile::Write((*Globals::status->field_54)[i], fd);
+    }
+
+    AEFile::Write((int32_t) 0x6e6a78, fd);
+    Array<int> *mods = Globals::status->getShip()->getMods();
+    if (mods != 0) {
+        AEFile::Write((int32_t) mods->size(), fd);
+        for (unsigned i = 0; i < mods->size(); i++) {
+            AEFile::Write((int32_t) (*mods)[i], fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    if (Globals::status->field_8c != 0) {
+        mods = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getMods();
+        if (mods != 0) {
+            AEFile::Write((int32_t) mods->size(), fd);
+            for (unsigned i = 0; i < mods->size(); i++) {
+                AEFile::Write((int32_t) (*mods)[i], fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    if (voidShips != 0) {
+        AEFile::Write((int32_t) voidShips->size(), fd);
+        for (unsigned i = 0; i < voidShips->size(); i++) {
+            mods = (*voidShips)[i]->getMods();
+            if (mods != 0) {
+                AEFile::Write((int32_t) mods->size(), fd);
+                for (unsigned j = 0; j < mods->size(); j++) {
+                    AEFile::Write((int32_t) (*mods)[j], fd);
+                }
+            } else {
+                AEFile::Write((int32_t) 0, fd);
+            }
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    for (unsigned i = 0; i < stack->size() + 1; i++) {
+        Station *station = i == stack->size() ? Globals::status->getStation() : (*stack)[i];
+        if (station == 0) {
+            continue;
+        }
+        Array<Ship *> *ships = station->getShips();
+        if (ships != 0) {
+            AEFile::Write((int32_t) ships->size(), fd);
+            for (unsigned j = 0; j < ships->size(); j++) {
+                if ((*ships)[j]->getMods() != 0) {
+                    AEFile::Write((uint32_t) (*ships)[j]->getMods()->size(), fd);
+                    mods = (*ships)[j]->getMods();
+                    for (unsigned k = 0; k < mods->size(); k++) {
+                        AEFile::Write((int32_t) (*mods)[k], fd);
+                    }
+                } else {
+                    AEFile::Write((int32_t) 0, fd);
+                }
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+    }
+
+    AEFile::Write((int32_t) Globals::status->wanted->size(), fd);
+    for (unsigned i = 0; i < Globals::status->wanted->size(); i++) {
+        this->writeWanted((*Globals::status->wanted)[i], fd);
+    }
+    for (int i = 0; i < 4; i++) {
+        AEFile::Write((int32_t) Globals::status->getCollectedBounties(i), fd);
+    }
+    AEFile::Write(options->byte_0x37, fd);
+    AEFile::Write((int32_t) Globals::status->field_178, fd);
+    AEFile::Write(hints->flag[40], fd);
+    AEFile::Write(hints->flag[41], fd);
+    AEFile::Write(hints->flag[44], fd);
+    AEFile::Write(hints->flag[42], fd);
+    AEFile::Write(hints->flag[43], fd);
+    AEFile::Write(hints->flag[46], fd);
+    AEFile::Write(hints->flag[47], fd);
+    AEFile::Write(hints->flag[48], fd);
+    AEFile::Write((int32_t) Globals::status->field_58->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_58->size(); i++) {
+        AEFile::Write((*Globals::status->field_58)[i], fd);
+    }
+    AEFile::Write(hints->flag[49], fd);
+    AEFile::Write(hints->flag[45], fd);
+    AEFile::Write(hints->flag[50], fd);
+    AEFile::Write((int32_t) Globals::status->field_118, fd);
+    AEFile::Write(hints->flag[51], fd);
+    AEFile::Write(hints->flag[52], fd);
+    AEFile::Write(hints->flag[53], fd);
+    AEFile::Write(hints->flag[54], fd);
+    AEFile::Write(hints->flag[55], fd);
+    AEFile::Write(hints->flag[56], fd);
+    AEFile::Write(hints->flag[57], fd);
+    AEFile::Write(hints->flag[58], fd);
     AEFile::Close(fd);
     this->addHash(slot);
-
-    return;
+    Globals::lastRecordWritten = slot;
+    this->saveOptions();
+    return 1;
 }
 
 void *Galaxy_getStationByIndex(int idx); // lint: void_ptr (external symbol; mangled signature is fixed)

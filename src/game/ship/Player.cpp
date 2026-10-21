@@ -1087,7 +1087,7 @@ LAB_342a: {
                         }
                     }
                 }
-                Globals::status->field_110 = 0x100;
+                reinterpret_cast<uint16_t &>(Globals::status->field_110) = 0x100;
             }
         }
     }
