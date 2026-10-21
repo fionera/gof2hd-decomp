@@ -347,88 +347,38 @@ void Hud::updateQueue(int dt) {
 
 
 
-static const char g_Hud_oiSep[1] = {0};
-static const unsigned char g_Hud_secColors[4 * 0xc] = {0};
+// Security-level text colours (r, g, b) indexed by SolarSystem::getSecurityLevel().
+static const int g_Hud_securityColors[4][3] = {
+    {255, 42, 0},
+    {255, 108, 0},
+    {237, 237, 0},
+    {0, 237, 0},
+};
 
 void Hud::drawOrbitInformation() {
-    if (Globals::status->inAlienOrbit() != 0) return;
-
-    int *layout = (int *) Globals::layout;
-    Globals::Canvas->SetColor((unsigned) (-1));
-    int x = Globals::Canvas->GetImage2DWidth((unsigned) (0)) + layout[0x87];
-
-    if (((SolarSystem *) ((long) Globals::status->getSystem()))->hasNoOwner() == 0)
-        Globals::Canvas->DrawImage2D((unsigned) this->factionLogoImage, 3, 0);
-
-    String *font = (String *) Globals::font;
-
-    {
-        char name[12];
-        ((Station *) (name))->getName();
-        Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (name), (x), (char) layout[0x88], false);
-        {
-            String *_s = ((String *) (name));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-    }
-    Globals::Canvas->SetColor((unsigned) (-1));
-
-    if (Globals::status->getCurrentCampaignMission() <= 0xf) return;
-
-    SolarSystem *sys = (SolarSystem *) ((long) Globals::status->getSystem());
-    int sec = sys->getSecurityLevel();
-    int idx = ((SolarSystem *) ((long) Globals::status->getSystem()))->getIndex();
-    int *status = (int *) Globals::status;
-    if (idx == 0x1a && status[0x45] > 1) sec = 3;
-
-    {
-        char sysName[12], copy[12], sep[12], acc[12], full[12];
-        ((SolarSystem *) (sysName))->getName();
-        ((String *) (copy))->Set(((String *) (sysName))->data);
-        ((String *) (sep))->ctor_char(g_Hud_oiSep, false);
-        *(String *) acc = *(String *) copy + *(String *) sep;
-        String *txt = (Globals::gameText)->getText(0);
-        *(String *) full = *(String *) acc + *(String *) txt;
-        Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (full), (x), (char) layout[0x89], false);
-        {
-            String *_s = ((String *) (full));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (acc));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (sep));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (copy));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (sysName));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-    }
-
-    const unsigned char *row = g_Hud_secColors + sec * 0xc;
-    Globals::Canvas->SetColor((unsigned char) (row[0]), (unsigned char) (row[4]), (unsigned char) (row[8]),
-                              (unsigned char) (0xff));
-    String *secTxt = (Globals::gameText)->getText(sec);
-    Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (secTxt), (x), (char) layout[0x8a], false);
+    if (Globals::status->inAlienOrbit() != 0)
+        return;
+    Globals::Canvas->SetColor(0xffffffff);
+    int x = Globals::Canvas->GetImage2DWidth(this->factionLogoImage);
+    x += Globals::layout->orbitInfoTextX;
+    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->hasNoOwner() == 0)
+        Globals::Canvas->DrawImage2D(this->factionLogoImage, 3, 3);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, Globals::status->getStation()->getName(), x,
+                                Globals::layout->orbitInfoStationY, false);
+    Globals::Canvas->SetColor(0x777777ff);
+    if (Globals::status->getCurrentCampaignMission() < 16)
+        return;
+    int security = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getSecurityLevel();
+    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 26 && Globals::status->field_114 > 1)
+        security = 3;
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                String(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), false) + String(" ") +
+                                    *Globals::gameText->getText(137),
+                                x, Globals::layout->orbitInfoSystemY, false);
+    Globals::Canvas->SetColor(g_Hud_securityColors[security][0], g_Hud_securityColors[security][1],
+                              g_Hud_securityColors[security][2], 255);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(security + 402), x,
+                                Globals::layout->orbitInfoSecurityY, false);
 }
 
 unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
