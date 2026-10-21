@@ -204,7 +204,6 @@ static_assert(__builtin_offsetof(PlayerEgoVtable, placeAtStation) == 0x1c,
 
 static inline void levelSpawnFar(Level *self, int *kiPlayer);
 
-static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit);
 
 
 
@@ -1377,39 +1376,35 @@ void Level::createFighterTurrets() {
 }
 
 void Level::updateAlienAttackers(int dt) {
-    Level *thisptr = this;
-    this->alienAttackTimer = this->alienAttackTimer + dt;
-
-    Mission *m = (Mission *) Globals::status->getMission();
-    bool blocked = (m != 0) && m->isCampaignMission() != 0 &&
-                   (Globals::status->getCurrentCampaignMission() == 0x28 ||
-                    Globals::status->getCurrentCampaignMission() == 0x93 ||
-                    Globals::status->getCurrentCampaignMission() == 0x9a);
-    if (blocked)
+    alienAttackTimer += dt;
+    if (Globals::status->getMission() != nullptr && Globals::status->getMission()->isCampaignMission()
+        && (Globals::status->getCurrentCampaignMission() == 0x28 || Globals::status->getCurrentCampaignMission() == 0x93
+            || Globals::status->getCurrentCampaignMission() == 0x9a)) {
         return;
-
-    int elapsed = this->alienAttackTimer;
-    int period = (Globals::status->getCurrentCampaignMission() == 0x29) ? 10000 : 45000;
-    if (elapsed <= period)
+    }
+    if (alienAttackTimer <= (Globals::status->getCurrentCampaignMission() == 0x29 ? 10000 : 45000)) {
         return;
-
-    this->alienAttackTimer = 0;
-    if (this->enemies == nullptr)
+    }
+    alienAttackTimer = 0;
+    if (enemies == nullptr) {
         return;
+    }
 
-    for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
-        int *ki = (int *) (*this->enemies)[i];
-
-        if (((KIPlayer *) ki)->shipGroup == 9 && ((KIPlayer *) ki)->isDead() != 0 && ((KIPlayer *) ki)->player->
-            isActive() == 0) {
-            ((PlayerFighter *) ki)->revive();
-            int inOrbit = (Globals::status->inAlienOrbit() != 0);
-            if (!inOrbit) {
-                Station *st = (Station *) Globals::status->getStation();
-                if (((Station *) st)->isAttackedByAliens() == 0)
-                    inOrbit = 1;
-            }
-            levelPlaceAlien(thisptr, ki, inOrbit);
+    for (unsigned int i = 0; i < enemies->size(); i++) {
+        KIPlayer *alien = (*enemies)[i];
+        if (alien->shipGroup != 9 || !alien->isDead() || alien->player->isActive()) {
+            continue;
+        }
+        alien->revive();
+        if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->isAttackedByAliens()) {
+            // the station is under attack: respawn around it
+            alien->setPosition((*landmarks)[3]->getPosition().x - 10000.0f + (float) Globals::rnd->nextInt(20000),
+                               (*landmarks)[3]->getPosition().y - 10000.0f + (float) Globals::rnd->nextInt(20000),
+                               (*landmarks)[3]->getPosition().z - 10000.0f + (float) Globals::rnd->nextInt(20000));
+        } else {
+            alien->setPosition(player->getPosition().x - 40000.0f + (float) Globals::rnd->nextInt(80000),
+                               player->getPosition().y - 30000.0f + (float) Globals::rnd->nextInt(60000),
+                               player->getPosition().z + (float) Globals::rnd->nextInt(2) == 0.0f ? 40000.0f : -40000.0f);
         }
     }
 }
@@ -7107,17 +7102,6 @@ static inline void levelSpawnFar(Level *self, int *kiPlayer) {
     ((KIPlayer *) kiPlayer)->setPosition(p.x + ox, p.y + oy, p.z + oz);
 }
 
-static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit) {
-    AbyssEngine::AERandom *rng = Globals::rnd;
-    Vector base;
-    base.x = base.y = base.z = 0.0f;
-    if (alienInOrbit)
-        base = (self->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : self->player->getPosition());
-    float ox = (float) (rng->nextInt() % 100000 - 50000);
-    float oy = (float) (rng->nextInt() % 60000 - 30000);
-    float oz = (float) (rng->nextInt() % 100000 - 50000);
-    ((KIPlayer *) kiPlayer)->setPosition(base.x + ox, base.y + oy, base.z + oz);
-}
 
 
 
