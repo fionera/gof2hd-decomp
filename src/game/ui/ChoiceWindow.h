@@ -22,8 +22,8 @@ public:
     String title;
     int count;
     int medal;
-    int medalImage;
-    int medalBgImage;
+    unsigned int medalImage;
+    unsigned int medalBgImage;
     String medalText;
     int padding;
     int padding2;
