@@ -203,60 +203,31 @@ void ModStation::OnResume() {
     (*holder)->setVolume(1, *reinterpret_cast<float *>(Globals::options));
 }
 
-static inline int Status_getCurrentCampaignMission_cpp() { return (int)(Globals::status->getCurrentCampaignMission()); }
-
-static inline int GameText_getText_cpp(int id) { return (int)(Globals::gameText->getText(id)); }
-
-static inline int Status_getStation_cpp() { return (int)(Globals::status->getStation()); }
-
-
-static inline int Status_getShip_cpp() { return (int)(Globals::status->getShip()); }
-
-
-
-void ChoiceWindow_setNotice_cpp(ChoiceWindow * cw);
-
-static inline int GameText_getText_cppline(int id) { return (int)(Globals::gameText->getText(id)); }
-
 void ModStation::checkPendingProducts() {
-    int camp = Status_getCurrentCampaignMission_cpp();
-    GameText_getText_cpp(213);
-
-    Array<PendingProduct *> *products =
-            (Array<PendingProduct *> *) (intptr_t) Globals::status->getPendingProducts();
-    if (products != 0) {
-        Array<int> *itemTable = (Array<int> *) (intptr_t) *(int *) &Globals::items;
-        for (unsigned i = 0; i < products->size(); i = i + 1) {
-            PendingProduct *pp = (*products)[i];
-            if (pp != 0) {
-                int dstStation = pp->stationIndex;
-                Station *here = (Station *) Status_getStation_cpp();
-                if (dstStation == here->getIndex()) {
-                    if (camp == 0x92 && pp->blueprintIndex == 0xd2) {
-                        PendingProduct *o = (*products)[i];
-                        if (o != 0)
-                            delete o;
-                        (*products)[i] = 0;
-                        goto done;
-                    }
-                    Item *it = ((Item*)(long)((*itemTable)[pp->blueprintIndex]))->makeItem(pp->quantity);
-                    ((Ship*)(long)Status_getShip_cpp())->addCargo(it);
-                    (void) it->getAmount();
-                    GameText_getText_cppline(it->getIndex());
-
-                    PendingProduct *o = (*products)[i];
-                    if (o != 0)
-                        delete o;
-                    (*products)[i] = 0;
-                    this->flag_0x63 = 1;
-                }
+    int campaignMission = Globals::status->getCurrentCampaignMission();
+    String message = *Globals::gameText->getText(213) + String("\n", false);
+    Array<PendingProduct *> *products = (Array<PendingProduct *> *) (intptr_t) Globals::status->getPendingProducts();
+    if (products != nullptr) {
+        for (unsigned i = 0; i < products->size(); i++) {
+            PendingProduct *product = (*products)[i];
+            if (product == nullptr || product->stationIndex != Globals::status->getStation()->getIndex())
+                continue;
+            if (campaignMission == 146 && product->blueprintIndex == 210) {
+                delete (*products)[i];
+                (*products)[i] = nullptr;
+                return;
             }
+            Item *item = (*Globals::items)[product->blueprintIndex]->makeItem(product->quantity);
+            Globals::status->getShip()->addCargo(item);
+            message = message + String("\n", false) + String(item->getAmount()) + String("x ", false) +
+                      *Globals::gameText->getText(item->getIndex() + 1274);
+            delete (*products)[i];
+            (*products)[i] = nullptr;
+            this->flag_0x63 = 1;
         }
     }
-
-    if (this->flag_0x63 != 0)
-        ChoiceWindow_setNotice_cpp(this->choiceWindow);
-done:;
+    if (this->flag_0x63)
+        this->choiceWindow->set(message);
 }
 
 static int *g_okp_stack = 0;
