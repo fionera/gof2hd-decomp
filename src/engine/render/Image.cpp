@@ -30,9 +30,8 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
-                   unsigned int vertexFormat,
-                   void **out); // lint: void_ptr (exported MeshCreate symbol; void** baked into mangled name)
+    int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount, signed char vertexFormat,
+                   Mesh **out);
 
     void MeshRelease(Engine * engine, Mesh * *slot);
 
@@ -41,69 +40,72 @@ namespace AbyssEngine {
             return -4;
 
         unsigned int handle = 0;
-        if (AEFile::OpenRead(path, (uint32_t *) (&handle)) == 0)
+        if (AEFile::OpenRead(path, (uint32_t *) &handle) == 0)
             return -1;
 
-        char magic[8];
-        for (int i = 0; i < 4; ++i) magic[i] = '*';
-        if (AEFile::Read((uint32_t)(8), magic, handle) == 0)
+        char magic[8] = "*******";
+        if (AEFile::Read((uint32_t) 8, magic, handle) == 0)
             return -1;
-        static const char want[8] = {'*', '*', '*', '*', 0, 0, 0, 0};
+        static const char want[8] = "AEimage";
         for (unsigned int k = 0; k < 8; ++k)
             if (want[k] != magic[k])
                 return -1;
 
+        if (AEFile::Skip((uint32_t) 1, handle) == 0)
+            return -1;
+        if (AEFile::Read((uint32_t) 2, &region->atlasW, handle) == 0)
+            return -1;
+        if (AEFile::Read((uint32_t) 2, &region->atlasH, handle) == 0)
+            return -1;
         unsigned short regionCount = 0;
-        if (AEFile::Skip((uint32_t)(1), handle) == 0) return -1;
-        if (AEFile::Read((uint32_t)(2), &region->atlasW, handle) == 0) return -1;
-        if (AEFile::Read((uint32_t)(2), &region->atlasH, handle) == 0) return -1;
-        if (AEFile::Read((uint32_t)(2), &regionCount, handle) == 0) return -1;
-        if (regionCount <= index) return -1;
+        if (AEFile::Read((uint32_t) 2, &regionCount, handle) == 0)
+            return -1;
+        if (regionCount <= index)
+            return -1;
 
-        if (MeshCreate(engine, 4, 2, 0x13, (void **) region) != 1) // lint: void_ptr (cast to exported MeshCreate void** param)
-            // lint: void_ptr (cast to exported MeshCreate void** param)
+        if (MeshCreate(engine, 4, 2, 0x13, (Mesh **) region) != 1)
             return -2;
 
-        unsigned char mode = 0;
         for (unsigned short i = 0; i < regionCount; ++i) {
-            if (i == index) {
-                if (AEFile::Read((uint32_t)(2), &region->offX, handle) == 0) goto fail;
-                if (AEFile::Read((uint32_t)(2), &region->offY, handle) == 0) goto fail;
-                if (AEFile::Read((uint32_t)(2), &region->sizeX, handle) == 0) goto fail;
-                if (AEFile::Read((uint32_t)(2), &region->sizeY, handle) == 0) goto fail;
+            if (i != index) {
+                if (AEFile::Skip((uint32_t) 8, handle) == 0)
+                    goto fail;
+                continue;
+            }
+            if (AEFile::Read((uint32_t) 2, &region->offX, handle) == 0)
+                goto fail;
+            if (AEFile::Read((uint32_t) 2, &region->offY, handle) == 0)
+                goto fail;
+            if (AEFile::Read((uint32_t) 2, &region->sizeX, handle) == 0)
+                goto fail;
+            if (AEFile::Read((uint32_t) 2, &region->sizeY, handle) == 0)
+                goto fail;
 
+            {
                 Mesh *mesh = region->mesh;
                 float *pos = (float *) mesh->positions;
-
-                float halfW = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->sizeX, mode);
+                float w = (float) region->sizeX;
+                float h = (float) region->sizeY;
                 pos[0] = 0;
                 pos[1] = 0;
                 pos[2] = 0;
+                pos[3] = w;
                 pos[4] = 0;
                 pos[5] = 0;
-                pos[3] = halfW;
-                pos[6] = halfW;
-                float halfH = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->sizeY, mode);
+                pos[6] = w;
+                pos[7] = h;
                 pos[8] = 0;
                 pos[9] = 0;
+                pos[10] = h;
                 pos[11] = 0;
-                pos[7] = halfH;
-                pos[10] = halfH;
 
-                double atlasH = (double)
-                        AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->atlasH, mode);
-                double atlasW = (double)
-                        AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->atlasW, mode);
-                float offYs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) region->offY, mode);
-                float offXs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) region->offX, mode);
-                float offYu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->offY, mode);
-                float offXu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->offX, mode);
-
+                float invH = (float) (1.0 / (double) region->atlasH);
+                float invW = (float) (1.0 / (double) region->atlasW);
+                float u0 = (float) region->offX * invW;
+                float v0 = (float) region->offY * invH;
+                float u1 = (w + (float) (short) region->offX) * invW;
+                float v1 = (h + (float) (short) region->offY) * invH;
                 float *uv = (float *) mesh->texCoords;
-                float u0 = offXu * (float) (1.0 / atlasW);
-                float v0 = offYu * (float) (1.0 / atlasH);
-                float v1 = (halfH + offYs) * (float) (1.0 / atlasH);
-                float u1 = (halfW + offXs) * (float) (1.0 / atlasW);
                 uv[0] = u0;
                 uv[1] = v0;
                 uv[2] = u1;
@@ -113,13 +115,13 @@ namespace AbyssEngine {
                 uv[6] = u0;
                 uv[7] = v1;
 
-                unsigned int *draw = (unsigned int *) mesh->indices;
-                draw[0] = 0x20000;
-                draw[1] = 1;
-                draw[2] = 0;
-            } else {
-                if (AEFile::Skip((uint32_t)(8), handle) == 0)
-                    goto fail;
+                unsigned short *tri = (unsigned short *) mesh->indices;
+                tri[0] = 0;
+                tri[1] = 2;
+                tri[2] = 1;
+                tri[3] = 0;
+                tri[4] = 3;
+                tri[5] = 2;
             }
         }
 
@@ -133,9 +135,8 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
-                   unsigned int vertexFormat,
-                   void **out); // lint: void_ptr (exported MeshCreate symbol; void** baked into mangled name)
+    int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount, signed char vertexFormat,
+                   Mesh **out);
 
     void ImageFontRelease(Engine * engine, ImageFont * *slot);
 
@@ -253,8 +254,7 @@ namespace AbyssEngine {
 
                 unsigned int n = (*out)->glyphCount;
                 for (unsigned int gi = 0; gi < n; ++gi) {
-                    if (MeshCreate(engine, 4, 2, 0x13, (void **) &(*out)->glyphMeshes[gi]) != 1) // lint: void_ptr (cast to exported MeshCreate void** param)
-                        // lint: void_ptr (cast to exported MeshCreate void** param)
+                    if (MeshCreate(engine, 4, 2, 0x13, &(*out)->glyphMeshes[gi]) != 1)
                         goto fail;
                     unsigned short sizeY = 0, sizeX = 0, offX = 0, offY = 0;
                     if (AEFile::Read((uint32_t)(2), &sizeY, handle) == 0) goto fail;
