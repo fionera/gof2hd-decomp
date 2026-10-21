@@ -2279,92 +2279,90 @@ void Status::checkForLevelUp() {
     }
 }
 
-static Station **g_mwPrevStation = nullptr;
-
 void Status::moveWanted() {
-    Array<SolarSystem *> *systemsTable = 0;
-    SystemPathFinder *pf = 0;
-    Station **prevHolder = g_mwPrevStation;
-
-    for (unsigned i = 0; i < wanted->size(); i = i + 1) {
-        Wanted *w = (*wanted)[i];
-        if (w->isActive() == 0)
+    bool initialized = false;
+    Array<SolarSystem *> *systems = 0;
+    SystemPathFinder *pathFinder = 0;
+    for (unsigned i = 0; i < this->wanted->size(); i++) {
+        if (!(*this->wanted)[i]->isActive() || (*this->wanted)[i]->isTerminated() ||
+            Globals::status->inAlienOrbit() ||
+            (*this->wanted)[i]->getCurrentLocation() == Globals::status->station->getIndex()) {
             continue;
-        if (w->isTerminated() != 0)
-            continue;
-        if (inAlienOrbit())
-            continue;
-
-        if (w->getCurrentLocation() == station->getIndex())
-            continue;
-        if (*prevHolder != 0) {
-            if ((*prevHolder)->getIndex() == w->getCurrentLocation())
-                continue;
         }
-
-        if (pf == 0) {
-            FileRead fr;
-            systemsTable = fr.loadSystemsBinary();
-            pf = new SystemPathFinder();
+        if (Level::programmedStation != 0 &&
+            Level::programmedStation->getIndex() == (*this->wanted)[i]->getCurrentLocation()) {
+            continue;
         }
-
-        Station *fromSt = Globals::globals->getRandomStation();
-        int fromSys = fromSt->getSystem();
-        Station *toSt = Globals::globals->getRandomStation();
-        int toSys = toSt->getSystem();
-
-        Array<int> *path = 0;
-        if (fromSt->getIndex() == toSt->getIndex()) {
-            unsigned lo, hi;
+        if (!initialized) {
+            FileRead *fileRead = new FileRead();
+            systems = fileRead->loadSystemsBinary();
+            delete fileRead;
+            pathFinder = new SystemPathFinder();
+        }
+        // Station lookups do not touch the reader instance, so no FileRead object is created.
+        FileRead *reader = 0;
+        Station *from = reader->loadStation((*this->wanted)[i]->getCurrentLocation());
+        int fromSystem = from->getSystem();
+        Station *to = reader->loadStation((*this->wanted)[i]->getTravelsTo());
+        int toSystem = to->getSystem();
+        Array<int> *path;
+        if (from->getIndex() == to->getIndex()) {
+            unsigned minJumps;
+            unsigned maxJumps;
             if (i < 2) {
-                hi = 4;
-                lo = 2;
+                maxJumps = 4;
+                minJumps = 2;
             } else {
-                int r = (i - 1) % 6;
-                lo = r / 3 + 2;
-                hi = r / 2 + 4;
+                int step = (int) (i - 1) % 6;
+                minJumps = step / 3 + 2;
+                maxJumps = 4 + step / 2;
             }
-            w->setLastSeen(w->getCurrentLocation());
-            if (toSt != 0) delete toSt;
-            toSt = Globals::globals->getRandomStation();
-            toSys = toSt->getSystem();
-            for (;;) {
-                path = pf->getSystemPath(systemsTable, fromSys, toSys);
-                int dsys = toSt->getSystem();
-                int routes = (int) (intptr_t)(*systemsTable)[dsys]->getRoutes();
-                bool ok = path != 0 && routes != 0 &&
-                          (unsigned) (*path)[0] >= lo && (unsigned) (*path)[0] <= hi &&
-                          (*systemVisibilities)[dsys] != 0 &&
-                          dsys != 0x1b && dsys != 0x1c && dsys != 0x19 && dsys != 0x1a && dsys != 6 &&
-                          dsys != fromSt->getSystem();
-                if (ok) {
-                    w->setTravelsTo(toSt->getIndex());
+            (*this->wanted)[i]->setLastSeen((*this->wanted)[i]->getCurrentLocation());
+            if (to != 0) {
+                delete to;
+            }
+            to = Globals::globals->getRandomStation();
+            toSystem = to->getSystem();
+            while (true) {
+                path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
+                uint32_t *routes = (*systems)[to->getSystem()]->getRoutes();
+                if (path != 0 && routes != 0 && path->size() >= minJumps && path->size() <= maxJumps &&
+                    (*Globals::status->systemVisibilities)[to->getSystem()] && to->getSystem() != 27 &&
+                    to->getSystem() != 28 && to->getSystem() != 25 && to->getSystem() != 26 &&
+                    to->getSystem() != 6 && to->getSystem() != from->getSystem()) {
+                    (*this->wanted)[i]->setTravelsTo(to->getIndex());
                     break;
                 }
-                if (toSt != 0) delete toSt;
-                toSt = Globals::globals->getRandomStation();
-                toSys = toSt->getSystem();
+                if (to != 0) {
+                    delete to;
+                }
+                to = Globals::globals->getRandomStation();
+                toSystem = to->getSystem();
             }
-        } else if (fromSys == toSys) {
-            w->setCurrentLocation(w->getTravelsTo());
+        } else if (fromSystem == toSystem) {
+            (*this->wanted)[i]->setCurrentLocation((*this->wanted)[i]->getTravelsTo());
             path = 0;
         } else {
-            path = pf->getSystemPath(systemsTable, fromSys, toSys);
-            int wg = (*systemsTable)[(*path)[1]]->getWarpGateIndex();
-            w->setCurrentLocation(wg);
+            path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
+            (*this->wanted)[i]->setCurrentLocation((*systems)[(*path)[1]]->getWarpGateIndex());
         }
-
-        if (toSt != 0) delete toSt;
-        if (fromSt != 0) delete fromSt;
-        if (path != 0) delete path;
+        if (to != 0) {
+            delete to;
+        }
+        if (from != 0) {
+            delete from;
+        }
+        if (path != 0) {
+            delete path;
+        }
+        initialized = true;
     }
-
-    if (systemsTable != 0) {
-        ArrayReleaseClasses(*systemsTable);
-        delete systemsTable;
+    if (systems != 0) {
+        ArrayReleaseClasses(*systems);
+        delete systems;
     }
-    if (pf != 0) {
-        delete pf;
+    if (pathFinder != 0) {
+        delete pathFinder;
     }
 }
 
