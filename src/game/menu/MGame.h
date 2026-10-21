@@ -260,7 +260,7 @@ public:
 
     void startJumpScene();
 
-    void successCheck();
+    bool successCheck();
 
     void switchCamera(int id);
 
