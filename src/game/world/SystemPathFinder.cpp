@@ -2,50 +2,20 @@
 #include "game/core/Globals.h"
 #include "engine/render/LODManager.h"
 
+Node::Node(int value) {
+    this->parent = nullptr;
+    this->value = value;
+    this->children = new Array<Node *>();
+}
+
+Node::~Node() {
+    ArrayRelease(*this->children);
+}
 
 SystemPathFinder::SystemPathFinder() {
 }
 
 SystemPathFinder::~SystemPathFinder() {
-}
-
-int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
-    for (uint32_t i = 0; i < nodes->size(); ++i) {
-        if (nodes->data()[i] == node) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
-    Array<Node *> *closed = new Array<Node *>;
-    Array<Node *> *open = new Array<Node *>;
-    ArrayAdd(start, *open);
-    start->parent = nullptr;
-
-    while (!open->empty()) {
-        Node *current = open->data()[0];
-        ArrayRemove(current, *open);
-        if (current == goal) {
-            return constructPath(goal);
-        }
-
-        ArrayAdd(current, *closed);
-        Array<Node *> *neighbours = current->children;
-        for (uint32_t i = 0; i < neighbours->size(); ++i) {
-            Node *next = neighbours->data()[i];
-
-            if (contains(closed, next) != 0 || contains(open, next) != 0) {
-                continue;
-            }
-
-            next->parent = current;
-            ArrayAdd(next, *open);
-        }
-    }
-
-    return nullptr;
 }
 
 int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from,
@@ -57,24 +27,6 @@ int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from,
         return length - 1;
     }
     return 0;
-}
-
-Array<Node *> *SystemPathFinder::constructPath(Node *node) {
-    Array<Node *> *backwards = new Array<Node *>;
-    for (; node->parent != nullptr; node = node->parent) {
-        ArrayAdd(node, *backwards);
-    }
-
-    Array<Node *> *path = new Array<Node *>;
-    ArraySetLength(backwards->size(), *path);
-
-    uint32_t count = (uint32_t) backwards->size();
-    for (uint32_t out = 0; out < count; ++out) {
-        path->data()[out] = backwards->data()[count - 1 - out];
-    }
-
-    delete backwards;
-    return path;
 }
 
 Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
@@ -127,4 +79,61 @@ Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
         delete nodePath;
     }
     return path;
+}
+
+Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
+    Array<Node *> *closed = new Array<Node *>;
+    Array<Node *> *open = new Array<Node *>;
+    ArrayAdd(start, *open);
+    start->parent = nullptr;
+
+    while (!open->empty()) {
+        Node *current = open->data()[0];
+        ArrayRemove(current, *open);
+        if (current == goal) {
+            return constructPath(goal);
+        }
+
+        ArrayAdd(current, *closed);
+        Array<Node *> *neighbours = current->children;
+        for (uint32_t i = 0; i < neighbours->size(); ++i) {
+            Node *next = neighbours->data()[i];
+
+            if (contains(closed, next) != 0 || contains(open, next) != 0) {
+                continue;
+            }
+
+            next->parent = current;
+            ArrayAdd(next, *open);
+        }
+    }
+
+    return nullptr;
+}
+
+Array<Node *> *SystemPathFinder::constructPath(Node *node) {
+    Array<Node *> *backwards = new Array<Node *>;
+    for (; node->parent != nullptr; node = node->parent) {
+        ArrayAdd(node, *backwards);
+    }
+
+    Array<Node *> *path = new Array<Node *>;
+    ArraySetLength(backwards->size(), *path);
+
+    uint32_t count = (uint32_t) backwards->size();
+    for (uint32_t out = 0; out < count; ++out) {
+        path->data()[out] = backwards->data()[count - 1 - out];
+    }
+
+    delete backwards;
+    return path;
+}
+
+int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
+    for (uint32_t i = 0; i < nodes->size(); ++i) {
+        if (nodes->data()[i] == node) {
+            return 1;
+        }
+    }
+    return 0;
 }
