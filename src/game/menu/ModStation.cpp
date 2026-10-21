@@ -273,9 +273,6 @@ ModStation::ModStation() {
     this->idleBox = nullptr;
     this->field_0x108 = 0;
     this->field_0x10c = 0;
-    this->lightDirection.x = 0.0f;
-    this->lightDirection.y = 0.0f;
-    this->lightDirection.z = 0.0f;
     this->dt = 0;
     this->flag_0xb3 = 0;
     this->flag_0xb0 = 0;
