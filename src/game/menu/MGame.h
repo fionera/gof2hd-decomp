@@ -172,7 +172,7 @@ public:
     int thrustBase;
     int field_0x1d4;
     float field_0x1d8;
-    uint8_t _pad_0x1dc[1];
+    uint8_t field_0x1dc;
     uint8_t field_0x1dd;
     uint8_t _pad_0x1de[2];
     int field_0x1e0;

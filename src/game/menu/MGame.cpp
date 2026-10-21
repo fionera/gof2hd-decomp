@@ -938,295 +938,234 @@ static int g_initInfoTextKey;
 
 static int *g_initInfoWidth;
 
+// Globals::options as read by MGame (engine sound toggle @0x0f, effect quality @0x28).
+struct GameSettingsView {
+    uint8_t _pad0[0x0f];
+    uint8_t engineSoundEnabled;
+    uint8_t _pad10[0x28 - 0x10];
+    float effectQuality;
+};
+
 int MGame::OnInitialize() {
-    MGame *self = this;
-    self->missionInfoLines = 0;
-    Level *level = self->level;
-    self->loadProgress = 100;
+    this->loadProgress = 100;
+    this->field_0x1dc = 0;
+    if (this->level == nullptr) {
+        unsigned int cubeTexture;
+        if (Globals::status->inAlienOrbit())
+            this->paintCanvas->TextureCreate(12040, cubeTexture, false);
+        else
+            this->paintCanvas->TextureCreate(
+                (unsigned short) (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() + 12030),
+                cubeTexture, false);
+        this->paintCanvas->ChangeCubeTexture(cubeTexture);
 
-    if (level == 0) {
-        unsigned texSel;
-        if (Globals::status->inAlienOrbit() == 0) {
-            Globals::status->getSystem();
-            int ti = ((SolarSystem *) (0))->getTextureIndex();
-            texSel = (ti + 0x2efe) & 0xffff;
-        } else {
-            texSel = 0x2f08;
+        Globals::globals->startNewSoundResourceList();
+        Globals::globals->addSoundResourceToList(102);
+        Globals::globals->addSoundResourceToList(104);
+        Globals::globals->addSoundResourceToList(105);
+        Globals::globals->addSoundResourceToList(106);
+        Globals::globals->addSoundResourceToList(107);
+        Globals::globals->addSoundResourceToList(103);
+        Globals::globals->addSoundResourceToList(126);
+        Globals::globals->addSoundResourceToList(5);
+        Globals::globals->addSoundResourceToList(24);
+        Globals::globals->addSoundResourceToList(21);
+        Globals::globals->addSoundResourceToList(18);
+        Globals::globals->addSoundResourceToList(19);
+        Globals::globals->addSoundResourceToList(20);
+        Globals::globals->addSoundResourceToList(28);
+        Globals::globals->addSoundResourceToList(29);
+        Globals::globals->addSoundResourceToList(27);
+        Globals::globals->addSoundResourceToList(37);
+        Globals::globals->addSoundResourceToList(26);
+        Globals::globals->addSoundResourceToList(46);
+        Globals::globals->addSoundResourceToList(47);
+        if (Globals::status->getWingmen())
+            Globals::globals->addSoundResourceToList(48);
+        Globals::globals->addSoundResourceToList(62);
+        Globals::globals->addSoundResourceToList(61);
+        Globals::globals->addSoundResourceToList(36);
+        if (Globals::status->getCurrentCampaignMission() <= 1) {
+            Globals::globals->addSoundResourceToList(156);
+            Globals::globals->addSoundResourceToList(157);
         }
-        Globals::Canvas->TextureCreate((unsigned short) (unsigned) (intptr_t) self->paintCanvas, 0, nullptr, texSel,
-                                       false);
-        Globals::Canvas->ChangeCubeTexture((unsigned) (intptr_t) self->paintCanvas);
-
-        {
-            Globals::globals->startNewSoundResourceList();
-            static const int kCommon[] = {
-                0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e, 0x05, 0x18, 0x15,
-                0x12, 0x13, 0x14, 0x1c, 0x1d, 0x1b, 0x25, 0x1a, 0x2e, 0x2f,
-            };
-            for (int id: kCommon)
-                Globals::globals->addSoundResourceToList(id);
-
-            if (Globals::status->getWingmen() != 0)
-                Globals::globals->addSoundResourceToList(0x30);
-
-            Globals::globals->addSoundResourceToList(0x3e);
-            Globals::globals->addSoundResourceToList(0x3d);
-            Globals::globals->addSoundResourceToList(0x24);
-
-            if (Globals::status->getCurrentCampaignMission() < 2) {
-                Globals::globals->addSoundResourceToList(0x9c);
-                Globals::globals->addSoundResourceToList(0x9d);
-            }
-
-            if (Globals::status->inAlienOrbit() == 0) {
-                Globals::status->getSystem();
-                if (((SolarSystem *) (0))->currentOrbitHasWarpGate())
-                    Globals::globals->addSoundResourceToList(0x1f);
-            }
-
-            int cm = Globals::status->getCurrentCampaignMission();
-            if (cm == 0) {
-                Globals::globals->addSoundResourceToList(0x8f);
-                Globals::globals->addSoundResourceToList(0x9d);
-                Globals::globals->addSoundResourceToList(0x9e);
-                Globals::globals->addSoundResourceToList(0xa1);
-                Globals::globals->addSoundResourceToList(0xa0);
-                Globals::globals->addSoundResourceToList(0x9f);
-            } else if (cm == 0xe) {
-                Globals::globals->addSoundResourceToList(0xf);
-            } else if (cm == 0x18) {
-                Globals::globals->addSoundResourceToList(0x22);
-            } else if (cm == 0x1d) {
-                Globals::globals->addSoundResourceToList(0xe);
-            } else if (cm == 0x29) {
-                Globals::globals->addSoundResourceToList(0x9b);
-                Globals::globals->addSoundResourceToList(0x99);
-                Globals::globals->addSoundResourceToList(0x9a);
-            }
+        if (!Globals::status->inAlienOrbit() &&
+            ((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate())
+            Globals::globals->addSoundResourceToList(31);
+        if (Globals::status->getCurrentCampaignMission() == 0) {
+            Globals::globals->addSoundResourceToList(143);
+            Globals::globals->addSoundResourceToList(157);
+            Globals::globals->addSoundResourceToList(158);
+            Globals::globals->addSoundResourceToList(161);
+            Globals::globals->addSoundResourceToList(160);
+            Globals::globals->addSoundResourceToList(159);
+        } else if (Globals::status->getCurrentCampaignMission() == 14) {
+            Globals::globals->addSoundResourceToList(15);
+        } else if (Globals::status->getCurrentCampaignMission() == 24) {
+            Globals::globals->addSoundResourceToList(34);
+        } else if (Globals::status->getCurrentCampaignMission() == 29) {
+            Globals::globals->addSoundResourceToList(14);
+        } else if (Globals::status->getCurrentCampaignMission() == 41) {
+            Globals::globals->addSoundResourceToList(155);
+            Globals::globals->addSoundResourceToList(153);
+            Globals::globals->addSoundResourceToList(154);
         }
-
         Globals::status->checkForLevelUp();
-        level = new Level(3);
-        self->level = level;
+        this->level = new Level(3);
     }
-
-    if (((Level *) (level))->init() == 0) {
-        self->loadProgress = 100;
-
+    if (!this->level->init())
         return 100;
+
+    reset();
+    if (Globals::status->field_64 >= 0)
+        this->player->player->setHitpoints(Globals::status->field_64);
+    if (Globals::status->field_5c >= 0)
+        this->player->player->setShieldHP(Globals::status->field_5c);
+    if (Globals::status->field_60 >= 0)
+        this->player->player->setArmorHP(Globals::status->field_60);
+    if (Globals::status->field_68 >= 0)
+        this->player->player->setGammaHP(Globals::status->field_68);
+    this->player->resetLastHP();
+    if (Globals::status->getCurrentCampaignMission() != 95) {
+        Globals::status->field_64 = Globals::status->getShip()->getMaxHP();
+        Globals::status->field_5c = Globals::status->getShip()->getMaxShieldHP();
+        Globals::status->field_60 = Globals::status->getShip()->getMaxArmorHP();
+        Globals::status->field_68 = 100;
+        if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
+                                                        Globals::status->getCurrentCampaignMission()) == 0.0f)
+            this->player->player->setGammaHP(100);
     }
+    if (!Globals::status->inAlienOrbit())
+        Globals::status->field_84 = Globals::status->getStation()->getIndex();
 
-    ((MGame *) (self))->reset();
-
-    {
-        Player *pl = (Player *) self->player->player;
-
-        if (Globals::status->field_64 >= 0) pl->setHitpoints(Globals::status->field_64);
-        if (Globals::status->field_5c >= 0) pl->setShieldHP(Globals::status->field_5c);
-        if (Globals::status->field_60 >= 0) pl->setArmorHP(Globals::status->field_60);
-        if (Globals::status->field_68 >= 0) pl->setGammaHP(Globals::status->field_68);
-
-        self->player->resetLastHP();
-
-        if (Globals::status->getCurrentCampaignMission() != 0x5f) {
-            Ship *ship = Globals::status->getShip();
-            Globals::status->field_64 = ship->getMaxHP();
-            Globals::status->field_5c = ship->getMaxShieldHP();
-            Globals::status->field_60 = ship->getMaxArmorHP();
-            Globals::status->field_68 = 100;
-
-            int stIdx = ((Station *) (Globals::status->getStation()))->getIndex();
-            int cm = Globals::status->getCurrentCampaignMission();
-            if (Globals::status->getGammaRayDamagePerSecond(stIdx, cm) == 0.0f)
-                pl->setGammaHP(100);
-        }
-    }
-    self->player->resetLastHP();
-
-    if (Globals::status->getCurrentCampaignMission() != 0x5f) {
-    }
-    if (Globals::status->inAlienOrbit() == 0)
-        Globals::status->field_84 = Station_getIndex(Globals::status->getStation());
-
-    unsigned t = self->applicationManager->GetCurrentTimeMillis();
-    self->field_0x1ac = 0;
-    self->cloakAttributeMax = 0;
-    self->startTime = t & 0xffff;
-    self->lastTime = t & 0xffff;
-
-    if (static_cast<Radar *>(self->player->field_0x14)->hasScanner() != 0)
+    this->startTime = this->lastTime = Globals::appManager->GetCurrentTimeMillis();
+    this->timeWarpState = 0;
+    this->cloakAttribute = 0;
+    if (this->radar->hasScanner())
         Globals::status->field_11c = 0;
-    Globals::status->field_12c = 0;
     Globals::status->field_134 = 0;
+    Globals::status->field_12c = 0;
     Globals::status->field_13c = 0;
     Globals::status->field_144 = 0;
-
-    Item *eq = ((Ship *) (((Status *) ((Status *) *((int *) &Globals::status)))->getShip()))->
-            getFirstEquipmentOfSort(0x15);
-    if (eq != 0) {
-        self->cloakAttributeMax = ((Item *) (eq))->getAttribute(0x26);
-        self->cloakAttribute = ((Item *) (eq))->getAttribute(0x26);
-        self->hud->setTimeExtender(1, 0, 1, 0);
+    Item *timeExtender = Globals::status->getShip()->getFirstEquipmentOfSort(26);
+    if (timeExtender != nullptr) {
+        this->cloakAttribute = timeExtender->getAttribute(42);
+        this->cloakAttributeMax = timeExtender->getAttribute(43);
+        this->hud->setTimeExtender(true, false, true, false);
     }
 
-    if (Globals::status->dlc1Won() != 0 && Globals::status->inAlienOrbit() != 0 &&
-        Globals::status->getCurrentCampaignMission() < 0x93) {
-        if (self->player != 0 && self->radio != 0)
-            self->player->radioRef = self->radio;
-        self->level->createRadioMessage(8, 0);
+    if (Globals::status->dlc1Won() && Globals::status->inAlienOrbit() &&
+        Globals::status->getCurrentCampaignMission() <= 146) {
+        if (this->player != nullptr && this->radio != nullptr)
+            this->player->radioRef = this->radio;
+        this->level->createRadioMessage(8, 0);
     }
-
-    if (Globals::status->inBlackMarketSystem() == 0) {
-        Globals::status->field_110 = 0;
+    if (Globals::status->inBlackMarketSystem()) {
+        if (this->player != nullptr && this->radio != nullptr)
+            this->player->radioRef = this->radio;
+        if (Globals::status->field_110) {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            if (enemies != nullptr) {
+                for (unsigned i = 0; i < enemies->size(); i++) {
+                    if ((*enemies)[i]->shipGroup == 8)
+                        (*enemies)[i]->field_0x25 = 0;
+                }
+            }
+        } else if (Globals::status->field_0x111) {
+            this->level->createRadioMessage(13, 8);
+        } else {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            if (enemies != nullptr) {
+                for (unsigned i = 0; i < enemies->size(); i++) {
+                    if ((*enemies)[i]->shipGroup == 8)
+                        (*enemies)[i]->field_0x25 = 0;
+                }
+            }
+            this->level->createRadioMessage(9, 8);
+        }
     } else {
-        if (self->player != 0 && self->radio != 0)
-            self->player->radioRef = self->radio;
-        if (Globals::status->field_110 == 0) {
-            int id;
-            Level *lvl;
-            if (Globals::status->field_0x111 == 0) {
-                Array<KIPlayer *> *enemies = self->level->getEnemies();
-                if (enemies != nullptr) {
-                    int n = (int) enemies->size();
-                    for (int i = 0; i < n; i++) {
-                        KIPlayer *e = (*enemies)[i];
-                        if (e->shipGroup == 8)
-                            e->field_0x25 = 0;
-                    }
-                }
-                lvl = self->level;
-                id = 9;
-            } else {
-                lvl = self->level;
-                id = 0xd;
-            }
-            ((Level *) (lvl))->createRadioMessage(id, 0);
-        } else {
-            Array<KIPlayer *> *enemies = self->level->getEnemies();
-            if (enemies != nullptr) {
-                int n = (int) enemies->size();
-                for (int i = 0; i < n; i++) {
-                    KIPlayer *e = (*enemies)[i];
-                    if (e->shipGroup == 8)
-                        e->field_0x25 = 0;
+        Globals::status->field_110 = 0;
+        Globals::status->field_0x111 = 0;
+    }
+
+    if (!Globals::status->inAlienOrbit() && Globals::status->getCurrentCampaignMission() == 125 &&
+        Globals::status->isFreighterMissionStation(Globals::status->getStation()->getIndex()) &&
+        !(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
+          (1 << Globals::status->getFreighterMissionStationBit(Globals::status->getStation()->getIndex())))) {
+        Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
+        campaign->setStatusValue(
+            ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() |
+            (1 << Globals::status->getFreighterMissionStationBit(Globals::status->getStation()->getIndex())));
+        if (this->player != nullptr && this->radio != nullptr)
+            this->player->radioRef = this->radio;
+        this->level->createRadioMessage(19, 0);
+    }
+
+    Array<Item *> *secondaries = Globals::status->getShip()->getEquipment(1);
+    if (secondaries != nullptr) {
+        if (Globals::status->getShip()->hasEquipment(Globals::status->field_f4, 1)) {
+            for (unsigned i = 0; i < secondaries->size(); i++) {
+                Item *weapon = (*secondaries)[i];
+                if (weapon != nullptr && weapon->getIndex() == Globals::status->field_f4) {
+                    this->level->getPlayer()->setCurrentSecondaryWeaponIndex(weapon->getIndex());
+                    this->hud->setCurrentSecondaryWeapon(weapon);
+                    break;
                 }
             }
+        } else if ((*secondaries)[0] != nullptr) {
+            this->player->setCurrentSecondaryWeaponIndex((*secondaries)[0]->getIndex());
+            this->hud->setCurrentSecondaryWeapon((*secondaries)[0]);
         }
     }
 
-    {
-        if (Globals::status->inAlienOrbit() == 0 && Globals::status->getCurrentCampaignMission() == 0x7d) {
-            int stIdx = ((Station *) (Globals::status->getStation()))->getIndex();
-            if (Globals::status->isFreighterMissionStation(stIdx) != 0) {
-                Mission *m = Globals::status->getMission();
-                int statusVal = ((Mission *) (m))->getStatusValue();
-                int bit = Globals::status->getFreighterMissionStationBit(
-                    ((Station *) (Globals::status->getStation()))->getIndex());
-                if ((statusVal & (1 << (bit & 0xff))) == 0) {
-                    int bit2 = Globals::status->getFreighterMissionStationBit(
-                        ((Station *) (Globals::status->getStation()))->getIndex());
-                    ((Mission *) (m))->setStatusValue(statusVal | (1 << (bit2 & 0xff)));
-                    if (self->player != 0 && self->radio != 0)
-                        self->player->radioRef = self->radio;
-                    self->level->createRadioMessage(0x13, 0);
-                }
-            }
+    this->field_0x1a4 = 0;
+    GameSettingsView *settings = reinterpret_cast<GameSettingsView *>(Globals::options);
+    if (settings->engineSoundEnabled) {
+        this->player->PlayEngineSound();
+        Array<KIPlayer *> *enemies = this->level->getEnemies();
+        if (enemies != nullptr) {
+            for (unsigned i = 0; i < enemies->size(); i++)
+                (*enemies)[i]->PlayEngineSound();
         }
-
-        Array<Item *> *secondary = Globals::status->getShip()->getEquipment(1);
-        if (secondary != 0) {
-            int savedId = Globals::status->field_f4;
-            if (Globals::status->getShip()->hasEquipment(savedId, 1) == 0) {
-                Item *first = secondary->empty() ? 0 : (*secondary)[0];
-                if (first != 0) {
-                    self->player->setCurrentSecondaryWeaponIndex(((Item *) (first))->getIndex());
-                    self->hud->setCurrentSecondaryWeapon(first);
-                }
-            } else {
-                for (unsigned i = 0; i < secondary->size(); i++) {
-                    Item *it = (*secondary)[i];
-                    if (it != 0 && ((Item *) (it))->getIndex() == savedId) {
-                        ((Level *) ((Level *) self->level))->getPlayer();
-                        self->player->setCurrentSecondaryWeaponIndex(((Item *) (it))->getIndex());
-                        self->hud->setCurrentSecondaryWeapon(it);
-                        break;
-                    }
-                }
-            }
-        }
-
-        reinterpret_cast<uint16_t &>(self->_bc8) = 0;
-        bool renderParticles =
-                ((ParticleSystemGlobal *) (intptr_t) g_initParticleFlag)->particlesEnabled != 0;
-        if (!renderParticles) {
-            if (Globals::status->getCurrentCampaignMission() > 1) {
-                Vec3 p = self->player->getPosition();
-                (void) p;
-                ((FModSound *) (*g_fmod))->play(*g_initEngineSnd,
-                                                (Vector *) &self->player->field_0x1c,
-                                                (Vector *) &p, 0.0f);
-            }
-        } else {
-            self->player->PlayEngineSound();
-            Array<KIPlayer *> *enemies = self->level->getEnemies();
-            if (enemies != nullptr)
-                for (unsigned i = 0; i < enemies->size(); i++)
-                    ((KIPlayer *) ((*enemies)[i]))->PlayEngineSound();
-        }
-
-        self->loadingTime = 0;
-
-        self->level->getStarSystem();
-        ((StarSystem *) (0))->initLight();
-        self->level->enableParticleEffects(true, renderParticles);
-
-        Globals::status->getShip();
-        float fireRate = (float) Globals::status->getShip()->getFireRateFactor();
-        if (1.0f - fireRate >= 0.0f)
-            self->player->pitchAllPrimaryGuns(1.0f - fireRate);
-
-        if (Globals::status->inAlienOrbit() == 0) {
-            int idx = ((Station *) (Globals::status->getStation()))->getIndex();
-            bool visit;
-            unsigned off = (unsigned) (idx - 0x6d);
-            if (off < 0x1a) {
-                if ((g_initStationMask & (1 << (off & 0xff))) == 0)
-                    visit = (off != 2) || (Globals::status->getCurrentCampaignMission() < 0x5e);
-                else
-                    visit = true;
-            } else {
-                visit = ((unsigned) (idx - 0x66) <= 2);
-            }
-            if (visit)
-                ((Station *) (Globals::status->getStation()))->visit();
-        }
-
-        if (*g_initMusicArmed != -1)
-            Globals::globals->playMusicAndFadeOutCurrent(*g_initMusicTrack);
-        *g_initMusicArmed = -1;
-        ((FModSound *) (*g_initFmod))->setDownPitch(false);
-
-        Engine *eng = (Engine *) self->applicationManager->GetEngine();
-        ((Engine *) (eng))->SetPostEffect(g_initPostEffect, false);
-
-        if (Globals::status->getCurrentCampaignMission() == 0x9e) {
-            Array<KIPlayer *> *enemies = self->level->getEnemies();
-            if (enemies != nullptr) {
-                KIPlayer *first = (*enemies)[0];
-                ((PlayerFighter *) (first))->cloak(true, false);
-            }
-        }
-
-        if (self->menuWindow == 0)
-            self->menuWindow = new MenuTouchWindow(1);
-
-        self->missionInfoLines = new Array<AbyssEngine::String *>();
-        String *font = *g_initInfoFont;
-        String *text = (String *) ((GameText *) (*g_gameText))->getText(g_initInfoTextKey);
-        Globals::globals->getLineArray(static_cast<unsigned int>(reinterpret_cast<std::size_t>(font)),
-                                       *text, *g_initInfoWidth, self->missionInfoLines);
-        self->active = 1;
+    } else if (Globals::status->getCurrentCampaignMission() >= 2) {
+        Vector position = this->player->getPosition();
+        Globals::sound->play(this->player->field_0x1c, &position, nullptr, 0.0f);
     }
+
+    this->loadingTime = 0;
+    this->level->getStarSystem()->initLight();
+    this->level->enableParticleEffects(settings->effectQuality >= 0.25f, settings->effectQuality > 0.7f);
+    float pitch = 1.0f - Globals::status->getShip()->getFireRateFactor();
+    if (pitch >= 0.0f)
+        this->player->pitchAllPrimaryGuns(pitch);
+
+    if (!Globals::status->inAlienOrbit()) {
+        int station = Globals::status->getStation()->getIndex();
+        unsigned slot = (unsigned) (station - 109);
+        bool visit;
+        if (slot <= 25 && ((1u << slot) & 0x3800003)) // stations 109, 110, 132, 133, 134
+            visit = true;
+        else if (slot == 2) // station 111
+            visit = Globals::status->getCurrentCampaignMission() >= 94;
+        else
+            visit = (unsigned) (station - 102) < 3;
+        if (visit)
+            Globals::status->getStation()->visit();
+    }
+
+    if (Globals::switch_to_target_setting != -1)
+        Globals::globals->playMusicAndFadeOutCurrent(Globals::switch_to_target_setting);
+    Globals::switch_to_target_setting = -1;
+    Globals::sound->setDownPitch(false);
+    static_cast<Engine *>(this->applicationManager->GetEngine())->SetPostEffect(0x01400002, false);
+    if (Globals::status->getCurrentCampaignMission() == 158 && this->level->getEnemies() != nullptr)
+        ((PlayerFighter *) (*this->level->getEnemies())[0])->cloak(1, true);
+    if (this->menuWindow == nullptr)
+        this->menuWindow = new MenuTouchWindow(1);
+    this->missionInfoLines = new Array<String *>();
+    Globals::globals->getLineArray(reinterpret_cast<unsigned int &>(Globals::font), *Globals::gameText->getText(196),
+                                   Globals::w - Globals::layout->buttonInsetX * 2, this->missionInfoLines);
+    this->active = 1;
     return 0;
 }
 
