@@ -1116,9 +1116,14 @@ void Globals::loadFont(int language) {
                 Globals::Canvas->FontSetSpacing(mainFont, Globals::iPadHD ? -7 : (Globals::retinaDisplay ? -10 : -5));
             } else {
                 Globals::Canvas->FontCreate(0x457, mainFont, true);
-                Globals::Canvas->FontSetSpacing(mainFont, Globals::retinaDisplay ? -5
-                                                          : Globals::n9 ? -4
-                                                          : Globals::iPadHD ? -4 : -2);
+                if (Globals::retinaDisplay)
+                    Globals::Canvas->FontSetSpacing(mainFont, -5);
+                else if (Globals::n9)
+                    Globals::Canvas->FontSetSpacing(mainFont, -4);
+                else if (Globals::iPadHD)
+                    Globals::Canvas->FontSetSpacing(mainFont, -4);
+                else
+                    Globals::Canvas->FontSetSpacing(mainFont, -2);
             }
             break;
     }
