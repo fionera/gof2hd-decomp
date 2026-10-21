@@ -199,11 +199,9 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, unsigned int count) {
-        int i = 0;
-        while ((unsigned short) i++ < count) {
+    void ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, unsigned int count) {
+        for (unsigned short i = 0; i < count; ++i) {
         }
-        return i;
     }
 }
 
