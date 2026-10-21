@@ -1,5 +1,8 @@
 #include "game/world/NewsTicker.h"
 #include "game/core/Globals.h"
+#include "game/mission/Item.h"
+#include "game/world/Galaxy.h"
+#include "game/world/Station.h"
 #include "game/ui/Layout.h"
 #include "engine/core/AbyssEngine.h"
 #include "game/world/SolarSystem.h"
@@ -175,7 +178,171 @@ uint32_t NewsTicker::OnTouchEnd(int, int) {
     return 1;
 }
 
+static const char *const kPlatformLetters[4] = {"A", "B", "C", "D"};
+
 String NewsTicker::replaceTokens(String text) {
-    return text;
+    if (Globals::status->stringHasToken(String(text, false), String("#PLANET_NAME", false))) {
+        Station *station = Globals::globals->getRandomStation();
+        text = Globals::status->replaceHash(String(text, false), String(station->getName(), false),
+                                            String("#PLANET_NAME", false));
+        if (Globals::status->stringHasToken(String(text, false), String("#SYSTEM_NAME", false))) {
+            SolarSystem *system = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(station->getSystem());
+            text = Globals::status->replaceHash(String(text, false), String(system->getName(), false),
+                                                String("#SYSTEM_NAME", false));
+        }
+        delete station;
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#SYSTEM_NAME", false))) {
+        SolarSystem *system;
+        if (Globals::status->stringHasToken(String(text, false), String("#DRINK_NAME", false))) {
+            system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
+            text = Globals::status->replaceHash(String(text, false),
+                                                String(*Globals::gameText->getText(system->getIndex() + 1406), false),
+                                                String("#DRINK_NAME", false));
+        } else {
+            system = Globals::globals->getRandomSystemForDrinks();
+        }
+        text = Globals::status->replaceHash(String(text, false), String(system->getName(), false),
+                                            String("#SYSTEM_NAME", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#CHILD_NAME", false))) {
+        String name = Globals::globals->getRandomName(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace(), true);
+        int space = (int) name.IndexOf(String(" ", false));
+        if (space >= 0) {
+            name = name.SubString(0, space);
+        }
+        text = Globals::status->replaceHash(String(text, false), String(name, false), String("#CHILD_NAME", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#SHIP_NAME", false))) {
+        int kind = Globals::rnd->nextInt(4);
+        text = Globals::status->replaceHash(
+                String(text, false),
+                String(*Globals::gameText->getText(Globals::globals->getRandomEnemyFighter(kind) + 913), false),
+                String("#SHIP_NAME", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#PLATFORM_NUMBER", false))) {
+        unsigned int platformIndex = Globals::rnd->nextInt(6);
+        const char *letter;
+        if (platformIndex < 4) {
+            letter = kPlatformLetters[platformIndex];
+        } else if (platformIndex == 4) {
+            letter = "E";
+        } else {
+            letter = "F";
+        }
+        String platform(letter, false);
+        text = Globals::status->replaceHash(String(text, false), platform + String(Globals::rnd->nextInt(10)),
+                                            String("#PLATFORM_NUMBER", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#CATASTROPHE", false))) {
+        text = Globals::status->replaceHash(String(text, false),
+                                            String(*Globals::gameText->getText(Globals::rnd->nextInt(5) + 3237), false),
+                                            String("#CATASTROPHE", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#VICTIMS", false))) {
+        int victims = Globals::rnd->nextInt(99000) + 100000;
+        text = Globals::status->replaceHash(String(text, false),
+                                            String(Layout::formatNumber(victims / 1000 * 1000), false),
+                                            String("#VICTIMS", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#BERGER_LASER", false))) {
+        String laser(*Globals::gameText->getText(Globals::rnd->nextInt(4) + 1279), false);
+        text = Globals::status->replaceHash(String(text, false), String(laser, false), String("#BERGER_LASER", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#VOSSK_SHIP_OR_ITEM", false))) {
+        int roll = Globals::rnd->nextInt(100);
+        String item;
+        String price;
+        if (roll < 40) {
+            item = *Globals::gameText->getText(922);
+        } else {
+            Array<Item *> *candidates = new Array<Item *>();
+            for (unsigned int i = 0; i < Globals::items->size(); ++i) {
+                Item *candidate = (*Globals::items)[i];
+                if (candidate->getAttribute(60) == 1 && candidate->getIngredients() == 0 &&
+                    candidate->getType() != 4) {
+                    ArrayAdd(candidate, *candidates);
+                }
+            }
+            int itemIndex = (*candidates)[Globals::rnd->nextInt(candidates->size())]->getIndex();
+            item = *Globals::gameText->getText(itemIndex + 1274);
+            delete candidates;
+        }
+        price = Layout::formatNumber((int) (Globals::status->getPlayingTime() / 1000000) + (roll < 40 ? 140 : 12));
+        text = Globals::status->replaceHash(String(text, false), String(item, false),
+                                            String("#VOSSK_SHIP_OR_ITEM", false));
+        text = Globals::status->replaceHash(String(text, false),
+                                            String(price, false) + String(" ", false) + *Globals::gameText->getText(3242),
+                                            String("#VOSSK_REVENUE", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#PROFESSION", false))) {
+        text = Globals::status->replaceHash(String(text, false),
+                                            String(*Globals::gameText->getText(Globals::rnd->nextInt(4) + 3243), false),
+                                            String("#PROFESSION", false));
+        int kind = Globals::rnd->nextInt(8);
+        String name = Globals::globals->getRandomName(kind, true);
+        text = Globals::status->replaceHash(String(text, false), String(name, false), String("#NAME", false));
+        text = Globals::status->replaceHash(String(text, false),
+                                            String(*Globals::gameText->getText(Globals::rnd->nextInt(4) + 3247), false),
+                                            String("#ACTIVITY", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#RACE_NAME", false))) {
+        text = Globals::status->replaceHash(String(text, false),
+                                            String(*Globals::gameText->getText(Globals::rnd->nextInt(4) + 406), false),
+                                            String("#RACE_NAME", false));
+        int kind = Globals::rnd->nextInt(8);
+        String name = Globals::globals->getRandomName(kind, true);
+        text = Globals::status->replaceHash(String(text, false), String(name, false), String("#NAME", false));
+        text = Globals::status->replaceHash(String(text, false),
+                                            String(*Globals::gameText->getText(Globals::rnd->nextInt(5) + 3251), false),
+                                            String("#CRIME", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#NIVELIAN_PLANET", false))) {
+        Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
+        int index = -1;
+        while (index < 0) {
+            SolarSystem *system = (*systems)[Globals::rnd->nextInt(systems->size())];
+            if (system->getRace() == 2) {
+                index = system->getIndex();
+            }
+        }
+        Array<int> *stations = (Array<int> *) (*systems)[index]->getStations();
+        Station *station = (Station *) (intptr_t) Globals::galaxy->getStation(
+                (*stations)[Globals::rnd->nextInt(stations->size())]);
+        text = Globals::status->replaceHash(String(text, false), String(station->getName(), false),
+                                            String("#NIVELIAN_PLANET", false));
+        int demonstrators = Globals::rnd->nextInt(990000) + 1000000;
+        String count = Layout::formatNumber(demonstrators / 1000 * 1000);
+        text = Globals::status->replaceHash(String(text, false), String(count, false),
+                                            String("#DEMONSTRATORS", false));
+        delete station;
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#POLL_PERCENTAGE", false))) {
+        text = Globals::status->replaceHash(String(text, false), String(Globals::rnd->nextInt(80) + 10),
+                                            String("#POLL_PERCENTAGE", false));
+        text = Globals::status->replaceHash(String(text, false),
+                                            String(*Globals::gameText->getText(Globals::rnd->nextInt(6) + 3256), false),
+                                            String("#POLL_TOPIC", false));
+    }
+
+    if (Globals::status->stringHasToken(String(text, false), String("#CASUALTIES", false))) {
+        text = Globals::status->replaceHash(String(text, false),
+                                            2 + String(String(Globals::rnd->nextInt(48)), false),
+                                            String("#CASUALTIES", false));
+    }
+
+    return String(text, false);
 }
 
