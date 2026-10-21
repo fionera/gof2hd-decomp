@@ -4,7 +4,7 @@
 
 class HackingGame {
 public:
-    HackingGame(int type, int canvas, int rewardItem, int rewardAmount, int dockingIndex);
+    HackingGame(int type, int difficulty, int rewardItem, int rewardAmount, int dockingIndex);
 
     ~HackingGame();
 

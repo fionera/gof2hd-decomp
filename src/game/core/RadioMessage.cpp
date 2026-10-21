@@ -106,305 +106,222 @@ int RadioMessage::getSoundID() {
     return 0;
 }
 
-namespace {
-    uint8_t enemyFriendFlag(Player *player) {
-        return static_cast<uint8_t>(reinterpret_cast<uint16_t &>(player->enemyFlagsLo) >> 8);
-    }
-}
-
 int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script) {
-    if (this->triggeredFlag != 0) {
+    if (this->triggeredFlag)
         return 0;
-    }
 
-    auto setResult = [this](int value) -> int {
-        this->triggeredFlag = static_cast<uint8_t>(value);
-        if (value == 0) {
-            return 0;
-        }
-        this->radio->currentMessage = this;
-        return 1;
-    };
-    auto triggerResult = [this]() -> int {
-        this->triggeredFlag = 1;
-        this->radio->currentMessage = this;
-        return 1;
-    };
-
-    auto selectTarget = [this](Array<Player *> *list, int i) -> Player * {
-        return list->data()[this->targetIndices[i]];
-    };
-
+    Array<Player *> *enemies;
     switch (this->conditionType) {
-        case 0: {
-            if (ego->getRoute() == 0) {
-                break;
-            }
-            int current = reinterpret_cast<Route *>(static_cast<intptr_t>(ego->getRoute()))->getCurrent();
-            int last = this->lastRouteIndex;
-            int value = 0;
-            if (current > last) {
-                value = (last == this->conditionValue);
-            }
-            this->lastRouteIndex = current;
-            this->triggeredFlag = static_cast<uint8_t>(value);
-            if (value != 0) {
-                this->radio->currentMessage = this;
-                return 1;
-            }
-            return 0;
-        }
-
-        case 1: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            for (int i = 0; i < this->targetCount; ++i) {
-                if (selectTarget(list, i)->isDead()) {
-                    return triggerResult();
-                }
+        case 0: // the ego reached the given waypoint of its route
+            if (ego->getRoute() == 0)
+                goto reject;
+            {
+                bool reached = false;
+                if (((Route *) (intptr_t) ego->getRoute())->getCurrent() > this->lastRouteIndex)
+                    reached = this->lastRouteIndex == this->conditionValue;
+                this->lastRouteIndex = ((Route *) (intptr_t) ego->getRoute())->getCurrent();
+                this->triggeredFlag = reached;
             }
             break;
-        }
-
-        case 2: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
+        case 1: // one of the targets died
+            enemies = ego->player->getEnemies();
             for (int i = 0; i < this->targetCount; ++i) {
-                Player *player = selectTarget(list, i);
-                if (enemyFriendFlag(player) != 0 && player->isDead()) {
-                    return triggerResult();
+                if ((*enemies)[this->targetIndices[i]]->isDead()) {
+                    goto fire;
                 }
             }
-            break;
-        }
-
+            goto reject;
+        case 2: // one of the friendly targets died
+            enemies = ego->player->getEnemies();
+            for (int i = 0; i < this->targetCount; ++i) {
+                if ((*enemies)[this->targetIndices[i]]->carriesFriendCargoFlag &&
+                    (*enemies)[this->targetIndices[i]]->isDead()) {
+                    goto fire;
+                }
+            }
+            goto reject;
         case 3:
-            return setResult(ego->level->getEnemiesLeft() < 1);
-
+            this->triggeredFlag = ego->level->getEnemiesLeft() < 1;
+            break;
         case 4:
-            return setResult(ego->level->getFriendsLeft() < 1);
-
+            this->triggeredFlag = ego->level->getFriendsLeft() < 1;
+            break;
         case 5:
-            return setResult(time >= static_cast<int64_t>(this->conditionValue));
-
-        case 6: {
-            RadioMessage * message = this->radio->getMessage(this->conditionValue);
-            return setResult(message->triggeredFlag);
-        }
-
-        case 8: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
+            this->triggeredFlag = time >= this->conditionValue;
+            break;
+        case 6:
+            this->triggeredFlag = this->radio->getMessage(this->conditionValue)->triggeredFlag;
+            break;
+        case 8: // one of the targets became active
+            enemies = ego->player->getEnemies();
             for (int i = 0; i < this->targetCount; ++i) {
-                Player *player = selectTarget(list, i);
-                if (!player->isAsteroid() && player->isActive()) {
-                    return triggerResult();
+                if (!(*enemies)[this->targetIndices[i]]->isAsteroid() &&
+                    (*enemies)[this->targetIndices[i]]->isActive()) {
+                    goto fire;
                 }
             }
-            break;
-        }
-
-        case 9: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
+            goto reject;
+        case 9: // all targets died
+            enemies = ego->player->getEnemies();
             for (int i = 0; i < this->targetCount; ++i) {
-                if (!selectTarget(list, i)->isDead()) {
-                    break;
-                }
-                if (i + 1 >= this->targetCount) {
-                    return triggerResult();
-                }
+                if (!(*enemies)[this->targetIndices[i]]->isDead())
+                    goto reject;
             }
-            break;
-        }
-
-        case 10: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
+            goto fire;
+        case 10: // one of the friendly targets became active
+            enemies = ego->player->getEnemies();
             for (int i = 0; i < this->targetCount; ++i) {
-                Player *player = selectTarget(list, i);
-                if (!player->isAsteroid() && enemyFriendFlag(player) != 0 && player->isActive()) {
-                    return triggerResult();
+                if (!(*enemies)[this->targetIndices[i]]->isAsteroid() &&
+                    (*enemies)[this->targetIndices[i]]->carriesFriendCargoFlag &&
+                    (*enemies)[this->targetIndices[i]]->isActive()) {
+                    goto fire;
                 }
             }
+            goto reject;
+        case 11:
+            this->triggeredFlag = this->objective->achieved((int) time);
             break;
-        }
-
-        case 0x0b:
-            return setResult(this->objective->achieved(static_cast<int>(time)));
-
-        case 0x0c: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
+        case 12: // one of the targets is below half hull
+            enemies = ego->player->getEnemies();
             for (int i = 0; i < this->targetCount; ++i) {
-                Player *target = selectTarget(list, i);
-                if (target->getHitpoints() < target->getMaxHitpoints() / 2) {
-                    return triggerResult();
+                if ((*enemies)[this->targetIndices[i]]->getHitpoints() <
+                    (*enemies)[this->targetIndices[i]]->getMaxHitpoints() / 2) {
+                    goto fire;
                 }
             }
+            goto reject;
+        case 14:
+            this->triggeredFlag =
+                    (*ego->player->getEnemies())[this->conditionValue]->getKIPlayer()->lostMissionCrateToEgo;
             break;
-        }
-
-        case 0x0e: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            KIPlayer *ki = list->data()[this->conditionValue]->getKIPlayer();
-            return setResult(ki->lostMissionCrateToEgo);
-        }
-
-        case 0x0f: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            for (uint32_t i = 0; i < list->size(); ++i) {
-                Player *player = list->data()[i];
-                if (!player->isAsteroid() && player->isDead()) {
-                    return triggerResult();
+        case 15: // any ship died
+            enemies = ego->player->getEnemies();
+            for (unsigned int i = 0; i < enemies->size(); ++i) {
+                if (!(*enemies)[i]->isAsteroid() && (*enemies)[i]->isDead()) {
+                    goto fire;
                 }
             }
+            goto reject;
+        case 16: // any non-friendly ship is active
+            enemies = ego->player->getEnemies();
+            for (unsigned int i = 0; i < enemies->size(); ++i) {
+                if (!(*enemies)[i]->isAsteroid() && (*enemies)[i]->isActive() &&
+                    !(*enemies)[i]->isAlwaysFriend()) {
+                    goto fire;
+                }
+            }
+            goto reject;
+        case 17:
+            enemies = ego->player->getEnemies();
+            for (unsigned int i = 0; i < enemies->size(); ++i) {
+                if ((int) i != this->conditionValue && !(*enemies)[i]->isAsteroid() && (*enemies)[i]->isDead())
+                    goto fire;
+            }
+            goto fire;
+        case 18:
+            if ((*ego->player->getEnemies())[this->conditionValue]->getKIPlayer()->lostMissionCrateToEgo)
+                goto fire;
+                this->triggeredFlag =
+                        (*ego->player->getEnemies())[this->conditionValue]->getKIPlayer()->field_0x6a;
             break;
-        }
-
-        case 0x10: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            for (uint32_t i = 0; i < list->size(); ++i) {
-                Player *player = list->data()[i];
-                if (!player->isAsteroid() && player->isActive() && !player->isAlwaysFriend()) {
-                    return triggerResult();
-                }
-            }
-            break;
-        }
-
-        case 0x11: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            for (uint32_t i = 0; i < list->size(); ++i) {
-                if (i == static_cast<uint32_t>(this->conditionValue)) {
-                    continue;
-                }
-                Player *player = list->data()[i];
-                if (player->isAsteroid()) {
-                    continue;
-                }
-                if (player->isDead()) {
-                    break;
-                }
-            }
-            return triggerResult();
-        }
-
-        case 0x12: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            KIPlayer *ki = list->data()[this->conditionValue]->getKIPlayer();
-            if (ki->lostMissionCrateToEgo != 0) {
-                return triggerResult();
-            }
-            ki = list->data()[this->conditionValue]->getKIPlayer();
-            return setResult(ki->field_0x6a);
-        }
-
-        case 0x13: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
+        case 19: // one of the targets is below a quarter hull
+            enemies = ego->player->getEnemies();
             for (int i = 0; i < this->targetCount; ++i) {
-                Player *target = selectTarget(list, i);
-                if (target->getHitpoints() < target->getMaxHitpoints() / 4) {
-                    return triggerResult();
+                if ((*enemies)[this->targetIndices[i]]->getHitpoints() <
+                    (*enemies)[this->targetIndices[i]]->getMaxHitpoints() / 4) {
+                    goto fire;
                 }
             }
-            break;
-        }
-
-        case 0x14: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
+            goto reject;
+        case 20: { // the given number of ships died
+            enemies = ego->player->getEnemies();
             int dead = 0;
-            for (uint32_t i = 0; i < list->size(); ++i) {
-                Player *player = list->data()[i];
-                if (!player->isAsteroid()) {
-                    dead += player->isDead();
-                }
-                if (dead >= this->conditionValue) {
-                    return triggerResult();
-                }
+            for (unsigned int i = 0; i < enemies->size(); ++i) {
+                if (!(*enemies)[i]->isAsteroid())
+                    dead += (*enemies)[i]->isDead();
+                if (dead >= this->conditionValue)
+                    goto fire;
             }
+            goto reject;
+        }
+        case 21:
+            this->triggeredFlag = (*ego->player->getEnemies())[this->conditionValue]->getKIPlayer()->field_0x24;
             break;
-        }
-
-        case 0x15: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            KIPlayer *ki = list->data()[this->conditionValue]->getKIPlayer();
-            return setResult(ki->field_0x24);
-        }
-
-        case 0x16:
-            return setResult(ego->level->field_1c >= this->conditionValue);
-
-        case 0x17:
-            return setResult(static_cast<Radar *>(ego->field_0x14)->stationLocked());
-
-        case 0x18: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            Player *player = list->data()[this->conditionValue];
-            if (!player->isActive()) {
-                int value = (!player->isDead()) & (time > 0xea5fLL);
-                return setResult(value);
-            }
+        case 22:
+            this->triggeredFlag = ego->level->field_1c >= this->conditionValue;
             break;
-        }
-
-        case 0x19: {
-            if (ego->getRoute() == 0) {
-                break;
-            }
-            int current = reinterpret_cast<Route *>(static_cast<intptr_t>(ego->getRoute()))->getCurrent();
+        case 23:
+            this->triggeredFlag = ego->field_0x14->stationLocked();
+            break;
+        case 24:
+            if ((*ego->player->getEnemies())[this->conditionValue]->isActive())
+                goto reject;
+            this->triggeredFlag =
+                        !(*ego->player->getEnemies())[this->conditionValue]->isDead() & (time >= 60000);
+            break;
+        case 25: { // passed the first waypoint with the given number of ships alive
+            if (ego->getRoute() == 0)
+                goto reject;
+            int current = ((Route *) (intptr_t) ego->getRoute())->getCurrent();
             int last = this->lastRouteIndex;
-            this->lastRouteIndex = current;
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            int active = 0;
-            for (uint32_t i = 0; i < list->size(); ++i) {
-                Player *player = list->data()[i];
-                if (!player->isAsteroid()) {
-                    active += player->isDead() ^ 1;
-                }
+            this->lastRouteIndex = ((Route *) (intptr_t) ego->getRoute())->getCurrent();
+            enemies = ego->player->getEnemies();
+            int alive = 0;
+            for (unsigned int i = 0; i < enemies->size(); ++i) {
+                if (!(*enemies)[i]->isAsteroid())
+                    alive += !(*enemies)[i]->isDead();
             }
-            int value = (active >= this->conditionValue) & (current > last) & (last == 0);
-            return setResult(value);
+            this->triggeredFlag = (alive >= this->conditionValue) & ((current > last) & (last == 0));
+            break;
         }
-
-        case 0x1a: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            Player *player = list->data()[0];
-            if (!player->isActive() || player->isDead()) {
-                break;
-            }
-            Vector pos = player->getPosition();
-            float dz = pos.z - static_cast<float>(this->conditionValue);
-            if (dz > 0.0f) {
-                return setResult(dz < 5000.0f);
-            }
-            return setResult(dz > -5000.0f);
+        case 26: { // the first ship is within 5000 units of the given depth
+            Player *ship = (*ego->player->getEnemies())[0];
+            if (!ship->isActive() || ship->isDead())
+                goto reject;
+            if (ship->getPosition().z - (float) this->conditionValue > 0.0f)
+                this->triggeredFlag = ship->getPosition().z - (float) this->conditionValue < 5000.0f;
+            else
+                this->triggeredFlag = ship->getPosition().z - (float) this->conditionValue > -5000.0f;
+            break;
         }
-
-        case 0x1b:
-            return setResult(script->getEvent() - this->conditionValue == 0);
-
-        case 0x1c:
-            return setResult(static_cast<Player *>(ego->player)->getArmorHP() < 1);
-
-        case 0x1e: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
+        case 27:
+            this->triggeredFlag = script->getEvent() == this->conditionValue;
+            break;
+        case 28:
+            this->triggeredFlag = ego->player->getArmorHP() < 1;
+            break;
+        case 30: { // the given number of the escorted ships died
+            enemies = ego->player->getEnemies();
             int dead = 0;
             for (int i = 2; i != 6; ++i) {
-                Player *player = list->data()[i];
-                if (!player->isAsteroid()) {
-                    dead += player->isDead();
-                }
+                if (!(*enemies)[i]->isAsteroid())
+                    dead += (*enemies)[i]->isDead();
             }
-            return setResult(dead - this->conditionValue == 0);
-        }
-
-        case 0x1f: {
-            Array<Player *> *list = static_cast<Player *>(ego->player)->getEnemies();
-            for (int i = 0; i < this->targetCount; ++i) {
-                Player *target = selectTarget(list, i);
-                if (target->getHitpoints() < target->getMaxHitpoints() / 4 * 3) {
-                    return triggerResult();
-                }
-            }
+            this->triggeredFlag = dead == this->conditionValue;
             break;
         }
+        case 31: // one of the targets is below three quarters hull
+            enemies = ego->player->getEnemies();
+            for (int i = 0; i < this->targetCount; ++i) {
+                if ((*enemies)[this->targetIndices[i]]->getHitpoints() <
+                    (*enemies)[this->targetIndices[i]]->getMaxHitpoints() / 4 * 3) {
+                    goto fire;
+                }
+            }
+            goto reject;
+        default:
+            goto reject;
     }
+    if (!this->triggeredFlag)
+        return 0;
+    this->radio->setCurrentMessage(this);
+    return 1;
 
+fire:
+    this->triggeredFlag = 1;
+    this->radio->setCurrentMessage(this);
+    return 1;
+reject:
     this->triggeredFlag = 0;
     return 0;
 }
