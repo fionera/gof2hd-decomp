@@ -2414,14 +2414,26 @@ void PaintCanvas::Begin3d() {
     return glLoadIdentity();
 }
 
-void paintcanvas_ext_transform_addmesh(AbyssEngine::PaintCanvas *, void *, // lint: void_ptr (external symbol; mangling must match lib)
-                                       unsigned short, bool);
-
 void PaintCanvas::TransformAddMesh(unsigned int transformIndex,
                                    unsigned short meshId, bool b) {
     if (transformIndex < this->transforms.count) {
-        PCTransformView *t = (PCTransformView *) this->transforms.data_[transformIndex];
-        return paintcanvas_ext_transform_addmesh(this, t, meshId, b);
+        unsigned int meshIndex = 0xffffffff;
+        this->MeshCreate(meshId, meshIndex, b);
+        if (meshIndex == 0xffffffff) {
+            return;
+        }
+        ArrayAdd<AbyssEngine::Mesh *>(this->meshes.data_[meshIndex],
+                                      this->transforms.data_[transformIndex]->meshes);
+        this->transforms.data_[transformIndex]->bounds().Merge(
+                *(const AbyssEngine::AEMath::BSphere *) &this->meshes.data_[meshIndex]->boundsCenterX);
+        AbyssEngine::Transform *anim = this->meshes.data_[meshIndex]->animation;
+        if (anim != 0) {
+            if (this->transforms.data_[transformIndex]->animationLength < anim->animationLength) {
+                this->transforms.data_[transformIndex]->SetAnimationLength(anim->animationLength);
+            }
+            this->transforms.data_[transformIndex]->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
+        }
+        this->transforms.data_[transformIndex]->CollectAnimationData();
     }
 }
 
@@ -4042,9 +4054,6 @@ void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
     }
     out = idx;
 }
-
-
-
 
 void PaintCanvas::FogSetParameter(AbyssEngine::FogMode mode, float fogStart, float fogEnd,
                                   float fogDensity, unsigned int color) {
