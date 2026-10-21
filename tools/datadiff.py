@@ -6,8 +6,15 @@ symbol, or RELATIVE): those compare by the symbol / object(+offset) / function t
 two links place things at different addresses. .bss objects (no file bytes) compare by size only.
 
 Usage: datadiff.py <original.so> <ours.so> [--top N] [--json out]
+       datadiff.py <original.so> <ours.so> --sections [--objdump OBJDUMP] [--top N]
+
+--sections (phase 2, local data): section sizes, then the original's .rodata strings (>=4 printable
+chars) and 16-byte binary chunks that occur nowhere in ours (plus our strings absent from the
+original -- usually invented placeholders). With --objdump, every gap is attributed to the
+original functions that reach it PC-relatively (ldr rX,[pc] + add rX,pc), i.e. the bodies whose
+literals/tables are missing or wrong.
 """
-import argparse, bisect, json, struct, sys, os
+import argparse, bisect, json, re, struct, subprocess, sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "verify"))
 from elf import Elf32, SHT_REL, SHT_DYNSYM  # noqa: E402
 
@@ -72,12 +79,106 @@ class Side:
         return out
 
 
+def _sec(e, name):
+    s = next((x for x in e.sections if x["name"] == name), None)
+    return (e.data[s["offset"]:s["offset"] + s["size"]], s["addr"]) if s else (b"", 0)
+
+
+_STR = re.compile(rb"[\x20-\x7e\t\n\r]{4,}\x00")
+
+
+def pic_xrefs(side, objdump):
+    """(target address, function) for every `ldr rX,[pc,#n]` ... `add rX,pc` pair in .text."""
+    text = next(s for s in side.e.sections if s["name"] == ".text")
+    out = subprocess.run([objdump, "-d", "-M", "force-thumb", "-j", ".text", side.e.path],
+                         capture_output=True, text=True).stdout if hasattr(side.e, "path") else ""
+    funcs = sorted((f["value"] & ~1, n) for n, f in side.e.functions().items())
+    starts = [f[0] for f in funcs]
+    ldr = re.compile(r"^\s*([0-9a-f]+):\s.*\tldr(?:\.w)?\s+(\w+), \[pc, #-?\d+\]\s+; \(([0-9a-f]+)")
+    add = re.compile(r"^\s*([0-9a-f]+):\s.*\tadd\s+(\w+), pc$")
+    regs, refs = {}, []
+    for line in out.splitlines():
+        m = ldr.match(line)
+        if m:
+            a = int(m.group(3), 16)
+            if text["addr"] - 0x100000 <= a < text["addr"] + text["size"] + 0x100000:
+                try:
+                    regs[m.group(2)] = struct.unpack("<I", side.e.bytes_at(a, 4))[0]
+                except Exception:  # noqa: BLE001
+                    pass
+            continue
+        m = add.match(line)
+        if m and m.group(2) in regs:
+            at = int(m.group(1), 16)
+            t = (regs.pop(m.group(2)) + at + 4) & 0xFFFFFFFF
+            i = bisect.bisect_right(starts, at) - 1
+            refs.append((t, funcs[i][1] if i >= 0 else "?"))
+    refs.sort()
+    return refs
+
+
+def section_report(o, u, objdump, top):
+    for name in (".rodata", ".data.rel.ro", ".data", ".bss"):
+        so = next((x for x in o.e.sections if x["name"] == name), None)
+        su = next((x for x in u.e.sections if x["name"] == name), None)
+        if so and su:
+            print(f"{name:<14} orig {so['size']:>7}  ours {su['size']:>7}  delta {su['size'] - so['size']:>+7}")
+    orod, oaddr = _sec(o.e, ".rodata")
+    urod, _ = _sec(u.e, ".rodata")
+    refs = pic_xrefs(o, objdump) if objdump else []
+    keys = [r[0] for r in refs]
+
+    def who(a, n):
+        if not refs:
+            return ""
+        j, k = bisect.bisect_left(keys, a - 96), bisect.bisect_right(keys, a + n)
+        fns = sorted({f for _, f in refs[j:k]})
+        return "  <- " + ", ".join(fns[:3]) + (" ..." if len(fns) > 3 else "")
+
+    mask = bytearray(len(orod))
+    miss_s = []
+    for m in _STR.finditer(orod):
+        mask[m.start():m.end()] = b"\x01" * (m.end() - m.start())
+        if m.group(0) not in urod:
+            miss_s.append((m.start() + oaddr, m.group(0)))
+    print(f"\n.rodata strings missing from ours: {len(miss_s)} ({sum(len(x) for _, x in miss_s)} B)")
+    for a, st in sorted(miss_s, key=lambda r: -len(r[1]))[:top]:
+        print(f"  {a:#x} {len(st):>5}  {st[:60]!r}{who(a, len(st))}")
+    extra = [m.group(0) for m in _STR.finditer(urod) if m.group(0) not in orod]
+    print(f"\nour .rodata strings absent from the original: {len(extra)} ({sum(map(len, extra))} B)")
+    for st in sorted(extra, key=len, reverse=True)[:top]:
+        print(f"  {len(st):>5}  {st[:70]!r}")
+    runs, i = [], 0
+    while i + 16 <= len(orod):
+        if mask[i] or i % 4:
+            i += 1
+            continue
+        w = orod[i:i + 16]
+        if not any(mask[i:i + 16]) and w.count(0) != 16 and w not in urod:
+            if runs and runs[-1][1] == i:
+                runs[-1][1] = i + 16
+            else:
+                runs.append([i, i + 16])
+            i += 16
+        else:
+            i += 4
+    print(f"\n.rodata binary chunks missing from ours: {len(runs)} runs ({sum(b - a for a, b in runs)} B)")
+    for a, b in sorted(runs, key=lambda r: r[0] - r[1])[:top]:
+        print(f"  {a + oaddr:#x} {b - a:>6}  {orod[a:a + 16].hex()}{who(a + oaddr, b - a)}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("original"); ap.add_argument("ours")
     ap.add_argument("--top", type=int, default=30); ap.add_argument("--json")
+    ap.add_argument("--sections", action="store_true", help="phase-2 local-data gap report")
+    ap.add_argument("--objdump", help="NDK objdump: attribute gaps to original functions")
     a = ap.parse_args()
     o, u = Side(a.original), Side(a.ours)
+    if a.sections:
+        o.e.path = a.original
+        section_report(o, u, a.objdump, a.top)
+        return
     common = sorted(set(o.objs) & set(u.objs))
     rows, exact = [], 0
     for n in common:
