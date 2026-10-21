@@ -222,7 +222,7 @@ ALL_CRITS = SOFT + HARD
 
 def collect(root):
     """Return per-file per-criterion counts: {crit: {relpath: count}} plus raw items for display."""
-    files = sorted(p for p in root.rglob("*") if p.suffix in (".cpp", ".h", ".hpp"))
+    files = sorted(p for p in root.rglob("*") if p.suffix in (".c", ".cpp", ".h", ".hpp"))
     counts = {c: {} for c in ALL_CRITS}
     items = {c: [] for c in ALL_CRITS}
     for f in files:
