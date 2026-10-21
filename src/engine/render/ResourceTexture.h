@@ -29,7 +29,12 @@ namespace AbyssEngine {
             delete[] utf8;
         }
 
-        ~ResourceTexture();
+        // Inline (the original exports only a WEAK D2, emitted at 0x77ebc.. by the PaintCanvas TU,
+        // right after ReleaseAllResources).
+        ~ResourceTexture() {
+            delete[] this->name;
+            this->name = nullptr;
+        }
     };
 }
 

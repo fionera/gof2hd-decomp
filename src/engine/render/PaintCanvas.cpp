@@ -1504,7 +1504,6 @@ void PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
     }
 }
 
-static const char g_getline_empty_7c428[] = "";
 
 void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWidth,
                           AbyssEngine::String *out) {
@@ -1534,7 +1533,7 @@ void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWid
     if ((int) str.size() > 1) {
         *out = str.SubString(0, str.size());
     } else {
-        *out = AbyssEngine::String(g_getline_empty_7c428, false);
+        *out = AbyssEngine::String("", false);
     }
 }
 
@@ -2673,27 +2672,6 @@ void PaintCanvas::Suspend() {
     }
 }
 
-void PaintCanvas::DrawTransform(Transform *tf, const AbyssEngine::AEMath::Matrix &m2,
-                                AbyssEngine::AEMath::Matrix &m3) {
-    if (tf && tf->visible) {
-        AbyssEngine::AEMath::Matrix world = m2 * tf->worldMatrix;
-        if (tf->keyFrames.size() != 0) {
-            world *= tf->rotationMatrix;
-        }
-        for (unsigned int i = 0; i < tf->meshes.size(); i++) {
-            this->DrawMesh(tf->meshes[i], world, m3, tf->color, tf->localMatrix);
-        }
-        for (unsigned int i = 0; i < tf->children.size(); i++) {
-            if (this->currentCamera < this->cameras.count &&
-                tf->children[i]->InCameraVF(&world, (this->cameras.data_)[this->currentCamera])) {
-                this->DrawTransform(tf->children[i], world, m3);
-            } else {
-                this->culledCount += 1;
-            }
-        }
-    }
-}
-
 void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
                               int w, int h, unsigned char alignFlags, unsigned char anchorFlags,
                               unsigned char flipFlags) {
@@ -3556,29 +3534,6 @@ void PaintCanvas::ReleaseAllResources() {
     this->field_0x1cc = 0;
 }
 
-// The Resource* payload classes' destructors live in the PaintCanvas TU in the original
-// (0x77ebc.., right after ReleaseAllResources; iOS dump: Resource* classes in PaintCanvas.cpp).
-AbyssEngine::ResourceTexture::~ResourceTexture() {
-    delete[] this->name;
-    this->name = nullptr;
-}
-
-AbyssEngine::ResourceMesh::~ResourceMesh() {
-    delete[] this->name;
-    this->name = nullptr;
-}
-
-AbyssEngine::ResourceTransform::~ResourceTransform() {
-    if (this->dataA != nullptr) {
-        ::operator delete[](this->dataA);
-    }
-    this->dataA = nullptr;
-
-    if (this->dataB != nullptr) {
-        ::operator delete[](this->dataB);
-    }
-    this->dataB = nullptr;
-}
 
 AbyssEngine::PickedTextureRegion
 PaintCanvas::TransformGet2DPickedTextureRegion(unsigned int transformIndex, int x, int y, int z,

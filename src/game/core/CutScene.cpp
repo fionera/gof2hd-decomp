@@ -40,9 +40,6 @@ CutScene::CutScene(int mode) {
     this->cameraId70 = (uint32_t) -1;
     this->initialized = 0;
     this->geometries = nullptr;
-    this->vec8.x = 0.0f;
-    this->vec8.y = 0.0f;
-    this->vec8.z = 0.0f;
     this->vec8w = 0.0f;
     this->geom28 = nullptr;
     this->geom2c = nullptr;

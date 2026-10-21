@@ -256,8 +256,8 @@ void MeshMerger::init() {
     uint32_t indexCount = 0;
     for (int i = 0; i < this->rows; i++) {
         Mesh *mesh = this->sourceMeshes[i];
-        indexCount += (uint32_t) mesh->indexCount / 3u;
         vertexCount += mesh->vertexCount;
+        indexCount += (uint32_t) mesh->indexCount / 3u;
     }
 
     this->canvas->MeshCreate((uint16_t) vertexCount, (uint16_t) indexCount,

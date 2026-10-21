@@ -28,7 +28,7 @@ public:
 
     ~MineGun();
 
-    int isMineGun() override;
+    int isMineGun() override { return 1; }
 
     void render();
 

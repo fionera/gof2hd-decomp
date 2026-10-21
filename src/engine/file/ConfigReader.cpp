@@ -33,7 +33,7 @@ namespace AbyssEngine {
         void ReadTimer(ConfigReader *reader, Engine *engine) {
             String line = reader->GetNewLine();
             if (line.Compare("EOF") != 0)
-                reinterpret_cast<int &>(engine->explosionTimeline) = line.ValueOf();
+                engine->timerInterval = line.ValueOf();
         }
 
         // [KEYMAP]: up to 64 "<code>,<name>" lines; the mapping is only applied when all 64 are present.

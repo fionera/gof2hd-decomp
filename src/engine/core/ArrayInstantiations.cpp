@@ -102,7 +102,6 @@ template void ArrayReleaseClasses<AELowLevelFile *>(Array<AELowLevelFile *> &);
 
 template void ArrayReleaseClasses<PendingProduct *>(Array<PendingProduct *> &);
 
-template void ArrayReleaseClasses<Node *>(Array<Node *> &);
 
 template void ArrayReleaseClasses<BluePrint *>(Array<BluePrint *> &);
 

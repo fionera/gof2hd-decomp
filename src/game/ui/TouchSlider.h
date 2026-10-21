@@ -15,8 +15,8 @@ public:
     int trackHeight;
     float value;
     int numSteps;
-    int trackImage;
-    int knobImage;
+    unsigned int trackImage;
+    unsigned int knobImage;
     uint8_t isDragging;
     uint8_t isDisabled;
     int touchPadding;

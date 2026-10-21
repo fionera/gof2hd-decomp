@@ -403,10 +403,9 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         if (Globals::status->getCurrentCampaignMission() == 102 && !Globals::status->inAlienOrbit() &&
             Globals::status->getStation()->getIndex() == 113)
             passengers = false;
-        else if (Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit())
-            passengers = Globals::status->getStation()->getIndex() != 131;
         else
-            passengers = true;
+            passengers = !(Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit() &&
+                           Globals::status->getStation()->getIndex() == 131);
         String count = String(Globals::status->field_178) + String(" / ") +
                        String(Globals::status->getShip()->getMaxPassengers());
         if (passengers)
@@ -826,10 +825,9 @@ void Hud::updateQueue(int dt) {
         if ((*this->eventQueue)[1] == 0)
             this->eventQueueDirty = 0;
         this->eventQueuePaused = 0;
-        return;
-    }
-    if (this->eventQueueTimer > 2000 && this->eventQueuePaused == 0)
+    } else if (this->eventQueueTimer > 2000 && this->eventQueuePaused == 0) {
         this->eventQueuePaused = 1;
+    }
 }
 
 
@@ -1904,27 +1902,14 @@ void Hud::initHudMenu(int menuType, Level *level) {
             break;
         }
         case 1:
-            for (unsigned int i = 0; i < this->equipmentArray->size(); i++) {
+            for (int i = 0; (unsigned int) i < this->equipmentArray->size(); i++) {
                 if ((*this->equipmentArray)[i] == 0)
                     continue;
                 TouchButton *button = new TouchButton(
                         *Globals::gameText->getText((*this->equipmentArray)[i]->getIndex() + 1274) +
                         String(String(" (") + String((*this->equipmentArray)[i]->getAmount()) + String(")"), false),
                         0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
-                switch (i) {
-                    case 0:
-                        button->id = 0x2000;
-                        break;
-                    case 1:
-                        button->id = 0x4000;
-                        break;
-                    case 2:
-                        button->id = 0x8000;
-                        break;
-                    default:
-                        button->id = 0x10000;
-                        break;
-                }
+                button->id = i == 0 ? 0x2000 : i == 1 ? 0x4000 : i == 2 ? 0x8000 : 0x10000;
                 ArrayAdd(button, *this->menuButtons);
                 y += rowGap + Globals::layout->field_0x30_rowHeight;
             }
@@ -1932,7 +1917,11 @@ void Hud::initHudMenu(int menuType, Level *level) {
             break;
         case 2: {
             int textIds[4] = {307, 308, 309, (unsigned char) Globals::status->field_f8 != 0 ? 311 : 310};
-            int keys[4] = {0x20000, 0x40000, 0x80000, 0x100000};
+            int keys[4];
+            keys[0] = 0x20000;
+            keys[1] = 0x40000;
+            keys[2] = 0x80000;
+            keys[3] = 0x100000;
             for (unsigned int i = 0; i < 4; i++) {
                 TouchButton *button = new TouchButton(*Globals::gameText->getText(textIds[i]), 0, this->field_0x3d4, y,
                                                       this->field_0x3dc, 0x11, 4);
@@ -2002,10 +1991,9 @@ void Hud::initHudMenu(int menuType, Level *level) {
             if (Globals::iPad == 0 && this->menuButtons->size() >= 5) {
                 for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
                     TouchButton *button = (*this->menuButtons)[i];
-                    float x = button->getPosition().x;
-                    (*this->menuButtons)[i]->getPosition();
-                    button->setPosition((int) x, (int) ((*this->menuButtons)[i]->getPosition().y -
-                                                        (float) Globals::layout->field_0x30_rowHeight));
+                    button->setPosition((int) button->getPosition().x,
+                                        (int) ((*this->menuButtons)[i]->getPosition().y -
+                                               (float) Globals::layout->field_0x30_rowHeight));
                 }
             }
             Globals::Canvas->Image2DCreate(1268, this->image_0x35c);

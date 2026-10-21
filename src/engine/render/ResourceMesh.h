@@ -19,7 +19,12 @@ namespace AbyssEngine {
             memcpy(this->name, name, len + 1);
         }
 
-        ~ResourceMesh();
+        // Inline (the original exports only a WEAK D2, emitted at 0x77ebc.. by the PaintCanvas TU,
+        // right after ReleaseAllResources).
+        ~ResourceMesh() {
+            delete[] this->name;
+            this->name = nullptr;
+        }
     };
 }
 

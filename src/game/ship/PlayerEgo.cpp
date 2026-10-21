@@ -86,7 +86,7 @@ static const int kHiddenBlueprints[5] = {226, 221, 223, 225, 227};
 
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairPos;
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairShootPos;
-AbyssEngine::AEMath::Vector PlayerEgo::vec_up;
+AbyssEngine::AEMath::Vector PlayerEgo::vec_up = {0.0f, 1.0f, 0.0f};
 
 PlayerEgo::PlayerEgo(Player *player)
     : lastCrosshairPos(), lastCrosshairShootPos(), moveDirection(), moveTarget(), dockOffsetVec(), headingVec(),
@@ -1110,7 +1110,7 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     this->autoPilotTarget = v;
     this->autoPilot = (v != 0) ? 1 : 0;
     if (v == 0) {
-        ((KIPlayer *) this->field_0x14)->autoPilotState = 0;
+        ((KIPlayer *) this->field_0x14)->shipPosition.x = 0;
         if (old != 0) {
             this->bankHistoryIndex = 0;
             this->bankHistoryFilled = 0;

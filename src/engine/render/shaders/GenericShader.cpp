@@ -61,7 +61,7 @@ static const char *const kGenericShaderFragmentSource =
     "}  \n";
 
 namespace AbyssEngine {
-    int GenericShader::ShaderIndex;
+    int GenericShader::ShaderIndex = -1;
 
     void GenericShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kGenericShaderVertexSource, kGenericShaderFragmentSource);
@@ -121,11 +121,11 @@ namespace AbyssEngine {
             if (this->uGlColorLoc >= 0)
                 glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
             if (this->uAmbientColorLoc >= 0)
-                glUniform3fv(this->uAmbientColorLoc, 1, (const float *) &engine->lightAmbientShaded);
+                glUniform3fv(this->uAmbientColorLoc, 1, (const float *) engine->ambientShaded[0]);
             if (this->uDiffuseColorLoc >= 0)
-                glUniform3fv(this->uDiffuseColorLoc, 1, (const float *) &engine->field_0x2fc);
+                glUniform3fv(this->uDiffuseColorLoc, 1, (const float *) engine->diffuseShaded[0]);
             if (this->uSpecularColorLoc >= 0)
-                glUniform3fv(this->uSpecularColorLoc, 1, (const float *) &engine->lightDiffuseShaded);
+                glUniform3fv(this->uSpecularColorLoc, 1, (const float *) engine->specularShaded[0]);
             if (this->uSpecularPowerLoc >= 0)
                 glUniform1f(this->uSpecularPowerLoc, engine->materialShininess);
             this->dirty = 0;

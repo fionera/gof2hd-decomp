@@ -70,7 +70,7 @@ static const char *const kSpecCubeMappingFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int SpecCubeMapping::ShaderIndex;
+    int SpecCubeMapping::ShaderIndex = -1;
 
     SpecCubeMapping::SpecCubeMapping() {
         SpecCubeMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
@@ -110,9 +110,9 @@ namespace AbyssEngine {
     void SpecCubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (this->dirty != 0) {
             glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
-            glUniform3fv(this->uAmbientColorLoc, 1, (const float *) &engine->lightAmbientShaded);
-            glUniform3fv(this->uDiffuseColorLoc, 1, (const float *) &engine->field_0x2fc);
-            glUniform3fv(this->uSpecularColorLoc, 1, (const float *) &engine->lightDiffuseShaded);
+            glUniform3fv(this->uAmbientColorLoc, 1, (const float *) engine->ambientShaded[0]);
+            glUniform3fv(this->uDiffuseColorLoc, 1, (const float *) engine->diffuseShaded[0]);
+            glUniform3fv(this->uSpecularColorLoc, 1, (const float *) engine->specularShaded[0]);
             glUniform1f(this->uSpecularPowerLoc, engine->materialShininess);
             this->dirty = 0;
         }

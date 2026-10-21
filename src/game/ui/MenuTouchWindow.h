@@ -153,7 +153,7 @@ public:
     int listX;
     int listTopY;
     int listBottomY;
-    uint32_t fadeValue;
+    float fadeValue; // difficulty factor of a new game (0.5 easy, 1.5 hard)
     int buttonWidth;
     int buttonYBias;
     int buttonRowGap;
@@ -216,7 +216,7 @@ public:
 
     float getRelativeScrollStartPos();
 
-    int OnTouchEnd(int y, int x, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    int OnTouchEnd(int x, int y, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
