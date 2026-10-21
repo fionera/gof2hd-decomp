@@ -247,48 +247,34 @@ void ModMainMenu::OnUpdate() {
 }
 
 void ModMainMenu::OnRender2D() {
-    ((PaintCanvas *) (long) this->paintCanvas)->Begin2d();
-    ((PaintCanvas *) (long) this->paintCanvas)->SetColor((unsigned int) this->paintCanvas);
+    ((PaintCanvas *) (intptr_t) this->paintCanvas)->Begin2d();
+    ((PaintCanvas *) (intptr_t) this->paintCanvas)->SetColor(0xffffffffu);
     this->cutScene->render2D();
 
-    if (this->logoActive == 0) {
+    if (!this->logoActive) {
         this->touchWindow->draw();
     } else {
-        int time = this->fadeTimer;
-        int color = time <= 0x0f3b
-                        ? (int) (((float) time / 3900.0f) * 255.0f) - 0x100
-                        : -1;
-        (void) color;
-        ((PaintCanvas *) (long) this->paintCanvas)->SetColor((unsigned int) this->paintCanvas);
-
-        Globals::Canvas->DrawImage2D((unsigned int) this->logoImage, 0, 0, (unsigned char) 'D');
-
-        if (this->fadeTimer >= 0x0f3c) {
-            int canvas = (int) (intptr_t) Globals::Canvas;
-            float pulse = AbyssEngine::AEMath::Sinf(
-                (float) Globals::appManager->GetSystemTimeMillis() * 0.003f);
-            float signedPulse = pulse > 0.0f ? pulse : -pulse;
-            int alpha = (unsigned int) (signedPulse * 255.0f);
-            (void) alpha;
-            Globals::Canvas->SetColor((unsigned char) canvas, 0xff, 0xff, 0xff);
-
-            AbyssEngine::String **stringHolder = g_ModMainMenu_r2d_string;
-            int *textIdHolder = g_ModMainMenu_r2d_textId;
-            int drawCanvas = (int) (intptr_t) Globals::Canvas;
-            AbyssEngine::String *drawStr = *stringHolder;
-            int text = (int) (long) ((GameText *) (*textIdHolder))->getText(0xc7);
-
-            int screenW = *g_ModMainMenu_r2d_screenW;
-            int textWidth = Globals::Canvas->GetTextWidth((unsigned int) drawCanvas, *drawStr);
-
-            int screenH = *g_ModMainMenu_r2d_screenH;
-            int imageHeight = Globals::Canvas->GetImage2DHeight((unsigned int) (intptr_t) Globals::Canvas);
-            Globals::Canvas->DrawString((unsigned int) drawCanvas, *drawStr, text,
-                                        (screenW >> 1) - (textWidth >> 1),
-                                        (bool) ((char) (screenH >> 1) + (char) (imageHeight >> 1) + '\n'));
+        // Logo fades in over 3.9 s, then a pulsing "touch to start" text appears below it.
+        unsigned int color = this->fadeTimer <= 3899
+                             ? (unsigned int) ((int) ((float) this->fadeTimer / 3900.0f * 255.0f) - 256)
+                             : 0xffffffffu;
+        ((PaintCanvas *) (intptr_t) this->paintCanvas)->SetColor(color);
+        Globals::Canvas->DrawImage2D((unsigned int) this->logoImage, 0, 0, 0x44, 0x44);
+        if (this->fadeTimer >= 3900) {
+            PaintCanvas *screen = Globals::Canvas;
+            float pulse = AbyssEngine::AEMath::Sinf((float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f) > 0.0f
+                          ? AbyssEngine::AEMath::Sinf((float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f)
+                          : -AbyssEngine::AEMath::Sinf((float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f);
+            screen->SetColor(0xff, 0xff, 0xff, (unsigned char) (pulse * 255.0f));
+            Globals::Canvas->DrawString(
+                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(199),
+                    (Globals::w >> 1) -
+                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                                   *Globals::gameText->getText(199)) >> 1),
+                    (Globals::h >> 1) + (Globals::Canvas->GetImage2DHeight((unsigned int) this->logoImage) >> 1) + 10,
+                    false);
         }
     }
-
     ((PaintCanvas *) (intptr_t) this->paintCanvas)->End2d();
 }
 
