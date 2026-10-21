@@ -509,7 +509,35 @@ namespace AbyssEngine {
 
         // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
         // axis-aligned bounds are collected; float streams are read verbatim.
-        if (packed != 0) {
+        if (packed == 0) {
+            if ((flags & 3) != 0) {
+                Mesh *mesh = *slot;
+                int *raw = (int *) new unsigned char[mesh->vertexCount * 12];
+                if (AEFile::Read(mesh->vertexCount * 12, raw, handle) == 0) {
+                    delete[] (unsigned char *) raw;
+                    return -1;
+                }
+                mesh = *slot;
+                mesh->positions = new float[mesh->vertexCount * 3];
+                mesh = *slot;
+                unsigned int count = mesh->vertexCount * 3;
+                for (unsigned int i = 0; i != count; i++) {
+                    unsigned int axis = i % 3;
+                    float value = raw[i];
+                    ((float *) mesh->positions)[i] = value;
+                    if (minimum[axis] > value)
+                        minimum[axis] = value;
+                    if (maximum[axis] < value)
+                        maximum[axis] = value;
+                }
+                delete[] (unsigned char *) raw;
+            } else if ((flags & 0x18) != 0) {
+                Mesh *mesh = *slot;
+                mesh->positions = new float[mesh->vertexCount * 3];
+                if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
+                    return -1;
+            }
+        } else {
             Mesh *mesh = *slot;
             short *raw = (short *) new unsigned char[mesh->vertexCount * 6];
             if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
@@ -530,40 +558,12 @@ namespace AbyssEngine {
                     maximum[axis] = value;
             }
             delete[] (unsigned char *) raw;
-        } else if ((flags & 3) != 0) {
-            Mesh *mesh = *slot;
-            int *raw = (int *) new unsigned char[mesh->vertexCount * 12];
-            if (AEFile::Read(mesh->vertexCount * 12, raw, handle) == 0) {
-                delete[] (unsigned char *) raw;
-                return -1;
-            }
-            mesh = *slot;
-            mesh->positions = new float[mesh->vertexCount * 3];
-            mesh = *slot;
-            unsigned int count = mesh->vertexCount * 3;
-            for (unsigned int i = 0; i != count; i++) {
-                unsigned int axis = i % 3;
-                float value = raw[i];
-                ((float *) mesh->positions)[i] = value;
-                if (minimum[axis] > value)
-                    minimum[axis] = value;
-                if (maximum[axis] < value)
-                    maximum[axis] = value;
-            }
-            delete[] (unsigned char *) raw;
-        } else if ((flags & 0x18) != 0) {
-            Mesh *mesh = *slot;
-            mesh->positions = new float[mesh->vertexCount * 3];
-            if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
-                return -1;
         }
 
-        Vector center = {(maximum[0] + minimum[0]) * 0.5f, (maximum[1] + minimum[1]) * 0.5f,
-                         (maximum[2] + minimum[2]) * 0.5f};
-        (*slot)->bounds.center = center;
-        Vector high = {maximum[0], maximum[1], maximum[2]};
-        Vector low = {minimum[0], minimum[1], minimum[2]};
-        (*slot)->bounds.radius = AEMath::VectorLength(high - low);
+        (*slot)->bounds.center = Vector((maximum[0] + minimum[0]) * 0.5f, (maximum[1] + minimum[1]) * 0.5f,
+                                        (maximum[2] + minimum[2]) * 0.5f);
+        (*slot)->bounds.radius = AEMath::VectorLength(Vector(maximum[0], maximum[1], maximum[2]) -
+                                                      Vector(minimum[0], minimum[1], minimum[2]));
 
         if ((*slot)->vertexFormat & 2) {
             if (packed != 0) {
@@ -623,9 +623,9 @@ namespace AbyssEngine {
                         x /= length;
                         y /= length;
                         z /= length;
-                        float cx = (double) x < -1.0 ? -1.0f : x;
-                        float cy = (double) y < -1.0 ? -1.0f : y;
-                        float cz = (double) z < -1.0 ? -1.0f : z;
+                        float cx = (double) x < -1.0 ? -1.0 : x;
+                        float cy = (double) y < -1.0 ? -1.0 : y;
+                        float cz = (double) z < -1.0 ? -1.0 : z;
                         if (x > 1.0f)
                             cx = 1.0f;
                         if (y > 1.0f)
