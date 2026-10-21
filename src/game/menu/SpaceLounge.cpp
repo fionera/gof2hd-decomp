@@ -46,8 +46,6 @@ namespace AbyssEngine {
 // Projection helper installed in SpaceLounge_screen_projector (maps a world Vector to a screen Vector).
 typedef void (*ScreenProjectFn)(Vector *out, Vector *in);
 
-static Layout **SpaceLounge_layout_move;
-static Layout **SpaceLounge_layout_begin;
 
 void MatrixSetTranslation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -138,37 +136,35 @@ int SpaceLounge::OnTouchMove(int x, int y) {
         return 0;
     }
 
-    int mode = this->mode;
-    if (mode == 0) {
-        Array<Agent *> *agents = this->agents;
-        if (agents != 0) {
-            Array<Vector *> *rects = this->agentRects;
-            float fy = (float) y;
-            float fx = (float) x;
-            this->hoverAgent = -1;
-            this->selectedAgent = -1;
-            int count = (int) agents->size();
-            for (int i = 0; count != i; ++i) {
-                float *a = (float *) (*rects)[i * 2];
-                if (a[0] < fx) {
-                    float *b = (float *) (*rects)[i * 2 + 1];
-                    if (fx < b[0] && fy < a[1] && b[1] < fy) {
-                        this->hoverAgent = i;
+    switch (this->mode) {
+        case 0:
+            if (this->agents != 0) {
+                float fx = (float) x;
+                float fy = (float) y;
+                this->selectedAgent = -1;
+                this->hoverAgent = -1;
+                for (int i = 0; i != (int) this->agents->size(); ++i) {
+                    float *a = (float *) (*this->agentRects)[i * 2];
+                    if (a[0] < fx) {
+                        float *b = (float *) (*this->agentRects)[i * 2 + 1];
+                        if (fx < b[0] && fy < a[1] && b[1] < fy) {
+                            this->hoverAgent = i;
+                        }
                     }
                 }
             }
-        }
-    } else if (mode == 3) {
-        Array<TouchButton *> *buttons = this->buttons;
-        (*buttons)[0]->OnTouchMove(x, y);
-    } else if (mode == 2) {
-        Array<TouchButton *> *buttons = this->buttons;
-        for (unsigned i = 0; i < buttons->size(); ++i) {
-            (*buttons)[i]->OnTouchMove(x, y);
-        }
+            break;
+        case 3:
+            (*this->buttons)[0]->OnTouchMove(x, y);
+            break;
+        case 2:
+            for (unsigned i = 0; i < this->buttons->size(); ++i) {
+                (*this->buttons)[i]->OnTouchMove(x, y);
+            }
+            break;
     }
 
-    (*SpaceLounge_layout_move)->OnTouchMove(x, y);
+    Globals::layout->OnTouchMove(x, y);
     if (this->listVisible != 0) {
         this->listWindow->OnTouchMove(x, y);
     } else {
@@ -292,52 +288,43 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
 }
 
 int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) {
-    unsigned delta;
-
+    // Generic chat sounds 759..806 map onto a per-race bank.
     switch (race) {
         case 0:
         case 5:
-            delta = soundId - 0x2f7;
             if (alternate) {
-                if ((unsigned) delta < 0x30) {
-                    return soundId + 0xf0;
+                if (soundId >= 759 && soundId < 807) {
+                    return soundId + 240;
                 }
-            } else if ((unsigned) delta < 0x30) {
-                return soundId + 0xc0;
+            } else if (soundId >= 759 && soundId < 807) {
+                return soundId + 192;
             }
             break;
         case 1:
-            delta = soundId - 0x2f7;
-            if ((unsigned) delta < 0x30) {
-                return soundId + 0x120;
+            if (soundId >= 759 && soundId < 807) {
+                return soundId + 288;
             }
             break;
         case 2:
         case 3:
-            delta = soundId - 0x2f7;
-            if ((unsigned) delta < 0x30) {
-                return soundId + 0x90;
+            if (soundId >= 759 && soundId < 807) {
+                return soundId + 144;
             }
             break;
         case 4:
-            delta = soundId - 0x2f7;
-            if ((unsigned) delta < 0x30) {
-                return soundId + 0x60;
+            if (soundId >= 759 && soundId < 807) {
+                return soundId + 96;
             }
             break;
         case 6:
-            goto done;
+            return soundId;
         case 7:
-            delta = soundId - 0x2f7;
-            if ((unsigned) delta < 0x30) {
-                return soundId + 0x30;
+            if (soundId >= 759 && soundId < 807) {
+                return soundId + 48;
             }
             break;
     }
-
-    soundId = -1;
-done:
-    return soundId;
+    return -1;
 }
 
 static inline Agent *selected_agent(SpaceLounge *self) {
@@ -1130,51 +1117,38 @@ SpaceLounge::~SpaceLounge() {
     delete[] this->agentVisited;
     this->agentVisited = 0;
 
-    {
-        Array<String *> *strings = this->agentTexts;
-        if (strings != 0) {
-            ArrayReleaseClasses(*strings);
-            delete strings;
-        }
+    if (this->agentTexts != 0) {
+        ArrayReleaseClasses(*this->agentTexts);
+        delete this->agentTexts;
     }
     this->agentTexts = 0;
 
-    {
-        Array<TouchButton *> *buttons = this->buttons;
-        if (buttons != 0) {
-            ArrayReleaseClasses(*buttons);
-            delete buttons;
-        }
+    if (this->buttons != 0) {
+        ArrayReleaseClasses(*this->buttons);
+        delete this->buttons;
     }
     this->buttons = 0;
 
     if (this->agentImageParts != 0) {
-        return;
+        ArrayReleaseClasses(*this->agentImageParts);
+        delete this->agentImageParts;
     }
     this->agentImageParts = 0;
 
-    {
-        Array<Array<ImagePart *> *> *grid = this->silhouetteGrid;
-        if (grid != 0) {
-            for (unsigned i = 0; i < grid->size(); ++i) {
-                Array<ImagePart *> *inner = (*grid)[i];
-                if (inner != 0) {
-                    ArrayReleaseClasses(*inner);
-                    delete inner;
-                }
-                (*grid)[i] = 0;
-            }
-            delete grid;
+    if (this->silhouetteGrid != 0) {
+        for (unsigned i = 0; i < this->silhouetteGrid->size(); ++i) {
+            ArrayReleaseClasses(*(*this->silhouetteGrid)[i]);
+            delete (*this->silhouetteGrid)[i];
+            (*this->silhouetteGrid)[i] = 0;
         }
+        ArrayReleaseClasses(*this->silhouetteGrid);
+        delete this->silhouetteGrid;
     }
     this->silhouetteGrid = 0;
 
-    {
-        Array<Vector *> *rects = this->agentRects;
-        if (rects != 0) {
-            ArrayReleaseClasses(*rects);
-            delete rects;
-        }
+    if (this->agentRects != 0) {
+        ArrayReleaseClasses(*this->agentRects);
+        delete this->agentRects;
     }
     this->agentRects = 0;
 
@@ -1186,22 +1160,14 @@ SpaceLounge::~SpaceLounge() {
 }
 
 void SpaceLounge::draw() {
-    String title;
-
     if (this->listVisible != 0) {
-        if (this->listWindow->shows3DShip() != 0) {
-            PaintCanvas **canvasSlot = SpaceLounge_draw_canvas_slot;
-            PaintCanvas *canvas = *canvasSlot;
-            canvas->SetColor((unsigned char) (long) canvas, 0, 0, 0);
-            int width = pc_GetWidth(canvas);
-            int height = pc_GetHeight(canvas);
-            (void) height;
-            canvas->FillRectangle((int) (long) canvas, 0, 0, width);
-            canvas->SetColor((unsigned int) (long) canvas);
+        if (this->listWindow->shows3DShip()) {
+            Globals::Canvas->SetColor(0, 0, 0, 255);
+            Globals::Canvas->FillRectangle(0, 0, Globals::Canvas->GetWidth(), Globals::Canvas->GetHeight());
+            Globals::Canvas->SetColor(0xffffffffu);
         }
         this->listWindow->draw();
-        Layout *layout = *SpaceLounge_draw_layout_slot;
-        layout->drawFooter();
+        Globals::layout->drawFooter();
         return;
     }
 
@@ -1210,20 +1176,13 @@ void SpaceLounge::draw() {
         return;
     }
 
-    Layout **layoutSlot = SpaceLounge_draw_layout_slot;
-    Layout *layout = *layoutSlot;
-    GameText **textsSlot = SpaceLounge_draw_text_slot;
-    String *text = (*textsSlot)->getText(0x18e);
-    title.Set(text->data);
-    layout->drawHeader(title, false);
+    Globals::layout->drawHeader(String(*Globals::gameText->getText(398), false));
+    this->drawLounge();
 
-    ((SpaceLounge *) (this))->drawLounge();
-
-    layout = *layoutSlot;
-    if ((this->mode & 0xfffffffe) == 2) {
-        layout->drawFooterNoBackButton();
+    if ((this->mode & ~1) == 2) {
+        Globals::layout->drawFooterNoBackButton();
     } else {
-        layout->drawFooter();
+        Globals::layout->drawFooter();
     }
 
     if (this->chatActive != 0 || this->popupActive != 0 || this->choiceVisible != 0) {
