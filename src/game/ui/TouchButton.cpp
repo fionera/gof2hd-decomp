@@ -51,7 +51,7 @@ unsigned int TouchButton::OnTouchMove(int px, int py) {
             r = 0;
         else
             r = touchedInside(px, py);
-        this->touched = (unsigned char) r;
+        this->touched = r;
         return r;
     }
     return 0;
@@ -65,7 +65,7 @@ void TouchButton::setPressProgress(float value) {
     this->pressProgress = value;
 }
 
-uint8_t TouchButton::isTouched() {
+bool TouchButton::isTouched() {
     return this->touched;
 }
 
@@ -109,11 +109,11 @@ void TouchButton::resetTouch() {
 }
 
 
-unsigned int TouchButton::OnTouchBegin(int px, int py) {
+bool TouchButton::OnTouchBegin(int px, int py) {
     if (this->visible == 0 || this->halfTransparent != 0)
         return 0;
-    int r = touchedInside(px, py);
-    this->touched = (unsigned char) r;
+    bool r = touchedInside(px, py);
+    this->touched = r;
     if (r == 0)
         return 0;
     Globals::sound->play(0x7c, 0, 0, 0.0f);

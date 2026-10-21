@@ -46,7 +46,7 @@ public:
     int textOffsetX;
     int textOffsetY;
     int textColor;
-    unsigned char touched;
+    bool touched;
     unsigned char alwaysPressed;
     unsigned char visible;
     unsigned char halfTransparent;
@@ -73,7 +73,7 @@ public:
 
     ~TouchButton();
 
-    unsigned int OnTouchBegin(int px, int py);
+    bool OnTouchBegin(int px, int py);
 
     unsigned int OnTouchEnd(int px, int py);
 
@@ -92,7 +92,7 @@ public:
     int init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y,
              unsigned char flags0, unsigned char flags1);
 
-    uint8_t isTouched();
+    bool isTouched();
 
     uint8_t isVisible();
 
