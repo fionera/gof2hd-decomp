@@ -56,7 +56,7 @@ public:
     int field_0x218;
     uint8_t _pad_0x21c[1];
     unsigned char hasCloak;
-    unsigned char hasBoostButton;
+    bool hasBoostButton;
     unsigned char hasShieldBar;
     unsigned char hasArmorRegen;
     unsigned char hasAutofireUI;
@@ -89,8 +89,8 @@ public:
     int fuelGaugeValue;
     unsigned char field_0x280;
     unsigned char field_0x281;
-    unsigned char quickMenuOpen;
-    unsigned char quickMenuEmpty;
+    bool quickMenuOpen;
+    bool quickMenuEmpty;
     unsigned int touchFlags;
     int field_0x288;
     Array<void *> * keyArray; // lint: void_ptr (opaque touch-handle element type; matches exported void* touchId);
