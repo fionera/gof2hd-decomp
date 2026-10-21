@@ -798,99 +798,98 @@ namespace AbyssEngine {
         if (m->uploaded != 0 || (short) m->indexCount == 0)
             return -4;
 
-        unsigned int vcount = m->vertexCount;
-
-        float *colArr = (float *) m->colors;
-        float *tanArr = (float *) m->tangents;
-        float *binArr = (float *) m->binormals;
+        unsigned char *pos = m->positions;
+        unsigned char *tex = m->texCoords;
+        unsigned char *col = m->colors;
+        unsigned char *nrm = m->normals;
+        unsigned char *tan = m->tangents;
+        unsigned char *bin = m->binormals;
 
         glGenBuffers(1, &m->positionVBO);
         glBindBuffer(0x8892, m->positionVBO);
-        glBufferData(0x8892, vcount * 0xc, m->positions, 0x88e4);
+        glBufferData(0x8892, m->vertexCount * 0xc, pos, 0x88e4);
 
-        unsigned char flags = m->vertexFormat;
-        if (flags & 2) {
+        if (m->vertexFormat & 2) {
             glGenBuffers(1, &m->texCoordVBO);
             glBindBuffer(0x8892, m->texCoordVBO);
-            glBufferData(0x8892, vcount << 3, m->texCoords, 0x88e4);
-            m->vboByteSize += (int) (vcount * 8);
+            glBufferData(0x8892, m->vertexCount * 8, tex, 0x88e4);
+            m->vboByteSize += m->vertexCount * 8;
 
             glGenBuffers(1, &m->indexVBO);
             glBindBuffer(0x8893, m->indexVBO);
-            glBufferData(0x8893, (unsigned int) m->indexCount << 1, m->indices, 0x88e4);
-            m->vboByteSize += (int) (m->indexCount * 2);
-            flags = m->vertexFormat;
+            glBufferData(0x8893, m->indexCount * 2, m->indices, 0x88e4);
+            m->vboByteSize += m->indexCount * 2;
         }
 
-        if (flags & 4) {
+        if (m->vertexFormat & 4) {
             glGenBuffers(1, &m->normalVBO);
             glBindBuffer(0x8892, m->normalVBO);
-            glBufferData(0x8892, vcount * 0xc, m->normals, 0x88e4);
-            m->vboByteSize += (int) (vcount * 0xc);
+            glBufferData(0x8892, m->vertexCount * 0xc, nrm, 0x88e4);
+            m->vboByteSize += m->vertexCount * 0xc;
             if (Engine::enableShader != 0) {
                 glGenBuffers(1, &m->tangentVBO);
                 glBindBuffer(0x8892, m->tangentVBO);
-                glBufferData(0x8892, vcount * 0xc, tanArr, 0x88e4);
-                m->vboByteSize += (int) (vcount * 0xc);
+                glBufferData(0x8892, m->vertexCount * 0xc, tan, 0x88e4);
+                m->vboByteSize += m->vertexCount * 0xc;
                 glGenBuffers(1, &m->binormalVBO);
                 glBindBuffer(0x8892, m->binormalVBO);
-                glBufferData(0x8892, vcount * 0xc, binArr, 0x88e4);
-                m->vboByteSize += (int) (vcount * 0xc);
+                glBufferData(0x8892, m->vertexCount * 0xc, bin, 0x88e4);
+                m->vboByteSize += m->vertexCount * 0xc;
             }
         }
 
         if (m->vertexFormat & 8) {
             glGenBuffers(1, &m->colorVBO);
             glBindBuffer(0x8892, m->colorVBO);
-            glBufferData(0x8892, vcount << 4, colArr, 0x88e4);
-            m->vboByteSize += (int) (vcount * 0x10);
+            glBufferData(0x8892, m->vertexCount * 0x10, col, 0x88e4);
+            m->vboByteSize += m->vertexCount * 0x10;
         }
 
         glBindBuffer(0x8892, 0);
         glBindBuffer(0x8893, 0);
 
-        if (glGetError() == 0) {
-            if (Engine::KeepRawMeshData == 0) {
-                if (m->positions != 0) operator delete[](m->positions); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->positions = 0;
-                if (m->texCoords != 0) operator delete[](m->texCoords); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->texCoords = 0;
-                if (m->indices != 0) operator delete[](m->indices); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->indices = 0;
-                if (m->normals != 0) operator delete[](m->normals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->normals = 0;
-                if (m->colors != 0) operator delete[](m->colors); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->colors = 0;
-                if (m->tangents != 0) operator delete[](m->tangents); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->tangents = 0;
-                if (m->binormals != 0) operator delete[](m->binormals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->binormals = 0;
+        if (glGetError() != 0) {
+            if (m->uploaded != 0) {
+                glDeleteBuffers(1, &m->positionVBO);
+                glDeleteBuffers(1, &m->indexVBO);
+                unsigned char f = m->vertexFormat;
+                if (f & 2) {
+                    glDeleteBuffers(1, &m->texCoordVBO);
+                    f = m->vertexFormat;
+                }
+                if (f & 4) {
+                    glDeleteBuffers(1, &m->normalVBO);
+                    if (Engine::enableShader != 0) {
+                        glDeleteBuffers(1, &m->tangentVBO);
+                        glDeleteBuffers(1, &m->binormalVBO);
+                    }
+                }
+                if (m->vertexFormat & 8)
+                    glDeleteBuffers(1, &m->colorVBO);
             }
-            m->uploaded = 1;
-            Engine::vboSize += m->vboByteSize;
-            return 1;
+            m->vboByteSize = 0;
+            return -1;
         }
 
-        if (m->uploaded != 0) {
-            glDeleteBuffers(1, &m->positionVBO);
-            glDeleteBuffers(1, &m->indexVBO);
-            unsigned char f = m->vertexFormat;
-            if (f & 2) {
-                glDeleteBuffers(1, &m->texCoordVBO);
-                f = m->vertexFormat;
-            }
-            if (f & 4) {
-                glDeleteBuffers(1, &m->normalVBO);
-                if (Engine::enableShader != 0) {
-                    glDeleteBuffers(1, &m->tangentVBO);
-                    glDeleteBuffers(1, &m->binormalVBO);
-                }
-            }
-            if (m->vertexFormat & 8)
-                glDeleteBuffers(1, &m->colorVBO);
+        if (Engine::KeepRawMeshData == 0) {
+            if (m->positions != 0) operator delete[](m->positions); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->positions = 0;
+            if (m->texCoords != 0) operator delete[](m->texCoords); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->texCoords = 0;
+            if (m->indices != 0) operator delete[](m->indices); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->indices = 0;
+            if (m->normals != 0) operator delete[](m->normals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->normals = 0;
+            if (m->colors != 0) operator delete[](m->colors); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->colors = 0;
+            if (m->tangents != 0) operator delete[](m->tangents); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->tangents = 0;
+            if (m->binormals != 0) operator delete[](m->binormals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->binormals = 0;
         }
-        m->vboByteSize = 0;
-        return -1;
+        m->uploaded = 1;
+        Engine::vboSize += m->vboByteSize;
+        return 1;
     }
 }
 
