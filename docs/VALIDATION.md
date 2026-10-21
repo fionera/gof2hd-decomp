@@ -167,6 +167,13 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   entry address was "named" and produced phantom linked_exact flips on untouched functions
   whenever unrelated code shifted the layout (±2-5 noise per relink, observed on BeamGun dtors /
   shader Init family).
+- **Inline Thumb literal pools are decoded honestly** (2026-10-21): the pool is found by a linear
+  sweep that ignores pc-relative "loads" decoded out of pool data (they used to mark real code as
+  pool and mask it); the code is then decoded from a copy with pool bytes replaced by NOPs, because
+  binutils recovers IT state by scanning backwards and a pool word that looks like `IT` put
+  spurious condition codes on the real instructions after it. An aligned pool word whose raw value
+  is identical in both links compares equal even if one side's value happens to fall on an
+  address/function entry of that link; words resolving to two different symbols never unify.
 - `linked_exact` additionally requires equal function size; the fuzzy % uses
   `difflib(autojunk=False)` (autojunk floored every ≥200-instruction function to garbage scores,
   mis-steering the worst-first campaign).
@@ -178,7 +185,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1254, linked_exact 3288, avg 83.7%**
+Current numbers (of **4523** compared): **byte_exact 1254, linked_exact 3291, avg 83.7%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
