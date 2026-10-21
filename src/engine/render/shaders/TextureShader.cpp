@@ -51,7 +51,7 @@ static const char *const kTextureShaderFragmentSource =
     "\tgl_FragColor = glColor * textureColor;\t\t\n"
     "} \n";
 
-static const char *const kShaderSource2 =
+static const char *const kTextureShaderFogFragmentSource =
     "precision lowp float;                            \n"
     "varying mediump vec2 v_texCoord;                            \n"
     "uniform sampler2D s_texture;                        \n"
@@ -81,7 +81,7 @@ namespace AbyssEngine {
         this->program = this->ES2LoadProgram(vertexShader, kTextureShaderFragmentSource);
         ConnectShaderComponents(this->program, 0);
 
-        this->programExt = this->ES2LoadProgram(vertexShader, kShaderSource2);
+        this->programExt = this->ES2LoadProgram(vertexShader, kTextureShaderFogFragmentSource);
         ConnectShaderComponents(this->programExt, 1);
     }
 
@@ -95,55 +95,55 @@ namespace AbyssEngine {
 
     void TextureShader::SetInActive() {
         for (uint32_t i = 0; i != 2; i += 1) {
-            glDisableVertexAttribArray(this->positionAttrib[i]);
-            glDisableVertexAttribArray(this->texcoordAttrib[i]);
+            glDisableVertexAttribArray(this->aPositionLoc[i]);
+            glDisableVertexAttribArray(this->aTexCoordLoc[i]);
         }
     }
 
     void TextureShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
         int slot = AbyssEngine::Engine::fogEnabled;
 
-        glUniformMatrix4fv(this->mvpUniform[slot], 1, 0, engine->worldViewProjMatrix);
+        glUniformMatrix4fv(this->uWorldMatrixLoc[slot], 1, 0, engine->worldViewProjMatrix);
 
-        int location = this->worldViewUniform[slot];
+        int location = this->uUvMatrixLoc[slot];
         if (location >= 0) {
             glUniformMatrix4fv(location, 1, 0, engine->uvMatrix);
         }
 
-        location = this->alphaUniform[slot];
+        location = this->uDarkenValueLoc[slot];
         if (location >= 0) {
             glUniform1f(location, 1.0f - reinterpret_cast<float &>(mesh->materialId));
         }
 
         if (this->dirty != 0) {
-            glUniform4fv(this->colorUniform[slot], 1, engine->glColor);
+            glUniform4fv(this->uGlColorLoc[slot], 1, engine->glColor);
 
-            location = this->textureModeUniform[slot];
+            location = this->uUVAnimationLoc[slot];
             if (location >= 0) {
                 glUniform1i(location, mesh->hasAnimation);
             }
 
-            location = this->lightUniform[slot];
+            location = this->uFogColorLoc[slot];
             if (location >= 0) {
                 glUniform3fv(location, 1, engine->fogColor);
             }
 
-            location = this->fogFarUniform[slot];
+            location = this->uFogMinDistLoc[slot];
             if (location >= 0) {
                 glUniform1f(location, engine->fogMinDist);
             }
 
-            location = this->fogNearUniform[slot];
+            location = this->uFogMaxDistLoc[slot];
             if (location >= 0) {
                 glUniform1f(location, engine->fogMaxDist);
             }
 
-            location = this->activeTextureUniform[slot];
+            location = this->uEnableFogLoc[slot];
             if (location >= 0) {
                 glUniform1i(location, AbyssEngine::Engine::fogEnabled);
             }
 
-            location = this->fogColorUniform[slot];
+            location = this->uEyePosModelLoc[slot];
             if (location >= 0) {
                 glUniform3f(location, engine->lightColor.x, engine->lightColor.y, engine->lightColor.z);
             }
@@ -152,37 +152,37 @@ namespace AbyssEngine {
         }
 
         if ((int) (mesh->vertexFormat << 30) < 0) {
-            glEnableVertexAttribArray(this->positionAttrib[slot]);
-            glEnableVertexAttribArray(this->texcoordAttrib[slot]);
+            glEnableVertexAttribArray(this->aPositionLoc[slot]);
+            glEnableVertexAttribArray(this->aTexCoordLoc[slot]);
 
             if (mesh->uploaded == 0) {
-                glVertexAttribPointer(this->positionAttrib[slot], 3, 0x1406, 0, 0, mesh->positions);
-                glVertexAttribPointer(this->texcoordAttrib[slot], 2, 0x1406, 0, 0, mesh->texCoords);
+                glVertexAttribPointer(this->aPositionLoc[slot], 3, 0x1406, 0, 0, mesh->positions);
+                glVertexAttribPointer(this->aTexCoordLoc[slot], 2, 0x1406, 0, 0, mesh->texCoords);
             } else {
                 glBindBuffer(0x8892, mesh->positionVBO);
-                glVertexAttribPointer(this->positionAttrib[slot], 3, 0x1406, 0, 0, 0);
+                glVertexAttribPointer(this->aPositionLoc[slot], 3, 0x1406, 0, 0, 0);
                 glBindBuffer(0x8892, mesh->texCoordVBO);
-                glVertexAttribPointer(this->texcoordAttrib[slot], 2, 0x1406, 0, 0, 0);
+                glVertexAttribPointer(this->aTexCoordLoc[slot], 2, 0x1406, 0, 0, 0);
             }
         }
     }
 
     void TextureShader::ConnectShaderComponents(uint32_t program, int slot) {
-        this->textureUniform[slot] = glGetUniformLocation(program, "texture");
-        this->positionAttrib[slot] = glGetAttribLocation(program, "position");
-        this->texcoordAttrib[slot] = glGetAttribLocation(program, "texcoord");
-        this->mvpUniform[slot] = glGetUniformLocation(program, "mvp");
-        this->colorUniform[slot] = glGetUniformLocation(program, "color");
-        this->lightUniform[slot] = glGetUniformLocation(program, "light");
-        this->fogNearUniform[slot] = glGetUniformLocation(program, "fogNear");
-        this->fogFarUniform[slot] = glGetUniformLocation(program, "fogFar");
-        this->activeTextureUniform[slot] = glGetUniformLocation(program, "activeTexture");
-        this->fogColorUniform[slot] = glGetUniformLocation(program, "fogColor");
-        this->alphaUniform[slot] = glGetUniformLocation(program, "alpha");
-        this->textureModeUniform[slot] = glGetUniformLocation(program, "textureMode");
-        this->worldViewUniform[slot] = glGetUniformLocation(program, "worldView");
+        this->sTextureLoc[slot] = glGetUniformLocation(program, "s_texture");
+        this->aPositionLoc[slot] = glGetAttribLocation(program, "a_position");
+        this->aTexCoordLoc[slot] = glGetAttribLocation(program, "a_texCoord");
+        this->uWorldMatrixLoc[slot] = glGetUniformLocation(program, "u_WorldMatrix");
+        this->uGlColorLoc[slot] = glGetUniformLocation(program, "glColor");
+        this->uFogColorLoc[slot] = glGetUniformLocation(program, "u_fogColor");
+        this->uFogMaxDistLoc[slot] = glGetUniformLocation(program, "u_fogMaxDist");
+        this->uFogMinDistLoc[slot] = glGetUniformLocation(program, "u_fogMinDist");
+        this->uEnableFogLoc[slot] = glGetUniformLocation(program, "u_EnableFog");
+        this->uEyePosModelLoc[slot] = glGetUniformLocation(program, "u_eyeposmodel");
+        this->uDarkenValueLoc[slot] = glGetUniformLocation(program, "u_DarkenValue");
+        this->uUVAnimationLoc[slot] = glGetUniformLocation(program, "u_UVAnimation");
+        this->uUvMatrixLoc[slot] = glGetUniformLocation(program, "u_UvMatrix");
 
         glUseProgram(program);
-        glUniform1i(this->textureUniform[slot], 0);
+        glUniform1i(this->sTextureLoc[slot], 0);
     }
 }
