@@ -32,17 +32,17 @@ void Item::init() {
     type = data[3];
     sort = data[5];
     tecLevel = data[7];
-    minPriceSystem = data[9];
-    maxPriceSystem = data[11];
     occurence = data[13];
     minPrice = data[15];
     maxPrice = data[17];
+    minPriceSystem = data[9];
+    maxPriceSystem = data[11];
     amount = 0;
     stationAmount = 0;
     blueprintAmount = 0;
     missingIngredients = 0;
-    unsaleable = false;
     price = minPrice + (maxPrice - minPrice) / 2;
+    unsaleable = false;
 }
 
 Item::~Item() {
@@ -174,38 +174,27 @@ IntArray *Item::getAttributes() {
 }
 
 int Item::getAttribute(int attribute) {
-    int *data = attributes->data();
-    uint32_t size = attributes->size();
-    for (uint32_t index = 0; index < size; index += 2) {
-        if (data[index] == attribute) {
-            return data[index + 1];
-        }
+    // Attributes are stored as (id, value) pairs.
+    for (uint32_t i = 0; i < attributes->size(); i += 2) {
+        if ((*attributes)[i] == attribute)
+            return (*attributes)[i + 1];
     }
     return static_cast<int>(0xc5997825);
 }
 
 int Item::transaction(bool buy, int, bool useCredits) {
     if (buy) {
-        int currentStationAmount = stationAmount;
-        if (currentStationAmount > 0) {
-            int currentPrice;
-            if (useCredits) {
-                currentPrice = price;
-            } else {
-                currentPrice = price;
-                if (status->getCredits() < currentPrice) {
-                    return 0;
-                }
-                currentStationAmount = stationAmount;
-            }
-            amount += 1;
-            stationAmount = currentStationAmount - 1;
-            return -currentPrice;
+        if (this->stationAmount > 0) {
+            if (!useCredits && Globals::status->getCredits() < this->price)
+                return 0;
+            this->amount++;
+            this->stationAmount--;
+            return -this->price;
         }
-    } else if (amount > 0) {
-        amount -= 1;
-        stationAmount += 1;
-        return price;
+    } else if (this->amount > 0) {
+        this->amount--;
+        this->stationAmount++;
+        return this->price;
     }
     return 0;
 }
@@ -346,16 +335,12 @@ ItemArray *Item::extractItems(ItemArray *items, bool station) {
 
     ItemArray *extracted = new ItemArray();
     for (uint32_t i = 0; i < items->size(); i++) {
-        Item * item = (*items)[i];
-        int amount = station ? item->amount : item->stationAmount;
-        if (amount > 0) {
+        Item *item = (*items)[i];
+        if ((station ? item->amount : item->stationAmount) > 0)
             ArrayAdd(item->makeItem(), *extracted);
-        }
     }
-
-    if (extracted->size() == 0) {
-        return nullptr;
-    }
+    if (extracted->size() == 0)
+        extracted = nullptr;
     return extracted;
 }
 
@@ -509,8 +494,7 @@ void Item::adjustPrice(Station *station) {
 }
 
 bool Item::checkCargoSpace() {
-    int requiredLoad = amount + status->getShip()->getCurrentLoad();
-    return requiredLoad <= status->getShip()->getMaxLoad();
+    return status->getShip()->getCurrentLoad() + amount <= status->getShip()->getMaxLoad();
 }
 
 bool Item::isUnsaleable() {
