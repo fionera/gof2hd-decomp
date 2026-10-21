@@ -26,14 +26,14 @@ namespace AbyssEngine {
             return 1;
 
         const Matrix &view = cam->projection;
-        // Point in camera space (computed but unused; a plain float[3] in the original).
-        float camPoint[3] = {0.0f, 0.0f, 0.0f};
+        // Point in camera space (computed but unused).
+        Vector camPoint = {0.0f, 0.0f, 0.0f};
         if (extra != 0) {
             Matrix combined = view;
             combined *= *extra;
-            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(combined, point);
+            camPoint = AEMath::MatrixInverseTransformVector(combined, point);
         } else {
-            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(view, point);
+            camPoint = AEMath::MatrixInverseTransformVector(view, point);
         }
 
         Vector toPoint = point - AEMath::MatrixGetPosition(view);
@@ -105,14 +105,14 @@ namespace AbyssEngine {
             return 1;
 
         const Matrix &view = cam->projection;
-        // Point in camera space (computed but unused; a plain float[3] in the original).
-        float camPoint[3] = {0.0f, 0.0f, 0.0f};
+        // Point in camera space (computed but unused).
+        Vector camPoint = {0.0f, 0.0f, 0.0f};
         if (extra != 0) {
             Matrix combined = view;
             combined *= *extra;
-            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(combined, center);
+            camPoint = AEMath::MatrixInverseTransformVector(combined, center);
         } else {
-            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(view, center);
+            camPoint = AEMath::MatrixInverseTransformVector(view, center);
         }
 
         Vector toCenter = center - AEMath::MatrixGetPosition(view);

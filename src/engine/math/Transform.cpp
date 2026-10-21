@@ -355,18 +355,12 @@ namespace AbyssEngine {
 
     void Transform::DebugOut(int value) {}
 
-    Transform::Transform(Transform *other) {
-        this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
-        this->boundingRadius = 0.0f;
-        this->boundingRadius2 = 1.0f;
-        this->scale.y = 0.0f;
-        this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
-        this->localScale.y = 0.0f;
-        this->localTranslation = AEMath::Vector{0.0f, 0.0f, 0.0f};
-
+    Transform::Transform(Transform *other)
+        : boundingCenter(), boundingRadius(0.0f), boundingRadius2(1.0f), translation(), scale(), localTranslation(),
+          localScale() {
         if (other == 0) {
-            Transform temp;
-            temp.~Transform();
+            // The original "delegates" by constructing (and immediately destroying) a temporary.
+            Transform();
         } else {
             this->animating = true;
             this->animationStart = other->animationStart;
@@ -414,48 +408,25 @@ namespace AbyssEngine {
         }
     }
 
-    Transform::Transform() {
-        this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
-        this->boundingRadius = 0.0f;
-        this->boundingRadius2 = 1.0f;
-        this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
-        this->scale.x = 0.0f;
-        this->scale.y = 0.0f;
-
+    Transform::Transform()
+        : boundingCenter(), boundingRadius(0.0f), boundingRadius2(1.0f), translation(), scale(), localTranslation(),
+          localScale() {
         this->animationLength = 0;
-        this->localScale.y = 0.0f;
         this->color = -1;
         this->animating = true;
         this->animationSpeed = 1.0f;
-        this->currentTime = 0;
-        this->currentKeyFrameIndex = 0;
         this->rangeStart = 0;
         this->rangeEnd = 0;
+        this->currentTime = 0;
+        this->currentKeyFrameIndex = 0;
 
-        Quaternion q;
-        this->localRotation = q;
-        this->rotation = q;
-
-        AEMath::Vector zero = {0.0f, 0.0f, 0.0f};
-        this->localTranslation = zero;
-        this->translation = zero;
-        AEMath::Vector one = {1.0f, 1.0f, 1.0f};
-        this->localScale = one;
-        this->scale = one;
-
-        AEMath::Matrix identity;
-        for (int i = 0; i < 15; ++i) {
-            identity.m[i] = 0.0f;
-        }
-        identity.m[0] = 1.0f;
-        identity.m[5] = 1.0f;
-        identity.m[10] = 1.0f;
-        identity.m[14] = 1.0f;
-        this->localMatrix = identity;
-        this->rotationMatrix = identity;
+        this->rotation = this->localRotation = Quaternion();
+        this->translation = this->localTranslation = AEMath::Vector{0.0f, 0.0f, 0.0f};
+        this->scale = this->localScale = AEMath::Vector{1.0f, 1.0f, 1.0f};
+        this->rotationMatrix = this->localMatrix = AEMath::Matrix();
 
         this->flags = 2;
-        this->localMatrix.m[5] = 1.0f;
+        this->localMatrix.m[5] = -1.0f;
         this->vfcEnabled = true;
         this->keyFramesShared = false;
         this->visible = true;
@@ -511,7 +482,7 @@ namespace AbyssEngine {
                 float span = (float) (next->timestamp - prevTime);
                 Quaternion toRotation(this->keyFrames[this->currentKeyFrameIndex]->rotation);
                 float t = elapsed / span;
-                this->rotation.Lerp(fromRotation, toRotation, t);
+                this->rotation = Quaternion::Lerp(fromRotation, toRotation, t);
 
                 this->translation = AEMath::VectorLerp(this->keyFrames[this->currentKeyFrameIndex - 1]->translation,
                                                        this->keyFrames[this->currentKeyFrameIndex]->translation, t);
@@ -523,7 +494,7 @@ namespace AbyssEngine {
 
                 Quaternion fromLocal(from->localRotation);
                 Quaternion toLocal(this->keyFrames[this->currentKeyFrameIndex]->localRotation);
-                this->localRotation.Lerp(fromLocal, toLocal, t);
+                this->localRotation = Quaternion::Lerp(fromLocal, toLocal, t);
 
                 this->localTranslation = AEMath::VectorLerp(
                     this->keyFrames[this->currentKeyFrameIndex - 1]->localTranslation,
@@ -1335,13 +1306,14 @@ namespace AbyssEngine {
             return 1;
         }
 
+        const AEMath::Vector &bc = this->boundingCenter;
         AEMath::Vector center = {0.0f, 0.0f, 0.0f};
         AEMath::Vector extent = {this->boundingRadius, this->boundingRadius, this->boundingRadius};
         if (matrix != 0) {
-            center = AEMath::MatrixTransformVector(*matrix * this->worldMatrix, this->boundingCenter);
+            center = AEMath::MatrixTransformVector(*matrix * this->worldMatrix, bc);
             extent = AEMath::MatrixRotateVector(*matrix * this->worldMatrix, extent);
         } else {
-            center = AEMath::MatrixTransformVector(this->worldMatrix, this->boundingCenter);
+            center = AEMath::MatrixTransformVector(this->worldMatrix, bc);
             extent = AEMath::MatrixRotateVector(this->worldMatrix, extent);
         }
 

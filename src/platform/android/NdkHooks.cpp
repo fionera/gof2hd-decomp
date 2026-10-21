@@ -26,8 +26,6 @@
 
 using AbyssEngine::Engine;
 
-void OnCreateApplication(AbyssEngine::Engine *engine);
-
 int gRealWidth;
 int gRealHeight;
 
@@ -187,16 +185,18 @@ extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI b
 
     int touchCount = GetTouchCount();
     for (int i = 0; i < touchCount; ++i) {
-        // Touch record layout: {handle, phase, x, y}.
+        // Queued touch: Touch::x carries the handle, Touch::y the phase, id/action the position.
         Touch rec = GetTouch(i);
+        const int x = rec.id;
+        const int y = rec.action;
         void *touch = reinterpret_cast<void *>(rec.x); // lint: void_ptr (opaque touch handle for OnTouch* void* params, baked ABI)
-        if (rec.y == 2) {
-            gEngine->appManager->OnTouchMove(rec.id, rec.action, touch);
+        if (rec.y == 0) {
+            gEngine->appManager->OnTouchBegin(x, y, touch);
         } else if (rec.y == 1) {
-            gEngine->appManager->OnTouchEnd(rec.id, rec.action, touch);
+            gEngine->appManager->OnTouchEnd(x, y, touch);
             gEngine->appManager->OnTouchEnd();
-        } else if (rec.y == 0) {
-            gEngine->appManager->OnTouchBegin(rec.id, rec.action, touch);
+        } else if (rec.y == 2) {
+            gEngine->appManager->OnTouchMove(x, y, touch);
         }
     }
 
@@ -209,24 +209,24 @@ extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI b
     RemoveTouches();
     gEngine->appManager->OnUpdate(now);
 
-    char *appData = static_cast<char *>(gEngine->appManager->GetApplicationData());
-    if (appData[0x3d] != 0) {
-        appData[0x40] = 1;
-        appData[0x3d] = 0;
-    } else if (appData[0x3c] != 0) {
-        appData[0x3c] = 0;
-    } else if (appData[0x3e] != 0) {
-        appData[0x3e] = 0;
-    } else if (appData[0x3f] != 0) {
-        appData[0x3f] = 0;
-    } else if (appData[0xa0] != 0) {
-        appData[0xa0] = 0;
-    } else if (appData[0xa1] != 0) {
-        appData[0xa1] = 0;
-    } else if (appData[0xa2] != 0) {
-        appData[0xa2] = 0;
-    } else if (appData[0xa3] != 0) {
-        appData[0xa3] = 0;
+    GameData *data = static_cast<GameData *>(gEngine->appManager->GetApplicationData());
+    if (data->field_0x3d != 0) {
+        data->field_0x3d = 0;
+        data->field_0x40 = 1;
+    } else if (data->field_0x3c != 0) {
+        data->field_0x3c = 0;
+    } else if (data->field_0x3e != 0) {
+        data->field_0x3e = 0;
+    } else if (data->field_0x3f != 0) {
+        data->field_0x3f = 0;
+    } else if (data->field_0xa0 != 0) {
+        data->field_0xa0 = 0;
+    } else if (data->field_0xa1 != 0) {
+        data->field_0xa1 = 0;
+    } else if (data->field_0xa2 != 0) {
+        data->field_0xa2 = 0;
+    } else if (data->field_0xa3 != 0) {
+        data->field_0xa3 = 0;
     }
 
     ndk_checkPlaytimeAndSpendOfferwallCredits();
@@ -245,13 +245,14 @@ extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() { // lint: extern_c 
 
 extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
                                           float x, float y) {
-    if (phase == 2) {
-        gEngine->appManager->OnTouchMove(static_cast<int>(x), static_cast<int>(y), touch);
+    // phase: 0 = down, 1 = up, 2 = move.
+    if (phase == 0) {
+        gEngine->appManager->OnTouchBegin(static_cast<int>(x), static_cast<int>(y), touch);
     } else if (phase == 1) {
         gEngine->appManager->OnTouchEnd(static_cast<int>(x), static_cast<int>(y), touch);
         gEngine->appManager->OnTouchEnd();
-    } else if (phase == 0) {
-        gEngine->appManager->OnTouchBegin(static_cast<int>(x), static_cast<int>(y), touch);
+    } else if (phase == 2) {
+        gEngine->appManager->OnTouchMove(static_cast<int>(x), static_cast<int>(y), touch);
     }
 }
 
@@ -352,10 +353,25 @@ void ndk_iapBoughtConsumable(unsigned int consumable) {
     if (consumable > 4 || gEngine == nullptr)
         return;
 
-    static const int kCreditPackValue[5] = {
-        100000, 300000, 1000000, 3000000, 10000000
-    };
-    setBaughtCredits(kCreditPackValue[consumable]);
+    // TODO(decomp): the original shares one non-tail call after a tbb switch (with a second
+    // range check); clang folds this to tail calls here.
+    switch (consumable) {
+    case 0:
+        setBaughtCredits(100000);
+        break;
+    case 1:
+        setBaughtCredits(300000);
+        break;
+    case 2:
+        setBaughtCredits(1000000);
+        break;
+    case 3:
+        setBaughtCredits(3000000);
+        break;
+    case 4:
+        setBaughtCredits(10000000);
+        break;
+    }
 }
 
 int setBaughtCredits(int amount) {

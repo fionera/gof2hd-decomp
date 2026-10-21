@@ -36,17 +36,25 @@ int32_t FileRead::loadStationsBinary() {
         uint32_t handle;
         AEFile::OpenRead("data/bin/stations.bin", &handle);
 
+        // The original sizes and fills a colour table through a pointer that is never allocated
+        // (the result is discarded); reproduced as written.
+        Array<int8_t> *colors = 0;
+        ArraySetLength<int8_t>(0x195, *colors);
+
+        String name;
         int32_t color0;
         int32_t color1;
         int32_t color2;
         int32_t offset = 0;
-        String name;
         for (uint32_t i = 0; i < 0x87; i++) {
             AEFile::ReadSwitched(name, handle);
             AEFile::ReadSwitched(offset, handle);
             AEFile::ReadSwitched(color0, handle);
             AEFile::ReadSwitched(color1, handle);
             AEFile::ReadSwitched(color2, handle);
+            (*colors)[offset++] = (int8_t) color0;
+            (*colors)[offset++] = (int8_t) color1;
+            (*colors)[offset++] = (int8_t) color2;
         }
         AEFile::Close(handle);
     }
@@ -68,47 +76,50 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id) {
 
         int16_t ship = 0;
         int16_t count = 0;
-        int16_t type = 0;
-        int16_t x = 0;
-        int16_t y = 0;
-        int16_t z = 0;
+        // Only the last declarator of each list is initialised, as in the original.
+        int16_t type, x, y, z = 0;
+        float extraX, extraY, extraZ = 0.0f;
+        int32_t current;
 
         do {
             AEFile::Read(ship, handle);
             AEFile::Read(count, handle);
+            current = ship;
             for (int32_t i = 0; i < count; i++) {
-                AEFile::ReadSwitched(type, handle);
-                AEFile::ReadSwitched(x, handle);
-                AEFile::ReadSwitched(y, handle);
-                AEFile::ReadSwitched(z, handle);
-
-                float extraX = 0.0f;
-                float extraY = 0.0f;
-                float extraZ = 0.0f;
+                AEFile::Read(type, handle);
+                AEFile::Read(x, handle);
+                AEFile::Read(y, handle);
+                AEFile::Read(z, handle);
                 if (type == 3) {
-                    AEFile::ReadSwitched(reinterpret_cast<int32_t &>(extraX), handle);
-                    AEFile::ReadSwitched(reinterpret_cast<int32_t &>(extraY), handle);
-                    AEFile::ReadSwitched(reinterpret_cast<int32_t &>(extraZ), handle);
+                    AEFile::Read(extraX, handle);
+                    AEFile::Read(extraY, handle);
+                    AEFile::Read(extraZ, handle);
                 }
-                if (ship == id) {
+                if (current == id) {
                     if (positions->data()[type] == 0) {
                         positions->data()[type] = new Array<Vector *>();
                     }
                     Vector *pos = new Vector;
-                    pos->x = (float) x;
-                    pos->y = (float) z;
-                    pos->z = (float) -y;
+                    float px = x;
+                    float py = z;
+                    float pz = -y;
+                    pos->x = px;
+                    pos->y = py;
+                    pos->z = pz;
                     ArrayAdd<Vector *>(pos, *positions->data()[type]);
                     if (type == 3) {
                         Vector *extra = new Vector;
-                        extra->x = extraX;
-                        extra->y = extraZ;
-                        extra->z = extraY;
+                        float ex = extraX;
+                        float ey = extraZ;
+                        float ez = extraY;
+                        extra->x = ex;
+                        extra->y = ey;
+                        extra->z = ez;
                         ArrayAdd<Vector *>(extra, *positions->data()[3]);
                     }
                 }
             }
-        } while (ship != id);
+        } while (current != id);
         AEFile::Close(handle);
     }
     return positions;
@@ -123,61 +134,51 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
 
         uint16_t current = 0;
         uint16_t count = 0;
-        do {
+        Vector position = {0.0f, 0.0f, 0.0f};
+        Vector rotation = {0.0f, 0.0f, 0.0f};
+        Vector unused = {0.0f, 0.0f, 0.0f};
+        Vector direction = {0.0f, 0.0f, 0.0f};
+        for (;;) {
             AEFile::Read(current, handle);
             AEFile::Read(count, handle);
-            if ((uint32_t) current != (uint32_t) id) {
-                AEFile::Skip((uint32_t) count * 0x26, handle);
-            }
-        } while ((uint32_t) current != (uint32_t) id);
+            if ((uint32_t) current == (uint32_t) id)
+                break;
+            AEFile::Skip((uint32_t) count * 0x26, handle);
+        }
 
         points = new Array<SpacePoint *>();
 
-        const float angleScale = 0.017453292f;
-        const float rollScale = -0.017453292f;
-
+        const float toRadNeg = -0.017453292f;
+        const float toRad = 0.017453292f;
+        uint16_t type;
         for (uint32_t i = 0; i < count; i++) {
-            uint16_t type;
             AEFile::Read(type, handle);
+            AEFile::Read(position.x, handle);
+            AEFile::Read(position.y, handle);
+            AEFile::Read(position.z, handle);
+            AEFile::Read(rotation.x, handle);
+            AEFile::Read(rotation.y, handle);
+            AEFile::Read(rotation.z, handle);
+            AEFile::Read(unused.x, handle);
+            AEFile::Read(unused.y, handle);
+            AEFile::Read(unused.z, handle);
 
-            float a;
-            float b;
-            float c;
-            float rx;
-            float ry;
-            float rz;
-            float ignored0;
-            float ignored1;
-            float ignored2;
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(a), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(b), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(c), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(rx), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ry), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(rz), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ignored0), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ignored1), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ignored2), handle);
-
-            Vector position;
-            position.x = a;
-            position.y = c;
-            position.z = -b;
+            // File space is Y-up/right-handed the other way: swap Y/Z and negate.
+            float py = position.y;
+            position.y = position.z;
+            position.z = -py;
+            float ry = rotation.y;
+            rotation.x = rotation.x * toRadNeg;
+            rotation.y = rotation.z * toRadNeg;
+            rotation.z = ry * toRad;
 
             Matrix matrix;
-            MatrixIdentity(matrix);
-            Matrix rotation =
-                    MatrixSetRotation(matrix, rx * angleScale, rz * angleScale, ry * rollScale,
-                                      AbyssEngine::AEMath::ROTATION_ORDER_XZY);
-            Vector direction = MatrixGetDir(rotation);
+            matrix = MatrixSetRotation(matrix, rotation.x, rotation.y, rotation.z,
+                                       AbyssEngine::AEMath::ROTATION_ORDER_XZY);
+            direction = MatrixGetDir(matrix);
 
-            uint32_t selected = 0;
-            if (group != -1) {
-                selected = i >> 1;
-            }
-            if (group == -1 || selected == (uint32_t) group) {
-                SpacePoint *point = new SpacePoint((int32_t) type, position, direction, (int32_t) i);
-                ArrayAdd<SpacePoint *>(point, *points);
+            if (group == -1 || (i >> 1) == (uint32_t) group) {
+                ArrayAdd<SpacePoint *>(new SpacePoint((int32_t) type, position, direction, (int32_t) i), *points);
             }
         }
         AEFile::Close(handle);
@@ -196,21 +197,23 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
         ArraySetLength<SolarSystem *>(0x22, *systems);
 
         String name;
+        int32_t faction;
+        int32_t a;
+        int32_t b;
+        int32_t c;
+        int32_t d;
+        int32_t e;
+        int32_t f;
+        int32_t flag;
+        uint32_t count;
+        bool visible;
         for (uint32_t i = 0; i < 0x22; i++) {
-            int32_t faction;
-            int32_t flag;
-            int32_t a;
-            int32_t b;
-            int32_t c;
-            int32_t d;
-            int32_t e;
-            int32_t f;
-            uint32_t count;
 
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
             AEFile::ReadSwitched(faction, handle);
             AEFile::ReadSwitched(flag, handle);
+            visible = flag == 1;
             AEFile::ReadSwitched(a, handle);
             AEFile::ReadSwitched(b, handle);
             AEFile::ReadSwitched(c, handle);
@@ -260,7 +263,7 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
                 }
             }
 
-            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, flag == 1, a, b, c, d, e, f,
+            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, visible, a, b, c, d, e, f,
                                                  routes, stations, wrecks, statics);
             delete[] routes;
         }
@@ -406,66 +409,52 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count) {
 
 Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second) {
     Array<String *> *names = 0;
-    String path;
+    String path("");
 
     switch (type) {
         case 0: {
-            const char *text = "names_terran_0_m.bin";
-            if (!first) {
-                text = "names_terran_0_w.bin";
-            }
-            if (!second) {
-                text = "names_terran_1.bin";
-            }
-            path = text;
+            const char *file = "names_terran_0_m.bin";
+            if (!first)
+                file = "names_terran_0_w.bin";
+            if (!second)
+                file = "names_terran_1.bin";
+            path = String(file);
             break;
         }
-        case 1: {
-            path = second ? "names_vossk_0.bin" : "names_vossk_1.bin";
+        case 1:
+            path = String(second ? "names_vossk_0.bin" : "names_vossk_1.bin");
             break;
-        }
-        case 2: {
-            path = second ? "names_nivelian_0.bin" : "names_nivelian_1.bin";
+        case 2:
+            path = String(second ? "names_nivelian_0.bin" : "names_nivelian_1.bin");
             break;
-        }
-        case 3: {
-            if (second) {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_nivelian_0.bin" : "names_terran_0_m.bin";
-            } else {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_nivelian_1.bin" : "names_terran_1.bin";
-            }
+        case 3:
+            if (second)
+                path = String(Globals::rnd->nextInt(2) != 0 ? "names_nivelian_0.bin" : "names_terran_0_m.bin");
+            else
+                path = String(Globals::rnd->nextInt(2) != 0 ? "names_nivelian_1.bin" : "names_terran_1.bin");
             break;
-        }
-        case 4: {
-            path = second ? "names_multipod_0.bin" : "names_multipod_1.bin";
+        case 4:
+            path = String(second ? "names_multipod_0.bin" : "names_multipod_1.bin");
             break;
-        }
-        case 5: {
-            if (!second) {
+        case 5:
+            if (!second)
                 return names;
-            }
-            path = "names_cyborg_0.bin";
+            path = String("names_cyborg_0.bin");
             break;
-        }
-        case 6: {
-            path = second ? "names_bobolan_0.bin" : "names_bobolan_1.bin";
+        case 6:
+            path = String(second ? "names_bobolan_0.bin" : "names_bobolan_1.bin");
             break;
-        }
-        case 7: {
-            if (!second) {
+        case 7:
+            if (!second)
                 return names;
-            }
-            path = "names_grey_0.bin";
+            path = String("names_grey_0.bin");
             break;
-        }
-        case 8: {
-            if (second) {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_nivelian_0.bin" : "names_terran_0_m.bin";
-            } else {
-                path = Globals::rnd->nextInt(2) != 0 ? "names_nivelian_1.bin" : "names_terran_1.bin";
-            }
+        case 8:
+            if (second)
+                path = String(Globals::rnd->nextInt(2) != 0 ? "names_nivelian_0.bin" : "names_terran_0_m.bin");
+            else
+                path = String(Globals::rnd->nextInt(2) != 0 ? "names_nivelian_1.bin" : "names_terran_1.bin");
             break;
-        }
         default:
             return names;
     }
@@ -502,16 +491,20 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system) {
     uint32_t handle;
     AEFile::OpenRead("data/bin/stations.bin", &handle);
 
-    Array<int32_t> *ids = system->stationIds;
+    Array<int32_t> *ids = (Array<int32_t> *) system->getStations();
     ArraySetLength<Station *>(ids->size(), *stations);
 
     String name;
     uint32_t out = 0;
-    for (uint32_t stationId = 0; stationId < 0x87; stationId++) {
-        int32_t a;
-        int32_t b;
-        int32_t c;
-        int32_t d;
+    int32_t a;
+    int32_t b;
+    int32_t c;
+    int32_t d;
+    for (uint32_t stationId = 0;; stationId++) {
+        if (stationId >= 0x87) {
+            AEFile::Close(handle);
+            return stations;
+        }
         AEFile::ReadSwitched(name, handle);
         name.ConvertFromUTF8();
         AEFile::ReadSwitched(a, handle);
@@ -528,8 +521,6 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system) {
             }
         }
     }
-    AEFile::Close(handle);
-    return stations;
 }
 
 Array<Agent *> *FileRead::loadAgents() {
@@ -599,7 +590,11 @@ Array<int32_t> *FileRead::loadWreckCollision(int32_t id) {
 
     int32_t key = 0;
     int32_t count = 0;
-    for (uint32_t i = 0; i < 6; i++) {
+    for (uint32_t i = 0;; i++) {
+        if (i >= 6) {
+            AEFile::Close(handle);
+            return nullptr;
+        }
         AEFile::Read(key, handle);
         AEFile::Read(count, handle);
         count++;
@@ -617,8 +612,6 @@ Array<int32_t> *FileRead::loadWreckCollision(int32_t id) {
         }
         AEFile::Skip(count << 2, handle);
     }
-    AEFile::Close(handle);
-    return nullptr;
 }
 
 Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
@@ -631,7 +624,11 @@ Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
 
     int32_t key = 0;
     int32_t count = 0;
-    for (uint32_t i = 0; i < 0x88; i++) {
+    for (uint32_t i = 0;; i++) {
+        if (i >= 0x88) {
+            AEFile::Close(handle);
+            return nullptr;
+        }
         AEFile::Read(key, handle);
         AEFile::Read(count, handle);
         count++;
@@ -649,8 +646,6 @@ Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
         }
         AEFile::Skip(count << 2, handle);
     }
-    AEFile::Close(handle);
-    return nullptr;
 }
 
 Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
@@ -663,7 +658,11 @@ Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
 
     int32_t key = 0;
     int32_t count = 0;
-    for (uint32_t i = 0; i < 7; i++) {
+    for (uint32_t i = 0;; i++) {
+        if (i >= 7) {
+            AEFile::Close(handle);
+            return nullptr;
+        }
         AEFile::Read(key, handle);
         AEFile::Read(count, handle);
         count++;
@@ -681,8 +680,6 @@ Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
         }
         AEFile::Skip(count << 2, handle);
     }
-    AEFile::Close(handle);
-    return nullptr;
 }
 
 Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
@@ -699,10 +696,14 @@ Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
         wanted = 0x65;
     }
 
-    for (uint32_t i = 0; i < 0x88; i++) {
-        int8_t group;
-        int16_t station;
-        int8_t count;
+    int8_t group;
+    int16_t station;
+    int8_t count;
+    for (uint32_t i = 0;; i++) {
+        if (i >= 0x88) {
+            AEFile::Close(handle);
+            return parts;
+        }
         AEFile::Read(group, handle);
         AEFile::ReadSwitched(station, handle);
         AEFile::Read(count, handle);
@@ -738,8 +739,6 @@ Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
         }
         ArrayRelease(*parts);
     }
-    AEFile::Close(handle);
-    return parts;
 }
 
 Array<int32_t> *FileRead::loadShipParts(int32_t id) {

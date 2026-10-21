@@ -119,9 +119,14 @@ namespace {
         uint8_t uniformSize;
     };
 
+    struct PCSpriteNodeView {
+        uint8_t pad00[0x30];
+        unsigned int spriteMaterial;
+    };
+
     struct PCSpriteSystemView2 {
         uint8_t pad00[0x10];
-        ::Node *node;
+        PCSpriteNodeView *node;
     };
 
     struct PCResourceView {
@@ -2093,7 +2098,7 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
         unsigned int mat = 0xffffffff;
         this->MaterialCreate(matResId, mat);
         if (mat <= this->materials.count) {
-            ::Node *node = ((PCSpriteSystemView2 *) ss)->node;
+            PCSpriteNodeView *node = ((PCSpriteSystemView2 *) ss)->node;
             node->spriteMaterial =
                     (unsigned int) (uintptr_t) this->materials.data_[mat];
         }

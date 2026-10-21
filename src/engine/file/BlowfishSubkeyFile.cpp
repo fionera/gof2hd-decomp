@@ -13,7 +13,7 @@ std::FILE *SubkeyFile = nullptr;
 
 extern "C" unsigned int F(unsigned int value); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
-extern "C" short opensubkeyfile() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern "C" int opensubkeyfile() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     SubkeyFile = std::fopen("Blowfish.dat", "rb");
     return SubkeyFile != nullptr ? 0 : -1;
 }
@@ -26,84 +26,96 @@ extern "C" void *decrypt(void *ctx) { // lint: extern_c (native ABI boundary; or
 extern "C" void Blowfish_encipher(unsigned int *xl, unsigned int *xr) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
-    for (int i = 0; i != 16; ++i) {
-        unsigned int t = P[i] ^ Xl;
-        Xl = F(t) ^ Xr;
-        Xr = t;
+    unsigned int temp;
+    for (int i = 0; i < 16; ++i) {
+        Xl = Xl ^ P[i];
+        Xr = F(Xl) ^ Xr;
+        temp = Xl;
+        Xl = Xr;
+        Xr = temp;
     }
-    *xl = P[17] ^ Xr;
-    *xr = Xl ^ P[16];
+    temp = Xl;
+    Xl = Xr;
+    Xr = temp;
+    Xr = Xr ^ P[16];
+    Xl = Xl ^ P[17];
+    *xl = Xl;
+    *xr = Xr;
 }
 
 extern "C" void Blowfish_decipher(unsigned int *xl, unsigned int *xr) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
+    unsigned int temp;
     for (unsigned int i = 17; i > 1; --i) {
-        unsigned int t = P[i] ^ Xl;
-        Xl = F(t) ^ Xr;
-        Xr = t;
+        Xl = Xl ^ P[i];
+        Xr = F(Xl) ^ Xr;
+        temp = Xl;
+        Xl = Xr;
+        Xr = temp;
     }
-    *xl = P[0] ^ Xr;
-    *xr = Xl ^ P[1];
+    temp = Xl;
+    Xl = Xr;
+    Xr = temp;
+    Xr = Xr ^ P[1];
+    Xl = Xl ^ P[0];
+    *xl = Xl;
+    *xr = Xr;
 }
 
-#define BLOWFISH_N 16
-#define BLOWFISH_NO_ERR 0
-#define BLOWFISH_DATA_ERROR -1
-
+// Reference Blowfish key schedule (P-array and S-boxes read from Blowfish.dat, then mixed with the key).
 extern "C" short InitializeBlowfish(unsigned char key[], short keybytes) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    short i, j, k;
-    short error;
-    unsigned short numread;
-    unsigned int data, datal, datar;
+    unsigned int data;
+    unsigned int datal;
+    unsigned int datar;
 
-    // First, open the file containing the array initialization data.
-    error = opensubkeyfile();
-    if (error == BLOWFISH_NO_ERR) {
-        for (i = 0; i < BLOWFISH_N + 2; ++i) {
-            numread = std::fread(&data, 4, 1, SubkeyFile);
-            if (numread != 1)
-                return BLOWFISH_DATA_ERROR;
-            P[i] = data;
-        }
-        for (i = 0; i < 4; ++i) {
-            for (j = 0; j < 256; ++j) {
-                numread = std::fread(&data, 4, 1, SubkeyFile);
-                if (numread != 1)
-                    return BLOWFISH_DATA_ERROR;
-                S[i][j] = data;
-            }
-        }
-        std::fclose(SubkeyFile);
-
-        j = 0;
-        for (i = 0; i < BLOWFISH_N + 2; ++i) {
-            data = 0x00000000;
-            for (k = 0; k < 4; ++k) {
-                data = (data << 8) | key[j];
-                j = j + 1;
-                if (j >= keybytes)
-                    j = 0;
-            }
-            P[i] = P[i] ^ data;
-        }
-
-        datal = 0x00000000;
-        datar = 0x00000000;
-        for (i = 0; i < BLOWFISH_N + 2; i += 2) {
-            Blowfish_encipher(&datal, &datar);
-            P[i] = datal;
-            P[i + 1] = datar;
-        }
-        for (i = 0; i < 4; ++i) {
-            for (j = 0; j < 256; j += 2) {
-                Blowfish_encipher(&datal, &datar);
-                S[i][j] = datal;
-                S[i][j + 1] = datar;
-            }
-        }
-    } else {
+    int error = opensubkeyfile();
+    if (error != 0) {
         std::printf("Unable to open subkey initialization file : %d\n", error);
+        return (short) error;
     }
-    return error;
+
+    for (unsigned short i = 0; i < 18; ++i) {
+        unsigned short numread = (unsigned short) std::fread(&data, 4, 1, SubkeyFile);
+        if (numread != 1)
+            return -1;
+        P[i] = data;
+    }
+    for (unsigned short i = 0; i < 4; ++i) {
+        for (unsigned short j = 0; j < 256; ++j) {
+            unsigned short numread = (unsigned short) std::fread(&data, 4, 1, SubkeyFile);
+            if (numread != 1)
+                return -1;
+            S[i][j] = data;
+        }
+    }
+    std::fclose(SubkeyFile);
+
+    short j = 0;
+    for (short i = 0; i < 18; ++i) {
+        data = 0;
+        for (unsigned short k = 0; k < 4; ++k) {
+            data = (data << 8) | key[j];
+            j = j + 1;
+            if (j >= keybytes)
+                j = 0;
+        }
+        P[i] = P[i] ^ data;
+    }
+
+    datal = 0;
+    datar = 0;
+    for (short i = 0; i < 18; i += 2) {
+        Blowfish_encipher(&datal, &datar);
+        P[i] = datal;
+        P[i + 1] = datar;
+    }
+    for (short i = 0; i < 4; ++i) {
+        for (short k = 0; k < 256; k += 2) {
+            Blowfish_encipher(&datal, &datar);
+            S[i][k] = datal;
+            S[i][k + 1] = datar;
+        }
+    }
+    return (short) error;
 }

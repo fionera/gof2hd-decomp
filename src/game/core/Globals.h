@@ -118,7 +118,7 @@ public:
                        unsigned short &o14, unsigned short &o15, unsigned short &o16,
                        unsigned short &o17);
 
-    unsigned int createBillBoard(int p1, int height, float u0, float v0, float u1, float v1, int width);
+    unsigned int createBillBoard(int halfWidth, int halfLength, float u0, float v0, float u1, float v1, int texture);
 
     Array<BoundingVolume *> *getWreckCollision(int kind, AEGeometry *geom);
 
@@ -158,9 +158,9 @@ public:
     static int top_edge;
     static int bottom_edge;
     static int resetKeyboard;
-    static int rotateShipInStation;
-    static int translateStarMapInXDirection;
-    static int translateStarMapInYDirection;
+    static float rotateShipInStation;
+    static float translateStarMapInXDirection;
+    static float translateStarMapInYDirection;
     static int smallButton_dim;
     static int touch_stick_x;
     static int touch_stick_y;

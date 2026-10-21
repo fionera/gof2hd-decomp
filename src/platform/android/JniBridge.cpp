@@ -49,129 +49,6 @@ char *flstat_rootPath;
 
 int AccIndex;
 
-void OnCreateApplication(AbyssEngine::Engine * engine);
-
-void OnCreateApplication(AbyssEngine::Engine *engine) {
-    using AbyssEngine::Engine;
-
-    GameData *data = new GameData();
-    data->field_0x04 = 0;
-    data->field_0x0c = 0;
-    data->field_0x0e = 0;
-    data->field_0x14 = 0;
-    data->field_0x10 = -1;
-    data->field_0x44 = 0;
-    data->field_0x3c = 0;
-    data->field_0x40 = 0;
-    data->field_0x48 = -1;
-    data->field_0x4c = 1;
-    data->field_0x08 = 0;
-    data->field_0x6d = 0;
-    data->field_0x6e = 0;
-    data->field_0x6f = 0;
-    data->field_0x70 = 0;
-    data->field_0x71 = 0;
-    data->field_0x72 = 0;
-    data->field_0x73 = 0;
-    data->field_0x74 = 0;
-    data->field_0x75 = 0;
-    data->field_0x76 = 0;
-    data->field_0x77 = 0;
-    data->field_0x50 = 0;
-    data->field_0x54 = 0;
-    data->field_0x58 = 0;
-    data->field_0x5c = 0;
-    data->field_0x60 = 0;
-    data->field_0x64 = 0;
-    data->field_0x68 = 0;
-    data->field_0x6c = 0;
-
-    data->globals = new Globals();
-
-    DeviceInfo dev = engine->GetDeviceInfo();
-
-    if (dev.height < 640 || dev.isPad != 0) {
-        DeviceInfo padDev = engine->GetDeviceInfo();
-        Globals::retinaDisplay = (padDev.isPad != 0) && (static_cast<int>(dev.height) > 800);
-    } else {
-        Globals::retinaDisplay = true;
-    }
-
-    data->field_0xa8 = AbyssEngine::String("", false);
-    data->field_0xa5 = 0;
-    data->field_0xb8 = AbyssEngine::String("", false);
-    data->field_0xc4 = 0;
-    data->field_0xb4 = 0;
-    data->field_0x78 = 0;
-    data->field_0x7a = 0;
-    data->field_0x7c = AbyssEngine::String("", false);
-    data->field_0x88 = AbyssEngine::String("", false);
-    data->field_0x94 = AbyssEngine::String("", false);
-    data->field_0xa4 = 0;
-    data->field_0xa0 = 0;
-
-    Globals::iPad = (dev.height == 480) && (dev.width == 864);
-
-    engine->GetDeviceInfo();
-    Globals::iPadHD = 0;
-    Globals::iPad = dev.isPad;
-    Globals::iPadLargePossible = 0;
-    Globals::iPadLarge = (dev.isPad != 0) ? Globals::retinaDisplay : 0;
-    if (dev.isPad != 0) {
-        Globals::iPadAssetsWithLowerRes =
-                (static_cast<int>(dev.height) < 768) && (static_cast<int>(dev.width) < 1024);
-    } else {
-        Globals::iPadAssetsWithLowerRes = 0;
-    }
-    Globals::switch_to_target_setting = -1;
-    Globals::enterSpaceLounge = 0;
-
-    BuildResourceList(engine);
-
-    Globals::appManager = engine->appManager;
-    Globals::Canvas = engine->appManager->paintCanvas;
-    Globals::w = Globals::Canvas->GetWidth();
-    Globals::h = Globals::Canvas->GetHeight();
-
-    GameText *text = new GameText();
-    Globals::gameText = text;
-    text->setLanguage(static_cast<short>(hrwhs_country_code), 3401);
-    data->globals->loadFont(GameText::getLanguage());
-    data->globals->init(engine->appManager, engine);
-
-    engine->appManager->SetApplicationData(data);
-    engine->appManager->SetLoadingCallback(&loadingScreen, Globals::font);
-
-    engine->appManager->RegisterApplicationModule(
-        2, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MGame()));
-    engine->appManager->RegisterApplicationModule(
-        1, reinterpret_cast<AbyssEngine::IApplicationModule *>(new ModMainMenu()));
-    engine->appManager->RegisterApplicationModule(
-        5, reinterpret_cast<AbyssEngine::IApplicationModule *>(new ModStation()));
-    engine->appManager->RegisterApplicationModule(
-        0, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MTitle()));
-
-    engine->appManager->CheatSetCallback(&OnCheatActivated, nullptr);
-    engine->appManager->CheatAddCode(AbyssEngine::String("754753835", false), 0);
-    engine->appManager->CheatAddCode(AbyssEngine::String("448366639", false), 1);
-    engine->appManager->CheatAddCode(AbyssEngine::String("373352623", false), 2);
-
-    Globals::layout->initTip();
-    Globals::status->resetGame();
-    AbyssEngine::Engine::vfc = true;
-    Globals::rnd->reset();
-    engine->appManager->SetCurrentApplicationModule(0);
-    AbyssEngine::Engine::clampTextures = false;
-
-    engine->appManager->paintCanvas->TextureCreateGlobal(
-        AbyssEngine::String("data/textures/pow_texture.aei", false), 2);
-
-    AbyssEngine::Engine::vboSupported = true;
-    AbyssEngine::Engine::clampTextures = false;
-    engine->field_0x74 = false;
-    AbyssEngine::Engine::lodBiasNormal = -0.5f;
-    AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
-}
 
 extern "C" jint JNI_OnLoad(JavaVM *vm, void * /*reserved*/) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
     // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
@@ -214,6 +91,11 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setZIPPath( // lint
     }
 }
 
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setCountryCodeOfDevice( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/, jint code) {
+    ndk23_setCountryCode(static_cast<unsigned int>(code));
+}
+
 char *dataDirectory;
 char *zipDirectory;
 
@@ -242,10 +124,6 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_SetDirectories( // 
         __android_log_print(ANDROID_LOG_ERROR, "GOF2_NATIVE", "zipDirectory in main.c: %s", zipDirectory);
         env->ReleaseStringUTFChars(zipDir, zip);
     }
-}
-
-extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_STARTUP( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/) {
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_initialize( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
@@ -285,14 +163,23 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_sendResumeSignalToG
     ndk23_sendingResumeSignal();
 }
 
-extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setCountryCodeOfDevice( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/, jint code) {
-    ndk23_setCountryCode(static_cast<unsigned int>(code));
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_STARTUP( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/) {
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleAccelerometer( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/, jfloat x, jfloat y, jfloat z) {
     ndk23_handleAcceleration(-x, y, z);
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_resize( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/, jint width, jint height) {
+    ndk23_renderstep(width, height);
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleTouchEvent( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/, jint touch, jint phase, jfloat x, jfloat y) {
+    ndk23_handleTouchScreenEvent(touch, phase, x, y);
 }
 
 extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC1BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
@@ -305,10 +192,32 @@ extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC2BOUGHT( // l
     return ndk_getDLC_2_BOUGHT();
 }
 
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC3BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/) {
+    return ndk_getDLC_3_BOUGHT();
+}
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC4BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/) {
+    return ndk_getDLC_4_BOUGHT();
+}
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC5BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/) {
+    return ndk_getDLC_5_BOUGHT();
+}
+
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC1( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
     ndk_iapBoughtPremium(0, 1);
 }
+
+int g_android_current_achievements[3];
+int g_android_leaderboard_scores[8];
+int g_android_link_game_gp;
+int g_android_gp_is_linked;
+int g_android_show_achievements;
+int g_android_show_leaderboards;
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC2( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/) {
@@ -330,16 +239,90 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC5( 
     ndk_iapBoughtPremium(4, 1);
 }
 
-int g_android_current_achievements[3];
-int g_android_leaderboard_scores[8];
-int g_android_link_game_gp;
-int g_android_gp_is_linked;
-int g_android_show_achievements;
-int g_android_show_leaderboards;
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_testPurchase( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/) {
+    ndk_iapBoughtConsumable(0);
+}
 
-extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetAchievementId( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/, jint index) {
-    return g_android_current_achievements[index];
+extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv *env, jclass /*clazz*/) {
+    // Google Play licensing public key (base64 RSA SubjectPublicKeyInfo) of the shipped APK.
+    return env->NewStringUTF(
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiSfBidMj3fOEJih9J4/2"
+        "RUjqwsjbcl1O1gbHSVB9LpKh5G5ds0rLsVGw52j44szFre/CinNDST/OjnDBkMlr"
+        "ewUxZwXPrYycO3JTE3BjS9Fl8kADtN2aU4LvdVGZBSk32TVgqBLLGDNUFfda3fv+"
+        "MTQmcXDCFmTRbZwjHFhGOd56L3RO35KUszkak9ST5UL2nNJL9yOqcQ2BWkT+oI3a"
+        "hALETTUCE6VdHEoliW9Mb+E9BaU2hOmowkJIWQhkbw+d4d44Y9dqVSwNS7N453IV"
+        "wifLXANv7MY+9nIO7qHtGTNQC1VKgcHEs/slbpqahUBcsifJP3xgD6/pNbOzGHpY"
+        "VQIDAQAB");
+}
+
+extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getPremiumSKU( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv *env, jclass /*clazz*/, jint index) {
+    switch (index) {
+        case 0: return env->NewStringUTF("iap_managed_valkyrie");
+        case 1: return env->NewStringUTF("iap_managed_kaamo_club");
+        case 2: return env->NewStringUTF("iap_managed_supernova");
+        case 3: return env->NewStringUTF("iap_managed_vip");
+        case 4: return env->NewStringUTF("iap_managed_full_package");
+    }
+    return nullptr;
+}
+
+extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv *env, jclass /*clazz*/, jint index) {
+    switch (index) {
+        case 0: return env->NewStringUTF("iap_managed_credits_100_000");
+        case 1: return env->NewStringUTF("iap_managed_credits_300_000");
+        case 2: return env->NewStringUTF("iap_managed_credits_1_000_000");
+        case 3: return env->NewStringUTF("iap_managed_credits_3_000_000");
+        case 4: return env->NewStringUTF("iap_managed_10_000_000");
+    }
+    return nullptr;
+}
+
+extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapBoughtPremium( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/, jint pack, jint bought) {
+    ndk_iapBoughtPremium(static_cast<unsigned int>(pack),
+                         static_cast<unsigned int>(bought));
+}
+
+extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapBoughtConsumable( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/, jint consumable) {
+    ndk_iapBoughtConsumable(static_cast<unsigned int>(consumable));
+}
+
+extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapSetNativeItemInformationList( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv *env, jclass clazz, jobjectArray ids, jobjectArray names,
+    jobjectArray descriptions, jobjectArray currencies, jobjectArray prices) {
+    ndk_setNativeItemInformationList(env, clazz, ids, names, descriptions,
+                                     currencies, prices);
+}
+
+extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapResetNativeItemInformationList( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/) {
+    ndk_resetNativeItemInformationList();
+}
+
+extern "C" void Java_net_fishlabs_tapjoy_ToJNI_spentAmountOfCredits( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/, jint amount) {
+    gb_android_offerwallCreditAmount = amount;
+    ndk_checkPlaytimeAndSpendOfferwallCredits();
+}
+
+extern "C" jint Java_net_fishlabs_playhaven_ToJNI_getCurrentApplicationModule( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/) {
+    return ndk_getCurrentApplicationModule();
+}
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getLogoShown( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/) {
+    return ndk_getLogoShown();
+}
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_isInMainMenu( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/) {
+    return ndk_isInMainMenu();
 }
 
 extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLeaderboardScore( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
@@ -350,6 +333,11 @@ extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLeaderboard
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetLeaderboardScore( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv * /*env*/, jclass /*clazz*/, jint index) {
     g_android_leaderboard_scores[index] = 0;
+}
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetAchievementId( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    JNIEnv * /*env*/, jclass /*clazz*/, jint index) {
+    return g_android_current_achievements[index];
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetAchievements( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
@@ -394,114 +382,4 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetGPIsLinked(
     g_android_gp_is_linked = linked;
 }
 
-extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC3BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk_getDLC_3_BOUGHT();
-}
-
-extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC4BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk_getDLC_4_BOUGHT();
-}
-
-extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC5BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk_getDLC_5_BOUGHT();
-}
-
-extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getLogoShown( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk_getLogoShown();
-}
-
-extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_isInMainMenu( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk_isInMainMenu();
-}
-
-extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_resize( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/, jint width, jint height) {
-    ndk23_renderstep(width, height);
-}
-
-extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleTouchEvent( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/, jint touch, jint phase, jfloat x, jfloat y) {
-    ndk23_handleTouchScreenEvent(touch, phase, x, y);
-}
-
-extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_testPurchase( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/) {
-    ndk_iapBoughtConsumable(0);
-}
-
-extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapBoughtConsumable( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/, jint consumable) {
-    ndk_iapBoughtConsumable(static_cast<unsigned int>(consumable));
-}
-
-extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapBoughtPremium( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/, jint pack, jint bought) {
-    ndk_iapBoughtPremium(static_cast<unsigned int>(pack),
-                         static_cast<unsigned int>(bought));
-}
-
-extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapSetNativeItemInformationList( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv *env, jclass clazz, jobjectArray ids, jobjectArray names,
-    jobjectArray descriptions, jobjectArray currencies, jobjectArray prices) {
-    ndk_setNativeItemInformationList(env, clazz, ids, names, descriptions,
-                                     currencies, prices);
-}
-
-extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapResetNativeItemInformationList( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/) {
-    ndk_resetNativeItemInformationList();
-}
-
-extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv *env, jclass /*clazz*/, jint index) {
-    switch (index) {
-        case 0: return env->NewStringUTF("iap_managed_credits_100_000");
-        case 1: return env->NewStringUTF("iap_managed_credits_300_000");
-        case 2: return env->NewStringUTF("iap_managed_credits_1_000_000");
-        case 3: return env->NewStringUTF("iap_managed_credits_3_000_000");
-        case 4: return env->NewStringUTF("iap_managed_10_000_000");
-    }
-    return nullptr;
-}
-
-extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getPremiumSKU( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv *env, jclass /*clazz*/, jint index) {
-    switch (index) {
-        case 0: return env->NewStringUTF("iap_managed_valkyrie");
-        case 1: return env->NewStringUTF("iap_managed_kaamo_club");
-        case 2: return env->NewStringUTF("iap_managed_supernova");
-        case 3: return env->NewStringUTF("iap_managed_vip");
-        case 4: return env->NewStringUTF("iap_managed_full_package");
-    }
-    return nullptr;
-}
-
-extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv *env, jclass /*clazz*/) {
-    // Google Play licensing public key (base64 X.509 SubjectPublicKeyInfo).
-    return env->NewStringUTF(
-        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiSfBidMj3fOEJih9J4/2"
-        "RUjqwsjbcl1O1gbHSVB9LpKh5G5ds0rLsVGw52j44szFre/CinNDST/OjnDBkMlr"
-        "ewUxZwXPrYycO3JTE3BjS9Fl8kADtN2aU4LvdVGZBSk32TVgqBLLGDNUFfda3fv+"
-        "MTQmcXDCFmTRbZwjHFhGOd56L3RO35KUszkak9ST5UL2nNJL9yOqcQ2BWkT+oI3a"
-        "hALETTUCE6VdHEoliW9Mb+E9BaU2hOmowkJIWQhkbw+d4d44Y9dqVSwNS7N453IV"
-        "wifLXANv7MY+9nIO7qHtGTNQC1VKgcHEs/slbpqahUBcsifJP3xgD6/pNbOzGHpY"
-        "VQIDAQAB");
-}
-
-extern "C" jint Java_net_fishlabs_playhaven_ToJNI_getCurrentApplicationModule( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/) {
-    return ndk_getCurrentApplicationModule();
-}
-
-extern "C" void Java_net_fishlabs_tapjoy_ToJNI_spentAmountOfCredits( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    JNIEnv * /*env*/, jclass /*clazz*/, jint amount) {
-    gb_android_offerwallCreditAmount = amount;
-    ndk_checkPlaytimeAndSpendOfferwallCredits();
-}
 

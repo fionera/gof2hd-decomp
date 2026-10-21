@@ -4,25 +4,77 @@
 
 namespace AEMath = AbyssEngine::AEMath;
 
+Trail::Trail(int type, int segments) {
+    this->sourceX = 0;
+    this->sourceY = 0;
+    this->sourceZ = 0;
+    this->segments = segments;
 
-void Trail::update(const Vector &a, const Vector &b) {
-    update(a.x, a.y, a.z, b.x, b.y, b.z);
+    float uvSide = 0.0f;
+    if ((type & ~3) != 4) {
+        uvSide = 0.0f;
+        if ((uint32_t)(type - 9) < 3) {
+            uvSide = 1.0f;
+        }
+    }
+
+    this->width = 0x3c;
+    Globals::Canvas->MeshCreate((uint16_t)(segments * 2 + 2),
+                       (uint16_t)(segments * 2),
+                       0x13,
+                       0x4e77,
+                       this->meshId);
+
+    // Two triangles per segment between the vertex pairs (i, i+1) and (i+2, i+3).
+    for (int i = 0; i < this->segments * 2 - 2; i += 2) {
+        Globals::Canvas->MeshSetTriangle(this->meshId, (uint16_t) i, (uint16_t) i, (uint16_t) (i | 1),
+                                         (uint16_t) (i + 2));
+        Globals::Canvas->MeshSetTriangle(this->meshId, (uint16_t) (i | 1), (uint16_t) (i + 3), (uint16_t) (i + 2),
+                                         (uint16_t) (i | 1));
+    }
+
+    float uvScale = 0.0f;
+    for (int point = 0, i = 0; i < this->segments * 2 + 2; i += 2, point++) {
+        float u = (float) -(int) (((float) point / (float) (this->segments + 1)) * uvScale);
+        Globals::Canvas->MeshSetUv(this->meshId, (uint16_t) i, uvSide, u);
+        Globals::Canvas->MeshSetUv(this->meshId, (uint16_t)(i | 1), uvSide, u);
+    }
+
+    int count = (this->segments * 2 + 2) * 3;
+    this->pointCount = count;
+
+    this->points = new int[count];
+    this->relativePoints = new int[count];
+    Globals::Canvas->TransformCreate(this->transformId);
+    Globals::Canvas->TransformAddMeshId(this->transformId, this->meshId);
+    changeType(type);
 }
 
-void Trail::render() {
-    Globals::Canvas->DrawTransform(this->transformId, nullptr);
-}
-
-void Trail::translate(const Vector &delta) {
-    float dx = delta.x;
-    float dy = delta.y;
-    float dz = delta.z;
-
-    for (int i = 0; i < this->pointCount; i += 3) {
-        int *point = this->points + i;
-        point[0] = (int) (dx + (float) point[0]);
-        point[1] = (int) (dy + (float) point[1]);
-        point[2] = (int) (dz + (float) point[2]);
+void Trail::changeType(int type) {
+    switch (type) {
+        case 1:
+        case 7:
+        case 11:
+            Globals::Canvas->TransformSetColor(this->transformId, 0xff0000ffu);
+            break;
+        case 2:
+        case 9:
+            Globals::Canvas->TransformSetColor(this->transformId, 0x00ff00ffu);
+            break;
+        default:
+            Globals::Canvas->TransformSetColor(this->transformId, 0xffffffffu);
+            break;
+        case 5:
+            Globals::Canvas->TransformSetColor(this->transformId, 0x00ff0000u);
+            break;
+        case 3:
+        case 6:
+        case 10:
+            Globals::Canvas->TransformSetColor(this->transformId, 0xffff00ffu);
+            break;
+        case 8:
+            Globals::Canvas->TransformSetColor(this->transformId, 0xff4000ffu);
+            break;
     }
 }
 
@@ -87,62 +139,6 @@ void Trail::update(float ax, float ay, float az, float bx, float by, float bz) {
     AEMath::MatrixSetTranslation(*local, ax, ay, az);
 }
 
-Trail::Trail(int type, int segments) {
-    this->sourceX = 0;
-    this->sourceY = 0;
-    this->sourceZ = 0;
-    this->segments = segments;
-
-    float uvSide = 0.0f;
-    if ((type & ~3) != 4) {
-        uvSide = 0.0f;
-        if ((uint32_t)(type - 9) < 3) {
-            uvSide = 1.0f;
-        }
-    }
-
-    PaintCanvas *canvas = Globals::Canvas;
-    this->width = 0x3c;
-    canvas->MeshCreate((uint16_t)(segments * 2 + 2),
-                       (uint16_t)(segments * 2),
-                       0x13,
-                       0x4e77,
-                       this->meshId);
-
-    for (int i = 2; i - 2 < segments * 2 - 2; i += 2) {
-        uint16_t tri = (uint16_t)(i - 2);
-        uint16_t odd = (uint16_t)(tri | 1);
-        uint16_t current = (uint16_t) i;
-        canvas->MeshSetTriangle(this->meshId, tri, tri, odd, current);
-        canvas->MeshSetTriangle(this->meshId, odd, (uint16_t)(tri + 3), current, odd);
-    }
-
-    float uvScale = 0.0f;
-    int point = 0;
-    for (int i = 0; i < segments * 2 + 2; i += 2) {
-        float u = (float) -(int) (((float) point / (float) (segments + 1)) * uvScale);
-        canvas->MeshSetUv(this->meshId, (uint16_t) i, uvSide, u);
-        canvas->MeshSetUv(this->meshId, (uint16_t)(i | 1), uvSide, u);
-        point++;
-        segments = this->segments;
-    }
-
-    int count = (segments * 2 + 2) * 3;
-    this->pointCount = count;
-
-    this->points = new int[count];
-    this->relativePoints = new int[count];
-    canvas->TransformCreate(this->transformId);
-    canvas->TransformAddMeshId(this->transformId, this->meshId);
-    changeType(type);
-}
-
-void Trail::update(const Matrix &a, const Matrix &b, const Vector &v) {
-    Vector va = AEMath::MatrixTransformVector(a, v);
-    Vector vb = AEMath::MatrixTransformVector(b, v);
-    update(va.x, va.y, va.z, vb.x, vb.y, vb.z);
-}
-
 void Trail::setWidth(int width) {
     int delta = this->width - width;
     PaintCanvas **canvas = &Globals::Canvas;
@@ -156,32 +152,14 @@ void Trail::setWidth(int width) {
     this->width = width;
 }
 
-void Trail::changeType(int type) {
-    switch (type) {
-        case 1:
-        case 7:
-        case 11:
-            Globals::Canvas->TransformSetColor(this->transformId, 0xff0000ffu);
-            break;
-        case 2:
-        case 9:
-            Globals::Canvas->TransformSetColor(this->transformId, 0x00ff00ffu);
-            break;
-        default:
-            Globals::Canvas->TransformSetColor(this->transformId, 0xffffffffu);
-            break;
-        case 5:
-            Globals::Canvas->TransformSetColor(this->transformId, 0x00ff0000u);
-            break;
-        case 3:
-        case 6:
-        case 10:
-            Globals::Canvas->TransformSetColor(this->transformId, 0xffff00ffu);
-            break;
-        case 8:
-            Globals::Canvas->TransformSetColor(this->transformId, 0xff4000ffu);
-            break;
-    }
+void Trail::update(const Vector &a, const Vector &b) {
+    update(a.x, a.y, a.z, b.x, b.y, b.z);
+}
+
+void Trail::update(const Matrix &a, const Matrix &b, const Vector &v) {
+    Vector va = AEMath::MatrixTransformVector(a, v);
+    Vector vb = AEMath::MatrixTransformVector(b, v);
+    update(va.x, va.y, va.z, vb.x, vb.y, vb.z);
 }
 
 void Trail::reset(Vector value) {
@@ -197,4 +175,21 @@ void Trail::reset(Vector value) {
     }
 
     update(value, value);
+}
+
+void Trail::translate(const Vector &delta) {
+    float dx = delta.x;
+    float dy = delta.y;
+    float dz = delta.z;
+
+    for (int i = 0; i < this->pointCount; i += 3) {
+        int *point = this->points + i;
+        point[0] = (int) (dx + (float) point[0]);
+        point[1] = (int) (dy + (float) point[1]);
+        point[2] = (int) (dz + (float) point[2]);
+    }
+}
+
+void Trail::render() {
+    Globals::Canvas->DrawTransform(this->transformId, nullptr);
 }

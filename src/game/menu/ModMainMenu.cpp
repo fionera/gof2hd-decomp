@@ -68,45 +68,6 @@ ModMainMenu::~ModMainMenu() {
     OnRelease();
 }
 
-void ModMainMenu::OnKeyPress(long long key, long long mod) {
-    (void) key;
-    (void) mod;
-}
-
-void ModMainMenu::OnKeyRelease(long long key, long long mod) {
-    (void) key;
-    (void) mod;
-}
-
-int ModMainMenu::ShowLoadingScreen() {
-    return 1;
-}
-
-void ModMainMenu::OnRelease() {
-    if (this->cutScene != nullptr)
-        delete this->cutScene;
-    this->cutScene = nullptr;
-
-    if (this->touchWindow != nullptr)
-        delete this->touchWindow;
-    this->touchWindow = nullptr;
-
-    Globals::Canvas->ReleaseAllResources();
-
-    Globals::globals->loadFont(GameText::getLanguage());
-
-    Layout **reload = g_ModMainMenu_releaseReload;
-    if (*reload != nullptr) {
-        (*reload)->reload();
-        (*g_ModMainMenu_releaseImageFactory)->reload();
-        (*reload)->initTip();
-    }
-
-    FModSound *sound = *g_ModMainMenu_releaseSound;
-    if (sound != nullptr)
-        sound->freeAllEvents();
-}
-
 void ModMainMenu::OnResume() {
     FModSound **holder = &Globals::sound;
     FModSound *sound = *holder;
@@ -117,105 +78,9 @@ void ModMainMenu::OnResume() {
     (*holder)->setVolume(1, *reinterpret_cast<float *>(Globals::options));
 }
 
-void ModMainMenu::OnRender3D() {
-    Globals::Canvas->ClearBuffer(0);
-    this->cutScene->renderBG();
-    Globals::Canvas->Begin3d();
-    this->cutScene->render3D();
-    Globals::Canvas->End3d();
-}
-
-void ModMainMenu::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
-    // lint: void_ptr (exported virtual signature)
-    if (this->logoActive != 0)
-        return;
-    this->touchWindow->OnTouchMove(x, y, touch);
-}
-
-void ModMainMenu::OnTouchMove(int x, int y) {
-    (void) x;
-    (void) y;
-}
-
 void ModMainMenu::OnSuspend() {
     if (Globals::recordHandler != nullptr)
         Globals::recordHandler->saveOptions();
-}
-
-void ModMainMenu::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
-    // lint: void_ptr (exported virtual signature)
-    if (this->logoActive == 0) {
-        this->touchWindow->OnTouchEnd(x, y, touch);
-        Level *level = *(Level **) this->cutScene;
-        ((StarSystem *) (intptr_t) level->getStarSystem())->initLight();
-        return;
-    }
-
-    this->logoActive = 0;
-    Globals::logoIsShown = 0;
-}
-
-void ModMainMenu::OnTouchEnd(int x, int y) {
-    (void) x;
-    (void) y;
-}
-
-void ModMainMenu::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
-    // lint: void_ptr (exported virtual signature)
-    if (this->logoActive != 0)
-        return;
-    this->touchWindow->OnTouchBegin(x, y, touch);
-}
-
-void ModMainMenu::OnTouchBegin(int x, int y) {
-    (void) x;
-    (void) y;
-}
-
-void ModMainMenu::OnRender2D() {
-    ((PaintCanvas *) (long) this->paintCanvas)->Begin2d();
-    ((PaintCanvas *) (long) this->paintCanvas)->SetColor((unsigned int) this->paintCanvas);
-    this->cutScene->render2D();
-
-    if (this->logoActive == 0) {
-        this->touchWindow->draw();
-    } else {
-        int time = this->fadeTimer;
-        int color = time <= 0x0f3b
-                        ? (int) (((float) time / 3900.0f) * 255.0f) - 0x100
-                        : -1;
-        (void) color;
-        ((PaintCanvas *) (long) this->paintCanvas)->SetColor((unsigned int) this->paintCanvas);
-
-        Globals::Canvas->DrawImage2D((unsigned int) this->logoImage, 0, 0, (unsigned char) 'D');
-
-        if (this->fadeTimer >= 0x0f3c) {
-            int canvas = (int) (intptr_t) Globals::Canvas;
-            float pulse = AbyssEngine::AEMath::Sinf(
-                (float) Globals::appManager->GetSystemTimeMillis() * 0.003f);
-            float signedPulse = pulse > 0.0f ? pulse : -pulse;
-            int alpha = (unsigned int) (signedPulse * 255.0f);
-            (void) alpha;
-            Globals::Canvas->SetColor((unsigned char) canvas, 0xff, 0xff, 0xff);
-
-            AbyssEngine::String **stringHolder = g_ModMainMenu_r2d_string;
-            int *textIdHolder = g_ModMainMenu_r2d_textId;
-            int drawCanvas = (int) (intptr_t) Globals::Canvas;
-            AbyssEngine::String *drawStr = *stringHolder;
-            int text = (int) (long) ((GameText *) (*textIdHolder))->getText(0xc7);
-
-            int screenW = *g_ModMainMenu_r2d_screenW;
-            int textWidth = Globals::Canvas->GetTextWidth((unsigned int) drawCanvas, *drawStr);
-
-            int screenH = *g_ModMainMenu_r2d_screenH;
-            int imageHeight = Globals::Canvas->GetImage2DHeight((unsigned int) (intptr_t) Globals::Canvas);
-            Globals::Canvas->DrawString((unsigned int) drawCanvas, *drawStr, text,
-                                        (screenW >> 1) - (textWidth >> 1),
-                                        (bool) ((char) (screenH >> 1) + (char) (imageHeight >> 1) + '\n'));
-        }
-    }
-
-    ((PaintCanvas *) (intptr_t) this->paintCanvas)->End2d();
 }
 
 int ModMainMenu::OnInitialize() {
@@ -316,6 +181,58 @@ state80:
     return this->state;
 }
 
+void ModMainMenu::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
+    // lint: void_ptr (exported virtual signature)
+    if (this->logoActive != 0)
+        return;
+    this->touchWindow->OnTouchBegin(x, y, touch);
+}
+
+void ModMainMenu::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
+    // lint: void_ptr (exported virtual signature)
+    if (this->logoActive != 0)
+        return;
+    this->touchWindow->OnTouchMove(x, y, touch);
+}
+
+void ModMainMenu::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
+    // lint: void_ptr (exported virtual signature)
+    if (this->logoActive == 0) {
+        this->touchWindow->OnTouchEnd(x, y, touch);
+        Level *level = *(Level **) this->cutScene;
+        ((StarSystem *) (intptr_t) level->getStarSystem())->initLight();
+        return;
+    }
+
+    this->logoActive = 0;
+    Globals::logoIsShown = 0;
+}
+
+void ModMainMenu::OnRelease() {
+    if (this->cutScene != nullptr)
+        delete this->cutScene;
+    this->cutScene = nullptr;
+
+    if (this->touchWindow != nullptr)
+        delete this->touchWindow;
+    this->touchWindow = nullptr;
+
+    Globals::Canvas->ReleaseAllResources();
+
+    Globals::globals->loadFont(GameText::getLanguage());
+
+    Layout **reload = g_ModMainMenu_releaseReload;
+    if (*reload != nullptr) {
+        (*reload)->reload();
+        (*g_ModMainMenu_releaseImageFactory)->reload();
+        (*reload)->initTip();
+    }
+
+    FModSound *sound = *g_ModMainMenu_releaseSound;
+    if (sound != nullptr)
+        sound->freeAllEvents();
+}
+
 void ModMainMenu::OnUpdate() {
     ApplicationManager *app = this->applicationManager;
     int elapsed = (int) app->GetElapsedTimeMillis();
@@ -342,4 +259,87 @@ void ModMainMenu::OnUpdate() {
     FModSound **listener = g_ModMainMenu_updateListener;
     this->fadeTimer = this->frameTime + this->fadeTimer;
     (*listener)->updateAll(nullptr, nullptr, nullptr, nullptr);
+}
+
+void ModMainMenu::OnRender2D() {
+    ((PaintCanvas *) (long) this->paintCanvas)->Begin2d();
+    ((PaintCanvas *) (long) this->paintCanvas)->SetColor((unsigned int) this->paintCanvas);
+    this->cutScene->render2D();
+
+    if (this->logoActive == 0) {
+        this->touchWindow->draw();
+    } else {
+        int time = this->fadeTimer;
+        int color = time <= 0x0f3b
+                        ? (int) (((float) time / 3900.0f) * 255.0f) - 0x100
+                        : -1;
+        (void) color;
+        ((PaintCanvas *) (long) this->paintCanvas)->SetColor((unsigned int) this->paintCanvas);
+
+        Globals::Canvas->DrawImage2D((unsigned int) this->logoImage, 0, 0, (unsigned char) 'D');
+
+        if (this->fadeTimer >= 0x0f3c) {
+            int canvas = (int) (intptr_t) Globals::Canvas;
+            float pulse = AbyssEngine::AEMath::Sinf(
+                (float) Globals::appManager->GetSystemTimeMillis() * 0.003f);
+            float signedPulse = pulse > 0.0f ? pulse : -pulse;
+            int alpha = (unsigned int) (signedPulse * 255.0f);
+            (void) alpha;
+            Globals::Canvas->SetColor((unsigned char) canvas, 0xff, 0xff, 0xff);
+
+            AbyssEngine::String **stringHolder = g_ModMainMenu_r2d_string;
+            int *textIdHolder = g_ModMainMenu_r2d_textId;
+            int drawCanvas = (int) (intptr_t) Globals::Canvas;
+            AbyssEngine::String *drawStr = *stringHolder;
+            int text = (int) (long) ((GameText *) (*textIdHolder))->getText(0xc7);
+
+            int screenW = *g_ModMainMenu_r2d_screenW;
+            int textWidth = Globals::Canvas->GetTextWidth((unsigned int) drawCanvas, *drawStr);
+
+            int screenH = *g_ModMainMenu_r2d_screenH;
+            int imageHeight = Globals::Canvas->GetImage2DHeight((unsigned int) (intptr_t) Globals::Canvas);
+            Globals::Canvas->DrawString((unsigned int) drawCanvas, *drawStr, text,
+                                        (screenW >> 1) - (textWidth >> 1),
+                                        (bool) ((char) (screenH >> 1) + (char) (imageHeight >> 1) + '\n'));
+        }
+    }
+
+    ((PaintCanvas *) (intptr_t) this->paintCanvas)->End2d();
+}
+
+void ModMainMenu::OnRender3D() {
+    Globals::Canvas->ClearBuffer(0);
+    this->cutScene->renderBG();
+    Globals::Canvas->Begin3d();
+    this->cutScene->render3D();
+    Globals::Canvas->End3d();
+}
+
+void ModMainMenu::OnKeyPress(long long key, long long mod) {
+    (void) key;
+    (void) mod;
+}
+
+void ModMainMenu::OnKeyRelease(long long key, long long mod) {
+    (void) key;
+    (void) mod;
+}
+
+void ModMainMenu::OnTouchBegin(int x, int y) {
+    (void) x;
+    (void) y;
+}
+
+void ModMainMenu::OnTouchMove(int x, int y) {
+    (void) x;
+    (void) y;
+}
+
+void ModMainMenu::OnTouchEnd(int x, int y) {
+    (void) x;
+    (void) y;
+}
+
+int ModMainMenu::ShowLoadingScreen() {
+    return 1;
 }
