@@ -720,18 +720,17 @@ void PlayerFighter::update(int dt) {
             if (!(this->wingmanFlag && this->field_0xe4 == 3) && this->field_0x38 > 0) {
                 this->field_0x38 = -1;
                 for (uint32_t i = 1; i < enemies->size(); ++i) {
-                    Player *other = (*enemies)[i];
-                    if (!other->isActive() || other->isDead()) {
+                    if (!(*enemies)[i]->isActive() || (*enemies)[i]->isDead()) {
                         continue;
                     }
-                    if (!other->getKIPlayer() && !other->egoFlag) {
+                    if (!(*enemies)[i]->getKIPlayer() && !(*enemies)[i]->egoFlag) {
                         continue;
                     }
-                    int otherRace = other->egoFlag ? 0 : other->getKIPlayer()->shipGroup;
+                    int otherRace = (*enemies)[i]->egoFlag ? 0 : (*enemies)[i]->getKIPlayer()->shipGroup;
                     bool hostile;
                     if (this->wingmanFlag) {
-                        hostile = other->enemyFlagsLo ||
-                                  (this->wingmanTarget && other == this->wingmanTarget->player);
+                        hostile = (*enemies)[i]->enemyFlagsLo ||
+                                  (this->wingmanTarget && (*enemies)[i] == this->wingmanTarget->player);
                     } else {
                         int race = this->shipGroup;
                         hostile = (otherRace == 8 && race != 8) || (otherRace != 8 && race == 8) ||
@@ -1116,8 +1115,7 @@ void PlayerFighter::update(int dt) {
                         }
                         float turn = angle > 0.0f ? angle : -angle;
                         if (turn != 0.0f) {
-                            Vector heading = this->distanceToTarget;
-                            if (ACosf(VectorDot(MatrixGetRight(matrix), heading)) < 1.57079637f) {
+                            if (ACosf(VectorDot(MatrixGetRight(matrix), Vector(this->distanceToTarget))) < 1.57079637f) {
                                 turn = -turn;
                             }
                         }

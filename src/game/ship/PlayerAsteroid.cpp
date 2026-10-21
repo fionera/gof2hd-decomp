@@ -46,9 +46,11 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->rotationEnabled = 1;
     this->secondaryGeometry() = nullptr;
 
-    float size = scaling < 0.9f ? 0.9f : scaling;
+    // Keep the nested clamp inline: its evaluation order matches the original spin calculation.
     this->spin = Vector((float) (Globals::rnd->nextInt(3) - 1), (float) (Globals::rnd->nextInt(3) - 1),
-                        (float) (Globals::rnd->nextInt(3) - 1)) * (1.0f - (size < 1.0f ? size : 1.0f));
+                        (float) (Globals::rnd->nextInt(3) - 1)) *
+                 (1.0f - ((scaling < 0.9f ? 0.9f : scaling) < 1.0f
+                                  ? (scaling < 0.9f ? 0.9f : scaling) : 1.0f));
 
     this->state = 0;
     this->stealFlagByte = 1;
