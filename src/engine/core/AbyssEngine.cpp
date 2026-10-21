@@ -214,19 +214,19 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b) {
-        float local[4][4];
-        const float (*A)[4] = a->m;
-        const float (*B)[4] = b->m;
-
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                local[i][j] = A[i][0] * B[0][j] + A[i][1] * B[1][j] + A[i][2] * B[2][j] +
-                              A[i][3] * B[3][j];
-            }
+    void esMatrixMultiply(ESMatrix *result, ESMatrix *srcA, ESMatrix *srcB) {
+        ESMatrix tmp;
+        for (int i = 0; i < 4; i++) {
+            tmp.m[i][0] = (srcA->m[i][0] * srcB->m[0][0]) + (srcA->m[i][1] * srcB->m[1][0]) +
+                          (srcA->m[i][2] * srcB->m[2][0]) + (srcA->m[i][3] * srcB->m[3][0]);
+            tmp.m[i][1] = (srcA->m[i][0] * srcB->m[0][1]) + (srcA->m[i][1] * srcB->m[1][1]) +
+                          (srcA->m[i][2] * srcB->m[2][1]) + (srcA->m[i][3] * srcB->m[3][1]);
+            tmp.m[i][2] = (srcA->m[i][0] * srcB->m[0][2]) + (srcA->m[i][1] * srcB->m[1][2]) +
+                          (srcA->m[i][2] * srcB->m[2][2]) + (srcA->m[i][3] * srcB->m[3][2]);
+            tmp.m[i][3] = (srcA->m[i][0] * srcB->m[0][3]) + (srcA->m[i][1] * srcB->m[1][3]) +
+                          (srcA->m[i][2] * srcB->m[2][3]) + (srcA->m[i][3] * srcB->m[3][3]);
         }
-
-        memcpy(out, local, 0x40);
+        memcpy(result, &tmp, sizeof(ESMatrix));
     }
 }
 
