@@ -34,16 +34,18 @@ public:
     int32_t field_0x10;
     int32_t field_0x14;
     int32_t lastDt;
-    uint32_t keyImageRetreat;
-    uint32_t keyImageWanted;
-    uint32_t keyImageMission;
-    uint32_t keyImageCurrent;
-    uint32_t keyImageDiscovered;
-    uint32_t systemNameImage;
-    uint32_t selectIcon;
-    uint32_t cursorIcon;
-    uint32_t currentMarkerIcon;
-    uint8_t _pad_0x40[12];
+    int32_t field_0x1c;
+    // Image ids, offsets from StarMap::init's Image2DCreate targets (0x452 -> +0x20, 0x4a2 -> +0x30, ...).
+    uint32_t keyImageRetreat;      // @0x20
+    uint32_t keyImageWanted;       // @0x24
+    uint32_t keyImageMission;      // @0x28
+    uint32_t keyImageCurrent;      // @0x2c
+    uint32_t keyImageDiscovered;   // @0x30
+    uint32_t systemNameImage;      // @0x34 (initStarSystem)
+    uint8_t _pad_0x38[8];
+    uint32_t selectIcon;           // @0x40
+    uint32_t cursorIcon;           // @0x44
+    uint32_t currentMarkerIcon;    // @0x48
     TouchButton *backButton;
     SystemPathFinder *pathFinder;
     Array<SolarSystem *> *systems;
@@ -67,14 +69,13 @@ public:
     uint8_t choiceVisible;
     uint8_t jumpMapModeA;
     uint8_t jumpMapModeB;
-    AbyssEngine::Vector field_0xac;
-    uint8_t _pad_0xb8[4];
-    AbyssEngine::Vector field_0xbc;
-    uint8_t _pad_0xc8[4];
-    AbyssEngine::Vector field_0xcc;
-    uint8_t _pad_0xd8[4];
+    // Three EaseInOut objects (default-constructed in place by the ctor at +0xac/+0xbc/+0xcc).
+    AbyssEngine::EaseInOut field_0xac;
+    AbyssEngine::EaseInOut field_0xbc;
+    AbyssEngine::EaseInOut field_0xcc;
     uint8_t missionChangedFlag;
-    uint8_t _pad_0xdd[12];
+    uint8_t _pad_0xdd[11];
+    int32_t field_0xe8;
     int32_t field_0xec;
     int32_t field_0xf0;
     uint8_t isGalaxyMode;
@@ -166,7 +167,7 @@ public:
 
     uint32_t OnTouchBegin(int x, int y);
 
-    void OnTouchMove(int x, int y);
+    int OnTouchMove(int x, int y);
 
     int OnTouchEnd(int x, int y);
 
@@ -184,6 +185,8 @@ public:
 };
 
 #if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(StarMap, keyImageRetreat) == 0x20, "");
+static_assert(__builtin_offsetof(StarMap, selectIcon) == 0x40, "");
 static_assert(__builtin_offsetof(StarMap, pathFinder) == 0x50, "");
 static_assert(__builtin_offsetof(StarMap, choiceWindow) == 0x5c, "");
 static_assert(__builtin_offsetof(StarMap, systemPath) == 0xa0, "");

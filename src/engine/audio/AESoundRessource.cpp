@@ -1,71 +1,60 @@
 #include "engine/audio/AESoundRessource.h"
 #include "engine/audio/AESound.h"
 
-static const char defaultSoundName[] = "";
-
 namespace AbyssEngine {
     AESoundRessource::AESoundRessource() {
-        this->sounds = new Array<AESoundInterface *>();
-        this->numSounds = 0;
         this->soundInfoTable = nullptr;
+        this->numSounds = 0;
     }
 
     AESoundRessource::~AESoundRessource() {
         freeAllRessources();
-        for (uint32_t i = 0; i < sounds->size(); ++i) {
-            AESoundInterface *sound = (*sounds)[i];
-            if (sound != nullptr)
-                delete sound;
-            (*sounds)[i] = nullptr;
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->sounds[i] != nullptr)
+                delete this->sounds[i];
+            this->sounds[i] = nullptr;
         }
-        delete sounds;
+        ArrayRemoveAll(this->sounds);
     }
 
     void AESoundRessource::freeAllRessources() {
-        for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-            AESoundInterface *sound = (*this->sounds)[i];
-            if (sound != nullptr) {
-                delete sound;
-                (*this->sounds)[i] = nullptr;
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->sounds[i] != nullptr) {
+                delete this->sounds[i];
+                this->sounds[i] = nullptr;
             }
         }
     }
 
     void AESoundRessource::SetSound(const AESoundInfo *info, int count) {
-        this->numSounds = count;
         this->soundInfoTable = info;
-        ArraySetLength(count, *(this->sounds));
-        for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-            (*this->sounds)[i] = nullptr;
-        }
+        this->numSounds = count;
+        ArraySetLength(count, this->sounds);
+        for (uint32_t i = 0; i < this->sounds.size(); ++i)
+            this->sounds[i] = nullptr;
     }
 
     void AESoundRessource::getSoundInfo(int id, AESoundInfo &info, int &index) {
         index = -1;
-        uint32_t count = this->sounds->size();
-        for (uint32_t i = 0; i < count; ++i) {
-            const AESoundInfo *entry = &this->soundInfoTable[i];
-            if (entry->id == id) {
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->soundInfoTable[i].id == id) {
                 index = i;
-                info = *entry;
+                info = this->soundInfoTable[i];
                 return;
             }
         }
     }
 
     void AESoundRessource::init(int id) {
-        AESoundInfo info;
-        info.name = defaultSoundName;
         int index;
+        AESoundInfo info;
+        info.name = "";
         this->getSoundInfo(id, info, index);
         if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            if (sound == nullptr) {
-                sound = new AESound();
-                (*this->sounds)[index] = sound;
-            }
-            sound->loadSound(info.name);
-            sound->setGain(info.type);
+            if (this->sounds[index] == nullptr)
+                this->sounds[index] = new AESound();
+            this->sounds[index]->loadSound(info.name);
+            this->sounds[index]->setGain(info.type);
         }
     }
 
@@ -73,30 +62,23 @@ namespace AbyssEngine {
     }
 
     void AESoundRessource::initWithoutLoading(int id) {
-        AESoundInfo info;
-        info.name = defaultSoundName;
         int index;
+        AESoundInfo info;
+        info.name = "";
         this->getSoundInfo(id, info, index);
-        if (index != -1) {
-            if ((*this->sounds)[index] == nullptr) {
-                (*this->sounds)[index] = new AESound();
-            }
-        }
+        if (index != -1 && this->sounds[index] == nullptr)
+            this->sounds[index] = new AESound();
     }
 
     void AESoundRessource::play(int id, float volume) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
         if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            if (sound->loaded() == 0) {
+            if (!this->sounds[index]->loaded())
                 this->init(id);
-            }
-            sound = (*this->sounds)[index];
-            if (sound != nullptr) {
-                sound->play(volume);
-            }
+            if (this->sounds[index] != nullptr)
+                this->sounds[index]->play(volume);
         }
     }
 
@@ -105,174 +87,124 @@ namespace AbyssEngine {
     }
 
     void AESoundRessource::playLoop(int id) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
-        if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            if (sound != nullptr && sound->isPlaying() == 0) {
-                sound->playLoop();
-            }
-        }
+        if (index != -1 && this->sounds[index] != nullptr && !this->sounds[index]->isPlaying())
+            this->sounds[index]->playLoop();
     }
 
     void AESoundRessource::playMusic(int id) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
-        if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            if (sound != nullptr && sound->isPlaying() == 0) {
-                sound->play();
-            }
-        }
+        if (index != -1 && this->sounds[index] != nullptr && !this->sounds[index]->isPlaying())
+            this->sounds[index]->play();
     }
 
     void AESoundRessource::playMusicLoop(int id) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
-        if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            if (sound != nullptr && sound->isPlaying() == 0) {
-                sound->playLoop();
-            }
-        }
+        if (index != -1 && this->sounds[index] != nullptr && !this->sounds[index]->isPlaying())
+            this->sounds[index]->playLoop();
     }
 
     void AESoundRessource::stop(int id) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
-        if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            if (sound != nullptr) {
-                sound->stop();
-            }
-        }
+        if (index != -1 && this->sounds[index] != nullptr)
+            this->sounds[index]->stop();
     }
 
     void AESoundRessource::stop() {
-        for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-            AESoundInterface *sound = (*this->sounds)[i];
-            if (sound != nullptr) {
-                sound->stop();
-            }
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->sounds[i] != nullptr)
+                this->sounds[i]->stop();
         }
     }
 
     void AESoundRessource::pause(int id) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
-        if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            if (sound != nullptr) {
-                sound->pause();
-            }
-        }
+        if (index != -1 && this->sounds[index] != nullptr)
+            this->sounds[index]->pause();
     }
 
-    int AESoundRessource::pause() {
-        for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-            AESoundInterface *sound = (*this->sounds)[i];
-            if (sound != nullptr) {
-                sound->pause();
-            }
+    void AESoundRessource::pause() {
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->sounds[i] != nullptr)
+                this->sounds[i]->pause();
         }
-        return this->sounds->size();
     }
 
     void AESoundRessource::resume(int id) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
-        if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            if (sound != nullptr) {
-                sound->resume();
-            }
-        }
+        if (index != -1 && this->sounds[index] != nullptr)
+            this->sounds[index]->resume();
     }
 
     void AESoundRessource::resume() {
-        for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-            AESoundInterface *sound = (*this->sounds)[i];
-            if (sound != nullptr) {
-                sound->resume();
-            }
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->sounds[i] != nullptr)
+                this->sounds[i]->resume();
         }
     }
 
     void AESoundRessource::supend() {
-        for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-            AESoundInterface *sound = (*this->sounds)[i];
-            if (sound != nullptr) {
-                sound->unloadSound();
-            }
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->sounds[i] != nullptr)
+                this->sounds[i]->unloadSound();
         }
     }
 
     void AESoundRessource::release(int id) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
-        if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            sound->release();
-        }
+        if (index != -1)
+            this->sounds[index]->release();
     }
 
     bool AESoundRessource::isPlaying(int id) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
-        int result;
-        if (index == -1) {
-            result = 0;
-        } else {
-            AESoundInterface *sound = (*this->sounds)[index];
-            result = sound->isPlaying();
-        }
-        return result != 0;
+        if (index == -1)
+            return false;
+        return this->sounds[index]->isPlaying();
     }
 
     void AESoundRessource::setVolume(int id, int volume) {
-        AESoundInfo info;
         int index;
+        AESoundInfo info;
         this->getSoundInfo(id, info, index);
-        if (index != -1) {
-            AESoundInterface *sound = (*this->sounds)[index];
-            if (sound != nullptr) {
-                sound->setVolume(volume);
-            }
-        }
+        if (index != -1 && this->sounds[index] != nullptr)
+            this->sounds[index]->setVolume(volume);
     }
 
     void AESoundRessource::setVolume(int volume) {
-        for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-            AESoundInterface *sound = (*this->sounds)[i];
-            if (sound != nullptr) {
-                sound->setVolume(volume);
-            }
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->sounds[i] != nullptr)
+                this->sounds[i]->setVolume(volume);
         }
     }
 
     void AESoundRessource::setSoundVolume(int volume) {
-        for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-            AESoundInterface *sound = (*this->sounds)[i];
-            if (sound != nullptr) {
-                sound->setSoundVolume(volume);
-            }
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->sounds[i] != nullptr)
+                this->sounds[i]->setSoundVolume(volume);
         }
     }
 
     void AESoundRessource::setMusicVolume(int volume) {
-        for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-            AESoundInterface *sound = (*this->sounds)[i];
-            if (sound != nullptr) {
-                sound->setMusicVolume(volume);
-            }
+        for (uint32_t i = 0; i < this->sounds.size(); ++i) {
+            if (this->sounds[i] != nullptr)
+                this->sounds[i]->setMusicVolume(volume);
         }
     }
 }

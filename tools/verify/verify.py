@@ -39,6 +39,7 @@ stub_zero_size does NOT fail the run -- the ratchet (tools/ratchet.py) pins its 
 """
 import argparse
 import bisect
+import zlib
 import difflib
 import json
 import os
@@ -90,6 +91,51 @@ class Resolver:
         self.common = common
         self.plt = plt or {}
         self.addr_range = addr_range  # [lo, hi): pool words in this range look like addresses
+
+    def attach_data(self, elf, common_objects):
+        """Enable resolve_pic(): name what a PIC `add rX,pc` address points at."""
+        self.elf = elf
+        self.got = elf.got_map()
+        self.objs = elf.objects()
+        self.obj_starts = [o[0] for o in self.objs]
+        self.common_objects = common_objects
+
+    def _data_name(self, addr):
+        i = bisect.bisect_right(self.obj_starts, addr) - 1
+        if i >= 0:
+            v, sz, n = self.objs[i]
+            if v <= addr < v + max(sz, 1):
+                if n in self.common_objects:
+                    return f"{n}+{addr - v}"
+                return "obj:own"   # an object only this link exports: never equal to the other side
+        f = self.resolve_entry(addr)
+        if f:
+            return f"fn:{f}"
+        if self.elf.section_of(addr) in (".rodata", ".data", ".data.rel.ro"):
+            b = self.elf.bytes_at(addr, 65536)
+            z = b.find(b"\0")
+            if 0 < z and all(32 <= c < 127 or c in (9, 10, 13) for c in b[:z]):
+                if z <= 64:
+                    return "str:" + b[:z].decode("ascii")
+                return f"str:{b[:24].decode('ascii')!r}..#{z}:{zlib.crc32(b[:z]):08x}"
+        return None
+
+    def resolve_pic(self, target):
+        """What `add rX,pc` produced: a GOT slot (named by its relocation) or a direct data address."""
+        if getattr(self, "elf", None) is None:
+            return "addr"
+        slot = self.got.get(target)
+        if slot is not None:
+            kind, v = slot
+            if kind == "sym":
+                return f"got:{v}" if (v in self.common or v in self.common_objects
+                                      or v in self.imports) else "got:own"
+            n = self._data_name(v)
+            return f"got:{n}" if n else "got:local"
+        n = self._data_name(target)
+        if not n and os.environ.get("VERIFY_DEBUG_PIC"):
+            return f"local@{target:#x}:{self.elf.section_of(target)}"
+        return n if n else "local"
 
     def resolve(self, addr):
         addr &= ~1
@@ -248,6 +294,30 @@ def _pool_bytes(lines, thumb):
     return pool
 
 
+TB_INSN = re.compile(r"^tb([bh])(?:\.w)?\s+\[pc,")
+
+
+def _jump_tables(lines, blob, skip):
+    """Thumb-2 tbb/tbh tables: byte offsets they occupy. Each table starts right after its tbb/tbh
+    (pc+4) and ends where its smallest branch target begins (targets = table start + 2*entry)."""
+    tab = set()
+    for addr, insn in lines:
+        if addr in tab or addr in skip:
+            continue
+        m = TB_INSN.match(insn)
+        if not m:
+            continue
+        es = 1 if m.group(1) == "b" else 2
+        start = addr + 4
+        pos, end = start, len(blob)
+        while pos + es <= min(end, len(blob)):
+            v = blob[pos] if es == 1 else struct.unpack_from("<H", blob, pos)[0]
+            end = min(end, start + 2 * v)
+            pos += es
+        tab.update(range(start, max(pos, start)))
+    return tab
+
+
 def disassemble(objdump, blob, thumb, base=0, resolver=None):
     """Return (raw_lines, normalized_lines) for a code blob disassembled in the right mode."""
     with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
@@ -259,11 +329,17 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
         # recovers IT state by scanning backwards, so restarting the decode does not help. Decode
         # a copy with every pool byte pair replaced by a Thumb NOP instead; pool words are still
         # compared by their real value (pool_norm reads the original blob).
+        # tbb/tbh jump tables get the same treatment; entries compare by raw value (they are
+        # intra-function offsets, link-independent).
+        jtab = set()
         if thumb:
-            pool = _pool_bytes(lines, thumb)
-            if pool:
+            for _ in range(2):
+                pool = _pool_bytes(lines, thumb)
+                jtab = _jump_tables(lines, blob, pool)
+                if not pool and not jtab:
+                    break
                 clean = bytearray(blob)
-                for b in pool:
+                for b in pool | jtab:
                     if b < len(clean):
                         clean[b] = 0x00 if (b & 1) == 0 else 0xbf
                 with open(tmp, "wb") as f:
@@ -273,11 +349,12 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
         os.unlink(tmp)
     # pass 1: literal-pool bytes = targets of pc-relative loads (ARM pc bias +8, Thumb +4 word-aligned)
     pool = set()
+    pic_name = {}      # pic pool word offset -> what its `add rX,pc` address names (GOT/data)
     pic_delta = set()  # pool words consumed by the ldr rX,[pc,#N] / add rX,pc PIC idiom: the word
     #                    is an address DELTA that changes every link -- mask it, never name it
     #                    (a delta accidentally equal to a function entry must not compare as sym)
     for i, (addr, insn) in enumerate(lines):
-        if addr in pool:
+        if addr in pool or addr in jtab:
             continue
         pm = PCREL_LOAD.match(insn)
         if pm:
@@ -287,9 +364,13 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
             pool.update(range(tgt, tgt + width))
             # follow rX forward until the add consumes it or rX is overwritten (the scheduler
             # can put several unrelated instructions between the load and the add)
-            for _, later in lines[i + 1:i + 17]:
+            for laddr, later in lines[i + 1:i + 17]:
                 if re.match(rf"^add(?:\.[nw])?\s+{reg},\s*pc$", later):
                     pic_delta.update(range(tgt, tgt + width))
+                    if tgt + 4 <= len(blob) and resolver is not None:
+                        delta = struct.unpack_from("<I", blob, tgt)[0]
+                        dest = (base + laddr + (4 if thumb else 8) + delta) & 0xFFFFFFFF
+                        pic_name[tgt] = resolver.resolve_pic(dest)
                     break
                 lm = re.match(r"^([a-z]+)\S*\s+(\w+)", later)
                 if lm and lm.group(2) == reg and not re.match(
@@ -300,6 +381,11 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
     #                   (masked) word value -- collapse to one entry per 4-byte word so the
     #                   sequence length never depends on meaningless pool contents
     for addr, insn in lines:
+        if addr in jtab and addr not in pool:
+            last_word = None
+            raw.append(f".short 0x{blob[addr] | (blob[addr + 1] << 8 if addr + 1 < len(blob) else 0):04x}")
+            norm.append(raw[-1])
+            continue
         if addr in pic_delta or addr in pool:
             if (addr & ~3) == last_word:
                 continue
@@ -307,7 +393,7 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
             w = addr & ~3
             raw.append(f".word 0x{struct.unpack_from('<I', blob, w)[0]:08x}"
                        if w + 4 <= len(blob) else insn)
-            norm.append("pool:addr" if addr in pic_delta
+            norm.append(f"pool:pic:{pic_name.get(addr & ~3, 'addr')}" if addr in pic_delta
                         else pool_norm(blob, addr, resolver))
             continue
         last_word = None
@@ -351,6 +437,13 @@ def main():
 
     orig_res = Resolver(orig, common, of.plt_map(), addr_range(of))
     ours_res = Resolver(ours, common, ours_elf.plt_map(), addr_range(ours_elf))
+    # data references: GOT slots / PC-relative data compare by the object they name
+    common_objects = {o[2] for o in of.objects()} & {o[2] for o in ours_elf.objects()}
+    for res, e in ((orig_res, of), (ours_res, ours_elf)):
+        res.attach_data(e, common_objects)
+    imports = ({v for k, v in of.got_map().values() if k == "sym"}
+               & {v for k, v in ours_elf.got_map().values() if k == "sym"})
+    orig_res.imports = ours_res.imports = imports
 
     if args.show:
         name = args.show
@@ -372,6 +465,8 @@ def main():
             un = unorm[i] if i < len(unorm) else None
             mark = " " if on == un and ol == ul else ("~" if on == un else "|")
             print(f"  {ol:38} {mark} {ul}")
+            if mark == "|" and on and un and (on.startswith("pool:") or un.startswith("pool:")):
+                print(f"      = {on}  |  {un}")
         if len(oraw) != len(uraw):
             print(f"  (length differs: orig {len(oraw)} vs ours {len(uraw)} insns)")
         return 0

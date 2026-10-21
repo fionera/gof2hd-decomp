@@ -97,7 +97,7 @@ public:
     int field_0x114;
     int iconOffsetY;
     uint8_t replaceEquipPending;
-    uint8_t upgradeMode;
+    bool upgradeMode;
     uint8_t localBluePrint;
     uint8_t listModeFlag;
     int buttonWidth;
@@ -110,7 +110,7 @@ public:
 
     ~HangarWindow();
 
-    void OnTouchBegin(int touch, int coord);
+    int OnTouchBegin(int touch, int coord);
 
     void OnTouchEnd(int touch, int coord);
 

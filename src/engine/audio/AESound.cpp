@@ -27,8 +27,8 @@ namespace AbyssEngine {
     void AESound::stop() {
     }
 
-    int AESound::isPlaying() {
-        return 1;
+    bool AESound::isPlaying() {
+        return true;
     }
 
     int AESound::loaded() {

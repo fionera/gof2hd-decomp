@@ -1,4 +1,5 @@
 #include "engine/render/ParticleSettings.h"
+#include "engine/render/ParticleSettingsRef.h"
 
 ParticleSettings::ParticleSettings() {
 }
@@ -688,12 +689,13 @@ void ParticleSettings::multiplyAll(float scale) {
     }
 }
 
+// Blends two pristine sets (ParticleSettingsRef::init) into the live set (ParticleSettingsRef::cur).
 void ParticleSettings::Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out) {
-    SetDefinition &pa = this->sets[a];
-    SetDefinition &pb = this->sets[b];
-    SetDefinition &po = this->sets[out];
+    SetDefinition &pa = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::init).sets[a];
+    SetDefinition &pb = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::init).sets[b];
+    SetDefinition &po = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[out];
     float omt = 1.0f - t;
-    po.count = (int) (omt * (float) pa.count + (float) pb.count * t);
+    po.lifetime = (int) (omt * (float) pa.lifetime + (float) pb.lifetime * t);
     asFloat(po.lifeBase) = omt * asFloat(pa.lifeBase) + asFloat(pb.lifeBase) * t;
     asFloat(po.endSize) = omt * asFloat(pa.endSize) + asFloat(pb.endSize) * t;
     asFloat(po.velDir) = omt * asFloat(pa.velDir) + asFloat(pb.velDir) * t;

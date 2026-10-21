@@ -748,10 +748,8 @@ void ApplicationManager::SetExitCallback(QuitCallback_t *callback) {
     this->quitCallback = callback;
 }
 
-void *ApplicationManager::GetCurrentApplicationModule() const { // lint: void_ptr (exported GetCurrentApplicationModule return type, baked ABI)
-    // lint: void_ptr (exported GetCurrentApplicationModule return type, baked ABI)
-    return reinterpret_cast<void *>(this->currentModuleId); // lint: void_ptr (exported GetCurrentApplicationModule return type, baked ABI)
-    // lint: void_ptr (cast produces the void* return value mandated by the waived signature)
+unsigned int ApplicationManager::GetCurrentApplicationModule() const {
+    return this->currentModuleId;
 }
 
 String ApplicationManager::GetApplicationVersionString() {
