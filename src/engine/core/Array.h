@@ -77,9 +77,9 @@ public:
 
 template<class T>
 Array<T>::Array() {
-    T *p = static_cast<T *>(::operator new[](sizeof(T)));
+    T *p = new T[1];
     capacity_ = 1;
-    *p = T();
+    memset(p, 0, sizeof(T));
     count = 0;
     data_ = p;
 }
