@@ -2,9 +2,14 @@
 #include <ctime>
 
 namespace AbyssEngine {
+    namespace {
+        const int64_t kMultiplier = 0x5deece66dLL;
+        const int64_t kAddend = 0xbLL;
+        const int64_t kMask = (1LL << 48) - 1;
+    }
+
     AERandom::AERandom() {
-        long long now = time(0);
-        seed = (now ^ 0x5deece66dLL) & ((1LL << 48) - 1);
+        seed = (time(0) ^ kMultiplier) & kMask;
     }
 
     AERandom::AERandom(long long seed) {
@@ -15,31 +20,35 @@ namespace AbyssEngine {
     }
 
     void AERandom::setSeed(long long seed) {
-        this->seed = (seed ^ 0x5deece66dLL) & ((1LL << 48) - 1);
+        this->seed = (seed ^ kMultiplier) & kMask;
     }
 
     void AERandom::reset() {
-        long long now = time(0);
-        seed = (now ^ 0x5deece66dLL) & ((1LL << 48) - 1);
+        seed = (time(0) ^ kMultiplier) & kMask;
     }
 
     uint32_t AERandom::next(int bits) {
-        seed = (seed * 0x5deece66dLL + 0xbLL) & ((1LL << 48) - 1);
-        return static_cast<uint32_t>(static_cast<unsigned long long>(seed) >> (48 - bits));
+        seed = (seed * kMultiplier + kAddend) & kMask;
+        return static_cast<uint32_t>(static_cast<uint64_t>(seed) >> (48 - bits));
     }
 
     int AERandom::nextInt() {
-        return static_cast<int>(next(32));
+        seed = (seed * kMultiplier + kAddend) & kMask;
+        return static_cast<int>(static_cast<uint64_t>(seed) >> 16);
     }
 
     int AERandom::nextInt(int bound) {
-        if ((bound & -bound) == bound)
-            return static_cast<int>((bound * static_cast<long long>(next(31))) >> 31);
+        if ((bound & -bound) == bound) {
+            seed = (seed * kMultiplier + kAddend) & kMask;
+            int bits = static_cast<int>(static_cast<uint64_t>(seed) >> 17);
+            return static_cast<int>((static_cast<int64_t>(bits) * bound) >> 31);
+        }
 
         int bits;
         int value;
         do {
-            bits = static_cast<int>(next(31));
+            seed = (seed * kMultiplier + kAddend) & kMask;
+            bits = static_cast<int>(static_cast<uint64_t>(seed) >> 17);
             value = bits % bound;
         } while (bits - value + (bound - 1) < 0);
         return value;

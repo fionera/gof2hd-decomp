@@ -3,61 +3,37 @@
 #include "engine/audio/AESoundInterface.h"
 
 namespace AbyssEngine {
-    // Null sound backend. Every member is defined inline: the original exports them all WEAK.
     class AESound : public AESoundInterface {
     public:
-        void loadSound(const char *name) override {
-            (void) name;
-        }
+        void loadSound(const char *name) override;
 
-        void unloadSound() override {
-        }
+        void unloadSound() override;
 
-        void play() override {
-        }
+        void play() override;
 
-        void play(float volume) override {
-            (void) volume;
-        }
+        void play(float volume) override;
 
-        void playLoop() override {
-        }
+        void playLoop() override;
 
-        void pause() override {
-        }
+        void pause() override;
 
-        void resume() override {
-        }
+        void resume() override;
 
-        void stop() override {
-        }
+        void stop() override;
 
-        bool isPlaying() override {
-            return true;
-        }
+        bool isPlaying() override;
 
-        int loaded() override {
-            return 1;
-        }
+        int loaded() override;
 
-        void setGain(int gain) override {
-            (void) gain;
-        }
+        void setGain(int gain) override;
 
-        void setVolume(int volume) override {
-            (void) volume;
-        }
+        void setVolume(int volume) override;
 
-        void setSoundVolume(int volume) override {
-            (void) volume;
-        }
+        void setSoundVolume(int volume) override;
 
-        void setMusicVolume(int volume) override {
-            (void) volume;
-        }
+        void setMusicVolume(int volume) override;
 
-        void release() override {
-        }
+        void release() override;
     };
 }
 

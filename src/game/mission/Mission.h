@@ -70,11 +70,11 @@ public:
 
     void setProductionGoods(int a, int b);
 
-    String &setTargetName(String rhs);
+    void setTargetName(String rhs);
 
     void setTargetStation(int idx);
 
-    String &setTargetSystemName(const String &rhs);
+    void setTargetSystemName(const String &rhs);
 
     void setVisible(bool v);
 

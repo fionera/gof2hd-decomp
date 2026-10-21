@@ -100,13 +100,13 @@ Array<int> *BluePrint::getQuantityList() {
 }
 
 int BluePrint::getIngredientsValue() {
-    int total = 0;
     Array<int> *il = getIngredientList();
-    if (il != nullptr) {
-        for (uint32_t i = 0; i < il->size(); i++) {
-            int price = (*Globals::items)[(*il)[i]]->getSinglePrice();
-            total += (*ingredientCounters)[i] * price;
-        }
+    if (il == nullptr)
+        return 0;
+    int total = 0;
+    for (uint32_t i = 0; i < il->size(); i++) {
+        int price = (*Globals::items)[(*il)[i]]->getSinglePrice();
+        total += (*ingredientCounters)[i] * price;
     }
     return total;
 }

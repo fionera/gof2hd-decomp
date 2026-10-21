@@ -5,7 +5,8 @@
 namespace AbyssEngine {
     class AERandom {
     public:
-        long long seed; // 48-bit LCG state (java.util.Random)
+        // 48-bit linear congruential state (java.util.Random algorithm).
+        int64_t seed;
 
         AERandom();
 

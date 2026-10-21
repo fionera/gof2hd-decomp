@@ -187,9 +187,9 @@ public:
     int field_0x260;
     int field_0x264;
     float rollAccum;
-    int field_0x26c;
+    float field_0x26c;
     float yawAccumD;
-    int field_0x274;
+    float field_0x274;
     float pitchAccumD;
     float yawAccumF;
     int field_0x280;

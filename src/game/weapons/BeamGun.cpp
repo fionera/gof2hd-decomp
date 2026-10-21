@@ -41,23 +41,27 @@ static const int kSecondaryMeshes[233] = {
 };
 
 BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
-    int kind = meshKind == 0xe4 ? 2 : meshKind - 9;
+    int kind = meshKind - 9;
+    if (meshKind == 0xe4)
+        kind = 2;
     this->field_0x4 = 0;
     this->gun = gun;
     this->level = level;
     this->owner = owner;
     this->meshKind = kind;
-    this->primaryGeometry =
-            new AEGeometry((uint16_t) (meshKind == 0xe4 ? 0x4a92 : kind + 0x3795), Globals::Canvas, false);
+    uint16_t primaryMesh = (uint16_t) (kind + 0x3795);
+    if (meshKind == 0xe4)
+        primaryMesh = 0x4a92;
+    this->primaryGeometry = new AEGeometry(primaryMesh, Globals::Canvas, false);
 
     AEGeometry *secondary = nullptr;
     int mesh;
-    if (gun->isPlayerGun() && (mesh = kSecondaryMeshes[gun->itemIndex]) > -1) {
+    if (!gun->isPlayerGun() || (mesh = kSecondaryMeshes[gun->itemIndex]) < 0) {
+        this->hasSecondary = 0;
+    } else {
         this->hasSecondary = gun->weaponType != ITEM_SORT_MINE;
         if (this->hasSecondary)
             secondary = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
-    } else {
-        this->hasSecondary = 0;
     }
     this->secondaryVisible = 0;
     this->secondaryGeometry = secondary;

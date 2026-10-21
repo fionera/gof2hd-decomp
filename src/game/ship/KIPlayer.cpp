@@ -19,22 +19,22 @@ using AbyssEngine::Matrix;
 
 KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
                    float x, float y, float z, bool grouped) {
-    this->field_0x90 = 0;
-    this->field_0x94 = 0;
-    this->field_0x98 = 0;
-    this->field_0x9c = 0;
+    this->tempVector.x = 0;
+    this->tempVector.y = 0;
+    this->tempVector.z = 0;
+    this->auxVector.x = 0;
     this->field_0x10c = 0;
     this->field_0x110 = 0;
     this->field_0x114 = 0;
     this->field_0x118 = 0;
-    this->autoPilotState = 0;
-    this->field_0x30 = 0;
-    this->field_0x34 = 0;
+    this->shipPosition.x = 0;
+    this->shipPosition.y = 0;
+    this->shipPosition.z = 0;
     this->level = 0;
     this->route = 0;
     this->initialRoute = 0;
-    this->field_0xa0 = 0;
-    this->field_0xa4 = 0;
+    this->auxVector.y = 0;
+    this->auxVector.z = 0;
     this->field_0x11c = 0;
     this->field_0x120 = 0;
     this->player = player;

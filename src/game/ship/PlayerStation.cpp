@@ -419,6 +419,5 @@ Vector PlayerStation::getProjectionVector(const Vector &position) {
 }
 
 Vector PlayerStation::projectCollisionOnSurface(const Vector &position) {
-    return BoundingVolume::staticProjectCollisionOnSurface(
-        position, (BoundingVolumeList *) this->boundingVolumes);
+    return BoundingVolume::staticProjectCollisionOnSurface(position, (BoundingVolumeList *) this->boundingVolumes);
 }
