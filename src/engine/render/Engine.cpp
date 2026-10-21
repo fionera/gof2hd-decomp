@@ -90,9 +90,11 @@ namespace {
     int g_Engine_shaderPostC;
 
 
-    uint32_t g_Engine_postEffectBW;
-    uint32_t g_Engine_postEffectBlur;
-    int g_Engine_postEffectFlag;
+    // Post-effect ids (0x1400000 base) and the black/white effect's switch-off bookkeeping.
+    const uint32_t kPostEffectBase = 0x1400000;
+    const uint32_t kPostEffectBlur = 0x1400001;
+    const uint32_t kPostEffectBW = 0x1400002;
+    bool g_Engine_postEffectFlag;
     int g_Engine_postEffectCounter;
     int g_Engine_postEffectPending;
 
@@ -873,7 +875,7 @@ void Engine::DoPostEffect() {
             }
         }
         if (g_Engine_postEffectFlag == 1) {
-            this->SetPostEffect(g_Engine_postEffectBW, false);
+            this->SetPostEffect(kPostEffectBW, false);
         }
     }
     return;
@@ -933,32 +935,37 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
             width = this->displayHeight;
             height = this->displayWidth;
         }
-        this->postEffectFBO->Create(width, height, false, true);
+        this->postEffectFBO->Create(width, height, true, false);
     }
 
-    uint32_t flags = this->postEffectFlags;
-    if (effect == (uint32_t) g_Engine_postEffectBW) {
+    if (effect == kPostEffectBW) {
         if (enable) {
             if (g_Engine_postEffectCounter > 0) {
                 g_Engine_postEffectCounter -= 1;
             } else {
-                flags |= 4;
+                this->postEffectFlags |= 4;
             }
         } else if (g_Engine_postEffectFlag == 1) {
-            flags &= ~4u;
+            this->postEffectFlags &= ~4u;
             g_Engine_postEffectFlag = 0;
             g_Engine_postEffectPending = 1;
         } else {
-            g_Engine_postEffectFlag = g_Engine_postEffectCounter < 1;
+            g_Engine_postEffectFlag = g_Engine_postEffectCounter <= 0;
         }
-    } else if (effect == (uint32_t) g_Engine_postEffectBlur) {
-        g_Engine_postEffectFlag = enable;
-        flags = enable ? (flags | 2) : (flags & ~2u);
-    } else if (effect == 0x1400000) {
-        flags = enable ? (flags | 1) : (flags & ~1u);
+    } else if (effect == kPostEffectBlur) {
+        Engine::EnableGlow = enable;
+        if (enable) {
+            this->postEffectFlags |= 2;
+        } else {
+            this->postEffectFlags &= ~2u;
+        }
+    } else if (effect == kPostEffectBase) {
+        if (enable) {
+            this->postEffectFlags |= 1;
+        } else {
+            this->postEffectFlags &= ~1u;
+        }
     }
-    this->postEffectFlags = flags;
-    return;
 }
 
 void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
