@@ -1526,9 +1526,8 @@ void PlayerEgo::handleAutoTurret(int dt) {
         return;
     }
     Matrix aim = reinterpret_cast<Matrix &>(target->player->transform[0]);
-    Vector targetPosition = target->getPosition();
     this->moveTarget =
-        targetPosition + AbyssEngine::AEMath::VectorNormalize(AbyssEngine::AEMath::MatrixGetDir(aim)) * 1500.0f;
+        target->getPosition() + AbyssEngine::AEMath::VectorNormalize(AbyssEngine::AEMath::MatrixGetDir(aim)) * 1500.0f;
     aim = this->geometry->getMatrix() * this->turretGeometry->getMatrix();
     Vector local = AbyssEngine::AEMath::VectorNormalize(
         AbyssEngine::AEMath::MatrixInverseTransformVector(aim, this->moveTarget));
