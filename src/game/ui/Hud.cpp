@@ -222,8 +222,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     if (this->shieldHitFlash) {
         this->field_0x46c += dt;
         if (this->field_0x46c > 500) {
-            this->shieldHitFlash = 0;
             this->field_0x46c = 0;
+            this->shieldHitFlash = 0;
         }
     }
     if (this->field_0x470 >= 1)
@@ -262,9 +262,9 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                      this->field_0x43c, this->field_0x442);
         Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, this->field_0x442 + dividerOffset);
         Globals::Canvas->DrawImage2D(this->shieldBarBgImage, this->field_0x440, this->field_0x44a);
-        Globals::Canvas->DrawRegion2D(this->shieldBarFillImage, 0, 0,
-                                      (int) ((float) ego->player->getShieldDamageRate() * 0.01f * (float) this->field_0x446),
-                                      this->field_0x44c, 0.0f, 0, 0, this->field_0x440, this->field_0x44a);
+        int shieldW = (int) ((float) ego->player->getShieldDamageRate() * 0.01f * (float) this->field_0x446);
+        Globals::Canvas->DrawRegion2D(this->shieldBarFillImage, 0, 0, shieldW, this->field_0x44c, 0.0f, 0, 0,
+                                      this->field_0x440, this->field_0x44a);
         armorY = this->field_0x444;
         armorBarY = this->field_0x448;
     } else {
@@ -275,13 +275,14 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                  this->field_0x43c, armorY);
     Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, dividerOffset + armorY);
     Globals::Canvas->DrawImage2D(this->armorBarBgImage, this->field_0x440, armorBarY);
-    Globals::Canvas->DrawRegion2D(this->armorBarFillImage, 0, 0,
-                                  (int) ((float) ego->getHullDamageRate() * 0.01f * (float) this->field_0x446),
-                                  this->field_0x44c, 0.0f, 0, 0, this->field_0x440, armorBarY);
-    if (this->hasArmorRegen)
-        Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0,
-                                      (int) ((float) ego->player->getArmorDamageRate() * 0.01f * (float) this->field_0x446),
-                                      this->field_0x44c, 0.0f, 0, 0, this->field_0x440, armorBarY);
+    int hullW = (int) ((float) ego->getHullDamageRate() * 0.01f * (float) this->field_0x446);
+    Globals::Canvas->DrawRegion2D(this->armorBarFillImage, 0, 0, hullW, this->field_0x44c, 0.0f, 0, 0,
+                                  this->field_0x440, armorBarY);
+    if (this->hasArmorRegen) {
+        int regenW = (int) ((float) ego->player->getArmorDamageRate() * 0.01f * (float) this->field_0x446);
+        Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, 0,
+                                      this->field_0x440, armorBarY);
+    }
     if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
                                                     Globals::status->getCurrentCampaignMission()) > 0.0f) {
         int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
@@ -289,9 +290,9 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, gammaY + dividerOffset);
         int gammaBarY = this->field_0x448 - this->field_0x44a + this->field_0x448;
         Globals::Canvas->DrawImage2D(this->image_0x2cc, this->field_0x440, gammaBarY);
-        Globals::Canvas->DrawRegion2D(this->barDividerImage, 0, 0,
-                                      (int) ((float) ego->player->getGammaHP() / 100.0f * (float) this->field_0x446),
-                                      this->field_0x44c, 0.0f, 0, 0, this->field_0x440, gammaBarY);
+        int gammaW = (int) ((float) ego->player->getGammaHP() / 100.0f * (float) this->field_0x446);
+        Globals::Canvas->DrawRegion2D(this->barDividerImage, 0, 0, gammaW, this->field_0x44c, 0.0f, 0, 0,
+                                      this->field_0x440, gammaBarY);
     }
 
     if (ego->isInRocketControl()) {
@@ -303,7 +304,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             Globals::Canvas->DrawImage2D(this->missionBannerImage, this->field_0x3ec, this->field_0x3ee);
         }
         if ((Globals::options[17] && !ego->isAutoPilot() && !ego->isDockingToAsteroid() &&
-             !ego->isDockingToDockingPoint() && !this->hackingGameActive && !ego->isDockedToDockingPoint()) ||
+             !ego->isDockingToDockingPoint() && !this->hackingGameActive &&
+             (!ego->isDockedToDockingPoint() || ego->isInTurretMode())) ||
             (Globals::options[17] && ego->isInTurretMode()))
             Globals::Canvas->SetColor(0xffffffff);
         else
@@ -360,7 +362,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     }
 
     if ((Globals::options[17] && !ego->isAutoPilot() && !ego->isDockingToAsteroid() &&
-         !ego->isDockingToDockingPoint() && !this->hackingGameActive && !ego->isDockedToDockingPoint()) ||
+         !ego->isDockingToDockingPoint() && !this->hackingGameActive &&
+             (!ego->isDockedToDockingPoint() || ego->isInTurretMode())) ||
         (Globals::options[17] && ego->isInTurretMode()))
         Globals::Canvas->SetColor(0xffffffff);
     else
@@ -498,10 +501,14 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     else
         Globals::Canvas->DrawImage2D(this->image_0x348, Globals::w, Globals::h, 0x11, 0x22);
     if (this->hackingGameActive && !ego->isInTurretMode()) {
-        Globals::Canvas->DrawImage2D((this->touchFlags & 0x200) ? this->image_0x3a4 : this->image_0x3a8, this->field_0x454,
-                                     this->field_0x456);
-        Globals::Canvas->DrawImage2D((this->touchFlags & 0x400) ? this->image_0x3a4 : this->image_0x3a8, this->field_0x458,
-                                     this->field_0x45a);
+        if (this->touchFlags & 0x200)
+            Globals::Canvas->DrawImage2D(this->image_0x3a4, this->field_0x454, this->field_0x456);
+        else
+            Globals::Canvas->DrawImage2D(this->image_0x3a8, this->field_0x454, this->field_0x456);
+        if (this->touchFlags & 0x400)
+            Globals::Canvas->DrawImage2D(this->image_0x3a4, this->field_0x458, this->field_0x45a);
+        else
+            Globals::Canvas->DrawImage2D(this->image_0x3a8, this->field_0x458, this->field_0x45a);
     }
     if (mining || this->hackingGameActive || ego->isDockedToDockingPoint() || ego->isLandingOrTakingOff())
         Globals::Canvas->SetColor(0xffffff2f);
@@ -510,8 +517,12 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
          ego->level->getNumDockingTargets() >= 1)) {
         if (Globals::status->getCurrentCampaignMission() >= 2 &&
             !(Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 183))
-            Globals::Canvas->DrawImage2D((this->touchFlags & 0x40) ? this->image_0x30c : this->image_0x310,
-                                         this->field_0x3f8, this->field_0x3fa);
+        {
+            if (this->touchFlags & 0x40)
+                Globals::Canvas->DrawImage2D(this->image_0x30c, this->field_0x3f8, this->field_0x3fa);
+            else
+                Globals::Canvas->DrawImage2D(this->image_0x310, this->field_0x3f8, this->field_0x3fa);
+        }
     }
 
     // Autopilot button.
@@ -542,8 +553,10 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             Globals::Canvas->DrawImage2D(this->image_0x398, this->field_0x404 + this->field_0x450, this->field_0x406);
             if (Globals::mouseCursorActivated)
                 Globals::Canvas->SetColor(0xffffffff);
-            Globals::Canvas->DrawImage2D((this->touchFlags & 0x100) ? this->image_0x390 : this->image_0x394,
-                                         this->field_0x404, this->field_0x406);
+            if (this->touchFlags & 0x100)
+                Globals::Canvas->DrawImage2D(this->image_0x390, this->field_0x404, this->field_0x406);
+            else
+                Globals::Canvas->DrawImage2D(this->image_0x394, this->field_0x404, this->field_0x406);
             if (Globals::mouseCursorActivated || this->quickMenuOpen)
                 Globals::Canvas->SetColor(0xffffff00);
         }
@@ -558,9 +571,10 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         Globals::Canvas->SetColor(0xffffff00);
 
     // Fire button and secondary-weapon selector.
-    Globals::Canvas->DrawImage2D((this->touchFlags & 0x80) ? this->fireButtonPressedImages[fireImageIndex]
-                                                           : this->fireButtonImages[fireImageIndex],
-                                 this->field_0x3f2, this->field_0x3f4);
+    if (this->touchFlags & 0x80)
+        Globals::Canvas->DrawImage2D(this->fireButtonPressedImages[fireImageIndex], this->field_0x3f2, this->field_0x3f4);
+    else
+        Globals::Canvas->DrawImage2D(this->fireButtonImages[fireImageIndex], this->field_0x3f2, this->field_0x3f4);
     if (this->secondaryLabelTimerSeed == -1) {
         this->secondaryLabelTimerSeed = secondaryKind;
     } else if (this->secondaryLabelTimerSeed != (int) secondaryKind) {
@@ -711,25 +725,26 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
             int transferred = ego->getDockTransferedAmount();
             int total = ego->getDockTotalAmount();
-            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
             float progress = (float) transferred / (float) total;
             if (this->field_0x279)
                 progress = 1.0f - progress;
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
+            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             this->field_0x468 += dt;
-            float fade = (float) this->field_0x468 / 1000.0f;
-            if (fade >= 1.0f)
-                fade = 1.0f;
+            float fadeIn = (float) this->field_0x468 / 1000.0f;
+            float fade = 1.0f;
+            if (fadeIn < 1.0f)
+                fade = fadeIn;
             int top = this->field_0x3e2 * 2;
             int barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
-                                          (Globals::w >> 1) - barW / 2, barYOffset + this->field_0x3e2 * 2);
-            float textY = (float) top + (float) barH * 2.5f;
+                                          (Globals::w >> 1) - barW / 2, barYOffset + top);
             int textW = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+            float textY = (float) top + (float) barH * 2.5f;
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (textW >> 1),
                                         (int) textY, false);
             if (this->field_0x27a && Globals::status->getMission() != 0 &&
@@ -780,8 +795,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     }
 
     // First-flight steering hint.
-    bool miningNow = ego->isMining();
-    if (!Globals::hints[17] && !miningNow && Globals::status->getCurrentCampaignMission() == 2 &&
+    if (!ego->isMining() && !Globals::hints[17] && Globals::status->getCurrentCampaignMission() == 2 &&
         ego->levelScript->m_nScriptTime > 12000 && !ego->isDockingToAsteroid() && !ego->isDockedToAsteroid()) {
         this->field_0x4c4 += dt;
         if (this->field_0x4c4 > 2000)
