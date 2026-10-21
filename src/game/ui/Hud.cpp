@@ -1029,6 +1029,8 @@ void Hud::catchCargo(int itemId, int count, bool cargoFull, bool missionDelivery
         this->field_0x1f4 = Globals::status->replaceHash(String(this->field_0x1f4, false), String(1), String("#Q"));
         item = new ListItem(new String(this->field_0x1f4, false));
         item->itemId = itemId;
+        this->addToEventQueue(item);
+        return;
     } else {
         if (cargoFull) {
             this->field_0x1f4 = *Globals::gameText->getText(322);
