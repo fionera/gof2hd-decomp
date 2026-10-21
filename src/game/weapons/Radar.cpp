@@ -46,9 +46,7 @@ using ::AbyssEngine::gRadarCanvasForDraw;
 using ::AbyssEngine::gRadarCanvasSlot;
 using ::AbyssEngine::gRadarLayoutSlot;
 
-int Radar_GetMissionState(void *mission); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-int Radar_GetMissionType(void *mission); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 static inline int layout_i32(unsigned char *layout, unsigned off) {
     return *reinterpret_cast<int *>(layout + off);

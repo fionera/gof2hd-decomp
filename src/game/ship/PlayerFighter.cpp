@@ -24,9 +24,7 @@
 #include "game/world/Wanted.h"
 #include "game/ship/PlayerFixedObject.h"
 
-int *RH_op_new_arr(unsigned int n);
 
-void RH_op_delete_arr(void *p); // lint: void_ptr (external symbol; generic deallocator, param type load-bearing)
 
 namespace AbyssEngine {
     namespace AEMath {
