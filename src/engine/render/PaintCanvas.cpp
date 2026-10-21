@@ -143,11 +143,6 @@ namespace {
         uint16_t matResId;
     };
 
-    struct PCTexInfoView {
-        char *path;
-        uint32_t param;
-    };
-
     struct PCMaterialView {
         uint32_t textureSlots[8];
         uint32_t flags0;
@@ -2276,7 +2271,10 @@ int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix,
                                    AbyssEngine::AEMath::Vector &outVec) {
     int visible = 0;
     if (this->currentCamera < this->cameras.count) {
-        AbyssEngine::AEMath::Vector position = {srcMatrix.m[3], srcMatrix.m[7], srcMatrix.m[11]};
+        float tx = srcMatrix.m[3];
+        float ty = srcMatrix.m[7];
+        float tz = srcMatrix.m[11];
+        AbyssEngine::AEMath::Vector position = {tx, ty, tz};
         outVec = position;
 
         // Perspective divide against the camera frustum, then map to pixels.
@@ -2288,10 +2286,11 @@ int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix,
             outVec.x = (float) (-(px / (double) w) * (double) this->GetWidth() + (double) (this->GetWidth() >> 1));
             double py = (double) outVec.y * 0.5 / (double) h;
             outVec.y = (float) (py * (double) this->GetHeight() + (double) (this->GetHeight() >> 1));
-            if (outVec.z <= this->cameras.data_[this->currentCamera]->position[1]) {
-                if (outVec.y >= 0.0f && outVec.x >= 0.0f && outVec.x < (float) this->GetWidth()) {
-                    visible = outVec.y < (float) this->GetHeight();
-                }
+            if (!(outVec.z <= this->cameras.data_[this->currentCamera]->position[1])) {
+                return 0;
+            }
+            if (outVec.y >= 0.0f && outVec.x >= 0.0f && outVec.x < (float) this->GetWidth()) {
+                visible = outVec.y < (float) this->GetHeight();
             }
         }
     }
@@ -2603,8 +2602,8 @@ int PaintCanvas::GetScreenPosition(AbyssEngine::AEMath::Matrix &m,
     }
     int visible = 0;
     float w = outVec.z * camera->field_0x4c;
-    float h;
-    if (w != 0.0f && (h = outVec.z * camera->frustumTanHalfFov) != 0.0f) {
+    float h = outVec.z * camera->frustumTanHalfFov;
+    if (w != 0.0f && h != 0.0f) {
         double px = (double) outVec.x * 0.5;
         outVec.x = (float) (-(px / (double) w) * (double) this->GetWidth() + (double) (this->GetWidth() >> 1));
         double py = (double) outVec.y * 0.5 / (double) h;
@@ -2770,28 +2769,28 @@ void PaintCanvas::TextureCreate(unsigned short resId, void (*callback)(AbyssEngi
     eng->boundTextures[1] = -1;
 
     PCResourceView *res = (PCResourceView *) this->FindResource(resId);
-    if (res != 0) {
-        unsigned int idx = (unsigned int) res->handle;
-        if (idx == 0xffffffff) {
-            PCTexInfoView *info = (PCTexInfoView *) res->payload;
-            unsigned int texture = 0;
-            int ok;
-            if (useCallbackLoader) {
-                ok = AbyssEngine::TextureCreateFromFile(this->engine, info->path, callback, userData,
-                                                        &texture, true, (float) (int) info->param);
-            } else {
-                ok = AbyssEngine::TextureCreateFromFileIntern(this->engine, info->path, callback, userData,
-                                                              &texture, (float) (int) info->param, nullptr,
-                                                              false);
-            }
-            if (ok != 1) {
-                return;
-            }
-            idx = texture;
-            res->handle = (int) idx;
-        }
-        out = idx;
+    if (res == 0) {
+        return;
     }
+    if (res->handle != -1) {
+        out = (unsigned int) res->handle;
+        return;
+    }
+    AbyssEngine::ResourceTexture *info = (AbyssEngine::ResourceTexture *) res->payload;
+    unsigned int texture = 0;
+    int ok;
+    if (useCallbackLoader) {
+        ok = AbyssEngine::TextureCreateFromFile(this->engine, info->name, callback, userData,
+                                                &texture, true, info->value);
+    } else {
+        ok = AbyssEngine::TextureCreateFromFileIntern(this->engine, info->name, callback, userData,
+                                                      &texture, info->value, nullptr, true);
+    }
+    if (ok != 1) {
+        return;
+    }
+    res->handle = (int) texture;
+    out = texture;
 }
 
 void PaintCanvas::TextureCreate(unsigned short id, unsigned int &out, bool flag) {
