@@ -438,32 +438,22 @@ V3 PlayerFixedObject::getProjectionVector(const Vector &vec) {
 }
 
 PlayerFixedObject::~PlayerFixedObject() {
-    PlayerFixedObject *self = this;
-    AEGeometry *wreck = self->wreckGeometry;
-    if (wreck != self->geometry) {
-        if (wreck != 0) delete wreck;
-        self->wreckGeometry = 0;
+    if (this->wreckGeometry != this->geometry) {
+        delete this->wreckGeometry;
+        this->wreckGeometry = nullptr;
     }
-    Array<BoundingVolume *> *bvB = self->boundingVolumes;
-    if (bvB != 0) {
-        ArrayReleaseClasses(*bvB);
-        delete bvB;
+    if (this->boundingVolumes) {
+        ArrayReleaseClasses(*this->boundingVolumes);
+        delete this->boundingVolumes;
     }
-    self->boundingVolumes = 0;
-    Array<BoundingVolume *> *bvA = self->wreckCollision;
-    if (bvA != 0) {
-        ArrayReleaseClasses(*bvA);
-        delete bvA;
+    this->boundingVolumes = nullptr;
+    if (this->wreckCollision) {
+        ArrayReleaseClasses(*this->wreckCollision);
+        delete this->wreckCollision;
     }
-    self->wreckCollision = 0;
-    Explosion *expl = self->explosion;
-    if (expl != 0) delete expl;
-    self->explosion = 0;
-    {
-        if (self->name.data) delete[] self->name.data;
-        self->name.data = nullptr;
-        self->name.length = 0;
-    }
+    this->wreckCollision = nullptr;
+    delete this->explosion;
+    this->explosion = nullptr;
 }
 
 void PlayerFixedObject::render() {
@@ -492,120 +482,76 @@ void PlayerFixedObject::render() {
         ((AEGeometry *) this->geometry)->render();
 }
 
-static const int g_pfo_stationIdx[4] = {0, 0, 0, 0};
+// Pirate stations: station index -> loot list parameters.
+static const int kPirateStationIds[4] = {1, 33, 47, 86};
+static const int kPirateStationLoot[4][2] = {{45, 5}, {28, 1}, {4, 1}, {17, 1}};
 
-static const int g_pfo_lootParams[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-
-PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeometry *geom,
+PlayerFixedObject::PlayerFixedObject(int kind, int race, Player *player, AEGeometry *geom,
                                      float x, float y, float z)
-    : KIPlayer(kind, -1, player, geom, x, y, z, false) {
-    PlayerFixedObject * self = this;
+    : KIPlayer(kind, -1, player, geom, x, y, z, false), respawnPos(), homingTarget(), homingDir(), field_0x15c(),
+      field_0x160(), field_0x164() {
+    this->wreckMeshId = 0;
+    this->explosion = nullptr;
+    this->wreckGeometry = nullptr;
+    this->boundingVolumes = nullptr;
+    this->faction() = race;
+    this->wreckCollision = nullptr;
+    this->deltaTime = 0;
+    this->targetEnemy = 0;
+    this->collisionIndex = 0;
+    this->field_0x170 = 0;
+    this->shipHidden = 0;
+    this->explosionElapsed = 0;
+    this->field_0x174 = 0;
+    this->intPosX = 0;
+    this->intPosY = 0;
+    this->intPosZ = 0;
+    this->position() = Vector{x, y, z};
+    this->wreckType = -1;
+    this->moving = 0;
+    this->wreckMaterial = -1;
+    this->dockingType = 0;
+    this->intPosY = (int) y;
+    this->intPosX = (int) x;
+    this->intPosZ = (int) z;
+    this->name = String("", false);
 
-    Vector zeroVec = {0.0f, 0.0f, 0.0f};
-    self->respawnPos = zeroVec;
-    self->homingTarget = zeroVec;
-    self->homingDir = zeroVec;
-    self->field_0x15c = 0;
-    self->field_0x160 = 0;
-
-    {
-        if (self->name.data) delete[] self->name.data;
-        self->name.data = nullptr;
-        self->name.length = 0;
-    }
-    self->explosion = 0;
-    self->wreckMeshId = 0;
-    self->faction() = param2;
-    self->wreckGeometry = 0;
-    self->boundingVolumes = 0;
-    self->wreckCollision = 0;
-    self->deltaTime = 0;
-    self->targetEnemy = 0;
-    self->collisionIndex = 0;
-    self->field_0x170 = 0;
-    self->shipHidden = 0;
-    self->explosionElapsed = 0;
-    self->field_0x174 = 0;
-    self->intPosX = 0;
-    self->intPosY = 0;
-    self->intPosZ = 0;
-
-    Vector p = {x, y, z};
-    self->position() = p;
-
-    self->moving = 0;
-    self->wreckType = -1;
-    self->wreckMaterial = -1;
-    self->dockingType = 0;
-    self->intPosX = (int32_t) x;
-    self->intPosY = (int32_t) y;
-    self->intPosZ = (int32_t) z;
-
-    {
-        String tmp("", false);
-        self->name = tmp;
-    }
-
-    Mission *mission = Globals::status->getMission();
-    int campaign = mission->isCampaignMission();
-    bool special = false;
-    if (campaign != 0) {
-        int cm = Globals::status->getCurrentCampaignMission();
-        if (cm == 0x28) special = true;
-        else {
-            cm = Globals::status->getCurrentCampaignMission();
-            if (cm == 0x29) special = true;
-        }
-    }
-
-    if (special) {
-        if (self->lootList() != 0) {
-            delete self->lootList();
-        }
-        self->lootList() = 0;
+    if (Globals::status->getMission()->isCampaignMission()
+        && (Globals::status->getCurrentCampaignMission() == 40 || Globals::status->getCurrentCampaignMission() == 41)) {
+        delete this->lootList();
+        this->lootList() = nullptr;
     } else {
-        Generator *gen = new Generator();
+        Generator *generator = new Generator();
         if (kind == 0x37a3) {
-            self->field_0x41() = 1;
-            Station *station = Globals::status->getStation();
-            int sidx = station->getIndex();
-            for (uint32_t i = 0; i < 4; i++) {
-                if (g_pfo_stationIdx[i] == sidx) {
-                    self->lootList() = gen->getLootList(g_pfo_lootParams[i * 2 + 1], 0);
-                }
+            this->field_0x41() = 1;
+            int stationIndex = Globals::status->getStation()->getIndex();
+            for (unsigned int i = 0; i < 4; i++) {
+                if (kPirateStationIds[i] == stationIndex)
+                    this->lootList() = generator->getLootList(kPirateStationLoot[i][0], kPirateStationLoot[i][1]);
             }
         } else {
-            Array<int> *loot = gen->getLootList(-1, -1);
-            self->lootList() = loot;
-            if (loot != 0) {
-                int second = (kind != 0x498e) ? 0x4a88 : 0x498e;
-                if (kind != 0x498e && kind != second) {
-                    for (int idx = 1; (uint32_t)(idx - 1) < self->lootList()->size(); idx += 2) {
-                        if (kind == 0xe) {
-                            int r = Globals::rnd->nextInt();
-                            int &cell = (*self->lootList())[idx];
-                            cell = cell * (r + 5);
-                        } else {
-                            int r = Globals::rnd->nextInt();
-                            int &base = (*self->lootList())[idx];
-                            base = base * (r + 2);
-                            int r2 = Globals::rnd->nextInt();
-                            int &cell = (*self->lootList())[idx];
-                            if (cell < r2 + 8) cell = r2 + 8;
-                        }
+            this->lootList() = generator->getLootList(-1, -1);
+            if (this->lootList() && kind != 0x498e && kind != 0x4a88) {
+                for (unsigned int i = 1; i - 1 < this->lootList()->size(); i += 2) {
+                    if (kind == 14) {
+                        (*this->lootList())[i] *= Globals::rnd->nextInt(8) + 5;
+                    } else {
+                        (*this->lootList())[i] *= Globals::rnd->nextInt(4) + 2;
+                        int minimum = Globals::rnd->nextInt(5) + 8;
+                        (*this->lootList())[i] = minimum > (*this->lootList())[i] ? minimum : (*this->lootList())[i];
                     }
                 }
             }
         }
-        delete gen;
+        delete generator;
     }
 
-    ((Player *) self->player)->spawnedFlag = 1;
+    this->player->spawnedFlag = 1;
     if (kind != 0x37a3) {
-        self->aiActiveCounter() = 0x2f;
-        if (kind == 0xe) {
-            self->aiActiveCounter() = -1;
-            self->moving = 0;
+        this->aiActiveCounter() = 47;
+        if (kind == 14) {
+            this->moving = 0;
+            this->aiActiveCounter() = -1;
         }
     }
 }
