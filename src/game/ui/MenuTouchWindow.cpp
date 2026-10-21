@@ -1281,11 +1281,11 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
             nameY = 8;
             infoY = 5;
         } else if (Globals::iPadLarge) {
-            nameY = 12;
             infoY = 8;
+            nameY = 12;
         } else {
-            nameY = 6;
             infoY = 4;
+            nameY = 6;
         }
         // Side borders.
         int borderWidth = Globals::Canvas->GetImage2DWidth(this->scrollbarImageId);
@@ -1301,9 +1301,9 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         }
     }
     this->okButton->setPosition(Globals::w - this->listX - Globals::layout->buttonInsetX,
-                                (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
                                 this->scrollOffset +
                                 (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin) +
+                                (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
                                 Globals::layout->field_0x108);
 
     for (int i = 0; i < Globals::recordSlots; i++) {
