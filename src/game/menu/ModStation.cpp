@@ -2157,8 +2157,8 @@ void ModStation::leaveStation() {
         return;
     this->choiceWindow->set(*Globals::gameText->getText(397), true);
     this->choiceWindow->left();
-    this->flag_0xb2 = 1;
     this->flag_0x63 = 1;
+    this->flag_0xb2 = 1;
 }
 
 void ModStation::OnRelease() {
