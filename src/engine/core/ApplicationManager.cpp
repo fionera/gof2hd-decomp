@@ -240,11 +240,13 @@ void ApplicationManager::OnUpdate(long long now) {
             if (AbyssEngine::SwapCounter > 0) {
                 AbyssEngine::SwapCounter--;
                 this->engine->ClearBuffer(0);
+                this->engine->SwapBuffer();
+                return;
             } else {
                 IApplicationModule *next = this->pendingModule;
                 if (next != 0) {
-                    this->pendingModule = 0;
                     this->currentModule = next;
+                    this->pendingModule = 0;
                     if (this->loadingCallback != 0 && next->ShowLoadingScreen()) {
                         this->loadingCallback(this->paintCanvas, -1, this->loadingCallbackData);
                     }
@@ -277,17 +279,17 @@ void ApplicationManager::OnUpdate(long long now) {
                 this->currentModule->OnRelease();
                 this->engine->ResetLightParam();
                 AbyssEngine::SwapCounter = Engine::SwapCounter;
-                this->state = 0;
                 this->currentModule = 0;
+                this->state = 0;
             }
             break;
         case 4:
-            this->actionState = 0;
-            this->state = this->savedState;
-            this->currentTimeMs += 1;
-            this->frameTimeMs = now;
-            this->previousFrameTimeMs = now - 1;
             this->keyState = 0;
+            this->previousFrameTimeMs = now - 1;
+            this->frameTimeMs = now;
+            this->currentTimeMs += 1;
+            this->state = this->savedState;
+            this->actionState = 0;
             break;
         case 5: {
             if (performanceTest) {
@@ -300,9 +302,9 @@ void ApplicationManager::OnUpdate(long long now) {
             fpsTimer += (int) (this->frameTimeMs - this->previousFrameTimeMs);
             fpsCounter++;
             if (fpsTimer > 1000) {
+                currentFps = fpsCounter;
                 fpsCounter = 0;
                 fpsTimer -= 1000;
-                currentFps = fpsCounter;
             }
             if (Engine::enableShader) {
                 if (this->engine->IsPostEffectActivated()) {
@@ -421,8 +423,8 @@ void ApplicationManager::OnUpdate(long long now) {
                                               5, false);
             }
             if (performanceTest) {
-                triDrawn += this->engine->field_0x58 + this->engine->triangleCountA;
-                triDrawn += this->engine->drawCallCountB + this->engine->triangleCountB;
+                triDrawn += (int) this->engine->field_0x58 + this->engine->triangleCountA;
+                triDrawn += (int) (this->engine->field_0x58 >> 32) + this->engine->triangleCountB;
                 this->paintCanvas->SetColor(0, 255, 0, 255);
                 String text = String("PerfTest (") + String(performanceModulSwitches) + String("/") +
                               String(performanceOverallModulSwitches) + String(") : ") +
@@ -474,7 +476,7 @@ void ApplicationManager::OnUpdate(long long now) {
                     }
                     loadTexture++;
                 }
-                for (int i = 10; i != 0; --i) {
+                for (int i = 0; i < 10; ++i) {
                     if ((uint32_t) loadMesh < this->paintCanvas->meshes.size()) {
                         this->paintCanvas->MeshConvertToVBO(loadMesh);
                         loadMesh++;
