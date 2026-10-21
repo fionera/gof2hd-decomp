@@ -1266,17 +1266,18 @@ void SpaceLounge::draw() {
     }
 }
 
-void SpaceLounge::update(int dt) {
-    char maxMatrix[60];
-    char valueMatrix[60];
+#define SPACELOUNGE_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define SPACELOUNGE_MAX(a, b) ((a) < (b) ? (b) : (a))
+#define SPACELOUNGE_ABS(x) ((x) > 0.0f ? (x) : -(x))
 
-    if (dt > 50) {
+void SpaceLounge::update(int dt) {
+    using namespace AbyssEngine::AEMath;
+    if (dt >= 50) {
         dt = 50;
     }
     if (this->initialized == 0) {
         return;
     }
-
     if (this->mapVisible != 0) {
         this->starMap->update(dt);
         return;
@@ -1289,122 +1290,81 @@ void SpaceLounge::update(int dt) {
     if (this->cameraAnimating == 0) {
         this->cameraEase->Increase((float) dt);
     }
-
-    PaintCanvas **cameraSlot;
-    PaintCanvas *camera;
-    Matrix *current;
-    if (this->introDone == 0) {
-        ((AbyssEngine::EaseInOutMatrix *) (maxMatrix))->GetMaxValue();
-        ((AbyssEngine::EaseInOutMatrix *) (valueMatrix))->GetValue();
-        if ((memcmp((maxMatrix), (valueMatrix), sizeof(float) * 16) == 0) == 0) {
-            this->cameraAnimating = 0;
-            cameraSlot = SpaceLounge_update_camera_slot_c;
-            camera = *cameraSlot;
-            current = (Matrix *) (long) camera->CameraGetCurrent();
-            ((AbyssEngine::EaseInOutMatrix *) (valueMatrix))->GetValue();
-            camera->CameraSetLocal((unsigned int) (long) camera,
-                                   *(const AbyssEngine::AEMath::Matrix *) valueMatrix);
-        } else {
-            goto idle_camera;
-        }
-    } else {
-    idle_camera:
-        float step = (float) dt * 0.001f;
-        if (step > 1.0f) {
-            step = 1.0f;
-        }
-        if (step < 0.0f) {
-            step = 0.0f;
-        }
+    if (this->introDone != 0 || this->cameraEase->GetMaxValue() == this->cameraEase->GetValue()) {
+        // Idle: gentle head bob of the camera.
+        float step = SPACELOUNGE_MAX(SPACELOUNGE_MIN((float) dt * 0.0025f, 0.12f), 0.05f);
         this->introDone = 1;
-        this->headBobPhase = this->headBobPhase + step;
-        float wave = AbyssEngine::AEMath::Sinf(this->headBobPhase);
-        float maxRot = (float) this->headBobSteps * 0.5f;
-
-        if (this->cameraAnimating == 0) {
-            cameraSlot = SpaceLounge_update_camera_slot_a;
-            camera = *cameraSlot;
-            current = (Matrix *) camera->CameraGetLocal((unsigned int) (long) camera);
-            (void) current;
+        this->headBobPhase = step + this->headBobPhase;
+        float wave = Sinf(this->headBobPhase);
+        float amplitude = (float) this->headBobSteps * 0.85f;
+        amplitude = amplitude < 3.5f ? amplitude : 3.5f;
+        if (this->cameraAnimating != 0) {
+            float turn = this->headEase->GetValue();
+            if (SPACELOUNGE_ABS(turn - this->headEase->GetMaxValue()) < 0.25f) {
+                float target = (float) (5 - Globals::rnd->nextInt(10));
+                this->headBobReverse = turn > target;
+                this->headEase->SetRange(turn, target);
+                this->headBobSteps = Globals::rnd->nextInt(4) + 1;
+            }
+            int steps = this->headBobSteps;
+            this->headEase->Increase((float) ((this->headBobReverse ? -steps : steps) * dt));
+        } else {
+            PaintCanvas *canvas = Globals::Canvas;
+            this->baseMatrix = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
             this->cameraAnimating = 1;
-            int amount = SpaceLounge_update_random_slot->nextInt(10);
+            Globals::rnd->nextInt(10);
             this->headBobReverse = 0;
-            if (this->headEase == 0) {
-                this->headEase = new AbyssEngine::EaseInOut(0.0f, (float) amount);
+            if (this->headEase != 0) {
+                this->headEase->SetRange(0.0f, 5.0f);
             } else {
-                this->headEase->SetRange(0.0f, (float) amount);
+                this->headEase = new AbyssEngine::EaseInOut(0.0f, 5.0f);
             }
             this->headBobSteps = 2;
-        } else {
-            float value = this->headEase->GetValue();
-            float maxValue = this->headEase->GetMaxValue();
-            float distance = value - maxValue;
-            if (distance < 0.0f) {
-                distance = -distance;
-            }
-            int amount = this->headBobSteps;
-            if (distance < 0.25f) {
-                AbyssEngine::AERandom *random = SpaceLounge_update_random_slot;
-                amount = random->nextInt(10);
-                float next = (float) (5 - amount);
-                this->headBobReverse = value > next;
-                this->headEase->SetRange(value, next);
-                this->headBobSteps = random->nextInt(4) + 1;
-                amount = this->headBobSteps;
-            }
-            if (this->headBobReverse != 0) {
-                amount = -amount;
-            }
-            this->headEase->Increase((float) (dt * amount));
         }
-
-        float value = this->headEase->GetValue();
-        MatrixSetRotation(valueMatrix, value / 90.0f, 0.0f, value);
-        MatrixSetTranslation(maxMatrix, 0.0f, 0.0f, wave * maxRot);
-        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) (valueMatrix), this->baseMatrix);
-        cameraSlot = SpaceLounge_update_camera_slot_b;
-        camera = *cameraSlot;
-        current = (Matrix *) (long) camera->CameraGetCurrent();
-        camera->CameraSetLocal((unsigned int) (long) camera,
-                               *(const AbyssEngine::AEMath::Matrix *) valueMatrix);
+        float bob = wave * amplitude;
+        Matrix view = MatrixSetRotation(view, 0.0f, this->headEase->GetValue() / 35.0f, 0.0f);
+        MatrixSetTranslation(view, 0.0f, bob, 0.0f);
+        view *= this->baseMatrix;
+        PaintCanvas *canvas = Globals::Canvas;
+        canvas->CameraSetLocal(canvas->CameraGetCurrent(), view);
+    } else {
+        this->cameraAnimating = 0;
+        PaintCanvas *canvas = Globals::Canvas;
+        canvas->CameraSetLocal(canvas->CameraGetCurrent(), this->cameraEase->GetValue());
     }
 
-    ((SpaceLounge *) (this))->updateScreenPositions();
+    this->updateScreenPositions();
     if (this->mode != 0) {
         this->scrollWindow->update(dt);
     }
     this->cutScene->update();
 
     if (this->touchDown != 0) {
-        int x = this->touchX;
-        int y = this->touchY;
-        int top = *(int *) SpaceLounge_update_top_slot;
-        int height = *(int *) SpaceLounge_update_height_slot;
-        int width = *(int *) SpaceLounge_update_width_slot;
-        CutScene *cutscene = this->cutScene;
-        if (y < top) {
-            if (x < 150) {
-                cutscene->vec8.y -= 10.0f;
-            } else if (x > width - 150) {
-                cutscene->vec8.y += 10.0f;
+        // Debug-style free camera while a finger rests on the screen edges.
+        Layout *layout = Globals::layout;
+        if (this->touchY < layout->field_0xc_leftMargin) {
+            if (this->touchX <= 149) {
+                this->cutScene->vec8.y += -10.0f;
+            } else if (this->touchX > Globals::w - 150) {
+                this->cutScene->vec8.y += 10.0f;
             }
-        } else if (y < height - top * 2) {
-            if (x < 70) {
-                cutscene->cameraRotX -= 7.5f;
-            } else if (x > width - 70) {
-                cutscene->cameraRotX += 7.5f;
-            } else if (x > 100 && x < width - 100) {
-                if (y < height / 2) {
-                    cutscene->vec8.z -= (float) dt;
+        } else if (this->touchY < Globals::h - layout->field_0x10_rightMargin * 2) {
+            if (this->touchX <= 69) {
+                this->cutScene->cameraRotX += 0.01f;
+            } else if (this->touchX > Globals::w - 70) {
+                this->cutScene->cameraRotX += -0.01f;
+            } else if (this->touchX >= 101 && this->touchX < Globals::w - 100) {
+                if (this->touchY < Globals::h / 2) {
+                    this->cutScene->vec8.z -= (float) dt;
                 } else {
-                    cutscene->vec8.z += (float) dt;
+                    this->cutScene->vec8.z += (float) dt;
                 }
             }
         } else {
-            if (x < 70) {
-                cutscene->vec8.x -= (float) dt;
-            } else if (x > width - 70) {
-                cutscene->vec8.x += (float) dt;
+            if (this->touchX <= 69) {
+                this->cutScene->vec8.x -= (float) dt;
+            } else if (this->touchX > Globals::w - 70) {
+                this->cutScene->vec8.x += (float) dt;
             }
         }
     }
