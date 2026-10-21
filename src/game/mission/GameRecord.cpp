@@ -81,10 +81,10 @@ GameRecord::GameRecord() {
     this->field_0x118 = 0;
     this->field_0x119 = 0;
     this->field_0x11a = 0;
-    this->field_0x100 = 0;
-    this->field_0x101 = 0;
-    this->field_0x102 = 0;
-    this->field_0x103 = 0;
+    this->hintFlags[28] = 0;
+    this->hintFlags[29] = 0;
+    this->hintFlags[30] = 0;
+    this->hintFlags[31] = 0;
     this->field_0x104 = 0;
     this->field_0x105 = 0;
     this->field_0x106 = 0;
@@ -92,14 +92,35 @@ GameRecord::GameRecord() {
     this->field_0x108 = 0;
     this->field_0x109 = 0;
     this->field_0x10a = 0;
-    this->field_0xf0 = 0;
-    this->field_0xf4 = 0;
-    this->field_0xf8 = 0;
-    this->field_0xfc = 0;
+    this->hintFlags[12] = 0;
+    this->hintFlags[13] = 0;
+    this->hintFlags[14] = 0;
+    this->hintFlags[15] = 0;
+    this->hintFlags[16] = 0;
+    this->hintFlags[17] = 0;
+    this->hintFlags[18] = 0;
+    this->hintFlags[19] = 0;
+    this->hintFlags[20] = 0;
+    this->hintFlags[21] = 0;
+    this->hintFlags[22] = 0;
+    this->hintFlags[23] = 0;
+    this->hintFlags[24] = 0;
+    this->hintFlags[25] = 0;
+    this->hintFlags[26] = 0;
+    this->hintFlags[27] = 0;
     this->field_0xe0 = 0;
-    this->field_0xe4 = 0;
-    this->field_0xe8 = 0;
-    this->field_0xec = 0;
+    this->hintFlags[0] = 0;
+    this->hintFlags[1] = 0;
+    this->hintFlags[2] = 0;
+    this->hintFlags[3] = 0;
+    this->hintFlags[4] = 0;
+    this->hintFlags[5] = 0;
+    this->hintFlags[6] = 0;
+    this->hintFlags[7] = 0;
+    this->hintFlags[8] = 0;
+    this->hintFlags[9] = 0;
+    this->hintFlags[10] = 0;
+    this->hintFlags[11] = 0;
 
     this->shipId = 0xffffffff;
     this->field_0xc8 = 0;
@@ -146,43 +167,6 @@ typedef uint32_t uint;
 
 
 
-struct PlayerEgoSaveBlock {
-    uint8_t _pad_0x00[0x8];
-    uint32_t restored_0x08;
-    uint32_t restored_0x0c;
-    uint32_t restored_0x10;
-    uint32_t restored_0x14;
-    uint32_t restored_0x18;
-    uint32_t restored_0x1c;
-    uint32_t restored_0x20;
-    uint32_t restored_0x24;
-    uint8_t flag_0x28;
-    uint8_t flag_0x29;
-    uint8_t flag_0x2a;
-    uint8_t flag_0x2b;
-    uint8_t flag_0x2c;
-    uint8_t flag_0x2d;
-    uint8_t flag_0x2e;
-    uint8_t flag_0x2f;
-    uint8_t flag_0x30;
-    uint8_t flag_0x31;
-    uint8_t flag_0x32;
-    uint8_t flag_0x33;
-    uint8_t flag_0x34;
-    uint8_t flag_0x35;
-    uint8_t flag_0x36;
-    uint8_t flag_0x37;
-    uint8_t flag_0x38;
-    uint8_t flag_0x39;
-    uint8_t flag_0x3a;
-};
-
-static PlayerEgoSaveBlock *const *const kPlayerEgoSlot =
-        (PlayerEgoSaveBlock *const *const) 0x220290;
-
-static Mission *const *const *const kCampaignMissionSlot =
-        (Mission *const *const *const) 0x2202bc;
-
 struct MissionFlags {
     uint8_t _pad_0x00[0x2c];
     uint32_t field_0x2c;
@@ -191,7 +175,6 @@ struct MissionFlags {
     uint8_t versionGuardFlag;
 };
 
-static MissionFlags *const *const kMissionFlagsSlot = (MissionFlags *const *const) 0x22016c;
 
 static const uint32_t kRecordExtendedTag = 0x6e6a78;
 
@@ -255,7 +238,7 @@ void GameRecord::load() {
         this->field_0x40 = 0x2d;
     }
     Globals::status->setCurrentCampaignMission(this->field_0x40);
-    this->field_0x102 = 0x2d < (long) this->field_0x40;
+    this->hintFlags[30] = this->field_0x40 > 45;
     this->field_0x119 = 0x55 < (long) this->field_0x40;
     Globals::status->setFreelanceMission((Mission *) this->field_0x54);
     Globals::status->setCampaignMission((Mission *) this->field_0x58);
@@ -264,8 +247,7 @@ void GameRecord::load() {
     if (campaignStage == 0x23) {
         targetStation = ((Mission *) this->field_0x58)->getTargetStation();
         if (targetStation != 0x1d) {
-            Mission *m = new Mission(0xb, 0, 0x1d);
-            Globals::status->setCampaignMission(m);
+            Globals::status->setCampaignMission(new Mission(0xb, 0, 0x1d));
         }
         campaignStage = this->field_0x40;
     }
@@ -273,51 +255,44 @@ void GameRecord::load() {
         this->field_0x44 = 0x5b;
         this->field_0x48 = 0x12;
         Globals::status->setCurrentCampaignMission(0x1c);
-        Mission *m = new Mission(4, 0, 0x5b);
-        Globals::status->setCampaignMission(m);
+        Globals::status->setCampaignMission(new Mission(4, 0, 0x5b));
         campaignStage = this->field_0x40;
     }
     if (campaignStage == 0x19) {
         this->field_0x44 = 0x30;
         this->field_0x48 = 9;
         Globals::status->setCurrentCampaignMission(0x18);
-        Mission *m = new Mission(4, 0, 0x30);
-        Globals::status->setCampaignMission(m);
+        Globals::status->setCampaignMission(new Mission(4, 0, 0x30));
         campaignStage = this->field_0x40;
     }
     if (campaignStage == 0x29) {
         Globals::status->setCurrentCampaignMission(0x27);
-        Mission *m = new Mission(0xb, 0, 0x1e);
-        Globals::status->setCampaignMission(m);
+        Globals::status->setCampaignMission(new Mission(0xb, 0, 0x1e));
     }
     if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
         ((this->field_0x40 == 0x56 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
                                        != 100)))) {
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
-        Mission *m = new Mission(0xb, 0, 100);
-        Globals::status->setCampaignMission(m);
+        Globals::hints[49] = 1;
+        Globals::status->setCampaignMission(new Mission(0xb, 0, 100));
     }
     if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
         ((this->field_0x40 == 0x57 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
                                        != 10)))) {
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
-        Mission *m = new Mission(4, 0, 10);
-        Globals::status->setCampaignMission(m);
+        Globals::hints[49] = 1;
+        Globals::status->setCampaignMission(new Mission(4, 0, 10));
     }
     if ((((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
          (this->field_0x40 == 0x58)) && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(),
                                          targetStation != 10)) {
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
-        Mission *m = new Mission(0xb, 0, 10);
-        Globals::status->setCampaignMission(m);
+        Globals::hints[49] = 1;
+        Globals::status->setCampaignMission(new Mission(0xb, 0, 10));
     }
     if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
         ((this->field_0x40 == 0x59 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
                                        != 10)))) {
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
+        Globals::hints[49] = 1;
         Globals::status->setCurrentCampaignMission(0x56);
-        Mission *m = new Mission(0xb, 0, 100);
-        Globals::status->setCampaignMission(m);
+        Globals::status->setCampaignMission(new Mission(0xb, 0, 100));
     }
     if ((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) {
         campaignStage = this->field_0x40;
@@ -333,11 +308,10 @@ void GameRecord::load() {
                 (((Array<uint8_t> *) this->field_0x160)->data_[0x1b] != '\0'))
                 goto stationStackLoaded;
         }
-        (*kPlayerEgoSlot)->flag_0x31 = 1;
+        Globals::hints[49] = 1;
         this->field_0x40 = 0x56;
         Globals::status->setCurrentCampaignMission(this->field_0x40);
-        Mission *m = new Mission(0xb, 0, 100);
-        Globals::status->setCampaignMission(m);
+        Globals::status->setCampaignMission(new Mission(0xb, 0, 100));
     }
 stationStackLoaded:
     ((Station *) Globals::status->voidStation)->setItems((Array<Item *> *) this->field_0x180, true);
@@ -354,7 +328,7 @@ stationStackLoaded:
     st->field_90 = (Array<int> *) this->field_0x70;
     st->field_10c = this->field_0xd0;
 
-    MissionFlags *missionFlags = *kMissionFlagsSlot;
+    MissionFlags *missionFlags = (MissionFlags *) Globals::options;
     st->field_110 = this->field_0xd4;
     st->field_0x111 = this->field_0xdc;
     if (missionFlags->versionGuardFlag == '\0') {
@@ -450,7 +424,7 @@ afterDlcUnsaleable:
     st = Globals::status;
     st->field_8c = this->field_0x134;
     st->setStation((Station *) this->field_0x138);
-    Globals::status->setMission(**kCampaignMissionSlot);
+    Globals::status->setMission(Mission::empty);
     st->standing = (Standing *) this->field_0x13c;
     for (i = 0; i < this->field_0x140->size(); i++)
         (*Globals::status->bluePrints)[i] = (*this->field_0x140)[i];
@@ -506,43 +480,35 @@ afterDlcUnsaleable:
         }
     }
 
-    PlayerEgoSaveBlock *ego = *kPlayerEgoSlot;
-
-    ego->restored_0x08 = this->field_0xe4;
-    ego->restored_0x0c = this->field_0xe8;
-    ego->restored_0x10 = this->field_0xec;
-    ego->restored_0x14 = this->field_0xf0;
-
+    for (int k = 0; k < 16; k++)
+        Globals::hints[8 + k] = this->hintFlags[k];
     missionFlags->field_0x2c = reinterpret_cast<uint32_t &>(this->rank);
     scalar = this->field_0xcc;
     st->field_0x100 = this->field_0xc8;
     st->field_0x104 = scalar;
-
-    ego->restored_0x18 = this->field_0xf4;
-    ego->restored_0x1c = this->field_0xf8;
-    ego->restored_0x20 = this->field_0xfc;
-    ego->restored_0x24 = this->field_0x100;
+    for (int k = 16; k < 32; k++)
+        Globals::hints[8 + k] = this->hintFlags[k];
     if (this->field_0x1bc == kRecordExtendedTag) {
-        ego->flag_0x29 = this->field_0x105;
-        ego->flag_0x28 = this->field_0x104;
-        ego->flag_0x2a = this->field_0x106;
-        ego->flag_0x2b = this->field_0x107;
-        ego->flag_0x2c = this->field_0x108;
-        ego->flag_0x2d = this->field_0x109;
-        ego->flag_0x2e = this->field_0x10a;
-        ego->flag_0x2f = this->field_0x10b;
-        ego->flag_0x30 = this->field_0x10c;
+        Globals::hints[41] = this->field_0x105;
+        Globals::hints[40] = this->field_0x104;
+        Globals::hints[42] = this->field_0x106;
+        Globals::hints[43] = this->field_0x107;
+        Globals::hints[44] = this->field_0x108;
+        Globals::hints[45] = this->field_0x109;
+        Globals::hints[46] = this->field_0x10a;
+        Globals::hints[47] = this->field_0x10b;
+        Globals::hints[48] = this->field_0x10c;
         st->field_178 = this->field_0x1b8;
-        ego->flag_0x31 = this->field_0x119;
-        ego->flag_0x32 = this->field_0x11a;
-        ego->flag_0x33 = this->field_0x10d;
-        ego->flag_0x34 = this->field_0x10e;
-        ego->flag_0x35 = this->field_0x10f;
-        ego->flag_0x36 = this->field_0x110;
-        ego->flag_0x37 = this->field_0x111;
-        ego->flag_0x38 = this->field_0x113;
-        ego->flag_0x39 = this->field_0x112;
-        ego->flag_0x3a = this->field_0x114;
+        Globals::hints[49] = this->field_0x119;
+        Globals::hints[50] = this->field_0x11a;
+        Globals::hints[51] = this->field_0x10d;
+        Globals::hints[52] = this->field_0x10e;
+        Globals::hints[53] = this->field_0x10f;
+        Globals::hints[54] = this->field_0x110;
+        Globals::hints[55] = this->field_0x111;
+        Globals::hints[56] = this->field_0x113;
+        Globals::hints[57] = this->field_0x112;
+        Globals::hints[58] = this->field_0x114;
         st->field_58 = (Array<bool> *) this->field_0x17c;
         srcVec = (Array<uint32_t> *) this->field_0x1b4;
         if ((srcVec != (Array<uint32_t> *) 0x0) && (i = srcVec->count, i != 0)) {
