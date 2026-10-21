@@ -634,18 +634,16 @@ void MGame::maneuverTouchEnd(int a, int b, void *p) { // lint: void_ptr -- expor
 }
 
 void MGame::freeCamTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- exported method signature (Pv)
-    if (this->touch0Id != nullptr) {
-        if (this->menuTime < 1000) {
-            this->flCameraRoll = 0;
-            this->flCameraRoll = AbyssEngine::AEMath::VectorLength(*this->camera->getCamOffset());
-            this->touch1Id = touch;
-            this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
-        }
-    } else {
+    if (this->touch0Id == nullptr) {
         if (this->touch1Id == nullptr)
             this->menuTime = 0;
         this->touch0Id = touch;
         this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
+    } else if (this->menuTime < 1000) {
+        this->flCameraRoll = 0;
+        this->flCameraRoll = AbyssEngine::AEMath::VectorLength(*this->camera->getCamOffset());
+        this->touch1Id = touch;
+        this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
     }
     this->dragLastX = x;
     this->dragLastY = y;
