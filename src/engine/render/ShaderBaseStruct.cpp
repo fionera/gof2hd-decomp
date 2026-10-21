@@ -94,12 +94,11 @@ namespace AbyssEngine {
     }
 
     uint32_t ShaderBaseStruct::ES2LoadShader(uint32_t type, const char *source) {
-        const char *localSource = source;
         uint32_t shader = glCreateShader(type);
 
         if (shader != 0) {
             int status;
-            glShaderSource(shader, 1, &localSource, 0);
+            glShaderSource(shader, 1, &source, 0);
             glCompileShader(shader);
             glGetShaderiv(shader, 0x8b81, &status);
             if (status == 0) {
