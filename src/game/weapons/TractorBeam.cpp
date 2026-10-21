@@ -31,68 +31,67 @@ TractorBeam::~TractorBeam() {
 
 void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     KIPlayer *radarCrate = radar->field_0x1c;
-    if (this->grabbedCrate == nullptr && radarCrate == nullptr)
-        return;
-
-    if (this->grabbedCrate == nullptr && !level->getPlayer()->isInTurretMode()) {
-        if (radarCrate->cargoAvailable() == 0) {
-            this->active = 0;
-            radar->field_0x1c = nullptr;
-        } else {
-            if (radarCrate->crateGeometry == nullptr)
-                radarCrate->createCrate(0);
-            this->grabbedCrate = radarCrate;
-            this->storedHitpoints = radarCrate->player->getHitpoints();
-            this->active = 1;
-        }
-    } else if (this->grabbedCrate == nullptr || this->grabbedCrate->crateGeometry == nullptr ||
-        (this->grabbedCrate->stealFlagByte == 0 && !this->grabbedCrate->player->isActive())) {
-        radar->field_0x1c = nullptr;
-        radar->dockNavPtr = nullptr;
-        this->grabbedCrate = nullptr;
-        this->active = 0;
-        this->soundPlaying = 0;
-        Globals::sound->stop(0);
-    } else {
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->beamGeometry->transform))
-                ->Update((long long) frameTime, false);
-
-        this->direction = this->grabbedCrate->crateGeometry->getPosition();
-        this->direction -= level->getPlayer()->getPosition();
-        float distance = VectorLength(this->direction);
-
-        // Beam emitter offset of the ships with a non-central tractor beam.
-        Vector offset = Globals::status->getShip()->getIndex() == 44
-                        ? level->getPlayer()->GetDirVector() * -300.0f
-                        : Globals::status->getShip()->getIndex() == 49
-                          ? level->getPlayer()->GetDirVector() * -300.0f + level->getPlayer()->GetUpVector() * 200.0f
-                          : Vector{0.0f, 0.0f, 0.0f};
-
-        this->beamGeometry->setScaling(0.5f, 0.5f, distance);
-        this->beamGeometry->setDirection(VectorNormalize(this->direction - offset), Vector{0.0f, 1.0f, 0.0f});
-        this->beamGeometry->setPosition(level->getPlayer()->getPosition() + offset);
-
-        if (!(distance <= 400.0f)) {
-            radar->field_0x1c = nullptr;
-            this->direction = VectorNormalize(this->direction);
-            this->direction *= (float) (frameTime * 10);
-            this->grabbedCrate->crateGeometry->translate(-this->direction);
-            if ((this->grabbedCrate->isDead() || this->grabbedCrate->isDying()) &&
-                !this->grabbedCrate->field_0x40 && !this->grabbedCrate->deadFlag)
-                this->grabbedCrate->translate(-this->direction);
-            if (!this->soundPlaying) {
-                Globals::sound->play(0, nullptr, nullptr, 0.0f);
-                this->soundPlaying = 1;
+    if (this->grabbedCrate != nullptr || radarCrate != nullptr) {
+        if (this->grabbedCrate == nullptr && !level->getPlayer()->isInTurretMode()) {
+            if (radarCrate->cargoAvailable() == 0) {
+                this->active = 0;
+                radar->field_0x1c = nullptr;
+            } else {
+                if (radarCrate->crateGeometry == nullptr)
+                    radarCrate->createCrate(0);
+                this->grabbedCrate = radarCrate;
+                this->storedHitpoints = radarCrate->player->getHitpoints();
+                this->active = 1;
             }
-        } else {
-            this->grabbedCrate->captureCrate(hud);
-            this->active = 0;
-            this->grabbedCrate = nullptr;
+        } else if (this->grabbedCrate == nullptr || this->grabbedCrate->crateGeometry == nullptr ||
+            (this->grabbedCrate->stealFlagByte == 0 && !this->grabbedCrate->player->isActive())) {
             radar->field_0x1c = nullptr;
             radar->dockNavPtr = nullptr;
+            this->grabbedCrate = nullptr;
+            this->active = 0;
             this->soundPlaying = 0;
             Globals::sound->stop(0);
-            Globals::sound->play(4, nullptr, nullptr, 0.0f);
+        } else {
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->beamGeometry->transform))
+                    ->Update((long long) frameTime, false);
+
+            this->direction = this->grabbedCrate->crateGeometry->getPosition();
+            this->direction -= level->getPlayer()->getPosition();
+            float distance = VectorLength(this->direction);
+
+            // Beam emitter offset of the ships with a non-central tractor beam.
+            Vector offset = Globals::status->getShip()->getIndex() == 44
+                            ? level->getPlayer()->GetDirVector() * -300.0f
+                            : Globals::status->getShip()->getIndex() == 49
+                              ? level->getPlayer()->GetDirVector() * -300.0f + level->getPlayer()->GetUpVector() * 200.0f
+                              : Vector{0.0f, 0.0f, 0.0f};
+
+            this->beamGeometry->setScaling(0.5f, 0.5f, distance);
+            this->beamGeometry->setDirection(VectorNormalize(this->direction - offset), Vector{0.0f, 1.0f, 0.0f});
+            this->beamGeometry->setPosition(level->getPlayer()->getPosition() + offset);
+
+            if (distance <= 400.0f) {
+                this->grabbedCrate->captureCrate(hud);
+                this->active = 0;
+                this->grabbedCrate = nullptr;
+                radar->field_0x1c = nullptr;
+                radar->dockNavPtr = nullptr;
+                this->soundPlaying = 0;
+                Globals::sound->stop(0);
+                Globals::sound->play(4, nullptr, nullptr, 0.0f);
+            } else {
+                radar->field_0x1c = nullptr;
+                this->direction = VectorNormalize(this->direction);
+                this->direction *= (float) (frameTime * 10);
+                this->grabbedCrate->crateGeometry->translate(-this->direction);
+                if ((this->grabbedCrate->isDead() || this->grabbedCrate->isDying()) &&
+                    !this->grabbedCrate->field_0x40 && !this->grabbedCrate->deadFlag)
+                    this->grabbedCrate->translate(-this->direction);
+                if (!this->soundPlaying) {
+                    Globals::sound->play(0, nullptr, nullptr, 0.0f);
+                    this->soundPlaying = 1;
+                }
+            }
         }
     }
 }
