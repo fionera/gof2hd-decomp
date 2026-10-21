@@ -109,7 +109,7 @@ void BombGun::update(int elapsed) {
                 gun->hitSmall = 0;
                 static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->transform))->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                 static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-                this->player->rollMatrix =
+                this->player->field_0x40 =
                         reinterpret_cast<AbyssEngine::AEMath::Matrix &>(this->player->player->transform[0]);
                 Globals::sound->play(0x45c, nullptr, nullptr, 0.0f);
             }

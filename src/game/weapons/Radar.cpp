@@ -1,3 +1,13 @@
+#include "engine/render/AEGeometry.h"
+#include "game/ship/Agent.h"
+#include "game/mission/Mission.h"
+#include "engine/audio/FModSound.h"
+#include "game/ui/Hud.h"
+#include "game/ship/PlayerGasCloud.h"
+#include "game/ship/PlayerEgo.h"
+#include "game/world/StarSystem.h"
+#include "game/world/Route.h"
+#include "game/world/Waypoint.h"
 #include "game/ship/Player.h"
 #include "game/ship/PlayerAsteroid.h"
 #include "game/world/Level.h"
@@ -53,24 +63,24 @@ int Radar::getTurretScopeWidth() {
 }
 
 Radar::Radar(Level *level) {
-    this->field_0x174 = 0;
-    this->field_0x178 = 0;
-    this->field_0x17c = 0;
-    this->field_0x180 = 0;
-    this->field_0x164 = 0;
-    this->field_0x168 = 0;
-    this->field_0x16c = 0;
-    this->field_0x170 = 0;
-    this->radarPosX = 0;
-    this->radarPosY = 0;
-    this->radarPosZ = 0;
-    this->field_0x160 = 0;
+    this->egoPos.z = 0;
+    this->targetPos.x = 0;
+    this->targetPos.y = 0;
+    this->targetPos.z = 0;
+    this->playerPos.y = 0;
+    this->playerPos.z = 0;
+    this->egoPos.x = 0;
+    this->egoPos.y = 0;
+    this->radarPos.x = 0;
+    this->radarPos.y = 0;
+    this->radarPos.z = 0;
+    this->playerPos.x = 0;
 
     this->lockedEnemy = nullptr;
     this->dockNavPtr = nullptr;
     this->field_0x14 = 0;
     this->enabled = 1;
-    this->field_0x58 = 0;
+    this->asteroidSlots = nullptr;
     this->labelStrings = nullptr;
     this->lockedAsteroid = nullptr;
     this->field_0x10 = 0;
@@ -89,17 +99,18 @@ Radar::Radar(Level *level) {
     this->field_0x1c = nullptr;
     this->field_0x20 = 0;
     this->lockedStation = nullptr;
-    this->field_0x144 = 0;
-    this->field_0x148 = 0;
+    this->gasClouds = nullptr;
+    this->gasLockTimer = 0;
     this->field_0x14c = 0;
-    this->field_0x150 = 0;
-    this->field_0x134 = 0;
-    this->field_0x138 = 0;
-    this->field_0x13c = 0;
-    this->field_0x140 = 0;
-    for (int i = 0; i < 16; ++i) {
-        this->pad_0x198_to_0x1a8[i] = 0;
-    }
+    this->route = nullptr;
+    this->enemies = nullptr;
+    this->landmarks = nullptr;
+    this->asteroids = nullptr;
+    this->planetTargets = nullptr;
+    this->enemyLockTimer = 0;
+    this->asteroidLockTimer = 0;
+    this->planetLockTimer = 0;
+    this->stationLockTimer = 0;
     this->field_0x54 = 0;
     this->plasmaInRange = 0;
     this->field_0x120 = 0;
@@ -256,7 +267,7 @@ Radar::Radar(Level *level) {
     this->enabled = 1;
 
     int *lockSlots = new int[5];
-    this->field_0x58 = (int) (intptr_t) lockSlots;
+    this->asteroidSlots = lockSlots;
     for (int i = 0; i != 5; ++i) {
         lockSlots[i] = -1;
     }
@@ -329,11 +340,11 @@ void Radar::update(KIPlayer *player) {
 }
 
 void Radar::update(Vector value) {
-    Vector *current = reinterpret_cast<Vector *>(&this->radarPosX);
+    Vector *current = &this->radarPos;
     *current = AbyssEngine::AEMath::MatrixTransformVector(this->transform, value);
 
-    this->radarPosY = -this->radarPosY;
-    this->radarPosZ = -this->radarPosZ;
+    this->radarPos.y = -this->radarPos.y;
+    this->radarPos.z = -this->radarPos.z;
 
     int visible = Globals::Canvas->GetScreenPosition(value, value);
     this->onScreen = static_cast<uint8_t>(visible);
@@ -347,23 +358,945 @@ void Radar::update(Vector value) {
     }
 }
 
-long long Radar::draw(Player *, Hud *, int mode) {
-    if (this->enabled == 0) {
-        return 0;
+static const int kRaceMusic[4] = {134, 139, 138, 137};
+
+static inline unsigned int radarFont() {
+    return (unsigned int) (uintptr_t) Globals::font;
+}
+
+void Radar::draw(Player *player, Hud *hud, int mode) {
+    if (!this->enabled) {
+        return;
     }
-
     this->plasmaInRange = 0;
-
-    PaintCanvas *canvas = *gRadarCanvasForDraw;
-    canvas->SetColor(static_cast<unsigned int>(-1));
+    this->lockConfirmed = 0;
+    Globals::Canvas->SetColor(0xffffffff);
 
     Mission *mission = Globals::status->getMission();
-    int missionState = Radar_GetMissionState(mission);
-    if (missionState == 0 && Radar_GetMissionType(mission) == 0) {
-        (void) mode;
+    bool missionBlocksPlanets = false;
+    if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
+        mission->getType() != 171) {
+        missionBlocksPlanets = mission->getType() != 172;
     }
 
-    return 0;
+    bool turretMode = this->level->getPlayer()->isInTurretMode();
+    bool alienOrbit = Globals::status->inAlienOrbit();
+    int campaign = Globals::status->getCurrentCampaignMission();
+    this->enemies = this->level->getEnemies();
+    this->landmarks = this->level->getLandmarks();
+    this->route = this->level->getPlayerRoute();
+    this->asteroids = this->level->getAsteroids();
+    this->gasClouds = this->level->getGasClouds();
+    this->planetTargets = (Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets();
+
+    this->transform = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+    this->cameraPos.x = this->transform.m[3];
+    this->cameraPos.y = this->transform.m[7];
+    this->cameraPos.z = this->transform.m[11];
+    this->transform = AbyssEngine::AEMath::MatrixGetInverse(this->transform);
+
+    if (this->level->getPlayer()->goingToPlanet()) {
+        if (alienOrbit) {
+            this->field_0x1a8 = !this->level->getPlayer()->isDockingToPlanet();
+        } else if (!this->level->getPlayer()->isDockingToPlanet()) {
+            KIPlayer *autoTarget = (KIPlayer *) (intptr_t) this->level->getPlayer()->getAutoPilotTarget();
+            Array<KIPlayer *> *targets = (Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets();
+            SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
+            Array<int> *stations =
+                    (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
+            this->field_0x1a8 =
+                    autoTarget == targets->data()[system->getStationEnumIndex(stations->data()[this->planetDockIndex])];
+        } else {
+            this->field_0x1a8 = 0;
+        }
+    } else {
+        this->field_0x1a8 = 0;
+    }
+
+    Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY - this->imageHeight);
+    Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX, this->centerY - this->imageHeight, 1);
+    Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY, 2);
+    Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX, this->centerY, 3);
+
+    if (this->route != nullptr) {
+        Waypoint *waypoint = this->route->getWaypoint();
+        if (waypoint != nullptr) {
+            this->update(waypoint);
+            this->lockLabel = this->calcDistance((float) waypoint->x, (float) waypoint->y, (float) waypoint->z,
+                                                 this->cameraPos.x, this->cameraPos.y, this->cameraPos.z);
+            if (this->onScreen) {
+                Globals::Canvas->DrawImage2D(this->image_0x6c, this->screenX, this->screenY, 17, 68);
+                Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
+                                            this->screenY + this->halfScreenWidth, false);
+            } else if (this->scannerAvailable) {
+                Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->hasReservation), this->screenX,
+                                             this->screenY, 17, 68);
+            }
+        }
+    }
+
+    bool otherLock = this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr ||
+                     this->field_0x1c != nullptr || this->field_0x14 != 0;
+    bool landmarkHit = false;
+    if (this->landmarks != nullptr &&
+        Globals::status->getStation()->getIndex() != 109 && Globals::status->getStation()->getIndex() != 110 &&
+        (Globals::status->getStation()->getIndex() != 111 || Globals::status->getCurrentCampaignMission() <= 93)) {
+        for (uint32_t i = 0; i < this->landmarks->size(); ++i) {
+            if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
+                continue;
+            }
+            this->update(this->landmarks->data()[i]);
+            if (this->onScreen && this->screenX > this->centerX - this->field_0x128 &&
+                this->screenX < this->centerX + this->field_0x128 &&
+                this->screenY > this->centerY - this->field_0x128 &&
+                this->screenY < this->centerY + this->field_0x128) {
+                if (!landmarkHit && !otherLock && i != 3 && !turretMode) {
+                    int size = this->field_0x124;
+                    int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
+                    int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
+                    if (this->screenX > left && this->screenY < top + size * 2 && this->screenY > top &&
+                        this->screenX < left + size * 2) {
+                        if (this->field_0x28 != this->landmarks->data()[i]) {
+                            this->stationLockTimer = 0;
+                        }
+                        this->field_0x28 = this->landmarks->data()[i];
+                        landmarkHit = true;
+                    }
+                }
+                this->egoPos = player->getPosition();
+                this->targetPos = this->landmarks->data()[i]->player->getPosition();
+                if (i != 3) {
+                    Globals::Canvas->DrawImage2D(this->image_0x88, this->screenX, this->screenY, 17, 68);
+                }
+                int offset = i == 0 ? this->originX : this->originY;
+                Globals::Canvas->DrawString(radarFont(), *this->labelStrings->data()[i], this->screenX + offset,
+                                            this->screenY, false);
+                if (i <= 1) {
+                    if (i != 0 || alienOrbit) {
+                        KIPlayer *landmark = this->landmarks->data()[i];
+                        this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
+                                                             this->cameraPos.x, this->cameraPos.y,
+                                                             this->cameraPos.z);
+                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
+                                                    this->screenY + Globals::layout->field_0x4, false);
+                    } else {
+                        Globals::Canvas->DrawString(
+                                radarFont(),
+                                *Globals::gameText->getText(133) + String(": ") +
+                                        String(String(Globals::status->getStation()->getTecLevel()), false),
+                                this->screenX + this->originX, this->screenY + Globals::layout->field_0x4, false);
+                        KIPlayer *landmark = this->landmarks->data()[i];
+                        this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
+                                                             this->cameraPos.x, this->cameraPos.y,
+                                                             this->cameraPos.z);
+                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + this->originX,
+                                                    this->screenY + Globals::layout->field_0x4 * 2, false);
+                    }
+                }
+            } else if (i == 1) {
+                Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX, this->screenY, 17, 68);
+            } else if (i == 3) {
+                Globals::Canvas->DrawImage2D(this->image_0xb8, this->screenX, this->screenY, 17, 68);
+            }
+        }
+        if (!turretMode) {
+            if (this->lockedStation != nullptr) {
+                if (this->lockedStation->isDead()) {
+                    this->lockedStation = nullptr;
+                }
+                if (this->lockedStation == this->field_0x28) {
+                    this->lockConfirmed = 1;
+                }
+                this->lockedStation = nullptr;
+            }
+            if (landmarkHit && !this->level->getPlayer()->isDockingToAsteroid() &&
+                !this->level->getPlayer()->isDockingToDockingPoint() && !this->level->getPlayer()->isAutoPilot()) {
+                this->stationLockTimer += mode;
+                if (this->stationLockTimer > this->field_0x1b8) {
+                    if (!this->lockConfirmed) {
+                        Globals::sound->play(26, nullptr, nullptr, 0.0f);
+                    }
+                    this->lockedStation = this->field_0x28;
+                }
+                if (this->stationLockTimer > 0) {
+                    int frame;
+                    if (this->field_0x28 != 0 && this->field_0x28 != this->lockedStation) {
+                        frame = (int) ((float) this->stationLockTimer / (float) this->field_0x1b8 *
+                                       (float) (this->blipSprite->getRawFrameCount() - 1));
+                    } else {
+                        frame = this->blipSprite->getRawFrameCount() - 1;
+                    }
+                    this->blipSprite->setFrame(frame);
+                    this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
+                                                          (int) PlayerEgo::crosshairPos.y);
+                    this->blipSprite->draw(1.0f, 1.0f);
+                }
+                landmarkHit = true;
+            } else if (this->lockedStation == nullptr) {
+                this->stationLockTimer = 0;
+                this->field_0x28 = 0;
+            } else {
+                this->stationLockTimer = 0;
+            }
+        }
+    }
+
+    otherLock = this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr || this->field_0x1c != nullptr ||
+                this->lockedStation != nullptr;
+    if (campaign >= 2 && this->planetTargets != nullptr && !alienOrbit &&
+        !this->level->getPlayer()->isDockingToPlanet()) {
+        Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
+        bool planetHit = false;
+        for (uint32_t i = 0; i < this->planetTargets->size(); ++i) {
+            if (this->planetTargets->data()[i] == nullptr) {
+                continue;
+            }
+            this->update(this->planetTargets->data()[i]);
+            if (!this->onScreen) {
+                continue;
+            }
+            int stationId = stations->data()[i];
+            int currentStation = Globals::status->getStation()->getIndex();
+            int warpGate = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getWarpGateEnumIndex();
+            int textOffset = 10;
+            if (stationId != currentStation && (int) i == warpGate) {
+                Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX + 10, this->screenY - 10);
+                textOffset = 24;
+            }
+            Mission *campaignMission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
+            Mission *freelance = Globals::status->getFreelanceMission();
+            bool marked = false;
+            if (campaignMission != nullptr && !campaignMission->isEmpty() && campaignMission->isVisible() &&
+                (Globals::status->getCurrentCampaignMission() < 148 ||
+                 Globals::status->getCurrentCampaignMission() >= 152)) {
+                if (stationId != currentStation && stations->data()[i] == campaignMission->getTargetStation()) {
+                    if (Globals::status->getCurrentCampaignMission() != 120) {
+                        Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
+                        marked = true;
+                    }
+                }
+                if ((Globals::status->getCurrentCampaignMission() == 116 &&
+                     (uint32_t) (stations->data()[i] - 90) <= 4 &&
+                     ((1 << (stations->data()[i] - 90)) &
+                      ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue()) == 0) ||
+                    (Globals::status->getCurrentCampaignMission() == 120 && stations->data()[i] == 93) ||
+                    (Globals::status->getCurrentCampaignMission() == 125 &&
+                     Globals::status->isFreighterMissionStation(stations->data()[i]) &&
+                     ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
+                       (1 << Globals::status->getFreighterMissionStationBit(stations->data()[i])))) == 0)) {
+                    Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
+                    marked = true;
+                }
+            }
+            if (freelance != nullptr && !freelance->isEmpty() && freelance->isVisible()) {
+                int target = freelance->getType() == 14 ? freelance->getAgent()->getStation()
+                                                        : freelance->getTargetStation();
+                if (stationId != currentStation && stations->data()[i] == target) {
+                    Globals::Canvas->DrawImage2D(this->image_0xc4, this->screenX + textOffset, this->screenY - 10);
+                    marked = true;
+                }
+            }
+            if (!otherLock && !planetHit && !turretMode) {
+                int size = (int) i == StarSystem::orbitPlanetIndex ? this->field_0x128 : this->field_0x124;
+                int left = (int) (PlayerEgo::crosshairPos.x - (float) (size >> 1));
+                int top = (int) (PlayerEgo::crosshairPos.y - (float) (size >> 1));
+                planetHit = false;
+                if (this->screenX > left && this->screenX < left + size && this->screenY > top &&
+                    this->screenY < top + size) {
+                    if ((int) i == StarSystem::orbitPlanetIndex) {
+                        planetHit = false;
+                    } else {
+                        if (this->field_0x18 != this->planetTargets->data()[i]) {
+                            this->planetLockTimer = 0;
+                        }
+                        this->field_0x18 = this->planetTargets->data()[i];
+                        this->planetDockIndex = i;
+                        planetHit = true;
+                    }
+                    if (stationId != currentStation) {
+                        Globals::Canvas->DrawString(
+                                radarFont(),
+                                *((Array<String *> *) (intptr_t) Globals::status->getPlanetNames())->data()[i],
+                                this->screenX + (marked ? textOffset + 14 : textOffset), this->screenY - 10, false);
+                    }
+                }
+            }
+        }
+        if (!turretMode && !landmarkHit) {
+            if (this->field_0x14 != 0) {
+                if (this->field_0x14 == this->field_0x18) {
+                    this->lockConfirmed = 1;
+                }
+                this->field_0x14 = 0;
+            }
+            if (planetHit && !this->level->getPlayer()->isDockingToAsteroid() &&
+                !this->level->getPlayer()->isDockingToDockingPoint()) {
+                this->planetLockTimer += mode;
+                if (this->planetLockTimer > this->field_0x1b8) {
+                    if (missionBlocksPlanets) {
+                        hud->hudEvent(21, this->level->getPlayer(), 0);
+                        goto enemies;
+                    }
+                    if (!this->lockConfirmed) {
+                        Globals::sound->play(26, nullptr, nullptr, 0.0f);
+                    }
+                    this->field_0x14 = this->field_0x18;
+                    if (this->field_0x1a8) {
+                        this->level->getPlayer()->dockToPlanet();
+                    }
+                }
+                if (!missionBlocksPlanets && this->planetLockTimer >= 1) {
+                    int frame;
+                    if (this->field_0x18 != 0 && this->field_0x18 != this->field_0x14) {
+                        frame = (int) ((float) this->planetLockTimer / (float) this->field_0x1b8 *
+                                       (float) (this->blipSprite->getRawFrameCount() - 1));
+                    } else {
+                        if (this->level->getPlayer()->isDockingToPlanet()) {
+                            goto enemies;
+                        }
+                        frame = this->blipSprite->getRawFrameCount() - 1;
+                    }
+                    this->blipSprite->setFrame(frame);
+                    this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
+                                                          (int) PlayerEgo::crosshairPos.y);
+                    this->blipSprite->draw(1.0f, 1.0f);
+                }
+            } else if (this->field_0x14 == 0) {
+                this->planetLockTimer = 0;
+                this->field_0x18 = 0;
+            } else {
+                this->planetLockTimer = 0;
+            }
+        }
+    }
+
+enemies:
+    if (this->lockedEnemy != nullptr && (this->lockedEnemy->isDying() || this->lockedEnemy->isDead())) {
+        this->lockedEnemy = nullptr;
+        otherLock = false;
+        this->dockNavPtr = nullptr;
+    }
+    bool enemyHit = false;
+    bool alwaysEnemySeen = false;
+    bool bossSeen = false;
+    if (this->scannerAvailable && this->enemies != nullptr) {
+        bool alwaysEnemy = false;
+        for (uint32_t i = 0; i < this->enemies->size(); ++i) {
+            KIPlayer *enemy = this->enemies->data()[i];
+            if (!enemy->player->isActive() || (enemy->isDying() && !enemy->hasCargo) || enemy->field_0x74) {
+                if (enemy->shipGroup == 10 && enemy->player->isActive() && !enemy->isDead() && !enemy->isDying()) {
+                    this->field_0x1bc++;
+                    if (enemy->shipGroup == 10) {
+                        bossSeen = true;
+                    }
+                }
+                continue;
+            }
+            this->update(enemy);
+            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            enemy->field_0x75 = 0;
+            if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
+                continue;
+            }
+            KIPlayer *locked = this->lockedEnemy;
+            if (!enemy->stealFlagByte && !(enemy->countsAsEnemyExcludeFlag != 0 || wreck) &&
+                enemy->player->enemyFlagsLo) {
+                this->field_0x1bc++;
+                if (enemy->shipGroup == 10) {
+                    bossSeen = true;
+                }
+                if (enemy->field_0x42 && enemy->player->isAlwaysEnemy()) {
+                    alwaysEnemy = true;
+                }
+            }
+            if (this->onScreen) {
+                enemy->field_0x76 = 1;
+                this->egoPos = player->getPosition();
+                this->targetPos = enemy->player->getPosition();
+                if (this->egoPos.x - this->targetPos.x <= 24000.0f && this->egoPos.x - this->targetPos.x >= -24000.0f &&
+                    this->egoPos.y - this->targetPos.y <= 24000.0f && this->egoPos.y - this->targetPos.y >= -24000.0f &&
+                    this->egoPos.z - this->targetPos.z <= 24000.0f && this->egoPos.z - this->targetPos.z >= -24000.0f &&
+                    enemy->getType() != 16917) {
+                    if (wreck) {
+                        Globals::Canvas->DrawImage2D(this->image_0x9c, this->screenX, this->screenY, 17, 68);
+                    } else {
+                        if (!enemy->isDead()) {
+                            int cx = (int) PlayerEgo::crosshairPos.x;
+                            int cy = (int) PlayerEgo::crosshairPos.y;
+                            enemy->field_0x73 = this->screenX > cx - this->field_0x124 &&
+                                                this->screenX < cx + this->field_0x124 &&
+                                                this->screenY > cy - this->field_0x124 &&
+                                                this->screenY < cy + this->field_0x124;
+                        }
+                        Player *target = enemy->player;
+                        unsigned int frameImage;
+                        unsigned int barImage;
+                        if (target->enemyFlagsLo) {
+                            frameImage = this->image_0xe0;
+                            barImage = this->image_0xd0;
+                        } else if (target->carriesFriendCargoFlag) {
+                            frameImage = this->image_0xe4;
+                            barImage = this->image_0xd4;
+                        } else {
+                            frameImage = this->image_0xe8;
+                            barImage = this->image_0xd8;
+                        }
+                        Globals::Canvas->DrawImage2D(frameImage, this->screenX + 2 - this->halfScreenHeight,
+                                                     this->screenY + this->halfScreenWidth + 2);
+                        float hull = (float) enemy->player->getDamageRate() / 100.0f * (float) this->field_0x1c8;
+                        this->barWidth = (int) hull;
+                        Globals::Canvas->DrawRegion2D(barImage, 0, 0, (int) hull, this->field_0x1cc, 0.0f, 0, 0,
+                                                      this->screenX + 3 - this->halfScreenHeight,
+                                                      this->screenY + this->halfScreenWidth + 3);
+                        if (enemy->player->getEmpPoints() < enemy->player->getMaxEmpPoints()) {
+                            Globals::Canvas->DrawImage2D(this->image_0xec, this->screenX + 2 - this->halfScreenHeight,
+                                                         this->screenY + this->halfScreenWidth + 8);
+                            float emp = (float) enemy->player->getEmpDamageRate() / 100.0f * (float) this->field_0x1c8;
+                            this->barWidth = (int) emp;
+                            Globals::Canvas->DrawRegion2D(this->image_0xdc, 0, 0, (int) emp, this->field_0x1cc, 0.0f,
+                                                          0, 0, this->screenX + 3 - this->halfScreenHeight,
+                                                          this->screenY + this->halfScreenWidth + 9);
+                        }
+                        if (enemy == locked) {
+                            unsigned int lockImage;
+                            if (enemy->player->enemyFlagsLo) {
+                                lockImage = this->image_0x5c;
+                            } else if (enemy->player->carriesFriendCargoFlag) {
+                                lockImage = this->image_0x64;
+                            } else {
+                                lockImage = this->image_0x74;
+                            }
+                            Globals::Canvas->DrawImage2D(lockImage, this->screenX, this->screenY, 17, 68);
+                        }
+                    }
+                } else {
+                    unsigned int image;
+                    if (wreck) {
+                        image = this->image_0xa0;
+                    } else if (enemy == locked) {
+                        if (enemy->player->enemyFlagsLo) {
+                            image = this->image_0x7c;
+                        } else if (enemy->player->carriesFriendCargoFlag) {
+                            image = this->image_0x80;
+                        } else {
+                            image = this->image_0x84;
+                        }
+                    } else if (enemy->player->enemyFlagsLo) {
+                        image = this->image_0x60;
+                    } else if (enemy->player->carriesFriendCargoFlag) {
+                        image = this->image_0x68;
+                    } else {
+                        image = this->image_0x78;
+                    }
+                    Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
+                    enemy->field_0x73 = 0;
+                    int cx = (int) PlayerEgo::crosshairPos.x;
+                    int cy = (int) PlayerEgo::crosshairPos.y;
+                    bool inSight = false;
+                    if (AbyssEngine::AEMath::VectorLength(this->egoPos - this->targetPos) < 60000.0f &&
+                        this->screenX > cx - this->field_0x124 && this->screenX < cx + this->field_0x124 &&
+                        this->screenY > cy - this->field_0x124 && this->screenY < cy + this->field_0x124) {
+                        inSight = true;
+                    }
+                    enemy->field_0x73 = inSight;
+                    if (enemy == locked) {
+                        this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
+                                                             this->cameraPos.x, this->cameraPos.y, this->cameraPos.z);
+                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
+                                                    this->screenY + this->halfScreenWidth, false);
+                    }
+                }
+            } else {
+                enemy->field_0x73 = 0;
+                enemy->field_0x76 = 0;
+                if (wreck) {
+                    KIPlayer *e = this->enemies->data()[i];
+                    unsigned int image;
+                    if (e->countsAsEnemyExcludeFlag) {
+                        image = this->image_0xb0;
+                    } else if (e->shipGroup == 9) {
+                        image = this->image_0xb4;
+                    } else {
+                        image = this->image_0xa8;
+                    }
+                    Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
+                } else {
+                    unsigned int image;
+                    if (enemy->player->enemyFlagsLo) {
+                        image = enemy == locked ? this->image_0x90 : this->image_0x60;
+                    } else if (enemy->player->carriesFriendCargoFlag) {
+                        image = enemy == locked ? this->image_0x94 : this->image_0x68;
+                    } else {
+                        image = enemy == locked ? this->image_0x98 : this->image_0x78;
+                    }
+                    Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
+                }
+                goto tractor;
+            }
+            if (!this->level->getPlayer()->isAutoPilot() && !this->level->getPlayer()->isDockedToDockingPoint() &&
+                !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) && (!enemyHit || enemy->field_0x24) &&
+                (!wreck || enemy->isDead())) {
+                if (this->field_0x1c == nullptr && this->tractorAuto) {
+                    this->dockNavPtr = enemy;
+                    this->field_0x1c = enemy;
+                    enemyHit = true;
+                } else {
+                    int size = this->field_0x124;
+                    int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
+                    int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
+                    if (this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
+                        this->screenY < top + size * 2) {
+                        enemy->field_0x75 = 1;
+                        if ((wreck && this->hasTractor13) || (this->field_0x1b0 && !this->field_0x1a8)) {
+                            if (this->dockNavPtr != enemy) {
+                                this->enemyLockTimer = 0;
+                            }
+                            this->dockNavPtr = enemy;
+                            enemyHit = true;
+                        }
+                    }
+                }
+            }
+        tractor:
+            if (this->tractorMode2 && this->field_0x1c == nullptr && wreck && enemy->isDead()) {
+                this->dockNavPtr = enemy;
+                this->field_0x1c = enemy;
+                enemyHit = true;
+            }
+        }
+        alwaysEnemySeen = alwaysEnemy;
+    }
+
+    if (!this->level->getPlayer()->isDockingToAsteroid() &&
+        !(this->level->getPlayer()->isDockingToDockingPoint() || turretMode || otherLock)) {
+        bool navWreck = this->dockNavPtr != nullptr && this->dockNavPtr->hasCargo &&
+                        (this->dockNavPtr->isDead() || this->dockNavPtr->isDying());
+        if (this->lockedEnemy != nullptr && (this->lockedEnemy->isDying() || this->lockedEnemy->isDead())) {
+            this->lockedEnemy = nullptr;
+        }
+        if (enemyHit) {
+            this->enemyLockTimer += mode;
+            if (this->enemyLockTimer > ((navWreck || this->dockNavPtr->field_0x24) ? this->field_0x1b4
+                                                                                    : this->field_0x1b8)) {
+                if (navWreck || this->dockNavPtr->field_0x24) {
+                    this->field_0x1c = this->dockNavPtr;
+                    if (!this->hasTractor13) {
+                        hud->hudEvent(9, this->level->getPlayer(), 0);
+                        this->field_0x1c = nullptr;
+                        this->enemyLockTimer = 0;
+                    }
+                } else if (this->lockedEnemy != this->dockNavPtr) {
+                    Globals::sound->play(26, nullptr, nullptr, 0.0f);
+                    this->lockedEnemy = this->dockNavPtr;
+                    if (this->field_0x1a9) {
+                        this->egoPos = player->getPosition();
+                        this->targetPos = this->lockedEnemy->player->getPosition();
+                        if (this->egoPos.x - this->targetPos.x < -24000.0f ||
+                            this->egoPos.x - this->targetPos.x > 24000.0f ||
+                            this->egoPos.y - this->targetPos.y < -24000.0f ||
+                            this->egoPos.y - this->targetPos.y > 24000.0f ||
+                            this->egoPos.z - this->targetPos.z < -24000.0f ||
+                            this->egoPos.z - this->targetPos.z > 24000.0f) {
+                            Array<int> *cargo = this->lockedEnemy->cargo;
+                            if (cargo == nullptr) {
+                                hud->hudEvent(22, this->level->getPlayer(), 0);
+                            } else {
+                                for (uint32_t c = 0; c < cargo->size(); c += 2) {
+                                    if (cargo->data()[c + 1] > 0) {
+                                        hud->catchCargo(cargo->data()[0], cargo->data()[1], false, false, false, true,
+                                                        false);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    this->enemyLockTimer = 0;
+                } else {
+                    this->enemyLockTimer = 0;
+                }
+            }
+            if (this->enemyLockTimer > ((navWreck || this->dockNavPtr->field_0x24) ? 500 : 0) &&
+                this->dockNavPtr != nullptr) {
+                KIPlayer *current = (navWreck || this->dockNavPtr->field_0x24) ? this->field_0x1c : this->lockedEnemy;
+                if (this->dockNavPtr != current) {
+                    Sprite *blip = this->blipSprite;
+                    float frames = (float) (blip->getRawFrameCount() - 1);
+                    float elapsed;
+                    float total;
+                    if (navWreck || this->dockNavPtr->field_0x24) {
+                        elapsed = (float) (this->enemyLockTimer - 500);
+                        total = (float) (this->field_0x1b4 - 500);
+                    } else {
+                        elapsed = (float) this->enemyLockTimer;
+                        total = (float) this->field_0x1b8;
+                    }
+                    blip->setFrame((int) (elapsed / total * frames));
+                    this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
+                                                          (int) PlayerEgo::crosshairPos.y);
+                    this->blipSprite->draw(1.0f, 1.0f);
+                }
+            }
+            enemyHit = true;
+        } else {
+            if (*(navWreck ? &this->field_0x1c : &this->lockedEnemy) == nullptr) {
+                this->enemyLockTimer = 0;
+                enemyHit = false;
+                this->dockNavPtr = nullptr;
+            } else {
+                this->enemyLockTimer = 0;
+                enemyHit = false;
+            }
+        }
+    }
+
+    bool otherLock2 = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) || this->field_0x1c != nullptr ||
+                      this->lockedStation != nullptr || this->field_0x14 != 0;
+    if (this->gasClouds != nullptr) {
+        bool gasHit = false;
+        for (uint32_t i = 0; i < this->gasClouds->size(); ++i) {
+            PlayerGasCloud *cloud = (PlayerGasCloud *) this->gasClouds->data()[i];
+            Array<AEGeometry *> *sparks = (Array<AEGeometry *> *) cloud->getSparks();
+            if (sparks != nullptr && Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {
+                for (uint32_t s = 0; s < sparks->size(); ++s) {
+                    this->update(sparks->data()[s]->getPosition());
+                    int size = this->turretScopeHalfWidth;
+                    int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
+                    int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
+                    if (this->onScreen && this->screenX > left && this->screenX < left + size * 2 &&
+                        this->screenY > top && this->screenY < top + size * 2) {
+                        float distance = AbyssEngine::AEMath::VectorLength(
+                                sparks->data()[s]->getPosition() - this->level->getPlayer()->getPosition());
+                        float range = (float) Globals::status->getShip()->getFirstEquipmentOfSort(35)->getAttribute(51);
+                        if (!(distance > range) && cloud->isSparkAlive(s)) {
+                            this->plasmaInRange = 1;
+                        }
+                        cloud->setSparkInSight(s, turretMode && distance <= range);
+                    } else {
+                        cloud->setSparkInSight(s, false);
+                    }
+                }
+            }
+            if (!cloud->player->isActive() || cloud->isDying() ||
+                Globals::status->getShip()->getFirstEquipmentOfSort(33)->getAttribute(57) != 1) {
+                continue;
+            }
+            this->update(cloud);
+            cloud->field_0x75 = 0;
+            if (cloud->isDead() || cloud->isDying()) {
+                continue;
+            }
+            if (this->onScreen) {
+                KIPlayer *locked = this->lockedGasCloud;
+                cloud->field_0x76 = 1;
+                this->egoPos = player->getPosition();
+                this->targetPos = cloud->player->getPosition();
+                if (this->egoPos.x - this->targetPos.x > 24000.0f || this->egoPos.x - this->targetPos.x < -24000.0f ||
+                    this->egoPos.y - this->targetPos.y > 24000.0f || this->egoPos.y - this->targetPos.y < -24000.0f ||
+                    this->egoPos.z - this->targetPos.z > 24000.0f || this->egoPos.z - this->targetPos.z < -24000.0f) {
+                    cloud->field_0x73 = 0;
+                }
+                Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty), this->screenX,
+                                             this->screenY, 17, 68);
+                cloud->field_0x73 = 0;
+                if (cloud == locked) {
+                    this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
+                                                         this->cameraPos.x, this->cameraPos.y, this->cameraPos.z);
+                    Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
+                                                this->screenY + this->halfScreenWidth, false);
+                }
+                if (!(this->level->getPlayer()->isAutoPilot() || otherLock2 || enemyHit)) {
+                    int size = this->field_0x124;
+                    int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
+                    int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
+                    if (this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
+                        this->screenY < top + size * 2) {
+                        cloud->field_0x75 = 1;
+                        if (this->field_0x1b0 && !this->field_0x1a8) {
+                            if (this->field_0x3c != cloud) {
+                                this->gasLockTimer = 0;
+                            }
+                            this->field_0x3c = cloud;
+                            gasHit = true;
+                        }
+                    }
+                }
+            } else if (Globals::status->getShip()->getFirstEquipmentOfSort(33)->getAttribute(58) == 1) {
+                cloud->field_0x73 = 0;
+                cloud->field_0x76 = 0;
+                Globals::Canvas->DrawImage2D(this->image_0xc0, this->screenX, this->screenY, 17, 68);
+            }
+        }
+        if (!turretMode && !enemyHit) {
+            if (this->lockedGasCloud != nullptr) {
+                if (this->lockedGasCloud->isDead()) {
+                    this->lockedGasCloud = nullptr;
+                }
+                if (this->lockedGasCloud == this->field_0x3c) {
+                    this->lockConfirmed = 1;
+                }
+                this->lockedGasCloud = nullptr;
+            }
+            if (gasHit) {
+                this->gasLockTimer += mode;
+                if (this->gasLockTimer > this->field_0x1b8 - 200) {
+                    if (!this->lockConfirmed && !Globals::sound->isPlaying(26)) {
+                        Globals::sound->play(26, nullptr, nullptr, 0.0f);
+                    }
+                    this->lockedGasCloud = this->field_0x3c;
+                }
+                if (this->gasLockTimer > 500) {
+                    Sprite *blip = this->blipSprite;
+                    int last = blip->getRawFrameCount() - 1;
+                    KIPlayer *candidate = this->field_0x3c;
+                    if (candidate == nullptr || candidate == this->lockedGasCloud) {
+                        blip->setFrame(last);
+                    } else {
+                        int frame = (int) ((float) (this->gasLockTimer - 500) / (float) (this->field_0x1b8 - 500) *
+                                           (float) last);
+                        if (frame >= this->blipSprite->getRawFrameCount() - 1) {
+                            goto asteroids;
+                        }
+                        this->blipSprite->setFrame(frame);
+                    }
+                    this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
+                                                          (int) PlayerEgo::crosshairPos.y);
+                    this->blipSprite->draw(1.0f, 1.0f);
+                }
+            } else {
+                this->gasLockTimer = 0;
+                this->field_0x3c = 0;
+            }
+        }
+    }
+
+asteroids:
+    for (int i = 0; i != 5; ++i) {
+        this->asteroidSlots[i] = -1;
+    }
+    {
+        bool otherLock3 = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) ||
+                          this->field_0x1c != nullptr || this->lockedStation != nullptr || this->field_0x14 != 0;
+        if (!this->level->getPlayer()->isInDockingProcedure() && this->asteroids != nullptr) {
+            bool inCenter = false;
+            if (this->field_0x1aa) {
+                Level *level = this->level;
+                inCenter = level->isInAsteroidCenterRange(level->getPlayer()->getPosition());
+            }
+            int slotCount = 0;
+            bool asteroidHit = false;
+            for (uint32_t i = 0; i < this->asteroids->size(); ++i) {
+                PlayerAsteroid *asteroid = (PlayerAsteroid *) this->asteroids->data()[i];
+                if (!(asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying())) &&
+                    (asteroid->isDead() || asteroid->isDying())) {
+                    continue;
+                }
+                this->update(asteroid);
+                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
+                if (this->onScreen) {
+                    if (!(this->level->getPlayer()->isAutoPilot() || otherLock3 || enemyHit || asteroidHit ||
+                          turretMode)) {
+                        asteroidHit = false;
+                        if (asteroid->isMinable() && !this->field_0x1a8) {
+                            if (wreck && this->field_0x1c == nullptr && this->tractorAuto) {
+                                this->dockNavPtr = asteroid;
+                                this->field_0x1c = asteroid;
+                                asteroidHit = true;
+                            } else {
+                                int size = this->field_0x124;
+                                int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
+                                int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
+                                if (this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
+                                    this->screenY < top + size * 2 && !asteroid->asteroidFlag && slotCount <= 3 &&
+                                    this->field_0x1b0) {
+                                    this->asteroidSlots[slotCount++] = i;
+                                }
+                            }
+                        }
+                    }
+                    if (inCenter && asteroid->getQualityFrameIndex() == 0) {
+                        this->qualitySprite->setFrame(0);
+                        this->qualitySprite->setPosition(this->screenX, this->screenY);
+                        this->qualitySprite->draw(1.0f, 1.0f);
+                    }
+                    if (wreck) {
+                        Globals::Canvas->DrawImage2D(this->image_0x9c, this->screenX, this->screenY, 17, 68);
+                    }
+                } else if (wreck) {
+                    Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty),
+                                                 this->screenX, this->screenY, 17, 68);
+                    int x = this->screenX;
+                    int y = this->screenY;
+                    if (this->field_0x11d && !this->field_0x11f && !this->field_0x120) {
+                        x += 11;
+                    } else if (this->field_0x11e && !this->field_0x11f && !this->field_0x120) {
+                        x -= 11;
+                    } else if (this->field_0x11f) {
+                        y += 11;
+                    } else if (this->field_0x120) {
+                        y -= 11;
+                    }
+                    Globals::Canvas->DrawImage2D(this->image_0xac, x, y, 17, 68);
+                }
+                if (this->tractorMode2 && this->field_0x1c == nullptr && wreck) {
+                    this->dockNavPtr = asteroid;
+                    this->field_0x1c = asteroid;
+                    asteroidHit = true;
+                }
+            }
+
+            int best = -1;
+            int bestDistance = 999999;
+            for (int k = 0; k != 5; ++k) {
+                int index = this->asteroidSlots[k];
+                if (index < 0) {
+                    continue;
+                }
+                this->radarPos = this->asteroids->data()[index]->getPosition();
+                this->playerPos = player->getPosition();
+                this->radarPos -= this->playerPos;
+                int distance = (int) AbyssEngine::AEMath::VectorLength(this->radarPos);
+                if (distance < bestDistance) {
+                    best = index;
+                    bestDistance = distance;
+                }
+            }
+            if (best > -1) {
+                if (this->field_0x10 != this->asteroids->data()[best]) {
+                    this->asteroidLockTimer = 0;
+                }
+                this->field_0x10 = this->asteroids->data()[best];
+                asteroidHit = true;
+            }
+
+            if (!turretMode && !enemyHit) {
+                if (this->lockedAsteroid != nullptr) {
+                    if (this->lockedAsteroid->isDead()) {
+                        this->lockedAsteroid = nullptr;
+                    }
+                    if (this->lockedAsteroid == this->field_0x10) {
+                        this->lockConfirmed = 1;
+                    }
+                    this->lockedAsteroid = nullptr;
+                }
+                KIPlayer *candidate = this->field_0x10;
+                bool candidateWreck = candidate != nullptr && candidate->hasCargo &&
+                                      (candidate->isDead() || candidate->isDying());
+                if (!asteroidHit || this->level->getPlayer()->isDockingToAsteroid()) {
+                    if (*(candidateWreck ? &this->field_0x1c : &this->lockedAsteroid) == nullptr) {
+                        this->asteroidLockTimer = 0;
+                        this->field_0x10 = 0;
+                    } else {
+                        this->asteroidLockTimer = 0;
+                    }
+                } else {
+                    this->asteroidLockTimer += mode;
+                    if (this->asteroidLockTimer > this->field_0x1b8 - 200) {
+                        if (candidateWreck) {
+                            if (this->hasTractor13) {
+                                this->field_0x1c = this->field_0x10;
+                            } else {
+                                hud->hudEvent(9, this->level->getPlayer(), 0);
+                            }
+                        } else if (this->hasScanner19) {
+                            if (!this->lockConfirmed && !Globals::sound->isPlaying(26)) {
+                                Globals::sound->play(26, nullptr, nullptr, 0.0f);
+                            }
+                            this->lockedAsteroid = this->field_0x10;
+                        } else {
+                            hud->hudEvent(20, this->level->getPlayer(), 0);
+                        }
+                    }
+                    if (this->asteroidLockTimer > 500) {
+                        KIPlayer *target = this->field_0x10;
+                        if (target == nullptr || target == *(candidateWreck ? &this->field_0x1c : &this->lockedAsteroid)) {
+                            Sprite *blip = this->blipSprite;
+                            blip->setFrame(blip->getRawFrameCount() - 1);
+                        } else {
+                            int frame = (int) ((float) (this->asteroidLockTimer - 500) /
+                                               (float) (this->field_0x1b8 - 500) *
+                                               (float) (this->blipSprite->getRawFrameCount() - 1));
+                            if (frame >= this->blipSprite->getRawFrameCount() - 1) {
+                                goto music;
+                            }
+                            this->blipSprite->setFrame(frame);
+                        }
+                        this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
+                                                              (int) PlayerEgo::crosshairPos.y);
+                        this->blipSprite->draw(1.0f, 1.0f);
+                    }
+                }
+            }
+        } else if (this->level->getPlayer()->isDockingToAsteroid() && this->lockedAsteroid != nullptr) {
+            this->egoPos = this->lockedAsteroid->getPosition();
+            this->lockLabel = this->calcDistance(this->egoPos.x, this->egoPos.y, this->egoPos.z, this->cameraPos.x,
+                                                 this->cameraPos.y, this->cameraPos.z);
+            Globals::Canvas->DrawString(radarFont(), this->lockLabel,
+                                        (int) (PlayerEgo::crosshairPos.x - (float) this->halfScreenHeight),
+                                        (int) (PlayerEgo::crosshairPos.y + (float) this->halfScreenWidth), false);
+        }
+    }
+
+music:
+    int current = Globals::sound->currentMusicEvent;
+    if (current == 143) {
+        return;
+    }
+    if (this->field_0x1bc >= 1) {
+        this->field_0x54 = 1;
+        if ((uint32_t) (current - 136) > 15 || ((1 << (current - 136)) & 0xe071) == 0 ||
+            (current != 151 && alwaysEnemySeen)) {
+            Globals::sound->stop(current);
+            int music;
+            if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens() ||
+                Globals::status->getCurrentCampaignMission() == 16) {
+                music = 136;
+            } else if (this->field_0x1bc <= 2) {
+                music = alwaysEnemySeen ? 151 : bossSeen ? 149 : 140;
+            } else if (this->field_0x1bc <= 4) {
+                music = alwaysEnemySeen ? 151 : bossSeen ? 149 : 141;
+            } else {
+                music = alwaysEnemySeen ? 151 : bossSeen ? 150 : 142;
+            }
+            Globals::sound->play(music, nullptr, nullptr, 0.0f);
+        }
+    } else {
+        this->field_0x54 = 0;
+        if (Globals::status->getCurrentCampaignMission() != 145) {
+            current = Globals::sound->currentMusicEvent;
+            if (((uint32_t) (current - 127) > 25 || ((1 << (current - 127)) & 0x23c1c8f) == 0) &&
+                (uint32_t) (current - 2238) >= 5) {
+                Globals::sound->stop(current);
+                int music;
+                if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens()) {
+                    music = 145;
+                } else if (Globals::status->getCurrentCampaignMission() == 1) {
+                    music = 143;
+                } else {
+                    int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+                    if (Globals::status->getStation()->getIndex() == 108) {
+                        music = 146;
+                    } else if (Globals::status->getStation()->getIndex() == 101) {
+                        music = 147;
+                    } else if (Globals::status->inSupernovaSystem()) {
+                        if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
+                            Globals::status->getMission()->getTargetStation() ==
+                                    Globals::status->getStation()->getIndex()) {
+                            music = Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242;
+                        } else {
+                            music = 148;
+                        }
+                    } else if (Globals::status->inDeepScienceOrbit()) {
+                        music = 152;
+                    } else {
+                        music = kRaceMusic[race];
+                    }
+                }
+                Globals::sound->play(music, nullptr, nullptr, 0.0f);
+            }
+        }
+    }
+    this->field_0x1bc = 0;
 }
 
 Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
@@ -426,7 +1359,7 @@ void Radar::drawCurrentLock(Hud *) {
     Globals::Canvas->DrawImage2D(this->image_0xcc, this->lockLabelX, this->field_0x214);
     KIPlayer *asteroid = this->lockedAsteroid;
     KIPlayer *station = this->lockedStation;
-    Array<KIPlayer *> *landmarks = (Array<KIPlayer *> *) (intptr_t) this->field_0x138;
+    Array<KIPlayer *> *landmarks = this->landmarks;
     String *titleText;
     if (station == (*landmarks)[0]) {
         titleText = (*this->labelStrings)[0];

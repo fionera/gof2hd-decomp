@@ -292,8 +292,8 @@ void Level::enableFog(bool enable) {
     particleSystemMgr->enableSystemRender(field_284, enable);
 }
 
-void Level::isInAsteroidCenterRange(Vector v) {
-    collisionVolume->collide(v.x, v.y, v.z);
+int Level::isInAsteroidCenterRange(Vector v) {
+    return collisionVolume->collide(v.x, v.y, v.z);
 }
 
 Array<KIPlayer *> *Level::getAsteroids() {
