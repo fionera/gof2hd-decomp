@@ -342,7 +342,7 @@ namespace AbyssEngine {
 
         void MeshChangeShaderAnimValue(Transform *transform, float value, unsigned int mode);
 
-        float MeshSetPoint(unsigned int index, unsigned short vtx, float x, float y, float z);
+        void MeshSetPoint(unsigned int index, unsigned short vtx, float x, float y, float z);
 
         void MeshSetUv(unsigned int index, unsigned short sub, float u, float v);
 
@@ -419,7 +419,7 @@ namespace AbyssEngine {
 
         void ReleaseSpriteSystemResource(unsigned int index);
 
-        float SpriteSystemSetPosition(unsigned int index, unsigned short sub, float x, float y, float z);
+        void SpriteSystemSetPosition(unsigned int index, unsigned short sub, float x, float y, float z);
 
         void SpriteSystemAddPosition(unsigned int index, unsigned short sub, float x, float y, float z);
 

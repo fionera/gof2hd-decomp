@@ -375,7 +375,6 @@ static inline int paintcanvas_ext_gsp_getheight(void *self) { return ((PaintCanv
 
 static inline float paintcanvas_ext_gsp_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
-void paintcanvas_ext_shader_anim(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -511,9 +510,7 @@ void *paintcanvas_ext_dsc_arr_dtor(void *arr); // lint: void_ptr (external symbo
 
 void paintcanvas_ext_dsc_op_delete(void *p); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void paintcanvas_ext_ec_glEnable(unsigned int cap) { glEnable(cap); }
 
-static inline void paintcanvas_ext_ec_glScissor(int x, int y, int w, int h) { glScissor(x, y, w, h); }
 
 void paintcanvas_ext_di3_restore(unsigned int flag, void *img); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1824,8 +1821,8 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index) {
     AbyssEngine::SpriteSystemDraw(this->engine, *(const AbyssEngine::AEMath::Matrix*)ident, *(const AbyssEngine::AEMath::Matrix*)worldM, this->spriteSystems.data_[index]);
 }
 
-float PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
-                                float x, float y, float z) {
+void PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
+                               float x, float y, float z) {
     if (index < this->meshes.count) {
         PCMeshView *mesh = (PCMeshView *) this->meshes.data_[index];
         if (vtx < mesh->vertexCount) {
@@ -1833,10 +1830,8 @@ float PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
             p[0] = x;
             p[1] = y;
             p[2] = z;
-            return z;
         }
     }
-    return x;
 }
 
 static const char g_getline_empty_7c428[] = "";
@@ -2591,14 +2586,14 @@ void PaintCanvas::MeshChangeShaderAnimValue(AbyssEngine::Mesh *mesh, float value
     if (!mesh) {
         return;
     }
-    if (mode == 4) {
-        mesh->shaderAnimValue1 = value;
+    if (mode == 1) {
+        memcpy(&mesh->materialId, &value, sizeof(value));  // Mesh+0x1c holds a float anim value
     } else if (mode == 2) {
         mesh->shaderAnimValue0 = value;
-    } else if (mode == 1) {
-        memcpy(&mesh->materialId, &value, sizeof(value));
+    } else if (mode == 4) {
+        mesh->shaderAnimValue1 = value;
     }
-    return paintcanvas_ext_shader_anim(this, mesh->animation);
+    return this->MeshChangeShaderAnimValue(mesh->animation, value, mode);
 }
 
 void PaintCanvas::Resume() {
@@ -3084,8 +3079,8 @@ int PaintCanvas::TransformGetTriCount(unsigned int index) {
     return 0;
 }
 
-float PaintCanvas::SpriteSystemSetPosition(unsigned int index, unsigned short sub,
-                                           float x, float y, float z) {
+void PaintCanvas::SpriteSystemSetPosition(unsigned int index, unsigned short sub,
+                                          float x, float y, float z) {
     if (index < this->spriteSystems.count) {
         PCSpriteSystemView *s = (PCSpriteSystemView *) (this->spriteSystems.data_)[index];
         if (s) {
@@ -3094,11 +3089,9 @@ float PaintCanvas::SpriteSystemSetPosition(unsigned int index, unsigned short su
                 p[0] = x;
                 p[1] = y;
                 p[2] = z;
-                return z;
             }
         }
     }
-    return x;
 }
 
 void PaintCanvas::DrawImage2D(unsigned int index, int x, int y) {
@@ -3851,48 +3844,36 @@ void PaintCanvas::SetMatForGlow(AbyssEngine::Material *glowSource) {
 }
 
 void PaintCanvas::EnableClip(int x, int y, int w, int h) {
-    paintcanvas_ext_ec_glEnable(0xc11);
-    int sx, sy, sw, sh;
+    glEnable(0xc11);
+    // The scissor box is given in game coordinates; rotate it into the GL framebuffer orientation.
     switch (this->gameOrientation) {
-        case 0:
-            sx = x;
-            sy = y;
-            sw = w;
-            sh = h;
+        case 0: {
+            int t = x;
+            x = y;
+            y = t;
+            t = h;
+            h = w;
+            w = t;
             break;
+        }
         case 1: {
-            int dispH = this->GetHeight();
-            int dispW = this->GetWidth();
-            sx = dispH - (y + h);
-            sy = dispW - (x + w);
-            sw = h;
-            sh = w;
+            int nx = this->GetHeight() - (y + h);
+            int ny = this->GetWidth() - (x + w);
+            int t = h;
+            h = w;
+            w = t;
+            x = nx;
+            y = ny;
             break;
         }
-        case 2: {
-            int dispH = this->GetHeight();
-            sx = dispH - (y + h);
-            sy = x;
-            sw = w;
-            sh = h;
+        case 2:
+            y = this->GetHeight() - (y + h);
             break;
-        }
-        case 3: {
-            int dispW = this->GetWidth();
-            sx = dispW - (x + w);
-            sy = y;
-            sw = w;
-            sh = h;
-            break;
-        }
-        default:
-            sx = x;
-            sy = y;
-            sw = w;
-            sh = h;
+        case 3:
+            x = this->GetWidth() - (x + w);
             break;
     }
-    paintcanvas_ext_ec_glScissor(sx, sy, sw, sh);
+    glScissor(x, y, w, h);
 }
 
 void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
