@@ -540,9 +540,11 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     int iw = Globals::Canvas->GetImage2DWidth(img);
     int cols = w / iw;
     int fullW = cols * iw;
+    int remW = w - fullW;
     int ih = Globals::Canvas->GetImage2DHeight(img);
     int rows = h / ih;
     int fullH = rows * ih;
+    int remH = h - fullH;
 
     for (int r = 0; r < rows; r++) {
         int px = x;
@@ -552,8 +554,6 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
         }
     }
 
-    int remH = h - fullH;
-    int remW = w - fullW;
     if (remW > 0) {
         int py = y;
         for (int r = 0; r < rows; r++) {
@@ -658,13 +658,11 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     int cols = spanW / edgeW;
     int topY = pad + y;
     int bottomEdgeY = h - inset + topY;
-    int edgeX = cornerW + pad + x;
-    for (int i = 0; i < cols; i++) {
-        Globals::Canvas->DrawImage2D(edge, edgeX, topY);
-        Globals::Canvas->DrawImage2D(edge, edgeX, bottomEdgeY, 2);
-        edgeX += edgeW;
-    }
     int remW = spanW - cols * edgeW;
+    for (int i = 0; i < cols; i++) {
+        Globals::Canvas->DrawImage2D(edge, cornerW + pad + x + i * edgeW, topY);
+        Globals::Canvas->DrawImage2D(edge, cornerW + pad + x + i * edgeW, bottomEdgeY, 2);
+    }
     if (remW > 0) {
         Globals::Canvas->DrawRegion2D(edge, 0, 0, remW, edgeH, 0.0f, 0, 0, cols * edgeW + (pad + x + cornerW), topY);
         Globals::Canvas->DrawRegion2D(edge, 0, 0, remW, edgeH, 3.14159274f, 0, 0, spanW + (pad + x + cornerW),
@@ -674,19 +672,19 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     // Left and right edges (the edge image rotated by -90/+90 degrees).
     int spanH = h - cornerH * 2 - inset * 2;
     int rows = spanH / edgeW;
-    int rightEdgeX = w + x + pad;
     int edgeTop = pad + y + cornerH;
-    int edgeY = cornerH + pad + y;
-    for (int i = 0; i < rows; i++) {
-        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, -1.57079637f, 0, 0, pad + x, edgeW + edgeY);
-        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, 1.57079637f, 0, 0, rightEdgeX, edgeY);
-        edgeY += rows * edgeW;
-    }
     int remH = spanH - rows * edgeW;
+    for (int i = 0; i < rows; i++) {
+        // Note: the original steps by rows * edgeW per tile, not edgeW.
+        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, -1.57079637f, 0, 0, pad + x,
+                                      edgeW + cornerH + pad + y + i * rows * edgeW);
+        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, 1.57079637f, 0, 0, w + x + pad,
+                                      cornerH + pad + y + i * rows * edgeW);
+    }
     if (remH > 0) {
         Globals::Canvas->DrawRegion2D(edge, 0, 0, remH, edgeH, -1.57079637f, 0, 0, pad + x, spanH + edgeTop);
-        Globals::Canvas->DrawRegion2D(edge, 0, 0, remH, edgeH, 1.57079637f, 0, 0, rightEdgeX - inset * 2,
-                                      edgeTop + rows * edgeW);
+        Globals::Canvas->DrawRegion2D(edge, 0, 0, remH, edgeH, 1.57079637f, 0, 0, w + x + pad - inset * 2,
+                                      cornerH + pad + y + rows * edgeW);
     }
 }
 
