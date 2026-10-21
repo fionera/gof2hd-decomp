@@ -684,7 +684,7 @@ void paintcanvas_ext_dss2_mtx_assign(void *dst, void *src); // lint: void_ptr (e
 
 void paintcanvas_ext_dss2_ssdraw(void *eng, void *worldM, void *viewM, void *ss); // lint: void_ptr (external symbol; mangling must match lib)
 
-unsigned short PaintCanvas::GetImage2DWidth(unsigned int index) {
+int PaintCanvas::GetImage2DWidth(unsigned int index) {
     if (index < this->images.count) {
         PCImage2DView *img = (PCImage2DView *) (this->images.data_)[index];
         return img->width;
@@ -810,7 +810,7 @@ void PaintCanvas::DrawRectangle(int x, int y, int w, int h) {
     }
 }
 
-unsigned short PaintCanvas::GetImage2DHeight(unsigned int index) {
+int PaintCanvas::GetImage2DHeight(unsigned int index) {
     if (index < this->images.count) {
         PCImage2DView *img = (PCImage2DView *) (this->images.data_)[index];
         return img->height;

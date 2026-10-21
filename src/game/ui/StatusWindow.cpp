@@ -584,80 +584,52 @@ void StatusWindow::draw() {
 
 StatusWindow::StatusWindow() {
     this->tabButtons = new Array<TouchButton *>();
-    ArraySetLength(2, *(this->tabButtons));
-
-    Layout *layout = Globals::layout;
-    int layoutW = Globals::w;
-
-    String *t0 = (Globals::gameText)->getText(0xa8);
-    int helpOff = layout->getHelpButtonOffset();
-    TouchButton *b0 = new TouchButton(*t0, 3, layoutW - helpOff, 0, 0x12);
-    (*this->tabButtons)[1] = b0;
-
-    String *t1 = (Globals::gameText)->getText(0x241);
-    int helpOff2 = layout->getHelpButtonOffset();
-    TouchButton *b1 = new TouchButton(*t1, 3, 0, 0, 0x12);
-    int w1 = b1->getWidth();
-    b1->setPosition(((layoutW - helpOff2) - w1) + layout->field_0x38, 0, 0x12);
-    (*this->tabButtons)[0] = b1;
-
-    unsigned int defTab = Globals::iPad;
-    this->activeTab = defTab;
-    (*this->tabButtons)[defTab]->setAlwaysPressed(true);
-
+    ArraySetLength(2, *this->tabButtons);
+    (*this->tabButtons)[1] = new TouchButton(*Globals::gameText->getText(0xa8), 3,
+                                             Globals::w - Globals::layout->getHelpButtonOffset(), 0, 0x12);
+    (*this->tabButtons)[0] = new TouchButton(*Globals::gameText->getText(0x241), 3,
+                                             Globals::w - Globals::layout->getHelpButtonOffset() -
+                                             (*this->tabButtons)[1]->getWidth() + Globals::layout->field_0x38,
+                                             0, 0x12);
+    this->activeTab = Globals::iPad;
+    (*this->tabButtons)[this->activeTab]->setAlwaysPressed(true);
+    this->medalRowHeight = Globals::layout->field_0x84;
     this->detailLines = 0;
-    this->medalRowHeight = layout->field_0x84;
     this->selectedMedal = -1;
 
     this->medalButtons = new Array<TouchButton *>();
-    this->medalCount = 0x2d;
-    ArraySetLength(0x2d, *(this->medalButtons));
-
-    int *medalIds = Globals::achievements->getMedals();
-    for (int i = 0; i < this->medalCount; i++) {
-        int medal = medalIds[i];
-        String *txt = (Globals::gameText)->getText(0x5e3 + i);
-        TouchButton *btn = new TouchButton(i, medal, *txt, 0, 0, 'D');
-        (*this->medalButtons)[i] = btn;
-    }
+    this->medalCount = 45;
+    ArraySetLength(45, *this->medalButtons);
+    int *medals = Globals::achievements->getMedals();
+    for (int i = 0; i < this->medalCount; i++)
+        (*this->medalButtons)[i] = new TouchButton(i, medals[i], *Globals::gameText->getText(0x5e3 + i), 0, 0, 0x44);
 
     this->reInit();
-
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->Image2DCreate((unsigned short) 0x48e, this->standingEmblemImage);
-    canvas->Image2DCreate((unsigned short) 0x48f, this->standingBarImage);
-    canvas->Image2DCreate((unsigned short) 0x48d, this->standingFrameImage);
-    this->standingBarWidth = canvas->GetImage2DWidth(this->standingEmblemImage) / 2;
-    int img3h = canvas->GetImage2DHeight(this->standingEmblemImage);
-
-    this->scrollDamping = 0.0f;
-    this->scrollVelocityF = 0.0f;
-    this->touchStartY = 0;
-    this->isDragging = 0;
+    Globals::Canvas->Image2DCreate(0x48e, this->standingEmblemImage);
+    Globals::Canvas->Image2DCreate(0x48f, this->standingBarImage);
+    Globals::Canvas->Image2DCreate(0x48d, this->standingFrameImage);
+    this->standingBarWidth = Globals::Canvas->GetImage2DWidth(this->standingEmblemImage) / 2;
+    this->standingBarHeight = Globals::Canvas->GetImage2DHeight(this->standingEmblemImage);
     this->scrollOffset = 0;
     this->lastTouchY = 0;
     this->scrollTarget = 0;
     this->scrollVelocity = 0;
-    this->standingBarHeight = img3h;
+    this->scrollDamping = 0.0f;
+    this->scrollVelocityF = 0.0f;
+    this->touchStartY = 0;
+    this->isDragging = 0;
 
-    int *heights = new int[3];
-    this->tabHeights = heights;
-    int row = ((layout->field_0x1c * 3 + layout->field_0x2d8) +
-               layout->field_0x2c_rowHeight * 8) + this->charImageHeight +
-              layout->field_0x4 * 7;
-    heights[0] = row;
-
-    int lineH;
-    if (Globals::iPad == 0) {
-        lineH = this->medalRowHeight * (this->medalCount / 3);
-    } else {
-        lineH = (this->medalCount / 3) * this->medalRowHeight +
-                layout->field_0x1c + layout->field_0x2c_rowHeight;
-    }
-    heights[1] = lineH + 10;
-
-    this->contentHeight = heights[this->activeTab];
-    this->viewportHeight =
-    (((Globals::h - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin) -
-     layout->field_0x20_top) - layout->field_0x24;
+    this->tabHeights = new int[3];
+    Layout *layout = Globals::layout;
+    this->tabHeights[0] = layout->field_0x1c * 3 + layout->field_0x2d8 + layout->field_0x2c_rowHeight * 2 +
+                          this->charImageHeight + layout->field_0x4 +
+                          (layout->field_0x4 + layout->field_0x2c_rowHeight) * 6;
+    if (Globals::iPad != 0)
+        this->tabHeights[1] = layout->field_0x1c + layout->field_0x2c_rowHeight +
+                              this->medalCount / 3 * this->medalRowHeight + 10;
+    else
+        this->tabHeights[1] = this->medalCount / 3 * this->medalRowHeight + 10;
+    this->contentHeight = this->tabHeights[this->activeTab];
+    this->viewportHeight = Globals::h - layout->field_0x10_rightMargin - layout->field_0xc_leftMargin -
+                           layout->field_0x20_top - layout->field_0x24;
 }
