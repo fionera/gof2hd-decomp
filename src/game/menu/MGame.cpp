@@ -193,8 +193,6 @@ static float g_fcZoomMax;
 
 static float g_fcZoomMin;
 
-static int g_accelTune;
-
 struct AccelTune {
     uint8_t _pad0[0x10];
     char invertSign;
@@ -652,86 +650,59 @@ void MGame::reset() {
 }
 
 void MGame::handleAccelerometer() {
-    Engine *eng = (Engine *) this->applicationManager->GetEngine();
-    double *acc = ((Engine *) (eng))->GetAccelValue();
-
-    float yaw = (float) (acc[1] * 2.5);
-    float steer = 1.0f;
-    int *shipField = (this->timeWarpState > 0) ? &this->field_0x44 : &this->deltaTime;
-    if (yaw <= 1.0f) {
-        steer = -1.0f;
-        if (yaw < -1.0f) {
-            this->player->left(*shipField, steer * steer);
-            goto afterYaw;
-        }
-        steer = yaw;
-        if (yaw < 0.0f) {
-            this->player->left(*shipField, steer * steer);
-            goto afterYaw;
-        }
-        if (yaw == 0.0f)
-            goto afterYaw;
+    float yaw = (float) (((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[1] * 2.5);
+    if (yaw > 1.0f) {
+        yaw = 1.0f;
+    } else if (yaw < -1.0f) {
+        yaw = -1.0f;
     }
-    this->player->right(*shipField, steer * steer);
+    if (yaw < 0.0f) {
+        this->player->left(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, yaw * yaw);
+    } else if (yaw > 0.0f) {
+        this->player->right(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, yaw * yaw);
+    }
 
-afterYaw: {
-        AbyssEngine::ApplicationManager *appMgr = this->applicationManager;
-
-        double *v1 = ((Engine *) appMgr->GetEngine())->GetAccelValue();
-        double d0 = *v1;
-        AccelCtxValue *c2 =
-                (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
-
-        float base = (float) d0;
-        AccelTune *tune = (AccelTune *) (intptr_t) g_accelTune;
-        double dz = c2->comp2;
-        float ref = tune->refValue;
-        char sign = tune->invertSign;
-
-        AccelCtxValue *c3 =
-                (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
-
-        float a, b;
-        if (sign == 0) {
-            float t = base;
-            if (c3->comp2 > 0.0) {
-                t = 1.0f;
-                if (base <= 1.0f) t = (1.0f - base) + 1.0f;
+    float roll = (float) ((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[0];
+    float pitch = (float) ((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2];
+    AccelTune *tune = (AccelTune *) Globals::options;
+    float refRoll = tune->refValue;
+    float dRoll;
+    float dPitch;
+    if (tune->invertSign) {
+        if (((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2] > 0.0) {
+            if (roll > 1.0f) {
+                roll = 1.0f;
+            } else {
+                roll = (1.0f - roll) + 1.0f;
             }
-            a = ref - t;
-            b = tune->baseValue - (float) dz;
-        } else {
-            float t = base;
-            if (c3->comp2 > 0.0) {
-                t = 1.0f;
-                if (base <= 1.0f) t = (1.0f - base) + 1.0f;
-            }
-            a = t - ref;
-            b = (float) dz - tune->baseValue;
         }
-
-        float a3 = a * 3.0f;
-        float b3 = b * 3.0f;
-        float aAbs = a * -3.0f;
-        if (a3 > 0.0f) aAbs = a3;
-        float bAbs = b * -3.0f;
-        if (b3 > 0.0f) bAbs = b3;
-        float roll = (aAbs < bAbs) ? b3 : a3;
-
-        float rollMag = 1.0f;
-        shipField = (this->timeWarpState > 0) ? &this->field_0x44 : &this->deltaTime;
-        if (roll <= 1.0f) {
-            rollMag = -1.0f;
-            if (roll < -1.0f) {
-                return this->player->turnHorizontal(*shipField, rollMag * rollMag);
+        dRoll = (roll - refRoll) * 3.0f;
+        dPitch = (pitch - tune->baseValue) * 3.0f;
+    } else {
+        if (((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2] > 0.0) {
+            if (roll > 1.0f) {
+                roll = 1.0f;
+            } else {
+                roll = (1.0f - roll) + 1.0f;
             }
-            rollMag = roll;
-            if (roll < 0.0f) {
-                return this->player->turnHorizontal(*shipField, rollMag * rollMag);
-            }
-            if (roll == 0.0f) return;
         }
-        return this->player->turnHorizontal(*shipField, rollMag * rollMag);
+        dRoll = (refRoll - roll) * 3.0f;
+        dPitch = (tune->baseValue - pitch) * 3.0f;
+    }
+    float rollScaled = dRoll;
+    float pitchScaled = dPitch;
+    float rollAbs = rollScaled > 0.0f ? rollScaled : -rollScaled;
+    float pitchAbs = pitchScaled > 0.0f ? pitchScaled : -pitchScaled;
+    float tilt = pitchAbs > rollAbs ? pitchScaled : rollScaled;
+    if (tilt > 1.0f) {
+        tilt = 1.0f;
+    } else if (tilt < -1.0f) {
+        tilt = -1.0f;
+    }
+    if (tilt < 0.0f) {
+        this->player->down(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
+    } else if (tilt > 0.0f) {
+        this->player->up(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
     }
 }
 
@@ -812,27 +783,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- e
         return;
     }
     this->needsRedraw = 0;
-    if (this->touch0Id != 0 && this->touch1Id != 0) {
-    float oldLen = AbyssEngine::AEMath::VectorLength(this->freeCamFinger1 - this->freeCamFinger0);
-    float newLen = oldLen;
-    if (this->touch0Id == id) {
-        float fx = (float) x;
-        float fy = (float) y;
-        newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger0);
-        this->freeCamFinger1 = Vector{fx, fy, 0.0f};
-    } else if (this->touch1Id == id) {
-        float fx = (float) x;
-        float fy = (float) y;
-        newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger1);
-        this->freeCamFinger0 = Vector{fx, fy, 0.0f};
-    }
-    this->flCameraRoll += (newLen - oldLen) * -50.0f;
-    if (this->flCameraRoll > 20000.0f)
-        this->flCameraRoll = 20000.0f;
-    else if (this->flCameraRoll < 1500.0f)
-        this->flCameraRoll = 1500.0f;
-    this->camera->zoomTarget(this->flCameraRoll);
-    } else {
+    if (this->touch0Id == 0 || this->touch1Id == 0) {
         int dx = x - this->dragLastX;
         int dy = y - this->dragLastY;
         this->dragLastX = x;
@@ -843,10 +794,32 @@ void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- e
         this->flShakeAmpY = 1.0f;
         this->flShakeX += (float) dx;
         this->flShakeY += (float) dy;
-        if (this->touch0Id == 0)
-            this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
-        else if (this->touch1Id == 0)
-            this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
+    }
+    if (this->touch0Id == 0) {
+        this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
+    } else if (this->touch1Id == 0) {
+        this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
+    } else {
+        float oldLen = AbyssEngine::AEMath::VectorLength(this->freeCamFinger1 - this->freeCamFinger0);
+        float newLen = oldLen;
+        if (this->touch0Id == id) {
+            float fx = (float) x;
+            float fy = (float) y;
+            newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger0);
+            this->freeCamFinger1 = Vector{fx, fy, 0.0f};
+        } else if (this->touch1Id == id) {
+            float fx = (float) x;
+            float fy = (float) y;
+            newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger1);
+            this->freeCamFinger0 = Vector{fx, fy, 0.0f};
+        }
+        this->flCameraRoll += (newLen - oldLen) * -50.0f;
+        if (this->flCameraRoll > 20000.0f) {
+            this->flCameraRoll = 20000.0f;
+        } else if (this->flCameraRoll < 1500.0f) {
+            this->flCameraRoll = 1500.0f;
+        }
+        this->camera->zoomTarget(this->flCameraRoll);
     }
 }
 
