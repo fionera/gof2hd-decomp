@@ -606,13 +606,13 @@ void Engine::DrawQuad(int x, int y, int width, int height) {
 
     float *uv = (float *) mesh->texCoords;
     uv[0] = 0.0f;
-    uv[1] = 0.0f;
+    uv[1] = 1.0f;
     uv[2] = 1.0f;
-    uv[3] = 0.0f;
+    uv[3] = 1.0f;
     uv[4] = 1.0f;
-    uv[5] = 1.0f;
+    uv[5] = 0.0f;
     uv[6] = 0.0f;
-    uv[7] = 1.0f;
+    uv[7] = 0.0f;
 
     return glDrawElements(4, mesh->indexCount, 0x1403,
                           mesh->indices);
