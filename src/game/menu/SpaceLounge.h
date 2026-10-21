@@ -74,12 +74,8 @@ public:
     int buttonY0;
     int buttonX;
     int hoverAgent;
-    int field_0x8c;
-    int field_0x90;
-    int field_0x94;
-    int field_0x98;
-    int field_0x9c;
-    int field_0xa0;
+    AbyssEngine::Vector agentTopLeft;     // @0x8c: screen rect of the agent being talked to
+    AbyssEngine::Vector agentBottomRight; // @0x98
     String title;
     uint8_t initialized;
     bool postEffectWasActive; // @0xb1
