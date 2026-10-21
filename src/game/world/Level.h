@@ -284,7 +284,7 @@ public:
 
     int collide(Vector v, bool param);
 
-    void isInAsteroidCenterRange(Vector v);
+    int isInAsteroidCenterRange(Vector v);
 
     int collideStream(Vector v);
 

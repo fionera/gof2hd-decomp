@@ -2042,7 +2042,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
             }
         }
         for (unsigned i = 0; i < 4; i++) {
-            AEFile::Read((&reinterpret_cast<int32_t &>(rec->field_0x1a4))[i], fd);
+            AEFile::Read(rec->collectedBounties[i], fd);
         }
         AEFile::Read(recordFlag(rec, 0x117), fd);
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x1b8), fd);
