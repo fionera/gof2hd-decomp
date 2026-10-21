@@ -865,7 +865,7 @@ void MGame::OnUpdate() {
     int mouseX = Globals::mouseDeltaX;
     int mouseY = Globals::mouseDeltaY;
     if (this->cameraMode == 3 && Globals::mouseCursorActivated && !Globals::is_hacking_visible &&
-        (mouseX != 0 || mouseY != 0)) {
+        (mouseX | mouseY) != 0) {
         int lastX = this->lastMouseX;
         int lastY = this->lastMouseY;
         freeCamTouchBegin(400, 400, keyboardTouchId());
@@ -1050,11 +1050,11 @@ void MGame::OnUpdate() {
                 text += String("\n") + *Globals::gameText->getText(286);
             }
             this->choiceWindow->set(text, true);
-            this->pauseOpen = 1;
             this->needsRedraw = 1;
+            this->pauseOpen = 1;
             pauseSounds();
-            this->choiceWindowOpen = 1;
             this->_bca = 1;
+            this->choiceWindowOpen = 1;
         }
     }
 
@@ -1625,10 +1625,10 @@ void MGame::OnUpdate() {
         static_cast<Engine *>(this->applicationManager->GetEngine())->SetPostEffect(0x1400002, true);
         float boost = this->player->getBoostPercentage();
         static_cast<Engine *>(this->applicationManager->GetEngine())->blurStrength = boost > 0.0f ? boost : 0.0f;
-        Vector screen;
+        Vector screen = {0.0f, 0.0f, 0.0f};
         Globals::Canvas->GetScreenPosition(this->player->getPosition(), screen);
-        screen[0] /= (float) static_cast<Engine *>(this->applicationManager->GetEngine())->GetDisplayWidth();
-        screen[1] = 1.0f - screen[1] / (float) static_cast<Engine *>(this->applicationManager->GetEngine())->GetDisplayHeight();
+        screen[0] /= (float) (int) static_cast<Engine *>(this->applicationManager->GetEngine())->GetDisplayWidth();
+        screen[1] = 1.0f - screen[1] / (float) (int) static_cast<Engine *>(this->applicationManager->GetEngine())->GetDisplayHeight();
         static_cast<Engine *>(this->applicationManager->GetEngine())->field_0x3cc = screen;
         float fov = 1.22f + this->player->getBoostPercentage() * 0.35f;
         reinterpret_cast<float &>(this->field_0x70) = fov;
@@ -1645,9 +1645,10 @@ void MGame::OnUpdate() {
         if (this->elapsedTime > 3000) {
             this->loadingTime += this->deltaTime;
         }
-    } else if (!this->player->isDead() && !Globals::status->getMission()->hasFailed() && successCheck()) {
-        return;
     } else {
+        if (!this->player->isDead() && !Globals::status->getMission()->hasFailed() && successCheck()) {
+            return;
+        }
         gameOverCheck();
     }
 
