@@ -84,15 +84,10 @@ void Sparks::update(int step) {
                                                  (int16_t) (this->lifetime - (this->elapsed << 1)));
     }
 
-    if (this->kind == 1) {
-        if (this->elapsed <= 500 && this->elapsed * 2 <= this->lifetime)
-            return;
-    } else if (this->elapsed <= 500) {
-        return;
+    if ((this->kind == 1 && this->elapsed * 2 > this->lifetime) || this->elapsed > 500) {
+        this->elapsed = 0;
+        this->active = 0;
     }
-
-    this->elapsed = 0;
-    this->active = 0;
 }
 
 static PaintCanvas **g_Sparks_canvas_explode_rocket = &Globals::Canvas;

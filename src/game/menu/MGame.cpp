@@ -1273,8 +1273,10 @@ void MGame::startChargingJumpDrive() {
         if (this->choiceWindow == nullptr) {
             this->choiceWindow = new ChoiceWindow();
         }
-        int textId = Globals::status->hardCoreMode() ? 579 : 580;
-        this->choiceWindow->set(*Globals::gameText->getText(textId));
+        if (Globals::status->hardCoreMode())
+            this->choiceWindow->set(*Globals::gameText->getText(579));
+        else
+            this->choiceWindow->set(*Globals::gameText->getText(580));
         this->choiceWindowOpen = 1;
         this->pauseOpen = 1;
         this->pauseSounds();

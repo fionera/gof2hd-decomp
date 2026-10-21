@@ -243,18 +243,12 @@ void ParticleSystemMesh::updateUsualEdges(int id, int delta) {
     int start = (int) this->idOffset;
     int stride = (int) this->stride;
     Vector move = {0.0f, 0.0f, 0.0f};
-    const Vector *velocity;
-    float scale;
-    if ((int) (this->flags << 12) < 0) {
-        velocity = &this->emitterVelocity;
-        scale = (float) delta * 0.001f * this->particleVelocities[id].y;
-    } else {
-        velocity = &this->particleVelocities[id];
-        scale = (float) delta * 0.001f;
-    }
-    move = *velocity * scale;
+    if ((int) (this->flags << 12) < 0)
+        move = this->emitterVelocity * ((float) delta * 0.001f * this->particleVelocities[id].y);
+    else
+        move = this->particleVelocities[id] * ((float) delta * 0.001f);
 
-    int point = start + stride * id * 4;
+    int point = start + id * 4 * stride;
     for (int i = 0; i < (int) this->stride * 4; i++)
         this->canvas->MeshTranslatePoint(this->resource, (uint16_t) (point + i), move.x, move.y, move.z);
 }
@@ -342,25 +336,16 @@ void ParticleSystemMesh::emitTrail(int delta) {
 
     if (def.colorFlag > 0.0f) {
         int saved = this->currentParticle;
-        bool finish = this->particleAges[getPrevId(this->currentParticle)] == -1;
+        int prev = getPrevId(this->currentParticle);
+        bool finish = this->particleAges[prev] == -1;
         pos -= def.colorFlag * 0.5f * dir;
+        float u0 = def.uvU0;
+        float v0 = def.uvV0;
+        float u1 = def.uvU1;
+        float v1 = v0 + (def.uvV1 - v0) * 0.05f;
         this->currentParticle = this->maxParticles;
-        Vector zero;
-        zero.x = 0.0f;
-        zero.y = 0.0f;
-        zero.z = 0.0f;
-        setParticle(pos,
-                    def.lifeBase,
-                    def.color0,
-                    def.uvU0,
-                    def.uvV0,
-                    def.uvU1,
-                    def.uvV0
-                        + (def.uvV1
-                           - def.uvV0) * 0.05f,
-                    true, 0.0f,
-                    def.colorFlag * 0.5f,
-                    zero, finish);
+        setParticle(pos, def.lifeBase, def.color0, u0, v0, u1, v1, true, 0.0f,
+                    def.colorFlag * 0.5f, Vector(), finish);
         this->currentParticle = saved;
         pos -= def.colorFlag * 0.5f * dir;
     }
@@ -392,10 +377,9 @@ void ParticleSystemMesh::emitTrail(int delta) {
                         * (def.uvV1
                            - def.uvV0);
             int base = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
-            for (int i = 0; i < (int) this->stride; i++) {
+            for (int i = 0; i < (int) this->stride; i++, base += 4) {
                 this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 2), u0, v);
                 this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 3), u1, v);
-                base += 4;
             }
         }
     }
@@ -409,7 +393,8 @@ void ParticleSystemMesh::emitTrail(int delta) {
 
     if (this->newSectionStarted != 0) {
         this->frameCounter = 0;
-        int prevAge = this->particleAges[getPrevId(this->currentParticle)];
+        int prev = getPrevId(this->currentParticle);
+        int prevAge = this->particleAges[prev];
         float s = (float) def.posBase;
         finishCurrentTrailParticle((ParticleSet) set, this->currentParticle, rightScaled * s, up * s);
         incId();
@@ -421,11 +406,7 @@ void ParticleSystemMesh::emitTrail(int delta) {
             setQuadEdge(pos, point, edgeRight);
             setQuadEdge(pos, point + 2, edgeRight);
             vel[0] = rightScaled * s;
-            Vector zero;
-            zero.x = 0.0f;
-            zero.y = 0.0f;
-            zero.z = 0.0f;
-            vel[1] = zero;
+            vel[1] = Vector();
             point += this->wide == 0 ? 4 : 8;
             vel += 2;
             flags = this->flags;
@@ -434,11 +415,7 @@ void ParticleSystemMesh::emitTrail(int delta) {
             setQuadEdge(pos, point, edgeUp);
             setQuadEdge(pos, point + 2, edgeUp);
             vel[0] = up * s;
-            Vector zero;
-            zero.x = 0.0f;
-            zero.y = 0.0f;
-            zero.z = 0.0f;
-            vel[1] = zero;
+            vel[1] = Vector();
         }
         *(Vector *) &this->field_0x80 = pos;
 
@@ -450,7 +427,7 @@ void ParticleSystemMesh::emitTrail(int delta) {
         }
 
         int base = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
-        for (int i = 0; i < (int) this->stride; i++) {
+        for (int i = 0; i < (int) this->stride; i++, base += 4) {
             this->canvas->MeshSetColor(this->resource, (uint16_t) base, backColor);
             this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 1), backColor);
             this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 2), frontColor);
@@ -467,7 +444,6 @@ void ParticleSystemMesh::emitTrail(int delta) {
             this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 3),
                                     def.uvU1,
                                     def.uvV1);
-            base += 4;
         }
 
         this->particleAges[this->currentParticle] = -2;
@@ -496,8 +472,10 @@ void ParticleSystemMesh::updateSingle(int id, float delta) {
     updateSingleColor(id);
 
     if (this->particleAges[id] > def.lifetime) {
-        int point = (int) this->idOffset + 4 * ((int) this->stride * id);
+        int stride = (int) this->stride;
+        int start = (int) this->idOffset;
         this->particleAges[id] = -1;
+        int point = start + stride * id * 4;
         for (int i = 0; i < (int) this->stride * 4; i++)
             this->canvas->MeshSetPoint(this->resource, (uint16_t) (point + i), 0.0f, 0.0f, 0.0f);
     }
