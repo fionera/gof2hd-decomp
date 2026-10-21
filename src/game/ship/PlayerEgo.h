@@ -85,11 +85,10 @@ public:
     uint8_t _pad_0xc0[4]; // original field_0xc0 region (1-byte field + 3 pad)
     uint8_t freeLookMode;
     int boostSpeed;
-    int field_0xcc;
-    int field_0xd0;
-    int boostDelay; // relocated from its drifted slot; real offset 0xd4 (used in PlayerEgo.cpp)
-    void *boostSoundId; // lint: void_ptr  opaque FMOD sound-event id stored in a pointer-width slot (used only as (int)(intptr_t)); no typed pointee
-    // lint: void_ptr  opaque FMOD sound-event id stored in a pointer-width slot (used only as (int)(intptr_t)); no typed pointee
+    int boostTime;
+    int boostDelay;
+    int boostSoundId;
+    int field_0xd8;
     AEGeometry *rollGeometry;
     float rotX;
     float rotY;
@@ -109,13 +108,11 @@ public:
     int currentSecondaryWeaponIndex;
     float yawAccumulator;
     float pitchAccumulator;
-    float yawRate;
-    float pitchRate;
-    // Ghidra: 4 fields (0x120/0x124/0x128/0x12c) precede lastHP(=combinedHp)@0x130; ours lacked them.
-    int field_0x120;
-    int field_0x124;
-    int field_0x128;
-    int field_0x12c;
+    // 64-bit tick counters (update() adds the frame time with adc); they give the class its 8-byte
+    // alignment (sizeof == 0x3a0, the original operator new size).
+    int64_t shieldRegenTick;
+    int64_t repairHPTick;
+    int64_t repairArmorTick;
     int lastHP;
     int shakeIntensity;
     int boostTimer;
@@ -125,7 +122,7 @@ public:
     uint8_t field_0x145;
     uint8_t field_0x146;
     AbyssEngine::AEMath::Vector dockOffsetVec;
-    int handling;
+    float handling;
     uint8_t autoPilot;
     int autoPilotTarget;
     uint8_t goingToWaypointFlag;
@@ -368,7 +365,7 @@ public:
 
     int getHackingGameDockIndex();
 
-    int getHandling();
+    float getHandling();
 
     int getHitpoints();
 
@@ -622,9 +619,9 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x80) == 0x80, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0xac) == 0xac, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0xb0) == 0xb0, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0xb2) == 0xb2, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0xcc) == 0xcc, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0xd0) == 0xd0, "");
-static_assert(__builtin_offsetof(PlayerEgo, boostDelay) == 0xd4, "");
+static_assert(__builtin_offsetof(PlayerEgo, boostTime) == 0xcc, "");
+static_assert(__builtin_offsetof(PlayerEgo, boostDelay) == 0xd0, "");
+static_assert(__builtin_offsetof(PlayerEgo, boostSoundId) == 0xd4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x145) == 0x145, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x146) == 0x146, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x1a1) == 0x1a1, "");
@@ -648,6 +645,7 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x394) == 0x394, "");
 static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x44, "");
 static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x2ac, "");
 static_assert(__builtin_offsetof(PlayerEgo, volatileGoods) == 0x398, "");
+static_assert(sizeof(PlayerEgo) == 0x3a0, "");
 // (sizeof==924 assert dropped: it was host-clang-calibrated and rounds differently under the NDK
 // ARM32 EABI; the per-field offset asserts above are the authoritative layout locks.)
 #endif

@@ -293,12 +293,10 @@ void PlayerEgo::boost() {
     if (this->field_0x146 == 0) return;
     if (this->rocketControlGun != 0) return;
     if (this->boostTimer < 0) return;
-    float v = (float) this->boostSpeed;
-    this->boostTimer = 0;
     this->boostingFlag = 1;
-    FModSound *snd = *(FModSound **) g_boost_fmod;
-    ((float &) this->speed) = v;
-    ((FModSound *) (*(FModSound **) snd))->play((int) (intptr_t) this->boostSoundId, (Vector *) 0, (Vector *) 0, v);
+    this->boostTimer = 0;
+    ((float &) this->speed) = (float) this->boostSpeed;
+    Globals::sound->play(this->boostSoundId, nullptr, nullptr, 0.0f);
 }
 
 float PlayerEgo::getDriveChargeRate() {
@@ -338,7 +336,7 @@ int PlayerEgo::shouldSwitchToFreeLookCam() {
     return 1;
 }
 
-int PlayerEgo::getHandling() {
+float PlayerEgo::getHandling() {
     PlayerEgo *self = this;
     return this->handling;
 }
@@ -362,8 +360,8 @@ void PlayerEgo::forceBoost() {
     this->boostTimer = 0;
     this->boostingFlag = 1;
     this->speed = 0x41000000;
-    this->field_0xcc = 0x2710;
-    this->field_0xd0 = 0;
+    this->boostTime = 0x2710;
+    this->boostDelay = 0;
 }
 
 int PlayerEgo::isDead() {
@@ -541,9 +539,12 @@ int PlayerEgo::shouldSwitchToStandardCam() {
 }
 
 void PlayerEgo::resetMovement() {
-    this->pitchAccumD = 0;
     this->rollAccum = 0;
+    this->field_0x26c = 0;
     this->yawAccumD = 0;
+    this->field_0x274 = 0;
+    this->pitchAccumD = 0;
+    this->yawAccumF = 0;
 }
 
 bool PlayerEgo::isHacking() {
@@ -552,7 +553,7 @@ bool PlayerEgo::isHacking() {
 }
 
 void PlayerEgo::setPosition(Vector v) {
-    this->geometry->setPosition(v);
+    setPosition(v.x, v.y, v.z);
 }
 
 void PlayerEgo::resetChargingDrive() {
@@ -711,7 +712,7 @@ bool PlayerEgo::explosionEnded() {
 }
 
 float PlayerEgo::getBoostPercentage() {
-    float den = (float) (this->field_0xcc / 6);
+    float den = (float) (this->boostTime / 6);
     float d = (float) this->boostTimer / den;
     float r;
     if (d < 1.0f) {
@@ -745,7 +746,7 @@ bool PlayerEgo::isDockingToAsteroid() {
 }
 
 float PlayerEgo::getBoostRate() {
-    float d = (float) this->boostTimer / (float) this->field_0xd0;
+    float d = (float) this->boostTimer / (float) this->boostDelay;
     float r = d + 1.0f;
     if (0.0f < d) r = 1.0f;
     return r;
@@ -771,10 +772,10 @@ unsigned char PlayerEgo::isInTurretMode() {
 
 void PlayerEgo::startJumpDrive() {
     if (this->chargingDrive != 0) return;
-    ((FModSound *) (*(FModSound **) g_FMod_singleton))->play(0x21, (Vector *) 0, (Vector *) 0, 0);
+    Globals::sound->play(0x21, nullptr, nullptr, 0.0f);
     ((Hud *) (this->hud))->hudEvent(0x19, this, 0);
-    this->driveCharge = 0;
     this->chargingDrive = 1;
+    this->driveCharge = 0;
 }
 
 bool PlayerEgo::isInRocketControl() {
@@ -819,7 +820,7 @@ bool PlayerEgo::isDockedToMiningPlant() {
 
 void PlayerEgo::setCurrentSecondaryWeaponIndex(int idx) {
     this->currentSecondaryWeaponIndex = idx;
-    (int &) g_PlayerEgo_singleton->gunBaseGeo = idx;
+    Globals::status->field_f4 = idx;
 }
 
 void PlayerEgo::removeRoute() {
@@ -979,9 +980,8 @@ bool PlayerEgo::hasCloak() {
 }
 
 int PlayerEgo::isBoostRefreshed() {
-    if (this->boostingFlag != 0) return 0;
-    if (this->field_0x146 == 0) return 0;
-    if (this->boostTimer > -1) return 1;
+    if (this->boostingFlag == 0 && this->field_0x146 != 0 && this->boostTimer >= 0)
+        return 1;
     return 0;
 }
 
@@ -1202,13 +1202,12 @@ void PlayerEgo::shake(int amount) {
 }
 
 void PlayerEgo::setRotation(float rx, float ry, float rz) {
-    char local[60];
     this->rotateX = rx;
     this->rotateY = ry;
     this->rotateZ = rz;
-    PaintCanvas *t = *(PaintCanvas **) g_setRotation_transform;
-    AbyssEngine::AEMath::Matrix *m = (AbyssEngine::AEMath::Matrix *) TransformGetLocal(t, this->field_0x4->transform);
-    MatrixSetRotation(local, m, this->rotateX, this->rotateY, this->rotateZ);
+    AbyssEngine::AEMath::Matrix &m =
+        *(AbyssEngine::AEMath::Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
+    AbyssEngine::AEMath::MatrixSetRotation(m, this->rotateX, this->rotateY, this->rotateZ);
 }
 
 void PlayerEgo::StopEngineSound() {
@@ -1275,11 +1274,11 @@ float PlayerEgo::down(int frameTime, float delta) {
     this->pitchAccumDir = -1;
     float rate;
     if (this->hardCoreMode == 0) {
-        rate = ((float &) this->handling);
+        rate = this->handling;
     } else {
         float cur = (float) ((Ship *) (PE_status()->getShip()))->getCurrentLoad();
         float max = (float) ((Ship *) (PE_status()->getShip()))->getMaxLoad();
-        rate = ((float &) this->handling) * (1.0f - cur / max) * g_PE_d_loadK + ((float &) this->handling) *
+        rate = this->handling * (1.0f - cur / max) * g_PE_d_loadK + this->handling *
                g_PE_d_loadB;
     }
 
@@ -1536,11 +1535,11 @@ float PlayerEgo::right(int frameTime, float delta) {
     this->yawAccumDir = -1;
     float rate;
     if (this->hardCoreMode == 0) {
-        rate = ((float &) this->handling);
+        rate = this->handling;
     } else {
         float cur = (float) ((Ship *) (PE_status()->getShip()))->getCurrentLoad();
         float max = (float) ((Ship *) (PE_status()->getShip()))->getMaxLoad();
-        rate = ((float &) this->handling) * (1.0f - cur / max) * g_PE_r_loadK + ((float &) this->handling) *
+        rate = this->handling * (1.0f - cur / max) * g_PE_r_loadK + this->handling *
                g_PE_r_loadB;
     }
 
@@ -1596,11 +1595,11 @@ float PlayerEgo::left(int frameTime, float delta) {
     this->yawAccumDir = 1;
     float rate;
     if (this->hardCoreMode == 0) {
-        rate = ((float &) this->handling);
+        rate = this->handling;
     } else {
         float cur = (float) ((Ship *) (PE_status()->getShip()))->getCurrentLoad();
         float max = (float) ((Ship *) (PE_status()->getShip()))->getMaxLoad();
-        rate = ((float &) this->handling) * (1.0f - cur / max) * g_PE_l_loadK + ((float &) this->handling) *
+        rate = this->handling * (1.0f - cur / max) * g_PE_l_loadK + this->handling *
                g_PE_l_loadB;
     }
 
@@ -1669,20 +1668,14 @@ PlayerEgo::~PlayerEgo() noexcept {
 }
 
 void PlayerEgo::throttleChanged() {
-    int v;
     if (this->throttleStarted == 0) {
+        this->throttle = 0;
         this->throttleStarted = 1;
-        v = 0;
-    } else {
-        v = this->throttle;
-        if ((unsigned) (v - 0x1f5) < 999) {
-            v = 500;
-        } else {
-            if (v < 0x5dc) return;
-            v = 2000 - v;
-        }
+    } else if (this->throttle > 500 && this->throttle < 1500) {
+        this->throttle = 500;
+    } else if (this->throttle >= 1500) {
+        this->throttle = 2000 - this->throttle;
     }
-    this->throttle = v;
 }
 
 PlayerEgo::PlayerEgo(Player *player) {
@@ -1924,7 +1917,7 @@ void PlayerEgo::roll(int amount) {
 
 void PlayerEgo::setTargetFollowCamera(TargetFollowCamera *cam) {
     this->targetFollowCamera = (int) (intptr_t) cam;
-    cam->resetShipHandling();
+    cam->setShipHandling(this->handling);
 }
 
 void PlayerEgo::calcCollision(Array<KIPlayer *> *candidates) {
@@ -1977,8 +1970,8 @@ void PlayerEgo::dockToPlanet() {
     this->boostingFlag = 1;
     this->boostTimer = 0;
     this->speed = 0x41000000;
-    this->field_0xcc = 10000;
-    this->field_0xd0 = 0;
+    this->boostTime = 10000;
+    this->boostDelay = 0;
     this->collide = 0;
     ((Player *) this->player)->resetGunDelay(0);
     float f = 1.0f;
@@ -2030,11 +2023,11 @@ float PlayerEgo::up(int frameTime, float delta) {
     this->pitchAccumDir = 1;
     float rate;
     if (this->hardCoreMode == 0) {
-        rate = ((float &) this->handling);
+        rate = this->handling;
     } else {
         float cur = (float) ((Ship *) (PE_status()->getShip()))->getCurrentLoad();
         float max = (float) ((Ship *) (PE_status()->getShip()))->getMaxLoad();
-        rate = ((float &) this->handling) * (1.0f - cur / max) * g_PE_u_loadK + ((float &) this->handling) *
+        rate = this->handling * (1.0f - cur / max) * g_PE_u_loadK + this->handling *
                g_PE_u_loadB;
     }
 
@@ -2166,14 +2159,12 @@ void PlayerEgo::setTurretMode(bool enable) {
 }
 
 void PlayerEgo::rotate(float rx, float ry, float rz) {
-    char local[60];
     this->rotateX = this->rotateX + rx;
     this->rotateY = this->rotateY + ry;
     this->rotateZ = this->rotateZ + rz;
-    int ido = this->field_0x4->transform;
-    PaintCanvas *t = *(PaintCanvas **) g_rotate_transform;
-    AbyssEngine::AEMath::Matrix *m = (AbyssEngine::AEMath::Matrix *) TransformGetLocal(t, ido);
-    MatrixSetRotation(local, m, this->rotateX, this->rotateY, this->rotateZ);
+    AbyssEngine::AEMath::Matrix &m =
+        *(AbyssEngine::AEMath::Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
+    AbyssEngine::AEMath::MatrixSetRotation(m, this->rotateX, this->rotateY, this->rotateZ);
 }
 
 static inline float fmin_(float a, float b) { return a < b ? a : b; }
@@ -2186,10 +2177,10 @@ void PlayerEgo::strafe(int /*dir*/, bool positive) {
     if (this->hardCoreMode != 0) {
         float cur = (float) ((Ship *) (PE_status()->getShip()))->getCurrentLoad();
         float max = (float) ((Ship *) (PE_status()->getShip()))->getMaxLoad();
-        float rate = ((float &) this->handling);
+        float rate = this->handling;
         base = rate * (1.0f - cur / max) * g_PE_strafeLoadK + rate * g_PE_strafeLoadB;
     } else {
-        base = ((float &) this->handling);
+        base = this->handling;
     }
 
     float sign = positive ? 1.0f : -1.0f;
@@ -2385,7 +2376,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     ((PlayerEgo *) (this))->getPosition();
     ((int &) this->dockOffsetVec.x) = *(int *) &pos[0];
     ((int &) this->dockOffsetVec.y) = *(int *) &pos[1];
-    this->boostDelay = *(int *) &pos[2];
+    this->boostSoundId = *(int *) &pos[2];
 
     PE_upd_subsystems(this, dt, radar, hud, radio, script);
 
@@ -2765,14 +2756,13 @@ void PlayerEgo::handleShip(int dt) {
 }
 
 void PlayerEgo::stopBoost() {
+    ((float &) this->speed) = 2.0f;
     this->boostingFlag = 0;
-    FModSound *r4 = *(FModSound **) g_stopBoost_obj;
-    this->speed = 0x40000000;
-    ((FModSound *) (*(FModSound **) r4))->stop(0x27);
-    ((FModSound *) (*(FModSound **) r4))->stop(0x26);
-    ((FModSound *) (*(FModSound **) r4))->stop(0x29);
-    ((FModSound *) (*(FModSound **) r4))->stop(0x28);
-    ((FModSound *) (*(FModSound **) r4))->stop(0x44e);
+    Globals::sound->stop(0x27);
+    Globals::sound->stop(0x26);
+    Globals::sound->stop(0x29);
+    Globals::sound->stop(0x28);
+    Globals::sound->stop(0x44e);
 }
 
 void PlayerEgo::setShip(int race, int group) {
