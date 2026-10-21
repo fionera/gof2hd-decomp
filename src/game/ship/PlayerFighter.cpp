@@ -2074,36 +2074,23 @@ normal:
 static const float gPush_div = 5000.0f;
 
 void PlayerFighter::push(int dt) {
-
-    if (0 < this->pushTimer()) {
-        int remaining = this->pushTimer() - dt;
-        float fr = VectorSignedToFloat(remaining, 0);
-        float ftotal = VectorSignedToFloat(this->pushDuration(), 0);
-        this->pushTimer() = remaining;
-        float frac = fr / ftotal;
+    if (this->pushTimer() > 0) {
+        this->pushTimer() -= dt;
+        float frac = (float) this->pushTimer() / (float) this->pushDuration();
 
         Matrix rot;
-        AbyssEngine::AEMath::MatrixSetRotation(rot, frac * this->pushImpulse().z, 0.0f,
-                                               frac * this->pushImpulse().y);
-
+        AbyssEngine::AEMath::MatrixSetRotation(rot, frac * this->pushImpulse().x, frac * this->pushImpulse().y,
+                                               frac * this->pushImpulse().z);
         if (this->deltaTime > 0) {
             AEGeometry *geom = (AEGeometry *) (intptr_t) this->geometry();
-            AbyssEngine::AEMath::Matrix *m = &geom->getMatrix();
-            Matrix result = *m * rot;
-
-            geom->setMatrix(result);
+            geom->setMatrix(geom->getMatrix() * rot);
         }
         float speed = (float) this->deltaTime;
         AEGeometry *geom = (AEGeometry *) (intptr_t) this->geometry();
-        float ftotal2 = VectorSignedToFloat(this->pushDuration(), 0);
-
-        Vector a = this->pushNormal() * speed;
-        Vector b = a * this->currentSpeed;
-        Vector c = b * ((2.0f - frac) * 3.0f * (ftotal2 / gPush_div));
-        geom->translate(c);
+        float duration = (float) this->pushDuration();
+        geom->translate(this->pushNormal() * speed * this->currentSpeed *
+                        ((2.0f - frac) * 3.0f * (duration / gPush_div)));
     }
-
-    return;
 }
 
 
