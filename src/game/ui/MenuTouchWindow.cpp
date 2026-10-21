@@ -2136,9 +2136,9 @@ void MenuTouchWindow::update(int dt) {
                               Globals::layout->field_0x24;
         this->contentHeightCache = Globals::Canvas->GetImage2DHeight(this->heapBufA[0]);
         this->menuState = 15;
+        this->pageHeight = (this->contentHeightCache + Globals::layout->field_0x2c_rowHeight) * 5;
         this->messageShowing = 0;
         this->dlcMessageShowing = 0;
-        this->pageHeight = (this->contentHeightCache + Globals::layout->field_0x2c_rowHeight) * 5;
         appData->purchaseReadyFlag = 0;
         Globals::options[59] = 1;
         Globals::recordHandler->saveOptions();
