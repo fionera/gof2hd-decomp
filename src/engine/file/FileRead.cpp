@@ -607,7 +607,11 @@ Array<int32_t> *FileRead::loadWreckCollision(int32_t id) {
 
     int32_t key = 0;
     int32_t count = 0;
-    for (uint32_t i = 0; i < 6; i++) {
+    for (uint32_t i = 0;; i++) {
+        if (i >= 6) {
+            AEFile::Close(handle);
+            return nullptr;
+        }
         AEFile::Read(key, handle);
         AEFile::Read(count, handle);
         count++;
@@ -625,8 +629,6 @@ Array<int32_t> *FileRead::loadWreckCollision(int32_t id) {
         }
         AEFile::Skip(count << 2, handle);
     }
-    AEFile::Close(handle);
-    return nullptr;
 }
 
 Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
@@ -639,7 +641,11 @@ Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
 
     int32_t key = 0;
     int32_t count = 0;
-    for (uint32_t i = 0; i < 0x88; i++) {
+    for (uint32_t i = 0;; i++) {
+        if (i >= 0x88) {
+            AEFile::Close(handle);
+            return nullptr;
+        }
         AEFile::Read(key, handle);
         AEFile::Read(count, handle);
         count++;
@@ -657,8 +663,6 @@ Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
         }
         AEFile::Skip(count << 2, handle);
     }
-    AEFile::Close(handle);
-    return nullptr;
 }
 
 Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
@@ -671,7 +675,11 @@ Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
 
     int32_t key = 0;
     int32_t count = 0;
-    for (uint32_t i = 0; i < 7; i++) {
+    for (uint32_t i = 0;; i++) {
+        if (i >= 7) {
+            AEFile::Close(handle);
+            return nullptr;
+        }
         AEFile::Read(key, handle);
         AEFile::Read(count, handle);
         count++;
@@ -689,8 +697,6 @@ Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
         }
         AEFile::Skip(count << 2, handle);
     }
-    AEFile::Close(handle);
-    return nullptr;
 }
 
 Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
