@@ -62,7 +62,7 @@ void FloatVectorMax(void *out, float a, float b, int c, int d); // lint: void_pt
 
 void Player::pitchAllPrimaryGuns(float pitch) {
     if (this->guns != 0) {
-        Array<Gun *> *prim = this->guns->data()[0];
+        Array<Gun *> *prim = (*this->guns)[0];
         if (prim != 0) {
             int n = prim->size();
             for (int i = 0; n != i; i++) {
@@ -1143,7 +1143,7 @@ LAB_3488: {
                     KIPlayer *ki3 = self->kiPlayer;
 
                     String *txt = (Globals::gameText)->getText(missionId);
-                    int cmp = (&ki3->name)->Compare_str(txt);
+                    int cmp = (&ki3->name)->Compare(*txt);
                     if (missionId == 0xb3 && cmp == 0) {
                         ((Mission *) (intptr_t) mission)->setStatusValue(
                             ((Mission *) (intptr_t) mission)->getStatusValue() + 1);

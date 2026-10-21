@@ -222,8 +222,8 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
 
     GameText *gameText = Globals::gameText;
     bool defaultButtons = false;
-    if (gameText->getText(0x86)->Compare_str((String *) &left) == 0)
-        defaultButtons = gameText->getText(0x87)->Compare_str((String *) &right) == 0;
+    if (gameText->getText(0x86)->Compare(left) == 0)
+        defaultButtons = gameText->getText(0x87)->Compare(right) == 0;
 
     if (width == -1)
         width = (Globals::layout)->field_0x264;

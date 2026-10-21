@@ -833,27 +833,35 @@ void MenuTouchWindow::startValkyrie() {
     (*statusHolder)->setSystemVisibility(0x19, true);
     (*statusHolder)->setCredits(0);
 
-    OptionsRecord *opt = (OptionsRecord *) Globals::hints;
-    Achievements *ach = Globals::achievements;
     OptionsRecord *optB = (OptionsRecord *) Globals::options;
-    ((Status *) *statusHolder)->field_84 = 0x1a0a;
-    opt->flag_word_0x8 = 0x101;
-    reinterpret_cast<uint16_t &>(opt->flag_word_0xd[0]) = 0x101;
-    opt->flag_word_0x1c = 0x101;
-    opt->flag_dword_0x20 = 0x1010101;
-    opt->flag_0x17 = 1;
-    opt->flag_0xa = 1;
-    opt->flag_0x15 = 1;
-    opt->flag_0x13 = 1;
-    opt->flag_0xf = 1;
-    opt->flag_0x1e = 1;
-    opt->flag_0x24 = 1;
-    opt->flag_0x36 = 0;
-    reinterpret_cast<int32_t &>(opt->field_0x32[0]) = 0;
-    opt->flag_0x38 = 1;
+    (*statusHolder)->field_84 = 0x1a0a;
+    unsigned char *hints = Globals::hints;
+    hints[8] = 1;
+    hints[9] = 1;
+    hints[13] = 1;
+    hints[14] = 1;
+    hints[28] = 1;
+    hints[29] = 1;
+    hints[32] = 1;
+    hints[33] = 1;
+    hints[34] = 1;
+    hints[35] = 1;
+    hints[23] = 1;
+    hints[10] = 1;
+    hints[21] = 1;
+    hints[19] = 1;
+    hints[15] = 1;
+    hints[30] = 1;
+    hints[36] = 1;
+    hints[54] = 0;
+    hints[50] = 0;
+    hints[51] = 0;
+    hints[52] = 0;
+    hints[53] = 0;
+    hints[56] = 1;
     optB->flag_0x34 = 1;
 
-    ach->setMedal(0x17, 3);
+    Globals::achievements->setMedal(0x17, 3);
     Globals::achievements->setMedal(0x1e, 1);
     Globals::recordHandler->saveOptions();
     (*statusHolder)->setKills(0xc5);
@@ -1130,71 +1138,49 @@ int MenuTouchWindow::loadGame(int slot) {
     RecordHandler *rh = new RecordHandler();
     GameRecord *rec = rh->readRecord(slot);
 
-    if (rec == 0) {
-        Globals::status->resetGame();
-        ChoiceWindow *cw = this->choiceWindow;
-        String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x64);
-        cw->set(*s, false);
-        this->loadFailedDialogShowing = 1;
-        this->messageShowing = 1;
-        delete rh;
-        return 0;
-    }
-
-    Status *flags = Globals::status;
-    bool versionOk = (rec->versionMismatchFlag == 0) || (flags->byte_0x37 != 0);
-    if (versionOk) {
-        bool dlcOk = (rec->dlcRequiredFlag == 0) || (flags->byte_0x35 != 0);
-        if (dlcOk) {
-            Globals::status->resetGame();
-            rec->load();
-            delete rh;
+    if (rec != 0) {
+        if (rec->versionMismatchFlag != 0 && Globals::options[55] == 0) {
+            this->choiceWindow->set(*Globals::gameText->getText(102), false);
+            this->messageShowing = 1;
             delete rec;
-            ModStation *ms = (ModStation *) Globals::appManager->GetApplicationModule(5);
-            ms->setGameLoaded();
-            Globals::switch_to_target_setting = 0;
-            Globals::appManager->SetCurrentApplicationModule(5);
-            return 1;
+            delete rh;
+            return 0;
         }
-
-        ChoiceWindow *cw = this->choiceWindow;
-        String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x65);
-        cw->set(*s, false);
+        if (rec->dlcRequiredFlag != 0 && Globals::options[53] == 0) {
+            this->choiceWindow->set(*Globals::gameText->getText(101), false);
+            this->messageShowing = 1;
+            delete rec;
+            delete rh;
+            return 0;
+        }
+    } else {
+        Globals::status->resetGame();
+        this->choiceWindow->set(*Globals::gameText->getText(100), false);
         this->messageShowing = 1;
-        delete rec;
+        this->loadFailedDialogShowing = 1;
         delete rh;
         return 0;
     }
 
-    ChoiceWindow *cw = this->choiceWindow;
-    String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x66);
-    cw->set(*s, false);
-    this->messageShowing = 1;
-    delete rec;
+    Globals::status->resetGame();
+    rec->load();
     delete rh;
-    return 0;
+    delete rec;
+    ModStation *ms = (ModStation *) Globals::appManager->GetApplicationModule(5);
+    ms->setGameLoaded();
+    Globals::switch_to_target_setting = 0;
+    Globals::appManager->SetCurrentApplicationModule(5);
+    return 1;
 }
 
-void _mtw_TouchButton_ctor(void *btn, void *label, int a, int x, int y, int w, // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-                           // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-                           char type, char id);
-
-
 void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton *> *arr, int yOff) {
-    TouchButton *btn = (TouchButton *) ::operator new(0xc8);
-
-    int btnW = this->buttonWidth;
-    int screenW = Globals::w;
-    int screenH = Globals::h;
-    int rowH = (Globals::layout)->field_0x30_rowHeight;
-
-    int x = screenW / 2 - btnW / 2;
-    int y = (rowH + this->buttonRowGap) * row + (yOff - this->buttonYBias) + screenH / 2;
-
-    _mtw_TouchButton_ctor(btn, &label, 0, x, y, btnW, 0x11, 0x04);
-    ((TouchButton *) btn)->field_0x0 = id;
-    ((TouchButton *) btn)->field_0x4 = id >> 31;
-    ArrayAdd<TouchButton *>((TouchButton *) btn, *arr);
+    TouchButton *btn = new TouchButton(label, 0, Globals::w / 2 - this->buttonWidth / 2,
+                                       (yOff - this->buttonYBias) + Globals::h / 2 +
+                                       (Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * row,
+                                       this->buttonWidth, 0x11, 0x04);
+    btn->field_0x0 = id;
+    btn->field_0x4 = id >> 31;
+    ArrayAdd<TouchButton *>(btn, *arr);
 
     int *posX = Globals::sub_menu_buttons_x;
     int *posY = Globals::sub_menu_buttons_y;
@@ -1624,19 +1610,17 @@ void MenuTouchWindow::draw() {
 float MenuTouchWindow::getRelativeScrollHeight() {
     int content = this->contentHeight;
     int page = this->pageHeight;
-    if (content <= page)
+    if (content > page)
         return 0.0f;
-    int off = this->scrollOffset;
-    int numer;
-    if (off >= 1) {
-        numer = content - off;
-    } else {
-        if (off >= content - page) {
-            return (float) content / (float) page;
-        }
-        numer = off + page;
+
+    int pos = this->scrollOffset;
+    if (pos >= 1) {
+        return (float) (content - pos) / (float) page;
     }
-    return (float) numer / (float) page;
+    if (pos >= content - page) {
+        return (float) content / (float) page;
+    }
+    return (float) (pos + page) / (float) page;
 }
 
 void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
@@ -2072,7 +2056,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
 void MenuTouchWindow::startSupernova() {
     Status *const *statusHolder = &Globals::status;
     Globals::status->resetGame();
-    for (int i = 0x54; i != 0; i--)
+    for (int i = 0; i < 0x54; ++i)
         (*statusHolder)->nextCampaignMission(false);
 
     (*statusHolder)->setMission(Mission::empty);
@@ -2113,36 +2097,44 @@ void MenuTouchWindow::startSupernova() {
     (*statusHolder)->setSystemVisibility(0x19, true);
     (*statusHolder)->setCredits(0);
 
-    OptionsRecord *opt = (OptionsRecord *) Globals::hints;
-    OptionsRecord *optB = (OptionsRecord *) Globals::options;
-    ((Status *) *statusHolder)->field_8c = 0x1a0a;
-    opt->flag_dword_0x20 = 0x1010101;
-    opt->flag_0x17 = 1;
-    opt->flag_0x36 = 0;
-    reinterpret_cast<int32_t &>(opt->field_0x32[0]) = 0;
-    opt->flag_word_0x8 = 0x101;
-    opt->flag_0xa = 1;
-    opt->flag_0x15 = 1;
-    opt->flag_0x13 = 1;
-    reinterpret_cast<uint16_t &>(opt->flag_word_0xd[0]) = 0x101;
-    opt->flag_0xf = 1;
-    opt->flag_0x26 = 1;
-    opt->flag_0x31 = 1;
-    opt->flag_0x24 = 1;
-    opt->flag_word_0x1c = 0x101;
-    opt->flag_0x1e = 1;
-    reinterpret_cast<uint16_t &>(opt->flag_0x38) = 0x101;
-    Achievements *ach = Globals::achievements;
-    optB->flag_0x34 = 1;
+    (*statusHolder)->field_84 = 0x1a0a;
+    unsigned char *hints = Globals::hints;
+    hints[32] = 1;
+    hints[33] = 1;
+    hints[34] = 1;
+    hints[35] = 1;
+    hints[23] = 1;
+    hints[54] = 0;
+    hints[50] = 0;
+    hints[51] = 0;
+    hints[52] = 0;
+    hints[53] = 0;
+    hints[8] = 1;
+    hints[9] = 1;
+    hints[10] = 1;
+    hints[21] = 1;
+    hints[19] = 1;
+    hints[13] = 1;
+    hints[14] = 1;
+    hints[15] = 1;
+    hints[38] = 1;
+    hints[49] = 1;
+    hints[36] = 1;
+    hints[28] = 1;
+    hints[29] = 1;
+    hints[30] = 1;
+    hints[56] = 1;
+    hints[57] = 1;
+    Globals::options[52] = 1;
 
-    ach->setMedal(0x17, 3);
+    Globals::achievements->setMedal(0x17, 3);
     Globals::achievements->setMedal(0x1e, 1);
     (*statusHolder)->setKills(0x182);
     Globals::recordHandler->saveOptions();
     Globals::sound->stop(Globals::sound->currentMusicEvent);
 
     ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) Globals::appManager;
-    optB->fadeValue = this->fadeValue;
+    ((OptionsRecord *) Globals::options)->fadeValue = this->fadeValue;
     thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
 }
 

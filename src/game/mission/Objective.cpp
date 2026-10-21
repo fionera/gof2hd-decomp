@@ -84,7 +84,7 @@ unsigned int Objective::achieved(int value) {
             result = this->value < value;
             break;
         case 4:
-            return ((RadioMessage *) (*this->level->getMessages())[this->value])->isOver();
+            return (*this->level->getMessages())[this->value]->isOver();
         case 5:
             result = this->level->getFriendsLeft() == 0;
             break;
@@ -166,9 +166,8 @@ unsigned int Objective::achieved(int value) {
             break;
         }
         case 22: {
-            Array<void *> *messages = this->level->getMessages(); // lint: void_ptr matches Level::getMessages() exported signature
-            // lint: void_ptr matches Level::getMessages() exported signature
-            return ((RadioMessage *) (*messages)[messages->size() - 1])->isOver();
+            Array<RadioMessage *> *messages = this->level->getMessages();
+            return (*messages)[messages->size() - 1]->isOver();
         }
         case 23:
             result = (uint8_t)(*this->level->getEnemies())[this->value]->field_0x24 != 0;

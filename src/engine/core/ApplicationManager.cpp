@@ -7,166 +7,100 @@
 #include "game/core/CheatHandler.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/KeyCode.h"
+#include "engine/core/AbyssEngine.h"
 #include <cstddef>
 
-namespace {
-    struct ModuleVTable {
-        void (*slot0)();
-
-        void (*destroy)(IApplicationModule *self);
-
-        int (*showLoading)(IApplicationModule *self);
-
-        void (*release)(IApplicationModule *self);
-
-        void (*onKeyPress)(IApplicationModule *self, IApplicationModule *self2,
-                           unsigned int, unsigned int, unsigned int, unsigned int);
-
-        void (*onKeyRelease)(IApplicationModule *self, IApplicationModule *self2,
-                             unsigned int, unsigned int, unsigned int, unsigned int);
-
-        void (*onTouchBegin2)(IApplicationModule *self, int x, int y);
-
-        void (*onTouchMove2)(IApplicationModule *self, int x, int y);
-
-        void (*onTouchEnd2)(IApplicationModule *self, int x, int y);
-
-        void (*onTouchBegin3)(IApplicationModule *self, int x, int y, void *data); // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-
-        // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-        void (*onTouchMove3)(IApplicationModule *self, int x, int y, void *data); // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-
-        // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-        void (*onTouchEnd3)(IApplicationModule *self, int x, int y, void *data); // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-
-        // lint: void_ptr (touch handle is void* in IApplicationModule interface)
-        void (*onRender3D)(IApplicationModule *self);
-
-        void (*onRender2D)(IApplicationModule *self);
-
-        void (*onUpdate)(IApplicationModule *self);
-
-        void (*onSuspend)(IApplicationModule *self);
-
-        void (*onResume)(IApplicationModule *self);
-    };
-
-    inline ModuleVTable *module_vtable(IApplicationModule *module) {
-        return *reinterpret_cast<ModuleVTable **>(module);
-    }
-
-    struct KeyMappingHeader {
-        unsigned int capacity;
-        unsigned int count;
-    };
-
-    inline AbyssEngine::KeyCode *key_entries(char *keyMappingTable) {
-        return reinterpret_cast<AbyssEngine::KeyCode *>(keyMappingTable);
-    }
-
-    inline KeyMappingHeader *key_header(char *keyMappingTable) {
-        return reinterpret_cast<KeyMappingHeader *>(keyMappingTable -
-                                                    sizeof(KeyMappingHeader));
-    }
-
-    struct ActionEntry {
-        unsigned int actionLow;
-        unsigned int actionHigh;
-        unsigned int keyIndex;
-        int flags;
-    };
-
-    inline ActionEntry *action_entries(Array<long long> *table) {
-        return reinterpret_cast<ActionEntry *>(table->data());
-    }
-}
-
 #if __SIZEOF_POINTER__ == 4
-static_assert(offsetof(ModuleVTable, destroy) == 0x04, "vtable destroy slot");
-static_assert(offsetof(ModuleVTable, showLoading) == 0x08, "vtable showLoading slot");
-static_assert(offsetof(ModuleVTable, release) == 0x0c, "vtable release slot");
-static_assert(offsetof(ModuleVTable, onKeyPress) == 0x10, "vtable onKeyPress slot");
-static_assert(offsetof(ModuleVTable, onKeyRelease) == 0x14, "vtable onKeyRelease slot");
-static_assert(offsetof(ModuleVTable, onTouchBegin2) == 0x18, "vtable onTouchBegin2 slot");
-static_assert(offsetof(ModuleVTable, onTouchEnd2) == 0x20, "vtable onTouchEnd2 slot");
-static_assert(offsetof(ModuleVTable, onTouchBegin3) == 0x24, "vtable onTouchBegin3 slot");
-static_assert(offsetof(ModuleVTable, onRender3D) == 0x30, "vtable onRender3D slot");
-static_assert(offsetof(ModuleVTable, onUpdate) == 0x38, "vtable onUpdate slot");
-static_assert(offsetof(ModuleVTable, onSuspend) == 0x3c, "vtable onSuspend slot");
-static_assert(offsetof(ModuleVTable, onResume) == 0x40, "vtable onResume slot");
 static_assert(sizeof(AbyssEngine::KeyCode) == 0x10, "KeyCode entry size");
 static_assert(offsetof(AbyssEngine::KeyCode, name) == 0x04, "KeyCode name offset");
-static_assert(sizeof(KeyMappingHeader) == 0x08, "key mapping header size");
-static_assert(sizeof(ActionEntry) == 0x10, "action entry size");
 #endif
 
-namespace {
-    int g_perfPending;
-    uint64_t g_perfCounter;
-    uint64_t g_perfLimit;
-    int g_perfExpired;
-
-    int g_touchMode;
-    int g_touchToggle;
-    int g_touchValue;
-    float g_touchFloat;
-    int g_touchDown;
-
-    int g_orientationLeft;
-    int g_orientationRight;
-    int g_orientationFlat;
-    int g_orientationUpsideDown;
-    int g_orientationInactive;
-
-    int64_t g_perfElapsed;
-    int64_t g_perfActionCount;
-    int64_t g_perfLimitValue;
-    int64_t g_perfTotal;
-    int64_t g_perfFrame;
-    int g_perfEnabled;
-    int g_perfPendingFlag;
-}
-
 ApplicationManager::ApplicationManager(Engine *engine) {
-
-    this->frameTimeMs = 0;
-    this->previousFrameTimeMs = 0;
-    this->pendingModule = 0;
-    this->currentTimeMs = 0;
-    this->currentKey = 0;
+    AbyssEngine::debugTouch[0] = 0.0f;
+    AbyssEngine::debugTouch[1] = 0.0f;
+    AbyssEngine::debugTouch[2] = 0.0f;
+    AbyssEngine::debugTouch[3] = 0.0f;
+    this->quitCallback = 0;
     this->state = 5;
+    this->applicationData = 0;
+    this->pendingModule = 0;
+    this->frameTimeMs = 0;
+    this->currentKey = 0;
+    this->previousFrameTimeMs = 0;
+    this->currentTimeMs = 0;
     this->currentModule = 0;
     this->keyState = 0;
     this->engine = engine;
 
     this->paintCanvas = new PaintCanvas(engine);
-    Globals::Canvas = this->paintCanvas;
-    gEngine = engine;
-
     this->soundResource = new AESoundRessource();
     this->cheatsEnabled = false;
-
     this->configReader = new ConfigReader(engine);
     this->loadingCallback = 0;
     this->resumeCallback = 0;
     this->soundFxEnabled = true;
+    this->musicEnabled = true;
     this->vibrateEnabled = true;
     this->orientationTrackingEnabled = false;
 
-    char *storage = new char[sizeof(KeyMappingHeader) + 0x40 * sizeof(AbyssEngine::KeyCode)];
-    KeyMappingHeader *header = reinterpret_cast<KeyMappingHeader *>(storage);
-    header->capacity = 0x10;
-    header->count = 0x40;
-    AbyssEngine::KeyCode *entries =
-            reinterpret_cast<AbyssEngine::KeyCode *>(storage + sizeof(KeyMappingHeader));
-    for (int i = 0; i != 0x40; ++i) {
-        new(&entries[i].name) String();
-        entries[i].code = 0;
+    AbyssEngine::KeyCode defaultKeys[50] = {
+            {0, String("0", false)},
+            {1, String("1", false)},
+            {2, String("2", false)},
+            {3, String("3", false)},
+            {4, String("4", false)},
+            {5, String("5", false)},
+            {6, String("6", false)},
+            {7, String("7", false)},
+            {8, String("8", false)},
+            {9, String("9", false)},
+            {10, String("#", false)},
+            {11, String("*", false)},
+            {12, String("D-pad left", false)},
+            {13, String("D-pad right", false)},
+            {14, String("D-pad up", false)},
+            {15, String("D-pad down", false)},
+            {0, String("D-pad fire", false)},
+            {0, String("Softbutton left", false)},
+            {0, String("Softbutton right", false)},
+            {0, String("CLR", false)},
+            {97, String("A", false)},
+            {98, String("B", false)},
+            {99, String("C", false)},
+            {100, String("D", false)},
+            {101, String("E", false)},
+            {102, String("F", false)},
+            {103, String("G", false)},
+            {104, String("H", false)},
+            {105, String("I", false)},
+            {106, String("J", false)},
+            {107, String("K", false)},
+            {108, String("L", false)},
+            {109, String("M", false)},
+            {110, String("N", false)},
+            {111, String("O", false)},
+            {112, String("P", false)},
+            {113, String("Q", false)},
+            {114, String("R", false)},
+            {115, String("S", false)},
+            {116, String("T", false)},
+            {117, String("U", false)},
+            {118, String("V", false)},
+            {119, String("W", false)},
+            {120, String("X", false)},
+            {121, String("Y", false)},
+            {122, String("Z", false)},
+            {32, String("Space", false)},
+            {10, String("Enter", false)},
+            {16, String("Menu", false)},
+            {17, String("CAPLK", false)},
+    };
+    this->keyMappingTable = new AbyssEngine::KeyCode[0x40];
+    for (unsigned int i = 0; i < 50; ++i) {
+        this->keyMappingTable[i] = defaultKeys[i];
     }
-    char *keys = reinterpret_cast<char *>(entries);
-    this->keyMappingTable = keys;
 
-    this->cheatHandler = new CheatHandler((AbyssEngine::KeyCode *) keys);
+    this->cheatHandler = new CheatHandler(this->keyMappingTable);
     this->lastTouchX = -1;
     this->lastTouchY = -1;
 }
@@ -174,18 +108,18 @@ ApplicationManager::ApplicationManager(Engine *engine) {
 ApplicationManager::~ApplicationManager() {
     IApplicationModule *module = this->currentModule;
     if (module != 0) {
-        module_vtable(module)->release(module);
+        module->OnRelease();
     }
 
     for (unsigned int i = 0; i < this->modules.size(); ++i) {
         IApplicationModule *entry = this->modules[i];
         if (entry != 0) {
-            module_vtable(entry)->destroy(entry);
+            delete entry;
         }
         this->modules[i] = 0;
     }
     ArrayRelease(this->modules);
-    ArrayRemoveAll(this->moduleIds);
+    ArrayRelease(this->moduleIds);
 
     delete this->paintCanvas;
     this->paintCanvas = 0;
@@ -199,15 +133,7 @@ ApplicationManager::~ApplicationManager() {
     delete this->configReader;
     this->configReader = 0;
 
-    char *keys = this->keyMappingTable;
-    if (keys != 0) {
-        AbyssEngine::KeyCode *entries = key_entries(keys);
-        unsigned int count = key_header(keys)->count;
-        for (unsigned int i = count; i != 0; --i) {
-            entries[i - 1].name.~String();
-        }
-        delete[] reinterpret_cast<char *>(key_header(keys));
-    }
+    delete[] this->keyMappingTable;
     this->keyMappingTable = 0;
 
 }
@@ -219,12 +145,11 @@ void ApplicationManager::SetApplicationModule(IApplicationModule *module) {
 }
 
 void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
-    if (g_perfPending != 0) {
-        uint64_t value = g_perfCounter + 1;
-        g_perfCounter = value;
-        if ((long long) (value - g_perfLimit) >= 0) {
-            *(char *) &g_perfExpired = 1;
-            *(char *) &g_perfPending = 0;
+    if (AbyssEngine::performanceTest) {
+        AbyssEngine::performanceModulSwitches++;
+        if (AbyssEngine::performanceModulSwitches >= AbyssEngine::performanceOverallModulSwitches) {
+            AbyssEngine::performanceTest = 0;
+            AbyssEngine::performanceTestEnded = 1;
         }
     }
 
@@ -264,14 +189,12 @@ void ApplicationManager::Resume(bool arg) {
 
     IApplicationModule *module = this->currentModule;
     if (module != 0) {
-        module_vtable(module)->onResume(module);
+        module->OnResume();
         if (this->engine != 0) {
             this->engine->Resume();
         }
         this->actionState = 0;
-        this->actionStateHigh = 0;
         this->keyState = 0;
-        this->keyStateHigh = 0;
         this->state = 4;
     }
 }
@@ -284,7 +207,7 @@ void ApplicationManager::Suspend() {
 
     IApplicationModule *module = this->currentModule;
     if (module != 0) {
-        module_vtable(module)->onSuspend(module);
+        module->OnSuspend();
         if (this->engine != 0) {
             this->engine->Suspend();
         }
@@ -313,7 +236,7 @@ void ApplicationManager::OnUpdate(long long now) {
                 this->currentModule = next;
             }
             if (module != 0) {
-                int loading = module_vtable(module)->showLoading(module);
+                int loading = module->OnInitialize();
                 LoadingCallback_t *callback = this->loadingCallback;
                 if (callback != 0) {
                     callback(this->paintCanvas, loading, this->loadingCallbackData);
@@ -337,7 +260,7 @@ void ApplicationManager::OnUpdate(long long now) {
         case 1: {
             IApplicationModule *module = this->currentModule;
             if (module != 0) {
-                module_vtable(module)->release(module);
+                module->OnRelease();
                 this->engine->ResetLightParam();
                 this->state = 0;
                 this->currentModule = 0;
@@ -355,16 +278,15 @@ void ApplicationManager::OnUpdate(long long now) {
         case 5: {
             IApplicationModule *module = this->currentModule;
             if (module != 0) {
-                ModuleVTable *vtable = module_vtable(module);
-                vtable->onRender3D(module);
+                module->OnUpdate();
                 Engine *engine = this->engine;
                 engine->triangleCountA = 0;
                 engine->field_0x58 = 0;
                 this->paintCanvas->culledCount = 0;
-                vtable->onRender2D(module);
+                module->OnRender3D();
                 ResumeCallback_t *resume = this->resumeCallback;
                 if (resume == 0 || !resume(this->paintCanvas, this->resumeCallbackData)) {
-                    vtable->onUpdate(module);
+                    module->OnRender2D();
                 }
             }
             break;
@@ -377,192 +299,149 @@ void ApplicationManager::OnUpdate(long long now) {
 void ApplicationManager::OnKeyPress(int key) {
     this->actionMask = 0;
     this->currentKey = key;
-    this->currentKeyHigh = key >> 31;
-    this->actionMaskHigh = 0;
 
-    unsigned int keyLow = 0;
-    unsigned int keyHigh = 0;
-    unsigned int actionLow = 0;
-    unsigned int actionHigh = 0;
-    unsigned int keyIndex = 0;
-    AbyssEngine::KeyCode *mapping = key_entries(this->keyMappingTable);
-    while (keyIndex <= 0x3f) {
-        if (mapping->code == key) {
-            int highIndex = (int) keyIndex - 0x20;
-            keyLow = 1u << keyIndex;
-            if (highIndex >= 0) {
-                keyLow = 0;
-            }
-            keyHigh = 1u >> (0x20 - keyIndex);
-            if (highIndex >= 0) {
-                keyHigh = 1u << highIndex;
-            }
-            this->keyState |= keyLow;
-            this->keyStateHigh |= keyHigh;
-
-            ActionEntry *entries = action_entries(&this->actionTable);
-            for (unsigned int i = 0; i < this->actionTable.size(); i += 2) {
-                ActionEntry *entry = &entries[i / 2];
-                if (entry->keyIndex == keyIndex && entry->flags == 0) {
-                    actionLow |= entry->actionLow;
-                    actionHigh |= entry->actionHigh;
-                    this->actionMask = actionLow;
-                    this->actionMaskHigh = actionHigh;
-                    this->actionState |= actionLow;
-                    this->actionStateHigh |= actionHigh;
+    long long keys = 0;
+    long long actions = 0;
+    for (unsigned int i = 0; i < 0x40; ++i) {
+        if (this->keyMappingTable[i].code == key) {
+            keys = 1LL << i;
+            this->keyState |= keys;
+            for (unsigned int j = 0; j < this->actionTable.size(); j += 2) {
+                if (this->actionTable[j + 1] == i) {
+                    actions |= this->actionTable[j];
+                    this->actionMask = actions;
+                    this->actionState |= actions;
                 }
             }
             break;
         }
-        ++mapping;
-        ++keyIndex;
     }
 
     IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
-        module_vtable(module)->onKeyPress(module, module, keyLow, keyHigh, actionLow, actionHigh);
+        module->OnKeyPress(keys, actions);
     }
 }
 
 void ApplicationManager::OnKeyRelease(int key) {
     this->actionMask = 0;
-    this->actionMaskHigh = 0;
 
-    unsigned int keyLow = 0;
-    unsigned int keyHigh = 0;
-    unsigned int actionLow = 0;
-    unsigned int actionHigh = 0;
-    unsigned int keyIndex = 0;
-    AbyssEngine::KeyCode *mapping = key_entries(this->keyMappingTable);
-    while (keyIndex <= 0x3f) {
-        if (mapping->code == key) {
-            int highIndex = (int) keyIndex - 0x20;
-            keyLow = 1u << keyIndex;
-            if (highIndex >= 0) {
-                keyLow = 0;
-            }
-            keyHigh = 1u >> (0x20 - keyIndex);
-            if (highIndex >= 0) {
-                keyHigh = 1u << highIndex;
-            }
-            this->keyState &= ~keyLow;
-            this->keyStateHigh &= ~keyHigh;
-
-            ActionEntry *entries = action_entries(&this->actionTable);
-            for (unsigned int i = 0; i < this->actionTable.size(); i += 2) {
-                ActionEntry *entry = &entries[i / 2];
-                if (entry->keyIndex == keyIndex && entry->flags == 0) {
-                    actionLow |= entry->actionLow;
-                    actionHigh |= entry->actionHigh;
-                    this->actionMask = actionLow;
-                    this->actionMaskHigh = actionHigh;
-                    this->actionState &= ~actionLow;
-                    this->actionStateHigh &= ~actionHigh;
+    long long keys = 0;
+    long long actions = 0;
+    for (unsigned int i = 0; i < 0x40; ++i) {
+        if (this->keyMappingTable[i].code == key) {
+            keys = 1LL << i;
+            this->keyState &= ~keys;
+            for (unsigned int j = 0; j < this->actionTable.size(); j += 2) {
+                if (this->actionTable[j + 1] == i) {
+                    actions |= this->actionTable[j];
+                    this->actionMask = actions;
+                    this->actionState &= ~actions;
                 }
             }
             break;
         }
-        ++mapping;
-        ++keyIndex;
     }
 
     IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
-        module_vtable(module)->onKeyRelease(module, module, keyLow, keyHigh, actionLow, actionHigh);
+        module->OnKeyRelease(keys, actions);
     }
 }
 
 void ApplicationManager::ResetKeyState() {
     this->keyState = 0;
-    this->keyStateHigh = 0;
 }
 
 uint64_t ApplicationManager::GetKeyState() {
-    return ((uint64_t)this->keyStateHigh << 32) | this->keyState;
+    return this->keyState;
 }
 
 uint64_t ApplicationManager::GetActionState() {
-    return ((uint64_t)this->actionStateHigh << 32) | this->actionState;
+    return this->actionState;
 }
 
 void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode *> *array) {
-    unsigned int count = array->size();
-    if (count == 0x40) {
-        AbyssEngine::KeyCode *entries = key_entries(this->keyMappingTable);
-        for (unsigned int index = 0; index < count; ++index) {
-            AbyssEngine::KeyCode *mapping = (*array)[index];
-            entries[index].code = mapping->code;
-            entries[index].name = mapping->name;
-            count = array->size();
+    if (array->size() == 0x40) {
+        for (unsigned int i = 0; i < array->size(); ++i) {
+            AbyssEngine::KeyCode *mapping = (*array)[i];
+            this->keyMappingTable[i].code = mapping->code;
+            this->keyMappingTable[i].name = mapping->name;
         }
     }
 }
 
 void ApplicationManager::ConvertTouchCoords(int &x, int &y) {
-    PaintCanvas *canvas = this->paintCanvas;
-    int orientation = canvas->gameOrientation;
-    int newY;
-
-    if (orientation != 3) {
-        if (orientation != 1) {
-            if (orientation != 0) {
-                return;
-            }
-            newY = x;
-            x = canvas->GetWidth() - y;
-            y = newY;
-            return;
-        }
-        int oldX = x;
-        x = y;
-        y = canvas->GetHeight() - oldX;
-        canvas = this->paintCanvas;
+    int old;
+    switch (this->paintCanvas->gameOrientation) {
+        case 0:
+            old = x;
+            x = this->paintCanvas->GetWidth() - y;
+            y = old;
+            break;
+        case 1:
+            old = x;
+            x = y;
+            y = this->paintCanvas->GetHeight() - old;
+            // fall through: then mirror both axes
+        case 3:
+            x = this->paintCanvas->GetWidth() - x;
+            y = this->paintCanvas->GetHeight() - y;
+            break;
     }
-    x = canvas->GetWidth() - x;
-    y = canvas->GetHeight() - y;
 }
 
-void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) { // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
+void ApplicationManager::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
-    int x = xArg;
-    int y = yArg;
-
     IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
-        module_vtable(module)->onTouchBegin3(module, x, y, touch);
+        module->OnTouchBegin(x, y, touch);
         module = this->currentModule;
-        module_vtable(module)->onTouchBegin2(module, x, y);
+        module->OnTouchBegin(x, y);
         this->lastTouchX = x;
         this->lastTouchY = y;
 
-        Engine *engine = this->engine;
-        int mode = g_touchMode;
-        if (mode <= 3) {
-            PaintCanvas *canvas = this->paintCanvas;
-            if (mode == 0 && x <= 0x31 && y <= 0x31) {
-                g_touchMode = 1;
-            } else if (mode == 1 && x > canvas->GetWidth() - 0x32 &&
-                       y > canvas->GetHeight() - 0x32) {
-                g_touchMode = 2;
-            } else if (mode == 2 && x <= 0x31 && y > canvas->GetHeight() - 0x32) {
-                bool *flag = &engine->field_0x74;
-                *flag = !*flag;
-            } else if (mode == 3 && y <= 0x31 && x > canvas->GetWidth() - 0x32) {
-                g_touchMode = 4;
+        switch (AbyssEngine::debugModusIndex) {
+            case 0:
+                if (x <= 49 && y <= 49) {
+                    AbyssEngine::debugModusIndex = 1;
+                    return;
+                }
+                break;
+            case 1:
+                if (x > this->paintCanvas->GetWidth() - 50 && y > this->paintCanvas->GetHeight() - 50) {
+                    AbyssEngine::debugModusIndex++;
+                    return;
+                }
+                break;
+            case 2:
+                if (x <= 49 && y > this->paintCanvas->GetHeight() - 50) {
+                    this->engine->field_0x74 = !this->engine->field_0x74;
+                    return;
+                }
+                break;
+            case 3: {
+                int width = this->paintCanvas->GetWidth();
+                if (y <= 49 && x > width - 50) {
+                    AbyssEngine::debugModusIndex++;
+                    return;
+                }
+                break;
             }
-        } else if (engine->field_0x74) {
+        }
+
+        if (this->engine->field_0x74) {
             if (y < 100) {
-                g_touchToggle ^= 1;
+                Engine::UseAdvancedShader ^= 1;
             } else {
                 int height = this->paintCanvas->GetHeight();
-                int width = this->paintCanvas->GetWidth();
-                int half = width / 2;
-                if (height - 100 < y) {
-                    g_touchValue = x < half ? 0 : 1;
+                int half = this->paintCanvas->GetWidth() / 2;
+                if (y > height - 100) {
+                    Engine::LodDistShader = x >= half ? 10000000.0f : 0.0f;
                 } else {
-                    g_touchFloat += x < half ? -1.0f : 1.0f;
+                    Engine::LodDistShader += x >= half ? 100.0f : -100.0f;
                 }
             }
         }
@@ -575,27 +454,25 @@ void ApplicationManager::OnTouchMove(int x, int y, void *touch) { // lint: void_
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
-        module_vtable(module)->onTouchMove3(module, x, y, touch);
+        module->OnTouchMove(x, y, touch);
         module = this->currentModule;
-        module_vtable(module)->onTouchMove2(module, x, y);
+        module->OnTouchMove(x, y);
         this->lastTouchX = x;
         this->lastTouchY = y;
     }
 }
 
-void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) { // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
+void ApplicationManager::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
-    g_touchDown = 0;
-    int x = xArg;
-    int y = yArg;
+    AbyssEngine::debugModusIndex = 0;
 
     IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
-        module_vtable(module)->onTouchEnd3(module, x, y, touch);
+        module->OnTouchEnd(x, y, touch);
         module = this->currentModule;
-        module_vtable(module)->onTouchEnd2(module, x, y);
+        module->OnTouchEnd(x, y);
         this->lastTouchX = x;
         this->lastTouchY = y;
     }
@@ -603,13 +480,9 @@ void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) { // lint: 
 
 void ApplicationManager::OnTouchEnd() {
     this->currentKey = 0;
-    this->currentKeyHigh = 0;
     this->keyState = 0;
-    this->keyStateHigh = 0;
     this->actionMask = 0;
-    this->actionMaskHigh = 0;
     this->actionState = 0;
-    this->actionStateHigh = 0;
 }
 
 uint64_t ApplicationManager::GetSystemTimeMillis() {
@@ -624,67 +497,37 @@ uint64_t ApplicationManager::GetElapsedTimeMillis() {
     return this->frameTimeMs - this->previousFrameTimeMs;
 }
 
-static bool update_orientation_timer(ApplicationManager *self, int *timer) {
-    int elapsed = self->frameTimeMs - self->previousFrameTimeMs;
-    int value = *timer + elapsed;
-    *timer = value;
-    return value >= 0xfb;
+static bool update_orientation_timer(ApplicationManager *self) {
+    AbyssEngine::orientationChangeTimer += (int) (self->frameTimeMs - self->previousFrameTimeMs);
+    return AbyssEngine::orientationChangeTimer > 250;
 }
 
 void ApplicationManager::CheckForOrientationChange() {
     double tilt = this->engine->accelRaw[0];
-    PaintCanvas *canvas;
-    int *timer;
-    AbyssEngine::LandscapeMode target;
 
-    if (tilt < -0.5) {
-        canvas = this->paintCanvas;
-        if (canvas->gameOrientation == 0) {
-            timer = &g_orientationLeft;
-            target = AbyssEngine::LandscapeMode_1;
-            if (update_orientation_timer(this, timer)) {
-                canvas->SetGameOrientation(target);
-                *timer = 0;
-            }
-            return;
+    if (tilt < -0.5 && this->paintCanvas->gameOrientation == 0) {
+        if (update_orientation_timer(this)) {
+            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_1);
+            AbyssEngine::orientationChangeTimer = 0;
         }
+    } else if (tilt > 0.5 && this->paintCanvas->gameOrientation == 1) {
+        if (update_orientation_timer(this)) {
+            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_dummy);
+            AbyssEngine::orientationChangeTimer = 0;
+        }
+    } else if (tilt > 0.5 && this->paintCanvas->gameOrientation == 3) {
+        if (update_orientation_timer(this)) {
+            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
+            AbyssEngine::orientationChangeTimer = 0;
+        }
+    } else if (tilt < -0.5 && this->paintCanvas->gameOrientation == 2) {
+        if (update_orientation_timer(this)) {
+            this->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_3);
+            AbyssEngine::orientationChangeTimer = 0;
+        }
+    } else {
+        AbyssEngine::orientationChangeTimer = 0;
     }
-
-    if (tilt > 0.5) {
-        canvas = this->paintCanvas;
-        if (canvas->gameOrientation == 3) {
-            timer = &g_orientationRight;
-            target = AbyssEngine::LandscapeMode_2;
-            if (update_orientation_timer(this, timer)) {
-                canvas->SetGameOrientation(target);
-                *timer = 0;
-            }
-            return;
-        }
-        if (canvas->gameOrientation == 1) {
-            timer = &g_orientationFlat;
-            if (update_orientation_timer(this, timer)) {
-                canvas->SetGameOrientation(AbyssEngine::LandscapeMode_dummy);
-                *timer = 0;
-            }
-            return;
-        }
-    }
-
-    if (tilt < -0.5) {
-        canvas = this->paintCanvas;
-        if (canvas->gameOrientation == 2) {
-            timer = &g_orientationUpsideDown;
-            target = AbyssEngine::LandscapeMode_3;
-            if (update_orientation_timer(this, timer)) {
-                canvas->SetGameOrientation(target);
-                *timer = 0;
-            }
-            return;
-        }
-    }
-
-    g_orientationInactive = 0;
 }
 
 void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
@@ -694,22 +537,13 @@ void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
 
 void *ApplicationManager::ConfigGetKeysForAction(long long action) { // lint: void_ptr (exported ConfigGetKeysForAction return type, header-declared ABI)
     // lint: void_ptr (exported ConfigGetKeysForAction return type, header-declared ABI)
-    int low = (int) action;
-    int high = (int) (action >> 32);
     Array<String *> *result = 0;
-
-    for (unsigned int index = 0; index < this->actionTable.size(); index += 2) {
-        ActionEntry *entry = &action_entries(&this->actionTable)[index / 2];
-        int actionLow = (int) entry->actionLow;
-        int actionHigh = (int) entry->actionHigh;
-        if (((actionLow ^ low) | (actionHigh ^ high)) == 0) {
+    for (unsigned int i = 0; i < this->actionTable.size(); i += 2) {
+        if (this->actionTable[i] == action) {
             if (result == 0) {
                 result = new Array<String *>();
             }
-            unsigned int keyIndex = action_entries(&this->actionTable)[index / 2].keyIndex;
-            AbyssEngine::KeyCode *entries = key_entries(this->keyMappingTable);
-            String *string = new String(entries[keyIndex].name);
-            ArrayAdd(string, *result);
+            ArrayAdd(new String(this->keyMappingTable[this->actionTable[i + 1]].name, false), *result);
         }
     }
     return result;
@@ -843,9 +677,9 @@ void ApplicationManager::SoundRelease(int soundId) {
     }
 }
 
-int ApplicationManager::SoundIsPlaying(int soundId) {
+bool ApplicationManager::SoundIsPlaying(int soundId) {
     if (this->soundResource == 0) {
-        return 0;
+        return false;
     }
     return this->soundResource->isPlaying(soundId);
 }
@@ -941,21 +775,20 @@ void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigToke
 }
 
 void ApplicationManager::EnablePerformanceTest(int count) {
-    g_perfElapsed = 0;
-    g_perfActionCount = (long long) count;
-    g_perfLimitValue = 0;
-    g_perfTotal = 0;
-    g_perfFrame = 0;
-    g_perfEnabled = 1;
-    g_perfPendingFlag = 0;
+    AbyssEngine::performanceOverallModulSwitches = count;
+    AbyssEngine::performanceModulSwitches = 0;
+    AbyssEngine::triDrawn = 0;
+    AbyssEngine::performanceTime = 0;
+    AbyssEngine::performanceFrameCounter = 0;
+    AbyssEngine::performanceTest = 1;
+    AbyssEngine::performanceTestEnded = 0;
 }
 
 void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {
     if (info != 0 && this->soundResource != 0) {
-        AESoundRessource *sound = this->soundResource;
-        sound->SetSound(info, count);
+        this->soundResource->SetSound(info, count);
         for (int i = 0; i < count; ++i) {
-            sound->init(i);
+            this->soundResource->init(i);
         }
     }
 }

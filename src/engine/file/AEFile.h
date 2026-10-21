@@ -80,25 +80,25 @@ public:
 
     static uint32_t Write(uint32_t bytes, void *buffer, uint32_t handle); // lint: void_ptr ABI signature (Pv mangled)
 
-    static void Write(bool value, uint32_t handle);
+    static uint32_t Write(bool value, uint32_t handle);
 
-    static void Write(char value, uint32_t handle);
+    static uint32_t Write(char value, uint32_t handle);
 
-    static void Write(int8_t value, uint32_t handle);
+    static uint32_t Write(int8_t value, uint32_t handle);
 
-    static void Write(uint8_t value, uint32_t handle);
+    static uint32_t Write(uint8_t value, uint32_t handle);
 
-    static void Write(int16_t value, uint32_t handle);
+    static uint32_t Write(int16_t value, uint32_t handle);
 
-    static void Write(uint16_t value, uint32_t handle);
+    static uint32_t Write(uint16_t value, uint32_t handle);
 
-    static void Write(int32_t value, uint32_t handle);
+    static uint32_t Write(int32_t value, uint32_t handle);
 
-    static void Write(uint32_t value, uint32_t handle);
+    static uint32_t Write(uint32_t value, uint32_t handle);
 
-    static void Write(int64_t value, uint32_t handle);
+    static uint32_t Write(int64_t value, uint32_t handle);
 
-    static void Write(float value, uint32_t handle);
+    static uint32_t Write(float value, uint32_t handle);
 
     static uint32_t Write(const String &value, uint32_t handle, bool wide);
 

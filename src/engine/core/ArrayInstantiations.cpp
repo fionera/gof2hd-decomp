@@ -87,6 +87,9 @@ template void ArrayRelease<bool>(Array<bool> &);
 
 template void ArrayRelease<int>(Array<int> &);
 
+// emitted by PaintCanvas in the original (RemoveAll* helpers); kept exported here until that body lands
+template void ArrayRemoveAll<unsigned int>(Array<unsigned int> &);
+
 template void ArraySetLength<PendingProduct *>(unsigned int, Array<PendingProduct *> &);
 
 template void ArraySetLength<BluePrint *>(unsigned int, Array<BluePrint *> &);
