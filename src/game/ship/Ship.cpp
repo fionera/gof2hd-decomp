@@ -528,131 +528,110 @@ void Ship::refreshValue() {
     this->boostSpeed = 0;
     this->boostDelay = 0;
     this->boostTime = 0;
-    if (Globals::status != 0 && Globals::status->getStanding() != 0) {
-        ((Standing *) ((intptr_t) Globals::status->getStanding()))->setPlayerSignatureRace(-1);
-    }
+    if (Globals::status != nullptr && Globals::status->getStanding() != 0)
+        ((Standing *) (intptr_t) Globals::status->getStanding())->setPlayerSignatureRace(-1);
     this->value = this->price;
 
-    unsigned int i = 0;
-    unsigned int n = 0;
-    Array<Item *> *eq;
-    for (;;) {
-        eq = this->equipment;
-        n = eq->size();
-        if (n <= i) {
-            break;
-        }
-        Item *cur = eq->data()[i];
-        if (cur != 0) {
-            switch (cur->getSort()) {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 8:
-                case 0x19: {
-                    float a = (float) cur->getAttribute(9);
-                    float b = (float) cur->getAttribute(0xb);
-                    this->firePower = this->firePower + (a / b) * 1.0f;
-                    break;
-                }
-                case 9:
-                    this->maxShieldHP = cur->getAttribute(0x12);
-                    this->shieldRegen = cur->getAttribute(0x13);
-                    break;
-                case 10:
-                    this->maxArmorHP = cur->getAttribute(0x14);
-                    break;
-                case 0xc:
-                    this->cargoPlus = cur->getAttribute(0x16) + this->cargoPlus;
-                    break;
-                case 0xe:
-                    this->boostSpeed = cur->getAttribute(0x19);
-                    this->boostTime = cur->getAttribute(0x1b);
-                    this->boostDelay = cur->getAttribute(0x1a);
-                    break;
-                case 0xf: {
-                    int idx = cur->getIndex();
-                    this->repairType = idx != 0x4b;
-                    break;
-                }
-                case 0x10:
-                    this->agility = cur->getAttribute(0x1c);
-                    break;
-                case 0x11:
-                    this->radarType = cur->getAttribute(0x1f);
-                    break;
-                case 0x12:
-                    this->hasJumpDriveFlag = 1;
-                    break;
-                case 0x14:
-                    this->firePower = cur->getAttribute(0x22) + this->firePower;
-                    break;
-                case 0x15:
-                    this->hasCloakFlag = 1;
-                    break;
-                case 0x1b:
-                    this->hasEmergency = 1;
-                    break;
-                case 0x1c: {
-                    float r = (float) cur->getAttribute(0x27);
-                    r = 1.0f - r / 100.0f;
-                    if (r == 0.0f) {
-                        r = 1.0f;
-                    }
-                    this->fireRateFactor = r;
-                    float d = (float) cur->getAttribute(0x28);
-                    d = d / 100.0f + 1.0f;
-                    this->damageFactor = d;
-                    if (d == 0.0f) {
-                        this->damageFactor = 1.0f;
-                    }
-                    break;
-                }
-                case 0x1d: {
-                    int idx = cur->getIndex();
-                    this->signatureRace = idx - 0xbd;
-                    if (Globals::status != 0 && Globals::status->getStanding() != 0) {
-                        ((Standing *) ((intptr_t) Globals::status->getStanding()))->setPlayerSignatureRace(
-                            this->signatureRace);
-                    }
-                    break;
-                }
+    for (unsigned int i = 0; i < this->equipment->size(); i++) {
+        if ((*this->equipment)[i] == nullptr)
+            continue;
+        switch ((*this->equipment)[i]->getSort()) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 8:
+            case 25:
+                this->firePower += (float) (*this->equipment)[i]->getAttribute(9) /
+                                   (float) (*this->equipment)[i]->getAttribute(11) * 1000.0f;
+                break;
+            case 9:
+                this->maxShieldHP = (*this->equipment)[i]->getAttribute(18);
+                this->shieldRegen = (*this->equipment)[i]->getAttribute(19);
+                break;
+            case 10:
+                this->maxArmorHP = (*this->equipment)[i]->getAttribute(20);
+                break;
+            case 12:
+                this->cargoPlus += (*this->equipment)[i]->getAttribute(22);
+                break;
+            case 14:
+                this->boostSpeed = (*this->equipment)[i]->getAttribute(25);
+                this->boostTime = (*this->equipment)[i]->getAttribute(27);
+                this->boostDelay = (*this->equipment)[i]->getAttribute(26);
+                break;
+            case 15:
+                this->repairType = (*this->equipment)[i]->getIndex() != 75;
+                break;
+            case 16:
+                this->agility = (*this->equipment)[i]->getAttribute(28);
+                break;
+            case 17:
+                this->radarType = (*this->equipment)[i]->getAttribute(31);
+                break;
+            case 18:
+                this->hasJumpDriveFlag = 1;
+                break;
+            case 20:
+                this->maxPassengers += (*this->equipment)[i]->getAttribute(34);
+                break;
+            case 21:
+                this->hasCloakFlag = 1;
+                break;
+            case 27:
+                this->hasEmergency = 1;
+                break;
+            case 28: {
+                float rate = 1.0f - (float) (*this->equipment)[i]->getAttribute(39) / 100.0f;
+                if (rate == -979797952.0f)
+                    rate = 1.0f;
+                this->fireRateFactor = rate;
+                float damage = (float) (*this->equipment)[i]->getAttribute(40) / 100.0f + 1.0f;
+                this->damageFactor = damage;
+                if (damage == -979797952.0f)
+                    this->damageFactor = 1.0f;
+                break;
             }
-            this->value = cur->getTotalPrice() + this->value;
+            case 29:
+                this->signatureRace = (*this->equipment)[i]->getIndex() - 189;
+                if (Globals::status != nullptr && Globals::status->getStanding() != 0)
+                    ((Standing *) (intptr_t) Globals::status->getStanding())
+                            ->setPlayerSignatureRace(this->signatureRace);
+                break;
         }
-        i = i + 1;
+        this->value += (*this->equipment)[i]->getTotalPrice();
     }
 
+    // Weapon fire power, now scaled by the damage and fire-rate modifiers found above.
     this->firePower = 0;
-    for (i = 0; i < n; i = i + 1) {
-        Item *cur = eq->data()[i];
-        unsigned int sort;
-        if (cur != 0 && (sort = cur->getSort()) < 0x1a && (1 << (sort & 0xff) & 0x4000) != 0) {
-            float dmg = this->damageFactor;
-            float a = (float) cur->getAttribute(9);
-            float b = (float) cur->getAttribute(0xb);
-            this->firePower = this->firePower + ((dmg * a) / (this->fireRateFactor * b)) * 1.0f;
+    for (unsigned int i = 0; i < this->equipment->size(); i++) {
+        if ((*this->equipment)[i] == nullptr)
+            continue;
+        switch ((*this->equipment)[i]->getSort()) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 8:
+            case 25:
+                this->firePower += (float) (*this->equipment)[i]->getAttribute(9) * this->damageFactor /
+                                   ((float) (*this->equipment)[i]->getAttribute(11) * this->fireRateFactor) *
+                                   1000.0f;
+                break;
         }
-        eq = this->equipment;
-        n = eq->size();
     }
 
-    Array<int> *m = this->mods;
-    int loadBonus = 0;
-    if (m != 0) {
-        for (unsigned int j = 0; j < m->size(); j = j + 1) {
-            if (m->data()[j] == 1) {
-                loadBonus += 0x1e;
-            }
+    int modBonus = 0;
+    if (this->mods != nullptr) {
+        for (unsigned int i = 0; i < this->mods->size(); i++) {
+            if ((*this->mods)[i] == 1)
+                modBonus += 30;
         }
     }
     int cargoPlus = this->cargoPlus;
-    float cp = (float) cargoPlus;
-    float bl = (float) (this->baseLoad + loadBonus);
-    this->cargoPlus = loadBonus + (int) ((cp * bl) / 100.0f);
+    this->cargoPlus = modBonus + (int) ((float) cargoPlus * (float) (this->baseLoad + modBonus) / 100.0f);
     this->compression = cargoPlus;
-    this->value = getCargoValue() + this->value;
+    this->value += getCargoValue();
 }
 
 void Ship::adjustPrice() {
