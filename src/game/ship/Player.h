@@ -114,7 +114,7 @@ public:
 
     ~Player();
 
-    int GetEngineEvent();
+    FMOD::Event *GetEngineEvent();
 
     void calcWeaponSounds(int count);
 
@@ -202,7 +202,7 @@ public:
 
     void setEmpForce(float value);
 
-    float *setHitVector(float x, float y, float z);
+    void setHitVector(float x, float y, float z);
 
     void setHitpoints(int value);
 
@@ -228,13 +228,13 @@ public:
 
     void setVulnerable(bool value);
 
-    void shoot(int a, int b, long long pos, bool flag);
+    bool shoot(int a, int b, long long pos, bool flag);
 
-    void shoot(int a, int b, long long pos, bool flag, Matrix mat);
+    bool shoot(int a, int b, long long pos, bool flag, Matrix mat);
 
-    void shoot(int a, long long pos, bool flag);
+    bool shoot(int a, long long pos, bool flag);
 
-    void shoot(int a, long long pos, bool flag, Matrix mat);
+    bool shoot(int a, long long pos, bool flag, Matrix mat);
 
     void turnEnemy();
 
@@ -250,7 +250,7 @@ public:
 
     void damageShield(int damage);
 
-    float damageGamma(float amount);
+    void damageGamma(float amount);
 
     Array<Player *> *getEnemies();
 

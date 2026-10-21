@@ -385,8 +385,8 @@ Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector d
     reinterpret_cast<int &>(this->field_0xa4_b0) = 0;
 }
 
-void Gun::shoot(Matrix m, int n, bool b) {
-    this->shootAt(m, n, 0, b);
+bool Gun::shoot(Matrix m, int n, bool b) {
+    return this->shootAt(m, n, nullptr, b);
 }
 
 void Gun::setEnemy(Player *enemy) {
@@ -502,11 +502,14 @@ void Gun::translate(const Vector &v) {
     }
 }
 
-void Gun::shootAt(Matrix m, int n, Player *p, bool b) {
+// TODO(decomp): unreconstructed body (original is 1788 bytes); the original returns whether a
+// projectile was fired (Player::shoot branches on it).
+bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
     (void) m;
     this->damage = n;
     this->target = p;
     this->ignited = b;
+    return true;
 }
 
 static int *const gCC_status = nullptr;
