@@ -48,6 +48,8 @@ float Level::b;
 
 #include "game/ship/PlayerFixedObject.h"
 #include "game/ship/PlayerStation.h"
+#include "game/ship/PlayerJumpgate.h"
+#include "game/ship/PlayerWormHole.h"
 #include <new>
 #include "game/ship/Agent.h"
 #include "engine/render/Engine.h"
@@ -894,58 +896,213 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
 }
 
 void Level::createSpace() {
-    if (*(unsigned *) &this->skyboxMesh == 0xffffffff) {
-        int alien = Globals::status->inAlienOrbit();
+    using namespace AbyssEngine::AEMath;
+    static const unsigned short jumpgateMeshes[12 * 4] = {
+            15000, 15002, 15001, 15003, 15004, 15006, 15005, 15007, 15008, 15010, 15009, 15011,
+            15012, 15014, 15013, 15015, 14725, 0, 14726, 0, 14723, 0, 14725, 0, 14722, 0, 14725, 0,
+            14720, 0, 14721, 0, 2, 0, 2, 0, 2, 0, 4, 0, 3, 0, 3, 0, 2, 0, 3, 0};
+    static const unsigned short jumpgateLodMeshes[12 * 2] = {
+            15016, 15020, 15017, 15021, 15018, 15022, 15019, 15023, 16900, 0, 16921, 0, 16904, 0,
+            18836, 0, 11, 0, 0, 0, 10, 0, 12, 0};
 
-        if (alien == 0) {
-            Globals::status->getSystem();
-            int sysVariant = (((SolarSystem *) Globals::status->getSystem())->getIndex() % 3);
-            unsigned int field08Handle;
-            Globals::Canvas->MeshCreate((unsigned short) (sysVariant + 0x45ba), field08Handle, false);
-            this->field_08 = field08Handle;
-            Globals::status->getSystem();
-            sysVariant = (((SolarSystem *) Globals::status->getSystem())->getIndex() % 3);
-            Globals::Canvas->TextureCreate((unsigned short) ((sysVariant + 0x2766) & 0xffff), nullptr, nullptr,
-                                           g_level_texOutScratch, false);
-
-            Globals::status->getSystem();
-            if (0xf < ((SolarSystem *) Globals::status->getSystem())->getTextureIndex()) {
-                Engine *eng = (Engine *) Globals::appManager->GetEngine();
-                if (eng->IsPostEffectActivated() != false) {
-                    AbyssEngine::Mesh *mp = Globals::Canvas->MeshGetPointer(
-                        (unsigned int) *(unsigned *) &this->skyboxMesh);
-                    mp->materialId = 0;
+    if (skyboxMesh == -1) {
+        if (Globals::status->inAlienOrbit()) {
+            Globals::Canvas->MeshCreate(0x45bc, (unsigned int &) field_08, false);
+            Globals::Canvas->TextureCreate(0x2768, (unsigned int &) field_19c, false);
+            Globals::Canvas->MeshCreate(0x4592, (unsigned int &) skyboxMesh, false);
+            Globals::Canvas->TextureCreate(0x275b, (unsigned int &) field_198, false);
+        } else {
+            Globals::Canvas->MeshCreate(0x45ba + ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() % 3,
+                                        (unsigned int &) field_08, false);
+            Globals::Canvas->TextureCreate(0x2766 + ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() % 3,
+                                           (unsigned int &) field_19c, false);
+            if (Globals::status->getCurrentCampaignMission() == 0 && missionPtr == 3) {
+                Globals::Canvas->MeshCreate(0x458b, (unsigned int &) skyboxMesh, false);
+                Globals::Canvas->TextureCreate(0x2754, (unsigned int &) field_198, false);
+            } else {
+                if (Globals::status->inSupernovaSystem()) {
+                    if (Globals::status->getCurrentCampaignMission() == 0x59) {
+                        Globals::Canvas->MeshCreate(0x458d, (unsigned int &) skyboxMesh, false);
+                        Globals::Canvas->TextureCreate(0x2756, (unsigned int &) field_198, false);
+                    } else {
+                        if (Globals::status->getCurrentCampaignMission() <= 0x9d) {
+                            // the dying star and its shock wave
+                            Globals::Canvas->MeshCreate(0x45a0, (unsigned int &) skyboxTexture, false);
+                            Globals::Canvas->TransformCreate((unsigned int &) field_10);
+                            Globals::Canvas->TransformAddMeshId(field_10, skyboxTexture);
+                            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_10))->Update(1000, false);
+                            Globals::Canvas->MeshCreate(0x45a1, (unsigned int &) field_14, false);
+                            Globals::Canvas->TransformCreate((unsigned int &) field_18);
+                            Globals::Canvas->TransformAddMeshId(field_18, field_14);
+                            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_18))->Update(1000, false);
+                            int mission = Globals::status->getCurrentCampaignMission();
+                            Globals::Canvas->TextureCreate(mission < 0x6a ? 0x2764 : 0x2765, (unsigned int &) field_1a0, false);
+                        }
+                        Globals::Canvas->MeshCreate(0x4597, (unsigned int &) skyboxMesh, false);
+                        Globals::Canvas->TextureCreate(0x2760, (unsigned int &) field_198, false);
+                    }
+                } else {
+                    Globals::Canvas->MeshCreate(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() + 0x4588,
+                                                (unsigned int &) skyboxMesh, false);
+                    Globals::Canvas->TextureCreate(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() + 0x2751,
+                                                   (unsigned int &) field_198, false);
+                }
+                int systemIndex = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex();
+                int systemIndex2 = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex();
+                if (systemIndex == 24 || systemIndex2 == 25 || systemIndex == 26) {
+                    supernovaFlareActive = 1;
+                    Globals::Canvas->MeshCreate(0x3827, (unsigned int &) supernovaFlareMesh, false);
+                    Globals::Canvas->TextureCreate(0x8282, (unsigned int &) supernovaFlareTexture, false);
+                    Globals::Canvas->TextureCreate(0x8283, (unsigned int &) field_1c8, false);
+                }
+                if (Globals::status->inPlanetRingOrbit()) {
+                    unsigned int mesh;
+                    Globals::Canvas->MeshCreate(0x499f, mesh, false);
+                    Globals::Canvas->TransformCreate((unsigned int &) field_1b4);
+                    Globals::Canvas->TransformAddMeshId(field_1b4, mesh);
+                    Globals::Canvas->TextureCreate(0x715a, (unsigned int &) field_1b8, false);
+                }
+                if (Globals::status->inStormOrbit()) {
+                    unsigned int mesh;
+                    Globals::Canvas->MeshCreate(0x49a0, mesh, false);
+                    Globals::Canvas->TransformCreate((unsigned int &) field_1bc);
+                    Globals::Canvas->TransformAddMeshId(field_1bc, mesh);
+                    Globals::Canvas->TextureCreate(0x715b, (unsigned int &) field_1c0, false);
                 }
             }
-        } else {
-            unsigned int field08Handle;
-            Globals::Canvas->MeshCreate((unsigned short) 0x45bc, field08Handle, false);
-            this->field_08 = field08Handle;
-            Globals::Canvas->TextureCreate((unsigned short) 0x2768, nullptr, nullptr, g_level_texOutScratch, false);
-            unsigned int skyboxMeshHandle;
-            Globals::Canvas->MeshCreate((unsigned short) 0x4592, skyboxMeshHandle, false);
-            this->skyboxMesh = skyboxMeshHandle;
-            Globals::Canvas->TextureCreate((unsigned short) 0x275b, nullptr, nullptr, g_level_texOutScratch, false);
+            if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() >= 16
+                && ((Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated()) {
+                reinterpret_cast<float &>(Globals::Canvas->MeshGetPointer(skyboxMesh)->materialId) = 0.22f;
+            }
         }
 
-        this->skyRotX = 0.0f;
-        this->skyRotY = 0.0f;
-        this->skyRotZ = 0.0f;
+        if (Globals::status->inFogSkyboxOrbit()) {
+            skyRotX = 0.0f;
+            skyRotY = 0.0f;
+            skyRotZ = 0.0f;
+        } else {
+            Globals::rnd->setSeed(Globals::status->getStation() != nullptr ? Globals::status->getStation()->getIndex() * 2 : -1);
+            skyRotX = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
+            skyRotY = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
+            skyRotZ = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
+            Globals::rnd->reset();
+        }
     }
 
-    int mode = this->missionPtr;
-    if (mode == 4 || mode == 0x17) {
-        StarSystem *ss = (StarSystem *) ::operator new(0x60);
-        new(ss) StarSystem(mode);
-        *(StarSystem **) &this->starSystem = ss;
-        this->skyRotX = 0.0f;
-        this->skyRotY = 0.0f;
-        this->skyRotZ = 0.0f;
-        return;
+    if (missionPtr != 4 && missionPtr != 23) {
+        bool aliens = comingFromAlienWorld || Globals::status->getStation()->isAttackedByAliens()
+                      || Globals::status->inAlienOrbit();
+        bool earlyAliens = aliens & (Globals::status->getCurrentCampaignMission() < 43);
+        if (earlyAliens) {
+            Globals::globals->addSoundResourceToList(34);
+        }
+        landmarks = new Array<KIPlayer *>();
+        ArraySetLength(4, *landmarks);
+        if (!Globals::status->inEmptyOrbit()
+            || (!Globals::status->inAlienOrbit()
+                && (Globals::status->getStation()->getIndex() == 27 || Globals::status->getStation()->getIndex() == 110
+                    || Globals::status->getStation()->getIndex() == 111))) {
+            (*landmarks)[0] = new PlayerStation(Globals::status->getStation());
+            lodManager->addObject(((PlayerStation *) (*landmarks)[0])->rootGeometry);
+            if (Globals::status->dlc1Won()) {
+                Station *station = (Station *) (intptr_t) Globals::galaxy->getStation(101);
+                (*landmarks)[0]->name = station->getName();
+                delete station;
+            }
+        } else {
+            (*landmarks)[0] = nullptr;
+        }
+
+        Vector gatePosition = reinterpret_cast<Vector &>(field_18c);
+        field_138 = 0;
+        Globals::rnd->setSeed(Globals::status->getStation() != nullptr
+                              ? (long long) (Globals::status->getStation()->getIndex() * 2) : -1);
+        for (int i = 1; i < 3; i++) {
+            if (i == 1 && (Globals::status->getSystem() == 0
+                           || !((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate())) {
+                delete (*landmarks)[1];
+                (*landmarks)[1] = nullptr;
+                continue;
+            }
+            if (Globals::status->getStation() != nullptr) {
+                int side = Globals::rnd->nextInt(2);
+                int offset = Globals::rnd->nextInt(500) + 250;
+                field_138 += (side == 0 ? -offset : offset) * 16;
+                float angle = (float) field_138;
+                reinterpret_cast<Vector &>(field_18c).z = angle * 3.0f + (i == 1 ? 90000.0f : 120000.0f);
+                Matrix rotation;
+                MatrixSetRotation(rotation, 0.0f, angle * (1.0f / 65536.0f) * 6.2831855f, 0.0f);
+                gatePosition = MatrixRotateVector(rotation, reinterpret_cast<Vector &>(field_18c));
+                gatePosition.y = 0.0f;
+            }
+            int race = Globals::status->inAlienOrbit() ? 0 : ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            AEGeometry *geometry = new AEGeometry(jumpgateMeshes[race * 4 + 0], Globals::Canvas, false);
+            unsigned int ring = -1;
+            Globals::Canvas->TransformCreate(ring);
+            Globals::Canvas->TransformAddMesh(ring, jumpgateMeshes[race * 4 + 1], false);
+            unsigned int glow = -1;
+            Globals::Canvas->TransformCreate(glow);
+            Globals::Canvas->TransformAddMesh(glow, jumpgateMeshes[race * 4 + 2], false);
+            geometry->addChild(ring);
+            geometry->addChild(glow);
+            (*landmarks)[i] = new PlayerJumpgate(15, geometry, gatePosition.x, gatePosition.y, gatePosition.z, i != 2);
+            if (i == 2) {
+                (*landmarks)[2]->player->radius = 0;
+            }
+            unsigned int jump = -1;
+            Globals::Canvas->TransformCreate(jump);
+            Globals::Canvas->TransformAddMesh(jump, jumpgateMeshes[race * 4 + 3], false);
+            ((PlayerJumpgate *) (*landmarks)[i])->addJumpAnimationHandle(jump);
+            unsigned short lodMeshes[2] = {jumpgateLodMeshes[race * 2 + 0], jumpgateLodMeshes[race * 2 + 1]};
+            int lodDistances[2] = {40000, 70000};
+            (*landmarks)[i]->geometry->setLodMeshes(lodMeshes, lodDistances, 2);
+            lodManager->addObject((*landmarks)[i]->geometry);
+            if (race == 1) {
+                unsigned short childLodMeshes[2] = {0x3ab0, 0x3ab1};
+                (*landmarks)[i]->geometry->setLodChildMeshes(childLodMeshes);
+            }
+        }
+        Globals::rnd->reset();
+
+        if (Globals::status->inAlienOrbit()) {
+            float y = (float) (Globals::rnd->nextInt(20000) - 10000);
+            float z = (float) (Globals::rnd->nextInt(50000) + 170000);
+            Vector position = {0.0f, y, z};
+            (*landmarks)[2]->setPosition(position);
+            (*landmarks)[2]->geometry->setDirection(-position, Vector{0.0f, 1.0f, 0.0f});
+            field_138 = 0;
+        }
+        if (!Globals::status->gameWon()) {
+            PlayerWormHole *wormhole = new PlayerWormHole(0x4262, new AEGeometry(0x4262, Globals::Canvas, false),
+                                                          (float) (Globals::rnd->nextInt(80000) - 40000),
+                                                          (float) (Globals::rnd->nextInt(40000) - 20000),
+                                                          (float) (Globals::rnd->nextInt(40000) + 40000), earlyAliens);
+            (*landmarks)[3] = wormhole;
+            (*landmarks)[3]->setLevel(this);
+        }
+        field_138 += 0x8000;
+        if (!initStreamOutPosition) {
+            field_138 = Globals::rnd->nextInt(2) == 0 ? 1600 : -1600;
+        }
     }
 
-    this->landmarks = new Array<KIPlayer *>();
-    ArraySetLength(4, *(this->landmarks));
+    starSystem = new StarSystem(missionPtr);
+    SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
+    if (system != nullptr) {
+        r = (float) system->starR;
+        g = (float) system->starG;
+        b = (float) system->starB;
+    } else {
+        r = 10.0f;
+        g = 136.0f;
+        b = 10.0f;
+    }
+    i_r = r;
+    i_g = g;
+    i_b = b;
+    r_min = (int) (r / 3.0f);
+    g_min = (int) (g / 3.0f);
+    b_min = (int) (b / 3.0f);
 }
 
 void Level::createRadioMessage(int type, int sub) {
@@ -6914,6 +7071,6 @@ float Level::i_a;
 float Level::i_b;
 float Level::i_g;
 float Level::i_r;
-float Level::b_min;
-float Level::g_min;
-float Level::r_min;
+int Level::b_min;
+int Level::g_min;
+int Level::r_min;
