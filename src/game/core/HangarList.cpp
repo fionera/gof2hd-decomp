@@ -23,8 +23,8 @@ HangarList::~HangarList() {
 }
 
 void HangarList::setCurrentTab(int tab, bool blueprintIngredients) {
-    (void) tab;
-    this->currentTab = blueprintIngredients;
+    (void) blueprintIngredients;
+    this->currentTab = tab;
 }
 
 void HangarList::setCurrentItemIndex(int index) {

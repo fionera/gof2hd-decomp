@@ -394,7 +394,7 @@ public:
 
     void loadAgents();
 
-    Array<int> *loadAgents(Array<int> *agents);
+    void loadAgents(Array<int> *agents);
 
     int getCollectedBounties(int index);
 

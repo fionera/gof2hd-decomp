@@ -76,10 +76,7 @@ int Status::getSystem() { return system; }
 
 int Status::inSupernovaSystem() {
     if (inAlienOrbit()) return 0;
-    int idx = asSystem(system)->getIndex();
-    int result = 0;
-    if (idx == 0x1b && currentCampaignMission < 0x9e) result = 1;
-    return result;
+    return asSystem(system)->getIndex() == 0x1b && currentCampaignMission < 0x9e;
 }
 
 void Status::visitStation() { stationsVisited = stationsVisited + 1; }
@@ -116,15 +113,13 @@ void Status::setStationsVisited(int v) { stationsVisited = v; }
 
 void Status::setStationStack(Array<Station *> *stack) { stationStack = stack; }
 
-struct HardCoreHolder {
-    char pad[0x2c];
+struct DifficultyOptionView {
+    uint8_t pad[0x2c];
     float difficulty;
 };
 
-static HardCoreHolder *g_hardCoreHolder = nullptr;
-
 bool Status::hardCoreMode() {
-    return g_hardCoreHolder->difficulty == 1.5f;
+    return reinterpret_cast<DifficultyOptionView *>(Globals::options)->difficulty == 1.5f;
 }
 
 void Status::crateCaptured(int delta) { capturedCrates = delta + capturedCrates; }
@@ -1656,8 +1651,8 @@ void Status::loadAgents() {
     agents = fr.loadAgents();
 }
 
-Array<int> *Status::loadAgents(Array<int> *agents) {
-    return agents;
+void Status::loadAgents(Array<int> *agents) {
+    (void) agents;
 }
 
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
