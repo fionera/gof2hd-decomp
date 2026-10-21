@@ -29,7 +29,7 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
     uint32_t id;
     canvas->MeshCreate(meshId, id, false);
     Mesh *ptr = canvas->MeshGetPointer(id);
-    sourceMeshes.data()[rows * lod + index] = ptr;
+    meshes.data()[rows * lod + index] = ptr;
 }
 
 void LodMeshMerger::update() {
@@ -114,92 +114,71 @@ void LodMeshMerger::update() {
     dirty = 0;
 }
 
-LodMeshMerger::LodMeshMerger(int rows_, int cols_, PaintCanvas *canvas_, uint16_t flags_)
-    : rows(rows_),
-      flags(flags_),
-      initialized(0),
-      canvas(canvas_),
-      mergedMesh(nullptr),
-      transformedMeshes(nullptr),
-      transforms(nullptr),
-      lodLevels(nullptr),
-      cols(cols_),
-      dirty(0) {
-    ArraySetLength((uint32_t)(cols * rows), sourceMeshes);
+LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
+    : mergedMesh(nullptr), transformedMeshes(nullptr), transforms(nullptr), lodLevels(nullptr) {
+    this->canvas = canvas;
+    this->rows = rows;
+    this->cols = cols;
+    ArraySetLength(cols * rows, this->meshes);
 
-    uint32_t n = (uint32_t) rows;
-    transformedMeshes = new Mesh *[n * cols]();
-
-    lodLevels = new int8_t[n]();
-
-    transforms = new Matrix[n];
-    for (uint32_t i = 0; i < n; i++) {
-        Matrix tmp;
-        tmp.m[0] = 1.0f;
-        tmp.m[1] = 0.0f;
-        tmp.m[2] = 0.0f;
-        tmp.m[3] = 0.0f;
-        tmp.m[4] = 1.0f;
-        tmp.m[5] = 0.0f;
-        tmp.m[6] = 0.0f;
-        tmp.m[7] = 0.0f;
-        tmp.m[8] = 0.0f;
-        tmp.m[9] = 0.0f;
-        tmp.m[10] = 1.0f;
-        tmp.m[11] = 0.0f;
-        tmp.m[12] = 0.0f;
-        tmp.m[13] = 0.0f;
-        tmp.m[14] = 1.0f;
-        transforms[i] = tmp;
+    int count = cols * this->rows;
+    this->transformedMeshes = new Mesh *[count];
+    memset(this->transformedMeshes, 0, count * sizeof(Mesh *));
+    this->lodLevels = new int8_t[this->rows];
+    memset(this->lodLevels, 0, this->rows);
+    this->transforms = new Matrix[this->rows];
+    for (int i = 0; i < this->rows; i++) {
+        this->transforms[i] = Matrix();
     }
-
-    enabled = new uint8_t[n];
-    for (uint32_t i = 0; i < n; i++) enabled[i] = 1;
-
-    visible = new uint8_t[n];
-    for (uint32_t i = 0; i < n; i++) visible[i] = 1;
+    this->enabled = new uint8_t[this->rows];
+    for (int i = 0; i < this->rows; i++) {
+        this->enabled[i] = 1;
+    }
+    this->visible = new uint8_t[this->rows];
+    for (int i = 0; i < this->rows; i++) {
+        this->visible[i] = 1;
+    }
+    this->dirty = 0;
+    this->flags = flags;
+    this->initialized = 0;
 }
 
-int LodMeshMerger::init() {
+void LodMeshMerger::init() {
     if (initialized != 0) {
-        return initialized;
+        return;
     }
 
     for (int i = 0; i < rows; i++) {
         int c = 0;
-        int lod = lodLevels[i];
-        if (lod >= -1 && cols <= lod) {
+        if (lodLevels[i] >= -1 && cols <= lodLevels[i]) {
             lodLevels[i] = 0;
         }
         for (; c < cols; c++) {
-            Mesh *mesh = sourceMeshes.data()[rows * c + i];
+            Mesh *mesh = meshes.data()[rows * c + i];
             if (mesh != nullptr) {
                 transformedMeshes[rows * c + i] = transformMesh(mesh, transforms[i]);
             }
         }
     }
 
-    uint32_t nv = 0;
-    uint32_t ni = 0;
+    uint32_t vertexCount = 0;
+    uint32_t indexCount = 0;
     for (int i = 0; i < rows; i++) {
-        Mesh *m0 = sourceMeshes.data()[i];
-        nv += m0->vertexCount;
-        ni += (uint32_t)m0->indexCount / 3u;
+        Mesh *mesh = meshes.data()[i];
+        indexCount += (uint32_t) mesh->indexCount / 3u;
+        vertexCount += mesh->vertexCount;
     }
+    if (vertexCount > 65535u) vertexCount = 65535u;
+    if (indexCount > 65535u) indexCount = 65535u;
 
-    uint32_t nv_clamped = nv;
-    if (nv_clamped > 65535u) nv_clamped = 65535u;
-    uint32_t ni_clamped = (ni < 65535u) ? ni : 65535u;
-
-    canvas->MeshCreate((uint16_t)ni_clamped, (uint16_t)nv_clamped,
-                       (signed char) sourceMeshes.data()[0]->vertexFormat,
+    canvas->MeshCreate((uint16_t) vertexCount, (uint16_t) indexCount,
+                       (signed char) meshes.data()[0]->vertexFormat,
                        flags, mergedMeshId);
     mergedMesh = canvas->MeshGetPointer(mergedMeshId);
     canvas->TransformCreate(transformId);
     canvas->TransformAddMeshId(transformId, mergedMeshId);
     dirty = 1;
     update();
-    return initialized;
 }
 
 Mesh *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
@@ -264,38 +243,31 @@ Mesh *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
     return out;
 }
 
-static void (*const g_freeFn)(void *) = ::free; // lint: void_ptr (matches libc free signature)
 
 LodMeshMerger::~LodMeshMerger() {
-    int count = rows * cols;
-    for (int i = 0; i < count; i++) {
-        Mesh *cell = transformedMeshes[i];
-        if (cell != nullptr) {
-            if (cell->positions != nullptr) {
-                delete[] (char *) cell->positions;
-                cell->positions = nullptr;
-            }
-            if (cell->normals != nullptr) {
-                delete[] (char *) cell->normals;
-                cell->normals = nullptr;
-            }
-            ::operator delete(cell);
-            transformedMeshes[i] = nullptr;
-        }
+    for (int i = 0; i < this->rows * this->cols; i++) {
+        if (this->transformedMeshes[i]->positions != nullptr)
+            delete[] this->transformedMeshes[i]->positions;
+        this->transformedMeshes[i]->positions = nullptr;
+        if (this->transformedMeshes[i]->normals != nullptr)
+            delete[] this->transformedMeshes[i]->normals;
+        this->transformedMeshes[i]->normals = nullptr;
+        if (this->transformedMeshes[i] != nullptr)
+            delete this->transformedMeshes[i];
+        this->transformedMeshes[i] = nullptr;
     }
-    delete[] transformedMeshes;
-    transformedMeshes = nullptr;
+    if (this->transformedMeshes != nullptr)
+        delete[] this->transformedMeshes;
+    this->transformedMeshes = nullptr;
 
-    g_freeFn(lodLevels);
-    lodLevels = nullptr;
-    g_freeFn(enabled);
-    enabled = nullptr;
-    g_freeFn(visible);
-    visible = nullptr;
+    delete[] this->lodLevels;
+    this->lodLevels = nullptr;
+    delete[] this->enabled;
+    this->enabled = nullptr;
+    delete[] this->visible;
+    this->visible = nullptr;
 
-    delete[] transforms;
-    transforms = nullptr;
-
-    ArrayRemoveAll(sourceMeshes);
-    sourceMeshes.shrink_to_fit();
+    if (this->transforms != nullptr)
+        delete[] this->transforms;
+    this->transforms = nullptr;
 }

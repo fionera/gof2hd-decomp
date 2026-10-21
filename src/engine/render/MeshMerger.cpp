@@ -21,7 +21,6 @@ void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
 
 void AEMath_BSphere_assign(void *dst, const void *src); // lint: void_ptr (external symbol signature)
 
-static void (*const g_freeFn)(void *) = ::free; // lint: void_ptr (matches libc free signature)
 
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                        PaintCanvas *canvas, uint16_t flags) {
@@ -159,39 +158,34 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags) 
 }
 
 MeshMerger::~MeshMerger() {
-    if (this->sourceMeshes != nullptr) delete[] this->sourceMeshes;
+    if (this->sourceMeshes != nullptr)
+        delete[] this->sourceMeshes;
     this->sourceMeshes = nullptr;
 
-    int count = this->rows * this->cols;
-    for (int i = 0; i < count; i++) {
-        Mesh *cell = this->transformedMeshes[i];
-        if (cell->positions != nullptr) {
-            delete[] (char *) cell->positions;
-            this->transformedMeshes[i]->positions = nullptr;
-        }
-        cell = this->transformedMeshes[i];
-        if (cell->normals != nullptr) {
-            delete[] (char *) cell->normals;
-            this->transformedMeshes[i]->normals = nullptr;
-        }
-        cell = this->transformedMeshes[i];
-        if (cell != nullptr) {
-            delete reinterpret_cast<unsigned char *>(cell);
-        }
+    for (int i = 0; i < this->rows * this->cols; i++) {
+        if (this->transformedMeshes[i]->positions != nullptr)
+            delete[] this->transformedMeshes[i]->positions;
+        this->transformedMeshes[i]->positions = nullptr;
+        if (this->transformedMeshes[i]->normals != nullptr)
+            delete[] this->transformedMeshes[i]->normals;
+        this->transformedMeshes[i]->normals = nullptr;
+        if (this->transformedMeshes[i] != nullptr)
+            delete this->transformedMeshes[i];
         this->transformedMeshes[i] = nullptr;
     }
-    Mesh **transformedMeshes = this->transformedMeshes;
-    if (transformedMeshes != nullptr) delete[] transformedMeshes;
+    if (this->transformedMeshes != nullptr)
+        delete[] this->transformedMeshes;
     this->transformedMeshes = nullptr;
 
-    g_freeFn(this->lods);
+    delete[] this->lods;
     this->lods = nullptr;
-    g_freeFn(this->enabledFlags);
+    delete[] this->enabledFlags;
     this->enabledFlags = nullptr;
-    g_freeFn(this->visibleFlags);
+    delete[] this->visibleFlags;
     this->visibleFlags = nullptr;
 
-    if (this->matrices != nullptr) delete[] this->matrices;
+    if (this->matrices != nullptr)
+        delete[] this->matrices;
     this->matrices = nullptr;
 }
 
@@ -296,48 +290,44 @@ void MeshMerger::update() {
     this->dirty = 0;
 }
 
-int MeshMerger::init() {
+void MeshMerger::init() {
     if (this->initialized != 0) {
-        return this->initialized;
+        return;
     }
 
-    int rows;
-    for (int i = 0; i < (rows = this->rows); i++) {
-        int lod = this->lods[i];
-        if (lod >= -1 && this->cols <= lod) {
+    for (int i = 0; i < this->rows; i++) {
+        int c = 0;
+        if (this->lods[i] >= -1 && this->cols <= this->lods[i]) {
             this->lods[i] = 0;
         }
-        for (int c = 0; c < this->cols; c++) {
+        for (; c < this->cols; c++) {
             Mesh *mesh = this->sourceMeshes[this->rows * c + i];
             if (mesh != nullptr) {
-                Mesh *t = (Mesh *) this->transformMesh(mesh, *(const Matrix *) (this->matrices + i * 0x3c));
-                this->transformedMeshes[this->rows * c + i] = t;
+                this->transformedMeshes[this->rows * c + i] =
+                        transformMesh(mesh, *(const Matrix *) (this->matrices + i * 0x3c));
             }
         }
     }
 
-    uint16_t nv = 0;
-    uint16_t ni = 0;
-    for (int i = 0; i < rows; i++) {
-        Mesh *m0 = this->sourceMeshes[i];
-        ni = ni + aeabi_uidiv16(m0->indexCount, 3);
-        nv = nv + m0->vertexCount;
+    uint32_t vertexCount = 0;
+    uint32_t indexCount = 0;
+    for (int i = 0; i < this->rows; i++) {
+        Mesh *mesh = this->sourceMeshes[i];
+        indexCount += (uint32_t) mesh->indexCount / 3u;
+        vertexCount += mesh->vertexCount;
     }
 
-    Mesh *first = this->sourceMeshes[0];
-    this->canvas->MeshCreate(nv, ni, (signed char) first->vertexFormat, this->mergedMeshId);
+    this->canvas->MeshCreate((uint16_t) vertexCount, (uint16_t) indexCount,
+                             (signed char) this->sourceMeshes[0]->vertexFormat, this->flags,
+                             this->mergedMeshId);
     this->mergedMesh = this->canvas->MeshGetPointer(this->mergedMeshId);
     this->canvas->TransformCreate(this->transformId);
     this->canvas->TransformAddMeshId(this->transformId, this->mergedMeshId);
     this->dirty = 1;
-
-    this->initialized = 1;
     this->update();
-    return this->initialized;
 }
 
-void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) { // lint: void_ptr (method return type baked into symbol-parity contract)
-    // lint: void_ptr (method return type baked into symbol-parity contract)
+MeshMerger::Mesh *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
     Mesh *out = new Mesh(mesh);
     out->vertexCount = mesh->vertexCount;
     out->indexCount = mesh->indexCount;

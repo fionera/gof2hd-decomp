@@ -54,9 +54,9 @@ public:
 
     void update();
 
-    int init();
+    void init();
 
-    void *transformMesh(Mesh *mesh, const Matrix &m); // lint: void_ptr (method return type baked into symbol-parity contract)
+    static Mesh *transformMesh(Mesh *mesh, const Matrix &m);
 
     // lint: void_ptr (method return type baked into symbol-parity contract)
 };
