@@ -190,9 +190,7 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     Quaternion operator*(const Quaternion &a, float s) {
-        float yv = a.y * s;
-        float wv = a.w * s;
-        return Quaternion(wv, 0.0f, yv, 0.0f);
+        return Quaternion(a.x * s, a.y * s, a.z * s, a.w * s);
     }
 }
 
@@ -311,17 +309,16 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int ImageFontGetYOffset(ImageFont *font) {
-        short v = (font == 0) ? (short) 0 : font->yOffset;
-        return (int) v;
+    short ImageFontGetYOffset(ImageFont *font) {
+        if (font == 0)
+            return 0;
+        return font->yOffset;
     }
 }
 
 namespace AbyssEngine {
     Quaternion operator-(const Quaternion &a, const Quaternion &b) {
-        float yv = a.y - b.y;
-        float wv = a.w - b.w;
-        return Quaternion(wv, 0.0f, yv, 0.0f);
+        return Quaternion(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
     }
 }
 
@@ -709,7 +706,7 @@ namespace AbyssEngine {
         for (unsigned int i = 0; (data = (CurveKeyframe **) curve->entries),
                                  i < (unsigned int) curve->count; ++i) {
             CurveKeyframe *entry = data[i];
-            char tag = (char) entry->tag;
+            int8_t tag = (int8_t) entry->tag;
             if (tag == 3 || tag == 2)
                 operator delete(entry);
             else if (tag == 1)
@@ -717,9 +714,10 @@ namespace AbyssEngine {
             curve = (Curve *) *slot;
         }
 
-        if (data != 0)
+        if (data != 0) {
             operator delete[](data);
-        curve = (Curve *) *slot;
+            curve = (Curve *) *slot;
+        }
         curve->entries = 0;
 
         if (*slot != 0)
@@ -1887,9 +1885,7 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     Quaternion operator+(const Quaternion &a, const Quaternion &b) {
-        float yv = a.y + b.y;
-        float wv = a.w + b.w;
-        return Quaternion(wv, 0.0f, yv, 0.0f);
+        return Quaternion(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
     }
 }
 
@@ -1903,8 +1899,7 @@ namespace AbyssEngine {
             sizes[0] = size;
             return;
         }
-        unsigned int count = sys->count;
-        for (unsigned int i = 0; i < count; ++i)
+        for (unsigned int i = 0; i < sys->count; ++i)
             sizes[i] = size;
     }
 }
@@ -2116,13 +2111,14 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    void ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, unsigned int count) {
-        unsigned short i = 0;
-        unsigned int v;
+    int ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, unsigned int count) {
+        unsigned int i = 0;
+        unsigned short v;
         do {
-            v = (unsigned int) i;
+            v = (unsigned short) i;
             i = i + 1;
         } while (v < count);
+        return (int) i;
     }
 }
 
