@@ -491,16 +491,18 @@ Status::Status() {
 }
 
 int Status::getFreighterMissionStationBit(int station) {
-    if (station == 0xf) return 4;
-    if (station == 0x5f) return 6;
-    if (station == 0x28) return 3;
-    if (station == 0x2d) return 9;
-    if (station == 0x3c) return 5;
-    if (station == 0x46) return 7;
-    if (station == 0x50) return 8;
-    if (station == 0x55) return 1;
-    if (station == 0x1e) return 2;
-    return 0;
+    switch (station) {
+        case 85: return 1;
+        case 30: return 2;
+        case 40: return 3;
+        case 15: return 4;
+        case 60: return 5;
+        case 95: return 6;
+        case 70: return 7;
+        case 80: return 8;
+        case 45: return 9;
+        default: return 0;
+    }
 }
 
 static int **g_ccpPriceMod = nullptr;
@@ -568,7 +570,7 @@ void Status::calcCargoPrices() {
     }
 }
 
-bool Status::isOnStack(Station *s) {
+Station *Status::isOnStack(Station *s) {
     unsigned i = 0;
     while (true) {
         if (2 < i) {
@@ -580,7 +582,7 @@ bool Status::isOnStack(Station *s) {
         }
         i = i + 1;
     }
-    return (*stationStack)[i] != 0;
+    return (*stationStack)[i];
 }
 
 bool Status::inAlienOrbit() {

@@ -1191,7 +1191,7 @@ void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
     AEFile::Write((int32_t)w->getIndex(), fd);
     AEFile::Write((int32_t)w->getBoard(), fd);
     AEFile::Write((int32_t)w->getRace(), fd);
-    AEFile::Write((uint8_t)w->isMale(), fd);
+    AEFile::Write(w->isMale(), fd);
     AEFile::Write((int32_t)w->getShip(), fd);
     AEFile::Write((int32_t)w->getWeapon(), fd);
     AEFile::Write((int32_t)w->getHitpoints(), fd);
