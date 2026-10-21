@@ -93,9 +93,9 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->useEgoOrientation = 0;
     this->explosions = nullptr;
     this->explosionReady = nullptr;
-    this->unusedSlot = -1;
     this->gun = gun;
     this->level = level;
+    this->unusedSlot = -1;
     this->secondaryTransform = -1;
     Globals::Canvas->TransformCreate(this->transform);
     this->meshId = mesh;
@@ -106,8 +106,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->scaleZ = 1.0f;
     this->spinAngle = 0.0f;
 
-    int type = gun->weaponType;
-    switch (type) {
+    switch (gun->weaponType) {
         case 1:
         case 3:
         case 8:
@@ -117,26 +116,28 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
             this->visible = 0;
             break;
     }
-    if (Globals::iPad && (type == 1 || type == 3 || type == 8)) {
+    if (Globals::iPad && (gun->weaponType == 1 || gun->weaponType == 3 || gun->weaponType == 8)) {
         this->scaleX = 0.6f;
         this->scaleY = 0.6f;
         this->scaleZ = 0.6f;
     }
-    if (type == 0xb) {
-        this->scaleX = 0.7f;
-        this->scaleY = 0.7f;
-        this->scaleZ = 0.7f;
-    }
-    if (type == 0x19) {
-        this->explosions = new Array<Explosion *>();
-        ArraySetLength(gun->count, *this->explosions);
-        this->explosionReady = new uint8_t[this->explosions->size()];
-        for (uint32_t i = 0; i < this->explosions->size(); ++i) {
-            (*this->explosions)[i] =
-                    new Explosion(gun->itemIndex == 0xb0 ? 8 : gun->itemIndex == 0xb1 ? 9 : 10);
-            (*this->explosions)[i]->setWeaponIndex(gun->itemIndex);
-            this->explosionReady[i] = 1;
-        }
+    switch (gun->weaponType) {
+        case 0xb:
+            this->scaleX = 0.7f;
+            this->scaleY = 0.7f;
+            this->scaleZ = 0.7f;
+            break;
+        case 0x19:
+            this->explosions = new Array<Explosion *>();
+            ArraySetLength(gun->positions.count, *this->explosions);
+            this->explosionReady = new uint8_t[this->explosions->size()];
+            for (uint32_t i = 0; i < this->explosions->size(); ++i) {
+                (*this->explosions)[i] =
+                        new Explosion(gun->itemIndex == 0xb0 ? 8 : gun->itemIndex == 0xb1 ? 9 : 10);
+                (*this->explosions)[i]->setWeaponIndex(gun->itemIndex);
+                this->explosionReady[i] = 1;
+            }
+            break;
     }
 
     if (gun->field_0xa8 != 0)
@@ -146,11 +147,9 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     else
         this->hasGeometry = 0;
 
-    AEGeometry *geometry = nullptr;
-    if (this->hasGeometry)
-        geometry = new AEGeometry((uint16_t) kProjectileMeshes[gun->itemIndex], Globals::Canvas, false);
-
-    this->geometry = geometry;
+    this->geometry = this->hasGeometry
+                     ? new AEGeometry((uint16_t) kProjectileMeshes[gun->itemIndex], Globals::Canvas, false)
+                     : nullptr;
     this->wasFiring = 0;
     this->deltaTime = 0;
 }
@@ -182,101 +181,94 @@ void ObjectGun::update(int dt) {
     this->deltaTime = dt;
     this->gun->update(dt);
 
-    if (this->hasGeometry == 0) {
-        if (!this->gun->isPlayerGun() && this->gun->owner != nullptr &&
-            this->gun->owner->getKIPlayer() != nullptr && this->gun->owner->getKIPlayer()->field_0x3f_b != 0) {
-            this->hasGeometry = 1;
-            this->geometry = new AEGeometry((uint16_t) kProjectileMeshes[this->gun->itemIndex], Globals::Canvas,
-                                            false);
-        }
-        if (this->hasGeometry == 0)
-            goto tail;
+    if (this->hasGeometry == 0 && !this->gun->isPlayerGun() && this->gun->owner != nullptr &&
+        this->gun->owner->getKIPlayer() != nullptr && this->gun->owner->getKIPlayer()->field_0x3f_b != 0) {
+        this->hasGeometry = 1;
+        this->geometry = new AEGeometry((uint16_t) kProjectileMeshes[this->gun->itemIndex], Globals::Canvas, false);
     }
 
-    if (this->gun->delayActive == 0) {
-        // Idle: rewind the muzzle animation.
-        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
-        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-    } else {
-        PlayerEgo *ego = this->level->getPlayer();
-        Vector position;
-        if (this->gun->isPlayerGun())
-            position = ego->getPosition();
-        else
-            position = this->gun->owner->getPosition();
+    if (this->hasGeometry != 0) {
+        if (this->gun->delayActive != 0) {
+            PlayerEgo *ego = this->level->getPlayer();
+            Vector position = this->gun->isPlayerGun() ? ego->getPosition() : this->gun->owner->getPosition();
 
-        Gun *gun = this->gun;
-        Matrix shipMatrix = reinterpret_cast<const Matrix &>(
-                (gun->isPlayerGun() ? ego->player : gun->owner)->transform[0]);
-        Vector barrel = gun->offset;
-        barrel.z += -100.0f;
-        position += AbyssEngine::AEMath::MatrixRotateVector(shipMatrix, barrel);
-        this->geometry->setPosition(position);
-        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
-                ->Update((int64_t) dt, false);
+            Matrix shipMatrix = reinterpret_cast<const Matrix &>(
+                    (this->gun->isPlayerGun() ? ego->player : this->gun->owner)->transform[0]);
+            Vector barrel = this->gun->offset;
+            barrel.z += -100.0f;
+            position += AbyssEngine::AEMath::MatrixRotateVector(shipMatrix, barrel);
+            this->geometry->setPosition(position);
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
+                    ->Update((int64_t) dt, false);
 
-        if (this->gun->weaponType == ITEM_SORT_TURRET) {
-            Matrix turret = ego->turretRoot->getMatrix() * ego->turretGeometry->getMatrix();
-            gun = this->gun;
-            int item = gun->itemIndex;
-            Vector muzzle;
-            muzzle.x = 0.0f;
-            muzzle.y = 0.0f;
-            switch (item) {
-                case 0x2f: muzzle.z = 260.0f;
-                    break;
-                case 0xb5: muzzle.z = 190.0f;
-                    break;
-                case 0x31: muzzle.z = 200.0f;
-                    break;
-                case 0xb4: muzzle.z = 172.0f;
-                    break;
-                case 0x30: muzzle.z = 170.0f;
-                    break;
-                case 0xe0: muzzle.z = 147.0f;
-                    break;
-                case 0xb6: muzzle.z = 150.0f;
-                    break;
-                default: muzzle.z = 205.0f;
-                    break;
-            }
-            if (gun->field_0xa4_b0) {
-                if (item == 0xb5) {
-                    muzzle.x = gun->field_0xa6 ? -35.0f : 35.0f;
-                } else {
-                    float side = item == 0x30 ? 20.0f : 45.0f;
-                    muzzle.x = gun->field_0xa6 ? gun->offset.x + -side : side - gun->offset.x;
-                }
-            }
-            if (gun->field_0xa5) {
-                if (item == 0xe0)
-                    muzzle.y = gun->field_0xa7 ? -13.0f : 13.0f;
+            if (this->gun->weaponType == ITEM_SORT_TURRET) {
+                Matrix turret = ego->turretRoot->getMatrix() * ego->turretGeometry->getMatrix();
+                Gun *gun = this->gun;
+                int item = gun->itemIndex;
+                // Muzzle offset along the barrel per turret model.
+                float barrelLength;
+                if (item == 0x2f)
+                    barrelLength = 260.0f;
                 else if (item == 0xb5)
-                    muzzle.y = gun->field_0xa7 ? -16.5f : 16.5f;
+                    barrelLength = 190.0f;
+                else if (item == 0x31)
+                    barrelLength = 200.0f;
+                else if (item == 0xb4)
+                    barrelLength = 172.0f;
+                else if (item == 0x30)
+                    barrelLength = 170.0f;
+                else if (item == 0xb6)
+                    barrelLength = 115.0f;
+                else
+                    barrelLength = 205.0f;
+                Vector muzzle = {0.0f, 0.0f, barrelLength};
+                if (item == 0xe0)
+                    muzzle.z = 147.0f;
+                else if (item == 0xb6)
+                    muzzle.z = 150.0f;
+                if (gun->field_0xa4_b0) {
+                    if (item == 0xb5)
+                        muzzle.x = gun->field_0xa6 ? -35.0f : 35.0f;
+                    else if (item == 0x30)
+                        muzzle.x = gun->field_0xa6 ? gun->offset.x + -20.0f : 20.0f - gun->offset.x;
+                    else
+                        muzzle.x = gun->field_0xa6 ? gun->offset.x + -45.0f : 45.0f - gun->offset.x;
+                }
+                if (gun->field_0xa5) {
+                    if (item != 0xe0) {
+                        if (item == 0xb5)
+                            muzzle.y = gun->field_0xa7 ? -16.5f : 16.5f;
+                    } else {
+                        muzzle.y = gun->field_0xa7 ? -13.0f : 13.0f;
+                    }
+                }
+                Vector rotated = AbyssEngine::AEMath::MatrixRotateVector(turret, muzzle);
+                this->geometry->setMatrix(turret);
+                this->geometry->translate(rotated);
+            } else {
+                PaintCanvas *canvas = Globals::Canvas;
+                Matrix camera = *reinterpret_cast<const Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                this->geometry->setDirection(AbyssEngine::AEMath::MatrixGetDir(shipMatrix),
+                                             AbyssEngine::AEMath::MatrixGetUp(camera));
             }
-            Vector rotated = AbyssEngine::AEMath::MatrixRotateVector(turret, muzzle);
-            this->geometry->setMatrix(turret);
-            this->geometry->translate(rotated);
         } else {
-            PaintCanvas *canvas = Globals::Canvas;
-            Matrix camera = *reinterpret_cast<const Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-            this->geometry->setDirection(AbyssEngine::AEMath::MatrixGetDir(shipMatrix),
-                                         AbyssEngine::AEMath::MatrixGetUp(camera));
+            // Idle: rewind the muzzle animation.
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
         }
     }
 
-tail:
     this->wasFiring = this->gun->delayActive;
     if (this->gun->weaponType == ITEM_SORT_SCATTER_GUN) {
-        for (uint32_t i = 0; i < this->gun->count; ++i) {
+        for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
             if (this->gun->hitFlags[i] == 0)
                 continue;
             if (this->explosionReady[i] != 0) {
-                (*this->explosions)[i]->start(reinterpret_cast<Vector *>(this->gun->hitPositions)[i],
+                (*this->explosions)[i]->start(this->gun->hitPositions.data()[i],
                                               Vector{0.0f, 0.0f, 0.0f});
                 this->explosionReady[i] = 0;
             }
@@ -298,7 +290,7 @@ void ObjectGun::render() {
 
     Gun *gun = this->gun;
     if (gun->weaponType == ITEM_SORT_SCATTER_GUN) {
-        for (uint32_t i = 0; i < gun->count; ++i) {
+        for (uint32_t i = 0; i < gun->positions.count; ++i) {
             if (gun->hitFlags[i] != 0) {
                 this->explosions->data()[i]->render();
                 gun = this->gun;
@@ -320,15 +312,15 @@ void ObjectGun::render() {
         }
 
         int inactive = 0;
-        for (uint32_t i = 0; i < this->gun->count; ++i) {
-            const Vector &position = ((const Vector *) this->gun->positions)[i];
+        for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
+            const Vector &position = this->gun->positions.data()[i];
             if (position.x == 50000.0f) {
                 // Parked slot (no live projectile).
                 ++inactive;
                 continue;
             }
             MatrixSetTranslation(this->orientation, position.x, position.y, position.z);
-            this->dir = VectorNormalize(((const Vector *) this->gun->velocities)[i]);
+            this->dir = VectorNormalize(this->gun->velocities.data()[i]);
 
             if (this->visible != 0) {
                 // Camera-facing projectile (beam heads, flares): billboard along the flight direction.
@@ -364,11 +356,11 @@ void ObjectGun::render() {
                 MatrixSetRotation(steer, player->rocketPitch, player->rocketYaw, 0.0f);
                 player->field_0x40 *= steer;
                 this->orientation = player->field_0x40;
-                const Vector &rocket = ((const Vector *) this->gun->positions)[i];
+                const Vector &rocket = this->gun->positions.data()[i];
                 MatrixSetTranslation(this->orientation, rocket.x, rocket.y, rocket.z);
                 const Vector heading = MatrixGetDir(this->orientation);
                 const Vector unit = VectorNormalize(heading);
-                ((Vector *) this->gun->velocities)[i] = unit * this->gun->pitchRate;
+                this->gun->velocities.data()[i] = unit * this->gun->pitchRate;
                 player->rocketPitch = 0.0f;
                 player->rocketYaw = 0.0f;
                 MatrixSetRotation(steer, 0.0f, 0.0f, this->rollAngle);
@@ -378,7 +370,7 @@ void ObjectGun::render() {
                 const Vector *upSource;
                 Vector worldUp;
                 if (this->level != nullptr && this->level->getPlayer() != nullptr && this->gun->isPlayerGun() != 0) {
-                    upSource = &((const Vector *) this->gun->upVectors)[i];
+                    upSource = &this->gun->upVectors.data()[i];
                 } else {
                     worldUp.y = 1.0f;
                     worldUp.x = 0.0f;
@@ -435,7 +427,7 @@ void ObjectGun::render() {
         }
 
         gun = this->gun;
-        if (inactive >= (int) gun->velocitiesCount)
+        if (inactive >= (int) gun->velocities.count)
             gun->active = 0;
     }
 

@@ -123,11 +123,9 @@ void AutoPilotList::draw() {
 
     int drawn = 0;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
-        String *text = (*this->entries)[i];
-        if (text != nullptr) {
-            Globals::Canvas->DrawString(
-                (unsigned int) (uintptr_t) Globals::font, *text,
-                this->x, drawn * 0xf + this->y + 0x12, false);
+        if ((*this->entries)[i] != nullptr) {
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*this->entries)[i],
+                                        this->x, drawn * 0xf + this->y + 0x12, false);
             drawn++;
         }
     }

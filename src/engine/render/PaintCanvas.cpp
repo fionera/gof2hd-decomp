@@ -32,7 +32,7 @@ namespace AbyssEngine {
                                Camera *camera);
     void CameraSetPerspective(float fov, float aspect, float width, float height,
                                Camera *camera);
-    int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, AEMath::Matrix *view,
+    bool CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, AEMath::Matrix *view,
                                     Camera *camera);
     int CameraIsPointinViewFrustum(const AEMath::Vector &point, AEMath::Matrix *view, Camera *camera);
     void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTextures);
@@ -2189,7 +2189,7 @@ void PaintCanvas::MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode,
     out = this->materials.count - 1;
 }
 
-int PaintCanvas::CameraIsSphereinViewFrustum(const AbyssEngine::AEMath::Vector &point, float radius) {
+bool PaintCanvas::CameraIsSphereinViewFrustum(const AbyssEngine::AEMath::Vector &point, float radius) {
     if (radius == 0.0f || this->currentCamera >= this->cameras.count) {
         return 1;
     }
@@ -2546,13 +2546,16 @@ PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
     this->currentCamera = 0xffffffff;
 
     AbyssEngine::MeshCreate(engine, 4, 2, 0x11, (AbyssEngine::Mesh **) &this->lineMesh);
-    unsigned short *quad = (unsigned short *) ((PCMeshView *) this->lineMesh)->indexBuffer;
-    quad[0] = 0;
-    quad[1] = 2;
-    quad[2] = 1;
-    quad[3] = 0;
-    quad[4] = 3;
-    quad[5] = 2;
+    {
+        // Two triangles for the line quad.
+        unsigned short *quad = (unsigned short *) ((PCMeshView *) this->lineMesh)->indexBuffer;
+        quad[0] = 0;
+        quad[1] = 2;
+        quad[2] = 1;
+        quad[3] = 0;
+        quad[4] = 3;
+        quad[5] = 2;
+    }
     this->colorR = 1.0f;
     this->colorG = 1.0f;
     this->colorB = 1.0f;
@@ -2827,19 +2830,17 @@ void PaintCanvas::DrawRegion2D(unsigned int index, float angle, int pivotX, int 
 
 void PaintCanvas::MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
                                   unsigned short v0, unsigned short v1, unsigned short v2) {
-    if (meshIndex < this->meshes.count) {
-        PCMeshView *mesh = (PCMeshView *) this->meshes.data_[meshIndex];
-        if (tri * 3 < mesh->indexCount) {
-            unsigned short *buf = (unsigned short *) mesh->indexBuffer;
-            buf[tri * 3] = v0;
-            buf[tri * 3 + 1] = v1;
-            buf[tri * 3 + 2] = v2;
-        }
-    }
+    if (meshIndex >= this->meshes.count)
+        return;
+    Mesh *mesh = this->meshes.data_[meshIndex];
+    int first = tri * 3;
+    if (first >= mesh->indexCount)
+        return;
+    unsigned short *indices = (unsigned short *) mesh->indices;
+    indices[first] = v0;
+    indices[first + 1] = v1;
+    indices[first + 2] = v2;
 }
-
-
-
 
 void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
     if (this->gameOrientation == orientation) {

@@ -16,14 +16,14 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
     // The position/offset vectors and both matrices are value-initialised members.
     this->id = id;
     this->target = target;
-    *reinterpret_cast<Vector *>(&this->targetOffsetX) = camOffset;
-    *reinterpret_cast<Vector *>(&this->camOffsetX) = targetOffset;
-    *reinterpret_cast<Vector *>(&this->posX) = Vector{0.0f, 0.0f, 0.0f};
+    this->targetOffset = camOffset;
+    this->camOffset = targetOffset;
+    this->position = Vector{0.0f, 0.0f, 0.0f};
     *getTargetPos() = Vector{0.0f, 0.0f, 0.0f};
 
     Matrix m = target->getMatrix();
     *getTargetPos() = MatrixTransformVector(m, camOffset);
-    *reinterpret_cast<Vector *>(&this->posX) = MatrixTransformVector(m, targetOffset);
+    this->position = MatrixTransformVector(m, targetOffset);
     *getUp() = Vector{0.0f, 1.0f, 0.0f};
 
     this->locked = 0;
@@ -51,9 +51,9 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
 }
 
 AEGeometry *TargetFollowCamera::getTarget() { return this->target; }
-Vector *TargetFollowCamera::getPosition() { return reinterpret_cast<Vector *>(&this->posX); }
-Vector *TargetFollowCamera::getTargetOffset() { return reinterpret_cast<Vector *>(&this->targetOffsetX); }
-Vector *TargetFollowCamera::getCamOffset() { return reinterpret_cast<Vector *>(&this->camOffsetX); }
+Vector *TargetFollowCamera::getPosition() { return &this->position; }
+Vector *TargetFollowCamera::getTargetOffset() { return &this->targetOffset; }
+Vector *TargetFollowCamera::getCamOffset() { return &this->camOffset; }
 
 Matrix TargetFollowCamera::getLocal() { return this->localMatrix; }
 void TargetFollowCamera::setLocal(Matrix m) { this->localMatrix = m; }
@@ -90,15 +90,15 @@ void TargetFollowCamera::setPosition(const Vector &position) {
     float x = position.x;
     float y = position.y;
     float z = position.z;
-    this->posX = x;
-    this->posY = y;
-    this->posZ = z;
+    this->position.x = x;
+    this->position.y = y;
+    this->position.z = z;
 }
 
 void TargetFollowCamera::setPosition(float x, float y, float z) {
-    this->posX = x;
-    this->posY = y;
-    this->posZ = z;
+    this->position.x = x;
+    this->position.y = y;
+    this->position.z = z;
 }
 
 void TargetFollowCamera::setRumblePercentage(float pct, int frequency) {
@@ -116,7 +116,7 @@ void TargetFollowCamera::setBoostPercentage(float pct, int frequency) {
 void TargetFollowCamera::enableFirstPersonCam(bool enabled) {
     this->firstPerson = enabled;
     Vector offset = {0.0f, 150.0f, -800.0f};
-    *reinterpret_cast<Vector *>(&this->fpOffsetX) = offset;
+    this->fpOffset = offset;
     this->shakeAccum = 0;
     this->shakeReference = 0;
 }
@@ -152,21 +152,21 @@ void TargetFollowCamera::setLocked(bool locked) {
 }
 
 void TargetFollowCamera::translateNoUpdate(float dx, float dy, float dz) {
-    this->posX += dx;
-    this->posY += dy;
-    this->posZ += dz;
-    this->targetX += dx;
-    this->targetY += dy;
-    this->targetZ += dz;
+    this->position.x += dx;
+    this->position.y += dy;
+    this->position.z += dz;
+    this->targetPos.x += dx;
+    this->targetPos.y += dy;
+    this->targetPos.z += dz;
 }
 
 void TargetFollowCamera::translate(float dx, float dy, float dz) {
-    this->posX += dx;
-    this->posY += dy;
-    this->posZ += dz;
-    this->targetX += dx;
-    this->targetY += dy;
-    this->targetZ += dz;
+    this->position.x += dx;
+    this->position.y += dy;
+    this->position.z += dz;
+    this->targetPos.x += dx;
+    this->targetPos.y += dy;
+    this->targetPos.z += dz;
     update(1000);
 }
 
@@ -262,15 +262,15 @@ void TargetFollowCamera::update(int dt) {
     } else if (this->locked) {
         this->hideShip = 0;
         *getTargetPos() = MatrixGetPosition(targetMatrix);
-        this->targetX -= this->posX;
-        this->targetY -= this->posY;
-        this->targetZ -= this->posZ;
+        this->targetPos.x -= this->position.x;
+        this->targetPos.y -= this->position.y;
+        this->targetPos.z -= this->position.z;
     } else if (this->firstPerson) {
         targetMatrix = MatrixIdentity(targetMatrix);
         MatrixSetRotation(targetMatrix, 0.0f, 3.1415927f, 0.0f);
         targetMatrix = this->firstPersonMatrix * targetMatrix;
         Vector lastPosition = *getPosition();
-        *getPosition() = MatrixTransformVector(targetMatrix, *reinterpret_cast<Vector *>(&this->fpOffsetX));
+        *getPosition() = MatrixTransformVector(targetMatrix, this->fpOffset);
         if (this->shakeReference == 0.0f || this->shakeAccum < this->shakeReference * 1.5f) {
             Vector step = *getPosition() - lastPosition;
             if (this->shakeReference == 0.0f)
@@ -285,9 +285,9 @@ void TargetFollowCamera::update(int dt) {
             this->hideShip = this->shakeAccum > this->shakeReference * 0.75f;
             *getPosition() = lastPosition + step;
         }
-        targetMatrix[3] = this->posX;
-        targetMatrix[7] = this->posY;
-        targetMatrix[11] = this->posZ;
+        targetMatrix[3] = this->position.x;
+        targetMatrix[7] = this->position.y;
+        targetMatrix[11] = this->position.z;
         *getUp() = MatrixGetUp(targetMatrix);
         Vector direction = MatrixGetDir(targetMatrix);
         *getTargetPos() = MatrixTransformVector(targetMatrix, direction);
@@ -297,7 +297,7 @@ void TargetFollowCamera::update(int dt) {
         *getUp() = MatrixGetUp(targetMatrix);
         if (this->rotateAroundTargetEnabled) {
             Matrix rotation;
-            MatrixSetRotation(rotation, this->rotX, this->rotY, this->rotZ,
+            MatrixSetRotation(rotation, this->rotation.x, this->rotation.y, this->rotation.z,
                               (AbyssEngine::AEMath::RotationOrder) 2);
             targetMatrix *= rotation;
             float length = VectorLength(*getCamOffset());
@@ -343,17 +343,17 @@ void TargetFollowCamera::update(int dt) {
         if (this->rumbleTimer < 1)
             this->rumbleActive = 0;
         float scale = this->firstPerson ? 0.001f : 1.0f;
-        this->posX += scale * (float) (-this->rumbleStrength + Globals::rnd->nextInt(this->rumbleStrength * 2));
-        this->posY += scale * (float) (-this->rumbleStrength + Globals::rnd->nextInt(this->rumbleStrength * 2));
-        this->posZ += scale * (float) (-this->rumbleStrength + Globals::rnd->nextInt(this->rumbleStrength * 2));
+        this->position.x += scale * (float) (-this->rumbleStrength + Globals::rnd->nextInt(this->rumbleStrength * 2));
+        this->position.y += scale * (float) (-this->rumbleStrength + Globals::rnd->nextInt(this->rumbleStrength * 2));
+        this->position.z += scale * (float) (-this->rumbleStrength + Globals::rnd->nextInt(this->rumbleStrength * 2));
     }
 
     if (this->shakeAmount > 0.0f) {
         int frequency = this->shakeFrequency;
         float scale = this->firstPerson ? 0.0015f : 1.0f;
-        this->targetX += scale * (this->shakeAmount * (float) (Globals::rnd->nextInt(frequency * 2) - frequency));
-        this->targetY += scale * (this->shakeAmount * (float) (Globals::rnd->nextInt(frequency * 2) - frequency));
-        this->targetZ += scale * (this->shakeAmount * (float) (Globals::rnd->nextInt(frequency * 2) - frequency));
+        this->targetPos.x += scale * (this->shakeAmount * (float) (Globals::rnd->nextInt(frequency * 2) - frequency));
+        this->targetPos.y += scale * (this->shakeAmount * (float) (Globals::rnd->nextInt(frequency * 2) - frequency));
+        this->targetPos.z += scale * (this->shakeAmount * (float) (Globals::rnd->nextInt(frequency * 2) - frequency));
     }
 
     targetMatrix = MatrixGetLookAt(*getPosition(), *getTargetPos(), *getUp());

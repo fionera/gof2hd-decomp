@@ -424,6 +424,11 @@ void CutScene::checkForTurret() {
             barrelChild = 18845;
             offsetY = 82.0f;
             break;
+        case 48:
+            baseMesh = 6772;
+            barrelMesh = 6773;
+            offsetY = 55.0f;
+            break;
         case 49:
             baseMesh = 6774;
             barrelMesh = 6775;
@@ -468,11 +473,6 @@ void CutScene::checkForTurret() {
             barrelChild = 18798;
             barrelChild2 = 18800;
             offsetY = 75.0f;
-            break;
-        case 48:
-            baseMesh = 6772;
-            barrelMesh = 6773;
-            offsetY = 55.0f;
             break;
         default:
             break;

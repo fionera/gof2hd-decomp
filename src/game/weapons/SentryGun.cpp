@@ -26,8 +26,7 @@ void SentryGun::update(int dt) {
              static_cast<Player *>(obj->player)->isDead())) {
             static_cast<Level *>(this->level)->field_6c += 1;
             obj->revive();
-            obj->setPosition(*reinterpret_cast<AbyssEngine::AEMath::Vector *>(
-                    this->gun->positions + this->gun->currentProjectile * 12));
+            obj->setPosition(this->gun->positions.data()[this->gun->currentProjectile]);
             obj->setActive(true);
             return;
         }

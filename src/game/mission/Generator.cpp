@@ -762,7 +762,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         if (pick == 8) {
             continue;
         }
-        if (race > 3 && pick == 10) {
+        if (pick == 10 && race > 3) {
             continue;
         }
         if (used != nullptr) {
