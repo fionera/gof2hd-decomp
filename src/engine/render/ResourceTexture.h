@@ -2,6 +2,8 @@
 #define GOF2_RESOURCETEXTURE_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
+#include <cstdint>
+#include <cstring>
 
 namespace AbyssEngine {
     class ResourceTexture {
@@ -9,9 +11,23 @@ namespace AbyssEngine {
         char *name;
         float value;
 
-        ResourceTexture(const char *name, float value);
+        // Defined in-class: the original emits these as weak (inline) C2 symbols in the
+        // GameResource TU that uses them.
+        ResourceTexture(const char *name, float value) {
+            uint32_t len = String::GetStringLength(name);
+            this->name = new char[len + 1U];
+            memcpy(this->name, name, len + 1U);
+            this->value = value;
+        }
 
-        ResourceTexture(const String &name, float value);
+        ResourceTexture(const String &name, float value) {
+            char *utf8 = name.GetAEChar();
+            uint32_t len = name.length;
+            this->name = new char[len + 1U];
+            memcpy(this->name, utf8, len + 1U);
+            this->value = value;
+            delete[] utf8;
+        }
 
         ~ResourceTexture();
     };
