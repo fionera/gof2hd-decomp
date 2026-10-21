@@ -808,7 +808,8 @@ String Globals::getAgentMissionText(Agent *agent) {
                 text = *Globals::gameText->getText(firstLine);
                 Globals::rnd->setSeed(agent->getName().size() * agent->getRace() +
                                       Globals::status->getStation()->getIndex());
-                if ((int) text.IndexOf(String("#S")) >= 0) {
+                int planetPos = text.IndexOf(String("#S"));
+                if (planetPos >= 0) {
                     text = Globals::status->replaceHash(String(text, false),
                                                         String(Globals::getRandomPlanetName(), false),
                                                         String("#S", false));
