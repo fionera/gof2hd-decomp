@@ -620,19 +620,19 @@ void ApplicationManager::OnTouchBegin(int x, int y, void *touch) { // lint: void
                     return;
                 }
                 break;
-            case 1:
+            case 2:
                 if (x > this->paintCanvas->GetWidth() - 50 && y > this->paintCanvas->GetHeight() - 50) {
                     AbyssEngine::debugModusIndex++;
                     return;
                 }
                 break;
-            case 2:
+            case 3:
                 if (x <= 49 && y > this->paintCanvas->GetHeight() - 50) {
                     this->engine->field_0x74 = !this->engine->field_0x74;
                     return;
                 }
                 break;
-            case 3: {
+            case 1: {
                 int width = this->paintCanvas->GetWidth();
                 if (y <= 49 && x > width - 50) {
                     AbyssEngine::debugModusIndex++;
@@ -649,9 +649,15 @@ void ApplicationManager::OnTouchBegin(int x, int y, void *touch) { // lint: void
                 int height = this->paintCanvas->GetHeight();
                 int half = this->paintCanvas->GetWidth() / 2;
                 if (y > height - 100) {
-                    Engine::LodDistShader = x >= half ? 10000000.0f : 0.0f;
+                    if (x < half) {
+                        Engine::LodDistShader = 0.0f;
+                    } else {
+                        Engine::LodDistShader = 10000000.0f;
+                    }
+                } else if (x < half) {
+                    Engine::LodDistShader += -100.0f;
                 } else {
-                    Engine::LodDistShader += x >= half ? 100.0f : -100.0f;
+                    Engine::LodDistShader += 100.0f;
                 }
             }
         }
