@@ -122,9 +122,10 @@ static const float kRimLightColors[57] = {
     0.67f, 0.63f, 0.46f,
 };
 
-static inline float clampLightComponent(float v) {
-    return v > 2.0f ? 2.0f : (v > 0.0f ? v : 0.0f);
-}
+// Keep the operands expanded: introducing a temporary changes the original
+// clang min/max lowering in initLight and render.
+#define STAR_MIN(a, b) ((a) > (b) ? (b) : (a))
+#define STAR_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 StarSystem::StarSystem(int mode) {
     this->stationIdxArray = nullptr;
@@ -364,6 +365,7 @@ StarSystem::StarSystem(int mode) {
 void StarSystem::initLight() {
     ((Engine *) Globals::appManager->GetEngine())->lightCount = 2;
 
+    float ambientScale = 0.15f;
     int sunIndex;
     bool normalSystem;
     if (this->abstractSystem) {
@@ -373,11 +375,12 @@ void StarSystem::initLight() {
         sunIndex = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() * 3;
         normalSystem = !this->abstractSystem;
     }
-    float ambientScale = 0.15f;
     this->sunLightColor[0] = kSunLightColors[sunIndex];
     this->sunLightColor[1] = kSunLightColors[sunIndex + 1];
     this->sunLightColor[2] = kSunLightColors[sunIndex + 2];
 
+    int stationIndex;
+    uint8_t abstractStation;
     if (normalSystem) {
         if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() == 15 &&
             (Globals::status->getCurrentCampaignMission() == 89 ||
@@ -386,21 +389,24 @@ void StarSystem::initLight() {
             this->sunLightColor[1] *= 0.5f;
             this->sunLightColor[2] *= 0.5f;
         }
-    }
-    if (!this->abstractSystem) {
-        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() == 15 &&
-            Globals::status->getCurrentCampaignMission() != 89) {
-            ambientScale = Globals::status->getCurrentCampaignMission() < 158 ? 0.7f : 0.15f;
+        if (!this->abstractSystem) {
+            if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() == 15 &&
+                Globals::status->getCurrentCampaignMission() != 89) {
+                ambientScale = Globals::status->getCurrentCampaignMission() < 158 ? 0.7f : 0.15f;
+            }
         }
+        stationIndex = this->abstractSystem ? 23 : Globals::status->getStation()->getTextureIndex() * 3;
+        abstractStation = this->abstractSystem;
+    } else {
+        stationIndex = 23;
+        abstractStation = 1;
     }
-
-    int stationIndex = this->abstractSystem ? 23 : Globals::status->getStation()->getTextureIndex() * 3;
     float stationR = kStationLightColors[stationIndex];
     float stationG = kStationLightColors[stationIndex + 1];
     float stationB = kStationLightColors[stationIndex + 2];
 
     float sunScale = 15.0f;
-    if (!this->abstractSystem &&
+    if (!abstractStation &&
         ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() == 15 &&
         Globals::status->getCurrentCampaignMission() != 89) {
         sunScale = Globals::status->getCurrentCampaignMission() < 158 ? 30.0f : 15.0f;
@@ -422,9 +428,9 @@ void StarSystem::initLight() {
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(
             this->lightDirection.x, this->lightDirection.y, this->lightDirection.z, 0x4000);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorAmbient(0.0f, 0.0f, 0.0f, 0x4000);
-    float diffuseR = clampLightComponent(sunScale * sunR);
-    float diffuseG = clampLightComponent(sunScale * sunG);
-    float diffuseB = clampLightComponent(sunScale * sunB);
+    float diffuseR = STAR_MIN(STAR_MAX(sunScale * sunR, 0.0f), 2.0f);
+    float diffuseG = STAR_MIN(STAR_MAX(sunScale * sunG, 0.0f), 2.0f);
+    float diffuseB = STAR_MIN(STAR_MAX(sunScale * sunB, 0.0f), 2.0f);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorDiffuse(diffuseR, diffuseG, diffuseB, 0x4000);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(2.0f, 2.0f, 2.0f, 0x4000);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(0.0f, 0.0f, -1.0f, 0x4001);
@@ -628,11 +634,7 @@ void StarSystem::render() {
             }
             if (i - 1 == (unsigned) StarSystem::orbitPlanetIndex && this->abstractSystem == 0 &&
                 !Globals::status->inPlanetRingOrbit()) {
-                float ring = cameraPos.z / -800000.0f;
-                float clamped = ring < 0.2f ? ring : 0.2f;
-                if (clamped < -0.2f) {
-                    clamped = -0.2f;
-                }
+                float clamped = STAR_MAX(-0.2f, STAR_MIN(0.2f, cameraPos.z / -800000.0f));
                 this->planetRingScaleOffset = clamped;
                 (*this->planetsArray)[i]->setScaling(this->planetScale + clamped, this->planetScale + clamped,
                                                     this->planetScale + clamped);
@@ -654,6 +656,9 @@ void StarSystem::render() {
         }
     }
 }
+#undef STAR_MIN
+#undef STAR_MAX
+
 void StarSystem::render2D() {
     if (this->lensFlare == nullptr)
         return;
