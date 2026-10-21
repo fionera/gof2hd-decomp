@@ -108,6 +108,15 @@ static const char hw_buy2_yes[1] = "", hw_buy2_no[1] = "", hw_buy2_icon[1] = "";
 static const char hw_init_buy[1] = "", hw_init_sell[1] = "", hw_init_lbl[1] = "",
         hw_init_more[1] = "", hw_init_back[1] = "", hw_init_help[1] = "";
 
+// Credits granted by the five free-credit offers (index 0 is the "rate us" entry without reward).
+static const int FREE_CREDIT_AMOUNTS[6] = {0, 7500, 5000, 5000, 5000, 7500};
+
+// View of the application data block used by the credit dialogs (GameData byte 0x15).
+struct HangarAppData {
+    uint8_t pad_0x0[0x15];
+    uint8_t freeCreditsOffer;
+};
+
 int HangarWindow::lastTab = 1;
 
 HangarWindow::HangarWindow() {
@@ -559,253 +568,392 @@ void HangarWindow::render3D() {
     }
 }
 
+static inline unsigned int hangarFont() { return (unsigned int) (uintptr_t) Globals::font; }
+
 void HangarWindow::render() {
-    Layout *layout = *g_hw_layout;
-    PaintCanvas *canvas = Globals::Canvas;
-    ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
-
-    unsigned char *dlc = AppManager_GetApplicationModule(*g_hw_dlcModuleId);
-
-    bool dlcShown = dlc != 0 && (*(uint8_t *) ((char *) (dlc) + (0x18))) != 0;
-
-    if (dlc == 0 || !dlcShown) {
-        int tab2 = this->viewMode;
-        if (tab2 == 0) {
-            ((Layout *) (layout))->drawBG();
-            unsigned int tab = this->hangarList->getCurrentTab();
-            Array<ListItem *> *items = ((HangarList *) this->hangarList)->getCurrentTabItems();
-            if (items != 0) {
-                float startPos = this->getRelativeScrollStartPos();
-                float visH = (float) this->visibleHeight;
-                float scrollH = this->getRelativeScrollHeight();
-                int scrollPx = (int) (scrollH * visH);
-                int startPx = (int) (startPos * visH);
-
-                int topY = *g_hw_screenWidth;
-                if (scrollPx > 0)
-                    topY = (topY - layout->field_0x48) - layout->field_0x2c_rowHeight;
-
-                int rowGap;
+    Globals::Canvas->SetColor(0xffffffffu);
+    ModStation *station = (ModStation *) Globals::appManager->GetApplicationModule(5);
+    if (station == nullptr || !station->pendingHangarClose) {
+        if (this->viewMode == 0) {
+            Globals::layout->drawBG();
+            int tab = this->hangarList->getCurrentTab();
+            Array<ListItem *> *items = this->hangarList->getCurrentTabItems();
+            if (items != nullptr) {
+                int barPos = (int) (this->getRelativeScrollStartPos() * (float) this->visibleHeight);
+                int barHeight = (int) (this->getRelativeScrollHeight() * (float) this->visibleHeight);
+                int listWidth = Globals::w;
+                if (barHeight > 0)
+                    listWidth = listWidth - Globals::layout->field_0x48 - Globals::layout->field_0x2c_rowHeight;
+                listWidth -= (Globals::layout->buttonInsetX + this->hintOffsetX) * 2;
+                int iconSpace;
                 if (tab == 0)
-                    rowGap = layout->field_0x4c << 1;
+                    iconSpace = Globals::layout->field_0x4c * 2;
                 else if (tab == 4 || tab == 1)
-                    rowGap = layout->field_0x50;
+                    iconSpace = Globals::layout->field_0x50;
                 else
-                    rowGap = 0;
+                    iconSpace = 0;
+                int textX = Globals::layout->field_0x4c + Globals::layout->field_0x2cc + iconSpace;
 
-                topY += (layout->buttonInsetX + this->hintOffsetX) * -2;
-                int baseY = layout->field_0x2cc;
-                int colW = layout->field_0x4c;
-
-                if (*g_hw_blackMarketHintFlag != 0 && *g_hw_introHintFlag == 0) {
-                    int iw = ((PaintCanvas *) canvas)->GetImage2DWidth(0);
-                    int ih = ((PaintCanvas *) canvas)->GetImage2DHeight(0);
-                    int rows = IDIV(*g_hw_screenHeight, 1);
-                    int y = 0;
+                if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
+                    int imgW = Globals::Canvas->GetImage2DWidth(this->hintImage);
+                    int imgH = Globals::Canvas->GetImage2DHeight(this->hintImage);
+                    int rows = Globals::h / imgH;
                     for (int r = 0; r <= rows; r++) {
-                        ((PaintCanvas *) canvas)->DrawImage2D((unsigned) this->hintImage,
-                                                              (layout->buttonInsetX - iw) + this->hintOffsetX, y,
-                                                              (unsigned char) 1);
-                        int off = (scrollPx < 1) ? 0 : (layout->field_0x48 + layout->field_0x2c_rowHeight);
-                        ((PaintCanvas *) canvas)->DrawImage2D((unsigned) this->hintImage,
-                                                              this->hintOffsetX + layout->buttonInsetX + topY + off, y,
-                                                              (unsigned char) 0);
-                        y += ih;
+                        Globals::Canvas->DrawImage2D(this->hintImage,
+                                                     Globals::layout->buttonInsetX - imgW + this->hintOffsetX,
+                                                     r * imgH, 1);
+                        Globals::Canvas->DrawImage2D(this->hintImage,
+                                                     this->hintOffsetX + Globals::layout->buttonInsetX + listWidth +
+                                                     (barHeight > 0
+                                                          ? Globals::layout->field_0x2c_rowHeight +
+                                                            Globals::layout->field_0x48
+                                                          : 0),
+                                                     r * imgH, 0);
                     }
                 }
 
-                int contentBase = colW + baseY + rowGap;
-
-                Array<TouchButton *> *btnArr = this->buttons;
-                for (int i = 0; i != 0x18; i++) {
-                    if (this->dragging == 0) {
-                        TouchButton *btn = (*this->buttons)[(i * 4) >> 2];
-                        if (btn != 0)
-                            btn->setVisible(false);
-                    }
+                for (int b = 0; b < 24; b++) {
+                    if (!this->dragging && (*this->buttons)[b] != nullptr)
+                        (*this->buttons)[b]->setVisible(false);
                 }
-
-                int boxW = rowGap - 2;
 
                 for (unsigned int i = 0; i < items->size(); i++) {
-                    int y = (layout->field_0x70_rowHeight + this->field_0x100.d) * (int) i +
-                            this->scrollOffset + layout->field_0x20_top + layout->field_0xc_leftMargin;
-                    if (y < 0 || y > *g_hw_screenHeight)
+                    int y = (Globals::layout->field_0x70_rowHeight + this->field_0x100.d) * i + this->scrollOffset +
+                            Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin;
+                    if (y < 0 || y > Globals::h)
                         continue;
+                    ListItem *item = (*items)[i];
 
-                    ListItem *li = items->data()[i];
-                    if (((ListItem *) (li))->isSelectable() == 0)
-                        continue;
-
-                    if (this->selectedItem == li && ((ListItem *) (li))->isTextButton() == 0) {
-                        String boxText;
-                        if (tab == 0 && ((ListItem *) li)->inTabIndex >= 0) {
-                            ((Layout *) (layout))->drawBox(10, this->hintOffsetX + layout->buttonInsetX, y, topY,
-                                                           layout->field_0x70_rowHeight, boxText);
+                    if (item->isSelectable()) {
+                        if (this->selectedItem == item && !item->isTextButton()) {
+                            if (tab == 0 && item->inTabIndex >= 0)
+                                Globals::layout->drawBox(10, this->hintOffsetX + Globals::layout->buttonInsetX, y,
+                                                         listWidth, Globals::layout->field_0x70_rowHeight, String(""));
+                            else
+                                Globals::layout->drawBox(4, this->hintOffsetX + Globals::layout->buttonInsetX, y,
+                                                         listWidth, Globals::layout->field_0x70_rowHeight, String(""));
+                        } else if (tab == 0 && item->inTabIndex >= 0) {
+                            Globals::layout->drawBox(9, this->hintOffsetX + Globals::layout->buttonInsetX, y,
+                                                     listWidth, Globals::layout->field_0x70_rowHeight, String(""));
                         } else {
-                            ((Layout *) (layout))->drawBox(4, this->hintOffsetX + layout->buttonInsetX, y, topY,
-                                                           layout->field_0x70_rowHeight, boxText);
+                            Globals::layout->drawBox(3, this->hintOffsetX + Globals::layout->buttonInsetX, y,
+                                                     listWidth, Globals::layout->field_0x70_rowHeight, String(""));
                         }
-                    } else if (tab != 0 || ((ListItem *) li)->inTabIndex < 0) {
-                        String boxText;
-                        ((Layout *) (layout))->drawBox(3, this->hintOffsetX + layout->buttonInsetX, y, topY,
-                                                       layout->field_0x70_rowHeight, boxText);
-                    } else {
-                        String boxText;
-                        ((Layout *) (layout))->drawBox(9, this->hintOffsetX + layout->buttonInsetX, y, topY,
-                                                       layout->field_0x70_rowHeight, boxText);
                     }
 
-                    ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
-                    String label;
-
-                    if (((ListItem *) (li))->isItem() == 0) {
-                        if (((ListItem *) (li))->isShip() != 0) {
-                            ((ListItem *) li)->ship->getIndex();
-
-                            int shipCredits = Globals::status->getCredits();
-                            int shipPrice = ((ListItem *) li)->ship->getPrice();
-                            unsigned int shipPriceColor = (shipCredits > shipPrice)
-                                                              ? 0xa35b5bffu
-                                                              : 0x7aa35bffu;
-                            ((PaintCanvas *) canvas)->SetColor(shipPriceColor);
-                            String price = Globals::layout->formatCredits(((ListItem *) li)->ship->getPrice());
-                            ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, price,
-                                                                 contentBase + layout->buttonInsetX + this->hintOffsetX,
-                                                                 0, (bool) 1);
-                            ((ImageFactory *) (*g_hw_globals))->drawShip(
-                                ((ListItem *) li)->ship->getIndex(), this->hintOffsetX + layout->buttonInsetX + rowGap,
-                                this->iconOffsetY + y);
-                            ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
-                        } else if (((ListItem *) (li))->isSlot() != 0) {
-                            if (tab == 4 && i == items->size() - 1) {
-                                (*this->buttons)[(0x5c) >> 2]->setPosition(
-                                    this->hintOffsetX + layout->buttonInsetX + topY / 2, layout->field_0x114_strip5c + y, 0x14);
-                                (*this->buttons)[(0x5c) >> 2]->setVisible(true);
-                                (*this->buttons)[(0x5c) >> 2]->draw();
-                                String tmp;
+                    Globals::Canvas->SetColor(0xffffffffu);
+                    String name;
+                    int buttonOffset = 0;
+                    if (item->isItem()) {
+                        name = *Globals::gameText->getText(item->item->getIndex() + 1274);
+                        if (tab == 4 || tab == 1) {
+                            if (item == this->selectedItem) {
+                                if (this->hangarList->getCurrentTab() == 1 ||
+                                    (this->hangarList->getCurrentTab() == 4 && item->isItem())) {
+                                    int right, left;
+                                    if (tab == 1) {
+                                        right = item->item->getStationAmount();
+                                        left = item->item->getAmount();
+                                    } else {
+                                        right = item->item->getAmount();
+                                        left = this->bluePrint->getCurrentAmount(item->item->getIndex());
+                                    }
+                                    if (left > 0) {
+                                        (*this->buttons)[8]->setPosition(
+                                            this->hintOffsetX + Globals::layout->buttonInsetX,
+                                            this->field_0x114 + y, 17);
+                                        (*this->buttons)[8]->setVisible(true);
+                                        (*this->buttons)[8]->draw();
+                                    }
+                                    if (right > 0) {
+                                        (*this->buttons)[9]->setPosition(
+                                            this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
+                                            this->field_0x114 + y, 18);
+                                        (*this->buttons)[9]->setVisible(true);
+                                        (*this->buttons)[9]->draw();
+                                    }
+                                    buttonOffset = (*this->buttons)[9]->getWidth() +
+                                                   Globals::layout->field_0x2c_rowHeight;
+                                }
+                                Globals::Canvas->SetColor(0xffffffffu);
+                                if (tab == 1) {
+                                    Globals::Canvas->DrawString(
+                                        hangarFont(), *Globals::gameText->getText(136),
+                                        this->hintOffsetX + Globals::layout->buttonInsetX + this->field_0x100.a -
+                                        Globals::Canvas->GetTextWidth(hangarFont(), *Globals::gameText->getText(136)) / 2,
+                                        y + 2, false);
+                                    Globals::Canvas->DrawString(
+                                        hangarFont(), *Globals::gameText->getText(183),
+                                        listWidth + this->hintOffsetX - this->field_0x100.a -
+                                        Globals::Canvas->GetTextWidth(hangarFont(), *Globals::gameText->getText(183)) / 2,
+                                        y + 2, false);
+                                } else {
+                                    Globals::Canvas->DrawString(
+                                        hangarFont(), *Globals::gameText->getText(183),
+                                        this->hintOffsetX + Globals::layout->buttonInsetX + this->field_0x100.a -
+                                        Globals::layout->field_0x254 -
+                                        Globals::Canvas->GetTextWidth(hangarFont(), *Globals::gameText->getText(183)) / 2,
+                                        y + 2, false);
+                                    Globals::Canvas->DrawString(
+                                        hangarFont(), *Globals::gameText->getText(271),
+                                        listWidth + this->hintOffsetX - this->field_0x100.a +
+                                        Globals::layout->field_0x258 -
+                                        Globals::Canvas->GetTextWidth(hangarFont(), *Globals::gameText->getText(271)) / 2,
+                                        y + 2, false);
+                                }
                             }
-                        } else if (((ListItem *) (li))->isBluePrint() != 0) {
-                            ((ListItem *) li)->bluePrint->getIndex();
-                            float rate = ((ListItem *) li)->bluePrint->getCompletionRate();
-                            if (rate > 0.0f) {
-                                ((PaintCanvas *) canvas)->DrawImage2D((unsigned) this->progressBarBgImage,
-                                                                      layout->buttonInsetX + contentBase + 2 + this->
-                                                                      hintOffsetX, 0, (unsigned char) 0);
-                                float dcw = (float) this->progressBarWidth;
-                                ((PaintCanvas *) canvas)->DrawRegion2D((unsigned) this->progressBarFillImage, 0, 0,
-                                                                       (int) (rate * dcw), this->progressBarHeight,
-                                                                       (float) (int) (rate * dcw),
-                                                                       0, 0, 0,
-                                                                       layout->buttonInsetX + contentBase + 3 + this->
-                                                                       hintOffsetX);
-                                float sliderW = (float) (this->progressBarWidth - 4);
-                                ((PaintCanvas *) canvas)->DrawImage2D((unsigned) this->progressBarBorderImage,
-                                                                      this->hintOffsetX + layout->buttonInsetX +
-                                                                      contentBase + 5 + (int) (rate * sliderW),
-                                                                      (layout->field_0x70_rowHeight / 2) + 2 + y,
-                                                                      (unsigned char) 0x11);
-                                ((PaintCanvas *) canvas)->SetColor(0x777777ffu);
-
-                                String pct, sfx, sum;
-                                pct.Set((long long) (int) (rate * 100.0f));
-                                sum = pct + sfx;
-                                ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, sum,
-                                                                     contentBase + 2 + layout->buttonInsetX + this->
-                                                                     hintOffsetX +
-                                                                     this->progressBarWidth + layout->field_0x2c_rowHeight, 0,
-                                                                     (bool) 0);
-                                ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
-                            }
-                            int bpIdx = ((ListItem *) li)->bluePrint->getIndex();
-
-                            int type = ((Item *) ((*(Item * *) (
-                                        (char *) ((*(unsigned char * *) ((char *) (*g_hw_globals) + (0x4)))) + (
-                                            bpIdx)))))->
-                                    getType();
-                            ((ImageFactory *) (*g_hw_globals))->drawItem(
-                                bpIdx, type, layout->buttonInsetX + rowGap + this->hintOffsetX);
-
-                            if (((ListItem *) li)->craftable != 0)
-                                ((PaintCanvas *) canvas)->SetColor(0x00ed00ffu);
-                        } else if (((ListItem *) (li))->isPendingProduct() != 0) {
-                            int amt = ((ListItem *) li)->pendingProduct->quantity;
-                            String head;
-                            if (amt < 2) {
+                            int left, right;
+                            if (tab == 1) {
+                                left = item->item->getStationAmount();
+                                right = item->item->getAmount();
                             } else {
-                                String num, sfx;
-                                head = num + sfx;
+                                left = item->item->getAmount();
+                                right = this->bluePrint->getCurrentAmount(item->item->getIndex()) +
+                                        item->item->getBlueprintAmount();
                             }
-                            String full;
-                            full = head + *(String *) Globals::gameText->getText(*g_hw_itemNameBase);
-                            int pidx = ((ListItem *) li)->pendingProduct->blueprintIndex;
-                            int type = ((Item *) ((*(Item * *) (
-                                        (char *) ((*(unsigned char * *) ((char *) (*g_hw_globals) + (0x4)))) + (
-                                            pidx)))))->
-                                    getType();
-                            ((ImageFactory *) (*g_hw_globals))->drawItem(
-                                pidx, type, rowGap + layout->buttonInsetX + this->hintOffsetX);
-                        } else if (((ListItem *) (li))->isMoveToCargoButton() != 0) {
-                            (*this->buttons)[(0x18) >> 2]->setPosition(this->hintOffsetX + layout->buttonInsetX, y, 0x11);
-                            (*this->buttons)[(0x18) >> 2]->setVisible(true);
-                            (*this->buttons)[(0x18) >> 2]->draw();
-                        } else if (((ListItem *) (li))->isSellButton() != 0) {
-                            (*this->buttons)[(0x14) >> 2]->setPosition(this->hintOffsetX + layout->buttonInsetX, y, 0x11);
-                            (*this->buttons)[(0x14) >> 2]->setVisible(true);
-                            (*this->buttons)[(0x14) >> 2]->draw();
-                        } else {
-                            String txt;
-                            ((String *) &txt)->Set(((String *) ((ListItem *) li)->name)->data);
-                            ((Layout *) (layout))->drawBox(0, this->hintOffsetX + layout->buttonInsetX,
-                                                           (y + layout->field_0x70_rowHeight) - layout->field_0x1c, topY,
-                                                           layout->field_0x1c, txt);
+                            String leftText = String(left) + String("t");
+                            String rightText = (tab == 1
+                                                    ? String(right)
+                                                    : String(right) + String("/") +
+                                                      String(this->bluePrint->getTotalAmount(item->item->getIndex()))) +
+                                               String("t");
+                            Globals::Canvas->SetColor(0xffffffffu);
+                            if (left > 0) {
+                                Globals::Canvas->DrawString(
+                                    hangarFont(), leftText,
+                                    this->hintOffsetX + Globals::layout->buttonInsetX + this->field_0x100.a +
+                                    this->field_0x100.c - Globals::Canvas->GetTextWidth(hangarFont(), leftText),
+                                    y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
+                            }
+                            if (tab == 4 || right > 0) {
+                                int extra = tab == 4 ? Globals::layout->field_0x25c : 0;
+                                Globals::Canvas->DrawString(
+                                    hangarFont(), rightText,
+                                    listWidth + extra + this->hintOffsetX - this->field_0x100.a + this->field_0x100.b -
+                                    Globals::Canvas->GetTextWidth(hangarFont(), rightText),
+                                    y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
+                            }
                         }
+                        if (tab == 1)
+                            Globals::Canvas->SetColor(item->item->getSinglePrice() > Globals::status->getCredits()
+                                                          ? 0xa35b5bffu
+                                                          : 0x7aa35bffu);
+                        else
+                            Globals::Canvas->SetColor(0x777777ffu);
+                        if (!this->upgradeMode) {
+                            Globals::Canvas->DrawString(
+                                hangarFont(), Globals::layout->formatCredits(item->item->getSinglePrice()),
+                                textX + Globals::layout->buttonInsetX + this->hintOffsetX,
+                                y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
+                        }
+                        Globals::imageFactory->drawItem(item->item->getIndex(), item->item->getType(),
+                                                        Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX,
+                                                        this->iconOffsetY + y);
+                        if (tab == 1 && !(*Globals::status->field_54)[item->item->getIndex()]) {
+                            Globals::Canvas->DrawImage2D(
+                                this->pendingIconImage,
+                                iconSpace - 2 + Globals::layout->buttonInsetX + this->hintOffsetX +
+                                Globals::layout->field_0x2cc,
+                                y + this->iconOffsetY + Globals::layout->field_0x2d0 - 2, 17, 34);
+                        } else if (item->inTabIndex > -1 ||
+                                   (tab == 1 && Globals::status->getShip()->hasEquipment(item->item->getIndex(), 1))) {
+                            Globals::Canvas->DrawImage2D(
+                                this->blueprintIconImage,
+                                iconSpace - 2 + Globals::layout->buttonInsetX + this->hintOffsetX +
+                                Globals::layout->field_0x2cc,
+                                y + this->iconOffsetY + Globals::layout->field_0x2d0 - 2, 17, 34);
+                        } else if (tab == 4 &&
+                                   Item::isInList(item->item, Globals::status->getStation()->getItems())) {
+                            Globals::Canvas->DrawImage2D(
+                                this->blueprintIconImage,
+                                iconSpace - 2 + Globals::layout->buttonInsetX + this->hintOffsetX +
+                                Globals::layout->field_0x2cc,
+                                y + this->iconOffsetY + Globals::layout->field_0x2d0 - 2, 17, 34);
+                        }
+                        if ((tab == 3 || tab == 0) && item->item->getAmount() >= 2)
+                            name += String(" (") + String(item->item->getAmount()) + String(")");
+                    } else if (item->isShip()) {
+                        name = *Globals::gameText->getText(item->ship->getIndex() + 913);
+                        Globals::Canvas->SetColor(0x777777ffu);
+                        if (tab == 1 && this->upgradeMode) {
+                            Globals::Canvas->DrawString(
+                                hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
+                                textX + Globals::layout->buttonInsetX + this->hintOffsetX,
+                                y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
+                        } else if (tab == 1 || i >= 2) {
+                            Globals::Canvas->SetColor(
+                                item->ship->getPrice() - Globals::status->getShip()->getPrice() >
+                                Globals::status->getCredits()
+                                    ? 0xa35b5bffu
+                                    : 0x7aa35bffu);
+                            Globals::Canvas->DrawString(
+                                hangarFont(),
+                                Globals::layout->formatCredits(item->ship->getPrice() -
+                                                               Globals::status->getShip()->getPrice()),
+                                textX + Globals::layout->buttonInsetX + this->hintOffsetX,
+                                y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
+                        } else {
+                            Globals::Canvas->DrawString(
+                                hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
+                                textX + Globals::layout->buttonInsetX + this->hintOffsetX,
+                                y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
+                        }
+                        Globals::imageFactory->drawShip(item->ship->getIndex(),
+                                                        Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX,
+                                                        this->iconOffsetY + y);
+                        Globals::Canvas->SetColor(0xffffffffu);
+                    } else if (item->isSlot()) {
+                        name = *Globals::gameText->getText(174);
+                        if (tab == 4 && i == items->size() - 1) {
+                            (*this->buttons)[23]->setPosition(
+                                this->hintOffsetX + Globals::layout->buttonInsetX + listWidth / 2,
+                                this->field_0x114 + y, 20);
+                            (*this->buttons)[23]->setVisible(true);
+                            (*this->buttons)[23]->draw();
+                            name = String("");
+                        }
+                    } else if (item->isBluePrint()) {
+                        name = *Globals::gameText->getText(item->bluePrint->getIndex() + 1274);
+                        if (item->bluePrint->getCompletionRate() > 0.0f) {
+                            float rate = item->bluePrint->getCompletionRate();
+                            Globals::Canvas->DrawImage2D(
+                                this->progressBarBgImage,
+                                textX + 2 + Globals::layout->buttonInsetX + this->hintOffsetX,
+                                y + Globals::layout->field_0x70_rowHeight / 2 + 1);
+                            Globals::Canvas->DrawRegion2D(
+                                this->progressBarFillImage, 0, 0, (int) (rate * (float) this->progressBarWidth),
+                                this->progressBarHeight, 0.0f, 0, 0,
+                                textX + 3 + Globals::layout->buttonInsetX + this->hintOffsetX,
+                                y + 2 + Globals::layout->field_0x70_rowHeight / 2);
+                            Globals::Canvas->DrawImage2D(
+                                this->progressBarBorderImage,
+                                this->hintOffsetX + (textX + 5 + Globals::layout->buttonInsetX +
+                                                     (int) (rate * (float) (this->progressBarWidth - 4))),
+                                y + 2 + Globals::layout->field_0x70_rowHeight / 2, 17, 20);
+                            Globals::Canvas->SetColor(0x777777ffu);
+                            String progress = String((int) (rate * 100.0f)) + String("%  (") +
+                                              item->bluePrint->stationName + String(")");
+                            Globals::Canvas->DrawString(
+                                hangarFont(), progress,
+                                textX + 2 + Globals::layout->buttonInsetX + this->hintOffsetX +
+                                this->progressBarWidth + Globals::layout->field_0x2c_rowHeight,
+                                y + Globals::layout->field_0x70_rowHeight / 2 + Globals::layout->field_0x260 +
+                                this->field_0x114, false);
+                            Globals::Canvas->SetColor(0xffffffffu);
+                        }
+                        Globals::imageFactory->drawItem(item->bluePrint->getIndex(),
+                                                        (*Globals::items)[item->bluePrint->getIndex()]->getType(),
+                                                        Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX,
+                                                        this->iconOffsetY + y);
+                        if (item->craftable)
+                            Globals::Canvas->SetColor(0x00ed00ffu);
+                    } else if (item->isPendingProduct()) {
+                        name = (item->pendingProduct->quantity >= 2
+                                    ? String(item->pendingProduct->quantity) + String("x ")
+                                    : String("")) +
+                               *Globals::gameText->getText(item->pendingProduct->blueprintIndex + 1274);
+                        Globals::Canvas->SetColor(0x777777ffu);
+                        Globals::Canvas->DrawString(
+                            hangarFont(),
+                            *Globals::gameText->getText(275) + String(" ") + item->pendingProduct->stationName,
+                            textX + Globals::layout->buttonInsetX + this->hintOffsetX,
+                            y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
+                        Globals::Canvas->SetColor(0xffffffffu);
+                        Globals::imageFactory->drawItem(
+                            item->pendingProduct->blueprintIndex,
+                            (*Globals::items)[item->pendingProduct->blueprintIndex]->getType(),
+                            Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX, this->iconOffsetY + y);
+                    } else if (item->isMoveToCargoButton()) {
+                        (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
+                        (*this->buttons)[6]->setVisible(true);
+                        (*this->buttons)[6]->draw();
+                        continue;
+                    } else if (item->isSellButton()) {
+                        (*this->buttons)[5]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
+                        (*this->buttons)[5]->setVisible(true);
+                        (*this->buttons)[5]->draw();
+                        continue;
                     } else {
-                        ((Item *) ((ListItem *) li)->item)->getIndex();
-                        ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
-
-                        if (tab == 1) {
-                            int itemCredits = Globals::status->getCredits();
-                            int itemPrice = ((Item *) ((ListItem *) li)->item)->getSinglePrice();
-                            ((PaintCanvas *) canvas)->SetColor((itemCredits > itemPrice)
-                                                                   ? 0xa35b5bffu
-                                                                   : 0x7aa35bffu);
-                        } else {
-                            ((PaintCanvas *) canvas)->SetColor(0x777777ffu);
-                        }
-                        if (this->upgradeMode == 0) {
-                            String price = Globals::layout->formatCredits(((Item *) ((ListItem *) li)->item)->getSinglePrice());
-                            ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, price,
-                                                                 contentBase + layout->buttonInsetX + this->hintOffsetX,
-                                                                 0, (bool) 1);
-                        }
-                        int iidx = ((Item *) ((ListItem *) li)->item)->getIndex();
-                        int itype = ((Item *) ((ListItem *) li)->item)->getType();
-                        ((ImageFactory *) (*g_hw_globals))->drawItem(iidx, itype,
-                                                                     layout->buttonInsetX + rowGap + this->hintOffsetX);
+                        Globals::layout->drawBox(0, this->hintOffsetX + Globals::layout->buttonInsetX,
+                                                 y + Globals::layout->field_0x70_rowHeight - Globals::layout->field_0x1c,
+                                                 listWidth, Globals::layout->field_0x1c, *item->name);
+                        continue;
                     }
 
-                    ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, label,
-                                                         this->hintOffsetX + layout->buttonInsetX + contentBase, 0,
-                                                         (bool) 0);
+                    Globals::Canvas->DrawString(hangarFont(), name,
+                                                textX + Globals::layout->buttonInsetX + this->hintOffsetX, y + 2,
+                                                false);
+                    if (item == this->selectedItem) {
+                        if (item->isShip()) {
+                            if (tab != 0 && !(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
+                                (*this->buttons)[1]->setPosition(
+                                    this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
+                                    this->field_0x114 + y, 18);
+                                (*this->buttons)[1]->setVisible(true);
+                                (*this->buttons)[1]->draw();
+                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                            }
+                            if (tab == 1 && this->upgradeMode) {
+                                (*this->buttons)[2]->setVisible(true);
+                                (*this->buttons)[10]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX,
+                                                                  this->field_0x114 + y, 17);
+                                (*this->buttons)[10]->setVisible(true);
+                                (*this->buttons)[10]->draw();
+                            }
+                        } else if (tab == 2) {
+                            if (item->isBluePrint()) {
+                                (*this->buttons)[7]->setPosition(
+                                    this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
+                                    this->field_0x114 + y, 18);
+                                (*this->buttons)[7]->setVisible(true);
+                                (*this->buttons)[7]->draw();
+                                buttonOffset = (*this->buttons)[7]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                            }
+                        } else if (tab == 0 && item->isItem()) {
+                            Item *equipped = Globals::status->getShip()->getFirstEquipmentOfSort(item->item->getSort());
+                            bool replaceable = false;
+                            bool sameWeapon = false;
+                            if (equipped != nullptr) {
+                                replaceable = !item->item->canBeInstalledMultipleTimes();
+                                sameWeapon = equipped->getType() == 3 &&
+                                             equipped->getIndex() == item->item->getIndex();
+                            }
+                            if (item->inTabIndex > -1 ||
+                                ((Globals::status->getShip()->getFreeSlots(item->item->getType()) != 0 ||
+                                  replaceable) &&
+                                 (!sameWeapon || item->item->canBeInstalledMultipleTimes()))) {
+                                int b = item->inTabIndex < 0 ? 4 : 3;
+                                (*this->buttons)[b]->setPosition(
+                                    this->hintOffsetX + Globals::layout->buttonInsetX + listWidth -
+                                    2 * Globals::layout->field_0x2c_rowHeight,
+                                    this->field_0x114 + y, 18);
+                                (*this->buttons)[b]->setVisible(true);
+                                (*this->buttons)[b]->draw();
+                                buttonOffset = (*this->buttons)[b]->getWidth() +
+                                               2 * Globals::layout->field_0x2c_rowHeight;
+                            }
+                        }
+                        if (item->isItem() || item->isShip() || item->isBluePrint() || item->isPendingProduct()) {
+                            (*this->buttons)[0]->setPosition(
+                                this->hintOffsetX + Globals::layout->buttonInsetX + (listWidth - buttonOffset),
+                                this->field_0x114 + y, 18);
+                            (*this->buttons)[0]->setVisible(true);
+                            (*this->buttons)[0]->draw();
+                        }
+                    }
                 }
 
-                if (scrollPx > 0 || startPx > 0) {
-                    ((Layout *) (layout))->drawScrollBar(
-                        ((*g_hw_screenHeight - layout->field_0x48) - layout->buttonInsetX) -
-                        this->hintOffsetX, layout->field_0x20_top + layout->field_0xc_leftMargin, this->visibleHeight, startPx,
-                        scrollPx);
+                if (barHeight > 0 || barPos > 0) {
+                    Globals::layout->drawScrollBar(Globals::w - Globals::layout->field_0x48 -
+                                                   Globals::layout->buttonInsetX - this->hintOffsetX,
+                                                   Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin,
+                                                   this->visibleHeight, barPos, barHeight);
                 }
             }
-
-            String header;
-            ((Layout *) (layout))->drawHeader(header);
-
-            Array<TouchButton *> *tabs = this->tabButtons;
-            for (unsigned int i = 0; i < tabs->size(); i++)
-                ((TouchButton *) (tabs->data()[i]))->draw();
+            Globals::layout->drawHeader(*Globals::gameText->getText(167));
+            for (unsigned int i = 0; i < this->tabButtons->size(); i++)
+                (*this->tabButtons)[i]->draw();
         }
-
         if (this->viewMode == 1) {
             this->viewMode = 0;
             this->render();
@@ -814,96 +962,164 @@ void HangarWindow::render() {
         }
     }
 
-    layout = *g_hw_layout;
-    ((Layout *) (layout))->drawFooter();
-    Array<TouchButton *> *btns = this->buttons;
-    (*btns)[(0x2c) >> 2]->setVisible(true);
-    (*btns)[(0x2c) >> 2]->setAlwaysPressed(g_hw_optionFlags[0x4e] == 0);
-    {
-        String credits = Globals::layout->formatCredits(Globals::status->getCredits());
-        (*btns)[(0x2c) >> 2]->setText(credits);
-    }
-    (*btns)[(0x2c) >> 2]->draw();
-
-    if (this->dialogActive == 0)
+    Globals::layout->drawFooter();
+    (*this->buttons)[11]->setVisible(true);
+    (*this->buttons)[11]->setAlwaysPressed(!Globals::options[78]);
+    (*this->buttons)[11]->setText(Globals::layout->formatCredits(Globals::status->getCredits()));
+    (*this->buttons)[11]->draw();
+    if (!this->dialogActive)
         return;
-
     this->dialog->draw();
 
-    if (this->buyCreditsActive == 0) {
-        if (this->freeCreditsActive != 0) {
-            for (unsigned int i = 0; i < 5; i++) {
-                TouchButton *b = (*btns)[(i * 4 + 0x48) >> 2];
-                bool vis;
-                if (i == 0 || (i == 1 && g_hw_optionFlags[0x49] != 0) ||
-                    (i == 2 && g_hw_optionFlags[0x4a] != 0) ||
-                    (i == 3 && g_hw_optionFlags[0x4b] != 0))
-                    vis = false;
-                else
-                    vis = (i != 4 || g_hw_optionFlags[0x4c] == 0);
-                b->setVisible(vis);
-                b->setPosition(layout->buttonInsetX + ((ChoiceWindow *) this->dialog)->x,
-                               layout->windowTopInset);
-                b->draw();
-            }
-        }
-    } else {
-        unsigned char *appData = AppManager_GetApplicationData();
-        (void) appData;
-        if (this->listModeFlag == 0) {
-            for (int slot = 0x30; slot <= 0x40; slot += 4) {
-                TouchButton *b = (*btns)[(slot) >> 2];
-                b->setVisible(true);
-                String t;
-                b->setText(t);
-                b->setPosition(*g_hw_screenWidth / 2, 0, 0x14);
-                b->draw();
-            }
-        } else {
-            for (unsigned int i = 0; i <= 4; i++) {
-                TouchButton *b = (*btns)[(i * 4 + 0x30) >> 2];
-                b->setVisible(true);
-                String label, split;
-                switch (i) {
-                    case 0: ((String *) &label)->ctor_char(hw_rnd_a, false);
-                        ((String *) &split)->ctor_char(hw_rnd_b, false);
+    if (this->buyCreditsActive) {
+        HangarAppData *data = (HangarAppData *) Globals::appManager->GetApplicationData();
+        int count;
+        if (this->listModeFlag) {
+            for (count = 0; count <= 4; count++) {
+                String description("");
+                String price("");
+                (*this->buttons)[12 + count]->setVisible(true);
+                switch (count) {
+                    case 0:
+                        description = String(Globals::cItemListDescription_00);
+                        price = String(Globals::cItemListPrice_00);
                         break;
-                    case 1: ((String *) &label)->ctor_char(hw_rnd_b, false);
-                        ((String *) &split)->ctor_char(hw_rnd_c, false);
+                    case 1:
+                        description = String(Globals::cItemListDescription_01);
+                        price = String(Globals::cItemListPrice_01);
                         break;
-                    case 2: ((String *) &label)->ctor_char(hw_rnd_c, false);
-                        ((String *) &split)->ctor_char(hw_rnd_d, false);
+                    case 2:
+                        description = String(Globals::cItemListDescription_02);
+                        price = String(Globals::cItemListPrice_02);
                         break;
-                    case 3: ((String *) &label)->ctor_char(hw_rnd_d, false);
-                        ((String *) &split)->ctor_char(hw_rnd_e, false);
+                    case 3:
+                        description = String(Globals::cItemListDescription_03);
+                        price = String(Globals::cItemListPrice_03);
                         break;
-                    default: ((String *) &label)->ctor_char(hw_rnd_e, false);
-                        ((String *) &split)->ctor_char(hw_rnd_x, false);
+                    case 4:
+                        description = String(Globals::cItemListDescription_04);
+                        price = String(Globals::cItemListPrice_04);
+                        break;
+                    default:
+                        description = String("");
+                        price = String("");
                         break;
                 }
-                unsigned int rowOff = UDIV(i & 0xff, 3);
-                int x = (this->gridSpacingX + this->buttonWidth) *
-                        ((i + rowOff * -3) & 0xff) +
-                        ((*g_hw_screenHeight / 2 - this->buttonWidth) - this->gridSpacingX);
-                int yy = (int) ((float) ((layout->field_0x20_top * -3) +
-                                         (*g_hw_screenWidth / 2 - this->gridButtonHeight / 2)) +
-                                (float) this->gridSpacingY * -0.5f +
-                                (float) ((int) rowOff * (this->gridSpacingY + this->gridButtonHeight)));
-                ((TouchButton *) (b))->setPosition(x, yy, 'D');
-                ((TouchButton *) (b))->replaceTextKeepSize(label);
-                ((TouchButton *) (b))->setSplitText(split);
-                ((TouchButton *) (b))->draw();
-
-                ((PaintCanvas *) canvas)->DrawImage2D((unsigned) (*(int *) ((char *) (this->tabIcons) + (i * 4))), x,
-                                                      yy - layout->field_0x2c_rowHeight, (unsigned char) 0x11);
+                int row = (unsigned char) count / 3;
+                int col = (unsigned char) count % 3;
+                int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * col;
+                int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
+                          (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
+                (*this->buttons)[12 + count]->setPosition(x, y, 68);
+                (*this->buttons)[12 + count]->replaceTextKeepSize(description);
+                (*this->buttons)[12 + count]->setSplitText(price);
+                (*this->buttons)[12 + count]->draw();
+                Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
+                                             68);
+                if (count == 4 && Globals::showBestDeal) {
+                    Globals::Canvas->DrawImage2D(
+                        this->scrollHintImageA,
+                        (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth),
+                        (int) ((float) y - (float) this->gridButtonHeight * 0.1f), 17, 17);
+                }
             }
+        } else {
+            int baseY = this->dialog->y + Globals::layout->windowTopInset + Globals::layout->field_0x2c_rowHeight * 5;
+            (*this->buttons)[12]->setVisible(true);
+            (*this->buttons)[12]->setText(String(Globals::cItemListDescription_00));
+            (*this->buttons)[12]->setSplitText(String(Globals::cItemListPrice_00));
+            (*this->buttons)[12]->setPosition(Globals::w / 2, baseY, 20);
+            (*this->buttons)[12]->draw();
+            (*this->buttons)[13]->setVisible(true);
+            (*this->buttons)[13]->setText(String(Globals::cItemListDescription_01));
+            (*this->buttons)[13]->setSplitText(String(Globals::cItemListPrice_01));
+            (*this->buttons)[13]->setPosition(
+                Globals::w / 2, baseY + (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), 20);
+            (*this->buttons)[13]->draw();
+            (*this->buttons)[14]->setVisible(true);
+            (*this->buttons)[14]->setText(String(Globals::cItemListDescription_02));
+            (*this->buttons)[14]->setSplitText(String(Globals::cItemListPrice_02));
+            (*this->buttons)[14]->setPosition(
+                Globals::w / 2, baseY + (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * 2, 20);
+            (*this->buttons)[14]->draw();
+            (*this->buttons)[15]->setVisible(true);
+            (*this->buttons)[15]->setText(String(Globals::cItemListDescription_03));
+            (*this->buttons)[15]->setSplitText(String(Globals::cItemListPrice_03));
+            (*this->buttons)[15]->setPosition(
+                Globals::w / 2, baseY + (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * 3, 20);
+            (*this->buttons)[15]->draw();
+            (*this->buttons)[16]->setVisible(true);
+            (*this->buttons)[16]->setText(String(Globals::cItemListDescription_04));
+            (*this->buttons)[16]->setSplitText(String(Globals::cItemListPrice_04));
+            (*this->buttons)[16]->setPosition(
+                Globals::w / 2, baseY + (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * 4, 20);
+            (*this->buttons)[16]->draw();
+            count = 5;
         }
 
-        if (this->listModeFlag == 0) {
-            int h17 = layout->field_0x30_rowHeight;
-            int h34 = layout->field_0x34;
-            int th = ((PaintCanvas *) canvas)->GetTextHeight(0);
-            this->dialog->setHeight((h34 + h17) * 6 + th * 2);
+        if (!Globals::options[75] || !Globals::options[74] || !Globals::options[73] || !Globals::options[77] ||
+            !Globals::options[76] || data->freeCreditsOffer) {
+            int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * 2;
+            int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
+                          (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * 1));
+            (*this->buttons)[17]->setVisible(true);
+            if (this->listModeFlag) {
+                (*this->buttons)[17]->setPosition(x, y, 68);
+                (*this->buttons)[17]->replaceTextKeepSize(*Globals::gameText->getText(118));
+                (*this->buttons)[17]->draw();
+                Globals::Canvas->DrawImage2D(this->tabIcons[5], x, y - Globals::layout->field_0x2c_rowHeight, 17, 68);
+                Globals::Canvas->DrawImage2D(
+                    this->scrollHintImageB,
+                    (int) ((float) (Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * 2) +
+                           (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth),
+                    (int) ((float) (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
+                          (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * 1)) - (float) this->gridButtonHeight * 0.1f), 17, 17);
+            } else {
+                (*this->buttons)[17]->setText(*Globals::gameText->getText(118));
+                (*this->buttons)[17]->setPosition(
+                    Globals::w / 2,
+                    this->field_0x48 + (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * count,
+                    20);
+                (*this->buttons)[17]->draw();
+            }
+            (*this->buttons)[17]->setSplitText(*Globals::gameText->getText(119));
+            count++;
+        }
+        if (!this->listModeFlag) {
+            this->dialog->setHeight((Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * (count + 1) +
+                                    Globals::Canvas->GetTextHeight(hangarFont()) * 2);
+        }
+    } else if (this->freeCreditsActive) {
+        int baseX = Globals::layout->buttonInsetX + this->dialog->x;
+        int baseY = this->dialog->y + Globals::layout->windowTopInset + Globals::layout->field_0x2c_rowHeight * 2;
+        int row = 0;
+        for (int i = 0; i < 5; i++) {
+            TouchButton *button = (*this->buttons)[18 + i];
+            bool visible = !(i == 0 || (i == 1 && Globals::options[73]) || (i == 2 && Globals::options[74]) ||
+                             (i == 3 && Globals::options[75]) || (i == 4 && Globals::options[76]));
+            button->setVisible(visible);
+            int y = (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * row + baseY;
+            button->setPosition(baseX, y);
+            button->draw();
+            if (visible) {
+                int textX = button->getWidth() + baseX + Globals::layout->field_0x2c_rowHeight;
+                int height = button->getHeight();
+                Globals::Canvas->SetColor(0xffffffffu);
+                int textY = (int) ((float) y + (float) height * 0.2f);
+                Globals::Canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
+                                            textY, false);
+                Globals::Canvas->SetColor(0x777777ffu);
+                if (i != 0) {
+                    Globals::Canvas->DrawString(
+                        hangarFont(),
+                        String("(+") + Globals::layout->formatCredits(FREE_CREDIT_AMOUNTS[i]) + String(")"), textX,
+                        textY + Globals::layout->field_0x4, false);
+                } else {
+                    Globals::Canvas->DrawString(hangarFont(), String(""), textX, textY + Globals::layout->field_0x4,
+                                                false);
+                }
+                row++;
+            }
         }
     }
 }
@@ -1375,7 +1591,6 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                 this->freeCreditsActive = 0;
                 this->showCreditsBuyWindow();
             }
-            static const int freeCreditsReward[6] = {0, 7500, 5000, 5000, 5000, 7500};
             uint8_t *appData = (uint8_t *) Globals::appManager->GetApplicationData();
             for (int i = 0; i != 5; i++) {
                 if ((*this->buttons)[18 + i]->OnTouchEnd(x, y)) {
@@ -1387,31 +1602,31 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     case 1:
                         appData[160] = 1;
                         NFC::free_credits_likeGOF2OnFacebook();
-                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::status->changeCredits(FREE_CREDIT_AMOUNTS[i]);
                         Globals::options[73] = 1;
                         break;
                     case 2:
                         appData[161] = 1;
                         NFC::free_credits_likeFishlabsOnFacebook();
-                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::status->changeCredits(FREE_CREDIT_AMOUNTS[i]);
                         Globals::options[74] = 1;
                         break;
                     case 3:
                         appData[162] = 1;
                         NFC::free_credits_subscribeToYoutubeChannel();
-                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::status->changeCredits(FREE_CREDIT_AMOUNTS[i]);
                         Globals::options[75] = 1;
                         break;
                     case 4:
                         appData[163] = 1;
                         NFC::free_credits_followOnTwitter();
-                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::status->changeCredits(FREE_CREDIT_AMOUNTS[i]);
                         Globals::options[76] = 1;
                         break;
                     case 5:
                         appData[13] = 1;
                         NFC::free_credits_rateGame();
-                        Globals::status->changeCredits(freeCreditsReward[i]);
+                        Globals::status->changeCredits(FREE_CREDIT_AMOUNTS[i]);
                         Globals::options[77] = 1;
                         break;
                     }
