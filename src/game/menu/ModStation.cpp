@@ -189,7 +189,7 @@ void ModStation::OnResume() {
 void ModStation::checkPendingProducts() {
     int campaignMission = Globals::status->getCurrentCampaignMission();
     String message = *Globals::gameText->getText(213) + String("\n", false);
-    Array<PendingProduct *> *products = (Array<PendingProduct *> *) (intptr_t) Globals::status->getPendingProducts();
+    Array<PendingProduct *> *products = Globals::status->getPendingProducts();
     if (products != nullptr) {
         for (unsigned i = 0; i < products->size(); i++) {
             PendingProduct *product = (*products)[i];

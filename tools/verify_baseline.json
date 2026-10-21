@@ -1,13 +1,17 @@
 {
  "verify": {
   "byte_exact": 1308,
-  "linked_exact": 3930,
+  "linked_exact": 3936,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 16,
-  "avg_match": 94.56,
+  "avg_match": 94.75,
   "compared": 4523
+ },
+ "data": {
+  "data_exact": 771,
+  "data_common": 843
  },
  "imports": [
   "FMOD_EventSystem_Create",
@@ -23,8 +27,6 @@
   "_Z13FileRead_ctorPv",
   "_Z13FileRead_dtorPv",
   "_Z13RH_op_new_arrj",
-  "_Z13aeabi_memcpy4PvPKvj",
-  "_Z13aeabi_uidiv16tt",
   "_Z14CameraGetLocalPvj",
   "_Z14PF_update_deadP13PlayerFighter",
   "_Z14_mtw_buildMenuPvi",
@@ -65,7 +67,6 @@
   "_Z18Station_getName_oiv",
   "_Z18Station_hasItem_oii",
   "_Z18Station_hasShip_oiP7Station",
-  "_Z18Status_replaceHashPvS_S_S_",
   "_Z18Status_replaceHashPvS_S_S_S_",
   "_Z18_mtw_draw_mainMenuPv",
   "_Z18_mtw_draw_missionsPv",
@@ -130,7 +131,6 @@
   "_Z24Status_setPassengers_oteii",
   "_Z24liw_set_buildShipPreviewPvS_S_",
   "_Z24paintcanvas_ext_get_gravPv",
-  "_Z25AEMath_MatrixRotateVectorPN11AbyssEngine6AEMath6VectorEPKS1_",
   "_Z25ChoiceWindow_setNotice_oiP12ChoiceWindowi",
   "_Z25ChoiceWindow_setNotice_ouii",
   "_Z25Layout_initHelpWindow_oteii",
@@ -167,7 +167,6 @@
   "_Z27paintcanvas_ext_dr3_mtx_mulPvS_",
   "_Z27paintcanvas_ext_set_reslistPKPN11AbyssEngine8ResourceEjPv",
   "_Z27paintcanvas_ext_tg2d_errmsgPv",
-  "_Z28AEMath_MatrixTransformVectorPN11AbyssEngine6AEMath6VectorEPKS1_",
   "_Z28HangarWindow_setSellMode_otei",
   "_Z28ModStation_msc_camCoordTablev",
   "_Z28ModStation_oi_setCameraLocaljRKN11AbyssEngine6AEMath6MatrixE",
