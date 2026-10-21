@@ -47,4 +47,3 @@ _ZN5ArrayIbED1Ev
 # libcrypto data symbol the original's static link garbage-collected.
 # odr-use anchor keeping the five _JNIEnv::Call*Method exports alive until the real JNI dispatch
 # consumer is decompiled.
-_ZN4gof218kJNIEnvCallAnchorsE

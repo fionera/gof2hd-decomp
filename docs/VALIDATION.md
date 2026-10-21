@@ -105,11 +105,11 @@ they stood for `Engine::enableShader` and `Engine::EnablePostEffect`. The origin
 `getAppVersion` is a size-0 symbol aliasing `Engine::InitGL`, so that body was dropped and the TU
 deleted; the 15 exports and the 3 `AE_getInitGL*` imports are gone.
 
-### Not-yet-wired (1 symbol)
-- `gof2::kJNIEnvCallAnchors` — an internal table whose purpose is to odr-use the five
-  `_JNIEnv::Call*Method` member functions (which the original **does** export). It must stay until
-  its real consumer in the JNI dispatch path is decompiled and references it; internalizing it now
-  GCs the table and drops those five exported methods.
+### JNI call anchor (removed 2026-10-21)
+`gof2::kJNIEnvCallAnchors` (src/engine/core/JNIEnvCalls.cpp) odr-used the five
+`_JNIEnv::Call*Method` members. Their real consumers are already decompiled (`NFC::iap_buy_*`,
+`NFC::isPad/getWidth/getHeight`, `FileInterfaceAndroid::Read/Write/Close`), so the table was
+deleted; the five weak members stay exported.
 
 ## Structural invariants — all at 0
 
