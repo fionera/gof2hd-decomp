@@ -707,10 +707,14 @@ Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
         wanted = 0x65;
     }
 
-    for (uint32_t i = 0; i < 0x88; i++) {
-        int8_t group;
-        int16_t station;
-        int8_t count;
+    int8_t group;
+    int16_t station;
+    int8_t count;
+    for (uint32_t i = 0;; i++) {
+        if (i >= 0x88) {
+            AEFile::Close(handle);
+            return parts;
+        }
         AEFile::Read(group, handle);
         AEFile::ReadSwitched(station, handle);
         AEFile::Read(count, handle);
@@ -746,8 +750,6 @@ Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
         }
         ArrayRelease(*parts);
     }
-    AEFile::Close(handle);
-    return parts;
 }
 
 Array<int32_t> *FileRead::loadShipParts(int32_t id) {
