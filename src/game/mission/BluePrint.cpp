@@ -137,7 +137,6 @@ int BluePrint::getMoneySpent() { return spentValue; }
 void BluePrint::setMoneySpent(int value) { spentValue = value; }
 
 void BluePrint::addItem(Item *item, int amount, int station) {
-    Status *status = Globals::status;
     if (amount == 0)
         return;
     item->setBlueprintAmount(0);
@@ -145,22 +144,22 @@ void BluePrint::addItem(Item *item, int amount, int station) {
     if (il == nullptr)
         return;
     for (uint32_t i = 0; i < il->size(); i++) {
-        if ((*il)[i] != item->getIndex())
-            continue;
-        (*ingredientCounters)[i] -= amount;
-        spentValue += item->getSinglePrice() * amount;
-        if (station >= 0 && stationIndex < 0) {
-            stationIndex = station;
-            if (status->getStation()->getIndex() == station) {
-                stationName = status->getStation()->getName();
-            } else {
-                Station *st = (Station *) (intptr_t) Globals::galaxy->getStation(station);
-                stationName = st->getName();
-                if (st != nullptr)
-                    delete st;
+        if ((*il)[i] == item->getIndex()) {
+            (*ingredientCounters)[i] -= amount;
+            spentValue += item->getSinglePrice() * amount;
+            if (station >= 0 && stationIndex < 0) {
+                stationIndex = station;
+                if (Globals::status->getStation()->getIndex() == station) {
+                    stationName = Globals::status->getStation()->getName();
+                } else {
+                    Station *st = (Station *) (intptr_t) Globals::galaxy->getStation(station);
+                    stationName = st->getName();
+                    if (st != nullptr)
+                        delete st;
+                }
             }
+            return;
         }
-        break;
     }
 }
 
