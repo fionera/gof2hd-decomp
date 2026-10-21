@@ -4201,58 +4201,36 @@ void MGame::OnRender2D() {
 }
 
 void MGame::OnRender3D() {
-    if (this->active == 0) return;
-    Globals::Canvas->ClearBuffer(0);
-
-    uint8_t inMenuLevel = this->pauseOpen;
-    uint8_t flag15e = this->freeCamMode;
-
-    if (inMenuLevel == 0) {
-        this->level->renderBG(0);
-        Globals::Canvas->Begin3d();
-        int arg = (flag15e == 0) ? this->deltaTime : 0;
-        this->level->render(arg);
-        int egoFlag = (this->jumpActive != 0) ? 0 : (this->jumpDriveActive == 0);
-        this->player->render(egoFlag);
-        if (this->jumpFlash != 0)
-            ((AEGeometry *) (this->player))->render();
-        this->levelScript->render3D();
-        return Globals::Canvas->End3d();
+    if (!this->active) {
+        return;
     }
-
-    if (flag15e != 0) {
-        this->level->renderBG(0);
+    Globals::Canvas->ClearBuffer(255);
+    if (!this->pauseOpen || this->freeCamMode) {
+        this->level->renderBG(this->freeCamMode ? 0 : this->deltaTime);
         Globals::Canvas->Begin3d();
-        this->level->render(this->deltaTime);
-        int egoFlag = (this->jumpActive != 0) ? 0 : (this->jumpDriveActive == 0);
-        this->player->render(egoFlag);
-        if (this->jumpFlash != 0)
-            ((AEGeometry *) (this->player))->render();
+        this->level->render(this->freeCamMode ? 0 : this->deltaTime);
+        this->player->render(!this->jumpActive && !this->jumpDriveActive);
+        if (this->jumpFlash != nullptr) {
+            this->jumpFlash->render();
+        }
         this->levelScript->render3D();
-        return Globals::Canvas->End3d();
-    }
-
-    if (this->menuTouchOpen != 0) {
+    } else if (this->menuTouchOpen) {
         Globals::Canvas->Begin3d();
         this->menuWindow->render3D();
-        return Globals::Canvas->End3d();
-    }
-
-    if (this->starMapOpen != 0) {
+    } else if (this->starMapOpen) {
         Globals::Canvas->Begin3d();
         this->starMap->render();
-        return Globals::Canvas->End3d();
+    } else {
+        this->level->renderBG(0);
+        Globals::Canvas->Begin3d();
+        this->level->render(0);
+        this->player->render(!this->jumpActive && !this->jumpDriveActive);
+        if (this->jumpFlash != nullptr) {
+            this->jumpFlash->render();
+        }
+        this->levelScript->render3D();
     }
-
-    this->level->renderBG(0);
-    Globals::Canvas->Begin3d();
-    this->level->render(0);
-    int egoFlag = (this->jumpActive != 0) ? 0 : (this->jumpDriveActive == 0);
-    this->player->render(egoFlag);
-    if (this->jumpFlash != 0)
-        ((AEGeometry *) (this->player))->render();
-    this->levelScript->render3D();
-    return Globals::Canvas->End3d();
+    Globals::Canvas->End3d();
 }
 
 void MGame::pause() {

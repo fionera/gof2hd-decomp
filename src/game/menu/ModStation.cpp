@@ -493,7 +493,6 @@ static const int gCampaignRewardOverride[7] = {200000, 6666, 6666, 100000, 6666,
 
 
 
-static int **g_ModStation_tb_clear = 0;
 
 static int *g_oi_stack = 0;
 
@@ -1342,8 +1341,8 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
     // lint: void_ptr
     if (this->activeTouch != 0)
         return;
-    this->flag_0x118 = 1;
     this->activeTouch = touch;
+    this->flag_0x118 = 1;
     int flag = this->flag_0x60;
     this->touchX = x;
     this->touchY = y;
@@ -1351,18 +1350,14 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
         if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown() != 0) {
             (unsigned char &) this->stationActive = 0;
             Globals::status->nextCampaignMission(true);
-            unsigned int mod = *(unsigned int *) Globals::appManager;
-            **g_ModStation_tb_clear = 0;
-
-            Globals::appManager->SetCurrentApplicationModule(mod);
+            Globals::switch_to_target_setting = 0;
+            Globals::appManager->SetCurrentApplicationModule(5);
             this->flag_0x60 = 0;
         }
         return;
     }
-    Layout **layoutHolder = &Globals::layout;
-    Layout *layoutObj = *layoutHolder;
-    if (layoutObj->choiceWindowOpen != 0) {
-        layoutObj->OnTouchBegin(x, y);
+    if (Globals::layout->choiceWindowOpen != 0) {
+        Globals::layout->OnTouchBegin(x, y);
         return;
     }
     if (this->flag_0x69 != 0) {
@@ -1407,13 +1402,12 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
     ((TouchButton *) (this->buttonCredits))->OnTouchBegin(x, y);
     for (int i = 0; i != 5; i++)
         (((TouchButton **) (intptr_t) this->buttonRow[1])[i])->OnTouchBegin(x, y);
-    layoutObj->OnTouchBegin(x, y);
+    Globals::layout->OnTouchBegin(x, y);
     if (((NewsTicker *) (this->newsTicker))->OnTouchBegin(x, y) != 0)
         return;
-    Layout *layout = layoutObj;
-    if (y <= layout->field_0xc_leftMargin)
+    if (y <= Globals::layout->field_0xc_leftMargin)
         return;
-    if (*(int *) &Globals::h - layout->field_0x10_rightMargin <= y)
+    if (Globals::h - Globals::layout->field_0x10_rightMargin <= y)
         return;
     if (x <= this->infoBoxW)
         return;
@@ -1432,10 +1426,8 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
     if (this->flag_0x60 != 0)
         return;
 
-    Layout **layoutHolder = &Globals::layout;
-    Layout *layoutObj = *layoutHolder;
-    if (layoutObj->choiceWindowOpen != 0) {
-        layoutObj->OnTouchMove(x, y);
+    if (Globals::layout->choiceWindowOpen != 0) {
+        Globals::layout->OnTouchMove(x, y);
         return;
     }
     if (this->flag_0x69 != 0) {
@@ -1471,7 +1463,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
         return;
     }
     if (this->flag_0x62 != 0) {
-        ((MenuTouchWindow *) (this->dlcMenu))->OnTouchMove(x, y, nullptr);
+        ((MenuTouchWindow *) (this->dlcMenu))->OnTouchMove(x, y, touch);
         return;
     }
     if (this->flag_0x61 == 0)
@@ -1480,13 +1472,12 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
     ((TouchButton *) (this->buttonCredits))->OnTouchMove(x, y);
     for (int i = 0; i != 5; i++)
         (((TouchButton **) (intptr_t) this->buttonRow[1])[i])->OnTouchMove(x, y);
-    layoutObj->OnTouchMove(x, y);
+    Globals::layout->OnTouchMove(x, y);
     if (((NewsTicker *) (this->newsTicker))->OnTouchMove(x, y) != 0)
         return;
-    Layout *layout = layoutObj;
-    if (y <= layout->field_0xc_leftMargin)
+    if (y <= Globals::layout->field_0xc_leftMargin)
         return;
-    if (*(int *) &Globals::h - layout->field_0x10_rightMargin <= y)
+    if (Globals::h - Globals::layout->field_0x10_rightMargin <= y)
         return;
     if (x <= this->infoBoxW)
         return;
