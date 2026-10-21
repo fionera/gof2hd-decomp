@@ -15,7 +15,6 @@
 #include <cstdint>
 #include <cstddef>
 
-
 namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); }
 namespace AbyssEngine {
     typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported TextureCreateFromFile signature)
@@ -318,8 +317,6 @@ static inline void paintcanvas_ext_fr_setwvm(void *self, void *m) { ((PaintCanva
 
 void paintcanvas_ext_fr_glenable(void *eng, unsigned int cap, bool on); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_fr_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_sprite_rgba(unsigned int, float, float, float, float, void *); // lint: void_ptr (external symbol; mangling must match lib)
@@ -380,29 +377,7 @@ static inline void paintcanvas_ext_di2_meshdraw(void *eng, void *mesh) { AbyssEn
 
 static inline void paintcanvas_ext_di2_glenable(unsigned int cap) { glEnable(cap); }
 
-void paintcanvas_ext_sbm_glenablecap(void *eng, unsigned int v, int on); // lint: void_ptr (external symbol; mangling must match lib)
-
 // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_sbm_glTexEnvi(unsigned int a, unsigned int b, unsigned int c) { glTexEnvi(a, b, c); }
-
-static inline void paintcanvas_ext_sbm_glEnable(unsigned int cap) { glEnable(cap); }
-
-static inline void paintcanvas_ext_sbm_glDisable(unsigned int cap) { glDisable(cap); }
-
-static inline void paintcanvas_ext_sbm_glBlendFunc(unsigned int a, unsigned int b) { glBlendFunc(a, b); }
-
-static inline void paintcanvas_ext_sbm_glDepthMask(int v) { glDepthMask(v); }
-
-static inline void paintcanvas_ext_sbm_glAlphaFunc(unsigned int a, float ref) { glAlphaFunc(a, ref); }
-
-static inline void paintcanvas_ext_sbm_texcombine(unsigned int a, unsigned int b, unsigned int c) { glTexEnvi(a, b, c); }
-
-void paintcanvas_ext_sbm_lightenable(void *eng, int on); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_sbm_lightsetlight(void *eng, int v); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_sbm_setlight(int on);
 
 void *paintcanvas_ext_fc_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -435,8 +410,6 @@ void paintcanvas_ext_glenable2(void *, unsigned int, bool); // lint: void_ptr (e
 void paintcanvas_ext_rt_deletearr(char *p);
 
 char *paintcanvas_ext_rt_getAEChar(void *strField); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_sbm_setalpha(void *eng, unsigned int v, int on); // lint: void_ptr (external symbol; mangling must match lib)
 
 void *paintcanvas_ext_tc_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1896,19 +1869,13 @@ void PaintCanvas::FontSetYOffset(unsigned int index, short yoff) {
     }
 }
 
-static volatile char g_sbm_flag_8cb62_storage = 0;
-static volatile char *const g_sbm_flag_8cb62 = &g_sbm_flag_8cb62_storage;
-
-static const unsigned int g_sbm_const_8ce34 = 0;
-
 void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
     this->engine->LightEnable(false);
 
-    volatile char *flag = g_sbm_flag_8cb62;
-    if (*flag != 0) {
-        this->engine->GlEnable(g_sbm_const_8ce34, false);
+    if (Engine::enableShader != 0) {
+        this->engine->GlEnable(0x1100020, false);
     } else {
-        paintcanvas_ext_sbm_glTexEnvi(0x2300, 0x2200, 0x2100);
+        glTexEnvi(0x2300, 0x2200, 0x2100);
     }
 
     switch (mode) {
@@ -1975,8 +1942,8 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
             glDisable(0xbe2);
             glDepthMask(1);
             this->engine->GlEnable(0x1000000, true);
-            if (*flag == 0) {
-                paintcanvas_ext_sbm_glAlphaFunc(0x204, 0.5f);
+            if (Engine::enableShader == 0) {
+                glAlphaFunc(0x204, 0.5f);
             }
             return;
         case 0x15:
@@ -1984,8 +1951,8 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
             glEnable(0xbe2);
             glBlendFunc(0x302, 0x303);
             glDepthMask(0);
-            if (*flag != 0) {
-                this->engine->GlEnable(g_sbm_const_8ce34, true);
+            if (Engine::enableShader != 0) {
+                this->engine->GlEnable(0x1100020, true);
                 return;
             }
             glTexEnvi(0x2300, 0x2200, 0x8570);
@@ -2001,7 +1968,7 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
             glEnable(0xbe2);
             glBlendFunc(0x302, 0x303);
             glDepthMask(0);
-            if (*flag == 0) {
+            if (Engine::enableShader == 0) {
                 glTexEnvi(0x2300, 0x2200, 0x8570);
                 glTexEnvi(0x2300, 0x8571, 0x8575);
                 glTexEnvi(0x2300, 0x8572, 0x1e01);
