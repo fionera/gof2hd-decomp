@@ -742,7 +742,7 @@ namespace AbyssEngine {
         for (unsigned int i = 0; i < mat->meshes.count; ++i) {
             Matrix world;
             AE_AEMath_matMul(&world, &mat->arr_5c.data_[i]);
-            ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
+            ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const Matrix *) canvas->worldViewMatrix);
             engine->SetModelMatrix(world);
             engine->SetUVMatrix(mat->arr_38.data_[i]);
 

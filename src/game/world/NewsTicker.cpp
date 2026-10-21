@@ -248,7 +248,7 @@ String NewsTicker::replaceTokens(String text) {
     if (Globals::status->stringHasToken(String(text, false), String("#VICTIMS", false))) {
         int victims = Globals::rnd->nextInt(99000) + 100000;
         text = Globals::status->replaceHash(String(text, false),
-                                            String(Layout::formatNumber(victims / 1000 * 1000), false),
+                                            String(Globals::layout->formatNumber(victims / 1000 * 1000), false),
                                             String("#VICTIMS", false));
     }
 
@@ -276,7 +276,7 @@ String NewsTicker::replaceTokens(String text) {
             item = *Globals::gameText->getText(itemIndex + 1274);
             delete candidates;
         }
-        price = Layout::formatNumber((int) (Globals::status->getPlayingTime() / 1000000) + (roll < 40 ? 140 : 12));
+        price = Globals::layout->formatNumber((int) (Globals::status->getPlayingTime() / 1000000) + (roll < 40 ? 140 : 12));
         text = Globals::status->replaceHash(String(text, false), String(item, false),
                                             String("#VOSSK_SHIP_OR_ITEM", false));
         text = Globals::status->replaceHash(String(text, false),
@@ -323,7 +323,7 @@ String NewsTicker::replaceTokens(String text) {
         text = Globals::status->replaceHash(String(text, false), String(station->getName(), false),
                                             String("#NIVELIAN_PLANET", false));
         int demonstrators = Globals::rnd->nextInt(990000) + 1000000;
-        String count = Layout::formatNumber(demonstrators / 1000 * 1000);
+        String count = Globals::layout->formatNumber(demonstrators / 1000 * 1000);
         text = Globals::status->replaceHash(String(text, false), String(count, false),
                                             String("#DEMONSTRATORS", false));
         delete station;

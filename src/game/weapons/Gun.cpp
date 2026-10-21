@@ -753,7 +753,7 @@ void Gun::calcCharacterCollision() {
             }
 
             KIPlayer *ki = enemy->getKIPlayer();
-            if (!enemy->pad_69 && (ki == nullptr || !(uint8_t) ki->field_0x8c)) {
+            if (!enemy->egoFlag && (ki == nullptr || !(uint8_t) ki->field_0x8c)) {
                 continue;
             }
             bool hit;
@@ -820,13 +820,13 @@ void Gun::calcCharacterCollision() {
             }
             int amount;
             if (this->owner == nullptr || this->owner->enemyFlagsLo) {
-                if (enemy->pad_69 && ((Level *) this->level)->getPlayer() != nullptr &&
+                if (enemy->egoFlag && ((Level *) this->level)->getPlayer() != nullptr &&
                     ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
                     amount = (int) ((float) this->damage * 3.0f * 0.25f);
                 } else {
                     amount = this->damage;
                 }
-            } else if (enemy->pad_69) {
+            } else if (enemy->egoFlag) {
                 amount = (int) ((float) this->damage * 0.2f);
             } else {
                 amount = this->damage;
