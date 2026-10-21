@@ -106,8 +106,7 @@ int *Galaxy::getAsteroidProbabilities(Station *station) {
     int *probs = new int[11];
     int *ids = new int[11];
 
-    int slot = 0;
-    for (int id = 0x9a; id != 0xa4; ++id) {
+    for (int id = 0x9a, slot = 0; id != 0xa4; ++id) {
         ids[slot] = id;
         int prob;
         int next;
@@ -135,8 +134,8 @@ int *Galaxy::getAsteroidProbabilities(Station *station) {
     ids[10] = 0xa4;
     probs[10] = alien != 0 ? 100 : 0;
 
-    bool sorted = true;
     int i = 1;
+    bool sorted = true;
     do {
         for (; i != 0xb; ++i) {
             int prev = i - 1;
@@ -159,12 +158,10 @@ int *Galaxy::getAsteroidProbabilities(Station *station) {
             break;
     } while (true);
 
-    int sub = 0;
-    for (int k = 0; k != 0xb; ++k) {
-        int v = probs[k];
-        if (0 < v)
-            probs[k] = v + sub;
-        sub = sub - 2;
+    // Each later (lower ranked) entry loses another 2 percent.
+    for (int penalty = 0, k = 0; k != 0xb; ++k, penalty -= 2) {
+        if (probs[k] > 0)
+            probs[k] += penalty;
     }
 
     int *out = new int[22];
@@ -188,8 +185,7 @@ int *Galaxy::getPlasmaProbabilities(Station *station) {
     int *probs = new int[4];
     int *ids = new int[4];
 
-    int slot = 0;
-    for (int id = 0xc9; id != 0xcd; ++id) {
+    for (int id = 0xc9, slot = 0; id != 0xcd; ++id) {
         ids[slot] = id;
         int prob;
         int next;
@@ -214,8 +210,8 @@ int *Galaxy::getPlasmaProbabilities(Station *station) {
         slot = next;
     }
 
-    bool sorted = true;
     int i = 1;
+    bool sorted = true;
     do {
         for (; i != 4; ++i) {
             int prev = i - 1;
@@ -238,12 +234,10 @@ int *Galaxy::getPlasmaProbabilities(Station *station) {
             break;
     } while (true);
 
-    int sub = 0;
-    for (int k = 0; k != 4; ++k) {
-        int v = probs[k];
-        if (0 < v)
-            probs[k] = v + sub;
-        sub = sub - 2;
+    // Each later (lower ranked) entry loses another 2 percent.
+    for (int penalty = 0, k = 0; k != 4; ++k, penalty -= 2) {
+        if (probs[k] > 0)
+            probs[k] += penalty;
     }
 
     int *out = new int[8];
