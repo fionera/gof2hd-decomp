@@ -108,7 +108,7 @@ static const char hw_buy2_yes[1] = "", hw_buy2_no[1] = "", hw_buy2_icon[1] = "";
 static const char hw_init_buy[1] = "", hw_init_sell[1] = "", hw_init_lbl[1] = "",
         hw_init_more[1] = "", hw_init_back[1] = "", hw_init_help[1] = "";
 
-int HangarWindow::lastTab;
+int HangarWindow::lastTab = 1;
 
 HangarWindow::HangarWindow() {
     this->bluePrint = nullptr;

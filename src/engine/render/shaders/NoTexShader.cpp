@@ -20,7 +20,7 @@ static const char *const kNoTexShaderFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int NoTexShader::ShaderIndex;
+    int NoTexShader::ShaderIndex = -1;
 
     void NoTexShader::SetInActive() {
         glDisableVertexAttribArray(this->aPositionLoc);

@@ -113,7 +113,7 @@ static const char *const kBumpRimCubeShader_newFragmentSource =
     "}  \n";
 
 namespace AbyssEngine {
-    int BumpRimCubeShader_new::ShaderIndex;
+    int BumpRimCubeShader_new::ShaderIndex = -1;
 
     BumpRimCubeShader_new::BumpRimCubeShader_new() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

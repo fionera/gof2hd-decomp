@@ -34,7 +34,7 @@ static const char *const kColorMixAddFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int ColorMixAdd::ShaderIndex;
+    int ColorMixAdd::ShaderIndex = -1;
 
     ColorMixAdd::ColorMixAdd() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

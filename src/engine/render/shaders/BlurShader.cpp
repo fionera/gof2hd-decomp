@@ -9,7 +9,7 @@
 
 
 namespace AbyssEngine {
-    int BlurShader::ShaderIndex;
+    int BlurShader::ShaderIndex = -1;
 
     BlurShader::BlurShader() {
         BlurShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

@@ -699,7 +699,7 @@ void ParticleSettings::Interpolate(ParticleSet a, ParticleSet b, float t, Partic
     asFloat(po.velDir) = omt * asFloat(pa.velDir) + asFloat(pb.velDir) * t;
 }
 
-int ParticleSettings::particleMultiply;
+float ParticleSettings::particleMultiply = 1.0f;
 int ParticleSettings::pCounter;
 
 int ParticleSettingsRef::assertInit;

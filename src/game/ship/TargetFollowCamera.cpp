@@ -2,26 +2,8 @@
 #include "game/core/Globals.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/render/PaintCanvas.h"
-
-namespace AbyssEngine {
-    class AERandom;
-
-    namespace AEMath {
-        Matrix MatrixGetLookAt(const Vector &pos, const Vector &at, const Vector &up);
-
-        Matrix MatrixSetRotationOrdered(const Matrix &base, float x, float y, float z, int order);
-    }
-}
-
-static unsigned g_currentCamera = 0;
-static AbyssEngine::AERandom *g_cameraRng = nullptr;
-
-int AERandom(void *rng, int bound); // lint: void_ptr (free fn signature baked into imported mangled name)
-
-static const float g_TFC_shakeMax = 0.0f;
-static const float g_TFC_rumbleScale = 1.0f;
-static const float g_TFC_shakeScale = 1.0f;
-
+#include "engine/math/AEMath.h"
+#include "engine/core/AERandom.h"
 
 static inline float bitsToFloat(uint32_t u) {
     float f;
@@ -256,149 +238,128 @@ void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion
 }
 
 void TargetFollowCamera::update(int dt) {
-    if (this->fixed != 0) {
-        *getPosition() = MatrixGetPosition(this->localMatrix);
-        Globals::Canvas->CameraSetLocal(g_currentCamera, this->localMatrix);
-        if (this->target != 0) {
-            Matrix m = this->target->getMatrix();
-            *getUp() = MatrixGetUp(m);
-            *getTargetPos() = MatrixGetPosition(m);
-        }
+    if (this->fixed) {
+        Vector position = MatrixGetPosition(this->localMatrix);
+        setPosition(position);
+        *getPosition() = position;
+        Globals::Canvas->CameraSetLocal(this->id, this->localMatrix);
+        if (this->target == nullptr)
+            return;
+        Matrix targetMatrix = this->target->getMatrix();
+        *getUp() = MatrixGetUp(this->useTargetsUpVec ? targetMatrix : Matrix());
+        *getTargetPos() = MatrixGetPosition(targetMatrix);
         return;
     }
 
-    if (dt <= 0 || this->active == 0) return;
+    if (dt < 1 || !this->active)
+        return;
 
-    Matrix m = this->target->getMatrix();
-
-    if (this->lookAtCam == 0) {
-        if (this->locked == 0) {
-            if (this->firstPerson == 0) {
-                Vector savedTarget = *getTargetPos();
-                Vector savedPos = *getPosition();
-                *getUp() = MatrixGetUp(m);
-
-                if (this->rotateAroundTargetEnabled != 0) {
-                    Matrix rot = AbyssEngine::AEMath::MatrixSetRotationOrdered(
-                        m, this->rotX, this->rotY, this->rotZ, 2);
-                    m *= rot;
-                    float curLen = VectorLength(*getCamOffset());
-                    if (curLen != this->zoom)
-                        *getCamOffset() *= (this->zoom / curLen);
-                }
-
-                double dd = (double) dt;
-                double d2 = dd * dd, d3 = d2 * dd, d4 = d3 * dd;
-                double inv = 1.0 / (float) dt;
-
-                *getPosition() = MatrixGetPosition(m);
-                *getTargetPos() = MatrixGetPosition(m);
-
-                Vector diff = *getTargetPos();
-                diff -= *getPosition();
-                float kA = (float) ((dampCoeffA[4] + dampCoeffA[1] * d2 + dampCoeffA[0] * dd +
-                                     dampCoeffA[2] * d3 + dampCoeffA[3] * d4) * inv);
-                diff *= kA;
-                diff += savedTarget;
-                *getTargetPos() = diff;
-
-                Vector diff2 = *getTargetPos();
-                diff2 -= *getPosition();
-                float kB = (float) ((dampCoeffB[4] + dampCoeffB[1] * d2 + dampCoeffB[0] * dd +
-                                     dampCoeffB[2] * d3 + dampCoeffB[3] * d4) * inv);
-                diff2 *= kB;
-
-                if (this->hideShip != 0) {
-                    float l = VectorLength(diff2) + this->shakeAccum;
-                    this->shakeAccum = l;
-                    this->hideShip = (l < g_TFC_shakeMax) ? 1 : 0;
-                }
-
-                diff2 += savedPos;
-                *getTargetPos() = diff2;
-            } else {
-                m = AbyssEngine::AEMath::Matrix();
-                Matrix rot;
-                MatrixSetRotation(rot, 0.0f, 0.0f, 0.0f);
-                rot *= this->firstPersonMatrix;
-                m = rot;
-
-                Vector cur = *getPosition();
-                *getPosition() = MatrixGetPosition(m);
-
-                if (this->shakeReference == 0.0f ||
-                    this->shakeAccum < this->shakeReference * 1.5f) {
-                    Vector d = *getPosition();
-                    d -= cur;
-                    if (this->shakeReference == 0.0f)
-                        this->shakeReference = VectorLength(d);
-
-                    double dd = (double) dt;
-                    double d2 = dd * dd, d3 = d2 * dd, d4 = d3 * dd;
-                    double inv = 1.0 / (float) dt;
-                    float k = (float) ((dampCoeffB[4] + dampCoeffB[1] * d3 + dampCoeffB[0] * d4 +
-                                        dampCoeffB[2] * d2 + dampCoeffB[3] * dd) * inv);
-                    d *= k;
-                    float l = VectorLength(d) + this->shakeAccum;
-                    this->shakeAccum = l;
-                    this->hideShip = (l >= this->shakeReference * 0.75f) ? 1 : 0;
-                    cur += *getPosition();
-                    *getPosition() = cur;
-                }
-
-                *getUp() = MatrixGetUp(m);
-                *getTargetPos() = MatrixGetPosition(m);
-            }
-        } else {
-            this->hideShip = 0;
-            *getTargetPos() = MatrixGetPosition(m);
-            this->targetX -= this->posX;
-            this->targetY -= this->posY;
-            this->targetZ -= this->posZ;
-        }
-    } else {
-        Matrix fp = m;
-        if (this->useTargetsUpVec == 0)
-            fp = AbyssEngine::AEMath::Matrix();
-        *getUp() = MatrixGetUp(fp);
-        *getTargetPos() = MatrixGetPosition(fp);
+    Matrix targetMatrix = this->target->getMatrix();
+    if (this->lookAtCam) {
+        *getUp() = MatrixGetUp(this->useTargetsUpVec ? targetMatrix : Matrix());
+        *getTargetPos() = MatrixGetPosition(targetMatrix);
         this->hideShip = 0;
+    } else if (this->locked) {
+        this->hideShip = 0;
+        *getTargetPos() = MatrixGetPosition(targetMatrix);
+        this->targetX -= this->posX;
+        this->targetY -= this->posY;
+        this->targetZ -= this->posZ;
+    } else if (this->firstPerson) {
+        targetMatrix = MatrixIdentity(targetMatrix);
+        MatrixSetRotation(targetMatrix, 0.0f, 3.1415927f, 0.0f);
+        targetMatrix = this->firstPersonMatrix * targetMatrix;
+        Vector lastPosition = *getPosition();
+        *getPosition() = MatrixTransformVector(targetMatrix, *reinterpret_cast<Vector *>(&this->fpOffsetX));
+        if (this->shakeReference == 0.0f || this->shakeAccum < this->shakeReference * 1.5f) {
+            Vector step = *getPosition() - lastPosition;
+            if (this->shakeReference == 0.0f)
+                this->shakeReference = VectorLength(step);
+            int t2 = dt * dt;
+            int t3 = t2 * dt;
+            int t4 = t3 * dt;
+            step *= (float) ((this->dampCoeffB[0] * t4 + this->dampCoeffB[1] * t3 + this->dampCoeffB[2] * t2 +
+                              this->dampCoeffB[3] * dt + this->dampCoeffB[4]) *
+                             (1.0f / dt));
+            this->shakeAccum += VectorLength(step);
+            this->hideShip = this->shakeAccum > this->shakeReference * 0.75f;
+            *getPosition() = lastPosition + step;
+        }
+        targetMatrix[3] = this->posX;
+        targetMatrix[7] = this->posY;
+        targetMatrix[11] = this->posZ;
+        *getUp() = MatrixGetUp(targetMatrix);
+        Vector direction = MatrixGetDir(targetMatrix);
+        *getTargetPos() = MatrixTransformVector(targetMatrix, direction);
+    } else {
+        Vector lastTarget = *getTargetPos();
+        Vector lastPosition = *getPosition();
+        *getUp() = MatrixGetUp(targetMatrix);
+        if (this->rotateAroundTargetEnabled) {
+            Matrix rotation;
+            MatrixSetRotation(rotation, this->rotX, this->rotY, this->rotZ,
+                              (AbyssEngine::AEMath::RotationOrder) 2);
+            targetMatrix *= rotation;
+            float length = VectorLength(*getCamOffset());
+            if (length != this->zoom)
+                *getCamOffset() *= this->zoom / length;
+        }
+        *getPosition() = MatrixTransformVector(targetMatrix, *getCamOffset());
+        *getTargetPos() = MatrixTransformVector(targetMatrix, *getTargetOffset());
+
+        Vector targetStep = *getTargetPos() - lastTarget;
+        long long t2 = (long long) dt * dt;
+        long long t3 = t2 * dt;
+        long long t4 = t3 * dt;
+        double x4 = (double) t4;
+        double x3 = (double) t3;
+        double x2 = (double) t2;
+        double x1 = (double) dt;
+        double inverse = 1.0f / dt;
+        targetStep *= (float) ((this->dampCoeffA[0] * x4 + this->dampCoeffA[1] * x3 + this->dampCoeffA[2] * x2 +
+                                this->dampCoeffA[3] * x1 + this->dampCoeffA[4]) *
+                               inverse);
+        *getTargetPos() = lastTarget + targetStep;
+
+        Vector positionStep = *getPosition() - lastPosition;
+        positionStep *= (float) ((this->dampCoeffB[0] * x4 + this->dampCoeffB[1] * x3 + this->dampCoeffB[2] * x2 +
+                                  this->dampCoeffB[3] * x1 + this->dampCoeffB[4]) *
+                                 inverse);
+        if (this->hideShip) {
+            this->shakeAccum += VectorLength(positionStep);
+            this->hideShip = this->shakeAccum < 800.0f;
+        }
+        *getPosition() = lastPosition + positionStep;
     }
 
-    if (this->firstPerson != 0) {
-        Matrix fpm = this->firstPersonMatrix;
-        *getPosition() = MatrixGetPosition(fpm);
-        *getUp() = MatrixGetUp(fpm);
-        Vector dir = MatrixGetDir(fpm);
-        dir -= *getPosition();
-        *getTargetPos() = dir;
+    if (this->firstPerson) {
+        *getPosition() = MatrixGetPosition(targetMatrix);
+        *getUp() = MatrixGetUp(targetMatrix);
+        *getTargetPos() = *getPosition() - MatrixGetDir(targetMatrix);
     }
 
-    if (this->rumbleActive != 0) {
+    if (this->rumbleActive) {
         this->rumbleTimer -= dt;
         if (this->rumbleTimer < 1)
             this->rumbleActive = 0;
-        float scale = (this->firstPerson == 0) ? 1.0f : g_TFC_rumbleScale;
-        int amt = this->rumbleStrength;
-        this->posX += scale * (float) (AERandom(g_cameraRng, amt << 1) - amt);
-        this->posY += scale * (float) (AERandom(g_cameraRng, amt << 1) - amt);
-        this->posZ += scale * (float) (AERandom(g_cameraRng, amt << 1) - amt);
+        float scale = this->firstPerson ? 0.001f : 1.0f;
+        this->posX += scale * (float) (-this->rumbleStrength + Globals::rnd->nextInt(this->rumbleStrength * 2));
+        this->posY += scale * (float) (-this->rumbleStrength + Globals::rnd->nextInt(this->rumbleStrength * 2));
+        this->posZ += scale * (float) (-this->rumbleStrength + Globals::rnd->nextInt(this->rumbleStrength * 2));
     }
 
-    float shake = this->shakeAmount;
-    if (shake > 0.0f) {
-        int freq = this->shakeFrequency;
-        float scale = (this->firstPerson == 0) ? 1.0f : g_TFC_shakeScale;
-        int b = freq << 1;
-        this->targetX += scale * shake * (float) (AERandom(g_cameraRng, b) - freq);
-        this->targetY += scale * shake * (float) (AERandom(g_cameraRng, b) - freq);
-        this->targetZ += scale * shake * (float) (AERandom(g_cameraRng, b) - freq);
+    if (this->shakeAmount > 0.0f) {
+        int frequency = this->shakeFrequency;
+        float scale = this->firstPerson ? 0.0015f : 1.0f;
+        this->targetX += scale * (this->shakeAmount * (float) (Globals::rnd->nextInt(frequency * 2) - frequency));
+        this->targetY += scale * (this->shakeAmount * (float) (Globals::rnd->nextInt(frequency * 2) - frequency));
+        this->targetZ += scale * (this->shakeAmount * (float) (Globals::rnd->nextInt(frequency * 2) - frequency));
     }
 
-    Matrix look = AbyssEngine::AEMath::MatrixGetLookAt(*getPosition(), *getTargetPos(), *getUp());
-    Matrix rollMat;
-    MatrixSetRotation(rollMat, this->rollAngle, 0.0f, 0.0f);
-    look *= rollMat;
-    Globals::Canvas->CameraSetLocal(g_currentCamera, look);
-    this->localMatrix = look;
+    targetMatrix = MatrixGetLookAt(*getPosition(), *getTargetPos(), *getUp());
+    Matrix roll;
+    MatrixSetRotation(roll, 0.0f, 0.0f, this->rollAngle);
+    targetMatrix *= roll;
+    Globals::Canvas->CameraSetLocal(this->id, targetMatrix);
+    this->localMatrix = targetMatrix;
 }

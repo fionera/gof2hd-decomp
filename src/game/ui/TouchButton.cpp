@@ -159,7 +159,6 @@ int TouchButton::getHeight() {
     return this->height;
 }
 
-static const char g_TB_emptyStr[] = "";
 
 // Medal button images by medal stage (bronze .. gold, elite variants) and their tint colours.
 static const int g_TB_eliteMedalTints[4] = {(int) 0xfa792160, (int) 0xfa7921ff, (int) 0xffffffff, (int) 0xce8258ff};
@@ -470,7 +469,7 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
     this->fontId = (uint32_t) (uintptr_t) Globals::font;
     this->fontSpacing = (*canvas)->FontGetSpacing(this->fontId);
 
-    String tmp(g_TB_emptyStr, false);
+    String tmp("", false);
     this->init(tmp, kind, a, -1, -1, b, c, d, flags0, flags1);
 }
 
@@ -680,7 +679,7 @@ TouchButton::TouchButton(unsigned int kind, unsigned int image,
     this->image = image;
     this->fontSpacing = (*canvas)->FontGetSpacing(this->fontId);
 
-    String tmp(g_TB_emptyStr, false);
+    String tmp("", false);
     this->init(tmp, kind, a, -1, -1, b, c, 0, flag, 0x44);
 }
 
@@ -717,6 +716,6 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, unsigned char f
     PaintCanvas *canvas = Globals::Canvas;
     this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
 
-    String tmp(g_TB_emptyStr, false);
+    String tmp("", false);
     this->init(tmp, kind, a, -1, -1, b, c, 0, flag, 0x44);
 }
