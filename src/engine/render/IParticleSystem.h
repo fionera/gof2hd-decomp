@@ -92,7 +92,16 @@ public:
 
     void interpolateColor(int index, float &alpha, float &red, float &green, float &blue);
 
-    float *rotateUVs(float *src, int seed, float *dst);
+    float *rotateUVs(float *src, int seed, float *dst) { // inline: orig WEAK
+        AbyssEngine::AERandom random((long long) seed);
+        int flip = random.nextInt(40000) & 3;
+        int other = ~flip;
+        dst[0] = src[flip & 1];
+        dst[1] = src[other & 1];
+        dst[2] = src[2 + ((flip >> 1) & 1)];
+        dst[3] = src[2 + ((other >> 1) & 1)];
+        return dst;
+    }
 
     void calcEmitterVelocity(int delta);
 
