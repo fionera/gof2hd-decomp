@@ -314,6 +314,8 @@ Generator *Globals::generator;
 #include "game/world/SolarSystem.h"
 #include "game/core/String.h"
 #include "engine/math/BoundingSphere.h"
+#include "engine/math/BoundingAAB.h"
+#include "engine/file/FileRead.h"
 #include "engine/math/Transform.h"
 #include "engine/render/ParticleSettingsRef.h"
 
@@ -326,12 +328,6 @@ static inline int nextInt_71ad0(AbyssEngine::AERandom *self, int bound) { return
 void MatrixSetTranslation(void *m, float x, float y, float z); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 int AERandom_nextIntB(int rng, int bound);
-
-void FileRead_ctor(void *self); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void *FileRead_dtor(void *self); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-float VectorScale(void *vec, float scalar); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 static inline void * Galaxy_dtor(void *g) { ((Galaxy*)g)->~Galaxy(); return (void *)(g); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
@@ -348,10 +344,6 @@ static inline void * FModSound_dtor(void *s) { ((FModSound*)s)->~FModSound(); re
 static inline void * Achievements_dtor(void *a) { ((Achievements*)a)->~Achievements(); return (void *)(a); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 static inline void * ImageFactory_dtor(void *f) { ((ImageFactory*)f)->~ImageFactory(); return (void *)(f); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void FileRead_ctor(void *f); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void *FileRead_dtor(void *f); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 static inline int Station_getIndex(int station) { return (int)(((Station*)(long)station)->getIndex()); }
 
@@ -377,21 +369,6 @@ static_assert(offsetof(HintsBuffer, quad) == 0x00, "quad");
 static_assert(sizeof(HintsBuffer) == 0x40, "HintsBuffer size");
 #endif
 
-struct FileRead {
-    FileRead();
-
-    ~FileRead();
-
-    Station *loadStation(int32_t id);
-
-    Array<int32_t> *loadWreckCollision(int32_t id);
-
-    Array<Item *> *loadItemsBinary();
-
-    Array<Ship *> *loadShipsBinary();
-
-    Array<String *> *loadNamesBinary(int32_t type, bool first, bool second);
-};
 
 
 static const float gSCS_f86f8 = 210.9375f;
@@ -477,8 +454,6 @@ static const int gRaceTable[64] = {
     2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
     8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3,
     3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
-
-void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float x1, float y1, float z1); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 static const float gSCF_b90 = 56.25f;
 static const float gSCF_b10 = 63.28125f;
@@ -1027,54 +1002,41 @@ void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
     out = hourText + String(":", false) + minuteText;
 }
 
-unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
-                                      int width) {
-    (void) p1;    int *canvasP = (int *) &Globals::Canvas;
-    unsigned int meshOut = 0;
-    ((PaintCanvas *) (long) *canvasP)->MeshCreate((unsigned short) 0xc, (unsigned short) 6, (signed char) 0x13,
-                                                  (unsigned short) 0, meshOut);
-    int mesh = (int) meshOut;
-    int cv = *canvasP;
-
-    PaintCanvas *meshCanvas = (PaintCanvas *) (long) cv;
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 0, 0, 1, 2);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 1, 2, 1, 3);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 2, 4, 5, 6);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 3, 6, 5, 7);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 4, 8, 9, 10);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 5, 10, 9, 0xb);
-
-    meshCanvas->MeshSetUv((unsigned int) mesh, 0, u0, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 1, u1, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 2, v1, u0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 3, v1, v0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 4, u0, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 5, u1, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 6, v1, u0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 7, v1, v0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 8, u0, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 9, u1, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 10, v1, u0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 0xb, v1, v0);
-
-    float pw = static_cast<float>(width);
-    float nh = static_cast<float>(-height);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 0, nh, 0, pw);
-    float nw = static_cast<float>(-width);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 1, nh, 0, nw);
-    float ph = static_cast<float>(height);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 2, ph, 0, pw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 3, ph, 0, nw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 4, 0, nh, pw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 5, 0, nh, nw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 6, 0, ph, pw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 7, 0, ph, nw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 8, nh, ph, 0);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 9, nh, nh, 0);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 10, ph, ph, 0);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 0xb, ph, nh, 0);
-
-    return meshOut;
+unsigned int Globals::createBillBoard(int halfWidth, int halfLength, float u0, float v0, float u1, float v1,
+                                      int texture) {
+    unsigned int mesh = 0;
+    Globals::Canvas->MeshCreate(12, 6, 19, texture, mesh);
+    Globals::Canvas->MeshSetTriangle(mesh, 0, 0, 1, 2);
+    Globals::Canvas->MeshSetTriangle(mesh, 1, 2, 1, 3);
+    Globals::Canvas->MeshSetTriangle(mesh, 2, 4, 5, 6);
+    Globals::Canvas->MeshSetTriangle(mesh, 3, 6, 5, 7);
+    Globals::Canvas->MeshSetTriangle(mesh, 4, 8, 9, 10);
+    Globals::Canvas->MeshSetTriangle(mesh, 5, 10, 9, 11);
+    Globals::Canvas->MeshSetUv(mesh, 0, u0, v0);
+    Globals::Canvas->MeshSetUv(mesh, 1, u0, v1);
+    Globals::Canvas->MeshSetUv(mesh, 2, u1, v0);
+    Globals::Canvas->MeshSetUv(mesh, 3, u1, v1);
+    Globals::Canvas->MeshSetUv(mesh, 4, u0, v0);
+    Globals::Canvas->MeshSetUv(mesh, 5, u0, v1);
+    Globals::Canvas->MeshSetUv(mesh, 6, u1, v0);
+    Globals::Canvas->MeshSetUv(mesh, 7, u1, v1);
+    Globals::Canvas->MeshSetUv(mesh, 8, u0, v0);
+    Globals::Canvas->MeshSetUv(mesh, 9, u0, v1);
+    Globals::Canvas->MeshSetUv(mesh, 10, u1, v0);
+    Globals::Canvas->MeshSetUv(mesh, 11, u1, v1);
+    Globals::Canvas->MeshSetPoint(mesh, 0, (float) -halfWidth, 0, (float) halfLength);
+    Globals::Canvas->MeshSetPoint(mesh, 1, (float) -halfWidth, 0, (float) -halfLength);
+    Globals::Canvas->MeshSetPoint(mesh, 2, (float) halfWidth, 0, (float) halfLength);
+    Globals::Canvas->MeshSetPoint(mesh, 3, (float) halfWidth, 0, (float) -halfLength);
+    Globals::Canvas->MeshSetPoint(mesh, 4, 0, (float) -halfWidth, (float) halfLength);
+    Globals::Canvas->MeshSetPoint(mesh, 5, 0, (float) -halfWidth, (float) -halfLength);
+    Globals::Canvas->MeshSetPoint(mesh, 6, 0, (float) halfWidth, (float) halfLength);
+    Globals::Canvas->MeshSetPoint(mesh, 7, 0, (float) halfWidth, (float) -halfLength);
+    Globals::Canvas->MeshSetPoint(mesh, 8, (float) -halfWidth, (float) halfWidth, 0);
+    Globals::Canvas->MeshSetPoint(mesh, 9, (float) -halfWidth, (float) -halfWidth, 0);
+    Globals::Canvas->MeshSetPoint(mesh, 10, (float) halfWidth, (float) halfWidth, 0);
+    Globals::Canvas->MeshSetPoint(mesh, 11, (float) halfWidth, (float) -halfWidth, 0);
+    return mesh;
 }
 
 String Globals::getRandomName(int race, bool female) {
@@ -1335,74 +1297,63 @@ void Globals::reportSupernovaChallengeScore() {
 // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
 
 
-Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) {
+Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry * /*geom*/) {
+    FileRead *reader = new FileRead();
+    Array<int> *data = reader->loadWreckCollision(kind);
+    delete reader;
 
-    FileRead *fr = (FileRead *) ::operator new(1);
-    FileRead_ctor(fr);
-    Array<int> *data = fr->loadWreckCollision(kind);
-    ::operator delete(FileRead_dtor(fr));
-
-    Array<BoundingVolume *> *outArr = nullptr;
-    if (data != 0) {
+    Array<BoundingVolume *> *volumes = nullptr;
+    if (data != nullptr) {
         int count = (*data)[0];
-
-        float v[3] = {0, 0, 0};
-        float c[3] = {0, 0, 0};
-
-        outArr = new Array<BoundingVolume *>();
-        ArraySetLength((unsigned) count, *outArr);
-
+        Vector center = {0.0f, 0.0f, 0.0f};
+        Vector extent = {0.0f, 0.0f, 0.0f};
+        volumes = new Array<BoundingVolume *>();
+        ArraySetLength(count, *volumes);
         int pos = 1;
         for (int i = 0; i < count; i++) {
-            int *base = data->data();
-            int kindWord = base[pos];
-            BoundingVolume *bound = nullptr;
-            if (kindWord == 1) {
-                int *rec = base + pos;
-                c[2] = (float) (-base[pos + 1]);
-                c[0] = (float) rec[2];
-                c[1] = (float) rec[3];
-                v[0] = (float) rec[4];
-                v[1] = (float) rec[5];
-                v[2] = (float) rec[6];
-                float mag = VectorScale(v, c[1]);
-                if (geom == 0) {
-                    mag = VectorScale(c, mag);
-                    VectorScale(v, mag);
+            BoundingVolume *volume;
+            switch ((*data)[pos++]) {
+            case 0:
+                center.x = (float) -(*data)[pos];
+                center.z = (float) (*data)[pos + 1];
+                center.y = (float) (*data)[pos + 2];
+                extent.x = (float) (*data)[pos + 3];
+                extent *= 0.6f;
+                if (extent.x < 0.0f) {
+                    extent *= -1.0f;
                 }
-                bound = (BoundingVolume *) ::operator new(0x2c);
-                BoundingAAB_ctor(bound, v[2] + v[2], c[1] + c[1], v[1] + v[1], c[2], c[0], v[0]);
-                pos += 7;
-            } else if (kindWord == 0) {
-                int *rec = base + pos;
-                c[2] = (float) (-base[pos + 1]);
-                c[0] = (float) rec[2];
-                c[1] = (float) rec[3];
-                v[0] = (float) rec[4];
-                VectorScale(v, v[0]);
-                float mag = v[0];
-                if (v[0] < 0.0f) {
-                    mag = VectorScale(v, v[0]);
+                pos += 4;
+                if (kind == 0) {
+                    center *= 2.0f;
+                    extent *= 2.0f;
                 }
-                if (geom == 0) {
-                    mag = VectorScale(c, mag);
-                    VectorScale(v, mag);
+                volume = new BoundingSphere(0, 0, 0, center.x, center.y, center.z, extent.x);
+                break;
+            case 1:
+                center.x = (float) -(*data)[pos];
+                center.z = (float) (*data)[pos + 1];
+                center.y = (float) (*data)[pos + 2];
+                extent.x = (float) (*data)[pos + 3];
+                extent.z = (float) (*data)[pos + 4];
+                extent.y = (float) (*data)[pos + 5];
+                extent *= 1.1f;
+                pos += 6;
+                if (kind == 0) {
+                    center *= 2.0f;
+                    extent *= 2.0f;
                 }
-                bound = (BoundingVolume *) ::operator new(0x48);
-                new(bound) BoundingSphere(c[2], c[1], c[0], 0.0f, 0.0f, 0.0f, v[0]);
-                pos += 5;
-            } else {
-                pos += 1;
+                volume = new BoundingAAB(0, 0, 0, center.x, center.y, center.z, extent.x * 2.0f, extent.y * 2.0f,
+                                         extent.z * 2.0f);
+                break;
+            default:
                 continue;
             }
-            (*outArr)[i] = bound;
+            (*volumes)[i] = volume;
         }
-
         ArrayRelease(*data);
         delete data;
     }
-
-    return outArr;
+    return volumes;
 }
 
 AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
