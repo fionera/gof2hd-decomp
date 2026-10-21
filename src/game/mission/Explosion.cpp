@@ -24,43 +24,38 @@ static inline AbyssEngine::AERandom *explosionRandom() {
 }
 
 void Explosion::reset() {
-    PaintCanvas *canvas = explosionCanvas();
-
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
         (AbyssEngine::AnimationMode) 3, 0);
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
         (AbyssEngine::AnimationMode) 1, 0);
 
-    uint32_t lodTransform = this->primaryMesh->altTransform;
-    if (lodTransform != 0xffffffffu) {
-        ((Transform *) canvas->TransformGetTransform(lodTransform))->SetAnimationState(
+    if (this->primaryMesh->childTransform != 0xffffffffu) {
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->childTransform))->SetAnimationState(
             (AbyssEngine::AnimationMode) 3, 0);
-        ((Transform *) canvas->TransformGetTransform(this->primaryMesh->altTransform))->SetAnimationState(
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->childTransform))->SetAnimationState(
             (AbyssEngine::AnimationMode) 1, 0);
     }
 
-    AEGeometry *secondary = this->secondaryMesh;
-    if (secondary != 0) {
-        ((Transform *) canvas->TransformGetTransform(secondary->transform))->SetAnimationState(
+    if (this->secondaryMesh != 0) {
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState(
             (AbyssEngine::AnimationMode) 3, 0);
-        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState(
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState(
             (AbyssEngine::AnimationMode) 1, 0);
     }
 
     if (this->type == 6) {
-        ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationRangeInTime(
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationRangeInTime(
             0x8fcLL, 10000000LL);
-        ((Transform *) canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationRangeInTime(
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationRangeInTime(
             0x8fcLL, 10000000LL);
     }
 
-    Array<AEGeometry *> *streaks = this->fireStreaks;
-    if (streaks != 0) {
-        for (uint32_t i = 0; i < streaks->size(); i++) {
-            AEGeometry *geometry = (*streaks)[i];
-            ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationState(
+    if (this->fireStreaks != 0) {
+        for (uint32_t i = 0; i < this->fireStreaks->size(); i++) {
+            AEGeometry *geometry = (*this->fireStreaks)[i];
+            ((Transform *) Globals::Canvas->TransformGetTransform(geometry->transform))->SetAnimationState(
                 (AbyssEngine::AnimationMode) 3, 0);
-            ((Transform *) canvas->TransformGetTransform(geometry->transform))->SetAnimationState(
+            ((Transform *) Globals::Canvas->TransformGetTransform(geometry->transform))->SetAnimationState(
                 (AbyssEngine::AnimationMode) 1, 0);
         }
     }
@@ -153,7 +148,7 @@ void Explosion::start(const Vector &position, const Vector &direction) {
     PaintCanvas **canvas = Explosion_canvas;
     ((Transform *) (*canvas)->TransformGetTransform(this->primaryMesh->transform))->animating = true;
 
-    uint32_t lodTransform = this->primaryMesh->altTransform;
+    uint32_t lodTransform = this->primaryMesh->childTransform;
     if (lodTransform != 0xffffffffu) {
         ((Transform *) (*canvas)->TransformGetTransform(lodTransform))->animating = true;
     }
@@ -203,52 +198,37 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
         return;
     }
 
-    PaintCanvas *canvas = explosionCanvas();
-    long long delta = (long long) dt;
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->Update(delta, 0);
-
-    uint32_t lodTransform = this->primaryMesh->altTransform;
-    if (lodTransform != 0xffffffffu) {
-        ((Transform *) canvas->TransformGetTransform(lodTransform))->Update(delta, 0);
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->Update(dt, 0);
+    if (this->primaryMesh->childTransform != 0xffffffffu) {
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->childTransform))->Update(dt, 0);
     }
-
-    AEGeometry *secondary = this->secondaryMesh;
-    if (secondary != 0) {
-        ((Transform *) canvas->TransformGetTransform(secondary->transform))->Update(delta, 0);
+    if (this->secondaryMesh != 0) {
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->Update(dt, 0);
     }
-
-    Array<AEGeometry *> *streaks = this->fireStreaks;
-    if (streaks != 0) {
-        for (uint32_t i = 0; i < streaks->size(); i++) {
-            AEGeometry *geometry = (*streaks)[i];
-            ((Transform *) canvas->TransformGetTransform(geometry->transform))->Update(delta, 0);
+    if (this->fireStreaks != 0) {
+        for (uint32_t i = 0; i < this->fireStreaks->size(); i++) {
+            ((Transform *) Globals::Canvas->TransformGetTransform((*this->fireStreaks)[i]->transform))->Update(dt, 0);
         }
     }
 
     if (camera != 0 && (uint32_t) this->type < 2) {
-        Vector cameraPosition;
-        Vector position = this->primaryMesh->getPosition();
+        float distance = AbyssEngine::AEMath::VectorLength(
+            this->primaryMesh->getPosition() -
+            AbyssEngine::AEMath::MatrixGetPosition(
+                *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent())));
 
-        unsigned int current = canvas->CameraGetCurrent();
-        MatrixGetPosition(&cameraPosition, (const Matrix *) canvas->CameraGetLocal(current));
-        Vector diff = position - cameraPosition;
-        float distance = AbyssEngine::AEMath::VectorLength(diff);
-
-        Transform *transform = ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform));
-        int anim = (int) transform->currentTime;
-        if (anim <= 0x7d0) {
+        int anim = (int) ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->currentTime;
+        if (anim <= 2000) {
             float capped = 30000.0f;
             if (distance < 30000.0f) {
                 capped = distance;
             }
-            float value = (1.0f - capped / 30000.0f) * ((float) anim / -2000.0f + 1.0f);
-            camera->setRumblePercentage(value, 0x32);
+            camera->setRumblePercentage((1.0f - capped / 30000.0f) * ((float) anim / -2000.0f + 1.0f), 50);
         }
     }
 
-    long long elapsed = this->elapsed + delta;
-    this->elapsed = elapsed;
-    if (this->duration < elapsed) {
+    this->elapsed += dt;
+    if (this->duration < this->elapsed) {
         this->reset();
         if (camera != 0) {
             camera->setRumblePercentage(0.0f, 0);
@@ -475,7 +455,7 @@ void Explosion::start(const Matrix &matrix) {
     }
 
     ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->animating = true;
-    uint32_t lodTransform = this->primaryMesh->altTransform;
+    uint32_t lodTransform = this->primaryMesh->childTransform;
     if (lodTransform != 0xffffffffu) {
         ((Transform *) canvas->TransformGetTransform(lodTransform))->animating = true;
     }
@@ -542,33 +522,24 @@ void Explosion::update(int dt, const Vector &position) {
         return;
     }
 
-    PaintCanvas *canvas = explosionCanvas();
-    long long delta = (long long) dt;
-    ((Transform *) canvas->TransformGetTransform(this->primaryMesh->transform))->Update(delta, 0);
-
-    uint32_t lodTransform = this->primaryMesh->altTransform;
-    if (lodTransform != 0xffffffffu) {
-        ((Transform *) canvas->TransformGetTransform(lodTransform))->Update(delta, 0);
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->Update(dt, 0);
+    if (this->primaryMesh->childTransform != 0xffffffffu) {
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->childTransform))->Update(dt, 0);
     }
-
-    AEGeometry *secondary = this->secondaryMesh;
-    if (secondary != 0) {
-        ((Transform *) canvas->TransformGetTransform(secondary->transform))->Update(delta, 0);
+    if (this->secondaryMesh != 0) {
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->Update(dt, 0);
     }
-
-    Array<AEGeometry *> *streaks = this->fireStreaks;
-    if (streaks != 0) {
-        for (uint32_t i = 0; i < streaks->size(); i++) {
-            AEGeometry *geometry = (*streaks)[i];
+    if (this->fireStreaks != 0) {
+        for (uint32_t i = 0; i < this->fireStreaks->size(); i++) {
+            AEGeometry *geometry = (*this->fireStreaks)[i];
             geometry->setPosition(position);
-            ((Transform *) canvas->TransformGetTransform(geometry->transform))->Update(delta, 0);
+            ((Transform *) Globals::Canvas->TransformGetTransform(geometry->transform))->Update(dt, 0);
         }
     }
 
-    long long elapsed = this->elapsed + delta;
-    this->elapsed = elapsed;
-    if (this->duration < elapsed) {
-        return this->reset();
+    this->elapsed += dt;
+    if (this->duration < this->elapsed) {
+        this->reset();
     }
 }
 
