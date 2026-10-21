@@ -395,9 +395,8 @@ uint8_t Level::friendCargoWasStolen() {
     return friendCargoStolen;
 }
 
-Array<void *> *Level::getMessages() { // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
-    // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
-    return (Array<void *> *) messages; // lint: void_ptr (exported return type)
+Array<RadioMessage *> *Level::getMessages() {
+    return messages;
 }
 
 Route *Level::getEnemyRoute() {
@@ -4581,65 +4580,48 @@ void Level::connectPlayers() {
     }
 }
 
-void Level::enemyDied(int r1, bool r2arg) {
-    Level *thisptr = this;
-    int r2 = (int) r2arg;
-    (void) r1;
-
-    this->enemiesLeft = this->enemiesLeft - 1;
-    this->kills = this->kills + 1;
-
-    if (r2 != 0) {
-        this->killCountA = this->killCountA + 1;
+void Level::enemyDied(int /*index*/, bool killedByFriend) {
+    enemiesLeft--;
+    kills++;
+    if (killedByFriend) {
+        killCountA++;
         return;
     }
 
-    Status **statusHolder = &Globals::status;
-    (*statusHolder)->incKills();
-    this->killCountB = this->killCountB + 1;
-    if (this->player == nullptr)
+    Globals::status->incKills();
+    killCountB++;
+    if (player == nullptr) {
         return;
+    }
 
-    if ((static_cast<Radar *>(this->player->field_0x14))->hasScanner() == 0) {
-        Achievements **achA = &Globals::achievements;
-        if (((Achievements *) (*achA))->hasMedal(0x28, 1) == 0) {
-            Status *st = *statusHolder;
-            int v = st->field_11c;
-            if ((char) st->field_120 == 0) {
-                v = v + 1;
-                st->field_11c = v;
-            }
-            int goal = ((Achievements *) (*achA))->getValue(0x28, 1);
-            int prog = (int) (((float) v / (float) goal) * 100.0f);
-            if ((prog % 10) == 0) {
-                int hud = this->player->getHUD();
-                int cur = (*statusHolder)->field_11c;
-                int g2 = ((Achievements *) (*achA))->getValue(0x28, 1);
-                ((Hud *) (hud))->hudEventMedal(0x28, (int) (((float) cur / (float) g2) * 100.0f));
-            }
-            int cur2 = (*statusHolder)->field_11c;
-            if (((Achievements *) (*achA))->getValue(0x28, 1) <= cur2)
-                (*statusHolder)->field_120 = 1;
+    // medal 40: kills without a scanner
+    if (!static_cast<Radar *>(player->field_0x14)->hasScanner()
+        && !Globals::achievements->hasMedal(0x28, 1)) {
+        int count = Globals::status->field_11c;
+        if (!Globals::status->field_120) {
+            Globals::status->field_11c = ++count;
+        }
+        if ((int) ((float) count / (float) Globals::achievements->getValue(0x28, 1) * 100.0f) % 10 == 0) {
+            ((Hud *) player->getHUD())->hudEventMedal(0x28,
+                    (int) ((float) Globals::status->field_11c
+                           / (float) Globals::achievements->getValue(0x28, 1) * 100.0f));
+        }
+        if (Globals::status->field_11c >= Globals::achievements->getValue(0x28, 1)) {
+            Globals::status->field_120 = 1;
         }
     }
 
-    if (this->player != nullptr &&
-        this->player->emergencySystemActive() != 0) {
-        Achievements **achB = &Globals::achievements;
-        if (((Achievements *) (*achB))->hasMedal(0x2b, 1) == 0) {
-            Status *st = *statusHolder;
-            int v = st->field_13c + 1;
-            st->field_13c = v;
-            int goal = ((Achievements *) (*achB))->getValue(0x2b, 1);
-            if (0 < (int) ((float) v / (float) goal)) {
-                int hud = this->player->getHUD();
-                int cur = (*statusHolder)->field_13c;
-                int g2 = ((Achievements *) (*achB))->getValue(0x2b, 1);
-                ((Hud *) (hud))->hudEventMedal(0x2b, (int) (((float) cur / (float) g2) * 100.0f));
-            }
-            int cur2 = (*statusHolder)->field_13c;
-            if (((Achievements *) (*achB))->getValue(0x2b, 1) <= cur2)
-                (*statusHolder)->field_140 = 1;
+    // medal 43: kills while the emergency system is active
+    if (player != nullptr && player->emergencySystemActive()
+        && !Globals::achievements->hasMedal(0x2b, 1)) {
+        int count = ++Globals::status->field_13c;
+        if ((int) ((float) count / (float) Globals::achievements->getValue(0x2b, 1)) > 0) {
+            ((Hud *) player->getHUD())->hudEventMedal(0x2b,
+                    (int) ((float) Globals::status->field_13c
+                           / (float) Globals::achievements->getValue(0x2b, 1) * 100.0f));
+        }
+        if (Globals::status->field_13c >= Globals::achievements->getValue(0x2b, 1)) {
+            Globals::status->field_140 = 1;
         }
     }
 }

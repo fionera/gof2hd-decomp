@@ -186,75 +186,40 @@ void LevelScript::resetStartSequenceOver() {
 }
 
 void LevelScript::skipCutscene() {
-    StackVector position;
-
-    int mission = Globals::status->getCurrentCampaignMission();
-    if (mission == 0x9a) {
-        if ((uint32_t)(m_nState - 1) < 9) {
+    if (Globals::status->getCurrentCampaignMission() == 0x9a) {
+        if (m_nState >= 1 && m_nState <= 9) {
             m_nState = 9;
             for (int i = 0; i != 8; ++i) {
-                Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-                // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-                ((RadioMessage *) ((*messages)[i]))->trigger();
-                messages = m_pLevel->getMessages();
-                ((RadioMessage *) ((*messages)[i]))->finish();
+                (*m_pLevel->getMessages())[i]->trigger();
+                (*m_pLevel->getMessages())[i]->finish();
             }
-
-            m_nScriptTimerA = 0x7d1;
+            m_nScriptTimerA = 2001;
             m_nScriptCounterA = 0;
-
-            LevelListProc getList = gLevelListProc;
-            unsigned char *list = getList(m_pLevel);
-            ((PlayerFighter *) firstListEntry(list))->setAIDisabled(false);
-
-            list = getList(m_pLevel);
-            unsigned char *fighter = firstListEntry(list);
-
-            list = getList(m_pLevel);
-            Route *route = ((KIPlayer *) firstListEntry(list))->getRoute();
-            Waypoint *waypoint = route->getWaypoint();
-            ReadWaypointProc readWaypoint =
-                    *(ReadWaypointProc *) (*reinterpret_cast<char **>(waypoint) + 0x28);
-            readWaypoint(&position, waypoint);
-            SetVectorProc setVector =
-                    *(SetVectorProc *) (*reinterpret_cast<char **>(fighter) + 0x44);
-            setVector(fighter, &position);
+            ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setAIDisabled(false);
+            KIPlayer *fighter = (*m_pLevel->getEnemies())[0];
+            Vector position = (*m_pLevel->getEnemies())[0]->getRoute()->getWaypoint(0)->getPosition();
+            fighter->setPosition(position);
         }
-    } else if (mission == 0x9d) {
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9d) {
         if (m_nState <= 4) {
             for (int i = 0; i != 4; ++i) {
-                Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-                // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-                ((RadioMessage *) ((*messages)[i]))->trigger();
-                messages = m_pLevel->getMessages();
-                ((RadioMessage *) ((*messages)[i]))->finish();
+                (*m_pLevel->getMessages())[i]->trigger();
+                (*m_pLevel->getMessages())[i]->finish();
             }
-            m_nScriptTimerA = 0x4651;
+            m_nScriptTimerA = 18001;
             m_nScriptCounterA = 0;
             m_nState = 4;
         }
-    } else if (mission == 0x9e) {
-        m_nScriptTimerB = 0x2ee1;
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9e) {
+        m_nScriptTimerB = 12001;
         m_nScriptCounterB = 0;
         for (int i = 0; i != 3; ++i) {
-            Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-            // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-            ((RadioMessage *) ((*messages)[i]))->trigger();
-            messages = m_pLevel->getMessages();
-            ((RadioMessage *) ((*messages)[i]))->finish();
+            (*m_pLevel->getMessages())[i]->trigger();
+            (*m_pLevel->getMessages())[i]->finish();
         }
-
-        LevelListProc getList = gLevelListProc;
-        unsigned char *list = getList(m_pLevel);
-        unsigned char *player = firstListEntry(list);
-        VirtualCommandProc command =
-                *(VirtualCommandProc *) (*reinterpret_cast<char **>(player) + 0x48);
-        command(player, 0x000ba51e, 0, 0x000ba4b6);
-
-        list = getList(m_pLevel);
-        ((KIPlayer *) firstListEntry(list))->setVisible(true);
-
-        list = getList(m_pLevel);
+        (*m_pLevel->getEnemies())[0]->setPosition(-2077.0f, 0.0f, 20233.0f);
+        (*m_pLevel->getEnemies())[0]->setVisible(true);
+        (*m_pLevel->getEnemies())[0]->setActive(true);
         m_nState = 2;
     }
 }
@@ -266,7 +231,7 @@ int LevelScript::process(int delta) {
     // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
     // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
     Level *level = m_pLevel;
-    Array<void *> *messages = level->getMessages(); // lint: void_ptr (matches Level::getMessages() -> Array<void*>*)
+    Array<RadioMessage *> *messages = level->getMessages();
     PlayerEgo *player = level->getPlayer();
     Array<KIPlayer *> *enemies = level->getEnemies();
     int mission = Globals::status->getCurrentCampaignMission();
@@ -4738,8 +4703,7 @@ int LevelScript::process(int delta) {
                 }
                 // States 0/1 both fall through here (0x13a42e): wait for the mission radio message to
                 // finish, then run the standard cutscene-exit teardown.
-                Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr
-                if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
+                if (!(*m_pLevel->getMessages())[0]->isOver()) {
                     // DEFERRED 0x13cde4: radio-not-over -> shared tail.
                     break;
                 }

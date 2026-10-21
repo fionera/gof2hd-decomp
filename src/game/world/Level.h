@@ -279,7 +279,7 @@ public:
 
     int getFriendsLeft();
 
-    Array<void *> *getMessages(); // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
+    Array<RadioMessage *> *getMessages();
 
     int getTimeLimit();
 
