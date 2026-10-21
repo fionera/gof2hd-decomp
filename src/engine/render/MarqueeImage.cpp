@@ -2,8 +2,6 @@
 #include "game/core/Globals.h"
 #include "engine/render/PaintCanvas.h"
 
-static PaintCanvas **g_MarqueeImage_canvas = &Globals::Canvas;
-
 MarqueeImage::~MarqueeImage() {
 }
 
@@ -17,17 +15,15 @@ void MarqueeImage::setPosition(int x, int y) {
 }
 
 MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed) {
-    PaintCanvas **holder = g_MarqueeImage_canvas;
-
-    (*holder)->Image2DCreate(image, this->image);
+    Globals::Canvas->Image2DCreate(image, this->image);
 
     this->x = x;
     this->y = y;
     this->visibleWidth = width;
     this->speed = speed;
 
-    this->imageWidth = (*holder)->GetImage2DWidth(this->image);
-    this->imageHeight = (*holder)->GetImage2DHeight(this->image);
+    this->imageWidth = Globals::Canvas->GetImage2DWidth(this->image);
+    this->imageHeight = Globals::Canvas->GetImage2DHeight(this->image);
     this->scrollPosition = 0;
 }
 
@@ -36,41 +32,27 @@ void MarqueeImage::draw() {
 }
 
 void MarqueeImage::update(int dt) {
-    float position = this->scrollPosition;
     float delta = ((float) dt / 1000.0f) * this->speed;
-    float width = (float) this->imageWidth;
-    position += delta;
-    this->scrollPosition = position;
-    if (width < position) {
-        position = (position - width) + delta * 0.5f;
-        this->scrollPosition = position;
-    }
-
-    this->scrollOffset = (int) (width - position);
+    this->scrollPosition += delta;
+    if (this->scrollPosition > (float) this->imageWidth)
+        this->scrollPosition = this->scrollPosition - (float) this->imageWidth + delta * 0.5f;
+    this->scrollOffset = (int) ((float) this->imageWidth - this->scrollPosition);
 }
 
 void MarqueeImage::draw(int x, int y) {
-    int32_t offset = this->scrollOffset;
     this->x = x;
     this->y = y;
 
-    int32_t visibleWidth = this->visibleWidth;
-
-    if (offset > -1) {
-        int drawWidth = offset;
-        if (drawWidth > visibleWidth) {
-            drawWidth = visibleWidth;
-        }
-
-        (*g_MarqueeImage_canvas)->DrawRegion2D(this->image, (int) this->scrollPosition,
-                                               0, drawWidth, this->imageHeight, 0.0f, 0, 0, x, y);
-        offset = this->scrollOffset;
+    // Tail of the strip: from the scroll position up to the end of the image (clipped to the window).
+    if (this->scrollOffset > -1) {
+        Globals::Canvas->DrawRegion2D(this->image, (int) this->scrollPosition, 0,
+                                      this->scrollOffset > this->visibleWidth ? this->visibleWidth
+                                                                              : this->scrollOffset,
+                                      this->imageHeight, 0.0f, 0, 0, x, y);
     }
-
-    if (offset <= visibleWidth) {
-        (*g_MarqueeImage_canvas)->DrawRegion2D(this->image, 0, 0,
-                                               visibleWidth - offset,
-                                               this->imageHeight, 0.0f, 0, 0,
-                                               offset + x, y);
+    // Head of the strip wrapping around behind it.
+    if (this->scrollOffset <= this->visibleWidth) {
+        Globals::Canvas->DrawRegion2D(this->image, 0, 0, this->visibleWidth - this->scrollOffset,
+                                      this->imageHeight, 0.0f, 0, 0, this->scrollOffset + x, y);
     }
 }

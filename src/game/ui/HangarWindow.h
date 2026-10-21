@@ -111,11 +111,11 @@ public:
 
     ~HangarWindow();
 
-    int OnTouchBegin(int touch, int coord);
+    bool OnTouchBegin(int touch, int coord);
 
     bool OnTouchEnd(int x, int y);
 
-    unsigned int OnTouchMove(int touch, int coord);
+    bool OnTouchMove(int touch, int coord);
 
     unsigned char isInitialized();
 

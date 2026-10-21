@@ -7,7 +7,9 @@
 
 int curTouchSize = 0;
 int maxTouchSize = 0;
-Touch *touches = nullptr;
+// The original allocates a one-entry buffer at static-init time (its second .init_array entry:
+// touches = realloc(touches, 16)).
+Touch *touches = static_cast<Touch *>(realloc(touches, sizeof(Touch)));
 
 
 

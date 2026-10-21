@@ -1316,25 +1316,25 @@ static inline float absf_local(float v) {
     return v > 0.0f ? v : -v;
 }
 
-uint32_t StarMap::OnTouchBegin(int x, int y) {
+bool StarMap::OnTouchBegin(int x, int y) {
     if (this->choiceVisible != 0) {
         this->choiceWindow->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
     if (this->transitionIn != 0 || this->transitionOut != 0) {
-        return 0;
+        return false;
     }
 
     Globals::layout->OnTouchBegin(x, y);
     if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) || this->stationCenterAnim != 0) {
-        return 0;
+        return false;
     }
     this->backButton->OnTouchBegin(x, y);
     if (Globals::layout->field_0xc_leftMargin >= y || y >= Globals::h - Globals::layout->field_0x10_rightMargin) {
-        return 0;
+        return false;
     }
     if (this->autoMode != 0 && this->autoTimer < 4000) {
-        return 0;
+        return false;
     }
 
     Globals::sound->stop(0x66);
@@ -1387,7 +1387,7 @@ uint32_t StarMap::OnTouchBegin(int x, int y) {
                 if (Globals::status->hardCoreMode()) {
                     this->jumpCost <<= 1;
                 }
-                return 0;
+                return false;
             }
         }
     } else if (this->mode == 3) {
@@ -1397,28 +1397,28 @@ uint32_t StarMap::OnTouchBegin(int x, int y) {
                 absf_local(this->scratchVector.y - fy) < (float) this->hitRadius) {
                 this->selectedStation = i;
                 Globals::sound->play(0x68, 0, 0, 0.0f);
-                return 0;
+                return false;
             }
         }
     }
-    return 0;
+    return false;
 }
 
-int StarMap::OnTouchMove(int x, int y) {
+bool StarMap::OnTouchMove(int x, int y) {
     if (this->choiceVisible != 0) {
         this->choiceWindow->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
     if (this->transitionIn != 0 || this->transitionOut != 0) {
-        return 0;
+        return false;
     }
     Globals::layout->OnTouchMove(x, y);
     if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) || this->stationCenterAnim != 0) {
-        return 0;
+        return false;
     }
     this->backButton->OnTouchMove(x, y);
     if (this->dragging == 0) {
-        return 0;
+        return false;
     }
 
     float fx = (float) x;
@@ -1454,7 +1454,7 @@ int StarMap::OnTouchMove(int x, int y) {
         Matrix local = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
         canvas = Globals::Canvas;
         canvas->CameraSetLocal(canvas->CameraGetCurrent(), local);
-        return 0;
+        return false;
     }
 
     // Star system view: rotate the system (angles in 1/65536 turns).
@@ -1474,7 +1474,7 @@ int StarMap::OnTouchMove(int x, int y) {
     this->yaw = yaw;
     this->pitch = pitch;
     this->starSystemRoot->setRotation(pitch / 65536.0f * 6.28318548f, yaw / 65536.0f * 6.28318548f, -0.0981747732f);
-    return 0;
+    return false;
 }
 
 static inline float absf_end(float v) {

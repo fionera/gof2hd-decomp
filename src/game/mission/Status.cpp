@@ -46,7 +46,7 @@ uint32_t Status::orbitHasPlanetRing(int index) {
 
 int Status::getSystem() { return system; }
 
-int Status::inSupernovaSystem() {
+bool Status::inSupernovaSystem() {
     if (inAlienOrbit()) return 0;
     return asSystem(system)->getIndex() == 0x1b && currentCampaignMission < 0x9e;
 }

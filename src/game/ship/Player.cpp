@@ -835,7 +835,7 @@ void Player::setActive(bool value) {
     this->active = value;
 }
 
-unsigned char Player::isActive() {
+bool Player::isActive() {
     return this->active;
 }
 

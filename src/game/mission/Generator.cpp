@@ -434,6 +434,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     return list;
 }
 Array<int> *Generator::getLootList(int itemIndex, int amount) {
+    Array<Item *> *items = Globals::items;
     if (itemIndex >= 0) {
         Array<int> *result = new Array<int>();
         ArrayAdd(itemIndex, *result);
@@ -441,7 +442,6 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
         return result;
     }
 
-    Array<Item *> *items = Globals::items;
     int pairCount = Globals::rnd->nextInt(3);
     if (Globals::rnd->nextInt(3) == 0) {
         return nullptr;
@@ -452,11 +452,11 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
 
     Array<Item *> *allItems = Globals::items;
     int type = 0;
-    for (uint32_t out = 0; out < result->size(); out += 2) {
+    uint32_t out;
+    for (out = 0; out < result->size(); out += 2) {
         bool found = false;
         int selected = 0;
-        uint32_t tries = 0;
-        while (tries < 100 && !found) {
+        for (int tries = 0; tries < 100 && !found; tries++) {
             selected = Globals::rnd->nextInt(items->size());
             type = (*allItems)[selected]->getType();
             found = false;
@@ -466,11 +466,12 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
                 (*allItems)[selected]->getSinglePrice() >= 1) {
                 if ((uint32_t) (selected - 217) < 2 || selected == 164 || selected == 175) {
                     found = false;
-                } else if (type == 4 || (*allItems)[selected]->getTecLevel() <= 7) {
+                } else if (type != 4 && (*allItems)[selected]->getTecLevel() > 7) {
+                    found = false;
+                } else {
                     found = true;
                 }
             }
-            ++tries;
         }
 
         int count;
@@ -580,12 +581,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
         }
         result->data()[out++] = existing->data()[i];
         if (existing->data()[i]->getOffer() == 9) {
-            int index;
-            if (Globals::status->getCurrentCampaignMission() >= 142) {
-                index = Globals::rnd->nextInt(9);
-            } else {
-                index = Globals::rnd->nextInt(7) + 2;
-            }
+            int index = Globals::status->getCurrentCampaignMission() >= 142 ? Globals::rnd->nextInt(9) : Globals::rnd->nextInt(7) + 2;
             int itemId = kAgentOfferItems[index];
             existing->data()[i]->setSellItemData(itemId, (uint32_t) (index - 3) < 2 ? 10 : 1,
                                                  (*Globals::items)[itemId]->getSinglePrice() *
@@ -601,7 +597,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                 }
             }
             if (choices->size() != 0) {
-                int shipId = choices->data()[Globals::rnd->nextInt(choices->size())];
+                int shipId = (*choices)[Globals::rnd->nextInt(choices->size())];
                 existing->data()[i]->setSellItemData(shipId, 1, (*Globals::ships)[shipId]->getPrice());
                 existing->data()[i]->setOfferAccepted(false);
             } else {
@@ -691,9 +687,8 @@ Agent *Generator::createAgent(Station *station) {
             }
         }
     }
-    if (Globals::rnd->nextInt(100) < 33) {
-        offer = 0;
-    } else if ((uint32_t) (offer - 5) <= 1 && !(Globals::status->getCurrentCampaignMission() > 15)) {
+    if (Globals::rnd->nextInt(100) < 33 ||
+        ((offer == 5 || offer == 6) && Globals::status->getCurrentCampaignMission() <= 15)) {
         offer = 0;
     }
 
@@ -729,11 +724,9 @@ Agent *Generator::createAgent(Station *station) {
                  (*items)[selected]->getIngredients() != nullptr || (*items)[selected]->getSinglePrice() == 0 ||
                  (*items)[selected]->getOccurence() == 0);
         Item *item = (*items)[selected];
-        int amount = Globals::rnd->nextInt(15);
+        int amount = Globals::rnd->nextInt(15) + 5;
         if (item->getType() == 3 || item->getType() == 0 || item->getType() == 2) {
             amount = 1;
-        } else {
-            amount += 5;
         }
         float factor = (float) (Globals::rnd->nextInt(120) + 40) / 100.0f;
         agent->setSellItemData(selected, amount,

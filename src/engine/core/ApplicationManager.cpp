@@ -263,8 +263,8 @@ bool ApplicationManager::SoundIsPlaying(int soundId) {
 void ApplicationManager::VibrateEnable(bool enable) {
     this->vibrateEnabled = enable;
 }
-void ApplicationManager::VibrateSupported() {
-    this->engine->VibrateSupported();
+bool ApplicationManager::VibrateSupported() {
+    return this->engine->HasVibration();
 }
 void ApplicationManager::Vibrate(unsigned short duration) {
     if (this->vibrateEnabled) {

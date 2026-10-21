@@ -30,6 +30,6 @@ public:
 
     bool getCalcValue();
 
-    unsigned int achieved(int value);
+    bool achieved(int value);
 };
 #endif

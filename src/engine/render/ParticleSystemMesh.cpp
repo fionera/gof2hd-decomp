@@ -139,7 +139,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     } else {
         if (sets.size() != 0) {
             int set = (int) sets.data()[0];
-            if (set != -1 && *(float *) ((char *) ParticleSettingsRef::cur + set * 160 + 0x40) > 0.0f)
+            if (set != -1 && *(float *) ((char *) ParticleSettingsRef::curBytes() + set * 160 + 0x40) > 0.0f)
                 this->pointCount = (quads << 2) + (stride << 2);
         }
         this->particleVelocities = new Vector[particleCount * edgeCount * 2];
@@ -263,7 +263,7 @@ void ParticleSystemMesh::updateSingleColor(int id) {
     if ((int) (this->flags << 16) < 0) {
         if (this->particleAges[(id == 0 ? (int) this->maxParticles : id) - 1] == -1) {
             int set = this->particleSetIds[id];
-            uint32_t color = *(uint32_t *) (ParticleSettingsRef::cur + set * 160 + 0x38);
+            uint32_t color = *(uint32_t *) (ParticleSettingsRef::curBytes() + set * 160 + 0x38);
             uint32_t mask = this->alphaFade == 0 ? 0xffffff00u : 0xffu;
             color &= mask;
             a = (float) (color >> 24) * 0.0039215689f;
@@ -319,12 +319,12 @@ void ParticleSystemMesh::emitTrail(int delta) {
     Vector dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix);
 
     Vector edgeRight = (this->flags & 0x20000) == 0
-                       ? rightScaled * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14))
-                       : (rightScaled + up) * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14) * 0.70710677f);
+                       ? rightScaled * (*(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x14))
+                       : (rightScaled + up) * (*(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x14) * 0.70710677f);
     Vector edgeUp = (this->flags & 0x20000) == 0
-                    ? up * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14))
-                    : (up - rightScaled) * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14) * 0.70710677f);
-    Vector edgeDir = dir * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x14));
+                    ? up * (*(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x14))
+                    : (up - rightScaled) * (*(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x14) * 0.70710677f);
+    Vector edgeDir = dir * (*(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x14));
 
     float offsetX = (float) (int) this->field_0x78;
     float offsetZ = (float) (int) this->field_0x7c;
@@ -333,33 +333,33 @@ void ParticleSystemMesh::emitTrail(int delta) {
     offset.y = 0.0f;
     offset.z = offsetZ;
     Vector pos = AbyssEngine::AEMath::MatrixTransformVector(*this->matrix, offset);
-    pos = pos + *(float *) (ParticleSettingsRef::cur + set * 160 + 0x78) * rightScaled
-              + *(float *) (ParticleSettingsRef::cur + set * 160 + 0x7c) * up
-              + *(float *) (ParticleSettingsRef::cur + set * 160 + 0x80) * dir;
+    pos = pos + *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x78) * rightScaled
+              + *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x7c) * up
+              + *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x80) * dir;
 
-    if (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x40) > 0.0f) {
+    if (*(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x40) > 0.0f) {
         int saved = this->currentParticle;
         bool finish = this->particleAges[getPrevId(this->currentParticle)] == -1;
-        pos -= *(float *) (ParticleSettingsRef::cur + set * 160 + 0x40) * 0.5f * dir;
+        pos -= *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x40) * 0.5f * dir;
         this->currentParticle = this->maxParticles;
         Vector zero;
         zero.x = 0.0f;
         zero.y = 0.0f;
         zero.z = 0.0f;
         setParticle(pos,
-                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x14),
-                    *(uint32_t *) (ParticleSettingsRef::cur + set * 160 + 0x34),
-                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x88),
-                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c),
-                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x90),
-                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c)
-                        + (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x94)
-                           - *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c)) * 0.05f,
+                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x14),
+                    *(uint32_t *) (ParticleSettingsRef::curBytes() + set * 160 + 0x34),
+                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x88),
+                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x8c),
+                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x90),
+                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x8c)
+                        + (*(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x94)
+                           - *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x8c)) * 0.05f,
                     true, 0.0f,
-                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x40) * 0.5f,
+                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x40) * 0.5f,
                     zero, finish);
         this->currentParticle = saved;
-        pos -= *(float *) (ParticleSettingsRef::cur + set * 160 + 0x40) * 0.5f * dir;
+        pos -= *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x40) * 0.5f * dir;
     }
 
     if (this->newSectionStarted == 0) {
@@ -381,13 +381,13 @@ void ParticleSystemMesh::emitTrail(int delta) {
         }
         if ((int) (flags << 11) < 0) {
             float t = (float) (int) (this->frameCounter + delta)
-                      / *(float *) (ParticleSettingsRef::cur + set * 160 + 0x2c);
-            float u0 = *(float *) (ParticleSettingsRef::cur + set * 160 + 0x88);
-            float u1 = *(float *) (ParticleSettingsRef::cur + set * 160 + 0x90);
-            float v = *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c)
+                      / *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x2c);
+            float u0 = *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x88);
+            float u1 = *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x90);
+            float v = *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x8c)
                       + (t < 1.0f ? t : 1.0f)
-                        * (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x94)
-                           - *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c));
+                        * (*(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x94)
+                           - *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x8c));
             int base = (int) this->idOffset + (int) this->stride * this->currentParticle * 4;
             for (int i = 0; i < (int) this->stride; i++) {
                 this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 2), u0, v);
@@ -398,7 +398,7 @@ void ParticleSystemMesh::emitTrail(int delta) {
     }
 
     this->frameCounter += delta;
-    if (*(float *) (ParticleSettingsRef::cur + set * 160 + 0x2c) < (float) (int) this->frameCounter) {
+    if (*(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x2c) < (float) (int) this->frameCounter) {
         Vector diff = *(Vector *) &this->field_0x80 - pos;
         if (AbyssEngine::AEMath::VectorDot(diff, diff) > 6000.0f)
             this->newSectionStarted = 1;
@@ -407,7 +407,7 @@ void ParticleSystemMesh::emitTrail(int delta) {
     if (this->newSectionStarted != 0) {
         this->frameCounter = 0;
         int prevAge = this->particleAges[getPrevId(this->currentParticle)];
-        float s = (float) *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x44);
+        float s = (float) *(int32_t *) (ParticleSettingsRef::curBytes() + set * 160 + 0x44);
         finishCurrentTrailParticle((ParticleSet) set, this->currentParticle, rightScaled * s, up * s);
         incId();
 
@@ -439,7 +439,7 @@ void ParticleSystemMesh::emitTrail(int delta) {
         }
         *(Vector *) &this->field_0x80 = pos;
 
-        uint32_t frontColor = *(uint32_t *) (ParticleSettingsRef::cur + set * 160 + 0x34);
+        uint32_t frontColor = *(uint32_t *) (ParticleSettingsRef::curBytes() + set * 160 + 0x34);
         uint32_t backColor = frontColor;
         if (prevAge == -1) {
             uint32_t mask = this->alphaFade == 0 ? 0xffffff00u : 0xffu;
@@ -453,17 +453,17 @@ void ParticleSystemMesh::emitTrail(int delta) {
             this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 2), frontColor);
             this->canvas->MeshSetColor(this->resource, (uint16_t) (base + 3), frontColor);
             this->canvas->MeshSetUv(this->resource, (uint16_t) base,
-                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x88),
-                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c));
+                                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x88),
+                                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x8c));
             this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 1),
-                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x90),
-                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x8c));
+                                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x90),
+                                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x8c));
             this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 2),
-                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x88),
-                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x94));
+                                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x88),
+                                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x94));
             this->canvas->MeshSetUv(this->resource, (uint16_t) (base + 3),
-                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x90),
-                                    *(float *) (ParticleSettingsRef::cur + set * 160 + 0x94));
+                                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x90),
+                                    *(float *) (ParticleSettingsRef::curBytes() + set * 160 + 0x94));
             base += 4;
         }
 
@@ -481,7 +481,7 @@ void ParticleSystemMesh::updateSingle(int id, float delta) {
                 return;
             Vector right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix) * (this->mirror != 0 ? -1.0f : 1.0f);
             Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
-            float size = (float) *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x44);
+            float size = (float) *(int32_t *) (ParticleSettingsRef::curBytes() + set * 160 + 0x44);
             finishCurrentTrailParticle((ParticleSet) set, id, right * size, up * size);
         }
     } else {
@@ -491,7 +491,7 @@ void ParticleSystemMesh::updateSingle(int id, float delta) {
     this->particleAges[id] = (int) ((float) this->particleAges[id] + delta);
     updateSingleColor(id);
 
-    if (this->particleAges[id] > *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x28)) {
+    if (this->particleAges[id] > *(int32_t *) (ParticleSettingsRef::curBytes() + set * 160 + 0x28)) {
         this->particleAges[id] = -1;
         int point = (int) this->idOffset + (int) this->stride * id * 4;
         for (int i = 0; i < (int) this->stride * 4; i++)

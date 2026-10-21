@@ -57,8 +57,6 @@ namespace AbyssEngine {
     }
 }
 
-static inline void TFC_setFastForwardMode(TargetFollowCamera *c, int v) { c->setFastForwardMode(v); }
-
 
 static inline void TFC_setLookAtCam(TargetFollowCamera *c, int v) { c->setLookAtCam(v); }
 
@@ -66,37 +64,12 @@ static inline void TFC_setLookAtCam(TargetFollowCamera *c, int v) { c->setLookAt
 
 
 
-static int *g_maneuverScale = &Globals::w;
 
 static inline void TFC_setActive(TargetFollowCamera *c, int v) { c->setActive(v); }
 
 static inline void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z) { c->setPosition(x, y, z); }
 
-static int *g_jsSound;
 
-static int g_jsHudFlag;
-
-static int g_jsFovDefault;
-
-static int g_jsFovAlienA;
-
-static int g_jsFovAlienB;
-
-static int g_jsPostEffect;
-
-static int g_jsOffsetX;
-
-static int g_jsOffsetY;
-
-static int g_jsOffsetZ;
-
-static int g_jsOffsetZ2;
-
-static GameText **g_gameText = &Globals::gameText;
-
-
-
-static DialogueWindow **g_goDlgA;
 
 
 struct MGameAppData {
@@ -126,29 +99,6 @@ static inline void *keyboardTouchId() { return reinterpret_cast<void *>(12345); 
 // Campaign missions after which the "your wingmen are leaving" radio messages are no longer due.
 static const int gWingmenRadioMissions[3] = {93, 111, 143};
 
-static FModSound **g_fmod = &Globals::sound;
-
-static inline int Station_getIndex(Station *s) { return s->getIndex(); }
-
-static int *g_deAutoFlag;
-
-static int g_dePostEffect;
-
-static int g_deTextA;
-
-static int g_deLitA0;
-
-static int g_deLitA1;
-
-static int g_deTextB;
-
-static int g_deLitB0;
-
-static int g_deLitB1;
-
-static int **g_deAlienFlag;
-
-static int g_initParticleFlag;
 
 struct ParticleSystemGlobal {
     uint8_t _pad0[0xf];
@@ -159,24 +109,6 @@ static_assert(offsetof(ParticleSystemGlobal, particlesEnabled) == 0xf,
               "ParticleSystemGlobal::particlesEnabled @ 0xf");
 #endif
 
-static int *g_initEngineSnd;
-
-static int *g_initMusicArmed;
-
-static int *g_initMusicTrack;
-
-static int **g_initFmod;
-
-static unsigned g_initPostEffect;
-
-static int g_initStationMask;
-
-static String **g_initInfoFont;
-
-static int g_initInfoTextKey;
-
-static int *g_initInfoWidth;
-
 // Globals::options as read by MGame (engine sound toggle @0x0f, effect quality @0x28).
 struct GameSettingsView {
     uint8_t _pad0[0x0f];
@@ -184,14 +116,6 @@ struct GameSettingsView {
     uint8_t _pad10[0x28 - 0x10];
     float effectQuality;
 };
-
-static inline void TFC_zoomTarget(TargetFollowCamera *cam, float z) { cam->zoomTarget(z); }
-
-static float g_fcRotScale;
-
-static float g_fcZoomMax;
-
-static float g_fcZoomMin;
 
 struct AccelTune {
     uint8_t _pad0[0x10];
@@ -213,40 +137,6 @@ static_assert(offsetof(AccelTune, baseValue) == 0x20, "AccelTune::baseValue @ 0x
 static_assert(offsetof(AccelCtxValue, comp2) == 0x10, "AccelCtxValue::comp2 @ 0x10");
 #endif
 
-static int **g_tmShipTune;
-
-static inline void TFC_translate(TargetFollowCamera *cam, int x, int y, int z) { cam->translate(x, y, z); }
-
-
-static int g_ujZNear;
-
-static int g_ujZSound;
-
-static int g_ujSpeed;
-
-static int *g_ujSound;
-
-static int g_ujPos0;
-
-static int g_ujPos1;
-
-static int g_ujPos2;
-
-static int **g_ujStation;
-
-static uint8_t **g_ujFlagA;
-
-static uint8_t **g_ujFlagB;
-
-static int **g_ujFlagC;
-
-static Layout ***g_r2dHelpLayout;
-
-static int **g_r2dPauseFlag;
-
-static int **g_r2dRewardLayout;
-
-static Layout ***g_r2dFadeLayout;
 
 MGame::MGame() {
     this->flShakeAmpX = 0;
@@ -707,7 +597,7 @@ void MGame::maneuverTouchMove(int a, int b, void *p) { // lint: void_ptr -- expo
     (void) a;
     (void) p;
     if (this->maneuverActive != 0) {
-        float f2 = (float) (*g_maneuverScale);
+        float f2 = (float) Globals::h;
         int d = b - this->maneuverStartY;
         if (d < 0) d = -d;
         float f3 = (float) d;
@@ -725,7 +615,7 @@ void MGame::maneuverTouchEnd(int a, int b, void *p) { // lint: void_ptr -- expor
     (void) b;
     (void) p;
     if (self->maneuverActive != 0 && self->maneuverHoldTime <= 0x258) {
-        float f2 = (float) (*g_maneuverScale);
+        float f2 = (float) Globals::w;
         int d = a - self->maneuverStartX;
         if (d < 0) d = -d;
         float f3 = (float) d;
@@ -851,7 +741,7 @@ void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) { // lint: void_ptr -- 
 
 void MGame::pauseSounds() {
     this->pauseSnapshot = this->pauseOpen;
-    ((FModSound *) (*g_fmod))->pauseAllPlayingSoundFXEvents();
+    Globals::sound->pauseAllPlayingSoundFXEvents();
     this->player->PauseEngineSound();
     Array<KIPlayer *> *e = this->level->getEnemies();
     if (e != nullptr) {
@@ -861,7 +751,7 @@ void MGame::pauseSounds() {
 }
 
 void MGame::resumeSounds() {
-    ((FModSound *) (*g_fmod))->resumeAll();
+    Globals::sound->resumeAll();
     this->player->ResumeEngineSound();
     Array<KIPlayer *> *e = this->level->getEnemies();
     if (e == nullptr) return;
@@ -1897,8 +1787,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 uint8_t &soundsMuted = reinterpret_cast<uint8_t *>(&this->field_0x1a4)[0];
                 if (this->menuWindow->OnTouchEnd(x, y, touchId)) {
                     // Pause menu closed.
-                    this->pauseSnapshot = 0;
                     this->pauseOpen = 0;
+                    this->pauseSnapshot = 0;
                     resumeSounds();
                     if (Globals::sound->IsCategoryEnabled(2)) {
                         if (soundsMuted) {
@@ -2088,8 +1978,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                                (Globals::status->getMission() == nullptr ||
                                 Globals::status->getMission()->getType() != 183)) {
                         // Open the auto pilot target menu.
-                        this->pauseOpen = 1;
                         this->hudMenuOpen = 1;
+                        this->pauseOpen = 1;
                         pauseSounds();
                         this->hud->initHudMenu(3, this->level);
                         this->_bc8 = 1;
@@ -2897,8 +2787,8 @@ void MGame::OnUpdate() {
                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(variant == 0 ? 533 : 534),
                                                           Globals::gameText->getText(1602), gMGameFaces + 5);
                 Globals::sound->play(variant == 0 ? 464 : 465, nullptr, nullptr, 0.0f);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
             } else if (Globals::status->getCurrentCampaignMission() == 24 && !this->player->isMining() &&
                        Globals::status->getMission()->isEmpty() &&
@@ -2914,8 +2804,8 @@ void MGame::OnUpdate() {
                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(variant == 0 ? 535 : 536),
                                                           Globals::gameText->getText(1603), gMGameFaces + 10);
                 Globals::sound->play(variant == 0 ? 467 : 468, nullptr, nullptr, 0.0f);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
             } else if (Globals::status->getCurrentCampaignMission() >= 122 &&
                        Globals::status->getCurrentCampaignMission() <= 124 && !this->player->isMining() &&
@@ -2950,8 +2840,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(596));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->pauseOpen = 1;
                 pauseSounds();
                 Globals::hints[23] = 1;
@@ -2963,8 +2853,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(590));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->pauseOpen = 1;
                 pauseSounds();
                 Globals::hints[33] = 1;
@@ -2976,8 +2866,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(593));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->pauseOpen = 1;
                 pauseSounds();
                 Globals::hints[34] = 1;
@@ -2990,8 +2880,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(584));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->pauseOpen = 1;
                 pauseSounds();
                 Globals::hints[32] = 1;
@@ -3005,8 +2895,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(637));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[21] = 1;
                 return;
             }
@@ -3018,8 +2908,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(648));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[28] = 1;
                 return;
             }
@@ -3030,8 +2920,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(619));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->field_0x1e6 = 1;
                 return;
             }
@@ -3047,8 +2937,8 @@ void MGame::OnUpdate() {
                 String hint(*Globals::gameText->getText(1725), false);
                 hint = Globals::globals->replaceKeyBindingTokens(hint);
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->field_0x1e5 = 1;
                 return;
             }
@@ -3059,8 +2949,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(620));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[17] = 1;
                 return;
             }
@@ -3071,8 +2961,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(621));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[18] = 1;
                 return;
             }
@@ -3084,8 +2974,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(617));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[55] = 1;
                 return;
             }
@@ -3096,8 +2986,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(636));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[20] = 1;
                 return;
             }
@@ -3126,8 +3016,8 @@ void MGame::OnUpdate() {
                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(1912),
                                                           Globals::gameText->getText(1603), gMGameFaces + 10);
                 Globals::sound->play(463, nullptr, nullptr, 0.0f);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 Globals::hints[37] = 1;
                 return;
             }
@@ -3138,8 +3028,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(599));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[40] = 1;
                 return;
             }
@@ -3156,8 +3046,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(600));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[41] = 1;
                 return;
             }
@@ -3168,8 +3058,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(602));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[44] = 1;
                 return;
             }
@@ -3182,8 +3072,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(603));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[46] = 1;
                 return;
             }
@@ -3197,8 +3087,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(606));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[47] = 1;
                 return;
             }
@@ -3212,8 +3102,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(609));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[48] = 1;
                 return;
             }
@@ -3229,8 +3119,8 @@ void MGame::OnUpdate() {
                 }
                 this->dialogueWindow = new DialogueWindow();
                 this->dialogueWindow->set(new Mission(160, 0, -1), 1, 46);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 Globals::hints[38] = 1;
                 Globals::status->nextCampaignMission(true);
                 Globals::status->nextCampaignMission(true);
@@ -3247,8 +3137,8 @@ void MGame::OnUpdate() {
                 }
                 this->dialogueWindow = new DialogueWindow();
                 this->dialogueWindow->set(new Mission(160, 0, -1), 1, 85);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 Globals::hints[49] = 1;
                 Globals::status->nextCampaignMission(true);
                 Globals::status->nextCampaignMission(true);
@@ -3291,8 +3181,8 @@ void MGame::OnUpdate() {
                 offer = Globals::status->replaceHash(String(offer, false), String((int) (share * 100.0f)),
                                                      String("#P"));
                 this->choiceWindow->set(offer, true);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->field_0xcf = 1;
                 this->field_0xd4 = 1;
             } else if (!Globals::status->field_114 && !Globals::status->inAlienOrbit() &&
@@ -3306,8 +3196,8 @@ void MGame::OnUpdate() {
                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(457),
                                                           Globals::gameText->getText(1601), gMGameFaces);
                 Globals::sound->play(1468, nullptr, nullptr, 0.0f);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 Globals::status->field_114 = 1;
                 return;
             }
@@ -3663,8 +3553,8 @@ bool MGame::dockEvent(int p1, int p2) {
         if (this->player->goingToStream() && !this->player->isDockingToStream() &&
             !this->player->isDockedToStream()) {
             this->player->dockToStream(true);
-            this->freeCamDragging = 0;
             this->needsRedraw = 1;
+            this->freeCamDragging = 0;
             return false;
         }
     }
@@ -3680,8 +3570,8 @@ bool MGame::dockEvent(int p1, int p2) {
             if (this->autopilotMenuOpen) {
                 return false;
             }
-            this->freeCamDragging = 0;
             this->needsRedraw = 1;
+            this->freeCamDragging = 0;
             if (this->choiceWindow == nullptr) {
                 this->choiceWindow = new ChoiceWindow();
             }
@@ -3689,8 +3579,8 @@ bool MGame::dockEvent(int p1, int p2) {
                                     Level::programmedStation->getName() + String("\n") +
                                     *Globals::gameText->getText(421), true);
             this->choiceWindow->left();
-            this->pauseOpen = 1;
             this->autopilotMenuOpen = 1;
+            this->pauseOpen = 1;
             pauseSounds();
             this->player->setAutoPilot(nullptr);
             return false;
@@ -3705,8 +3595,8 @@ bool MGame::dockEvent(int p1, int p2) {
         }
         if (Level::programmedStation == nullptr) {
             // No destination programmed yet: open the jump map.
-            this->freeCamDragging = 0;
             this->needsRedraw = 1;
+            this->freeCamDragging = 0;
             if (this->starMap == nullptr) {
                 this->starMap = new StarMap(false, nullptr, false, -1);
             }
@@ -3714,8 +3604,8 @@ bool MGame::dockEvent(int p1, int p2) {
             this->starMap->initLights();
             this->starMap->setJumpMapMode(true, false);
             this->player->setAutoPilot(nullptr);
-            this->pauseOpen = 1;
             this->starMapOpen = 1;
+            this->pauseOpen = 1;
             pauseSounds();
             this->needsRedraw = 1;
             return true;
@@ -3723,8 +3613,8 @@ bool MGame::dockEvent(int p1, int p2) {
         if (this->autopilotMenuOpen) {
             return false;
         }
-        this->freeCamDragging = 0;
         this->needsRedraw = 1;
+        this->freeCamDragging = 0;
         if (this->choiceWindow == nullptr) {
             this->choiceWindow = new ChoiceWindow();
         }
@@ -3732,8 +3622,8 @@ bool MGame::dockEvent(int p1, int p2) {
                                 Level::programmedStation->getName() + String("\n") +
                                 *Globals::gameText->getText(421), true);
         this->choiceWindow->left();
-        this->pauseOpen = 1;
         this->autopilotMenuOpen = 1;
+        this->pauseOpen = 1;
         pauseSounds();
         this->player->setAutoPilot(nullptr);
         return false;
@@ -4021,7 +3911,7 @@ void MGame::OnSuspend() {
             this->menuWindow = new MenuTouchWindow(1);
         this->pauseOpen = 1;
         this->pauseSnapshot = 1;
-        ((FModSound *) (*g_fmod))->pauseAllPlaying();
+        Globals::sound->pauseAllPlaying();
         this->player->PauseEngineSound();
         Array<KIPlayer *> *e = this->level->getEnemies();
         if (e != nullptr) {
