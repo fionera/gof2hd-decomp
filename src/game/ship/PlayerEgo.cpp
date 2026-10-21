@@ -139,7 +139,6 @@ static inline void Vec_sub(void *out, const void *a, const void *b) { for(int _i
 
 static inline float Vec_length(const void *v) { const float*_p=(const float*)v; return __builtin_sqrtf(_p[0]*_p[0]+_p[1]*_p[1]+_p[2]*_p[2]); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-int PE_hat_aimAndFire(PlayerEgo *self, int dt);
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1933,47 +1932,82 @@ int PlayerEgo::getShieldDamageRate() {
 }
 
 void PlayerEgo::handleAutoTurret(int dt) {
-    int t = this->autoTurretTimer + dt;
-    this->autoTurretTimer = t;
-    if (t >= 0xbb9) {
+    this->autoTurretTimer += dt;
+    if (this->autoTurretTimer >= 3001) {
         this->autoTurretTimer = 0;
-        this->autoTurretTarget = 0;
-        Array<KIPlayer *> *enemies = ((Level *) (this->level))->getEnemies();
+        this->autoTurretTarget = nullptr;
+        Array<KIPlayer *> *enemies = this->level->getEnemies();
         if (enemies != nullptr) {
-            int best = 60000;
-            for (unsigned i = 0; i < enemies->size(); i++) {
-                KIPlayer *e = (*enemies)[i];
-                if (((KIPlayer *) (e))->isDead() != 0) continue;
-                if (((KIPlayer *) (e))->isDying() != 0) continue;
-                if (((Player *) (((KIPlayer *) e)->player))->isActive() == 0) continue;
-                if (((KIPlayer *) (e))->isEnemy() == 0) continue;
-                if (reinterpret_cast<uint8_t &>(((KIPlayer *) e)->route) != 0) continue;
-
-                float epos[3];
-                ((KIPlayer *) (e))->getPosition();
-                float rel[3];
-                Vec_sub(rel, epos, &this->dockOffsetVec);
-                int dist = (int) Vec_length(rel);
-                if (dist < best
-                    && (this->autoTurretTarget == 0 || this->autoTurretTarget != this->autoTurretPrevTarget)) {
-                    this->autoTurretTarget = e;
-                    best = dist;
+            int nearest = 60000;
+            for (unsigned int i = 0; i < enemies->size(); i++) {
+                KIPlayer *enemy = (*enemies)[i];
+                if (enemy->isDead() || enemy->isDying() || !enemy->player->isActive() || !enemy->isEnemy()
+                    || enemy->field_0x74)
+                    continue;
+                int distance = (int) AbyssEngine::AEMath::VectorLength(this->dockOffsetVec - enemy->getPosition());
+                if (nearest > distance
+                    && (this->autoTurretTarget == nullptr || this->autoTurretTarget != this->autoTurretPrevTarget)) {
+                    nearest = distance;
+                    this->autoTurretTarget = enemy;
                 }
             }
         }
     }
 
-    KIPlayer *target = (KIPlayer *) this->autoTurretTarget;
-    if (target != 0 && ((KIPlayer *) target)->geometry != 0) {
-        int fireTimer = PE_hat_aimAndFire(this, dt);
-        this->autoTurretFireTimer = fireTimer;
-        if (fireTimer + dt > 0x1f4) {
-        } else {
-            return;
-        }
+    KIPlayer *target = this->autoTurretTarget;
+    if (target == nullptr || target->geometry == nullptr) {
+        this->player->stopShooting(2);
+        return;
     }
-
-    ((Player *) (this->player))->stopShooting(0);
+    Matrix aim = reinterpret_cast<Matrix &>(target->player->transform[0]);
+    Vector targetPosition = target->getPosition();
+    *(Vector *) &this->waypointX =
+        targetPosition + AbyssEngine::AEMath::VectorNormalize(AbyssEngine::AEMath::MatrixGetDir(aim)) * 1500.0f;
+    aim = this->geometry->getMatrix() * this->turretGeometry->getMatrix();
+    Vector local = AbyssEngine::AEMath::VectorNormalize(
+        AbyssEngine::AEMath::MatrixInverseTransformVector(aim, *(Vector *) &this->waypointX));
+    bool aligned = false;
+    if (local.x > 0.05f) {
+        float angle = (float) dt / (200.0f / (float) this->turretPitch) * 0.000244140625f * 6.2831855f;
+        this->turretBaseGeo->rotate(0.0f, angle, 0.0f);
+        this->turretGeometry->rotate(0.0f, angle, 0.0f);
+    } else if (local.x < -0.05f) {
+        float angle = (float) -dt / (200.0f / (float) this->turretPitch) * 0.000244140625f * 6.2831855f;
+        this->turretBaseGeo->rotate(0.0f, angle, 0.0f);
+        this->turretGeometry->rotate(0.0f, angle, 0.0f);
+    } else {
+        aligned = true;
+    }
+    if (local.y > 0.05f) {
+        if (this->lookYaw > -500.0f) {
+            this->lookYaw = this->lookYaw - (float) this->shakeIntensity;
+            this->turretGeometry->rotate((float) this->shakeIntensity * 0.000244140625f * -6.2831855f, 0.0f, 0.0f);
+            this->autoTurretPrevTarget = nullptr;
+        } else {
+            this->autoTurretPrevTarget = this->autoTurretTarget;
+            this->autoTurretTimer += dt;
+        }
+    } else if (local.y < -0.05f) {
+        if (this->lookYaw < 70.0f) {
+            this->lookYaw = this->lookYaw + (float) this->shakeIntensity;
+            this->turretGeometry->rotate((float) this->shakeIntensity * 0.000244140625f * 6.2831855f, 0.0f, 0.0f);
+            this->autoTurretPrevTarget = nullptr;
+        } else {
+            this->autoTurretPrevTarget = this->autoTurretTarget;
+            this->autoTurretTimer += dt;
+        }
+    } else if (aligned) {
+        this->player->shoot(2, (long long) dt, false, aim);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretGeometry->transform))
+            ->Update((long long) dt, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretBaseGeo->transform))
+            ->Update((long long) dt, false);
+        this->autoTurretFireTimer = 0;
+        return;
+    }
+    this->autoTurretFireTimer += dt;
+    if (this->autoTurretFireTimer > 500)
+        this->player->stopShooting(2);
 }
 
 
