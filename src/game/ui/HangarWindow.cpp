@@ -2332,12 +2332,12 @@ bool HangarWindow::selectItem(ListItem *item) {
                        Globals::status->getShip()->getIndex() == 37) {
                 this->dialog->set(*Globals::gameText->getText(325));
                 this->dialogActive = 1;
-            } else if (Globals::status->getShip()->getIndex() == item->ship->getIndex()) {
-                this->dialog->set(*Globals::gameText->getText(329));
-                this->dialogActive = 1;
-            } else {
+            } else if (Globals::status->getShip()->getIndex() != item->ship->getIndex()) {
                 this->shipSwapPending = 1;
                 this->dialog->set(*Globals::gameText->getText(this->upgradeMode ? 333 : 304), true);
+                this->dialogActive = 1;
+            } else {
+                this->dialog->set(*Globals::gameText->getText(329));
                 this->dialogActive = 1;
             }
             break;

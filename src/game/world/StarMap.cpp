@@ -1436,7 +1436,7 @@ int StarMap::OnTouchMove(int x, int y) {
     if (this->mode == 0) {
         // Galaxy map: pan the camera.
         float speed = absf_local(dx + dy);
-        if (speed >= 10.0f) {
+        if (!(speed < 10.0f)) {
             speed = 10.0f;
         }
         this->panX = (int) (dx + (float) this->panX);
@@ -1446,8 +1446,8 @@ int StarMap::OnTouchMove(int x, int y) {
             this->spin = 0.0f;
         }
         if (absf_local(this->touchStartX - fx) > 3.0f || absf_local(this->touchStartY - fy) > 3.0f) {
-            this->lastSelectedSystem = -1;
             this->selectedSystem = -1;
+            this->lastSelectedSystem = -1;
             this->jumpCost = 0;
         }
         PaintCanvas *canvas = Globals::Canvas;
@@ -1465,11 +1465,7 @@ int StarMap::OnTouchMove(int x, int y) {
     float rotY = dx * 50.0f;
     float rotX = dy * -50.0f;
     float pitch = rotX + this->pitch;
-    if (pitch > 8192.0f) {
-        pitch = 8192.0f;
-    } else if (pitch < -8192.0f) {
-        pitch = -8192.0f;
-    }
+    pitch = pitch > 8192.0f ? 8192.0f : (pitch > -8192.0f ? pitch : -8192.0f);
     float yaw = (float) ((int) (rotY + this->yaw) % 65536);
     this->touchDeltaX = rotY;
     this->touchDeltaY = rotX;
