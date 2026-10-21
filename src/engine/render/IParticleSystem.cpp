@@ -1,6 +1,7 @@
 #include "engine/render/IParticleSystem.h"
 #include <new>
 #include "engine/core/AERandom.h"
+#include "engine/render/ParticleSettingsRef.h"
 
 namespace AbyssEngine {
 }
@@ -21,7 +22,7 @@ namespace AbyssEngine {
     }
 }
 
-static char *ParticleSet_definitions = nullptr;
+
 
 void IParticleSystem::enableUpdate(bool enabled) {
     this->updateEnabled = enabled;
@@ -122,7 +123,7 @@ void IParticleSystem::emit(int delta) {
     Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
     Vector dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix);
 
-    char *def = ParticleSet_definitions + (set + set * 4) * 32;
+    char *def = (char *) ParticleSettingsRef::cur + (set + set * 4) * 32;
     float speed2 = AbyssEngine::AEMath::VectorDot(this->emitterVelocity, this->emitterVelocity);
     if (speed2 < (float) *(int *) (def + 0x98)) {
         return;
@@ -426,7 +427,7 @@ void IParticleSystem::emit(int delta) {
 void IParticleSystem::interpolateColor(int index, float &alpha, float &red, float &green, float &blue) {
     int age = this->particleAges[index];
     int setIndex = this->particleSetIds[index];
-    char *def = ParticleSet_definitions + (setIndex + setIndex * 4) * 32;
+    char *def = (char *) ParticleSettingsRef::cur + (setIndex + setIndex * 4) * 32;
 
     float t = (float) age / (float) *(int *) (def + 0x28);
     if (t > 1.0f) {
@@ -480,8 +481,8 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
                                  bool mirror, bool alphaFade)
     : canvas(canvas), random(), matrix(matrix), emitterVelocity(),
       lastEmitterPosition(), particleSets() {
-    this->mirror = mirror;
     this->alphaFade = alphaFade;
+    this->mirror = mirror;
     ArraySet(sets, this->particleSets);
 
     this->currentParticle = 0;
@@ -500,7 +501,7 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
     while (count != 0) {
         int set = *src;
         if (set != -1) {
-            char *def = ParticleSet_definitions + (set + set * 4) * 32;
+            char *def = (char *) ParticleSettingsRef::cur + (set + set * 4) * 32;
             uint32_t particles = *(uint32_t *) (def + 0x10);
             if ((int) maxParticles <= (int) particles) {
                 maxParticles = particles;
@@ -511,14 +512,14 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
                 this->flags = firstFlags;
             }
         }
-        ++src;
         --count;
+        ++src;
     }
 
-    this->emitTimer = 0;
     this->particleSetIndex = 0;
+    this->emitTimer = 0;
     this->particleAges = new int[maxParticles];
-    this->particleSetIds = new int8_t[maxParticles];
+    this->particleSetIds = new int8_t[(int) maxParticles];
 
     for (int i = 0; i < (int) maxParticles; ++i) {
         this->particleSetIds[i] = (int8_t) 200;
@@ -543,7 +544,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         int current = this->currentParticle;
         int set = this->particleSets[particleSet];
         this->particleSetIds[current] = (int8_t) set;
-        char *def = ParticleSet_definitions + (set + set * 4) * 32;
+        char *def = (char *) ParticleSettingsRef::cur + (set + set * 4) * 32;
         this->particleAges[current] = 0;
 
         uint32_t uv[4];
