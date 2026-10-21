@@ -89,7 +89,7 @@ void LevelScript::render3D() {
     }
 }
 
-uint8_t LevelScript::startSequenceOver() {
+bool LevelScript::startSequenceOver() {
     return m_bStartSequenceOver;
 }
 
@@ -110,8 +110,8 @@ void LevelScript::skipSequence() {
     }
 }
 
-uint8_t LevelScript::startSequence() {
-    return (uint8_t) m_bStartSequence;
+bool LevelScript::startSequence() {
+    return m_bStartSequence;
 }
 
 void LevelScript::setAutoPilotToProgrammedStation() {

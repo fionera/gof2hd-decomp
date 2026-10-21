@@ -69,7 +69,7 @@ public:
 
     AEGeometry *getShipGroup(int type, int variant, bool wireframe);
 
-    int init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine);
+    void init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine);
 
     float sqrt(float x);
 

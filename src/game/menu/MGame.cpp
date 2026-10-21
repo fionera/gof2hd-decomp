@@ -193,8 +193,6 @@ static float g_fcZoomMax;
 
 static float g_fcZoomMin;
 
-static int g_accelTune;
-
 struct AccelTune {
     uint8_t _pad0[0x10];
     char invertSign;
@@ -216,10 +214,6 @@ static_assert(offsetof(AccelCtxValue, comp2) == 0x10, "AccelCtxValue::comp2 @ 0x
 #endif
 
 static int **g_tmShipTune;
-
-static int **g_tmStarMap;
-
-static int **g_tmAppData;
 
 static inline void TFC_translate(TargetFollowCamera *cam, int x, int y, int z) { cam->translate(x, y, z); }
 
@@ -652,86 +646,59 @@ void MGame::reset() {
 }
 
 void MGame::handleAccelerometer() {
-    Engine *eng = (Engine *) this->applicationManager->GetEngine();
-    double *acc = ((Engine *) (eng))->GetAccelValue();
-
-    float yaw = (float) (acc[1] * 2.5);
-    float steer = 1.0f;
-    int *shipField = (this->timeWarpState > 0) ? &this->field_0x44 : &this->deltaTime;
-    if (yaw <= 1.0f) {
-        steer = -1.0f;
-        if (yaw < -1.0f) {
-            this->player->left(*shipField, steer * steer);
-            goto afterYaw;
-        }
-        steer = yaw;
-        if (yaw < 0.0f) {
-            this->player->left(*shipField, steer * steer);
-            goto afterYaw;
-        }
-        if (yaw == 0.0f)
-            goto afterYaw;
+    float yaw = (float) (((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[1] * 2.5);
+    if (yaw > 1.0f) {
+        yaw = 1.0f;
+    } else if (yaw < -1.0f) {
+        yaw = -1.0f;
     }
-    this->player->right(*shipField, steer * steer);
+    if (yaw < 0.0f) {
+        this->player->left(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, yaw * yaw);
+    } else if (yaw > 0.0f) {
+        this->player->right(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, yaw * yaw);
+    }
 
-afterYaw: {
-        AbyssEngine::ApplicationManager *appMgr = this->applicationManager;
-
-        double *v1 = ((Engine *) appMgr->GetEngine())->GetAccelValue();
-        double d0 = *v1;
-        AccelCtxValue *c2 =
-                (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
-
-        float base = (float) d0;
-        AccelTune *tune = (AccelTune *) (intptr_t) g_accelTune;
-        double dz = c2->comp2;
-        float ref = tune->refValue;
-        char sign = tune->invertSign;
-
-        AccelCtxValue *c3 =
-                (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
-
-        float a, b;
-        if (sign == 0) {
-            float t = base;
-            if (c3->comp2 > 0.0) {
-                t = 1.0f;
-                if (base <= 1.0f) t = (1.0f - base) + 1.0f;
+    float roll = (float) ((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[0];
+    float pitch = (float) ((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2];
+    AccelTune *tune = (AccelTune *) Globals::options;
+    float refRoll = tune->refValue;
+    float dRoll;
+    float dPitch;
+    if (tune->invertSign) {
+        if (((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2] > 0.0) {
+            if (roll > 1.0f) {
+                roll = 1.0f;
+            } else {
+                roll = (1.0f - roll) + 1.0f;
             }
-            a = ref - t;
-            b = tune->baseValue - (float) dz;
-        } else {
-            float t = base;
-            if (c3->comp2 > 0.0) {
-                t = 1.0f;
-                if (base <= 1.0f) t = (1.0f - base) + 1.0f;
-            }
-            a = t - ref;
-            b = (float) dz - tune->baseValue;
         }
-
-        float a3 = a * 3.0f;
-        float b3 = b * 3.0f;
-        float aAbs = a * -3.0f;
-        if (a3 > 0.0f) aAbs = a3;
-        float bAbs = b * -3.0f;
-        if (b3 > 0.0f) bAbs = b3;
-        float roll = (aAbs < bAbs) ? b3 : a3;
-
-        float rollMag = 1.0f;
-        shipField = (this->timeWarpState > 0) ? &this->field_0x44 : &this->deltaTime;
-        if (roll <= 1.0f) {
-            rollMag = -1.0f;
-            if (roll < -1.0f) {
-                return this->player->turnHorizontal(*shipField, rollMag * rollMag);
+        dRoll = (roll - refRoll) * 3.0f;
+        dPitch = (pitch - tune->baseValue) * 3.0f;
+    } else {
+        if (((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2] > 0.0) {
+            if (roll > 1.0f) {
+                roll = 1.0f;
+            } else {
+                roll = (1.0f - roll) + 1.0f;
             }
-            rollMag = roll;
-            if (roll < 0.0f) {
-                return this->player->turnHorizontal(*shipField, rollMag * rollMag);
-            }
-            if (roll == 0.0f) return;
         }
-        return this->player->turnHorizontal(*shipField, rollMag * rollMag);
+        dRoll = (refRoll - roll) * 3.0f;
+        dPitch = (tune->baseValue - pitch) * 3.0f;
+    }
+    float rollScaled = dRoll;
+    float pitchScaled = dPitch;
+    float rollAbs = rollScaled > 0.0f ? rollScaled : -rollScaled;
+    float pitchAbs = pitchScaled > 0.0f ? pitchScaled : -pitchScaled;
+    float tilt = pitchAbs > rollAbs ? pitchScaled : rollScaled;
+    if (tilt > 1.0f) {
+        tilt = 1.0f;
+    } else if (tilt < -1.0f) {
+        tilt = -1.0f;
+    }
+    if (tilt < 0.0f) {
+        this->player->down(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
+    } else if (tilt > 0.0f) {
+        this->player->up(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
     }
 }
 
@@ -812,27 +779,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- e
         return;
     }
     this->needsRedraw = 0;
-    if (this->touch0Id != 0 && this->touch1Id != 0) {
-    float oldLen = AbyssEngine::AEMath::VectorLength(this->freeCamFinger1 - this->freeCamFinger0);
-    float newLen = oldLen;
-    if (this->touch0Id == id) {
-        float fx = (float) x;
-        float fy = (float) y;
-        newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger0);
-        this->freeCamFinger1 = Vector{fx, fy, 0.0f};
-    } else if (this->touch1Id == id) {
-        float fx = (float) x;
-        float fy = (float) y;
-        newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger1);
-        this->freeCamFinger0 = Vector{fx, fy, 0.0f};
-    }
-    this->flCameraRoll += (newLen - oldLen) * -50.0f;
-    if (this->flCameraRoll > 20000.0f)
-        this->flCameraRoll = 20000.0f;
-    else if (this->flCameraRoll < 1500.0f)
-        this->flCameraRoll = 1500.0f;
-    this->camera->zoomTarget(this->flCameraRoll);
-    } else {
+    if (this->touch0Id == 0 || this->touch1Id == 0) {
         int dx = x - this->dragLastX;
         int dy = y - this->dragLastY;
         this->dragLastX = x;
@@ -843,10 +790,32 @@ void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- e
         this->flShakeAmpY = 1.0f;
         this->flShakeX += (float) dx;
         this->flShakeY += (float) dy;
-        if (this->touch0Id == 0)
-            this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
-        else if (this->touch1Id == 0)
-            this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
+    }
+    if (this->touch0Id == 0) {
+        this->freeCamFinger0 = Vector{(float) x, (float) y, 0.0f};
+    } else if (this->touch1Id == 0) {
+        this->freeCamFinger1 = Vector{(float) x, (float) y, 0.0f};
+    } else {
+        float oldLen = AbyssEngine::AEMath::VectorLength(this->freeCamFinger1 - this->freeCamFinger0);
+        float newLen = oldLen;
+        if (this->touch0Id == id) {
+            float fx = (float) x;
+            float fy = (float) y;
+            newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger0);
+            this->freeCamFinger1 = Vector{fx, fy, 0.0f};
+        } else if (this->touch1Id == id) {
+            float fx = (float) x;
+            float fy = (float) y;
+            newLen = AbyssEngine::AEMath::VectorLength(Vector{fx, fy, 0.0f} - this->freeCamFinger1);
+            this->freeCamFinger0 = Vector{fx, fy, 0.0f};
+        }
+        this->flCameraRoll += (newLen - oldLen) * -50.0f;
+        if (this->flCameraRoll > 20000.0f) {
+            this->flCameraRoll = 20000.0f;
+        } else if (this->flCameraRoll < 1500.0f) {
+            this->flCameraRoll = 1500.0f;
+        }
+        this->camera->zoomTarget(this->flCameraRoll);
     }
 }
 
@@ -1010,8 +979,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3213));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 91 &&
@@ -1023,8 +992,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3214));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 94 &&
@@ -1036,8 +1005,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3214));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 105 &&
@@ -1049,8 +1018,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3217));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 139 &&
@@ -1064,8 +1033,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3215));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 142 &&
@@ -1079,8 +1048,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3216));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 142 &&
@@ -1092,14 +1061,14 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3218));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             this->camera->setLookAtCam(true);
             this->player->dockToPlanet();
-            this->field_0x110 = 0;
             this->_b5c = 0;
+            this->field_0x110 = 0;
             this->hud->enableFireForTutorial(false);
             this->levelScript->m_bCinematicBreak = 1;
             this->jumpActive = 1;
@@ -1195,17 +1164,17 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
         this->camera->setFastForwardMode(true);
         return;
     }
-    if (this->cloakAttribute >= 1 && this->timeWarpState >= 0 && (flags & 0x100)) {
-        if (this->timeWarpState < 1) {
-            this->hud->setTimeExtender(true, false, true, true);
-            Globals::sound->setDownPitch(true);
-            this->timeWarpState = this->cloakAttribute;
-            Globals::sound->play(1120, nullptr, nullptr, 0.0f);
-        } else {
+    if (this->cloakAttribute >= 1 && this->timeWarpState >= 0 && (this->hudTouchFlags & 0x100)) {
+        if (this->timeWarpState > 0) {
             this->timeWarpState = -1;
             Globals::sound->setDownPitch(false);
             this->hud->setTimeExtender(true, false, false, false);
             Globals::sound->play(1119, nullptr, nullptr, 0.0f);
+        } else {
+            this->hud->setTimeExtender(true, false, true, true);
+            Globals::sound->setDownPitch(true);
+            this->timeWarpState = this->cloakAttribute;
+            Globals::sound->play(1120, nullptr, nullptr, 0.0f);
         }
         return;
     }
@@ -1230,34 +1199,18 @@ beginThrust:
 void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- exported override signature (Pv)
     // lint: void_ptr -- exported override signature (Pv)
     MGame *self = this;
-    int handledFree = 0;
-    if (self->pauseOpen != 0) {
-        uint8_t fc = self->freeCamMode;
-        int allowFree = (fc != 0);
-        if (fc != 0 &&
-            self->menuWindow->isShowingMessage() == 0 &&
-            self->menuWindow->isMakingScreenshot() == 0) {
-            allowFree = 1;
-        } else {
-            allowFree = 0;
-        }
-        (void) allowFree;
-    }
-
-    if (self->freeCamDragging != 0 && self->hudTouchFlags == 0 &&
-        self->cameraMode == 3) {
-        ((MGame *) (self))->freeCamTouchMove(p1, y, touch);
-        handledFree = 1;
-    }
-
-    if (!handledFree) {
+    if ((!self->pauseOpen || (self->freeCamMode && !self->menuWindow->isShowingMessage() &&
+                              !self->menuWindow->isMakingScreenshot())) &&
+        self->freeCamDragging != 0 && self->hudTouchFlags == 0 && self->cameraMode == 3) {
+        self->freeCamTouchMove(p1, y, touch);
+    } else {
         if (self->pauseOpen == 0) {
             int hh = self->hud->touchMove(p1, y, touch);
             self->hudTouchFlags = hh;
             unsigned mode = (unsigned) self->cameraMode;
             if (mode <= 1) {
                 ((MGame *) (self))->maneuverTouchMove(mode, y, touch);
-                if (reinterpret_cast<uint16_t &>(self->_b1b8) != 0 && self->jumpActive == 0) {
+                if (reinterpret_cast<uint8_t &>(self->_b1b8) != 0 && self->jumpActive == 0) {
                     int f8 = self->hudTouchFlags;
                     int ok = (f8 == 0) ||
                              (f8 == 0x20 && self->activeTouchId != touch);
@@ -1287,7 +1240,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
                                        (float) self->thrustResetX) / divisor +
                                       self->thrustBase;
                             if (t < 0.0f) t = 0.0f;
-                            if (t > 1.0f) t = 1.0f;
+                            t = t < 1.0f ? t : 1.0f;
                             self->player->setThrust(t);
                             self->player->throttleChanged();
                         }
@@ -1300,16 +1253,16 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
     if (self->pauseOpen == 0) return;
 
     if (self->gameOverActive != 0 || self->autopilotMenuOpen != 0 ||
-        self->choiceWindowOpen != 0 || reinterpret_cast<int &>(self->field_0xc4) != 0) {
+        self->choiceWindowOpen != 0 || reinterpret_cast<uint8_t &>(self->field_0xc4) != 0) {
         self->choiceWindow->OnTouchMove(p1, y);
         return;
     }
     if (self->starMapOpen != 0) {
-        int sel = **g_tmStarMap;
-        if (*(uint8_t *) sel == 0)
+        if (Globals::layout->choiceWindowOpen) {
+            Globals::layout->OnTouchMove(p1, y);
+        } else {
             self->starMap->OnTouchMove(p1, y);
-        else
-            ((Layout *) (**g_tmStarMap))->OnTouchMove(p1, y);
+        }
         return;
     }
     if (self->cutsceneActive != 0) {
@@ -1317,7 +1270,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
         return;
     }
     if (self->menuTouchOpen != 0) {
-        MGameAppData *ad = (MGameAppData *) (intptr_t) * *g_tmAppData;
+        MGameAppData *ad = (MGameAppData *) Globals::appManager->GetApplicationData();
         if (ad->modalActive == 0 && ad->transitionActive == 0)
             self->menuWindow->OnTouchMove(p1, y, touch);
     }
@@ -1565,8 +1518,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         break;
                     }
                     case 1: {
-                    this->choiceWindowOpen = 0;
                     this->_bca = 0;
+                    this->choiceWindowOpen = 0;
                     this->pauseOpen = 0;
                     resumeSounds();
                         break;
@@ -1579,8 +1532,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 int choice = this->choiceWindow->OnTouchEnd(x, y);
                 if (!supernovaChallenge) {
                     if (choice == 0) {
-                        this->pauseOpen = 0;
                         this->choiceWindowOpen = 0;
+                        this->pauseOpen = 0;
                         resumeSounds();
                     }
                 } else {
@@ -1643,8 +1596,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     return;
                 }
                 this->level->getStarSystem()->initLight();
-                this->pauseOpen = 0;
                 this->starMapOpen = 0;
+                this->pauseOpen = 0;
                 resumeSounds();
                 if (this->starMap->exitRequested) {
                     if (this->touchesStream) {
@@ -2194,8 +2147,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->hud->releaseAllKeys();
             }
         }
-        this->hudMenuOpen = 0;
         this->_bc8 = 0;
+        this->hudMenuOpen = 0;
         this->pauseOpen = 0;
         resumeSounds();
         this->hud->closeHudMenu();
@@ -2295,11 +2248,16 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 }
             }
         }
-    } else if (this->cameraMode == 0) {
-        maneuverTouchEnd(x, y, touchId);
-        reinterpret_cast<uint16_t &>(this->_b1b8) = 0;
-    } else if (this->cameraMode == 3) {
-        freeCamTouchEnd(x, y, touchId);
+    } else {
+        switch (this->cameraMode) {
+        case 3:
+            freeCamTouchEnd(x, y, touchId);
+            break;
+        case 0:
+            maneuverTouchEnd(x, y, touchId);
+            reinterpret_cast<uint16_t &>(this->_b1b8) = 0;
+            break;
+        }
     }
 
     if (this->player->isAutoPilot() && !wasAutoPilot) {
@@ -3856,15 +3814,18 @@ bool MGame::successCheck() {
         return success;
 
     Mission *completed = Globals::status->missionCompleted(false, false, this->levelScript->m_nScriptTime);
-    if (!completed && !this->level->checkObjective((int) this->levelScript->m_nScriptTime))
+    bool objectiveDone = this->level->checkObjective((int) this->levelScript->m_nScriptTime);
+    if (!completed && !objectiveDone)
         return success;
 
     if (Globals::status->getMission()->getType() == 5 || Globals::status->getMission()->getType() == 3) {
-        if (this->dialogueWindow == nullptr) {
+        if (this->dialogueWindow != nullptr) {
+            if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
+                this->dialogueWindow->setLevel(this->level);
+            }
+        } else {
             this->dialogueWindow = new DialogueWindow();
             if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
-        } else if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
-            this->dialogueWindow->setLevel(this->level);
         }
         Globals::status->getMission()->setTargetStation(Globals::status->getMission()->getAgent()->getStation());
         this->dialogueWindow->set(Globals::status->getMission(), 1, -1);
@@ -3918,11 +3879,13 @@ bool MGame::successCheck() {
         return success;
     }
 
-    if (this->dialogueWindow == nullptr) {
+    if (this->dialogueWindow != nullptr) {
+        if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
+            this->dialogueWindow->setLevel(this->level);
+        }
+    } else {
         this->dialogueWindow = new DialogueWindow();
         if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
-    } else if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
-        this->dialogueWindow->setLevel(this->level);
     }
     this->dialogueWindow->set(completed ? completed : Globals::status->getMission(), 1, -1);
     this->pauseOpen = 1;
@@ -4125,8 +4088,8 @@ void MGame::OnRender2D() {
         this->radio->draw(this->levelScript->m_nScriptTime, this->player, this->levelScript);
         if (this->cutsceneActive)
             this->dialogueWindow->draw();
-        this->field_0x110 = 0;
         this->_b5c = 0;
+        this->field_0x110 = 0;
     } else if (this->jumpActive || this->jumpDriveActive) {
         if (Globals::status->getCurrentCampaignMission() >= 8 && !this->levelScript->field_0x10 &&
             !this->jumpDriveActive && !this->player->isDockingToPlanet() && !this->levelScript->getEvent())
@@ -4135,8 +4098,8 @@ void MGame::OnRender2D() {
             this->radio->draw(this->levelScript->m_nScriptTime, this->player, this->levelScript);
         if (this->cutsceneActive)
             this->dialogueWindow->draw();
-        this->field_0x110 = 0;
         this->_b5c = 0;
+        this->field_0x110 = 0;
     } else if (this->gameOverActive) {
         if (this->elapsedTime >= 3001) {
             this->paintCanvas->SetColor(this->loadingTime < 4000
