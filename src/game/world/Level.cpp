@@ -85,8 +85,6 @@ namespace {
                   "entries must live at table offset 0x1254");
 }
 
-Matrix *CameraGetLocal(void *canvas, uint32_t index); // lint: void_ptr (free-function signature; retype changes mangling)
-
 // lint: void_ptr (free-function signature; retype changes mangling)
 
 static unsigned char *g_initStreamOut = nullptr;
@@ -721,7 +719,7 @@ void Level::alarmAllFriends(int race, bool message) {
 void Level::setPlayerEngineColor(short color) {
     if (player != nullptr && field_a4 != nullptr) {
         // engine-trail particle sets start at set 29; 0x34 is the set's second colour word
-        EngineColorTable *table = reinterpret_cast<EngineColorTable *>(ParticleSettingsRef::cur);
+        EngineColorTable *table = reinterpret_cast<EngineColorTable *>(&ParticleSettingsRef::cur);
         for (unsigned int i = 0; i < field_a4->size(); i++) {
             table->entries[i].color = color << 0x18 | color << 0x10 | color << 8 | 0xff;
         }
@@ -6650,7 +6648,7 @@ void Level::initParticleSystems() {
             this->field_a8 = new Array<int>();
             ArraySetLength(this->field_a4->size(), *(this->field_a8));
 
-            unsigned char *curBase = ParticleSettingsRef::cur;
+            unsigned char *curBase = ParticleSettingsRef::curBytes();
             unsigned char *entryPtr = curBase + 0x12b4;
             unsigned n = this->field_a4->size();
             for (unsigned i = 0; i < n; i++, entryPtr += 0xa0) {
@@ -6728,9 +6726,7 @@ void Level::initParticleSystems() {
             }
         }
 
-        PaintCanvas *canvas = Globals::Canvas;
-        canvas->CameraGetCurrent();
-        Matrix *local = CameraGetLocal(canvas, canvas->CameraGetCurrent());
+        Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
         int sys = (this->skybox2Mesh)->addSystem(local, ParticleSettings::ParticleSet_4, false);
         this->movingStarsIndex = sys;
 
@@ -6750,13 +6746,12 @@ void Level::initParticleSystems() {
             }
         }
 
-        canvas->CameraGetCurrent();
-        local = CameraGetLocal(canvas, canvas->CameraGetCurrent());
+        local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
         sys = this->particleSystemMgr->addSystem(local, ParticleSettings::ParticleSet_7, false);
         this->field_284 = sys;
 
         if (Globals::status->inAlienOrbit() != 0) {
-            unsigned char *cur = ParticleSettingsRef::cur;
+            unsigned char *cur = ParticleSettingsRef::curBytes();
             uint32_t c1 = *(uint32_t *)(cur + 0x494);
             uint32_t c2 = *(uint32_t *)(cur + 0x534);
             c1 = (c1 & 0xff) | (0x9274d4u << 8);
@@ -6764,7 +6759,7 @@ void Level::initParticleSystems() {
             *(uint32_t *)(cur + 0x534) = c2;
             *(uint32_t *)(cur + 0x494) = c1;
         } else {
-            unsigned char *cur = ParticleSettingsRef::cur;
+            unsigned char *cur = ParticleSettingsRef::curBytes();
             *(uint32_t *)(cur + 0x534) = 0xe2282880u;
             *(uint32_t *)(cur + 0x538) = 0x00ff0080u;
             int texIdx = ((SolarSystem *) Globals::status->getSystem())->getTextureIndex();
@@ -6787,12 +6782,12 @@ void Level::initParticleSystems() {
         Vector ldir = this->starSystem->getLightDirection();
         Vector normalized = AbyssEngine::AEMath::VectorNormalize(ldir);
         Vector negated = AbyssEngine::AEMath::operator-(normalized);
-        unsigned char *cur = ParticleSettingsRef::cur;
+        unsigned char *cur = ParticleSettingsRef::curBytes();
         *(float *)(cur + 0x4b8) = negated.x * 2000.0f;
         *(float *)(cur + 0x4bc) = negated.y * 2000.0f;
         *(float *)(cur + 0x4c0) = negated.z * 2000.0f;
     } else {
-        unsigned char *cur = ParticleSettingsRef::cur;
+        unsigned char *cur = ParticleSettingsRef::curBytes();
         *(uint32_t *)(cur + 0x4b8) = 0;
         *(uint32_t *)(cur + 0x4bc) = 0;
         *(uint32_t *)(cur + 0x4c0) = 0;

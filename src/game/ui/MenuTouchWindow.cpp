@@ -89,7 +89,6 @@ void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b); // lint: void_
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_render3D_inner(void *obj); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
@@ -3714,7 +3713,7 @@ void MenuTouchWindow::render3D() {
     MissionsWindow *obj = (MissionsWindow *) this->missionsWindow;
     if (obj == 0)
         return;
-    return _mtw_render3D_inner(obj);
+    return obj->render3D();
 }
 
 uint8_t MenuTouchWindow::isShowingMessage() {

@@ -32,6 +32,4 @@ namespace AbyssEngine {
     };
 }
 
-void OnCheatActivated(int code, void *data); // lint: void_ptr (exported free function signature)
-
 #endif

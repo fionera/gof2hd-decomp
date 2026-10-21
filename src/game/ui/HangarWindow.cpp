@@ -20,16 +20,11 @@
 #include "engine/core/GameText.h"
 #include "game/menu/ModStation.h"
 
-static const String g_HangarWindow_emptyDialogText;
 
 void Status_replaceHash(...);
 
 static inline int IDIV(int a, int b) { return a / b; }
 static inline unsigned int UDIV(unsigned int a, unsigned int b) { return a / b; }
-
-unsigned char *AppManager_GetApplicationData();
-
-unsigned char *AppManager_GetApplicationModule(unsigned int id);
 
 static inline unsigned char *ApplicationManager_GetApplicationData() { return (unsigned char *)Globals::appManager->GetApplicationData(); }
 
@@ -62,7 +57,6 @@ static int *g_hw_screenHeight;
 static AbyssEngine::ImageFont **g_hw_font;
 static RecordHandler **g_hw_recordHandler;
 static uint8_t *g_hw_optionFlags;
-static unsigned int *g_hw_dlcModuleId;
 static uint8_t *g_hw_blackMarketHintFlag;
 static uint8_t *g_hw_introHintFlag;
 static int *g_hw_headerTextId;
@@ -564,7 +558,7 @@ void HangarWindow::render() {
     PaintCanvas *canvas = Globals::Canvas;
     ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
 
-    unsigned char *dlc = AppManager_GetApplicationModule(*g_hw_dlcModuleId);
+    unsigned char *dlc = (unsigned char *) Globals::appManager->GetApplicationModule(5);
 
     bool dlcShown = dlc != 0 && (*(uint8_t *) ((char *) (dlc) + (0x18))) != 0;
 
@@ -848,7 +842,7 @@ void HangarWindow::render() {
             }
         }
     } else {
-        unsigned char *appData = AppManager_GetApplicationData();
+        unsigned char *appData = ApplicationManager_GetApplicationData();
         (void) appData;
         if (this->listModeFlag == 0) {
             for (int slot = 0x30; slot <= 0x40; slot += 4) {
