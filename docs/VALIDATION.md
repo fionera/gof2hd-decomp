@@ -86,6 +86,13 @@ How the former 50 allowlisted extras were removed — the template for any new o
   real callers (`NFC::iap_buy_*`, `NFC::isPad/getWidth/getHeight`,
   `FileInterfaceAndroid::Read/Write/Close`) are decompiled, so the table was deleted.
 
+### Static initializers (.init_array)
+The three `.init_array` entries are instruction-identical to the original's and in its order:
+Engine.cpp (`Engine::tv_modes` as `Array<int>` with `atexit(~Array)`, then `renderer`, `vendor`),
+the touch buffer (`touches = realloc(touches, sizeof(Touch))`), and ParticleSettings.cpp
+(`ParticleSettingsRef::init`, `::cur`). Any new namespace-scope object with a non-trivial
+ctor/dtor adds an entry the original does not have.
+
 ### Known import delta: `posix_memalign`
 The original imports `memalign`, not `posix_memalign`: it links the NDK's `libandroid_support.a`
 after `libc++abi.a` (ndk-build's `c++_static` for a pre-21 `APP_PLATFORM`), whose hidden
@@ -193,7 +200,7 @@ Current numbers (of **4523** compared): **byte_exact 1327, linked_exact 4158, av
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
 monotone, linked_exact within a ±1 transient band, stubs/missing/extra frozen, exports pinned to
-`tools/sodiff_allow.txt`, undefined-import set pinned (232 names; a typo'd callee is a hard
+`tools/sodiff_allow.txt`, undefined-import set pinned (207 names, the original's count: the only delta is posix_memalign for memalign; a typo'd callee is a hard
 failure), lint clean. `cmake --build … --target check` runs it; the pre-push hook
 (`git config core.hooksPath tools/hooks`) makes it unavoidable. Improvements are locked with
 `tools/ratchet.py --update-baseline` in the same commit.
