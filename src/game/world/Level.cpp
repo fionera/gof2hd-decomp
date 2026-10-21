@@ -5467,12 +5467,13 @@ Level::Level(int mission)
         : playerPosition(),
           stationPosition(),
           spawnPosition() {
-    field_1c = 0;
-    killCountA = 0;
-    killCountB = 0;
-    objectivesA = nullptr;
-    objectivesB = nullptr;
-    field_30 = 0;
+    skyboxMesh = -1;
+    field_08 = -1;
+    skyboxTexture = -1;
+    field_10 = -1;
+    missionPtr = mission;
+    collisionVolume = nullptr;
+    field_b0 = nullptr;
     field_90 = nullptr;
     field_94 = nullptr;
     field_98 = nullptr;
@@ -5484,13 +5485,12 @@ Level::Level(int mission)
     particleEmitBoolPtr = nullptr;
     particleSystemMgr = nullptr;
     field_80 = nullptr;
-    skyboxMesh = -1;
-    field_08 = -1;
-    skyboxTexture = -1;
-    field_10 = -1;
-    missionPtr = mission;
-    collisionVolume = nullptr;
-    field_b0 = nullptr;
+    field_1c = 0;
+    killCountA = 0;
+    killCountB = 0;
+    objectivesA = nullptr;
+    objectivesB = nullptr;
+    field_30 = 0;
     flashColor[0] = 0;
     flashColor[1] = 0;
     flashColor[2] = 0;
@@ -5534,6 +5534,8 @@ Level::Level(int mission)
     field_164 = 0;
     field_168 = 0;
     alarmRequested = 0;
+    field_188 = 0; // assigned twice in the original too (field_188 and field_288 below): the
+                   // repeated zero stores are what make clang fold these bytes into memsets
     movingStarsIndex = -1;
     field_284 = -1;
     field_34 = -1;
@@ -5551,6 +5553,7 @@ Level::Level(int mission)
     field_a0 = nullptr;
     field_a4 = nullptr;
     field_a8 = nullptr;
+    field_288 = 0;
     miningPlantIndex = -1;
     miningPlant = 0;
     numDeliveredOre = 0;
