@@ -90,7 +90,7 @@ public:
     int choiceItemCount;
     uint8_t field_0xd4;
     uint8_t turretMode;
-    uint8_t hudMenuOpen;
+    bool hudMenuOpen;
     uint8_t _pad_0xd7[1];
     int field_0xd8;
     uint8_t jumpDriveActive;

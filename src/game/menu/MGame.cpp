@@ -43,6 +43,7 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/weapons/Radar.h"
 #include "engine/input/VirtualInput.h"
+#include "engine/file/FileRead.h"
 #include "engine/core/AERandom.h"
 #include "game/world/Standing.h"
 
@@ -2424,32 +2425,840 @@ void MGame::freeCamTouchMove(int x, int y, void *touch) { // lint: void_ptr -- e
     }
 }
 
-void MGame::OnTouchEnd(int p1, int p2, void *touchId) { // lint: void_ptr -- exported override signature (Pv)
-    // lint: void_ptr -- exported override signature (Pv)
+void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- exported override signature (Pv)
     if (this->activeTouchId == touchId) {
-        this->activeTouchId = 0;
-        this->field_0xc4 = 0;
-        this->autopilotMenuOpen = 0;
-        this->field_0xc6 = 0;
+        this->activeTouchId = nullptr;
     }
 
-    int wasAutoPilot = this->player->isAutoPilot();
+    bool wasAutoPilot = this->player->isAutoPilot();
     this->flFastForwardWeight = 1.0f;
-    TFC_setFastForwardMode(this->camera, 0);
-    reinterpret_cast<uint8_t &>(this->player->miningUpVec) = 1; // TODO(decomp): byte @0x1c8 of PlayerEgo, unverified
+    this->camera->setFastForwardMode(false);
+    this->player->field_0x84 = 1;
 
-    unsigned hr = 0;
-    if (this->pauseOpen == 0) {
-        hr = this->hud->touchEnd(p1, p2, touchId);
-        this->hudTouchFlags = hr;
-        if (hr != 0) {
-            this->touch0Id = 0;
-            this->touch1Id = 0;
+    if (this->pauseOpen) {
+        if (this->choiceWindowOpen) {
+            if (this->field_0xcf) {
+                // Black market: sell the whole cargo?
+                int choice = this->choiceWindow->OnTouchEnd(x, y);
+                if (choice == 1) {
+                    Array<KIPlayer *> *enemies = this->level->getEnemies();
+                    if (enemies != nullptr) {
+                        for (unsigned i = 0; i < enemies->size(); i++) {
+                            KIPlayer *enemy = (*enemies)[i];
+                            if (enemy->shipGroup == 8) {
+                                enemy->field_0x25 = 1;
+                            }
+                        }
+                    }
+                    Globals::status->field_0x111 = 1;
+                    this->level->createRadioMessage(11, 8);
+                    this->pauseOpen = 0;
+                    this->choiceWindowOpen = 0;
+                    this->field_0xcf = 0;
+                    resumeSounds();
+                } else if (choice == 0) {
+                    if (Globals::status->getCredits() < this->choiceItemCount) {
+                        this->choiceWindow->set(
+                            Globals::status->replaceHash(
+                                String(*Globals::gameText->getText(203), false),
+                                String(Globals::layout->formatCredits(this->choiceItemCount), false), String("#C")),
+                            false);
+                        this->field_0xcf = 0;
+                        this->level->createRadioMessage(11, 8);
+                        Array<KIPlayer *> *enemies = this->level->getEnemies();
+                        if (enemies != nullptr) {
+                            for (unsigned i = 0; i < enemies->size(); i++) {
+                                KIPlayer *enemy = (*enemies)[i];
+                                if (enemy->shipGroup == 8) {
+                                    enemy->field_0x25 = 1;
+                                }
+                            }
+                        }
+                        Globals::status->field_0x111 = 1;
+                        return;
+                    }
+                    Array<KIPlayer *> *enemies = this->level->getEnemies();
+                    if (enemies != nullptr) {
+                        for (unsigned i = 0; i < enemies->size(); i++) {
+                            KIPlayer *enemy = (*enemies)[i];
+                            if (enemy->shipGroup == 8) {
+                                enemy->field_0x25 = 0;
+                            }
+                        }
+                    }
+                    Globals::status->changeCredits(-this->choiceItemCount);
+                    this->level->createRadioMessage(10, 8);
+                    Globals::status->field_110 = 1;
+                    this->pauseOpen = 0;
+                    this->choiceWindowOpen = 0;
+                    this->field_0xcf = 0;
+                    resumeSounds();
+                }
+            } else if (this->_bca) {
+                // Mining plant: refine the ore in the cargo hold.
+                int choice = this->choiceWindow->OnTouchEnd(x, y);
+                if (choice == 1) {
+                    this->choiceWindowOpen = 0;
+                    this->_bca = 0;
+                    this->pauseOpen = 0;
+                    resumeSounds();
+                } else if (choice == 0) {
+                    String report;
+                    Ship *ship = Globals::status->getShip();
+                    bool refinedAny = false;
+                    for (int ore = 154; ore < 166; ore++) {
+                        int refined = ore + 11;
+                        if (ore == 165) {
+                            refined = 218;
+                            ore = 217;
+                        }
+                        int fee = Globals::status->hardCoreMode() ? 100 : 30;
+                        int amount = 0;
+                        while (ship->hasCargo(ore, fee)) {
+                            ship->removeCargo(ore, fee);
+                            ship->addCargo((*Globals::items)[refined]->makeItem(1));
+                            amount--;
+                            refinedAny = true;
+                        }
+                        if (amount != 0) {
+                            report += String("\n") + String(-amount) + String("t ") +
+                                      *Globals::gameText->getText(1274 + refined);
+                        }
+                    }
+                    this->_bca = 0;
+                    if (refinedAny) {
+                        this->choiceWindow->set(*Globals::gameText->getText(291) + String("\n") + report);
+                    } else {
+                        this->choiceWindow->set(*Globals::gameText->getText(292));
+                    }
+                }
+            } else {
+                bool supernovaChallenge = this->field_0x1e4;
+                int choice = this->choiceWindow->OnTouchEnd(x, y);
+                if (!supernovaChallenge) {
+                    if (choice == 0) {
+                        this->pauseOpen = 0;
+                        this->choiceWindowOpen = 0;
+                        resumeSounds();
+                    }
+                } else if (choice == 2) {
+                    return;
+                } else if (choice == 1) {
+                    Globals::globals->playMusicAndFadeOutCurrent(2);
+                    this->active = 0;
+                    this->applicationManager->SetCurrentApplicationModule(1);
+                    Globals::status->resetGame();
+                    return;
+                } else if (choice == 0) {
+                    if (this->menuWindow == nullptr) {
+                        this->menuWindow = new MenuTouchWindow(1);
+                    }
+                    this->menuWindow->startSupernovaChallenge();
+                    return;
+                }
+            }
+        } else if (this->autopilotMenuOpen) {
+            int choice = this->choiceWindow->OnTouchEnd(x, y);
+            if (choice == 1) {
+                // Pick another destination on the jump map.
+                this->autopilotMenuOpen = 0;
+                if (this->starMap == nullptr) {
+                    this->starMap = new StarMap(false, nullptr, false, -1);
+                }
+                static_cast<Engine *>(this->applicationManager->GetEngine())->SetPostEffect(0x1400002, false);
+                this->starMap->initLights();
+                this->starMap->setJumpMapMode(true, false);
+                this->pauseOpen = 1;
+                this->starMapOpen = 1;
+                pauseSounds();
+                return;
+            }
+            if (choice != 0) {
+                return;
+            }
+            this->autopilotMenuOpen = 0;
+            if (this->player->isInTurretMode()) {
+                this->player->setTurretMode(false);
+            }
+            this->usingJumpDrive = 0;
+            startJumpScene();
+            this->player->resetGunDelay();
+            return;
+        } else if (!this->field_0xc4) {
+            if (this->starMapOpen) {
+                if (Globals::layout->choiceWindowOpen) {
+                    if (Globals::layout->OnTouchEnd(x, y)) {
+                        Globals::layout->choiceWindowOpen = 0;
+                    }
+                    return;
+                }
+                if (!this->starMap->OnTouchEnd(x, y)) {
+                    return;
+                }
+                this->level->getStarSystem()->initLight();
+                this->pauseOpen = 0;
+                this->starMapOpen = 0;
+                resumeSounds();
+                if (this->starMap->exitRequested) {
+                    if (this->touchesStream) {
+                        this->usingJumpDrive = 0;
+                        startJumpScene();
+                    } else if (!Level::doInstantJump) {
+                        this->levelScript->setAutoPilotToProgrammedStation();
+                    }
+                } else if (this->touchesStream) {
+                    // Jump cancelled while inside the stream: push the ship back out.
+                    this->player->dockToStream(false);
+                    this->player->setAutoPilot(nullptr);
+                    this->player->field_0x4->setDirection((*this->level->getLandmarks())[1]->geometry->getDirection(),
+                                                          Vector{0.0f, 1.0f, 0.0f});
+                    this->player->setPosition((*this->level->getLandmarks())[1]->geometry->getPosition() +
+                                              Vector{0.0f, 0.0f, 8000.0f});
+                }
+                delete this->starMap;
+                this->starMap = nullptr;
+                return;
+            }
+            if (this->cutsceneActive) {
+                if (!this->dialogueWindow->OnTouchEnd(x, y)) {
+                    return;
+                }
+                this->pauseOpen = 0;
+                resumeSounds();
+                this->cutsceneActive = 0;
+                if (Globals::status->getMission()->hasFailed()) {
+                    if (Globals::status->getMission()->isCampaignMission() ||
+                        Globals::status->getCurrentCampaignMission() == 42) {
+                        Globals::globals->playMusicAndFadeOutCurrent(2);
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(1);
+                        Globals::status->resetGame();
+                        return;
+                    }
+                    // Freelance mission failed: take back what was handed out.
+                    if (Globals::status->getMission()->getType() == 12) {
+                        Globals::status->changeCredits(-Globals::status->getMission()->getReward());
+                    } else if (Globals::status->getMission()->getType() == 3 ||
+                               Globals::status->getMission()->getType() == 5 ||
+                               Globals::status->getMission()->getType() == 11) {
+                        Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+                        if (cargo != nullptr) {
+                            for (unsigned i = 0; i < cargo->size(); i++) {
+                                if ((*cargo)[i]->isUnsaleable() &&
+                                    ((*cargo)[i]->getIndex() == 116 || (*cargo)[i]->getIndex() == 117)) {
+                                    Globals::status->getShip()->removeCargo((*cargo)[i]);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    Globals::status->setFreelanceMission(Mission::empty);
+                    this->level->removeObjectives();
+                    this->levelScript->m_nTimeLimit = 0;
+                    Globals::status->setMission(Mission::empty);
+                    this->player->setRoute(nullptr);
+                    if (this->player->goingToWaypoint()) {
+                        this->player->setAutoPilot(nullptr);
+                    }
+                    this->player->removeRoute();
+                    this->level->setPlayerRoute(nullptr);
+                } else if (Globals::status->getMission()->hasWon() ||
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()) {
+                    bool keepObjectives = ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()
+                                              ? !Globals::status->getMission()->isCampaignMission()
+                                              : false;
+                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission()
+                                                                                : ((Mission *) (intptr_t) Globals::status->getCampaignMission());
+                    if (mission->isInstantActionMission()) {
+                        Globals::switch_to_target_setting = 2;
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(1);
+                        return;
+                    }
+                    if (mission->isCampaignMission()) {
+                        Globals::status->nextCampaignMission(true);
+                    } else {
+                        Globals::status->setFreelanceMission(Mission::empty);
+                        Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
+                    }
+                    Globals::status->changeCredits(mission->getReward() + mission->getBonus());
+                    this->levelScript->m_nTimeLimit = 0;
+
+                    if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 15) {
+                        FileRead *reader = new FileRead();
+                        Globals::status->setStation(reader->loadStation(98));
+                        delete reader;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 22) {
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 43) {
+                        FileRead *reader = new FileRead();
+                        Globals::status->setStation(reader->loadStation(10));
+                        delete reader;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 42) {
+                        delete this->level->objectivesB;
+                        this->level->objectivesB = nullptr;
+                        delete this->level->objectivesA;
+                        this->level->objectivesA = nullptr;
+                        goto finishMission;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 65) {
+                        Globals::switch_to_target_setting = 1;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Level::initStreamOutPosition = 1;
+                        FileRead *reader = new FileRead();
+                        Globals::status->departStation(reader->loadStation(100));
+                        delete reader;
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 81) {
+                        Globals::switch_to_target_setting = 1;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Level::initStreamOutPosition = 1;
+                        Globals::status->setStation(Globals::status->playerStation);
+                        Globals::status->departStation(Globals::status->playerStation);
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 74) {
+                        FileRead *reader = new FileRead();
+                        Globals::status->setStation(reader->loadStation(100));
+                        delete reader;
+                        Globals::sound->stopAll();
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 95) {
+                        Globals::switch_to_target_setting = 1;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Level::initStreamOutPosition = 1;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        return;
+                    } else if (mission->isCampaignMission() && (Globals::status->getCurrentCampaignMission() == 96 ||
+                                                               Globals::status->getCurrentCampaignMission() == 127)) {
+                        Globals::switch_to_target_setting = 1;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Level::initStreamOutPosition = 1;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(98));
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 100) {
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Globals::switch_to_target_setting = 0;
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
+                        Globals::appManager->SetCurrentApplicationModule(5);
+                        this->active = 0;
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 110) {
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Globals::switch_to_target_setting = 0;
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
+                        Globals::appManager->SetCurrentApplicationModule(5);
+                        Globals::enterSpaceLounge = 1;
+                        this->active = 0;
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 120) {
+                        Globals::switch_to_target_setting = 1;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(126));
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(5);
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 126) {
+                        Globals::switch_to_target_setting = 1;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 134) {
+                        Globals::switch_to_target_setting = 0;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(5);
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 144) {
+                        Globals::switch_to_target_setting = 1;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 155) {
+                        Level::initStreamOutPosition = 1;
+                        Globals::switch_to_target_setting = 1;
+                        Globals::status->departStation(
+                            (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 161) {
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Globals::switch_to_target_setting = 0;
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(93));
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        return;
+                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 162) {
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
+                        Globals::switch_to_target_setting = 0;
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(93));
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(5);
+                        return;
+                    } else {
+                        goto finishMission;
+                    }
+                    // Back to the station.
+                    Globals::switch_to_target_setting = 0;
+                    Globals::status->field_64 = this->player->player->getHitpoints();
+                    Globals::status->field_5c = this->player->player->getShieldHP();
+                    Globals::status->field_60 = this->player->player->getArmorHP();
+                    Globals::status->field_68 = this->player->player->getGammaHP();
+                    this->active = 0;
+                    this->applicationManager->SetCurrentApplicationModule(5);
+                    return;
+
+                finishMission:
+                    if (!keepObjectives) {
+                        this->level->removeObjectives();
+                        Globals::status->setMission(Mission::empty);
+                        this->player->setRoute(nullptr);
+                        if (this->player->goingToWaypoint()) {
+                            this->player->setAutoPilot(nullptr);
+                        }
+                        this->player->removeRoute();
+                        this->level->setPlayerRoute(nullptr);
+                    }
+                    if (!mission->isCampaignMission() && mission->getType() == 183) {
+                        // Escort job handed out right after the previous one.
+                        this->field_0x1e0 = this->level->killCountB;
+                        Globals::status->getShip()->setEquipment((*Globals::items)[216]->makeItem(10), 0);
+                        Mission *escort = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0,
+                                                      0, Globals::status->getStation()->getIndex(), 1);
+                        Globals::status->setMission(escort);
+                        Globals::status->setFreelanceMission(escort);
+                        this->active = 0;
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                        return;
+                    }
+                } else {
+                    this->levelScript->resetStartSequenceOver();
+                }
+                this->frameTime = 0;
+                this->hud->resetAnalogStick();
+                this->hud->releaseAllKeys();
+                return;
+            }
+            if (this->menuTouchOpen) {
+                if (this->freeCamMode) {
+                    MGameAppData *appData = (MGameAppData *) Globals::appManager->GetApplicationData();
+                    if (appData->modalActive || appData->transitionActive) {
+                        return;
+                    }
+                    if (!this->menuWindow->isShowingMessage() && !this->menuWindow->isMakingScreenshot()) {
+                        freeCamTouchEnd(x, y, touchId);
+                    }
+                }
+                uint8_t &soundsMuted = reinterpret_cast<uint8_t *>(&this->field_0x1a4)[0];
+                if (this->menuWindow->OnTouchEnd(x, y, touchId)) {
+                    // Pause menu closed.
+                    this->pauseSnapshot = 0;
+                    this->pauseOpen = 0;
+                    resumeSounds();
+                    if (Globals::sound->IsCategoryEnabled(2)) {
+                        if (soundsMuted) {
+                            this->player->PlayEngineSound();
+                            Array<KIPlayer *> *enemies = this->level->getEnemies();
+                            if (enemies != nullptr) {
+                                for (unsigned i = 0; i < enemies->size(); i++) {
+                                    (*enemies)[i]->PlayEngineSound();
+                                }
+                            }
+                        } else {
+                            this->player->ResumeEngineSound();
+                            Array<KIPlayer *> *enemies = this->level->getEnemies();
+                            if (enemies != nullptr) {
+                                for (unsigned i = 0; i < enemies->size(); i++) {
+                                    (*enemies)[i]->ResumeEngineSound();
+                                }
+                            }
+                        }
+                    } else if (soundsMuted) {
+                        this->player->PlayEngineSound();
+                        Array<KIPlayer *> *enemies = this->level->getEnemies();
+                        if (enemies != nullptr) {
+                            for (unsigned i = 0; i < enemies->size(); i++) {
+                                (*enemies)[i]->PlayEngineSound();
+                            }
+                        }
+                    } else {
+                        if (this->player != nullptr) {
+                            this->player->StopEngineSound();
+                        }
+                        Array<KIPlayer *> *enemies = this->level->getEnemies();
+                        if (enemies != nullptr) {
+                            for (unsigned i = 0; i < enemies->size(); i++) {
+                                (*enemies)[i]->StopEngineSound();
+                            }
+                        }
+                    }
+                    this->menuTouchOpen = 0;
+                    this->touch0Id = 0;
+                    this->touch1Id = 0;
+                    this->activeTouchId = nullptr;
+                    this->level->getStarSystem()->initLight();
+                    float particleQuality = reinterpret_cast<const float &>(Globals::options[40]);
+                    this->level->enableParticleEffects(particleQuality > 0.0f, particleQuality > 0.7f);
+                    if (this->menuWindow->cinematicSteerActive) {
+                        // "Skip" pressed in the pause menu.
+                        this->menuWindow->cinematicSteerActive = 0;
+                        switch (Globals::status->getCurrentCampaignMission()) {
+                            case 154:
+                            case 157:
+                            case 158:
+                                this->levelScript->skipCutscene();
+                                break;
+                            case 1:
+                                Globals::switch_to_target_setting = 0;
+                                this->active = 0;
+                                Globals::appManager->SetCurrentApplicationModule(5);
+                                break;
+                            case 0:
+                                Globals::status->nextCampaignMission(true);
+                                Globals::status->setKills(3);
+                                Globals::switch_to_target_setting = 1;
+                                this->active = 0;
+                                Globals::appManager->SetCurrentApplicationModule(2);
+                                Level::initStreamOutPosition = 0;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    this->freeCamMode = 0;
+                }
+                if (!this->freeCamMode && this->menuWindow->inCinematicMode()) {
+                    setCinematicMode(true);
+                    this->hudTouchFlags = 0;
+                    this->level->getStarSystem()->initLight();
+                    return;
+                }
+                if (this->freeCamMode && !this->menuWindow->inCinematicMode()) {
+                    setCinematicMode(false);
+                    this->hudTouchFlags = 0;
+                }
+                return;
+            }
         }
     }
 
-    (void) wasAutoPilot;
-    (void) hr;
+    this->hudTouchFlags = this->hud->touchEnd(x, y, touchId);
+    if (this->hudTouchFlags != 0) {
+        this->touch0Id = 0;
+        this->touch1Id = 0;
+        if (this->hudTouchFlags & 1) {
+            // Pause button.
+            pauseSounds();
+            if (!this->pauseOpen) {
+                if (this->menuWindow == nullptr) {
+                    this->menuWindow = new MenuTouchWindow(1);
+                }
+                this->menuWindow->setSkipButtonVisible(this->levelScript->canSkipCutsceneNow());
+                this->pauseOpen = 1;
+                pauseSounds();
+                this->pauseSnapshot = this->pauseOpen;
+                reinterpret_cast<uint8_t *>(&this->field_0x1a4)[0] = !Globals::sound->IsCategoryEnabled(2);
+                Globals::sound->pauseAllPlaying();
+                this->player->PauseEngineSound();
+                Array<KIPlayer *> *enemies = this->level->getEnemies();
+                if (enemies != nullptr) {
+                    for (unsigned i = 0; i < enemies->size(); i++) {
+                        (*enemies)[i]->PauseEngineSound();
+                    }
+                }
+                this->menuWindow->setCutsceneMode(this->jumpActive ? true : this->player->isDead());
+                this->menuTouchOpen = 1;
+                Globals::sound->play(123, nullptr, nullptr, 0.0f);
+            }
+            this->hud->releaseAllKeys();
+            return;
+        }
+    }
+    if (this->levelScript->startSequence() || this->player->isDead()) {
+        this->levelScript->skipSequence();
+        return;
+    }
+    if (this->jumpActive || this->jumpDriveActive) {
+        return;
+    }
+
+    if ((this->hudTouchFlags & 2) && this->player->isBoostRefreshed() && !this->player->boosting() &&
+        !this->player->isMining() && !this->player->isDockedToDockingPoint()) {
+        this->player->setThrust(1.0f);
+        reinterpret_cast<float &>(this->field_0x1b0) = 1.0f;
+        this->field_0x1b4 = 100.0f;
+        static_cast<Engine *>(this->applicationManager->GetEngine())->wheelDelta = 0.0f;
+        this->player->boost();
+    }
+    if ((this->hudTouchFlags & 8) && this->player->player->gunAvailable(1) && !this->player->isMining() &&
+        !this->player->isInTurretMode() && !this->player->isDockedToDockingPoint() &&
+        !this->player->isLandingOrTakingOff()) {
+        this->player->shoot(this->deltaTime, 1);
+        this->hud->checkIfQuickMenuIsEmpty();
+    }
+    if (this->player->isHacking()) {
+        if (this->hudTouchFlags & 0x200) {
+            this->player->hackingRotateLCW();
+        }
+        if (this->hudTouchFlags & 0x400) {
+            this->player->hackingRotateRCW();
+        }
+    }
+    if (this->player->isInRocketControl()) {
+        return;
+    }
+    if (this->player->hasAutoTurret() && (this->hudTouchFlags & 0x20000000)) {
+        this->player->setAutoTurret(!this->player->autoTurretIsEnabled());
+        this->hud->hudEvent(this->player->autoTurretIsEnabled() ? 32 : 33, this->player, 0);
+    }
+
+    if (this->hudTouchFlags & 0x40) {
+        // Dock / auto pilot button.
+        if (Globals::status->inAlienOrbit() && this->player->isDockingToAsteroid()) {
+            this->player->dockToAsteroid(nullptr, this->radar);
+        }
+        if ((!Globals::status->inAlienOrbit() ||
+             (Globals::status->inAlienOrbit() && Globals::status->getCurrentCampaignMission() == 154 &&
+              this->level->getNumDockingTargets() >= 1)) &&
+            Globals::status->getCurrentCampaignMission() >= 2 && Globals::status->getCurrentCampaignMission() != 48 &&
+            !this->player->isDockedToDockingPoint() && !this->player->isLandingOrTakingOff()) {
+            if (!this->_bc8 && !this->player->isMining()) {
+                if (this->player->isAutoPilot()) {
+                    this->player->setAutoPilot(nullptr);
+                    this->hud->hudEvent(6, this->player, 0);
+                } else if (!this->_bc8) {
+                    if (this->player->isDockingToAsteroid()) {
+                        this->player->dockToAsteroid(this->radar->getLockedAsteroid(), this->radar);
+                        this->hud->hudEvent(6, this->player, 0);
+                    } else if (this->player->isDockingToDockingPoint()) {
+                        this->radar->lockedEnemy = nullptr;
+                        this->player->dockToDockingPoint(nullptr, this->radar);
+                        this->hud->hudEvent(6, this->player, 0);
+                    } else if (this->player->isDockingToStream()) {
+                        this->player->dockToAsteroid(this->radar->lockedStation, this->radar);
+                        this->hud->hudEvent(6, this->player, 0);
+                    } else if ((!Globals::status->inAlienOrbit() ||
+                                (Globals::status->inAlienOrbit() &&
+                                 Globals::status->getCurrentCampaignMission() == 154)) &&
+                               (Globals::status->getMission() == nullptr ||
+                                Globals::status->getMission()->getType() != 183)) {
+                        // Open the auto pilot target menu.
+                        this->pauseOpen = 1;
+                        this->hudMenuOpen = 1;
+                        pauseSounds();
+                        this->hud->initHudMenu(3, this->level);
+                        this->_bc8 = 1;
+                    }
+                }
+            } else if (this->_bc8) {
+                this->hudMenuOpen = 0;
+                this->_bc8 = 0;
+                this->pauseOpen = 0;
+                resumeSounds();
+                this->hud->closeHudMenu();
+                if (this->player != nullptr) {
+                    this->player->resetGunDelay();
+                }
+            }
+        }
+    } else if (this->_bc8) {
+        // Auto pilot target menu entries.
+        if (this->hudTouchFlags & 0x200000) {
+            this->levelScript->setAutoPilotToProgrammedStation();
+        }
+        if (this->hudTouchFlags & 0x400000) {
+            this->player->setAutoPilot((*this->level->getLandmarks())[1]);
+            this->hud->hudEvent(12, this->player, 0);
+        }
+        if (this->hudTouchFlags & 0x800000) {
+            this->player->setAutoPilot((*this->level->getLandmarks())[0]);
+            this->hud->hudEvent(10, this->player, 0);
+        }
+        if (this->hudTouchFlags & 0x1000000) {
+            this->player->setAutoPilot(this->level->getAsteroidWaypoint());
+            this->hud->hudEvent(14, this->player, 0);
+        }
+        if ((this->hudTouchFlags & 0x2000000) && this->level->getPlayerRoute() != nullptr) {
+            this->player->setAutoPilot(this->level->getPlayerRoute()->getWaypoint());
+            this->hud->hudEvent(13, this->player, 0);
+        }
+        for (int i = 0; i < this->level->getNumDockingTargets(); i++) {
+            if ((this->hudTouchFlags & (0x4000000 << i)) && this->level->getDockingTarget(i) != 0) {
+                this->radar->lockedEnemy = (KIPlayer *) (intptr_t) this->level->getDockingTarget(i);
+                this->hud->hudEvent(34, this->player, 0);
+                this->player->dockToDockingPoint((KIPlayer *) (intptr_t) this->level->getDockingTarget(i), this->radar);
+                this->radar->dockNavPtr = nullptr;
+                this->radar->lockedAsteroid = nullptr;
+                this->radar->field_0x10 = 0;
+                this->hud->releaseAllKeys();
+            }
+        }
+        this->hudMenuOpen = 0;
+        this->_bc8 = 0;
+        this->pauseOpen = 0;
+        resumeSounds();
+        this->hud->closeHudMenu();
+        if (this->player != nullptr) {
+            this->player->resetGunDelay();
+        }
+    }
+
+    if ((this->hudTouchFlags & 4) && !this->player->isMining()) {
+        // Quick menu button.
+        this->hudMenuOpen = !this->hudMenuOpen;
+        this->pauseOpen = !this->pauseOpen;
+        if (this->hudMenuOpen) {
+            pauseSounds();
+            this->hud->initHudMenu(0, this->level);
+        }
+    }
+    if ((this->hudTouchFlags & 0x80) && !this->player->isMining()) {
+        switchCamera(this->cameraMode + 1);
+    }
+
+    if (this->hudMenuOpen) {
+        int weaponSlot = -1;
+        int wingmanCommand = -1;
+        if (this->hudTouchFlags & 0x200) {
+            this->hud->initHudMenu(1, this->level);
+        } else if (this->hudTouchFlags & 0x800) {
+            this->hudMenuOpen = 0;
+            this->hud->closeHudMenu();
+            this->pauseOpen = 0;
+            resumeSounds();
+            useCloak();
+        } else if (this->hudTouchFlags & 0x400) {
+            this->hud->initHudMenu(2, this->level);
+        } else if (this->hudTouchFlags & 0x2000) {
+            weaponSlot = 0;
+        } else if (this->hudTouchFlags & 0x4000) {
+            weaponSlot = 1;
+        } else if (this->hudTouchFlags & 0x8000) {
+            weaponSlot = 2;
+        } else if (this->hudTouchFlags & 0x10000) {
+            weaponSlot = 3;
+        } else if (this->hudTouchFlags & 0x20000) {
+            wingmanCommand = 1;
+        } else if (this->hudTouchFlags & 0x40000) {
+            wingmanCommand = 3;
+        } else if (this->hudTouchFlags & 0x80000) {
+            wingmanCommand = 2;
+        } else if (this->hudTouchFlags & 0x100000) {
+            uint8_t &wingmenFollow = reinterpret_cast<uint8_t &>(Globals::status->field_f8);
+            wingmenFollow = !wingmenFollow;
+            wingmanCommand = 0;
+        } else if (this->hudTouchFlags & 0x1000) {
+            UseKhadorDrive();
+        }
+        if (weaponSlot >= 0) {
+            // Select a secondary weapon.
+            Array<Item *> *secondaries = Globals::status->getShip()->getEquipment(1);
+            if (secondaries != nullptr) {
+                this->level->getPlayer()->setCurrentSecondaryWeaponIndex((*secondaries)[weaponSlot]->getIndex());
+                this->hud->setCurrentSecondaryWeapon((*secondaries)[weaponSlot]);
+            }
+            this->pauseOpen = 0;
+            this->hudMenuOpen = 0;
+            resumeSounds();
+            this->hud->closeHudMenu();
+        } else {
+            if (wingmanCommand >= 0) {
+                // Order the wingmen.
+                Array<KIPlayer *> *enemies = this->level->getEnemies();
+                if (enemies != nullptr) {
+                    for (unsigned i = 0; i < enemies->size(); i++) {
+                        KIPlayer *wingman = (*enemies)[i];
+                        if (wingman->isWingMan() && !wingman->isDead()) {
+                            wingman->setWingmanCommand(wingmanCommand,
+                                                       wingmanCommand == 3 ? this->radar->getLockedEnemy() : nullptr);
+                        }
+                    }
+                }
+                this->hudMenuOpen = 0;
+                this->hud->closeHudMenu();
+                this->pauseOpen = 0;
+                resumeSounds();
+            }
+            if (this->hudTouchFlags == 0) {
+                this->hud->closeHudMenu();
+                this->hudMenuOpen = 0;
+                this->touch0Id = 0;
+                this->touch1Id = 0;
+                this->pauseOpen = 0;
+                resumeSounds();
+                if (this->_bc8) {
+                    this->_bc8 = 0;
+                    if (this->player != nullptr) {
+                        this->player->resetGunDelay();
+                    }
+                }
+            }
+        }
+    } else if (this->cameraMode == 0) {
+        maneuverTouchEnd(x, y, touchId);
+        reinterpret_cast<uint16_t &>(this->_b1b8) = 0;
+    } else if (this->cameraMode == 3) {
+        freeCamTouchEnd(x, y, touchId);
+    }
+
+    if (this->player->isAutoPilot() && !wasAutoPilot) {
+        reinterpret_cast<float &>(this->field_0x1b0) = 1.0f;
+        this->field_0x1b4 = 100.0f;
+    }
 }
 
 bool MGame::successCheck() {
