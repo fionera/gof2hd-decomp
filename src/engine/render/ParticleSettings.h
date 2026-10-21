@@ -71,7 +71,7 @@ public:
 
     static void Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out);
 
-    static int particleMultiply;
+    static float particleMultiply;
     static int pCounter;
 };
 #endif

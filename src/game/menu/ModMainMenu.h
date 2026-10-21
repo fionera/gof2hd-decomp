@@ -3,13 +3,12 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "engine/core/ApplicationManager.h"
+#include "engine/core/IApplicationModule.h"
 class CutScene;
 class MenuTouchWindow;
 
-class ModMainMenu {
+class ModMainMenu : public IApplicationModule {
 public:
-    int paintCanvas;
-    ApplicationManager *appManager;
     int state;
     uint8_t initialized;
     int frameTime;
@@ -24,7 +23,7 @@ public:
 
     virtual ~ModMainMenu();
 
-    virtual void OnInitialize();
+    virtual int OnInitialize();
 
     virtual void OnRelease();
 

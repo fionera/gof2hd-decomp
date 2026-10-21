@@ -378,9 +378,7 @@ int RecordHandler::recordStoreWritePreview(int slot) {
     return 1;
 }
 
-static const char g_WA_empty1[] = "";
 
-static const char g_WA_empty2[] = "";
 
 void RecordHandler::writeAgent(Agent *agentPtr, unsigned int fd) {
     RecordHandler * self = this;
@@ -424,14 +422,14 @@ void RecordHandler::writeAgent(Agent *agentPtr, unsigned int fd) {
 
     String *f0c = agent->wingman1;
     if (f0c == 0) {
-        String s(g_WA_empty1);
+        String s("");
         AEFile::Write(s, fd, (bool)1);
     } else {
         AEFile::Write(*f0c, fd, (bool)1);
     }
     String *f10 = agent->wingman2;
     if (f10 == 0) {
-        String s(g_WA_empty2);
+        String s("");
         AEFile::Write(s, fd, (bool)1);
     } else {
         AEFile::Write(*f10, fd, (bool)1);
