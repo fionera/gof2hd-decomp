@@ -50,7 +50,7 @@ public:
 
     uint8_t field_0x54;
     int itemIndex;
-    ItemSort weaponType;
+    int weaponType; // ItemSort
     int damage;
     int empDamage;
     uint8_t useCustomRadius;
@@ -67,13 +67,13 @@ public:
     int field_0x98;
     int fireIndex;
 
-    uint8_t _pad_0xa0[4]; // drift: 4 bytes missing so the former-union run lands at 0xa4
+    int currentProjectile; // 0xa0: index of the projectile last launched by shootAt
     // Former union { int field_0xa4; struct{...}; } at 0xa4: the wide int
     // `field_0xa4` is reinterpret_cast<int&>(field_0xa4_b0) at its use sites.
-    uint8_t field_0xa4_b0;
-    uint8_t field_0xa5;
-    uint8_t field_0xa6;
-    uint8_t field_0xa7;
+    bool field_0xa4_b0;
+    bool field_0xa5;
+    bool field_0xa6; // alternate the X mirror of the muzzle offset
+    bool field_0xa7; // alternate the Y mirror of the muzzle offset
 
     uint8_t field_0xa8;
     uint8_t delayActive;
@@ -91,7 +91,7 @@ public:
     uint8_t playerGun;
     int slotIndex;
     uint8_t levelCollision;
-    uint8_t friendGun;
+    bool friendGun;
     float errorMagnitudePercentage;
     int magnitude;
     int customRadius;

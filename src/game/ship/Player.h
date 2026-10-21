@@ -52,7 +52,7 @@ public:
     // Former uint16 `empDisabled` overlay (2-byte slot). The byte view is the real low byte;
     // the 16-bit view is `reinterpret_cast<uint16_t &>(empDisabledByte)`.
     uint8_t empDisabledByte;
-    uint8_t pad_69;
+    uint8_t egoFlag;
 
     uint8_t pad_6a[2];
     int32_t damageDoneByPlayer;

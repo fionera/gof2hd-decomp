@@ -36,9 +36,9 @@ public:
 
     Array<SolarSystem *> *getSystems();
 
-    uint8_t *getVisited();
+    bool *getVisited();
 
-    uint8_t *visited;
+    bool *visited;
     Array<SolarSystem *> *systems;
 };
 

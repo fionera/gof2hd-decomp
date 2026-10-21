@@ -1,5 +1,6 @@
 #ifndef GOF2_MATRIX_H
 #define GOF2_MATRIX_H
+#include "engine/math/Vector.h"
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -30,6 +31,11 @@ namespace AbyssEngine {
             operator float *();
 
             operator const float *() const;
+
+            // The original Matrix is { float rows[12]; Vector scale; }: m[12..14] is a Vector that the
+            // binary copies/multiplies through the (out-of-line) Vector operators.
+            Vector &scaleVector() { return *reinterpret_cast<Vector *>(&m[12]); }
+            const Vector &scaleVector() const { return *reinterpret_cast<const Vector *>(&m[12]); }
 
             float &operator[](int i) { return m[i]; }
             float operator[](int i) const { return m[i]; }

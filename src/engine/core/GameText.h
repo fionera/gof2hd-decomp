@@ -17,7 +17,7 @@ public:
 
     ~GameText();
 
-    static int getLanguage();
+    static short getLanguage();
 
     static AbyssEngine::String getRegionCode();
 
