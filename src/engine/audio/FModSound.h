@@ -108,7 +108,7 @@ public:
 
     void freeAllEvents();
 
-    uint8_t IsCategoryEnabled(int p1);
+    bool IsCategoryEnabled(int p1);
 
     void pauseAllPlayingSoundFXEvents();
 
