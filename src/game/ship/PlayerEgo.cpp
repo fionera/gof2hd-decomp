@@ -2284,8 +2284,15 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         aimPosition = AbyssEngine::AEMath::MatrixGetPosition(turret);
         aimDirection = AbyssEngine::AEMath::MatrixGetDir(turret);
     }
-    if (Globals::mouseCursorActivated && !mouseLocked && controlMode != 3
-        && (!this->autoPilot || controlMode == 1)) {
+    // Free mouse aiming is off when the cursor is hidden/locked, the autopilot steers (unless in
+    // control mode 1; evaluated without short-circuit, the binary ORs both flags) or in mode 3.
+    if (!Globals::mouseCursorActivated || mouseLocked || !(!this->autoPilot | (controlMode == 1))
+        || controlMode == 3) {
+        Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
+                                           crosshairPos);
+        crosshairPos = crosshairPos.z > 0.0f ? crosshairPos
+                                             : crosshairPos * 0.2f + this->lastCrosshairPos * 0.8f;
+        } else {
         float centerX = (float) (Globals::w >> 1);
         float centerY = (float) (Globals::h >> 1);
         float rangeX = (float) ((double) centerX * 0.7);
@@ -2327,12 +2334,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         crosshairShootPos = crosshairShootPos.z > 0.0f ? crosshairShootPos
                                                        : crosshairShootPos * 0.2f + this->lastCrosshairShootPos * 0.8f;
         this->lastCrosshairShootPos = crosshairShootPos;
-    } else {
-        Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
-                                           crosshairPos);
-        crosshairPos = crosshairPos.z > 0.0f ? crosshairPos
-                                             : crosshairPos * 0.2f + this->lastCrosshairPos * 0.8f;
-    }
+        }
     if (this->field_0x84 && !this->targetFollowCamera->isInFastForwardMode()) {
         if (Globals::mouseCursorActivated)
             this->targetFollowCamera->setShipHandling(this->handling);
