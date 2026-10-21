@@ -20,109 +20,6 @@ static inline PaintCanvas *paintCanvas() {
 
 typedef Array<BoundingVolume *> BoundingVolumeList;
 
-void PlayerStation::setVisible(bool visible) {
-    this->visibleFlag = visible;
-}
-
-PlayerStation::~PlayerStation() {
-    if (this->rootGeometry != nullptr) {
-        delete this->rootGeometry;
-    }
-    this->rootGeometry = nullptr;
-
-    if (this->secondGeometry != nullptr) {
-        delete this->secondGeometry;
-    }
-    this->secondGeometry = nullptr;
-
-    if (this->boundingVolumes != nullptr) {
-        ArrayReleaseClasses(*(BoundingVolumeList *) this->boundingVolumes);
-        delete (BoundingVolumeList *) this->boundingVolumes;
-    }
-    this->boundingVolumes = nullptr;
-}
-
-void PlayerStation::setPosition(const Vector &position) {
-    this->posX = position.x;
-    this->posY = position.y;
-    this->posZ = position.z;
-    this->rootGeometry->setPosition(position);
-
-    BoundingVolumeList *volumes = (BoundingVolumeList *) this->boundingVolumes;
-    if (volumes != nullptr) {
-        for (uint32_t i = 0; i < volumes->size(); ++i) {
-            (*volumes)[i]->update(position.x, position.y, position.z);
-            volumes = (BoundingVolumeList *) this->boundingVolumes;
-        }
-    }
-}
-
-Vector PlayerStation::projectCollisionOnSurface(const Vector &position) {
-    Vector result;
-    reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(
-        position, (BoundingVolumeList *) this->boundingVolumes);
-    return result;
-}
-
-void *PlayerStation::getRoot() { // lint: void_ptr (exported method return type baked into ABI)
-    // lint: void_ptr (exported method return type baked into ABI)
-    return this->rootGeometry;
-}
-
-Vector PlayerStation::getProjectionVector(const Vector &position) {
-    BoundingVolumeList *volumes = (BoundingVolumeList *) this->boundingVolumes;
-    if (volumes != nullptr) {
-        BoundingVolume *volume = (*volumes)[this->collisionIndex];
-        return volume->getProjectionVector(position);
-    }
-
-    Vector result = {0.0f, 0.0f, 0.0f};
-    return result;
-}
-
-void PlayerStation::render() {
-    if (!this->visibleFlag) {
-        return;
-    }
-    this->rootGeometry->render();
-}
-
-int PlayerStation::outerCollide(const Vector &position) {
-    return this->outerCollide(position.x, position.y, position.z);
-}
-
-Vector PlayerStation::getPosition() {
-    return this->rootGeometry->getPosition();
-}
-
-int PlayerStation::collide(float x, float y, float z) {
-    return this->outerCollide(x, y, z);
-}
-
-void PlayerStation::update(int delta) {
-    if ((int32_t) this->rootGeometry->childTransform == -1 || this->stationIndex == 101) {
-        return;
-    }
-    if (Globals::status->inAlienOrbit()) {
-        return;
-    }
-    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->rootGeometry->childTransform))
-            ->Update((long long) delta, false);
-    if (this->stationIndex == 108) {
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform0))
-                ->Update((long long) delta, false);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform1))
-                ->Update((long long) delta, false);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform2))
-                ->Update((long long) delta, false);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform3))
-                ->Update((long long) delta, false);
-    } else if (this->stationIndex == 100) {
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->meshTransform))
-                ->Update((long long) delta, false);
-    }
-}
-
 PlayerStation::PlayerStation(Station *station)
     : PlayerStaticFar(-1, nullptr, 0.0f, 0.0f, 0.0f) {
     this->field_0x158 = 0;
@@ -352,6 +249,91 @@ PlayerStation::PlayerStation(Station *station)
     this->collisionRadius = (int) (transform->boundingRadius + 10.0f);
 }
 
+PlayerStation::~PlayerStation() {
+    if (this->rootGeometry != nullptr) {
+        delete this->rootGeometry;
+    }
+    this->rootGeometry = nullptr;
+
+    if (this->secondGeometry != nullptr) {
+        delete this->secondGeometry;
+    }
+    this->secondGeometry = nullptr;
+
+    if (this->boundingVolumes != nullptr) {
+        ArrayReleaseClasses(*(BoundingVolumeList *) this->boundingVolumes);
+        delete (BoundingVolumeList *) this->boundingVolumes;
+    }
+    this->boundingVolumes = nullptr;
+}
+
+void PlayerStation::update(int delta) {
+    if ((int32_t) this->rootGeometry->childTransform == -1 || this->stationIndex == 101) {
+        return;
+    }
+    if (Globals::status->inAlienOrbit()) {
+        return;
+    }
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->rootGeometry->childTransform))
+            ->Update((long long) delta, false);
+    if (this->stationIndex == 108) {
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform0))
+                ->Update((long long) delta, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform1))
+                ->Update((long long) delta, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform2))
+                ->Update((long long) delta, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform3))
+                ->Update((long long) delta, false);
+    } else if (this->stationIndex == 100) {
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->meshTransform))
+                ->Update((long long) delta, false);
+    }
+}
+
+void PlayerStation::render() {
+    if (!this->visibleFlag) {
+        return;
+    }
+    this->rootGeometry->render();
+}
+
+void PlayerStation::setPosition(const Vector &position) {
+    this->posX = position.x;
+    this->posY = position.y;
+    this->posZ = position.z;
+    this->rootGeometry->setPosition(position);
+
+    BoundingVolumeList *volumes = (BoundingVolumeList *) this->boundingVolumes;
+    if (volumes != nullptr) {
+        for (uint32_t i = 0; i < volumes->size(); ++i) {
+            (*volumes)[i]->update(position.x, position.y, position.z);
+            volumes = (BoundingVolumeList *) this->boundingVolumes;
+        }
+    }
+}
+
+Vector PlayerStation::getPosition() {
+    return this->rootGeometry->getPosition();
+}
+
+void *PlayerStation::getRoot() { // lint: void_ptr (exported method return type baked into ABI)
+    // lint: void_ptr (exported method return type baked into ABI)
+    return this->rootGeometry;
+}
+
+void PlayerStation::setVisible(bool visible) {
+    this->visibleFlag = visible;
+}
+
+void PlayerStation::translate(float x, float y, float z) {
+    this->rootGeometry->translate(x, y, z);
+}
+
+int PlayerStation::collide(float x, float y, float z) {
+    return this->outerCollide(x, y, z);
+}
+
 int PlayerStation::outerCollide(float x, float y, float z) {
     float radius = (float) this->collisionRadius;
 
@@ -374,6 +356,25 @@ int PlayerStation::outerCollide(float x, float y, float z) {
     return false;
 }
 
-void PlayerStation::translate(float x, float y, float z) {
-    this->rootGeometry->translate(x, y, z);
+int PlayerStation::outerCollide(const Vector &position) {
+    return this->outerCollide(position.x, position.y, position.z);
 }
+
+Vector PlayerStation::getProjectionVector(const Vector &position) {
+    BoundingVolumeList *volumes = (BoundingVolumeList *) this->boundingVolumes;
+    if (volumes != nullptr) {
+        BoundingVolume *volume = (*volumes)[this->collisionIndex];
+        return volume->getProjectionVector(position);
+    }
+
+    Vector result = {0.0f, 0.0f, 0.0f};
+    return result;
+}
+
+Vector PlayerStation::projectCollisionOnSurface(const Vector &position) {
+    Vector result;
+    reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(
+        position, (BoundingVolumeList *) this->boundingVolumes);
+    return result;
+}
+

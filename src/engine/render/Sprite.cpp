@@ -158,15 +158,6 @@ void Sprite::setFrame(int frame) {
         this->currentFrame = frame;
     }
 
-    int columns = this->columns;
-    int row = frame / columns;
-    int column = frame - row * columns;
-
-    int frameWidth = this->frameWidth;
-    int frameHeight = this->frameHeight;
-    int frameX = frameWidth * column;
-    int frameY = frameHeight * row;
-
-    this->frameSrcX = frameX;
-    this->frameSrcY = frameY;
+    this->frameSrcX = (frame % this->columns) * this->frameWidth;
+    this->frameSrcY = (frame / this->columns) * this->frameHeight;
 }

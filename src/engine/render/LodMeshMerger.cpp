@@ -1,4 +1,5 @@
 #include "engine/render/LodMeshMerger.h"
+#include "engine/math/BSphere.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
 #include <cstdlib>
@@ -33,85 +34,67 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
 }
 
 void LodMeshMerger::update() {
-    for (int i = 0; i < rows; i++) {
-        Mesh *sph = transformedMeshes[i];
-        uint8_t vis = (uint8_t) canvas->CameraIsSphereinViewFrustum(
-            *(const Vector *) &sph->boundsCenterX, sph->boundsRadius);
-        if (vis != visible[i]) {
-            visible[i] = vis;
-            if (enabled[i] != 0) {
-                dirty = 1;
-            }
+    for (int i = 0; i < this->rows; i++) {
+        Mesh *mesh = this->transformedMeshes[i];
+        int isVisible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
+                                                                   mesh->boundsRadius);
+        if (isVisible != this->visible[i]) {
+            this->visible[i] = (uint8_t) isVisible;
+            if (this->enabled[i] != 0)
+                this->dirty = 1;
         }
     }
-
-    if (dirty == 0) {
+    if (this->dirty == 0)
         return;
-    }
 
-    int indexBudget = 0;
-    for (int j = 0; j < rows; j++) {
-        if (enabled[j] != 0 && visible[j] != 0) {
-            signed char lod = lodLevels[j];
-            Mesh *src = transformedMeshes[rows * lod + j];
-            indexBudget += src->indexCount;
+    // Keep the merged index count addressable by 16-bit indices: coarsen LODs until it fits.
+    int indexTotal = 0;
+    for (int i = 0; i < this->rows; i++) {
+        if (this->enabled[i] != 0 && this->visible[i] != 0)
+            indexTotal += this->transformedMeshes[this->rows * this->lodLevels[i] + i]->indexCount;
+    }
+    for (int i = 0; indexTotal >= 0x10000 && i < this->rows; i++) {
+        if (this->enabled[i] == 0 || this->visible[i] == 0)
+            continue;
+        signed char lod = this->lodLevels[i];
+        if (lod < this->cols - 1) {
+            Mesh *previous = this->transformedMeshes[this->rows * lod + i];
+            setLod(i, (signed char) (lod + 1));
+            Mesh *current = this->transformedMeshes[this->rows * this->lodLevels[i] + i];
+            indexTotal = indexTotal - previous->indexCount + current->indexCount;
         }
     }
 
-    for (int j = 0; indexBudget >= 0x10000 && j < rows; j++) {
-        if (enabled[j] != 0 && visible[j] != 0) {
-            signed char lod = lodLevels[j];
-            if (lod < cols - 1) {
-                Mesh *prev = transformedMeshes[rows * lod + j];
-                setLod(j, (signed char) (lod + 1));
-                signed char newLod = lodLevels[j];
-                Mesh *cur = transformedMeshes[rows * newLod + j];
-                indexBudget += cur->indexCount - prev->indexCount;
-            }
+    int vertexBase = 0;
+    int indexBase = 0;
+    for (int i = 0; i < this->rows; i++) {
+        if (this->enabled[i] == 0 || this->visible[i] == 0)
+            continue;
+        Mesh *src = this->transformedMeshes[this->rows * this->lodLevels[i] + i];
+        if (this->mergedMesh->vertexFormat & 1)
+            memcpy((Vector *) this->mergedMesh->positions + vertexBase, (const Vector *) src->positions,
+                   src->vertexCount * 12);
+        if (this->mergedMesh->vertexFormat & 4)
+            memcpy((Vector *) this->mergedMesh->normals + vertexBase, (const Vector *) src->normals,
+                   src->vertexCount * 12);
+        if (this->mergedMesh->vertexFormat & 8)
+            memcpy((uint32_t *) this->mergedMesh->colors + vertexBase * 4, (const uint32_t *) src->colors,
+                   src->vertexCount * 16);
+        if (this->mergedMesh->vertexFormat & 2)
+            memcpy((float *) this->mergedMesh->texCoords + vertexBase * 2, (const float *) src->texCoords,
+                   src->vertexCount * 8);
+        if (this->mergedMesh->vertexFormat & 0x10) {
+            uint16_t *dst = (uint16_t *) this->mergedMesh->indices + indexBase;
+            const uint16_t *idx = (const uint16_t *) src->indices;
+            for (int k = src->indexCount; k != 0; k--)
+                *dst++ = (uint16_t) (*idx++ + vertexBase);
         }
+        vertexBase += src->vertexCount;
+        indexBase += src->indexCount;
     }
-
-    Mesh *out = mergedMesh;
-    int vtxOffset = 0;
-    int idxOffset = 0;
-    for (int j = 0; j < rows; j++) {
-        if (enabled[j] != 0 && visible[j] != 0) {
-            uint8_t mask = out->vertexFormat;
-            signed char lod = lodLevels[j];
-            Mesh *src = transformedMeshes[rows * lod + j];
-
-            if (mask & 1) {
-                memcpy((char *) out->positions + vtxOffset * 0xc,
-                       src->positions, src->vertexCount * 0xc);
-            }
-            if (mask & 4) {
-                memcpy((char *) out->normals + vtxOffset * 0xc,
-                       src->normals, src->vertexCount * 0xc);
-            }
-            if (mask & 8) {
-                memcpy((char *) out->colors + vtxOffset * 0x10,
-                       src->colors, (uint32_t) src->vertexCount << 4);
-            }
-            if (mask & 2) {
-                memcpy((char *) out->texCoords + vtxOffset * 8,
-                       src->texCoords, (uint32_t) src->vertexCount << 3);
-            }
-            if (mask & 0x10) {
-                int16_t *si = (int16_t *) src->indices;
-                int16_t *di = (int16_t *) out->indices + idxOffset;
-                for (int k = -(int)(uint16_t)src->indexCount; k != 0; k++) {
-                    *di = (int16_t)(*si + (int16_t) vtxOffset);
-                    si++;
-                    di++;
-                }
-            }
-            idxOffset += src->indexCount;
-            vtxOffset += src->vertexCount;
-        }
-    }
-    out->indexCount = (uint16_t) idxOffset;
-    out->vertexCount = (uint16_t) vtxOffset;
-    dirty = 0;
+    this->mergedMesh->vertexCount = (uint16_t) vertexBase;
+    this->mergedMesh->indexCount = (uint16_t) indexBase;
+    this->dirty = 0;
 }
 
 LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
@@ -181,65 +164,47 @@ void LodMeshMerger::init() {
     update();
 }
 
-Mesh *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
-    Mesh *out = (Mesh *) ::operator new(sizeof(Mesh));
+Mesh *LodMeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
+    Mesh *out = new Mesh();
+    out->vertexCount = mesh->vertexCount;
+    out->indexCount = mesh->indexCount;
+    out->vertexFormat = mesh->vertexFormat;
+    if (mesh->vertexFormat & 2)
+        out->texCoords = mesh->texCoords;
+    if (mesh->vertexFormat & 8)
+        out->colors = mesh->colors;
+    if (mesh->vertexFormat & 0x10)
+        out->indices = mesh->indices;
 
-    memset(out, 0, sizeof(Mesh));
-    out->boundsRadiusSq = 1.0f;
-
-    uint32_t vcount = src->vertexCount;
-    out->vertexCount = src->vertexCount;
-    out->indexCount = src->indexCount;
-    uint8_t f = src->vertexFormat;
-    out->vertexFormat = f;
-
-    if (f & 0x2)
-        out->texCoords = src->texCoords;
-    if (f & 0x10)
-        out->colors = src->colors;
-    if (f & 0x20)
-        out->indices = src->indices;
-
-    if (f & 0x1) {
-        out->positions = (unsigned char *) new char[vcount * 0xc];
-        int o = 0;
-        for (uint32_t i = 0; i < vcount; i++) {
-            *(Vector *) ((char *) out->positions + o) =
-                    AbyssEngine::AEMath::MatrixTransformVector(m, *(Vector *) ((char *) src->positions + o));
-            o += 0xc;
-            vcount = src->vertexCount;
+    if (mesh->vertexFormat & 1) {
+        out->positions = new unsigned char[mesh->vertexCount * 12];
+        for (unsigned int i = 0; i < mesh->vertexCount; i++) {
+            ((Vector *) out->positions)[i] =
+                    AbyssEngine::AEMath::MatrixTransformVector(m, ((const Vector *) mesh->positions)[i]);
         }
-        f = src->vertexFormat;
     }
-
-    if (f & 0x4) {
-        out->normals = (unsigned char *) new char[vcount * 0xc];
-        int o = 0;
-        for (uint32_t i = 0; i < vcount; i++) {
-            Vector rot = AbyssEngine::AEMath::MatrixRotateVector(m, *(Vector *) ((char *) src->normals + o));
-            *(Vector *) ((char *) out->normals + o) = AbyssEngine::AEMath::VectorNormalize(rot);
-            o += 0xc;
-            vcount = src->vertexCount;
+    if (mesh->vertexFormat & 4) {
+        out->normals = new unsigned char[mesh->vertexCount * 12];
+        for (unsigned int i = 0; i < mesh->vertexCount; i++) {
+            ((Vector *) out->normals)[i] = AbyssEngine::AEMath::VectorNormalize(
+                    AbyssEngine::AEMath::MatrixRotateVector(m, ((const Vector *) mesh->normals)[i]));
         }
     }
 
-    float r = src->boundsRadius;
-    Vector ext = {r, r, r};
-    Vector tExt = AbyssEngine::AEMath::MatrixTransformVector(m, ext);
-    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, *(Vector *) &src->boundsCenterX);
-
-    float ax = tExt.x < 0.0f ? -tExt.x : tExt.x;
-    float ay = tExt.y < 0.0f ? -tExt.y : tExt.y;
-    float az = tExt.z < 0.0f ? -tExt.z : tExt.z;
-    float rad = ax;
-    if (ay > rad) rad = ay;
-    if (az > rad) rad = az;
-
-    out->boundsCenterX = center.x;
-    out->boundsCenterY = center.y;
-    out->boundsCenterZ = center.z;
-    out->boundsRadius = rad;
-
+    // The original transforms the radius vector but then measures the untransformed one.
+    Vector extent = {mesh->boundsRadius, mesh->boundsRadius, mesh->boundsRadius};
+    AbyssEngine::AEMath::MatrixTransformVector(m, extent);
+    float ax = extent.x > 0.0f ? extent.x : -extent.x;
+    float ay = extent.y > 0.0f ? extent.y : -extent.y;
+    float az = extent.z > 0.0f ? extent.z : -extent.z;
+    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, *(const Vector *) &mesh->boundsCenterX);
+    float radius = az;
+    if (ay > radius)
+        radius = ay;
+    if (ax > radius)
+        radius = ax;
+    AbyssEngine::AEMath::BSphere bounds = {center, radius, 1.0f};
+    *reinterpret_cast<AbyssEngine::AEMath::BSphere *>(&out->boundsCenterX) = bounds;
     return out;
 }
 
