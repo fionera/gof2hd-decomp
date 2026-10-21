@@ -222,7 +222,6 @@ PlayerEgo::PlayerEgo(Player *player)
     this->yawRamp = 0;
     this->field_0x260 = 0;
     this->field_0x264 = 0;
-    this->engineSoundId = -1;
     this->rollAccum = 0;
     this->field_0x26c = 0;
     this->yawAccumD = 0;
