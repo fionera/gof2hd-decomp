@@ -107,7 +107,7 @@ public:
     uint8_t flag_0xb3;
     int field_0xb4;
     int field_0xb8;
-    int *medalArray;
+    Array<int *> *medalArray; // pairs {medal id, grade}
     int medalIndex;
     int medalCount;
     int field_0xc8;
