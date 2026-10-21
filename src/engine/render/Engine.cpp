@@ -621,25 +621,21 @@ void Engine::DrawQuad(int x, int y, int width, int height) {
 }
 
 void Engine::SetColor(float red, float green, float blue, float alpha) {
-    Engine *self = this;
-    if (self->glColor[0] == red &&
-        self->glColor[1] == green &&
-        self->glColor[2] == blue &&
-        self->glColor[3] == alpha) {
-        return;
-    }
-    self->glColor[1] = green;
-    self->glColor[0] = red;
-    self->glColor[2] = blue;
-    self->glColor[3] = alpha;
-    self->packedColor =
-            (int) (green * 255.0f) * 0x10000 + (int) (red * 255.0f) * 0x1000000 +
-            (int) (blue * 255.0f) * 0x100 + (int) (alpha * 255.0f);
-    if (Engine::enableShader != 0) {
-        return this->ShaderUpdate();
-    }
-    self->LightSetMaterialColorAlpha(alpha);
-    return glColor4f(red, green, blue, alpha);
+    if (this->glColor[0] != red || this->glColor[1] != green || this->glColor[2] != blue ||
+        this->glColor[3] != alpha) {
+        this->glColor[0] = red;
+        this->glColor[1] = green;
+        this->glColor[2] = blue;
+        this->glColor[3] = alpha;
+        this->packedColor =
+                (int) (green * 255.0f) * 0x10000 + (int) (red * 255.0f) * 0x1000000 +
+                (int) (blue * 255.0f) * 0x100 + (int) (alpha * 255.0f);
+        if (Engine::enableShader != 0) {
+            return this->ShaderUpdate();
+        }
+        this->LightSetMaterialColorAlpha(alpha);
+        return glColor4f(red, green, blue, alpha);
+}
 }
 
 Engine::~Engine() {
