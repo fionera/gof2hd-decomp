@@ -2199,7 +2199,7 @@ void MenuTouchWindow::update(int dt) {
         this->dlcResultDialogShowing = 1;
         appData->purchaseResultFlag = 0;
     }
-    if (Globals::isTelekomCustomer && (uint8_t) (this->messageShowing | Globals::options[53]) == 0) {
+    if (Globals::isTelekomCustomer && (uint8_t) (*(volatile uint8_t *) &this->messageShowing | Globals::options[53]) == 0) {
         this->choiceWindow->set(*Globals::gameText->getText(3234));
         this->messageShowing = 1;
         this->supernovaPurchaseDialogShowing = 1;
@@ -3658,6 +3658,7 @@ void MenuTouchWindow::startSupernova() {
 
     (*statusHolder)->field_84 = 0x1a0a;
     unsigned char *hints = Globals::hints;
+    Globals::options[52] = 1;
     hints[32] = 1;
     hints[33] = 1;
     hints[34] = 1;
@@ -3684,7 +3685,6 @@ void MenuTouchWindow::startSupernova() {
     hints[30] = 1;
     hints[56] = 1;
     hints[57] = 1;
-    Globals::options[52] = 1;
 
     Globals::achievements->setMedal(0x17, 3);
     Globals::achievements->setMedal(0x1e, 1);
