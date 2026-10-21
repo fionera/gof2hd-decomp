@@ -3814,15 +3814,18 @@ bool MGame::successCheck() {
         return success;
 
     Mission *completed = Globals::status->missionCompleted(false, false, this->levelScript->m_nScriptTime);
-    if (!completed && !this->level->checkObjective((int) this->levelScript->m_nScriptTime))
+    bool objectiveDone = this->level->checkObjective((int) this->levelScript->m_nScriptTime);
+    if (!completed && !objectiveDone)
         return success;
 
     if (Globals::status->getMission()->getType() == 5 || Globals::status->getMission()->getType() == 3) {
-        if (this->dialogueWindow == nullptr) {
+        if (this->dialogueWindow != nullptr) {
+            if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
+                this->dialogueWindow->setLevel(this->level);
+            }
+        } else {
             this->dialogueWindow = new DialogueWindow();
             if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
-        } else if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
-            this->dialogueWindow->setLevel(this->level);
         }
         Globals::status->getMission()->setTargetStation(Globals::status->getMission()->getAgent()->getStation());
         this->dialogueWindow->set(Globals::status->getMission(), 1, -1);
@@ -3876,11 +3879,13 @@ bool MGame::successCheck() {
         return success;
     }
 
-    if (this->dialogueWindow == nullptr) {
+    if (this->dialogueWindow != nullptr) {
+        if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
+            this->dialogueWindow->setLevel(this->level);
+        }
+    } else {
         this->dialogueWindow = new DialogueWindow();
         if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
-    } else if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
-        this->dialogueWindow->setLevel(this->level);
     }
     this->dialogueWindow->set(completed ? completed : Globals::status->getMission(), 1, -1);
     this->pauseOpen = 1;
