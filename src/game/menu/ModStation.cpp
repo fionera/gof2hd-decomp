@@ -2698,18 +2698,19 @@ void ModStation::OnRender3D() {
         return;
     Globals::Canvas->ClearBuffer(0);
 
-    bool *p65 = &this->flag_0x65;
+    bool *p65;
     if (this->cutScene == 0 || this->flag_0x66 != 0 || this->flag_0x64 != 0 ||
-        this->flag_0x68 != 0 || this->flag_0x67 != 0 || *p65 != 0 ||
+        this->flag_0x68 != 0 || this->flag_0x67 != 0 || *(p65 = &this->flag_0x65) != 0 ||
         this->flag_0x62 != 0) {
         if (this->flag_0x67 != 0) {
             this->starMap->renderBG();
-        } else if (*p65 != 0) {
+        } else if (*(p65 = &this->flag_0x65) != 0) {
             ((SpaceLounge *) (this->spaceLounge))->OnRenderBG();
         }
     } else {
         ((CutScene *) (this->cutScene))->renderBG();
     }
+    p65 = &this->flag_0x65;
     Globals::Canvas->Begin3d();
     if (*p65 != 0)
         ((SpaceLounge *) (this->spaceLounge))->OnRender3D();
