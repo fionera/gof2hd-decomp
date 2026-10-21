@@ -14,7 +14,6 @@
 #include <cstring>
 #include <initializer_list>
 
-using AbyssEngine::AEMath::VectorSignedToFloat;
 
 struct VirtualKey {
     char name[0x14];
@@ -491,48 +490,39 @@ stillVisible:
 }
 
 namespace {
-    inline float bitsToFloat(int v) {
-        float f;
-        std::memcpy(&f, &v, sizeof f);
-        return f;
-    }
-
-    inline int floatToBits(float f) {
-        int v;
-        std::memcpy(&v, &f, sizeof v);
-        return v;
-    }
-
     inline bool keyHeld(int index) { return keys[index].pressed != 0; }
 
+    // Quadratic ease of a [-1, 1] stick deflection, re-centred on 0.5.
     inline float easeAxis(float t) {
         float eased;
-        if (t <= 0.0f)
-            eased = -(1.0f - (t + 1.0f) * (t + 1.0f));
-        else
+        if (t > 0.0f)
             eased = 1.0f - (t - 1.0f) * (t - 1.0f);
+        else
+            eased = -(1.0f - (t + 1.0f) * (t + 1.0f));
         return eased + 0.5f;
     }
 }
 
+// Per-frame keyboard/mouse emulation: maps held virtual keys and the captured mouse onto the
+// station/star-map controls and a synthetic touch on the in-flight stick (handle 0xe8b).
 void simulateTouch(AbyssEngine::Engine *engine) {
-    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(Globals::appManager) + 0xbc) != 0)
+    if (Globals::keys[47] != 0)
         AbyssEngine::Engine::EnablePostEffect = !AbyssEngine::Engine::EnablePostEffect;
 
     if (g_simEdgesInit == 0) {
-        Globals::resetKeyboard = 10;
-        Globals::right_edge = static_cast<int>(engine->GetDisplayWidth()) - 10;
         Globals::left_edge = 10;
+        Globals::right_edge = static_cast<int>(engine->GetDisplayWidth()) - 10;
+        Globals::top_edge = 10;
         Globals::bottom_edge = static_cast<int>(engine->GetDisplayHeight()) - 10;
         g_simEdgesInit = 1;
     }
 
-    if (g_mouse.config != 0) {
+    if (Globals::resetKeyboard != 0) {
         g_mouse.easedX = 0.5f;
         g_mouse.easedY = 0.5f;
-        g_input.mouseCaptured = 0;
-        g_mouse.config = 0;
-        Globals::keyboard_swipe = 0;
+        stackX = 0;
+        Globals::resetKeyboard = 0;
+        stackY = 0;
     }
 
     if (keyHeld(8))
@@ -540,116 +530,119 @@ void simulateTouch(AbyssEngine::Engine *engine) {
     if (keyHeld(9))
         engine->autoPilotEngaged = 1.0f;
 
-    if (keyHeld(11)) {
-        Globals::rotateShipInStation = floatToBits(keyHeld(14) ? -40.0f : -20.0f);
-    } else if (keyHeld(12)) {
-        Globals::rotateShipInStation = floatToBits(keyHeld(13) ? 40.0f : 20.0f);
-    } else if (keyHeld(13)) {
-        Globals::rotateShipInStation = floatToBits(20.0f);
-    } else if (keyHeld(14)) {
-        Globals::rotateShipInStation = floatToBits(-20.0f);
-    }
+    if (keyHeld(11))
+        Globals::rotateShipInStation = keyHeld(14) ? -40.0f : -20.0f;
+    else if (keyHeld(12))
+        Globals::rotateShipInStation = keyHeld(13) ? 40.0f : 20.0f;
+    else if (keyHeld(13))
+        Globals::rotateShipInStation = 20.0f;
+    else if (keyHeld(14))
+        Globals::rotateShipInStation = -20.0f;
 
-    if ((Globals::is_choice_window_visible | Globals::is_menu_visible |
-         Globals::is_dialogue_window_visible) == 0) {
-        float steer = bitsToFloat(Globals::rotateShipInStation) +
-                      VectorSignedToFloat(wheelStack, 0);
-        wheelStack = static_cast<int>(VectorSignedToFloat(wheelStack, 0) * 0.9f);
-        if (steer > 40.0f)
-            steer = 40.0f;
-        else if (steer < -40.0f)
-            steer = -40.0f;
-        Globals::rotateShipInStation = floatToBits(steer);
-    } else {
+    if ((Globals::is_dialogue_window_visible | Globals::is_choice_window_visible) != 0 ||
+        Globals::is_menu_visible != 0) {
         wheelStack = 0;
-        Globals::rotateShipInStation = floatToBits(0.0f);
+        Globals::rotateShipInStation = 0.0f;
+    } else {
+        // The mouse wheel spins the ship in the hangar and decays.
+        const float wheel = static_cast<float>(wheelStack);
+        Globals::rotateShipInStation += wheel;
+        wheelStack = static_cast<int>(wheel * 0.9f);
+        if (Globals::rotateShipInStation > 40.0f)
+            Globals::rotateShipInStation = 40.0f;
+        else if (Globals::rotateShipInStation < -40.0f)
+            Globals::rotateShipInStation = -40.0f;
     }
 
-    if (keyHeld(11) || keyHeld(15))
-        Globals::translateStarMapInXDirection = floatToBits(10.0f);
-    else if (keyHeld(12) || keyHeld(16))
-        Globals::translateStarMapInXDirection = floatToBits(-10.0f);
+    if ((keys[11].pressed | keys[15].pressed) != 0)
+        Globals::translateStarMapInXDirection = 10.0f;
+    else if ((keys[12].pressed | keys[16].pressed) != 0)
+        Globals::translateStarMapInXDirection = -10.0f;
     else
-        Globals::translateStarMapInXDirection = floatToBits(0.0f);
+        Globals::translateStarMapInXDirection = 0.0f;
 
-    if (keyHeld(13) || keyHeld(17))
-        Globals::translateStarMapInYDirection = floatToBits(-10.0f);
-    else if (keyHeld(14) || keyHeld(18))
-        Globals::translateStarMapInYDirection = floatToBits(10.0f);
+    if ((keys[13].pressed | keys[17].pressed) != 0)
+        Globals::translateStarMapInYDirection = -10.0f;
+    else if ((keys[14].pressed | keys[18].pressed) != 0)
+        Globals::translateStarMapInYDirection = 10.0f;
     else
-        Globals::translateStarMapInYDirection = floatToBits(0.0f);
+        Globals::translateStarMapInYDirection = 0.0f;
 
-    if (g_input.mouseCaptured != 0) {
-        int px = stackX;
-        int stepX = 0;
-        if (px < 0) { g_mouse.easedX = 0.0f; } else if (px != 0) {
-            stepX = 1;
+    const int captured = g_input.mouseCaptured;
+    if (captured != 0) {
+        // Push the stick to the side the mouse moved and bleed the accumulated motion off by one.
+        if (stackX < 0) {
+            g_mouse.easedX = 0.0f;
+            ++stackX;
+        } else if (stackX != 0) {
             g_mouse.easedX = 1.0f;
+            --stackX;
         }
-
-        int py = stackY;
-        int stepY = 0;
-        if (py < 0) { g_mouse.easedY = 0.0f; } else if (py != 0) {
-            stepY = 1;
+        if (stackY < 0) {
+            g_mouse.easedY = 0.0f;
+            ++stackY;
+        } else if (stackY != 0) {
             g_mouse.easedY = 1.0f;
+            --stackY;
         }
 
-        if (stepX != 0 || (px - stepX) < 0) {
-            int dx = px - stepX;
-            stackX = dx - (dx >> 31);
-        }
-        if (stepY != 0 || (py - stepY) < 0) {
-            int dy = py - stepY;
-            stackY = dy - (dy >> 31);
-        }
-
-        if (g_mouse.easedX > 1.0f) g_mouse.easedX = 1.0f;
-        else if (g_mouse.easedX < 0.0f) g_mouse.easedX = 0.0f;
-        if (g_mouse.easedY > 1.0f) g_mouse.easedY = 1.0f;
-        else if (g_mouse.easedY < 0.0f) g_mouse.easedY = 0.0f;
+        if (g_mouse.easedX > 1.0f)
+            g_mouse.easedX = 1.0f;
+        else if (g_mouse.easedX < 0.0f)
+            g_mouse.easedX = 0.0f;
+        if (g_mouse.easedY > 1.0f)
+            g_mouse.easedY = 1.0f;
+        else if (g_mouse.easedY < 0.0f)
+            g_mouse.easedY = 0.0f;
     }
 
+    // Keyboard stick: snap back towards the centre when released, else follow the key input.
     if (g_mouse.inputX == 0.5f) {
-        if (g_mouse.easedX != 0.5f)
-            g_mouse.easedX = static_cast<float>(static_cast<double>(g_mouse.easedX) +
-                                                (g_mouse.easedX < 0.5f ? 0.05 : -0.05));
-        if (static_cast<double>(g_mouse.easedX) > 0.4 &&
-            static_cast<double>(g_mouse.easedX) < 0.6)
+        if (g_mouse.easedX > 0.5f)
+            g_mouse.easedX = static_cast<float>(g_mouse.easedX + -0.05);
+        else if (g_mouse.easedX < 0.5f)
+            g_mouse.easedX = static_cast<float>(g_mouse.easedX + 0.05);
+        if (g_mouse.easedX > 0.4 && g_mouse.easedX < 0.6)
             g_mouse.easedX = 0.5f;
     } else {
-        float v = std::min(g_mouse.inputX + g_mouse.easedX, 1.0f);
+        const float v = std::min(g_mouse.inputX + g_mouse.easedX, 1.0f);
         g_mouse.easedX = v;
-        if (v < 0.0f) g_mouse.easedX = 0.0f;
+        if (v < 0.0f)
+            g_mouse.easedX = 0.0f;
     }
 
     if (g_mouse.inputY == 0.5f) {
-        if (g_mouse.easedY != 0.5f)
-            g_mouse.easedY = static_cast<float>(static_cast<double>(g_mouse.easedY) +
-                                                (g_mouse.easedY < 0.5f ? 0.05 : -0.05));
-        if (static_cast<double>(g_mouse.easedY) > 0.4 &&
-            static_cast<double>(g_mouse.easedY) < 0.6)
+        if (g_mouse.easedY > 0.5f)
+            g_mouse.easedY = static_cast<float>(g_mouse.easedY + -0.05);
+        else if (g_mouse.easedY < 0.5f)
+            g_mouse.easedY = static_cast<float>(g_mouse.easedY + 0.05);
+        if (g_mouse.easedY > 0.4 && g_mouse.easedY < 0.6)
             g_mouse.easedY = 0.5f;
     } else {
-        float v = std::min(g_mouse.inputY + g_mouse.easedY, 1.0f);
+        const float v = std::min(g_mouse.inputY + g_mouse.easedY, 1.0f);
         g_mouse.easedY = v;
-        if (v < 0.0f) g_mouse.easedY = 0.0f;
+        if (v < 0.0f)
+            g_mouse.easedY = 0.0f;
     }
 
-    if (g_input.mouseCaptured != 0) {
-        float magX = std::min(std::fabs(g_mouse.easedX), 500.0f);
-        float mag = std::max(std::fabs(g_mouse.easedY), magX);
-
-        float nx = std::max(std::min(VectorSignedToFloat(stackX, 0) / mag, 1.0f), -1.0f);
-        float ny = std::max(std::min(VectorSignedToFloat(stackY, 0) / (mag * 0.5f), 1.0f), -1.0f);
-
-        float ex = easeAxis(nx);
-        float ey = easeAxis(ny);
-        g_mouse.easedX = ex;
-        g_mouse.easedY = ey;
-        if (ex < 0.0f) { g_mouse.easedX = 0.0f; }
-        if (ey < 0.0f) { g_mouse.easedY = 0.0f; }
-        if (ex > 1.0f) g_mouse.easedX = 1.0f;
-        if (ey > 1.0f) g_mouse.easedY = 1.0f;
+    if (captured != 0) {
+        const float magX = std::fabs(g_mouse.easedX);
+        int range = static_cast<int>(magX > 500.0f ? magX : 500.0f);
+        const float magY = std::fabs(g_mouse.easedY);
+        if (magY > static_cast<float>(range))
+            range = static_cast<int>(magY);
+        const float nx = std::max(std::min(static_cast<float>(stackX) / static_cast<float>(range), 1.0f), -1.0f);
+        const float ny = std::max(std::min(static_cast<float>(stackY) / (static_cast<float>(range) * 0.5f), 1.0f), -1.0f);
+        g_mouse.easedX = easeAxis(nx);
+        g_mouse.easedY = easeAxis(ny);
+        if (g_mouse.easedX < 0.0f)
+            g_mouse.easedX = 0.0f;
+        if (g_mouse.easedY < 0.0f)
+            g_mouse.easedY = 0.0f;
+        if (g_mouse.easedX > 1.0f)
+            g_mouse.easedX = 1.0f;
+        if (g_mouse.easedY > 1.0f)
+            g_mouse.easedY = 1.0f;
     }
 
     if (g_input.useJoystick != 0) {
@@ -658,9 +651,9 @@ void simulateTouch(AbyssEngine::Engine *engine) {
     }
 
     if (Globals::appManager->GetCurrentApplicationModule() == 2) {
-        const float dim = VectorSignedToFloat(Globals::smallButton_dim, 0);
-        const float cy = VectorSignedToFloat(Globals::touch_stick_y, 0);
-        const float cx = VectorSignedToFloat(Globals::touch_stick_x, 0);
+        const float dim = static_cast<float>(Globals::smallButton_dim);
+        const float cy = static_cast<float>(Globals::touch_stick_y);
+        const float cx = static_cast<float>(Globals::touch_stick_x);
         const float ex = g_mouse.easedX;
         const float ey = g_mouse.easedY;
 
@@ -676,28 +669,23 @@ void simulateTouch(AbyssEngine::Engine *engine) {
             if (down == 0 && !inactive) {
                 if (ex == 0.5f && ey == 0.5f) {
                     mgr->OnTouchEnd(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchEnd ABI)
-                    // lint: void_ptr (synthetic touch handle for OnTouchEnd ABI)
                     g_simTouchActive = 0;
                 } else {
                     mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
-                    // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                 }
             } else if (down == 1 && !inactive) {
                 mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
-                // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
             } else if (active == 0 && down == 1) {
                 mgr->OnTouchBegin(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchBegin ABI)
-                // lint: void_ptr (synthetic touch handle for OnTouchBegin ABI)
-                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchBegin ABI)
-                // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
+                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                 g_simTouchActive = 1;
             }
         }
     }
 
     if (g_mouse.config == 0) {
-        stackX = static_cast<int>(VectorSignedToFloat(stackX, 0) * 0.96f);
-        stackY = static_cast<int>(VectorSignedToFloat(stackY, 0) * 0.96f);
+        stackX = static_cast<int>(static_cast<float>(stackX) * 0.96f);
+        stackY = static_cast<int>(static_cast<float>(stackY) * 0.96f);
     }
 }
 
