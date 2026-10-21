@@ -76,47 +76,50 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id) {
 
         int16_t ship = 0;
         int16_t count = 0;
-        int16_t type = 0;
-        int16_t x = 0;
-        int16_t y = 0;
-        int16_t z = 0;
+        // Only the last declarator of each list is initialised, as in the original.
+        int16_t type, x, y, z = 0;
+        float extraX, extraY, extraZ = 0.0f;
+        int32_t current;
 
         do {
             AEFile::Read(ship, handle);
             AEFile::Read(count, handle);
+            current = ship;
             for (int32_t i = 0; i < count; i++) {
-                AEFile::ReadSwitched(type, handle);
-                AEFile::ReadSwitched(x, handle);
-                AEFile::ReadSwitched(y, handle);
-                AEFile::ReadSwitched(z, handle);
-
-                float extraX = 0.0f;
-                float extraY = 0.0f;
-                float extraZ = 0.0f;
+                AEFile::Read(type, handle);
+                AEFile::Read(x, handle);
+                AEFile::Read(y, handle);
+                AEFile::Read(z, handle);
                 if (type == 3) {
-                    AEFile::ReadSwitched(reinterpret_cast<int32_t &>(extraX), handle);
-                    AEFile::ReadSwitched(reinterpret_cast<int32_t &>(extraY), handle);
-                    AEFile::ReadSwitched(reinterpret_cast<int32_t &>(extraZ), handle);
+                    AEFile::Read(extraX, handle);
+                    AEFile::Read(extraY, handle);
+                    AEFile::Read(extraZ, handle);
                 }
-                if (ship == id) {
+                if (current == id) {
                     if (positions->data()[type] == 0) {
                         positions->data()[type] = new Array<Vector *>();
                     }
                     Vector *pos = new Vector;
-                    pos->x = (float) x;
-                    pos->y = (float) z;
-                    pos->z = (float) -y;
+                    float px = x;
+                    float py = z;
+                    float pz = -y;
+                    pos->x = px;
+                    pos->y = py;
+                    pos->z = pz;
                     ArrayAdd<Vector *>(pos, *positions->data()[type]);
                     if (type == 3) {
                         Vector *extra = new Vector;
-                        extra->x = extraX;
-                        extra->y = extraZ;
-                        extra->z = extraY;
+                        float ex = extraX;
+                        float ey = extraZ;
+                        float ez = extraY;
+                        extra->x = ex;
+                        extra->y = ey;
+                        extra->z = ez;
                         ArrayAdd<Vector *>(extra, *positions->data()[3]);
                     }
                 }
             }
-        } while (ship != id);
+        } while (current != id);
         AEFile::Close(handle);
     }
     return positions;
