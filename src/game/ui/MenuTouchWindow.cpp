@@ -1182,26 +1182,14 @@ int MenuTouchWindow::loadGame(int slot) {
     return 0;
 }
 
-void _mtw_TouchButton_ctor(void *btn, void *label, int a, int x, int y, int w, // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-                           // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-                           char type, char id);
-
-
 void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton *> *arr, int yOff) {
-    TouchButton *btn = (TouchButton *) ::operator new(0xc8);
-
-    int btnW = this->buttonWidth;
-    int screenW = Globals::w;
-    int screenH = Globals::h;
-    int rowH = (Globals::layout)->field_0x30_rowHeight;
-
-    int x = screenW / 2 - btnW / 2;
-    int y = (rowH + this->buttonRowGap) * row + (yOff - this->buttonYBias) + screenH / 2;
-
-    _mtw_TouchButton_ctor(btn, &label, 0, x, y, btnW, 0x11, 0x04);
-    ((TouchButton *) btn)->field_0x0 = id;
-    ((TouchButton *) btn)->field_0x4 = id >> 31;
-    ArrayAdd<TouchButton *>((TouchButton *) btn, *arr);
+    TouchButton *btn = new TouchButton(label, 0, Globals::w / 2 - this->buttonWidth / 2,
+                                       (yOff - this->buttonYBias) + Globals::h / 2 +
+                                       (Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * row,
+                                       this->buttonWidth, 0x11, 0x04);
+    btn->field_0x0 = id;
+    btn->field_0x4 = id >> 31;
+    ArrayAdd<TouchButton *>(btn, *arr);
 
     int *posX = Globals::sub_menu_buttons_x;
     int *posY = Globals::sub_menu_buttons_y;
