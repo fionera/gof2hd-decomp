@@ -928,15 +928,15 @@ void PlayerEgo::checkForTurret() {
     Array<Item *> *equipment = Globals::status->getShip()->getEquipment(2);
     this->turretPitch = (int) ((double) (*equipment)[0]->getAttribute(17) * 1.5);
 
+    int glowMesh = -1;
+    int barrelExtraMesh2 = -1;
     unsigned short baseMesh;
+    int barrelExtraMesh = -1;
     unsigned short barrelMesh;
     int baseExtraMesh = -1;
-    int barrelExtraMesh = -1;
-    int barrelExtraMesh2 = -1;
-    int glowMesh = -1;
-    float offsetX = 0.0f;
-    float offsetY;
     float offsetZ = 0.0f;
+    float offsetY;
+    float offsetX = 0.0f;
     int turretIndex = (*equipment)[0]->getIndex();
     if (turretIndex == 48) {
         baseMesh = 0x1a74;
