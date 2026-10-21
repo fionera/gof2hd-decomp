@@ -9,26 +9,7 @@ int curTouchSize = 0;
 int maxTouchSize = 0;
 Touch *touches = nullptr;
 
-static PaintCanvas **g_LOD_canvas = nullptr;
 
-static char *cItemListID_05 = nullptr, *cItemListID_06 = nullptr, *cItemListID_07 = nullptr,
-        *cItemListID_08 = nullptr, *cItemListID_09 = nullptr, *cItemListID_10 = nullptr,
-        *cItemListID_11 = nullptr, *cItemListID_12 = nullptr, *cItemListID_13 = nullptr,
-        *cItemListID_14 = nullptr, *cItemListID_15 = nullptr, *cItemListID_16 = nullptr,
-        *cItemListID_17 = nullptr, *cItemListID_18 = nullptr, *cItemListID_19 = nullptr,
-        *cItemListID_20 = nullptr, *cItemListID_21 = nullptr, *cItemListID_22 = nullptr,
-        *cItemListID_23 = nullptr, *cItemListID_24 = nullptr;
-
-struct LODSettings {
-    unsigned char reserved_0x00[0x28];
-    float distanceFactor;
-};
-#if __SIZEOF_POINTER__ == 4
-static_assert(__builtin_offsetof(LODSettings, distanceFactor) == 0x28,
-              "LODSettings::distanceFactor must sit at offset 0x28");
-#endif
-
-static LODSettings *g_LOD_settings = nullptr;
 
 void AddTouch(int x, int y, int id, int action) {
     int index = curTouchSize;
@@ -71,67 +52,67 @@ extern "C" void ndk_resetNativeItemInformationList() { // lint: extern_c (native
         operator delete[](Globals::cItemListID_02);
         operator delete[](Globals::cItemListID_03);
         operator delete[](Globals::cItemListID_04);
-        Globals::cItemListID_01 = nullptr;
         Globals::cItemListID_00 = nullptr;
+        Globals::cItemListID_01 = nullptr;
         Globals::cItemListID_02 = nullptr;
         Globals::cItemListID_03 = nullptr;
         Globals::cItemListID_04 = nullptr;
     }
-    if (cItemListID_05 != nullptr && cItemListID_06 != nullptr &&
-        cItemListID_07 != nullptr && cItemListID_08 != nullptr &&
-        cItemListID_09 != nullptr) {
-        operator delete[](cItemListID_05);
-        operator delete[](cItemListID_06);
-        operator delete[](cItemListID_07);
-        operator delete[](cItemListID_08);
-        operator delete[](cItemListID_09);
-        cItemListID_06 = nullptr;
-        cItemListID_05 = nullptr;
-        cItemListID_07 = nullptr;
-        cItemListID_08 = nullptr;
-        cItemListID_09 = nullptr;
+    if (Globals::cItemListName_00 != nullptr && Globals::cItemListName_01 != nullptr &&
+        Globals::cItemListName_02 != nullptr && Globals::cItemListName_03 != nullptr &&
+        Globals::cItemListName_04 != nullptr) {
+        operator delete[](Globals::cItemListName_00);
+        operator delete[](Globals::cItemListName_01);
+        operator delete[](Globals::cItemListName_02);
+        operator delete[](Globals::cItemListName_03);
+        operator delete[](Globals::cItemListName_04);
+        Globals::cItemListName_00 = nullptr;
+        Globals::cItemListName_01 = nullptr;
+        Globals::cItemListName_02 = nullptr;
+        Globals::cItemListName_03 = nullptr;
+        Globals::cItemListName_04 = nullptr;
     }
-    if (cItemListID_10 != nullptr && cItemListID_11 != nullptr &&
-        cItemListID_12 != nullptr && cItemListID_13 != nullptr &&
-        cItemListID_14 != nullptr) {
-        operator delete[](cItemListID_10);
-        operator delete[](cItemListID_11);
-        operator delete[](cItemListID_12);
-        operator delete[](cItemListID_13);
-        operator delete[](cItemListID_14);
-        cItemListID_11 = nullptr;
-        cItemListID_10 = nullptr;
-        cItemListID_12 = nullptr;
-        cItemListID_13 = nullptr;
-        cItemListID_14 = nullptr;
+    if (Globals::cItemListDescription_00 != nullptr && Globals::cItemListDescription_01 != nullptr &&
+        Globals::cItemListDescription_02 != nullptr && Globals::cItemListDescription_03 != nullptr &&
+        Globals::cItemListDescription_04 != nullptr) {
+        operator delete[](Globals::cItemListDescription_00);
+        operator delete[](Globals::cItemListDescription_01);
+        operator delete[](Globals::cItemListDescription_02);
+        operator delete[](Globals::cItemListDescription_03);
+        operator delete[](Globals::cItemListDescription_04);
+        Globals::cItemListDescription_00 = nullptr;
+        Globals::cItemListDescription_01 = nullptr;
+        Globals::cItemListDescription_02 = nullptr;
+        Globals::cItemListDescription_03 = nullptr;
+        Globals::cItemListDescription_04 = nullptr;
     }
-    if (cItemListID_15 != nullptr && cItemListID_16 != nullptr &&
-        cItemListID_17 != nullptr && cItemListID_18 != nullptr &&
-        cItemListID_19 != nullptr) {
-        operator delete[](cItemListID_15);
-        operator delete[](cItemListID_16);
-        operator delete[](cItemListID_17);
-        operator delete[](cItemListID_18);
-        operator delete[](cItemListID_19);
-        cItemListID_16 = nullptr;
-        cItemListID_15 = nullptr;
-        cItemListID_17 = nullptr;
-        cItemListID_18 = nullptr;
-        cItemListID_19 = nullptr;
+    if (Globals::cItemListCurrency_00 != nullptr && Globals::cItemListCurrency_01 != nullptr &&
+        Globals::cItemListCurrency_02 != nullptr && Globals::cItemListCurrency_03 != nullptr &&
+        Globals::cItemListCurrency_04 != nullptr) {
+        operator delete[](Globals::cItemListCurrency_00);
+        operator delete[](Globals::cItemListCurrency_01);
+        operator delete[](Globals::cItemListCurrency_02);
+        operator delete[](Globals::cItemListCurrency_03);
+        operator delete[](Globals::cItemListCurrency_04);
+        Globals::cItemListCurrency_00 = nullptr;
+        Globals::cItemListCurrency_01 = nullptr;
+        Globals::cItemListCurrency_02 = nullptr;
+        Globals::cItemListCurrency_03 = nullptr;
+        Globals::cItemListCurrency_04 = nullptr;
     }
-    if (cItemListID_20 != nullptr && cItemListID_21 != nullptr &&
-        cItemListID_22 != nullptr && cItemListID_23 != nullptr &&
-        cItemListID_24 != nullptr) {
-        operator delete[](cItemListID_20);
-        operator delete[](cItemListID_21);
-        operator delete[](cItemListID_22);
-        operator delete[](cItemListID_23);
-        operator delete[](cItemListID_24);
-        cItemListID_21 = nullptr;
-        cItemListID_20 = nullptr;
-        cItemListID_22 = nullptr;
-        cItemListID_23 = nullptr;
-        cItemListID_24 = nullptr;
+    if (Globals::cItemListPrice_00 != nullptr && Globals::cItemListPrice_01 != nullptr &&
+        Globals::cItemListPrice_02 != nullptr && Globals::cItemListPrice_03 != nullptr &&
+        Globals::cItemListPrice_04 != nullptr) {
+        operator delete[](Globals::cItemListPrice_00);
+        operator delete[](Globals::cItemListPrice_01);
+        operator delete[](Globals::cItemListPrice_02);
+        operator delete[](Globals::cItemListPrice_03);
+        operator delete[](Globals::cItemListPrice_04);
+        Globals::cItemListPrice_00 = nullptr;
+        Globals::cItemListPrice_01 = nullptr;
+        Globals::cItemListPrice_02 = nullptr;
+        Globals::cItemListPrice_03 = nullptr;
+        Globals::cItemListPrice_04 = nullptr;
     }
 }
 
@@ -163,13 +144,11 @@ void LODManager::removeObject(AEGeometry *g) {
 }
 
 void LODManager::forceUpdate(int dt, bool useParent) {
+    // Options block: the LOD distance factor is the float at offset 0x28.
+    float factor = *reinterpret_cast<float *>(&Globals::options[0x28]);
     PaintCanvas *canvas = Globals::Canvas;
-    float factor = g_LOD_settings->distanceFactor;
-
-    uint32_t cam = canvas->CameraGetCurrent();
-    float *m = canvas->CameraGetLocal(cam);
     this->cameraPos = AbyssEngine::AEMath::MatrixGetPosition(
-            *reinterpret_cast<const Matrix *>(m));
+            *reinterpret_cast<const Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
 
     for (uint32_t i = 0; i < this->objects->size(); i++) {
         AEGeometry *g = (*this->objects)[i];
