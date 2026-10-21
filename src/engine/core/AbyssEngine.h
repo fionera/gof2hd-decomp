@@ -37,7 +37,7 @@ namespace AbyssEngine {
 
     extern int currentUsedShaderIndex;
 
-    extern float currentFps;
+    extern int currentFps;
     extern float debugTouch[4];
     extern int fpsCounter;
     extern int SwapCounter;
@@ -60,7 +60,7 @@ namespace AbyssEngine {
     extern float i_fov;
     extern float i_zFar;
     extern float i_zNear;
-    extern float fpsTimer;
+    extern int fpsTimer;
     extern int loadMesh;
     extern long long triDrawn;
     extern unsigned char ShaderSet;

@@ -35,10 +35,9 @@ PlayerStation::~PlayerStation() {
     }
     this->secondGeometry = nullptr;
 
-    BoundingVolumeList *volumes = (BoundingVolumeList *) this->boundingVolumes;
-    if (volumes != nullptr) {
-        ArrayReleaseClasses<BoundingVolume *>(*volumes);
-        delete volumes;
+    if (this->boundingVolumes != nullptr) {
+        ArrayReleaseClasses(*(BoundingVolumeList *) this->boundingVolumes);
+        delete (BoundingVolumeList *) this->boundingVolumes;
     }
     this->boundingVolumes = nullptr;
 }
@@ -101,30 +100,26 @@ int PlayerStation::collide(float x, float y, float z) {
 }
 
 void PlayerStation::update(int delta) {
-    bool active = (int32_t) this->rootGeometry->childTransform != -1;
-    int type = active ? this->stationIndex : 0;
-    if (!active || type == 0x65) {
+    if ((int32_t) this->rootGeometry->childTransform == -1 || this->stationIndex == 101) {
         return;
     }
-
     if (Globals::status->inAlienOrbit()) {
         return;
     }
-
-    PaintCanvas *canvas = paintCanvas();
-    long long delta64 = (long long) delta;
-    AEGeometry *root = this->rootGeometry;
-
-    ((AbyssEngine::Transform *) canvas->TransformGetTransform(root->childTransform))->Update(delta64, false);
-
-    type = this->stationIndex;
-    if (type == 100) {
-        ((AbyssEngine::Transform *) canvas->TransformGetTransform(this->meshTransform))->Update(delta64, false);
-    } else if (type == 0x6c) {
-        ((AbyssEngine::Transform *) canvas->TransformGetTransform(this->animTransform0))->Update(delta64, false);
-        ((AbyssEngine::Transform *) canvas->TransformGetTransform(this->animTransform1))->Update(delta64, false);
-        ((AbyssEngine::Transform *) canvas->TransformGetTransform(this->animTransform2))->Update(delta64, false);
-        ((AbyssEngine::Transform *) canvas->TransformGetTransform(this->animTransform3))->Update(delta64, false);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->rootGeometry->childTransform))
+            ->Update((long long) delta, false);
+    if (this->stationIndex == 108) {
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform0))
+                ->Update((long long) delta, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform1))
+                ->Update((long long) delta, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform2))
+                ->Update((long long) delta, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->animTransform3))
+                ->Update((long long) delta, false);
+    } else if (this->stationIndex == 100) {
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->meshTransform))
+                ->Update((long long) delta, false);
     }
 }
 
