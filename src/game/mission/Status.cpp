@@ -776,13 +776,20 @@ void Status::resetGame() {
     this->ship->priceDecline();
     setStation((Station *) (intptr_t) Globals::galaxy->getStation(78));
     this->ship->setCargo(0);
-    this->ship->setEquipment((*Globals::items)[2]->makeItem(), 0);
-    this->ship->setEquipment((*Globals::items)[2]->makeItem(), 1);
-    this->ship->setEquipment((*Globals::items)[54]->makeItem(), 0);
-    this->ship->setEquipment((*Globals::items)[59]->makeItem(), 1);
-    this->ship->setEquipment((*Globals::items)[82]->makeItem(), 2);
-    this->ship->setEquipment((*Globals::items)[73]->makeItem(), 3);
-    Globals::status->ship->setEquipment((*Globals::items)[36]->makeItem(6), 0);
+    Item *item = (*Globals::items)[2]->makeItem();
+    this->ship->setEquipment(item, 0);
+    item = (*Globals::items)[2]->makeItem();
+    this->ship->setEquipment(item, 1);
+    item = (*Globals::items)[54]->makeItem();
+    this->ship->setEquipment(item, 0);
+    item = (*Globals::items)[59]->makeItem();
+    this->ship->setEquipment(item, 1);
+    item = (*Globals::items)[82]->makeItem();
+    this->ship->setEquipment(item, 2);
+    item = (*Globals::items)[73]->makeItem();
+    this->ship->setEquipment(item, 3);
+    item = (*Globals::items)[36]->makeItem(6);
+    Globals::status->ship->setEquipment(item, 0);
 
     if (settings->blackMarketUnlockedFlag != 0)
         (*this->systemVisibilities)[25] = 1;
