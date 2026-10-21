@@ -23,6 +23,13 @@ libgcc helpers (`__aeabi_idiv`, `_Unwind_*`, ...), which therefore stay unversio
 original — then libc++abi.a and libgcc.a last, with ndk-build's default `--exclude-libs=libgcc.a`
 (the original defines `__aeabi_ldivmod` locally without exporting it).
 
+Link-line order (2026-10-21) follows ndk-build: crtbegin, the objects in the original's link order
+(`tools/gen_link_order.py`, recovered from the original's .dynsym, gold emits symbols in input
+order), the system `-l` libs up to libandroid, FMOD, libc++abi.a, `-l m`, libandroid_support.a
+(hidden posix_memalign wrapper over memalign), libgcc.a, `-l dl -l c`, crtend. Result: the
+undefined-import set and the defined-export set are identical to the original (207 / 0 extra),
+NEEDED identical. .dynsym ORDER is not yet identical (314/5578 positions).
+
 This is a **single, plain link** — no second pass, no `--version-script`, no `__attribute__`, no
 `asm`. Its full flag set, stated honestly: `--section-ordering-file` (an approved deviation that
 reproduces the original's interleaved .text function order from the original's symbol addresses;
@@ -195,7 +202,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1328, linked_exact 4195, avg 98.12%**
+Current numbers (of **4523** compared): **byte_exact 1328, linked_exact 4195, avg 98.09%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

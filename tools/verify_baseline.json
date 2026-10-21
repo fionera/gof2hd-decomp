@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 0,
-  "avg_match": 98.12,
+  "avg_match": 98.09,
   "compared": 4523
  },
  "data": {
@@ -186,7 +186,6 @@
   "mkstemp",
   "mktime",
   "open",
-  "posix_memalign",
   "powf",
   "printf",
   "pthread_cond_broadcast",
