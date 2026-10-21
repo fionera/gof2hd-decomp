@@ -57,12 +57,10 @@ void String::ReplaceChar(char from, char to) {
 }
 
 void String::Reverse() {
-    if (this->length > 0 && GameText::getLanguage() == 9) {
-        for (int i = 0, j = this->length - 1; i < j; i++, j--) {
-            unsigned short t = this->data[i];
-            this->data[i] = this->data[j];
-            this->data[j] = t;
-        }
+    if (this->data != nullptr && GameText::getLanguage() == 9) {
+        String copy(this->data, false);
+        for (unsigned int i = 0; i < (unsigned int) this->length; i++)
+            this->data[i] = *copy[this->length - 1 - i];
     }
 }
 
@@ -219,21 +217,28 @@ done:
 void String::Set(const char *s) {
     if (this->data) delete[] this->data;
     this->data = nullptr;
-    this->length = 0;
-    if (s == 0)
+    if (s == nullptr) {
+        Set("");
         return;
-    int n = 0;
-    for (const unsigned char *p = (const unsigned char *) s; *p != 0; p++)
-        n++;
-    if (n == 0)
-        return;
-    unsigned short *nd = new unsigned short[n + 1];
-    const unsigned char *p = (const unsigned char *) s;
-    for (int i = 0; i < n; i++)
-        nd[i] = (unsigned short) p[i];
-    nd[n] = 0;
-    this->data = nd;
-    this->length = n;
+    }
+    int len = StrLen(s);
+    this->length = len;
+    if (len == 0) {
+        this->data = new unsigned short[1];
+        this->data[0] = 0;
+    } else if (s[len - 1] != 0) {
+        unsigned short *out = new unsigned short[len + 1];
+        this->data = out;
+        for (unsigned int i = 0; i < (unsigned int) len; i++)
+            out[i] = (unsigned char) s[i];
+        out[len] = 0;
+    } else {
+        unsigned short *out = new unsigned short[len];
+        this->data = out;
+        for (unsigned int i = 0; i < (unsigned int) len; i++)
+            out[i] = (unsigned char) s[i];
+        this->length = len - 1;
+    }
 }
 
 int String::Compare(const String &otherRef) {
@@ -364,20 +369,27 @@ String &String::operator=(const String &other) {
 void String::Set(const unsigned short *s) {
     if (this->data) delete[] this->data;
     this->data = nullptr;
-    this->length = 0;
-    if (s == 0)
+    if (s == nullptr) {
+        Set("");
         return;
-    int n = 0;
-    while (s[n] != 0)
-        n++;
-    if (n == 0)
-        return;
-    unsigned short *nd = new unsigned short[n + 1];
-    for (int i = 0; i < n; i++)
-        nd[i] = s[i];
-    nd[n] = 0;
-    this->data = nd;
-    this->length = n;
+    }
+    int len = StrLen(s);
+    this->length = len;
+    if (len == 0) {
+        this->data = new unsigned short[1];
+        this->data[0] = 0;
+    } else if (s[len - 1] != 0) {
+        unsigned short *out = new unsigned short[len + 1];
+        this->data = out;
+        memcpy(out, s, len * 2);
+        out[len] = 0;
+    } else {
+        unsigned short *out = new unsigned short[len];
+        this->data = out;
+        memcpy(out, s, len * 2);
+        out[len - 1] = 0;
+        this->length = len - 1;
+    }
 }
 
 void String::ConvertFromUTF8() {
