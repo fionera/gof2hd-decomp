@@ -732,20 +732,26 @@ namespace AbyssEngine {
                 key->translation.z = values[2];
                 break;
             case 0x8:
-                key->scale.x = values[0];
-                if (values[0] > this->boundingRadius2)
-                    this->boundingRadius2 = values[0];
-                break;
+                {
+                    float value = values[0];
+                    key->scale.x = value;
+                    if (value > this->boundingRadius2)
+                        this->boundingRadius2 = value;
+                }                break;
             case 0x10:
-                key->scale.y = values[0];
-                if (values[0] > this->boundingRadius2)
-                    this->boundingRadius2 = values[0];
-                break;
+                {
+                    float value = values[0];
+                    key->scale.y = value;
+                    if (value > this->boundingRadius2)
+                        this->boundingRadius2 = value;
+                }                break;
             case 0x20:
-                key->scale.z = values[0];
-                if (values[0] > this->boundingRadius2)
-                    this->boundingRadius2 = values[0];
-                break;
+                {
+                    float value = values[0];
+                    key->scale.z = value;
+                    if (value > this->boundingRadius2)
+                        this->boundingRadius2 = value;
+                }                break;
             case 0x38:
                 key->scale.x = values[0];
                 key->scale.y = values[1];
@@ -862,20 +868,26 @@ namespace AbyssEngine {
                 key->translation.z = values[2];
                 break;
             case 0x8:
-                key->scale.x = values[0];
-                if (values[0] > this->boundingRadius2)
-                    this->boundingRadius2 = values[0];
-                break;
+                {
+                    float value = values[0];
+                    key->scale.x = value;
+                    if (value > this->boundingRadius2)
+                        this->boundingRadius2 = value;
+                }                break;
             case 0x10:
-                key->scale.y = values[0];
-                if (values[0] > this->boundingRadius2)
-                    this->boundingRadius2 = values[0];
-                break;
+                {
+                    float value = values[0];
+                    key->scale.y = value;
+                    if (value > this->boundingRadius2)
+                        this->boundingRadius2 = value;
+                }                break;
             case 0x20:
-                key->scale.z = values[0];
-                if (values[0] > this->boundingRadius2)
-                    this->boundingRadius2 = values[0];
-                break;
+                {
+                    float value = values[0];
+                    key->scale.z = value;
+                    if (value > this->boundingRadius2)
+                        this->boundingRadius2 = value;
+                }                break;
             case 0x38:
                 key->scale.x = values[0];
                 key->scale.y = values[1];
