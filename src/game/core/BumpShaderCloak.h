@@ -45,8 +45,6 @@ namespace AbyssEngine {
 
         static int ShaderIndex;
 
-        // Trailing state not yet identified; the original allocates sizeof == 0x98 (operator new in Engine::ShaderInit).
-        unsigned char unknownTail[16];
 
         BumpShaderCloak();
 

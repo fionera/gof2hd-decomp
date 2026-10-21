@@ -471,7 +471,7 @@ void ApplicationManager::OnUpdate(long long now) {
                     if (texture != 0 && !texture->valid) {
                         char *path = texture->name.GetAEChar();
                         unsigned int id;
-                        TextureCreateFromFileIntern(this->engine, path, 0, 0, &id, texture->aniso, texture, true);
+                        TextureCreateFromFileIntern(this->engine, path, 0, 0, &id, texture->scale, texture, true);
                         delete[] path;
                     }
                     loadTexture++;

@@ -120,10 +120,10 @@ void BombGun::update(int elapsed) {
                                              350.0f * *reinterpret_cast<const Vector *>(this->gun->velocities));
             this->trailGeometry->updateReferenceMatrix();
 
-            reinterpret_cast<TargetFollowCamera *>(static_cast<intptr_t>(this->player->getTargetFollowCamera()))->setTarget(this->trailGeometry);
-            reinterpret_cast<TargetFollowCamera *>(static_cast<intptr_t>(this->player->getTargetFollowCamera()))->setCamOffset(this->cameraOffset);
-            reinterpret_cast<TargetFollowCamera *>(static_cast<intptr_t>(this->player->getTargetFollowCamera()))->setTargetOffset(this->cameraTargetOffset);
-            reinterpret_cast<TargetFollowCamera *>(static_cast<intptr_t>(this->player->getTargetFollowCamera()))->useTargetsUpVector(false);
+            this->player->getTargetFollowCamera()->setTarget(this->trailGeometry);
+            this->player->getTargetFollowCamera()->setCamOffset(this->cameraOffset);
+            this->player->getTargetFollowCamera()->setTargetOffset(this->cameraTargetOffset);
+            this->player->getTargetFollowCamera()->useTargetsUpVector(false);
             this->player->setRocketControl(this->gun, this->trailGeometry);
 
             if (*this->gun->lifetimes < this->gun->initialLifetime - 500)
@@ -166,7 +166,7 @@ void BombGun::update(int elapsed) {
 
         float capped = (distance < 30000.0f) ? distance : 30000.0f;
         this->rumbleStrength = 1.0f - capped / 30000.0f;
-        reinterpret_cast<TargetFollowCamera *>(static_cast<intptr_t>(this->player->getTargetFollowCamera()))->setRumblePercentage(this->rumbleStrength, 0x32);
+        this->player->getTargetFollowCamera()->setRumblePercentage(this->rumbleStrength, 0x32);
 
         if (this->bombType == ITEM_SORT_SHOCK_BLAST)
             this->explosion->start(this->detonationPosition, this->player->GetDirVector());
@@ -180,11 +180,11 @@ void BombGun::update(int elapsed) {
     if (timer > 2000)
         timer = 2000;
     this->rumbleTimer = timer;
-    reinterpret_cast<TargetFollowCamera *>(static_cast<intptr_t>(this->player->getTargetFollowCamera()))->setRumblePercentage(
+    this->player->getTargetFollowCamera()->setRumblePercentage(
             this->rumbleStrength * ((float) this->rumbleTimer / -2000.0f + 1.0f), 0x32);
 
     if (!this->explosion->isPlaying()) {
-        reinterpret_cast<TargetFollowCamera *>(static_cast<intptr_t>(this->player->getTargetFollowCamera()))->setRumblePercentage(0.0f, 0);
+        this->player->getTargetFollowCamera()->setRumblePercentage(0.0f, 0);
         this->rumbleTimer = 0;
         this->gun->ignited = 0;
         this->detonationPending = 1;
