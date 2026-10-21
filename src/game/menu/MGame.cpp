@@ -57,8 +57,6 @@ namespace AbyssEngine {
     }
 }
 
-static inline void TFC_setFastForwardMode(TargetFollowCamera *c, int v) { c->setFastForwardMode(v); }
-
 
 static inline void TFC_setLookAtCam(TargetFollowCamera *c, int v) { c->setLookAtCam(v); }
 
@@ -72,31 +70,7 @@ static inline void TFC_setActive(TargetFollowCamera *c, int v) { c->setActive(v)
 
 static inline void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z) { c->setPosition(x, y, z); }
 
-static int *g_jsSound;
 
-static int g_jsHudFlag;
-
-static int g_jsFovDefault;
-
-static int g_jsFovAlienA;
-
-static int g_jsFovAlienB;
-
-static int g_jsPostEffect;
-
-static int g_jsOffsetX;
-
-static int g_jsOffsetY;
-
-static int g_jsOffsetZ;
-
-static int g_jsOffsetZ2;
-
-static GameText **g_gameText = &Globals::gameText;
-
-
-
-static DialogueWindow **g_goDlgA;
 
 
 struct MGameAppData {
@@ -128,28 +102,6 @@ static const int gWingmenRadioMissions[3] = {93, 111, 143};
 
 static FModSound **g_fmod = &Globals::sound;
 
-static inline int Station_getIndex(Station *s) { return s->getIndex(); }
-
-static int *g_deAutoFlag;
-
-static int g_dePostEffect;
-
-static int g_deTextA;
-
-static int g_deLitA0;
-
-static int g_deLitA1;
-
-static int g_deTextB;
-
-static int g_deLitB0;
-
-static int g_deLitB1;
-
-static int **g_deAlienFlag;
-
-static int g_initParticleFlag;
-
 struct ParticleSystemGlobal {
     uint8_t _pad0[0xf];
     uint8_t particlesEnabled;
@@ -159,24 +111,6 @@ static_assert(offsetof(ParticleSystemGlobal, particlesEnabled) == 0xf,
               "ParticleSystemGlobal::particlesEnabled @ 0xf");
 #endif
 
-static int *g_initEngineSnd;
-
-static int *g_initMusicArmed;
-
-static int *g_initMusicTrack;
-
-static int **g_initFmod;
-
-static unsigned g_initPostEffect;
-
-static int g_initStationMask;
-
-static String **g_initInfoFont;
-
-static int g_initInfoTextKey;
-
-static int *g_initInfoWidth;
-
 // Globals::options as read by MGame (engine sound toggle @0x0f, effect quality @0x28).
 struct GameSettingsView {
     uint8_t _pad0[0x0f];
@@ -184,14 +118,6 @@ struct GameSettingsView {
     uint8_t _pad10[0x28 - 0x10];
     float effectQuality;
 };
-
-static inline void TFC_zoomTarget(TargetFollowCamera *cam, float z) { cam->zoomTarget(z); }
-
-static float g_fcRotScale;
-
-static float g_fcZoomMax;
-
-static float g_fcZoomMin;
 
 struct AccelTune {
     uint8_t _pad0[0x10];
@@ -213,40 +139,6 @@ static_assert(offsetof(AccelTune, baseValue) == 0x20, "AccelTune::baseValue @ 0x
 static_assert(offsetof(AccelCtxValue, comp2) == 0x10, "AccelCtxValue::comp2 @ 0x10");
 #endif
 
-static int **g_tmShipTune;
-
-static inline void TFC_translate(TargetFollowCamera *cam, int x, int y, int z) { cam->translate(x, y, z); }
-
-
-static int g_ujZNear;
-
-static int g_ujZSound;
-
-static int g_ujSpeed;
-
-static int *g_ujSound;
-
-static int g_ujPos0;
-
-static int g_ujPos1;
-
-static int g_ujPos2;
-
-static int **g_ujStation;
-
-static uint8_t **g_ujFlagA;
-
-static uint8_t **g_ujFlagB;
-
-static int **g_ujFlagC;
-
-static Layout ***g_r2dHelpLayout;
-
-static int **g_r2dPauseFlag;
-
-static int **g_r2dRewardLayout;
-
-static Layout ***g_r2dFadeLayout;
 
 MGame::MGame() {
     this->freeCamFinger1.x = 0.0f;

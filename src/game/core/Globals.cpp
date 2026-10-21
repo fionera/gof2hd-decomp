@@ -321,31 +321,9 @@ Generator *Globals::generator;
 
 #include <new>
 
-static inline uint32_t nextInt_71aa4(AbyssEngine::AERandom *self) { return self->nextInt(); }
-
 static inline int nextInt_71ad0(AbyssEngine::AERandom *self, int bound) { return self->nextInt(bound); }
 
 void MatrixSetTranslation(void *m, float x, float y, float z); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-int AERandom_nextIntB(int rng, int bound);
-
-static inline void * Galaxy_dtor(void *g) { ((Galaxy*)g)->~Galaxy(); return (void *)(g); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * Status_dtor(void *s) { ((Status*)s)->~Status(); return (void *)(s); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void *AERandom_dtor(void *r) { ((AbyssEngine::AERandom*)r)->~AERandom(); return r; } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * Layout_dtor(void *l) { ((Layout*)l)->~Layout(); return (void *)(l); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void *Generator_dtor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * FModSound_dtor(void *s) { ((FModSound*)s)->~FModSound(); return (void *)(s); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * Achievements_dtor(void *a) { ((Achievements*)a)->~Achievements(); return (void *)(a); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * ImageFactory_dtor(void *f) { ((ImageFactory*)f)->~ImageFactory(); return (void *)(f); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline int Station_getIndex(int station) { return (int)(((Station*)(long)station)->getIndex()); }
 
 
 extern int g_android_leaderboard_scores[8];
@@ -389,7 +367,6 @@ static const float gSCS_f8730 = 54.0f;
 
 
 static inline char rdflag(char *const g) { return *g; }
-static inline int *rdobj(int *const g) { return g; }
 static inline CoordsObject *rdcoords(CoordsObject *const g) { return g; }
 
 
@@ -491,7 +468,6 @@ static const float gSCF_bf0 = 94.0f;
 
 static inline char rf(char *const g) { return *g; }
 static inline int rint(int *const g) { return *g; }
-static inline int *robj(int *const g) { return g; }
 static inline CoordsObject *rcoords(CoordsObject *const g) { return g; }
 
 static inline unsigned short clampU(float v) {
