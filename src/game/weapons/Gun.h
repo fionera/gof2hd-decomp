@@ -50,7 +50,7 @@ public:
 
     uint8_t field_0x54;
     int itemIndex;
-    ItemSort weaponType;
+    int weaponType; // ItemSort
     int damage;
     int empDamage;
     uint8_t useCustomRadius;
@@ -91,7 +91,7 @@ public:
     uint8_t playerGun;
     int slotIndex;
     uint8_t levelCollision;
-    uint8_t friendGun;
+    bool friendGun;
     float errorMagnitudePercentage;
     int magnitude;
     int customRadius;

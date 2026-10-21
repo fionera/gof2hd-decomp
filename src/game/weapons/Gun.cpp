@@ -1,3 +1,14 @@
+#include "game/ship/KIPlayer.h"
+#include "engine/math/AEMath.h"
+#include "game/ui/Hud.h"
+#include "game/ship/PlayerEgo.h"
+#include "game/world/Level.h"
+#include "game/mission/Achievements.h"
+#include "game/ship/PlayerGasCloud.h"
+#include "game/mission/Status.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/math/Transform.h"
+#include "game/core/Globals.h"
 #include "game/weapons/Gun.h"
 #include <new>
 #include "engine/core/AERandom.h"
@@ -134,54 +145,41 @@ void Gun::removeAllEnemies() {
     this->enemies = 0;
 }
 
-namespace AbyssEngine {
-    namespace Transform {
-        void SetAnimationState(unsigned tf, int a, int b);
-    }
-
-    class PaintCanvas {
-    public:
-        static unsigned TransformGetTransform(unsigned canvas);
-
-        static unsigned CameraGetCurrent();
-
-        static unsigned CameraGetLocal(unsigned canvas);
-
-        static unsigned TransformGetLocal(unsigned canvas);
-
-        static void TransformSetLocal(unsigned canvas, AEMath::Matrix *m);
-
-        static void DrawTransform(unsigned canvas, AEMath::Matrix *m);
-    };
-}
-
-static int *const gSI_items = nullptr;
-static int *const gSI_table = nullptr;
-static unsigned *const gSI_canvas = nullptr;
-static int *const gSI_rng = nullptr;
+// Projectile mesh id per item index (-1: weapon has no visible projectile mesh).
+// 233 entries
+static const int kGunProjectileMeshes[233] = {
+    14600, 14600, 14600, 14601, 14601, 14602, 14602, 14603, 14603, 14600, 14603, 14602, 14601, 14601, 14601, 14601,
+    14604, 14604, 14604, 14605, 14605, 14605, 14606, 14606, 14606, 14606, 14606, 14606, 14606, 14605, 14602, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14603,
+    14605, 14601, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, 14600, 14600, 14600, 14603, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, 14600, -1, -1, -1, 14600, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14600, -1, -1,
+    14600, -1, -1, -1, 14601, 14601, 14606, 14602, -1,
+};
 
 void Gun::setIndex(int index) {
     this->itemIndex = index;
-    int *items = gSI_items;
-    this->homing = (index == 0xe4) || ((unsigned) (index - 9) < 3);
-    GunItemRegistry *reg = reinterpret_cast<GunItemRegistry *>(*items);
-    this->empDamage = ((Item *) reg->itemTable[index])->getAttribute(0xa);
-    int g = gSI_table[index];
-    if (g >= 0) {
-        unsigned count = this->count;
-        this->geometries = new int[count];
-        this->randomFlags = new uint8_t[count];
-        unsigned *canvasHolder = gSI_canvas;
-        int *rngHolder = gSI_rng;
-        for (unsigned i = 0; i < count; i = i + 1) {
-            AEGeometry *geom = new AEGeometry((uint16_t) g, (PaintCanvas *) *canvasHolder, false);
+    this->homing = index == 228 || (unsigned) (index - 9) < 3;
+    this->empDamage = (*Globals::items)[index]->getAttribute(10);
+    int mesh = kGunProjectileMeshes[index];
+    if (mesh >= 0) {
+        this->geometries = new int[this->count];
+        this->randomFlags = new uint8_t[this->count];
+        for (unsigned i = 0; i < this->count; ++i) {
+            AEGeometry *geom = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
             this->geometries[i] = geom->transform;
-            int r = ((AbyssEngine::AERandom *) (*rngHolder))->nextInt();
-            this->randomFlags[i] = (r == 0);
-            unsigned tf = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder);
-            AbyssEngine::Transform::SetAnimationState(tf, 0, 0);
+            this->randomFlags[i] = Globals::rnd->nextInt(2) == 0;
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometries[i]))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
             delete geom;
-            count = this->count;
         }
     }
 }
@@ -214,90 +212,127 @@ void Gun::setOffset(int a, int b) {
     this->offset = local;
 }
 
-namespace AbyssEngine {
-    namespace AEMath {
-        float VectorLength(const Vector *v);
-    }
-}
-
-static int *const gIG_status = nullptr;
+// Item attribute value meaning "attribute not present".
+static const int kNoAttribute = -979797979;
 
 void Gun::ignite() {
-    if (this->weaponType == ITEM_SORT_EMP_BOMB || this->weaponType == ITEM_SORT_NUKE) {
-        if (this->weaponType == ITEM_SORT_NUKE)
-            reinterpret_cast<GunItemRegistry *>(*gIG_status)->nukeDetonations += 1;
-        reinterpret_cast<GunLevelHandle *>(this->level)->field_0x69 = 0;
+    switch (this->weaponType) {
+        case ITEM_SORT_NUKE:
+            Globals::status->field_c8++;
+            // fall through
+        case ITEM_SORT_EMP_BOMB:
+            reinterpret_cast<GunLevelHandle *>(this->level)->field_0x69 = 0;
+            break;
     }
-
-    Array<Player *> *enemies = this->enemies;
     this->ignited = 1;
-    if (enemies == 0)
-        return;
-
-    Vector *posOut = &this->targetDir;
-    Vector *base = &this->basePos;
-    this->lastHitKIPlayer = 0;
-
-    for (unsigned ei = 0; ei < enemies->size(); ei = ei + 1) {
-        Player *target = enemies->data()[ei];
-        this->target = target;
-        if (this->weaponType == ITEM_SORT_EMP_BOMB && target->isAsteroid() != 0)
-            continue;
-        if (target->isActive() == 0)
-            continue;
-
-        Vector *positions = reinterpret_cast<Vector *>(this->positions);
-        Vector *hitPositions = reinterpret_cast<Vector *>(this->hitPositions);
-        for (unsigned i = 0; i < this->count; i = i + 1) {
-            Vector v = positions[i];
-            *base = v;
-            *posOut = v;
-            *posOut -= *base;
-            int dist = (int) AbyssEngine::AEMath::VectorLength(posOut);
-            if (dist < this->magnitude) {
-                this->hitFlags[i] = 1;
-                hitPositions[i] = *base;
-                GunItemRegistry *reg = reinterpret_cast<GunItemRegistry *>(*gIG_status);
-                ((Item *) reg->itemTable[this->itemIndex])->getAttribute(0);
+    if (this->enemies != 0) {
+        this->lastHitKIPlayer = 0;
+        for (unsigned e = 0; e < this->enemies->size(); ++e) {
+            this->target = (*this->enemies)[e];
+            if (this->weaponType == ITEM_SORT_EMP_BOMB && this->target->isAsteroid()) {
+                continue;
+            }
+            if (!this->target->isActive()) {
+                continue;
+            }
+            for (unsigned i = 0; i < this->count; ++i) {
+                this->basePos = Vector(reinterpret_cast<Vector *>(this->positions)[i]);
+                this->targetDir = this->target->getPosition();
+                this->targetDir -= this->basePos;
+                int distance = (int) AbyssEngine::AEMath::VectorLength(this->targetDir);
+                if (distance < this->magnitude) {
+                    this->hitFlags[i] = 1;
+                    reinterpret_cast<Vector *>(this->hitPositions)[i] = this->basePos;
+                    float range = (float) this->magnitude;
+                    float remaining = (float) (this->magnitude - distance);
+                    float falloff;
+                    if (this->weaponType == ITEM_SORT_MINE) {
+                        falloff = (float) (10000 - distance) / 10000.0f;
+                    } else {
+                        falloff = remaining / range;
+                    }
+                    if (falloff > 1.0f) {
+                        falloff = 1.0f;
+                    } else if (falloff < 0.0f) {
+                        falloff = 0.0f;
+                    }
+                    int emp = (*Globals::items)[this->itemIndex]->getAttribute(10);
+                    switch (this->weaponType) {
+                        case ITEM_SORT_NUKE:
+                        case ITEM_SORT_MINE:
+                        case ITEM_SORT_IONIZING_MISSILE:
+                        case ITEM_SORT_SHOCK_BLAST:
+                            if (emp != kNoAttribute) {
+                                this->target->setEmpForce(falloff * (float) emp);
+                            }
+                            this->target->setBombForce(falloff);
+                            if (this->target->isAsteroid()) {
+                                falloff *= 0.6f;
+                            }
+                            if (this->damage > 0) {
+                                this->target->damage((int) (falloff * (float) this->damage), this->friendGun,
+                                                     this->itemIndex);
+                                if (this->target->isGasCloud() && this->weaponType == ITEM_SORT_IONIZING_MISSILE) {
+                                    ((PlayerGasCloud *) this->target->getKIPlayer())
+                                            ->explode(this->itemIndex, reinterpret_cast<Vector *>(this->positions)[i],
+                                                      (float) this->magnitude);
+                                }
+                                if (this->itemIndex == 179 && this->target->isAsteroid() &&
+                                    falloff * (float) this->damage >= (float) this->target->getHitpoints() &&
+                                    !Globals::achievements->hasMedal(44, 1)) {
+                                    int destroyed = ++Globals::status->field_144;
+                                    if (destroyed >= Globals::achievements->getValue(44, 1)) {
+                                        ((Hud *) ((Level *) this->level)->getPlayer()->getHUD())->hudEventMedal(44, 100);
+                                        Globals::status->field_148 = 1;
+                                    }
+                                }
+                            }
+                            if (emp > 0) {
+                                this->target->damageEmp((int) (falloff * (float) emp), this->friendGun);
+                            }
+                            if (this->weaponType == ITEM_SORT_SHOCK_BLAST && this->target->getKIPlayer() != 0) {
+                                this->target->getKIPlayer()->initPush(this->basePos, this->magnitude);
+                            }
+                            break;
+                        default:
+                            this->target->damageEmp((int) (falloff * (float) emp), this->friendGun);
+                            break;
+                    }
+                    this->targetDir = AbyssEngine::AEMath::VectorNormalize(this->targetDir);
+                    this->target->setHitVector(this->targetDir.x, this->targetDir.y, this->targetDir.z);
+                    this->targetDir = Vector(reinterpret_cast<Vector *>(this->velocities)[i]);
+                    this->targetDir = AbyssEngine::AEMath::VectorNormalize(this->targetDir);
+                    this->lastHitKIPlayer = (int) (intptr_t) this->target->getKIPlayer();
+                    this->lifetimes[i] = -1;
+                }
+                if (this->weaponType != ITEM_SORT_MINE) {
+                    this->lifetimes[i] = -1;
+                }
             }
         }
+        if (this->weaponType == ITEM_SORT_EMP_BOMB) {
+            this->lifetimes[0] = -1;
+        }
+    }
+    if (this->impact != 0) {
+        this->impact->explode(*reinterpret_cast<Vector *>(this->positions));
     }
 }
-
-namespace AbyssEngine {
-    namespace AEMath {
-        void MatrixGetPosition(Matrix *out, const Matrix *m);
-
-        void MatrixSetTranslation(Matrix *m, float x, float y, float z);
-    }
-}
-
-static unsigned *const gGunRenderCanvas = nullptr;
 
 void Gun::render() {
-    Matrix local;
-    char camBuf[64];
-
-    Sparks *impact = this->impact;
-    if (impact != 0)
-        impact->render();
-
+    if (this->impact != 0) {
+        this->impact->render();
+    }
     if (this->geometries != 0) {
-        unsigned canvas = *gGunRenderCanvas;
-        for (unsigned i = 0; i < this->count; i = i + 1) {
-            int tf = AbyssEngine::PaintCanvas::TransformGetTransform(canvas);
-            if (reinterpret_cast<GunTransformHandle *>(tf)->visible_0xed != 0) {
-                unsigned c = canvas;
-                AbyssEngine::PaintCanvas::CameraGetCurrent();
-                unsigned camLocal = AbyssEngine::PaintCanvas::CameraGetLocal(c);
-                memcpy(camBuf, (const unsigned char *) camLocal, 0x3c);
-                unsigned tl = AbyssEngine::PaintCanvas::TransformGetLocal(canvas);
-                AbyssEngine::AEMath::MatrixGetPosition(&local, (const Matrix *) tl);
-                this->targetDir = *(const Vector *) ((Vector *) &local);
-                AbyssEngine::AEMath::MatrixSetTranslation(&local, this->targetDir.z, 0, 0);
-                Matrix *m = ((Matrix **) this->geometries)[i];
-                AbyssEngine::PaintCanvas::TransformSetLocal(canvas, m);
-                AbyssEngine::PaintCanvas::DrawTransform(canvas, m);
+        for (unsigned i = 0; i < this->count; ++i) {
+            if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometries[i]))->visible) {
+                Matrix view = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+                this->targetDir = AbyssEngine::AEMath::MatrixGetPosition(
+                        *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometries[i]));
+                AbyssEngine::AEMath::MatrixSetTranslation(view, this->targetDir.x, this->targetDir.y,
+                                                          this->targetDir.z);
+                Globals::Canvas->TransformSetLocal(this->geometries[i], view);
+                Globals::Canvas->DrawTransform(this->geometries[i], nullptr);
             }
         }
     }
@@ -408,89 +443,68 @@ void Gun::setOffset(Vector *v) {
     this->offset = local;
 }
 
-namespace AbyssEngine {
-    namespace AEMath {
-        void operator_mul(Vector *out, float s);
-    }
-
-    namespace Transform {
-        void Update(long long tf, char b);
+static inline bool isRocketLike(int sort) {
+    switch (sort) {
+        case ITEM_SORT_ROCKET:
+        case ITEM_SORT_MISSILE:
+        case ITEM_SORT_CLUSTER_MISSILE:
+            return true;
+        default:
+            return false;
     }
 }
-
-static int *const gUP_canvas = nullptr;
-static int *const gUP_globals = nullptr;
 
 void Gun::update(int dt) {
     this->timer += dt;
     if (this->delayActive != 0) {
-        int t = this->delayTimer + dt;
-        this->delayTimer = t;
-        if (this->fireDelay <= t)
+        this->delayTimer += dt;
+        if (this->delayTimer >= this->fireDelay) {
             this->delayActive = 0;
+        }
     }
-    Sparks *impact = this->impact;
-    if (impact != 0)
-        impact->update(dt);
-
+    if (this->impact != 0) {
+        this->impact->update(dt);
+    }
     if (this->geometries != 0) {
-        int canvas = *gUP_canvas;
-        for (unsigned i = 0; i < this->count; i = i + 1) {
-            long long tf = AbyssEngine::PaintCanvas::TransformGetTransform(canvas);
-            AbyssEngine::Transform::Update(tf, (char) dt);
+        for (unsigned i = 0; i < this->count; ++i) {
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometries[i]))
+                    ->Update((long long) dt, false);
         }
     }
 
     if (this->active != 0 && this->weaponType != ITEM_SORT_SENTRY_GUN) {
         this->calcCharacterCollision();
         float fdt = (float) dt;
-        Vector *positions = reinterpret_cast<Vector *>(this->positions);
-        Vector *velocities = reinterpret_cast<Vector *>(this->velocities);
-        for (unsigned i = 0; i < this->count; i = i + 1) {
-            int amt = this->lifetimes[i];
-            int thr = 5;
-
-            if ((unsigned) (this->weaponType - ITEM_SORT_ROCKET) > 1 && this->weaponType != ITEM_SORT_CLUSTER_MISSILE)
-                thr = 0;
-            if (thr < amt) {
-                this->lifetimes[i] = amt - dt;
-                Vector scaled;
-                long long velBits = (long long) this->velocities;
+        for (unsigned i = 0; i < this->count; ++i) {
+            int lifetime = this->lifetimes[i];
+            if (lifetime > (isRocketLike(this->weaponType) ? -2000 : 0)) {
+                this->lifetimes[i] = lifetime - dt;
                 if (this->weaponType == ITEM_SORT_MINE) {
-                    Vector tmp;
-                    memcpy(&tmp.x, &velBits, sizeof(long long));
-                    AbyssEngine::AEMath::operator_mul(&tmp, fdt);
-                    int rem = this->initialLifetime - this->lifetimes[i];
-                    float f = (float) rem / 1.0f + 1.0f;
-                    scaled = tmp;
-                    AbyssEngine::AEMath::operator_mul(&scaled, f);
+                    Vector step = reinterpret_cast<Vector *>(this->velocities)[i] * fdt;
+                    float damping = (float) (this->initialLifetime - this->lifetimes[i]) / -500.0f + 1.0f;
+                    reinterpret_cast<Vector *>(this->positions)[i] += step * (damping > 0.0f ? damping : 0.0f);
                 } else {
-                    memcpy(&scaled.x, &velBits, sizeof(long long));
-                    AbyssEngine::AEMath::operator_mul(&scaled, fdt);
+                    reinterpret_cast<Vector *>(this->positions)[i] += reinterpret_cast<Vector *>(this->velocities)[i] * fdt;
                 }
-                positions[i] += scaled;
-                int v = this->lifetimes[i];
-                if (v < 1) {
-                    unsigned k = this->weaponType - 6;
-                    if (k < 0x1d && ((1 << (k & 0xff)) & 0x12345678) != 0) {
+                if (this->lifetimes[i] <= 0) {
+                    unsigned k = (unsigned) (this->weaponType - ITEM_SORT_EMP_BOMB);
+                    if (k <= 28 && ((1u << k) & 0x10000003u) != 0) {
                         this->ignite();
-                        v = this->lifetimes[i];
                     }
-                    if (v <= -2000) {
-                        int s = this->weaponType;
-                        if ((unsigned) (s - ITEM_SORT_ROCKET) < 2 || s == ITEM_SORT_CLUSTER_MISSILE)
-                            reinterpret_cast<GunUpdateGlobals *>(*gUP_globals)->field_0x12c = 0;
+                    if (this->lifetimes[i] <= -2000 && isRocketLike(this->weaponType)) {
+                        Globals::status->field_12c = 0;
                     }
                 }
-                if (this->weaponType == ITEM_SORT_SHOCK_BLAST)
+                if (this->weaponType == ITEM_SORT_SHOCK_BLAST) {
                     this->ignite();
+                }
             } else {
-                positions[i].x = 0;
-                positions[i].y = 0;
-                positions[i].z = 0;
-                velocities[i].x = 0;
-                velocities[i].y = 0;
-                velocities[i].z = 0;
+                reinterpret_cast<Vector *>(this->positions)[i].x = 50000.0f;
+                reinterpret_cast<Vector *>(this->positions)[i].y = 50000.0f;
+                reinterpret_cast<Vector *>(this->positions)[i].z = 50000.0f;
+                reinterpret_cast<Vector *>(this->velocities)[i].x = 0.0f;
+                reinterpret_cast<Vector *>(this->velocities)[i].y = 0.0f;
+                reinterpret_cast<Vector *>(this->velocities)[i].z = 0.0f;
             }
         }
     }
