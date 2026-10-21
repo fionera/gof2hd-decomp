@@ -1068,106 +1068,86 @@ static inline float absf_update(float v) {
     return v < 0.0f ? -v : v;
 }
 
-void StarMap::update(int dt) {
-    Matrix matrix;
-    Vector tmp;
+#define STARMAP_ABS(v) ((v) > 0 ? (v) : -(v))
+#define STARMAP_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define STARMAP_MAX(a, b) ((a) > (b) ? (a) : (b))
 
+void StarMap::update(int dt) {
     this->lastDt = dt;
-    if (this->mode == 0 || this->transitionIn != 0 || this->transitionOut != 0) {
-        Array<Vector *> *positions = this->systemPositions;
-        for (uint32_t i = 0; i < positions->size(); i++) {
-            ((AEGeometry *) (&tmp))->getPosition();
-            int visible = Globals::Canvas->GetScreenPosition(tmp, *(*positions)[i]);
-            (*positions)[i]->z = visible != 0 ? 1.0f : -1.0f;
+    if (this->mode == 0 || this->transitionIn || this->transitionOut) {
+        for (unsigned int i = 0; i < this->systemPositions->size(); i++) {
+            int onScreen = Globals::Canvas->GetScreenPosition((*this->systemGeoms)[i]->getPosition(),
+                                                               *(*this->systemPositions)[i]);
+            (*this->systemPositions)[i]->z = onScreen == 0 ? -1.0f : 1.0f;
         }
     }
-    if (this->mode == 3 || this->transitionIn != 0 || this->transitionOut != 0) {
-        Array<Vector *> *positions = this->stationPositions;
-        if (positions != 0) {
-            for (uint32_t i = 0; i < positions->size(); i++) {
-                ((AEGeometry *) (&tmp))->getPosition();
-                int visible = Globals::Canvas->GetScreenPosition(tmp, *(*positions)[i]);
-                (*positions)[i]->z = visible != 0 ? 1.0f : -1.0f;
-            }
+    if (this->mode == 3 || this->transitionIn || this->transitionOut) {
+        for (unsigned int i = 0; i < this->stationPositions->size(); i++) {
+            this->scratchVector2 = MatrixGetPosition(this->starSystemRoot->getMatrix() *
+                                                     (*this->stationGeoms)[i + 1]->getMatrix());
+            int onScreen = Globals::Canvas->GetScreenPosition(this->scratchVector2, *(*this->stationPositions)[i]);
+            (*this->stationPositions)[i]->z = onScreen == 0 ? -1.0f : 1.0f;
         }
     }
 
     if (this->markerGeom != 0) {
-        float v = EaseInOut_GetValue(this->easeZ);
-        float min = EaseInOut_GetMinValue(this->easeZ);
-        float max = this->easeZ->GetMaxValue();
-        float t = (v - min) / (max - min);
-        if (this->transitionOut != 0) {
+        float t = (this->easeZ->GetValue() - this->easeZ->GetMinValue()) /
+                  (this->easeZ->GetMaxValue() - this->easeZ->GetMinValue());
+        if (this->transitionOut)
             t = 1.0f - t;
-        } else if (this->transitionIn == 0 && this->mode == 0) {
-            t = 1.0f;
-        }
-        float scale = (float) (0.5 + (double) t * 0.5);
-        this->markerGeom->setScaling(scale);
+        else if (!this->transitionIn && this->mode == 0)
+            t = 0.0f;
+        float scale = (float) ((double) t * -0.014 + 0.02);
+        this->markerGeom->setScaling(scale, scale, scale);
         if (this->starSystemRoot != 0 && this->centeredStation >= 0) {
-            ((AEGeometry *) (&tmp))->getPosition();
-            this->markerGeom->setPosition(tmp);
+            Vector system = (*this->systemGeoms)[Globals::status->field_7c]->getPosition();
+            Vector station = MatrixGetPosition(this->starSystemRoot->getMatrix() *
+                                               (*this->stationGeoms)[this->centeredStation]->getMatrix());
+            this->markerGeom->setPosition(system + t * (station - system));
         }
-        PaintCanvas *canvas = Globals::Canvas;
-        ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
-        MatrixGetPosition(
-            &tmp, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
-                ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()));
-        this->scratchVector = tmp;
-        ((AEGeometry *) (&tmp))->getPosition();
-        this->scratchVector -= tmp;
-        VectorNormalize(&tmp, &this->scratchVector);
-        this->scratchVector = tmp;
+        this->scratchVector = MatrixGetPosition(
+            *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
+        this->scratchVector -= this->markerGeom->getPosition();
+        this->scratchVector = VectorNormalize(this->scratchVector);
         this->scratchVector.x += 0.5f;
-        Vector worldUp = {0.0f, 1.0f, 0.0f};
-        this->markerGeom->setDirection(this->scratchVector, worldUp);
-        ((AbyssEngine::Transform *) (((PaintCanvas *) (long) (canvas))->TransformGetTransform(0)))->Update(dt, false);
+        this->markerGeom->setDirection(this->scratchVector, Vector{0.0f, 1.0f, 0.0f});
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->markerGeom->transform))->Update(dt, false);
     }
 
-    if (this->transitionIn != 0 || this->transitionOut != 0) {
+    if (this->transitionIn || this->transitionOut) {
         float step = (float) (dt * 15);
-        EaseInOut_Update(this->easeX, step);
-        EaseInOut_Update(this->easeY, step);
-        EaseInOut_Update(this->easeZ, step);
-        tmp.x = EaseInOut_GetCurrentValue(this->easeX);
-        tmp.y = EaseInOut_GetCurrentValue(this->easeY);
-        tmp.z = EaseInOut_GetCurrentValue(this->easeZ);
-        this->scratchVector = tmp;
-        PaintCanvas *canvas = Globals::Canvas;
-        __builtin_memcpy(
-            &matrix, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
-                ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()), 0x3c);
-        MatrixSetTranslation(&matrix, this->scratchVector.x, this->scratchVector.y, this->scratchVector.z);
-        ((PaintCanvas *) (long) (canvas))->CameraSetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent(),
-                                                          *(const AbyssEngine::AEMath::Matrix *) (&matrix));
-        if (absf_update(this->scratchVector.x - this->easeX->GetMaxValue()) <= 1.0f &&
-            absf_update(this->scratchVector.y - this->easeY->GetMaxValue()) <= 1.0f &&
-            absf_update(this->scratchVector.z - this->easeZ->GetMaxValue()) <= 1.0f) {
-            if (this->transitionIn == 0) {
-                if (this->stationGeoms != 0) {
-                    ArrayReleaseClasses(*this->stationGeoms);
-                    delete this->stationGeoms;
-                    this->stationGeoms = 0;
-                }
-                if (this->ringGeoms != 0) {
-                    ArrayReleaseClasses(*this->ringGeoms);
-                    delete this->ringGeoms;
-                    this->ringGeoms = 0;
-                }
+        this->easeX->Increase(step);
+        this->easeY->Increase(step);
+        this->easeZ->Increase(step);
+        Vector position = {this->easeX->GetValue(), this->easeY->GetValue(), this->easeZ->GetValue()};
+        this->scratchVector = position;
+        Matrix camera = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+        MatrixSetTranslation(camera, this->scratchVector.x, this->scratchVector.y, this->scratchVector.z);
+        Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), camera);
+        if (STARMAP_ABS(this->scratchVector.x - this->easeX->GetMaxValue()) <= 1.0f &&
+            STARMAP_ABS(this->scratchVector.y - this->easeY->GetMaxValue()) <= 1.0f &&
+            STARMAP_ABS(this->scratchVector.z - this->easeZ->GetMaxValue()) <= 1.0f) {
+            if (this->transitionIn) {
+                this->mode = 3;
+            } else {
+                // Zoomed back out of the star system.
+                ArrayReleaseClasses(*this->stationGeoms);
+                delete this->stationGeoms;
+                this->stationGeoms = 0;
+                ArrayReleaseClasses(*this->ringGeoms);
+                delete this->ringGeoms;
+                this->ringGeoms = 0;
                 delete[] this->stationAngles;
-                this->stationAngles = (int *) 0;
+                this->stationAngles = 0;
                 delete[] this->stationDistances;
-                this->stationDistances = (int *) 0;
-                if (this->usedFlags != 0) {
-                    delete this->usedFlags;
-                    this->usedFlags = 0;
-                }
+                this->stationDistances = 0;
+                ArrayRelease(*this->usedFlags);
+                delete this->usedFlags;
+                this->usedFlags = 0;
                 delete this->starSystemRoot;
                 this->mode = 0;
-                this->starSystemRoot = (AEGeometry *) 0;
+                this->starSystemRoot = 0;
                 (*this->systemGeoms)[this->selectedSystem]->setVisible(true);
-            } else {
-                this->mode = 3;
             }
             this->transitionIn = 0;
             this->transitionOut = 0;
@@ -1175,101 +1155,117 @@ void StarMap::update(int dt) {
         return;
     }
 
-    ((FModSound *) (*g_StarMap_update_sound))->setParamValue(0, 0x66, 0.0f);
-    if (this->mode == 3) {
-        if (this->stationCenterAnim == 0 && this->dragging == 0) {
-            float vx = this->momentumFactor * this->velocityX;
-            float vy = this->momentumFactor * this->velocityY;
-            this->velocityX = vx;
-            this->velocityY = vy;
-            if (absf_update(vx) > 0.5f) {
-                this->yaw += vx;
-            }
-            if (absf_update(vy) > 0.5f) {
-                this->pitch += vy;
-            }
-        } else if (this->stationCenterAnim != 0 && this->selectedStation >= 0) {
-            int target = 0x8000 - ((int *) this->stationAngles)[this->selectedStation];
-            int diff = (int) this->yaw - target;
-            this->yaw += (float) (diff < 0 ? -diff : diff) * (diff < 0 ? 0.25f : -0.25f);
-            if (absf_update((float) diff) < 11.0f) {
-                this->stationCenterAnim = 0;
-            }
-        }
-        float speed = absf_update(this->velocityX + this->velocityY);
-        if (speed > 10.0f) {
-            speed = 10.0f;
-        }
-        this->spin += speed;
-        if (this->stationGeoms != 0) {
-            Array<AEGeometry *> *geoms = this->stationGeoms;
-            for (uint32_t i = 0; i < geoms->size(); i++) {
-                if ((*geoms)[i] != 0) {
-                    (*geoms)[i]->rotate((float) dt * 0.001f, 0.0f, 0.001f);
-                }
-            }
-        }
-        this->yaw = (float) ((int) this->yaw & 0xffff);
-        if (this->pitch < -90.0f) {
-            this->pitch = -90.0f;
-        }
-        if (this->pitch > 90.0f) {
-            this->pitch = 90.0f;
-        }
-        this->starSystemRoot->setRotation(this->pitch, 0.0f, this->yaw);
-        return;
-    }
-
-    if (this->mode == 0) {
-        if (this->pulseSystem >= 0 && this->autoMode != 0 &&
-            this->autoTimer < 4000) {
+    Globals::sound->setParamValue(0, 102, this->spin);
+    switch (this->mode) {
+    case 0: {
+        if (this->pulseSystem >= 0 && this->autoMode && this->autoTimer < 4000) {
             this->autoTimer += dt;
-            if (this->autoTimer > 3999) {
-                OnTouchBegin(*g_StarMap_update_screenW >> 1, *g_StarMap_update_screenH >> 1);
-            }
-            float scale = ((float) this->autoTimer / 4000.0f) * 1.5f;
-            (*this->systemGeoms)[this->pulseSystem]->setScaling(scale);
+            if (this->autoTimer >= 4000)
+                this->OnTouchBegin(Globals::w >> 1, Globals::h >> 1);
+            float scale = (float) ((double) ((float) this->autoTimer / 4000.0f) * 0.002);
+            (*this->systemGeoms)[this->pulseSystem]->setScaling(scale, scale, scale);
         }
-        if (this->dragging == 0) {
-            float vx = this->momentumFactor * this->velocityX;
-            float vy = this->momentumFactor * this->velocityY;
-            this->velocityX = vx;
-            this->velocityY = vy;
-            if (absf_update(vx) > 0.5f) {
-                this->panX = (int) ((float) this->panX + vx);
-            }
-            if (absf_update(vy) > 0.5f) {
-                this->panY = (int) ((float) this->panY + vy);
-            }
+        if (!this->dragging) {
+            this->velocityX = this->momentumFactor * this->velocityX;
+            this->velocityY = this->momentumFactor * this->velocityY;
+            if (STARMAP_ABS(this->velocityX) > 0.5f)
+                this->panX = (int) (this->velocityX + (float) this->panX);
+            if (STARMAP_ABS(this->velocityY) > 0.5f)
+                this->panY = (int) (this->velocityY + (float) this->panY);
         }
-        PaintCanvas *canvas = Globals::Canvas;
-        __builtin_memcpy(
-            &matrix, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
-                ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()), 0x3c);
-        MatrixSetTranslation(&matrix,
-                             (this->cameraBaseX + (float) this->panX) * 20.0f,
-                             0.0f,
-                             (this->cameraBaseZ + (float) this->panY) * 20.0f);
-        ((PaintCanvas *) (long) (canvas))->CameraSetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent(),
-                                                          *(const AbyssEngine::AEMath::Matrix *) (&matrix));
-        if (this->pathAnim != 0) {
-            Array<uint8_t> *vis = (Array<uint8_t> *) Globals::status->getSystemVisibilities();
-            uint32_t selected = this->selectedSystem;
-            if (vis != 0 && selected < vis->size() && (*vis)[selected] != 0) {
-                this->scratchVector = *(*this->systemPositions)[selected];
-                float targetX = (float) (*g_StarMap_update_screenW >> 1);
-                float targetY = (float) (*g_StarMap_update_screenH >> 1);
-                float sx = (this->scratchVector.x - targetX) / -30.0f;
-                float sy = (this->scratchVector.y - targetY) / -30.0f;
-                this->velocityX = sx;
-                this->velocityY = sy;
-                if (absf_update(sx) <= 2.0f && absf_update(sy) <= 2.0f) {
+        // Spring back when panned past the map edges.
+        int x = (int) (this->cameraBaseX + (float) this->panX);
+        int y = (int) (this->cameraBaseZ + (float) this->panY);
+        if (x > 120)
+            this->velocityX = (float) (120 - x) * 0.1f;
+        else if (x < -500)
+            this->velocityX = (float) (-500 - x) * 0.1f;
+        if (y > 140)
+            this->velocityY = (float) (140 - y) * 0.1f;
+        else if (y < -400)
+            this->velocityY = (float) (-400 - y) * 0.1f;
+        Matrix camera = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+        MatrixSetTranslation(camera, (this->cameraBaseX + (float) this->panX) * 20.0f,
+                             (this->cameraBaseZ + (float) this->panY) * 20.0f, 0.0f);
+        Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), camera);
+        this->spin += STARMAP_MIN(STARMAP_ABS(this->velocityX + this->velocityY), 10.0f);
+        if (this->spin > 100.0f)
+            this->spin = 0.0f;
+        if (this->pathAnim) {
+            // Scroll the selected system to the screen centre.
+            Array<bool> *visible = Globals::status->getSystemVisibilities();
+            if (visible != 0 && this->selectedSystem < visible->size() && this->selectedSystem >= 0 &&
+                (*visible)[this->selectedSystem]) {
+                this->scratchVector = *(*this->systemPositions)[this->selectedSystem];
+                float centerY = (float) (Globals::h >> 1);
+                float centerX = (float) (Globals::w >> 1);
+                float vx = 0.0f;
+                float vy = 0.0f;
+                if (this->scratchVector.x != centerX)
+                    vx = (this->scratchVector.x - centerX) / -30.0f;
+                if (this->scratchVector.y != centerY)
+                    vy = (this->scratchVector.y - centerY) / -30.0f;
+                if (STARMAP_ABS((int) vx) > STARMAP_ABS((int) (this->scratchVector.x - centerX)))
+                    vx = vx * 0.5f;
+                if (STARMAP_ABS((int) vy) > STARMAP_ABS((int) (this->scratchVector.y - centerY)))
+                    vy = vy * 0.5f;
+                this->velocityX = vx;
+                this->velocityY = vy;
+                if (STARMAP_ABS(vx) <= 2.0f && STARMAP_ABS(vy) <= 2.0f) {
                     this->pathAnim = 0;
                     this->lastSelectedSystem = this->selectedSystem;
                 }
             }
         }
+        break;
     }
+    case 3: {
+        if (this->stationCenterAnim) {
+            // Rotate the selected station to the front.
+            int target = 0x8000 - this->stationAngles[this->selectedStation];
+            int pitch = (int) this->pitch;
+            int yaw = (int) this->yaw;
+            int pitchDiff = STARMAP_ABS(-3096 - pitch);
+            int yawDiff = STARMAP_ABS(yaw - target);
+            if (target > yaw)
+                this->yaw += (float) (target - yaw) * 0.25f;
+            else
+                this->yaw += (float) (yaw - target) * -0.25f;
+            if (yawDiff <= 10)
+                this->stationCenterAnim = 0;
+            if (-3096 > pitch)
+                this->pitch += (float) (-3096 - pitch) * 0.25f;
+            else
+                this->pitch += (float) (pitch + 3096) * -0.25f;
+            if (yawDiff <= dt * 4 && STARMAP_ABS(pitchDiff) <= dt * 4) {
+                this->lastSelectedStation = this->selectedStation;
+                this->stationCenterAnim = 0;
+            }
+        } else if (!this->dragging) {
+            this->velocityX = this->momentumFactor * this->velocityX;
+            this->velocityY = this->momentumFactor * this->velocityY;
+            if (STARMAP_ABS(this->velocityX) > 0.5f)
+                this->yaw += this->velocityX;
+            if (STARMAP_ABS(this->velocityY) > 0.5f)
+                this->pitch += this->velocityY;
+        }
+        this->spin += STARMAP_MIN(STARMAP_ABS(this->velocityX + this->velocityY) * 0.01f, 10.0f);
+        if (this->spin > 100.0f)
+            this->spin = 0.0f;
+        if (this->stationGeoms != 0) {
+            for (unsigned int i = 0; i < this->stationGeoms->size(); i++) {
+                if ((*this->stationGeoms)[i] != 0)
+                    (*this->stationGeoms)[i]->rotate(0.0f, (float) dt * 0.0002f, 0.0f);
+            }
+        }
+        this->yaw = (float) ((int) this->yaw % 0x10000);
+        this->pitch = STARMAP_MIN(STARMAP_MAX(this->pitch, -8192.0f), 8192.0f);
+        this->starSystemRoot->setRotation(this->pitch * (1.0f / 65536.0f) * 6.2831855f,
+                                          this->yaw * (1.0f / 65536.0f) * 6.2831855f, -0.09817477f);
+        break;
+    }
+    }
+
 }
 
 static inline float absf_local(float v) {
