@@ -83,7 +83,7 @@ void Status_replaceHash(void *out, void *key, void *a, void *b); // lint: void_p
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 
-void StatusWindow::OnTouchEnd(int x, int y) {
+bool StatusWindow::OnTouchEnd(int x, int y) {
     int vy = this->scrollVelocity;
     int newOff = this->scrollOffset + vy;
     float vf = (float) vy;
@@ -97,7 +97,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     this->scrollVelocityF = (absvy > 3) ? vf : 0.0f;
 
     if (layout->OnTouchEnd(x, y) != 0)
-        return;
+        return false;
 
     if (Globals::iPad == 0) {
         for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
@@ -164,6 +164,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
             layout->initHelpWindow(title);
         }
     }
+    return false; // TODO(decomp): the original returns true when the window closes
 }
 
 int StatusWindow::OnTouchBegin(int x, int y) {

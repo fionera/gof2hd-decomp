@@ -342,7 +342,7 @@ static inline bool hit_agent(SpaceLounge *self, int x, int y, int i) {
     return (float) x < b[0] && (float) y < a[1] && b[1] < (float) y;
 }
 
-void SpaceLounge::OnTouchEnd(int x, int y) {
+bool SpaceLounge::OnTouchEnd(int x, int y) {
     String helpBig;
     String helpSmall;
     char matrix[60];
@@ -356,7 +356,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         } else if (result == 0) {
             ((SpaceLounge *) (this))->onKeyPress(0x10000);
         }
-        return;
+        return false;
     }
 
     if (this->mapVisible != 0) {
@@ -364,7 +364,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             this->cutScene->resetCamera();
             this->mapVisible = 0;
         }
-        return;
+        return false;
     }
 
     Layout **layoutSlot = SpaceLounge_touch_layout_slot;
@@ -383,7 +383,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             this->mode = 0;
             this->singleOffer = 0;
         }
-        return;
+        return false;
     }
 
     if (this->listVisible != 0) {
@@ -394,7 +394,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             helpSmall.Set(text->data);
             layout->initHelpWindow(helpSmall);
         }
-        return;
+        return false;
     }
 
     switch (this->mode) {
@@ -416,7 +416,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
                 }
                 this->introDone = 1;
                 this->headBobPhase = 0;
-                return;
+                return false;
             }
             if (this->agents != 0) {
                 this->hoverAgent = -1;
@@ -426,7 +426,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
                     if (hit_agent(this, x, y, i)) {
                         this->selectedAgent = i;
                         ((SpaceLounge *) (this))->onKeyPress(0x10000);
-                        return;
+                        return false;
                     }
                 }
             }
@@ -461,6 +461,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         helpBig.Set(text->data);
         layout->initHelpWindow(helpBig);
     }
+    return false; // TODO(decomp): the original returns true when the window closes
 }
 
 int SpaceLounge::getSoundId(Agent *agent) {
