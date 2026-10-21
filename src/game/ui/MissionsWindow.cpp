@@ -36,8 +36,6 @@ static_assert(offsetof(CampaignMissionFlags, campaignVisibleFlagB) == 0x37,
 
 
 
-static int *g_mwi_titleTable = nullptr;
-static int g_mwi_actionColor = 0;
 
 
 
@@ -56,15 +54,10 @@ static const int CAMPAIGN_GOAL_TEXT[164] = {
     748, 748, 748, 0,
 };
 
-void Status_replaceHash(void *out, void *key, void *a, void *b, void *c); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-// lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-int ApplicationManager_GetCurrentApplicationModule(void *appMgr); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-void TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char flags); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-// lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 int MissionsWindow::OnTouchMove(int p1, int p2) {
     if (this->m_mode == 1)
