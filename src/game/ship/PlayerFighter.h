@@ -32,7 +32,6 @@ public:
     // KIPlayer ones). KIPlayer::shipGroup (0x28) is the fighter's race; KIPlayer::field_0xe4 is the
     // current wingman command and KIPlayer::wingmanCommand (0xe0) the wingman's formation slot.
     signed char &field_0xdc() { return reinterpret_cast<signed char &>(this->wingmanFlag); }
-    Vector &renderPosition() { return reinterpret_cast<Vector &>(this->autoPilotState); } // 0x2c: position
     signed char &field_0x43() { return reinterpret_cast<signed char &>(this->reviveLockFlag); }
     uint8_t &crateCaptured() { return reinterpret_cast<uint8_t &>(this->hasCargo); }
     Array<int> *&lootList() { return this->cargo; }
@@ -42,8 +41,6 @@ public:
     Route *&routeClone() { return this->KIPlayer::route; }
     uint8_t &exhaustHidden() { return this->field_0x74; }
     AEGeometry *&wreckGeometry() { return this->crateGeometry; }
-    Vector &tempVector() { return reinterpret_cast<Vector &>(this->field_0x90); }   // 0x90 scratch
-    Vector &steerVector() { return reinterpret_cast<Vector &>(this->field_0x9c); }  // 0x9c scratch
     uint8_t &isMissionCrate() { return reinterpret_cast<uint8_t &>(this->carriesMissionCrate); }
     int32_t &deathTimer() { return this->field_0xd8; }
     uint8_t &field_0xf5() { return this->visibleFlag; }

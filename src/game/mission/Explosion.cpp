@@ -191,7 +191,7 @@ void Explosion::reset() {
     }
 
     this->elapsed = 0;
-    this->playing = 0;
+    this->playing = false;
 }
 
 Explosion::~Explosion() {
@@ -315,7 +315,7 @@ void Explosion::start(const Vector &position, const Vector &direction) {
         }
     }
 
-    this->playing = 1;
+    this->playing = true;
     Vector soundPosition = position;
     this->playSound(&soundPosition);
 }
@@ -347,7 +347,7 @@ void Explosion::start(const Matrix &matrix) {
         ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->animating = true;
     }
 
-    this->playing = 1;
+    this->playing = true;
     Vector position = AbyssEngine::AEMath::MatrixGetPosition(matrix);
     this->playSound(&position);
 }
@@ -425,7 +425,7 @@ bool Explosion::peakReached() {
     return this->elapsed > 0x8fcLL;
 }
 
-uint8_t Explosion::isPlaying() {
+bool Explosion::isPlaying() {
     return this->playing;
 }
 

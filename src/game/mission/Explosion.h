@@ -19,7 +19,7 @@ public:
     Array<AEGeometry *> *fireStreaks;
     long long duration;
     long long elapsed;
-    uint8_t playing;
+    bool playing;
     float scale;
     int weaponIndex;
     AbyssEngine::Matrix rotation;
@@ -30,7 +30,7 @@ public:
 
     void addFireStreaks();
 
-    uint8_t isPlaying();
+    bool isPlaying();
 
     bool peakReached();
 

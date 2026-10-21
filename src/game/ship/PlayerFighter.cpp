@@ -236,7 +236,7 @@ void PlayerFighter::reset() {
     this->crateCaptured() = 1;
 
     this->workingPosition = Vector{this->posX, this->posY, this->posZ};
-    this->renderPosition() = Vector(this->workingPosition);
+    this->shipPosition = Vector(this->workingPosition);
 
     this->frameTime = 0;
     this->field_0x38 = 0;
@@ -251,7 +251,7 @@ void PlayerFighter::reset() {
         this->state = 0;
     }
 
-    this->tempVector() = Vector{0, 0, 0};
+    this->tempVector = Vector{0, 0, 0};
     this->targetPos = Vector{0, 0, 0};
     this->distanceToTarget = Vector{0, 0, 0};
 
@@ -521,7 +521,7 @@ void PlayerFighter::update(int dt) {
         this->shipGroup = 1;
     }
     this->frameTime = dt;
-    this->renderPosition() = this->geometry->getPosition();
+    this->shipPosition = this->geometry->getPosition();
 
     // enemy / friend flags from the standing towards this fighter's race (shipGroup)
     if (!this->reviveLockFlag) {
@@ -575,8 +575,8 @@ void PlayerFighter::update(int dt) {
     this->trailTick += dt;
     if (this->trailTick > 200) {
         if (this->trail) {
-            this->trail->update(this->renderPosition(), this->workingPosition);
-            this->workingPosition = this->renderPosition();
+            this->trail->update(this->shipPosition, this->workingPosition);
+            this->workingPosition = this->shipPosition;
         }
         this->trailTick = 0;
     }
@@ -588,35 +588,35 @@ void PlayerFighter::update(int dt) {
 
     // wingmen in formation fly a one-point route next to the ego ship
     if (this->wingmanFlag && this->state != 4 && this->KIPlayer::route) {
-        this->tempVector() = this->level->getPlayer()->geometry->getPosition();
+        this->tempVector = this->level->getPlayer()->geometry->getPosition();
         if (this->field_0xe4 == 1) {
             switch (this->wingmanCommand) {
                 case 0:
-                    this->steerVector() = this->level->getPlayer()->geometry->getRightVector();
-                    this->steerVector() *= 4000.0f;
-                    this->tempVector() -= this->steerVector();
-                    this->tempVector() -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 3000.0f;
+                    this->auxVector = this->level->getPlayer()->geometry->getRightVector();
+                    this->auxVector *= 4000.0f;
+                    this->tempVector -= this->auxVector;
+                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 3000.0f;
                     break;
                 case 1:
-                    this->steerVector() = this->level->getPlayer()->geometry->getRightVector();
-                    this->steerVector() *= 4000.0f;
-                    this->tempVector() += this->steerVector();
-                    this->tempVector() -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 3000.0f;
+                    this->auxVector = this->level->getPlayer()->geometry->getRightVector();
+                    this->auxVector *= 4000.0f;
+                    this->tempVector += this->auxVector;
+                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 3000.0f;
                     break;
                 case 2:
-                    this->steerVector() = this->level->getPlayer()->geometry->getUpVector();
-                    this->steerVector() *= 2000.0f;
-                    this->tempVector() += this->steerVector();
-                    this->tempVector() -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 2000.0f;
+                    this->auxVector = this->level->getPlayer()->geometry->getUpVector();
+                    this->auxVector *= 2000.0f;
+                    this->tempVector += this->auxVector;
+                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 2000.0f;
                     break;
             }
             if (this->KIPlayer::route->length() > 1) {
-                int coords[3] = {(int) this->tempVector().x, (int) this->tempVector().y, (int) this->tempVector().z};
+                int coords[3] = {(int) this->tempVector.x, (int) this->tempVector.y, (int) this->tempVector.z};
                 delete this->KIPlayer::route;
                 this->KIPlayer::route = nullptr;
                 this->KIPlayer::route = new Route(coords, 3);
             } else {
-                this->KIPlayer::route->setNewCoords(this->tempVector());
+                this->KIPlayer::route->setNewCoords(this->tempVector);
             }
             this->KIPlayer::route->setLoop(true);
         }
@@ -650,14 +650,14 @@ void PlayerFighter::update(int dt) {
                         if (!(*enemies)[this->field_0x38]->isActive()) {
                             continue;
                         }
-                        this->tempVector() = (*enemies)[this->field_0x38]->getPosition();
+                        this->tempVector = (*enemies)[this->field_0x38]->getPosition();
                         if ((this->shipGroup != 8 && this->player->turnedEnemy()) ||
-                            (this->renderPosition().x - this->tempVector().x < this->field_0x128 &&
-                             this->renderPosition().x - this->tempVector().x > -this->field_0x128 &&
-                             this->renderPosition().y - this->tempVector().y < this->field_0x128 &&
-                             this->renderPosition().y - this->tempVector().y > -this->field_0x128 &&
-                             this->renderPosition().z - this->tempVector().z < this->field_0x128 &&
-                             this->renderPosition().z - this->tempVector().z > -this->field_0x128)) {
+                            (this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
+                             this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
+                             this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
+                             this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
+                             this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
+                             this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
                             this->targetIsActive = true;
                             break;
                         }
@@ -681,13 +681,13 @@ void PlayerFighter::update(int dt) {
                     }
                 }
                 if ((*enemies)[this->field_0x38]->isActive() && !(*enemies)[this->field_0x38]->isDead()) {
-                    this->tempVector() = (*enemies)[this->field_0x38]->getPosition();
-                    if (!(this->renderPosition().x - this->tempVector().x < this->field_0x128 &&
-                          this->renderPosition().x - this->tempVector().x > -this->field_0x128 &&
-                          this->renderPosition().y - this->tempVector().y < this->field_0x128 &&
-                          this->renderPosition().y - this->tempVector().y > -this->field_0x128 &&
-                          this->renderPosition().z - this->tempVector().z < this->field_0x128 &&
-                          this->renderPosition().z - this->tempVector().z > -this->field_0x128)) {
+                    this->tempVector = (*enemies)[this->field_0x38]->getPosition();
+                    if (!(this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
+                          this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
+                          this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
+                          this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
+                          this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
+                          this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
                         this->targetIsActive = false;
                         this->field_0x38 = -1;
                     }
@@ -701,14 +701,14 @@ void PlayerFighter::update(int dt) {
                     if (!(*enemies)[i] || !(*enemies)[i]->isActive() || (*enemies)[i]->isDead()) {
                         continue;
                     }
-                    this->tempVector() = (*enemies)[i]->getPosition();
+                    this->tempVector = (*enemies)[i]->getPosition();
                     if ((this->shipGroup != 8 && this->player->turnedEnemy()) ||
-                        (this->renderPosition().x - this->tempVector().x < this->field_0x128 &&
-                         this->renderPosition().x - this->tempVector().x > -this->field_0x128 &&
-                         this->renderPosition().y - this->tempVector().y < this->field_0x128 &&
-                         this->renderPosition().y - this->tempVector().y > -this->field_0x128 &&
-                         this->renderPosition().z - this->tempVector().z < this->field_0x128 &&
-                         this->renderPosition().z - this->tempVector().z > -this->field_0x128)) {
+                        (this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
+                         this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
+                         this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
+                         this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
+                         this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
+                         this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
                         this->targetIsActive = true;
                         this->field_0x38 = i;
                         break;
@@ -780,9 +780,9 @@ void PlayerFighter::update(int dt) {
                                         this->spacePoint = nav;
                                         nav->take();
                                     }
-                                    this->steerVector() = this->KIPlayer::route->getDockingTarget()->getPosition() +
+                                    this->auxVector = this->KIPlayer::route->getDockingTarget()->getPosition() +
                                                           MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), nav->position);
-                                    if ((int) VectorLength(this->steerVector() - this->getPosition()) < 2000) {
+                                    if ((int) VectorLength(this->auxVector - this->getPosition()) < 2000) {
                                         // close enough: ease into the docking point
                                         this->state = 8;
                                         delete this->easeMatrix;
@@ -801,7 +801,7 @@ void PlayerFighter::update(int dt) {
                                         MatrixSetRotation(dockMatrix, right, up, dockDir);
                                         this->easeMatrix = new AbyssEngine::EaseInOutMatrix(this->player->transform, dockMatrix, 3000);
                                     } else {
-                                        this->targetPos = this->steerVector();
+                                        this->targetPos = this->auxVector;
                                     }
                                 }
                             }
@@ -812,8 +812,8 @@ void PlayerFighter::update(int dt) {
                     this->field_0x38 = 0;
                     this->targetPlayer = this->player->getEnemy(0);
                     if (this->targetPlayer) {
-                        this->tempVector() = this->targetPlayer->getPosition();
-                        this->targetPos = this->tempVector();
+                        this->tempVector = this->targetPlayer->getPosition();
+                        this->targetPos = this->tempVector;
                     }
                 }
             } else {
@@ -821,10 +821,10 @@ void PlayerFighter::update(int dt) {
                     this->field_0x38 = 0;
                 }
                 this->targetPlayer = this->player->getEnemy(this->field_0x38);
-                this->tempVector() = this->targetPlayer->getPosition();
-                this->targetPos.x = this->tempVector().x;
-                this->targetPos.y = this->tempVector().y;
-                this->targetPos.z = this->tempVector().z;
+                this->tempVector = this->targetPlayer->getPosition();
+                this->targetPos.x = this->tempVector.x;
+                this->targetPos.y = this->tempVector.y;
+                this->targetPos.z = this->tempVector.z;
             }
         } else if (this->KIPlayer::route) {
             this->KIPlayer::route->update(this->geometry->getPosition());
@@ -873,21 +873,21 @@ void PlayerFighter::update(int dt) {
         this->player->StopEngineSound();
     }
 
-    this->distanceToTarget.x = this->targetPos.x - this->renderPosition().x;
-    this->distanceToTarget.y = this->targetPos.y - this->renderPosition().y;
-    this->distanceToTarget.z = this->targetPos.z - this->renderPosition().z;
+    this->distanceToTarget.x = this->targetPos.x - this->shipPosition.x;
+    this->distanceToTarget.y = this->targetPos.y - this->shipPosition.y;
+    this->distanceToTarget.z = this->targetPos.z - this->shipPosition.z;
 
     // sleeping enemies wake up when the ego ship (or its guided rocket) comes near
     if (this->player->enemyFlagsLo && (this->state == 5 || (this->wingmanFlag && this->field_0xe4 == 1)) &&
         this->field_0x128 > 0) {
         if (this->level->getPlayer()->isInRocketControl()) {
-            this->tempVector() = this->level->getPlayer()->getTargetFollowCamera()->getTarget()->getPosition();
+            this->tempVector = this->level->getPlayer()->getTargetFollowCamera()->getTarget()->getPosition();
         } else {
-            this->tempVector() = this->level->getPlayer()->player->getPosition();
+            this->tempVector = this->level->getPlayer()->player->getPosition();
         }
-        this->distanceToTarget.x = this->tempVector().x - this->renderPosition().x;
-        this->distanceToTarget.y = this->tempVector().y - this->renderPosition().y;
-        this->distanceToTarget.z = this->tempVector().z - this->renderPosition().z;
+        this->distanceToTarget.x = this->tempVector.x - this->shipPosition.x;
+        this->distanceToTarget.y = this->tempVector.y - this->shipPosition.y;
+        this->distanceToTarget.z = this->tempVector.z - this->shipPosition.z;
         if (this->distanceToTarget.x < 25000.0f && this->distanceToTarget.x > -25000.0f &&
             this->distanceToTarget.y < 25000.0f && this->distanceToTarget.y > -25000.0f &&
             this->distanceToTarget.z < 25000.0f && this->distanceToTarget.z > -25000.0f) {
@@ -899,8 +899,8 @@ void PlayerFighter::update(int dt) {
 
     if (this->boundingVolumes) {
         for (uint32_t i = 0; i < this->boundingVolumes->size(); ++i) {
-            (*this->boundingVolumes)[i]->update(this->renderPosition().x, this->renderPosition().y,
-                                                this->renderPosition().z);
+            (*this->boundingVolumes)[i]->update(this->shipPosition.x, this->shipPosition.y,
+                                                this->shipPosition.z);
         }
     }
 
@@ -975,11 +975,12 @@ void PlayerFighter::update(int dt) {
             this->field_0x73 = 0;
             this->dyingTimer = Globals::rnd->nextInt(1500) + 1500;
             this->dyingDirection = this->geometry->getDirection();
-            this->level->field_74->emitManual(this->level->field_3c, this->renderPosition(), 0, Vector(), -1.0f);
-            Globals::sound->play(20, Globals::options[15] ? &this->renderPosition() : nullptr, nullptr, 0.0f);
-            this->dyingSpin = VectorNormalize(Vector{(float) (Globals::rnd->nextInt(200) - 100),
-                                                     (float) (Globals::rnd->nextInt(200) - 100),
-                                                     (float) (Globals::rnd->nextInt(200) - 100)});
+            this->level->field_74->emitManual(this->level->field_3c, this->shipPosition, 0, Vector(), -1.0f);
+            Globals::sound->play(20, Globals::options[15] ? &this->shipPosition : nullptr, nullptr, 0.0f);
+            float x = (float) (Globals::rnd->nextInt(200) - 100);
+            float y = (float) (Globals::rnd->nextInt(200) - 100);
+            float z = (float) (Globals::rnd->nextInt(200) - 100);
+            this->dyingSpin = VectorNormalize(Vector{x, y, z});
             this->dyingSpin *= 0.05f;
             this->level->field_74->enableSystemEmit(this->engineTrailSystem, true);
             this->level->field_8c->enableSystemEmit(this->field_0x130, false);
@@ -1070,12 +1071,12 @@ void PlayerFighter::update(int dt) {
                                    this->distanceToTarget.x > -this->shootError &&
                                    this->distanceToTarget.y < this->shootError &&
                                    this->distanceToTarget.y > -this->shootError &&
-                                   this->targetPos.x - this->renderPosition().x < 35000.0f &&
-                                   this->targetPos.x - this->renderPosition().x > -35000.0f &&
-                                   this->targetPos.y - this->renderPosition().y < 35000.0f &&
-                                   this->targetPos.y - this->renderPosition().y > -35000.0f &&
-                                   this->targetPos.z - this->renderPosition().z < 35000.0f &&
-                                   this->targetPos.z - this->renderPosition().z > -35000.0f) {
+                                   this->targetPos.x - this->shipPosition.x < 35000.0f &&
+                                   this->targetPos.x - this->shipPosition.x > -35000.0f &&
+                                   this->targetPos.y - this->shipPosition.y < 35000.0f &&
+                                   this->targetPos.y - this->shipPosition.y > -35000.0f &&
+                                   this->targetPos.z - this->shipPosition.z < 35000.0f &&
+                                   this->targetPos.z - this->shipPosition.z > -35000.0f) {
                             if (this->field_0x25 && this->targetPlayer->isActive() && !this->targetPlayer->isDead() &&
                                 !(this->targetPlayer->egoFlag && this->level->getPlayer() &&
                                   this->level->getPlayer()->isDockedToDockingPoint() &&
@@ -1225,17 +1226,17 @@ void PlayerFighter::update(int dt) {
                     Array<KIPlayer *> *landmarks = this->level->getLandmarks();
                     if (landmarks) {
                         for (uint32_t i = 0; i < landmarks->size(); ++i) {
-                            if (!(*landmarks)[i] || !(*landmarks)[i]->outerCollide(this->renderPosition())) {
+                            if (!(*landmarks)[i] || !(*landmarks)[i]->outerCollide(this->shipPosition)) {
                                 continue;
                             }
-                            Vector away = (*landmarks)[i]->getProjectionVector(this->renderPosition());
+                            Vector away = (*landmarks)[i]->getProjectionVector(this->shipPosition);
                             if (away != Vector{0.0f, 0.0f, 0.0f}) {
-                                this->tempVector() = this->geometry->getDirection();
-                                away -= this->tempVector();
+                                this->tempVector = this->geometry->getDirection();
+                                away -= this->tempVector;
                                 away *= this->currentSpeed * 0.03f;
-                                this->steerVector() = this->tempVector() + away;
-                                this->steerVector() = VectorNormalize(this->steerVector());
-                                this->geometry->setDirection(this->steerVector(), Vector{0.0f, 1.0f, 0.0f});
+                                this->auxVector = this->tempVector + away;
+                                this->auxVector = VectorNormalize(this->auxVector);
+                                this->geometry->setDirection(this->auxVector, Vector{0.0f, 1.0f, 0.0f});
                                 this->geometry->moveForward(this->currentSpeed * (float) dt);
                                 break;
                             }
@@ -1244,17 +1245,17 @@ void PlayerFighter::update(int dt) {
                     Array<KIPlayer *> *ships = this->level->getEnemies();
                     if (ships) {
                         for (uint32_t i = 0; i < ships->size(); ++i) {
-                            if (!(*ships)[i] || !(*ships)[i]->outerCollide(this->renderPosition())) {
+                            if (!(*ships)[i] || !(*ships)[i]->outerCollide(this->shipPosition)) {
                                 continue;
                             }
-                            Vector away = (*ships)[i]->getProjectionVector(this->renderPosition());
+                            Vector away = (*ships)[i]->getProjectionVector(this->shipPosition);
                             if (away != Vector{0.0f, 0.0f, 0.0f}) {
-                                this->tempVector() = this->geometry->getDirection();
-                                away -= this->tempVector();
+                                this->tempVector = this->geometry->getDirection();
+                                away -= this->tempVector;
                                 away *= this->currentSpeed * 0.03f;
-                                this->steerVector() = this->tempVector() + away;
-                                this->steerVector() = VectorNormalize(this->steerVector());
-                                this->geometry->setDirection(this->steerVector(), Vector{0.0f, 1.0f, 0.0f});
+                                this->auxVector = this->tempVector + away;
+                                this->auxVector = VectorNormalize(this->auxVector);
+                                this->geometry->setDirection(this->auxVector, Vector{0.0f, 1.0f, 0.0f});
                                 this->geometry->moveForward(this->currentSpeed * (float) dt);
                                 break;
                             }
@@ -1280,16 +1281,17 @@ void PlayerFighter::update(int dt) {
                 if (this->dyingTimer >= 0) {
                     return;
                 }
-                this->explosion->start(this->renderPosition(), Vector{0.0f, 0.0f, 0.0f});
+                this->explosion->start(this->shipPosition, Vector{0.0f, 0.0f, 0.0f});
                 this->level->field_74->enableSystemEmit(this->engineTrailSystem, false);
                 if (reinterpret_cast<const float &>(Globals::options[40]) > 0.0f) {
                     this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
                     this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, false);
                 }
                 this->player->setBombForce((float) Globals::rnd->nextInt(50) * 0.01f + 50.0f);
-                this->field_0x17c = VectorNormalize(Vector{(float) (Globals::rnd->nextInt(200) - 100),
-                                                           (float) (Globals::rnd->nextInt(200) - 100),
-                                                           (float) (Globals::rnd->nextInt(200) - 100)});
+                float x = (float) (Globals::rnd->nextInt(200) - 100);
+                float y = (float) (Globals::rnd->nextInt(200) - 100);
+                float z = (float) (Globals::rnd->nextInt(200) - 100);
+                this->field_0x17c = VectorNormalize(Vector{x, y, z});
                 this->dyingTimer = 0;
                 this->state = 4;
                 if (this->spacePoint && !this->spacePoint->isFree()) {
@@ -1326,9 +1328,9 @@ void PlayerFighter::update(int dt) {
                     // the cargo crate drifts away from the wreck
                     float bombForce = this->player->getBombForce();
                     if (bombForce > 0.0f) {
-                        this->tempVector() = this->field_0x17c * bombForce;
-                        this->wreckGeometry()->translate(this->tempVector());
-                        this->geometry->translate(this->tempVector());
+                        this->tempVector = this->field_0x17c * bombForce;
+                        this->wreckGeometry()->translate(this->tempVector);
+                        this->geometry->translate(this->tempVector);
                         bombForce *= 0.98f;
                         if (bombForce < 0.05f) {
                             bombForce = 0.0f;
@@ -1398,9 +1400,9 @@ void PlayerFighter::update(int dt) {
                 SpacePoint *dockPoint = dock->getNearestDockingPoint(
                         this->KIPlayer::route->getDockingTarget()->getPosition() +
                         MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), this->spacePoint->position));
-                this->steerVector() = this->KIPlayer::route->getDockingTarget()->getPosition() +
+                this->auxVector = this->KIPlayer::route->getDockingTarget()->getPosition() +
                                       MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
-                if (kShipDockRadius[this->type] > (int) VectorLength(this->steerVector() - this->getPosition())) {
+                if (kShipDockRadius[this->type] > (int) VectorLength(this->auxVector - this->getPosition())) {
                     this->setExhaustVisible(false);
                     this->dockTimer = 0;
                     this->passengersMoved = 0;
@@ -1414,7 +1416,7 @@ void PlayerFighter::update(int dt) {
                 float step = (float) dt;
                 this->easeMatrix->Increase(step);
                 Matrix eased = this->easeMatrix->GetValue();
-                MatrixSetTranslation(eased, this->getPosition() + (this->steerVector() - this->getPosition()) * step * 0.0006f);
+                MatrixSetTranslation(eased, this->getPosition() + (this->auxVector - this->getPosition()) * step * 0.0006f);
                 this->geometry->setMatrix(eased);
                 this->player->transform = eased;
                 return;

@@ -25,7 +25,7 @@ public:
     // Geometry@0x124). field_0x40/hasCargo inherit by name.
     uint8_t &empActive() { return this->field_0x24; }
     int &faction() { return this->shipGroup; }
-    Vector &position() { return reinterpret_cast<Vector &>(this->autoPilotState); }
+    Vector &position() { return this->shipPosition; }
     uint8_t &field_0x41() { return reinterpret_cast<uint8_t &>(this->deadFlag); }
     Array<int> *&lootList() { return this->cargo; }
     float &spawnX() { return this->posX; }
@@ -33,7 +33,7 @@ public:
     float &spawnZ() { return this->posZ; }
     AEGeometry *&secondaryGeometry() { return this->crateGeometry; }
     uint8_t &collisionEnabled() { return reinterpret_cast<uint8_t &>(this->field_0x8c); } // ASM: orig reads @0x8c
-    Vector &targetPos() { return reinterpret_cast<Vector &>(this->field_0x90); }
+    Vector &targetPos() { return this->tempVector; }
     int &kind() { return this->type; }
     int &explosionTimer() { return this->field_0xd8; }
     int &aiActiveCounter() { return this->engineSoundEvent; }
