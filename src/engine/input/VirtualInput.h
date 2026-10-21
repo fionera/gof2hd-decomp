@@ -7,6 +7,36 @@ namespace AbyssEngine {
 
 extern "C" unsigned int F(unsigned int value); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
+int IsInGameSubMenuNotActive(int);
+
+int IsDialogNotVisible2(int);
+
+int IsDialogVisible(int);
+
+int IsStarMapNotVisible(int);
+
+int IsDialogNotVisible(int);
+
+int IsInPrimaryMenu(int);
+
+int IsInGameSubMenuActive(int);
+
+int HideMouse();
+
+void CaptureMouse(int capture);
+
+int SwitchToOtherMouseConifguration(int config);
+
+void UseJoystick(int use);
+
+int GetUseJoystick();
+
+bool SlowMotion();
+
+bool SpeedUp();
+
+void setValuesForGamepad(float x, float y);
+
 int GetKeyState(char *name);
 
 int GetKeyState(int index);
