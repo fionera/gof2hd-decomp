@@ -783,10 +783,15 @@ namespace AbyssEngine {
                 *out++ = *src++;
         } else {
             if (fraction > 0.0f) {
-                while (fraction * 10.0f < 1.0f) {
+                // Scale the fraction up until its first digit is non-zero.
+                float prev;
+                exponent = 1;
+                do {
+                    prev = fraction;
                     exponent--;
                     fraction *= 10.0f;
-                }
+                } while (fraction < 1.0f);
+                fraction = prev;
             }
             out = buf;
         }
