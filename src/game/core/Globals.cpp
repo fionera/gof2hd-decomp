@@ -2574,8 +2574,8 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
                             unsigned short &o14, unsigned short &o15, unsigned short &o16,
                             unsigned short &o17) {
     CoordsObject *coords = (CoordsObject *) Globals::options;
-    float margin = Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f);
     float minFire = Globals::iPadHD ? 210.9375f : (Globals::iPadLarge ? 300.0f : 150.0f);
+    float margin = Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f);
     int bottom = Globals::h - p2;
     float requested = (float) p1;
     float fire = requested;
