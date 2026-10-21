@@ -1988,7 +1988,7 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int MeshConvertToVBOIntern(Mesh *m) {
-        if (m == 0 || *g_Mesh_vboEnabledFlag == 0)
+        if (m == 0 || !Engine::vboSupported)
             return -4;
         if (m->uploaded != 0 || (short) m->indexCount == 0)
             return -4;
@@ -2518,7 +2518,7 @@ namespace AbyssEngine {
 
     int MeshConvertToVBO(Mesh *mesh) {
         int result = -4;
-        if (mesh != 0 && *g_Mesh_vboEnabledFlag != 0) {
+        if (mesh != 0 && Engine::vboSupported) {
             if (mesh->uploaded != 0 || mesh->vboEligible == 0)
                 return -4;
             MeshConvertToVBOIntern(mesh);
