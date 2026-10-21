@@ -828,8 +828,10 @@ namespace AbyssEngine {
         if (AEFile::Read(2, &(*slot)->vertexCount, handle) == 0)
             return -1;
 
-        float minimum[3] = {10000000.0f, 10000000.0f, 10000000.0f};
-        float maximum[3] = {-10000000.0f, -10000000.0f, -10000000.0f};
+        float minimum[3];
+        float maximum[3];
+        minimum[0] = minimum[1] = minimum[2] = 10000000.0f;
+        maximum[0] = maximum[1] = maximum[2] = -10000000.0f;
         unsigned int packed = flags & 4;
 
         // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
