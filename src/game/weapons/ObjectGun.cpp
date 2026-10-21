@@ -192,10 +192,9 @@ void ObjectGun::update(int dt) {
             PlayerEgo *ego = this->level->getPlayer();
             Vector position = this->gun->isPlayerGun() ? ego->getPosition() : this->gun->owner->getPosition();
 
-            Gun *gun = this->gun;
             Matrix shipMatrix = reinterpret_cast<const Matrix &>(
-                    (gun->isPlayerGun() ? ego->player : gun->owner)->transform[0]);
-            Vector barrel = gun->offset;
+                    (this->gun->isPlayerGun() ? ego->player : this->gun->owner)->transform[0]);
+            Vector barrel = this->gun->offset;
             barrel.z += -100.0f;
             position += AbyssEngine::AEMath::MatrixRotateVector(shipMatrix, barrel);
             this->geometry->setPosition(position);
@@ -204,7 +203,7 @@ void ObjectGun::update(int dt) {
 
             if (this->gun->weaponType == ITEM_SORT_TURRET) {
                 Matrix turret = ego->turretRoot->getMatrix() * ego->turretGeometry->getMatrix();
-                gun = this->gun;
+                Gun *gun = this->gun;
                 int item = gun->itemIndex;
                 // Muzzle offset along the barrel per turret model.
                 float barrelLength;
@@ -228,18 +227,20 @@ void ObjectGun::update(int dt) {
                 else if (item == 0xb6)
                     muzzle.z = 150.0f;
                 if (gun->field_0xa4_b0) {
-                    if (item == 0xb5) {
+                    if (item == 0xb5)
                         muzzle.x = gun->field_0xa6 ? -35.0f : 35.0f;
-                    } else {
-                        float side = item == 0x30 ? 20.0f : 45.0f;
-                        muzzle.x = gun->field_0xa6 ? gun->offset.x + -side : side - gun->offset.x;
-                    }
+                    else if (item == 0x30)
+                        muzzle.x = gun->field_0xa6 ? gun->offset.x + -20.0f : 20.0f - gun->offset.x;
+                    else
+                        muzzle.x = gun->field_0xa6 ? gun->offset.x + -45.0f : 45.0f - gun->offset.x;
                 }
                 if (gun->field_0xa5) {
-                    if (item == 0xe0)
+                    if (item != 0xe0) {
+                        if (item == 0xb5)
+                            muzzle.y = gun->field_0xa7 ? -16.5f : 16.5f;
+                    } else {
                         muzzle.y = gun->field_0xa7 ? -13.0f : 13.0f;
-                    else if (item == 0xb5)
-                        muzzle.y = gun->field_0xa7 ? -16.5f : 16.5f;
+                    }
                 }
                 Vector rotated = AbyssEngine::AEMath::MatrixRotateVector(turret, muzzle);
                 this->geometry->setMatrix(turret);
