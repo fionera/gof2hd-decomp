@@ -172,25 +172,23 @@ bool Standing::isFriend(int race) {
 }
 
 float Standing::getMissionBonus(int race) {
-    int v;
+    float r;
     switch (race) {
         case 0:
-            v = this->standings[0];
-            break;
+            r = (float) this->standings[0] / 100.0f;
+            return r < 0.0f ? 0.0f : r;
         case 1:
-            v = -this->standings[0];
-            break;
+            r = (float) -this->standings[0] / 100.0f;
+            return r < 0.0f ? 0.0f : r;
         case 2:
-            v = this->standings[1];
-            break;
+            r = (float) this->standings[1] / 100.0f;
+            return r < 0.0f ? 0.0f : r;
         case 3:
-            v = -this->standings[1];
-            break;
+            r = (float) -this->standings[1] / 100.0f;
+            return r < 0.0f ? 0.0f : r;
         default:
             return 0.0f;
     }
-    float r = (float) v / 100.0f;
-    return r < 0.0f ? 0.0f : r;
 }
 
 void Standing::applyDisable(int race) {
