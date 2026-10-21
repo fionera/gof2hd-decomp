@@ -53,31 +53,13 @@ namespace AbyssEngine {
 
 namespace {
 
-    static const float g_PE_cft_transformVal = 0.0f;
     static const float g_PE_shakeDiv = 40000.0f;
-    static const float g_PE_mtp_strafeEps = 0.0f;
-    static const float g_PE_mtp_strafeReset = 0.0f;
-    static const float g_PE_mtp_strafeK = 0.0f;
     static const float g_PE_strafeLoadK = 0.4f;
     static const float g_PE_strafeLoadB = 0.6f;
     static const float g_PE_strafeAccelK = 0.002f;
-    static float *g_PE_dr_posLock = nullptr;
-    static float *g_PE_dr_posNoLock = nullptr;
-    static float *g_PE_dr_posBlink = nullptr;
-    static float *g_PE_dr_posNormal = nullptr;
     // Pitch ramp delta constants (down/up non-turret paths)
     // Yaw ramp delta constants (right/left non-turret paths)
 }
-
-
-struct PE_MatrixBuf {
-    float m00;
-    float pad0[4];
-    float m11;
-    float pad1[4];
-    float m22;
-    float pad2[1];
-};
 
 struct PE_AsteroidMineTarget {
     char pad0[0x44];
@@ -88,18 +70,6 @@ static_assert(__builtin_offsetof(PE_AsteroidMineTarget, miningFlag) == 0x44, "mi
 #endif
 
 
-void *TransformGetLocal(void *, int); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-void MatrixSetRotation(void *, void *, float, float, float); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-void PE_mtp_steer(PlayerEgo *self, const float *target, int steer, float speed);
-
-
-void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-static inline void MatrixGetPosition(void *out, void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void PlayerEgo::setVisible(bool v) {
     this->visible = v;
@@ -183,9 +153,8 @@ void PlayerEgo::forceBoost() {
     this->boostDelay = 0;
 }
 
-int PlayerEgo::isDead() {
-    PlayerEgo *self = this;
-    return ((PlayerEgo *) (self))->getHitpoints() < 1;
+bool PlayerEgo::isDead() {
+    return this->getHitpoints() < 1;
 }
 
 int PlayerEgo::getAutoPilotTarget() {
@@ -301,7 +270,7 @@ void PlayerEgo::setRocketControl(Gun *gun, AEGeometry *geo) {
     int psm_arg = lvl->movingStarsIndex;
     ParticleSystemManager *psm = (ParticleSystemManager *) (intptr_t) lvl->skybox2Mesh;
     if (gun == 0) {
-        ((ParticleSystemManager *) (psm))->systemSetMatrix(psm_arg, (Matrix *) ((Player *) this->player)->transform);
+        ((ParticleSystemManager *) (psm))->systemSetMatrix(psm_arg, &((Player *) this->player)->transform);
         this->rocketBanking = 0.0f;
         return;
     }
@@ -828,128 +797,132 @@ void PlayerEgo::refillGunDelay() {
     ((Player *) this->player)->refillGunDelay(0);
 }
 
-void PE_cft_place(PlayerEgo *self, int turretIdx);
-
 void PlayerEgo::checkForTurret() {
-    if (this->turretMode != 0)
+    if (this->turretMode)
         return;
-    int avail = ((Player *) (this->player))->gunAvailable(0);
-    this->turretMode = (unsigned char) avail;
-    if (avail == 0)
+    this->turretMode = this->player->gunAvailable(2);
+    if (!this->turretMode)
         return;
 
     this->autoTurretEquipped = 0;
-    Array<Item *> *equip = ((Ship *) (Globals::status->getShip()))->getEquipment(2);
-    Item **item = equip->data_;
-    this->turretPitch = (int) ((double) item[0]->getAttribute(0) * 1.5);
+    Array<Item *> *equipment = Globals::status->getShip()->getEquipment(2);
+    this->turretPitch = (int) ((double) (*equipment)[0]->getAttribute(17) * 1.5);
 
-    int idx = item[0]->getIndex();
-    unsigned short base = 0xffff, barrel = 0xffff;
-    int muzzle = -1, child = -1, extra = -1, extra2 = -1;
-
-    if (idx == 0xe0) {
-        base = 0x499a;
-        barrel = 0x499b;
-        muzzle = 0x499c;
-        child = 0x499d;
-    } else if (idx == 0x30) {
-        base = 0x1a74;
-        barrel = 0x1a75;
-    } else if (idx == 0x31) {
-        base = 0x1a76;
-        barrel = 0x1a77;
-    } else if (idx == 0xb4) {
+    unsigned short baseMesh;
+    unsigned short barrelMesh;
+    int baseExtraMesh = -1;
+    int barrelExtraMesh = -1;
+    int barrelExtraMesh2 = -1;
+    int glowMesh = -1;
+    float offsetX = 0.0f;
+    float offsetY;
+    float offsetZ = 0.0f;
+    int turretIndex = (*equipment)[0]->getIndex();
+    if (turretIndex == 48) {
+        baseMesh = 0x1a74;
+        barrelMesh = 0x1a75;
+        offsetY = 55.0f;
+    } else if (turretIndex == 47) {
+        baseMesh = 0x1a72;
+        barrelMesh = 0x1a73;
+        offsetY = 60.0f;
+    } else if (turretIndex == 49) {
+        baseMesh = 0x1a76;
+        barrelMesh = 0x1a77;
+        offsetY = 60.0f;
+    } else if (turretIndex == 180) {
         this->autoTurretEquipped = 1;
-        base = 0x1a95;
-        barrel = 0x1a96;
-    } else if (idx == 0xb5) {
+        baseMesh = 0x1a95;
+        barrelMesh = 0x1a96;
+        offsetY = 84.0f;
+    } else if (turretIndex == 181) {
         this->autoTurretEquipped = 1;
-        base = 0x1a97;
-        barrel = 0x1a98;
-    } else if (idx == 0xb6) {
+        baseMesh = 0x1a97;
+        barrelMesh = 0x1a98;
+        offsetY = 88.0f;
+        offsetZ = -11.0f;
+    } else if (turretIndex == 182) {
         this->autoTurretEquipped = 1;
-        base = 0x1a99;
-        barrel = 0x1a9a;
-    } else if (idx == 0xc6) {
-        base = 0x4963;
-        barrel = 0x4964;
-        muzzle = 0x4966;
-        child = 0x4967;
-        extra = -1;
-        extra2 = 0x4a7f;
-    } else if (idx == 0xc7) {
-        base = 0x4968;
-        barrel = 0x4969;
-        muzzle = 0x496a;
-        child = 0x496b;
-        extra = -1;
-        extra2 = 0x4a7f;
-    } else if (idx == 0xc8) {
-        base = 0x496c;
-        barrel = 0x496d;
-        muzzle = 0x496e;
-        child = 0x496f;
-        extra = 0x4970;
-        extra2 = 0x4a7f;
-    } else if (idx == 0x2f) {
-        base = 0x1a72;
-        barrel = 0x1a73;
+        baseMesh = 0x1a99;
+        barrelMesh = 0x1a9a;
+        offsetX = 34.0f;
+        offsetY = 88.0f;
+        offsetZ = 1.6f;
+    } else if (turretIndex == 198) {
+        baseMesh = 0x4963;
+        barrelMesh = 0x4967;
+        baseExtraMesh = 0x4964;
+        barrelExtraMesh = 0x4966;
+        glowMesh = 0x4a7f;
+        offsetY = 80.0f;
+    } else if (turretIndex == 199) {
+        baseMesh = 0x4968;
+        barrelMesh = 0x496b;
+        baseExtraMesh = 0x4969;
+        barrelExtraMesh = 0x496a;
+        glowMesh = 0x4a7f;
+        offsetY = 38.0f;
+    } else if (turretIndex == 200) {
+        baseMesh = 0x496c;
+        barrelMesh = 0x496f;
+        baseExtraMesh = 0x496d;
+        barrelExtraMesh = 0x496e;
+        barrelExtraMesh2 = 0x4970;
+        glowMesh = 0x4a7f;
+        offsetY = 75.0f;
+    } else if (turretIndex == 224) {
+        baseMesh = 0x499a;
+        barrelMesh = 0x499b;
+        baseExtraMesh = 0x499c;
+        barrelExtraMesh = 0x499d;
+        offsetY = 82.0f;
+    } else {
+        baseMesh = 0xffff;
+        barrelMesh = 0xffff;
+        offsetY = 0.0f;
     }
 
-    PaintCanvas *canvas = Globals::Canvas;
-
-    AEGeometry *baseGeo = new AEGeometry((uint16_t) base, (PaintCanvas *) canvas, false);
-    this->turretBaseGeo = baseGeo;
-    AEGeometry *yawGeo = new AEGeometry((uint16_t) barrel, (PaintCanvas *) canvas, false);
-    this->turretGeometry = yawGeo;
-    ((AEGeometry *) yawGeo)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-    AEGeometry *muzzleRoot = new AEGeometry((PaintCanvas *) canvas);
-    this->turretRoot = muzzleRoot;
-
-    if (muzzle != -1) {
-        AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)muzzle, (PaintCanvas *) canvas, false);
-        ((AEGeometry *) (this->turretBaseGeo))->addChild((uint32_t)(uintptr_t)g);
-        delete (AEGeometry *) g;
+    this->turretBaseGeo = new AEGeometry(baseMesh, Globals::Canvas, false);
+    this->turretGeometry = new AEGeometry(barrelMesh, Globals::Canvas, false);
+    this->turretGeometry->setRotationOrder((AbyssEngine::AEMath::RotationOrder) 2);
+    this->turretRoot = new AEGeometry(Globals::Canvas);
+    if (baseExtraMesh != -1) {
+        AEGeometry *part = new AEGeometry((unsigned short) baseExtraMesh, Globals::Canvas, false);
+        this->turretBaseGeo->addChild(part->transform);
+        delete part;
     }
-    if (child != -1) {
-        AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)child, (PaintCanvas *) canvas, false);
-        ((AEGeometry *) (this->turretGeometry))->addChild((uint32_t)(uintptr_t)g);
-        delete (AEGeometry *) g;
+    if (barrelExtraMesh != -1) {
+        AEGeometry *part = new AEGeometry((unsigned short) barrelExtraMesh, Globals::Canvas, false);
+        this->turretGeometry->addChild(part->transform);
+        delete part;
     }
-    if (extra != -1) {
-        AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)extra, (PaintCanvas *) canvas, false);
-        ((AEGeometry *) (this->turretGeometry))->addChild((uint32_t)(uintptr_t)g);
-        delete (AEGeometry *) g;
+    if (barrelExtraMesh2 != -1) {
+        AEGeometry *part = new AEGeometry((unsigned short) barrelExtraMesh2, Globals::Canvas, false);
+        this->turretGeometry->addChild(part->transform);
+        delete part;
     }
-    if (extra2 != -1) {
-        AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)extra2, (PaintCanvas *) canvas, false);
-        this->turretExtraGeo = g;
-        ((AEGeometry *) (this->turretGeometry))->addChild((uint32_t)(uintptr_t)g);
-        AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            (unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
-        ((AbyssEngine::Transform *) (tf))->SetVisible(this->turretActive != 0);
+    if (glowMesh != -1) {
+        this->turretExtraGeo = new AEGeometry((unsigned short) glowMesh, Globals::Canvas, false);
+        this->turretGeometry->addChild(this->turretExtraGeo->transform);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretExtraGeo->transform))
+            ->SetVisible(this->turretActive);
     }
-
-    AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-        (unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
-    ((AbyssEngine::Transform *) tf)->boundingRadius = g_PE_cft_transformVal;
-    tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-        (unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
-    ((AbyssEngine::Transform *) (tf))->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
-
-    ((AEGeometry *) (this->turretBaseGeo))->setPosition(*(Vector *) &this->dockArrowImage);
-    ((AEGeometry *) (this->turretGeometry))->setPosition(*(Vector *) &this->dockArrowImage);
-
-    PE_cft_place(this, idx);
-
-    ((AEGeometry *) (this->turretRoot))->addChild((uint32_t)(uintptr_t)this->turretBaseGeo);
-    ((AEGeometry *) (this->turretRoot))->addChild((uint32_t)(uintptr_t)this->turretGeometry);
-
-    if (this->cloak != 0 && this->turretMode != 0) {
-        ((PaintCanvas *) (long) (canvas))->MeshCloneMaterial(
-            ((AEGeometry *) this->turretBaseGeo)->meshId, this->cloakMaterial2);
-        ((PaintCanvas *) (long) (canvas))->MeshCloneMaterial(
-            ((AEGeometry *) this->turretGeometry)->meshId, this->cloakMaterial3);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretRoot->transform))->boundingRadius =
+        1000000.0f;
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretGeometry->transform))
+        ->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
+    this->turretBaseGeo->setPosition(this->turretOffsetVec);
+    this->turretGeometry->setPosition(this->turretOffsetVec);
+    this->turretGeometry->translate(offsetX, offsetY, offsetZ);
+    if (!((*equipment)[0]->getIndex() >= 198 && (*equipment)[0]->getIndex() < 201)) {
+        this->turretBaseGeo->rotate(0.0f, 3.1415927f, 0.0f);
+        this->turretGeometry->rotate(0.0f, 3.1415927f, 0.0f);
+    }
+    this->turretRoot->addChild(this->turretBaseGeo->transform);
+    this->turretRoot->addChild(this->turretGeometry->transform);
+    if (this->cloak && this->turretMode) {
+        Globals::Canvas->MeshCloneMaterial(this->turretBaseGeo->meshId, this->cloakMaterial2);
+        Globals::Canvas->MeshCloneMaterial(this->turretGeometry->meshId, this->cloakMaterial3);
     }
 }
 
@@ -1488,79 +1461,67 @@ void PlayerEgo::throttleChanged() {
     }
 }
 
-PlayerEgo::PlayerEgo(Player *player) {
-    this->field_0x4 = nullptr;
-    this->geometry = nullptr;
-    this->field_0x14 = nullptr;
-    this->radioRef = nullptr;
-    this->freeze = 0;
-    this->inWormhole = 0;
-    this->turretGeometry = nullptr;
-    this->turretRoot = nullptr;
-    this->turretExtraGeo = nullptr;
-    this->shieldGeometry = nullptr;
-    this->shieldVisible = 0;
-    this->rocketPitch = 0;
-    this->rocketYaw = 0;
-    this->targetFollowCamera = 0;
-    this->explosion = nullptr;
-    this->explosion2 = nullptr;
-    for (int i = 0; i < 6; i++)
-        this->field_0x94[i] = 0;
-    this->field_0xac = 0;
-    this->field_0xb0 = 0;
-    this->switchToStandardCam = 0;
-    this->field_0xb2 = 0;
-    this->engineSoundId = -1;
+PlayerEgo::PlayerEgo(Player *player)
+    : lastCrosshairPos(), lastCrosshairShootPos(), moveDirection(), moveTarget(), dockOffsetVec(), headingVec(),
+      miningUpVec(), turretOffsetVec(), emergencyVec(), strafeTargetVec(), facingVec() {
     this->boostSpeed = 5;
     this->boostTime = 5000;
     this->boostDelay = 20000;
+    this->field_0x4 = nullptr;
     this->field_0xd8 = -1;
     this->turretBaseGeo = nullptr;
-    this->moveDirection.x = 0;
-    this->moveDirection.y = 0;
-    this->moveDirection.z = 0;
-    this->moveTarget.x = 0;
-    this->moveTarget.y = 0;
-    this->moveTarget.z = 0;
+    this->turretGeometry = nullptr;
+    this->targetFollowCamera = 0;
+    this->explosion = nullptr;
+    this->explosion2 = nullptr;
     this->movingStars = 0;
     this->route = 0;
     this->pitchAccumDir = 0;
     this->yawAccumDir = 0;
-    this->field_0x108 = 0;
-    this->currentSecondaryWeaponIndex = -1;
-    this->yawAccumulator = 0;
-    this->shieldRegenTick = 0;
-    this->repairHPTick = 0;
+    this->field_0x14 = nullptr;
+    this->radioRef = nullptr;
     this->repairArmorTick = 0;
     this->lastHP = 0;
     this->shakeIntensity = 0;
-    this->boostTimer = 0;
-    this->boostingFlag = 0;
-    this->field_0x140 = 0;
-    this->collide = 0;
-    this->field_0x145 = 0;
-    this->field_0x146 = 0;
-    this->dockOffsetVec = Vector{0.0f, 0.0f, 0.0f};
+    this->shieldRegenTick = 0;
+    this->repairHPTick = 0;
+    this->field_0x108 = 0;
+    this->currentSecondaryWeaponIndex = -1;
+    this->yawAccumulator = 0;
+    this->freeze = 0;
     this->handling = 0;
+    this->agility = 0;
     this->autoPilot = 0;
     this->autoPilotTarget = 0;
     this->goingToWaypointFlag = 0;
-    this->headingVec = Vector{0.0f, 0.0f, 0.0f};
     this->turretMode = 0;
+    this->boostingFlag = 0;
+    this->boostTimer = 0;
+    this->field_0x146 = 0;
+    this->collide = 0;
+    this->field_0x145 = 0;
+    this->field_0x140 = 0;
     this->turretCamera = 0xffffffff;
     this->dockCameraNode = nullptr;
     this->dockCameraLeaf = nullptr;
-    this->autoTurretEquipped = 0;
-    this->autoTurretTimer = 0;
-    this->autoTurretFireTimer = 0;
-    this->autoTurretTarget = nullptr;
-    this->autoTurretPrevTarget = nullptr;
-    this->rocketControlGun = 0;
-    this->rocketBanking = 0.0f;
     this->dockCameraMid = nullptr;
     this->turretActive = false;
     this->field_0x1a1 = 0;
+    this->dockingPointIndex = 0;
+    this->field_0x1d4 = 0;
+    this->planetDockTimer = 0;
+    this->computerControlled = 0;
+    this->inWormhole = 0;
+    this->field_0x230 = 0;
+    this->collidesWithStationFlag = 0;
+    this->geometry = nullptr;
+    this->shakeAccum = 0;
+    this->explosionTimer = 0;
+    this->field_0x308 = 0;
+    this->turretRoot = nullptr;
+    this->turretExtraGeo = nullptr;
+    this->shieldVisible = 0;
+    this->shieldGeometry = nullptr;
     this->lookPitch = 0;
     this->lookYaw = 0;
     this->cloaked = 0;
@@ -1570,76 +1531,75 @@ PlayerEgo::PlayerEgo(Player *player) {
     this->repairBeams = nullptr;
     this->asteroidTarget = 0;
     this->dockingState = 0;
-    this->dockingPointIndex = 0;
-    this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
-    this->field_0x1d4 = 0;
     this->dockScaling = 0;
     this->miningSettleTimer = 0;
     this->dockStation = nullptr;
     this->miningGame = 0;
-    this->hackingGame = 0;
     this->dockingToStream = 0;
     this->dockedToStream = 0;
     this->dockingToPlanet = 0;
-    this->planetDockTimer = 0;
-    this->computerControlled = 0;
+    this->hackingGame = 0;
     this->turretPitch = 0;
     this->driveCharge = 0;
-    this->driveChargeMax = 0;
     this->chargingDrive = 0;
-    this->cloakCharge = 0;
-    this->cloakRechargeTimer = 0;
-    this->cloakChargeMax = 0;
+    this->driveChargeMax = 0;
     this->cloakDischargeMax = 0;
     this->shieldRegenRate = 0;
     this->field_0x21c = 0;
     this->hud = 0;
-    this->turretOffsetVec = Vector{0.0f, 0.0f, 0.0f};
-    this->field_0x230 = 0;
-    this->collidesWithStationFlag = 0;
-    this->shakeAccum = 0;
-    this->agility = 0;
-    this->pitchRamp = 0;
-    this->yawRamp = 0;
-    this->field_0x260 = 0;
-    this->field_0x264 = 0;
-    this->rollAccum = 0;
-    this->field_0x26c = 0;
-    this->yawAccumD = 0;
-    this->field_0x274 = 0;
+    this->cloakCharge = 0;
+    this->cloakRechargeTimer = 0;
+    this->cloakChargeMax = 0;
+    this->smokeSystem = -1;
+    this->explosionSmoke = -1;
+    this->field_0x309 = 1;
+    this->visible = 1;
+    this->exhaustVisible = 1;
+    this->field_0x32d = 0;
+    this->field_0x30a = 0;
+    this->aboutToReachAutoTargetFlag = 0;
+    this->maneuverType = 0;
+    this->maneuverTimer = 0;
+    this->rocketControlGun = 0;
+    this->autoTurretEquipped = 0;
+    this->autoTurretEnabled = 1;
+    this->rocketBanking = 0.0f;
+    this->rocketPitch = 0;
+    this->rocketYaw = 0;
+    this->emergencySystemTimer = 0;
+    this->emergencyVal1 = 0;
+    this->field_0xac = 0;
+    this->dockedFlag = 0;
+    this->field_0x399 = 0;
+    this->field_0xb2 = 0;
+    this->throttleStarted = 0;
+    this->autoTurretTimer = 0;
+    this->autoTurretFireTimer = 0;
+    this->autoTurretTarget = nullptr;
+    this->autoTurretPrevTarget = nullptr;
+    this->throttle = 2000;
+    this->field_0xb0 = 0;
+    this->switchToStandardCam = 0;
+    this->strafeAccel = 0;
+    this->strafeFactor = 0.1f;
+    this->field_0x384 = 0;
     this->pitchAccumD = 0;
     this->yawAccumF = 0;
-    this->rollDirection = 0;
     this->rotateX = 0;
     this->rotateY = 0;
     this->rotateZ = 0;
     this->field_0x2f5 = 0;
-    this->explosionTimer = 0;
-    this->smokeSystem = -1;
-    this->explosionSmoke = -1;
-    this->field_0x308 = 0;
-    this->field_0x309 = 1;
-    this->field_0x30a = 0;
-    this->emergencySystemTimer = 0;
-    this->emergencyVal1 = 0;
-    this->emergencyVec = Vector{0.0f, 0.0f, 0.0f};
+    this->rollDirection = 0;
     this->autoLevel = 0;
-    this->field_0x32d = 0;
-    this->visible = 1;
-    this->exhaustVisible = 1;
-    this->aboutToReachAutoTargetFlag = 0;
-    this->maneuverType = 0;
-    this->strafeTargetVec = Vector{0.0f, 0.0f, 0.0f};
-    this->facingVec = Vector{0.0f, 0.0f, 0.0f};
-    this->maneuverTimer = 0;
-    this->autoTurretEnabled = 1;
-    this->dockedFlag = 0;
-    this->field_0x399 = 0;
-    this->throttleStarted = 0;
-    this->throttle = 2000;
-    this->strafeAccel = 0;
-    this->strafeFactor = 0.1f;
-    this->field_0x384 = 0;
+    this->pitchRamp = 0;
+    this->yawRamp = 0;
+    this->field_0x260 = 0;
+    this->field_0x264 = 0;
+    this->engineSoundId = -1;
+    this->rollAccum = 0;
+    this->field_0x26c = 0;
+    this->yawAccumD = 0;
+    this->field_0x274 = 0;
 
     this->player = player;
     player->setPlayShootSound(true, 2);
@@ -2220,9 +2180,7 @@ void PlayerEgo::stopMining() {
         amount = (int) ((float) amount * 0.5f);
     if (freeSpace <= amount)
         amount = freeSpace;
-    if (freeSpace < 1) {
-        this->hud->catchCargo(oreIndex, 0, true, false, true, false, false);
-    } else {
+    if (freeSpace >= 1) {
         if (((MiningGame *) (intptr_t) this->miningGame)->gotCore()) {
             Item *core = (*Globals::items)[coreIndex]->makeItem(1);
             Globals::status->getShip()->addCargo(core);
@@ -2244,6 +2202,8 @@ void PlayerEgo::stopMining() {
         }
         if (Globals::status->getShip()->getFreeSpace() <= 0)
             this->hud->catchCargo(oreIndex, amount, true, false, true, false, false);
+    } else {
+        this->hud->catchCargo(oreIndex, 0, true, false, true, false, false);
     }
     this->setExhaustVisible(true);
     ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->hasCargo = 0;
@@ -2333,164 +2293,111 @@ void PlayerEgo::strafe(int /*dir*/, bool positive) {
     this->strafeFactor = PE_minf(this->strafeFactor * 1.5f, 1.0f);
 }
 
-void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
-    (void) kip;
-    if (((PlayerEgo *) (this))->isDead() != 0)
+void PlayerEgo::dockToDockingPoint(KIPlayer *station, Radar *radar) {
+    if (this->isDead())
         return;
 
-    if (this->dockedFlag == 0) {
-        if (radar != 0) {
+    if (!this->dockedFlag) {
+        if (station) {
+            this->asteroidTarget = (int) (intptr_t) station;
             this->dockedFlag = 1;
-            this->asteroidTarget = (int) (intptr_t) radar;
-            this->dockScaling = 0x578;
             this->miningSettleTimer = 0;
+            this->dockScaling = 1400;
             this->field_0x145 = 1;
             this->dockingPointIndex = 0;
         }
         return;
     }
 
-    bool undock = (radar == 0);
-    if (!undock) {
-        Vector pos = ((PlayerEgo *) (this))->getPosition();
-        SpacePoint *sp = (SpacePoint *) (unsigned long) this->spacePoint;
-        SpacePoint *nav = ((KIPlayer *) (radar))->getNearestNavigationPoint(pos, sp);
-        if (nav == 0) {
-            if (radar->hasReservation != 0)
-                radar->reservationDirty = 1;
-            undock = true;
-        } else {
-            if (radar->hasReservation != 0)
-                radar->reservationDirty = 1;
-
-            ((PlayerEgo *) (this))->setTurretMode(0);
+    if (station
+        && station->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint)) {
+        if (station->field_0x70)
+            station->field_0x8c = 1;
+        {
+            this->setTurretMode(false);
             this->field_0x1a1 = 0;
-            Globals::Canvas->CameraSetCurrent(
-                (unsigned int) (this->targetFollowCamera->id));
-            ((LevelScript *) (this->levelScript))->resetCamera(this->levelScript->m_pLevel);
+            Globals::Canvas->CameraSetCurrent(this->targetFollowCamera->id);
+            this->levelScript->resetCamera(this->level);
             this->PlayEngineSound();
             this->dockingPointIndex = 3;
-            this->targetFollowCamera->setLookAtCam(false);
+            this->targetFollowCamera->setLookAtCam(true);
             this->targetFollowCamera->useTargetsUpVector(false);
-
-            if (this->easeMatrix != 0) {
-                ((AbyssEngine::EaseInOutMatrix *) this->easeMatrix)->~EaseInOutMatrix();
-                ::operator delete(this->easeMatrix);
-            }
-            this->easeMatrix = 0;
-
-            pos = ((PlayerEgo *) (this))->getPosition();
-            SpacePoint *nav2 = ((KIPlayer *) (radar))->getNearestNavigationPoint(pos, sp);
-            float *from = ((AEGeometry *) (this->geometry))->getMatrix();
-            this->easeMatrix = (AbyssEngine::EaseInOutMatrix *) PE_dtdp_makeEase(from, nav2);
-            ((PlayerEgo *) (this))->setExhaustVisible(true);
+            delete this->easeMatrix;
+            this->easeMatrix = nullptr;
+            SpacePoint *dockPoint =
+                station->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint);
+            Matrix current = this->geometry->getMatrix();
+            AbyssEngine::AEMath::MatrixSetTranslation(current, dockPoint->position.x, dockPoint->position.y,
+                                                      dockPoint->position.z);
+            this->easeMatrix = new AbyssEngine::EaseInOutMatrix(this->geometry->getMatrix(), current, 3000);
+            this->setExhaustVisible(true);
         }
-    }
-
-    if (undock) {
+    } else {
+        if (station && station->field_0x70)
+            station->field_0x8c = 1;
         this->PlayEngineSound();
-        this->dockedFlag = 0;
         this->field_0x1a1 = 0;
+        this->dockedFlag = 0;
         this->field_0x145 = 0;
         this->asteroidTarget = 0;
         this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
         this->targetFollowCamera->setActive(true);
         this->targetFollowCamera->setLookAtCam(false);
         this->targetFollowCamera->useTargetsUpVector(false);
-        ((Player *) (this->player))->resetGunDelay(0);
+        this->player->resetGunDelay(0);
         this->dockingPointIndex = 0;
-        ((PlayerEgo *) (this))->setExhaustVisible(true);
-        if (this->spacePoint != 0) {
-            ((SpacePoint *) ((unsigned long) this->spacePoint))->giveFree();
+        this->setExhaustVisible(true);
+        if (this->spacePoint) {
+            ((SpacePoint *) (intptr_t) this->spacePoint)->giveFree();
             this->spacePoint = 0;
         }
     }
 
-    if (((intptr_t) this->hackingGame) != 0) {
-        delete (HackingGame *) ((intptr_t) this->hackingGame);
+    if (this->hackingGame) {
+        delete (HackingGame *) (intptr_t) this->hackingGame;
         this->hackingGame = 0;
         this->hud->setHackingGameActive(false);
     }
 }
 
 void PlayerEgo::draw(bool allowHud) {
-    if (((intptr_t) this->rocketControlGun) != 0)
+    if (this->rocketControlGun)
         return;
-
-    if (((intptr_t) this->hackingGame) != 0 && this->turretActive == 0) {
+    if (this->hackingGame && !this->turretActive) {
         ((HackingGame *) (intptr_t) this->hackingGame)->render2D();
         return;
     }
-
-    if (((intptr_t) this->miningGame) != 0) {
+    if (this->miningGame) {
         ((MiningGame *) (intptr_t) this->miningGame)->render2D();
         return;
     }
-
-    bool full;
-    if (this->computerControlled != 0 || ((PlayerEgo *) (this))->isDead() != 0 || this->freeze != 0
-        || allowHud == 0 || ((char &) this->dockingState) != 0 || this->dockingToPlanet != 0 || this->dockedToStream !=
-        0) {
-        full = false;
-    } else {
-        full = true;
-    }
-
-    if (!full) {
-        if (this->autoPilot != 0) {
+    if (this->computerControlled || this->isDead() || this->freeze || !allowHud || (char &) this->dockingState
+        || this->dockingToPlanet || this->dockedToStream || (this->dockedFlag && !this->turretActive)
+        || (this->autoPilot && !this->turretActive)) {
+        if (this->autoPilot || (this->dockedFlag && (unsigned) (this->dockingPointIndex - 1) >= 3))
             this->drawThrottle();
-            return;
-        }
-        if (this->dockedFlag == 0)
-            return;
-        if ((unsigned) (this->dockingPointIndex - 1) < 3)
-            return;
-        this->drawThrottle();
         return;
     }
 
-    PE_MatrixBuf m;
-    for (unsigned i = 0; i < sizeof(m); i++) ((unsigned char *) &m)[i] = 0;
-    m.m00 = 1.0f;
-    m.m11 = 1.0f;
-    m.m22 = 1.0f;
-
-    bool aligned = (this->autoPilot != 0 && this->turretActive != 0);
-    if (!aligned)
-        Mat_assign(&m, ((AEGeometry *) (this->geometry))->getMatrix());
-
-    PaintCanvas *canvas = Globals::Canvas;
-    Globals::Canvas->SetColor((unsigned int) (0xffffffff));
-
-    if (this->turretActive != 0
-        && ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
-        if (((Radar *) (this->field_0x14))->isPlasmaInRange() != 0) {
-            float *p = g_PE_dr_posLock;
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->radarBlipImage3), (int) p[0],
-                                                           (int) p[1], (unsigned char) (0x11), (unsigned char) (0x44));
-        } else {
-            float *p = g_PE_dr_posNoLock;
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->radarBlipImage2), (int) p[0],
-                                                           (int) p[1], (unsigned char) (0x11), (unsigned char) (0x44));
-        }
+    Matrix view;
+    if (!this->autoPilot && !this->turretActive)
+        view = this->geometry->getMatrix();
+    Globals::Canvas->SetColor(0xffffffff);
+    if (this->turretActive && Globals::status->getShip()->getFirstEquipmentOfSort(35)) {
+        Globals::Canvas->DrawImage2D(this->field_0x14->isPlasmaInRange() ? this->radarBlipImage3 : this->radarBlipImage2,
+                                     (int) PlayerEgo::crosshairPos.x, (int) PlayerEgo::crosshairPos.y, 17, 68);
+    } else if (this->level->field_30) {
+        Globals::Canvas->DrawImage2D(this->radarBlipImage1, (int) PlayerEgo::crosshairPos.x,
+                                     (int) PlayerEgo::crosshairPos.y, 17, 68);
+        this->shakeAccum += this->shakeIntensity;
+        if (this->shakeAccum > 200)
+            this->level->field_30 = 0;
     } else {
-        if ((char &) this->level->field_30 != 0) {
-            float *p = g_PE_dr_posBlink;
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->radarBlipImage1), (int) p[0],
-                                                           (int) p[1], (unsigned char) (0x11), (unsigned char) (0x44));
-            int t = this->shakeAccum + this->shakeIntensity;
-            this->shakeAccum = t;
-            if (t >= 0xc9)
-                (char &) this->level->field_30 = 0;
-        } else {
-            float *p = g_PE_dr_posNormal;
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->dockArrowImage), (int) p[0],
-                                                           (int) p[1], (unsigned char) (0x11), (unsigned char) (0x44));
-            this->shakeAccum = 0;
-        }
+        Globals::Canvas->DrawImage2D(this->dockArrowImage, (int) PlayerEgo::crosshairPos.x,
+                                     (int) PlayerEgo::crosshairPos.y, 17, 68);
+        this->shakeAccum = 0;
     }
-
-    ((PlayerEgo *) (this))->drawThrottle();
+    this->drawThrottle();
 }
 
 // Blueprint unlocked by the hidden blueprint of the station (rodata 0x1fba34).
@@ -3236,13 +3143,13 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
                                            crosshairShootPos);
         crosshairShootPos = crosshairShootPos.z > 0.0f ? crosshairShootPos
-                                                       : crosshairShootPos * 0.2f + *(Vector *) &this->field_0x94[3] * 0.8f;
-        *(Vector *) &this->field_0x94[3] = crosshairShootPos;
+                                                       : crosshairShootPos * 0.2f + this->lastCrosshairShootPos * 0.8f;
+        this->lastCrosshairShootPos = crosshairShootPos;
     } else {
         Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
                                            crosshairPos);
         crosshairPos = crosshairPos.z > 0.0f ? crosshairPos
-                                             : crosshairPos * 0.2f + *(Vector *) &this->field_0x94[0] * 0.8f;
+                                             : crosshairPos * 0.2f + this->lastCrosshairPos * 0.8f;
     }
     if (this->field_0x84 && !this->targetFollowCamera->isInFastForwardMode()) {
         if (Globals::mouseCursorActivated)
@@ -3252,7 +3159,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         this->field_0x84 = 0;
     }
     this->field_0x378 = Globals::mouseCursorActivated != 0;
-    *(Vector *) &this->field_0x94[0] = crosshairPos;
+    this->lastCrosshairPos = crosshairPos;
 
     if (this->isDead() && this->explosion != nullptr) {
         this->player->stopShooting(0);
