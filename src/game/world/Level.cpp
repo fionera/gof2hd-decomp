@@ -6626,109 +6626,77 @@ void Level::initParticleSystems() {
         3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
         2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
     };
-    static const float g_ips_vel_78[9] = {
-        0.376953125f, 0.12890625f, 0.005859375f, 0.251953125f,
-        0.251953125f, 0.251953125f, 0.251953125f, 0.501953125f, 0.626953125f,
-    };
-    static const float g_ips_vel_7c[9] = {
-        0.001953125f, 0.005859375f, 0.005859375f, 0.001953125f,
-        0.001953125f, 0.001953125f, 0.001953125f, 0.001953125f, 0.001953125f,
-    };
-    static const float g_ips_vel_80[9] = {
-        0.498046875f, 0.24609375f, 0.119140625f, 0.373046875f,
-        0.373046875f, 0.373046875f, 0.373046875f, 0.623046875f, 0.748046875f,
-    };
-    static const float g_ips_vel_84[9] = {
-        0.123046875f, 0.12109375f, 0.119140625f, 0.123046875f,
-        0.123046875f, 0.123046875f, 0.123046875f, 0.123046875f, 0.123046875f,
-    };
 
     if (this->player != nullptr) {
         if (this->field_a4 != nullptr) {
             this->field_a8 = new Array<int>();
             ArraySetLength(this->field_a4->size(), *(this->field_a8));
 
-            unsigned char *curBase = ParticleSettingsRef::curBytes();
-            unsigned char *entryPtr = curBase + 0x12b4;
-            unsigned n = this->field_a4->size();
-            for (unsigned i = 0; i < n; i++, entryPtr += 0xa0) {
-                const Matrix *playerMat = &this->player->player->transform;
-                int slot = this->field_80->addSystem(
-                    playerMat,
-                    (ParticleSettings::ParticleSet)(i + 0x1d),
-                    false);
-                (*this->field_a8)[i] = slot;
-
-                AEGeometry *geo = (*this->field_a4)[i];
-
-                float posX = geo->getPosition().x;
-                *(int *)(entryPtr - 0x1c) = *(int *)&posX;
-                float posY = geo->getPosition().y;
-                *(int *)(entryPtr - 0x18) = *(int *)&posY;
-                float posZ = geo->getPosition().z;
-                *(int *)(entryPtr - 0x14) = *(int *)&posZ;
-
-                float sclX0 = geo->getScaling().x;
-                double sclX15 = (double)sclX0 * 1.5;
-                int intp;
-                if (sclX15 < 1.0) {
-                    float sclX1 = geo->getScaling().x;
-                    double sv = (double)sclX1 * 1.5 * 80.0;
-                    intp = (int)sv;
-                } else {
-                    intp = 0x50;
+            for (unsigned int i = 0; i < this->field_a4->size(); i++) {
+                (*this->field_a8)[i] = this->field_80->addSystem(&this->player->player->transform,
+                                                                 (ParticleSettings::ParticleSet) (i + 29), false);
+                // engine flare particle set for this anchor
+                ParticleSettings::SetDefinition &set = ParticleSettingsRef::cur.sets[i + 29];
+                set.posRight = (*this->field_a4)[i]->getPosition().x;
+                set.posUp = (*this->field_a4)[i]->getPosition().y;
+                set.lifetime = (double) (*this->field_a4)[i]->getScaling().x * 1.5 < 1.0
+                                       ? (int) ((double) (*this->field_a4)[i]->getScaling().x * 1.5 * 80.0)
+                                       : 80;
+                set.lifeBase = (*this->field_a4)[i]->getScaling().x * 250.0f;
+                set.flLifetime = 8.0f;
+                set.count = 20;
+                set.posBase = -1000;
+                set.posDir = (*this->field_a4)[i]->getPosition().z;
+                set.velDir = (double) (*this->field_a4)[i]->getScaling().x * 1.5 < 1.0
+                                     ? (float) ((double) (*this->field_a4)[i]->getScaling().x * 1.5 * -4000.0)
+                                     : -4000.0f;
+                set.color0 = 0xddddddff;
+                set.color1 = 0;
+                set.drag = 0.8f;
+                switch (g_ips_shipTypeMap[Globals::status->getShip()->getIndex()]) {
+                    case 1:
+                        set.uvU0 = 0.376953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.498046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                    case 2:
+                        set.uvU0 = 0.12890625f;
+                        set.uvV0 = 0.005859375f;
+                        set.uvU1 = 0.24609375f;
+                        set.uvV1 = 0.12109375f;
+                        break;
+                    case 3:
+                        set.uvU0 = 0.005859375f;
+                        set.uvV0 = 0.005859375f;
+                        set.uvU1 = 0.119140625f;
+                        set.uvV1 = 0.119140625f;
+                        break;
+                    case 8:
+                        set.uvU0 = 0.501953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.623046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                    case 9:
+                        set.uvU0 = 0.626953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.748046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                    default:
+                        set.uvU0 = 0.251953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.373046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
                 }
-                *(int *)(entryPtr - 0x6c) = intp;
-                *(int *)(entryPtr - 0x68) = 0x41000000;
-
-                float sclX2 = geo->getScaling().x;
-                float sz250 = sclX2 * 250.0f;
-                *(float *)(entryPtr - 0x80) = sz250;
-                *(int *)(entryPtr - 0x84) = 0x14;
-
-                *(uint32_t *)(entryPtr - 0x60) = 0xddddddff;
-                *(uint32_t *)(entryPtr - 0x5c) = 0;
-
-                *(int *)(entryPtr - 0x50) = -1000;
-
-                *(float *)(entryPtr - 0x30) = 0.800000011920929f;
-
-                float sclX3 = geo->getScaling().x;
-                double sclX3_15 = (double)sclX3 * 1.5;
-                float velResult;
-                if (sclX3_15 < 1.0) {
-                    float sclX4 = geo->getScaling().x;
-                    double sv2 = (double)sclX4 * 1.5 * -4000.0;
-                    velResult = (float)sv2;
-                } else {
-                    velResult = -4000.0f;
-                }
-                *(float *)(entryPtr - 0x24) = velResult;
-
-                int shipIdx = Globals::status->getShip()->getIndex();
-                unsigned midx = (unsigned)(g_ips_shipTypeMap[shipIdx] - 1);
-                float v78, v7c, v80, v84;
-                if (midx > 8) {
-                    v78 = 0.251953125f;
-                    v7c = 0.001953125f;
-                    v80 = 0.373046875f;
-                    v84 = 0.123046875f;
-                } else {
-                    v78 = g_ips_vel_78[midx];
-                    v7c = g_ips_vel_7c[midx];
-                    v80 = g_ips_vel_80[midx];
-                    v84 = g_ips_vel_84[midx];
-                }
-                *(float *)(entryPtr - 0xc) = v78;
-                *(float *)(entryPtr - 0x8) = v7c;
-                *(float *)(entryPtr - 0x4) = v80;
-                *(float *)(entryPtr + 0x0) = v84;
             }
         }
 
-        Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-        int sys = (this->skybox2Mesh)->addSystem(local, ParticleSettings::ParticleSet_4, false);
-        this->movingStarsIndex = sys;
+        this->movingStarsIndex = this->skybox2Mesh->addSystem(
+                (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()),
+                ParticleSettings::ParticleSet_4, false);
 
         if (Globals::status->getSystem() != 0) {
             SolarSystem *ss = (SolarSystem *) Globals::status->getSystem();
@@ -6736,34 +6704,34 @@ void Level::initParticleSystems() {
                 for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
                     KIPlayer *k = (*this->enemies)[i];
                     if (k != 0 && k->getType() == 0x37a3) {
-                        AEGeometry *kg = k->geometry;
-                        kg->updateReferenceMatrix();
-                        Matrix const *ref = &kg->getReferenceMatrix();
-                        this->particleSystemMgr->addSystem(ref, ParticleSettings::ParticleSet_8, false);
+                        k->geometry->updateReferenceMatrix();
+                        this->particleSystemMgr->addSystem(&k->geometry->getReferenceMatrix(),
+                                                           ParticleSettings::ParticleSet_8, false);
                         break;
                     }
                 }
             }
         }
 
-        local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-        sys = this->particleSystemMgr->addSystem(local, ParticleSettings::ParticleSet_7, false);
-        this->field_284 = sys;
+        this->field_284 = this->particleSystemMgr->addSystem(
+                (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()),
+                ParticleSettings::ParticleSet_7, false);
 
+        // tint the star-dust (set 7) and nebula (set 8) particles to the system's sky colour
+        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
+        ParticleSettings::SetDefinition &nebula = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_8];
         if (Globals::status->inAlienOrbit() != 0) {
-            unsigned char *cur = ParticleSettingsRef::curBytes();
-            uint32_t c1 = *(uint32_t *)(cur + 0x494);
-            uint32_t c2 = *(uint32_t *)(cur + 0x534);
+            uint32_t c1 = dust.color0;
+            uint32_t c2 = nebula.color0;
             c1 = (c1 & 0xff) | (0x9274d4u << 8);
             c2 = (c2 & 0xff) | (0x9274d4u << 8);
-            *(uint32_t *)(cur + 0x534) = c2;
-            *(uint32_t *)(cur + 0x494) = c1;
+            nebula.color0 = c2;
+            dust.color0 = c1;
         } else {
-            unsigned char *cur = ParticleSettingsRef::curBytes();
-            *(uint32_t *)(cur + 0x534) = 0xe2282880u;
-            *(uint32_t *)(cur + 0x538) = 0x00ff0080u;
+            nebula.color0 = 0xe2282880u;
+            nebula.color1 = 0x00ff0080u;
             int texIdx = ((SolarSystem *) Globals::status->getSystem())->getTextureIndex();
-            uint32_t col = g_ips_skyColors[texIdx];
+            int col = (int) g_ips_skyColors[texIdx];
             int isSN = Globals::status->inSupernovaSystem();
             float scale = isSN ? 0.5f : 0.6f;
             int alpha = isSN ? 0xff : 0xbb;
@@ -6771,26 +6739,25 @@ void Level::initParticleSystems() {
             int comp1 = (int)((float)((col >> 16) & 0xff) * scale);
             int comp2 = (int)((float)((col >>  8) & 0xff) * scale);
             uint32_t result = (uint32_t)(((unsigned)comp0 << 24) | ((unsigned)comp1 << 16) | ((unsigned)comp2 << 8) | (unsigned)alpha);
-            *(uint32_t *)(cur + 0x494) = result;
-            *(uint32_t *)(cur + 0x498) = result;
+            dust.color0 = result;
+            dust.color1 = result;
         }
     }
 
     if (Globals::status->inSupernovaSystem() != 0 &&
         Globals::status->getCurrentCampaignMission() != 0x59 &&
         Globals::status->getCurrentCampaignMission() <= 0x9d) {
-        Vector ldir = this->starSystem->getLightDirection();
-        Vector normalized = AbyssEngine::AEMath::VectorNormalize(ldir);
-        Vector negated = AbyssEngine::AEMath::operator-(normalized);
-        unsigned char *cur = ParticleSettingsRef::curBytes();
-        *(float *)(cur + 0x4b8) = negated.x * 2000.0f;
-        *(float *)(cur + 0x4bc) = negated.y * 2000.0f;
-        *(float *)(cur + 0x4c0) = negated.z * 2000.0f;
+        // star dust drifts away from the dying star
+        Vector drift = -AbyssEngine::AEMath::VectorNormalize(this->starSystem->getLightDirection());
+        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
+        dust.velBaseX = drift.x * 2000.0f;
+        dust.velBaseY = drift.y * 2000.0f;
+        dust.velBaseZ = drift.z * 2000.0f;
     } else {
-        unsigned char *cur = ParticleSettingsRef::curBytes();
-        *(uint32_t *)(cur + 0x4b8) = 0;
-        *(uint32_t *)(cur + 0x4bc) = 0;
-        *(uint32_t *)(cur + 0x4c0) = 0;
+        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
+        dust.velBaseX = 0.0f;
+        dust.velBaseY = 0.0f;
+        dust.velBaseZ = 0.0f;
     }
 
     if (this->field_80 != 0)
@@ -6804,65 +6771,23 @@ void Level::initParticleSystems() {
     if (this->field_98 != 0)
         (this->field_98)->init();
 
-    {
-        AbyssEngine::AEMath::Matrix mat_0xa;
-        mat_0xa.m[0]  = 1.0f; mat_0xa.m[1]  = 0.0f; mat_0xa.m[2]  = 0.0f;
-        mat_0xa.m[3]  = 0.0f; mat_0xa.m[4]  = 0.0f; mat_0xa.m[5]  = 1.0f;
-        mat_0xa.m[6]  = 0.0f; mat_0xa.m[7]  = 0.0f; mat_0xa.m[8]  = 0.0f;
-        mat_0xa.m[9]  = 0.0f; mat_0xa.m[10] = 1.0f; mat_0xa.m[11] = 0.0f;
-        mat_0xa.m[12] = 1.0f; mat_0xa.m[13] = 1.0f; mat_0xa.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_0xb;
-        mat_0xb.m[0]  = 1.0f; mat_0xb.m[1]  = 0.0f; mat_0xb.m[2]  = 0.0f;
-        mat_0xb.m[3]  = 0.0f; mat_0xb.m[4]  = 0.0f; mat_0xb.m[5]  = 1.0f;
-        mat_0xb.m[6]  = 0.0f; mat_0xb.m[7]  = 0.0f; mat_0xb.m[8]  = 0.0f;
-        mat_0xb.m[9]  = 0.0f; mat_0xb.m[10] = 1.0f; mat_0xb.m[11] = 0.0f;
-        mat_0xb.m[12] = 1.0f; mat_0xb.m[13] = 1.0f; mat_0xb.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_14;
-        mat_14.m[0]  = 1.0f; mat_14.m[1]  = 0.0f; mat_14.m[2]  = 0.0f;
-        mat_14.m[3]  = 0.0f; mat_14.m[4]  = 0.0f; mat_14.m[5]  = 1.0f;
-        mat_14.m[6]  = 0.0f; mat_14.m[7]  = 0.0f; mat_14.m[8]  = 0.0f;
-        mat_14.m[9]  = 0.0f; mat_14.m[10] = 1.0f; mat_14.m[11] = 0.0f;
-        mat_14.m[12] = 1.0f; mat_14.m[13] = 1.0f; mat_14.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_15;
-        mat_15.m[0]  = 1.0f; mat_15.m[1]  = 0.0f; mat_15.m[2]  = 0.0f;
-        mat_15.m[3]  = 0.0f; mat_15.m[4]  = 0.0f; mat_15.m[5]  = 1.0f;
-        mat_15.m[6]  = 0.0f; mat_15.m[7]  = 0.0f; mat_15.m[8]  = 0.0f;
-        mat_15.m[9]  = 0.0f; mat_15.m[10] = 1.0f; mat_15.m[11] = 0.0f;
-        mat_15.m[12] = 1.0f; mat_15.m[13] = 1.0f; mat_15.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_16;
-        mat_16.m[0]  = 1.0f; mat_16.m[1]  = 0.0f; mat_16.m[2]  = 0.0f;
-        mat_16.m[3]  = 0.0f; mat_16.m[4]  = 0.0f; mat_16.m[5]  = 1.0f;
-        mat_16.m[6]  = 0.0f; mat_16.m[7]  = 0.0f; mat_16.m[8]  = 0.0f;
-        mat_16.m[9]  = 0.0f; mat_16.m[10] = 1.0f; mat_16.m[11] = 0.0f;
-        mat_16.m[12] = 1.0f; mat_16.m[13] = 1.0f; mat_16.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_17;
-        mat_17.m[0]  = 1.0f; mat_17.m[1]  = 0.0f; mat_17.m[2]  = 0.0f;
-        mat_17.m[3]  = 0.0f; mat_17.m[4]  = 0.0f; mat_17.m[5]  = 1.0f;
-        mat_17.m[6]  = 0.0f; mat_17.m[7]  = 0.0f; mat_17.m[8]  = 0.0f;
-        mat_17.m[9]  = 0.0f; mat_17.m[10] = 1.0f; mat_17.m[11] = 0.0f;
-        mat_17.m[12] = 1.0f; mat_17.m[13] = 1.0f; mat_17.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_18a;
-        mat_18a.m[0]  = 1.0f; mat_18a.m[1]  = 0.0f; mat_18a.m[2]  = 0.0f;
-        mat_18a.m[3]  = 0.0f; mat_18a.m[4]  = 0.0f; mat_18a.m[5]  = 1.0f;
-        mat_18a.m[6]  = 0.0f; mat_18a.m[7]  = 0.0f; mat_18a.m[8]  = 0.0f;
-        mat_18a.m[9]  = 0.0f; mat_18a.m[10] = 1.0f; mat_18a.m[11] = 0.0f;
-        mat_18a.m[12] = 1.0f; mat_18a.m[13] = 1.0f; mat_18a.m[14] = 1.0f;
-        AbyssEngine::AEMath::Matrix mat_18b;
-        mat_18b.m[0]  = 1.0f; mat_18b.m[1]  = 0.0f; mat_18b.m[2]  = 0.0f;
-        mat_18b.m[3]  = 0.0f; mat_18b.m[4]  = 0.0f; mat_18b.m[5]  = 1.0f;
-        mat_18b.m[6]  = 0.0f; mat_18b.m[7]  = 0.0f; mat_18b.m[8]  = 0.0f;
-        mat_18b.m[9]  = 0.0f; mat_18b.m[10] = 1.0f; mat_18b.m[11] = 0.0f;
-        mat_18b.m[12] = 1.0f; mat_18b.m[13] = 1.0f; mat_18b.m[14] = 1.0f;
-        this->field_38 = this->field_74->addSystem(&mat_0xa, ParticleSettings::ParticleSet_0xa, false);
-        this->field_3c = this->field_74->addSystem(&mat_0xb, ParticleSettings::ParticleSet_0xb, false);
-        this->field_48 = this->field_74->addSystem(&mat_14, ParticleSettings::ParticleSet_0x14, false);
-        this->field_34 = this->field_74->addSystem(&mat_15, ParticleSettings::ParticleSet_0x15, false);
-        this->field_50 = this->field_74->addSystem(&mat_16, ParticleSettings::ParticleSet_0x16, false);
-        this->field_54 = this->field_74->addSystem(&mat_17, ParticleSettings::ParticleSet_0x17, false);
-        if (Globals::status->getCurrentCampaignMission() == 0x50) {
-            this->field_58 = this->field_74->addSystem(&mat_18a, ParticleSettings::ParticleSet_0x18, false);
-            this->field_5c = this->field_74->addSystem(&mat_18b, ParticleSettings::ParticleSet_0x18, false);
-        }
+    Matrix emitter0xa;
+    this->field_38 = this->field_74->addSystem(&emitter0xa, ParticleSettings::ParticleSet_0xa, false);
+    Matrix emitter0xb;
+    this->field_3c = this->field_74->addSystem(&emitter0xb, ParticleSettings::ParticleSet_0xb, false);
+    Matrix emitter0x14;
+    this->field_48 = this->field_74->addSystem(&emitter0x14, ParticleSettings::ParticleSet_0x14, false);
+    Matrix emitter0x15;
+    this->field_34 = this->field_74->addSystem(&emitter0x15, ParticleSettings::ParticleSet_0x15, false);
+    Matrix emitter0x16;
+    this->field_50 = this->field_74->addSystem(&emitter0x16, ParticleSettings::ParticleSet_0x16, false);
+    Matrix emitter0x17;
+    this->field_54 = this->field_74->addSystem(&emitter0x17, ParticleSettings::ParticleSet_0x17, false);
+    if (Globals::status->getCurrentCampaignMission() == 0x50) {
+        Matrix emitter0x18a;
+        this->field_58 = this->field_74->addSystem(&emitter0x18a, ParticleSettings::ParticleSet_0x18, false);
+        Matrix emitter0x18b;
+        this->field_5c = this->field_74->addSystem(&emitter0x18b, ParticleSettings::ParticleSet_0x18, false);
     }
 
     (this->field_74)->init();
