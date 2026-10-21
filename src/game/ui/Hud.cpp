@@ -826,10 +826,9 @@ void Hud::updateQueue(int dt) {
         if ((*this->eventQueue)[1] == 0)
             this->eventQueueDirty = 0;
         this->eventQueuePaused = 0;
-        return;
-    }
-    if (this->eventQueueTimer > 2000 && this->eventQueuePaused == 0)
+    } else if (this->eventQueueTimer > 2000 && this->eventQueuePaused == 0) {
         this->eventQueuePaused = 1;
+    }
 }
 
 
@@ -1932,7 +1931,11 @@ void Hud::initHudMenu(int menuType, Level *level) {
             break;
         case 2: {
             int textIds[4] = {307, 308, 309, (unsigned char) Globals::status->field_f8 != 0 ? 311 : 310};
-            int keys[4] = {0x20000, 0x40000, 0x80000, 0x100000};
+            int keys[4];
+            keys[0] = 0x20000;
+            keys[1] = 0x40000;
+            keys[2] = 0x80000;
+            keys[3] = 0x100000;
             for (unsigned int i = 0; i < 4; i++) {
                 TouchButton *button = new TouchButton(*Globals::gameText->getText(textIds[i]), 0, this->field_0x3d4, y,
                                                       this->field_0x3dc, 0x11, 4);
