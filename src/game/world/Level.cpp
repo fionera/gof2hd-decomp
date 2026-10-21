@@ -1012,14 +1012,16 @@ void Level::createSpace() {
         for (int i = 1; i < 3; i++) {
             if (i == 1 && (Globals::status->getSystem() == 0
                            || !((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate())) {
-                delete (*landmarks)[1];
-                (*landmarks)[1] = nullptr;
+                if ((*landmarks)[1] != nullptr) {
+                    delete (*landmarks)[1];
+                    (*landmarks)[1] = nullptr;
+                }
                 continue;
             }
             if (Globals::status->getStation() != nullptr) {
                 int side = Globals::rnd->nextInt(2);
                 int offset = Globals::rnd->nextInt(500) + 250;
-                field_138 += (side == 0 ? -offset : offset) * 16;
+                field_138 += (side == 0 ? -offset : offset) << 4;
                 float angle = (float) field_138;
                 spawnPosition.z = angle * 3.0f + (i == 1 ? 90000.0f : 120000.0f);
                 Matrix rotation;
@@ -1080,14 +1082,14 @@ void Level::createSpace() {
 
     starSystem = new StarSystem(missionPtr);
     SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
-    if (system != nullptr) {
-        r = (float) system->starR;
-        g = (float) system->starG;
-        b = (float) system->starB;
-    } else {
+    if (system == nullptr) {
         r = 10.0f;
         g = 136.0f;
         b = 10.0f;
+    } else {
+        r = (float) system->starR;
+        g = (float) system->starG;
+        b = (float) system->starB;
     }
     r_min = (int) (r / 3.0f);
     g_min = (int) (g / 3.0f);
@@ -2593,12 +2595,11 @@ void Level::createAsteroids() {
     // the field layout is seeded by the station so it stays the same between visits
     Globals::rnd->setSeed(Globals::status->getStation()->getIndex());
     ArraySetLength(Globals::rnd->nextInt(40) + 40, *asteroids);
-    int randomX = Globals::rnd->nextInt(100000);
-    int randomY = Globals::rnd->nextInt(100000);
-    int randomZ = Globals::rnd->nextInt(100000);
+    int x = Globals::rnd->nextInt(100000) - 50000;
+    int y = Globals::rnd->nextInt(100000) - 50000;
+    int z = Globals::rnd->nextInt(100000) + 20000;
     bool alienOrbit = Globals::status->inAlienOrbit();
     int mission = Globals::status->getCurrentCampaignMission();
-    int x, y, z;
     if (alienOrbit) {
         x = mission == 0x9a ? -70000 : -30000;
         y = 0;
@@ -2620,9 +2621,6 @@ void Level::createAsteroids() {
         y = 0;
         z = 70000;
     } else {
-        z = randomZ + 20000;
-        y = randomY - 50000;
-        x = randomX - 50000;
         if (Globals::status->getCurrentCampaignMission() == 0 && missionPtr == 3) {
             x = 0;
             y = 0;
