@@ -350,7 +350,6 @@ static void MG_drawLayer(PaintCanvas *canvas, int image, int x, int y,
 }
 
 
-static char g_MiningGame_oreSuffix[1] = {};
 
 
 
@@ -435,7 +434,7 @@ void MiningGame::render2D() {
                         (int) (this->posY - (float) layout->oreLabelYOffset));
 
     amountText->Set((long long) (int) this->oreAmount);
-    suffixText->ctor_char(g_MiningGame_oreSuffix, false);
+    suffixText->ctor_char("t", false);
     *oreText = *amountText + *suffixText;
     {
         String *_s = suffixText;

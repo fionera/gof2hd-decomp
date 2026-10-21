@@ -1083,7 +1083,6 @@ void MenuTouchWindow::saveGame(int slot) {
 }
 
 
-static const int g_mtw_upTextIds[16] = {};
 
 #define MTW_ABS(v) ((v) > 0 ? (v) : -(v))
 

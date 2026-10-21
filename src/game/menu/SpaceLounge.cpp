@@ -59,7 +59,10 @@ static Layout **SpaceLounge_touch_layout_slot;
 static GameText **SpaceLounge_touch_help_text_slot;
 static GameText **SpaceLounge_touch_list_help_text_slot;
 static PaintCanvas **SpaceLounge_touch_camera_slot;
-static int SpaceLounge_touch_race_vectors[64];
+// Lounge camera position per race (x, y, z).
+static const int SpaceLounge_touch_race_vectors[4][3] = {
+    {-1800, 620, 1805}, {607, 610, 2362}, {136, 444, 1122}, {2222, 450, 1227},
+};
 
 namespace AbyssEngine {
 }
@@ -402,8 +405,8 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             if (this->introDone == 0) {
                 SolarSystem *system = (SolarSystem *) (long) Globals::status->getSystem();
                 int race = system->getRace();
-                int *v = &SpaceLounge_touch_race_vectors[race * 3];
-                MatrixSetTranslation(matrix, (float) v[2], (float) v[0], (float) v[1]);
+                const int *v = SpaceLounge_touch_race_vectors[race];
+                MatrixSetTranslation(matrix, (float) v[0], (float) v[1], (float) v[2]);
                 MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
                 PaintCanvas **cameraSlot = SpaceLounge_touch_camera_slot;
                 PaintCanvas *camera = *cameraSlot;
