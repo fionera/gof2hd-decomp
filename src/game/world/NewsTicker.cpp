@@ -16,7 +16,6 @@
 
 
 
-static const char *const kPlatformLetters[4] = {"A", "B", "C", "D"};
 
 NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     this->x = x;
@@ -148,12 +147,22 @@ String NewsTicker::replaceTokens(String text) {
     if (Globals::status->stringHasToken(String(text, false), String("#PLATFORM_NUMBER", false))) {
         unsigned int platformIndex = Globals::rnd->nextInt(6);
         const char *letter;
-        if (platformIndex < 4) {
-            letter = kPlatformLetters[platformIndex];
-        } else if (platformIndex == 4) {
-            letter = "E";
-        } else {
-            letter = "F";
+        switch (platformIndex) {
+            case 0:
+                letter = "A";
+                break;
+            case 1:
+                letter = "B";
+                break;
+            case 2:
+                letter = "C";
+                break;
+            case 3:
+                letter = "D";
+                break;
+            default:
+                letter = platformIndex == 4 ? "E" : "F";
+                break;
         }
         String platform(letter, false);
         text = Globals::status->replaceHash(String(text, false), platform + String(Globals::rnd->nextInt(10)),
@@ -167,10 +176,10 @@ String NewsTicker::replaceTokens(String text) {
     }
 
     if (Globals::status->stringHasToken(String(text, false), String("#VICTIMS", false))) {
-        int victims = Globals::rnd->nextInt(99000) + 100000;
-        text = Globals::status->replaceHash(String(text, false),
-                                            String(Globals::layout->formatNumber(victims / 1000 * 1000), false),
-                                            String("#VICTIMS", false));
+        text = Globals::status->replaceHash(
+                String(text, false),
+                String(Globals::layout->formatNumber((Globals::rnd->nextInt(99000) + 100000) / 1000 * 1000), false),
+                String("#VICTIMS", false));
     }
 
     if (Globals::status->stringHasToken(String(text, false), String("#BERGER_LASER", false))) {
@@ -197,7 +206,7 @@ String NewsTicker::replaceTokens(String text) {
             item = *Globals::gameText->getText(itemIndex + 1274);
             delete candidates;
         }
-        price = Globals::layout->formatNumber((int) (Globals::status->getPlayingTime() / 1000000) + (roll < 40 ? 140 : 12));
+        price = Globals::layout->formatNumber((int) (Globals::status->getPlayingTime() / 1000000 + (roll < 40 ? 140 : 12)));
         text = Globals::status->replaceHash(String(text, false), String(item, false),
                                             String("#VOSSK_SHIP_OR_ITEM", false));
         text = Globals::status->replaceHash(String(text, false),
@@ -243,8 +252,7 @@ String NewsTicker::replaceTokens(String text) {
                 (*stations)[Globals::rnd->nextInt(stations->size())]);
         text = Globals::status->replaceHash(String(text, false), String(station->getName(), false),
                                             String("#NIVELIAN_PLANET", false));
-        int demonstrators = Globals::rnd->nextInt(990000) + 1000000;
-        String count = Globals::layout->formatNumber(demonstrators / 1000 * 1000);
+        String count = Globals::layout->formatNumber((Globals::rnd->nextInt(990000) + 1000000) / 1000 * 1000);
         text = Globals::status->replaceHash(String(text, false), String(count, false),
                                             String("#DEMONSTRATORS", false));
         delete station;
