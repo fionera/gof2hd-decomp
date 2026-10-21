@@ -539,18 +539,18 @@ namespace AbyssEngine {
             AEMath::Matrix centered;
             toCenter.m[3] = -0.5f;
             toCenter.m[7] = -0.5f;
-            fromCenter.m[3] = 0.5f;
-            fromCenter.m[7] = 0.5f;
             offset.m[3] = 0.5f + this->localScale.x * this->localTranslation.x;
             offset.m[7] = 0.5f + this->localScale.y * this->localTranslation.y;
+            fromCenter.m[3] = 0.5f;
+            fromCenter.m[7] = 0.5f;
             AEMath::MatrixSetScaling(scaling, this->localScale.x, this->localScale.y, 1.0f);
             centered = fromCenter * this->localMatrix * toCenter;
-            if (Engine::enableShader != 0) {
-                this->localMatrix = centered * offset * scaling * toCenter;
-            } else {
+            if (Engine::enableShader == 0) {
                 AEMath::Matrix flip;
                 flip.m[5] = -1.0f;
                 this->localMatrix = centered * offset * scaling * flip * toCenter;
+            } else {
+                this->localMatrix = centered * offset * scaling * toCenter;
             }
         }
 
