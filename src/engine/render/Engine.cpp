@@ -89,8 +89,6 @@ namespace {
     int g_Engine_shaderPostB;
     int g_Engine_shaderPostC;
 
-    float g_Engine_texEnv;
-    int g_Engine_texEnvDirty;
 
     uint32_t g_Engine_postEffectBW;
     uint32_t g_Engine_postEffectBlur;
@@ -1229,13 +1227,30 @@ Engine::Engine()
 }
 
 void Engine::SetTextures(uint32_t first, uint32_t second) {
-    PaintCanvas *manager = this->appManager->paintCanvas;
-    uint32_t count = manager->cubeTextures.count;
+    uint32_t count = this->appManager->paintCanvas->cubeTextures.count;
     if (count == 0 || first > count - 1) {
         return;
     }
-    this->SetTextureSlot(first, 0);
-    if (second > count - 1) {
+    uint32_t texture =
+            ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[first])->glTexture;
+    if ((uint32_t) this->boundTextures[0] != texture) {
+        glActiveTexture(0x84c0);
+        float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[first])->texEnv;
+        if (currentLODBias != env) {
+            currentLODBias = env;
+            if (Engine::enableShader != 0) {
+                if (BiasErrorOutputFlag != 0) {
+                    BiasErrorOutputFlag = 0;
+                }
+            } else {
+                glTexEnvf(0x8500, 0x8501, env);
+            }
+        }
+        glBindTexture(0xde1, texture);
+        this->boundTextures[0] = texture;
+    }
+
+    if (second > this->appManager->paintCanvas->cubeTextures.count - 1) {
         if (this->boundTextures[1] != -1) {
             if (Engine::enableShader == 0) {
                 glActiveTexture(0x84c1);
@@ -1247,16 +1262,19 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
         return;
     }
 
-    uint32_t texture = **(uint32_t **) (manager->cubeTextures.data_ + second);
-    if (this->boundTextures[1] != texture) {
+    uint32_t texture2 =
+            ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[second])->glTexture;
+    if ((uint32_t) this->boundTextures[1] != texture2) {
         glActiveTexture(0x84c1);
         this->GlEnable(0xde1, true);
-        unsigned int target = (Engine::enableShader != 0 &&
-                               (this->glEnableFlags & 0x80008) != 0)
-                                  ? 0x8513
-                                  : 0xde1;
-        glBindTexture(target, texture);
-        this->boundTextures[1] = texture;
+        unsigned int target;
+        if (Engine::enableShader != 0 && (this->glEnableFlags & 0x80008) != 0) {
+            target = 0x8513;
+        } else {
+            target = 0xde1;
+        }
+        glBindTexture(target, texture2);
+        this->boundTextures[1] = texture2;
     }
 }
 
