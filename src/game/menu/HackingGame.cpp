@@ -304,12 +304,7 @@ void HackingGame::reInit() {
         if (i == type * 2 - 1) {
             for (int j = 0; j != 6; ++j)
                 local[j] = this->working[j];
-            // The original's solvableInNSteps returns bool (the header still says int);
-            // call through a bool-returning member pointer so the result is handled as
-            // bool, as in the original (movne.w r8,#0).
-            typedef bool (HackingGame::*Solver)(int, int, int, int, int *);
-            Solver solver = reinterpret_cast<Solver>(&HackingGame::solvableInNSteps);
-            if ((this->*solver)(type, 0, 0, 0, local))
+            if (solvableInNSteps(type, 0, 0, 0, local))
                 i = 0;
         }
     }
@@ -321,7 +316,7 @@ void HackingGame::reInit() {
     this->rotatingRight = false;
 }
 
-int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int rightCount, int *state) {
+bool HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int rightCount, int *state) {
     int leftState[6];
     int rightState[6];
 
@@ -345,7 +340,7 @@ int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int right
         unsigned move = 0;
         do {
             if (move > 1)
-                return 0;
+                return false;
 
             if (leftCount < 3 && move == 0) {
                 int a = leftState[0];
@@ -378,7 +373,7 @@ int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int right
         } while (true);
     }
 
-    return 0;
+    return false;
 }
 
 

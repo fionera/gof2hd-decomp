@@ -32,7 +32,7 @@ public:
 
     void reInit();
 
-    int solvableInNSteps(int steps, int depth, int leftCount, int rightCount, int *state);
+    bool solvableInNSteps(int steps, int depth, int leftCount, int rightCount, int *state);
 
     int update(int dt);
 
