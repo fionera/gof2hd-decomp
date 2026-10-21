@@ -331,25 +331,25 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     }
 
     if (aim.y > 0.05f) {
-        if (!this->isSentryGun() && this->rotationAccum < -599) {
+        if (this->isSentryGun() || this->rotationAccum > -600) {
+            float step = (float) this->lastDelta;
+            this->rotationAccum = (int) ((float) this->rotationAccum - step);
+            turretGeometry->rotate(step * 0.00024414062f * -6.2831855f, 0.0f, 0.0f);
+            this->previousEnemy = nullptr;
+        } else {
             this->pickEnemyTimer += delta;
             this->previousEnemy = this->currentEnemy;
-            return;
         }
-        float step = (float) this->lastDelta;
-        this->rotationAccum = (int) ((float) this->rotationAccum - step);
-        turretGeometry->rotate(step * 0.00024414062f * -6.2831855f, 0.0f, 0.0f);
-        this->previousEnemy = nullptr;
     } else if (aim.y < -0.05f) {
-        if (!this->isSentryGun() && this->rotationAccum > 99) {
+        if (this->isSentryGun() || this->rotationAccum < 100) {
+            float step = (float) this->lastDelta;
+            this->rotationAccum = (int) (step + (float) this->rotationAccum);
+            turretGeometry->rotate(step * 0.00024414062f * 6.2831855f, 0.0f, 0.0f);
+            this->previousEnemy = nullptr;
+        } else {
             this->pickEnemyTimer += delta;
             this->previousEnemy = this->currentEnemy;
-            return;
         }
-        float step = (float) this->lastDelta;
-        this->rotationAccum = (int) (step + (float) this->rotationAccum);
-        turretGeometry->rotate(step * 0.00024414062f * 6.2831855f, 0.0f, 0.0f);
-        this->previousEnemy = nullptr;
     } else if (aligned) {
         this->player->shoot(0, (long long) delta, false, matrix);
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(turretGeometry->transform))
