@@ -65,9 +65,8 @@ int Layout::OnTouchBegin(int x, int y) {
 }
 
 float Layout::getPulseValue(float speed) {
-    Status *status = Globals::status;
-    float a = AbyssEngine::AEMath::Sinf((float) status->getPlayingTime() * speed);
-    float b = AbyssEngine::AEMath::Sinf((float) status->getPlayingTime() * speed);
+    float a = AbyssEngine::AEMath::Sinf((float) Globals::status->getPlayingTime() * speed);
+    float b = AbyssEngine::AEMath::Sinf((float) Globals::status->getPlayingTime() * speed);
     return a > 0.0f ? b : -b;
 }
 
@@ -75,9 +74,7 @@ void Layout::setDrawColor(int color) {
     this->drawColor = color;
 }
 
-static int *gW = nullptr;
 
-static int *gH = nullptr;
 
 
 
@@ -282,15 +279,14 @@ int Layout::OnTouchEnd(int x, int y) {
 }
 
 void Layout::startFade(bool fadeOut, int color, int duration) {
-    this->fadeOut = fadeOut;
     this->fading = 1;
+    this->fadeOut = fadeOut;
     this->fadeColor = color & 0xffffff00u;
     this->fadeProgress = 0;
     this->fadeDuration = duration;
 }
 
 
-static int **g_tipTextId = nullptr;
 
 
 
@@ -300,18 +296,10 @@ void Layout::initTip() {
         delete this->tipLines;
         this->tipLines = nullptr;
     }
-    Array<String *> *arr = new Array<String *>();
-
-    unsigned color = (unsigned int) (unsigned long) Globals::font;
-    int textId = **g_tipTextId;
-    PaintCanvas *canvas = Globals::Canvas;
-    Globals::rnd->nextInt();
-    String *str = Globals::gameText->getText(textId);
-
-    this->tipLines = arr;
-    int *m = (int *) Globals::layout;
-    int width = m[0x78 / 4] + m[0x4c / 4] * -2;
-    canvas->GetLineArray(color, *str, width, this->tipLines);
+    this->tipLines = new Array<String *>();
+    Globals::Canvas->GetLineArray((unsigned int) (uintptr_t) Globals::font,
+                                  *Globals::gameText->getText(Globals::rnd->nextInt(13) + 340),
+                                  Globals::layout->field_0x78 - 2 * Globals::layout->field_0x4c, this->tipLines);
 }
 
 static unsigned *g_efColor = nullptr;
@@ -607,12 +595,11 @@ void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
 void Layout::showMissionRewardMessage(int show, bool flag) {
     if (show == 0)
         return;
-    this->rewardMessageFlag = flag;
     this->rewardMessageActive = 1;
-    FModSound *sound = Globals::sound;
+    this->rewardMessageFlag = flag;
     this->rewardMessageTimer = 0;
     this->rewardCredits = show;
-    sound->play(0x24, 0, 0, 0.0f);
+    Globals::sound->play(0x24, 0, 0, 0.0f);
 }
 
 
@@ -962,10 +949,9 @@ void Layout::initHelpWindow(String text) {
     if (this->choiceWindow == nullptr)
         this->choiceWindow = new ChoiceWindow();
     (Globals::sound)->play(0x7e, 0, 0, 0);
-    String *title = Globals::gameText->getText(0x187);
-    this->choiceWindow->set(*title, text);
-    this->choiceWindowOpen = 1;
+    this->choiceWindow->set(*Globals::gameText->getText(0x187), text, false);
     this->helpPressedFlag = 0;
+    this->choiceWindowOpen = 1;
 }
 
 
@@ -1300,9 +1286,7 @@ void Layout::drawWindow(String title, int x, int y, int w, int h) {
 }
 
 void Layout::drawMask() {
-    int w = *gW;
-    int h = *gH;
-    this->drawMask(0, 0, w, h);
+    this->drawMask(0, 0, Globals::w, Globals::h);
 }
 
 void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h) {
@@ -1387,10 +1371,10 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
 }
 
 void Layout::drawMask(int x, int y, int w, int h) {
-    PaintCanvas *pc = Globals::Canvas;
-    unsigned saved = pc->GetColor();
-    pc->FillRectangle(x, y, w, h);
-    pc->SetColor(saved);
+    unsigned int saved = Globals::Canvas->GetColor();
+    Globals::Canvas->SetColor(0x80);
+    Globals::Canvas->FillRectangle(x, y, w, h);
+    Globals::Canvas->SetColor(saved);
 }
 
 void Layout::drawWindow(String title) {
