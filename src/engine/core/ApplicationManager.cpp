@@ -20,15 +20,15 @@ ApplicationManager::ApplicationManager(Engine *engine) {
     AbyssEngine::debugTouch[1] = 0.0f;
     AbyssEngine::debugTouch[2] = 0.0f;
     AbyssEngine::debugTouch[3] = 0.0f;
-    this->frameTimeMs = 0;
-    this->previousFrameTimeMs = 0;
-    this->pendingModule = 0;
-    this->applicationData = 0;
-    this->currentTimeMs = 0;
-    this->currentKey = 0;
-    this->state = 5;
-    this->currentModule = 0;
     this->quitCallback = 0;
+    this->state = 5;
+    this->applicationData = 0;
+    this->pendingModule = 0;
+    this->frameTimeMs = 0;
+    this->currentKey = 0;
+    this->previousFrameTimeMs = 0;
+    this->currentTimeMs = 0;
+    this->currentModule = 0;
     this->keyState = 0;
     this->engine = engine;
 
