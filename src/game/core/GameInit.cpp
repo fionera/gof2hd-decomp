@@ -144,12 +144,8 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
 
     const int width = static_cast<int>(engine->GetDeviceInfo().width);
     const int height = static_cast<int>(engine->GetDeviceInfo().height);
-    const bool pad = engine->GetDeviceInfo().isPad != 0;
-
-    if (height < 640 || pad)
-        Globals::retinaDisplay = engine->GetDeviceInfo().isPad != 0 && height > 800;
-    else
-        Globals::retinaDisplay = true;
+    Globals::retinaDisplay = (engine->GetDeviceInfo().isPad != 0 || height < 640)
+        ? engine->GetDeviceInfo().isPad != 0 && height > 800 : true;
 
     data->field_0xa8 = AbyssEngine::String("", false);
     data->field_0xa5 = 0;
