@@ -1815,8 +1815,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                 Globals::status->voidStation->addShip((*Globals::ships)[oldShip->getIndex()]->makeShip(-1));
                 if (oldShip->getMods() != 0) {
                     for (unsigned int i = 0; i < oldShip->getMods()->size(); i++) {
-                        Array<Ship *> *stored = Globals::status->voidStation->getShips();
-                        (*stored)[stored->size() - 1]->addMod((*oldShip->getMods())[i]);
+                        (*Globals::status->voidStation->getShips())[Globals::status->voidStation->getShips()->size() - 1]
+                            ->addMod((*oldShip->getMods())[i]);
                     }
                 }
             }
