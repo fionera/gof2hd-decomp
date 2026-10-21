@@ -2317,10 +2317,7 @@ int MGame::nextCamId(int cur) {
             Globals::status->getShip()->getFirstEquipmentOfSort(35) == nullptr) {
             return 3;
         }
-        id = 1;
-        if (this->player->hasAutoTurret()) {
-            id = 3;
-        }
+        return this->player->hasAutoTurret() ? 3 : 1;
     }
     return id;
 }
