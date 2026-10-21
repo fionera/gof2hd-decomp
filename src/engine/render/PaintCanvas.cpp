@@ -29,6 +29,7 @@ namespace AbyssEngine {
     int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, AEMath::Matrix *view,
                                     Camera *camera);
     int CameraIsPointinViewFrustum(const AEMath::Vector &point, AEMath::Matrix *view, Camera *camera);
+    void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTextures);
 }
 
 namespace AbyssEngine {
@@ -357,8 +358,6 @@ static inline float paintcanvas_ext_dss1_sinf(float v) { return sinf(v); }
 static inline float paintcanvas_ext_dss1_cosf(float v) { return cosf(v); }
 
 static inline void paintcanvas_ext_dss1_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_end3d(AbyssEngine::PaintCanvas *);
 
 void paintcanvas_ext_get_grav(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -813,11 +812,11 @@ void PaintCanvas::SpriteSystemSetAllSize(unsigned int index, short size) {
 }
 
 void PaintCanvas::RemoveAllMatsForGlow() {
-    PCArrayRemoveAll((PCArrayHeader *) &this->glowMeshes);
-    PCArrayRemoveAll((PCArrayHeader *) &this->glowMatA);
-    PCArrayRemoveAll((PCArrayHeader *) &this->glowMatB);
-    PCArrayRemoveAll((PCArrayHeader *) &this->glowUints);
-    return PCArrayRemoveAll((PCArrayHeader *) &this->glowMatC);
+    ArrayRemoveAll(this->glowMeshes);
+    ArrayRemoveAll(this->glowMatA);
+    ArrayRemoveAll(this->glowMatB);
+    ArrayRemoveAll(this->glowUints);
+    ArrayRemoveAll(this->glowMatC);
 }
 
 void PaintCanvas::MaterialChange(unsigned int index,
@@ -1947,7 +1946,330 @@ void PaintCanvas::CameraSetPerspective(unsigned int index, float a, float b, flo
 }
 
 void PaintCanvas::End3d() {
-    return paintcanvas_ext_end3d(this);
+    if (Engine::enableShader != 0) {
+        this->RemoveAllMatsForGlow();
+    }
+    if (this->fogEnableFlag == 1 && this->fogMode != 0) {
+        if (Engine::enableShader != 0) {
+            Engine::fogEnabled = true;
+        } else {
+            glEnable(0xb60);
+        }
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 0);
+
+    // Opaque pass; glow-flagged materials are queued and their draw lists copied to the glow set.
+    bool glowPending = false;
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        AbyssEngine::Material *mat = this->materials.data_[i];
+        if (mat->blendMode == 0) {
+            if (Engine::enableShader != 0 && this->engine->IsPostEffectActivated() &&
+                Engine::EnableGlow != 0 && this->materials.data_[i]->addData != 0) {
+                this->SetMatForGlow(this->materials.data_[i]);
+                glowPending = true;
+            }
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+        if (Engine::enableShader != 0 && this->engine->IsPostEffectActivated() &&
+            Engine::EnableGlow != 0 && glowPending) {
+            for (unsigned int j = 0; j < this->glowMatA.count; j++) {
+                ArrayAdd<AbyssEngine::Mesh *>(this->glowMeshes.data_[j], this->materials.data_[i]->meshes);
+                ArrayAdd<AbyssEngine::AEMath::Matrix>(this->glowMatA.data_[j], this->materials.data_[i]->arr_2c);
+                ArrayAdd<AbyssEngine::AEMath::Matrix>(this->glowMatB.data_[j], this->materials.data_[i]->arr_38);
+                ArrayAdd<unsigned int>(this->glowUints.data_[j], this->materials.data_[i]->arr_50);
+                ArrayAdd<AbyssEngine::AEMath::Matrix>(this->glowMatC.data_[j], this->materials.data_[i]->arr_5c);
+            }
+            this->RemoveAllMatsForGlow();
+            glowPending = false;
+        }
+    }
+
+    if (this->fogEnableFlag == 1 && this->fogMode != 0) {
+        if (Engine::enableShader != 0) {
+            Engine::fogEnabled = false;
+        } else {
+            glDisable(0xb60);
+        }
+        for (unsigned int i = 0; i < this->materials.count; i++) {
+            if (this->materials.data_[i]->blendMode == 23) {
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            }
+        }
+        if (Engine::enableShader != 0) {
+            Engine::fogEnabled = true;
+        } else {
+            glEnable(0xb60);
+        }
+    }
+
+    this->engine->LightEnable(true);
+    AbyssEngine::AEMath::Matrix camera = *(AbyssEngine::AEMath::Matrix *) this->CameraGetLocal(this->currentCamera);
+    this->engine->SetWorldViewMatrix(AbyssEngine::AEMath::MatrixGetInverse(camera));
+    this->engine->LightSetLight(0x4000);
+
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        AbyssEngine::Material *mat = this->materials.data_[i];
+        unsigned int cap;
+        switch (mat->blendMode) {
+            case 6:
+                AbyssEngine::MaterialDraw(this, this->engine, mat, true);
+                break;
+            case 11:
+                this->engine->GlEnable(0x1100000, true);
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+                this->engine->GlEnable(0x1100000, false);
+                break;
+            case 12:
+            case 28:
+            case 29:
+                if (Engine::enableShader != 0 && this->engine->IsPostEffectActivated() &&
+                    Engine::EnableGlow != 0 && this->materials.data_[i]->addData != 0) {
+                    this->SetMatForGlow(this->materials.data_[i]);
+                    glowPending = true;
+                }
+                if (AbyssEngine::CubeMapSetIndex == 0) {
+                    this->engine->GlEnable(0x1100013, true);
+                    AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+                    this->engine->GlEnable(0x1100013, false);
+                } else {
+                    this->engine->GlEnable(0x1100014, true);
+                    AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+                    this->engine->GlEnable(0x1100014, false);
+                }
+                break;
+            case 13:
+                if (Engine::enableShader != 0 && this->engine->IsPostEffectActivated() &&
+                    Engine::EnableGlow != 0 && this->materials.data_[i]->addData != 0) {
+                    this->SetMatForGlow(this->materials.data_[i]);
+                    glowPending = true;
+                }
+                this->engine->GlEnable(0x1100014, true);
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+                this->engine->GlEnable(0x1100014, false);
+                break;
+            case 15:
+                this->engine->GlEnable(0x1100001, true);
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+                this->engine->GlEnable(0x1100001, false);
+                break;
+            case 19:
+                this->engine->GlEnable(0x1100006, true);
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+                this->engine->GlEnable(0x1100006, false);
+                break;
+            case 38:
+                this->engine->GlEnable(0x1100022, true);
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+                this->engine->GlEnable(0x1100022, false);
+                break;
+        }
+        if (Engine::enableShader != 0 && this->engine->IsPostEffectActivated() &&
+            Engine::EnableGlow != 0 && glowPending) {
+            for (unsigned int j = 0; j < this->glowMatA.count; j++) {
+                ArrayAdd<AbyssEngine::Mesh *>(this->glowMeshes.data_[j], this->materials.data_[i]->meshes);
+                ArrayAdd<AbyssEngine::AEMath::Matrix>(this->glowMatA.data_[j], this->materials.data_[i]->arr_2c);
+                ArrayAdd<AbyssEngine::AEMath::Matrix>(this->glowMatB.data_[j], this->materials.data_[i]->arr_38);
+                ArrayAdd<unsigned int>(this->glowUints.data_[j], this->materials.data_[i]->arr_50);
+                ArrayAdd<AbyssEngine::AEMath::Matrix>(this->glowMatC.data_[j], this->materials.data_[i]->arr_5c);
+            }
+            this->RemoveAllMatsForGlow();
+            glowPending = false;
+        }
+    }
+
+    this->SetBlendMode((AbyssEngine::BlendMode) 8);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        AbyssEngine::Material *mat = this->materials.data_[i];
+        unsigned int cap;
+        if (mat->blendMode == 8) {
+            AbyssEngine::MaterialDraw(this, this->engine, mat, true);
+            continue;
+        } else if (mat->blendMode == 16) {
+            cap = 0x1100016;
+        } else if (mat->blendMode == 36) {
+            cap = 0x1100021;
+        } else {
+            continue;
+        }
+        this->engine->GlEnable(cap, true);
+        AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        this->engine->GlEnable(cap, false);
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 9);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 9) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 7);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 7) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    this->engine->LightEnable(false);
+    this->SetBlendMode((AbyssEngine::BlendMode) 37);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 37) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 1);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 1) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    if (this->fogEnableFlag == 1 && this->fogMode != 0) {
+        if (Engine::enableShader != 0) {
+            Engine::fogEnabled = false;
+        } else {
+            glDisable(0xb60);
+        }
+        for (unsigned int i = 0; i < this->materials.count; i++) {
+            if (this->materials.data_[i]->blendMode == 24) {
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            }
+        }
+        if (Engine::enableShader != 0) {
+            Engine::fogEnabled = true;
+        } else {
+            glEnable(0xb60);
+        }
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 21);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 21) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 22);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 22) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 10);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 10) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    this->engine->GlEnable(0x1000000, false);
+    this->SetBlendMode((AbyssEngine::BlendMode) 2);
+    if (this->fogEnableFlag == 1 && this->fogMode != 0) {
+        if (Engine::enableShader != 0) {
+            Engine::fogEnabled = false;
+        } else {
+            glDisable(0xb60);
+        }
+    }
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 2) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 3);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 3) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    if (this->fogEnableFlag == 1 && this->fogMode != 0) {
+        if (Engine::enableShader != 0) {
+            Engine::fogEnabled = true;
+        } else {
+            glEnable(0xb60);
+        }
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 4);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 4) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 5);
+    unsigned int savedColor = this->engine->packedColor;
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 5) {
+            this->SetColor(255, 255, 255, 127);
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+    this->SetColor(savedColor);
+    this->SetBlendMode((AbyssEngine::BlendMode) 1);
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i]->blendMode == 18) {
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        }
+    }
+
+    // Refraction pass: refractive materials keep the refraction FBO alive while they have meshes.
+    if (Engine::enableShader != 0 && Engine::EnableRefract != 0) {
+        this->engine->CopyFBO();
+        this->engine->SetPerspMatrix(this->projMatrix3d);
+    }
+    this->SetBlendMode((AbyssEngine::BlendMode) 0);
+    bool refract = false;
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        AbyssEngine::Material *mat = this->materials.data_[i];
+        unsigned int cap;
+        unsigned int meshCount;
+        if (mat->blendMode == 34) {
+            meshCount = mat->meshes.count;
+            cap = 0x1100018;
+        } else if (mat->blendMode == 14) {
+            meshCount = mat->meshes.count;
+            cap = 0x1100015;
+        } else {
+            continue;
+        }
+        this->engine->GlEnable(cap, true);
+        AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+        this->engine->GlEnable(cap, false);
+        refract |= meshCount != 0;
+    }
+    bool disableRefract = Engine::DisableRefract;
+    this->SetBlendMode((AbyssEngine::BlendMode) 3);
+    if (disableRefract) {
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+            if (this->materials.data_[i]->blendMode == 39) {
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            }
+        }
+    } else {
+        for (unsigned int i = 0; i < this->materials.count; i++) {
+            AbyssEngine::Material *mat = this->materials.data_[i];
+            if (mat->blendMode == 39) {
+                unsigned int meshCount = mat->meshes.count;
+                this->engine->GlEnable(0x1100024, true);
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+                this->engine->GlEnable(0x1100024, false);
+                refract |= meshCount != 0;
+            }
+        }
+    }
+    Engine::EnableRefract = refract;
+
+    if (this->fogMode != 0) {
+        if (Engine::enableShader != 0) {
+            Engine::fogEnabled = false;
+        } else {
+            glDisable(0xb60);
+        }
+    }
+    if (Engine::enableShader != 0 && this->engine->IsPostEffectActivated() && Engine::EnableGlow != 0) {
+        this->SetBlendMode((AbyssEngine::BlendMode) 0);
+        this->engine->GlowBeginGlow(0x203);
+        for (unsigned int i = 0; i < this->materials.count; i++) {
+            if (this->materials.data_[i]->addData != 0) {
+                this->engine->GlEnable(0x1100017, true);
+                AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+                this->engine->GlEnable(0x1100017, false);
+            }
+        }
+        this->engine->GlowEndGlow();
+    }
 }
 
 void PaintCanvas::MeshCloneMaterial(unsigned int index, unsigned int &out) {
