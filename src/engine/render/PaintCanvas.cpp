@@ -3792,19 +3792,18 @@ void PaintCanvas::DrawRegion2D(unsigned int index, int srcX, int srcY,
 void PaintCanvas::RestoreImage2D(AbyssEngine::Image2D *image) {
     PCImage2DView *img = (PCImage2DView *) image;
     PCMeshView *m = (PCMeshView *) img->mesh;
-    img->restoreFlag = 0;
     float *s = (float *) m->positions;
-
-    float w = (float) (unsigned int) img->width;
-    float h = (float) (unsigned int) img->height;
+    img->restoreFlag = 0;
 
     s[0] = 0.0f;
     s[1] = 0.0f;
     s[2] = 0.0f;
+    float w = (float) (unsigned int) img->width;
     s[3] = w;
     s[4] = 0.0f;
     s[5] = 0.0f;
     s[6] = w;
+    float h = (float) (unsigned int) img->height;
     s[7] = h;
     s[8] = 0.0f;
     s[9] = 0.0f;
@@ -3817,10 +3816,12 @@ void PaintCanvas::RestoreImage2D(AbyssEngine::Image2D *image) {
     float v0 = (float) (unsigned int) img->v0;
 
     float *buf = (float *) m->uvs;
+    float bottom = h + v0;
+    float right = w + u0;
     float a = u0 * invH;
     float b = v0 * invW;
-    float c = (h + v0) * invW;
-    float d = (w + u0) * invH;
+    float c = bottom * invW;
+    float d = right * invH;
     buf[0] = a;
     buf[1] = b;
     buf[2] = d;
@@ -3830,10 +3831,13 @@ void PaintCanvas::RestoreImage2D(AbyssEngine::Image2D *image) {
     buf[6] = a;
     buf[7] = c;
 
-    int *ipd = (int *) m->indexBuffer;
-    ipd[0] = 0x20000;
-    ipd[1] = 1;
-    ipd[2] = 0x20003;
+    unsigned short *indices = (unsigned short *) m->indexBuffer;
+    indices[0] = 0;
+    indices[1] = 2;
+    indices[2] = 1;
+    indices[3] = 0;
+    indices[4] = 3;
+    indices[5] = 2;
 }
 
 void PaintCanvas::SpriteSystemGetPosition(unsigned int index, unsigned short sub,
