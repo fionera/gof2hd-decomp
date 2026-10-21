@@ -233,23 +233,23 @@ void ParticleSystemMesh::init(uint32_t mesh, uint16_t firstPoint) {
 }
 
 void ParticleSystemMesh::updateUsualEdges(int id, int delta) {
-    Vector move;
-    float scale = (float) delta * 0.001f;
-    const Vector *src;
+    int start = (int) this->idOffset;
+    int stride = (int) this->stride;
+    Vector move = {0.0f, 0.0f, 0.0f};
+    const Vector *velocity;
+    float scale;
     if ((int) (this->flags << 12) < 0) {
-        const Vector *trail = this->particleVelocities + id;
-        src = &this->emitterVelocity;
-        scale *= trail->y;
+        velocity = &this->emitterVelocity;
+        scale = (float) delta * 0.001f * this->particleVelocities[id].y;
     } else {
-        src = this->particleVelocities + id;
+        velocity = &this->particleVelocities[id];
+        scale = (float) delta * 0.001f;
     }
+    move = *velocity * scale;
 
-    move = *src * scale;
-
-    int point = (int) this->idOffset + (int) this->stride * id * 4;
+    int point = start + stride * id * 4;
     for (int i = 0; i < (int) this->stride * 4; i++)
-        this->canvas->MeshTranslatePoint(this->resource, (uint16_t)(point + i), move.x,
-                                         move.y, move.z);
+        this->canvas->MeshTranslatePoint(this->resource, (uint16_t) (point + i), move.x, move.y, move.z);
 }
 
 void ParticleSystemMesh::updateSingleColor(int id) {
