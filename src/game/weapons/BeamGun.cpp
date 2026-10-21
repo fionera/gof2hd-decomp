@@ -163,7 +163,7 @@ void BeamGun::update(int elapsed) {
             transformed = gun->offset;
             transformed.z = gun->offset.z + -100.0f;
 
-            MatrixRotateVector(&rotated, (Matrix *) ((Player *) player->player)->transform, &transformed);
+            MatrixRotateVector(&rotated, &((Player *) player->player)->transform, &transformed);
             *(Vector *) &playerMatrix = *(Vector *) &playerMatrix + rotated;
             this->secondaryGeometry->setPosition(*(Vector *) &playerMatrix);
 
@@ -172,7 +172,7 @@ void BeamGun::update(int elapsed) {
                 static_cast<Transform *>(canvas->TransformGetTransform(secondary->transform));
             t->Update((long long) elapsed, false);
 
-            MatrixGetDir(&rotated, (Matrix *) ((Player *) player->player)->transform);
+            MatrixGetDir(&rotated, &((Player *) player->player)->transform);
             back.x = 0.0f;
             back.y = 1.0f;
             back.z = 0.0f;

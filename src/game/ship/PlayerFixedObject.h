@@ -47,7 +47,8 @@ public:
     Vector homingTarget;
     Vector homingDir;
     uint32_t field_0x15c;
-    uint64_t field_0x160;
+    uint32_t field_0x160;
+    uint32_t field_0x164;
     int32_t targetEnemy;
     int collisionIndex;
     uint8_t field_0x170;
