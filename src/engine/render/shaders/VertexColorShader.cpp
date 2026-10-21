@@ -19,7 +19,7 @@ static const char *const kVertexColorShaderFragmentSource =
     "}";
 
 namespace AbyssEngine {
-    int VertexColorShader::ShaderIndex;
+    int VertexColorShader::ShaderIndex = -1;
 
     VertexColorShader::VertexColorShader() {
         VertexColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

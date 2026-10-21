@@ -55,7 +55,7 @@ static const char *const kBumpShaderV2FragmentSource =
     "}  \n";
 
 namespace AbyssEngine {
-    int BumpShaderV2::ShaderIndex;
+    int BumpShaderV2::ShaderIndex = -1;
 
     BumpShaderV2::BumpShaderV2() {
         BumpShaderV2::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

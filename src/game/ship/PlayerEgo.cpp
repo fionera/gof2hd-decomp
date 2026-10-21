@@ -86,7 +86,7 @@ static const int kHiddenBlueprints[5] = {226, 221, 223, 225, 227};
 
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairPos;
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairShootPos;
-AbyssEngine::AEMath::Vector PlayerEgo::vec_up;
+AbyssEngine::AEMath::Vector PlayerEgo::vec_up = {0.0f, 1.0f, 0.0f};
 
 PlayerEgo::PlayerEgo(Player *player)
     : lastCrosshairPos(), lastCrosshairShootPos(), moveDirection(), moveTarget(), dockOffsetVec(), headingVec(),

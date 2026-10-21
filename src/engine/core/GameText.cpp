@@ -365,4 +365,4 @@ AbyssEngine::String *GameText::getText(int key) {
 }
 
 
-unsigned short GameText::currentLang;
+unsigned short GameText::currentLang = 0xffff;

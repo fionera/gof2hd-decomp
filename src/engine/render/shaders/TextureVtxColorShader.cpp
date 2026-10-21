@@ -78,7 +78,7 @@ static const char *const kTextureVtxColorShaderFogFragmentSource =
 namespace AbyssEngine {
     static inline bool EngineFogEnabled() { return Engine::fogEnabled; }
 
-    int TextureVtxColorShader::ShaderIndex;
+    int TextureVtxColorShader::ShaderIndex = -1;
 
     TextureVtxColorShader::TextureVtxColorShader() {
         TextureVtxColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
