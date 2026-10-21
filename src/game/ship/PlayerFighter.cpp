@@ -542,13 +542,13 @@ void PlayerFighter::update(int dt) {
                 this->field_0x140 = !this->field_0x140;
             }
         }
-    }
 
-    // locking a neutral ship on the radar makes it hostile and uncovers its wanted entry
-    if (!this->player->isAlwaysEnemy() && this->level->getPlayer() &&
-        this->level->getPlayer()->field_0x14->lockedEnemy == this && !this->reviveLockFlag) {
-        this->player->setAlwaysEnemy(true);
-        this->level->uncoverWanted(this->field_0x48);
+        // Locking a bounty target makes it hostile and uncovers its wanted entry.
+        if (!this->player->isAlwaysEnemy() && this->level->getPlayer() &&
+            this->level->getPlayer()->field_0x14->lockedEnemy == this && !this->reviveLockFlag) {
+            this->player->setAlwaysEnemy(true);
+            this->level->uncoverWanted(this->field_0x48);
+        }
     }
 
     if (Globals::status->inBlackMarketSystem() && Globals::status->field_110 && this->shipGroup == 8) {
@@ -916,7 +916,7 @@ void PlayerFighter::update(int dt) {
                 }
             }
             this->smoking = true;
-        } else if (this->smoking && !((float) this->player->getMaxHitpoints() * 0.33f > (float) hp)) {
+        } else if (this->smoking && (float) this->player->getMaxHitpoints() * 0.33f <= (float) hp) {
             this->smoking = false;
             this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
             this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, false);
@@ -1157,7 +1157,7 @@ void PlayerFighter::update(int dt) {
                         this->roll(dt);
                     }
                     if (this->smoothRoll != this->targetRoll) {
-                        float step = (float) dt * 1.25f / 3.9f;
+                        float step = (float) dt * 1.25f / 3.8999999f;
                         if (this->smoothRoll < this->targetRoll) {
                             this->smoothRoll += step;
                             if (this->smoothRoll > this->targetRoll) {
