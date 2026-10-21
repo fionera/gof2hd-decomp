@@ -511,7 +511,6 @@ void paintcanvas_ext_get_grav(void *); // lint: void_ptr (external symbol; mangl
 
 static inline void paintcanvas_ext_glMatrixMode(unsigned int mode) { glMatrixMode(mode); }
 
-void paintcanvas_ext_matgl_load(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_gl_loadidentity() { glLoadIdentity(); }
 
@@ -1363,10 +1362,9 @@ void *PaintCanvas::MaterialGetMaterial(unsigned int index) { // lint: void_ptr (
     return 0;
 }
 
-static char *paintcanvas_g_bg_flag;
 
 void PaintCanvas::EndBG() {
-    *paintcanvas_g_bg_flag = this->bgFlagSaved;
+    Engine::vfc = this->bgFlagSaved;
 }
 
 void *PaintCanvas::FindResource(unsigned short id) { // lint: void_ptr (external symbol; mangling must match lib)
@@ -2502,8 +2500,6 @@ void PaintCanvas::GetGravValue() {
     return paintcanvas_ext_get_grav(this->engine);
 }
 
-static char paintcanvas_g_bg_a = 0;
-static char paintcanvas_g_bg_b = 0;
 
 void PaintCanvas::BeginBG() {
     ((Engine *) this->engine)->statsEnabled = 0;
@@ -2511,18 +2507,17 @@ void PaintCanvas::BeginBG() {
     glDepthMask(0);
     glDisable(0xbe2);
     this->engine->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-    this->bgFlagSaved = paintcanvas_g_bg_a;
-    char flag = paintcanvas_g_bg_b;
-    paintcanvas_g_bg_a = 0;
-    if (flag != 0) {
-        return paintcanvas_ext_matgl_load(this->engine, &this->projMatrix3d.m[0]);
+    this->bgFlagSaved = Engine::vfc;
+    Engine::vfc = 0;
+    if (Engine::enableShader != 0) {
+        return this->engine->SetPerspMatrix(this->projMatrix3d.m);
     }
-    paintcanvas_ext_glMatrixMode(0x1702);
-    paintcanvas_ext_gl_loadidentity();
+    glMatrixMode(0x1702);
+    glLoadIdentity();
     glScalef(1.0f, -1.0f, 1.0f);
-    paintcanvas_ext_glMatrixMode(0x1701);
-    glLoadMatrixf((const float*)&this->projMatrix3d.m[0]);
-    paintcanvas_ext_glMatrixMode(0x1700);
+    glMatrixMode(0x1701);
+    glLoadMatrixf(this->projMatrix3d.m);
+    glMatrixMode(0x1700);
     return glLoadIdentity();
 }
 
@@ -2629,7 +2624,6 @@ void PaintCanvas::TextureCreateGlobal(AbyssEngine::String name, unsigned int uni
     ::operator delete[](path);
 }
 
-static char paintcanvas_g_use_matgl = 0;
 
 void PaintCanvas::Begin3d() {
     ((Engine *) this->engine)->statsEnabled = 0;
@@ -2637,15 +2631,15 @@ void PaintCanvas::Begin3d() {
     glDepthMask(1);
     glDisable(0xbe2);
     this->engine->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-    if (paintcanvas_g_use_matgl != 0) {
-        return paintcanvas_ext_matgl_load(this->engine, &this->projMatrix3d.m[0]);
+    if (Engine::enableShader != 0) {
+        return this->engine->SetPerspMatrix(this->projMatrix3d.m);
     }
-    paintcanvas_ext_glMatrixMode(0x1702);
-    paintcanvas_ext_gl_loadidentity();
+    glMatrixMode(0x1702);
+    glLoadIdentity();
     glScalef(1.0f, -1.0f, 1.0f);
-    paintcanvas_ext_glMatrixMode(0x1701);
-    glLoadMatrixf((const float*)&this->projMatrix3d.m[0]);
-    paintcanvas_ext_glMatrixMode(0x1700);
+    glMatrixMode(0x1701);
+    glLoadMatrixf(this->projMatrix3d.m);
+    glMatrixMode(0x1700);
     return glLoadIdentity();
 }
 
@@ -4788,16 +4782,16 @@ int paintcanvas_ext_rt_texfromfile(void *eng, char *path, void *cb, void *ud, //
                                    unsigned int *out, bool b, float f);
 
 void PaintCanvas::ReloadTextures() {
-    unsigned int out = 0;
     for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
         PCCubeTexView *res = (PCCubeTexView *) (this->cubeTextures.data_)[i];
         if (res->glTexId == -1) {
+            unsigned int out = 0;
             char *path = reinterpret_cast<AbyssEngine::String *>(res->pathField)->GetAEChar();
             float f = ((PCCubeTexView *) (this->cubeTextures.data_)[i])->scale;
             int ok = AbyssEngine::TextureCreateFromFile(this->engine, path, 0, 0,
                                                         &out, false, f);
             if (ok == 1) {
-                ((PCCubeTexView *) (this->cubeTextures.data_)[i])->glTexId = 0;
+                ((PCCubeTexView *) (this->cubeTextures.data_)[i])->glTexId = out;
             }
             delete[] path;
         }
