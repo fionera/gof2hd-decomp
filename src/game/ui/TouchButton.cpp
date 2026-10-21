@@ -109,7 +109,7 @@ void TouchButton::resetTouch() {
 }
 
 
-unsigned int TouchButton::OnTouchBegin(int px, int py) {
+bool TouchButton::OnTouchBegin(int px, int py) {
     if (this->visible == 0 || this->halfTransparent != 0)
         return 0;
     int r = touchedInside(px, py);

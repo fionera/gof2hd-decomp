@@ -110,7 +110,7 @@ public:
 
     ~HangarWindow();
 
-    void OnTouchBegin(int touch, int coord);
+    int OnTouchBegin(int touch, int coord);
 
     void OnTouchEnd(int touch, int coord);
 

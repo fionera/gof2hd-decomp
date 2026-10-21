@@ -74,7 +74,7 @@ public:
 
     ~TouchButton();
 
-    unsigned int OnTouchBegin(int px, int py);
+    bool OnTouchBegin(int px, int py);
 
     unsigned int OnTouchEnd(int px, int py);
 

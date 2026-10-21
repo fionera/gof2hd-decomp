@@ -293,7 +293,7 @@ public:
 
     ~Layout();
 
-    int OnTouchBegin(int x, int y);
+    bool OnTouchBegin(int x, int y);
 
     int OnTouchEnd(int x, int y);
 
