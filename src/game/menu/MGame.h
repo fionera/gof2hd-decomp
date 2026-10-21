@@ -11,6 +11,7 @@ class Radar;
 class AEGeometry;
 class ChoiceWindow;
 class DialogueWindow;
+class GameRecord;
 class Hud;
 class Level;
 class LevelScript;
@@ -97,7 +98,8 @@ public:
     int field_0xd8;
     uint8_t jumpDriveActive;
     uint8_t usingJumpDrive;
-    uint8_t _pad_0xde[2];
+    uint8_t field_0xde;
+    uint8_t field_0xdf;
     uint8_t field_0xe0;
     uint8_t _pad_0xe1[3];
 
@@ -181,7 +183,7 @@ public:
     uint16_t field_0x1e4;
     uint8_t field_0x1e6;
     uint8_t _pad_0x1e7[1];
-    int gameRecord;
+    GameRecord *gameRecord;
     Array<AbyssEngine::String *> *missionInfoLines;
 
     MGame();

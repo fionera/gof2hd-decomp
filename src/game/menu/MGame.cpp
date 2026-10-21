@@ -1,4 +1,5 @@
 #include "game/menu/MGame.h"
+#include "game/menu/ModStation.h"
 #include <new>
 #include "game/core/Radio.h"
 #include "game/core/RadioMessage.h"
@@ -58,7 +59,6 @@ static inline void TFC_setFastForwardMode(TargetFollowCamera *c, int v) { c->set
 static inline void TFC_setLookAtCam(TargetFollowCamera *c, int v) { c->setLookAtCam(v); }
 
 
-void FModSound_restoreState();
 
 
 
@@ -452,7 +452,7 @@ void MGame::gameOverCheck() {
                 Globals::lastCampaignMissionFailed = mission;
                 Globals::lastCampaignMissionFailCount++;
             }
-            this->gameRecord = (int) (intptr_t) Globals::recordHandler->recordStoreRead(Globals::lastRecordWritten);
+            this->gameRecord = Globals::recordHandler->recordStoreRead(Globals::lastRecordWritten);
         }
     }
 
@@ -529,7 +529,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) { // lint: void_ptr -- e
                 return self->applicationManager->SetCurrentApplicationModule(2);
             }
             if (self->gameRecord != 0) {
-                ((GameRecord *) (self->gameRecord))->load();
+                self->gameRecord->load();
                 Globals::globals->playMusicAndFadeOutCurrent(**g_tbRecordTrack);
                 self->active = 0;
                 return self->applicationManager->SetCurrentApplicationModule(5);
@@ -2166,137 +2166,98 @@ MGame::MGame() {
     this->field_0x1e0 = z;
 }
 
-static inline unsigned char *Radio_dtor(Radio *p) { p->~Radio(); return (unsigned char*)p; }
-
-static inline unsigned char * DialogueWindow_dtor(DialogueWindow * p) { p->~DialogueWindow(); return (unsigned char *)(p); }
-
-static int g_relPostEffect;
-
-static int *g_relSoundFlag;
-
-static int *g_relLayout;
-
-static int **g_relImgFactory;
-
-struct StarMapModule {
-    uint8_t _pad0[0x10];
-    StarMap *starMap;
-};
-#if __SIZEOF_POINTER__ == 4
-static_assert(offsetof(StarMapModule, starMap) == 0x10, "StarMapModule::starMap @ 0x10");
-#endif
-
 void MGame::OnRelease() {
-    Engine *eng = (Engine *) this->applicationManager->GetEngine();
-    ((Engine *) (eng))->SetPostEffect(g_relPostEffect, 0);
-
-    int *soundFlag = g_relSoundFlag;
-    if (*soundFlag != 0) {
-        ((FModSound *) (0))->setDownPitch(true /* down: arg lost in decomp */);
-        ((FModSound *) ((Engine *) *soundFlag))->disableReverb();
-        ((FModSound *) ((Engine *) *soundFlag))->stopAllSoundFXEvents();
+    static_cast<Engine *>(this->applicationManager->GetEngine())->SetPostEffect(0x01400002, false);
+    if (Globals::sound != nullptr) {
+        Globals::sound->setDownPitch(false);
+        Globals::sound->disableReverb();
+        Globals::sound->stopAllSoundFXEvents();
     }
 
     delete this->level;
-
-    this->elapsedTime = 0;
+    this->level = nullptr;
+    this->player = nullptr;
     this->cameraMode = 0;
-    this->level = 0;
     this->active = 0;
     this->field_0x70 = 0;
     this->deltaTime = 0;
+    this->elapsedTime = 0;
+    this->_b5c = 0;
+    this->pauseOpen = 0;
+    this->cutsceneActive = 0;
+    this->jumpActive = 0;
     this->gameOverActive = 0;
-    this->player = 0;
-    reinterpret_cast<int &>(this->_b5c) = 0;
-
+    this->campaignMission = 0;
+    this->startTime = 0;
+    this->startTimeHigh = 0;
+    this->lastTime = 0;
+    this->lastTimeHigh = 0;
     this->frameTime = 0;
     this->frameTimeHigh = 0;
     this->field_0x38 = 0;
     this->field_0x3c = 0;
 
-    this->startTime = 0;
-    this->startTimeHigh = 0;
-    this->lastTime = 0;
-    this->lastTimeHigh = 0;
-
     delete this->jumpFlash;
-    this->jumpFlash = 0;
-
+    this->jumpFlash = nullptr;
     delete this->hud;
-    this->hud = 0;
-
+    this->hud = nullptr;
     delete this->levelScript;
-    this->levelScript = 0;
+    this->levelScript = nullptr;
+    delete this->radar;
+    this->radar = nullptr;
+    delete this->radio;
+    this->radio = nullptr;
 
-    if (this->radar != 0)
-        delete this->radar;
-    this->radar = 0;
-
-    if (this->radio != 0)
-        ::operator delete(Radio_dtor(this->radio));
-    this->radio = 0;
-
-    StarMapModule *m1 = (StarMapModule *) Globals::appManager->GetApplicationModule(0);
-    if (m1->starMap != 0) {
-        StarMapModule *m2 = (StarMapModule *) Globals::appManager->GetApplicationModule(0);
-        delete m2->starMap;
-    }
-    StarMapModule *m3 = (StarMapModule *) Globals::appManager->GetApplicationModule(0);
-    m3->starMap = 0;
+    ModStation *station = reinterpret_cast<ModStation *>(Globals::appManager->GetApplicationModule(5));
+    if (station->starMap != nullptr)
+        delete reinterpret_cast<ModStation *>(Globals::appManager->GetApplicationModule(5))->starMap;
+    reinterpret_cast<ModStation *>(Globals::appManager->GetApplicationModule(5))->starMap = nullptr;
 
     delete this->menuWindow;
-    this->menuWindow = 0;
-
-    if (this->dialogueWindow != 0)
-        ::operator delete(DialogueWindow_dtor(this->dialogueWindow));
-    this->dialogueWindow = 0;
-
+    this->menuWindow = nullptr;
+    delete this->dialogueWindow;
+    this->dialogueWindow = nullptr;
     delete this->starMap;
-    this->starMap = 0;
-
+    this->starMap = nullptr;
     delete this->choiceWindow;
-    this->choiceWindow = 0;
+    this->choiceWindow = nullptr;
 
+    this->autopilotMenuOpen = 0;
+    this->field_0xc6 = 0;
+    this->starMapOpen = 0;
+    this->_bc8 = 0;
+    this->touchesStream = 0;
+    this->touchesStation = 0;
+    this->jumpGateSoundStarted = 0;
+    this->choiceWindowOpen = 0;
+    this->turretMode = 0;
+    this->hudMenuOpen = 0;
+    this->jumpFlash = nullptr;
     this->field_0xd8 = 0;
     this->jumpDriveActive = 0;
-    this->turretMode = 0;
-    this->autopilotMenuOpen = 0;
-    this->touchesStream = 0;
+    this->usingJumpDrive = 0;
+    this->field_0xde = 0;
+    this->field_0xdf = 0;
 
-    if (this->camera != 0)
-        ::operator delete(TargetFollowCamera_dtor(this->camera));
-    this->camera = 0;
+    delete this->camera;
+    this->camera = nullptr;
+    delete this->gameRecord;
+    this->gameRecord = nullptr;
 
-    if (this->gameRecord != 0) {
-        ((GameRecord *) (intptr_t) this->gameRecord)->~GameRecord();
-        ::operator delete((GameRecord *) (intptr_t) this->gameRecord);
-    }
-    this->gameRecord = 0;
-
-    {
-        int *p = (int *) 0;
-        (void) p;
-    }
     Globals::Canvas->ReleaseAllResources();
-
-    int lang = GameText::getLanguage();
-    Globals::globals->loadFont(lang);
-
-    int *layout = g_relLayout;
-    if (*layout != 0) {
-        ((Layout *) (*layout))->reload();
-        ((ImageFactory *) (**g_relImgFactory))->reload();
-        ((Layout *) (*layout))->initTip();
+    Globals::globals->loadFont(GameText::getLanguage());
+    if (Globals::layout != nullptr) {
+        Globals::layout->reload();
+        Globals::imageFactory->reload();
+        Globals::layout->initTip();
     }
 
-    if (this->missionInfoLines != 0) {
-        ArrayReleaseClasses(*this->missionInfoLines);
-        delete this->missionInfoLines;
-    }
-    this->missionInfoLines = 0;
+    ArrayReleaseClasses(*this->missionInfoLines);
+    delete this->missionInfoLines;
+    this->missionInfoLines = nullptr;
 
-    if (*soundFlag != 0)
-        FModSound_restoreState();
+    if (Globals::sound != nullptr)
+        Globals::sound->freeAllEvents();
 }
 
 static Layout ***g_r2dHelpLayout;

@@ -2117,108 +2117,73 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     return (int) (long) arr;
 }
 
-static const int gPM_table0 = 0;
-static const int gPM_table1 = 0;
+static const int gStationMusicByRace[4] = {128, 127, 129, 130};
+static const int gSpaceMusicByRace[4] = {134, 139, 138, 137};
 
 void Globals::playMusicAndFadeOutCurrent(int mode) {
-    int snd;
-    int track;
-    int vol = 0;
-
-    if (mode == 2) {
-        int *sndP = (int *) &Globals::sound;
-        ((FModSound *) (*sndP))->stop(0);
-        snd = *sndP;
-        track = 0x91;
-        ((FModSound *) (snd))->play(track, 0, 0, (float) vol);
-        return;
-    }
-    if (mode == 1) {
-        int *statSnd = (int *) &Globals::status;
-        if (Globals::status->inAlienOrbit() != 0) {
-            int *sndP = (int *) &Globals::sound;
-            ((FModSound *) (*sndP))->stop(0);
-            snd = *sndP;
-            track = 0x88;
-            int m = Globals::status->getCurrentCampaignMission();
-            if (m > 0x92 && Globals::status->getCurrentCampaignMission() < 0x9a) {
-                track = 0x91;
+    switch (mode) {
+        case 0: {
+            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            Globals::sound->stop(Globals::sound->currentMusicEvent);
+            if (Globals::status->getStation()->getIndex() == 108) {
+                Globals::sound->play(132, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 101) {
+                Globals::sound->play(131, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 10 ||
+                       Globals::status->getStation()->getIndex() == 100) {
+                if (Globals::status->getStation()->getIndex() == 10 &&
+                    Globals::status->getCurrentCampaignMission() == 159)
+                    Globals::sound->play(144, nullptr, nullptr, 0.0f);
+                else
+                    Globals::sound->play(133, nullptr, nullptr, 0.0f);
+            } else {
+                int track = gStationMusicByRace[race];
+                Globals::sound->play(track, nullptr, nullptr, 0.0f);
             }
-            ((FModSound *) (snd))->play(track, 0, 0, (float) vol);
-            return;
+            break;
         }
-        ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-        int *sndP = (int *) &Globals::sound;
-        ((FModSound *) (*sndP))->stop(0);
-        if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x6c) {
-            ((FModSound *) (*sndP))->play(0x92, 0, 0, (float) vol);
-            return;
-        }
-        if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x65) {
-            ((FModSound *) (*sndP))->play(0x93, 0, 0, (float) vol);
-            return;
-        }
-        if (Globals::status->inSupernovaSystem() != 0) {
-            if (Globals::status->getCurrentCampaignMission() == 0x59) {
-                ((FModSound *) (*sndP))->play(0x8be, 0, 0, (float) vol);
-                return;
+        case 1: {
+            if (Globals::status->inAlienOrbit()) {
+                Globals::sound->stop(Globals::sound->currentMusicEvent);
+                Globals::sound->play(Globals::status->getCurrentCampaignMission() >= 147 &&
+                                     Globals::status->getCurrentCampaignMission() < 154 ? 145 : 136,
+                                     nullptr, nullptr, 0.0f);
+                break;
             }
-            if (Globals::status->getMission() != 0 && ((Mission *) (long) Globals::status->getMission())->isEmpty() ==
-                0) {
-                int tgt = ((Mission *) (long) Globals::status->getMission())->getTargetStation();
-                if (tgt == Station_getIndex((int) (long) Globals::status->getStation())) {
-                    int cm = Globals::status->getCurrentCampaignMission();
-                    track = cm < 0x6a ? 0x8c1 : 0x8c2;
-                    ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
-                    return;
+            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            Globals::sound->stop(Globals::sound->currentMusicEvent);
+            if (Globals::status->getStation()->getIndex() == 108) {
+                Globals::sound->play(146, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 101) {
+                Globals::sound->play(147, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->inSupernovaSystem()) {
+                if (Globals::status->getCurrentCampaignMission() == 89) {
+                    Globals::sound->play(2238, nullptr, nullptr, 0.0f);
+                } else if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
+                           Globals::status->getMission()->getTargetStation() ==
+                           Globals::status->getStation()->getIndex()) {
+                    Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242, nullptr,
+                                         nullptr, 0.0f);
+                } else {
+                    Globals::sound->play(148, nullptr, nullptr, 0.0f);
                 }
+            } else if (Globals::status->inDeepScienceOrbit()) {
+                Globals::sound->play(152, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 120 &&
+                       (Globals::status->getCurrentCampaignMission() == 126 ||
+                        Globals::status->getCurrentCampaignMission() == 133)) {
+                Globals::sound->play(2239, nullptr, nullptr, 0.0f);
+            } else {
+                int track = gSpaceMusicByRace[race];
+                Globals::sound->play(track, nullptr, nullptr, 0.0f);
             }
-            ((FModSound *) (*sndP))->play(0x94, 0, 0, (float) vol);
-            return;
+            break;
         }
-        if (Globals::status->inDeepScienceOrbit() != 0) {
-            ((FModSound *) (*sndP))->play(0x98, 0, 0, (float) vol);
-            return;
-        }
-        if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x78 &&
-            (Globals::status->getCurrentCampaignMission() == 0x7e ||
-             Globals::status->getCurrentCampaignMission() == 0x85)) {
-            ((FModSound *) (*sndP))->play(0x8bf, 0, 0, (float) vol);
-            return;
-        }
-        const int *table = &gPM_table1;
-        track = table[((SolarSystem *) (long) Globals::status->getSystem())->getRace()];
-        ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
-        return;
+        case 2:
+            Globals::sound->stop(Globals::sound->currentMusicEvent);
+            Globals::sound->play(145, nullptr, nullptr, 0.0f);
+            break;
     }
-    if (mode != 0) {
-        return;
-    }
-
-    int race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-    int *sndP = (int *) &Globals::sound;
-    ((FModSound *) (*sndP))->stop(0);
-    if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x6c) {
-        ((FModSound *) (*sndP))->play(0x84, 0, 0, (float) vol);
-        return;
-    }
-    if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x65) {
-        ((FModSound *) (*sndP))->play(0x83, 0, 0, (float) vol);
-        return;
-    }
-    int idx = Station_getIndex((int) (long) Globals::status->getStation());
-    if (idx == 10 || Station_getIndex((int) (long) Globals::status->getStation()) == 100) {
-        if (Station_getIndex((int) (long) Globals::status->getStation()) == 10 &&
-            Globals::status->getCurrentCampaignMission() == 0x9f) {
-            ((FModSound *) (*sndP))->play(0x90, 0, 0, (float) vol);
-            return;
-        }
-        ((FModSound *) (*sndP))->play(0x85, 0, 0, (float) vol);
-        return;
-    }
-    const int *table = &gPM_table0;
-    track = table[race];
-    ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
 }
 
 static const int gGDS_pairTable[1] = {};
