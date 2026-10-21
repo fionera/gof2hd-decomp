@@ -5605,16 +5605,9 @@ void Level::createStaticObjects() {
 }
 
 KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) {
-    int x, y, z;
-    if (waypoint != nullptr) {
-        x = waypoint->x;
-        y = waypoint->y;
-        z = waypoint->z;
-    } else {
-        x = 0;
-        y = 0;
-        z = 0;
-    }
+    int x = waypoint != nullptr ? waypoint->x : 0;
+    int y = waypoint != nullptr ? waypoint->y : 0;
+    int z = waypoint != nullptr ? waypoint->z : 0;
     if (scatter) {
         x = x + Globals::rnd->nextInt(20000) - 10000;
         y = y + Globals::rnd->nextInt(20000) - 10000;
@@ -5638,7 +5631,10 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             geometry = new AEGeometry(type, Globals::Canvas, false);
         }
 
-        if ((unsigned int) (type - 0x49c0) < 3 || type == 0x1a74 || type == 0x1a76 || type == 0x381b) {
+        if (type == 0x4a6a) {
+            new Player(1000, 9999999, 0, 0, 0);
+            object = new PlayerStatic(0x4a6a, geometry, x, y, z);
+        } else if ((unsigned int) (type - 0x49c0) < 3 || type == 0x1a74 || type == 0x1a76 || type == 0x381b) {
             Player *player = new Player(1000, 100, 0, 0, 0);
             object = new PlayerTurret(type, player, geometry, x, y, z);
             object->setLevel(this);
@@ -5739,9 +5735,6 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             fixed->setBV(getBoundingVolume(2000, geometry));
             fixed->player->radius = 0;
             object = fixed;
-        } else if (type == 0x4a6a) {
-            new Player(1000, 9999999, 0, 0, 0);
-            object = new PlayerStatic(0x4a6a, geometry, x, y, z);
         } else if (type == 0x493e || type == 0x4941 || type == 0x4944 || type == 0x4947 || type == 0x494a) {
             Player *player = new Player(1000, 9999999, 0, 0, 0);
             player->setVulnerable(false);
@@ -5787,8 +5780,8 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             delete part3;
             delete part4;
             fixed->setShipGroup(root, -1, false);
-            fixed->field_0x40 = 1;
             fixed->field_0x70 = 1;
+            fixed->field_0x40 = 1;
             Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
             ArraySetLength(2, *volumes);
             (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
@@ -5893,8 +5886,8 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             root->setLodMeshes(lodMeshes, lodDistances, 1);
             root->setLodChildTransform(firstLights);
             fixed->setShipGroup(root, -1, false);
-            fixed->field_0x40 = 1;
             fixed->field_0x70 = 1;
+            fixed->field_0x40 = 1;
             Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
             ArraySetLength(2, *volumes);
             (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
