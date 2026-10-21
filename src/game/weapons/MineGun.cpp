@@ -28,13 +28,10 @@ MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
         this->readyFlags[i] = 1;
     }
 
-    PaintCanvas **canvas = &Globals::Canvas;
-    this->geometry = new AEGeometry((uint16_t)(mesh + 1), *canvas, false);
-    (*canvas)->TransformAddChild(this->transform, this->geometry->transform);
-
-    AbyssEngine::Transform *transform =
-            (AbyssEngine::Transform *) (*canvas)->TransformGetTransform(this->geometry->transform);
-    transform->SetAnimationState((AbyssEngine::AnimationMode) 2, 0);
+    this->geometry = new AEGeometry((uint16_t) (mesh + 1), Globals::Canvas, false);
+    Globals::Canvas->TransformAddChild(this->transform, this->geometry->transform);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometry->transform))
+            ->SetAnimationState((AbyssEngine::AnimationMode) 2, 0);
 }
 
 MineGun::~MineGun() {

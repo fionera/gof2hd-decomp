@@ -12,10 +12,6 @@
 #include "game/weapons/Radar.h"
 #include "game/ship/Player.h"
 
-static PaintCanvas *gCanvasRoot = nullptr;
-static FModSound *gPullSound = nullptr;
-static FModSound *gCaptureSound = nullptr;
-static const float gCaptureDistance = 0.0f;
 
 void TractorBeam::render() {
     if (!this->active)
@@ -24,106 +20,82 @@ void TractorBeam::render() {
 }
 
 void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
-    KIPlayer *crate = this->grabbedCrate;
-    KIPlayer *radarCrate = (KIPlayer *) radar->field_0x1c;
-
-    if (radarCrate == nullptr && crate == nullptr)
+    KIPlayer *radarCrate = radar->field_0x1c;
+    if (this->grabbedCrate == nullptr && radarCrate == nullptr)
         return;
 
-    PlayerEgo *player = (PlayerEgo *) (intptr_t) level->getPlayer();
-
-    if (crate == nullptr) {
-        if (!player->isInTurretMode()) {
-            if (radarCrate->cargoAvailable() == 0) {
-                this->active = 0;
-                radar->field_0x1c = nullptr;
-            } else {
-                if (radarCrate->crateGeometry == nullptr)
-                    radarCrate->createCrate(0);
-                this->grabbedCrate = radarCrate;
-                this->storedHitpoints = ((Player *) radarCrate->player)->getHitpoints();
-                this->active = 1;
-            }
-            return;
+    if (this->grabbedCrate == nullptr && !level->getPlayer()->isInTurretMode()) {
+        if (radarCrate->cargoAvailable() == 0) {
+            this->active = 0;
+            radar->field_0x1c = nullptr;
+        } else {
+            if (radarCrate->crateGeometry == nullptr)
+                radarCrate->createCrate(0);
+            this->grabbedCrate = radarCrate;
+            this->storedHitpoints = radarCrate->player->getHitpoints();
+            this->active = 1;
         }
-        crate = this->grabbedCrate;
-        if (crate == nullptr)
-            goto detach;
-    }
-
-    if (crate->crateGeometry == nullptr ||
-        (reinterpret_cast<int &>(crate->stealFlagByte) == 0 && ((Player *) crate)->isActive() == 0)) {
-    detach:
-        radar->dockNavPtr = nullptr;
+    } else if (this->grabbedCrate == nullptr || this->grabbedCrate->crateGeometry == nullptr ||
+        (this->grabbedCrate->stealFlagByte == 0 && !this->grabbedCrate->player->isActive())) {
         radar->field_0x1c = nullptr;
+        radar->dockNavPtr = nullptr;
         this->grabbedCrate = nullptr;
         this->active = 0;
-        return;
-    }
-
-    PaintCanvas *canvas = gCanvasRoot;
-    AbyssEngine::Transform *tf = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-    tf->Update(frameTime, false);
-
-    Vector cratePos = ((AEGeometry *) this->grabbedCrate->crateGeometry)->getPosition();
-    Vector playerPos = player->getPosition();
-    Vector working = cratePos - playerPos;
-    this->dirX = working.x;
-    this->dirY = working.y;
-    this->dirZ = working.z;
-    float dist = VectorLength(working);
-
-    int shipIndex = Globals::status->getShip()->getIndex();
-    Vector offset = {0.0f, 0.0f, 0.0f};
-    if (shipIndex == 0x2c) {
-        offset = player->GetDirVector() * 0.5f;
-    } else if (shipIndex == 0x31) {
-        Vector dir = player->GetDirVector();
-        Vector tmp = dir * 0.5f;
-        offset.x = tmp.x + dir.x;
-        offset.y = tmp.y + dir.y;
-        offset.z = tmp.z + dir.z;
-    }
-    this->beamGeometry->setScaling(offset.x);
-
-    AEGeometry *beam = this->beamGeometry;
-    Vector dirN = VectorNormalize(offset - working);
-    beam->setDirection(dirN, dirN);
-    beam->setPosition(player->getPosition());
-
-    if (dist > gCaptureDistance) {
-        radar->field_0x1c = nullptr;
-        dirN = VectorNormalize(working);
-        working = dirN * (float) (frameTime * 10);
-        Vector pull = dirN - working;
-        ((AEGeometry *) this->grabbedCrate->crateGeometry)->translate(pull);
-
-        if (this->soundPlaying == 0) {
-            gPullSound->play(0, nullptr, nullptr, 0.0f);
-            this->soundPlaying = 1;
-        }
-    } else {
-        this->grabbedCrate->captureCrate(hud);
-        this->grabbedCrate = nullptr;
-        this->active = 0;
-        radar->dockNavPtr = nullptr;
-        radar->field_0x1c = nullptr;
         this->soundPlaying = 0;
-        gCaptureSound->stop(nullptr);
-        gCaptureSound->play(4, nullptr, nullptr, 0.0f);
+        Globals::sound->stop(0);
+    } else {
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->beamGeometry->transform))
+                ->Update((long long) frameTime, false);
+
+        this->direction = this->grabbedCrate->crateGeometry->getPosition();
+        this->direction -= level->getPlayer()->getPosition();
+        float distance = VectorLength(this->direction);
+
+        // Beam emitter offset of the ships with a non-central tractor beam.
+        Vector offset = Globals::status->getShip()->getIndex() == 44
+                        ? level->getPlayer()->GetDirVector() * -300.0f
+                        : Globals::status->getShip()->getIndex() == 49
+                          ? level->getPlayer()->GetDirVector() * -300.0f + level->getPlayer()->GetUpVector() * 200.0f
+                          : Vector{0.0f, 0.0f, 0.0f};
+
+        this->beamGeometry->setScaling(0.5f, 0.5f, distance);
+        this->beamGeometry->setDirection(VectorNormalize(this->direction - offset), Vector{0.0f, 1.0f, 0.0f});
+        this->beamGeometry->setPosition(level->getPlayer()->getPosition() + offset);
+
+        if (!(distance <= 400.0f)) {
+            radar->field_0x1c = nullptr;
+            this->direction = VectorNormalize(this->direction);
+            this->direction *= (float) (frameTime * 10);
+            this->grabbedCrate->crateGeometry->translate(-this->direction);
+            if ((this->grabbedCrate->isDead() || this->grabbedCrate->isDying()) &&
+                !this->grabbedCrate->field_0x40 && !this->grabbedCrate->deadFlag)
+                this->grabbedCrate->translate(-this->direction);
+            if (!this->soundPlaying) {
+                Globals::sound->play(0, nullptr, nullptr, 0.0f);
+                this->soundPlaying = 1;
+            }
+        } else {
+            this->grabbedCrate->captureCrate(hud);
+            this->active = 0;
+            this->grabbedCrate = nullptr;
+            radar->field_0x1c = nullptr;
+            radar->dockNavPtr = nullptr;
+            this->soundPlaying = 0;
+            Globals::sound->stop(0);
+            Globals::sound->play(4, nullptr, nullptr, 0.0f);
+        }
     }
 }
 
 TractorBeam::TractorBeam(AEGeometry * /*unused*/, int kind) {
-    this->dirX = 0.0f;
-    this->dirY = 0.0f;
-    this->dirZ = 0.0f;
+    this->direction.x = 0.0f;
+    this->direction.y = 0.0f;
+    this->direction.z = 0.0f;
     this->grabbedCrate = nullptr;
     this->active = 0;
     this->soundPlaying = 0;
 
-    uint16_t meshId = (uint16_t)((short) kind + 0x3798);
-    this->beamGeometry = new AEGeometry(meshId, gCanvasRoot, false);
+    this->beamGeometry = new AEGeometry((uint16_t) (kind + 0x3798), Globals::Canvas, false);
     this->storedHitpoints = 0;
 }
 
