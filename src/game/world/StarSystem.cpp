@@ -568,118 +568,71 @@ void StarSystem::switchSunForSupernovaIntro() {
     this->tintColor = kSystemTints[system->getIndex()];
 }
 
-static uint32_t g_StarSystem_render_station_index_storage = 0;
-static uint32_t *g_StarSystem_render_station_index =
-        &g_StarSystem_render_station_index_storage;
-
 void StarSystem::render() {
-    Matrix savedCamera;
-    Matrix lookAt;
-    Vector tempMatrix;
-    Vector tempVec;
-    Vector up;
-    Vector scaleBytes;
-
-    PaintCanvas *canvas = Globals::Canvas;
-    unsigned current = canvas->CameraGetCurrent();
-    Matrix *local = (Matrix *) canvas->CameraGetLocal(current);
-    Vector cameraPos = AbyssEngine::AEMath::MatrixGetPosition(*local);
-
-    uint32_t count = this->planetsArray->size();
-    AEGeometry **geoms = this->planetsArray->data();
-    for (uint32_t i = 0; i < count; ++i) {
-        if (count > 1) {
+    using namespace AbyssEngine::AEMath;
+    Vector cameraPos = MatrixGetPosition(*(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
+    for (unsigned i = 0; i < this->planetsArray->size(); ++i) {
+        if (this->planetsArray->size() >= 2) {
             if (i == 0) {
-                unsigned current2 = canvas->CameraGetCurrent();
-                Matrix *local2 = (Matrix *) canvas->CameraGetLocal(current2);
-                savedCamera = *local2;
-                tempVec = (*this->positionsArray)[0] + cameraPos;
-                if (this->supernovaSystem == 0) {
-                    MatrixGetUp(&up, &savedCamera);
-                } else {
+                Matrix m = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+                Vector target = (*this->positionsArray)[0] + cameraPos;
+                Vector up;
+                if (this->supernovaSystem) {
                     up.x = 1.0f;
                     up.y = 0.0f;
                     up.z = 0.0f;
+                } else {
+                    up = MatrixGetUp(m);
                 }
-                MatrixGetLookAt(&lookAt, &tempVec, &cameraPos, &up);
-                savedCamera = lookAt;
-                geoms[0]->setRotation(0.0f, 0.0f, 0.0f);
-                tempVec = geoms[0]->getScaling();
-
-                float grow = (this->lensFlare->intensity - 10.0f) * 0.001f;
-                if (grow < 0.0f) {
-                    grow = 0.0f;
+                m = MatrixGetLookAt(target, cameraPos, up);
+                (*this->planetsArray)[0]->setRotation(0.0f, 0.0f, 0.0f);
+                Vector scaling = (*this->planetsArray)[0]->getScaling();
+                float grow = (this->lensFlare->intensity + -10.0f) * 0.015625f;
+                grow = grow > 0.0f ? grow : 0.0f;
+                if (this->supernovaSystem) {
+                    MatrixSetScaling(m, scaling.x, scaling.y, scaling.z);
+                } else {
+                    MatrixSetScaling(m, scaling.x + grow, grow + scaling.y, scaling.z);
                 }
-                float sx = tempVec.x;
-                float sy = tempVec.y;
-                float sz = tempVec.z;
-                if (this->supernovaSystem == 0) {
-                    sx += grow;
-                    sy += grow;
+                (*this->planetsArray)[0]->setMatrix(m);
+                if (this->supernovaSystem) {
+                    scaling *= 0.3f;
+                    m = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+                    Vector streakTarget = (*this->positionsArray)[0] + cameraPos;
+                    Vector streakUp = MatrixGetUp(m);
+                    m = MatrixGetLookAt(streakTarget, cameraPos, streakUp);
+                    MatrixSetScaling(m, grow + scaling.x, grow + scaling.y, scaling.z);
+                    this->sunStreak->setMatrix(m);
+                    this->renderSunStreak();
                 }
-                MatrixSetScaling(&lookAt, sx, sy, sz);
-                geoms[0]->setMatrix(lookAt);
-
-                if (this->supernovaSystem != 0) {
-                    tempVec *= grow;
-                    unsigned current3 = canvas->CameraGetCurrent();
-                    Matrix *local3 = (Matrix *) canvas->CameraGetLocal(current3);
-                    savedCamera = *local3;
-                    up = (*this->positionsArray)[0] + cameraPos;
-                    MatrixGetUp(&scaleBytes, &savedCamera);
-                    MatrixGetLookAt(&lookAt, &up, &cameraPos, &scaleBytes);
-                    savedCamera = lookAt;
-                    MatrixSetScaling(&lookAt, grow + tempVec.x,
-                                     tempVec.y,
-                                     grow + tempVec.z);
-                    this->sunStreak->setMatrix(lookAt);
-                    renderSunStreak();
-                }
-
-                MatrixSetScaling(&lookAt,
-                                 grow * (grow + tempVec.x + 1.0f),
-                                 tempVec.y,
-                                 tempVec.y / ((1.0f - grow) * 6.0f + 6.0f));
-                this->sunStreak->setMatrix(lookAt);
+                MatrixSetScaling(m, grow * (grow + scaling.x + 1.0f),
+                                 scaling.y / ((1.0f - grow) * 6.0f + 6.0f), scaling.z);
+                this->sunStreak->setMatrix(m);
             }
-
-            uint32_t stationIndex = *g_StarSystem_render_station_index;
-            bool selected = (i - 1) == stationIndex;
-            if (selected && this->abstractSystem == 0 &&
-                Globals::status->inPlanetRingOrbit() == 0) {
-                float ring = cameraPos.z / 65536.0f;
-                float clamped = ring < 0.0f ? ring : 0.0f;
-                if (clamped < -1.0f) {
-                    clamped = -1.0f;
+            if (i - 1 == (unsigned) StarSystem::orbitPlanetIndex && this->abstractSystem == 0 &&
+                !Globals::status->inPlanetRingOrbit()) {
+                float ring = cameraPos.z / -800000.0f;
+                float clamped = ring < 0.2f ? ring : 0.2f;
+                if (clamped < -0.2f) {
+                    clamped = -0.2f;
                 }
                 this->planetRingScaleOffset = clamped;
-                geoms[i]->setScaling(this->planetScale + clamped,
-                                     this->planetScale + clamped,
-                                     this->planetScale + clamped);
+                (*this->planetsArray)[i]->setScaling(this->planetScale + clamped, this->planetScale + clamped,
+                                                    this->planetScale + clamped);
             }
-
-            tempMatrix = (*this->positionsArray)[i] + cameraPos;
-            geoms[i]->setPosition(tempMatrix);
+            (*this->planetsArray)[i]->setPosition((*this->positionsArray)[i] + cameraPos);
         }
-
-        canvas->SetTexture((*this->texturesArray)[i], (unsigned) -1);
-        AbyssEngine::BlendMode blend;
-        if (i == 0) {
-            blend = AbyssEngine::BlendMode_2;
-        } else {
-            blend = this->fogEnabled == 0
-                        ? AbyssEngine::BlendMode_1
-                        : AbyssEngine::BlendMode_0x15;
-        }
-        canvas->SetBlendMode(blend);
-        geoms[i]->render();
-
-        if ((int) i == this->planetRingIndex) {
-            canvas->SetTexture(this->planetRingTexture, (unsigned) -1);
-            canvas->SetBlendMode(AbyssEngine::BlendMode_1);
-            savedCamera = geoms[i]->getMatrix();
-            MatrixSetScaling(&lookAt, 4.0f, 4.0f, 4.0f);
-            this->planetRing->setMatrix(lookAt);
+        Globals::Canvas->SetTexture((*this->texturesArray)[i], (unsigned) -1);
+        Globals::Canvas->SetBlendMode(i == 0 ? AbyssEngine::BlendMode_2
+                                             : (this->fogEnabled ? AbyssEngine::BlendMode_0x15
+                                                                 : AbyssEngine::BlendMode_1));
+        (*this->planetsArray)[i]->render();
+        if (i == (unsigned) this->planetRingIndex) {
+            Globals::Canvas->SetTexture(this->planetRingTexture, (unsigned) -1);
+            Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_1);
+            Matrix ringMatrix = (*this->planetsArray)[i]->getMatrix();
+            MatrixSetScaling(ringMatrix, 4.0f, 4.0f, 4.0f);
+            this->planetRing->setMatrix(ringMatrix);
             this->planetRing->render();
         }
     }
