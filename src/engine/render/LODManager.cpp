@@ -148,9 +148,8 @@ void LODManager::removeObject(AEGeometry *g) {
 void LODManager::forceUpdate(int dt, bool useParent) {
     // Options block: the LOD distance factor is the float at offset 0x28.
     float factor = *reinterpret_cast<float *>(&Globals::options[0x28]);
-    PaintCanvas *canvas = Globals::Canvas;
     this->cameraPos = AbyssEngine::AEMath::MatrixGetPosition(
-            *reinterpret_cast<const Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
+            *reinterpret_cast<const Matrix *>(Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent())));
 
     for (uint32_t i = 0; i < this->objects->size(); i++) {
         AEGeometry *g = (*this->objects)[i];
