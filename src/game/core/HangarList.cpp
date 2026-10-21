@@ -318,8 +318,7 @@ void HangarList::initShipTab(Ship *ship) {
             if (type < 3) {
                 textId = type + 0x109;
             }
-            AbyssEngine::String *slotLabel = (*texts)->getText(textId);
-            (*items)[out] = new ListItem(slotLabel, static_cast<int>(type));
+            (*items)[out] = new ListItem((*texts)->getText(textId), static_cast<int>(type));
             ++out;
             Array<Item *> *slotItems = ship->getEquipment(type);
             for (uint32_t j = 0; j < slotItems->size(); ++j) {
