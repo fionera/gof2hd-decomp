@@ -1,4 +1,5 @@
 #include "game/weapons/BeamGun.h"
+#include "game/core/Globals.h"
 #include "game/world/Level.h"
 #include "game/world/LevelScript.h"
 #include "engine/math/Transform.h"
@@ -21,38 +22,49 @@ void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector)
 
 static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
 
-static PaintCanvas **BeamGun_canvas = nullptr;
-
-static int32_t BeamGun_secondaryMeshes[256] = {};
+// Muzzle-effect mesh shown with the beam of each player weapon item (-1 = none).
+static const int kSecondaryMeshes[233] = {
+    14500, 14500, 14500, 14501, 14501, 14502, 14502, 14503, 14503, 14500, 14503, 14502,
+    14501, 14501, 14501, 14501, 14504, 14504, 14504, 14505, 14505, 14505, 14506, 14506,
+    14507, 14507, 14508, 14508, 14506, 14505, 14502, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14503,
+    14505, 14501, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 14506, 14503, 14502, -1,
+    14509, 14510, 14506, 14503, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, 14500, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 14505, -1, -1, -1,
+    14501, 14501, 14508, 14502, -1,
+};
 
 BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
-    int type = meshKind;
-    int kind = type - 9;
-    if (type == 0xe4)
-        kind = 2;
-
+    int kind = meshKind == 0xe4 ? 2 : meshKind - 9;
     this->field_0x4 = 0;
     this->gun = gun;
     this->level = level;
     this->owner = owner;
     this->meshKind = kind;
-
-    PaintCanvas *canvas = *BeamGun_canvas;
-    uint16_t primaryMesh = (uint16_t)(kind + 0x3795);
-    if (type == 0xe4)
-        primaryMesh = 0x4a92;
-    this->primaryGeometry = new AEGeometry(primaryMesh, canvas, false);
+    this->primaryGeometry =
+            new AEGeometry((uint16_t) (meshKind == 0xe4 ? 0x4a92 : kind + 0x3795), Globals::Canvas, false);
 
     AEGeometry *secondary = nullptr;
-    int mesh = gun->isPlayerGun();
-    if (mesh != 0 && (mesh = BeamGun_secondaryMeshes[gun->itemIndex]) >= 0) {
+    int mesh;
+    if (gun->isPlayerGun() && (mesh = kSecondaryMeshes[gun->itemIndex]) > -1) {
         this->hasSecondary = gun->weaponType != ITEM_SORT_MINE;
-        if (gun->weaponType != ITEM_SORT_MINE)
-            secondary = new AEGeometry((uint16_t) mesh, canvas, false);
+        if (this->hasSecondary)
+            secondary = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
     } else {
         this->hasSecondary = 0;
     }
-
     this->secondaryVisible = 0;
     this->secondaryGeometry = secondary;
 }
@@ -92,7 +104,7 @@ void BeamGun::update(int elapsed) {
         return;
     }
 
-    PaintCanvas *canvas = *BeamGun_canvas;
+    PaintCanvas *canvas = Globals::Canvas;
 
     if (gun->hitSmall != 0) {
         AEGeometry *geometry = this->primaryGeometry;
