@@ -34,7 +34,7 @@ static const char *const kPulseShaderFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int PulseShader::ShaderIndex;
+    int PulseShader::ShaderIndex = -1;
 
     PulseShader::PulseShader() {
         PulseShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

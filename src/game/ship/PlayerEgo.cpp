@@ -3691,4 +3691,4 @@ bool PlayerEgo::toggleCloaking() {
 
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairPos;
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairShootPos;
-AbyssEngine::AEMath::Vector PlayerEgo::vec_up;
+AbyssEngine::AEMath::Vector PlayerEgo::vec_up = {0.0f, 1.0f, 0.0f};

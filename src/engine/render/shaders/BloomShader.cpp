@@ -11,7 +11,7 @@
 
 
 namespace AbyssEngine {
-    int BloomShader::ShaderIndex;
+    int BloomShader::ShaderIndex = -1;
 
     void BloomShader::Init(Engine *) {
         const char *vertex = "BloomShader.vsh";

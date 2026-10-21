@@ -1190,4 +1190,4 @@ void Player::StopEngineSound() {
     }
 }
 
-int Player::velocity;
+int Player::velocity = 100;

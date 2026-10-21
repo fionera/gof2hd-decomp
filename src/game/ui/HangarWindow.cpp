@@ -2178,4 +2178,4 @@ ListItem *HangarWindow::getCurrentItem() {
     return this->selectedItem;
 }
 
-int HangarWindow::lastTab;
+int HangarWindow::lastTab = 1;

@@ -351,4 +351,4 @@ void GameText::ReadLangFile(unsigned int file, int count) {
     AEFile::Close(file);
 }
 
-unsigned short GameText::currentLang;
+unsigned short GameText::currentLang = 0xffff;

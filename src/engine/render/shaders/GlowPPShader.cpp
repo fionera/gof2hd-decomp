@@ -11,7 +11,7 @@
 
 
 namespace AbyssEngine {
-    int GlowPPShader::ShaderIndex;
+    int GlowPPShader::ShaderIndex = -1;
 
     void GlowPPShader::SetInActive() {
         glDisableVertexAttribArray(this->meshAttribPosition);

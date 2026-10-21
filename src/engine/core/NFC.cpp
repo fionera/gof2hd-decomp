@@ -231,4 +231,4 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed()
     g_android_back_button_pressed = 1;
 }
 
-const char *NFC::interface_path;
+const char *NFC::interface_path = "net/fishlabs/gof2hdallandroid2012/NativeFunctionCalls";

@@ -10,7 +10,7 @@ static const char *const kSimpleShaderFragmentSource =
     "precision lowp float;uniform lowp vec4 glColor;void main()  {   gl_FragColor = glColor;} ";
 
 namespace AbyssEngine {
-    int SimpleShader::ShaderIndex;
+    int SimpleShader::ShaderIndex = -1;
 
     SimpleShader::SimpleShader() {
         SimpleShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

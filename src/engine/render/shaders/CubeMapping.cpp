@@ -69,7 +69,7 @@ static const char *const kCubeMappingFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int CubeMapping::ShaderIndex;
+    int CubeMapping::ShaderIndex = -1;
 
     CubeMapping::CubeMapping() {
         CubeMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

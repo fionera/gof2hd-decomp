@@ -40,7 +40,7 @@ unsigned int hrwhs_country_code;
 
 int gb_android_offerwallCreditAmount;
 
-const char *ndkEntrance;
+const char *ndkEntrance = "0";
 
 int rotateAccelValues;
 
