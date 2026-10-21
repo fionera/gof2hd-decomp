@@ -2167,11 +2167,51 @@ void PlayerEgo::shoot(int weapon, int type) {
 }
 
 void PlayerEgo::stopMining() {
-    MiningGame *mg = (MiningGame *) (intptr_t) this->miningGame;
-    if (mg != 0) {
-        delete (MiningGame *) mg;
-        this->miningGame = 0;
+    PlayerAsteroid *asteroid = (PlayerAsteroid *) (intptr_t) this->asteroidTarget;
+    int oreIndex = asteroid->asteroidIndex;
+    int freeSpace = Globals::status->getShip()->getFreeSpace();
+    int coreIndex = oreIndex == 217 ? 218 : oreIndex + 11;
+    int amount = ((MiningGame *) (intptr_t) this->miningGame)->getOreAmount();
+    if (Globals::status->hardCoreMode() && !((MiningGame *) (intptr_t) this->miningGame)->gameWon())
+        amount = (int) ((float) amount * 0.5f);
+    if (freeSpace <= amount)
+        amount = freeSpace;
+    if (freeSpace < 1) {
+        ((Hud *) (intptr_t) this->hud)->catchCargo(oreIndex, 0, true, false, true, false, false);
+    } else {
+        if (((MiningGame *) (intptr_t) this->miningGame)->gotCore()) {
+            Item *core = (*Globals::items)[coreIndex]->makeItem(1);
+            Globals::status->getShip()->addCargo(core);
+            ((Hud *) (intptr_t) this->hud)->catchCargo(coreIndex, 1, false, false, false, false, false);
+            Globals::status->field_a4++;
+            if (coreIndex != 218)
+                (*Globals::status->field_98)[coreIndex - 165] = true;
+            int remaining = Globals::status->getShip()->getFreeSpace();
+            if (remaining < amount)
+                amount = remaining;
+        }
+        if (amount > 0) {
+            Item *ore = (*Globals::items)[oreIndex]->makeItem(amount);
+            Globals::status->getShip()->addCargo(ore);
+            ((Hud *) (intptr_t) this->hud)->catchCargo(oreIndex, amount, false, false, true, false, false);
+            Globals::status->field_a0 += amount;
+            if (oreIndex != 217)
+                (*Globals::status->field_94)[oreIndex - 154] = true;
+        }
+        if (Globals::status->getShip()->getFreeSpace() <= 0)
+            ((Hud *) (intptr_t) this->hud)->catchCargo(oreIndex, amount, true, false, true, false, false);
     }
+    this->setExhaustVisible(true);
+    ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->hasCargo = 0;
+    ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->player->setHitpoints(-1);
+    Globals::status->field_d8--;
+    if (this->miningGame != 0)
+        delete (MiningGame *) (intptr_t) this->miningGame;
+    this->miningGame = 0;
+    this->dockToAsteroid(nullptr, this->field_0x14);
+    Globals::sound->stop(1);
+    Globals::sound->stop(3);
+    Globals::sound->resume(this->field_0x1c);
 }
 
 bool PlayerEgo::setTurretMode(bool enable) {
