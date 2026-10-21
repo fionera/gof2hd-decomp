@@ -156,29 +156,32 @@ namespace AbyssEngine {
     }
 
     void Quaternion::Convert(AEMath::Matrix &matrix) {
+        float qw = w;
         float qx = x;
         float qy = y;
         float qz = z;
-        float qw = w;
-        double xx = qx * qx;
-        double yy = qy * qy;
-        double zz = qz * qz;
-        double ww = qw * qw;
-        double inv = 1.0 / (xx + yy + zz + ww);
-        double xy_plus = (double) (qx * qy) + (double) (qw * qz);
-        double xy_minus = (double) (qx * qy) - (double) (qw * qz);
-        double xz_minus = (double) (qx * qz) - (double) (qw * qy);
-        double xz_plus = (double) (qw * qy) + (double) (qx * qz);
-        double yz_plus = (double) (qw * qx) + (double) (qy * qz);
-        double yz_minus = (double) (qy * qz) - (double) (qw * qx);
-        matrix.m[0] = (((xx - yy) - zz) + ww) * inv;
-        matrix.m[1] = (xy_plus + xy_plus) * inv;
-        matrix.m[2] = (xz_minus + xz_minus) * inv;
-        matrix.m[4] = (xy_minus + xy_minus) * inv;
-        matrix.m[5] = (((yy - xx) - zz) + ww) * inv;
-        matrix.m[6] = (yz_plus + yz_plus) * inv;
-        matrix.m[8] = (xz_plus + xz_plus) * inv;
-        matrix.m[9] = (yz_minus + yz_minus) * inv;
-        matrix.m[10] = ((-xx - yy) + zz + ww) * inv;
+        double sqx = qx * qx;
+        double sqy = qy * qy;
+        double sqz = qz * qz;
+        double sqw = qw * qw;
+        double invs = 1.0 / (sqx + sqy + sqz + sqw);
+        matrix.m[0] = (sqx - sqy - sqz + sqw) * invs;
+        matrix.m[5] = (-sqx + sqy - sqz + sqw) * invs;
+        matrix.m[10] = (-sqx - sqy + sqz + sqw) * invs;
+
+        double tmp1 = qx * qy;
+        double tmp2 = qw * qz;
+        matrix.m[1] = 2.0 * (tmp1 + tmp2) * invs;
+        matrix.m[4] = 2.0 * (tmp1 - tmp2) * invs;
+
+        tmp1 = qx * qz;
+        tmp2 = qw * qy;
+        matrix.m[2] = 2.0 * (tmp1 - tmp2) * invs;
+        matrix.m[8] = 2.0 * (tmp1 + tmp2) * invs;
+
+        tmp1 = qy * qz;
+        tmp2 = qw * qx;
+        matrix.m[6] = 2.0 * (tmp1 + tmp2) * invs;
+        matrix.m[9] = 2.0 * (tmp1 - tmp2) * invs;
     }
 }
