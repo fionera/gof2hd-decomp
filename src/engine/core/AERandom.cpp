@@ -2,10 +2,14 @@
 #include <ctime>
 
 namespace AbyssEngine {
+    namespace {
+        const int64_t kMultiplier = 0x5deece66dLL;
+        const int64_t kAddend = 0xbLL;
+        const int64_t kMask = (1LL << 48) - 1;
+    }
+
     AERandom::AERandom() {
-        long long now = time(0);
-        seedLow = 0xdeece66dU ^ static_cast<uint32_t>(now);
-        seedHigh = (static_cast<uint32_t>(now >> 31) & 0xffffU) ^ 5U;
+        seed = (time(0) ^ kMultiplier) & kMask;
     }
 
     AERandom::AERandom(long long seed) {
@@ -16,57 +20,36 @@ namespace AbyssEngine {
     }
 
     void AERandom::setSeed(long long seed) {
-        seedLow = 0xdeece66dU ^ static_cast<uint32_t>(seed);
-        seedHigh = (static_cast<uint32_t>(seed >> 32) & 0xffffU) ^ 5U;
+        this->seed = (seed ^ kMultiplier) & kMask;
     }
 
     void AERandom::reset() {
-        long long now = time(0);
-        seedLow = 0xdeece66dU ^ static_cast<uint32_t>(now);
-        seedHigh = (static_cast<uint32_t>(now >> 31) & 0xffffU) ^ 5U;
+        seed = (time(0) ^ kMultiplier) & kMask;
     }
 
     uint32_t AERandom::next(int bits) {
-        uint64_t seed = (static_cast<uint64_t>(seedHigh) << 32) | seedLow;
-        seed = seed * 0x5deece66dULL + 0xbULL;
-        uint32_t newLo = static_cast<uint32_t>(seed);
-        uint32_t newHi = static_cast<uint32_t>(seed >> 32) & 0xffffU;
-
-        seedLow = newLo;
-        seedHigh = newHi;
-
-        return static_cast<uint32_t>(((static_cast<uint64_t>(newHi) << 32) | newLo) >> (48 - bits));
+        seed = (seed * kMultiplier + kAddend) & kMask;
+        return static_cast<uint32_t>(static_cast<uint64_t>(seed) >> (48 - bits));
     }
 
     int AERandom::nextInt() {
-        uint64_t seed = (static_cast<uint64_t>(seedHigh) << 32) | seedLow;
-        seed = seed * 0x5deece66dULL + 0xbULL;
-        uint32_t newLo = static_cast<uint32_t>(seed);
-        uint32_t newHi = static_cast<uint32_t>(seed >> 32) & 0xffffU;
-        seedLow = newLo;
-        seedHigh = newHi;
-        return static_cast<int>(static_cast<uint32_t>(seed >> 16));
+        seed = (seed * kMultiplier + kAddend) & kMask;
+        return static_cast<int>(static_cast<uint64_t>(seed) >> 16);
     }
 
     int AERandom::nextInt(int bound) {
         if ((bound & -bound) == bound) {
-            uint64_t seed = (static_cast<uint64_t>(seedHigh) << 32) | seedLow;
-            seed = (seed * 0x5deece66dULL + 0xbULL) & 0xffffffffffffULL;
-            int bits = static_cast<int>(static_cast<uint32_t>(seed >> 17));
-            seedLow = static_cast<uint32_t>(seed);
-            seedHigh = static_cast<uint32_t>(seed >> 32);
+            seed = (seed * kMultiplier + kAddend) & kMask;
+            int bits = static_cast<int>(static_cast<uint64_t>(seed) >> 17);
             return static_cast<int>((static_cast<int64_t>(bits) * bound) >> 31);
         }
 
         int bits;
         int value;
         do {
-            uint64_t seed = (static_cast<uint64_t>(seedHigh) << 32) | seedLow;
-            seed = (seed * 0x5deece66dULL + 0xbULL) & 0xffffffffffffULL;
-            bits = static_cast<int>(static_cast<uint32_t>(seed >> 17));
+            seed = (seed * kMultiplier + kAddend) & kMask;
+            bits = static_cast<int>(static_cast<uint64_t>(seed) >> 17);
             value = bits % bound;
-            seedLow = static_cast<uint32_t>(seed);
-            seedHigh = static_cast<uint32_t>(seed >> 32);
         } while (bits - value + (bound - 1) < 0);
         return value;
     }

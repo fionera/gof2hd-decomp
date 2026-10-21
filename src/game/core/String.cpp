@@ -203,22 +203,19 @@ unsigned int String::Compare(const char *s) {
         return 1;
     const unsigned short *a = this->data;
     bool reachedEnd = false;
-    unsigned short ca;
-    unsigned char cb;
-    for (int i = 0;; i++) {
-        ca = a[i];
-        if (ca == 0) {
-            cb = (unsigned char) s[i];
+    for (;;) {
+        if (*a == 0) {
             reachedEnd = true;
             break;
         }
-        cb = (unsigned char) s[i];
-        if (cb == 0 || cb != ca)
+        if (*s == 0 || (unsigned char) *s != *a)
             break;
+        a++;
+        s++;
     }
-    if (cb == 0)
-        return ca != 0;
-    int d = ca - cb;
+    if (*s == 0)
+        return *a != 0;
+    int d = *a - (unsigned char) *s;
     if (reachedEnd)
         d = -1;
     return (signed char) d;

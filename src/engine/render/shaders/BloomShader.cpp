@@ -117,24 +117,22 @@ static const char *const kBloomFinalFragmentSource =
     "\t//gl_FragColor.rgb = bloomBase;\n"
     "}\n";
 
-
-
-
 namespace AbyssEngine {
-    int BloomShader::ShaderIndex;
+    int BloomShader::ShaderIndex = -1;
 
     void BloomShader::Init(Engine *) {
+        const char *vertex = kBloomVertexSource;
         const char *positionName = "a_position";
         const char *texCoordName = "a_texCoord";
         const char *matrixName = "u_WorldMatrix";
         const char *samplerName = "s_texture_base";
         const char *texSizeName = "texSize";
 
-        this->program = this->ES2LoadProgram(kBloomVertexSource, kBloomLumaFragmentSource);
-        this->downSampleProgram = this->ES2LoadProgram(kBloomVertexSource, kBloomDownSampleFragmentSource);
-        this->blurHProgram = this->ES2LoadProgram(kBloomVertexSource, kBloomBlurHFragmentSource);
-        this->blurVProgram = this->ES2LoadProgram(kBloomVertexSource, kBloomBlurVFragmentSource);
-        this->finalProgram = this->ES2LoadProgram(kBloomVertexSource, kBloomFinalFragmentSource);
+        this->program = this->ES2LoadProgram(vertex, kBloomLumaFragmentSource);
+        this->downSampleProgram = this->ES2LoadProgram(vertex, kBloomDownSampleFragmentSource);
+        this->blurHProgram = this->ES2LoadProgram(vertex, kBloomBlurHFragmentSource);
+        this->blurVProgram = this->ES2LoadProgram(vertex, kBloomBlurVFragmentSource);
+        this->finalProgram = this->ES2LoadProgram(vertex, kBloomFinalFragmentSource);
 
         this->lumaAttribPosition = glGetAttribLocation(this->program, positionName);
         this->lumaAttribTexCoord = glGetAttribLocation(this->program, texCoordName);

@@ -15,33 +15,22 @@ SentryGun::~SentryGun() {
 
 void SentryGun::update(int dt) {
     this->gun->update(dt);
-
-    Gun *gun = this->gun;
-    if (gun->hitSmall == 0)
+    if (this->gun->hitSmall == 0)
         return;
-    gun->hitSmall = 0;
+    this->gun->hitSmall = 0;
 
-    Level *level = static_cast<Level *>(this->level);
-    Array<KIPlayer *> &pool = *level->field_b0;
-
-    int base = this->cooldown;
-    for (int i = base; i < base + 3; i++) {
-        KIPlayer *obj = pool[i];
-        Player *owner = static_cast<Player *>(obj->player);
-        if (obj->isDying() == false &&
-            (owner->isActive() == 0 || owner->isDead())) {
-            level->field_6c += 1;
-
+    for (int i = this->cooldown; i < this->cooldown + 3; i++) {
+        KIPlayer *obj = (*static_cast<Level *>(this->level)->field_b0)[i];
+        if (!obj->isDying() &&
+            (static_cast<Player *>(obj->player)->isActive() == 0 ||
+             static_cast<Player *>(obj->player)->isDead())) {
+            static_cast<Level *>(this->level)->field_6c += 1;
             obj->revive();
-
-            Gun *g = this->gun;
-            AbyssEngine::AEMath::Vector *spawnPos =
-                    (AbyssEngine::AEMath::Vector *) (g->positions + g->fireIndex * 12);
-
-            obj->setPosition(spawnPos->x, spawnPos->y, spawnPos->z);
+            obj->setPosition(*reinterpret_cast<AbyssEngine::AEMath::Vector *>(
+                    this->gun->positions + this->gun->currentProjectile * 12));
+            obj->setActive(true);
             return;
         }
-        base = this->cooldown;
     }
 }
 

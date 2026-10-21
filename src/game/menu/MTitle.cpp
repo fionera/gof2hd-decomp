@@ -46,9 +46,6 @@ void MTitle::OnRelease() {
 void MTitle::OnKeyPress(long long key, long long mod) {
 }
 
-void MTitle::OnKeyRelease(long long key, long long mod) {
-}
-
 void MTitle::OnTouchBegin(int x, int y) {
 }
 
@@ -110,6 +107,3 @@ void MTitle::OnTouchEnd(int x, int y) {
     this->timer = 5000;
 }
 
-int MTitle::ShowLoadingScreen() {
-    return 0;
-}

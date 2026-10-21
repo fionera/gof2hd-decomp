@@ -1,8 +1,7 @@
 #include "engine/audio/AESound.h"
 
 namespace AbyssEngine {
-    char *AESound::loadSound(const char *name) {
-        return const_cast<char *>(name);
+    void AESound::loadSound(const char * /*name*/) {
     }
 
     void AESound::unloadSound() {

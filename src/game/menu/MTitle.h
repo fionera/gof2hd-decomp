@@ -22,7 +22,8 @@ public:
 
     void OnKeyPress(long long key, long long mod);
 
-    void OnKeyRelease(long long key, long long mod);
+    void OnKeyRelease(long long key, long long mod) {
+    }
 
     void OnTouchBegin(int x, int y);
 
@@ -36,6 +37,8 @@ public:
 
     void OnTouchEnd(int x, int y);
 
-    int ShowLoadingScreen();
+    int ShowLoadingScreen() {
+        return 0;
+    }
 };
 #endif

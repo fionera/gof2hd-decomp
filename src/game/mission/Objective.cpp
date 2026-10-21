@@ -60,7 +60,7 @@ unsigned int Objective::achieved(int value) {
         case 2: {
             Waypoint *last =
                     ((Route *) (intptr_t) this->level->getPlayerRoute())->getLastWaypoint();
-            result = last->state != 0;
+            result = (uint8_t) last->state != 0;
             break;
         }
         case 3:
@@ -72,18 +72,18 @@ unsigned int Objective::achieved(int value) {
             result = this->level->getFriendsLeft() == 0;
             break;
         case 7: {
-            result = 0;
+            int dead = 0;
             for (int i = 0; i < this->value; i++)
-                result += (*enemies)[i]->isDead();
-            result = (int) result == this->value;
+                dead += (*enemies)[i]->isDead();
+            result = dead == this->value;
             break;
         }
         case 8: {
             Array<KIPlayer *> *asteroids = this->level->getAsteroids();
-            result = 0;
+            int destroyed = 0;
             for (uint32_t i = 0; i < asteroids->size(); i++)
-                result += (*asteroids)[i]->isDead();
-            result = (int) result > this->value;
+                destroyed += (*asteroids)[i]->isDead();
+            result = destroyed > this->value;
             break;
         }
         case 9: {
@@ -137,20 +137,20 @@ unsigned int Objective::achieved(int value) {
         case 21: {
             result = 0;
             for (int i = this->value; i < this->calcValue; i++) {
-                KIPlayer *enemy = (*enemies)[i];
-                if (enemy->isDead() != 0 && enemy->shipGroup == 8)
+                if ((*enemies)[i]->isDead() && (*enemies)[i]->shipGroup == 8)
                     result++;
+            }
+            if (this->type == 20) {
+                if ((int) result != this->calcValue - this->value)
+                    return 0;
+                return this->level->killCountB > this->level->killCountA;
             }
             if ((int) result != this->calcValue - this->value)
                 return 0;
-            if (this->type != 0x14)
-                return this->level->killCountB <= this->level->killCountA;
-            result = this->level->killCountB > this->level->killCountA;
-            break;
+            return this->level->killCountB <= this->level->killCountA;
         }
         case 22: {
-            Array<RadioMessage *> *messages = this->level->getMessages();
-            return (*messages)[messages->size() - 1]->isOver();
+            return (*this->level->getMessages())[this->level->getMessages()->size() - 1]->isOver();
         }
         case 23:
             result = (uint8_t)(*this->level->getEnemies())[this->value]->field_0x24 != 0;

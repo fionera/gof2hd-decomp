@@ -62,7 +62,7 @@ static const char *const kCubeNormalMappingFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int CubeNormalMapping::ShaderIndex;
+    int CubeNormalMapping::ShaderIndex = -1;
 
     CubeNormalMapping::CubeNormalMapping() {
         CubeNormalMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
@@ -103,9 +103,9 @@ namespace AbyssEngine {
         Mesh *mesh = meshArg;
         if (this->dirty != 0) {
             glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
-            glUniform4fv(this->uAmbientColorLoc, 1, (float *) &engine->lightAmbientShaded);
-            glUniform4fv(this->uDiffuseColorLoc, 1, (float *) &engine->field_0x2fc);
-            glUniform4fv(this->uSpecularColorLoc, 1, (float *) &engine->lightDiffuseShaded);
+            glUniform4fv(this->uAmbientColorLoc, 1, (float *) engine->ambientShaded[0]);
+            glUniform4fv(this->uDiffuseColorLoc, 1, (float *) engine->diffuseShaded[0]);
+            glUniform4fv(this->uSpecularColorLoc, 1, (float *) engine->specularShaded[0]);
             glUniform1f(this->uSpecularPowerLoc, engine->materialShininess);
             this->dirty = 0;
         }

@@ -62,7 +62,7 @@ void AEGeometry::setScaling(float s) {
 }
 
 Vector AEGeometry::getRotation() {
-    return this->rotation;
+    return Vector(this->rotationX, this->rotationY, this->rotationZ);
 }
 
 void AEGeometry::setScaling(const Vector &v) {
@@ -172,9 +172,9 @@ void AEGeometry::setRotation(float x, float y, float z) {
     AbyssEngine::AEMath::MatrixSetScaling(
         *(Matrix *) this->canvas->TransformGetLocal(this->transform),
         this->scalingX, this->scalingY, this->scalingZ);
-    this->rotation.x = x;
-    this->rotation.y = y;
-    this->rotation.z = z;
+    this->rotationX = x;
+    this->rotationY = y;
+    this->rotationZ = z;
 }
 
 void AEGeometry::setRotation(const Vector &v) {
@@ -203,12 +203,12 @@ void AEGeometry::setLodChildMeshes(uint16_t *meshes) {
 }
 
 void AEGeometry::rotate(float x, float y, float z) {
-    this->rotation.x += x;
-    this->rotation.y += y;
-    this->rotation.z += z;
+    this->rotationX += x;
+    this->rotationY += y;
+    this->rotationZ += z;
     AbyssEngine::AEMath::MatrixSetRotation(
         *(Matrix *) this->canvas->TransformGetLocal(this->transform),
-        this->rotation.x, this->rotation.y, this->rotation.z,
+        this->rotationX, this->rotationY, this->rotationZ,
         (AbyssEngine::AEMath::RotationOrder) this->rotationOrder);
     AbyssEngine::AEMath::MatrixSetScaling(
         *(Matrix *) this->canvas->TransformGetLocal(this->transform),
@@ -221,9 +221,9 @@ AEGeometry::AEGeometry(PaintCanvas *canvas)
     this->mesh = 0;
     canvas->TransformCreate(this->baseTransform);
 
-    this->rotation.x = 0.0f;
-    this->rotation.y = 0.0f;
-    this->rotation.z = 0.0f;
+    this->rotationX = 0.0f;
+    this->rotationY = 0.0f;
+    this->rotationZ = 0.0f;
     this->scalingX = 1.0f;
     this->scalingY = 1.0f;
     this->scalingZ = 1.0f;
@@ -267,9 +267,9 @@ AEGeometry::AEGeometry(uint16_t mesh, PaintCanvas *canvas, bool flag)
     canvas->MeshCreate(mesh, this->meshId, flag);
     canvas->TransformAddMeshId(this->baseTransform, this->meshId);
 
-    this->rotation.x = 0.0f;
-    this->rotation.y = 0.0f;
-    this->rotation.z = 0.0f;
+    this->rotationX = 0.0f;
+    this->rotationY = 0.0f;
+    this->rotationZ = 0.0f;
     this->scalingX = 1.0f;
     this->scalingY = 1.0f;
     this->scalingZ = 1.0f;
@@ -294,7 +294,7 @@ AEGeometry::AEGeometry(uint16_t mesh, PaintCanvas *canvas, bool flag)
 void AEGeometry::setScaling(float x, float y, float z) {
     AbyssEngine::AEMath::MatrixSetRotation(
         *(Matrix *) this->canvas->TransformGetLocal(this->transform),
-        this->rotation.x, this->rotation.y, this->rotation.z,
+        this->rotationX, this->rotationY, this->rotationZ,
         (AbyssEngine::AEMath::RotationOrder) this->rotationOrder);
     AbyssEngine::AEMath::MatrixSetScaling(
         *(Matrix *) this->canvas->TransformGetLocal(this->transform), x, y, z);

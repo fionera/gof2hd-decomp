@@ -213,8 +213,8 @@ String Mission::getTargetSystemName() {
     return String(this->targetSystemName, false);
 }
 
-String &Mission::setTargetSystemName(const String &rhs) {
-    return this->targetSystemName = rhs;
+void Mission::setTargetSystemName(const String &rhs) {
+    this->targetSystemName = rhs;
 }
 
 void Mission::setTargetStation(int idx) {
@@ -255,8 +255,8 @@ String Mission::getTargetName() {
     return String(this->targetName, false);
 }
 
-String &Mission::setTargetName(String rhs) {
-    return this->targetName = rhs;
+void Mission::setTargetName(String rhs) {
+    this->targetName = rhs;
 }
 
 void Mission::setType(int type) {

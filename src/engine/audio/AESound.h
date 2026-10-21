@@ -5,7 +5,7 @@
 namespace AbyssEngine {
     class AESound : public AESoundInterface {
     public:
-        char *loadSound(const char *name) override;
+        void loadSound(const char *name) override;
 
         void unloadSound() override;
 

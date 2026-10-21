@@ -36,7 +36,7 @@ public:
 
     ~RocketGun();
 
-    int isRocketGun() override;
+    int isRocketGun() override { return 1; }
 
     void render();
 

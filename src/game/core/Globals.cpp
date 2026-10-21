@@ -161,8 +161,8 @@ int Globals::switch_to_target_setting = 0;
 Status *Globals::status = nullptr;
 alignas(4) unsigned char Globals::options[100] = {};
 FModSound *Globals::sound = nullptr;
-int Globals::logoIsShown = 0;
-int Globals::isInMainMenu = 0;
+int Globals::logoIsShown = -1;
+int Globals::isInMainMenu = -1;
 
 char *Globals::cItemListID_00 = nullptr;
 char *Globals::cItemListID_01 = nullptr;
@@ -194,11 +194,11 @@ char *Globals::cItemListPrice_04 = nullptr;
 AbyssEngine::ApplicationManager *Globals::appManager;
 unsigned char Globals::gameLoaded;
 unsigned char Globals::gameSaving;
-float Globals::sec_fire_x;
-float Globals::sec_fire_y;
+int Globals::sec_fire_x;
+int Globals::sec_fire_y;
 float Globals::sec_fire_z;
-float Globals::autopilot_x;
-float Globals::autopilot_y;
+int Globals::autopilot_x;
+int Globals::autopilot_y;
 float Globals::autopilot_z;
 int Globals::mouseDeltaX;
 int Globals::mouseDeltaY;
@@ -210,20 +210,20 @@ int Globals::mouse_wheelX;
 int Globals::mouse_wheelY;
 int Globals::qualityLevel;
 Ship *Globals::shipTemplate;
-unsigned char Globals::showBestDeal;
+unsigned char Globals::showBestDeal = 1;
 int Globals::simulateFire;
-int Globals::subMenuIndex;
+int Globals::subMenuIndex = -1;
 int Globals::topMenuIndex;
-float Globals::action_menu_x;
-float Globals::action_menu_y;
+int Globals::action_menu_x;
+int Globals::action_menu_y;
 float Globals::action_menu_z;
 RecordHandler *Globals::recordHandler;
 float Globals::touch_stick_z;
-float Globals::turret_view_x;
-float Globals::turret_view_y;
+int Globals::turret_view_x;
+int Globals::turret_view_y;
 float Globals::turret_view_z;
-float Globals::fast_forward_x;
-float Globals::fast_forward_y;
+int Globals::fast_forward_x;
+int Globals::fast_forward_y;
 float Globals::fast_forward_z;
 int Globals::fontLangSelect;
 int Globals::keyboard_swipe;
@@ -240,7 +240,7 @@ int Globals::instantActionWave;
 unsigned char Globals::isTelekomCustomer;
 int Globals::lastRecordWritten;
 int Globals::instantActionScore;
-unsigned char Globals::showNewCreditsMenu;
+unsigned char Globals::showNewCreditsMenu = 1;
 int Globals::sub_menu_buttons_x[10];
 int Globals::sub_menu_buttons_y[10];
 unsigned char Globals::iap_hack_dlc1Bought;
@@ -253,7 +253,7 @@ int Globals::w;
 int Globals::lastSpaceMusicPlayed;
 int Globals::energyCellsProbChange;
 int Globals::sub_menu_button_count;
-unsigned char Globals::inAppPurchaseSupported;
+unsigned char Globals::inAppPurchaseSupported = 1;
 int Globals::lastStationMusicPlayed;
 int Globals::menu_touch_window_type;
 unsigned char Globals::useLowResTexturesForHD;
@@ -274,13 +274,13 @@ unsigned char Globals::hints[59];
 Array<Item *> *Globals::items;
 Array<Ship *> *Globals::ships;
 AbyssEngine::PaintCanvas *Globals::Canvas;
-float Globals::fire_x;
-float Globals::fire_y;
+int Globals::fire_x;
+int Globals::fire_y;
 float Globals::fire_z;
 Galaxy *Globals::galaxy;
 Layout *Globals::layout;
-float Globals::boost_x;
-float Globals::boost_y;
+int Globals::boost_x;
+int Globals::boost_y;
 float Globals::boost_z;
 Globals *Globals::globals;
 int Globals::pause_x;
@@ -854,7 +854,7 @@ Globals::~Globals() {
 // GOT-indirect load, which &Global compiles to in PIC. (Previously stubbed as
 // null gI_* placeholder pointers, which folded init to a 2-byte stub.)
 
-int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
+void Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
     (void) engine;
     int *missionSlot = (int *) &Mission::empty;
     if (*missionSlot == 0) {
@@ -924,9 +924,9 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     *fmodSlotP = fmod;
     fmod->init();
 
-    (*fmodSlotP)->enableCategory(1, settings->_region[1]);
-    (*fmodSlotP)->enableCategory(2, settings->_region[0]);
-    (*fmodSlotP)->enableCategory(3, settings->_region[2]);
+    (*fmodSlotP)->enableCategory(1, reinterpret_cast<bool &>(settings->_region[1]));
+    (*fmodSlotP)->enableCategory(2, reinterpret_cast<bool &>(settings->_region[0]));
+    (*fmodSlotP)->enableCategory(3, reinterpret_cast<bool &>(settings->_region[2]));
     (*fmodSlotP)->setVolume(1, settings->colorR);
     (*fmodSlotP)->setVolume(2, settings->colorG);
     (*fmodSlotP)->setVolume(3, settings->colorB);
@@ -937,25 +937,8 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
 
     Globals::instantActionPoints = 0;
     Globals::first_start_ever = true;
-    InitZeroObject *obj = (InitZeroObject *) Globals::hints;
-    obj->slots[0] = 0;
-    obj->slots[1] = 0;
-    obj->slots[2] = 0;
-    obj->slots[3] = 0;
-    obj->slots[4] = 0;
-    obj->slots[5] = 0;
-    obj->slots[6] = 0;
-    obj->slots[7] = 0;
-    obj->slots[8] = 0;
-    obj->slots[9] = 0;
-    obj->slots[10] = 0;
-    obj->slots[11] = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2b]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2f]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x33]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x37]) = 0;
-    InitFlagByte *flagByteObj = (InitFlagByte *) &Globals::gameLoaded;
-    flagByteObj->flag = 0;
+    Globals::globals->resetHints();
+    Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
     Globals::initMemoryWarning = 0;
 
@@ -964,9 +947,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     layout->reload();
     ParticleSettingsRef::initialize();
 
-    Array<int> *arr = new Array<int>();
-    this->soundResources = arr;
-    return (int) (long) arr;
+    this->soundResources = new Array<int>();
 }
 
 void Globals::resetHints() {
@@ -1619,13 +1600,14 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
             } else if (Globals::status->inSupernovaSystem()) {
                 if (Globals::status->getCurrentCampaignMission() == 89) {
                     Globals::sound->play(2238, nullptr, nullptr, 0.0f);
-                } else if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
-                           Globals::status->getMission()->getTargetStation() ==
+                } else if (Globals::status->getMission() == nullptr || Globals::status->getMission()->isEmpty() ||
+                           Globals::status->getMission()->getTargetStation() !=
                            Globals::status->getStation()->getIndex()) {
-                    Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242, nullptr,
-                                         nullptr, 0.0f);
-                } else {
                     Globals::sound->play(148, nullptr, nullptr, 0.0f);
+                } else if (Globals::status->getCurrentCampaignMission() >= 106) {
+                    Globals::sound->play(2242, nullptr, nullptr, 0.0f);
+                } else {
+                    Globals::sound->play(2241, nullptr, nullptr, 0.0f);
                 }
             } else if (Globals::status->inDeepScienceOrbit()) {
                 Globals::sound->play(152, nullptr, nullptr, 0.0f);

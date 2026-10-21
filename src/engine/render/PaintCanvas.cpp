@@ -1504,7 +1504,6 @@ void PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
     }
 }
 
-static const char g_getline_empty_7c428[] = "";
 
 void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWidth,
                           AbyssEngine::String *out) {
@@ -1534,7 +1533,7 @@ void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWid
     if ((int) str.size() > 1) {
         *out = str.SubString(0, str.size());
     } else {
-        *out = AbyssEngine::String(g_getline_empty_7c428, false);
+        *out = AbyssEngine::String("", false);
     }
 }
 
@@ -3554,29 +3553,6 @@ void PaintCanvas::ReleaseAllResources() {
     this->field_0x1cc = 0;
 }
 
-// The Resource* payload classes' destructors live in the PaintCanvas TU in the original
-// (0x77ebc.., right after ReleaseAllResources; iOS dump: Resource* classes in PaintCanvas.cpp).
-AbyssEngine::ResourceTexture::~ResourceTexture() {
-    delete[] this->name;
-    this->name = nullptr;
-}
-
-AbyssEngine::ResourceMesh::~ResourceMesh() {
-    delete[] this->name;
-    this->name = nullptr;
-}
-
-AbyssEngine::ResourceTransform::~ResourceTransform() {
-    if (this->dataA != nullptr) {
-        ::operator delete[](this->dataA);
-    }
-    this->dataA = nullptr;
-
-    if (this->dataB != nullptr) {
-        ::operator delete[](this->dataB);
-    }
-    this->dataB = nullptr;
-}
 
 AbyssEngine::PickedTextureRegion
 PaintCanvas::TransformGet2DPickedTextureRegion(unsigned int transformIndex, int x, int y, int z,

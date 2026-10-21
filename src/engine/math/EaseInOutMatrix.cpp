@@ -67,11 +67,7 @@ namespace AbyssEngine {
         }
 
         float w = (float) (AEMath::Sinf(m_t * 6.2831855f) * 0.5 + 0.5);
-        {
-            Quaternion scaled = m_q1 * w;
-            Quaternion blended = scaled + m_q0;
-            blended.Convert(m_current);
-        }
+        (m_q1 * w + m_q0).Convert(m_current);
         AEMath::MatrixSetTranslation(m_current, m_posDelta * w + m_minPos);
     }
 

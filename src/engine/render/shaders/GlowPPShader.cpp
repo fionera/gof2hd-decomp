@@ -5,10 +5,8 @@
 #include "engine/render/Mesh.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/ApplicationManager.h"
-#include <GLES2/gl2.h>
-#include <cstring>
 
-static const char *const kGlowVertexSource =
+static const char *const kGlowPPVertexSource =
     "attribute highp vec4 a_position;\n"
     "attribute mediump vec2 a_texCoord;\n"
     "varying lowp vec2 v_texCoord;\n"
@@ -19,7 +17,7 @@ static const char *const kGlowVertexSource =
     "\tv_texCoord = a_texCoord;\n"
     "}\n";
 
-static const char *const kGlowCopyFragmentSource =
+static const char *const kGlowPPCopyFragmentSource =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -28,7 +26,7 @@ static const char *const kGlowCopyFragmentSource =
     "   gl_FragColor.rgb = texture2D(s_texture_base, v_texCoord).rgb * texture2D(s_texture_base, v_texCoord).a;\n"
     "}\n";
 
-static const char *const kGlowBlurXFragmentSource =
+static const char *const kGlowPPBlurHFragmentSource =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -52,7 +50,7 @@ static const char *const kGlowBlurXFragmentSource =
     "\tgl_FragColor = vec4(tc, 1.0);\n"
     "}\n";
 
-static const char *const kGlowBlurYFragmentSource =
+static const char *const kGlowPPBlurVFragmentSource =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -76,7 +74,7 @@ static const char *const kGlowBlurYFragmentSource =
     "\tgl_FragColor = vec4(tc, 1.0);\n"
     "}\n";
 
-static const char *const kGlowCombineFragmentSource =
+static const char *const kGlowPPCombineFragmentSource =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -87,11 +85,13 @@ static const char *const kGlowCombineFragmentSource =
     "\tgl_FragColor.rgb = texture2D(s_texture_base, v_texCoord).rgb + texture2D(s_texture_glow, v_texCoord).rgb;\n"
     "}\n";
 
+#include <GLES2/gl2.h>
+#include <cstring>
 
 
 
 namespace AbyssEngine {
-    int GlowPPShader::ShaderIndex;
+    int GlowPPShader::ShaderIndex = -1;
 
     void GlowPPShader::SetInActive() {
         glDisableVertexAttribArray(this->meshAttribPosition);
@@ -268,10 +268,11 @@ namespace AbyssEngine {
     }
 
     void GlowPPShader::Init(Engine *) {
-        this->copyProgram = this->ES2LoadProgram(kGlowVertexSource, kGlowCopyFragmentSource);
-        this->blurXProgram = this->ES2LoadProgram(kGlowVertexSource, kGlowBlurXFragmentSource);
-        this->blurYProgram = this->ES2LoadProgram(kGlowVertexSource, kGlowBlurYFragmentSource);
-        this->combineProgram = this->ES2LoadProgram(kGlowVertexSource, kGlowCombineFragmentSource);
+        const char *vertex = kGlowPPVertexSource;
+        this->copyProgram = this->ES2LoadProgram(vertex, kGlowPPCopyFragmentSource);
+        this->blurXProgram = this->ES2LoadProgram(vertex, kGlowPPBlurHFragmentSource);
+        this->blurYProgram = this->ES2LoadProgram(vertex, kGlowPPBlurVFragmentSource);
+        this->combineProgram = this->ES2LoadProgram(vertex, kGlowPPCombineFragmentSource);
 
         const char *position = "a_position";
         const char *texcoord = "a_texCoord";

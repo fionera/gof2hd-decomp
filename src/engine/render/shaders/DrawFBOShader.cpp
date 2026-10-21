@@ -29,7 +29,7 @@ static const char *const kDrawFBOShaderFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int DrawFBOShader::ShaderIndex;
+    int DrawFBOShader::ShaderIndex = -1;
 
     DrawFBOShader::DrawFBOShader() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
