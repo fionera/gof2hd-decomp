@@ -1176,7 +1176,7 @@ unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lin
                 (*this->keyArray)[j] = key;
                 this->elementBits[j] = e;
                 this->touchFlags = e | this->touchFlags;
-                break;
+                return this->touchFlags;
             }
         }
     }
@@ -1673,10 +1673,6 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         case 29:
             this->field_0x276 = 0;
             return;
-        case 30:
-            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1396);
-            this->clearQueue();
-            break;
         case 31:
             this->field_0x1e0 = *Globals::gameText->getText(324);
             break;
@@ -1709,6 +1705,10 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             break;
         case 47:
             this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1476);
+            this->clearQueue();
+            break;
+        case 30:
+            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1396);
             this->clearQueue();
             break;
     }
@@ -1831,7 +1831,7 @@ void Hud::initHudMenu(int menuType, Level *level) {
     this->updateSecondaryWeaponString();
     this->field_0x4cc = 0;
     int rowGap = Globals::layout->field_0x1dc;
-    int y;
+    int y = this->menuBaseY;
     if (Globals::iPad != 0) {
         float top = (this->menuType == 3 ? (float) *(int *) &Globals::options[84]
                                          : (float) *(int *) &Globals::options[88] -
@@ -1843,8 +1843,6 @@ void Hud::initHudMenu(int menuType, Level *level) {
         this->menuOriginY = (int) top;
         y = (int) top + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + 1;
         this->menuBaseY = y;
-    } else {
-        y = this->menuBaseY;
     }
 
     switch (menuType) {
