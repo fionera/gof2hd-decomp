@@ -605,7 +605,7 @@ void DialogueWindow::loadContent() {
     }
 
     this->scrollWindow->setText(String(""), String(this->bodyText, false),
-                                (unsigned int) (uintptr_t) (speaker == 56 || speaker == 19 ? Globals::fontAlien
+                                (unsigned int) (uintptr_t) (speaker == 19 || speaker == 56 ? Globals::fontAlien
                                                                                            : Globals::font));
     this->prevButton->setVisible(this->page != 0);
     this->moreButton->setVisible(this->length() > 1);
