@@ -1280,19 +1280,15 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         if (Globals::iPadHD) {
             nameY = 8;
             infoY = 5;
-        } else if (Globals::iPadLarge) {
-            infoY = 8;
-            nameY = 12;
         } else {
-            infoY = 4;
-            nameY = 6;
+            nameY = !Globals::iPadLarge ? 6 : 12;
+            infoY = !Globals::iPadLarge ? 4 : 8;
         }
         // Side borders.
         int borderWidth = Globals::Canvas->GetImage2DWidth(this->scrollbarImageId);
         int borderHeight = Globals::Canvas->GetImage2DHeight(this->scrollbarImageId);
         int count = Globals::h / borderHeight;
-        int y = 0;
-        for (int i = 0; i <= count; i++) {
+        for (int i = 0, y = 0; i <= count; i++) {
             Globals::Canvas->DrawImage2D(this->scrollbarImageId,
                                          Globals::layout->buttonInsetX - borderWidth + this->listX, y, 1);
             Globals::Canvas->DrawImage2D(this->scrollbarImageId, Globals::layout->buttonInsetX + width + this->listX,
@@ -1301,8 +1297,8 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         }
     }
     this->okButton->setPosition(Globals::w - this->listX - Globals::layout->buttonInsetX,
+                                (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top) +
                                 this->scrollOffset +
-                                (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin) +
                                 (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
                                 Globals::layout->field_0x108);
 
@@ -1315,7 +1311,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
                                  width - 3, Globals::layout->field_0x70_rowHeight, String(""));
         int nameLineY = y + nameY;
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[0],
-                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
+                                    this->listX + Globals::layout->buttonInsetX + Globals::layout->field_0x2c_rowHeight,
                                     nameLineY, false);
         GameRecord *record = (*this->previewRecords)[i];
         if (record != 0 && record->shipId < 64)
@@ -1331,10 +1327,10 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         Globals::Canvas->SetColor(0x777777ffu);
         int infoLineY = y + infoY;
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[2],
-                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
+                                    this->listX + Globals::layout->buttonInsetX + Globals::layout->field_0x2c_rowHeight,
                                     infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[3],
-                                    Globals::layout->buttonInsetX + this->listX +
+                                    this->listX + Globals::layout->buttonInsetX +
                                     Globals::layout->field_0x2c_rowHeight * 2 + this->metricB +
                                     Globals::layout->field_0x2c4,
                                     infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
