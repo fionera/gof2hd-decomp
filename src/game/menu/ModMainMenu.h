@@ -3,13 +3,12 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "engine/core/ApplicationManager.h"
+#include "engine/core/IApplicationModule.h"
 class CutScene;
 class MenuTouchWindow;
 
-class ModMainMenu {
+class ModMainMenu : public IApplicationModule {
 public:
-    int paintCanvas;
-    ApplicationManager *appManager;
     int state;
     uint8_t initialized;
     int frameTime;
@@ -22,38 +21,38 @@ public:
 
     ModMainMenu();
 
-    virtual ~ModMainMenu();
+    ~ModMainMenu() override;
 
-    virtual void OnInitialize();
+    int OnInitialize() override;
 
-    virtual void OnRelease();
+    void OnRelease() override;
 
-    virtual void OnKeyPress(long long key, long long mod);
+    void OnKeyPress(long long key, long long mod) override;
 
-    virtual void OnKeyRelease(long long key, long long mod);
+    void OnKeyRelease(long long key, long long mod) override;
 
-    virtual void OnTouchBegin(int x, int y);
+    void OnTouchBegin(int x, int y) override;
 
-    virtual void OnTouchMove(int x, int y);
+    void OnTouchMove(int x, int y) override;
 
-    virtual void OnTouchEnd(int x, int y);
+    void OnTouchEnd(int x, int y) override;
 
-    virtual void OnTouchBegin(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
+    void OnTouchBegin(int x, int y, void *touch) override; // lint: void_ptr (exported virtual signature)
 
-    virtual void OnTouchMove(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
+    void OnTouchMove(int x, int y, void *touch) override; // lint: void_ptr (exported virtual signature)
 
-    virtual void OnTouchEnd(int x, int y, void *touch); // lint: void_ptr (exported virtual signature)
+    void OnTouchEnd(int x, int y, void *touch) override; // lint: void_ptr (exported virtual signature)
 
-    virtual void OnUpdate();
+    void OnUpdate() override;
 
-    virtual void OnRender3D();
+    void OnRender3D() override;
 
-    virtual void OnRender2D();
+    void OnRender2D() override;
 
-    virtual void OnSuspend();
+    void OnSuspend() override;
 
-    virtual void OnResume();
+    void OnResume() override;
 
-    virtual int ShowLoadingScreen();
+    int ShowLoadingScreen() override;
 };
 #endif

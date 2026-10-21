@@ -26,34 +26,6 @@ namespace AbyssEngine {
     }
 }
 
-static Layout **g_ModMainMenu_releaseReload;
-static ImageFactory **g_ModMainMenu_releaseImageFactory;
-static FModSound **g_ModMainMenu_releaseSound;
-
-static int *g_ModMainMenu_resumeObj;
-static int *g_ModMainMenu_resumeArg;
-
-static int *g_ModMainMenu_suspendObj;
-
-static int *g_ModMainMenu_touchEndFlag;
-
-static AbyssEngine::String **g_ModMainMenu_r2d_string;
-static int *g_ModMainMenu_r2d_textId;
-static int *g_ModMainMenu_r2d_screenW;
-static int *g_ModMainMenu_r2d_screenH;
-
-static Globals **g_ModMainMenu_initSoundRes;
-
-static void (*g_ModMainMenu_initAddSound)(Globals *, int);
-
-static OptionsRecord *g_ModMainMenu_initOptions;
-static RecordHandler **g_ModMainMenu_initRecord;
-static int *g_ModMainMenu_initTouchFlag;
-static int *g_ModMainMenu_initMusicSlot;
-static int *g_ModMainMenu_initMusic;
-
-static Layout **g_ModMainMenu_updateLayout;
-static FModSound **g_ModMainMenu_updateListener;
 
 ModMainMenu::ModMainMenu() {
     this->initialized = 0;
@@ -83,101 +55,70 @@ void ModMainMenu::OnSuspend() {
         Globals::recordHandler->saveOptions();
 }
 
-void ModMainMenu::OnInitialize() {
+int ModMainMenu::OnInitialize() {
     if (this->cutScene == nullptr) {
-        Globals **soundRes = g_ModMainMenu_initSoundRes;
-        (*soundRes)->startNewSoundResourceList();
-        void(*addSound)(Globals *, int) = g_ModMainMenu_initAddSound;
-        addSound(*soundRes, 0x7e);
-        addSound(*soundRes, 0x15);
-        addSound(*soundRes, 0x12);
-        addSound(*soundRes, 0x13);
-        addSound(*soundRes, 0x14);
-
+        // First call: load the menu sounds and set up the background cut scene at a random station.
+        Globals::globals->startNewSoundResourceList();
+        Globals::globals->addSoundResourceToList(0x7e);
+        Globals::globals->addSoundResourceToList(0x15);
+        Globals::globals->addSoundResourceToList(0x12);
+        Globals::globals->addSoundResourceToList(0x13);
+        Globals::globals->addSoundResourceToList(0x14);
         Globals::status->resetGame();
         Globals::rnd->reset();
-
-        int station = Globals::galaxy->getStation(Globals::rnd->nextInt(100));
-        Globals::status->setStation((Station *) (intptr_t) station);
-
-        CutScene *cutscene = new CutScene(2);
-        this->cutScene = cutscene;
-        cutscene->initialize();
-
-        int canvas = this->paintCanvas;
-        int texture;
-        if (Globals::status->inAlienOrbit() != 0) {
-            texture = 0x2f08;
-        } else {
-            texture = (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() +
-                       0x2efe) &
-                      0xffff;
-        }
-        unsigned int texSlot = 0xffffffff;
-        ((PaintCanvas *) (long) canvas)->TextureCreate((unsigned short) texture, texSlot, true);
-        ((PaintCanvas *) (long) this->paintCanvas)->ChangeCubeTexture((unsigned int) this->paintCanvas);
-        return;
+        Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(Globals::rnd->nextInt(100)));
+        this->cutScene = new CutScene(2);
+        this->cutScene->initialize();
+        unsigned int skybox;
+        if (Globals::status->inAlienOrbit())
+            this->paintCanvas->TextureCreate(0x2f08, skybox, false);
+        else
+            this->paintCanvas
+                    ->TextureCreate((unsigned short) (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() + 0x2efe),
+                                    skybox, false);
+        this->paintCanvas->ChangeCubeTexture(skybox);
+        return 100;
     }
 
-    int state = this->state;
-    if (state == 0x1e)
-        goto state30;
-    if (state == 0x3c)
-        goto state60;
-    if (state == 0x50)
-        goto state80;
-    if (state != 100)
-        goto music;
-
-    {
-        OptionsRecord *options = g_ModMainMenu_initOptions;
-        if (options->firstRunPreviewChecked == 0) {
-            RecordHandler **recordHolder = g_ModMainMenu_initRecord;
-            GameRecord *record = (GameRecord *) (*recordHolder)->recordStoreReadPreview(0);
-            if (record != nullptr) {
-                this->hasSavedGame = 1;
-                delete record;
+    switch (this->state) {
+        case 100: {
+            OptionsRecord *options = reinterpret_cast<OptionsRecord *>(Globals::options);
+            if (!options->firstRunPreviewChecked) {
+                GameRecord *record = (GameRecord *) Globals::recordHandler->recordStoreReadPreview(0);
+                if (record != nullptr) {
+                    this->hasSavedGame = 1;
+                    delete record;
+                }
+                options->firstRunPreviewChecked = 1;
+                Globals::recordHandler->saveOptions();
             }
-            options->firstRunPreviewChecked = 1;
-            (*recordHolder)->saveOptions();
+            Globals::status->setPlayingTime(0);
+            this->touchWindow = new MenuTouchWindow(0);
+            if (this->hasSavedGame) {
+                this->touchWindow->showSupernovaMessage();
+                this->hasSavedGame = 0;
+            }
+            return this->state = 80;
         }
-
-        Globals::status->setPlayingTime(0);
-        MenuTouchWindow *window = new MenuTouchWindow(0);
-        this->touchWindow = window;
-        if (this->hasSavedGame != 0) {
-            window->showSupernovaMessage();
-            this->hasSavedGame = 0;
-        }
-        this->state = 0x50;
+        case 80:
+            Globals::Canvas->Image2DCreate(0x1b5a, reinterpret_cast<unsigned int &>(this->logoImage));
+            this->fadeTimer = 0;
+            this->logoActive = 1;
+            Globals::logoIsShown = 1;
+            return this->state = 60;
+        case 60:
+            return this->state = 30;
+        case 30:
+            this->state = 1;
+            // fall through
+        default:
+            if (Globals::switch_to_target_setting != -1)
+                Globals::globals->playMusicAndFadeOutCurrent(Globals::switch_to_target_setting);
+            Globals::switch_to_target_setting = -1;
+            this->state = 100;
+            this->initialized = 1;
+            return 0;
     }
-    return;
-
-state60:
-    this->state = 0x1e;
-    return;
-
-state30:
-    this->state = 1;
-
-music: {
-        int *musicSlot = g_ModMainMenu_initMusicSlot;
-        if (*musicSlot != -1)
-            Globals::globals->playMusicAndFadeOutCurrent(*g_ModMainMenu_initMusic);
-        *musicSlot = -1;
-    }
-    this->initialized = 1;
-    this->state = 100;
-    return;
-
-state80:
-    unsigned int logoImageHandle;
-    Globals::Canvas->Image2DCreate(0x1b5a, logoImageHandle);
-    this->logoImage = logoImageHandle;
-    this->logoActive = 1;
-    this->fadeTimer = 0;
-    *g_ModMainMenu_initTouchFlag = 1;
-    this->state = 0x3c;
 }
 
 void ModMainMenu::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr (exported virtual signature)
@@ -229,12 +170,12 @@ void ModMainMenu::OnRelease() {
 void ModMainMenu::OnUpdate() {
     // Frame time clamped to [0, 150] ms.
     int frameTime;
-    if ((int) this->appManager->GetElapsedTimeMillis() <= 150 && (int) this->appManager->GetElapsedTimeMillis() < 0)
+    if ((int) this->applicationManager->GetElapsedTimeMillis() <= 150 && (int) this->applicationManager->GetElapsedTimeMillis() < 0)
         frameTime = 0;
-    else if ((int) this->appManager->GetElapsedTimeMillis() > 150)
+    else if ((int) this->applicationManager->GetElapsedTimeMillis() > 150)
         frameTime = 150;
     else
-        frameTime = (int) this->appManager->GetElapsedTimeMillis();
+        frameTime = (int) this->applicationManager->GetElapsedTimeMillis();
     this->frameTime = frameTime;
 
     Globals::layout->update(this->frameTime);
@@ -247,8 +188,8 @@ void ModMainMenu::OnUpdate() {
 }
 
 void ModMainMenu::OnRender2D() {
-    ((PaintCanvas *) (intptr_t) this->paintCanvas)->Begin2d();
-    ((PaintCanvas *) (intptr_t) this->paintCanvas)->SetColor(0xffffffffu);
+    this->paintCanvas->Begin2d();
+    this->paintCanvas->SetColor(0xffffffffu);
     this->cutScene->render2D();
 
     if (!this->logoActive) {
@@ -258,7 +199,7 @@ void ModMainMenu::OnRender2D() {
         unsigned int color = this->fadeTimer <= 3899
                              ? (unsigned int) ((int) ((float) this->fadeTimer / 3900.0f * 255.0f) - 256)
                              : 0xffffffffu;
-        ((PaintCanvas *) (intptr_t) this->paintCanvas)->SetColor(color);
+        this->paintCanvas->SetColor(color);
         Globals::Canvas->DrawImage2D((unsigned int) this->logoImage, 0, 0, 0x44, 0x44);
         if (this->fadeTimer >= 3900) {
             PaintCanvas *screen = Globals::Canvas;
@@ -275,7 +216,7 @@ void ModMainMenu::OnRender2D() {
                     false);
         }
     }
-    ((PaintCanvas *) (intptr_t) this->paintCanvas)->End2d();
+    this->paintCanvas->End2d();
 }
 
 void ModMainMenu::OnRender3D() {
