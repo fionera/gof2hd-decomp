@@ -158,6 +158,9 @@ public:
     uint32_t field_0x1b8;
     uint32_t field_0x1bc;
     uint8_t field_0x1c0;
+    // Tail padding: the original allocates 456 bytes (0x1c8) per record (natural 8-byte alignment
+    // of the int64 play-time view); this member keeps sizeof equal under the 1-byte packing.
+    uint8_t _pad_0x1c1[7];
 
     GameRecord();
 
@@ -168,7 +171,7 @@ public:
 #pragma pack(pop)
 
 #if __SIZEOF_POINTER__ == 4
-static_assert(sizeof(GameRecord) == 449, "GameRecord must be 449 bytes (0x1c1)");
+static_assert(sizeof(GameRecord) == 456, "GameRecord must be 456 bytes (0x1c8)");
 static_assert(offsetof(GameRecord, data) == 0x0, "");
 static_assert(offsetof(GameRecord, field_0x98) == 0x98, "");
 static_assert(offsetof(GameRecord, field_0xa8) == 0xa8, "");

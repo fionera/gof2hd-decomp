@@ -318,26 +318,17 @@ void RecordHandler::addHash(int slot) {
 }
 
 int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromBackup) {
-    String num;
-    String path;
-    unsigned int fd;
-    int sz;
-
-    num.Set((long long) (slot));
-    String &dir = fromBackup ? this->backupDir : this->recordDir;
-    path = dir + num;
-
+    String path = (fromBackup ? this->backupDir : this->recordDir) + String(slot);
     if (AEFile::FileExist(path) != 0) {
+        unsigned int fd;
         AEFile::OpenRead(path, &fd);
-        sz = AEFile::GetFileSize(fd);
-        signed char *b = new signed char[sz | (sz >> 31)];
-        *out = b;
-        AEFile::Read(sz, b, fd);
+        int size = AEFile::GetFileSize(fd);
+        *out = new signed char[size | (size >> 31)];
+        AEFile::Read(size, *out, fd);
         AEFile::Close(fd);
-    } else {
-        sz = -1;
+        return size;
     }
-    return sz;
+    return -1;
 }
 
 GameRecord *RecordHandler::readRecord(int slot) {
@@ -446,15 +437,10 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
 }
 
 GameRecord *RecordHandler::recordStoreReadPreview(int slot) {
-    String path;
-    String num;
-
-    num.Set((long long) (slot));
-    path = this->backupDir + num;
-
-    unsigned int fd;
+    String path = this->backupDir + String(slot);
     GameRecord *gr = 0;
     if (AEFile::FileExist(path) != 0) {
+        unsigned int fd;
         AEFile::OpenRead(path, &fd);
         gr = new GameRecord();
 
@@ -831,18 +817,13 @@ void RecordHandler::loadResolutionValue(float resolution) {
 }
 
 int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup) {
-    String num;
-    String path;
-    unsigned int fd;
-
-    num.Set((long long) (slot));
-    String &dir = toBackup ? this->backupDir : this->recordDir;
-    path = dir + num;
-
-    if (AEFile::FileExist(path) != 0)
+    String path = (toBackup ? this->backupDir : this->recordDir) + String(slot);
+    if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
+    }
+    unsigned int fd;
     AEFile::OpenWrite(path, &fd);
-    ((AEFile *) (n))->Write(buf, fd);
+    AEFile::Write((uint32_t) n, buf, fd);
     AEFile::Close(fd);
     return n;
 }
