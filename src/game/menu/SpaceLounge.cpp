@@ -673,73 +673,44 @@ void SpaceLounge::onKeyPress(int key) {
 }
 
 void SpaceLounge::updateScreenPositions() {
-    char camera[60];
-    char look[60];
-    char pos[12];
-    char up[12];
-    char target[12];
-    char halfRight[12];
-    char screen[12];
-
+    using namespace AbyssEngine::AEMath;
     if (this->agents == 0) {
         return;
     }
 
-    Level *level = SpaceLounge_screen_level_slot;
-    Array<KIPlayer *> *enemies = level->getEnemies();
-    PaintCanvas **canvasSlot = SpaceLounge_screen_canvas_slot;
-    PaintCanvas *canvas = *canvasSlot;
-    ScreenProjectFn project = SpaceLounge_screen_projector;
+    Array<KIPlayer *> *figures = this->cutScene->level->getEnemies();
+    Vector offset = Vector();
+    Vector pos = Vector();
+    Vector screen = Vector();
+    PaintCanvas *canvas = Globals::Canvas;
+    offset = 150.0f * MatrixGetRight(*(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
 
-    const Matrix *current = (const Matrix *) (long) canvas->CameraGetCurrent();
-    (void) current;
-    Matrix *local = (Matrix *) canvas->CameraGetLocal((unsigned int) (long) canvas);
-    MatrixGetRight(pos, local);
-    *(Vector *) (halfRight) = *(const Vector *) (pos) * (0.5f);
+    for (unsigned int i = 0; i < this->agents->size(); ++i) {
+        // Name-plate anchors: left/right of the figure, the right one raised above its head.
+        pos = (*figures)[i]->getPosition();
+        screen = pos - offset;
+        Globals::Canvas->GetScreenPosition(screen, *(*this->agentRects)[i * 2]);
+        screen = pos + offset;
+        screen.y += 450.0f;
+        Globals::Canvas->GetScreenPosition(screen, *(*this->agentRects)[i * 2 + 1]);
 
-    unsigned count = (unsigned) this->agents->size();
-    for (unsigned i = 0; i < count; ++i) {
-        KIPlayer *enemy = (*enemies)[i];
-        *(Vector *) target = enemy->getPosition();
+        PaintCanvas *c = Globals::Canvas;
+        Matrix look = *(const Matrix *) c->CameraGetLocal(c->CameraGetCurrent());
+        look = MatrixGetLookAt(MatrixGetPosition(look), pos, MatrixGetUp(look));
+        (*figures)[i + this->agents->size()]->geometry->setMatrix(look);
 
-        project((Vector *) screen, (Vector *) target);
-        *(Vector *) (pos) = *(const Vector *) (target) - *(const Vector *) (halfRight);
-        project((Vector *) screen, (Vector *) pos);
-        canvas->GetScreenPosition(*(AbyssEngine::AEMath::Vector *) canvas,
-                                  *(AbyssEngine::AEMath::Vector *) screen);
+        this->silhouettePos = pos;
+        this->silhouettePos.x -= MatrixGetDir(look).x * 100.0f;
+        this->silhouettePos.z -= MatrixGetDir(look).z * 100.0f;
+        (*figures)[i + this->agents->size()]->setPosition(this->silhouettePos);
 
-        *(Vector *) (pos) = *(const Vector *) (target) + *(const Vector *) (halfRight);
-        project((Vector *) screen, (Vector *) pos);
-        canvas->GetScreenPosition(*(AbyssEngine::AEMath::Vector *) canvas,
-                                  *(AbyssEngine::AEMath::Vector *) screen);
-
-        current = (const Matrix *) (long) canvas->CameraGetCurrent();
-        local = (Matrix *) canvas->CameraGetLocal((unsigned int) (long) canvas);
-        *(Matrix *) (camera) = *local;
-        MatrixGetPosition(pos, camera);
-        MatrixGetUp(up, camera);
-        MatrixGetLookAt(look, pos, target, up);
-        *(Matrix *) (camera) = *(const Matrix *) (look);
-
-        KIPlayer *mapped = (*enemies)[count + i];
-        mapped->parentGeometry->setMatrix(*(const AbyssEngine::AEMath::Matrix *) (camera));
-
-        project(&this->silhouettePos, (Vector *) target);
-        MatrixGetDir(pos, look);
-        this->silhouettePos.x -= (*(float *) pos) * 20.0f;
-        MatrixGetDir(pos, look);
-        this->silhouettePos.z -= (*(float *) (pos + 8)) * 20.0f;
-
-        mapped->setPosition(this->silhouettePos.x, this->silhouettePos.y, this->silhouettePos.z);
-
-        if (((SolarSystem *) (long) Globals::status->getSystem())->getRace() == 0) {
-            MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) (camera), *(const Matrix *) (look));
+        if (((SolarSystem *) Globals::status->getSystem())->getRace() == 0) {
+            Matrix turn;
+            MatrixSetRotation(turn, 0.0f, 3.14159274f, 0.0f);
+            look *= turn;
         }
-
-        enemy->parentGeometry->setMatrix(*(const AbyssEngine::AEMath::Matrix *) (camera));
-
-        enemy->setPosition(((Vector *) target)->x, ((Vector *) target)->y, ((Vector *) target)->z);
+        (*figures)[i]->geometry->setMatrix(look);
+        (*figures)[i]->setPosition(pos);
     }
 }
 
