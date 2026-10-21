@@ -466,68 +466,66 @@ int Status::getFreighterMissionStationBit(int station) {
     }
 }
 
-static int **g_ccpPriceMod = nullptr;
-
 void Status::calcCargoPrices() {
-    Galaxy *gal = Globals::galaxy;
-    Array<SolarSystem *> *systems = gal->getSystems();
-    AbyssEngine::AERandom *rng = Globals::rnd;
-    const float kPriceScale = 100.0f;
-    const float kJitter = 0.02f;
-
-    for (int src = 0; src != 3; src = src + 1) {
-        Array<Item *> *list;
-        if (src == 1)
-            list = ship->getEquipment();
-        else if (src == 0)
-            list = ship->getCargo();
-        else
-            list = station->getItems();
-        if (list == 0)
-            continue;
-
-        rng->setSeed((long long) station->getIndex());
-        bool ringWorld = false;
-        if (!inAlienOrbit())
-            ringWorld = (asSystem(system)->getIndex() == 0x19);
-
-        for (unsigned i = 0; i < list->size(); i = i + 1) {
-            Item *item = (*list)[i];
-            if (item == 0)
-                continue;
-
-            SolarSystem *itemSys = (*systems)[item->getIndex()];
-            SolarSystem *maxSys = (*systems)[item->getMaxPriceSystem()];
-            int dItem = gal->distancePercent(itemSys->getX(), itemSys->getY(),
-                                             maxSys->getX(), maxSys->getY());
-
-            SolarSystem *curSys = (*systems)[station->getIndex()];
-            int dHere = gal->distancePercent(itemSys->getX(), itemSys->getY(),
-                                             curSys->getX(), curSys->getY());
-
-            float t = ((kPriceScale / (float) dItem) * (float) dHere) / kPriceScale;
-            int minPrice = item->getMinPrice();
-            int band = item->getMaxPrice() - item->getMinPrice();
-            float clamp = t < 1.0f ? t : 1.0f;
-
-            if (item->getSinglePrice() > 0) {
-                int price;
-                if (ringWorld) {
-                    price = item->getMaxPrice();
-                } else {
-                    int base = minPrice + (int) (clamp * (float) band);
-                    int jitterMax = (int) ((float) base * kJitter);
-                    if (jitterMax < 2)
-                        jitterMax = 1;
-                    price = (base - jitterMax) + rng->nextInt((jitterMax << 1) | 1);
-                }
-                if (*g_ccpPriceMod != 0 && **g_ccpPriceMod != 0) {
-                    price = (int) ((float) price + (float) price * (float) (**g_ccpPriceMod) * 0.01f);
-                }
-                item->setPrice(price);
-            }
+    Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
+    for (int list = 0; list != 3; list++) {
+        Array<Item *> *items;
+        switch (list) {
+            case 0:
+                items = this->ship->getCargo();
+                break;
+            case 1:
+                items = this->ship->getEquipment();
+                break;
+            default:
+                items = this->station->getItems();
+                break;
         }
-        rng->reset();
+        if (items == 0) {
+            continue;
+        }
+        Globals::rnd->setSeed((long long) this->station->getIndex());
+        bool ringWorld;
+        if (Globals::status->inAlienOrbit()) {
+            ringWorld = false;
+        } else {
+            ringWorld = asSystem(Globals::status->system)->getIndex() == 25;
+        }
+        for (unsigned i = 0; i < items->size(); i++) {
+            Item *item = (*items)[i];
+            if (item == 0) {
+                continue;
+            }
+            int priceRange = Globals::galaxy->distancePercent(
+                (*systems)[item->getMinPriceSystem()]->getX(), (*systems)[item->getMinPriceSystem()]->getY(),
+                (*systems)[item->getMaxPriceSystem()]->getX(), (*systems)[item->getMaxPriceSystem()]->getY());
+            int distance = Globals::galaxy->distancePercent(
+                (*systems)[(*items)[i]->getMinPriceSystem()]->getX(),
+                (*systems)[(*items)[i]->getMinPriceSystem()]->getY(),
+                (*systems)[this->station->getSystem()]->getX(), (*systems)[this->station->getSystem()]->getY());
+            float factor = 100.0f / (float) priceRange * (float) distance / 100.0f;
+            int minPrice = item->getMinPrice();
+            int priceBonus = (int) ((factor < 1.0f ? factor : 1.0f) * (float) (item->getMaxPrice() - item->getMinPrice()));
+            if (item->getSinglePrice() < 1) {
+                continue;
+            }
+            int price;
+            if (ringWorld) {
+                price = item->getMaxPrice();
+            } else {
+                int base = minPrice + priceBonus;
+                int jitter = (int) ((float) base * 0.02f);
+                if (jitter <= 1) {
+                    jitter = 1;
+                }
+                price = base - jitter + Globals::rnd->nextInt(jitter << 1 | 1);
+            }
+            if (Globals::globalPriceRaise != 0) {
+                price = (int) ((float) price + (float) price * (float) Globals::globalPriceRaise * 0.01f);
+            }
+            item->setPrice(price);
+        }
+        Globals::rnd->reset();
     }
 }
 
