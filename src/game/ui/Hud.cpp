@@ -1183,13 +1183,13 @@ unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lin
     return this->touchFlags;
 }
 
-unsigned int Hud::sameHudEventAsBefore(String str) {
+bool Hud::sameHudEventAsBefore(String str) {
     for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
         ListItem *e = (*this->eventQueue)[i];
         if (e != 0 && ((String *) e->name)->Compare(str) == 0)
-            return 1;
+            return true;
     }
-    return 0;
+    return false;
 }
 
 
@@ -1712,7 +1712,7 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->clearQueue();
             break;
     }
-    if (this->sameHudEventAsBefore(this->field_0x1e0) != 0)
+    if (this->sameHudEventAsBefore(this->field_0x1e0))
         return;
     ListItem *item;
     if (eventId == 27 || eventId == 30 || eventId == 31 || eventId == 47)
@@ -1798,7 +1798,7 @@ void Hud::hudEventMedal(int medalId, int percent) {
     if (percent >= 100)
         percent = 100;
     this->field_0x1e0 = *Globals::gameText->getText(medalId + 1507) + String(":") + String(percent) + String("%");
-    if (this->sameHudEventAsBefore(String(this->field_0x1e0, false)) != 0)
+    if (this->sameHudEventAsBefore(String(this->field_0x1e0, false)))
         return;
     this->addToEventQueue(new ListItem(new String(this->field_0x1e0, false), 3));
     bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >

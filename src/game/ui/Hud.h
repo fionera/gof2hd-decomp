@@ -362,7 +362,7 @@ public:
 
     void resetAnalogStick();
 
-    unsigned int sameHudEventAsBefore(String str);
+    bool sameHudEventAsBefore(String str);
 
     int sameHudEventAsBeforeAggregate(String str);
 
