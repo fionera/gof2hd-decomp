@@ -294,44 +294,12 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
     case 14: {
         Globals::Canvas->Image2DCreate(1340, (unsigned int &) this->frameImages[1][0]);
         Globals::Canvas->Image2DCreate(1339, (unsigned int &) this->frameImages[0][0]);
-        unsigned short language = GameText::getLanguage();
-        float lineFactor;
-        if (language < 16 && ((1 << language) & 0x8c00))
-            lineFactor = 1.0f;
-        else
-            lineFactor = language == 14 ? 1.0f : 1.5f;
-        this->frameImages[2][0] = this->frameImages[0][0];
-        this->height = Globals::Canvas->GetImage2DHeight(this->frameImages[1][0]);
-        int w = Globals::Canvas->GetImage2DWidth(this->frameImages[1][0]);
-        this->layoutHeight = this->height;
-        this->width = w;
-        this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
-        this->textOffsetY = (int) ((float) (this->height / 2) +
-                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
-        this->touchMargin = Globals::layout->field_0x80_touchMargin;
-        break;
+        goto textButton;
     }
     case 15: {
         Globals::Canvas->Image2DCreate(1342, (unsigned int &) this->frameImages[1][0]);
         Globals::Canvas->Image2DCreate(1341, (unsigned int &) this->frameImages[0][0]);
-        unsigned short language = GameText::getLanguage();
-        float lineFactor;
-        if (language < 16 && ((1 << language) & 0x8c00))
-            lineFactor = 1.0f;
-        else
-            lineFactor = language == 14 ? 1.0f : 1.5f;
-        this->frameImages[2][0] = this->frameImages[0][0];
-        this->height = Globals::Canvas->GetImage2DHeight(this->frameImages[1][0]);
-        int w = Globals::Canvas->GetImage2DWidth(this->frameImages[1][0]);
-        this->layoutHeight = this->height;
-        this->width = w;
-        this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
-        this->textOffsetY = (int) ((float) (this->height / 2) +
-                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
-        this->touchMargin = Globals::layout->field_0x80_touchMargin;
-        break;
+        goto textButton;
     }
     case 16: {
         this->frameImages[1][0] = subId;
@@ -348,23 +316,7 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
     case 17: {
         Globals::Canvas->Image2DCreate(3008, (unsigned int &) this->frameImages[1][0]);
         Globals::Canvas->Image2DCreate(3009, (unsigned int &) this->frameImages[0][0]);
-        unsigned short language = GameText::getLanguage();
-        float lineFactor;
-        if (language < 16 && ((1 << language) & 0x8c00))
-            lineFactor = 1.0f;
-        else
-            lineFactor = language == 14 ? 1.0f : 1.5f;
-        this->frameImages[2][0] = this->frameImages[0][0];
-        this->height = Globals::Canvas->GetImage2DHeight(this->frameImages[1][0]);
-        int w = Globals::Canvas->GetImage2DWidth(this->frameImages[1][0]);
-        this->layoutHeight = this->height;
-        this->width = w;
-        this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
-        this->textOffsetY = (int) ((float) (this->height / 2) +
-                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
-        this->touchMargin = Globals::layout->field_0x80_touchMargin;
-        break;
+        goto textButton;
     }
     case 19: {
         this->frameImages[1][0] = subId;
@@ -387,6 +339,8 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
             Globals::Canvas->Image2DCreate(3008, (unsigned int &) this->frameImages[1][0]);
             Globals::Canvas->Image2DCreate(3009, (unsigned int &) this->frameImages[0][0]);
         }
+    textButton:
+        // These image styles share the language-dependent text layout.
         unsigned short language = GameText::getLanguage();
         float lineFactor;
         if (language < 16 && ((1 << language) & 0x8c00))
@@ -460,6 +414,8 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
 
 
 void TouchButton::draw() {
+    unsigned int imageToDraw;
+    int imageX, imageY;
     unsigned int savedColor = Globals::Canvas->GetColor();
     if (!this->visible)
         return;
@@ -489,8 +445,12 @@ void TouchButton::draw() {
         break;
     case 16:
         Globals::Canvas->DrawImage2D(this->frameImages[1][0], this->x, this->y);
-        if (this->touched || this->alwaysPressed)
-            Globals::Canvas->DrawImage2D(this->frameImages[0][0], this->x, this->y);
+        if (this->touched || this->alwaysPressed) {
+            imageToDraw = this->frameImages[0][0];
+            imageX = this->x;
+            imageY = this->y;
+            goto drawSingleImage;
+        }
         break;
     default: {
         int leftCap = this->touched ? this->frameImages[0][0] : ((this->alwaysPressed ? this->frameImages[2][0] : this->frameImages[1][0]));
@@ -536,12 +496,12 @@ void TouchButton::draw() {
                 Globals::layout->drawBGPattern((this->progressHighlight ? this->frameImages[0][1] : this->frameImages[1][1]),
                                                this->leftWidth + this->x, this->y,
                                                this->midStretch > rest ? rest : this->midStretch, this->height);
-                if (this->leftWidth + this->midStretch < filled) {
-                    int right = filled - this->leftWidth - this->midStretch;
-                    Globals::Canvas->DrawRegion2D(this->frameImages[this->progressHighlight ? 0 : 1][2], 0, 0,
-                                                  this->rightWidth > right ? right : this->rightWidth, this->height,
-                                                  0.0f, 0, 0, this->midStretch + this->leftWidth + this->x, this->y);
-                }
+            }
+            if (this->leftWidth + this->midStretch < filled) {
+                int right = filled - this->leftWidth - this->midStretch;
+                Globals::Canvas->DrawRegion2D((this->progressHighlight ? this->frameImages[0][2] : this->frameImages[1][2]), 0, 0,
+                                              this->rightWidth > right ? right : this->rightWidth, this->height,
+                                              0.0f, 0, 0, this->midStretch + this->leftWidth + this->x, this->y);
             }
             Globals::layout->setDrawColor(0xffffffff);
         }
@@ -551,8 +511,12 @@ void TouchButton::draw() {
         else
             Globals::Canvas->SetColor(this->textColor);
         if (this->subId != -1) {
-            if (this->kind != 19)
-                Globals::Canvas->DrawImage2D(this->subId, this->x + this->textOffsetX, this->y + this->textOffsetY);
+            if (this->kind != 19) {
+                imageToDraw = this->subId;
+                imageX = this->x + this->textOffsetX;
+                imageY = this->y + this->textOffsetY;
+                goto drawSingleImage;
+            }
         } else {
             Globals::Canvas->DrawString(this->fontId, this->text, this->x + this->textOffsetX,
                                         this->y + this->textOffsetY, false);
@@ -586,6 +550,10 @@ void TouchButton::draw() {
         break;
     }
     }
+    goto restoreDrawState;
+drawSingleImage:
+    Globals::Canvas->DrawImage2D(imageToDraw, imageX, imageY);
+restoreDrawState:
     Globals::layout->setDrawColor(0xffffffff);
     Globals::Canvas->FontSetSpacing(this->fontId, savedSpacing);
     Globals::Canvas->SetColor(savedColor);
