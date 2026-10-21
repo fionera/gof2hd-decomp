@@ -212,8 +212,11 @@ void PlayerAsteroid::update(int delta) {
     if (bombForce > 0.0f && this->state == 3) {
         this->hitVector() = this->player->getHitVector();
         float size = this->scaling;
-        if (size > 1.0f || size < 0.6f)
-            size = size > 1.0f ? 1.0f : 0.6f;
+        // Clamp the scale to [0.6, 1.0]. The binary evaluates the redundant inner
+        // `size > 1.0f` test inside the `size < 0.6f` arm (four selects), so the
+        // nesting is kept as written.
+        if (size < 0.6f || size > 1.0f)
+            size = size < 0.6f ? (size > 1.0f ? 1.0f : 0.6f) : 1.0f;
         this->hitVector() *= (float) (int) (bombForce * 1024.0f * (1.0f - size / 100.0f));
         this->translate(this->hitVector());
         this->explosion->translate(this->hitVector());
