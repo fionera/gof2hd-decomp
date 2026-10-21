@@ -1018,31 +1018,12 @@ static const char gLTS_hrEmpty[] = "";
 static const char gLTS_sep[] = "";
 
 void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
-    long long q = ms / 0xea60;
-    int minute = (int) (q % 0x3c);
-
-    long long q2 = ms / 0xea60;
-    int hours = (int) (q2 % 0x18);
-
-    String mPart, mNum, minStr;
-    mPart.ctor_char(minute < 10 ? gLTS_minTens : gLTS_minEmpty, false);
-    mNum.Set((long long) (minute));
-    minStr = mPart + mNum;
-
-    long long h = ms / 0xea60;
-    int hv = (int) h * 0x18 + hours;
-
-    String hPart, hNum, hrStr;
-    hPart.ctor_char(hv < 10 ? gLTS_hrTens : gLTS_hrEmpty, false);
-    hNum.Set((long long) (hv));
-    hrStr = hPart + hNum;
-
-    String sep, left;
-    sep.ctor_char(gLTS_sep, false);
-    left = sep + hrStr;
-    out = left + minStr;
-
-    return;
+    int minutes = (int) (ms / 60000 % 60);
+    int hours = (int) (ms / 3600000 % 24);
+    String minuteText = (minutes < 10 ? String("0", false) : String("", false)) + String(minutes);
+    hours += (int) (ms / 86400000) * 24;
+    String hourText = (hours < 10 ? String("0", false) : String("", false)) + String(hours);
+    out = hourText + String(":", false) + minuteText;
 }
 
 static const unsigned short gGSG_resTable[1] = {};
