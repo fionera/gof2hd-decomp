@@ -12,7 +12,21 @@ static PaintCanvas **g_IF_drawShip_canvas = &Globals::Canvas;
 static PaintCanvas **g_drawItem_canvas = &Globals::Canvas;
 static PaintCanvas **g_IF_drawItem4_canvas = &Globals::Canvas;
 
-int IMAGE_OFFSETS[104];
+int IMAGE_OFFSETS[104] = {
+    16, 45, 16, 26, 32, 75, 16, 0,
+    16, 52, 16, 25, 32, 75, 16, 0,
+    16, 45, 16, 24, 32, 75, 16, 0,
+    32, -20, 32, -20, 32, 0, 16, -75,
+    32, 75, 16, 17, 32, 75, 16, 0,
+    16, -20, 32, -20, 32, 0, 16, -75,
+    32, 75, 16, 42, 16, 0, 16, 0,
+    16, 39, 16, 21, 32, 75, 16, 0,
+    16, -20, 32, -20, 32, 0, 16, -75,
+    32, 75, 32, 0, 32, 0, 32, 0,
+    16, 46, 16, 26, 32, 75, 16, 0,
+    16, 0, 16, 0, 16, 0, 16, 0,
+    32, 75, 32, 0, 32, 0, 32, 0,
+};
 int IMAGE_OFFSETS_IPAD[104] = {
     16, 75, 16, 43, 32, 125, 16, 0,
     16, 86, 16, 41, 32, 125, 16, 0,
