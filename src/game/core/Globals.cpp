@@ -1058,7 +1058,7 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
                     String suf, full;
                     suf.ctor_char(suffix, false);
                     full = prefix + suf;
-                    int cmp = entry->Compare_str(&full);
+                    int cmp = entry->Compare(full);
                     if (cmp == 0) {
                         result = (int) i;
                         keepGoing = false;

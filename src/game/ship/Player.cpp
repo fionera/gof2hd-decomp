@@ -1143,7 +1143,7 @@ LAB_3488: {
                     KIPlayer *ki3 = self->kiPlayer;
 
                     String *txt = (Globals::gameText)->getText(missionId);
-                    int cmp = (&ki3->name)->Compare_str(txt);
+                    int cmp = (&ki3->name)->Compare(*txt);
                     if (missionId == 0xb3 && cmp == 0) {
                         ((Mission *) (intptr_t) mission)->setStatusValue(
                             ((Mission *) (intptr_t) mission)->getStatusValue() + 1);

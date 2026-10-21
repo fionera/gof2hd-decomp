@@ -5315,7 +5315,7 @@ void Level::wingmanDied(AbyssEngine::String const &name) {
     String key = name;
     for (unsigned int i = 0; i < *list; i = i + 1) {
         String *w = ((String **) list[1])[i];
-        if (w->Compare_str(&key) == 0) {
+        if (w->Compare(key) == 0) {
             levelWingmanDiedOne(((String **) list[1])[i], list);
             return;
         }

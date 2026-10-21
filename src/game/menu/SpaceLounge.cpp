@@ -560,13 +560,13 @@ int SpaceLounge::getSoundId(Agent *agent) {
     if (checkSpecialText) {
         GameText **texts = SpaceLounge_getSoundId_specialText;
         String *text = (*texts)->getText(0x334);
-        if (missionText.Compare_str(text) != 0) {
+        if (missionText.Compare(*text) != 0) {
             text = (*texts)->getText(0x338);
-            if (missionText.Compare_str(text) != 0) {
+            if (missionText.Compare(*text) != 0) {
                 text = (*texts)->getText(0x33b);
-                if (missionText.Compare_str(text) != 0) {
+                if (missionText.Compare(*text) != 0) {
                     text = (*texts)->getText(0x341);
-                    dummy = missionText.Compare_str(text);
+                    dummy = missionText.Compare(*text);
                     if (dummy != 0) {
                         goto special_done;
                     }
