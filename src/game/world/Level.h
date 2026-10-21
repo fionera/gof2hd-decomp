@@ -54,7 +54,8 @@ public:
     int killCountB;
     Objective *objectivesA;
     Objective *objectivesB;
-    int field_30;
+    uint8_t field_30;
+    uint8_t pad_31[3];
     int field_34;
     int field_38;
     int field_3c;
@@ -126,7 +127,7 @@ public:
     uint8_t friendCargoStolen;
     uint8_t pad_13d[3];
     Vector flashColor;
-    int flashField;
+    float flashAlpha;
     int flashDurationA;
     int flashDurationB;
     uint8_t flashActive;
@@ -240,7 +241,7 @@ public:
 
     void createRadioMessages(int set);
 
-    void *getBoundingVolume(int param, AEGeometry *kind); // lint: void_ptr (method return type is symbol-baked)
+    Array<BoundingVolume *> *getBoundingVolume(int id, AEGeometry *geometry);
 
     PlayerEgo *getPlayer();
 
@@ -278,7 +279,7 @@ public:
 
     int getFriendsLeft();
 
-    Array<void *> *getMessages(); // lint: void_ptr (exported signature; cross-file use in LevelScript.cpp)
+    Array<RadioMessage *> *getMessages();
 
     int getTimeLimit();
 

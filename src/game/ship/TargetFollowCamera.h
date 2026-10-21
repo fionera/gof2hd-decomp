@@ -32,7 +32,7 @@ public:
     float camOffsetY;
     float camOffsetZ;
     uint8_t locked;
-    uint8_t lookAtCam;
+    bool lookAtCam;
     uint8_t active;
     uint8_t rumbleActive;
     int rumbleTimer;
@@ -49,7 +49,7 @@ public:
     float fpOffsetX;
     float fpOffsetY;
     float fpOffsetZ;
-    uint8_t hideShip;
+    bool hideShip;
     float shakeAccum;
     float shakeReference;
     uint8_t useTargetsUpVec;
@@ -147,11 +147,11 @@ public:
 
     void translateNoUpdate(float dx, float dy, float dz);
 
-    unsigned char isInLookAtMode();
+    bool isInLookAtMode();
 
     unsigned char isInFastForwardMode();
 
-    unsigned char hideShipForFirstPersonCam();
+    bool hideShipForFirstPersonCam();
 
     void update(int dt);
 };

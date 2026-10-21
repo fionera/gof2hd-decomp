@@ -9,7 +9,7 @@ public:
     int index;
     int board;
     int race;
-    uint8_t male;
+    bool male;
     int shipId;
     int weapon;
     int hitpoints;
@@ -23,8 +23,8 @@ public:
     int lastSeen;
     int travelsTo;
     int currentLocation;
-    uint8_t terminated;
-    uint8_t active;
+    bool terminated;
+    bool active;
 
     Wanted(int index, String name, int board, int race, bool male,
            int shipId, int weapon, int hitpoints, int lootItemId, int lootAmount,
@@ -34,9 +34,9 @@ public:
 
     String getName();
 
-    uint8_t isActive();
+    bool isActive();
 
-    uint8_t isTerminated();
+    bool isTerminated();
 
     void setActive(bool v);
 
@@ -48,7 +48,7 @@ public:
 
     int getRace();
 
-    int isMale();
+    bool isMale();
 
     int getShip();
 

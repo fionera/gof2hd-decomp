@@ -214,9 +214,15 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
             tgt = ((addr + (4 if thumb else 8)) & ~3) + imm
             width = 8 if (mnem == "ldrd" or (mnem == "vldr" and reg.startswith("d"))) else 4
             pool.update(range(tgt, tgt + width))
-            for _, later in lines[i + 1:i + 5]:
+            # follow rX forward until the add consumes it or rX is overwritten (the scheduler
+            # can put several unrelated instructions between the load and the add)
+            for _, later in lines[i + 1:i + 17]:
                 if re.match(rf"^add(?:\.[nw])?\s+{reg},\s*pc$", later):
                     pic_delta.update(range(tgt, tgt + width))
+                    break
+                lm = re.match(r"^([a-z]+)\S*\s+(\w+)", later)
+                if lm and lm.group(2) == reg and not re.match(
+                        r"^(str|cmp|cmn|tst|teq|push|stm|vst|b)", lm.group(1)):
                     break
     raw, norm = [], []
     last_word = None  # pool bytes decode as 1 Thumb32 or 2 Thumb16 lines depending on the

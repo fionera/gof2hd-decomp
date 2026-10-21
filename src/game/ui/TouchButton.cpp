@@ -109,13 +109,13 @@ void TouchButton::resetTouch() {
 }
 
 
-bool TouchButton::OnTouchBegin(int px, int py) {
+unsigned int TouchButton::OnTouchBegin(int px, int py) {
     if (this->visible == 0 || this->halfTransparent != 0)
-        return false;
+        return 0;
     int r = touchedInside(px, py);
     this->touched = (unsigned char) r;
     if (r == 0)
-        return false;
+        return 0;
     Globals::sound->play(0x7c, 0, 0, 0.0f);
     return this->touched != 0;
 }

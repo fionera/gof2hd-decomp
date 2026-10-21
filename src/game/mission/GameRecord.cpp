@@ -495,7 +495,7 @@ afterDlcUnsaleable:
         }
     }
     st = Globals::status;
-    st->wingmen = this->field_0x14c;
+    st->wingmen = (Array<String *> *) this->field_0x14c;
     st->field_0x2c = this->field_0x150;
     st->fadeValue = this->field_0x154;
     reinterpret_cast<int32_t &>(st->_byte_0x28) = this->field_0x158;

@@ -57,18 +57,16 @@ public:
     int field_0x20;
     uint8_t freeze;
     uint8_t inWormhole;
-    AEGeometry *turretGeometry;
-    AEGeometry *field_0x2c;
-    AEGeometry *field_0x30;
-    AEGeometry *gunYawGeo;
-    AEGeometry *gunMuzzleRoot;
-    AEGeometry *gunExtraGeo;
+    AEGeometry *turretGeometry;  // turret barrel (yaw/pitch)
+    AEGeometry *turretRoot;
+    AEGeometry *turretExtraGeo;
+    AEGeometry *shieldGeometry;  // supernova heat shield
+    uint8_t shieldVisible;
+    float shieldRadius;
 
-    float maneuverParam;
-    // rollMatrix relocated here: it fills the original matrix region at 0x44..0x80
-    // (AEMath::Matrix is float[15] = 0x3c, ending exactly at field_0x80 = 0x80).
-    AbyssEngine::AEMath::Matrix rollMatrix;
-    float field_0x80;
+    AbyssEngine::AEMath::Matrix rollMatrix;  // 0x40..0x7c (ctor calls Matrix::Matrix() on this+0x40)
+    float rocketPitch;                       // 0x7c (up/down in rocket control)
+    float rocketYaw;                         // 0x80 (left/right in rocket control)
     uint8_t _pad_0x84[4]; // original field_0x84 region (1-byte field + 3 pad)
     int targetFollowCamera;
 
@@ -85,18 +83,17 @@ public:
     uint8_t _pad_0xc0[4]; // original field_0xc0 region (1-byte field + 3 pad)
     uint8_t freeLookMode;
     int boostSpeed;
-    int field_0xcc;
-    int field_0xd0;
-    int boostDelay; // relocated from its drifted slot; real offset 0xd4 (used in PlayerEgo.cpp)
-    void *boostSoundId; // lint: void_ptr  opaque FMOD sound-event id stored in a pointer-width slot (used only as (int)(intptr_t)); no typed pointee
-    // lint: void_ptr  opaque FMOD sound-event id stored in a pointer-width slot (used only as (int)(intptr_t)); no typed pointee
-    AEGeometry *rollGeometry;
+    int boostTime;
+    int boostDelay;
+    int boostSoundId;
+    int field_0xd8;
+    AEGeometry *turretBaseGeo;
     float rotX;
     float rotY;
     float rotZ;
     float waypointX;
     float waypointY;
-    AEGeometry *gunBaseGeo;
+    float waypointZ;
     // Ghidra: movingStars@0xf8 sits between gunBaseGeo@0xf4 and route@0xfc. Our decomp lacked it; the
     // route..collide block was 4 low. Added here and the _pad_0x126 below shrinks by 4 to keep the
     // downstream asserts (field_0x145@0x145) pinned.
@@ -109,23 +106,21 @@ public:
     int currentSecondaryWeaponIndex;
     float yawAccumulator;
     float pitchAccumulator;
-    float yawRate;
-    float pitchRate;
-    // Ghidra: 4 fields (0x120/0x124/0x128/0x12c) precede lastHP(=combinedHp)@0x130; ours lacked them.
-    int field_0x120;
-    int field_0x124;
-    int field_0x128;
-    int field_0x12c;
+    // 64-bit tick counters (update() adds the frame time with adc); they give the class its 8-byte
+    // alignment (sizeof == 0x3a0, the original operator new size).
+    int64_t shieldRegenTick;
+    int64_t repairHPTick;
+    int64_t repairArmorTick;
     int lastHP;
     int shakeIntensity;
     int boostTimer;
     uint8_t boostingFlag;
+    int field_0x140;
     uint8_t collide;
-    uint8_t _pad_0x13e[7]; // shrunk for movingStars + field_0x108 + 4 fields @0x120
     uint8_t field_0x145;
     uint8_t field_0x146;
     AbyssEngine::AEMath::Vector dockOffsetVec;
-    int handling;
+    float handling;
     uint8_t autoPilot;
     int autoPilotTarget;
     uint8_t goingToWaypointFlag;
@@ -155,22 +150,14 @@ public:
     int dockingState;
     int dockingPointIndex;
 
-    // `resumeFlag` is the low byte of this int slot:
-    //   reinterpret_cast<uint8_t &>(dockApproachDist)
-    int dockApproachDist;
-
-    int dockApproachThreshold;
-    int field_0x1d0;
+    AbyssEngine::AEMath::Vector miningUpVec;
+    uint8_t field_0x1d4;
     int dockScaling;
     int miningSettleTimer;
     KIPlayer *dockStation;
-    // miningGame is at 0x1e4 (drift: our 0x1e0->orig 0x1e4); field_0x1e0@0x1e0 precedes it. The +4 from
-    // these two is balanced by removing the spurious _pad_0x2a0[4] (original matrix region is 0x3c),
-    // keeping field_0x2a4@0x2a4; turretHudMatrix shifts 0x264->0x268. (Doubles above are now floats.)
-    int field_0x1e0;
     int miningGame;
     int hackingGame;
-    short docked;
+    uint8_t dockingToStream;
     uint8_t dockedToStream;
     uint8_t dockingToPlanet;
     int planetDockTimer;
@@ -183,8 +170,11 @@ public:
     int cloakRechargeTimer;
     int cloakChargeMax;
     int cloakDischargeMax;
+    float shieldRegenRate;
+    int field_0x21c;
     int hud;
     AbyssEngine::AEMath::Vector turretOffsetVec;
+    int field_0x230;
     uint8_t collidesWithStationFlag;
     uint8_t hardCoreMode;
     int hpGaugeImage;
@@ -193,30 +183,30 @@ public:
     int radarBlipImage2;
     int radarBlipImage3;
     int shakeAccum;
+    int freeCargoSpace;
+    float agility;
     float pitchRamp;
     float yawRamp;
-    // ASM ground truth: these were modeled as 8-byte doubles but the .cpp accesses them via (float&),
-    // and Ghidra shows separate 4-byte fields here (freeCargoSpace@0x250/flAgility@0x254 etc.). Split
-    // into floats + their separated high-half fields (size-neutral 24 bytes, removes 8-byte alignment).
-    float rollAccum;
-    int field_0x250;
-    float yawAccumD;
-    int field_0x258;
-    float pitchAccumD;
     int field_0x260;
+    int field_0x264;
+    float rollAccum;
+    int field_0x26c;
+    float yawAccumD;
+    int field_0x274;
+    float pitchAccumD;
     float yawAccumF;
-    // turretHudMatrix relocated here: it fills the original matrix region at 0x264..0x2a4.
-    AbyssEngine::AEMath::Matrix turretHudMatrix;
+    int field_0x280;
+    float field_0x284;
+    float field_0x288;
+    int field_0x28c;
+    int field_0x290[5];
     int field_0x2a4;
     uint8_t field_0x2a8;
     uint8_t rollDirection;
-    uint8_t _pad_0x2aa[20]; // region vacated by relocated rollMatrix + missing fields (0x2aa..0x2c0)
-    void *field_0x2c0; // lint: void_ptr  opaque flag, only ever compared != 0; never assigned a typed value in the tree
-    uint8_t gunExtraVisible;
+    AbyssEngine::AEMath::Matrix turretHudMatrix;
     float rotateX;
     float rotateY;
     float rotateZ;
-    uint8_t _pad_before_rolling[32]; // ASM (roll): rolling is at 0x2f4, AFTER this gap, not before it
     uint8_t rolling;
     uint8_t field_0x2f5;
     int explosionTimer;
@@ -246,11 +236,9 @@ public:
     uint8_t autoTurretEnabled;
     uint8_t dockedFlag;
     AbyssEngine::EaseInOutMatrix *easeMatrix;
+    int field_0x35c;
     int dockTotalAmount;
     int dockTransferedAmount;
-    // ASM: getCloakRechargeRate reads cloakRechargeMax at [this,#872]=0x368; ours had it @0x364.
-    // A 4-byte field precedes it; compensated by shrinking _pad_0x388 below so field_0x394 stays pinned.
-    int field_0x364;
     int cloakRechargeMax;
     int spacePoint;
     uint8_t throttleStarted;
@@ -266,6 +254,8 @@ public:
     uint32_t cloakMaterial3;    // 0x390
     unsigned char *field_0x394;
     uint8_t volatileGoods;
+    uint8_t field_0x399;
+    uint8_t field_0x39a;
     uint8_t lostMiningGameFlag;
 
     PlayerEgo(Player *player);
@@ -322,7 +312,7 @@ public:
 
     void dockToStream(bool param);
 
-    float down(int frameTime, float delta);
+    void down(int frameTime, float delta);
 
     void draw(bool allowHud);
 
@@ -368,7 +358,7 @@ public:
 
     int getHackingGameDockIndex();
 
-    int getHandling();
+    float getHandling();
 
     int getHitpoints();
 
@@ -476,11 +466,11 @@ public:
 
     bool isRechargingCloak();
 
-    void killLiberator();
+    bool killLiberator();
 
     int levelCollision();
 
-    float left(int frameTime, float delta);
+    void left(int frameTime, float delta);
 
     unsigned char lostMiningGame();
 
@@ -508,7 +498,7 @@ public:
 
     void revive();
 
-    float right(int frameTime, float delta);
+    void right(int frameTime, float delta);
 
     void roll(int amount);
 
@@ -556,7 +546,7 @@ public:
 
     void setThrust(float v);
 
-    void setTurretMode(bool enable);
+    bool setTurretMode(bool enable);
 
     void setTurretPosition(AbyssEngine::AEMath::Vector v);
 
@@ -586,7 +576,7 @@ public:
 
     void throttleChanged();
 
-    void toggleCloaking();
+    bool toggleCloaking();
 
     int tryToStartEmergencySystem();
 
@@ -594,7 +584,7 @@ public:
 
     void turnVertical(int a, float v);
 
-    float up(int frameTime, float delta);
+    void up(int frameTime, float delta);
 
     void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6, int arg7);
 
@@ -610,36 +600,40 @@ public:
 static_assert(__builtin_offsetof(PlayerEgo, field_0x4) == 0x4, "PlayerEgo::transform overlay offset");
 // levelScript is the storage the former `rocketReturnMatrix` Matrix view aliased (offset 0x10).
 static_assert(__builtin_offsetof(PlayerEgo, levelScript) == 0x10, "PlayerEgo::rocketReturnMatrix overlay offset");
-static_assert(__builtin_offsetof(PlayerEgo, maneuverParam) == 0x40, "PlayerEgo::maneuverParam offset");
 static_assert(__builtin_offsetof(PlayerEgo, targetFollowCamera) == 0x88, "PlayerEgo::targetFollowCamera offset");
-// resumeFlag was the low byte of this 4-byte int slot.
-static_assert(__builtin_offsetof(PlayerEgo, dockApproachThreshold) -
-              __builtin_offsetof(PlayerEgo, dockApproachDist) == 4,
-              "PlayerEgo::dockApproachDist overlay slot width");
 
 // Former-drift fields: each now lands at the offset encoded in its name (Ghidra-verified).
-static_assert(__builtin_offsetof(PlayerEgo, field_0x80) == 0x80, "");
+static_assert(__builtin_offsetof(PlayerEgo, rocketYaw) == 0x80, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0xac) == 0xac, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0xb0) == 0xb0, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0xb2) == 0xb2, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0xcc) == 0xcc, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0xd0) == 0xd0, "");
-static_assert(__builtin_offsetof(PlayerEgo, boostDelay) == 0xd4, "");
+static_assert(__builtin_offsetof(PlayerEgo, boostTime) == 0xcc, "");
+static_assert(__builtin_offsetof(PlayerEgo, boostDelay) == 0xd0, "");
+static_assert(__builtin_offsetof(PlayerEgo, boostSoundId) == 0xd4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x145) == 0x145, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x146) == 0x146, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x1a1) == 0x1a1, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x1d0) == 0x1d0, "");
+static_assert(__builtin_offsetof(PlayerEgo, miningUpVec) == 0x1c8, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2a4) == 0x2a4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2a8) == 0x2a8, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x2c0) == 0x2c0, "");
+static_assert(__builtin_offsetof(PlayerEgo, collide) == 0x144, "");
+static_assert(__builtin_offsetof(PlayerEgo, dockScaling) == 0x1d8, "");
+static_assert(__builtin_offsetof(PlayerEgo, dockingToPlanet) == 0x1ee, "");
+static_assert(__builtin_offsetof(PlayerEgo, hud) == 0x220, "");
+static_assert(__builtin_offsetof(PlayerEgo, hardCoreMode) == 0x235, "");
+static_assert(__builtin_offsetof(PlayerEgo, shakeAccum) == 0x24c, "");
+static_assert(__builtin_offsetof(PlayerEgo, yawAccumF) == 0x27c, "");
+static_assert(__builtin_offsetof(PlayerEgo, rotateX) == 0x2e8, "");
+static_assert(__builtin_offsetof(PlayerEgo, rolling) == 0x2f4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2f5) == 0x2f5, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x309) == 0x309, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x32d) == 0x32d, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x394) == 0x394, "");
 // Relocated matrices and the field immediately after the last drift field, to pin the tail.
-static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x44, "");
-static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x268, "");
+static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x40, "");
+static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x2ac, "");
 static_assert(__builtin_offsetof(PlayerEgo, volatileGoods) == 0x398, "");
+static_assert(sizeof(PlayerEgo) == 0x3a0, "");
 // (sizeof==924 assert dropped: it was host-clang-calibrated and rounds differently under the NDK
 // ARM32 EABI; the per-field offset asserts above are the authoritative layout locks.)
 #endif

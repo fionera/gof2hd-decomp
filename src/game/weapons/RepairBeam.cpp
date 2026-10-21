@@ -1,4 +1,5 @@
 #include "game/weapons/RepairBeam.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/Globals.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/render/PaintCanvas.h"

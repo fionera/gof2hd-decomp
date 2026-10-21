@@ -76,7 +76,7 @@ namespace AbyssEngine {
     float timeBetweenFrames;
     unsigned char BiasErrorOutputFlag;
     unsigned char performanceTestEnded;
-    float orientationChangeTimer;
+    int orientationChangeTimer;
     long long performanceFrameCounter;
     long long performanceModulSwitches;
     long long performanceOverallModulSwitches;
@@ -200,7 +200,7 @@ namespace AbyssEngine {
     String operator+(const String &a, const String &b) {
         String result(a);
         result += b;
-        return result;
+        return String(result);
     }
 }
 
@@ -1154,10 +1154,8 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     String operator+(const String &a, const long long &b) {
         String result(a);
-        String num;
-        num.ctor_longlong(b);
-        result += num;
-        return result;
+        result += String(b);
+        return String(result);
     }
 }
 
@@ -1176,10 +1174,9 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     String operator+(const float &a, const String &b) {
-        String result;
-        result.ctor_float(a);
+        String result(a);
         result += b;
-        return result;
+        return String(result);
     }
 }
 
@@ -1562,10 +1559,8 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     String operator+(const String &a, const int &b) {
         String result(a);
-        String num;
-        num.Set((long long) (b));
-        result += num;
-        return result;
+        result += String(b);
+        return String(result);
     }
 }
 
@@ -1736,10 +1731,9 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     String operator+(const int &a, const String &b) {
-        String result;
-        result.Set((long long) (a));
+        String result(a);
         result += b;
-        return result;
+        return String(result);
     }
 }
 
@@ -2415,10 +2409,9 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     String operator+(const long long &a, const String &b) {
-        String result;
-        result.ctor_longlong(a);
+        String result(a);
         result += b;
-        return result;
+        return String(result);
     }
 }
 
@@ -2464,9 +2457,8 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     bool operator==(const String &a, const String &b) {
-        String tmp(a);
-        int cmp = tmp.Compare_str(const_cast<String *>(&b));
-        return cmp != 0;
+        String copy(a);
+        return copy.Compare(b) == 0;
     }
 }
 
@@ -2526,10 +2518,8 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     String operator+(const String &a, const float &b) {
         String result(a);
-        String num;
-        num.ctor_float(b);
-        result += num;
-        return result;
+        result += String(b);
+        return String(result);
     }
 }
 
@@ -2846,87 +2836,85 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    void computeFloatString(float value, int intValue, int *precision, int *exponentOut, int extra) {
-        unsigned short *buf = (unsigned short *) operator new[](0x42);
-
-        int prec = *precision & ~(*precision >> 31);
-        if (prec > 0x1d)
-            prec = 0x1e;
-
-        int sign = 0;
-        float v = (float) intValue;
-        if (v < 0.0f) {
-            v = -v;
-            intValue = (int) v;
-            sign = 1;
+    unsigned short *computeFloatString(float value, int precision, int *decimalPoint, int *negative, int fixed) {
+        unsigned short *buf = new unsigned short[33];
+        if (precision < 0)
+            precision = 0;
+        if (precision >= 30)
+            precision = 30;
+        *negative = 0;
+        if (value < 0.0f) {
+            *negative = 1;
+            value = -value;
         }
+        float integral;
+        int exponent = 0;
+        unsigned short *out;
 
-        (void) sign;
-
-        float ip = (float) (int) v;
-        float frac = (float) intValue - ip;
-
-        int digitCount = 0;
-        unsigned short *w = buf;
-        if ((int) v != 0) {
-            unsigned short tmp[40];
-            int n = 0;
-            float cur = ip;
-            while (cur != 0.0f) {
-                float q = cur / 10.0f;
-                float qi = (float) (int) q;
-                int digit = (int) (((double) (q - qi)) * 10.0 + 0.5);
-                tmp[n++] = (unsigned short) (0x30 + digit);
-                cur = qi;
-                ++digitCount;
+        float fraction = MODF(value, &integral);
+        if (integral != 0.0f) {
+            unsigned short *end = buf + 32;
+            unsigned short *p = buf + 31;
+            while (integral != 0.0f) {
+                float digit = MODF(integral / 10.0f, &integral);
+                exponent++;
+                *p-- = (unsigned short) ((int) ((digit + 0.03) * 10.0) + '0');
             }
-            for (int i = n - 1; i >= 0; --i)
-                *w++ = tmp[i];
+            unsigned short *src = p + 1;
+            out = buf;
+            while (src < end)
+                *out++ = *src++;
         } else {
-            digitCount = 0;
-            if (frac != 0.0f) {
-                float f = frac;
-                while (f * 10.0f < 1.0f) {
-                    --digitCount;
-                    f = f * 10.0f;
+            if (fraction > 0.0f) {
+                while (fraction * 10.0f < 1.0f) {
+                    exponent--;
+                    fraction *= 10.0f;
                 }
             }
+            out = buf;
+        }
+        *decimalPoint = exponent;
+
+        unsigned short *limit = buf + precision;
+        if (fixed == 0)
+            limit += exponent;
+        if (limit < buf) {
+            *buf = 0;
+            return buf;
+        }
+        while (out <= limit && out < buf + 32) {
+            float digit;
+            fraction = MODF(fraction * 10.0f, &digit);
+            *out++ = (unsigned short) ((int) digit + '0');
+        }
+        if (limit >= buf + 32) {
+            buf[31] = 0;
+            return buf;
         }
 
-        *exponentOut = digitCount;
-
-        int limit = (extra == 0) ? (prec + (digitCount > 0 ? digitCount : 0)) : prec;
-        float f = frac;
-        int produced = 0;
-        while (produced < limit && (w - buf) < 0x20) {
-            float scaled = f * 10.0f;
-            float di = (float) (int) scaled;
-            f = scaled - di;
-            *w++ = (unsigned short) (0x30 + (int) di);
-            ++produced;
-        }
-
-        if (w > buf) {
-            unsigned short *p = w - 1;
-            unsigned short d = (unsigned short) (*p + 5);
-            *p = d;
-            while (d > 0x39) {
-                *p = 0x30;
-                if (p > buf) {
-                    --p;
-                    d = (unsigned short) (*p + 1);
-                    *p = d;
-                } else {
-                    *p = 0x31;
-                    ++digitCount;
-                    *exponentOut = digitCount;
-                    d = 0x31;
-                    break;
+        unsigned short *p = limit;
+        unsigned short v = (unsigned short) (*limit + 5);
+        *limit = v;
+        while (v > '9') {
+            *p = '0';
+            if (p > buf) {
+                p--;
+                v = (unsigned short) (*p + 1);
+                *p = v;
+            } else {
+                *p = '1';
+                exponent++;
+                *decimalPoint = exponent;
+                if (fixed == 0) {
+                    if (limit > buf)
+                        *limit = '0';
+                    limit++;
                 }
+                v = *p;
             }
         }
-
-        *w = 0;
+        *limit = 0;
+        return buf;
     }
 }
 
@@ -2952,7 +2940,7 @@ namespace AbyssEngine {
 
 int GetStringLength(AbyssEngine::String str) {
     const unsigned short *p = str.GetAEWChar();
-    while (*p)
-        ++p;
-    return static_cast<int>(p - str.GetAEWChar());
+    while (*p++) {
+    }
+    return static_cast<int>(p - str.GetAEWChar()) - 1;
 }

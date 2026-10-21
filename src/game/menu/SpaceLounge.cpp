@@ -252,43 +252,41 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
 
     if (this->listVisible != 0) {
         this->listWindow->OnTouchBegin(x, y);
-        (*SpaceLounge_layout_begin)->OnTouchBegin(x, y);
+        Globals::layout->OnTouchBegin(x, y);
         this->scrollWindow->OnTouchBegin(x, y);
         return 0;
     }
 
-    int mode = this->mode;
-    if (mode == 0) {
-        if (this->introDone == 0) {
-            return 0;
-        }
-        Array<Agent *> *agents = this->agents;
-        if (agents != 0) {
-            Array<Vector *> *rects = this->agentRects;
-            float fy = (float) y;
-            float fx = (float) x;
-            int count = (int) agents->size();
-            for (int i = 0; count != i; ++i) {
-                float *a = (float *) (*rects)[i * 2];
-                if (a[0] < fx) {
-                    float *b = (float *) (*rects)[i * 2 + 1];
-                    if (fx < b[0] && fy < a[1] && b[1] < fy) {
-                        this->hoverAgent = i;
+    switch (this->mode) {
+        case 0:
+            if (this->introDone == 0) {
+                return 0;
+            }
+            if (this->agents != 0) {
+                float fx = (float) x;
+                float fy = (float) y;
+                for (int i = 0; i != (int) this->agents->size(); ++i) {
+                    float *a = (float *) (*this->agentRects)[i * 2];
+                    if (a[0] < fx) {
+                        float *b = (float *) (*this->agentRects)[i * 2 + 1];
+                        if (fx < b[0] && fy < a[1] && b[1] < fy) {
+                            this->hoverAgent = i;
+                        }
                     }
                 }
             }
-        }
-    } else if (mode == 3) {
-        Array<TouchButton *> *buttons = this->buttons;
-        (*buttons)[0]->OnTouchBegin(x, y);
-    } else if (mode == 2) {
-        Array<TouchButton *> *buttons = this->buttons;
-        for (unsigned i = 0; i < buttons->size(); ++i) {
-            (*buttons)[i]->OnTouchBegin(x, y);
-        }
+            break;
+        case 3:
+            (*this->buttons)[0]->OnTouchBegin(x, y);
+            break;
+        case 2:
+            for (unsigned i = 0; i < this->buttons->size(); ++i) {
+                (*this->buttons)[i]->OnTouchBegin(x, y);
+            }
+            break;
     }
 
-    (*SpaceLounge_layout_begin)->OnTouchBegin(x, y);
+    Globals::layout->OnTouchBegin(x, y);
     this->scrollWindow->OnTouchBegin(x, y);
     return 0;
 }
@@ -562,13 +560,13 @@ int SpaceLounge::getSoundId(Agent *agent) {
     if (checkSpecialText) {
         GameText **texts = SpaceLounge_getSoundId_specialText;
         String *text = (*texts)->getText(0x334);
-        if (missionText.Compare_str(text) != 0) {
+        if (missionText.Compare(*text) != 0) {
             text = (*texts)->getText(0x338);
-            if (missionText.Compare_str(text) != 0) {
+            if (missionText.Compare(*text) != 0) {
                 text = (*texts)->getText(0x33b);
-                if (missionText.Compare_str(text) != 0) {
+                if (missionText.Compare(*text) != 0) {
                     text = (*texts)->getText(0x341);
-                    dummy = missionText.Compare_str(text);
+                    dummy = missionText.Compare(*text);
                     if (dummy != 0) {
                         goto special_done;
                     }
