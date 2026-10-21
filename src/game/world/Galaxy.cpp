@@ -7,8 +7,6 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 
-static float g_galaxyDistanceScale = 0.0f;
-
 static const int kStationCount = 0x87;
 
 Galaxy::Galaxy() {
@@ -16,8 +14,9 @@ Galaxy::Galaxy() {
     for (int i = 0; i < kStationCount; ++i)
         this->visited[i] = 0;
 
-    FileRead loader;
-    this->systems = loader.loadSystemsBinary();
+    FileRead *loader = new FileRead();
+    this->systems = loader->loadSystemsBinary();
+    delete loader;
 }
 
 Galaxy::~Galaxy() {
@@ -46,11 +45,13 @@ int Galaxy::getSystem(int index) {
 }
 
 int Galaxy::getStation(int index) {
-    if (index < 0)
-        return (int) (intptr_t) Globals::status->playerStation;
-
-    FileRead loader;
-    return (int) (intptr_t) loader.loadStation(index);
+    if (index >= 0) {
+        FileRead *loader = new FileRead();
+        Station *station = loader->loadStation(index);
+        delete loader;
+        return (int) (intptr_t) station;
+    }
+    return (int) (intptr_t) Globals::status->playerStation;
 }
 
 void Galaxy::setVisited(bool *src, int count) {
@@ -83,18 +84,19 @@ float Galaxy::distance(SolarSystem *a, SolarSystem *b) {
     if (a->getIndex() == b->getIndex())
         return 0.0f;
 
-    Vector pa;
-    Vector pb;
-    pa.x = (float) a->getX();
-    pa.y = (float) a->getY();
-    pa.z = (float) (a->getZ() / 10);
-    pb.x = (float) b->getX();
-    pb.y = (float) b->getY();
-    pb.z = (float) (b->getZ() / 10);
+    // The galaxy map is flattened: z is scaled down by 10.
+    int ax = a->getX();
+    int ay = a->getY();
+    int az = a->getZ() / 10;
+    Vector pa = {(float) ax, (float) ay, (float) az};
+    int bx = b->getX();
+    int by = b->getY();
+    int bz = b->getZ() / 10;
+    Vector pb = {(float) bx, (float) by, (float) bz};
 
     pa -= pb;
     float sq = pa.x * pa.x + pa.y * pa.y + pa.z * pa.z;
-    return Globals::globals->sqrt(sq) * g_galaxyDistanceScale;
+    return Globals::globals->sqrt(sq) * 18.85f;
 }
 
 int *Galaxy::getAsteroidProbabilities(Station *station) {
