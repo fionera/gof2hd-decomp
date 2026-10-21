@@ -3015,9 +3015,8 @@ void MenuTouchWindow::startSupernova() {
     Globals::recordHandler->saveOptions();
     Globals::sound->stop(Globals::sound->currentMusicEvent);
 
-    ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) Globals::appManager;
     ((OptionsRecord *) Globals::options)->fadeValue = this->fadeValue;
-    thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
+    Globals::appManager->SetCurrentApplicationModule(5);
 }
 
 void MenuTouchWindow::startGOF2() {
