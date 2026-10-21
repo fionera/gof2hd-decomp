@@ -77,9 +77,11 @@ public:
 
 template<class T>
 Array<T>::Array() {
-    T *p = static_cast<T *>(::operator new[](sizeof(T)));
+    // The original allocates one (default-constructed) element and then zero-fills it -- even
+    // for class types such as AEMath::Matrix (ctor call + 60-byte clear in Array<Matrix>()).
+    T *p = new T[1];
     capacity_ = 1;
-    *p = T();
+    memset(p, 0, sizeof(T));
     count = 0;
     data_ = p;
 }
