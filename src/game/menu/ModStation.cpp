@@ -2832,8 +2832,8 @@ void ModStation::checkHints() {
                                 *Globals::gameText->getText(126), *Globals::gameText->getText(127),
                                 *Globals::gameText->getText(524), -1, -1);
         Globals::options[52] = 1;
-        this->flag_0x63 = 1;
         this->flag_0xdc = 1;
+        this->flag_0x63 = 1;
     }
 
     // Bounty hunter hints: one per terminated wanted pilot (4 targets).
