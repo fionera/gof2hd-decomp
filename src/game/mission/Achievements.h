@@ -49,7 +49,7 @@ public:
 
     int *getNewMedals();
 
-    uint8_t hasMedal(int index, int value);
+    bool hasMedal(int index, int value);
 
     void incCatches();
 
