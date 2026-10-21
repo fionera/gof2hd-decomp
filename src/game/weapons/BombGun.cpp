@@ -185,6 +185,3 @@ void BombGun::render() {
         this->explosion->render();
 }
 
-int BombGun::isBombGun() {
-    return 1;
-}

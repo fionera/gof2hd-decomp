@@ -145,8 +145,3 @@ void BeamGun::setEnemy(Player *enemy) {
     this->gun->setEnemy(enemy);
 }
 
-void BeamGun::translate(const Vector & /*v*/) {
-}
-
-void BeamGun::replaceGun(unsigned int /*mesh*/, int /*unused*/) {
-}
