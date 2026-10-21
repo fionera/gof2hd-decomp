@@ -18,17 +18,10 @@ static AbyssEngine::AERandom *g_cameraRng = nullptr;
 
 int AERandom(void *rng, int bound); // lint: void_ptr (free fn signature baked into imported mangled name)
 
-static const double g_TFC_seedHandlingA = 0.005;
-static const double g_TFC_seedHandlingB = 0.006;
 static const float g_TFC_shakeMax = 0.0f;
 static const float g_TFC_rumbleScale = 1.0f;
 static const float g_TFC_shakeScale = 1.0f;
 
-static const double g_TFC_dampA[9] = {0};
-static const double g_TFC_dampB[9] = {0};
-static const double g_TFC_dampC[9] = {0};
-static const double g_TFC_dampD[9] = {0};
-static const double g_TFC_dampE[9] = {0};
 
 static inline float bitsToFloat(uint32_t u) {
     float f;
@@ -38,28 +31,23 @@ static inline float bitsToFloat(uint32_t u) {
 
 TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
                                        Vector camOffset, Vector targetOffset) {
+    // The position/offset vectors and both matrices are value-initialised members.
     this->id = id;
     this->target = target;
-
-    this->firstPersonMatrix = AbyssEngine::AEMath::Matrix();
-    this->fpOffsetX = this->fpOffsetY = this->fpOffsetZ = 0;
-    this->localMatrix = AbyssEngine::AEMath::Matrix();
-
-    *getTargetOffset() = camOffset;
-    *getCamOffset() = targetOffset;
-
-    Vector zero = {0.0f, 0.0f, 0.0f};
-    *getPosition() = zero;
-    *getTargetPos() = zero;
+    *reinterpret_cast<Vector *>(&this->targetOffsetX) = camOffset;
+    *reinterpret_cast<Vector *>(&this->camOffsetX) = targetOffset;
+    *reinterpret_cast<Vector *>(&this->posX) = Vector{0.0f, 0.0f, 0.0f};
+    *getTargetPos() = Vector{0.0f, 0.0f, 0.0f};
 
     Matrix m = target->getMatrix();
-    *getTargetPos() = MatrixGetPosition(m);
-    *getPosition() = MatrixGetPosition(m);
-
-    Vector up = {0.0f, 1.0f, 0.0f};
-    *getUp() = up;
+    *getTargetPos() = MatrixTransformVector(m, camOffset);
+    *reinterpret_cast<Vector *>(&this->posX) = MatrixTransformVector(m, targetOffset);
+    *getUp() = Vector{0.0f, 1.0f, 0.0f};
 
     this->locked = 0;
+    this->lookAtCam = false;
+    this->active = 1;
+    this->rumbleActive = 0;
     this->rumbleTimer = 0;
     this->rotateAroundTargetEnabled = 0;
     this->firstPerson = 0;
@@ -67,19 +55,17 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
     this->useTargetsUpVec = 1;
     this->shakeAmount = 0.0f;
     this->shakeFrequency = 5;
-
-    float zoom = VectorLength(targetOffset);
-
-    this->handlingDampingA = (float) g_TFC_seedHandlingA;
-    this->handlingDampingB = (float) g_TFC_seedHandlingB;
-    this->zoom = zoom;
+    this->zoom = VectorLength(targetOffset);
+    this->handlingDampingA = 0.005f;
+    this->handlingDampingB = 0.006f;
+    this->rollAngle = 0.0f;
+    this->shipHandling = 100.0f;
     this->fixed = 0;
 
     aproximateCooefficientsForAproximationOfDampingFunktion(
-        zoom, dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
+        this->handlingDampingA, dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
     aproximateCooefficientsForAproximationOfDampingFunktion(
-        this->handlingDampingB,
-        dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
+        this->handlingDampingB, dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
 }
 
 AEGeometry *TargetFollowCamera::getTarget() { return this->target; }
@@ -119,9 +105,12 @@ void TargetFollowCamera::setTargetOffset(const Vector &offset) {
 }
 
 void TargetFollowCamera::setPosition(const Vector &position) {
-    this->posX = position.x;
-    this->posY = position.y;
-    this->posZ = position.z;
+    float x = position.x;
+    float y = position.y;
+    float z = position.z;
+    this->posX = x;
+    this->posY = y;
+    this->posZ = z;
 }
 
 void TargetFollowCamera::setPosition(float x, float y, float z) {
@@ -165,8 +154,8 @@ void TargetFollowCamera::hit() {
 
 void TargetFollowCamera::hitSmall() {
     if (this->rumbleActive != 0) return;
-    this->rumbleTimer = 50;
     this->rumbleActive = 1;
+    this->rumbleTimer = 50;
     this->rumbleStrength = 2;
     this->smallRumble = 1;
 }
@@ -190,7 +179,12 @@ void TargetFollowCamera::translateNoUpdate(float dx, float dy, float dz) {
 }
 
 void TargetFollowCamera::translate(float dx, float dy, float dz) {
-    translateNoUpdate(dx, dy, dz);
+    this->posX += dx;
+    this->posY += dy;
+    this->posZ += dz;
+    this->targetX += dx;
+    this->targetY += dy;
+    this->targetZ += dz;
     update(1000);
 }
 
@@ -219,38 +213,46 @@ void TargetFollowCamera::calculateCoefficents(float t) {
 }
 
 void TargetFollowCamera::setFastForwardMode(bool enabled) {
-    if (enabled == (this->fastForward != 0)) return;
-    {
-        float s = this->shipHandling * 0.01f;
-        this->handlingDampingA = 0.003f + (1.0f - s) * 0.015f;
-        this->handlingDampingB = 0.001f + s * 0.010986f;
+    if ((enabled && !this->fastForward) || (!enabled && this->fastForward)) {
+        setShipHandling(this->shipHandling);
+        aproximateCooefficientsForAproximationOfDampingFunktion(
+            this->handlingDampingA,
+            dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
+        aproximateCooefficientsForAproximationOfDampingFunktion(
+            this->handlingDampingB,
+            dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
+        this->fastForward = enabled;
     }
-    aproximateCooefficientsForAproximationOfDampingFunktion(
-        this->handlingDampingA,
-        dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
-    aproximateCooefficientsForAproximationOfDampingFunktion(
-        this->handlingDampingB,
-        dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
-    this->fastForward = enabled;
 }
 
 void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion(
     float t, double &outB, double &outA, double &outC, double &outD, double &outE) {
-    double x = static_cast<double>(t);
-    double x2 = x * x, x3 = x2 * x, x4 = x3 * x, x5 = x4 * x;
-    double x6 = x5 * x, x7 = x6 * x, x8 = x7 * x;
+    // Degree-8 polynomial fits of the damping-function coefficients over the damping value
+    // (constants from the original's literal pool).
+    double x = t;
+    double x2 = x * x;
+    double x3 = x2 * x;
+    double x4 = x3 * x;
+    double x5 = x4 * x;
+    double x6 = x5 * x;
+    double x7 = x6 * x;
+    double x8 = x7 * x;
 
-#define GOF2_TFC_POLY8(c) \
-        (x8 * (c)[0] + x7 * (c)[1] + x6 * (c)[2] + x5 * (c)[3] + x4 * (c)[4] + \
-         x3 * (c)[5] + x2 * (c)[6] + x  * (c)[7] +      (c)[8])
-
-    outB = GOF2_TFC_POLY8(g_TFC_dampE);
-    outA = -GOF2_TFC_POLY8(g_TFC_dampA);
-    outC = GOF2_TFC_POLY8(g_TFC_dampC);
-    outD = GOF2_TFC_POLY8(g_TFC_dampD);
-    outE = -GOF2_TFC_POLY8(g_TFC_dampB);
-
-#undef GOF2_TFC_POLY8
+    outB = x8 * -103298.31437796567 + x7 * 15119.074437016332 + x6 * -969.134661736397 +
+           x5 * 43.75888381977114 + x4 * -1.7133856245383816 + x3 * 0.0422027858310806 +
+           x2 * -1.233489837107569e-06 + x * 1.2102111341477596e-09;
+    outA = -(x8 * -12480406.26454869 + x7 * 1803725.9838256645 + x6 * -111015.302667393 +
+             x5 * 4448.097529049415 + x4 * -128.52917290808267 + x3 * 0.1488423578964816 +
+             x2 * 0.16651597434517493 + x * 1.4781876353802752e-07 + -4.5716904903627806e-11);
+    outC = x8 * -149924392.42871693 + x7 * 26011080.905412003 + x6 * -2122499.1658084425 +
+           x5 * 112294.22315362946 + x4 * -3466.199114885294 + x3 * 0.3778121387254571 +
+           x2 * -0.0009647307184731492 + x * 0.5000009352113304 + -2.8527534035103244e-10;
+    outD = x7 * -448847784.8572755 + x8 * 2837989977.8564253 + x6 * 31896097.579336446 +
+           x5 * -1451302.48192741 + x4 * 39522.4565731161 + x3 * -11.25222010529228 +
+           x2 * 0.19280203402657284 + x * 0.4999743866523157 + 7.913368945635026e-09;
+    outE = -(x7 * -609933689.8511872 + x8 * 3091464099.7803183 + x6 * 56126838.41706436 +
+             x5 * -3103835.9217881793 + x4 * 89689.50184512888 + x3 * -1.6589554694294697 +
+             x2 * 0.00422802001700341 + x * -4.3754915810647766e-06 + 1.4969893482859894e-09);
 }
 
 void TargetFollowCamera::update(int dt) {

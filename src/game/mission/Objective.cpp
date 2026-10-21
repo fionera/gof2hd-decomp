@@ -173,7 +173,7 @@ unsigned int Objective::achieved(int value) {
             result = (uint8_t)(*this->level->getEnemies())[this->value]->field_0x24 != 0;
             break;
         case 25:
-            result = *(float *) &(*this->level->getEnemies())[this->value]->field_0x64 == 0.0f;
+            result = (*this->level->getEnemies())[this->value]->speed == 0.0f;
             break;
         case 26: {
             for (int i = this->value; i < this->calcValue; i++) {

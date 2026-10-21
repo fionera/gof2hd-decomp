@@ -13,7 +13,7 @@ public:
     // Ghidra ground truth: a 4-byte field precedes center@0x128; our decomp lacked it, shifting
     // center/modelGeometry/sparkGeometries.. 4 bytes low.
     int field_0x124;
-    Vector center;
+    Vector center = {0.0f, 0.0f, 0.0f};
     AEGeometry *modelGeometry;
     Array<AEGeometry *> *sparkGeometries;
     Array<Vector *> *sparkVelocities;
@@ -26,7 +26,7 @@ public:
     int elapsedSinceExplosion;
     uint8_t settled;
     int itemId;
-    uint16_t sparkMeshId;
+    int sparkMeshId;
     int cloudMeshId;
 
     PlayerGasCloud(int itemId, ParticleSystemManager *particles, AEGeometry *geometry,

@@ -32,11 +32,8 @@ void ChoiceWindow::setWidth(int width) {
 
 
 void ChoiceWindow::set(String const &a, String const &b) {
-    GameText *gameText = Globals::gameText;
-    String *title = gameText->getText(0x186);
-    String *left = gameText->getText(0x86);
-    String *center = gameText->getText(0x87);
-    set(*title, a, false, *left, *center, b, -1, -1);
+    set(*Globals::gameText->getText(390), a, false, *Globals::gameText->getText(134),
+        *Globals::gameText->getText(135), b, -1, -1);
 }
 
 
@@ -47,11 +44,8 @@ void ChoiceWindow::set(String const &text, bool flag) {
 
 
 void ChoiceWindow::set(String const &title, String const &message, bool flag) {
-    GameText *gameText = Globals::gameText;
-    String *left = gameText->getText(0x86);
-    String *center = gameText->getText(0x87);
-    String *right = gameText->getText(0x20c);
-    set(title, message, flag, *left, *center, *right, -1, -1);
+    set(title, message, flag, *Globals::gameText->getText(134), *Globals::gameText->getText(135),
+        *Globals::gameText->getText(524), -1, -1);
 }
 
 int ChoiceWindow::OnTouchEnd(int x, int y) {
@@ -134,60 +128,32 @@ void ChoiceWindow::setHeight(int height) {
                         this->y + this->height - this->padding, 0x21);
 }
 
-static uint32_t g_ChoiceWindow_medalImagesLow_146e8c[64];
-static uint32_t g_ChoiceWindow_medalImagesHigh_146e8c[64];
-static uint32_t g_ChoiceWindow_medalImages_146e8c[64];
+
+// Medal artwork (original .rodata @ 0x1fb888 and 0x202784).
+static const int MEDAL_TIER_IMAGES_DLC[4] = {8045, 8035, 2415, 2413};
+static const int MEDAL_TIER_IMAGES[4] = {2416, 2414, 2415, 2413};
+static const int MEDAL_IMAGES[45] = {
+    2376, 2377, 2378, 2379, 2380, 2381, 2382, 2383, 2384, 2385, 2386, 2387, 2388, 2389, 2390,
+    2391, 2392, 2393, 2394, 2395, 2396, 2397, 2398, 2399, 2400, 2401, 2402, 2403, 2404, 2405,
+    2406, 2407, 2408, 2409, 2410, 2411, 8036, 8037, 8038, 8039, 8040, 8041, 8042, 8043, 8044,
+};
 
 void ChoiceWindow::setMedal(int medal, int count) {
-    GameText *gameText = Globals::gameText;
-    this->medalText = *gameText->getText(medal + 0x5e3);
-
-    String pattern = *gameText->getText(medal + 0x610);
-    int value = Globals::achievements->getValue(medal, count);
-    String number;
-    {
-        int v = value;
-        char buf[16];
-        int n = 0;
-        bool neg = v < 0;
-        unsigned uv = neg ? (unsigned) (-v) : (unsigned) v;
-        do {
-            buf[n++] = char('0' + uv % 10);
-            uv /= 10;
-        } while (uv);
-        if (neg) buf[n++] = '-';
-        while (n--) {
-            int _nl = number.length + 1;
-            unsigned short *_nd = new unsigned short[_nl + 1];
-            for (int _i = 0; _i < number.length; _i++) _nd[_i] = number.data[_i];
-            _nd[number.length] = (unsigned short) ((char16_t) (unsigned char) buf[n]);
-            _nd[_nl] = 0;
-            if (number.data) delete[] number.data;
-            number.data = _nd;
-            number.length = _nl;
-        }
-    }
-
-    String finalText = Globals::status->replaceHash(pattern, number);
-
-    set(*gameText->getText(0x161), finalText, false);
+    this->medalText = *Globals::gameText->getText(medal + 1507);
+    String text = String("\n\n\n\n\n\n") +
+                  Globals::status->replaceHash(*Globals::gameText->getText(medal + 1552),
+                                               String(String(Globals::achievements->getValue(medal, count)), false)) +
+                  String("\n\n");
+    set(*Globals::gameText->getText(353), text, false);
     this->scrollWindow->setTextCentered(true);
 
-    PaintCanvas *canvas = Globals::Canvas;
-    unsigned int medalImageHandle;
-    if (count < 0x24) {
-        canvas->Image2DCreate((unsigned short) g_ChoiceWindow_medalImagesLow_146e8c[count],
-                              medalImageHandle);
-    } else {
-        canvas->Image2DCreate((unsigned short) g_ChoiceWindow_medalImagesHigh_146e8c[count],
-                              medalImageHandle);
-    }
-    this->medalImage = medalImageHandle;
-    unsigned int medalBgImageHandle;
-    canvas->Image2DCreate((unsigned short) g_ChoiceWindow_medalImages_146e8c[medal],
-                          medalBgImageHandle);
-    this->medalBgImage = medalBgImageHandle;
-
+    // NOTE: the original tests the tier (not the medal index) against the first DLC medal
+    // here, unlike draw(); the tier is always < 36 in practice.
+    if (count >= 36)
+        Globals::Canvas->Image2DCreate((unsigned short) MEDAL_TIER_IMAGES_DLC[count], this->medalImage);
+    else
+        Globals::Canvas->Image2DCreate((unsigned short) MEDAL_TIER_IMAGES[count], this->medalImage);
+    Globals::Canvas->Image2DCreate((unsigned short) MEDAL_IMAGES[medal], this->medalBgImage);
     this->count = count;
     this->medal = medal;
     this->buttonsVisible = 1;
@@ -219,202 +185,144 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
                        String const &left, String const &right, String const &single,
                        int y, int width) {
     this->hasButtons = hasButtons;
-
-    GameText *gameText = Globals::gameText;
-    bool defaultButtons = false;
-    if (gameText->getText(0x86)->Compare(left) == 0)
-        defaultButtons = gameText->getText(0x87)->Compare(right) == 0;
-
+    // The standard yes/no pair keeps the default width; custom buttons get a wider window.
+    bool defaultButtons = Globals::gameText->getText(134)->Compare(left) == 0 &&
+                          Globals::gameText->getText(135)->Compare(right) == 0;
     if (width == -1)
-        width = (Globals::layout)->field_0x264;
+        width = Globals::layout->field_0x264;
     if (!defaultButtons)
-        width = (int) ((float) width * 0.85f);
-
+        width = (int) ((float) width * 1.2f);
     this->width = width;
     this->x = Globals::w / 2 - width / 2;
-    (Globals::sound)->play(0x7e, nullptr, nullptr, 0.0f);
+    Globals::sound->play(126, nullptr, nullptr, 0.0f);
     this->title = title;
 
     delete this->scrollWindow;
     this->scrollWindow = nullptr;
-
     Array<String *> *lines = new Array<String *>();
-
-    Layout *layout = Globals::layout;
-    Globals::globals->getLineArray(
-        (unsigned int) (uintptr_t) Globals::font,
-        message,
-        (this->width - layout->field_0x4c * 2) - layout->field_0x48,
-        lines);
-
-    int contentHeight = layout->field_0x4 * (int) lines->size() + layout->windowTopInset +
-                        layout->field_0x4c * 2 + this->padding * 2 +
-                        layout->field_0x30_rowHeight;
-    int maxHeight = layout->field_0x278;
-    if ((unsigned) contentHeight < (unsigned) maxHeight)
-        maxHeight = contentHeight;
-    this->height = maxHeight;
-
+    Globals::globals->getLineArray((unsigned int) (uintptr_t) Globals::font, message,
+                                   this->width - Globals::layout->field_0x4c * 2 - Globals::layout->field_0x48,
+                                   lines);
+    int contentHeight = lines->size() * Globals::layout->field_0x4 + Globals::layout->windowTopInset +
+                        Globals::layout->field_0x4c * 2 + this->padding * 2 +
+                        Globals::layout->field_0x30_rowHeight;
+    unsigned int height = Globals::layout->field_0x278;
+    if (height > (unsigned int) contentHeight)
+        height = contentHeight;
+    this->height = height;
     if (y == -1)
-        y = Globals::h / 2 - maxHeight / 2;
+        y = Globals::h / 2 - this->height / 2;
     this->y = y;
 
-    this->scrollWindow = new ScrollTouchWindow(
-        this->x, layout->windowTopInset + y, this->width,
-        (((maxHeight - this->padding * 2) - layout->windowTopInset) - layout->field_0x30_rowHeight) +
-        layout->field_0x2bc,
-        false);
-
+    this->scrollWindow = new ScrollTouchWindow(this->x, Globals::layout->windowTopInset + y, this->width,
+                                               this->height - this->padding * 2 - Globals::layout->windowTopInset -
+                                               Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x2bc,
+                                               false);
     this->scrollWindow->setText(title, message);
-
     ArrayReleaseClasses(*lines);
     delete lines;
 
     delete this->leftButton;
     this->leftButton = nullptr;
-
     delete this->rightButton;
     this->rightButton = nullptr;
-
     if (hasButtons) {
-        int baseWidth = layout->field_0x40;
-        float scaled = (float) baseWidth * 1.5f;
-        if (defaultButtons) scaled = (float) baseWidth;
-        int buttonWidth = (int) scaled;
-
-        this->leftButton = new TouchButton(left, 0,
-                                           this->x + this->width / 2 - layout->field_0x4c / 2,
-                                           this->y + this->height - this->padding,
-                                           buttonWidth, 0x22, 4);
-
-        this->rightButton = new TouchButton(right, 0,
-                                            this->x + this->width / 2 + layout->field_0x4c / 2,
-                                            this->y + this->height - this->padding,
-                                            buttonWidth, 0x21, 4);
+        float buttonWidth = (float) Globals::layout->field_0x40 * 1.5f;
+        if (defaultButtons)
+            buttonWidth = (float) Globals::layout->field_0x40;
+        this->leftButton = new TouchButton(left, 0, this->x + this->width / 2 - Globals::layout->field_0x4c / 2,
+                                           this->y + this->height - this->padding, (int) buttonWidth, 34, 4);
+        this->rightButton = new TouchButton(right, 0, this->x + this->width / 2 + Globals::layout->field_0x4c / 2,
+                                            this->y + this->height - this->padding, (int) buttonWidth, 33, 4);
     } else {
-        this->rightButton = new TouchButton(single, 0,
-                                            this->x + this->width / 2,
-                                            this->y + this->height - this->padding,
-                                            layout->field_0x40, 0x24, 4);
+        this->leftButton = new TouchButton(single, 0, this->x + this->width / 2,
+                                           this->y + this->height - this->padding, Globals::layout->field_0x40,
+                                           36, 4);
     }
-
     this->buttonsVisible = 1;
 }
 
 
 void ChoiceWindow::setMiscButton(String const &text) {
-    Layout *layout;
-    int padding = this->padding;
     int buttonWidth;
+    if (this->leftButton != nullptr && this->rightButton != nullptr)
+        buttonWidth = this->leftButton->getWidth() + this->rightButton->getWidth() + this->padding;
+    else
+        buttonWidth = this->padding + Globals::layout->field_0x40 * 2;
 
-    if (this->leftButton == nullptr || this->rightButton == nullptr) {
-        layout = Globals::layout;
-        buttonWidth = padding + layout->field_0x40 * 2;
-    } else {
-        int leftWidth = this->leftButton->getWidth();
-        int rightWidth = this->rightButton->getWidth();
-        layout = Globals::layout;
-        buttonWidth = leftWidth + rightWidth + padding;
-    }
-
-    this->miscButton = new TouchButton(text, 0,
-                                       this->x + this->width / 2 - layout->field_0x4c / 2,
-                                       this->y + this->height - padding, buttonWidth, 0x22, 4);
-
-    layout = Globals::layout;
-    setHeight((this->height - layout->windowTopInset) + this->padding * 2 + layout->field_0x30_rowHeight);
-
-    this->miscButton->setPosition(this->x + this->width / 2,
-                                  this->y + this->height - this->padding, 0x24);
-
-    layout = Globals::layout;
-    int delta = -(layout->field_0x30_rowHeight + this->padding);
-    if (this->leftButton != nullptr) this->leftButton->translate(0, delta);
-    if (this->rightButton != nullptr) this->rightButton->translate(0, delta);
-
-    this->scrollWindow->setYPosition(
-        Globals::h / 2 - this->height / 2 + layout->windowTopInset);
+    this->miscButton = new TouchButton(text, 0, this->x + this->width / 2 - Globals::layout->field_0x4c / 2,
+                                       this->y + this->height - this->padding, buttonWidth, 34, 4);
+    setHeight(this->height - Globals::layout->windowTopInset + this->padding * 2 +
+              Globals::layout->field_0x30_rowHeight);
+    this->miscButton->setPosition(this->x + this->width / 2, this->y + this->height - this->padding, 36);
+    if (this->leftButton != nullptr)
+        this->leftButton->translate(0, -(Globals::layout->field_0x30_rowHeight + this->padding));
+    if (this->rightButton != nullptr)
+        this->rightButton->translate(0, -(Globals::layout->field_0x30_rowHeight + this->padding));
+    this->scrollWindow->setYPosition(Globals::h / 2 - this->height / 2 + Globals::layout->windowTopInset);
 }
 
-static int g_ChoiceWindow_medalColorsLow_1471bc[64];
-static int g_ChoiceWindow_medalColorsHigh_1471bc[64];
-static int g_ChoiceWindow_creditValues_1471bc[64];
+
+// Medal tier colours and credit rewards (original .rodata @ 0x1fb8a8, 0x1fb8b8, 0x1fb848).
+static const unsigned int MEDAL_TIER_COLORS_DLC[4] = {0xfa792160, 0xfa7921ff, 0xffffffff, 0xce8258ff};
+static const unsigned int MEDAL_TIER_COLORS[4] = {0x2198ff2f, 0xfad10eff, 0xffffffff, 0xce8258ff};
+static const int MEDAL_TIER_CREDITS[4] = {0, 5000, 2500, 1000};
 
 void ChoiceWindow::draw() {
-    Vector pos;
+    Globals::layout->drawMask();
+    Globals::layout->drawBox(7, this->x, this->y, this->width, this->height, String(this->title, false));
+    Globals::Canvas->SetColor(0xffffffff);
 
-    Layout *layout = Globals::layout;
-    layout->drawMask();
-
-    layout->drawBox(7, this->x, this->y, this->width, this->height, this->title, 1u);
-
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->SetColor(0xffffffff);
-
-    if (this->medalImage != -1) {
-        canvas->DrawImage2D(this->medalImage,
-                            this->x + (this->width >> 1),
-                            this->y + this->padding2 + 1, (unsigned char) 0x11);
-        int color;
-        if (this->count < 0x24)
-            color = g_ChoiceWindow_medalColorsLow_1471bc[this->count];
+    if (this->medalImage != (unsigned int) -1) {
+        Globals::Canvas->DrawImage2D(this->medalImage, this->x + (this->width >> 1), this->y + this->padding2 + 1,
+                                     17, 68);
+        if (this->medal >= 36)
+            Globals::Canvas->SetColor(MEDAL_TIER_COLORS_DLC[this->count]);
         else
-            color = g_ChoiceWindow_medalColorsHigh_1471bc[this->count];
-        canvas->SetColor(color);
-        canvas->DrawImage2D(this->medalBgImage,
-                            this->x + (this->width >> 1),
-                            this->y + this->padding2, (unsigned char) 0x11);
+            Globals::Canvas->SetColor(MEDAL_TIER_COLORS[this->count]);
+        Globals::Canvas->DrawImage2D(this->medalBgImage, this->x + (this->width >> 1), this->y + this->padding2,
+                                     17, 68);
 
-        if (Globals::status->hardCoreMode() == 0 &&
-            Globals::achievements->isEliteMedal(this->medal) == 0) {
-            String creditsText = Globals::layout->formatCredits(
-                g_ChoiceWindow_creditValues_1471bc[this->count]);
-
+        if (!Globals::status->hardCoreMode() && !Globals::achievements->isEliteMedal(this->medal)) {
+            String credits = String("+ ") + Globals::layout->formatCredits(MEDAL_TIER_CREDITS[this->count]);
+            PaintCanvas *canvas = Globals::Canvas;
             unsigned int font = (unsigned int) (uintptr_t) Globals::font;
-            int textWidth = canvas->GetTextWidth(font, creditsText);
-            canvas->DrawString(font, creditsText,
-                               this->x + (this->width >> 1) - textWidth / 2,
-                               this->y + this->height - this->padding3,
-                               false);
+            canvas->DrawString(font, credits,
+                               this->x + (this->width >> 1) - canvas->GetTextWidth(font, credits) / 2,
+                               this->y + this->height - this->padding3, false);
         }
 
-        canvas->SetColor(0xffffffff);
+        Globals::Canvas->SetColor(0xff8000ff);
+        PaintCanvas *canvas = Globals::Canvas;
         unsigned int font = (unsigned int) (uintptr_t) Globals::font;
-        int textWidth = canvas->GetTextWidth(font, this->medalText);
         canvas->DrawString(font, this->medalText,
-                           this->x + (this->width >> 1) - textWidth / 2,
+                           this->x + (this->width >> 1) - canvas->GetTextWidth(font, this->medalText) / 2,
                            this->y + this->padding4, false);
     }
 
     this->scrollWindow->draw();
 
-    if (this->buttonsVisible != 0) {
-        if (this->leftButton != nullptr) this->leftButton->draw();
-
-        if (this->rightButton != nullptr) {
+    if (this->buttonsVisible) {
+        if (this->leftButton != nullptr)
+            this->leftButton->draw();
+        if (this->rightButton != nullptr)
             this->rightButton->draw();
-            pos = this->rightButton->getPosition();
-            ((ChoiceWindowButtonPosCache *) Globals::other_buttons_x)->rightOrSingleButtonPos = (int) pos[0];
-            pos = this->rightButton->getPosition();
-            ((ChoiceWindowButtonPosCache *) Globals::other_buttons_y)->rightOrSingleButtonPos = (int) pos[1];
+        // Remember the button positions for the touch/keyboard navigation.
+        if (this->rightButton != nullptr) {
+            Globals::other_buttons_x[2] = (int) this->rightButton->getPosition().x;
+            Globals::other_buttons_y[2] = (int) this->rightButton->getPosition().y;
         }
-
         if (this->leftButton != nullptr) {
-            pos = this->leftButton->getPosition();
-            ((ChoiceWindowButtonPosCache *) Globals::other_buttons_x)->leftButtonPos = (int) pos[0];
-            pos = this->leftButton->getPosition();
-            ((ChoiceWindowButtonPosCache *) Globals::other_buttons_y)->leftButtonPos = (int) pos[1];
-
+            Globals::other_buttons_x[3] = (int) this->leftButton->getPosition().x;
+            Globals::other_buttons_y[3] = (int) this->leftButton->getPosition().y;
             if (this->rightButton == nullptr) {
-                pos = this->leftButton->getPosition();
-                ((ChoiceWindowButtonPosCache *) Globals::other_buttons_x)->rightOrSingleButtonPos = (int) pos[0];
-                pos = this->leftButton->getPosition();
-                ((ChoiceWindowButtonPosCache *) Globals::other_buttons_y)->rightOrSingleButtonPos = (int) pos[1];
+                Globals::other_buttons_x[2] = (int) this->leftButton->getPosition().x;
+                Globals::other_buttons_y[2] = (int) this->leftButton->getPosition().y;
             }
         }
-
         Globals::is_choice_window_visible = 1;
-        if (this->miscButton != nullptr) this->miscButton->draw();
+        if (this->miscButton != nullptr)
+            this->miscButton->draw();
     }
 }
 
