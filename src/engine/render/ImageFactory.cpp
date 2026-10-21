@@ -8,12 +8,23 @@
 
 static PaintCanvas **g_reload_canvas = &Globals::Canvas;
 static PaintCanvas **g_drawChar_canvas = &Globals::Canvas;
-static PaintCanvas **g_IF_drawShip_canvas = &Globals::Canvas;
-static PaintCanvas **g_drawItem_canvas = &Globals::Canvas;
-static PaintCanvas **g_IF_drawItem4_canvas = &Globals::Canvas;
 
-int IMAGE_OFFSETS[104];
-int IMAGE_OFFSETS_IPAD[104] = {
+int IMAGE_OFFSETS[13][4][2] = {
+    {{16, 45}, {16, 26}, {32, 75}, {16, 0}},
+    {{16, 52}, {16, 25}, {32, 75}, {16, 0}},
+    {{16, 45}, {16, 24}, {32, 75}, {16, 0}},
+    {{32, -20}, {32, -20}, {32, 0}, {16, -75}},
+    {{32, 75}, {16, 17}, {32, 75}, {16, 0}},
+    {{16, -20}, {32, -20}, {32, 0}, {16, -75}},
+    {{32, 75}, {16, 42}, {16, 0}, {16, 0}},
+    {{16, 39}, {16, 21}, {32, 75}, {16, 0}},
+    {{16, -20}, {32, -20}, {32, 0}, {16, -75}},
+    {{32, 75}, {32, 0}, {32, 0}, {32, 0}},
+    {{16, 46}, {16, 26}, {32, 75}, {16, 0}},
+    {{16, 0}, {16, 0}, {16, 0}, {16, 0}},
+    {{32, 75}, {32, 0}, {32, 0}, {32, 0}},
+};
+int IMAGE_OFFSETS_IPAD[13][4][2] = {
     16, 75, 16, 43, 32, 125, 16, 0,
     16, 86, 16, 41, 32, 125, 16, 0,
     16, 74, 16, 40, 32, 125, 16, 0,
@@ -28,7 +39,7 @@ int IMAGE_OFFSETS_IPAD[104] = {
     16, 0, 16, 0, 16, 0, 16, 0,
     32, 125, 32, 0, 32, 0, 32, 0,
 };
-int IMAGE_OFFSETS_IPAD_HD[104] = {
+int IMAGE_OFFSETS_IPAD_HD[13][4][2] = {
     16, 84, 16, 48, 32, 141, 16, 0,
     16, 96, 16, 45, 32, 141, 16, 0,
     16, 82, 16, 44, 32, 141, 16, 0,
@@ -43,7 +54,7 @@ int IMAGE_OFFSETS_IPAD_HD[104] = {
     32, 141, 32, 0, 32, 0, 32, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
 };
-int IMAGE_OFFSETS_IPAD_LARGE[104] = {
+int IMAGE_OFFSETS_IPAD_LARGE[13][4][2] = {
     16, 120, 16, 68, 32, 200, 16, 0,
     16, 137, 16, 65, 32, 200, 16, 0,
     16, 118, 16, 64, 32, 200, 16, 0,
@@ -59,7 +70,45 @@ int IMAGE_OFFSETS_IPAD_LARGE[104] = {
     32, 200, 32, 0, 32, 0, 32, 0,
 };
 
-static int *g_IF_idTable = IMAGE_OFFSETS;
+// Image resource of each portrait part: [row][part], -1 = part not available.
+static const int kPartImageIds[13][4] = {
+    {5000, 5011, 5022, 5033},
+    {5044, 5048, 5053, 5059},
+    {5068, 5073, 5078, 5083},
+    {-1, -1, -1, -1},
+    {5088, 5091, 5094, 5099},
+    {-1, -1, -1, -1},
+    {5103, 5105, 5108, -1},
+    {5113, 5115, 5117, 5120},
+    {-1, -1, -1, -1},
+    {5122, -1, -1, -1},
+    {5126, 5130, 5134, 5139},
+    {5146, -1, -1, -1},
+    {5148, -1, -1, -1},
+};
+
+// Part offsets used on retina / N9 screens.
+static const int kRetinaOffsets[13][4][2] = {
+    {{16, 75}, {16, 43}, {32, 125}, {16, 0}},
+    {{16, 86}, {16, 41}, {32, 125}, {16, 0}},
+    {{16, 74}, {16, 40}, {32, 125}, {16, 0}},
+    {{32, -33}, {32, -33}, {32, 0}, {16, -125}},
+    {{32, 125}, {16, 28}, {32, 125}, {16, 0}},
+    {{16, -33}, {32, -33}, {32, 0}, {16, -125}},
+    {{32, 125}, {16, 72}, {16, 0}, {16, 0}},
+    {{16, 65}, {16, 35}, {32, 125}, {16, 0}},
+    {{16, -33}, {32, -33}, {32, 0}, {16, -125}},
+    {{32, 125}, {32, 0}, {32, 0}, {32, 0}},
+    {{16, 76}, {16, 43}, {32, 125}, {16, 0}},
+    {{16, 0}, {16, 0}, {16, 0}, {16, 0}},
+    {{32, 125}, {32, 0}, {32, 0}, {32, 0}},
+};
+
+// Portrait part offset table of the current screen class.
+#define PART_OFFSETS                                                                        \
+    (Globals::iPadHD ? IMAGE_OFFSETS_IPAD_HD                                                \
+                     : Globals::iPadLarge ? IMAGE_OFFSETS_IPAD_LARGE                        \
+                                          : Globals::iPad ? IMAGE_OFFSETS_IPAD : IMAGE_OFFSETS)
 
 static AbyssEngine::AERandom **gCreateChar2Rng1 = &Globals::rnd;
 static const int gCreateChar2Table[] = {
@@ -78,14 +127,6 @@ static const int gCreateChar2Table[] = {
 static AbyssEngine::AERandom **gCreateChar2Rng2 = &Globals::rnd;
 static AbyssEngine::AERandom **gCreateCharRng = &Globals::rnd;
 
-static PaintCanvas **g_IF_li_canvas = &Globals::Canvas;
-static char *g_IF_flagA = (char *)&Globals::iPadHD;
-static char *g_IF_flagB = (char *)&Globals::iPadLarge;
-static int *g_IF_posTableA = IMAGE_OFFSETS_IPAD_HD;
-static int *g_IF_posTableB = IMAGE_OFFSETS_IPAD_LARGE;
-static int *g_IF_posTableC = IMAGE_OFFSETS;
-static char *g_IF_flagC = (char *)&Globals::iPad;
-static int *g_IF_posTableD = IMAGE_OFFSETS_IPAD;
 
 int ImageFactory::getItemImageId(int itemId) {
     int base = 0xef0;
@@ -100,14 +141,11 @@ ImageFactory::~ImageFactory() {
 
 ImageFactory::ImageFactory() {
     this->sprite = nullptr;
-    if (Globals::iPad != 0) {
-        const int *src = IMAGE_OFFSETS_IPAD;
-        if (Globals::iPadHD != 0)
-            src = IMAGE_OFFSETS_IPAD_HD;
-        else if (Globals::iPadLarge != 0)
-            src = IMAGE_OFFSETS_IPAD_LARGE;
-        for (int i = 0; i < 104; ++i)
-            IMAGE_OFFSETS[i] = src[i];
+    if (Globals::retinaDisplay || Globals::n9) {
+        for (int i = 0; i < 13; i++)
+            for (int j = 0; j < 4; j++)
+                for (int k = 0; k < 2; k++)
+                    IMAGE_OFFSETS[i][j][k] = kRetinaOffsets[i][j][k];
     }
     this->reload();
 }
@@ -148,63 +186,38 @@ void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, bool flag) 
 }
 
 void ImageFactory::drawShip(int shipId, int x, int y) {
-    PaintCanvas **holder = g_IF_drawShip_canvas;
-    unsigned classIcon = 0xffffffffu;
-    (*holder)->SetColor(0xffffffffu);
+    Globals::Canvas->SetColor(0xffffffffu);
     this->sprite->setFrame(5);
     this->sprite->setPosition(x, y);
     this->sprite->draw(1.0f, 1.0f);
-    (*holder)->Image2DCreate((unsigned short) (shipId + 0x971), classIcon);
-    (*holder)->DrawImage2D(classIcon, x, y);
+    unsigned int image = 0xffffffffu;
+    Globals::Canvas->Image2DCreate((unsigned short) (shipId + 0x971), image);
+    Globals::Canvas->DrawImage2D(image, x, y);
 }
 
 void ImageFactory::drawItem(int itemId, int x, int y) {
-    PaintCanvas **holder = g_drawItem_canvas;
-    unsigned icon = 0xffffffffu;
-    (*holder)->SetColor(0xffffffffu);
-    int base = 0xef0;
-    if (itemId < 0xb0) base = 0x898;
-    (*holder)->Image2DCreate((unsigned short) (base + itemId), icon);
-    (*holder)->DrawImage2D(icon, x, y);
+    Globals::Canvas->SetColor(0xffffffffu);
+    unsigned int image = 0xffffffffu;
+    Globals::Canvas->Image2DCreate((unsigned short) getItemImageId(itemId), image);
+    Globals::Canvas->DrawImage2D(image, x, y);
 }
 
-void *ImageFactory::loadImage(int row, int col, int frameBase) { // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
-    int id = g_IF_idTable[row * 4 + col];
-    if (id < 0)
+void *ImageFactory::loadImage(int row, int part, int frame) { // lint: void_ptr exported method return type baked into ImageFactory::loadImage signature
+    if (kPartImageIds[row][part] < 0)
         return nullptr;
-
-    unsigned image = 0;
-    (*g_IF_li_canvas)->Image2DCreate((unsigned short) ((short)id + (short)frameBase), image);
-
-    int *posBase;
-
-    int cell = row * 8 + col * 2;
-    if (*g_IF_flagA != 0) {
-        posBase = g_IF_posTableA;
-    } else if (*g_IF_flagB != 0) {
-        posBase = g_IF_posTableB;
-    } else {
-        posBase = g_IF_posTableC;
-        if (*g_IF_flagC == 0)
-            posBase = g_IF_posTableD;
-    }
-
-    int px = posBase[cell];
-    int py = posBase[cell + 1];
-    return new ImagePart(image, px, py);
+    unsigned int image = 0;
+    Globals::Canvas->Image2DCreate((unsigned short) (kPartImageIds[row][part] + frame), image);
+    return new ImagePart(image, PART_OFFSETS[row][part][0], PART_OFFSETS[row][part][1]);
 }
 
 void ImageFactory::drawItem(int itemId, int frame, int x, int y) {
-    PaintCanvas **holder = g_IF_drawItem4_canvas;
-    unsigned icon = 0xffffffffu;
-    (*holder)->SetColor(0xffffffffu);
+    Globals::Canvas->SetColor(0xffffffffu);
     this->sprite->setFrame(frame);
     this->sprite->setPosition(x, y);
     this->sprite->draw(1.0f, 1.0f);
-    int base = 0xef0;
-    if (itemId < 0xb0) base = 0x898;
-    (*holder)->Image2DCreate((unsigned short) (base + itemId), icon);
-    (*holder)->DrawImage2D(icon, x, y);
+    unsigned int image = 0xffffffffu;
+    Globals::Canvas->Image2DCreate((unsigned short) getItemImageId(itemId), image);
+    Globals::Canvas->DrawImage2D(image, x, y);
 }
 
 Array<ImagePart *> *ImageFactory::loadChar(int *desc) {
