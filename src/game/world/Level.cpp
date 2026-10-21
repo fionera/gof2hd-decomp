@@ -86,7 +86,6 @@ Matrix *CameraGetLocal(void *canvas, uint32_t index); // lint: void_ptr (free-fu
 
 static unsigned char *g_initStreamOut = nullptr;
 
-static int *g_engineColorBase = nullptr;
 
 static const int g_cg_meshTable[233] = {6754, 6755, 6756, 6760, 6761, 6762, 6763, 6764, 6765, -1, -1, -1, 6788, 6789, 6790, 6791, 6792, 6793, 6794, 6795, 6796, 6797, 6798, 6799, 6800, 6801, 6802, 6803, 14236, 14237, 14238, 14247, 14247, 14247, 14247, 14247, 14249, 14249, 14249, 14249, 14249, 14684, 14684, 14684, 14680, 14680, 14682, 6792, 6797, 6789, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14050, 14052, 14054, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6900, 6901, 6902, 14293, 6905, 6906, 6799, 14297, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14239, 14235, -1, -1, 14247, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6788, 6788, 6788, 14247, 14247, 14247, -1, -1, -1, -1, 14247, -1, -1, 6796, -1, -1, -1, -1, 19091, 6803, 19094, 27338};
 static const int g_cg_soundTable[233] = {52, 53, 54, 56, 55, 57, 58, 59, 60, 50, 49, 50, 78, 75, 79, 77, 72, 73, 74, 76, 80, 81, 66, 67, 63, 64, 68, 65, 69, 70, 71, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 6, 7, 8, 9, 10, 11, 92, 93, 94, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1098, 1100, 1099, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1111, 1113, 1112, 1117, 1095, 1096, 1097, 1101, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1118, -1, -1, -1, 2254, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2271, 2272, -1, -1, 2263, 2263, 2263, 2265, 2265, 2265, -1, -1, -1, -1, 2254, 2267, 2268, 2252, -1, 2269, -1, 2275, 2276, 2278, 2277, 2280};
@@ -221,8 +220,6 @@ static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit)
 static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned i, Vector *out);
 
 static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i);
-
-static inline void levelWingmanDiedOne(String *name, unsigned int *list);
 
 bool Level::hasMiningPlant() {
     return miningPlant > 0;
@@ -361,10 +358,12 @@ void Level::switchSkyboxForIntro() {
 }
 
 void Level::switchSkyboxForSupernovaReversal() {
-    int tex = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
-    Globals::Canvas->MeshCreate((unsigned short) ((unsigned short) (tex + 0x4588)), (unsigned int &) skyboxMesh, false);
-    int tex2 = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
-    Globals::Canvas->TextureCreate((unsigned short) ((unsigned short) (tex2 + 0x2751)), (unsigned int &) field_198, false);
+    Globals::Canvas->MeshCreate(
+            (unsigned short) (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() + 0x4588),
+            (unsigned int &) skyboxMesh, false);
+    Globals::Canvas->TextureCreate(
+            (unsigned short) (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() + 0x2751),
+            (unsigned int &) field_198, false);
     skyboxTexture = -1;
 }
 
@@ -753,12 +752,11 @@ void Level::alarmAllFriends(int race, bool message) {
 }
 
 void Level::setPlayerEngineColor(short color) {
-    int c = color;
     if (player != nullptr && field_a4 != nullptr) {
-        EngineColorTable *table = (EngineColorTable *) g_engineColorBase;
-        int count = (int) field_a4->size();
-        for (int i = 0; i < count; i = i + 1) {
-            table->entries[i].color = c << 0x10 | c << 0x18 | c << 8 | 0xff;
+        // engine-trail particle sets start at set 29; 0x34 is the set's second colour word
+        EngineColorTable *table = reinterpret_cast<EngineColorTable *>(ParticleSettingsRef::cur);
+        for (unsigned int i = 0; i < field_a4->size(); i++) {
+            table->entries[i].color = color << 0x18 | color << 0x10 | color << 8 | 0xff;
         }
     }
 }
@@ -5306,20 +5304,19 @@ void Level::createPlayer() {
 }
 
 void Level::wingmanDied(AbyssEngine::String const &name) {
-    unsigned int *list = (unsigned int *) (intptr_t) Globals::status->getWingmen();
-    if (list == 0) {
+    Array<String *> *wingmen = (Array<String *> *) (intptr_t) Globals::status->getWingmen();
+    if (wingmen == nullptr) {
         return;
     }
-    if (__builtin_expect(*list < 2, 0)) {
-        return Globals::status->setWingmen((Array<String *> *) 0);
-    }
-    String key = name;
-    for (unsigned int i = 0; i < *list; i = i + 1) {
-        String *w = ((String **) list[1])[i];
-        if (w->Compare_str(&key) == 0) {
-            levelWingmanDiedOne(((String **) list[1])[i], list);
-            return;
+    if (wingmen->count > 1) {
+        for (unsigned int i = 0; i < wingmen->count; i++) {
+            if (wingmen->data_[i]->Compare(name) == 0) {
+                ArrayRemove(wingmen->data_[i], *wingmen);
+                return;
+            }
         }
+    } else {
+        Globals::status->setWingmen(nullptr);
     }
 }
 
@@ -6763,17 +6760,6 @@ void Level::renderBG(int t) {
     }
 
     ((PaintCanvas *) (long) (canvas))->EndBG();
-}
-
-static inline void levelWingmanDiedOne(String *name, unsigned int *list) {
-    unsigned int n = list[0];
-    String **data = (String **) (intptr_t) list[1];
-    unsigned int w = 0;
-    for (unsigned int r = 0; r < n; ++r) {
-        if (data[r] != name)
-            data[w++] = data[r];
-    }
-    list[0] = w;
 }
 
 static inline void levelSpawnFar(Level *self, int *kiPlayer) {

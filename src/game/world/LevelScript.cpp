@@ -117,8 +117,7 @@ void LevelScript::resetCamera(Level *level) {
 void LevelScript::skipSequence() {
     if (field_0x24 > 0 && Globals::status->getCurrentCampaignMission() > 0) {
         field_0x24 = 0x1b59;
-        PlayerEgo *player = m_pLevel->getPlayer();
-        (void) player; /* virtual Player flag setter — resolved via vtable */
+        m_pLevel->getPlayer()->player->setVulnerable(true);
     }
 }
 
@@ -190,16 +189,15 @@ LevelScript::~LevelScript() {
 }
 
 uint32_t LevelScript::canSkipCutsceneNow() {
-    int mission = Globals::status->getCurrentCampaignMission();
-    if (mission == 0x9a) {
-        if (!((uint32_t)(m_nState - 1) < 9)) {
+    if (Globals::status->getCurrentCampaignMission() == 0x9a) {
+        if (!(m_nState >= 1 && m_nState <= 9)) {
             return 0;
         }
-    } else if (mission == 0x9d) {
-        if (!((uint32_t)(m_nState - 2) < 3)) {
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9d) {
+        if (!(m_nState >= 2 && m_nState <= 4)) {
             return 0;
         }
-    } else if (mission == 0x9e && m_nState > 1) {
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9e && m_nState > 1) {
         return 0;
     }
     return 1;
