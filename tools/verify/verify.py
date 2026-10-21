@@ -421,6 +421,10 @@ def main():
     ap.add_argument("--show", metavar="MANGLED", help="side-by-side disasm for one symbol")
     ap.add_argument("--top", type=int, default=40, help="worst-N to print")
     args = ap.parse_args()
+    # keep disassembly temp files off a possibly-exhausted shared /tmp
+    _tmp = Path(args.build_dir or ".") / "tmp"
+    _tmp.mkdir(parents=True, exist_ok=True)
+    tempfile.tempdir = str(_tmp)
 
     of = Elf32(args.original)
     ours_elf = Elf32(args.ours)

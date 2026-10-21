@@ -66,48 +66,48 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
 
     PaintCanvas **canvas = &Globals::Canvas;
 
-    if (!flag) {
-        this->animResetFlag = 0;
-        if (this->animActiveFlag != 0) {
-            this->animActiveFlag = 0;
-            for (int i = 0; i != 50; i += 1) {
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 0, -70.0f, 0, 500.0f);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 1, -70.0f, 0, -500.0f);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 2, 70.0f, 0, 500.0f);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 3, 70.0f, 0, -500.0f);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 4, 0, -70.0f, 500.0f);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 5, 0, -70.0f, -500.0f);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 6, 0, 70.0f, 500.0f);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 7, 0, 70.0f, -500.0f);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 8, -70.0f, 70.0f, 0);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 9, -70.0f, -70.0f, 0);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 10, 70.0f, 70.0f, 0);
-                (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 11, 70.0f, -70.0f, 0);
-            }
-        }
-    } else {
+    if (flag) {
         float fv = param19 * 1000.0f;
-        float a = (float) (-500 - (int) (param19 * 4500.0f));
         float b = (float) ((int) (param19 * 4500.0f) + 500);
-        float c = (float) ((int) (param19 * -20.0f) + 0x46);
+        float a = (float) (-500 - (int) (param19 * 4500.0f));
         float d = (float) (-0x46 - (int) (param19 * -20.0f));
+        float c = (float) ((int) (param19 * -20.0f) + 0x46);
         for (int i = 0; i != 50; i += 1) {
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 0, d, 0, b);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 1, d, 0, a);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 2, c, 0, b);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 3, c, 0, a);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 4, 0, d, b);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 5, 0, d, a);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 6, 0, c, b);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 7, 0, c, a);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 8, d, c, 0);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 9, d, d, 0);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 10, c, c, 0);
-            (*canvas)->SpriteSystemSetPosition(this->billboardIds[i], 11, c, d, 0);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 0, d, 0, b);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 1, d, 0, a);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 2, c, 0, b);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 3, c, 0, a);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 4, 0, d, b);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 5, 0, d, a);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 6, 0, c, b);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 7, 0, c, a);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 8, d, c, 0);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 9, d, d, 0);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 10, c, c, 0);
+            (*canvas)->MeshSetPoint(this->billboardIds[i], 11, c, d, 0);
             this->velocityArray[i] = (int) fv + 1000;
         }
         this->animResetFlag = 0x01;
         this->animActiveFlag = 0x01;
+    } else {
+        this->animResetFlag = 0;
+        if (this->animActiveFlag != 0) {
+            this->animActiveFlag = 0;
+            for (int i = 0; i != 50; i += 1) {
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 0, -70.0f, 0, 500.0f);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 1, -70.0f, 0, -500.0f);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 2, 70.0f, 0, 500.0f);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 3, 70.0f, 0, -500.0f);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 4, 0, -70.0f, 500.0f);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 5, 0, -70.0f, -500.0f);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 6, 0, 70.0f, 500.0f);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 7, 0, 70.0f, -500.0f);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 8, -70.0f, 70.0f, 0);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 9, -70.0f, -70.0f, 0);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 10, 70.0f, 70.0f, 0);
+                (*canvas)->MeshSetPoint(this->billboardIds[i], 11, 70.0f, -70.0f, 0);
+            }
+        }
     }
 
     param19 = param19 * 1000.0f;

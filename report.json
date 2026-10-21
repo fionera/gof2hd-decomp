@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4537,
   "compared": 4523,
-  "avg_match": 97.71,
+  "avg_match": 97.77,
   "byte_exact": 1327,
-  "linked_exact": 4152,
-  "fuzzy_perfect": 4152,
+  "linked_exact": 4160,
+  "fuzzy_perfect": 4160,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -334,14 +334,6 @@
    "linked": false,
    "osize": 148,
    "usize": 144
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas8DrawMeshEPNS_4MeshERNS_6AEMath6MatrixES5_jS5_",
-   "pct": 40.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1296,
-   "usize": 1312
   },
   {
    "name": "_ZN9BluePrint7addItemEP4Itemii",
@@ -1008,22 +1000,6 @@
    "usize": 2028
   },
   {
-   "name": "_ZN10MeshMergerC1EiiPN11AbyssEngine11PaintCanvasEt",
-   "pct": 65.1,
-   "byte": false,
-   "linked": false,
-   "osize": 408,
-   "usize": 408
-  },
-  {
-   "name": "_ZN10MeshMergerC2EiiPN11AbyssEngine11PaintCanvasEt",
-   "pct": 65.1,
-   "byte": false,
-   "linked": false,
-   "osize": 408,
-   "usize": 408
-  },
-  {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
    "pct": 65.2,
    "byte": false,
@@ -1054,14 +1030,6 @@
    "linked": false,
    "osize": 9332,
    "usize": 9232
-  },
-  {
-   "name": "_ZN9PlayerEgo20approachDockingPointEP3HudiP5Radar",
-   "pct": 66.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2532,
-   "usize": 2536
   },
   {
    "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
@@ -1198,22 +1166,6 @@
    "linked": false,
    "osize": 216,
    "usize": 216
-  },
-  {
-   "name": "_ZN13LodMeshMergerC1EiiPN11AbyssEngine11PaintCanvasEt",
-   "pct": 69.8,
-   "byte": false,
-   "linked": false,
-   "osize": 428,
-   "usize": 428
-  },
-  {
-   "name": "_ZN13LodMeshMergerC2EiiPN11AbyssEngine11PaintCanvasEt",
-   "pct": 69.8,
-   "byte": false,
-   "linked": false,
-   "osize": 428,
-   "usize": 428
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15MeshSetTriangleEjtttt",
@@ -1462,22 +1414,6 @@
    "linked": false,
    "osize": 412,
    "usize": 400
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvasC1EPNS_6EngineE",
-   "pct": 77.0,
-   "byte": false,
-   "linked": false,
-   "osize": 520,
-   "usize": 520
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvasC2EPNS_6EngineE",
-   "pct": 77.0,
-   "byte": false,
-   "linked": false,
-   "osize": 520,
-   "usize": 520
   },
   {
    "name": "_ZN20FileInterfaceAndroid4ReadEjPv",
@@ -1816,14 +1752,6 @@
    "usize": 188
   },
   {
-   "name": "_ZN11MovingStars6updateEiN11AbyssEngine6AEMath6MatrixEbf",
-   "pct": 83.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1356,
-   "usize": 1352
-  },
-  {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 83.2,
    "byte": false,
@@ -1870,14 +1798,6 @@
    "linked": false,
    "osize": 1392,
    "usize": 1408
-  },
-  {
-   "name": "_ZN9PlayerEgo4drawEb",
-   "pct": 84.1,
-   "byte": false,
-   "linked": false,
-   "osize": 620,
-   "usize": 616
   },
   {
    "name": "_ZN10MiningGameC1EiiP3Hud",
@@ -2062,6 +1982,14 @@
    "linked": false,
    "osize": 3488,
    "usize": 3480
+  },
+  {
+   "name": "_ZN9PlayerEgo20approachDockingPointEP3HudiP5Radar",
+   "pct": 87.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2532,
+   "usize": 2532
   },
   {
    "name": "_ZN9Generator11getLootListEii",
@@ -2294,6 +2222,14 @@
    "linked": false,
    "osize": 544,
    "usize": 544
+  },
+  {
+   "name": "_ZN9PlayerEgo4drawEb",
+   "pct": 90.6,
+   "byte": false,
+   "linked": false,
+   "osize": 620,
+   "usize": 620
   },
   {
    "name": "_ZN3Hud11updateQueueEi",
@@ -2624,6 +2560,14 @@
    "usize": 2104
   },
   {
+   "name": "_ZN11AbyssEngine11PaintCanvas8DrawMeshEPNS_4MeshERNS_6AEMath6MatrixES5_jS5_",
+   "pct": 96.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1296,
+   "usize": 1296
+  },
+  {
    "name": "_ZN12PlayerTurret14handleRotationEiP10AEGeometryS1_",
    "pct": 96.3,
    "byte": false,
@@ -2726,14 +2670,6 @@
    "linked": false,
    "osize": 88,
    "usize": 88
-  },
-  {
-   "name": "_ZN18ParticleSystemMesh17updateSingleColorEi",
-   "pct": 97.4,
-   "byte": false,
-   "linked": false,
-   "osize": 572,
-   "usize": 572
   },
   {
    "name": "_ZN12StatusWindow10OnTouchEndEii",
@@ -5864,6 +5800,22 @@
    "usize": 16
   },
   {
+   "name": "_ZN10MeshMergerC1EiiPN11AbyssEngine11PaintCanvasEt",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 408,
+   "usize": 408
+  },
+  {
+   "name": "_ZN10MeshMergerC2EiiPN11AbyssEngine11PaintCanvasEt",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 408,
+   "usize": 408
+  },
+  {
    "name": "_ZN10MiningGame12getOreAmountEv",
    "pct": 100.0,
    "byte": true,
@@ -8574,6 +8526,22 @@
    "linked": true,
    "osize": 68,
    "usize": 68
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvasC1EPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 520,
+   "usize": 520
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvasC2EPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 520,
+   "usize": 520
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvasD1Ev",
@@ -14536,6 +14504,14 @@
    "usize": 72
   },
   {
+   "name": "_ZN11MovingStars6updateEiN11AbyssEngine6AEMath6MatrixEbf",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1356,
+   "usize": 1356
+  },
+  {
    "name": "_ZN11MovingStars9translateERKN11AbyssEngine6AEMath6VectorE",
    "pct": 100.0,
    "byte": false,
@@ -16966,6 +16942,22 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN13LodMeshMergerC1EiiPN11AbyssEngine11PaintCanvasEt",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 428,
+   "usize": 428
+  },
+  {
+   "name": "_ZN13LodMeshMergerC2EiiPN11AbyssEngine11PaintCanvasEt",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 428,
+   "usize": 428
   },
   {
    "name": "_ZN13PlayerFighter11removeTrailEv",
@@ -19758,6 +19750,14 @@
    "linked": true,
    "osize": 364,
    "usize": 364
+  },
+  {
+   "name": "_ZN18ParticleSystemMesh17updateSingleColorEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 572,
+   "usize": 572
   },
   {
    "name": "_ZN18ParticleSystemMesh20wasNewSectionStartedEv",

@@ -36,10 +36,10 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
 void LodMeshMerger::update() {
     for (int i = 0; i < this->rows; i++) {
         Mesh *mesh = this->transformedMeshes[i];
-        int isVisible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
+        bool isVisible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
                                                                    mesh->boundsRadius);
         if (isVisible != this->visible[i]) {
-            this->visible[i] = (uint8_t) isVisible;
+            this->visible[i] = isVisible;
             if (this->enabled[i] != 0)
                 this->dirty = 1;
         }
@@ -104,25 +104,24 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
     this->cols = cols;
     ArraySetLength(cols * rows, this->meshes);
 
-    int count = cols * this->rows;
-    this->transformedMeshes = new Mesh *[count];
-    memset(this->transformedMeshes, 0, count * sizeof(Mesh *));
+    this->transformedMeshes = new Mesh *[cols * this->rows];
+    memset(this->transformedMeshes, 0, cols * this->rows * sizeof(Mesh *));
     this->lodLevels = new int8_t[this->rows];
     memset(this->lodLevels, 0, this->rows);
     this->transforms = new Matrix[this->rows];
     for (int i = 0; i < this->rows; i++) {
         this->transforms[i] = Matrix();
     }
-    this->enabled = new uint8_t[this->rows];
+    this->enabled = new bool[this->rows];
     for (int i = 0; i < this->rows; i++) {
-        this->enabled[i] = 1;
+        this->enabled[i] = true;
     }
-    this->visible = new uint8_t[this->rows];
+    this->visible = new bool[this->rows];
     for (int i = 0; i < this->rows; i++) {
-        this->visible[i] = 1;
+        this->visible[i] = true;
     }
-    this->dirty = 0;
     this->flags = flags;
+    this->dirty = 0;
     this->initialized = 0;
 }
 
