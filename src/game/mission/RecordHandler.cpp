@@ -1474,7 +1474,7 @@ void RecordHandler::recordStoreWrite(int slot) {
             }
         }
 
-        Array<String *> *wingmen = reinterpret_cast<Array<String *> *>((intptr_t) status->wingmen);
+        Array<String *> *wingmen = status->wingmen;
 
         if (wingmen == 0) { AEFile::Write((int32_t)-1, fd); } else {
             AEFile::Write((int32_t)wingmen->size(), fd);

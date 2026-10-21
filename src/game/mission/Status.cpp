@@ -276,17 +276,13 @@ bool Status::inDeepScienceOrbit() {
 }
 
 int Status::wantedBoardAccessible() {
-    Status *st = Globals::status;
-    Array<Wanted *> *w = st->wanted;
+    Array<Wanted *> *w = Globals::status->wanted;
     for (unsigned i = 0; i < w->size(); i = i + 1) {
-        int race = asSystem(st->system)->getRace();
-        int board = (*w)[i]->getBoard();
-        if (race == board) {
-            if (st->currentCampaignMission >= (*w)[i]->getRequiredMission() &&
-                st->inAlienOrbit() == 0 &&
-                st->station->getIndex() != 0x6c) {
-                return 1;
-            }
+        if (asSystem(Globals::status->system)->getRace() == (*w)[i]->getBoard() &&
+            Globals::status->currentCampaignMission >= (*w)[i]->getRequiredMission() &&
+            Globals::status->inAlienOrbit() == 0 &&
+            Globals::status->station->getIndex() != 0x6c) {
+            return 1;
         }
     }
     return 0;
@@ -352,7 +348,7 @@ uint32_t Status::inPlanetRingOrbit() {
 
 void Status::setBoughtEquipment(int v) { boughtEquipment = v; }
 
-int Status::getWingmen() { return wingmen; }
+int Status::getWingmen() { return (int) (intptr_t) wingmen; }
 
 int Status::getGoodsProduced() { return goodsProduced; }
 
@@ -366,16 +362,22 @@ void Status::changeCredits(int delta) {
     }
 }
 
-static const int kFreighterMaskA = 0x40008401;
-static const int kFreighterMaskB = 0x02008401;
 
 int Status::isFreighterMissionStation(int station) {
-    if ((unsigned) (station - 0x1e) < 0x1f && ((1 << ((station - 0x1e) & 0xff)) & kFreighterMaskA) != 0)
-        return 1;
-    if ((unsigned) (station - 0x46) < 0x1a && ((1 << ((station - 0x46) & 0xff)) & kFreighterMaskB) != 0)
-        return 1;
-    if (station == 0xf) return 1;
-    return 0;
+    switch (station) {
+        case 15:
+        case 30:
+        case 40:
+        case 45:
+        case 60:
+        case 70:
+        case 80:
+        case 85:
+        case 95:
+            return 1;
+        default:
+            return 0;
+    }
 }
 
 unsigned char Status::isBlueprintUnlocked(int index) {
@@ -613,9 +615,8 @@ void Status::resetGame() {
         reinterpret_cast<int32_t &>(this->_byte_0x28) = 0;
     }
     if (this->wingmen != 0) {
-        Array<String *> *wm = (Array<String *> *) (intptr_t) this->wingmen;
-        ArrayReleaseClasses(*wm);
-        delete wm;
+        ArrayReleaseClasses(*this->wingmen);
+        delete this->wingmen;
     }
 
     this->fadeValue = 0;
@@ -1635,12 +1636,8 @@ void Status::loadAgents(Array<int> *agents) {
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
 
 void Status::checkForLevelUp() {
-    int a0 = field_a0;
-    int a4 = field_a4;
-    int d4 = field_d4 / 3;
-    int k = kills + d4;
-    int a0d = a0 / 0x32;
-    int sum = k + a0d + a4 + missionCount * 2 + currentCampaignMission + stationsVisited;
+    int sum = kills + field_d4 / 3 + field_a0 / 50 + field_a4 + missionCount * 2 +
+              currentCampaignMission + stationsVisited;
     for (int i = 0; i != 0x15; i = i + 1) {
         if (sum >= g_levelXPTable[i]) {
             level = i;
@@ -1738,22 +1735,19 @@ void Status::moveWanted() {
 }
 
 void Status::setWingmen(Array<String *> *list) {
-    Array<String *> *cur = (Array<String *> *) (intptr_t) wingmen;
-    if (cur != 0) {
-        ArrayReleaseClasses(*cur);
+    if (wingmen != 0) {
+        ArrayReleaseClasses(*wingmen);
     }
     if (list == 0) {
         wingmen = 0;
         reinterpret_cast<int32_t &>(this->_byte_0x28) = 0;
         this->fadeValue = 0;
     } else {
-        Array<String *> *na = new Array<String *>();
-        wingmen = (int32_t)(intptr_t)
-        na;
-        ArraySetLength(list->size(), *na);
+        wingmen = new Array<String *>();
+        ArraySetLength(list->size(), *wingmen);
         for (unsigned i = 0; i < list->size(); i = i + 1) {
-            String *s = new String(*(*list)[i], false);
-            (*na)[i] = s;
+            String *name = new String(*(*list)[i], false);
+            (*wingmen)[i] = name;
         }
     }
 }

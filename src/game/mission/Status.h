@@ -31,7 +31,7 @@ public:
     Array<BluePrint *> *bluePrints;
     Array<PendingProduct *> *pendingProducts;
     Array<Agent *> *agents;
-    int32_t wingmen;
+    Array<String *> *wingmen;
 
     // former union: int32 field_0x28 overlaid with these bytes.
     // wide view: reinterpret_cast<int32_t &>(_byte_0x28)
