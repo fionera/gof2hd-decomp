@@ -800,15 +800,19 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
         case ITEM_SORT_TURRET: {
             float z;
             float x;
-            if (idx == 181) {
-                z = -300.0f;
-                x = 0.0f;
-            } else if (idx == 48) {
-                z = 300.0f;
-                x = 80.0f;
-            } else {
-                z = 300.0f;
-                x = 0.0f;
+            switch (idx) {
+                case 181:
+                    z = -300.0f;
+                    x = 0.0f;
+                    break;
+                case 48:
+                    z = 300.0f;
+                    x = 80.0f;
+                    break;
+                default:
+                    z = 300.0f;
+                    x = 0.0f;
+                    break;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
@@ -825,15 +829,19 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
         case ITEM_SORT_PLASMA_COLLECTOR: {
             float z;
             float x;
-            if (idx == 181) {
-                z = -300.0f;
-                x = 0.0f;
-            } else if (idx == 48) {
-                z = 300.0f;
-                x = 80.0f;
-            } else {
-                z = 300.0f;
-                x = 0.0f;
+            switch (idx) {
+                case 181:
+                    z = -300.0f;
+                    x = 0.0f;
+                    break;
+                case 48:
+                    z = 300.0f;
+                    x = 80.0f;
+                    break;
+                default:
+                    z = 300.0f;
+                    x = 0.0f;
+                    break;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
