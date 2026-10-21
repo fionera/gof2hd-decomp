@@ -1053,25 +1053,30 @@ void Status::unlockBluePrint(int index) {
     }
 }
 
-static const int g_gammaTableA[5] = {0x3f333333, 0x3ecccccd, 0x3ecccccd, 0x3e99999a, 0x3e4ccccd};
-static const int g_gammaTableB[5] = {0x40400000, 0x40000000, 0x3f800000, 0x3f000000, 0x3e99999a};
-
-int Status::getGammaRayDamagePerSecond(int station, int system) {
-    unsigned k = (unsigned)(station - 0x6d);
-    if (k > 4) {
-        return 0;
+float Status::getGammaRayDamagePerSecond(int station, int system) {
+    float damage = 0.0f;
+    if (station >= 109 && station <= 113) {
+        if (system <= 105) {
+            switch (station) {
+                case 109: return 0.7f;
+                case 110: return 0.4f;
+                case 111: return 0.4f;
+                case 112: return 0.3f;
+                case 113: return 0.2f;
+            }
+        } else if (currentCampaignMission <= 157) {
+            switch (station) {
+                case 109: return 3.0f;
+                case 110: return 2.0f;
+                case 111: return 1.0f;
+                case 112: return 0.5f;
+                case 113: return 0.3f;
+            }
+        } else if (station == 109) {
+            damage = 1.0f;
+        }
     }
-    if (system <= 0x69) {
-        return g_gammaTableA[k];
-    }
-    if (currentCampaignMission <= 0x9d) {
-        return g_gammaTableB[k];
-    }
-    float result = 0.0f;
-    if (station == 0x6d) result = 1.0f;
-    int r;
-    memcpy(&r, &result, sizeof(r));
-    return r;
+    return damage;
 }
 
 int Status::addStationToStack(Station *s) {

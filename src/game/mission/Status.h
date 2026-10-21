@@ -401,7 +401,7 @@ public:
 
     void incCollectedBounties(int index);
 
-    int getGammaRayDamagePerSecond(int station, int system);
+    float getGammaRayDamagePerSecond(int station, int system);
 
     void loadWanted();
 

@@ -952,11 +952,11 @@ unsigned char PlayerEgo::collidesWithStation() {
 }
 
 void PlayerEgo::stopPlanetDock() {
-    ((TargetFollowCamera *) (this->targetFollowCamera))->setLookAtCam(0);
+    ((TargetFollowCamera *) (this->targetFollowCamera))->setLookAtCam(false);
     this->collide = 1;
     this->dockingToPlanet = 0;
-    ((PlayerEgo *) (this))->stopBoost();
-    this->speed = 0x40000000;
+    this->stopBoost();
+    ((float &) this->speed) = 2.0f;
 }
 
 bool PlayerEgo::isRechargingCloak() {
@@ -1211,19 +1211,15 @@ void PlayerEgo::setRotation(float rx, float ry, float rz) {
 }
 
 void PlayerEgo::StopEngineSound() {
-    if (this->dockedFlag == 0 || this->dockingPointIndex != 1) {
-        if (((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x26) != 0
-            && Globals::status->inAlienOrbit() == 0) {
-            int idx = Globals::status->getStation()->getIndex();
-            int cm = Globals::status->getCurrentCampaignMission();
-            float g = Globals::status->getGammaRayDamagePerSecond(idx, cm);
-            if (0.0f < g && this->engineSoundId != -1) {
-                ((FModSound *) (Globals::sound))->play((int) (intptr_t)((intptr_t) this->engineSoundId),
-                                                                      (Vector *) 0, (Vector *) 0, g);
-            }
-        }
+    if ((this->dockedFlag == 0 || this->dockingPointIndex != 1)
+        && Globals::status->getShip()->getFirstEquipmentOfSort(0x26) != 0
+        && !Globals::status->inAlienOrbit()
+        && Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
+                                                       Globals::status->getCurrentCampaignMission()) > 0.0f
+        && this->engineSoundId != -1) {
+        Globals::sound->play(this->engineSoundId, nullptr, nullptr, 0.0f);
     }
-    ((Player *) this->player)->StopEngineSound();
+    this->player->StopEngineSound();
 }
 
 void PlayerEgo::startSmokeEmission() {
@@ -1712,17 +1708,14 @@ PlayerEgo::PlayerEgo(Player *player) {
 }
 
 void PlayerEgo::PlayEngineSound() {
-    if (((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x26) != 0
-        && Globals::status->inAlienOrbit() == 0) {
-        int idx = Globals::status->getStation()->getIndex();
-        int cm = Globals::status->getCurrentCampaignMission();
-        float g = Globals::status->getGammaRayDamagePerSecond(idx, cm);
-        if (0.0f < g && this->engineSoundId != -1) {
-            ((FModSound *) (Globals::sound))->play((int) (intptr_t)((intptr_t) this->engineSoundId),
-                                                                  (Vector *) 0, (Vector *) 0, g);
-        }
+    if (Globals::status->getShip()->getFirstEquipmentOfSort(0x26) != 0
+        && !Globals::status->inAlienOrbit()
+        && Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
+                                                       Globals::status->getCurrentCampaignMission()) > 0.0f
+        && this->engineSoundId != -1) {
+        Globals::sound->play(this->engineSoundId, nullptr, nullptr, 0.0f);
     }
-    ((Player *) this->player)->PlayEngineSound(0, (Vector *) 0);
+    this->player->PlayEngineSound(this->field_0x1c, nullptr);
 }
 
 void PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
