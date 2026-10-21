@@ -1,3 +1,4 @@
+#include "engine/audio/FModSound.h"
 #include "game/ui/Hud.h"
 #include "game/weapons/Radar.h"
 #include "game/mission/Mission.h"
@@ -1194,6 +1195,7 @@ int Hud::init() {
     this->field_0x4cc = 0;
     this->field_0x4d0 = 0;
     this->field_0x276 = 0;
+    this->field_0x277 = 0;
     this->weaponSelectState = 0;
     this->fuelGaugeValue = 0;
     this->factionLogoImage = -1;
@@ -1379,81 +1381,180 @@ void Hud::clearQueue() {
 }
 
 void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
-    (void) ego;
-
     switch (eventId) {
+        case 36:
+        case 38:
+        case 40:
+        case 42:
+            this->field_0x1e0 = *Globals::gameText->getText(3200);
+            this->weaponSelectState = 0;
+            break;
+        case 5:
+            this->field_0x1e0 = *Globals::gameText->getText(571) + String(" ") + *Globals::gameText->getText(38);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 10:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + String(Globals::status->getStation()->getName()) +
+                                (Globals::status->getStation()->getIndex() == 101 ? String("") : String(" ") + *Globals::gameText->getText(136));
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 11:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(550);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 12:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(547);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 13:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(548);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 14:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(549);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 15:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(545);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 7:
+            this->field_0x1e0 = *Globals::gameText->getText(553);
+            break;
+        case 8:
+            this->field_0x1e0 = *Globals::gameText->getText(539);
+            break;
+        case 9:
+            this->field_0x1e0 = *Globals::gameText->getText(540);
+            break;
+        case 16:
+            this->field_0x1e0 = *Globals::gameText->getText(307);
+            break;
+        case 17:
+            this->field_0x1e0 = *Globals::gameText->getText(308);
+            break;
+        case 18:
+            this->field_0x1e0 = *Globals::gameText->getText(309);
+            break;
+        case 20:
+            this->field_0x1e0 = *Globals::gameText->getText(541);
+            break;
+        case 21:
+            this->field_0x1e0 = *Globals::gameText->getText(525);
+            break;
+        case 22:
+            this->field_0x1e0 = *Globals::gameText->getText(542);
+            break;
+        case 23:
+            this->field_0x1e0 = *Globals::gameText->getText(543);
+            break;
+        case 24:
+            this->field_0x1e0 = *Globals::gameText->getText(544);
+            break;
+        case 27:
+            this->field_0x1e0 = *Globals::gameText->getText(322);
+            break;
+        case 31:
+            this->field_0x1e0 = *Globals::gameText->getText(324);
+            break;
+        case 34:
+            this->field_0x1e0 = *Globals::gameText->getText(3199);
+            break;
+        case 43:
+            this->field_0x1e0 = *Globals::gameText->getText(3203);
+            break;
+        case 44:
+            this->field_0x1e0 = *Globals::gameText->getText(3201);
+            break;
+        case 45:
+            this->field_0x1e0 = *Globals::gameText->getText(3202);
+            break;
+        case 46:
+            this->field_0x1e0 = *Globals::gameText->getText(316);
+            break;
+        case 19:
+            this->field_0x1e0 = this->eventLines[19];
+            break;
         case 1:
         case 2:
-            if (this->hasAutofireUI == 0) return;
+            if (this->hasAutofireUI == 0)
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(37) + String(" ") + *Globals::gameText->getText(eventId == 1 ? 38 : 39);
             break;
         case 3:
-            if (this->hasBoostButton == 0 || ((PlayerEgo *) ((long) arg))->readyToBoost() == 0) return;
+            if (this->hasBoostButton == 0 || !ego->readyToBoost())
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(314);
             break;
         case 4:
-            if (this->hasBoostButton == 0) return;
+            if (this->hasBoostButton == 0)
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(315);
             break;
-
-        case 0x23:
+        case 6:
+            this->field_0x1e0 = *Globals::gameText->getText(571) + String(" ") + *Globals::gameText->getText(39);
+            Globals::sound->play(29, 0, 0, 0.0f);
+            break;
+        case 32:
+        case 33:
+            this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(eventId == 32 ? 38 : 39);
+            break;
+        case 30:
+        case 47:
+            this->field_0x1e0 = String(String("-") + String(arg) + String("t ")) + *Globals::gameText->getText(eventId == 30 ? 1396 : 1476);
+            this->clearQueue();
+            break;
+        case 25:
+            this->field_0x464 = 0;
+            this->field_0x277 = 1;
+            return;
+        case 26:
+            this->field_0x277 = 0;
+            return;
+        case 28:
+            this->field_0x464 = 0;
+            this->field_0x276 = 1;
+            return;
+        case 29:
+            this->field_0x276 = 0;
+            return;
+        case 35:
             this->field_0x468 = 0;
             this->field_0x27a = 1;
             this->weaponSelectState = 1;
+            this->field_0x279 = 0;
             return;
-        case 0x25:
-            this->field_0x468 = 0;
-            this->field_0x27a = 1;
-            this->weaponSelectState = 0x101;
-            return;
-        case 0x27:
+        case 39:
             this->field_0x468 = 0;
             this->field_0x27a = 0;
             this->weaponSelectState = 1;
+            this->field_0x279 = 0;
             return;
-        case 0x29:
+        case 37:
+            this->field_0x468 = 0;
+            this->field_0x27a = 1;
+            this->weaponSelectState = 1;
+            this->field_0x279 = 1;
+            return;
+        case 41:
             this->field_0x468 = 0;
             this->field_0x27a = 0;
-            this->weaponSelectState = 0x101;
-            return;
-        case 0x24:
-        case 0x26:
-        case 0x28:
-        case 0x2a:
-            *(unsigned char *) &this->weaponSelectState = 0;
-            break;
-
-        default:
+            this->weaponSelectState = 1;
+            this->field_0x279 = 1;
             break;
     }
-
-    String *line = (String *) &this->field_0x1e0;
-    char probe[12];
-    ((String *) (probe))->Set((line)->data);
-    unsigned int dup = sameHudEventAsBefore(*(String *) probe);
-    {
-        String *_s = ((String *) (probe));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    if (dup != 0)
+    if (this->sameHudEventAsBefore(this->field_0x1e0) != 0)
         return;
-
-    String *str = new String(*line);
-
-    unsigned int idBit = (unsigned int) (eventId - 1);
     ListItem *item;
-    if (idBit < 0x15 && ((1u << (idBit & 0x1f)) & g_Hud_heImportantMask) != 0)
-        item = new ListItem(str, 1);
+    if (eventId == 27 || eventId == 30 || eventId == 31 || eventId == 47)
+        item = new ListItem(new String(this->field_0x1e0), 1);
     else
-        item = new ListItem(str, 0);
-    addToEventQueue(item);
-
-    String *font = (String *) Globals::font;
-    int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) (font));
-    int screenW = *(int *) &Globals::w;
-    this->eventScrollTick = 0;
-    this->eventScrolls = 1;
-    this->letterbox =
-            (unsigned char) ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w);
+        item = new ListItem(new String(this->field_0x1e0));
+    this->addToEventQueue(item);
+    this->eventScrolls = 0;
+    this->field_0x1dc[2] = 1;
+    this->letterbox = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
+                      Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
 }
 
 

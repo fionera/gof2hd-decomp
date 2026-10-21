@@ -80,8 +80,10 @@ public:
     int eventQueuePaused;
     unsigned char jumpMapSelectedFlag;
     unsigned char field_0x275;
-    unsigned short field_0x276;
-    unsigned short weaponSelectState;
+    unsigned char field_0x276;
+    unsigned char field_0x277;
+    unsigned char weaponSelectState;
+    unsigned char field_0x279;
     unsigned char field_0x27a;
     unsigned char field_0x27b;
     int fuelGaugeValue;
