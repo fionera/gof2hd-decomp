@@ -91,7 +91,7 @@ public:
 
     void writeAgent(Agent *agentPtr, unsigned int fd);
 
-    void writeByteArrayAsOptionsFile(signed char *buf, int n);
+    int writeByteArrayAsOptionsFile(signed char *buf, int n);
 
     int writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup);
 

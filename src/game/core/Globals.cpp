@@ -165,7 +165,7 @@ unsigned char Globals::enterSpaceLounge = 0;
 int Globals::switch_to_target_setting = 0;
 
 Status *Globals::status = nullptr;
-unsigned char Globals::options[100] = {};
+alignas(4) unsigned char Globals::options[100] = {};
 FModSound *Globals::sound = nullptr;
 int Globals::logoIsShown = 0;
 int Globals::isInMainMenu = 0;

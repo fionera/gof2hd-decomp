@@ -393,14 +393,12 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     AEFile::Read(reinterpret_cast<int32_t &>(reqMission), fd);
     AEFile::Read(reinterpret_cast<int32_t &>(numWingmen), fd);
 
-    Wanted *w = new Wanted(idx, name, board, race, male, ship, weapon, hp, loot,
+    Wanted *w = new Wanted(idx, String(name, false), board, race, male, ship, weapon, hp, loot,
                            lootAmt, reward, reqBounties, reqMission, numWingmen);
 
     int *parts = new int[5];
-    int *p = parts;
-    for (unsigned i = 0; i < 5; i++) {
-        AEFile::Read(reinterpret_cast<int32_t &>(*p), fd);
-        p++;
+    for (int i = 0; i < 5; i++) {
+        AEFile::Read(reinterpret_cast<int32_t &>(parts[i]), fd);
     }
     w->setImageParts(parts);
     w->setActive(active);
@@ -500,15 +498,15 @@ RecordHandler::RecordHandler()
 RecordHandler::~RecordHandler() {
 }
 
-void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
+int RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     String tmp(this->optionsPath, false);
-    unsigned int fd;
-
     if (AEFile::FileExist(tmp) != 0)
         AEFile::FileDelete(tmp);
+    unsigned int fd;
     AEFile::OpenWrite(tmp, &fd);
     AEFile::Write((uint32_t)n, buf, fd);
     AEFile::Close(fd);
+    return n;
 }
 
 static int *g_RH_wp_float = nullptr;
@@ -1193,7 +1191,7 @@ void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
     AEFile::Write((int32_t)w->getIndex(), fd);
     AEFile::Write((int32_t)w->getBoard(), fd);
     AEFile::Write((int32_t)w->getRace(), fd);
-    AEFile::Write((uint8_t)w->isMale(), fd);
+    AEFile::Write(w->isMale(), fd);
     AEFile::Write((int32_t)w->getShip(), fd);
     AEFile::Write((int32_t)w->getWeapon(), fd);
     AEFile::Write((int32_t)w->getHitpoints(), fd);
@@ -1476,7 +1474,7 @@ void RecordHandler::recordStoreWrite(int slot) {
             }
         }
 
-        Array<String *> *wingmen = reinterpret_cast<Array<String *> *>((intptr_t) status->wingmen);
+        Array<String *> *wingmen = status->wingmen;
 
         if (wingmen == 0) { AEFile::Write((int32_t)-1, fd); } else {
             AEFile::Write((int32_t)wingmen->size(), fd);
@@ -1770,9 +1768,9 @@ static int g_RSR_modVersion = 0;
 
 int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     String tmp(this->optionsPath, false);
-    unsigned int fd;
     int sz;
     if (AEFile::FileExist(tmp) != 0) {
+        unsigned int fd;
         AEFile::OpenRead(tmp, &fd);
         sz = AEFile::GetFileSize(fd);
         signed char *buf = new signed char[sz | (sz >> 31)];

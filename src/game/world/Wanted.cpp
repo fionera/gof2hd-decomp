@@ -4,7 +4,7 @@
 int Wanted::getIndex() { return index; }
 int Wanted::getBoard() { return board; }
 int Wanted::getRace() { return race; }
-int Wanted::isMale() { return male; }
+bool Wanted::isMale() { return male; }
 int Wanted::getShip() { return shipId; }
 int Wanted::getWeapon() { return weapon; }
 int Wanted::getHitpoints() { return hitpoints; }
@@ -25,9 +25,9 @@ void Wanted::setCurrentLocation(int v) { currentLocation = v; }
 void Wanted::setTravelsTo(int v) { travelsTo = v; }
 void Wanted::setLastSeen(int v) { lastSeen = v; }
 
-uint8_t Wanted::isTerminated() { return terminated; }
+bool Wanted::isTerminated() { return terminated; }
 void Wanted::setTerminated(bool v) { terminated = v; }
-uint8_t Wanted::isActive() { return active; }
+bool Wanted::isActive() { return active; }
 void Wanted::setActive(bool v) { active = v; }
 
 String Wanted::getName() {
@@ -42,8 +42,8 @@ Wanted::Wanted(int index, String name, int board, int race, bool male,
     this->board = board;
     this->race = race;
     this->male = male;
-    this->terminated = 0;
-    this->active = 0;
+    this->terminated = false;
+    this->active = false;
     this->lastSeen = -1;
     this->travelsTo = -1;
     this->currentLocation = -1;

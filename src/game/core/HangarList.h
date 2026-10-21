@@ -56,7 +56,7 @@ public:
 
     void initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships);
 
-    int init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
+    void init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
              Array<BluePrint *> *blueprints);
 };
 #endif

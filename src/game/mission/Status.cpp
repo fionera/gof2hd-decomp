@@ -15,50 +15,9 @@
 #include "game/world/Wanted.h"
 #include "game/world/Standing.h"
 #include "game/ship/Ship.h"
-
-static int **g_campaignSentinel = nullptr;
-static Status *g_incKillsHook = nullptr;
-static Status *g_incPirateKillsHook = nullptr;
-
-static void incKills_notify(Status * arg);
-
-static void incPirateKills_notify(Status * arg);
-
-static void incKills_notify(Status *arg) { (void) arg; }
-
-static void incPirateKills_notify(Status *arg) { (void) arg; }
-
-struct FileRead {
-    FileRead();
-
-    ~FileRead();
-
-    int loadStationsBinary();
-
-    Array<SolarSystem *> *loadSystemsBinary();
-
-    Array<Wanted *> *loadWanted();
-
-    Array<Agent *> *loadAgents();
-};
-
-struct Generator {
-    Generator();
-
-    Array<Agent *> *createAgents(Station *station);
-
-    Array<Ship *> *getShipBuyList(Station *station);
-
-    Array<Item *> *getItemBuyList(Station *station);
-};
-
-struct SystemPathFinder {
-    SystemPathFinder();
-
-    ~SystemPathFinder();
-
-    Array<int> *getSystemPath(Array<SolarSystem *> *systems, int from, int to);
-};
+#include "engine/file/FileRead.h"
+#include "game/mission/Generator.h"
+#include "game/world/SystemPathFinder.h"
 
 static SolarSystem *asSystem(int32_t v) { return (SolarSystem *) (intptr_t) v; }
 
@@ -88,10 +47,7 @@ int Status::getSystem() { return system; }
 
 int Status::inSupernovaSystem() {
     if (inAlienOrbit()) return 0;
-    int idx = asSystem(system)->getIndex();
-    int result = 0;
-    if (idx == 0x1b && currentCampaignMission < 0x9e) result = 1;
-    return result;
+    return asSystem(system)->getIndex() == 0x1b && currentCampaignMission < 0x9e;
 }
 
 void Status::visitStation() { stationsVisited = stationsVisited + 1; }
@@ -128,15 +84,13 @@ void Status::setStationsVisited(int v) { stationsVisited = v; }
 
 void Status::setStationStack(Array<Station *> *stack) { stationStack = stack; }
 
-struct HardCoreHolder {
-    char pad[0x2c];
+struct DifficultyOptionView {
+    uint8_t pad[0x2c];
     float difficulty;
 };
 
-static HardCoreHolder *g_hardCoreHolder = nullptr;
-
 bool Status::hardCoreMode() {
-    return g_hardCoreHolder->difficulty == 1.5f;
+    return reinterpret_cast<DifficultyOptionView *>(Globals::options)->difficulty == 1.5f;
 }
 
 void Status::crateCaptured(int delta) { capturedCrates = delta + capturedCrates; }
@@ -204,7 +158,7 @@ Station *Status::getStation() { return station; }
 void Status::setCampaignMission(Mission *m) {
     m->setCampaignMission(true);
     Mission *cur = missions->data()[0];
-    if (cur != 0 && cur != (Mission *) (intptr_t) **g_campaignSentinel) {
+    if (cur != 0 && cur != Mission::empty) {
         delete cur;
         missions->data()[0] = 0;
     }
@@ -271,7 +225,7 @@ int Status::getCapturedCrates() { return capturedCrates; }
 
 void Status::incKills() {
     kills = kills + 1;
-    return incKills_notify(g_incKillsHook);
+    Globals::achievements->incKills();
 }
 
 int Status::getStationsVisited() { return stationsVisited; }
@@ -322,17 +276,13 @@ bool Status::inDeepScienceOrbit() {
 }
 
 int Status::wantedBoardAccessible() {
-    Status *st = Globals::status;
-    Array<Wanted *> *w = st->wanted;
+    Array<Wanted *> *w = Globals::status->wanted;
     for (unsigned i = 0; i < w->size(); i = i + 1) {
-        int race = asSystem(st->system)->getRace();
-        int board = (*w)[i]->getBoard();
-        if (race == board) {
-            if (st->currentCampaignMission >= (*w)[i]->getRequiredMission() &&
-                st->inAlienOrbit() == 0 &&
-                st->station->getIndex() != 0x6c) {
-                return 1;
-            }
+        if (asSystem(Globals::status->system)->getRace() == (*w)[i]->getBoard() &&
+            Globals::status->currentCampaignMission >= (*w)[i]->getRequiredMission() &&
+            Globals::status->inAlienOrbit() == 0 &&
+            Globals::status->station->getIndex() != 0x6c) {
+            return 1;
         }
     }
     return 0;
@@ -340,7 +290,7 @@ int Status::wantedBoardAccessible() {
 
 void Status::incPirateKills() {
     pirateKills = pirateKills + 1;
-    return incPirateKills_notify(g_incPirateKillsHook);
+    Globals::achievements->incPirateKills();
 }
 
 void Status::setGoodsProduced(int v) { goodsProduced = v; }
@@ -398,7 +348,7 @@ uint32_t Status::inPlanetRingOrbit() {
 
 void Status::setBoughtEquipment(int v) { boughtEquipment = v; }
 
-int Status::getWingmen() { return wingmen; }
+int Status::getWingmen() { return (int) (intptr_t) wingmen; }
 
 int Status::getGoodsProduced() { return goodsProduced; }
 
@@ -412,30 +362,31 @@ void Status::changeCredits(int delta) {
     }
 }
 
-static const int kFreighterMaskA = 0x40008401;
-static const int kFreighterMaskB = 0x02008401;
 
 int Status::isFreighterMissionStation(int station) {
-    if ((unsigned) (station - 0x1e) < 0x1f && ((1 << ((station - 0x1e) & 0xff)) & kFreighterMaskA) != 0)
-        return 1;
-    if ((unsigned) (station - 0x46) < 0x1a && ((1 << ((station - 0x46) & 0xff)) & kFreighterMaskB) != 0)
-        return 1;
-    if (station == 0xf) return 1;
-    return 0;
+    switch (station) {
+        case 15:
+        case 30:
+        case 40:
+        case 45:
+        case 60:
+        case 70:
+        case 80:
+        case 85:
+        case 95:
+            return 1;
+        default:
+            return 0;
+    }
 }
 
-int Status::isBlueprintUnlocked(int index) {
-    unsigned i = 0;
-    while (true) {
-        if (bluePrints->size() <= i) {
-            return 0;
-        }
+unsigned char Status::isBlueprintUnlocked(int index) {
+    for (unsigned i = 0; i < bluePrints->size(); i++) {
         if ((*bluePrints)[i]->getIndex() == index) {
-            break;
+            return (*bluePrints)[i]->isUnlocked();
         }
-        i = i + 1;
     }
-    return (*bluePrints)[i]->isUnlocked();
+    return 0;
 }
 
 Status::Status() {
@@ -462,11 +413,12 @@ Status::Status() {
     ArraySetLength(0xf, *field_50);
     ArraySetLength(0xe9, *field_54);
     ArraySetLength(5, *field_58);
-    stationsVisited = 0;
     currentCampaignMission = 0;
+    stationsVisited = 0;
     reinterpret_cast<int32_t &>(_byte_0x34) = 0;
     field_10c = 0;
     field_110 = 0;
+    field_0x111 = 0;
     kills = 0;
     missionCount = 0;
     level = 1;
@@ -474,8 +426,8 @@ Status::Status() {
     rating = 0;
     playingTime = 0;
     playerStation = new Station();
-    field_8c = 0;
     ship = 0;
+    field_8c = 0;
     mission = 0;
     station = 0;
     system = 0;
@@ -493,25 +445,26 @@ Status::Status() {
     this->field_0x40 = 0;
     this->field_0x44 = 0;
     this->field_0x48 = 0;
-    collectedBounties[0] = 0;
-    collectedBounties[1] = 0;
-    collectedBounties[2] = 0;
-    collectedBounties[3] = 0;
-    this->field_0x17c = 0;
+    for (int i = 0; i < 4; i++) {
+        collectedBounties[i] = 0;
+    }
     field_178 = 0;
+    this->field_0x17c = 0;
 }
 
 int Status::getFreighterMissionStationBit(int station) {
-    if (station == 0xf) return 4;
-    if (station == 0x5f) return 6;
-    if (station == 0x28) return 3;
-    if (station == 0x2d) return 9;
-    if (station == 0x3c) return 5;
-    if (station == 0x46) return 7;
-    if (station == 0x50) return 8;
-    if (station == 0x55) return 1;
-    if (station == 0x1e) return 2;
-    return 0;
+    switch (station) {
+        case 85: return 1;
+        case 30: return 2;
+        case 40: return 3;
+        case 15: return 4;
+        case 60: return 5;
+        case 95: return 6;
+        case 70: return 7;
+        case 80: return 8;
+        case 45: return 9;
+        default: return 0;
+    }
 }
 
 static int **g_ccpPriceMod = nullptr;
@@ -579,7 +532,7 @@ void Status::calcCargoPrices() {
     }
 }
 
-bool Status::isOnStack(Station *s) {
+Station *Status::isOnStack(Station *s) {
     unsigned i = 0;
     while (true) {
         if (2 < i) {
@@ -591,7 +544,7 @@ bool Status::isOnStack(Station *s) {
         }
         i = i + 1;
     }
-    return (*stationStack)[i] != 0;
+    return (*stationStack)[i];
 }
 
 bool Status::inAlienOrbit() {
@@ -662,9 +615,8 @@ void Status::resetGame() {
         reinterpret_cast<int32_t &>(this->_byte_0x28) = 0;
     }
     if (this->wingmen != 0) {
-        Array<String *> *wm = (Array<String *> *) (intptr_t) this->wingmen;
-        ArrayReleaseClasses(*wm);
-        delete wm;
+        ArrayReleaseClasses(*this->wingmen);
+        delete this->wingmen;
     }
 
     this->fadeValue = 0;
@@ -1040,22 +992,22 @@ bool Status::inEmptyOrbit() {
 }
 
 void Status::loadWanted() {
-    FileRead fr;
-    wanted = fr.loadWanted();
+    FileRead *fileRead = new FileRead();
+    wanted = fileRead->loadWanted();
+    delete fileRead;
 }
 
 void Status::unlockBluePrint(int index) {
     for (unsigned i = 0; i < bluePrints->size(); i = i + 1) {
-        BluePrint *bp = (*bluePrints)[i];
-        if (bp->getIndex() == index) {
-            bp->unlock();
+        if ((*bluePrints)[i]->getIndex() == index) {
+            (*bluePrints)[i]->unlock();
         }
     }
 }
 
 float Status::getGammaRayDamagePerSecond(int station, int system) {
     float damage = 0.0f;
-    if (station >= 109 && station <= 113) {
+    if ((unsigned) (station - 109) <= 4) {
         if (system <= 105) {
             switch (station) {
                 case 109: return 0.7f;
@@ -1672,23 +1624,20 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
 }
 
 void Status::loadAgents() {
-    FileRead fr;
-    agents = fr.loadAgents();
+    FileRead *fileRead = new FileRead();
+    agents = fileRead->loadAgents();
+    delete fileRead;
 }
 
-Array<int> *Status::loadAgents(Array<int> *agents) {
-    return agents;
+void Status::loadAgents(Array<int> *agents) {
+    (void) agents;
 }
 
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
 
 void Status::checkForLevelUp() {
-    int a0 = field_a0;
-    int a4 = field_a4;
-    int d4 = field_d4 / 3;
-    int k = kills + d4;
-    int a0d = a0 / 0x32;
-    int sum = k + a0d + a4 + missionCount * 2 + currentCampaignMission + stationsVisited;
+    int sum = kills + field_d4 / 3 + field_a0 / 50 + field_a4 + missionCount * 2 +
+              currentCampaignMission + stationsVisited;
     for (int i = 0; i != 0x15; i = i + 1) {
         if (sum >= g_levelXPTable[i]) {
             level = i;
@@ -1786,22 +1735,19 @@ void Status::moveWanted() {
 }
 
 void Status::setWingmen(Array<String *> *list) {
-    Array<String *> *cur = (Array<String *> *) (intptr_t) wingmen;
-    if (cur != 0) {
-        ArrayReleaseClasses(*cur);
+    if (wingmen != 0) {
+        ArrayReleaseClasses(*wingmen);
     }
     if (list == 0) {
         wingmen = 0;
         reinterpret_cast<int32_t &>(this->_byte_0x28) = 0;
         this->fadeValue = 0;
     } else {
-        Array<String *> *na = new Array<String *>();
-        wingmen = (int32_t)(intptr_t)
-        na;
-        ArraySetLength(list->size(), *na);
+        wingmen = new Array<String *>();
+        ArraySetLength(list->size(), *wingmen);
         for (unsigned i = 0; i < list->size(); i = i + 1) {
-            String *s = new String(*(*list)[i], false);
-            (*na)[i] = s;
+            String *name = new String(*(*list)[i], false);
+            (*wingmen)[i] = name;
         }
     }
 }
