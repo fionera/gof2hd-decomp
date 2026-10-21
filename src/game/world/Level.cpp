@@ -4539,6 +4539,7 @@ void Level::connectPlayers() {
         bool wingman = ship->isWingMan();
         bool firstOfMission24 = campaignMission == 0x24 && i == 0;
 
+        // count the targets this ship may engage
         unsigned int count = 0;
         for (unsigned int k = 0; k < enemies->size(); k++) {
             KIPlayer *other = (*enemies)[k];
@@ -4549,13 +4550,15 @@ void Level::connectPlayers() {
                 if (other->isWingMan()) {
                     continue;
                 }
+            } else if (campaignMission == 0x40) {
+                if (i == 0 || ship == nullptr || k == 0) {
+                    continue;
+                }
             } else if (campaignMission == 0x9a) {
                 bool alienOrbit = Globals::status->inAlienOrbit();
                 if (k == 8 && alienOrbit && ship->shipGroup == 8) {
                     continue;
                 }
-            } else if (campaignMission == 0x40 && !(i != 0 && ship != nullptr && k != 0)) {
-                continue;
             }
             if (ship->field_0x40 && ((PlayerFixedObject *) ship)->getDockingType() == 3
                 && Globals::status->getStation()->stationHasHiddenBlueprint(true)) {
@@ -4571,49 +4574,14 @@ void Level::connectPlayers() {
         ArraySetLength(count, *targets);
 
         Mission *mission = Globals::status->getMission();
-        bool friendly = ((i & 1) && mission->getType() == 12) || mission->getType() == 2 || mission->getType() == 9
-                        || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x10
-                            && ship->shipGroup == 9)
-                        || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x18
-                            && ship->shipGroup == 9)
-                        || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x1c
-                            && ship->shipGroup == 9);
-        if (!friendly) {
-            if (mission->isCampaignMission()) {
-                Globals::status->getCurrentCampaignMission();
-            }
-            if (mission->isCampaignMission()) {
-                Globals::status->getCurrentCampaignMission();
-            }
-            int slot = 0;
-            if (player != nullptr) {
-                (*targets)[0] = player->player;
-                slot = 1;
-            }
-            for (unsigned int k = 0; k < enemies->size(); k++) {
-                KIPlayer *other = (*enemies)[k];
-                if (other == ship || (!wingman & (other->shipGroup == group))) {
-                    continue;
-                }
-                if (firstOfMission24) {
-                    if (other->isWingMan()) {
-                        continue;
-                    }
-                } else if (campaignMission == 0x9a) {
-                    bool alienOrbit = Globals::status->inAlienOrbit();
-                    if (k == 8 && alienOrbit && ship->shipGroup == 8) {
-                        continue;
-                    }
-                } else if (campaignMission == 0x40 && !(i != 0 && ship != nullptr && k != 0)) {
-                    continue;
-                }
-                if (ship->field_0x40 && ((PlayerFixedObject *) ship)->getDockingType() == 3
-                    && Globals::status->getStation()->stationHasHiddenBlueprint(true)) {
-                    continue;
-                }
-                (*targets)[slot++] = (*enemies)[k]->player;
-            }
-        } else {
+        if (((i & 1) && mission->getType() == 12) || mission->getType() == 2 || mission->getType() == 9
+            || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x10
+                && ship->shipGroup == 9)
+            || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x18
+                && ship->shipGroup == 9)
+            || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x1c
+                && ship->shipGroup == 9)) {
+            // escort / defend: this ship only fights the player's foes
             if (ship->player->isAlwaysFriend()) {
                 delete targets;
                 targets = new Array<Player *>();
@@ -4638,6 +4606,43 @@ void Level::connectPlayers() {
                 }
             }
             (*targets)[targets->size() - 1] = player->player;
+        } else {
+            if (mission->isCampaignMission()) {
+                Globals::status->getCurrentCampaignMission();
+            }
+            if (mission->isCampaignMission()) {
+                Globals::status->getCurrentCampaignMission();
+            }
+            int slot = 0;
+            if (player != nullptr) {
+                (*targets)[0] = player->player;
+                slot = 1;
+            }
+            for (unsigned int k = 0; k < enemies->size(); k++) {
+                KIPlayer *other = (*enemies)[k];
+                if (other == ship || (!wingman & (other->shipGroup == group))) {
+                    continue;
+                }
+                if (firstOfMission24) {
+                    if (other->isWingMan()) {
+                        continue;
+                    }
+                } else if (campaignMission == 0x40) {
+                    if (i == 0 || ship == nullptr || k == 0) {
+                        continue;
+                    }
+                } else if (campaignMission == 0x9a) {
+                    bool alienOrbit = Globals::status->inAlienOrbit();
+                    if (k == 8 && alienOrbit && ship->shipGroup == 8) {
+                        continue;
+                    }
+                }
+                if (ship->field_0x40 && ((PlayerFixedObject *) ship)->getDockingType() == 3
+                    && Globals::status->getStation()->stationHasHiddenBlueprint(true)) {
+                    continue;
+                }
+                (*targets)[slot++] = (*enemies)[k]->player;
+            }
         }
         ship->player->addEnemies(targets);
         delete targets;
