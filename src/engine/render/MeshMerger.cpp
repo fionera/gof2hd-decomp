@@ -21,7 +21,6 @@ void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
 
 void AEMath_BSphere_assign(void *dst, const void *src); // lint: void_ptr (external symbol signature)
 
-static void (*const g_freeFn)(void *) = ::free; // lint: void_ptr (matches libc free signature)
 
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                        PaintCanvas *canvas, uint16_t flags) {
@@ -159,39 +158,34 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags) 
 }
 
 MeshMerger::~MeshMerger() {
-    if (this->sourceMeshes != nullptr) delete[] this->sourceMeshes;
+    if (this->sourceMeshes != nullptr)
+        delete[] this->sourceMeshes;
     this->sourceMeshes = nullptr;
 
-    int count = this->rows * this->cols;
-    for (int i = 0; i < count; i++) {
-        Mesh *cell = this->transformedMeshes[i];
-        if (cell->positions != nullptr) {
-            delete[] (char *) cell->positions;
-            this->transformedMeshes[i]->positions = nullptr;
-        }
-        cell = this->transformedMeshes[i];
-        if (cell->normals != nullptr) {
-            delete[] (char *) cell->normals;
-            this->transformedMeshes[i]->normals = nullptr;
-        }
-        cell = this->transformedMeshes[i];
-        if (cell != nullptr) {
-            delete reinterpret_cast<unsigned char *>(cell);
-        }
+    for (int i = 0; i < this->rows * this->cols; i++) {
+        if (this->transformedMeshes[i]->positions != nullptr)
+            delete[] this->transformedMeshes[i]->positions;
+        this->transformedMeshes[i]->positions = nullptr;
+        if (this->transformedMeshes[i]->normals != nullptr)
+            delete[] this->transformedMeshes[i]->normals;
+        this->transformedMeshes[i]->normals = nullptr;
+        if (this->transformedMeshes[i] != nullptr)
+            delete this->transformedMeshes[i];
         this->transformedMeshes[i] = nullptr;
     }
-    Mesh **transformedMeshes = this->transformedMeshes;
-    if (transformedMeshes != nullptr) delete[] transformedMeshes;
+    if (this->transformedMeshes != nullptr)
+        delete[] this->transformedMeshes;
     this->transformedMeshes = nullptr;
 
-    g_freeFn(this->lods);
+    delete[] this->lods;
     this->lods = nullptr;
-    g_freeFn(this->enabledFlags);
+    delete[] this->enabledFlags;
     this->enabledFlags = nullptr;
-    g_freeFn(this->visibleFlags);
+    delete[] this->visibleFlags;
     this->visibleFlags = nullptr;
 
-    if (this->matrices != nullptr) delete[] this->matrices;
+    if (this->matrices != nullptr)
+        delete[] this->matrices;
     this->matrices = nullptr;
 }
 

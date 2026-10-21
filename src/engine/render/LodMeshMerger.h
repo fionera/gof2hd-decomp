@@ -1,6 +1,7 @@
 #ifndef GOF2_LODMESHMERGER_H
 #define GOF2_LODMESHMERGER_H
 #include "engine/core/Array.h"
+#include "engine/render/AMeshMerger.h"
 #include "../core/AEString.h"
 #include "PaintCanvas.h"
 
@@ -16,15 +17,8 @@ namespace AbyssEngine {
 using ::AbyssEngine::PaintCanvas;
 using ::AbyssEngine::Mesh;
 
-class LodMeshMerger {
+class LodMeshMerger : public AMeshMerger {
 public:
-    int rows;
-    uint16_t flags;
-    uint8_t initialized;
-    Array<Mesh *> sourceMeshes;
-    PaintCanvas *canvas;
-    uint32_t mergedMeshId;
-    uint32_t transformId;
     Mesh *mergedMesh;
     Mesh **transformedMeshes;
     AbyssEngine::Matrix *transforms;
