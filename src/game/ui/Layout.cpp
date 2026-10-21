@@ -911,73 +911,47 @@ void Layout::drawHeader(String title, bool transition) {
 
 
 
-static const char g_mrLit0[] = "";
-
-static const char g_mrLit1[] = "";
 
 
-static int *g_mrTextId = nullptr;
 
 
-static const char g_mrLit2[] = "";
+
 
 void Layout::drawMissionRewardMessage(bool transition) {
-    if (this->rewardMessageActive != 0) {
-        PaintCanvas *pc = Globals::Canvas;
-        unsigned saved = pc->GetColor();
-        unsigned origColor = this->drawColor;
+    if (this->rewardMessageActive) {
+        unsigned int savedColor = Globals::Canvas->GetColor();
+        unsigned int savedDrawColor = this->drawColor;
         Globals::Canvas->SetColor(0xffffffff);
-
-        int t = this->rewardMessageTimer;
-        float a;
-        if (t < 2000) {
-            a = (float) t / 6000.0f;
-        } else if (t > 5000) {
-            a = (float) (7000 - t) / 6000.0f;
-        } else {
-            a = 1.0f;
-        }
-        unsigned col = (unsigned) ((int) (a * 256.0f)) - 0x100;
-        Globals::Canvas->SetColor(col);
-
-        unsigned newColor = pc->GetColor();
+        float fade;
+        if (this->rewardMessageTimer < 2000)
+            fade = (float) this->rewardMessageTimer / 2000.0f;
+        else if (this->rewardMessageTimer > 5000)
+            fade = (float) (7000 - this->rewardMessageTimer) / 2000.0f;
+        else
+            fade = 1.0f;
+        Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
+        this->drawColor = Globals::Canvas->GetColor();
         int boxW = this->rewardBoxWidth;
         int boxH = this->rewardBoxHeight;
-        int boxX = this->rewardBoxX;
-        int boxY = this->rewardBoxY;
-        this->drawColor = newColor;
-
-        if (transition != 0) {
-            int sw = Globals::w;
-            String s0(g_mrLit0);
-            this->drawBox(2, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s0, 0u);
-
-            sw = Globals::w;
-            String s1(g_mrLit1);
-            this->drawBox(8, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s1, 0u);
+        int boxY = this->rewardBoxX;
+        int textY = this->rewardBoxY;
+        if (transition) {
+            this->drawBox(2, (Globals::w >> 1) - (boxH >> 1), boxY, boxH, boxW, String(""));
+            this->drawBox(8, (Globals::w >> 1) - (boxH >> 1), boxY, boxH, boxW, String(""));
         }
-
-        int sh = Globals::w;
-        pc->DrawImage2D(this->rewardIconImage, sh >> 1, (char) boxX, (unsigned char) (0x11));
-
-        String *txt = Globals::gameText->getText(*g_mrTextId);
-        String line(*txt);
-
-        sh = Globals::w;
-        unsigned font = (unsigned int) (unsigned long) Globals::font;
-        int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), line);
-        pc->DrawString((unsigned) (unsigned long) (font), line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
-
-        String suffix(g_mrLit2);
-        String credits = this->formatCredits(this->rewardCredits);
-        line = suffix + credits;
-
-        sh = Globals::w;
-        tw = pc->GetTextWidth((unsigned) (unsigned long) (font), line);
-        pc->DrawString((unsigned) (unsigned long) (font), line, (sh >> 1) - (tw >> 1),
-                       this->rewardBoxY2 + boxX, false);
-        Globals::Canvas->SetColor(saved);
-        this->drawColor = origColor;
+        Globals::Canvas->DrawImage2D(this->rewardIconImage, Globals::w >> 1, boxY, 0x11, 0x14);
+        String text(*Globals::gameText->getText(this->rewardMessageFlag ? 3206 : 216), false);
+        Globals::Canvas->DrawString(
+            (unsigned int) (uintptr_t) Globals::font, text,
+            (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
+            boxY + textY, false);
+        text = String("+ ") + this->formatCredits(this->rewardCredits);
+        Globals::Canvas->DrawString(
+            (unsigned int) (uintptr_t) Globals::font, text,
+            (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
+            this->rewardBoxY2 + boxY, false);
+        Globals::Canvas->SetColor(savedColor);
+        this->drawColor = savedDrawColor;
     }
 }
 
