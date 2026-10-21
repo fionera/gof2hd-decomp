@@ -489,7 +489,6 @@ void Player::addEnemies(Array<Player *> *enemies) {
 Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
     Player * self = this;
 
-    *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(self->transform) = AbyssEngine::AEMath::Matrix();
     self->shieldHP = 0.0f;
     self->armorHP = 0;
     self->maxArmorHP = 0;
@@ -522,32 +521,30 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->guns = gunArr;
     ArraySetLength(3, *gunArr);
 
-    if (numPrimary < 1) {
-        self->guns->data()[0] = 0;
+    if (numPrimary >= 1) {
+        (*self->guns)[0] = new Array<Gun *>();
+        ArraySetLength(numPrimary, *(*self->guns)[0]);
     } else {
-        Array<Gun *> *a = new Array<Gun *>();
-        self->guns->data()[0] = a;
-        ArraySetLength(numPrimary, *self->guns->data()[0]);
+        (*self->guns)[0] = nullptr;
     }
-    if (numSecondary < 1) {
-        self->guns->data()[1] = 0;
+    if (numSecondary >= 1) {
+        (*self->guns)[1] = new Array<Gun *>();
+        ArraySetLength(numSecondary, *(*self->guns)[1]);
     } else {
-        Array<Gun *> *a = new Array<Gun *>();
-        self->guns->data()[1] = a;
-        ArraySetLength(numSecondary, *self->guns->data()[1]);
+        (*self->guns)[1] = nullptr;
     }
-    if (numTertiary < 1) {
-        self->guns->data()[2] = 0;
+    if (numTertiary >= 1) {
+        (*self->guns)[2] = new Array<Gun *>();
+        ArraySetLength(numTertiary, *(*self->guns)[2]);
     } else {
-        Array<Gun *> *a = new Array<Gun *>();
-        self->guns->data()[2] = a;
-        ArraySetLength(numTertiary, *self->guns->data()[2]);
+        (*self->guns)[2] = nullptr;
     }
 
-    self->playShootSoundFlag = 1;
     self->playShootSoundId = 1;
+    self->playShootSoundFlag = 1;
     reinterpret_cast<uint16_t &>(self->destroyedByte) = 0;
     self->active = 1;
+    self->damaged = 0;
     self->damageTimer = 0;
     self->vulnerable = 1;
     self->kiPlayer = 0;
@@ -570,14 +567,14 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->gammaHit = 0;
 
     Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
-        *reinterpret_cast<const Matrix *>(self->transform));
+        self->transform);
     self->lastPosition = tmp;
     self->engineSoundId = -1;
 }
 
 Vector Player::getPosition() {
     Vector out = AbyssEngine::AEMath::MatrixGetPosition(
-        *reinterpret_cast<const Matrix *>(this->transform));
+        this->transform);
     return out;
 }
 

@@ -1,14 +1,17 @@
 #ifndef GOF2_MATRIX_H
 #define GOF2_MATRIX_H
 #include "engine/math/Vector.h"
+#include "engine/math/MatrixElements.h"
 
 namespace AbyssEngine {
     namespace AEMath {
         struct Matrix {
-            // Canonical 15-float storage. Named element views were removed (former union);
-            // cross-file uses now index m[] directly: e3=m[3], m11_rightY=m[4], m12_upY=m[5],
-            // e7=m[7], e11=m[11].
-            float m[15];
+            // 15 scalar elements, indexed as m[i] (e3=m[3], m11_rightY=m[4], m12_upY=m[5], e7=m[7],
+            // e11=m[11]). The storage is deliberately NOT a C array: under -fstack-protector-strong a
+            // local whose type contains an array is placed next to the stack guard, ahead of the
+            // other locals, while the original lays Matrix locals out in plain declaration order
+            // (PlayerEgo::moveToPosition / handleTurretView stack slots; +5 linked, none lost).
+            MatrixElements m;
 
             Matrix() {
                 m[0] = 1.0f;
