@@ -767,7 +767,8 @@ String Globals::getAgentMissionText(Agent *agent) {
                     return text;
                 }
                 int costs = (int) ((float) abs(standing) / 100.0f * 32000.0f);
-                text = *Globals::gameText->getText(race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882);
+                int textId = race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882;
+                text = *Globals::gameText->getText(textId);
                 text = Globals::status->replaceHash(String(text, false),
                                                     String(Globals::layout->formatCredits(costs), false),
                                                     String("#C", false));
