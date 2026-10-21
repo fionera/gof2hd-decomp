@@ -160,15 +160,14 @@ LodMeshMerger::LodMeshMerger(int rows_, int cols_, PaintCanvas *canvas_, uint16_
     for (uint32_t i = 0; i < n; i++) visible[i] = 1;
 }
 
-int LodMeshMerger::init() {
+void LodMeshMerger::init() {
     if (initialized != 0) {
-        return initialized;
+        return;
     }
 
     for (int i = 0; i < rows; i++) {
         int c = 0;
-        int lod = lodLevels[i];
-        if (lod >= -1 && cols <= lod) {
+        if (lodLevels[i] >= -1 && cols <= lodLevels[i]) {
             lodLevels[i] = 0;
         }
         for (; c < cols; c++) {
@@ -179,19 +178,17 @@ int LodMeshMerger::init() {
         }
     }
 
-    uint32_t nv = 0;
-    uint32_t ni = 0;
+    uint32_t vertexCount = 0;
+    uint32_t indexCount = 0;
     for (int i = 0; i < rows; i++) {
-        Mesh *m0 = sourceMeshes.data()[i];
-        nv += m0->vertexCount;
-        ni += (uint32_t)m0->indexCount / 3u;
+        Mesh *mesh = sourceMeshes.data()[i];
+        indexCount += (uint32_t) mesh->indexCount / 3u;
+        vertexCount += mesh->vertexCount;
     }
+    if (vertexCount > 65535u) vertexCount = 65535u;
+    if (indexCount > 65535u) indexCount = 65535u;
 
-    uint32_t nv_clamped = nv;
-    if (nv_clamped > 65535u) nv_clamped = 65535u;
-    uint32_t ni_clamped = (ni < 65535u) ? ni : 65535u;
-
-    canvas->MeshCreate((uint16_t)ni_clamped, (uint16_t)nv_clamped,
+    canvas->MeshCreate((uint16_t) vertexCount, (uint16_t) indexCount,
                        (signed char) sourceMeshes.data()[0]->vertexFormat,
                        flags, mergedMeshId);
     mergedMesh = canvas->MeshGetPointer(mergedMeshId);
@@ -199,7 +196,6 @@ int LodMeshMerger::init() {
     canvas->TransformAddMeshId(transformId, mergedMeshId);
     dirty = 1;
     update();
-    return initialized;
 }
 
 Mesh *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {

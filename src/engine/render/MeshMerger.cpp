@@ -296,48 +296,44 @@ void MeshMerger::update() {
     this->dirty = 0;
 }
 
-int MeshMerger::init() {
+void MeshMerger::init() {
     if (this->initialized != 0) {
-        return this->initialized;
+        return;
     }
 
-    int rows;
-    for (int i = 0; i < (rows = this->rows); i++) {
-        int lod = this->lods[i];
-        if (lod >= -1 && this->cols <= lod) {
+    for (int i = 0; i < this->rows; i++) {
+        int c = 0;
+        if (this->lods[i] >= -1 && this->cols <= this->lods[i]) {
             this->lods[i] = 0;
         }
-        for (int c = 0; c < this->cols; c++) {
+        for (; c < this->cols; c++) {
             Mesh *mesh = this->sourceMeshes[this->rows * c + i];
             if (mesh != nullptr) {
-                Mesh *t = (Mesh *) this->transformMesh(mesh, *(const Matrix *) (this->matrices + i * 0x3c));
-                this->transformedMeshes[this->rows * c + i] = t;
+                this->transformedMeshes[this->rows * c + i] =
+                        transformMesh(mesh, *(const Matrix *) (this->matrices + i * 0x3c));
             }
         }
     }
 
-    uint16_t nv = 0;
-    uint16_t ni = 0;
-    for (int i = 0; i < rows; i++) {
-        Mesh *m0 = this->sourceMeshes[i];
-        ni = ni + aeabi_uidiv16(m0->indexCount, 3);
-        nv = nv + m0->vertexCount;
+    uint32_t vertexCount = 0;
+    uint32_t indexCount = 0;
+    for (int i = 0; i < this->rows; i++) {
+        Mesh *mesh = this->sourceMeshes[i];
+        indexCount += (uint32_t) mesh->indexCount / 3u;
+        vertexCount += mesh->vertexCount;
     }
 
-    Mesh *first = this->sourceMeshes[0];
-    this->canvas->MeshCreate(nv, ni, (signed char) first->vertexFormat, this->mergedMeshId);
+    this->canvas->MeshCreate((uint16_t) vertexCount, (uint16_t) indexCount,
+                             (signed char) this->sourceMeshes[0]->vertexFormat, this->flags,
+                             this->mergedMeshId);
     this->mergedMesh = this->canvas->MeshGetPointer(this->mergedMeshId);
     this->canvas->TransformCreate(this->transformId);
     this->canvas->TransformAddMeshId(this->transformId, this->mergedMeshId);
     this->dirty = 1;
-
-    this->initialized = 1;
     this->update();
-    return this->initialized;
 }
 
-void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) { // lint: void_ptr (method return type baked into symbol-parity contract)
-    // lint: void_ptr (method return type baked into symbol-parity contract)
+MeshMerger::Mesh *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
     Mesh *out = new Mesh(mesh);
     out->vertexCount = mesh->vertexCount;
     out->indexCount = mesh->indexCount;

@@ -48,9 +48,9 @@ public:
 
     void update();
 
-    int init();
+    void init();
 
-    Mesh *transformMesh(Mesh *src, const AbyssEngine::Matrix &m);
+    static Mesh *transformMesh(Mesh *src, const AbyssEngine::Matrix &m);
 };
 
 #endif
