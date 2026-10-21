@@ -2724,191 +2724,41 @@ PaintCanvas::~PaintCanvas() {
     this->ReleaseAllResources();
 
     for (unsigned int i = 0; i < this->resources.count; i++) {
-        PCResourceView *res = (PCResourceView *) (this->resources.data_)[i];
-        if (res != 0) {
-            char *payload = res->payload;
-            int type = res->type;
-            switch (type) {
-                case 1:
-                case 3:
-                case 6:
-                    delete payload;
-                    break;
-                case 2:
-                    if (payload) {
-                        delete (AbyssEngine::ResourceTexture *) payload;
-                    }
-                    break;
-                case 4:
-                    if (payload) {
-                        delete (AbyssEngine::ResourceMesh *) payload;
-                    }
-                    break;
-                case 5:
-                    if (payload) {
-                        delete (AbyssEngine::ResourceTransform *) payload;
-                    }
-                    break;
-                default:
-                    break;
-            }
-            char *cell = (char *) (this->resources.data_)[i];
-            if (cell != 0) {
-                delete cell;
-            }
-            (this->resources.data_)[i] = 0;
-
-            {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowMeshes;
-                for (uint32_t j = 0; j < a->count; ++j) {
-                    char *e = ((char **) a->data)[j];
-                    if (e != nullptr)
-                        ::operator delete(e);
-                }
-                a->count = 0;
-            }
-            {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatA;
-                ::operator delete(a->data);
-                a->data = nullptr;
-                a->count = 0;
-                a->capacity = 0;
-            }
-            {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatB;
-                ::operator delete(a->data);
-                a->data = nullptr;
-                a->count = 0;
-                a->capacity = 0;
-            }
-            {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowUints;
-                for (uint32_t j = 0; j < a->count; ++j) {
-                    char *e = ((char **) a->data)[j];
-                    if (e != nullptr)
-                        ::operator delete(e);
-                }
-                a->count = 0;
-            }
-            {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatC;
-                ::operator delete(a->data);
-                a->data = nullptr;
-                a->count = 0;
-                a->capacity = 0;
-            }
+        PCResourceView *res = (PCResourceView *) this->resources.data_[i];
+        if (res == 0) {
+            continue;
         }
+        switch (res->type) {
+            case 1:
+            case 3:
+            case 6:
+                operator delete(res->payload);
+                break;
+            case 2:
+                delete (AbyssEngine::ResourceTexture *) res->payload;
+                break;
+            case 4:
+                delete (AbyssEngine::ResourceMesh *) res->payload;
+                break;
+            case 5:
+                delete (AbyssEngine::ResourceTransform *) res->payload;
+                break;
+        }
+        delete (PCResourceView *) this->resources.data_[i];
+        this->resources.data_[i] = 0;
+        ArrayRelease(this->glowMeshes);
+        ArrayRelease(this->glowMatA);
+        ArrayRelease(this->glowMatB);
+        ArrayRelease(this->glowUints);
+        ArrayRelease(this->glowMatC);
     }
 
     AbyssEngine::MeshRelease(this->engine, (AbyssEngine::Mesh **) &this->quad2dMesh);
     AbyssEngine::MeshRelease(this->engine, (AbyssEngine::Mesh **) &this->lineMesh);
 
     for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
-        PCCubeTexView *tex = (PCCubeTexView *) (this->cubeTextures.data_)[i];
-        if (tex != 0) {
-            reinterpret_cast<AbyssEngine::String *>(tex->pathField)->~String();
-            delete tex;
-        }
-        (this->cubeTextures.data_)[i] = 0;
-    }
-
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatC;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowUints;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatB;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatA;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowMeshes;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->spriteSystems;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->materials;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->cameras;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->transforms;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->images;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->fonts;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->resources;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->meshes;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-    {
-        PCArrayHeader *a = (PCArrayHeader *) &this->cubeTextures;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
+        delete this->cubeTextures.data_[i];
+        this->cubeTextures.data_[i] = 0;
     }
 }
 
@@ -4292,6 +4142,30 @@ void PaintCanvas::ReleaseAllResources() {
     }
     ArrayRemoveAll(this->spriteSystems);
     this->field_0x1cc = 0;
+}
+
+// The Resource* payload classes' destructors live in the PaintCanvas TU in the original
+// (0x77ebc.., right after ReleaseAllResources; iOS dump: Resource* classes in PaintCanvas.cpp).
+AbyssEngine::ResourceTexture::~ResourceTexture() {
+    delete[] this->name;
+    this->name = nullptr;
+}
+
+AbyssEngine::ResourceMesh::~ResourceMesh() {
+    delete[] this->name;
+    this->name = nullptr;
+}
+
+AbyssEngine::ResourceTransform::~ResourceTransform() {
+    if (this->dataA != nullptr) {
+        ::operator delete[](this->dataA);
+    }
+    this->dataA = nullptr;
+
+    if (this->dataB != nullptr) {
+        ::operator delete[](this->dataB);
+    }
+    this->dataB = nullptr;
 }
 
 static const unsigned int g_tg2d_defval_7b590 = 0;
