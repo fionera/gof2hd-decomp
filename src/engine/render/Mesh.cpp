@@ -323,135 +323,155 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    struct Vec2 {
-        float u, v;
-    };
+    int MeshConvertToVBOIntern(Mesh * mesh);
+    int TransformConvertToVBO(Transform * t);
 
-    Vec2 MeshIntersect(float qx, float qz, Mesh *mesh) {
-        Vec2 out;
-        unsigned int i = 0;
+    int MeshConvertToVBO(Mesh *mesh) {
+        int result = -4;
+        if (mesh != 0 && Engine::vboSupported) {
+            if (mesh->uploaded != 0 || mesh->vboEligible == 0)
+                return -4;
+            MeshConvertToVBOIntern(mesh);
+            TransformConvertToVBO(mesh->animation);
+            result = 1;
+        }
+        return result;
+    }
+}
 
-        for (;;) {
-            if ((unsigned int) mesh->indexCount <= i) {
-                out.u = -1.0f;
-                out.v = -1.0f;
-                return out;
-            }
+namespace AbyssEngine {
+    void MeshRelease(Engine * engine, Mesh * *slot);
 
-            float *pos = (float *) mesh->positions;
-            unsigned short *idx = (unsigned short *) mesh->indices + i;
-            float *a = pos + (unsigned int) idx[0] * 3;
-            float *b = pos + (unsigned int) idx[1] * 3;
-            float *c = pos + (unsigned int) idx[2] * 3;
+    void TransformRelease(Engine *engine, Transform **slot) {
+        Transform *t = (Transform *) *slot;
+        if (t == 0)
+            return;
 
-            float ax = a[0], az = a[2];
-            float bx = b[0], bz = b[2];
-            float cx = c[0], cz = c[2];
+        for (unsigned int i = 0; i < t->children.count; ++i) {
+            TransformRelease(engine, &t->children.data_[i]);
+            t = (Transform *) *slot;
+        }
 
-            float minZ = az, maxZ = bz;
-            if (bz < az) {
-                minZ = bz;
-                maxZ = az;
-            }
-            float minX = ax, maxX = bx;
-            if (bx < ax) {
-                minX = bx;
-                maxX = ax;
-            }
-            if (cz > maxZ) maxZ = cz;
-            if (cz < minZ) minZ = cz;
-            if (cx > maxX) maxX = cx;
-            if (cx < minX) minX = cx;
-
-            if (maxZ >= qz && minX <= qx && maxX >= qx && minZ <= qz) {
-                float ex = bx - ax, ez = bz - az;
-                float len = sqrtf(ez * ez + ex * ex);
-                float side = (ex / len) * qz + (-ez / len) * qx -
-                             (az * (ex / len) + ax * (-ez / len));
-                if (side <= 0.0f) {
-                    ex = cx - bx;
-                    ez = cz - bz;
-                    len = sqrtf(ez * ez + ex * ex);
-                    side = (ex / len) * qz + (-ez / len) * qx -
-                           (bz * (ex / len) + bx * (-ez / len));
-                    if (side <= 0.0f) {
-                        ez = az - cz;
-                        ex = ax - cx;
-                        len = sqrtf(ez * ez + ex * ex);
-                        side = (ex / len) * qz + (-ez / len) * qx -
-                               (cz * (ex / len) + cx * (-ez / len));
-                        if (side <= 0.0f) {
-                            float *uv = (float *) mesh->texCoords;
-                            unsigned int i0 = idx[0], i1 = idx[1], i2 = idx[2];
-                            out.u = (uv[i0 * 2] + uv[i1 * 2] + uv[i2 * 2]) / 3.0f;
-                            float vv = (uv[i0 * 2 + 1] + uv[i1 * 2 + 1] + uv[i2 * 2 + 1]) / 3.0f;
-                            out.v = vv;
-                            if (Engine::enableShader != 0)
-                                out.v = 1.0f - vv;
-                            return out;
-                        }
-                    }
-                }
-            }
-            i += 3;
+        for (unsigned int i = 0; i < t->meshes.count; ++i) {
+            MeshRelease(engine, &t->meshes.data_[i]);
+            t = (Transform *) *slot;
         }
     }
 }
 
 namespace AbyssEngine {
-    int MeshDraw(Engine *engine, Mesh *mesh) {
-        if (mesh == 0 || (short) mesh->vertexCount == 0 || (mesh->vertexFormat & 1) == 0)
+    void TransformRelease(Engine * engine, Transform * *slot);
+
+    void MeshReleaseIntern(Engine *engine, Mesh **slot);
+
+    void MeshRelease(Engine *engine, Mesh **slot) {
+        if (engine != 0 && *slot != 0) {
+            TransformRelease(engine, &(*slot)->animation);
+
+            MeshReleaseIntern(engine, slot);
+        }
+    }
+}
+
+namespace AbyssEngine {
+    void MeshReleaseIntern(Engine * /*engine*/, Mesh **slot) {
+        Mesh *m = *slot;
+        if (m == 0)
+            return;
+
+        if (m->shared == 0) {
+            if (m->uploaded != 0) {
+                glDeleteBuffers(1, &m->positionVBO);
+                glDeleteBuffers(1, &m->indexVBO);
+                unsigned char flags = m->vertexFormat;
+                if (flags & 2) {
+                    glDeleteBuffers(1, &m->texCoordVBO);
+                    flags = m->vertexFormat;
+                }
+                if (flags & 4) {
+                    glDeleteBuffers(1, &m->normalVBO);
+                    if (Engine::enableShader != 0) {
+                        glDeleteBuffers(1, &m->tangentVBO);
+                        glDeleteBuffers(1, &m->binormalVBO);
+                    }
+                }
+                if (m->vertexFormat & 8)
+                    glDeleteBuffers(1, &m->colorVBO);
+            }
+
+            if (m->indices != 0) operator delete[](m->indices); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->indices = 0;
+            if (m->positions != 0) operator delete[](m->positions); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->positions = 0;
+            if (m->texCoords != 0) operator delete[](m->texCoords); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->texCoords = 0;
+            if (m->colors != 0) operator delete[](m->colors); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->colors = 0;
+            if (m->normals != 0) operator delete[](m->normals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->normals = 0;
+
+            if (Engine::enableShader != 0) {
+                if (m->tangents != 0) operator delete[](m->tangents); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+                m->tangents = 0;
+                if (m->binormals != 0) operator delete[](m->binormals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+                m->binormals = 0;
+            }
+        }
+
+        delete m->animation;
+        m->animation = 0;
+
+        operator delete(m); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+        *slot = 0;
+    }
+}
+
+namespace AbyssEngine {
+    int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short triCount,
+                   signed char vertexFormat, Mesh **out) {
+        if (vertexCount < 4 || triCount == 0 || (vertexFormat & 1) == 0)
             return -4;
 
-        if (Engine::enableShader == 0 && mesh->uploaded != 0) {
-            glBindBuffer(0x8892, mesh->positionVBO);
-            engine->AEClientState(0x8074, true);
-            glVertexPointer(3, 0x1406, 0, 0);
-            glBindBuffer(0x8893, mesh->indexVBO);
+        Mesh *m = new Mesh();
+        *out = m;
+        m->vertexFormat = vertexFormat;
+        m->vertexCount = vertexCount;
+        m->indexCount = triCount * 3;
+        m->field_0x2a = triCount;
 
-            if (mesh->vertexFormat & 2) {
-                glBindBuffer(0x8892, mesh->texCoordVBO);
-                engine->AEClientState(0x8078, true);
-                glTexCoordPointer(2, 0x1406, 0, 0);
-            } else {
-                engine->AEClientState(0x8078, false);
-            }
+        float *f = new float[vertexCount * 3];
+        m->positions = (unsigned char *) f;
+        memset(f, 0, vertexCount * 3 * sizeof(float));
 
-            if (mesh->vertexFormat & 4) {
-                glBindBuffer(0x8892, mesh->normalVBO);
-                engine->AEClientState(0x8075, true);
-                glNormalPointer(0x1406, 0, 0);
-            } else {
-                engine->AEClientState(0x8075, false);
-            }
-
-            if (mesh->vertexFormat & 8) {
-                glBindBuffer(0x8892, mesh->colorVBO);
-                engine->AEClientState(0x8076, true);
-                glColorPointer(4, 0x1406, 0, 0);
-            } else {
-                engine->AEClientState(0x8076, false);
-            }
-
-            glDrawElements(4, (int) mesh->indexCount, 0x1403, 0);
-
-            // Engine byte 0xfe enables the draw statistics, byte 0xfd selects the bucket.
-            if (engine->field_0xfe != 0) {
-                int tris = (int) ((unsigned) mesh->indexCount / (unsigned) 3);
-                if (engine->statsEnabled != 0) {
-                    engine->triangleCountB += tris;
-                    engine->drawCallCountB += 1;
-                } else {
-                    engine->triangleCountA += tris;
-                    engine->drawCallCountA += 1;
-                }
-            }
-
-            glBindBuffer(0x8892, 0);
-            glBindBuffer(0x8893, 0);
-        } else {
-            engine->RenderMesh(mesh);
+        if (vertexFormat & 0x10) {
+            unsigned short *idx = new unsigned short[triCount * 3];
+            (*out)->indices = (unsigned char *) idx;
+            memset(idx, 0, triCount * 3 * sizeof(unsigned short));
         }
+        if (vertexFormat & 2) {
+            f = new float[vertexCount * 2];
+            m->texCoords = (unsigned char *) f;
+            memset(f, 0, vertexCount * 2 * sizeof(float));
+        }
+        if (vertexFormat & 4) {
+            f = new float[vertexCount * 3];
+            m->normals = (unsigned char *) f;
+            memset(f, 0, vertexCount * 3 * sizeof(float));
+            if (Engine::enableShader) {
+                f = new float[vertexCount * 3];
+                m->tangents = (unsigned char *) f;
+                memset(f, 0, vertexCount * 3 * sizeof(float));
+                f = new float[vertexCount * 3];
+                m->binormals = (unsigned char *) f;
+                memset(f, 0, vertexCount * 3 * sizeof(float));
+            }
+        }
+        if (vertexFormat & 8) {
+            f = new float[vertexCount * 4];
+            m->colors = (unsigned char *) f;
+            memset(f, 0, vertexCount * 4 * sizeof(float));
+        }
+
         return 1;
     }
 }
@@ -728,256 +748,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    void TransformRelease(Engine * engine, Transform * *slot);
-
-    void MeshReleaseIntern(Engine *engine, Mesh **slot);
-
-    void MeshRelease(Engine *engine, Mesh **slot) {
-        if (engine != 0 && *slot != 0) {
-            TransformRelease(engine, &(*slot)->animation);
-
-            MeshReleaseIntern(engine, slot);
-        }
-    }
-}
-
-namespace AbyssEngine {
-    int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short triCount,
-                   signed char vertexFormat, Mesh **out) {
-        if (vertexCount < 4 || triCount == 0 || (vertexFormat & 1) == 0)
-            return -4;
-
-        Mesh *m = new Mesh();
-        *out = m;
-        m->vertexFormat = vertexFormat;
-        m->vertexCount = vertexCount;
-        m->indexCount = triCount * 3;
-        m->field_0x2a = triCount;
-
-        float *f = new float[vertexCount * 3];
-        m->positions = (unsigned char *) f;
-        memset(f, 0, vertexCount * 3 * sizeof(float));
-
-        if (vertexFormat & 0x10) {
-            unsigned short *idx = new unsigned short[triCount * 3];
-            (*out)->indices = (unsigned char *) idx;
-            memset(idx, 0, triCount * 3 * sizeof(unsigned short));
-        }
-        if (vertexFormat & 2) {
-            f = new float[vertexCount * 2];
-            m->texCoords = (unsigned char *) f;
-            memset(f, 0, vertexCount * 2 * sizeof(float));
-        }
-        if (vertexFormat & 4) {
-            f = new float[vertexCount * 3];
-            m->normals = (unsigned char *) f;
-            memset(f, 0, vertexCount * 3 * sizeof(float));
-            if (Engine::enableShader) {
-                f = new float[vertexCount * 3];
-                m->tangents = (unsigned char *) f;
-                memset(f, 0, vertexCount * 3 * sizeof(float));
-                f = new float[vertexCount * 3];
-                m->binormals = (unsigned char *) f;
-                memset(f, 0, vertexCount * 3 * sizeof(float));
-            }
-        }
-        if (vertexFormat & 8) {
-            f = new float[vertexCount * 4];
-            m->colors = (unsigned char *) f;
-            memset(f, 0, vertexCount * 4 * sizeof(float));
-        }
-
-        return 1;
-    }
-}
-
-namespace AbyssEngine {
-    int MeshConvertToVBOIntern(Mesh *m) {
-        if (m == 0 || !Engine::vboSupported)
-            return -4;
-        if (m->uploaded != 0 || (short) m->indexCount == 0)
-            return -4;
-
-        unsigned char *pos = m->positions;
-        unsigned char *tex = m->texCoords;
-        unsigned char *col = m->colors;
-        unsigned char *nrm = m->normals;
-        unsigned char *tan = m->tangents;
-        unsigned char *bin = m->binormals;
-
-        glGenBuffers(1, &m->positionVBO);
-        glBindBuffer(0x8892, m->positionVBO);
-        glBufferData(0x8892, m->vertexCount * 0xc, pos, 0x88e4);
-
-        if (m->vertexFormat & 2) {
-            glGenBuffers(1, &m->texCoordVBO);
-            glBindBuffer(0x8892, m->texCoordVBO);
-            glBufferData(0x8892, m->vertexCount * 8, tex, 0x88e4);
-            m->vboByteSize += m->vertexCount * 8;
-
-            glGenBuffers(1, &m->indexVBO);
-            glBindBuffer(0x8893, m->indexVBO);
-            glBufferData(0x8893, m->indexCount * 2, m->indices, 0x88e4);
-            m->vboByteSize += m->indexCount * 2;
-        }
-
-        if (m->vertexFormat & 4) {
-            glGenBuffers(1, &m->normalVBO);
-            glBindBuffer(0x8892, m->normalVBO);
-            glBufferData(0x8892, m->vertexCount * 0xc, nrm, 0x88e4);
-            m->vboByteSize += m->vertexCount * 0xc;
-            if (Engine::enableShader != 0) {
-                glGenBuffers(1, &m->tangentVBO);
-                glBindBuffer(0x8892, m->tangentVBO);
-                glBufferData(0x8892, m->vertexCount * 0xc, tan, 0x88e4);
-                m->vboByteSize += m->vertexCount * 0xc;
-                glGenBuffers(1, &m->binormalVBO);
-                glBindBuffer(0x8892, m->binormalVBO);
-                glBufferData(0x8892, m->vertexCount * 0xc, bin, 0x88e4);
-                m->vboByteSize += m->vertexCount * 0xc;
-            }
-        }
-
-        if (m->vertexFormat & 8) {
-            glGenBuffers(1, &m->colorVBO);
-            glBindBuffer(0x8892, m->colorVBO);
-            glBufferData(0x8892, m->vertexCount * 0x10, col, 0x88e4);
-            m->vboByteSize += m->vertexCount * 0x10;
-        }
-
-        glBindBuffer(0x8892, 0);
-        glBindBuffer(0x8893, 0);
-
-        if (glGetError() != 0) {
-            if (m->uploaded != 0) {
-                glDeleteBuffers(1, &m->positionVBO);
-                glDeleteBuffers(1, &m->indexVBO);
-                unsigned char f = m->vertexFormat;
-                if (f & 2) {
-                    glDeleteBuffers(1, &m->texCoordVBO);
-                    f = m->vertexFormat;
-                }
-                if (f & 4) {
-                    glDeleteBuffers(1, &m->normalVBO);
-                    if (Engine::enableShader != 0) {
-                        glDeleteBuffers(1, &m->tangentVBO);
-                        glDeleteBuffers(1, &m->binormalVBO);
-                    }
-                }
-                if (m->vertexFormat & 8)
-                    glDeleteBuffers(1, &m->colorVBO);
-            }
-            m->vboByteSize = 0;
-            return -1;
-        }
-
-        if (Engine::KeepRawMeshData == 0) {
-            if (m->positions != 0) operator delete[](m->positions); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->positions = 0;
-            if (m->texCoords != 0) operator delete[](m->texCoords); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->texCoords = 0;
-            if (m->indices != 0) operator delete[](m->indices); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->indices = 0;
-            if (m->normals != 0) operator delete[](m->normals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->normals = 0;
-            if (m->colors != 0) operator delete[](m->colors); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->colors = 0;
-            if (m->tangents != 0) operator delete[](m->tangents); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->tangents = 0;
-            if (m->binormals != 0) operator delete[](m->binormals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->binormals = 0;
-        }
-        m->uploaded = 1;
-        Engine::vboSize += m->vboByteSize;
-        return 1;
-    }
-}
-
-namespace AbyssEngine {
-    int MeshConvertToVBO(Mesh * mesh);
-
-    int TransformConvertToVBO(Transform *t) {
-        if (t != 0) {
-            for (unsigned int i = 0; i < t->meshes.count; ++i)
-                MeshConvertToVBO(t->meshes.data_[i]);
-            for (unsigned int i = 0; i < t->children.count; ++i)
-                TransformConvertToVBO(t->children.data_[i]);
-        }
-        return 1;
-    }
-}
-
-namespace AbyssEngine {
-    void MeshReleaseIntern(Engine * /*engine*/, Mesh **slot) {
-        Mesh *m = *slot;
-        if (m == 0)
-            return;
-
-        if (m->shared == 0) {
-            if (m->uploaded != 0) {
-                glDeleteBuffers(1, &m->positionVBO);
-                glDeleteBuffers(1, &m->indexVBO);
-                unsigned char flags = m->vertexFormat;
-                if (flags & 2) {
-                    glDeleteBuffers(1, &m->texCoordVBO);
-                    flags = m->vertexFormat;
-                }
-                if (flags & 4) {
-                    glDeleteBuffers(1, &m->normalVBO);
-                    if (Engine::enableShader != 0) {
-                        glDeleteBuffers(1, &m->tangentVBO);
-                        glDeleteBuffers(1, &m->binormalVBO);
-                    }
-                }
-                if (m->vertexFormat & 8)
-                    glDeleteBuffers(1, &m->colorVBO);
-            }
-
-            if (m->indices != 0) operator delete[](m->indices); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->indices = 0;
-            if (m->positions != 0) operator delete[](m->positions); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->positions = 0;
-            if (m->texCoords != 0) operator delete[](m->texCoords); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->texCoords = 0;
-            if (m->colors != 0) operator delete[](m->colors); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->colors = 0;
-            if (m->normals != 0) operator delete[](m->normals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-            m->normals = 0;
-
-            if (Engine::enableShader != 0) {
-                if (m->tangents != 0) operator delete[](m->tangents); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->tangents = 0;
-                if (m->binormals != 0) operator delete[](m->binormals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                m->binormals = 0;
-            }
-        }
-
-        delete m->animation;
-        m->animation = 0;
-
-        operator delete(m); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-        *slot = 0;
-    }
-}
-
-namespace AbyssEngine {
-    int MeshConvertToVBOIntern(Mesh * mesh);
-    int TransformConvertToVBO(Transform * t);
-
-    int MeshConvertToVBO(Mesh *mesh) {
-        int result = -4;
-        if (mesh != 0 && Engine::vboSupported) {
-            if (mesh->uploaded != 0 || mesh->vboEligible == 0)
-                return -4;
-            MeshConvertToVBOIntern(mesh);
-            TransformConvertToVBO(mesh->animation);
-            result = 1;
-        }
-        return result;
-    }
-}
-
-namespace AbyssEngine {
     int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                      Material *mat);
 
@@ -1110,21 +880,252 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    void MeshRelease(Engine * engine, Mesh * *slot);
+    int MeshDraw(Engine *engine, Mesh *mesh) {
+        if (mesh == 0 || (short) mesh->vertexCount == 0 || (mesh->vertexFormat & 1) == 0)
+            return -4;
 
-    void TransformRelease(Engine *engine, Transform **slot) {
-        Transform *t = (Transform *) *slot;
-        if (t == 0)
-            return;
+        if (Engine::enableShader == 0 && mesh->uploaded != 0) {
+            glBindBuffer(0x8892, mesh->positionVBO);
+            engine->AEClientState(0x8074, true);
+            glVertexPointer(3, 0x1406, 0, 0);
+            glBindBuffer(0x8893, mesh->indexVBO);
 
-        for (unsigned int i = 0; i < t->children.count; ++i) {
-            TransformRelease(engine, &t->children.data_[i]);
-            t = (Transform *) *slot;
+            if (mesh->vertexFormat & 2) {
+                glBindBuffer(0x8892, mesh->texCoordVBO);
+                engine->AEClientState(0x8078, true);
+                glTexCoordPointer(2, 0x1406, 0, 0);
+            } else {
+                engine->AEClientState(0x8078, false);
+            }
+
+            if (mesh->vertexFormat & 4) {
+                glBindBuffer(0x8892, mesh->normalVBO);
+                engine->AEClientState(0x8075, true);
+                glNormalPointer(0x1406, 0, 0);
+            } else {
+                engine->AEClientState(0x8075, false);
+            }
+
+            if (mesh->vertexFormat & 8) {
+                glBindBuffer(0x8892, mesh->colorVBO);
+                engine->AEClientState(0x8076, true);
+                glColorPointer(4, 0x1406, 0, 0);
+            } else {
+                engine->AEClientState(0x8076, false);
+            }
+
+            glDrawElements(4, (int) mesh->indexCount, 0x1403, 0);
+
+            // Engine byte 0xfe enables the draw statistics, byte 0xfd selects the bucket.
+            if (engine->field_0xfe != 0) {
+                int tris = (int) ((unsigned) mesh->indexCount / (unsigned) 3);
+                if (engine->statsEnabled != 0) {
+                    engine->triangleCountB += tris;
+                    engine->drawCallCountB += 1;
+                } else {
+                    engine->triangleCountA += tris;
+                    engine->drawCallCountA += 1;
+                }
+            }
+
+            glBindBuffer(0x8892, 0);
+            glBindBuffer(0x8893, 0);
+        } else {
+            engine->RenderMesh(mesh);
+        }
+        return 1;
+    }
+}
+
+namespace AbyssEngine {
+    int MeshConvertToVBOIntern(Mesh *m) {
+        if (m == 0 || !Engine::vboSupported)
+            return -4;
+        if (m->uploaded != 0 || (short) m->indexCount == 0)
+            return -4;
+
+        unsigned char *pos = m->positions;
+        unsigned char *tex = m->texCoords;
+        unsigned char *col = m->colors;
+        unsigned char *nrm = m->normals;
+        unsigned char *tan = m->tangents;
+        unsigned char *bin = m->binormals;
+
+        glGenBuffers(1, &m->positionVBO);
+        glBindBuffer(0x8892, m->positionVBO);
+        glBufferData(0x8892, m->vertexCount * 0xc, pos, 0x88e4);
+
+        if (m->vertexFormat & 2) {
+            glGenBuffers(1, &m->texCoordVBO);
+            glBindBuffer(0x8892, m->texCoordVBO);
+            glBufferData(0x8892, m->vertexCount * 8, tex, 0x88e4);
+            m->vboByteSize += m->vertexCount * 8;
+
+            glGenBuffers(1, &m->indexVBO);
+            glBindBuffer(0x8893, m->indexVBO);
+            glBufferData(0x8893, m->indexCount * 2, m->indices, 0x88e4);
+            m->vboByteSize += m->indexCount * 2;
         }
 
-        for (unsigned int i = 0; i < t->meshes.count; ++i) {
-            MeshRelease(engine, &t->meshes.data_[i]);
-            t = (Transform *) *slot;
+        if (m->vertexFormat & 4) {
+            glGenBuffers(1, &m->normalVBO);
+            glBindBuffer(0x8892, m->normalVBO);
+            glBufferData(0x8892, m->vertexCount * 0xc, nrm, 0x88e4);
+            m->vboByteSize += m->vertexCount * 0xc;
+            if (Engine::enableShader != 0) {
+                glGenBuffers(1, &m->tangentVBO);
+                glBindBuffer(0x8892, m->tangentVBO);
+                glBufferData(0x8892, m->vertexCount * 0xc, tan, 0x88e4);
+                m->vboByteSize += m->vertexCount * 0xc;
+                glGenBuffers(1, &m->binormalVBO);
+                glBindBuffer(0x8892, m->binormalVBO);
+                glBufferData(0x8892, m->vertexCount * 0xc, bin, 0x88e4);
+                m->vboByteSize += m->vertexCount * 0xc;
+            }
+        }
+
+        if (m->vertexFormat & 8) {
+            glGenBuffers(1, &m->colorVBO);
+            glBindBuffer(0x8892, m->colorVBO);
+            glBufferData(0x8892, m->vertexCount * 0x10, col, 0x88e4);
+            m->vboByteSize += m->vertexCount * 0x10;
+        }
+
+        glBindBuffer(0x8892, 0);
+        glBindBuffer(0x8893, 0);
+
+        if (glGetError() != 0) {
+            if (m->uploaded != 0) {
+                glDeleteBuffers(1, &m->positionVBO);
+                glDeleteBuffers(1, &m->indexVBO);
+                unsigned char f = m->vertexFormat;
+                if (f & 2) {
+                    glDeleteBuffers(1, &m->texCoordVBO);
+                    f = m->vertexFormat;
+                }
+                if (f & 4) {
+                    glDeleteBuffers(1, &m->normalVBO);
+                    if (Engine::enableShader != 0) {
+                        glDeleteBuffers(1, &m->tangentVBO);
+                        glDeleteBuffers(1, &m->binormalVBO);
+                    }
+                }
+                if (m->vertexFormat & 8)
+                    glDeleteBuffers(1, &m->colorVBO);
+            }
+            m->vboByteSize = 0;
+            return -1;
+        }
+
+        if (Engine::KeepRawMeshData == 0) {
+            if (m->positions != 0) operator delete[](m->positions); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->positions = 0;
+            if (m->texCoords != 0) operator delete[](m->texCoords); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->texCoords = 0;
+            if (m->indices != 0) operator delete[](m->indices); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->indices = 0;
+            if (m->normals != 0) operator delete[](m->normals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->normals = 0;
+            if (m->colors != 0) operator delete[](m->colors); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->colors = 0;
+            if (m->tangents != 0) operator delete[](m->tangents); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->tangents = 0;
+            if (m->binormals != 0) operator delete[](m->binormals); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+            m->binormals = 0;
+        }
+        m->uploaded = 1;
+        Engine::vboSize += m->vboByteSize;
+        return 1;
+    }
+}
+
+namespace AbyssEngine {
+    int MeshConvertToVBO(Mesh * mesh);
+
+    int TransformConvertToVBO(Transform *t) {
+        if (t != 0) {
+            for (unsigned int i = 0; i < t->meshes.count; ++i)
+                MeshConvertToVBO(t->meshes.data_[i]);
+            for (unsigned int i = 0; i < t->children.count; ++i)
+                TransformConvertToVBO(t->children.data_[i]);
+        }
+        return 1;
+    }
+}
+
+namespace AbyssEngine {
+    struct Vec2 {
+        float u, v;
+    };
+
+    Vec2 MeshIntersect(float qx, float qz, Mesh *mesh) {
+        Vec2 out;
+        unsigned int i = 0;
+
+        for (;;) {
+            if ((unsigned int) mesh->indexCount <= i) {
+                out.u = -1.0f;
+                out.v = -1.0f;
+                return out;
+            }
+
+            float *pos = (float *) mesh->positions;
+            unsigned short *idx = (unsigned short *) mesh->indices + i;
+            float *a = pos + (unsigned int) idx[0] * 3;
+            float *b = pos + (unsigned int) idx[1] * 3;
+            float *c = pos + (unsigned int) idx[2] * 3;
+
+            float ax = a[0], az = a[2];
+            float bx = b[0], bz = b[2];
+            float cx = c[0], cz = c[2];
+
+            float minZ = az, maxZ = bz;
+            if (bz < az) {
+                minZ = bz;
+                maxZ = az;
+            }
+            float minX = ax, maxX = bx;
+            if (bx < ax) {
+                minX = bx;
+                maxX = ax;
+            }
+            if (cz > maxZ) maxZ = cz;
+            if (cz < minZ) minZ = cz;
+            if (cx > maxX) maxX = cx;
+            if (cx < minX) minX = cx;
+
+            if (maxZ >= qz && minX <= qx && maxX >= qx && minZ <= qz) {
+                float ex = bx - ax, ez = bz - az;
+                float len = sqrtf(ez * ez + ex * ex);
+                float side = (ex / len) * qz + (-ez / len) * qx -
+                             (az * (ex / len) + ax * (-ez / len));
+                if (side <= 0.0f) {
+                    ex = cx - bx;
+                    ez = cz - bz;
+                    len = sqrtf(ez * ez + ex * ex);
+                    side = (ex / len) * qz + (-ez / len) * qx -
+                           (bz * (ex / len) + bx * (-ez / len));
+                    if (side <= 0.0f) {
+                        ez = az - cz;
+                        ex = ax - cx;
+                        len = sqrtf(ez * ez + ex * ex);
+                        side = (ex / len) * qz + (-ez / len) * qx -
+                               (cz * (ex / len) + cx * (-ez / len));
+                        if (side <= 0.0f) {
+                            float *uv = (float *) mesh->texCoords;
+                            unsigned int i0 = idx[0], i1 = idx[1], i2 = idx[2];
+                            out.u = (uv[i0 * 2] + uv[i1 * 2] + uv[i2 * 2]) / 3.0f;
+                            float vv = (uv[i0 * 2 + 1] + uv[i1 * 2 + 1] + uv[i2 * 2 + 1]) / 3.0f;
+                            out.v = vv;
+                            if (Engine::enableShader != 0)
+                                out.v = 1.0f - vv;
+                            return out;
+                        }
+                    }
+                }
+            }
+            i += 3;
         }
     }
 }
+
