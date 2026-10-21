@@ -2881,9 +2881,6 @@ void PaintCanvas::MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
 
 
 
-static void zero16(void *p) { // lint: void_ptr (external symbol; mangling must match lib)
-    memset(p, 0, 0x10);
-}
 
 void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
     if (this->gameOrientation == orientation) {
@@ -2897,69 +2894,67 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
 
     float fw = (float) (int) this->engine->GetDisplayWidth();
     float fh = (float) (int) this->engine->GetDisplayHeight();
-    float *proj = this->projOrthoMatrix;
-    float *view = this->worldViewMatrix;
     // 2D ortho projection plus a view matrix that rotates the canvas into the device orientation.
     switch (orientation) {
         case 0:
-            memset(proj, 0, sizeof(this->projOrthoMatrix));
-            proj[13] = 1.0f;
-            proj[15] = 1.0f;
-            memset(view, 0, sizeof(this->worldViewMatrix));
-            view[1] = -1.0f;
-            proj[10] = -0.05f;
-            proj[12] = -1.0f;
-            view[10] = 1.0f;
-            view[4] = 1.0f;
-            proj[0] = 2.0f / fh;
-            proj[5] = -(2.0f / fw);
-            view[15] = 1.0f;
-            view[13] = (float) (int) this->engine->GetDisplayWidth();
+            memset(this->projOrthoMatrix, 0, sizeof(this->projOrthoMatrix));
+            this->projOrthoMatrix[13] = 1.0f;
+            this->projOrthoMatrix[15] = 1.0f;
+            this->projOrthoMatrix[10] = -0.05f;
+            this->projOrthoMatrix[12] = -1.0f;
+            memset(this->worldViewMatrix, 0, sizeof(this->worldViewMatrix));
+            this->worldViewMatrix[1] = -1.0f;
+            this->worldViewMatrix[4] = 1.0f;
+            this->worldViewMatrix[10] = 1.0f;
+            this->projOrthoMatrix[0] = 2.0f / fh;
+            this->projOrthoMatrix[5] = -(2.0f / fw);
+            this->worldViewMatrix[15] = 1.0f;
+            this->worldViewMatrix[13] = (float) (int) this->engine->GetDisplayWidth();
             break;
         case 1:
-            memset(proj, 0, sizeof(this->projOrthoMatrix));
-            proj[13] = 1.0f;
-            proj[15] = 1.0f;
-            memset(view, 0, sizeof(this->worldViewMatrix));
-            view[1] = 1.0f;
-            proj[10] = -0.05f;
-            proj[12] = -1.0f;
-            view[10] = 1.0f;
-            view[4] = -1.0f;
-            proj[0] = 2.0f / fh;
-            proj[5] = -(2.0f / fw);
-            view[15] = 1.0f;
-            view[12] = (float) (int) this->engine->GetDisplayHeight();
+            memset(this->projOrthoMatrix, 0, sizeof(this->projOrthoMatrix));
+            this->projOrthoMatrix[13] = 1.0f;
+            this->projOrthoMatrix[15] = 1.0f;
+            this->projOrthoMatrix[10] = -0.05f;
+            this->projOrthoMatrix[12] = -1.0f;
+            memset(this->worldViewMatrix, 0, sizeof(this->worldViewMatrix));
+            this->worldViewMatrix[1] = 1.0f;
+            this->worldViewMatrix[4] = -1.0f;
+            this->worldViewMatrix[10] = 1.0f;
+            this->projOrthoMatrix[0] = 2.0f / fh;
+            this->projOrthoMatrix[5] = -(2.0f / fw);
+            this->worldViewMatrix[15] = 1.0f;
+            this->worldViewMatrix[12] = (float) (int) this->engine->GetDisplayHeight();
             break;
         case 3:
-            memset(proj, 0, sizeof(this->projOrthoMatrix));
-            proj[13] = 1.0f;
-            proj[15] = 1.0f;
-            proj[10] = -0.05f;
-            proj[12] = -1.0f;
-            proj[0] = 2.0f / fw;
-            proj[5] = -(2.0f / fh);
-            memset(view, 0, sizeof(this->worldViewMatrix));
-            view[0] = -1.0f;
-            view[5] = -1.0f;
-            view[10] = 1.0f;
-            view[15] = 1.0f;
-            view[12] = (float) (int) this->engine->GetDisplayWidth();
-            view[13] = (float) (int) this->engine->GetDisplayHeight();
+            memset(this->projOrthoMatrix, 0, sizeof(this->projOrthoMatrix));
+            this->projOrthoMatrix[13] = 1.0f;
+            this->projOrthoMatrix[15] = 1.0f;
+            this->projOrthoMatrix[10] = -0.05f;
+            this->projOrthoMatrix[12] = -1.0f;
+            this->projOrthoMatrix[0] = 2.0f / fw;
+            this->projOrthoMatrix[5] = -(2.0f / fh);
+            memset(this->worldViewMatrix, 0, sizeof(this->worldViewMatrix));
+            this->worldViewMatrix[0] = -1.0f;
+            this->worldViewMatrix[5] = -1.0f;
+            this->worldViewMatrix[10] = 1.0f;
+            this->worldViewMatrix[15] = 1.0f;
+            this->worldViewMatrix[12] = (float) (int) this->engine->GetDisplayWidth();
+            this->worldViewMatrix[13] = (float) (int) this->engine->GetDisplayHeight();
             break;
         default:
-            memset(proj, 0, sizeof(this->projOrthoMatrix));
-            proj[13] = 1.0f;
-            proj[15] = 1.0f;
-            proj[10] = -0.05f;
-            proj[12] = -1.0f;
-            proj[0] = 2.0f / fw;
-            proj[5] = -(2.0f / fh);
-            memset(view, 0, sizeof(this->worldViewMatrix));
-            view[0] = 1.0f;
-            view[5] = 1.0f;
-            view[10] = 1.0f;
-            view[15] = 1.0f;
+            memset(this->projOrthoMatrix, 0, sizeof(this->projOrthoMatrix));
+            this->projOrthoMatrix[13] = 1.0f;
+            this->projOrthoMatrix[15] = 1.0f;
+            this->projOrthoMatrix[10] = -0.05f;
+            this->projOrthoMatrix[12] = -1.0f;
+            this->projOrthoMatrix[0] = 2.0f / fw;
+            this->projOrthoMatrix[5] = -(2.0f / fh);
+            memset(this->worldViewMatrix, 0, sizeof(this->worldViewMatrix));
+            this->worldViewMatrix[0] = 1.0f;
+            this->worldViewMatrix[5] = 1.0f;
+            this->worldViewMatrix[10] = 1.0f;
+            this->worldViewMatrix[15] = 1.0f;
             break;
     }
 
