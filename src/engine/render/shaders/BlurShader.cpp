@@ -157,16 +157,13 @@ namespace AbyssEngine {
 
         int texelLocation = this->uTexelSize;
         if (texelLocation >= 0) {
-            float texelX;
-            float texelY;
             if (engine->appManager->paintCanvas->gameOrientation == 2) {
-                texelX = 1.0f / (float) (int) engine->GetDisplayWidth();
-                texelY = 1.0f / (float) (int) engine->GetDisplayHeight();
+                glUniform2f(texelLocation, 1.0f / (float) (int) engine->GetDisplayWidth(),
+                            1.0f / (float) (int) engine->GetDisplayHeight());
             } else {
-                texelX = 1.0f / (float) (int) engine->GetDisplayHeight();
-                texelY = 1.0f / (float) (int) engine->GetDisplayWidth();
+                glUniform2f(texelLocation, 1.0f / (float) (int) engine->GetDisplayHeight(),
+                            1.0f / (float) (int) engine->GetDisplayWidth());
             }
-            glUniform2f(texelLocation, texelX, texelY);
         }
 
         int centerLocation = this->uCenter;
