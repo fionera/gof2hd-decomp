@@ -295,12 +295,8 @@ void HangarList::initShipTab(Ship *ship) {
     } else {
         available = new Array<Item *>();
         for (uint32_t i = 0; i < cargo->size(); ++i) {
-            Item *item = (*cargo)[i];
-            int type = item->getType();
-            if (type != 4) {
-                if (ship->getSlots(type) > 0) {
-                    ArrayAdd(item, *available);
-                }
+            if ((*cargo)[i]->getType() != 4 && ship->getSlots((*cargo)[i]->getType()) > 0) {
+                ArrayAdd((*cargo)[i], *available);
             }
         }
         cargoEmpty = false;
@@ -324,24 +320,22 @@ void HangarList::initShipTab(Ship *ship) {
             }
             AbyssEngine::String *slotLabel = (*texts)->getText(textId);
             (*items)[out] = new ListItem(slotLabel, static_cast<int>(type));
+            ++out;
             Array<Item *> *slotItems = ship->getEquipment(type);
             for (uint32_t j = 0; j < slotItems->size(); ++j) {
-                ++out;
-                Item *item = (*slotItems)[j];
-                ListItem *li;
-                if (item == nullptr) {
-                    li = new ListItem(static_cast<int>(type));
+                if ((*slotItems)[j] != nullptr) {
+                    (*items)[out] = new ListItem((*slotItems)[j]);
                 } else {
-                    li = new ListItem(item);
+                    (*items)[out] = new ListItem(static_cast<int>(type));
                 }
-                (*items)[out] = li;
                 for (uint32_t k = 0; k < equipment->size(); ++k) {
-                    if ((*equipment)[k] == li->item) {
-                        li->subTabIndex = k;
+                    if ((*equipment)[k] == (*items)[out]->item) {
+                        (*items)[out]->subTabIndex = k;
                         break;
                     }
                 }
-                li->inTabIndex = j;
+                (*items)[out]->inTabIndex = j;
+                ++out;
             }
             delete slotItems;
             if (!cargoEmpty) {
