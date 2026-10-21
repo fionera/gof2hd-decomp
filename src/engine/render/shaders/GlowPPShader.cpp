@@ -3,7 +3,10 @@
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/core/ApplicationManager.h"
 #include <GLES2/gl2.h>
+#include <cstring>
 
 
 
@@ -44,48 +47,15 @@ namespace AbyssEngine {
             this->backgroundTarget->EndCapture();
         }
 
-        engine->projMatrix[12] = 0.0f;
-        engine->projMatrix[13] = 0.0f;
-        engine->projMatrix[14] = 0.0f;
-        engine->projMatrix[15] = 0.0f;
-        engine->projMatrix[8] = 0.0f;
-        engine->projMatrix[9] = 0.0f;
-        engine->projMatrix[10] = 0.0f;
-        engine->projMatrix[11] = 0.0f;
-        engine->projMatrix[4] = 0.0f;
-        engine->projMatrix[5] = 0.0f;
-        engine->projMatrix[6] = 0.0f;
-        engine->projMatrix[7] = 0.0f;
-        engine->projMatrix[0] = 0.0f;
-        engine->projMatrix[1] = 0.0f;
-        engine->projMatrix[2] = 0.0f;
-        engine->projMatrix[3] = 0.0f;
-
-        engine->projMatrix[0] = 2.0f / (float) (int32_t) engine->GetDisplayWidth();
-        engine->projMatrix[5] = -(2.0f / (float) (int32_t) engine->GetDisplayHeight());
-        engine->projMatrix[10] = -1.0f;
-        engine->projMatrix[12] = -1.0f;
+        memset(engine->projMatrix, 0, sizeof(engine->projMatrix));
+        engine->projMatrix[0] = 2.0f / (float) (int) engine->GetDisplayWidth();
+        engine->projMatrix[5] = -(2.0f / (float) (int) engine->GetDisplayHeight());
+        engine->projMatrix[10] = -0.05f;
         engine->projMatrix[13] = 1.0f;
         engine->projMatrix[15] = 1.0f;
-
-        float matrix[16];
-        matrix[0] = 1.0f;
-        matrix[1] = 0.0f;
-        matrix[2] = 0.0f;
-        matrix[3] = 0.0f;
-        matrix[4] = 0.0f;
-        matrix[5] = 1.0f;
-        matrix[6] = 0.0f;
-        matrix[7] = 0.0f;
-        matrix[8] = 0.0f;
-        matrix[9] = 0.0f;
-        matrix[10] = 1.0f;
-        matrix[11] = 0.0f;
-        matrix[12] = 0.0f;
-        matrix[13] = 0.0f;
-        matrix[14] = 0.0f;
-        matrix[15] = 1.0f;
-        engine->SetWorldViewMatrix(reinterpret_cast<const AEMath::Matrix &>(matrix));
+        engine->projMatrix[12] = -1.0f;
+        AEMath::Matrix identity;
+        engine->SetWorldViewMatrix(identity);
         glDisable(0xb71);
         glDepthMask(0);
         glDisable(0xbe2);
@@ -104,10 +74,11 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->copyAttribPosition);
         glDisableVertexAttribArray(this->copyAttribTexCoord);
 
-        for (int32_t i = 3; i != 0; --i) {
+        FBOContainer *blurSource = this->copyTarget;
+        for (int i = 0; i < 3; i++) {
             glUseProgram(this->blurXProgram);
             glActiveTexture(0x84c0);
-            this->copyTarget->Activate();
+            blurSource->Activate();
             this->blurXTarget->BeginCapture();
             glEnableVertexAttribArray(this->blurXAttribPosition);
             glEnableVertexAttribArray(this->blurXAttribTexCoord);
@@ -138,15 +109,26 @@ namespace AbyssEngine {
             engine->DrawQuad(0, 0, engine->GetDisplayWidth(), engine->GetDisplayHeight());
             glDisableVertexAttribArray(this->blurYAttribPosition);
             glDisableVertexAttribArray(this->blurYAttribTexCoord);
+            blurSource = this->blurYTarget;
         }
 
-        FBOContainer *firstTexture = this->blurYTarget;
-        FBOContainer *secondTexture = this->backgroundTarget;
-        uint32_t mode = AbyssEngine::Engine::switchGlow;
-        if (mode == 0) {
-            firstTexture = this->copyTarget;
-        } else if (mode == 1) {
-            firstTexture = source;
+        FBOContainer *firstTexture = source;
+        FBOContainer *secondTexture = blurSource;
+        switch (AbyssEngine::Engine::switchGlow) {
+            case 0:
+                secondTexture = this->backgroundTarget;
+                break;
+            case 1:
+                firstTexture = this->copyTarget;
+                secondTexture = this->backgroundTarget;
+                break;
+            case 2:
+                firstTexture = blurSource;
+                secondTexture = this->backgroundTarget;
+                break;
+            case 3:
+                secondTexture = this->blurYTarget;
+                break;
         }
 
         glUseProgram(this->combineProgram);
@@ -157,16 +139,11 @@ namespace AbyssEngine {
 
         if (target == 0) {
             glBindFramebuffer(0x8d40, engine->viewFramebuffer);
-            uint32_t width;
-            uint32_t height;
-            if (*(int32_t *) (*(char **) engine->appManager + 0x30) == 2) {
-                width = engine->GetDisplayWidth();
-                height = engine->GetDisplayHeight();
+            if (engine->appManager->paintCanvas->gameOrientation == 2) {
+                glViewport(0, 0, engine->GetDisplayWidth(), engine->GetDisplayHeight());
             } else {
-                width = engine->GetDisplayHeight();
-                height = engine->GetDisplayWidth();
+                glViewport(0, 0, engine->GetDisplayHeight(), engine->GetDisplayWidth());
             }
-            glViewport(0, 0, width, height);
         } else {
             target->BeginCapture();
         }
