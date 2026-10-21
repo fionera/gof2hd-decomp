@@ -698,31 +698,33 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
 }
 
 void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
-    PaintCanvas *manager = this->appManager->paintCanvas;
-    uint32_t count = manager->cubeTextures.count;
-    if (count == 0 || slot >= 8 || textureIndex > count - 1) {
+    uint32_t count = this->appManager->paintCanvas->cubeTextures.count;
+    if (count == 0) {
+        return;
+    }
+    if (slot >= 8 || textureIndex > count - 1) {
         return;
     }
     uint32_t *bound = (uint32_t *) &this->boundTextures[slot];
-
-    TextureEntry *textureEntry = (TextureEntry *) manager->cubeTextures.data_[textureIndex];
-    uint32_t texture = textureEntry->glTexture;
+    uint32_t texture = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->glTexture;
     if (*bound == texture) {
         return;
     }
     glActiveTexture(slot + 0x84c0);
-    float env = textureEntry->texEnv;
-    if (g_Engine_texEnv != env) {
-        g_Engine_texEnv = env;
-        if (Engine::enableShader == 0) {
+    float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->texEnv;
+    if (currentLODBias != env) {
+        currentLODBias = env;
+        if (Engine::enableShader != 0) {
+            if (BiasErrorOutputFlag != 0) {
+                BiasErrorOutputFlag = 0;
+            }
+        } else {
             glTexEnvf(0x8500, 0x8501, env);
-            textureEntry = (TextureEntry *) manager->cubeTextures.data_[textureIndex];
-        } else if (g_Engine_texEnvDirty != 0) {
-            g_Engine_texEnvDirty = 0;
         }
     }
-
-    glBindTexture(textureEntry->isCube == 0 ? 0xde1 : 0x8513, texture);
+    glBindTexture(((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube
+                          ? 0x8513 : 0xde1,
+                  texture);
     *bound = texture;
 }
 
