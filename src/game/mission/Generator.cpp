@@ -227,67 +227,58 @@ Array<Agent *> *Generator::createAgents(Station *station) {
     return result;
 }
 
-static uint8_t *g_Generator_missionFlags;
-static Array<Item *> **g_Generator_missionItems;
-static int *g_Generator_targetNames;
-
-Mission *Generator::createMission(Agent *agent,
-                                  Array<SolarSystem *> *systems) {
-    Status *status = Globals::status;
-    AbyssEngine::AERandom *random = Globals::rnd;
-
-    int agentStation = agent->getStation();
-    int targetStation = generateStationIndex(systems, agentStation);
-    if (status->getSystem() == 0xf) {
-        Array<int> *stations =
-                (Array<int> *) systems->data()[status->getSystem()]->getStations();
-        targetStation = stations->data()[0] + random->nextInt();
+Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
+    int targetStation = generateStationIndex(systems, agent->getStation());
+    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
+        targetStation = ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
+                                ->data()[0] +
+                        Globals::rnd->nextInt(4);
     }
 
     uint32_t race = agent->getRace();
-    uint32_t type = 0;
+    int type = 0;
     bool selected = false;
     int guard = 999;
-    Array<uint8_t> *used = (Array<uint8_t> *) status->field_50;
+    Array<bool> *used = Globals::status->field_50;
     while (!selected) {
         selected = guard < 1;
-        uint32_t pick = random->nextInt();
+        int pick = Globals::rnd->nextInt(15);
         --guard;
         type = pick;
-        if (pick == 8 || (pick == 10 && race >= 4)) {
+        if (pick == 8) {
+            continue;
+        }
+        if (race > 3 && pick == 10) {
             continue;
         }
         if (used != nullptr) {
-            uint8_t *data = used->data();
-            if (data[pick] != 0) {
-                uint32_t sum = 0;
+            if (used->data()[pick]) {
+                int sum = 0;
                 for (uint32_t i = 0; i < used->size(); ++i) {
-                    sum += data[i];
+                    sum += used->data()[i];
                 }
-                if (sum == 0xe) {
+                if (sum == 14) {
                     for (uint32_t i = 0; i < used->size(); ++i) {
-                        data[i] = 0;
+                        used->data()[i] = false;
                     }
                 }
                 continue;
             }
-            data[pick] = 1;
+            used->data()[pick] = true;
         }
-        if (pick == 0xc) {
+        if (pick == 12) {
             selected = true;
-            if (status->getSystem() != 0x19) {
-                type = pick;
-            } else {
-                type = 0xc;
-            }
+            type = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() != 25 ? pick : 12;
         } else {
             selected = true;
         }
     }
 
-    if (status->getCurrentCampaignMission() < 0x10 ||
-        (type == 0xf && g_Generator_missionFlags[0x37] == 0)) {
-        switch (random->nextInt()) {
+    if (Globals::status->getCurrentCampaignMission() < 16 || (type == 15 && !Globals::options[0x37])) {
+        switch (Globals::rnd->nextInt(5)) {
+            case 0:
+                type = 11;
+                break;
             case 1:
                 type = 0;
                 break;
@@ -298,14 +289,11 @@ Mission *Generator::createMission(Agent *agent,
                 type = 4;
                 break;
             case 4:
-                type = 0xc;
-                targetStation = agent->getStation();
-                break;
-            default:
-                type = 0xb;
+                type = 12;
                 break;
         }
-    } else if (type == 0xc) {
+    }
+    if (type == 12) {
         targetStation = agent->getStation();
     }
 
@@ -313,162 +301,152 @@ Mission *Generator::createMission(Agent *agent,
         targetStation = agent->getStation();
         type = 8;
     } else {
-        if (type < 0xf && ((1U << (type & 0xff)) & 0x4801U) != 0) {
-            while (targetStation == status->getStation()->getIndex()) {
+        if ((uint32_t) type < 15 && ((1U << type) & 0x4801U) != 0) {
+            while (targetStation == Globals::status->getStation()->getIndex()) {
                 targetStation = generateStationIndex(systems, agent->getStation());
             }
         }
-        if (race < 4 && type == 0xd) {
-            SolarSystem *agentSystem = systems->data()[agent->getSystem()];
-            if (agentSystem->getRoutes() == nullptr) {
-                type = random->nextInt() == 0 ? 1 : 4;
-            } else {
-                bool ok = false;
-                while (!ok) {
-                    targetStation =
-                            generateStationIndex(systems, agent->getStation());
+        if (race < 4 && type == 13) {
+            if (systems->data()[agent->getSystem()]->getRoutes() != nullptr) {
+                bool found = false;
+                while (!found) {
+                    targetStation = generateStationIndex(systems, agent->getStation());
                     for (uint32_t i = 0; i < systems->size(); ++i) {
                         if (systems->data()[i]->stationIsInSystem(targetStation) &&
                             (uint32_t) systems->data()[i]->getRace() == race) {
-                            ok = true;
+                            found = true;
                             break;
                         }
                     }
                 }
-                type = 0xd;
+                type = 13;
+            } else {
+                type = Globals::rnd->nextInt(2) == 0 ? 1 : 4;
             }
         }
     }
 
     AbyssEngine::String agentName = agent->getName();
-    int difficulty = random->nextInt() + 1;
+    int difficulty;
+    if (Globals::status->getCurrentCampaignMission() <= 15) {
+        difficulty = Globals::rnd->nextInt(2);
+    } else {
+        difficulty = Globals::rnd->nextInt(9);
+    }
 
     int itemId = 0;
     int amount = 0;
     if (type == 8) {
-        Array<Item *> *items = *g_Generator_missionItems;
+        Array<Item *> *items = Globals::items;
         do {
-            itemId = random->nextInt() + 0x61;
-        } while (items->data()[itemId]->getOccurence() == 0 ||
-                 items->data()[itemId]->getSinglePrice() == 0 ||
-                 items->data()[itemId]->getIngredients() != nullptr ||
-                 ((itemId - 0x61) & 0xfffffffe) == 0x78 ||
-                 itemId == 0x75 || ((itemId - 0x61) & 0xfffffffe) == 0x12 ||
-                 itemId == 0x83 || itemId == 0xa4 || itemId == 0xaf);
-        amount = random->nextInt() + 5;
+            itemId = Globals::rnd->nextInt(items->size() - 97) + 97;
+        } while ((*items)[itemId]->getOccurence() == 0 || (*items)[itemId]->getSinglePrice() == 0 ||
+                 (*items)[itemId]->getIngredients() != nullptr || itemId == 175 || itemId == 164 || itemId == 131 ||
+                 itemId == 116 || itemId == 115 || itemId == 117 || itemId == 218 || itemId == 217);
+        amount = Globals::rnd->nextInt(15) + 5;
+        difficulty = (*items)[itemId]->getTecLevel();
     } else {
+        ++difficulty;
         switch (type) {
             case 0:
-                itemId = random->nextInt();
-                amount = (int) (((float) difficulty / 10.0f) * 35.0f) + 5;
+                itemId = Globals::rnd->nextInt(7);
+                amount = (int) ((float) difficulty / 10.0f * 95.0f) + 5;
                 break;
             case 2:
-                amount = (int) ((float) random->nextInt()) + 2;
+                amount = (int) (float) Globals::rnd->nextInt(4) + 2;
                 break;
             case 3:
             case 5:
-                itemId = type == 3 ? 0x74 : 0x75;
-                amount = (int) (((float) difficulty / 10.0f) * 8.0f) + 2;
+                itemId = type == 3 ? 116 : 117;
+                amount = (int) ((float) difficulty / 10.0f * 8.0f) + 2;
                 break;
-            case 0xb:
-                amount = (int) (((float) difficulty / 10.0f) * 18.0f) + 2;
+            case 11:
+                amount = (int) ((float) difficulty / 10.0f * 18.0f) + 2;
                 break;
-            case 0xf:
-                amount = random->nextInt() + 30;
+            case 15:
+                amount = (int) (float) Globals::rnd->nextInt(90) + 30;
                 for (uint32_t i = 0; i < systems->size(); ++i) {
                     if (systems->data()[i]->stationIsInSystem(targetStation)) {
-                        int *prob =
-                                (int *) Globals::galaxy
-                                ->getAsteroidProbabilities(status->getStation());
-                        itemId = prob[random->nextInt() * 2];
+                        itemId = Globals::galaxy->getAsteroidProbabilities(Globals::status->getStation())
+                                         [Globals::rnd->nextInt(3) * 2];
                         break;
                     }
                 }
                 break;
-            default:
-                amount = 0;
-                itemId = 0;
-                break;
         }
     }
 
-    if (difficulty > 10) {
+    if (difficulty >= 10) {
         difficulty = 10;
     }
 
-    SolarSystem *from =
-            systems->data()[status->getStation()->getSystem()];
-    SolarSystem *to = systems->data()
-    [((Station *) (intptr_t) Globals::galaxy
-        ->getStation(targetStation))->getSystem()];
-    int distance = (int) Globals::galaxy->distance(to, from);
-    float reward = ((float) distance / 1000.0f + 1.0f) *
-                   (float) ((int) (((float) difficulty / 10.0f) * 1400.0f) +
-                            1500);
+    float reward =
+            (Globals::galaxy->distance(
+                     systems->data()[Globals::status->getStation()->getSystem()],
+                     systems->data()[((Station *) (intptr_t) Globals::galaxy->getStation(targetStation))->getSystem()]) /
+                     1200.0f +
+             1.0f) *
+            (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 9) {
-        reward *= 0.25f;
+        reward *= 1.2f;
     } else if (type == 7) {
-        reward *= 0.5f;
+        reward *= 0.7f;
     } else if (type == 8) {
-        reward = (float) (amount * (*g_Generator_missionItems)
-                          ->data()[itemId]
-                          ->getSinglePrice()) *
-                 1.2f;
+        reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
     } else if (type == 3 || type == 5) {
-        reward += reward;
-    } else if (type == 0xb) {
-        reward = reward * 0.4f + ((reward * 0.4f) / 5.0f) * (float) amount;
+        reward *= 2.0f;
+    } else if (type == 11) {
+        reward *= 0.6f;
+        reward += reward / 5.0f * (float) amount;
     }
 
-    int level = status->getLevel();
+    int level = Globals::status->getLevel();
     reward += (float) (level * level * level * 10);
 
-    int bonus = 0;
-    if ((type | 4) != 0xc) {
-        Standing *standing = (Standing *) (intptr_t) status->getStanding();
-        int rawBonus =
-                (int) (reward * standing->getMissionBonus(agent->getRace()));
-        bonus = rawBonus + rawBonus % 50;
+    int bonus;
+    if (type == 8 || type == 12) {
+        bonus = 0;
+    } else {
+        int rawBonus = (int) (reward * ((Standing *) (intptr_t) Globals::status->getStanding())
+                                               ->getMissionBonus(agent->getRace()));
+        int rem = rawBonus % 50;
+        bonus = rawBonus + rem;
         if (bonus % 50 != 0) {
-            bonus = rawBonus - rawBonus % 50;
+            bonus = rawBonus - rem;
         }
     }
 
-    int rewardInt = (int) reward;
-    int remainder = rewardInt % 50;
-    rewardInt = ((rewardInt + remainder) % 50 == 0)
-                    ? rewardInt + remainder
-                    : rewardInt - remainder;
+    float rem = (float) ((int) reward % 50);
+    if ((int) (reward + rem) % 50 == 0) {
+        reward = reward + rem;
+    } else {
+        reward = reward - rem;
+    }
 
-    Mission *mission = new Mission();
-    AbyssEngine::String missionName;
-    Mission_ctor_full(mission, type, &missionName, agent->getImageParts(), race,
-                      rewardInt, targetStation, difficulty);
+    Mission *mission = new Mission(type, agentName, agent->getImageParts(), race, (int) reward, targetStation,
+                                   difficulty);
 
-    int costs = rewardInt / 10 + random->nextInt();
+    int costs = (int) (reward / 10.0f + (float) Globals::rnd->nextInt((int) reward / 10));
     if (type == 8) {
         costs = (int) ((float) costs * 0.5f);
     } else if (type == 6) {
-        AbyssEngine::String targetName = Globals::globals->getRandomName(0, true);
-        mission->setTargetName(targetName);
+        mission->setTargetName(Globals::globals->getRandomName(0, true));
     }
     int costRem = costs % 50;
-    int roundedCosts = costs + costRem;
-    if (roundedCosts % 50 != 0) {
-        roundedCosts = costs - costRem;
+    int rounded = costs + costRem;
+    if (rounded % 50 != 0) {
+        rounded = costs - costRem;
     }
-    mission->setCosts(roundedCosts);
+    mission->setCosts(rounded);
     mission->setProductionGoods(itemId, amount);
     mission->setBonus(bonus);
 
     for (uint32_t i = 0; i < systems->size(); ++i) {
         if (systems->data()[i]->stationIsInSystem(targetStation)) {
-            AbyssEngine::String systemName = systems->data()[i]->getName();
-            mission->setTargetSystemName(systemName);
+            mission->setTargetSystemName(systems->data()[i]->getName());
             break;
         }
     }
-
     return mission;
 }
 
