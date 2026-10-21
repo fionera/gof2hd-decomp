@@ -357,20 +357,18 @@ void HangarList::initShipTab(Ship *ship) {
     (*this->tabs)[0] = items;
 }
 
-static int shopTypeTextId(uint32_t type) {
+static int shopTypeTextId(int type) {
     int textId = 0x10e;
     if (type == 3) {
         textId = 0x10d;
     }
-    if (type < 3) {
+    if (type >= 0 && type < 3) {
         textId = type + 0x109;
     }
     return textId;
 }
 
 void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
-    int counts[5] = {};
-
     if ((*this->tabs)[1] != nullptr) {
         if ((*this->tabs)[1]->size() != 0) {
             ArrayReleaseClasses(*(*this->tabs)[1]);
@@ -385,15 +383,15 @@ void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
     }
 
     Array<ListItem *> *list = new Array<ListItem *>();
+    int counts[5] = {};
     if (shopItems != nullptr) {
         for (uint32_t i = 0; i < shopItems->size(); ++i) {
-            int type = (*shopItems)[i]->getType();
-            counts[type] = counts[type] + 1;
+            counts[(*shopItems)[i]->getType()]++;
         }
     }
 
     int length = 0;
-    for (uint32_t i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i) {
         if (counts[i] > 0) {
             ++length;
         }
@@ -401,31 +399,27 @@ void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
     if (ships != nullptr && ships->size() != 0) {
         length += ships->size() + 1;
     }
-    length += shopItems == nullptr ? 0 : shopItems->size();
+    length += shopItems != nullptr ? shopItems->size() : 0;
     ArraySetLength(length, *list);
 
-    uint32_t out;
-    GameText **texts = &Globals::gameText;
+    int out = 0;
     if (ships != nullptr && ships->size() != 0) {
-        AbyssEngine::String *shipsLabel = (*texts)->getText(0xad);
-        (*list)[0] = new ListItem(shipsLabel, -1);
-        for (uint32_t i = 0; i < ships->size(); ++i) {
+        (*list)[0] = new ListItem(Globals::gameText->getText(0xad), -1);
+        uint32_t i;
+        for (i = 0; i < ships->size(); ++i) {
             (*ships)[i]->adjustPrice();
             (*list)[i + 1] = new ListItem((*ships)[i]);
         }
-        out = ships->size() + 1;
-    } else {
-        out = 0;
+        out = i + 1;
     }
 
-    for (uint32_t type = 0; type < 5; ++type) {
+    for (int type = 0; type < 5; ++type) {
         if (counts[type] > 0) {
-            AbyssEngine::String *shopLabel = (*texts)->getText(shopTypeTextId(type));
-            (*list)[out] = new ListItem(shopLabel, static_cast<int>(type));
+            (*list)[out] = new ListItem(Globals::gameText->getText(shopTypeTextId(type)), type);
             ++out;
             if (shopItems != nullptr) {
                 for (uint32_t i = 0; i < shopItems->size(); ++i) {
-                    if (static_cast<uint32_t>((*shopItems)[i]->getType()) == type) {
+                    if ((*shopItems)[i]->getType() == type) {
                         (*list)[out] = new ListItem((*shopItems)[i]);
                         ++out;
                     }
