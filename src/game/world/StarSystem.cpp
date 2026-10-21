@@ -593,15 +593,12 @@ void StarSystem::renderSunStreak() {
 void StarSystem::render() {
     using namespace AbyssEngine::AEMath;
     Vector cameraPos = MatrixGetPosition(*(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
-    for (unsigned i = 0; i < this->planetsArray->size(); ++i) {
+    for (int i = 0; i < this->planetsArray->size(); ++i) {
         if (this->planetsArray->size() >= 2) {
             if (i == 0) {
                 Matrix m = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-                {
-                    Vector target = (*this->positionsArray)[0] + cameraPos;
-                    Vector up = this->supernovaSystem ? Vector(1.0f, 0.0f, 0.0f) : MatrixGetUp(m);
-                    m = MatrixGetLookAt(target, cameraPos, up);
-                }
+                m = MatrixGetLookAt((*this->positionsArray)[0] + cameraPos, cameraPos,
+                                    this->supernovaSystem ? Vector(1.0f, 0.0f, 0.0f) : MatrixGetUp(m));
                 (*this->planetsArray)[0]->setRotation(0.0f, 0.0f, 0.0f);
                 Vector scaling = (*this->planetsArray)[0]->getScaling();
                 float grow = (this->lensFlare->intensity + -10.0f) * 0.015625f;
