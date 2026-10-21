@@ -338,30 +338,6 @@ namespace AbyssEngine {
 
 void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void paintcanvas_ext_dm_memcpy(void *dst, const void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dm_settrans(void *out, float v); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dm_getpos(void *out); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dm_settrans_vec(void *out, void *vec); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dm_transformvec(void *m, void *vec); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dm_rotatevec(void *m, void *vec); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dm_vec_assign(void *dst, const void *src); // lint: void_ptr (external symbol; mangling must match lib)
-
-int paintcanvas_ext_dm_spherefrustum(void *self, void *pt, float radius); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline float paintcanvas_ext_dm_unsignedtofloat(unsigned int v, unsigned int mode) { (void)mode; return (float)v; }
-
-static inline void paintcanvas_ext_dm_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dm_setmodelmatrix(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dm_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
-
 
 
 
@@ -2981,128 +2957,82 @@ void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangle
     out = (unsigned int) result;
 }
 
-static const float g_dm_255_8ee80 = 0;
-
-static unsigned int mulColors(unsigned int a, unsigned int b) {
-    unsigned int r = (((a >> 16) & 0xff) * ((b >> 16) & 0xff)) & 0xffffff00;
-    unsigned int g = (((a >> 8) & 0xff) * ((b >> 8) & 0xff)) & 0xffffff00;
-    unsigned int bl = ((a & 0xff) * (b & 0xff)) >> 8;
-    unsigned int al = (((a >> 24) & 0xff) * ((b >> 24) & 0xff)) & 0xffffff00;
-    return (bl) | (g << 8) | (r << 8) | (al << 16);
-}
-
 void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix &worldMatrix,
                            AbyssEngine::AEMath::Matrix &viewMatrix, unsigned int color,
                            AbyssEngine::AEMath::Matrix &uvMatrix) {
-    AbyssEngine::AEMath::Matrix worldM;
-    AbyssEngine::AEMath::Matrix uvM;
-    paintcanvas_ext_dm_memcpy(&worldM, worldMatrix, 0x3c);
-    paintcanvas_ext_dm_memcpy(&uvM, uvMatrix, 0x3c);
-
+    AbyssEngine::AEMath::Matrix world = worldMatrix;
+    AbyssEngine::AEMath::Matrix uv = uvMatrix;
     unsigned int meshColor = color;
 
     if (mesh->animation != 0) {
-        Transform *resTf = mesh->animation;
-        float a[16], b[16];
-        memset(a, 0, sizeof(a));
-        a[0] = 1.0f;
-        a[5] = 1.0f;
-        a[14] = 1.0f;
-        memset(b, 0, sizeof(b));
-        b[0] = 1.0f;
-        b[5] = 1.0f;
-        b[14] = 1.0f;
+        // Animated sub-mesh: rotate around the mesh pivot by the animation transform's rotation.
+        AbyssEngine::AEMath::Matrix fromPivot;
+        AbyssEngine::AEMath::Matrix toPivot;
+        AbyssEngine::AEMath::MatrixSetTranslation(fromPivot, -mesh->pivotX, -mesh->pivotZ, mesh->pivotY);
+        AbyssEngine::AEMath::MatrixSetTranslation(toPivot, mesh->pivotX, mesh->pivotZ, -mesh->pivotY);
+        AbyssEngine::AEMath::Matrix position;
+        AbyssEngine::AEMath::MatrixSetTranslation(
+                position, AbyssEngine::AEMath::MatrixGetPosition(mesh->animation->rotationMatrix));
+        AbyssEngine::AEMath::Matrix rotation = mesh->animation->rotationMatrix;
+        rotation.m[3] = 0.0f;
+        rotation.m[7] = 0.0f;
+        rotation.m[11] = 0.0f;
+        world = worldMatrix * position * toPivot * rotation * fromPivot;
 
-        float pivotM[16];
-        paintcanvas_ext_dm_settrans(pivotM, mesh->pivotY);
-        paintcanvas_ext_dm_settrans(pivotM, -mesh->pivotY);
-        memset(pivotM, 0, sizeof(pivotM));
-        pivotM[0] = 1.0f;
-        pivotM[5] = 1.0f;
-        pivotM[14] = 1.0f;
-
-        float posM[16];
-        float resLocal[16];
-        paintcanvas_ext_dm_getpos(posM);
-        paintcanvas_ext_dm_settrans_vec(resLocal, pivotM);
-        paintcanvas_ext_dm_memcpy(resLocal, resTf->rotationMatrix, 0x3c);
-
-        float s1[16], s2[16], s3[16];
-        *(AbyssEngine::AEMath::Matrix*)s1 = worldMatrix * *(const AbyssEngine::AEMath::Matrix*)pivotM;
-        *(AbyssEngine::AEMath::Matrix*)s2 = *(const AbyssEngine::AEMath::Matrix*)s1 * *(const AbyssEngine::AEMath::Matrix*)b;
-        *(AbyssEngine::AEMath::Matrix*)s3 = *(const AbyssEngine::AEMath::Matrix*)s2 * *(const AbyssEngine::AEMath::Matrix*)resLocal;
-        *(AbyssEngine::AEMath::Matrix*)posM = *(const AbyssEngine::AEMath::Matrix*)s3 * *(const AbyssEngine::AEMath::Matrix*)a;
-        worldM = *(const AbyssEngine::AEMath::Matrix*)posM;
-
-        unsigned int resColor = resTf->color;
-        uvM = resTf->localMatrix;
-        meshColor = mulColors(resColor, color);
+        unsigned int animColor = (unsigned int) mesh->animation->color;
+        uv = mesh->animation->localMatrix;
+        meshColor = ((((animColor >> 24) * (color >> 24)) >> 8) << 24) |
+                    (((((animColor >> 16) & 0xff) * ((color >> 16) & 0xff)) >> 8) << 16) |
+                    (((((animColor >> 8) & 0xff) * ((color >> 8) & 0xff)) >> 8) << 8) |
+                    (((animColor & 0xff) * (color & 0xff)) >> 8);
     }
 
-    paintcanvas_ext_dm_transformvec(&uvM, &worldM);
-
-    float ext[3];
-    ext[0] = mesh->boundsRadius;
-    ext[1] = ext[0];
-    ext[2] = ext[0];
-    paintcanvas_ext_dm_rotatevec(&uvM, &worldM);
-    paintcanvas_ext_dm_vec_assign(ext, &uvM);
-
-    float ax = ext[0] < 0.0f ? -ext[0] : ext[0];
-    float ay = ext[1] < 0.0f ? -ext[1] : ext[1];
-    float az = ext[2] < 0.0f ? -ext[2] : ext[2];
-    float maxxy = ax > ay ? ax : ay;
-    float radius = maxxy;
+    AbyssEngine::AEMath::Vector center = AbyssEngine::AEMath::MatrixTransformVector(
+            world, *(const AbyssEngine::AEMath::Vector *) &mesh->boundsCenterX);
+    AbyssEngine::AEMath::Vector extent = {mesh->boundsRadius, mesh->boundsRadius, mesh->boundsRadius};
+    extent = AbyssEngine::AEMath::MatrixRotateVector(world, extent);
+    float ax = extent.x > 0.0f ? extent.x : -extent.x;
+    float ay = extent.y > 0.0f ? extent.y : -extent.y;
+    float az = extent.z > 0.0f ? extent.z : -extent.z;
+    float axy = ax > ay ? ax : ay;
 
     if (mesh->vertexCount != 0) {
-        float r2 = maxxy > az ? maxxy : az;
-        int vis = paintcanvas_ext_dm_spherefrustum(this, &uvM, r2 * mesh->boundsRadiusSq);
-        if (vis == 0) {
+        float radius = axy > az ? axy : az;
+        if (!this->CameraIsSphereinViewFrustum(center, radius * mesh->boundsRadiusSq)) {
             this->culledCount += 1;
             return;
         }
         if (mesh->vertexCount != 0) {
-            if (mesh->material == 0) {
-                float fr = paintcanvas_ext_dm_unsignedtofloat(meshColor >> 24, 0);
-                float fg = paintcanvas_ext_dm_unsignedtofloat((meshColor >> 16) & 0xff, 0);
-                float fb = paintcanvas_ext_dm_unsignedtofloat((meshColor >> 8) & 0xff, 0);
-                float fa = paintcanvas_ext_dm_unsignedtofloat(meshColor & 0xff, 0);
-                ((AbyssEngine::Engine*)this->engine)->SetColor(
-                    (this->colorR * fr) / g_dm_255_8ee80,
-                    (this->colorG * fg) / g_dm_255_8ee80,
-                    (this->colorB * fb) / g_dm_255_8ee80,
-                    (this->colorA * fa) / g_dm_255_8ee80);
-
-                worldM *= viewMatrix;
-                paintcanvas_ext_dm_setwvm(this, &worldM);
-                paintcanvas_ext_dm_setmodelmatrix(this->engine);
-                ((AbyssEngine::Engine*)this->engine)->SetUVMatrix(uvM);
-                paintcanvas_ext_dm_meshdraw(this->engine, mesh);
-                ((AbyssEngine::Engine*)this->engine)->ResetUVMatrix();
+            if (mesh->material != 0) {
+                // Batched: the material draws all its queued meshes later.
+                ArrayAddCached<AbyssEngine::Mesh *>(mesh, mesh->material->meshes);
+                ArrayAddCached<AbyssEngine::AEMath::Matrix>(world, mesh->material->arr_2c);
+                ArrayAddCached<AbyssEngine::AEMath::Matrix>(uv, mesh->material->arr_38);
+                ArrayAddCached<AbyssEngine::AEMath::Matrix>(viewMatrix, mesh->material->arr_5c);
+                ArrayAddCached<uint32_t>(meshColor, mesh->material->arr_50);
             } else {
-                AbyssEngine::Material *res = (AbyssEngine::Material *) mesh->material;
-                ArrayAddCached<AbyssEngine::Mesh*>(mesh, res->meshes);
-                ArrayAddCached<AbyssEngine::AEMath::Matrix>(worldM, res->arr_2c);
-                ArrayAddCached<AbyssEngine::AEMath::Matrix>(uvM, res->arr_38);
-                ArrayAddCached<AbyssEngine::AEMath::Matrix>(viewMatrix, res->arr_5c);
-                ArrayAddCached<uint32_t>(meshColor, res->arr_50);
+                this->engine->SetColor(this->colorR * (float) (meshColor >> 24) / 255.0f,
+                                       this->colorG * (float) ((meshColor >> 16) & 0xff) / 255.0f,
+                                       this->colorB * (float) ((meshColor >> 8) & 0xff) / 255.0f,
+                                       this->colorA * (float) (meshColor & 0xff) / 255.0f);
+                this->SetWorldViewMatrix(viewMatrix * world);
+                this->engine->SetModelMatrix(world);
+                this->engine->SetUVMatrix(uv);
+                AbyssEngine::MeshDraw(this->engine, mesh);
+                this->engine->ResetUVMatrix();
             }
         }
     }
 
     if (mesh->animation != 0) {
-        Transform *res = mesh->animation;
-        unsigned int n = res->meshes.size();
-        while ((int) (--n) >= 0) {
-            this->DrawMesh(res->meshes[n], worldM, viewMatrix, color, uvM);
+        for (int i = (int) mesh->animation->meshes.count - 1; i > -1; i--) {
+            this->DrawMesh(mesh->animation->meshes.data_[i], world, viewMatrix, color, uv);
         }
-        for (unsigned int i = 0; i < res->children.size(); i++) {
-            if (this->currentCamera < this->cameras.count) {
-                AbyssEngine::Camera *cam = this->cameras.data_[this->currentCamera];
-                Transform *tf = res->children[i];
-                if (tf->InCameraVF(&worldMatrix, cam)) {
-                    this->DrawTransform(res->children[i], worldM, viewMatrix);
-                }
+        for (unsigned int i = 0; i < mesh->animation->children.count; i++) {
+            if (this->currentCamera < this->cameras.count &&
+                mesh->animation->children.data_[i]->InCameraVF(&worldMatrix,
+                                                               this->cameras.data_[this->currentCamera])) {
+                this->DrawTransform(mesh->animation->children.data_[i], world, viewMatrix);
             }
         }
     }
