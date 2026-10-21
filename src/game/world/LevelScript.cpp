@@ -36,7 +36,6 @@
 #include "game/world/Standing.h"
 #include "game/world/Galaxy.h"
 
-static Station *gProgrammedStation = nullptr;
 
 struct StackVector {
     float v[3];
@@ -53,8 +52,6 @@ struct StackVector {
     operator Vector *() { return reinterpret_cast<Vector *>(v); }
 };
 
-typedef void (*RenderProc)(AEGeometry *);
-
 typedef unsigned char * (*LevelListProc)(Level *);
 
 typedef void (*ReadWaypointProc)(StackVector *out, Waypoint *waypoint);
@@ -63,7 +60,6 @@ typedef void (*SetVectorProc)(unsigned char *self, StackVector *value);
 
 typedef void (*VirtualCommandProc)(unsigned char *self, int a, int b, int c);
 
-static RenderProc gRenderProc;
 static LevelListProc gLevelListProc;
 
 static inline unsigned char *arrayData(unsigned char *array) {
@@ -82,21 +78,14 @@ void LevelScript::render3D() {
     if (m_pGeometry2) m_pGeometry2->render();
     if (m_pGeometry3) m_pGeometry3->render();
 
-    if (m_pExplosion &&m_pExplosion
-
-
-    ->
-    isPlaying()
-    )
-    {
+    if (m_pExplosion && m_pExplosion->isPlaying()) {
         m_pExplosion->render();
     }
 
     if (m_bRenderParticles && m_pParticleGeom0) {
-        RenderProc render = gRenderProc;
-        render(m_pParticleGeom0);
-        render(m_pParticleGeom1);
-        render(m_pParticleGeom2);
+        m_pParticleGeom0->render();
+        m_pParticleGeom1->render();
+        m_pParticleGeom2->render();
     }
 }
 
@@ -117,8 +106,7 @@ void LevelScript::resetCamera(Level *level) {
 void LevelScript::skipSequence() {
     if (field_0x24 > 0 && Globals::status->getCurrentCampaignMission() > 0) {
         field_0x24 = 0x1b59;
-        PlayerEgo *player = m_pLevel->getPlayer();
-        (void) player; /* virtual Player flag setter — resolved via vtable */
+        m_pLevel->getPlayer()->player->setVulnerable(true);
     }
 }
 
@@ -127,41 +115,29 @@ uint8_t LevelScript::startSequence() {
 }
 
 void LevelScript::setAutoPilotToProgrammedStation() {
-    if (gProgrammedStation == 0) {
+    if (Level::programmedStation == nullptr) {
+        return;
+    }
+    if (Globals::status->getStation()->equals(Level::programmedStation)) {
+        Level::programmedStation = nullptr;
         return;
     }
 
-    Station *programmed = gProgrammedStation;
-    if (Globals::status->getStation()->equals(programmed)) {
-        gProgrammedStation = 0;
-        return;
-    }
-
-    SolarSystem *system = (SolarSystem *) Globals::status->getSystem();
-    PlayerEgo *player;
-    unsigned char *target;
-
-    if (system->stationIsInSystem(programmed)) {
-        player = m_pLevel->getPlayer();
-        unsigned char *targets = (unsigned char *) ((StarSystem *) m_pLevel->getStarSystem())->getPlanetTargets();
-        int targetIndex = system->getStationEnumIndex(programmed->getIndex());
-        target = reinterpret_cast<unsigned char **>(arrayData(targets))[targetIndex];
-    } else if (system->currentOrbitHasWarpGate()) {
-        player = m_pLevel->getPlayer();
-        Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
-        target = (unsigned char *) (*landmarks)[1];
+    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->stationIsInSystem(Level::programmedStation)) {
+        m_pLevel->getPlayer()->setAutoPilot(
+                (*(Array<KIPlayer *> *) m_pLevel->getStarSystem()->getPlanetTargets())[
+                        ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStationEnumIndex(
+                                Level::programmedStation->getIndex())]);
+    } else if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate()) {
+        m_pLevel->getPlayer()->setAutoPilot((*m_pLevel->getLandmarks())[1]);
     } else {
-        int warpGateIndex = system->getWarpGateEnumIndex();
-        if (warpGateIndex < 0) {
+        int warpGate = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getWarpGateEnumIndex();
+        if (warpGate < 0) {
             return;
         }
-        player = m_pLevel->getPlayer();
-        unsigned char *targets = (unsigned char *) ((StarSystem *) m_pLevel->getStarSystem())->getPlanetTargets();
-        target = reinterpret_cast<unsigned char **>(arrayData(targets))[warpGateIndex];
+        m_pLevel->getPlayer()->setAutoPilot(
+                (*(Array<KIPlayer *> *) m_pLevel->getStarSystem()->getPlanetTargets())[warpGate]);
     }
-
-    (void) player;
-    (void) target; /* virtual Player autopilot-target setter — resolved via vtable */
 }
 
 LevelScript::~LevelScript() {
@@ -190,96 +166,60 @@ LevelScript::~LevelScript() {
 }
 
 uint32_t LevelScript::canSkipCutsceneNow() {
-    int mission = Globals::status->getCurrentCampaignMission();
-    if (mission == 0x9a) {
-        if (!((uint32_t)(m_nState - 1) < 9)) {
+    if (Globals::status->getCurrentCampaignMission() == 0x9a) {
+        if (!(m_nState >= 1 && m_nState <= 9)) {
             return 0;
         }
-    } else if (mission == 0x9d) {
-        if (!((uint32_t)(m_nState - 2) < 3)) {
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9d) {
+        if (!(m_nState >= 2 && m_nState <= 4)) {
             return 0;
         }
-    } else if (mission == 0x9e && m_nState > 1) {
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9e && m_nState > 1) {
         return 0;
     }
     return 1;
 }
 
 void LevelScript::resetStartSequenceOver() {
-    field_0x24 = 0;
     m_bStartSequenceOver = 0;
+    field_0x24 = 0;
 }
 
 void LevelScript::skipCutscene() {
-    StackVector position;
-
-    int mission = Globals::status->getCurrentCampaignMission();
-    if (mission == 0x9a) {
-        if ((uint32_t)(m_nState - 1) < 9) {
+    if (Globals::status->getCurrentCampaignMission() == 0x9a) {
+        if (m_nState >= 1 && m_nState <= 9) {
             m_nState = 9;
             for (int i = 0; i != 8; ++i) {
-                Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-                // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-                ((RadioMessage *) ((*messages)[i]))->trigger();
-                messages = m_pLevel->getMessages();
-                ((RadioMessage *) ((*messages)[i]))->finish();
+                (*m_pLevel->getMessages())[i]->trigger();
+                (*m_pLevel->getMessages())[i]->finish();
             }
-
-            m_nScriptTimerA = 0x7d1;
+            m_nScriptTimerA = 2001;
             m_nScriptCounterA = 0;
-
-            LevelListProc getList = gLevelListProc;
-            unsigned char *list = getList(m_pLevel);
-            ((PlayerFighter *) firstListEntry(list))->setAIDisabled(false);
-
-            list = getList(m_pLevel);
-            unsigned char *fighter = firstListEntry(list);
-
-            list = getList(m_pLevel);
-            Route *route = ((KIPlayer *) firstListEntry(list))->getRoute();
-            Waypoint *waypoint = route->getWaypoint();
-            ReadWaypointProc readWaypoint =
-                    *(ReadWaypointProc *) (*reinterpret_cast<char **>(waypoint) + 0x28);
-            readWaypoint(&position, waypoint);
-            SetVectorProc setVector =
-                    *(SetVectorProc *) (*reinterpret_cast<char **>(fighter) + 0x44);
-            setVector(fighter, &position);
+            ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setAIDisabled(false);
+            KIPlayer *fighter = (*m_pLevel->getEnemies())[0];
+            Vector position = (*m_pLevel->getEnemies())[0]->getRoute()->getWaypoint(0)->getPosition();
+            fighter->setPosition(position);
         }
-    } else if (mission == 0x9d) {
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9d) {
         if (m_nState <= 4) {
             for (int i = 0; i != 4; ++i) {
-                Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-                // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-                ((RadioMessage *) ((*messages)[i]))->trigger();
-                messages = m_pLevel->getMessages();
-                ((RadioMessage *) ((*messages)[i]))->finish();
+                (*m_pLevel->getMessages())[i]->trigger();
+                (*m_pLevel->getMessages())[i]->finish();
             }
-            m_nScriptTimerA = 0x4651;
+            m_nScriptTimerA = 18001;
             m_nScriptCounterA = 0;
             m_nState = 4;
         }
-    } else if (mission == 0x9e) {
-        m_nScriptTimerB = 0x2ee1;
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9e) {
+        m_nScriptTimerB = 12001;
         m_nScriptCounterB = 0;
         for (int i = 0; i != 3; ++i) {
-            Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-            // lint: void_ptr (matches cross-file Level::getMessages() -> Array<void*>*)
-            ((RadioMessage *) ((*messages)[i]))->trigger();
-            messages = m_pLevel->getMessages();
-            ((RadioMessage *) ((*messages)[i]))->finish();
+            (*m_pLevel->getMessages())[i]->trigger();
+            (*m_pLevel->getMessages())[i]->finish();
         }
-
-        LevelListProc getList = gLevelListProc;
-        unsigned char *list = getList(m_pLevel);
-        unsigned char *player = firstListEntry(list);
-        VirtualCommandProc command =
-                *(VirtualCommandProc *) (*reinterpret_cast<char **>(player) + 0x48);
-        command(player, 0x000ba51e, 0, 0x000ba4b6);
-
-        list = getList(m_pLevel);
-        ((KIPlayer *) firstListEntry(list))->setVisible(true);
-
-        list = getList(m_pLevel);
+        (*m_pLevel->getEnemies())[0]->setPosition(-2077.0f, 0.0f, 20233.0f);
+        (*m_pLevel->getEnemies())[0]->setVisible(true);
+        (*m_pLevel->getEnemies())[0]->setActive(true);
         m_nState = 2;
     }
 }
@@ -291,7 +231,7 @@ int LevelScript::process(int delta) {
     // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
     // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
     Level *level = m_pLevel;
-    Array<void *> *messages = level->getMessages(); // lint: void_ptr (matches Level::getMessages() -> Array<void*>*)
+    Array<RadioMessage *> *messages = level->getMessages();
     PlayerEgo *player = level->getPlayer();
     Array<KIPlayer *> *enemies = level->getEnemies();
     int mission = Globals::status->getCurrentCampaignMission();
@@ -506,7 +446,7 @@ int LevelScript::process(int delta) {
             AbyssEngine::Transform *t = (AbyssEngine::Transform *)
                     Globals::Canvas->TransformGetTransform(dockModel->transform);
             t->Update((long long) delta, false);
-            if (reinterpret_cast<long long &>(field_0x8) >= 14001) {
+            if (m_nScriptTime >= 14001) {
                 m_pCamera->setRumblePercentage(0.0f, 0);
                 m_nState = 2;
             }
@@ -541,7 +481,7 @@ int LevelScript::process(int delta) {
                 rumble = 1.0f;
             }
             m_pCamera->setRumblePercentage(rumble, 100); // 0x138262
-            if (reinterpret_cast<long long &>(field_0x8) >= 10001) {
+            if (m_nScriptTime >= 10001) {
                 // The station model lives at this+0xd8 (named m_pGeometry5 in the header).
                 m_pGeometry5->setPosition(Vector{0.0f, 0.0f, 10000.0f}); // 0x138278, z=10000.0f @0x138540
                 AbyssEngine::Transform *t = (AbyssEngine::Transform *)
@@ -563,7 +503,7 @@ int LevelScript::process(int delta) {
         // approach choreography substates s1..s12. Substate epilogues re-share the mission tail at
         // 0x13c88c in the original; here they fall through to the shared active tail below (pass-2
         // structural approximation, kept consistent).
-        if (reinterpret_cast<long long &>(field_0x8) >= 7901) {
+        if (m_nScriptTime >= 7901) {
             // 0x13834e: advance landmarks[0]'s station-root transform animation this frame.
             // landmarks[0]'s [+0x140] field is PlayerStation::rootGeometry (offset 0x140).
             PlayerStation *station = (PlayerStation *) (*m_pLevel->getLandmarks())[0];
@@ -584,25 +524,25 @@ int LevelScript::process(int delta) {
             }
             case 2: { // s2 @0x13ba5c: pan the camera in; once counter>=7001 reframe it.
                 m_pCamera->translate(-(float) delta * 0.5f, (float) delta * 0.3f, (float) delta); // 0.3 @0x13b93c
-                if (reinterpret_cast<long long &>(field_0x8) >= 7001) {
+                if (m_nScriptTime >= 7001) {
                     m_nState = 3;
                     m_pCamera->setPosition(20000.0f, 5000.0f, 30000.0f); // pool @0x13bda0/a4/a8
                 }
                 break;
             }
             case 3: { // s3 @0x13b8dc: start the approach music (1122), advance at counter>=9001.
-                if (reinterpret_cast<long long &>(field_0x8) >= 7901) {
+                if (m_nScriptTime >= 7901) {
                     if (!Globals::sound->isPlaying(1122)) {
                         Globals::sound->play(1122, nullptr, nullptr, 0.0f);
                     }
-                    if (reinterpret_cast<long long &>(field_0x8) >= 9001) {
+                    if (m_nScriptTime >= 9001) {
                         m_nState = 4;
                     }
                 }
                 break;
             }
             case 4: { // s4 @0x13baba: at counter>=18001 reframe the camera and hide the player ship.
-                if (reinterpret_cast<long long &>(field_0x8) >= 18001) {
+                if (m_nScriptTime >= 18001) {
                     m_nState = 5;
                     m_pCamera->setPosition(8000.0f, 31000.0f, -9000.0f); // pool @0x13bdac/b0/b4
                     player->freeze = 1;       // player+0x24
@@ -611,14 +551,14 @@ int LevelScript::process(int delta) {
                 break;
             }
             case 5: { // s5 @0x13b8c0: at counter>=18001 reset the frame timer and advance.
-                if (reinterpret_cast<long long &>(field_0x8) >= 18001) {
+                if (m_nScriptTime >= 18001) {
                     reinterpret_cast<long long &>(m_nScriptTimerA) = 0;
                     m_nState = 6;
                 }
                 break;
             }
             case 7: { // s7 @0x13bc18: at counter>=27001 advance.
-                if (reinterpret_cast<long long &>(field_0x8) >= 27001) {
+                if (m_nScriptTime >= 27001) {
                     m_nState = 8;
                 }
                 break;
@@ -1042,7 +982,7 @@ int LevelScript::process(int delta) {
                     // group-8 escort into a widening formation ahead of the player, re-aim it at the
                     // player and wipe its cargo list.
                     if (!player->isDockedToDockingPoint() &&
-                        *reinterpret_cast<long long *>(&field_0x8) < 60001) {
+                        m_nScriptTime < 60001) {
                         // Not-yet-progressed: 0x13c524 branches to the trampoline 0x141198, which
                         // reloads m_nState and falls into the shared state tail at 0x1391ca. For
                         // m_nState==0 that tail immediately returns via `if (m_nState < 1) break`, so
@@ -2011,8 +1951,7 @@ int LevelScript::process(int delta) {
                     if (m_pGeometry6 != nullptr) {
                         delete m_pGeometry6;
                     }
-                    field_0x8 = 0;
-                    field_0xc = 0;
+                    m_nScriptTime = 0;
                     m_nTimeLimit = 180000;
                     m_pGeometry6 = nullptr;
                     m_pLevel->objectivesA = new Objective(3, 180000, m_pLevel);
@@ -2250,8 +2189,7 @@ int LevelScript::process(int delta) {
                 if (messages != nullptr && m_nState == 5 &&
                     ((RadioMessage *) ((*messages)[7]))->isOver()) {
                     // FModSound::play(0x99, ...) DEFERRED @0x13abe2
-                    field_0x8 = 0;
-                    field_0xc = 0;
+                    m_nScriptTime = 0;
                     if (level->objectivesB != nullptr) {
                         delete level->objectivesB;
                     }
@@ -3306,7 +3244,7 @@ int LevelScript::process(int delta) {
                 // state 0 (0x13acc2): cutscene-exit body. Guard -- only run once the mission has
                 // progressed (level->field_178 > 6) or the 64-bit script counter (field_0x8:field_0xc)
                 // has reached 60001.
-                long long counter94 = *reinterpret_cast<long long *>(&field_0x8);
+                long long counter94 = m_nScriptTime;
                 if (!(m_pLevel->field_178 > 6) && counter94 < 60001) {
                     break; // -> post-switch tail (0x144e36)
                 }
@@ -4643,8 +4581,7 @@ int LevelScript::process(int delta) {
                         // enemy list, and clear the mission timer.
                         if (((RadioMessage *) ((*messages)[8]))->isOver()) { // 0x14354c
                             if (m_nTimeLimit <= 0) { // 0x14355e (m_nTimeLimit @this+0, cmp >0 skips)
-                                field_0x8 = 0;      // 0x143568 strd 0,0,[this+8]
-                                field_0xc = 0;
+                                m_nScriptTime = 0;      // 0x143568 strd 0,0,[this+8]
                                 m_nTimeLimit = 91000; // 0x143570 str 0x16378 -> [this+0]
                                 // new Objective(type=3, value=91000, m_pLevel) -> objectivesB, 0x143580
                                 m_pLevel->objectivesB = new Objective(3, 91000, m_pLevel); // 0x143588
@@ -4763,8 +4700,7 @@ int LevelScript::process(int delta) {
                 }
                 // States 0/1 both fall through here (0x13a42e): wait for the mission radio message to
                 // finish, then run the standard cutscene-exit teardown.
-                Array<void *> *messages = m_pLevel->getMessages(); // lint: void_ptr
-                if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
+                if (!(*m_pLevel->getMessages())[0]->isOver()) {
                     // DEFERRED 0x13cde4: radio-not-over -> shared tail.
                     break;
                 }
@@ -5032,8 +4968,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     m_pGeometry3 = 0;
     m_pExplosion = 0;
     m_pGeometry4 = 0;
-    field_0x8 = 0;
-    field_0xc = 0;
+    m_nScriptTime = 0;
     m_nTimeLimit = level->getTimeLimit();
     field_0x24 = 0;
     m_pGeometry5 = 0;

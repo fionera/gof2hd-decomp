@@ -68,14 +68,14 @@ ModMainMenu::~ModMainMenu() {
     OnRelease();
 }
 
-long long ModMainMenu::OnKeyPress(long long key, long long mod) {
+void ModMainMenu::OnKeyPress(long long key, long long mod) {
+    (void) key;
     (void) mod;
-    return key;
 }
 
-long long ModMainMenu::OnKeyRelease(long long key, long long mod) {
+void ModMainMenu::OnKeyRelease(long long key, long long mod) {
+    (void) key;
     (void) mod;
-    return key;
 }
 
 int ModMainMenu::ShowLoadingScreen() {

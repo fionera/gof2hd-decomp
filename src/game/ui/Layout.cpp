@@ -59,16 +59,14 @@ int Layout::OnTouchBegin(int x, int y) {
         this->choiceWindow->OnTouchBegin(x, y);
         return 0;
     }
-    TouchButton *btn = this->backButton->isVisible() == 0
-                           ? this->secondaryButton
-                           : this->backButton;
-    return btn->OnTouchBegin(x, y);
+    if (this->backButton->isVisible() != 0)
+        return static_cast<int>(this->backButton->OnTouchBegin(x, y));
+    return static_cast<int>(this->secondaryButton->OnTouchBegin(x, y));
 }
 
 float Layout::getPulseValue(float speed) {
-    Status *status = Globals::status;
-    float a = AbyssEngine::AEMath::Sinf((float) status->getPlayingTime() * speed);
-    float b = AbyssEngine::AEMath::Sinf((float) status->getPlayingTime() * speed);
+    float a = AbyssEngine::AEMath::Sinf((float) Globals::status->getPlayingTime() * speed);
+    float b = AbyssEngine::AEMath::Sinf((float) Globals::status->getPlayingTime() * speed);
     return a > 0.0f ? b : -b;
 }
 
@@ -76,9 +74,7 @@ void Layout::setDrawColor(int color) {
     this->drawColor = color;
 }
 
-static int *gW = nullptr;
 
-static int *gH = nullptr;
 
 
 
@@ -267,12 +263,9 @@ int Layout::OnTouchMove(int x, int y) {
         this->choiceWindow->OnTouchMove(x, y);
         return 0;
     }
-    TouchButton *btn;
     if (this->backButton->isVisible() != 0)
-        btn = this->backButton;
-    else
-        btn = this->secondaryButton;
-    return static_cast<int>(btn->OnTouchMove(x, y));
+        return static_cast<int>(this->backButton->OnTouchMove(x, y));
+    return static_cast<int>(this->secondaryButton->OnTouchMove(x, y));
 }
 
 int Layout::OnTouchEnd(int x, int y) {
@@ -280,24 +273,20 @@ int Layout::OnTouchEnd(int x, int y) {
         this->helpPressedFlag = this->helpButton->OnTouchEnd(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0)
         return this->choiceWindow->OnTouchEnd(x, y) == 0;
-    TouchButton *btn;
     if (this->backButton->isVisible() != 0)
-        btn = this->backButton;
-    else
-        btn = this->secondaryButton;
-    return static_cast<int>(btn->OnTouchEnd(x, y));
+        return static_cast<int>(this->backButton->OnTouchEnd(x, y));
+    return static_cast<int>(this->secondaryButton->OnTouchEnd(x, y));
 }
 
 void Layout::startFade(bool fadeOut, int color, int duration) {
-    this->fadeOut = fadeOut;
     this->fading = 1;
+    this->fadeOut = fadeOut;
     this->fadeColor = color & 0xffffff00u;
     this->fadeProgress = 0;
     this->fadeDuration = duration;
 }
 
 
-static int **g_tipTextId = nullptr;
 
 
 
@@ -307,18 +296,10 @@ void Layout::initTip() {
         delete this->tipLines;
         this->tipLines = nullptr;
     }
-    Array<String *> *arr = new Array<String *>();
-
-    unsigned color = (unsigned int) (unsigned long) Globals::font;
-    int textId = **g_tipTextId;
-    PaintCanvas *canvas = Globals::Canvas;
-    Globals::rnd->nextInt();
-    String *str = Globals::gameText->getText(textId);
-
-    this->tipLines = arr;
-    int *m = (int *) Globals::layout;
-    int width = m[0x78 / 4] + m[0x4c / 4] * -2;
-    canvas->GetLineArray(color, *str, width, this->tipLines);
+    this->tipLines = new Array<String *>();
+    Globals::Canvas->GetLineArray((unsigned int) (uintptr_t) Globals::font,
+                                  *Globals::gameText->getText(Globals::rnd->nextInt(13) + 340),
+                                  Globals::layout->field_0x78 - 2 * Globals::layout->field_0x4c, this->tipLines);
 }
 
 static unsigned *g_efColor = nullptr;
@@ -588,38 +569,37 @@ String Layout::formatNumber(int value) {
     return out;
 }
 
-static int *gW1 = nullptr;
-
-static int *gW2 = nullptr;
-
-static int *gW3 = nullptr;
 
 
 
 
-void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
-    this->windowX = p1;
-    this->windowY = p2;
-    this->windowWidth = p3;
-    this->windowHeight = p4;
-    this->helpButton->setPosition(p3 + p1, p2, 0x12);
-    int *tb = (int *) Globals::layout;
-    this->backButton->setPosition(tb[0x28 / 4] + this->windowX,
-           (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
-    this->secondaryButton->setPosition(tb[0x28 / 4] + this->windowX,
-           (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
+
+
+void Layout::setWindowDimensions(int x, int y, int w, int h) {
+    this->windowX = x;
+    this->windowY = y;
+    this->windowWidth = w;
+    this->windowHeight = h;
+    this->helpButton->setPosition(w + x, y, 0x12);
+    this->backButton->setPosition(Globals::layout->buttonInsetX + this->windowX,
+                                  this->windowY + this->windowHeight - this->footerButtonOffset, 0x21);
+    this->secondaryButton->setPosition(Globals::layout->buttonInsetX + this->windowX,
+                                       this->windowY + this->windowHeight - this->footerButtonOffset, 0x21);
+    if (this->backButton != nullptr) {
+        Globals::other_buttons_x[0] = (int) this->backButton->getPosition().x;
+        Globals::other_buttons_y[0] = (int) this->backButton->getPosition().y;
+    }
 }
 
 
 void Layout::showMissionRewardMessage(int show, bool flag) {
     if (show == 0)
         return;
-    this->rewardMessageFlag = flag;
     this->rewardMessageActive = 1;
-    FModSound *sound = Globals::sound;
+    this->rewardMessageFlag = flag;
     this->rewardMessageTimer = 0;
     this->rewardCredits = show;
-    sound->play(0x24, 0, 0, 0.0f);
+    Globals::sound->play(0x24, 0, 0, 0.0f);
 }
 
 
@@ -719,33 +699,23 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
 }
 
 
-static int **g_dfDimA = nullptr;
-
-
-static int **g_dfDimB = nullptr;
-
 uint8_t Layout::drawFade() {
     if (this->fading != 0) {
-        PaintCanvas *pc = Globals::Canvas;
-        unsigned saved = pc->GetColor();
-
+        unsigned int saved = Globals::Canvas->GetColor();
         float t = (float) this->fadeProgress / (float) this->fadeDuration;
-        if (this->fadeOut != 0)
-            t = 1.0f - t;
-        if (t > 1.0f) t = 1.0f;
-
-        unsigned color = this->fadeColor;
-        if (t > 0.0f)
-            color += (int) (t * 255.0f);
+        float alpha = this->fadeOut != 0 ? t : 1.0f - t;
+        alpha = alpha < 1.0f ? alpha : 1.0f;
+        unsigned int color = this->fadeColor;
+        if (alpha > 0.0f)
+            color += (int) (alpha * 255.0f);
         Globals::Canvas->SetColor(color);
-        (Globals::Canvas)->FillRectangle(0, 0, **g_dfDimA, 0);
+        Globals::Canvas->FillRectangle(0, 0, Globals::w, Globals::h);
         Globals::Canvas->SetColor(saved);
     }
     if (this->fillScreen != 0) {
-        PaintCanvas *pc = Globals::Canvas;
-        unsigned saved = pc->GetColor();
+        unsigned int saved = Globals::Canvas->GetColor();
         Globals::Canvas->SetColor(0xff);
-        (Globals::Canvas)->FillRectangle(0, 0, **g_dfDimB, 0);
+        Globals::Canvas->FillRectangle(0, 0, Globals::w, Globals::h);
         Globals::Canvas->SetColor(saved);
     }
     return this->fading;
@@ -900,30 +870,22 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
 
 
 
-static const char g_dwCmpLit[] = "";
 
 
 void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
-    PaintCanvas *pc = Globals::Canvas;
-    unsigned saved = pc->GetColor();
-    if (drawBG) {
-        int top = ((int *) Globals::layout)[8 / 4];
-        this->drawBGPattern(this->bgPatternImage, x, top + y, w, h - top);
-    }
-    Globals::Canvas->SetColor(*(unsigned *) &Globals::Canvas);
-    int *m = (int *) Globals::layout;
-    int top = m[8 / 4];
-    pc->DrawRectangle(x, top + y, w, h - top);
+    unsigned int saved = Globals::Canvas->GetColor();
+    if (drawBG)
+        this->drawBGPattern(this->bgPatternImage, x, Globals::layout->windowTopInset + y, w,
+                            h - Globals::layout->windowTopInset);
+    Globals::Canvas->SetColor(0x255d8dff);
+    Globals::Canvas->DrawRectangle(x, Globals::layout->windowTopInset + y, w, h - Globals::layout->windowTopInset);
     Globals::Canvas->SetColor(this->drawColor);
-    pc->DrawImage2D(this->headerIconImage, x, 0);
-    if (title.size() != 0 && title.Compare_char(g_dwCmpLit) == 0) {
-        int *mm = (int *) Globals::layout;
-        int half = mm[8 / 4];
-        half += half >> 31;
-        int ty = (y + (half >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), title, mm[0x28 / 4] + x, ty, false);
+    Globals::Canvas->DrawImage2D(this->headerIconImage, x, y);
+    if (title.size() != 0 && title.Compare("") == 0) {
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, title, Globals::layout->buttonInsetX + x,
+                                    y + Globals::layout->windowTopInset / 2 + 1 - this->textBaselineAdjust, false);
     }
-    pc->SetColor(saved);
+    Globals::Canvas->SetColor(saved);
 }
 
 
@@ -969,54 +931,32 @@ void Layout::initHelpWindow(String text) {
     if (this->choiceWindow == nullptr)
         this->choiceWindow = new ChoiceWindow();
     (Globals::sound)->play(0x7e, 0, 0, 0);
-    String *title = Globals::gameText->getText(0x187);
-    this->choiceWindow->set(*title, text);
-    this->choiceWindowOpen = 1;
+    this->choiceWindow->set(*Globals::gameText->getText(0x187), text, false);
     this->helpPressedFlag = 0;
+    this->choiceWindowOpen = 1;
 }
 
 
 
 
-static int *g_rwOutX = nullptr;
-
-static int *g_rwOutY = nullptr;
-
 void Layout::resetWindowDimensions() {
-    int h = Globals::h;
-    int w = Globals::w;
-
     this->windowX = 0;
     this->windowY = 0;
-    this->windowWidth = w;
-    this->windowHeight = h;
-
-    this->helpButton->setPosition(w, 0, (unsigned char) 0x12);
-
-    int *m = (int *) Globals::layout;
-    int inset = m[0x28 / 4];
-    int btnY = (this->windowY + this->windowHeight) - this->footerButtonOffset;
-    this->backButton->setPosition(inset + this->windowX, btnY, (unsigned char) 0x21);
-    this->secondaryButton->setPosition(inset + this->windowX, btnY, (unsigned char) 0x21);
-
+    this->windowWidth = Globals::w;
+    this->windowHeight = Globals::h;
+    this->helpButton->setPosition(Globals::w, 0, 0x12);
+    this->backButton->setPosition(Globals::layout->buttonInsetX + this->windowX,
+                                  this->windowY + this->windowHeight - this->footerButtonOffset, 0x21);
+    this->secondaryButton->setPosition(Globals::layout->buttonInsetX + this->windowX,
+                                       this->windowY + this->windowHeight - this->footerButtonOffset, 0x21);
     if (this->backButton != nullptr) {
-        Vector pos = this->backButton->getPosition();
-        *g_rwOutX = (int) pos[0];
-        pos = this->backButton->getPosition();
-        *g_rwOutY = (int) pos[1];
+        Globals::other_buttons_x[0] = (int) this->backButton->getPosition().x;
+        Globals::other_buttons_y[0] = (int) this->backButton->getPosition().y;
     }
 }
 
-static const String *g_tagBaseString = nullptr;
-
-static const char g_tagLit0[] = "";
-
-static const char g_tagLit1[] = "";
-
-static const char g_tagLit2[] = "";
-
 String Layout::tagString(String in) {
-    return String(g_tagLit0) + *g_tagBaseString + String(g_tagLit1) + in + String(g_tagLit2);
+    return String("<c:") + String((int) 0xff8000ff) + String(">") + in + String("<c:>");
 }
 
 
@@ -1201,33 +1141,27 @@ void Layout::drawFooterStation() {
     }
 }
 
-static unsigned *g_dhColor = nullptr;
 
 
 
 void Layout::drawHeader(String title, bool transition) {
-    PaintCanvas *pc = Globals::Canvas;
-    unsigned img = *g_dhColor;
-    pc->SetColor(this->drawColor);
-    int iw = pc->GetImage2DWidth(img);
-    int ih = pc->GetImage2DHeight(img);
-    pc->DrawImage2D(this->headerCapImage, this->windowX, this->windowY);
-    this->drawBGPattern(this->headerPatternImage, this->windowX + iw, this->windowY, this->windowWidth + iw * -2, ih);
-    pc->DrawImage2D(this->headerCapImage,
-                    this->windowWidth + this->windowX,
-                    this->windowY, iw, ih, (unsigned char) (0x11), (unsigned char) (0x12), (unsigned char) (0x01));
+    Globals::Canvas->SetColor(this->drawColor);
+    int capW = Globals::Canvas->GetImage2DWidth(this->headerCapImage);
+    int capH = Globals::Canvas->GetImage2DHeight(this->headerCapImage);
+    Globals::Canvas->DrawImage2D(this->headerCapImage, this->windowX, this->windowY);
+    this->drawBGPattern(this->headerPatternImage, this->windowX + capW, this->windowY, this->windowWidth - 2 * capW,
+                        capH);
+    Globals::Canvas->DrawImage2D(this->headerCapImage, this->windowWidth + this->windowX, this->windowY, capW, capH,
+                                 0x11, 0x12, 1);
     if (title.size() != 0) {
-        pc->DrawImage2D(this->headerIconImage, this->windowX, this->windowY);
-        int *m = (int *) Globals::layout;
-        pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), title,
-                       m[0x28 / 4] + m[0x44 / 4] + this->windowX,
-                       this->headerTitleY + this->windowY, false);
+        Globals::Canvas->DrawImage2D(this->headerIconImage, this->windowX, this->windowY);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, title,
+                                    Globals::layout->field_0x44 + this->windowX + Globals::layout->buttonInsetX,
+                                    this->headerTitleY + this->windowY, false);
     }
     this->helpButtonEnabled = transition;
-    if (transition && this->choiceWindowOpen == 0) {
-        alignas(4) unsigned char sp[8];
-        TouchButton_footerAnim(this->helpButton, 0, 0, sp);
-    }
+    if (transition && this->choiceWindowOpen == 0)
+        this->helpButton->draw();
 }
 
 
@@ -1307,9 +1241,7 @@ void Layout::drawWindow(String title, int x, int y, int w, int h) {
 }
 
 void Layout::drawMask() {
-    int w = *gW;
-    int h = *gH;
-    this->drawMask(0, 0, w, h);
+    this->drawMask(0, 0, Globals::w, Globals::h);
 }
 
 void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h) {
@@ -1317,8 +1249,7 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
 }
 
 void Layout::drawBox(int style, int x, int y, int w, int h, String text) {
-    String tmp(text);
-    this->drawBox(style, x, y, w, h, tmp, 0u);
+    this->drawBox(style, x, y, w, h, text, 1);
 }
 
 void Layout::drawFooter(bool stationMode_, bool showBack_) {
@@ -1394,20 +1325,16 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
 }
 
 void Layout::drawMask(int x, int y, int w, int h) {
-    PaintCanvas *pc = Globals::Canvas;
-    unsigned saved = pc->GetColor();
-    pc->FillRectangle(x, y, w, h);
-    pc->SetColor(saved);
+    unsigned int saved = Globals::Canvas->GetColor();
+    Globals::Canvas->SetColor(0x80);
+    Globals::Canvas->FillRectangle(x, y, w, h);
+    Globals::Canvas->SetColor(saved);
 }
 
 void Layout::drawWindow(String title) {
-    String tmp(title);
-    this->drawWindow(tmp, true);
+    this->drawWindow(title, false);
 }
 
 void Layout::drawWindow(String title, bool drawBG) {
-    String tmp(title);
-    int p4 = *gW2;
-    int p5 = *gW3 - ((int *) gW1)[2];
-    this->drawWindow(tmp, 0, 0, p4, p5, drawBG);
+    this->drawWindow(title, 0, 0, Globals::w, Globals::h - Globals::layout->windowTopInset, drawBG);
 }

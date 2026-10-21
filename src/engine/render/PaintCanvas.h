@@ -102,7 +102,7 @@ namespace AbyssEngine {
         char *lineMesh;
         unsigned int field_0x1cc;
         float lineVerts[8];
-        unsigned char bgFlagSaved;
+        bool bgFlagSaved;
         char fogMode;
         int fogEnableFlag;
         unsigned char field_0x1f8;

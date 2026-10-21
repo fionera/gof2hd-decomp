@@ -895,7 +895,7 @@ int Hud::sameHudEventAsBeforeAggregate(String str) {
         if (i < 1)
             return -1;
         e = (*q)[i];
-    } while (e == 0 || ((String *) e->name)->Compare_str(&str) != 0);
+    } while (e == 0 || ((String *) e->name)->Compare(str) != 0);
     return i;
 }
 
@@ -1063,7 +1063,7 @@ unsigned int Hud::sameHudEventAsBefore(String str) {
     int i = (int) q->size();
     while (--i >= 1) {
         ListItem *e = (*q)[i];
-        if (e != 0 && ((String *) e->name)->Compare_str(&str) == 0)
+        if (e != 0 && ((String *) e->name)->Compare(str) == 0)
             return 1;
     }
     return 0;
