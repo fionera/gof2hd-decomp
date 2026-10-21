@@ -124,7 +124,7 @@ public:
     int field_0x1a0;
     int field_0x1a4;
     uint8_t _pad_0x1a8[56];
-    int field_0x1e0;
+    float eventBannerScale; // 0x1e0, read as float by Hud::drawEventQueue
     int field_0x1e4;
     int field_0x1e8;
     int field_0x1ec;

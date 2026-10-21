@@ -82,16 +82,13 @@ void Hud::playerHit() {
 }
 
 void Hud::addToEventQueue(ListItem *item) {
-    Array<ListItem *> *q = this->eventQueue;
-    unsigned int idx = 0;
-    do {
-        unsigned int next = idx + 1;
-        if (next >= q->size())
+    for (unsigned int i = 1; i < this->eventQueue->size(); i++) {
+        if ((*this->eventQueue)[i] == 0) {
+            (*this->eventQueue)[i] = item;
+            this->eventQueueDirty = 1;
             return;
-        idx = next;
-    } while ((*q)[idx] != 0);
-    (*q)[idx] = item;
-    this->eventQueueDirty = 1;
+        }
+    }
 }
 
 unsigned int Hud::firePressed() {
@@ -329,33 +326,21 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 }
 
 void Hud::updateQueue(int dt) {
-    int t = this->eventQueueTimer + dt;
-    this->eventQueueTimer = t;
-    int v;
-    if (t >= 0xfa1) {
+    this->eventQueueTimer += dt;
+    if (this->eventQueueTimer > 4000) {
         this->eventQueueTimer = 0;
-        Array<ListItem *> *q = this->eventQueue;
-        delete (*q)[0];
-        (*q)[0] = 0;
-        unsigned int i = 0;
-        while (true) {
-            if (q->size() <= i + 1)
-                break;
-            (*q)[i] = (*q)[i + 1];
-            i = i + 1;
-        }
-        if ((*q)[1] == 0) {
+        if ((*this->eventQueue)[0] != 0)
+            delete (*this->eventQueue)[0];
+        (*this->eventQueue)[0] = 0;
+        for (unsigned int i = 0; i + 1 < this->eventQueue->size(); i++)
+            (*this->eventQueue)[i] = (*this->eventQueue)[i + 1];
+        if ((*this->eventQueue)[1] == 0)
             this->eventQueueDirty = 0;
-        }
-        v = 0;
-    } else {
-        if (t < 0x7d1)
-            return;
-        if (this->eventQueuePaused != 0)
-            return;
-        v = 1;
+        this->eventQueuePaused = 0;
+        return;
     }
-    this->eventQueuePaused = v;
+    if (this->eventQueueTimer > 2000 && this->eventQueuePaused == 0)
+        this->eventQueuePaused = 1;
 }
 
 
@@ -891,58 +876,38 @@ void Hud::updateSecondaryWeaponString() {
 }
 
 
-static HudEventDisplay **g_Hud_eqSelf = nullptr;
 
 
 
 void Hud::drawEventQueue() {
-    char letterbox = *(char *) &Radar::drawTarget;
-    char cinematicY = (letterbox == 0) ? 0 : (char) this->field_0x3e2;
-
-    HudEventDisplay *src = (HudEventDisplay *) *g_Hud_eqSelf;
-    int dispBase = src->eventBannerDisplayBase;
-    float dispScale = src->eventBannerDisplayScale;
-
-    Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
-                              (unsigned char) (0));
-    float mul = (letterbox == 0) ? -2.0f : -1.0f;
-    int yOff = (int) (mul * dispScale);
-
-    Globals::Canvas->DrawImage2D((unsigned) this->pauseButtonPressedImage, this->field_0x3e0, 0);
-
+    unsigned char targetMode = Radar::drawTarget;
+    int barY = targetMode != 0 ? this->field_0x3e2 : 0;
+    int alpha = (int) ((float) this->eventQueueTimer / 2000.0f * 255.0f);
+    if (alpha > 255)
+        alpha = 510 - alpha;
+    int bannerY = Globals::layout->field_0x1e4;
+    float bannerScale = Globals::layout->eventBannerScale;
+    Globals::Canvas->SetColor(0xff, 0xff, 0xff, (unsigned char) alpha);
+    int textOffset = (int) ((targetMode == 0 ? -2.0f : -1.0f) * bannerScale);
+    Globals::Canvas->DrawImage2D(this->image_0x354, this->field_0x3e0,
+                                 (Radar::drawTarget != 0 ? this->field_0x3e2 : 0) - Globals::layout->field_0x1e4);
     ListItem *item = (*this->eventQueue)[1];
     if (item != 0) {
-        int kind = item->buttonKind;
-        int b2, b3, b4;
-        if (kind == 2) {
-            b2 = 0;
-            b3 = 0xed;
-            b4 = 0;
-        } else if (kind == 1) {
-            b2 = 0xff;
-            b3 = 0x2a;
-            b4 = 0;
-        } else if (kind == 3) {
-            b2 = 0xff;
-            b3 = 0x80;
-            b4 = 0;
-        } else {
-            b2 = 0xff;
-            b3 = 0xff;
-            b4 = 0xff;
-        }
-        Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (b2), (unsigned char) (b3),
-                                  (unsigned char) (b4));
-
-        String *label = (String *) item->name;
-        String *font = (String *) Globals::font;
-        int screenW = *(int *) &Globals::w;
-        int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) (font));
-        char y = (char) ((char) yOff + (char) dispBase + cinematicY);
-        Globals::Canvas->DrawString((unsigned) (long) (font), *label, ((screenW >> 1) - w / 2), (y), false);
+        int y = bannerY + barY;
+        if (item->buttonKind == 1)
+            Globals::Canvas->SetColor(0xff, 0x2a, 0, (unsigned char) alpha);
+        else if (item->buttonKind == 2)
+            Globals::Canvas->SetColor(0, 0xed, 0, (unsigned char) alpha);
+        else if (item->buttonKind == 3)
+            Globals::Canvas->SetColor(0xff, 0x80, 0, (unsigned char) alpha);
+        else
+            Globals::Canvas->SetColor(0xff, 0xff, 0xff, (unsigned char) alpha);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *item->name,
+                                    (Globals::w >> 1) -
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, *item->name) / 2,
+                                    textOffset + y, false);
     }
-
-    Globals::Canvas->SetColor(0xffffffffu);
+    Globals::Canvas->SetColor(0xffffffff);
 }
 
 unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
@@ -984,12 +949,12 @@ done:
 }
 
 unsigned int Hud::sameHudEventAsBefore(String str) {
-    Array<ListItem *> *q = this->eventQueue;
-    int i = (int) q->size();
-    while (--i >= 1) {
-        ListItem *e = (*q)[i];
+    int i = (int) this->eventQueue->size() - 1;
+    while (i >= 1) {
+        ListItem *e = (*this->eventQueue)[i];
         if (e != 0 && ((String *) e->name)->Compare(str) == 0)
             return 1;
+        i--;
     }
     return 0;
 }
