@@ -2377,58 +2377,30 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
     }
 }
 
-void PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix,
-                                    AbyssEngine::AEMath::Vector &outVec) {
-    if (this->currentCamera >= this->cameras.count) {
-        return;
-    }
+int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix,
+                                   AbyssEngine::AEMath::Vector &outVec) {
+    int visible = 0;
+    if (this->currentCamera < this->cameras.count) {
+        AbyssEngine::AEMath::Vector position = {srcMatrix.m[3], srcMatrix.m[7], srcMatrix.m[11]};
+        outVec = position;
 
-    float src[3];
-    src[0] = srcMatrix.m[3];
-    src[1] = srcMatrix.m[7];
-    src[2] = srcMatrix.m[11];
-    paintcanvas_ext_gsp_vec_assign(&outVec, src);
-
-    PCCameraView *cam = (PCCameraView *) ((char **) this->cameras.data_)[this->currentCamera];
-    float z = outVec[2];
-    float denomX = cam->factor4c * z;
-    if (denomX == 0.0f) {
-        return;
-    }
-    float denomY = z * cam->factor48;
-    if (denomY == 0.0f) {
-        return;
-    }
-
-    float px = outVec[0];
-    int w0 = paintcanvas_ext_gsp_getwidth(this);
-    int w1 = paintcanvas_ext_gsp_getwidth(this);
-    double fw = (double) paintcanvas_ext_gsp_signedtofloat(w0, 0);
-    double termY = ((double) outVec[1] * 0.5) / (double) denomY;
-    double halfW = (double) paintcanvas_ext_gsp_signedtofloat(w1 >> 1, 0);
-    outVec[0] = (float) (halfW - (((double) px * 0.5) / (double) denomX) * fw);
-
-    int h0 = paintcanvas_ext_gsp_getheight(this);
-    double fh = (double) paintcanvas_ext_gsp_signedtofloat(h0, 0);
-    int h1 = paintcanvas_ext_gsp_getheight(this);
-    double halfH = (double) paintcanvas_ext_gsp_signedtofloat(h1 >> 1, 0);
-    outVec[1] = (float) (halfH + termY * fh);
-
-    PCCameraView *cam2 = (PCCameraView *) ((char **) this->cameras.data_)[this->currentCamera];
-    if (outVec[2] <= cam2->param1) {
-        float fy = outVec[1];
-        if (fy >= 0.0f) {
-            float fx = outVec[0];
-            if (fx >= 0.0f) {
-                int ww = paintcanvas_ext_gsp_getwidth(this);
-                float fww = paintcanvas_ext_gsp_signedtofloat(ww, 0);
-                if (fx < fww) {
-                    int hh = paintcanvas_ext_gsp_getheight(this);
-                    paintcanvas_ext_gsp_signedtofloat(hh, 0);
+        // Perspective divide against the camera frustum, then map to pixels.
+        AbyssEngine::Camera *camera = this->cameras.data_[this->currentCamera];
+        float w = camera->field_0x4c * outVec.z;
+        float h = outVec.z * camera->frustumTanHalfFov;
+        if (w != 0.0f && h != 0.0f) {
+            double px = (double) outVec.x * 0.5;
+            outVec.x = (float) (-(px / (double) w) * (double) this->GetWidth() + (double) (this->GetWidth() >> 1));
+            double py = (double) outVec.y * 0.5 / (double) h;
+            outVec.y = (float) (py * (double) this->GetHeight() + (double) (this->GetHeight() >> 1));
+            if (outVec.z <= this->cameras.data_[this->currentCamera]->position[1]) {
+                if (outVec.y >= 0.0f && outVec.x >= 0.0f && outVec.x < (float) this->GetWidth()) {
+                    visible = outVec.y < (float) this->GetHeight();
                 }
             }
         }
     }
+    return visible;
 }
 
 void PaintCanvas::SpriteSystemCreate(unsigned short resId,

@@ -441,7 +441,7 @@ namespace AbyssEngine {
 
         int GetScreenPosition(const Vector &a, Vector &b);
 
-        void GetScreenPosition(const Matrix &srcMatrix, Vector &outVec);
+        int GetScreenPosition(const Matrix &srcMatrix, Vector &outVec);
 
         int GetScreenPosition(Matrix &m, const Vector &worldPos,
                               Vector &outVec);
