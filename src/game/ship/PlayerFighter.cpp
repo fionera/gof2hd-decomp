@@ -28,8 +28,6 @@ int *RH_op_new_arr(unsigned int n);
 
 void RH_op_delete_arr(void *p); // lint: void_ptr (external symbol; generic deallocator, param type load-bearing)
 
-void PF_update_dead(PlayerFighter * self);
-
 namespace AbyssEngine {
     namespace AEMath {
         float VectorLength(const Vector &value);
@@ -495,10 +493,10 @@ void PlayerFighter::setAIDisabled(bool v) {
     this->aiDisabled = v;
 }
 void PlayerFighter::update(int dt) {
-    // Chunk 1: Entry guard — dead state with explosion finished
+    // wreck fully burnt out (and any crate gone or abandoned for a minute): retire the fighter
     if (this->state == 4 && this->explosion->isPlaying() == 0 &&
         (this->crateCaptured() == 0 || 60000 < this->deathTimer())) {
-        PF_update_dead(this);
+        this->KIPlayer::setActive(false);
         return;
     }
 
