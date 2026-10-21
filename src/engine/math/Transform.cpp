@@ -1354,42 +1354,22 @@ namespace AbyssEngine {
             return 1;
         }
 
-        AEMath::Vector center;
-        center.x = 0.0f;
-        center.y = 0.0f;
-        center.z = 0.0f;
-
-        AEMath::Vector radiusVector;
-        radiusVector.x = this->boundingRadius;
-        radiusVector.y = radiusVector.x;
-        radiusVector.z = radiusVector.x;
-
-        AEMath::Vector rotated;
-        if (matrix == 0) {
-            AEMath::Vector transformed = AEMath::MatrixTransformVector(
-                this->worldMatrix, this->boundingCenter);
-            center = transformed;
-            rotated = AEMath::MatrixRotateVector(this->worldMatrix, radiusVector);
+        AEMath::Vector center = {0.0f, 0.0f, 0.0f};
+        AEMath::Vector extent = {this->boundingRadius, this->boundingRadius, this->boundingRadius};
+        if (matrix != 0) {
+            center = AEMath::MatrixTransformVector(*matrix * this->worldMatrix, this->boundingCenter);
+            extent = AEMath::MatrixRotateVector(*matrix * this->worldMatrix, extent);
         } else {
-            AEMath::Matrix combined = AEMath::operator*(*matrix, this->worldMatrix);
-            AEMath::Vector transformed = AEMath::MatrixTransformVector(
-                combined, this->boundingCenter);
-            center = transformed;
-            combined = AEMath::operator*(*matrix, this->worldMatrix);
-            rotated = AEMath::MatrixRotateVector(combined, radiusVector);
+            center = AEMath::MatrixTransformVector(this->worldMatrix, this->boundingCenter);
+            extent = AEMath::MatrixRotateVector(this->worldMatrix, extent);
         }
 
-        radiusVector = rotated;
-        float x = radiusVector.x < 0.0f ? -radiusVector.x : radiusVector.x;
-        float y = radiusVector.y < 0.0f ? -radiusVector.y : radiusVector.y;
-        if (x < y) {
-            x = y;
-        }
-        float z = radiusVector.z < 0.0f ? -radiusVector.z : radiusVector.z;
-        if (x < z) {
-            x = z;
-        }
+        float ax = extent.x > 0.0f ? extent.x : -extent.x;
+        float ay = extent.y > 0.0f ? extent.y : -extent.y;
+        float az = extent.z > 0.0f ? extent.z : -extent.z;
+        float m = ax > ay ? ax : ay;
+        m = m > az ? m : az;
 
-        return CameraIsSphereinViewFrustum(center, this->boundingRadius2 * x, 0, camera);
+        return CameraIsSphereinViewFrustum(center, this->boundingRadius2 * m, 0, camera);
     }
 }
