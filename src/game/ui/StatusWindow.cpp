@@ -387,11 +387,7 @@ void StatusWindow::draw() {
     this->boxWidth = width - Globals::layout->buttonInsetX * 2;
 
     String value;
-    String separator;
-    if (GameText::getLanguage() == 9)
-        separator = String("");
-    else
-        separator = String(":");
+    String separator = GameText::getLanguage() == 9 ? String("") : String(":");
 
     if (this->activeTab == 0 || Globals::iPad) {
         // Pilot box.
