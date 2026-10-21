@@ -20,7 +20,6 @@
 #include "engine/core/GameText.h"
 #include "game/menu/ModStation.h"
 
-static const String g_HangarWindow_emptyDialogText;
 
 void Status_replaceHash(...);
 
