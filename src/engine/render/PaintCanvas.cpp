@@ -1954,10 +1954,11 @@ void PaintCanvas::FontCreate(unsigned short resId, unsigned int &out,
     if (AbyssEngine::ImageCreateFontFromFile(this->engine, *(char **) texres->payload, info[1], &font) != 1) {
         return;
     }
+    AbyssEngine::ImageFont *createdFont = font;
     if (texres->handle != -1) {
-        ((PCFontView *) font)->texture = texres->handle;
+        ((PCFontView *) createdFont)->texture = texres->handle;
     }
-    ArrayAdd<AbyssEngine::ImageFont *>(font, this->fonts);
+    ArrayAdd<AbyssEngine::ImageFont *>(createdFont, this->fonts);
     res->handle = (int) this->fonts.count - 1;
     out = (unsigned int) res->handle;
 
@@ -2122,10 +2123,11 @@ int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix,
             outVec.x = (float) (-(px / (double) w) * (double) this->GetWidth() + (double) (this->GetWidth() >> 1));
             double py = (double) outVec.y * 0.5 / (double) h;
             outVec.y = (float) (py * (double) this->GetHeight() + (double) (this->GetHeight() >> 1));
-            if (!(outVec.z <= this->cameras.data_[this->currentCamera]->position[1])) {
-                return 0;
+            if (outVec.z > this->cameras.data_[this->currentCamera]->position[1]) {
+                return visible;
             }
-            if (outVec.y >= 0.0f && outVec.x >= 0.0f && outVec.x < (float) this->GetWidth()) {
+            // Evaluate both lower bounds before testing the screen dimensions.
+            if (((outVec.y >= 0.0f) & (outVec.x >= 0.0f)) && outVec.x < (float) this->GetWidth()) {
                 visible = outVec.y < (float) this->GetHeight();
             }
         }
