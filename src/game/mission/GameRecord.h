@@ -138,17 +138,10 @@ public:
     uint32_t field_0x17c;
     uint32_t field_0x180;
     uint32_t field_0x184;
-    uint32_t field_0x188;
-    uint32_t field_0x18c;
-    uint32_t field_0x190;
-    uint32_t pilotName;
-    uint32_t field_0x198;
-    uint32_t field_0x19c;
+    String field_0x188;
+    String pilotName;
     uint32_t shipId;
-    uint32_t field_0x1a4;
-    uint32_t field_0x1a8;
-    uint32_t field_0x1ac;
-    uint32_t field_0x1b0;
+    int32_t collectedBounties[4]; // 0x1a4
     uint32_t field_0x1b4;
     uint32_t field_0x1b8;
     uint32_t field_0x1bc;

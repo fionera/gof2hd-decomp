@@ -52,6 +52,12 @@ Orchestrator session log. One entry per session; newest first. Resume from git l
   wave1-w2,w3,w6,w8,w9,w10,w12,w13,w14, wave2-w1b,w4b,w5b. Task files were in the session
   scratchpad (worker.md template); recreate from this log if lost.
 
+- Vector ctor A/B (w1/w12 hypothesis "inline zeroing default ctor"): zeroing ctor + (x,y,z)
+  ctor -> linked -10 net (13 lost/3 gained); empty user ctor -> -5 net. Rejected for now; the
+  pattern is per-class member NSDMI (w12 used per-header default initializers instead).
+- Link now mirrors ndk-build (dbf3b4c2): APK libfmodex/libfmodevent inputs, libgcc.a last,
+  --exclude-libs=libgcc.a. NEEDED identical to original.
+
 ## Session 2026-07-28 (Fable wave — linked 2751->2779; PostRA experiment queued)
 
 Net from the prior checkpoint at `b56b79d7` through HEAD `5b7d1ee5`:

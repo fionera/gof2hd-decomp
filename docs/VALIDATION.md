@@ -17,6 +17,12 @@ zlib/libzip built with the app's ndk-build flags — `-Oz -g
 **gold** linker: `-shared -soname libgof2hdaa.so --build-id`, libc++abi.a, zlib+libzip pulled
 `--whole-archive`, app-provided imports (FMOD, GLES, …) left unresolved as in the original.
 
+The link inputs mirror ndk-build's: the app's prebuilt `libfmodex.so`/`libfmodevent.so` from the
+original APK (`../_work/bins/apk_libs/`, NEEDED in the original's order) — FMOD re-exports the
+libgcc helpers (`__aeabi_idiv`, `_Unwind_*`, ...), which therefore stay unversioned imports as in the
+original — then libc++abi.a and libgcc.a last, with ndk-build's default `--exclude-libs=libgcc.a`
+(the original defines `__aeabi_ldivmod` locally without exporting it).
+
 This is a **single, plain link** — no second pass, no `--version-script`, no `__attribute__`, no
 `asm`. Its full flag set, stated honestly: `--section-ordering-file` (an approved deviation that
 reproduces the original's interleaved .text function order from the original's symbol addresses;
@@ -196,7 +202,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1300, linked_exact 3791, avg 92.33%**
+Current numbers (of **4523** compared): **byte_exact 1300, linked_exact 3811, avg 92.75%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

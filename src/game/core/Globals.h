@@ -151,7 +151,7 @@ public:
     static unsigned char isCinematicModeActive;
     static int mouseCursorActivated;
     static unsigned char showMouseDuringGameOver;
-    static unsigned char keyBindings[8];
+    static unsigned char *keyBindings;
 
     static int left_edge;
     static int right_edge;
@@ -284,8 +284,8 @@ public:
     static AbyssEngine::AERandom *rnd;
     static void *font; // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
     // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
-    static unsigned char keys[1020];
-    static void *bankZ; // lint: void_ptr (unknown audio-bank handle, never referenced)
+    static int keys[255];
+    static float bankZ;
     static unsigned char hints[59];
     static Array<Item *> *items;
     static Array<Ship *> *ships;
