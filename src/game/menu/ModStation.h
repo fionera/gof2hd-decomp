@@ -94,7 +94,7 @@ public:
     // was union { ScrollTouchBox* scrollBox; FlagWord scrollBoxFlags; }
     ScrollTouchBox *scrollBox;
 
-    int introTimer;
+    Mission *dialogueMission; // mission whose briefing/debriefing dialogue is shown
     // Station info box (x, y, width, height) drawn by OnRender2D.
     int infoBoxX;
     int infoBoxY;
@@ -246,7 +246,7 @@ static_assert(__builtin_offsetof(ModStation, choiceWindow) == 0x70, "");
 static_assert(__builtin_offsetof(ModStation, spaceLounge) == 0x74, "");
 static_assert(__builtin_offsetof(ModStation, buttonCredits) == 0x94, "");
 static_assert(__builtin_offsetof(ModStation, scrollBox) == 0x98, "");
-static_assert(__builtin_offsetof(ModStation, introTimer) == 0x9c, "");
+static_assert(__builtin_offsetof(ModStation, dialogueMission) == 0x9c, "");
 static_assert(__builtin_offsetof(ModStation, flag_0xb0) == 0xb0, "");
 static_assert(__builtin_offsetof(ModStation, flag_0xd8) == 0xd8, "");
 static_assert(__builtin_offsetof(ModStation, flag_0xdc) == 0xdc, "");

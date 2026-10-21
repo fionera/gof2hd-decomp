@@ -1665,8 +1665,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
 
     if (this->flag_0x69) {
         if (this->dialogueWindow->OnTouchEnd(x, y)) {
-            Mission *mission = reinterpret_cast<Mission *&>(this->introTimer);
-            if (mission == nullptr) {
+            if (this->dialogueMission == nullptr) {
                 // Greeting dialogue closed.
                 this->flag_0x69 = 0;
                 delete this->dialogueWindow;
@@ -1689,20 +1688,20 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             }
 
             // Mission delivered: settle the cargo.
-            int type = mission->getType();
-            bool campaignMission = mission->isCampaignMission();
+            int type = this->dialogueMission->getType();
+            bool campaignMission = this->dialogueMission->isCampaignMission();
             if (type == 8) {
                 if (!campaignMission) {
-                    Globals::status->getShip()->removeCargo(mission->getProductionGoodIndex(),
-                                                            mission->getProductionGoodAmount());
+                    Globals::status->getShip()->removeCargo(this->dialogueMission->getProductionGoodIndex(),
+                                                            this->dialogueMission->getProductionGoodAmount());
                     if (this->hangarWindow != nullptr) {
                         this->hangarWindow->initialize();
                     }
                 }
-            } else if (!campaignMission && mission->getType() == 11) {
+            } else if (!campaignMission && this->dialogueMission->getType() == 11) {
                 Globals::status->setPassengers(0);
-                if (!mission->isCampaignMission()) {
-                    Globals::status->field_b8 += mission->getProductionGoodAmount();
+                if (!this->dialogueMission->isCampaignMission()) {
+                    Globals::status->field_b8 += this->dialogueMission->getProductionGoodAmount();
                 }
                 Array<Item *> *cargo = Globals::status->getShip()->getCargo();
                 if (cargo != nullptr) {
@@ -1717,8 +1716,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         }
                     }
                 }
-            } else if (mission->getType() == 3 || mission->getType() == 5 || mission->getType() == 11) {
-            } else if (mission->getType() == 0) {
+            } else if (this->dialogueMission->getType() == 3 || this->dialogueMission->getType() == 5 || this->dialogueMission->getType() == 11) {
+            } else if (this->dialogueMission->getType() == 0) {
                 Array<Item *> *cargo = Globals::status->getShip()->getCargo();
                 if (cargo != nullptr) {
                     for (unsigned i = 0; i < cargo->size(); i++) {
@@ -1732,8 +1731,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         }
                     }
                 }
-                Globals::status->field_9c += mission->getProductionGoodAmount();
-            } else if (mission->getType() == 14) {
+                Globals::status->field_9c += this->dialogueMission->getProductionGoodAmount();
+            } else if (this->dialogueMission->getType() == 14) {
                 Array<Item *> *cargo = Globals::status->getShip()->getCargo();
                 if (cargo != nullptr) {
                     for (unsigned i = 0; i < cargo->size(); i++) {
@@ -1748,10 +1747,10 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 }
             }
 
-            if (mission->isCampaignMission()) {
+            if (this->dialogueMission->isCampaignMission()) {
                 if (Globals::status->getCurrentCampaignMission() == 43) {
                     // Valkyrie intro: radio chatter over the hangar.
-                    Globals::status->removeMission(mission);
+                    Globals::status->removeMission(this->dialogueMission);
                     Globals::status->setMission(Mission::empty);
                     this->flag_0x69 = 0;
                     Globals::sound->stop(Globals::sound->currentMusicEvent);
@@ -1789,41 +1788,31 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     Globals::status->nextCampaignMission(true);
                 }
                 int next = Globals::status->getCurrentCampaignMission();
-                switch (next) {
-                    case 48:
-                    case 49:
-                    case 55:
-                    case 56:
-                    case 58:
-                        this->cutScene->replacePlayerShip(Globals::status->getShip()->getIndex(),
-                                                          Globals::status->getShip()->getRace());
-                        break;
-                    case 45:
-                        Globals::status->removeMission(mission);
-                        reinterpret_cast<Mission *&>(this->introTimer) = nullptr;
-                        Globals::status->setMission(Mission::empty);
-                        this->selectedButton = 1;
-                        this->flag_0x69 = 0;
-                        OnKeyPress(0x10000, 0);
-                        return;
-                    case 9:
-                    case 44:
-                    case 75:
-                    case 76:
-                    case 83:
-                        Globals::status->removeMission(mission);
-                        reinterpret_cast<Mission *&>(this->introTimer) = nullptr;
-                        Globals::status->setMission(Mission::empty);
-                        this->flag_0x69 = 0;
-                        Globals::switch_to_target_setting = 0;
-                        Globals::appManager->SetCurrentApplicationModule(5);
-                        return;
-                    case 18:
-                        Globals::status->removeMission(mission);
-                        this->flag_0x69 = 0;
-                        reinterpret_cast<Mission *&>(this->introTimer) = nullptr;
-                        return;
-                    default:
+                if (next == 48 || next == 49 || next == 55 || next == 56 || next == 58) {
+                    this->cutScene->replacePlayerShip(Globals::status->getShip()->getIndex(),
+                                                      Globals::status->getShip()->getRace());
+                } else if (next == 45) {
+                    Globals::status->removeMission(this->dialogueMission);
+                    this->dialogueMission = nullptr;
+                    Globals::status->setMission(Mission::empty);
+                    this->selectedButton = 1;
+                    this->flag_0x69 = 0;
+                    OnKeyPress(0x10000, 0);
+                    return;
+                } else if (next == 9 || next == 44 || next == 75 || next == 76 || next == 83) {
+                    Globals::status->removeMission(this->dialogueMission);
+                    this->dialogueMission = nullptr;
+                    Globals::status->setMission(Mission::empty);
+                    this->flag_0x69 = 0;
+                    Globals::switch_to_target_setting = 0;
+                    Globals::appManager->SetCurrentApplicationModule(5);
+                    return;
+                } else if (next == 18) {
+                    Globals::status->removeMission(this->dialogueMission);
+                    this->flag_0x69 = 0;
+                    this->dialogueMission = nullptr;
+                    return;
+                } else {
                         if (next == 77 && Globals::status->getStation()->getIndex() == 100) {
                             Globals::status->getStation()->addShip((*Globals::ships)[37]->makeShip(0));
                         } else if (next == 78) {
@@ -1896,20 +1885,19 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             this->stationActive = 0;
                             return;
                         }
-                        break;
                 }
             } else {
                 Globals::status->incMissionCount();
-                Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
+                Globals::layout->showMissionRewardMessage(this->dialogueMission->getReward() + this->dialogueMission->getBonus(), false);
             }
-            unsigned reward = mission->getReward() + mission->getBonus();
+            unsigned reward = this->dialogueMission->getReward() + this->dialogueMission->getBonus();
             if (reward > 1000000) {
                 unsigned slot = Globals::status->getCurrentCampaignMission() - 55;
                 reward = slot <= 6 ? gCampaignRewardOverride[slot] : 6666;
             }
             Globals::status->changeCredits(reward);
-            Globals::status->removeMission(mission);
-            reinterpret_cast<Mission *&>(this->introTimer) = nullptr;
+            Globals::status->removeMission(this->dialogueMission);
+            this->dialogueMission = nullptr;
             if (this->spaceLounge != nullptr) {
                 this->spaceLounge->refresh();
             }
@@ -2597,7 +2585,7 @@ static const unsigned gStationImageByRace[10] = {1190, 1187, 1189, 1188, 0xfffff
                                                  0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
 
 int ModStation::OnInitialize() {
-    this->introTimer = 0;
+    this->dialogueMission = nullptr;
     if (this->cutScene == nullptr) {
         this->cutScene = new CutScene(23);
         this->cutScene->initialize();
