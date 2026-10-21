@@ -1,3 +1,4 @@
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/ui/MenuTouchWindow.h"
 #include "game/menu/ModStation.h"
 #include "engine/core/AbyssEngine.h"

@@ -1,4 +1,5 @@
 #include "engine/math/Transform.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/core/KeyFrame.h"
 #include "engine/render/Mesh.h"

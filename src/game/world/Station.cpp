@@ -1,3 +1,4 @@
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/world/Station.h"
 #include "game/core/Globals.h"
 #include "game/ship/Ship.h"
