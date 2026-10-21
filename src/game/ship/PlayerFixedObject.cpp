@@ -28,24 +28,138 @@ namespace AbyssEngine {
     }
 }
 
-int PlayerFixedObject::getDockingType() {
-    return this->dockingType;
+// Pirate stations: station index -> loot list parameters.
+static const int kPirateStationIds[4] = {1, 33, 47, 86};
+static const int kPirateStationLoot[4][2] = {{45, 5}, {28, 1}, {4, 1}, {17, 1}};
+
+PlayerFixedObject::PlayerFixedObject(int kind, int race, Player *player, AEGeometry *geom,
+                                     float x, float y, float z)
+    : KIPlayer(kind, -1, player, geom, x, y, z, false), respawnPos(), homingTarget(), homingDir(), field_0x15c(),
+      field_0x160(), field_0x164() {
+    this->wreckMeshId = 0;
+    this->explosion = nullptr;
+    this->wreckGeometry = nullptr;
+    this->boundingVolumes = nullptr;
+    this->faction() = race;
+    this->wreckCollision = nullptr;
+    this->deltaTime = 0;
+    this->targetEnemy = 0;
+    this->collisionIndex = 0;
+    this->field_0x170 = 0;
+    this->shipHidden = 0;
+    this->explosionElapsed = 0;
+    this->field_0x174 = 0;
+    this->intPosX = 0;
+    this->intPosY = 0;
+    this->intPosZ = 0;
+    this->position() = Vector{x, y, z};
+    this->wreckType = -1;
+    this->moving = 0;
+    this->wreckMaterial = -1;
+    this->dockingType = 0;
+    this->intPosY = (int) y;
+    this->intPosX = (int) x;
+    this->intPosZ = (int) z;
+    this->name = String("", false);
+
+    if (Globals::status->getMission()->isCampaignMission()
+        && (Globals::status->getCurrentCampaignMission() == 40 || Globals::status->getCurrentCampaignMission() == 41)) {
+        delete this->lootList();
+        this->lootList() = nullptr;
+    } else {
+        Generator *generator = new Generator();
+        if (kind == 0x37a3) {
+            this->field_0x41() = 1;
+            int stationIndex = Globals::status->getStation()->getIndex();
+            for (unsigned int i = 0; i < 4; i++) {
+                if (kPirateStationIds[i] == stationIndex)
+                    this->lootList() = generator->getLootList(kPirateStationLoot[i][0], kPirateStationLoot[i][1]);
+            }
+        } else {
+            this->lootList() = generator->getLootList(-1, -1);
+            if (this->lootList() && kind != 0x498e && kind != 0x4a88) {
+                for (unsigned int i = 1; i - 1 < this->lootList()->size(); i += 2) {
+                    if (kind == 14) {
+                        (*this->lootList())[i] *= Globals::rnd->nextInt(8) + 5;
+                    } else {
+                        (*this->lootList())[i] *= Globals::rnd->nextInt(4) + 2;
+                        int minimum = Globals::rnd->nextInt(5) + 8;
+                        (*this->lootList())[i] = minimum > (*this->lootList())[i] ? minimum : (*this->lootList())[i];
+                    }
+                }
+            }
+        }
+        delete generator;
+    }
+
+    this->player->spawnedFlag = 1;
+    if (kind != 0x37a3) {
+        this->aiActiveCounter() = 47;
+        if (kind == 14) {
+            this->moving = 0;
+            this->aiActiveCounter() = -1;
+        }
+    }
 }
 
-void PlayerFixedObject::setBV(Array<BoundingVolume *> *bv) {
-    this->boundingVolumes = bv;
+PlayerFixedObject::~PlayerFixedObject() {
+    if (this->wreckGeometry != this->geometry) {
+        delete this->wreckGeometry;
+        this->wreckGeometry = nullptr;
+    }
+    if (this->boundingVolumes) {
+        ArrayReleaseClasses(*this->boundingVolumes);
+        delete this->boundingVolumes;
+    }
+    this->boundingVolumes = nullptr;
+    if (this->wreckCollision) {
+        ArrayReleaseClasses(*this->wreckCollision);
+        delete this->wreckCollision;
+    }
+    this->wreckCollision = nullptr;
+    delete this->explosion;
+    this->explosion = nullptr;
 }
 
-void PlayerFixedObject::hideShip() {
-    this->shipHidden = 1;
+void PlayerFixedObject::reset() {
+    this->KIPlayer::reset();
+
+    this->setPosition(this->spawnX(), this->spawnY(), this->spawnZ());
+
+    this->targetEnemy = 0;
+
+    this->respawnPos = Vector{this->spawnX(), this->spawnY(), this->spawnZ()};
+    this->position() = Vector(this->respawnPos);
+
+    this->deltaTime = 0;
+    if (this->state != 5)
+        this->state = 0;
+
+    this->targetPos() = Vector{0.0f, 0.0f, 0.0f};
+    this->homingTarget = Vector{0.0f, 0.0f, 0.0f};
+    this->homingDir = Vector{0.0f, 0.0f, 0.0f};
 }
 
-int PlayerFixedObject::getTransportID() {
-    return this->transportID;
+void PlayerFixedObject::setMoving(bool v) {
+    this->moving = v;
 }
 
-void PlayerFixedObject::setDockingType(int v) {
-    this->dockingType = v;
+void PlayerFixedObject::setPosition(float x, float y, float z) {
+    this->spawnX() = x;
+    this->spawnY() = y;
+    this->spawnZ() = z;
+    this->intPosY = (int32_t) y;
+    this->intPosX = (int32_t) x;
+    this->intPosZ = (int32_t) z;
+    ((AEGeometry *) this->geometry)->setPosition(x, y, z);
+    reinterpret_cast<Matrix &>(this->player->transform[0]) = ((AEGeometry *) this->geometry)->getMatrix();
+    this->position() = ((AEGeometry *) this->geometry)->getPosition();
+    if (this->boundingVolumes != nullptr) {
+        for (uint32_t i = 0; i < this->boundingVolumes->size(); i++)
+            (*this->boundingVolumes)[i]->update(this->position().x, this->position().y, this->position().z);
+    }
+    if (this->wreckGeometry != nullptr)
+        this->wreckGeometry->setPosition(x, y, z);
 }
 
 void PlayerFixedObject::setPosition(const Vector &v) {
@@ -59,41 +173,14 @@ void PlayerFixedObject::translate(const Vector &d) {
     this->setPosition(d.x + x, d.y + y, d.z + z);
 }
 
-String PlayerFixedObject::getName() {
-    return this->name;
+void PlayerFixedObject::setBV(Array<BoundingVolume *> *bv) {
+    this->boundingVolumes = bv;
 }
 
-void PlayerFixedObject::setName(String name) {
-    this->name = name;
-}
-
-void PlayerFixedObject::setMoving(bool v) {
-    this->moving = v;
-}
-
-V3 PlayerFixedObject::projectCollisionOnSurface(const Vector &vec) {
-    Array<BoundingVolume *> *bv = this->wreckCollision;
-    if (bv != 0 && this->state == 4) {
-        V3 result;
-        reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(vec, bv);
-        return result;
-    }
-    Array<BoundingVolume *> *bv2 = this->boundingVolumes;
-    if (bv2 != 0) {
-        V3 result;
-        reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(vec, bv2);
-        return result;
-    }
-    V3 z = {0.0f, 0.0f, 0.0f};
-    return z;
-}
-
-void PlayerFixedObject::setTransportID(int v) {
-    this->transportID = v;
-}
-
-void PlayerFixedObject::outerCollide(Vector v) {
-    this->outerCollide(v.x, v.y, v.z);
+void PlayerFixedObject::setBV(BoundingVolume *bv) {
+    Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
+    this->boundingVolumes = a;
+    ArrayAdd(bv, *a);
 }
 
 V3 PlayerFixedObject::getPosition() {
@@ -102,6 +189,58 @@ V3 PlayerFixedObject::getPosition() {
     float fz = (float) intPosZ;
     V3 pos = {fx, fy, fz};
     return pos;
+}
+
+void PlayerFixedObject::setWreckedMeshId(int meshId) {
+    this->wreckMeshId = (uint16_t) meshId;
+    this->wreckGeometry = new AEGeometry((uint16_t) meshId, Globals::Canvas, true);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))
+        ->boundingRadius = 500000.0f;
+    switch (this->kind()) {
+        case 13:
+            this->wreckType = 4;
+            break;
+        case 14:
+            this->wreckType = 0;
+            break;
+        case 15:
+            if (this->faction() == 3)
+                this->wreckType = 1;
+            else if (this->faction() == 2)
+                this->wreckType = 2;
+            else
+                this->wreckType = 3;
+            break;
+        case 0x37a3:
+            this->wreckType = 5;
+            break;
+        default:
+            if (this->wreckType < 0)
+                return;
+            break;
+    }
+    this->wreckCollision = Globals::globals->getWreckCollision(this->wreckType, this->wreckGeometry);
+}
+
+void PlayerFixedObject::moveForward(int amount) {
+    float d = (float) amount;
+    this->intPosZ = amount + this->intPosZ;
+    ((AEGeometry *) (this->geometry))->moveForward(d);
+    const Matrix *m = &((AEGeometry *) (this->geometry))->getMatrix();
+    ((Player *) this->player)->transform = *m;
+    Vector position = ((AEGeometry *) this->geometry)->getPosition();
+    this->position() = position;
+    if (this->wreckGeometry != 0) {
+        this->wreckGeometry->moveForward(d);
+    }
+    Array<BoundingVolume *> *bv = this->boundingVolumes;
+    if (bv != 0) {
+        for (uint32_t i = 0; i < bv->size(); i++) {
+            BoundingVolume *o = (*bv)[i];
+            o->update(this->position().x, this->position().y, this->position().z);
+            bv = this->boundingVolumes;
+        }
+    }
 }
 
 void PlayerFixedObject::update(int dt) {
@@ -342,123 +481,6 @@ void PlayerFixedObject::setExhaustVisible(bool v) {
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(geom->childTransform))->SetVisible(v);
 }
 
-int PlayerFixedObject::collide(float x, float y, float z) {
-    PlayerFixedObject *self = this;
-    Array<BoundingVolume *> *a = self->wreckCollision;
-    if ((a != 0 || self->state != 4) && self->collisionEnabled() != 0) {
-        if (a != 0 && self->state == 4) {
-            for (uint32_t i = 0; i < a->size(); i++) {
-                BoundingVolume *bv = (*a)[i];
-                if (bv->collide(x, y, z) != 0) return 1;
-                a = self->wreckCollision;
-            }
-        } else {
-            Array<BoundingVolume *> *b = self->boundingVolumes;
-            if (b != 0) {
-                for (uint32_t i = 0; i < b->size(); i++) {
-                    BoundingVolume *bv = (*b)[i];
-                    if (bv->collide(x, y, z) != 0) return 1;
-                    b = self->boundingVolumes;
-                }
-            }
-        }
-    }
-    return 0;
-}
-
-void PlayerFixedObject::setBV(BoundingVolume *bv) {
-    Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
-    this->boundingVolumes = a;
-    ArrayAdd(bv, *a);
-}
-
-
-
-void PlayerFixedObject::reset() {
-    this->KIPlayer::reset();
-
-    this->setPosition(this->spawnX(), this->spawnY(), this->spawnZ());
-
-    this->targetEnemy = 0;
-
-    this->respawnPos = Vector{this->spawnX(), this->spawnY(), this->spawnZ()};
-    this->position() = Vector(this->respawnPos);
-
-    this->deltaTime = 0;
-    if (this->state != 5)
-        this->state = 0;
-
-    this->targetPos() = Vector{0.0f, 0.0f, 0.0f};
-    this->homingTarget = Vector{0.0f, 0.0f, 0.0f};
-    this->homingDir = Vector{0.0f, 0.0f, 0.0f};
-}
-
-void PlayerFixedObject::setWreckedMeshId(int meshId) {
-    this->wreckMeshId = (uint16_t) meshId;
-    this->wreckGeometry = new AEGeometry((uint16_t) meshId, Globals::Canvas, true);
-    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))
-        ->boundingRadius = 500000.0f;
-    switch (this->kind()) {
-        case 13:
-            this->wreckType = 4;
-            break;
-        case 14:
-            this->wreckType = 0;
-            break;
-        case 15:
-            if (this->faction() == 3)
-                this->wreckType = 1;
-            else if (this->faction() == 2)
-                this->wreckType = 2;
-            else
-                this->wreckType = 3;
-            break;
-        case 0x37a3:
-            this->wreckType = 5;
-            break;
-        default:
-            if (this->wreckType < 0)
-                return;
-            break;
-    }
-    this->wreckCollision = Globals::globals->getWreckCollision(this->wreckType, this->wreckGeometry);
-}
-
-V3 PlayerFixedObject::getProjectionVector(const Vector &vec) {
-    PlayerFixedObject *self = this;
-    Array<BoundingVolume *> *bv = self->wreckCollision;
-    if (bv != 0 && self->state == 4) {
-        int idx = self->collisionIndex;
-        return (*bv)[idx]->getProjectionVector(vec);
-    }
-    Array<BoundingVolume *> *bv2 = self->boundingVolumes;
-    if (bv2 != 0) {
-        int idx = self->collisionIndex;
-        return (*bv2)[idx]->getProjectionVector(vec);
-    }
-    V3 z = {0.0f, 0.0f, 0.0f};
-    return z;
-}
-
-PlayerFixedObject::~PlayerFixedObject() {
-    if (this->wreckGeometry != this->geometry) {
-        delete this->wreckGeometry;
-        this->wreckGeometry = nullptr;
-    }
-    if (this->boundingVolumes) {
-        ArrayReleaseClasses(*this->boundingVolumes);
-        delete this->boundingVolumes;
-    }
-    this->boundingVolumes = nullptr;
-    if (this->wreckCollision) {
-        ArrayReleaseClasses(*this->wreckCollision);
-        delete this->wreckCollision;
-    }
-    this->wreckCollision = nullptr;
-    delete this->explosion;
-    this->explosion = nullptr;
-}
-
 void PlayerFixedObject::render() {
     if (this->secondaryGeometry() != nullptr && this->shipHidden == 0)
         this->secondaryGeometry()->render();
@@ -485,110 +507,65 @@ void PlayerFixedObject::render() {
         ((AEGeometry *) this->geometry)->render();
 }
 
-// Pirate stations: station index -> loot list parameters.
-static const int kPirateStationIds[4] = {1, 33, 47, 86};
-static const int kPirateStationLoot[4][2] = {{45, 5}, {28, 1}, {4, 1}, {17, 1}};
-
-PlayerFixedObject::PlayerFixedObject(int kind, int race, Player *player, AEGeometry *geom,
-                                     float x, float y, float z)
-    : KIPlayer(kind, -1, player, geom, x, y, z, false), respawnPos(), homingTarget(), homingDir(), field_0x15c(),
-      field_0x160(), field_0x164() {
-    this->wreckMeshId = 0;
-    this->explosion = nullptr;
-    this->wreckGeometry = nullptr;
-    this->boundingVolumes = nullptr;
-    this->faction() = race;
-    this->wreckCollision = nullptr;
-    this->deltaTime = 0;
-    this->targetEnemy = 0;
-    this->collisionIndex = 0;
-    this->field_0x170 = 0;
-    this->shipHidden = 0;
-    this->explosionElapsed = 0;
-    this->field_0x174 = 0;
-    this->intPosX = 0;
-    this->intPosY = 0;
-    this->intPosZ = 0;
-    this->position() = Vector{x, y, z};
-    this->wreckType = -1;
-    this->moving = 0;
-    this->wreckMaterial = -1;
-    this->dockingType = 0;
-    this->intPosY = (int) y;
-    this->intPosX = (int) x;
-    this->intPosZ = (int) z;
-    this->name = String("", false);
-
-    if (Globals::status->getMission()->isCampaignMission()
-        && (Globals::status->getCurrentCampaignMission() == 40 || Globals::status->getCurrentCampaignMission() == 41)) {
-        delete this->lootList();
-        this->lootList() = nullptr;
-    } else {
-        Generator *generator = new Generator();
-        if (kind == 0x37a3) {
-            this->field_0x41() = 1;
-            int stationIndex = Globals::status->getStation()->getIndex();
-            for (unsigned int i = 0; i < 4; i++) {
-                if (kPirateStationIds[i] == stationIndex)
-                    this->lootList() = generator->getLootList(kPirateStationLoot[i][0], kPirateStationLoot[i][1]);
+int PlayerFixedObject::collide(float x, float y, float z) {
+    PlayerFixedObject *self = this;
+    Array<BoundingVolume *> *a = self->wreckCollision;
+    if ((a != 0 || self->state != 4) && self->collisionEnabled() != 0) {
+        if (a != 0 && self->state == 4) {
+            for (uint32_t i = 0; i < a->size(); i++) {
+                BoundingVolume *bv = (*a)[i];
+                if (bv->collide(x, y, z) != 0) return 1;
+                a = self->wreckCollision;
             }
         } else {
-            this->lootList() = generator->getLootList(-1, -1);
-            if (this->lootList() && kind != 0x498e && kind != 0x4a88) {
-                for (unsigned int i = 1; i - 1 < this->lootList()->size(); i += 2) {
-                    if (kind == 14) {
-                        (*this->lootList())[i] *= Globals::rnd->nextInt(8) + 5;
-                    } else {
-                        (*this->lootList())[i] *= Globals::rnd->nextInt(4) + 2;
-                        int minimum = Globals::rnd->nextInt(5) + 8;
-                        (*this->lootList())[i] = minimum > (*this->lootList())[i] ? minimum : (*this->lootList())[i];
-                    }
+            Array<BoundingVolume *> *b = self->boundingVolumes;
+            if (b != 0) {
+                for (uint32_t i = 0; i < b->size(); i++) {
+                    BoundingVolume *bv = (*b)[i];
+                    if (bv->collide(x, y, z) != 0) return 1;
+                    b = self->boundingVolumes;
                 }
             }
         }
-        delete generator;
     }
-
-    this->player->spawnedFlag = 1;
-    if (kind != 0x37a3) {
-        this->aiActiveCounter() = 47;
-        if (kind == 14) {
-            this->moving = 0;
-            this->aiActiveCounter() = -1;
-        }
-    }
+    return 0;
 }
 
-void PlayerFixedObject::setPosition(float x, float y, float z) {
-    this->spawnX() = x;
-    this->spawnY() = y;
-    this->spawnZ() = z;
-    this->intPosY = (int32_t) y;
-    this->intPosX = (int32_t) x;
-    this->intPosZ = (int32_t) z;
-    ((AEGeometry *) this->geometry)->setPosition(x, y, z);
-    reinterpret_cast<Matrix &>(this->player->transform[0]) = ((AEGeometry *) this->geometry)->getMatrix();
-    this->position() = ((AEGeometry *) this->geometry)->getPosition();
-    if (this->boundingVolumes != nullptr) {
-        for (uint32_t i = 0; i < this->boundingVolumes->size(); i++)
-            (*this->boundingVolumes)[i]->update(this->position().x, this->position().y, this->position().z);
+V3 PlayerFixedObject::getProjectionVector(const Vector &vec) {
+    PlayerFixedObject *self = this;
+    Array<BoundingVolume *> *bv = self->wreckCollision;
+    if (bv != 0 && self->state == 4) {
+        int idx = self->collisionIndex;
+        return (*bv)[idx]->getProjectionVector(vec);
     }
-    if (this->wreckGeometry != nullptr)
-        this->wreckGeometry->setPosition(x, y, z);
+    Array<BoundingVolume *> *bv2 = self->boundingVolumes;
+    if (bv2 != 0) {
+        int idx = self->collisionIndex;
+        return (*bv2)[idx]->getProjectionVector(vec);
+    }
+    V3 z = {0.0f, 0.0f, 0.0f};
+    return z;
 }
 
-void PlayerFixedObject::setDeadButSelectable() {
-    Player *player = this->player;
-    this->moving = 0;
-    player->setHitpoints(1);
-    ((Player *) (this->player))->setVulnerable(false);
-    this->level->lodManager->removeObject((AEGeometry *) this->geometry);
-    AEGeometry *geom = this->geometry;
-    if (geom != 0) delete geom;
-    AEGeometry *newGeom = this->wreckGeometry;
-    this->geometry = newGeom;
-    AbyssEngine::Transform *t = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(newGeom->transform);
-    t->SetAnimationRangeInTime(t->animationLength, t->animationLength);
+V3 PlayerFixedObject::projectCollisionOnSurface(const Vector &vec) {
+    Array<BoundingVolume *> *bv = this->wreckCollision;
+    if (bv != 0 && this->state == 4) {
+        V3 result;
+        reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(vec, bv);
+        return result;
+    }
+    Array<BoundingVolume *> *bv2 = this->boundingVolumes;
+    if (bv2 != 0) {
+        V3 result;
+        reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(vec, bv2);
+        return result;
+    }
+    V3 z = {0.0f, 0.0f, 0.0f};
+    return z;
+}
+
+void PlayerFixedObject::outerCollide(Vector v) {
+    this->outerCollide(v.x, v.y, v.z);
 }
 
 int PlayerFixedObject::outerCollide(float x, float y, float z) {
@@ -621,23 +598,44 @@ int PlayerFixedObject::outerCollide(float x, float y, float z) {
     return 0;
 }
 
-void PlayerFixedObject::moveForward(int amount) {
-    float d = (float) amount;
-    this->intPosZ = amount + this->intPosZ;
-    ((AEGeometry *) (this->geometry))->moveForward(d);
-    const Matrix *m = &((AEGeometry *) (this->geometry))->getMatrix();
-    ((Player *) this->player)->transform = *m;
-    Vector position = ((AEGeometry *) this->geometry)->getPosition();
-    this->position() = position;
-    if (this->wreckGeometry != 0) {
-        this->wreckGeometry->moveForward(d);
-    }
-    Array<BoundingVolume *> *bv = this->boundingVolumes;
-    if (bv != 0) {
-        for (uint32_t i = 0; i < bv->size(); i++) {
-            BoundingVolume *o = (*bv)[i];
-            o->update(this->position().x, this->position().y, this->position().z);
-            bv = this->boundingVolumes;
-        }
-    }
+void PlayerFixedObject::setDockingType(int v) {
+    this->dockingType = v;
+}
+
+int PlayerFixedObject::getDockingType() {
+    return this->dockingType;
+}
+
+void PlayerFixedObject::setTransportID(int v) {
+    this->transportID = v;
+}
+
+int PlayerFixedObject::getTransportID() {
+    return this->transportID;
+}
+
+String PlayerFixedObject::getName() {
+    return this->name;
+}
+
+void PlayerFixedObject::setName(String name) {
+    this->name = name;
+}
+
+void PlayerFixedObject::hideShip() {
+    this->shipHidden = 1;
+}
+
+void PlayerFixedObject::setDeadButSelectable() {
+    Player *player = this->player;
+    this->moving = 0;
+    player->setHitpoints(1);
+    ((Player *) (this->player))->setVulnerable(false);
+    this->level->lodManager->removeObject((AEGeometry *) this->geometry);
+    AEGeometry *geom = this->geometry;
+    if (geom != 0) delete geom;
+    AEGeometry *newGeom = this->wreckGeometry;
+    this->geometry = newGeom;
+    AbyssEngine::Transform *t = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(newGeom->transform);
+    t->SetAnimationRangeInTime(t->animationLength, t->animationLength);
 }
