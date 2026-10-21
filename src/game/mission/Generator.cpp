@@ -301,7 +301,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     }
 
     int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-    bool allGold = station->getIndex() == 10 ? Globals::achievements->gotAllGoldMedals() != 0 : false;
+    bool allGold = station->getIndex() == 10 ? Globals::achievements->gotAllGoldMedals() : false;
     int stationIndex = station->getIndex();
     int stationId = station->getIndex();
     int count;

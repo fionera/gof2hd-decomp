@@ -370,8 +370,8 @@ bool Achievements::gotAllMedals() {
     return this->gotAllMedals_;
 }
 
-uint8_t Achievements::gotAllGoldMedals() {
-    return this->gotAllGoldMedals_;
+bool Achievements::gotAllGoldMedals() {
+    return reinterpret_cast<bool &>(this->gotAllGoldMedals_);
 }
 
 uint8_t Achievements::gotAllSupernovaMedals() {
