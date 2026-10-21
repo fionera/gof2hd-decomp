@@ -137,9 +137,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     uint32_t quads = particleCount * stride;
     this->pointCount = quads << 2;
 
-    if ((flags & 0x8000) == 0) {
-        this->particleVelocities = new Vector[particleCount];
-    } else {
+    if ((flags & 0x8000) != 0) {
         if (sets.size() != 0) {
             int set = (int) sets.data()[0];
             if (set != -1) {
@@ -150,6 +148,8 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
             }
         }
         this->particleVelocities = new Vector[particleCount * edgeCount * 2];
+    } else {
+        this->particleVelocities = new Vector[particleCount];
     }
     this->field_0x78 = 0;
     this->field_0x7c = 0;
