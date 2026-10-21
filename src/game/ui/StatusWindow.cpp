@@ -83,87 +83,62 @@ void Status_replaceHash(void *out, void *key, void *a, void *b); // lint: void_p
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 
-void StatusWindow::OnTouchEnd(int x, int y) {
-    int vy = this->scrollVelocity;
-    int newOff = this->scrollOffset + vy;
-    float vf = (float) vy;
-    int absvy = vy < 0 ? -vy : vy;
-    Layout *layout = Globals::layout;
-
+int StatusWindow::OnTouchEnd(int x, int y) {
+    int velocity = this->scrollVelocity;
+    int offset = this->scrollOffset + velocity;
     this->scrollDamping = 0.9f;
     this->isDragging = 0;
-    this->scrollOffset = newOff;
-    this->scrollTarget = newOff;
-    this->scrollVelocityF = (absvy > 3) ? vf : 0.0f;
+    this->scrollOffset = offset;
+    this->scrollTarget = offset;
+    this->scrollVelocityF = (velocity < 0 ? -velocity : velocity) > 3 ? (float) velocity : 0.0f;
+    if (Globals::layout->OnTouchEnd(x, y))
+        return 1;
 
-    if (layout->OnTouchEnd(x, y) != 0)
-        return;
-
-    if (Globals::iPad == 0) {
+    if (!Globals::iPad) {
         for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
-            if ((*this->tabButtons)[i]->OnTouchEnd(x, y) != 0) {
+            if ((*this->tabButtons)[i]->OnTouchEnd(x, y)) {
                 this->activeTab = i;
                 this->contentHeight = this->tabHeights[i];
                 this->scrollOffset = 0;
             }
         }
     }
-
     if (this->activeTab == 1) {
         for (int i = 0; i < this->medalCount; i++) {
-            if ((*this->medalButtons)[i]->OnTouchEnd(x, y) != 0) {
-                Achievements *ach = Globals::achievements;
-                int *medals = ach->getMedals();
-                int elite = ach->isEliteMedal(i);
-                if (elite != 0 || medals[i] != 0) {
-                    if (this->selectedMedal >= 0) {
+            if ((*this->medalButtons)[i]->OnTouchEnd(x, y)) {
+                int *medals = Globals::achievements->getMedals();
+                bool elite = Globals::achievements->isEliteMedal(i);
+                if (elite || medals[i] != 0) {
+                    if (this->selectedMedal >= 0)
                         (*this->medalButtons)[this->selectedMedal]->setAlwaysPressed(false);
-                    }
                     this->selectedMedal = i;
-
                     if (this->detailLines != 0) {
                         ArrayReleaseClasses(*this->detailLines);
                         delete this->detailLines;
                     }
+                    this->detailLines = 0;
                     this->detailLines = new Array<String *>();
-
-                    int count = (elite == 0) ? medals[this->selectedMedal] : 1;
-
-                    String hdr, valStr, valTmp, full;
-                    Status *key = Globals::status;
-                    String *t = (Globals::gameText)->getText(this->selectedMedal + 0x610);
-                    hdr.Set((t)->data);
-                    String *val = (String *) (intptr_t) ach->getValue(this->selectedMedal, count);
-                    valStr.Set(val->data);
-                    valTmp.Set((valStr).data);
-                    Status_replaceHash(&full, key, &hdr, &valTmp);
-
-                    String hint = this->getMedalHintText(this->selectedMedal);
-                    full += hint;
-
-                    (Globals::globals)->getLineArray(
-                        (unsigned int) (uintptr_t) Globals::font,
-                        full, this->boxWidth - layout->field_0x4c * 2, this->detailLines);
+                    int stage = elite ? 1 : medals[this->selectedMedal];
+                    String text = Globals::status->replaceHash(
+                        String(*Globals::gameText->getText(this->selectedMedal + 1552), false),
+                        String(String(Globals::achievements->getValue(this->selectedMedal, stage)), false));
+                    text += this->getMedalHintText(this->selectedMedal);
+                    Globals::globals->getLineArray((unsigned int) (uintptr_t) Globals::font, text,
+                                                   this->boxWidth - Globals::layout->field_0x4c * 2,
+                                                   this->detailLines);
                     (*this->medalButtons)[i]->setAlwaysPressed(true);
                 }
                 break;
             }
         }
     }
-
-    if (layout->helpPressed() != 0) {
-        if (this->activeTab == 1) {
-            String title;
-            String *t = (Globals::gameText)->getText(0x287);
-            title.Set((t)->data);
-            layout->initHelpWindow(title);
-        } else if (this->activeTab == 0) {
-            String title;
-            String *t = (Globals::gameText)->getText(0x280);
-            title.Set((t)->data);
-            layout->initHelpWindow(title);
-        }
+    if (Globals::layout->helpPressed()) {
+        if (this->activeTab == 0)
+            Globals::layout->initHelpWindow(String(*Globals::gameText->getText(640), false));
+        else if (this->activeTab == 1)
+            Globals::layout->initHelpWindow(String(*Globals::gameText->getText(647), false));
     }
+    return 0;
 }
 
 int StatusWindow::OnTouchBegin(int x, int y) {
