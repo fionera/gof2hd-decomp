@@ -22,9 +22,9 @@ namespace AbyssEngine {
     int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, float scale, AELoadedTexture *outTex, bool flag); // lint: void_ptr (exported TextureCreateFromFileIntern signature)
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triangleCount,
                    signed char meshType, Mesh **out);
-    float CameraSetPerspective(float a, float b, float c, float width, float height,
+    void CameraSetPerspective(float a, float b, float c, float width, float height,
                                Camera *camera);
-    float CameraSetPerspective(float fov, float aspect, float width, float height,
+    void CameraSetPerspective(float fov, float aspect, float width, float height,
                                Camera *camera);
 }
 

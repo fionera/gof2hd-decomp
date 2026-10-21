@@ -630,8 +630,7 @@ namespace AbyssEngine {
     namespace AEMath {
     }
 
-    float CameraSetPerspective(float fov, float aspectNum, float aspectDen, float near, Camera *cam) {
-        float ret = fov;
+    void CameraSetPerspective(float fov, float aspectNum, float aspectDen, float near, Camera *cam) {
         if (cam != 0) {
             float *f = (float *) cam;
             f[1] = fov;
@@ -645,11 +644,8 @@ namespace AbyssEngine {
             f[0x14] = aspectDen / near;
 
             float at = AbyssEngine::AEMath::ATanf((aspectDen / near) * scale);
-            float ca = AbyssEngine::AEMath::Cosf(at);
-            ret = 1.0f / ca;
-            f[0x15] = ret;
+            f[0x15] = 1.0f / AbyssEngine::AEMath::Cosf(at);
         }
-        return ret;
     }
 }
 
@@ -787,8 +783,9 @@ namespace AbyssEngine {
 
         unsigned int i = 0;
         Mesh **glyphs;
+        ImageFont *f;
         for (;;) {
-            ImageFont *f = *slot;
+            f = *slot;
             glyphs = f->glyphMeshes;
             if (f->glyphCount <= i)
                 break;
@@ -796,9 +793,11 @@ namespace AbyssEngine {
             ++i;
         }
 
-        if (glyphs != 0)
+        if (glyphs != 0) {
             operator delete[](glyphs);
-        (*slot)->glyphMeshes = 0;
+            f = *slot;
+        }
+        f->glyphMeshes = 0;
 
         if (*slot != 0)
             operator delete(*slot);
@@ -1505,30 +1504,24 @@ namespace AbyssEngine {
     namespace AEMath {
     }
 
-    float CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen, float near,
-                               Camera *cam) {
-        float ret = p1;
+    void CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen, float near,
+                              Camera *cam) {
         if (cam != 0) {
             float *f = (float *) cam;
             f[0] = p1;
             f[1] = aspectNum;
             f[2] = fov;
 
-            float s = AbyssEngine::AEMath::Sinf(f[0] * 0.5f);
-            float c = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
+            float half = p1 * 0.5f;
+            float s = AbyssEngine::AEMath::Sinf(half);
+            float c = AbyssEngine::AEMath::Cosf(half);
             f[0x12] = s / c;
             f[0x13] = (aspectDen / near) * (s / c);
             f[0x14] = aspectDen / near;
 
-            float c2 = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
-            f[0x16] = 1.0f / c2;
-
-            AbyssEngine::AEMath::ATanf(f[0x12] * f[0x14]);
-            float c3 = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
-            ret = 1.0f / c3;
-            f[0x15] = ret;
+            f[0x16] = 1.0f / AbyssEngine::AEMath::Cosf(half);
+            f[0x15] = 1.0f / AbyssEngine::AEMath::Cosf(AbyssEngine::AEMath::ATanf(f[0x12] * f[0x14]));
         }
-        return ret;
     }
 }
 
