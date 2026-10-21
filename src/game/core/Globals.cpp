@@ -423,18 +423,6 @@ static inline char rdflag(char *const g) { return *g; }
 static inline int *rdobj(int *const g) { return g; }
 static inline CoordsObject *rdcoords(CoordsObject *const g) { return g; }
 
-static const char gIAP_prefixA[] = "";
-static const char gIAP_prefixB[] = "";
-static const char gIAP_id50[] = "";
-static const char gIAP_id0[] = "";
-static const char gIAP_id1[] = "";
-static const char gIAP_id2[] = "";
-static const char gIAP_id3[] = "";
-static const char gIAP_id4[] = "";
-static const char gIAP_id51[] = "";
-static const char gIAP_id52[] = "";
-static const char gIAP_id53[] = "";
-static const char gIAP_id54[] = "";
 
 static const char gLTS_minTens[] = "";
 static const char gLTS_minEmpty[] = "";
@@ -2578,66 +2566,35 @@ float Globals::sqrt(float x) {
 
 int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) {
     int result = -1;
-
-    if (list != 0) {
-        unsigned len = list->size();
-        unsigned i = 0;
-        bool keepGoing = true;
-        while (i < len && keepGoing) {
+    if (list != nullptr) {
+        bool searching = true;
+        for (unsigned i = 0; i < list->size() && searching; i++) {
             String *entry = (*list)[i];
-            String base, pb, prefix;
-            base.ctor_char(gIAP_prefixA, false);
-            pb.ctor_char(gIAP_prefixB, false);
-            prefix = base + pb;
-
-            if (entry == 0) {
+            String prefix = String("www.fishlabs.net.gof2hd") + String(".");
+            if (entry == nullptr) {
                 result = -1;
-                keepGoing = false;
+                searching = false;
             } else {
-                const char *suffix = 0;
-                bool known = true;
+                int differs = 1;
                 switch (productCode) {
-                    case 0: suffix = gIAP_id0;
-                        break;
-                    case 1: suffix = gIAP_id1;
-                        break;
-                    case 2: suffix = gIAP_id2;
-                        break;
-                    case 3: suffix = gIAP_id3;
-                        break;
-                    case 4: suffix = gIAP_id4;
-                        break;
-                    case 0x32: suffix = gIAP_id50;
-                        break;
-                    case 0x33: suffix = gIAP_id51;
-                        break;
-                    case 0x34: suffix = gIAP_id52;
-                        break;
-                    case 0x35: suffix = gIAP_id53;
-                        break;
-                    case 0x36: suffix = gIAP_id54;
-                        break;
-                    default: known = false;
-                        break;
+                    case 0: differs = entry->Compare(prefix + String("dlc1")); break;
+                    case 1: differs = entry->Compare(prefix + String("dlc2")); break;
+                    case 2: differs = entry->Compare(prefix + String("dlc3")); break;
+                    case 3: differs = entry->Compare(prefix + String("dlc4")); break;
+                    case 4: differs = entry->Compare(prefix + String("dlc5")); break;
+                    case 50: differs = entry->Compare(prefix + String("dlcCredits1")); break;
+                    case 51: differs = entry->Compare(prefix + String("dlcCredits2")); break;
+                    case 52: differs = entry->Compare(prefix + String("dlcCredits3")); break;
+                    case 53: differs = entry->Compare(prefix + String("dlcCredits4.0")); break;
+                    case 54: differs = entry->Compare(prefix + String("dlcCredits5")); break;
+                    default: break;
                 }
-                if (!known) {
-                    keepGoing = true;
-                } else {
-                    String suf, full;
-                    suf.ctor_char(suffix, false);
-                    full = prefix + suf;
-                    int cmp = entry->Compare(full);
-                    if (cmp == 0) {
-                        result = (int) i;
-                        keepGoing = false;
-                    } else {
-                        keepGoing = true;
-                    }
+                if (differs == 0) {
+                    result = (int) i;
+                    searching = false;
                 }
             }
-            i++;
         }
     }
-
     return result;
 }
