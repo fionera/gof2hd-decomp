@@ -59,7 +59,8 @@ struct AppData {
     char restoreNotice;
     char pad43[0x48 - 0x43];
     int purchaseId;
-    char pad4c[0x58 - 0x4c];
+    char pad4c[0x54 - 0x4c];
+    Array<String *> *productIds;
     int *purchaseList;
     char pad5c[0x60 - 0x5c];
     Array<String *> *iapArray;
@@ -225,9 +226,84 @@ static inline void Status_checkForLevelUp_okp() { Globals::status->checkForLevel
 
 void leaveStation();
 
-// Portrait part descriptors for the pirate-base greeting dialogues.
-static int gPirateGreetingFaceA[10] = {2, 0, 0, 0, 0, 4, 2, 0, 2, 2};
+// Portrait part descriptors of the story characters (5 ints per face).
+static int gStoryFaces[62][5] = {
+    {0, 8, 8, 1, 8},
+    {2, 1, 1, 1, 1},
+    {0, 9, 9, 8, 9},
+    {0, 2, 3, 3, 10},
+    {10, 0, 0, 1, 0},
+    {1, 1, 0, 4, 0},
+    {0, 6, 8, 8, 7},
+    {0, 4, 8, 8, 10},
+    {0, 3, 5, 8, 6},
+    {0, 7, 7, 8, 5},
+    {0, 5, 4, 2, 7},
+    {10, 1, 1, 2, 4},
+    {2, 2, 2, 4, 2},
+    {11, 1, 0, 0, 1},
+    {11, 1, 0, 0, 2},
+    {11, 1, 0, 0, 3},
+    {0, 8, 10, 10, 4},
+    {9, 0, 0, 0, 0},
+    {7, 1, 1, 0, 0},
+    {2, 0, 0, 1, 2},
+    {0, 2, 10, 9, 2},
+    {1, 2, 4, 3, 1},
+    {1, 3, 1, 5, 0},
+    {10, 3, 3, 4, 6},
+    {0, 0, 5, 8, 6},
+    {0, 8, 8, 8, 0},
+    {0, 4, 8, 8, 4},
+    {0, 0, 5, 8, 10},
+    {0, 2, 10, 9, 2},
+    {7, 0, 0, 2, 1},
+    {0, 5, 4, 8, 3},
+    {4, 1, 1, 1, 1},
+    {0, 4, 8, 8, 4},
+    {0, 2, 10, 9, 2},
+    {2, 4, 1, 4, 1},
+    {0, 8, 3, 8, 3},
+    {2, 2, 1, 3, 2},
+    {6, 0, 0, 2, 0},
+    {10, 3, 3, 1, 4},
+    {0, 0, 5, 4, 6},
+    {1, 0, 3, 1, 2},
+    {2, 4, 1, 2, 3},
+    {1, 0, 1, 1, 3},
+    {7, 0, 0, 0, 0},
+    {2, 4, 2, 0, 0},
+    {2, 0, 1, 1, 2},
+    {2, 1, 0, 4, 0},
+    {1, 0, 0, 3, 5},
+    {0, 3, 3, 0, 5},
+    {10, 0, 3, 3, 5},
+    {0, 3, 6, 0, 8},
+    {10, 3, 0, 3, 3},
+    {0, 10, 7, 2, 1},
+    {12, 0, 0, 0, 0},
+    {0, 0, 10, 0, 7},
+    {0, 6, 0, 7, 4},
+    {2, 3, 1, 1, 4},
+    {2, 1, 4, 2, 0},
+    {0, 0, 4, 3, 5},
+    {0, 10, 2, 9, 4},
+    {2, 0, 0, 0, 0},
+    {4, 2, 0, 2, 2}};
 static int gPirateGreetingFaceB[5];
+// Face of the story character speaking a given story dialogue.
+static int *const gStoryFaceTable[63] = {
+    gPirateGreetingFaceB, gStoryFaces[0], gStoryFaces[1], gStoryFaces[2], gStoryFaces[61], gStoryFaces[3],
+    gStoryFaces[4], gStoryFaces[5], gStoryFaces[6], gStoryFaces[7], gStoryFaces[8], gStoryFaces[9],
+    gStoryFaces[10], gStoryFaces[11], gStoryFaces[12], gStoryFaces[13], gStoryFaces[14], gStoryFaces[15],
+    gStoryFaces[16], gStoryFaces[17], gStoryFaces[18], gStoryFaces[19], gStoryFaces[60], gStoryFaces[20],
+    gStoryFaces[21], gStoryFaces[22], gStoryFaces[23], gStoryFaces[24], gStoryFaces[25], gStoryFaces[26],
+    gStoryFaces[27], gStoryFaces[28], gStoryFaces[29], gStoryFaces[30], gStoryFaces[31], gStoryFaces[32],
+    gStoryFaces[33], gStoryFaces[34], gStoryFaces[35], gStoryFaces[36], gStoryFaces[37], gStoryFaces[38],
+    gStoryFaces[39], gStoryFaces[40], gStoryFaces[41], gStoryFaces[42], gStoryFaces[43], gStoryFaces[44],
+    gStoryFaces[45], gStoryFaces[46], gStoryFaces[47], gStoryFaces[48], gStoryFaces[49], gStoryFaces[50],
+    gStoryFaces[51], gStoryFaces[52], gStoryFaces[53], gStoryFaces[54], gStoryFaces[55], gStoryFaces[56],
+    gStoryFaces[57], gStoryFaces[58], gStoryFaces[59]};
 
 void ModStation::OnKeyPress(long long, long long key) {
     if (!this->stationActive)
@@ -276,7 +352,7 @@ void ModStation::OnKeyPress(long long, long long key) {
                         if (this->dialogueWindow == nullptr) {
                             this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(432),
                                                                       Globals::gameText->getText(1609),
-                                                                      gPirateGreetingFaceA);
+                                                                      gStoryFaces[60]);
                             this->flag_0x69 = 1;
                             Agent *agent = new Agent(0, String("", false), 0, 0, 2, true, 0, 0, 0, 0);
                             Globals::sound->play(Globals::globals->getDialogueSoundId(432, agent), nullptr, nullptr,
@@ -785,323 +861,338 @@ static inline void AEGeometry_rotate_ou(AEGeometry *geom, float x, float y, floa
 void Engine_setHangarLightIntensity_ou(float v);
 
 void ModStation::OnUpdate() {
-    int *status = (int *) Globals::status;
-    int *sound = (int *) Globals::sound;
-
-    int elapsed;
-    int e = ApplicationManager_GetElapsedTimeMillis_ou();
-    if (e < 0x97 && ApplicationManager_GetElapsedTimeMillis_ou() < 0) {
-        elapsed = 0;
-    } else {
-        if (ApplicationManager_GetElapsedTimeMillis_ou() < 0x97)
-            elapsed = ApplicationManager_GetElapsedTimeMillis_ou();
-        else
-            elapsed = 0x96;
-    }
-
-    this->dt = elapsed;
-    this->accumTime += (long long) elapsed;
-
+    int delta = ((int) this->applicationManager->GetElapsedTimeMillis() > 150
+                     ? 150
+                     : (int) this->applicationManager->GetElapsedTimeMillis()) < 0
+                    ? 0
+                    : ((int) this->applicationManager->GetElapsedTimeMillis() > 150
+                           ? 150
+                           : (int) this->applicationManager->GetElapsedTimeMillis());
+    this->dt = delta;
+    this->accumTime += delta;
     Globals::sound->updateAll(nullptr, nullptr, nullptr, nullptr);
-    int *layout = (int *) Globals::layout;
-    Layout_update_ou(*layout);
-    if (reinterpret_cast<uint8_t*>(&this->accumTime)[2] == 0)
-        Status_incPlayingTime_ou((long long) (unsigned) *(int *) &Globals::status);
+    Globals::layout->update(this->dt);
+    if (!this->flag_0x62) {
+        Globals::status->incPlayingTime(this->dt);
+    }
+    this->buttonCredits->setText(Globals::layout->formatCredits(Globals::status->getCredits()));
+    Globals::achievements->updateCredits(Globals::status->getCredits());
 
-    int creditsBtn = this->activeMission;
-    Status_getCredits_ou();
-    Layout_formatCredits_ou(this);
-    TouchButton_setText_ou(creditsBtn);
+    if (this->stationActive && Globals::enterSpaceLounge) {
+        // Straight into the space lounge.
+        this->flag_0xd8 = 1;
+        Globals::enterSpaceLounge = 0;
+        if (this->spaceLounge != nullptr) {
+            this->spaceLounge->init();
+        } else {
+            this->spaceLounge = new SpaceLounge();
+        }
+        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 2.0f);
+        Globals::sound->stop(122);
+        Globals::sound->play(108, nullptr, nullptr, 0.0f);
+        this->flag_0x65 = 1;
+        return;
+    }
 
-    Achievements_updateCredits_ou((Achievements *) *(int *) &Globals::achievements, Status_getCredits_ou());
-
-    if (this->stationActive != 0) {
-        char *flag = (char *) &Globals::enterSpaceLounge;
-        if (*flag != 0) {
-            reinterpret_cast<uint8_t*>(&this->buttonCredits)[0] = 1;
-            *flag = 0;
-            if (this->spaceLounge == 0) {
-                SpaceLounge *sl = (SpaceLounge *) ::operator new(0x10c);
-                SpaceLounge_ctor_ou(sl);
-                this->spaceLounge = sl;
-            } else {
-                SpaceLounge_init_ou(this->spaceLounge);
+    AppData *appData = (AppData *) Globals::appManager->GetApplicationData();
+    if (appData->restoreNotice) {
+        this->choiceWindow->set(*Globals::gameText->getText(100));
+        this->flag_0x63 = 1;
+        appData->restoreNotice = 0;
+    }
+    if (appData->purchaseReady && appData->purchaseList != nullptr && *appData->purchaseList != 0 &&
+        (unsigned) (appData->purchaseId - 50) <= 4) {
+        // In-app purchase completed: hand out the credits.
+        int credits = (*reinterpret_cast<Array<int> *>(appData->iapArray))[
+            Globals::globals->getInAppPurchaseArrayIndex(appData->purchaseId, appData->productIds)];
+        if (credits >= 0) {
+            Globals::status->changeCredits(credits);
+            autosave();
+            this->choiceWindow->set(*Globals::gameText->getText(125));
+            this->flag_0x63 = 1;
+            appData->purchaseReady = 0;
+            if (this->hangarWindow != nullptr) {
+                this->hangarWindow->hideMessage();
             }
-            Globals::sound->setParamValue(0, *sound, 0.0f);
-            FModSound_stop_ou(*sound);
-            Globals::sound->play(0x6c, nullptr, nullptr, 0.0f);
-            this->flag_0x65 = 1;
-            goto epilogue;
+            delete this->dlcMenu;
+            this->dlcMenu = nullptr;
         }
     }
 
-    {
-        AppData *appData = (AppData *) (intptr_t) ApplicationManager_GetApplicationData_ou();
-        if (appData->restoreNotice != 0) {
-            ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(*(int *) &Globals::gameText));
-            this->flag_0x6f = 1;
-            appData->restoreNotice = 0;
+    if (!this->flag_0x64 && !this->flag_0x65 && !this->flag_0x66 && !this->flag_0x67 && !this->flag_0x68 &&
+        !this->flag_0x60) {
+        if (this->newsTicker != nullptr) {
+            this->newsTicker->update(this->dt);
         }
-        if (appData->purchaseReady != 0 && appData->purchaseList != 0 &&
-            *appData->purchaseList != 0 &&
-            (unsigned) (appData->purchaseId - 0x32) < 5) {
-            int idx = Globals::globals->getInAppPurchaseArrayIndex(appData->purchaseId,
-                                                                   appData->iapArray);
-            if (-1 < (intptr_t)(*appData->iapArray)[idx]) {
-                Status_changeCredits_ou(*status);
-                this->autosave();
-                ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(*(int *) &Globals::gameText));
-                this->flag_0x6f = 1;
-                appData->purchaseReady = 0;
-                if ((int) (intptr_t) this->hangarWindow != 0)
-                    this->hangarWindow->hideMessage();
-                if ((int) (intptr_t) this->dlcMenu != 0) {
-                    MenuTouchWindow_dtor_ou(this->dlcMenu);
-                    ::operator delete(this->dlcMenu);
-                }
-                this->dlcMenu = 0;
-            }
-        }
-    }
-
-    if (this->flag_0x64 == 0 && this->flag_0x65 == 0 &&
-        this->flag_0x66 == 0 && this->flag_0x67 == 0 &&
-        this->flag_0x68 == 0 && this->flag_0x60 == 0) {
-        if (this->newsTicker != nullptr)
-            this->newsTicker->update(0);
-        if ((int) (intptr_t) this->cutScene != 0)
+        if (this->cutScene != nullptr) {
             this->cutScene->process(0);
-        {
-            float bx = this->camCoordX;
-            float by = this->camCoordY;
-            float bz = this->camCoordZ;
-
-            float dx = EaseInOut_advance_ou(this->easeX, elapsed);
-            float dy = EaseInOut_advance_ou(this->easeY, elapsed);
-            float dz = EaseInOut_advance_ou(this->easeZ, elapsed);
-            Matrix cam;
-            MatrixSetTranslation(cam, bx + dx, by + dy, bz + dz);
-            ModStation_ou_setCameraLocal(ModStation_ou_cameraHandle(), cam);
         }
+        // Idle camera drift around the hangar.
+        uint8_t *flipAxis = &this->_pad_0x12d[0];
+        int step = this->dt;
+        int backStep = -this->dt;
+        this->easeX->Increase((float) (flipAxis[1] ? backStep : step));
+        float camX = this->easeX->GetValue();
+        if ((camX - this->easeX->GetMaxValue() > 0.0f ? camX - this->easeX->GetMaxValue()
+                                                      : -(camX - this->easeX->GetMaxValue())) <= 20.0f) {
+            bool back = flipAxis[1];
+            flipAxis[1] = !back;
+            int offset = Globals::rnd->nextInt(131);
+            this->easeX->SetRange(camX, this->camKeyX + (float) (back ? offset + 18 : -18 - offset));
+        }
+        this->easeY->Increase((float) (flipAxis[0] ? backStep : step));
+        float camY = this->easeY->GetValue();
+        if ((camY - this->easeY->GetMaxValue() > 0.0f ? camY - this->easeY->GetMaxValue()
+                                                      : -(camY - this->easeY->GetMaxValue())) <= 20.0f) {
+            bool back = flipAxis[0];
+            flipAxis[0] = !back;
+            int offset = Globals::rnd->nextInt(120);
+            this->easeY->SetRange(camY, this->camKeyY + (float) (back ? offset + 30 : -30 - offset));
+        }
+        this->easeZ->Increase((float) (flipAxis[2] ? backStep : step));
+        float camZ = this->easeZ->GetValue();
+        if ((camZ - this->easeZ->GetMaxValue() > 0.0f ? camZ - this->easeZ->GetMaxValue()
+                                                      : -(camZ - this->easeZ->GetMaxValue())) <= 20.0f) {
+            bool back = flipAxis[2];
+            flipAxis[2] = !back;
+            int offset = Globals::rnd->nextInt(100);
+            this->easeZ->SetRange(camZ, this->camKeyZ + (float) (back ? offset + 50 : -50 - offset));
+        }
+        AbyssEngine::AEMath::MatrixSetTranslation(
+            *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(
+                Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent())),
+            camX, camY, camZ);
     }
 
-    if (this->accumTime < (long long) ((int) this->accumTime < 1000 ? 1 : 0))
-        goto epilogue;
+    if (this->accumTime < 1000) {
+        return;
+    }
 
-    if (this->flag_0x60 != 0) {
-        int t = (int) (intptr_t) this->spaceLounge;
-        if (t < 1 + 0 && 0 < this->dt + t) {
-            if (this->cutScene != 0) {
-                ::operator delete(this->cutScene);
-            }
-            this->cutScene = 0;
-            CutScene *cs = (CutScene *) ::operator new(0xa0);
-            CutScene_ctor_ou(cs, 2);
-            this->cutScene = cs;
-            CutScene_initialize_ou(cs);
-            cs->rotationSpeed = 0;
-            t = (int) (intptr_t) this->spaceLounge;
+    if (this->flag_0x60) {
+        // Valkyrie intro sequence.
+        if (this->field_0xb4 < -6000 && this->field_0xb4 + this->dt > -6001) {
+            delete this->cutScene;
+            this->cutScene = nullptr;
+            this->cutScene = new CutScene(2);
+            this->cutScene->initialize();
+            this->cutScene->rotationSpeed = 3e-05f;
             this->flag_0x60 = 1;
         }
-        this->spaceLounge = (SpaceLounge *) (intptr_t)(t + this->dt);
+        this->field_0xb4 += this->dt;
         this->cutScene->update(this->dt);
-
-        if (((Radio *)(intptr_t)this->activeMission)->lastMessageShown() != 0) {
-            float scroll = reinterpret_cast<float&>(this->touchX);
-            float target = reinterpret_cast<float&>(this->touchY);
-
-            float step = VectorSignedToFloat(elapsed, 0) * 0.004f;
-            if (scroll < target) {
-                scroll += (target - scroll) * step;
-                if (scroll > target) scroll = target;
-            } else if (scroll > target) {
-                scroll -= (scroll - target) * step;
-                if (scroll < target) scroll = target;
+        if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown()) {
+            Vector &textPos = reinterpret_cast<Vector &>(this->idleBox);
+            float textY = textPos.y;
+            if (textY > (float) (Globals::h / 2)) {
+                float scrolled = textY + (float) this->dt * -0.03f;
+                if (scrolled <= (float) (Globals::h / 2)) {
+                    textPos.y = scrolled;
+                    this->field_0xb8 = 4000;
+                    textY = scrolled;
+                }
             }
-            reinterpret_cast<float&>(this->touchX) = scroll;
+            if (this->field_0xb8 > 0) {
+                this->field_0xb8 -= this->dt;
+            } else {
+                textY += (float) this->dt * -0.03f;
+                textPos.y = textY;
+                this->scrollBox->setPosition(
+                    (int) textPos.x,
+                    (int) (textY + (float) Globals::Canvas->GetImage2DHeight(this->field_0x5c) +
+                           (float) (Globals::h / 2)));
+            }
         }
-
-        if ((int) (intptr_t) this->spaceLounge >= 0 /* cutscene countdown elapsed */) {
+        if (this->field_0xb4 >= 136001) {
             this->stationActive = 0;
-            Status_nextCampaignMission_ou(*status);
-            int nextModule = **(int **) g_ou_appData;
-            ApplicationManager_SetCurrentApplicationModule_ou(nextModule);
+            Globals::status->nextCampaignMission(true);
+            Globals::switch_to_target_setting = 0;
+            Globals::appManager->SetCurrentApplicationModule(5);
             this->flag_0x60 = 0;
-            goto epilogue;
         }
-    } else if (this->flag_0x68 != 0) {
-        this->dialogueWindow->update(0);
-    } else if (this->flag_0x69 != 0) {
+        return;
+    }
+
+    if (this->flag_0x69) {
+        this->dialogueWindow->update(this->dt);
+    } else if (this->flag_0x67) {
         this->starMap->update(this->dt);
-    } else if (this->flag_0x67 != 0) {
+    } else if (this->flag_0x66) {
         this->hangarWindow->update(this->dt);
-    } else if (this->flag_0x66 != 0) {
+    } else if (this->flag_0x64) {
         ((MissionsWindow *) this->m_pDialogueWindow)->update(this->dt);
-    } else if (this->flag_0x64 != 0) {
+    } else if (this->flag_0x65) {
         this->spaceLounge->update(this->dt);
-    } else if (this->flag_0x65 != 0) {
+    } else if (this->flag_0x68) {
         this->statusWindow->update(this->dt);
     }
-
-    if (this->flag_0x6f != 0)
+    if (this->flag_0x63) {
         this->choiceWindow->update(this->dt);
-    if (this->flag_0x6e != 0)
-        MenuTouchWindow_update_ou(this->dlcMenu, this->dt);
+    }
+    if (this->flag_0x62) {
+        this->dlcMenu->update(this->dt);
+    }
 
-    if (this->flag_0x6f == 0 && this->flag_0x69 == 0 &&
-        this->flag_0x6c == 0) {
-        if (reinterpret_cast<uint8_t*>(&this->buttonCredits)[2] == 0) {
-            this->checkPendingProducts();
-            reinterpret_cast<uint8_t*>(&this->buttonCredits)[2] = 1;
+    if (!this->flag_0x63 && !this->flag_0x69 && !this->flag_0xb0) {
+        if (!this->flag_0xda) {
+            checkPendingProducts();
+            this->flag_0xda = 1;
         }
-        if (reinterpret_cast<uint8_t*>(&this->buttonCredits)[1] == 0) {
-            this->checkMedals();
-            reinterpret_cast<uint8_t*>(&this->buttonCredits)[1] = 1;
+        if (!this->flag_0xd9) {
+            checkMedals();
+            this->flag_0xd9 = 1;
         }
-
-        if (this->flag_0x6a == 0 && this->flag_0x6e != 0) {
-            Status *rec = (Status *) (intptr_t) *(int *) &Globals::status;
-            if (rec->byte_0x2a == 0) {
-                ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(*(int *) &Globals::gameText));
-                this->flag_0x6f = 1;
-                rec->byte_0x2a = 1;
-                this->flag_0x6e = 0;
-            }
+        if (!this->flag_0x6a && this->flag_0x6e && !Globals::hints[42]) {
+            this->choiceWindow->set(*Globals::gameText->getText(601));
+            this->flag_0x63 = 1;
+            Globals::hints[42] = 1;
+            this->flag_0x6e = 0;
         }
 
-        bool special = false;
-        int intro = (this->flag_0x65 != 0) ? this->spaceLounge->introFinished() : 0;
-        int completed = Status_missionCompleted_ou(*status, 1, (long long) intro);
-        Mission *m = (Mission *) completed;
-        int camp = Status_getCurrentCampaignMission_ou();
-        if (m == 0 && camp == 0x74) {
-            if (this->flag_0x65 != 0 && this->spaceLounge->introFinished() != 0) {
-                Status_getSystem_ou();
-                if (SolarSystem_getIndex_ou() == 0x12) {
-                    Status_getCampaignMission_ou();
-                    int mask = Mission_getStatusValue_ou();
-                    Station *st = (Station *) Status_getStation_ou();
-                    int sidx = st->getIndex();
-                    special = true;
-                    if ((1 << ((sidx - 0x5a) & 0xff) & mask) == 0) {
-                        int v = Status_getCampaignMission_ou();
-                        Status_getCampaignMission_ou();
-                        Mission_getStatusValue_ou();
-                        Status_getStation_ou();
-                        Mission_setStatusValue_ou(v);
-                    }
-                }
-            }
+        bool reachedBeacon = false;
+        Mission *completed = Globals::status->missionCompleted(
+            true, this->flag_0x65 ? this->spaceLounge->introFinished() : false, 0);
+        if (completed == nullptr && Globals::status->getCurrentCampaignMission() == 116 && this->flag_0x65 &&
+            this->spaceLounge->introFinished() &&
+            ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 18 &&
+            !(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
+              (1 << (Globals::status->getStation()->getIndex() - 90)))) {
+            // Mission 116: one of the beacon stations visited.
+            ((Mission *) (intptr_t) Globals::status->getCampaignMission())
+                ->setStatusValue(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() |
+                                 (1 << (Globals::status->getStation()->getIndex() - 90)));
+            reachedBeacon = true;
         }
 
-        int campNow = Status_getCurrentCampaignMission_ou();
-        bool generic = campNow < 0x94 || Status_getCurrentCampaignMission_ou() > 0x97;
-        if (!generic) {
-            Station *st = (Station *) Status_getStation_ou();
-            int sidx = st->getIndex();
-            int bit = (sidx == 0x42) ? 2 : (sidx == 0x37) ? 1 : (sidx == 9) ? 4 : 0;
-            bool introOk = this->flag_0x65 != 0 && this->spaceLounge->introFinished() != 0;
-            if (m == 0) {
-                if (introOk && 0x93 < Status_getCurrentCampaignMission_ou() &&
-                    Status_getCurrentCampaignMission_ou() < 0x97 &&
-                    (sidx == 9 || sidx == 0x37 || sidx == 0x42)) {
-                    Status_getCampaignMission_ou();
-                    if ((Mission_getStatusValue_ou() & bit) == 0) {
-                        int v = Status_getCampaignMission_ou();
-                        Status_getCampaignMission_ou();
-                        Mission_getStatusValue_ou();
-                        Mission_setStatusValue_ou(v);
-                        Status_getStation_ou();
-                        DialogueWindow *dw = new DialogueWindow();
-                        this->dialogueWindow = dw;
-                        Mission *nm = (Mission *) ::operator new(0x78);
-                        new ((void*)nm) Mission(0xa0, 0, -1);
-                        Mission_setCampaignMission_ou(nm);
-                        this->dialogueWindow->set(nm, 1, -1);
-                        this->flag_0x69 = 1;
-                        goto afterDialogue;
-                    }
-                }
-                generic = true;
-            } else if (introOk && 0x93 < Status_getCurrentCampaignMission_ou() &&
-                       sidx == 0x60 && Status_getCurrentCampaignMission_ou() <= 0x96) {
-                Status_setCurrentCampaignMission_ou(*status);
-                DialogueWindow *dw = new DialogueWindow();
-                this->activeMission = (int) (intptr_t) m;
-                this->dialogueWindow = dw;
-                this->dialogueWindow->set(m, 1, -1);
-                this->flag_0x69 = 1;
-                goto afterDialogue;
-            } else {
-                generic = true;
-            }
-        }
-        if (generic) {
-            if (special) {
-                Station *st = (Station *) Status_getStation_ou();
-                int sidx = st->getIndex();
-                int slot = (sidx == 0x5e) ? 3 : (sidx - 0x5a);
-                Globals::sound->play(slot + 0x619, nullptr, nullptr, 0.0f);
-                int kind = (slot == 1) ? 0x39 : 0x3a;
-                if (slot == 0 || slot == 2) kind = 0;
-                DialogueWindow *dw = new DialogueWindow(
-                    (String *) (intptr_t) GameText_getText_ou(*(int *) &Globals::gameText),
-                    (String *) (intptr_t) GameText_getText_ou(*(int *) &Globals::gameText),
-                    (int *) (long) kind);
-                this->flag_0x69 = 1;
-                this->dialogueWindow = dw;
-            } else if (m == 0) {
-                Mission *fm = (Mission *) Status_missionFailed_ou(*status, 1, 0);
-                if (fm != 0) {
-                    DialogueWindow *dw = new DialogueWindow(fm, (Level *) 0, 2);
+        if (Globals::status->getCurrentCampaignMission() >= 148 &&
+            Globals::status->getCurrentCampaignMission() <= 151) {
+            int stationIndex = Globals::status->getStation()->getIndex();
+            int visitBit = stationIndex == 66 ? 2 : stationIndex == 55 ? 1 : stationIndex == 9 ? 4 : 0;
+            if (completed != nullptr) {
+                if (this->flag_0x65 && this->spaceLounge->introFinished() &&
+                    Globals::status->getCurrentCampaignMission() >= 148 && stationIndex == 96 &&
+                    Globals::status->getCurrentCampaignMission() <= 150) {
+                    Globals::status->setCurrentCampaignMission(151);
+                    this->dialogueWindow = new DialogueWindow();
+                    this->dialogueMission = completed;
+                    this->dialogueWindow->set(completed, 1, 151);
                     this->flag_0x69 = 1;
-                    this->dialogueWindow = dw;
-                    Status_removeMission_ou(*status);
-                    if (Mission_getType_ou() == 0xd) {
-                        ((Status *) (intptr_t) * status)->field_0xf0 = 0;
-                        this->autosave();
-                    }
+                    checkHints();
+                    goto afterMissions;
                 }
-            } else {
-                this->activeMission = (int) (intptr_t) m;
-                DialogueWindow *dw = new DialogueWindow(m, (Level *) 0, 1);
+            } else if (this->flag_0x65 && this->spaceLounge->introFinished() &&
+                       Globals::status->getCurrentCampaignMission() >= 148 &&
+                       Globals::status->getCurrentCampaignMission() <= 150 &&
+                       (stationIndex == 9 || stationIndex == 55 || stationIndex == 66) &&
+                       !(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() & visitBit)) {
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())
+                    ->setStatusValue(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() |
+                                     visitBit);
+                int textId = Globals::status->getStation()->getIndex() == 66 ? 149 : 148;
+                if (Globals::status->getStation()->getIndex() == 9) {
+                    textId = 150;
+                }
+                this->dialogueWindow = new DialogueWindow();
+                Mission *briefing = new Mission(160, 0, -1);
+                briefing->setCampaignMission(true);
+                this->dialogueWindow->set(briefing, 1, textId);
                 this->flag_0x69 = 1;
-                this->dialogueWindow = dw;
-                if (Mission_getType_ou() == 0xd) {
-                    ((Status *) (intptr_t) * status)->field_0xf0 = 0;
-                    this->autosave();
-                }
-                if (this->spaceLounge != 0)
-                    this->spaceLounge->setHangarUpdate(true);
+                checkHints();
+                goto afterMissions;
             }
         }
-    afterDialogue:
-        this->checkHints();
-    }
 
-    if (this->flag_0x100 == 0) {
-        float cur = reinterpret_cast<float&>(this->flag_0x118);
-        float tgt = this->lightDirection.x;
-        float step = VectorSignedToFloat(elapsed, 0) * 0.002f;
-        if (cur < tgt) {
-            cur += step;
-            if (cur > tgt) cur = tgt;
-        } else if (cur > tgt) {
-            cur -= step;
-            if (cur < tgt) cur = tgt;
+        if (reachedBeacon) {
+            int beacon = Globals::status->getStation()->getIndex() == 94 ? 3
+                                                                         : Globals::status->getStation()->getIndex() - 90;
+            Globals::sound->play(1561 + beacon, nullptr, nullptr, 0.0f);
+            bool firstVoice = beacon == 0 || beacon == 2;
+            int textId = 2716 + beacon;
+            int face = firstVoice ? 0 : (textId == 2717 ? 57 : 58);
+            this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(textId),
+                                                      Globals::gameText->getText(firstVoice ? 1597 : 1516),
+                                                      gStoryFaceTable[face]);
+            this->flag_0x69 = 1;
+        } else if (completed != nullptr) {
+            this->dialogueMission = completed;
+            this->dialogueWindow = new DialogueWindow(completed, nullptr, 1);
+            this->flag_0x69 = 1;
+            if (completed->getType() == 13) {
+                reinterpret_cast<uint16_t &>(Globals::status->field_0xf0) = 0;
+                autosave();
+            }
+            if (this->spaceLounge != nullptr) {
+                this->spaceLounge->setHangarUpdate(true);
+            }
+        } else {
+            Mission *failed = (Mission *) (intptr_t) Globals::status->missionFailed(true, 0);
+            if (failed != nullptr) {
+                this->dialogueWindow = new DialogueWindow(failed, nullptr, 2);
+                this->flag_0x69 = 1;
+                Globals::status->removeMission(failed);
+                if (failed->getType() == 13) {
+                    reinterpret_cast<uint16_t &>(Globals::status->field_0xf0) = 0;
+                    autosave();
+                }
+            }
         }
-        if (cur < 0.0f) cur = 0.0f;
-        if (cur > 1.0f) cur = 1.0f;
-        reinterpret_cast<float&>(this->flag_0x118) = cur;
-        Engine_setHangarLightIntensity_ou(cur);
+        checkHints();
     }
-    if ((int) (intptr_t) this->cutScene != 0 && this->flag_0x60 == 0) {
-        AEGeometry *geom = (AEGeometry *) (intptr_t) this->infoBoxW;
-        if (geom != nullptr)
-            AEGeometry_rotate_ou(geom, 0.0f, 0.1f, 0.0f);
+afterMissions:
+
+    if (!this->flag_0x100) {
+        // Hangar rotation inertia.
+        float factor = (float) this->dt * 0.05f;
+        factor = factor < 1.0f ? factor : 1.0f;
+        float &spin = reinterpret_cast<float &>(this->field_0xf8);
+        spin = spin * (reinterpret_cast<float &>(this->field_0xf4) * factor);
+        if ((spin > 0.0f ? spin : -spin) > 1.0f) {
+            this->camAngle = (int) (spin + (float) this->camAngle);
+        }
+    }
+    if (this->cutScene != nullptr && !this->flag_0x60) {
+        this->cutScene->cameraRotX = (float) this->camAngle / 120.0f;
     }
 
-epilogue:;
+    if (this->flag_0x118) {
+        // Debug camera controls by touching the screen edges.
+        if (this->touchY < Globals::layout->field_0xc_leftMargin) {
+            if (this->touchX < 100) {
+                this->cutScene->rootGeom->translate(0.0f, -10.0f, 0.0f);
+                this->cutScene->vec8.y += -10.0f;
+            } else if (this->touchX < 200) {
+                this->cutScene->rootGeom->translate(0.0f, 10.0f, 0.0f);
+                this->cutScene->vec8.y += 10.0f;
+            } else if (this->touchX < 300) {
+                this->cutScene->rootGeom->rotate(0.01f, 0.0f, 0.0f);
+                this->cutScene->vec8w += 0.01f;
+            } else if (this->touchX < 400) {
+                this->cutScene->rootGeom->rotate(-0.01f, 0.0f, 0.0f);
+                this->cutScene->vec8w += -0.01f;
+            }
+        } else if (this->touchY < Globals::h - 2 * Globals::layout->field_0x10_rightMargin) {
+            if (this->touchX < 70) {
+                this->cutScene->rootGeom->rotate(0.0f, 0.01f, 0.0f);
+                reinterpret_cast<float &>(this->cutScene->shipPosY) += 0.01f;
+            } else if (this->touchX > Globals::w - 70) {
+                this->cutScene->rootGeom->rotate(0.0f, -0.01f, 0.0f);
+                reinterpret_cast<float &>(this->cutScene->shipPosY) += -0.01f;
+            } else if (this->touchX > 100 && this->touchX < Globals::w - 100) {
+                if (this->touchY < Globals::h / 2) {
+                    this->cutScene->rootGeom->moveForward((float) -this->dt);
+                    this->cutScene->vec8.z -= (float) this->dt;
+                } else {
+                    this->cutScene->rootGeom->moveForward((float) this->dt);
+                    this->cutScene->vec8.z += (float) this->dt;
+                }
+            }
+        } else if (this->touchX < 70) {
+            this->cutScene->rootGeom->translate((float) -this->dt, 0.0f, 0.0f);
+            this->cutScene->vec8.x -= (float) this->dt;
+        } else if (this->touchX > Globals::w - 70) {
+            this->cutScene->rootGeom->translate((float) this->dt, 0.0f, 0.0f);
+            this->cutScene->vec8.x += (float) this->dt;
+        }
+    }
 }
 
 static int **g_ModStation_ric_chk = 0;
@@ -1315,7 +1406,7 @@ wingmen:
         delete this->dialogueWindow;
         this->dialogueWindow = nullptr;
         this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(442), Globals::gameText->getText(1662),
-                                                  gPirateGreetingFaceA);
+                                                  gStoryFaces[60]);
         Globals::sound->play(589, nullptr, nullptr, 0.0f);
         this->flag_0x69 = 1;
         reinterpret_cast<uint8_t *>(&Globals::status->field_f8)[1] = 0;
@@ -1799,6 +1890,11 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     this->flag_0x69 = 0;
                     OnKeyPress(0x10000, 0);
                     return;
+                } else if (next == 18) {
+                    Globals::status->removeMission(this->dialogueMission);
+                    this->flag_0x69 = 0;
+                    this->dialogueMission = nullptr;
+                    return;
                 } else if (next == 9 || next == 44 || next == 75 || next == 76 || next == 83) {
                     Globals::status->removeMission(this->dialogueMission);
                     this->dialogueMission = nullptr;
@@ -1806,11 +1902,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     this->flag_0x69 = 0;
                     Globals::switch_to_target_setting = 0;
                     Globals::appManager->SetCurrentApplicationModule(5);
-                    return;
-                } else if (next == 18) {
-                    Globals::status->removeMission(this->dialogueMission);
-                    this->flag_0x69 = 0;
-                    this->dialogueMission = nullptr;
                     return;
                 } else {
                         if (next == 77 && Globals::status->getStation()->getIndex() == 100) {
@@ -2060,7 +2151,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         }
         Globals::sound->stop(95);
         Globals::sound->play(122, nullptr, nullptr, 0.0f);
-        Globals::sound->setParamValue(Globals::sound->currentMusicEvent, 0, 0.0f);
+        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.0f);
         Array<TouchButton *> *row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
         for (unsigned i = 0; i < reinterpret_cast<Array<TouchButton *> *>(this->buttonRow)->size(); i++) {
             if (i < 10) {
@@ -2080,7 +2171,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         }
         this->flag_0x67 = 0;
         resetLight();
-        Globals::sound->setParamValue(Globals::sound->currentMusicEvent, 0, 0.0f);
+        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.0f);
         return;
     }
 
@@ -2091,7 +2182,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         this->flag_0x65 = 0;
         resetIdleCamForHangar();
         resetLight();
-        Globals::sound->setParamValue(Globals::sound->currentMusicEvent, 0, 0.0f);
+        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.0f);
         Globals::sound->stop(108);
         Globals::sound->play(122, nullptr, nullptr, 0.0f);
         this->cutScene->checkForTurret();
@@ -2107,7 +2198,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             return;
         }
         this->flag_0x68 = 0;
-        Globals::sound->setParamValue(Globals::sound->currentMusicEvent, 0, 0.0f);
+        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.0f);
         return;
     }
 
@@ -2116,7 +2207,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             return;
         }
         this->flag_0x64 = 0;
-        Globals::sound->setParamValue(Globals::sound->currentMusicEvent, 0, 0.0f);
+        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.0f);
         resetLight();
         return;
     }
@@ -2748,7 +2839,7 @@ int ModStation::OnInitialize() {
                     if (this->dialogueWindow == nullptr) {
                         this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(434),
                                                                   Globals::gameText->getText(1609),
-                                                                  gPirateGreetingFaceA);
+                                                                  gStoryFaces[60]);
                         Agent *agent = new Agent(0, String(""), 0, 0, 2, true, 0, 0, 0, 0);
                         Globals::sound->play(Globals::globals->getDialogueSoundId(434, agent), nullptr, nullptr, 0.0f);
                         delete agent;
@@ -2875,7 +2966,7 @@ int ModStation::OnInitialize() {
                 delete this->dialogueWindow;
                 this->dialogueWindow = nullptr;
                 Mission *mission = new Mission(-1, String(*Globals::gameText->getText(1601), false),
-                                               gPirateGreetingFaceA + 5, 4, 0, 108, 0);
+                                               gStoryFaces[61], 4, 0, 108, 0);
                 mission->setWon(true);
                 Globals::status->field_114 = 2;
                 this->dialogueWindow = new DialogueWindow(mission, nullptr, 0);
