@@ -26,8 +26,6 @@
 
 using AbyssEngine::Engine;
 
-void OnCreateApplication(AbyssEngine::Engine *engine);
-
 int gRealWidth;
 int gRealHeight;
 

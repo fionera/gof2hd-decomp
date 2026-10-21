@@ -73,12 +73,9 @@ public:
     AbyssEngine::String field_0xb8;
     uint8_t field_0xc4;
 
-    GameData() {
-    }
-
-    ~GameData() {
-    }
 };
+
+void OnCreateApplication(AbyssEngine::Engine *engine);
 
 void OnDestroyApplication(AbyssEngine::Engine *engine);
 
