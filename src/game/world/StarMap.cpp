@@ -828,85 +828,182 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
     }
 }
 
-void StarMap::draw() {
-    String tmp;
+// Security level colours (RGB) for the system info line.
+static const int StarMap_securityColors[4][3] = {{255, 42, 0}, {255, 108, 0}, {237, 237, 0}, {0, 237, 0}};
 
-    int mode = this->mode;
-    int alpha = mode == 0 ? 0xff : 0;
-    this->alpha = alpha;
-    if (this->transitionIn != 0 || this->transitionOut != 0) {
-        float v = EaseInOut_GetValue(this->easeZ);
-        float min = EaseInOut_GetMinValue(this->easeZ);
-        float max = this->easeZ->GetMaxValue();
-        float t = (v - min) / (max - min);
-        if (this->transitionIn != 0) {
-            t = 1.0f - t;
-        }
-        this->alpha = (int) (t * 255.0f);
+void StarMap::draw() {
+    this->alpha = this->mode == 0 ? 255 : 0;
+    if (this->transitionIn || this->transitionOut) {
+        float t = (this->easeZ->GetValue() - this->easeZ->GetMinValue()) /
+                  (this->easeZ->GetMaxValue() - this->easeZ->GetMinValue());
+        this->alpha = (int) ((this->transitionIn ? 1.0f - t : t) * 255.0f);
     }
 
-    if (mode != 3 || this->transitionIn != 0 || this->transitionOut != 0) {
-        Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
-                                  (unsigned char) (this->alpha));
-        Array<Vector *> *positions = this->systemPositions;
-        for (uint32_t i = 0; i < positions->size(); i++) {
-            this->scratchVector = *(*positions)[i];
+    if (this->mode != 3 || this->transitionIn || this->transitionOut) {
+        // Galaxy: faint route network.
+        Globals::Canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha < 34 ? this->alpha : 34));
+        for (uint32_t i = 0; i < this->systemGeoms->size(); i++) {
+            Array<bool> *visible = Globals::status->getSystemVisibilities();
+            if (visible == 0 || visible->size() <= i || !(*visible)[i])
+                continue;
+            if (this->autoMode != 0 && this->pulseSystem == (int) i && this->autoTimer < 4000)
+                continue;
             Array<int> *routes = (Array<int> *) (*this->systems)[i]->getRoutes();
-            if (routes != 0) {
+            if (routes == 0)
+                continue;
+            Vector from = *(*this->systemPositions)[i];
+            this->scratchVector = from;
+            for (uint32_t j = 0; j < routes->size(); j++) {
+                uint32_t to = (*routes)[j];
+                if (visible->size() <= to || !(*visible)[to] || to >= this->systemPositions->size())
+                    continue;
+                if (this->autoMode != 0 && this->pulseSystem == (int) to && this->autoTimer < 4000)
+                    continue;
+                Vector dest = *(*this->systemPositions)[to];
+                this->scratchVector2 = dest;
+                if (this->scratchVector.z < 0.0f && this->scratchVector2.z < 0.0f)
+                    continue;
+                Globals::Canvas->DrawLine((int) this->scratchVector.x, (int) this->scratchVector.y,
+                                          (int) this->scratchVector2.x, (int) this->scratchVector2.y);
+            }
+        }
+
+        // Routes out of the current system pulse.
+        Globals::Canvas->SetColor(255, 255, 255, (uint8_t) this->alpha);
+        Vector here = *(*this->systemPositions)[((SolarSystem *) Globals::status->getSystem())->getIndex()];
+        this->scratchVector2 = here;
+        Array<int> *routes = (Array<int> *) ((SolarSystem *) Globals::status->getSystem())->getRoutes();
+        for (uint32_t i = 0; i < this->systems->size(); i++) {
+            Array<bool> *visible = Globals::status->getSystemVisibilities();
+            if (visible == 0 || i >= this->systemPositions->size() || visible->size() <= i || !(*visible)[i])
+                continue;
+            Vector there = *(*this->systemPositions)[i];
+            this->scratchVector = there;
+            bool hidden = this->scratchVector.z < 0.0f && this->scratchVector2.z < 0.0f;
+            if (routes != 0 && !hidden && this->jumpMapModeB == 0) {
                 for (uint32_t j = 0; j < routes->size(); j++) {
-                    uint32_t to = (uint32_t) (*routes)[j];
-                    if (to < positions->size()) {
-                        this->scratchVector2 = *(*positions)[to];
-                        if (this->scratchVector.z >= 0.0f || this->scratchVector2.z >= 0.0f) {
-                            Globals::Canvas->DrawLine((int) this->scratchVector.x, (int) this->scratchVector.y,
-                                                      (int) this->scratchVector2.x, (int) this->scratchVector2.y);
-                        }
+                    if ((uint32_t) (*routes)[j] == i) {
+                        float pulse = (float) (101 - Globals::status->getPlayingTime() / 10 % 99) / 100.0f;
+                        int fade = (int) (pulse * 255.0f);
+                        Globals::Canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha < fade ? this->alpha : fade));
+                        Globals::Canvas->DrawLine(
+                                (int) this->scratchVector2.x, (int) this->scratchVector2.y,
+                                (int) (this->scratchVector.x + pulse * (this->scratchVector2.x - this->scratchVector.x)),
+                                (int) (this->scratchVector.y + pulse * (this->scratchVector2.y - this->scratchVector.y)));
+                        break;
                     }
                 }
             }
+            if (!this->transitionIn && !this->transitionOut) {
+                this->drawOnScreenInfo(i, false);
+            }
         }
-        for (uint32_t i = 0; i < this->systems->size(); i++) {
-            drawOnScreenInfo((int) i, false);
+
+        // Animated planned route.
+        if (this->mode == 0 && !this->transitionIn && !this->transitionOut && this->systemPath != 0) {
+            float pulse = (float) (101 - Globals::status->getPlayingTime() / 10 % 99) / 100.0f;
+            int step = this->field_0xe8;
+            if (pulse > *(float *) &this->field_0xec) {
+                step++;
+                this->field_0xe8 = step;
+                step = (uint32_t) step < this->systemPath->size() ? step : 0;
+                this->field_0xe8 = step;
+            }
+            *(float *) &this->field_0xec = pulse;
+            if ((uint32_t) step == this->systemPath->size() - 1) {
+                Globals::Canvas->SetColor(255, 255, 0, (uint8_t) (int) (pulse * 255.0f));
+            } else {
+                Globals::Canvas->SetColor(0xffff00ffu);
+            }
+            for (int i = 0; i < this->field_0xe8; i++) {
+                Vector a1 = *(*this->systemPositions)[(*this->systemPath)[i]];
+                this->scratchVector2 = a1;
+                Vector b1 = *(*this->systemPositions)[(*this->systemPath)[i + 1]];
+                this->scratchVector = b1;
+                Globals::Canvas->DrawLine((int) this->scratchVector2.x, (int) this->scratchVector2.y,
+                                          (int) this->scratchVector.x, (int) this->scratchVector.y);
+            }
+            if ((uint32_t) this->field_0xe8 < this->systemPath->size() - 1) {
+                Vector a2 = *(*this->systemPositions)[(*this->systemPath)[this->field_0xe8]];
+                this->scratchVector2 = a2;
+                Vector b2 = *(*this->systemPositions)[(*this->systemPath)[this->field_0xe8 + 1]];
+                this->scratchVector = b2;
+                Globals::Canvas->DrawLine(
+                        (int) this->scratchVector2.x, (int) this->scratchVector2.y,
+                        (int) (this->scratchVector.x + pulse * (this->scratchVector2.x - this->scratchVector.x)),
+                        (int) (this->scratchVector.y + pulse * (this->scratchVector2.y - this->scratchVector.y)));
+            }
         }
     }
 
-    if (this->selectedSystem >= 0 &&
-        (this->autoMode == 0 || this->autoTimer > 3999)) {
-        drawOnScreenInfo(this->selectedSystem, false);
+    if (this->selectedSystem >= 0 && (this->autoMode == 0 || this->autoTimer >= 4000)) {
+        this->drawOnScreenInfo(this->selectedSystem, false);
     }
 
     if (this->starSystemRoot != 0 && this->stations != 0) {
         SolarSystem *system = (*this->systems)[this->selectedSystem];
-        if (system->hasNoOwner() == 0) {
-            Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
-                                      (unsigned char) (this->alpha ^ 0xff));
-            Layout *drawLayout = (Layout *) *g_StarMap_draw_layout;
-            Globals::Canvas->DrawImage2D((unsigned int) (this->systemNameImage), drawLayout->field_0x2c_rowHeight,
-                                         drawLayout->field_0xc_leftMargin +
-                                         drawLayout->field_0x2c_rowHeight, (unsigned char) (0));
-            ((SolarSystem *) (&tmp))->getName();
-            Globals::Canvas->DrawString((unsigned int) (long) (*g_StarMap_draw_font), tmp,
-                                        Globals::Canvas->GetImage2DWidth((unsigned int) (this->systemNameImage)) +
-                                        drawLayout->field_0x2c_rowHeight * 2,
-                                        drawLayout->field_0xc_leftMargin +
-                                        drawLayout->field_0x2c_rowHeight + 2, false);
+        if (!system->hasNoOwner()) {
+            PaintCanvas *canvas = Globals::Canvas;
+            canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha ^ 255));
+            canvas->DrawImage2D(this->systemNameImage, Globals::layout->field_0x2c_rowHeight,
+                                Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight);
+            int indent = Globals::layout->field_0x2c_rowHeight;
+            int nameWidth = canvas->GetImage2DWidth(this->systemNameImage);
+            canvas->SetColor(255, 128, 0, (uint8_t) (this->alpha ^ 255));
+            int textX = nameWidth + indent * 2;
+            canvas->DrawString((unsigned int) (uintptr_t) Globals::font, (*this->systems)[this->selectedSystem]->getName(),
+                               textX, Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight + 2,
+                               false);
+            canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha ^ 255));
+            canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                               *Globals::gameText->getText((*this->systems)[this->selectedSystem]->getRace() + 406), textX,
+                               Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight +
+                               Globals::layout->field_0x4 + 2,
+                               false);
+            int security = (*this->systems)[this->selectedSystem]->getSecurityLevel();
+            canvas->SetColor((uint8_t) StarMap_securityColors[security][0], (uint8_t) StarMap_securityColors[security][1],
+                             (uint8_t) StarMap_securityColors[security][2], (uint8_t) (this->alpha ^ 255));
+            canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(security + 402),
+                               textX,
+                               Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight +
+                               Globals::layout->field_0x4 * 2 + 2,
+                               false);
         }
         for (uint32_t i = 0; i < this->stations->size(); i++) {
-            if (i != (uint32_t) this->selectedStation) {
-                drawOnScreenInfo((int) i, true);
+            if ((int) i != this->selectedStation) {
+                this->drawOnScreenInfo(i, true);
             }
         }
-        if (this->selectedStation >= 0) {
-            drawOnScreenInfo(this->selectedStation, true);
+        if (this->selectedStation > -1) {
+            this->drawOnScreenInfo(this->selectedStation, true);
         }
     }
 
-    if (this->showKey != 0) {
-        drawKey();
+    if (this->showKey) {
+        this->drawKey();
     }
-    tmp.copy((String *) ((GameText *) (*g_StarMap_draw_text))->getText(0x190), false);
-    ((Layout *) (*g_StarMap_draw_layout))->drawHeader(tmp);
-    ((Layout *) (*g_StarMap_draw_layout))->drawEmptyFooter(1);
+    Globals::layout->drawHeader(String(*Globals::gameText->getText(177), false));
+    Globals::layout->drawEmptyFooter(true);
+
+    if ((Globals::status->getShip()->hasJumpDriveIntegrated() || this->jumpMapModeB != 0) && this->jumpCost >= 1 &&
+        this->selectedSystem >= 0 && this->selectedSystem != ((SolarSystem *) Globals::status->getSystem())->getIndex()) {
+        // Energy cells needed / carried.
+        String line = *Globals::gameText->getText(578) + String(" ") +
+                      String(String(this->jumpCost) + String(" / ") + String(this->cargoAmount), false);
+        if (this->jumpCost > this->cargoAmount) {
+            Globals::Canvas->SetColor(0xff2a00ffu);
+        }
+        Layout *layout = Globals::layout;
+        int left = layout->windowX;
+        int width = layout->windowWidth;
+        int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, line);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, line,
+                                    left + width / 2 - textWidth / 2,
+                                    Globals::layout->windowY + Globals::layout->windowHeight -
+                                    Globals::layout->footerTextInset,
+                                    false);
+        Globals::Canvas->SetColor(0xffffffffu);
+    }
     this->backButton->draw();
     if (this->choiceVisible != 0) {
         this->choiceWindow->draw();
