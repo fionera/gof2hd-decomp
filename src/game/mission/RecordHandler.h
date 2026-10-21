@@ -85,7 +85,7 @@ public:
 
     int recordStoreWritePreview(GameRecord *rec, int slot);
 
-    void recordStoreWritePreview(int slot);
+    int recordStoreWritePreview(int slot);
 
     void saveOptions();
 
