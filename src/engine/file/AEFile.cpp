@@ -29,8 +29,8 @@ void AEFile::SetInterface(FileInterface *fileInterface) {
         return;
     }
 
-    if (AEFile::fileInterface != nullptr) {
-        fileInterface->ResetSaveDirectory();
+    if (AEFile::appRoot != nullptr) {
+        fileInterface->SetAppRootDir(AEFile::appRoot);
     }
 
     if (AEFile::pakFileEntryList == nullptr) {
@@ -196,33 +196,34 @@ uint32_t AEFile::Read(int64_t &value, uint32_t handle) { return Read(8, &value, 
 uint32_t AEFile::Read(float &value, uint32_t handle) { return Read(4, &value, handle); }
 
 uint32_t AEFile::Read(String &value, uint32_t handle, bool wide) {
-    uint32_t length = 0;
+    uint32_t length;
     uint32_t result = Read(4, &length, handle);
+    if (wide) {
+        if (result == 0) {
+            return 0;
+        }
+        uint16_t *buffer = new uint16_t[length + 1];
+        uint32_t ok = 0;
+        if (Read(length << 1, buffer, handle) != 0) {
+            buffer[length] = 0;
+            value.Set(buffer);
+            ok = 1;
+        }
+        delete[] buffer;
+        return ok;
+    }
     if (result == 0) {
         return 0;
     }
-
-    if (wide) {
-        uint16_t *buffer = new uint16_t[length + 1];
-        result = Read(length << 1, buffer, handle);
-        if (result != 0) {
-            buffer[length] = 0;
-            AEStr_set(value, buffer);
-            result = 1;
-        }
-        delete[] buffer;
-    } else {
-        char *buffer = new char[length + 1];
-        result = Read(length, buffer, handle);
-        if (result != 0) {
-            buffer[length] = 0;
-            AEStr_set(value, buffer);
-            result = 1;
-        }
-        delete[] buffer;
+    char *buffer = new char[length + 1];
+    uint32_t ok = 0;
+    if (Read(length, buffer, handle) != 0) {
+        buffer[length] = 0;
+        value.Set(buffer);
+        ok = 1;
     }
-
-    return result;
+    delete[] buffer;
+    return ok;
 }
 
 uint32_t AEFile::ReadSwitched(int16_t &value, uint32_t handle) {
@@ -292,24 +293,21 @@ uint32_t AEFile::Write(int64_t value, uint32_t handle) { return Write(8, &value,
 uint32_t AEFile::Write(float value, uint32_t handle) { return Write(4, &value, handle); }
 
 uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide) {
-    uint32_t result;
-    uint32_t size = value.size();
-
     if (wide) {
-        uint16_t *text = AEStr_wchar(value);
-        result = Write(4, &size, handle);
-        if (result != 0) {
-            result = Write(size << 1, text, handle);
+        const unsigned short *text = value.GetAEWChar();
+        uint32_t size = value.size();
+        if (Write(4, &size, handle) == 0) {
+            return 0;
         }
-    } else {
-        char *text = AEStr_char(value);
-        result = Write(4, &size, handle);
-        if (result != 0) {
-            result = Write(size, text, handle);
-        }
-        ::operator delete(text);
+        return Write(value.size() << 1, const_cast<unsigned short *>(text), handle);
     }
-
+    char *text = value.GetAEChar();
+    uint32_t size = value.size();
+    uint32_t result = 0;
+    if (Write(4, &size, handle) != 0) {
+        result = Write(value.size(), text, handle);
+    }
+    delete[] text;
     return result;
 }
 
@@ -345,43 +343,37 @@ void AEFile::RegisterPakFile(String path) {
 }
 
 void AEFile::collectPakFiles(const String &path) {
-    FileInterface *fileInterface = AEFile::fileInterface;
-    if (fileInterface == nullptr || fileInterface->enabled == 0) {
+    if (AEFile::fileInterface == nullptr || AEFile::fileInterface->enabled == 0) {
         return;
     }
 
-    char *pathChars = AEStr_char(path);
-    if (fileInterface->FileEnumInit(pathChars, false) != 0) {
+    char *pathChars = path.GetAEChar();
+    if (AEFile::fileInterface->FileEnumInit(pathChars, false) != 0) {
         String entry;
-        while (fileInterface->FileGetNextEnum(entry) != 0) {
-            String entryCopy;
-            entryCopy.Set((const_cast<String *>(&entry))->data);
-            String suffix(".pak");
-            if (AEStr_indexOf(entry, suffix) != 0xffffffffu) {
+        while (AEFile::fileInterface->FileGetNextEnum(entry) != 0) {
+            String entryCopy(entry);
+            if (entry.IndexOf(String(".pak")) != 0xffffffffu) {
                 collectFilesInPakFiles(entryCopy);
             }
         }
     }
-    ::operator delete(pathChars);
+    delete[] pathChars;
     sortPakFileEntryList();
 }
 
 void AEFile::collectFilesInPakFiles(String &path) {
-    FileInterface *fileInterface = AEFile::fileInterface;
-    if (fileInterface == nullptr || fileInterface->enabled == 0) {
+    if (AEFile::fileInterface == nullptr || AEFile::fileInterface->enabled == 0) {
         return;
     }
 
     OpenRead(path, nullptr);
 
     int8_t nameLength;
-    uint32_t readResult = Read(1, &nameLength, 0);
     uint32_t offset = 1;
-
+    uint32_t readResult = Read(1, &nameLength, 0);
     while ((readResult & 1) != 0) {
-        int32_t length = nameLength;
-        char *name = new char[length + 1];
-        Read(length, name, 0);
+        char *name = new char[nameLength + 1];
+        Read(nameLength, name, 0);
         name[nameLength] = 0;
 
         uint32_t packedSize;
@@ -390,10 +382,7 @@ void AEFile::collectFilesInPakFiles(String &path) {
         Read(4, &size, 0);
 
         AEPakFileEntry *entry = new AEPakFileEntry();
-        String nameString;
-        nameString.ctor_char(name, false);
-        entry->crc = crc32_ccitt(nameString);
-
+        entry->crc = crc32_ccitt(String(name));
         entry->name = path;
         offset = offset + nameLength + 8;
         entry->offset = offset;
@@ -419,20 +408,18 @@ void AEFile::collectFilesInPakFiles(String &path) {
 }
 
 void AEFile::sortPakFileEntryList() {
-    Array<AEPakFileEntry *> *entries = AEFile::pakFileEntryList;
-    int32_t count = (int32_t) entries->size();
+    int32_t count = (int32_t) AEFile::pakFileEntryList->size();
     if (count == 0) {
         return;
     }
 
-    for (int32_t pass = count - 1; pass > 0; pass--) {
+    for (int32_t pass = count - 1; pass >= 0; pass--) {
         for (int32_t index = 0; index < pass; index++) {
-            AEPakFileEntry **data = entries->data();
-            AEPakFileEntry *left = data[index];
-            AEPakFileEntry *right = data[index + 1];
-            if (right->crc < left->crc) {
-                data[index] = right;
-                data[index + 1] = left;
+            AEPakFileEntry *left = AEFile::pakFileEntryList->data()[index];
+            AEPakFileEntry *right = AEFile::pakFileEntryList->data()[index + 1];
+            if (left->crc > right->crc) {
+                AEFile::pakFileEntryList->data()[index] = right;
+                AEFile::pakFileEntryList->data()[index + 1] = left;
             }
         }
     }
@@ -489,20 +476,14 @@ uint32_t AEFile::FileExist(const String &path) {
     if (fileInterface == nullptr) {
         return 0;
     }
-
-    String nativePath;
-    nativePath.Set((const_cast<String *>(&path))->data);
-    if (fileInterface->FileExist(nativePath) != 0) {
+    if (fileInterface->FileExist(path) != 0) {
         return 1;
     }
 
-    String pakPath;
-    pakPath.Set((const_cast<String *>(&path))->data);
-    if (*AEStr_index(pakPath, 0) != '/') {
-        String prefix("/");
-        pakPath = prefix + path;
+    String pakPath(path);
+    if (*pakPath[0] != '/') {
+        pakPath = String("/") + String(path);
     }
-
     return findPakFile(pakPath) != nullptr;
 }
 
@@ -511,9 +492,7 @@ uint32_t AEFile::FileDelete(const String &path) {
     if (fileInterface == nullptr) {
         return 0;
     }
-    String localPath;
-    localPath.Set((const_cast<String *>(&path))->data);
-    return fileInterface->FileDelete(localPath);
+    return fileInterface->FileDelete(path);
 }
 
 uint32_t AEFile::GetDeviceFreeSpace() {
@@ -551,9 +530,7 @@ void AEFile::SetZipDirectory(void *path) { // lint: void_ptr ABI signature (Pv m
 void AEFile::SetSaveDirectory(String path) {
     FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface != nullptr) {
-        String savePath;
-        savePath.Set((const_cast<String *>(&path))->data);
-        fileInterface->SetSaveDirectory(savePath);
+        fileInterface->SetSaveDirectory(path);
     }
 }
 
