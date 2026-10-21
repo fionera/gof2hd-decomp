@@ -6295,7 +6295,7 @@ void Level::assignGuns() {
                 || campaignMission == 56) {
                 damage = 5;
             }
-            if (campaignMission == 80 && (*enemies)[i]->field_0x3e) {
+            if ((*enemies)[i]->field_0x3e && campaignMission == 80) {
                 damage = (int) (damage * 1.7f);
             }
             if (Globals::status->getCurrentCampaignMission() == 70 && !(*enemies)[i]->isWingMan()) {
