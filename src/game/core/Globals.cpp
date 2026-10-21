@@ -2506,13 +2506,13 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
                              unsigned short &o14) {
     CoordsObject *coords = (CoordsObject *) Globals::options;
     int bottom = Globals::h + (-25 - p2 - p3);
-    float minSteer = Globals::iPadHD ? 210.9375f : (Globals::iPadLarge ? 300.0f : 150.0f);
+    float minSteer = Globals::iPadHD ? 210.9375f : (!Globals::iPadLarge ? 150.0f : 300.0f);
     if (bottom < p1) {
         p1 = bottom;
     }
     float steer = (float) p1;
     if (minSteer > steer) {
-        coords->steerValue = Globals::iPadHD ? 210 : (Globals::iPadLarge ? 300 : 150);
+        coords->steerValue = Globals::iPadHD ? 210 : (!Globals::iPadLarge ? 150 : 300);
     } else {
         coords->steerValue = (int) steer;
     }
@@ -2525,13 +2525,13 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
         o7 = 20;
         stickGap = 92.8125f;
     } else {
-        unsigned short margin = Globals::iPadLarge ? 40 : 20;
+        unsigned short margin = !Globals::iPadLarge ? 20 : 40;
         o5 = margin;
         o6 = coords->steerValue;
         o13 = margin;
-        o14 = (unsigned short) ((float) o6 - (Globals::iPadLarge ? 180.0f : 90.0f));
+        o14 = (unsigned short) ((float) o6 - (!Globals::iPadLarge ? 90.0f : 180.0f));
         o7 = 20;
-        stickGap = Globals::iPadLarge ? 132.0f : 66.0f;
+        stickGap = !Globals::iPadLarge ? 66.0f : 132.0f;
     }
     o8 = (unsigned short) (stickGap + (float) o6);
     o9 = o7 + p2 / 2;
@@ -2542,7 +2542,7 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
         knob = knob + 313.59375f;
         edge = 2.8125f;
     } else {
-        knob = (Globals::iPadLarge ? 446.0f : 223.0f) + knob;
+        knob = (!Globals::iPadLarge ? 223.0f : 446.0f) + knob;
         edge = !Globals::iPadLarge ? 2.0f : 4.0f;
     }
     o12 = (unsigned short) knob;
@@ -2555,15 +2555,15 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
             small = 187;
             o12 = (unsigned short) ((float) o12 - (top + -2.8125f));
         } else {
-            big = Globals::iPadLarge ? 346 : 173;
-            small = Globals::iPadLarge ? 266 : 133;
-            o12 = (unsigned short) ((float) o12 - (top - (Globals::iPadLarge ? 4.0f : 2.0f)));
+            big = !Globals::iPadLarge ? 173 : 346;
+            small = !Globals::iPadLarge ? 133 : 266;
+            o12 = (unsigned short) ((float) o12 - (top - (!Globals::iPadLarge ? 2.0f : 4.0f)));
         }
         float t = (float) o12 / 54.0f;
         o11 = (unsigned short) ((float) small + (t < 1.0f ? t : 1.0f) * (float) (big - small));
-        o12 = (unsigned short) (top - (Globals::iPadHD ? 2.8125f : (Globals::iPadLarge ? 4.0f : 2.0f)));
+        o12 = (unsigned short) (top - (Globals::iPadHD ? 2.8125f : (!Globals::iPadLarge ? 2.0f : 4.0f)));
     } else {
-        o11 = Globals::iPadHD ? 28 : (Globals::iPadLarge ? 40 : 20);
+        o11 = Globals::iPadHD ? 28 : (!Globals::iPadLarge ? 20 : 40);
     }
 }
 
