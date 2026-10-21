@@ -23,9 +23,13 @@ namespace AbyssEngine {
                 m[9] = 0.0f;
                 m[10] = 1.0f;
                 m[11] = 0.0f;
-                m[12] = 1.0f;
-                m[13] = 1.0f;
-                m[14] = 1.0f;
+                // Through the inline scaleVector() accessor: at codegen time the ctor body contains a call
+                // to a not-yet-emitted inline function, so the ctor is not inferred nounwind and callers in
+                // a cleanup scope keep it as an invoke (the original's landing pads).
+                Vector &scale = scaleVector();
+                scale.x = 1.0f;
+                scale.y = 1.0f;
+                scale.z = 1.0f;
             }
 
             operator float *();
