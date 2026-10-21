@@ -218,7 +218,7 @@ void ModMainMenu::OnRender2D() {
     ((PaintCanvas *) (intptr_t) this->paintCanvas)->End2d();
 }
 
-void ModMainMenu::OnInitialize() {
+int ModMainMenu::OnInitialize() {
     if (this->cutScene == nullptr) {
         Globals **soundRes = g_ModMainMenu_initSoundRes;
         (*soundRes)->startNewSoundResourceList();
@@ -239,7 +239,7 @@ void ModMainMenu::OnInitialize() {
         this->cutScene = cutscene;
         cutscene->initialize();
 
-        int canvas = this->paintCanvas;
+        int canvas = (int) (intptr_t) this->paintCanvas;
         int texture;
         if (Globals::status->inAlienOrbit() != 0) {
             texture = 0x2f08;
@@ -251,7 +251,7 @@ void ModMainMenu::OnInitialize() {
         unsigned int texSlot = 0xffffffff;
         ((PaintCanvas *) (long) canvas)->TextureCreate((unsigned short) texture, texSlot, true);
         ((PaintCanvas *) (long) this->paintCanvas)->ChangeCubeTexture((unsigned int) this->paintCanvas);
-        return;
+        return 100;
     }
 
     int state = this->state;
@@ -286,11 +286,11 @@ void ModMainMenu::OnInitialize() {
         }
         this->state = 0x50;
     }
-    return;
+    return this->state;
 
 state60:
     this->state = 0x1e;
-    return;
+    return this->state;
 
 state30:
     this->state = 1;
@@ -303,7 +303,7 @@ music: {
     }
     this->initialized = 1;
     this->state = 100;
-    return;
+    return 0;
 
 state80:
     unsigned int logoImageHandle;
@@ -313,10 +313,11 @@ state80:
     this->fadeTimer = 0;
     *g_ModMainMenu_initTouchFlag = 1;
     this->state = 0x3c;
+    return this->state;
 }
 
 void ModMainMenu::OnUpdate() {
-    ApplicationManager *app = this->appManager;
+    ApplicationManager *app = this->applicationManager;
     int elapsed = (int) app->GetElapsedTimeMillis();
     int frameTime;
     if (elapsed < 0x97 && (elapsed = (int) app->GetElapsedTimeMillis()) < 0) {
