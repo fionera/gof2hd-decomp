@@ -17,7 +17,7 @@
 #include <cstdint>
 #include <cstring>
 
-namespace {
+namespace AbyssEngine {
     struct CurveKeyframe {
         int8_t tag;  // 1 = step, 2 = linear, 3 = cubic Hermite
         uint8_t pad0x1[7];
@@ -177,34 +177,27 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     void CurveRelease(Curve **slot) {
-        Curve *curve = (Curve *) *slot;
-        if (curve == 0)
+        if (*slot == 0)
             return;
 
-        CurveKeyframe **data = 0;
-        for (unsigned int i = 0; (data = (CurveKeyframe **) curve->entries),
-                                 i < (unsigned int) curve->count; ++i) {
-            CurveKeyframe *entry = data[i];
-            int8_t tag = (int8_t) entry->tag;
-            switch (tag) {
-                case 3:
+        for (unsigned short i = 0; i < (*slot)->count; i++) {
+            CurveKeyframe *entry = (*slot)->entries[i];
+            switch (entry->tag) {
+                case 1:
                     operator delete(entry);
                     break;
                 case 2:
                     operator delete(entry);
                     break;
-                case 1:
+                case 3:
                     operator delete(entry);
                     break;
             }
-            curve = (Curve *) *slot;
         }
 
-        if (data != 0) {
-            operator delete[](data);
-            curve = (Curve *) *slot;
-        }
-        curve->entries = 0;
+        if ((*slot)->entries != 0)
+            delete[] (*slot)->entries;
+        (*slot)->entries = 0;
 
         if (*slot != 0)
             operator delete(*slot);
@@ -231,7 +224,7 @@ namespace AbyssEngine {
         *out = curve;
         curve->count = count;
 
-        unsigned char *data = (unsigned char *) operator new[]((unsigned int) count << 2);
+        CurveKeyframe **data = (CurveKeyframe **) operator new[]((unsigned int) count << 2);
         curve->entries = data;
         memcpy(data, src, (unsigned int) count << 2);
         return 1;
@@ -261,38 +254,41 @@ namespace AbyssEngine {
     };
 
     int CurveGetValue(unsigned long long time, Curve *curve) {
-        CurveKeyframe **keys = (CurveKeyframe **) curve->entries;
-        if (keys[0]->time >= time)
-            return keys[0]->value;
+        CurveKeyframe **keys = curve->entries;
+        CurveKeyframe *key = keys[0];
+        if (key->time >= time)
+            return key->value;
         int last = curve->count - 1;
-        if (time >= keys[last]->time)
-            return keys[last]->value;
+        key = keys[last];
+        if (time >= key->time)
+            return key->value;
 
         unsigned short index;
-        CurveKeyframe *key;
         do {
             index = (unsigned short) last;
             key = keys[index];
             last--;
         } while (time < key->time);
 
-        if (key->tag == 3) {
-            CurveKeyframe *next = keys[index + 1];
-            int endValue = next->value;
-            long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
-            long long t2 = (t * t) >> 12;
-            long long t3 = (t2 * t) >> 12;
-            int startValue = key->value;
-            return (int) (((t - 2 * t2 + t3) * key->c0) >> 12) + (int) (((t3 - t2) * key->c1) >> 12) +
-                   (int) (((3 * t2 - 2 * t3) * (endValue - startValue)) >> 12) + startValue;
+        switch (key->tag) {
+            case 1:
+                return key->value;
+            case 2: {
+                CurveKeyframe *next = keys[index + 1];
+                long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
+                return (int) ((t * (next->value - key->value)) >> 12) + key->value;
+            }
+            case 3: {
+                CurveKeyframe *next = keys[index + 1];
+                int endValue = next->value;
+                long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
+                long long t2 = (t * t) >> 12;
+                long long t3 = (t2 * t) >> 12;
+                int startValue = key->value;
+                return (int) (((t - 2 * t2 + t3) * key->c0) >> 12) + (int) (((t3 - t2) * key->c1) >> 12) +
+                       (int) (((3 * t2 - 2 * t3) * (endValue - startValue)) >> 12) + startValue;
+            }
         }
-        if (key->tag == 2) {
-            CurveKeyframe *next = keys[index + 1];
-            long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
-            return (int) ((t * (next->value - key->value)) >> 12) + key->value;
-        }
-        if (key->tag == 1)
-            return key->value;
         return 0;
     }
 }
