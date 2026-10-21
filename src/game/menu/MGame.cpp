@@ -2796,8 +2796,8 @@ void MGame::OnUpdate() {
                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(variant == 0 ? 533 : 534),
                                                           Globals::gameText->getText(1602), gMGameFaces + 5);
                 Globals::sound->play(variant == 0 ? 464 : 465, nullptr, nullptr, 0.0f);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
             } else if (Globals::status->getCurrentCampaignMission() == 24 && !this->player->isMining() &&
                        Globals::status->getMission()->isEmpty() &&
@@ -2813,8 +2813,8 @@ void MGame::OnUpdate() {
                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(variant == 0 ? 535 : 536),
                                                           Globals::gameText->getText(1603), gMGameFaces + 10);
                 Globals::sound->play(variant == 0 ? 467 : 468, nullptr, nullptr, 0.0f);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
             } else if (Globals::status->getCurrentCampaignMission() >= 122 &&
                        Globals::status->getCurrentCampaignMission() <= 124 && !this->player->isMining() &&
@@ -2849,8 +2849,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(596));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->pauseOpen = 1;
                 pauseSounds();
                 Globals::hints[23] = 1;
@@ -2862,8 +2862,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(590));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->pauseOpen = 1;
                 pauseSounds();
                 Globals::hints[33] = 1;
@@ -2875,8 +2875,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(593));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->pauseOpen = 1;
                 pauseSounds();
                 Globals::hints[34] = 1;
@@ -2889,8 +2889,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(584));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->pauseOpen = 1;
                 pauseSounds();
                 Globals::hints[32] = 1;
@@ -2904,8 +2904,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(637));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[21] = 1;
                 return;
             }
@@ -2917,8 +2917,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(648));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[28] = 1;
                 return;
             }
@@ -2929,8 +2929,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(619));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->field_0x1e6 = 1;
                 return;
             }
@@ -2946,8 +2946,8 @@ void MGame::OnUpdate() {
                 String hint(*Globals::gameText->getText(1725), false);
                 hint = Globals::globals->replaceKeyBindingTokens(hint);
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->field_0x1e5 = 1;
                 return;
             }
@@ -2958,8 +2958,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(620));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[17] = 1;
                 return;
             }
@@ -2970,8 +2970,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(621));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[18] = 1;
                 return;
             }
@@ -2983,8 +2983,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(617));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[55] = 1;
                 return;
             }
@@ -2995,8 +2995,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(636));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[20] = 1;
                 return;
             }
@@ -3025,8 +3025,8 @@ void MGame::OnUpdate() {
                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(1912),
                                                           Globals::gameText->getText(1603), gMGameFaces + 10);
                 Globals::sound->play(463, nullptr, nullptr, 0.0f);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 Globals::hints[37] = 1;
                 return;
             }
@@ -3037,8 +3037,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(599));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[40] = 1;
                 return;
             }
@@ -3055,8 +3055,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(600));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[41] = 1;
                 return;
             }
@@ -3067,8 +3067,8 @@ void MGame::OnUpdate() {
                     this->choiceWindow = new ChoiceWindow();
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(602));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[44] = 1;
                 return;
             }
@@ -3081,8 +3081,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(603));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[46] = 1;
                 return;
             }
@@ -3096,8 +3096,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(606));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[47] = 1;
                 return;
             }
@@ -3111,8 +3111,8 @@ void MGame::OnUpdate() {
                 }
                 String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(609));
                 this->choiceWindow->set(hint);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 Globals::hints[48] = 1;
                 return;
             }
@@ -3128,8 +3128,8 @@ void MGame::OnUpdate() {
                 }
                 this->dialogueWindow = new DialogueWindow();
                 this->dialogueWindow->set(new Mission(160, 0, -1), 1, 46);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 Globals::hints[38] = 1;
                 Globals::status->nextCampaignMission(true);
                 Globals::status->nextCampaignMission(true);
@@ -3146,8 +3146,8 @@ void MGame::OnUpdate() {
                 }
                 this->dialogueWindow = new DialogueWindow();
                 this->dialogueWindow->set(new Mission(160, 0, -1), 1, 85);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 Globals::hints[49] = 1;
                 Globals::status->nextCampaignMission(true);
                 Globals::status->nextCampaignMission(true);
@@ -3190,8 +3190,8 @@ void MGame::OnUpdate() {
                 offer = Globals::status->replaceHash(String(offer, false), String((int) (share * 100.0f)),
                                                      String("#P"));
                 this->choiceWindow->set(offer, true);
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 this->field_0xcf = 1;
                 this->field_0xd4 = 1;
             } else if (!Globals::status->field_114 && !Globals::status->inAlienOrbit() &&
@@ -3205,8 +3205,8 @@ void MGame::OnUpdate() {
                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(457),
                                                           Globals::gameText->getText(1601), gMGameFaces);
                 Globals::sound->play(1468, nullptr, nullptr, 0.0f);
-                this->needsRedraw = 1;
                 this->cutsceneActive = 1;
+                this->needsRedraw = 1;
                 Globals::status->field_114 = 1;
                 return;
             }
