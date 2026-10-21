@@ -849,16 +849,12 @@ void Hud::setCurrentSecondaryWeapon(Item *item) {
 }
 
 int Hud::sameHudEventAsBeforeAggregate(String str) {
-    Array<ListItem *> *q = this->eventQueue;
-    int i = (int) q->size();
-    ListItem *e;
-    do {
-        i = i + -1;
-        if (i < 1)
-            return -1;
-        e = (*q)[i];
-    } while (e == 0 || ((String *) e->name)->Compare(str) != 0);
-    return i;
+    for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
+        ListItem *e = (*this->eventQueue)[i];
+        if (e != 0 && ((String *) e->name)->Compare(str) == 0)
+            return (int) i;
+    }
+    return -1;
 }
 
 
@@ -950,12 +946,10 @@ done:
 }
 
 unsigned int Hud::sameHudEventAsBefore(String str) {
-    int i = (int) this->eventQueue->size() - 1;
-    while (i >= 1) {
+    for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
         ListItem *e = (*this->eventQueue)[i];
         if (e != 0 && ((String *) e->name)->Compare(str) == 0)
             return 1;
-        i--;
     }
     return 0;
 }
@@ -1414,21 +1408,21 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->field_0x1e0 = *Globals::gameText->getText(308);
             break;
         case 28:
-            this->field_0x464 = 0;
             this->field_0x276 = 1;
+            this->field_0x464 = 0;
             return;
         case 34:
             this->field_0x1e0 = *Globals::gameText->getText(3199);
             break;
         case 35:
-            this->field_0x468 = 0;
             this->field_0x27a = 1;
+            this->field_0x468 = 0;
             this->weaponSelectState = 1;
             this->field_0x279 = 0;
             return;
         case 39:
-            this->field_0x468 = 0;
             this->field_0x27a = 0;
+            this->field_0x468 = 0;
             this->weaponSelectState = 1;
             this->field_0x279 = 0;
             return;
@@ -1501,8 +1495,8 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->field_0x1e0 = *Globals::gameText->getText(544);
             break;
         case 25:
-            this->field_0x464 = 0;
             this->field_0x277 = 1;
+            this->field_0x464 = 0;
             return;
         case 26:
             this->field_0x277 = 0;
@@ -1527,14 +1521,14 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(39);
             break;
         case 37:
-            this->field_0x468 = 0;
             this->field_0x27a = 1;
+            this->field_0x468 = 0;
             this->weaponSelectState = 1;
             this->field_0x279 = 1;
             return;
         case 41:
-            this->field_0x468 = 0;
             this->field_0x27a = 0;
+            this->field_0x468 = 0;
             this->weaponSelectState = 1;
             this->field_0x279 = 1;
             break;
@@ -1560,10 +1554,11 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
     else
         item = new ListItem(new String(this->field_0x1e0));
     this->addToEventQueue(item);
+    bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
+                Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
     this->eventScrolls = 0;
     this->field_0x1dc[2] = 1;
-    this->letterbox = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
-                      Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
+    this->letterbox = wide;
 }
 
 
