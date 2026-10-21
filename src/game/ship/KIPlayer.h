@@ -75,7 +75,8 @@ public:
     // (noTargetFlag == reinterpret_cast<uint8_t&>(route)) at their use sites.
     Route *route;
 
-    uint16_t field_0x70;
+    uint8_t field_0x70;
+    uint8_t field_0x71;
     uint8_t field_0x72;
     uint8_t field_0x73;
     uint8_t field_0x74;
