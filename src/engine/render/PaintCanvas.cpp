@@ -2681,94 +2681,45 @@ static const double g_gsp2_gravscale_8bfa8 = 0;
 int PaintCanvas::GetScreenPosition(AbyssEngine::AEMath::Matrix &m,
                                    const AbyssEngine::AEMath::Vector &worldPos,
                                    AbyssEngine::AEMath::Vector &outVec) {
-    int result = 0;
-    AbyssEngine::AEMath::Vector transformed =
-        AbyssEngine::AEMath::MatrixTransformVector(m, worldPos);
-
-    {
-        if (this->currentCamera >= this->cameras.count) {
-            goto finish;
-        }
-
-        char invMat[60];
-        PCCameraView *cam = (PCCameraView *) this->cameras.data_[this->currentCamera];
-        if (this->initialized == 0) {
-            paintcanvas_ext_gsp2_invtransformvec(invMat, cam->localMatrix);
-            paintcanvas_ext_gsp2_vec_assign(&outVec, invMat);
-        } else {
-            float m[16];
-            char scratch[60];
-            memset(m, 0, sizeof(m));
-            m[0] = 1.0f;
-            m[5] = 1.0f;
-            m[14] = 1.0f;
-            paintcanvas_ext_gsp2_matidentity(scratch, m);
-
-            PCGravView *grav = (PCGravView *) paintcanvas_ext_gsp2_getgrav(this->engine);
-            double angle = grav->angle * g_gsp2_gravscale_8bfa8;
-            float a = (float) angle;
-            int orient = this->gameOrientation;
-            float rot = (orient == 1) ? a : -a;
-            float s = paintcanvas_ext_gsp2_sinf(rot);
-            float c = paintcanvas_ext_gsp2_cosf(rot);
-            m[0] = c;
-            m[5] = c;
-            *(unsigned int *) &m[1] = *(unsigned int *) &s ^ 0x80000000;
-            m[4] = s;
-
-            paintcanvas_ext_gsp2_memcpy(scratch, cam->localMatrix, 0x3c);
-            paintcanvas_ext_gsp2_mtx_muleq(scratch, m);
-            paintcanvas_ext_gsp2_invtransformvec(invMat, scratch);
-            paintcanvas_ext_gsp2_vec_assign(&outVec, invMat);
-        }
-
-        float z = outVec[2];
-        PCCameraView *cam2 = (PCCameraView *) ((char **) this->cameras.data_)[this->currentCamera];
-        if (z > cam2->param1) {
-            goto finish;
-        }
-        float denomX = z * cam2->factor4c;
-        if (denomX == 0.0f) {
-            goto finish;
-        }
-        float denomY = z * cam2->factor48;
-        if (denomY == 0.0f) {
-            goto finish;
-        }
-
-        float px = outVec[0];
-        int w0 = paintcanvas_ext_gsp2_getwidth(this);
-        int w1 = paintcanvas_ext_gsp2_getwidth(this);
-        float py = outVec[1];
-        double fw = (double) paintcanvas_ext_gsp2_signedtofloat(w0, 0);
-        double halfW = (double) paintcanvas_ext_gsp2_signedtofloat(w1 >> 1, 0);
-        outVec[0] = (float) (halfW - (((double) px * 0.5) / (double) denomX) * fw);
-
-        int h0 = paintcanvas_ext_gsp2_getheight(this);
-        double fh = (double) paintcanvas_ext_gsp2_signedtofloat(h0, 0);
-        int h1 = paintcanvas_ext_gsp2_getheight(this);
-        double halfH = (double) paintcanvas_ext_gsp2_signedtofloat(h1 >> 1, 0);
-        outVec[1] = (float) (halfH + (((double) py * 0.5) / (double) denomY) * fh);
-
-        float nx = outVec[0];
-        if (nx >= 0.0f) {
-            float ny = outVec[1];
-            if (ny >= 0.0f) {
-                int ww = paintcanvas_ext_gsp2_getwidth(this);
-                float fww = paintcanvas_ext_gsp2_signedtofloat(ww, 0);
-                if (nx < fww) {
-                    int hh = paintcanvas_ext_gsp2_getheight(this);
-                    float fhh = paintcanvas_ext_gsp2_signedtofloat(hh, 0);
-                    if (ny < fhh) {
-                        result = 1;
-                    }
-                }
-            }
+    AbyssEngine::AEMath::Vector transformed = AbyssEngine::AEMath::MatrixTransformVector(m, worldPos);
+    if (this->currentCamera >= this->cameras.count) {
+        return 0;
+    }
+    if (this->initialized != 0) {
+        AbyssEngine::AEMath::Matrix roll;
+        AbyssEngine::AEMath::MatrixIdentity(roll);
+        float angle = (float) (this->engine->GetGravValue()[1] * 1.5707963705062866);
+        float rot = (this->gameOrientation == 1) ? angle : -angle;
+        float s = AbyssEngine::AEMath::Sinf(rot);
+        float c = AbyssEngine::AEMath::Cosf(rot);
+        roll.m[0] = c;
+        roll.m[5] = c;
+        roll.m[1] = -s;
+        roll.m[4] = s;
+        AbyssEngine::AEMath::Matrix view = this->cameras.data_[this->currentCamera]->projection;
+        view *= roll;
+        outVec = AbyssEngine::AEMath::MatrixInverseTransformVector(view, transformed);
+    } else {
+        outVec = AbyssEngine::AEMath::MatrixInverseTransformVector(
+                this->cameras.data_[this->currentCamera]->projection, transformed);
+    }
+    AbyssEngine::Camera *camera = this->cameras.data_[this->currentCamera];
+    if (outVec.z > camera->position[1]) {
+        return 0;
+    }
+    int visible = 0;
+    float w = outVec.z * camera->field_0x4c;
+    float h;
+    if (w != 0.0f && (h = outVec.z * camera->frustumTanHalfFov) != 0.0f) {
+        double px = (double) outVec.x * 0.5;
+        outVec.x = (float) (-(px / (double) w) * (double) this->GetWidth() + (double) (this->GetWidth() >> 1));
+        double py = (double) outVec.y * 0.5 / (double) h;
+        outVec.y = (float) (py * (double) this->GetHeight() + (double) (this->GetHeight() >> 1));
+        if (outVec.x >= 0.0f && outVec.y >= 0.0f && outVec.x < (float) this->GetWidth()) {
+            visible = outVec.y < (float) this->GetHeight();
         }
     }
-
-finish:
-    return result;
+    return visible;
 }
 
 int PaintCanvas::ResourceLoaded(unsigned int index, AbyssEngine::ResourceType type) {
