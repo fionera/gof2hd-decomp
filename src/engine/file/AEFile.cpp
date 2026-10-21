@@ -194,9 +194,10 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
         case OPEN_APPEND: {
             nativeHandle = reinterpret_cast<FileInterface *>(
                     AEFile::fileInterface->OpenAppend(String(text, false), path.size(), false, 0));
-            if (nativeHandle == nullptr)
+            if (nativeHandle != nullptr)
+                file = new AENormalFile(nativeHandle);
+            else
                 return 0;
-            file = new AENormalFile(nativeHandle);
             break;
         }
         default:
