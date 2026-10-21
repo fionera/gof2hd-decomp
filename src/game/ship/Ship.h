@@ -153,9 +153,9 @@ public:
 
     int getUnmoddedHandling();
 
-    int getFireRateFactor();
+    float getFireRateFactor();
 
-    int getDamageFactor();
+    float getDamageFactor();
 
     float getFirePower();
 

@@ -677,7 +677,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
                 s54.length = 0;
             }
             GameRecord *slot = rec->data_[i];
-            _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) slot, slot->playTimeObj);
+            _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) slot, (void *) (intptr_t) slot->playTime); // lint: void_ptr (shim param)
             String *e;
             String **rowData;
 

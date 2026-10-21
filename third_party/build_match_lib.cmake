@@ -82,6 +82,8 @@ if(GOF2_LIB STREQUAL "zlib")
 
 # ==========================================================================================
 elseif(GOF2_LIB STREQUAL "libzip")
+    # Compiled against the NDK sysroot zlib.h (ZLIB_VERSION "1.2.7", as the original passes to
+    # deflateInit2_/inflateInit2_), not the vendored 1.2.3 headers -- the app linked zlib 1.2.3 code.
     # libzip 0.9.3 -- bracketed from the original's symbol set (pre-0.11 zip_add names,
     # _zip_err_str[] ends at ZIP_ER_DELETED). Needs zlib headers; relink links libzip before zlib.
     set(SRC "${TP_DIR}/libzip/libzip-0.9.3")
@@ -124,7 +126,7 @@ elseif(GOF2_LIB STREQUAL "libzip")
     # -mthumb: the original .so has all libzip functions in Thumb mode (clang defaults to ARM).
     foreach(c ${_csrc})
         get_filename_component(_n "${c}" NAME_WE)
-        compile("${OBJDIR}/${_n}.o" "${SRC}/lib" "-Oz;-g;-fstack-protector-strong;-I.;-I${ZSRC};-mthumb" "${c}")
+        compile("${OBJDIR}/${_n}.o" "${SRC}/lib" "-Oz;-g;-fstack-protector-strong;-I.;-mthumb" "${c}")
         list(APPEND objs "${OBJDIR}/${_n}.o")
     endforeach()
     archive("${TP_DIR}/libzip/libzip_gof2.a" ${objs})

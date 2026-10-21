@@ -124,7 +124,7 @@ namespace AbyssEngine {
 
         String GetApplicationVersionString();
 
-        void *GetCurrentApplicationModule() const; // lint: void_ptr (exported ABI signature, returns Pv)
+        unsigned int GetCurrentApplicationModule() const;
 
         uint64_t GetCurrentTimeMillis();
 

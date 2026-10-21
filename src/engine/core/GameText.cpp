@@ -14,7 +14,7 @@ void GameText::release() {
     }
 }
 
-int GameText::getLanguage() {
+short GameText::getLanguage() {
     return (short) *g_langCode;
 }
 
