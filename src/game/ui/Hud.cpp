@@ -288,7 +288,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
                 int screenW = *(int *) &Globals::w;
                 unsigned short iconW = this->field_0x3ec;
                 canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
-                canvas->DrawImage2D((unsigned) this->eventBannerImage, this->field_0x3ec, 0);
+                canvas->DrawImage2D((unsigned) this->pauseButtonPressedImage, this->field_0x3ec, 0);
                 int textW = Globals::Canvas->GetTextWidth(
                     (unsigned) (long) canvas, *(String *) (font));
                 int tx = this->field_0x3ec + ((screenW - iconW) - textW) / 2;
@@ -908,7 +908,7 @@ void Hud::drawEventQueue() {
     float mul = (letterbox == 0) ? -2.0f : -1.0f;
     int yOff = (int) (mul * dispScale);
 
-    Globals::Canvas->DrawImage2D((unsigned) this->eventBannerImage, this->field_0x3e0, 0);
+    Globals::Canvas->DrawImage2D((unsigned) this->pauseButtonPressedImage, this->field_0x3e0, 0);
 
     ListItem *item = (*this->eventQueue)[1];
     if (item != 0) {
@@ -1052,12 +1052,11 @@ int Hud::init() {
 }
 
 void Hud::drawPauseButton() {
-    Globals::Canvas->SetColor((unsigned) (-1));
-    unsigned char flag = this->touchFlags;
-    int y = this->field_0x40c;
-    int x = this->field_0x40a;
-    int img = (flag & 1) == 0 ? this->pauseButtonImage : this->pauseButtonPressedImage;
-    return Globals::Canvas->DrawImage2D((unsigned) (img), (x), (y));
+    Globals::Canvas->SetColor(0xffffffff);
+    if ((this->touchFlags & 1) != 0)
+        Globals::Canvas->DrawImage2D(this->pauseButtonPressedImage, this->field_0x40a, this->field_0x40c);
+    else
+        Globals::Canvas->DrawImage2D(this->pauseButtonImage, this->field_0x40a, this->field_0x40c);
 }
 
 Hud *Hud::checkIfQuickMenuIsEmpty() {
@@ -1125,7 +1124,7 @@ void Hud::drawMenu(int unused) {
     int hx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
     char hy = (char) ((char) this->menuOriginYBase + (char) this->menuOriginY + (char) (this->menuRowHeight / 2)
                       - (char) layout[0x8b]);
-    Globals::Canvas->DrawImage2D((unsigned) this->quickMenuHeaderImage, hx, hy, (unsigned char) 0x11);
+    Globals::Canvas->DrawImage2D((unsigned) this->pauseButtonImage, hx, hy, (unsigned char) 0x11);
 
     int y = this->menuOriginY + this->menuOriginYBase + this->menuRowHeight;
 
