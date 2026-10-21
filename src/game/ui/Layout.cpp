@@ -827,12 +827,12 @@ void Layout::reload() {
     this->field_0x354 = -1;
     this->field_0x350 = -1;
     this->field_0x36c = -1;
+    this->field_0x370 = -1;
     this->field_0x35c = -1;
     this->field_0x368 = -1;
     this->field_0x364 = -1;
     this->field_0x358 = -1;
     this->field_0x360 = -1;
-    this->field_0x370 = -1;
     this->field_0x384 = -1;
     this->field_0x380 = -1;
     this->field_0x38c = -1;
@@ -862,21 +862,21 @@ void Layout::reload() {
     Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x48b), reinterpret_cast<unsigned int &>(this->field_0x37c));
     Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x52d), reinterpret_cast<unsigned int &>(this->rewardIconImage));
 
-    if (Globals::iPad == 0) {
-        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x480), reinterpret_cast<unsigned int &>(this->field_0x350));
-        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47f), reinterpret_cast<unsigned int &>(this->field_0x354));
-        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x479), reinterpret_cast<unsigned int &>(this->field_0x358));
-        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x478), reinterpret_cast<unsigned int &>(this->field_0x35c));
-        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x489), reinterpret_cast<unsigned int &>(this->field_0x36c));
-        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x488),
-                                     reinterpret_cast<unsigned int &>(this->field_0x370));
-    } else {
+    if (Globals::iPad != 0) {
         Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6bb), reinterpret_cast<unsigned int &>(this->field_0x350));
         Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6ba), reinterpret_cast<unsigned int &>(this->field_0x354));
         Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6b9), reinterpret_cast<unsigned int &>(this->field_0x358));
         Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6b8), reinterpret_cast<unsigned int &>(this->field_0x35c));
         Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6b7), reinterpret_cast<unsigned int &>(this->field_0x36c));
         Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6bc),
+                                     reinterpret_cast<unsigned int &>(this->field_0x370));
+    } else {
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x480), reinterpret_cast<unsigned int &>(this->field_0x350));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47f), reinterpret_cast<unsigned int &>(this->field_0x354));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x479), reinterpret_cast<unsigned int &>(this->field_0x358));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x478), reinterpret_cast<unsigned int &>(this->field_0x35c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x489), reinterpret_cast<unsigned int &>(this->field_0x36c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x488),
                                      reinterpret_cast<unsigned int &>(this->field_0x370));
     }
 
