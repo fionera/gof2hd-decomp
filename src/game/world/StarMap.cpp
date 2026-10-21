@@ -161,6 +161,7 @@ void StarMap::setStart(int start, int target) {
     this->routeStart = target;
     this->routeTarget = start;
     delete this->systemPath;
+    this->systemPath = nullptr;
     this->systemPath =
             this->pathFinder->getSystemPath(this->systems, start, this->targetSystem);
 }

@@ -832,27 +832,35 @@ void MenuTouchWindow::startValkyrie() {
     (*statusHolder)->setSystemVisibility(0x19, true);
     (*statusHolder)->setCredits(0);
 
-    OptionsRecord *opt = (OptionsRecord *) Globals::hints;
-    Achievements *ach = Globals::achievements;
     OptionsRecord *optB = (OptionsRecord *) Globals::options;
-    ((Status *) *statusHolder)->field_84 = 0x1a0a;
-    opt->flag_word_0x8 = 0x101;
-    reinterpret_cast<uint16_t &>(opt->flag_word_0xd[0]) = 0x101;
-    opt->flag_word_0x1c = 0x101;
-    opt->flag_dword_0x20 = 0x1010101;
-    opt->flag_0x17 = 1;
-    opt->flag_0xa = 1;
-    opt->flag_0x15 = 1;
-    opt->flag_0x13 = 1;
-    opt->flag_0xf = 1;
-    opt->flag_0x1e = 1;
-    opt->flag_0x24 = 1;
-    opt->flag_0x36 = 0;
-    reinterpret_cast<int32_t &>(opt->field_0x32[0]) = 0;
-    opt->flag_0x38 = 1;
+    (*statusHolder)->field_84 = 0x1a0a;
+    unsigned char *hints = Globals::hints;
+    hints[8] = 1;
+    hints[9] = 1;
+    hints[13] = 1;
+    hints[14] = 1;
+    hints[28] = 1;
+    hints[29] = 1;
+    hints[32] = 1;
+    hints[33] = 1;
+    hints[34] = 1;
+    hints[35] = 1;
+    hints[23] = 1;
+    hints[10] = 1;
+    hints[21] = 1;
+    hints[19] = 1;
+    hints[15] = 1;
+    hints[30] = 1;
+    hints[36] = 1;
+    hints[54] = 0;
+    hints[50] = 0;
+    hints[51] = 0;
+    hints[52] = 0;
+    hints[53] = 0;
+    hints[56] = 1;
     optB->flag_0x34 = 1;
 
-    ach->setMedal(0x17, 3);
+    Globals::achievements->setMedal(0x17, 3);
     Globals::achievements->setMedal(0x1e, 1);
     Globals::recordHandler->saveOptions();
     (*statusHolder)->setKills(0xc5);
@@ -2071,7 +2079,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
 void MenuTouchWindow::startSupernova() {
     Status *const *statusHolder = &Globals::status;
     Globals::status->resetGame();
-    for (int i = 0x54; i != 0; i--)
+    for (int i = 0; i < 0x54; ++i)
         (*statusHolder)->nextCampaignMission(false);
 
     (*statusHolder)->setMission(Mission::empty);
@@ -2112,36 +2120,44 @@ void MenuTouchWindow::startSupernova() {
     (*statusHolder)->setSystemVisibility(0x19, true);
     (*statusHolder)->setCredits(0);
 
-    OptionsRecord *opt = (OptionsRecord *) Globals::hints;
-    OptionsRecord *optB = (OptionsRecord *) Globals::options;
-    ((Status *) *statusHolder)->field_8c = 0x1a0a;
-    opt->flag_dword_0x20 = 0x1010101;
-    opt->flag_0x17 = 1;
-    opt->flag_0x36 = 0;
-    reinterpret_cast<int32_t &>(opt->field_0x32[0]) = 0;
-    opt->flag_word_0x8 = 0x101;
-    opt->flag_0xa = 1;
-    opt->flag_0x15 = 1;
-    opt->flag_0x13 = 1;
-    reinterpret_cast<uint16_t &>(opt->flag_word_0xd[0]) = 0x101;
-    opt->flag_0xf = 1;
-    opt->flag_0x26 = 1;
-    opt->flag_0x31 = 1;
-    opt->flag_0x24 = 1;
-    opt->flag_word_0x1c = 0x101;
-    opt->flag_0x1e = 1;
-    reinterpret_cast<uint16_t &>(opt->flag_0x38) = 0x101;
-    Achievements *ach = Globals::achievements;
-    optB->flag_0x34 = 1;
+    (*statusHolder)->field_84 = 0x1a0a;
+    unsigned char *hints = Globals::hints;
+    hints[32] = 1;
+    hints[33] = 1;
+    hints[34] = 1;
+    hints[35] = 1;
+    hints[23] = 1;
+    hints[54] = 0;
+    hints[50] = 0;
+    hints[51] = 0;
+    hints[52] = 0;
+    hints[53] = 0;
+    hints[8] = 1;
+    hints[9] = 1;
+    hints[10] = 1;
+    hints[21] = 1;
+    hints[19] = 1;
+    hints[13] = 1;
+    hints[14] = 1;
+    hints[15] = 1;
+    hints[38] = 1;
+    hints[49] = 1;
+    hints[36] = 1;
+    hints[28] = 1;
+    hints[29] = 1;
+    hints[30] = 1;
+    hints[56] = 1;
+    hints[57] = 1;
+    Globals::options[52] = 1;
 
-    ach->setMedal(0x17, 3);
+    Globals::achievements->setMedal(0x17, 3);
     Globals::achievements->setMedal(0x1e, 1);
     (*statusHolder)->setKills(0x182);
     Globals::recordHandler->saveOptions();
     Globals::sound->stop(Globals::sound->currentMusicEvent);
 
     ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) Globals::appManager;
-    optB->fadeValue = this->fadeValue;
+    ((OptionsRecord *) Globals::options)->fadeValue = this->fadeValue;
     thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
 }
 
