@@ -531,20 +531,15 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
 
 void DialogueWindow::draw() {
     Globals::Canvas->SetColor((unsigned int) -1);
-    Layout *layout = Globals::layout;
-    layout->drawMask();
-    {
-        String title(this->agentName, false);
-        layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, title);
-    }
+    Globals::layout->drawMask();
+    Globals::layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight,
+                             String(this->agentName, false));
 
     this->scrollWindow->draw();
 
-    layout = Globals::layout;
-    int margin = layout->field_0x4c;
-    (Globals::imageFactory)->drawChar(this->faceParts,
-                                       this->frameX + margin, this->frameY + margin + layout->windowTopInset,
-                                       this->mirrorFace);
+    Layout *layout = Globals::layout;
+    Globals::imageFactory->drawChar(this->faceParts, this->frameX + layout->field_0x4c,
+                                    layout->field_0x4c + this->frameY + layout->windowTopInset, this->mirrorFace);
 
     this->prevButton->draw();
     this->nextButton->draw();
