@@ -2024,70 +2024,54 @@ static unsigned **const gR_g5 = nullptr;
 
 void PlayerFighter::render() {
     if (this->wreckGeometry() != 0) {
-        ((AEGeometry *) (0))->render();
+        this->wreckGeometry()->render();
     }
-    int active = ((Player *) (this->player()))->isActive();
-    int st = this->state;
-    unsigned *idp;
-    if (active != 0 && (unsigned) (st - 3) < 2) {
+    bool active = ((Player *) (this->player()))->isActive();
+    if (active) {
+        if (this->state != 3 && this->state != 4) {
+            goto normal;
+        }
         if (this->explosion != 0) {
-            ((Explosion *) (0))->render();
-            st = this->state;
+            this->explosion->render();
         }
-        if (st == 4) {
+        if (this->state == 4) {
             if (this->field_0x1f8 >= 300) {
-                goto done;
+                return;
             }
-            idp = *gR_g4;
-        } else {
-            if (st != 3) {
-                goto done;
-            }
+        } else if (this->state == 3) {
             if (this->subGeometry() == 0) {
-                return ((AEGeometry *) (intptr_t) this->geometry())->render();
+                ((AEGeometry *) this->geometry())->render();
+                return;
             }
-            idp = *gR_g3;
-        }
-    } else {
-        if (active != 0 || st != 5) {
-            goto done;
-        }
-        if (this->subGeometry() == 0) {
-            ((AEGeometry *) (0))->render();
         } else {
-            idp = *gR_g5;
-            unsigned char tmp[60];
-            unsigned id = *idp;
-            unsigned char *src = (unsigned char *) Globals::Canvas->TransformGetLocal(id);
-            memcpy(tmp, src, 0x3c);
-            Globals::Canvas->TransformSetLocal(
-                *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t)((AEGeometry *) (intptr_t) this->subGeometry())->
-                transform);
-            ((AEGeometry *) (0))->render();
-            Globals::Canvas->TransformSetLocal(
-                *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t)((AEGeometry *) (intptr_t) this->subGeometry())->
-                transform);
+            return;
         }
-        if (this->trail != 0) {
-            ((AbyssEngine::Trail *) (0))->render();
+        // render the sub-geometry (cockpit/debris) at the player's transform
+        {
+            Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(((AEGeometry *) this->subGeometry())->transform);
+            Globals::Canvas->TransformSetLocal(((AEGeometry *) this->subGeometry())->transform,
+                                               reinterpret_cast<Matrix &>(((Player *) this->player())->transform[0]));
+            ((AEGeometry *) this->subGeometry())->render();
+            Globals::Canvas->TransformSetLocal(((AEGeometry *) this->subGeometry())->transform, saved);
         }
-        goto done;
+        return;
     }
-    {
-        unsigned char tmp[60];
-        unsigned id = *idp;
-        unsigned char *src = (unsigned char *) Globals::Canvas->TransformGetLocal(id);
-        memcpy(tmp, src, 0x3c);
-        Globals::Canvas->TransformSetLocal(
-            *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t)((AEGeometry *) (intptr_t) this->subGeometry())->
-            transform);
-        ((AEGeometry *) (0))->render();
-        Globals::Canvas->TransformSetLocal(
-            *idp, *(const AbyssEngine::AEMath::Matrix *) (intptr_t)((AEGeometry *) (intptr_t) this->subGeometry())->
-            transform);
+    if (this->state != 5) {
+        return;
     }
-done:
-    ;
+normal:
+    if (this->subGeometry() == 0) {
+        ((AEGeometry *) this->geometry())->render();
+    } else {
+        Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(((AEGeometry *) this->subGeometry())->transform);
+        Globals::Canvas->TransformSetLocal(((AEGeometry *) this->subGeometry())->transform,
+                                           reinterpret_cast<Matrix &>(((Player *) this->player())->transform[0]));
+        ((AEGeometry *) this->subGeometry())->render();
+        Globals::Canvas->TransformSetLocal(((AEGeometry *) this->subGeometry())->transform, saved);
+    }
+    if (this->trail != 0) {
+        this->trail->render();
+    }
 }
 
 static const float gPush_div = 5000.0f;
