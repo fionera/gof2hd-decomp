@@ -133,9 +133,6 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->slotIndex = kind;
     this->damage = damage;
     this->pitchRate = speed;
-    this->field_0xd0 = 0;
-    this->field_0xd4 = 0;
-    this->field_0xcc = 0;
     this->ammoCount = 0;
     this->field_0x78 = 0;
     this->playerGun = 0;

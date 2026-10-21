@@ -73,9 +73,7 @@ public:
     Sparks *impact;
     Player *target;
     Vector basePos;
-    int field_0xcc;
-    int field_0xd0;
-    int field_0xd4;
+    Vector field_0xcc;
     Vector targetDir;
     Vector velocity;
     uint8_t playerGun;
@@ -169,8 +167,6 @@ static_assert(offsetof(Gun, field_0xa7) == 0xa7, "");
 static_assert(offsetof(Gun, field_0xa8) == 0xa8, "");
 static_assert(offsetof(Gun, field_0xb0) == 0xb0, "");
 static_assert(offsetof(Gun, field_0xcc) == 0xcc, "");
-static_assert(offsetof(Gun, field_0xd0) == 0xd0, "");
-static_assert(offsetof(Gun, field_0xd4) == 0xd4, "");
 static_assert(offsetof(Gun, targetDir) == 0xd8, "Gun first field after drift run");
 #endif
 #endif
