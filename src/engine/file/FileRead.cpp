@@ -204,21 +204,23 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
         ArraySetLength<SolarSystem *>(0x22, *systems);
 
         String name;
+        int32_t faction;
+        int32_t a;
+        int32_t b;
+        int32_t c;
+        int32_t d;
+        int32_t e;
+        int32_t f;
+        int32_t flag;
+        uint32_t count;
+        bool visible;
         for (uint32_t i = 0; i < 0x22; i++) {
-            int32_t faction;
-            int32_t flag;
-            int32_t a;
-            int32_t b;
-            int32_t c;
-            int32_t d;
-            int32_t e;
-            int32_t f;
-            uint32_t count;
 
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
             AEFile::ReadSwitched(faction, handle);
             AEFile::ReadSwitched(flag, handle);
+            visible = flag == 1;
             AEFile::ReadSwitched(a, handle);
             AEFile::ReadSwitched(b, handle);
             AEFile::ReadSwitched(c, handle);
@@ -268,7 +270,7 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
                 }
             }
 
-            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, flag == 1, a, b, c, d, e, f,
+            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, visible, a, b, c, d, e, f,
                                                  routes, stations, wrecks, statics);
             delete[] routes;
         }
