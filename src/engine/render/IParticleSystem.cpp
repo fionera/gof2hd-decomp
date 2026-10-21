@@ -151,7 +151,7 @@ void IParticleSystem::emit(int delta) {
     uv[3] = def.uvV1;
     float *uvp = uv;
 
-    float step = 1.5f;
+    float step; // uninitialised as in the original; on the paths that skip assigning it, it only feeds a zero product
     for (int i = 0; i < count; i++) {
         this->particleSetIds[this->currentParticle] = (int8_t) set;
         this->particleAges[this->currentParticle] = 0;
