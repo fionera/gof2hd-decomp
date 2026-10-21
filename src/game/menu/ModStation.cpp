@@ -707,21 +707,21 @@ int ModStation::OnInitialize() {
                 secondary->setUnsaleable(true);
                 this->cutScene->replacePlayerShip(Globals::status->getShip()->getIndex(), 3);
             }
-            Array<TouchButton *> &row = *reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
             int mission = Globals::status->getCurrentCampaignMission();
             bool mission15 = false;
             if (mission <= 4) {
-                row[0]->setHalfTransparent(true);
-                row[2]->setHalfTransparent(true);
-                row[3]->setHalfTransparent(true);
-            } else if (mission < 9 || mission == 15) {
+                (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[0]->setHalfTransparent(true);
+                goto dimMissionButtons;
+            }
+            if (mission < 9 || mission == 15) {
                 mission15 = mission == 15;
-                row[2]->setHalfTransparent(true);
-                row[3]->setHalfTransparent(true);
+            dimMissionButtons:
+                (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[2]->setHalfTransparent(true);
+                (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[3]->setHalfTransparent(true);
             }
             if (mission < 12 || mission15 || Globals::status->getStation()->getIndex() == 100 ||
                 Globals::status->getStation()->getIndex() == 101) {
-                row[1]->setHalfTransparent(true);
+                (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[1]->setHalfTransparent(true);
             }
 
             Vector lightDir = AbyssEngine::AEMath::MatrixGetDir(*reinterpret_cast<AbyssEngine::AEMath::Matrix *>(
