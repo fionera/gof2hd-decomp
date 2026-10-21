@@ -292,18 +292,11 @@ tail:
 }
 
 void ObjectGun::render() {
-    Matrix local;
-    Matrix cameraLocal;
-    Matrix rotate;
-    Matrix scaleMatrix;
-    Vector muzzle;
-    Vector dir;
-    Vector up;
-    Vector side;
+    using namespace AbyssEngine::AEMath;
+
+    this->gun->render();
 
     Gun *gun = this->gun;
-    gun->render();
-
     if (gun->weaponType == ITEM_SORT_SCATTER_GUN) {
         for (uint32_t i = 0; i < gun->count; ++i) {
             if (gun->hitFlags[i] != 0) {
@@ -314,149 +307,135 @@ void ObjectGun::render() {
     }
 
     if (gun->active != 0) {
-        for (uint32_t i = 0; i < 15; ++i)
-            cameraLocal.m[i] = 0.0f;
-        cameraLocal.m[0] = 1.0f;
-        cameraLocal.m[5] = 1.0f;
-        cameraLocal.m[14] = 1.0f;
+        Matrix camera;
         if (gun->weaponType == ITEM_SORT_TURRET) {
             PaintCanvas *canvas = Globals::Canvas;
-            cameraLocal = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
+            camera = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
             if (this->visible != 0) {
-                for (uint32_t mi = 0; mi < 15; ++mi)
-                    rotate.m[mi] = 0.0f;
-                rotate.m[0] = 1.0f;
-                rotate.m[5] = 1.0f;
-                rotate.m[14] = 1.0f;
-                MatrixSetRotation(&scaleMatrix, this->spinAngle, 0.0f, 0.0f);
-                rotate = scaleMatrix;
-                AbyssEngine::AEMath::MatrixMultiply(cameraLocal, rotate);
+                // Visible turrets are drawn turned around and spun about their own axis.
+                Matrix spin;
+                spin = MatrixSetRotation(spin, 0.0f, 3.14159265f, this->spinAngle);
+                camera *= spin;
             }
         }
 
-        uint32_t inactive = 0;
-        for (uint32_t i = 0; i < gun->count; ++i) {
-            Vector *gunPos = &((Vector *) gun->positions)[i];
-            if (gunPos->x != -1000.0f) {
-                MatrixSetTranslation(&local, gunPos->x, gunPos->y, gunPos->z);
-                ::VectorNormalize((Vector *) &local, &((Vector *) gun->velocities)[i]);
-                this->dir = *(const Vector *) &local;
-
-                if (this->visible != 0) {
-                    muzzle.x = -this->dir.x;
-                    muzzle.y = -this->dir.y;
-                    muzzle.z = -this->dir.z;
-                    if ((uint32_t)(gun->itemIndex - 0xb4) > 2) {
-                        PaintCanvas *canvas = Globals::Canvas;
-                        cameraLocal = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
-                        MatrixGetDir(&dir, &cameraLocal);
-                        muzzle = dir;
-                        gun = this->gun;
-                    }
-
-                    this->orientation.m[0] = cameraLocal.m[0];
-                    this->orientation.m[1] = cameraLocal.m[1];
-                    this->orientation.m[4] = cameraLocal.m[4];
-                    this->orientation.m[5] = cameraLocal.m[5];
-                    this->orientation.m[8] = cameraLocal.m[10];
-                    this->orientation.m[9] = cameraLocal.m[11];
-                    this->orientation.m[2] = -muzzle.x;
-                    this->orientation.m[6] = -muzzle.y;
-                    this->orientation.m[10] = -muzzle.z;
-
-                    int scale = gun->lifetimes[i];
-                    if (scale < 1000) {
-                        float fscale = (float) scale / 750.0f;
-                        MatrixSetScaling(&local, fscale, fscale, fscale);
-                    } else if (gun->hitSmall != 0) {
-                        MatrixSetScaling(&local, 1.0f, 1.0f, 1.0f);
-                    }
-                } else if (this->useEgoOrientation == 0) {
-                    Vector base;
-                    if (this->level == nullptr || this->level->getPlayer() == 0 ||
-                        gun->isPlayerGun() == 0) {
-                        base.x = 0.0f;
-                        base.y = 1.0f;
-                        base.z = 0.0f;
-                    } else {
-                        base = ((const Vector *) gun->upVectors)[i];
-                    }
-                    this->up = base;
-                    VectorCross(&side, &this->up, &this->dir);
-                    ::VectorNormalize(&this->side, &side);
-                    VectorCross(&side, &this->side, &this->dir);
-                    ::VectorNormalize(&this->up, &side);
-
-                    this->orientation.m[0] = this->side.x;
-                    this->orientation.m[1] = this->up.x;
-                    this->orientation.m[2] = this->dir.x;
-                    this->orientation.m[4] = this->side.y;
-                    this->orientation.m[5] = this->up.y;
-                    this->orientation.m[6] = this->dir.y;
-                    this->orientation.m[8] = this->side.z;
-                    this->orientation.m[9] = this->up.z;
-                    this->orientation.m[10] = this->dir.z;
-
-                    int scale = gun->lifetimes[i];
-                    if (scale < 1000) {
-                        float fscale = (float) scale / 750.0f;
-                        MatrixSetScaling(&local, fscale, fscale, fscale);
-                    } else if (gun->hitSmall != 0) {
-                        MatrixSetScaling(&local, 1.0f, 1.0f, 1.0f);
-                        if (this->isRocketGun() == 0)
-                            gun->hitSmall = 0;
-                    }
-                } else {
-                    Player *player = (Player *) (uint64_t) this->level->getPlayer();
-                    EgoPlayerView *playerView = (EgoPlayerView *) player;
-                    for (uint32_t mi = 0; mi < 15; ++mi)
-                        local.m[mi] = 0.0f;
-                    local.m[0] = 1.0f;
-                    local.m[5] = 1.0f;
-                    local.m[14] = 1.0f;
-
-                    // NOTE: re-reads the int EMP counters' bits as floats (decompiler artifact; see Player.h).
-                    MatrixSetRotation(&scaleMatrix, reinterpret_cast<float &>(player->empPoints),
-                                      reinterpret_cast<float &>(player->maxEmpPoints), 0.0f);
-                    AbyssEngine::AEMath::MatrixMultiply(playerView->orientation, local);
-                    this->orientation = playerView->orientation;
-                    MatrixSetTranslation(&scaleMatrix, gunPos->x, gunPos->y, gunPos->z);
-                    MatrixGetDir(&dir, &scaleMatrix);
-                    ::VectorNormalize(&muzzle, &dir);
-                    muzzle *= gun->pitchRate;
-                    ((Vector *) gun->velocities)[i] = muzzle;
-                    player->empPoints = 0;
-                    player->maxEmpPoints = 0;
-                    MatrixSetRotation(&scaleMatrix, this->rollAngle, 0.0f, 0.0f);
-                    Globals::Canvas->TransformSetLocal(this->secondaryTransform, scaleMatrix);
-                }
-
-                if (*g_ObjectGunRenderScaleFlag != 0)
-                    MatrixSetScaling(&local, this->scaleX, this->scaleY, this->scaleZ);
-
-                if (this->gun->weaponType == ITEM_SORT_MINE) {
-                    Array<Vector *> *spins = (Array<Vector *> *) this->gun->wobbleOffsets;
-                    Vector *spin = spins->data()[i];
-                    if (spin != nullptr && this->deltaTime > 0) {
-                        MatrixSetRotation(&local, spin->x, spin->y, spin->z);
-                        float step = (float) this->deltaTime * 0.02f;
-                        float neg = -step;
-                        spin->x += spin->x < 0.0f ? neg : step;
-                        spin->y += spin->y < 0.0f ? neg : step;
-                        spin->z += spin->z < 0.0f ? neg : step;
-                    }
-                    MatrixSetScaling(&local, this->scaleX, this->scaleY, this->scaleZ);
-                }
-
-                PaintCanvas *canvas = Globals::Canvas;
-                canvas->TransformSetLocal(this->transform, this->orientation);
-                canvas->DrawTransform(this->transform, nullptr);
-            } else {
+        int inactive = 0;
+        for (uint32_t i = 0; i < this->gun->count; ++i) {
+            const Vector &position = ((const Vector *) this->gun->positions)[i];
+            if (position.x == 50000.0f) {
+                // Parked slot (no live projectile).
                 ++inactive;
+                continue;
             }
-            gun = this->gun;
+            MatrixSetTranslation(this->orientation, position.x, position.y, position.z);
+            this->dir = VectorNormalize(((const Vector *) this->gun->velocities)[i]);
+
+            if (this->visible != 0) {
+                // Camera-facing projectile (beam heads, flares): billboard along the flight direction.
+                Vector facing = -this->dir;
+                gun = this->gun;
+                if ((uint32_t) (gun->itemIndex - 0xb4) > 2) {
+                    PaintCanvas *canvas = Globals::Canvas;
+                    camera = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
+                    facing = MatrixGetDir(camera);
+                    gun = this->gun;
+                }
+                this->orientation.m[0] = camera.m[0];
+                this->orientation.m[1] = camera.m[1];
+                this->orientation.m[4] = camera.m[4];
+                this->orientation.m[5] = camera.m[5];
+                this->orientation.m[8] = camera.m[8];
+                this->orientation.m[9] = camera.m[9];
+                this->orientation.m[2] = -facing.x;
+                this->orientation.m[6] = -facing.y;
+                this->orientation.m[10] = -facing.z;
+
+                const int lifetime = gun->lifetimes[i];
+                if (lifetime < 1000) {
+                    const float grow = (float) lifetime / 1000.0f;
+                    MatrixSetScaling(this->orientation, grow, grow, grow);
+                } else if (gun->hitSmall != 0) {
+                    MatrixSetScaling(this->orientation, 1.0f, 1.0f, 1.0f);
+                }
+            } else if (this->useEgoOrientation != 0) {
+                // Player-steered rocket: apply the pending pitch/yaw input to the ego rocket matrix.
+                PlayerEgo *player = this->level->getPlayer();
+                Matrix steer;
+                MatrixSetRotation(steer, player->rocketPitch, player->rocketYaw, 0.0f);
+                player->field_0x40 *= steer;
+                this->orientation = player->field_0x40;
+                const Vector &rocket = ((const Vector *) this->gun->positions)[i];
+                MatrixSetTranslation(this->orientation, rocket.x, rocket.y, rocket.z);
+                const Vector heading = MatrixGetDir(this->orientation);
+                const Vector unit = VectorNormalize(heading);
+                ((Vector *) this->gun->velocities)[i] = unit * this->gun->pitchRate;
+                player->rocketPitch = 0.0f;
+                player->rocketYaw = 0.0f;
+                MatrixSetRotation(steer, 0.0f, 0.0f, this->rollAngle);
+                Globals::Canvas->TransformSetLocal(this->secondaryTransform, steer);
+            } else {
+                // Free projectile: build an orthonormal frame around the flight direction.
+                const Vector *upSource;
+                Vector worldUp;
+                if (this->level != nullptr && this->level->getPlayer() != nullptr && this->gun->isPlayerGun() != 0) {
+                    upSource = &((const Vector *) this->gun->upVectors)[i];
+                } else {
+                    worldUp.y = 1.0f;
+                    worldUp.x = 0.0f;
+                    worldUp.z = 0.0f;
+                    upSource = &worldUp;
+                }
+                this->up = *upSource;
+                this->side = VectorCross(this->up, this->dir);
+                this->side = VectorNormalize(this->side);
+                this->up = VectorCross(this->dir, this->side);
+                this->up = VectorNormalize(this->up);
+
+                this->orientation.m[0] = this->side.x;
+                this->orientation.m[1] = this->up.x;
+                this->orientation.m[2] = this->dir.x;
+                this->orientation.m[4] = this->side.y;
+                this->orientation.m[5] = this->up.y;
+                this->orientation.m[6] = this->dir.y;
+                this->orientation.m[8] = this->side.z;
+                this->orientation.m[9] = this->up.z;
+                this->orientation.m[10] = this->dir.z;
+
+                gun = this->gun;
+                const int lifetime = gun->lifetimes[i];
+                if (lifetime < 1000) {
+                    const float grow = (float) lifetime / 1000.0f;
+                    MatrixSetScaling(this->orientation, grow, grow, grow);
+                } else if (gun->hitSmall != 0) {
+                    MatrixSetScaling(this->orientation, 1.0f, 1.0f, 1.0f);
+                    if (this->isRocketGun() == 0)
+                        this->gun->hitSmall = 0;
+                }
+            }
+
+            if (Globals::iPad)
+                MatrixSetScaling(this->orientation, this->scaleX, this->scaleY, this->scaleZ);
+
+            if (this->gun->weaponType == ITEM_SORT_MINE) {
+                // Mines tumble: rotate by the per-mine spin and keep winding it up.
+                Vector *spin = ((Array<Vector *> *) this->gun->wobbleOffsets)->data()[i];
+                if (spin != nullptr && this->deltaTime > 0) {
+                    MatrixSetRotation(this->orientation, spin->x, spin->y, spin->z);
+                    const float step = (float) this->deltaTime * 0.0005f;
+                    spin->x += spin->x < 0.0f ? -step : step;
+                    spin->y += spin->y < 0.0f ? -step : step;
+                    spin->z += spin->z < 0.0f ? -step : step;
+                }
+                MatrixSetScaling(this->orientation, this->scaleX, this->scaleY, this->scaleZ);
+            }
+
+            PaintCanvas *canvas = Globals::Canvas;
+            canvas->TransformSetLocal(this->transform, this->orientation);
+            canvas->DrawTransform(this->transform, nullptr);
         }
-        if (gun->positionsCap <= (int) inactive)
+
+        gun = this->gun;
+        if (inactive >= (int) gun->velocitiesCount)
             gun->active = 0;
     }
 
