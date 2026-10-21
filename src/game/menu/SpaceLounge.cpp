@@ -2073,6 +2073,21 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                 int offer = agent->getOffer();
                 String message("");
                 switch (offer) {
+                case 7:
+                    if (Globals::status->getCredits() < agent->getCosts()) {
+                        this->choiceWindow->set(Globals::status->replaceHash(*Globals::gameText->getText(203),
+                                                                         String(Globals::layout->formatCredits(agent->getCosts() - Globals::status->getCredits()), false),
+                                                                         String("#C")),
+                                           false);
+                    this->choiceVisible = 1;
+                    return 0;
+                    }
+                    message = *Globals::gameText->getText(885);
+                    message = Globals::status->replaceHash(
+                        message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
                 case 0:
                 case 5:
                     if (this->singleOffer) {
@@ -2134,9 +2149,6 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                     this->choiceWindow->set(message, true);
                     this->chatActive = 1;
                     break;
-                case 1:
-                    this->mode = 0;
-                    return 0;
                 case 2:
                 case 3:
                 case 4:
@@ -2155,13 +2167,16 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                     return 0;
                     }
                     switch (offer) {
-                    case 2:
-                    case 9:
-                        message = *Globals::gameText->getText(868);
-                        message = Globals::status->replaceHash(message, String(String(agent->getSellItemQuantity()), false),
-                                                               String("#Q"));
+                    case 8:
+                        message = *Globals::gameText->getText(871);
                         message = Globals::status->replaceHash(
-                            message, *Globals::gameText->getText(1274 + agent->getSellItemIndex()), String("#P"));
+                            message,
+                            String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
+                                   false),
+                            String("#C"));
+                        break;
+                    case 10:
+                        message = *Globals::gameText->getText(873);
                         message = Globals::status->replaceHash(
                             message,
                             String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
@@ -2190,16 +2205,13 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                             message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false),
                             String("#C"));
                         break;
-                    case 8:
-                        message = *Globals::gameText->getText(871);
+                    case 2:
+                    case 9:
+                        message = *Globals::gameText->getText(868);
+                        message = Globals::status->replaceHash(message, String(String(agent->getSellItemQuantity()), false),
+                                                               String("#Q"));
                         message = Globals::status->replaceHash(
-                            message,
-                            String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
-                                   false),
-                            String("#C"));
-                        break;
-                    case 10:
-                        message = *Globals::gameText->getText(873);
+                            message, *Globals::gameText->getText(1274 + agent->getSellItemIndex()), String("#P"));
                         message = Globals::status->replaceHash(
                             message,
                             String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
@@ -2234,21 +2246,9 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                     this->choiceWindow->set(message, true);
                     this->chatActive = 1;
                     break;
-                case 7:
-                    if (Globals::status->getCredits() < agent->getCosts()) {
-                        this->choiceWindow->set(Globals::status->replaceHash(*Globals::gameText->getText(203),
-                                                                         String(Globals::layout->formatCredits(agent->getCosts() - Globals::status->getCredits()), false),
-                                                                         String("#C")),
-                                           false);
-                    this->choiceVisible = 1;
+                case 1:
+                    this->mode = 0;
                     return 0;
-                    }
-                    message = *Globals::gameText->getText(885);
-                    message = Globals::status->replaceHash(
-                        message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
-                    this->choiceWindow->set(message, true);
-                    this->chatActive = 1;
-                    break;
                 default:
                     this->choiceWindow->set(message, true);
                     this->chatActive = 1;
