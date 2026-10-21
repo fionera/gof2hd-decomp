@@ -1,6 +1,6 @@
-
-
 #include "platform/android/NdkHooks.h"
+
+#include <GLES2/gl2.h>
 
 #include <cstdlib>
 #include <cstdint>
@@ -9,12 +9,40 @@
 #include "game/mission/Status.h"
 #include "game/mission/RecordHandler.h"
 #include "engine/core/ApplicationManager.h"
+#include "engine/core/GameData.h"
 #include "engine/core/IApplicationModule.h"
 #include "engine/render/Engine.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/render/LODManager.h"
 #include "engine/audio/FModSound.h"
+#include "engine/file/AEFile.h"
+#include "engine/file/FileInterfaceAndroid.h"
+#include "engine/input/VirtualInput.h"
+#include "engine/core/NFC.h"
 #include "game/core/Globals.h"
 
+// Android NDK entry layer (original TU starting at GetEngine, .text 0x93c88..0x950dc): the
+// ndk23_* lifecycle/input hooks the Java_* wrappers in JniBridge.cpp tail-call, and the IAP glue.
+
 using AbyssEngine::Engine;
+
+void OnCreateApplication(AbyssEngine::Engine *engine);
+
+int gRealWidth;
+int gRealHeight;
+
+char *rootDirectory;
+char *ZIPDirectory;
+
+int forceExit;
+
+unsigned int hrwhs_country_code;
+
+int gb_android_offerwallCreditAmount;
+
+const char *ndkEntrance;
+
+int rotateAccelValues;
 
 int gi_iap_buy_dlc1_pressed;
 int gi_iap_buy_dlc2_pressed;
@@ -28,76 +56,220 @@ int gi_iap_buy_credit_pack3_pressed;
 int gi_iap_buy_credit_pack4_pressed;
 int gi_iap_buy_credit_pack5_pressed;
 
-extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-int setBaughtCredits(int amount) {
-    int *packFlag;
-    if (amount == 100000) {
-        Globals::status->changeCredits(amount);
-        packFlag = &gi_iap_buy_credit_pack1_pressed;
-    } else if (amount == 300000) {
-        Globals::status->changeCredits(amount);
-        packFlag = &gi_iap_buy_credit_pack2_pressed;
-    } else if (amount == 1000000) {
-        Globals::status->changeCredits(amount);
-        packFlag = &gi_iap_buy_credit_pack3_pressed;
-    } else if (amount == 3000000) {
-        Globals::status->changeCredits(amount);
-        packFlag = &gi_iap_buy_credit_pack4_pressed;
-    } else if (amount == 10000000) {
-        Globals::status->changeCredits(amount);
-        packFlag = &gi_iap_buy_credit_pack5_pressed;
+// Low-pass filtered gravity and its negation as handed to the engine.
+static double gGravity[3];
+static double gNegGravity[3];
+
+extern "C" void ExitFunction() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    forceExit = -1;
+}
+
+extern "C" int ndk23_getScreenshotFlag() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    return 0;
+}
+
+extern "C" void ndk23_resetScreenshotFlag() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+}
+
+extern "C" int ndk23_getExitFlag() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    return forceExit;
+}
+
+extern "C" void ndk23_setDisplayHeightAndWidth(int height, int width) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    (void) height;
+    (void) width;
+}
+
+extern "C" int ndk23_getCurrentFiredStatus() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    return 0;
+}
+
+extern "C" void ndk23_Init(const char *apkPath, int width, int height) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    ndkEntrance = "ndkInit";
+    glViewport(0, 0, width, height);
+    gGravity[0] = 0.0;
+    gGravity[1] = 0.0;
+    gGravity[2] = 0.0;
+    gRealHeight = width;
+    gRealWidth = height;
+    loadAPK(apkPath);
+
+    gEngine = new AbyssEngine::Engine();
+    gEngine->str_0x3c = String("2.0.16", false);
+    gEngine->InitGL(true, width, height);
+    if (rootDirectory != nullptr)
+        AEFile::SetAppRootDir(rootDirectory);
+    gEngine->Initialize(&OnCreateApplication);
+    gEngine->SetOnDestroyApp(&OnDestroyApplication);
+    gEngine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
+}
+
+extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+                                  int width, int height, float /*scale*/) {
+    ndkEntrance = "ndkInit";
+    glViewport(0, 0, width, height);
+    gGravity[0] = 0.0;
+    gGravity[1] = 0.0;
+    gGravity[2] = 0.0;
+    gRealHeight = width;
+    gRealWidth = height;
+    loadAPKAndZip(apkPath, zipPath);
+
+    gEngine = new AbyssEngine::Engine();
+    gEngine->str_0x3c = String("2.0.16", false);
+    gEngine->InitGL(true, width, height);
+    if (rootDirectory != nullptr)
+        AEFile::SetAppRootDir(rootDirectory);
+    gEngine->Initialize(&OnCreateApplication);
+    gEngine->SetOnDestroyApp(&OnDestroyApplication);
+    gEngine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
+}
+
+extern "C" void ndk23_resize(int width, int height) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    glViewport(0, 0, width, height);
+
+    gRealWidth = width;
+    gRealHeight = height;
+
+    simulateTouch(gEngine);
+}
+
+extern "C" void ndk23_ndkDone() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    if (gEngine != nullptr) {
+        gEngine->Release();
+        delete gEngine;
+        gEngine = nullptr;
+    }
+}
+
+extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
+                                             // lint: void_ptr (ndk* touch handle param, baked ABI)
+                                             float x, float y) {
+    ndk23_handleTouchPadEvent(clazz, touch, phase, x, y);
+}
+
+extern "C" void ndk23_handleAcceleration(float x, float y, float z) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    double ax = x;
+    double ay = y;
+    double tiltA, tiltB;
+    if (rotateAccelValues != 0) {
+        tiltA = -ax;
+        tiltB = ay;
     } else {
-        return 0;
+        tiltA = ay;
+        tiltB = ax;
     }
-
-    if (*packFlag != 0) {
-        *packFlag = 0;
-        checkFirstCreditPackBoughtWriteAction();
-    }
-    ndk_autosave();
-    return 1;
-}
-
-void checkFirstCreditPackBoughtWriteAction() {
-    Globals::status->getCurrentCampaignMission();
-    if (Globals::options[0x62] == 0) {
-        Globals::options[0x62] = 1;
-        RecordHandler handler;
-        handler.saveOptions();
-    }
-}
-
-const char *getStringUTFChars(JNIEnv *env, jstring str, jboolean *isCopy) {
-    if (env != nullptr && str != nullptr)
-        return env->GetStringUTFChars(str, isCopy);
-    return nullptr;
-}
-
-void releaseStringUTFChars(JNIEnv *env, jstring str, const char *chars) {
-    if (env != nullptr && str != nullptr && chars != nullptr) {
-        env->ReleaseStringUTFChars(str, chars);
+    if (gEngine == nullptr)
         return;
+
+    double az = z;
+    double accelX = -tiltB;
+    double accelY = -tiltA;
+    double accelZ = -az;
+    if (gEngine->appManager->paintCanvas->initialized) {
+        gGravity[0] = gGravity[0] * 0.95 + tiltB * 0.05;
+        gGravity[1] = gGravity[1] * 0.95 + tiltA * 0.05;
+        gGravity[2] = gGravity[2] * 0.95 + az * 0.05;
+    } else {
+        gGravity[0] = tiltB * 0.95;
+        gGravity[1] = tiltB * 0.95;
+        gGravity[2] = tiltB * 0.95;
     }
-    if (chars != nullptr) {
-        operator delete(const_cast<char *>(chars));
-    }
-    if (str != nullptr) {
-        operator delete(reinterpret_cast<void *>(str)); // lint: void_ptr NDK boundary, operator delete ABI requires void*
-        // lint: void_ptr NDK boundary, operator delete ABI requires void*
-    }
+    gNegGravity[0] = -gGravity[0];
+    gNegGravity[1] = -gGravity[1];
+    gNegGravity[2] = -gGravity[2];
+    gEngine->SetAccelValue(accelX, accelY, accelZ);
+    gEngine->SetGravValue(gNegGravity[0], gNegGravity[1], gNegGravity[2]);
 }
 
-char *pConstToNonConst(const char *s) {
-    if (s != nullptr) {
-        char *copy = static_cast<char *>(std::malloc(std::strlen(s) + 1));
-        if (copy != nullptr) {
-            std::strcpy(copy, s);
-            return copy;
+extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    gEngine->appManager->SetExitCallback(&ExitFunction);
+
+    int touchCount = GetTouchCount();
+    for (int i = 0; i < touchCount; ++i) {
+        // Touch record layout: {handle, phase, x, y}.
+        Touch rec = GetTouch(i);
+        void *touch = reinterpret_cast<void *>(rec.x); // lint: void_ptr (opaque touch handle for OnTouch* void* params, baked ABI)
+        if (rec.y == 2) {
+            gEngine->appManager->OnTouchMove(rec.id, rec.action, touch);
+        } else if (rec.y == 1) {
+            gEngine->appManager->OnTouchEnd(rec.id, rec.action, touch);
+            gEngine->appManager->OnTouchEnd();
+        } else if (rec.y == 0) {
+            gEngine->appManager->OnTouchBegin(rec.id, rec.action, touch);
         }
     }
-    return nullptr;
+
+    if (g_android_back_button_pressed != 0) {
+        keyPressed(gEngine, 0x35);
+        keyReleased(gEngine, 0x35);
+        g_android_back_button_pressed = 0;
+    }
+
+    RemoveTouches();
+    gEngine->appManager->OnUpdate(now);
+
+    char *appData = static_cast<char *>(gEngine->appManager->GetApplicationData());
+    if (appData[0x3d] != 0) {
+        appData[0x40] = 1;
+        appData[0x3d] = 0;
+    } else if (appData[0x3c] != 0) {
+        appData[0x3c] = 0;
+    } else if (appData[0x3e] != 0) {
+        appData[0x3e] = 0;
+    } else if (appData[0x3f] != 0) {
+        appData[0x3f] = 0;
+    } else if (appData[0xa0] != 0) {
+        appData[0xa0] = 0;
+    } else if (appData[0xa1] != 0) {
+        appData[0xa1] = 0;
+    } else if (appData[0xa2] != 0) {
+        appData[0xa2] = 0;
+    } else if (appData[0xa3] != 0) {
+        appData[0xa3] = 0;
+    }
+
+    ndk_checkPlaytimeAndSpendOfferwallCredits();
 }
 
+extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    if (Globals::status->getPlayingTime() >= 1) {
+        int amount = gb_android_offerwallCreditAmount;
+        if (amount > 0) {
+            Globals::status->changeCredits(amount);
+            ndk_autosave();
+            gb_android_offerwallCreditAmount = 0;
+        }
+    }
+}
+
+extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
+                                          float x, float y) {
+    if (phase == 2) {
+        gEngine->appManager->OnTouchMove(static_cast<int>(x), static_cast<int>(y), touch);
+    } else if (phase == 1) {
+        gEngine->appManager->OnTouchEnd(static_cast<int>(x), static_cast<int>(y), touch);
+        gEngine->appManager->OnTouchEnd();
+    } else if (phase == 0) {
+        gEngine->appManager->OnTouchBegin(static_cast<int>(x), static_cast<int>(y), touch);
+    }
+}
+
+extern "C" void ndk23_setRootDirectory(const char *path) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    rootDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
+    std::strcpy(rootDirectory, path);
+}
+
+extern "C" void ndk23_setZipDirectory(const char *path) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    ZIPDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
+    std::strcpy(ZIPDirectory, path);
+}
+
+extern "C" void ndk23_setCountryCode(unsigned int code) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    AbyssEngine::Engine::countryCode = (code < 16) ? code : 0u;
+}
+
+extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 void ndk23_sendingPauseSignal() {
     if (gEngine == nullptr)
         return;
@@ -109,57 +281,6 @@ void ndk23_sendingResumeSignal() {
     if (gEngine == nullptr)
         return;
     Globals::sound->resumeAll();
-}
-
-void ndk_autosave() {
-    RecordHandler *handler = new RecordHandler;
-    handler->recordStoreWrite(0);
-    handler->recordStoreWritePreview(0);
-    delete handler;
-}
-
-int ndk_getCurrentApplicationModule() {
-    if (gEngine == nullptr)
-        return -1;
-    return static_cast<int>(Globals::appManager->GetCurrentApplicationModule());
-}
-
-int ndk_getLogoShown() {
-    return Globals::logoIsShown;
-}
-
-int ndk_isInMainMenu() {
-    return Globals::isInMainMenu;
-}
-
-int ndk_getDLC_1_BOUGHT() {
-    return gEngine != nullptr ? Globals::options[0x35] : 0;
-}
-
-int ndk_getDLC_2_BOUGHT() {
-    return gEngine != nullptr ? Globals::options[0x36] : 0;
-}
-
-int ndk_getDLC_3_BOUGHT() {
-    return gEngine != nullptr ? Globals::options[0x37] : 0;
-}
-
-int ndk_getDLC_4_BOUGHT() {
-    return gEngine != nullptr ? Globals::options[0x38] : 0;
-}
-
-int ndk_getDLC_5_BOUGHT() {
-    return gEngine != nullptr ? Globals::options[0x39] : 0;
-}
-
-void ndk_iapBoughtConsumable(unsigned int consumable) {
-    if (consumable > 4 || gEngine == nullptr)
-        return;
-
-    static const int kCreditPackValue[5] = {
-        100000, 300000, 1000000, 3000000, 10000000
-    };
-    setBaughtCredits(kCreditPackValue[consumable]);
 }
 
 void ndk_iapBoughtPremium(unsigned int pack, unsigned int bought) {
@@ -204,6 +325,126 @@ void ndk_iapBoughtPremium(unsigned int pack, unsigned int bought) {
         Globals::options[0x37] = owned;
         Globals::status->setSystemVisibility(25, true);
         break;
+    }
+}
+
+int ndk_getDLC_1_BOUGHT() {
+    return gEngine != nullptr ? Globals::options[0x35] : 0;
+}
+
+int ndk_getDLC_2_BOUGHT() {
+    return gEngine != nullptr ? Globals::options[0x36] : 0;
+}
+
+int ndk_getDLC_3_BOUGHT() {
+    return gEngine != nullptr ? Globals::options[0x37] : 0;
+}
+
+int ndk_getDLC_4_BOUGHT() {
+    return gEngine != nullptr ? Globals::options[0x38] : 0;
+}
+
+int ndk_getDLC_5_BOUGHT() {
+    return gEngine != nullptr ? Globals::options[0x39] : 0;
+}
+
+void ndk_iapBoughtConsumable(unsigned int consumable) {
+    if (consumable > 4 || gEngine == nullptr)
+        return;
+
+    static const int kCreditPackValue[5] = {
+        100000, 300000, 1000000, 3000000, 10000000
+    };
+    setBaughtCredits(kCreditPackValue[consumable]);
+}
+
+int setBaughtCredits(int amount) {
+    int *packFlag;
+    if (amount == 100000) {
+        Globals::status->changeCredits(amount);
+        packFlag = &gi_iap_buy_credit_pack1_pressed;
+    } else if (amount == 300000) {
+        Globals::status->changeCredits(amount);
+        packFlag = &gi_iap_buy_credit_pack2_pressed;
+    } else if (amount == 1000000) {
+        Globals::status->changeCredits(amount);
+        packFlag = &gi_iap_buy_credit_pack3_pressed;
+    } else if (amount == 3000000) {
+        Globals::status->changeCredits(amount);
+        packFlag = &gi_iap_buy_credit_pack4_pressed;
+    } else if (amount == 10000000) {
+        Globals::status->changeCredits(amount);
+        packFlag = &gi_iap_buy_credit_pack5_pressed;
+    } else {
+        return 0;
+    }
+
+    if (*packFlag != 0) {
+        *packFlag = 0;
+        checkFirstCreditPackBoughtWriteAction();
+    }
+    ndk_autosave();
+    return 1;
+}
+
+void checkFirstCreditPackBoughtWriteAction() {
+    Globals::status->getCurrentCampaignMission();
+    if (Globals::options[0x62] == 0) {
+        Globals::options[0x62] = 1;
+        RecordHandler handler;
+        handler.saveOptions();
+    }
+}
+
+void ndk_autosave() {
+    RecordHandler *handler = new RecordHandler;
+    handler->recordStoreWrite(0);
+    handler->recordStoreWritePreview(0);
+    delete handler;
+}
+
+int ndk_getCurrentApplicationModule() {
+    if (gEngine == nullptr)
+        return -1;
+    return static_cast<int>(Globals::appManager->GetCurrentApplicationModule());
+}
+
+int ndk_getLogoShown() {
+    return Globals::logoIsShown;
+}
+
+int ndk_isInMainMenu() {
+    return Globals::isInMainMenu;
+}
+
+char *pConstToNonConst(const char *s) {
+    if (s != nullptr) {
+        char *copy = static_cast<char *>(std::malloc(std::strlen(s) + 1));
+        if (copy != nullptr) {
+            std::strcpy(copy, s);
+            return copy;
+        }
+    }
+    return nullptr;
+}
+
+const char *getStringUTFChars(JNIEnv *env, jstring str, jboolean *isCopy) {
+    if (env != nullptr && str != nullptr)
+        return env->GetStringUTFChars(str, isCopy);
+    return nullptr;
+}
+
+void releaseStringUTFChars(JNIEnv *env, jstring str, const char *chars) {
+    if (env != nullptr && str != nullptr && chars != nullptr) {
+        env->ReleaseStringUTFChars(str, chars);
+        return;
+    }
+    if (chars != nullptr) {
+        operator delete(const_cast<char *>(chars));
+    }
+    if (str != nullptr) {
+        operator delete(reinterpret_cast<void *>(str)); // lint: void_ptr NDK boundary, operator delete ABI requires void*
+        // lint: void_ptr NDK boundary, operator delete ABI requires void*
     }
 }
 

@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1300,
-  "linked_exact": 3811,
+  "linked_exact": 3823,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 19,
-  "avg_match": 92.75,
+  "avg_match": 92.89,
   "compared": 4523
  },
  "imports": [
@@ -21,7 +21,6 @@
   "_Z10Array_dtorPv",
   "_Z10TB_frameIdiji",
   "_Z11VectorScalePvf",
-  "_Z12PE_cft_placeP9PlayerEgoi",
   "_Z13FileRead_ctorPv",
   "_Z13FileRead_dtorPv",
   "_Z13RH_op_new_arrj",
@@ -39,7 +38,6 @@
   "_Z16Item_setPrice_oii",
   "_Z16MatrixSetScalingPN11AbyssEngine6AEMath6MatrixEfff",
   "_Z16OnCheatActivatediPv",
-  "_Z16PE_dtdp_makeEasePKvS0_",
   "_Z16RH_op_delete_arrPv",
   "_Z16Ship_getIndex_oiv",
   "_Z16Ship_hasCargo_oiii",

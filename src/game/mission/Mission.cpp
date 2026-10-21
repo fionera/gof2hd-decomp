@@ -6,7 +6,6 @@
 #include "engine/core/GameText.h"
 #include "game/world/Station.h"
 
-static GameText **g_gameText;
 
 uint8_t Mission::isInstantActionMission() {
     return this->instantAction;
@@ -32,7 +31,7 @@ String Mission::getName() {
     if (this->campaign != 0) {
         return String("");
     }
-    return *(*g_gameText)->getText(this->id + 0x162);
+    return *Globals::gameText->getText(this->id + 0x162);
 }
 
 void Mission::setProductionGoods(int a, int b) {
@@ -94,12 +93,11 @@ Mission::Mission(int id, AbyssEngine::String client, int *clientImage, int clien
     this->clientRace = clientRace;
     this->costs = costs;
     this->targetStation = station;
-    Station *st = (Station *) (long) Globals::galaxy->getStation(station);
-    this->targetStationName = st->getName();
+    this->targetStationName = ((Station *) (long) Globals::galaxy->getStation(station))->getName();
     this->reward = reward;
     this->targetSystemName = String("");
-    this->visible = 1;
     this->campaign = 0;
+    this->visible = 1;
     this->instantAction = 0;
     this->failed = 0;
     this->won = 0;
@@ -126,30 +124,24 @@ Mission::Mission(int id) {
 }
 
 void Mission::calcDistance() {
-    Galaxy *g = Globals::galaxy;
-    Station *st = (Station *) (long) g->getStation(this->targetStation);
-    Array<SolarSystem *> *sys = g->getSystems();
-    SolarSystem *a = (*sys)[Globals::status->getStation()->getSystem()];
-    SolarSystem *b = (*sys)[st->getSystem()];
-    this->distance = (int) g->distance(a, b);
+    Station *st = (Station *) (long) Globals::galaxy->getStation(this->targetStation);
+    Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
+    this->distance = (int) Globals::galaxy->distance((*systems)[Globals::status->getStation()->getSystem()],
+                                                     (*systems)[st->getSystem()]);
     delete st;
 }
 
 Mission::Mission(int id, int goods, int station) {
-    this->costs = goods;
     this->targetStation = station;
+    this->costs = goods;
     this->clientImage = 0;
     this->agent = 0;
     this->id = id;
-    if (station < 0) {
-        this->targetStationName = String("");
-    } else {
-        Station *st = (Station *) (long) Globals::galaxy->getStation(station);
-        this->targetStationName = st->getName();
-    }
+    this->targetStationName =
+        station >= 0 ? ((Station *) (long) Globals::galaxy->getStation(station))->getName() : String("");
     this->targetSystemName = String("");
-    this->visible = 1;
     this->campaign = 1;
+    this->visible = 1;
     this->failed = 0;
     this->won = 0;
     this->instantAction = 0;

@@ -50,15 +50,9 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/
     this->elapsedSinceExplosion = 0;
     this->field_0x25 = 0;
     // Gas cloud items 201..204 have their own cloud/spark meshes.
-    int cloudMesh = 18997;
-    if ((unsigned int) (itemId - 201) < 4)
-        cloudMesh = itemId + 18796;
-    int sparkMesh = 19001;
-    if ((unsigned int) (itemId - 201) < 4)
-        sparkMesh = itemId + 18800;
-    this->cloudMeshId = cloudMesh;
+    this->cloudMeshId = (unsigned int) (itemId - 201) < 4 ? itemId + 18796 : 18997;
     this->itemId = itemId;
-    this->sparkMeshId = sparkMesh;
+    this->sparkMeshId = (unsigned int) (itemId - 201) < 4 ? itemId + 18800 : 19001;
     this->sparkGeometries = 0;
     this->sparkVelocities = 0;
     this->sparkLife = 0;
@@ -174,7 +168,8 @@ void PlayerGasCloud::explode(int itemIndex, Vector src, float radius) {
         float x = this->center.x + delta.x - spread + strength * (float) Globals::rnd->nextInt(10000);
         float y = this->center.y + delta.y - spread + strength * (float) Globals::rnd->nextInt(10000);
         float z = this->center.z - spread + delta.z + strength * (float) Globals::rnd->nextInt(10000);
-        Vector direction = VectorNormalize(Vector{x, y, z} - this->center);
+        Vector target = {x, y, z};
+        Vector direction = VectorNormalize(this->center - target);
 
         float minLife = (float) Globals::rnd->nextInt(200) / 200.0f * 3.0f + 3.0f;
         float life = minLife * 7.0f;

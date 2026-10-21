@@ -32,10 +32,9 @@ Station *FileRead::loadStation(int32_t id) {
 }
 
 int32_t FileRead::loadStationsBinary() {
-    String path("stations_binary.bin");
-    if (AEFile::FileExist(path) != 0) {
+    if (AEFile::FileExist(String("data/bin/stations.bin")) != 0) {
         uint32_t handle;
-        AEFile::OpenRead("stations_binary.bin", &handle);
+        AEFile::OpenRead("data/bin/stations.bin", &handle);
 
         int32_t color0;
         int32_t color1;
@@ -55,12 +54,11 @@ int32_t FileRead::loadStationsBinary() {
 }
 
 Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id) {
-    String path("weapon_positions.bin");
 
     Array<Array<Vector *> *> *positions = 0;
-    if (AEFile::FileExist(path) != 0) {
+    if (AEFile::FileExist(String("data/bin/weapons_hd.bin")) != 0) {
         uint32_t handle;
-        AEFile::OpenRead("weapon_positions.bin", &handle);
+        AEFile::OpenRead("data/bin/weapons_hd.bin", &handle);
 
         positions = new Array<Array<Vector *> *>();
         ArraySetLength<Array<Vector *> *>(4, *positions);
@@ -117,12 +115,11 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id) {
 }
 
 Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
-    String path("space_points.bin");
 
     Array<SpacePoint *> *points = 0;
-    if (AEFile::FileExist(path) != 0) {
+    if (AEFile::FileExist(String("data/bin/docks_hd.bin")) != 0) {
         uint32_t handle;
-        AEFile::OpenRead("space_points.bin", &handle);
+        AEFile::OpenRead("data/bin/docks_hd.bin", &handle);
 
         uint16_t current = 0;
         uint16_t count = 0;
@@ -189,12 +186,11 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
 }
 
 Array<SolarSystem *> *FileRead::loadSystemsBinary() {
-    String path("systems_binary.bin");
 
     Array<SolarSystem *> *systems = 0;
-    if (AEFile::FileExist(path) != 0) {
+    if (AEFile::FileExist(String("data/bin/systems.bin")) != 0) {
         uint32_t handle;
-        AEFile::OpenRead("systems_binary.bin", &handle);
+        AEFile::OpenRead("data/bin/systems.bin", &handle);
 
         systems = new Array<SolarSystem *>();
         ArraySetLength<SolarSystem *>(0x22, *systems);
@@ -264,9 +260,8 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
                 }
             }
 
-            SolarSystem *system = new SolarSystem((int32_t) i, name, faction, flag == 1, a, b, c, d, e, f,
-                                                  routes, stations, wrecks, statics);
-            systems->data()[i] = system;
+            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, flag == 1, a, b, c, d, e, f,
+                                                 routes, stations, wrecks, statics);
             delete[] routes;
         }
         AEFile::Close(handle);
@@ -275,33 +270,32 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
 }
 
 Array<Wanted *> *FileRead::loadWanted() {
-    String path("wanted_binary.bin");
 
     Array<Wanted *> *wanted = 0;
-    if (AEFile::FileExist(path) != 0) {
+    if (AEFile::FileExist(String("data/bin/wanted.bin")) != 0) {
         uint32_t handle;
-        AEFile::OpenRead("wanted_binary.bin", &handle);
+        AEFile::OpenRead("data/bin/wanted.bin", &handle);
 
         wanted = new Array<Wanted *>();
         ArraySetLength<Wanted *>(0x19, *wanted);
 
         String name;
         uint32_t index = 0;
+        int32_t id;
+        int32_t a;
+        int32_t b;
+        int32_t d;
+        int32_t e;
+        int32_t f;
+        int32_t c;
+        int32_t imageCount;
+        int32_t g;
+        int32_t h;
+        int32_t i;
+        int32_t j;
+        int32_t k;
+        int32_t l;
         while (index < wanted->size()) {
-            int32_t id;
-            int32_t a;
-            int32_t b;
-            int32_t c;
-            int32_t d;
-            int32_t e;
-            int32_t f;
-            int32_t g;
-            int32_t h;
-            int32_t i;
-            int32_t j;
-            int32_t k;
-            int32_t l;
-            int32_t imageCount;
 
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
@@ -319,15 +313,14 @@ Array<Wanted *> *FileRead::loadWanted() {
             AEFile::ReadSwitched(k, handle);
             AEFile::ReadSwitched(l, handle);
 
-            Wanted *entry = new Wanted(id, name, a, b, c == 1, d, e, f, g, h, i, j, k, l);
-            wanted->data()[index] = entry;
+            wanted->data()[index] = new Wanted(id, name, a, b, c == 1, d, e, f, g, h, i, j, k, l);
 
             AEFile::ReadSwitched(imageCount, handle);
             uint32_t oldIndex = index++;
             if (imageCount > 0) {
                 int32_t *parts = new int32_t[5];
+                int8_t part;
                 for (uint32_t n = 0; n < 5; n++) {
-                    char part;
                     AEFile::Read(part, handle);
                     parts[n] = part;
                 }
@@ -340,26 +333,25 @@ Array<Wanted *> *FileRead::loadWanted() {
 }
 
 Array<NewsItem *> *FileRead::loadTicker() {
-    String path("ticker_binary.bin");
 
     Array<NewsItem *> *items = 0;
-    if (AEFile::FileExist(path) != 0) {
+    if (AEFile::FileExist(String("data/bin/ticker.bin")) != 0) {
         uint32_t handle;
-        AEFile::OpenRead("ticker_binary.bin", &handle);
+        AEFile::OpenRead("data/bin/ticker.bin", &handle);
 
         items = new Array<NewsItem *>();
         ArraySetLength<NewsItem *>(0x3b, *items);
 
+        int32_t active;
+        int32_t flags[4];
+        int32_t a;
+        int32_t b;
         for (uint32_t i = 0; i < 0x3b; i++) {
-            int32_t active;
-            int32_t flags[4];
-            int32_t a;
-            int32_t b;
             AEFile::ReadSwitched(active, handle);
-            AEFile::ReadSwitched(flags[0], handle);
-            AEFile::ReadSwitched(flags[1], handle);
-            AEFile::ReadSwitched(flags[2], handle);
-            AEFile::ReadSwitched(flags[3], handle);
+            AEFile::Read(flags[0], handle);
+            AEFile::Read(flags[1], handle);
+            AEFile::Read(flags[2], handle);
+            AEFile::Read(flags[3], handle);
             AEFile::ReadSwitched(a, handle);
             AEFile::ReadSwitched(b, handle);
 
@@ -380,21 +372,20 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count) {
     Array<Station *> *stations = new Array<Station *>();
     ArraySetLength<Station *>(count, *stations);
 
-    String path("stations_binary.bin");
-    if (AEFile::FileExist(path) == 0) {
+    if (AEFile::FileExist(String("data/bin/stations.bin")) == 0) {
         return 0;
     }
 
     uint32_t handle;
-    AEFile::OpenRead("stations_binary.bin", &handle);
+    AEFile::OpenRead("data/bin/stations.bin", &handle);
 
     String name;
     int32_t out = 0;
+    int32_t a;
+    int32_t b;
+    int32_t c;
+    int32_t d;
     for (uint32_t stationId = 0; stationId < 0x87; stationId++) {
-        int32_t a;
-        int32_t b;
-        int32_t c;
-        int32_t d;
         AEFile::ReadSwitched(name, handle);
         name.ConvertFromUTF8();
         AEFile::ReadSwitched(a, handle);
@@ -403,8 +394,7 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count) {
         AEFile::ReadSwitched(d, handle);
         for (int32_t i = 0; i < count; i++) {
             if (stationId == (uint32_t) ids[i]) {
-                Station *station = new Station(name, a, b, c, d);
-                stations->data()[out] = station;
+                stations->data()[out] = new Station(name, a, b, c, d);
                 out++;
             }
         }
@@ -505,13 +495,12 @@ Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second
 Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system) {
     Array<Station *> *stations = new Array<Station *>();
 
-    String path("stations_binary.bin");
-    if (AEFile::FileExist(path) == 0) {
+    if (AEFile::FileExist(String("data/bin/stations.bin")) == 0) {
         return 0;
     }
 
     uint32_t handle;
-    AEFile::OpenRead("stations_binary.bin", &handle);
+    AEFile::OpenRead("data/bin/stations.bin", &handle);
 
     Array<int32_t> *ids = system->stationIds;
     ArraySetLength<Station *>(ids->size(), *stations);
@@ -531,8 +520,7 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system) {
         AEFile::ReadSwitched(d, handle);
         for (uint32_t i = 0; i < ids->size(); i++) {
             if ((uint32_t) ids->data()[i] == stationId) {
-                Station *station = new Station(name, a, b, c, d);
-                stations->data()[out++] = station;
+                stations->data()[out++] = new Station(name, a, b, c, d);
             }
             if (out == ids->size()) {
                 AEFile::Close(handle);
@@ -545,29 +533,29 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system) {
 }
 
 Array<Agent *> *FileRead::loadAgents() {
-    String path("agents_binary.bin");
 
     Array<Agent *> *agents = 0;
-    if (AEFile::FileExist(path) != 0) {
+    if (AEFile::FileExist(String("data/bin/agents.bin")) != 0) {
         uint32_t handle;
-        AEFile::OpenRead("agents_binary.bin", &handle);
+        AEFile::OpenRead("data/bin/agents.bin", &handle);
 
         agents = new Array<Agent *>();
         ArraySetLength<Agent *>(0x1b, *agents);
 
         String name;
         uint32_t index = 0;
+        int32_t id;
+        int32_t a;
+        int32_t b;
+        int32_t c;
+        int32_t d;
+        int32_t e;
+        int32_t g;
+        int32_t flag;
+        int32_t imageCount;
+        int32_t f = -1;
+        bool male;
         while (index < agents->size()) {
-            int32_t id;
-            int32_t a;
-            int32_t b;
-            int32_t c;
-            int32_t flag;
-            int32_t d;
-            int32_t e;
-            int32_t f;
-            int32_t g;
-            int32_t imageCount;
 
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
@@ -576,20 +564,20 @@ Array<Agent *> *FileRead::loadAgents() {
             AEFile::ReadSwitched(b, handle);
             AEFile::ReadSwitched(c, handle);
             AEFile::ReadSwitched(flag, handle);
+            male = flag == 1;
             AEFile::ReadSwitched(d, handle);
             AEFile::ReadSwitched(e, handle);
             AEFile::ReadSwitched(f, handle);
             AEFile::ReadSwitched(g, handle);
 
-            Agent *agent = new Agent(id, name, a, b, c, flag == 1, d, e, f, g);
-            agents->data()[index] = agent;
+            agents->data()[index] = new Agent(id, name, a, b, c, male, d, e, f, g);
 
             AEFile::ReadSwitched(imageCount, handle);
             uint32_t oldIndex = index++;
             if (imageCount > 0) {
                 int32_t *parts = new int32_t[5];
+                int8_t part;
                 for (uint32_t i = 0; i < 5; i++) {
-                    char part;
                     AEFile::Read(part, handle);
                     parts[i] = part;
                 }
@@ -602,12 +590,12 @@ Array<Agent *> *FileRead::loadAgents() {
 }
 
 Array<int32_t> *FileRead::loadWreckCollision(int32_t id) {
-    if (AEFile::FileExist(String("wreck_collision.bin")) == 0) {
+    if (AEFile::FileExist(String("data/bin/wreck_collisions.bin")) == 0) {
         return nullptr;
     }
 
     uint32_t handle;
-    AEFile::OpenRead("wreck_collision.bin", &handle);
+    AEFile::OpenRead("data/bin/wreck_collisions.bin", &handle);
 
     int32_t key = 0;
     int32_t count = 0;
@@ -634,12 +622,12 @@ Array<int32_t> *FileRead::loadWreckCollision(int32_t id) {
 }
 
 Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
-    if (AEFile::FileExist(String("station_collision.bin")) == 0) {
+    if (AEFile::FileExist(String("data/bin/collision.bin")) == 0) {
         return nullptr;
     }
 
     uint32_t handle;
-    AEFile::OpenRead("station_collision.bin", &handle);
+    AEFile::OpenRead("data/bin/collision.bin", &handle);
 
     int32_t key = 0;
     int32_t count = 0;
@@ -666,12 +654,12 @@ Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
 }
 
 Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
-    if (AEFile::FileExist(String("static_collision.bin")) == 0) {
+    if (AEFile::FileExist(String("data/bin/static_collisions.bin")) == 0) {
         return nullptr;
     }
 
     uint32_t handle;
-    AEFile::OpenRead("static_collision.bin", &handle);
+    AEFile::OpenRead("data/bin/static_collisions.bin", &handle);
 
     int32_t key = 0;
     int32_t count = 0;
@@ -699,12 +687,12 @@ Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
 
 Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
     Array<int32_t> *parts = nullptr;
-    if (AEFile::FileExist(String("station_parts.bin")) == 0) {
+    if (AEFile::FileExist(String("data/bin/stationparts.bin")) == 0) {
         return parts;
     }
 
     uint32_t handle;
-    AEFile::OpenRead("station_parts.bin", &handle);
+    AEFile::OpenRead("data/bin/stationparts.bin", &handle);
 
     int32_t wanted = id + 1;
     if (special == 1) {
@@ -755,12 +743,12 @@ Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
 }
 
 Array<int32_t> *FileRead::loadShipParts(int32_t id) {
-    if (AEFile::FileExist(String("ship_parts.bin")) == 0) {
+    if (AEFile::FileExist(String("data/bin/shipparts.bin")) == 0) {
         return nullptr;
     }
 
     uint32_t handle;
-    AEFile::OpenRead("ship_parts.bin", &handle);
+    AEFile::OpenRead("data/bin/shipparts.bin", &handle);
 
     int32_t wanted = id + 1;
     Array<int32_t> *parts = nullptr;
@@ -803,20 +791,19 @@ Array<int32_t> *FileRead::loadShipParts(int32_t id) {
 }
 
 Array<Item *> *FileRead::loadItemsBinary() {
-    String path("items_binary.bin");
 
     Array<Item *> *items = 0;
-    if (AEFile::FileExist(path) != 0) {
+    if (AEFile::FileExist(String("data/bin/items.bin")) != 0) {
         uint32_t handle;
-        AEFile::OpenRead("items_binary.bin", &handle);
+        AEFile::OpenRead("data/bin/items.bin", &handle);
 
         items = new Array<Item *>();
         ArraySetLength<Item *>(0xe9, *items);
 
+        uint32_t count0 = 0;
+        uint32_t count1 = 0;
+        uint32_t count2 = 0;
         for (uint32_t i = 0; i < 0xe9; i++) {
-            uint32_t count0 = 0;
-            uint32_t count1 = 0;
-            uint32_t count2 = 0;
             Array<int> *a0;
             Array<int> *a1;
             Array<int> *a2;
@@ -863,26 +850,25 @@ Array<Item *> *FileRead::loadItemsBinary() {
 }
 
 Array<Ship *> *FileRead::loadShipsBinary() {
-    String path("ships_binary.bin");
 
     Array<Ship *> *ships = 0;
-    if (AEFile::FileExist(path) != 0) {
+    if (AEFile::FileExist(String("data/bin/ships.bin")) != 0) {
         uint32_t handle;
-        AEFile::OpenRead("ships_binary.bin", &handle);
+        AEFile::OpenRead("data/bin/ships.bin", &handle);
 
         ships = new Array<Ship *>();
         ArraySetLength<Ship *>(0x40, *ships);
 
+        int32_t a;
+        int32_t b;
+        int32_t c;
+        int32_t d;
+        int32_t e;
+        int32_t f;
+        int32_t g;
+        int32_t h;
+        int32_t speed;
         for (uint32_t i = 0; i < 0x40; i++) {
-            int32_t a;
-            int32_t b;
-            int32_t c;
-            int32_t d;
-            int32_t e;
-            int32_t f;
-            int32_t g;
-            int32_t h;
-            int32_t speed;
             AEFile::ReadSwitched(a, handle);
             AEFile::ReadSwitched(b, handle);
             AEFile::ReadSwitched(c, handle);

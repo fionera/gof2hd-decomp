@@ -72,7 +72,8 @@ public:
 
     Explosion *explosion;
     Explosion *explosion2;
-    int field_0x94[6];
+    AbyssEngine::AEMath::Vector lastCrosshairPos;      // 0x94
+    AbyssEngine::AEMath::Vector lastCrosshairShootPos; // 0xa0
     int field_0xac;
     uint8_t field_0xb0;
     uint8_t switchToStandardCam;
@@ -304,7 +305,7 @@ public:
 
     void dockToAsteroid(KIPlayer *kip, Radar *radar);
 
-    void dockToDockingPoint(KIPlayer *kip, Radar *radar);
+    void dockToDockingPoint(KIPlayer *station, Radar *radar);
 
     void dockToPlanet();
 

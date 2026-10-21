@@ -21,10 +21,50 @@ public:
     Array<TouchButton *> *buttons;
     void *cinematicTouchIdA; // lint: void_ptr (opaque touch handle; matches exported void* touchId)
     void *cinematicTouchIdB; // lint: void_ptr (opaque touch handle; matches exported void* touchId)
-    uint8_t pad_0x10[4];
+    ScrollTouchWindow *cinematicTextWindow;
     TouchButton *cinematicBtnA;
     TouchButton *cinematicBtnB;
-    uint8_t pad_0x1c[0x74];
+    // Touch-control preview (steering pad / fire buttons), laid out by Globals::setCoordsSteer/Fire.
+    uint32_t steerImageA;
+    uint32_t steerImageB;
+    uint32_t steerImageC;
+    uint32_t steerImageD;
+    uint8_t pad_0x2c[2];
+    uint16_t steerCoord_0x2e;
+    uint16_t steerCoord_0x30;
+    uint16_t steerCoord_0x32;
+    uint16_t steerCoord_0x34;
+    uint8_t pad_0x36[6];
+    uint16_t steerCoord_0x3c;
+    uint16_t steerCoord_0x3e;
+    uint16_t steerCoord_0x40;
+    uint16_t steerCoord_0x42;
+    uint8_t pad_0x44[4];
+    uint16_t steerCoord_0x48;
+    uint16_t steerCoord_0x4a;
+    uint16_t fireCoord_0x4c;
+    uint16_t fireCoord_0x4e;
+    uint32_t fireImage_0x50;
+    uint32_t fireImage_0x54;
+    uint32_t fireImage_0x58;
+    uint32_t fireImage_0x5c;
+    uint16_t fireCoord_0x60;
+    uint16_t fireCoord_0x62;
+    uint16_t fireCoord_0x64;
+    uint16_t fireCoord_0x66;
+    uint16_t fireCoord_0x68;
+    uint16_t fireCoord_0x6a;
+    uint16_t fireCoord_0x6c;
+    uint16_t fireCoord_0x6e;
+    uint16_t fireCoord_0x70;
+    uint16_t fireCoord_0x72;
+    uint32_t fireSize_0x74;
+    uint32_t fireImageA;
+    uint32_t fireImageB;
+    uint32_t fireImage_0x80;
+    uint32_t fireImage_0x84;
+    uint32_t fireImage_0x88;
+    uint32_t fireImage_0x8c;
     int cinematicAnchorA;
     int cinematicAnchorB;
     unsigned short cinematicTouchState;
@@ -61,8 +101,8 @@ public:
     uint32_t scrollbarImageId;
     int field_0x120;
     uint8_t pad_0x124[0x10];
-    unsigned char *heapBufA;
-    unsigned char *heapBufB;
+    uint32_t *heapBufA;
+    uint32_t *heapBufB;
     uint8_t pad_0x13c[0x18];
     int listEntryWidth;
     int listEntryHeight;
@@ -118,7 +158,7 @@ public:
     int dragLastX;
     uint8_t pad_0x210[4];
     int dragVelocity;
-    uint32_t inertiaDecay;
+    float inertiaDecay;
     float inertiaVel;
     int dragStartX;
     uint8_t dragging;
@@ -157,7 +197,7 @@ public:
 
     void startValkyrie();
 
-    int OnTouchBegin(int y, int x, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    int OnTouchBegin(int x, int y, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
@@ -181,7 +221,7 @@ public:
 
     float getRelativeScrollHeight();
 
-    int OnTouchMove(int y, int x, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    int OnTouchMove(int x, int y, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 

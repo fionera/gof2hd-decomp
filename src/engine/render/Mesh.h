@@ -83,11 +83,12 @@ namespace AbyssEngine {
 
         uint8_t hasAnimation;
 
-        // Empty mesh: every member zero except the squared bounds radius.
+        // Empty mesh: every member zero except the squared bounds radius. shaderAnimValue1 and the
+        // index counts are left uninitialised (the original ctor never stores to 0x24..0x2b).
         Mesh()
             : vertexFormat(0), vertexCount(0), positions(nullptr), texCoords(nullptr), colors(nullptr),
               normals(nullptr), tangents(nullptr), binormals(nullptr), materialId(0), shaderAnimValue0(0.0f),
-              shaderAnimValue1(0.0f), indexCount(0), field_0x2a(0), indices(nullptr), material(nullptr),
+              indices(nullptr), material(nullptr),
               animation(nullptr), shared(0), boundsCenterX(0.0f), boundsCenterY(0.0f), boundsCenterZ(0.0f),
               boundsRadius(0.0f), boundsRadiusSq(1.0f), pivotX(0.0f), pivotY(0.0f), pivotZ(0.0f), uploaded(0),
               positionVBO(0), indexVBO(0), texCoordVBO(0), normalVBO(0), tangentVBO(0), binormalVBO(0),
