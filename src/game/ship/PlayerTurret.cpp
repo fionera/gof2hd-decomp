@@ -92,8 +92,8 @@ void PlayerTurret::handleTurret(int delta) {
 
 void PlayerTurret::revive() {
     this->player->reset();
-    this->crateGeometry = nullptr;
     this->state = 1;
+    this->crateGeometry = nullptr;
     this->field_0xd8 = 0;
     this->setActive(true);
     this->explosion->reset();
