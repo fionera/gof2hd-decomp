@@ -551,69 +551,53 @@ void StarMap::depart(bool jump) {
     }
 
     if (this->jumpMapModeA != 0) {
-        Array<Station *> *stations = this->stations;
-        Globals::status->departStation((*stations)[selected]);
+        Globals::status->departStation((*this->stations)[selected]);
         Level::programmedStation = 0;
         Level::setInitStreamOut();
         Globals::status->jumpgateUsed();
-        if (jump && this->jumpMapModeB != 0) {
-            int toSystem = (*stations)[selected]->getSystem();
+        if (!jump || this->jumpMapModeB == 0) {
+            Level::doInstantJump = 0;
+        } else {
+            int toSystem = (*this->stations)[this->selectedStation]->getSystem();
             int current = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
             Level::doInstantJump = (uint8_t)(toSystem != current);
             if (toSystem != current) {
                 Level::energyCellsForNextJump = this->jumpCost;
             }
-        } else {
-            Level::doInstantJump = 0;
         }
-    } else {
-        if (Globals::status->getCurrentCampaignMission() == 3) {
-            goto cleanup;
-        }
-
+    } else if (Globals::status->getCurrentCampaignMission() != 3) {
         Globals::status->field_5c = -1;
         Globals::status->field_60 = -1;
         Globals::status->field_64 = -1;
         Globals::status->field_68 = -1;
         Globals::status->departStation((Station *) Globals::status->getStation());
 
-        Station *target = (*this->stations)[this->selectedStation];
-        if (target->equals((Station *) Globals::status->getStation()) == 0) {
-            Level::programmedStation = target;
+        if ((*this->stations)[this->selectedStation]->equals((Station *) Globals::status->getStation()) == 0) {
+            Level::programmedStation = (*this->stations)[this->selectedStation];
         }
 
-        if (jump) {
-            Ship *ship = (Ship *) Globals::status->getShip();
-            if (ship->hasVolatileGoods() != 0) {
-                goto no_jump;
-            }
-            if (((Ship *) (Globals::status->getShip()))->hasJumpDriveIntegrated() == 0 && this->jumpMapModeB == 0) {
-                goto no_jump;
-            }
+        if (!jump || ((Ship *) Globals::status->getShip())->hasVolatileGoods() ||
+            (!((Ship *) Globals::status->getShip())->hasJumpDriveIntegrated() && this->jumpMapModeB == 0)) {
+            Level::doInstantJump = 0;
+        } else {
             int toSystem = Level::programmedStation->getSystem();
             int current = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
             Level::doInstantJump = (uint8_t)(toSystem != current);
             if (toSystem != current) {
                 Level::energyCellsForNextJump = this->jumpCost;
             }
-        } else {
-        no_jump:
-            Level::doInstantJump = 0;
         }
         Globals::achievements->resetNewMedals();
     }
 
-cleanup: {
-        Array<Station *> *stations = this->stations;
-        for (uint32_t i = 0; i < stations->size(); i++) {
-            if (i != (uint32_t) this->selectedStation) {
-                delete (*stations)[i];
-                (*stations)[i] = 0;
-            }
+    for (uint32_t i = 0; i < this->stations->size(); i++) {
+        if (i != (uint32_t) this->selectedStation) {
+            delete (*this->stations)[i];
+            (*this->stations)[i] = 0;
         }
-        delete stations;
-        this->stations = (Array<Station *> *) 0;
     }
+    delete this->stations;
+    this->stations = (Array<Station *> *) 0;
     Globals::sound->stop(0x66);
     Globals::switch_to_target_setting = 1;
 

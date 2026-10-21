@@ -1859,17 +1859,18 @@ void HangarWindow::mountItem(Item *item) {
 }
 
 unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
-    Layout *layout = *g_hw_layout;
-    ((Layout *) (layout))->OnTouchMove(touch, coord);
+    Globals::layout->OnTouchMove(touch, coord);
 
     if (this->dialogActive != 0) {
         if (this->buyCreditsActive != 0) {
-            for (int i = 0xc; i != 0x11; i++)
-                (*this->buttons)[(i * 4) >> 2]->OnTouchMove(touch, coord);
-            (*this->buttons)[(0x44) >> 2]->OnTouchMove(touch, coord);
+            for (int i = 12; i != 17; i++) {
+                (*this->buttons)[i]->OnTouchMove(touch, coord);
+            }
+            (*this->buttons)[17]->OnTouchMove(touch, coord);
         } else if (this->freeCreditsActive != 0) {
-            for (int i = 0x12; i != 0x17; i++)
-                (*this->buttons)[(i * 4) >> 2]->OnTouchMove(touch, coord);
+            for (int i = 18; i != 23; i++) {
+                (*this->buttons)[i]->OnTouchMove(touch, coord);
+            }
         }
         this->dialog->OnTouchMove(touch, coord);
         return 0;
@@ -1880,42 +1881,36 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
         return 0;
     }
 
-    if (layout->field_0xc_leftMargin < coord && coord < *g_hw_screenWidth - layout->field_0x10_rightMargin) {
+    Layout *layout = Globals::layout;
+    if (layout->field_0xc_leftMargin < coord && coord < Globals::h - layout->field_0x10_rightMargin) {
         int dy = coord - this->lastTouchY;
         this->scrollDelta = dy;
         this->damping = 1.0f;
         this->scrollOffset = this->scrollOffset + dy;
         this->lastTouchY = coord;
 
-        TouchButton *btnUp = (*this->buttons)[(0x20) >> 2];
-        TouchButton *btnDown = (*this->buttons)[(0x24) >> 2];
-        int touched = ((TouchButton *) (btnUp))->isTouched();
-        if (touched != 0)
-            touched = 1;
-        else
-            touched = ((TouchButton *) (btnDown))->isTouched();
-
-        int adist = coord - this->touchStartY;
-        if (adist < 0)
-            adist = -adist;
-
-        if (touched == 0 && adist > 5) {
+        bool touched = (*this->buttons)[8]->isTouched() ? true : (*this->buttons)[9]->isTouched();
+        int dist = coord - this->touchStartY;
+        if (dist < 0) {
+            dist = -dist;
+        }
+        if (!touched && dist > 5) {
             this->holdTime = 0;
             this->repeatTimer = 0;
-            Array<TouchButton *> *buttons = this->buttons;
-            for (unsigned int i = 0; i < buttons->size(); i++)
-                buttons->data()[i]->OnTouchMove(touch, coord);
-            this->setSellMode(true);
+            for (unsigned int i = 0; i < this->buttons->size(); i++) {
+                (*this->buttons)[i]->OnTouchMove(touch, coord);
+            }
+            this->setSellMode(false);
             this->sellConfirmPending = 0;
             this->selectedItem = 0;
-            ((TouchButton *) (btnUp))->resetTouch();
-            ((TouchButton *) (btnDown))->resetTouch();
+            (*this->buttons)[8]->resetTouch();
+            (*this->buttons)[9]->resetTouch();
         }
     }
 
-    Array<TouchButton *> *tabs = this->tabButtons;
-    for (unsigned int i = 0; i < tabs->size(); i++)
-        ((TouchButton *) (tabs->data()[i]))->OnTouchMove(touch, coord);
+    for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
+        (*this->tabButtons)[i]->OnTouchMove(touch, coord);
+    }
     return 0;
 }
 
