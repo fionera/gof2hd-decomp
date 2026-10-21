@@ -1005,8 +1005,8 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
         return;
     if (x <= this->infoBoxW)
         return;
-    this->field_0xfc = x;
     this->camScrollPos = x;
+    this->field_0xfc = x;
     this->camScrollVel = 0;
     this->flag_0x100 = 1;
 }

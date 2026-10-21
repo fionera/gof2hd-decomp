@@ -1116,9 +1116,9 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
                         }
                         if (apply) {
                             self->thrustEngaged = 1;
-                            float divisor = reinterpret_cast<float &>(Globals::layout->field_0x2f8);
                             float t = ((float) self->thrustStartY - (float) y -
-                                       (float) self->thrustResetX) / divisor +
+                                       (float) self->thrustResetX) /
+                                          reinterpret_cast<float &>(Globals::layout->field_0x2f8) +
                                       self->thrustBase;
                             if (t < 0.0f) t = 0.0f;
                             t = t < 1.0f ? t : 1.0f;
