@@ -1607,18 +1607,14 @@ void SpaceLounge::drawLounge() {
         String name = agent->isKnown() || agent->isStoryAgent()
                               ? agent->getName()
                               : String(*Globals::gameText->getText(agent->getRace() + 406), false);
-        String role;
-        if (agent->getMission() != 0) {
-            role = String(*Globals::gameText->getText(agent->getMission()->getType() + 354), false);
-        } else if (agent->getOffer() == 6) {
-            role = String(*Globals::gameText->getText(306), false);
-        } else if (agent->getOffer() == 2) {
-            role = String(*Globals::gameText->getText(305), false);
-        } else if (agent->getOffer() == 7) {
-            role = String(*Globals::gameText->getText(884), false);
-        } else {
-            role = String("");
-        }
+        String role = agent->getMission() != 0
+                          ? String(*Globals::gameText->getText(agent->getMission()->getType() + 354), false)
+                          : agent->getOffer() == 6
+                                ? String(*Globals::gameText->getText(306), false)
+                                : agent->getOffer() == 2
+                                      ? String(*Globals::gameText->getText(305), false)
+                                      : agent->getOffer() == 7 ? String(*Globals::gameText->getText(884), false)
+                                                               : String("");
 
         int width = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name);
         if (agent->isKnown()) {
@@ -1716,21 +1712,21 @@ void SpaceLounge::drawLounge() {
     if (offer == 1 || this->singleOffer != 0 || this->mode == 3) {
         (*this->buttons)[0]->setVisible(true);
         (*this->buttons)[0]->draw();
-        return;
-    }
-    (*this->buttons)[0]->setVisible(true);
-    (*this->buttons)[1]->setVisible(true);
-    (*this->buttons)[0]->draw();
-    (*this->buttons)[1]->draw();
-    if (offer == 2 || offer == 3 || offer == 9 || offer == 10) {
-        (*this->buttons)[2]->setVisible(true);
-        (*this->buttons)[2]->draw();
-    } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
-               (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
-        (*this->buttons)[3]->setVisible(true);
-        (*this->buttons)[4]->setVisible(true);
-        (*this->buttons)[3]->draw();
-        (*this->buttons)[4]->draw();
+    } else {
+        (*this->buttons)[0]->setVisible(true);
+        (*this->buttons)[1]->setVisible(true);
+        (*this->buttons)[0]->draw();
+        (*this->buttons)[1]->draw();
+        if (offer == 2 || offer == 3 || offer == 9 || offer == 10) {
+            (*this->buttons)[2]->setVisible(true);
+            (*this->buttons)[2]->draw();
+        } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
+                   (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
+            (*this->buttons)[3]->setVisible(true);
+            (*this->buttons)[4]->setVisible(true);
+            (*this->buttons)[3]->draw();
+            (*this->buttons)[4]->draw();
+        }
     }
 }
 
