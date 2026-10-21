@@ -73,15 +73,17 @@ public:
     unsigned char field_0x234;
     unsigned char cargoFullFlag;
     Level *menuLevel;
-    Item *currentSecondaryWeapon;
-    Array<Item *> *equipmentArray;
-    unsigned char shieldHitFlash; // ASM (playerHit): shieldHitFlash@0x244, after equipmentArray
-    Array<ListItem *> *eventQueue;
+    uint8_t _pad_0x23c[8];
+    unsigned char shieldHitFlash; // playerHit: strb [this,#0x244]
+    uint8_t _pad_0x245[19];
+    Item *currentSecondaryWeapon;   // setCurrentSecondaryWeapon: str [this,#0x258]
+    Array<Item *> *equipmentArray;  // ~Hud: 0x25c
+    int field_0x260;
+    Array<ListItem *> *eventQueue;  // ~Hud/clearQueue: 0x264
     int eventQueueTimer;
     unsigned char eventQueueDirty;
     int eventQueuePaused;
-    unsigned char jumpMapSelectedFlag;
-    uint8_t _hudrealign_0x259[28]; // realign field_0x275 to 0x275
+    unsigned char jumpMapSelectedFlag; // jumpMapSelected: ldrb [this,#0x274]
     unsigned char field_0x275;
     unsigned short field_0x276;
     unsigned short weaponSelectState;
@@ -333,6 +335,9 @@ static_assert(__builtin_offsetof(CargoBay, cargoCurrent) == 0x54,
 static_assert(__builtin_offsetof(CargoBay, cargoMax) == 0x58,
               "CargoBay::cargoMax must live at +0x58");
 static_assert(__builtin_offsetof(Hud, eventScrolls) == 0x1d8, "Hud::eventScrolls offset");
+static_assert(__builtin_offsetof(Hud, currentSecondaryWeapon) == 0x258, "Hud::currentSecondaryWeapon offset");
+static_assert(__builtin_offsetof(Hud, jumpMapSelectedFlag) == 0x274, "Hud::jumpMapSelectedFlag offset");
+static_assert(__builtin_offsetof(Hud, field_0x275) == 0x275, "Hud::field_0x275 offset");
 static_assert(__builtin_offsetof(Hud, field_0x1dc) == 0x1dc, "Hud::field_0x1dc offset");
 static_assert(__builtin_offsetof(Hud, letterbox) == 0x1ec, "Hud::letterbox offset");
 static_assert(__builtin_offsetof(Hud, field_0x1f0) == 0x1f0, "Hud::field_0x1f0 offset");
