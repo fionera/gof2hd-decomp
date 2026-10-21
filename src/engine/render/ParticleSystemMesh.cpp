@@ -278,22 +278,21 @@ void ParticleSystemMesh::updateUsualEdges(int id, int delta) {
 }
 
 void ParticleSystemMesh::updateSingleColor(int id) {
-    float b;
-    float g;
-    float r;
     float a;
+    float r;
+    float g;
+    float b;
 
-    int start = (int) this->idOffset;
     int stride = (int) this->stride;
+    int start = (int) this->idOffset;
     if ((int) (this->flags << 16) < 0) {
-        int prev = id == 0 ? (int) this->maxParticles : id;
-        if (this->particleAges[prev - 1] == -1) {
+        if (this->particleAges[(id == 0 ? (int) this->maxParticles : id) - 1] == -1) {
             int set = this->particleSetIds[id];
             uint32_t color = *(uint32_t *) (ParticleSettingsRef::cur + set * 160 + 0x38);
             uint32_t mask = this->alphaFade == 0 ? 0xffffff00u : 0xffu;
             color &= mask;
-            r = (float) ((color >> 16) & 0xff) * 0.0039215689f;
             a = (float) (color >> 24) * 0.0039215689f;
+            r = (float) ((color >> 16) & 0xff) * 0.0039215689f;
             g = (float) ((color >> 8) & 0xff) * 0.0039215689f;
             b = (float) (color & 0xff) * 0.0039215689f;
         } else {
@@ -305,9 +304,8 @@ void ParticleSystemMesh::updateSingleColor(int id) {
 
     int point = start + stride * id * 4;
     for (int i = 0; i < (int) this->stride; i++) {
-        this->canvas->MeshSetColor(this->resource, (uint16_t)(point + 2), a, r, g, b);
-        this->canvas->MeshSetColor(this->resource, (uint16_t)(point + 3), a, r, g, b);
-        point += 4;
+        this->canvas->MeshSetColor(this->resource, (uint16_t)(point + i * 4 + 2), a, r, g, b);
+        this->canvas->MeshSetColor(this->resource, (uint16_t)(point + i * 4 + 3), a, r, g, b);
     }
 
     if ((int) (this->flags << 16) < 0) {
