@@ -1610,241 +1610,616 @@ int Globals::getDialogueSoundId(int code, Agent *agent) {
             return gDialogueSoundPairs[i + 1];
         }
     }
-
-    if (agent == 0) {
+    if (agent == nullptr) {
         return -1;
     }
-
-    int race = ((Agent *) (agent))->getRace();
-    int male = ((Agent *) (agent))->isMale();
-
-    int category;
+    int race = agent->getRace();
+    bool male = agent->isMale();
+    int soundId;
     if (race == 3) {
-        int *parts = ((Agent *) (agent))->getImageParts();
-        if (parts != 0) {
-            int *p = ((Agent *) (agent))->getImageParts();
-            category = (*p == 2) ? 3 : 0;
+        if (agent->getImageParts() == nullptr) {
+            race = 2;
         } else {
-            category = 2;
+            race = agent->getImageParts()[0] == 2 ? 3 : 0;
         }
-    } else {
-        category = race;
     }
-
-    int isMale = male;
-    int soundId = -1;
-    switch (category) {
-        case 0:
-        case 5: {
-            if (isMale == 0) {
-                if ((unsigned) (code - 0x172) > 0x13) {
-                    break;
-                }
-                static const int femaleTable[20] = {
-                    0x2a7, 0x29b, 0x2a1, 0x2a2, 0x2a3, 0x2a4, 0x2a5, 0x2a6, 0x295, 0x29c,
-                    0x29d, 0x29e, 0x29f, 0x2a0, 0x296, 0x297, 0x298, 0x299, 0x29a, 0x294,
-                };
-                soundId = femaleTable[code - 0x172];
+    switch (race) {
+    case 0:
+    case 5:
+        if (!male) {
+            switch (code) {
+            case 389:
+                soundId = 660;
                 break;
+            case 370:
+                soundId = 679;
+                break;
+            case 371:
+                soundId = 667;
+                break;
+            case 372:
+                soundId = 673;
+                break;
+            case 373:
+                soundId = 674;
+                break;
+            case 374:
+                soundId = 675;
+                break;
+            case 375:
+                soundId = 676;
+                break;
+            case 376:
+                soundId = 677;
+                break;
+            case 377:
+                soundId = 678;
+                break;
+            case 378:
+                soundId = 661;
+                break;
+            case 379:
+                soundId = 668;
+                break;
+            case 380:
+                soundId = 669;
+                break;
+            case 381:
+                soundId = 670;
+                break;
+            case 382:
+                soundId = 671;
+                break;
+            case 383:
+                soundId = 672;
+                break;
+            case 384:
+                soundId = 662;
+                break;
+            case 385:
+                soundId = 663;
+                break;
+            case 386:
+                soundId = 664;
+                break;
+            case 387:
+                soundId = 665;
+                break;
+            case 388:
+                soundId = 666;
+                break;
+            default:
+                return -1;
             }
-
-            switch (code) {
-                case 0x172: soundId = 0x2bb; break;
-                case 0x173: soundId = 0x2af; break;
-                case 0x174: soundId = 0x2b5; break;
-                case 0x175: soundId = 0x2b6; break;
-                case 0x176: soundId = 0x2b7; break;
-                case 0x177: soundId = 0x2b8; break;
-                case 0x178: soundId = 0x2b9; break;
-                case 0x179: soundId = 0x2ba; break;
-                case 0x17a: soundId = 0x2a9; break;
-                case 0x17b: soundId = 0x2b0; break;
-                case 0x17c: soundId = 0x2b1; break;
-                case 0x17d: soundId = 0x2b2; break;
-                case 0x17e: soundId = 0x2b3; break;
-                case 0x17f: soundId = 0x2b4; break;
-                case 0x180: soundId = 0x2aa; break;
-                case 0x181: soundId = 0x2ab; break;
-                case 0x182: soundId = 0x2ac; break;
-                case 0x183: soundId = 0x2ad; break;
-                case 0x184: soundId = 0x2ae; break;
-                case 0x185: soundId = 0x2a8; break;
-                case 0x1aa: soundId = 0x2c1; break;
-                case 0x1ab: soundId = 0x2c2; break;
-                case 0x1ac: soundId = 0x2c3; break;
-                case 0x1ad: soundId = 0x2c6; break;
-                case 0x1ae: soundId = 0x2c7; break;
-                case 0x1af: soundId = 0x2c8; break;
-                case 0x1bd: soundId = 0x2bc; break;
-                case 0x1be: soundId = 0x2bd; break;
-                case 0x1bf: soundId = 0x2be; break;
-                case 0x139: soundId = 0x2cb; break;
-                default: break;
-            }
-            break;
+        break;
         }
-        case 1: {
-            switch (code) {
-                case 0x172: soundId = 0x2df; break;
-                case 0x173: soundId = 0x2d3; break;
-                case 0x174: soundId = 0x2d9; break;
-                case 0x175: soundId = 0x2da; break;
-                case 0x176: soundId = 0x2db; break;
-                case 0x177: soundId = 0x2dc; break;
-                case 0x178: soundId = 0x2dd; break;
-                case 0x179: soundId = 0x2de; break;
-                case 0x17a: soundId = 0x2cd; break;
-                case 0x17b: soundId = 0x2d4; break;
-                case 0x17c: soundId = 0x2d5; break;
-                case 0x17d: soundId = 0x2d6; break;
-                case 0x17e: soundId = 0x2d7; break;
-                case 0x17f: soundId = 0x2d8; break;
-                case 0x180: soundId = 0x2ce; break;
-                case 0x181: soundId = 0x2cf; break;
-                case 0x182: soundId = 0x2d0; break;
-                case 0x183: soundId = 0x2d1; break;
-                case 0x184: soundId = 0x2d2; break;
-                case 0x185: soundId = 0x2cc; break;
-                case 0x1aa: soundId = 0x2e5; break;
-                case 0x1ab: soundId = 0x2e6; break;
-                case 0x1ac: soundId = 0x2e7; break;
-                case 0x1ad: soundId = 0x2ea; break;
-                case 0x1ae: soundId = 0x2eb; break;
-                case 0x1af: soundId = 0x2ec; break;
-                case 0x1bd: soundId = 0x2e0; break;
-                case 0x1be: soundId = 0x2e1; break;
-                case 0x1bf: soundId = 0x2e2; break;
-                default: break;
-            }
+        switch (code) {
+        case 389:
+            soundId = 680;
             break;
-        }
-        case 2:
-        case 3:
-            switch (code) {
-                case 0x172: soundId = 0x27e; break;
-                case 0x173: soundId = 0x272; break;
-                case 0x174: soundId = 0x278; break;
-                case 0x175: soundId = 0x279; break;
-                case 0x176: soundId = 0x27a; break;
-                case 0x177: soundId = 0x27b; break;
-                case 0x178: soundId = 0x27c; break;
-                case 0x179: soundId = 0x27d; break;
-                case 0x17a: soundId = 0x26c; break;
-                case 0x17b: soundId = 0x273; break;
-                case 0x17c: soundId = 0x274; break;
-                case 0x17d: soundId = 0x275; break;
-                case 0x17e: soundId = 0x276; break;
-                case 0x17f: soundId = 0x277; break;
-                case 0x180: soundId = 0x26d; break;
-                case 0x181: soundId = 0x26e; break;
-                case 0x182: soundId = 0x26f; break;
-                case 0x183: soundId = 0x270; break;
-                case 0x184: soundId = 0x271; break;
-                case 0x185: soundId = 0x26b; break;
-                case 0x1aa: soundId = 0x285; break;
-                case 0x1ab: soundId = 0x286; break;
-                case 0x1ac: soundId = 0x287; break;
-                case 0x1ad: soundId = 0x28a; break;
-                case 0x1ae: soundId = 0x28b; break;
-                case 0x1af: soundId = 0x28c; break;
-                case 0x1b0: soundId = 0x24c; break;
-                case 0x1b2: soundId = 0x24a; break;
-                case 0x1ba: soundId = 0x24d; break;
-                case 0x1bd: soundId = 0x27f; break;
-                case 0x1be: soundId = 0x281; break;
-                case 0x1bf: soundId = 0x282; break;
-                case 0x139: soundId = 0x28f; break;
-                default: break;
-            }
+        case 370:
+            soundId = 699;
             break;
-        case 4: {
-            switch (code) {
-                case 0x172: soundId = 0x267; break;
-                case 0x173: soundId = 0x25b; break;
-                case 0x174: soundId = 0x261; break;
-                case 0x175: soundId = 0x262; break;
-                case 0x176: soundId = 0x263; break;
-                case 0x177: soundId = 0x264; break;
-                case 0x178: soundId = 0x265; break;
-                case 0x179: soundId = 0x266; break;
-                case 0x17a: soundId = 0x255; break;
-                case 0x17b: soundId = 0x25c; break;
-                case 0x17c: soundId = 0x25d; break;
-                case 0x17d: soundId = 0x25e; break;
-                case 0x17e: soundId = 0x25f; break;
-                case 0x17f: soundId = 0x260; break;
-                case 0x180: soundId = 0x256; break;
-                case 0x181: soundId = 599; break;
-                case 0x182: soundId = 600; break;
-                case 0x183: soundId = 0x259; break;
-                case 0x184: soundId = 0x25a; break;
-                case 0x185: soundId = 0x26a; break;
-                case 0x139: soundId = 0x268; break;
-                default: break;
-            }
+        case 371:
+            soundId = 687;
             break;
-        }
-        case 6: {
-            switch (code) {
-                case 0x172: soundId = 0x230; break;
-                case 0x173: soundId = 0x2f6; break;
-                case 0x174: soundId = 0x22a; break;
-                case 0x175: soundId = 0x22b; break;
-                case 0x176: soundId = 0x22c; break;
-                case 0x177: soundId = 0x22d; break;
-                case 0x178: soundId = 0x22e; break;
-                case 0x179: soundId = 0x22f; break;
-                case 0x17a: soundId = 0x2f0; break;
-                case 0x17b: soundId = 0x225; break;
-                case 0x17c: soundId = 0x226; break;
-                case 0x17d: soundId = 0x227; break;
-                case 0x17e: soundId = 0x228; break;
-                case 0x17f: soundId = 0x229; break;
-                case 0x180: soundId = 0x2f1; break;
-                case 0x181: soundId = 0x2f2; break;
-                case 0x182: soundId = 0x2f3; break;
-                case 0x183: soundId = 0x2f4; break;
-                case 0x184: soundId = 0x2f5; break;
-                case 0x185: soundId = 0x2ef; break;
-                case 0x139: soundId = 0x231; break;
-                default: break;
-            }
+        case 372:
+            soundId = 693;
             break;
-        }
-        case 7: {
-            switch (code) {
-                case 0x172: soundId = 0x246; break;
-                case 0x173: soundId = 0x23a; break;
-                case 0x174: soundId = 0x240; break;
-                case 0x175: soundId = 0x241; break;
-                case 0x176: soundId = 0x242; break;
-                case 0x177: soundId = 0x243; break;
-                case 0x178: soundId = 0x244; break;
-                case 0x179: soundId = 0x245; break;
-                case 0x17a: soundId = 0x234; break;
-                case 0x17b: soundId = 0x23b; break;
-                case 0x17c: soundId = 0x23c; break;
-                case 0x17d: soundId = 0x23d; break;
-                case 0x17e: soundId = 0x23e; break;
-                case 0x17f: soundId = 0x23f; break;
-                case 0x180: soundId = 0x235; break;
-                case 0x181: soundId = 0x236; break;
-                case 0x182: soundId = 0x237; break;
-                case 0x183: soundId = 0x238; break;
-                case 0x184: soundId = 0x239; break;
-                case 0x185: soundId = 0x233; break;
-                case 0x139: soundId = 0x247; break;
-                default: break;
-            }
+        case 373:
+            soundId = 694;
             break;
-        }
-        case 8:
-            if ((unsigned) (code - 0x1b3) <= 5) {
-                soundId = code + 0x9b;
-            }
+        case 374:
+            soundId = 695;
+            break;
+        case 375:
+            soundId = 696;
+            break;
+        case 376:
+            soundId = 697;
+            break;
+        case 377:
+            soundId = 698;
+            break;
+        case 378:
+            soundId = 681;
+            break;
+        case 379:
+            soundId = 688;
+            break;
+        case 380:
+            soundId = 689;
+            break;
+        case 381:
+            soundId = 690;
+            break;
+        case 382:
+            soundId = 691;
+            break;
+        case 383:
+            soundId = 692;
+            break;
+        case 384:
+            soundId = 682;
+            break;
+        case 385:
+            soundId = 683;
+            break;
+        case 386:
+            soundId = 684;
+            break;
+        case 387:
+            soundId = 685;
+            break;
+        case 388:
+            soundId = 686;
+            break;
+        case 426:
+            soundId = 705;
+            break;
+        case 427:
+            soundId = 706;
+            break;
+        case 428:
+            soundId = 707;
+            break;
+        case 429:
+            soundId = 710;
+            break;
+        case 430:
+            soundId = 711;
+            break;
+        case 431:
+            soundId = 712;
+            break;
+        case 445:
+            soundId = 700;
+            break;
+        case 446:
+            soundId = 701;
+            break;
+        case 447:
+            soundId = 702;
+            break;
+        case 313:
+            soundId = 715;
             break;
         default:
+            return -1;
+        }
+        break;
+    case 1:
+        switch (code) {
+        case 389:
+            soundId = 716;
             break;
+        case 370:
+            soundId = 735;
+            break;
+        case 371:
+            soundId = 723;
+            break;
+        case 372:
+            soundId = 729;
+            break;
+        case 373:
+            soundId = 730;
+            break;
+        case 374:
+            soundId = 731;
+            break;
+        case 375:
+            soundId = 732;
+            break;
+        case 376:
+            soundId = 733;
+            break;
+        case 377:
+            soundId = 734;
+            break;
+        case 378:
+            soundId = 717;
+            break;
+        case 379:
+            soundId = 724;
+            break;
+        case 380:
+            soundId = 725;
+            break;
+        case 381:
+            soundId = 726;
+            break;
+        case 382:
+            soundId = 727;
+            break;
+        case 383:
+            soundId = 728;
+            break;
+        case 384:
+            soundId = 718;
+            break;
+        case 385:
+            soundId = 719;
+            break;
+        case 386:
+            soundId = 720;
+            break;
+        case 387:
+            soundId = 721;
+            break;
+        case 388:
+            soundId = 722;
+            break;
+        case 426:
+            soundId = 741;
+            break;
+        case 427:
+            soundId = 742;
+            break;
+        case 428:
+            soundId = 743;
+            break;
+        case 429:
+            soundId = 746;
+            break;
+        case 430:
+            soundId = 747;
+            break;
+        case 431:
+            soundId = 748;
+            break;
+        case 445:
+            soundId = 736;
+            break;
+        case 446:
+            soundId = 737;
+            break;
+        case 447:
+            soundId = 738;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 2:
+    case 3:
+        switch (code) {
+        case 389:
+            soundId = 619;
+            break;
+        case 370:
+            soundId = 638;
+            break;
+        case 371:
+            soundId = 626;
+            break;
+        case 372:
+            soundId = 632;
+            break;
+        case 373:
+            soundId = 633;
+            break;
+        case 374:
+            soundId = 634;
+            break;
+        case 375:
+            soundId = 635;
+            break;
+        case 376:
+            soundId = 636;
+            break;
+        case 377:
+            soundId = 637;
+            break;
+        case 378:
+            soundId = 620;
+            break;
+        case 379:
+            soundId = 627;
+            break;
+        case 380:
+            soundId = 628;
+            break;
+        case 381:
+            soundId = 629;
+            break;
+        case 382:
+            soundId = 630;
+            break;
+        case 383:
+            soundId = 631;
+            break;
+        case 384:
+            soundId = 621;
+            break;
+        case 385:
+            soundId = 622;
+            break;
+        case 386:
+            soundId = 623;
+            break;
+        case 387:
+            soundId = 624;
+            break;
+        case 388:
+            soundId = 625;
+            break;
+        case 426:
+            soundId = 645;
+            break;
+        case 427:
+            soundId = 646;
+            break;
+        case 428:
+            soundId = 647;
+            break;
+        case 429:
+            soundId = 650;
+            break;
+        case 430:
+            soundId = 651;
+            break;
+        case 431:
+            soundId = 652;
+            break;
+        case 432:
+            soundId = 588;
+            break;
+        case 434:
+            soundId = 586;
+            break;
+        case 442:
+            soundId = 589;
+            break;
+        case 445:
+            soundId = 639;
+            break;
+        case 446:
+            soundId = 641;
+            break;
+        case 447:
+            soundId = 642;
+            break;
+        case 313:
+            soundId = 655;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 4:
+        switch (code) {
+        case 389:
+            soundId = 618;
+            break;
+        case 370:
+            soundId = 615;
+            break;
+        case 371:
+            soundId = 603;
+            break;
+        case 372:
+            soundId = 609;
+            break;
+        case 373:
+            soundId = 610;
+            break;
+        case 374:
+            soundId = 611;
+            break;
+        case 375:
+            soundId = 612;
+            break;
+        case 376:
+            soundId = 613;
+            break;
+        case 377:
+            soundId = 614;
+            break;
+        case 378:
+            soundId = 597;
+            break;
+        case 379:
+            soundId = 604;
+            break;
+        case 380:
+            soundId = 605;
+            break;
+        case 381:
+            soundId = 606;
+            break;
+        case 382:
+            soundId = 607;
+            break;
+        case 383:
+            soundId = 608;
+            break;
+        case 384:
+            soundId = 598;
+            break;
+        case 385:
+            soundId = 599;
+            break;
+        case 386:
+            soundId = 600;
+            break;
+        case 387:
+            soundId = 601;
+            break;
+        case 388:
+            soundId = 602;
+            break;
+        case 313:
+            soundId = 616;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 6:
+        switch (code) {
+        case 389:
+            soundId = 751;
+            break;
+        case 370:
+            soundId = 560;
+            break;
+        case 371:
+            soundId = 758;
+            break;
+        case 372:
+            soundId = 554;
+            break;
+        case 373:
+            soundId = 555;
+            break;
+        case 374:
+            soundId = 556;
+            break;
+        case 375:
+            soundId = 557;
+            break;
+        case 376:
+            soundId = 558;
+            break;
+        case 377:
+            soundId = 559;
+            break;
+        case 378:
+            soundId = 752;
+            break;
+        case 379:
+            soundId = 549;
+            break;
+        case 380:
+            soundId = 550;
+            break;
+        case 381:
+            soundId = 551;
+            break;
+        case 382:
+            soundId = 552;
+            break;
+        case 383:
+            soundId = 553;
+            break;
+        case 384:
+            soundId = 753;
+            break;
+        case 385:
+            soundId = 754;
+            break;
+        case 386:
+            soundId = 755;
+            break;
+        case 387:
+            soundId = 756;
+            break;
+        case 388:
+            soundId = 757;
+            break;
+        case 313:
+            soundId = 561;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 7:
+        switch (code) {
+        case 389:
+            soundId = 563;
+            break;
+        case 370:
+            soundId = 582;
+            break;
+        case 371:
+            soundId = 570;
+            break;
+        case 372:
+            soundId = 576;
+            break;
+        case 373:
+            soundId = 577;
+            break;
+        case 374:
+            soundId = 578;
+            break;
+        case 375:
+            soundId = 579;
+            break;
+        case 376:
+            soundId = 580;
+            break;
+        case 377:
+            soundId = 581;
+            break;
+        case 378:
+            soundId = 564;
+            break;
+        case 379:
+            soundId = 571;
+            break;
+        case 380:
+            soundId = 572;
+            break;
+        case 381:
+            soundId = 573;
+            break;
+        case 382:
+            soundId = 574;
+            break;
+        case 383:
+            soundId = 575;
+            break;
+        case 384:
+            soundId = 565;
+            break;
+        case 385:
+            soundId = 566;
+            break;
+        case 386:
+            soundId = 567;
+            break;
+        case 387:
+            soundId = 568;
+            break;
+        case 388:
+            soundId = 569;
+            break;
+        case 313:
+            soundId = 583;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 8:
+        switch (code) {
+        case 435:
+            soundId = 590;
+            break;
+        case 436:
+            soundId = 591;
+            break;
+        case 437:
+            soundId = 592;
+            break;
+        case 438:
+            soundId = 593;
+            break;
+        case 439:
+            soundId = 594;
+            break;
+        case 440:
+            soundId = 595;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    default:
+        return -1;
     }
     return soundId;
 }
