@@ -364,8 +364,6 @@ public:
 
     void incNumDeliveredPassengers(int delta);
 
-    void crm_dispatch(int egoComm, void *queue); // lint: void_ptr (method param is symbol-baked)
-
     static unsigned char doInstantJump;
     static Station *programmedStation;
     static unsigned char comingFromAlienWorld;

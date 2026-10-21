@@ -27,6 +27,8 @@ float Level::b;
 #include "game/ship/KIPlayer.h"
 #include "game/weapons/ObjectGun.h"
 #include "game/core/RadioMessage.h"
+#include "game/core/Radio.h"
+#include "game/world/RadioStageEntry.h"
 #include "engine/render/ParticleSystemManager.h"
 #include "game/world/StarSystem.h"
 #include "engine/core/AbyssEngine.h"
@@ -117,9 +119,7 @@ static int g_cg_mineFx = 0;
 
 
 
-static int *g_crm_counts8 = nullptr;
 
-static int *g_crm_table8 = nullptr;
 
 
 
@@ -1105,197 +1105,229 @@ void Level::createSpace() {
 }
 
 void Level::createRadioMessage(int type, int sub) {
-    unsigned r2 = (unsigned) sub;
-
-    if (this->player == nullptr || this->player->field_0x1c == 0)
+    if (this->player == nullptr || this->player->radioRef == nullptr)
         return;
-
-    Globals::status->getMission();
-    if (((Mission *) Globals::status->getMission())->isEmpty() == 0)
+    if (!((Mission *) Globals::status->getMission())->isEmpty())
         return;
 
     if (this->messages != nullptr) {
-        if (this->messages) {
-            ArrayReleaseClasses(*this->messages);
-            delete this->messages;
-            this->messages = nullptr;
-        }
+        delete this->messages;
+        this->messages = nullptr;
     }
     this->messages = new Array<RadioMessage *>();
 
+    int delay = 0;
+    int id = 0x1ba;
     int speaker;
-    if (r2 == 0) speaker = 0x40;
-    else if (r2 == 2) speaker = 0x41;
-    else if (r2 == 3) speaker = 0x15;
-    else speaker = (r2 == 8) ? 9 : 0x3f;
+    if (sub == 0)
+        speaker = 0x40;
+    else if (sub == 2)
+        speaker = 0x41;
+    else if (sub == 3)
+        speaker = 0x15;
+    else
+        speaker = (sub == 8) ? 9 : 0x3f;
 
-    int extraDelay = 0;
-    unsigned id = 0x1ba;
-    bool aborted = false;
-    bool builtInline = false;
+    static const RadioStageEntry stageEntries[] = {
+        {26, 2453}, {0, 2454}, {26, 2455}, {0, 2456}, {26, 2457}, {0, 2458}, {26, 2459},
+        {0, 2460}, {26, 2461}, {0, 2462}, {26, 2463}, {31, 2464}, {26, 2465}, {0, 2466},
+        {26, 2467}, {0, 2468}, {26, 2469}, {0, 2470}, {31, 2471}, {26, 2472}, {0, 2473},
+    };
+    static const int stageCounts[8] = {2, 2, 2, 4, 3, 3, 2, 3};
+    static const int bountyCounts[25] = {2, 3};
+    static const int bountyEntries[] = {
+        10000, 3132, 0, 3133, 10000, 3136, 0, 3137, 10000, 3138,
+    };
+    static const int wantedCounts[25] = {2, 2};
+    static const int wantedEntries[] = {
+        0, 3134, 10000, 3135, 0, 3139, 10000, 3140,
+    };
 
     switch (type) {
         case 0:
-        case 1: {
-            int *stations = (int *) Globals::status->field_90;
-            bool atStation = false;
-            if (stations != 0) {
-                for (unsigned k = 0; k < (unsigned) *stations; k = k + 1) {
-                    int sidx = *(int *) (((int *) stations[1])[k]);
-                    Station *st = (Station *) Globals::status->getStation();
-                    if (sidx == ((Station *) st)->getIndex()) {
-                        atStation = true;
-                        break;
+            if (Globals::status->field_90 != nullptr) {
+                for (unsigned k = 0; k < Globals::status->field_90->size(); k++) {
+                    if ((*Globals::status->field_90)[k] == ((Station *) Globals::status->getStation())->getIndex()) {
+                        delete this->messages;
+                        this->messages = nullptr;
+                        this->player->radioRef->setMessages(nullptr);
+                        return;
                     }
                 }
             }
-            if (atStation) {
-                aborted = true;
-                break;
-            }
-            int base = (type == 0) ? 0x1aa : 0x1ad;
-            id = Globals::rnd->nextInt() + base;
+            id = Globals::rnd->nextInt(3) + 0x1aa;
             break;
-        }
+        case 1:
+            if (Globals::status->field_90 != nullptr) {
+                for (unsigned k = 0; k < Globals::status->field_90->size(); k++) {
+                    if ((*Globals::status->field_90)[k] == ((Station *) Globals::status->getStation())->getIndex()) {
+                        delete this->messages;
+                        this->messages = nullptr;
+                        this->player->radioRef->setMessages(nullptr);
+                        return;
+                    }
+                }
+            }
+            id = Globals::rnd->nextInt(3) + 0x1ad;
+            break;
         case 3:
             this->field_1b0 = 1;
-            id = Globals::rnd->nextInt() + 0x1b3;
+            id = Globals::rnd->nextInt(3) + 0x1b3;
             break;
         case 4:
             this->field_68 = 1;
-            id = Globals::rnd->nextInt() + 0x1b6;
+            id = Globals::rnd->nextInt(3) + 0x1b6;
             break;
-        case 5: id = 0x1bb;
-            extraDelay = 0;
+        case 5:
+            id = 0x1bb;
+            speaker = 0;
             break;
-        case 6: id = 0x1bc;
-            extraDelay = 0;
+        case 6:
+            id = 0x1bc;
+            speaker = 0;
             break;
-        case 9: id = Globals::rnd->nextInt() + 0x1c1;
+        case 7:
             break;
-        case 10: id = Globals::rnd->nextInt() + 0x1c3;
-            break;
-        case 0xb: id = Globals::rnd->nextInt() + 0x1c5;
-            break;
-        case 0xc: id = 0x1c5;
-            extraDelay = 0;
-            break;
-        case 0xd: id = Globals::rnd->nextInt() + 0x1c7;
-            break;
-        case 0xe: {
-            int *st = (int *) Globals::status->field_90;
-            id = 0x88f;
-            if (st != 0) {
-                for (int k = 0; k != *st; k = k + 1)
-                    if (-1 < *(int *) (st[1] + k * 4)) id = id - 2;
+        case 8: {
+            int stage = Globals::rnd->nextInt(8);
+            int off = 0;
+            for (int k = 0; k < stage; k++)
+                off += stageCounts[k];
+            int count = stageCounts[stage];
+            for (int k = 0; k < count; k++) {
+                int stageDelay = k == 0 ? 5000 : k - 1;
+                int image = stageEntries[off + k].radioStageEntry;
+                ArrayAdd(new RadioMessage(stageEntries[off + k].textID, image, k == 0 ? 5 : 6, stageDelay),
+                         *this->messages);
             }
+            this->player->radioRef->setMessages(this->messages);
+            return;
+        }
+        case 16: {
+            int off = 0;
+            for (int k = 0; k < sub; k++)
+                off += bountyCounts[k];
+            int count = bountyCounts[sub];
+            for (int k = 0; k < count; k++) {
+                int image = bountyEntries[(off + k) * 2];
+                if (image == 10000)
+                    image += sub;
+                ArrayAdd(new RadioMessage(bountyEntries[(off + k) * 2 + 1], image, k == 0 ? 5 : 6, k == 0 ? 5000 : k - 1), *this->messages);
+            }
+            if (sub != 2 && sub != 6) {
+                this->player->radioRef->setMessages(this->messages);
+                return;
+            }
+            id = Globals::rnd->nextInt(5) + 0xc4a;
+            speaker = 10000 + sub;
             break;
         }
-        case 0xf: {
-            int *st = (int *) Globals::status->field_90;
+        case 17:
+            id = Globals::rnd->nextInt(5) + 0xc4f;
+            speaker = 0;
+            delay = (int) this->player->levelScript->m_nScriptTime + 6000;
+            break;
+        case 18: {
+            int off = 0;
+            for (int k = 0; k < sub; k++)
+                off += wantedCounts[k];
+            int count = wantedCounts[sub];
+            for (int k = 0; k < count; k++) {
+                int image = wantedEntries[(off + k) * 2];
+                if (image == 10000)
+                    image += sub;
+                ArrayAdd(new RadioMessage(wantedEntries[(off + k) * 2 + 1], image, k == 0 ? 5 : 6, k == 0 ? 5000 : k - 1), *this->messages);
+            }
+            if ((unsigned) sub < 2) {
+                this->player->radioRef->setMessages(this->messages);
+                return;
+            }
+            id = Globals::rnd->nextInt(5) + 0xc45;
+            speaker = 0;
+            break;
+        }
+        case 9:
+            id = Globals::rnd->nextInt(2) + 0x1c1;
+            break;
+        case 10:
+            id = Globals::rnd->nextInt(2) + 0x1c3;
+            break;
+        case 11:
+            id = Globals::rnd->nextInt(2) + 0x1c5;
+            break;
+        case 12:
+            id = 0x1c5;
+            break;
+        case 13:
+            id = Globals::rnd->nextInt(2) + 0x1c7;
+            break;
+        case 14:
+            id = 0x88f;
+            if (Globals::status->field_90 != nullptr) {
+                for (int k = 0; k != Globals::status->field_90->size(); k++)
+                    if ((*Globals::status->field_90)[k] >= 0)
+                        id -= 2;
+            }
+            break;
+        case 15:
             id = 0x88e;
-            if (st != 0) {
-                for (int k = 0; k != *st; k = k + 1)
-                    if (-1 < *(int *) (st[1] + k * 4)) id = id - 2;
-                if (id - 0x889 < 5) {
-                    extraDelay = 0;
+            if (Globals::status->field_90 != nullptr) {
+                for (int k = 0; k != Globals::status->field_90->size(); k++)
+                    if ((*Globals::status->field_90)[k] >= 0)
+                        id -= 2;
+                if (id >= 0x889 && id <= 0x88d) {
+                    speaker = 0;
                     break;
                 }
             }
-            aborted = true;
+            delete this->messages;
+            this->messages = nullptr;
+            this->player->radioRef->setMessages(nullptr);
+            return;
+        case 19:
+            ArrayAdd(new RadioMessage(Globals::rnd->nextInt(4) + 0xaf4, 0, 5, 1500), *this->messages);
+            ArrayAdd(new RadioMessage(Globals::rnd->nextInt(4) + 0xafa, 0, 6, 0), *this->messages);
+            this->player->radioRef->setMessages(this->messages);
+            return;
+        case 21:
+            id = 0xc54;
+            speaker = 0;
             break;
-        }
-        case 8: {
-            int stage = Globals::rnd->nextInt();
-            int off = 0;
-            for (int k = 0; k < stage; k = k + 1)
-                off = off + g_crm_counts8[k];
-            int cnt = g_crm_counts8[stage];
-            RadioStageEntry *tbl = (RadioStageEntry *) g_crm_table8 + off;
-            for (int k = 0; k < cnt; k = k + 1) {
-                int delay = (k == 0) ? 5000 : (k - 1);
-                int arg = tbl[k].radioStageEntry;
-                RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-                int kind = (k == 0) ? 5 : 6;
-                new(m) RadioMessage(tbl[k].textID, arg, kind, delay);
-                ArrayAdd(m, *(this->messages));
-            }
-            builtInline = true;
+        case 22:
+            id = 0xc55;
+            speaker = 0;
             break;
-        }
-        case 0x13: {
-            RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-            AbyssEngine::AERandom *rng = Globals::rnd;
-            new(m) RadioMessage(rng->nextInt() + 0xaf4, 0, 5, 0x5dc);
-            ArrayAdd(m, *(this->messages));
-            m = (RadioMessage *) ::operator new(0x28);
-            new(m) RadioMessage(rng->nextInt() + 0xafa, 0, 6, 0);
-            ArrayAdd(m, *(this->messages));
-            builtInline = true;
+        case 23:
+            id = 0xc56;
+            speaker = 0;
             break;
-        }
-        case 0x15: id = 0xc54;
-            extraDelay = 0;
+        case 24:
+            id = 0xc57;
+            speaker = 0;
             break;
-        case 0x16: id = 0xc55;
-            extraDelay = 0;
+        case 25:
+            id = 0xc58;
+            speaker = 0;
             break;
-        case 0x17: id = 0xc56;
-            extraDelay = 0;
+        case 26:
+            id = 0xc59;
+            speaker = 0;
             break;
-        case 0x18: id = 0xc57;
-            extraDelay = 0;
-            break;
-        case 0x19: id = 0xc58;
-            extraDelay = 0;
-            break;
-        case 0x1a: id = 0xc59;
-            extraDelay = 0;
-            break;
-        case 0x1b: {
-            RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-            new(m) RadioMessage(r2 * 2 + 0xc60, 6, 5, 0x5dc);
-            ArrayAdd(m, *(this->messages));
-            m = (RadioMessage *) ::operator new(0x28);
-            new(m) RadioMessage(r2 * 2 + 0xc61, 0, 6, 0);
-            ArrayAdd(m, *(this->messages));
-            builtInline = true;
-            break;
-        }
-        case 0x1c:
+        case 27:
+            ArrayAdd(new RadioMessage(sub * 2 + 0xc60, 6, 5, 1500), *this->messages);
+            ArrayAdd(new RadioMessage(sub * 2 + 0xc61, 0, 6, 0), *this->messages);
+            this->player->radioRef->setMessages(this->messages);
+            return;
+        case 28:
             speaker = 0x26;
-            id = r2;
-            extraDelay = 0;
+            id = sub;
             break;
-        case 7:
         default:
-            if (type == 7 || type == 0xc || type == 0xe) {
-            } else {
-                id = Globals::rnd->nextInt() + 0x1bd;
-            }
+            id = Globals::rnd->nextInt(3) + 0x1bd;
             break;
     }
-
-    if (aborted) {
-        if (this->messages != nullptr)
-            if (this->messages) {
-                ArrayReleaseClasses(*this->messages);
-                delete this->messages;
-                this->messages = nullptr;
-            }
-        PlayerEgo *ego = this->player;
-        this->crm_dispatch(ego->field_0x1c, 0);
-        return;
-    }
-
-    if (!builtInline) {
-        RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-        new(m) RadioMessage(id, speaker, 5, extraDelay);
-        ArrayAdd(m, *(this->messages));
-    }
-
-    PlayerEgo *ego = this->player;
-    this->crm_dispatch(ego->field_0x1c, this->messages);
+    ArrayAdd(new RadioMessage(id, speaker, 5, delay), *this->messages);
+    this->player->radioRef->setMessages(this->messages);
 }
 
 int Level::init() {
