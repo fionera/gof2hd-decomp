@@ -801,127 +801,123 @@ void Status::resetGame() {
     this->field_158 = -1;
 }
 
-static int g_anwSysMask = 0;
 
 int Status::activateNewWanted() {
-    Status * slot = Globals::status;
-    Array<Wanted *> *w = slot->wanted;
-    if (w == 0) {
+    Array<Wanted *> *wanted = Globals::status->wanted;
+    if (wanted == 0) {
         return 0;
     }
+    SystemPathFinder *pathFinder = 0;
     Array<SolarSystem *> *systems = 0;
     int activated = 0;
-    SystemPathFinder *pf = 0;
-    for (unsigned i = 0; i < w->size(); i = i + 1) {
-        Wanted *cur = (*w)[i];
+    for (unsigned i = 0; i < wanted->size(); i++) {
+        Wanted *cur = (*wanted)[i];
         if (cur == 0) {
             continue;
         }
-        unsigned lo, hi;
+        unsigned minJumps;
+        unsigned maxJumps;
         if (i < 2) {
-            hi = 4;
-            lo = 2;
+            maxJumps = 4;
+            minJumps = 2;
         } else {
-            int rem = (i - 1) % 6;
-            lo = rem / 3 + 2;
-            hi = rem / 2 + 4;
+            int step = (int) (i - 1) % 6;
+            minJumps = step / 3 + 2;
+            maxJumps = 4 + step / 2;
         }
-        if (asSystem(slot->system)->getRace() != cur->getBoard()) {
+        if (asSystem(Globals::status->system)->getRace() != cur->getBoard()) {
             continue;
         }
-        if (slot->currentCampaignMission < cur->getRequiredMission()) {
+        if (Globals::status->currentCampaignMission < cur->getRequiredMission()) {
             continue;
         }
-        if (i < 2 && slot->currentCampaignMission > cur->getRequiredMission()) {
+        if (i < 2 && Globals::status->currentCampaignMission > cur->getRequiredMission()) {
             continue;
         }
-        if (slot->inAlienOrbit() != 0) {
+        if (Globals::status->inAlienOrbit()) {
             continue;
         }
-        if (slot->station->getIndex() == 0x6c) {
+        if (Globals::status->station->getIndex() == 108) {
             continue;
         }
-        if (cur->isActive() != 0) {
+        if (cur->isActive()) {
             continue;
         }
-        if (cur->isTerminated() != 0) {
+        if (cur->isTerminated()) {
             continue;
         }
-        int board = cur->getBoard();
-        int avail = (board < 4) ? slot->collectedBounties[board] : 0;
-        if (avail < cur->getRequiredBounties()) {
+        if (Globals::status->getCollectedBounties(cur->getBoard()) < cur->getRequiredBounties()) {
             continue;
         }
         cur->setActive(true);
-        if (pf == 0) {
-            pf = new SystemPathFinder();
-            FileRead fr;
-            systems = fr.loadSystemsBinary();
+        activated++;
+        if (pathFinder == 0) {
+            pathFinder = new SystemPathFinder();
+            FileRead *fileRead = new FileRead();
+            systems = fileRead->loadSystemsBinary();
+            delete fileRead;
         }
-        activated = activated + 1;
         Array<int> *path;
-        int fromSys, toSys;
         do {
-            Station *a = Globals::globals->getRandomStation();
-            unsigned asys = a->getSystem();
-            Array<bool> *vis = slot->systemVisibilities;
-            while (true) {
-                bool ok = false;
-                if (vis != 0 && asys < vis->size()) {
-                    ok = (*vis)[asys] != 0;
-                }
-                if (asSystem((int) asys)->getRoutes() != 0 && ok &&
-                    !(asys < 0x1d && (1 << (asys & 0xff) & g_anwSysMask) != 0)) {
-                    break;
-                }
-                if (a != 0) {
-                    delete a;
-                }
-                a = Globals::globals->getRandomStation();
-                asys = a->getSystem();
+            Station *from = Globals::globals->getRandomStation();
+            unsigned fromSystem = from->getSystem();
+            Array<bool> *visibilities = Globals::status->systemVisibilities;
+            bool visible = false;
+            if (visibilities != 0 && visibilities->size() > fromSystem) {
+                visible = (*visibilities)[fromSystem];
             }
-            Station *b = Globals::globals->getRandomStation();
-            unsigned bsys = b->getSystem();
-            while (true) {
-                bool ok2 = false;
-                if (vis != 0 && bsys < vis->size()) {
-                    ok2 = (*vis)[bsys] != 0;
+            while ((*systems)[fromSystem]->getRoutes() == 0 || !visible || fromSystem == 27 || fromSystem == 28 ||
+                   fromSystem == 25 || fromSystem == 26 || fromSystem == 6) {
+                if (from != 0) {
+                    delete from;
                 }
-                if (asSystem((int) bsys)->getRoutes() != 0 && ok2 &&
-                    !(bsys < 0x1d && (1 << (bsys & 0xff) & g_anwSysMask) != 0) && asys != bsys) {
-                    break;
+                from = Globals::globals->getRandomStation();
+                fromSystem = from->getSystem();
+                visible = false;
+                if (visibilities != 0 && visibilities->size() > fromSystem) {
+                    visible = (*visibilities)[fromSystem];
                 }
-                if (b != 0) {
-                    delete b;
+            }
+            Station *to = Globals::globals->getRandomStation();
+            unsigned toSystem = to->getSystem();
+            visible = false;
+            if (visibilities != 0 && visibilities->size() > toSystem) {
+                visible = (*visibilities)[toSystem];
+            }
+            while ((*systems)[toSystem]->getRoutes() == 0 || !visible || toSystem == 27 || toSystem == 28 ||
+                   toSystem == 25 || toSystem == 26 || toSystem == 6 || fromSystem == toSystem) {
+                if (to != 0) {
+                    delete to;
                 }
-                b = Globals::globals->getRandomStation();
-                bsys = b->getSystem();
+                to = Globals::globals->getRandomStation();
+                toSystem = to->getSystem();
+                visible = false;
+                if (visibilities != 0 && visibilities->size() > toSystem) {
+                    visible = (*visibilities)[toSystem];
+                }
             }
-            cur->setLastSeen(a->getIndex());
-            cur->setTravelsTo(b->getIndex());
-            fromSys = a->getSystem();
-            toSys = b->getSystem();
-            if (a != 0) {
-                delete a;
+            cur->setLastSeen(from->getIndex());
+            cur->setTravelsTo(to->getIndex());
+            int fromIndex = from->getSystem();
+            int toIndex = to->getSystem();
+            if (from != 0) {
+                delete from;
             }
-            if (b != 0) {
-                delete b;
+            if (to != 0) {
+                delete to;
             }
-            path = pf->getSystemPath(systems, fromSys, toSys);
-        } while (path == 0 || (unsigned) (*path)[0] < lo || hi < (unsigned) (*path)[0]);
-        AbyssEngine::AERandom *rnd = Globals::rnd;
-        int pick = (*path)[rnd->nextInt(path->size())];
-        SolarSystem *dst = (*systems)[pick];
-        Array<int> *dstStations = (Array<int> *) dst->getStations();
-        if (dstStations != 0) {
-            int idx = rnd->nextInt(dstStations->size());
-            int st = (*dstStations)[idx];
-            cur->setCurrentLocation(st);
+            path = pathFinder->getSystemPath(systems, fromIndex, toIndex);
+        } while (path == 0 || path->size() < minJumps || path->size() > maxJumps);
+        int target = (*path)[Globals::rnd->nextInt(path->size())];
+        if ((*systems)[target]->getStations() != 0) {
+            int pick = Globals::rnd->nextInt(
+                reinterpret_cast<Array<int> *>((*systems)[target]->getStations())->size());
+            cur->setCurrentLocation((*reinterpret_cast<Array<int> *>((*systems)[target]->getStations()))[pick]);
         }
         delete path;
     }
-    if (pf != 0) {
-        delete pf;
+    if (pathFinder != 0) {
+        delete pathFinder;
     }
     if (systems != 0) {
         ArrayReleaseClasses(*systems);
@@ -948,7 +944,7 @@ void Status::addPendingProduct(BluePrint *bp) {
 
 bool Status::inEmptyOrbit() {
     int idx = station->getIndex();
-    if (idx == 78 && currentCampaignMission < 2) {
+    if (currentCampaignMission < 2 && idx == 78) {
         return true;
     }
     if (inAlienOrbit() && currentCampaignMission >= 43 && currentCampaignMission <= 83) {
@@ -2278,8 +2274,8 @@ void Status::checkForLevelUp() {
 
 void Status::moveWanted() {
     bool initialized = false;
-    Array<SolarSystem *> *systems = 0;
     SystemPathFinder *pathFinder = 0;
+    Array<SolarSystem *> *systems = 0;
     for (unsigned i = 0; i < this->wanted->size(); i++) {
         if (!(*this->wanted)[i]->isActive() || (*this->wanted)[i]->isTerminated() ||
             Globals::status->inAlienOrbit() ||
@@ -2341,7 +2337,8 @@ void Status::moveWanted() {
             path = 0;
         } else {
             path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
-            (*this->wanted)[i]->setCurrentLocation((*systems)[(*path)[1]]->getWarpGateIndex());
+            int gateIndex = (*systems)[(*path)[1]]->getWarpGateIndex();
+            (*this->wanted)[i]->setCurrentLocation(gateIndex);
         }
         if (to != 0) {
             delete to;
