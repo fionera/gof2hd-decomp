@@ -6,17 +6,11 @@
 #include "engine/math/Transform.h"
 #include "engine/math/BoundingSphere.h"
 #include "engine/render/PaintCanvas.h"
-
-static PaintCanvas *g_PaintCanvas = nullptr;
-static Status **g_Status = nullptr;
-
-static PaintCanvas *paintCanvas() {
-    return g_PaintCanvas;
-}
+#include "game/core/Globals.h"
 
 bool PlayerJumpgate::timeToJump() {
     AbyssEngine::Transform *transform =
-            (AbyssEngine::Transform *) paintCanvas()->TransformGetTransform(this->transformHandle);
+            (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->transformHandle);
     return transform->currentTime > 1000LL;
 }
 
@@ -26,10 +20,10 @@ void PlayerJumpgate::activate() {
 
     if (this->transformHandle != 0xffffffffU) {
         AbyssEngine::Transform *transform =
-                (AbyssEngine::Transform *) paintCanvas()->TransformGetTransform(this->transformHandle);
-        transform->SetAnimationState(AbyssEngine::AnimationMode_0, nullptr);
+                (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->transformHandle);
+        transform->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
 
-        paintCanvas()->TransformRemoveChild(this->geometry->transform,
+        Globals::Canvas->TransformRemoveChild(this->geometry->transform,
                                             this->geometry->childTransform);
         this->geometry->addChild(this->transformHandle);
     }
@@ -46,16 +40,16 @@ bool PlayerJumpgate::animationEnded() {
         return false;
 
     AbyssEngine::Transform *transform =
-            (AbyssEngine::Transform *) paintCanvas()->TransformGetTransform(this->transformHandle);
+            (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->transformHandle);
     return !transform->animating;
 }
 
 void PlayerJumpgate::update(int delta) {
-    if (!this->isVisible())
+    if (!this->visibleFlag)
         return;
 
     AbyssEngine::Transform *transform =
-            (AbyssEngine::Transform *) paintCanvas()->TransformGetTransform(this->geometry->transform);
+            (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometry->transform);
     transform->Update((longlong) delta, true);
 }
 
@@ -63,8 +57,7 @@ void PlayerJumpgate::setPosition(float x, float y, float z) {
     this->positionX = (int) x;
     this->positionY = (int) y;
     this->positionZ = (int) z;
-    Vector pos = {x, y, z};
-    this->geometry->setPosition(pos);
+    this->geometry->setPosition(x, y, z);
 }
 
 PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, float y, float z,
@@ -76,13 +69,11 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
         this->boundingVolumes = new Array<BoundingVolume *>();
         ArraySetLength(1, *(this->boundingVolumes));
 
-        Status *status = *g_Status;
         int radius;
-        if (status->inAlienOrbit()) {
-            radius = 0x1d4c;
+        if (Globals::status->inAlienOrbit()) {
+            radius = 7500;
         } else {
-            SolarSystem *system = (SolarSystem *) (intptr_t) status->getSystem();
-            radius = system->getRace() == 1 ? 0x2bf2 : 0x1d4c;
+            radius = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 1 ? 11250 : 7500;
         }
 
         this->player->setRadius(radius);
@@ -90,8 +81,8 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
         (*this->boundingVolumes)[0] = new BoundingSphere(x, y, z, 0.0f, 0.0f, 0.0f, (float) radius);
     }
 
-    this->transformHandle = 0xffffffffU;
     this->activated = 0;
+    this->transformHandle = 0xffffffffU;
     this->geometry->setRotation(0.0f, 3.1415927f, 0.0f);
 }
 

@@ -101,7 +101,7 @@ public:
 
     Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector dir, Vector vel);
 
-    ~Gun() noexcept(false);
+    ~Gun();
 
     void calcCharacterCollision();
 

@@ -77,87 +77,81 @@ namespace {
     int g_delayedKeyCount;
     int g_delayedKeys[kDelayedKeyMax];
 
-    bool g_speedUp;
-    bool g_slowMotion;
+    // Cheat speed control (0/1 flags; GlobalOpt narrows them to bytes).
+    int g_speedUp;
+    int g_slowMotion;
 
-    unsigned char g_simEdgesInit;
-    unsigned char g_simTouchActive;
+    int g_simEdgesInit;
+    int g_simTouchActive;
 }
 
-extern "C" unsigned int S[4][256]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
-// Blowfish round function over the S-boxes loaded by InitializeBlowfish.
-extern "C" unsigned int F(unsigned int value) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    const unsigned int a = value >> 24;
-    const unsigned int b = (value >> 16) & 0xff;
-    const unsigned int c = (value >> 8) & 0xff;
-    const unsigned int d = value & 0xff;
-
-    return ((S[0][a] + S[1][b]) ^ S[2][c]) + S[3][d];
+// Touch-window predicates (VirtualKey::condition) and pointer/joystick switches.
+int IsInGameSubMenuNotActive(int) {
+    if (Globals::subMenuIndex != -1 || Globals::is_menu_visible != 0)
+        return false;
+    return !Globals::isStarMapVisible;
 }
 
-void MouseInput(int dx, int dy) {
-    if (g_input.mouseCaptured == 0)
-        return;
-    if (g_mouse.config != 0) {
-        stackX = dx;
-    } else {
-        stackX += dx;
-        dy += stackY;
-    }
-    stackY = dy;
+int IsDialogNotVisible2(int) {
+    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
+            Globals::is_menu_visible) == 0;
 }
 
-void LowerMouseWheel() {
-    if (Globals::mouse_wheel > 0)
-        Globals::mouse_wheel = std::max(static_cast<int>(Globals::mouse_wheel * 0.95), 0);
-    else if (Globals::mouse_wheel < 0)
-        Globals::mouse_wheel = std::min(static_cast<int>(Globals::mouse_wheel * 0.95), 0);
-
-    if (Globals::mouse_wheelX > 0)
-        Globals::mouse_wheelX = std::max(static_cast<int>(Globals::mouse_wheelX * 0.95), 0);
-    else if (Globals::mouse_wheelX < 0)
-        Globals::mouse_wheelX = std::min(static_cast<int>(Globals::mouse_wheelX * 0.95), 0);
-
-    if (Globals::mouse_wheelY > 0)
-        Globals::mouse_wheelY = std::max(static_cast<int>(Globals::mouse_wheelY * 0.95), 0);
-    else if (Globals::mouse_wheelY < 0)
-        Globals::mouse_wheelY = std::min(static_cast<int>(Globals::mouse_wheelY * 0.95), 0);
+int IsDialogVisible(int) {
+    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible) != 0;
 }
 
-void MouseWheel(float delta, float residual) {
-    if (delta < -4.0f && Globals::appManager->GetCurrentApplicationModule() == 2)
-        Globals::keyboard_swipe = 1;
-    if (delta > 4.0f && Globals::appManager->GetCurrentApplicationModule() == 2)
-        Globals::keyboard_swipe = -1;
-    wheelStack = static_cast<int>(delta + residual + static_cast<float>(wheelStack));
+int IsStarMapNotVisible(int) {
+    return !Globals::isStarMapVisible;
 }
 
-void keyReleasedWithDelay(AbyssEngine::Engine * /*engine*/, int key) {
-    if (g_delayedKeyCount > kDelayedKeyMax)
-        return;
-    g_delayedKeys[g_delayedKeyCount] = key;
-    ++g_delayedKeyCount;
+int IsDialogNotVisible(int) {
+    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible) == 0;
 }
 
-void SendStoredKeyUpEvents(AbyssEngine::Engine *engine) {
-    for (int i = 0; i < g_delayedKeyCount; ++i)
-        keyReleased(engine, g_delayedKeys[i]);
-    g_delayedKeyCount = 0;
+int IsInPrimaryMenu(int) {
+    return Globals::is_menu_visible != 0 && Globals::topMenuIndex == 0 &&
+           Globals::menu_touch_window_type == 0 && Globals::is_dialogue_window_visible == 0 &&
+           Globals::is_choice_window_visible == 0 && !Globals::isStarMapVisible;
 }
 
-void keyEventReleased(AbyssEngine::Engine *engine, char *name) {
-    for (VirtualKey &key: keys) {
-        if (std::strcmp(key.name, name) == 0)
-            keyReleased(engine, key.keyCode);
-    }
+// Touch windows 0x579.. are the in-game sub menu buttons.
+int IsSubMenuActive(int key) {
+    const int handle = keys[key].touchWindowHandle;
+    if (handle <= 0x578)
+        return 0;
+    if (handle - 0x579 >= Globals::sub_menu_button_count)
+        return 0;
+    if (Globals::is_menu_visible != 0)
+        return Globals::topMenuIndex != 1 && Globals::topMenuIndex != 2;
+    if (Globals::subMenuIndex != -1)
+        return 1;
+    return Globals::appManager->GetCurrentApplicationModule() == 5;
 }
 
-void keyEventPressed(AbyssEngine::Engine *engine, char *name) {
-    for (VirtualKey &key: keys) {
-        if (std::strcmp(key.name, name) == 0)
-            keyPressed(engine, key.keyCode);
-    }
+int IsInGameSubMenuActive(int) {
+    return Globals::subMenuIndex != -1;
+}
+
+int HideMouse() {
+    return g_input.mouseCaptured;
+}
+
+void CaptureMouse(int capture) {
+    g_input.mouseCaptured = capture;
+}
+
+int SwitchToOtherMouseConifguration(int config) {
+    g_mouse.config = config;
+    return 0;
+}
+
+void UseJoystick(int use) {
+    g_input.useJoystick = use;
+}
+
+int GetUseJoystick() {
+    return g_input.useJoystick;
 }
 
 void SetKeyCode(const char *name, int slot, int code) {
@@ -180,71 +174,30 @@ void SetKeyCode(const char *name, int slot, int code) {
     }
 }
 
-// Touch windows 0x579.. are the in-game sub menu buttons.
-int IsSubMenuActive(int key) {
-    const int handle = keys[key].touchWindowHandle;
-    if (handle <= 0x578)
+int GetKeyState(int index) {
+    if (static_cast<unsigned int>(index) > kVirtualKeyCount - 1)
         return 0;
-    if (handle - 0x579 >= Globals::sub_menu_button_count)
-        return 0;
-    if (Globals::is_menu_visible != 0)
-        return Globals::topMenuIndex != 1 && Globals::topMenuIndex != 2;
-    if (Globals::subMenuIndex != -1)
-        return 1;
-    return Globals::appManager->GetCurrentApplicationModule() == 5;
+    return keys[index].pressed;
+}
+
+int GetKeyState(char *name) {
+    for (int i = 0; i < kVirtualKeyCount; ++i) {
+        if (std::strcmp(keys[i].name, name) == 0 &&
+            keys[i].pressed != 0)
+            return 1;
+    }
+    return 0;
+}
+
+void keyEventPressed(AbyssEngine::Engine *engine, char *name) {
+    for (VirtualKey &key: keys) {
+        if (std::strcmp(key.name, name) == 0)
+            keyPressed(engine, key.keyCode);
+    }
 }
 
 static inline bool keyMatches(const VirtualKey &k, int code) {
     return k.keyCode == code || k.altCode1 == code || k.altCode2 == code || k.altCode3 == code;
-}
-
-void keyReleased(AbyssEngine::Engine *engine, int key) {
-    Globals::is_choice_window_visible = 0;
-    Globals::is_dialogue_window_visible = 0;
-    Globals::is_menu_visible = 0;
-    Globals::is_hacking_visible = 0;
-    if (engine == nullptr)
-        return;
-
-    Globals::appManager->GetCurrentApplicationModule();
-    int released = -1;
-    for (int i = 0; i < kVirtualKeyCount; ++i) {
-        VirtualKey &k = keys[i];
-        if (!keyMatches(k, key) || k.pressed != 1)
-            continue;
-        k.pressed = 0;
-        if (i < 0xb)
-            released = i;
-        if (k.touchX == nullptr)
-            continue;
-        engine->appManager->OnTouchEnd(k.touchOffsetX + k.lastTouchX, k.touchOffsetY + k.lastTouchY,
-                                       reinterpret_cast<void *>(k.touchWindowHandle)); // lint: void_ptr (opaque touch handle for OnTouchEnd ABI)
-        engine->appManager->OnTouchEnd();
-        engine->DrawQuad(k.lastTouchX, k.lastTouchY, 10, 10);
-        if (k.releaseTouch != 0)
-            g_input.requiredTouch = k.releaseTouch;
-    }
-
-    switch (released) {
-        case 0:
-            g_mouse.inputX = keys[1].pressed ? 0.1f : 0.5f;
-            break;
-        case 1:
-            g_mouse.inputX = keys[0].pressed ? -0.1f : 0.5f;
-            break;
-        case 2:
-            g_mouse.inputY = keys[3].pressed ? -0.1f : 0.5f;
-            break;
-        case 3:
-            g_mouse.inputY = keys[2].pressed ? 0.1f : 0.5f;
-            break;
-        case 6:
-        case 7:
-            Globals::bankZ = 0.0f;
-            break;
-        default:
-            break;
-    }
 }
 
 void keyPressed(AbyssEngine::Engine *engine, int key) {
@@ -312,14 +265,14 @@ done:
 
     if (g_input.comboProgress == 9) {
         if (GetKeyState(const_cast<char *>("Accelerate")) != 0) {
-            g_slowMotion = false;
-            g_speedUp = true;
+            g_slowMotion = 0;
+            g_speedUp = 1;
         } else if (GetKeyState(const_cast<char *>("Decelerate")) != 0) {
-            g_speedUp = false;
-            g_slowMotion = true;
+            g_speedUp = 0;
+            g_slowMotion = 1;
         } else if (Globals::keys[42] != 0) {
-            g_speedUp = false;
-            g_slowMotion = false;
+            g_speedUp = 0;
+            g_slowMotion = 0;
         }
     }
 
@@ -340,9 +293,9 @@ done:
             break;
         case 7: Globals::bankZ = 0.01f;
             break;
-        case 8: engine->autoPilotEngaged = 1.0f;
+        case 8: engine->wheelDelta = 1.0f;
             break;
-        case 9: engine->autoPilotEngaged = -1.0f;
+        case 9: engine->wheelDelta = -1.0f;
             break;
         case 19: Globals::showWingmanMenu = 1;
             break;
@@ -350,19 +303,73 @@ done:
     }
 }
 
-int GetKeyState(int index) {
-    if (static_cast<unsigned int>(index) > kVirtualKeyCount - 1)
-        return 0;
-    return keys[index].pressed;
+void keyEventReleased(AbyssEngine::Engine *engine, char *name) {
+    for (VirtualKey &key: keys) {
+        if (std::strcmp(key.name, name) == 0)
+            keyReleased(engine, key.keyCode);
+    }
 }
 
-int GetKeyState(char *name) {
+void keyReleased(AbyssEngine::Engine *engine, int key) {
+    Globals::is_choice_window_visible = 0;
+    Globals::is_dialogue_window_visible = 0;
+    Globals::is_menu_visible = 0;
+    Globals::is_hacking_visible = 0;
+    if (engine == nullptr)
+        return;
+
+    Globals::appManager->GetCurrentApplicationModule();
+    int released = -1;
     for (int i = 0; i < kVirtualKeyCount; ++i) {
-        if (std::strcmp(keys[i].name, name) == 0 &&
-            keys[i].pressed != 0)
-            return 1;
+        VirtualKey &k = keys[i];
+        if (!keyMatches(k, key) || k.pressed != 1)
+            continue;
+        k.pressed = 0;
+        if (i < 0xb)
+            released = i;
+        if (k.touchX == nullptr)
+            continue;
+        engine->appManager->OnTouchEnd(k.touchOffsetX + k.lastTouchX, k.touchOffsetY + k.lastTouchY,
+                                       reinterpret_cast<void *>(k.touchWindowHandle)); // lint: void_ptr (opaque touch handle for OnTouchEnd ABI)
+        engine->appManager->OnTouchEnd();
+        engine->DrawQuad(k.lastTouchX, k.lastTouchY, 10, 10);
+        if (k.releaseTouch != 0)
+            g_input.requiredTouch = k.releaseTouch;
     }
-    return 0;
+
+    switch (released) {
+        case 0:
+            g_mouse.inputX = keys[1].pressed ? 0.1f : 0.5f;
+            break;
+        case 1:
+            g_mouse.inputX = keys[0].pressed ? -0.1f : 0.5f;
+            break;
+        case 2:
+            g_mouse.inputY = keys[3].pressed ? -0.1f : 0.5f;
+            break;
+        case 3:
+            g_mouse.inputY = keys[2].pressed ? 0.1f : 0.5f;
+            break;
+        case 6:
+        case 7:
+            Globals::bankZ = 0.0f;
+            break;
+        default:
+            break;
+    }
+}
+
+void SendStoredKeyUpEvents(AbyssEngine::Engine *engine) {
+    for (int i = 0; i < g_delayedKeyCount; ++i)
+        keyReleased(engine, g_delayedKeys[i]);
+    g_delayedKeyCount = 0;
+}
+
+void keyReleasedWithDelay(AbyssEngine::Engine * /*engine*/, int key) {
+    if (g_delayedKeyCount > kDelayedKeyMax)
+        return;
+    g_delayedKeys[g_delayedKeyCount] = key;
+    ++g_delayedKeyCount;
 }
 
 bool ArrowKeyPressed() {
@@ -373,6 +380,49 @@ bool ArrowKeyPressed() {
 bool keyIsPressed() {
     return (keys[0].pressed | keys[1].pressed | keys[2].pressed | keys[3].pressed |
             g_input.mouseCaptured) != 0;
+}
+
+void actualizeButtonPositions(AbyssEngine::Engine * /*engine*/) {
+}
+
+void LowerMouseWheel() {
+    if (Globals::mouse_wheel > 0)
+        Globals::mouse_wheel = std::max(static_cast<int>(Globals::mouse_wheel * 0.95), 0);
+    else if (Globals::mouse_wheel < 0)
+        Globals::mouse_wheel = std::min(static_cast<int>(Globals::mouse_wheel * 0.95), 0);
+
+    if (Globals::mouse_wheelX > 0)
+        Globals::mouse_wheelX = std::max(static_cast<int>(Globals::mouse_wheelX * 0.95), 0);
+    else if (Globals::mouse_wheelX < 0)
+        Globals::mouse_wheelX = std::min(static_cast<int>(Globals::mouse_wheelX * 0.95), 0);
+
+    if (Globals::mouse_wheelY > 0)
+        Globals::mouse_wheelY = std::max(static_cast<int>(Globals::mouse_wheelY * 0.95), 0);
+    else if (Globals::mouse_wheelY < 0)
+        Globals::mouse_wheelY = std::min(static_cast<int>(Globals::mouse_wheelY * 0.95), 0);
+}
+
+void MouseWheel(float delta, float residual) {
+    if (delta < -4.0f && Globals::appManager->GetCurrentApplicationModule() == 2)
+        Globals::keyboard_swipe = 1;
+    if (delta > 4.0f && Globals::appManager->GetCurrentApplicationModule() == 2)
+        Globals::keyboard_swipe = -1;
+    wheelStack = static_cast<int>(delta + residual + static_cast<float>(wheelStack));
+}
+
+void MouseInput(int dx, int dy) {
+    if (g_input.mouseCaptured == 0)
+        return;
+    if (g_mouse.config != 0) {
+        stackX = dx;
+    } else {
+        stackX += dx;
+        dy += stackY;
+    }
+    stackY = dy;
+}
+
+void KeyboardAnimationTimer(AbyssEngine::Engine * /*engine*/) {
 }
 
 namespace {
@@ -436,12 +486,6 @@ stillVisible:
     return 0;
 }
 
-void KeyboardAnimationTimer(AbyssEngine::Engine * /*engine*/) {
-}
-
-void actualizeButtonPositions(AbyssEngine::Engine * /*engine*/) {
-}
-
 namespace {
     inline float bitsToFloat(int v) {
         float f;
@@ -488,9 +532,9 @@ void simulateTouch(AbyssEngine::Engine *engine) {
     }
 
     if (keyHeld(8))
-        engine->autoPilotEngaged = -1.0f;
+        engine->wheelDelta = -1.0f;
     if (keyHeld(9))
-        engine->autoPilotEngaged = 1.0f;
+        engine->wheelDelta = 1.0f;
 
     if (keyHeld(11)) {
         Globals::rotateShipInStation = floatToBits(keyHeld(14) ? -40.0f : -20.0f);
@@ -617,7 +661,7 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         const float ey = g_mouse.easedY;
 
         const int down = keyIsPressed();
-        unsigned char active = g_simTouchActive;
+        const int active = g_simTouchActive;
         const bool inactive = (active ^ 1) != 0;
 
         if (down != 0 || !inactive) {
@@ -651,4 +695,29 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         stackX = static_cast<int>(VectorSignedToFloat(stackX, 0) * 0.96f);
         stackY = static_cast<int>(VectorSignedToFloat(stackY, 0) * 0.96f);
     }
+}
+
+bool SlowMotion() {
+    return g_slowMotion != 0;
+}
+
+bool SpeedUp() {
+    return g_speedUp != 0;
+}
+
+void setValuesForGamepad(float x, float y) {
+    g_mouse.gamepadX = x;
+    g_mouse.gamepadY = y;
+}
+
+extern "C" unsigned int S[4][256]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+
+// Blowfish round function over the S-boxes loaded by InitializeBlowfish.
+extern "C" unsigned int F(unsigned int value) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    const unsigned int a = value >> 24;
+    const unsigned int b = (value >> 16) & 0xff;
+    const unsigned int c = (value >> 8) & 0xff;
+    const unsigned int d = value & 0xff;
+
+    return ((S[0][a] + S[1][b]) ^ S[2][c]) + S[3][d];
 }

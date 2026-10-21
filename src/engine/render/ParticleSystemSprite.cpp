@@ -4,14 +4,8 @@
 #define GOF2_ENUM_BlendMode
 #include "engine/render/PaintCanvas.h"
 
-void ParticleSystem_updateAreaExitParticleImpl(ParticleSystemSprite *self, int index, float dt);
 
-using AbyssEngine::AEMath::VectorSignedToFloat;
-using AbyssEngine::AEMath::VectorUnsignedToFloat;
 
-static float g_uvRoundBias = 0.0f;
-
-static float g_colorScale = 0.0f;
 
 ParticleSystemSprite::~ParticleSystemSprite() {
     this->release();
@@ -86,89 +80,79 @@ void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle, uint32_t
 }
 
 void ParticleSystemSprite::updateSingle(int index, float dt) {
-    if ((int) (this->flags << 24) < 0)
-        return;
-
-    PaintCanvas *pc = this->canvas;
-    uint32_t handle = this->resource;
-    uint16_t id = (uint16_t) this->resource;
-
-    int *ages = this->particleAges;
-    int8_t *setIdx = this->particleSetIds;
-    char *set = (char *) ParticleSettingsRef::cur + (int) setIdx[index] * 0xa0;
-
-    float age = VectorSignedToFloat(ages[index], 0);
-    age = (float) (int) (age + dt);
-    ages[index] = (int) age;
-
-    int lifetime = *(int *) (set + 0x28);
-    if ((int) age > lifetime) {
-        ages[index] = -1;
-        pc->SpriteSystemSetPosition(handle, id, age, 0.0f, 0.0f);
+    if ((int) (this->flags << 24) < 0) {
+        this->updateAreaExitParticle(index, dt);
         return;
     }
 
-    VectorSignedToFloat(*(int *) (set + 0x44), 0);
-    pc->SpriteSystemAddSize(handle, id, (short) this->idOffset + (short) index);
+    const ParticleSettings::SetDefinition &def =
+            reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[this->particleSetIds[index]];
+    this->particleAges[index] = (int) ((float) this->particleAges[index] + dt);
+    if (def.lifetime < this->particleAges[index]) {
+        this->particleAges[index] = -1;
+        this->canvas->SpriteSystemSetPosition(this->resource, (uint16_t) (this->idOffset + index),
+                                              4294967296.0f, 4294967296.0f, 4294967296.0f);
+        this->canvas->SpriteSystemSetSize(this->resource, (uint16_t) (this->idOffset + index), 0);
+        return;
+    }
 
-    float ca, cr, cg, cb;
-    this->interpolateColor(index, ca, cr, cg, cb);
-    pc->SpriteSystemSetRGBA(handle, id, cg, 0.0f, cb, 0.0f);
+    this->canvas->SpriteSystemAddSize(this->resource, (uint16_t) (this->idOffset + index),
+                                      (short) ((float) def.posBase * dt * 0.001f));
 
-    int frames = *(int *) (set + 0x9c);
-    if (frames != 0) {
-        int span = *(int *) (set + 0x28);
-        int aged = ages[index] - 1;
-        int cur = (aged * frames) / span;
-        int prevAged = (int) ((float) aged - dt);
-        int prev = (prevAged * frames) / span;
-        if (prev < 0) prev = 0;
+    float alpha;
+    float red;
+    float green;
+    float blue;
+    this->interpolateColor(index, alpha, red, green, blue);
+    this->canvas->SpriteSystemSetRGBA(this->resource, (uint16_t) (this->idOffset + index),
+                                      alpha, red, green, blue);
 
-        if ((uint32_t) cur != (uint32_t) prev) {
-            float fcur = VectorSignedToFloat(cur, 0);
-            float du = *(float *) (set + 0x90) - *(float *) (set + 0x88);
-            float dv = *(float *) (set + 0x94) - *(float *) (set + 0x8c);
-            float u0 = *(float *) (set + 0x88) + du * fcur;
-            float frac = VectorSignedToFloat((int) (u0 + g_uvRoundBias), 0);
-            u0 = u0 - frac;
-            float v0 = *(float *) (set + 0x8c) + dv * frac;
-            float uv[4] = {u0, du + u0, v0, dv + v0};
-
+    if (def.frames != 0) {
+        int age = this->particleAges[index] - 1;
+        int frame = age * def.frames / def.lifetime;
+        int prevFrame = (age - (int) dt) * def.frames / def.lifetime;
+        if (prevFrame < 0)
+            prevFrame = 0;
+        if (frame != prevFrame) {
+            float u0 = reinterpret_cast<const float &>(def.uvU0);
+            float v0 = reinterpret_cast<const float &>(def.uvV0);
+            float du = reinterpret_cast<const float &>(def.uvU1) - u0;
+            float dv = reinterpret_cast<const float &>(def.uvV1) - v0;
+            float u = u0 + du * (float) frame;
+            float row = (float) (int) (u + 0.0009765625f);
+            u -= row;
+            float v = v0 + dv * row;
+            float uv[4] = {u, du + u, v, dv + v};
+            float rotated[4];
             float *out = uv;
-            float uvRot[4];
-
-            if (((this->flags >> 24) & 0x2) != 0)
-                out = this->rotateUVs(uv, index, uvRot);
-
-            pc->SpriteSystemSetUv(handle, id, out[1], 0.0f, out[2], 0.0f);
+            if ((this->flags >> 24) & 2)
+                out = this->rotateUVs(uv, index, rotated);
+            this->canvas->SpriteSystemSetUv(this->resource, (uint16_t) (this->idOffset + index),
+                                            out[0], out[2], out[1], out[3]);
         }
     }
 
-    float pos[4] = {0, 0, 0, 0};
-    pc->SpriteSystemAddPosition(handle, id, pos[1], 0.0f, pos[2]);
+    Vector step = this->particleVelocities[index] * dt * 0.001f;
+    this->canvas->SpriteSystemAddPosition(this->resource, (uint16_t) (this->idOffset + index),
+                                          step.x, step.y, step.z);
 }
 
 void ParticleSystemSprite::setAlpha(int index, uint32_t color, float alpha) {
-    float c0 = (float) (color & 0xff);
-    float c1 = (float) ((color >> 8) & 0xff);
-    float c2 = (float) ((color >> 16) & 0xff);
-    float c3 = (float) (color >> 24);
-
-    c0 = c0 * (1.0f / 255.0f);
-    c1 = c1 * (1.0f / 255.0f);
-    c2 = c2 * (1.0f / 255.0f);
-    c3 = c3 * (1.0f / 255.0f);
+    float a = (float) (color & 0xff) * 0.003921569f;
+    float b = (float) ((color >> 8) & 0xff) * 0.003921569f;
+    float g = (float) ((color >> 16) & 0xff) * 0.003921569f;
+    float r = (float) (color >> 24) * 0.003921569f;
 
     if (this->alphaFade == 0) {
-        c0 = c0 * alpha;
+        a *= alpha;
     } else {
-        c1 = c1 * alpha;
-        c2 = c2 * alpha;
-        c3 = c3 * alpha;
+        b *= alpha;
+        g *= alpha;
+        r *= alpha;
     }
 
     this->canvas->SpriteSystemSetRGBA(this->resource,
-                                      (uint16_t)(this->idOffset + index), c3, c2, c1, c0);
+                                      (uint16_t)(this->idOffset + index), r, g, b, a);
 }
 
 void ParticleSystemSprite::enable(bool enabled) {
@@ -247,54 +231,32 @@ void ParticleSystemSprite::updateAreaExitParticle(int index, float dt) {
     this->setAlpha(index, *(uint32_t *) (set + 0x34), alpha);
 }
 
-void ParticleSystemSprite::setParticle(const Vector &pos, float p2, uint32_t color, float p4,
-                                       float p5, float p6, float p7, bool clearColor, float p9,
-                                       float p10, const Vector &uv) {
-    (void) p2;
-    (void) p5;
-    (void) p6;
-    (void) p7;
-    (void) p9;
-    (void) p10;
+void ParticleSystemSprite::setParticle(const Vector &pos, float scale, uint32_t color, float u0,
+                                       float v0, float u1, float v1, bool maskedColor, float size0,
+                                       float size1, const Vector &velocity) {
+    (void) size0;
+    (void) size1;
+    (void) velocity;
 
-    PaintCanvas *pc = this->canvas;
-    uint32_t handle = this->resource;
-    uint16_t id = (uint16_t) this->resource;
-
-    pc->SpriteSystemSetPosition(handle, id, pos.y, p4, pos.z);
-
-    short size = (short) this->currentParticle + (short) this->idOffset;
-    pc->SpriteSystemSetSize(handle, id, size);
-
-    pc->SpriteSystemSetUv(handle, id, uv.x, uv.y, uv.z, ((const float *) &uv)[3]);
-
-    if (clearColor)
+    this->canvas->SpriteSystemSetPosition(this->resource, (uint16_t) (this->currentParticle + this->idOffset),
+                                          pos.x, pos.y, pos.z);
+    this->canvas->SpriteSystemSetSize(this->resource, (uint16_t) (this->idOffset + this->currentParticle),
+                                      (short) scale);
+    this->canvas->SpriteSystemSetUv(this->resource, (uint16_t) (this->idOffset + this->currentParticle),
+                                    u0, v0, u1, v1);
+    if (maskedColor)
         color &= 0xffffff00;
-
-    float a = VectorUnsignedToFloat(color >> 0x18, 0);
-    float b = VectorUnsignedToFloat((color & 0xffff) >> 8, 0);
-    float g = VectorUnsignedToFloat(color & 0xff, 0);
-    float r = VectorUnsignedToFloat((color & 0xffffff) >> 0x10, 0);
-    (void) a;
-    (void) b;
-    (void) g;
-
-    pc->SpriteSystemSetRGBA(handle, id, r * g_colorScale, g, g_colorScale, b);
+    this->canvas->SpriteSystemSetRGBA(this->resource, (uint16_t) (this->idOffset + this->currentParticle),
+                                      (float) (color >> 24) * 0.003921569f,
+                                      (float) ((color >> 16) & 0xff) * 0.003921569f,
+                                      (float) ((color >> 8) & 0xff) * 0.003921569f,
+                                      (float) (color & 0xff) * 0.003921569f);
 }
 
 void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle) {
     if (handle == 0xffffffffu)
         return;
 
-    float *a = (float *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
-    Matrix am;
-    for (int i = 0; i < 15; ++i)
-        am.m[i] = a[i];
-
-    float *b = (float *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
-    Matrix bm;
-    for (int i = 0; i < 15; ++i)
-        bm.m[i] = b[i];
-
-    canvas->DrawSpriteSystem(handle, am, bm);
+    canvas->DrawSpriteSystem(handle, *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()),
+                             *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
 }

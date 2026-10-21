@@ -162,7 +162,12 @@ public:
     int field_0x1f8;
     int field_0x1fc;
     int field_0x200;
-    uint8_t _pad_0x204[0x18];
+    int field_0x204;
+    int field_0x208;
+    int field_0x20c;
+    int field_0x210;
+    int field_0x214;
+    int field_0x218;
     int orbitInfoTextX;     // 0x21c: HUD orbit-information text x, right of the faction logo
     int orbitInfoStationY;  // 0x220
     int orbitInfoSystemY;   // 0x224

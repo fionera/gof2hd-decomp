@@ -195,8 +195,8 @@ void ApplicationManager::Resume(bool arg) {
         if (this->engine != 0) {
             this->engine->Resume();
         }
-        this->actionState = 0;
         this->keyState = 0;
+        this->actionState = 0;
         this->state = 4;
     }
 }
@@ -689,8 +689,8 @@ void ApplicationManager::OnTouchEnd(int x, int y, void *touch) { // lint: void_p
 }
 
 void ApplicationManager::OnTouchEnd() {
-    this->currentKey = 0;
     this->keyState = 0;
+    this->currentKey = 0;
     this->actionMask = 0;
     this->actionState = 0;
 }
@@ -963,7 +963,8 @@ unsigned int ApplicationManager::GetCurrentApplicationModule() const {
 }
 
 String ApplicationManager::GetApplicationVersionString() {
-    return String("2.0.16");
+    // The 2.0.16 binary returns an empty string here (literal pool -> ""), not a version number.
+    return String("");
 }
 
 void ApplicationManager::ConfigReadFile(String name) {

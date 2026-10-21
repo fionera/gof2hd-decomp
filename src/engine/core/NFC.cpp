@@ -225,67 +225,7 @@ int NFC::getHeight() {
     return value;
 }
 
-int IsDialogVisible(int) {
-    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible) != 0;
-}
-
-int IsDialogNotVisible(int) {
-    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible) == 0;
-}
-
-int IsDialogNotVisible2(int) {
-    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
-            Globals::is_menu_visible) == 0;
-}
-
-int IsStarMapNotVisible(int) {
-    return !Globals::isStarMapVisible;
-}
-
-int IsInGameSubMenuNotActive(int) {
-    if (Globals::subMenuIndex != -1 || Globals::is_menu_visible != 0)
-        return false;
-    return !Globals::isStarMapVisible;
-}
-
-int IsInGameSubMenuActive(int) {
-    return Globals::subMenuIndex != -1;
-}
-
-int IsInPrimaryMenu(int) {
-    return Globals::is_menu_visible != 0 && Globals::topMenuIndex == 0 &&
-           Globals::menu_touch_window_type == 0 && Globals::is_dialogue_window_visible == 0 &&
-           Globals::is_choice_window_visible == 0 && !Globals::isStarMapVisible;
-}
-
 int g_android_back_button_pressed = 0;
-
-static int g_mouseCaptured;
-static int g_useJoystick;
-static int g_mouseConfig = 1;
-
-int HideMouse() {
-    return g_mouseCaptured;
-}
-
-void CaptureMouse(int capture) {
-    g_mouseCaptured = capture;
-}
-
-// TODO(decomp): the original stores into VirtualInput's merged .data block (mouse configuration
-// read by keyPressed/simulateTouch); this TU has no reader, so the store is dead here.
-int SwitchToOtherMouseConifguration(int config) {
-    g_mouseConfig = config;
-    return 0;
-}
-
-void UseJoystick(int use) {
-    g_useJoystick = use;
-}
-
-int GetUseJoystick() {
-    return g_useJoystick;
-}
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     g_android_back_button_pressed = 1;

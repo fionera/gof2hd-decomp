@@ -94,9 +94,7 @@ public:
     Vector playerPosition;
     int missionPtr;
     BoundingVolume *collisionVolume;
-    float field_c8;
-    float field_cc;
-    float field_d0;
+    Vector stationPosition; // 0xc8
     int field_d4;
     Waypoint *asteroidWaypoint;
     int field_dc;
@@ -146,9 +144,7 @@ public:
     uint8_t alarmRequested;
     uint8_t field_18a;
     uint8_t pad_18b;
-    int field_18c;
-    int field_190;
-    int field_194;
+    Vector spawnPosition; // 0x18c: scratch spawn / jumpgate position
     int field_198;
     int field_19c;
     int field_1a0;

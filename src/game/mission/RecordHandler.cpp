@@ -748,10 +748,8 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
     int *imageParts = 0;
     if (imageCount >= 1) {
         imageParts = new int[imageCount];
-        int *part = imageParts;
         for (int i = 0; i < imageCount; i++) {
-            AEFile::Read(*part, fd);
-            part++;
+            AEFile::Read(imageParts[i], fd);
         }
     }
 
@@ -1193,7 +1191,7 @@ int RecordHandler::recordStoreWrite(int slot) {
     }
 
     Array<PendingProduct *> *pending =
-        reinterpret_cast<Array<PendingProduct *> *>(Globals::status->getPendingProducts());
+        Globals::status->getPendingProducts();
     if (pending != 0) {
         int count = 0;
         for (unsigned i = 0; i < pending->size(); i++) {
@@ -2079,36 +2077,37 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
 
 bool RecordHandler::checkHash(unsigned int fd) {
     int size = AEFile::GetFileSize(fd);
-    if (size >= 0) {
-        unsigned char *buffer = new unsigned char[size];
-        AEFile::Read(size, buffer, fd);
-        Array<unsigned char> *bytes = new Array<unsigned char>();
-        ArrayAdd(buffer, size, *bytes);
-        delete[] buffer;
+    if (size < 0) {
+        return false;
+    }
+    unsigned char *buffer = new unsigned char[size];
+    AEFile::Read(size, buffer, fd);
+    Array<unsigned char> *bytes = new Array<unsigned char>();
+    ArrayAdd(buffer, size, *bytes);
+    delete[] buffer;
 
-        if (bytes->size() > 33) {
-            unsigned char *digest = new unsigned char[32];
-            Sha256Context *context = new Sha256Context;
-            SHA256_Init(context);
-            SHA256_Update(context, bytes->data(), bytes->size() - 32);
-            char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
-            SHA256_Update(context, salt, 25);
-            SHA256_Update(context, g_android_origami_super_club, 16);
-            SHA256_Final(digest, context);
+    if (!(bytes->size() > 33)) {
+        return false;
+    }
+    unsigned char *digest = new unsigned char[32];
+    Sha256Context *context = new Sha256Context;
+    SHA256_Init(context);
+    SHA256_Update(context, bytes->data(), bytes->size() - 32);
+    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+    SHA256_Update(context, salt, 25);
+    SHA256_Update(context, g_android_origami_super_club, 16);
+    SHA256_Final(digest, context);
 
-            bool valid = true;
-            for (int i = 0; i < 32; i++) {
-                if (digest[i] != (*bytes)[bytes->size() - 32 + i]) {
-                    valid = false;
-                    break;
-                }
-            }
-            delete[] digest;
-            delete context;
-            return valid;
+    bool valid = true;
+    for (int i = 0; i < 32; i++) {
+        if (digest[i] != (*bytes)[bytes->size() - 32 + i]) {
+            valid = false;
+            break;
         }
     }
-    return false;
+    delete[] digest;
+    delete context;
+    return valid;
 }
 
 void RecordHandler::addHashToOptions() {
