@@ -17,15 +17,14 @@ class Player {
 public:
     Array<Array<Gun *> *> *guns;
 
-    // Canonical raw matrix storage; the AEMath::Matrix view is taken via
-    // reinterpret_cast<AbyssEngine::AEMath::Matrix &>(transform[0]) at the few sites that need it.
-    float transform[15];
+    // World transform (constructed by the out-of-line Matrix::Matrix()).
+    AbyssEngine::AEMath::Matrix transform;
 
     int32_t radius;
 
     // Former uint16 `destroyed` overlay: byte pair promoted to plain members.
     // The 16-bit view is `reinterpret_cast<uint16_t &>(destroyedByte)`.
-    uint8_t destroyedByte;
+    bool destroyedByte;
     uint8_t spawnedFlag;
 
     uint8_t pad_46[2];
