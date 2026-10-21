@@ -239,23 +239,41 @@ namespace AbyssEngine {
         }
 
         Matrix &Matrix::operator=(const Matrix &other) {
-            for (int i = 0; i < 16; ++i) {
+            for (int i = 0; i < 12; ++i) {
                 m[i] = other.m[i];
             }
+            scaleVector() = other.scaleVector();
             return *this;
         }
 
         bool operator==(const Matrix &lhs, const Matrix &rhs) {
-            for (int i = 0; i < 12; ++i) {
-                if (lhs.m[i] != rhs.m[i]) {
-                    return false;
-                }
-            }
-            return true;
+            return !(lhs.m[0] != rhs.m[0] ||
+                     lhs.m[1] != rhs.m[1] ||
+                     lhs.m[2] != rhs.m[2] ||
+                     lhs.m[3] != rhs.m[3] ||
+                     lhs.m[4] != rhs.m[4] ||
+                     lhs.m[5] != rhs.m[5] ||
+                     lhs.m[6] != rhs.m[6] ||
+                     lhs.m[7] != rhs.m[7] ||
+                     lhs.m[8] != rhs.m[8] ||
+                     lhs.m[9] != rhs.m[9] ||
+                     lhs.m[10] != rhs.m[10] ||
+                     lhs.m[11] != rhs.m[11]);
         }
 
         bool operator!=(const Matrix &lhs, const Matrix &rhs) {
-            return !(lhs == rhs);
+            return lhs.m[0] != rhs.m[0] ||
+                   lhs.m[1] != rhs.m[1] ||
+                   lhs.m[2] != rhs.m[2] ||
+                   lhs.m[3] != rhs.m[3] ||
+                   lhs.m[4] != rhs.m[4] ||
+                   lhs.m[5] != rhs.m[5] ||
+                   lhs.m[6] != rhs.m[6] ||
+                   lhs.m[7] != rhs.m[7] ||
+                   lhs.m[8] != rhs.m[8] ||
+                   lhs.m[9] != rhs.m[9] ||
+                   lhs.m[10] != rhs.m[10] ||
+                   lhs.m[11] != rhs.m[11];
         }
 
         Matrix operator*(const Matrix &lhs, const Matrix &rhs) {
@@ -296,7 +314,22 @@ namespace AbyssEngine {
         }
 
         Matrix &Matrix::operator*=(const Matrix &other) {
-            *this = *this * other;
+            const float r00 = m[0], r01 = m[1], r02 = m[2];
+            m[0] = r00 * other.m[0] + r01 * other.m[4] + r02 * other.m[8];
+            m[1] = r00 * other.m[1] + r01 * other.m[5] + r02 * other.m[9];
+            m[2] = r00 * other.m[2] + r01 * other.m[6] + r02 * other.m[10];
+            m[3] = m[3] + (r00 * other.m[3] + r01 * other.m[7] + r02 * other.m[11]);
+            const float r10 = m[4], r11 = m[5], r12 = m[6];
+            m[4] = r10 * other.m[0] + r11 * other.m[4] + r12 * other.m[8];
+            m[5] = r10 * other.m[1] + r11 * other.m[5] + r12 * other.m[9];
+            m[6] = r10 * other.m[2] + r11 * other.m[6] + r12 * other.m[10];
+            m[7] = m[7] + (r10 * other.m[3] + r11 * other.m[7] + r12 * other.m[11]);
+            const float r20 = m[8], r21 = m[9], r22 = m[10];
+            m[8] = r20 * other.m[0] + r21 * other.m[4] + r22 * other.m[8];
+            m[9] = r20 * other.m[1] + r21 * other.m[5] + r22 * other.m[9];
+            m[10] = r20 * other.m[2] + r21 * other.m[6] + r22 * other.m[10];
+            m[11] = m[11] + (r20 * other.m[3] + r21 * other.m[7] + r22 * other.m[11]);
+            scaleVector() *= other.scaleVector();
             return *this;
         }
 
