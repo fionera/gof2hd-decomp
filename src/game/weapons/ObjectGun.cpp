@@ -13,11 +13,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
 
-struct MeshId {
-    uint16_t id;
-    uint16_t pad;
-};
-
 struct EgoPlayerView {
     char header[0x40];
     Matrix orientation;
@@ -55,26 +50,37 @@ static inline void VectorCross(Vector *out, const Vector *a, const Vector *b) { 
 
 void ObjectGun_setEnemies_impl(void *items); // lint: void_ptr free-function signature, retype changes mangling
 
-static uint8_t *g_ObjectGunScaleFlag = nullptr;
 static uint8_t *g_ObjectGunRenderScaleFlag = nullptr;
-static MeshId g_ObjectGunGeometryIds[256] = {};
-static int g_ObjectGunPlayerGunIds[256] = {};
+// Projectile mesh per item index (-1: the item has no visible projectile).
+static const int kProjectileMeshes[233] = {
+    14500, 14500, 14500, 14501, 14501, 14502, 14502, 14503, 14503, 14500, 14503, 14502,
+    14501, 14501, 14501, 14501, 14504, 14504, 14504, 14505, 14505, 14505, 14506, 14506,
+    14507, 14507, 14508, 14508, 14506, 14505, 14502, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14503,
+    14505, 14501, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 14506, 14503, 14502, -1,
+    14509, 14510, 14506, 14503, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, 14500, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 14505, -1, -1, -1,
+    14501, 14501, 14508, 14502, -1,
+};
 
 static uint32_t (*g_TransformGetObject)(PaintCanvas *canvas, uint32_t mesh) = nullptr;
 
 static void (*g_TransformSetState)(uint32_t object, int state, int value) = nullptr;
 
-ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Level *level) {
-    this->dir.x = 0.0f;
-    this->dir.y = 0.0f;
-    this->dir.z = 0.0f;
-    this->up.y = 0.0f;
-    this->up.z = 0.0f;
-    this->side.x = 0.0f;
-    this->side.z = 0.0f;
-    this->orientation = AbyssEngine::AEMath::Matrix();
-
-    PaintCanvas *canvas = Globals::Canvas;
+ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Level *level)
+    : dir(), up(), side() {
     this->useEgoOrientation = 0;
     this->explosions = nullptr;
     this->explosionReady = nullptr;
@@ -82,9 +88,9 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->gun = gun;
     this->level = level;
     this->secondaryTransform = -1;
-    canvas->TransformCreate(this->transform);
+    Globals::Canvas->TransformCreate(this->transform);
     this->meshId = mesh;
-    canvas->TransformAddMesh(this->transform, (uint16_t) mesh, false);
+    Globals::Canvas->TransformAddMesh(this->transform, (uint16_t) mesh, false);
     this->rollAngle = 0.0f;
     this->scaleX = 1.0f;
     this->scaleY = 1.0f;
@@ -92,57 +98,51 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->spinAngle = 0.0f;
 
     int type = gun->weaponType;
-    this->visible = (type <= 8 && ((1u << type) & 0x10aU) != 0) ? 1 : 0;
-
-    if (*g_ObjectGunScaleFlag != 0) {
-        if (type == 1 || type == 3 || type == 8) {
-            this->scaleX = 0.6f;
-            this->scaleY = 0.6f;
-            this->scaleZ = 0.6f;
-        }
+    switch (type) {
+        case 1:
+        case 3:
+        case 8:
+            this->visible = 1;
+            break;
+        default:
+            this->visible = 0;
+            break;
+    }
+    if (Globals::iPad && (type == 1 || type == 3 || type == 8)) {
+        this->scaleX = 0.6f;
+        this->scaleY = 0.6f;
+        this->scaleZ = 0.6f;
     }
     if (type == 0xb) {
         this->scaleX = 0.7f;
         this->scaleY = 0.7f;
         this->scaleZ = 0.7f;
-    } else if (type == 0x19) {
+    }
+    if (type == 0x19) {
         this->explosions = new Array<Explosion *>();
-        ArraySetLength(gun->count, *(this->explosions));
+        ArraySetLength(gun->count, *this->explosions);
         this->explosionReady = new uint8_t[this->explosions->size()];
-
         for (uint32_t i = 0; i < this->explosions->size(); ++i) {
-            int explosionType = 10;
-            if (gun->itemIndex == 0xb1)
-                explosionType = 9;
-            if (gun->itemIndex == 0xb0)
-                explosionType = 8;
-            Explosion *explosion = new Explosion(explosionType);
-            (*this->explosions)[i] = explosion;
-            explosion->setWeaponIndex(gun->itemIndex);
+            (*this->explosions)[i] =
+                    new Explosion(gun->itemIndex == 0xb0 ? 8 : gun->itemIndex == 0xb1 ? 9 : 10);
+            (*this->explosions)[i]->setWeaponIndex(gun->itemIndex);
             this->explosionReady[i] = 1;
         }
     }
 
-    AEGeometry *geometry = nullptr;
-    bool createGeometry = true;
-    if (gun->field_0xa8 == 0) {
-        if (gun->isPlayerGun() == 0 || g_ObjectGunPlayerGunIds[gun->itemIndex] < 0) {
-            this->hasGeometry = 0;
-            createGeometry = false;
-        } else {
-            this->hasGeometry = (gun->weaponType != ITEM_SORT_MINE) ? 1 : 0;
-            createGeometry = this->hasGeometry != 0;
-        }
-    } else {
+    if (gun->field_0xa8 != 0)
         this->hasGeometry = 1;
-    }
+    else if (gun->isPlayerGun() && kProjectileMeshes[gun->itemIndex] >= 0)
+        this->hasGeometry = gun->weaponType != ITEM_SORT_MINE;
+    else
+        this->hasGeometry = 0;
 
-    if (createGeometry)
-        geometry = new AEGeometry((uint16_t) g_ObjectGunGeometryIds[gun->itemIndex].id,
-                                  canvas, false);
+    AEGeometry *geometry = nullptr;
+    if (this->hasGeometry)
+        geometry = new AEGeometry((uint16_t) kProjectileMeshes[gun->itemIndex], Globals::Canvas, false);
 
-    this->wasFiring = 0;
     this->geometry = geometry;
+    this->wasFiring = 0;
     this->deltaTime = 0;
 }
 
@@ -206,7 +206,7 @@ void ObjectGun::update(int dt) {
                 if (ki != nullptr && ki->field_0x3f_b != 0) {
                     this->hasGeometry = 1;
                     this->geometry = new AEGeometry(
-                        (uint16_t) g_ObjectGunGeometryIds[this->gun->itemIndex].id,
+                        (uint16_t) kProjectileMeshes[this->gun->itemIndex],
                         (PaintCanvas *) *canvas, false);
                 }
             }
