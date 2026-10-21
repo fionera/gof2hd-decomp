@@ -97,8 +97,7 @@ public:
     int32_t field_0x1c4;
     int32_t field_0x1c8;
     int32_t field_0x1cc;
-    int32_t deltaTime;
-    int32_t deltaTimeHi;
+    long long deltaTime; // frame time (64-bit, from update(dt))
     int32_t hitpoints;
     int32_t field_0x1dc;
     signed char field_0x1e0;

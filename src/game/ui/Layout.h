@@ -61,7 +61,8 @@ public:
     int field_0x5c;
     int field_0x60;
     int field_0x64;
-    uint8_t _pad_0x68[8];
+    int field_0x68;   // lounge panel width
+    int field_0x6c;   // lounge panel height
 
     int field_0x70_rowHeight;
 
@@ -70,9 +71,9 @@ public:
     int field_0x7c;
     int field_0x80_touchMargin;
     int field_0x84;
-    uint8_t _pad_0x88[4];
+    int field_0x88;   // StarMap ctor: hitRadius = layout->field_0x88
     int field_0x8c;
-    int field_0x90;
+    float field_0x90;   // StarMap drag scale (copied raw into StarMap::dragScale, a float)
     int field_0x94;
     int field_0x98;
     int field_0x9c;
@@ -102,29 +103,57 @@ public:
 
     int field_0x114_strip5c;
 
-    uint8_t _pad_0x118[12];
+    int field_0x118;
+    int field_0x11c;
+    int field_0x120;
     int field_0x124;
     int field_0x128;
-    uint8_t _pad_0x12c[4];
+    int field_0x12c;
     int field_0x130;
     int field_0x134;
     int field_0x138;
     int field_0x13c;
-    uint8_t _pad_0x140[24];
+    int field_0x140;
+    int field_0x144;
+    int field_0x148;
+    int field_0x14c;
+    int field_0x150;
+    int field_0x154;
     int field_0x158;
     int field_0x15c;
-    uint8_t _pad_0x160[24];
+    int field_0x160;
+    int field_0x164;
+    int field_0x168;
+    int field_0x16c;
+    int field_0x170;
+    int field_0x174;
     int field_0x178;
     int field_0x17c;
-    uint8_t _pad_0x180[16];
+    int field_0x180;
+    int field_0x184;
+    int field_0x188;
+    int field_0x18c;
     int field_0x190;
     int field_0x194;
     int field_0x198;
     int field_0x19c;
     int field_0x1a0;
     int field_0x1a4;
-    uint8_t _pad_0x1a8[56];
-    int field_0x1e0;
+    int field_0x1a8;
+    int field_0x1ac;
+    int field_0x1b0;
+    int field_0x1b4;
+    int field_0x1b8;
+    int field_0x1bc;
+    int field_0x1c0;
+    int field_0x1c4;
+    int field_0x1c8;
+    int field_0x1cc;
+    int field_0x1d0;
+    int field_0x1d4;
+    int field_0x1d8;
+    int field_0x1dc;
+    float eventBannerScale; // 0x1e0, read as float by Hud::drawEventQueue
     int field_0x1e4;
     int field_0x1e8;
     int field_0x1ec;
@@ -293,7 +322,7 @@ public:
 
     ~Layout();
 
-    int OnTouchBegin(int x, int y);
+    bool OnTouchBegin(int x, int y);
 
     int OnTouchEnd(int x, int y);
 
@@ -333,11 +362,11 @@ public:
 
     void enableFillScreen(bool v);
 
-    static String formatNumber(int n);
+    String formatNumber(int n);
 
     String tagString(String in);
 
-    static String formatCredits(int n);
+    String formatCredits(int n);
 
     int getFooterTransitionWidth();
 

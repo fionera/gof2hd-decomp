@@ -12,7 +12,7 @@ static float g_galaxyDistanceScale = 0.0f;
 static const int kStationCount = 0x87;
 
 Galaxy::Galaxy() {
-    this->visited = new uint8_t[kStationCount];
+    this->visited = new bool[kStationCount];
     for (int i = 0; i < kStationCount; ++i)
         this->visited[i] = 0;
 
@@ -30,7 +30,7 @@ Galaxy::~Galaxy() {
 }
 
 void Galaxy::reset() {
-    uint8_t *visited = this->visited;
+    bool *visited = this->visited;
     for (int i = 0; i < kStationCount; ++i)
         visited[i] = 0;
 }
@@ -52,7 +52,7 @@ void Galaxy::visitStation(int index) {
 
 void Galaxy::setVisited(bool *src, int count) {
     for (int i = 0; i < count; ++i)
-        this->visited[i] = (uint8_t) src[i];
+        this->visited[i] = (bool) src[i];
     for (int i = count; i < kStationCount; ++i)
         this->visited[i] = 0;
 }
@@ -246,13 +246,13 @@ int Galaxy::getStation(int index) {
         return (int) (intptr_t) Globals::status->playerStation;
 
     FileRead loader;
-    return loader.loadStation(index);
+    return (int) (intptr_t) loader.loadStation(index);
 }
 
 Array<SolarSystem *> *Galaxy::getSystems() {
     return this->systems;
 }
 
-uint8_t *Galaxy::getVisited() {
+bool *Galaxy::getVisited() {
     return this->visited;
 }

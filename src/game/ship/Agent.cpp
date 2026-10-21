@@ -147,7 +147,7 @@ void Agent::setSystemName(String src) {
     this->systemName = src;
 }
 
-Agent::~Agent() noexcept(false) {
+Agent::~Agent() {
     delete[] this->imageParts;
     this->imageParts = nullptr;
     if (this->wingman1 != nullptr) {

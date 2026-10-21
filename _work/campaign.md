@@ -19,6 +19,26 @@ Orchestrator session log. One entry per session; newest first. Resume from git l
   Status/RecordHandler/Explosion/HangarList; AbyssEngine/Transform/AEMath/
   FileRead/AEFile/String). Orchestrator merges and gates on master.
 
+- Landed on master (all gated): vendored libs with app flags (zlib/libzip -Oz -g
+  -fstack-protector-strong -ffunction-sections; libzip against NDK zlib.h 1.2.7); OpenSSL
+  1.1.0l via real GCC 4.9 from NDK r13b (w11; .comment proves GCC 4.9.x 20150123); local
+  functions placed in source order in the section-ordering file; verify hardened: PIC pool
+  register followed 16 insns, honest Thumb pool decoding (sweep + NOP-filled decode, binutils
+  scans IT state backwards), tbb/tbh tables as data, and **PIC data references compared by GOT
+  symbol / data object / string content** — this demoted 52 rows that read the wrong
+  global/string (metric correction 3316->3264, documented in VALIDATION.md).
+- tools/gapdiff.py: the original has only ~52 KB of local code. The .text deficit (~360 KB)
+  is ~136 exported functions with stubbed/truncated bodies (MGame::OnUpdate 11440 B vs 88 B,
+  SpaceLounge::startChat, Radar::draw, Hud::draw, Layout ctor, ...). Shim imports almost always
+  stand for INLINED code. Workers were sent per-file stub lists.
+- Rejected A/Bs: -fstack-protector (-100 linked), -std=c++11/gnu++11 (neutral/-1).
+- Wave-1 merges so far: w11 (libs), w7 (resource tables via generator,
+  _work/reconstructions/gameresource_gen/), w1 (PaintCanvas/Engine), w4 (UI), interim merge of
+  all. Array.h / ArrayReleaseClasses.h are orchestrator-owned (w4 design + w9 store order).
+- Wave 2 launched: w1b (PaintCanvas/Engine stubs), w4b (Hud/Layout stubs), w12 (game UI/ships),
+  w13 (render/particles + .rodata ParticleSettings_str bloat), w14 (platform/audio/weapons),
+  w15 (shader TUs: recover embedded GLSL + attribute names from .rodata).
+
 ## Session 2026-07-28 (Fable wave — linked 2751->2779; PostRA experiment queued)
 
 Net from the prior checkpoint at `b56b79d7` through HEAD `5b7d1ee5`:

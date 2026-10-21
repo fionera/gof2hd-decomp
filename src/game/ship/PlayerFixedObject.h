@@ -112,7 +112,7 @@ public:
 
     void setMoving(bool v);
 
-    void *setName(String name); // lint: void_ptr (exported method return type)
+    void setName(String name);
 
     void setPosition(float x, float y, float z) override;
 

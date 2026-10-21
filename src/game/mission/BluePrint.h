@@ -12,7 +12,7 @@ class BluePrint {
 public:
     Array<int> *ingredientCounters;
     int32_t spentValue;
-    uint8_t locked;
+    bool locked;
     int32_t productionCount;
     int32_t stationIndex;
     AbyssEngine::String stationName;
