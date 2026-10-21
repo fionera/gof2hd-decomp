@@ -804,10 +804,7 @@ namespace AbyssEngine {
                 unsigned short subMeshCount;
                 if (AEFile::Read(2, &subMeshCount, handle) == 0)
                     goto fail;
-                if (subMeshCount < 2) {
-                    if (MeshReadData(engine, handle, fmt, out, mat) == -1)
-                        goto fail;
-                } else {
+                if (subMeshCount > 1) {
                     // Several sub-meshes: each becomes a child mesh of a fresh animation transform.
                     (*out)->animation = new Transform();
                     for (unsigned int i = 0; i < subMeshCount; i++) {
@@ -821,6 +818,9 @@ namespace AbyssEngine {
                                 child->bounds);
                         ArrayAdd(child, (*out)->animation->meshes);
                     }
+                } else {
+                    if (MeshReadData(engine, handle, fmt, out, mat) == -1)
+                        goto fail;
                 }
             }
         }
