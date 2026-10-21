@@ -1215,50 +1215,45 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
 }
 
 uint32_t Engine::ShaderInit() {
-#define MAKE_SHADER(Type, size) do { \
-        auto *s = new(operator new(size)) AbyssEngine::Type(); \
-        this->ShaderRegister(s); \
-    } while(0)
-    MAKE_SHADER(TextureShader, 0x8c);
-    MAKE_SHADER(SimpleShader, 0x2c);
-    MAKE_SHADER(TextureVtxColorShader, 0x94);
-    MAKE_SHADER(NoTexShader, 0x2c);
-    MAKE_SHADER(NoTexVtxColorShader, 0x30);
-    MAKE_SHADER(TextureAlphaTestShader, 0x74);
-    MAKE_SHADER(CubeMapping, 0x5c);
-    MAKE_SHADER(CubeNormalMapping, 0x68);
-    MAKE_SHADER(BumpMapping, 0x44);
-    MAKE_SHADER(SandboxShader, 0x50);
-    MAKE_SHADER(GenericShader, 0x64);
-    MAKE_SHADER(GenericShader1, 0x58);
-    MAKE_SHADER(GenericShader2, 0x58);
-    MAKE_SHADER(TexOnlyShader, 0x30);
-    MAKE_SHADER(BumpShaderV2, 0x60);
-    MAKE_SHADER(BumpShaderV3, 0x84);
-    MAKE_SHADER(VertexColorShader, 0x5c);
-    MAKE_SHADER(VertexColorAlphaTextureShader, 0x5c);
-    MAKE_SHADER(PulseShader, 0x5c);
-    MAKE_SHADER(BumpShader, 0x84);
-    MAKE_SHADER(BumpShaderV4, 0x5c);
-    MAKE_SHADER(BloomShader, 0xa0);
-    MAKE_SHADER(BlurShader, 0x64);
-    MAKE_SHADER(PostBWShader, 0x34);
-    MAKE_SHADER(TextureLightShader, 0x70);
-    MAKE_SHADER(BumpRimCubeShader, 0x98);
-    MAKE_SHADER(BumpShaderCloak, 0x98);
-    MAKE_SHADER(SpecCubeMapping, 0x5c);
-    MAKE_SHADER(SpecCubeAlphaMapping, 0x5c);
-    MAKE_SHADER(EnergyShield, 0x60);
-    MAKE_SHADER(SimpleRefractionShader, 0x58);
-    MAKE_SHADER(GlowShader, 0x34);
-    MAKE_SHADER(GlowPPShader, 0xa8);
-    MAKE_SHADER(DrawFBOShader, 0x60);
-    MAKE_SHADER(ColorMixAdd, 0x40);
-    MAKE_SHADER(BumpShaderParticle, 0x6c);
-    MAKE_SHADER(DNSShader, 0x64);
-    MAKE_SHADER(BumpShaderRefract, 0x4c);
-    MAKE_SHADER(BumpRimCubeShader_new, 0x98);
-#undef MAKE_SHADER
+    this->ShaderRegister(new TextureShader());
+    this->ShaderRegister(new SimpleShader());
+    this->ShaderRegister(new TextureVtxColorShader());
+    this->ShaderRegister(new NoTexShader());
+    this->ShaderRegister(new NoTexVtxColorShader());
+    this->ShaderRegister(new TextureAlphaTestShader());
+    this->ShaderRegister(new CubeMapping());
+    this->ShaderRegister(new CubeNormalMapping());
+    this->ShaderRegister(new BumpMapping());
+    this->ShaderRegister(new SandboxShader());
+    this->ShaderRegister(new GenericShader());
+    this->ShaderRegister(new GenericShader1());
+    this->ShaderRegister(new GenericShader2());
+    this->ShaderRegister(new TexOnlyShader());
+    this->ShaderRegister(new BumpShaderV2());
+    this->ShaderRegister(new BumpShaderV3());
+    this->ShaderRegister(new VertexColorShader());
+    this->ShaderRegister(new VertexColorAlphaTextureShader());
+    this->ShaderRegister(new PulseShader());
+    this->ShaderRegister(new BumpShader());
+    this->ShaderRegister(new BumpShaderV4());
+    this->ShaderRegister(new BloomShader());
+    this->ShaderRegister(new BlurShader());
+    this->ShaderRegister(new PostBWShader());
+    this->ShaderRegister(new TextureLightShader());
+    this->ShaderRegister(new BumpRimCubeShader());
+    this->ShaderRegister(new BumpShaderCloak());
+    this->ShaderRegister(new SpecCubeMapping());
+    this->ShaderRegister(new SpecCubeAlphaMapping());
+    this->ShaderRegister(new EnergyShield());
+    this->ShaderRegister(new SimpleRefractionShader());
+    this->ShaderRegister(new GlowShader());
+    this->ShaderRegister(new GlowPPShader());
+    this->ShaderRegister(new DrawFBOShader());
+    this->ShaderRegister(new ColorMixAdd());
+    this->ShaderRegister(new BumpShaderParticle());
+    this->ShaderRegister(new DNSShader());
+    this->ShaderRegister(new BumpShaderRefract());
+    this->ShaderRegister(new BumpRimCubeShader_new());
     glGetError();
     return 1;
 }

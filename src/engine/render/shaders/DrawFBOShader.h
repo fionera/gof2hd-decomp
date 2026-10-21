@@ -28,6 +28,9 @@ namespace AbyssEngine {
         int texCoordLoc;
         int textureLoc;
 
+        // Trailing state not yet identified; the original allocates sizeof == 0x60 (operator new in Engine::ShaderInit).
+        unsigned char unknownTail[8];
+
         DrawFBOShader();
 
         ~DrawFBOShader();
@@ -40,6 +43,10 @@ namespace AbyssEngine {
 
         void RenderEffect(FBOContainer *fbo, Engine *engine) override;
     };
+
+#if __SIZEOF_POINTER__ == 4
+    static_assert(sizeof(DrawFBOShader) == 0x60, "DrawFBOShader size (Engine::ShaderInit operator new)");
+#endif
 }
 
 #endif

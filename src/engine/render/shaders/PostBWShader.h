@@ -25,6 +25,9 @@ namespace AbyssEngine {
         int aTexCoord;
         int sTexture;
 
+        // Trailing state not yet identified; the original allocates sizeof == 0x34 (operator new in Engine::ShaderInit).
+        unsigned char unknownTail[4];
+
         PostBWShader();
 
         ~PostBWShader();
@@ -37,6 +40,10 @@ namespace AbyssEngine {
 
         void RenderEffect(FBOContainer *fbo, Engine *engine) override;
     };
+
+#if __SIZEOF_POINTER__ == 4
+    static_assert(sizeof(PostBWShader) == 0x34, "PostBWShader size (Engine::ShaderInit operator new)");
+#endif
 }
 
 #endif
