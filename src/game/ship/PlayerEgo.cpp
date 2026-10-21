@@ -94,7 +94,6 @@ float PlayerEgo::getDriveChargeRate() {
 }
 
 bool PlayerEgo::isAutoPilot() {
-    PlayerEgo *self = this;
     return this->autoPilot;
 }
 
@@ -293,7 +292,6 @@ void PlayerEgo::turnHorizontal(int a, float v) {
 }
 
 float PlayerEgo::getThrust() {
-    PlayerEgo *self = this;
     return this->thrust;
 }
 
@@ -670,7 +668,6 @@ unsigned char PlayerEgo::aboutToReachAutoTarget() {
 }
 
 bool PlayerEgo::autoTurretIsEnabled() {
-    PlayerEgo *self = this;
     return this->autoTurretEnabled;
 }
 

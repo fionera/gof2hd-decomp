@@ -47,9 +47,9 @@ public:
 
     void updateSingle(int index, float dt) override;
 
-    void setParticle(const Vector &pos, float p2, uint32_t color, float p4, float p5,
-                     float p6, float p7, bool clearColor, float p9, float p10,
-                     const Vector &uv) override;
+    void setParticle(const Vector &pos, float scale, uint32_t color, float u0, float v0,
+                     float u1, float v1, bool maskedColor, float size0, float size1,
+                     const Vector &velocity) override;
 
     void setAlpha(int index, uint32_t color, float alpha);
 

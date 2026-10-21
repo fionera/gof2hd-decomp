@@ -3,6 +3,7 @@
 #include "engine/core/AEString.h"
 #include "engine/core/Array.h"
 #include "engine/math/AEMath.h"
+#include "engine/math/BSphere.h"
 #include "engine/render/PaintCanvas.h"
 #include <cstdlib>
 #include <cstring>
@@ -19,7 +20,6 @@ void AEMath_MatrixTransformVector(Vector *out, const Vector *v);
 
 void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
 
-void AEMath_BSphere_assign(void *dst, const void *src); // lint: void_ptr (external symbol signature)
 
 
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
@@ -328,55 +328,34 @@ void MeshMerger::init() {
 }
 
 MeshMerger::Mesh *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
-    Mesh *out = new Mesh(mesh);
+    Mesh *out = new Mesh();
     out->vertexCount = mesh->vertexCount;
     out->indexCount = mesh->indexCount;
-    uint8_t flags = mesh->vertexFormat;
-    out->vertexFormat = flags;
-
-    if (flags & 2) {
+    out->vertexFormat = mesh->vertexFormat;
+    if (mesh->vertexFormat & 2)
         out->texCoords = mesh->texCoords;
-    }
-    if (flags & 8) {
+    if (mesh->vertexFormat & 8)
         out->colors = mesh->colors;
-    }
-    if (flags & 0x10) {
+    if (mesh->vertexFormat & 0x10)
         out->indices = mesh->indices;
-    }
-    uint16_t nv = mesh->vertexCount;
-    if (flags & 1) {
-        char *buf = new char[(uint32_t) nv * 0xc];
-        out->positions = (unsigned char *) buf;
-        int off = 0;
-        for (uint32_t k = 0; k < nv; k++) {
-            Vector tmp;
-            AEMath_MatrixTransformVector(&tmp, (const Vector *) &m);
-            *(Vector *) (buf + off) = tmp;
-            off += 0xc;
-            nv = mesh->vertexCount;
+
+    if (mesh->vertexFormat & 1) {
+        out->positions = new unsigned char[mesh->vertexCount * 12];
+        for (unsigned int i = 0; i < mesh->vertexCount; i++) {
+            ((Vector *) out->positions)[i] =
+                    AbyssEngine::AEMath::MatrixTransformVector(m, ((const Vector *) mesh->positions)[i]);
         }
-        flags = mesh->vertexFormat;
     }
-    if (flags & 4) {
-        char *buf = new char[(uint32_t) nv * 0xc];
-        out->normals = (unsigned char *) buf;
-        int off = 0;
-        for (uint32_t k = 0; k < nv; k++) {
-            Vector rot;
-            AEMath_MatrixRotateVector(&rot, (const Vector *) &m);
-            *(Vector *) (buf + off) = AbyssEngine::AEMath::VectorNormalize(rot);
-            off += 0xc;
-            nv = mesh->vertexCount;
+    if (mesh->vertexFormat & 4) {
+        out->normals = new unsigned char[mesh->vertexCount * 12];
+        for (unsigned int i = 0; i < mesh->vertexCount; i++) {
+            ((Vector *) out->normals)[i] = AbyssEngine::AEMath::VectorNormalize(
+                    AbyssEngine::AEMath::MatrixRotateVector(m, ((const Vector *) mesh->normals)[i]));
         }
     }
 
-    Vector center;
-    AEMath_MatrixTransformVector(&center, (const Vector *) &m);
-    float bs[4];
-    bs[0] = center.x;
-    bs[1] = center.y;
-    bs[2] = mesh->boundsRadius;
-    bs[3] = 1.0f;
-    AEMath_BSphere_assign(&out->boundsCenterX, bs);
+    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, *(const Vector *) &mesh->boundsCenterX);
+    AbyssEngine::AEMath::BSphere bounds = {center, mesh->boundsRadius, 1.0f};
+    *reinterpret_cast<AbyssEngine::AEMath::BSphere *>(&out->boundsCenterX) = bounds;
     return out;
 }
