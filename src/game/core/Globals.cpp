@@ -1580,38 +1580,38 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
     }
 }
 
-static const float gSCF_b90 = 0;
-static const float gSCF_b10 = 0;
-static const float gSCF_b14 = 0;
-static const float gSCF_b7c = 0;
-static const float gSCF_b80 = 0;
-static const float gSCF_b84 = 0;
-static const float gSCF_b88 = 0;
-static const float gSCF_b8c = 0;
-static const float gSCF_b94 = 0;
-static const float gSCF_b98 = 0;
-static const float gSCF_b9c = 0;
-static const float gSCF_ba0 = 0;
-static const float gSCF_ba4 = 0;
-static const float gSCF_ba8 = 0;
-static const float gSCF_bac = 0;
-static const float gSCF_bb0 = 0;
-static const float gSCF_bb4 = 0;
-static const float gSCF_bb8 = 0;
-static const float gSCF_bbc = 0;
-static const float gSCF_bc0 = 0;
-static const float gSCF_bc4 = 0;
-static const float gSCF_bc8 = 0;
-static const float gSCF_bcc = 0;
-static const float gSCF_bd0 = 0;
-static const float gSCF_bd4 = 0;
-static const float gSCF_bd8 = 0;
-static const float gSCF_bdc = 0;
-static const float gSCF_be0 = 0;
-static const float gSCF_be4 = 0;
-static const float gSCF_be8 = 0;
-static const float gSCF_bec = 0;
-static const float gSCF_bf0 = 0;
+static const float gSCF_b90 = 56.25f;
+static const float gSCF_b10 = 63.28125f;
+static const float gSCF_b14 = 210.9375f;
+static const float gSCF_b7c = 63.28125f;
+static const float gSCF_b80 = 90.0f;
+static const float gSCF_b84 = 45.0f;
+static const float gSCF_b88 = 300.0f;
+static const float gSCF_b8c = 150.0f;
+static const float gSCF_b94 = 80.0f;
+static const float gSCF_b98 = 40.0f;
+static const float gSCF_b9c = 107.28125f;
+static const float gSCF_ba0 = 5.625f;
+static const float gSCF_ba4 = 18.09375f;
+static const float gSCF_ba8 = 19.28125f;
+static const float gSCF_bac = 112.5f;
+static const float gSCF_bb0 = 94.21875f;
+static const float gSCF_bb4 = 152.0f;
+static const float gSCF_bb8 = 77.0f;
+static const float gSCF_bbc = 160.0f;
+static const float gSCF_bc0 = 80.0f;
+static const float gSCF_bc4 = 134.0f;
+static const float gSCF_bc8 = 67.0f;
+static const float gSCF_bcc = 100.0625f;
+static const float gSCF_bd0 = 209.53125f;
+static const float gSCF_bd4 = 144.0f;
+static const float gSCF_bd8 = 74.0f;
+static const float gSCF_bdc = 298.0f;
+static const float gSCF_be0 = 149.0f;
+static const float gSCF_be4 = 132.1875f;
+static const float gSCF_be8 = 0.0f;
+static const float gSCF_bec = 189.0f;
+static const float gSCF_bf0 = 94.0f;
 
 
 static inline char rf(char *const g) { return *g; }
