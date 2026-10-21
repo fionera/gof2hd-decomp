@@ -68,8 +68,8 @@ namespace AbyssEngine {
         *reinterpret_cast<AEMath::BSphere *>(&this->boundsCenterX) =
                 *reinterpret_cast<const AEMath::BSphere *>(&src->boundsCenterX);
 
-        this->vboByteSize = 0;
         this->vertexFormat = src->vertexFormat;
+        this->vboByteSize = 0;
         this->materialId = 0;
         this->shaderAnimValue0 = 0;
         this->vertexCount = src->vertexCount;
@@ -94,8 +94,8 @@ namespace AbyssEngine {
 
         *reinterpret_cast<AEMath::Vector *>(&this->pivotX) = *reinterpret_cast<const AEMath::Vector *>(&src->pivotX);
 
-        this->shared = 1;
         this->hasAnimation = src->hasAnimation;
+        this->shared = 1;
         this->uploaded = src->uploaded;
         this->positionVBO = src->positionVBO;
         this->indexVBO = src->indexVBO;
