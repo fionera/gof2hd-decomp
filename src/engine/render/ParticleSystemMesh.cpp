@@ -475,33 +475,29 @@ void ParticleSystemMesh::emitTrail(int delta) {
 }
 
 void ParticleSystemMesh::updateSingle(int id, float delta) {
-    int intDelta = (int) delta;
     int set = this->particleSetIds[id];
     if ((int) (this->flags << 16) < 0) {
-        updateTrailEdges(id, intDelta);
-        if (this->particleAges[id] == -2 && this->newSectionStarted != 0) {
-            Vector scaledRight = AbyssEngine::AEMath::MatrixGetRight(*this->matrix) * (this->mirror == 0 ? 1.0f : -1.0f);
+        updateTrailEdges(id, (int) delta);
+        if (this->particleAges[id] == -2) {
+            if (this->newSectionStarted == 0)
+                return;
+            Vector right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix) * (this->mirror != 0 ? -1.0f : 1.0f);
             Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
-            float s = (float) *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x44);
-            scaledRight = scaledRight * s;
-            Vector scaledUp = up * s;
-            finishCurrentTrailParticle((ParticleSet) set, id, scaledRight, scaledUp);
+            float size = (float) *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x44);
+            finishCurrentTrailParticle((ParticleSet) set, id, right * size, up * size);
         }
     } else {
-        updateUsualEdges(id, intDelta);
+        updateUsualEdges(id, (int) delta);
     }
 
-    int age = this->particleAges[id];
-    age = (int) ((float) age + delta);
-    this->particleAges[id] = age;
+    this->particleAges[id] = (int) ((float) this->particleAges[id] + delta);
     updateSingleColor(id);
 
-    int lifetime = *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x28);
-    if (age > lifetime) {
+    if (this->particleAges[id] > *(int32_t *) (ParticleSettingsRef::cur + set * 160 + 0x28)) {
         this->particleAges[id] = -1;
         int point = (int) this->idOffset + (int) this->stride * id * 4;
         for (int i = 0; i < (int) this->stride * 4; i++)
-            this->canvas->MeshSetPoint(this->resource, (uint16_t)(point + i), 0.0f, 0.0f, 0.0f);
+            this->canvas->MeshSetPoint(this->resource, (uint16_t) (point + i), 0.0f, 0.0f, 0.0f);
     }
 }
 
