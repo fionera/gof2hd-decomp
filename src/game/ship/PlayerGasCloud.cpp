@@ -37,10 +37,6 @@ static_assert(offsetof(PgcCampaign, rescueMissionFlag) == 0x2d,
 
 
 
-static float g_pgc_countScale = 130.0f;
-static float g_pgc_attrDiv = 100.0f;
-static float g_pgc_spread = 5000.0f;
-static float g_pgc_lifeDiv = 200.0f;
 static float g_pgcu_velScale = 0.08f;
 static float g_pgcu_catchDist = 800.0f;
 static int g_pgcu_minTimer = -1499;
@@ -54,27 +50,23 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/
                                AEGeometry *geometry, const Vector &position)
     : KIPlayer(itemId, -1, new Player(0, 9999999, 0, 0, 0), geometry,
                position.x, position.y, position.z, false) {
-    this->center.x = 0;
-    this->center.y = 0;
-    this->center.z = 0;
+    this->player->setKIPlayer(this);
     this->player->setMaxHitpoints(1);
-
     this->setPosition(position);
 
-    this->elapsedSinceExplosion = 0;
     this->crateGeometry = 0;
+    this->elapsedSinceExplosion = 0;
     this->field_0x25 = 0;
-
-    int cloudMesh = 0x4a35;
-    if ((unsigned int) (itemId - 0xc9) < 4)
-        cloudMesh = itemId + 0x496c;
-    int sparkMesh = 0x4a39;
-    if ((unsigned int) (itemId - 0xc9) < 4)
-        sparkMesh = itemId + 0x4970;
+    // Gas cloud items 201..204 have their own cloud/spark meshes.
+    int cloudMesh = 18997;
+    if ((unsigned int) (itemId - 201) < 4)
+        cloudMesh = itemId + 18796;
+    int sparkMesh = 19001;
+    if ((unsigned int) (itemId - 201) < 4)
+        sparkMesh = itemId + 18800;
+    this->cloudMeshId = cloudMesh;
     this->itemId = itemId;
     this->sparkMeshId = sparkMesh;
-    this->cloudMeshId = cloudMesh;
-
     this->sparkGeometries = 0;
     this->sparkVelocities = 0;
     this->sparkLife = 0;
@@ -83,14 +75,12 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/
     this->sparkTimers = 0;
     this->sparkInSight = 0;
     this->exploded = 0;
-
     this->center = position;
 
-    this->modelGeometry = new AEGeometry(this->cloudMeshId, Globals::Canvas, false);
+    this->modelGeometry = new AEGeometry((uint16_t) this->cloudMeshId, Globals::Canvas, false);
     this->modelGeometry->setPosition(position);
-
-    this->hasCargo = 1;
     this->field_0x44 = 1;
+    this->hasCargo = 1;
     this->state = 0;
     this->visibleFlag = 1;
     this->settled = 0;
@@ -168,8 +158,8 @@ void PlayerGasCloud::explode(int itemIndex, Vector src, float radius) {
         return;
 
     this->state = 3;
+    this->setActive(false);
     this->exploded = 1;
-
     this->sparkGeometries = new Array<AEGeometry *>();
     this->sparkVelocities = new Array<Vector *>();
     this->sparkLife = new Array<float>();
@@ -178,49 +168,32 @@ void PlayerGasCloud::explode(int itemIndex, Vector src, float radius) {
     this->sparkInSight = new Array<bool>();
     this->sparkScale = new Array<float>();
 
+    // The closer the explosion, the more (and further spread) sparks the cloud releases.
     Vector delta = src - this->center;
-    float dist = VectorLength(delta);
-    float t = 1.5f - dist / radius;
-    float countBase = t * g_pgc_countScale;
-
-    Array<Item *> *itemTable = Globals::items;
-    Item *item = (*itemTable)[itemIndex];
-    int attr = item->getAttribute(0);
-    float attrF = (float) attr / g_pgc_attrDiv;
-    float spread = t * g_pgc_spread;
-    float lifeDiv = g_pgc_lifeDiv;
-
-    AbyssEngine::AERandom *rng = Globals::rnd;
-
-    int count = (int) ((countBase / 1.5f + 10.0f) * attrF);
+    float strength = 1.5f - VectorLength(delta) / radius;
+    float amount = strength * 130.0f;
+    float density = (float) (*Globals::items)[itemIndex]->getAttribute(56) / 100.0f;
+    float spread = strength * 5000.0f;
+    int count = (int) ((amount / 1.5f + 10.0f) * density);
     for (int i = 0; i < count; i++) {
-        AEGeometry *shard = new AEGeometry(this->sparkMeshId,
-                                           Globals::Canvas, false);
-        shard->setPosition(this->center);
+        AEGeometry *spark = new AEGeometry((uint16_t) this->sparkMeshId, Globals::Canvas, false);
+        spark->setPosition(this->center);
 
-        float jx = (float) rng->next(10000);
-        float jy = (float) rng->next(10000);
-        float jz = (float) rng->next(10000);
+        float x = this->center.x + delta.x - spread + strength * (float) Globals::rnd->nextInt(10000);
+        float y = this->center.y + delta.y - spread + strength * (float) Globals::rnd->nextInt(10000);
+        float z = this->center.z - spread + delta.z + strength * (float) Globals::rnd->nextInt(10000);
+        Vector direction = VectorNormalize(Vector{x, y, z} - this->center);
 
-        Vector p;
-        p.x = ((this->center.x + delta.x) - spread) + t * jx;
-        p.y = ((this->center.y + delta.y) - spread) + t * jy;
-        p.z = ((this->center.z + delta.z) - spread) + t * jz;
-
-        Vector d = p - this->center;
-        Vector dn = AbyssEngine::AEMath::VectorNormalize(d);
-
-        float life = ((float) rng->next(200) / lifeDiv) * 3.0f + 3.0f;
-        int timer = rng->next(14000);
-
-        ArrayAdd(life * 7.0f, *(this->sparkLife));
-        ArrayAdd(life, *(this->sparkLifeMin));
-        ArrayAdd(timer + 8000, *(this->sparkTimers));
-
-        ArrayAdd(new Vector(dn), *(this->sparkVelocities));
-        ArrayAdd(shard, *(this->sparkGeometries));
-        ArrayAdd(false, *(this->sparkInSight));
-        ArrayAdd(1.0f, *(this->sparkScale));
+        float minLife = (float) Globals::rnd->nextInt(200) / 200.0f * 3.0f + 3.0f;
+        float life = minLife * 7.0f;
+        int timer = Globals::rnd->nextInt(14000);
+        ArrayAdd(life, *this->sparkLife);
+        ArrayAdd(minLife, *this->sparkLifeMin);
+        ArrayAdd(timer + 8000, *this->sparkTimers);
+        ArrayAdd(new Vector(direction), *this->sparkVelocities);
+        ArrayAdd(spark, *this->sparkGeometries);
+        ArrayAdd(false, *this->sparkInSight);
+        ArrayAdd(1.0f, *this->sparkScale);
     }
 }
 
@@ -369,34 +342,23 @@ void PlayerGasCloud::update(int dt) {
 }
 
 void PlayerGasCloud::render() {
-    char cameraLocal[60];
-
     if (this->visibleFlag == 0)
         return;
-    int mode = this->state;
-    if (mode != 3 && mode != 0)
+    if (this->state != 3 && this->state != 0)
         return;
 
-    PaintCanvas *cam = Globals::Canvas;
-    unsigned int cur = cam->CameraGetCurrent();
-    memcpy(cameraLocal, cam->CameraGetLocal(cur), 0x3c);
-
-    const Matrix &camMatrix = *(const Matrix *) cameraLocal;
-    Vector dir = MatrixGetDir(camMatrix);
-
-    Array<AEGeometry *> *arr = this->sparkGeometries;
-    if (this->exploded == 0 || arr == 0) {
-        AEGeometry *geom = this->modelGeometry;
-        geom->setDirection(dir, MatrixGetUp(camMatrix));
-        geom->render();
-    } else {
-        for (unsigned int i = 0; i < arr->size(); i++) {
-            AEGeometry *g = (*this->sparkGeometries)[i];
-            g->setScaling((*this->sparkScale)[i]);
-            g->setDirection(dir, MatrixGetUp(camMatrix));
-            g->render();
-            arr = this->sparkGeometries;
+    // Billboard the cloud towards the camera.
+    Matrix camera = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+    Vector direction = -MatrixGetDir(camera);
+    if (this->exploded && this->sparkGeometries != nullptr) {
+        for (unsigned int i = 0; i < this->sparkGeometries->size(); i++) {
+            (*this->sparkGeometries)[i]->setScaling((*this->sparkScale)[i]);
+            (*this->sparkGeometries)[i]->setDirection(direction, MatrixGetUp(camera));
+            (*this->sparkGeometries)[i]->render();
         }
+    } else {
+        this->modelGeometry->setDirection(direction, MatrixGetUp(camera));
+        this->modelGeometry->render();
     }
 }
 
