@@ -1668,81 +1668,18 @@ void Hud::drawChallengeModeScore(int unused) {
 
 
 
-static const char g_Hud_meSep[1] = {0};
-static const char g_Hud_meEnd[1] = {0};
-
 void Hud::hudEventMedal(int medalId, int percent) {
-    GameText *gt = Globals::gameText;
-    String *name = gt->getText(medalId + 0x5e3);
-
-    char sep[12], acc1[12], num[12], acc2[12], end[12], acc3[12];
-    ((String *) (sep))->ctor_char(g_Hud_meSep, false);
-    *(String *) acc1 = *(String *) name + *(String *) sep;
-    if (percent >= 100) percent = 100;
-    ((String *) (num))->Set((long long) (percent));
-    *(String *) acc2 = *(String *) acc1 + *(String *) num;
-    ((String *) (end))->ctor_char(g_Hud_meEnd, false);
-    *(String *) acc3 = *(String *) acc2 + *(String *) end;
-
-    String *dst = &this->field_0x1e0;
-    *((String *) (dst)) = *((String *) (acc3));
-    {
-        String *_s = ((String *) (acc3));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (end));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (acc2));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (num));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (acc1));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (sep));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    char probe[12];
-    ((String *) (probe))->Set(((String *) (dst))->data);
-    int same = sameHudEventAsBefore(*(String *) probe);
-    {
-        String *_s = ((String *) (probe));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    if (same != 0) return;
-
-    String *str = new String(*(String *) dst);
-    ListItem *item = new ListItem(str, 3);
-    addToEventQueue(item);
-
-    int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) ((String *) Globals::font));
-    int screenW = *(int *) &Globals::w;
-    this->eventScrollTick = 0;
-    this->eventScrolls = 1;
-    this->letterbox = ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w) ? 1 : 0;
+    if (percent >= 100)
+        percent = 100;
+    this->field_0x1e0 = *Globals::gameText->getText(medalId + 1507) + String(":") + String(percent) + String("%");
+    if (this->sameHudEventAsBefore(String(this->field_0x1e0, false)) != 0)
+        return;
+    this->addToEventQueue(new ListItem(new String(this->field_0x1e0, false), 3));
+    bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
+                Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
+    this->eventScrolls = 0;
+    this->field_0x1dc[2] = 1;
+    this->letterbox = wide;
 }
 
 
