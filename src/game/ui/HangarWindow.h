@@ -99,7 +99,7 @@ public:
     int iconOffsetY;
     uint8_t replaceEquipPending;
     bool upgradeMode;
-    uint8_t localBluePrint;
+    bool localBluePrint;
     uint8_t listModeFlag;
     int buttonWidth;
     int gridButtonHeight;

@@ -227,31 +227,3 @@ void ModMainMenu::OnRender3D() {
     Globals::Canvas->End3d();
 }
 
-void ModMainMenu::OnKeyPress(long long key, long long mod) {
-    (void) key;
-    (void) mod;
-}
-
-void ModMainMenu::OnKeyRelease(long long key, long long mod) {
-    (void) key;
-    (void) mod;
-}
-
-void ModMainMenu::OnTouchBegin(int x, int y) {
-    (void) x;
-    (void) y;
-}
-
-void ModMainMenu::OnTouchMove(int x, int y) {
-    (void) x;
-    (void) y;
-}
-
-void ModMainMenu::OnTouchEnd(int x, int y) {
-    (void) x;
-    (void) y;
-}
-
-int ModMainMenu::ShowLoadingScreen() {
-    return 1;
-}

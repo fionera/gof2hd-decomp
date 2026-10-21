@@ -24,8 +24,6 @@ static_assert(offsetof(JNINativeInterface, DeleteLocalRef) == 0x5c, "JNI layout"
 
 
 
-static const char kDirPreFix[] = "";
-
 char *logi(char *message) {
     return message;
 }
@@ -321,10 +319,6 @@ void FileInterfaceAndroid::SetSaveDirectory(String) {
 }
 
 void FileInterfaceAndroid::ResetSaveDirectory() {
-}
-
-String FileInterfaceAndroid::GetDirPreFix() {
-    return String(kDirPreFix);
 }
 
 jmethodID FileInterfaceAndroid::methodRead;

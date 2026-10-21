@@ -86,7 +86,7 @@ public:
     uint8_t damaged;
     uint8_t vulnerable;
     uint8_t shootingEnabled;
-    float hitVector[3];
+    Vector hitVector;
     KIPlayer *kiPlayer;
     float bombForce;
     float empForce;

@@ -15,11 +15,7 @@ extern "C" int loadAPK(const char *path) { // lint: extern_c (native ABI boundar
 }
 
 extern "C" int loadAPKAndZip(const char *apkPath, const char *patchPath) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    struct zip *apk = zip_open(apkPath, 0, 0);
-    APKArchive = apk;
-
-    struct zip *patch = zip_open(patchPath, 0, 0);
-    ZIPArchive = patch;
-
-    return apk != 0 && patch != 0;
+    APKArchive = zip_open(apkPath, 0, 0);
+    ZIPArchive = zip_open(patchPath, 0, 0);
+    return APKArchive != 0 && ZIPArchive != 0;
 }

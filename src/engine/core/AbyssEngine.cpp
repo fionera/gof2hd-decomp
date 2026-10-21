@@ -17,7 +17,7 @@
 #include <cstdint>
 #include <cstring>
 
-namespace {
+namespace AbyssEngine {
     struct CurveKeyframe {
         int8_t tag;  // 1 = step, 2 = linear, 3 = cubic Hermite
         uint8_t pad0x1[7];
@@ -38,25 +38,6 @@ namespace {
 }
 
 namespace AbyssEngine {
-    // Defined in EngineFlags.cpp (separate TU). These MUST be declared in
-    // namespace AbyssEngine (external linkage) so they bind to the real
-    // definitions there; declaring them in an anonymous namespace would give
-    // them internal linkage and leave them undefined in this TU.
-    extern char *g_Camera_frustumEnabledFlag;
-    extern char *g_Engine_fboEnabledFlag;
-    extern char *g_Engine_shaderModeFlag;
-    extern char *g_GameText_arabicEnabledFlag;
-    extern char *g_MeshIntersect_flipVFlag;
-    extern char *g_Mesh_extraArraysFlag;
-    extern char *g_Mesh_keepCpuCopyFlag;
-    extern char *g_Mesh_shaderPathFlag;
-    extern char *g_Mesh_tangentDelFlag;
-    extern char *g_Mesh_tangentEnabledFlag;
-    extern int *g_Mesh_vboByteCounter;
-    extern char *g_Mesh_vboEnabledFlag;
-    extern char *g_SpriteSystem_tangentFlag;
-    extern char *g_SpriteSystem_uvFlipFlag;
-
     int currentUsedShaderIndex = -1;
 
     int currentFps;
@@ -72,7 +53,7 @@ namespace AbyssEngine {
     unsigned char performanceTest;
     long long performanceTime;
     float timeBetweenFrames = 1000000.0f;
-    unsigned char BiasErrorOutputFlag = 1;
+    bool BiasErrorOutputFlag = true;
     unsigned char performanceTestEnded;
     int orientationChangeTimer;
     long long performanceFrameCounter;
@@ -87,12 +68,6 @@ namespace AbyssEngine {
     long long triDrawn;
     unsigned char ShaderSet;
 
-    Engine *AE_getInitGLThis();
-
-    int AE_getInitGLWidth();
-
-    int AE_getInitGLHeight();
-
     void AE_SpriteSystem_pushMatrix(unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3,
                                     unsigned int m4, unsigned int m5, unsigned int m6, unsigned int m7,
                                     unsigned int m8, unsigned int m9, unsigned int m10, unsigned int m11,
@@ -106,115 +81,40 @@ unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const c
 }
 
 namespace AbyssEngine {
-    Quaternion operator*(const Quaternion &a, float s) {
-        return Quaternion(a.x * s, a.y * s, a.z * s, a.w * s);
-    }
-}
-
-namespace AbyssEngine {
+    // The original exports getAppVersion with size 0 at the same address as Engine::InitGL: an
+    // Android stub whose body the compiler dropped entirely. The previous body here was a copy of
+    // Engine::InitGL (GLES1Compat.cpp) routed through invented AE_getInitGL* shims.
     void getAppVersion() {
-        Engine *self = AE_getInitGLThis();
-        int width = AE_getInitGLWidth();
-        int height = AE_getInitGLHeight();
-
-        self->refractFBO = 0;
-        self->displayWidth = width;
-        self->displayHeight = height;
-        self->viewportWidth = width;
-        self->viewportHeight = height;
-
-        FileInterfaceAndroid *fileIface = new FileInterfaceAndroid();
-        self->fileInterface = fileIface;
-        AEFile::SetInterface((FileInterface *) fileIface);
-
-        self->lastGlError = 0;
-        self->vibrationSupported = 0;
-        self->hasVibration = false;
-
-        char *shaderFlag = g_Engine_shaderModeFlag;
-        self->viewFramebuffer = 0;
-        self->ResetLightParam();
-        glViewport(0, 0, self->viewportHeight, self->viewportWidth);
-
-        if (*shaderFlag == 0) {
-            glEnable(0x803a);
-            glDisable(0xb50);
-            glLineWidth(1.0f);
-        } else {
-            self->ShaderInit();
-        }
-
-        float zero3[3] = {0, 0, 0};
-        self->field_0x468 = *(const Vector *) zero3;
-        self->lightDirty[0] = 0;
-        self->field_0x474 = *(const Vector *) zero3;
-        self->lightDirty[1] = 0;
-
-        glEnable(0xb71);
-        self->GlEnable(0xde1, true);
-        glDisable(0xbe2);
-        glCullFace(0x405);
-        glEnable(0xb44);
-        self->AfterGLInit();
-        (*(PaintCanvas **) self->appManager)->Initialize(false);
-
-        self->maxTextureSize = 0;
-        glGetIntegerv(0xd33, reinterpret_cast<GLint *>(&self->maxTextureSize));
-
-        if (*shaderFlag != 0 && *g_Engine_fboEnabledFlag != 0) {
-            FBOContainer *fbo = new FBOContainer(self, String(""));
-            self->refractFBO = fbo;
-            fbo->Create((int) self->displayWidth, (int) self->displayHeight, true, false);
-        }
-    }
-}
-
-namespace AbyssEngine {
-    Quaternion operator-(const Quaternion &a, const Quaternion &b) {
-        return Quaternion(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
     }
 }
 
 namespace AbyssEngine {
     void CurveRelease(Curve **slot) {
-        Curve *curve = (Curve *) *slot;
-        if (curve == 0)
+        if (*slot == 0)
             return;
 
-        CurveKeyframe **data = 0;
-        for (unsigned int i = 0; (data = (CurveKeyframe **) curve->entries),
-                                 i < (unsigned int) curve->count; ++i) {
-            CurveKeyframe *entry = data[i];
-            int8_t tag = (int8_t) entry->tag;
-            switch (tag) {
-                case 3:
+        for (unsigned short i = 0; i < (*slot)->count; i++) {
+            CurveKeyframe *entry = (*slot)->entries[i];
+            switch (entry->tag) {
+                case 1:
                     operator delete(entry);
                     break;
                 case 2:
                     operator delete(entry);
                     break;
-                case 1:
+                case 3:
                     operator delete(entry);
                     break;
             }
-            curve = (Curve *) *slot;
         }
 
-        if (data != 0) {
-            operator delete[](data);
-            curve = (Curve *) *slot;
-        }
-        curve->entries = 0;
+        if ((*slot)->entries != 0)
+            delete[] (*slot)->entries;
+        (*slot)->entries = 0;
 
         if (*slot != 0)
             operator delete(*slot);
         *slot = 0;
-    }
-}
-
-namespace AbyssEngine {
-    Quaternion operator+(const Quaternion &a, const Quaternion &b) {
-        return Quaternion(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
     }
 }
 
@@ -231,7 +131,7 @@ namespace AbyssEngine {
         *out = curve;
         curve->count = count;
 
-        unsigned char *data = (unsigned char *) operator new[]((unsigned int) count << 2);
+        CurveKeyframe **data = (CurveKeyframe **) operator new[]((unsigned int) count << 2);
         curve->entries = data;
         memcpy(data, src, (unsigned int) count << 2);
         return 1;
@@ -239,19 +139,19 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b) {
-        float local[4][4];
-        const float (*A)[4] = a->m;
-        const float (*B)[4] = b->m;
-
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                local[i][j] = A[i][0] * B[0][j] + A[i][1] * B[1][j] + A[i][2] * B[2][j] +
-                              A[i][3] * B[3][j];
-            }
+    void esMatrixMultiply(ESMatrix *result, ESMatrix *srcA, ESMatrix *srcB) {
+        ESMatrix tmp;
+        for (int i = 0; i < 4; i++) {
+            tmp.m[i][0] = (srcA->m[i][0] * srcB->m[0][0]) + (srcA->m[i][1] * srcB->m[1][0]) +
+                          (srcA->m[i][2] * srcB->m[2][0]) + (srcA->m[i][3] * srcB->m[3][0]);
+            tmp.m[i][1] = (srcA->m[i][0] * srcB->m[0][1]) + (srcA->m[i][1] * srcB->m[1][1]) +
+                          (srcA->m[i][2] * srcB->m[2][1]) + (srcA->m[i][3] * srcB->m[3][1]);
+            tmp.m[i][2] = (srcA->m[i][0] * srcB->m[0][2]) + (srcA->m[i][1] * srcB->m[1][2]) +
+                          (srcA->m[i][2] * srcB->m[2][2]) + (srcA->m[i][3] * srcB->m[3][2]);
+            tmp.m[i][3] = (srcA->m[i][0] * srcB->m[0][3]) + (srcA->m[i][1] * srcB->m[1][3]) +
+                          (srcA->m[i][2] * srcB->m[2][3]) + (srcA->m[i][3] * srcB->m[3][3]);
         }
-
-        memcpy(out, local, 0x40);
+        memcpy(result, &tmp, sizeof(ESMatrix));
     }
 }
 
@@ -261,38 +161,41 @@ namespace AbyssEngine {
     };
 
     int CurveGetValue(unsigned long long time, Curve *curve) {
-        CurveKeyframe **keys = (CurveKeyframe **) curve->entries;
-        if (keys[0]->time >= time)
-            return keys[0]->value;
+        CurveKeyframe **keys = curve->entries;
+        CurveKeyframe *key = keys[0];
+        if (key->time >= time)
+            return key->value;
         int last = curve->count - 1;
-        if (time >= keys[last]->time)
-            return keys[last]->value;
+        key = keys[last];
+        if (time >= key->time)
+            return key->value;
 
         unsigned short index;
-        CurveKeyframe *key;
         do {
             index = (unsigned short) last;
             key = keys[index];
             last--;
         } while (time < key->time);
 
-        if (key->tag == 3) {
-            CurveKeyframe *next = keys[index + 1];
-            int endValue = next->value;
-            long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
-            long long t2 = (t * t) >> 12;
-            long long t3 = (t2 * t) >> 12;
-            int startValue = key->value;
-            return (int) (((t - 2 * t2 + t3) * key->c0) >> 12) + (int) (((t3 - t2) * key->c1) >> 12) +
-                   (int) (((3 * t2 - 2 * t3) * (endValue - startValue)) >> 12) + startValue;
+        switch (key->tag) {
+            case 1:
+                return key->value;
+            case 2: {
+                CurveKeyframe *next = keys[index + 1];
+                long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
+                return (int) ((t * (next->value - key->value)) >> 12) + key->value;
+            }
+            case 3: {
+                CurveKeyframe *next = keys[index + 1];
+                int endValue = next->value;
+                long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
+                long long t2 = (t * t) >> 12;
+                long long t3 = (t2 * t) >> 12;
+                int startValue = key->value;
+                return (int) (((t - 2 * t2 + t3) * key->c0) >> 12) + (int) (((t3 - t2) * key->c1) >> 12) +
+                       (int) (((3 * t2 - 2 * t3) * (endValue - startValue)) >> 12) + startValue;
+            }
         }
-        if (key->tag == 2) {
-            CurveKeyframe *next = keys[index + 1];
-            long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
-            return (int) ((t * (next->value - key->value)) >> 12) + key->value;
-        }
-        if (key->tag == 1)
-            return key->value;
         return 0;
     }
 }

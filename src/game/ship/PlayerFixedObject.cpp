@@ -550,15 +550,11 @@ V3 PlayerFixedObject::getProjectionVector(const Vector &vec) {
 V3 PlayerFixedObject::projectCollisionOnSurface(const Vector &vec) {
     Array<BoundingVolume *> *bv = this->wreckCollision;
     if (bv != 0 && this->state == 4) {
-        V3 result;
-        reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(vec, bv);
-        return result;
+        return BoundingVolume::staticProjectCollisionOnSurface(vec, bv);
     }
     Array<BoundingVolume *> *bv2 = this->boundingVolumes;
     if (bv2 != 0) {
-        V3 result;
-        reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(vec, bv2);
-        return result;
+        return BoundingVolume::staticProjectCollisionOnSurface(vec, bv2);
     }
     V3 z = {0.0f, 0.0f, 0.0f};
     return z;

@@ -221,7 +221,6 @@ int NFC::getWidth() {
     return value;
 }
 
-int g_android_back_button_pressed = 0;
 
 int NFC::getHeight() {
     jclass cls = g_pEnv->FindClass("net/fishlabs/ow_utils/DeviceInfo");

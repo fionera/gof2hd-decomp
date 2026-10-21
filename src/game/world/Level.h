@@ -123,7 +123,7 @@ public:
     int field_138;
     bool friendCargoStolen;
     uint8_t pad_13d[3];
-    Vector flashColor;
+    float flashColor[3]; // rgb; raw floats (orig ctor assigns them in the body, no Vector ctor)
     float flashAlpha;
     int flashDurationA;
     int flashDurationB;

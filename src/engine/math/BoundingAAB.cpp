@@ -4,8 +4,8 @@
 #include <cmath>
 
 int BoundingAAB::outerCollide(float x, float y, float z) {
-    float centerX = this->centerX + this->extentsX;
-    float extentX = this->halfExtentX;
+    float centerX = this->position.x + this->offset.x;
+    float extentX = this->halfExtents.x;
     if (!(centerX - extentX < x)) {
         return 0;
     }
@@ -13,8 +13,8 @@ int BoundingAAB::outerCollide(float x, float y, float z) {
         return 0;
     }
 
-    float centerY = this->centerY + this->extentsY;
-    float extentY = this->halfExtentY;
+    float centerY = this->position.y + this->offset.y;
+    float extentY = this->halfExtents.y;
     if (!(centerY - extentY < y)) {
         return 0;
     }
@@ -22,8 +22,8 @@ int BoundingAAB::outerCollide(float x, float y, float z) {
         return 0;
     }
 
-    float centerZ = this->centerZ + this->extentsZ;
-    float extentZ = this->halfExtentZ;
+    float centerZ = this->position.z + this->offset.z;
+    float extentZ = this->halfExtents.z;
     if (!(centerZ - extentZ < z)) {
         return 0;
     }
@@ -33,37 +33,23 @@ int BoundingAAB::outerCollide(float x, float y, float z) {
     return 0;
 }
 
+// Moves the point onto the nearest of the six faces.
 Vector BoundingAAB::projectCollisionOnSurface(const Vector &point) {
+    Vector faceOffsets[6] = {
+            {point.x - (this->position.x + this->offset.x + this->halfExtents.x), 0.0f, 0.0f},
+            {point.x - (this->position.x + this->offset.x - this->halfExtents.x), 0.0f, 0.0f},
+            {0.0f, point.y - (this->position.y + this->offset.y + this->halfExtents.y), 0.0f},
+            {0.0f, point.y - (this->position.y + this->offset.y - this->halfExtents.y), 0.0f},
+            {0.0f, 0.0f, point.z - (this->position.z + this->offset.z + this->halfExtents.z)},
+            {0.0f, 0.0f, point.z - (this->position.z + this->offset.z - this->halfExtents.z)},
+    };
     float distances[6];
-    Vector offsets[6] = {};
-
-    float centerX = this->centerX + this->extentsX;
-    float extentX = this->halfExtentX;
-    float highX = centerX + extentX;
-    float lowX = centerX - extentX;
-    offsets[0].x = point.x - highX;
-    offsets[1].x = point.x - lowX;
-
-    float centerY = this->centerY + this->extentsY;
-    float extentY = this->halfExtentY;
-    float highY = centerY + extentY;
-    float lowY = centerY - extentY;
-    offsets[2].y = point.y - highY;
-    offsets[3].y = point.y - lowY;
-
-    float centerZ = this->centerZ + this->extentsZ;
-    float extentZ = this->halfExtentZ;
-    float highZ = centerZ + extentZ;
-    float lowZ = centerZ - extentZ;
-    offsets[4].z = point.z - highZ;
-    offsets[5].z = point.z - lowZ;
-
-    distances[0] = std::fabs(offsets[0].x);
-    distances[1] = std::fabs(offsets[1].x);
-    distances[2] = std::fabs(offsets[2].y);
-    distances[3] = std::fabs(offsets[3].y);
-    distances[4] = std::fabs(offsets[4].z);
-    distances[5] = std::fabs(offsets[5].z);
+    distances[0] = AbyssEngine::AEMath::Absf(faceOffsets[0].x);
+    distances[1] = AbyssEngine::AEMath::Absf(faceOffsets[1].x);
+    distances[2] = AbyssEngine::AEMath::Absf(faceOffsets[2].y);
+    distances[3] = AbyssEngine::AEMath::Absf(faceOffsets[3].y);
+    distances[4] = AbyssEngine::AEMath::Absf(faceOffsets[4].z);
+    distances[5] = AbyssEngine::AEMath::Absf(faceOffsets[5].z);
 
     float closest = distances[0];
     int closestIndex = 0;
@@ -73,8 +59,7 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point) {
             closestIndex = i;
         }
     }
-
-    return point - offsets[closestIndex];
+    return point - faceOffsets[closestIndex];
 }
 
 BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
@@ -98,9 +83,9 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
         extentZ = halfDepth;
     }
 
-    this->halfExtentX = extentX;
-    this->halfExtentY = extentY;
-    this->halfExtentZ = extentZ;
+    this->halfExtents.x = extentX;
+    this->halfExtents.y = extentY;
+    this->halfExtents.z = extentZ;
 }
 
 BoundingAAB::~BoundingAAB() {

@@ -29,7 +29,7 @@ public:
     AbyssEngine::String *name;
     AbyssEngine::String *name2;
 
-    uint8_t selectable;
+    bool selectable;
 
     int slot;
 
@@ -38,13 +38,13 @@ public:
     int buttonKind;
 
     int imageIndex;
-    uint8_t textButton;
+    bool textButton;
 
     int inTabIndex;
 
     int subTabIndex;
 
-    uint8_t text;
+    bool text;
 
     uint8_t craftable;
 
@@ -110,7 +110,7 @@ public:
 
     bool isPendingProduct();
 
-    uint8_t isSelectable();
+    bool isSelectable();
 
     bool isSellButton();
 
@@ -120,8 +120,8 @@ public:
 
     bool isTab();
 
-    uint8_t isText();
+    bool isText();
 
-    uint8_t isTextButton();
+    bool isTextButton();
 };
 #endif

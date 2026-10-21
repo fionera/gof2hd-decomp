@@ -28,7 +28,7 @@ PlayerJunk::~PlayerJunk() {
 void PlayerJunk::reset() {
     KIPlayer::reset();
     this->state = 0;
-    this->setVisible(true);
+    this->setActive(true);
 }
 
 int PlayerJunk::collide(float x, float y, float z) {
@@ -67,18 +67,8 @@ void PlayerJunk::update(int elapsed) {
                     ((Radar *) this->level->getPlayer()->field_0x14)->field_0x1c = nullptr;
             }
 
-            Vector position;
-            position.x = this->posX;
-            position.y = this->posY;
-            position.z = this->posZ;
-            Vector zero;
-            zero.x = 0.0f;
-            zero.y = 0.0f;
-            zero.z = 0.0f;
-
-            Level *level = this->level;
-            level->field_74->emitManual(
-                level->field_34, position, 0, zero, -1.0f);
+            this->level->field_74->emitManual(this->level->field_34, Vector(this->posX, this->posY, this->posZ), 0,
+                                              Vector(), -1.0f);
         }
     }
 

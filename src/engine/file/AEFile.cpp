@@ -714,7 +714,3 @@ Array<AEPakFileEntry *> *AEFile::pakFileEntryList;
 Array<AELowLevelFile *> *AEFile::file;
 char *AEFile::appRoot;
 
-uint32_t AEPakFile::Write(uint32_t, void *) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
-    // lint: void_ptr virtual buffer param; Pv baked into mangled name
-    return 0;
-}

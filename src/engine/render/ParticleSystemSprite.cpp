@@ -86,7 +86,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
     }
 
     const ParticleSettings::SetDefinition &def =
-            reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[this->particleSetIds[index]];
+            ParticleSettingsRef::cur.sets[this->particleSetIds[index]];
     this->particleAges[index] = (int) ((float) this->particleAges[index] + dt);
     if (def.lifetime < this->particleAges[index]) {
         this->particleAges[index] = -1;
@@ -137,30 +137,12 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
                                           step.x, step.y, step.z);
 }
 
-void ParticleSystemSprite::setAlpha(int index, uint32_t color, float alpha) {
-    float a = (float) (color & 0xff) * 0.003921569f;
-    float b = (float) ((color >> 8) & 0xff) * 0.003921569f;
-    float g = (float) ((color >> 16) & 0xff) * 0.003921569f;
-    float r = (float) (color >> 24) * 0.003921569f;
-
-    if (this->alphaFade == 0) {
-        a *= alpha;
-    } else {
-        b *= alpha;
-        g *= alpha;
-        r *= alpha;
-    }
-
-    this->canvas->SpriteSystemSetRGBA(this->resource,
-                                      (uint16_t)(this->idOffset + index), r, g, b, a);
-}
-
 void ParticleSystemSprite::enable(bool enabled) {
     (void) enabled;
 }
 
 void ParticleSystemSprite::updateAreaExitParticle(int index, float dt) {
-    char *set = (char *) ParticleSettingsRef::cur + (int) this->particleSetIds[index] * 0xa0;
+    char *set = (char *) ParticleSettingsRef::curBytes() + (int) this->particleSetIds[index] * 0xa0;
 
     Vector step = this->particleVelocities[index] * dt * 0.001f;
     this->canvas->SpriteSystemAddPosition(this->resource, (uint16_t)(this->idOffset + index),

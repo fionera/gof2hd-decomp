@@ -23,6 +23,13 @@
 #include "game/world/SpacePoint.h"
 #include "game/world/Wanted.h"
 #include "game/ship/PlayerFixedObject.h"
+#include "game/ship/PlayerEgo.h"
+#include "game/world/Waypoint.h"
+#include "game/world/Station.h"
+#include "game/ship/Ship.h"
+#include "engine/core/GameText.h"
+#include "game/ui/Layout.h"
+#include "game/ship/TargetFollowCamera.h"
 
 
 
@@ -53,11 +60,19 @@ static const float gHC_divOut = -2000.0f;
 
 int PlayerFighter::stationRouteAliens;
 
+// Docking-port capture radius per ship type (this TU's copy of the shared table).
+static const int kShipDockRadius[64] = {
+    160, 150, 220, 310, 160, 180, 140, 170, 170, 110, 250, 205, 240, 250, 250, 250,
+    170, 170, 190, 460, 170, 210, 140, 170, 160, 190, 170, 240, 220, 280, 200, 200,
+    140, 160, 180, 150, 310, 390, 480, 200, 300, 300, 170, 200, 170, 370, 370, 300,
+    440, 340, 170, 470, 170, 170, 170, 170, 200, 170, 250, 150, 170, 250, 270, 170,
+};
+
 PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeometry *geom,
                              float x, float y, float z, bool flag)
     : KIPlayer(faction, -1, player, geom, x, y, z, flag),
       field_0x200(0), field_0x204(0), field_0x208(0),
-      workingPosition(), resetVecB(), resetVecC(), field_0x17c(), field_0x188(), field_0x194() {
+      workingPosition(), targetPos(), distanceToTarget(), field_0x17c(), dyingSpin(), dyingDirection() {
     // patrol route: the four corners of a box in random order, visited 2-4 times
     Vector c0 = {(float) (Globals::rnd->nextInt(25000) - 30000), (float) (Globals::rnd->nextInt(10000) - 10000),
                  (float) (Globals::rnd->nextInt(25000) + 20000)};
@@ -81,7 +96,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
         points[i + 1] = (int) corners[corner].y;
         points[i + 2] = (int) corners[corner].z;
     }
-    this->route = new Route(points, count);
+    this->defaultRoute = new Route(points, count);
     delete[] points;
 
     if (PlayerFighter::stationRouteAliens == 0) {
@@ -97,56 +112,54 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     this->field_0x130 = -1;
     this->field_0x134 = -1;
     this->field_0x138 = -1;
-    this->field_0x128 = 50000;
     this->rotate = 2.0f;
-    this->shootError = 500.0f / 65536.0f;
+    this->shootError = 500.0f * 1.525878e-5f;
     this->speed = 2.0f;
     this->field_0x1b0 = 1500;
+    this->field_0x128 = 50000;
     this->boostProb = 5;
     this->field_0x38 = 0;
     this->field_0x140 = 0;
     this->field_0x12d = 0;
-    this->field_0x12e = 0;
+    this->targetIsActive = 0;
     this->field_0x13d = 0;
     this->field_0x13e = 0;
-    this->field_0x1f8 = 0;
+    this->dyingTimer = 0;
     this->deathTimer() = 0;
     this->field_0x12f = 0;
-    this->field_0x1fc = 0;
-    this->field_0x1c8 = 0;
-    this->field_0x1e0 = 0;
-    this->field_0x1f4 = 0;
-    this->wingmanCommand() = wingmanCmd;
-    this->maneuverTimer = 0;
+    this->smoking = 0;
+    this->damageEscape = 0;
+    this->trailTick = 0;
+    this->boosting = 0;
+    this->field_0x1f5 = 0;
+    this->behaviourChangeTick = 0;
+    this->shipGroup = wingmanCmd;
     this->field_0x1bc = 0;
-    this->field_0x1c0 = 0;
-    this->field_0x1c4 = 0;
+    this->boostTick = 0;
+    this->boostTimeLimit = 0;
     this->targetPlayer = nullptr;
     this->commandRoute = nullptr;
     this->boundingVolumes = nullptr;
     this->trail = nullptr;
-    this->deltaTime = 0;
+    this->frameTime = 0;
     this->hitpoints = 0;
-    this->field_0x1dc = 0;
-    this->field_0x1e4 = 0;
+    this->damageAccumulator = 0;
+    this->initialWaypoint = 0;
     this->currentSpeed = 0;
-    this->field_0x1ec = 0;
+    this->targetSpeed = 0;
     this->currentRotate = 0;
 
     this->workingPosition = Vector{x, y, z};
-    this->field_0x13d = 1;
     this->crateCaptured() = 1;
+    this->field_0x13d = 1;
     this->currentSpeed = this->speed;
     this->currentRotate = this->rotate;
-    this->route->setLoop(true);
+    this->defaultRoute->setLoop(true);
     ((Route *) (intptr_t) PlayerFighter::stationRouteAliens)->setLoop(true);
     this->routeClone() = nullptr;
     if (Globals::status->getCurrentCampaignMission() != 41) {
-        if (wingmanCmd == 9) {
-            this->routeClone() = ((Route *) (intptr_t) PlayerFighter::stationRouteAliens)->clone();
-        } else {
-            this->routeClone() = this->route->clone();
-        }
+        this->routeClone() = wingmanCmd == 9 ? ((Route *) (intptr_t) PlayerFighter::stationRouteAliens)->clone()
+                                             : this->defaultRoute->clone();
     }
     this->field_0x12d = 0;
     if (wingmanCmd == 9) {
@@ -160,9 +173,9 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     this->explosion = new Explosion(0);
     this->explosion->addFireStreaks();
     this->field_0x13e = 1;
-    this->hitpoints = ((Player *) (this->player()))->getHitpoints();
-    this->field_0x1dc = 0;
-    this->field_0x1e0 = 0;
+    this->hitpoints = this->player->getHitpoints();
+    this->damageAccumulator = 0;
+    this->damageEscape = 0;
     this->field_0xe4 = 1;
     this->field_0x25 = 1;
     this->engineTrailSystem = -1;
@@ -174,13 +187,13 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     this->targetRoll = 0;
     this->smoothRoll = 0;
     this->field_0x214 = 0;
-    this->field_0x294 = 0x443b8000; // 750.0f
-    this->field_0x298 = 0x41723ace; // 15.139357f
+    this->maxRoll = 750.0f;
+    this->rollFactor = 15.1393566f;
     for (int i = 0; i < 5; ++i) {
         this->rollSamples[i] = 0;
     }
-    this->rollBufferFilled = 0;
     this->rollSampleIndex = 0;
+    this->rollBufferFilled = 0;
     this->rollActive() = 0;
     this->field_0x254 = 0;
     this->field_0x255 = 0;
@@ -197,8 +210,8 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     this->gunSwitchTimer = 0;
 }
 PlayerFighter::~PlayerFighter() {
-    delete this->route;
-    this->route = 0;
+    delete this->defaultRoute;
+    this->defaultRoute = 0;
 
     if (this->boundingVolumes != 0) {
         ArrayReleaseClasses(*this->boundingVolumes);
@@ -220,24 +233,24 @@ void PlayerFighter::reset() {
     this->crateCaptured() = 1;
 
     this->workingPosition = Vector{this->posX, this->posY, this->posZ};
-    this->renderPosition() = Vector(this->workingPosition);
+    this->shipPosition = Vector(this->workingPosition);
 
-    this->deltaTime = 0;
+    this->frameTime = 0;
     this->field_0x38 = 0;
-    this->field_0x12e = 0;
+    this->targetIsActive = 0;
     this->targetPlayer = nullptr;
     this->field_0x12c = 0;
-    this->maneuverTimer = 0;
-    this->field_0x1c0 = 0;
-    this->field_0x1c4 = 0;
-    this->field_0x1c8 = 0;
+    this->behaviourChangeTick = 0;
+    this->boostTick = 0;
+    this->boostTimeLimit = 0;
+    this->trailTick = 0;
     if (this->state != 5) {
         this->state = 0;
     }
 
-    this->resetVecA() = Vector{0, 0, 0};
-    this->resetVecB = Vector{0, 0, 0};
-    this->resetVecC = Vector{0, 0, 0};
+    this->tempVector = Vector{0, 0, 0};
+    this->targetPos = Vector{0, 0, 0};
+    this->distanceToTarget = Vector{0, 0, 0};
 
     this->isMissionCrate() = 0;
     this->missionCrateLost() = 0;
@@ -245,7 +258,7 @@ void PlayerFighter::reset() {
     this->crateLost() = 0;
     this->crateCaptured() = 1;
     this->field_0x140 = 0;
-    this->field_0x1fc = 0;
+    this->smoking = 0;
     this->field_0x13c = 0;
     this->cloakActive = 0;
     this->cloakTimer = 0;
@@ -318,14 +331,13 @@ void PlayerFighter::setPosition(float x, float y, float z) {
     this->posY = y;
     this->posZ = z;
 
-    ((AEGeometry *) (intptr_t) this->geometry())->setPosition(x, y, z);
+    this->geometry->setPosition(x, y, z);
     this->workingPosition = Vector{x, y, z};
     if (this->trail != 0) {
         this->trail->reset(this->workingPosition);
     }
-    reinterpret_cast<AbyssEngine::AEMath::Matrix &>(
-            ((Player *) (intptr_t) this->player())->transform[0]) =
-            ((AEGeometry *) (intptr_t) this->geometry())->getMatrix();
+    this->player->transform =
+            this->geometry->getMatrix();
 
     return;
 }
@@ -335,14 +347,14 @@ void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
     switch (cmd) {
         case 2:
         case 3:
-            this->maneuverTimer = 0x1389;
+            this->behaviourChangeTick = 0x1389;
             if (this->currentSpeed != 5.5f) {
-                this->field_0x1c0 = 0x1389;
+                this->boostTick = 0x1389;
             }
             if (cmd == 2) {
-                if (((Level *) (this->level()))->getPlayerRoute() != 0) {
-                    this->commandRoute = ((Level *) (this->level()))->getPlayerRoute()->getExactClone();
-                    this->field_0x1e4 = this->commandRoute->getCurrent();
+                if (this->level->getPlayerRoute() != 0) {
+                    this->commandRoute = this->level->getPlayerRoute()->getExactClone();
+                    this->initialWaypoint = this->commandRoute->getCurrent();
                     break;
                 }
             } else if (target != 0) {
@@ -351,7 +363,7 @@ void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
             this->field_0xe4 = saved;
             break;
         case 1:
-            this->field_0x1e0 = 0;
+            this->damageEscape = 0;
             this->field_0x13d = 0;
             break;
         case 0:
@@ -384,11 +396,11 @@ void PlayerFighter::removeTrail() {
     this->trail = 0;
 }
 void PlayerFighter::setExhaustVisible(bool vis) {
-    int geom = this->geometry();
+    AEGeometry *geom = this->geometry;
     if (geom != 0) {
-        int sub = this->subGeometry();
+        AEGeometry *sub = this->parentGeometry;
         if (sub != 0) {
-            int id = (int) ((AEGeometry *) (intptr_t) sub)->childTransform;
+            int id = (int) sub->childTransform;
             if (id == -1)
                 return;
             unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
@@ -396,7 +408,7 @@ void PlayerFighter::setExhaustVisible(bool vis) {
             return ((AbyssEngine::Transform *) (unsigned long) t)->SetVisible(vis);
         }
 
-        int id = (int) ((AEGeometry *) (intptr_t) geom)->childTransform;
+        int id = (int) geom->childTransform;
         if (id != -1) {
             unsigned t = (unsigned) (unsigned long) Globals::Canvas->TransformGetTransform(id);
 
@@ -422,41 +434,41 @@ void PlayerFighter::setCloakingPossible(bool v) {
     }
 }
 void PlayerFighter::handleCloaking() {
-    if (this->wingmanCommand() != 10) return;
-    if (this->geometry() == 0) return;
+    if (this->shipGroup != 10) return;
+    if (this->geometry == 0) return;
     if (KIPlayer::isDead()) return;
-    if (((Player *) (intptr_t) this->player())->empDisabledByte != 0) return;
+    if (this->player->empDisabledByte != 0) return;
     if (this->cloakingPossible == 0) return;
 
     if (this->cloakActive != 0) {
         if (this->cloakTimer == 0) {
             this->field_0x13c = 1;
             if (this->cloakMaterial == 0xffffffff) {
-                Globals::Canvas->MeshCloneMaterial(((AEGeometry *) (intptr_t) this->subGeometry())->meshId,
+                Globals::Canvas->MeshCloneMaterial(this->parentGeometry->meshId,
                                                    this->cloakMaterial);
                 this->cloakSavedMode =
                         ((AbyssEngine::Material *) Globals::Canvas
-                                 ->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId)
+                                 ->MeshGetPointer(this->parentGeometry->meshId)
                                  ->material)
                                 ->blendMode;
             }
             ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial))->blendMode = 14;
-            Globals::Canvas->MeshChangeMaterial(((AEGeometry *) (intptr_t) this->subGeometry())->meshId,
+            Globals::Canvas->MeshChangeMaterial(this->parentGeometry->meshId,
                                                 (unsigned short) this->cloakMaterial);
             if (this->field_0x2d9 != 0) {
                 this->cloakTimer = 2000;
                 this->field_0x2d9 = 0;
             }
         }
-        this->cloakTimer += this->deltaTime;
+        this->cloakTimer += this->frameTime;
 
-        if (this->cloakTimer - this->deltaTime <= 2000) {
+        if (this->cloakTimer - this->frameTime <= 2000) {
             if (this->cloakTimer >= 2000) {
                 this->setExhaustVisible(false);
                 this->exhaustHidden() = 1;
             }
             Globals::Canvas->MeshChangeShaderAnimValue(
-                    Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId),
+                    Globals::Canvas->MeshGetPointer(this->parentGeometry->meshId),
                     (float) this->cloakTimer / 2000.0f, 1u);
         } else if (this->cloakTimer > this->cloakDuration) {
             int material = this->cloakMaterial;
@@ -469,16 +481,13 @@ void PlayerFighter::handleCloaking() {
         } else if (this->cloakTimer > this->cloakDuration - 2000) {
             this->exhaustHidden() = 0;
             Globals::Canvas->MeshChangeShaderAnimValue(
-                    Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->subGeometry())->meshId),
+                    Globals::Canvas->MeshGetPointer(this->parentGeometry->meshId),
                     ((float) this->cloakTimer - (float) (this->cloakDuration - 2000)) / -2000.0f + 1.0f, 1u);
         }
-        return;
-    }
-
-    if (this->field_0x1e0 != 0 && Globals::rnd->nextInt(100) < 50) {
+    } else if (this->damageEscape != 0 && Globals::rnd->nextInt(100) < 50) {
         this->cloak(-1, false);
     } else {
-        this->cloakCooldown += this->deltaTime;
+        this->cloakCooldown += this->frameTime;
         if (this->cloakCooldown > 8000) {
             this->cloakCooldown = 0;
             if (Globals::rnd->nextInt(100) < 30) {
@@ -491,1355 +500,964 @@ void PlayerFighter::setAIDisabled(bool v) {
     this->aiDisabled = v;
 }
 void PlayerFighter::update(int dt) {
-    // wreck fully burnt out (and any crate gone or abandoned for a minute): retire the fighter
-    if (this->state == 4 && this->explosion->isPlaying() == 0 &&
-        (this->crateCaptured() == 0 || 60000 < this->deathTimer())) {
-        this->KIPlayer::setActive(false);
+    using namespace AbyssEngine::AEMath;
+
+    // wreck burnt out (no crate left, or the crate drifted for a minute): retire the fighter
+    if (this->state == 4 && !this->explosion->isPlaying() &&
+        (!this->crateCaptured() || this->deathTimer() > 60000)) {
+        this->setActive(false);
         return;
     }
 
-    // Chunk 2: Timer increment + position snapshot
-    this->field_0x1c0 += dt;
-    this->maneuverTimer += dt;
-    if (this->wingmanCommand() == 1) {
-        this->wingmanCommand() = 1;
+    this->boostTick += dt;
+    this->behaviourChangeTick += dt;
+    if (this->shipGroup == 1) {
+        this->shipGroup = 1;
     }
-    this->deltaTime = dt;
+    this->frameTime = dt;
+    this->shipPosition = this->geometry->getPosition();
 
-    {
-        Vector pos = ((AEGeometry *)(intptr_t)this->geometry())->getPosition();
-        this->renderPosition() = pos;
+    // enemy / friend flags from the standing towards this fighter's race (shipGroup)
+    if (!this->reviveLockFlag) {
+        this->player->enemyFlagsLo = (this->shipGroup & ~1) == 8 ? true
+                                     : this->isWingMan()      ? false
+                                     : ((Standing *) Globals::status->getStanding())->isEnemy(this->shipGroup);
+        this->player->carriesFriendCargoFlag = (this->shipGroup & ~1) == 8 ? false
+                                               : this->isWingMan()      ? true
+                                               : ((Standing *) Globals::status->getStanding())->isFriend(this->shipGroup);
     }
-
-    // Chunk 3: Enemy/friend flag update
-    if (this->field_0x43() == 0) {
-        // Enemy flag
-        unsigned char enemy;
-        if ((this->wingmanCommand() & ~1) == 8) {
-            enemy = 1;
-        } else if (((KIPlayer *)(this))->isWingMan() != 0) {
-            enemy = 0;
-        } else {
-            enemy = (unsigned char)((Standing *)(Globals::status->getStanding()))->isEnemy(this->wingmanCommand());
-        }
-        ((Player *)(intptr_t)this->player())->enemyFlagsLo = enemy;
-
-        // Friend flag (symmetric pass)
-        unsigned char friend_flag;
-        if ((this->wingmanCommand() & ~1) == 8) {
-            friend_flag = 0;
-        } else if (((KIPlayer *)(this))->isWingMan() != 0) {
-            friend_flag = 1;
-        } else {
-            friend_flag = (unsigned char)((Standing *)(Globals::status->getStanding()))->isFriend(this->wingmanCommand());
-        }
-        ((Player *)(intptr_t)this->player())->carriesFriendCargoFlag = friend_flag;
-    } else {
-        // field_0x43 != 0: HP-based enemy override (region D)
-        int damage_dealt = ((Player *)(intptr_t)this->player())->damageDoneByPlayer;
-        int hp_threshold = ((Player *)(intptr_t)this->player())->getMaxHitpoints() / 20;
-        if (damage_dealt > hp_threshold) {
-            ((Player *)(intptr_t)this->player())->enemyFlagsLo = 1;
-        }
+    if (this->reviveLockFlag &&
+        this->player->damageDoneByPlayer > this->player->getMaxHitpoints() / 20) {
+        this->player->enemyFlagsLo = true;
     }
 
-    // Chunk 3b: Gun switch timer (region E — field_0x42 gate)
-    if (this->KIPlayer::field_0x42 != 0) {
+    // bounty targets switch between their primary and secondary weapons every 20 s
+    if (this->field_0x42) {
         this->gunSwitchTimer += dt;
         if (this->gunSwitchTimer > 20000) {
             this->gunSwitchTimer = 0;
-            if (((Player *)(intptr_t)this->player())->gunAvailable(1)) {
-                this->field_0x140 = (this->field_0x140 == 0) ? 1 : 0;
+            if (this->player->gunAvailable(1)) {
+                this->field_0x140 = !this->field_0x140;
             }
         }
     }
 
-    // Chunk 3c: isAlwaysEnemy / lockedEnemy radar check (dd154..dd178 → dd62a)
-    if (((Player *)(intptr_t)this->player())->isAlwaysEnemy() == 0) {
-        PlayerEgo *ego = ((Level *)(intptr_t)this->level())->getPlayer();
-        if (ego != 0) {
-            ego = ((Level *)(intptr_t)this->level())->getPlayer();
-            if (ego->field_0x14 != 0 &&
-                ego->field_0x14->lockedEnemy == (KIPlayer *)this &&
-                this->field_0x43() == 0) {
-                ((Player *)(intptr_t)this->player())->setAlwaysEnemy(1);
-                ((Level *)(intptr_t)this->level())->uncoverWanted(this->KIPlayer::field_0x48);
+    // locking a neutral ship on the radar makes it hostile and uncovers its wanted entry
+    if (!this->player->isAlwaysEnemy() && this->level->getPlayer() &&
+        this->level->getPlayer()->field_0x14->lockedEnemy == this && !this->reviveLockFlag) {
+        this->player->setAlwaysEnemy(true);
+        this->level->uncoverWanted(this->field_0x48);
+    }
+
+    if (Globals::status->inBlackMarketSystem() && Globals::status->field_110 && this->shipGroup == 8) {
+        this->player->enemyFlagsLo = false;
+        this->player->carriesFriendCargoFlag = false;
+    }
+    if (this->player->turnedEnemy()) {
+        this->player->enemyFlagsLo = true;
+        this->player->carriesFriendCargoFlag = false;
+    }
+    if (this->player->isAlwaysFriend()) {
+        this->player->enemyFlagsLo = false;
+        this->player->carriesFriendCargoFlag = true;
+    }
+
+    if (!this->wingmanFlag && !this->KIPlayer::route) {
+        this->KIPlayer::route = this->defaultRoute->clone();
+    }
+
+    this->trailTick += dt;
+    if (this->trailTick > 200) {
+        if (this->trail) {
+            this->trail->update(this->shipPosition, this->workingPosition);
+            this->workingPosition = this->shipPosition;
+        }
+        this->trailTick = 0;
+    }
+
+    this->player->transform = this->geometry->getMatrix();
+    if (this->parentGeometry) {
+        this->player->transform *= this->parentGeometry->getMatrix();
+    }
+
+    // wingmen in formation fly a one-point route next to the ego ship
+    if (this->wingmanFlag && this->state != 4 && this->KIPlayer::route) {
+        this->tempVector = this->level->getPlayer()->geometry->getPosition();
+        if (this->field_0xe4 == 1) {
+            switch (this->wingmanCommand) {
+                case 0:
+                    this->auxVector = this->level->getPlayer()->geometry->getRightVector();
+                    this->auxVector *= 4000.0f;
+                    this->tempVector -= this->auxVector;
+                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 3000.0f;
+                    break;
+                case 1:
+                    this->auxVector = this->level->getPlayer()->geometry->getRightVector();
+                    this->auxVector *= 4000.0f;
+                    this->tempVector += this->auxVector;
+                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 3000.0f;
+                    break;
+                case 2:
+                    this->auxVector = this->level->getPlayer()->geometry->getUpVector();
+                    this->auxVector *= 2000.0f;
+                    this->tempVector += this->auxVector;
+                    this->tempVector -= VectorNormalize(this->level->getPlayer()->geometry->getDirection()) * 2000.0f;
+                    break;
             }
-        }
-    }
-
-    // Chunk 4a: Black market / turnedEnemy / isAlwaysFriend flag overrides (dd17c..dd1c6)
-    {
-        Status *st = Globals::status;
-        if (st->inBlackMarketSystem() != 0) {
-            if (st->field_110 != 0) {
-                if (this->wingmanCommand() == 8) {
-                    reinterpret_cast<uint16_t &>(((Player *)(intptr_t)this->player())->enemyFlagsLo) = 0;
-                }
-            }
-        }
-        Player *pl = (Player *)(intptr_t)this->player();
-        if (pl->turnedEnemy() != 0) {
-            reinterpret_cast<uint16_t &>(pl->enemyFlagsLo) = 1;
-        }
-        if (pl->isAlwaysFriend() != 0) {
-            reinterpret_cast<uint16_t &>(pl->enemyFlagsLo) = 0x100;
-        }
-    }
-
-    // Chunk 4b: wingmanFlag — lazy route-clone init (dd1c6..dd1da)
-    if (this->wingmanFlag == 0) {
-        if (this->KIPlayer::route == 0) {
-            this->KIPlayer::route = this->route->clone();
-        }
-    }
-
-    // Chunk 4c: Trail tick update (dd1da..dd20a)
-    {
-        this->field_0x1c8 += dt;
-        if (this->field_0x1c8 >= 201) {
-            if (this->trail != 0) {
-                this->trail->update(this->renderPosition(), this->workingPosition);
-                this->workingPosition = this->renderPosition();
-            }
-            this->field_0x1c8 = 0;
-        }
-    }
-
-    // Chunk 4d: Player::transform = geometry->getMatrix() (dd20a..dd22c)
-    reinterpret_cast<AbyssEngine::AEMath::Matrix &>(
-            ((Player *)(intptr_t)this->player())->transform[0]) =
-            ((AEGeometry *)(intptr_t)this->geometry())->getMatrix();
-    if (this->subGeometry() != 0) {
-        reinterpret_cast<AbyssEngine::AEMath::Matrix &>(
-                ((Player *)(intptr_t)this->player())->transform[0]) *=
-                ((AEGeometry *)(intptr_t)this->subGeometry())->getMatrix();
-    }
-
-    // Hoisted to avoid goto-over-init: enemies is used from Chunk 5b onward
-    Array<Player *> *enemies = nullptr;
-
-    // Chunk 5: Wingman flag / state dispatch (dd22c..dd27e)
-    {
-        int s5 = this->state;
-        Player *pl5 = (Player *)(intptr_t)this->player();
-        bool stop5 = false;
-        if (this->wingmanFlag != 0) {
-            if (s5 == 4 || this->KIPlayer::route == 0) {
-                stop5 = true;
+            if (this->KIPlayer::route->length() > 1) {
+                int coords[3] = {(int) this->tempVector.x, (int) this->tempVector.y, (int) this->tempVector.z};
+                delete this->KIPlayer::route;
+                this->KIPlayer::route = nullptr;
+                this->KIPlayer::route = new Route(coords, 3);
             } else {
-                // wingmanFlag && state!=4 && route!=0: fetch ego geometry pos → resetVecA
-                PlayerEgo *ego2 = ((Level *)(intptr_t)this->level())->getPlayer();
-                if (ego2 != 0) {
-                    this->resetVecA() = ego2->geometry->getPosition();
-                }
-                // if field_0xe4 == 1: escort path (dd2e0, handled by PF_update_body)
-                // if field_0xe4 != 1: jump back to dd240 = state 3/4 check below
-                if (this->KIPlayer::field_0xe4 == 1) {
-                    goto update_body;
-                }
+                this->KIPlayer::route->setNewCoords(this->tempVector);
             }
+            this->KIPlayer::route->setLoop(true);
         }
-        if (!stop5 && (unsigned)(s5 - 3) < 2u) {
-            stop5 = true;
-        }
-        if (stop5) {
-            pl5->StopEngineSound();
-            goto update_body;
-        }
-        // Normal path: call Player::update
-        int fov_p1 = this->fov() + 1;
-        bool boost = (fov_p1 != 0) && (s5 != 5);
-        pl5->update(dt, boost);
     }
 
-    // Chunk 5b: getEnemies + aiDisabled gate (dd26c..dd27e)
-    enemies = ((Player *)(intptr_t)this->player())->getEnemies();
-    if (this->aiDisabled != 0) {
-        goto update_body;
-    }
-
-    // Chunk 6: target index validation + route follow when no enemies (dd27e..dd3c6)
-    if (enemies == nullptr) {
-        // Route follow path (dd35c..dd3c0)
-        Route *kr = this->KIPlayer::route;
-        if (kr == nullptr) {
-            this->KIPlayer::state = 5;
-            goto update_body;
+    if (this->state != 3 && this->state != 4) {
+        this->player->update(dt, this->fov() != -1 && this->state != 5);
+        Array<Player *> *enemies = this->player->getEnemies();
+        if (this->aiDisabled) {
+            goto commandRoute;
         }
-        {
-            Vector pos = ((AEGeometry *)(intptr_t)this->geometry())->getPosition();
-            kr->update(pos);
-        }
-        Waypoint *wp = kr->getWaypoint();
-        if (wp == nullptr) {
-            goto update_body;
-        }
-        this->resetVecB.x = (float)wp->x;
-        this->resetVecB.y = (float)wp->y;
-        this->resetVecB.z = (float)wp->z;
-        this->field_0x12c = 1;
-        goto update_body;
-    } else {
-        // Target index validation (dd27e..dd3c6)
-        int tgt = this->KIPlayer::field_0x38;
-        if ((unsigned)tgt >= enemies->count) {
-            tgt = -1;
-            this->KIPlayer::field_0x38 = -1;
-        }
-        if (this->field_0x12e == 0) {
-            this->KIPlayer::field_0x38 = -1;
-        } else if (tgt >= 0) {
-            Player *ep = (*enemies)[tgt];
-            if (ep->isActive() == 0) {
-                this->field_0x12e = 0;
+        if (enemies) {
+            if ((uint32_t) this->field_0x38 >= enemies->size()) {
+                this->field_0x38 = -1;
             }
-        }
-    }
-
-    // Chunk 7: maneuver timer gate + target-scan RNG entry (dd3c6..dd436)
-    {
-        int mtimer = this->maneuverTimer;
-        this->targetPlayer = nullptr;
-        if (mtimer >= 5001) {
-            // Timer expired: if flag was set, clear it; otherwise roll for new shoot-chance flag
-            uint8_t new_flag;
-            if (this->field_0x12d != 0) {
-                new_flag = 0;
-            } else {
-                new_flag = (uint8_t)(Globals::rnd->nextInt(100) < 20 ? 1 : 0);
+            if (!this->targetIsActive) {
+                this->field_0x38 = -1;
+            } else if (this->field_0x38 >= 0 && !(*enemies)[this->field_0x38]->isActive()) {
+                this->targetIsActive = false;
             }
-            this->maneuverTimer = 0;
-            this->field_0x12d = new_flag;
-            // Second RNG roll: should we scan for a new target this frame?
-            int r2 = Globals::rnd->nextInt(100);
-            if (r2 <= 29 && enemies->count >= 2) {
-                // Enter target scan loop (dd426..dd50a) — handled by PF_update_body
-                this->field_0x12e = 0;
-                goto update_body;
-            }
-            // No scan: clear target index
-            this->KIPlayer::field_0x38 = 0;
-        }
-    }
 
-    // Chunk 7b: post-timer dd50e wingman/death check (dd50e..dd542) handled by PF_update_body
-    // when timer >= 5001; but timer < 5001 path jumps over to dd544 below.
-    // Since PF_update_body handles dd50e-dd542 too, we fall through for the no-scan path.
-
-    // dd544: if already have a locked target, go straight to PF_update_body (dd7ac path)
-    if (this->field_0x12e != 0) {
-        goto update_body;
-    }
-
-    // Chunk 8: linear enemy scan when no locked target (dd55a..dd620)
-    {
-        int tgt_idx = -1;
-        unsigned int n = enemies->count;
-        float R = (float)(int)this->field_0x128;
-        for (unsigned int i = 0; i < n; i++) {
-            Player *ep = enemies->data_[i];
-            if (ep == nullptr) continue;
-            if (!ep->isActive()) continue;
-            if (ep->isDead()) continue;
-            // Get enemy position and store in resetVecA
-            Vector ep_pos = ep->getPosition();
-            this->resetVecA() = ep_pos;
-            // TurnedEnemy check (skip if wingmanCommand==8)
-            if (this->KIPlayer::shipGroup != 8) {
-                if (((Player *)(intptr_t)this->player())->turnedEnemy() != 0) {
-                    // found via turned-enemy: store target
-                    this->field_0x12e = 1;
-                    this->KIPlayer::field_0x38 = (int)i;
-                    goto update_body;
-                }
-            }
-            // Range check: AABB within attack radius R
-            float dx = this->renderPosition().x - this->resetVecA().x;
-            float dy = this->renderPosition().y - this->resetVecA().y;
-            float dz = this->renderPosition().z - this->resetVecA().z;
-            if (dx < R && dx > -R && dy < R && dy > -R && dz < R && dz > -R) {
-                tgt_idx = (int)i;
-                break;
-            }
-        }
-        if (tgt_idx >= 0) {
-            this->field_0x12e = 1;
-            this->KIPlayer::field_0x38 = tgt_idx;
-        }
-    }
-
-    // ------------ inlined PF_update_body begins here -------------------------
-    update_body:;
-    {
-    using namespace AbyssEngine;
-    using namespace AbyssEngine::AEMath;
-
-    AEGeometry *geom = (AEGeometry *)(intptr_t)this->geometry();
-
-    // de1a8: entry gate — if aiDisabled, just spin the reference matrix and cloak
-    if (this->aiDisabled != 0) {
-        geom->updateReferenceMatrix();
-        this->handleCloaking();
-        return;
-    }
-
-    // de1bc: state dispatch (tbh, states 0-9)
-    int curState = this->state;
-    if (curState > 9) {
-        return; // de1dc: out-of-range -> epilogue
-    }
-
-    switch (curState) {
-    // -----------------------------------------------------------------------
-    // State 0: initialise — set state to 1, return
-    // -----------------------------------------------------------------------
-    case 0:
-        this->state = 1;
-        return;
-
-    // -----------------------------------------------------------------------
-    // State 2: dead / no-op — just return
-    // -----------------------------------------------------------------------
-    case 2:
-        return;
-
-    // -----------------------------------------------------------------------
-    // State 1 / State 7: active AI — handleCloaking + damage particle logic
-    // -----------------------------------------------------------------------
-    case 1:
-    case 7: {
-        this->handleCloaking();
-
-        // de204: check field_0x13d (damageEscape flag)
-        if (this->field_0x13d == 0) {
-            break; // skip to post-state movement (de9c6)
-        }
-
-        // de20e: compute accumulated damage delta
-        int newDmg = (int) this->deltaTime;    // field_0x1d0
-        int fp_val = dt;                  // fp = dt at entry
-        if (newDmg <= fp_val) {
-            // de254: boost timer kick: field_0x1c0 = 10000
-            // de214: skip to boost section
-            break; // goto boost section via post-switch fall-through
-        }
-        // de21c: delta damage
-        int delta = (int) (this->deltaTime >> 32);   // field_0x1d4
-        int newHp  = newDmg - fp_val;    // field_0x1d0 - dt
-        this->deltaTime = (long long) (newHp + delta) << 32; // lo = 0, hi += delta
-
-        // de230: get HP percentage
-        int maxHp = ((Player *)(intptr_t)this->player())->getMaxHitpoints();
-        float pct = ((float)(newHp + delta) / (float)maxHp) * 100.0f;
-
-        // de24c: if pct > 40.0: boost kick + break
-        if (pct > 40.0f) {
-            this->field_0x1c0 = 10000;   // de258
-            this->field_0x1dc = 0;       // de262
-            this->field_0x1e0 = 1;       // de268 (field_0x1e0 used as boostFlag)
-            break; // de26c: goto boost section
-        }
-        break;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 3: dying spin + explosion
-    // de2c0-de47e
-    // -----------------------------------------------------------------------
-    case 3: {
-        // Clear death-trail flags
-        this->field_0x101 = 0;           // de2d0
-        this->field_0x13e = 0;           // de2d4
-
-        // Build identity rotation matrix on stack, then set rotation from field_0x188
-        Matrix rotMat;
-        rotMat.m[0]  = 1.0f; rotMat.m[5]  = 1.0f; rotMat.m[10] = 1.0f; // diagonal
-        rotMat.m[1]  = 0.0f; rotMat.m[2]  = 0.0f; rotMat.m[3]  = 0.0f;
-        rotMat.m[4]  = 0.0f; rotMat.m[6]  = 0.0f; rotMat.m[7]  = 0.0f;
-        rotMat.m[8]  = 0.0f; rotMat.m[9]  = 0.0f; rotMat.m[11] = 0.0f;
-        rotMat.m[12] = 0.0f; rotMat.m[13] = 0.0f; rotMat.m[14] = 0.0f;
-        AEMath::MatrixSetRotation(rotMat,
-                                  this->field_0x188.x,
-                                  this->field_0x188.y,
-                                  this->field_0x188.z);
-
-        // Apply rotation to geometry matrix if dt >= 1
-        if (dt >= 1) {
-            Matrix geoMat = geom->getMatrix();
-            Matrix newMat = geoMat * rotMat;
-            geom->setMatrix(newMat);
-        }
-
-        // Translate: direction * float(dt) * currentSpeed
-        Vector dir = this->field_0x194 * (float)dt;
-        Vector dirScaled = dir * this->currentSpeed;
-        geom->translate(dirScaled);
-        geom->updateReferenceMatrix();
-
-        // Decrement death countdown
-        this->field_0x1f8 -= dt;
-        if (this->field_0x1f8 > -1) {
-            return;
-        }
-
-        // Countdown expired: trigger explosion
-        {
-            Vector zeroVec = {0.0f, 0.0f, 0.0f};
-            this->explosion->start(zeroVec, zeroVec);
-        }
-
-        // Disable engine trail emit
-        ((Level *)(intptr_t)this->level())->field_74->enableSystemEmit(
-            this->engineTrailSystem, false);
-
-        // Disable damage particles if options[0x28] > 0
-        if (Globals::options[0x28] > 0) {
-            ((Level *)(intptr_t)this->level())->particleEmitBoolPtr->enableSystemEmit(
-                this->field_0x80, false);
-            ((Level *)(intptr_t)this->level())->particleSystemMgr->enableSystemEmit(
-                this->field_0x84, false);
-        }
-
-        // Random bomb force: 50.0 + rnd(50) * 0.01
-        int rndBomb = Globals::rnd->nextInt(50);
-        float bombForce = 50.0f + (float)rndBomb * 0.01f;
-        ((Player *)(intptr_t)this->player())->setBombForce(bombForce);
-
-        // Random spin direction: 3 * rnd(200)-100, normalize -> field_0x17c
-        {
-            int rx = Globals::rnd->nextInt(200) - 100;
-            int ry = Globals::rnd->nextInt(200) - 100;
-            int rz = Globals::rnd->nextInt(200) - 100;
-            Vector spinDir = {(float)rx, (float)ry, (float)rz};
-            Vector normDir = VectorNormalize(spinDir);
-            this->field_0x17c = normDir;
-        }
-
-        // State -> 4, reset countdown, cleanup spacePoint
-        this->field_0x1f8 = 0;
-        this->state = 4;
-
-        if (this->spacePoint != 0) {
-            SpacePoint *sp = (SpacePoint *)(intptr_t)this->spacePoint;
-            if (!sp->isFree()) {
-                sp->giveFree();
-                this->spacePoint = 0;
-            }
-        }
-
-        // de47e: hasCrateCaptured check (reached only from state 3 path)
-        if (!this->crateCaptured()) {
-            return;
-        }
-        // de488: if carriesMissionCrate != 0 && missionCrateCaptured != 0 -> special exit
-        if (this->carriesMissionCrate != 0 && this->missionCrateCaptured() != 0) {
-            // de458: clear crateCaptured, set empDisabledByte=1
-            this->crateCaptured() = 0;
-            ((Player *)(intptr_t)this->player())->empDisabledByte = 1;
-            return;
-        }
-        // de498: create crate — shipGroup == 9 ? flag=1 : flag=0
-        {
-            int flag = ((this->shipGroup - 9) == 0) ? 1 : 0;
-            this->createCrate(flag);
-        }
-        return;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 4: crate float / wreck hover
-    // de4ac-de4c2
-    // -----------------------------------------------------------------------
-    case 4: {
-        // de4ac: field_0x1f8 += dt; if >= 1: clear field_0x73, fall to post-state
-        this->field_0x1f8 += dt;
-        if (this->field_0x1f8 < 1) {
-            // still floating: stay in state 4 movement
-            break;
-        }
-        this->field_0x73 = 0;
-        // fall through to post-state movement
-        break;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 5: asleep proximity check
-    // de4c4-de590
-    // -----------------------------------------------------------------------
-    case 5: {
-        Player *pl5b = (Player *)(intptr_t)this->player();
-        // de4c6: if !pl5b->enemyFlagsLo: skip visibility
-        if (pl5b->enemyFlagsLo != 0) {
-            // de4cc: if status->getCurrentCampaignMission() >= 2 and geom != 0:
-            if (Globals::status->getCurrentCampaignMission() >= 2) {
-                AEGeometry *visGeom = (AEGeometry *)(intptr_t)this->subGeometry();
-                if (visGeom == nullptr) {
-                    visGeom = geom;
-                }
-                visGeom->setVisible(0);
-            }
-        }
-        // de4e4..de4f4: no target, or target hidden -> stay asleep
-        if (this->targetPlayer == nullptr) {
-            return;
-        }
-        if (this->targetPlayer->field_5e != 0) {
-            return;
-        }
-        // de4f8: proximity check: resetVecC components vs field_0x128 (radius)
-        {
-            float radius = (float)this->field_0x128;
-            float rx = this->resetVecC.x;
-            float ry = this->resetVecC.y;
-            float rz = this->resetVecC.z;
-            if (rx >= radius || rx <= -radius) { return; }
-            if (ry >= radius || ry <= -radius) { return; }
-            if (rz >= radius) { return; }
-        }
-        // In range: awaken
-        this->state = 1;
-        AEGeometry *visGeom2 = (AEGeometry *)(intptr_t)this->subGeometry();
-        if (visGeom2 == nullptr) visGeom2 = geom;
-        visGeom2->setVisible(1);
-        ((Player *)(intptr_t)this->player())->setActive(1);
-        if (this->field_0x12f != 0) {
-            ((Level *)(intptr_t)this->level())->pirateStationAction(1);
-        }
-        return;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 6: jump — accelerate until > 100.0, then setDead
-    // de590-de5d8
-    // -----------------------------------------------------------------------
-    case 6: {
-        this->currentSpeed *= 1.1f;
-        float move = this->currentSpeed * (float)dt;
-        int moveInt = (int)move;
-        float movef = (float)moveInt;
-        geom->moveForward(movef);
-        if (this->currentSpeed > 100.0f) {
-            this->setDead();
-        }
-        return;
-    }
-
-    // -----------------------------------------------------------------------
-    // State 8: docking approach
-    // de5da-de8a2
-    // -----------------------------------------------------------------------
-    case 8: {
-        // de5da-de6e8: docking approach
-        // Dock-distance threshold table, indexed by KIPlayer::type (8 ship types)
-        static const int kDockThreshold[] = {160, 150, 220, 310, 160, 180, 140, 170};
-
-        // getDockingTarget() twice via cached fn-ptr (r6 in asm); result = dockingKI
-        KIPlayer *dockingKI = this->KIPlayer::route->getDockingTarget();
-
-        // dockingTarget->getPosition() into routePos
-        Vector routePos = dockingKI->getPosition();
-
-        // Rotate this->spacePoint->position (offset 0) by dockingKI's geometry matrix
-        Matrix *dockMat0 = &((AEGeometry *)(intptr_t)dockingKI->geometry)->getMatrix();
-        SpacePoint *sp0   = (SpacePoint *)(intptr_t)this->spacePoint;
-        Vector rotOff0    = MatrixRotateVector(*dockMat0, sp0->position);
-
-        // approachPos0 = routePos + rotatedOffset
-        Vector approachPos0 = routePos + rotOff0;
-
-        // getNearestDockingPoint(approachPos0) -> nearest SpacePoint slot
-        SpacePoint *slot = dockingKI->getNearestDockingPoint(approachPos0);
-
-        // Second pass: re-fetch dockingTarget + its position (asm re-calls 4x)
-        KIPlayer *dockingKI2 = this->KIPlayer::route->getDockingTarget();
-        Vector routePos2     = dockingKI2->getPosition();
-        Matrix *dockMat1     = &((AEGeometry *)(intptr_t)dockingKI2->geometry)->getMatrix();
-
-        // Rotate slot position (SpacePoint at offset 0 = Vector) by matrix
-        Vector rotOff1   = MatrixRotateVector(*dockMat1, slot->position);
-        Vector targetPos = routePos2 + rotOff1;
-
-        // Store computed dock target position into field_0x9c (as Vector)
-        reinterpret_cast<Vector &>(this->KIPlayer::field_0x9c) = targetPos;
-
-        // self->getPosition() (virtual)
-        Vector selfPos1 = this->getPosition();
-
-        // Distance = length(field_0x9c - selfPos1) converted to int
-        Vector diff1 = reinterpret_cast<const Vector &>(this->KIPlayer::field_0x9c) - selfPos1;
-        int dist = (int)VectorLength(diff1);
-
-        // Threshold check: if dist >= threshold → EaseInOut path
-        // asm: ble.w de8a4 (branch if threshold <= dist, i.e. dist still too far)
-        if (kDockThreshold[this->KIPlayer::type] <= dist) {
-            // de8a4: EaseInOut interpolation approach
-            float dtF = (float)dt;
-            this->easeMatrix->Increase(dtF);
-
-            // GetValue fills a Matrix (sret)
-            Matrix easeVal = this->easeMatrix->GetValue();
-
-            // self->getPosition() twice (asm calls it twice)
-            Vector selfPos2 = this->getPosition();
-            Vector selfPos3 = this->getPosition();
-
-            // diff = field_0x9c - selfPos3
-            Vector eDir = reinterpret_cast<const Vector &>(this->KIPlayer::field_0x9c) - selfPos3;
-
-            // scale by dt and ease factor 0.0006
-            Vector moveVec  = eDir * dtF;
-            Vector moveVec2 = moveVec * 0.00060000003f;
-
-            // new position = selfPos2 + moveVec2
-            Vector newPos = selfPos2 + moveVec2;
-
-            // Set translation of easeVal matrix and push to geometry + player
-            MatrixSetTranslation(easeVal, newPos);
-            ((AEGeometry *)(intptr_t)this->geometry())->setMatrix(easeVal);
-            reinterpret_cast<Matrix &>(((Player *)(intptr_t)this->player())->transform[0]) = easeVal;
-
-            // de930: b.w df450 (landmark check — falls through to post-state)
-            break;
-        }
-
-        // Within threshold: transition to state 9
-        this->setExhaustVisible(false);
-        this->field_0x2bc = 0;
-        this->field_0x2c0 = 0;
-        this->state = 9;
-
-        // Disable particle trail if field_0x1fc set
-        if (this->field_0x1fc != 0) {
-            Level *lv8 = (Level *)(intptr_t)this->level();
-            lv8->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
-            lv8->particleSystemMgr->enableSystemEmit(this->field_0x84, false);
-        }
-        return;  // de6e8: b.n de1dc (function epilogue)
-    }
-
-    // -----------------------------------------------------------------------
-    // State 9: docked waiting (timer)
-    // de714-de84f
-    // -----------------------------------------------------------------------
-    case 9: {
-        // Increment docking timer
-        this->field_0x2bc += dt;
-
-        // Mission dock logic (type 0xb8 passenger transport)
-        Mission *mission = Globals::status->getMission();
-        if (!mission->isEmpty() && mission->getType() == 0xb8) {
-            Route *r9 = this->KIPlayer::route;
-            if (r9 != nullptr) {
-                PlayerFixedObject *dockTarget =
-                    (PlayerFixedObject *)r9->getDockingTarget();
-                if (dockTarget != nullptr && dockTarget->getDockingType() == 1) {
-                    // compute field_0x2c0 = int(float(field_0x2bc) / dockDiv)
-                    // dockDiv comes from a pool constant (type-dependent)
-                    // (exact constant elided — placeholder 3000.0f matches observed behaviour)
-                    int oldC = this->field_0x2c0;
-                    float timerF = (float)this->field_0x2bc;
-                    float dockDiv = (this->wreckGeometry() != nullptr
-                                     && /* type 0x33 */ false) ? 3000.0f : 3000.0f;
-                    this->field_0x2c0 = (int)(timerF / dockDiv);
-
-                    // passenger delivery logic
-                    if (Globals::status->getCurrentCampaignMission() == 0x5e) {
-                        int sv = mission->getStatusValue();
-                        int maxPass = Globals::status->getShip()->getMaxPassengers();
-                        if (sv >= maxPass) { goto state9_skip_delivery; }
+            this->targetPlayer = nullptr;
+            if (this->behaviourChangeTick > 5000) {
+                this->field_0x12d = this->field_0x12d ? false : Globals::rnd->nextInt(100) < 20;
+                this->behaviourChangeTick = 0;
+                // occasionally pick a random enemy in sight
+                if (Globals::rnd->nextInt(100) < 30 && enemies->size() > 1) {
+                    this->targetIsActive = false;
+                    for (int i = 0; i < 5 && !this->targetIsActive; ++i) {
+                        this->field_0x38 = Globals::rnd->nextInt(enemies->size());
+                        if (!(*enemies)[this->field_0x38]->isActive()) {
+                            continue;
+                        }
+                        this->tempVector = (*enemies)[this->field_0x38]->getPosition();
+                        if ((this->shipGroup != 8 && this->player->turnedEnemy()) ||
+                            (this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
+                             this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
+                             this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
+                             this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
+                             this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
+                             this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
+                            this->targetIsActive = true;
+                            break;
+                        }
                     }
-                    if (this->field_0x2c0 > oldC) {
-                        int lvlPass = ((Level *)(intptr_t)this->level())->getNumDeliveredPassengers();
-                        int missionAmt = mission->getProductionGoodAmount();
-                        if (lvlPass < missionAmt) {
-                            int sv2 = mission->getStatusValue();
-                            int newSv = sv2 + oldC;
-                            int diff = newSv - this->field_0x2c0;
-                            mission->setStatusValue(diff);
-                            if (mission->getStatusValue() <= -1) {
-                                mission->setStatusValue(0);
+                }
+                if (!this->targetIsActive) {
+                    this->field_0x38 = 0;
+                }
+                // wingman ordered to attack a specific ship
+                if (this->wingmanFlag && this->field_0xe4 == 3 && this->wingmanTarget) {
+                    if (this->wingmanTarget->isDead()) {
+                        this->setWingmanCommand(1, nullptr);
+                    } else {
+                        for (uint32_t i = 0; i < enemies->size(); ++i) {
+                            if ((*enemies)[i] == this->wingmanTarget->player && (*enemies)[i]->isActive() &&
+                                !(*enemies)[i]->isAlwaysFriend()) {
+                                this->field_0x38 = i;
+                                break;
                             }
                         }
                     }
                 }
+                if ((*enemies)[this->field_0x38]->isActive() && !(*enemies)[this->field_0x38]->isDead()) {
+                    this->tempVector = (*enemies)[this->field_0x38]->getPosition();
+                    if (!(this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
+                          this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
+                          this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
+                          this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
+                          this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
+                          this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
+                        this->targetIsActive = false;
+                        this->field_0x38 = -1;
+                    }
+                } else {
+                    this->targetIsActive = false;
+                    this->field_0x38 = -1;
+                }
+            } else if (!this->targetIsActive) {
+                // first enemy in sight
+                for (uint32_t i = 0; i < enemies->size(); ++i) {
+                    if (!(*enemies)[i] || !(*enemies)[i]->isActive() || (*enemies)[i]->isDead()) {
+                        continue;
+                    }
+                    this->tempVector = (*enemies)[i]->getPosition();
+                    if ((this->shipGroup != 8 && this->player->turnedEnemy()) ||
+                        (this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
+                         this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
+                         this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
+                         this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
+                         this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
+                         this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
+                        this->targetIsActive = true;
+                        this->field_0x38 = i;
+                        break;
+                    }
+                }
+            }
+
+            // a friendly fighter never targets the ego ship (enemy 0)
+            if (!this->player->enemyFlagsLo && this->field_0x38 == 0) {
+                this->targetIsActive = false;
+                this->field_0x38 = 1;
+            }
+            if (!(this->wingmanFlag && this->field_0xe4 == 3) && this->field_0x38 > 0) {
+                this->field_0x38 = -1;
+                for (uint32_t i = 1; i < enemies->size(); ++i) {
+                    Player *other = (*enemies)[i];
+                    if (!other->isActive() || other->isDead()) {
+                        continue;
+                    }
+                    if (!other->getKIPlayer() && !other->egoFlag) {
+                        continue;
+                    }
+                    int otherRace = other->egoFlag ? 0 : other->getKIPlayer()->shipGroup;
+                    bool hostile;
+                    if (this->wingmanFlag) {
+                        hostile = other->enemyFlagsLo ||
+                                  (this->wingmanTarget && other == this->wingmanTarget->player);
+                    } else {
+                        int race = this->shipGroup;
+                        hostile = (otherRace == 8 && race != 8) || (otherRace != 8 && race == 8) ||
+                                  (otherRace == 9 && race != 9) || (otherRace != 9 && race == 9) ||
+                                  (otherRace == 0 && race == 1) || (otherRace == 1 && race == 0) ||
+                                  (otherRace == 3 && race == 2) || (otherRace == 2 && race == 3) ||
+                                  (otherRace == 10 && race != 10) || (otherRace != 10 && race == 10);
+                    }
+                    if (hostile) {
+                        this->targetIsActive = true;
+                        this->field_0x38 = i;
+                        break;
+                    }
+                }
+            }
+            if (this->wingmanFlag && !this->targetIsActive && this->field_0xe4 == 1) {
+                this->field_0x38 = -1;
+            }
+
+            this->field_0x12c = false;
+            if ((this->field_0x38 == -1 && this->KIPlayer::route) || this->player->doesNeverAttack()) {
+                if (this->KIPlayer::route->getWaypoint() && this->player->isActive()) {
+                    this->KIPlayer::route->update(this->geometry->getPosition());
+                    if (this->KIPlayer::route->getWaypoint()) {
+                        if (!this->KIPlayer::route->getDockingTarget()) {
+                            this->targetPos.x = (float) this->KIPlayer::route->getWaypoint()->x;
+                            this->targetPos.y = (float) this->KIPlayer::route->getWaypoint()->y;
+                            this->targetPos.z = (float) this->KIPlayer::route->getWaypoint()->z;
+                        } else {
+                            if (this->state == 1) {
+                                this->state = 7;
+                            }
+                            if (this->state == 7) {
+                                // approach the nearest free navigation point of the docking target
+                                KIPlayer *dock = this->KIPlayer::route->getDockingTarget();
+                                SpacePoint *nav = dock->getNearestNavigationPoint(this->getPosition(), this->spacePoint);
+                                if (nav) {
+                                    if (this->spacePoint != nav) {
+                                        if (this->spacePoint) {
+                                            this->spacePoint->giveFree();
+                                        }
+                                        this->spacePoint = nav;
+                                        nav->take();
+                                    }
+                                    this->auxVector = this->KIPlayer::route->getDockingTarget()->getPosition() +
+                                                          MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), nav->position);
+                                    if ((int) VectorLength(this->auxVector - this->getPosition()) >= 2000) {
+                                        this->targetPos = this->auxVector;
+                                    } else {
+                                        // close enough: ease into the docking point
+                                        this->state = 8;
+                                        delete this->easeMatrix;
+                                        this->easeMatrix = nullptr;
+                                        KIPlayer *target = this->KIPlayer::route->getDockingTarget();
+                                        SpacePoint *dockPoint = target->getNearestDockingPoint(
+                                                this->KIPlayer::route->getDockingTarget()->getPosition() +
+                                                MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), this->spacePoint->position));
+                                        Vector dockDir = VectorNormalize(MatrixRotateVector(
+                                                this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->direction));
+                                        Vector navPos = MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), nav->position);
+                                        Vector dockPos = MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
+                                        Vector up = VectorNormalize(navPos - dockPos);
+                                        Vector right = VectorNormalize(VectorCross(up, dockDir));
+                                        Matrix dockMatrix;
+                                        MatrixSetRotation(dockMatrix, right, up, dockDir);
+                                        this->easeMatrix = new AbyssEngine::EaseInOutMatrix(this->player->transform, dockMatrix, 3000);
+                                    }
+                                }
+                            }
+                        }
+                        this->field_0x12c = true;
+                    }
+                } else {
+                    this->field_0x38 = 0;
+                    this->targetPlayer = this->player->getEnemy(0);
+                    if (this->targetPlayer) {
+                        this->tempVector = this->targetPlayer->getPosition();
+                        this->targetPos.x = this->tempVector.x;
+                        this->targetPos.y = this->tempVector.y;
+                        this->targetPos.z = this->tempVector.z;
+                    }
+                }
+            } else {
+                if (this->field_0x38 < 0 || (uint32_t) this->field_0x38 >= this->player->getEnemies()->size()) {
+                    this->field_0x38 = 0;
+                }
+                this->targetPlayer = this->player->getEnemy(this->field_0x38);
+                this->tempVector = this->targetPlayer->getPosition();
+                this->targetPos.x = this->tempVector.x;
+                this->targetPos.y = this->tempVector.y;
+                this->targetPos.z = this->tempVector.z;
+            }
+        } else if (this->KIPlayer::route) {
+            this->KIPlayer::route->update(this->geometry->getPosition());
+            if (this->KIPlayer::route->getWaypoint()) {
+                this->targetPos.x = (float) this->KIPlayer::route->getWaypoint()->x;
+                this->targetPos.y = (float) this->KIPlayer::route->getWaypoint()->y;
+                this->targetPos.z = (float) this->KIPlayer::route->getWaypoint()->z;
+                this->field_0x12c = true;
+            }
+        } else {
+            this->state = 5;
+        }
+
+        // jumpers following their route leave the system after 20 s
+        if (this->jumperFlag && this->field_0x12c) {
+            this->field_0xf0 += dt;
+            if (this->field_0xf0 >= 20000) {
+                this->state = 6;
+                this->field_0xf0 = 0;
+                this->field_0x12c = false;
+            }
+        } else {
+            this->field_0xf0 = 0;
+        }
+
+    commandRoute:
+        // wingman ordered to fly the player's route
+        if (this->wingmanFlag && this->field_0xe4 == 2) {
+            if (!this->commandRoute) {
+                this->setWingmanCommand(1, nullptr);
+            } else {
+                this->commandRoute->update(this->geometry->getPosition());
+                if (this->commandRoute->getCurrent() > this->initialWaypoint) {
+                    delete this->commandRoute;
+                    this->commandRoute = nullptr;
+                    this->setWingmanCommand(1, nullptr);
+                } else if (this->commandRoute->getWaypoint()) {
+                    this->targetPos.x = (float) this->commandRoute->getWaypoint()->x;
+                    this->targetPos.y = (float) this->commandRoute->getWaypoint()->y;
+                    this->targetPos.z = (float) this->commandRoute->getWaypoint()->z;
+                    this->field_0x12c = true;
+                }
             }
         }
-        state9_skip_delivery:;
+    } else {
+        this->player->StopEngineSound();
+    }
 
-        // Check if docking time complete
-        {
-            Route *r9b = this->KIPlayer::route;
-            int dockTime = 0;
-            if (r9b != nullptr) {
-                dockTime = r9b->getDockingTime();
+    this->distanceToTarget.x = this->targetPos.x - this->shipPosition.x;
+    this->distanceToTarget.y = this->targetPos.y - this->shipPosition.y;
+    this->distanceToTarget.z = this->targetPos.z - this->shipPosition.z;
+
+    // sleeping enemies wake up when the ego ship (or its guided rocket) comes near
+    if (this->player->enemyFlagsLo && (this->state == 5 || (this->wingmanFlag && this->field_0xe4 == 1)) &&
+        this->field_0x128 > 0) {
+        if (this->level->getPlayer()->isInRocketControl()) {
+            this->tempVector = this->level->getPlayer()->getTargetFollowCamera()->getTarget()->getPosition();
+        } else {
+            this->tempVector = this->level->getPlayer()->player->getPosition();
+        }
+        this->distanceToTarget.x = this->tempVector.x - this->shipPosition.x;
+        this->distanceToTarget.y = this->tempVector.y - this->shipPosition.y;
+        this->distanceToTarget.z = this->tempVector.z - this->shipPosition.z;
+        if (this->distanceToTarget.x < 25000.0f && this->distanceToTarget.x > -25000.0f &&
+            this->distanceToTarget.y < 25000.0f && this->distanceToTarget.y > -25000.0f &&
+            this->distanceToTarget.z < 25000.0f && this->distanceToTarget.z > -25000.0f) {
+            this->state = 1;
+            (this->parentGeometry ? this->parentGeometry : this->geometry)->setVisible(true);
+            this->player->setActive(true);
+        }
+    }
+
+    if (this->boundingVolumes) {
+        for (uint32_t i = 0; i < this->boundingVolumes->size(); ++i) {
+            (*this->boundingVolumes)[i]->update(this->shipPosition.x, this->shipPosition.y,
+                                                this->shipPosition.z);
+        }
+    }
+
+    {
+        int hp = this->player->getHitpoints();
+
+        // smoke trail below a third of the hull
+        if (!this->smoking && (float) this->player->getMaxHitpoints() * 0.33f > (float) hp) {
+            if (reinterpret_cast<const float &>(Globals::options[40]) > 0.0f) {
+                if (this->isDocked()) {
+                    this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
+                    this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, false);
+                } else {
+                    this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, true);
+                    this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, true);
+                }
             }
-            if (this->field_0x2bc <= dockTime) {
+            this->smoking = true;
+        } else if (this->smoking && !((float) this->player->getMaxHitpoints() * 0.33f > (float) hp)) {
+            this->smoking = false;
+            this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
+            this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, false);
+        }
+
+        if (hp <= 0 && this->state != 3 && this->state != 4) {
+            // destroyed
+            Mission *freelance = Globals::status->getFreelanceMission();
+            if (freelance && freelance->getType() == 13 &&
+                Globals::status->getStation()->getIndex() == freelance->getTargetStation() &&
+                !Globals::status->field_0xf1) {
+                if (this->name.length != 0 && !this->name.Compare(*Globals::gameText->getText(1663))) {
+                    Globals::status->field_0xf0 = 1;
+                } else {
+                    Globals::status->field_0xf0 = 0;
+                    Globals::status->field_0xf1 = 1;
+                }
+            }
+            if (this->field_0x42) {
+                // bounty collected
+                (*Globals::status->wanted)[this->field_0x48]->setTerminated(true);
+                (*Globals::status->wanted)[this->field_0x48]->setActive(false);
+                Globals::layout->showMissionRewardMessage((*Globals::status->wanted)[this->field_0x48]->getReward(), true);
+                Globals::status->setCredits(Globals::status->getCredits() +
+                                            (*Globals::status->wanted)[this->field_0x48]->getReward());
+                Globals::status->incCollectedBounties((*Globals::status->wanted)[this->field_0x48]->getBoard());
+            }
+            if (this->player->enemyFlagsLo) {
+                if (this->shipGroup == 9) {
+                    this->cargo = new Array<int>();
+                    ArrayAdd(131, *this->cargo);
+                    ArrayAdd(Globals::rnd->nextInt(3) + 1, *this->cargo);
+                } else if (this->shipGroup == 8) {
+                    if (!this->player->destroyedByte) {
+                        Globals::status->incPirateKills();
+                    }
+                } else if (!this->carriesMissionCrate && this->crateCaptured() && Globals::options[53] &&
+                           Globals::rnd->nextInt(100) < 0 && this->shipGroup <= 3) {
+                    delete this->cargo;
+                    this->cargo = nullptr;
+                    this->cargo = new Array<int>();
+                    ArrayAdd(this->shipGroup + 189, *this->cargo);
+                    ArrayAdd(1, *this->cargo);
+                }
+                this->level->enemyDied(this->type, this->player->destroyedByte);
+            } else {
+                this->level->friendDied();
+                if (this->wingmanFlag) {
+                    this->level->wingmanDied(this->name);
+                }
+            }
+            this->state = 3;
+            this->field_0x73 = 0;
+            this->dyingTimer = Globals::rnd->nextInt(1500) + 1500;
+            this->dyingDirection = this->geometry->getDirection();
+            this->level->field_74->emitManual(this->level->field_3c, this->shipPosition, 0, Vector(), -1.0f);
+            Globals::sound->play(20, Globals::options[15] ? &this->shipPosition : nullptr, nullptr, 0.0f);
+            float x = (float) (Globals::rnd->nextInt(200) - 100);
+            float y = (float) (Globals::rnd->nextInt(200) - 100);
+            float z = (float) (Globals::rnd->nextInt(200) - 100);
+            this->dyingSpin = VectorNormalize(Vector{x, y, z});
+            this->dyingSpin *= 0.05f;
+            this->level->field_74->enableSystemEmit(this->engineTrailSystem, true);
+            this->level->field_8c->enableSystemEmit(this->field_0x130, false);
+            this->level->field_8c->enableSystemEmit(this->field_0x134, false);
+            this->level->field_8c->enableSystemEmit(this->field_0x138, false);
+            this->crateCaptured() = this->cargoAvailable();
+            this->setExhaustVisible(false);
+        }
+
+        if (this->aiDisabled) {
+            this->geometry->updateReferenceMatrix();
+            this->handleCloaking();
+            return;
+        }
+
+        switch (this->state) {
+            case 0:
+                this->state = 1;
+                return;
+            case 1:
+            case 7:
+                this->handleCloaking();
+                if (this->field_0x13d) {
+                    // heavy damage makes the fighter boost away
+                    if (this->hitpoints > hp) {
+                        this->damageAccumulator += this->hitpoints - hp;
+                        this->hitpoints = hp;
+                        if ((float) this->damageAccumulator / (float) this->player->getMaxHitpoints() * 100.0f > 40.0f) {
+                            this->boostTick = 10000;
+                            this->damageAccumulator = 0;
+                            this->damageEscape = true;
+                        }
+                    }
+                    if (this->boostTick > 5000 && !this->boosting) {
+                        this->boostTick = 0;
+                        if (this->damageEscape || Globals::rnd->nextInt(100) < this->boostProb) {
+                            this->boostTimeLimit = Globals::rnd->nextInt(3000) + 5000;
+                            this->boosting = true;
+                            this->targetSpeed = 5.5f;
+                            this->currentRotate = 1.3f;
+                        }
+                    }
+                    if (this->boosting) {
+                        if (this->boostTick > this->boostTimeLimit) {
+                            this->damageEscape = false;
+                            this->boostTick = 0;
+                            this->targetSpeed = this->speed;
+                            this->currentRotate = this->rotate;
+                        }
+                        if (this->targetSpeed > 0.0f) {
+                            this->currentSpeed *= this->targetSpeed > this->currentSpeed ? 1.05f : 0.95f;
+                            if (this->currentSpeed >= 5.5f || this->currentSpeed < this->speed) {
+                                this->currentSpeed = this->targetSpeed;
+                                if (this->targetSpeed == this->speed) {
+                                    this->boosting = false;
+                                }
+                                this->targetSpeed = 0.0f;
+                            }
+                        }
+                    }
+                }
+
+                // too close to the target: veer off sideways
+                if (this->targetPlayer && !this->field_0x12c) {
+                    int range = this->targetPlayer->egoFlag && this->level->getPlayer() &&
+                                        this->level->getPlayer()->isDockedToDockingPoint() ? 12000 : 8000;
+                    if (this->distanceToTarget.x < range && this->distanceToTarget.x > -range &&
+                        this->distanceToTarget.y < range && this->distanceToTarget.y > -range &&
+                        this->distanceToTarget.z < range && this->distanceToTarget.z > -range) {
+                        this->distanceToTarget = this->geometry->getRightVector();
+                    }
+                }
+                {
+                    Vector toTarget = VectorNormalize(this->distanceToTarget);
+                    this->distanceToTarget = MatrixRotateVector(MatrixGetInverse(this->player->transform), toTarget);
+                    this->distanceToTarget.y = -this->distanceToTarget.y;
+                    this->field_0x24 = this->player->empDisabledByte;
+
+                    if (this->targetIsActive && !this->field_0x12c && this->targetPlayer &&
+                        !this->player->doesNeverAttack()) {
+                        if (this->targetPlayer->field_5e) {
+                            this->targetIsActive = false;
+                            if (this->isShooting) {
+                                this->player->stopShooting(this->field_0x140);
+                                this->isShooting = false;
+                            }
+                        } else if (this->distanceToTarget.x < this->shootError &&
+                                   this->distanceToTarget.x > -this->shootError &&
+                                   this->distanceToTarget.y < this->shootError &&
+                                   this->distanceToTarget.y > -this->shootError &&
+                                   this->targetPos.x - this->shipPosition.x < 35000.0f &&
+                                   this->targetPos.x - this->shipPosition.x > -35000.0f &&
+                                   this->targetPos.y - this->shipPosition.y < 35000.0f &&
+                                   this->targetPos.y - this->shipPosition.y > -35000.0f &&
+                                   this->targetPos.z - this->shipPosition.z < 35000.0f &&
+                                   this->targetPos.z - this->shipPosition.z > -35000.0f) {
+                            if (this->field_0x25 && this->targetPlayer->isActive() && !this->targetPlayer->isDead() &&
+                                !(this->targetPlayer->egoFlag && this->level->getPlayer() &&
+                                  this->level->getPlayer()->isDockedToDockingPoint() &&
+                                  this->targetPlayer->getPosition().y > this->player->getPosition().y)) {
+                                this->player->shoot(this->field_0x140, (long long) dt, false);
+                                this->isShooting = true;
+                            } else {
+                                this->targetIsActive = false;
+                            }
+                        }
+                    }
+
+                    Matrix matrix = this->geometry->getMatrix();
+                    if (this->field_0x12d) {
+                        this->rollSampleIndex = 0;
+                        this->targetRoll = 0.0f;
+                        this->rollBufferFilled = false;
+                    } else {
+                        // turn towards the target by at most dt * 48 / 65536 per frame
+                        Vector wanted = toTarget;
+                        Vector dir = MatrixGetDir(matrix);
+                        toTarget -= dir;
+                        toTarget = VectorNormalize(toTarget);
+                        toTarget *= (float) (dt * 48) / 65536.0f;
+                        this->distanceToTarget = toTarget + dir;
+                        this->distanceToTarget = VectorNormalize(this->distanceToTarget);
+                        float dx = this->distanceToTarget.x - wanted.x;
+                        float dy = this->distanceToTarget.y - wanted.y;
+                        float dz = this->distanceToTarget.z - wanted.z;
+                        if ((dx > 0.0f ? dx : -dx) + (dy > 0.0f ? dy : -dy) + (dz > 0.0f ? dz : -dz) < 0.0625f) {
+                            this->distanceToTarget = wanted;
+                        }
+
+                        // bank into the turn: average of the last turn angles
+                        float dot = VectorDot(VectorNormalize(dir), this->distanceToTarget);
+                        float angle = 0.0f;
+                        if (dot < 1.0f && dot > -1.0f) {
+                            angle = ACosf(dot);
+                        }
+                        float turn = angle > 0.0f ? angle : -angle;
+                        if (turn != 0.0f) {
+                            Vector heading = this->distanceToTarget;
+                            if (ACosf(VectorDot(MatrixGetRight(matrix), heading)) < 1.57079637f) {
+                                turn = -turn;
+                            }
+                        }
+                        this->rollSamples[this->rollSampleIndex] = turn;
+                        if (this->rollBufferFilled) {
+                            float sum = 0.0f;
+                            for (int i = 0; i < 5; ++i) {
+                                sum += this->rollSamples[i];
+                            }
+                            turn = sum / 5.0f;
+                        } else if (this->rollSampleIndex != 0) {
+                            float sum = 0.0f;
+                            for (int i = 0; i < this->rollSampleIndex; ++i) {
+                                sum += this->rollSamples[i];
+                            }
+                            turn = sum / (float) this->rollSampleIndex;
+                        }
+                        if (++this->rollSampleIndex >= 5) {
+                            this->rollSampleIndex = 0;
+                            if (!this->rollBufferFilled) {
+                                this->rollBufferFilled = true;
+                            }
+                        }
+                        this->targetRoll = turn * this->maxRoll * this->rollFactor;
+                        if (this->targetRoll > this->maxRoll) {
+                            this->targetRoll = this->maxRoll;
+                        } else if (this->targetRoll < -this->maxRoll) {
+                            this->targetRoll = -this->maxRoll;
+                        }
+
+                        Vector right = VectorCross(MatrixGetUp(matrix), this->distanceToTarget);
+                        right = VectorNormalize(right);
+                        Vector up = VectorCross(this->distanceToTarget, right);
+                        up = VectorNormalize(up);
+                        matrix = MatrixSetRotation(matrix, right, up, this->distanceToTarget);
+                    }
+
+                    if (this->rollActive()) {
+                        this->roll(dt);
+                    }
+                    if (this->smoothRoll != this->targetRoll) {
+                        float step = (float) dt * 1.25f / 3.9f;
+                        if (this->smoothRoll < this->targetRoll) {
+                            this->smoothRoll += step;
+                            if (this->smoothRoll > this->targetRoll) {
+                                this->smoothRoll = this->targetRoll;
+                            }
+                        } else if (this->smoothRoll > this->targetRoll) {
+                            this->smoothRoll -= step;
+                            if (this->smoothRoll < this->targetRoll) {
+                                this->smoothRoll = this->targetRoll;
+                            }
+                        }
+                    }
+                    if ((int) this->field_0xfc > 0) {
+                        this->field_0xfc -= dt;
+                        if ((int) this->field_0xfc <= 0) {
+                            this->rollActive() = 1;
+                        }
+                    }
+                    if (this->targetRoll == this->smoothRoll) {
+                        if ((int) this->field_0xfc > 0) {
+                            this->field_0xfc -= dt;
+                            if ((int) this->field_0xfc <= 0) {
+                                this->rollActive() = 1;
+                            }
+                        }
+                    } else {
+                        this->field_0xfc = 750;
+                    }
+
+                    Matrix bank;
+                    bank = MatrixSetRotation(bank, 0.0f, 0.0f, this->smoothRoll / 4096.0f * 3.14159274f);
+                    if (this->parentGeometry) {
+                        this->parentGeometry->setMatrix(bank);
+                    }
+                    if (this->player->empDisabledByte) {
+                        // stunned: drift, engines sparking
+                        this->level->field_8c->enableSystemEmit(this->field_0x130, true);
+                        this->level->field_8c->enableSystemEmit(this->field_0x134, true);
+                        this->level->field_8c->enableSystemEmit(this->field_0x138, true);
+                    } else {
+                        float move = (float) (int) (this->currentSpeed * (float) dt);
+                        matrix[3] += matrix[2] * move;
+                        matrix[7] += matrix[6] * move;
+                        matrix[11] += matrix[10] * move;
+                        if (this->rollActive()) {
+                            matrix *= this->rollMatrix;
+                        }
+                        Globals::Canvas->TransformSetLocal(this->geometry->transform, matrix);
+                        this->player->transform = matrix;
+                        if (this->parentGeometry) {
+                            this->player->transform *= this->parentGeometry->getMatrix();
+                        }
+                        this->level->field_8c->enableSystemEmit(this->field_0x130, false);
+                        this->level->field_8c->enableSystemEmit(this->field_0x134, false);
+                        this->level->field_8c->enableSystemEmit(this->field_0x138, false);
+                    }
+                    this->geometry->updateReferenceMatrix();
+                }
+
+                // steer around landmarks and other ships
+                if (this->field_0x13e) {
+                    Array<KIPlayer *> *landmarks = this->level->getLandmarks();
+                    if (landmarks) {
+                        for (uint32_t i = 0; i < landmarks->size(); ++i) {
+                            if (!(*landmarks)[i] || !(*landmarks)[i]->outerCollide(this->shipPosition)) {
+                                continue;
+                            }
+                            Vector away = (*landmarks)[i]->getProjectionVector(this->shipPosition);
+                            if (away != Vector{0.0f, 0.0f, 0.0f}) {
+                                this->tempVector = this->geometry->getDirection();
+                                away -= this->tempVector;
+                                away *= this->currentSpeed * 0.03f;
+                                this->auxVector = this->tempVector + away;
+                                this->auxVector = VectorNormalize(this->auxVector);
+                                this->geometry->setDirection(this->auxVector, Vector{0.0f, 1.0f, 0.0f});
+                                this->geometry->moveForward(this->currentSpeed * (float) dt);
+                                break;
+                            }
+                        }
+                    }
+                    Array<KIPlayer *> *ships = this->level->getEnemies();
+                    if (ships) {
+                        for (uint32_t i = 0; i < ships->size(); ++i) {
+                            if (!(*ships)[i] || !(*ships)[i]->outerCollide(this->shipPosition)) {
+                                continue;
+                            }
+                            Vector away = (*ships)[i]->getProjectionVector(this->shipPosition);
+                            if (away != Vector{0.0f, 0.0f, 0.0f}) {
+                                this->tempVector = this->geometry->getDirection();
+                                away -= this->tempVector;
+                                away *= this->currentSpeed * 0.03f;
+                                this->auxVector = this->tempVector + away;
+                                this->auxVector = VectorNormalize(this->auxVector);
+                                this->geometry->setDirection(this->auxVector, Vector{0.0f, 1.0f, 0.0f});
+                                this->geometry->moveForward(this->currentSpeed * (float) dt);
+                                break;
+                            }
+                        }
+                    }
+                }
+                this->push(dt);
+                return;
+            case 2:
+                return;
+            case 3: {
+                // tumbling before the final explosion
+                this->field_0x101 = 0;
+                this->field_0x13e = 0;
+                Matrix spin;
+                MatrixSetRotation(spin, this->dyingSpin.x, this->dyingSpin.y, this->dyingSpin.z);
+                if (dt > 0) {
+                    this->geometry->setMatrix(this->geometry->getMatrix() * spin);
+                }
+                this->geometry->translate(this->dyingDirection * (float) dt * this->currentSpeed);
+                this->geometry->updateReferenceMatrix();
+                this->dyingTimer -= dt;
+                if (this->dyingTimer >= 0) {
+                    return;
+                }
+                this->explosion->start(this->shipPosition, Vector{0.0f, 0.0f, 0.0f});
+                this->level->field_74->enableSystemEmit(this->engineTrailSystem, false);
+                if (reinterpret_cast<const float &>(Globals::options[40]) > 0.0f) {
+                    this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
+                    this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, false);
+                }
+                this->player->setBombForce((float) Globals::rnd->nextInt(50) * 0.01f + 50.0f);
+                float x = (float) (Globals::rnd->nextInt(200) - 100);
+                float y = (float) (Globals::rnd->nextInt(200) - 100);
+                float z = (float) (Globals::rnd->nextInt(200) - 100);
+                this->field_0x17c = VectorNormalize(Vector{x, y, z});
+                this->dyingTimer = 0;
+                this->state = 4;
+                if (this->spacePoint && !this->spacePoint->isFree()) {
+                    this->spacePoint->giveFree();
+                    this->spacePoint = nullptr;
+                }
+                if (this->crateCaptured()) {
+                    if (this->carriesMissionCrate && !this->missionCrateCaptured()) {
+                        this->crateCaptured() = 0;
+                        this->missionCrateLost() = 1;
+                    } else {
+                        this->createCrate(this->shipGroup == 9 ? 4 : 0);
+                    }
+                }
+                return;
+            }
+            case 4: {
+                this->dyingTimer += dt;
+                if (this->dyingTimer > 0) {
+                    this->field_0x73 = 0;
+                } else {
+                    Matrix spin;
+                    MatrixSetRotation(spin, this->dyingSpin.x, this->dyingSpin.y, this->dyingSpin.z);
+                    if (dt > 0) {
+                        this->geometry->setMatrix(this->geometry->getMatrix() * spin);
+                    }
+                    this->geometry->translate(this->dyingDirection * (float) dt * this->currentSpeed);
+                    this->geometry->updateReferenceMatrix();
+                }
+                this->geometry->updateReferenceMatrix();
+                this->explosion->update(dt, this->level->getPlayer() ? this->level->getPlayer()->getTargetFollowCamera() : nullptr);
+                this->deathTimer() += dt;
+                if (this->crateCaptured() && this->player->isActive() && dt > 0 && this->wreckGeometry()) {
+                    // the cargo crate drifts away from the wreck
+                    float bombForce = this->player->getBombForce();
+                    if (bombForce > 0.0f) {
+                        this->tempVector = this->field_0x17c * bombForce;
+                        this->wreckGeometry()->translate(this->tempVector);
+                        this->geometry->translate(this->tempVector);
+                        bombForce *= 0.98f;
+                        if (bombForce < 0.05f) {
+                            bombForce = 0.0f;
+                        }
+                        this->player->setBombForce(bombForce);
+                    }
+                    float angle = (float) (int) ((float) (dt / 2) / 65536.0f * 6.28318548f);
+                    this->wreckGeometry()->rotate(angle, angle, angle);
+                    this->player->transform = this->wreckGeometry()->getMatrix();
+                    if (this->deathTimer() <= 60000 || this->explosion->isPlaying()) {
+                        return;
+                    }
+                    if (this->level->getPlayer() && this->level->getPlayer()->field_0x14 &&
+                        this->level->getPlayer()->field_0x14->field_0x1c == this) {
+                        this->level->getPlayer()->field_0x14->field_0x1c = nullptr;
+                    }
+                    if (this->carriesMissionCrate && !this->missionCrateCaptured()) {
+                        this->missionCrateLost() = 1;
+                    }
+                    delete this->wreckGeometry();
+                    this->deathTimer() = 0;
+                    this->wreckGeometry() = nullptr;
+                } else {
+                    if (this->explosion->isPlaying()) {
+                        return;
+                    }
+                    if (this->carriesMissionCrate && !this->missionCrateCaptured()) {
+                        this->missionCrateLost() = 1;
+                    }
+                    if (this->deathTimer() <= 60000) {
+                        this->field_0x101 = 1;
+                        return;
+                    }
+                }
+                this->setActive(false);
+                this->field_0x101 = 1;
+                return;
+            }
+            case 5:
+                // asleep: hidden from far away, wakes when the target comes into sight
+                if (this->player->enemyFlagsLo && Globals::status->getCurrentCampaignMission() > 1) {
+                    (this->parentGeometry ? this->parentGeometry : this->geometry)->setVisible(false);
+                }
+                if (this->targetPlayer && !this->targetPlayer->field_5e &&
+                    this->distanceToTarget.x < this->field_0x128 && this->distanceToTarget.x > -this->field_0x128 &&
+                    this->distanceToTarget.y < this->field_0x128 && this->distanceToTarget.y > -this->field_0x128 &&
+                    this->distanceToTarget.z < this->field_0x128 && this->distanceToTarget.z > -this->field_0x128) {
+                    this->state = 1;
+                    (this->parentGeometry ? this->parentGeometry : this->geometry)->setVisible(true);
+                    this->player->setActive(true);
+                    if (this->field_0x12f) {
+                        this->level->pirateStationAction(true);
+                    }
+                }
+                return;
+            case 6:
+                // jumping out
+                this->currentSpeed *= 1.1f;
+                this->geometry->moveForward((float) (int) (this->currentSpeed * (float) dt));
+                if (this->currentSpeed > 100.0f) {
+                    this->setDead();
+                }
+                return;
+            case 8: {
+                // easing into the docking point
+                KIPlayer *dock = this->KIPlayer::route->getDockingTarget();
+                SpacePoint *dockPoint = dock->getNearestDockingPoint(
+                        this->KIPlayer::route->getDockingTarget()->getPosition() +
+                        MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), this->spacePoint->position));
+                this->auxVector = this->KIPlayer::route->getDockingTarget()->getPosition() +
+                                      MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
+                if (kShipDockRadius[this->type] > (int) VectorLength(this->auxVector - this->getPosition())) {
+                    this->setExhaustVisible(false);
+                    this->dockTimer = 0;
+                    this->passengersMoved = 0;
+                    this->state = 9;
+                    if (this->smoking) {
+                        this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
+                        this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, false);
+                    }
+                    return;
+                }
+                float step = (float) dt;
+                this->easeMatrix->Increase(step);
+                Matrix eased = this->easeMatrix->GetValue();
+                MatrixSetTranslation(eased, this->getPosition() + (this->auxVector - this->getPosition()) * step * 0.0006f);
+                this->geometry->setMatrix(eased);
+                this->player->transform = eased;
+                return;
+            }
+            case 9: {
+                // docked: unload passengers, then undock after the docking time
+                Mission *mission = Globals::status->getMission();
+                this->dockTimer += dt;
+                if (!mission->isEmpty() && mission->getType() == 184 &&
+                    ((PlayerFixedObject *) this->KIPlayer::route->getDockingTarget())->getDockingType() == 1) {
+                    int moved = this->passengersMoved;
+                    this->passengersMoved = (int) ((float) this->dockTimer / (this->shipGroupFlag == 51 ? 200.0f : 1500.0f));
+                    if ((Globals::status->getCurrentCampaignMission() != 94 ||
+                         mission->getStatusValue() > Globals::status->getShip()->getMaxPassengers()) &&
+                        this->passengersMoved > moved &&
+                        this->level->getNumDeliveredPassengers() < mission->getProductionGoodAmount()) {
+                        mission->setStatusValue(mission->getStatusValue() + moved - this->passengersMoved);
+                        if (mission->getStatusValue() < 0) {
+                            mission->setStatusValue(0);
+                        }
+                    }
+                }
+                if (this->dockTimer > this->KIPlayer::route->getDockingTime()) {
+                    this->setExhaustVisible(true);
+                    this->KIPlayer::route->reachWaypoint(this->KIPlayer::route->getCurrent());
+                    this->state = 1;
+                    if (this->smoking) {
+                        this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, true);
+                        this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, true);
+                    }
+                    if (this->spacePoint) {
+                        this->spacePoint->giveFree();
+                        this->spacePoint = nullptr;
+                    }
+                }
                 return;
             }
         }
-
-        // Docking done: setExhaustVisible, advance route, state=1
-        this->setExhaustVisible(true);
-        Route *r9c = this->KIPlayer::route;
-        if (r9c != nullptr) {
-            int cur = r9c->getCurrent();
-            r9c->reachWaypoint(cur);
-        }
-        this->state = 1;
-
-        // Re-enable engine trail if field_0x1fc != 0
-        if (this->field_0x1fc != 0) {
-            ((Level *)(intptr_t)this->level())->particleEmitBoolPtr->enableSystemEmit(
-                this->field_0x80, true);
-            ((Level *)(intptr_t)this->level())->particleSystemMgr->enableSystemEmit(
-                this->field_0x84, true);
-        }
-
-        // Clean up spacePoint
-        if (this->spacePoint != 0) {
-            SpacePoint *sp = (SpacePoint *)(intptr_t)this->spacePoint;
-            sp->giveFree();
-            this->spacePoint = 0;
-        }
-        return;
     }
-
-    default:
-        break;
-    }
-
-    // -----------------------------------------------------------------------
-    // Post-state: boost timer (de840-de9c6)
-    // de840: if field_0x1c0 > 5000 and boost not active: maybe start boost
-    // de934: if boost active: update speed toward target
-    // -----------------------------------------------------------------------
-    // de840: only try to start a boost if not already boosting
-    if (this->field_0x1c0 > 5000 && this->field_0x1f4 == 0) {
-        bool skipBoost = false;
-        if (this->field_0x1e0 == 0) {
-            int r = Globals::rnd->nextInt(100);
-            if (r < this->boostProb) {
-                skipBoost = true;
-            }
-        }
-        if (!skipBoost) {
-            // de87a: start boost
-            int dur = Globals::rnd->nextInt(3000) + 5000;
-            this->field_0x1c4 = dur;
-            this->field_0x1f4  = 1;
-            // strd at de89e: field_0x1ec = 5.5 (speed target), currentRotate = 1.3
-            this->field_0x1ec = 5.5f;
-            this->currentRotate = 1.3f;
-        } else {
-            // de8c0: skipBoost path — reset timer
-            this->field_0x1c0 = 0;
-        }
-    }
-
-    // de934: if boost active: update currentSpeed toward target
-    if (this->field_0x1f4 != 0) {
-        if (this->field_0x1c0 > this->field_0x1c4) {
-            // Boost expired: restore pre-boost speed
-            this->field_0x1e0 = 0;
-            this->field_0x1c0 = 0;
-            this->currentSpeed = this->speed;
-            this->field_0x1ec = this->speed;
-            this->currentRotate = this->rotate;
-            this->field_0x1f4  = 0;
-        } else {
-            // Still boosting: drive speed toward 5.5 target
-            float spd    = this->currentSpeed;
-            float target = this->field_0x1ec;
-            spd *= (spd < target) ? 1.05f : 0.95f;
-            if (spd > 5.5f)        { spd = 5.5f; }
-            if (spd < this->speed) { spd = this->speed; }
-            this->currentSpeed = spd;
-            if (spd == target) {
-                this->field_0x1ec = 0.0f;
-                this->field_0x1f4 = 0;
-            }
-        }
-    }
-
-    // de9c6: post-state movement subsystem
-    // Check if commandRoute is valid and not paused
-    {
-        Player *tgt_b = this->targetPlayer;
-        if (tgt_b != nullptr && this->field_0x12c == 0) {
-            // de9da: the target's byte at +0x69 widens the follow range when the ego is docked
-            bool routeActive = tgt_b->egoFlag != 0;
-
-            // Determine range threshold: 12000 if player is docked, else 8000
-            int threshold;
-            if (routeActive) {
-                Level *lv = (Level *)(intptr_t)this->level();
-                PlayerEgo *ego = lv->getPlayer();
-                threshold = (ego != nullptr && ego->isDockedToDockingPoint()) ? 12000 : 8000;
-            } else {
-                threshold = 8000;
-            }
-
-            float threshF    = (float)threshold;
-            float negThreshF = -threshF;
-
-            // Check resetVecC components vs threshold
-            bool inRange = (this->resetVecC.x < threshF && this->resetVecC.x > negThreshF &&
-                            this->resetVecC.y < threshF && this->resetVecC.y > negThreshF &&
-                            this->resetVecC.z < threshF);
-            if (inRange) {
-                // Within range: compute normalized heading from resetVecB
-                Vector normDir = VectorNormalize(this->resetVecB);
-                this->resetVecA() = normDir;
-            }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Movement: MatrixSetRotation + translate (de2c0 / dea08 path)
-    // -----------------------------------------------------------------------
-    // (builds identity matrix, loads field_0x188 angles, rotates geom)
-    {
-        Matrix identMat;
-        identMat.m[0]  = 1.0f; identMat.m[5]  = 1.0f; identMat.m[10] = 1.0f;
-        identMat.m[1]  = 0.0f; identMat.m[2]  = 0.0f; identMat.m[3]  = 0.0f;
-        identMat.m[4]  = 0.0f; identMat.m[6]  = 0.0f; identMat.m[7]  = 0.0f;
-        identMat.m[8]  = 0.0f; identMat.m[9]  = 0.0f; identMat.m[11] = 0.0f;
-        identMat.m[12] = 0.0f; identMat.m[13] = 0.0f; identMat.m[14] = 0.0f;
-        AEMath::MatrixSetRotation(identMat,
-                                  this->field_0x188.x,
-                                  this->field_0x188.y,
-                                  this->field_0x188.z);
-        if (dt >= 1) {
-            Matrix geoMat = geom->getMatrix();
-            Matrix newMat = geoMat * identMat;
-            geom->setMatrix(newMat);
-        }
-
-        Vector transl = this->field_0x194 * (float)dt;
-        Vector translScaled = transl * this->currentSpeed;
-        geom->translate(translScaled);
-        geom->updateReferenceMatrix();
-        geom->updateReferenceMatrix(); // called twice in asm (dea9e + deaa0)
-
-        // Explosion update
-        Level *lv = (Level *)(intptr_t)this->level();
-        TargetFollowCamera *cam = nullptr;
-        {
-            PlayerEgo *ego = lv->getPlayer();
-            if (ego != nullptr) {
-                cam = (TargetFollowCamera *)(intptr_t)ego->getTargetFollowCamera();
-            }
-        }
-        this->explosion->update(dt, cam);
-
-        // Increment death timer
-        this->deathTimer() += dt;
-
-        // de9fc: crate-wreck bomb/rotation block
-        if (this->crateCaptured()) {
-            Player *deadPl = (Player *)(intptr_t)this->player();
-            if (deadPl->isActive() && dt >= 1) {
-                AEGeometry *wGeom = this->wreckGeometry();
-                if (wGeom != nullptr) {
-                    // getBombForce > 0: apply bomb push
-                    float bombF = deadPl->getBombForce();
-                    if (bombF > 0.0f) {
-                        Vector bombDir = this->field_0x17c * bombF;
-                        this->resetVecA() = bombDir;
-                        wGeom->translate(this->resetVecA());
-                        geom->translate(this->resetVecA());
-
-                        // Decay bomb force: *= 0.98, clamp min to 0 if < 0.05
-                        float newBF = bombF * 0.98f;
-                        if (newBF < 0.05f) { newBF = 0.0f; }
-                        deadPl->setBombForce(newBF);
-                    }
-
-                    // Wreck rotation: dt>>1 * (1/65536) * 2*pi
-                    float angle = (float)(dt >> 1) * (1.0f / 65536.0f) * 6.2831855f;
-                    float fangle = (float)(int)angle;
-                    wGeom->rotate(fangle, fangle, fangle);
-
-                    // Copy wreck matrix into Player::transform for camera tracking
-                    Matrix wMat = wGeom->getMatrix();
-                    reinterpret_cast<Matrix &>(deadPl->transform[0]) = wMat;
-                }
-            }
-        }
-
-        // debc4: if death timer < 60001, skip cleanup
-        if (this->deathTimer() < 60001) {
-            goto death_done;
-        }
-        // Explosion still playing?
-        if (this->explosion->isPlaying()) { goto death_done_return; }
-
-        // Camera target cleanup: if ego's radar target is this ship, clear it
-        // debd0: [ego+0x14] = Radar* (field_0x14); [Radar+0x1c] = field_0x1c (KIPlayer*)
-        {
-            Level *lv2 = (Level *)(intptr_t)this->level();
-            PlayerEgo *ego2 = lv2->getPlayer();
-            if (ego2 != nullptr) {
-                Radar *radar = ego2->field_0x14;
-                if (radar != nullptr && radar->field_0x1c == this) {
-                    radar->field_0x1c = nullptr;
-                }
-            }
-        }
-
-        // empDisabled check
-        {
-            Player *cleanPl = (Player *)(intptr_t)this->player();
-            if (cleanPl->empDisabledByte != 0 && cleanPl->egoFlag == 0) {
-                cleanPl->empDisabledByte = 1;
-            }
-        }
-
-        // Delete wreck geometry
-        delete this->wreckGeometry();
-        this->deathTimer() = 0;
-        this->wreckGeometry() = nullptr;
-        this->setActive(false);
-        this->field_0x101 = 1;
-
-        death_done_return:
-        return;
-        death_done:;
-    }
-
-    // -----------------------------------------------------------------------
-    // Shooting math + roll samples (ded30-df040)
-    // -----------------------------------------------------------------------
-    {
-        // ded30: entry — read player->empDisabledByte into field_0x24
-        // ded26-ded2c (just before): field_0x174 (resetVecC.y) was negated
-        {
-            Player *pl_sh = (Player *)(intptr_t)this->player();
-            this->field_0x24 = pl_sh->empDisabledByte;
-        }
-
-        // ded38: beq ded44 if field_0x12e == 0 (no locked target)
-        // ded3a-ded40: if field_0x12c != 0 (follow-route), skip to no-target path
-        if (this->field_0x12e != 0 && this->field_0x12c == 0) {
-            // No target / follow-route path → def12
-            goto shoot_no_target;
-        }
-
-        // ded44: geometry matrix copy (0x3c bytes = 15 floats)
-        shoot_geomcopy:;
-        {
-            Matrix geomMat;
-            memcpy(&geomMat, &geom->getMatrix(), sizeof(Matrix));
-
-            // ded54: check field_0x12d (roll-buffer reset flag)
-            if (this->field_0x12d != 0) {
-                // Reset roll buffer state and targetRoll
-                this->rollSampleIndex = 0;
-                *(float *)&this->targetRoll = 0.0f;  // field_0x20c = 0
-                this->rollBufferFilled = 0;
-                goto shoot_done;  // df042
-            }
-
-            // ded6e: direction computation
-            // Pre-normalized resetVecC (computed at decf4 before shooting block)
-            Vector preMod = VectorNormalize(this->resetVecC);
-            // Backup before subtraction (sp+0xd8 in asm)
-            Vector preMod_bak = preMod;
-
-            // MatrixGetDir from geometry matrix
-            Vector geomDir = MatrixGetDir(geomMat);  // sp+0x17c
-
-            // Subtract geometry dir from pre-normalized resetVecC
-            preMod -= geomDir;          // sp+0x188 -= sp+0x17c
-
-            // Normalize the difference
-            Vector normDiff = VectorNormalize(preMod);  // sp+0x140
-            preMod = normDiff;                          // sp+0x188 = sp+0x140
-
-            // Scale by 48*dt/65536
-            float angleScale = (float)(3 * dt << 4) * (1.0f / 65536.0f);
-            preMod *= angleScale;              // sp+0x188 *= scale
-
-            // Combined direction: scaled-normalized-diff + geomDir
-            Vector combined = preMod + geomDir;  // sp+0x140
-
-            // Store into resetVecC then normalize it
-            this->resetVecC = combined;
-            // Normalize resetVecC (stored via [sp+0xd0]=&resetVecC pattern)
-            this->resetVecC = VectorNormalize(this->resetVecC);
-
-            // dee00-dee2a: compute Manhattan distance of change
-            float dz = this->resetVecC.z - preMod_bak.z;
-            float dx = this->resetVecC.x - preMod_bak.x;
-            float dy = this->resetVecC.y - preMod_bak.y;
-            float manhDist = (dx >= 0.0f ? dx : -dx) + (dy >= 0.0f ? dy : -dy)
-                           + (dz >= 0.0f ? dz : -dz);
-
-            // dee32-dee3e: if < 0.0625, revert resetVecC to pre-subtract normalized
-            if (manhDist < 0.0625f) {
-                this->resetVecC = preMod_bak;
-            }
-
-            // dee44-dee52: normalize geomDir, then VectorDot(normGeomDir, resetVecC)
-            Vector normGeomDir = VectorNormalize(geomDir);  // sp+0x140
-            float dot = VectorDot(normGeomDir, this->resetVecC);
-
-            // dee56-dee7e: compute angle = acos(clamp(dot, -1.0, 1.0))
-            float angle;
-            if (dot >= 1.0f || dot <= -1.0f) {
-                angle = 0.0f;  // pool dec34 = 0.0f
-            } else {
-                angle = ACosf(dot);
-            }
-
-            // dee82-dee9e: s16 = |angle|; if zero skip sign determination
-            float signedAngle = (angle >= 0.0f ? angle : -angle);
-
-            if (signedAngle != 0.0f) {
-                // deea0-deed8: sign from right-axis projection
-                Vector rightVec = MatrixGetRight(geomMat);  // sp+0x140
-                // Dot(rightVec, resetVecC) and acos → compare with pi/2
-                float rightDot = VectorDot(rightVec, this->resetVecC);
-                float rightAngle = ACosf(rightDot);
-                // If rightAngle < pi/2: angle is negative (turn left)
-                if (rightAngle < 1.5707964f) {
-                    signedAngle = -signedAngle;
-                }
-            }
-
-            // deedc-deee4: store angle into rollSamples[rollSampleIndex]
-            int idx = this->rollSampleIndex;
-            this->rollSamples[idx] = signedAngle;
-
-            // deee8: check rollBufferFilled
-            if (this->rollBufferFilled != 0) {
-                // Buffer full: sum all 5 samples
-                float sum = 0.0f;
-                for (int i = 0; i < 5; ++i) {
-                    sum += this->rollSamples[i];
-                }
-                float avg = sum / 5.0f;
-                // def7a: s16 = avg
-                signedAngle = avg;  // reuse for targetRoll computation below
-                // Manage index and full flag
-                int newIdx = idx + 1;
-                this->rollSampleIndex = newIdx;
-                if (idx >= 4) {
-                    this->rollSampleIndex = 0;
-                    // rollBufferFilled stays 1 (already set)
-                }
-            } else {
-                // Buffer not yet full
-                if (idx == 0) {
-                    // def9c: first entry — just advance index and use single sample
-                    this->rollSampleIndex = 1;
-                    // signedAngle stays as-is (single sample)
-                } else {
-                    // def56-def72: partial sum of rollSamples[0..idx-1]
-                    float sum = 0.0f;
-                    for (int i = 0; i < idx; ++i) {
-                        sum += this->rollSamples[i];
-                    }
-                    signedAngle = sum / (float)idx;
-                }
-                // def80: advance index
-                int newIdx = idx + 1;
-                this->rollSampleIndex = newIdx;
-                if (idx >= 4) {
-                    this->rollSampleIndex = 0;
-                    if (this->rollBufferFilled == 0) {
-                        this->rollBufferFilled = 1;
-                    }
-                }
-            }
-
-            // defa2-defce: compute targetRoll = clamp(signedAngle * f294 * f298, ±f294)
-            float f294 = *(float *)&this->field_0x294;
-            float f298 = *(float *)&this->field_0x298;
-            float tRoll = signedAngle * f294 * f298;
-            *(float *)&this->targetRoll = tRoll;
-            if (tRoll > f294) {
-                *(float *)&this->targetRoll = f294;
-            } else if (tRoll < -f294) {
-                *(float *)&this->targetRoll = -f294;
-            }
-
-            // defd8-df03a: build orthonormal basis from resetVecC as forward dir
-            // MatrixGetUp → origUp (sp+0x140)
-            Vector origUp  = MatrixGetUp(geomMat);
-            // newRight = normalize(cross(origUp, resetVecC))  (sp+0x130)
-            Vector newRight = VectorNormalize(VectorCross(origUp, this->resetVecC));
-            // newUp    = normalize(cross(resetVecC, newRight)) (sp+0x124)
-            Vector newUp    = VectorNormalize(VectorCross(this->resetVecC, newRight));
-            // MatrixSetRotation: right=newRight(sp+0x130), up=newUp(sp+0x124), dir=resetVecC
-            Matrix rotMat   = MatrixSetRotation(geomMat, newRight, newUp, this->resetVecC);
-            geomMat         = rotMat;
-
-            goto shoot_done;  // df042
-        }
-
-        // def12: no-target path
-        shoot_no_target:;
-        {
-            Player *tgt = this->targetPlayer;
-            if (tgt == nullptr) {
-                goto shoot_geomcopy;  // beq.w ded44
-            }
-            if (tgt->doesNeverAttack()) {
-                goto shoot_geomcopy;  // bne.w ded44
-            }
-            // def2a-def30: check field_5e (hidden/sleep)
-            if (tgt->field_5e == 0) {
-                goto shoot_check_eligible;  // beq.w df480
-            }
-            // def34: clear field_0x12e
-            this->field_0x12e = 0;
-            // def3a: if isShooting, stopShooting
-            if (this->isShooting != 0) {
-                ((Player *)(intptr_t)this->player())->stopShooting(this->field_0x140);
-                this->isShooting = 0;
-            }
-            goto shoot_geomcopy;  // b.n ded44
-        }
-
-        shoot_done:;  // df042
-    }
-    goto shoot_after;
-
-    // df480: shoot eligibility checks
-    shoot_check_eligible:;
-    {
-        // df480-df530: check resetVecC.x/.y vs shootError and resetVecB vs renderPos ±35000
-        float sErr = this->shootError;
-        if (this->resetVecC.x >= sErr || this->resetVecC.x <= -sErr) {
-            goto shoot_skip_done;
-        }
-        if (this->resetVecC.y >= sErr || this->resetVecC.y <= -sErr) {
-            goto shoot_skip_done;
-        }
-        // World position range checks: resetVecB - renderPosition() vs ±35000
-        float rx = this->renderPosition().x;
-        float ry = this->renderPosition().y;
-        float rz = this->renderPosition().z;
-        if ((this->resetVecB.x - rx) >= 35000.0f || (this->resetVecB.x - rx) <= -35000.0f) {
-            goto shoot_skip_done;
-        }
-        if ((this->resetVecB.y - ry) >= 35000.0f || (this->resetVecB.y - ry) <= -35000.0f) {
-            goto shoot_skip_done;
-        }
-        if ((this->resetVecB.z - rz) >= 35000.0f || (this->resetVecB.z - rz) <= -35000.0f) {
-            goto shoot_skip_done;
-        }
-
-        // df534-df54c: field_0x25 / isActive / isDead checks
-        if (this->field_0x25 == 0) {
-            goto shoot_skip_done;
-        }
-        if (!((Player *)(intptr_t)this->player())->isActive()) {
-            goto shoot_skip_done;
-        }
-        {
-            Player *shootTgt = this->targetPlayer;
-            if (shootTgt == nullptr || shootTgt->isDead()) {
-                goto shoot_skip_done;
-            }
-        }
-
-        // df7bc: docking check — skip if target is ego-docked station
-        {
-            Player *shootTgt2 = this->targetPlayer;
-            if (shootTgt2 != nullptr && (shootTgt2->egoFlag) != 0) {
-                Level *lvs  = (Level *)(intptr_t)this->level();
-                PlayerEgo *egos = lvs->getPlayer();
-                if (egos != nullptr && egos->isDockedToDockingPoint()) {
-                    // df7da-df7fc: compare target.y with self.y
-                    Vector tgtPos  = shootTgt2->getPosition();
-                    Vector selfPos = ((Player *)(intptr_t)this->player())->getPosition();
-                    if (tgtPos.y > selfPos.y) {
-                        goto shoot_skip_done;  // df550 via bgt
-                    }
-                }
-            }
-        }
-
-        // df800-df814: shoot!
-        ((Player *)(intptr_t)this->player())->shoot(this->field_0x140, dt, 0LL, false);
-        this->isShooting = 1;
-        goto shoot_geomcopy;  // b.w ded44
-    }
-
-    shoot_skip_done:;
-    this->field_0x12e = 0;
-    goto shoot_geomcopy;  // b.w ded44
-
-    shoot_after:;
-
-    // -----------------------------------------------------------------------
-    // Roll subsystem (df042-df110)
-    // -----------------------------------------------------------------------
-    {
-        if (this->rollActive() != 0) {
-            this->roll(dt);
-        }
-
-        // Smooth targetRoll -> smoothRoll
-        float targetRoll = *(float *)&this->targetRoll;
-        float smoothRoll = *(float *)&this->smoothRoll;
-        if (smoothRoll != targetRoll) {
-            float step = (float)dt * 1.25f / 3.9f;
-            if (smoothRoll < targetRoll) {
-                smoothRoll += step;
-                if (smoothRoll > targetRoll) { smoothRoll = targetRoll; }
-            } else {
-                smoothRoll -= step;
-                if (smoothRoll < targetRoll) { smoothRoll = targetRoll; }
-            }
-            *(float *)&this->smoothRoll = smoothRoll;
-
-            // If still different: reset countdown to 750
-            if (smoothRoll != targetRoll) {
-                this->field_0xfc = 750;
-            } else {
-                // countdown roll timer
-                if (this->field_0xfc >= 1) {
-                    this->field_0xfc -= (uint32_t)dt;
-                    if ((int32_t)this->field_0xfc <= 0) {
-                        this->rollActive() = 1;
-                    }
-                }
-            }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Camera matrix + particle trail (df110-df260)
-    // -----------------------------------------------------------------------
-    {
-        // df110: compute roll angle = smoothRoll * (1/4096) * pi
-        float rollAngle = *(float *)&this->smoothRoll;
-        rollAngle *= 0.000244140625f;  // 1/4096
-        rollAngle *= 3.14159265f;      // pi
-        (void)rollAngle; // used below in MatrixSetRotation if implemented
-
-        // Build identity matrix for roll
-        Matrix rollMat;
-        rollMat.m[0]  = 1.0f; rollMat.m[1]  = 0.0f; rollMat.m[2]  = 0.0f;
-        rollMat.m[3]  = 0.0f; rollMat.m[4]  = 0.0f; rollMat.m[5]  = 1.0f;
-        rollMat.m[6]  = 0.0f; rollMat.m[7]  = 0.0f; rollMat.m[8]  = 0.0f;
-        rollMat.m[9]  = 0.0f; rollMat.m[10] = 1.0f; rollMat.m[11] = 0.0f;
-        rollMat.m[12] = 0.0f; rollMat.m[13] = 0.0f; rollMat.m[14] = 0.0f;
-
-        // Player transform = rollMat * this->rollMatrix (camera view)
-        Player *camPl = (Player *)(intptr_t)this->player();
-        Matrix &camMat = reinterpret_cast<Matrix &>(camPl->transform[0]);
-        camMat = rollMat * this->rollMatrix;
-
-        // if rollActive: apply roll matrix again
-        if (this->rollActive()) {
-            camMat *= this->rollMatrix;
-        }
-
-        // Set PaintCanvas local transform from camMat (via geom->transform node ID)
-        {
-            AEGeometry *playerGeom = (AEGeometry *)(intptr_t)this->geometry();
-            Globals::Canvas->TransformSetLocal(playerGeom->transform, camMat);
-        }
-
-        // Copy geom matrix into camMat for camera tracking
-        {
-            Matrix gm = geom->getMatrix();
-            camMat = gm;
-        }
-
-        // Enable/disable particle trail based on Player::empDisabledByte
-        Level *lv3 = (Level *)(intptr_t)this->level();
-        Player *trailPl = (Player *)(intptr_t)this->player();
-        bool trailOn = (trailPl->empDisabledByte == 0);
-        lv3->field_74->enableSystemEmit(this->field_0x130, trailOn);
-        lv3->field_74->enableSystemEmit(this->field_0x134, trailOn);
-        lv3->field_74->enableSystemEmit(this->field_0x138, trailOn);
-
-        geom->updateReferenceMatrix();
-    }
-
-    // -----------------------------------------------------------------------
-    // Landmark collision (df260-df358)
-    // -----------------------------------------------------------------------
-    {
-        if (this->field_0x13e != 0) {
-            Level *lv4 = (Level *)(intptr_t)this->level();
-            Array<KIPlayer *> *landmarks = lv4->getLandmarks();
-            if (landmarks != nullptr) {
-                Vector workPos = this->workingPosition;
-                unsigned int n_lm = landmarks->count;
-                for (unsigned int i_lm = 0; i_lm < n_lm; ++i_lm) {
-                    KIPlayer *lm = (*landmarks)[i_lm];
-                    if (lm == nullptr) { continue; }
-                    if (!lm->collide(workPos.x, workPos.y, workPos.z)) { continue; }
-                    Vector normal = lm->getCollisionNormal(workPos);
-                    if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) { continue; }
-                    // Deflect: current dir + (workPos - dir)*speed*0.03, normalize, set
-                    Vector dir_lm = geom->getDirection();
-                    this->resetVecA() = dir_lm;
-                    Vector diff = workPos - this->resetVecA();
-                    diff *= this->currentSpeed * 0.03f;
-                    Vector newDir = this->resetVecA() + diff;
-                    // Store newDir in field_0x9c (reinterpreted as Vector at that offset)
-                    reinterpret_cast<Vector &>(this->field_0x9c) = newDir;
-                    this->resetVecA() = VectorNormalize(newDir);
-                    {
-                        Vector up = {0.0f, 1.0f, 0.0f};
-                        geom->setDirection(this->resetVecA(), up);
-                    }
-                    geom->moveForward(this->currentSpeed * (float)dt);
-                    break;
-                }
-            }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Enemy collision (df358-df446)
-    // -----------------------------------------------------------------------
-    {
-        Level *lv5 = (Level *)(intptr_t)this->level();
-        Array<KIPlayer *> *enemies_ki = lv5->getEnemies();
-        if (enemies_ki != nullptr) {
-            Vector workPos2 = this->workingPosition;
-            unsigned int n2 = enemies_ki->count;
-            for (unsigned int i2 = 0; i2 < n2; ++i2) {
-                KIPlayer *en = (*enemies_ki)[i2];
-                if (en == nullptr) { continue; }
-                if (!en->collide(workPos2.x, workPos2.y, workPos2.z)) { continue; }
-                Vector normal2 = en->getCollisionNormal(workPos2);
-                if (normal2.x == 0.0f && normal2.y == 0.0f && normal2.z == 0.0f) { continue; }
-                Vector dir2 = geom->getDirection();
-                this->resetVecA() = dir2;
-                Vector diff2 = workPos2 - this->resetVecA();
-                diff2 *= this->currentSpeed * 0.03f;
-                Vector newDir2 = this->resetVecA() + diff2;
-                reinterpret_cast<Vector &>(this->field_0x9c) = newDir2;
-                this->resetVecA() = VectorNormalize(newDir2);
-                {
-                    Vector up2 = {0.0f, 1.0f, 0.0f};
-                    geom->setDirection(this->resetVecA(), up2);
-                }
-                geom->moveForward(this->currentSpeed * (float)dt);
-                break;
-            }
-        }
-    }
-
-    // df446: push(dt) via virtual dispatch
-    this->push(dt);
-    } // end update_body block
 }
 void PlayerFighter::roll(int angle) {
     if (this->rollActive() == 0) {
         return;
     }
-    AbyssEngine::AEMath::Matrix &m = ((AEGeometry *) (intptr_t) this->geometry())->getMatrix();
+    AbyssEngine::AEMath::Matrix &m = this->geometry->getMatrix();
     float rightX = m.m[4];
     float rightY = m.m[5];
     float bank = rightX > 0.0f ? rightX : -rightX;
@@ -1883,12 +1501,12 @@ void PlayerFighter::render() {
     if (this->wreckGeometry() != 0) {
         this->wreckGeometry()->render();
     }
-    bool active = ((Player *) (this->player()))->isActive();
+    bool active = this->player->isActive();
     if (active ? (this->state != 3 && this->state != 4) : this->state == 5) {
         if (this->parentGeometry != nullptr) {
             Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(this->parentGeometry->transform);
             Globals::Canvas->TransformSetLocal(this->parentGeometry->transform,
-                                               reinterpret_cast<Matrix &>(((Player *) this->player())->transform[0]));
+                                               this->player->transform);
             this->parentGeometry->render();
             Globals::Canvas->TransformSetLocal(this->parentGeometry->transform, saved);
         } else {
@@ -1908,14 +1526,14 @@ void PlayerFighter::render() {
             } else {
                 Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(this->parentGeometry->transform);
                 Globals::Canvas->TransformSetLocal(this->parentGeometry->transform,
-                                                   reinterpret_cast<Matrix &>(((Player *) this->player())->transform[0]));
+                                                   this->player->transform);
                 this->parentGeometry->render();
                 Globals::Canvas->TransformSetLocal(this->parentGeometry->transform, saved);
             }
-        } else if (this->state == 4 && this->field_0x1f8 < 300) {
+        } else if (this->state == 4 && this->dyingTimer < 300) {
             Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(this->parentGeometry->transform);
             Globals::Canvas->TransformSetLocal(this->parentGeometry->transform,
-                                               reinterpret_cast<Matrix &>(((Player *) this->player())->transform[0]));
+                                               this->player->transform);
             this->parentGeometry->render();
             Globals::Canvas->TransformSetLocal(this->parentGeometry->transform, saved);
         }
@@ -1980,12 +1598,12 @@ void PlayerFighter::push(int dt) {
         Matrix rot;
         AbyssEngine::AEMath::MatrixSetRotation(rot, frac * this->pushImpulse().x, frac * this->pushImpulse().y,
                                                frac * this->pushImpulse().z);
-        if (this->deltaTime > 0) {
-            AEGeometry *geom = (AEGeometry *) (intptr_t) this->geometry();
+        if (this->frameTime > 0) {
+            AEGeometry *geom = this->geometry;
             geom->setMatrix(geom->getMatrix() * rot);
         }
-        float speed = (float) this->deltaTime;
-        AEGeometry *geom = (AEGeometry *) (intptr_t) this->geometry();
+        float speed = (float) this->frameTime;
+        AEGeometry *geom = this->geometry;
         float duration = (float) this->pushDuration();
         geom->translate(this->pushNormal() * speed * this->currentSpeed *
                         ((2.0f - frac) * 3.0f * (duration / gPush_div)));
@@ -1993,31 +1611,31 @@ void PlayerFighter::push(int dt) {
 }
 void PlayerFighter::awake() {
     this->state = 1;
-    ((Player *) (this->player()))->setActive(1);
+    this->player->setActive(1);
     ((PlayerFighter *) (this))->setExhaustVisible(true);
-    int geom = this->subGeometry();
+    AEGeometry *geom = this->parentGeometry;
     this->field_0xf5() = 1;
     if (geom == 0) {
-        geom = this->geometry();
+        geom = this->geometry;
     }
 
-    return ((AEGeometry *) (intptr_t) geom)->setVisible(true);
+    return geom->setVisible(true);
 }
 void PlayerFighter::revive() {
-    unsigned char enemy = ((Player *) (this->player()))->turnedEnemy();
-    ((Player *) (this->player()))->reset();
+    unsigned char enemy = this->player->turnedEnemy();
+    this->player->reset();
     if (enemy != 0) {
-        ((Player *) (this->player()))->turnEnemy();
+        this->player->turnEnemy();
     }
     this->name = String();
     this->state = 1;
     this->wreckGeometry() = 0;
-    this->field_0x12e = 0;
+    this->targetIsActive = 0;
     this->field_0x38 = -1;
     this->KIPlayer::route->reset();
-    this->hitpoints = ((Player *) (this->player()))->getHitpoints();
-    this->field_0x1dc = 0;
-    this->field_0x1e0 = 0;
+    this->hitpoints = this->player->getHitpoints();
+    this->damageAccumulator = 0;
+    this->damageEscape = 0;
     this->deathTimer() = 0;
     this->setActive(true);
     this->field_0xf0 = 0;
@@ -2030,7 +1648,7 @@ void PlayerFighter::revive() {
     this->field_0xf5() = 1;
     (this->parentGeometry != nullptr ? this->parentGeometry : this->KIPlayer::geometry)->setVisible(true);
 
-    if ((unsigned) (this->wingmanCommand() - 9) < 2) {
+    if ((unsigned) (this->shipGroup - 9) < 2) {
         delete this->lootList();
         this->lootList() = 0;
     } else {

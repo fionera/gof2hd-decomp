@@ -61,9 +61,7 @@ namespace {
 #endif
 }
 
-typedef Array<Vector> VecArray;
 
-static inline void Gun_VecArray_ctor(VecArray *a) { new(a) VecArray(); }
 
 
 
@@ -123,13 +121,6 @@ static inline bool isRocketLike(int sort) {
 }
 
 Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay, float speed, Vector dir, Vector vel) {
-    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->count));
-    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->velocitiesCount));
-    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->upVectorsCount));
-    Gun_VecArray_ctor(reinterpret_cast<VecArray *>(&this->hitPositionsCount));
-    this->offset.x = 0;
-    this->offset.y = 0;
-    this->offset.z = 0;
     this->field_0x90 = 0;
     this->field_0x94 = 0;
     this->field_0x98 = 0;
@@ -142,21 +133,9 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->slotIndex = kind;
     this->damage = damage;
     this->pitchRate = speed;
-    this->targetDir.z = 0;
-    this->velocity.x = 0;
-    this->velocity.y = 0;
-    this->velocity.z = 0;
-    this->field_0xd0 = 0;
-    this->field_0xd4 = 0;
-    this->targetDir.x = 0;
-    this->targetDir.y = 0;
-    this->basePos.x = 0;
-    this->basePos.y = 0;
-    this->basePos.z = 0;
-    this->field_0xcc = 0;
     this->ammoCount = 0;
     this->field_0x78 = 0;
-    this->playerGun = 0;
+    this->playerGun = false;
     this->field_0xa8 = 0;
 
     this->offset = dir;
@@ -171,21 +150,21 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->ammoCount = ammo;
     this->field_0x78 = ammo << 1;
     this->lifetimes = new int[count];
-    this->hitFlags = new uint8_t[count];
+    this->hitFlags = new bool[count];
     this->wobbleOffsets = reinterpret_cast<Array<int> *>(new Array<Vector *>());
-    ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->count));
-    ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->velocitiesCount));
-    ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->upVectorsCount));
-    ArraySetLength(count, *reinterpret_cast<VecArray *>(&this->hitPositionsCount));
+    ArraySetLength(count, this->positions);
+    ArraySetLength(count, this->velocities);
+    ArraySetLength(count, this->upVectors);
+    ArraySetLength(count, this->hitPositions);
     ArraySetLength(count, *reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets));
     for (int i = 0; i < count; ++i) {
-        reinterpret_cast<Vector *>(this->positions)[i].x = 50000.0f;
+        this->positions.data()[i].x = 50000.0f;
         this->lifetimes[i] = -1000000;
         this->hitFlags[i] = 0;
         (*reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets))[i] = nullptr;
     }
-    this->impact = nullptr;
     this->field_0x54 = 0;
+    this->impact = nullptr;
     this->active = 0;
     this->hitSmall = 0;
     this->enemies = nullptr;
@@ -224,10 +203,6 @@ Gun::~Gun() {
     }
     this->wobbleOffsets = 0;
 
-    reinterpret_cast<VecArray *>(&this->hitPositionsCount)->~VecArray();
-    reinterpret_cast<VecArray *>(&this->upVectorsCount)->~VecArray();
-    reinterpret_cast<VecArray *>(&this->velocitiesCount)->~VecArray();
-    reinterpret_cast<VecArray *>(&this->count)->~VecArray();
 }
 void Gun::setIndex(int index) {
     this->itemIndex = index;
@@ -235,9 +210,9 @@ void Gun::setIndex(int index) {
     this->empDamage = (*Globals::items)[index]->getAttribute(10);
     int mesh = kGunProjectileMeshes[index];
     if (mesh >= 0) {
-        this->geometries = new int[this->count];
-        this->randomFlags = new uint8_t[this->count];
-        for (unsigned i = 0; i < this->count; ++i) {
+        this->geometries = new int[this->positions.count];
+        this->randomFlags = new uint8_t[this->positions.count];
+        for (unsigned i = 0; i < this->positions.count; ++i) {
             AEGeometry *geom = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
             this->geometries[i] = geom->transform;
             this->randomFlags[i] = Globals::rnd->nextInt(2) == 0;
@@ -310,7 +285,7 @@ void Gun::setLevel(Level *lvl) {
 void Gun::setPlayerGun(bool v) {
     this->playerGun = v;
 }
-uint8_t Gun::isPlayerGun() {
+bool Gun::isPlayerGun() {
     return this->playerGun;
 }
 bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
@@ -354,17 +329,17 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             reinterpret_cast<Vector &>(this->field_0x90) = AbyssEngine::AEMath::VectorNormalize(
                     (*this->enemies)[this->fireIndex]->getPosition() -
                     ((Level *) this->level)->getPlayer()->getPosition());
-            *reinterpret_cast<Vector *>(this->positions) = (*this->enemies)[this->fireIndex]->getPosition();
-            *reinterpret_cast<Vector *>(this->velocities) =
+            *this->positions.data() = (*this->enemies)[this->fireIndex]->getPosition();
+            *this->velocities.data() =
                     ((Level *) this->level)->getPlayer()->geometry->getDirection();
             this->field_0x8c = nearest;
         } else {
             reinterpret_cast<Vector &>(this->field_0x90) =
                     ((Level *) this->level)->getPlayer()->geometry->getDirection();
             Vector egoPosition = ((Level *) this->level)->getPlayer()->getPosition();
-            *reinterpret_cast<Vector *>(this->positions) =
+            *this->positions.data() =
                     egoPosition + 30000.0f * ((Level *) this->level)->getPlayer()->geometry->getDirection();
-            *reinterpret_cast<Vector *>(this->velocities) =
+            *this->velocities.data() =
                     ((Level *) this->level)->getPlayer()->geometry->getDirection();
             this->field_0x8c = 30000;
         }
@@ -373,7 +348,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
     (void) positions;
 
     bool fired = false;
-    for (unsigned i = 0; i < this->count; ++i) {
+    for (unsigned i = 0; i < this->positions.count; ++i) {
         int lifetime = this->lifetimes[i];
         if (lifetime > (isRocketLike(this->weaponType) ? -2000 : 0)) {
             continue;
@@ -386,26 +361,21 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->active = 1;
         this->hitSmall = 1;
         this->currentProjectile = i;
-        reinterpret_cast<Vector *>(this->positions)[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
+        this->positions.data()[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
 
         Vector direction = {0, 0, 0};
-        if (this->offset != direction) {
-            if (this->weaponType == ITEM_SORT_SHOCK_BLAST) {
-                direction = Vector{0, 0, 0};
-                goto aim;
-            }
+        if (this->offset != direction && this->weaponType != ITEM_SORT_SHOCK_BLAST) {
             if (!this->field_0xa5 && !this->field_0xa4_b0) {
-                reinterpret_cast<Vector *>(this->positions)[i] +=
-                        AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
+                this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
             } else {
-                if (!this->field_0xa5 || this->field_0xa4_b0) {
+                // alternate the muzzle between the mirrored offsets
+                if (this->field_0xa4_b0) {
                     this->targetDir = this->offset;
                     if (this->field_0xa6) {
                         this->targetDir.x = -this->targetDir.x;
                     }
                     this->field_0xa6 = !this->field_0xa6;
-                    reinterpret_cast<Vector *>(this->positions)[i] +=
-                            AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
+                    this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
                 }
                 if (this->field_0xa5 && this->field_0xa6) {
                     this->targetDir = this->offset;
@@ -413,8 +383,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
                         this->targetDir.y = -this->targetDir.y;
                     }
                     this->field_0xa7 = !this->field_0xa7;
-                    reinterpret_cast<Vector *>(this->positions)[i] +=
-                            AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
+                    this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
                 }
             }
         }
@@ -432,24 +401,23 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             (*reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets))[i]->z =
                     (float) (Globals::rnd->nextInt(200) - 100) / 50.0f;
         } else {
-        aim:
             direction = AbyssEngine::AEMath::MatrixGetDir(m);
         }
         direction += AbyssEngine::AEMath::MatrixRotateVector(m, this->velocity);
-        reinterpret_cast<Vector *>(this->velocities)[i] = direction;
-        reinterpret_cast<Vector *>(this->upVectors)[i] = AbyssEngine::AEMath::MatrixGetUp(m);
+        this->velocities.data()[i] = direction;
+        this->upVectors.data()[i] = AbyssEngine::AEMath::MatrixGetUp(m);
         if (this->errorMagnitudePercentage > 0.0f) {
             float spread = this->errorMagnitudePercentage * 0.005f;
-            reinterpret_cast<Vector *>(this->velocities)[i].x +=
+            this->velocities.data()[i].x +=
                     (float) Globals::rnd->nextInt((int) this->errorMagnitudePercentage) * 0.01f - spread;
-            reinterpret_cast<Vector *>(this->velocities)[i].y +=
+            this->velocities.data()[i].y +=
                     (float) Globals::rnd->nextInt((int) this->errorMagnitudePercentage) * 0.01f - spread;
-            reinterpret_cast<Vector *>(this->velocities)[i].z +=
+            this->velocities.data()[i].z +=
                     (float) Globals::rnd->nextInt((int) this->errorMagnitudePercentage) * 0.01f - spread;
         }
-        reinterpret_cast<Vector *>(this->velocities)[i] =
-                AbyssEngine::AEMath::VectorNormalize(reinterpret_cast<Vector *>(this->velocities)[i]);
-        reinterpret_cast<Vector *>(this->velocities)[i] *= this->pitchRate;
+        this->velocities.data()[i] =
+                AbyssEngine::AEMath::VectorNormalize(this->velocities.data()[i]);
+        this->velocities.data()[i] *= this->pitchRate;
         this->lifetimes[i] = this->weaponType == ITEM_SORT_SENTRY_GUN ? 0 : this->initialLifetime;
 
         bool keepAmmo = true;
@@ -513,14 +481,14 @@ void Gun::ignite() {
             if (!this->target->isActive()) {
                 continue;
             }
-            for (unsigned i = 0; i < this->count; ++i) {
-                this->basePos = Vector(reinterpret_cast<Vector *>(this->positions)[i]);
+            for (unsigned i = 0; i < this->positions.count; ++i) {
+                this->basePos = Vector(this->positions.data()[i]);
                 this->targetDir = this->target->getPosition();
                 this->targetDir -= this->basePos;
                 int distance = (int) AbyssEngine::AEMath::VectorLength(this->targetDir);
                 if (distance < this->magnitude) {
                     this->hitFlags[i] = 1;
-                    reinterpret_cast<Vector *>(this->hitPositions)[i] = this->basePos;
+                    this->hitPositions.data()[i] = this->basePos;
                     float range = (float) this->magnitude;
                     float remaining = (float) (this->magnitude - distance);
                     float falloff = remaining / range;
@@ -550,7 +518,7 @@ void Gun::ignite() {
                                                      this->itemIndex);
                                 if (this->target->isGasCloud() && this->weaponType == ITEM_SORT_IONIZING_MISSILE) {
                                     ((PlayerGasCloud *) this->target->getKIPlayer())
-                                            ->explode(this->itemIndex, reinterpret_cast<Vector *>(this->positions)[i],
+                                            ->explode(this->itemIndex, this->positions.data()[i],
                                                       (float) this->magnitude);
                                 }
                                 if (this->itemIndex == 179 && this->target->isAsteroid() &&
@@ -576,7 +544,7 @@ void Gun::ignite() {
                     }
                     this->targetDir = AbyssEngine::AEMath::VectorNormalize(this->targetDir);
                     this->target->setHitVector(this->targetDir.x, this->targetDir.y, this->targetDir.z);
-                    this->targetDir = Vector(reinterpret_cast<Vector *>(this->velocities)[i]);
+                    this->targetDir = Vector(this->velocities.data()[i]);
                     this->targetDir = AbyssEngine::AEMath::VectorNormalize(this->targetDir);
                     this->lastHitKIPlayer = (int) (intptr_t) this->target->getKIPlayer();
                     this->lifetimes[i] = -1;
@@ -591,7 +559,7 @@ void Gun::ignite() {
         }
     }
     if (this->impact != 0) {
-        this->impact->explode(*reinterpret_cast<Vector *>(this->positions));
+        this->impact->explode(*this->positions.data());
     }
 }
 void Gun::calcCharacterCollision() {
@@ -630,9 +598,9 @@ void Gun::calcCharacterCollision() {
         if (!enemy->isActive()) continue;
         if (enemy->getHitpoints() < 1) continue;
 
-        for (unsigned i = 0; i < this->count; ++i) {
-            Vector position = reinterpret_cast<Vector *>(this->positions)[i];
-            Vector velocity = reinterpret_cast<Vector *>(this->velocities)[i];
+        for (unsigned i = 0; i < this->positions.count; ++i) {
+            Vector position = this->positions.data()[i];
+            Vector velocity = this->velocities.data()[i];
             Vector enemyPosition =
                     AbyssEngine::AEMath::MatrixGetPosition(reinterpret_cast<Matrix &>(enemy->transform[0]));
             int radius = this->useCustomRadius ? this->customRadius : enemy->radius;
@@ -702,10 +670,10 @@ void Gun::calcCharacterCollision() {
                     this->ignite();
                     return;
                 }
-                reinterpret_cast<Vector *>(this->velocities)[i] =
+                this->velocities.data()[i] =
                         AbyssEngine::AEMath::VectorNormalize(enemyPosition - position);
-                reinterpret_cast<Vector *>(this->positions)[i] +=
-                        reinterpret_cast<Vector *>(this->velocities)[i] * this->pitchRate * 100.0f;
+                this->positions.data()[i] +=
+                        this->velocities.data()[i] * this->pitchRate * 100.0f;
                 return;
             }
             if (explodeOnContact) {
@@ -759,7 +727,7 @@ void Gun::calcCharacterCollision() {
             }
             if (scatter) {
                 this->hitFlags[i] = 1;
-                reinterpret_cast<Vector *>(this->hitPositions)[i] = position;
+                this->hitPositions.data()[i] = position;
                 for (unsigned k = 0; k < this->enemies->size(); ++k) {
                     Player *other = (*this->enemies)[k];
                     this->targetDir = other->getPosition();
@@ -796,7 +764,7 @@ void Gun::update(int dt) {
         this->impact->update(dt);
     }
     if (this->geometries != 0) {
-        for (unsigned i = 0; i < this->count; ++i) {
+        for (unsigned i = 0; i < this->positions.count; ++i) {
             ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometries[i]))
                     ->Update((long long) dt, false);
         }
@@ -805,17 +773,17 @@ void Gun::update(int dt) {
     if (this->active != 0 && this->weaponType != ITEM_SORT_SENTRY_GUN) {
         this->calcCharacterCollision();
         float fdt = (float) dt;
-        for (unsigned i = 0; i < this->count; ++i) {
+        for (unsigned i = 0; i < this->positions.count; ++i) {
             int lifetime = this->lifetimes[i];
             if (lifetime > (isRocketLike(this->weaponType) ? -2000 : 0)) {
                 this->lifetimes[i] = lifetime - dt;
                 if (this->weaponType == ITEM_SORT_MINE) {
                     // mines decelerate over their first 500 ms of flight
-                    reinterpret_cast<Vector *>(this->positions)[i] +=
-                            reinterpret_cast<Vector *>(this->velocities)[i] * fdt *
+                    this->positions.data()[i] +=
+                            this->velocities.data()[i] * fdt *
                             std::max((float) (this->initialLifetime - this->lifetimes[i]) / -500.0f + 1.0f, 0.0f);
                 } else {
-                    reinterpret_cast<Vector *>(this->positions)[i] += reinterpret_cast<Vector *>(this->velocities)[i] * fdt;
+                    this->positions.data()[i] += this->velocities.data()[i] * fdt;
                 }
                 if (this->lifetimes[i] <= 0) {
                     unsigned k = (unsigned) (this->weaponType - ITEM_SORT_EMP_BOMB);
@@ -830,12 +798,12 @@ void Gun::update(int dt) {
                     this->ignite();
                 }
             } else {
-                reinterpret_cast<Vector *>(this->positions)[i].z = 50000.0f;
-                reinterpret_cast<Vector *>(this->positions)[i].y = 50000.0f;
-                reinterpret_cast<Vector *>(this->positions)[i].x = 50000.0f;
-                reinterpret_cast<Vector *>(this->velocities)[i].z = 0.0f;
-                reinterpret_cast<Vector *>(this->velocities)[i].y = 0.0f;
-                reinterpret_cast<Vector *>(this->velocities)[i].x = 0.0f;
+                this->positions.data()[i].z = 50000.0f;
+                this->positions.data()[i].y = 50000.0f;
+                this->positions.data()[i].x = 50000.0f;
+                this->velocities.data()[i].z = 0.0f;
+                this->velocities.data()[i].y = 0.0f;
+                this->velocities.data()[i].x = 0.0f;
             }
         }
     }
@@ -845,7 +813,7 @@ void Gun::render() {
         this->impact->render();
     }
     if (this->geometries != 0) {
-        for (unsigned i = 0; i < this->count; ++i) {
+        for (unsigned i = 0; i < this->positions.count; ++i) {
             if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometries[i]))->animating) {
                 Matrix view = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
                 this->targetDir = AbyssEngine::AEMath::MatrixGetPosition(
@@ -859,7 +827,7 @@ void Gun::render() {
     }
 }
 void Gun::translate(const Vector &v) {
-    for (unsigned i = 0; i < this->count; i = i + 1) {
-        reinterpret_cast<Vector *>(this->positions)[i] += v;
+    for (unsigned i = 0; i < this->positions.count; i = i + 1) {
+        this->positions.data()[i] += v;
     }
 }

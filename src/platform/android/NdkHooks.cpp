@@ -22,7 +22,7 @@
 #include "game/core/Globals.h"
 
 // Android NDK entry layer (original TU starting at GetEngine, .text 0x93c88..0x950dc): the
-// ndk23_* lifecycle/input hooks the Java_* wrappers in JniBridge.cpp tail-call, and the IAP glue.
+// ndk23_* lifecycle/input hooks the Java_* wrappers in main.c tail-call, and the IAP glue.
 
 using AbyssEngine::Engine;
 
@@ -140,10 +140,9 @@ extern "C" void ndk23_ndkDone() { // lint: extern_c (native ABI boundary; origin
     }
 }
 
-extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
-                                             // lint: void_ptr (ndk* touch handle param, baked ABI)
-                                             float x, float y) {
-    ndk23_handleTouchPadEvent(clazz, touch, phase, x, y);
+// The original forwards its four core-register arguments unchanged to AddTouch (b.w AddTouch).
+extern "C" void ndk23_handleTouchScreenEvent(int x, int y, int id, int action) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    AddTouch(x, y, id, action);
 }
 
 extern "C" void ndk23_handleAcceleration(float x, float y, float z) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)

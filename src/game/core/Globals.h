@@ -39,23 +39,6 @@ public:
     // ASM: addSoundResourceToList reads soundResources at [this,#4] -> a 4-byte member precedes it @0x0.
     int field_0x0;                                // @0x0 (was missing; shifted soundResources to @0x4)
     Array<int> *soundResources;                  // @0x4
-    unsigned char _pad_0x8[44];                   // 0x08..0x34 (unmodeled members)
-    int field_0x34;                               // @0x34
-    unsigned char _pad_0x38[4];                   // 0x38..0x3c
-    void *field_0x3c; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
-    void *field_0x40; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
-    unsigned char _pad_0x44[4];                   // 0x44..0x48
-    void *field_0x48; // lint: void_ptr (unknown-purpose member at fixed offset, never referenced)
-    unsigned char _pad_0x4c[8];                   // 0x4c..0x54
-    unsigned int *field_0x54;                     // @0x54
-    unsigned char _pad_0x58[84];                  // 0x58..0xac
-    int field_0xac;                               // @0xac
-    unsigned char _pad_0xb0[96];                  // 0xb0..0x110
-    unsigned short field_0x110;                   // @0x110
-    unsigned char _pad_0x112[2];                  // 0x112..0x114
-    int field_0x114;                              // @0x114
-    unsigned char _pad_0x118[52];                 // 0x118..0x14c
-    int field_0x14c;                              // @0x14c
 
     Globals();
 
@@ -69,7 +52,7 @@ public:
 
     AEGeometry *getShipGroup(int type, int variant, bool wireframe);
 
-    int init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine);
+    void init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine);
 
     float sqrt(float x);
 
@@ -308,15 +291,9 @@ public:
 };
 
 #if __SIZEOF_POINTER__ == 4
-static_assert(__builtin_offsetof(Globals, field_0x34) == 0x34, "Globals::field_0x34");
-static_assert(__builtin_offsetof(Globals, field_0x3c) == 0x3c, "Globals::field_0x3c");
-static_assert(__builtin_offsetof(Globals, field_0x40) == 0x40, "Globals::field_0x40");
-static_assert(__builtin_offsetof(Globals, field_0x48) == 0x48, "Globals::field_0x48");
-static_assert(__builtin_offsetof(Globals, field_0x54) == 0x54, "Globals::field_0x54");
-static_assert(__builtin_offsetof(Globals, field_0xac) == 0xac, "Globals::field_0xac");
-static_assert(__builtin_offsetof(Globals, field_0x110) == 0x110, "Globals::field_0x110");
-static_assert(__builtin_offsetof(Globals, field_0x114) == 0x114, "Globals::field_0x114");
-static_assert(__builtin_offsetof(Globals, field_0x14c) == 0x14c, "Globals::field_0x14c");
+// OnCreateApplication allocates the instance with operator new(8): only field_0x0 and
+// soundResources are per-instance, everything else is static.
+static_assert(sizeof(Globals) == 8, "Globals instance size");
 #endif
 
 #endif

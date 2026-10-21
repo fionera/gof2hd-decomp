@@ -25,7 +25,7 @@ void PlayerStaticFar::setYRotation(int /*yRotation*/) {
 }
 
 void PlayerStaticFar::render() {
-    this->KIPlayer::render();
+    this->PlayerStatic::render();
 }
 
 void PlayerStaticFar::update(int /*delta*/) {
@@ -97,10 +97,7 @@ Vector PlayerStaticFar::getProjectionVector(const Vector &value) {
 
 Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value) {
     if (this->boundingVolumes != nullptr) {
-        Vector out;
-        reinterpret_cast<BoundingVolume *>(&out)
-                ->staticProjectCollisionOnSurface(value, this->boundingVolumes);
-        return out;
+        return BoundingVolume::staticProjectCollisionOnSurface(value, this->boundingVolumes);
     }
     return {0.0f, 0.0f, 0.0f};
 }

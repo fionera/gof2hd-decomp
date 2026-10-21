@@ -5,8 +5,8 @@
 namespace AbyssEngine {
     class AERandom {
     public:
-        uint32_t seedLow;
-        uint32_t seedHigh;
+        // 48-bit linear congruential state (java.util.Random algorithm).
+        int64_t seed;
 
         AERandom();
 

@@ -14,10 +14,9 @@ BoundingVolume::~BoundingVolume() {
 
 int BoundingVolume::collide(float, float, float) {
     if (children != nullptr) {
-        for (BoundingVolume *child: *children) {
-            if (child->collide(centerX, centerY, centerZ) != 0) {
+        for (unsigned int i = 0; i < children->size(); i++) {
+            if ((*children)[i]->collide(position.x, position.y, position.z) != 0)
                 return 1;
-            }
         }
     }
     return 0;
@@ -47,60 +46,38 @@ void BoundingVolume::setVolumes(Array<BoundingVolume *> *arr) {
 
 BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez) {
     children = nullptr;
-    centerX = cx;
-    centerY = cy;
-    centerZ = cz;
-    extentsX = ex;
-    extentsY = ey;
-    extentsZ = ez;
+    position.x = cx;
+    position.y = cy;
+    position.z = cz;
+    offset.x = ex;
+    offset.z = ez;
+    offset.y = ey;
 }
 
-void BoundingVolume::staticProjectCollisionOnSurface(const Vector &v, Array<BoundingVolume *> *vols) {
-    centerX = v.x;
-    centerY = v.y;
-    centerZ = v.z;
-
-    if (vols != nullptr) {
+// Pushes the point out of every volume it lies in (two passes, so overlapping volumes settle).
+Vector BoundingVolume::staticProjectCollisionOnSurface(const Vector &point, Array<BoundingVolume *> *volumes) {
+    Vector result = point;
+    if (volumes != nullptr) {
         for (int pass = 0; pass != 2; pass++) {
-            for (BoundingVolume * bv
-
-
-            :
-            *vols
-            )
-            {
-                if (bv->outerCollide(centerX, centerY, centerZ) != 0) {
-                    Vector out = bv->projectCollisionOnSurface(Vector{centerX, centerY, centerZ});
-                    centerX = out.x;
-                    centerY = out.y;
-                    centerZ = out.z;
-                }
+            for (unsigned int i = 0; i < volumes->size(); i++) {
+                if ((*volumes)[i]->outerCollide(result.x, result.y, result.z) != 0)
+                    result = (*volumes)[i]->projectCollisionOnSurface(result);
             }
         }
     }
+    return result;
 }
 
 void BoundingVolume::update(float x, float y, float z) {
     if (children != nullptr) {
-        for (BoundingVolume * child
-
-
-        :
-        *children
-        )
-        {
-            child->update(x, y, z);
-        }
+        for (unsigned int i = 0; i < children->size(); i++)
+            (*children)[i]->update(x, y, z);
     }
-    centerX = x;
-    centerY = y;
-    centerZ = z;
+    position = Vector{x, y, z};
 }
 
-Vector BoundingVolume::getProjectionVector(const Vector &v) {
-    Vector center;
-    center.x = centerX;
-    center.y = centerY;
-    center.z = centerZ;
-    return AEMath::VectorNormalize(v - center);
+Vector BoundingVolume::getProjectionVector(const Vector &point) {
+    Vector direction = point - position;
+    direction = AEMath::VectorNormalize(direction);
+    return direction;
 }
