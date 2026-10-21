@@ -555,8 +555,8 @@ namespace AbyssEngine {
                     break;
                 }
                 
-                unsigned int offset = 0;
-                for (unsigned int level = 0; offset < image->dataLen; level++) {
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
                     unsigned int blocks = height < 8 ? 2 : height >> 2;
                     unsigned int rows = width < 8 ? 16 : (width << 1) & ~7u;
                     unsigned int blockBytes = rows * blocks;
