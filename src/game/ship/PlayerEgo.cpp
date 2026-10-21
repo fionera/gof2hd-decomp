@@ -222,10 +222,6 @@ PlayerEgo::PlayerEgo(Player *player)
     this->yawRamp = 0;
     this->field_0x260 = 0;
     this->field_0x264 = 0;
-    this->rollAccum = 0;
-    this->field_0x26c = 0;
-    this->yawAccumD = 0;
-    this->field_0x274 = 0;
 
     this->player = player;
     player->setPlayShootSound(true, 2);
@@ -316,14 +312,22 @@ PlayerEgo::PlayerEgo(Player *player)
     this->freeLookMode = 0;
     this->field_0x354 = Globals::status->inBlackMarketSystem();
     this->maxBank = this->handling * 750.0f / 63.0f * 1.2f;
-    this->bankFactor = 15.139356f;
+    this->bankFactor = 15.139357f;
     this->field_0x20 = 0;
     for (int i = 0; i < 5; i++)
         this->bankHistory[i] = 0;
     this->bankHistoryIndex = 0;
     this->bankHistoryFilled = 0;
+    this->rollAccum = 0;
+    this->field_0x26c = 0;
+    this->yawAccumD = 0;
+    this->field_0x274 = 0;
     this->hitShakeTimer = 0;
     this->hitShake = 0;
+    this->easeMatrix = nullptr;
+    this->field_0x35c = 0;
+    this->dockTotalAmount = 0;
+    this->dockTransferedAmount = 0;
     this->field_0x84 = 1;
     this->spacePoint = 0;
     this->engineSoundId = -1;
@@ -1932,7 +1936,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     if (this->player->getGammaHP() <= 0 && !this->dockingToPlanet && !this->dockingToStream)
         this->player->setHitpoints(0);
 
-    if ((char &) this->dockingState) {
+    if (this->dockingState) {
         this->field_0x145 = 1;
         KIPlayer *asteroid = (KIPlayer *) (intptr_t) this->asteroidTarget;
         if (asteroid == nullptr || asteroid->isDying() || ((KIPlayer *) (intptr_t) this->asteroidTarget)->isDead()) {
@@ -2071,7 +2075,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     }
 
-    if (!(char &) this->dockingState && (unsigned int) (this->dockingPointIndex - 1) >= 2) {
+    if (!this->dockingState && (unsigned int) (this->dockingPointIndex - 1) >= 2) {
         Matrix rotation;
         bool steered;
         if (this->autoPilotTarget == 0 || this->dockedToStream) {
@@ -2421,7 +2425,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         if (object->stealFlagByte) {
             if (object->isDying() || object->isDead())
                 continue;
-            if (((char &) this->dockingState || this->dockedFlag) && object == (KIPlayer *) (intptr_t) this->asteroidTarget)
+            if ((this->dockingState || this->dockedFlag) && object == (KIPlayer *) (intptr_t) this->asteroidTarget)
                 continue;
             Vector impact = object->getProjectionVector(this->geometry->getPosition());
             if (impact != Vector{0.0f, 0.0f, 0.0f}) {
@@ -2461,9 +2465,9 @@ unsigned char PlayerEgo::isDockingToStream() {
 }
 
 void PlayerEgo::dockToAsteroid(KIPlayer *asteroid, Radar *radar) {
-    if (((char &) this->dockingState) != 0) {
+    if (this->dockingState != 0) {
         ((PlayerAsteroid *) (((intptr_t) this->asteroidTarget)))->setRotationEnabled(true);
-        ((char &) this->dockingState) = 0;
+        this->dockingState = 0;
         this->field_0x145 = 0;
         this->asteroidTarget = 0;
         this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
@@ -2477,7 +2481,7 @@ void PlayerEgo::dockToAsteroid(KIPlayer *asteroid, Radar *radar) {
         this->setExhaustVisible(true);
     } else if (asteroid != nullptr) {
         this->miningSettleTimer = 0;
-        ((char &) this->dockingState) = 1;
+        this->dockingState = 1;
         this->asteroidTarget = (int) (intptr_t) asteroid;
         this->dockScaling = (int) (((PlayerAsteroid *) asteroid)->getScaling() * 2500.0f);
         this->field_0x145 = 1;
@@ -3143,7 +3147,7 @@ int PlayerEgo::getHackingGameDockIndex() {
 }
 
 bool PlayerEgo::isInDockingProcedure() {
-    if (((char &) this->dockingState) != 0) return true;
+    if (this->dockingState != 0) return true;
     return this->dockedFlag != 0;
 }
 
@@ -3299,12 +3303,12 @@ void PlayerEgo::refillGunDelay() {
 }
 
 bool PlayerEgo::isDockedToAsteroid() {
-    if (((char &) this->dockingState) == 0) return false;
+    if (this->dockingState == 0) return false;
     return this->dockingPointIndex == 1;
 }
 
 bool PlayerEgo::isDockingToAsteroid() {
-    if (((char &) this->dockingState) != 0) return this->dockingPointIndex != 1;
+    if (this->dockingState != 0) return this->dockingPointIndex != 1;
     return false;
 }
 
@@ -3544,7 +3548,7 @@ void PlayerEgo::draw(bool allowHud) {
         ((MiningGame *) (intptr_t) this->miningGame)->render2D();
         return;
     }
-    if (this->computerControlled || this->isDead() || this->freeze || !allowHud || (char &) this->dockingState
+    if (this->computerControlled || this->isDead() || this->freeze || !allowHud || this->dockingState
         || this->dockingToPlanet || this->dockedToStream || (this->dockedFlag && !this->turretActive)
         || (this->autoPilot && !this->turretActive)) {
         if (this->autoPilot || (this->dockedFlag && (unsigned) (this->dockingPointIndex - 1) >= 3))
@@ -3552,8 +3556,9 @@ void PlayerEgo::draw(bool allowHud) {
         return;
     }
 
+    // Reaching here with the autopilot on implies the turret is active.
     Matrix view;
-    if (!this->autoPilot && !this->turretActive)
+    if (!this->turretActive)
         view = this->geometry->getMatrix();
     Globals::Canvas->SetColor(0xffffffff);
     if (this->turretActive && Globals::status->getShip()->getFirstEquipmentOfSort(35)) {
