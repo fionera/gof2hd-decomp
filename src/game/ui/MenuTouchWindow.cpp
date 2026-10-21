@@ -1968,115 +1968,83 @@ void MenuTouchWindow::setSkipButtonVisible(bool visible) {
     }
 }
 
-static const char gDlsBoxStr[] = "";
 
 void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
-    (void) param1;
-    Layout *layout = Globals::layout;
-    PaintCanvas *canvas = Globals::Canvas;
-
-    int rowBaseY = layout->field_0x10c_rowBaseY;
-    ((PaintCanvas *) canvas)->SetColor(0xffffffff);
-
-    int scrollOff = this->listX;
-    int margin = layout->buttonInsetX;
-    int strip58 = layout->field_0x110_strip58;
-    int strip5c = layout->field_0x114_strip5c;
-    int screenBound = Globals::w;
-    int inner = screenBound + margin * -2 + scrollOff * -2;
-
-    if (Globals::iPad != 0 && Globals::iPadAssetsWithLowerRes == 0) {
-        strip5c = 8;
-        if (Globals::iPadHD == 0) {
-            strip58 = 0xc;
-            if (Globals::iPadLarge == 0) {
-                strip5c = 4;
-                strip58 = 6;
-            }
+    int shipY = Globals::layout->field_0x10c_rowBaseY;
+    Globals::Canvas->SetColor(0xffffffffu);
+    int nameY = Globals::layout->field_0x110_strip58;
+    int infoY = Globals::layout->field_0x114_strip5c;
+    int width = Globals::w - Globals::layout->buttonInsetX * 2 - this->listX * 2;
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
+        if (Globals::iPadHD) {
+            nameY = 8;
+            infoY = 5;
+        } else if (Globals::iPadLarge) {
+            nameY = 12;
+            infoY = 8;
         } else {
-            strip58 = 8;
-            strip5c = 5;
+            nameY = 6;
+            infoY = 4;
         }
-        int iw = ((PaintCanvas *) canvas)->GetImage2DWidth(this->scrollbarImageId);
-        int ih = ((PaintCanvas *) canvas)->GetImage2DHeight(this->scrollbarImageId);
-        int count = _mtw_idiv((int) (long) &Globals::iPadLarge, 1);
-        int yy = 0;
-        for (int k = 0; k <= count; k++) {
-            ((PaintCanvas *) canvas)->DrawImage2D(this->scrollbarImageId,
-                                                  (layout->buttonInsetX - iw) + this->listX, yy, (unsigned char) 1);
-            ((PaintCanvas *) canvas)->DrawImage2D(this->scrollbarImageId,
-                                                  layout->buttonInsetX + inner + this->listX, yy, (unsigned char) 0);
-            yy += ih;
+        // Side borders.
+        int borderWidth = Globals::Canvas->GetImage2DWidth(this->scrollbarImageId);
+        int borderHeight = Globals::Canvas->GetImage2DHeight(this->scrollbarImageId);
+        int count = Globals::h / borderHeight;
+        int y = 0;
+        for (int i = 0; i <= count; i++) {
+            Globals::Canvas->DrawImage2D(this->scrollbarImageId,
+                                         Globals::layout->buttonInsetX - borderWidth + this->listX, y, 1);
+            Globals::Canvas->DrawImage2D(this->scrollbarImageId, Globals::layout->buttonInsetX + width + this->listX,
+                                         y, 0);
+            y += borderHeight;
         }
-        scrollOff = this->listX;
-        margin = layout->buttonInsetX;
     }
+    this->okButton->setPosition(Globals::w - this->listX - Globals::layout->buttonInsetX,
+                                (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
+                                this->scrollOffset +
+                                (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin) +
+                                Globals::layout->field_0x108);
 
-    this->okButton->setPosition((screenBound - scrollOff) - margin,
-                               (layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow
-                               + this->scrollOffset
-                               + layout->field_0x20_top + layout->field_0xc_leftMargin + layout->field_0x108);
-
-    int rowCount = Globals::recordSlots;
-    int rowMax = Globals::h;
-
-    for (int i = 0; i < rowCount; i++) {
-        int rowY = (layout->field_0x70_rowHeight + this->listRowGap) * i + this->scrollOffset
-                   + layout->field_0x20_top + layout->field_0xc_leftMargin;
-        if (rowY < 0 || rowY > rowMax) continue;
-
-        ((PaintCanvas *) canvas)->SetColor(0xffffffff);
-        int boxX = layout->buttonInsetX + this->listX;
-        String box;
-        box.ctor_char(gDlsBoxStr, false);
-        int mode = (i == this->selectedRow) ? 4 : 3;
-        layout->drawBox(mode, boxX, rowY, inner - 3, layout->field_0x70_rowHeight, box);
-
-        int *font = (int *) Globals::font;
-        int yName = strip58 + rowY;
-        String **cols = this->recordRows->data_[i]->data_;
-
-        ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[0],
-                                             layout->buttonInsetX + this->listX + layout->field_0x2c_rowHeight,
-                                             (char) yName, false);
-
-        GameRecord *slot = ((Array<GameRecord *> *) this->previewRecords)->data_[i];
-        if (slot != 0) {
-            unsigned int shipId = slot->shipId;
-            if (shipId < 0x40) {
-                _mtw_ImageFactory_drawShip(Globals::imageFactory, shipId,
-                                           layout->field_0x2c_rowHeight + layout->buttonInsetX + this->listX +
-                                           this->metricB,
-                                           rowBaseY + rowY);
-            }
-        }
-
-        ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[1],
-                                             layout->buttonInsetX + this->listX + layout->field_0x2c_rowHeight * 2 +
-                                             this->metricB + layout->field_0x2c4,
-                                             yName, (bool) 0);
-
-        ((PaintCanvas *) canvas)->SetColor(0x777777ff);
-        int rowY2 = rowY + strip5c;
-        ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[2],
-                                             layout->buttonInsetX + this->listX + layout->field_0x2c_rowHeight,
-                                             rowY2 + layout->field_0x70_rowHeight / 2, (bool) 0);
-
-        ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[3],
-                                             layout->buttonInsetX + this->listX + layout->field_0x2c_rowHeight * 2 +
-                                             this->metricB + layout->field_0x2c4,
-                                             rowY2 + layout->field_0x70_rowHeight / 2, (bool) 0);
-
-        ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[4],
-                                             layout->buttonInsetX + this->listX + layout->field_0x2c4 +
-                                             (layout->field_0x2c_rowHeight + this->metricA) * 2,
-                                             yName, (bool) 0);
-
-        ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[5],
-                                             layout->buttonInsetX + this->listX + layout->field_0x2c4 +
-                                             (layout->field_0x2c_rowHeight + this->metricA) * 2,
-                                             rowY2 + layout->field_0x70_rowHeight / 2, (bool) 0);
-
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        int y = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->scrollOffset + (Globals::layout->field_0x70_rowHeight + this->listRowGap) * i;
+        if (y < 0 || y > Globals::h)
+            continue;
+        Globals::Canvas->SetColor(0xffffffffu);
+        Globals::layout->drawBox(i == this->selectedRow ? 4 : 3, Globals::layout->buttonInsetX + this->listX, y,
+                                 width - 3, Globals::layout->field_0x70_rowHeight, String(""));
+        int nameLineY = y + nameY;
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[0],
+                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
+                                    nameLineY, false);
+        GameRecord *record = (*this->previewRecords)[i];
+        if (record != 0 && record->shipId < 64)
+            Globals::imageFactory->drawShip(record->shipId,
+                                            Globals::layout->buttonInsetX + this->listX +
+                                            Globals::layout->field_0x2c_rowHeight + this->metricB,
+                                            shipY + y);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[1],
+                                    Globals::layout->buttonInsetX + this->listX +
+                                    Globals::layout->field_0x2c_rowHeight * 2 + this->metricB +
+                                    Globals::layout->field_0x2c4,
+                                    nameLineY, false);
+        Globals::Canvas->SetColor(0x777777ffu);
+        int infoLineY = y + infoY;
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[2],
+                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
+                                    infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[3],
+                                    Globals::layout->buttonInsetX + this->listX +
+                                    Globals::layout->field_0x2c_rowHeight * 2 + this->metricB +
+                                    Globals::layout->field_0x2c4,
+                                    infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[4],
+                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c4 +
+                                    (Globals::layout->field_0x2c_rowHeight + this->metricA) * 2,
+                                    nameLineY, false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[5],
+                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c4 +
+                                    (Globals::layout->field_0x2c_rowHeight + this->metricA) * 2,
+                                    infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
         if (i == this->selectedRow)
             this->okButton->draw();
     }
