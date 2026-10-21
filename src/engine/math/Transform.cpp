@@ -3,6 +3,7 @@
 #include "engine/core/AbyssEngine.h"
 #include "engine/core/KeyFrame.h"
 #include "engine/render/Mesh.h"
+#include "engine/render/Engine.h"
 
 static bool g_transform_matrix_flag = false;
 
@@ -487,121 +488,155 @@ namespace AbyssEngine {
     void Transform::InternUpdate(longlong time, bool updateBounds) {
         if (this->keyFrames.size() != 0) {
             longlong current = this->rangeStart;
-            if (current < time) current = time;
-
-            Array<KeyFrame *> &items = this->keyFrames;
-            KeyFrame *last = items[items.size() - 1];
-            if (last->timestamp < current) {
+            if (current < time)
+                current = time;
+            KeyFrame *last = this->keyFrames[this->keyFrames.size() - 1];
+            if (last->timestamp < current)
                 current = last->timestamp;
-            }
 
-            int index = 0;
-            while (items[index]->timestamp < current) {
+            int index = -1;
+            KeyFrame **cursor = this->keyFrames.data();
+            KeyFrame *next;
+            do {
+                next = *cursor++;
                 ++index;
-            }
+            } while (next->timestamp < current);
             this->currentKeyFrameIndex = index;
 
             if (index == 0) {
                 AEMath::Matrix identity;
-                for (int i = 0; i < 15; ++i) {
-                    identity.m[i] = 0.0f;
-                }
-                identity.m[0] = 1.0f;
-                identity.m[5] = 1.0f;
-                identity.m[10] = 1.0f;
-                identity.m[14] = 1.0f;
                 this->localMatrix = identity;
-                if (!g_transform_matrix_flag) {
-                    this->localMatrix.m[5] = 1.0f;
-                }
-            } else if (current == 0) {
-                KeyFrame *key = items[index];
-                this->rotation.Set(key->rotation.x, key->rotation.y, key->rotation.z);
-                this->translation = key->translation;
-                this->scale = key->scale;
+                if (Engine::enableShader == 0)
+                    this->localMatrix.m[5] = -1.0f;
+                return;
+            }
+
+            if (current == 0) {
+                KeyFrame *key = next;
+                this->rotation = Quaternion(key->rotation);
+                this->translation = this->keyFrames[this->currentKeyFrameIndex]->translation;
+                this->scale = this->keyFrames[this->currentKeyFrameIndex]->scale;
+                key = this->keyFrames[this->currentKeyFrameIndex];
                 this->alpha = key->alpha;
-                this->localRotation.Set(key->localRotation.x, key->localRotation.y, key->localRotation.z);
-                this->localTranslation = key->localTranslation;
-                this->localScale = key->localScale;
+                this->localRotation = Quaternion(key->localRotation);
+                this->localTranslation = this->keyFrames[this->currentKeyFrameIndex]->localTranslation;
+                this->localScale = this->keyFrames[this->currentKeyFrameIndex]->localScale;
             } else {
-                KeyFrame *prev = items[index - 1];
-                KeyFrame *next = items[index];
-                float t = (float) (current - prev->timestamp) /
-                          (float) (next->timestamp - prev->timestamp);
+                KeyFrame *prev = cursor[-2];
+                longlong prevTime = prev->timestamp;
+                Quaternion fromRotation(prev->rotation);
+                float elapsed = (float) (current - prevTime);
+                float span = (float) (next->timestamp - prevTime);
+                Quaternion toRotation(this->keyFrames[this->currentKeyFrameIndex]->rotation);
+                float t = elapsed / span;
+                this->rotation.Lerp(fromRotation, toRotation, t);
 
-                Quaternion qa;
-                qa.Set(prev->rotation.x, prev->rotation.y, prev->rotation.z);
-                Quaternion qb;
-                qb.Set(next->rotation.x, next->rotation.y, next->rotation.z);
-                this->rotation.Lerp(qa, qb, t);
+                this->translation = AEMath::VectorLerp(this->keyFrames[this->currentKeyFrameIndex - 1]->translation,
+                                                       this->keyFrames[this->currentKeyFrameIndex]->translation, t);
+                this->scale = AEMath::VectorLerp(this->keyFrames[this->currentKeyFrameIndex - 1]->scale,
+                                                 this->keyFrames[this->currentKeyFrameIndex]->scale, t);
+                KeyFrame *from = this->keyFrames[this->currentKeyFrameIndex - 1];
+                KeyFrame *to = this->keyFrames[this->currentKeyFrameIndex];
+                this->alpha = from->alpha + t * (to->alpha - from->alpha);
 
-                this->translation = AEMath::VectorLerp(prev->translation, next->translation, t);
-                this->scale = AEMath::VectorLerp(prev->scale, next->scale, t);
-                this->alpha = prev->alpha + t * (next->alpha - prev->alpha);
+                Quaternion fromLocal(from->localRotation);
+                Quaternion toLocal(this->keyFrames[this->currentKeyFrameIndex]->localRotation);
+                this->localRotation.Lerp(fromLocal, toLocal, t);
 
-                Quaternion qc;
-                qc.Set(prev->localRotation.x, prev->localRotation.y, prev->localRotation.z);
-                Quaternion qd;
-                qd.Set(next->localRotation.x, next->localRotation.y, next->localRotation.z);
-                this->localRotation.Lerp(qc, qd, t);
-
-                this->localTranslation = AEMath::VectorLerp(prev->localTranslation, next->localTranslation, t);
-                this->localScale = AEMath::VectorLerp(prev->localScale, next->localScale, t);
+                this->localTranslation = AEMath::VectorLerp(
+                    this->keyFrames[this->currentKeyFrameIndex - 1]->localTranslation,
+                    this->keyFrames[this->currentKeyFrameIndex]->localTranslation, t);
+                this->localScale = AEMath::VectorLerp(this->keyFrames[this->currentKeyFrameIndex - 1]->localScale,
+                                                      this->keyFrames[this->currentKeyFrameIndex]->localScale, t);
             }
 
-            uint a = (uint) clamp_positive_byte(this->alpha);
-            this->color = (int) (a | (a << 8) | (a << 16) | (a << 24));
+            unsigned int a = (unsigned int) (this->alpha * 255.0f);
+            this->color = (int) (a | (a << 16) | (a << 24) | (a << 8));
 
-            AEMath::Matrix rotationMat;
-            for (int i = 0; i < 15; ++i) {
-                rotationMat.m[i] = 0.0f;
+            // Rotation part: the quaternion matrix with the engine's Y/Z axis swap applied.
+            AEMath::Matrix rot;
+            this->rotation.Convert(rot);
+            this->rotationMatrix.m[0] = rot.m[0];
+            this->rotationMatrix.m[1] = rot.m[2];
+            this->rotationMatrix.m[2] = -rot.m[1];
+            this->rotationMatrix.m[3] = rot.m[3];
+            this->rotationMatrix.m[4] = rot.m[8];
+            this->rotationMatrix.m[5] = rot.m[10];
+            this->rotationMatrix.m[6] = -rot.m[9];
+            this->rotationMatrix.m[7] = rot.m[11];
+            this->rotationMatrix.m[8] = -rot.m[4];
+            this->rotationMatrix.m[9] = -rot.m[6];
+            this->rotationMatrix.m[10] = rot.m[5];
+            this->rotationMatrix.m[11] = -rot.m[7];
+            AEMath::MatrixSetScaling(this->rotationMatrix, this->scale.x, this->scale.y, this->scale.z);
+            AEMath::MatrixSetTranslation(this->rotationMatrix, this->translation.x, this->translation.y,
+                                         this->translation.z);
+
+            // Local (UV) rotation from the local quaternion.
+            float x = this->localRotation.x;
+            float y = this->localRotation.y;
+            float z = this->localRotation.z;
+            float w = this->localRotation.w;
+            float xx = x * x, yy = y * y, zz = z * z;
+            float zw = z * w, xy = x * y, yw = y * w, xz = x * z, xw = x * w, yz = y * z;
+            this->localMatrix.m[0] = (float) (1.0 - 2.0 * ((double) yy + (double) zz));
+            this->localMatrix.m[1] = (float) (2.0 * ((double) xy - (double) zw));
+            this->localMatrix.m[2] = (float) (2.0 * ((double) xz + (double) yw));
+            this->localMatrix.m[3] = 0.0f;
+            this->localMatrix.m[4] = (float) (2.0 * ((double) xy + (double) zw));
+            this->localMatrix.m[5] = (float) (1.0 - 2.0 * ((double) xx + (double) zz));
+            this->localMatrix.m[6] = (float) (2.0 * ((double) yz - (double) xw));
+            this->localMatrix.m[7] = 0.0f;
+            this->localMatrix.m[8] = (float) (2.0 * ((double) xz - (double) yw));
+            this->localMatrix.m[9] = (float) (2.0 * ((double) yz + (double) xw));
+            this->localMatrix.m[10] = (float) (1.0 - 2.0 * ((double) xx + (double) yy));
+            this->localMatrix.m[11] = 0.0f;
+
+            AEMath::Matrix toCenter;
+            toCenter.m[3] = -0.5f;
+            toCenter.m[7] = -0.5f;
+            AEMath::Matrix fromCenter;
+            fromCenter.m[3] = 0.5f;
+            fromCenter.m[7] = 0.5f;
+            AEMath::Matrix offset;
+            offset.m[3] = 0.5f + this->localScale.x * this->localTranslation.x;
+            offset.m[7] = 0.5f + this->localScale.y * this->localTranslation.y;
+            AEMath::Matrix scaling;
+            AEMath::Matrix centered;
+            AEMath::MatrixSetScaling(scaling, this->localScale.x, this->localScale.y, 1.0f);
+            centered = fromCenter * this->localMatrix * toCenter;
+            if (Engine::enableShader != 0) {
+                this->localMatrix = centered * offset * scaling * toCenter;
+            } else {
+                AEMath::Matrix flip;
+                flip.m[5] = -1.0f;
+                this->localMatrix = centered * offset * scaling * flip * toCenter;
             }
-            rotationMat.m[0] = 1.0f;
-            rotationMat.m[5] = 1.0f;
-            rotationMat.m[10] = 1.0f;
-            rotationMat.m[14] = 1.0f;
-            this->rotation.Convert(rotationMat);
-            this->rotationMatrix = rotationMat;
-
-            AEMath::Matrix scaleMat;
-            AEMath::MatrixSetScaling(scaleMat, this->scale.x, this->scale.y, this->scale.z);
-            AEMath::MatrixSetTranslation(scaleMat, this->translation.x,
-                                         this->translation.y, this->translation.z);
-
-            AEMath::Matrix local;
-            this->localRotation.Convert(local);
-            AEMath::Matrix composed = AEMath::operator*(local, scaleMat);
-            this->localMatrix = composed;
         }
 
         if (!updateBounds) {
-            AEMath::BSphere sphere;
-            sphere.center.x = 0.0f;
-            sphere.center.y = 0.0f;
-            sphere.center.z = 0.0f;
-            sphere.radius = 0.0f;
-            sphere.radius2 = 1.0f;
-            this->bounds() = sphere;
+            AEMath::BSphere empty = {{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
+            this->bounds() = empty;
 
             for (uint i = 0; i < this->meshes.size(); ++i) {
                 Mesh *mesh = this->meshes[i];
-                AEMath::BSphere childSphere;
                 if (mesh != 0 && mesh->animation != 0) {
-                    (mesh->animation)->InternUpdate(time, updateBounds);
+                    mesh->animation->InternUpdate(time, false);
+                    AEMath::BSphere sphere = *reinterpret_cast<AEMath::BSphere *>(&this->meshes[i]->boundsCenterX);
+                    sphere.center = AEMath::MatrixTransformVector(this->meshes[i]->animation->rotationMatrix,
+                                                                  sphere.center);
+                    this->bounds().Merge(sphere);
+                } else {
+                    AEMath::BSphere sphere = *reinterpret_cast<AEMath::BSphere *>(&mesh->boundsCenterX);
+                    this->bounds().Merge(sphere);
                 }
-                childSphere.center.x = mesh->boundsCenterX;
-                childSphere.center.y = mesh->boundsCenterY;
-                childSphere.center.z = mesh->boundsCenterZ;
-                childSphere.radius = mesh->boundsRadius;
-                childSphere.radius2 = mesh->boundsRadiusSq;
-                this->bounds().Merge(childSphere);
             }
 
             for (uint i = 0; i < this->children.size(); ++i) {
-                Transform * child = this->children[i];
-                child->InternUpdate(time, updateBounds);
-                AEMath::BSphere childSphere = child->bounds();
-                this->bounds().Merge(childSphere);
+                this->children[i]->InternUpdate(time, false);
+                AEMath::BSphere sphere = this->children[i]->bounds();
+                sphere.center = AEMath::MatrixTransformVector(this->children[i]->rotationMatrix, sphere.center);
+                this->bounds().Merge(sphere);
             }
         }
     }
