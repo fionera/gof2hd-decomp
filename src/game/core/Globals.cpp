@@ -357,15 +357,6 @@ static inline int Station_getIndex(int station) { return (int)(((Station*)(long)
 
 extern int g_android_leaderboard_scores[8];
 
-void Globals::reportLeaderboards() {
-    int kills = Globals::status->getKills();
-    g_android_leaderboard_scores[0] = kills;
-}
-
-Array<int> *Globals::getSoundResourceList() {
-    return soundResources;
-}
-
 #pragma pack(push, 1)
 struct Q16 {
     int32x4_t v;
@@ -385,68 +376,6 @@ static_assert(offsetof(HintsBuffer, quad) == 0x00, "quad");
 static_assert(sizeof(HintsBuffer) == 0x40, "HintsBuffer size");
 #endif
 
-
-void Globals::resetHints() {
-    HintsBuffer *hints = (HintsBuffer *) Globals::hints;
-    const int32x4_t z = vdupq_n_s32(0);
-    hints->quad[0].v = z;
-    reinterpret_cast<Q16 &>(reinterpret_cast<uint8_t *>(hints->quad)[0x2b]).v = z;
-    hints->quad[2].v = z;
-    hints->quad[1].v = z;
-}
-
-void Globals::startNewSoundResourceList() {
-    if (this->soundResources != nullptr) {
-        ArrayRelease(*(this->soundResources));
-        delete this->soundResources;
-    }
-    this->soundResources = nullptr;
-    Array<int> *list = new Array<int>();
-    this->soundResources = list;
-    ArrayAdd<int>(0x7c, *list);
-    ArrayAdd<int>(0x7b, *this->soundResources);
-}
-
-
-String Globals::getItemName(int item) {
-    String *src = Globals::gameText->getText(item + 0x4fa);
-    return String(*src, false);
-}
-
-String Globals::getKeyActionName(int action) {
-    (void) action;
-    String r;
-    return r;
-}
-
-float Globals::sqrt(float x) {
-    return AbyssEngine::AEMath::Sqrtf(x);
-}
-
-
-SolarSystem *Globals::getRandomSystemForDrinks() {
-    Galaxy *galaxy = Globals::galaxy;
-    int picked = Globals::rnd->nextInt(0x16);
-    return (SolarSystem *) (intptr_t) galaxy->getSystem(picked);
-}
-
-void Globals::addSoundResourceToList(int snd) {
-    Array<int> *a = this->soundResources;
-    if (a == nullptr) {
-        return;
-    }
-    for (unsigned i = 0; i < a->size(); ++i) {
-        if ((*a)[i] == snd) {
-            return;
-        }
-    }
-    ArrayAdd<int>(snd, *a);
-}
-
-String Globals::replaceKeyBindingTokens(const String &src) {
-    return String(src, false);
-}
-
 struct FileRead {
     FileRead();
 
@@ -463,56 +392,6 @@ struct FileRead {
     Array<String *> *loadNamesBinary(int32_t type, bool first, bool second);
 };
 
-
-Station *Globals::getRandomStation() {
-    FileRead *f = new FileRead();
-    int which = nextInt_71ad0(Globals::rnd, 0x87);
-    Station *r = f->loadStation(which);
-    delete f;
-    return r;
-}
-
-void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY) {
-    drawLines(font, lines, baseX, startY, false);
-}
-
-void Globals::reportSupernovaChallengeScore() {
-}
-
-
-void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
-                           Array<String *> *out) {
-    String *line = new String();
-    String work(text, false);
-    work += String("\n", false);
-
-    unsigned count = 0;
-    for (int consumed = 0; consumed < work.length; count++) {
-        String rest = work.SubString(consumed, work.length);
-        getLine(font, String(rest, false), maxWidth, line);
-        consumed += line->length;
-    }
-    delete line;
-
-    ArraySetLength(count, *out);
-    for (unsigned i = 0; i < count; i++)
-        (*out)[i] = new String();
-
-    int consumed = 0;
-    for (unsigned i = 0; i < count; i++) {
-        String rest = work.SubString(consumed, work.length);
-        getLine(font, String(rest, false), maxWidth, (*out)[i]);
-        int end = (*out)[i]->length;
-        consumed += end;
-        int start = 0;
-        while (*(*(*out)[i])[start] == ' ')
-            start++;
-        while (*(*(*out)[i])[end - 1] == ' ')
-            end--;
-        *(*out)[i] = (*out)[i]->SubString(start, end);
-    }
-}
-
 static const char gLTS2_secTens[] = "";
 static const char gLTS2_secEmpty[] = "";
 static const char gLTS2_minTens[] = "";
@@ -522,6 +401,396 @@ static const char gLTS2_hrTens[] = "";
 static const char gLTS2_hrEmpty[] = "";
 static const char gLTS2_sep1[] = "";
 static const char gLTS2_sep2[] = "";
+
+static const float gSCS_f86f8 = 210.9375f;
+static const float gSCS_f86fc = 300.0f;
+static const float gSCS_f8700 = 150.0f;
+static const float gSCS_f8704 = -126.5625f;
+static const float gSCS_f8708 = 92.8125f;
+static const float gSCS_f870c = 180.0f;
+static const float gSCS_f8710 = 90.0f;
+static const float gSCS_f8714 = 132.0f;
+static const float gSCS_f8718 = 66.0f;
+static const float gSCS_f871c = 313.59375f;
+static const float gSCS_f8720 = 2.8125f;
+static const float gSCS_f8724 = 446.0f;
+static const float gSCS_f8728 = 223.0f;
+static const float gSCS_f872c = -2.8125f;
+static const float gSCS_f8730 = 54.0f;
+
+
+static inline char rdflag(char *const g) { return *g; }
+static inline int *rdobj(int *const g) { return g; }
+static inline CoordsObject *rdcoords(CoordsObject *const g) { return g; }
+
+static const char gIAP_prefixA[] = "";
+static const char gIAP_prefixB[] = "";
+static const char gIAP_id50[] = "";
+static const char gIAP_id0[] = "";
+static const char gIAP_id1[] = "";
+static const char gIAP_id2[] = "";
+static const char gIAP_id3[] = "";
+static const char gIAP_id4[] = "";
+static const char gIAP_id51[] = "";
+static const char gIAP_id52[] = "";
+static const char gIAP_id53[] = "";
+static const char gIAP_id54[] = "";
+
+static const char gLTS_minTens[] = "";
+static const char gLTS_minEmpty[] = "";
+static const char gLTS_hrTens[] = "";
+static const char gLTS_hrEmpty[] = "";
+static const char gLTS_sep[] = "";
+
+static const unsigned short gGSG_resTable[1] = {};
+static const unsigned short gGSG_meshTable[1] = {};
+static const short gGSG_extraTable[1] = {};
+static const unsigned gGSG_lodTable[1] = {};
+static const unsigned gGSG_childTable[1] = {};
+
+static const int gRaceTable[64] = {
+    3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
+    2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
+    8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3,
+    3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
+
+void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float x1, float y1, float z1); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+
+static const float gSCF_b90 = 56.25f;
+static const float gSCF_b10 = 63.28125f;
+static const float gSCF_b14 = 210.9375f;
+static const float gSCF_b7c = 63.28125f;
+static const float gSCF_b80 = 90.0f;
+static const float gSCF_b84 = 45.0f;
+static const float gSCF_b88 = 300.0f;
+static const float gSCF_b8c = 150.0f;
+static const float gSCF_b94 = 80.0f;
+static const float gSCF_b98 = 40.0f;
+static const float gSCF_b9c = 107.28125f;
+static const float gSCF_ba0 = 5.625f;
+static const float gSCF_ba4 = 18.09375f;
+static const float gSCF_ba8 = 19.28125f;
+static const float gSCF_bac = 112.5f;
+static const float gSCF_bb0 = 94.21875f;
+static const float gSCF_bb4 = 152.0f;
+static const float gSCF_bb8 = 77.0f;
+static const float gSCF_bbc = 160.0f;
+static const float gSCF_bc0 = 80.0f;
+static const float gSCF_bc4 = 134.0f;
+static const float gSCF_bc8 = 67.0f;
+static const float gSCF_bcc = 100.0625f;
+static const float gSCF_bd0 = 209.53125f;
+static const float gSCF_bd4 = 144.0f;
+static const float gSCF_bd8 = 74.0f;
+static const float gSCF_bdc = 298.0f;
+static const float gSCF_be0 = 149.0f;
+static const float gSCF_be4 = 132.1875f;
+static const float gSCF_be8 = 0.0f;
+static const float gSCF_bec = 189.0f;
+static const float gSCF_bf0 = 94.0f;
+
+
+static inline char rf(char *const g) { return *g; }
+static inline int rint(int *const g) { return *g; }
+static inline int *robj(int *const g) { return g; }
+static inline CoordsObject *rcoords(CoordsObject *const g) { return g; }
+
+static inline unsigned short clampU(float v) {
+    return (unsigned short) ((0.0f < v) ? (short) (int) v : 0);
+}
+
+
+
+static inline char flag(char *const g) { return *g; }
+
+static const int gStationMusicByRace[4] = {128, 127, 129, 130};
+static const int gSpaceMusicByRace[4] = {134, 139, 138, 137};
+
+static const int gGDS_pairTable[1] = {};
+
+static const char gGRN_noFirst[] = "";
+static const char gGRN_noLast[] = "";
+static const char gGRN_space[] = "";
+
+#include "engine/core/AERandom.h"
+
+// Globals::Globals() below zero-initializes the Globals static members directly
+// (the original reads each via a GOT-indirect load, which &Global compiles to in
+// PIC). Previously stubbed as null gGC_p_* placeholder pointers, which folded the
+// constructor to a 2-byte stub. Each placeholder->member mapping was verified
+// against the original via Ghidra (recovered symbol names + plate comments).
+
+Globals::Globals() {
+    Globals *self = this;
+    GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
+    CtorSecondaryObject *secondary = (CtorSecondaryObject *) Globals::hints;
+    int *p5 = (int *) &Globals::recordHandler;
+    int *p7 = &Globals::lastStationMusicPlayed;
+    int *p9 = &Globals::lastCampaignMissionFailCount;
+    int *p11 = &Globals::lastSpaceMusicPlayed;
+    int *p12 = &Globals::lastCampaignMissionFailed;
+
+    Globals::Canvas = 0;
+    Globals::shipTemplate = 0;
+    Globals::gameText = 0;
+    Globals::font = 0;
+    Globals::fontAlien = 0;
+    Globals::fontLangSelect = 0;
+    Globals::rnd = 0;
+    Globals::globals = 0;
+    Globals::layout = 0;
+    Globals::appManager = 0;
+    *p5 = 0;
+    Globals::generator = 0;
+
+    *(int *) self = 0;
+
+    settings->colorR = 0.5f;
+    settings->colorG = 0.5f;
+    settings->colorB = 0.5f;
+    reinterpret_cast<int16_t &>(settings->_region[0]) = 0x101;
+    reinterpret_cast<int16_t &>(settings->_region[4]) = 0;
+
+    settings->glowR = 0.5f;
+    settings->glowG = 0.5f;
+
+    settings->tintR = 0.6f;
+    settings->tintG = 0.6f;
+    settings->tintB = 0.5f;
+    settings->brightness = 1.0f;
+    settings->contrast = 0.5f;
+    settings->_region[2] = 1;
+    settings->enableFlag30 = 1;
+    settings->shortAt40 = 0;
+    settings->intAt50 = 0;
+    settings->flagAt39 = 0;
+    settings->intAt35 = 0;
+    settings->intAt31 = 0;
+    secondary->slot1 = 0;
+    secondary->flagAt13 = 0;
+
+    settings->flagAt3f = 0;
+    settings->intAt3b = 0;
+    settings->flagAt4e = 0;
+    settings->shortAt4c = 0;
+    settings->intAt48 = 0;
+    secondary->slot0 = 0;
+
+    Globals::gameLoaded = 0;
+    Globals::gameSaving = 0;
+    *p11 = -1;
+    Globals::initMemoryWarning = 0;
+    *p7 = -1;
+    *p9 = 0;
+    *p12 = -1;
+
+    int *p7b = (int *) &Globals::imageFactory;
+    int *p5b = (int *) &Globals::achievements;
+
+    float fv = settings->qualityLevel;
+    int v54 = 0x247;
+    if (1.0f <= fv) v54 = 0x33e;
+    if (fv <= 0.0f) v54 = 0x19f;
+    settings->resWidth = v54;
+
+    int v58 = 0x201;
+    if (1.0f <= fv) v58 = 0x2da;
+    if (fv <= 0.0f) v58 = 0x16d;
+    settings->resHeight = v58;
+
+    int *p11b = (int *) &Globals::galaxy;
+    Globals::instantActionScore = 0;
+    Globals::instantActionWave = 0;
+    int *p9b = (int *) &Globals::status;
+    Globals::instantActionType = -1;
+    Globals::instantActionPlayerName = 0;
+    Globals::items = 0;
+    *p9b = 0;
+    settings->shortAt60 = 0x100;
+    *p11b = 0;
+    int *p8b = (int *) &Globals::ships;
+    *p5b = 0;
+    *p7b = 0;
+    *p8b = 0;
+    self->soundResources = 0;
+}
+
+Globals::~Globals() {
+    if (Globals::recordHandler != nullptr)
+        Globals::recordHandler->saveOptions();
+    delete Globals::galaxy;
+    Globals::galaxy = nullptr;
+    delete Globals::status;
+    Globals::status = nullptr;
+    delete Globals::gameText;
+    Globals::gameText = nullptr;
+    delete Globals::rnd;
+    Globals::rnd = nullptr;
+    delete Globals::layout;
+    Globals::layout = nullptr;
+    delete Globals::generator;
+    Globals::generator = nullptr;
+    delete Globals::recordHandler;
+    Globals::recordHandler = nullptr;
+    delete Globals::instantActionPlayerName;
+    Globals::instantActionPlayerName = nullptr;
+    delete Globals::sound;
+    Globals::sound = nullptr;
+    if (Globals::items != nullptr) {
+        ArrayReleaseClasses(*Globals::items);
+        delete Globals::items;
+    }
+    Globals::items = nullptr;
+    if (Globals::ships != nullptr) {
+        ArrayReleaseClasses(*Globals::ships);
+        delete Globals::ships;
+    }
+    Globals::ships = nullptr;
+    delete Globals::galaxy;
+    Globals::galaxy = nullptr;
+    delete Globals::achievements;
+    Globals::achievements = nullptr;
+    delete Globals::status;
+    Globals::status = nullptr;
+    delete Globals::imageFactory;
+    Globals::imageFactory = nullptr;
+    if (this->soundResources != nullptr) {
+        ArrayRelease(*this->soundResources);
+        delete this->soundResources;
+    }
+    this->soundResources = nullptr;
+    Globals::globals = nullptr;
+}
+
+// Globals::init below accesses these engine globals directly (Mission::empty,
+// Globals::options/items/ships/Canvas/globals/generator/recordHandler/sound/
+// layout/imageFactory and the init flag bytes); the original reads each via a
+// GOT-indirect load, which &Global compiles to in PIC. (Previously stubbed as
+// null gI_* placeholder pointers, which folded init to a 2-byte stub.)
+
+int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
+    (void) engine;
+    int *missionSlot = (int *) &Mission::empty;
+    if (*missionSlot == 0) {
+        Mission *m = new Mission();
+        *missionSlot = (int) (long) m;
+    }
+
+    GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
+    int *flagFFFF = (int *) &Globals::lastRecordWritten;
+    int *langSettingSlot = &Globals::recordSlots;
+    char *langFlag = (char *) &Globals::iPad;
+    char *zeroByte = (char *) &Globals::startLiteVersionWithMoreCredits;
+
+    char lang = *langFlag;
+    settings->_region[5] = 1;
+    settings->enableFlag30 = 1;
+    settings->colorR = 0.5f;
+    settings->colorG = 0.5f;
+    settings->colorB = 0.5f;
+    settings->tintB = 0.5f;
+    settings->brightness = 1.0f;
+    settings->glowR = 1.0f;
+    settings->glowG = 1.0f;
+    settings->tintR = 0.6f;
+    settings->tintG = 0.6f;
+    reinterpret_cast<int16_t &>(settings->_region[3]) = 0x101;
+    *zeroByte = 0;
+    *flagFFFF = -1;
+    *langSettingSlot = (lang == 0) ? 6 : 0xc;
+
+    Galaxy *galaxy = new Galaxy();
+    Globals::galaxy = galaxy;
+    Achievements *ach = new Achievements();
+    Globals::achievements = ach;
+    Status *status = new Status();
+    Globals::status = status;
+    ImageFactory *imgFac = new ImageFactory();
+    Globals::imageFactory = imgFac;
+
+    FileRead *fr = new FileRead();
+    Globals::items = (Array<Item *> *) (long) fr->loadItemsBinary();
+    Globals::ships = (Array<Ship *> *) (long) fr->loadShipsBinary();
+    delete fr;
+
+    int *engineSlot = (int *) &Globals::Canvas;
+    if (*engineSlot == 0) {
+        *engineSlot = *reinterpret_cast<int *>(app);
+    }
+    Globals::appManager = app;
+    app->VibrateEnable(0);
+
+    AbyssEngine::AERandom *rng = new AbyssEngine::AERandom();
+    Globals::globals = this;
+    Globals::rnd = rng;
+
+    Generator *gen = new Generator();
+    Globals::generator = gen;
+
+    RecordHandler *rh = new RecordHandler();
+    RecordHandler **rhSlotP = &Globals::recordHandler;
+    *rhSlotP = rh;
+    Globals::status->resetGame();
+    (*rhSlotP)->loadOptions();
+
+    FModSound *fmod = new FModSound();
+    FModSound **fmodSlotP = &Globals::sound;
+    *fmodSlotP = fmod;
+    fmod->init();
+
+    (*fmodSlotP)->enableCategory(1, settings->_region[1]);
+    (*fmodSlotP)->enableCategory(2, settings->_region[0]);
+    (*fmodSlotP)->enableCategory(3, settings->_region[2]);
+    (*fmodSlotP)->setVolume(1, settings->colorR);
+    (*fmodSlotP)->setVolume(2, settings->colorG);
+    (*fmodSlotP)->setVolume(3, settings->colorB);
+
+    if (Globals::sound->tryToStopMusicForBGMusic() != 0) {
+        settings->_region[1] = 0;
+    }
+
+    Globals::instantActionPoints = 0;
+    Globals::first_start_ever = true;
+    InitZeroObject *obj = (InitZeroObject *) Globals::hints;
+    obj->slots[0] = 0;
+    obj->slots[1] = 0;
+    obj->slots[2] = 0;
+    obj->slots[3] = 0;
+    obj->slots[4] = 0;
+    obj->slots[5] = 0;
+    obj->slots[6] = 0;
+    obj->slots[7] = 0;
+    obj->slots[8] = 0;
+    obj->slots[9] = 0;
+    obj->slots[10] = 0;
+    obj->slots[11] = 0;
+    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2b]) = 0;
+    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2f]) = 0;
+    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x33]) = 0;
+    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x37]) = 0;
+    InitFlagByte *flagByteObj = (InitFlagByte *) &Globals::gameLoaded;
+    flagByteObj->flag = 0;
+    Globals::gameSaving = 0;
+    Globals::initMemoryWarning = 0;
+
+    Layout *layout = new Layout();
+    Globals::layout = layout;
+    layout->reload();
+    ParticleSettingsRef::initialize();
+
+    Array<int> *arr = new Array<int>();
+    this->soundResources = arr;
+    return (int) (long) arr;
+}
+
+void Globals::resetHints() {
+    HintsBuffer *hints = (HintsBuffer *) Globals::hints;
+    const int32x4_t z = vdupq_n_s32(0);
+    hints->quad[0].v = z;
+    reinterpret_cast<Q16 &>(reinterpret_cast<uint8_t *>(hints->quad)[0x2b]).v = z;
+    hints->quad[2].v = z;
+    hints->quad[1].v = z;
+}
 
 void Globals::longToTimeString(long long ms, String &out) {
     long long secQ = ms / 1000;
@@ -569,6 +838,184 @@ void Globals::longToTimeString(long long ms, String &out) {
     return;
 }
 
+void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
+    int minutes = (int) (ms / 60000 % 60);
+    int hours = (int) (ms / 3600000 % 24);
+    String minuteText = (minutes < 10 ? String("0", false) : String("", false)) + String(minutes);
+    hours += (int) (ms / 86400000) * 24;
+    String hourText = (hours < 10 ? String("0", false) : String("", false)) + String(hours);
+    out = hourText + String(":", false) + minuteText;
+}
+
+unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
+                                      int width) {
+    (void) p1;    int *canvasP = (int *) &Globals::Canvas;
+    unsigned int meshOut = 0;
+    ((PaintCanvas *) (long) *canvasP)->MeshCreate((unsigned short) 0xc, (unsigned short) 6, (signed char) 0x13,
+                                                  (unsigned short) 0, meshOut);
+    int mesh = (int) meshOut;
+    int cv = *canvasP;
+
+    PaintCanvas *meshCanvas = (PaintCanvas *) (long) cv;
+    meshCanvas->MeshSetTriangle((unsigned int) mesh, 0, 0, 1, 2);
+    meshCanvas->MeshSetTriangle((unsigned int) mesh, 1, 2, 1, 3);
+    meshCanvas->MeshSetTriangle((unsigned int) mesh, 2, 4, 5, 6);
+    meshCanvas->MeshSetTriangle((unsigned int) mesh, 3, 6, 5, 7);
+    meshCanvas->MeshSetTriangle((unsigned int) mesh, 4, 8, 9, 10);
+    meshCanvas->MeshSetTriangle((unsigned int) mesh, 5, 10, 9, 0xb);
+
+    meshCanvas->MeshSetUv((unsigned int) mesh, 0, u0, 0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 1, u1, 0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 2, v1, u0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 3, v1, v0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 4, u0, 0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 5, u1, 0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 6, v1, u0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 7, v1, v0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 8, u0, 0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 9, u1, 0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 10, v1, u0);
+    meshCanvas->MeshSetUv((unsigned int) mesh, 0xb, v1, v0);
+
+    float pw = static_cast<float>(width);
+    float nh = static_cast<float>(-height);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 0, nh, 0, pw);
+    float nw = static_cast<float>(-width);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 1, nh, 0, nw);
+    float ph = static_cast<float>(height);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 2, ph, 0, pw);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 3, ph, 0, nw);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 4, 0, nh, pw);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 5, 0, nh, nw);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 6, 0, ph, pw);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 7, 0, ph, nw);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 8, nh, ph, 0);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 9, nh, nh, 0);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 10, ph, ph, 0);
+    meshCanvas->MeshSetPoint((unsigned int) mesh, 0xb, ph, nh, 0);
+
+    return meshOut;
+}
+
+String Globals::getRandomName(int race, bool female) {
+    FileRead *reader = new FileRead();
+    Array<String *> *firstNames = reader->loadNamesBinary(race, female, true);
+    Array<String *> *lastNames = reader->loadNamesBinary(race, female, false);
+    String firstName = firstNames == nullptr
+                           ? String("", false)
+                           : String(*(*firstNames)[Globals::rnd->nextInt(firstNames->size())], false);
+    String lastName = lastNames == nullptr
+                          ? String("", false)
+                          : String(*(*lastNames)[Globals::rnd->nextInt(lastNames->size())], false);
+    if (firstNames != nullptr) {
+        ArrayReleaseClasses(*firstNames);
+        delete firstNames;
+    }
+    if (lastNames != nullptr) {
+        ArrayReleaseClasses(*lastNames);
+        delete lastNames;
+    }
+    delete reader;
+    if (lastName.length != 0)
+        return firstName + String(" ", false) + lastName;
+    return String(firstName, false);
+}
+
+void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
+    int lang = GameText::getLanguage();
+    int width = (lang | 1) == 11 ? 15 : 5;
+    if (lang == 15) width = lang;
+    unsigned lastSpace = 0;
+    for (unsigned i = 0; i < (unsigned) text.length; i++) {
+        unsigned short c = *text[i];
+        width += Globals::Canvas->GetTextWidth(font, text, i, i + 1);
+        if (c == ' ') lastSpace = i;
+        if (width >= maxWidth) {
+            if ((int) lastSpace >= 1)
+                *out = text.SubString(0, lastSpace + 1);
+            else
+                *out = text.SubString(0, i + 1);
+            return;
+        }
+        if (*text[i] == '\n' || *text[i] == '\r') {
+            *out = text.SubString(0, i + 1);
+            return;
+        }
+    }
+    if (text.length >= 2)
+        *out = text.SubString(0, text.length);
+    else
+        *out = String("", false);
+}
+
+void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
+                           Array<String *> *out) {
+    String *line = new String();
+    String work(text, false);
+    work += String("\n", false);
+
+    unsigned count = 0;
+    for (int consumed = 0; consumed < work.length; count++) {
+        String rest = work.SubString(consumed, work.length);
+        getLine(font, String(rest, false), maxWidth, line);
+        consumed += line->length;
+    }
+    delete line;
+
+    ArraySetLength(count, *out);
+    for (unsigned i = 0; i < count; i++)
+        (*out)[i] = new String();
+
+    int consumed = 0;
+    for (unsigned i = 0; i < count; i++) {
+        String rest = work.SubString(consumed, work.length);
+        getLine(font, String(rest, false), maxWidth, (*out)[i]);
+        int end = (*out)[i]->length;
+        consumed += end;
+        int start = 0;
+        while (*(*(*out)[i])[start] == ' ')
+            start++;
+        while (*(*(*out)[i])[end - 1] == ' ')
+            end--;
+        *(*out)[i] = (*out)[i]->SubString(start, end);
+    }
+}
+
+void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
+                        bool centered) {
+    int *cv = (int *) &Globals::Canvas;
+    LineMetrics **lh = (LineMetrics **) &Globals::layout;
+    int yacc = startY;
+    int dx = 0;
+    for (unsigned i = 0; i < lines->size(); i++) {
+        if (centered) {
+            int w = ((PaintCanvas *) (long) *cv)->GetTextWidth(font, *(*lines)[i]);
+            dx = -(w >> 1);
+        }
+        ((PaintCanvas *) (long) *cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
+        yacc += (*lh)->lineHeight;
+    }
+}
+
+void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
+                        unsigned int rightX, bool centered) {
+    int *cv = (int *) &Globals::Canvas;
+    LineMetrics **lh = (LineMetrics **) &Globals::layout;
+    int yacc = startY;
+    int dx = 0;
+    for (unsigned i = 0; i < lines->size(); i++) {
+        if (!centered) {
+            int w = ((PaintCanvas *) (long) *cv)->GetTextWidth(font, *(*lines)[i]);
+            dx = (int) rightX - w;
+        }
+        ((PaintCanvas *) (long) *cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
+        yacc += (*lh)->lineHeight;
+    }
+}
+
+void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY) {
+    drawLines(font, lines, baseX, startY, false);
+}
 
 String Globals::getBoundedString(const String &text, int width) {
     String result(text, false);
@@ -581,171 +1028,731 @@ String Globals::getBoundedString(const String &text, int width) {
     return result;
 }
 
-static const float gSCS_f86f8 = 210.9375f;
-static const float gSCS_f86fc = 300.0f;
-static const float gSCS_f8700 = 150.0f;
-static const float gSCS_f8704 = -126.5625f;
-static const float gSCS_f8708 = 92.8125f;
-static const float gSCS_f870c = 180.0f;
-static const float gSCS_f8710 = 90.0f;
-static const float gSCS_f8714 = 132.0f;
-static const float gSCS_f8718 = 66.0f;
-static const float gSCS_f871c = 313.59375f;
-static const float gSCS_f8720 = 2.8125f;
-static const float gSCS_f8724 = 446.0f;
-static const float gSCS_f8728 = 223.0f;
-static const float gSCS_f872c = -2.8125f;
-static const float gSCS_f8730 = 54.0f;
+void Globals::releaseResources() {
+    Globals::Canvas->ReleaseAllResources();
+    Globals::layout->reload();
+}
 
-
-static inline char rdflag(char *const g) { return *g; }
-static inline int *rdobj(int *const g) { return g; }
-static inline CoordsObject *rdcoords(CoordsObject *const g) { return g; }
-
-void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
-                             unsigned short &o5, unsigned short &o6, unsigned short &o7,
-                             unsigned short &o8, unsigned short &o9, unsigned short &o10,
-                             unsigned short &o11, unsigned short &o12, unsigned short &o13,
-                             unsigned short &o14) {
-    int screenH = Globals::h;
-    char isPhone = rdflag((char *) &Globals::iPadHD);
-    int bottom = ((-0x19 - p2) - p3) + screenH;
-
-    float thresh = gSCS_f86f8;
-    if (isPhone == 0) {
-        thresh = (rdflag((char *) &Globals::iPadLarge) == 0) ? gSCS_f8700 : gSCS_f86fc;
+void Globals::loadFont(int language) {
+    // The font handles are stored in pointer-typed statics shared with other TUs.
+    unsigned int &mainFont = reinterpret_cast<unsigned int &>(Globals::font);
+    unsigned int &alienFont = reinterpret_cast<unsigned int &>(Globals::fontAlien);
+    unsigned int &langSelectFont = reinterpret_cast<unsigned int &>(Globals::fontLangSelect);
+    bool latinFont = true;
+    switch (language) {
+        case 9:
+            Globals::Canvas->FontCreate(0x2d74, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
+            latinFont = false;
+            break;
+        case 10:
+            Globals::Canvas->FontCreate(0x2d78, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
+            break;
+        case 11:
+            Globals::Canvas->FontCreate(0x2d76, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
+            break;
+        case 14:
+            Globals::Canvas->FontCreate(0x2d7c, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
+            break;
+        default:
+            if (language == 15) {
+                Globals::Canvas->FontCreate(0x2d7e, mainFont, true);
+                Globals::Canvas->FontSetSpacing(mainFont, Globals::iPadHD ? -7 : (Globals::retinaDisplay ? -10 : -5));
+            } else {
+                Globals::Canvas->FontCreate(0x457, mainFont, true);
+                Globals::Canvas->FontSetSpacing(mainFont, Globals::retinaDisplay ? -5
+                                                          : Globals::n9 ? -4
+                                                          : Globals::iPadHD ? -4 : -2);
+            }
+            break;
     }
-    if (bottom < p1) {
-        p1 = bottom;
-    }
-    float fp1 = static_cast<float>(p1);
+    Globals::Canvas->field_0x1c = latinFont;
+    Globals::Canvas->FontCreate(0x51e, alienFont, true);
+    Globals::Canvas->FontSetSpacing(alienFont, 0);
+    Globals::Canvas->FontCreate(0x2d7a, langSelectFont, true);
+    Globals::Canvas->FontSetSpacing(langSelectFont, 0);
+}
 
-    unsigned short uv;
-    int iv;
-    if (thresh < fp1) {
-        iv = (int) fp1;
-        uv = (unsigned short) iv;
-        rdcoords((CoordsObject *) Globals::options)->steerValue = (int) fp1;
-        char flag8;
-        if (isPhone == 0) {
-            flag8 = rdflag((char *) &Globals::iPadLarge);
-            goto label8508;
+unsigned Globals::getRandomEnemyFighter(int kind) {
+    (void) this;
+    int t = kind;
+    if (kind > 3 && kind != 9 && kind != 10) {
+        t = 8;
+    }
+    unsigned r;
+    if (t == 1) {
+        if (Globals::status->dlc1Won() == 0) {
+            r = 9;
+        } else {
+            int n = nextInt_71ad0(Globals::rnd, 0x64);
+            r = 0x27;
+            if (n < 0x55) {
+                r = 0x29;
+            }
+            if (n < 0x3c) {
+                r = 9;
+            }
         }
-        goto common;
-    label8508:
-        uv = (flag8 == 0) ? 0x14 : 0x28;
-        o5 = uv;
-        o6 = (unsigned short) iv;
-        o13 = uv;
-        {
-            float sub = (flag8 == 0) ? gSCS_f8710 : gSCS_f870c;
-            float add14 = (flag8 == 0) ? gSCS_f8718 : gSCS_f8714;
-            float val = static_cast<float>(o6);
-            float r = val - sub;
-            o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
-            o7 = 0x14;
-            (void) add14;
-            goto label8556;
+    } else if (t == 9) {
+        r = 8;
+    } else if (t == 0xa) {
+        r = 0x2c;
+    } else {
+        do {
+            do {
+                r = nextInt_71ad0(Globals::rnd, 0x25);
+            } while ((unsigned) ((r & ~4u) - 9) < 2);
+        } while (((r < 0x10) && ((1u << r & 0x8101u) != 0)) ||
+                 (gRaceTable[r] != t));
+    }
+    return r;
+}
+
+String Globals::getRandomPlanetName() {
+    FileRead *f = new FileRead();
+    int which = nextInt_71ad0(Globals::rnd, 0x64);
+    Station *st = f->loadStation(which);
+    String name = st->getName();
+    delete st;
+    delete f;
+    return name;
+}
+
+Station *Globals::getRandomStation() {
+    FileRead *f = new FileRead();
+    int which = nextInt_71ad0(Globals::rnd, 0x87);
+    Station *r = f->loadStation(which);
+    delete f;
+    return r;
+}
+
+SolarSystem *Globals::getRandomSystemForDrinks() {
+    Galaxy *galaxy = Globals::galaxy;
+    int picked = Globals::rnd->nextInt(0x16);
+    return (SolarSystem *) (intptr_t) galaxy->getSystem(picked);
+}
+
+String Globals::getItemName(int item) {
+    String *src = Globals::gameText->getText(item + 0x4fa);
+    return String(*src, false);
+}
+
+void Globals::reportLeaderboards() {
+    int kills = Globals::status->getKills();
+    g_android_leaderboard_scores[0] = kills;
+}
+
+void Globals::reportSupernovaChallengeScore() {
+}
+
+// lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
+
+
+Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) {
+
+    FileRead *fr = (FileRead *) ::operator new(1);
+    FileRead_ctor(fr);
+    Array<int> *data = fr->loadWreckCollision(kind);
+    ::operator delete(FileRead_dtor(fr));
+
+    Array<BoundingVolume *> *outArr = nullptr;
+    if (data != 0) {
+        int count = (*data)[0];
+
+        float v[3] = {0, 0, 0};
+        float c[3] = {0, 0, 0};
+
+        outArr = new Array<BoundingVolume *>();
+        ArraySetLength((unsigned) count, *outArr);
+
+        int pos = 1;
+        for (int i = 0; i < count; i++) {
+            int *base = data->data();
+            int kindWord = base[pos];
+            BoundingVolume *bound = nullptr;
+            if (kindWord == 1) {
+                int *rec = base + pos;
+                c[2] = (float) (-base[pos + 1]);
+                c[0] = (float) rec[2];
+                c[1] = (float) rec[3];
+                v[0] = (float) rec[4];
+                v[1] = (float) rec[5];
+                v[2] = (float) rec[6];
+                float mag = VectorScale(v, c[1]);
+                if (geom == 0) {
+                    mag = VectorScale(c, mag);
+                    VectorScale(v, mag);
+                }
+                bound = (BoundingVolume *) ::operator new(0x2c);
+                BoundingAAB_ctor(bound, v[2] + v[2], c[1] + c[1], v[1] + v[1], c[2], c[0], v[0]);
+                pos += 7;
+            } else if (kindWord == 0) {
+                int *rec = base + pos;
+                c[2] = (float) (-base[pos + 1]);
+                c[0] = (float) rec[2];
+                c[1] = (float) rec[3];
+                v[0] = (float) rec[4];
+                VectorScale(v, v[0]);
+                float mag = v[0];
+                if (v[0] < 0.0f) {
+                    mag = VectorScale(v, v[0]);
+                }
+                if (geom == 0) {
+                    mag = VectorScale(c, mag);
+                    VectorScale(v, mag);
+                }
+                bound = (BoundingVolume *) ::operator new(0x48);
+                new(bound) BoundingSphere(c[2], c[1], c[0], 0.0f, 0.0f, 0.0f, v[0]);
+                pos += 5;
+            } else {
+                pos += 1;
+                continue;
+            }
+            (*outArr)[i] = bound;
+        }
+
+        ArrayRelease(*data);
+        delete data;
+    }
+
+    return outArr;
+}
+
+AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
+    PaintCanvas *canvas = Globals::Canvas;
+
+    if (kind == 0xf) {
+        AEGeometry *geom;
+
+        if (variant == 0) {
+            geom = new AEGeometry((uint16_t) 0x42a9, canvas, false);
+
+            unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff, mesh2 = 0xffffffff;
+            canvas->TransformCreate(mesh0);
+            canvas->TransformAddMesh(mesh0, 0x42ae, false);
+            geom->addChild(mesh0);
+            canvas->TransformCreate(mesh1);
+            canvas->TransformAddMesh(mesh1, 0x42b2, false);
+            geom->addChild(mesh1);
+            canvas->TransformCreate(mesh2);
+            canvas->TransformAddMesh(mesh2, 0x42ad, false);
+            geom->addChild(mesh2);
+
+            uint16_t lodMeshes[2] = {0x42aa, 0x42ab};
+            int lodDists[2] = {25000, 45000};
+            geom->setLodMeshes(lodMeshes, lodDists, 2);
+            uint16_t lodChild = 0x42ae;
+            geom->setLodChildMeshes(&lodChild);
+        } else if (variant == 3) {
+            geom = new AEGeometry((uint16_t) 0x4299, canvas, false);
+
+            unsigned head = 0xffffffff;
+            canvas->TransformCreate(head);
+            canvas->TransformAddMesh(head, 0x4299, true);
+            geom->addChild(head);
+
+            int segments = AERandom_nextIntB(0, 4);
+            unsigned prevA = 0xffffffff, prevB = 0xffffffff;
+            for (int i = 0; i < segments; i++) {
+                unsigned a = 0xffffffff, b = 0xffffffff;
+                canvas->TransformCreate(a);
+                canvas->TransformCreate(b);
+                canvas->TransformAddMesh(a, 0x429a, true);
+                canvas->TransformAddMesh(b, 0x429a, true);
+                unsigned keepA = a, keepB = b;
+                if (prevA != 0xffffffff) {
+                    canvas->TransformAddChild(prevA, a);
+                    canvas->TransformAddChild(prevB, b);
+                    keepA = prevA;
+                    keepB = prevB;
+                }
+                prevA = keepA;
+                prevB = keepB;
+            }
+            if (prevA != 0xffffffff) {
+                geom->addChild(prevA);
+            }
+
+            unsigned tail = 0xffffffff;
+            canvas->TransformCreate(tail);
+            canvas->TransformAddMesh(tail, 0x429a, true);
+            geom->addChild(tail);
+
+            uint16_t lodMeshes[1] = {0x429a};
+            int lodDists[1] = {35000};
+            geom->setLodMeshes(lodMeshes, lodDists, 1);
+            geom->setLodChildTransform(prevB);
+        } else {
+            geom = new AEGeometry((uint16_t) 0x42a4, canvas, false);
+
+            unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff;
+            canvas->TransformCreate(mesh0);
+            canvas->TransformAddMesh(mesh0, 0x42a4, true);
+            geom->addChild(mesh0);
+            canvas->TransformCreate(mesh1);
+            canvas->TransformAddMesh(mesh1, 0x42a4, true);
+            geom->addChild(mesh1);
+
+            uint16_t lodMeshes[2] = {0x42a6, 0x42a7};
+            int lodDists[2] = {35000, 60000};
+            geom->setLodMeshes(lodMeshes, lodDists, 2);
+        }
+
+        return geom;
+    }
+    if (kind == 0xe || kind == 0xd) {
+        int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
+        AEGeometry *geom = new AEGeometry((uint16_t) resId, canvas, false);
+        unsigned t0 = 0xffffffff;
+        canvas->TransformCreate(t0);
+        canvas->TransformAddMesh((unsigned) t0, 0, (bool) (1));
+        geom->addChild(t0);
+        unsigned t1 = 0xffffffff;
+        canvas->TransformCreate(t1);
+        canvas->TransformAddMesh((unsigned) t1, 0, (bool) (1));
+        geom->addChild(t1);
+        unsigned short lodMeshes[2] = {0, 0};
+        int dist[2];
+        dist[0] = (kind == 0xe) ? 35000 : 35000;
+        dist[1] = (kind == 0xe) ? 60000 : 45000;
+        geom->setLodMeshes(lodMeshes, dist, 2);
+        unsigned short childMeshes[1] = {0};
+        geom->setLodChildMeshes(childMeshes);
+        if (kind == 0xe) {
+            geom->setScaling(1.0f);
+        }
+        return geom;
+    }
+
+    {
+        AEGeometry *geom = new AEGeometry((uint16_t) gGSG_resTable[kind], canvas, true);
+        unsigned short mesh = gGSG_meshTable[kind];
+        unsigned mainT = 0xffffffff;
+        unsigned mainMesh = 0xffffffff;
+        if (mesh != 0xffff) {
+            canvas->MeshCreate(mesh, mainMesh, true);
+            canvas->TransformCreate(mainT);
+            canvas->TransformAddMeshId(mainT, mainMesh);
+            geom->addChild(mainT);
+            geom->meshHandle = mainMesh;
+        }
+        if (!wireframe) {
+            unsigned short mat = (unsigned short) ((short) kind + 0x7dc8);
+            unsigned matH = 0xffffffff;
+            canvas->MaterialCreate(mat, matH);
+            canvas->MeshChangeResourceMaterial(geom->meshId, mat);
+        }
+        short extra = gGSG_extraTable[kind];
+        if (extra != -1) {
+            unsigned t = 0xffffffff;
+            canvas->TransformCreate(t);
+            canvas->TransformAddMesh((unsigned) t, 0, (bool) ((int) (unsigned char) (char) extra));
+            geom->addChild(t);
+        }
+        if (wireframe) {
+            if (kind != 0x27 && kind != 0x29) {
+                unsigned t = 0xffffffff;
+                canvas->TransformCreate(t);
+                canvas->TransformAddMesh((unsigned) t, 0, (bool) ((int) (char) (-0x14 + (char) kind)));
+                geom->addChild(t);
+            }
+        } else {
+            unsigned t = 0xffffffff;
+            canvas->TransformCreate(t);
+            canvas->TransformAddMesh((unsigned) t, 0, (bool) ((int) (char) (0x50 + (char) kind)));
+            geom->addChild(t);
+        }
+
+        unsigned lastVisibleDist = 2;
+        const unsigned *lod = &gGSG_lodTable[kind * 3];
+        unsigned count = 0;
+        for (int i = 0; i != 2; i++) {
+            if (lod[i] != 0xffff) count++;
+        }
+        if (count != 0) {
+            unsigned short *meshes = new unsigned short[count];
+            unsigned *ids = new unsigned[count];
+            int *dist = new int[count];
+            int d = 5000;
+            unsigned *idp = ids;
+            const unsigned *src = lod;
+            for (unsigned i = 0; i < count; i++) {
+                unsigned m = *src;
+                dist[i] = d;
+                meshes[i] = (unsigned short) m;
+                if (!wireframe) {
+                    canvas->MeshCreate((unsigned short) m, *idp, true);
+                    canvas->MeshChangeResourceMaterial(*idp,
+                                                       (unsigned short) ((short) kind + 0x7dc8));
+                }
+                d += 8000;
+                idp++;
+                src++;
+            }
+            lastVisibleDist = (unsigned) d;
+            if (wireframe) {
+                geom->setLodMeshes(meshes, dist, count);
+            } else {
+                geom->setLodMeshesWithMeshIds(meshes, ids, dist, count);
+            }
+
+            const unsigned *childSrc = &gGSG_childTable[kind * 3];
+            int childCount = 0;
+            for (int i = 0; i != 2; i++) {
+                if (childSrc[i] != 0xffff) childCount++;
+            }
+            if (childCount != 0) {
+                unsigned short *childMeshes = new unsigned short[childCount];
+                for (int i = 0; i != childCount; i++) {
+                    childMeshes[i] = (unsigned short) childSrc[i];
+                }
+                geom->setLodChildMeshes(childMeshes);
+                delete[] childMeshes;
+            }
+            delete[] meshes;
+            delete[] dist;
+        }
+        geom->setLodLastVisibleDistance(lastVisibleDist);
+        return geom;
+    }
+}
+
+void Globals::startNewSoundResourceList() {
+    if (this->soundResources != nullptr) {
+        ArrayRelease(*(this->soundResources));
+        delete this->soundResources;
+    }
+    this->soundResources = nullptr;
+    Array<int> *list = new Array<int>();
+    this->soundResources = list;
+    ArrayAdd<int>(0x7c, *list);
+    ArrayAdd<int>(0x7b, *this->soundResources);
+}
+
+Array<int> *Globals::getSoundResourceList() {
+    return soundResources;
+}
+
+void Globals::addSoundResourceToList(int snd) {
+    Array<int> *a = this->soundResources;
+    if (a == nullptr) {
+        return;
+    }
+    for (unsigned i = 0; i < a->size(); ++i) {
+        if ((*a)[i] == snd) {
+            return;
+        }
+    }
+    ArrayAdd<int>(snd, *a);
+}
+
+void Globals::playMusicAndFadeOutCurrent(int mode) {
+    switch (mode) {
+        case 0: {
+            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            Globals::sound->stop(Globals::sound->currentMusicEvent);
+            if (Globals::status->getStation()->getIndex() == 108) {
+                Globals::sound->play(132, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 101) {
+                Globals::sound->play(131, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 10 ||
+                       Globals::status->getStation()->getIndex() == 100) {
+                if (Globals::status->getStation()->getIndex() == 10 &&
+                    Globals::status->getCurrentCampaignMission() == 159)
+                    Globals::sound->play(144, nullptr, nullptr, 0.0f);
+                else
+                    Globals::sound->play(133, nullptr, nullptr, 0.0f);
+            } else {
+                int track = gStationMusicByRace[race];
+                Globals::sound->play(track, nullptr, nullptr, 0.0f);
+            }
+            break;
+        }
+        case 1: {
+            if (Globals::status->inAlienOrbit()) {
+                Globals::sound->stop(Globals::sound->currentMusicEvent);
+                Globals::sound->play(Globals::status->getCurrentCampaignMission() >= 147 &&
+                                     Globals::status->getCurrentCampaignMission() < 154 ? 145 : 136,
+                                     nullptr, nullptr, 0.0f);
+                break;
+            }
+            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            Globals::sound->stop(Globals::sound->currentMusicEvent);
+            if (Globals::status->getStation()->getIndex() == 108) {
+                Globals::sound->play(146, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 101) {
+                Globals::sound->play(147, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->inSupernovaSystem()) {
+                if (Globals::status->getCurrentCampaignMission() == 89) {
+                    Globals::sound->play(2238, nullptr, nullptr, 0.0f);
+                } else if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
+                           Globals::status->getMission()->getTargetStation() ==
+                           Globals::status->getStation()->getIndex()) {
+                    Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242, nullptr,
+                                         nullptr, 0.0f);
+                } else {
+                    Globals::sound->play(148, nullptr, nullptr, 0.0f);
+                }
+            } else if (Globals::status->inDeepScienceOrbit()) {
+                Globals::sound->play(152, nullptr, nullptr, 0.0f);
+            } else if (Globals::status->getStation()->getIndex() == 120 &&
+                       (Globals::status->getCurrentCampaignMission() == 126 ||
+                        Globals::status->getCurrentCampaignMission() == 133)) {
+                Globals::sound->play(2239, nullptr, nullptr, 0.0f);
+            } else {
+                int track = gSpaceMusicByRace[race];
+                Globals::sound->play(track, nullptr, nullptr, 0.0f);
+            }
+            break;
+        }
+        case 2:
+            Globals::sound->stop(Globals::sound->currentMusicEvent);
+            Globals::sound->play(145, nullptr, nullptr, 0.0f);
+            break;
+    }
+}
+
+int Globals::getDialogueSoundId(int code, Agent *agent) {
+    const int *t = gGDS_pairTable;
+    for (unsigned i = 0; (i >> 6) < 0x2f; i += 2) {
+        if (t[i] == code) {
+            return t[i + 1];
+        }
+    }
+
+    if (agent == 0) {
+        return -1;
+    }
+
+    int race = ((Agent *) (agent))->getRace();
+    int male = ((Agent *) (agent))->isMale();
+
+    int category;
+    if (race == 3) {
+        int *parts = ((Agent *) (agent))->getImageParts();
+        if (parts != 0) {
+            int *p = ((Agent *) (agent))->getImageParts();
+            category = (*p == 2) ? 3 : 0;
+        } else {
+            category = 2;
         }
     } else {
-        if (isPhone == 0) {
-            char flag = rdflag((char *) &Globals::iPadLarge);
-            iv = (flag == 0) ? 0x96 : 0x12c;
-            rdcoords((CoordsObject *) Globals::options)->steerValue = iv;
-            char flag8 = (flag == 0) ? 0 : 1;
-            (void) flag8;
-            goto label8508;
-        }
-        uv = 0xd2;
-        rdcoords((CoordsObject *) Globals::options)->steerValue = 0xd2;
+        category = race;
     }
 
-common: {
-        float fv = gSCS_f8708;
-        o5 = 0x1c;
-        o6 = uv;
-        o13 = 0x1c;
-        float val = static_cast<float>(o6);
-        float r = val + gSCS_f8704;
-        o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
-        o7 = 0x14;
-        (void) fv;
-    }
-
-label8556: {
-        unsigned absp2 = (unsigned) (p2 - (p2 >> 31));
-        float fv = gSCS_f8708;
-        float val6 = static_cast<float>(o6);
-        float r8 = fv + val6;
-        o8 = (unsigned short) ((0.0f < r8) ? (short) (int) r8 : 0);
-        o9 = (unsigned short) (o7 + (short) (absp2 >> 1));
-        o10 = (unsigned short) (o8 + (short) (absp2 >> 1));
-
-        float val6b = static_cast<float>(o6);
-        float fv2;
-        float acc;
-        if (isPhone == 0) {
-            bool b = (rdflag((char *) &Globals::iPadLarge) == 0);
-            acc = (b ? gSCS_f8728 : gSCS_f8724) + val6b;
-            fv2 = b ? 2.0f : 4.0f;
-        } else {
-            acc = val6b + gSCS_f871c;
-            fv2 = gSCS_f8720;
-        }
-        int i12 = (0.0f < acc) ? (int) acc : 0;
-        o12 = (unsigned short) i12;
-
-        float top = static_cast<float>(screenH - p4);
-        float f12 = static_cast<float>((unsigned) i12);
-        if (f12 <= top - fv2) {
-            unsigned short u11;
-            if (isPhone == 0) {
-                u11 = (rdflag((char *) &Globals::iPadLarge) == 0) ? 0x14 : 0x28;
-            } else {
-                u11 = 0x1c;
-            }
-            o11 = u11;
-        } else {
-            int a, b;
-            if (isPhone == 0) {
-                float fv14 = 4.0f;
-                a = 0x15a;
-                char flag8 = rdflag((char *) &Globals::iPadLarge);
-                if (flag8 == 0) fv14 = 2.0f;
-                b = 0x10a;
-                float d = f12 - (top - fv14);
-                int i16 = (0.0f < d) ? (int) d : 0;
-                o12 = (unsigned short) i16;
-                if (flag8 == 0) {
-                    a = 0xad;
-                    b = 0x85;
+    int isMale = male;
+    switch (category) {
+        case 0:
+        case 5: {
+            if (isMale == 0) {
+                if ((unsigned) (code - 0x172) > 0x13) {
+                    return -1;
                 }
-                float fd = static_cast<float>((unsigned) i16);
-                float fr = static_cast<float>(a - b);
-                float scale = 1.0f;
-                if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
-                float base = static_cast<float>(b);
-                base = base + scale * fr;
-                o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
-                float fv15 = 4.0f;
-                if (rdflag((char *) &Globals::iPadLarge) == 0) fv15 = 2.0f;
-                o12 = (unsigned short) ((0.0f < top - fv15) ? (short) (int) (top - fv15) : 0);
-            } else {
-                a = 0xf3;
-                b = 0xbb;
-                float d = f12 - (top + gSCS_f872c);
-                int i16 = (0.0f < d) ? (int) d : 0;
-                o12 = (unsigned short) i16;
-                float fd = static_cast<float>((unsigned) i16);
-                float fr = static_cast<float>(a - b);
-                float scale = 1.0f;
-                if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
-                float base = static_cast<float>(b);
-                base = base + scale * fr;
-                o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
-                o12 = (unsigned short) ((0.0f < top - gSCS_f8720) ? (short) (int) (top - gSCS_f8720) : 0);
+                static const int femaleTable[20] = {
+                    0x2a7, 0x29b, 0x2a1, 0x2a2, 0x2a3, 0x2a4, 0x2a5, 0x2a6, 0x295, 0x29c,
+                    0x29d, 0x29e, 0x29f, 0x2a0, 0x296, 0x297, 0x298, 0x299, 0x29a, 0x294,
+                };
+                return femaleTable[code - 0x172];
+            }
+
+            switch (code) {
+                case 0x172: return 0x2bb;
+                case 0x173: return 0x2af;
+                case 0x174: return 0x2b5;
+                case 0x175: return 0x2b6;
+                case 0x176: return 0x2b7;
+                case 0x177: return 0x2b8;
+                case 0x178: return 0x2b9;
+                case 0x179: return 0x2ba;
+                case 0x17a: return 0x2a9;
+                case 0x17b: return 0x2b0;
+                case 0x17c: return 0x2b1;
+                case 0x17d: return 0x2b2;
+                case 0x17e: return 0x2b3;
+                case 0x17f: return 0x2b4;
+                case 0x180: return 0x2aa;
+                case 0x181: return 0x2ab;
+                case 0x182: return 0x2ac;
+                case 0x183: return 0x2ad;
+                case 0x184: return 0x2ae;
+                case 0x185: return 0x2a8;
+                case 0x1aa: return 0x2c1;
+                case 0x1ab: return 0x2c2;
+                case 0x1ac: return 0x2c3;
+                case 0x1ad: return 0x2c6;
+                case 0x1ae: return 0x2c7;
+                case 0x1af: return 0x2c8;
+                case 0x1bd: return 0x2bc;
+                case 0x1be: return 0x2bd;
+                case 0x1bf: return 0x2be;
+                case 0x139: return 0x2cb;
+                default: return -1;
             }
         }
+        case 1: {
+            switch (code) {
+                case 0x172: return 0x2df;
+                case 0x173: return 0x2d3;
+                case 0x174: return 0x2d9;
+                case 0x175: return 0x2da;
+                case 0x176: return 0x2db;
+                case 0x177: return 0x2dc;
+                case 0x178: return 0x2dd;
+                case 0x179: return 0x2de;
+                case 0x17a: return 0x2cd;
+                case 0x17b: return 0x2d4;
+                case 0x17c: return 0x2d5;
+                case 0x17d: return 0x2d6;
+                case 0x17e: return 0x2d7;
+                case 0x17f: return 0x2d8;
+                case 0x180: return 0x2ce;
+                case 0x181: return 0x2cf;
+                case 0x182: return 0x2d0;
+                case 0x183: return 0x2d1;
+                case 0x184: return 0x2d2;
+                case 0x185: return 0x2cc;
+                case 0x1aa: return 0x2e5;
+                case 0x1ab: return 0x2e6;
+                case 0x1ac: return 0x2e7;
+                case 0x1ad: return 0x2ea;
+                case 0x1ae: return 0x2eb;
+                case 0x1af: return 0x2ec;
+                case 0x1bd: return 0x2e0;
+                case 0x1be: return 0x2e1;
+                case 0x1bf: return 0x2e2;
+                default: return -1;
+            }
+        }
+        case 2:
+        case 3:
+            switch (code) {
+                case 0x172: return 0x27e;
+                case 0x173: return 0x272;
+                case 0x174: return 0x278;
+                case 0x175: return 0x279;
+                case 0x176: return 0x27a;
+                case 0x177: return 0x27b;
+                case 0x178: return 0x27c;
+                case 0x179: return 0x27d;
+                case 0x17a: return 0x26c;
+                case 0x17b: return 0x273;
+                case 0x17c: return 0x274;
+                case 0x17d: return 0x275;
+                case 0x17e: return 0x276;
+                case 0x17f: return 0x277;
+                case 0x180: return 0x26d;
+                case 0x181: return 0x26e;
+                case 0x182: return 0x26f;
+                case 0x183: return 0x270;
+                case 0x184: return 0x271;
+                case 0x185: return 0x26b;
+                case 0x1aa: return 0x285;
+                case 0x1ab: return 0x286;
+                case 0x1ac: return 0x287;
+                case 0x1ad: return 0x28a;
+                case 0x1ae: return 0x28b;
+                case 0x1af: return 0x28c;
+                case 0x1b0: return 0x24c;
+                case 0x1b2: return 0x24a;
+                case 0x1ba: return 0x24d;
+                case 0x1bd: return 0x27f;
+                case 0x1be: return 0x281;
+                case 0x1bf: return 0x282;
+                case 0x139: return 0x28f;
+                default: return -1;
+            }
+        case 4: {
+            switch (code) {
+                case 0x172: return 0x267;
+                case 0x173: return 0x25b;
+                case 0x174: return 0x261;
+                case 0x175: return 0x262;
+                case 0x176: return 0x263;
+                case 0x177: return 0x264;
+                case 0x178: return 0x265;
+                case 0x179: return 0x266;
+                case 0x17a: return 0x255;
+                case 0x17b: return 0x25c;
+                case 0x17c: return 0x25d;
+                case 0x17d: return 0x25e;
+                case 0x17e: return 0x25f;
+                case 0x17f: return 0x260;
+                case 0x180: return 0x256;
+                case 0x181: return 599;
+                case 0x182: return 600;
+                case 0x183: return 0x259;
+                case 0x184: return 0x25a;
+                case 0x185: return 0x26a;
+                case 0x139: return 0x268;
+                default: return -1;
+            }
+        }
+        case 6: {
+            switch (code) {
+                case 0x172: return 0x230;
+                case 0x173: return 0x2f6;
+                case 0x174: return 0x22a;
+                case 0x175: return 0x22b;
+                case 0x176: return 0x22c;
+                case 0x177: return 0x22d;
+                case 0x178: return 0x22e;
+                case 0x179: return 0x22f;
+                case 0x17a: return 0x2f0;
+                case 0x17b: return 0x225;
+                case 0x17c: return 0x226;
+                case 0x17d: return 0x227;
+                case 0x17e: return 0x228;
+                case 0x17f: return 0x229;
+                case 0x180: return 0x2f1;
+                case 0x181: return 0x2f2;
+                case 0x182: return 0x2f3;
+                case 0x183: return 0x2f4;
+                case 0x184: return 0x2f5;
+                case 0x185: return 0x2ef;
+                case 0x139: return 0x231;
+                default: return -1;
+            }
+        }
+        case 7: {
+            switch (code) {
+                case 0x172: return 0x246;
+                case 0x173: return 0x23a;
+                case 0x174: return 0x240;
+                case 0x175: return 0x241;
+                case 0x176: return 0x242;
+                case 0x177: return 0x243;
+                case 0x178: return 0x244;
+                case 0x179: return 0x245;
+                case 0x17a: return 0x234;
+                case 0x17b: return 0x23b;
+                case 0x17c: return 0x23c;
+                case 0x17d: return 0x23d;
+                case 0x17e: return 0x23e;
+                case 0x17f: return 0x23f;
+                case 0x180: return 0x235;
+                case 0x181: return 0x236;
+                case 0x182: return 0x237;
+                case 0x183: return 0x238;
+                case 0x184: return 0x239;
+                case 0x185: return 0x233;
+                case 0x139: return 0x247;
+                default: return -1;
+            }
+        }
+        case 8:
+            if ((unsigned) (code - 0x1b3) <= 5) {
+                return code + 0x9b;
+            }
+            return -1;
+        default:
+            return -1;
     }
 }
 
@@ -1074,702 +2081,151 @@ String Globals::getAgentMissionText(Agent *agent) {
     return text;
 }
 
-static const char gIAP_prefixA[] = "";
-static const char gIAP_prefixB[] = "";
-static const char gIAP_id50[] = "";
-static const char gIAP_id0[] = "";
-static const char gIAP_id1[] = "";
-static const char gIAP_id2[] = "";
-static const char gIAP_id3[] = "";
-static const char gIAP_id4[] = "";
-static const char gIAP_id51[] = "";
-static const char gIAP_id52[] = "";
-static const char gIAP_id53[] = "";
-static const char gIAP_id54[] = "";
+void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
+                             unsigned short &o5, unsigned short &o6, unsigned short &o7,
+                             unsigned short &o8, unsigned short &o9, unsigned short &o10,
+                             unsigned short &o11, unsigned short &o12, unsigned short &o13,
+                             unsigned short &o14) {
+    int screenH = Globals::h;
+    char isPhone = rdflag((char *) &Globals::iPadHD);
+    int bottom = ((-0x19 - p2) - p3) + screenH;
 
-int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) {
-    int result = -1;
-
-    if (list != 0) {
-        unsigned len = list->size();
-        unsigned i = 0;
-        bool keepGoing = true;
-        while (i < len && keepGoing) {
-            String *entry = (*list)[i];
-            String base, pb, prefix;
-            base.ctor_char(gIAP_prefixA, false);
-            pb.ctor_char(gIAP_prefixB, false);
-            prefix = base + pb;
-
-            if (entry == 0) {
-                result = -1;
-                keepGoing = false;
-            } else {
-                const char *suffix = 0;
-                bool known = true;
-                switch (productCode) {
-                    case 0: suffix = gIAP_id0;
-                        break;
-                    case 1: suffix = gIAP_id1;
-                        break;
-                    case 2: suffix = gIAP_id2;
-                        break;
-                    case 3: suffix = gIAP_id3;
-                        break;
-                    case 4: suffix = gIAP_id4;
-                        break;
-                    case 0x32: suffix = gIAP_id50;
-                        break;
-                    case 0x33: suffix = gIAP_id51;
-                        break;
-                    case 0x34: suffix = gIAP_id52;
-                        break;
-                    case 0x35: suffix = gIAP_id53;
-                        break;
-                    case 0x36: suffix = gIAP_id54;
-                        break;
-                    default: known = false;
-                        break;
-                }
-                if (!known) {
-                    keepGoing = true;
-                } else {
-                    String suf, full;
-                    suf.ctor_char(suffix, false);
-                    full = prefix + suf;
-                    int cmp = entry->Compare(full);
-                    if (cmp == 0) {
-                        result = (int) i;
-                        keepGoing = false;
-                    } else {
-                        keepGoing = true;
-                    }
-                }
-            }
-            i++;
-        }
+    float thresh = gSCS_f86f8;
+    if (isPhone == 0) {
+        thresh = (rdflag((char *) &Globals::iPadLarge) == 0) ? gSCS_f8700 : gSCS_f86fc;
     }
-
-    return result;
-}
-
-String Globals::getKeyBindingReplaceString(int key) {
-    (void) key;
-
-    String tmp;
-    return String(*tmp.ToUpperCase(), false);
-}
-
-static const char gLTS_minTens[] = "";
-static const char gLTS_minEmpty[] = "";
-static const char gLTS_hrTens[] = "";
-static const char gLTS_hrEmpty[] = "";
-static const char gLTS_sep[] = "";
-
-void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
-    int minutes = (int) (ms / 60000 % 60);
-    int hours = (int) (ms / 3600000 % 24);
-    String minuteText = (minutes < 10 ? String("0", false) : String("", false)) + String(minutes);
-    hours += (int) (ms / 86400000) * 24;
-    String hourText = (hours < 10 ? String("0", false) : String("", false)) + String(hours);
-    out = hourText + String(":", false) + minuteText;
-}
-
-static const unsigned short gGSG_resTable[1] = {};
-static const unsigned short gGSG_meshTable[1] = {};
-static const short gGSG_extraTable[1] = {};
-static const unsigned gGSG_lodTable[1] = {};
-static const unsigned gGSG_childTable[1] = {};
-
-AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
-    PaintCanvas *canvas = Globals::Canvas;
-
-    if (kind == 0xf) {
-        AEGeometry *geom;
-
-        if (variant == 0) {
-            geom = new AEGeometry((uint16_t) 0x42a9, canvas, false);
-
-            unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff, mesh2 = 0xffffffff;
-            canvas->TransformCreate(mesh0);
-            canvas->TransformAddMesh(mesh0, 0x42ae, false);
-            geom->addChild(mesh0);
-            canvas->TransformCreate(mesh1);
-            canvas->TransformAddMesh(mesh1, 0x42b2, false);
-            geom->addChild(mesh1);
-            canvas->TransformCreate(mesh2);
-            canvas->TransformAddMesh(mesh2, 0x42ad, false);
-            geom->addChild(mesh2);
-
-            uint16_t lodMeshes[2] = {0x42aa, 0x42ab};
-            int lodDists[2] = {25000, 45000};
-            geom->setLodMeshes(lodMeshes, lodDists, 2);
-            uint16_t lodChild = 0x42ae;
-            geom->setLodChildMeshes(&lodChild);
-        } else if (variant == 3) {
-            geom = new AEGeometry((uint16_t) 0x4299, canvas, false);
-
-            unsigned head = 0xffffffff;
-            canvas->TransformCreate(head);
-            canvas->TransformAddMesh(head, 0x4299, true);
-            geom->addChild(head);
-
-            int segments = AERandom_nextIntB(0, 4);
-            unsigned prevA = 0xffffffff, prevB = 0xffffffff;
-            for (int i = 0; i < segments; i++) {
-                unsigned a = 0xffffffff, b = 0xffffffff;
-                canvas->TransformCreate(a);
-                canvas->TransformCreate(b);
-                canvas->TransformAddMesh(a, 0x429a, true);
-                canvas->TransformAddMesh(b, 0x429a, true);
-                unsigned keepA = a, keepB = b;
-                if (prevA != 0xffffffff) {
-                    canvas->TransformAddChild(prevA, a);
-                    canvas->TransformAddChild(prevB, b);
-                    keepA = prevA;
-                    keepB = prevB;
-                }
-                prevA = keepA;
-                prevB = keepB;
-            }
-            if (prevA != 0xffffffff) {
-                geom->addChild(prevA);
-            }
-
-            unsigned tail = 0xffffffff;
-            canvas->TransformCreate(tail);
-            canvas->TransformAddMesh(tail, 0x429a, true);
-            geom->addChild(tail);
-
-            uint16_t lodMeshes[1] = {0x429a};
-            int lodDists[1] = {35000};
-            geom->setLodMeshes(lodMeshes, lodDists, 1);
-            geom->setLodChildTransform(prevB);
-        } else {
-            geom = new AEGeometry((uint16_t) 0x42a4, canvas, false);
-
-            unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff;
-            canvas->TransformCreate(mesh0);
-            canvas->TransformAddMesh(mesh0, 0x42a4, true);
-            geom->addChild(mesh0);
-            canvas->TransformCreate(mesh1);
-            canvas->TransformAddMesh(mesh1, 0x42a4, true);
-            geom->addChild(mesh1);
-
-            uint16_t lodMeshes[2] = {0x42a6, 0x42a7};
-            int lodDists[2] = {35000, 60000};
-            geom->setLodMeshes(lodMeshes, lodDists, 2);
-        }
-
-        return geom;
+    if (bottom < p1) {
+        p1 = bottom;
     }
-    if (kind == 0xe || kind == 0xd) {
-        int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
-        AEGeometry *geom = new AEGeometry((uint16_t) resId, canvas, false);
-        unsigned t0 = 0xffffffff;
-        canvas->TransformCreate(t0);
-        canvas->TransformAddMesh((unsigned) t0, 0, (bool) (1));
-        geom->addChild(t0);
-        unsigned t1 = 0xffffffff;
-        canvas->TransformCreate(t1);
-        canvas->TransformAddMesh((unsigned) t1, 0, (bool) (1));
-        geom->addChild(t1);
-        unsigned short lodMeshes[2] = {0, 0};
-        int dist[2];
-        dist[0] = (kind == 0xe) ? 35000 : 35000;
-        dist[1] = (kind == 0xe) ? 60000 : 45000;
-        geom->setLodMeshes(lodMeshes, dist, 2);
-        unsigned short childMeshes[1] = {0};
-        geom->setLodChildMeshes(childMeshes);
-        if (kind == 0xe) {
-            geom->setScaling(1.0f);
-        }
-        return geom;
-    }
+    float fp1 = static_cast<float>(p1);
 
-    {
-        AEGeometry *geom = new AEGeometry((uint16_t) gGSG_resTable[kind], canvas, true);
-        unsigned short mesh = gGSG_meshTable[kind];
-        unsigned mainT = 0xffffffff;
-        unsigned mainMesh = 0xffffffff;
-        if (mesh != 0xffff) {
-            canvas->MeshCreate(mesh, mainMesh, true);
-            canvas->TransformCreate(mainT);
-            canvas->TransformAddMeshId(mainT, mainMesh);
-            geom->addChild(mainT);
-            geom->meshHandle = mainMesh;
+    unsigned short uv;
+    int iv;
+    if (thresh < fp1) {
+        iv = (int) fp1;
+        uv = (unsigned short) iv;
+        rdcoords((CoordsObject *) Globals::options)->steerValue = (int) fp1;
+        char flag8;
+        if (isPhone == 0) {
+            flag8 = rdflag((char *) &Globals::iPadLarge);
+            goto label8508;
         }
-        if (!wireframe) {
-            unsigned short mat = (unsigned short) ((short) kind + 0x7dc8);
-            unsigned matH = 0xffffffff;
-            canvas->MaterialCreate(mat, matH);
-            canvas->MeshChangeResourceMaterial(geom->meshId, mat);
+        goto common;
+    label8508:
+        uv = (flag8 == 0) ? 0x14 : 0x28;
+        o5 = uv;
+        o6 = (unsigned short) iv;
+        o13 = uv;
+        {
+            float sub = (flag8 == 0) ? gSCS_f8710 : gSCS_f870c;
+            float add14 = (flag8 == 0) ? gSCS_f8718 : gSCS_f8714;
+            float val = static_cast<float>(o6);
+            float r = val - sub;
+            o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
+            o7 = 0x14;
+            (void) add14;
+            goto label8556;
         }
-        short extra = gGSG_extraTable[kind];
-        if (extra != -1) {
-            unsigned t = 0xffffffff;
-            canvas->TransformCreate(t);
-            canvas->TransformAddMesh((unsigned) t, 0, (bool) ((int) (unsigned char) (char) extra));
-            geom->addChild(t);
-        }
-        if (wireframe) {
-            if (kind != 0x27 && kind != 0x29) {
-                unsigned t = 0xffffffff;
-                canvas->TransformCreate(t);
-                canvas->TransformAddMesh((unsigned) t, 0, (bool) ((int) (char) (-0x14 + (char) kind)));
-                geom->addChild(t);
-            }
-        } else {
-            unsigned t = 0xffffffff;
-            canvas->TransformCreate(t);
-            canvas->TransformAddMesh((unsigned) t, 0, (bool) ((int) (char) (0x50 + (char) kind)));
-            geom->addChild(t);
-        }
-
-        unsigned lastVisibleDist = 2;
-        const unsigned *lod = &gGSG_lodTable[kind * 3];
-        unsigned count = 0;
-        for (int i = 0; i != 2; i++) {
-            if (lod[i] != 0xffff) count++;
-        }
-        if (count != 0) {
-            unsigned short *meshes = new unsigned short[count];
-            unsigned *ids = new unsigned[count];
-            int *dist = new int[count];
-            int d = 5000;
-            unsigned *idp = ids;
-            const unsigned *src = lod;
-            for (unsigned i = 0; i < count; i++) {
-                unsigned m = *src;
-                dist[i] = d;
-                meshes[i] = (unsigned short) m;
-                if (!wireframe) {
-                    canvas->MeshCreate((unsigned short) m, *idp, true);
-                    canvas->MeshChangeResourceMaterial(*idp,
-                                                       (unsigned short) ((short) kind + 0x7dc8));
-                }
-                d += 8000;
-                idp++;
-                src++;
-            }
-            lastVisibleDist = (unsigned) d;
-            if (wireframe) {
-                geom->setLodMeshes(meshes, dist, count);
-            } else {
-                geom->setLodMeshesWithMeshIds(meshes, ids, dist, count);
-            }
-
-            const unsigned *childSrc = &gGSG_childTable[kind * 3];
-            int childCount = 0;
-            for (int i = 0; i != 2; i++) {
-                if (childSrc[i] != 0xffff) childCount++;
-            }
-            if (childCount != 0) {
-                unsigned short *childMeshes = new unsigned short[childCount];
-                for (int i = 0; i != childCount; i++) {
-                    childMeshes[i] = (unsigned short) childSrc[i];
-                }
-                geom->setLodChildMeshes(childMeshes);
-                delete[] childMeshes;
-            }
-            delete[] meshes;
-            delete[] dist;
-        }
-        geom->setLodLastVisibleDistance(lastVisibleDist);
-        return geom;
-    }
-}
-
-static const int gRaceTable[64] = {
-    3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
-    2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
-    8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3,
-    3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
-
-unsigned Globals::getRandomEnemyFighter(int kind) {
-    (void) this;
-    int t = kind;
-    if (kind > 3 && kind != 9 && kind != 10) {
-        t = 8;
-    }
-    unsigned r;
-    if (t == 1) {
-        if (Globals::status->dlc1Won() == 0) {
-            r = 9;
-        } else {
-            int n = nextInt_71ad0(Globals::rnd, 0x64);
-            r = 0x27;
-            if (n < 0x55) {
-                r = 0x29;
-            }
-            if (n < 0x3c) {
-                r = 9;
-            }
-        }
-    } else if (t == 9) {
-        r = 8;
-    } else if (t == 0xa) {
-        r = 0x2c;
     } else {
-        do {
-            do {
-                r = nextInt_71ad0(Globals::rnd, 0x25);
-            } while ((unsigned) ((r & ~4u) - 9) < 2);
-        } while (((r < 0x10) && ((1u << r & 0x8101u) != 0)) ||
-                 (gRaceTable[r] != t));
-    }
-    return r;
-}
-
-
-void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
-                        unsigned int rightX, bool centered) {
-    int *cv = (int *) &Globals::Canvas;
-    LineMetrics **lh = (LineMetrics **) &Globals::layout;
-    int yacc = startY;
-    int dx = 0;
-    for (unsigned i = 0; i < lines->size(); i++) {
-        if (!centered) {
-            int w = ((PaintCanvas *) (long) *cv)->GetTextWidth(font, *(*lines)[i]);
-            dx = (int) rightX - w;
+        if (isPhone == 0) {
+            char flag = rdflag((char *) &Globals::iPadLarge);
+            iv = (flag == 0) ? 0x96 : 0x12c;
+            rdcoords((CoordsObject *) Globals::options)->steerValue = iv;
+            char flag8 = (flag == 0) ? 0 : 1;
+            (void) flag8;
+            goto label8508;
         }
-        ((PaintCanvas *) (long) *cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
-        yacc += (*lh)->lineHeight;
+        uv = 0xd2;
+        rdcoords((CoordsObject *) Globals::options)->steerValue = 0xd2;
     }
-}
 
+common: {
+        float fv = gSCS_f8708;
+        o5 = 0x1c;
+        o6 = uv;
+        o13 = 0x1c;
+        float val = static_cast<float>(o6);
+        float r = val + gSCS_f8704;
+        o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
+        o7 = 0x14;
+        (void) fv;
+    }
 
-unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
-                                      int width) {
-    (void) p1;    int *canvasP = (int *) &Globals::Canvas;
-    unsigned int meshOut = 0;
-    ((PaintCanvas *) (long) *canvasP)->MeshCreate((unsigned short) 0xc, (unsigned short) 6, (signed char) 0x13,
-                                                  (unsigned short) 0, meshOut);
-    int mesh = (int) meshOut;
-    int cv = *canvasP;
+label8556: {
+        unsigned absp2 = (unsigned) (p2 - (p2 >> 31));
+        float fv = gSCS_f8708;
+        float val6 = static_cast<float>(o6);
+        float r8 = fv + val6;
+        o8 = (unsigned short) ((0.0f < r8) ? (short) (int) r8 : 0);
+        o9 = (unsigned short) (o7 + (short) (absp2 >> 1));
+        o10 = (unsigned short) (o8 + (short) (absp2 >> 1));
 
-    PaintCanvas *meshCanvas = (PaintCanvas *) (long) cv;
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 0, 0, 1, 2);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 1, 2, 1, 3);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 2, 4, 5, 6);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 3, 6, 5, 7);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 4, 8, 9, 10);
-    meshCanvas->MeshSetTriangle((unsigned int) mesh, 5, 10, 9, 0xb);
+        float val6b = static_cast<float>(o6);
+        float fv2;
+        float acc;
+        if (isPhone == 0) {
+            bool b = (rdflag((char *) &Globals::iPadLarge) == 0);
+            acc = (b ? gSCS_f8728 : gSCS_f8724) + val6b;
+            fv2 = b ? 2.0f : 4.0f;
+        } else {
+            acc = val6b + gSCS_f871c;
+            fv2 = gSCS_f8720;
+        }
+        int i12 = (0.0f < acc) ? (int) acc : 0;
+        o12 = (unsigned short) i12;
 
-    meshCanvas->MeshSetUv((unsigned int) mesh, 0, u0, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 1, u1, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 2, v1, u0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 3, v1, v0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 4, u0, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 5, u1, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 6, v1, u0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 7, v1, v0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 8, u0, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 9, u1, 0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 10, v1, u0);
-    meshCanvas->MeshSetUv((unsigned int) mesh, 0xb, v1, v0);
-
-    float pw = static_cast<float>(width);
-    float nh = static_cast<float>(-height);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 0, nh, 0, pw);
-    float nw = static_cast<float>(-width);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 1, nh, 0, nw);
-    float ph = static_cast<float>(height);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 2, ph, 0, pw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 3, ph, 0, nw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 4, 0, nh, pw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 5, 0, nh, nw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 6, 0, ph, pw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 7, 0, ph, nw);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 8, nh, ph, 0);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 9, nh, nh, 0);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 10, ph, ph, 0);
-    meshCanvas->MeshSetPoint((unsigned int) mesh, 0xb, ph, nh, 0);
-
-    return meshOut;
-}
-
-void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float x1, float y1, float z1); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-// lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-
-Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) {
-
-    FileRead *fr = (FileRead *) ::operator new(1);
-    FileRead_ctor(fr);
-    Array<int> *data = fr->loadWreckCollision(kind);
-    ::operator delete(FileRead_dtor(fr));
-
-    Array<BoundingVolume *> *outArr = nullptr;
-    if (data != 0) {
-        int count = (*data)[0];
-
-        float v[3] = {0, 0, 0};
-        float c[3] = {0, 0, 0};
-
-        outArr = new Array<BoundingVolume *>();
-        ArraySetLength((unsigned) count, *outArr);
-
-        int pos = 1;
-        for (int i = 0; i < count; i++) {
-            int *base = data->data();
-            int kindWord = base[pos];
-            BoundingVolume *bound = nullptr;
-            if (kindWord == 1) {
-                int *rec = base + pos;
-                c[2] = (float) (-base[pos + 1]);
-                c[0] = (float) rec[2];
-                c[1] = (float) rec[3];
-                v[0] = (float) rec[4];
-                v[1] = (float) rec[5];
-                v[2] = (float) rec[6];
-                float mag = VectorScale(v, c[1]);
-                if (geom == 0) {
-                    mag = VectorScale(c, mag);
-                    VectorScale(v, mag);
-                }
-                bound = (BoundingVolume *) ::operator new(0x2c);
-                BoundingAAB_ctor(bound, v[2] + v[2], c[1] + c[1], v[1] + v[1], c[2], c[0], v[0]);
-                pos += 7;
-            } else if (kindWord == 0) {
-                int *rec = base + pos;
-                c[2] = (float) (-base[pos + 1]);
-                c[0] = (float) rec[2];
-                c[1] = (float) rec[3];
-                v[0] = (float) rec[4];
-                VectorScale(v, v[0]);
-                float mag = v[0];
-                if (v[0] < 0.0f) {
-                    mag = VectorScale(v, v[0]);
-                }
-                if (geom == 0) {
-                    mag = VectorScale(c, mag);
-                    VectorScale(v, mag);
-                }
-                bound = (BoundingVolume *) ::operator new(0x48);
-                new(bound) BoundingSphere(c[2], c[1], c[0], 0.0f, 0.0f, 0.0f, v[0]);
-                pos += 5;
+        float top = static_cast<float>(screenH - p4);
+        float f12 = static_cast<float>((unsigned) i12);
+        if (f12 <= top - fv2) {
+            unsigned short u11;
+            if (isPhone == 0) {
+                u11 = (rdflag((char *) &Globals::iPadLarge) == 0) ? 0x14 : 0x28;
             } else {
-                pos += 1;
-                continue;
+                u11 = 0x1c;
             }
-            (*outArr)[i] = bound;
+            o11 = u11;
+        } else {
+            int a, b;
+            if (isPhone == 0) {
+                float fv14 = 4.0f;
+                a = 0x15a;
+                char flag8 = rdflag((char *) &Globals::iPadLarge);
+                if (flag8 == 0) fv14 = 2.0f;
+                b = 0x10a;
+                float d = f12 - (top - fv14);
+                int i16 = (0.0f < d) ? (int) d : 0;
+                o12 = (unsigned short) i16;
+                if (flag8 == 0) {
+                    a = 0xad;
+                    b = 0x85;
+                }
+                float fd = static_cast<float>((unsigned) i16);
+                float fr = static_cast<float>(a - b);
+                float scale = 1.0f;
+                if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
+                float base = static_cast<float>(b);
+                base = base + scale * fr;
+                o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
+                float fv15 = 4.0f;
+                if (rdflag((char *) &Globals::iPadLarge) == 0) fv15 = 2.0f;
+                o12 = (unsigned short) ((0.0f < top - fv15) ? (short) (int) (top - fv15) : 0);
+            } else {
+                a = 0xf3;
+                b = 0xbb;
+                float d = f12 - (top + gSCS_f872c);
+                int i16 = (0.0f < d) ? (int) d : 0;
+                o12 = (unsigned short) i16;
+                float fd = static_cast<float>((unsigned) i16);
+                float fr = static_cast<float>(a - b);
+                float scale = 1.0f;
+                if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
+                float base = static_cast<float>(b);
+                base = base + scale * fr;
+                o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
+                o12 = (unsigned short) ((0.0f < top - gSCS_f8720) ? (short) (int) (top - gSCS_f8720) : 0);
+            }
         }
-
-        ArrayRelease(*data);
-        delete data;
     }
-
-    return outArr;
-}
-
-// Globals::Globals() below zero-initializes the Globals static members directly
-// (the original reads each via a GOT-indirect load, which &Global compiles to in
-// PIC). Previously stubbed as null gGC_p_* placeholder pointers, which folded the
-// constructor to a 2-byte stub. Each placeholder->member mapping was verified
-// against the original via Ghidra (recovered symbol names + plate comments).
-
-Globals::Globals() {
-    Globals *self = this;
-    GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
-    CtorSecondaryObject *secondary = (CtorSecondaryObject *) Globals::hints;
-    int *p5 = (int *) &Globals::recordHandler;
-    int *p7 = &Globals::lastStationMusicPlayed;
-    int *p9 = &Globals::lastCampaignMissionFailCount;
-    int *p11 = &Globals::lastSpaceMusicPlayed;
-    int *p12 = &Globals::lastCampaignMissionFailed;
-
-    Globals::Canvas = 0;
-    Globals::shipTemplate = 0;
-    Globals::gameText = 0;
-    Globals::font = 0;
-    Globals::fontAlien = 0;
-    Globals::fontLangSelect = 0;
-    Globals::rnd = 0;
-    Globals::globals = 0;
-    Globals::layout = 0;
-    Globals::appManager = 0;
-    *p5 = 0;
-    Globals::generator = 0;
-
-    *(int *) self = 0;
-
-    settings->colorR = 0.5f;
-    settings->colorG = 0.5f;
-    settings->colorB = 0.5f;
-    reinterpret_cast<int16_t &>(settings->_region[0]) = 0x101;
-    reinterpret_cast<int16_t &>(settings->_region[4]) = 0;
-
-    settings->glowR = 0.5f;
-    settings->glowG = 0.5f;
-
-    settings->tintR = 0.6f;
-    settings->tintG = 0.6f;
-    settings->tintB = 0.5f;
-    settings->brightness = 1.0f;
-    settings->contrast = 0.5f;
-    settings->_region[2] = 1;
-    settings->enableFlag30 = 1;
-    settings->shortAt40 = 0;
-    settings->intAt50 = 0;
-    settings->flagAt39 = 0;
-    settings->intAt35 = 0;
-    settings->intAt31 = 0;
-    secondary->slot1 = 0;
-    secondary->flagAt13 = 0;
-
-    settings->flagAt3f = 0;
-    settings->intAt3b = 0;
-    settings->flagAt4e = 0;
-    settings->shortAt4c = 0;
-    settings->intAt48 = 0;
-    secondary->slot0 = 0;
-
-    Globals::gameLoaded = 0;
-    Globals::gameSaving = 0;
-    *p11 = -1;
-    Globals::initMemoryWarning = 0;
-    *p7 = -1;
-    *p9 = 0;
-    *p12 = -1;
-
-    int *p7b = (int *) &Globals::imageFactory;
-    int *p5b = (int *) &Globals::achievements;
-
-    float fv = settings->qualityLevel;
-    int v54 = 0x247;
-    if (1.0f <= fv) v54 = 0x33e;
-    if (fv <= 0.0f) v54 = 0x19f;
-    settings->resWidth = v54;
-
-    int v58 = 0x201;
-    if (1.0f <= fv) v58 = 0x2da;
-    if (fv <= 0.0f) v58 = 0x16d;
-    settings->resHeight = v58;
-
-    int *p11b = (int *) &Globals::galaxy;
-    Globals::instantActionScore = 0;
-    Globals::instantActionWave = 0;
-    int *p9b = (int *) &Globals::status;
-    Globals::instantActionType = -1;
-    Globals::instantActionPlayerName = 0;
-    Globals::items = 0;
-    *p9b = 0;
-    settings->shortAt60 = 0x100;
-    *p11b = 0;
-    int *p8b = (int *) &Globals::ships;
-    *p5b = 0;
-    *p7b = 0;
-    *p8b = 0;
-    self->soundResources = 0;
-}
-
-Globals::~Globals() {
-    if (Globals::recordHandler != nullptr)
-        Globals::recordHandler->saveOptions();
-    delete Globals::galaxy;
-    Globals::galaxy = nullptr;
-    delete Globals::status;
-    Globals::status = nullptr;
-    delete Globals::gameText;
-    Globals::gameText = nullptr;
-    delete Globals::rnd;
-    Globals::rnd = nullptr;
-    delete Globals::layout;
-    Globals::layout = nullptr;
-    delete Globals::generator;
-    Globals::generator = nullptr;
-    delete Globals::recordHandler;
-    Globals::recordHandler = nullptr;
-    delete Globals::instantActionPlayerName;
-    Globals::instantActionPlayerName = nullptr;
-    delete Globals::sound;
-    Globals::sound = nullptr;
-    if (Globals::items != nullptr) {
-        ArrayReleaseClasses(*Globals::items);
-        delete Globals::items;
-    }
-    Globals::items = nullptr;
-    if (Globals::ships != nullptr) {
-        ArrayReleaseClasses(*Globals::ships);
-        delete Globals::ships;
-    }
-    Globals::ships = nullptr;
-    delete Globals::galaxy;
-    Globals::galaxy = nullptr;
-    delete Globals::achievements;
-    Globals::achievements = nullptr;
-    delete Globals::status;
-    Globals::status = nullptr;
-    delete Globals::imageFactory;
-    Globals::imageFactory = nullptr;
-    if (this->soundResources != nullptr) {
-        ArrayRelease(*this->soundResources);
-        delete this->soundResources;
-    }
-    this->soundResources = nullptr;
-    Globals::globals = nullptr;
-}
-
-
-void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
-                        bool centered) {
-    int *cv = (int *) &Globals::Canvas;
-    LineMetrics **lh = (LineMetrics **) &Globals::layout;
-    int yacc = startY;
-    int dx = 0;
-    for (unsigned i = 0; i < lines->size(); i++) {
-        if (centered) {
-            int w = ((PaintCanvas *) (long) *cv)->GetTextWidth(font, *(*lines)[i]);
-            dx = -(w >> 1);
-        }
-        ((PaintCanvas *) (long) *cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
-        yacc += (*lh)->lineHeight;
-    }
-}
-
-static const float gSCF_b90 = 56.25f;
-static const float gSCF_b10 = 63.28125f;
-static const float gSCF_b14 = 210.9375f;
-static const float gSCF_b7c = 63.28125f;
-static const float gSCF_b80 = 90.0f;
-static const float gSCF_b84 = 45.0f;
-static const float gSCF_b88 = 300.0f;
-static const float gSCF_b8c = 150.0f;
-static const float gSCF_b94 = 80.0f;
-static const float gSCF_b98 = 40.0f;
-static const float gSCF_b9c = 107.28125f;
-static const float gSCF_ba0 = 5.625f;
-static const float gSCF_ba4 = 18.09375f;
-static const float gSCF_ba8 = 19.28125f;
-static const float gSCF_bac = 112.5f;
-static const float gSCF_bb0 = 94.21875f;
-static const float gSCF_bb4 = 152.0f;
-static const float gSCF_bb8 = 77.0f;
-static const float gSCF_bbc = 160.0f;
-static const float gSCF_bc0 = 80.0f;
-static const float gSCF_bc4 = 134.0f;
-static const float gSCF_bc8 = 67.0f;
-static const float gSCF_bcc = 100.0625f;
-static const float gSCF_bd0 = 209.53125f;
-static const float gSCF_bd4 = 144.0f;
-static const float gSCF_bd8 = 74.0f;
-static const float gSCF_bdc = 298.0f;
-static const float gSCF_be0 = 149.0f;
-static const float gSCF_be4 = 132.1875f;
-static const float gSCF_be8 = 0.0f;
-static const float gSCF_bec = 189.0f;
-static const float gSCF_bf0 = 94.0f;
-
-
-static inline char rf(char *const g) { return *g; }
-static inline int rint(int *const g) { return *g; }
-static inline int *robj(int *const g) { return g; }
-static inline CoordsObject *rcoords(CoordsObject *const g) { return g; }
-
-static inline unsigned short clampU(float v) {
-    return (unsigned short) ((0.0f < v) ? (short) (int) v : 0);
 }
 
 void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
@@ -1901,557 +2357,89 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     o15 = clampU(t15 + static_cast<float>(o7));
 }
 
+String Globals::getKeyBindingReplaceString(int key) {
+    (void) key;
 
-void Globals::releaseResources() {
-    Globals::Canvas->ReleaseAllResources();
-    Globals::layout->reload();
+    String tmp;
+    return String(*tmp.ToUpperCase(), false);
 }
 
+String Globals::getKeyActionName(int action) {
+    (void) action;
+    String r;
+    return r;
+}
 
+String Globals::replaceKeyBindingTokens(const String &src) {
+    return String(src, false);
+}
 
-static inline char flag(char *const g) { return *g; }
+float Globals::sqrt(float x) {
+    return AbyssEngine::AEMath::Sqrtf(x);
+}
 
-void Globals::loadFont(int language) {
-    // The font handles are stored in pointer-typed statics shared with other TUs.
-    unsigned int &mainFont = reinterpret_cast<unsigned int &>(Globals::font);
-    unsigned int &alienFont = reinterpret_cast<unsigned int &>(Globals::fontAlien);
-    unsigned int &langSelectFont = reinterpret_cast<unsigned int &>(Globals::fontLangSelect);
-    bool latinFont = true;
-    switch (language) {
-        case 9:
-            Globals::Canvas->FontCreate(0x2d74, mainFont, true);
-            Globals::Canvas->FontSetSpacing(mainFont,
-                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
-            latinFont = false;
-            break;
-        case 10:
-            Globals::Canvas->FontCreate(0x2d78, mainFont, true);
-            Globals::Canvas->FontSetSpacing(mainFont,
-                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
-            break;
-        case 11:
-            Globals::Canvas->FontCreate(0x2d76, mainFont, true);
-            Globals::Canvas->FontSetSpacing(mainFont,
-                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
-            break;
-        case 14:
-            Globals::Canvas->FontCreate(0x2d7c, mainFont, true);
-            Globals::Canvas->FontSetSpacing(mainFont,
-                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
-            break;
-        default:
-            if (language == 15) {
-                Globals::Canvas->FontCreate(0x2d7e, mainFont, true);
-                Globals::Canvas->FontSetSpacing(mainFont, Globals::iPadHD ? -7 : (Globals::retinaDisplay ? -10 : -5));
+int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) {
+    int result = -1;
+
+    if (list != 0) {
+        unsigned len = list->size();
+        unsigned i = 0;
+        bool keepGoing = true;
+        while (i < len && keepGoing) {
+            String *entry = (*list)[i];
+            String base, pb, prefix;
+            base.ctor_char(gIAP_prefixA, false);
+            pb.ctor_char(gIAP_prefixB, false);
+            prefix = base + pb;
+
+            if (entry == 0) {
+                result = -1;
+                keepGoing = false;
             } else {
-                Globals::Canvas->FontCreate(0x457, mainFont, true);
-                Globals::Canvas->FontSetSpacing(mainFont, Globals::retinaDisplay ? -5
-                                                          : Globals::n9 ? -4
-                                                          : Globals::iPadHD ? -4 : -2);
-            }
-            break;
-    }
-    Globals::Canvas->field_0x1c = latinFont;
-    Globals::Canvas->FontCreate(0x51e, alienFont, true);
-    Globals::Canvas->FontSetSpacing(alienFont, 0);
-    Globals::Canvas->FontCreate(0x2d7a, langSelectFont, true);
-    Globals::Canvas->FontSetSpacing(langSelectFont, 0);
-}
-
-// Globals::init below accesses these engine globals directly (Mission::empty,
-// Globals::options/items/ships/Canvas/globals/generator/recordHandler/sound/
-// layout/imageFactory and the init flag bytes); the original reads each via a
-// GOT-indirect load, which &Global compiles to in PIC. (Previously stubbed as
-// null gI_* placeholder pointers, which folded init to a 2-byte stub.)
-
-int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
-    (void) engine;
-    int *missionSlot = (int *) &Mission::empty;
-    if (*missionSlot == 0) {
-        Mission *m = new Mission();
-        *missionSlot = (int) (long) m;
-    }
-
-    GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
-    int *flagFFFF = (int *) &Globals::lastRecordWritten;
-    int *langSettingSlot = &Globals::recordSlots;
-    char *langFlag = (char *) &Globals::iPad;
-    char *zeroByte = (char *) &Globals::startLiteVersionWithMoreCredits;
-
-    char lang = *langFlag;
-    settings->_region[5] = 1;
-    settings->enableFlag30 = 1;
-    settings->colorR = 0.5f;
-    settings->colorG = 0.5f;
-    settings->colorB = 0.5f;
-    settings->tintB = 0.5f;
-    settings->brightness = 1.0f;
-    settings->glowR = 1.0f;
-    settings->glowG = 1.0f;
-    settings->tintR = 0.6f;
-    settings->tintG = 0.6f;
-    reinterpret_cast<int16_t &>(settings->_region[3]) = 0x101;
-    *zeroByte = 0;
-    *flagFFFF = -1;
-    *langSettingSlot = (lang == 0) ? 6 : 0xc;
-
-    Galaxy *galaxy = new Galaxy();
-    Globals::galaxy = galaxy;
-    Achievements *ach = new Achievements();
-    Globals::achievements = ach;
-    Status *status = new Status();
-    Globals::status = status;
-    ImageFactory *imgFac = new ImageFactory();
-    Globals::imageFactory = imgFac;
-
-    FileRead *fr = new FileRead();
-    Globals::items = (Array<Item *> *) (long) fr->loadItemsBinary();
-    Globals::ships = (Array<Ship *> *) (long) fr->loadShipsBinary();
-    delete fr;
-
-    int *engineSlot = (int *) &Globals::Canvas;
-    if (*engineSlot == 0) {
-        *engineSlot = *reinterpret_cast<int *>(app);
-    }
-    Globals::appManager = app;
-    app->VibrateEnable(0);
-
-    AbyssEngine::AERandom *rng = new AbyssEngine::AERandom();
-    Globals::globals = this;
-    Globals::rnd = rng;
-
-    Generator *gen = new Generator();
-    Globals::generator = gen;
-
-    RecordHandler *rh = new RecordHandler();
-    RecordHandler **rhSlotP = &Globals::recordHandler;
-    *rhSlotP = rh;
-    Globals::status->resetGame();
-    (*rhSlotP)->loadOptions();
-
-    FModSound *fmod = new FModSound();
-    FModSound **fmodSlotP = &Globals::sound;
-    *fmodSlotP = fmod;
-    fmod->init();
-
-    (*fmodSlotP)->enableCategory(1, settings->_region[1]);
-    (*fmodSlotP)->enableCategory(2, settings->_region[0]);
-    (*fmodSlotP)->enableCategory(3, settings->_region[2]);
-    (*fmodSlotP)->setVolume(1, settings->colorR);
-    (*fmodSlotP)->setVolume(2, settings->colorG);
-    (*fmodSlotP)->setVolume(3, settings->colorB);
-
-    if (Globals::sound->tryToStopMusicForBGMusic() != 0) {
-        settings->_region[1] = 0;
-    }
-
-    Globals::instantActionPoints = 0;
-    Globals::first_start_ever = true;
-    InitZeroObject *obj = (InitZeroObject *) Globals::hints;
-    obj->slots[0] = 0;
-    obj->slots[1] = 0;
-    obj->slots[2] = 0;
-    obj->slots[3] = 0;
-    obj->slots[4] = 0;
-    obj->slots[5] = 0;
-    obj->slots[6] = 0;
-    obj->slots[7] = 0;
-    obj->slots[8] = 0;
-    obj->slots[9] = 0;
-    obj->slots[10] = 0;
-    obj->slots[11] = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2b]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2f]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x33]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x37]) = 0;
-    InitFlagByte *flagByteObj = (InitFlagByte *) &Globals::gameLoaded;
-    flagByteObj->flag = 0;
-    Globals::gameSaving = 0;
-    Globals::initMemoryWarning = 0;
-
-    Layout *layout = new Layout();
-    Globals::layout = layout;
-    layout->reload();
-    ParticleSettingsRef::initialize();
-
-    Array<int> *arr = new Array<int>();
-    this->soundResources = arr;
-    return (int) (long) arr;
-}
-
-static const int gStationMusicByRace[4] = {128, 127, 129, 130};
-static const int gSpaceMusicByRace[4] = {134, 139, 138, 137};
-
-void Globals::playMusicAndFadeOutCurrent(int mode) {
-    switch (mode) {
-        case 0: {
-            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-            Globals::sound->stop(Globals::sound->currentMusicEvent);
-            if (Globals::status->getStation()->getIndex() == 108) {
-                Globals::sound->play(132, nullptr, nullptr, 0.0f);
-            } else if (Globals::status->getStation()->getIndex() == 101) {
-                Globals::sound->play(131, nullptr, nullptr, 0.0f);
-            } else if (Globals::status->getStation()->getIndex() == 10 ||
-                       Globals::status->getStation()->getIndex() == 100) {
-                if (Globals::status->getStation()->getIndex() == 10 &&
-                    Globals::status->getCurrentCampaignMission() == 159)
-                    Globals::sound->play(144, nullptr, nullptr, 0.0f);
-                else
-                    Globals::sound->play(133, nullptr, nullptr, 0.0f);
-            } else {
-                int track = gStationMusicByRace[race];
-                Globals::sound->play(track, nullptr, nullptr, 0.0f);
-            }
-            break;
-        }
-        case 1: {
-            if (Globals::status->inAlienOrbit()) {
-                Globals::sound->stop(Globals::sound->currentMusicEvent);
-                Globals::sound->play(Globals::status->getCurrentCampaignMission() >= 147 &&
-                                     Globals::status->getCurrentCampaignMission() < 154 ? 145 : 136,
-                                     nullptr, nullptr, 0.0f);
-                break;
-            }
-            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-            Globals::sound->stop(Globals::sound->currentMusicEvent);
-            if (Globals::status->getStation()->getIndex() == 108) {
-                Globals::sound->play(146, nullptr, nullptr, 0.0f);
-            } else if (Globals::status->getStation()->getIndex() == 101) {
-                Globals::sound->play(147, nullptr, nullptr, 0.0f);
-            } else if (Globals::status->inSupernovaSystem()) {
-                if (Globals::status->getCurrentCampaignMission() == 89) {
-                    Globals::sound->play(2238, nullptr, nullptr, 0.0f);
-                } else if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
-                           Globals::status->getMission()->getTargetStation() ==
-                           Globals::status->getStation()->getIndex()) {
-                    Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242, nullptr,
-                                         nullptr, 0.0f);
+                const char *suffix = 0;
+                bool known = true;
+                switch (productCode) {
+                    case 0: suffix = gIAP_id0;
+                        break;
+                    case 1: suffix = gIAP_id1;
+                        break;
+                    case 2: suffix = gIAP_id2;
+                        break;
+                    case 3: suffix = gIAP_id3;
+                        break;
+                    case 4: suffix = gIAP_id4;
+                        break;
+                    case 0x32: suffix = gIAP_id50;
+                        break;
+                    case 0x33: suffix = gIAP_id51;
+                        break;
+                    case 0x34: suffix = gIAP_id52;
+                        break;
+                    case 0x35: suffix = gIAP_id53;
+                        break;
+                    case 0x36: suffix = gIAP_id54;
+                        break;
+                    default: known = false;
+                        break;
+                }
+                if (!known) {
+                    keepGoing = true;
                 } else {
-                    Globals::sound->play(148, nullptr, nullptr, 0.0f);
+                    String suf, full;
+                    suf.ctor_char(suffix, false);
+                    full = prefix + suf;
+                    int cmp = entry->Compare(full);
+                    if (cmp == 0) {
+                        result = (int) i;
+                        keepGoing = false;
+                    } else {
+                        keepGoing = true;
+                    }
                 }
-            } else if (Globals::status->inDeepScienceOrbit()) {
-                Globals::sound->play(152, nullptr, nullptr, 0.0f);
-            } else if (Globals::status->getStation()->getIndex() == 120 &&
-                       (Globals::status->getCurrentCampaignMission() == 126 ||
-                        Globals::status->getCurrentCampaignMission() == 133)) {
-                Globals::sound->play(2239, nullptr, nullptr, 0.0f);
-            } else {
-                int track = gSpaceMusicByRace[race];
-                Globals::sound->play(track, nullptr, nullptr, 0.0f);
             }
-            break;
+            i++;
         }
-        case 2:
-            Globals::sound->stop(Globals::sound->currentMusicEvent);
-            Globals::sound->play(145, nullptr, nullptr, 0.0f);
-            break;
     }
+
+    return result;
 }
-
-static const int gGDS_pairTable[1] = {};
-
-int Globals::getDialogueSoundId(int code, Agent *agent) {
-    const int *t = gGDS_pairTable;
-    for (unsigned i = 0; (i >> 6) < 0x2f; i += 2) {
-        if (t[i] == code) {
-            return t[i + 1];
-        }
-    }
-
-    if (agent == 0) {
-        return -1;
-    }
-
-    int race = ((Agent *) (agent))->getRace();
-    int male = ((Agent *) (agent))->isMale();
-
-    int category;
-    if (race == 3) {
-        int *parts = ((Agent *) (agent))->getImageParts();
-        if (parts != 0) {
-            int *p = ((Agent *) (agent))->getImageParts();
-            category = (*p == 2) ? 3 : 0;
-        } else {
-            category = 2;
-        }
-    } else {
-        category = race;
-    }
-
-    int isMale = male;
-    switch (category) {
-        case 0:
-        case 5: {
-            if (isMale == 0) {
-                if ((unsigned) (code - 0x172) > 0x13) {
-                    return -1;
-                }
-                static const int femaleTable[20] = {
-                    0x2a7, 0x29b, 0x2a1, 0x2a2, 0x2a3, 0x2a4, 0x2a5, 0x2a6, 0x295, 0x29c,
-                    0x29d, 0x29e, 0x29f, 0x2a0, 0x296, 0x297, 0x298, 0x299, 0x29a, 0x294,
-                };
-                return femaleTable[code - 0x172];
-            }
-
-            switch (code) {
-                case 0x172: return 0x2bb;
-                case 0x173: return 0x2af;
-                case 0x174: return 0x2b5;
-                case 0x175: return 0x2b6;
-                case 0x176: return 0x2b7;
-                case 0x177: return 0x2b8;
-                case 0x178: return 0x2b9;
-                case 0x179: return 0x2ba;
-                case 0x17a: return 0x2a9;
-                case 0x17b: return 0x2b0;
-                case 0x17c: return 0x2b1;
-                case 0x17d: return 0x2b2;
-                case 0x17e: return 0x2b3;
-                case 0x17f: return 0x2b4;
-                case 0x180: return 0x2aa;
-                case 0x181: return 0x2ab;
-                case 0x182: return 0x2ac;
-                case 0x183: return 0x2ad;
-                case 0x184: return 0x2ae;
-                case 0x185: return 0x2a8;
-                case 0x1aa: return 0x2c1;
-                case 0x1ab: return 0x2c2;
-                case 0x1ac: return 0x2c3;
-                case 0x1ad: return 0x2c6;
-                case 0x1ae: return 0x2c7;
-                case 0x1af: return 0x2c8;
-                case 0x1bd: return 0x2bc;
-                case 0x1be: return 0x2bd;
-                case 0x1bf: return 0x2be;
-                case 0x139: return 0x2cb;
-                default: return -1;
-            }
-        }
-        case 1: {
-            switch (code) {
-                case 0x172: return 0x2df;
-                case 0x173: return 0x2d3;
-                case 0x174: return 0x2d9;
-                case 0x175: return 0x2da;
-                case 0x176: return 0x2db;
-                case 0x177: return 0x2dc;
-                case 0x178: return 0x2dd;
-                case 0x179: return 0x2de;
-                case 0x17a: return 0x2cd;
-                case 0x17b: return 0x2d4;
-                case 0x17c: return 0x2d5;
-                case 0x17d: return 0x2d6;
-                case 0x17e: return 0x2d7;
-                case 0x17f: return 0x2d8;
-                case 0x180: return 0x2ce;
-                case 0x181: return 0x2cf;
-                case 0x182: return 0x2d0;
-                case 0x183: return 0x2d1;
-                case 0x184: return 0x2d2;
-                case 0x185: return 0x2cc;
-                case 0x1aa: return 0x2e5;
-                case 0x1ab: return 0x2e6;
-                case 0x1ac: return 0x2e7;
-                case 0x1ad: return 0x2ea;
-                case 0x1ae: return 0x2eb;
-                case 0x1af: return 0x2ec;
-                case 0x1bd: return 0x2e0;
-                case 0x1be: return 0x2e1;
-                case 0x1bf: return 0x2e2;
-                default: return -1;
-            }
-        }
-        case 2:
-        case 3:
-            switch (code) {
-                case 0x172: return 0x27e;
-                case 0x173: return 0x272;
-                case 0x174: return 0x278;
-                case 0x175: return 0x279;
-                case 0x176: return 0x27a;
-                case 0x177: return 0x27b;
-                case 0x178: return 0x27c;
-                case 0x179: return 0x27d;
-                case 0x17a: return 0x26c;
-                case 0x17b: return 0x273;
-                case 0x17c: return 0x274;
-                case 0x17d: return 0x275;
-                case 0x17e: return 0x276;
-                case 0x17f: return 0x277;
-                case 0x180: return 0x26d;
-                case 0x181: return 0x26e;
-                case 0x182: return 0x26f;
-                case 0x183: return 0x270;
-                case 0x184: return 0x271;
-                case 0x185: return 0x26b;
-                case 0x1aa: return 0x285;
-                case 0x1ab: return 0x286;
-                case 0x1ac: return 0x287;
-                case 0x1ad: return 0x28a;
-                case 0x1ae: return 0x28b;
-                case 0x1af: return 0x28c;
-                case 0x1b0: return 0x24c;
-                case 0x1b2: return 0x24a;
-                case 0x1ba: return 0x24d;
-                case 0x1bd: return 0x27f;
-                case 0x1be: return 0x281;
-                case 0x1bf: return 0x282;
-                case 0x139: return 0x28f;
-                default: return -1;
-            }
-        case 4: {
-            switch (code) {
-                case 0x172: return 0x267;
-                case 0x173: return 0x25b;
-                case 0x174: return 0x261;
-                case 0x175: return 0x262;
-                case 0x176: return 0x263;
-                case 0x177: return 0x264;
-                case 0x178: return 0x265;
-                case 0x179: return 0x266;
-                case 0x17a: return 0x255;
-                case 0x17b: return 0x25c;
-                case 0x17c: return 0x25d;
-                case 0x17d: return 0x25e;
-                case 0x17e: return 0x25f;
-                case 0x17f: return 0x260;
-                case 0x180: return 0x256;
-                case 0x181: return 599;
-                case 0x182: return 600;
-                case 0x183: return 0x259;
-                case 0x184: return 0x25a;
-                case 0x185: return 0x26a;
-                case 0x139: return 0x268;
-                default: return -1;
-            }
-        }
-        case 6: {
-            switch (code) {
-                case 0x172: return 0x230;
-                case 0x173: return 0x2f6;
-                case 0x174: return 0x22a;
-                case 0x175: return 0x22b;
-                case 0x176: return 0x22c;
-                case 0x177: return 0x22d;
-                case 0x178: return 0x22e;
-                case 0x179: return 0x22f;
-                case 0x17a: return 0x2f0;
-                case 0x17b: return 0x225;
-                case 0x17c: return 0x226;
-                case 0x17d: return 0x227;
-                case 0x17e: return 0x228;
-                case 0x17f: return 0x229;
-                case 0x180: return 0x2f1;
-                case 0x181: return 0x2f2;
-                case 0x182: return 0x2f3;
-                case 0x183: return 0x2f4;
-                case 0x184: return 0x2f5;
-                case 0x185: return 0x2ef;
-                case 0x139: return 0x231;
-                default: return -1;
-            }
-        }
-        case 7: {
-            switch (code) {
-                case 0x172: return 0x246;
-                case 0x173: return 0x23a;
-                case 0x174: return 0x240;
-                case 0x175: return 0x241;
-                case 0x176: return 0x242;
-                case 0x177: return 0x243;
-                case 0x178: return 0x244;
-                case 0x179: return 0x245;
-                case 0x17a: return 0x234;
-                case 0x17b: return 0x23b;
-                case 0x17c: return 0x23c;
-                case 0x17d: return 0x23d;
-                case 0x17e: return 0x23e;
-                case 0x17f: return 0x23f;
-                case 0x180: return 0x235;
-                case 0x181: return 0x236;
-                case 0x182: return 0x237;
-                case 0x183: return 0x238;
-                case 0x184: return 0x239;
-                case 0x185: return 0x233;
-                case 0x139: return 0x247;
-                default: return -1;
-            }
-        }
-        case 8:
-            if ((unsigned) (code - 0x1b3) <= 5) {
-                return code + 0x9b;
-            }
-            return -1;
-        default:
-            return -1;
-    }
-}
-
-
-String Globals::getRandomPlanetName() {
-    FileRead *f = new FileRead();
-    int which = nextInt_71ad0(Globals::rnd, 0x64);
-    Station *st = f->loadStation(which);
-    String name = st->getName();
-    delete st;
-    delete f;
-    return name;
-}
-
-static const char gGRN_noFirst[] = "";
-static const char gGRN_noLast[] = "";
-static const char gGRN_space[] = "";
-
-String Globals::getRandomName(int race, bool female) {
-    FileRead *reader = new FileRead();
-    Array<String *> *firstNames = reader->loadNamesBinary(race, female, true);
-    Array<String *> *lastNames = reader->loadNamesBinary(race, female, false);
-    String firstName = firstNames == nullptr
-                           ? String("", false)
-                           : String(*(*firstNames)[Globals::rnd->nextInt(firstNames->size())], false);
-    String lastName = lastNames == nullptr
-                          ? String("", false)
-                          : String(*(*lastNames)[Globals::rnd->nextInt(lastNames->size())], false);
-    if (firstNames != nullptr) {
-        ArrayReleaseClasses(*firstNames);
-        delete firstNames;
-    }
-    if (lastNames != nullptr) {
-        ArrayReleaseClasses(*lastNames);
-        delete lastNames;
-    }
-    delete reader;
-    if (lastName.length != 0)
-        return firstName + String(" ", false) + lastName;
-    return String(firstName, false);
-}
-
-
-void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
-    int lang = GameText::getLanguage();
-    int width = (lang | 1) == 11 ? 15 : 5;
-    if (lang == 15) width = lang;
-    unsigned lastSpace = 0;
-    for (unsigned i = 0; i < (unsigned) text.length; i++) {
-        unsigned short c = *text[i];
-        width += Globals::Canvas->GetTextWidth(font, text, i, i + 1);
-        if (c == ' ') lastSpace = i;
-        if (width >= maxWidth) {
-            if ((int) lastSpace >= 1)
-                *out = text.SubString(0, lastSpace + 1);
-            else
-                *out = text.SubString(0, i + 1);
-            return;
-        }
-        if (*text[i] == '\n' || *text[i] == '\r') {
-            *out = text.SubString(0, i + 1);
-            return;
-        }
-    }
-    if (text.length >= 2)
-        *out = text.SubString(0, text.length);
-    else
-        *out = String("", false);
-}
-
-#include "engine/core/AERandom.h"
