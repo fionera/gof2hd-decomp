@@ -711,21 +711,18 @@ Route *Level::createRoute(int count) {
     unsigned int n = count * 3;
     int *pts = new int[n];
     int *p = pts + 1;
-    for (int i = -1; i + 1 < (int) n; i = i + 3) {
+    for (int i = -1; i + 1 < (int) n; i = i + 3, p = p + 3) {
         int sign = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
         p[-1] = (Globals::rnd->nextInt(30000) + 50000) * sign;
         p[0] = Globals::rnd->nextInt(20000) - 10000;
         if (i == -1) {
-            pts[2] = Globals::rnd->nextInt() + 50000;
+            pts[2] = Globals::rnd->nextInt(30000) + 50000;
         } else {
             int prev = p[-2];
-            p[1] = Globals::rnd->nextInt() + prev + 50000;
+            p[1] = Globals::rnd->nextInt(30000) + prev + 50000;
         }
-        p = p + 3;
     }
-    Route *r = (Route *) ::operator new(0x18);
-    new(r) Route(pts, n);
-    return r;
+    return new Route(pts, n);
 }
 
 void Level::alarmAllFriends(int race, bool message) {
@@ -4257,24 +4254,17 @@ void Level::reset() {
         }
     }
     player->setRoute(playerRoute);
-    int count;
+    int count = 0;
     if (this->enemies != nullptr) {
-        count = 0;
-        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
-            KIPlayer *e = (*this->enemies)[i];
-            if (e->deadFlag == 0 && e->lostMissionCrateToEgo == 0 && e->field_0x40 == 0) {
-                int wm = e->isWingMan();
-                if (wm == 0) {
-                    if ((char) e->field_0x44 == 0 && e->stealFlagByte == 0) {
-                        count = count + (e->countsAsEnemyExcludeFlag ^ 1);
-                    }
-                }
+        for (unsigned int i = 0; i < this->enemies->size(); i++) {
+            if ((*this->enemies)[i]->deadFlag == 0 && (*this->enemies)[i]->field_0x71 == 0
+                && (*this->enemies)[i]->field_0x3f_b == 0 && !(*this->enemies)[i]->isWingMan()
+                && (char) (*this->enemies)[i]->field_0x44 == 0 && (*this->enemies)[i]->stealFlagByte == 0) {
+                count += (*this->enemies)[i]->countsAsEnemyExcludeFlag ^ 1;
             }
         }
-        count = count - field_120;
-    } else {
-        count = 0;
     }
+    count = this->enemies != nullptr ? count - field_120 : 0;
     enemiesLeft = count;
     int ast;
     if (asteroids == nullptr) {
@@ -5643,22 +5633,19 @@ void Level::almostKillWanted(int index) {
     if (Globals::status->isStorylineWanted(index) == 0) {
         return;
     }
-    int m = (int) (intptr_t) ::operator new(0x78);
-    new((Mission *) (intptr_t) m) Mission(4, 0, Globals::status->getStation()->getIndex());
-    ((Mission *) (m))->setCampaignMission(true);
-    ((Mission *) (m))->setWon(1);
-    Globals::status->setMission((Mission *) (intptr_t) m);
-    Globals::status->setCampaignMission((Mission *) (intptr_t) m);
+    Mission *mission = new Mission(4, 0, Globals::status->getStation()->getIndex());
+    mission->setCampaignMission(true);
+    mission->setWon(1);
+    Globals::status->setMission(mission);
+    Globals::status->setCampaignMission(mission);
     delete objectivesA;
     objectivesA = nullptr;
     objectivesA = new Objective(3, 0, 0, this);
-    KIPlayer *e = (*this->enemies)[0];
-    e->player->setAlwaysEnemy(0);
-    ((Player *) (int) (intptr_t)(*this->enemies)[1])->resetDamageDoneByPlayer();
-    e->player->enemyFlagsLo = 0;
-    e->reviveLockFlag = 1;
-    Array<Wanted *> *w = Globals::status->getWanted();
-    return w->data_[index]->setActive(0 != 0);
+    (*enemies)[0]->player->setAlwaysEnemy(false);
+    (*enemies)[0]->player->resetDamageDoneByPlayer();
+    (*enemies)[0]->player->enemyFlagsLo = 0;
+    (*enemies)[0]->reviveLockFlag = 1;
+    (*Globals::status->getWanted())[index]->setActive(false);
 }
 
 void Level::assignGuns() {

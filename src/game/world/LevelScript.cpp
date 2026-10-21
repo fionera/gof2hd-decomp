@@ -36,7 +36,6 @@
 #include "game/world/Standing.h"
 #include "game/world/Galaxy.h"
 
-static Station *gProgrammedStation = nullptr;
 
 struct StackVector {
     float v[3];
@@ -53,8 +52,6 @@ struct StackVector {
     operator Vector *() { return reinterpret_cast<Vector *>(v); }
 };
 
-typedef void (*RenderProc)(AEGeometry *);
-
 typedef unsigned char * (*LevelListProc)(Level *);
 
 typedef void (*ReadWaypointProc)(StackVector *out, Waypoint *waypoint);
@@ -63,7 +60,6 @@ typedef void (*SetVectorProc)(unsigned char *self, StackVector *value);
 
 typedef void (*VirtualCommandProc)(unsigned char *self, int a, int b, int c);
 
-static RenderProc gRenderProc;
 static LevelListProc gLevelListProc;
 
 static inline unsigned char *arrayData(unsigned char *array) {
@@ -82,21 +78,14 @@ void LevelScript::render3D() {
     if (m_pGeometry2) m_pGeometry2->render();
     if (m_pGeometry3) m_pGeometry3->render();
 
-    if (m_pExplosion &&m_pExplosion
-
-
-    ->
-    isPlaying()
-    )
-    {
+    if (m_pExplosion && m_pExplosion->isPlaying()) {
         m_pExplosion->render();
     }
 
     if (m_bRenderParticles && m_pParticleGeom0) {
-        RenderProc render = gRenderProc;
-        render(m_pParticleGeom0);
-        render(m_pParticleGeom1);
-        render(m_pParticleGeom2);
+        m_pParticleGeom0->render();
+        m_pParticleGeom1->render();
+        m_pParticleGeom2->render();
     }
 }
 
@@ -126,41 +115,29 @@ uint8_t LevelScript::startSequence() {
 }
 
 void LevelScript::setAutoPilotToProgrammedStation() {
-    if (gProgrammedStation == 0) {
+    if (Level::programmedStation == nullptr) {
+        return;
+    }
+    if (Globals::status->getStation()->equals(Level::programmedStation)) {
+        Level::programmedStation = nullptr;
         return;
     }
 
-    Station *programmed = gProgrammedStation;
-    if (Globals::status->getStation()->equals(programmed)) {
-        gProgrammedStation = 0;
-        return;
-    }
-
-    SolarSystem *system = (SolarSystem *) Globals::status->getSystem();
-    PlayerEgo *player;
-    unsigned char *target;
-
-    if (system->stationIsInSystem(programmed)) {
-        player = m_pLevel->getPlayer();
-        unsigned char *targets = (unsigned char *) ((StarSystem *) m_pLevel->getStarSystem())->getPlanetTargets();
-        int targetIndex = system->getStationEnumIndex(programmed->getIndex());
-        target = reinterpret_cast<unsigned char **>(arrayData(targets))[targetIndex];
-    } else if (system->currentOrbitHasWarpGate()) {
-        player = m_pLevel->getPlayer();
-        Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
-        target = (unsigned char *) (*landmarks)[1];
+    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->stationIsInSystem(Level::programmedStation)) {
+        m_pLevel->getPlayer()->setAutoPilot(
+                (*(Array<KIPlayer *> *) m_pLevel->getStarSystem()->getPlanetTargets())[
+                        ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStationEnumIndex(
+                                Level::programmedStation->getIndex())]);
+    } else if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate()) {
+        m_pLevel->getPlayer()->setAutoPilot((*m_pLevel->getLandmarks())[1]);
     } else {
-        int warpGateIndex = system->getWarpGateEnumIndex();
-        if (warpGateIndex < 0) {
+        int warpGate = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getWarpGateEnumIndex();
+        if (warpGate < 0) {
             return;
         }
-        player = m_pLevel->getPlayer();
-        unsigned char *targets = (unsigned char *) ((StarSystem *) m_pLevel->getStarSystem())->getPlanetTargets();
-        target = reinterpret_cast<unsigned char **>(arrayData(targets))[warpGateIndex];
+        m_pLevel->getPlayer()->setAutoPilot(
+                (*(Array<KIPlayer *> *) m_pLevel->getStarSystem()->getPlanetTargets())[warpGate]);
     }
-
-    (void) player;
-    (void) target; /* virtual Player autopilot-target setter — resolved via vtable */
 }
 
 LevelScript::~LevelScript() {
