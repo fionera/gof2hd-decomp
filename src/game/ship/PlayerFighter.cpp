@@ -158,28 +158,31 @@ static inline void PF_enableEmit(int base, int handle, int enable) {
 
 void PlayerFighter::setLevel(Level *lvl) {
     KIPlayer::setLevel(lvl);
-    Level *lev = (Level *) (intptr_t) this->level();
 
-    int v;
-    v = PF_addSystem((int) (intptr_t) lev->field_74, PF_getRefMatrix(this->geometry()), 9, 0);
-    this->engineTrailSystem = v;
-    PF_enableEmit((int) (intptr_t) lev->field_74, v, 0);
+    int handle = this->KIPlayer::level->field_74->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 9, false);
+    this->engineTrailSystem = handle;
+    this->KIPlayer::level->field_74->enableSystemEmit(handle, false);
 
-    v = PF_addSystem((int) (intptr_t) lev->particleEmitBoolPtr, PF_getRefMatrix(this->geometry()), 0xf, 0);
-    this->field_0x80 = v;
-    PF_enableEmit((int) (intptr_t) lev->particleEmitBoolPtr, v, 0);
+    handle = this->KIPlayer::level->particleEmitBoolPtr->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 15, false);
+    this->field_0x80 = handle;
+    this->KIPlayer::level->particleEmitBoolPtr->enableSystemEmit(handle, false);
 
-    v = PF_addSystem((int) (intptr_t) lev->particleRenderBoolPtr, PF_getRefMatrix(this->geometry()), 0x2a, 0);
-    this->field_0x84 = v;
-    PF_enableEmit((int) (intptr_t) lev->particleRenderBoolPtr, v, 0);
+    handle = this->KIPlayer::level->particleRenderBoolPtr->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 42, false);
+    this->field_0x84 = handle;
+    this->KIPlayer::level->particleRenderBoolPtr->enableSystemEmit(handle, false);
 
-    v = PF_addSystem((int) (intptr_t) lev->field_8c, PF_getRefMatrix(this->geometry()), 0x11, 0);
-    this->field_0x134 = v;
-    PF_enableEmit((int) (intptr_t) lev->field_8c, v, 0);
+    handle = this->KIPlayer::level->field_8c->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 17, false);
+    this->field_0x134 = handle;
+    this->KIPlayer::level->field_8c->enableSystemEmit(handle, false);
 
-    v = PF_addSystem((int) (intptr_t) lev->field_8c, PF_getRefMatrix(this->geometry()), 0x12, 0);
-    this->field_0x138 = v;
-    return PF_enableEmit((int) (intptr_t) lev->field_8c, v, 0);
+    handle = this->KIPlayer::level->field_8c->addSystem(
+            &this->KIPlayer::geometry->getReferenceMatrix(), (ParticleSettings::ParticleSet) 18, false);
+    this->field_0x138 = handle;
+    this->KIPlayer::level->field_8c->enableSystemEmit(handle, false);
 }
 
 
