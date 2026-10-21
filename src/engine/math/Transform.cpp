@@ -668,175 +668,165 @@ namespace AbyssEngine {
 
     void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
         ++AbyssEngine::lauf;
-
-        longlong timestamp = time;
-        if (this->animationLength < timestamp) {
-            this->animationLength = timestamp;
-        }
+        if (this->animationLength < time)
+            this->animationLength = time;
 
         uint index = 0;
-        while (index < this->keyFrames.size()) {
-            KeyFrame *existing = this->keyFrames[index];
-            longlong existingTime = existing->timestamp;
-            if (existingTime >= timestamp) {
-                if (existingTime == timestamp) {
-                    existing->channelFlags |= (uint) flags;
-                    existing->channelFlagsHi |= (uint)((ulonglong) flags >> 32);
-                    if (flags == 0x10) {
-                        existing->scale.y = values[0];
-                        if (this->boundingRadius2 < values[0]) this->boundingRadius2 = values[0];
-                    } else if (flags == 0x20) {
-                        existing->scale.z = values[0];
-                        if (this->boundingRadius2 < values[0]) this->boundingRadius2 = values[0];
-                    } else if (flags == 0x38) {
-                        existing->scale.x = values[0];
-                        existing->scale.y = values[1];
-                        existing->scale.z = values[2];
-                        float max = values[1] < values[0] ? values[0] : values[1];
-                        if (values[2] > max) max = values[2];
-                        if (this->boundingRadius2 < max) this->boundingRadius2 = max;
-                    } else if (flags == 0x40) {
-                        existing->rotation.x = values[0];
-                    } else if (flags == 0x80) {
-                        existing->rotation.y = values[0];
-                    } else if (flags == 0x100) {
-                        existing->rotation.z = values[0];
-                    } else if (flags == 0x1c0) {
-                        existing->rotation.x = values[0];
-                        existing->rotation.y = values[1];
-                        existing->rotation.z = values[2];
-                    } else if (flags == 0x200) {
-                        existing->alpha = values[0] / kAngleDivisor;
-                    } else if (flags == 0x400) {
-                        existing->localTranslation.x = -values[0];
-                    } else if (flags == 0x800) {
-                        existing->localTranslation.y = values[0];
-                    } else if (flags == 0x1000) {
-                        existing->localTranslation.z = values[0];
-                    } else if (flags == 0x1c00) {
-                        existing->localTranslation.x = values[0];
-                        existing->localTranslation.y = values[1];
-                        existing->localTranslation.z = values[2];
-                    } else if (flags == 0x2000) {
-                        existing->localScale.x = values[0];
-                    } else if (flags == 0x4000) {
-                        existing->localScale.y = values[0];
-                    } else if (flags == 0x8000) {
-                        existing->localScale.z = values[0];
-                    } else if (flags == 0xe000) {
-                        existing->localScale.x = values[0];
-                        existing->localScale.y = values[1];
-                        existing->localScale.z = values[2];
-                    } else if (flags == 0x10000) {
-                        existing->localRotation.x = values[0];
-                    } else if (flags == 0x20000) {
-                        existing->localRotation.y = values[0];
-                    } else if (flags == 0x40000) {
-                        existing->localRotation.z = values[0];
-                    } else if (flags == 0x70000) {
-                        existing->localRotation.x = values[0];
-                        existing->localRotation.y = values[1];
-                        existing->localRotation.z = values[2];
-                    }
-                    UpdateKeyFrames(existing, index);
-                    return;
-                }
+        KeyFrame *key;
+        for (; index < this->keyFrames.size(); ++index) {
+            key = this->keyFrames[index];
+            if (key->timestamp >= time) {
+                if (key->timestamp == time)
+                    goto store;
                 break;
             }
-            ++index;
         }
 
-        KeyFrame *key = new KeyFrame();
-        key->timestamp = timestamp;
+        key = new KeyFrame();
+        key->timestamp = time;
         InsertKeyFrame(key, index);
-
         if (index != 0) {
-            Array<KeyFrame *> &items = this->keyFrames;
-            KeyFrame *prev = items[index - 1];
             if (index < this->keyFrames.size() - 1) {
-                KeyFrame *next = items[index + 1];
-                float t = (float) (timestamp - prev->timestamp) /
-                          (float) (next->timestamp - prev->timestamp);
-                key->translation = AEMath::VectorLerp(prev->translation, next->translation, t);
-                key->scale = AEMath::VectorLerp(prev->scale, next->scale, t);
-                key->rotation = AEMath::VectorLerp(prev->rotation, next->rotation, t);
-                key->alpha = prev->alpha + t * (next->alpha - prev->alpha);
-                key->localTranslation = AEMath::VectorLerp(prev->localTranslation, next->localTranslation, t);
-                key->localScale = AEMath::VectorLerp(prev->localScale, next->localScale, t);
-                key->localRotation = AEMath::VectorLerp(prev->localRotation, next->localRotation, t);
+                KeyFrame *before = this->keyFrames[index - 1];
+                longlong beforeTime = before->timestamp;
+                float elapsed = (float) (time - beforeTime);
+                KeyFrame *after = this->keyFrames[index + 1];
+                float t = elapsed / (float) (after->timestamp - beforeTime);
+                key->translation = AEMath::VectorLerp(before->translation, after->translation, t);
+                key->scale = AEMath::VectorLerp(this->keyFrames[index - 1]->scale, this->keyFrames[index + 1]->scale, t);
+                key->rotation = AEMath::VectorLerp(this->keyFrames[index - 1]->rotation,
+                                                   this->keyFrames[index + 1]->rotation, t);
+                before = this->keyFrames[index - 1];
+                after = this->keyFrames[index + 1];
+                key->alpha = before->alpha + t * (after->alpha - before->alpha);
+                key->localTranslation = AEMath::VectorLerp(before->localTranslation, after->localTranslation, t);
+                key->localScale = AEMath::VectorLerp(this->keyFrames[index - 1]->localScale,
+                                                     this->keyFrames[index + 1]->localScale, t);
+                key->localRotation = AEMath::VectorLerp(this->keyFrames[index - 1]->localRotation,
+                                                        this->keyFrames[index + 1]->localRotation, t);
             } else {
-                copy_vec(key->translation, prev->translation);
-                copy_vec(key->scale, prev->scale);
-                copy_vec(key->rotation, prev->rotation);
-                key->alpha = prev->alpha;
-                copy_vec(key->localTranslation, prev->localTranslation);
-                copy_vec(key->localScale, prev->localScale);
-                copy_vec(key->localRotation, prev->localRotation);
+                key->translation = this->keyFrames[index - 1]->translation;
+                key->scale = this->keyFrames[index - 1]->scale;
+                key->rotation = this->keyFrames[index - 1]->rotation;
+                KeyFrame *before = this->keyFrames[index - 1];
+                key->alpha = before->alpha;
+                key->localTranslation = before->localTranslation;
+                key->localScale = this->keyFrames[index - 1]->localScale;
+                key->localRotation = this->keyFrames[index - 1]->localRotation;
             }
-            key->channelFlags |= prev->channelFlags;
-            key->channelFlagsHi |= prev->channelFlagsHi;
+            key->channelFlags |= this->keyFrames[index - 1]->channelFlags;
+            key->channelFlagsHi |= this->keyFrames[index - 1]->channelFlagsHi;
         }
 
+    store:
         key->channelFlags |= (uint) flags;
-        key->channelFlagsHi |= (uint)((ulonglong) flags >> 32);
-        if (flags == 0x10) {
-            key->scale.y = values[0];
-            if (this->boundingRadius2 < values[0]) this->boundingRadius2 = values[0];
-        } else if (flags == 0x20) {
-            key->scale.z = values[0];
-            if (this->boundingRadius2 < values[0]) this->boundingRadius2 = values[0];
-        } else if (flags == 0x38) {
-            key->scale.x = values[0];
-            key->scale.y = values[1];
-            key->scale.z = values[2];
-            float max = values[1] < values[0] ? values[0] : values[1];
-            if (values[2] > max) max = values[2];
-            if (this->boundingRadius2 < max) this->boundingRadius2 = max;
-        } else if (flags == 0x40) {
-            key->rotation.x = values[0];
-        } else if (flags == 0x80) {
-            key->rotation.y = values[0];
-        } else if (flags == 0x100) {
-            key->rotation.z = values[0];
-        } else if (flags == 0x1c0) {
-            key->rotation.x = values[0];
-            key->rotation.y = values[1];
-            key->rotation.z = values[2];
-        } else if (flags == 0x200) {
-            key->alpha = values[0] / kAngleDivisor;
-        } else if (flags == 0x400) {
-            key->localTranslation.x = -values[0];
-        } else if (flags == 0x800) {
-            key->localTranslation.y = values[0];
-        } else if (flags == 0x1000) {
-            key->localTranslation.z = values[0];
-        } else if (flags == 0x1c00) {
-            key->localTranslation.x = values[0];
-            key->localTranslation.y = values[1];
-            key->localTranslation.z = values[2];
-        } else if (flags == 0x2000) {
-            key->localScale.x = values[0];
-        } else if (flags == 0x4000) {
-            key->localScale.y = values[0];
-        } else if (flags == 0x8000) {
-            key->localScale.z = values[0];
-        } else if (flags == 0xe000) {
-            key->localScale.x = values[0];
-            key->localScale.y = values[1];
-            key->localScale.z = values[2];
-        } else if (flags == 0x10000) {
-            key->localRotation.x = values[0];
-        } else if (flags == 0x20000) {
-            key->localRotation.y = values[0];
-        } else if (flags == 0x40000) {
-            key->localRotation.z = values[0];
-        } else if (flags == 0x70000) {
-            key->localRotation.x = values[0];
-            key->localRotation.y = values[1];
-            key->localRotation.z = values[2];
+        key->channelFlagsHi |= (uint) ((ulonglong) flags >> 32);
+        switch (flags) {
+            case 0x1:
+                key->translation.x = values[0];
+                break;
+            case 0x2:
+                key->translation.y = values[0];
+                break;
+            case 0x4:
+                key->translation.z = values[0];
+                break;
+            case 0x7:
+                key->translation.x = values[0];
+                key->translation.y = values[1];
+                key->translation.z = values[2];
+                break;
+            case 0x8:
+                key->scale.x = values[0];
+                if (values[0] > this->boundingRadius2)
+                    this->boundingRadius2 = values[0];
+                break;
+            case 0x10:
+                key->scale.y = values[0];
+                if (values[0] > this->boundingRadius2)
+                    this->boundingRadius2 = values[0];
+                break;
+            case 0x20:
+                key->scale.z = values[0];
+                if (values[0] > this->boundingRadius2)
+                    this->boundingRadius2 = values[0];
+                break;
+            case 0x38:
+                key->scale.x = values[0];
+                key->scale.y = values[1];
+                key->scale.z = values[2];
+                {
+                    float largest = values[0] > values[1] ? values[0] : values[1];
+                    largest = largest > values[2] ? largest : values[2];
+                    if (largest > this->boundingRadius2)
+                        this->boundingRadius2 = largest;
+                }
+                break;
+            case 0x40:
+                key->rotation.x = values[0];
+                break;
+            case 0x80:
+                key->rotation.y = values[0];
+                break;
+            case 0x100:
+                key->rotation.z = values[0];
+                break;
+            case 0x1c0:
+                key->rotation.x = values[0];
+                key->rotation.y = values[1];
+                key->rotation.z = values[2];
+                break;
+            case 0x200:
+                key->alpha = values[0] / 100.0f;
+                break;
+            case 0x400:
+                key->localTranslation.x = -values[0];
+                break;
+            case 0x800:
+                key->localTranslation.y = values[0];
+                break;
+            case 0x1000:
+                key->localTranslation.z = values[0];
+                break;
+            case 0x1c00:
+                key->localTranslation.x = values[0];
+                key->localTranslation.y = values[1];
+                key->localTranslation.z = values[2];
+                break;
+            case 0x2000:
+                key->localScale.x = values[0];
+                break;
+            case 0x4000:
+                key->localScale.y = values[0];
+                break;
+            case 0x8000:
+                key->localScale.z = values[0];
+                break;
+            case 0xe000:
+                key->localScale.x = values[0];
+                key->localScale.y = values[1];
+                key->localScale.z = values[2];
+                break;
+            case 0x10000:
+                key->localRotation.x = values[0];
+                break;
+            case 0x20000:
+                key->localRotation.y = values[0];
+                break;
+            case 0x40000:
+                key->localRotation.z = values[0];
+                break;
+            case 0x70000:
+                key->localRotation.x = values[0];
+                key->localRotation.y = values[1];
+                key->localRotation.z = values[2];
+                break;
+            default:
+                break;
         }
         UpdateKeyFrames(key, index);
     }
+
 
     static float old_angle_divisor = 57.295780f;
 
