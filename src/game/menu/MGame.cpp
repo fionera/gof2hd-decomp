@@ -215,10 +215,6 @@ static_assert(offsetof(AccelCtxValue, comp2) == 0x10, "AccelCtxValue::comp2 @ 0x
 
 static int **g_tmShipTune;
 
-static int **g_tmStarMap;
-
-static int **g_tmAppData;
-
 static inline void TFC_translate(TargetFollowCamera *cam, int x, int y, int z) { cam->translate(x, y, z); }
 
 
@@ -1203,34 +1199,18 @@ beginThrust:
 void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- exported override signature (Pv)
     // lint: void_ptr -- exported override signature (Pv)
     MGame *self = this;
-    int handledFree = 0;
-    if (self->pauseOpen != 0) {
-        uint8_t fc = self->freeCamMode;
-        int allowFree = (fc != 0);
-        if (fc != 0 &&
-            self->menuWindow->isShowingMessage() == 0 &&
-            self->menuWindow->isMakingScreenshot() == 0) {
-            allowFree = 1;
-        } else {
-            allowFree = 0;
-        }
-        (void) allowFree;
-    }
-
-    if (self->freeCamDragging != 0 && self->hudTouchFlags == 0 &&
-        self->cameraMode == 3) {
-        ((MGame *) (self))->freeCamTouchMove(p1, y, touch);
-        handledFree = 1;
-    }
-
-    if (!handledFree) {
+    if ((!self->pauseOpen || (self->freeCamMode && !self->menuWindow->isShowingMessage() &&
+                              !self->menuWindow->isMakingScreenshot())) &&
+        self->freeCamDragging != 0 && self->hudTouchFlags == 0 && self->cameraMode == 3) {
+        self->freeCamTouchMove(p1, y, touch);
+    } else {
         if (self->pauseOpen == 0) {
             int hh = self->hud->touchMove(p1, y, touch);
             self->hudTouchFlags = hh;
             unsigned mode = (unsigned) self->cameraMode;
             if (mode <= 1) {
                 ((MGame *) (self))->maneuverTouchMove(mode, y, touch);
-                if (reinterpret_cast<uint16_t &>(self->_b1b8) != 0 && self->jumpActive == 0) {
+                if (reinterpret_cast<uint8_t &>(self->_b1b8) != 0 && self->jumpActive == 0) {
                     int f8 = self->hudTouchFlags;
                     int ok = (f8 == 0) ||
                              (f8 == 0x20 && self->activeTouchId != touch);
@@ -1260,7 +1240,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
                                        (float) self->thrustResetX) / divisor +
                                       self->thrustBase;
                             if (t < 0.0f) t = 0.0f;
-                            if (t > 1.0f) t = 1.0f;
+                            t = t < 1.0f ? t : 1.0f;
                             self->player->setThrust(t);
                             self->player->throttleChanged();
                         }
@@ -1273,16 +1253,16 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
     if (self->pauseOpen == 0) return;
 
     if (self->gameOverActive != 0 || self->autopilotMenuOpen != 0 ||
-        self->choiceWindowOpen != 0 || reinterpret_cast<int &>(self->field_0xc4) != 0) {
+        self->choiceWindowOpen != 0 || reinterpret_cast<uint8_t &>(self->field_0xc4) != 0) {
         self->choiceWindow->OnTouchMove(p1, y);
         return;
     }
     if (self->starMapOpen != 0) {
-        int sel = **g_tmStarMap;
-        if (*(uint8_t *) sel == 0)
+        if (Globals::layout->choiceWindowOpen) {
+            Globals::layout->OnTouchMove(p1, y);
+        } else {
             self->starMap->OnTouchMove(p1, y);
-        else
-            ((Layout *) (**g_tmStarMap))->OnTouchMove(p1, y);
+        }
         return;
     }
     if (self->cutsceneActive != 0) {
@@ -1290,7 +1270,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
         return;
     }
     if (self->menuTouchOpen != 0) {
-        MGameAppData *ad = (MGameAppData *) (intptr_t) * *g_tmAppData;
+        MGameAppData *ad = (MGameAppData *) Globals::appManager->GetApplicationData();
         if (ad->modalActive == 0 && ad->transitionActive == 0)
             self->menuWindow->OnTouchMove(p1, y, touch);
     }
