@@ -436,3 +436,274 @@ namespace AbyssEngine {
         return 1;
     }
 }
+
+namespace AbyssEngine {
+    extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    void glTexEnvi(unsigned int t, unsigned int p, int v);
+    }
+
+    int ImageCreateFromFile(Engine *engine, const char *path, Image **out);
+
+    void ImageRelease(Image * *slot);
+
+    int GenerateCompressedTexture(Image * /*image*/) {
+        return 1;
+    }
+
+    int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *), // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    void *user, unsigned int *outIds, float scale, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    AELoadedTexture *outTex, bool registerTexture) {
+        Image *image = 0;
+        *outIds = 0;
+        engine->lastGlError = glGetError();
+
+        int result = ImageCreateFromFile(engine, path, &image);
+        if (result != 1)
+            return result;
+        if (cb != 0)
+            cb(image, user);
+
+        glGenTextures(1, outIds);
+        if (image->format == 6) {
+            if (Engine::enableShader != 0) {
+                glBindTexture(0x8513, *outIds);
+                glTexParameteri(0x8513, 0x2800, 0x2601);
+                glTexParameteri(0x8513, 0x2801, 0x2601);
+                int faceHeight = image->height / 6;
+                int faceWidth = image->width;
+                glTexImage2D(0x8517, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data);
+                int facePixels = faceHeight * faceWidth;
+                glTexImage2D(0x8516, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 4);
+                glTexImage2D(0x8519, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 8);
+                glTexImage2D(0x8515, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 12);
+                glTexImage2D(0x851a, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 16);
+                glTexImage2D(0x8518, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 20);
+            }
+        } else {
+            glBindTexture(0xde1, *outIds);
+            glPixelStorei(0xcf5, 1);
+            if (Engine::enableShader == 0)
+                glTexEnvi(0x2300, 0x2200, 0x2100);
+            if (Engine::clampTextures) {
+                glTexParameteri(0xde1, 0x2802, 0x812f);
+                glTexParameteri(0xde1, 0x2803, 0x812f);
+            } else {
+                glTexParameteri(0xde1, 0x2802, 0x2901);
+                glTexParameteri(0xde1, 0x2803, 0x2901);
+            }
+            if (image->hasMipmaps) {
+                if (Engine::AnisotropyValue > 0.0f) {
+                    glTexParameterf(0xde1, 0x84fe, Engine::AnisotropyValue);
+                    glTexParameteri(0xde1, 0x2801, 0x2703);
+                } else {
+                    glTexParameteri(0xde1, 0x2801, 0x2703);
+                    glTexParameteri(0xde1, 0x2800, 0x2601);
+                }
+            } else if (engine->linearFilterFlag) {
+                glTexParameteri(0xde1, 0x2800, 0x2601);
+                glTexParameteri(0xde1, 0x2801, 0x2601);
+            } else {
+                glTexParameteri(0xde1, 0x2800, 0x2600);
+                glTexParameteri(0xde1, 0x2801, 0x2600);
+            }
+            if (Engine::clampTextures) {
+                glTexParameteri(0xde1, 0x2800, 0x2601);
+                glTexParameteri(0xde1, 0x2801, 0x2601);
+            }
+
+            switch (image->format) {
+            case 1:
+                glTexImage2D(0xde1, 0, 0x1909, image->width, image->height, 0, 0x1909, 0x1401, image->data);
+                if (image->hasMipmaps)
+                    glGenerateMipmap(0xde1);
+                break;
+            case 2:
+                glTexImage2D(0xde1, 0, 0x1907, image->width, image->height, 0, 0x1907, 0x1401, image->data);
+                if (image->hasMipmaps)
+                    glGenerateMipmap(0xde1);
+                break;
+            case 3:
+                glTexImage2D(0xde1, 0, 0x1908, image->width, image->height, 0, 0x1908, 0x1401, image->data);
+                if (image->hasMipmaps)
+                    glGenerateMipmap(0xde1);
+                break;
+            case 4: {
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, 0x8c03, width, height, 0, image->dataLen, image->data);
+                    break;
+                }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blocks = width < 16 ? 2 : width >> 3;
+                    unsigned int rows = height < 8 ? 16 : (height << 1) & ~7u;
+                    unsigned int blockBytes = rows * blocks;
+                    glCompressedTexImage2D(0xde1, level, 0x8c03, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            case 5: {
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, 0x8c02, width, height, 0, image->dataLen, image->data);
+                    break;
+                }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blocks = height < 8 ? 2 : height >> 2;
+                    unsigned int rows = width < 8 ? 16 : (width << 1) & ~7u;
+                    unsigned int blockBytes = rows * blocks;
+                    glCompressedTexImage2D(0xde1, level, 0x8c02, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            case 7: {
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, 0x8c93, width, height, 0, image->dataLen, image->data);
+                    break;
+                }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blockBytes = width * height;
+                    if (blockBytes <= 16)
+                        blockBytes = 16;
+                    glCompressedTexImage2D(0xde1, level, 0x8c93, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            case 8:
+            case 9:
+            case 10: {
+                unsigned int format = 0x83f0;
+                if (image->format == 9)
+                    format = 0x83f2;
+                if (image->format == 10)
+                    format = 0x83f3;
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, format, width, height, 0, image->dataLen, image->data);
+                    break;
+                }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blockBytes = height * width;
+                    if (image->format - 9 <= 1) {
+                        if ((int) blockBytes <= 16)
+                            blockBytes = 16;
+                    } else if (blockBytes > 15) {
+                        blockBytes >>= 1;
+                    } else {
+                        blockBytes = image->format == 8 ? 8 : 16;
+                    }
+                    glCompressedTexImage2D(0xde1, level, format, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            case 11: {
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, 0x8d64, width, height, 0, image->dataLen, image->data);
+                    break;
+                }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blockBytes = (width * height) >> 1;
+                    if (width < 8)
+                        blockBytes = 8;
+                    glCompressedTexImage2D(0xde1, level, 0x8d64, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            default:
+                break;
+            }
+        }
+
+        if (registerTexture) {
+            if (outTex != 0) {
+                outTex->valid = 1;
+                outTex->isCube = image->format == 6;
+                if (glGetError() != 0) {
+                    outTex->glId = 0xffffffff;
+                    outTex->byteSize = 0;
+                    glDeleteTextures(1, outIds);
+                } else {
+                    AELabelObject(0x1702, *outIds, path);
+                    outTex->glId = *outIds;
+                    outTex->byteSize = image->dataLen;
+                    ++Engine::ImageCount;
+                }
+                engine->textureByteCounter += outTex->byteSize;
+            } else {
+                AELoadedTexture *texture = new AELoadedTexture;
+                texture->scale = scale;
+                texture->valid = 1;
+                texture->isCube = image->format == 6;
+                texture->name.Set(path);
+                if (glGetError() != 0) {
+                    glDeleteTextures(1, outIds);
+                    texture->byteSize = 0;
+                    texture->glId = 0xffffffff;
+                } else {
+                    AELabelObject(0x1702, *outIds, path);
+                    texture->glId = *outIds;
+                    texture->byteSize = image->dataLen;
+                    ++Engine::ImageCount;
+                }
+                engine->textureByteCounter += texture->byteSize;
+                ArrayAdd(texture, engine->appManager->paintCanvas->cubeTextures);
+                *outIds = engine->appManager->paintCanvas->cubeTextures.count - 1;
+            }
+        } else {
+            engine->lastGlError = glGetError();
+            if (engine->lastGlError != 0) {
+                engine->lastErrorPath = String(path);
+                glDeleteTextures(1, outIds);
+                ImageRelease(&image);
+                return -4;
+            }
+            AELabelObject(0x1702, *outIds, path);
+        }
+
+        ImageRelease(&image);
+        return 1;
+    }
+}
