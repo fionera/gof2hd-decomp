@@ -1,12 +1,12 @@
 {
  "verify": {
-  "byte_exact": 1209,
-  "linked_exact": 2945,
+  "byte_exact": 1212,
+  "linked_exact": 2955,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 34,
-  "avg_match": 80.22,
+  "avg_match": 80.39,
   "compared": 4523
  },
  "imports": [
@@ -569,6 +569,9 @@
   "malloc",
   "memchr",
   "memcmp",
+  "memcpy",
+  "memset",
+  "mkstemp",
   "mktime",
   "open",
   "posix_memalign",

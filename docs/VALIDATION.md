@@ -9,7 +9,9 @@ How the decompiled `libgof2hdaa.so` is checked against the original Android rele
 7.0.2, `-target armv7-none-linux-androideabi21 -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp
 -fPIC -frtti -fstack-protector -Oz -stdlib=libc++`. The `link_so` target links those objects plus
 the vendored static libs the original statically linked (libcrypto subset, zlib 1.2.3, libzip 0.9.3 —
-`third_party/match_libs.cmake`; zlib/libzip built with the app's ndk-build flags — `-Oz -g
+`third_party/match_libs.cmake`; libcrypto is OpenSSL 1.1.0l built with real GCC 4.9 (NDK r13b,
+fetched once — the original's `.comment` names `GCC: (GNU) 4.9.x 20150123`) at -O3 ARM;
+zlib/libzip built with the app's ndk-build flags — `-Oz -g
 -fstack-protector-strong -ffunction-sections -mthumb` and the SHA/CRYPTO_memcmp C files
 `-marm`, matching the original's per-function ISA modes) into `libgof2hdaa.so` with the NDK
 **gold** linker: `-shared -soname libgof2hdaa.so --build-id`, libc++abi.a, zlib+libzip pulled
@@ -45,15 +47,15 @@ is i386, which aligns 8-byte scalars to 4 and reports wrong offsets for ARM).
 ## Current state — symbol parity (2026-07-26)
 
 ```
-original: 5370   ours: 5421   extra: 51 (all allowlisted)   missing: 0   (wrong_type: 0   absent: 0)
+original: 5370   ours: 5420   extra: 50 (all allowlisted)   missing: 0   (wrong_type: 0   absent: 0)
 ```
 
 **Zero missing, zero wrong_type** — every function and object the original exports, with the correct
 signature, is present. The 12 formerly broken zero-size UB stubs have all been reconstructed (see
 the fidelity section).
-The **51 extra** symbols are all documented in `tools/sodiff_allow.txt`, so the `diff` target exits
+The **50 extra** symbols are all documented in `tools/sodiff_allow.txt`, so the `diff` target exits
 0; any extra beyond the list is a hard failure. They break down as 34 ctor/dtor aliases (below),
-15 engine flag globals (below), `SHA256_version`, and `gof2::kJNIEnvCallAnchors`:
+15 engine flag globals (below), and `gof2::kJNIEnvCallAnchors`:
 
 ### Reducible (already fixed)
 Moving an empty/simple **out-of-line** ctor/dtor **inline into the header** makes clang emit it weak
@@ -97,9 +99,7 @@ constant-fold the null through the flag-gated engine functions (the original kee
 internal data, accessed GOT-indirect). Hidden visibility would change the GOT codegen and
 `__attribute__` is banned, so the 15 exports stay as a documented delta.
 
-### Vendored / not-yet-wired (2 symbols)
-- `SHA256_version` — a data symbol from the vendored libcrypto subset; the original's static link
-  garbage-collected it. Not part of the decompiled source.
+### Not-yet-wired (1 symbol)
 - `gof2::kJNIEnvCallAnchors` — an internal table whose purpose is to odr-use the five
   `_JNIEnv::Call*Method` member functions (which the original **does** export). It must stay until
   its real consumer in the JNI dispatch path is decompiled and references it; internalizing it now
@@ -177,7 +177,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1209, linked_exact 2945, avg 80.22%**
+Current numbers (of **4523** compared): **byte_exact 1212, linked_exact 2955, avg 80.39%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
