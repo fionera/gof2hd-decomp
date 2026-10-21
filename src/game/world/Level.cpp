@@ -803,9 +803,12 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             if (idx == 181) {
                 z = -300.0f;
                 x = 0.0f;
+            } else if (idx == 48) {
+                z = 300.0f;
+                x = 80.0f;
             } else {
                 z = 300.0f;
-                x = idx == 48 ? 80.0f : 0.0f;
+                x = 0.0f;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
@@ -825,9 +828,12 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             if (idx == 181) {
                 z = -300.0f;
                 x = 0.0f;
+            } else if (idx == 48) {
+                z = 300.0f;
+                x = 80.0f;
             } else {
                 z = 300.0f;
-                x = idx == 48 ? 80.0f : 0.0f;
+                x = 0.0f;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
