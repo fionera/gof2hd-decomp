@@ -727,8 +727,8 @@ void Level::setPlayerEngineColor(short color) {
 }
 
 Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color) {
-    AbstractGun *weapon = nullptr;
     Gun *gun = nullptr;
+    AbstractGun *weapon = nullptr;
     switch (kind) {
         case ITEM_SORT_LASER:
         case ITEM_SORT_BLASTER:
@@ -922,8 +922,11 @@ void Level::createSpace() {
                             Globals::Canvas->TransformCreate((unsigned int &) field_18);
                             Globals::Canvas->TransformAddMeshId(field_18, field_14);
                             ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_18))->Update(1000, false);
-                            int mission = Globals::status->getCurrentCampaignMission();
-                            Globals::Canvas->TextureCreate(mission < 0x6a ? 0x2764 : 0x2765, (unsigned int &) field_1a0, false);
+                            if (Globals::status->getCurrentCampaignMission() > 0x69) {
+                                Globals::Canvas->TextureCreate(0x2765, (unsigned int &) field_1a0, false);
+                            } else {
+                                Globals::Canvas->TextureCreate(0x2764, (unsigned int &) field_1a0, false);
+                            }
                         }
                         Globals::Canvas->MeshCreate(0x4597, (unsigned int &) skyboxMesh, false);
                         Globals::Canvas->TextureCreate(0x2760, (unsigned int &) field_198, false);
@@ -1007,14 +1010,16 @@ void Level::createSpace() {
         for (int i = 1; i < 3; i++) {
             if (i == 1 && (Globals::status->getSystem() == 0
                            || !((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate())) {
-                delete (*landmarks)[1];
-                (*landmarks)[1] = nullptr;
+                if ((*landmarks)[1] != nullptr) {
+                    delete (*landmarks)[1];
+                    (*landmarks)[1] = nullptr;
+                }
                 continue;
             }
             if (Globals::status->getStation() != nullptr) {
                 int side = Globals::rnd->nextInt(2);
                 int offset = Globals::rnd->nextInt(500) + 250;
-                field_138 += (side == 0 ? -offset : offset) * 16;
+                field_138 += (side == 0 ? -offset : offset) << 4;
                 float angle = (float) field_138;
                 spawnPosition.z = angle * 3.0f + (i == 1 ? 90000.0f : 120000.0f);
                 Matrix rotation;
@@ -1075,21 +1080,21 @@ void Level::createSpace() {
 
     starSystem = new StarSystem(missionPtr);
     SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
-    if (system != nullptr) {
-        r = (float) system->starR;
-        g = (float) system->starG;
-        b = (float) system->starB;
-    } else {
+    if (system == nullptr) {
         r = 10.0f;
         g = 136.0f;
         b = 10.0f;
+    } else {
+        r = (float) system->starR;
+        g = (float) system->starG;
+        b = (float) system->starB;
     }
-    i_r = r;
-    i_g = g;
-    i_b = b;
     r_min = (int) (r / 3.0f);
     g_min = (int) (g / 3.0f);
     b_min = (int) (b / 3.0f);
+    i_r = r;
+    i_g = g;
+    i_b = b;
 }
 
 void Level::createRadioMessage(int type, int sub) {
@@ -1479,14 +1484,16 @@ void Level::createFighterTurrets() {
         }
         PlayerTurret *turret;
         switch (ship->shipGroupFlag) {
-            case 0x33:
+            case 0x33: {
                 turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
                 turret->player->setVulnerable(false);
                 turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
-                turret->setHost(ship, Vector{0.0f, 470.0f, -83.0f});
-                turret->shipGroup = 0;
+                Vector hostOffset = {0.0f, 470.0f, -83.0f};
+                turret->setHost(ship, hostOffset);
                 ship->field_0x10 = (int) (intptr_t) turret;
+                turret->shipGroup = 0;
                 break;
+            }
             case 0x2d:
                 turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
                 turret->player->setVulnerable(false);
@@ -1505,8 +1512,8 @@ void Level::createFighterTurrets() {
 
 void Level::updateAlienAttackers(int dt) {
     alienAttackTimer += dt;
-    if (Globals::status->getMission() != nullptr && Globals::status->getMission()->isCampaignMission()
-        && (Globals::status->getCurrentCampaignMission() == 0x28 || Globals::status->getCurrentCampaignMission() == 0x93
+    Mission *mission = Globals::status->getMission();
+    if (mission != nullptr && mission->isCampaignMission() && (Globals::status->getCurrentCampaignMission() == 0x28 || Globals::status->getCurrentCampaignMission() == 0x93
             || Globals::status->getCurrentCampaignMission() == 0x9a)) {
         return;
     }
@@ -2586,12 +2593,11 @@ void Level::createAsteroids() {
     // the field layout is seeded by the station so it stays the same between visits
     Globals::rnd->setSeed(Globals::status->getStation()->getIndex());
     ArraySetLength(Globals::rnd->nextInt(40) + 40, *asteroids);
-    int randomX = Globals::rnd->nextInt(100000);
-    int randomY = Globals::rnd->nextInt(100000);
-    int randomZ = Globals::rnd->nextInt(100000);
+    int x = Globals::rnd->nextInt(100000) - 50000;
+    int y = Globals::rnd->nextInt(100000) - 50000;
+    int z = Globals::rnd->nextInt(100000) + 20000;
     bool alienOrbit = Globals::status->inAlienOrbit();
     int mission = Globals::status->getCurrentCampaignMission();
-    int x, y, z;
     if (alienOrbit) {
         x = mission == 0x9a ? -70000 : -30000;
         y = 0;
@@ -2613,9 +2619,6 @@ void Level::createAsteroids() {
         y = 0;
         z = 70000;
     } else {
-        x = randomX - 50000;
-        y = randomY - 50000;
-        z = randomZ + 20000;
         if (Globals::status->getCurrentCampaignMission() == 0 && missionPtr == 3) {
             x = 0;
             y = 0;
@@ -4436,7 +4439,7 @@ void Level::update(long long dt, bool skipLod) {
 
     float gammaDamage = Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
                                                                     Globals::status->getCurrentCampaignMission());
-    if (gammaDamage > 0.0f && player != nullptr) {
+    if (player != nullptr && gammaDamage > 0.0f) {
         Item *shield = Globals::status->getShip()->getFirstEquipmentOfSort(0x26);
         if (shield != nullptr) {
             int protection = shield->getAttribute(0x34);
@@ -5568,10 +5571,12 @@ void Level::createStaticObjects() {
             geometry->setDirection(starSystem->getLightDirection(), Vector{0.0f, 1.0f, 0.0f});
             object->name = *Globals::gameText->getText(0xc87);
             object->player->setAlwaysFriend(true);
-            if (enemies == nullptr) {
+            if (enemies != nullptr) {
+                ArrayAdd(object, *enemies);
+            } else {
                 enemies = new Array<KIPlayer *>();
+                ArrayAdd(object, *enemies);
             }
-            ArrayAdd(object, *enemies);
             delete object->cargo;
             object->cargo = nullptr;
         }
@@ -5588,10 +5593,12 @@ void Level::createStaticObjects() {
         delete object->cargo;
         object->cargo = nullptr;
         object->player->setAlwaysFriend(true);
-        if (enemies == nullptr) {
+        if (enemies != nullptr) {
+            ArrayAdd(object, *enemies);
+        } else {
             enemies = new Array<KIPlayer *>();
+            ArrayAdd(object, *enemies);
         }
-        ArrayAdd(object, *enemies);
     }
 }
 
@@ -7219,7 +7226,7 @@ static inline void levelSpawnFar(Level *self, int *kiPlayer) {
 
 unsigned char Level::doInstantJump;
 Station *Level::programmedStation;
-unsigned char Level::comingFromAlienWorld;
+bool Level::comingFromAlienWorld;
 unsigned char Level::initStreamOutPosition;
 int Level::energyCellsForNextJump;
 int Level::lastMissionFreighterHitpoints;
