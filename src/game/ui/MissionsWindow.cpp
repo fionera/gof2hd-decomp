@@ -364,99 +364,90 @@ void MissionsWindow::draw() {
         this->m_pWantedWindow->draw();
         return;
     }
-    if (this->m_starMapActive != 0) {
+    if (this->m_starMapActive) {
         this->m_pStarMap->draw();
         return;
     }
 
-    PaintCanvas *canvas = Globals::Canvas;
-    Layout *L = Globals::layout;
-    unsigned int color = 0xFFFFFFFF;
-    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
-    int titleId = 0x81;
-
-    ((PaintCanvas *) canvas)->SetColor(color);
-
-    {
-        String *ht = Globals::gameText->getText(titleId);
-        String header(*ht);
-        L->drawHeader(header);
+    Globals::Canvas->SetColor(0xffffffffu);
+    Globals::layout->drawHeader(*Globals::gameText->getText(129));
+    if (Globals::status->wantedBoardAccessible()) {
+        for (unsigned int i = 0; i < this->m_pTabButtons->size(); i++)
+            (*this->m_pTabButtons)[i]->draw();
     }
 
-    if (Globals::status->wantedBoardAccessible() != 0) {
-        Array<TouchButton *> *tabs = this->m_pTabButtons;
-        for (unsigned int i = 0; i < tabs->size(); i++)
-            (*tabs)[i]->draw();
-    }
-
-    int ox = this->m_x, oy = this->m_y;
-    int ow = this->m_width, oh = this->m_height;
-
-    {
-        String *t = Globals::gameText->getText(titleId);
-        String box(*t);
-        int c = L->field_0xc_leftMargin, p20 = L->field_0x20_top;
-        int p28 = L->buttonInsetX, p2c = L->field_0x2c_rowHeight;
-        L->drawBox(1, p28 + ox, oy + c + p20, (ow >> 1) - (p2c + p28), L->field_0x5c, box,
-                   (unsigned) (uintptr_t) canvas);
-    }
-    {
-        String box("", false);
-        int c = L->field_0xc_leftMargin, p10 = L->field_0x10_rightMargin;
-        int p20 = L->field_0x20_top, p24 = L->field_0x24;
-        int p28 = L->buttonInsetX, p2c = L->field_0x2c_rowHeight;
-        int p5c = L->field_0x5c;
-        L->drawBox(5, p28 + ox, oy + c + p20 + p5c + p2c, (ow >> 1) - (p2c + p28),
-                   ((oh - (p20 + c + p5c + p2c * 2)) - p10) - p24, box, (unsigned) (uintptr_t) canvas);
-    }
-
+    // Campaign mission on the left half.
+    Globals::layout->drawBox(1, this->m_x + Globals::layout->buttonInsetX,
+                             this->m_y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+                             (this->m_width >> 1) - (Globals::layout->field_0x2c_rowHeight +
+                                                     Globals::layout->buttonInsetX),
+                             Globals::layout->field_0x5c, *Globals::gameText->getText(555));
+    Globals::layout->drawBox(5, this->m_x + Globals::layout->buttonInsetX,
+                             this->m_y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                             Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight,
+                             (this->m_width >> 1) - (Globals::layout->field_0x2c_rowHeight +
+                                                     Globals::layout->buttonInsetX),
+                             this->m_height - Globals::layout->field_0x20_top - Globals::layout->field_0xc_leftMargin -
+                             Globals::layout->field_0x5c - 2 * Globals::layout->field_0x2c_rowHeight -
+                             Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+                             String("", false));
     this->m_pCampaignWindow->draw();
-    if (this->m_pAcceptButton) this->m_pAcceptButton->draw();
+    if (this->m_pAcceptButton != nullptr)
+        this->m_pAcceptButton->draw();
 
-    {
-        String *t = Globals::gameText->getText(titleId);
-        String box(*t);
-        int c = L->field_0xc_leftMargin, p20 = L->field_0x20_top;
-        int p28 = L->buttonInsetX, p2c = L->field_0x2c_rowHeight;
-        L->drawBox(1, ox + (ow >> 1) + p2c, oy + c + p20, ((ow >> 1) - p2c) - p28, L->field_0x5c, box,
-                   (unsigned) (uintptr_t) canvas);
+    // Freelance mission on the right half.
+    Globals::layout->drawBox(1, this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight,
+                             this->m_y + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+                             (this->m_width >> 1) - Globals::layout->field_0x2c_rowHeight -
+                             Globals::layout->buttonInsetX,
+                             Globals::layout->field_0x5c, *Globals::gameText->getText(556));
+    Globals::layout->drawBox(5, this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight,
+                             this->m_y + Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0xc_leftMargin +
+                             Globals::layout->field_0x20_top + Globals::layout->field_0x5c,
+                             (this->m_width >> 1) - Globals::layout->field_0x2c_rowHeight -
+                             Globals::layout->buttonInsetX,
+                             this->m_height - Globals::layout->field_0xc_leftMargin -
+                             Globals::layout->field_0x2c_rowHeight * 2 - Globals::layout->field_0x20_top -
+                             Globals::layout->field_0x5c -
+                             Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+                             String("", false));
+    Mission *freelance = Globals::status->getFreelanceMission();
+    if (freelance != nullptr && !freelance->isEmpty() && this->m_pAgentImageParts != nullptr) {
+        Globals::imageFactory->drawChar(this->m_pAgentImageParts,
+                                        this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight,
+                                        Globals::layout->field_0x2c_rowHeight + this->m_y +
+                                        Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                        Globals::layout->field_0x5c,
+                                        false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, freelance->getAgent()->getName(),
+                                    this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2d4 +
+                                    Globals::layout->field_0x2c_rowHeight * 2,
+                                    this->m_y + Globals::layout->field_0x2c_rowHeight +
+                                    Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                    Globals::layout->field_0x5c,
+                                    false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, freelance->getAgent()->getStationName(),
+                                    this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2d4 +
+                                    Globals::layout->field_0x2c_rowHeight * 2,
+                                    this->m_y + Globals::layout->field_0x2c_rowHeight +
+                                    Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                    Globals::layout->field_0x5c + Globals::layout->field_0x4,
+                                    false);
+        Globals::Canvas->DrawString(
+                (unsigned int) (uintptr_t) Globals::font,
+                *Globals::gameText->getText(freelance->getAgent()->getMission()->getType() + 354),
+                this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2d4 + Globals::layout->field_0x2c_rowHeight * 2,
+                this->m_y + Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0xc_leftMargin +
+                Globals::layout->field_0x20_top + Globals::layout->field_0x5c + Globals::layout->field_0x4 * 2,
+                false);
     }
-    {
-        String box("", false);
-        int c = L->field_0xc_leftMargin, p10 = L->field_0x10_rightMargin;
-        int p20 = L->field_0x20_top, p24 = L->field_0x24;
-        int p28 = L->buttonInsetX, p2c = L->field_0x2c_rowHeight;
-        int p5c = L->field_0x5c;
-        L->drawBox(5, ox + (ow >> 1) + p2c, oy + p2c + c + p20 + p5c, ((ow >> 1) - p2c) - p28,
-                   ((oh - (c + p2c * 2 + p20 + p5c)) - p10) - p24, box, (unsigned) (uintptr_t) canvas);
-    }
-
-    Mission *fm = Globals::status->getFreelanceMission();
-    if (fm != nullptr && fm->isEmpty() == 0 && this->m_pAgentImageParts != nullptr) {
-        (Globals::imageFactory)->drawChar(
-            this->m_pAgentImageParts, ox + (ow >> 1) + L->field_0x2c_rowHeight,
-            L->field_0x2c_rowHeight + oy + L->field_0xc_leftMargin + L->field_0x20_top + L->field_0x5c, false);
-
-        int detailX = ox + (ow >> 1) + L->field_0x2d4 + L->field_0x2c_rowHeight * 2;
-        int detailY = oy + L->field_0xc_leftMargin + L->field_0x20_top + L->field_0x2c_rowHeight + L->field_0x5c;
-
-        String name = ((Agent *) (fm->getAgent()))->getName();
-        ((PaintCanvas *) canvas)->DrawString(font, name, detailX, detailY, false);
-
-        String station = ((Agent *) (fm->getAgent()))->getStationName();
-        ((PaintCanvas *) canvas)->DrawString(font, station, detailX, detailY, false);
-
-        String *typeTxt = Globals::gameText->getText(
-            ((Agent *) (fm->getAgent()))->getMission()->getType() + 0x162);
-        ((PaintCanvas *) canvas)->DrawString(font, *typeTxt, detailX, detailY, false);
-    }
-
     this->m_pFreelanceWindow->draw();
-    if (this->m_pMapButton) this->m_pMapButton->draw();
-    if (this->m_pRejectButton) this->m_pRejectButton->draw();
-
-    L->drawFooter();
-    if (this->m_field_0x21 != 0 || this->m_choiceActive != 0)
+    if (this->m_pMapButton != nullptr)
+        this->m_pMapButton->draw();
+    if (this->m_pRejectButton != nullptr)
+        this->m_pRejectButton->draw();
+    Globals::layout->drawFooter();
+    if (this->m_field_0x21 || this->m_choiceActive)
         this->m_pChoiceWindow->draw();
 }
 

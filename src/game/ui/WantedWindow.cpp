@@ -335,9 +335,9 @@ void WantedWindow::draw() {
                              Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight,
                              (this->windowWidth >> 1) - (Globals::layout->field_0x2c_rowHeight +
                                                          Globals::layout->buttonInsetX),
-                             this->windowHeight - (Globals::layout->field_0x20_top +
-                                                   Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x5c +
-                                                   Globals::layout->field_0x2c_rowHeight * 2) -
+                             this->windowHeight - Globals::layout->field_0x20_top -
+                             Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x5c -
+                             2 * Globals::layout->field_0x2c_rowHeight -
                              Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
                              String("", false));
     Globals::layout->drawBox(1, this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight,
@@ -351,9 +351,9 @@ void WantedWindow::draw() {
                              Globals::layout->field_0x5c,
                              (this->windowWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
                              Globals::layout->buttonInsetX,
-                             this->windowHeight - (Globals::layout->field_0xc_leftMargin +
-                                                   Globals::layout->field_0x2c_rowHeight * 2 +
-                                                   Globals::layout->field_0x20_top + Globals::layout->field_0x5c) -
+                             this->windowHeight - Globals::layout->field_0xc_leftMargin -
+                             Globals::layout->field_0x2c_rowHeight * 2 - Globals::layout->field_0x20_top -
+                             Globals::layout->field_0x5c -
                              Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
                              String("", false));
 
