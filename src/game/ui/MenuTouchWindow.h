@@ -102,7 +102,7 @@ public:
     int field_0x120;
     uint8_t pad_0x124[0x10];
     uint32_t *heapBufA;
-    unsigned char *heapBufB;
+    uint32_t *heapBufB;
     uint8_t pad_0x13c[0x18];
     int listEntryWidth;
     int listEntryHeight;
@@ -197,7 +197,7 @@ public:
 
     void startValkyrie();
 
-    int OnTouchBegin(int y, int x, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    int OnTouchBegin(int x, int y, void *touchId); // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
 
