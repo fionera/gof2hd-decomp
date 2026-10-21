@@ -556,14 +556,13 @@ namespace AbyssEngine {
         if (mesh == 0 || (short) mesh->vertexCount == 0 || (mesh->vertexFormat & 1) == 0)
             return -4;
 
-        unsigned char flags = mesh->vertexFormat;
         if (Engine::enableShader == 0 && mesh->uploaded != 0) {
             glBindBuffer(0x8892, mesh->positionVBO);
             engine->AEClientState(0x8074, true);
             glVertexPointer(3, 0x1406, 0, 0);
             glBindBuffer(0x8893, mesh->indexVBO);
 
-            if (flags & 2) {
+            if (mesh->vertexFormat & 2) {
                 glBindBuffer(0x8892, mesh->texCoordVBO);
                 engine->AEClientState(0x8078, true);
                 glTexCoordPointer(2, 0x1406, 0, 0);
@@ -571,7 +570,7 @@ namespace AbyssEngine {
                 engine->AEClientState(0x8078, false);
             }
 
-            if (flags & 4) {
+            if (mesh->vertexFormat & 4) {
                 glBindBuffer(0x8892, mesh->normalVBO);
                 engine->AEClientState(0x8075, true);
                 glNormalPointer(0x1406, 0, 0);
@@ -579,7 +578,7 @@ namespace AbyssEngine {
                 engine->AEClientState(0x8075, false);
             }
 
-            if (flags & 8) {
+            if (mesh->vertexFormat & 8) {
                 glBindBuffer(0x8892, mesh->colorVBO);
                 engine->AEClientState(0x8076, true);
                 glColorPointer(4, 0x1406, 0, 0);
@@ -589,14 +588,15 @@ namespace AbyssEngine {
 
             glDrawElements(4, (int) mesh->indexCount, 0x1403, 0);
 
-            if (engine->statsEnabled != 0) {
+            // Engine byte 0xfe enables the draw statistics, byte 0xfd selects the bucket.
+            if (engine->field_0xfe != 0) {
                 int tris = (int) ((unsigned) mesh->indexCount / (unsigned) 3);
-                if (engine->statsBucketFlag == 0) {
-                    engine->drawCallCountA += 1;
-                    engine->triangleCountA += tris;
-                } else {
+                if (engine->statsEnabled != 0) {
                     engine->triangleCountB += tris;
                     engine->drawCallCountB += 1;
+                } else {
+                    engine->triangleCountA += tris;
+                    engine->drawCallCountA += 1;
                 }
             }
 
