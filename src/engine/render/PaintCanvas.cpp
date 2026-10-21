@@ -1698,43 +1698,35 @@ static const unsigned int g_init_const_7e7b8 = 0;
 
 void PaintCanvas::Initialize(bool landscape) {
     this->gameOrientation = landscape ? 2 : 0;
-    paintcanvas_ext_init_setorientation(this->engine);
+    this->engine->SetScreenOrientation((AbyssEngine::LandscapeMode) this->gameOrientation);
 
-    memset(&this->projOrthoMatrix[0], 0, 0x10);
-    memset(&this->projOrthoMatrix[4], 0, 0x10);
-    memset(&this->projOrthoMatrix[8], 0, 0x10);
-    memset(&this->projOrthoMatrix[12], 0, 0x10);
-
+    float *proj = this->projOrthoMatrix;
+    memset(proj, 0, sizeof(this->projOrthoMatrix));
     int orient = this->gameOrientation;
-    int w = paintcanvas_ext_init_dispwidth(this->engine);
-    float fw = paintcanvas_ext_init_signedtofloat(w, 0);
-    int h = paintcanvas_ext_init_dispheight(this->engine);
-    float fh = paintcanvas_ext_init_signedtofloat(h, 0);
+    float fw = (float) (int) this->engine->GetDisplayWidth();
+    float fh = (float) (int) this->engine->GetDisplayHeight();
 
-    float ymul;
+    float ymul = fw;
     if (orient == 2) {
-        this->projOrthoMatrix[0] = 2.0f / fw;
+        proj[0] = 2.0f / fw;
         ymul = fh;
     } else {
-        memset(&this->worldViewMatrix[0], 0, 0x10);
-        memset(&this->worldViewMatrix[4], 0, 0x10);
-        memset(&this->worldViewMatrix[8], 0, 0x10);
-        memset(&this->worldViewMatrix[11], 0, 0x10);
-        this->worldViewMatrix[15] = 1.0f;
-        this->projOrthoMatrix[0] = 2.0f / fh;
-        this->worldViewMatrix[1] = g_init_const_7e7b4;
-        this->worldViewMatrix[10] = 1.0f;
-        this->worldViewMatrix[4] = 1.0f;
-        this->worldViewMatrix[13] = fw;
-        ymul = fw;
+        float *view = this->worldViewMatrix;
+        memset(view, 0, sizeof(this->worldViewMatrix));
+        view[15] = 1.0f;
+        proj[0] = 2.0f / fh;
+        view[1] = -1.0f;
+        view[10] = 1.0f;
+        view[4] = 1.0f;
+        view[13] = fw;
     }
-    this->projOrthoMatrix[10] = g_init_const_7e7b8;
-    this->projOrthoMatrix[15] = 1.0f;
-    this->projOrthoMatrix[12] = g_init_const_7e7b4;
-    this->projOrthoMatrix[13] = 1.0f;
-    this->projOrthoMatrix[5] = -2.0f / ymul;
+    proj[10] = -0.05f;
+    proj[15] = 1.0f;
+    proj[12] = -1.0f;
+    proj[13] = 1.0f;
+    proj[5] = -2.0f / ymul;
 
-    paintcanvas_ext_init_setpersp(this, 16384.0f, 512.0f, 65536.0f);
+    return this->SetProjectionMatrix3d(16384.0f, 512.0f, 65536.0f);
 }
 
 void PaintCanvas::DrawMesh(unsigned int index) {
