@@ -1,0 +1,158 @@
+#include "engine/render/LensFlare.h"
+#include "engine/render/PaintCanvas.h"
+
+
+// PC-relative pointer-to-pointer global: the engine PaintCanvas singleton used to
+// create the flare's three Image2D sprites, and the same holder reused at draw time.
+extern PaintCanvas *const gLensFlareCanvas __attribute__((visibility("hidden")));
+extern PaintCanvas *const gLF_Canvas2 __attribute__((visibility("hidden")));
+
+// PC-relative palette tables (R/G/B per flare-colour index).
+extern const uint32_t gFlareR[] __attribute__((visibility("hidden")));
+extern const uint32_t gFlareG[] __attribute__((visibility("hidden")));
+extern const uint32_t gFlareB[] __attribute__((visibility("hidden")));
+
+LensFlare::LensFlare(PaintCanvas *canvas)
+{
+    this->images = new uint32_t[3];
+    PaintCanvas *singleton = *(PaintCanvas **)gLensFlareCanvas;
+    for (int i = 0; i != 3; ++i)
+        singleton->Image2DCreate((unsigned short)(i + 0x508), this->images[i]);
+    this->width = canvas->GetWidth();
+    this->height = canvas->GetHeight();
+    this->canvas = canvas;
+}
+
+LensFlare::~LensFlare()
+{
+    delete[] this->images;
+    this->images = nullptr;
+}
+
+void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
+{
+    // --- tint from palette -------------------------------------------------
+    uint32_t r, g, b;
+    if ((unsigned)colorIndex <= 4) {
+        r = gFlareR[colorIndex];
+        g = gFlareG[colorIndex];
+        b = gFlareB[colorIndex];
+    } else {
+        r = 0xff;
+        g = 0xff;
+        b = 0xff;
+    }
+
+    // alpha < 0 -> nothing to draw.
+    if (alpha < 0.0f)
+        return;
+
+    // --- horizontal cull against the [-w, 2w] guard band -------------------
+    int w = this->width;
+    if ((float)(-w) >= srcX)
+        return;
+    if ((float)(w * 2) <= srcX)
+        return;
+
+    // --- vertical cull against the [-h, 2h] guard band ---------------------
+    int h = this->height;
+    if ((float)(-h) >= srcY)
+        return;
+    if ((float)(h * 2) <= srcY)
+        return;
+
+    // --- distance from screen centre, fade -> this->intensity --------------
+    float cx = (float)(w >> 1);
+    float cy = (float)(h >> 1);
+    float dx = cx - srcX;
+    float dy = cy - srcY;
+    float dist = sqrtf(dx * dx + dy * dy);
+
+    // normalize the centre->source direction (guarded by dist > 0).
+    float ndx = -dx * 1.5f;
+    float ndy = -dy * 1.5f;
+    if (dist > 0.0f) {
+        ndx = ndx / dist;
+        ndy = ndy / dist;
+    }
+
+    // fade = palette-scaled (1 - dist / (h/2)); larger colorIndex uses a different base.
+    float halfH = (float)(h >> 1);
+    float base = (colorIndex == 5) ? 0.875f : 0.5f;
+    float fade = base * (1.0f - dist / halfH);
+    this->intensity = fade;
+
+    PaintCanvas *canvas = *(PaintCanvas **)gLF_Canvas2;
+    uint32_t img0 = this->images[0];
+    uint32_t img1 = this->images[1];
+    uint32_t img2 = this->images[2];
+
+    // --- sprite 0: the main flare at the source, faded by (1-intensity) -----
+    {
+        uint32_t a = (uint32_t)(1.0f - (1.0f - fade));
+        uint32_t color = (a << 0) | (r << 8) | (g << 16) | (b << 24);
+        canvas->SetColor(color);
+        float px = cx + ndx * 0.5f * 0.5f * 17.0f;
+        float py = cy + ndy * 0.5f * 0.5f * 17.0f;
+        canvas->DrawImage2D(img0, (int)px, (int)py);
+    }
+
+    // --- sprite at image[0] again, scaled by 0.75 around source -------------
+    {
+        int iw = (int)canvas->GetImage2DWidth(img0);
+        float s = (float)iw * 0.75f;
+        canvas->DrawImage2D(img0, (int)(cx + ndx * s), (int)(cy + ndy * s));
+    }
+
+    // --- sprite image[1]: two passes at 0.5 and 0.25 offsets ----------------
+    {
+        int ih = (int)canvas->GetImage2DWidth(img1);
+        float s = (float)ih * 0.5f;
+        canvas->DrawImage2D(img1, (int)(cx + ndx * s * 17.0f),
+                            (int)(cy + ndy * s * 17.0f));
+        float s2 = (float)ih * 0.25f;
+        canvas->DrawImage2D(img1, (int)(cx + ndx * s2 * 17.0f),
+                            (int)(cy + ndy * s2 * 17.0f));
+    }
+
+    // --- re-fade and draw image[2] (the inner glow) -------------------------
+    {
+        uint32_t a = (uint32_t)(1.0f - this->intensity);
+        uint32_t color = (a << 0) | (r << 8) | (g << 16) | (b << 24);
+        canvas->SetColor(color);
+    }
+    if (1.0f - this->intensity < 0.625f) {
+        int iw = (int)canvas->GetImage2DWidth(img0);
+        int ih = (int)canvas->GetImage2DWidth(img0);
+        float s = (float)iw * 1.25f;
+        canvas->DrawImage2D(img0, (int)(cx + ndx * (float)ih * 0.125f * 17.0f),
+                            (int)(cy + ndy * s));
+    }
+
+    // --- streak / final overlay --------------------------------------------
+    {
+        uint32_t a = (uint32_t)(1.0f - this->intensity);
+        uint32_t color = (a << 0) | (r << 8) | (g << 16) | (b << 24);
+        canvas->SetColor(color);
+        int iw0 = (int)canvas->GetImage2DWidth(img2);
+        int iw1 = (int)canvas->GetImage2DWidth(img2);
+        float s = (float)iw0 * 2.0f;
+        canvas->DrawImage2D(img2, (int)(cx + ndx * (float)iw1 * 0.5f),
+                            (int)(cy + ndy * s));
+    }
+
+    // final blended draw if intensity > 0.
+    if (this->intensity > 0.0f) {
+        unsigned int saved = (unsigned int)this->canvas->GetColor();
+        uint32_t color = (g << 16) | (b << 8) | (r << 24);
+        uint32_t shifted = color + (uint32_t)(int)this->intensity;
+        this->canvas->SetColor(shifted);
+        this->canvas->FillRectangle(0, 0, 0, this->height);
+        this->canvas->SetColor(saved);
+    }
+}
+
+void LensFlare::update(int)
+{
+    this->intensity = 0.0f;
+}

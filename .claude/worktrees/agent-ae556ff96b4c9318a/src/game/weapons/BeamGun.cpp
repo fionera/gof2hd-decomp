@@ -1,0 +1,216 @@
+#include "game/weapons/BeamGun.h"
+#include "game/world/Level.h"
+#include "game/world/LevelScript.h"
+#include "engine/math/Transform.h"
+#include "game/weapons/Gun.h"
+#include "game/ship/PlayerEgo.h"
+#include "engine/render/AEGeometry.h"
+#include "platform/libc.h"
+
+// PaintCanvas is pulled in by pointer only (forward-declared by AEGeometry.h):
+// its full header conflicts with Transform.h during this migration, so reach its
+// transform table through the engine helper shim below.
+
+
+namespace AbyssEngine { namespace AEMath {
+Vector operator+(const Vector& lhs, const Vector& rhs);
+Matrix operator*(const Matrix& lhs, const Matrix& rhs);
+} }
+
+// Engine canvas transform lookup (PaintCanvas::TransformGetTransform veneer).
+Transform* BeamGun_canvasTransform(PaintCanvas* canvas, uint32_t transformId);
+void MatrixRotateVector(Vector* out, const Matrix* matrix, const Vector* vector);
+void MatrixGetDir(Vector* out, const Matrix* matrix);
+
+// PaintCanvas holder + per-model mesh table resolved by the engine at load time.
+__attribute__((visibility("hidden"))) extern void** BeamGun_canvas;
+__attribute__((visibility("hidden"))) extern int32_t BeamGun_secondaryMeshes[];
+
+// setEnemies()/setEnemy() land in inherited gun-hierarchy handlers reached
+// through engine relocation slots; they have no static body in this image, so
+// they stay as resolved-slot externs.
+__attribute__((visibility("hidden"))) extern void (*BeamGun_enemiesHandler_slot)(void*);
+__attribute__((visibility("hidden"))) extern void (*BeamGun_enemyHandler_slot)(void*);
+
+BeamGun::BeamGun(int owner, Gun* gun, int meshKind, Level* level)
+{
+    int type = meshKind;
+    int kind = type - 9;
+    if (type == 0xe4)
+        kind = 2;
+
+    this->field_0x4 = 0;
+    this->gun = gun;
+    this->level = level;
+    this->owner = owner;
+    this->meshKind = kind;
+
+    PaintCanvas* canvas = (PaintCanvas*)*BeamGun_canvas;
+    uint16_t primaryMesh = (uint16_t)(kind + 0x3795);
+    if (type == 0xe4)
+        primaryMesh = 0x4a92;
+    this->primaryGeometry = new AEGeometry(primaryMesh, canvas, false);
+
+    AEGeometry* secondary = nullptr;
+    int mesh = gun->isPlayerGun();
+    if (mesh != 0 && (mesh = BeamGun_secondaryMeshes[gun->itemIndex]) >= 0) {
+        this->hasSecondary = gun->weaponType != ITEM_SORT_MINE;
+        if (gun->weaponType != ITEM_SORT_MINE)
+            secondary = new AEGeometry((uint16_t)mesh, canvas, false);
+    } else {
+        this->hasSecondary = 0;
+    }
+
+    this->secondaryVisible = 0;
+    this->secondaryGeometry = secondary;
+}
+
+BeamGun::~BeamGun()
+{
+
+    if (this->primaryGeometry != nullptr)
+        delete this->primaryGeometry;
+    this->primaryGeometry = nullptr;
+
+    if (this->secondaryGeometry != nullptr)
+        delete this->secondaryGeometry;
+    this->secondaryGeometry = nullptr;
+}
+
+void BeamGun::render()
+{
+    if (this->gun->active == 0)
+        return;
+
+    this->primaryGeometry->render();
+
+    if (this->secondaryVisible != 0 && this->secondaryGeometry != nullptr)
+        this->secondaryGeometry->render();
+}
+
+void BeamGun::update(int elapsed)
+{
+    Vector back;
+    Vector rotated;
+    Matrix playerMatrix;
+    Vector transformed;
+    Vector position;
+
+    this->gun->update(elapsed);
+
+    Gun* gun = this->gun;
+    if (gun->active == 0) {
+        this->primaryGeometry->setVisible(false);
+        return;
+    }
+
+    PaintCanvas* canvas = (PaintCanvas*)*BeamGun_canvas;
+
+    if (gun->hitSmall != 0) {
+        AEGeometry* geometry = this->primaryGeometry;
+        Transform* transform = BeamGun_canvasTransform(canvas, geometry->transform);
+        transform->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
+        transform = BeamGun_canvasTransform(canvas, geometry->transform);
+        transform->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+        this->gun->hitSmall = 0;
+    }
+
+    Transform* primaryTransform = BeamGun_canvasTransform(canvas, this->primaryGeometry->transform);
+    primaryTransform->Update((long long)elapsed, false);
+
+    gun = this->gun;
+    this->primaryGeometry->setScaling(1.0f);
+
+    Vector up;
+    up.x = 0.0f;
+    up.y = 1.0f;
+    up.z = 0.0f;
+    this->primaryGeometry->setDirection(*(Vector*)&gun->field_0x90, up);
+
+    PlayerEgo* player = (PlayerEgo*)this->level->getPlayer();
+    position = player->getPosition();
+
+    Vector zero;
+    zero.x = 0.0f;
+    zero.y = 0.0f;
+    zero.z = 0.0f;
+    if (memcmp(&this->gun->offset, &zero, sizeof(float) * 3) != 0) {
+        player = (PlayerEgo*)this->level->getPlayer();
+        Matrix& firstMatrix = player->geometry->getMatrix();
+        player = (PlayerEgo*)this->level->getPlayer();
+        Matrix& secondMatrix = player->field_0x4->getMatrix();
+        playerMatrix = firstMatrix * secondMatrix;
+
+        gun = this->gun;
+        back.x = 0.0f;
+        back.y = 0.0f;
+        back.z = -100.0f;
+        rotated = gun->offset + back;
+        MatrixRotateVector(&transformed, &playerMatrix, &rotated);
+        position = position + transformed;
+    }
+
+    this->primaryGeometry->setPosition(position);
+    this->primaryGeometry->setVisible(true);
+
+    if (this->hasSecondary != 0) {
+        gun = this->gun;
+        if (gun->delayActive == 0) {
+            AEGeometry* secondary = this->secondaryGeometry;
+            Transform* t = BeamGun_canvasTransform(canvas, secondary->transform);
+            t->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
+            t = BeamGun_canvasTransform(canvas, secondary->transform);
+            t->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
+            t = BeamGun_canvasTransform(canvas, secondary->transform);
+            t->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+        } else {
+            player = (PlayerEgo*)this->level->getPlayer();
+            Vector playerPos = player->getPosition();
+            playerMatrix = *(Matrix*)&playerPos;
+
+            gun = this->gun;
+            transformed = gun->offset;
+            transformed.z = gun->offset.z + -100.0f;
+
+            MatrixRotateVector(&rotated, (Matrix*)((char*)player->player + 4), &transformed);
+            *(Vector*)&playerMatrix = *(Vector*)&playerMatrix + rotated;
+            this->secondaryGeometry->setPosition(*(Vector*)&playerMatrix);
+
+            AEGeometry* secondary = this->secondaryGeometry;
+            Transform* t = BeamGun_canvasTransform(canvas, secondary->transform);
+            t->Update((long long)elapsed, false);
+
+            MatrixGetDir(&rotated, (Matrix*)((char*)player->player + 4));
+            back.x = 0.0f;
+            back.y = 1.0f;
+            back.z = 0.0f;
+            this->secondaryGeometry->setDirection(rotated, back);
+        }
+    }
+
+    this->secondaryVisible = this->gun->delayActive;
+}
+
+// Swapping the beam mesh is a no-op: the beam geometry is rebuilt each frame in
+// update(), so there is no standing mesh to replace.
+void BeamGun::replaceGun(unsigned int /*mesh*/, int /*unused*/)
+{
+}
+
+// The beam is positioned directly from the gun/player state every frame, so a
+// camera-relative translate has nothing to apply.
+void BeamGun::translate(const Vector& /*v*/)
+{
+}
+
+// setEnemies/setEnemy forward the enemy data through the inherited gun-hierarchy
+// handler the dynamic linker resolves into the engine relocation slot.
+void BeamGun::setEnemies(Array<Player*>* enemies)
+{
+    BeamGun_enemiesHandler_slot(enemies->data());
+}
+
+void BeamGun::setEnemy(Player* enemy)
+{
+    BeamGun_enemyHandler_slot(((void**)enemy)[2]);
+}

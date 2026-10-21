@@ -1,0 +1,56 @@
+#ifndef GOF2_ITEMSORT_H
+#define GOF2_ITEMSORT_H
+
+// Galaxy on Fire 2 -- ItemSort: item attribute 2 ("sort", German "Sorte" = kind).
+// This is the item-category id for the whole catalog, not just weapons. The names are the
+// in-game category strings (gb.lang index 210 + sort). Level::createGun() instantiates only the
+// weapon sorts (marked "weapon:" below); the remaining sorts (shields, scanners, commodities, ...)
+// fall through createGun's switch as no-ops. Explicit `int` base keeps it layout-identical to the
+// former `int` fields it replaces.
+enum ItemSort : int {
+    ITEM_SORT_LASER            = 0,   // weapon: BeamGun / ObjectGun
+    ITEM_SORT_BLASTER          = 1,   // weapon: BeamGun / ObjectGun
+    ITEM_SORT_AUTO_CANNON      = 2,   // weapon: ObjectGun, 0x19 barrels, 2% spread
+    ITEM_SORT_THERMO           = 3,   // weapon: homing RocketGun
+    ITEM_SORT_ROCKET           = 4,   // weapon: dumb-fire RocketGun
+    ITEM_SORT_MISSILE          = 5,   // weapon: homing RocketGun
+    ITEM_SORT_EMP_BOMB         = 6,   // weapon: BombGun (EMP explosion)
+    ITEM_SORT_NUKE             = 7,   // weapon: BombGun
+    ITEM_SORT_TURRET           = 8,   // weapon: ObjectGun, 0xf barrels, spin render
+    ITEM_SORT_SHIELD           = 9,
+    ITEM_SORT_ARMOR            = 10,
+    ITEM_SORT_MINE             = 11,  // weapon: MineGun
+    ITEM_SORT_COMPRESSION      = 12,
+    ITEM_SORT_TRACTOR_BEAM     = 13,
+    ITEM_SORT_BOOSTER          = 14,
+    ITEM_SORT_REPAIR_BOT       = 15,
+    ITEM_SORT_STEERING_NOZZLE  = 16,
+    ITEM_SORT_SCANNER          = 17,
+    ITEM_SORT_JUMP_DRIVE       = 18,
+    ITEM_SORT_MINING_LASER     = 19,
+    ITEM_SORT_CABIN            = 20,
+    ITEM_SORT_CLOAK            = 21,
+    ITEM_SORT_COMMODITY        = 22,
+    ITEM_SORT_ORE              = 23,
+    ITEM_SORT_ORE_CORE         = 24,
+    ITEM_SORT_SCATTER_GUN      = 25,  // weapon: ObjectGun (case-2 group)
+    ITEM_SORT_TIME_EXTENDER    = 26,
+    ITEM_SORT_EMERGENCY_SYSTEM = 27,
+    ITEM_SORT_WEAPON_MOD       = 28,
+    ITEM_SORT_SIGNATURE        = 29,
+    ITEM_SORT_RESERVED_30      = 30,  // unused in data (lang "-")
+    ITEM_SORT_RESERVED_31      = 31,
+    ITEM_SORT_RESERVED_32      = 32,
+    ITEM_SORT_SPECTRAL_FILTER  = 33,
+    ITEM_SORT_IONIZING_MISSILE = 34,  // weapon: BombGun (case-6 group)
+    ITEM_SORT_PLASMA_COLLECTOR = 35,  // weapon: ObjectGun (table23)
+    ITEM_SORT_PLASMA           = 36,
+    ITEM_SORT_REPAIR_BEAM      = 37,
+    ITEM_SORT_GAMMA_SHIELD     = 38,
+    ITEM_SORT_SENTRY_GUN       = 39,  // weapon: SentryGun
+    ITEM_SORT_CLUSTER_MISSILE  = 40,  // weapon: homing RocketGun (idx barrels, wave)
+    ITEM_SORT_TRANSFUSION_BEAM = 41,
+    ITEM_SORT_SHOCK_BLAST      = 42,  // weapon: BombGun (table2a)
+};
+
+#endif // GOF2_ITEMSORT_H

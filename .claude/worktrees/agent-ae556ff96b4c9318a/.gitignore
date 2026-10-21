@@ -1,0 +1,15 @@
+# CMake / CLion
+cmake-build-*/
+/build/
+compile_commands.json
+.idea/
+.cache/
+
+# object files, scratch, python caches
+*.o
+*.log
+*.out
+__pycache__/
+*.pyc
+.verify-spike/
+cmake-build-match/

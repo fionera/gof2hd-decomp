@@ -1,0 +1,70 @@
+#ifndef GOF2_RECORDHANDLER_H
+#define GOF2_RECORDHANDLER_H
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
+
+// Game types referenced by pointer only.
+struct Agent;
+struct Mission;
+struct Wanted;
+struct GameRecord;
+namespace AbyssEngine { class PaintCanvas; class Engine; }
+
+// Builds the application's startup resource list (textures/sounds/fonts the active
+// device profile needs). Called from OnCreateApplication; the body lives in its own TU.
+void BuildResourceList(AbyssEngine::Engine *engine);
+
+// Full-screen "loading / saving" splash: clears the frame, draws the window chrome
+// (background, header, empty footer), the centered status caption and the spinner image,
+// and finally a horizontal progress bar filled to `progress` percent. `resourceHolder`
+// points at the resource id of the font/spinner to use (and is refreshed if the font for
+// the current language is not loaded yet); a null holder draws an empty frame.
+void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder);
+
+// RecordHandler — save/record serialization for the persistent game state.
+// The two leading pointers track the mission/agent currently being (de)serialized so the
+// writer can break self-reference cycles; the three String members hold the file-path
+// prefixes for the options file and the primary/backup record directories.
+class RecordHandler {
+public:
+    Mission *currentMission;   // mission being serialized (cycle guard)
+    void    *currentAgent;     // agent being serialized (cycle guard)
+    String   optionsPath;      // options file path
+    String   recordDir;        // primary save-record directory prefix
+    String   backupDir;        // backup save-record directory prefix
+
+    RecordHandler();
+    ~RecordHandler();
+
+    void   addHash(int slot);
+    void   addHashToOptions();
+    void   changeSaveDirectoryToBackupDirectory();
+    bool   checkHash(unsigned int fd);
+    void   convertSDVersionSaves();
+    bool   notEnoughMemory();
+    void   loadOptions();
+    void   loadResolutionValue(float resolution);
+    void  *readAgent(unsigned int fd);
+    void  *readAllPreviewRecords();
+    void  *readAllRecords();
+    void  *readMission(unsigned int fd);
+    int    readOptionsFileAsByteArray(signed char **out);
+    void  *readRecord(int slot);
+    int    readRecordAsByteArray(signed char **out, int slot, bool fromBackup);
+    void   recoverSDVersionSaves();
+    void  *readWanted(unsigned int fd);
+    void  *recordStoreRead(int slot);
+    void  *recordStoreReadPreview(int slot);
+    void   recordStoreWrite(int slot);
+    int    recordStoreWritePreview(GameRecord *rec, int slot);
+    void   recordStoreWritePreview(int slot);
+    void   saveOptions();
+    void   writeAgent(Agent *agentPtr, unsigned int fd);
+    void   writeByteArrayAsOptionsFile(signed char *buf, int n);
+    int    writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup);
+    void   writeMission(Mission *m, unsigned int fd);
+    void   writeWanted(Wanted *w, unsigned int fd);
+};
+#endif
