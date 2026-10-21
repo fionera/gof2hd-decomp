@@ -1043,7 +1043,7 @@ asteroids:
         bool otherLock3 = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) ||
                           this->field_0x1c != nullptr || this->lockedStation != nullptr || this->field_0x14 != 0;
         if (!this->level->getPlayer()->isInDockingProcedure() && this->asteroids != nullptr) {
-            bool inCenter = false;
+            int inCenter = 0;
             if (this->field_0x1aa) {
                 Level *level = this->level;
                 inCenter = level->isInAsteroidCenterRange(level->getPlayer()->getPosition());
