@@ -749,7 +749,7 @@ namespace AbyssEngine {
         for (unsigned int i = 0; i < mat->meshes.count; ++i) {
             Matrix world;
             AE_AEMath_matMul(&world, &mat->arr_5c.data_[i]);
-            ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
+            ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const Matrix *) canvas->worldViewMatrix);
             engine->SetModelMatrix(world);
             engine->SetUVMatrix(mat->arr_38.data_[i]);
 
@@ -1669,7 +1669,7 @@ namespace AbyssEngine {
 
                 if (x + advance >= 0 && x <= (int) engine->GetDisplayWidth()) {
                     if (!shaderMode) {
-                        ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
+                        ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const Matrix *) canvas->worldViewMatrix);
                         MeshDraw(engine, font->glyphMeshes[slot]);
                     } else {
                         Mesh *spr = (Mesh *) canvas->quad2dMesh;
@@ -1701,7 +1701,7 @@ namespace AbyssEngine {
 
                         if (n > 0x62) {
                             ((Mesh *) canvas->quad2dMesh)->indexCount = (short) ((n + 1) * 6);
-                            ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
+                            ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const Matrix *) canvas->worldViewMatrix);
                             MeshDraw(engine, (Mesh *) canvas->quad2dMesh);
                             canvas->field_0xc = 0;
                         }
@@ -1724,7 +1724,7 @@ namespace AbyssEngine {
             int n = canvas->field_0xc;
             if (n > 0) {
                 ((Mesh *) canvas->quad2dMesh)->indexCount = (short) ((n + (n << 1)) * 2);
-                ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
+                ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const Matrix *) canvas->worldViewMatrix);
                 MeshDraw(engine, (Mesh *) canvas->quad2dMesh);
                 canvas->field_0xc = 0;
             }

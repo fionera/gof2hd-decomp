@@ -701,10 +701,10 @@ bool TouchButton::touchedInside(int px, int py) {
     int h;
     int top;
     if (this->kind == 3) {
-        // Reads the raw bits of projMatrix3d.m[0] as an int x-inset; in landscape the
+        // Reads the raw bits of projMatrix3d[0] as an int x-inset; in landscape the
         // perspective matrix leaves m[0] at 0, so the inset is 0 at runtime.
         int v;
-        memcpy(&v, &Globals::Canvas->projMatrix3d.m[0], sizeof(v));
+        memcpy(&v, &Globals::Canvas->projMatrix3d[0], sizeof(v));
         if (xm1 + v > px)
             return false;
         if (this->width + ((x + 1) - v) <= px)

@@ -58,28 +58,23 @@ namespace AbyssEngine {
         ::Array<AbyssEngine::AELoadedTexture *> cubeTextures;  // 0x10 (count/data/capacity)
         unsigned char field_0x1c;                              // 0x1c
         int field_0x20;                                        // 0x20
-        unsigned int meshCount;                                // 0x24
-        char **meshes;                                         // 0x28
-        char *mask2dImage;                                     // 0x2c (Ghidra gap)
+        ::Array<AbyssEngine::Mesh *> meshes;                   // 0x24 (count/data/capacity)
         int gameOrientation;                                   // 0x30 (orientation)
         Engine *engine;                                        // 0x34
         // Ghidra ground truth (ResetPersMatrix/SetProjOrthoMatrix/CameraGetLocal): the three
         // projection-region matrices are full GL 4x4s (0x40 bytes) at 0x38/0x78/0xb8 — each is a
         // 15-float Matrix plus its m[15] slot as a trailing float. identityMatrix at 0xf8 is a
         // plain 15-float Matrix (CameraGetLocal copies exactly 0x3c of it).
-        Matrix projMatrix3d;                                   // 0x38 (GL 4x4)
-        float projMatrix3d_m15;                                // 0x74
-        Matrix projOrthoMatrix;                                // 0x78 (GL 4x4)
-        float projOrthoMatrix_m15;                             // 0xb4
-        Matrix worldViewMatrix;                                // 0xb8 (GL 4x4)
-        float worldViewMatrix_m15;                             // 0xf4
+        // Plain GL 4x4 float arrays: the original ctor runs no Matrix ctor for them (only for
+        // identityMatrix at 0xf8).
+        float projMatrix3d[16];                                // 0x38
+        float projOrthoMatrix[16];                             // 0x78
+        float worldViewMatrix[16];                             // 0xb8
         Matrix identityMatrix;                                 // 0xf8
         ::Array<AbyssEngine::Resource *> resources;
         ::Array<AbyssEngine::ImageFont *> fonts;
         ::Array<AbyssEngine::Image2D *> images;
-        unsigned int transformCount;
-        char **transforms;
-        unsigned int transforms_cap; // Ghidra: transforms is an inline Array (count/data/capacity@0x160)
+        ::Array<AbyssEngine::Transform *> transforms;          // 0x158
         ::Array<AbyssEngine::Camera *> cameras;
         unsigned int currentCamera;
         ::Array<AbyssEngine::Material *> materials;
@@ -466,8 +461,7 @@ namespace AbyssEngine {
     static_assert(__builtin_offsetof(PaintCanvas, initialized) == 0x0, "PaintCanvas::initialized offset");
     static_assert(__builtin_offsetof(PaintCanvas, culledCount) == 0x4, "PaintCanvas::culledCount offset");
     static_assert(__builtin_offsetof(PaintCanvas, cubeTextures) == 0x10, "PaintCanvas::cubeTextures @0x10");
-    static_assert(__builtin_offsetof(PaintCanvas, meshCount) == 0x24, "PaintCanvas::meshCount @0x24");
-    static_assert(__builtin_offsetof(PaintCanvas, meshes) == 0x28, "PaintCanvas::meshes @0x28");
+    static_assert(__builtin_offsetof(PaintCanvas, meshes) == 0x24, "PaintCanvas::meshes @0x24");
     static_assert(__builtin_offsetof(PaintCanvas, engine) == 0x34, "PaintCanvas::engine @0x34");
     static_assert(__builtin_offsetof(PaintCanvas, projMatrix3d) == 0x38, "PaintCanvas::projMatrix3d @0x38");
     static_assert(__builtin_offsetof(PaintCanvas, projOrthoMatrix) == 0x78, "PaintCanvas::projOrthoMatrix @0x78");
