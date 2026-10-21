@@ -46,8 +46,6 @@ namespace AbyssEngine {
 // Projection helper installed in SpaceLounge_screen_projector (maps a world Vector to a screen Vector).
 typedef void (*ScreenProjectFn)(Vector *out, Vector *in);
 
-static Layout **SpaceLounge_layout_move;
-static Layout **SpaceLounge_layout_begin;
 
 void MatrixSetTranslation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -138,37 +136,35 @@ int SpaceLounge::OnTouchMove(int x, int y) {
         return 0;
     }
 
-    int mode = this->mode;
-    if (mode == 0) {
-        Array<Agent *> *agents = this->agents;
-        if (agents != 0) {
-            Array<Vector *> *rects = this->agentRects;
-            float fy = (float) y;
-            float fx = (float) x;
-            this->hoverAgent = -1;
-            this->selectedAgent = -1;
-            int count = (int) agents->size();
-            for (int i = 0; count != i; ++i) {
-                float *a = (float *) (*rects)[i * 2];
-                if (a[0] < fx) {
-                    float *b = (float *) (*rects)[i * 2 + 1];
-                    if (fx < b[0] && fy < a[1] && b[1] < fy) {
-                        this->hoverAgent = i;
+    switch (this->mode) {
+        case 0:
+            if (this->agents != 0) {
+                float fx = (float) x;
+                float fy = (float) y;
+                this->selectedAgent = -1;
+                this->hoverAgent = -1;
+                for (int i = 0; i != (int) this->agents->size(); ++i) {
+                    float *a = (float *) (*this->agentRects)[i * 2];
+                    if (a[0] < fx) {
+                        float *b = (float *) (*this->agentRects)[i * 2 + 1];
+                        if (fx < b[0] && fy < a[1] && b[1] < fy) {
+                            this->hoverAgent = i;
+                        }
                     }
                 }
             }
-        }
-    } else if (mode == 3) {
-        Array<TouchButton *> *buttons = this->buttons;
-        (*buttons)[0]->OnTouchMove(x, y);
-    } else if (mode == 2) {
-        Array<TouchButton *> *buttons = this->buttons;
-        for (unsigned i = 0; i < buttons->size(); ++i) {
-            (*buttons)[i]->OnTouchMove(x, y);
-        }
+            break;
+        case 3:
+            (*this->buttons)[0]->OnTouchMove(x, y);
+            break;
+        case 2:
+            for (unsigned i = 0; i < this->buttons->size(); ++i) {
+                (*this->buttons)[i]->OnTouchMove(x, y);
+            }
+            break;
     }
 
-    (*SpaceLounge_layout_move)->OnTouchMove(x, y);
+    Globals::layout->OnTouchMove(x, y);
     if (this->listVisible != 0) {
         this->listWindow->OnTouchMove(x, y);
     } else {
@@ -292,52 +288,43 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
 }
 
 int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) {
-    unsigned delta;
-
+    // Generic chat sounds 759..806 map onto a per-race bank.
     switch (race) {
         case 0:
         case 5:
-            delta = soundId - 0x2f7;
             if (alternate) {
-                if ((unsigned) delta < 0x30) {
-                    return soundId + 0xf0;
+                if (soundId >= 759 && soundId < 807) {
+                    return soundId + 240;
                 }
-            } else if ((unsigned) delta < 0x30) {
-                return soundId + 0xc0;
+            } else if (soundId >= 759 && soundId < 807) {
+                return soundId + 192;
             }
             break;
         case 1:
-            delta = soundId - 0x2f7;
-            if ((unsigned) delta < 0x30) {
-                return soundId + 0x120;
+            if (soundId >= 759 && soundId < 807) {
+                return soundId + 288;
             }
             break;
         case 2:
         case 3:
-            delta = soundId - 0x2f7;
-            if ((unsigned) delta < 0x30) {
-                return soundId + 0x90;
+            if (soundId >= 759 && soundId < 807) {
+                return soundId + 144;
             }
             break;
         case 4:
-            delta = soundId - 0x2f7;
-            if ((unsigned) delta < 0x30) {
-                return soundId + 0x60;
+            if (soundId >= 759 && soundId < 807) {
+                return soundId + 96;
             }
             break;
         case 6:
-            goto done;
+            return soundId;
         case 7:
-            delta = soundId - 0x2f7;
-            if ((unsigned) delta < 0x30) {
-                return soundId + 0x30;
+            if (soundId >= 759 && soundId < 807) {
+                return soundId + 48;
             }
             break;
     }
-
-    soundId = -1;
-done:
-    return soundId;
+    return -1;
 }
 
 static inline Agent *selected_agent(SpaceLounge *self) {
@@ -686,73 +673,44 @@ void SpaceLounge::onKeyPress(int key) {
 }
 
 void SpaceLounge::updateScreenPositions() {
-    char camera[60];
-    char look[60];
-    char pos[12];
-    char up[12];
-    char target[12];
-    char halfRight[12];
-    char screen[12];
-
+    using namespace AbyssEngine::AEMath;
     if (this->agents == 0) {
         return;
     }
 
-    Level *level = SpaceLounge_screen_level_slot;
-    Array<KIPlayer *> *enemies = level->getEnemies();
-    PaintCanvas **canvasSlot = SpaceLounge_screen_canvas_slot;
-    PaintCanvas *canvas = *canvasSlot;
-    ScreenProjectFn project = SpaceLounge_screen_projector;
+    Array<KIPlayer *> *figures = this->cutScene->level->getEnemies();
+    Vector offset = Vector();
+    Vector pos = Vector();
+    Vector screen = Vector();
+    PaintCanvas *canvas = Globals::Canvas;
+    offset = 150.0f * MatrixGetRight(*(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
 
-    const Matrix *current = (const Matrix *) (long) canvas->CameraGetCurrent();
-    (void) current;
-    Matrix *local = (Matrix *) canvas->CameraGetLocal((unsigned int) (long) canvas);
-    MatrixGetRight(pos, local);
-    *(Vector *) (halfRight) = *(const Vector *) (pos) * (0.5f);
+    for (unsigned int i = 0; i < this->agents->size(); ++i) {
+        // Name-plate anchors: left/right of the figure, the right one raised above its head.
+        pos = (*figures)[i]->getPosition();
+        screen = pos - offset;
+        Globals::Canvas->GetScreenPosition(screen, *(*this->agentRects)[i * 2]);
+        screen = pos + offset;
+        screen.y += 450.0f;
+        Globals::Canvas->GetScreenPosition(screen, *(*this->agentRects)[i * 2 + 1]);
 
-    unsigned count = (unsigned) this->agents->size();
-    for (unsigned i = 0; i < count; ++i) {
-        KIPlayer *enemy = (*enemies)[i];
-        *(Vector *) target = enemy->getPosition();
+        PaintCanvas *c = Globals::Canvas;
+        Matrix look = *(const Matrix *) c->CameraGetLocal(c->CameraGetCurrent());
+        look = MatrixGetLookAt(MatrixGetPosition(look), pos, MatrixGetUp(look));
+        (*figures)[i + this->agents->size()]->geometry->setMatrix(look);
 
-        project((Vector *) screen, (Vector *) target);
-        *(Vector *) (pos) = *(const Vector *) (target) - *(const Vector *) (halfRight);
-        project((Vector *) screen, (Vector *) pos);
-        canvas->GetScreenPosition(*(AbyssEngine::AEMath::Vector *) canvas,
-                                  *(AbyssEngine::AEMath::Vector *) screen);
+        this->silhouettePos = pos;
+        this->silhouettePos.x -= MatrixGetDir(look).x * 100.0f;
+        this->silhouettePos.z -= MatrixGetDir(look).z * 100.0f;
+        (*figures)[i + this->agents->size()]->setPosition(this->silhouettePos);
 
-        *(Vector *) (pos) = *(const Vector *) (target) + *(const Vector *) (halfRight);
-        project((Vector *) screen, (Vector *) pos);
-        canvas->GetScreenPosition(*(AbyssEngine::AEMath::Vector *) canvas,
-                                  *(AbyssEngine::AEMath::Vector *) screen);
-
-        current = (const Matrix *) (long) canvas->CameraGetCurrent();
-        local = (Matrix *) canvas->CameraGetLocal((unsigned int) (long) canvas);
-        *(Matrix *) (camera) = *local;
-        MatrixGetPosition(pos, camera);
-        MatrixGetUp(up, camera);
-        MatrixGetLookAt(look, pos, target, up);
-        *(Matrix *) (camera) = *(const Matrix *) (look);
-
-        KIPlayer *mapped = (*enemies)[count + i];
-        mapped->parentGeometry->setMatrix(*(const AbyssEngine::AEMath::Matrix *) (camera));
-
-        project(&this->silhouettePos, (Vector *) target);
-        MatrixGetDir(pos, look);
-        this->silhouettePos.x -= (*(float *) pos) * 20.0f;
-        MatrixGetDir(pos, look);
-        this->silhouettePos.z -= (*(float *) (pos + 8)) * 20.0f;
-
-        mapped->setPosition(this->silhouettePos.x, this->silhouettePos.y, this->silhouettePos.z);
-
-        if (((SolarSystem *) (long) Globals::status->getSystem())->getRace() == 0) {
-            MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) (camera), *(const Matrix *) (look));
+        if (((SolarSystem *) Globals::status->getSystem())->getRace() == 0) {
+            Matrix turn;
+            MatrixSetRotation(turn, 0.0f, 3.14159274f, 0.0f);
+            look *= turn;
         }
-
-        enemy->parentGeometry->setMatrix(*(const AbyssEngine::AEMath::Matrix *) (camera));
-
-        enemy->setPosition(((Vector *) target)->x, ((Vector *) target)->y, ((Vector *) target)->z);
+        (*figures)[i]->geometry->setMatrix(look);
+        (*figures)[i]->setPosition(pos);
     }
 }
 
@@ -761,156 +719,182 @@ static inline TouchButton *button_at(SpaceLounge *self, unsigned i) {
 }
 
 void SpaceLounge::drawLounge() {
-    String s0, s1, s2, s3, s4, s5, s6;
-
-    PaintCanvas **canvasSlot = SpaceLounge_lounge_canvas_slot;
-    PaintCanvas *canvas = *canvasSlot;
-    Layout **layoutSlot = SpaceLounge_lounge_layout_slot;
-    Layout *layout = *layoutSlot;
-    ImageFactory **factorySlot = SpaceLounge_lounge_image_factory_slot;
-    ImageFactory *factory = *factorySlot;
-
-    if (this->mode == 0) {
-        int hover = this->hoverAgent;
-        if (hover >= 0) {
-            Agent *agent = (*this->agents)[hover];
-            Array<Vector *> *rects = this->agentRects;
-            float *left = (float *) (*rects)[hover * 2];
-            float *right = (float *) (*rects)[hover * 2 + 1];
-            int pad = layoutMetric(layout, 0x94);
-            int cx = (int) (left[0] + (right[0] - left[0]) * 0.5f);
-            int y = (int) (right[1] - (float) (pad * 2));
-
-            canvas->SetColor((unsigned int) (long) canvas);
-            if (agent->isKnown() != 0 || agent->isStoryAgent() != 0) {
-                s0 = agent->getName();
-            } else {
-                GameText **texts = SpaceLounge_lounge_text_slot;
-                String *text = (*texts)->getText(agent->getRace() + 0x196);
-                s0.Set(text->data);
-            }
-
-            Mission *mission = agent->getMission();
-            if (mission != 0) {
-                GameText **texts = SpaceLounge_lounge_text_slot;
-                String *text = (*texts)->getText(mission->getType() + 0x162);
-                s1.Set(text->data);
-            } else {
-                int offer = agent->getOffer();
-                GameText **texts = SpaceLounge_lounge_text_slot;
-                int id = 0;
-                if (offer == 6) {
-                    id = 0x132;
-                } else if (offer == 2) {
-                    id = 0x131;
-                } else if (offer == 7) {
-                    id = 0x130;
-                }
-                if (id != 0) {
-                    s1.Set((*texts)->getText(id)->data);
-                } else {
-                    s1 = "";
-                }
-            }
-
-            String *font = *SpaceLounge_lounge_font_slot;
-            int textWidth = canvas->GetTextWidth((unsigned int) (long) canvas, *font);
-            int boxX = cx - pad;
-            int boxY = y - pad;
-            int width = pad * 2 + textWidth;
-            s2 = "";
-            layout->drawBox(2, boxX, boxY, width, layout->field_0x30_rowHeight, s2, 1u);
-            canvas->DrawRectangle(boxX, boxY, width, layout->field_0x30_rowHeight);
-
-            s3 = agent->isKnown() == 0 ? "?" : "";
-            s4 = s3 + s0;
-            canvas->DrawString((unsigned int) (long) font, s4, cx, y + layoutMetric(layout, 0x2c0),
-                               false);
-
-            if (agent->isKnown() != 0) {
-                s5 = " ";
-                s6 = s5 + s0;
-                int nameWidth = canvas->GetTextWidth((unsigned int) (long) canvas, *font);
-                canvas->DrawString((unsigned int) (long) font, s1, cx + nameWidth,
-                                   y + layoutMetric(layout, 0x2c0), false);
-            }
+    if (this->mode != 0) {
+        // Conversation: portrait panel + answer buttons.
+        Globals::Canvas->SetColor(0xffffffffu);
+        Layout *layout = Globals::layout;
+        layout->drawBox(2, this->panelX, this->panelY, layout->field_0x68, layout->field_0x6c, String(""));
+        Globals::Canvas->SetColor(0x193043ffu);
+        Globals::Canvas->DrawRectangle(this->panelX, this->panelY, Globals::layout->field_0x68,
+                                       Globals::layout->field_0x6c);
+        Globals::Canvas->SetColor(0xffffffffu);
+        Globals::imageFactory->drawChar((*this->silhouetteGrid)[this->selectedAgent],
+                                        Globals::layout->field_0x4c + this->panelX,
+                                        Globals::layout->field_0x4c + this->panelY, false);
+        this->scrollWindow->draw();
+        if ((this->mode & ~1) != 2) {
+            return;
         }
-        return;
-    }
 
-    canvas->SetColor((unsigned int) (long) canvas);
-    s0 = "";
-    layout->drawBox(2, this->panelX, this->panelY, layoutMetric(layout, 0x68), layoutMetric(layout, 0x6c), s0, 1u);
-    canvas->DrawRectangle(this->panelX, this->panelY, layoutMetric(layout, 0x68),
-                          layoutMetric(layout, 0x6c));
-    factory->drawChar((*this->silhouetteGrid)[this->selectedAgent],
-                      layout->field_0x4c + this->panelX, layout->field_0x4c + this->panelY, false);
-    this->scrollWindow->draw();
-
-    if ((this->mode & 0xfffffffe) != 2) {
-        return;
-    }
-
-    button_at(this, 0)->setTextColor(-1);
-    int offer = ((*this->agents)[this->selectedAgent])->getOffer();
-    if (this->mode == 2) {
-        button_at(this, 0)->setPosition(this->buttonX, this->buttonY0);
-        button_at(this, 1)->setPosition(this->panelWidth + this->buttonX, this->buttonY0, 0x12);
-        this->visibleButtonCount = 0;
-        if (offer < 11 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
-            this->visibleButtonCount = 3;
-        } else if (offer == 1) {
-            this->visibleButtonCount = 1;
-            button_at(this, 0)->setPosition(this->buttonX, this->buttonY1);
+        (*this->buttons)[0]->setTextColor(0xed00ff);
+        int offer = (*this->agents)[this->selectedAgent]->getOffer();
+        if (this->mode == 2) {
+            (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY0);
+            (*this->buttons)[1]->setPosition(this->panelWidth + this->buttonX, this->buttonY0, 18);
+            this->visibleButtonCount = 0;
+            if (offer <= 10 && ((1 << offer) & 0x60c) != 0) {
+                this->visibleButtonCount = 3;
+            } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission() != 0 &&
+                       (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
+                       (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
+                this->visibleButtonCount = this->singleOffer == 0 ? 4 : 1;
+                if (this->singleOffer != 0) {
+                    (*this->buttons)[0]->setTextColor(-1);
+                    (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+                }
+            } else if (offer == 1) {
+                this->visibleButtonCount = 1;
+                (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+            } else {
+                this->visibleButtonCount = 2;
+                (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+                (*this->buttons)[1]->setPosition(this->panelWidth + this->buttonX, this->buttonY1, 18);
+            }
         } else {
-            this->visibleButtonCount = 2;
-            button_at(this, 0)->setPosition(this->buttonX, this->buttonY1);
-            button_at(this, 1)->setPosition(this->panelWidth + this->buttonX, this->buttonY1, 0x12);
+            this->visibleButtonCount = 1;
+            (*this->buttons)[0]->setTextColor(-1);
+            (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
         }
+
+        for (unsigned int i = 0; i < this->buttons->size(); i++) {
+            (*this->buttons)[i]->setVisible(false);
+        }
+        layout = Globals::layout;
+        int inset = layout->field_0x4c * 2;
+        int boxHeight = layout->field_0x2d8;
+        if (this->visibleButtonCount > 2) {
+            int stacked = layout->field_0x30_rowHeight * (this->visibleButtonCount - 1) +
+                          layout->field_0x34 * (this->visibleButtonCount - 2);
+            boxHeight = boxHeight > stacked ? boxHeight : stacked;
+        }
+        layout->drawBox(2, this->panelX, this->buttonPanelY, layout->field_0x68, inset + boxHeight, String(""));
+        Globals::Canvas->SetColor(0x193043ffu);
+        Globals::Canvas->DrawRectangle(this->panelX, this->buttonPanelY, Globals::layout->field_0x68, inset + boxHeight);
+        Globals::Canvas->SetColor(0xffffffffu);
+        Globals::imageFactory->drawChar(this->agentImageParts, Globals::layout->field_0x4c + this->panelX,
+                                        this->buttonPanelY + Globals::layout->field_0x4c, true);
+
+        if (offer == 1 || this->singleOffer != 0 || this->mode == 3) {
+            (*this->buttons)[0]->setVisible(true);
+            (*this->buttons)[0]->draw();
+            return;
+        }
+        (*this->buttons)[0]->setVisible(true);
+        (*this->buttons)[1]->setVisible(true);
+        (*this->buttons)[0]->draw();
+        (*this->buttons)[1]->draw();
+        if (offer > 10) {
+            return;
+        }
+        if (((1 << offer) & 0x60c) != 0) {
+            (*this->buttons)[2]->setVisible(true);
+            (*this->buttons)[2]->draw();
+        } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
+                   (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
+            (*this->buttons)[3]->setVisible(true);
+            (*this->buttons)[4]->setVisible(true);
+            (*this->buttons)[3]->draw();
+            (*this->buttons)[4]->draw();
+        }
+        return;
+    }
+
+    // Lounge overview: name plate above the hovered agent.
+    if (this->hoverAgent < 0) {
+        return;
+    }
+    Agent *agent = (*this->agents)[this->hoverAgent];
+    Vector *left = (*this->agentRects)[this->hoverAgent * 2];
+    Vector *right = (*this->agentRects)[this->hoverAgent * 2 + 1];
+    int pad = Globals::layout->field_0x94;
+    Globals::Canvas->SetColor(0xffffffffu);
+    int centerX = (int) (left->x + (right->x - left->x) * 0.5f);
+    int top = (int) (right->y - (float) (pad * 2));
+
+    String name = agent->isKnown() || agent->isStoryAgent()
+                          ? agent->getName()
+                          : String(*Globals::gameText->getText(agent->getRace() + 406), false);
+    String role;
+    if (agent->getMission() != 0) {
+        role = String(*Globals::gameText->getText(agent->getMission()->getType() + 354), false);
+    } else if (agent->getOffer() == 6) {
+        role = String(*Globals::gameText->getText(306), false);
+    } else if (agent->getOffer() == 2) {
+        role = String(*Globals::gameText->getText(305), false);
+    } else if (agent->getOffer() == 7) {
+        role = String(*Globals::gameText->getText(884), false);
     } else {
-        this->visibleButtonCount = 1;
-        button_at(this, 0)->setTextColor(-1);
-        button_at(this, 0)->setPosition(this->buttonX, this->buttonY1);
+        role = String("");
     }
 
-    for (unsigned i = 0; i < this->buttons->size(); ++i) {
-        button_at(this, i)->setVisible(false);
+    int width = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name);
+    if (agent->isKnown()) {
+        width += Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, role + String("  "));
     }
-
-    int buttonHeight = layout->field_0x2d8;
-    if (this->visibleButtonCount > 2) {
-        int needed = layout->field_0x30_rowHeight * (this->visibleButtonCount - 1) + layout->field_0x34 * (
-                         this->visibleButtonCount - 2);
-        if (needed > buttonHeight) {
-            buttonHeight = needed;
-        }
+    Layout *layout = Globals::layout;
+    int x = centerX;
+    if (x - pad < layout->buttonInsetX) {
+        x = layout->buttonInsetX + pad;
+    } else if (pad + x + width > Globals::w - layout->buttonInsetX) {
+        x = Globals::w - layout->buttonInsetX - (width + pad * 2);
     }
-    int panelHeight = layout->field_0x4c * 2 + buttonHeight;
-    s0 = "";
-    layout->drawBox(2, this->panelX, this->buttonPanelY, layoutMetric(layout, 0x68), panelHeight, s0, 1u);
-    canvas->DrawRectangle(this->panelX, this->buttonPanelY, layoutMetric(layout, 0x68), panelHeight);
-    factory->drawChar(this->agentImageParts, layout->field_0x4c + this->panelX,
-                      this->buttonPanelY + layout->field_0x4c, true);
-
-    button_at(this, 0)->setVisible(true);
-    if (!(offer == 1 || this->singleOffer != 0 || this->mode == 3)) {
-        button_at(this, 1)->setVisible(true);
-        button_at(this, 0)->draw();
-        button_at(this, 1)->draw();
-        if (offer <= 10 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
-            button_at(this, 2)->setVisible(true);
-        }
+    int lineHeight = layout->field_0x30_rowHeight;
+    layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
+    Globals::Canvas->SetColor(0x193043ffu);
+    Globals::Canvas->DrawRectangle(x - pad, top - pad, pad * 2 + width, Globals::layout->field_0x30_rowHeight);
+    Globals::Canvas->SetColor(0xffffffffu);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                name + (agent->isKnown() ? String("  ") : String("")), x,
+                                top + Globals::layout->field_0x2c0, false);
+    if (agent->isKnown()) {
+        Globals::Canvas->SetColor(0xff8000ffu);
+        Globals::Canvas->DrawString(
+                (unsigned int) (uintptr_t) Globals::font, role,
+                Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name + String("  ")) + x,
+                top + Globals::layout->field_0x2c0, false);
     }
-    button_at(this, 0)->draw();
 }
 
-int SpaceLounge::init() {
-    char matrix[60];
+// Lounge camera fly-in per lounge race: start/end translations and Y rotations.
+static const int SpaceLounge_cameraStartPos[4 * 3] = {
+        -1315, 1160, -2728, 1484, 2980, -1626, -2472, 734, -3000, -2598, 400, 1813};
+static const int SpaceLounge_cameraEndPos[4 * 3] = {
+        -1800, 620, 1805, 607, 610, 2362, 136, 444, 1122, 2222, 450, 1227};
+static const float SpaceLounge_cameraStartRot[4] = {0.03f, 0.03f, 0.21f, 1.87f};
+static const float SpaceLounge_cameraEndRot[4] = {0.04f, 0.43f, 0.6f, 0.46f};
 
+// Character descriptor for the anonymous silhouette (all parts default).
+static int SpaceLounge_silhouetteChar[8];
+
+int SpaceLounge::init() {
     this->touchDown = 0;
     this->initialized = 0;
     this->cameraAnimating = 0;
-    this->agents = (Array<Agent *> *) Station_getAgents(Globals::status->getStation());
+    this->agents = Globals::status->getStation()->getAgents();
+
+    if (this->silhouetteGrid == 0 && this->agents != 0 && this->agentRects == 0) {
+        this->silhouetteGrid = new Array<Array<ImagePart *> *>();
+        ArraySetLength(this->agents->size(), *this->silhouetteGrid);
+        this->agentRects = new Array<Vector *>();
+        ArraySetLength(this->agents->size() * 2, *this->agentRects);
+        for (unsigned int i = 0; i < this->agents->size(); i++) {
+            (*this->silhouetteGrid)[i] = Globals::imageFactory->loadChar((*this->agents)[i]->getImageParts());
+            (*this->agentRects)[i] = new Vector();
+            (*this->agentRects)[this->agents->size() + i] = new Vector();
+        }
+        this->agentImageParts = new Array<ImagePart *>();
+        this->agentImageParts = Globals::imageFactory->loadChar(SpaceLounge_silhouetteChar);
+    }
 
     if (this->choiceWindow != 0) {
         delete this->choiceWindow;
@@ -918,101 +902,146 @@ int SpaceLounge::init() {
     }
     this->choiceWindow = new ChoiceWindow();
     this->hangarUpdate = 0;
-
     if (this->cutScene != 0) {
         this->cutScene->resetCamera();
     }
-
     this->field_0x18 = 0;
-    this->agentVisited = new char[0x15];
-    for (int i = 0; i != 0x15; ++i) {
+    this->agentVisited = new char[21];
+    for (int i = 0; i != 21; ++i) {
         this->agentVisited[i] = 0;
     }
 
-    Layout **layoutSlot = SpaceLounge_init_layout_slot;
-    Layout *layout = *layoutSlot;
-    int panelW = layoutMetric(layout, 0x68);
-    this->panelX = panelW / 2;
+    // Agent list panel + buttons.
+    Layout *layout = Globals::layout;
+    this->panelX = Globals::w / 2 - layout->field_0x68 / 2;
     this->panelY = layout->field_0x20_top + layout->field_0xc_leftMargin;
-    this->panelWidth = panelW - layout->field_0x4c * 3 - layout->field_0x2d4;
-
-    this->scrollWindow = new ScrollTouchWindow(
-        this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4,
-        this->panelY, this->panelWidth, layoutMetric(layout, 0x6c), false);
-
+    this->panelWidth = layout->field_0x68 - layout->field_0x4c * 3 - layout->field_0x2d4;
+    this->scrollWindow = new ScrollTouchWindow(this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4, this->panelY,
+                                               this->panelWidth, layout->field_0x6c, false);
     this->mode = 0;
-    this->buttonPanelY = this->panelY + layoutMetric(layout, 0x6c) + layout->field_0x2c_rowHeight;
-    this->buttonsHeight = (layout->field_0x34 + layout->field_0x30_rowHeight) * 5;
+    this->buttonPanelY = this->panelY + Globals::layout->field_0x6c + Globals::layout->field_0x2c_rowHeight;
+    this->buttonsHeight = (Globals::layout->field_0x34 + Globals::layout->field_0x30_rowHeight) * 5;
 
     if (this->buttons != 0) {
-        Array<TouchButton *> *oldButtons = this->buttons;
-        ArrayReleaseClasses(*oldButtons);
-        delete oldButtons;
+        ArrayReleaseClasses(*this->buttons);
+        delete this->buttons;
     }
-    Array<TouchButton *> *buttons = new Array<TouchButton *>();
-    this->buttons = buttons;
-    ArraySetLength(5, *buttons);
+    this->buttons = 0;
+    this->buttons = new Array<TouchButton *>();
+    ArraySetLength(5, *this->buttons);
 
-    GameText **textsSlot = SpaceLounge_init_text_slot;
-    String *text = (*textsSlot)->getText(0);
-    int baseY = this->buttonPanelY + layout->field_0x4c;
-    this->buttonX = this->panelX + layoutMetric(layout, 0x68) - layout->field_0x4c - this->panelWidth;
-    this->buttonY1 = (baseY + layout->field_0x2d8 / 2) - layout->field_0x30_rowHeight / 2;
-    this->buttonY0 = baseY;
-
-    for (unsigned i = 0; i < 5; ++i) {
-        TouchButton *button = new TouchButton(*text, 0, this->buttonX,
-                                              baseY + (int) i * (layout->field_0x30_rowHeight + layout->field_0x34),
-                                              this->panelWidth, 0x11, 4);
-        (*buttons)[i] = button;
-        button->setTextColor(-1);
-    }
-
+    layout = Globals::layout;
+    this->buttonX = this->panelX + layout->field_0x68 - layout->field_0x4c - this->panelWidth;
+    int y = this->buttonPanelY + layout->field_0x4c;
+    int rowHeight = layout->field_0x30_rowHeight;
+    int rowGap = layout->field_0x34;
+    (*this->buttons)[0] = new TouchButton(*Globals::gameText->getText(860), 0, this->buttonX, y,
+                                          this->panelWidth / 2 - Globals::layout->field_0x4c / 2, 17, 4);
+    (*this->buttons)[0]->setTextColor(0xed00ff);
+    (*this->buttons)[1] = new TouchButton(*Globals::gameText->getText(861), 0,
+                                          this->panelX + Globals::layout->field_0x68 - Globals::layout->field_0x4c, y,
+                                          this->panelWidth / 2 - Globals::layout->field_0x4c, 18, 4);
+    (*this->buttons)[1]->setTextColor(0xff2a00ff);
+    int y2 = y + rowHeight + rowGap;
+    (*this->buttons)[2] = new TouchButton(*Globals::gameText->getText(776), 0, this->buttonX, y2, this->panelWidth, 17, 4);
+    (*this->buttons)[3] = new TouchButton(*Globals::gameText->getText(804), 0, this->buttonX, y2, this->panelWidth, 17, 4);
+    (*this->buttons)[4] = new TouchButton(*Globals::gameText->getText(807), 0, this->buttonX,
+                                          y2 + Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34,
+                                          this->panelWidth, 17, 4);
     this->hoverAgent = -1;
-    MatrixSetTranslation(matrix, 0.0f, 0.0f, 0.0f);
-    MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
-    PaintCanvas **cameraSlot = SpaceLounge_init_camera_slot;
-    PaintCanvas *camera = *cameraSlot;
-    const AbyssEngine::AEMath::Matrix *current =
-            (const AbyssEngine::AEMath::Matrix *) (long) camera->CameraGetCurrent();
-    camera->CameraSetLocal((unsigned int) (long) camera, *current);
+    this->buttonY1 = y + Globals::layout->field_0x2d8 / 2 - Globals::layout->field_0x30_rowHeight / 2;
+    this->buttonY0 = y;
+
+    // Camera at the lounge's resting view.
+    int race = ((SolarSystem *) Globals::status->getSystem())->getRace();
+    Matrix rest;
+    AbyssEngine::AEMath::MatrixSetTranslation(rest, (float) SpaceLounge_cameraEndPos[race * 3],
+                                              (float) SpaceLounge_cameraEndPos[race * 3 + 1],
+                                              (float) SpaceLounge_cameraEndPos[race * 3 + 2]);
+    AbyssEngine::AEMath::MatrixSetRotation(rest, 0.0f, SpaceLounge_cameraEndRot[race], 0.0f);
+    PaintCanvas *canvas = Globals::Canvas;
+    canvas->CameraSetLocal(canvas->CameraGetCurrent(), rest);
     if (this->cameraEase != 0) {
-        this->cameraEase->SetRange(*(AbyssEngine::AEMath::Matrix *) matrix, *(AbyssEngine::AEMath::Matrix *) matrix);
+        this->cameraEase->SetRange(rest, rest);
     }
     this->introDone = 1;
-    this->headBobPhase = 0;
-    ((SpaceLounge *) (this))->updateScreenPositions();
+    this->headBobPhase = 0.0f;
+    if (this->cutScene != 0) {
+        this->cutScene->level->getStarSystem()->initLight();
+    }
+    ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(0.5f, 0.5f, 0.5f, 0x4000);
+
+    if (Globals::iPad) {
+        // iPad: place the agent panel next to the selected agent.
+        float margin = Globals::iPadHD ? 14.0f : (Globals::iPadLarge ? 20.0f : 10.0f);
+        if (this->agentRects != 0 && this->selectedAgent >= 0 &&
+            (unsigned int) (this->selectedAgent * 2) < this->agentRects->size()) {
+            Vector *rect = (*this->agentRects)[this->selectedAgent * 2];
+            layout = Globals::layout;
+            float x;
+            if (rect->x - margin - (float) layout->field_0x68 < (float) layout->buttonInsetX) {
+                x = this->field_0x98 + margin;
+                float right = (float) (Globals::w - layout->buttonInsetX);
+                if (x >= right) {
+                    x = right;
+                }
+            } else {
+                x = this->field_0x8c - margin - (float) layout->field_0x68;
+                if (x < (float) layout->buttonInsetX) {
+                    x = (float) layout->buttonInsetX;
+                }
+            }
+            this->panelX = (int) x;
+            int panelHeight = layout->field_0x6c;
+            float top = this->field_0x9c - (float) (panelHeight / 3);
+            float bottom = (float) (Globals::h - layout->field_0x10_rightMargin - layout->field_0x24 - panelHeight);
+            float minTop = (float) (layout->field_0x20_top + layout->field_0xc_leftMargin);
+            if (top < bottom) {
+                bottom = top;
+            }
+            if (bottom < minTop) {
+                bottom = minTop;
+            }
+            this->panelY = (int) bottom;
+            delete this->scrollWindow;
+            this->scrollWindow = 0;
+            this->scrollWindow = new ScrollTouchWindow(this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4,
+                                                       this->panelY, this->panelWidth, layout->field_0x6c, false);
+            layout = Globals::layout;
+            this->buttonPanelY = this->panelY + layout->field_0x6c + layout->field_0x2c_rowHeight;
+            this->buttonX = this->panelX + layout->field_0x68 - layout->field_0x4c - this->panelWidth;
+            int y0 = layout->field_0x4c + this->buttonPanelY;
+            float extra = Globals::iPadHD ? 15.46875f : (Globals::iPadLarge ? 22.0f : 11.0f);
+            int spacing = (int) (extra + (float) layout->field_0x34);
+            this->buttonY1 = y0 - layout->field_0x30_rowHeight / 2 + layout->field_0x2d8 / 2;
+            this->buttonY0 = y0;
+            int y1 = layout->field_0x30_rowHeight + y0 + spacing;
+            (*this->buttons)[2]->setPosition(this->buttonX, y1);
+            (*this->buttons)[3]->setPosition(this->buttonX, y1);
+            (*this->buttons)[4]->setPosition(this->buttonX, y1 + spacing + Globals::layout->field_0x30_rowHeight);
+        }
+    }
+
+    this->field_0xb1 = ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated();
+    if (Globals::status->getCurrentCampaignMission() == 24 && Globals::status->getStation()->getIndex() == 10) {
+        // Campaign: the arms dealer opens the conversation by himself.
+        for (unsigned int i = 0; i < this->agents->size(); i++) {
+            Agent *agent = (*this->agents)[i];
+            if (agent->getOffer() == 2 && agent->getSellItemIndex() == 68 && !agent->isKnown()) {
+                this->selectedAgent = i;
+                this->startChat();
+                break;
+            }
+        }
+    }
+    this->initialized = 1;
     return 0;
 }
 
-SpaceLounge::SpaceLounge() {
-    char from[60];
-    char to[60];
 
-    this->field_0x8c = 0;
-    this->field_0x90 = 0;
-    this->field_0x94 = 0;
-    this->field_0x98 = 0;
-    this->silhouettePos.x = 0;
-    this->silhouettePos.y = 0;
-    this->silhouettePos.z = 0;
-    this->field_0x9c = 0;
-    this->field_0xa0 = 0;
-    this->baseMatrix = AbyssEngine::AEMath::Matrix();
-
-    this->initialized = 0;
-    this->starMap = 0;
-    this->choiceWindow = 0;
-    this->listWindow = 0;
-    this->mapVisible = 0;
-    this->singleOffer = 0;
-    this->agentVisited = 0;
-    this->buttons = 0;
-    this->headEase = 0;
-    this->listVisible = 0;
-    this->mode = 0;
-    this->field_0x18 = 0;
-    this->cameraEase = 0;
+SpaceLounge::SpaceLounge()
+        : silhouettePos(), field_0x8c(0), field_0x90(0), field_0x94(0), field_0x98(0), field_0x9c(0),
+          field_0xa0(0) {
     this->selectedAgent = 0;
     this->agents = 0;
     this->agentTexts = 0;
@@ -1021,47 +1050,81 @@ SpaceLounge::SpaceLounge() {
     this->agentImageParts = 0;
     this->agentRects = 0;
     this->cutScene = 0;
+    this->initialized = 0;
+    this->starMap = 0;
+    this->choiceWindow = 0;
+    this->listWindow = 0;
+    this->mapVisible = 0;
+    this->hangarUpdate = 0;
+    this->singleOffer = 0;
+    this->agentVisited = 0;
+    this->buttons = 0;
+    this->headEase = 0;
+    this->listVisible = 0;
+    this->mode = 0;
+    this->field_0x18 = 0;
+    this->chatActive = 0;
+    this->popupActive = 0;
+    this->choiceVisible = 0;
+    this->cameraEase = 0;
 
     this->init();
 
-    Array<Agent *> *agents = this->agents;
-    if (agents != 0) {
-        for (unsigned i = 0; i < agents->size(); ++i) {
-            Agent *agent = (*agents)[i];
-            int offer = agent->getOffer();
-            if ((offer == 6 || offer == 0) && agent->getMission() != 0) {
-                Mission *mission = agent->getMission();
-                if (mission->getType() == 0xc && agent->hasAcceptedOffer() != 0) {
-                    ArrayRemove_AgentPtr(agent, this->agents);
-                    this->init();
-                    break;
-                }
+    // A finished "rescue" mission agent leaves the lounge: drop it and rebuild.
+    if (this->agents != 0) {
+        for (unsigned i = 0; i < this->agents->size(); ++i) {
+            Agent *agent = (*this->agents)[i];
+            if ((agent->getOffer() == 6 || agent->getOffer() == 0) && agent->getMission() != 0 &&
+                agent->getMission()->getType() == 12 && agent->hasAcceptedOffer()) {
+                ArrayRemove((*this->agents)[i], *this->agents);
+                this->init();
+                break;
             }
-            agents = this->agents;
         }
     }
 
     if (this->cutScene == 0) {
         this->cutScene = new CutScene(4);
     }
-    while (this->cutScene->isInitialized() == 0) {
+    while (!this->cutScene->isInitialized()) {
         this->cutScene->initialize();
     }
 
-    int race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-    MatrixSetTranslation(from, (float) race, 0.0f, 0.0f);
-    MatrixSetRotation(from, 0.0f, 0.0f, 0.0f);
-    MatrixSetTranslation(to, (float) race, 0.0f, 0.0f);
-    MatrixSetRotation(to, 0.0f, 0.0f, 0.0f);
-    this->cameraEase = new AbyssEngine::EaseInOutMatrix(*(Matrix *) from, *(Matrix *) to, 3000);
+    // Turn every agent (and its seat partner) towards the camera.
+    Array<KIPlayer *> *figures = this->cutScene->level->getEnemies();
+    if (this->agents != 0) {
+        for (unsigned i = 0; i < this->agents->size(); ++i) {
+            Vector pos = (*figures)[i]->getPosition();
+            PaintCanvas *canvas = Globals::Canvas;
+            Matrix look = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
+            look = AbyssEngine::AEMath::MatrixGetLookAt(AbyssEngine::AEMath::MatrixGetPosition(look), pos,
+                                                        AbyssEngine::AEMath::MatrixGetUp(look));
+            (*figures)[i]->geometry->setMatrix(look);
+            (*figures)[i]->setPosition(pos);
+            (*figures)[i + this->agents->size()]->geometry->setMatrix(look);
+            pos.x += AbyssEngine::AEMath::MatrixGetDir(look).x * -100.0f;
+            pos.z += AbyssEngine::AEMath::MatrixGetDir(look).z * -100.0f;
+            (*figures)[i + this->agents->size()]->setPosition(pos);
+        }
+    }
 
-    PaintCanvas **cameraSlot = SpaceLounge_ctor_camera_slot;
-    PaintCanvas *camera = *cameraSlot;
-    const AbyssEngine::AEMath::Matrix *current =
-            (const AbyssEngine::AEMath::Matrix *) (long) camera->CameraGetCurrent();
-    camera->CameraSetLocal((unsigned int) (long) camera, *current);
-    this->initialized = 1;
+    Matrix from;
+    int race = ((SolarSystem *) Globals::status->getSystem())->getRace();
+    AbyssEngine::AEMath::MatrixSetTranslation(from, (float) SpaceLounge_cameraStartPos[race * 3],
+                                              (float) SpaceLounge_cameraStartPos[race * 3 + 1],
+                                              (float) SpaceLounge_cameraStartPos[race * 3 + 2]);
+    AbyssEngine::AEMath::MatrixSetRotation(from, 0.0f, SpaceLounge_cameraStartRot[race], 0.0f);
+    Matrix to;
+    AbyssEngine::AEMath::MatrixSetTranslation(to, (float) SpaceLounge_cameraEndPos[race * 3],
+                                              (float) SpaceLounge_cameraEndPos[race * 3 + 1],
+                                              (float) SpaceLounge_cameraEndPos[race * 3 + 2]);
+    AbyssEngine::AEMath::MatrixSetRotation(to, 0.0f, SpaceLounge_cameraEndRot[race], 0.0f);
+    this->cameraEase = new AbyssEngine::EaseInOutMatrix(from, to, 3000);
+
+    PaintCanvas *canvas = Globals::Canvas;
+    canvas->CameraSetLocal(canvas->CameraGetCurrent(), from);
     this->introDone = 0;
+    this->initialized = 1;
 }
 
 void SpaceLounge::startChat() {
@@ -1130,51 +1193,38 @@ SpaceLounge::~SpaceLounge() {
     delete[] this->agentVisited;
     this->agentVisited = 0;
 
-    {
-        Array<String *> *strings = this->agentTexts;
-        if (strings != 0) {
-            ArrayReleaseClasses(*strings);
-            delete strings;
-        }
+    if (this->agentTexts != 0) {
+        ArrayReleaseClasses(*this->agentTexts);
+        delete this->agentTexts;
     }
     this->agentTexts = 0;
 
-    {
-        Array<TouchButton *> *buttons = this->buttons;
-        if (buttons != 0) {
-            ArrayReleaseClasses(*buttons);
-            delete buttons;
-        }
+    if (this->buttons != 0) {
+        ArrayReleaseClasses(*this->buttons);
+        delete this->buttons;
     }
     this->buttons = 0;
 
     if (this->agentImageParts != 0) {
-        return;
+        ArrayReleaseClasses(*this->agentImageParts);
+        delete this->agentImageParts;
     }
     this->agentImageParts = 0;
 
-    {
-        Array<Array<ImagePart *> *> *grid = this->silhouetteGrid;
-        if (grid != 0) {
-            for (unsigned i = 0; i < grid->size(); ++i) {
-                Array<ImagePart *> *inner = (*grid)[i];
-                if (inner != 0) {
-                    ArrayReleaseClasses(*inner);
-                    delete inner;
-                }
-                (*grid)[i] = 0;
-            }
-            delete grid;
+    if (this->silhouetteGrid != 0) {
+        for (unsigned i = 0; i < this->silhouetteGrid->size(); ++i) {
+            ArrayReleaseClasses(*(*this->silhouetteGrid)[i]);
+            delete (*this->silhouetteGrid)[i];
+            (*this->silhouetteGrid)[i] = 0;
         }
+        ArrayReleaseClasses(*this->silhouetteGrid);
+        delete this->silhouetteGrid;
     }
     this->silhouetteGrid = 0;
 
-    {
-        Array<Vector *> *rects = this->agentRects;
-        if (rects != 0) {
-            ArrayReleaseClasses(*rects);
-            delete rects;
-        }
+    if (this->agentRects != 0) {
+        ArrayReleaseClasses(*this->agentRects);
+        delete this->agentRects;
     }
     this->agentRects = 0;
 
@@ -1186,22 +1236,14 @@ SpaceLounge::~SpaceLounge() {
 }
 
 void SpaceLounge::draw() {
-    String title;
-
     if (this->listVisible != 0) {
-        if (this->listWindow->shows3DShip() != 0) {
-            PaintCanvas **canvasSlot = SpaceLounge_draw_canvas_slot;
-            PaintCanvas *canvas = *canvasSlot;
-            canvas->SetColor((unsigned char) (long) canvas, 0, 0, 0);
-            int width = pc_GetWidth(canvas);
-            int height = pc_GetHeight(canvas);
-            (void) height;
-            canvas->FillRectangle((int) (long) canvas, 0, 0, width);
-            canvas->SetColor((unsigned int) (long) canvas);
+        if (this->listWindow->shows3DShip()) {
+            Globals::Canvas->SetColor(0, 0, 0, 255);
+            Globals::Canvas->FillRectangle(0, 0, Globals::Canvas->GetWidth(), Globals::Canvas->GetHeight());
+            Globals::Canvas->SetColor(0xffffffffu);
         }
         this->listWindow->draw();
-        Layout *layout = *SpaceLounge_draw_layout_slot;
-        layout->drawFooter();
+        Globals::layout->drawFooter();
         return;
     }
 
@@ -1210,20 +1252,13 @@ void SpaceLounge::draw() {
         return;
     }
 
-    Layout **layoutSlot = SpaceLounge_draw_layout_slot;
-    Layout *layout = *layoutSlot;
-    GameText **textsSlot = SpaceLounge_draw_text_slot;
-    String *text = (*textsSlot)->getText(0x18e);
-    title.Set(text->data);
-    layout->drawHeader(title, false);
+    Globals::layout->drawHeader(String(*Globals::gameText->getText(398), false));
+    this->drawLounge();
 
-    ((SpaceLounge *) (this))->drawLounge();
-
-    layout = *layoutSlot;
-    if ((this->mode & 0xfffffffe) == 2) {
-        layout->drawFooterNoBackButton();
+    if ((this->mode & ~1) == 2) {
+        Globals::layout->drawFooterNoBackButton();
     } else {
-        layout->drawFooter();
+        Globals::layout->drawFooter();
     }
 
     if (this->chatActive != 0 || this->popupActive != 0 || this->choiceVisible != 0) {

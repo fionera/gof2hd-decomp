@@ -177,7 +177,8 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   and embeds the GLSL source, `zip_close` passing zlib version "1.2.3" vs the original's "1.2.7",
   `PlayerEgo::shake` taking `AERandom::next` vs `nextInt`). linked 3316 -> 3264 is that correction,
   not a code regression.
-- **Inline Thumb literal pools are decoded honestly** (2026-10-21): the pool is found by a linear
+- **Inline Thumb literal pools and tbb/tbh jump tables are decoded honestly** (2026-10-21; jump-table
+  entries compare by raw value): the pool is found by a linear
   sweep that ignores pc-relative "loads" decoded out of pool data (they used to mark real code as
   pool and mask it); the code is then decoded from a copy with pool bytes replaced by NOPs, because
   binutils recovers IT state by scanning backwards and a pool word that looks like `IT` put
@@ -195,7 +196,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1261, linked_exact 3302, avg 84.48%**
+Current numbers (of **4523** compared): **byte_exact 1291, linked_exact 3541, avg 89.11%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

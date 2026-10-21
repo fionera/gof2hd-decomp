@@ -809,8 +809,8 @@ int Ship::getValue() { return this->value; }
 int Ship::getPrice() { return this->price; }
 void Ship::setPrice(int price) { this->price = price; }
 int Ship::getUnmoddedHandling() { return *(int *) &this->handling; }
-int Ship::getFireRateFactor() { return *(int *) &this->fireRateFactor; }
-int Ship::getDamageFactor() { return *(int *) &this->damageFactor; }
+float Ship::getFireRateFactor() { return this->fireRateFactor; }
+float Ship::getDamageFactor() { return this->damageFactor; }
 float Ship::getFirePower() { return this->firePower; }
 int Ship::getAgility() { return this->agility; }
 int Ship::getRadarType() { return this->radarType; }

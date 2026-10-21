@@ -52,7 +52,7 @@ int Layout::getFooterTransitionWidth() {
     return w2 + w1;
 }
 
-int Layout::OnTouchBegin(int x, int y) {
+bool Layout::OnTouchBegin(int x, int y) {
     if (this->helpButtonEnabled != 0)
         this->helpButton->OnTouchBegin(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0) {
@@ -60,8 +60,8 @@ int Layout::OnTouchBegin(int x, int y) {
         return 0;
     }
     if (this->backButton->isVisible() != 0)
-        return static_cast<int>(this->backButton->OnTouchBegin(x, y));
-    return static_cast<int>(this->secondaryButton->OnTouchBegin(x, y));
+        return this->backButton->OnTouchBegin(x, y);
+    return this->secondaryButton->OnTouchBegin(x, y);
 }
 
 float Layout::getPulseValue(float speed) {
