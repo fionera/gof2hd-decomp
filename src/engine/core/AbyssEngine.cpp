@@ -200,7 +200,7 @@ namespace AbyssEngine {
     String operator+(const String &a, const String &b) {
         String result(a);
         result += b;
-        return result;
+        return String(result);
     }
 }
 
@@ -1154,10 +1154,8 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     String operator+(const String &a, const long long &b) {
         String result(a);
-        String num;
-        num.ctor_longlong(b);
-        result += num;
-        return result;
+        result += String(b);
+        return String(result);
     }
 }
 
@@ -1176,10 +1174,9 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     String operator+(const float &a, const String &b) {
-        String result;
-        result.ctor_float(a);
+        String result(a);
         result += b;
-        return result;
+        return String(result);
     }
 }
 
@@ -1562,10 +1559,8 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     String operator+(const String &a, const int &b) {
         String result(a);
-        String num;
-        num.Set((long long) (b));
-        result += num;
-        return result;
+        result += String(b);
+        return String(result);
     }
 }
 
@@ -1736,10 +1731,9 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     String operator+(const int &a, const String &b) {
-        String result;
-        result.Set((long long) (a));
+        String result(a);
         result += b;
-        return result;
+        return String(result);
     }
 }
 
@@ -2415,10 +2409,9 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     String operator+(const long long &a, const String &b) {
-        String result;
-        result.ctor_longlong(a);
+        String result(a);
         result += b;
-        return result;
+        return String(result);
     }
 }
 
@@ -2464,9 +2457,8 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     bool operator==(const String &a, const String &b) {
-        String tmp(a);
-        int cmp = tmp.Compare(b);
-        return cmp != 0;
+        String copy(a);
+        return copy.Compare(b) == 0;
     }
 }
 
@@ -2526,10 +2518,8 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     String operator+(const String &a, const float &b) {
         String result(a);
-        String num;
-        num.ctor_float(b);
-        result += num;
-        return result;
+        result += String(b);
+        return String(result);
     }
 }
 
