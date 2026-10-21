@@ -381,6 +381,46 @@ void PlayerFixedObject::update(int dt) {
             this->state = 1;
             this->player->setActive(true);
         }
+    } else if (this->state == 3) {
+        if (this->explosion)
+            this->explosion->update(dt, (TargetFollowCamera *) nullptr);
+        if (this->kind() != 0x37a3) {
+            if (this->moving) {
+                this->intPosZ += dt;
+                this->wreckGeometry->moveForward((float) dt);
+                if (this->secondaryGeometry())
+                    this->secondaryGeometry()->moveForward((float) dt);
+            }
+            reinterpret_cast<Matrix &>(this->player->transform[0]) = this->wreckGeometry->getMatrix();
+            this->position() = this->wreckGeometry->getPosition();
+            if (this->boundingVolumes) {
+                for (unsigned int i = 0; i < this->boundingVolumes->size(); i++)
+                    (*this->boundingVolumes)[i]->update(this->position().x, this->position().y,
+                                                        this->position().z);
+            }
+        }
+        this->finished() = 0;
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))->Update(dt, false);
+        if (!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))->animating) {
+            this->state = 4;
+            this->level->field_74->enableSystemEmit(this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50, false);
+            this->explosion->reset();
+            float scale = 6.0f;
+            if (this->kind() == 0x37e7)
+                scale = 8.0f;
+            if (this->kind() == 0x37a3)
+                scale = 8.0f;
+            this->explosion->setScaling(scale);
+            this->explosion->start(this->position(), Vector{0.0f, 0.0f, 0.0f});
+            this->explosionElapsed = 0;
+            this->rumbleTimer = 1;
+            if (this->level->getPlayer() && this->level->getPlayer()->getTargetFollowCamera()) {
+                float distance = AbyssEngine::AEMath::VectorLength(
+                    this->position() - *this->level->getPlayer()->getTargetFollowCamera()->getPosition());
+                this->rumblePercentage = 1.0f - (distance < 30000.0f ? distance : 30000.0f) / 30000.0f;
+                this->level->getPlayer()->getTargetFollowCamera()->setRumblePercentage(this->rumblePercentage, 50);
+            }
+        }
     } else if (this->state == 4) {
         this->explosionElapsed += dt;
         if (this->explosion)
@@ -426,46 +466,6 @@ void PlayerFixedObject::update(int dt) {
                     this->level->getPlayer()->getTargetFollowCamera()->setRumblePercentage(0.0f, 0);
                     this->rumbleTimer = 0;
                 }
-            }
-        }
-    } else if (this->state == 3) {
-        if (this->explosion)
-            this->explosion->update(dt, (TargetFollowCamera *) nullptr);
-        if (this->kind() != 0x37a3) {
-            if (this->moving) {
-                this->intPosZ += dt;
-                this->wreckGeometry->moveForward((float) dt);
-                if (this->secondaryGeometry())
-                    this->secondaryGeometry()->moveForward((float) dt);
-            }
-            reinterpret_cast<Matrix &>(this->player->transform[0]) = this->wreckGeometry->getMatrix();
-            this->position() = this->wreckGeometry->getPosition();
-            if (this->boundingVolumes) {
-                for (unsigned int i = 0; i < this->boundingVolumes->size(); i++)
-                    (*this->boundingVolumes)[i]->update(this->position().x, this->position().y,
-                                                        this->position().z);
-            }
-        }
-        this->finished() = 0;
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))->Update(dt, false);
-        if (!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))->animating) {
-            this->state = 4;
-            this->level->field_74->enableSystemEmit(this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50, false);
-            this->explosion->reset();
-            float scale = 6.0f;
-            if (this->kind() == 0x37e7)
-                scale = 8.0f;
-            if (this->kind() == 0x37a3)
-                scale = 8.0f;
-            this->explosion->setScaling(scale);
-            this->explosion->start(this->position(), Vector{0.0f, 0.0f, 0.0f});
-            this->explosionElapsed = 0;
-            this->rumbleTimer = 1;
-            if (this->level->getPlayer() && this->level->getPlayer()->getTargetFollowCamera()) {
-                float distance = AbyssEngine::AEMath::VectorLength(
-                    this->position() - *this->level->getPlayer()->getTargetFollowCamera()->getPosition());
-                this->rumblePercentage = 1.0f - (distance < 30000.0f ? distance : 30000.0f) / 30000.0f;
-                this->level->getPlayer()->getTargetFollowCamera()->setRumblePercentage(this->rumblePercentage, 50);
             }
         }
     }
