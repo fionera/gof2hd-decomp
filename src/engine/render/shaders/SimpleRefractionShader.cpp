@@ -64,103 +64,102 @@ namespace AbyssEngine {
         this->program = program;
 
         this->aPositionLoc = glGetAttribLocation(program, "a_position");
-        this->aNormalLoc = glGetAttribLocation(this->program, "a_texCoord");
-        this->aTangentLoc = glGetAttribLocation(this->program, "a_normal");
-        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_tangent");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+        this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
+        this->aBitangentLoc = glGetAttribLocation(this->program, "a_bitangent");
 
-        this->uM0Loc = glGetUniformLocation(this->program, "a_bitangent");
-        this->uM1Loc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
-        this->uM2Loc = glGetUniformLocation(this->program, "u_eyeposmodel");
-        this->uTex0Loc = glGetUniformLocation(this->program, "s_texture[0]");
-        this->uTex1Loc = glGetUniformLocation(this->program, "s_texture[1]");
-        this->uM3Loc = glGetUniformLocation(this->program, "glColor");
-        this->uM4Loc = glGetUniformLocation(this->program, "u_TexBias");
-        this->uM5Loc = glGetUniformLocation(this->program, "u_texelSize");
+        this->uMvpMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uEyePosModelLoc = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->sTexture0Loc = glGetUniformLocation(this->program, "s_texture[0]");
+        this->sTexture1Loc = glGetUniformLocation(this->program, "s_texture[1]");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        this->uTexBiasLoc = glGetUniformLocation(this->program, "u_TexBias");
+        this->uTexelSizeLoc = glGetUniformLocation(this->program, "u_texelSize");
 
         glActiveTexture(0x84c7);
         engine->ActivateRefractFBO();
 
-        this->uRefractLoc = glGetUniformLocation(this->program, "u_CloakRate");
-        this->uM6Loc = glGetUniformLocation(this->program, "s_texture_base");
+        this->uCloakRateLoc = glGetUniformLocation(this->program, "u_CloakRate");
+        this->sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
 
         glUseProgram(this->program);
 
-        int samplerLocs[2] = {this->uTex0Loc, this->uTex1Loc};
         for (int i = 0; i != 2; i = i + 1) {
-            if (samplerLocs[i] >= 0)
-                glUniform1i(samplerLocs[i], i);
+            if ((&this->sTexture0Loc)[i] >= 0)
+                glUniform1i((&this->sTexture0Loc)[i], i);
         }
-        glUniform1i(this->uM6Loc, 7);
+        glUniform1i(this->sTextureBaseLoc, 7);
     }
 
     void SimpleRefractionShader::SetInActive() {
         if (this->aPositionLoc >= 0)
             glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(this->aTexCoordLoc);
         if (this->aNormalLoc >= 0)
             glDisableVertexAttribArray(this->aNormalLoc);
         if (this->aTangentLoc >= 0)
             glDisableVertexAttribArray(this->aTangentLoc);
-        if (this->aTexCoordLoc >= 0)
-            glDisableVertexAttribArray(this->aTexCoordLoc);
-        if (this->uM0Loc >= 0)
-            glDisableVertexAttribArray(this->uM0Loc);
+        if (this->aBitangentLoc >= 0)
+            glDisableVertexAttribArray(this->aBitangentLoc);
     }
 
     void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, ::Engine *engine) {
-        if (this->uM1Loc >= 0)
-            glUniformMatrix4fv(this->uM1Loc, 1, 0, engine->worldViewProjMatrix);
+        if (this->uMvpMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uMvpMatrixLoc, 1, 0, engine->worldViewProjMatrix);
 
         if (this->dirty != 0) {
-            if (this->uM4Loc >= 0)
-                glUniform1f(this->uM4Loc, -2.0f);
-            if (this->uM3Loc >= 0)
-                glUniform4fv(this->uM3Loc, 1, engine->glColor);
-            if (this->uM2Loc >= 0)
-                glUniform3f(this->uM2Loc, engine->lightColor.x, engine->lightColor.y,
+            if (this->uTexBiasLoc >= 0)
+                glUniform1f(this->uTexBiasLoc, -2.0f);
+            if (this->uGlColorLoc >= 0)
+                glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
+            if (this->uEyePosModelLoc >= 0)
+                glUniform3f(this->uEyePosModelLoc, engine->lightColor.x, engine->lightColor.y,
                             engine->lightColor.z);
-            int loc = this->uM5Loc;
+            int loc = this->uTexelSizeLoc;
             float w = (float) (int32_t) engine->GetDisplayWidth();
             float h = (float) (int32_t) engine->GetDisplayHeight();
             glUniform2f(loc, 1.0f / w, 1.0f / h);
             glActiveTexture(0x84c7);
             engine->ActivateRefractFBO();
-            glUniform1f(this->uRefractLoc, mesh->shaderAnimValue0);
+            glUniform1f(this->uCloakRateLoc, mesh->shaderAnimValue0);
             this->dirty = 0;
         }
 
         if (this->aPositionLoc >= 0)
             glEnableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glEnableVertexAttribArray(this->aTexCoordLoc);
         if (this->aNormalLoc >= 0)
             glEnableVertexAttribArray(this->aNormalLoc);
         if (this->aTangentLoc >= 0)
             glEnableVertexAttribArray(this->aTangentLoc);
-        if (this->aTexCoordLoc >= 0)
-            glEnableVertexAttribArray(this->aTexCoordLoc);
-        if (this->uM0Loc >= 0)
-            glEnableVertexAttribArray(this->uM0Loc);
+        if (this->aBitangentLoc >= 0)
+            glEnableVertexAttribArray(this->aBitangentLoc);
 
         if (mesh->uploaded == 0) {
             if (this->aPositionLoc >= 0)
                 glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
-            if (this->aNormalLoc >= 0)
-                glVertexAttribPointer(this->aNormalLoc, 2, 0x1406, 0, 0, mesh->texCoords);
-            if (this->aTangentLoc >= 0)
-                glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, mesh->normals);
             if (this->aTexCoordLoc >= 0)
-                glVertexAttribPointer(this->aTexCoordLoc, 3, 0x1406, 0, 0, mesh->tangents);
-            if (this->uM0Loc >= 0)
-                glVertexAttribPointer(this->uM0Loc, 3, 0x1406, 0, 0, mesh->binormals);
+                glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+            if (this->aNormalLoc >= 0)
+                glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, mesh->normals);
+            if (this->aTangentLoc >= 0)
+                glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, mesh->tangents);
+            if (this->aBitangentLoc >= 0)
+                glVertexAttribPointer(this->aBitangentLoc, 3, 0x1406, 0, 0, mesh->binormals);
         } else {
             glBindBuffer(0x8892, mesh->positionVBO);
             glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->aNormalLoc, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->normalVBO);
-            glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->tangentVBO);
-            glVertexAttribPointer(this->aTexCoordLoc, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->binormalVBO);
-            glVertexAttribPointer(this->uM0Loc, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aBitangentLoc, 3, 0x1406, 0, 0, 0);
         }
     }
 }

@@ -19,20 +19,20 @@ namespace AbyssEngine {
     public:
         int aPosition;
         int aTexCoord;
-        int uM0;
-        int uM1;
-        int uM2;
-        int uM3;
-        int uTex0;
-        int uTex1;
+        int aNormal;
+        int uMvpMatrix;
+        int uModelViewMatrix;
+        int uEyePosModel;
+        int sTexture0;
+        int sTexture1;
         int field_0x40;
-        int uM4;
-        int uM5;
+        int uGlColor;
+        int uRimColor;
         int field_0x4c;
-        int uM7;
-        int uRefract;
-        int uM6;
-        int uM8;
+        int uTime;
+        int uVertTime;
+        int uTexelSize;
+        int sTextureBase;
 
         static int ShaderIndex;
 

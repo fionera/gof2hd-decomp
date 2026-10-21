@@ -52,8 +52,8 @@ namespace AbyssEngine {
             glDisableVertexAttribArray(aPosition);
         if (aTexCoord >= 0)
             glDisableVertexAttribArray(aTexCoord);
-        if (uSampler0 >= 0)
-            glDisableVertexAttribArray(uSampler0);
+        if (aVertexColor >= 0)
+            glDisableVertexAttribArray(aVertexColor);
     }
 
     BumpShaderRefract::BumpShaderRefract() {
@@ -68,47 +68,44 @@ namespace AbyssEngine {
         aPosition = glGetAttribLocation(program, "a_position");
         aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
 
-        uSampler0 = glGetUniformLocation(this->program, "a_VertexColor");
+        aVertexColor = glGetAttribLocation(this->program, "a_VertexColor");
         uMvpMatrix = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
-        uSampler2 = glGetUniformLocation(this->program, "s_texture[0]");
-        uSampler3 = glGetUniformLocation(this->program, "s_texture[1]");
-        uPixelSize = glGetUniformLocation(this->program, "u_texelSize");
-        uViewMatrix = glGetUniformLocation(this->program, "u_UvMatrix");
-        uColorIndex = glGetUniformLocation(this->program, "u_UVAnimation");
-        uColor = glGetUniformLocation(this->program, "glColor");
+        sTexture0 = glGetUniformLocation(this->program, "s_texture[0]");
+        sTexture1 = glGetUniformLocation(this->program, "s_texture[1]");
+        uTexelSize = glGetUniformLocation(this->program, "u_texelSize");
+        uUvMatrix = glGetUniformLocation(this->program, "u_UvMatrix");
+        uUVAnimation = glGetUniformLocation(this->program, "u_UVAnimation");
+        uGlColor = glGetUniformLocation(this->program, "glColor");
 
         glActiveTexture(0x84c7);
         engine->ActivateRefractFBO();
-        uRefractSampler = glGetUniformLocation(this->program, "s_texture_base");
+        sTextureBase = glGetUniformLocation(this->program, "s_texture_base");
 
         glUseProgram(this->program);
 
-        int *samplers = &uSampler2;
+        int *samplers = &sTexture0;
         for (int i = 0; i != 2; i++) {
             int loc = samplers[i];
             if (loc >= 0)
                 glUniform1i(loc, i);
         }
-        glUniform1i(uRefractSampler, 7);
+        glUniform1i(sTextureBase, 7);
     }
 
     void BumpShaderRefract::UpdateMeshData(Mesh *mesh, ::Engine *engine) {
-        char *e = (char *) engine;
-        char *m = (char *) mesh;
-
         if (uMvpMatrix >= 0)
-            glUniformMatrix4fv(uMvpMatrix, 1, 0, (float *) (e + 0x104));
-        if (uViewMatrix >= 0)
-            glUniformMatrix4fv(uViewMatrix, 1, 0, (float *) (e + 0x1c4));
+            glUniformMatrix4fv(uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
+        if (uUvMatrix >= 0)
+            glUniformMatrix4fv(uUvMatrix, 1, 0, engine->uvMatrix);
 
         if (this->dirty != 0) {
-            if (uColorIndex >= 0)
-                glUniform1i(uColorIndex, *(uint8_t *) (m + 0x85));
-            glUniform4fv(uColor, 1, (float *) (e + 0xd0));
-            int loc = uPixelSize;
+            if (uUVAnimation >= 0)
+                glUniform1i(uUVAnimation, mesh->hasAnimation);
+            glUniform4fv(uGlColor, 1, engine->glColor);
+            int loc = uTexelSize;
             if (loc >= 0) {
-                float w = (float) engine->GetDisplayWidth();
-                float h = (float) engine->GetDisplayHeight();
+                float w = (float) (int) engine->GetDisplayWidth();
+                float h = (float) (int) engine->GetDisplayHeight();
                 glUniform2f(loc, 1.0f / w, 1.0f / h);
             }
             glActiveTexture(0x84c7);
@@ -120,36 +117,29 @@ namespace AbyssEngine {
             glEnableVertexAttribArray(aPosition);
         if (aTexCoord >= 0)
             glEnableVertexAttribArray(aTexCoord);
-        if (uSampler0 >= 0)
-            glEnableVertexAttribArray(uSampler0);
+        if (aVertexColor >= 0)
+            glEnableVertexAttribArray(aVertexColor);
 
-        int loc0 = aPosition;
-        const float *ptr;
-        int last;
-        if (*(uint8_t *) (m + 0x5c) == 0) {
-            if (loc0 >= 0)
-                glVertexAttribPointer(loc0, 3, 0x1406, 0, 0, *(float **) (m + 0x4));
-            if (aTexCoord >= 0)
-                glVertexAttribPointer(aTexCoord, 2, 0x1406, 0, 0, *(float **) (m + 0x8));
-            last = uSampler0;
-            if (last < 0)
-                return;
-            ptr = *(float **) (m + 0xc);
-        } else {
-            if (loc0 >= 0) {
-                glBindBuffer(0x8892, *(uint32_t *) (m + 0x60));
+        if (mesh->uploaded != 0) {
+            if (aPosition >= 0) {
+                glBindBuffer(0x8892, mesh->positionVBO);
                 glVertexAttribPointer(aPosition, 3, 0x1406, 0, 0, 0);
             }
             if (aTexCoord >= 0) {
-                glBindBuffer(0x8892, *(uint32_t *) (m + 0x68));
+                glBindBuffer(0x8892, mesh->texCoordVBO);
                 glVertexAttribPointer(aTexCoord, 2, 0x1406, 0, 0, 0);
             }
-            if (uSampler0 < 0)
-                return;
-            glBindBuffer(0x8892, *(uint32_t *) (m + 0x78));
-            ptr = 0;
-            last = uSampler0;
+            if (aVertexColor >= 0) {
+                glBindBuffer(0x8892, mesh->colorVBO);
+                glVertexAttribPointer(aVertexColor, 4, 0x1406, 0, 0, 0);
+            }
+        } else {
+            if (aPosition >= 0)
+                glVertexAttribPointer(aPosition, 3, 0x1406, 0, 0, mesh->positions);
+            if (aTexCoord >= 0)
+                glVertexAttribPointer(aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
+            if (aVertexColor >= 0)
+                glVertexAttribPointer(aVertexColor, 4, 0x1406, 0, 0, mesh->colors);
         }
-        glVertexAttribPointer(last, 4, 0x1406, 0, 0, ptr);
     }
 }

@@ -19,15 +19,15 @@ namespace AbyssEngine {
     public:
         int aPosition;
         int aTexCoord;
-        int uSampler0;
+        int aVertexColor;
         int uMvpMatrix;
-        int uSampler2;
-        int uSampler3;
-        int uPixelSize;
-        int uRefractSampler;
-        int uViewMatrix;
-        int uColorIndex;
-        int uColor;
+        int sTexture0;
+        int sTexture1;
+        int uTexelSize;
+        int sTextureBase;
+        int uUvMatrix;
+        int uUVAnimation;
+        int uGlColor;
 
         static int ShaderIndex;
 
