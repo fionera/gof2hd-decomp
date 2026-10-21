@@ -20,8 +20,8 @@ class TouchButton;
 class ScrollTouchBox;
 class AEGeometry;
 class Radio;
-struct HangarWindow;
-struct StatusWindow;
+class HangarWindow;
+class StatusWindow;
 template<class T>
 class Array;
 
@@ -95,11 +95,11 @@ public:
     ScrollTouchBox *scrollBox;
 
     int introTimer;
-    AEGeometry *hangarShipGeom;
-
-    int field_0xa4;
-    AEGeometry *hangarGeom;
-    int field_0xac;
+    // Station info box (x, y, width, height) drawn by OnRender2D.
+    int infoBoxX;
+    int infoBoxY;
+    int infoBoxW;
+    int infoBoxH;
     uint8_t flag_0xb0;
     uint8_t flag_0xb1;
     uint8_t flag_0xb2;

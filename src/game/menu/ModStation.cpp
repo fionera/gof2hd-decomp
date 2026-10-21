@@ -13,6 +13,11 @@ extern int g_android_current_achievements[3];
 #include "engine/math/EaseInOutMatrix.h"
 #include "game/mission/Item.h"
 #include "game/ui/MissionsWindow.h"
+#include "game/ui/HangarWindow.h"
+#include "game/ui/StatusWindow.h"
+#include "game/ui/ScrollTouchBox.h"
+#include "game/ui/MenuTouchWindow.h"
+#include "game/world/SolarSystem.h"
 #include "game/world/NewsTicker.h"
 #include "game/world/StarMap.h"
 #include "game/mission/Achievements.h"
@@ -35,28 +40,6 @@ extern int g_android_current_achievements[3];
 
 using AbyssEngine::AEMath::VectorSignedToFloat;
 using AbyssEngine::AEMath::Matrix;
-
-struct HangarWindow {
-    ~HangarWindow();
-
-    void OnTouchBegin(int touch, int coord);
-
-    unsigned int OnTouchMove(int touch, int coord);
-
-    void update(int dt);
-
-    void hideMessage();
-};
-
-struct StatusWindow {
-    ~StatusWindow();
-
-    int OnTouchBegin(int x, int y);
-
-    int OnTouchMove(int x, int y);
-
-    void update(int frameTime);
-};
 
 struct HangarWindowHead {
     char shipChanged;
@@ -969,7 +952,7 @@ void ModStation::OnUpdate() {
         Engine_setHangarLightIntensity_ou(cur);
     }
     if ((int) (intptr_t) this->cutScene != 0 && this->flag_0x60 == 0) {
-        AEGeometry *geom = this->hangarGeom;
+        AEGeometry *geom = (AEGeometry *) (intptr_t) this->infoBoxW;
         if (geom != nullptr)
             AEGeometry_rotate_ou(geom, 0.0f, 0.1f, 0.0f);
     }
@@ -1210,7 +1193,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
         return;
     if (*(int *) &Globals::h - layout->field_0x10_rightMargin <= y)
         return;
-    if (x <= (int) (intptr_t) this->hangarGeom)
+    if (x <= this->infoBoxW)
         return;
     int delta = x - this->camScrollPos;
     this->camScrollVel = delta;
@@ -2297,7 +2280,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
         return;
     if (*(int *) &Globals::h - layout->field_0x10_rightMargin <= y)
         return;
-    if (x <= (int) (intptr_t) this->hangarGeom)
+    if (x <= this->infoBoxW)
         return;
     this->field_0xfc = x;
     this->camScrollPos = x;
@@ -2309,85 +2292,130 @@ void ModStation::OnTouchBegin(int x, int y) {}
 void ModStation::OnTouchEnd(int x, int y) {}
 void ModStation::OnTouchMove(int x, int y) {}
 
-static int *g_r2d_stack = 0;
-
-
-void HangarWindow_render_r2d(ModStation * self);
-
-void HangarWindow_render3D_r2d();
-
-void SpaceLounge_draw_r2d(ModStation * self);
-
-void SpaceLounge_draw3DShip_r2d();
-
-void MissionsWindow_draw_r2d(MissionsWindow * w);
-
-void StarMap_draw_r2d(ModStation * self);
-void StatusWindow_draw_r2d(ModStation * self);
-void MenuTouchWindow_draw_r2d(ModStation * self);
-void Radio_draw_r2d(ModStation * self);
-
-void CutScene_render2D_r2d();
-
-void ChoiceWindow_draw_r2d(ModStation * self);
-void Layout_drawHelpWindow_r2d(Layout * l);
-
-Layout *ModStation_r2d_layout();
-
-void Layout_drawCredits_r2d(Layout * layout);
-
 void ModStation::OnRender2D() {
-    Globals::Canvas->Begin2d();
-    Globals::Canvas->SetColor((unsigned) (uintptr_t) this->paintCanvas);
-
-    if (this->stationActive == 0) {
+    this->paintCanvas->Begin2d();
+    this->paintCanvas->SetColor(0xffffffff);
+    if (!this->stationActive)
         return;
-    }
 
-    if (this->flag_0x66 != 0) {
-        HangarWindow_render_r2d(this);
-    } else if (this->flag_0x65 != 0) {
-        SpaceLounge_draw_r2d(this);
-    } else if (this->flag_0x64 != 0) {
-        MissionsWindow_draw_r2d((MissionsWindow *) this->m_pDialogueWindow);
-    } else if (this->flag_0x67 != 0) {
-        StarMap_draw_r2d(this);
-    } else if (this->flag_0x68 != 0) {
-        StatusWindow_draw_r2d(this);
-    } else if (this->flag_0x6a != 0) {
-        MenuTouchWindow_draw_r2d(this);
-    } else if (this->flag_0x6c != 0) {
-        Radio_draw_r2d(this);
-        CutScene_render2D_r2d();
-    } else {
-        Layout *layout = (Layout *) this->buttonState;
-        if (layout == nullptr) layout = ModStation_r2d_layout();
-        if (layout != nullptr)
-            Layout_drawCredits_r2d(layout);
-    }
-
-    if (this->flag_0x6a != 0 || this->flag_0x6b != 0)
-        ChoiceWindow_draw_r2d(this);
-    if (this->flag_0x69 != 0) {
-        if (this->dialogueWindow != 0)
-            this->dialogueWindow->draw();
-    }
-
-    Layout **help = (Layout **) &Globals::layout;
-    if ((*help)->choiceWindowOpen != 0)
-        Layout_drawHelpWindow_r2d((Layout *) *help);
-
-    Globals::Canvas->End2d();
-
-    if ((*help)->choiceWindowOpen == 0) {
-        if (this->flag_0x66 != 0) {
-            HangarWindow_render3D_r2d();
+    if (this->flag_0x66) {
+        this->hangarWindow->render();
+    } else if (this->flag_0x65) {
+        this->spaceLounge->draw();
+    } else if (this->flag_0x64) {
+        ((MissionsWindow *) this->m_pDialogueWindow)->draw();
+    } else if (this->flag_0x67) {
+        this->starMap->draw();
+    } else if (this->flag_0x68) {
+        this->statusWindow->draw();
+    } else if (this->flag_0x62) {
+        this->dlcMenu->draw();
+    } else if (this->flag_0x60) {
+        Radio *radio = (Radio *) (intptr_t) this->activeMission;
+        radio->draw((long long) this->field_0xb4, nullptr, nullptr);
+        if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown()) {
+            Globals::Canvas->DrawImage2D(this->field_0x5c, 0, (int) reinterpret_cast<float &>(this->field_0x108), 20, 68);
+            this->scrollBox->draw();
         }
-        if ((*help)->choiceWindowOpen == 0 && this->flag_0x65 != 0)
-            SpaceLounge_draw3DShip_r2d();
+        int time = this->field_0xb4;
+        if (time > 130000 || time < -6000 || time < 0) {
+            float fade;
+            if (time > 130000)
+                fade = (float) (time - 130000) / 6000.0f;
+            else if (time < -6000)
+                fade = (float) (time + 12000) / 6000.0f;
+            else
+                fade = (float) (time + 6000) / -6000.0f + 1.0f;
+            this->paintCanvas->SetColor((int) (fade * 255.0f));
+            Globals::Canvas->FillRectangle(0, 0, Globals::w, Globals::h);
+        }
+        if (this->field_0xb4 > -6000)
+            this->cutScene->render2D();
+    } else {
+        Globals::layout->drawFooterStation();
+        {
+            String stationName = Globals::status->getStation()->getName();
+            String title(stationName, false);
+            Globals::layout->drawHeader(title + (Globals::status->getStation()->getIndex() == 101
+                                                     ? String("", false)
+                                                     : String(" ", false) + *Globals::gameText->getText(136)));
+        }
+        if (this->flag_0x61) {
+            Globals::layout->drawBox(2, this->infoBoxX, this->infoBoxY, this->infoBoxW, this->infoBoxH, String("", false));
+            if (!((SolarSystem *) (intptr_t) Globals::status->getSystem())->hasNoOwner())
+                this->paintCanvas->DrawImage2D(this->departPending, Globals::layout->buttonInsetX,
+                                               Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                               Globals::layout->field_0x2c_rowHeight * 2);
+            String systemTitle = String(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), false) +
+                                 String(" ", false) + *Globals::gameText->getText(137);
+            unsigned int &font = reinterpret_cast<unsigned int &>(Globals::font);
+            if (Globals::Canvas->GetTextWidth(font, systemTitle) >
+                this->infoBoxW - Globals::layout->buttonInsetX * 2 - Globals::layout->field_0x4c -
+                this->paintCanvas->GetImage2DWidth(this->departPending))
+                systemTitle = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName();
+            this->paintCanvas->DrawString(font, systemTitle,
+                                          Globals::layout->buttonInsetX +
+                                          this->paintCanvas->GetImage2DWidth(this->departPending) +
+                                          Globals::layout->field_0x4c,
+                                          Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                          Globals::layout->field_0x2c_rowHeight * 2,
+                                          false);
+            this->paintCanvas->DrawString(font,
+                                          *Globals::gameText->getText(133) + String(": ", false) +
+                                          String(String(Globals::status->getStation()->getTecLevel()), false),
+                                          Globals::layout->buttonInsetX +
+                                          this->paintCanvas->GetImage2DWidth(this->departPending) +
+                                          Globals::layout->field_0x4c,
+                                          Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                          Globals::layout->field_0x4 + Globals::layout->field_0x2c_rowHeight * 4,
+                                          false);
+            if (Globals::layout->field_0x286 &&
+                !((SolarSystem *) (intptr_t) Globals::status->getSystem())->hasNoOwner())
+                this->paintCanvas->DrawString(
+                    font,
+                    *Globals::gameText->getText(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() + 406),
+                    Globals::layout->buttonInsetX + this->paintCanvas->GetImage2DWidth(this->departPending) +
+                    Globals::layout->field_0x4c,
+                    Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                    Globals::layout->field_0x4 * 2 + Globals::layout->field_0x2c_rowHeight * 6,
+                    false);
+            Array<TouchButton *> *buttons = (Array<TouchButton *> *) (intptr_t) this->buttonRow;
+            for (unsigned i = 0; i < 5; i++)
+                (*buttons)[i]->draw();
+            this->buttonLaunch->draw();
+            this->buttonCredits->draw();
+            if (Globals::status->getStation()->getIndex() != 101 && Globals::status->getStation()->getIndex() != 108 &&
+                ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() != 25 &&
+                this->newsTicker != nullptr)
+                this->newsTicker->draw();
+            Globals::layout->drawMissionRewardMessage(true);
+        }
+        if (this->accumTime < 3000) {
+            this->paintCanvas->DrawString(reinterpret_cast<unsigned int &>(Globals::font),
+                                          *Globals::gameText->getText(this->flag_0xb0 ? 54 : 50),
+                                          Globals::layout->buttonInsetX + this->infoBoxW,
+                                          Globals::layout->headerTitleY, false);
+        } else {
+            this->flag_0xb0 = 0;
+        }
     }
 
-    Globals::Canvas->SwapBuffer();
+    if (this->flag_0x6a)
+        this->medalChoiceWindow->draw();
+    else if (this->flag_0x63)
+        this->choiceWindow->draw();
+    if (this->flag_0x69)
+        this->dialogueWindow->draw();
+    if (Globals::layout->choiceWindowOpen)
+        Globals::layout->drawHelpWindow();
+    this->paintCanvas->End2d();
+    if (!Globals::layout->choiceWindowOpen) {
+        if (this->flag_0x66)
+            this->hangarWindow->render3D();
+        if (!Globals::layout->choiceWindowOpen && this->flag_0x65)
+            this->spaceLounge->draw3DShip();
+    }
+    this->paintCanvas->SwapBuffer();
 }
 
 static int *g_oi_stack = 0;
