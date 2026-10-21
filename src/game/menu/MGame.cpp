@@ -1324,24 +1324,19 @@ void MGame::OnTouchMove(int p1, int y, void *touch) { // lint: void_ptr -- expor
 }
 
 void MGame::useCloak() {
-    if (((::PlayerEgo *) (this->player))->toggleCloaking()) return;
-    if (this->choiceWindow == 0)
+    if (this->player->toggleCloaking()) {
+        return;
+    }
+    if (this->choiceWindow == nullptr) {
         this->choiceWindow = new ChoiceWindow();
-    Item *eq = ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x15);
-    int attr = eq == 0 ? 0 : ((Item *) (eq))->getAttribute(0x26);
-    ChoiceWindow *cw = this->choiceWindow;
-    String *txt = ((GameText *) (*g_gameText))->getText(0x247);
-    String s0, s1, s2, s3, s4, s5;
-    s2.ctor_char("", false);
-    s3 = *(String *) txt + s2;
-    s1.Set((long long) (attr));
-    s4 = s3 + s1;
-    s0.ctor_char("", false);
-    s5 = s4 + s0;
-    ((ChoiceWindow *) (cw))->set(*(String *) &s5);
-    this->pauseOpen = 1;
+    }
+    Item *cloak = Globals::status->getShip()->getFirstEquipmentOfSort(21);
+    int duration = cloak != nullptr ? cloak->getAttribute(38) : 0;
+    this->choiceWindow->set(*Globals::gameText->getText(583) + String(" ", false) + String(duration) +
+                            String(".", false));
     this->choiceWindowOpen = 1;
-    ((MGame *) (this))->pauseSounds();
+    this->pauseOpen = 1;
+    this->pauseSounds();
 }
 
 void MGame::UseKhadorDrive() {
@@ -2464,21 +2459,29 @@ void MGame::switchCamera(int id) {
 
 int MGame::nextCamId(int cur) {
     int id = cur + 1;
-    if (id == 2) id++;
-    if (id == 1) {
-        id = (Globals::status->getShip()->getFirstEquipmentOfSort(8) != 0 ||
-              Globals::status->getShip()->getFirstEquipmentOfSort(0x23) != 0) &&
-             !this->player->hasAutoTurret() ? 1 : 2;
+    if (id == 2) {
+        id++;
     }
-    if (id == 2) id++;
+    if (id == 1 && ((Globals::status->getShip()->getFirstEquipmentOfSort(8) == nullptr &&
+                     Globals::status->getShip()->getFirstEquipmentOfSort(35) == nullptr) ||
+                    this->player->hasAutoTurret())) {
+        id++;
+    }
+    if (id == 2) {
+        id++;
+    }
     if (id >= 4) {
-        if (!this->player->isDockedToDockingPoint()) return 0;
-        if (Globals::status->getShip()->getFirstEquipmentOfSort(8) == 0 &&
-            Globals::status->getShip()->getFirstEquipmentOfSort(0x23) == 0) {
+        if (!this->player->isDockedToDockingPoint()) {
+            return 0;
+        }
+        if (Globals::status->getShip()->getFirstEquipmentOfSort(8) == nullptr &&
+            Globals::status->getShip()->getFirstEquipmentOfSort(35) == nullptr) {
             return 3;
         }
         id = 1;
-        if (this->player->hasAutoTurret()) id = 3;
+        if (this->player->hasAutoTurret()) {
+            id = 3;
+        }
     }
     return id;
 }
