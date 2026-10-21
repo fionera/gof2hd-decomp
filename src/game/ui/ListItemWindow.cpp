@@ -680,17 +680,11 @@ void ListItemWindow::update(int frameTime) {
 
 
 ListItemWindow::ListItemWindow() {
-    Layout **a = &Globals::layout;
-    PaintCanvas **b = &Globals::Canvas;
     this->labels = 0;
     this->values = 0;
     this->statsCur = 0;
     this->statsPrev = 0;
-    Layout *av = *a;
-    PaintCanvas *canvas = *b;
     this->scrollWindow = 0;
-    (void) av;
-    int h = canvas->GetTextHeight((unsigned int) (long) canvas);
-    this->textHalfHeight = h / 2 - 1;
+    this->textHalfHeight = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 - 1;
     this->previewHeight = 0;
 }
