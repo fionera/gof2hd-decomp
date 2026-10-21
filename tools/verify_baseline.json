@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1300,
-  "linked_exact": 3794,
+  "linked_exact": 3798,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 19,
-  "avg_match": 92.33,
+  "avg_match": 92.44,
   "compared": 4523
  },
  "imports": [
@@ -159,7 +159,6 @@
   "_Z25ChoiceWindow_setNotice_ouii",
   "_Z25EaseInOut_GetCurrentValuePv",
   "_Z25Layout_initHelpWindow_oteii",
-  "_Z25MiningGame_Status_getShipP6Status",
   "_Z25Mission_getStatusValue_ouv",
   "_Z25Mission_setStatusValue_oui",
   "_Z25ObjectGun_setEnemies_implPv",
@@ -297,7 +296,6 @@
   "_Z36paintcanvas_ext_gsp2_invtransformvecPvS_",
   "_Z37HangarWindow_showCreditsBuyWindow_oteP12HangarWindow",
   "_Z38_mtw_Globals_longToTimeStringNoSecondsxPv",
-  "_Z39MiningGame_Ship_getFirstEquipmentOfSortP4Shipi",
   "_Z46ApplicationManager_GetCurrentApplicationModulePv",
   "_Z50MiningGame_Status_getCurrentCampaignMission_renderP6Status",
   "_Z8AERandomPvi",
