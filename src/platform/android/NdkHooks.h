@@ -3,12 +3,28 @@
 
 #include <jni.h>
 
+// JNI environment of the render thread (set by ToJNI_initialize, defined in JniBridge.cpp).
+extern JNIEnv *g_pEnv;
+
+// Purchase-in-flight flags raised by the NFC store buttons.
+extern int gi_iap_buy_dlc1_pressed;
+extern int gi_iap_buy_dlc2_pressed;
+extern int gi_iap_buy_dlc3_pressed;
+extern int gi_iap_buy_dlc4_pressed;
+extern int gi_iap_buy_dlc5_pressed;
+
+extern int gi_iap_buy_credit_pack1_pressed;
+extern int gi_iap_buy_credit_pack2_pressed;
+extern int gi_iap_buy_credit_pack3_pressed;
+extern int gi_iap_buy_credit_pack4_pressed;
+extern int gi_iap_buy_credit_pack5_pressed;
+
 extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 int setBaughtCredits(int amount);
 
 void checkFirstCreditPackBoughtWriteAction();
 
-const char *getStringUTFChars(JNIEnv *env, jstring str);
+const char *getStringUTFChars(JNIEnv *env, jstring str, jboolean *isCopy);
 
 void releaseStringUTFChars(JNIEnv *env, jstring str, const char *chars);
 
@@ -26,15 +42,15 @@ int ndk_getLogoShown();
 
 int ndk_isInMainMenu();
 
-bool ndk_getDLC_1_BOUGHT();
+int ndk_getDLC_1_BOUGHT();
 
-bool ndk_getDLC_2_BOUGHT();
+int ndk_getDLC_2_BOUGHT();
 
-bool ndk_getDLC_3_BOUGHT();
+int ndk_getDLC_3_BOUGHT();
 
-bool ndk_getDLC_4_BOUGHT();
+int ndk_getDLC_4_BOUGHT();
 
-bool ndk_getDLC_5_BOUGHT();
+int ndk_getDLC_5_BOUGHT();
 
 void ndk_iapBoughtConsumable(unsigned int consumable);
 
