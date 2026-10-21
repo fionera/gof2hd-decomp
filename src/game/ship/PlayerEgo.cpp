@@ -1,4 +1,5 @@
 #include "game/ship/PlayerEgo.h"
+#include <cstring>
 #include "game/world/Station.h"
 #include "game/world/StarSystem.h"
 #include "engine/render/ParticleSettings.h"
@@ -107,11 +108,6 @@ PlayerEgo::PlayerEgo(Player *player)
     this->yawAccumDir = 0;
     this->field_0x14 = nullptr;
     this->radioRef = nullptr;
-    this->repairArmorTick = 0;
-    this->lastHP = 0;
-    this->shakeIntensity = 0;
-    this->shieldRegenTick = 0;
-    this->repairHPTick = 0;
     this->field_0x108 = 0;
     this->currentSecondaryWeaponIndex = -1;
     this->yawAccumulator = 0;
@@ -122,8 +118,12 @@ PlayerEgo::PlayerEgo(Player *player)
     this->autoPilotTarget = 0;
     this->goingToWaypointFlag = 0;
     this->turretMode = 0;
-    this->boostingFlag = 0;
-    this->boostTimer = 0;
+    // Clear the contiguous repair, hitpoint, shake, and boost state together.
+    std::memset(&this->repairArmorTick, 0,
+                sizeof(this->repairArmorTick) + sizeof(this->lastHP) + sizeof(this->shakeIntensity)
+                    + sizeof(this->boostTimer) + sizeof(this->boostingFlag));
+    this->shieldRegenTick = 0;
+    this->repairHPTick = 0;
     this->field_0x146 = 0;
     this->collide = 0;
     this->field_0x145 = 0;
