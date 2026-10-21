@@ -395,30 +395,33 @@ void PlayerFixedObject::reset() {
 
 void PlayerFixedObject::setWreckedMeshId(int meshId) {
     this->wreckMeshId = (uint16_t) meshId;
-    AEGeometry *geom = new AEGeometry((uint16_t) meshId, Globals::Canvas, true);
-    this->wreckGeometry = geom;
-    AbyssEngine::Transform *t = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(geom->transform);
-    *(int *) &t->boundingRadius = 0x48f42400;
-
-    int kind = this->kind();
-    int sel;
-    if (kind == 0xd) {
-        sel = 4;
-    } else if (kind == 0xe) {
-        sel = 0;
-    } else if (kind == 0xf) {
-        if (this->faction() == 3) sel = 1;
-        else sel = (this->faction() == 2) ? 2 : 3;
-    } else if (kind == 0x37a3) {
-        sel = 5;
-    } else {
-        sel = this->wreckType;
-        if (sel < 0) return;
-        this->wreckCollision = Globals::globals->getWreckCollision(sel, this->wreckGeometry);
-        return;
+    this->wreckGeometry = new AEGeometry((uint16_t) meshId, Globals::Canvas, true);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))
+        ->boundingRadius = 500000.0f;
+    switch (this->kind()) {
+        case 13:
+            this->wreckType = 4;
+            break;
+        case 14:
+            this->wreckType = 0;
+            break;
+        case 15:
+            if (this->faction() == 3)
+                this->wreckType = 1;
+            else if (this->faction() == 2)
+                this->wreckType = 2;
+            else
+                this->wreckType = 3;
+            break;
+        case 0x37a3:
+            this->wreckType = 5;
+            break;
+        default:
+            if (this->wreckType < 0)
+                return;
+            break;
     }
-    this->wreckType = sel;
-    this->wreckCollision = Globals::globals->getWreckCollision(sel, this->wreckGeometry);
+    this->wreckCollision = Globals::globals->getWreckCollision(this->wreckType, this->wreckGeometry);
 }
 
 V3 PlayerFixedObject::getProjectionVector(const Vector &vec) {
