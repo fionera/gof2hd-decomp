@@ -47,7 +47,7 @@ extern "C" void Blowfish_decipher(unsigned int *xl, unsigned int *xr) { // lint:
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
     unsigned int temp;
-    for (unsigned int i = 17; i >= 2; --i) {
+    for (unsigned int i = 17; i > 1; --i) {
         Xl = Xl ^ P[i];
         Xr = F(Xl) ^ Xr;
         temp = Xl;
