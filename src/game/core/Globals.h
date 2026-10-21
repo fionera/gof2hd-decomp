@@ -298,8 +298,8 @@ public:
     static float boost_y;
     static float boost_z;
     static Globals *globals;
-    static float pause_x;
-    static float pause_y;
+    static int pause_x;
+    static int pause_y;
     static float pause_z;
     static GameText *gameText;
     static void *fontAlien; // lint: void_ptr (unknown alien-font handle, never referenced)

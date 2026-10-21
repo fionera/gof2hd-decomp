@@ -157,7 +157,7 @@ public:
 
     int getDamageFactor();
 
-    int getFirePower();
+    float getFirePower();
 
     int getAgility();
 
@@ -209,7 +209,7 @@ public:
     int boostTime;
     int agility;
     int maxPassengers;
-    int firePower;
+    float firePower;
     int repairType;
     unsigned char hasJumpDriveFlag;
     unsigned char hasCloakFlag;
