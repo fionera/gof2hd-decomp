@@ -240,7 +240,7 @@ void MeshMerger::init() {
 
     for (int i = 0; i < this->rows; i++) {
         int c = 0;
-        if (this->lods[i] >= -1 && this->cols <= this->lods[i]) {
+        if (this->lods[i] < -1 || this->cols <= this->lods[i]) {
             this->lods[i] = 0;
         }
         for (; c < this->cols; c++) {
