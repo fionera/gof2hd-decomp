@@ -502,30 +502,22 @@ void ParticleSystemMesh::updateSingle(int id, float delta) {
 }
 
 void ParticleSystemMesh::updateTrailEdges(int id, int delta) {
-    int edgeCount = (int) this->edgeCount;
-    int stride = (int) this->stride;
-    int point = (int) this->idOffset + id * stride * 4;
-    Vector *edge = this->particleVelocities + id * edgeCount * 2;
     float scale = (float) delta * 0.001f;
+    int point = (int) this->idOffset + id * (int) this->stride * 4;
+    Vector *edge = this->particleVelocities + id * (int) this->edgeCount * 2;
 
-    for (int i = 0; i < edgeCount; i++) {
-        Vector move = *edge * scale;
-        this->canvas->MeshTranslatePoint(this->resource, (uint16_t) point, -move.x, move.y,
-                                         -move.z);
-        int span = this->wide == 0 ? 1 : 4;
-        this->canvas->MeshTranslatePoint(this->resource, (uint16_t)(point + span), move.x,
-                                         move.y, move.z);
+    for (int i = 0; i < (int) this->edgeCount; i++) {
+        Vector move = *edge++ * scale;
+        this->canvas->MeshTranslatePoint(this->resource, (uint16_t) point, -move.x, -move.y, -move.z);
+        this->canvas->MeshTranslatePoint(this->resource, (uint16_t) (point + (this->wide != 0 ? 4 : 1)),
+                                         move.x, move.y, move.z);
 
         if (this->particleAges[id] != -2 || (int) (this->flags << 16) >= 0) {
-            Vector move2 = *(edge + 1) * scale;
-            this->canvas->MeshTranslatePoint(this->resource, (uint16_t)(point + 2),
-                                             -move2.x, move2.y, -move2.z);
-            this->canvas->MeshTranslatePoint(this->resource, (uint16_t)(point + span + 2),
+            Vector move2 = *edge++ * scale;
+            this->canvas->MeshTranslatePoint(this->resource, (uint16_t) (point + 2), -move2.x, -move2.y, -move2.z);
+            this->canvas->MeshTranslatePoint(this->resource, (uint16_t) (point + 2 + (this->wide != 0 ? 4 : 1)),
                                              move2.x, move2.y, move2.z);
-            edge += 2;
-            point += this->wide == 0 ? 4 : 8;
-        } else {
-            edge += 1;
+            point += this->wide != 0 ? 8 : 4;
         }
     }
 }
