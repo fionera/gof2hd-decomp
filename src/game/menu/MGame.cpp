@@ -2543,8 +2543,8 @@ void MGame::OnUpdate() {
                     this->timeWarpState = -1;
                 } else if (this->timeWarpState > 0) {
                     int realDelta = this->deltaTime;
-                    this->deltaTime = (int) ((float) realDelta * 0.3f);
                     this->field_0x44 = (int) ((float) realDelta * 0.7f);
+                    this->deltaTime = (int) ((float) realDelta * 0.3f);
                     this->hud->setTimeExtender(true, false, true, true);
                 }
             } else {
@@ -3218,7 +3218,7 @@ void MGame::OnUpdate() {
         screen[0] /= (float) (int) static_cast<Engine *>(this->applicationManager->GetEngine())->GetDisplayWidth();
         screen[1] = 1.0f - screen[1] / (float) (int) static_cast<Engine *>(this->applicationManager->GetEngine())->GetDisplayHeight();
         static_cast<Engine *>(this->applicationManager->GetEngine())->field_0x3cc = screen;
-        float fov = 1.22f + this->player->getBoostPercentage() * 0.35f;
+        float fov = 1.22f + this->player->getBoostPercentage() * (1.57f - 1.22f); // boost widens FOV from 1.22 to 1.57 rad
         reinterpret_cast<float &>(this->field_0x70) = fov;
         Globals::Canvas->CameraSetPerspective(
             this->cameraId, fov, 20.0f,
