@@ -235,10 +235,6 @@ void Engine::ActivateRender2TextureFBO() {
     }
 }
 
-typedef void Materialfv(unsigned int face, unsigned int pname, const float *params);
-
-static Materialfv *g_Engine_glMaterialfv;
-
 void Engine::LightSetMaterialColorAlpha(float alpha) {
     if (this->lightingEnabled == 0) {
         return;
@@ -246,12 +242,11 @@ void Engine::LightSetMaterialColorAlpha(float alpha) {
 
     this->materialAmbient[3] = alpha;
     this->materialAlpha = alpha;
-    Materialfv *materialfv = g_Engine_glMaterialfv;
-    materialfv(0x408, 0x1200, this->materialAmbient);
+    glMaterialfv(0x408, 0x1200, this->materialAmbient);
     this->materialSpecular[3] = this->materialAlpha;
-    materialfv(0x408, 0x1202, this->materialSpecular);
+    glMaterialfv(0x408, 0x1202, this->materialSpecular);
     this->materialDiffuse[3] = this->materialAlpha;
-    return materialfv(0x408, 0x1201, this->materialDiffuse);
+    return glMaterialfv(0x408, 0x1201, this->materialDiffuse);
 }
 
 void Engine::SetAccelValue(double x, double y, double z) {
@@ -738,33 +733,61 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
 }
 
 void Engine::AEClientState(unsigned int state, bool enable) {
-    uint32_t bits = this->clientStateFlagsAE;
-    uint32_t mask = 0;
-    switch (state) {
-        case 0x8074: mask = 2;
-            break;
-        case 0x8075: mask = 1;
-            break;
-        case 0x8076: mask = 8;
-            break;
-        case 0x8078: mask = 4;
-            break;
-        default: return;
-    }
     if (enable) {
-        if ((bits & mask) != 0) {
-            return;
+        switch (state) {
+            case 0x8074:
+                if ((this->clientStateFlagsAE & 2) == 0) {
+                    glEnableClientState(0x8074);
+                    this->clientStateFlagsAE |= 2;
+                }
+                break;
+            case 0x8075:
+                if ((this->clientStateFlagsAE & 1) == 0) {
+                    glEnableClientState(0x8075);
+                    this->clientStateFlagsAE |= 1;
+                }
+                break;
+            case 0x8076:
+                if ((this->clientStateFlagsAE & 8) == 0) {
+                    glEnableClientState(0x8076);
+                    this->clientStateFlagsAE |= 8;
+                }
+                break;
+            case 0x8078:
+                if ((this->clientStateFlagsAE & 4) == 0) {
+                    glEnableClientState(0x8078);
+                    this->clientStateFlagsAE |= 4;
+                }
+                break;
         }
-        glEnableClientState(state);
-        bits |= mask;
     } else {
-        if ((bits & mask) == 0) {
-            return;
+        switch (state) {
+            case 0x8074:
+                if ((this->clientStateFlagsAE & 2) != 0) {
+                    glDisableClientState(0x8074);
+                    this->clientStateFlagsAE &= ~2u;
+                }
+                break;
+            case 0x8075:
+                if ((this->clientStateFlagsAE & 1) != 0) {
+                    glDisableClientState(0x8075);
+                    this->clientStateFlagsAE &= ~1u;
+                }
+                break;
+            case 0x8078:
+                if ((this->clientStateFlagsAE & 4) != 0) {
+                    glDisableClientState(0x8078);
+                    this->clientStateFlagsAE &= ~4u;
+                }
+                break;
+            case 0x8076:
+                if ((this->clientStateFlagsAE & 8) != 0) {
+                    glDisableClientState(0x8076);
+                    this->clientStateFlagsAE &= ~8u;
+                }
+                break;
         }
-        glDisableClientState(state);
-        bits &= ~mask;
     }
-    this->clientStateFlagsAE = bits;
 }
 
 void Engine::GlowBeginGlow(int depthFunc) {
@@ -1545,7 +1568,7 @@ void Engine::GlEnable(unsigned int cap, bool enable) {
 }
 
 void Engine::LightEnable(bool enabled) {
-    if ((bool) this->lightingEnabled == enabled) return;
+    if (this->lightingEnabled == enabled) return;
     this->lightingEnabled = enabled;
     if (!enabled) {
         this->LightSetMaterialColorAlpha(1.0f);

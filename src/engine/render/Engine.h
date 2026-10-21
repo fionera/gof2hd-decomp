@@ -194,7 +194,7 @@ namespace AbyssEngine {
 
         uint8_t glowActive;
         uint32_t glEnableFlags;
-        uint8_t lightingEnabled;
+        bool lightingEnabled;
         float uvMatrixGL[16];
         Vector field_0x468;
 
