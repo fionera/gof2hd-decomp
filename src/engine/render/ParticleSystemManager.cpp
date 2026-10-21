@@ -84,7 +84,7 @@ void ParticleSystemManager::initSprites() {
     this->canvas->SpriteSystemSetAllSize(this->spriteSystemId, 0);
 
     // Sprite UV rectangle of the first particle set (floats at cur + 0x88..0x94).
-    const float *uv = reinterpret_cast<const float *>(ParticleSettingsRef::cur + 0x88);
+    const float *uv = reinterpret_cast<const float *>(ParticleSettingsRef::curBytes() + 0x88);
     this->canvas->SpriteSystemSetAllUv(this->spriteSystemId, uv[0], uv[1], uv[2], uv[3]);
 
     for (unsigned i = 0, offset = 0; i < this->spriteSystems.count; ++i) {
@@ -174,7 +174,7 @@ int ParticleSystemManager::addSystem(AbyssEngine::AEMath::Matrix const *matrix,
     ArrayAdd<ParticleSettings::ParticleSet>(set, sets);
 
     ParticleSettings::SetDefinition *definitions =
-        reinterpret_cast<ParticleSettings::SetDefinition *>(ParticleSettingsRef::cur);
+        ParticleSettingsRef::cur.sets;
     uint32_t *setFlags = &definitions[(int) set].flags;
 
     int handle;

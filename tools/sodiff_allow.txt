@@ -3,47 +3,5 @@
 # target and tools/ratchet.py treat any extra export NOT on this list as a hard failure, and
 # tools/ratchet.py --update-baseline refuses to lock a state with undocumented extras.
 #
-# -- Compiler-emitted C1/C2 & D1/D2 ctor/dtor alias duplicates (docs/VALIDATION.md): clang emits
-#    both variants; the original's link kept one name. Removing ours needs __attribute__((used))
-#    or a version script, both banned.
-_ZN11AbyssEngine12ResourceMeshC1EPKctb
-_ZN11AbyssEngine12ResourceMeshD1Ev
-_ZN11AbyssEngine15ResourceTextureC1EPKcf
-_ZN11AbyssEngine15ResourceTextureC1ERKNS_6StringEf
-_ZN11AbyssEngine15ResourceTextureD1Ev
-_ZN11AbyssEngine16ResourceMaterialC1EtNS_9BlendModeE
-_ZN11AbyssEngine16ResourceMaterialC1EttNS_9BlendModeE
-_ZN11AbyssEngine17ResourceTransformD1Ev
-_ZN11AbyssEngine6AEMath6MatrixC1Ev
-_ZN11AbyssEngine6CameraC1Efffff
-_ZN11AbyssEngine6StringC1Ec
-_ZN11AbyssEngine6StringC1Ef
-_ZN11AbyssEngine6StringC1Ei
-_ZN11AbyssEngine6StringC1Ex
-_ZN11AbyssEngine6StringC2ERKS0_
-_ZN11AbyssEngine8MaterialC1EPS0_
-_ZN11AbyssEngine8MaterialC1Ev
-_ZN11AbyssEngine8MaterialD1Ev
-_ZN16ParticleSettingsD1Ev
-_ZN5ArrayIN11AbyssEngine6StringEEC2Ev
-_ZN5ArrayIN11AbyssEngine6StringEED2Ev
-_ZN5ArrayIP10GameRecordED1Ev
-_ZN5ArrayIP11TouchSliderEC1Ev
-_ZN5ArrayIP11TouchSliderED1Ev
-_ZN5ArrayIP14PendingProductED1Ev
-_ZN5ArrayIP5RadioED2Ev
-_ZN5ArrayIP9BluePrintEC1Ev
-_ZN5ArrayIP9BluePrintED1Ev
-_ZN5ArrayIPN11AbyssEngine7KeyCodeEEC1Ev
-_ZN5ArrayIPN11AbyssEngine7KeyCodeEED1Ev
-_ZN5ArrayIPS_IN11AbyssEngine6StringEEED2Ev
-_ZN5ArrayIPS_IP9ImagePartEEC1Ev
-_ZN5ArrayIPS_IPN11AbyssEngine6StringEEEC1Ev
-_ZN5ArrayIPS_IPN11AbyssEngine6StringEEED1Ev
-_ZN5ArrayIPaED2Ev
-_ZN5ArrayIbED1Ev
-#
-# -- Vendored / not-yet-wired (docs/VALIDATION.md)
-# libcrypto data symbol the original's static link garbage-collected.
-# odr-use anchor keeping the five _JNIEnv::Call*Method exports alive until the real JNI dispatch
-# consumer is decompiled.
+# Empty since 2026-10-21: every former entry was fixed in source (see docs/VALIDATION.md,
+# "Reducible (already fixed)"). Do not add an entry without a rationale there.

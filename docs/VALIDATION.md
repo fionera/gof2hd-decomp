@@ -50,66 +50,48 @@ irreducible delta (machine-checked via `tools/sodiff_allow.txt`).
 `objdump`; `layout.py`/`drift_scan.py` use the NDK clang (never the host compiler — host `-m32`
 is i386, which aligns 8-byte scalars to 4 and reports wrong offsets for ARM).
 
-## Current state — symbol parity (2026-07-26)
+## Current state — symbol parity (2026-10-21)
 
 ```
-original: 5370   ours: 5420   extra: 50 (all allowlisted)   missing: 0   (wrong_type: 0   absent: 0)
+original: 5370   ours: 5370   extra: 0   missing: 0   (wrong_type: 0   absent: 0)
 ```
 
-**Zero missing, zero wrong_type** — every function and object the original exports, with the correct
-signature, is present. The 12 formerly broken zero-size UB stubs have all been reconstructed (see
-the fidelity section).
-The **50 extra** symbols are all documented in `tools/sodiff_allow.txt`, so the `diff` target exits
-0; any extra beyond the list is a hard failure. They break down as 34 ctor/dtor aliases (below),
-15 engine flag globals (below), and `gof2::kJNIEnvCallAnchors`:
+**Exact defined-export parity**: every function and object the original exports is present with
+the correct signature, and we export nothing it does not. `tools/sodiff_allow.txt` is empty; any
+extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
+reconstructed (see the fidelity section).
 
-### Reducible (already fixed)
-Moving an empty/simple **out-of-line** ctor/dtor **inline into the header** makes clang emit it weak
-and fold the redundant complete-object variant (C1/D1) into the base-object variant (C2/D2) the
-original exports. Done for `GameData`, `EaseInOutMatrix::~EaseInOutMatrix`, `KeyFrame::KeyFrame`
-(40 → 36), `Array<Radio*>::~Array` through its TU merge, and `AEMath::Matrix::Matrix` (36 → 34).
-This is the template for any further reductions.
+### Reducible (all fixed)
+How the former 50 allowlisted extras were removed — the template for any new one:
 
-### Irreducible under the "no linker scripts" rule (34 symbols)
-**Compiler-emitted C1/C2 & D1/D2 constructor/destructor alias duplicates.** clang emits both the
-complete-object (C1/D1) and base-object (C2/D2) variant; for a class with no virtual bases they are
-identical and the original's link kept only one name. The inline trick above removes the duplicate
-**only when an out-of-line odr-use of the surviving variant happens to remain** — verified
-empirically that for most of these classes inlining *also* drops the C2/D2 the original keeps
-(`Camera`, `Material`, `ParticleSettings`, `ResourceTransform` each went `missing` when inlined).
-Forcing the out-of-line copy back would require `__attribute__((used))` or a `--version-script`,
-both forbidden. These are therefore left as a documented delta:
+- **C1/D1 alias duplicates of inline/template ctors and dtors.** clang (`-mconstructor-aliases`)
+  emits a C1/D1 alias next to C2/D2 only for a *strong or weak_odr* definition. An implicitly
+  instantiated / inline (`linkonce_odr`) one is RAUW'd to the C2/D2 variant, which is the only
+  name the original exports. So: no explicit `template Array<T>::Array()` / `~Array()`
+  instantiations (they are `weak_odr` and exported both variants for 12 `Array<T>`s — each is
+  implicitly instantiated by its real user anyway), and empty ctors/dtors the original emits weak
+  go inline in the header (`GameData`, `EaseInOutMatrix`, `KeyFrame`, `AEMath::Matrix`, the
+  Resource*/Material/Camera/String set, ...).
+- **`ParticleSettings` D1**: the original's `~ParticleSettings` is the implicit (weak) dtor,
+  odr-used only by `__GLOBAL__sub_I_ParticleSettings.cpp`, which constructs
+  `ParticleSettingsRef::init` then `::cur` (both `ParticleSettings` objects, not byte arrays) and
+  registers the dtor with `__cxa_atexit`. Modelling the statics with their real type reproduces
+  that initializer and the weak D2-only export.
+- **Engine flag globals (15)**: `src/engine/core/EngineFlags.cpp` held invented never-set flags
+  (`g_Engine_shaderModeFlag`, `g_Mesh_vboEnabledFlag`, ...). Only two still had a user, a bogus
+  `getAppVersion` body that duplicated `Engine::InitGL` through `AE_getInitGL*` shims (they stood
+  for `Engine::enableShader` / `Engine::EnablePostEffect`). The original's `getAppVersion` is a
+  size-0 symbol aliasing `Engine::InitGL`, so the body was dropped and the TU deleted.
+- **`gof2::kJNIEnvCallAnchors`**: a table odr-using the five `_JNIEnv::Call*Method` members. Their
+  real callers (`NFC::iap_buy_*`, `NFC::isPad/getWidth/getHeight`,
+  `FileInterfaceAndroid::Read/Write/Close`) are decompiled, so the table was deleted.
 
-- `AbyssEngine::ResourceMesh` C1`(const char*,u16,bool)`, D1
-- `AbyssEngine::ResourceTexture` C1`(const char*,float)`, C1`(const String&,float)`, D1
-- `AbyssEngine::ResourceMaterial` C1`(u16,BlendMode)`, C1`(u16,u16,BlendMode)`
-- `AbyssEngine::ResourceTransform` D1
-- `AbyssEngine::Camera` C1`(float×5)`
-- `AbyssEngine::Material` C1`(Material*)`, C1`()`, D1
-- `AbyssEngine::String` C1`(char)`, C1`(int)`, C1`(float)`, C1`(long long)`, C2`(const String&)`
-- `ParticleSettings` D1
-- 11 `Array<T>` instantiations (`Array<String>`, `Array<TouchSlider*>`, `Array<BluePrint*>`,
-  `Array<GameRecord*>`, `Array<PendingProduct*>`, `Array<KeyCode*>`, `Array<Array<String>*>`,
-  `Array<Array<ImagePart*>>`, `Array<Array<String*>>`, `Array<signed char*>`, `Array<bool>`) —
-  C1 and/or D1/D2.
-
-`AbyssEngine::String` is additionally the polymorphic `{vtable,data,length}` class noted as needing
-a full re-model; its copy-ctor delta (`C2(const String&)` vs the original's `C2(const String&,bool)`)
-is part of that and is not safe to change piecemeal.
-
-### Engine flag globals (removed 2026-10-21)
-`src/engine/core/EngineFlags.cpp` used to hold 15 invented, never-set flag globals
-(`g_Engine_shaderModeFlag`, `g_Mesh_vboEnabledFlag`, ...). Only two had a remaining user, the
-bogus `getAppVersion` body (a duplicate of `Engine::InitGL` routed through `AE_getInitGL*` shims):
-they stood for `Engine::enableShader` and `Engine::EnablePostEffect`. The original's
-`getAppVersion` is a size-0 symbol aliasing `Engine::InitGL`, so that body was dropped and the TU
-deleted; the 15 exports and the 3 `AE_getInitGL*` imports are gone.
-
-### JNI call anchor (removed 2026-10-21)
-`gof2::kJNIEnvCallAnchors` (src/engine/core/JNIEnvCalls.cpp) odr-used the five
-`_JNIEnv::Call*Method` members. Their real consumers are already decompiled (`NFC::iap_buy_*`,
-`NFC::isPad/getWidth/getHeight`, `FileInterfaceAndroid::Read/Write/Close`), so the table was
-deleted; the five weak members stay exported.
+### Known import delta: `posix_memalign`
+The original imports `memalign`, not `posix_memalign`: it links the NDK's `libandroid_support.a`
+after `libc++abi.a` (ndk-build's `c++_static` for a pre-21 `APP_PLATFORM`), whose hidden
+`posix_memalign` (at 0x19ae14, between the libc++abi code and libgcc's `__aeabi_ldivmod`) wraps
+`memalign`. libc++abi's `fallback_malloc.o`/`stdlib_new_delete.o` are the users. Our link does not
+pass `libandroid_support.a`, so `posix_memalign` stays an import; fixing it is a link-input change.
 
 ## Structural invariants — all at 0
 
@@ -207,7 +189,7 @@ Current numbers (of **4523** compared): **byte_exact 1327, linked_exact 4152, av
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
 monotone, linked_exact within a ±1 transient band, stubs/missing/extra frozen, exports pinned to
-`tools/sodiff_allow.txt`, undefined-import set pinned (595 names; a typo'd callee is a hard
+`tools/sodiff_allow.txt`, undefined-import set pinned (232 names; a typo'd callee is a hard
 failure), lint clean. `cmake --build … --target check` runs it; the pre-push hook
 (`git config core.hooksPath tools/hooks`) makes it unavoidable. Improvements are locked with
 `tools/ratchet.py --update-baseline` in the same commit.

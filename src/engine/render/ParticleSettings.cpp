@@ -4,9 +4,6 @@
 ParticleSettings::ParticleSettings() {
 }
 
-ParticleSettings::~ParticleSettings() {
-}
-
 static inline float &asFloat(uint32_t &slot) {
     return reinterpret_cast<float &>(slot);
 }
@@ -661,8 +658,8 @@ int ParticleSettings::init() {
 
 // Rescales the live set (ParticleSettingsRef::cur) from the pristine copy (ParticleSettingsRef::init).
 void ParticleSettings::multiplyAll(float scale) {
-    ParticleSettings &cur = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur);
-    ParticleSettings &init = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::init);
+    ParticleSettings &cur = ParticleSettingsRef::cur;
+    ParticleSettings &init = ParticleSettingsRef::init;
     float inverse = 1.0f / scale;
     float alphaScale = (float) (1.0 / ((scale + 1.0f) * 0.5));
     for (int i = 0; i < 48; i++) {
@@ -689,9 +686,9 @@ void ParticleSettings::multiplyAll(float scale) {
 
 // Blends two pristine sets (ParticleSettingsRef::init) into the live set (ParticleSettingsRef::cur).
 void ParticleSettings::Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out) {
-    SetDefinition &pa = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::init).sets[a];
-    SetDefinition &pb = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::init).sets[b];
-    SetDefinition &po = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[out];
+    SetDefinition &pa = ParticleSettingsRef::init.sets[a];
+    SetDefinition &pb = ParticleSettingsRef::init.sets[b];
+    SetDefinition &po = ParticleSettingsRef::cur.sets[out];
     float omt = 1.0f - t;
     po.lifetime = (int) (omt * (float) pa.lifetime + (float) pb.lifetime * t);
     asFloat(po.lifeBase) = omt * asFloat(pa.lifeBase) + asFloat(pb.lifeBase) * t;
@@ -703,5 +700,5 @@ float ParticleSettings::particleMultiply = 1.0f;
 int ParticleSettings::pCounter;
 
 int ParticleSettingsRef::assertInit;
-unsigned char ParticleSettingsRef::cur[7680];
-unsigned char ParticleSettingsRef::init[7680];
+ParticleSettings ParticleSettingsRef::init;
+ParticleSettings ParticleSettingsRef::cur;

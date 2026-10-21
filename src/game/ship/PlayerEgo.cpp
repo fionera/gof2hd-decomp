@@ -1676,7 +1676,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             this->player->flShake += (float) dt * 0.001f * shake;
         }
         if (this->level->field_a4 != nullptr) {
-            ParticleSettings &settings = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur);
+            ParticleSettings &settings = ParticleSettingsRef::cur;
             for (unsigned int i = 0; i < this->level->field_a4->size(); i++) {
                 float scale = (*this->level->field_a4)[i]->getScaling().x;
                 reinterpret_cast<float &>(settings.sets[29 + i].lifeBase) =
@@ -2216,9 +2216,9 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         ParticleSettings::Interpolate((ParticleSettings::ParticleSet) 4, (ParticleSettings::ParticleSet) 6,
                                       this->getBoostPercentage(), (ParticleSettings::ParticleSet) 4);
     } else {
-        ParticleSettings &current = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur);
+        ParticleSettings &current = ParticleSettingsRef::cur;
         uint32_t color = current.sets[4].color0;
-        current.sets[4] = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::init).sets[4];
+        current.sets[4] = ParticleSettingsRef::init.sets[4];
         current.sets[4].color0 = color;
     }
 
