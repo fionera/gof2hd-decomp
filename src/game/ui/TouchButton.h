@@ -89,8 +89,8 @@ public:
 
     int getWidth();
 
-    int init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y,
-             unsigned char flags0, unsigned char flags1);
+    void init(const String &text, unsigned int subId, int kind, int medalIndex, int medalStage, int x, int y,
+              int width, unsigned char flags0, unsigned char flags1);
 
     bool isTouched();
 
