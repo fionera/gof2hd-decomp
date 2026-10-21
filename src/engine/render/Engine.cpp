@@ -1148,7 +1148,7 @@ Engine::Engine()
     this->gravRaw[0] = 0;
     this->gravRaw[1] = 0;
     this->gravRaw[2] = 0;
-    reinterpret_cast<int &>(this->explosionTimeline) = 0x14;  // raw-int placeholder (see Engine.h)
+    this->timerInterval = 20;
     this->linearFilterFlag = 1;
     this->field_0xcc = 0.7f;
     this->appManager = new ApplicationManager(this);

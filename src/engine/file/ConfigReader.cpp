@@ -1,64 +1,70 @@
 #include "engine/file/ConfigReader.h"
+#include "engine/core/ApplicationManager.h"
+#include "engine/core/KeyCode.h"
+#include "engine/render/Engine.h"
 
 namespace AbyssEngine {
     namespace {
-        void config_reader_read_file_callback(ConfigReader *, Engine *) {
+        // TIMER: one line, the engine timer interval.
+        void ConfigReadTimer(ConfigReader *reader, void *context) { // lint: void_ptr (ConfigTokenReadFunction ctx)
+            String line = reader->GetNewLine();
+            if (line.Compare("EOF") != 0) {
+                Engine *engine = static_cast<Engine *>(context);
+                engine->timerInterval = line.ValueOf();
+            }
         }
 
-        void config_reader_keys_for_action_callback(ConfigReader *, Engine *) {
+        // KEYMAP: up to 64 "code,name" lines; only a complete table replaces the key mapping.
+        void ConfigReadKeyMap(ConfigReader *reader, void *context) { // lint: void_ptr (ConfigTokenReadFunction ctx)
+            Array<KeyCode *> keyCodes;
+            String line;
+            for (unsigned int i = 0; i < 64 && line.Compare("EOF") != 0; i++) {
+                String newLine = reader->GetNewLine();
+                Array<String *> *parts = static_cast<Array<String *> *>(newLine.Split(String(",", false)));
+                if (parts == nullptr || parts->count != 2) {
+                    delete[] newLine.GetAEChar();
+                    break;
+                }
+                KeyCode *keyCode = new KeyCode();
+                keyCode->code = (*parts)[0]->ValueOf();
+                keyCode->name = *(*parts)[1];
+                ArrayAdd(keyCode, keyCodes);
+                for (unsigned int j = 0; j < parts->count; j++) {
+                    if ((*parts)[j] != nullptr)
+                        delete (*parts)[j];
+                    (*parts)[j] = nullptr;
+                }
+                ArrayRemoveAll(*parts);
+                delete parts;
+            }
+            if (keyCodes.count == 64) {
+                Engine *engine = static_cast<Engine *>(context);
+                engine->appManager->KeyCodeSetMapping(&keyCodes);
+            }
+            for (unsigned int i = 0; i < keyCodes.count; i++) {
+                if (keyCodes[i] != nullptr)
+                    delete keyCodes[i];
+                keyCodes[i] = nullptr;
+            }
+            ArrayRemoveAll(keyCodes);
         }
 
-        void config_reader_register_token_callback(ConfigReader *, Engine *) {
+        // VIBRATION: "ON" enables device vibration.
+        void ConfigReadVibration(ConfigReader *reader, void *context) { // lint: void_ptr (ConfigTokenReadFunction ctx)
+            String line = reader->GetNewLine();
+            if (line.Compare("EOF") != 0) {
+                Engine *engine = static_cast<Engine *>(context);
+                if (line.Compare("ON") == 0)
+                    engine->vibrationSupported = true;
+            }
         }
     }
 
     ConfigReader::ConfigReader(Engine *engine) {
         this->engine = engine;
-
-        String readFileName;
-        for (const char *p = "ConfigReadFile"; p && *p; ++p) {
-            int _nl = readFileName.length + 1;
-            unsigned short *_nd = new unsigned short[_nl + 1];
-            for (int _i = 0; _i < readFileName.length; _i++) _nd[_i] = readFileName.data[_i];
-            _nd[readFileName.length] = (unsigned short) (static_cast<char16_t>(static_cast<unsigned char>(*p)));
-            _nd[_nl] = 0;
-            if (readFileName.data) delete[] readFileName.data;
-            readFileName.data = _nd;
-            readFileName.length = _nl;
-        }
-        RegisterTokenReadFunction(
-            readFileName,
-            (ConfigTokenReadFunction) config_reader_read_file_callback, engine);
-
-        String keysForActionName;
-        for (const char *p = "ConfigGetKeysForAction"; p && *p; ++p) {
-            int _nl = keysForActionName.length + 1;
-            unsigned short *_nd = new unsigned short[_nl + 1];
-            for (int _i = 0; _i < keysForActionName.length; _i++) _nd[_i] = keysForActionName.data[_i];
-            _nd[keysForActionName.length] = (unsigned short) (static_cast<char16_t>(static_cast<unsigned char>(*p)));
-            _nd[_nl] = 0;
-            if (keysForActionName.data) delete[] keysForActionName.data;
-            keysForActionName.data = _nd;
-            keysForActionName.length = _nl;
-        }
-        RegisterTokenReadFunction(
-            keysForActionName,
-            (ConfigTokenReadFunction) config_reader_keys_for_action_callback, engine);
-
-        String registerTokenName;
-        for (const char *p = "ConfigRegisterTokenReadFunction"; p && *p; ++p) {
-            int _nl = registerTokenName.length + 1;
-            unsigned short *_nd = new unsigned short[_nl + 1];
-            for (int _i = 0; _i < registerTokenName.length; _i++) _nd[_i] = registerTokenName.data[_i];
-            _nd[registerTokenName.length] = (unsigned short) (static_cast<char16_t>(static_cast<unsigned char>(*p)));
-            _nd[_nl] = 0;
-            if (registerTokenName.data) delete[] registerTokenName.data;
-            registerTokenName.data = _nd;
-            registerTokenName.length = _nl;
-        }
-        RegisterTokenReadFunction(
-            registerTokenName,
-            (ConfigTokenReadFunction) config_reader_register_token_callback, engine);
+        RegisterTokenReadFunction(String("TIMER", false), ConfigReadTimer, engine);
+        RegisterTokenReadFunction(String("KEYMAP", false), ConfigReadKeyMap, engine);
+        RegisterTokenReadFunction(String("VIBRATION", false), ConfigReadVibration, engine);
     }
 
     ConfigReader::~ConfigReader() {
