@@ -581,8 +581,7 @@ void KIPlayer::setShipGroup(AEGeometry *geom, int group, bool flag) {
     this->geometry->setPosition(this->posX, this->posY, this->posZ);
     *(Matrix *) this->player->transform = this->geometry->getMatrix();
     if (this->parentGeometry != 0) {
-        Matrix &pm = this->parentGeometry->getMatrix();
-        *(Matrix *) this->player->transform *= pm;
+        *(Matrix *) this->player->transform *= this->parentGeometry->getMatrix();
     }
 }
 

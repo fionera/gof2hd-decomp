@@ -304,7 +304,7 @@ void HackingGame::reInit() {
             this->target[i] = i;
     }
 
-    for (int i = 0x28; i != 0; --i) {
+    for (int i = 0; i < 40; ++i) {
         int a = Globals::rnd->nextInt(6);
         int b = Globals::rnd->nextInt(6);
         int value = this->target[a];
@@ -318,7 +318,7 @@ void HackingGame::reInit() {
         this->working[i] = value;
     }
 
-    for (unsigned i = 0; (int) i < this->difficulty * 2; ++i) {
+    for (int i = 0; i < this->difficulty * 2; ++i) {
         int count = Globals::rnd->nextInt(2);
         for (int j = 0; j <= count; ++j) {
             if ((i & 1) == 0)
@@ -328,7 +328,7 @@ void HackingGame::reInit() {
         }
 
         type = this->difficulty;
-        if (i == (unsigned) (type * 2 - 1)) {
+        if (i == type * 2 - 1) {
             for (int j = 0; j != 6; ++j)
                 local[j] = this->working[j];
             if (solvableInNSteps(type, 0, 0, 0, local) != 0)

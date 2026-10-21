@@ -2,6 +2,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES/gl.h>
+extern "C" void glClientActiveTexture(GLenum texture); // lint: extern_c (GLES1 C ABI entry point, defined in GLES1Compat.cpp)
 #include "engine/core/AbyssEngine.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
@@ -72,32 +73,27 @@ bool AbyssEngine::PostEffectFlag;
 
 namespace AbyssEngine {
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
-                   unsigned int vertexFormat,
-                   void **out); // lint: void_ptr (exported MeshCreate symbol; void** baked into mangled name)
+                   signed char vertexFormat, Mesh **out);
     void MeshRelease(Engine *engine, Mesh **slot);
     void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b);
 }
 
-static String *g_Engine_vendorString = nullptr;
-static String *g_Engine_rendererString = nullptr;
 
 namespace {
 
     bool g_Engine_supportsFBO;
 
-    int g_Engine_defaultShader;
-    int g_Engine_shaderDrew;
 
     int g_Engine_shaderPostA;
     int g_Engine_shaderPostB;
     int g_Engine_shaderPostC;
 
-    float g_Engine_texEnv;
-    int g_Engine_texEnvDirty;
 
-    uint32_t g_Engine_postEffectBW;
-    uint32_t g_Engine_postEffectBlur;
-    int g_Engine_postEffectFlag;
+    // Post-effect ids (0x1400000 base) and the black/white effect's switch-off bookkeeping.
+    const uint32_t kPostEffectBase = 0x1400000;
+    const uint32_t kPostEffectBlur = 0x1400001;
+    const uint32_t kPostEffectBW = 0x1400002;
+    bool g_Engine_postEffectFlag;
     int g_Engine_postEffectCounter;
     int g_Engine_postEffectPending;
 
@@ -238,10 +234,6 @@ void Engine::ActivateRender2TextureFBO() {
     }
 }
 
-typedef void Materialfv(unsigned int face, unsigned int pname, const float *params);
-
-static Materialfv *g_Engine_glMaterialfv;
-
 void Engine::LightSetMaterialColorAlpha(float alpha) {
     if (this->lightingEnabled == 0) {
         return;
@@ -249,12 +241,11 @@ void Engine::LightSetMaterialColorAlpha(float alpha) {
 
     this->materialAmbient[3] = alpha;
     this->materialAlpha = alpha;
-    Materialfv *materialfv = g_Engine_glMaterialfv;
-    materialfv(0x408, 0x1200, this->materialAmbient);
+    glMaterialfv(0x408, 0x1200, this->materialAmbient);
     this->materialSpecular[3] = this->materialAlpha;
-    materialfv(0x408, 0x1202, this->materialSpecular);
+    glMaterialfv(0x408, 0x1202, this->materialSpecular);
     this->materialDiffuse[3] = this->materialAlpha;
-    return materialfv(0x408, 0x1201, this->materialDiffuse);
+    return glMaterialfv(0x408, 0x1201, this->materialDiffuse);
 }
 
 void Engine::SetAccelValue(double x, double y, double z) {
@@ -482,31 +473,36 @@ void Engine::DeactivateRender2FracFBO() {
 }
 
 void Engine::SetPerspMatrix(float *matrix) {
-    if (Engine::enableShader == 0) {
-        return;
-    }
-    float *proj = this->projMatrix;
-    for (int i = 0; i < 16; i += 1) {
-        proj[i] = matrix[i];
+    if (Engine::enableShader != 0) {
+        float *proj = this->projMatrix;
+        proj[0] = matrix[0];
+        proj[1] = matrix[1];
+        proj[2] = matrix[2];
+        proj[3] = matrix[3];
+        proj[4] = matrix[4];
+        proj[5] = matrix[5];
+        proj[6] = matrix[6];
+        proj[7] = matrix[7];
+        proj[8] = matrix[8];
+        proj[9] = matrix[9];
+        proj[10] = matrix[10];
+        proj[11] = matrix[11];
+        proj[12] = matrix[12];
+        proj[13] = matrix[13];
+        proj[14] = matrix[14];
+        proj[15] = matrix[15];
     }
 }
 
 void Engine::SetFrameBufferTexture(int slot0, int slot1) {
-    int firstValue = this->frameBufferTextures[slot0];
-    if (firstValue != -1) {
+    if (this->frameBufferTextures[slot0] != -1) {
         glActiveTexture(0x84c0);
-        glBindTexture(0xde1, firstValue);
+        glBindTexture(0xde1, this->frameBufferTextures[slot0]);
     }
-
-    if (slot1 == -1) {
-        return;
+    if (slot1 != -1 && this->frameBufferTextures[slot1] != -1) {
+        glActiveTexture(0x84c1);
+        glBindTexture(0xde1, this->frameBufferTextures[slot1]);
     }
-    int secondValue = this->frameBufferTextures[slot1];
-    if (secondValue == -1) {
-        return;
-    }
-    glActiveTexture(0x84c1);
-    return glBindTexture(0xde1, secondValue);
 }
 
 void Engine::LightSetLightDirection(float x, float y, float z, unsigned int light) {
@@ -528,66 +524,153 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
 }
 
 void Engine::RenderMesh(Mesh *mesh) {
+    // Triangle statistics: [0]/[1] = indexed 2D/3D (field_0x58 holds two counters),
+    // triangleCountA/B = VBO-indexed 2D/3D; drawCallCountA/B = 2D/3D draw calls.
+    int *indexedTriangles = (int *) &this->field_0x58;
     if (mesh == 0 || mesh->indexCount == 0) {
-        goto done;
+        return;
     }
 
-    if (Engine::enableShader == 0) {
-        glVertexPointer(3, 0x1406, 0, mesh->positions);
-        this->AEClientState(0x8074, true);
-        bool tex = ((uint32_t) mesh->vertexFormat << 30) < 0;
-
-        if (tex && (mesh->material == 0 ||
-                    ((Material *) mesh->material)->textures[1] == -1)) {
-            glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
-        }
-        this->AEClientState(0x8078, tex);
-        bool normals = ((uint32_t) mesh->vertexFormat << 29) < 0;
-        if (normals) {
-            glNormalPointer(0x1406, 0, mesh->normals);
-        }
-        this->AEClientState(0x8075, normals);
-        bool colors = ((uint32_t) mesh->vertexFormat << 28) < 0;
-        if (colors) {
-            glColorPointer(4, 0x1406, 0, (unsigned char *) (uintptr_t) mesh->colors);
-        }
-        this->AEClientState(0x8076, colors);
-        if (((uint32_t) mesh->vertexFormat << 27) < 0) {
-            glDrawElements(4, mesh->indexCount, 0x1403,
-                           mesh->indices);
+    if (Engine::enableShader != 0) {
+        ShaderSet = 0;
+        uint32_t flags = this->glEnableFlags;
+        if ((flags & 0x1000) != 0) {
+            this->ShaderSetActive(GenericShader::ShaderIndex, mesh);
+        }         else if ((flags & 0x2000) != 0) {
+            this->ShaderSetActive(GenericShader1::ShaderIndex, mesh);
+        }         else if ((flags & 0x4000) != 0) {
+            this->ShaderSetActive(GenericShader2::ShaderIndex, mesh);
+        }         else if ((flags & 0x400) != 0) {
+            this->ShaderSetActive(SandboxShader::ShaderIndex, mesh);
+        }         else if ((flags & 0x4) != 0) {
+            this->ShaderSetActive(BumpMapping::ShaderIndex, mesh);
+        }         else if ((flags & 0x10000) != 0) {
+            this->ShaderSetActive(BumpShaderV3::ShaderIndex, mesh);
+        }         else if ((flags & 0x1000000) != 0) {
+            this->ShaderSetActive(BumpShaderParticle::ShaderIndex, mesh);
+        }         else if ((flags & 0x40000) != 0) {
+            this->ShaderSetActive(BumpShaderCloak::ShaderIndex, mesh);
+        }         else if ((flags & 0x8000000) != 0) {
+            this->ShaderSetActive(BumpShaderRefract::ShaderIndex, mesh);
+        }         else if ((flags & 0x200000) != 0) {
+            this->ShaderSetActive(EnergyShield::ShaderIndex, mesh);
+        }         else if ((flags & 0x400000) != 0) {
+            this->ShaderSetActive(SimpleRefractionShader::ShaderIndex, mesh);
+        }         else if ((flags & 0x100000) != 0) {
+            this->ShaderSetActive(GlowShader::ShaderIndex, mesh);
+        }         else if ((flags & 0x4000000) != 0) {
+            this->ShaderSetActive(DNSShader::ShaderIndex, mesh);
+        } 
+        else if ((flags & 0x20000) != 0) {
+            if (Engine::UseAdvancedShader != 0) {
+                this->ShaderSetActive(BumpRimCubeShader::ShaderIndex, mesh);
+            } else {
+                this->ShaderSetActive(BumpRimCubeShader_new::ShaderIndex, mesh);
+            }
+        } else if ((flags & 0x2000000) != 0) {
+            // shader already bound by the caller
+        } else if ((flags & 0x8) != 0) {
+            this->ShaderSetActive(SpecCubeMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x80000) != 0) {
+            this->ShaderSetActive(SpecCubeAlphaMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x8000) != 0) {
+            this->ShaderSetActive(CubeNormalMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x2) != 0) {
+            this->ShaderSetActive(TextureAlphaTestShader::ShaderIndex, mesh);
+        } else if ((flags & 0x1) == 0) {
+            this->ShaderSetActive(NoTexShader::ShaderIndex, mesh);
+        } else if ((mesh->vertexFormat & 0xa) == 8) {
+            this->ShaderSetActive(NoTexVtxColorShader::ShaderIndex, mesh);
+        } else if (this->lightingEnabled) {
+            this->ShaderSetActive(TextureLightShader::ShaderIndex, mesh);
+        } else if ((mesh->vertexFormat & 8) != 0) {
+            this->ShaderSetActive(TextureVtxColorShader::ShaderIndex, mesh);
+        } else if ((flags & 0x800000) != 0) {
+            this->ShaderSetActive(ColorMixAdd::ShaderIndex, mesh);
         } else {
-            glDrawArrays(4, 0, mesh->vertexCount);
+            this->ShaderSetActive(TextureShader::ShaderIndex, mesh);
         }
 
-        if (tex && mesh->material != 0 &&
-            ((Material *) mesh->material)->textures[1] != -1) {
-            this->AEClientState(0x8078, false);
-        }
-    } else {
-        g_Engine_shaderDrew = 0;
-        this->ShaderSetActive(g_Engine_defaultShader, mesh);
-        if (g_Engine_shaderDrew != 0) {
-            int oldBuffer = 0;
+        if (ShaderSet != 0) {
+            int oldBuffer;
             glGetIntegerv(0x8ca6, &oldBuffer);
-            if (((uint32_t) mesh->vertexFormat << 27) < 0) {
-                if (mesh->uploaded == 0) {
-                    glDrawElements(4, mesh->indexCount, 0x1403,
-                                   mesh->indices);
-                } else {
+            if ((mesh->vertexFormat & 0x10) == 0) {
+                glDrawArrays(4, 0, mesh->vertexCount);
+            } else {
+                unsigned int count = mesh->indexCount;
+                unsigned int triangles = count / 3;
+                if (mesh->uploaded != 0) {
+                    if (this->statsEnabled != 0) {
+                        this->triangleCountB += triangles;
+                        this->drawCallCountB += 1;
+                    } else {
+                        this->triangleCountA += triangles;
+                        this->drawCallCountA += 1;
+                    }
                     glBindBuffer(0x8893, mesh->indexVBO);
                     glDrawElements(4, mesh->indexCount, 0x1403, 0);
                     glBindBuffer(0x8892, 0);
                     glBindBuffer(0x8893, 0);
+                } else {
+                    if (this->statsEnabled != 0) {
+                        indexedTriangles[1] += triangles;
+                        this->drawCallCountB += 1;
+                    } else {
+                        indexedTriangles[0] += triangles;
+                        this->drawCallCountA += 1;
+                    }
+                    glDrawElements(4, count, 0x1403, mesh->indices);
                 }
-            } else {
-                glDrawArrays(4, 0, mesh->vertexCount);
             }
-            this->ShaderSetInActive();
+            this->shaders[currentUsedShaderIndex]->SetInActive();
         }
+        return;
     }
 
-done:
-    return;
+    glVertexPointer(3, 0x1406, 0, mesh->positions);
+    this->AEClientState(0x8074, true);
+    if ((mesh->vertexFormat & 2) == 0) {
+        this->AEClientState(0x8078, false);
+    } else if (mesh->material == 0 || ((Material *) mesh->material)->textures[1] == -1) {
+        glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
+        this->AEClientState(0x8078, true);
+    }
+    if ((mesh->vertexFormat & 4) == 0) {
+        this->AEClientState(0x8075, false);
+    } else {
+        glNormalPointer(0x1406, 0, mesh->normals);
+        this->AEClientState(0x8075, true);
+    }
+    if ((mesh->vertexFormat & 8) == 0) {
+        this->AEClientState(0x8076, false);
+    } else {
+        glColorPointer(4, 0x1406, 0, mesh->colors);
+        this->AEClientState(0x8076, true);
+    }
+    if ((mesh->vertexFormat & 0x10) == 0) {
+        glDrawArrays(4, 0, mesh->vertexCount);
+    } else {
+        unsigned int count;
+        if (this->field_0xfe != 0) {
+            count = mesh->indexCount;
+            unsigned int triangles = count / 3;
+            if (this->statsEnabled != 0) {
+                indexedTriangles[1] += triangles;
+                this->drawCallCountB += 1;
+            } else {
+                indexedTriangles[0] += triangles;
+                this->drawCallCountA += 1;
+            }
+        } else {
+            count = mesh->indexCount;
+        }
+        glDrawElements(4, count, 0x1403, mesh->indices);
+    }
+    if ((mesh->vertexFormat & 2) != 0 && mesh->material != 0 &&
+        ((Material *) mesh->material)->textures[1] != -1) {
+        this->AEClientState(0x8078, false);
+        return glClientActiveTexture(0x84c0);
+    }
 }
 
 void Engine::DrawQuad(int x, int y, int width, int height) {
@@ -607,42 +690,36 @@ void Engine::DrawQuad(int x, int y, int width, int height) {
     positions[9] = fx;
     positions[10] = bottom;
 
-    static const float uvs[8] = {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        1.0f, 1.0f,
-        0.0f, 1.0f,
-    };
     float *uv = (float *) mesh->texCoords;
-    float32x4_t uv0 = vld1q_f32(uvs);
-    float32x4_t uv1 = vld1q_f32(uvs + 4);
-    vst1q_f32(uv, uv0);
-    vst1q_f32(uv + 4, uv1);
+    uv[0] = 0.0f;
+    uv[1] = 1.0f;
+    uv[2] = 1.0f;
+    uv[3] = 1.0f;
+    uv[4] = 1.0f;
+    uv[5] = 0.0f;
+    uv[6] = 0.0f;
+    uv[7] = 0.0f;
 
     return glDrawElements(4, mesh->indexCount, 0x1403,
                           mesh->indices);
 }
 
 void Engine::SetColor(float red, float green, float blue, float alpha) {
-    Engine *self = this;
-    if (self->glColor[0] == red &&
-        self->glColor[1] == green &&
-        self->glColor[2] == blue &&
-        self->glColor[3] == alpha) {
-        return;
-    }
-    self->glColor[1] = green;
-    self->glColor[0] = red;
-    self->glColor[2] = blue;
-    self->glColor[3] = alpha;
-    self->packedColor =
-            (int) (green * 255.0f) * 0x10000 + (int) (red * 255.0f) * 0x1000000 +
-            (int) (blue * 255.0f) * 0x100 + (int) (alpha * 255.0f);
-    if (Engine::enableShader != 0) {
-        return this->ShaderUpdate();
-    }
-    self->LightSetMaterialColorAlpha(alpha);
-    return glColor4f(red, green, blue, alpha);
+    if (this->glColor[0] != red || this->glColor[1] != green || this->glColor[2] != blue ||
+        this->glColor[3] != alpha) {
+        this->glColor[0] = red;
+        this->glColor[1] = green;
+        this->glColor[2] = blue;
+        this->glColor[3] = alpha;
+        this->packedColor =
+                (int) (green * 255.0f) * 0x10000 + (int) (red * 255.0f) * 0x1000000 +
+                (int) (blue * 255.0f) * 0x100 + (int) (alpha * 255.0f);
+        if (Engine::enableShader != 0) {
+            return this->ShaderUpdate();
+        }
+        this->LightSetMaterialColorAlpha(alpha);
+        return glColor4f(red, green, blue, alpha);
+}
 }
 
 Engine::~Engine() {
@@ -675,17 +752,18 @@ void Engine::ReleaseGL() {
 
 void Engine::AfterGLInit() {
     this->ResetLightParam();
-    AbyssEngine::MeshCreate(this, 4, 2, 0x13, (void **) &this->quadMesh); // lint: void_ptr (void** baked into exported MeshCreate)
+    AbyssEngine::MeshCreate(this, 4, 2, 0x13, &this->quadMesh);
 
-    uint32_t *indices = (uint32_t *) this->quadMesh->indices;
-    indices[0] = 0x20000;
-    indices[1] = 1;
-    indices[2] = 0x30002;
+    unsigned short *indices = (unsigned short *) this->quadMesh->indices;
+    indices[0] = 0;
+    indices[1] = 2;
+    indices[2] = 1;
+    indices[3] = 0;
+    indices[4] = 3;
+    indices[5] = 2;
 
-    String vendor((const char *) glGetString(0x1f00));
-    *g_Engine_vendorString = vendor;
-    String renderer((const char *) glGetString(0x1f01));
-    *g_Engine_rendererString = renderer;
+    Engine::vendor = String((const char *) glGetString(0x1f00));
+    Engine::renderer = String((const char *) glGetString(0x1f01));
 }
 
 void Engine::DrawCloakFBO(FBOContainer *fbo) {
@@ -706,62 +784,92 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
 }
 
 void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
-    PaintCanvas *manager = this->appManager->paintCanvas;
-    uint32_t count = manager->cubeTextures.count;
-    if (count == 0 || slot >= 8 || textureIndex > count - 1) {
+    uint32_t count = this->appManager->paintCanvas->cubeTextures.count;
+    if (count == 0) {
+        return;
+    }
+    if (slot >= 8 || textureIndex > count - 1) {
         return;
     }
     uint32_t *bound = (uint32_t *) &this->boundTextures[slot];
-
-    TextureEntry *textureEntry = (TextureEntry *) manager->cubeTextures.data_[textureIndex];
-    uint32_t texture = textureEntry->glTexture;
+    uint32_t texture = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->glTexture;
     if (*bound == texture) {
         return;
     }
     glActiveTexture(slot + 0x84c0);
-    float env = textureEntry->texEnv;
-    if (g_Engine_texEnv != env) {
-        g_Engine_texEnv = env;
-        if (Engine::enableShader == 0) {
+    float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->texEnv;
+    if (currentLODBias != env) {
+        currentLODBias = env;
+        if (Engine::enableShader != 0) {
+            if (BiasErrorOutputFlag != 0) {
+                BiasErrorOutputFlag = 0;
+            }
+        } else {
             glTexEnvf(0x8500, 0x8501, env);
-            textureEntry = (TextureEntry *) manager->cubeTextures.data_[textureIndex];
-        } else if (g_Engine_texEnvDirty != 0) {
-            g_Engine_texEnvDirty = 0;
         }
     }
-
-    glBindTexture(textureEntry->isCube == 0 ? 0xde1 : 0x8513, texture);
+    glBindTexture(((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube
+                          ? 0x8513 : 0xde1,
+                  texture);
     *bound = texture;
 }
 
 void Engine::AEClientState(unsigned int state, bool enable) {
-    uint32_t bits = this->clientStateFlagsAE;
-    uint32_t mask = 0;
-    switch (state) {
-        case 0x8074: mask = 2;
-            break;
-        case 0x8075: mask = 1;
-            break;
-        case 0x8076: mask = 8;
-            break;
-        case 0x8078: mask = 4;
-            break;
-        default: return;
-    }
     if (enable) {
-        if ((bits & mask) != 0) {
-            return;
+        switch (state) {
+            case 0x8074:
+                if ((this->clientStateFlagsAE & 2) == 0) {
+                    glEnableClientState(0x8074);
+                    this->clientStateFlagsAE |= 2;
+                }
+                break;
+            case 0x8075:
+                if ((this->clientStateFlagsAE & 1) == 0) {
+                    glEnableClientState(0x8075);
+                    this->clientStateFlagsAE |= 1;
+                }
+                break;
+            case 0x8076:
+                if ((this->clientStateFlagsAE & 8) == 0) {
+                    glEnableClientState(0x8076);
+                    this->clientStateFlagsAE |= 8;
+                }
+                break;
+            case 0x8078:
+                if ((this->clientStateFlagsAE & 4) == 0) {
+                    glEnableClientState(0x8078);
+                    this->clientStateFlagsAE |= 4;
+                }
+                break;
         }
-        glEnableClientState(state);
-        bits |= mask;
     } else {
-        if ((bits & mask) == 0) {
-            return;
+        switch (state) {
+            case 0x8074:
+                if ((this->clientStateFlagsAE & 2) != 0) {
+                    glDisableClientState(0x8074);
+                    this->clientStateFlagsAE &= ~2u;
+                }
+                break;
+            case 0x8075:
+                if ((this->clientStateFlagsAE & 1) != 0) {
+                    glDisableClientState(0x8075);
+                    this->clientStateFlagsAE &= ~1u;
+                }
+                break;
+            case 0x8078:
+                if ((this->clientStateFlagsAE & 4) != 0) {
+                    glDisableClientState(0x8078);
+                    this->clientStateFlagsAE &= ~4u;
+                }
+                break;
+            case 0x8076:
+                if ((this->clientStateFlagsAE & 8) != 0) {
+                    glDisableClientState(0x8076);
+                    this->clientStateFlagsAE &= ~8u;
+                }
+                break;
         }
-        glDisableClientState(state);
-        bits &= ~mask;
     }
-    this->clientStateFlagsAE = bits;
 }
 
 void Engine::GlowBeginGlow(int depthFunc) {
@@ -853,7 +961,7 @@ void Engine::DoPostEffect() {
             }
         }
         if (g_Engine_postEffectFlag == 1) {
-            this->SetPostEffect(g_Engine_postEffectBW, false);
+            this->SetPostEffect(kPostEffectBW, false);
         }
     }
     return;
@@ -913,32 +1021,37 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
             width = this->displayHeight;
             height = this->displayWidth;
         }
-        this->postEffectFBO->Create(width, height, false, true);
+        this->postEffectFBO->Create(width, height, true, false);
     }
 
-    uint32_t flags = this->postEffectFlags;
-    if (effect == (uint32_t) g_Engine_postEffectBW) {
+    if (effect == kPostEffectBW) {
         if (enable) {
             if (g_Engine_postEffectCounter > 0) {
                 g_Engine_postEffectCounter -= 1;
             } else {
-                flags |= 4;
+                this->postEffectFlags |= 4;
             }
         } else if (g_Engine_postEffectFlag == 1) {
-            flags &= ~4u;
+            this->postEffectFlags &= ~4u;
             g_Engine_postEffectFlag = 0;
             g_Engine_postEffectPending = 1;
         } else {
-            g_Engine_postEffectFlag = g_Engine_postEffectCounter < 1;
+            g_Engine_postEffectFlag = g_Engine_postEffectCounter <= 0;
         }
-    } else if (effect == (uint32_t) g_Engine_postEffectBlur) {
-        g_Engine_postEffectFlag = enable;
-        flags = enable ? (flags | 2) : (flags & ~2u);
-    } else if (effect == 0x1400000) {
-        flags = enable ? (flags | 1) : (flags & ~1u);
+    } else if (effect == kPostEffectBlur) {
+        Engine::EnableGlow = enable;
+        if (enable) {
+            this->postEffectFlags |= 2;
+        } else {
+            this->postEffectFlags &= ~2u;
+        }
+    } else if (effect == kPostEffectBase) {
+        if (enable) {
+            this->postEffectFlags |= 1;
+        } else {
+            this->postEffectFlags &= ~1u;
+        }
     }
-    this->postEffectFlags = flags;
-    return;
 }
 
 void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
@@ -971,16 +1084,33 @@ void Engine::initFileInterface() {
 void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
     if (Engine::enableShader != 0) {
         float *proj = this->projMatrix;
-        for (int i = 0; i < 16; i += 1) {
-            proj[i] = projection[i];
-        }
+        proj[0] = projection[0];
+        proj[1] = projection[1];
+        proj[2] = projection[2];
+        proj[3] = projection[3];
+        proj[4] = projection[4];
+        proj[5] = projection[5];
+        proj[6] = projection[6];
+        proj[7] = projection[7];
+        proj[8] = projection[8];
+        proj[9] = projection[9];
+        proj[10] = projection[10];
+        proj[11] = projection[11];
+        proj[12] = projection[12];
+        proj[13] = projection[13];
+        proj[14] = projection[14];
+        proj[15] = projection[15];
         if (multiply) {
             float local[16];
-            memcpy(local, view, 0x40);
-            AbyssEngine::esMatrixMultiply((AbyssEngine::ESMatrix *) this->projMatrix, (AbyssEngine::ESMatrix *) local, (AbyssEngine::ESMatrix *) this->projMatrix);
+            vst1q_f32(&local[0], vld1q_f32(&view[0]));
+            vst1q_f32(&local[4], vld1q_f32(&view[4]));
+            vst1q_f32(&local[8], vld1q_f32(&view[8]));
+            vst1q_f32(&local[12], vld1q_f32(&view[12]));
+            AbyssEngine::esMatrixMultiply((AbyssEngine::ESMatrix *) this->projMatrix,
+                                          (AbyssEngine::ESMatrix *) local,
+                                          (AbyssEngine::ESMatrix *) this->projMatrix);
         }
     }
-    return;
 }
 
 int Engine::InitGL(bool shaders, int width, int height) {
@@ -1190,13 +1320,30 @@ Engine::Engine()
 }
 
 void Engine::SetTextures(uint32_t first, uint32_t second) {
-    PaintCanvas *manager = this->appManager->paintCanvas;
-    uint32_t count = manager->cubeTextures.count;
+    uint32_t count = this->appManager->paintCanvas->cubeTextures.count;
     if (count == 0 || first > count - 1) {
         return;
     }
-    this->SetTextureSlot(first, 0);
-    if (second > count - 1) {
+    uint32_t texture =
+            ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[first])->glTexture;
+    if ((uint32_t) this->boundTextures[0] != texture) {
+        glActiveTexture(0x84c0);
+        float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[first])->texEnv;
+        if (currentLODBias != env) {
+            currentLODBias = env;
+            if (Engine::enableShader != 0) {
+                if (BiasErrorOutputFlag != 0) {
+                    BiasErrorOutputFlag = 0;
+                }
+            } else {
+                glTexEnvf(0x8500, 0x8501, env);
+            }
+        }
+        glBindTexture(0xde1, texture);
+        this->boundTextures[0] = texture;
+    }
+
+    if (second > this->appManager->paintCanvas->cubeTextures.count - 1) {
         if (this->boundTextures[1] != -1) {
             if (Engine::enableShader == 0) {
                 glActiveTexture(0x84c1);
@@ -1208,16 +1355,19 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
         return;
     }
 
-    uint32_t texture = **(uint32_t **) (manager->cubeTextures.data_ + second);
-    if (this->boundTextures[1] != texture) {
+    uint32_t texture2 =
+            ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[second])->glTexture;
+    if ((uint32_t) this->boundTextures[1] != texture2) {
         glActiveTexture(0x84c1);
         this->GlEnable(0xde1, true);
-        unsigned int target = (Engine::enableShader != 0 &&
-                               (this->glEnableFlags & 0x80008) != 0)
-                                  ? 0x8513
-                                  : 0xde1;
-        glBindTexture(target, texture);
-        this->boundTextures[1] = texture;
+        unsigned int target;
+        if (Engine::enableShader != 0 && (this->glEnableFlags & 0x80008) != 0) {
+            target = 0x8513;
+        } else {
+            target = 0xde1;
+        }
+        glBindTexture(target, texture2);
+        this->boundTextures[1] = texture2;
     }
 }
 
@@ -1270,15 +1420,8 @@ uint32_t Engine::ShaderInit() {
     return 1;
 }
 
-uint64_t Engine::SetEyePosition(float x, float y, float z) {
-    this->eyePosition.x = x;
-    this->eyePosition.y = y;
-    this->eyePosition.z = z;
-    uint32_t cx;
-    uint32_t cy;
-    memcpy(&cx, &x, sizeof(cx));
-    memcpy(&cy, &y, sizeof(cy));
-    return (uint64_t) cx | ((uint64_t) cy << 32);
+void Engine::SetEyePosition(float x, float y, float z) {
+    this->eyePosition = Vector{x, y, z};
 }
 
 void Engine::SetModelMatrix(const Matrix &matrix) {
@@ -1355,16 +1498,35 @@ void Engine::LightSetLight(unsigned int light) {
 }
 
 void Engine::SetTexturesExt(uint32_t first, ...) {
-    PaintCanvas *manager = this->appManager->paintCanvas;
-    if (manager->cubeTextures.count != 0) {
+    if (this->appManager->paintCanvas->cubeTextures.count != 0) {
         va_list args;
         va_start(args, first);
         uint32_t slot = 0;
-        uint32_t textureIndex = first;
-        while (textureIndex != 0xffffffff) {
-            this->SetTextureSlot(textureIndex, slot);
-            slot += 1;
-            textureIndex = va_arg(args, uint32_t);
+        for (uint32_t textureIndex = first; textureIndex != 0xffffffff;
+             textureIndex = va_arg(args, uint32_t), slot += 1) {
+            if (textureIndex >= this->appManager->paintCanvas->cubeTextures.count) {
+                continue;
+            }
+            uint32_t texture =
+                    ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->glTexture;
+            if ((uint32_t) this->boundTextures[slot] == texture) {
+                continue;
+            }
+            glActiveTexture(slot + 0x84c0);
+            float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->texEnv;
+            if (currentLODBias != env) {
+                currentLODBias = env;
+                if (Engine::enableShader != 0) {
+                    if (BiasErrorOutputFlag != 0) {
+                        BiasErrorOutputFlag = 0;
+                    }
+                } else {
+                    glTexEnvf(0x8500, 0x8501, env);
+                }
+            }
+            bool isCube = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0;
+            glBindTexture(isCube ? 0x8513 : 0xde1, texture);
+            this->boundTextures[slot] = texture;
         }
         va_end(args);
         for (uint32_t i = slot; i < 0x14; i += 1) {
@@ -1372,7 +1534,6 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
         }
         glActiveTexture(0x84c0);
     }
-    return;
 }
 
 void Engine::PreUpdate() {
@@ -1494,38 +1655,216 @@ void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsi
 }
 
 void Engine::GlEnable(unsigned int cap, bool enable) {
-    if (Engine::enableShader == 0) {
-        unsigned int glCap = cap == 0x1000000 ? 0xbc0 : cap;
-        if (enable) {
-            return glEnable(glCap);
+    // Engine-level capability codes (0x1000000 alpha test, 0x11000xx shader features) are tracked
+    // as bits in glEnableFlags when shaders are on; the GLES1 path forwards real GL caps only.
+    if (Engine::enableShader != 0) {
+        switch (cap) {
+            case 0x1100000:
+                if (enable) {
+                    this->glEnableFlags |= 0x4u;
+                } else {
+                    this->glEnableFlags &= ~0x4u;
+                }
+                break;
+            case 0x1000000:
+                if (enable) {
+                    this->glEnableFlags |= 0x2u;
+                } else {
+                    this->glEnableFlags &= ~0x2u;
+                }
+                break;
+            case 0x1100001:
+                if (enable) {
+                    this->glEnableFlags |= 0x8u;
+                } else {
+                    this->glEnableFlags &= ~0x8u;
+                }
+                break;
+            case 0x1100002:
+                if (enable) {
+                    this->glEnableFlags |= 0x10u;
+                } else {
+                    this->glEnableFlags &= ~0x10u;
+                }
+                break;
+            case 0x1100003:
+                if (enable) {
+                    this->glEnableFlags |= 0x20u;
+                } else {
+                    this->glEnableFlags &= ~0x20u;
+                }
+                break;
+            case 0x1100004:
+                if (enable) {
+                    this->glEnableFlags |= 0x80u;
+                } else {
+                    this->glEnableFlags &= ~0x80u;
+                }
+                break;
+            case 0x1100005:
+                if (enable) {
+                    this->glEnableFlags |= 0x40u;
+                } else {
+                    this->glEnableFlags &= ~0x40u;
+                }
+                break;
+            case 0x1100006:
+                if (enable) {
+                    this->glEnableFlags |= 0x100u;
+                } else {
+                    this->glEnableFlags &= ~0x100u;
+                }
+                break;
+            case 0x1100007:
+                if (enable) {
+                    this->glEnableFlags |= 0x200u;
+                } else {
+                    this->glEnableFlags &= ~0x200u;
+                }
+                break;
+            case 0x1100008:
+                if (enable) {
+                    this->glEnableFlags |= 0x400u;
+                } else {
+                    this->glEnableFlags &= ~0x400u;
+                }
+                break;
+            case 0x1100009:
+                if (enable) {
+                    this->glEnableFlags |= 0x1000u;
+                } else {
+                    this->glEnableFlags &= ~0x1000u;
+                }
+                break;
+            case 0x1100010:
+                if (enable) {
+                    this->glEnableFlags |= 0x2000u;
+                } else {
+                    this->glEnableFlags &= ~0x2000u;
+                }
+                break;
+            case 0x1100011:
+                if (enable) {
+                    this->glEnableFlags |= 0x4000u;
+                } else {
+                    this->glEnableFlags &= ~0x4000u;
+                }
+                break;
+            case 0x1100012:
+                if (enable) {
+                    this->glEnableFlags |= 0x8000u;
+                } else {
+                    this->glEnableFlags &= ~0x8000u;
+                }
+                break;
+            case 0x1100013:
+                if (enable) {
+                    this->glEnableFlags |= 0x10000u;
+                } else {
+                    this->glEnableFlags &= ~0x10000u;
+                }
+                break;
+            case 0x1100014:
+                if (enable) {
+                    this->glEnableFlags |= 0x20000u;
+                } else {
+                    this->glEnableFlags &= ~0x20000u;
+                }
+                break;
+            case 0x1100015:
+                if (enable) {
+                    this->glEnableFlags |= 0x40000u;
+                } else {
+                    this->glEnableFlags &= ~0x40000u;
+                }
+                break;
+            case 0x1100016:
+                if (enable) {
+                    this->glEnableFlags |= 0x80000u;
+                } else {
+                    this->glEnableFlags &= ~0x80000u;
+                }
+                break;
+            case 0x1100017:
+                if (enable) {
+                    this->glEnableFlags |= 0x100000u;
+                } else {
+                    this->glEnableFlags &= ~0x100000u;
+                }
+                break;
+            case 0x1100018:
+                if (enable) {
+                    this->glEnableFlags |= 0x200000u;
+                } else {
+                    this->glEnableFlags &= ~0x200000u;
+                }
+                break;
+            case 0x1100019:
+                if (enable) {
+                    this->glEnableFlags |= 0x400000u;
+                } else {
+                    this->glEnableFlags &= ~0x400000u;
+                }
+                break;
+            case 0x1100020:
+                if (enable) {
+                    this->glEnableFlags |= 0x800000u;
+                } else {
+                    this->glEnableFlags &= ~0x800000u;
+                }
+                break;
+            case 0x1100021:
+                if (enable) {
+                    this->glEnableFlags |= 0x1000000u;
+                } else {
+                    this->glEnableFlags &= ~0x1000000u;
+                }
+                break;
+            case 0x1100022:
+                if (enable) {
+                    this->glEnableFlags |= 0x2000000u;
+                } else {
+                    this->glEnableFlags &= ~0x2000000u;
+                }
+                break;
+            case 0x1100023:
+                if (enable) {
+                    this->glEnableFlags |= 0x4000000u;
+                } else {
+                    this->glEnableFlags &= ~0x4000000u;
+                }
+                break;
+            case 0x1100024:
+                if (enable) {
+                    this->glEnableFlags |= 0x8000000u;
+                } else {
+                    this->glEnableFlags &= ~0x8000000u;
+                }
+                break;
+            case 0xde1:
+                if (enable) {
+                    this->glEnableFlags |= 0x1u;
+                } else {
+                    this->glEnableFlags &= ~0x1u;
+                }
+                break;
         }
-        return glDisable(glCap);
-    }
-
-    uint32_t bit = 0;
-    if (cap == 0xde1) {
-        bit = 1;
-    } else if (cap == 0x1000000) {
-        bit = 2;
-    } else if (cap >= 0x1100000 && cap <= 0x1100024) {
-        static const uint32_t bits[] = {
-            4, 8, 0x10, 0x20, 0x80, 0x40, 0x100, 0x200, 0x400, 0x1000,
-            0, 0, 0, 0, 0, 0, 0x2000, 0x4000, 0x8000, 0x10000, 0x20000,
-            0x40000, 0x80000, 0x100000, 0x200000, 0x400000, 0, 0, 0, 0, 0,
-            0, 0x800000, 0x1000000, 0x2000000, 0x4000000, 0x8000000,
-        };
-        bit = bits[cap - 0x1100000];
-    }
-    if (bit == 0) {
         return;
     }
-    uint32_t flags = this->glEnableFlags;
-    flags = enable ? (flags | bit) : (flags & ~bit);
-    this->glEnableFlags = flags;
+    if ((cap >> 20) > 16) {
+        return;
+    }
+    if (cap == 0x1000000) {
+        cap = 0xbc0;
+    }
+    if (enable) {
+        return glEnable(cap);
+    }
+    return glDisable(cap);
 }
 
 void Engine::LightEnable(bool enabled) {
-    if ((bool) this->lightingEnabled == enabled) return;
+    if (this->lightingEnabled == enabled) return;
     this->lightingEnabled = enabled;
     if (!enabled) {
         this->LightSetMaterialColorAlpha(1.0f);
@@ -1578,13 +1917,13 @@ unsigned char AbyssEngine::Engine::UseAdvancedShader;
 unsigned char AbyssEngine::Engine::enableReverseFlag;
 int AbyssEngine::Engine::tv_h;
 int AbyssEngine::Engine::tv_w;
-AbyssEngine::AEMath::Vector AbyssEngine::Engine::vendor;
+AbyssEngine::String AbyssEngine::Engine::vendor;
 unsigned char AbyssEngine::Engine::DrawFBO;
 int AbyssEngine::Engine::vboSize;
 unsigned char AbyssEngine::Engine::DEBUGKEY;
 unsigned char AbyssEngine::Engine::TVEnable;
 float AbyssEngine::Engine::farPlane;
-AbyssEngine::AEMath::Vector AbyssEngine::Engine::renderer;
+AbyssEngine::String AbyssEngine::Engine::renderer;
 AbyssEngine::AEMath::Vector AbyssEngine::Engine::tv_modes;
 unsigned char AbyssEngine::Engine::WireFrame;
 float AbyssEngine::Engine::nearPlane;

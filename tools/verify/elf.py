@@ -14,6 +14,10 @@ STT_FUNC = 2
 STB_LOCAL = 0
 SHN_UNDEF = 0
 R_ARM_JUMP_SLOT = 22
+R_ARM_ABS32 = 2
+R_ARM_GLOB_DAT = 21
+R_ARM_RELATIVE = 23
+STT_OBJECT = 1
 
 
 class Elf32:
@@ -108,6 +112,43 @@ class Elf32:
             if sym_idx < len(dynsym_names):
                 out[plt["addr"] + 20 + 12 * i] = dynsym_names[sym_idx]
         return out
+
+    def got_map(self):
+        """slot vaddr -> ('sym', name) for GLOB_DAT/ABS32 slots, ('rel', target) for RELATIVE ones.
+
+        PIC code reaches every global through `ldr rX,[pc,#N]; add rX,pc` (+ `ldr rX,[rX]` for a GOT
+        slot); resolving the slot to the symbol its dynamic relocation binds makes data references
+        comparable by name across two links."""
+        names = [s["name"] for s in self._symbols(SHT_DYNSYM)]
+        out = {}
+        for sec in self.sections:
+            if sec["type"] != SHT_REL or sec["name"] == ".rel.plt":
+                continue
+            for off in range(sec["offset"], sec["offset"] + sec["size"], 8):
+                r_offset, r_info = struct.unpack_from("<II", self.data, off)
+                typ, idx = r_info & 0xFF, r_info >> 8
+                if typ in (R_ARM_GLOB_DAT, R_ARM_ABS32) and 0 < idx < len(names):
+                    out[r_offset] = ("sym", names[idx])
+                elif typ == R_ARM_RELATIVE:
+                    word = self.bytes_at(r_offset, 4)
+                    if len(word) == 4:
+                        out[r_offset] = ("rel", struct.unpack("<I", word)[0])
+        return out
+
+    def objects(self):
+        """sorted [(value, size, name)] of defined exported .dynsym data objects."""
+        out = []
+        for s in self._symbols(SHT_DYNSYM):
+            if s["name"] and s["shndx"] != SHN_UNDEF and (s["info"] & 0xF) == STT_OBJECT \
+                    and (s["info"] >> 4) != STB_LOCAL:
+                out.append((s["value"], s["size"], s["name"]))
+        return sorted(out)
+
+    def section_of(self, vaddr):
+        for s in self.sections:
+            if s["addr"] and s["addr"] <= vaddr < s["addr"] + s["size"]:
+                return s["name"]
+        return None
 
     def bytes_at(self, vaddr, size):
         """Raw bytes backing [vaddr, vaddr+size) via the containing section's file mapping."""

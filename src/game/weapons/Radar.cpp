@@ -161,25 +161,19 @@ void Radar::update(KIPlayer *player) {
 }
 
 void Radar::update(Vector value) {
-    Vector transformed = AbyssEngine::AEMath::MatrixTransformVector(this->transform, value);
     Vector *current = reinterpret_cast<Vector *>(&this->radarPosX);
-    *current = transformed;
+    *current = AbyssEngine::AEMath::MatrixTransformVector(this->transform, value);
 
     this->radarPosY = -this->radarPosY;
     this->radarPosZ = -this->radarPosZ;
 
-    Vector screen = value;
-
-    int visible = (gPaintCanvas->GetScreenPosition(value, screen) != 0);
+    int visible = Globals::Canvas->GetScreenPosition(value, value);
     this->onScreen = static_cast<uint8_t>(visible);
-
-    int screenX = static_cast<int>(screen.x);
-    this->screenX = screenX;
-    int screenY = static_cast<int>(screen.y);
-    this->screenY = screenY;
+    this->screenX = static_cast<int>(value.x);
+    this->screenY = static_cast<int>(value.y);
 
     if (visible == 0) {
-        *current = this->elipsoidIntersect(screenX, screenY, *current);
+        *current = this->elipsoidIntersect(static_cast<int>(value.x), static_cast<int>(value.y), *current);
         this->screenX = static_cast<int>(current->x);
         this->screenY = static_cast<int>(current->y);
     }
@@ -205,22 +199,22 @@ long long Radar::draw(Player *, Hud *, int mode) {
     return 0;
 }
 
-Vector Radar::elipsoidIntersect(int y, int x, Vector value) {
+Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
     int centerY = this->centerY;
-    float dy = static_cast<float>(centerY - x);
+    float dy = static_cast<float>(centerY - y);
     float dy2 = dy * dy;
     int centerX = this->centerX;
-    float dx = static_cast<float>(centerX - y);
+    float dx = static_cast<float>(centerX - x);
     float dx2 = dx * dx;
     float weightY = this->weightY;
     float weightX = this->weightX;
     float distance = weightY * dy2 + weightX * dx2;
 
     if (distance >= 0.0f) {
-        float scale = (distance - std::sqrt(distance)) / distance;
+        float scale = (distance - Globals::globals->sqrt(distance)) / distance;
         if (scale >= 0.0f && scale <= 1.0f) {
-            value.y = static_cast<float>(static_cast<int>(static_cast<float>(x) + scale * dy));
-            value.x = static_cast<float>(static_cast<int>(static_cast<float>(y) + scale * dx));
+            value.x = static_cast<float>(static_cast<int>(static_cast<float>(x) + scale * dx));
+            value.y = static_cast<float>(static_cast<int>(static_cast<float>(y) + scale * dy));
         }
     }
 
@@ -256,34 +250,26 @@ void Radar::drawCurrentLock(Hud *) {
     }
 }
 
-void Radar::calcDistance(float, float a, float b, float c, float d, float e) {
-    long long dx = static_cast<long long>(a * 0.5f - d * 0.5f);
-    long long dy = static_cast<long long>(c * 0.5f - e * 0.5f);
-    long long dz = static_cast<long long>(b * 0.5f - e * 0.5f);
-    long long total = dy * dy + dx * dx + dz * dz;
-    int distance = static_cast<int>(std::sqrt(static_cast<float>(total) * 0.001f));
+String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
+    long long dx = static_cast<long long>(x1 * 0.5f - x2 * 0.5f);
+    long long dz = static_cast<long long>(z1 * 0.5f - z2 * 0.5f);
+    long long dy = static_cast<long long>(y1 * 0.5f - y2 * 0.5f);
+    long long squared = dy * dy + dx * dx + dz * dz;
+    int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
     int meters = distance << 3;
 
-    String text;
-    text.Set_longlong(meters);
-
+    String text = String(meters) + String("m", false);
     if (distance >= 125) {
         int remainder = meters % 1000;
-        if (remainder < 100) {
-            text.Set_char("");
+        if (remainder >= 100) {
+            text = String(remainder);
         } else {
-            text.Set_longlong(remainder);
+            text = String("0", false);
         }
-
-        String head;
-        head = text.SubString(0, 1);
-        text = head;
-
-        unsigned kilometers = static_cast<unsigned>(distance) / 125u;
-        String km;
-        km.Set_longlong(static_cast<long long>(kilometers));
-        text = km + text;
+        text = text.SubString(0, 1);
+        text = String((int) ((unsigned int) distance / 125u)) + String(".", false) + text + String("km", false);
     }
+    return text;
 }
 
 unsigned char Radar::drawTarget;
