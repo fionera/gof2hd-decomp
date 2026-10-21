@@ -480,7 +480,7 @@ void DialogueWindow::loadContent() {
             int entry = this->briefingOffsets[this->campaignMission] + (this->page * 2 | 1);
             textId = g_dw_briefingScript[entry];
             this->bodyText = *Globals::gameText->getText(textId);
-            if ((unsigned int) entry <= 23 && ((1 << entry) & 0xa0200a))
+            if (((unsigned int) entry <= 23 && ((1 << entry) & 0xa0200a)) || entry == 35)
                 this->bodyText = Globals::globals->replaceKeyBindingTokens(this->bodyText);
         } else if (this->kind == 1) {
             textId = g_dw_successScript[this->successOffsets[this->campaignMission] + (this->page * 2 | 1)];

@@ -1150,15 +1150,7 @@ void Hud::drawEventQueue() {
 unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     unsigned int e = touchedElement(a, b);
-    if (e == 0) {
-        for (int i = 0; i != 0x19; i = i + 1) {
-            if ((*this->keyArray)[i] == key) {
-                this->touchFlags = this->touchFlags & ~(unsigned int) this->elementBits[i];
-                this->elementBits[i] = 0;
-                (*this->keyArray)[i] = 0;
-            }
-        }
-    } else {
+    if (e != 0) {
         for (int j = 0; j < 25; j++) {
             if ((*this->keyArray)[j] == key) {
                 unsigned int v = (unsigned int) this->elementBits[j];
@@ -1177,6 +1169,14 @@ unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lin
                 this->elementBits[j] = e;
                 this->touchFlags = e | this->touchFlags;
                 return this->touchFlags;
+            }
+        }
+    } else {
+        for (int i = 0; i != 0x19; i = i + 1) {
+            if ((*this->keyArray)[i] == key) {
+                this->touchFlags = this->touchFlags & ~(unsigned int) this->elementBits[i];
+                this->elementBits[i] = 0;
+                (*this->keyArray)[i] = 0;
             }
         }
     }

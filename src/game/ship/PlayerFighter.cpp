@@ -440,7 +440,19 @@ void PlayerFighter::handleCloaking() {
     if (this->player->empDisabledByte != 0) return;
     if (this->cloakingPossible == 0) return;
 
-    if (this->cloakActive != 0) {
+    if (this->cloakActive == 0) {
+        if (this->damageEscape != 0 && Globals::rnd->nextInt(100) < 50) {
+            this->cloak(-1, false);
+        } else {
+            this->cloakCooldown += this->frameTime;
+            if (this->cloakCooldown > 8000) {
+                this->cloakCooldown = 0;
+                if (Globals::rnd->nextInt(100) < 30) {
+                    this->cloak(-1, false);
+                }
+            }
+        }
+    } else {
         if (this->cloakTimer == 0) {
             this->field_0x13c = 1;
             if (this->cloakMaterial == 0xffffffff) {
@@ -483,16 +495,6 @@ void PlayerFighter::handleCloaking() {
             Globals::Canvas->MeshChangeShaderAnimValue(
                     Globals::Canvas->MeshGetPointer(this->parentGeometry->meshId),
                     ((float) this->cloakTimer - (float) (this->cloakDuration - 2000)) / -2000.0f + 1.0f, 1u);
-        }
-    } else if (this->damageEscape != 0 && Globals::rnd->nextInt(100) < 50) {
-        this->cloak(-1, false);
-    } else {
-        this->cloakCooldown += this->frameTime;
-        if (this->cloakCooldown > 8000) {
-            this->cloakCooldown = 0;
-            if (Globals::rnd->nextInt(100) < 30) {
-                this->cloak(-1, false);
-            }
         }
     }
 }
@@ -1460,11 +1462,12 @@ void PlayerFighter::roll(int angle) {
     AbyssEngine::AEMath::Matrix &m = this->geometry->getMatrix();
     float rightX = m.m[4];
     float rightY = m.m[5];
-    float bank = rightX > 0.0f ? rightX : -rightX;
+    float absX = rightX > 0.0f ? rightX : -rightX;
     if (angle >= 60) {
         angle = 60;
     }
-    if (m.m[5] > 0.0f && bank < 0.015f) {
+    float bank; // like the original, left unset when no case below matches (rightX == 0)
+    if (rightY > 0.0f && absX < 0.015f) {
         this->rollMatrix = AbyssEngine::AEMath::MatrixIdentity(this->rollMatrix);
         this->rollActive() = 0;
         this->field_0x254 = 0;
@@ -1473,8 +1476,11 @@ void PlayerFighter::roll(int angle) {
     }
 
     if (this->field_0x254 != 0) {
-        float levelOut = rightY == rightY ? 0.0002f : -0.0002f;
-        bank = rightX < 0.0f ? levelOut : -0.0002f;
+        if (rightX < 0.0f && (rightY < 0.0f || rightY >= 0.0f)) {
+            bank = 0.0002f;
+        } else {
+            bank = -0.0002f;
+        }
     } else if (rightX > 0.0f && this->field_0x255 == 1) {
         this->field_0x254 = 1;
         bank = -0.00035f;
@@ -1483,15 +1489,19 @@ void PlayerFighter::roll(int angle) {
         bank = 0.00035f;
     } else if (rightX < 0.0f && rightY < 0.0f) {
         bank = 0.00075f;
+    } else if (rightX < 0.0f && rightY >= 0.0f) {
+        bank = rightX > -0.3f ? 0.00025f : 0.00035f;
     } else if (rightX >= 0.0f && rightY < 0.0f) {
         bank = -0.00075f;
     } else if (rightX > 0.0f && rightY > 0.0f) {
-        bank = rightX > 0.3f ? -0.00035f : -0.00025f;
-    } else if (rightX < 0.0f && rightY >= 0.0f) {
-        bank = rightX > -0.3f ? 0.00025f : 0.00035f;
+        if (rightX <= 0.3f) {
+            bank = -0.00025f;
+        } else {
+            bank = -0.00035f;
+        }
     }
 
-    if (rightX != 0.0f) {
+    if (rightX < 0.0f || rightX > 0.0f) {
         this->field_0x255 = rightX < 0.0f ? 1 : 2;
     }
     this->rollActive() = 1;

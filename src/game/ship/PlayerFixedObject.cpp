@@ -195,7 +195,7 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     this->wreckMeshId = (uint16_t) meshId;
     this->wreckGeometry = new AEGeometry((uint16_t) meshId, Globals::Canvas, true);
     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))
-        ->boundingRadius = 500000.0f;
+        ->boundingSphere.radius = 500000.0f;
     switch (this->kind()) {
         case 13:
             this->wreckType = 4;
@@ -247,10 +247,8 @@ void PlayerFixedObject::update(int dt) {
     this->deltaTime = dt;
     this->player->update(dt, this->aiActiveCounter() != -1 && this->moving);
 
-    if ((this->faction() & ~1) == 8)
-        this->player->enemyFlagsLo = 1;
-    else
-        this->player->enemyFlagsLo = ((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(this->faction());
+    this->player->enemyFlagsLo = (this->faction() & ~1) == 8 ? true
+        : ((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(this->faction());
     this->player->carriesFriendCargoFlag =
         (this->faction() & ~1) == 8 ? false
                                     : ((Standing *) (intptr_t) Globals::status->getStanding())->isFriend(this->faction());

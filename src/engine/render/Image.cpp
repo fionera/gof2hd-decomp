@@ -200,7 +200,7 @@ namespace AbyssEngine {
             }
             case 1:
             case 3:
-                if (AEFile::Skip((uint32_t) atlasH * atlasW * 4, handle) == 0)
+                if (AEFile::Skip((uint32_t) atlasW * atlasH * 4, handle) == 0)
                     goto fail;
                 break;
             default:
@@ -230,7 +230,7 @@ namespace AbyssEngine {
                 goto fail;
             (*out)->glyphMeshes = new Mesh *[(*out)->glyphCount];
 
-            for (unsigned int g = 0; g < (*out)->glyphCount; ++g) {
+            for (unsigned short g = 0; g < (*out)->glyphCount; ++g) {
                 if (MeshCreate(engine, 4, 2, 0x13, &(*out)->glyphMeshes[g]) != 1)
                     goto fail;
                 unsigned short u = 0;
@@ -263,8 +263,8 @@ namespace AbyssEngine {
                 pos[10] = h;
                 pos[11] = 0;
 
-                float invH = (float) (1.0 / (double) atlasH);
                 float invW = (float) (1.0 / (double) atlasW);
+                float invH = (float) (1.0 / (double) atlasH);
                 float u0 = (float) u * invW;
                 float v0 = (float) v * invH;
                 float u1 = (w + (float) u) * invW;
@@ -583,8 +583,8 @@ namespace AbyssEngine {
                     if (blockBytes <= 16)
                         blockBytes = 16;
                     glCompressedTexImage2D(0xde1, level, 0x8c93, width, height, 0, blockBytes, image->data + offset);
-                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
                     unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
                     offset += blockBytes;
                     height = nextHeight;
                     width = nextWidth;
@@ -655,11 +655,11 @@ namespace AbyssEngine {
 
         if (registerTexture) {
             if (outTex != 0) {
-                outTex->valid = 1;
                 outTex->isCube = image->format == 6;
+                outTex->valid = 1;
                 if (glGetError() != 0) {
-                    outTex->glId = 0xffffffff;
                     outTex->byteSize = 0;
+                    outTex->glId = 0xffffffff;
                     glDeleteTextures(1, outIds);
                 } else {
                     AELabelObject(0x1702, *outIds, path);
@@ -670,14 +670,14 @@ namespace AbyssEngine {
                 engine->textureByteCounter += outTex->byteSize;
             } else {
                 AELoadedTexture *texture = new AELoadedTexture;
+                texture->isCube = image->format == 6;
                 texture->scale = scale;
                 texture->valid = 1;
-                texture->isCube = image->format == 6;
                 texture->name.Set(path);
                 if (glGetError() != 0) {
                     glDeleteTextures(1, outIds);
-                    texture->byteSize = 0;
                     texture->glId = 0xffffffff;
+                    texture->byteSize = 0;
                 } else {
                     AELabelObject(0x1702, *outIds, path);
                     texture->glId = *outIds;

@@ -281,21 +281,21 @@ void IParticleSystem::interpolateColor(int index, float &alpha, float &red, floa
     float inv = 1.0f - t;
     uint32_t c0 = def.color0;
     uint32_t c1 = def.color1;
-    int fadeFrames = def.fadeFrames;
     alpha = (t * (float) (c1 >> 24) + inv * (float) (c0 >> 24)) * 0.003921569f;
     red = (t * (float) ((c1 >> 16) & 0xff) + inv * (float) ((c0 >> 16) & 0xff)) * 0.003921569f;
     green = (t * (float) ((c1 >> 8) & 0xff) + inv * (float) ((c0 >> 8) & 0xff)) * 0.003921569f;
     blue = (t * (float) (c1 & 0xff) + inv * (float) (c0 & 0xff)) * 0.003921569f;
 
-    if (age < fadeFrames) {
-        float fade = (float) age / (float) fadeFrames;
+    if (age < def.fadeFrames) {
+        float fade = (float) age / (float) def.fadeFrames;
+        // alphaFade fades alpha/red/green, otherwise only blue is faded.
+        float *last = &blue;
         if (this->alphaFade != 0) {
             alpha *= fade;
             red *= fade;
-            green *= fade;
-        } else {
-            blue *= fade;
+            last = &green;
         }
+        *last *= fade;
     }
 }
 

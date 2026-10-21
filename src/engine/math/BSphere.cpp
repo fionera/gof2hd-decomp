@@ -15,13 +15,13 @@ namespace AbyssEngine {
             // World-space bounds of the transform: moved centre, radius scaled by the largest axis.
             BSphere sphere;
             sphere.radius2 = 1.0f;
-            Vector v = MatrixTransformVector(t.worldMatrix, t.boundingCenter);
+            Vector v = MatrixTransformVector(t.worldMatrix, t.boundingSphere.center);
             sphere.center.x = v.x;
             sphere.center.y = v.y;
             sphere.center.z = v.z;
-            v.x = t.boundingRadius;
-            v.y = t.boundingRadius;
-            v.z = t.boundingRadius;
+            v.x = t.boundingSphere.radius;
+            v.y = t.boundingSphere.radius;
+            v.z = t.boundingSphere.radius;
             Vector rotated = MatrixRotateVector(t.worldMatrix, v);
             v.x = rotated.x;
             v.y = rotated.y;

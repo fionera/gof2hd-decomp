@@ -5161,7 +5161,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
 
     if (Globals::status->getCurrentCampaignMission() == 80) {
         m_pGeometry0 = new AEGeometry(14370, Globals::Canvas, false);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))->boundingRadius =
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))->boundingSphere.radius =
                 1000000.0f;
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))
                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);

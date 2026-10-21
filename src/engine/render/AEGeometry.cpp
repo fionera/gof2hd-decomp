@@ -236,10 +236,10 @@ AEGeometry::AEGeometry(PaintCanvas *canvas)
     this->rotationOrder = 0;
     this->lodDistancesSq = nullptr;
     this->meshHandle = 0xffffffff;
-    this->merger = nullptr;
     this->altTransform = 0xffffffff;
     this->currentLod = 0;
     this->meshId = 0xffffffff;
+    this->merger = nullptr;
     this->transform = this->baseTransform;
     this->parentTransform = 0xffffffff;
     this->childTransform = 0xffffffff;
