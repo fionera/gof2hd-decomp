@@ -282,29 +282,27 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
     String zipPath("47947_GOF2CONTENT_ETC/assets/");
     zipPath += String(relative, false);
 
-    // TODO(decomp): the original traces here with
-    //   fprintf(stderr, "OpenRead('%s', %d, %d, %d, %d, %d)\n", apkPath.GetAEChar(), p2, p3, p4, p5, p6);
-    // which needs the fprintf import admitted to the ratchet baseline first.
-    (void) p2;
+    fprintf(stderr, "OpenRead('%s', %d, %d, %d, %d, %d)\n", apkPath.GetAEChar(), p2, p3, p4, p5, p6);
 
     zip_file *apkFile = zip_fopen(APKArchive, apkPath.GetAEChar(), 0);
     zip_file *zipFile = 0;
     if (ZIPArchive != 0)
         zipFile = zip_fopen(ZIPArchive, zipPath.GetAEChar(), 0);
 
-    if (apkFile != 0)
-        return new FileInterfaceAndroid(apkFile, p3, p6, p4, p5);
-    if (zipFile != 0)
-        return new FileInterfaceAndroid(zipFile, p3, p6, p4, p5);
-    if (this->appRootDir == 0)
-        return 0;
-
-    String dir(this->appRootDir);
-    String full = dir + String(relative, false);
-    FILE *f = fopen(full.GetAEChar(), "rb");
-    if (f == 0)
-        return 0;
-    return new FileInterfaceAndroid(f, false);
+    FileInterfaceAndroid *opened = 0;
+    if (apkFile != 0) {
+        opened = new FileInterfaceAndroid(apkFile, p3, p6, p4, p5);
+    } else if (zipFile != 0) {
+        opened = new FileInterfaceAndroid(zipFile, p3, p6, p4, p5);
+    } else if (this->appRootDir != 0) {
+        // Not packaged: fall back to the unpacked data directory.
+        String dir(this->appRootDir);
+        String full = dir + String(relative, false);
+        FILE *f = fopen(full.GetAEChar(), "rb");
+        if (f != 0)
+            opened = new FileInterfaceAndroid(f, false);
+    }
+    return opened;
 }
 
 void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) { // lint: void_ptr virtual override return type baked into vtable/symbol
