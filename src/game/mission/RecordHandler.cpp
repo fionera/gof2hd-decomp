@@ -1191,7 +1191,7 @@ int RecordHandler::recordStoreWrite(int slot) {
     }
 
     Array<PendingProduct *> *pending =
-        reinterpret_cast<Array<PendingProduct *> *>(Globals::status->getPendingProducts());
+        Globals::status->getPendingProducts();
     if (pending != 0) {
         int count = 0;
         for (unsigned i = 0; i < pending->size(); i++) {

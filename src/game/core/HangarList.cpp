@@ -104,7 +104,7 @@ void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
         unlocked += (*blueprints)[i]->isUnlocked();
     }
 
-    Array<PendingProduct *> *pending = Globals::status->pendingProducts;
+    Array<PendingProduct *> *pending = Globals::status->getPendingProducts();
     uint32_t length = unlocked;
     bool noPending = true;
     if (pending != nullptr) {
