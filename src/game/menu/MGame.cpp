@@ -1565,8 +1565,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         break;
                     }
                     case 1: {
-                    this->choiceWindowOpen = 0;
                     this->_bca = 0;
+                    this->choiceWindowOpen = 0;
                     this->pauseOpen = 0;
                     resumeSounds();
                         break;
@@ -1579,8 +1579,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 int choice = this->choiceWindow->OnTouchEnd(x, y);
                 if (!supernovaChallenge) {
                     if (choice == 0) {
-                        this->pauseOpen = 0;
                         this->choiceWindowOpen = 0;
+                        this->pauseOpen = 0;
                         resumeSounds();
                     }
                 } else {
@@ -1643,8 +1643,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     return;
                 }
                 this->level->getStarSystem()->initLight();
-                this->pauseOpen = 0;
                 this->starMapOpen = 0;
+                this->pauseOpen = 0;
                 resumeSounds();
                 if (this->starMap->exitRequested) {
                     if (this->touchesStream) {
@@ -2194,8 +2194,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->hud->releaseAllKeys();
             }
         }
-        this->hudMenuOpen = 0;
         this->_bc8 = 0;
+        this->hudMenuOpen = 0;
         this->pauseOpen = 0;
         resumeSounds();
         this->hud->closeHudMenu();
@@ -2295,11 +2295,16 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 }
             }
         }
-    } else if (this->cameraMode == 0) {
-        maneuverTouchEnd(x, y, touchId);
-        reinterpret_cast<uint16_t &>(this->_b1b8) = 0;
-    } else if (this->cameraMode == 3) {
-        freeCamTouchEnd(x, y, touchId);
+    } else {
+        switch (this->cameraMode) {
+        case 3:
+            freeCamTouchEnd(x, y, touchId);
+            break;
+        case 0:
+            maneuverTouchEnd(x, y, touchId);
+            reinterpret_cast<uint16_t &>(this->_b1b8) = 0;
+            break;
+        }
     }
 
     if (this->player->isAutoPilot() && !wasAutoPilot) {
