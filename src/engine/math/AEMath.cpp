@@ -12,7 +12,9 @@ namespace AbyssEngine {
         float Pow(float lhs, float rhs) { return ::powf(lhs, rhs); }
 
         float Absf(float value) {
-            return value >= 0.0f ? value : -value;
+            if (value >= 0.0f)
+                return value;
+            return -value;
         }
 
         float Max(float lhs, float rhs) {
@@ -120,17 +122,23 @@ namespace AbyssEngine {
 
         Vector operator*(const Vector &lhs, float rhs) {
             Vector result;
-            result.x = lhs.x * rhs;
-            result.y = lhs.y * rhs;
-            result.z = lhs.z * rhs;
+            result.x = lhs.x;
+            result.y = lhs.y;
+            result.z = lhs.z;
+            result.x *= rhs;
+            result.y *= rhs;
+            result.z *= rhs;
             return result;
         }
 
         Vector operator*(float lhs, const Vector &rhs) {
             Vector result;
-            result.x = rhs.x * lhs;
-            result.y = rhs.y * lhs;
-            result.z = rhs.z * lhs;
+            result.x = rhs.x;
+            result.y = rhs.y;
+            result.z = rhs.z;
+            result.x *= lhs;
+            result.y *= lhs;
+            result.z *= lhs;
             return result;
         }
 
@@ -144,17 +152,23 @@ namespace AbyssEngine {
 
         Vector operator/(const Vector &lhs, float rhs) {
             Vector result;
-            result.x = lhs.x / rhs;
-            result.y = lhs.y / rhs;
-            result.z = lhs.z / rhs;
+            result.x = lhs.x;
+            result.y = lhs.y;
+            result.z = lhs.z;
+            result.x /= rhs;
+            result.y /= rhs;
+            result.z /= rhs;
             return result;
         }
 
         Vector operator/(float lhs, const Vector &rhs) {
             Vector result;
-            result.x = rhs.x / lhs;
-            result.y = rhs.y / lhs;
-            result.z = rhs.z / lhs;
+            result.x = rhs.x;
+            result.y = rhs.y;
+            result.z = rhs.z;
+            result.x /= lhs;
+            result.y /= lhs;
+            result.z /= lhs;
             return result;
         }
 
@@ -191,10 +205,13 @@ namespace AbyssEngine {
         }
 
         Vector VectorCross(const Vector &lhs, const Vector &rhs) {
+            float x = lhs.y * rhs.z - lhs.z * rhs.y;
+            float y = lhs.z * rhs.x - lhs.x * rhs.z;
+            float z = lhs.x * rhs.y - lhs.y * rhs.x;
             Vector result;
-            result.x = lhs.y * rhs.z - lhs.z * rhs.y;
-            result.y = lhs.z * rhs.x - lhs.x * rhs.z;
-            result.z = lhs.x * rhs.y - lhs.y * rhs.x;
+            result.x = x;
+            result.y = y;
+            result.z = z;
             return result;
         }
 
@@ -218,11 +235,7 @@ namespace AbyssEngine {
         }
 
         Vector VectorLerp(const Vector &from, const Vector &to, float t) {
-            Vector result;
-            result.x = from.x + (to.x - from.x) * t;
-            result.y = from.y + (to.y - from.y) * t;
-            result.z = from.z + (to.z - from.z) * t;
-            return result;
+            return from + (to - from) * t;
         }
 
         Matrix &Matrix::operator=(const Matrix &other) {
@@ -272,10 +285,13 @@ namespace AbyssEngine {
         }
 
         Vector operator*(const Matrix &matrix, const Vector &vector) {
+            const float x = vector.x * matrix.m[0] + vector.y * matrix.m[1] + vector.z * matrix.m[2] + matrix.m[3];
+            const float y = vector.x * matrix.m[4] + vector.y * matrix.m[5] + vector.z * matrix.m[6] + matrix.m[7];
+            const float z = vector.x * matrix.m[8] + vector.y * matrix.m[9] + vector.z * matrix.m[10] + matrix.m[11];
             Vector result;
-            result.x = vector.x * matrix.m[0] + vector.y * matrix.m[1] + vector.z * matrix.m[2] + matrix.m[3];
-            result.y = vector.x * matrix.m[4] + vector.y * matrix.m[5] + vector.z * matrix.m[6] + matrix.m[7];
-            result.z = vector.x * matrix.m[8] + vector.y * matrix.m[9] + vector.z * matrix.m[10] + matrix.m[11];
+            result.x = x;
+            result.y = y;
+            result.z = z;
             return result;
         }
 
@@ -338,38 +354,46 @@ namespace AbyssEngine {
         }
 
         Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector) {
+            const float x = vector.x * matrix.m[0] + vector.y * matrix.m[1] + vector.z * matrix.m[2] + matrix.m[3];
+            const float y = vector.x * matrix.m[4] + vector.y * matrix.m[5] + vector.z * matrix.m[6] + matrix.m[7];
+            const float z = vector.x * matrix.m[8] + vector.y * matrix.m[9] + vector.z * matrix.m[10] + matrix.m[11];
             Vector result;
-            result.x = vector.x * matrix.m[0] + vector.y * matrix.m[1] + vector.z * matrix.m[2] + matrix.m[3];
-            result.y = vector.x * matrix.m[4] + vector.y * matrix.m[5] + vector.z * matrix.m[6] + matrix.m[7];
-            result.z = vector.x * matrix.m[8] + vector.y * matrix.m[9] + vector.z * matrix.m[10] + matrix.m[11];
+            result.x = x;
+            result.y = y;
+            result.z = z;
             return result;
         }
 
         Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector) {
+            const float x = vector.x * matrix.m[0] + vector.y * matrix.m[1] + vector.z * matrix.m[2];
+            const float y = vector.x * matrix.m[4] + vector.y * matrix.m[5] + vector.z * matrix.m[6];
+            const float z = vector.x * matrix.m[8] + vector.y * matrix.m[9] + vector.z * matrix.m[10];
             Vector result;
-            result.x = vector.x * matrix.m[0] + vector.y * matrix.m[1] + vector.z * matrix.m[2];
-            result.y = vector.x * matrix.m[4] + vector.y * matrix.m[5] + vector.z * matrix.m[6];
-            result.z = vector.x * matrix.m[8] + vector.y * matrix.m[9] + vector.z * matrix.m[10];
+            result.x = x;
+            result.y = y;
+            result.z = z;
             return result;
         }
 
         Vector MatrixInverseTransformVector(const Matrix &matrix, const Vector &vector) {
-            const float tx = -(matrix.m[0] * matrix.m[3]) - matrix.m[4] * matrix.m[7] - matrix.m[8] * matrix.m[11];
-            const float ty = -(matrix.m[1] * matrix.m[3]) - matrix.m[5] * matrix.m[7] - matrix.m[9] * matrix.m[11];
-            const float tz = -(matrix.m[2] * matrix.m[3]) - matrix.m[6] * matrix.m[7] - matrix.m[10] * matrix.m[11];
-
+            const float x = vector.x * matrix.m[0] + vector.y * matrix.m[4] + vector.z * matrix.m[8] + (-(matrix.m[0] * matrix.m[3]) - matrix.m[4] * matrix.m[7] - matrix.m[8] * matrix.m[11]);
+            const float y = vector.x * matrix.m[1] + vector.y * matrix.m[5] + vector.z * matrix.m[9] + (-(matrix.m[1] * matrix.m[3]) - matrix.m[5] * matrix.m[7] - matrix.m[9] * matrix.m[11]);
+            const float z = vector.x * matrix.m[2] + vector.y * matrix.m[6] + vector.z * matrix.m[10] + (-(matrix.m[2] * matrix.m[3]) - matrix.m[6] * matrix.m[7] - matrix.m[10] * matrix.m[11]);
             Vector result;
-            result.x = vector.x * matrix.m[0] + vector.y * matrix.m[4] + vector.z * matrix.m[8] + tx;
-            result.y = vector.x * matrix.m[1] + vector.y * matrix.m[5] + vector.z * matrix.m[9] + ty;
-            result.z = vector.x * matrix.m[2] + vector.y * matrix.m[6] + vector.z * matrix.m[10] + tz;
+            result.x = x;
+            result.y = y;
+            result.z = z;
             return result;
         }
 
         Vector MatrixInverseRotateVector(const Matrix &matrix, const Vector &vector) {
+            const float x = vector.x * matrix.m[0] + vector.y * matrix.m[4] + vector.z * matrix.m[8];
+            const float y = vector.x * matrix.m[1] + vector.y * matrix.m[5] + vector.z * matrix.m[9];
+            const float z = vector.x * matrix.m[2] + vector.y * matrix.m[6] + vector.z * matrix.m[10];
             Vector result;
-            result.x = vector.x * matrix.m[0] + vector.y * matrix.m[4] + vector.z * matrix.m[8];
-            result.y = vector.x * matrix.m[1] + vector.y * matrix.m[5] + vector.z * matrix.m[9];
-            result.z = vector.x * matrix.m[2] + vector.y * matrix.m[6] + vector.z * matrix.m[10];
+            result.x = x;
+            result.y = y;
+            result.z = z;
             return result;
         }
 
