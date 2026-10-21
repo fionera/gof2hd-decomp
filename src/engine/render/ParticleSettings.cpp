@@ -659,33 +659,31 @@ int ParticleSettings::init() {
     return 0;
 }
 
+// Rescales the live set (ParticleSettingsRef::cur) from the pristine copy (ParticleSettingsRef::init).
 void ParticleSettings::multiplyAll(float scale) {
-    float recip = 1.0f / ((scale + 1.0f) * 0.5f);
-    for (int i = 0; i < 48; ++i) {
-        SetDefinition &p = this->sets[i];
-        float lifeScale, lifeBase;
-        if (p.flags & 0x20) {
-            lifeBase = asFloat(p.flLifetime);
-            lifeScale = scale;
-        } else if ((int) (p.flags << 0x1b) < 0) {
-            lifeBase = asFloat(p.flLifetime);
-            lifeScale = 1.0f / scale;
+    ParticleSettings &cur = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur);
+    ParticleSettings &init = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::init);
+    float inverse = 1.0f / scale;
+    float alphaScale = (float) (1.0 / ((scale + 1.0f) * 0.5));
+    for (int i = 0; i < 48; i++) {
+        SetDefinition &dst = cur.sets[i];
+        SetDefinition &src = init.sets[i];
+        float lifetime;
+        if (dst.flags & 0x20) {
+            lifetime = asFloat(src.flLifetime) * scale;
+        } else if (dst.flags & 0x10) {
+            lifetime = inverse * asFloat(src.flLifetime);
         } else {
             continue;
         }
-        unsigned c34 = p.color0;
-        unsigned c38 = p.color1;
-        float comp10 = (float) p.count;
-        float r34 = recip * (float) (int) (c34 & 0xff);
-        float r38 = recip * (float) (int) (c38 & 0xff);
-        asFloat(p.flLifetime) = lifeBase * lifeScale;
-        unsigned u34 = (0.0f < r34) ? (unsigned) r34 : 0;
-        unsigned u38 = (0.0f < r38) ? (unsigned) r38 : 0;
-        if (u34 > 0xfe) u34 = 0xff;
-        if (u38 > 0xfe) u38 = 0xff;
-        p.color0 = u34 | (c34 & 0xffffff00);
-        p.color1 = u38 | (c38 & 0xffffff00);
-        p.count = (int) (comp10 * scale);
+        asFloat(dst.flLifetime) = lifetime;
+        uint32_t alpha0 = (uint32_t) (alphaScale * (float) (int) (src.color0 & 0xff));
+        uint32_t alpha1 = (uint32_t) (alphaScale * (float) (int) (src.color1 & 0xff));
+        if (alpha0 > 0xff) alpha0 = 0xff;
+        if (alpha1 > 0xff) alpha1 = 0xff;
+        dst.color0 = alpha0 | (src.color0 & 0xffffff00);
+        dst.color1 = alpha1 | (src.color1 & 0xffffff00);
+        dst.count = (int) ((float) src.count * scale);
     }
 }
 
