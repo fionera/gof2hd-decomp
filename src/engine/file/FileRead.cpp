@@ -554,6 +554,7 @@ Array<Agent *> *FileRead::loadAgents() {
         int32_t flag;
         int32_t imageCount;
         int32_t f = -1;
+        bool male;
         while (index < agents->size()) {
 
             AEFile::ReadSwitched(name, handle);
@@ -563,7 +564,7 @@ Array<Agent *> *FileRead::loadAgents() {
             AEFile::ReadSwitched(b, handle);
             AEFile::ReadSwitched(c, handle);
             AEFile::ReadSwitched(flag, handle);
-            bool male = flag == 1;
+            male = flag == 1;
             AEFile::ReadSwitched(d, handle);
             AEFile::ReadSwitched(e, handle);
             AEFile::ReadSwitched(f, handle);
