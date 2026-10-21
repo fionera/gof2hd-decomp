@@ -548,8 +548,10 @@ namespace AbyssEngine {
                 break;
             }
             case 5: {
-                unsigned int width = image->width;
-                unsigned int height = image->height;
+                unsigned int height;
+                unsigned int width;
+                width = image->width;
+                height = image->height;
                 if (!image->hasMipmaps) {
                     glCompressedTexImage2D(0xde1, 0, 0x8c02, width, height, 0, image->dataLen, image->data);
                     break;
@@ -570,21 +572,20 @@ namespace AbyssEngine {
                 break;
             }
             case 7: {
+                unsigned int offset = 0;
                 unsigned int width = image->width;
                 unsigned int height = image->height;
                 if (!image->hasMipmaps) {
                     glCompressedTexImage2D(0xde1, 0, 0x8c93, width, height, 0, image->dataLen, image->data);
                     break;
                 }
-                
-                unsigned int offset = 0;
                 for (unsigned int level = 0; offset < image->dataLen; level++) {
                     unsigned int blockBytes = width * height;
                     if (blockBytes <= 16)
                         blockBytes = 16;
                     glCompressedTexImage2D(0xde1, level, 0x8c93, width, height, 0, blockBytes, image->data + offset);
-                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
                     offset += blockBytes;
                     height = nextHeight;
                     width = nextWidth;
@@ -654,21 +655,7 @@ namespace AbyssEngine {
         }
 
         if (registerTexture) {
-            if (outTex != 0) {
-                outTex->isCube = image->format == 6;
-                outTex->valid = 1;
-                if (glGetError() != 0) {
-                    outTex->byteSize = 0;
-                    outTex->glId = 0xffffffff;
-                    glDeleteTextures(1, outIds);
-                } else {
-                    AELabelObject(0x1702, *outIds, path);
-                    outTex->glId = *outIds;
-                    outTex->byteSize = image->dataLen;
-                    ++Engine::ImageCount;
-                }
-                engine->textureByteCounter += outTex->byteSize;
-            } else {
+            if (outTex == 0) {
                 AELoadedTexture *texture = new AELoadedTexture;
                 texture->isCube = image->format == 6;
                 texture->scale = scale;
@@ -687,6 +674,20 @@ namespace AbyssEngine {
                 engine->textureByteCounter += texture->byteSize;
                 ArrayAdd(texture, engine->appManager->paintCanvas->cubeTextures);
                 *outIds = engine->appManager->paintCanvas->cubeTextures.count - 1;
+            } else {
+                outTex->isCube = image->format == 6;
+                outTex->valid = 1;
+                if (glGetError() != 0) {
+                    outTex->byteSize = 0;
+                    outTex->glId = 0xffffffff;
+                    glDeleteTextures(1, outIds);
+                } else {
+                    AELabelObject(0x1702, *outIds, path);
+                    outTex->glId = *outIds;
+                    outTex->byteSize = image->dataLen;
+                    ++Engine::ImageCount;
+                }
+                engine->textureByteCounter += outTex->byteSize;
             }
         } else {
             engine->lastGlError = glGetError();
