@@ -7,6 +7,7 @@
 #include "game/core/CheatHandler.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/KeyCode.h"
+#include "engine/core/AbyssEngine.h"
 #include <cstddef>
 
 namespace {
@@ -101,30 +102,12 @@ static_assert(sizeof(ActionEntry) == 0x10, "action entry size");
 #endif
 
 namespace {
-    int g_perfPending;
-    uint64_t g_perfCounter;
-    uint64_t g_perfLimit;
-    int g_perfExpired;
-
-    int g_touchMode;
-    int g_touchToggle;
-    int g_touchValue;
-    float g_touchFloat;
-    int g_touchDown;
 
     int g_orientationLeft;
     int g_orientationRight;
     int g_orientationFlat;
     int g_orientationUpsideDown;
     int g_orientationInactive;
-
-    int64_t g_perfElapsed;
-    int64_t g_perfActionCount;
-    int64_t g_perfLimitValue;
-    int64_t g_perfTotal;
-    int64_t g_perfFrame;
-    int g_perfEnabled;
-    int g_perfPendingFlag;
 }
 
 ApplicationManager::ApplicationManager(Engine *engine) {
@@ -219,12 +202,11 @@ void ApplicationManager::SetApplicationModule(IApplicationModule *module) {
 }
 
 void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
-    if (g_perfPending != 0) {
-        uint64_t value = g_perfCounter + 1;
-        g_perfCounter = value;
-        if ((long long) (value - g_perfLimit) >= 0) {
-            *(char *) &g_perfExpired = 1;
-            *(char *) &g_perfPending = 0;
+    if (AbyssEngine::performanceTest) {
+        AbyssEngine::performanceModulSwitches++;
+        if (AbyssEngine::performanceModulSwitches >= AbyssEngine::performanceOverallModulSwitches) {
+            AbyssEngine::performanceTest = 0;
+            AbyssEngine::performanceTestEnded = 1;
         }
     }
 
@@ -522,11 +504,8 @@ void ApplicationManager::ConvertTouchCoords(int &x, int &y) {
     y = canvas->GetHeight() - y;
 }
 
-void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) { // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
+void ApplicationManager::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchBegin touch handle param, baked ABI)
-    int x = xArg;
-    int y = yArg;
-
     IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
@@ -537,32 +516,45 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) { // lint
         this->lastTouchX = x;
         this->lastTouchY = y;
 
-        Engine *engine = this->engine;
-        int mode = g_touchMode;
-        if (mode <= 3) {
-            PaintCanvas *canvas = this->paintCanvas;
-            if (mode == 0 && x <= 0x31 && y <= 0x31) {
-                g_touchMode = 1;
-            } else if (mode == 1 && x > canvas->GetWidth() - 0x32 &&
-                       y > canvas->GetHeight() - 0x32) {
-                g_touchMode = 2;
-            } else if (mode == 2 && x <= 0x31 && y > canvas->GetHeight() - 0x32) {
-                bool *flag = &engine->field_0x74;
-                *flag = !*flag;
-            } else if (mode == 3 && y <= 0x31 && x > canvas->GetWidth() - 0x32) {
-                g_touchMode = 4;
+        switch (AbyssEngine::debugModusIndex) {
+            case 0:
+                if (x <= 49 && y <= 49) {
+                    AbyssEngine::debugModusIndex = 1;
+                    return;
+                }
+                break;
+            case 1:
+                if (x > this->paintCanvas->GetWidth() - 50 && y > this->paintCanvas->GetHeight() - 50) {
+                    AbyssEngine::debugModusIndex++;
+                    return;
+                }
+                break;
+            case 2:
+                if (x <= 49 && y > this->paintCanvas->GetHeight() - 50) {
+                    this->engine->field_0x74 = !this->engine->field_0x74;
+                    return;
+                }
+                break;
+            case 3: {
+                int width = this->paintCanvas->GetWidth();
+                if (y <= 49 && x > width - 50) {
+                    AbyssEngine::debugModusIndex++;
+                    return;
+                }
+                break;
             }
-        } else if (engine->field_0x74) {
+        }
+
+        if (this->engine->field_0x74) {
             if (y < 100) {
-                g_touchToggle ^= 1;
+                Engine::UseAdvancedShader ^= 1;
             } else {
                 int height = this->paintCanvas->GetHeight();
-                int width = this->paintCanvas->GetWidth();
-                int half = width / 2;
-                if (height - 100 < y) {
-                    g_touchValue = x < half ? 0 : 1;
+                int half = this->paintCanvas->GetWidth() / 2;
+                if (y > height - 100) {
+                    Engine::LodDistShader = x >= half ? 10000000.0f : 0.0f;
                 } else {
-                    g_touchFloat += x < half ? -1.0f : 1.0f;
+                    Engine::LodDistShader += x >= half ? 100.0f : -100.0f;
                 }
             }
         }
@@ -583,11 +575,9 @@ void ApplicationManager::OnTouchMove(int x, int y, void *touch) { // lint: void_
     }
 }
 
-void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) { // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
+void ApplicationManager::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
     // lint: void_ptr (exported OnTouchEnd touch handle param, baked ABI)
-    g_touchDown = 0;
-    int x = xArg;
-    int y = yArg;
+    AbyssEngine::debugModusIndex = 0;
 
     IApplicationModule *module = this->currentModule;
     if (module != 0 && this->state == 5) {
@@ -941,13 +931,13 @@ void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigToke
 }
 
 void ApplicationManager::EnablePerformanceTest(int count) {
-    g_perfElapsed = 0;
-    g_perfActionCount = (long long) count;
-    g_perfLimitValue = 0;
-    g_perfTotal = 0;
-    g_perfFrame = 0;
-    g_perfEnabled = 1;
-    g_perfPendingFlag = 0;
+    AbyssEngine::performanceOverallModulSwitches = count;
+    AbyssEngine::performanceModulSwitches = 0;
+    AbyssEngine::triDrawn = 0;
+    AbyssEngine::performanceTime = 0;
+    AbyssEngine::performanceFrameCounter = 0;
+    AbyssEngine::performanceTest = 1;
+    AbyssEngine::performanceTestEnded = 0;
 }
 
 void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {

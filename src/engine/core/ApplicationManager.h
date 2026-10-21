@@ -119,7 +119,7 @@ namespace AbyssEngine {
 
         void ConvertTouchCoords(int &x, int &y);
 
-        void EnablePerformanceTest(int count);
+        static void EnablePerformanceTest(int count);
 
         uint64_t GetActionState();
 

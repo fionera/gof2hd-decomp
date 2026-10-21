@@ -1845,14 +1845,11 @@ done:
 }
 
 void PlayerFighter::cloak(int dur, bool b) {
-    unsigned v;
-    if (dur > 0) {
-        v = (unsigned) dur;
-    } else {
-        v = Globals::rnd->nextInt(5000) + 5000;
+    if (dur <= 0) {
+        dur = Globals::rnd->nextInt(5000) + 5000;
     }
+    this->cloakDuration = dur + 4000;
     this->cloakActive = 1;
-    this->cloakDuration = v + 4000;
     this->field_0x2d9 = b;
 }
 
