@@ -159,6 +159,8 @@ namespace AbyssEngine {
         static unsigned short termChar;
     };
 
+    unsigned short *computeFloatString(float value, int precision, int *decimalPoint, int *negative, int fixed);
+
     String operator+(const String &a, const String &b);
 
     String operator+(const int &a, const String &b);

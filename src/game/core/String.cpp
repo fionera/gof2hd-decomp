@@ -6,7 +6,6 @@
 
 void String_printImpl(const char *s);
 
-uint16_t *String_computeFloatString(float v, int base, int *outExp, int *outNeg);
 
 void String_concat(String * out, String * a, String * b);
 
@@ -145,37 +144,43 @@ unsigned short *String::operator[](int i) {
 void String::Set(long long v) {
     if (this->data) delete[] this->data;
     this->data = nullptr;
-    this->length = 0;
-
     if (v == 0) {
-        this->Set("");
+        Set("");
         return;
     }
-
-    bool neg = v < 0;
-    unsigned long long mag = neg ? (unsigned long long) (-v) : (unsigned long long) v;
-
-    char16_t tmp[24];
-    int n = 0;
+    unsigned short *out = new unsigned short[20];
+    this->data = out;
+    this->length = 0;
+    unsigned long long magnitude;
+    if (v < 0) {
+        *out++ = '-';
+        this->length = 1;
+        magnitude = (unsigned long long) -v;
+    } else {
+        magnitude = (unsigned int) v; // binary: non-negative values keep only the low word
+    }
+    int count = 0;
+    unsigned long long previous;
     do {
-        unsigned int rem = (unsigned int) (mag % 10);
-        char16_t ch = (char16_t) (rem | 0x30);
-        if (rem > 9)
-            ch = (char16_t) (rem + 0x57);
-        tmp[n++] = ch;
-        mag /= 10;
-    } while (mag != 0);
-
-    int total = n + (neg ? 1 : 0);
-    unsigned short *out = (unsigned short *) ::operator new[]((total + 1) * 2);
-    int w = 0;
-    if (neg)
-        out[w++] = (unsigned short) u'-';
-    for (int i = n - 1; i >= 0; i--)
-        out[w++] = (unsigned short) tmp[i];
-    out[w] = 0;
-    this->Set(out);
-    ::operator delete[](out);
+        unsigned int digit = (unsigned int) (magnitude % 10);
+        unsigned char c = (unsigned char) (digit | '0');
+        if (digit > 9)
+            c = (unsigned char) (digit + 'a' - 10);
+        out[count++] = c;
+        this->length++;
+        previous = magnitude;
+        magnitude /= 10;
+    } while (previous > 9);
+    out[count] = 0;
+    unsigned short *lo = out;
+    unsigned short *hi = out + count - 1;
+    do {
+        unsigned short t = *hi;
+        *hi = *lo;
+        *lo = t;
+        lo++;
+        hi--;
+    } while (lo < hi);
 }
 
 int String::StrLen(const char *s) {
@@ -417,57 +422,24 @@ done:
     ;
 }
 
-static const char kZeroDot[] = "0.";
-static const char kZero[] = "0";
-static const char kDot[] = ".";
-static const char kExp[] = "E";
 
 void String::Set(float v) {
-    int exp = 0;
-    int neg = 0;
-    uint16_t *digitsW = String_computeFloatString(v, 10, &exp, &neg);
-
-    int digitCount = String::StrLen((const unsigned short *) digitsW);
-
-    /* Upper bound on the result length: leading "0." plus up to -exp zeros,
-       the digits, a possible '.' separator, and a possible leading 'E' sign. */
-    int leadingZeros = (exp < 1 && exp < 0) ? -exp : 0;
-    int cap = 2 + leadingZeros + digitCount + 1 + 1;
-    unsigned short *acc = (unsigned short *) ::operator new[]((cap + 1) * 2);
-    int len = 0;
-
-    if (exp < 1) {
-        for (const char *p = kZeroDot; *p; p++)
-            acc[len++] = (unsigned short) (unsigned char) *p;
-        for (int i = 0; exp < i; i--)
-            for (const char *p = kZero; *p; p++)
-                acc[len++] = (unsigned short) (unsigned char) *p;
+    int exponent;
+    int negative;
+    unsigned short *digits = computeFloatString(v, 10, &exponent, &negative, 1);
+    String result;
+    if (exponent <= 0) {
+        result.Set("0.");
+        for (int i = 0; i > exponent; i--)
+            result += String("0");
     }
-
-    for (const uint16_t *p = digitsW; *p != 0; p++)
-        acc[len++] = (unsigned short) *p;
-
-    if (exp > 0 && exp <= len) {
-        /* Insert '.' after the first `exp` code units. */
-        for (int i = len; i > exp; i--)
-            acc[i] = acc[i - 1];
-        acc[exp] = (unsigned short) (unsigned char) kDot[0];
-        len++;
-    }
-
-    if (neg != 0) {
-        /* Prepend the 'E' (exponent/sign marker). */
-        for (int i = len; i > 0; i--)
-            acc[i] = acc[i - 1];
-        acc[0] = (unsigned short) (unsigned char) kExp[0];
-        len++;
-    }
-
-    acc[len] = 0;
-
-    delete[] digitsW;
-    this->Set(acc);
-    ::operator delete[](acc);
+    result += String(digits, false);
+    if (exponent >= 1)
+        result = result.SubString(0, exponent) + String(".") + result.SubString(exponent, result.length);
+    if (negative != 0)
+        result = String("-") + result;
+    delete[] digits;
+    Set(result.data);
 }
 
 int String::StrLen(const unsigned short *s) {
