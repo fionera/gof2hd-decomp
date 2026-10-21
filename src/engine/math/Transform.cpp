@@ -249,8 +249,8 @@ namespace AbyssEngine {
     }
 
     void Transform::SetAnimationLength(longlong value) {
-        this->rangeEnd = value;
         this->animationLength = value;
+        this->rangeEnd = value;
     }
 
     void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
@@ -297,16 +297,9 @@ namespace AbyssEngine {
 
     void Transform::InsertKeyFrame(KeyFrame *keyFrame, int index) {
         ArrayAdd((KeyFrame *) 0, this->keyFrames);
-        int count = (int) this->keyFrames.size();
-        int from = count - 2;
-        int to = count - 1;
-        Array<KeyFrame *> &items = this->keyFrames;
-        while (index < to) {
-            items[to] = items[from];
-            --from;
-            --to;
-        }
-        items[index] = keyFrame;
+        for (int i = (int) this->keyFrames.size() - 1; i > index; i--)
+            this->keyFrames[i] = this->keyFrames[i - 1];
+        this->keyFrames[index] = keyFrame;
     }
 
     void Transform::Update(longlong time, bool updateBounds) {
@@ -431,12 +424,11 @@ namespace AbyssEngine {
         // lint: void_ptr method parameter baked into mangled symbol
         if (mode == AnimationMode_0) {
             this->animating = false;
+            this->flags = mode;
         } else if (mode == static_cast<AnimationMode>(3)) {
             this->animating = true;
             this->currentTime = this->rangeStart;
-            return;
         }
-        this->flags = mode;
     }
 
     Transform::Transform() {

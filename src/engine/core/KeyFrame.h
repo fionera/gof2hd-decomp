@@ -24,12 +24,10 @@ namespace AbyssEngine {
         // Defined inline so the complete-object ctor (C1) folds into the base-object C2 the
         // original exports (see docs/VALIDATION.md).
         KeyFrame() {
-            const AEMath::Vector one = {1.0f, 1.0f, 1.0f};
-
             timestamp = 0;
             __builtin_memset(this, 0, 0x48);
-            scale = one;
-            localScale = one;
+            scale = AEMath::Vector{1.0f, 1.0f, 1.0f};
+            localScale = AEMath::Vector{1.0f, 1.0f, 1.0f};
             channelFlags = 0;
             channelFlagsHi = 0;
             alpha = 1.0f;
