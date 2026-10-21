@@ -12,32 +12,30 @@
 static const int kHiddenBlueprints[5] = {132, 133, 134, 129, 123};
 static const int kPirateStations[4] = {1, 33, 47, 86};
 
-Station::Station()
-    : name("Station"),
-      index(-1),
-      systemIndex(-1),
-      planet(0),
-      textureIndex(0),
-      visited(0),
-      techLevel(0),
-      attackedFriends(0),
-      items(nullptr),
-      ships(nullptr),
-      agents(nullptr) {
+Station::Station() {
+    name = String("");
+    index = -1;
+    systemIndex = -1;
+    techLevel = 0;
+    textureIndex = 0;
+    visited = 0;
+    attackedFriends = 0;
+    items = nullptr;
+    ships = nullptr;
+    agents = nullptr;
 }
 
-Station::Station(String name, int index, int systemIndex, int techLevel, int textureIndex)
-    : name(name),
-      index(index),
-      systemIndex(systemIndex),
-      planet(0),
-      textureIndex(textureIndex),
-      visited(0),
-      techLevel(techLevel),
-      attackedFriends(0),
-      items(nullptr),
-      ships(nullptr),
-      agents(nullptr) {
+Station::Station(String name, int index, int systemIndex, int techLevel, int textureIndex) {
+    this->name = name;
+    this->index = index;
+    this->systemIndex = systemIndex;
+    this->techLevel = techLevel;
+    this->textureIndex = textureIndex;
+    this->visited = 0;
+    this->attackedFriends = 0;
+    this->items = nullptr;
+    this->ships = nullptr;
+    this->agents = nullptr;
 }
 
 Station::~Station() {
@@ -52,13 +50,17 @@ Station::~Station() {
         items = nullptr;
     }
     if (agents != nullptr) {
-        Mission *campaign = reinterpret_cast<Mission *>(Globals::status->getCampaignMission());
-        Mission *freelance = Globals::status->getFreelanceMission();
-        Agent *campaignAgent = campaign != nullptr ? campaign->getAgent() : nullptr;
-        Agent *freelanceAgent = freelance != nullptr ? freelance->getAgent() : nullptr;
-        for (Agent *a: *agents) {
-            if (a != nullptr && a != campaignAgent && a != freelanceAgent && !a->isStoryAgent())
-                delete a;
+        // Agents still referenced by the running missions and story agents are owned elsewhere.
+        for (uint32_t i = 0; i < agents->size(); i++) {
+            Agent *agent = (*agents)[i];
+            Agent *campaignAgent = Globals::status->getCampaignMission() != 0
+                                   ? ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getAgent()
+                                   : nullptr;
+            Agent *freelanceAgent = Globals::status->getFreelanceMission() != nullptr
+                                    ? Globals::status->getFreelanceMission()->getAgent()
+                                    : nullptr;
+            if (agent != nullptr && agent != campaignAgent && agent != freelanceAgent && !agent->isStoryAgent())
+                delete agent;
         }
         delete agents;
         agents = nullptr;
@@ -77,17 +79,21 @@ Array<Item *> *Station::getItems() { return items; }
 Array<Ship *> *Station::getShips() { return ships; }
 
 void Station::addItem(Item *item) {
-    if (items == nullptr) {
-        items = new Array<Item *>();
-    } else {
+    int index = -1;
+    if (items != nullptr) {
         for (uint32_t i = 0; i < items->size(); i++) {
             if ((*items)[i]->equals(item)) {
-                (*items)[i]->changeAmount(item->getAmount());
-                return;
+                index = (int) i;
+                break;
             }
         }
+    } else {
+        items = new Array<Item *>();
     }
-    ArrayAdd(item, *items);
+    if (index >= 0)
+        (*items)[index]->changeAmount(item->getAmount());
+    else
+        ArrayAdd(item, *items);
 }
 
 void Station::setAttackedFriends(bool v) {
@@ -193,15 +199,19 @@ uint32_t Station::hasShip(int index) {
 }
 
 void Station::addShip(Ship *ship) {
-    if (ships == nullptr) {
-        ships = new Array<Ship *>();
-    } else {
+    int index = -1;
+    if (ships != nullptr) {
         for (uint32_t i = 0; i < ships->size(); i++) {
-            if ((*ships)[i]->equals(ship))
-                return;
+            if ((*ships)[i]->equals(ship)) {
+                index = (int) i;
+                break;
+            }
         }
+    } else {
+        ships = new Array<Ship *>();
     }
-    ArrayAdd(ship, *ships);
+    if (index < 0)
+        ArrayAdd(ship, *ships);
 }
 
 uint32_t Station::stationHasPirateBase() {
