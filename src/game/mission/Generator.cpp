@@ -452,7 +452,8 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
 
     Array<Item *> *allItems = Globals::items;
     int type = 0;
-    for (int out = 0; out < result->size(); out += 2) {
+    uint32_t out;
+    for (out = 0; out < result->size(); out += 2) {
         bool found = false;
         int selected = 0;
         for (int tries = 0; tries < 100 && !found; tries++) {
@@ -686,9 +687,8 @@ Agent *Generator::createAgent(Station *station) {
             }
         }
     }
-    if (Globals::rnd->nextInt(100) < 33) {
-        offer = 0;
-    } else if ((uint32_t) (offer - 5) <= 1 && !(Globals::status->getCurrentCampaignMission() > 15)) {
+    if (Globals::rnd->nextInt(100) < 33 ||
+        ((offer == 5 || offer == 6) && Globals::status->getCurrentCampaignMission() <= 15)) {
         offer = 0;
     }
 
