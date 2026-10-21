@@ -123,14 +123,17 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     this->field_0x84 = 0;
     this->field_0x88 = 0;
 
-    uint32_t edgeCount = ((flags >> 13) & 1) + ((flags >> 12) & 1);
+    this->edgeCount = 0;
+    if ((flags & 0x1000) != 0)
+        this->edgeCount++;
+    if ((flags & 0x2000) != 0)
+        this->edgeCount++;
     if ((flags & 0x4000) != 0)
-        edgeCount++;
-    uint32_t wide = (flags >> 16) & 1;
-    uint32_t stride = edgeCount << wide;
-    this->wide = (uint8_t) wide;
-    this->edgeCount = edgeCount;
-    this->stride = stride;
+        this->edgeCount++;
+    this->wide = (flags >> 16) & 1;
+    this->stride = this->edgeCount << this->wide;
+    uint32_t edgeCount = this->edgeCount;
+    uint32_t stride = this->stride;
     uint32_t quads = particleCount * stride;
     this->pointCount = quads << 2;
 
@@ -139,8 +142,12 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     } else {
         if (sets.size() != 0) {
             int set = (int) sets.data()[0];
-            if (set != -1 && reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set].colorFlag > 0.0f)
-                this->pointCount = (quads << 2) + (stride << 2);
+            if (set != -1) {
+                const ParticleSettings::SetDefinition &def =
+                        reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+                if (def.colorFlag > 0.0f)
+                    this->pointCount = (quads << 2) + (stride << 2);
+            }
         }
         this->particleVelocities = new Vector[particleCount * edgeCount * 2];
     }
