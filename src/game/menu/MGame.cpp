@@ -407,17 +407,22 @@ int MGame::OnInitialize() {
         this->player->pitchAllPrimaryGuns(pitch);
 
     if (!Globals::status->inAlienOrbit()) {
-        int station = Globals::status->getStation()->getIndex();
-        unsigned slot = (unsigned) (station - 109);
-        bool visit;
-        if (slot <= 25 && ((1u << slot) & 0x3800003)) // stations 109, 110, 132, 133, 134
-            visit = true;
-        else if (slot == 2) // station 111
-            visit = Globals::status->getCurrentCampaignMission() >= 94;
-        else
-            visit = (unsigned) (station - 102) < 3;
-        if (visit)
+        switch (Globals::status->getStation()->getIndex()) {
+        case 111:
+            if (Globals::status->getCurrentCampaignMission() < 94)
+                break;
+            // fall through: station 111 is visited once campaign mission 94 is reached
+        case 102:
+        case 103:
+        case 104:
+        case 109:
+        case 110:
+        case 132:
+        case 133:
+        case 134:
             Globals::status->getStation()->visit();
+            break;
+        }
     }
 
     if (Globals::switch_to_target_setting != -1)
