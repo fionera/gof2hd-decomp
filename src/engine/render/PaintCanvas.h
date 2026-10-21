@@ -79,21 +79,11 @@ namespace AbyssEngine {
         unsigned int currentCamera;
         ::Array<AbyssEngine::Material *> materials;
         ::Array<AbyssEngine::SpriteSystem *> spriteSystems;
-        unsigned int glowMeshes_count;
-        char *glowMeshes_data;
-        unsigned int glowMeshes_cap;
-        unsigned int glowMatA_count;
-        char *glowMatA_data;
-        unsigned int glowMatA_cap;
-        unsigned int glowMatB_count;
-        char *glowMatB_data;
-        unsigned int glowMatB_cap;
-        unsigned int glowUints_count;
-        char *glowUints_data;
-        unsigned int glowUints_cap;
-        unsigned int glowMatC_count;
-        char *glowMatC_data;
-        unsigned int glowMatC_cap;
+        ::Array<AbyssEngine::Mesh *> glowMeshes;               // 0x18c
+        ::Array<AbyssEngine::AEMath::Matrix> glowMatA;         // 0x198
+        ::Array<AbyssEngine::AEMath::Matrix> glowMatB;         // 0x1a4
+        ::Array<unsigned int> glowUints;                       // 0x1b0
+        ::Array<AbyssEngine::AEMath::Matrix> glowMatC;         // 0x1bc
         char *lineMesh;
         unsigned int field_0x1cc;
         float lineVerts[8];

@@ -877,11 +877,11 @@ void PaintCanvas::SpriteSystemSetAllSize(unsigned int index, short size) {
 }
 
 void PaintCanvas::RemoveAllMatsForGlow() {
-    PCArrayRemoveAll((PCArrayHeader *) &this->glowMeshes_count);
-    PCArrayRemoveAll((PCArrayHeader *) &this->glowMatA_count);
-    PCArrayRemoveAll((PCArrayHeader *) &this->glowMatB_count);
-    PCArrayRemoveAll((PCArrayHeader *) &this->glowUints_count);
-    return PCArrayRemoveAll((PCArrayHeader *) &this->glowMatC_count);
+    PCArrayRemoveAll((PCArrayHeader *) &this->glowMeshes);
+    PCArrayRemoveAll((PCArrayHeader *) &this->glowMatA);
+    PCArrayRemoveAll((PCArrayHeader *) &this->glowMatB);
+    PCArrayRemoveAll((PCArrayHeader *) &this->glowUints);
+    return PCArrayRemoveAll((PCArrayHeader *) &this->glowMatC);
 }
 
 void PaintCanvas::MaterialChange(unsigned int index,
@@ -2623,7 +2623,7 @@ PaintCanvas::~PaintCanvas() {
             (this->resources.data_)[i] = 0;
 
             {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowMeshes_count;
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowMeshes;
                 for (uint32_t j = 0; j < a->count; ++j) {
                     char *e = ((char **) a->data)[j];
                     if (e != nullptr)
@@ -2632,21 +2632,21 @@ PaintCanvas::~PaintCanvas() {
                 a->count = 0;
             }
             {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatA_count;
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatA;
                 ::operator delete(a->data);
                 a->data = nullptr;
                 a->count = 0;
                 a->capacity = 0;
             }
             {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatB_count;
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatB;
                 ::operator delete(a->data);
                 a->data = nullptr;
                 a->count = 0;
                 a->capacity = 0;
             }
             {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowUints_count;
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowUints;
                 for (uint32_t j = 0; j < a->count; ++j) {
                     char *e = ((char **) a->data)[j];
                     if (e != nullptr)
@@ -2655,7 +2655,7 @@ PaintCanvas::~PaintCanvas() {
                 a->count = 0;
             }
             {
-                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatC_count;
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatC;
                 ::operator delete(a->data);
                 a->data = nullptr;
                 a->count = 0;
@@ -2677,35 +2677,35 @@ PaintCanvas::~PaintCanvas() {
     }
 
     {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatC_count;
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatC;
         ::operator delete(a->data);
         a->data = nullptr;
         a->count = 0;
         a->capacity = 0;
     }
     {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowUints_count;
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowUints;
         ::operator delete(a->data);
         a->data = nullptr;
         a->count = 0;
         a->capacity = 0;
     }
     {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatB_count;
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatB;
         ::operator delete(a->data);
         a->data = nullptr;
         a->count = 0;
         a->capacity = 0;
     }
     {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatA_count;
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatA;
         ::operator delete(a->data);
         a->data = nullptr;
         a->count = 0;
         a->capacity = 0;
     }
     {
-        PCArrayHeader *a = (PCArrayHeader *) &this->glowMeshes_count;
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowMeshes;
         ::operator delete(a->data);
         a->data = nullptr;
         a->count = 0;
@@ -2978,50 +2978,39 @@ void paintcanvas_ext_meshcreate5(void *, unsigned short, unsigned short, // lint
                                  signed char, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
-    PCArrayCtor((PCArrayHeader *) &this->meshes);
-    paintcanvas_ctor_matrix(&this->identityMatrix);
-    PCArrayCtor((PCArrayHeader *) &this->transforms);
-    PCArrayCtor((PCArrayHeader *) &this->glowMeshes_count);
-    PCArrayCtor((PCArrayHeader *) &this->glowMatA_count);
-    PCArrayCtor((PCArrayHeader *) &this->glowMatB_count);
-    PCArrayCtor((PCArrayHeader *) &this->glowUints_count);
-    PCArrayCtor((PCArrayHeader *) &this->glowMatC_count);
-
+    this->field_0x20 = 0;
     this->fogMode = 0;
-    this->meshes.capacity_ = 0;
     this->fogEnableFlag = 1;
     this->culledCount = 0;
     this->initialized = 0;
     this->engine = engine;
     this->currentCamera = 0xffffffff;
 
-    paintcanvas_ext_meshcreate5(engine, 4, 2, 0x11, &this->lineMesh);
-
-    int *p = (int *) ((PCMeshView *) this->lineMesh)->indexBuffer;
-    p[0] = 0x20000;
-    p[1] = 1;
-    p[2] = *(int *) 0x87878;
+    AbyssEngine::MeshCreate(engine, 4, 2, 0x11, (AbyssEngine::Mesh **) &this->lineMesh);
+    unsigned short *quad = (unsigned short *) ((PCMeshView *) this->lineMesh)->indexBuffer;
+    quad[0] = 0;
+    quad[1] = 2;
+    quad[2] = 1;
+    quad[3] = 0;
+    quad[4] = 3;
+    quad[5] = 2;
     this->colorR = 1.0f;
     this->colorG = 1.0f;
     this->colorB = 1.0f;
     this->colorA = 1.0f;
     this->field_0x1c = 1;
-    engine->shaderModeFlag = 1;
+    engine->statsBucketFlag = 1;
 
-    paintcanvas_ext_meshcreate5(engine, 400, 200, 0x1b, &this->quad2dMesh);
-
-    short *buf = (short *) ((PCMeshView *) this->quad2dMesh)->indexBuffer;
-    int j = 0;
-    for (int i = 0; i != 0x4b0; i += 0xc) {
-        short *e = buf + i / 2;
-        short a = (short) (j << 2);
-        e[0] = a;
-        e[1] = (short) ((j << 2) | 2);
-        e[2] = (short) ((j << 2) | 1);
-        e[3] = a;
-        e[4] = (short) ((j << 2) | 3);
-        e[5] = (short) ((j << 2) | 2);
-        j++;
+    AbyssEngine::MeshCreate(engine, 400, 200, 0x1b, (AbyssEngine::Mesh **) &this->quad2dMesh);
+    unsigned short *buf = (unsigned short *) ((PCMeshView *) this->quad2dMesh)->indexBuffer;
+    for (int i = 0; i < 100; i++) {
+        unsigned short *e = buf + i * 6;
+        e[0] = (unsigned short) (i << 2);
+        e[1] = (unsigned short) ((i << 2) | 2);
+        e[2] = (unsigned short) ((i << 2) | 1);
+        e[3] = (unsigned short) (i << 2);
+        e[4] = (unsigned short) ((i << 2) | 3);
+        e[5] = (unsigned short) ((i << 2) | 2);
     }
     this->field_0x1f8 = 1;
     this->field_0x1cc = 0;
@@ -3714,14 +3703,14 @@ void PaintCanvas::DrawStringColor(unsigned int index, const AbyssEngine::String 
 void PaintCanvas::SetMatForGlow(AbyssEngine::Material *glowSource) {
     for (unsigned int i = 0; i < glowSource->meshes.count; i++) {
         ArrayAdd<AbyssEngine::Mesh *>(glowSource->meshes.data_[i],
-                                      *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&this->glowMeshes_count));
+                                      this->glowMeshes);
 
-        paintcanvas_ext_smfg_pushmat(glowSource->arr_2c.data_[i], &this->glowMatA_count);
-        paintcanvas_ext_smfg_pushmat(glowSource->arr_38.data_[i], &this->glowMatB_count);
+        paintcanvas_ext_smfg_pushmat(glowSource->arr_2c.data_[i], &this->glowMatA);
+        paintcanvas_ext_smfg_pushmat(glowSource->arr_38.data_[i], &this->glowMatB);
 
-        PCArrayAdd<unsigned int>(glowSource->arr_50.data_[i], (PCArrayHeader *) &this->glowUints_count);
+        PCArrayAdd<unsigned int>(glowSource->arr_50.data_[i], (PCArrayHeader *) &this->glowUints);
 
-        paintcanvas_ext_smfg_pushmat(glowSource->arr_5c.data_[i], &this->glowMatC_count);
+        paintcanvas_ext_smfg_pushmat(glowSource->arr_5c.data_[i], &this->glowMatC);
     }
 }
 
