@@ -18,6 +18,7 @@
 #include "engine/file/FileRead.h"
 #include "game/mission/Generator.h"
 #include "game/world/SystemPathFinder.h"
+#include "game/world/Level.h"
 
 static SolarSystem *asSystem(int32_t v) { return (SolarSystem *) (intptr_t) v; }
 
@@ -549,25 +550,11 @@ bool Status::inAlienOrbit() {
     return station->equals(playerStation);
 }
 
-static int *g_rg_settings = nullptr;
-static Array<Item *> **g_rg_itemTable = nullptr;
-static int **g_rg_statusSlotC = nullptr;
-static int **g_rg_zeroSlotA = nullptr;
-static char **g_rg_zeroSlotB = nullptr;
-static int **g_rg_zeroSlotC = nullptr;
-
-static int (*g_rg_makeItemB)(int) = nullptr;
-
-static void (*g_rg_addCargo)(int, int, int) = nullptr;
-
-#include "game/core/Globals.h"
-
 void Status::resetGame() {
-    int *settings = g_rg_settings;
-    GameSettings *srec = (GameSettings *) *settings;
+    GameSettings *settings = reinterpret_cast<GameSettings *>(Globals::options);
 
-    this->field_8c = 0;
     this->boughtEquipment = 0;
+    this->field_8c = 0;
     this->field_0x100 = 0;
     this->field_0x104 = 0;
     this->credits = 0;
@@ -597,10 +584,8 @@ void Status::resetGame() {
     this->field_138 = 0;
     this->field_140 = 0;
     this->field_148 = 0;
-
-    char hardcore = srec->hardCoreFlag;
     this->field_0x111 = 0;
-    this->field_114 = hardcore != 0 ? 3 : 0;
+    this->field_114 = settings->hardCoreFlag != 0 ? 3 : 0;
 
     if (this->voidStation != nullptr) {
         delete this->voidStation;
@@ -614,57 +599,51 @@ void Status::resetGame() {
     }
     if (this->wingmen != 0) {
         ArrayReleaseClasses(*this->wingmen);
-        delete this->wingmen;
+        if (this->wingmen != 0) {
+            delete this->wingmen;
+        }
     }
-
-    this->fadeValue = 0;
     this->wingmen = 0;
-    for (unsigned j = 0; j < this->field_94->size(); j = j + 1)
+    this->fadeValue = 0;
+
+    for (unsigned j = 0; j < this->field_94->size(); j++)
         (*this->field_94)[j] = 0;
-
-    for (unsigned j = 0; j < this->field_98->size(); j = j + 1)
+    for (unsigned j = 0; j < this->field_98->size(); j++)
         (*this->field_98)[j] = 0;
-
     this->field_9c = 0;
     this->field_a0 = 0;
     this->field_a4 = 0;
     this->field_a8 = 0;
-    for (unsigned j = 0; j < this->field_ac->size(); j = j + 1)
+    for (unsigned j = 0; j < this->field_ac->size(); j++)
         (*this->field_ac)[j] = 0;
-
     this->field_b0 = 0;
-    for (unsigned j = 0; j < this->field_b4->size(); j = j + 1)
+    for (unsigned j = 0; j < this->field_b4->size(); j++)
         (*this->field_b4)[j] = 0;
 
     if (this->stationStack != 0) {
-        for (unsigned k = 0; k < this->stationStack->size(); k = k + 1) {
-            Station *st = (*this->stationStack)[k];
-            if (st != 0) {
-                delete st;
+        for (unsigned k = 0; k < this->stationStack->size(); k++) {
+            if ((*this->stationStack)[k] != 0) {
+                delete (*this->stationStack)[k];
                 (*this->stationStack)[k] = 0;
             }
         }
     }
 
     Globals::globals->resetHints();
-    Galaxy *gal = Globals::galaxy;
-    gal->reset();
+    Globals::galaxy->reset();
 
-    for (unsigned j = 0; j < this->field_50->size(); j = j + 1)
+    for (unsigned j = 0; j < this->field_50->size(); j++)
         (*this->field_50)[j] = 0;
+    for (unsigned j = 0; j < 176; j++)
+        (*this->field_54)[j] = 1;
+    for (unsigned j = 176; j < this->field_54->size(); j++)
+        (*this->field_54)[j] = 0;
+    (*this->field_54)[62] = 0;
+    (*this->field_54)[61] = 0;
+    (*this->field_54)[60] = 0;
 
-    Array<bool> &arr54 = *this->field_54;
-    for (int j = 0; j != 0xb0; j = j + 1)
-        arr54[j] = 1;
-    for (unsigned k = 0xb0; k < arr54.size(); k = k + 1)
-        arr54[k] = 0;
-
-    arr54[0x3e] = 0;
-    arr54[0x3c] = 0;
-    arr54[0x3d] = 0;
-    reinterpret_cast<int32_t &>(this->_byte_0x34) = 0;
     this->field_b8 = 0;
-
+    reinterpret_cast<int32_t &>(this->_byte_0x34) = 0;
     this->field_e0 = 0;
     this->field_e4 = 0;
     this->field_e8 = 0;
@@ -677,89 +656,103 @@ void Status::resetGame() {
     this->field_d4 = 0;
     this->field_d8 = 0;
     this->field_dc = 0;
-
-    **g_rg_zeroSlotA = 0;
-    **g_rg_zeroSlotB = 0;
-    **g_rg_zeroSlotC = 0;
-
+    Level::energyCellsForNextJump = 0;
+    Level::doInstantJump = 0;
+    Level::programmedStation = 0;
     this->field_160 = 0;
     this->field_164 = 0;
     this->field_0x108 = 0;
     this->field_174 = 0;
     this->field_0xf0 = 0;
+    this->field_0xf1 = 0;
     this->field_f4 = -1;
     this->field_f8 = 1;
 
     Globals::achievements->init();
 
-    Array<int> **off4[4] = {
-        &this->field_0x40, &this->field_0x3c,
-        &this->field_0x48, &this->field_0x44
-    };
-    for (int q = 0; q < 4; q = q + 1) {
-        delete *off4[q];
-        *off4[q] = 0;
+    if (this->field_0x40 != 0) {
+        delete this->field_0x40;
+        this->field_0x40 = 0;
     }
-    for (int q = 0; q < 4; q = q + 1) {
-        *off4[q] = new Array<int>();
-        ArraySetLength(0xe9, *(*off4[q]));
+    if (this->field_0x3c != 0) {
+        delete this->field_0x3c;
+        this->field_0x3c = 0;
     }
-    {
-        Array<int> &d40 = *this->field_0x40;
-        Array<int> &d3c = *this->field_0x3c;
-        Array<int> &d48 = *this->field_0x48;
-        Array<int> &d44 = *this->field_0x44;
-        for (int j = 0; j != 0xe9; j = j + 1) {
-            d40[j] = 0;
-            d3c[j] = 0;
-            d48[j] = 0;
-            d44[j] = 0;
-        }
+    if (this->field_0x48 != 0) {
+        delete this->field_0x48;
+        this->field_0x48 = 0;
+    }
+    if (this->field_0x44 != 0) {
+        delete this->field_0x44;
+        this->field_0x44 = 0;
+    }
+    this->field_0x40 = new Array<int>();
+    ArraySetLength(233, *this->field_0x40);
+    this->field_0x3c = new Array<int>();
+    ArraySetLength(233, *this->field_0x3c);
+    this->field_0x48 = new Array<int>();
+    ArraySetLength(233, *this->field_0x48);
+    this->field_0x44 = new Array<int>();
+    ArraySetLength(233, *this->field_0x44);
+    for (int j = 0; j < 233; j++) {
+        (*this->field_0x40)[j] = 0;
+        (*this->field_0x3c)[j] = 0;
+        (*this->field_0x48)[j] = 0;
+        (*this->field_0x44)[j] = 0;
     }
 
-    delete this->field_4c;
+    if (this->field_4c != 0) {
+        delete this->field_4c;
+        this->field_4c = 0;
+    }
     this->field_4c = new Array<bool>();
-    ArraySetLength(4, *(this->field_4c));
-    for (int j = 0; j != 4; j = j + 1) (*this->field_4c)[j] = 0;
+    ArraySetLength(4, *this->field_4c);
+    for (int j = 0; j < 4; j++)
+        (*this->field_4c)[j] = 0;
 
-    delete this->field_58;
+    if (this->field_58 != 0) {
+        delete this->field_58;
+        this->field_58 = 0;
+    }
     this->field_58 = new Array<bool>();
-    ArraySetLength(5, *(this->field_58));
-    for (int j = 0; j != 5; j = j + 1) (*this->field_58)[j] = 0;
+    ArraySetLength(5, *this->field_58);
+    for (int j = 0; j < 5; j++)
+        (*this->field_58)[j] = 0;
 
-    Array<SolarSystem *> *systems = gal->getSystems();
-    Array<bool> &vis = *this->systemVisibilities;
-    for (unsigned k = 0; k < systems->size(); k = k + 1) {
-        vis[k] = (*systems)[k]->isVisible() != 0;
+    Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
+    Array<bool> *visibilities = this->systemVisibilities;
+    for (unsigned j = 0; j < systems->size(); j++)
+        (*visibilities)[j] = (*systems)[j]->isVisible();
+
+    Array<Item *> *items = Globals::items;
+    int blueprintCount = 0;
+    for (unsigned j = 0; j < items->size(); j++) {
+        if ((*items)[j]->getIngredients() != 0)
+            blueprintCount++;
     }
-
-    unsigned bpCount = 0;
-    Array<Item *> *items = *g_rg_itemTable;
-    for (unsigned k = 0; k < items->size(); k = k + 1) {
-        if ((*items)[k]->getIngredients() != 0)
-            bpCount = bpCount + 1;
-    }
-
     if (this->bluePrints != 0) {
         ArrayReleaseClasses(*this->bluePrints);
-        delete this->bluePrints;
+        if (this->bluePrints != 0) {
+            delete this->bluePrints;
+        }
     }
     this->bluePrints = 0;
-    if (bpCount != 0) {
+    if (blueprintCount != 0) {
         this->bluePrints = new Array<BluePrint *>();
-        ArraySetLength(bpCount, *(this->bluePrints));
-        int idx = 0;
-        for (unsigned k = 0; k < items->size(); k = k + 1) {
-            if ((*items)[k]->getIngredients() != 0) {
-                (*this->bluePrints)[idx] = new BluePrint(k);
-                idx = idx + 1;
+        ArraySetLength(blueprintCount, *this->bluePrints);
+        int k = 0;
+        for (unsigned j = 0; j < items->size(); j++) {
+            if ((*items)[j]->getIngredients() != 0) {
+                (*this->bluePrints)[k] = new BluePrint(j);
+                k++;
             }
         }
     }
-
     if (this->pendingProducts != 0) {
         ArrayReleaseClasses(*this->pendingProducts);
-        delete this->pendingProducts;
+        if (this->pendingProducts != 0) {
+            delete this->pendingProducts;
+        }
     }
     this->pendingProducts = 0;
 
@@ -774,34 +767,25 @@ void Status::resetGame() {
     this->field_7c = -1;
     this->field_80 = -1;
     this->field_84 = 0;
-
-    (*this->missions)[0]->setType(**g_rg_statusSlotC);
+    (*this->missions)[1] = Mission::empty;
     this->currentCampaignMission = 0;
-
-    setCampaignMission(new Mission(4, 0, 0x4e));
-
+    setCampaignMission(new Mission(4, 0, 78));
     this->mission = (*this->missions)[0];
-    setShip(Globals::status->ship->makeShip(-1));
+
+    setShip((*Globals::ships)[10]->makeShip(-1));
     this->ship->priceDecline();
-    setStation((Station *) (intptr_t) gal->getStation(0));
+    setStation((Station *) (intptr_t) Globals::galaxy->getStation(78));
     this->ship->setCargo(0);
+    this->ship->setEquipment((*Globals::items)[2]->makeItem(), 0);
+    this->ship->setEquipment((*Globals::items)[2]->makeItem(), 1);
+    this->ship->setEquipment((*Globals::items)[54]->makeItem(), 0);
+    this->ship->setEquipment((*Globals::items)[59]->makeItem(), 1);
+    this->ship->setEquipment((*Globals::items)[82]->makeItem(), 2);
+    this->ship->setEquipment((*Globals::items)[73]->makeItem(), 3);
+    Globals::status->ship->setEquipment((*Globals::items)[36]->makeItem(6), 0);
 
-    int (*makeItemB)(int) = g_rg_makeItemB;
-    void (*addCargo)(int, int, int) = g_rg_addCargo;
-    int shipObj = (int) (intptr_t) this->ship;
-    int *srcShip = (int *) (*items->data());
-
-    addCargo(shipObj, makeItemB(srcShip[2]), 0);
-    addCargo(shipObj, makeItemB(srcShip[2]), 1);
-    addCargo(shipObj, makeItemB(srcShip[0x36]), 0);
-    addCargo(shipObj, makeItemB(srcShip[0x3b]), 1);
-    addCargo(shipObj, makeItemB(srcShip[0x52]), 2);
-    addCargo(shipObj, makeItemB(srcShip[0x49]), 3);
-    addCargo((int) (intptr_t) Globals::status->ship,
-             (int) (intptr_t)((Item *) (intptr_t) srcShip[0x24])->makeItem(), 0);
-
-    if (srec->blackMarketUnlockedFlag != 0)
-        (*this->systemVisibilities)[0x19] = 1;
+    if (settings->blackMarketUnlockedFlag != 0)
+        (*this->systemVisibilities)[25] = 1;
 
     this->field_64 = this->ship->getMaxHP();
     this->field_5c = this->ship->getMaxShieldHP();

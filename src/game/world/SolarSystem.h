@@ -23,7 +23,7 @@ public:
     Array<int> *stationIds;
     Array<int> *forbiddenGoods;
     Array<int> *linkedSystemIds;
-    uint8_t visible;
+    bool visible;
 
     SolarSystem(int unk0, AbyssEngine::String displayName, int security,
                 bool isVisible, int factionId, int x, int y, int z,
@@ -74,7 +74,7 @@ public:
 
     int isFullyDiscovered();
 
-    uint8_t isVisible();
+    bool isVisible();
 
     void setCoords(int x, int y);
 
