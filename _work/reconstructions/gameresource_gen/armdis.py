@@ -33,7 +33,7 @@ def use_binary(path):
 
 
 def u32(a):
-    return struct.unpack_from('<I', _data, a)[0]
+    return struct.unpack_from('<I', _data, a + _bias)[0]
 
 
 def cstr(a):
@@ -366,6 +366,15 @@ class Interp:
             for r in ('r0', 'r1', 'r2', 'r3', 'r12', 'lr'):
                 self.regs.pop(r, None)
             self.regs['r0'] = res
+        elif mn == 'b' and i.mnemonic in ('b', 'b.w') and self.insns and not (
+                self.insns[0].address <= ops[0].imm <= self.insns[-1].address):
+            # tail call (through a gold Thumb->ARM veneer: bx pc; nop; ldr ip,[pc]; add pc,ip,pc)
+            t = ops[0].imm
+            if struct.unpack_from('<H', _data, t + _bias)[0] == 0x4778:
+                t = (u32(t + 12) + t + 16) & 0xffffffff
+            name = self.plt.get(t, 'local_%x' % t)
+            args = [self.regs.get(r, V('u', r)) for r in ('r0', 'r1', 'r2', 'r3')]
+            self.events.append(('call', name, args, [], i.address, V('ret', (name, i.address))))
         elif mn in ('b', 'cbz', 'cbnz') or (mn.startswith('b') and len(mn) == 3 and mn not in ('bic',)):
             self.events.append(('branch', i.mnemonic, i.op_str, i.address))
         elif mn in ('cmp', 'cmn', 'tst', 'it', 'nop', 'push', 'pop'):
