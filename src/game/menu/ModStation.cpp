@@ -269,10 +269,7 @@ int Status_holder_frag();
 
 static inline int Status_getCredits_frag() { return (int)(Globals::status->getCredits()); }
 
-ModStation::ModStation() {
-    this->idleBox = nullptr;
-    this->field_0x108 = 0;
-    this->field_0x10c = 0;
+ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     this->dt = 0;
     this->flag_0xb3 = 0;
     this->flag_0xb0 = 0;
@@ -2094,8 +2091,8 @@ void ModStation::OnUpdate() {
     if (appData->purchaseReady && appData->purchaseList != nullptr && *appData->purchaseList != 0 &&
         (unsigned) (appData->purchaseId - 50) <= 4) {
         // In-app purchase completed: hand out the credits.
-        int credits = (*reinterpret_cast<Array<int> *>(appData->iapArray))[
-            Globals::globals->getInAppPurchaseArrayIndex(appData->purchaseId, appData->productIds)];
+        int productIndex = Globals::globals->getInAppPurchaseArrayIndex(appData->purchaseId, appData->productIds);
+        int credits = (*reinterpret_cast<Array<int> *>(appData->iapArray))[productIndex];
         if (credits >= 0) {
             Globals::status->changeCredits(credits);
             autosave();
@@ -2125,7 +2122,7 @@ void ModStation::OnUpdate() {
         this->easeX->Increase((float) (flipAxis[1] ? backStep : step));
         float camX = this->easeX->GetValue();
         if ((camX - this->easeX->GetMaxValue() > 0.0f ? camX - this->easeX->GetMaxValue()
-                                                      : -(camX - this->easeX->GetMaxValue())) <= 20.0f) {
+                                                      : -(camX - this->easeX->GetMaxValue())) <= 5.0f) {
             bool back = flipAxis[1];
             flipAxis[1] = back ^ 1;
             int offset;
@@ -2135,7 +2132,7 @@ void ModStation::OnUpdate() {
         this->easeY->Increase((float) (flipAxis[0] ? backStep : step));
         float camY = this->easeY->GetValue();
         if ((camY - this->easeY->GetMaxValue() > 0.0f ? camY - this->easeY->GetMaxValue()
-                                                      : -(camY - this->easeY->GetMaxValue())) <= 20.0f) {
+                                                      : -(camY - this->easeY->GetMaxValue())) <= 5.0f) {
             bool back = flipAxis[0];
             flipAxis[0] = back ^ 1;
             int offset;
@@ -2145,7 +2142,7 @@ void ModStation::OnUpdate() {
         this->easeZ->Increase((float) (flipAxis[2] ? backStep : step));
         float camZ = this->easeZ->GetValue();
         if ((camZ - this->easeZ->GetMaxValue() > 0.0f ? camZ - this->easeZ->GetMaxValue()
-                                                      : -(camZ - this->easeZ->GetMaxValue())) <= 20.0f) {
+                                                      : -(camZ - this->easeZ->GetMaxValue())) <= 5.0f) {
             bool back = flipAxis[2];
             flipAxis[2] = back ^ 1;
             int offset;
@@ -2411,20 +2408,20 @@ void ModStation::checkPendingProducts() {
     if (products != nullptr) {
         for (unsigned i = 0; i < products->size(); i++) {
             PendingProduct *product = (*products)[i];
-            if (product == nullptr || product->stationIndex != Globals::status->getStation()->getIndex())
-                continue;
-            if (campaignMission == 146 && product->blueprintIndex == 210) {
+            if (product != nullptr && product->stationIndex == Globals::status->getStation()->getIndex()) {
+                if (campaignMission == 146 && product->blueprintIndex == 210) {
+                    delete (*products)[i];
+                    (*products)[i] = nullptr;
+                    return;
+                }
+                Item *item = (*Globals::items)[product->blueprintIndex]->makeItem(product->quantity);
+                Globals::status->getShip()->addCargo(item);
+                message = message + String("\n", false) + String(item->getAmount()) + String("x ", false) +
+                          *Globals::gameText->getText(item->getIndex() + 1274);
                 delete (*products)[i];
                 (*products)[i] = nullptr;
-                return;
+                this->flag_0x63 = 1;
             }
-            Item *item = (*Globals::items)[product->blueprintIndex]->makeItem(product->quantity);
-            Globals::status->getShip()->addCargo(item);
-            message = message + String("\n", false) + String(item->getAmount()) + String("x ", false) +
-                      *Globals::gameText->getText(item->getIndex() + 1274);
-            delete (*products)[i];
-            (*products)[i] = nullptr;
-            this->flag_0x63 = 1;
         }
     }
     if (this->flag_0x63)
@@ -2510,44 +2507,33 @@ void ModStation::checkHints() {
         }
     }
 
-    if (!this->flag_0x6a) {
-        if (!(this->flag_0x63 | Globals::hints[26]) && Globals::achievements->gotAllMedals()) {
-            this->choiceWindow->set(*Globals::gameText->getText(649));
-            Globals::hints[26] = 1;
-            this->flag_0x63 = 1;
-        }
-        if (this->flag_0x6a)
-            goto wingmen;
-        if (!(this->flag_0x63 | Globals::hints[27]) && Globals::achievements->gotAllGoldMedals()) {
-            this->choiceWindow->set(*Globals::gameText->getText(650));
-            Globals::hints[27] = 1;
-            this->flag_0x63 = 1;
-        }
-        if (this->flag_0x6a)
-            goto wingmen;
-        if (!this->flag_0x63) {
-            if (!Globals::status->isBlueprintUnlocked(232) && Globals::achievements->gotAllGoldMedals() &&
-                Globals::achievements->gotAllSupernovaMedals()) {
-                this->choiceWindow->set(*Globals::gameText->getText(651));
-                Globals::status->unlockBluePrint(232);
-                autosave();
-                this->flag_0x63 = 1;
-            }
-            if (this->flag_0x6a)
-                goto wingmen;
-        }
-        if (!(this->flag_0x63 | Globals::hints[58]) && Globals::status->getCurrentCampaignMission() >= 162 &&
-            ((Globals::achievements->gotAllGoldMedals() && Globals::achievements->gotAllSupernovaMedals() &&
-              !Globals::status->hardCoreMode()) ||
-             Globals::status->hardCoreMode())) {
-            Globals::hints[58] = 1;
-            this->choiceWindow->set(*Globals::gameText->getText(3233));
-            autosave();
-            this->flag_0x63 = 1;
-        }
+    if (!this->flag_0x6a && !(this->flag_0x63 | Globals::hints[26]) && Globals::achievements->gotAllMedals()) {
+        this->choiceWindow->set(*Globals::gameText->getText(649));
+        Globals::hints[26] = 1;
+        this->flag_0x63 = 1;
+    }
+    if (!this->flag_0x6a && !(this->flag_0x63 | Globals::hints[27]) && Globals::achievements->gotAllGoldMedals()) {
+        this->choiceWindow->set(*Globals::gameText->getText(650));
+        Globals::hints[27] = 1;
+        this->flag_0x63 = 1;
+    }
+    if (!this->flag_0x6a && !this->flag_0x63 && !Globals::status->isBlueprintUnlocked(232) &&
+        Globals::achievements->gotAllGoldMedals() && Globals::achievements->gotAllSupernovaMedals()) {
+        this->choiceWindow->set(*Globals::gameText->getText(651));
+        Globals::status->unlockBluePrint(232);
+        autosave();
+        this->flag_0x63 = 1;
+    }
+    if (!this->flag_0x6a && !(this->flag_0x63 | Globals::hints[58]) &&
+        Globals::status->getCurrentCampaignMission() >= 162 &&
+        ((Globals::achievements->gotAllGoldMedals() && Globals::achievements->gotAllSupernovaMedals() &&
+          !Globals::status->hardCoreMode()) || Globals::status->hardCoreMode())) {
+        Globals::hints[58] = 1;
+        this->choiceWindow->set(*Globals::gameText->getText(3233));
+        autosave();
+        this->flag_0x63 = 1;
     }
 
-wingmen:
     if (this->flag_0x69 || this->flag_0x6a || this->flag_0x63)
         return;
     if (Globals::status->wingmen != nullptr && !this->flag_0xdb && (int) Globals::status->fadeValue <= 0 &&
