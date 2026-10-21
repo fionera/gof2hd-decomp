@@ -73,6 +73,128 @@ static_assert(__builtin_offsetof(AudioStateView, soundEnabledFlag) == 0xf,
 
 // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
+Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
+    Player * self = this;
+
+    *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(self->transform) = AbyssEngine::AEMath::Matrix();
+    self->shieldHP = 0.0f;
+    self->armorHP = 0;
+    self->maxArmorHP = 0;
+    self->maxShieldHP = 0;
+    self->hitVector[0] = 0.0f;
+    self->hitVector[1] = 0.0f;
+    self->hitVector[2] = 0.0f;
+    self->lastPosition.y = 0.0f;
+    self->lastPosition.z = 0.0f;
+    self->radius = radius;
+    self->numPrimaryGuns = numPrimary;
+    self->numSecondaryGuns = numSecondary;
+    self->numTertiaryGuns = numTertiary;
+    self->gammaHP = 100.0f;
+    self->hitpoints = hitpoints;
+    self->empPoints = 0;
+    self->maxEmpPoints = 0;
+    self->maxHitpoints = hitpoints;
+    self->damageDoneByPlayer = 0;
+    self->field_5e = 0;
+    self->shootingEnabled = 1;
+    self->lastPosition.x = 0.0f;
+    self->flShake = 0.0f;
+    self->bombForce = 0.0f;
+    self->empForce = 0.0f;
+    ((Player *) (self))->updateDamageRate();
+    self->field_58 = -1;
+
+    Array<Array<Gun *> *> *gunArr = new Array<Array<Gun *> *>();
+    self->guns = gunArr;
+    ArraySetLength(3, *gunArr);
+
+    if (numPrimary < 1) {
+        self->guns->data()[0] = 0;
+    } else {
+        Array<Gun *> *a = new Array<Gun *>();
+        self->guns->data()[0] = a;
+        ArraySetLength(numPrimary, *self->guns->data()[0]);
+    }
+    if (numSecondary < 1) {
+        self->guns->data()[1] = 0;
+    } else {
+        Array<Gun *> *a = new Array<Gun *>();
+        self->guns->data()[1] = a;
+        ArraySetLength(numSecondary, *self->guns->data()[1]);
+    }
+    if (numTertiary < 1) {
+        self->guns->data()[2] = 0;
+    } else {
+        Array<Gun *> *a = new Array<Gun *>();
+        self->guns->data()[2] = a;
+        ArraySetLength(numTertiary, *self->guns->data()[2]);
+    }
+
+    self->playShootSoundFlag = 1;
+    self->playShootSoundId = 1;
+    reinterpret_cast<uint16_t &>(self->destroyedByte) = 0;
+    self->active = 1;
+    self->damageTimer = 0;
+    self->vulnerable = 1;
+    self->kiPlayer = 0;
+    self->bombForce = 0.0f;
+    reinterpret_cast<uint16_t &>(self->enemyFlagsLo) = 0;
+    self->turnedEnemyFlag = 0;
+    self->alwaysEnemy = 0;
+    self->alwaysFriend = 0;
+    self->enemies = 0;
+    self->field_54 = 0;
+    reinterpret_cast<uint16_t &>(self->empDisabledByte) = 0;
+    self->neverAttack = 0;
+    self->healAccumulator = 0;
+    self->engineEvent = 0;
+    self->engineSoundPlaying = 0;
+    self->enginePaused = 0;
+    self->shieldHit = 0;
+    self->armorHit = 0;
+    self->hullHit = 0;
+    self->gammaHit = 0;
+
+    Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
+        *reinterpret_cast<const Matrix *>(self->transform));
+    self->lastPosition = tmp;
+    self->engineSoundId = -1;
+}
+
+Vector Player::getPosition() {
+    Vector out = AbyssEngine::AEMath::MatrixGetPosition(
+        *reinterpret_cast<const Matrix *>(this->transform));
+    return out;
+}
+
+Player::~Player() {
+    Array<Array<Gun *> *> *guns = this->guns;
+    if (guns != 0) {
+        for (unsigned int i = 0; i < guns->size(); i++) {
+            Array<Gun *> *slot = (*guns)[i];
+            if (slot != 0) {
+                ArrayReleaseClasses(*slot);
+                Array<Gun *> *s2 = this->guns->data()[i];
+                if (s2 == 0) {
+                    this->guns->data()[i] = 0;
+                } else {
+                    delete s2;
+                    this->guns->data()[i] = 0;
+                }
+                guns = this->guns;
+            }
+        }
+        ArrayReleaseClasses(*guns);
+        delete this->guns;
+        this->guns = 0;
+    }
+    if (this->enemies != 0) {
+        delete this->enemies;
+    }
+    this->enemies = 0;
+}
+
 void Player::pitchAllPrimaryGuns(float pitch) {
     if (this->guns != 0) {
         Array<Gun *> *prim = (*this->guns)[0];
@@ -486,100 +608,6 @@ void Player::addEnemies(Array<Player *> *enemies) {
     delete merged;
 }
 
-Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
-    Player * self = this;
-
-    *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(self->transform) = AbyssEngine::AEMath::Matrix();
-    self->shieldHP = 0.0f;
-    self->armorHP = 0;
-    self->maxArmorHP = 0;
-    self->maxShieldHP = 0;
-    self->hitVector[0] = 0.0f;
-    self->hitVector[1] = 0.0f;
-    self->hitVector[2] = 0.0f;
-    self->lastPosition.y = 0.0f;
-    self->lastPosition.z = 0.0f;
-    self->radius = radius;
-    self->numPrimaryGuns = numPrimary;
-    self->numSecondaryGuns = numSecondary;
-    self->numTertiaryGuns = numTertiary;
-    self->gammaHP = 100.0f;
-    self->hitpoints = hitpoints;
-    self->empPoints = 0;
-    self->maxEmpPoints = 0;
-    self->maxHitpoints = hitpoints;
-    self->damageDoneByPlayer = 0;
-    self->field_5e = 0;
-    self->shootingEnabled = 1;
-    self->lastPosition.x = 0.0f;
-    self->flShake = 0.0f;
-    self->bombForce = 0.0f;
-    self->empForce = 0.0f;
-    ((Player *) (self))->updateDamageRate();
-    self->field_58 = -1;
-
-    Array<Array<Gun *> *> *gunArr = new Array<Array<Gun *> *>();
-    self->guns = gunArr;
-    ArraySetLength(3, *gunArr);
-
-    if (numPrimary < 1) {
-        self->guns->data()[0] = 0;
-    } else {
-        Array<Gun *> *a = new Array<Gun *>();
-        self->guns->data()[0] = a;
-        ArraySetLength(numPrimary, *self->guns->data()[0]);
-    }
-    if (numSecondary < 1) {
-        self->guns->data()[1] = 0;
-    } else {
-        Array<Gun *> *a = new Array<Gun *>();
-        self->guns->data()[1] = a;
-        ArraySetLength(numSecondary, *self->guns->data()[1]);
-    }
-    if (numTertiary < 1) {
-        self->guns->data()[2] = 0;
-    } else {
-        Array<Gun *> *a = new Array<Gun *>();
-        self->guns->data()[2] = a;
-        ArraySetLength(numTertiary, *self->guns->data()[2]);
-    }
-
-    self->playShootSoundFlag = 1;
-    self->playShootSoundId = 1;
-    reinterpret_cast<uint16_t &>(self->destroyedByte) = 0;
-    self->active = 1;
-    self->damageTimer = 0;
-    self->vulnerable = 1;
-    self->kiPlayer = 0;
-    self->bombForce = 0.0f;
-    reinterpret_cast<uint16_t &>(self->enemyFlagsLo) = 0;
-    self->turnedEnemyFlag = 0;
-    self->alwaysEnemy = 0;
-    self->alwaysFriend = 0;
-    self->enemies = 0;
-    self->field_54 = 0;
-    reinterpret_cast<uint16_t &>(self->empDisabledByte) = 0;
-    self->neverAttack = 0;
-    self->healAccumulator = 0;
-    self->engineEvent = 0;
-    self->engineSoundPlaying = 0;
-    self->enginePaused = 0;
-    self->shieldHit = 0;
-    self->armorHit = 0;
-    self->hullHit = 0;
-    self->gammaHit = 0;
-
-    Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
-        *reinterpret_cast<const Matrix *>(self->transform));
-    self->lastPosition = tmp;
-    self->engineSoundId = -1;
-}
-
-Vector Player::getPosition() {
-    Vector out = AbyssEngine::AEMath::MatrixGetPosition(
-        *reinterpret_cast<const Matrix *>(this->transform));
-    return out;
-}
 
 void Player::damageGamma(float amount) {
     if (this->vulnerable && this->active) {
@@ -671,32 +699,6 @@ void Player::regenerateHull() {
     this->updateDamageRate();
 }
 
-Player::~Player() {
-    Array<Array<Gun *> *> *guns = this->guns;
-    if (guns != 0) {
-        for (unsigned int i = 0; i < guns->size(); i++) {
-            Array<Gun *> *slot = guns->data()[i];
-            if (slot != 0) {
-                ArrayReleaseClasses(*slot);
-                Array<Gun *> *s2 = this->guns->data()[i];
-                if (s2 == 0) {
-                    this->guns->data()[i] = 0;
-                } else {
-                    delete s2;
-                    this->guns->data()[i] = 0;
-                }
-                guns = this->guns;
-            }
-        }
-        ArrayReleaseClasses(*guns);
-        delete this->guns;
-        this->guns = 0;
-    }
-    if (this->enemies != 0) {
-        delete this->enemies;
-    }
-    this->enemies = 0;
-}
 
 void Player::setGammaHP(int value) {
     float hp = (float) value;
@@ -838,7 +840,7 @@ void Player::setEnemies(Array<Player *> *enemies) {
     Array<Array<Gun *> *> *guns = this->guns;
     if (guns != 0) {
         for (unsigned int i = 0; i < guns->size(); i++) {
-            Array<Gun *> *slot = guns->data()[i];
+            Array<Gun *> *slot = (*guns)[i];
             if (slot != 0) {
                 for (unsigned int j = 0; j < slot->size(); j++) {
                     Gun *gun = slot->data()[j];
