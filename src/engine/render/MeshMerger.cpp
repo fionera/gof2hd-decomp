@@ -225,68 +225,48 @@ void MeshMerger::render() {
 }
 
 void MeshMerger::update() {
-    int rows = this->rows;
-    for (int i = 0; i < rows; i++) {
-        Mesh *sph = this->transformedMeshes[i];
-        uint8_t vis = (uint8_t) this->canvas->CameraIsSphereinViewFrustum(
-            *(const Vector *) &sph->boundsCenterX, sph->boundsRadius);
-        int8_t *visArr = (int8_t *) this->visibleFlags;
-        if (vis != (uint8_t) visArr[i]) {
-            visArr[i] = (int8_t) vis;
-            if (((int8_t *) this->enabledFlags)[i] != 0) {
+    for (int i = 0; i < this->rows; i++) {
+        Mesh *mesh = this->transformedMeshes[i];
+        int visible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
+                                                                 mesh->boundsRadius);
+        if (visible != this->visibleFlags[i]) {
+            this->visibleFlags[i] = (uint8_t) visible;
+            if (this->enabledFlags[i] != 0)
                 this->dirty = 1;
-            }
         }
-        rows = this->rows;
     }
-
-    if (this->dirty == 0) {
+    if (this->dirty == 0)
         return;
-    }
 
-    Mesh *out = this->mergedMesh;
-    int idxOff = 0;
-    int vtxOff = 0;
-    for (int j = 0; j < rows; j++) {
-        if (((int8_t *) this->enabledFlags)[j] != 0 &&
-            ((int8_t *) this->visibleFlags)[j] != 0) {
-            uint8_t mask = out->vertexFormat;
-            signed char lod = this->lods[j];
-            Mesh *src = this->transformedMeshes[rows * lod + j];
-
-            if (mask & 1) {
-                aeabi_memcpy4((char *) out->positions + vtxOff * 0xc,
-                              src->positions, (uint32_t) src->vertexCount * 0xc);
-            }
-            if (mask & 4) {
-                aeabi_memcpy4((char *) out->normals + vtxOff * 0xc,
-                              src->normals, (uint32_t) src->vertexCount * 0xc);
-            }
-            if (mask & 8) {
-                aeabi_memcpy4((char *) (uintptr_t) out->colors + vtxOff * 0x10,
-                              (const char *) (uintptr_t) src->colors,
-                              (uint32_t) src->vertexCount << 4);
-            }
-            if (mask & 2) {
-                aeabi_memcpy4((char *) out->texCoords + vtxOff * 8,
-                              src->texCoords, (uint32_t) src->vertexCount << 3);
-            }
-            if (mask & 0x10) {
-                int16_t *si = (int16_t *) src->indices;
-                int16_t *di = (int16_t *) ((char *) out->indices + idxOff * 2);
-                for (int k = -(int) (uint16_t) src->indexCount; k != 0; k++) {
-                    *di = (int16_t)(*si + (int16_t) vtxOff);
-                    si++;
-                    di++;
-                }
-            }
-            rows = this->rows;
-            idxOff += src->indexCount;
-            vtxOff += src->vertexCount;
+    int vertexBase = 0;
+    int indexBase = 0;
+    for (int i = 0; i < this->rows; i++) {
+        if (this->enabledFlags[i] == 0 || this->visibleFlags[i] == 0)
+            continue;
+        Mesh *src = this->transformedMeshes[this->rows * this->lods[i] + i];
+        if (this->mergedMesh->vertexFormat & 1)
+            memcpy((Vector *) this->mergedMesh->positions + vertexBase, (const Vector *) src->positions,
+                   src->vertexCount * 12);
+        if (this->mergedMesh->vertexFormat & 4)
+            memcpy((Vector *) this->mergedMesh->normals + vertexBase, (const Vector *) src->normals,
+                   src->vertexCount * 12);
+        if (this->mergedMesh->vertexFormat & 8)
+            memcpy((uint32_t *) this->mergedMesh->colors + vertexBase * 4, (const uint32_t *) src->colors,
+                   src->vertexCount * 16);
+        if (this->mergedMesh->vertexFormat & 2)
+            memcpy((float *) this->mergedMesh->texCoords + vertexBase * 2, (const float *) src->texCoords,
+                   src->vertexCount * 8);
+        if (this->mergedMesh->vertexFormat & 0x10) {
+            uint16_t *dst = (uint16_t *) this->mergedMesh->indices + indexBase;
+            const uint16_t *idx = (const uint16_t *) src->indices;
+            for (int k = src->indexCount; k != 0; k--)
+                *dst++ = (uint16_t) (*idx++ + vertexBase);
         }
+        vertexBase += src->vertexCount;
+        indexBase += src->indexCount;
     }
-    out->indexCount = (uint16_t) idxOff;
-    out->vertexCount = (uint16_t) vtxOff;
+    this->mergedMesh->vertexCount = (uint16_t) vertexBase;
+    this->mergedMesh->indexCount = (uint16_t) indexBase;
     this->dirty = 0;
 }
 
