@@ -628,8 +628,8 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                 // Decline.
                 this->scrollWindow->setText(agent->getName(),
                                             *Globals::gameText->getText(845 + Globals::rnd->nextInt(5)));
-                this->chatScroll = 0;
                 this->mode = 0;
+                this->chatScroll = 0;
                 Globals::status->field_e0++;
                 break;
             case 2: {
@@ -670,13 +670,13 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                 int target = (*this->agents)[this->selectedAgent]->getMission()->getTargetStation();
                 if (target == Globals::status->getStation()->getIndex()) {
                     this->scrollWindow->setText(agent->getName(), *Globals::gameText->getText(805));
-                    this->chatScroll = 0;
                     this->mode = 2;
+                    this->chatScroll = 0;
                 } else if (((SolarSystem *) Globals::status->getSystem())
                                ->stationIsInSystem((*this->agents)[this->selectedAgent]->getMission()->getTargetStation())) {
                     this->scrollWindow->setText(agent->getName(), *Globals::gameText->getText(806));
-                    this->chatScroll = 0;
                     this->mode = 2;
+                    this->chatScroll = 0;
                 } else {
                     this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
                     if (this->starMap != 0) {
@@ -697,9 +697,9 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                 this->scrollWindow->setText(
                     agent->getName(),
                     *Globals::gameText->getText(808 + (int) ((float) difficulty / 10.0f * 5.0f)));
-                this->singleOffer = 1;
-                this->mode = 2;
                 this->chatScroll = 0;
+                this->mode = 2;
+                this->singleOffer = 1;
                 agent->getRace();
                 break;
             }
