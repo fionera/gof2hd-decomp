@@ -17,18 +17,20 @@ namespace AbyssEngine {
 
     void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
         glUniformMatrix4fv(this->combineUniformWorldView, 1, 0, engine->worldViewProjMatrix);
-        this->dirty = 0;
+        if (this->dirty != 0) {
+            this->dirty = 0;
+        }
 
         glEnableVertexAttribArray(this->meshAttribPosition);
         glEnableVertexAttribArray(this->meshAttribTexCoord);
-        if (mesh->uploaded == 0) {
-            glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, mesh->positions);
-            glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
-        } else {
+        if (mesh->uploaded != 0) {
             glBindBuffer(0x8892, mesh->positionVBO);
             glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
             glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, 0);
+        } else {
+            glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
         }
     }
 
@@ -257,7 +259,7 @@ namespace AbyssEngine {
 
     GlowPPShader::GlowPPShader() {
         GlowPPShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"GlowPPShader";
+        this->name = String("GlowPPShader");
     }
 
     GlowPPShader::~GlowPPShader() {

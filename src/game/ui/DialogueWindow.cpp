@@ -145,8 +145,7 @@ int DialogueWindow::previousPage() {
 }
 
 bool DialogueWindow::isLastPage() {
-    int len = this->length();
-    return this->page == len - 1;
+    return this->page == this->length() - 1;
 }
 
 bool DialogueWindow::hasBriefingDialogue(int id) {
@@ -162,21 +161,18 @@ bool DialogueWindow::hasSuccessDialogue(int id) {
 void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     this->mission = mission;
     this->kind = kind;
-    if (kind == 1) {
+    if (kind == 2) {
+        Agent *agent = mission->getAgent();
+        if (agent != 0 && agent->isGenericAgent() == 0)
+            agent->setOfferAccepted(false);
+        mission->setFailed(true);
+    } else if (kind == 1) {
         mission->getAgent();
         mission->setWon(true);
-    } else if (kind == 2) {
-        Agent *agent = mission->getAgent();
-        if (agent != 0 && agent->isGenericAgent() == 0) {
-            agent->setOfferAccepted(false);
-        }
-        mission->setFailed(true);
     }
-
     this->page = 0;
-    if (campaign == -1) {
+    if (campaign == -1)
         campaign = Globals::status->getCurrentCampaignMission();
-    }
     this->campaignMission = campaign;
     this->loadContent();
 }
@@ -302,19 +298,15 @@ static EngineSoundConfig *g_dw_soundConfig = &g_dw_soundConfig_storage;
 
 
 void DialogueWindow::update(int dt) {
-    if (this->scrollWindow != 0) {
+    if (this->scrollWindow != 0)
         this->scrollWindow->update(dt);
-    }
-    if (this->choiceActive != 0) {
+    if (this->choiceActive != 0)
         this->choiceWindow->update(dt);
-    }
-    if (g_dw_soundConfig->autoAdvanceEnabled != 0 && this->voiceSound != -1) {
-        FModSound *sound = Globals::sound;
-        sound->getPlayingProgress(this->voiceSound);
-        if (sound->isPlaying(this->voiceSound) == 0 && this->isLastPage() == 0) {
-            if (this->autoAdvanceTimer >= this->pauseLength) {
+    if (Globals::options[14] != 0 && this->voiceSound != -1) {
+        Globals::sound->getPlayingProgress(this->voiceSound);
+        if (Globals::sound->isPlaying(this->voiceSound) == 0 && this->isLastPage() == 0) {
+            if (this->autoAdvanceTimer >= this->pauseLength)
                 this->nextPage();
-            }
             this->autoAdvanceTimer = this->autoAdvanceTimer + dt;
         }
     }
@@ -327,23 +319,21 @@ void DialogueWindow::update(int dt) {
 
 int DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->choiceActive != 0) {
-        int r = this->choiceWindow->OnTouchEnd(x, y);
-        if (r == 1) {
+        int result = this->choiceWindow->OnTouchEnd(x, y);
+        if (result == 1) {
             this->choiceActive = 0;
-            return 0;
+        } else if (result == 0) {
+            this->choiceActive = 0;
+            if (Globals::status->getCurrentCampaignMission() == 0x0f) {
+                Globals::sound->play(0xa2, 0, 0, 0);
+                Globals::sound->stop(Globals::sound->currentMusicEvent);
+                Globals::sound->play(0x88, 0, 0, 0);
+            }
+            if (this->voiceSound != -1)
+                Globals::sound->stop(this->voiceSound);
+            return 1;
         }
-        if (r != 0) return 0;
-        this->choiceActive = 0;
-        if (Globals::status->getCurrentCampaignMission() == 0x0f) {
-            FModSound *sound = Globals::sound;
-            sound->play(0xa2, 0, 0, 0);
-            sound->stop(sound->currentMusicEvent);
-            sound->play(0x88, 0, 0, 0);
-        }
-        if (this->voiceSound != -1) {
-            (Globals::sound)->stop(this->voiceSound);
-        }
-        return 1;
+        return 0;
     }
 
     this->scrollWindow->OnTouchEnd(x, y);

@@ -31,15 +31,12 @@ static inline void MatrixGetLookAt(Matrix *out, const Vector *from, const Vector
 void MatrixSetScaling(Matrix *matrix, float x, float y, float z);
 
 void StarSystem::switchSunForSupernovaExpansion() {
-    AEGeometry *sun = (*this->planetsArray)[0];
-    sun->setScaling(11332.0703125f, 11332.0703125f, 11332.0703125f);
+    (*this->planetsArray)[0]->setScaling(Vector{1.373291015625f, 1.373291015625f, 1.373291015625f});
 }
 
 void StarSystem::renderSunStreak() {
-    uint32_t texture = (this->supernovaSystem != 0)
-                           ? this->supernovaSunTexture
-                           : (*this->texturesArray)[0];
-    Globals::Canvas->SetTexture(texture, (unsigned) -1);
+    Globals::Canvas->SetTexture(this->supernovaSystem != 0 ? this->supernovaSunTexture : (*this->texturesArray)[0],
+                                (unsigned) -1);
     Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_2);
     this->sunStreak->render();
 }
@@ -69,146 +66,227 @@ Vector StarSystem::getLightDirection() {
     return this->lightDirection;
 }
 
-static float g_StarSystem_init_sunColors[256] = {0};
+// Per-system / per-station render tables (.rodata, original TU order).
+static const int kSunTextures[19] = {
+    0x272f, 0x2730, 0x2731, 0x2732, 0x2733, 0x2734, 0x2735, 0x2736, 0x2737, 0x2738, 0x2739, 0x2730, 0x2737, 0x2733, 0x272f, 0x2ddd, 0x2736, 0x2731, 0x2735,
+};
 
-static float g_StarSystem_init_lightColors[256] = {0};
+static const int kSystemTints[34] = {
+    3, 1, 3, 2, 0, 3, 1, 4, 2, 4, 1, 3, 1, 3, 2, 3, 3, 0, 2, 1, 2, 3, 2, 0, 3, 1, 2, 5, 3, 3, 3, 3, 3, 3,
+};
 
-static float g_StarSystem_init_stationColors[256] = {0};
+static const int kCurrentStationTextures[27] = {
+    0x273a, 0x273b, 0x273c, 0x273d, 0x273e, 0x273f, 0x2740, 0x2741, 0x2742, 0x2743, 0x2744, 0x2745, 0x2746, 0x2747, 0x2748, 0x2749, 0x274a, 0x274b, 0x274c, 0x274d, 0x2d68, 0x2d69, 0x2d6a, 0x2719, 0x2e14, 0x2e15, 0x2e16,
+};
 
-static inline uint32_t rgba_scaled(uint32_t color, float scale) {
-    uint32_t r = (uint32_t)((float) ((color >> 24) & 0xff) * scale);
-    uint32_t g = (uint32_t)((float) ((color >> 16) & 0xff) * scale);
-    uint32_t b = (uint32_t)((float) ((color >> 8) & 0xff) * scale);
-    return (r << 24) | (g << 16) | (b << 8) | 0xff;
+static const int kStationTextures[27] = {
+    0x271b, 0x271c, 0x271d, 0x271e, 0x271f, 0x2720, 0x2721, 0x2722, 0x2723, 0x2724, 0x2725, 0x2726, 0x2727, 0x2728, 0x2729, 0x272a, 0x272b, 0x272c, 0x272d, 0x272e, 0x2d65, 0x2d66, 0x2d67, 0x2d67, 0x2e08, 0x2e09, 0x2e0a,
+};
+
+static const float kSunLightColors[57] = {
+    0.21f, 0.32f, 0.25f,
+    0.5f, 0.29f, 0.28f,
+    0.24f, 0.4f, 0.37f,
+    0.22f, 0.32f, 0.43f,
+    0.18f, 0.23f, 0.27f,
+    0.38f, 0.13f, 0.11f,
+    0.34f, 0.34f, 0.3f,
+    0.24f, 0.26f, 0.25f,
+    0.21f, 0.23f, 0.27f,
+    0.43f, 0.47f, 0.47f,
+    0.43f, 0.21f, 0.34f,
+    0.85f, 0.41f, 0.14f,
+    0.08f, 0.24f, 0.48f,
+    0.2f, 0.25f, 0.2f,
+    0.3f, 0.35f, 0.15f,
+    1.0f, 0.52f, 0.24f,
+    0.39f, 0.48f, 0.44f,
+    0.41f, 0.52f, 0.58f,
+    0.67f, 0.63f, 0.46f,
+};
+
+static const float kStationLightColors[81] = {
+    0.29f, 0.35f, 0.31f,
+    0.25f, 0.22f, 0.14f,
+    0.2f, 0.17f, 0.09f,
+    0.3f, 0.27f, 0.31f,
+    0.25f, 0.34f, 0.41f,
+    0.39f, 0.165f, 0.045f,
+    0.37f, 0.43f, 0.26f,
+    0.42f, 0.22f, 0.11f,
+    0.18f, 0.25f, 0.28f,
+    0.075f, 0.065f, 0.045f,
+    0.2f, 0.43f, 0.35f,
+    0.27f, 0.09f, 0.04f,
+    0.38f, 0.29f, 0.16f,
+    0.06f, 0.05f, 0.03f,
+    0.11f, 0.1f, 0.11f,
+    0.25f, 0.23f, 0.2f,
+    0.25f, 0.19f, 0.135f,
+    0.17f, 0.35f, 0.48f,
+    0.07f, 0.07f, 0.07f,
+    0.26f, 0.29f, 0.31f,
+    0.13f, 0.1f, 0.06f,
+    0.31f, 0.31f, 0.21f,
+    0.39f, 0.32f, 0.25f,
+    0.64f, 0.5f, 0.67f,
+    0.45f, 0.38f, 0.34f,
+    0.48f, 0.52f, 0.58f,
+    0.21f, 0.27f, 0.34f,
+};
+
+static const float kRimLightColors[57] = {
+    0.21f, 0.32f, 0.25f,
+    0.5f, 0.29f, 0.28f,
+    0.24f, 0.4f, 0.37f,
+    0.22f, 0.32f, 0.43f,
+    0.18f, 0.23f, 0.27f,
+    0.38f, 0.13f, 0.11f,
+    0.34f, 0.34f, 0.3f,
+    0.24f, 0.26f, 0.25f,
+    0.21f, 0.23f, 0.27f,
+    0.43f, 0.47f, 0.47f,
+    0.43f, 0.21f, 0.34f,
+    0.2f, 0.11f, 0.04f,
+    0.08f, 0.24f, 0.48f,
+    0.2f, 0.25f, 0.2f,
+    0.3f, 0.35f, 0.15f,
+    0.5f, 0.26f, 0.12f,
+    0.39f, 0.48f, 0.44f,
+    0.41f, 0.52f, 0.58f,
+    0.67f, 0.63f, 0.46f,
+};
+
+static inline float clampLightComponent(float v) {
+    return v > 2.0f ? 2.0f : (v > 0.0f ? v : 0.0f);
 }
 
 void StarSystem::initLight() {
-    Engine *engine = (Engine *) Globals::appManager->GetEngine();
-    engine->lightCount = 2;
+    ((Engine *) Globals::appManager->GetEngine())->lightCount = 2;
 
-    Status *status = Globals::status;
-    uint32_t baseIndex;
+    int sunIndex;
     bool normalSystem;
-    if (this->abstractSystem == 0) {
-        SolarSystem *system = (SolarSystem *) (intptr_t) status->getSystem();
-        baseIndex = system->getTextureIndex() * 3;
-        normalSystem = true;
-    } else {
-        baseIndex = 0x1e;
+    if (this->abstractSystem) {
+        sunIndex = 30;
         normalSystem = false;
+    } else {
+        sunIndex = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() * 3;
+        normalSystem = !this->abstractSystem;
     }
-
-    float ambientScale = 0.5f;
-    this->sunLightColor.x = g_StarSystem_init_sunColors[baseIndex];
-    this->sunLightColor.y = g_StarSystem_init_sunColors[baseIndex + 1];
-    this->sunLightColor.z = g_StarSystem_init_sunColors[baseIndex + 2];
+    float ambientScale = 0.15f;
+    this->sunLightColor.x = kSunLightColors[sunIndex];
+    this->sunLightColor.y = kSunLightColors[sunIndex + 1];
+    this->sunLightColor.z = kSunLightColors[sunIndex + 2];
 
     if (normalSystem) {
-        SolarSystem *system = (SolarSystem *) (intptr_t) status->getSystem();
-        uint32_t tex = system->getTextureIndex();
-        int mission = status->getCurrentCampaignMission();
-        if (tex == 0x0f && (mission == 0x59 || mission > 0x9d)) {
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() == 15 &&
+            (Globals::status->getCurrentCampaignMission() == 89 ||
+             Globals::status->getCurrentCampaignMission() >= 158)) {
             this->sunLightColor.x *= 0.5f;
             this->sunLightColor.y *= 0.5f;
             this->sunLightColor.z *= 0.5f;
         }
-        if (this->abstractSystem == 0) {
-            system = (SolarSystem *) (intptr_t) status->getSystem();
-            tex = system->getTextureIndex();
-            ambientScale = 0.5f;
-            mission = status->getCurrentCampaignMission();
-            if (tex == 0x0f && mission != 0x59) {
-                ambientScale = mission < 0x9e ? 0.35f : 0.6f;
-            }
+    }
+    if (!this->abstractSystem) {
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() == 15 &&
+            Globals::status->getCurrentCampaignMission() != 89) {
+            ambientScale = Globals::status->getCurrentCampaignMission() < 158 ? 0.7f : 0.15f;
         }
     }
 
-    uint32_t stationColorIndex = 0x17;
-    if (normalSystem && this->abstractSystem == 0) {
-        Station *station = status->getStation();
-        stationColorIndex = station->getTextureIndex() * 3;
+    int stationIndex = this->abstractSystem ? 23 : Globals::status->getStation()->getTextureIndex() * 3;
+    float stationR = kStationLightColors[stationIndex];
+    float stationG = kStationLightColors[stationIndex + 1];
+    float stationB = kStationLightColors[stationIndex + 2];
+
+    float sunScale = 15.0f;
+    if (!this->abstractSystem &&
+        ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() == 15 &&
+        Globals::status->getCurrentCampaignMission() != 89) {
+        sunScale = Globals::status->getCurrentCampaignMission() < 158 ? 30.0f : 15.0f;
     }
 
-    float lr = g_StarSystem_init_stationColors[stationColorIndex];
-    float lg = g_StarSystem_init_stationColors[stationColorIndex + 1];
-    float lb = g_StarSystem_init_stationColors[stationColorIndex + 2];
-    engine = ((Engine *) Globals::appManager->GetEngine());
-    engine->LightSetGlobalSceneColorAmbient(ambientScale * this->sunLightColor.x,
-                                            ambientScale * this->sunLightColor.y,
-                                            ambientScale * this->sunLightColor.z);
-    engine = ((Engine *) Globals::appManager->GetEngine());
-    engine->LightSetRimColor(g_StarSystem_init_lightColors[baseIndex] * 3.0f,
-                             g_StarSystem_init_lightColors[baseIndex + 1] * 3.0f,
-                             g_StarSystem_init_lightColors[baseIndex + 2] * 3.0f);
+    float sunR = this->sunLightColor.x;
+    float sunG = this->sunLightColor.y;
+    float sunB = this->sunLightColor.z;
+    ((Engine *) Globals::appManager->GetEngine())->LightSetGlobalSceneColorAmbient(
+            ambientScale * this->sunLightColor.x, ambientScale * this->sunLightColor.y,
+            ambientScale * this->sunLightColor.z);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetRimColor(kRimLightColors[sunIndex] * 3.0f,
+                                                                    kRimLightColors[sunIndex + 1] * 3.0f,
+                                                                    kRimLightColors[sunIndex + 2] * 3.0f);
     ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorAmbient(1.0f, 1.0f, 1.0f);
     ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorDiffuse(1.0f, 1.0f, 1.0f);
     ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorSpecular(1.0f, 1.0f, 1.0f);
-    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorShininess(0.7f);
-    ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(this->lightDirection.x, this->lightDirection.y,
-                                                           this->lightDirection.z, 0x4000);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetMaterialColorShininess(20.0f);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(
+            this->lightDirection.x, this->lightDirection.y, this->lightDirection.z, 0x4000);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorAmbient(0.0f, 0.0f, 0.0f, 0x4000);
-    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorDiffuse(this->sunLightColor.x, this->sunLightColor.y,
-                                                              this->sunLightColor.z, 0x4000);
+    float diffuseR = clampLightComponent(sunScale * sunR);
+    float diffuseG = clampLightComponent(sunScale * sunG);
+    float diffuseB = clampLightComponent(sunScale * sunB);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorDiffuse(diffuseR, diffuseG, diffuseB, 0x4000);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(2.0f, 2.0f, 2.0f, 0x4000);
-    ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(0.0f, 0.0f, 1.0f, 0x4001);
-    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorDiffuse(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
-    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
-    ((Engine *) Globals::appManager->GetEngine())->LightSetParticleAmbient(this->sunLightColor.x, this->sunLightColor.y,
-                                                            this->sunLightColor.z);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(0.0f, 0.0f, -1.0f, 0x4001);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorDiffuse(
+            stationR * 1.5f, stationG * 1.5f, stationB * 1.5f, 0x4001);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(
+            stationR * 1.5f, stationG * 1.5f, stationB * 1.5f, 0x4001);
+    ((Engine *) Globals::appManager->GetEngine())->LightSetParticleAmbient(
+            this->sunLightColor.x, this->sunLightColor.y, this->sunLightColor.z);
 
-    Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_1);
+    Globals::Canvas->FogEnable(false, AbyssEngine::FogMode_1);
     this->fogEnabled = 0;
-    if (this->abstractSystem != 0) {
+    if (this->abstractSystem) {
         return;
     }
 
-    uint32_t tex = ((SolarSystem *) (intptr_t) status->getSystem())->getTextureIndex();
-    uint32_t fogColor = 0;
-    switch (tex) {
-        case 0x0b:
-            fogColor = 0x808080ff;
+    uint32_t fogColor;
+    int texture = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
+    switch (texture) {
+        case 11:
+            fogColor = 0xdb6923ff;
             break;
-        case 0x0c:
-            fogColor = 0xa0a0a0ff;
+        case 12:
+            fogColor = 0x163e7cff;
             break;
-        case 0x0f:
-            if (status->getCurrentCampaignMission() == 0x59) {
+        case 15:
+            if (Globals::status->getCurrentCampaignMission() == 89) {
                 return;
             }
-            fogColor = 0x707070ff;
-            Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 0.0f, 1.0f, fogColor);
-            Globals::Canvas->FogEnable(1, AbyssEngine::FogMode_1);
+            Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 100000.0f, 1.0f, 0x82441fff);
+            Globals::Canvas->FogEnable(true, AbyssEngine::FogMode_1);
             this->fogEnabled = 1;
             for (uint32_t i = 1; i < this->planetsArray->size(); ++i) {
-                AEGeometry *geom = (*this->planetsArray)[i];
-                AbyssEngine::Transform *transform =
-                        (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(geom->transform);
-
-                transform->id = (int) fogColor;
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[i]->transform))
+                        ->color = (int) 0x82441fff;
             }
             return;
-        case 0x10:
-            fogColor = 0x909090ff;
+        case 16:
+            fogColor = 0x47665eff;
             break;
-        case 0x11:
-            fogColor = 0x707090ff;
+        case 17:
+            fogColor = 0x738d95ff;
             break;
-        case 0x12:
-            fogColor = 0x909070ff;
+        case 18:
+            fogColor = 0xaba075ff;
             break;
         default:
             return;
     }
 
-    Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 0.0f, 1.0f, fogColor);
-    Globals::Canvas->FogEnable(1, AbyssEngine::FogMode_1);
+    Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f,
+                                     (texture == 16 || texture == 17 || texture == 18) ? 150000.0f : 50000.0f,
+                                     1.0f, fogColor);
+    Globals::Canvas->FogEnable(true, AbyssEngine::FogMode_1);
     this->fogEnabled = 1;
-    uint32_t scaled = rgba_scaled(fogColor, 0.65f);
+    int r = (int) ((float) (int) (fogColor >> 24) * 0.7f);
+    int g = (int) ((float) (int) ((fogColor >> 16) & 0xff) * 0.7f);
+    int b = (int) ((float) (int) ((fogColor >> 8) & 0xff) * 0.7f);
+    uint32_t planetFog = (r << 24) | (g << 16) | (b << 8) | 0xff;
     for (uint32_t i = 1; i < this->planetsArray->size(); ++i) {
-        AEGeometry *geom = (*this->planetsArray)[i];
-        AbyssEngine::Transform *transform =
-                (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(geom->transform);
-        transform->id = (int) scaled;
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[i]->transform))->color =
+                (int) planetFog;
     }
 }
 
@@ -216,22 +294,16 @@ void StarSystem::render2D() {
     if (this->lensFlare == nullptr)
         return;
 
-    unsigned current = Globals::Canvas->CameraGetCurrent();
-    Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(current);
+    Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
     Vector pos;
     pos.x = local->m[3] + this->lightDirection.x * 65536.0f;
     pos.y = local->m[7] + this->lightDirection.y * 65536.0f;
     pos.z = local->m[11] + this->lightDirection.z * 65536.0f;
     this->lensFlare->update(0);
-    Globals::Canvas->GetScreenPosition(pos, pos);
-    this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
+    if (Globals::Canvas->GetScreenPosition(pos, pos)) {
+        this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
+    }
 }
-
-static uint16_t g_StarSystem_ctor_planetTextures[256] = {0};
-
-static uint16_t g_StarSystem_ctor_stationTextures[256] = {0};
-
-static uint32_t g_StarSystem_ctor_systemColors[256] = {0};
 
 StarSystem::StarSystem(int mode) {
     char usedSlots[0x60];
@@ -312,9 +384,9 @@ StarSystem::StarSystem(int mode) {
         this->tintColor = 3;
     } else {
         uint32_t tex = ((SolarSystem *) (intptr_t) status->getSystem())->getTextureIndex();
-        Globals::Canvas->TextureCreate(g_StarSystem_ctor_planetTextures[tex],
+        Globals::Canvas->TextureCreate(kSunTextures[tex],
                                        (*this->texturesArray)[0], false);
-        this->tintColor = g_StarSystem_ctor_systemColors[
+        this->tintColor = kSystemTints[
             ((SolarSystem *) (intptr_t) status->getSystem())->getIndex()];
     }
 
@@ -332,11 +404,11 @@ StarSystem::StarSystem(int mode) {
                 Globals::Canvas->TextureCreate((uint16_t) 0x273b,
                                                (*this->texturesArray)[i], false);
             } else {
-                Globals::Canvas->TextureCreate(g_StarSystem_ctor_planetTextures[stationTex],
+                Globals::Canvas->TextureCreate(kCurrentStationTextures[stationTex],
                                                (*this->texturesArray)[i], false);
             }
         } else {
-            Globals::Canvas->TextureCreate(g_StarSystem_ctor_stationTextures[stationTex],
+            Globals::Canvas->TextureCreate(kStationTextures[stationTex],
                                            (*this->texturesArray)[i], false);
             if (Globals::status->orbitHasPlanetRing(station->getIndex()) != 0) {
                 this->planetRing = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
@@ -462,44 +534,38 @@ void StarSystem::updateSupernova(int dt) {
 }
 
 void StarSystem::scaleSunDuringSupernovaIntro(int amount) {
-    AEGeometry *sun = (*this->planetsArray)[0];
-    float scale = sun->getScaling().x + (float) amount * -9.769497830779909e32f;
-    sun->setScaling(scale, scale, scale);
+    float scale = (*this->planetsArray)[0]->getScaling().x + (float) amount * 4.0e-5f;
+    (*this->planetsArray)[0]->setScaling(scale, scale, scale);
 }
 
 void StarSystem::switchPlanetForIntro() {
     Globals::Canvas->TextureCreate((uint16_t) 0x273a,
                                    (*this->texturesArray)[this->selectedStationSlot], false);
-    AEGeometry *planet = (*this->planetsArray)[this->selectedStationSlot];
-    planet->setScaling(planet->getScaling() * 2.0f);
+    Vector scaling = (*this->planetsArray)[this->selectedStationSlot]->getScaling() * 2.0f;
+    (*this->planetsArray)[this->selectedStationSlot]->setScaling(scaling);
 }
 
 void StarSystem::switchSunForSupernovaReversal() {
     Globals::Canvas->TextureCreate((uint16_t) 0x2734,
                                    (*this->texturesArray)[0], false);
-    AEGeometry *sun = (*this->planetsArray)[0];
-    sun->setScaling(2.429073312463973e24f, 2.429073312463973e24f, 2.429073312463973e24f);
+    (*this->planetsArray)[0]->setScaling(Vector{0.2288818359375f, 0.2288818359375f, 0.2288818359375f});
 }
-
-static uint32_t g_StarSystem_intro_colors[256] = {0};
 
 void StarSystem::switchSunForSupernovaIntro() {
     Globals::Canvas->TextureCreate((uint16_t) 0x2df3, (*this->texturesArray)[0], false);
     Globals::Canvas->TextureCreate((uint16_t) 0x2df4, this->supernovaSunTexture, false);
 
-    AEGeometry *streak = this->sunStreak;
-    streak->setMesh(0x2df2);
-    streak->setScaling(streak->getScaling() * 5.0f);
+    this->sunStreak->setMesh(0x2df2);
+    this->sunStreak->setScaling(this->sunStreak->getScaling() * 5.0f);
 
-    AEGeometry *sun = (*this->planetsArray)[0];
-    sun->setMesh(0x2df1);
-    sun->setScaling(0.6866455078125f);
-    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(sun->transform))->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
-    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(sun->transform))->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(sun->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+    (*this->planetsArray)[0]->setMesh(0x2df1);
+    (*this->planetsArray)[0]->setScaling(0.6866455078125f);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[0]->transform))->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[0]->transform))->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[0]->transform))->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
 
     SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
-    this->tintColor = g_StarSystem_intro_colors[system->getIndex()];
+    this->tintColor = kSystemTints[system->getIndex()];
 }
 
 static uint32_t g_StarSystem_render_station_index_storage = 0;

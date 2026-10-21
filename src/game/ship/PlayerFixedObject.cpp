@@ -63,9 +63,8 @@ String PlayerFixedObject::getName() {
     return this->name;
 }
 
-void *PlayerFixedObject::setName(String name) { // lint: void_ptr (exported method return type)
-    // lint: void_ptr (exported method return type)
-    return &(this->name = name);
+void PlayerFixedObject::setName(String name) {
+    this->name = name;
 }
 
 void PlayerFixedObject::setMoving(bool v) {
@@ -481,9 +480,8 @@ afterMotion:
 
 void PlayerFixedObject::setExhaustVisible(bool v) {
     AEGeometry *geom = (AEGeometry *) this->geometry;
-    if (geom != 0 && (int) geom->childTransform != -1) {
-        return ((AbyssEngine::Transform *) (Globals::Canvas->TransformGetTransform(geom->transform)))->SetVisible(v);
-    }
+    if (geom != nullptr && (int) geom->childTransform != -1)
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(geom->childTransform))->SetVisible(v);
 }
 
 int PlayerFixedObject::collide(float x, float y, float z) {
@@ -516,9 +514,7 @@ void PlayerFixedObject::setBV(BoundingVolume *bv) {
     ArrayAdd(bv, *a);
 }
 
-typedef void (*VecAssignFn)(Vector *dst, const Vector *src);
 
-static VecAssignFn *g_pfo_vecAssignZero = nullptr;
 
 void PlayerFixedObject::reset() {
     this->KIPlayer::reset();
@@ -527,19 +523,16 @@ void PlayerFixedObject::reset() {
 
     this->targetEnemy = 0;
 
-    Vector spawn = {this->spawnX(), this->spawnY(), this->spawnZ()};
-    this->respawnPos = spawn;
-    this->position() = this->respawnPos;
+    this->respawnPos = Vector{this->spawnX(), this->spawnY(), this->spawnZ()};
+    this->position() = Vector(this->respawnPos);
 
     this->deltaTime = 0;
     if (this->state != 5)
         this->state = 0;
 
-    VecAssignFn fn = *g_pfo_vecAssignZero;
-    Vector zero = {0.0f, 0.0f, 0.0f};
-    fn(&this->targetPos(), &zero);
-    fn(&this->homingTarget, &zero);
-    fn(&this->homingDir, &zero);
+    this->targetPos() = Vector{0.0f, 0.0f, 0.0f};
+    this->homingTarget = Vector{0.0f, 0.0f, 0.0f};
+    this->homingDir = Vector{0.0f, 0.0f, 0.0f};
 }
 
 void PlayerFixedObject::setWreckedMeshId(int meshId) {
@@ -615,39 +608,30 @@ PlayerFixedObject::~PlayerFixedObject() {
     }
 }
 
-static void render_thunk_state5(AEGeometry *geom) {
-    geom->render();
-}
-
-static void render_thunk_other(Explosion *expl) {
-    expl->render();
-}
-
 void PlayerFixedObject::render() {
-    PlayerFixedObject *self = this;
-    AEGeometry *g78 = self->secondaryGeometry();
-    if (g78 != 0 && self->shipHidden == 0) {
-        g78->render();
+    if (this->secondaryGeometry() != nullptr && this->shipHidden == 0)
+        this->secondaryGeometry()->render();
+    switch (this->state) {
+        case 3:
+            if (this->shipHidden == 0)
+                this->wreckGeometry->render();
+            this->explosion->render();
+            return;
+        case 4:
+            if (this->shipHidden == 0)
+                this->wreckGeometry->render();
+            if (this->explosion != nullptr)
+                this->explosion->render();
+            return;
+        case 5:
+            break;
+        default:
+            if (!this->player->isActive())
+                return;
+            break;
     }
-    int state = self->state;
-    Explosion *expl;
-    if (state == 5) {
-        if (self->shipHidden != 0) return;
-        return render_thunk_state5(self->geometry);
-    }
-    if (state == 4) {
-        if (self->shipHidden == 0) self->wreckGeometry->render();
-        expl = self->explosion;
-        if (expl == 0) return;
-    } else if (state == 3) {
-        if (self->shipHidden == 0) self->wreckGeometry->render();
-        expl = self->explosion;
-    } else {
-        if (((Player *) (self->player))->isActive() == 0) return;
-        if (self->shipHidden != 0) return;
-        return render_thunk_state5(self->geometry);
-    }
-    return render_thunk_other(expl);
+    if (this->shipHidden == 0)
+        ((AEGeometry *) this->geometry)->render();
 }
 
 static const int g_pfo_stationIdx[4] = {0, 0, 0, 0};
@@ -772,31 +756,18 @@ void PlayerFixedObject::setPosition(float x, float y, float z) {
     this->spawnX() = x;
     this->spawnY() = y;
     this->spawnZ() = z;
-    this->intPosX = (int32_t) x;
     this->intPosY = (int32_t) y;
+    this->intPosX = (int32_t) x;
     this->intPosZ = (int32_t) z;
-
-    Vector posVec = {x, y, z};
-    ((AEGeometry *) (this->geometry))->setPosition(posVec);
-    const Matrix *m = &((AEGeometry *) (this->geometry))->getMatrix();
-    *(Matrix *) ((Player *) this->player)->transform = *m;
-
-    char buf[12];
-    ((AEGeometry *) ((Vector *) buf))->getPosition();
-    this->position() = *(const Vector *) ((Vector *) buf);
-
-    Array<BoundingVolume *> *bv = this->boundingVolumes;
-    if (bv != 0) {
-        for (uint32_t i = 0; i < bv->size(); i++) {
-            BoundingVolume *o = (*bv)[i];
-            o->update(this->position().x, this->position().y, this->position().z);
-            bv = this->boundingVolumes;
-        }
+    ((AEGeometry *) this->geometry)->setPosition(x, y, z);
+    reinterpret_cast<Matrix &>(this->player->transform[0]) = ((AEGeometry *) this->geometry)->getMatrix();
+    this->position() = ((AEGeometry *) this->geometry)->getPosition();
+    if (this->boundingVolumes != nullptr) {
+        for (uint32_t i = 0; i < this->boundingVolumes->size(); i++)
+            (*this->boundingVolumes)[i]->update(this->position().x, this->position().y, this->position().z);
     }
-
-    if (this->wreckGeometry != 0) {
-        this->wreckGeometry->setPosition(posVec);
-    }
+    if (this->wreckGeometry != nullptr)
+        this->wreckGeometry->setPosition(x, y, z);
 }
 
 void PlayerFixedObject::setDeadButSelectable() {

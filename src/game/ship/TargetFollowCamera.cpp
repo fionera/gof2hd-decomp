@@ -279,7 +279,7 @@ void TargetFollowCamera::update(int dt) {
                 if (this->rotateAroundTargetEnabled != 0) {
                     Matrix rot = AbyssEngine::AEMath::MatrixSetRotationOrdered(
                         m, this->rotX, this->rotY, this->rotZ, 2);
-                    MatrixMultiply(m, rot);
+                    m *= rot;
                     float curLen = VectorLength(*getCamOffset());
                     if (curLen != this->zoom)
                         *getCamOffset() *= (this->zoom / curLen);
@@ -318,7 +318,7 @@ void TargetFollowCamera::update(int dt) {
                 m = AbyssEngine::AEMath::Matrix();
                 Matrix rot;
                 MatrixSetRotation(rot, 0.0f, 0.0f, 0.0f);
-                MatrixMultiply(rot, this->firstPersonMatrix);
+                rot *= this->firstPersonMatrix;
                 m = rot;
 
                 Vector cur = *getPosition();
@@ -396,7 +396,7 @@ void TargetFollowCamera::update(int dt) {
     Matrix look = AbyssEngine::AEMath::MatrixGetLookAt(*getPosition(), *getTargetPos(), *getUp());
     Matrix rollMat;
     MatrixSetRotation(rollMat, this->rollAngle, 0.0f, 0.0f);
-    MatrixMultiply(look, rollMat);
+    look *= rollMat;
     Globals::Canvas->CameraSetLocal(g_currentCamera, look);
     this->localMatrix = look;
 }

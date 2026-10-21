@@ -13,6 +13,7 @@ class AEGeometry;
 class Agent;
 class BoundingVolume;
 class Station;
+class SolarSystem;
 class Status;
 class FModSound;
 class Galaxy;
@@ -90,7 +91,7 @@ public:
 
     String getKeyActionName(int action);
 
-    void getRandomSystemForDrinks();
+    SolarSystem *getRandomSystemForDrinks();
 
     String replaceKeyBindingTokens(const String &src);
 
@@ -146,7 +147,7 @@ public:
     static int is_choice_window_visible;
     static int is_menu_visible;
     static int is_hacking_visible;
-    static unsigned char isStarMapVisible;
+    static bool isStarMapVisible;
     static unsigned char isCinematicModeActive;
     static int mouseCursorActivated;
     static unsigned char showMouseDuringGameOver;
@@ -298,8 +299,8 @@ public:
     static float boost_y;
     static float boost_z;
     static Globals *globals;
-    static float pause_x;
-    static float pause_y;
+    static int pause_x;
+    static int pause_y;
     static float pause_z;
     static GameText *gameText;
     static void *fontAlien; // lint: void_ptr (unknown alien-font handle, never referenced)

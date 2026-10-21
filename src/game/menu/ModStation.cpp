@@ -13,6 +13,11 @@ extern int g_android_current_achievements[3];
 #include "engine/math/EaseInOutMatrix.h"
 #include "game/mission/Item.h"
 #include "game/ui/MissionsWindow.h"
+#include "game/ui/HangarWindow.h"
+#include "game/ui/StatusWindow.h"
+#include "game/ui/ScrollTouchBox.h"
+#include "game/ui/MenuTouchWindow.h"
+#include "game/world/SolarSystem.h"
 #include "game/world/NewsTicker.h"
 #include "game/world/StarMap.h"
 #include "game/mission/Achievements.h"
@@ -35,28 +40,6 @@ extern int g_android_current_achievements[3];
 
 using AbyssEngine::AEMath::VectorSignedToFloat;
 using AbyssEngine::AEMath::Matrix;
-
-struct HangarWindow {
-    ~HangarWindow();
-
-    void OnTouchBegin(int touch, int coord);
-
-    unsigned int OnTouchMove(int touch, int coord);
-
-    void update(int dt);
-
-    void hideMessage();
-};
-
-struct StatusWindow {
-    ~StatusWindow();
-
-    int OnTouchBegin(int x, int y);
-
-    int OnTouchMove(int x, int y);
-
-    void update(int frameTime);
-};
 
 struct HangarWindowHead {
     char shipChanged;
@@ -108,9 +91,7 @@ static_assert(offsetof(SettingsBlock, dlc1WonShown) == 0x39, "");
 
 static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::sound->tryToStopMusicForBGMusic()); }
 
-void AEMath_MatrixSetTranslation(Matrix *m, int x, int y, int z);
 
-void AEMath_MatrixSetRotation(Matrix *m, Matrix *loc, int rx, int ry, int a4, int a5);
 
 
 void ModStation::autosave() {
@@ -120,7 +101,7 @@ void ModStation::autosave() {
     rh->recordStoreWrite(0);
     rh->recordStoreWritePreview(0);
     delete rh;
-    reinterpret_cast<uint8_t*>(&this->cameraFlags)[1] = 1;
+    this->flag_0xb1 = 1;
     if ((int) (intptr_t) this->dlcMenu != 0) {
         this->dlcMenu->callDlcMenu();
     }
@@ -176,13 +157,13 @@ void ModStation::addAchievement(int medalId, int kind) {
 }
 
 void ModStation::showMapWindow() {
-    reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] = 0;
-    reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] = 1;
+    this->flag_0x64 = 0;
+    this->flag_0x67 = 1;
 }
 
 void ModStation::setGameLoaded() {
-    reinterpret_cast<uint8_t*>(&this->cameraFlags)[0] = 1;
-    reinterpret_cast<uint8_t*>(&this->cameraFlags)[3] = 1;
+    this->flag_0xb0 = 1;
+    this->flag_0xb3 = 1;
 }
 
 
@@ -205,60 +186,31 @@ void ModStation::OnResume() {
     (*holder)->setVolume(1, *reinterpret_cast<float *>(Globals::options));
 }
 
-static inline int Status_getCurrentCampaignMission_cpp() { return (int)(Globals::status->getCurrentCampaignMission()); }
-
-static inline int GameText_getText_cpp(int id) { return (int)(Globals::gameText->getText(id)); }
-
-static inline int Status_getStation_cpp() { return (int)(Globals::status->getStation()); }
-
-
-static inline int Status_getShip_cpp() { return (int)(Globals::status->getShip()); }
-
-
-
-void ChoiceWindow_setNotice_cpp(ChoiceWindow * cw);
-
-static inline int GameText_getText_cppline(int id) { return (int)(Globals::gameText->getText(id)); }
-
 void ModStation::checkPendingProducts() {
-    int camp = Status_getCurrentCampaignMission_cpp();
-    GameText_getText_cpp(213);
-
-    Array<PendingProduct *> *products =
-            (Array<PendingProduct *> *) (intptr_t) Globals::status->getPendingProducts();
-    if (products != 0) {
-        Array<int> *itemTable = (Array<int> *) (intptr_t) *(int *) &Globals::items;
-        for (unsigned i = 0; i < products->size(); i = i + 1) {
-            PendingProduct *pp = (*products)[i];
-            if (pp != 0) {
-                int dstStation = pp->stationIndex;
-                Station *here = (Station *) Status_getStation_cpp();
-                if (dstStation == here->getIndex()) {
-                    if (camp == 0x92 && pp->blueprintIndex == 0xd2) {
-                        PendingProduct *o = (*products)[i];
-                        if (o != 0)
-                            delete o;
-                        (*products)[i] = 0;
-                        goto done;
-                    }
-                    Item *it = ((Item*)(long)((*itemTable)[pp->blueprintIndex]))->makeItem(pp->quantity);
-                    ((Ship*)(long)Status_getShip_cpp())->addCargo(it);
-                    (void) it->getAmount();
-                    GameText_getText_cppline(it->getIndex());
-
-                    PendingProduct *o = (*products)[i];
-                    if (o != 0)
-                        delete o;
-                    (*products)[i] = 0;
-                    reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
-                }
+    int campaignMission = Globals::status->getCurrentCampaignMission();
+    String message = *Globals::gameText->getText(213) + String("\n", false);
+    Array<PendingProduct *> *products = (Array<PendingProduct *> *) (intptr_t) Globals::status->getPendingProducts();
+    if (products != nullptr) {
+        for (unsigned i = 0; i < products->size(); i++) {
+            PendingProduct *product = (*products)[i];
+            if (product == nullptr || product->stationIndex != Globals::status->getStation()->getIndex())
+                continue;
+            if (campaignMission == 146 && product->blueprintIndex == 210) {
+                delete (*products)[i];
+                (*products)[i] = nullptr;
+                return;
             }
+            Item *item = (*Globals::items)[product->blueprintIndex]->makeItem(product->quantity);
+            Globals::status->getShip()->addCargo(item);
+            message = message + String("\n", false) + String(item->getAmount()) + String("x ", false) +
+                      *Globals::gameText->getText(item->getIndex() + 1274);
+            delete (*products)[i];
+            (*products)[i] = nullptr;
+            this->flag_0x63 = 1;
         }
     }
-
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] != 0)
-        ChoiceWindow_setNotice_cpp(this->choiceWindow);
-done:;
+    if (this->flag_0x63)
+        this->choiceWindow->set(message);
 }
 
 static int *g_okp_stack = 0;
@@ -267,79 +219,219 @@ static inline void Status_checkForLevelUp_okp() { Globals::status->checkForLevel
 
 void leaveStation();
 
+// Portrait part descriptors for the pirate-base greeting dialogues.
+static int gPirateGreetingFaceA[10] = {2, 0, 0, 0, 0, 4, 2, 0, 2, 2};
+static int gPirateGreetingFaceB[5];
+
 void ModStation::OnKeyPress(long long, long long key) {
-    if (this->stationActive == 0)
+    if (!this->stationActive)
         return;
-
-    Status_checkForLevelUp_okp();
-
-    int t34 = reinterpret_cast<uint32_t*>(&this->accumTime)[1];
-    bool banner = 999 < (uint32_t) this->accumTime;
-    if (!((-(int) banner - t34) < 0)) {
-        if (key == 0x10000) {
-            reinterpret_cast<uint32_t&>(this->accumTime) = 0x3e9;
-            reinterpret_cast<uint32_t*>(&this->accumTime)[1] = 0;
-        }
-        return;
-    }
-
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] != 0 || reinterpret_cast<uint8_t*>(&this->modalFlags)[1] != 0 ||
-        reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0 || reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0 ||
-        reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0 || reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0 ||
-        reinterpret_cast<uint8_t*>(&this->modalFlags)[0] != 0)
-        return;
-
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] != 0) {
+    Globals::status->checkForLevelUp();
+    if (this->accumTime < 1000) {
         if (key == 0x10000)
-            leaveStation();
+            this->accumTime = 1001;
         return;
     }
-
-    unsigned char held = reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[1];
-    char sub = reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[2];
-    if (held == 0) {
-        if (key == 0x40000 && sub == 0)
-            leaveStation();
+    if (this->flag_0x63 || this->flag_0x69 || this->flag_0x65 || this->flag_0x66 || this->flag_0x67 ||
+        this->flag_0x64 || this->flag_0x68)
+        return;
+    if (this->flag_0x6a) {
+        if (key == 0x10000)
+            checkMedals();
         return;
     }
-
-    if (sub != 0) {
-        if (key == 0x20000)
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[1] = (unsigned char) (
-                reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[1] ^ 1);
+    unsigned char menuOpen = this->flag_0x61;
+    unsigned char dlcOpen = this->flag_0x62;
+    if (menuOpen && !dlcOpen) {
+        switch (key) {
+            case 0x4000:
+                this->buttonState[this->selectedButton] = 0;
+                this->selectedButton = this->selectedButton > 0 ? this->selectedButton - 1 : 4;
+                this->buttonState[this->selectedButton] = 1;
+                return;
+            case 0x8000:
+                this->buttonState[this->selectedButton] = 0;
+                this->selectedButton = this->selectedButton < 4 ? this->selectedButton + 1 : 0;
+                this->buttonState[this->selectedButton] = 1;
+                return;
+            case 0x20000:
+                return;
+        }
+        if (key == 0x10000) {
+            switch (this->selectedButton) {
+                case 0:
+                    if (Globals::status->getCurrentCampaignMission() < 5 ||
+                        Globals::status->getCurrentCampaignMission() == 48 ||
+                        Globals::status->getCurrentCampaignMission() == 49 ||
+                        Globals::status->getCurrentCampaignMission() == 56)
+                        goto notAvailable;
+                    if (Globals::status->getStation()->getIndex() == 4 &&
+                        Globals::status->getStation()->stationHasPirateBase()) {
+                        if (this->dialogueWindow == nullptr) {
+                            this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(432),
+                                                                      Globals::gameText->getText(1609),
+                                                                      gPirateGreetingFaceA);
+                            this->flag_0x69 = 1;
+                            Agent *agent = new Agent(0, String("", false), 0, 0, 2, true, 0, 0, 0, 0);
+                            Globals::sound->play(Globals::globals->getDialogueSoundId(432, agent), nullptr, nullptr,
+                                                 0.0f);
+                            delete agent;
+                        }
+                        return;
+                    }
+                    if (this->hangarWindow == nullptr) {
+                        this->hangarWindow = new HangarWindow();
+                        this->hangarWindow->initialize();
+                    }
+                    if (this->spaceLounge != nullptr && this->spaceLounge->hangarNeedsUpdate()) {
+                        delete this->hangarWindow;
+                        this->hangarWindow = nullptr;
+                        this->hangarWindow = new HangarWindow();
+                        this->hangarWindow->initialize();
+                        this->spaceLounge->setHangarUpdate(false);
+                    } else if (this->m_pDialogueWindow != nullptr &&
+                               ((MissionsWindow *) this->m_pDialogueWindow)->hangarNeedsUpdate()) {
+                        delete this->hangarWindow;
+                        this->hangarWindow = nullptr;
+                        this->hangarWindow = new HangarWindow();
+                        this->hangarWindow->initialize();
+                        ((MissionsWindow *) this->m_pDialogueWindow)->setHangarUpdate(false);
+                    }
+                    for (unsigned i = 0; i < this->hangarWindow->buttons->size(); i++) {
+                        if (i < 10) {
+                            Globals::sub_menu_buttons_x[i] =
+                                (int) (*this->hangarWindow->buttons)[i]->getPosition().x;
+                            Globals::sub_menu_buttons_y[i] =
+                                (int) (*this->hangarWindow->buttons)[i]->getPosition().y;
+                        }
+                    }
+                    Globals::sub_menu_button_count = this->hangarWindow->buttons->size();
+                    this->field_0xd0 = 0;
+                    {
+                        Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+                        if (cargo != nullptr) {
+                            for (unsigned i = 0; i < cargo->size(); i++) {
+                                if ((*cargo)[i]->getIndex() >= 132 && (*cargo)[i]->getIndex() <= 153)
+                                    this->field_0xd0 += (*cargo)[i]->getAmount();
+                            }
+                        }
+                    }
+                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 1.0f);
+                    Globals::sound->stop(122);
+                    Globals::sound->play(95, nullptr, nullptr, 0.0f);
+                    this->savedPostEffect =
+                        static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())->IsPostEffectActivated();
+                    this->flag_0x66 = 1;
+                    if (!Globals::hints[8]) {
+                        Globals::hints[8] = 1;
+                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(622), false));
+                    }
+                    return;
+                case 1:
+                    if (Globals::status->getCurrentCampaignMission() < 13 ||
+                        Globals::status->getCurrentCampaignMission() == 49)
+                        goto notAvailable;
+                    if (Globals::status->getStation()->getIndex() == 88 &&
+                        Globals::status->getStation()->stationHasPirateBase()) {
+                        if (this->dialogueWindow == nullptr) {
+                            this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(433),
+                                                                      Globals::gameText->getText(1597),
+                                                                      gPirateGreetingFaceB);
+                            this->flag_0x69 = 1;
+                            Agent *agent = new Agent(0, String("", false), 0, 0, 0, true, 0, 0, 0, 0);
+                            Globals::sound->play(Globals::globals->getDialogueSoundId(433, agent), nullptr, nullptr,
+                                                 0.0f);
+                            delete agent;
+                        }
+                        return;
+                    }
+                    if (this->spaceLounge != nullptr)
+                        this->spaceLounge->init();
+                    else
+                        this->spaceLounge = new SpaceLounge();
+                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 2.0f);
+                    Globals::sound->stop(122);
+                    Globals::sound->play(108, nullptr, nullptr, 0.0f);
+                    this->flag_0x65 = 1;
+                    if (!Globals::hints[13]) {
+                        Globals::hints[13] = 1;
+                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(627), false));
+                    }
+                    return;
+                case 2:
+                    if (Globals::status->getCurrentCampaignMission() < 9 ||
+                        Globals::status->getCurrentCampaignMission() == 48 ||
+                        Globals::status->getCurrentCampaignMission() == 49)
+                        goto notAvailable;
+                    if (Globals::status->getShip()->getCurrentLoad() > Globals::status->getShip()->getMaxLoad()) {
+                        this->choiceWindow->set(*Globals::gameText->getText(204));
+                        this->flag_0x63 = 1;
+                        return;
+                    }
+                    if (Globals::status->getCurrentCampaignMission() == 77 &&
+                        Globals::status->getShip()->getIndex() != 37) {
+                        this->choiceWindow->set(*Globals::gameText->getText(326));
+                        this->flag_0x63 = 1;
+                        return;
+                    }
+                    if (this->starMap != nullptr)
+                        this->starMap->init(false, nullptr, false, -1);
+                    else
+                        this->starMap = new StarMap(false, nullptr, false, -1);
+                    if (Globals::status->getShip()->hasEquipment(85, 1) ||
+                        Globals::status->getShip()->hasJumpDriveIntegrated())
+                        this->starMap->setJumpMapMode(false, true);
+                    this->flag_0x67 = 1;
+                    Globals::sound->stop(122);
+                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.6f);
+                    if (!Globals::hints[14] && Globals::status->getCurrentCampaignMission() >= 16) {
+                        Globals::hints[14] = 1;
+                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(628), false));
+                    } else if (!Globals::hints[15] && Globals::status->getCurrentCampaignMission() <= 15) {
+                        Globals::hints[15] = 1;
+                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(631), false));
+                    }
+                    return;
+                case 3:
+                    if (Globals::status->getCurrentCampaignMission() <= 8)
+                        goto notAvailable;
+                    if (this->m_pDialogueWindow != nullptr)
+                        ((MissionsWindow *) this->m_pDialogueWindow)->init();
+                    else
+                        this->m_pDialogueWindow = (DialogueWindow *) new MissionsWindow();
+                    this->flag_0x64 = 1;
+                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.6f);
+                    if (!Globals::hints[19]) {
+                        Globals::hints[19] = 1;
+                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
+                    }
+                    return;
+                case 4:
+                    if (this->statusWindow == nullptr)
+                        this->statusWindow = new StatusWindow();
+                    this->statusWindow->reInit();
+                    this->flag_0x68 = 1;
+                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.6f);
+                    if (!(Globals::iPad | Globals::hints[24])) {
+                        Globals::hints[24] = 1;
+                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(640), false));
+                    }
+                    return;
+                default:
+                    return;
+            }
+        notAvailable:
+            this->choiceWindow->set(*Globals::gameText->getText(528));
+            this->flag_0x63 = 1;
+            return;
+        }
+    }
+    if (key == 0x40000 && !dlcOpen) {
+        leaveStation();
         return;
     }
-
-    if (key == 0x4000) {
-        int sel = this->selectedButton;
-        int *btn = this->buttonState;
-        btn[sel] = 0;
-        sel = (0 < sel) ? (sel - 1) : 4;
-        this->selectedButton = sel;
-        btn[sel] = 1;
-        return;
-    }
-    if (key == 0x8000) {
-        int sel = this->selectedButton;
-        int *btn = this->buttonState;
-        btn[sel] = 0;
-        sel = (sel < 4) ? (sel + 1) : 0;
-        this->selectedButton = sel;
-        btn[sel] = 1;
-        return;
-    }
-    if (key == 0x20000)
-        return;
-    if (key != 0x10000)
-        return;
-
-    int which = this->selectedButton;
-    if (which < 0 || which > 4) {
-        this->choiceWindow->set(*Globals::gameText->getText(0x210));
-        return;
-    }
-    if (((which >= 0 && which <= 4) ? 1 : 0) == 0)
-        this->choiceWindow->set(*Globals::gameText->getText(0x210));
+    if (key == 0x20000 && !dlcOpen)
+        this->flag_0x61 = menuOpen ^ 1;
 }
 
 void ModStation::OnKeyRelease(long long, long long) {
@@ -365,7 +457,7 @@ ModStation::ModStation() {
     reinterpret_cast<uint8_t*>(&this->cameraTween)[3] = 0;
     reinterpret_cast<uint16_t&>(this->cameraTween) = 0;
     this->stationActive = 0;
-    reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+    this->flag_0x69 = 0;
     this->state = 100;
     this->starMap = 0;
     this->cutScene = 0;
@@ -374,7 +466,7 @@ ModStation::ModStation() {
     this->dlcMenu = 0;
     this->activeMission = 0;
     this->radioMessages = 0;
-    reinterpret_cast<uint8_t*>(&this->screenFlags)[2] = 0;
+    this->flag_0x6e = 0;
     this->pendingHangarClose = 0;
     this->m_pDialogueWindow = 0;
     this->choiceWindow = 0;
@@ -432,79 +524,101 @@ ModStation::~ModStation() {
 }
 
 void ModStation::leaveStation() {
-    leaveStation();
+    if (Globals::status->getShip()->getCurrentLoad() > Globals::status->getShip()->getMaxLoad()) {
+        this->choiceWindow->set(*Globals::gameText->getText(204));
+        this->flag_0x63 = 1;
+        return;
+    }
+    int firePower;
+    if (Globals::status->getCurrentCampaignMission() == 6 ||
+        (Globals::status->getCurrentCampaignMission() == 7 &&
+         ((firePower = Globals::status->getShip()->getFirePower(), reinterpret_cast<float &>(firePower) == 0.0f) ||
+          Globals::status->getShip()->getCombinedHP() == Globals::status->getShip()->getBaseHP()))) {
+        // Ship::firePower holds a float; Ship::getFirePower() is declared int in our headers.
+        if (Globals::status->getShip()->hasCargoType(0) || Globals::status->getShip()->hasCargoType(3))
+            this->choiceWindow->set(*Globals::gameText->getText(530));
+        else
+            this->choiceWindow->set(*Globals::gameText->getText(529));
+        this->flag_0x63 = 1;
+        return;
+    }
+    if (Globals::status->getCurrentCampaignMission() == 20 &&
+        Globals::status->getStation()->getIndex() ==
+        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+        this->choiceWindow->set(*Globals::gameText->getText(531));
+        this->flag_0x63 = 1;
+        return;
+    }
+    if (Globals::status->getCurrentCampaignMission() == 21 &&
+        Globals::status->getStation()->getIndex() ==
+        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+        if (!Globals::status->getShip()->hasEquipment(41, 1) && !Globals::status->getShip()->hasEquipment(42, 1) &&
+            !Globals::status->getShip()->hasEquipment(43, 1)) {
+            this->choiceWindow->set(*Globals::gameText->getText(531));
+            this->flag_0x63 = 1;
+            return;
+        }
+    } else if (Globals::status->getCurrentCampaignMission() == 77 && Globals::status->getShip()->getIndex() != 37) {
+        this->choiceWindow->set(*Globals::gameText->getText(326));
+        this->flag_0x63 = 1;
+        return;
+    }
+    if (this->flag_0x63 || this->flag_0x69 || this->flag_0x6a)
+        return;
+    this->choiceWindow->set(*Globals::gameText->getText(397), true);
+    this->choiceWindow->left();
+    this->flag_0xb2 = 1;
+    this->flag_0x63 = 1;
 }
 
-static int *g_ModStation_cm_credit1 = 0;
-
-static int *g_ModStation_cm_credit2 = 0;
-
-static int **g_ModStation_cm_lead = 0;
+// Credit reward per medal grade (none, gold, silver, bronze).
+static const int gMedalCreditReward[4] = {0, 5000, 2500, 1000};
 
 void ModStation::checkMedals() {
     Globals::globals->reportLeaderboards();
-
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] != 0 || reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] != 0) {
-        int idx = this->medalIndex + 1;
-        this->medalIndex = idx;
-        if (idx >= this->medalCount) {
-            reinterpret_cast<uint8_t*>(&this->modalFlags)[2] = 0;
+    if (!this->flag_0x6a && !this->flag_0x63) {
+        if (Globals::status->getCurrentCampaignMission() == 1)
+            addAchievement(0, 1);
+        this->medalArray = nullptr;
+        int *medals = Globals::achievements->getNewMedals();
+        int count = 0;
+        this->medalCount = 0;
+        for (int i = 0; i < 45; i++) {
+            if (medals[i] >= 1)
+                this->medalCount = ++count;
+        }
+        if (count > 0) {
+            this->medalArray = new Array<int *>();
+            ArraySetLength(this->medalCount, *this->medalArray);
+            this->medalCount = 0;
+            for (int i = 0; i < 45; i++) {
+                if (medals[i] >= 1) {
+                    (*this->medalArray)[this->medalCount] = new int[2];
+                    (*this->medalArray)[this->medalCount][0] = i;
+                    (*this->medalArray)[this->medalCount][1] = medals[i];
+                    this->medalCount++;
+                }
+            }
+            this->flag_0x6a = 1;
+            this->medalIndex = 0;
+            this->medalChoiceWindow = new ChoiceWindow();
+            this->medalChoiceWindow->setMedal((*this->medalArray)[0][0], (*this->medalArray)[0][1]);
+            if (!Globals::status->hardCoreMode())
+                Globals::status->changeCredits(gMedalCreditReward[(*this->medalArray)[0][1]]);
+            addAchievement((*this->medalArray)[0][0], (*this->medalArray)[0][1]);
+        }
+    } else {
+        this->medalIndex++;
+        if (this->medalIndex >= this->medalCount) {
+            this->flag_0x6a = 0;
             return;
         }
-        Array<int *> *medalArr = *(Array<int *> **) &this->medalArray;
-        int *medal = (*medalArr)[idx];
-        ((ChoiceWindow *) (this->medalChoiceWindow))->setMedal(medal[0], medal[1]);
-        if (Globals::status->hardCoreMode() == 0) {
-            int *mp = (*medalArr)[this->medalIndex];
-            Globals::status->changeCredits(g_ModStation_cm_credit2[mp[1]]);
-        }
-        int *p = (*medalArr)[this->medalIndex];
-        this->addAchievement(p[0], p[1]);
-        return;
+        this->medalChoiceWindow->setMedal((*this->medalArray)[this->medalIndex][0],
+                                          (*this->medalArray)[this->medalIndex][1]);
+        if (!Globals::status->hardCoreMode())
+            Globals::status->changeCredits(gMedalCreditReward[(*this->medalArray)[this->medalIndex][1]]);
+        addAchievement((*this->medalArray)[this->medalIndex][0], (*this->medalArray)[this->medalIndex][1]);
     }
-
-    if (Globals::status->getCurrentCampaignMission() == 1)
-        ((ModStation *) ((ModStation *) 1))->addAchievement(0, 1);
-    this->medalArray = 0;
-    int *medals = Globals::achievements->getNewMedals();
-    int count = 0;
-    this->medalCount = 0;
-    for (int i = 0; i != 0x2d; i++) {
-        if (medals[i] >= 1) {
-            count++;
-            this->medalCount = count;
-        }
-    }
-    if (count < 1)
-        return;
-
-    Array<int *> *arr = new Array<int *>();
-    *(Array<int *> **) &this->medalArray = arr;
-    ArraySetLength(this->medalCount, *arr);
-    int j = 0;
-    this->medalCount = 0;
-    for (int i = 0; i != 0x2d; i++) {
-        if (medals[i] >= 1) {
-            int *cell = new int[2];
-            (*arr)[j] = cell;
-            cell[0] = i;
-            (*arr)[this->medalCount][1] = medals[i];
-            j = this->medalCount + 1;
-            this->medalCount = j;
-        }
-    }
-    this->medalIndex = 0;
-    reinterpret_cast<uint8_t*>(&this->modalFlags)[2] = 1;
-    ChoiceWindow *cw = new ChoiceWindow();
-    this->medalChoiceWindow = cw;
-    int *medal = (*arr)[0];
-    cw->setMedal(medal[0], medal[1]);
-    if (Globals::status->hardCoreMode() == 0) {
-        int *p0 = (*arr)[0];
-        Globals::status->changeCredits(g_ModStation_cm_credit1[p0[1]]);
-    }
-    int *p = (*arr)[0];
-    this->addAchievement(p[0], p[1]);
 }
 
 void ModStation::OnRender3D() {
@@ -512,11 +626,11 @@ void ModStation::OnRender3D() {
         return;
     Globals::Canvas->ClearBuffer(0);
 
-    uint8_t *p65 = &reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1];
-    if (this->cutScene == 0 || reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0 || reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0 ||
-        reinterpret_cast<uint8_t*>(&this->modalFlags)[0] != 0 || reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0 || *p65 != 0 ||
-        reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[2] != 0) {
-        if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0) {
+    uint8_t *p65 = &this->flag_0x65;
+    if (this->cutScene == 0 || this->flag_0x66 != 0 || this->flag_0x64 != 0 ||
+        this->flag_0x68 != 0 || this->flag_0x67 != 0 || *p65 != 0 ||
+        this->flag_0x62 != 0) {
+        if (this->flag_0x67 != 0) {
             this->starMap->renderBG();
         } else if (*p65 != 0) {
             ((SpaceLounge *) (this->spaceLounge))->OnRenderBG();
@@ -527,56 +641,49 @@ void ModStation::OnRender3D() {
     Globals::Canvas->Begin3d();
     if (*p65 != 0)
         ((SpaceLounge *) (this->spaceLounge))->OnRender3D();
-    else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0)
+    else if (this->flag_0x67 != 0)
         this->starMap->render();
-    else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0)
+    else if (this->flag_0x64 != 0)
         ((MissionsWindow *) (this->m_pDialogueWindow))->render3D();
-    else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] == 0 && this->cutScene != 0)
+    else if (this->flag_0x66 == 0 && this->cutScene != 0)
         ((CutScene *) (this->cutScene))->render3D();
     ((PaintCanvas *) Globals::Canvas)->End3d();
 }
 
-static int **g_rl_engineHolder = 0;
-
-static int g_rl_lightFlag = 0;
-
-static inline int ApplicationManager_GetEngine_rl() { return (int)(intptr_t) Globals::appManager->GetEngine(); }
-
-static inline int Status_getSystem_rl() { return (int)(Globals::status->getSystem()); }
-
-int SolarSystem_getRace_rl();
-
-int rl_engineFromHolder(int holder);
-
-void Engine_resetStationLight(int engine, int race);
-
-void Engine_LightEnable_rl(int engine, int flag);
-
 void ModStation::resetLight() {
-    int holder = *(int *) g_rl_engineHolder;
-    rl_engineFromHolder(holder);
-    rl_engineFromHolder(holder);
-    rl_engineFromHolder(holder);
-
-    Status_getSystem_rl();
-    int race = SolarSystem_getRace_rl();
-    int engine;
-    switch (race) {
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetMaterialColorAmbient(0.7f, 0.7f, 0.7f);
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightDirection(-this->lightDirection.x, -this->lightDirection.y,
+                                                             -this->lightDirection.z, 0x4000);
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorDiffuse(1.0f, 1.0f, 1.0f, 0x4000);
+    switch (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()) {
         case 1:
-        case 2:
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.25f, 0.55f, 0.25f, 0x4000);
+            break;
         case 3:
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.45f, 0.25f, 0.25f, 0x4000);
+            break;
+        case 2:
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.15f, 0.15f, 0.35f, 0x4000);
+            break;
         case 8:
-            engine = ApplicationManager_GetEngine_rl();
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.83f, 0.28f, 0.12f, 0x4000);
             break;
         default:
-            engine = ApplicationManager_GetEngine_rl();
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.25f, 0.25f, 0.25f, 0x4000);
             break;
     }
-    Engine_resetStationLight(engine, race);
-    engine = ApplicationManager_GetEngine_rl();
-
-    engine = ApplicationManager_GetEngine_rl();
-    Engine_LightEnable_rl(engine, g_rl_lightFlag);
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorSpecular(0.5f, 0.5f, 0.5f, 0x4000);
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetMaterialColorShininess(96.0f);
 }
 
 static int *g_ou_stack = 0;
@@ -719,7 +826,7 @@ void ModStation::OnUpdate() {
             Globals::sound->setParamValue(0, *sound, 0.0f);
             FModSound_stop_ou(*sound);
             Globals::sound->play(0x6c, nullptr, nullptr, 0.0f);
-            reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] = 1;
+            this->flag_0x65 = 1;
             goto epilogue;
         }
     }
@@ -728,7 +835,7 @@ void ModStation::OnUpdate() {
         AppData *appData = (AppData *) (intptr_t) ApplicationManager_GetApplicationData_ou();
         if (appData->restoreNotice != 0) {
             ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(*(int *) &Globals::gameText));
-            reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 1;
+            this->flag_0x6f = 1;
             appData->restoreNotice = 0;
         }
         if (appData->purchaseReady != 0 && appData->purchaseList != 0 &&
@@ -740,7 +847,7 @@ void ModStation::OnUpdate() {
                 Status_changeCredits_ou(*status);
                 this->autosave();
                 ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(*(int *) &Globals::gameText));
-                reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 1;
+                this->flag_0x6f = 1;
                 appData->purchaseReady = 0;
                 if ((int) (intptr_t) this->hangarWindow != 0)
                     this->hangarWindow->hideMessage();
@@ -753,9 +860,9 @@ void ModStation::OnUpdate() {
         }
     }
 
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] == 0 && reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] == 0 &&
-        reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] == 0 && reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] == 0 &&
-        reinterpret_cast<uint8_t*>(&this->modalFlags)[0] == 0 && reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] == 0) {
+    if (this->flag_0x64 == 0 && this->flag_0x65 == 0 &&
+        this->flag_0x66 == 0 && this->flag_0x67 == 0 &&
+        this->flag_0x68 == 0 && this->flag_0x60 == 0) {
         if (this->newsTicker != nullptr)
             this->newsTicker->update(0);
         if ((int) (intptr_t) this->cutScene != 0)
@@ -777,7 +884,7 @@ void ModStation::OnUpdate() {
     if (this->accumTime < (long long) ((int) this->accumTime < 1000 ? 1 : 0))
         goto epilogue;
 
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] != 0) {
+    if (this->flag_0x60 != 0) {
         int t = (int) (intptr_t) this->spaceLounge;
         if (t < 1 + 0 && 0 < this->dt + t) {
             if (this->cutScene != 0) {
@@ -790,7 +897,7 @@ void ModStation::OnUpdate() {
             CutScene_initialize_ou(cs);
             cs->rotationSpeed = 0;
             t = (int) (intptr_t) this->spaceLounge;
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] = 1;
+            this->flag_0x60 = 1;
         }
         this->spaceLounge = (SpaceLounge *) (intptr_t)(t + this->dt);
         this->cutScene->update(this->dt);
@@ -815,30 +922,30 @@ void ModStation::OnUpdate() {
             Status_nextCampaignMission_ou(*status);
             int nextModule = **(int **) g_ou_appData;
             ApplicationManager_SetCurrentApplicationModule_ou(nextModule);
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] = 0;
+            this->flag_0x60 = 0;
             goto epilogue;
         }
-    } else if (reinterpret_cast<uint8_t*>(&this->modalFlags)[0] != 0) {
+    } else if (this->flag_0x68 != 0) {
         this->dialogueWindow->update(0);
-    } else if (reinterpret_cast<uint8_t*>(&this->modalFlags)[1] != 0) {
+    } else if (this->flag_0x69 != 0) {
         this->starMap->update(this->dt);
-    } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0) {
+    } else if (this->flag_0x67 != 0) {
         this->hangarWindow->update(this->dt);
-    } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0) {
+    } else if (this->flag_0x66 != 0) {
         ((MissionsWindow *) this->m_pDialogueWindow)->update(this->dt);
-    } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0) {
+    } else if (this->flag_0x64 != 0) {
         this->spaceLounge->update(this->dt);
-    } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0) {
+    } else if (this->flag_0x65 != 0) {
         this->statusWindow->update(this->dt);
     }
 
-    if (reinterpret_cast<uint8_t*>(&this->screenFlags)[3] != 0)
+    if (this->flag_0x6f != 0)
         this->choiceWindow->update(this->dt);
-    if (reinterpret_cast<uint8_t*>(&this->screenFlags)[2] != 0)
+    if (this->flag_0x6e != 0)
         MenuTouchWindow_update_ou(this->dlcMenu, this->dt);
 
-    if (reinterpret_cast<uint8_t*>(&this->screenFlags)[3] == 0 && reinterpret_cast<uint8_t*>(&this->modalFlags)[1] == 0 &&
-        reinterpret_cast<uint8_t*>(&this->screenFlags)[0] == 0) {
+    if (this->flag_0x6f == 0 && this->flag_0x69 == 0 &&
+        this->flag_0x6c == 0) {
         if (reinterpret_cast<uint8_t*>(&this->buttonCredits)[2] == 0) {
             this->checkPendingProducts();
             reinterpret_cast<uint8_t*>(&this->buttonCredits)[2] = 1;
@@ -848,23 +955,23 @@ void ModStation::OnUpdate() {
             reinterpret_cast<uint8_t*>(&this->buttonCredits)[1] = 1;
         }
 
-        if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 && reinterpret_cast<uint8_t*>(&this->screenFlags)[2] != 0) {
+        if (this->flag_0x6a == 0 && this->flag_0x6e != 0) {
             Status *rec = (Status *) (intptr_t) *(int *) &Globals::status;
             if (rec->byte_0x2a == 0) {
                 ChoiceWindow_setNotice_ou((int) (intptr_t) this->choiceWindow, GameText_getText_ou(*(int *) &Globals::gameText));
-                reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 1;
+                this->flag_0x6f = 1;
                 rec->byte_0x2a = 1;
-                reinterpret_cast<uint8_t*>(&this->screenFlags)[2] = 0;
+                this->flag_0x6e = 0;
             }
         }
 
         bool special = false;
-        int intro = (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0) ? this->spaceLounge->introFinished() : 0;
+        int intro = (this->flag_0x65 != 0) ? this->spaceLounge->introFinished() : 0;
         int completed = Status_missionCompleted_ou(*status, 1, (long long) intro);
         Mission *m = (Mission *) completed;
         int camp = Status_getCurrentCampaignMission_ou();
         if (m == 0 && camp == 0x74) {
-            if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0 && this->spaceLounge->introFinished() != 0) {
+            if (this->flag_0x65 != 0 && this->spaceLounge->introFinished() != 0) {
                 Status_getSystem_ou();
                 if (SolarSystem_getIndex_ou() == 0x12) {
                     Status_getCampaignMission_ou();
@@ -889,7 +996,7 @@ void ModStation::OnUpdate() {
             Station *st = (Station *) Status_getStation_ou();
             int sidx = st->getIndex();
             int bit = (sidx == 0x42) ? 2 : (sidx == 0x37) ? 1 : (sidx == 9) ? 4 : 0;
-            bool introOk = reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0 && this->spaceLounge->introFinished() != 0;
+            bool introOk = this->flag_0x65 != 0 && this->spaceLounge->introFinished() != 0;
             if (m == 0) {
                 if (introOk && 0x93 < Status_getCurrentCampaignMission_ou() &&
                     Status_getCurrentCampaignMission_ou() < 0x97 &&
@@ -907,7 +1014,7 @@ void ModStation::OnUpdate() {
                         new ((void*)nm) Mission(0xa0, 0, -1);
                         Mission_setCampaignMission_ou(nm);
                         this->dialogueWindow->set(nm, 1, -1);
-                        reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 1;
+                        this->flag_0x69 = 1;
                         goto afterDialogue;
                     }
                 }
@@ -919,7 +1026,7 @@ void ModStation::OnUpdate() {
                 this->activeMission = (int) (intptr_t) m;
                 this->dialogueWindow = dw;
                 this->dialogueWindow->set(m, 1, -1);
-                reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 1;
+                this->flag_0x69 = 1;
                 goto afterDialogue;
             } else {
                 generic = true;
@@ -937,13 +1044,13 @@ void ModStation::OnUpdate() {
                     (String *) (intptr_t) GameText_getText_ou(*(int *) &Globals::gameText),
                     (String *) (intptr_t) GameText_getText_ou(*(int *) &Globals::gameText),
                     (int *) (long) kind);
-                reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 1;
+                this->flag_0x69 = 1;
                 this->dialogueWindow = dw;
             } else if (m == 0) {
                 Mission *fm = (Mission *) Status_missionFailed_ou(*status, 1, 0);
                 if (fm != 0) {
                     DialogueWindow *dw = new DialogueWindow(fm, (Level *) 0, 2);
-                    reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 1;
+                    this->flag_0x69 = 1;
                     this->dialogueWindow = dw;
                     Status_removeMission_ou(*status);
                     if (Mission_getType_ou() == 0xd) {
@@ -954,7 +1061,7 @@ void ModStation::OnUpdate() {
             } else {
                 this->activeMission = (int) (intptr_t) m;
                 DialogueWindow *dw = new DialogueWindow(m, (Level *) 0, 1);
-                reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 1;
+                this->flag_0x69 = 1;
                 this->dialogueWindow = dw;
                 if (Mission_getType_ou() == 0xd) {
                     ((Status *) (intptr_t) * status)->field_0xf0 = 0;
@@ -968,9 +1075,9 @@ void ModStation::OnUpdate() {
         this->checkHints();
     }
 
-    if (reinterpret_cast<uint8_t*>(&this->dragFlags)[0] == 0) {
-        float cur = reinterpret_cast<float&>(this->scrollFlags);
-        float tgt = reinterpret_cast<float&>(this->scrollTarget);
+    if (this->flag_0x100 == 0) {
+        float cur = reinterpret_cast<float&>(this->flag_0x118);
+        float tgt = this->lightDirection.x;
         float step = VectorSignedToFloat(elapsed, 0) * 0.002f;
         if (cur < tgt) {
             cur += step;
@@ -981,11 +1088,11 @@ void ModStation::OnUpdate() {
         }
         if (cur < 0.0f) cur = 0.0f;
         if (cur > 1.0f) cur = 1.0f;
-        reinterpret_cast<float&>(this->scrollFlags) = cur;
+        reinterpret_cast<float&>(this->flag_0x118) = cur;
         Engine_setHangarLightIntensity_ou(cur);
     }
-    if ((int) (intptr_t) this->cutScene != 0 && reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] == 0) {
-        AEGeometry *geom = this->hangarGeom;
+    if ((int) (intptr_t) this->cutScene != 0 && this->flag_0x60 == 0) {
+        AEGeometry *geom = (AEGeometry *) (intptr_t) this->infoBoxW;
         if (geom != nullptr)
             AEGeometry_rotate_ou(geom, 0.0f, 0.1f, 0.0f);
     }
@@ -995,60 +1102,38 @@ epilogue:;
 
 static int **g_ModStation_ric_chk = 0;
 
-static int *g_ModStation_ric_rotX = 0;
-
-static int *g_ModStation_ric_rotY = 0;
+static const float gHangarCamPitch[10] = {-0.27f, -0.3f, -0.18f, -0.2f, 0.0f, 0.0f, 0.0f, -0.2f, -0.2f, 0.0f};
+static const float gHangarCamYaw[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0f, 0.0f, 3.0f, 2.5f, 0.0f};
 
 void ModStation::resetIdleCamForHangar() {
-    char matrix[60];
-
-    if (this->cutScene != 0)
-        ((CutScene *) (this->cutScene))->resetCamera();
-
-    if (this->easeX != 0)
-        ((AbyssEngine::EaseInOut *) (this->easeX))->SetRange(
-            reinterpret_cast<float&>(this->camKeyX), reinterpret_cast<float&>(this->camKeyX));
+    if (this->cutScene != nullptr)
+        this->cutScene->resetCamera();
+    if (this->easeX != nullptr)
+        this->easeX->SetRange(this->camKeyX, this->camKeyX);
     else
-        this->easeX = new AbyssEngine::EaseInOut(reinterpret_cast<float&>(this->camKeyX),
-                                                 reinterpret_cast<float&>(this->camKeyX));
-
-    if (this->easeY != 0)
-        ((AbyssEngine::EaseInOut *) (this->easeY))->SetRange(
-            reinterpret_cast<float&>(this->camKeyY), reinterpret_cast<float&>(this->camKeyY));
+        this->easeX = new AbyssEngine::EaseInOut(this->camKeyX, this->camKeyX);
+    if (this->easeY != nullptr)
+        this->easeY->SetRange(this->camKeyY, this->camKeyY);
     else
-        this->easeY = new AbyssEngine::EaseInOut(reinterpret_cast<float&>(this->camKeyY),
-                                                 reinterpret_cast<float&>(this->camKeyY));
-
-    if (this->easeZ != 0)
-        ((AbyssEngine::EaseInOut *) (this->easeZ))->SetRange(
-            reinterpret_cast<float&>(this->camKeyZ), reinterpret_cast<float&>(this->camKeyZ));
+        this->easeY = new AbyssEngine::EaseInOut(this->camKeyY, this->camKeyY);
+    if (this->easeZ != nullptr)
+        this->easeZ->SetRange(this->camKeyZ, this->camKeyZ);
     else
-        this->easeZ = new AbyssEngine::EaseInOut(reinterpret_cast<float&>(this->camKeyZ),
-                                                 reinterpret_cast<float&>(this->camKeyZ));
+        this->easeZ = new AbyssEngine::EaseInOut(this->camKeyZ, this->camKeyZ);
 
-    Globals::Canvas->CameraGetCurrent();
-    Matrix *loc = (Matrix *) Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
-
-    AEMath_MatrixSetTranslation((Matrix *) matrix, this->camKeyX, this->camKeyY,
-                                this->camKeyZ);
-
+    AbyssEngine::AEMath::MatrixSetTranslation(
+        *reinterpret_cast<Matrix *>(Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent())),
+        this->camKeyX, this->camKeyY, this->camKeyZ);
     int race;
-    Station *st = Globals::status->getStation();
-    if (st->getIndex() == 0x65) {
+    if (Globals::status->getStation()->getIndex() == 101)
         race = 8;
-    } else {
-        st = Globals::status->getStation();
-        if (st->getIndex() == 100) {
-            race = 7;
-        } else {
-            race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-        }
-    }
-
-    Globals::Canvas->CameraGetCurrent();
-    Matrix *loc2 = (Matrix *) Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
-    AEMath_MatrixSetRotation((Matrix *) matrix, loc2, g_ModStation_ric_rotX[race], g_ModStation_ric_rotY[race], 0, 2);
-    (void) loc;
+    else if (Globals::status->getStation()->getIndex() == 100)
+        race = 7;
+    else
+        race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+    AbyssEngine::AEMath::MatrixSetRotation(
+        *reinterpret_cast<Matrix *>(Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent())),
+        gHangarCamPitch[race], gHangarCamYaw[race], 0.0f, (AbyssEngine::AEMath::RotationOrder) 2);
 }
 
 static int *g_ch_stack = 0;
@@ -1089,12 +1174,12 @@ static inline void FModSound_playWingmanRecruit_ch() {
 }
 
 void ModStation::checkHints() {
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] != 0)
+    if (this->flag_0x60 != 0)
         return;
 
     HintRecord *hintRec = (HintRecord *) (intptr_t) (int) (intptr_t) Globals::hints;
 
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 && reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 &&
+    if (this->flag_0x6a == 0 && this->flag_0x63 == 0 &&
         hintRec->flags[0x34] == 0 &&
         0x12 < Status_getCurrentCampaignMission_ch()) {
         ChoiceWindow_set6_ch(this->choiceWindow,
@@ -1102,45 +1187,45 @@ void ModStation::checkHints() {
                              GameText_getText_ch(0x7e), GameText_getText_ch(0x7f),
                              GameText_getText_ch(0x20c));
         hintRec->flags[0x34] = 1;
-        reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
-        reinterpret_cast<uint8_t*>(&this->hintFlags)[0] = 1;
+        this->flag_0x63 = 1;
+        this->flag_0xdc = 1;
     }
 
     int **status = (int **) &Globals::status;
 
     static const int wantedOff[4] = {0x18, 0x30, 0x48, 0x60};
     static const int wantedFlag[4] = {0x33, 0x34, 0x35, 0x36};
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[1] == 0) {
+    if (this->flag_0x69 == 0) {
         for (int k = 0; k < 4; k = k + 1) {
-            if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] != 0) return;
-            if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 && hintRec->flags[wantedFlag[k]] == 0) {
+            if (this->flag_0x6a != 0) return;
+            if (this->flag_0x63 == 0 && hintRec->flags[wantedFlag[k]] == 0) {
                 Status *st = (Status *) (intptr_t) * status;
                 Wanted *w = (*st->wanted)[wantedOff[k] / 4];
                 if (Wanted_isTerminated_ch(w) != 0) {
                     ChoiceWindow_set1_ch(this->choiceWindow, GameText_getText_ch(wantedOff[k]));
-                    reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+                    this->flag_0x63 = 1;
                     hintRec->flags[wantedFlag[k]] = 1;
                 }
             }
         }
     }
 
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0) {
-        if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 && hintRec->flags[0x1a] == 0 &&
+    if (this->flag_0x6a == 0) {
+        if (this->flag_0x63 == 0 && hintRec->flags[0x1a] == 0 &&
             Achievements_gotAllMedals_ch(*&Globals::achievements) != 0) {
             ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x1a));
             hintRec->flags[0x1a] = 1;
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+            this->flag_0x63 = 1;
         }
-        if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 && reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 &&
+        if (this->flag_0x6a == 0 && this->flag_0x63 == 0 &&
             hintRec->flags[0x1b] == 0 &&
             Achievements_gotAllGoldMedals_ch() != 0) {
             ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x1b));
             hintRec->flags[0x1b] = 1;
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+            this->flag_0x63 = 1;
         }
 
-        if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 && reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0) {
+        if (this->flag_0x6a == 0 && this->flag_0x63 == 0) {
             Status *statPtr = (Status *) *status;
             if (Status_isBlueprintUnlocked_ch(statPtr, 0xe8) == 0 &&
                 Achievements_gotAllGoldMedals_ch() != 0 &&
@@ -1148,11 +1233,11 @@ void ModStation::checkHints() {
                 ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x3b));
                 Status_unlockBluePrint_ch(statPtr, 0xe8);
                 this->autosave();
-                reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+                this->flag_0x63 = 1;
             }
         }
 
-        if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 && reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 &&
+        if (this->flag_0x6a == 0 && this->flag_0x63 == 0 &&
             hintRec->flags[0x3a] == 0 &&
             0xa1 < Status_getCurrentCampaignMission_ch()) {
             bool ok = (Achievements_gotAllGoldMedals_ch() != 0 &&
@@ -1163,21 +1248,21 @@ void ModStation::checkHints() {
                 hintRec->flags[0x3a] = 1;
                 ChoiceWindow_set1_ch(this->choiceWindow, GameText_text_ch(0x3c));
                 this->autosave();
-                reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+                this->flag_0x63 = 1;
             }
         }
     }
 
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[1] == 0 && reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 &&
-        reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0) {
+    if (this->flag_0x69 == 0 && this->flag_0x6a == 0 &&
+        this->flag_0x63 == 0) {
         delete this->dialogueWindow;
         this->dialogueWindow = nullptr;
         DialogueWindow *dw = (DialogueWindow *) ::operator new(0x74);
         DialogueWindow_initWingman_ch(dw, 0);
         this->dialogueWindow = dw;
         FModSound_playWingmanRecruit_ch();
-        reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 1;
-        reinterpret_cast<uint8_t*>(&this->alarmFlags)[3] = 1;
+        this->flag_0x69 = 1;
+        this->flag_0xdb = 1;
     }
 }
 
@@ -1189,7 +1274,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
         return;
     this->touchX = x;
     this->touchY = y;
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] != 0)
+    if (this->flag_0x60 != 0)
         return;
 
     Layout **layoutHolder = &Globals::layout;
@@ -1198,43 +1283,43 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
         layoutObj->OnTouchMove(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[1] != 0) {
+    if (this->flag_0x69 != 0) {
         ((DialogueWindow *) (this->dialogueWindow))->OnTouchMove(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] != 0) {
+    if (this->flag_0x63 != 0) {
         ((ChoiceWindow *) (this->choiceWindow))->OnTouchMove(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] != 0) {
+    if (this->flag_0x6a != 0) {
         ((ChoiceWindow *) (this->medalChoiceWindow))->OnTouchMove(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0) {
+    if (this->flag_0x66 != 0) {
         ((HangarWindow *) (this->hangarWindow))->OnTouchMove(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0) {
+    if (this->flag_0x67 != 0) {
         this->starMap->OnTouchMove(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0) {
+    if (this->flag_0x65 != 0) {
         ((SpaceLounge *) (this->spaceLounge))->OnTouchMove(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[0] != 0) {
+    if (this->flag_0x68 != 0) {
         ((StatusWindow *) (this->statusWindow))->OnTouchMove(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0) {
+    if (this->flag_0x64 != 0) {
         ((MissionsWindow *) (this->m_pDialogueWindow))->OnTouchMove(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[2] != 0) {
+    if (this->flag_0x62 != 0) {
         ((MenuTouchWindow *) (this->dlcMenu))->OnTouchMove(x, y, nullptr);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[1] == 0)
+    if (this->flag_0x61 == 0)
         return;
     ((TouchButton *) (this->buttonLaunch))->OnTouchMove(x, y);
     ((TouchButton *) (this->buttonCredits))->OnTouchMove(x, y);
@@ -1248,7 +1333,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
         return;
     if (*(int *) &Globals::h - layout->field_0x10_rightMargin <= y)
         return;
-    if (x <= (int) (intptr_t) this->hangarGeom)
+    if (x <= this->infoBoxW)
         return;
     int delta = x - this->camScrollPos;
     this->camScrollVel = delta;
@@ -1343,8 +1428,8 @@ void ModStation::OnRelease() {
     delete this->scrollBox;
     this->scrollBox = 0;
 
-    reinterpret_cast<uint8_t *>(&this->cameraFlags)[0] = 0;
-    reinterpret_cast<uint8_t *>(&this->cameraFlags)[1] = 0;
+    this->flag_0xb0 = 0;
+    this->flag_0xb1 = 0;
     if (*soundHolder != 0)
         (*&Globals::sound)->freeAllEvents();
 }
@@ -1470,7 +1555,6 @@ int StarMap_OnTouchEnd_ote(int sm, int p1);
 
 int SpaceLounge_OnTouchEnd_ote(int l, int p1, int p2);
 
-int SpaceLounge_hangarNeedsUpdate_ote();
 
 void SpaceLounge_refresh_ote();
 
@@ -1490,7 +1574,6 @@ static inline void RecordHandler_saveOptions_ote(RecordHandler * rh) { rh->saveO
 
 void CutScene_replacePlayerShip_ote(int cs, int shipIndex);
 
-void CutScene_checkForTurret_ote(int cs);
 
 void ChoiceWindow_setFee_frag(ChoiceWindow *cw, int credits, int templateId);
 
@@ -1510,8 +1593,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
 
     if (this->activeTouch != touch)
         return;
-    int starMapOpen = reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0];
-    reinterpret_cast<uint8_t*>(&this->scrollFlags)[0] = 0;
+    int starMapOpen = this->flag_0x60;
+    this->flag_0x118 = 0;
     this->activeTouch = 0;
     if (starMapOpen != 0)
         return;
@@ -1523,7 +1606,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         return;
     }
 
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[1] != 0) {
+    if (this->flag_0x69 != 0) {
         if (this->dialogueWindow->OnTouchEnd(x, x) != 0) {
             if (this->activeMission != 0) {
                 {
@@ -1610,7 +1693,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             this->activeMission = 0;
                             if ((int) (intptr_t) this->spaceLounge != 0)
                                 SpaceLounge_refresh_ote();
-                            reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                            this->flag_0x69 = 0;
                             this->checkHints();
                         }
                         return;
@@ -1620,7 +1703,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     if (camp == 0x2b) {
                         Status_removeMission_ote(*status);
                         Status_setMission_ote(*status);
-                        reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                        this->flag_0x69 = 0;
                         int snd = *(int *) &Globals::sound;
                         FModSound_stop_ote(snd);
                         Globals::sound->play(0x90, nullptr, nullptr, 0.0f);
@@ -1635,7 +1718,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             ScrollTouchBox_initRadio_ote(box, radio);
                             this->idleBox = box;
                         }
-                        reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] = 1;
+                        this->flag_0x60 = 1;
                         return;
                     }
 
@@ -1663,7 +1746,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                 this->activeMission = 0;
                                 if ((int) (intptr_t) this->spaceLounge != 0)
                                     SpaceLounge_refresh_ote();
-                                reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                                this->flag_0x69 = 0;
                                 this->checkHints();
                             }
                             return;
@@ -1673,7 +1756,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             this->activeMission = 0;
                             Status_setMission_ote(*status);
                             this->selectedButton = 1;
-                            reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                            this->flag_0x69 = 0;
 
                             {
                                 int module = **(int **) g_ote_module;
@@ -1692,7 +1775,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         if ((unsigned) (cm - 0x4b) > 8 || (1 << ((cm - 0x4b) & 0xff) & 0x103) == 0) {
                             if (cm == 0x12) {
                                 Status_removeMission_ote(*status);
-                                reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                                this->flag_0x69 = 0;
                                 this->activeMission = 0;
                                 return;
                             }
@@ -1714,7 +1797,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                     this->activeMission = 0;
                                     if ((int) (intptr_t) this->spaceLounge != 0)
                                         SpaceLounge_refresh_ote();
-                                    reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                                    this->flag_0x69 = 0;
                                     this->checkHints();
                                 }
                                 return;
@@ -1741,7 +1824,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                     this->activeMission = 0;
                                     if ((int) (intptr_t) this->spaceLounge != 0)
                                         SpaceLounge_refresh_ote();
-                                    reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                                    this->flag_0x69 = 0;
                                     this->checkHints();
                                 }
                                 return;
@@ -1769,7 +1852,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                     this->activeMission = 0;
                                     if ((int) (intptr_t) this->spaceLounge != 0)
                                         SpaceLounge_refresh_ote();
-                                    reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                                    this->flag_0x69 = 0;
                                     this->checkHints();
                                 }
                                 return;
@@ -1790,7 +1873,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                     HangarWindow_dtor_ote((HangarWindow *) this->hangarWindow);
                                     ::operator delete(this->hangarWindow);
                                 }
-                                reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] = 0;
+                                this->flag_0x66 = 0;
                                 this->hangarWindow = 0;
                                 {
                                     Mission_getReward_ote();
@@ -1802,7 +1885,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                     this->activeMission = 0;
                                     if ((int) (intptr_t) this->spaceLounge != 0)
                                         SpaceLounge_refresh_ote();
-                                    reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                                    this->flag_0x69 = 0;
                                     this->checkHints();
                                 }
                                 return;
@@ -1810,7 +1893,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             if (cm == 0x80) {
                                 Status_activateNewWanted_ote();
                                 if (((Status *) (intptr_t) *(int *) &Globals::status)->byte_0x2a == 0)
-                                    reinterpret_cast<uint8_t*>(&this->screenFlags)[2] = 1;
+                                    this->flag_0x6e = 1;
                                 {
                                     Mission_getReward_ote();
                                     int bonus = Mission_getBonus_ote();
@@ -1821,7 +1904,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                     this->activeMission = 0;
                                     if ((int) (intptr_t) this->spaceLounge != 0)
                                         SpaceLounge_refresh_ote();
-                                    reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                                    this->flag_0x69 = 0;
                                     this->checkHints();
                                 }
                                 return;
@@ -1837,7 +1920,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                 this->activeMission = 0;
                                 if ((int) (intptr_t) this->spaceLounge != 0)
                                     SpaceLounge_refresh_ote();
-                                reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                                this->flag_0x69 = 0;
                                 this->checkHints();
                             }
                             return;
@@ -1847,7 +1930,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     Status_removeMission_ote(*status);
                     this->activeMission = 0;
                     Status_setMission_ote(*status);
-                    reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+                    this->flag_0x69 = 0;
                     ((Status *) (intptr_t) * status)->wanted = 0; /* cutscene slot (+0x0) */
                     {
                         int module = **(int **) g_ote_module;
@@ -1859,7 +1942,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             }
 
             DialogueWindow *dw = this->dialogueWindow;
-            reinterpret_cast<uint8_t*>(&this->modalFlags)[1] = 0;
+            this->flag_0x69 = 0;
             if (dw != 0) {
                 delete dw;
             }
@@ -1887,17 +1970,17 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             }
             return;
         }
-        if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0)
+        if (this->flag_0x65 != 0)
             return;
     }
 
-    if (reinterpret_cast<uint8_t*>(&this->screenFlags)[3] != 0) {
+    if (this->flag_0x6f != 0) {
         int r = ChoiceWindow_OnTouchEnd_ote((int) (intptr_t) this->choiceWindow, x);
         if (r == 1) {
-            char departed = reinterpret_cast<uint8_t*>(&this->modalFlags)[3];
+            char departed = this->flag_0x6b;
             reinterpret_cast<uint8_t*>(&this->departPending)[2] = 0;
             if (departed == 0) {
-                reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 0;
+                this->flag_0x6f = 0;
                 reinterpret_cast<uint8_t*>(&this->scrollBox)[0] = 0;
             } else {
                 reinterpret_cast<uint8_t*>(&this->departPending)[2] = 0;
@@ -1956,11 +2039,11 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     return;
                 }
 
-                if (reinterpret_cast<uint8_t*>(&this->modalFlags)[3] != 0) {
+                if (this->flag_0x6b != 0) {
                     int credits = Status_getCredits_ote();
                     if ((int) (intptr_t) this->buttonCredits <= credits) {
                         Status_changeCredits_ote(*status);
-                        reinterpret_cast<uint8_t*>(&this->modalFlags)[3] = 0;
+                        this->flag_0x6b = 0;
                         reinterpret_cast<uint8_t*>(&this->buttonCredits)[0] = 1;
                         Station *st = (Station *) Status_getStation_ote();
                         st->setAttackedFriends(0);
@@ -1969,34 +2052,34 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         this->autosave();
                         {
                             if (reinterpret_cast<uint8_t*>(&this->scrollBox)[0] != 0) {
-                                reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 0;
+                                this->flag_0x6f = 0;
                                 reinterpret_cast<uint8_t*>(&this->scrollBox)[0] = 0;
                                 AppData *appData = (AppData *) (intptr_t) ApplicationManager_GetApplicationData_ote();
                                 appData->hideRadio = 1;
                                 return;
                             }
-                            if (reinterpret_cast<uint8_t*>(&this->screenFlags)[0] == 0) {
-                                if (reinterpret_cast<uint8_t*>(&this->screenFlags)[1] != 0) {
+                            if (this->flag_0x6c == 0) {
+                                if (this->flag_0x6d != 0) {
                                     int feeCredits = Status_getCredits_ote();
                                     if (feeCredits < 25000) {
                                         ChoiceWindow_setFee_frag(this->choiceWindow, feeCredits, 1);
-                                        reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 0;
+                                        this->flag_0x6d = 0;
                                         return;
                                     }
                                     Status_changeCredits_ote(*status);
-                                    reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 0;
-                                    reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 0;
+                                    this->flag_0x6f = 0;
+                                    this->flag_0x6d = 0;
                                     Station *home = (Station *) *status;
                                     Galaxy_getStation_ote(*(int *) &Globals::galaxy);
                                     Status_setStation_ote(home);
                                     **(int **) g_ote_module = 0;
                                     ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
                                 }
-                                if (this->pendingHangarClose != 0 && reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0) {
+                                if (this->pendingHangarClose != 0 && this->flag_0x66 != 0) {
                                     this->pendingHangarClose = 0;
-                                    reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] = 0;
+                                    this->flag_0x66 = 0;
                                 }
-                                reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 0;
+                                this->flag_0x6f = 0;
                             } else {
                                 Status_changeCredits_ote(*status);
                                 ((Ship *) (long) Status_getShip_ote())->removeCargo(0x6d);
@@ -2007,48 +2090,48 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                 Station *st2 = (Station *) Status_getStation_ote();
                                 st2->setItems(0, (bool)0);
                                 ((Status *) (intptr_t) * status)->voidStation->setItems(0, (bool)0);
-                                reinterpret_cast<uint8_t*>(&this->screenFlags)[0] = 0;
+                                this->flag_0x6c = 0;
                             }
                         }
                         return;
                     }
                     ChoiceWindow_setFee_frag(this->choiceWindow, credits, 0);
-                    reinterpret_cast<uint8_t*>(&this->modalFlags)[3] = 1;
+                    this->flag_0x6b = 1;
                     reinterpret_cast<uint8_t*>(&this->departPending)[2] = 1;
-                    reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 1;
+                    this->flag_0x6f = 1;
                     return;
                 }
 
                 {
                     if (reinterpret_cast<uint8_t*>(&this->scrollBox)[0] != 0) {
-                        reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 0;
+                        this->flag_0x6f = 0;
                         reinterpret_cast<uint8_t*>(&this->scrollBox)[0] = 0;
                         AppData *appData = (AppData *) (intptr_t) ApplicationManager_GetApplicationData_ote();
                         appData->hideRadio = 1;
                         return;
                     }
-                    if (reinterpret_cast<uint8_t*>(&this->screenFlags)[0] == 0) {
-                        if (reinterpret_cast<uint8_t*>(&this->screenFlags)[1] != 0) {
+                    if (this->flag_0x6c == 0) {
+                        if (this->flag_0x6d != 0) {
                             int credits = Status_getCredits_ote();
                             if (credits < 25000) {
                                 ChoiceWindow_setFee_frag(this->choiceWindow, credits, 1);
-                                reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 0;
+                                this->flag_0x6d = 0;
                                 return;
                             }
                             Status_changeCredits_ote(*status);
-                            reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 0;
-                            reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 0;
+                            this->flag_0x6f = 0;
+                            this->flag_0x6d = 0;
                             Station *home = (Station *) *status;
                             Galaxy_getStation_ote(*(int *) &Globals::galaxy);
                             Status_setStation_ote(home);
                             **(int **) g_ote_module = 0;
                             ApplicationManager_SetCurrentApplicationModule_ote(**(int **) g_ote_module);
                         }
-                        if (this->pendingHangarClose != 0 && reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0) {
+                        if (this->pendingHangarClose != 0 && this->flag_0x66 != 0) {
                             this->pendingHangarClose = 0;
-                            reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] = 0;
+                            this->flag_0x66 = 0;
                         }
-                        reinterpret_cast<uint8_t*>(&this->screenFlags)[3] = 0;
+                        this->flag_0x6f = 0;
                     } else {
                         Status_changeCredits_ote(*status);
                         ((Ship *) (long) Status_getShip_ote())->removeCargo(0x6d);
@@ -2059,7 +2142,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         Station *st = (Station *) Status_getStation_ote();
                         st->setItems(0, (bool)0);
                         ((Status *) (intptr_t) * status)->voidStation->setItems(0, (bool)0);
-                        reinterpret_cast<uint8_t*>(&this->screenFlags)[0] = 0;
+                        this->flag_0x6c = 0;
                     }
                 }
             }
@@ -2067,21 +2150,21 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         return;
     }
 
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[0] != 0) {
+    if (this->flag_0x68 != 0) {
         if (StatusWindow_OnTouchEnd_ote((int) (intptr_t) this->statusWindow, x, y) != 0) {
-            reinterpret_cast<uint8_t*>(&this->modalFlags)[0] = 0;
+            this->flag_0x68 = 0;
             this->resetLight();
         }
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0) {
+    if (this->flag_0x67 != 0) {
         if (StarMap_OnTouchEnd_ote((int) (intptr_t) this->starMap, x) != 0) {
-            reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] = 0;
+            this->flag_0x67 = 0;
             this->resetLight();
         }
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0) {
+    if (this->flag_0x66 != 0) {
         if (HangarWindow_OnTouchEnd_ote((HangarWindow *) this->hangarWindow, x, y) != 0) {
             int *st = (int *) Globals::status;
 
@@ -2100,7 +2183,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             HangarWindow_setSellMode_ote((int) (intptr_t) this->hangarWindow);
             this->resetIdleCamForHangar();
             HangarWindowHead *hw = (HangarWindowHead *) this->hangarWindow;
-            reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] = 0;
+            this->flag_0x66 = 0;
             if (hw->shipChanged != 0) {
                 hw->shipChanged = 0;
                 int cs = (int) (intptr_t) this->cutScene;
@@ -2111,7 +2194,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 CutScene_replacePlayerShip_ote(cs, shipIndex);
             }
             if ((int) (intptr_t) this->cutScene != 0)
-                CutScene_checkForTurret_ote((int) (intptr_t) this->cutScene);
+                this->cutScene->checkForTurret();
             int snd = *(int *) &Globals::sound;
             FModSound_stop_ote(snd);
             Globals::sound->play(0x7a, nullptr, nullptr, 0.0f);
@@ -2133,17 +2216,17 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         }
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0) {
+    if (this->flag_0x64 != 0) {
         if (SpaceLounge_OnTouchEnd_ote((int) (intptr_t) this->spaceLounge, x, y) != 0) {
-            reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] = 0;
+            this->flag_0x65 = 0;
             this->resetIdleCamForHangar();
             this->resetLight();
             int snd = *(int *) &Globals::sound;
             Globals::sound->setParamValue(0, snd, 0.0f);
             FModSound_stop_ote(snd);
             Globals::sound->play(0x7a, nullptr, nullptr, 0.0f);
-            CutScene_checkForTurret_ote((int) (intptr_t) this->cutScene);
-            if ((int) (intptr_t) this->spaceLounge != 0 && SpaceLounge_hangarNeedsUpdate_ote() != 0) {
+            this->cutScene->checkForTurret();
+            if ((int) (intptr_t) this->spaceLounge != 0 && this->spaceLounge->hangarNeedsUpdate() != 0) {
                 if (this->hangarWindow != 0) {
                     HangarWindow_dtor_ote((HangarWindow *) this->hangarWindow);
                     ::operator delete(this->hangarWindow);
@@ -2153,18 +2236,18 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         }
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0) {
+    if (this->flag_0x65 != 0) {
         if (MissionsWindow_OnTouchEnd_ote((int) (intptr_t) this->m_pDialogueWindow, x) != 0) {
-            reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] = 0;
+            this->flag_0x64 = 0;
             int snd = *(int *) &Globals::sound;
             Globals::sound->setParamValue(0, snd, 0.0f);
         }
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->screenFlags)[2] != 0) {
+    if (this->flag_0x6e != 0) {
         if (MenuTouchWindow_OnTouchEnd_ote((MenuTouchWindow *) this->dlcMenu,
                                            x, y, touch) != 0) {
-            reinterpret_cast<uint8_t*>(&this->screenFlags)[2] = 0;
+            this->flag_0x6e = 0;
             {
                 int *row = (int *) ModStation_ote_buttonRow(this);
                 if (row != nullptr) {
@@ -2182,7 +2265,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         }
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->screenFlags)[1] != 0) {
+    if (this->flag_0x6d != 0) {
         {
             int *help = (int *) Globals::layout;
 
@@ -2200,7 +2283,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 }
                 HangarWindow_initialize_ote();
                 this->pendingHangarClose = 1;
-                reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] = 1;
+                this->flag_0x66 = 1;
                 HangarWindow_showCreditsBuyWindow_ote((HangarWindow *) this->hangarWindow);
             }
 
@@ -2225,7 +2308,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     this->dlcMenu = w;
                 }
                 Status_checkForLevelUp_ote();
-                reinterpret_cast<uint8_t*>(&this->screenFlags)[2] = 1;
+                this->flag_0x6e = 1;
                 {
                     int *row = (int *) ModStation_ote_buttonRow(this);
                     if (row != nullptr) {
@@ -2264,9 +2347,9 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
     // lint: void_ptr
     if (this->activeTouch != 0)
         return;
-    reinterpret_cast<uint8_t*>(&this->scrollFlags)[0] = 1;
+    this->flag_0x118 = 1;
     this->activeTouch = touch;
-    int flag = this->m_nStarMapWindowOpen;
+    int flag = this->flag_0x60;
     this->touchX = x;
     this->touchY = y;
     if (flag != 0) {
@@ -2277,7 +2360,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
             **g_ModStation_tb_clear = 0;
 
             Globals::appManager->SetCurrentApplicationModule(mod);
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[0] = 0;
+            this->flag_0x60 = 0;
         }
         return;
     }
@@ -2287,43 +2370,43 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
         layoutObj->OnTouchBegin(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[1] != 0) {
+    if (this->flag_0x69 != 0) {
         ((DialogueWindow *) (this->dialogueWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] != 0) {
+    if (this->flag_0x63 != 0) {
         ((ChoiceWindow *) (this->choiceWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] != 0) {
+    if (this->flag_0x6a != 0) {
         ((ChoiceWindow *) (this->medalChoiceWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0) {
+    if (this->flag_0x66 != 0) {
         ((HangarWindow *) (this->hangarWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0) {
+    if (this->flag_0x65 != 0) {
         ((SpaceLounge *) (this->spaceLounge))->OnTouchBegin(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0) {
+    if (this->flag_0x67 != 0) {
         this->starMap->OnTouchBegin(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[0] != 0) {
+    if (this->flag_0x68 != 0) {
         ((StatusWindow *) (this->statusWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0) {
+    if (this->flag_0x64 != 0) {
         ((MissionsWindow *) (this->m_pDialogueWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[2] != 0) {
+    if (this->flag_0x62 != 0) {
         ((MenuTouchWindow *) (this->dlcMenu))->OnTouchBegin(x, y, touch);
         return;
     }
-    if (reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[1] == 0)
+    if (this->flag_0x61 == 0)
         return;
     ((TouchButton *) (this->buttonLaunch))->OnTouchBegin(x, y);
     ((TouchButton *) (this->buttonCredits))->OnTouchBegin(x, y);
@@ -2337,97 +2420,142 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
         return;
     if (*(int *) &Globals::h - layout->field_0x10_rightMargin <= y)
         return;
-    if (x <= (int) (intptr_t) this->hangarGeom)
+    if (x <= this->infoBoxW)
         return;
     this->field_0xfc = x;
     this->camScrollPos = x;
     this->camScrollVel = 0;
-    reinterpret_cast<uint8_t*>(&this->dragFlags)[0] = 1;
+    this->flag_0x100 = 1;
 }
 
 void ModStation::OnTouchBegin(int x, int y) {}
 void ModStation::OnTouchEnd(int x, int y) {}
 void ModStation::OnTouchMove(int x, int y) {}
 
-static int *g_r2d_stack = 0;
-
-
-void HangarWindow_render_r2d(ModStation * self);
-
-void HangarWindow_render3D_r2d();
-
-void SpaceLounge_draw_r2d(ModStation * self);
-
-void SpaceLounge_draw3DShip_r2d();
-
-void MissionsWindow_draw_r2d(MissionsWindow * w);
-
-void StarMap_draw_r2d(ModStation * self);
-void StatusWindow_draw_r2d(ModStation * self);
-void MenuTouchWindow_draw_r2d(ModStation * self);
-void Radio_draw_r2d(ModStation * self);
-
-void CutScene_render2D_r2d();
-
-void ChoiceWindow_draw_r2d(ModStation * self);
-void Layout_drawHelpWindow_r2d(Layout * l);
-
-Layout *ModStation_r2d_layout();
-
-void Layout_drawCredits_r2d(Layout * layout);
-
 void ModStation::OnRender2D() {
-    Globals::Canvas->Begin2d();
-    Globals::Canvas->SetColor(this->fadeColor);
-
-    if (this->stationActive == 0) {
+    this->paintCanvas->Begin2d();
+    this->paintCanvas->SetColor(0xffffffff);
+    if (!this->stationActive)
         return;
-    }
 
-    if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0) {
-        HangarWindow_render_r2d(this);
-    } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0) {
-        SpaceLounge_draw_r2d(this);
-    } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[0] != 0) {
-        MissionsWindow_draw_r2d((MissionsWindow *) this->m_pDialogueWindow);
-    } else if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[3] != 0) {
-        StarMap_draw_r2d(this);
-    } else if (reinterpret_cast<uint8_t*>(&this->modalFlags)[0] != 0) {
-        StatusWindow_draw_r2d(this);
-    } else if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] != 0) {
-        MenuTouchWindow_draw_r2d(this);
-    } else if (reinterpret_cast<uint8_t*>(&this->screenFlags)[0] != 0) {
-        Radio_draw_r2d(this);
-        CutScene_render2D_r2d();
-    } else {
-        Layout *layout = (Layout *) this->buttonState;
-        if (layout == nullptr) layout = ModStation_r2d_layout();
-        if (layout != nullptr)
-            Layout_drawCredits_r2d(layout);
-    }
-
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[2] != 0 || reinterpret_cast<uint8_t*>(&this->modalFlags)[3] != 0)
-        ChoiceWindow_draw_r2d(this);
-    if (reinterpret_cast<uint8_t*>(&this->modalFlags)[1] != 0) {
-        if (this->dialogueWindow != 0)
-            this->dialogueWindow->draw();
-    }
-
-    Layout **help = (Layout **) &Globals::layout;
-    if ((*help)->choiceWindowOpen != 0)
-        Layout_drawHelpWindow_r2d((Layout *) *help);
-
-    Globals::Canvas->End2d();
-
-    if ((*help)->choiceWindowOpen == 0) {
-        if (reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] != 0) {
-            HangarWindow_render3D_r2d();
+    if (this->flag_0x66) {
+        this->hangarWindow->render();
+    } else if (this->flag_0x65) {
+        this->spaceLounge->draw();
+    } else if (this->flag_0x64) {
+        ((MissionsWindow *) this->m_pDialogueWindow)->draw();
+    } else if (this->flag_0x67) {
+        this->starMap->draw();
+    } else if (this->flag_0x68) {
+        this->statusWindow->draw();
+    } else if (this->flag_0x62) {
+        this->dlcMenu->draw();
+    } else if (this->flag_0x60) {
+        Radio *radio = (Radio *) (intptr_t) this->activeMission;
+        radio->draw((long long) this->field_0xb4, nullptr, nullptr);
+        if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown()) {
+            Globals::Canvas->DrawImage2D(this->field_0x5c, 0, (int) reinterpret_cast<float &>(this->field_0x108), 20, 68);
+            this->scrollBox->draw();
         }
-        if ((*help)->choiceWindowOpen == 0 && reinterpret_cast<uint8_t*>(&this->subWindowFlags)[1] != 0)
-            SpaceLounge_draw3DShip_r2d();
+        int time = this->field_0xb4;
+        if (time > 130000 || time < -6000 || time < 0) {
+            float fade;
+            if (time > 130000)
+                fade = (float) (time - 130000) / 6000.0f;
+            else if (time < -6000)
+                fade = (float) (time + 12000) / 6000.0f;
+            else
+                fade = (float) (time + 6000) / -6000.0f + 1.0f;
+            this->paintCanvas->SetColor((int) (fade * 255.0f));
+            Globals::Canvas->FillRectangle(0, 0, Globals::w, Globals::h);
+        }
+        if (this->field_0xb4 > -6000)
+            this->cutScene->render2D();
+    } else {
+        Globals::layout->drawFooterStation();
+        {
+            String stationName = Globals::status->getStation()->getName();
+            String title(stationName, false);
+            Globals::layout->drawHeader(title + (Globals::status->getStation()->getIndex() == 101
+                                                     ? String("", false)
+                                                     : String(" ", false) + *Globals::gameText->getText(136)));
+        }
+        if (this->flag_0x61) {
+            Globals::layout->drawBox(2, this->infoBoxX, this->infoBoxY, this->infoBoxW, this->infoBoxH, String("", false));
+            if (!((SolarSystem *) (intptr_t) Globals::status->getSystem())->hasNoOwner())
+                this->paintCanvas->DrawImage2D(this->departPending, Globals::layout->buttonInsetX,
+                                               Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                               Globals::layout->field_0x2c_rowHeight * 2);
+            String systemTitle = String(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), false) +
+                                 String(" ", false) + *Globals::gameText->getText(137);
+            unsigned int &font = reinterpret_cast<unsigned int &>(Globals::font);
+            if (Globals::Canvas->GetTextWidth(font, systemTitle) >
+                this->infoBoxW - Globals::layout->buttonInsetX * 2 - Globals::layout->field_0x4c -
+                this->paintCanvas->GetImage2DWidth(this->departPending))
+                systemTitle = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName();
+            this->paintCanvas->DrawString(font, systemTitle,
+                                          Globals::layout->buttonInsetX +
+                                          this->paintCanvas->GetImage2DWidth(this->departPending) +
+                                          Globals::layout->field_0x4c,
+                                          Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                          Globals::layout->field_0x2c_rowHeight * 2,
+                                          false);
+            this->paintCanvas->DrawString(font,
+                                          *Globals::gameText->getText(133) + String(": ", false) +
+                                          String(String(Globals::status->getStation()->getTecLevel()), false),
+                                          Globals::layout->buttonInsetX +
+                                          this->paintCanvas->GetImage2DWidth(this->departPending) +
+                                          Globals::layout->field_0x4c,
+                                          Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                          Globals::layout->field_0x4 + Globals::layout->field_0x2c_rowHeight * 4,
+                                          false);
+            if (Globals::layout->field_0x286 &&
+                !((SolarSystem *) (intptr_t) Globals::status->getSystem())->hasNoOwner())
+                this->paintCanvas->DrawString(
+                    font,
+                    *Globals::gameText->getText(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() + 406),
+                    Globals::layout->buttonInsetX + this->paintCanvas->GetImage2DWidth(this->departPending) +
+                    Globals::layout->field_0x4c,
+                    Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                    Globals::layout->field_0x4 * 2 + Globals::layout->field_0x2c_rowHeight * 6,
+                    false);
+            Array<TouchButton *> *buttons = (Array<TouchButton *> *) (intptr_t) this->buttonRow;
+            for (unsigned i = 0; i < 5; i++)
+                (*buttons)[i]->draw();
+            this->buttonLaunch->draw();
+            this->buttonCredits->draw();
+            if (Globals::status->getStation()->getIndex() != 101 && Globals::status->getStation()->getIndex() != 108 &&
+                ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() != 25 &&
+                this->newsTicker != nullptr)
+                this->newsTicker->draw();
+            Globals::layout->drawMissionRewardMessage(true);
+        }
+        if (this->accumTime < 3000) {
+            this->paintCanvas->DrawString(reinterpret_cast<unsigned int &>(Globals::font),
+                                          *Globals::gameText->getText(this->flag_0xb0 ? 54 : 50),
+                                          Globals::layout->buttonInsetX + this->infoBoxW,
+                                          Globals::layout->headerTitleY, false);
+        } else {
+            this->flag_0xb0 = 0;
+        }
     }
 
-    Globals::Canvas->SwapBuffer();
+    if (this->flag_0x6a)
+        this->medalChoiceWindow->draw();
+    else if (this->flag_0x63)
+        this->choiceWindow->draw();
+    if (this->flag_0x69)
+        this->dialogueWindow->draw();
+    if (Globals::layout->choiceWindowOpen)
+        Globals::layout->drawHelpWindow();
+    this->paintCanvas->End2d();
+    if (!Globals::layout->choiceWindowOpen) {
+        if (this->flag_0x66)
+            this->hangarWindow->render3D();
+        if (!Globals::layout->choiceWindowOpen && this->flag_0x65)
+            this->spaceLounge->draw3DShip();
+    }
+    this->paintCanvas->SwapBuffer();
 }
 
 static int *g_oi_stack = 0;
@@ -2589,7 +2717,7 @@ void ChoiceWindow_set1_oiImpl(ChoiceWindow *cw, int textStr);
 void NewsTicker_build_oiImpl(ModStation * self);
 void DlcMenu_build_oiImpl(ModStation * self);
 
-void ModStation::OnInitialize() {
+int ModStation::OnInitialize() {
     int *status = (int *) Globals::status;
 
     this->introTimer = 0;
@@ -2605,8 +2733,8 @@ void ModStation::OnInitialize() {
     int next;
 
     if (state == 0x14) {
-        if (reinterpret_cast<uint8_t*>(&this->cameraFlags)[1] == 0 && reinterpret_cast<uint8_t*>(&this->cameraFlags)[0] == 0 &&
-            reinterpret_cast<uint8_t*>(&this->dragFlags)[1] != 0) {
+        if (this->flag_0xb1 == 0 && this->flag_0xb0 == 0 &&
+            this->flag_0x101 != 0) {
             bool skip = false;
             if (Status_getCurrentCampaignMission_oi() == 0x4d) {
                 Station *st = (Station *) Status_getStation_oi();
@@ -2685,7 +2813,7 @@ void ModStation::OnInitialize() {
             ModStation_oi_setCameraLocal(ModStation_oi_cameraHandle(), key);
         }
         this->resetLight();
-        if (reinterpret_cast<uint8_t*>(&this->dragFlags)[1] != 0)
+        if (this->flag_0x101 != 0)
             this->enterStation();
 
         if (Status_getCurrentCampaignMission_oi() == 0x4d) {
@@ -2702,8 +2830,8 @@ void ModStation::OnInitialize() {
             }
         }
 
-        if (reinterpret_cast<uint8_t*>(&this->modalFlags)[1] == 0 && reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 &&
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 &&
+        if (this->flag_0x69 == 0 && this->flag_0x6a == 0 &&
+            this->flag_0x63 == 0 &&
             ((TextRootRecord *) (intptr_t) *(int *) &Globals::gameText)->noRoutesHintShown == 0) {
             Station *st2 = (Station *) Status_getStation_oi();
             if (st2->getIndex() != 0x65) {
@@ -2715,16 +2843,16 @@ void ModStation::OnInitialize() {
                 if (routes == 0 && hasJump == 0 && hasFuel == 0 &&
                     0x10 < Status_getCurrentCampaignMission_oi()) {
                     ChoiceWindow_set_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText), 1);
-                    reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 1;
-                    reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+                    this->flag_0x6d = 1;
+                    this->flag_0x63 = 1;
                 }
             }
         }
 
         ((Status *) (intptr_t) *(int *) &Globals::status)->field_f8 = 1;
-        reinterpret_cast<uint8_t*>(&this->scrollFlags)[0] = 0;
+        this->flag_0x118 = 0;
         this->activeTouch = 0;
-        reinterpret_cast<uint8_t*>(&this->cameraFlags)[3] = 0;
+        this->flag_0xb3 = 0;
         this->loadTick = 0;
         reinterpret_cast<uint8_t*>(&this->field_0x148)[0] = 0;
         next = 1;
@@ -2734,30 +2862,31 @@ void ModStation::OnInitialize() {
             if (st->getIndex() == 0x78) {
                 int camp = Status_getCurrentCampaignMission_oi();
                 if (camp == 0x62 || Status_getCurrentCampaignMission_oi() == 100)
-                    reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
+                    this->flag_0xd8 = 1;
             }
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
             if (st->getIndex() == 0x3a && Status_getCurrentCampaignMission_oi() == 0x8a)
-                reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
+                this->flag_0xd8 = 1;
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
             if (st->getIndex() == 0x7e && Status_getCurrentCampaignMission_oi() == 0x78)
-                reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
+                this->flag_0xd8 = 1;
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
             if (st->getIndex() == 0x4e && Status_getCurrentCampaignMission_oi() == 0x8d)
-                reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
+                this->flag_0xd8 = 1;
         }
         if (Status_inSupernovaSystem_oi() != 0)
-            reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] = 1;
+            this->flag_0xd8 = 1;
         if (Globals::iPad != 0)
-            reinterpret_cast<uint16_t&>(this->alarmFlags) = 0x101;
+            this->flag_0xd8 = 1;
+            this->flag_0xd9 = 1;
 
-        if (reinterpret_cast<uint8_t*>(&this->cameraFlags)[0] == 0) {
+        if (this->flag_0xb0 == 0) {
             bool gate = false;
             Station *st = (Station *) Status_getStation_oi();
             if (st->getIndex() == 4) gate = true;
@@ -2773,7 +2902,7 @@ void ModStation::OnInitialize() {
                                                      GameText_getText_oiImpl(0x3e), GameText_getText_oiImpl(0x49),
                                                      GameText_getText_oiImpl(0x7e), GameText_getText_oiImpl(0x7f),
                                                      GameText_getText_oiImpl(0x20c), GameText_getText_oiImpl(0x20d));
-                            reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 1;
+                            this->flag_0x6d = 1;
                         }
                         goto afterGate;
                     }
@@ -2788,9 +2917,9 @@ void ModStation::OnInitialize() {
                     Station *s2 = (Station *) Status_getStation_oi();
                     if (s2->getIndex() != 100) {
                         Station *s3 = (Station *) Status_getStation_oi();
-                        if (s3->getIndex() != 0x65 && reinterpret_cast<uint8_t*>(&this->modalFlags)[2] == 0 &&
-                            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0 &&
-                            reinterpret_cast<uint8_t*>(&this->alarmFlags)[0] == 0 /* RAWREAD: alarmActive (+0xd8) */ &&
+                        if (s3->getIndex() != 0x65 && this->flag_0x6a == 0 &&
+                            this->flag_0x63 == 0 &&
+                            this->flag_0xd8 == 0 /* RAWREAD: alarmActive (+0xd8) */ &&
                             ((Status *) (intptr_t) *(int *) &Globals::status)->field_0x108 == 0) {
                             Status_getStation_oi();
                             bool enemy = false;
@@ -2808,7 +2937,7 @@ void ModStation::OnInitialize() {
                                 int credits = Status_getCredits_oi();
                                 if (standing < 0) {
                                     ChoiceWindow_setFee_oiImpl(this->choiceWindow, credits, 0);
-                                    reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 1;
+                                    this->flag_0x6d = 1;
                                 }
                             }
                         }
@@ -2842,9 +2971,9 @@ void ModStation::OnInitialize() {
         }
 
         if (Status_getCurrentCampaignMission_oi() == 0x2b) {
-            if (hereIdx == 10) reinterpret_cast<uint8_t*>(&this->alarmFlags)[1] = 1;
+            if (hereIdx == 10) this->flag_0xd9 = 1;
         } else if (hereIdx == 10 && Status_getCurrentCampaignMission_oi() == 0x2c) {
-            reinterpret_cast<uint8_t*>(&this->alarmFlags)[1] = 1;
+            this->flag_0xd9 = 1;
         }
 
         bool isS100;
@@ -2939,7 +3068,7 @@ void ModStation::OnInitialize() {
             }
             this->dialogueWindow = 0;
             ChoiceWindow_set1_oiImpl(this->choiceWindow, GameText_getText_oiImpl(0x6c));
-            reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 1;
+            this->flag_0x6d = 1;
         } else {
             Station *st = (Station *) Status_getStation_oi();
             if (st->getIndex() == 0x6c && ((Status *) (intptr_t) *(int *) &Globals::status)->field_114 == 2) {
@@ -2948,9 +3077,9 @@ void ModStation::OnInitialize() {
                     ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
                 } else {
                     ChoiceWindow_set_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText), 1);
-                    reinterpret_cast<uint8_t*>(&this->screenFlags)[0] = 1;
+                    this->flag_0x6c = 1;
                 }
-                reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+                this->flag_0x63 = 1;
             }
         }
 
@@ -2969,37 +3098,37 @@ void ModStation::OnInitialize() {
         (void) rec;
         if (Status_getCurrentCampaignMission_oi() == 0xa2 && (unsigned char) settings->wantedActivatedShown == 0) {
             ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+            this->flag_0x63 = 1;
             settings->wantedActivatedShown = 1;
         }
         SettingsBlock *settings2 = (SettingsBlock *) (intptr_t) (int) (intptr_t) Globals::options;
         if (Status_gameWon_oi() != 0 && ((Status *) (intptr_t) *(int *) &Globals::status)->byte_0x35 == 0 &&
             settings->gameWonShown == 0) {
             ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+            this->flag_0x63 = 1;
             settings->gameWonShown = 1;
         }
         if (Status_dlc1Won_oi() != 0 && ((Status *) (intptr_t) *(int *) &Globals::status)->byte_0x37 == 0 &&
             settings->dlc1WonShown == 0) {
             ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+            this->flag_0x63 = 1;
             settings->dlc1WonShown = 1;
         }
         (void) settings2;
 
         int wanted = Status_activateNewWanted_oi();
-        if (wanted > 0 && reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] == 0) {
+        if (wanted > 0 && this->flag_0x63 == 0) {
             if (wanted == 1)
                 ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(*(int *) &Globals::gameText));
             else {
                 ChoiceWindow_set1_oiImpl(this->choiceWindow, GameText_getText_oiImpl(0x2c5));
-                reinterpret_cast<uint8_t*>(&this->screenFlags)[1] = 1;
+                this->flag_0x6d = 1;
             }
-            reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
+            this->flag_0x63 = 1;
         }
         next = 0x14;
     } else if (state == 0x3c) {
-        reinterpret_cast<uint8_t*>(&this->dragFlags)[0] = 0;
+        this->flag_0x100 = 0;
         this->camScrollPos = 0;
         this->field_0xe0 = 0;
         this->camScrollVel = 0;
@@ -3012,23 +3141,32 @@ void ModStation::OnInitialize() {
         if (this->cutScene != 0)
             this->cutScene->cameraRotX = (float) angle / 120.0f;
         this->field_0xec = 0;
-        reinterpret_cast<uint8_t*>(&this->cameraFlags)[0] =
-                reinterpret_cast<uint8_t*>(&this->cameraFlags)[3];
+        this->flag_0xb0 =
+                this->flag_0xb3;
         NewsTicker_build_oiImpl(this);
         next = 0x28;
     } else if (state == 0x50) {
-        reinterpret_cast<uint16_t*>(&this->m_nStarMapWindowOpen)[1] = 0;
-        reinterpret_cast<uint16_t*>(&this->subWindowFlags)[0] = 0;
-        reinterpret_cast<uint8_t*>(&this->screenFlags)[2] = 0;
-        reinterpret_cast<uint16_t&>(this->screenFlags) = 0;
-        this->modalFlags = 0;
-        reinterpret_cast<uint16_t*>(&this->subWindowFlags)[1] = 0;
-        reinterpret_cast<uint16_t&>(this->m_nStarMapWindowOpen) = 0x100;
-        reinterpret_cast<uint8_t*>(&this->hintFlags)[0] = 0;
-        reinterpret_cast<uint16_t*>(&this->hintFlags)[1] = 0;
-        reinterpret_cast<uint8_t*>(&this->field_0x12c)[0] = 0;
+        this->flag_0x62 = 0;
+        this->flag_0x63 = 0;
+        this->flag_0x64 = 0;
+        this->flag_0x65 = 0;
+        this->flag_0x6e = 0;
+        this->flag_0x6c = 0;
+        this->flag_0x6d = 0;
+        this->flag_0x68 = 0;
+        this->flag_0x69 = 0;
+        this->flag_0x6a = 0;
+        this->flag_0x6b = 0;
+        this->flag_0x66 = 0;
+        this->flag_0x67 = 0;
+        this->flag_0x60 = 0;
+        this->flag_0x61 = 1;
+        this->flag_0xdc = 0;
+        this->flag_0xde = 0;
+        this->flag_0xdf = 0;
+        this->savedPostEffect = 0;
         this->pendingHangarClose = 0;
-        reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 0;
+        this->flag_0x63 = 0;
         DlcMenu_build_oiImpl(this);
         next = 0x3c;
     } else if (state == 100) {
@@ -3043,7 +3181,7 @@ void ModStation::OnInitialize() {
 
         this->introCountdown = 0x32;
         int *st = (int *) Globals::status;
-        reinterpret_cast<uint8_t*>(&this->dragFlags)[1] = 1;
+        this->flag_0x101 = 1;
         Status_getStation_oi();
         Station_getName_oi();
 
@@ -3080,10 +3218,11 @@ void ModStation::OnInitialize() {
                 (void) i;
             }
         }
-        return;
+        return this->state;
     }
 
     this->state = next;
+    return next;
 }
 
 static int *g_dlc_stack = 0;
@@ -3094,29 +3233,23 @@ static int *g_dlc_stack = 0;
 static inline void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); }
 
 void ModStation::showDlcMenu() {
-    MenuTouchWindow *win = (MenuTouchWindow *) this->dlcMenu;
-    if (win == 0) {
-        win = (MenuTouchWindow *) ::operator new(0x240);
-        MenuTouchWindow_ctor_dlc(win, 2);
-        this->dlcMenu = win;
+    MenuTouchWindow *menu = this->dlcMenu;
+    if (menu == nullptr) {
+        menu = (MenuTouchWindow *) ::operator new(0x240);
+        MenuTouchWindow_ctor_dlc(menu, 2);
+        this->dlcMenu = menu;
     }
-    reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[2] = 1;
-
-    int *bx = Globals::sub_menu_buttons_x;
-    int *by = Globals::sub_menu_buttons_y;
-    for (unsigned i = 0; i < win->buttons->size(); i = i + 1) {
+    this->flag_0x62 = 1;
+    for (unsigned i = 0; i < menu->buttons->size(); i++) {
         if (i < 10) {
-            AbyssEngine::AEMath::Vector pos;
-            pos = (*win->buttons)[i]->getPosition();
-            bx[i] = (int) pos.x;
-            pos = (*win->buttons)[i]->getPosition();
-            by[i] = (int) pos.y;
-            win = (MenuTouchWindow *) this->dlcMenu;
+            Globals::sub_menu_buttons_x[i] = (int) (*menu->buttons)[i]->getPosition().x;
+            Globals::sub_menu_buttons_y[i] = (int) (*this->dlcMenu->buttons)[i]->getPosition().y;
+            menu = this->dlcMenu;
         }
     }
-    Globals::sub_menu_button_count = win->buttons->size();
-    reinterpret_cast<uint8_t*>(&this->subWindowFlags)[2] = 0;
-    win->callDlcMenu();
+    Globals::sub_menu_button_count = menu->buttons->size();
+    this->flag_0x66 = 0;
+    menu->callDlcMenu();
 }
 
 void ModStation::showCBSMessage() {
@@ -3133,8 +3266,8 @@ void ModStation::showCBSMessage() {
                     false),
             true, code, purchase, code, -1, -1);
 
-    reinterpret_cast<uint8_t*>(&this->m_nStarMapWindowOpen)[3] = 1;
-    reinterpret_cast<uint8_t*>(&this->hintFlags)[1] = 1;
+    this->flag_0x63 = 1;
+    this->flag_0xdd = 1;
 }
 
 void ChoiceWindow_setNotice_frag(ChoiceWindow *cw, int textStr);

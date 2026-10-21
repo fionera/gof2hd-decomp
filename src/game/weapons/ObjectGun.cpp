@@ -29,7 +29,7 @@ static_assert(offsetof(EgoPlayerView, orientation) == 0x40,
 
 namespace AbyssEngine {
     namespace AEMath {
-        void MatrixMultiply(const Matrix &, const Matrix &);
+        Matrix MatrixMultiply(const Matrix &, const Matrix &);
     }
 }
 
