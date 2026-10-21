@@ -392,34 +392,30 @@ void Achievements::initCheckEquipmentAndWeapons() {
 }
 
 void Achievements::countMedals() {
-    int *r3 = this->medals;
-    int total = 0;
+    // 36 regular medals (1 = gold) followed by 9 supernova medals.
+    int *medals = this->medals;
+    int count = 0;
     int golds = 0;
-    this->medalCount = total;
+    this->medalCount = count;
     for (int i = 0; i < 36; ++i) {
-        int v = r3[i];
-        if (v != 0) {
-            total++;
-            if (v == 1) {
-                this->medalCount = total;
+        if (medals[i] != 0) {
+            count++;
+            if (medals[i] == 1) {
+                this->medalCount = count;
                 golds++;
             } else {
-                this->medalCount = total;
+                this->medalCount = count;
             }
         }
     }
-    const int *base2 = r3 + 36;
-    int j = 0;
-    int supers = 0;
-    for (; j < 9; ++j) {
-        if (base2[j] != 0)
-            supers++;
+    int supernovas = 0;
+    for (int i = 0; i < 9; ++i) {
+        if (medals[36 + i] != 0)
+            supernovas++;
     }
-    int sOk = (supers == 9);
-    int gOk = (golds == 36);
-    this->gotAllSupernovaMedals_ = (uint8_t)(sOk & gOk);
-    this->gotAllGoldMedals_ = (uint8_t)gOk;
-    this->gotAllMedals_ = total == 36;
+    this->gotAllSupernovaMedals_ = supernovas == 9 && golds == 36;
+    this->gotAllGoldMedals_ = golds == 36;
+    this->gotAllMedals_ = count == 36;
 }
 
 bool Achievements::gotAllMedals() {
