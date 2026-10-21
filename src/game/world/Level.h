@@ -94,9 +94,7 @@ public:
     Vector playerPosition;
     int missionPtr;
     BoundingVolume *collisionVolume;
-    float field_c8;
-    float field_cc;
-    float field_d0;
+    Vector stationPosition; // 0xc8
     int field_d4;
     Waypoint *asteroidWaypoint;
     int field_dc;
