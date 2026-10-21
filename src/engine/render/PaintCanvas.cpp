@@ -313,7 +313,6 @@ namespace {
     }
 }
 
-void paintcanvas_ext_has_vibration(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_sprite_allsize(unsigned int, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -333,7 +332,6 @@ static inline void paintcanvas_ext_meshdraw(void *eng, void *mesh) { AbyssEngine
 
 void paintcanvas_ext_draw_mesh(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_get_grav(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_set_reslist(AbyssEngine::Resource * const *, unsigned int, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -341,7 +339,6 @@ namespace AbyssEngine {
     int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, SpriteSystem **out);
 }
 
-void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 
 
@@ -380,8 +377,8 @@ unsigned int PaintCanvas::CameraGetCurrent() {
     return cur;
 }
 
-void PaintCanvas::HasVibration() {
-    return paintcanvas_ext_has_vibration(this->engine);
+bool PaintCanvas::HasVibration() {
+    return this->engine->HasVibration();
 }
 
 float *PaintCanvas::CameraGetLocal(unsigned int index) {
@@ -1922,8 +1919,8 @@ void PaintCanvas::MeshCloneMaterial(unsigned int index, unsigned int &out) {
     out = result;
 }
 
-void PaintCanvas::GetGravValue() {
-    return paintcanvas_ext_get_grav(this->engine);
+double *PaintCanvas::GetGravValue() {
+    return this->engine->GetGravValue();
 }
 
 void PaintCanvas::BeginBG() {
@@ -2272,8 +2269,8 @@ AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in) {
     return this->GetReverseString(AbyssEngine::String(in, false), this->field_0x1c == 0);
 }
 
-void PaintCanvas::GetAccelValue() {
-    return paintcanvas_ext_get_accel(this->engine);
+double *PaintCanvas::GetAccelValue() {
+    return this->engine->GetAccelValue();
 }
 
 void PaintCanvas::ResetPersMatrix() {
