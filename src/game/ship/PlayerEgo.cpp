@@ -227,7 +227,7 @@ PlayerEgo::PlayerEgo(Player *player)
     player->setPlayShootSound(true, 2);
     this->field_0x108 = 1;
     this->movingStars = (int) (intptr_t) new MovingStars();
-    this->lastHP = player->getCombinedHP();
+    this->lastHP = this->player->getCombinedHP();
     this->speed = 2.0f;
     this->thrust = 1.0f;
     this->boostDelay = Globals::status->getShip()->getBoostDelay();
@@ -258,18 +258,18 @@ PlayerEgo::PlayerEgo(Player *player)
         this->field_0x1c = 45;
     else if (this->handling >= 1.15f)
         this->field_0x1c = 44;
-    else if (this->handling < 0.95f)
-        this->field_0x1c = 42;
-    else
+    else if (this->handling >= 0.95f)
         this->field_0x1c = 43;
+    else
+        this->field_0x1c = 42;
     Globals::globals->addSoundResourceToList(this->field_0x1c);
 
     this->agility = (float) Globals::status->getShip()->getAgility();
     this->handling = (this->handling + this->handling * (this->agility / 100.0f)) * 20.0f;
     this->hardCoreMode = Globals::status->hardCoreMode();
-    this->cloakMaterial1 = 0xffffffff;
     this->shieldRegenRate = (float) Globals::status->getShip()->getMaxShieldHP()
                             / ((float) Globals::status->getShip()->getShieldRegen() / 100.0f);
+    this->cloakMaterial1 = 0xffffffff;
 
     if (Globals::status->getShip()->hasCloakIntegrated())
         this->cloak = (*Globals::items)[95];
@@ -312,37 +312,35 @@ PlayerEgo::PlayerEgo(Player *player)
     this->freeLookMode = 0;
     this->field_0x354 = Globals::status->inBlackMarketSystem();
     this->maxBank = this->handling * 750.0f / 63.0f * 1.2f;
-    this->bankFactor = 15.139357f;
     this->field_0x20 = 0;
+    this->bankFactor = 15.139357f;
     for (int i = 0; i < 5; i++)
         this->bankHistory[i] = 0;
+    this->field_0x274 = 0;
     this->bankHistoryIndex = 0;
     this->bankHistoryFilled = 0;
-    this->rollAccum = 0;
     this->field_0x26c = 0;
-    this->yawAccumD = 0;
-    this->field_0x274 = 0;
     this->hitShakeTimer = 0;
     this->hitShake = 0;
-    this->easeMatrix = nullptr;
-    this->field_0x35c = 0;
-    this->dockTotalAmount = 0;
-    this->dockTransferedAmount = 0;
+    this->field_0x378 = Globals::mouseCursorActivated == 0;
     this->field_0x84 = 1;
     this->spacePoint = 0;
     this->engineSoundId = -1;
     this->lostMiningGameFlag = 0;
-    this->field_0x378 = Globals::mouseCursorActivated == 0;
+    this->dockTransferedAmount = 0;
+    this->dockTotalAmount = 0;
+    this->easeMatrix = nullptr;
+    this->rollAccum = 0;
+    this->yawAccumD = 0;
+    this->field_0x35c = 0;
 
     float difficulty = reinterpret_cast<const float &>(Globals::options[44]);
     if (difficulty <= 0.0f)
         this->cloakRechargeMax = 5000;
     else if (difficulty <= 0.6f)
         this->cloakRechargeMax = 7000;
-    else if (difficulty <= 1.1f)
-        this->cloakRechargeMax = 9000;
     else
-        this->cloakRechargeMax = 12000;
+        this->cloakRechargeMax = difficulty <= 1.1f ? 9000 : 12000;
 
     if ((Globals::status->inSupernovaSystem() || Globals::status->inSupernovaOrbit())
         && Globals::status->getShip()->getFirstEquipmentOfSort(38) != nullptr) {
