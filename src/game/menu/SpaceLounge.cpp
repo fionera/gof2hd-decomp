@@ -23,6 +23,16 @@
 #include "game/ui/TouchButton.h"
 
 #include "engine/render/PaintCanvas.h"
+#include "game/menu/ModStation.h"
+#include "engine/core/ApplicationManager.h"
+#include "engine/render/Engine.h"
+#include "game/mission/BluePrint.h"
+#include "game/mission/Achievements.h"
+#include "game/world/Station.h"
+#include "game/world/Galaxy.h"
+#include "game/ship/Ship.h"
+#include "game/mission/Item.h"
+#include "game/ui/ListItem.h"
 
 static inline int pc_GetWidth(PaintCanvas *self) { return self->GetWidth(); }
 static inline int pc_GetHeight(PaintCanvas *self) { return self->GetHeight(); }
@@ -342,125 +352,372 @@ static inline bool hit_agent(SpaceLounge *self, int x, int y, int i) {
     return (float) x < b[0] && (float) y < a[1] && b[1] < (float) y;
 }
 
-void SpaceLounge::OnTouchEnd(int x, int y) {
-    String helpBig;
-    String helpSmall;
-    char matrix[60];
+static const int SpaceLounge_cameraPositions[12] = {-1800, 620, 1805, 607, 610, 2362, 136, 444, 1122, 2222, 450, 1227};
+static const float SpaceLounge_cameraRotations[4] = {0.04f, 0.43f, 0.6f, 0.46f};
 
+int SpaceLounge::OnTouchEnd(int x, int y) {
     this->touchDown = 0;
-
-    if (this->choiceVisible != 0 || this->chatActive != 0) {
-        int result = this->choiceWindow->OnTouchEnd(x, y);
-        if (result == 1) {
+    if (this->choiceVisible || this->chatActive) {
+        int choice = this->choiceWindow->OnTouchEnd(x, y);
+        if (choice == 1)
             this->chatActive = 0;
-        } else if (result == 0) {
-            ((SpaceLounge *) (this))->onKeyPress(0x10000);
-        }
-        return;
+        else if (choice == 0)
+            this->onKeyPress(0x10000);
+        return 0;
     }
-
-    if (this->mapVisible != 0) {
-        if (this->starMap->OnTouchEnd(x, y) != 0) {
+    if (this->mapVisible) {
+        if (this->starMap->OnTouchEnd(x, y)) {
             this->cutScene->resetCamera();
             this->mapVisible = 0;
         }
-        return;
+        return 0;
     }
-
-    Layout **layoutSlot = SpaceLounge_touch_layout_slot;
-    Layout *layout = *layoutSlot;
-    if (layout->OnTouchEnd(x, y) != 0) {
-        if (this->listVisible != 0) {
-            layout->resetWindowDimensions();
+    if (Globals::layout->OnTouchEnd(x, y)) {
+        // Back button.
+        if (this->listVisible) {
+            Globals::layout->resetWindowDimensions();
             this->listVisible = 0;
-        } else if (this->mode != 0) {
-            if (this->selectedAgent >= 0) {
-                Agent *agent = selected_agent(this);
-                if (agent->isGenericAgent() != 0) {
-                    agent->setEvent(1);
-                }
-            }
-            this->mode = 0;
-            this->singleOffer = 0;
+            return 0;
         }
-        return;
+        if (this->mode == 0)
+            return 1;
+        if (this->selectedAgent >= 0 && (*this->agents)[this->selectedAgent]->isGenericAgent())
+            (*this->agents)[this->selectedAgent]->setEvent(1);
+        this->mode = 0;
+        this->singleOffer = 0;
+        return 0;
     }
-
-    if (this->listVisible != 0) {
+    if (this->listVisible) {
         this->listWindow->OnTouchEnd(x, y);
-        if (layout->helpPressed() != 0) {
-            GameText **texts = SpaceLounge_touch_list_help_text_slot;
-            String *text = (*texts)->getText(0x283);
-            helpSmall.Set(text->data);
-            layout->initHelpWindow(helpSmall);
-        }
-        return;
+        if (Globals::layout->helpPressed())
+            Globals::layout->initHelpWindow(*Globals::gameText->getText(643));
+        return 0;
     }
 
     switch (this->mode) {
-        case 0:
-            if (this->introDone == 0) {
-                SolarSystem *system = (SolarSystem *) (long) Globals::status->getSystem();
-                int race = system->getRace();
-                int *v = &SpaceLounge_touch_race_vectors[race * 3];
-                MatrixSetTranslation(matrix, (float) v[2], (float) v[0], (float) v[1]);
-                MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
-                PaintCanvas **cameraSlot = SpaceLounge_touch_camera_slot;
-                PaintCanvas *camera = *cameraSlot;
-                const AbyssEngine::AEMath::Matrix *current =
-                        (const AbyssEngine::AEMath::Matrix *) (long) camera->CameraGetCurrent();
-                camera->CameraSetLocal((unsigned int) (long) camera, *current);
-                if (this->cameraEase != 0) {
-                    this->cameraEase->SetRange(*(AbyssEngine::AEMath::Matrix *) matrix,
-                                               *(AbyssEngine::AEMath::Matrix *) matrix);
-                }
-                this->introDone = 1;
-                this->headBobPhase = 0;
-                return;
-            }
-            if (this->agents != 0) {
-                this->hoverAgent = -1;
-                this->selectedAgent = -1;
-                unsigned count = (unsigned) this->agents->size();
-                for (unsigned i = 0; i < count; ++i) {
-                    if (hit_agent(this, x, y, i)) {
-                        this->selectedAgent = i;
-                        ((SpaceLounge *) (this))->onKeyPress(0x10000);
-                        return;
-                    }
-                }
-            }
-            break;
-        case 1:
-            ((SpaceLounge *) (this))->onKeyPress(0x10000);
-            break;
-        case 2: {
-            Array<TouchButton *> *buttons = this->buttons;
-            for (unsigned i = 0; i < buttons->size(); ++i) {
-                TouchButton *button = (*buttons)[i];
-                if (button->OnTouchEnd(x, y) != 0) {
-                    Agent *agent = selected_agent(this);
-                    if (i >= 5 && agent->isGenericAgent() != 0) {
-                        agent->setEvent(1);
-                    }
-                }
-            }
-            break;
+    case 0:
+        if (!this->introDone) {
+            // Skip the camera fly-in.
+            int race = ((SolarSystem *) Globals::status->getSystem())->getRace();
+            Matrix camera;
+            MatrixSetTranslation(camera, (float) SpaceLounge_cameraPositions[race * 3],
+                                 (float) SpaceLounge_cameraPositions[race * 3 + 1],
+                                 (float) SpaceLounge_cameraPositions[race * 3 + 2]);
+            MatrixSetRotation(camera, 0.0f, SpaceLounge_cameraRotations[race], 0.0f);
+            Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), camera);
+            if (this->cameraEase != 0)
+                this->cameraEase->SetRange(camera, camera);
+            this->introDone = 1;
+            this->headBobPhase = 0;
+            return 0;
         }
-        case 3:
-            if ((*this->buttons)[0]->OnTouchEnd(x, y) != 0) {
-                ((SpaceLounge *) (this))->onKeyPress(0x10000);
+        if (this->agents != 0) {
+            this->hoverAgent = -1;
+            this->selectedAgent = -1;
+            for (unsigned int i = 0; i < this->agents->size(); i++) {
+                Vector *topLeft = (*this->agentRects)[i * 2];
+                Vector *bottomRight = (*this->agentRects)[i * 2 + 1];
+                if (topLeft->x < (float) x && bottomRight->x > (float) x && topLeft->y > (float) y &&
+                    bottomRight->y < (float) y) {
+                    this->selectedAgent = i;
+                    this->onKeyPress(0x10000);
+                    return 0;
+                }
             }
-            break;
+        }
+        break;
+    case 1:
+        this->onKeyPress(0x10000);
+        break;
+    case 2:
+        for (int i = 0; i < this->buttons->size(); i++) {
+            if (!(*this->buttons)[i]->OnTouchEnd(x, y))
+                continue;
+            Agent *agent = (*this->agents)[this->selectedAgent];
+            agent->getRace();
+            switch (i) {
+            case 0: {
+                // Accept the offer.
+                int offer = agent->getOffer();
+                String message("");
+                switch (offer) {
+                case 0:
+                case 5:
+                    if (this->singleOffer) {
+                        this->mode = 2;
+                        this->singleOffer = 0;
+                        String text = Globals::globals->getAgentMissionText((*this->agents)[this->selectedAgent]);
+                        if (agent->getMission() != 0 && !agent->getMission()->isEmpty()) {
+                            text = Globals::status->replaceHash(
+                                text,
+                                String(Globals::layout->formatCredits(agent->getMission()->getReward() +
+                                                                      agent->getMission()->getBonus()),
+                                       false) + this->title,
+                                String("#C"));
+                        }
+                        this->scrollWindow->setText(agent->getName(), text);
+                        this->chatScroll = 0;
+                        return 0;
+                    }
+                    if (agent->getMission()->getType() == 0) {
+                        int amount = agent->getMission()->getProductionGoodAmount();
+                        if (!Globals::status->getShip()->spaceAvailable(amount)) {
+                            message = *Globals::gameText->getText(337);
+                            message = Globals::status->replaceHash(message, String(String(amount), false), String("#Q"));
+                            this->choiceWindow->set(message, false);
+                            this->choiceVisible = 1;
+                            break;
+                        }
+                    } else if (agent->getMission()->getType() == 11) {
+                        int amount = agent->getMission()->getProductionGoodAmount();
+                        if (amount > Globals::status->getShip()->getMaxPassengers()) {
+                            message = *Globals::gameText->getText(338);
+                            message = Globals::status->replaceHash(message, String(String(amount), false), String("#Q"));
+                            this->choiceWindow->set(message, false);
+                            this->choiceVisible = 1;
+                            break;
+                        }
+                    }
+                    if (agent->isGenericAgent()) {
+                        message = *Globals::gameText->getText(865);
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(Globals::layout->formatCredits(agent->getMission()->getReward() +
+                                                                  agent->getMission()->getBonus()),
+                                   false),
+                            String("#C"));
+                        message = Globals::status->replaceHash(
+                            message, *Globals::gameText->getText(354 + agent->getMission()->getType()), String("#M"));
+                        if (Globals::status->hardCoreMode())
+                            message += String("\n") + *Globals::gameText->getText(27) + String(": ") +
+                                       String(Globals::layout->formatCredits((agent->getMission()->getReward() +
+                                                                              agent->getMission()->getBonus()) /
+                                                                             10),
+                                              false);
+                    } else {
+                        message = *Globals::gameText->getText(863);
+                    }
+                    if (Globals::status->getFreelanceMission() != 0 && !Globals::status->getFreelanceMission()->isEmpty())
+                        message += String(" ") + *Globals::gameText->getText(864);
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                case 1:
+                    this->mode = 0;
+                    return 0;
+                case 2:
+                case 3:
+                case 4:
+                case 8:
+                case 9:
+                case 10: {
+                    float factor = 1.0f;
+                    if (offer >= 8 && offer <= 10)
+                        factor = Globals::options[56] ? 1.0f : 2.0f;
+                    int credits = Globals::status->getCredits();
+                    if (factor * (float) agent->getSellItemPrice() > (float) credits) {
+                        this->choiceWindow->set(Globals::status->replaceHash(*Globals::gameText->getText(203),
+                                                                         String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice() - (float) Globals::status->getCredits())), false),
+                                                                         String("#C")),
+                                           false);
+                    this->choiceVisible = 1;
+                    return 0;
+                    }
+                    switch (offer) {
+                    case 2:
+                    case 9:
+                        message = *Globals::gameText->getText(868);
+                        message = Globals::status->replaceHash(message, String(String(agent->getSellItemQuantity()), false),
+                                                               String("#Q"));
+                        message = Globals::status->replaceHash(
+                            message, *Globals::gameText->getText(1274 + agent->getSellItemIndex()), String("#P"));
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
+                                   false),
+                            String("#C"));
+                        break;
+                    case 3:
+                        message = *Globals::gameText->getText(869);
+                        message = Globals::status->replaceHash(
+                            message,
+                            *Globals::gameText->getText(1274 +
+                                                        (*Globals::items)[agent->getSellBlueprintIndex()]->getIndex()),
+                            String("#P"));
+                        message = Globals::status->replaceHash(
+                            message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false),
+                            String("#C"));
+                        break;
+                    case 4:
+                        message = *Globals::gameText->getText(870);
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(((SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex()))->getName(),
+                                   false),
+                            String("#S"));
+                        message = Globals::status->replaceHash(
+                            message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false),
+                            String("#C"));
+                        break;
+                    case 8:
+                        message = *Globals::gameText->getText(871);
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
+                                   false),
+                            String("#C"));
+                        break;
+                    case 10:
+                        message = *Globals::gameText->getText(873);
+                        message = Globals::status->replaceHash(
+                            message,
+                            String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())),
+                                   false),
+                            String("#C"));
+                        break;
+                    }
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                }
+                case 6:
+                    // Hire a wingman.
+                    if (Globals::status->getWingmen() != 0) {
+                        this->choiceWindow->set(*Globals::gameText->getText(785), false);
+                        this->choiceVisible = 1;
+                        return 0;
+                    }
+                    if (Globals::status->getCredits() < agent->getCosts()) {
+                        this->choiceWindow->set(Globals::status->replaceHash(*Globals::gameText->getText(203),
+                                                                         String(Globals::layout->formatCredits(agent->getCosts() - Globals::status->getCredits()), false),
+                                                                         String("#C")),
+                                           false);
+                    this->choiceVisible = 1;
+                    return 0;
+                    }
+                    message = *Globals::gameText->getText(Globals::achievements->gotAllMedals() ? 867 : 866);
+                    message = Globals::status->replaceHash(
+                        message, String(String(agent->getWingmanFriendsCount() + 1), false), String("#Q"));
+                    message = Globals::status->replaceHash(
+                        message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                case 7:
+                    if (Globals::status->getCredits() < agent->getCosts()) {
+                        this->choiceWindow->set(Globals::status->replaceHash(*Globals::gameText->getText(203),
+                                                                         String(Globals::layout->formatCredits(agent->getCosts() - Globals::status->getCredits()), false),
+                                                                         String("#C")),
+                                           false);
+                    this->choiceVisible = 1;
+                    return 0;
+                    }
+                    message = *Globals::gameText->getText(885);
+                    message = Globals::status->replaceHash(
+                        message, String(Globals::layout->formatCredits(agent->getCosts()), false), String("#C"));
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                default:
+                    this->choiceWindow->set(message, true);
+                    this->chatActive = 1;
+                    break;
+                }
+                break;
+            }
+            case 1:
+                // Decline.
+                this->scrollWindow->setText(agent->getName(),
+                                            *Globals::gameText->getText(845 + Globals::rnd->nextInt(5)));
+                this->chatScroll = 0;
+                this->mode = 0;
+                Globals::status->field_e0++;
+                break;
+            case 2: {
+                // Show the offered item.
+                if (this->listWindow == 0)
+                    this->listWindow = new ListItemWindow();
+                if ((*this->agents)[this->selectedAgent]->getOffer() == 2 ||
+                    (*this->agents)[this->selectedAgent]->getOffer() == 9) {
+                    this->listWindow->set(
+                        new ListItem((*Globals::items)[(*this->agents)[this->selectedAgent]->getSellItemIndex()]), 0, 0,
+                        0, 0, false);
+                } else if ((*this->agents)[this->selectedAgent]->getOffer() == 10) {
+                    this->field_0xb1 = ((Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated();
+                    ((Engine *) Globals::appManager->GetEngine())->SetPostEffect(0x1400000, false);
+                    this->listWindow->set(
+                        new ListItem((*Globals::ships)[(*this->agents)[this->selectedAgent]->getSellItemIndex()]), 0, 0,
+                        0, 0, false);
+                } else {
+                    Array<BluePrint *> *bluePrints = (Array<BluePrint *> *) Globals::status->getBluePrints();
+                    for (unsigned int b = 0; b < ((Array<BluePrint *> *) Globals::status->getBluePrints())->size(); b++) {
+                        if ((*(Array<BluePrint *> *) Globals::status->getBluePrints())[b]->getIndex() ==
+                            (*this->agents)[this->selectedAgent]->getSellBlueprintIndex()) {
+                            this->listWindow->set(
+                                new ListItem((*Globals::items)[(*(Array<BluePrint *> *) Globals::status->getBluePrints())[b]
+                                                                   ->getIndex()]),
+                                0, 0, 0, 0, false);
+                            break;
+                        }
+                    }
+                    (void) bluePrints;
+                }
+                this->listVisible = 1;
+                break;
+            }
+            case 3: {
+                // Where is the target?
+                (*this->agents)[this->selectedAgent]->wasAskedForLocation = 1;
+                int target = (*this->agents)[this->selectedAgent]->getMission()->getTargetStation();
+                if (target == Globals::status->getStation()->getIndex()) {
+                    this->scrollWindow->setText(agent->getName(), *Globals::gameText->getText(805));
+                    this->chatScroll = 0;
+                    this->mode = 2;
+                } else if (((SolarSystem *) Globals::status->getSystem())
+                               ->stationIsInSystem((*this->agents)[this->selectedAgent]->getMission()->getTargetStation())) {
+                    this->scrollWindow->setText(agent->getName(), *Globals::gameText->getText(806));
+                    this->chatScroll = 0;
+                    this->mode = 2;
+                } else {
+                    this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+                    if (this->starMap != 0) {
+                        this->starMap->init(true, (*this->agents)[this->selectedAgent]->getMission(), false, -1);
+                    } else {
+                        StarMap *map = new StarMap(true, (*this->agents)[this->selectedAgent]->getMission(), false, -1);
+                        ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap = map;
+                        this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+                    }
+                    this->mapVisible = 1;
+                }
+                break;
+            }
+            case 4: {
+                // How difficult is it?
+                (*this->agents)[this->selectedAgent]->wasAskedForDifficulty = 1;
+                int difficulty = (*this->agents)[this->selectedAgent]->getMission()->getDifficulty();
+                this->scrollWindow->setText(
+                    agent->getName(),
+                    *Globals::gameText->getText(808 + (int) ((float) difficulty / 10.0f * 5.0f)));
+                this->singleOffer = 1;
+                this->mode = 2;
+                this->chatScroll = 0;
+                agent->getRace();
+                break;
+            }
+            }
+            if ((*this->agents)[this->selectedAgent]->isGenericAgent())
+                (*this->agents)[this->selectedAgent]->setEvent(1);
+        }
+        break;
+    case 3:
+        if ((*this->buttons)[0]->OnTouchEnd(x, y))
+            this->onKeyPress(0x10000);
+        break;
     }
-
     this->scrollWindow->OnTouchEnd(x, y);
-    if (layout->helpPressed() != 0) {
-        GameText **texts = SpaceLounge_touch_help_text_slot;
-        String *text = (*texts)->getText(0x273);
-        helpBig.Set(text->data);
-        layout->initHelpWindow(helpBig);
-    }
+    if (Globals::layout->helpPressed())
+        Globals::layout->initHelpWindow(*Globals::gameText->getText(627));
+    return 0;
 }
 
 int SpaceLounge::getSoundId(Agent *agent) {
