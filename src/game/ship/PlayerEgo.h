@@ -57,12 +57,12 @@ public:
     int field_0x20;
     uint8_t freeze;
     uint8_t inWormhole;
-    AEGeometry *turretGeometry;
-    AEGeometry *field_0x2c;
-    AEGeometry *field_0x30;
-    AEGeometry *gunYawGeo;
-    AEGeometry *gunMuzzleRoot;
-    AEGeometry *gunExtraGeo;
+    AEGeometry *turretGeometry;  // turret barrel (yaw/pitch)
+    AEGeometry *turretRoot;
+    AEGeometry *turretExtraGeo;
+    AEGeometry *shieldGeometry;  // supernova heat shield
+    uint8_t shieldVisible;
+    float shieldRadius;
 
     float maneuverParam;
     // rollMatrix relocated here: it fills the original matrix region at 0x44..0x80
@@ -89,13 +89,13 @@ public:
     int boostDelay;
     int boostSoundId;
     int field_0xd8;
-    AEGeometry *rollGeometry;
+    AEGeometry *turretBaseGeo;
     float rotX;
     float rotY;
     float rotZ;
     float waypointX;
     float waypointY;
-    AEGeometry *gunBaseGeo;
+    float waypointZ;
     // Ghidra: movingStars@0xf8 sits between gunBaseGeo@0xf4 and route@0xfc. Our decomp lacked it; the
     // route..collide block was 4 low. Added here and the _pad_0x126 below shrinks by 4 to keep the
     // downstream asserts (field_0x145@0x145) pinned.

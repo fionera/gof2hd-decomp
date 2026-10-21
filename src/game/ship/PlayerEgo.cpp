@@ -1083,32 +1083,32 @@ void PlayerEgo::checkForTurret() {
     PaintCanvas *canvas = Globals::Canvas;
 
     AEGeometry *baseGeo = new AEGeometry((uint16_t) base, (PaintCanvas *) canvas, false);
-    this->gunBaseGeo = baseGeo;
+    this->turretBaseGeo = baseGeo;
     AEGeometry *yawGeo = new AEGeometry((uint16_t) barrel, (PaintCanvas *) canvas, false);
-    this->gunYawGeo = yawGeo;
+    this->turretGeometry = yawGeo;
     ((AEGeometry *) yawGeo)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
     AEGeometry *muzzleRoot = new AEGeometry((PaintCanvas *) canvas);
-    this->gunMuzzleRoot = muzzleRoot;
+    this->turretRoot = muzzleRoot;
 
     if (muzzle != -1) {
         AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)muzzle, (PaintCanvas *) canvas, false);
-        ((AEGeometry *) (this->gunBaseGeo))->addChild((uint32_t)(uintptr_t)g);
+        ((AEGeometry *) (this->turretBaseGeo))->addChild((uint32_t)(uintptr_t)g);
         delete (AEGeometry *) g;
     }
     if (child != -1) {
         AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)child, (PaintCanvas *) canvas, false);
-        ((AEGeometry *) (this->gunYawGeo))->addChild((uint32_t)(uintptr_t)g);
+        ((AEGeometry *) (this->turretGeometry))->addChild((uint32_t)(uintptr_t)g);
         delete (AEGeometry *) g;
     }
     if (extra != -1) {
         AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)extra, (PaintCanvas *) canvas, false);
-        ((AEGeometry *) (this->gunYawGeo))->addChild((uint32_t)(uintptr_t)g);
+        ((AEGeometry *) (this->turretGeometry))->addChild((uint32_t)(uintptr_t)g);
         delete (AEGeometry *) g;
     }
     if (extra2 != -1) {
         AEGeometry *g = new AEGeometry((uint16_t)(unsigned short)extra2, (PaintCanvas *) canvas, false);
-        this->gunExtraGeo = g;
-        ((AEGeometry *) (this->gunYawGeo))->addChild((uint32_t)(uintptr_t)g);
+        this->turretExtraGeo = g;
+        ((AEGeometry *) (this->turretGeometry))->addChild((uint32_t)(uintptr_t)g);
         AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
             (unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
         ((AbyssEngine::Transform *) (tf))->SetVisible(this->turretActive != 0);
@@ -1121,17 +1121,17 @@ void PlayerEgo::checkForTurret() {
         (unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
     ((AbyssEngine::Transform *) (tf))->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
 
-    ((AEGeometry *) (this->gunBaseGeo))->setPosition(*(Vector *) &this->dockArrowImage);
-    ((AEGeometry *) (this->gunYawGeo))->setPosition(*(Vector *) &this->dockArrowImage);
+    ((AEGeometry *) (this->turretBaseGeo))->setPosition(*(Vector *) &this->dockArrowImage);
+    ((AEGeometry *) (this->turretGeometry))->setPosition(*(Vector *) &this->dockArrowImage);
 
     PE_cft_place(this, idx);
 
-    ((AEGeometry *) (this->gunMuzzleRoot))->addChild((uint32_t)(uintptr_t)this->gunBaseGeo);
-    ((AEGeometry *) (this->gunMuzzleRoot))->addChild((uint32_t)(uintptr_t)this->gunYawGeo);
+    ((AEGeometry *) (this->turretRoot))->addChild((uint32_t)(uintptr_t)this->turretBaseGeo);
+    ((AEGeometry *) (this->turretRoot))->addChild((uint32_t)(uintptr_t)this->turretGeometry);
 
     if (this->cloak != 0 && this->turretMode != 0) {
         ((PaintCanvas *) (long) (canvas))->MeshCloneMaterial(
-            ((AEGeometry *) this->rollGeometry)->meshId, this->cloakMaterial2);
+            ((AEGeometry *) this->turretBaseGeo)->meshId, this->cloakMaterial2);
         ((PaintCanvas *) (long) (canvas))->MeshCloneMaterial(
             ((AEGeometry *) this->turretGeometry)->meshId, this->cloakMaterial3);
     }
@@ -1467,7 +1467,7 @@ float PlayerEgo::right(int frameTime, float delta) {
         float ft = (float) frameTime;
         float ang = ((ft * delta) / (g_PE_r_turK1 / pitch)) * g_PE_r_turK2 * g_PE_r_turK3;
         ((AEGeometry *) this->dockCameraNode)->rotate(0.0f, (float) ang, 0.0f);
-        ((AEGeometry *) this->rollGeometry)->rotate(0.0f, (float) ang, 0.0f);
+        ((AEGeometry *) this->turretBaseGeo)->rotate(0.0f, (float) ang, 0.0f);
         ((AEGeometry *) this->turretGeometry)->rotate(0.0f, (float) ang, 0.0f);
         return ang;
     }
@@ -1527,7 +1527,7 @@ float PlayerEgo::left(int frameTime, float delta) {
         float ft = (float) frameTime;
         float ang = ((ft * delta) / (g_PE_l_turK1 / pitch)) * g_PE_l_turK2 * g_PE_l_turK3;
         ((AEGeometry *) this->dockCameraNode)->rotate(0.0f, (float) ang, 0.0f);
-        ((AEGeometry *) this->rollGeometry)->rotate(0.0f, (float) ang, 0.0f);
+        ((AEGeometry *) this->turretBaseGeo)->rotate(0.0f, (float) ang, 0.0f);
         ((AEGeometry *) this->turretGeometry)->rotate(0.0f, (float) ang, 0.0f);
         return ang;
     }
@@ -1584,8 +1584,8 @@ PlayerEgo::~PlayerEgo() noexcept {
     this->field_0x4 = 0;
     if (this->geometry) delete (AEGeometry *) this->geometry;
     this->geometry = 0;
-    if (this->rollGeometry) delete (AEGeometry *) this->rollGeometry;
-    this->rollGeometry = 0;
+    if (this->turretBaseGeo) delete (AEGeometry *) this->turretBaseGeo;
+    this->turretBaseGeo = 0;
     if (this->turretGeometry) delete (AEGeometry *) this->turretGeometry;
     this->turretGeometry = 0;
     if (this->route) delete (Route *) this->route;
@@ -1594,12 +1594,12 @@ PlayerEgo::~PlayerEgo() noexcept {
     this->dockCameraNode = 0;
     if (this->dockCameraLeaf) delete (AEGeometry *) this->dockCameraLeaf;
     this->dockCameraLeaf = 0;
-    if (this->field_0x2c) delete (AEGeometry *) this->field_0x2c;
-    this->field_0x2c = 0;
-    if (this->field_0x30) delete (AEGeometry *) this->field_0x30;
-    this->field_0x30 = 0;
-    if (this->gunYawGeo) delete (AEGeometry *) this->gunYawGeo;
-    this->gunYawGeo = 0;
+    if (this->turretRoot) delete (AEGeometry *) this->turretRoot;
+    this->turretRoot = 0;
+    if (this->turretExtraGeo) delete (AEGeometry *) this->turretExtraGeo;
+    this->turretExtraGeo = 0;
+    if (this->shieldGeometry) delete (AEGeometry *) this->shieldGeometry;
+    this->shieldGeometry = 0;
     if (this->dockCameraMid) delete (AEGeometry *) this->dockCameraMid;
     this->dockCameraMid = 0;
     if (this->tractorBeam) delete (TractorBeam *) this->tractorBeam;
@@ -1910,7 +1910,7 @@ void PlayerEgo::dockToPlanet() {
     this->collide = 0;
     this->resetGunDelay();
     this->dockingToPlanet = 1;
-    ((char &) this->gunMuzzleRoot) = 0;
+    this->shieldVisible = 0;
     ((float &) this->speed) = 8.0f;
     this->planetDockTimer = 0;
     Globals::sound->play(5, nullptr, nullptr, 0.0f);
@@ -2079,7 +2079,7 @@ void PlayerEgo::setTurretMode(bool enable) {
         ((Player *) (this->player))->stopShooting(0);
     }
 
-    if (this->field_0x30 != 0) {
+    if (this->turretExtraGeo != 0) {
         AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
             (unsigned int) (reinterpret_cast<unsigned int &>(Globals::Canvas->initialized)));
         ((AbyssEngine::Transform *) (tf))->SetVisible(enable != 0);
@@ -2360,7 +2360,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             float wpPos[3] = {wpVec.x, wpVec.y, wpVec.z};
             ((int &) this->waypointX) = *(int *) &wpPos[0];
             ((int &) this->waypointY) = *(int *) &wpPos[1];
-            ((int &) this->gunBaseGeo) = *(int *) &wpPos[2];
+            ((int &) this->waypointZ) = *(int *) &wpPos[2];
 
             float me[3];
             ((PlayerEgo *) (this))->getPosition();
@@ -2373,7 +2373,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             if (h + g_PE_upd_handlingBias < 4.0f)
                 speed = ((Ship *) (PE_status()->getShip()))->getHandling() + g_PE_upd_handlingBias;
             ((PlayerEgo *) (this))->moveToPosition(Vector{
-                                                       this->waypointX, this->waypointY, ((float &) this->gunBaseGeo)
+                                                       this->waypointX, this->waypointY, this->waypointZ
                                                    }, true, speed);
             if (this->turretActive != 0)
                 ((PlayerEgo *) (this))->handleTurretView(dt);
@@ -2682,71 +2682,52 @@ void PlayerEgo::stopBoost() {
 }
 
 void PlayerEgo::setShip(int race, int group) {
-    AEGeometry *grp = Globals::globals->getShipGroup(race, group, true);
-    this->field_0x4 = grp;
-
-    PaintCanvas *canvas = Globals::Canvas;
-    AbyssEngine::Mesh *mesh = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
-        (unsigned int) (((AEGeometry *) grp)->meshId));
+    this->field_0x4 = Globals::globals->getShipGroup(race, group, true);
+    AbyssEngine::Mesh *mesh = Globals::Canvas->MeshGetPointer(this->field_0x4->meshId);
     this->field_0x394 = ((PE_MaterialBlock *) mesh->material)->materialList;
 
-    AEGeometry *hull = new AEGeometry(Globals::Canvas);
-    this->geometry = (AEGeometry *) hull;
-    ((AEGeometry *) (hull))->addChild((uint32_t) this->field_0x4->transform);
+    this->geometry = new AEGeometry(Globals::Canvas);
+    this->geometry->addChild(this->field_0x4->transform);
 
-    if (((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0xd) != 0) {
-        Item *it = (Item *) ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0xd);
-        int idx = ((Item *) (it))->getIndex();
-        int kind = (idx < 0x48) ? idx - 0x44 : 3;
-        TractorBeam *tb = (TractorBeam *) TractorBeam_new(this->geometry, kind);
-        this->tractorBeam = tb;
-        Globals::globals->addSoundResourceToList(0x0);
-        Globals::globals->addSoundResourceToList(0x4);
+    if (Globals::status->getShip()->getFirstEquipmentOfSort(13) != nullptr) {
+        int idx = Globals::status->getShip()->getFirstEquipmentOfSort(13)->getIndex();
+        this->tractorBeam = new TractorBeam(this->geometry, idx < 72 ? idx - 68 : 3);
+        Globals::globals->addSoundResourceToList(0);
+        Globals::globals->addSoundResourceToList(4);
     }
 
-    for (unsigned i = 0; i < 2; i++) {
-        int sort = (i == 0) ? 0x25 : 0x29;
-        Item *it = (Item *) ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(sort);
-        if (it != 0) {
-            if (this->repairBeams == 0)
+    for (unsigned int i = 0; i < 2; i++) {
+        int sort = i == 0 ? 37 : 41;
+        Item *item = Globals::status->getShip()->getFirstEquipmentOfSort(sort);
+        if (item != nullptr) {
+            if (this->repairBeams == nullptr)
                 this->repairBeams = new Array<RepairBeam *>();
-            RepairBeam *rb = new RepairBeam(((Item *) (it))->getIndex(), ((Item *) (it))->getSort());
-            int idx = ((Item *) (it))->getIndex();
-            if (idx == 0xde)
-                Globals::globals->addSoundResourceToList(0x8db);
-            else if (((Item *) (it))->getIndex() == 0xdf)
-                Globals::globals->addSoundResourceToList(0x8dc);
-            ArrayAdd(rb, *(this->repairBeams));
+            RepairBeam *beam = new RepairBeam(item->getIndex(), item->getSort());
+            if (item->getIndex() == 222)
+                Globals::globals->addSoundResourceToList(2267);
+            else if (item->getIndex() == 223)
+                Globals::globals->addSoundResourceToList(2268);
+            ArrayAdd(beam, *this->repairBeams);
         }
     }
 
-    if (((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x1b) != 0
-        && ((Ship *) (PE_status()->getShip()))->hasEmergencySystem() != 0) {
-        AEGeometry *geo = new AEGeometry((uint16_t) 0x3826, Globals::Canvas, false);
-        this->field_0xac = (int) (intptr_t) geo;
-        ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x1b);
-        this->emergencyVal1 = ((Item *) (((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x29)))->
-                getAttribute(0);
-        AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            (unsigned int) (this->field_0x4->transform));
-        Vec_assign(&this->emergencyVec, &((AbyssEngine::Transform *) tf)->boundingCenter);
-        tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            (unsigned int) (this->field_0x4->transform));
-        this->emergencyVal2 = ((AbyssEngine::Transform *) tf)->boundingRadius / g_PE_ss_emDiv + g_PE_ss_emBias;
+    if (Globals::status->getShip()->getFirstEquipmentOfSort(27) != nullptr
+        && Globals::status->getShip()->hasEmergencySystem()) {
+        this->field_0xac = (int) (intptr_t) new AEGeometry((uint16_t) 14374, Globals::Canvas, false);
+        this->emergencyVal1 = Globals::status->getShip()->getFirstEquipmentOfSort(27)->getAttribute(41);
+        this->emergencyVec = ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
+            this->field_0x4->transform))->boundingCenter;
+        this->emergencyVal2 = ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
+            this->field_0x4->transform))->boundingRadius / 500.0f + 0.1f;
     }
 
-    if (PE_status()->inSupernovaSystem() != 0 || PE_status()->inSupernovaOrbit() != 0) {
-        AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-            (unsigned int) (this->field_0x4->transform));
-        ((float &) this->gunExtraGeo) = ((AbyssEngine::Transform *) tf)->boundingRadius * 1.75f;
+    if (Globals::status->inSupernovaSystem() || Globals::status->inSupernovaOrbit()) {
+        this->shieldRadius = ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
+            this->field_0x4->transform))->boundingRadius * 1.75f;
     }
 
-    if (this->cloak != 0) {
-        AbyssEngine::Mesh *mesh = Globals::Canvas->MeshGetPointer(
-            (unsigned int) this->field_0x4->meshId);
-        if (mesh != 0)
-            Vec_assign(&this->cloakMaterial1, &mesh->shaderAnimValue0);
-    }
+    if (this->cloak != nullptr)
+        Globals::Canvas->MeshCloneMaterial(this->field_0x4->meshId, this->cloakMaterial1);
 }
 
 void PlayerEgo::addGun(Array<Gun *> *arr, int x) {
@@ -2774,13 +2755,13 @@ void PlayerEgo::render(bool allowHud) {
         if (((intptr_t) this->field_0xac) != 0 && this->emergencySystemTimer >= 1)
             ((AEGeometry *) (this->geometry))->render();
 
-        if (((char &) this->gunMuzzleRoot) != 0)
-            ((AEGeometry *) (this->gunYawGeo))->render();
+        if (this->shieldVisible != 0)
+            ((AEGeometry *) (this->shieldGeometry))->render();
 
         if (this->turretMode != 0) {
-            if (this->field_0x30 != 0)
-                ((AEGeometry *) (this->field_0x30))->setVisible(this->turretActive != 0);
-            ((AEGeometry *) (this->field_0x2c))->render();
+            if (this->turretExtraGeo != 0)
+                ((AEGeometry *) (this->turretExtraGeo))->setVisible(this->turretActive != 0);
+            ((AEGeometry *) (this->turretRoot))->render();
         }
 
         if (this->tractorBeam != 0)
@@ -2855,16 +2836,16 @@ void PlayerEgo::toggleCloaking() {
         ((AbyssEngine::Material *) ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial(
             (unsigned int) (this->cloakMaterial3)))->blendMode = 0xe;
         ((PaintCanvas *) (long) (canvas))->MeshChangeMaterial(
-            (unsigned int) (((AEGeometry *) this->rollGeometry)->meshId), (unsigned int) (this->cloakMaterial2));
+            (unsigned int) (((AEGeometry *) this->turretBaseGeo)->meshId), (unsigned int) (this->cloakMaterial2));
         ((PaintCanvas *) (long) (canvas))->MeshChangeMaterial(
             (unsigned int) (((AEGeometry *) this->turretGeometry)->meshId), (unsigned int) (this->cloakMaterial3));
 
         AbyssEngine::Mesh *m;
         m = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
-            (unsigned int) (((AEGeometry *) this->rollGeometry)->meshId));
+            (unsigned int) (((AEGeometry *) this->turretBaseGeo)->meshId));
         ((PaintCanvas *) (long) (canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int) (1));
         m = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
-            (unsigned int) (((AEGeometry *) this->rollGeometry)->meshId));
+            (unsigned int) (((AEGeometry *) this->turretBaseGeo)->meshId));
         ((PaintCanvas *) (long) (canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int) (2));
         m = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
             (unsigned int) (((AEGeometry *) this->turretGeometry)->meshId));
@@ -2888,7 +2869,7 @@ void PlayerEgo::toggleCloaking() {
             unsigned int out;
             ((PaintCanvas *) (long) (canvas))->MaterialCreate((unsigned short) (mat), out);
             ((PaintCanvas *) (long) (canvas))->MeshChangeResourceMaterial(
-                (unsigned int) (((AEGeometry *) this->rollGeometry)->meshId), (unsigned int) (mat));
+                (unsigned int) (((AEGeometry *) this->turretBaseGeo)->meshId), (unsigned int) (mat));
             ((PaintCanvas *) (long) (canvas))->MeshChangeResourceMaterial(
                 (unsigned int) (((AEGeometry *) this->turretGeometry)->meshId), (unsigned int) (mat));
         }
