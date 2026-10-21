@@ -251,7 +251,7 @@ void TargetFollowCamera::update(int dt) {
         return;
     }
 
-    if (dt < 1 || !this->active)
+    if (!this->active || dt < 1)
         return;
 
     Matrix targetMatrix = this->target->getMatrix();
@@ -271,7 +271,7 @@ void TargetFollowCamera::update(int dt) {
         targetMatrix = this->firstPersonMatrix * targetMatrix;
         Vector lastPosition = *getPosition();
         *getPosition() = MatrixTransformVector(targetMatrix, this->fpOffset);
-        if (this->shakeReference == 0.0f || this->shakeAccum < this->shakeReference * 1.5f) {
+        if (this->shakeAccum < this->shakeReference * 1.5f || this->shakeReference == 0.0f) {
             Vector step = *getPosition() - lastPosition;
             if (this->shakeReference == 0.0f)
                 this->shakeReference = VectorLength(step);
