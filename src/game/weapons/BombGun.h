@@ -35,7 +35,7 @@ public:
 
     ~BombGun();
 
-    int isBombGun() override;
+    int isBombGun() override { return 1; }
 
     void setPlayer(PlayerEgo *player);
 

@@ -31,7 +31,7 @@ static const char *const kMaskShaderFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int MaskShader::ShaderIndex;
+    int MaskShader::ShaderIndex = -1;
 
     MaskShader::MaskShader() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

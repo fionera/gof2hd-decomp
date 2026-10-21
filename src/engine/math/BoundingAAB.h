@@ -8,9 +8,7 @@
 
 class BoundingAAB : public BoundingVolume {
 public:
-    float halfExtentX;
-    float halfExtentY;
-    float halfExtentZ;
+    Vector halfExtents;
 
     BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
                 float width, float height, float depth);

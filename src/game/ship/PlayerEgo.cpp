@@ -86,7 +86,7 @@ static const int kHiddenBlueprints[5] = {226, 221, 223, 225, 227};
 
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairPos;
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairShootPos;
-AbyssEngine::AEMath::Vector PlayerEgo::vec_up;
+AbyssEngine::AEMath::Vector PlayerEgo::vec_up = {0.0f, 1.0f, 0.0f};
 
 PlayerEgo::PlayerEgo(Player *player)
     : lastCrosshairPos(), lastCrosshairShootPos(), moveDirection(), moveTarget(), dockOffsetVec(), headingVec(),
@@ -222,7 +222,6 @@ PlayerEgo::PlayerEgo(Player *player)
     this->yawRamp = 0;
     this->field_0x260 = 0;
     this->field_0x264 = 0;
-    this->engineSoundId = -1;
     this->rollAccum = 0;
     this->field_0x26c = 0;
     this->yawAccumD = 0;
@@ -929,15 +928,15 @@ void PlayerEgo::checkForTurret() {
     Array<Item *> *equipment = Globals::status->getShip()->getEquipment(2);
     this->turretPitch = (int) ((double) (*equipment)[0]->getAttribute(17) * 1.5);
 
+    int glowMesh = -1;
+    int barrelExtraMesh2 = -1;
     unsigned short baseMesh;
+    int barrelExtraMesh = -1;
     unsigned short barrelMesh;
     int baseExtraMesh = -1;
-    int barrelExtraMesh = -1;
-    int barrelExtraMesh2 = -1;
-    int glowMesh = -1;
-    float offsetX = 0.0f;
-    float offsetY;
     float offsetZ = 0.0f;
+    float offsetY;
+    float offsetX = 0.0f;
     int turretIndex = (*equipment)[0]->getIndex();
     if (turretIndex == 48) {
         baseMesh = 0x1a74;
@@ -1111,7 +1110,7 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     this->autoPilotTarget = v;
     this->autoPilot = (v != 0) ? 1 : 0;
     if (v == 0) {
-        ((KIPlayer *) this->field_0x14)->autoPilotState = 0;
+        ((KIPlayer *) this->field_0x14)->shipPosition.x = 0;
         if (old != 0) {
             this->bankHistoryIndex = 0;
             this->bankHistoryFilled = 0;
@@ -1907,14 +1906,16 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     if (this->volatileGoods) {
         if (!Globals::sound->isPlaying(35))
             Globals::sound->play(35, nullptr, nullptr, 0.0f);
-        float pitchDelta = this->yawAccumD - (float &) this->field_0x274;
-        float rollDelta = this->rollAccum - (float &) this->field_0x26c;
+        float pitchDelta = this->yawAccumD - this->field_0x274;
+        float rollDelta = this->rollAccum - this->field_0x26c;
         float pitchLevel = pitchDelta > 0.0f ? pitchDelta : -pitchDelta;
         float rollLevel = rollDelta > 0.0f ? rollDelta : -rollDelta;
-        this->player->flShake += (float) dt * 0.001f * 0.5f * (pitchLevel > rollLevel ? pitchLevel : rollLevel);
-        (float &) this->field_0x26c = this->rollAccum;
-        (float &) this->field_0x274 = this->yawAccumD;
-        if (this->player->flShake >= 1.0f && !this->dockingToPlanet && !this->dockedToStream) {
+        float shake = this->player->flShake
+                      + (float) dt * 0.001f * 0.5f * (pitchLevel > rollLevel ? pitchLevel : rollLevel);
+        this->player->flShake = shake;
+        this->field_0x274 = this->yawAccumD;
+        this->field_0x26c = this->rollAccum;
+        if (shake >= 1.0f && !this->dockingToPlanet && !this->dockedToStream) {
             this->player->setHitpoints(0);
             if (this->explosion2 == nullptr) {
                 this->explosion2 = new Explosion(12);
@@ -1953,13 +1954,12 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         if (this->approachDockingPoint(hud, 0, radar)) {
             Mission *mission = Globals::status->getMission();
             Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
-            PlayerFixedObject *dock = (PlayerFixedObject *) (intptr_t) this->asteroidTarget;
             if (!mission->isEmpty() && (mission->getType() == 15 || mission->getType() == 184)
-                && dock->getDockingType() == 1) {
+                && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 1) {
                 int delivered = this->dockTransferedAmount;
                 if (delivered != this->dockTotalAmount) {
-                    this->dockTransferedAmount =
-                        (int) ((float) this->field_0x35c / (mission->getType() == 184 ? 1500.0f : 1000.0f));
+                    float transferTime = mission->getType() == 184 ? 1500.0f : 1000.0f;
+                    this->dockTransferedAmount = (int) ((float) this->field_0x35c / transferTime);
                     if (this->dockTotalAmount <= this->dockTransferedAmount) {
                         if (delivered < this->dockTransferedAmount)
                             hud->hudEvent(mission->getType() == 184 ? 38 : 42, this, 0);
@@ -1983,7 +1983,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                     }
                 }
             } else if (!mission->isEmpty() && (mission->getType() == 184 || mission->getType() == 168)
-                       && dock->getDockingType() == 2) {
+                       && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 2) {
                 int delivered = this->dockTransferedAmount;
                 if (delivered != this->dockTotalAmount) {
                     this->dockTransferedAmount = (int) ((float) this->field_0x35c / 1500.0f);
@@ -1996,7 +1996,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                         Globals::status->field_178 += this->dockTransferedAmount - delivered;
                 }
             } else if (campaign != nullptr && !campaign->isEmpty()
-                       && (campaign->getType() == 167 || campaign->getType() == 174) && dock->getDockingType() == 1) {
+                       && (campaign->getType() == 167 || campaign->getType() == 174) && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 1) {
                 int delivered = this->dockTransferedAmount;
                 if (delivered != this->dockTotalAmount) {
                     this->dockTransferedAmount = (int) ((float) this->field_0x35c / 1000.0f);
@@ -2011,7 +2011,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                         campaign->setStatusValue(campaign->getStatusValue() + 1);
                     }
                 }
-            } else if (dock->getDockingType() == 3 && this->hackingGame == 0) {
+            } else if (((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 3 && this->hackingGame == 0) {
                 int dockIndex = 0;
                 for (int i = 0; i < this->level->getNumDockingTargets(); i++) {
                     if (this->asteroidTarget == this->level->getDockingTarget(i))
@@ -2059,8 +2059,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     }
 
-    if (this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive
-        && (this->dockingPointIndex | 1) != 3)
+    if (this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive && this->dockingPointIndex != 2
+        && this->dockingPointIndex != 3)
         this->updateManeuver();
 
     if (this->autoTurretEquipped && this->autoTurretEnabled
@@ -2256,10 +2256,10 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         Vector screen = {0.0f, 0.0f, 0.0f};
         Globals::Canvas->GetScreenPosition(hitDirection * 5000.0f + this->dockOffsetVec, screen);
         int side;
-        if (!(screen.x > 0.0f))
+        if (screen.x <= 0.0f)
             side = 1;
         else
-            side = screen.x < (float) Globals::w ? 0 : 2;
+            side = !(screen.x >= (float) Globals::w) ? 0 : 2;
         this->field_0x20 = side;
         if (screen.z < 0.0f) {
             this->field_0x20 = side | 16;
@@ -2283,8 +2283,15 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         aimPosition = AbyssEngine::AEMath::MatrixGetPosition(turret);
         aimDirection = AbyssEngine::AEMath::MatrixGetDir(turret);
     }
-    if (Globals::mouseCursorActivated && !mouseLocked && controlMode != 3
-        && (controlMode == 1 || !this->autoPilot)) {
+    // Free mouse aiming is off when the cursor is hidden/locked, the autopilot steers (unless in
+    // control mode 1; evaluated without short-circuit, the binary ORs both flags) or in mode 3.
+    if (!Globals::mouseCursorActivated || mouseLocked || !(!this->autoPilot | (controlMode == 1))
+        || controlMode == 3) {
+        Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
+                                           crosshairPos);
+        crosshairPos = crosshairPos.z > 0.0f ? crosshairPos
+                                             : crosshairPos * 0.2f + this->lastCrosshairPos * 0.8f;
+        } else {
         float centerX = (float) (Globals::w >> 1);
         float centerY = (float) (Globals::h >> 1);
         float rangeX = (float) ((double) centerX * 0.7);
@@ -2326,12 +2333,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         crosshairShootPos = crosshairShootPos.z > 0.0f ? crosshairShootPos
                                                        : crosshairShootPos * 0.2f + this->lastCrosshairShootPos * 0.8f;
         this->lastCrosshairShootPos = crosshairShootPos;
-    } else {
-        Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
-                                           crosshairPos);
-        crosshairPos = crosshairPos.z > 0.0f ? crosshairPos
-                                             : crosshairPos * 0.2f + this->lastCrosshairPos * 0.8f;
-    }
+        }
     if (this->field_0x84 && !this->targetFollowCamera->isInFastForwardMode()) {
         if (Globals::mouseCursorActivated)
             this->targetFollowCamera->setShipHandling(this->handling);

@@ -56,7 +56,7 @@ static const char *const kSandboxShaderFragmentSource =
     "}\t\n";
 
 namespace AbyssEngine {
-    int SandboxShader::ShaderIndex;
+    int SandboxShader::ShaderIndex = -1;
 
     void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine) {
         AbyssEngine::Mesh *mesh = meshArg;

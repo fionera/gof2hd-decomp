@@ -25,7 +25,7 @@ static const char *const kTexOnlyShaderFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int TexOnlyShader::ShaderIndex;
+    int TexOnlyShader::ShaderIndex = -1;
 
     TexOnlyShader::TexOnlyShader() {
         TexOnlyShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

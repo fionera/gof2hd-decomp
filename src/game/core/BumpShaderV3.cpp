@@ -5,7 +5,7 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
-    int BumpShaderV3::ShaderIndex;
+    int BumpShaderV3::ShaderIndex = -1;
 
     BumpShaderV3::BumpShaderV3() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
@@ -148,23 +148,23 @@ namespace AbyssEngine {
             if (this->uGlColor >= 0)
                 glUniform4fv(this->uGlColor, 1, engine->glColor);
             if (this->uAmbientColor[0] >= 0)
-                glUniform3fv(this->uAmbientColor[0], 1, (float *) &engine->lightAmbientShaded);
+                glUniform3fv(this->uAmbientColor[0], 1, (float *) engine->ambientShaded[0]);
             if (this->uDiffuseColor[0] >= 0)
-                glUniform3fv(this->uDiffuseColor[0], 1, (float *) &engine->field_0x2fc);
+                glUniform3fv(this->uDiffuseColor[0], 1, (float *) engine->diffuseShaded[0]);
             if (this->uSpecularColor[0] >= 0)
-                glUniform3fv(this->uSpecularColor[0], 1, (float *) &engine->lightDiffuseShaded);
+                glUniform3fv(this->uSpecularColor[0], 1, (float *) engine->specularShaded[0]);
             if (this->uSpecularPower >= 0)
                 glUniform1f(this->uSpecularPower, engine->materialShininess);
             if (this->uRimColor >= 0)
-                glUniform3fv(this->uRimColor, 1, (float *) &engine->rimColor);
+                glUniform3fv(this->uRimColor, 1, (float *) engine->rimColor);
             if (this->uIsGlowMat >= 0) {
                 glUniform1f(this->uIsGlowMat,
                             (float) (static_cast<Material *>(mesh->material)->addData != nullptr));
             }
             if (engine->lightCount >= 2) {
-                glUniform3fv(this->uAmbientColor[1], 1, (float *) &engine->lightSpecularShaded);
-                glUniform3fv(this->uDiffuseColor[1], 1, (float *) &engine->field_0x308);
-                glUniform3fv(this->uSpecularColor[1], 1, (float *) &engine->particleAmbient);
+                glUniform3fv(this->uAmbientColor[1], 1, (float *) engine->ambientShaded[1]);
+                glUniform3fv(this->uDiffuseColor[1], 1, (float *) engine->diffuseShaded[1]);
+                glUniform3fv(this->uSpecularColor[1], 1, (float *) engine->specularShaded[1]);
                 glUniform3f(this->uLightDirModel[1], engine->field_0x33c.x, engine->field_0x33c.y,
                             engine->field_0x33c.z);
             } else {

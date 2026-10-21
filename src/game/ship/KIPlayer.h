@@ -34,10 +34,8 @@ public:
     uint8_t _pad_0x26[2];
     int shipGroup;
 
-    int autoPilotState;
-
-    int field_0x30;
-    int field_0x34;
+    // 0x2c: the ship's current world position as cached by the subclasses' update()
+    Vector shipPosition;
     int field_0x38;
 
     // Former union { int stealFlag; struct{...}; } at 0x3c: the wide int
@@ -92,12 +90,8 @@ public:
     int state;
     uint8_t field_0x8c;
     uint8_t _pad_0x8d[3];
-    int field_0x90;
-    int field_0x94;
-    int field_0x98;
-    int field_0x9c;
-    int field_0xa0;
-    int field_0xa4;
+    Vector tempVector;   // 0x90: scratch vector (Java tempVector_)
+    Vector auxVector;    // 0x9c: second scratch vector (Java position)
     float rotationSpeed;
     int type;
     uint8_t _pad_0xb0;
@@ -158,19 +152,53 @@ public:
     virtual void translate(const Vector &v);
     virtual void render();
     virtual Vector getPosition();
-    virtual void initPush(const Vector &target, int radius);
-    virtual void push(int dt);
-    virtual void update(int dt);
-    virtual int collide(float x, float y, float z);
-    virtual int outerCollide(float x, float y, float z);
-    virtual int outerCollide(const Vector &v);
+    virtual void initPush(const Vector &, int) {
+    }
+    virtual void push(int) {
+    }
+    virtual void update(int) {
+    }
+    virtual int collide(float, float, float) {
+        return 0;
+    }
+    virtual int outerCollide(float, float, float) {
+        return 0;
+    }
+    virtual int outerCollide(const Vector &v) {
+        return this->outerCollide(v.x, v.y, v.z);
+    }
     virtual void setPosition(const Vector &v);
     virtual void setPosition(float x, float y, float z);
-    virtual int getSpeed();
-    virtual Vector getProjectionVector(const Vector &v);
-    virtual Vector getCollisionNormal(const Vector &position);
-    virtual Vector projectCollisionOnSurface(const Vector &position);
-    virtual void setState(int state);
+    virtual int getSpeed() {
+        return 0;
+    }
+    virtual Vector getProjectionVector(const Vector &v) {
+        (void) v;
+        Vector out;
+        out.x = 0.0f;
+        out.y = 0.0f;
+        out.z = 0.0f;
+        return out;
+    }
+    virtual Vector getCollisionNormal(const Vector &position) {
+        (void) position;
+        Vector out;
+        out.x = 0.0f;
+        out.y = 0.0f;
+        out.z = 0.0f;
+        return out;
+    }
+    virtual Vector projectCollisionOnSurface(const Vector &position) {
+        (void) position;
+        Vector out;
+        out.x = 0.0f;
+        out.y = 0.0f;
+        out.z = 0.0f;
+        return out;
+    }
+    virtual void setState(int state) {
+        this->state = state;
+    }
 
     void PauseEngineSound();
     void PlayEngineSound();
