@@ -604,17 +604,15 @@ void Engine::DrawQuad(int x, int y, int width, int height) {
     positions[9] = fx;
     positions[10] = bottom;
 
-    static const float uvs[8] = {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        1.0f, 1.0f,
-        0.0f, 1.0f,
-    };
     float *uv = (float *) mesh->texCoords;
-    float32x4_t uv0 = vld1q_f32(uvs);
-    float32x4_t uv1 = vld1q_f32(uvs + 4);
-    vst1q_f32(uv, uv0);
-    vst1q_f32(uv + 4, uv1);
+    uv[0] = 0.0f;
+    uv[1] = 0.0f;
+    uv[2] = 1.0f;
+    uv[3] = 0.0f;
+    uv[4] = 1.0f;
+    uv[5] = 1.0f;
+    uv[6] = 0.0f;
+    uv[7] = 1.0f;
 
     return glDrawElements(4, mesh->indexCount, 0x1403,
                           mesh->indices);
