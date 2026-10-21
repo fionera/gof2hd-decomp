@@ -539,14 +539,6 @@ void *paintcanvas_ext_mc2_new_mesh_copy(void *src); // lint: void_ptr (external 
 
 void paintcanvas_ext_mc2_converttovbo(void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline float paintcanvas_ext_fsp_unsignedtofloat(unsigned int v, unsigned int mode) { (void)mode; return (float)v; }
-
-static inline void paintcanvas_ext_fsp_glFogf(unsigned int pname, float v) { glFogf(pname, v); }
-
-static inline void paintcanvas_ext_fsp_glFogfv(unsigned int pname, void *v) { glFogfv(pname, (const float*)v); } // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_fsp_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_dr3_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline float paintcanvas_ext_dr3_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
@@ -4051,45 +4043,30 @@ void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
     out = idx;
 }
 
-static char g_fsp_flag_8cf40_storage = 0;
-static char *const g_fsp_flag_8cf40 = &g_fsp_flag_8cf40_storage;
 
-static const double g_fsp_255d_8d070 = 0;
 
-static const float g_fsp_255f_8d078 = 0;
 
 void PaintCanvas::FogSetParameter(AbyssEngine::FogMode mode, float fogStart, float fogEnd,
                                   float fogDensity, unsigned int color) {
-    float col[4];
-    if (*g_fsp_flag_8cf40 == 0) {
-        float modeF = paintcanvas_ext_fsp_unsignedtofloat((unsigned int) mode, 0);
-        paintcanvas_ext_fsp_glFogf(0xb65, modeF);
-        paintcanvas_ext_fsp_glFogf(0xb62, fogDensity);
-        paintcanvas_ext_fsp_glFogf(0xb63, fogStart);
-        paintcanvas_ext_fsp_glFogf(0xb64, fogEnd);
-
-        float r = paintcanvas_ext_fsp_unsignedtofloat((color >> 16) & 0xff, 0);
-        float g = paintcanvas_ext_fsp_unsignedtofloat((color >> 8) & 0xff, 0);
-        paintcanvas_ext_fsp_unsignedtofloat(color >> 24, 0);
-        float b = paintcanvas_ext_fsp_unsignedtofloat(color & 0xff, 0);
-        col[0] = r / g_fsp_255f_8d078;
-        col[1] = g / g_fsp_255f_8d078;
-        col[2] = b / g_fsp_255f_8d078;
-        col[3] = fogStart;
-        paintcanvas_ext_fsp_glFogfv(0xb66, col);
-    } else {
-        double r = (double) paintcanvas_ext_fsp_unsignedtofloat((color >> 16) & 0xff, 0);
-        r = r / g_fsp_255d_8d070;
-        paintcanvas_ext_fsp_unsignedtofloat(color >> 24, 0);
-        double g = (double) paintcanvas_ext_fsp_unsignedtofloat((color >> 8) & 0xff, 0);
-        Engine *eng = (Engine *) this->engine;
-        g = g / g_fsp_255d_8d070;
+    if (Engine::enableShader != 0) {
+        Engine *eng = this->engine;
         eng->fogMinDist = fogStart;
         eng->fogMaxDist = fogEnd;
-        col[0] = (float) r;
-        col[1] = (float) g;
-        paintcanvas_ext_fsp_vec_assign(&eng->fogColor, col);
+        eng->fogColor = Vector{(float) ((double) (color >> 24) / 255.0),
+                               (float) ((double) ((color >> 16) & 0xff) / 255.0),
+                               (float) ((double) ((color >> 8) & 0xff) / 255.0)};
+        return;
     }
+    glFogf(0xb65, (float) (unsigned int) mode);
+    glFogf(0xb62, fogDensity);
+    glFogf(0xb63, fogStart);
+    glFogf(0xb64, fogEnd);
+    float rgba[4];
+    rgba[0] = (float) (color >> 24) / 255.0f;
+    rgba[1] = (float) ((color >> 16) & 0xff) / 255.0f;
+    rgba[2] = (float) ((color >> 8) & 0xff) / 255.0f;
+    rgba[3] = (float) (color & 0xff) / 255.0f;
+    glFogfv(0xb66, rgba);
 }
 
 static const unsigned int g_dr3_const_88808 = 0;
