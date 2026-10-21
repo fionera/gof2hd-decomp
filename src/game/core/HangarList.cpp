@@ -164,23 +164,21 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
 
     uint32_t out = 1;
     for (uint32_t i = 0; i < ingredients->size(); ++i) {
-        Item *shown = nullptr;
         bool found = false;
         if (cargo != nullptr) {
             for (uint32_t j = 0; j < cargo->size(); ++j) {
                 if ((*cargo)[j]->getIndex() == (*ingredients)[i]) {
                     (*list)[out] = new ListItem((*cargo)[j]);
-                    shown = (*cargo)[j];
+                    (*cargo)[j]->setBlueprintAmount(0);
                     found = true;
                     break;
                 }
             }
         }
         if (!found) {
-            shown = (*allItems)[(*ingredients)[i]];
-            (*list)[out] = new ListItem(shown);
+            (*list)[out] = new ListItem((*allItems)[(*ingredients)[i]]);
+            (*allItems)[(*ingredients)[i]]->setBlueprintAmount(0);
         }
-        shown->setBlueprintAmount(0);
         ++out;
     }
 
