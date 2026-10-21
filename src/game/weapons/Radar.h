@@ -13,6 +13,7 @@ class Player;
 class Hud;
 class KIPlayer;
 class Level;
+class Route;
 class Sprite;
 
 class Radar {
@@ -45,7 +46,7 @@ public:
     int imageWidth;
     int imageHeight;
     uint8_t field_0x54;
-    int field_0x58;
+    int *asteroidSlots; // 0x58: 5 candidate asteroid indices (-1 = empty)
 
     unsigned int image_0x5c;
     unsigned int image_0x60;
@@ -107,14 +108,14 @@ public:
     int field_0x128; // Ghidra
     int turretScopeHalfWidth;
     uint8_t plasmaInRange;
-    int field_0x134;
-    int field_0x138;
-    int field_0x13c;
-    int field_0x140;
-    int field_0x144;
-    int field_0x148;
+    Array<KIPlayer *> *enemies;       // 0x134
+    Array<KIPlayer *> *landmarks;     // 0x138
+    Array<KIPlayer *> *asteroids;     // 0x13c
+    Array<KIPlayer *> *planetTargets; // 0x140
+    Array<KIPlayer *> *gasClouds;     // 0x144
+    int gasLockTimer;                 // 0x148
     int field_0x14c;
-    int field_0x150;
+    Route *route;                     // 0x150
     // radar-space position of the tracked target (Vector), written by update()
     float radarPosX;
     float radarPosY;
@@ -122,19 +123,16 @@ public:
     // ASM (Radar ctor): labelStrings zeroed @0x188, lockLabel String ctor @0x18c, strb @0x1a8,
     // ints zeroed @0x1b4/0x1b8/0x1bc, transform ctor @0x1d0, @0x20c zeroed, screenWidth block
     // @0x21c-0x230 filled from the engine display size.
-    int field_0x160;
-    int field_0x164;
-    int field_0x168;
-    int field_0x16c;
-    int field_0x170;
-    int field_0x174;
-    int field_0x178;
-    int field_0x17c;
-    int field_0x180;
-    int field_0x184;
+    AbyssEngine::AEMath::Vector playerPos;  // 0x160
+    AbyssEngine::AEMath::Vector egoPos;     // 0x16c
+    AbyssEngine::AEMath::Vector targetPos;  // 0x178
+    int barWidth;                           // 0x184
     Array<AbyssEngine::String *> *labelStrings;
     AbyssEngine::String lockLabel;
-    uint8_t pad_0x198_to_0x1a8[0x1a8 - 0x198];
+    int enemyLockTimer;    // 0x198
+    int asteroidLockTimer; // 0x19c
+    int planetLockTimer;   // 0x1a0
+    int stationLockTimer;  // 0x1a4
     uint8_t field_0x1a8;
     uint8_t field_0x1a9;
     uint8_t field_0x1aa;
@@ -163,6 +161,9 @@ public:
     int halfScreenHeight;
     int originX;
     int originY;
+    int field_0x234;
+    int field_0x238;
+    AbyssEngine::AEMath::Vector cameraPos; // 0x23c
 
     static_assert(sizeof(AbyssEngine::String) == 0xc, "lockLabel must be 12 bytes");
 
@@ -192,7 +193,7 @@ public:
 
     void update(AbyssEngine::AEMath::Vector value);
 
-    long long draw(Player *player, Hud *hud, int mode);
+    void draw(Player *player, Hud *hud, int mode);
 
     AbyssEngine::AEMath::Vector elipsoidIntersect(int y, int x, AbyssEngine::AEMath::Vector value);
 
@@ -214,6 +215,7 @@ static_assert(offsetof(Radar, lockLabel) == 0x18c, "ctor String @0x18c");
 static_assert(offsetof(Radar, scannerAvailable) == 0x1ab, "");
 static_assert(offsetof(Radar, transform) == 0x1d0, "ctor Matrix @0x1d0");
 static_assert(offsetof(Radar, screenWidth) == 0x21c, "ctor display block @0x21c-0x230");
-static_assert(sizeof(Radar) == 0x234, "");
+static_assert(offsetof(Radar, cameraPos) == 0x23c, "");
+static_assert(sizeof(Radar) == 0x248, "MGame news Radar with 584 bytes");
 
 #endif

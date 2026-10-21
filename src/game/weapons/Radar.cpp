@@ -53,24 +53,24 @@ int Radar::getTurretScopeWidth() {
 }
 
 Radar::Radar(Level *level) {
-    this->field_0x174 = 0;
-    this->field_0x178 = 0;
-    this->field_0x17c = 0;
-    this->field_0x180 = 0;
-    this->field_0x164 = 0;
-    this->field_0x168 = 0;
-    this->field_0x16c = 0;
-    this->field_0x170 = 0;
+    this->egoPos.z = 0;
+    this->targetPos.x = 0;
+    this->targetPos.y = 0;
+    this->targetPos.z = 0;
+    this->playerPos.y = 0;
+    this->playerPos.z = 0;
+    this->egoPos.x = 0;
+    this->egoPos.y = 0;
     this->radarPosX = 0;
     this->radarPosY = 0;
     this->radarPosZ = 0;
-    this->field_0x160 = 0;
+    this->playerPos.x = 0;
 
     this->lockedEnemy = nullptr;
     this->dockNavPtr = nullptr;
     this->field_0x14 = 0;
     this->enabled = 1;
-    this->field_0x58 = 0;
+    this->asteroidSlots = nullptr;
     this->labelStrings = nullptr;
     this->lockedAsteroid = nullptr;
     this->field_0x10 = 0;
@@ -89,17 +89,18 @@ Radar::Radar(Level *level) {
     this->field_0x1c = nullptr;
     this->field_0x20 = 0;
     this->lockedStation = nullptr;
-    this->field_0x144 = 0;
-    this->field_0x148 = 0;
+    this->gasClouds = nullptr;
+    this->gasLockTimer = 0;
     this->field_0x14c = 0;
-    this->field_0x150 = 0;
-    this->field_0x134 = 0;
-    this->field_0x138 = 0;
-    this->field_0x13c = 0;
-    this->field_0x140 = 0;
-    for (int i = 0; i < 16; ++i) {
-        this->pad_0x198_to_0x1a8[i] = 0;
-    }
+    this->route = nullptr;
+    this->enemies = nullptr;
+    this->landmarks = nullptr;
+    this->asteroids = nullptr;
+    this->planetTargets = nullptr;
+    this->enemyLockTimer = 0;
+    this->asteroidLockTimer = 0;
+    this->planetLockTimer = 0;
+    this->stationLockTimer = 0;
     this->field_0x54 = 0;
     this->plasmaInRange = 0;
     this->field_0x120 = 0;
@@ -256,7 +257,7 @@ Radar::Radar(Level *level) {
     this->enabled = 1;
 
     int *lockSlots = new int[5];
-    this->field_0x58 = (int) (intptr_t) lockSlots;
+    this->asteroidSlots = lockSlots;
     for (int i = 0; i != 5; ++i) {
         lockSlots[i] = -1;
     }
@@ -347,23 +348,7 @@ void Radar::update(Vector value) {
     }
 }
 
-long long Radar::draw(Player *, Hud *, int mode) {
-    if (this->enabled == 0) {
-        return 0;
-    }
-
-    this->plasmaInRange = 0;
-
-    PaintCanvas *canvas = *gRadarCanvasForDraw;
-    canvas->SetColor(static_cast<unsigned int>(-1));
-
-    Mission *mission = Globals::status->getMission();
-    int missionState = Radar_GetMissionState(mission);
-    if (missionState == 0 && Radar_GetMissionType(mission) == 0) {
-        (void) mode;
-    }
-
-    return 0;
+void Radar::draw(Player *, Hud *, int) {
 }
 
 Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
@@ -426,7 +411,7 @@ void Radar::drawCurrentLock(Hud *) {
     Globals::Canvas->DrawImage2D(this->image_0xcc, this->lockLabelX, this->field_0x214);
     KIPlayer *asteroid = this->lockedAsteroid;
     KIPlayer *station = this->lockedStation;
-    Array<KIPlayer *> *landmarks = (Array<KIPlayer *> *) (intptr_t) this->field_0x138;
+    Array<KIPlayer *> *landmarks = this->landmarks;
     String *titleText;
     if (station == (*landmarks)[0]) {
         titleText = (*this->labelStrings)[0];
