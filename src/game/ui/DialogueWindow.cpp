@@ -443,9 +443,7 @@ static const char g_dw_emptyString[] = "";
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     this->init();
 
-    String blank(g_dw_emptyString, false);
-    String copy(*text, false);
-    this->scrollWindow->setText(blank, copy);
+    this->scrollWindow->setText(String(g_dw_emptyString, false), String(*text, false));
 
     this->moreButton->setVisible(false);
     this->prevButton->setVisible(false);
@@ -454,17 +452,14 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     delete this->nextButton;
     this->nextButton = 0;
 
-    GameText *gameText = Globals::gameText;
-    Layout *layout = Globals::layout;
-    int margin = layout->field_0x4c;
-    int x = this->frameX + this->frameWidth / 2;
-    int y = this->frameY + this->frameHeight - margin;
-    int width = this->frameWidth - margin * 4 - layout->field_0x50 * 2;
-    this->nextButton = new TouchButton(*gameText->getText(0x20c), 0, x, y, width, 0x24, 4);
+    this->nextButton = new TouchButton(*Globals::gameText->getText(0x20c), 0, this->frameX + this->frameWidth / 2,
+                                       this->frameY + this->frameHeight - Globals::layout->field_0x4c,
+                                       this->frameWidth - Globals::layout->field_0x4c * 4 - Globals::layout->field_0x50 * 2,
+                                       0x24, 4);
 
     this->agentName = *(agentName);
-    this->voiceSound = -1;
     this->page = 0;
+    this->voiceSound = -1;
     this->pauseLength = 0;
 }
 
