@@ -513,17 +513,18 @@ void ApplicationManager::OnUpdate(long long now) {
                         this->loadingCallback(this->paintCanvas, loading, this->loadingCallbackData);
                     }
                     if (loading == 0) {
-                        this->frameTimeMs = now;
-                        loadMesh = 0;
                         this->actionState = 0;
-                        this->keyState = 0;
                         this->state = 5;
-                        loadTexture = 0;
                         this->previousFrameTimeMs = now - 1;
                         this->currentTimeMs = 0;
+                        this->frameTimeMs = now;
+                        this->keyState = 0;
+                        loadTexture = 0;
+                        loadMesh = 0;
                     } else {
+                        uint64_t elapsed = (uint64_t) now - this->frameTimeMs;
                         uint64_t previous = this->frameTimeMs;
-                        this->currentTimeMs += (uint64_t) now - previous;
+                        this->currentTimeMs += elapsed;
                         this->frameTimeMs = now;
                         this->previousFrameTimeMs = previous;
                     }
@@ -683,9 +684,10 @@ void ApplicationManager::OnUpdate(long long now) {
                 triDrawn += (int) this->engine->field_0x58 + this->engine->triangleCountA;
                 triDrawn += (int) (this->engine->field_0x58 >> 32) + this->engine->triangleCountB;
                 this->paintCanvas->SetColor(0, 255, 0, 255);
+                int seconds = (int) (performanceTime / 1000);
                 String text = String("PerfTest (") + String(performanceModulSwitches) + String("/") +
                               String(performanceOverallModulSwitches) + String(") : ") +
-                              String((int) (performanceTime / 1000)) + String("   ") + String(triDrawn);
+                              String(seconds) + String("   ") + String(triDrawn);
                 this->paintCanvas->DrawString(this->engine->field_0x78, text, this->paintCanvas->GetWidth() / 2, 5,
                                               false);
                 text = String(this->paintCanvas->GetWidth()) + String(" / ") + String(this->paintCanvas->GetHeight());
@@ -701,10 +703,10 @@ void ApplicationManager::OnUpdate(long long now) {
         case 6: {
             if (this->currentTimeMs == 0 && this->paintCanvas->WarmUpTexture()) {
                 this->state = 5;
+                this->previousFrameTimeMs = now - 1;
                 this->currentTimeMs = 0;
                 this->actionState = 0;
                 this->frameTimeMs = now;
-                this->previousFrameTimeMs = now - 1;
                 this->keyState = 0;
             }
             uint64_t previous = this->frameTimeMs;
@@ -740,12 +742,12 @@ void ApplicationManager::OnUpdate(long long now) {
                     }
                 }
             } else {
-                this->state = 5;
-                this->currentTimeMs = 0;
-                this->actionState = 0;
-                this->frameTimeMs = now;
                 this->previousFrameTimeMs = now - 1;
+                this->frameTimeMs = now;
+                this->currentTimeMs = 0;
                 this->keyState = 0;
+                this->actionState = 0;
+                this->state = 5;
             }
             uint64_t previous = this->frameTimeMs;
             this->previousFrameTimeMs = previous;
