@@ -1843,58 +1843,62 @@ void Status::nextCampaignMission(bool advance) {
 }
 
 void Status::setStation(Station *s) {
-    if (station == s) {
+    if (this->station == s) {
         return;
     }
-    station = s;
-    Galaxy *gal = Globals::galaxy;
-    system = gal->getSystem(s->getSystem());
-    if (system == 0) {
+    this->station = s;
+    this->system = Globals::galaxy->getSystem(s->getSystem());
+    if (this->system == 0) {
         return;
     }
-    (*field_b4)[station->getSystem()] = true;
-    FileRead fr;
-    Array<Station *> *list = (Array<Station *> *) (intptr_t) fr.loadStationsBinary();
-    if (planetNames != 0) {
-        Array<String *> *pn = (Array<String *> *) (intptr_t) planetNames;
-        ArrayReleaseClasses(*pn);
-        delete pn;
+    (*this->field_b4)[this->station->getSystem()] = true;
+
+    FileRead *fileRead = new FileRead();
+    Array<Station *> *stationList = fileRead->loadStationsBinary(asSystem(this->system));
+    delete fileRead;
+
+    Array<String *> *names = (Array<String *> *) (intptr_t) this->planetNames;
+    if (names != 0) {
+        ArrayReleaseClasses(*names);
+        if ((Array<String *> *) (intptr_t) this->planetNames != 0) {
+            delete (Array<String *> *) (intptr_t) this->planetNames;
+        }
     }
-    Array<String *> *names = new Array<String *>();
-    planetNames = (int32_t)(intptr_t)
-    names;
-    ArraySetLength(list->size(), *names);
-    if (planetTextures != 0) {
-        delete (Array<int> *) (intptr_t) planetTextures;
+    this->planetNames = 0;
+    names = new Array<String *>();
+    this->planetNames = (int32_t) (intptr_t) names;
+    ArraySetLength(stationList->size(), *names);
+
+    if ((Array<int> *) (intptr_t) this->planetTextures != 0) {
+        ArrayRelease(*(Array<int> *) (intptr_t) this->planetTextures);
+        if ((Array<int> *) (intptr_t) this->planetTextures != 0) {
+            delete (Array<int> *) (intptr_t) this->planetTextures;
+        }
     }
-    Array<int> *texs = new Array<int>();
-    planetTextures = (int32_t)(intptr_t)
-    texs;
-    ArraySetLength(list->size(), *texs);
-    Array<Station *> *stations = (Array<Station *> *) asSystem(system)->getStations();
-    for (unsigned i = 0; i < stations->size(); i = i + 1) {
-        Station *cur = 0;
-        bool found = false;
-        for (unsigned j = 0; j < list->size(); j = j + 1) {
-            cur = (*list)[j];
-            int target = (int) (intptr_t)(*stations)[i];
-            if (target == cur->getIndex()) {
-                found = true;
+    this->planetTextures = 0;
+    Array<int> *textures = new Array<int>();
+    this->planetTextures = (int32_t) (intptr_t) textures;
+    ArraySetLength(stationList->size(), *textures);
+
+    Array<int> *stationIndices = (Array<int> *) asSystem(this->system)->getStations();
+    for (unsigned i = 0; i < ((Array<int> *) asSystem(this->system)->getStations())->size(); i++) {
+        for (unsigned j = 0; j < stationList->size(); j++) {
+            Station *candidate = (*stationList)[j];
+            if ((*stationIndices)[i] == candidate->getIndex()) {
+                String *name;
+                if (this->currentCampaignMission != 0) {
+                    name = new String(candidate->getName());
+                } else {
+                    name = new String();
+                }
+                (*(Array<String *> *) (intptr_t) this->planetNames)[i] = name;
+                (*(Array<int> *) (intptr_t) this->planetTextures)[i] = candidate->getTextureIndex();
                 break;
             }
         }
-        if (!found) {
-            continue;
-        }
-        String *nm = new String();
-        if (currentCampaignMission != 0) {
-            *nm = cur->getName();
-        }
-        (*names)[i] = nm;
-        (*texs)[i] = cur->getTextureIndex();
     }
-    ArrayReleaseClasses(*list);
-    delete list;
+    ArrayReleaseClasses(*stationList);
+    delete stationList;
 }
 
 String Status::replaceHash(String text, String replacement, String hash) {

@@ -438,40 +438,23 @@ int RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     return n;
 }
 
-static int *g_RH_wp_float = nullptr;
-
-struct RankHolder {
-    uint8_t _pad[0x2c];
-    int32_t rankBits;
-};
-
-void RecordHandler::recordStoreWritePreview(int slot) {
-    String path;
-    String num;
-    unsigned int fd;
-
-    num.Set((long long) (slot));
-    path = this->backupDir + num;
-
-    if (AEFile::FileExist(path) != 0)
+int RecordHandler::recordStoreWritePreview(int slot) {
+    String path = this->backupDir + String(slot);
+    if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
+    }
+    unsigned int fd;
     AEFile::OpenWrite(path, &fd);
-
     AEFile::Write(Globals::status->getPlayingTime(), fd);
-    AEFile::Write((int32_t)Globals::status->getCredits(), fd);
-
-    num = ((Station *) (&num))->getName();
-    AEFile::Write(num, fd, (bool)true);
-
-    num = ((SolarSystem *) (&num))->getName();
-    AEFile::Write(num, fd, (bool)true);
-
-    AEFile::Write((int32_t)Globals::status->getCurrentCampaignMission(), fd);
-    AEFile::Write((int32_t)Globals::status->getLevel(), fd);
-    AEFile::Write(reinterpret_cast<float &>((*reinterpret_cast<RankHolder **>(g_RH_wp_float))->rankBits), fd);
-
-    AEFile::Write((int32_t)((Ship *) (Globals::status->getShip()))->getIndex(), fd);
+    AEFile::Write((int32_t) Globals::status->getCredits(), fd);
+    AEFile::Write(Globals::status->getStation()->getName(), fd, true);
+    AEFile::Write(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), fd, true);
+    AEFile::Write((int32_t) Globals::status->getCurrentCampaignMission(), fd);
+    AEFile::Write((int32_t) Globals::status->getLevel(), fd);
+    AEFile::Write(reinterpret_cast<OptionsBuffer *>(Globals::options)->difficulty, fd);
+    AEFile::Write((int32_t) Globals::status->getShip()->getIndex(), fd);
     AEFile::Close(fd);
+    return 1;
 }
 
 static const char g_WA_empty1[] = "";
