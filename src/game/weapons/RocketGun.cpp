@@ -68,7 +68,7 @@ RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
     this->trailMatrices = nullptr;
     this->trailSystems = nullptr;
     this->trailTimers = nullptr;
-    this->particleManager = 0;
+    this->particleManager = nullptr;
     this->unusedSlot = -1;
 
     int gate = 0x37a9;
@@ -86,96 +86,73 @@ RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
 
 void RocketGun::setRadar(Radar *radar) {
     this->radar = radar;
-    Level *radarLevel = (Level *) radar->level;
-    Gun *gun = this->gun;
-    this->particleManager = (int) (intptr_t) radarLevel->field_80;
+    this->particleManager = radar->level->field_80;
 
-    int gunType = gun->itemIndex;
-    uint32_t mode = (uint32_t)(gunType - 0x1c);
-    if (mode > 2) {
-        if (gunType != 0xc1) {
-            if (gun->weaponType != ITEM_SORT_CLUSTER_MISSILE)
-                goto non_special;
-        }
-    }
-    if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
-        mode = 0;
-    } else if (gunType == 0xc1) {
-        mode = 3;
-    }
+    int item = this->gun->itemIndex;
+    int trailMode = item - 0x1c; // 0..2: the three missile tiers
+    if ((unsigned int) trailMode < 3 || item == 0xc1 || this->gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
+        if (this->gun->weaponType == ITEM_SORT_CLUSTER_MISSILE)
+            trailMode = 0;
+        else if (item == 0xc1)
+            trailMode = 3;
 
-    {
         this->trailMatrices = new Array<Matrix>();
         this->trailSystems = new Array<int>();
         this->trailTimers = new Array<int>();
+        ArraySetLength(this->gun->count, *this->trailMatrices);
+        ArraySetLength(this->gun->count, *this->trailSystems);
+        ArraySetLength(this->gun->count, *this->trailTimers);
 
-        uint32_t count = this->gun->count;
-        ArraySetLength(count, *(this->trailMatrices));
-        ArraySetLength(count, *(this->trailSystems));
-        ArraySetLength(count, *(this->trailTimers));
-
-        ParticleSettings::ParticleSet defaultType = ParticleSettings::ParticleSet_0x1c;
-        if (mode == 2)
-            defaultType = ParticleSettings::ParticleSet_0x1b;
-        for (uint32_t i = 0; i < this->gun->count; i++) {
+        ParticleSettings::ParticleSet defaultSet =
+                trailMode == 2 ? ParticleSettings::ParticleSet_0x1b : ParticleSettings::ParticleSet_0x1c;
+        for (uint32_t i = 0; i < this->gun->count; ++i) {
             ParticleSystemManager *manager;
             if (this->gun->itemIndex == 0xc1) {
-                this->particleManager = (int) (intptr_t) radarLevel->field_98;
-                manager = (ParticleSystemManager *) this->particleManager;
+                this->particleManager = radar->level->field_98;
+                manager = this->particleManager;
             } else {
-                manager = (ParticleSystemManager *) this->particleManager;
+                manager = this->particleManager;
             }
-
-            ParticleSettings::ParticleSet effect;
-            if (mode == 0) {
-                effect = ParticleSettings::ParticleSet_0x19;
-            } else {
-                effect = defaultType;
-                if (mode == 1)
-                    effect = ParticleSettings::ParticleSet_0x1a;
-            }
-
-            int system = manager->addSystem(&(*this->trailMatrices)[i], effect, false);
-            (*this->trailSystems)[i] = system;
-            ((ParticleSystemManager *) this->particleManager)->enableSystemEmit(system, false);
+            ParticleSettings::ParticleSet set;
+            if (trailMode == 0)
+                set = ParticleSettings::ParticleSet_0x19;
+            else if (trailMode == 1)
+                set = ParticleSettings::ParticleSet_0x1a;
+            else
+                set = defaultSet;
+            (*this->trailSystems)[i] = manager->addSystem(&(*this->trailMatrices)[i], set, false);
+            this->particleManager->enableSystemEmit((*this->trailSystems)[i], false);
             (*this->trailTimers)[i] = 0;
         }
         return;
     }
 
-non_special:
-    int rocketKind = this->rocketKind;
-    if ((uint32_t)(rocketKind - 4) < 2 || rocketKind == 0x28) {
+    if ((unsigned int) (this->rocketKind - 4) < 2 || this->rocketKind == 0x28) {
         this->trailMatrices = new Array<Matrix>();
         this->trailSystems = new Array<int>();
         this->trailTimers = new Array<int>();
-
-        ArraySetLength(this->gun->count, *(this->trailMatrices));
-        ArraySetLength(this->gun->count, *(this->trailSystems));
-        ArraySetLength(this->gun->count, *(this->trailTimers));
-
-        for (uint32_t i = 0; i < this->gun->count; i++) {
-            ParticleSystemManager *manager = radarLevel->field_80;
-            int system = manager->addSystem(&(*this->trailMatrices)[i], ParticleSettings::ParticleSet_0x27, false);
-            (*this->trailSystems)[i] = system;
-            manager->enableSystemEmit(system, false);
+        ArraySetLength(this->gun->count, *this->trailMatrices);
+        ArraySetLength(this->gun->count, *this->trailSystems);
+        ArraySetLength(this->gun->count, *this->trailTimers);
+        for (uint32_t i = 0; i < this->gun->count; ++i) {
+            (*this->trailSystems)[i] = radar->level->field_80->addSystem(
+                    &(*this->trailMatrices)[i], ParticleSettings::ParticleSet_0x27, false);
+            radar->level->field_80->enableSystemEmit((*this->trailSystems)[i], false);
             (*this->trailTimers)[i] = 0;
         }
         return;
     }
 
-    if (gunType == 0xe8) {
-        ParticleSystemManager *manager = radarLevel->field_9c;
-        Matrix *local = (Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
-        int system = manager->addSystem(local, ParticleSettings::ParticleSet_0x2f, false);
-        this->particleSystem = system;
-        manager->enableSystemEmit(system, 0);
+    if (item == 0xe8) {
+        this->particleSystem = radar->level->field_9c->addSystem(
+                (Matrix *) Globals::Canvas->TransformGetLocal(this->transform), ParticleSettings::ParticleSet_0x2f,
+                false);
+        radar->level->field_9c->enableSystemEmit(this->particleSystem, false);
     } else {
-        ParticleSystemManager *manager = radarLevel->particleRenderBoolPtr;
-        Matrix *local = (Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
-        int system = manager->addSystem(local, ParticleSettings::ParticleSet_0xc, false);
-        this->particleSystem = system;
-        manager->enableSystemEmit(system, 0);
+        this->particleSystem = radar->level->particleRenderBoolPtr->addSystem(
+                (Matrix *) Globals::Canvas->TransformGetLocal(this->transform), ParticleSettings::ParticleSet_0xc,
+                false);
+        radar->level->particleRenderBoolPtr->enableSystemEmit(this->particleSystem, false);
     }
 }
 
@@ -307,7 +284,7 @@ void RocketGun::update(int elapsed) {
             int shotIndex = gun->fireIndex;
             Vector *shotPositions = (Vector *) gun->positions;
             int system = (*this->trailSystems)[shotIndex];
-            ParticleSystemManager *manager = (ParticleSystemManager *) this->particleManager;
+            ParticleSystemManager *manager = this->particleManager;
             if (shotPositions[shotIndex].z != kZeroCompare) {
                 (*this->trailMatrices)[shotIndex] = matrix;
                 manager->resetSystem(system);
@@ -352,7 +329,7 @@ void RocketGun::update(int elapsed) {
         this->fadeTimer = timer;
         if (timer < 1) {
             this->fadeTimer = 0;
-            ((ParticleSystemManager *) this->particleManager)
+            this->particleManager
                     ->enableSystemRender(this->particleSystem, false);
         }
     }
@@ -399,7 +376,7 @@ void RocketGun::update(int elapsed) {
             } else {
                 if (this->trailMatrices != nullptr) {
                     int system = (*this->trailSystems)[i];
-                    ((ParticleSystemManager *) this->particleManager)
+                    this->particleManager
                             ->enableSystemEmit(system, false);
                     int *timer = &(*this->trailTimers)[i];
                     if (*timer == 0)
@@ -431,7 +408,7 @@ void RocketGun::update(int elapsed) {
                 *timer = left;
                 if (left < 1) {
                     *timer = 0;
-                    ((ParticleSystemManager *) this->particleManager)
+                    this->particleManager
                             ->enableSystemRender((*this->trailSystems)[i], false);
                 }
             }

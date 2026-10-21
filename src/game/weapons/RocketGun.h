@@ -9,6 +9,7 @@
 #include "engine/math/AEMath.h"
 
 class Radar;
+class ParticleSystemManager;
 
 class Gun;
 class Level;
@@ -28,7 +29,7 @@ public:
     Array<AbyssEngine::AEMath::Matrix> *trailMatrices;
     Array<int> *trailSystems;
     Array<int> *trailTimers;
-    int particleManager;
+    ParticleSystemManager *particleManager;
 
     RocketGun(int meshVariantId, Gun *gun, int mesh, int unused4,
               uint32_t flags, int rocketKind, bool homing, Level *level);
