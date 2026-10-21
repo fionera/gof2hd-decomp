@@ -1,5 +1,6 @@
 #include "engine/render/PaintCanvas.h"
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 #include <GLES2/gl2.h>
 #include <GLES/gl.h>
@@ -7,6 +8,7 @@
 #include "engine/render/AELoadedTexture.h"
 #include "engine/render/Material.h"
 #include "engine/core/Array.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "engine/core/Node.h"
 #include "engine/math/Transform.h"
 #include "engine/render/ResourceTexture.h"
@@ -228,21 +230,6 @@ namespace {
         double angle;
     };
 
-    struct PCStrLenView {
-        uint8_t pad00[0x08];
-        int length;
-    };
-
-    struct PCSplitArrayView {
-        uint32_t count;
-        char **data;
-    };
-
-    struct PCStrPartView {
-        uint8_t pad00[0x08];
-        int length;
-    };
-
 #if __SIZEOF_POINTER__ == 4
     static_assert(sizeof(PCSpriteSystemView) >= 0x0d, "sprite view");
     static_assert(offsetof(PCImage2DView, restoreFlag) == 0x14, "img restore");
@@ -416,33 +403,19 @@ void paintcanvas_ext_dm_setmodelmatrix(void *eng); // lint: void_ptr (external s
 
 static inline void paintcanvas_ext_dm_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void paintcanvas_ext_dsc_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dsc_getcolor(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dsc_str_copy(void *out, const AbyssEngine::String *src, bool copy); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dsc_str_fromchar(void *out, const char *s, bool copy); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_dsc_splittags(void *str, void *sep); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dsc_str_dtor(void *s); // lint: void_ptr (external symbol; mangling must match lib)
 
-unsigned short *paintcanvas_ext_dsc_str_cast(void *str); // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_dsc_textwidth(void *self, unsigned int font, void *str); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dsc_setcolor(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 
-char *paintcanvas_ext_dsc_getAEChar(void *str); // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_dsc_sscanf(const char *s, const char *fmt, void *out); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dsc_releaseclasses(void *arr); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_dsc_arr_dtor(void *arr); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dsc_op_delete(void *p); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_dr3_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1319,63 +1292,40 @@ static const char g_gla_nl_8c4c0[] = "\n";
 
 void PaintCanvas::GetLineArray(unsigned int font, const AbyssEngine::String &str, int width,
                                ::Array<AbyssEngine::String *> *outArray) {
-    AbyssEngine::String *acc = new AbyssEngine::String();
+    AbyssEngine::String *line = new AbyssEngine::String();
+    AbyssEngine::String text(str, false);
+    text += AbyssEngine::String(g_gla_nl_8c4c0, false);
 
-    char src[16];
-    char nl[16];
-    paintcanvas_ext_dsc_str_copy(src, &str, false);
-    new((AbyssEngine::String*)nl) AbyssEngine::String(g_gla_nl_8c4c0, false);
-    *(AbyssEngine::String*)src += *(AbyssEngine::String*)nl;
-    ((AbyssEngine::String*)nl)->~String();
-
+    // First pass: count the wrapped lines.
     unsigned int count = 0;
-    int pos = 0;
-    int srcLen = ((PCStrLenView *) src)->length;
-    while (pos < srcLen) {
-        char sub[16];
-        char line[16];
-        new((AbyssEngine::String*)sub) AbyssEngine::String(((AbyssEngine::String*)src)->SubString(0, (unsigned int) srcLen));
-        new((AbyssEngine::String*)line) AbyssEngine::String(*(AbyssEngine::String*)sub, false);
-        this->GetLine(font, *(AbyssEngine::String*)line, width, acc);
-        ((AbyssEngine::String*)line)->~String();
-        pos += (int) acc->size();
-        ((AbyssEngine::String*)sub)->~String();
-        count++;
+    for (int pos = 0; pos < (int) text.size(); count++) {
+        AbyssEngine::String rest = text.SubString((unsigned int) pos, text.size());
+        this->GetLine(font, rest, width, line);
+        pos += (int) line->size();
     }
-    delete acc;
+    delete line;
 
     ArraySetLength<AbyssEngine::String *>(count, *outArray);
     for (unsigned int i = 0; i < count; i++) {
         outArray->data_[i] = new AbyssEngine::String();
     }
 
+    // Second pass: fill each line and trim surrounding blanks.
+    int pos = 0;
     for (unsigned int i = 0; i < count; i++) {
-        char sub[16];
-        char line[16];
-        new((AbyssEngine::String*)sub) AbyssEngine::String(((AbyssEngine::String*)src)->SubString(0, (unsigned int) ((PCStrLenView *) src)->length));
-        new((AbyssEngine::String*)line) AbyssEngine::String(*(AbyssEngine::String*)sub, false);
-        AbyssEngine::String *out = outArray->data_[i];
-        this->GetLine(font, *(AbyssEngine::String*)line, width, out);
-        ((AbyssEngine::String*)line)->~String();
-
-        AbyssEngine::String *cur = outArray->data_[i];
-        int len = (int) cur->size();
-        int lo = 0;
-        while (*(*outArray->data_[i])[lo] == 0x20) {
-            lo++;
+        AbyssEngine::String rest = text.SubString((unsigned int) pos, text.size());
+        this->GetLine(font, rest, width, outArray->data_[i]);
+        int end = (int) outArray->data_[i]->size();
+        pos += end;
+        int start = 0;
+        while (*(*outArray->data_[i])[start] == ' ') {
+            start++;
         }
-        len++;
-        do {
-            len--;
-        } while (*(*outArray->data_[i])[len - 2] == 0x20);
-
-        char trimmed[16];
-        new((AbyssEngine::String*)trimmed) AbyssEngine::String(outArray->data_[i]->SubString((unsigned int) lo, (unsigned int) len));
-        *outArray->data_[i] = *(AbyssEngine::String*)trimmed;
-        ((AbyssEngine::String*)trimmed)->~String();
-        ((AbyssEngine::String*)sub)->~String();
+        while (*(*outArray->data_[i])[end - 1] == ' ') {
+            end--;
+        }
+        *outArray->data_[i] = outArray->data_[i]->SubString((unsigned int) start, (unsigned int) end);
     }
-    ((AbyssEngine::String*)src)->~String();
 }
 
 void PaintCanvas::AddResource(AbyssEngine::Resource *resource) {
@@ -3306,57 +3256,43 @@ void PaintCanvas::DrawString(unsigned int index, const unsigned short *str,
     }
 }
 
-static const char g_dsc_pipe_882c4[] = "|";
+static const char g_dsc_tag_sep[] = "c"; // colour-tag separator (orig .rodata 0x1ca491)
 
 static const char g_dsc_fmt_882ee[] = "%x";
 
-void paintcanvas_ext_dsc_fontdraw(void *font, unsigned short *txt, unsigned int len, // lint: void_ptr (external symbol; mangling must match lib)
-                                  int x, int y, void *self, void *eng, // lint: void_ptr (external symbol; mangling must match lib)
-                                  bool b); // lint: void_ptr (external symbol; mangling must match lib)
 
 void PaintCanvas::DrawStringColor(unsigned int index, const AbyssEngine::String &text,
                                   int x, int y, bool b) {
     if (index >= this->fonts.count) {
         return;
     }
-    PCFontView *font0 = (PCFontView *) ((char **) this->fonts.data_)[index];
-    paintcanvas_ext_dsc_settexture(this, (unsigned int) font0->texture);
-    paintcanvas_ext_dsc_getcolor(this);
+    PCFontView *font0 = (PCFontView *) this->fonts.data_[index];
+    this->SetTexture((unsigned int) font0->texture, (unsigned int) -1);
+    unsigned int savedColor = this->GetColor();
 
-    char str[16];
-    char sep[16];
-    paintcanvas_ext_dsc_str_copy(str, &text, false);
-    paintcanvas_ext_dsc_str_fromchar(sep, g_dsc_pipe_882c4, false);
-    PCSplitArrayView *parts = (PCSplitArrayView *) paintcanvas_ext_dsc_splittags(str, sep);
-    paintcanvas_ext_dsc_str_dtor(sep);
-
+    // "c"-separated segments alternate between text and a hex colour ("" restores the colour).
+    AbyssEngine::String str(text, false);
+    ::Array<AbyssEngine::String *> *parts = str.SplitTags(AbyssEngine::String(g_dsc_tag_sep, false));
     if (parts != 0) {
         bool draw = true;
         for (unsigned int i = 0; i < parts->count; i++) {
-            char **data = parts->data;
-            char *part = data[i];
             if (draw) {
-                AbyssEngine::ImageFont *font = this->fonts.data_[index];
-                unsigned short *txt = paintcanvas_ext_dsc_str_cast(part);
-                paintcanvas_ext_dsc_fontdraw(font, txt, (unsigned int) ((PCStrPartView *) part)->length, x,
-                                             y, this, this->engine, b);
-                x += paintcanvas_ext_dsc_textwidth(this, index, part);
-            } else if (((PCStrPartView *) part)->length == 0) {
-                paintcanvas_ext_dsc_setcolor(this);
+                AbyssEngine::ImageFontDrawString(this->fonts.data_[index], (unsigned short *) *parts->data_[i],
+                                                 parts->data_[i]->size(), x, y, this, this->engine, b);
+                x += this->GetTextWidth(index, *parts->data_[i]);
+            } else if (parts->data_[i]->size() == 0) {
+                this->SetColor(savedColor);
             } else {
-                int color = 0;
-                char *s = paintcanvas_ext_dsc_getAEChar(part);
-                paintcanvas_ext_dsc_sscanf(s, g_dsc_fmt_882ee, &color);
-                paintcanvas_ext_dsc_setcolor(this);
+                unsigned int color = 0;
+                sscanf(parts->data_[i]->GetAEChar(), g_dsc_fmt_882ee, &color);
+                this->SetColor(color);
             }
             draw = !draw;
         }
-        paintcanvas_ext_dsc_setcolor(this);
-        paintcanvas_ext_dsc_releaseclasses(parts);
-        char *p = (char *) paintcanvas_ext_dsc_arr_dtor(parts);
-        paintcanvas_ext_dsc_op_delete(p);
+        this->SetColor(savedColor);
+        ArrayReleaseClasses<AbyssEngine::String *>(*parts);
+        delete parts;
     }
-    paintcanvas_ext_dsc_str_dtor(str);
 }
 
 void PaintCanvas::SetMatForGlow(AbyssEngine::Material *glowSource) {
