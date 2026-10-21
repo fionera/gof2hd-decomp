@@ -819,8 +819,10 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->radar->lockedStation == (*this->level->getLandmarks())[0]) {
                     this->hud->hudEvent(10, this->player, 0);
                 } else {
-                    this->hud->hudEvent(this->radar->lockedStation == (*this->level->getLandmarks())[3] ? 15 : 12,
-                                        this->player, 0);
+                    if (this->radar->lockedStation == (*this->level->getLandmarks())[3])
+                        this->hud->hudEvent(15, this->player, 0);
+                    else
+                        this->hud->hudEvent(12, this->player, 0);
                 }
                 this->hudTouchFlags = this->hud->touchEnd(x, y, touch);
                 return;
@@ -976,13 +978,9 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
             this->player->dockToAsteroid(this->radar->getLockedAsteroid(), this->radar);
         }
 
-        if (this->player->isMining()) {
-            Globals::status->field_124 = 0;
-            this->player->stopMining();
-            return;
-        }
-        if ((this->radar->lockedEnemy != nullptr && this->radar->lockedEnemy->field_0x70) ||
-            this->player->isDockedToDockingPoint()) {
+        if (!this->player->isMining() &&
+            ((this->radar->lockedEnemy != nullptr && this->radar->lockedEnemy->field_0x70) ||
+             this->player->isDockedToDockingPoint())) {
             if (this->radar->lockedEnemy != nullptr && !this->player->isDockingToDockingPoint() &&
                 !this->player->isDockedToDockingPoint() && this->radar->lockedEnemy->field_0x75) {
                 this->hud->hudEvent(34, this->player, 0);
@@ -1010,6 +1008,11 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 this->_b5c = 0;
             }
             this->lastTapTime = now;
+            return;
+        }
+        if (this->player->isMining()) {
+            Globals::status->field_124 = 0;
+            this->player->stopMining();
             return;
         }
         this->hud->enableFireForTutorial(false);
@@ -1389,7 +1392,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             amount--;
                             refinedAny = true;
                         }
-                        if (amount != 0) {
+                        if (amount < 0) {
                             report += String("\n") + String(-amount) + String("t ") +
                                       *Globals::gameText->getText(1274 + refined);
                         }
