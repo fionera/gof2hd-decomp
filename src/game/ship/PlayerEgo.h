@@ -444,7 +444,7 @@ public:
 
     bool isDockingToDockingPoint();
 
-    unsigned char isDockingToPlanet();
+    bool isDockingToPlanet();
 
     unsigned char isDockingToStream();
 
