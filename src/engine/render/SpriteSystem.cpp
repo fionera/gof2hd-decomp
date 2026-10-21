@@ -40,6 +40,7 @@ namespace AbyssEngine {
                             0x1f, &sys->mesh);
         SpriteSystem *s = *out;
         Mesh *mesh = s->mesh;
+        unsigned short *indices = (unsigned short *) mesh->indices;
         if (rc != 1) {
             MeshRelease(engine, &s->mesh);
             if ((*out)->posCpu != 0)
@@ -53,8 +54,6 @@ namespace AbyssEngine {
             *out = 0;
             return -1;
         }
-
-        unsigned short *indices = (unsigned short *) mesh->indices;
 
         s->posCpu = new float[n * 3];
         memset((*out)->posCpu, 0, n * 0xc);
