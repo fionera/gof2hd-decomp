@@ -314,6 +314,7 @@ Generator *Globals::generator;
 #include "game/world/SolarSystem.h"
 #include "game/core/String.h"
 #include "engine/math/BoundingSphere.h"
+#include "engine/math/Transform.h"
 #include "engine/render/ParticleSettingsRef.h"
 
 #include <new>
@@ -416,11 +417,60 @@ static inline CoordsObject *rdcoords(CoordsObject *const g) { return g; }
 
 
 
-static const unsigned short gGSG_resTable[1] = {};
-static const unsigned short gGSG_meshTable[1] = {};
-static const short gGSG_extraTable[1] = {};
-static const unsigned gGSG_lodTable[1] = {};
-static const unsigned gGSG_childTable[1] = {};
+static const unsigned short gShipGeometryRes[64] = {
+    17000, 17001, 17002, 17003, 17004, 17005, 17006, 17007, 17008, 17009, 17010, 17011, 17012, 17013, 17014, 17015,
+    17016, 17017, 17018, 17019, 17020, 17021, 17022, 17023, 17024, 17025, 17026, 17027, 17028, 17029, 17030, 17031,
+    17032, 17033, 17034, 17035, 17036, 17211, 17216, 17221, 17227, 17233, 17239, 17245, 17251, 17257, 17263, 17269,
+    17275, 17281, 17287, 17293, 17299, 17305, 17311, 17317, 17323, 17329, 17335, 17341, 17347, 17353, 17359, 17365,
+};
+static const unsigned short gShipMainMesh[64] = {
+    65535, 65535, 65535, 65535, 18704, 65535, 65535, 65535, 18708, 18709, 65535, 65535, 18712, 65535, 65535, 65535,
+    18716, 65535, 18718, 65535, 65535, 18721, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 18731,
+    65535, 65535, 65535, 18735, 65535, 65535, 65535, 18739, 65535, 18741, 18742, 18743, 65535, 65535, 65535, 65535,
+    65535, 17286, 17292, 65535, 65535, 17310, 17316, 18818, 18819, 18820, 18821, 18822, 18823, 65535, 65535, 17370,
+};
+static const unsigned short gShipExtraMesh[64] = {
+    18700, 18701, 18702, 18703, 65535, 18705, 18706, 18707, 65535, 65535, 18710, 18711, 65535, 65535, 65535, 65535,
+    65535, 18717, 65535, 18719, 18720, 65535, 18722, 18723, 18724, 18725, 18726, 18727, 18728, 18729, 18730, 65535,
+    18732, 18733, 18734, 65535, 18736, 17215, 18738, 65535, 17231, 65535, 17243, 17249, 18779, 18811, 18812, 18813,
+    18780, 65535, 17291, 18814, 18815, 65535, 65535, 18818, 18819, 18820, 18821, 18822, 18823, 18824, 18825, 18826,
+};
+static const int gShipLodMeshes[64][3] = {
+    17100, 17101, 17102, 17103, 17104, 17105, 17106, 17107, 17108, 17109, 17110, 17111,
+    17112, 17113, 17114, 17115, 17116, 17117, 17118, 17119, 17120, 17121, 17122, 17123,
+    17124, 17125, 17126, 17127, 17128, 17128, 17130, 65535, 65535, 17133, 17134, 17135,
+    17136, 17137, 17138, 17139, 17140, 17141, 17142, 17143, 17144, 17145, 17146, 17147,
+    17148, 17149, 17150, 17151, 17152, 17153, 17154, 17155, 17156, 17157, 17158, 17159,
+    17160, 17161, 17162, 17163, 17164, 17165, 17166, 17167, 17168, 17169, 17170, 17171,
+    17172, 17173, 17174, 17175, 17176, 17177, 17178, 17179, 17180, 17181, 17182, 17183,
+    17184, 17185, 17186, 17187, 17188, 17189, 17190, 17191, 17192, 17193, 17194, 17195,
+    17196, 17197, 17198, 17199, 17200, 17201, 17202, 17203, 17204, 17205, 17206, 17207,
+    17208, 17209, 17210, 65535, 65535, 65535, 65535, 65535, 65535, 17222, 17223, 65535,
+    65535, 65535, 65535, 17234, 17235, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+static const int gShipLodChildMeshes[64][3] = {
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    18708, 18708, 18708, 18709, 18709, 18709, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 17040, 17041, 17042, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535,
+    65535, 65535, 65535, 65535, 65535, 65535, 0, 0, 0, 0, 0, 0,
+};
 
 static const int gRaceTable[64] = {
     3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
@@ -672,9 +722,6 @@ static const int gDialogueSoundPairs[3008] = {
     3153, 2229, 3154, 2230, 3155, 2231, 3141, 2232, 3142, 2233, 3143, 2234, 3144, 2235, 3145, 2236,
 };
 
-static const char gGRN_noFirst[] = "";
-static const char gGRN_noLast[] = "";
-static const char gGRN_space[] = "";
 
 #include "engine/core/AERandom.h"
 
@@ -1359,202 +1406,198 @@ Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) 
 }
 
 AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
-    PaintCanvas *canvas = Globals::Canvas;
-
-    if (kind == 0xf) {
-        AEGeometry *geom;
-
-        if (variant == 0) {
-            geom = new AEGeometry((uint16_t) 0x42a9, canvas, false);
-
-            unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff, mesh2 = 0xffffffff;
-            canvas->TransformCreate(mesh0);
-            canvas->TransformAddMesh(mesh0, 0x42ae, false);
-            geom->addChild(mesh0);
-            canvas->TransformCreate(mesh1);
-            canvas->TransformAddMesh(mesh1, 0x42b2, false);
-            geom->addChild(mesh1);
-            canvas->TransformCreate(mesh2);
-            canvas->TransformAddMesh(mesh2, 0x42ad, false);
-            geom->addChild(mesh2);
-
-            uint16_t lodMeshes[2] = {0x42aa, 0x42ab};
-            int lodDists[2] = {25000, 45000};
-            geom->setLodMeshes(lodMeshes, lodDists, 2);
-            uint16_t lodChild = 0x42ae;
-            geom->setLodChildMeshes(&lodChild);
-        } else if (variant == 3) {
-            geom = new AEGeometry((uint16_t) 0x4299, canvas, false);
-
-            unsigned head = 0xffffffff;
-            canvas->TransformCreate(head);
-            canvas->TransformAddMesh(head, 0x4299, true);
-            geom->addChild(head);
-
-            int segments = AERandom_nextIntB(0, 4);
-            unsigned prevA = 0xffffffff, prevB = 0xffffffff;
-            for (int i = 0; i < segments; i++) {
-                unsigned a = 0xffffffff, b = 0xffffffff;
-                canvas->TransformCreate(a);
-                canvas->TransformCreate(b);
-                canvas->TransformAddMesh(a, 0x429a, true);
-                canvas->TransformAddMesh(b, 0x429a, true);
-                unsigned keepA = a, keepB = b;
-                if (prevA != 0xffffffff) {
-                    canvas->TransformAddChild(prevA, a);
-                    canvas->TransformAddChild(prevB, b);
-                    keepA = prevA;
-                    keepB = prevB;
-                }
-                prevA = keepA;
-                prevB = keepB;
-            }
-            if (prevA != 0xffffffff) {
-                geom->addChild(prevA);
-            }
-
-            unsigned tail = 0xffffffff;
-            canvas->TransformCreate(tail);
-            canvas->TransformAddMesh(tail, 0x429a, true);
-            geom->addChild(tail);
-
-            uint16_t lodMeshes[1] = {0x429a};
-            int lodDists[1] = {35000};
-            geom->setLodMeshes(lodMeshes, lodDists, 1);
-            geom->setLodChildTransform(prevB);
-        } else {
-            geom = new AEGeometry((uint16_t) 0x42a4, canvas, false);
-
-            unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff;
-            canvas->TransformCreate(mesh0);
-            canvas->TransformAddMesh(mesh0, 0x42a4, true);
-            geom->addChild(mesh0);
-            canvas->TransformCreate(mesh1);
-            canvas->TransformAddMesh(mesh1, 0x42a4, true);
-            geom->addChild(mesh1);
-
-            uint16_t lodMeshes[2] = {0x42a6, 0x42a7};
-            int lodDists[2] = {35000, 60000};
-            geom->setLodMeshes(lodMeshes, lodDists, 2);
-        }
-
-        return geom;
-    }
-    if (kind == 0xe || kind == 0xd) {
-        int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
-        AEGeometry *geom = new AEGeometry((uint16_t) resId, canvas, false);
+    AEGeometry *geom;
+    if (kind == 13) {
+        geom = new AEGeometry((uint16_t) 17013, Globals::Canvas, false);
         unsigned t0 = 0xffffffff;
-        canvas->TransformCreate(t0);
-        canvas->TransformAddMesh((unsigned) t0, 0, (bool) (1));
+        Globals::Canvas->TransformCreate(t0);
+        Globals::Canvas->TransformAddMesh(t0, 18713, false);
         geom->addChild(t0);
         unsigned t1 = 0xffffffff;
-        canvas->TransformCreate(t1);
-        canvas->TransformAddMesh((unsigned) t1, 0, (bool) (1));
+        Globals::Canvas->TransformCreate(t1);
+        Globals::Canvas->TransformAddMesh(t1, 17038, false);
         geom->addChild(t1);
-        unsigned short lodMeshes[2] = {0, 0};
-        int dist[2];
-        dist[0] = (kind == 0xe) ? 35000 : 35000;
-        dist[1] = (kind == 0xe) ? 60000 : 45000;
-        geom->setLodMeshes(lodMeshes, dist, 2);
-        unsigned short childMeshes[1] = {0};
-        geom->setLodChildMeshes(childMeshes);
-        if (kind == 0xe) {
-            geom->setScaling(1.0f);
+        uint16_t lodMeshes[2] = {17139, 17140};
+        int lodDists[2] = {35000, 45000};
+        geom->setLodMeshes(lodMeshes, lodDists, 2);
+        uint16_t lodChildMeshes[2] = {17040, 17041};
+        geom->setLodChildMeshes(lodChildMeshes);
+    } else if (kind == 14) {
+        geom = new AEGeometry((uint16_t) 14311, Globals::Canvas, false);
+        unsigned t0 = 0xffffffff;
+        Globals::Canvas->TransformCreate(t0);
+        Globals::Canvas->TransformAddMesh(t0, 14316, false);
+        geom->addChild(t0);
+        unsigned t1 = 0xffffffff;
+        Globals::Canvas->TransformCreate(t1);
+        Globals::Canvas->TransformAddMesh(t1, 14315, false);
+        geom->addChild(t1);
+        uint16_t lodMeshes[2] = {14312, 14313};
+        int lodDists[2] = {35000, 60000};
+        geom->setLodMeshes(lodMeshes, lodDists, 2);
+        uint16_t lodChildMeshes[2] = {14316, 14316};
+        geom->setLodChildMeshes(lodChildMeshes);
+        geom->setScaling(2.0f, 2.0f, 2.0f);
+    } else if (kind == 15) {
+        switch (variant) {
+        case 3: {
+            geom = new AEGeometry((uint16_t) 17049, Globals::Canvas, false);
+            unsigned head = 0xffffffff;
+            Globals::Canvas->TransformCreate(head);
+            Globals::Canvas->TransformAddMesh(head, 17055, false);
+            geom->addChild(head);
+            int segments = Globals::rnd->nextInt(4);
+            unsigned firstLeft = 0xffffffff;
+            unsigned firstRight = 0xffffffff;
+            for (int i = 0; i < segments; i++) {
+                unsigned left = 0xffffffff;
+                unsigned right = 0xffffffff;
+                Globals::Canvas->TransformCreate(left);
+                Globals::Canvas->TransformCreate(right);
+                Globals::Canvas->TransformAddMesh(left, 17052, false);
+                Globals::Canvas->TransformAddMesh(right, 17053, false);
+                if (firstLeft != 0xffffffff) {
+                    Globals::Canvas->TransformAddChild(firstLeft, left);
+                    Globals::Canvas->TransformAddChild(firstRight, right);
+                } else {
+                    firstLeft = left;
+                    firstRight = right;
+                }
+                float z = i == 0 ? -2150.0f : (i == 1 ? 2150.0f : 4300.0f);
+                AbyssEngine::AEMath::MatrixSetTranslation(*(AbyssEngine::AEMath::Matrix *) Globals::Canvas->TransformGetLocal(left), 0, 0, z);
+                AbyssEngine::AEMath::MatrixSetTranslation(*(AbyssEngine::AEMath::Matrix *) Globals::Canvas->TransformGetLocal(right), 0, 0, z);
+            }
+            if (firstLeft != 0xffffffff) {
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(firstLeft))->boundingRadius = 100000.0f;
+                geom->addChild(firstLeft);
+            }
+            unsigned tail = 0xffffffff;
+            Globals::Canvas->TransformCreate(tail);
+            Globals::Canvas->TransformAddMesh(tail, 17054, false);
+            geom->addChild(tail);
+            uint16_t lodMeshes[1] = {17050};
+            int lodDists[1] = {35000};
+            geom->setLodMeshes(lodMeshes, lodDists, 1);
+            geom->setLodChildTransform(firstRight);
+            break;
         }
-        return geom;
-    }
-
-    {
-        AEGeometry *geom = new AEGeometry((uint16_t) gGSG_resTable[kind], canvas, true);
-        unsigned short mesh = gGSG_meshTable[kind];
-        unsigned mainT = 0xffffffff;
-        unsigned mainMesh = 0xffffffff;
-        if (mesh != 0xffff) {
-            canvas->MeshCreate(mesh, mainMesh, true);
-            canvas->TransformCreate(mainT);
-            canvas->TransformAddMeshId(mainT, mainMesh);
-            geom->addChild(mainT);
-            geom->meshHandle = mainMesh;
+        case 0: {
+            geom = new AEGeometry((uint16_t) 17065, Globals::Canvas, false);
+            unsigned t0 = 0xffffffff;
+            Globals::Canvas->TransformCreate(t0);
+            Globals::Canvas->TransformAddMesh(t0, 17070, false);
+            geom->addChild(t0);
+            unsigned t1 = 0xffffffff;
+            Globals::Canvas->TransformCreate(t1);
+            Globals::Canvas->TransformAddMesh(t1, 17074, false);
+            geom->addChild(t1);
+            unsigned t2 = 0xffffffff;
+            Globals::Canvas->TransformCreate(t2);
+            Globals::Canvas->TransformAddMesh(t2, 17069, false);
+            geom->addChild(t2);
+            uint16_t lodMeshes[2] = {17066, 17067};
+            int lodDists[2] = {25000, 45000};
+            geom->setLodMeshes(lodMeshes, lodDists, 2);
+            uint16_t lodChildMeshes[2] = {17070, 17070};
+            geom->setLodChildMeshes(lodChildMeshes);
+            break;
+        }
+        default: {
+            geom = new AEGeometry((uint16_t) 17060, Globals::Canvas, false);
+            unsigned t0 = 0xffffffff;
+            Globals::Canvas->TransformCreate(t0);
+            Globals::Canvas->TransformAddMesh(t0, 17061, false);
+            geom->addChild(t0);
+            unsigned t1 = 0xffffffff;
+            Globals::Canvas->TransformCreate(t1);
+            Globals::Canvas->TransformAddMesh(t1, 17064, false);
+            geom->addChild(t1);
+            uint16_t lodMeshes[2] = {17062, 17063};
+            int lodDists[2] = {35000, 60000};
+            geom->setLodMeshes(lodMeshes, lodDists, 2);
+            break;
+        }
+        }
+    } else {
+        geom = new AEGeometry(gShipGeometryRes[kind], Globals::Canvas, true);
+        unsigned transform = 0xffffffff;
+        unsigned meshId = 0xffffffff;
+        if (gShipMainMesh[kind] != 0xffff) {
+            Globals::Canvas->MeshCreate(gShipMainMesh[kind], meshId, true);
+            Globals::Canvas->TransformCreate(transform);
+            Globals::Canvas->TransformAddMeshId(transform, meshId);
+            geom->addChild(transform);
+            geom->meshHandle = meshId;
         }
         if (!wireframe) {
-            unsigned short mat = (unsigned short) ((short) kind + 0x7dc8);
-            unsigned matH = 0xffffffff;
-            canvas->MaterialCreate(mat, matH);
-            canvas->MeshChangeResourceMaterial(geom->meshId, mat);
+            unsigned materialId = 0xffffffff;
+            Globals::Canvas->MaterialCreate(32200 + kind, materialId);
+            Globals::Canvas->MeshChangeResourceMaterial(geom->meshId, 32200 + kind);
         }
-        short extra = gGSG_extraTable[kind];
-        if (extra != -1) {
+        if (gShipExtraMesh[kind] != 0xffff) {
             unsigned t = 0xffffffff;
-            canvas->TransformCreate(t);
-            canvas->TransformAddMesh((unsigned) t, 0, (bool) ((int) (unsigned char) (char) extra));
+            Globals::Canvas->TransformCreate(t);
+            Globals::Canvas->TransformAddMesh(t, gShipExtraMesh[kind], false);
             geom->addChild(t);
         }
         if (wireframe) {
-            if (kind != 0x27 && kind != 0x29) {
+            if (kind != 39 && kind != 41) {
                 unsigned t = 0xffffffff;
-                canvas->TransformCreate(t);
-                canvas->TransformAddMesh((unsigned) t, 0, (bool) ((int) (char) (-0x14 + (char) kind)));
+                Globals::Canvas->TransformCreate(t);
+                Globals::Canvas->TransformAddMesh(t, 17900 + kind, false);
                 geom->addChild(t);
             }
         } else {
             unsigned t = 0xffffffff;
-            canvas->TransformCreate(t);
-            canvas->TransformAddMesh((unsigned) t, 0, (bool) ((int) (char) (0x50 + (char) kind)));
+            Globals::Canvas->TransformCreate(t);
+            Globals::Canvas->TransformAddMesh(t, 18000 + kind, false);
             geom->addChild(t);
         }
-
-        unsigned lastVisibleDist = 2;
-        const unsigned *lod = &gGSG_lodTable[kind * 3];
-        unsigned count = 0;
-        for (int i = 0; i != 2; i++) {
-            if (lod[i] != 0xffff) count++;
+        int lodCount = 0;
+        for (int i = 0; i < 2; i++) {
+            if (gShipLodMeshes[kind][i] != 0xffff) {
+                lodCount++;
+            }
         }
-        if (count != 0) {
-            unsigned short *meshes = new unsigned short[count];
-            unsigned *ids = new unsigned[count];
-            int *dist = new int[count];
-            int d = 5000;
-            unsigned *idp = ids;
-            const unsigned *src = lod;
-            for (unsigned i = 0; i < count; i++) {
-                unsigned m = *src;
-                dist[i] = d;
-                meshes[i] = (unsigned short) m;
+        if (lodCount > 0) {
+            uint16_t *lodMeshes = new uint16_t[lodCount];
+            uint32_t *lodMeshIds = new uint32_t[lodCount];
+            int *lodDists = new int[lodCount];
+            int dist = 5000;
+            for (int i = 0; i < lodCount; i++) {
+                lodMeshes[i] = gShipLodMeshes[kind][i];
+                lodDists[i] = dist;
                 if (!wireframe) {
-                    canvas->MeshCreate((unsigned short) m, *idp, true);
-                    canvas->MeshChangeResourceMaterial(*idp,
-                                                       (unsigned short) ((short) kind + 0x7dc8));
+                    Globals::Canvas->MeshCreate(gShipLodMeshes[kind][i], lodMeshIds[i], true);
+                    Globals::Canvas->MeshChangeResourceMaterial(lodMeshIds[i], 32200 + kind);
                 }
-                d += 8000;
-                idp++;
-                src++;
+                dist += 8000;
             }
-            lastVisibleDist = (unsigned) d;
             if (wireframe) {
-                geom->setLodMeshes(meshes, dist, count);
+                geom->setLodMeshes(lodMeshes, lodDists, lodCount);
             } else {
-                geom->setLodMeshesWithMeshIds(meshes, ids, dist, count);
+                geom->setLodMeshesWithMeshIds(lodMeshes, lodMeshIds, lodDists, lodCount);
             }
-
-            const unsigned *childSrc = &gGSG_childTable[kind * 3];
             int childCount = 0;
-            for (int i = 0; i != 2; i++) {
-                if (childSrc[i] != 0xffff) childCount++;
+            for (int i = 0; i < 2; i++) {
+                if (gShipLodChildMeshes[kind][i] != 0xffff) {
+                    childCount++;
+                }
             }
-            if (childCount != 0) {
-                unsigned short *childMeshes = new unsigned short[childCount];
-                for (int i = 0; i != childCount; i++) {
-                    childMeshes[i] = (unsigned short) childSrc[i];
+            if (childCount > 0) {
+                uint16_t *childMeshes = new uint16_t[childCount];
+                for (int i = 0; i < childCount; i++) {
+                    childMeshes[i] = gShipLodChildMeshes[kind][i];
                 }
                 geom->setLodChildMeshes(childMeshes);
                 delete[] childMeshes;
             }
-            delete[] meshes;
-            delete[] dist;
+            delete[] lodMeshes;
+            delete[] lodDists;
         }
-        geom->setLodLastVisibleDistance(lastVisibleDist);
-        return geom;
+        geom->setLodLastVisibleDistance(80000);
     }
+    return geom;
 }
 
 void Globals::startNewSoundResourceList() {
