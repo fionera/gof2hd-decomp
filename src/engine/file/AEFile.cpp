@@ -1,7 +1,8 @@
 #include "engine/file/AEFile.h"
 #include "game/core/String.h"
 #include <new>
-
+#include "engine/file/AEPakFile.h"
+#include "engine/file/AENormalFile.h"
 
 namespace {
     inline void AEStr_set(String &self, const char *s) { self.Set_char(s); }
@@ -18,6 +19,103 @@ namespace {
     inline uint32_t AEStr_indexOf(const String &self, const String &needle) {
         return const_cast<String &>(self).IndexOf(needle);
     }
+}
+
+AEPakFile::AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset)
+    : fileInterface(fileInterface),
+      sizeLimit(static_cast<uint32_t>(sizeLimit)),
+      baseOffset(static_cast<uint32_t>(baseOffset)),
+      position(0) {
+}
+
+AEPakFile::~AEPakFile() {
+    Release();
+}
+
+uint32_t AEPakFile::Read(uint32_t bytes, void *buffer) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    FileInterface *file;
+    if (bytes != 0 && (file = fileInterface) != nullptr) {
+        if (static_cast<int>(position + bytes) > static_cast<int>(sizeLimit)) {
+            bytes = static_cast<uint32_t>(static_cast<int>(sizeLimit) - static_cast<int>(position));
+        }
+        if (bytes != 0) {
+            position += bytes;
+            return file->Read(bytes, buffer);
+        }
+    }
+    return 0;
+}
+
+uint32_t AEPakFile::Skip(uint32_t bytes) {
+    char *buffer = new char[bytes];
+    Read(bytes, buffer);
+    delete[] buffer;
+    return 1;
+}
+
+uint32_t AEPakFile::GetFileSize() {
+    return sizeLimit;
+}
+
+uint32_t AEPakFile::Release() {
+    if (fileInterface != nullptr) {
+        fileInterface->Close();
+        if (fileInterface != nullptr) {
+            delete fileInterface;
+        }
+        fileInterface = nullptr;
+    }
+    return 1;
+}
+
+AENormalFile::AENormalFile(FileInterface *file)
+    : file(file) {
+}
+
+AENormalFile::~AENormalFile() {
+    Release();
+}
+
+uint32_t AENormalFile::Release() {
+    if (file != nullptr) {
+        file->Close();
+        if (file != nullptr) {
+            delete file;
+        }
+    }
+    file = nullptr;
+    return 1;
+}
+
+uint32_t AENormalFile::Read(uint32_t bytes, void *buffer) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    if (file != nullptr) {
+        return file->Read(bytes, buffer);
+    }
+    return 0;
+}
+
+uint32_t AENormalFile::Write(uint32_t bytes, void *buffer) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    if (file != nullptr) {
+        return file->Write(bytes, buffer);
+    }
+    return 0;
+}
+
+uint32_t AENormalFile::Skip(uint32_t bytes) {
+    if (file != nullptr) {
+        return file->Seek(bytes);
+    }
+    return 0;
+}
+
+uint32_t AENormalFile::GetFileSize() {
+    if (file != nullptr) {
+        return file->GetFileSize();
+    }
+    return 0;
 }
 
 FileInterface *OpenAppend(unsigned short * /*name*/, int /*size*/, bool /*append*/, unsigned int /*mode*/) {
@@ -620,3 +718,8 @@ FileInterface *AEFile::fileInterface;
 Array<AEPakFileEntry *> *AEFile::pakFileEntryList;
 Array<AELowLevelFile *> *AEFile::file;
 char *AEFile::appRoot;
+
+uint32_t AEPakFile::Write(uint32_t, void *) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    return 0;
+}
