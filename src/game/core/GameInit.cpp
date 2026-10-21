@@ -154,18 +154,17 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     data->field_0x60 = 0;
     data->field_0x64 = 0;
     data->field_0x68 = 0;
-    data->field_0x6c = 0;
 
     data->globals = new Globals();
 
+    const int width = static_cast<int>(engine->GetDeviceInfo().width);
+    const int height = static_cast<int>(engine->GetDeviceInfo().height);
     DeviceInfo dev = engine->GetDeviceInfo();
 
-    if (dev.height < 640 || dev.isPad != 0) {
-        DeviceInfo padDev = engine->GetDeviceInfo();
-        Globals::retinaDisplay = (padDev.isPad != 0) && (static_cast<int>(dev.height) > 800);
-    } else {
+    if (height < 640 || dev.isPad != 0)
+        Globals::retinaDisplay = engine->GetDeviceInfo().isPad != 0 && height > 800;
+    else
         Globals::retinaDisplay = true;
-    }
 
     data->field_0xa8 = AbyssEngine::String("", false);
     data->field_0xa5 = 0;
@@ -183,19 +182,14 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     data->field_0xa2 = 0;
     data->field_0xa3 = 0;
 
-    Globals::iPad = (dev.height == 480) && (dev.width == 864);
+    Globals::n9 = height == 480 && width == 864;
 
-    engine->GetDeviceInfo();
+    dev = engine->GetDeviceInfo();
     Globals::iPadHD = 0;
     Globals::iPad = dev.isPad;
     Globals::iPadLargePossible = 0;
-    Globals::iPadLarge = (dev.isPad != 0) ? Globals::retinaDisplay : 0;
-    if (dev.isPad != 0) {
-        Globals::iPadAssetsWithLowerRes =
-                (static_cast<int>(dev.height) < 768) && (static_cast<int>(dev.width) < 1024);
-    } else {
-        Globals::iPadAssetsWithLowerRes = 0;
-    }
+    Globals::iPadLarge = dev.isPad != 0 ? Globals::retinaDisplay : 0;
+    Globals::iPadAssetsWithLowerRes = dev.isPad != 0 ? (height < 768 && width < 1024) : 0;
     Globals::switch_to_target_setting = -1;
     Globals::enterSpaceLounge = 0;
 
@@ -208,8 +202,8 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
 
     GameText *text = new GameText();
     Globals::gameText = text;
-    text->setLanguage(static_cast<short>(hrwhs_country_code), 3401);
-    data->globals->loadFont(GameText::getLanguage());
+    text->setLanguage(static_cast<short>(AbyssEngine::Engine::countryCode), 3401);
+    Globals::globals->loadFont(GameText::getLanguage());
     data->globals->init(engine->appManager, engine);
 
     engine->appManager->SetApplicationData(data);
