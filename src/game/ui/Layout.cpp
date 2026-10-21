@@ -59,10 +59,9 @@ int Layout::OnTouchBegin(int x, int y) {
         this->choiceWindow->OnTouchBegin(x, y);
         return 0;
     }
-    TouchButton *btn = this->backButton->isVisible() == 0
-                           ? this->secondaryButton
-                           : this->backButton;
-    return btn->OnTouchBegin(x, y);
+    if (this->backButton->isVisible() != 0)
+        return static_cast<int>(this->backButton->OnTouchBegin(x, y));
+    return static_cast<int>(this->secondaryButton->OnTouchBegin(x, y));
 }
 
 float Layout::getPulseValue(float speed) {
@@ -267,12 +266,9 @@ int Layout::OnTouchMove(int x, int y) {
         this->choiceWindow->OnTouchMove(x, y);
         return 0;
     }
-    TouchButton *btn;
     if (this->backButton->isVisible() != 0)
-        btn = this->backButton;
-    else
-        btn = this->secondaryButton;
-    return static_cast<int>(btn->OnTouchMove(x, y));
+        return static_cast<int>(this->backButton->OnTouchMove(x, y));
+    return static_cast<int>(this->secondaryButton->OnTouchMove(x, y));
 }
 
 int Layout::OnTouchEnd(int x, int y) {
@@ -280,12 +276,9 @@ int Layout::OnTouchEnd(int x, int y) {
         this->helpPressedFlag = this->helpButton->OnTouchEnd(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0)
         return this->choiceWindow->OnTouchEnd(x, y) == 0;
-    TouchButton *btn;
     if (this->backButton->isVisible() != 0)
-        btn = this->backButton;
-    else
-        btn = this->secondaryButton;
-    return static_cast<int>(btn->OnTouchEnd(x, y));
+        return static_cast<int>(this->backButton->OnTouchEnd(x, y));
+    return static_cast<int>(this->secondaryButton->OnTouchEnd(x, y));
 }
 
 void Layout::startFade(bool fadeOut, int color, int duration) {
