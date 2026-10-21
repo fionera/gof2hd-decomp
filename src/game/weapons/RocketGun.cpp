@@ -36,11 +36,11 @@ RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
     this->steerX = 0;
     this->steerY = 0;
     this->steerZ = 0;
-    this->homing = homing;
     this->activeShotId = -1;
-    this->turnRate = kRocketTurnRate;
     this->particleSystem = -1;
     this->rocketKind = rocketKind;
+    this->homing = homing;
+    this->turnRate = kRocketTurnRate;
     this->fadeTimer = 0;
     this->trailMatrices = nullptr;
     this->trailSystems = nullptr;

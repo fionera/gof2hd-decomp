@@ -93,9 +93,9 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->useEgoOrientation = 0;
     this->explosions = nullptr;
     this->explosionReady = nullptr;
-    this->unusedSlot = -1;
     this->gun = gun;
     this->level = level;
+    this->unusedSlot = -1;
     this->secondaryTransform = -1;
     Globals::Canvas->TransformCreate(this->transform);
     this->meshId = mesh;
@@ -106,8 +106,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->scaleZ = 1.0f;
     this->spinAngle = 0.0f;
 
-    int type = gun->weaponType;
-    switch (type) {
+    switch (gun->weaponType) {
         case 1:
         case 3:
         case 8:
@@ -117,26 +116,28 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
             this->visible = 0;
             break;
     }
-    if (Globals::iPad && (type == 1 || type == 3 || type == 8)) {
+    if (Globals::iPad && (gun->weaponType == 1 || gun->weaponType == 3 || gun->weaponType == 8)) {
         this->scaleX = 0.6f;
         this->scaleY = 0.6f;
         this->scaleZ = 0.6f;
     }
-    if (type == 0xb) {
-        this->scaleX = 0.7f;
-        this->scaleY = 0.7f;
-        this->scaleZ = 0.7f;
-    }
-    if (type == 0x19) {
-        this->explosions = new Array<Explosion *>();
-        ArraySetLength(gun->count, *this->explosions);
-        this->explosionReady = new uint8_t[this->explosions->size()];
-        for (uint32_t i = 0; i < this->explosions->size(); ++i) {
-            (*this->explosions)[i] =
-                    new Explosion(gun->itemIndex == 0xb0 ? 8 : gun->itemIndex == 0xb1 ? 9 : 10);
-            (*this->explosions)[i]->setWeaponIndex(gun->itemIndex);
-            this->explosionReady[i] = 1;
-        }
+    switch (gun->weaponType) {
+        case 0xb:
+            this->scaleX = 0.7f;
+            this->scaleY = 0.7f;
+            this->scaleZ = 0.7f;
+            break;
+        case 0x19:
+            this->explosions = new Array<Explosion *>();
+            ArraySetLength(gun->count, *this->explosions);
+            this->explosionReady = new uint8_t[this->explosions->size()];
+            for (uint32_t i = 0; i < this->explosions->size(); ++i) {
+                (*this->explosions)[i] =
+                        new Explosion(gun->itemIndex == 0xb0 ? 8 : gun->itemIndex == 0xb1 ? 9 : 10);
+                (*this->explosions)[i]->setWeaponIndex(gun->itemIndex);
+                this->explosionReady[i] = 1;
+            }
+            break;
     }
 
     if (gun->field_0xa8 != 0)
@@ -146,11 +147,9 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     else
         this->hasGeometry = 0;
 
-    AEGeometry *geometry = nullptr;
-    if (this->hasGeometry)
-        geometry = new AEGeometry((uint16_t) kProjectileMeshes[gun->itemIndex], Globals::Canvas, false);
-
-    this->geometry = geometry;
+    this->geometry = this->hasGeometry
+                     ? new AEGeometry((uint16_t) kProjectileMeshes[gun->itemIndex], Globals::Canvas, false)
+                     : nullptr;
     this->wasFiring = 0;
     this->deltaTime = 0;
 }
