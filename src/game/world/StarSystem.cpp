@@ -13,6 +13,7 @@
 #include "engine/render/Engine.h"
 #include "game/ship/PlayerStatic.h"
 #include "engine/render/LensFlare.h"
+#include <cstdlib>
 
 int StarSystem::orbitPlanetIndex;
 
@@ -127,11 +128,6 @@ static inline float clampLightComponent(float v) {
 }
 
 StarSystem::StarSystem(int mode) {
-    char usedSlots[0x60];
-    for (unsigned i = 0; i < sizeof(usedSlots); ++i) {
-        usedSlots[i] = 0;
-    }
-
     this->lightDirection.x = 0.0f;
     this->lightDirection.y = 0.0f;
     this->lightDirection.z = 0.0f;
@@ -139,172 +135,231 @@ StarSystem::StarSystem(int mode) {
     this->texturesArray = nullptr;
     this->playerTargets = nullptr;
     this->planetsArray = nullptr;
-
-    Status *status = Globals::status;
-    this->abstractSystem = status->getSystem() == 0;
-    this->supernovaSystem = (uint8_t) status->inSupernovaSystem();
-
+    this->abstractSystem = Globals::status->getSystem() == 0;
+    this->supernovaSystem = Globals::status->inSupernovaSystem();
     this->lensFlare = new LensFlare(Globals::Canvas);
     this->planetRing = nullptr;
     this->planetRingIndex = -1;
 
-    if (this->abstractSystem != 0) {
+    if (this->abstractSystem) {
+        // no real system: a sun and one planet as backdrop
         this->planetsArray = new Array<AEGeometry *>();
-        ArraySetLength(2, *(this->planetsArray));
-
-        AEGeometry *sun = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
-        (*this->planetsArray)[0] = sun;
-        sun->setScaling(Vector{1000.0f, 1000.0f, 1000.0f});
-        sun->moveForward(0x447a0000);
-        this->lightDirection = sun->getDirection();
+        ArraySetLength(2, *this->planetsArray);
+        (*this->planetsArray)[0] = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
+        (*this->planetsArray)[0]->setScaling(Vector{15000.0f / 65536.0f, 15000.0f / 65536.0f, 15000.0f / 65536.0f});
+        (*this->planetsArray)[0]->moveForward(-20000.0f);
+        this->lightDirection = (*this->planetsArray)[0]->getDirection();
         this->lightDirection.x = -this->lightDirection.x;
         this->lightDirection.y = -this->lightDirection.y;
         this->lightDirection.z = -this->lightDirection.z;
-
-        AEGeometry *planet = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
-        (*this->planetsArray)[1] = planet;
-        int rnd = Globals::rnd->nextInt(0x4e20);
-        float scale = (float) (rnd + 0x4e20) * 0.001f;
-        planet->setScaling(Vector{scale, scale, scale});
-        planet->setRotation(Vector{0.0f, 90.0f, 0.0f});
-        planet->moveForward(0x447a0000);
+        (*this->planetsArray)[1] = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
+        float scale = (float) (Globals::rnd->nextInt(20000) + 20000) * (1.0f / 65536.0f);
+        (*this->planetsArray)[1]->setScaling(Vector{scale, scale, scale});
+        (*this->planetsArray)[1]->setRotation(Vector{0.0f, 5.2347136f, 0.0f});
+        (*this->planetsArray)[1]->moveForward(-20000.0f);
 
         this->texturesArray = new Array<uint32_t>();
-        ArraySetLength(2, *(this->texturesArray));
+        ArraySetLength(2, *this->texturesArray);
         Globals::Canvas->TextureCreate((uint16_t) 0x2739, (*this->texturesArray)[0], false);
         Globals::Canvas->TextureCreate((uint16_t) 0x2719, (*this->texturesArray)[1], false);
 
         this->positionsArray = new Array<Vector>();
-        ArraySetLength(2, *(this->positionsArray));
-        (*this->positionsArray)[0] = sun->getPosition();
-        (*this->positionsArray)[1] = planet->getPosition();
+        ArraySetLength(2, *this->positionsArray);
+        (*this->positionsArray)[0] = (*this->planetsArray)[0]->getPosition();
+        (*this->positionsArray)[1] = (*this->planetsArray)[1]->getPosition();
 
-        AEGeometry *streak = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
-        this->sunStreak = streak;
-        streak->setScaling(Vector{250.0f, 15.0f, 1000.0f});
-        initLight();
+        this->sunStreak = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
+        this->sunStreak->setScaling(Vector{30000.0f / 65536.0f, 3000.0f / 65536.0f, 15000.0f / 65536.0f});
+        this->initLight();
         return;
     }
 
-    SolarSystem *system = (SolarSystem *) (intptr_t) status->getSystem();
-    uint32_t *stations = system->getStations();
-    FileRead reader;
-    Array<Station *> *stationArray = (Array<Station *> *) (intptr_t) reader.loadStationsBinary();
+    Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
+    FileRead *reader = new FileRead();
+    Array<Station *> *stationArray = reader->loadStationsBinary((SolarSystem *) (intptr_t) Globals::status->getSystem());
+    delete reader;
 
     this->texturesArray = new Array<uint32_t>();
-    ArraySetLength(stationArray->size() + 1, *(this->texturesArray));
-
+    ArraySetLength(stationArray->size() + 1, *this->texturesArray);
     this->stationIdxArray = new Array<int>();
-    ArraySetLength(reinterpret_cast<Array<int> *>(stations)->size(), *(this->stationIdxArray));
+    ArraySetLength(stations->size(), *this->stationIdxArray);
 
-    int mission = status->getCurrentCampaignMission();
-    if ((mission == 0x59 && this->supernovaSystem != 0) ||
-        (mission > 0x9d &&
-         ((SolarSystem *) (intptr_t) status->getSystem())->getIndex() == 0x1b)) {
+    int mission = Globals::status->getCurrentCampaignMission();
+    if ((mission == 89 && this->supernovaSystem) ||
+        (mission > 157 && ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 27)) {
         Globals::Canvas->TextureCreate((uint16_t) 0x2dde, (*this->texturesArray)[0], false);
         this->tintColor = 3;
     } else {
-        uint32_t tex = ((SolarSystem *) (intptr_t) status->getSystem())->getTextureIndex();
-        Globals::Canvas->TextureCreate(kSunTextures[tex],
-                                       (*this->texturesArray)[0], false);
-        this->tintColor = kSystemTints[
-            ((SolarSystem *) (intptr_t) status->getSystem())->getIndex()];
+        Globals::Canvas->TextureCreate(
+                kSunTextures[((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex()],
+                (*this->texturesArray)[0], false);
+        this->tintColor = kSystemTints[((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex()];
     }
 
-    uint32_t count = reinterpret_cast<Array<int> *>(stations)->size();
-    int *stationIds = reinterpret_cast<Array<int> *>(stations)->data();
-    Station **loadedStations = stationArray->data();
     for (uint32_t i = 1; i < this->texturesArray->size(); ++i) {
-        int stationIndex = stationIds[i - 1];
-        int currentStation = status->getStation()->getIndex();
-        Station *station = loadedStations[i - 1];
-        uint32_t stationTex = station->getTextureIndex();
-        if (stationIndex == currentStation) {
-            if (mode == 3 && status->getCurrentCampaignMission() == 0) {
+        if (stations->data()[i - 1] == Globals::status->getStation()->getIndex()) {
+            if (Globals::status->getCurrentCampaignMission() == 0 && mode == 3) {
                 this->selectedStationSlot = i;
-                Globals::Canvas->TextureCreate((uint16_t) 0x273b,
-                                               (*this->texturesArray)[i], false);
+                Globals::Canvas->TextureCreate((uint16_t) 0x273b, (*this->texturesArray)[i], false);
             } else {
-                Globals::Canvas->TextureCreate(kCurrentStationTextures[stationTex],
+                Globals::Canvas->TextureCreate(kCurrentStationTextures[stationArray->data()[i - 1]->getTextureIndex()],
                                                (*this->texturesArray)[i], false);
             }
         } else {
-            Globals::Canvas->TextureCreate(kStationTextures[stationTex],
+            Globals::Canvas->TextureCreate(kStationTextures[stationArray->data()[i - 1]->getTextureIndex()],
                                            (*this->texturesArray)[i], false);
-            if (Globals::status->orbitHasPlanetRing(station->getIndex()) != 0) {
-                this->planetRing = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
-                Globals::Canvas->TextureCreate((uint16_t) 0x7198,
-                                               this->planetRingTexture, false);
+            if (Globals::status->orbitHasPlanetRing(stationArray->data()[i - 1]->getIndex())) {
+                this->planetRing = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
+                Globals::Canvas->TextureCreate((uint16_t) 0x7198, this->planetRingTexture, false);
                 this->planetRingIndex = i;
             }
         }
-        (*this->stationIdxArray)[i - 1] = station->getIndex();
+        this->stationIdxArray->data()[i - 1] = stationArray->data()[i - 1]->getIndex();
     }
-
     ArrayReleaseClasses(*stationArray);
     delete stationArray;
 
     this->playerTargets = new Array<KIPlayer *>();
-
-    ArraySetLength<unsigned int>(static_cast<unsigned int>(count),
-                                 *reinterpret_cast<Array<unsigned int> *>(this->playerTargets));
-
+    ArraySetLength(stations->size(), *this->playerTargets);
     this->planetsArray = new Array<AEGeometry *>();
-    ArraySetLength(count + 1, *(this->planetsArray));
-
+    ArraySetLength(stations->size() + 1, *this->planetsArray);
     this->positionsArray = new Array<Vector>();
-    ArraySetLength(count + 1, *(this->positionsArray));
+    ArraySetLength(stations->size() + 1, *this->positionsArray);
 
-    Globals::rnd->setSeed((long long) status->getStation()->getIndex() * 300);
-
-    int sunSlot = Globals::rnd->nextInt(14);
+    // planets are placed on 24 orbit slots of 2730/65536 turns each
+    Globals::rnd->setSeed((long long) (Globals::status->getStation()->getIndex() * 300));
+    int usedSlots[24];
+    for (int k = 0; k < 24; ++k) {
+        usedSlots[k] = 0;
+    }
+    int slot = 0;
+    int sunSlot = 0;
     for (uint32_t i = 0; i < this->planetsArray->size(); ++i) {
-        AEGeometry *geom = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
-        (*this->planetsArray)[i] = geom;
-
-        if (i == 0) {
-            float sunScale = this->supernovaSystem == 0 ? 1000.0f : 2000.0f;
-            geom->setScaling(Vector{sunScale, sunScale, sunScale});
-            AEGeometry *streak = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
-            this->sunStreak = streak;
-            streak->setScaling(Vector{
-                this->supernovaSystem == 0 ? 250.0f : 500.0f,
-                this->supernovaSystem == 0 ? 15.0f : 25.0f,
-                this->supernovaSystem == 0 ? 1000.0f : 2000.0f
-            });
-            if (this->supernovaSystem != 0) {
-                Globals::Canvas->TextureCreate((uint16_t) 0x2dde,
-                                               this->supernovaSunTexture, false);
-            }
-            usedSlots[sunSlot * 4] = 1;
-        } else {
-            PlayerStatic *player = new PlayerStatic(0, geom, 0.0f, 0.0f, 0.0f);
-            (*this->playerTargets)[i - 1] = player;
-            int slot = Globals::rnd->nextInt(11) + 7;
-            usedSlots[slot * 4] = 1;
-            int dist = Globals::rnd->nextInt(0x4e20) + 0x4e20;
-            if (status->getCurrentCampaignMission() == 0) {
-                dist = (int) ((float) dist * 0.5f);
-            }
-            float scale = (float) dist * 0.001f;
-            this->planetScale = scale;
-            geom->setScaling(Vector{scale, scale, scale});
+        (*this->planetsArray)[i] = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
+        if (!this->abstractSystem &&
+            ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() >= 15 &&
+            ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated()) {
+            reinterpret_cast<float &>(Globals::Canvas->MeshGetPointer((*this->planetsArray)[i]->meshId)->materialId) =
+                    0.22f;
         }
 
-        int angleSlot = (i == 0) ? sunSlot : (int) i + 6;
-        geom->setRotation(Vector{0.0f, (float) (angleSlot * 0xaaa) * 0.001f, 0.0f});
-        geom->moveForward(0x447a0000);
+        int flip;
+        bool tilted;
         if (i == 0) {
-            this->lightDirection = geom->getDirection();
+            int randomSlot = Globals::rnd->nextInt(14);
+            switch (Globals::status->getStation()->getTextureIndex()) {
+                case 9:
+                case 13:
+                case 14:
+                case 18:
+                case 20:
+                    slot = 6;
+                    break;
+                case 21:
+                    slot = 4;
+                    break;
+                case 22:
+                    slot = 16;
+                    break;
+                default:
+                    slot = randomSlot + 5;
+                    break;
+            }
+            if (this->supernovaSystem) {
+                float sunScale = Globals::status->getCurrentCampaignMission() < 106 ? 65000.0f / 65536.0f
+                                                                                     : 90000.0f / 65536.0f;
+                (*this->planetsArray)[0]->setScaling(Vector{sunScale, sunScale, sunScale});
+                this->sunStreak = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
+                this->sunStreak->setScaling(Vector{130000.0f / 65536.0f, 13000.0f / 65536.0f, 65000.0f / 65536.0f});
+                if (((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated()) {
+                    reinterpret_cast<float &>(Globals::Canvas->MeshGetPointer(this->sunStreak->meshId)->materialId) =
+                            0.22f;
+                }
+                Globals::Canvas->TextureCreate((uint16_t) 0x2dde, this->supernovaSunTexture, false);
+            } else {
+                (*this->planetsArray)[0]->setScaling(
+                        Vector{15000.0f / 65536.0f, 15000.0f / 65536.0f, 15000.0f / 65536.0f});
+                this->sunStreak = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
+                this->sunStreak->setScaling(Vector{30000.0f / 65536.0f, 3000.0f / 65536.0f, 15000.0f / 65536.0f});
+            }
+            usedSlots[slot] = 1;
+            flip = 0x8000;
+            sunSlot = slot;
+            tilted = true;
+        } else {
+            if (stations->data()[i - 1] == Globals::status->getStation()->getIndex()) {
+                (*this->playerTargets)[i - 1] = new PlayerStatic(0, (*this->planetsArray)[i], 0.0f, 0.0f, 0.0f);
+                // the orbited planet: slot 0, size depends on the station
+                slot = 0;
+                flip = sunSlot < 12 ? 0 : 0x8000;
+                StarSystem::orbitPlanetIndex = i - 1;
+                int size = Globals::rnd->nextInt(20000) + 20000;
+                if (Globals::status->getCurrentCampaignMission() == 0) {
+                    size = (int) ((float) size * 0.5f);
+                }
+                int texture = Globals::status->getStation()->getTextureIndex();
+                if (Globals::status->inPlanetRingOrbit()) {
+                    size = 26000;
+                } else {
+                    switch (texture) {
+                        case 6:
+                        case 11:
+                        case 12:
+                        case 17:
+                            size = Globals::rnd->nextInt(15000) + 35000;
+                            break;
+                        case 9:
+                        case 16:
+                            size = Globals::rnd->nextInt(13000) + 32500;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                this->planetScale = (float) size * (1.0f / 65536.0f);
+                (*this->planetsArray)[i]->setScaling(Vector{this->planetScale, this->planetScale, this->planetScale});
+            } else {
+                (*this->playerTargets)[i - 1] = new PlayerStatic(0, (*this->planetsArray)[i], 0.0f, 0.0f, 0.0f);
+                bool placed = false;
+                while (!placed) {
+                    slot = Globals::rnd->nextInt(11) + 7;
+                    placed = false;
+                    if (abs(slot - sunSlot) >= 3) {
+                        placed = usedSlots[slot] == 0;
+                    }
+                }
+                float scale = (float) ((0.8 + 0.01 * Globals::rnd->nextInt(40)) * (2300.0 / 65536.0));
+                (*this->planetsArray)[i]->setScaling(Vector{scale, scale, scale});
+                flip = sunSlot - slot < 12 ? 0 : 0x8000;
+                if (sunSlot <= slot) {
+                    flip = 0x8000;
+                }
+            }
+            usedSlots[slot] = 1;
+            tilted = slot != sunSlot && stations->data()[i - 1] != Globals::status->getStation()->getIndex();
+        }
+
+        const float kTwoPi = 6.2831855f;
+        if (tilted) {
+            float tilt = (float) (Globals::rnd->nextInt(4096) - 2048) * (1.0f / 65536.0f) * kTwoPi;
+            (*this->planetsArray)[i]->setRotation(
+                    Vector{tilt, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
+        } else {
+            (*this->planetsArray)[i]->setRotation(Vector{0.0f, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
+        }
+        (*this->planetsArray)[i]->moveForward(-20000.0f);
+        if (i == 0) {
+            this->lightDirection = (*this->planetsArray)[0]->getDirection();
             this->lightDirection.x = -this->lightDirection.x;
             this->lightDirection.y = -this->lightDirection.y;
             this->lightDirection.z = -this->lightDirection.z;
+        } else if (flip != 0) {
+            (*this->planetsArray)[i]->rotate(Vector{0.0f, (float) flip * (1.0f / 65536.0f) * kTwoPi, 0.0f});
         }
-        (*this->positionsArray)[i] = geom->getPosition();
+        (*this->positionsArray)[i] = (*this->planetsArray)[i]->getPosition();
     }
-
     Globals::rnd->reset();
-    initLight();
+    this->initLight();
 }
 void StarSystem::initLight() {
     ((Engine *) Globals::appManager->GetEngine())->lightCount = 2;
