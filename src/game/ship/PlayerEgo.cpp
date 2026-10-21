@@ -78,6 +78,8 @@ static const int kShipDockRadius[64] = {
 };
 
 static inline float PE_minf(float a, float b) { return b < a ? b : a; }
+static inline float PE_absf(float v) { return v > 0.0f ? v : -v; }
+static inline float PE_maxf(float a, float b) { return a > b ? a : b; }
 
 // Blueprint unlocked by the hidden blueprint of the station (rodata 0x1fba34).
 static const int kHiddenBlueprints[5] = {226, 221, 223, 225, 227};
@@ -231,7 +233,7 @@ PlayerEgo::PlayerEgo(Player *player)
     this->field_0x108 = 1;
     this->movingStars = (int) (intptr_t) new MovingStars();
     this->lastHP = player->getCombinedHP();
-    ((float &) this->speed) = 2.0f;
+    this->speed = 2.0f;
     this->thrust = 1.0f;
     this->boostDelay = Globals::status->getShip()->getBoostDelay();
     this->boostSpeed = (int) ((float) Globals::status->getShip()->getBoostSpeed() / 100.0f * 2.0f) + 2;
@@ -696,7 +698,7 @@ void PlayerEgo::stopShooting(int param) {
 }
 
 void PlayerEgo::stopBoost() {
-    ((float &) this->speed) = 2.0f;
+    this->speed = 2.0f;
     this->boostingFlag = 0;
     Globals::sound->stop(0x27);
     Globals::sound->stop(0x26);
@@ -718,7 +720,7 @@ void PlayerEgo::boost() {
     if (this->boostTimer < 0) return;
     this->boostingFlag = 1;
     this->boostTimer = 0;
-    ((float &) this->speed) = (float) this->boostSpeed;
+    this->speed = (float) this->boostSpeed;
     Globals::sound->play(this->boostSoundId, nullptr, nullptr, 0.0f);
 }
 
@@ -730,7 +732,7 @@ int PlayerEgo::getBoostSpeed() {
 void PlayerEgo::forceBoost() {
     this->boostTimer = 0;
     this->boostingFlag = 1;
-    this->speed = 0x41000000;
+    this->speed = 8.0f;
     this->boostTime = 0x2710;
     this->boostDelay = 0;
 }
@@ -1192,7 +1194,7 @@ bool PlayerEgo::isInWormhole() {
 
 void PlayerEgo::handleTurretView(int dt) {
     if ((this->autoPilotTarget == 0 || this->dockedToStream) && !(this->dockedFlag && this->dockingPointIndex == 1))
-        this->geometry->moveForward(this->thrust * (float) dt * ((float &) this->speed));
+        this->geometry->moveForward(this->thrust * (float) dt * this->speed);
     Matrix view = this->geometry->getMatrix() * this->dockCameraNode->getMatrix();
     view *= this->dockCameraMid->getMatrix();
     if (this->hitShake || this->boostingFlag) {
@@ -1277,10 +1279,8 @@ void PlayerEgo::roll(int amount) {
 }
 
 void PlayerEgo::handleShip(int dt) {
-    FModSound *sound = Globals::sound;
-    float pitchLevel = this->yawAccumD > 0.0f ? this->yawAccumD : -this->yawAccumD;
-    float rollLevel = this->rollAccum > 0.0f ? this->rollAccum : -this->rollAccum;
-    sound->setParamValue(this->player->GetEngineEvent(), 0, pitchLevel > rollLevel ? pitchLevel : rollLevel);
+    Globals::sound->setParamValue(this->player->GetEngineEvent(), 0,
+                                  PE_maxf(PE_absf(this->yawAccumD), PE_absf(this->rollAccum)));
     Globals::sound->setParamValue(this->player->GetEngineEvent(), 1, this->rollAccum * 0.2f + 0.5f);
 
     Matrix local = *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform);
@@ -1295,7 +1295,7 @@ void PlayerEgo::handleShip(int dt) {
     if (this->rolling)
         local *= this->rollMatrix;
 
-    float distance = this->thrust * frameTime * ((float &) this->speed);
+    float distance = this->thrust * frameTime * this->speed;
     local.m[3] += local.m[2] * distance;
     local.m[7] += distance * local.m[6];
     local.m[11] += distance * local.m[10];
@@ -1368,7 +1368,7 @@ int PlayerEgo::updateManeuver() {
         side *= this->handling * 0.05f;
         if (this->maneuverType == 2)
             side *= -1.0f;
-        this->geometry->moveForward(this->thrust * (float) this->shakeIntensity * ((float &) this->speed));
+        this->geometry->moveForward(this->thrust * (float) this->shakeIntensity * this->speed);
         this->geometry->translate(side.x, side.y, side.z);
         Matrix spin;
         AbyssEngine::AEMath::MatrixSetRotation(
@@ -1415,7 +1415,7 @@ int PlayerEgo::updateManeuver() {
         Vector shift = this->facingVec * 7.0f * (float) this->shakeIntensity
                        * (1.0f - (float) this->maneuverTimer / 3000.0f);
         this->targetFollowCamera->translate(shift.x, shift.y, shift.z);
-        this->geometry->moveForward(this->thrust * (float) this->shakeIntensity * ((float &) this->speed));
+        this->geometry->moveForward(this->thrust * (float) this->shakeIntensity * this->speed);
         if (this->maneuverTimer >= 3000) {
             this->maneuverType = 0;
             this->targetFollowCamera->setLookAtCam(false);
@@ -1478,7 +1478,7 @@ float PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
     }
 
     this->geometry->setDirection(this->headingVec, Vector{0.0f, 1.0f, 0.0f});
-    this->geometry->moveForward((float) this->shakeIntensity * this->thrust * ((float &) this->speed));
+    this->geometry->moveForward((float) this->shakeIntensity * this->thrust * this->speed);
     this->roll(this->shakeIntensity);
 
     float strafe = this->strafeAccel;
@@ -1689,7 +1689,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         if (this->boostTimer > this->boostTime) {
             ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->SetPostEffect(0x01400002, false);
             this->boostingFlag = 0;
-            ((float &) this->speed) = 2.0f;
+            this->speed = 2.0f;
             this->boostTimer = -this->boostDelay;
             if (!this->field_0x146) {
                 this->boostSpeed = 2;
@@ -1885,7 +1885,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         moving = true;
     }
     if (moving) {
-        this->geometry->moveForward(((float &) this->speed) * (float) dt);
+        this->geometry->moveForward(this->speed * (float) dt);
         reinterpret_cast<Matrix &>(this->player->transform[0]) =
             *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
             * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
@@ -3324,14 +3324,14 @@ void PlayerEgo::dockToPlanet() {
     this->targetFollowCamera->setLookAtCam(true);
     this->boostTimer = 0;
     this->boostingFlag = 1;
-    ((float &) this->speed) = 8.0f;
+    this->speed = 8.0f;
     this->boostTime = 10000;
     this->boostDelay = 0;
     this->collide = 0;
     this->resetGunDelay();
     this->dockingToPlanet = 1;
     this->shieldVisible = 0;
-    ((float &) this->speed) = 8.0f;
+    this->speed = 8.0f;
     this->planetDockTimer = 0;
     Globals::sound->play(5, nullptr, nullptr, 0.0f);
 }
@@ -3341,7 +3341,7 @@ void PlayerEgo::stopPlanetDock() {
     this->collide = 1;
     this->dockingToPlanet = 0;
     this->stopBoost();
-    ((float &) this->speed) = 2.0f;
+    this->speed = 2.0f;
 }
 
 bool PlayerEgo::isDockedToPlanet() {
@@ -3355,7 +3355,7 @@ void PlayerEgo::dockToStream(bool param) {
         this->dockedToStream = 1;
         return;
     }
-    this->speed = 0x40000000;
+    this->speed = 2.0f;
     AbyssEngine::AEMath::Vector position = {this->moveDirection.x, this->moveDirection.y, this->moveDirection.z};
     this->setPosition(position);
     this->field_0x145 = 0;
@@ -3660,7 +3660,7 @@ void PlayerEgo::pitchAllPrimaryGuns(float pitch) {
 
 void PlayerEgo::setSpeed(float v) {
     PlayerEgo *self = this;
-    ((float &) this->speed) = v;
+    this->speed = v;
 }
 
 void PlayerEgo::changeThrust(float v) {
@@ -3680,8 +3680,8 @@ int PlayerEgo::getThrust() {
 }
 
 int PlayerEgo::getSpeed() {
-    PlayerEgo *self = this;
-    return this->speed;
+    // Callers (LevelScript) consume the raw float bits.
+    return reinterpret_cast<int &>(this->speed);
 }
 
 int PlayerEgo::getDockTotalAmount() {
