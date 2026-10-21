@@ -461,13 +461,13 @@ void DialogueWindow::loadContent() {
     if (this->mission->isCampaignMission() || (this->kind == 2 && this->campaignMission == 42)) {
         int pageBase;
         const int *script;
-        if (this->kind == 1) {
-            pageBase = this->successOffsets[this->campaignMission];
-            script = g_dw_successScript;
-            speaker = script[pageBase + this->page * 2];
-        } else if (this->kind == 0) {
+        if (this->kind == 0) {
             pageBase = this->briefingOffsets[this->campaignMission];
             script = g_dw_briefingScript;
+            speaker = script[pageBase + this->page * 2];
+        } else if (this->kind == 1) {
+            pageBase = this->successOffsets[this->campaignMission];
+            script = g_dw_successScript;
             speaker = script[pageBase + this->page * 2];
         } else {
             speaker = 16;
@@ -476,7 +476,13 @@ void DialogueWindow::loadContent() {
         this->agentName = *Globals::gameText->getText(speaker + 1597);
         bool playerSpeaks = speaker == 0;
         this->mirrorFace = playerSpeaks;
-        if (this->kind == 1) {
+        if (this->kind == 0) {
+            int entry = this->briefingOffsets[this->campaignMission] + (this->page * 2 | 1);
+            textId = g_dw_briefingScript[entry];
+            this->bodyText = *Globals::gameText->getText(textId);
+            if ((unsigned int) entry <= 23 && ((1 << entry) & 0xa0200a))
+                this->bodyText = Globals::globals->replaceKeyBindingTokens(this->bodyText);
+        } else if (this->kind == 1) {
             textId = g_dw_successScript[this->successOffsets[this->campaignMission] + (this->page * 2 | 1)];
             this->bodyText = *Globals::gameText->getText(textId);
             if (textId == 1718 || textId == 1730) {
@@ -493,12 +499,6 @@ void DialogueWindow::loadContent() {
                 textId -= 2;
                 this->bodyText = *Globals::gameText->getText(textId);
             }
-        } else if (this->kind == 0) {
-            int entry = this->briefingOffsets[this->campaignMission] + (this->page * 2 | 1);
-            textId = g_dw_briefingScript[entry];
-            this->bodyText = *Globals::gameText->getText(textId);
-            if ((unsigned int) entry <= 23 && ((1 << entry) & 0xa0200a))
-                this->bodyText = Globals::globals->replaceKeyBindingTokens(this->bodyText);
         } else {
             String extra = (unsigned int) (this->campaignMission - 38) <= 3 && this->campaignMission != 39
                                ? String(*Globals::gameText->getText(527), false)
@@ -517,7 +517,30 @@ void DialogueWindow::loadContent() {
             this->agentName = this->mission->getClientName();
             this->mirrorFace = false;
         }
-        if (this->kind == 1) {
+        if (this->kind == 0) {
+            if (this->mission->getType() == 12) {
+                textId = 372;
+                this->bodyText = *Globals::gameText->getText(textId);
+            } else if (this->mission->getType() == 7) {
+                textId = 378;
+                this->bodyText = *Globals::gameText->getText(textId);
+            } else if (this->mission != 0 && this->mission->getTargetStation() == 108) {
+                const int *script =
+                    Globals::status->field_114 == 2 ? g_dw_station108ScriptLate : g_dw_station108Script;
+                textId = script[this->page * 2 | 1];
+                this->bodyText = *Globals::gameText->getText(textId);
+                int scriptSpeaker = script[this->page * 2];
+                this->clientImage = g_dw_speakerFaces[scriptSpeaker];
+                this->agentName = *Globals::gameText->getText(scriptSpeaker + 1597);
+            } else {
+                if (GameText::getLanguage() == 1 && this->mission->getAgent() != 0)
+                    textId = this->pickGermanGenericTextBecauseWeSaved100EurosWithThat(this->kind,
+                                                                                       this->mission->getAgent());
+                else
+                    textId = g_dw_genericBriefingTexts[Globals::rnd->nextInt(5)];
+                this->bodyText = *Globals::gameText->getText(textId);
+            }
+        } else if (this->kind == 1) {
             bool storyAgent = this->mission->getAgent() != 0 && this->mission->getAgent()->isStoryAgent();
             if (this->mission->getType() == 5 || this->mission->getType() == 3) {
                 this->bodyText = *Globals::gameText->getText(389);
@@ -561,29 +584,6 @@ void DialogueWindow::loadContent() {
                 this->mission->getClientRace());
             if (this->mission->getTargetStation() == 108) {
                 textId = 458;
-                this->bodyText = *Globals::gameText->getText(textId);
-            }
-        } else if (this->kind == 0) {
-            if (this->mission->getType() == 12) {
-                textId = 372;
-                this->bodyText = *Globals::gameText->getText(textId);
-            } else if (this->mission->getType() == 7) {
-                textId = 378;
-                this->bodyText = *Globals::gameText->getText(textId);
-            } else if (this->mission != 0 && this->mission->getTargetStation() == 108) {
-                const int *script =
-                    Globals::status->field_114 == 2 ? g_dw_station108ScriptLate : g_dw_station108Script;
-                textId = script[this->page * 2 | 1];
-                this->bodyText = *Globals::gameText->getText(textId);
-                int scriptSpeaker = script[this->page * 2];
-                this->clientImage = g_dw_speakerFaces[scriptSpeaker];
-                this->agentName = *Globals::gameText->getText(scriptSpeaker + 1597);
-            } else {
-                if (GameText::getLanguage() == 1 && this->mission->getAgent() != 0)
-                    textId = this->pickGermanGenericTextBecauseWeSaved100EurosWithThat(this->kind,
-                                                                                       this->mission->getAgent());
-                else
-                    textId = g_dw_genericBriefingTexts[Globals::rnd->nextInt(5)];
                 this->bodyText = *Globals::gameText->getText(textId);
             }
         } else if (this->mission->getType() == 12) {
