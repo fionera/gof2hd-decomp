@@ -2075,95 +2075,87 @@ done:
     return false;
 }
 
-static int g_mgameInitVal;
-
 MGame::MGame() {
-    {
-        if (this->gameOverTitle.data) delete[] this->gameOverTitle.data;
-        this->gameOverTitle.data = nullptr;
-        this->gameOverTitle.length = 0;
-    }
-
-    int z = 0;
-    int initVal = g_mgameInitVal;
-
-    this->freeCamFinger1.x = this->freeCamFinger1.y = this->freeCamFinger1.z = 0.0f;
-    this->freeCamFinger0.x = 0.0f;
-
-    this->flShakeAmpX = 0;
-    this->flShakeAmpY = 0;
-    this->field_0x144 = 0;
-    this->flShakePhaseX = 0;
-
-    this->field_0x18c = 0;
-    this->field_0x190 = 0;
-    this->field_0x194 = 0;
+    this->loadProgress = 100;
     this->field_0x198 = 0;
-
-    this->elapsedTime = z;
-    reinterpret_cast<int &>(this->egoJumpPos.x) = z;
-    reinterpret_cast<int &>(this->egoJumpPos.y) = z;
-    reinterpret_cast<int &>(this->egoJumpPos.z) = z;
-    this->field_0x1bc = z;
-    this->thrustStartY = z;
-    this->field_0x1c4 = z;
-    this->freeCamFinger0.y = this->freeCamFinger0.z = 0.0f;
-    this->flShakePhaseY = z;
-    this->field_0x150 = z;
-    this->field_0x19c = z;
-    this->field_0x1a0 = z;
-
-    this->loadProgress = 0x64;
-    this->loadingImage = -1;
-    this->cameraMode = z;
-
-    this->frameTime = 0;
-    this->frameTimeHigh = 0;
-    this->field_0x38 = 0;
-    this->field_0x3c = 0;
-
-    this->startTime = 0;
-    this->startTimeHigh = 0;
-    this->lastTime = 0;
-    this->lastTimeHigh = 0;
-
-    this->radar = 0;
-    this->radio = 0;
-    this->menuWindow = 0;
-    this->dialogueWindow = 0;
-
-    this->field_0x70 = 0;
-    this->hud = 0;
-    this->level = 0;
-    this->levelScript = 0;
-
-    this->pauseSnapshot = 0;
-    this->active = 0;
-    this->turretMode = 0;
-    this->hudMenuOpen = 0;
-    this->jumpFlash = 0;
-    this->camera = 0;
-    *(uint8_t *) &this->field_0x1e4 = 0;
-    this->field_0x1d4 = z;
-    this->deltaTime = z;
-    this->player = 0;
-    reinterpret_cast<int &>(this->_b5c) = z;
-    this->gameOverActive = 0;
-    this->campaignMission = 0;
-    this->starMap = 0;
-    this->choiceWindow = 0;
-    this->_bc8 = 0;
-    reinterpret_cast<int &>(this->field_0xc4) = z;
-    this->autopilotMenuOpen = 0;
-    this->field_0xc6 = 0;
-    this->starMapOpen = 0;
     this->choiceWindowOpen = 0;
+    this->camera = nullptr;
+    this->field_0x190 = 0;
+    this->loadingImage = -1;
+    this->levelScript = nullptr;
+    this->field_0xdf = 0;
+    this->field_0x3c = 0;
+    this->freeCamFinger1.z = 0.0f;
+    this->startTimeHigh = 0;
+    this->starMap = nullptr;
+    this->freeCamFinger1.x = 0.0f;
+    this->flShakePhaseX = 0;
+    this->field_0x144 = 0;
+    this->flShakePhaseY = 0;
+    this->player = nullptr;
+    this->choiceWindow = nullptr;
+    this->flShakeAmpX = 0;
+    this->jumpDriveActive = 0;
+    this->field_0x1c4 = 0;
+    this->field_0x150 = 0;
+    this->egoJumpPos.x = 0.0f;
+    this->touchesStream = 0;
+    this->field_0x194 = 0;
+    this->field_0xde = 0;
+    this->startTime = 0;
+    this->freeCamFinger0.y = 0.0f;
+    this->thrustStartY = 0;
+    this->cutsceneActive = 0;
+    this->field_0xd8 = 0;
+    this->field_0x18c = 0;
+    this->field_0x70 = 0;
+    this->field_0x38 = 0;
+    this->pauseSnapshot = 0;
+    this->jumpGateSoundStarted = 0;
+    this->egoJumpPos.z = 0.0f;
+    this->field_0x1bc = 0;
+    this->campaignMission = 0;
+    this->cameraMode = 0;
+    this->field_0x1e4 = 0;
+    this->starMapOpen = 0;
+    this->frameTime = 0;
+    this->freeCamFinger0.x = 0.0f;
+    this->autopilotMenuOpen = 0;
+    this->level = nullptr;
+    this->dialogueWindow = nullptr;
+    this->field_0x1d4 = 0;
+    this->radio = nullptr;
+    this->touchesStation = 0;
+    this->usingJumpDrive = 0;
+    this->elapsedTime = 0;
+    this->egoJumpPos.y = 0.0f;
+    this->_b5c = 0;
+    this->jumpActive = 0;
+    this->_bc8 = 0;
+    this->field_0x19c = 0;
+    this->gameOverActive = 0;
+    this->field_0x1a0 = 0;
+    this->jumpFlash = nullptr;
+    this->freeCamFinger1.y = 0.0f;
+    this->hudMenuOpen = 0;
+    this->_bca = 0;
+    this->menuWindow = nullptr;
+    this->field_0xc4 = 0;
+    this->lastTime = 0;
+    this->hud = nullptr;
+    this->lastTimeHigh = 0;
+    this->pauseOpen = 0;
+    this->flShakeAmpY = 0;
+    this->deltaTime = 0;
+    this->field_0xc6 = 0;
     this->field_0xcf = 0;
-    reinterpret_cast<int &>(this->_bca) = z;
-    this->field_0xd8 = z;
-    this->jumpDriveActive = z;
-    this->field_0x1d8 = initVal;
-    this->field_0x1e0 = z;
+    this->radar = nullptr;
+    this->freeCamFinger0.z = 0.0f;
+    this->turretMode = 0;
+    this->active = 0;
+    this->frameTimeHigh = 0;
+    this->field_0x1d8 = 100.0f;
+    this->field_0x1e0 = 0;
 }
 
 void MGame::OnRelease() {
