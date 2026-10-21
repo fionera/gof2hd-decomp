@@ -6,6 +6,7 @@
 #include "../../engine/core/AEString.h"
 
 class BluePrint;
+class Agent;
 
 class GameRecord {
 public:
@@ -48,8 +49,7 @@ public:
     uint32_t field_0x8c;
     uint32_t field_0x90;
     uint32_t field_0x94;
-    uint32_t field_0x98;
-    uint32_t field_0x9c;
+    int64_t field_0x98;
     uint32_t field_0xa0;
     uint32_t field_0xa4;
     uint32_t field_0xa8;
@@ -63,12 +63,12 @@ public:
     uint32_t field_0xc8;
     uint32_t field_0xcc;
     uint32_t field_0xd0;
-    uint8_t field_0xd4;
+    bool field_0xd4;
     uint8_t field_0xd5;
     uint8_t field_0xd6;
     uint8_t field_0xd7;
     uint32_t field_0xd8;
-    uint8_t field_0xdc;
+    bool field_0xdc;
     uint8_t field_0xdd;
     uint8_t field_0xde;
     uint8_t field_0xdf;
@@ -113,7 +113,7 @@ public:
     uint32_t field_0x13c;
     Array<BluePrint *> *field_0x140;
     uint32_t field_0x144;
-    uint32_t field_0x148;
+    Array<Agent *> *field_0x148;
     uint32_t field_0x14c;
     uint32_t field_0x150;
     uint32_t field_0x154;

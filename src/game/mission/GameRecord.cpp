@@ -62,7 +62,6 @@ GameRecord::GameRecord() {
     this->field_0xb0 = 0;
     this->field_0xb4 = 0;
     this->field_0x98 = 0;
-    this->field_0x9c = 0;
     this->field_0xa0 = 0;
     this->field_0xa4 = 0;
     this->field_0x10b = 0;
@@ -138,7 +137,7 @@ GameRecord::GameRecord() {
     this->field_0x13c = 0;
     this->field_0x140 = nullptr;
     this->field_0x144 = 0;
-    this->field_0x148 = 0;
+    this->field_0x148 = nullptr;
     this->field_0x14c = 0;
     this->field_0x150 = 0;
     this->field_0x154 = 0;
@@ -182,7 +181,7 @@ void GameRecord::load() {
     bool campaignLocked;
     int campaignStage;
     unsigned char *deadArray;
-    Array<uint8_t> *srcByteArray;
+    Array<bool> *srcByteArray;
     Array<uint32_t> *srcVec;
     BluePrint *blueprint;
     Station *station;
@@ -311,15 +310,13 @@ void GameRecord::load() {
     st = Globals::status;
     st->field_ac = (Array<bool> *) this->field_0x84;
     st->field_b0 = this->field_0x88;
-    srcByteArray = (Array<uint8_t> *) this->field_0x8c;
+    srcByteArray = (Array<bool> *) this->field_0x8c;
     srcCount = srcByteArray->count;
     for (copyIndex = 0; srcCount != copyIndex; copyIndex = copyIndex + 1) {
         st->field_b4->data_[copyIndex] = srcByteArray->data_[copyIndex];
     }
     st->field_b8 = this->field_0x90;
-    scalar = this->field_0x9c;
-    st->field_c0 = this->field_0x98;
-    st->field_c4 = scalar;
+    reinterpret_cast<int64_t &>(st->field_c0) = this->field_0x98;
 
     st->field_c8 = this->field_0xa0;
     st->field_cc = this->field_0xa4;
@@ -336,34 +333,28 @@ void GameRecord::load() {
         Globals::achievements->setMedals((int *) this->field_0x60, this->field_0x64);
     }
     Globals::status->setShip((Ship *) this->field_0x130);
-    if (Globals::status->dlc1Won() != 0) {
-        Item *dlcItem = (Item *) Globals::status->getShip()->getFirstEquipmentOfSort(0x12);
-        if (dlcItem == (Item *) 0x0) {
-            dlcItem = (Item *) Globals::status->getShip()->getCargo(0x55);
-            if (dlcItem == (Item *) 0x0) goto afterDlcUnsaleable;
-        }
-        dlcItem->setUnsaleable(false);
+    if (Globals::status->dlc1Won()) {
+        Item *dlcItem = Globals::status->getShip()->getFirstEquipmentOfSort(18);
+        if (dlcItem == nullptr)
+            dlcItem = Globals::status->getShip()->getCargo(85);
+        if (dlcItem != nullptr)
+            dlcItem->setUnsaleable(false);
     }
-afterDlcUnsaleable:
-    if (Globals::status->gameWon() != 0) {
-        Array<Item *> *cargo = ((Ship *) (Globals::status->getShip()))->getCargo();
-        if (cargo != (Array<Item *> *) 0x0) {
-            for (i = 0; i < cargo->size(); i = i + 1) {
-                Item *item = (*cargo)[i];
-                if ((item != (Item *) 0x0) && (item->getIndex() == 0x83)) {
-                    item->setUnsaleable(false);
-                }
+    if (Globals::status->gameWon()) {
+        Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+        if (cargo != nullptr) {
+            for (i = 0; i < cargo->size(); i++) {
+                if ((*cargo)[i] != nullptr && (*cargo)[i]->getIndex() == 131)
+                    (*cargo)[i]->setUnsaleable(false);
             }
         }
     }
     if (this->field_0x40 > 121) {
-        Array<Item *> *cargo = ((Ship *) (Globals::status->getShip()))->getCargo();
-        if (cargo != (Array<Item *> *) 0x0) {
-            for (i = 0; i < cargo->size(); i = i + 1) {
-                Item *item = (*cargo)[i];
-                if ((item != (Item *) 0x0) && (item->getIndex() == 0xd1)) {
-                    item->setUnsaleable(false);
-                }
+        Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+        if (cargo != nullptr) {
+            for (i = 0; i < cargo->size(); i++) {
+                if ((*cargo)[i] != nullptr && (*cargo)[i]->getIndex() == 209)
+                    (*cargo)[i]->setUnsaleable(false);
             }
         }
     }
@@ -390,16 +381,12 @@ afterDlcUnsaleable:
     st->field_8c = this->field_0x134;
     st->setStation((Station *) this->field_0x138);
     Globals::status->setMission(Mission::empty);
-    st->standing = (Standing *) this->field_0x13c;
+    Globals::status->standing = (Standing *) this->field_0x13c;
     for (i = 0; i < this->field_0x140->size(); i++)
         (*Globals::status->bluePrints)[i] = (*this->field_0x140)[i];
     Globals::status->pendingProducts = (Array<PendingProduct *> *) this->field_0x144;
-    {
-        Array<uint32_t> *agVec = (Array<uint32_t> *) this->field_0x148;
-        for (i = 0; i < agVec->count; i = i + 1) {
-            ((Array<uint32_t> *) Globals::status->agents)->data_[i] = agVec->data_[i];
-        }
-    }
+    for (i = 0; i < this->field_0x148->size(); i++)
+        (*Globals::status->agents)[i] = (*this->field_0x148)[i];
     st = Globals::status;
     st->wingmen = (Array<String *> *) this->field_0x14c;
     st->field_0x2c = this->field_0x150;
@@ -438,21 +425,49 @@ afterDlcUnsaleable:
         st->field_4c = (Array<bool> *) this->field_0x174;
         srcByteArray2 = (Array<uint8_t> *) this->field_0x178;
         i = srcByteArray2->count;
-        if (dstByteVec->count <= i) {
+        if (i >= dstByteVec->count) {
             for (j = 0; i != j; j = j + 1) {
                 dstByteVec->data_[j] = srcByteArray2->data_[j];
             }
         }
     }
 
-    for (int k = 0; k < 16; k++)
-        Globals::hints[8 + k] = this->hintFlags[k];
+    Globals::hints[8] = this->hintFlags[0];
+    Globals::hints[9] = this->hintFlags[1];
+    Globals::hints[10] = this->hintFlags[2];
+    Globals::hints[11] = this->hintFlags[3];
+    Globals::hints[12] = this->hintFlags[4];
+    Globals::hints[13] = this->hintFlags[5];
+    Globals::hints[14] = this->hintFlags[6];
+    Globals::hints[15] = this->hintFlags[7];
+    Globals::hints[16] = this->hintFlags[8];
+    Globals::hints[17] = this->hintFlags[9];
+    Globals::hints[18] = this->hintFlags[10];
+    Globals::hints[19] = this->hintFlags[11];
+    Globals::hints[20] = this->hintFlags[12];
+    Globals::hints[21] = this->hintFlags[13];
+    Globals::hints[22] = this->hintFlags[14];
+    Globals::hints[23] = this->hintFlags[15];
     missionFlags->field_0x2c = reinterpret_cast<uint32_t &>(this->rank);
     scalar = this->field_0xcc;
     st->field_0x100 = this->field_0xc8;
     st->field_0x104 = scalar;
-    for (int k = 16; k < 32; k++)
-        Globals::hints[8 + k] = this->hintFlags[k];
+    Globals::hints[24] = this->hintFlags[16];
+    Globals::hints[25] = this->hintFlags[17];
+    Globals::hints[26] = this->hintFlags[18];
+    Globals::hints[27] = this->hintFlags[19];
+    Globals::hints[28] = this->hintFlags[20];
+    Globals::hints[29] = this->hintFlags[21];
+    Globals::hints[30] = this->hintFlags[22];
+    Globals::hints[31] = this->hintFlags[23];
+    Globals::hints[32] = this->hintFlags[24];
+    Globals::hints[33] = this->hintFlags[25];
+    Globals::hints[34] = this->hintFlags[26];
+    Globals::hints[35] = this->hintFlags[27];
+    Globals::hints[36] = this->hintFlags[28];
+    Globals::hints[37] = this->hintFlags[29];
+    Globals::hints[38] = this->hintFlags[30];
+    Globals::hints[39] = this->hintFlags[31];
     if (this->field_0x1bc == kRecordExtendedTag) {
         Globals::hints[41] = this->field_0x105;
         Globals::hints[40] = this->field_0x104;
