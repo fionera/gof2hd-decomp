@@ -283,203 +283,8 @@ static inline void _mtw_Array_TB_ctor(void *a) { new(a) Array<TouchButton*>(); }
 
 void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int x, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// _mtw_Ship_addCargo removed: ship->addCargo(item)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void MenuTouchWindow::showSupernovaMessage() {
-    ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-    GameText *gt = Globals::gameText;
-    String *s1 = (String *) _mtw_GameText_getText(gt, 0x266);
-    String *s2 = (String *) _mtw_GameText_getText(Globals::gameText, 0x267);
-    cw->set(*s1, *s2, false);
-    this->messageShowing = 1;
-    this->supernovaMessageShowing = 1;
-}
-
-bool MenuTouchWindow::isInMissionScreen() {
-    return this->menuState == 9;
-}
-
-uint8_t MenuTouchWindow::isShowingMessage() {
-    return this->messageShowing;
-}
-
-bool MenuTouchWindow::isMakingScreenshot() {
-    return this->screenshotState < 0x80000000u;
-}
-
-void MenuTouchWindow::hideMessage() {
-    this->messageShowing = 0;
-}
-
-void MenuTouchWindow::render3D() {
-    if (this->menuState != 9)
-        return;
-    MissionsWindow *obj = (MissionsWindow *) this->missionsWindow;
-    if (obj == 0)
-        return;
-    return _mtw_render3D_inner(obj);
-}
-
-bool MenuTouchWindow::inCinematicMode() {
-    return this->menuState == 0xd;
-}
-
-float MenuTouchWindow::getRelativeScrollStartPos() {
-    int offset = this->scrollOffset;
-    if (offset > 0)
-        return 0.0f;
-    return -(float) offset / (float) this->pageHeight;
-}
-
 // g_android_link_game_gp is the Google-Play "link game" flag (JniBridge.cpp)
 extern int g_android_link_game_gp;
-
-int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
-    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
-    if (this->menuState == 0xb && touchId != 0) {
-        if (this->cinematicTouchIdA == touchId)
-            this->cinematicTouchIdA = 0;
-        if (this->cinematicTouchIdB == touchId)
-            this->cinematicTouchIdB = 0;
-        this->cinematicTouchState = 0;
-    }
-
-    this->pendingActivate = 0;
-    this->dragging = 0;
-
-    uint8_t *layoutGuard = (uint8_t *) Globals::layout;
-    if (*layoutGuard != 0) {
-        if (_mtw_Layout_OnTouchEnd(layoutGuard, y, x) != 0)
-            *layoutGuard = 0;
-        return 0;
-    }
-
-    int state = this->menuState;
-
-    if (state == 0) {
-        if (this->messageShowing != 0) {
-            ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-            if (this->returnToMenuShowing != 0) {
-                int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-                if (r == 1) {
-                    this->returnToMenuShowing = 0;
-                    this->messageShowing = 0;
-                } else if (r == 0) {
-                    _mtw_AppMgr_Quit(Globals::appManager);
-                }
-                return 0;
-            }
-            if (this->genericConfirmB != 0) {
-                int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-                if (r != 1) {
-                    if (r != 0) return 0;
-                    g_android_link_game_gp = 1;
-                }
-                this->messageShowing = 0;
-                this->genericConfirmB = 0;
-                return 0;
-            }
-            if (this->quitConfirmShowing != 0) {
-                int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-                if (r == 1) {
-                    this->quitConfirmShowing = 0;
-                    this->messageShowing = 0;
-                    this->returnToMenuSubFlag = 0;
-                    return 0;
-                }
-                if (r != 0) return 0;
-                _mtw_FModSound_resumeAll(Globals::sound);
-                _mtw_FModSound_stopAll();
-                Globals::switch_to_target_setting = 2;
-                _mtw_AppMgr_SetCurrentApplicationModule(Globals::appManager,
-                                                        Globals::switch_to_target_setting);
-                this->quitConfirmShowing = 0;
-                this->messageShowing = 0;
-                return 0;
-            }
-            if (this->leaderboardDialogShowing != 0) {
-                unsigned int r = (unsigned int) _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-                if (r < 2) Globals::globals->reportLeaderboards();
-                this->leaderboardDialogShowing = 0;
-                this->messageShowing = 0;
-            }
-            if (this->dlcMessageShowing != 0) {
-                _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-                this->messageShowing = 0;
-                return 0;
-            }
-            if (this->dlcErrorDialogShowing != 0 || this->dlcResultDialogShowing != 0) {
-                _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-                this->messageShowing = 0;
-                return 0;
-            }
-            if (this->loadFailedDialogShowing != 0) {
-                this->loadFailedDialogShowing = 0;
-            } else if (this->genericConfirmA != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
-                this->messageShowing = 0;
-                this->genericConfirmA = 0;
-                return 0;
-            } else if (this->supernovaMessageShowing != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
-                this->supernovaMessageShowing = 0;
-            } else if (this->supernovaPurchaseDialogShowing != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
-                this->supernovaPurchaseDialogShowing = 0;
-            } else {
-                _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-            }
-            this->messageShowing = 0;
-            return 0;
-        }
-        return _mtw_onTouchEnd_genericButtons(this, y, x, 0x4), 0;
-    }
-
-    switch (state) {
-        case 1:
-        case 2:
-            if (this->listStateSuppress != 0) return 0;
-            _mtw_onTouchEnd_listState(this, y, x, state);
-            break;
-        case 3:
-            _mtw_onTouchEnd_genericButtons(this, y, x, 0xac);
-            break;
-        case 4:
-            _mtw_onTouchEnd_scrollState(this, y, x, 0xf0);
-            break;
-        case 7:
-        case 8:
-            _mtw_onTouchEnd_optionsState(this, y, x);
-            break;
-        case 9:
-            _mtw_onTouchEnd_missionsState(this, y, x);
-            break;
-        case 0xb:
-            _mtw_onTouchEnd_cinematicState(this, y, x);
-            break;
-        case 0xc:
-            _mtw_onTouchEnd_genericButtons(this, y, x, 0xb4);
-            break;
-        case 0xd:
-            _mtw_onTouchEnd_genericButtons(this, y, x, 0x4);
-            break;
-        case 0xe:
-            _mtw_onTouchEnd_genericButtons(this, y, x, 0xb0);
-            break;
-        case 0xf:
-        case 0x10:
-            _mtw_onTouchEnd_scrollState(this, y, x, 0xf4);
-            break;
-        case 0x11:
-            _mtw_onTouchEnd_genericButtons(this, y, x, 0xb8);
-            break;
-        default:
-            _mtw_onTouchEnd_genericButtons(this, y, x, 0x4);
-            break;
-    }
-    return 0;
-}
 
 void _mtw_ArrayReleaseClasses_TB(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -491,6 +296,738 @@ static inline void freeObj(T **slot, void *(*dtor)(void *)) { // lint: void_ptr 
     T *o = *slot;
     if (o != 0) ::operator delete(dtor(o));
     *slot = 0;
+}
+
+void _mtw_ArrayReleaseClasses_Str(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_ArrayReleaseClasses_StrArr(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+// lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void *_mtw_String_op_plus(void *out, void *rhs); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+// lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int w, // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+                               // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+                               char type, char id);
+
+static const char gCrbDash[] = "";
+
+
+typedef void (*RefreshFn)();
+
+
+static const int g_mtw_upTextIds[16] = {};
+
+#define MTW_ABS(v) ((v) > 0 ? (v) : -(v))
+
+void _mtw_draw_mainMenu(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_loadSaveList(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_optionsTabs(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_scrollA(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_audioOptions(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_keyConfig(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_missions(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_cinematic(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_buttonsB4(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_store(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_buttonsB0(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_scrollB(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_draw_buttonsB8(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+// lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_Layout_OnTouchMove(void *layout, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void _mtw_buildMenu(void *self, int menuType); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+static const int MenuTouchWindow_languageIds[10] = {27, 28, 30, 29, 31, 32, 33, 35, 38, 39};
+static const int MenuTouchWindow_languageTextIds[10] = {2, 1, 4, 3, 5, 7, 8, 14, 12, 13};
+static const int MenuTouchWindow_controlImages[3][2] = {{9500, 9501}, {9504, 9505}, {9502, 9503}};
+
+MenuTouchWindow::MenuTouchWindow(int menuType) {
+    this->buttonWidth = Globals::layout->field_0x294_buttonWidth;
+    this->buttonYBias = Globals::layout->field_0x298_buttonYBias;
+    this->buttonRowGap = Globals::layout->field_0x29c_buttonRowGap;
+    this->listRowGap = Globals::layout->field_0x2a0_listRowGap;
+    this->metricA = Globals::layout->field_0x2a4_metricA;
+    this->metricB = Globals::layout->field_0x2a8_metricB;
+    this->metricC = Globals::layout->field_0x2ac_metricC;
+    int mainButtonOffset = Globals::layout->field_0x2b0;
+    this->backgroundEnabled = menuType;
+    this->buttons = new Array<TouchButton *>();
+    this->scrollEntries = new Array<TouchButton *>();
+    this->scrollUpButton = 0;
+    this->scrollExtraButton = 0;
+    this->buttonsB8 = 0;
+    this->buttonsB0 = 0;
+    this->buttonsB4 = 0;
+    this->cinematicSteerActive = 0;
+    this->field_0x120 = -1;
+    this->selectedRow = 0;
+    this->field_0x1c4 = 0;
+    this->heapBufA = 0;
+    this->heapBufB = 0;
+    this->field_0x1e0 = 0;
+    this->scrollWindowA = 0;
+    this->scrollWindowB = 0;
+    this->scrollSlots = 0;
+    this->field_0x230 = 0;
+    this->field_0x234 = 0;
+    this->cutsceneMode = 0;
+    this->previewStrings0 = 0;
+    this->previewStrings1 = 0;
+    this->previewRecords = 0;
+    this->loadPreviewRecords();
+
+    bool showLanguages = true;
+    switch (menuType) {
+    case 2: {
+        this->addButton(0, *Globals::gameText->getText(28), 0, this->buttons, 0);
+        this->addButton(1, *Globals::gameText->getText(29), 1, this->buttons, 0);
+        this->addButton(2, *Globals::gameText->getText(30), 2, this->buttons, 0);
+        this->addButton(3, *Globals::gameText->getText(31), 3, this->buttons, 0);
+        int row = 4;
+        if (Globals::iPad) {
+            this->addButton(25, *Globals::gameText->getText(0), 4, this->buttons, 0);
+            row = 5;
+        }
+        this->addButton(4, *Globals::gameText->getText(43), row, this->buttons, 0);
+        break;
+    }
+    case 0: {
+        // Main menu.
+        Globals::Canvas->Image2DCreate(7002, *(unsigned int *) &this->field_0x120);
+        this->addButton(0, *Globals::gameText->getText(28), 0, this->buttons, mainButtonOffset);
+        int row = 1;
+        if (Globals::lastRecordWritten >= 0 && this->previewRecords != 0 &&
+            Globals::lastRecordWritten < Globals::recordSlots && (*this->previewRecords)[Globals::lastRecordWritten] != 0) {
+            this->addButton(11, *Globals::gameText->getText(41), 1, this->buttons, mainButtonOffset);
+            row = 2;
+        }
+        this->addButton(1, *Globals::gameText->getText(29), row, this->buttons, mainButtonOffset);
+        this->addButton(3, *Globals::gameText->getText(31), row + 1, this->buttons, mainButtonOffset);
+        int next = row + 2;
+        if (Globals::iPad) {
+            this->addButton(25, *Globals::gameText->getText(0), row + 2, this->buttons, mainButtonOffset);
+            next = row + 3;
+        }
+        this->addButton(4, *Globals::gameText->getText(43), next, this->buttons, mainButtonOffset);
+        break;
+    }
+    case 1: {
+        // In-game pause menu.
+        Globals::Canvas->Image2DCreate(1332, *(unsigned int *) &this->field_0x120);
+        this->addButton(3, *Globals::gameText->getText(31), 0, this->buttons, 0);
+        int row = 1;
+        if (Globals::status->getCurrentCampaignMission() >= 16 && !Globals::status->inAlienOrbit() &&
+            Globals::status->getMission()->getType() != 183) {
+            this->addButton(10, *Globals::gameText->getText(129), 1, this->buttons, 0);
+            row = 2;
+        }
+        if (Globals::status->getCurrentCampaignMission() >= 2 && Globals::status->getMission()->getType() != 183) {
+            this->addButton(12, *Globals::gameText->getText(166), row, this->buttons, 0);
+            row++;
+        }
+        this->addButton(6, *Globals::gameText->getText(522), row, this->buttons, 0);
+        this->addButton(19, *Globals::gameText->getText(59), row + 1, this->buttons, 0);
+        int mission = Globals::status->getCurrentCampaignMission();
+        if (mission == 154 || mission == 157 || mission == 158)
+            this->addButton(18, *Globals::gameText->getText(395), row + 2, this->buttons, 0);
+        TouchButton *quit = new TouchButton(*Globals::gameText->getText(61), 0,
+                                            Globals::w - Globals::layout->field_0x2c_rowHeight,
+                                            Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
+        quit->id = 20;
+        ArrayAdd(quit, *this->scrollEntries);
+        TouchButton *save = new TouchButton(*Globals::gameText->getText(60), 0,
+                                            Globals::w - Globals::layout->field_0x2c_rowHeight * 2 - quit->getWidth(),
+                                            Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
+        save->id = 21;
+        ArrayAdd(save, *this->scrollEntries);
+        save->setPosition(Globals::w - Globals::layout->field_0x2c_rowHeight,
+                          Globals::h - Globals::layout->field_0x2c_rowHeight);
+        showLanguages = false;
+        break;
+    }
+    }
+    if (showLanguages && Globals::layout->field_0x285) {
+        TouchButton *dlc = new TouchButton(*Globals::gameText->getText(33), 0,
+                                           Globals::w - Globals::layout->field_0x2c_rowHeight,
+                                           Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
+        dlc->id = 17;
+        ArrayAdd(dlc, *this->scrollEntries);
+    }
+    TouchButton *back = new TouchButton(*Globals::gameText->getText(62), 0,
+                                        Globals::w - Globals::layout->field_0x2c_rowHeight,
+                                        Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
+    back->id = 22;
+    ArrayAdd(back, *this->scrollEntries);
+
+    Vector anchor = this->buttons != 0
+                        ? (*this->buttons)[this->buttons->size() - 1 >= 4 ? 4 : this->buttons->size() - 1]->getPosition()
+                        : Vector();
+    TouchButton *leaderboards =
+        new TouchButton(String("Leaderboards"), 17,
+                        (int) (anchor.x + (float) this->buttonWidth + (float) (this->buttonWidth / 3)), (int) anchor.y, 68);
+    leaderboards->id = 23;
+    ArrayAdd(leaderboards, *this->scrollEntries);
+    TouchButton *achievements = new TouchButton(String("Achievements"), 17,
+                                                (int) (anchor.x - (float) (this->buttonWidth / 3)), (int) anchor.y, 68);
+    achievements->id = 24;
+    ArrayAdd(achievements, *this->scrollEntries);
+    TouchButton *facebook = new TouchButton(*Globals::gameText->getText(5000), 0,
+                                            Globals::w - Globals::layout->field_0x2c_rowHeight * 2 - back->getWidth(),
+                                            Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
+    facebook->id = 109;
+    ArrayAdd(facebook, *this->scrollEntries);
+    TouchButton *twitter = new TouchButton(*Globals::gameText->getText(5001), 0,
+                                           Globals::w + Globals::layout->field_0x2c_rowHeight * -3 - back->getWidth() -
+                                               facebook->getWidth(),
+                                           Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
+    twitter->id = 110;
+    ArrayAdd(twitter, *this->scrollEntries);
+
+    // Options.
+    this->optionsButtons = new Array<TouchButton *>();
+    this->addButton(8, *Globals::gameText->getText(489), 0, this->optionsButtons, 0);
+    this->addButton(9, *Globals::gameText->getText(498), 1, this->optionsButtons, 0);
+    if (showLanguages) {
+        this->addButton(25, *Globals::gameText->getText(0), 2, this->optionsButtons, 0);
+        // Language selection.
+        this->buttonsB0 = new Array<TouchButton *>();
+        int rowHeight = (int) (Globals::iPad ? (float) Globals::layout->field_0x34
+                                             : (float) Globals::layout->field_0x34 * 0.9f) + 2;
+        for (unsigned int i = 0; i < 10; i++) {
+            int x;
+            int y;
+            if (Globals::iPad) {
+                x = Globals::w / 2 - this->buttonWidth / 2;
+                y = (rowHeight + Globals::layout->field_0x30_rowHeight) * i +
+                    (Globals::h / 2 - this->buttonYBias - Globals::layout->field_0x29c_buttonRowGap -
+                     Globals::layout->field_0x30_rowHeight);
+            } else {
+                x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +
+                           (float) this->buttonWidth * -0.5f);
+                y = (rowHeight + Globals::layout->field_0x30_rowHeight) * (i >> 1) +
+                    (Globals::h / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap);
+            }
+            bool special = (i | 1) == 9;
+            int spacing = Globals::Canvas->FontGetSpacing(
+                special ? (unsigned int) Globals::fontLangSelect : (unsigned int) (uintptr_t) Globals::font);
+            TouchButton *language = new TouchButton(
+                *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, this->buttonWidth, 17, 4,
+                special ? (unsigned int) Globals::fontLangSelect : (unsigned int) (uintptr_t) Globals::font, spacing);
+            language->id = MenuTouchWindow_languageIds[i];
+            if (special)
+                language->fontId = Globals::fontLangSelect;
+            ArrayAdd(language, *this->buttonsB0);
+        }
+    }
+
+    Globals::Canvas->Image2DCreate(1301, this->optionsImage_0x10c);
+    Globals::Canvas->Image2DCreate(1302, this->optionsImage_0x110);
+    Globals::Canvas->Image2DCreate(1303, this->optionsImage_0x114);
+    Globals::Canvas->Image2DCreate(1304, this->optionsImage_0x118);
+    this->heapBufA = new uint32_t[5];
+    this->heapBufB = new uint32_t[5];
+    Globals::Canvas->Image2DCreate(3002, this->heapBufA[0]);
+    Globals::Canvas->Image2DCreate(3004, this->heapBufA[1]);
+    Globals::Canvas->Image2DCreate(3011, this->heapBufA[2]);
+    Globals::Canvas->Image2DCreate(3013, this->heapBufA[3]);
+    Globals::Canvas->Image2DCreate(3015, this->heapBufA[4]);
+    Globals::Canvas->Image2DCreate(3003, this->heapBufB[0]);
+    Globals::Canvas->Image2DCreate(Globals::iPad ? 3014 : 3005, this->heapBufB[1]);
+    Globals::Canvas->Image2DCreate(3012, this->heapBufB[2]);
+    Globals::Canvas->Image2DCreate(3014, this->heapBufB[3]);
+    Globals::Canvas->Image2DCreate(3016, this->heapBufB[4]);
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes)
+        Globals::Canvas->Image2DCreate(3101, this->borderImage_0x14c);
+    Globals::Canvas->Image2DCreate(3000, this->scrollImage_0x13c);
+    Globals::Canvas->Image2DCreate(3001, this->scrollImage_0x140);
+    Globals::Canvas->Image2DCreate(3006, this->scrollImage_0x144);
+    Globals::Canvas->Image2DCreate(3007, this->scrollImage_0x148);
+    this->scrollbarHit = 0;
+    this->contentHeightCache = Globals::Canvas->GetImage2DHeight(this->heapBufA[0]);
+    this->slotImageWidth = Globals::Canvas->GetImage2DWidth(this->heapBufA[0]);
+    this->slotX = Globals::layout->buttonInsetX + Globals::layout->field_0x2c_rowHeight;
+    this->slotY = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top;
+    this->slotBorderWidth = Globals::iPad && !Globals::iPadAssetsWithLowerRes
+                                ? 0
+                                : Globals::Canvas->GetImage2DWidth(this->scrollImage_0x13c);
+    this->slotMarkerWidth = Globals::Canvas->GetImage2DWidth(this->heapBufB[0]);
+    this->slotMarkerHeight = Globals::Canvas->GetImage2DHeight(this->heapBufB[0]);
+    this->slotListWidth = this->slotImageWidth + Globals::layout->field_0x2c_rowHeight * 2;
+    this->slotTextWidth =
+        Globals::w - this->slotListWidth - Globals::layout->buttonInsetX * 2 - this->slotBorderWidth;
+    this->scrollSlots = new Array<TouchButton *>();
+    ArraySetLength(5, *this->scrollSlots);
+    this->slotSpacing = Globals::layout->field_0x2c_rowHeight;
+    for (unsigned int i = 0; i < this->scrollSlots->size(); i++) {
+        (*this->scrollSlots)[i] = new TouchButton(this->heapBufA[i], 16, this->slotX,
+                                                  (this->slotSpacing + this->contentHeightCache) * i + this->slotY, 17);
+        (*this->scrollSlots)[i]->id = 54 + i;
+    }
+    int windowHeight = Globals::h - Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
+                       this->slotMarkerHeight - Globals::layout->field_0x2c_rowHeight -
+                       Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24;
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes)
+        windowHeight -= Globals::Canvas->GetImage2DHeight(this->borderImage_0x14c) * 2;
+    this->scrollWindowB = new ScrollTouchWindow(
+        Globals::w - Globals::layout->buttonInsetX - this->slotTextWidth,
+        Globals::layout->field_0x2c_rowHeight +
+            (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->slotMarkerHeight),
+        this->slotTextWidth, windowHeight, false);
+    this->scrollWindowB->setText(String(""), *Globals::gameText->getText(87 + this->field_0x1e0));
+
+    Vector first = (*this->buttons)[0]->getPosition();
+    TouchButton *store = new TouchButton(
+        *Globals::gameText->getText(97), 17,
+        (int) (anchor.x + (float) this->buttonWidth + (float) (this->buttonWidth / 3)),
+        (int) (first.y - (float) (Globals::layout->field_0x2c_rowHeight * 3)), 20);
+    store->id = 53;
+    ArrayAdd(store, *this->scrollEntries);
+    if (!Globals::inAppPurchaseSupported)
+        store->setVisible(false);
+    Globals::Canvas->Image2DCreate(3010, this->image_0x124);
+    Globals::Canvas->Image2DCreate(9023, this->image_0x128);
+
+    if (Globals::iPad) {
+        // Touch control preview.
+        Globals::Canvas->Image2DCreate(1217, this->steerImageA);
+        Globals::Canvas->Image2DCreate(1202, this->steerImageB);
+        Globals::Canvas->Image2DCreate(1200, this->steerImageC);
+        Globals::Canvas->Image2DCreate(1206, this->steerImageD);
+        Globals::globals->setCoordsSteer(*(int *) &Globals::options[84],
+                                         Globals::Canvas->GetImage2DWidth(this->steerImageA),
+                                         Globals::Canvas->GetImage2DWidth(this->steerImageC),
+                                         Globals::Canvas->GetImage2DWidth(this->steerImageB), this->steerCoord_0x2e,
+                                         this->steerCoord_0x30, this->steerCoord_0x40, this->steerCoord_0x42,
+                                         this->steerCoord_0x3c, this->steerCoord_0x3e, this->steerCoord_0x34,
+                                         this->steerCoord_0x32, this->steerCoord_0x48, this->steerCoord_0x4a);
+        Globals::Canvas->Image2DCreate(1222, this->fireImageA);
+        Globals::Canvas->Image2DCreate(1706, this->fireImageB);
+        Globals::Canvas->Image2DCreate(1210, this->fireImage_0x84);
+        Globals::Canvas->Image2DCreate(1204, this->fireImage_0x80);
+        Globals::Canvas->Image2DCreate(1214, this->fireImage_0x88);
+        Globals::Canvas->Image2DCreate(1212, this->fireImage_0x8c);
+        Globals::globals->setCoordsFire(*(int *) &Globals::options[88], Globals::Canvas->GetImage2DWidth(this->fireImageA),
+                                        this->fireImageA, this->fireImageB, this->fireSize_0x74, this->fireCoord_0x60,
+                                        this->fireCoord_0x62, this->fireCoord_0x64, this->fireCoord_0x66,
+                                        this->fireCoord_0x68, this->fireCoord_0x6a, this->fireCoord_0x6c,
+                                        this->fireCoord_0x6e, this->fireCoord_0x70, this->fireCoord_0x72,
+                                        this->fireCoord_0x4c, this->fireCoord_0x4e);
+        Globals::Canvas->Image2DCreate(1701, this->fireImage_0x50);
+        Globals::Canvas->Image2DCreate(1702, this->fireImage_0x54);
+        Globals::Canvas->Image2DCreate(1703, this->fireImage_0x58);
+        Globals::Canvas->Image2DCreate(1704, this->fireImage_0x5c);
+        this->cinematicBtnB = new TouchButton(
+            *Globals::gameText->getText(497), 0, Globals::w / 2,
+            Globals::layout->field_0x300 + Globals::layout->choiceWindowTitleHeight - Globals::layout->field_0x34 * 2 -
+                Globals::layout->field_0x30_rowHeight * 2,
+            (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
+        this->cinematicBtnA = new TouchButton(
+            *Globals::gameText->getText(496), 0, Globals::w / 2,
+            Globals::layout->field_0x300 + Globals::layout->choiceWindowTitleHeight - Globals::layout->field_0x34 -
+                Globals::layout->field_0x30_rowHeight,
+            (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
+        this->cinematicTextWindow =
+            new ScrollTouchWindow(Globals::w / 2 - Globals::layout->field_0x304 / 2,
+                                  Globals::layout->field_0x300 + Globals::layout->windowTopInset,
+                                  Globals::layout->field_0x304, Globals::layout->choiceWindowTitleHeight, false);
+        this->cinematicTextWindow->setText(String(""), *Globals::gameText->getText(495));
+        this->cinematicTouchIdA = 0;
+        this->cinematicTouchIdB = 0;
+        float entryWidth;
+        if (Globals::iPadHD) {
+            this->listBottomY = 703;
+            entryWidth = 175.78125f;
+        } else {
+            this->listBottomY = Globals::iPadLarge ? 1000 : 500;
+            entryWidth = Globals::iPadLarge ? 250.0f : 125.0f;
+        }
+        this->listTopY = (Globals::w - this->listBottomY) / 2;
+        this->listEntryWidth = (int) entryWidth;
+    } else {
+        this->listTopY = 0;
+        this->listBottomY = Globals::w;
+        this->listEntryWidth = (Globals::h - Globals::layout->field_0xc_leftMargin -
+                                Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x20_top -
+                                Globals::layout->field_0x24) / 2;
+    }
+    this->optionsWidth = this->listBottomY - Globals::layout->buttonInsetX * 2;
+    this->listEntryHeight = 1 - Globals::layout->field_0x2c_rowHeight + this->optionsWidth / 2;
+    this->field_0x15c = 1 - Globals::layout->field_0x2c_rowHeight + this->listEntryWidth / 2;
+    this->sliderSpacing = Globals::Canvas->GetImage2DHeight(this->optionsImage_0x114);
+    this->sliderRowHeight = this->sliderSpacing + 15;
+
+    this->optBtnD0 = new TouchButton(
+        *Globals::gameText->getText(492), 0,
+        this->listTopY + this->listBottomY - Globals::layout->buttonInsetX - this->listEntryHeight / 2,
+        Globals::layout->field_0x2c_rowHeight + (this->listEntryWidth + (Globals::layout->field_0xc_leftMargin +
+                                                                         Globals::layout->field_0x20_top)) +
+            this->field_0x15c / 2,
+        this->listEntryHeight - 20, 68, 4);
+    this->optBtnCC = new TouchButton(String(""), 13,
+                                     this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight - 10,
+                                     Globals::layout->field_0x2c_rowHeight +
+                                         (this->listEntryWidth + (Globals::layout->field_0xc_leftMargin +
+                                                                  Globals::layout->field_0x20_top)) +
+                                         this->field_0x15c / 2,
+                                     66);
+    this->scrollExtraButton = new TouchButton(
+        String(""), 13, this->listTopY + this->listBottomY - 25 - Globals::layout->buttonInsetX,
+        Globals::layout->field_0x2c_rowHeight * 5 +
+            (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x1c * 3 +
+             this->listEntryWidth) +
+            this->sliderRowHeight + this->sliderRowHeight / 2 +
+            (Globals::layout->field_0x2fc + (this->field_0x15c + Globals::layout->field_0x2c_rowHeight) +
+             this->sliderRowHeight) * 2,
+        66);
+    this->optBtnD0->setHalfTransparent(Globals::options[17]);
+    this->optBtnCC->setAlwaysPressed(Globals::options[16]);
+    this->scrollExtraButton->setAlwaysPressed(Globals::options[64]);
+    if (Globals::iPad) {
+        this->scrollUpButton = new TouchButton(
+            *Globals::gameText->getText(494), 0,
+            this->listTopY + this->listBottomY - Globals::layout->buttonInsetX - this->listEntryHeight / 2,
+            Globals::layout->field_0x2c_rowHeight + (this->listEntryWidth + (Globals::layout->field_0xc_leftMargin +
+                                                                             Globals::layout->field_0x20_top)) +
+                this->field_0x15c / 2,
+            this->listEntryHeight - 20, 68, 4);
+    }
+
+    this->buttonsB4 = new Array<TouchButton *>();
+    this->addButton(16, *Globals::gameText->getText(519), 0, this->buttonsB4, 0);
+    this->addButton(50, *Globals::gameText->getText(25), 1, this->buttonsB4, 0);
+
+    // Control scheme selection.
+    this->buttonsB8 = new Array<TouchButton *>();
+    unsigned int pressedImage = 0xffffffffu;
+    unsigned int image = 0xffffffffu;
+    for (int i = 0; i < 3; i++) {
+        Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[i][0], image);
+        Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[i][1], pressedImage);
+        int imageWidth = Globals::Canvas->GetImage2DWidth(image);
+        int imageHeight = Globals::Canvas->GetImage2DHeight(image);
+        int x;
+        if (i == 0)
+            x = 0 - imageWidth / 2 - imageWidth + Globals::w / 2;
+        else
+            x = (i == 1 ? 0 - imageWidth / 2 : imageWidth / 2) + Globals::w / 2;
+        ArrayAdd(new TouchButton(image, pressedImage, 19, x, Globals::h / 2 - imageHeight / 2, 1), *this->buttonsB8);
+    }
+
+    // Volume / sensitivity sliders.
+    int sliderTop = Globals::layout->field_0x2b4;
+    int sliderTop2 = Globals::layout->field_0x2b8;
+    this->sliders = new Array<TouchSlider *>();
+    ArrayAdd(new TouchSlider(0,
+                             Globals::w + 10 - Globals::layout->buttonInsetX - this->listEntryHeight,
+                             Globals::layout->field_0xc_leftMargin - sliderTop + Globals::layout->field_0x20_top +
+                                 this->listEntryWidth +
+                                 (this->field_0x15c + Globals::layout->field_0x2c_rowHeight) * 2,
+                             Globals::options[17] ? *(float *) &Globals::options[20] : *(float *) &Globals::options[24]),
+             *this->sliders);
+    ArrayAdd(new TouchSlider(1, Globals::layout->buttonInsetX + this->metricC,
+                             Globals::layout->field_0xc_leftMargin + sliderTop2 + Globals::layout->field_0x20_top +
+                                 Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight,
+                             *(float *) &Globals::options[0]),
+             *this->sliders);
+    ArrayAdd(new TouchSlider(1, this->metricC + Globals::layout->buttonInsetX,
+                             Globals::layout->field_0xc_leftMargin + sliderTop2 + Globals::layout->field_0x20_top +
+                                 Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight * 3 +
+                                 this->sliderSpacing,
+                             *(float *) &Globals::options[4]),
+             *this->sliders);
+    ArrayAdd(new TouchSlider(1, this->metricC + Globals::layout->buttonInsetX,
+                             Globals::layout->field_0xc_leftMargin + sliderTop2 + Globals::layout->field_0x20_top +
+                                 Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight * 5 +
+                                 this->sliderSpacing * 2,
+                             *(float *) &Globals::options[8]),
+             *this->sliders);
+    ArrayAdd(new TouchSlider(2, this->metricC + Globals::layout->buttonInsetX,
+                             (int) ((double) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                              Globals::layout->field_0x1c * 3 +
+                                              Globals::layout->field_0x2c_rowHeight * 6) +
+                                    (double) this->sliderSpacing * 2.5 + (double) sliderTop),
+                             *(float *) &Globals::options[36]),
+             *this->sliders);
+    ArrayAdd(new TouchSlider(2, this->metricC + Globals::layout->buttonInsetX,
+                             (int) ((double) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                              Globals::layout->field_0x1c * 3 +
+                                              Globals::layout->field_0x2c_rowHeight * 8) +
+                                    (double) this->sliderSpacing * 2.5 + (double) this->sliderRowHeight +
+                                    (double) sliderTop),
+                             *(float *) &Globals::options[40]),
+             *this->sliders);
+    ArrayAdd(new TouchSlider(2, Globals::layout->buttonInsetX + this->metricC,
+                             Globals::layout->field_0xc_leftMargin + sliderTop + Globals::layout->field_0x20_top +
+                                 Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight,
+                             *(float *) &Globals::options[44]),
+             *this->sliders);
+    (*this->sliders)[6]->setPosition(Globals::w / 2 - (*this->sliders)[6]->getWidth() / 2,
+                                     Globals::layout->field_0xc_leftMargin + sliderTop +
+                                         Globals::layout->field_0x20_top + Globals::layout->field_0x1c +
+                                         Globals::layout->field_0x2c_rowHeight);
+    this->optBtnD4 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
+                                     Globals::layout->field_0x2c_rowHeight +
+                                         (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                          Globals::layout->field_0x1c),
+                                     18);
+    this->optBtnD4->setAlwaysPressed(Globals::options[13]);
+    (*this->sliders)[1]->setHalfTransparent(!Globals::options[13]);
+    this->optBtnD8 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
+                                     Globals::layout->field_0x2c_rowHeight * 3 +
+                                         (this->sliderSpacing + (Globals::layout->field_0xc_leftMargin +
+                                                                 Globals::layout->field_0x20_top) +
+                                          Globals::layout->field_0x1c),
+                                     18);
+    this->optBtnD8->setAlwaysPressed(Globals::options[12]);
+    (*this->sliders)[2]->setHalfTransparent(!Globals::options[14]);
+    this->optBtnDC = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
+                                     Globals::layout->field_0x2c_rowHeight * 5 +
+                                         (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                          this->sliderSpacing * 2 + Globals::layout->field_0x1c),
+                                     18);
+    this->optBtnDC->setAlwaysPressed(Globals::options[14]);
+    (*this->sliders)[3]->setHalfTransparent(!Globals::options[14]);
+    (*this->sliders)[5]->setFixedScale(1);
+    (*this->sliders)[6]->setFixedScale(1);
+
+    if (Globals::iPad) {
+        (*this->sliders)[0]->setPosition(
+            this->listTopY + Globals::layout->buttonInsetX + 10,
+            (int) ((float) (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                            Globals::layout->field_0x1c + this->listEntryWidth +
+                            Globals::layout->field_0x2c_rowHeight * 3 + this->field_0x15c * 2) -
+                   (Globals::iPadHD ? 35.15625f : (Globals::iPadLarge ? 50.0f : 25.0f))));
+        (*this->sliders)[1]->setPosition(
+            Globals::layout->buttonInsetX + this->listTopY + this->metricC,
+            (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
+                   (float) (Globals::layout->field_0x2fc +
+                            (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                             this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 4) +
+                            (this->field_0x15c + Globals::layout->field_0x1c) * 2)));
+        (*this->sliders)[2]->setPosition(
+            this->listTopY + Globals::layout->buttonInsetX + this->metricC,
+            (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
+                   (float) (Globals::layout->field_0x2fc +
+                            (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                             this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 3) +
+                            this->sliderRowHeight +
+                            (this->field_0x15c + Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight) *
+                                2)));
+        (*this->sliders)[3]->setPosition(
+            this->listTopY + Globals::layout->buttonInsetX + this->metricC,
+            (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
+                   (float) (Globals::layout->field_0x2fc +
+                            (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                             this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 6) +
+                            (this->field_0x15c + Globals::layout->field_0x1c + this->sliderRowHeight) * 2)));
+        if (Globals::iPadLargePossible) {
+            (*this->sliders)[4]->setPosition(-100000, -100000);
+            (*this->sliders)[5]->setPosition(
+                Globals::layout->buttonInsetX + this->listTopY + this->metricC,
+                (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
+                       (float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                                 Globals::layout->field_0x1c * 3 + this->listEntryWidth +
+                                 Globals::layout->field_0x2c_rowHeight * 7) +
+                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2)));
+            (*this->sliders)[5]->setValue(*(float *) &Globals::options[68]);
+        } else {
+            (*this->sliders)[4]->setPosition(
+                Globals::layout->buttonInsetX + this->listTopY + this->metricC,
+                (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
+                       (float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                                 Globals::layout->field_0x1c * 3 + this->listEntryWidth +
+                                 Globals::layout->field_0x2c_rowHeight * 6) +
+                                this->sliderRowHeight + (this->field_0x15c + Globals::layout->field_0x2fc) * 2)));
+            (*this->sliders)[5]->setPosition(
+                Globals::layout->buttonInsetX + this->listTopY + this->metricC,
+                (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
+                       (float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                                 Globals::layout->field_0x1c * 3 + this->listEntryWidth +
+                                 Globals::layout->field_0x2c_rowHeight * 7) +
+                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2)));
+        }
+        Globals::Canvas->Image2DCreate(1700, this->scrollbarImageId);
+        this->listX = Globals::iPadAssetsWithLowerRes ? 50 : (int) ((float) Globals::w * 0.2f);
+        this->scrollWindowA = new ScrollTouchWindow(
+            Globals::layout->buttonInsetX + Globals::w / 4,
+            Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+            Globals::w / 2 - Globals::layout->buttonInsetX * 2,
+            Globals::h - (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top) -
+                Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+            false);
+    } else {
+        this->listX = 0;
+        this->scrollWindowA = new ScrollTouchWindow(
+            Globals::layout->buttonInsetX, Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+            Globals::w - Globals::layout->buttonInsetX * 2,
+            Globals::h - (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top) -
+                Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+            false);
+    }
+
+    // About text.
+    String version = ((Engine *) Globals::appManager->GetEngine())->str_0x3c;
+    if (version.length >= 3)
+        version = String(" v") + version;
+    else
+        version = String("");
+    String about = String("Galaxy on Fire 2 HD") + version + String("\n\n") + *Globals::gameText->getText(45) +
+                   String("\n\n\n") + *Globals::gameText->getText(48);
+    this->scrollWindowA->setText(String(""), about);
+    this->scrollWindowA->setTextCentered(true);
+
+    TouchButton *credits;
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
+        credits = new TouchButton(*Globals::gameText->getText(98), 7,
+                                  (int) ((float) (this->slotListWidth + Globals::layout->buttonInsetX) +
+                                         (float) this->slotTextWidth * 0.5f),
+                                  Globals::h + 5 - Globals::layout->field_0x10_rightMargin -
+                                      Globals::layout->field_0x24 -
+                                      Globals::Canvas->GetImage2DHeight(this->borderImage_0x14c),
+                                  36);
+    } else {
+        credits = new TouchButton(*Globals::gameText->getText(98), 0, Globals::w - Globals::layout->field_0x2c_rowHeight,
+                                  Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
+    }
+    credits->id = 52;
+    ArrayAdd(credits, *this->scrollEntries);
+
+    this->messageShowing = 0;
+    this->genericConfirmA = 0;
+    this->supernovaMessageShowing = 0;
+    this->supernovaPurchaseDialogShowing = 0;
+    this->choiceWindow = new ChoiceWindow();
+    MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
+    if (!Globals::options[53] && ((uint8_t *) appData)[108]) {
+        Globals::options[53] = 1;
+        Globals::recordHandler->saveOptions();
+        ((uint8_t *) appData)[108] = 0;
+        this->choiceWindow->set(*Globals::gameText->getText(74));
+        this->genericConfirmA = 1;
+        this->messageShowing = 1;
+    } else if (Globals::iPadLargePossible && !Globals::options[65]) {
+        Globals::options[65] = 1;
+        Globals::recordHandler->saveOptions();
+        this->choiceWindow->set(*Globals::gameText->getText(123));
+        this->genericConfirmA = 1;
+        this->messageShowing = 1;
+    }
+
+    this->missionsWindow = 0;
+    this->recordRows = 0;
+    this->menuState = 0;
+    this->field_0x171 = 0;
+    this->field_0x172 = 0;
+    this->saveDialogShowing = 0;
+    this->returnToMenuSubFlag = 0;
+    this->field_0x175 = 0;
+    this->field_0x176 = 0;
+    this->quitConfirmShowing = 0;
+    this->returnToMenuShowing = 0;
+    this->leaderboardDialogShowing = 0;
+    this->dlcMessageShowing = 0;
+    this->field_0x17b = 0;
+    this->dlcResultDialogShowing = 0;
+    this->dlcErrorDialogShowing = 0;
+    this->loadFailedDialogShowing = 0;
+    this->selectedRow = -1;
+    this->okButton = 0;
+    this->backButton = 0;
+    this->upButtonPressed = 0;
+    this->downButtonPressed = 0;
+    this->fadeValue = 0x3f000000u; // 0.5f
+    this->screenshotState = -1;
+    this->field_0x188 = 0;
+    this->storeInitDialogShowing = 0;
+    this->purchaseRestorePending = 0;
+    this->scrollOffset = 0;
+    this->field_0x1da = 0;
+    this->listStateSuppress = 0;
+    this->field_0x1dc = 0;
+    this->field_0x1dd = 0;
+    this->field_0x1de = 0;
+    this->dragLastX = 0;
+    this->field_0x210 = 0;
+    this->dragVelocity = 0;
+    this->inertiaDecay = 0.0f;
+    this->inertiaVel = 0.0f;
+    this->dragStartX = 0;
+    this->dragging = 0;
+}
+
+void MenuTouchWindow::loadPreviewRecords() {
+    this->scrollOffset = 0;
+
+    this->dragLastX = 0;
+    this->field_0x210 = 0;
+    this->dragVelocity = 0;
+    this->inertiaDecay = 0;
+    this->inertiaVel = 0.0f;
+    this->dragStartX = 0;
+    this->dragging = 0;
+
+    int *metrics = &Globals::h;
+    Layout *layout = Globals::layout;
+    int *rowObj = &Globals::recordSlots;
+
+    this->contentHeight = (((metrics[0] - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin)
+                           - layout->field_0x20_top) - layout->field_0x24;
+
+    this->pageHeight = rowObj[0] * (layout->field_0x70_rowHeight + this->listRowGap);
+
+    Array<GameRecord *> *rec = this->previewRecords;
+    if (rec != 0) {
+        delete rec;
+        this->previewRecords = 0;
+    }
+    RecordHandler *rh = new RecordHandler();
+    this->previewRecords = (Array<GameRecord *> *) rh->readAllPreviewRecords();
+    delete rh;
+
+}
+
+void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton *> *arr, int yOff) {
+    TouchButton *btn = new TouchButton(label, 0, Globals::w / 2 - this->buttonWidth / 2,
+                                       (yOff - this->buttonYBias) + Globals::h / 2 +
+                                       (Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * row,
+                                       this->buttonWidth, 0x11, 0x04);
+    btn->id = id;
+    ArrayAdd<TouchButton *>(btn, *arr);
+
+    int *posX = Globals::sub_menu_buttons_x;
+    int *posY = Globals::sub_menu_buttons_y;
+    for (uint32_t i = 0; i < arr->count; i++) {
+        if (i < 10) {
+            {
+                Vector bpos = arr->data_[i]->getPosition();
+                posX[i] = (int) bpos.x;
+            }
+            {
+                Vector bpos = arr->data_[i]->getPosition();
+                posY[i] = (int) bpos.y;
+            }
+        }
+    }
+    Globals::sub_menu_button_count = arr->count;
 }
 
 MenuTouchWindow::~MenuTouchWindow() {
@@ -574,20 +1111,20 @@ MenuTouchWindow::~MenuTouchWindow() {
     this->heapBufB = 0;
 }
 
-void _mtw_ArrayReleaseClasses_Str(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+bool MenuTouchWindow::isInMissionScreen() {
+    return this->menuState == 9;
+}
 
-void _mtw_ArrayReleaseClasses_StrArr(void *arr); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void *_mtw_String_op_plus(void *out, void *rhs); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int w, // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-                               // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-                               char type, char id);
-
+void MenuTouchWindow::setCutsceneMode(bool mode) {
+    this->cutsceneMode = (uint8_t) mode;
+    bool notMode = !mode;
+    for (uint32_t i = 0; i < this->buttons->count; i++) {
+        TouchButton *btn = this->buttons->data_[i];
+        if (btn->id == 0x13) {
+            btn->setVisible(notMode);
+        }
+    }
+}
 
 void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
     if (this->recordRows != 0) {
@@ -665,87 +1202,421 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
                                        Globals::layout->field_0xc_leftMargin + y + Globals::layout->field_0x20_top, 18);
 }
 
-// _mtw_Status_getShip / _mtw_Item_make / _mtw_Item_makeQty / _mtw_Ship_setItem removed:
-// real calls are Status::getShip(), Item::makeItem()/makeItem(int) on Globals::items
-// prototypes, and Ship::setEquipment(Item*, int) (proven from 0x12ca80 disasm).
+void MenuTouchWindow::saveGame(int slot) {
+    RecordHandler *rh = new RecordHandler();
+    rh->recordStoreWrite(slot);
+    rh->recordStoreWritePreview(slot);
 
-void MenuTouchWindow::startValkyrie() {
-    Status *const *statusHolder = &Globals::status;
-    Globals::status->resetGame();
-    for (int i = 0; i < 0x2d; ++i)
-        (*statusHolder)->nextCampaignMission(false);
+    int *arr = (int *) this->previewRecords->data_;
+    GameRecord *rec = this->previewRecords->data_[slot];
+    int *cell;
+    if (rec == 0) {
+        cell = arr + slot;
+    } else {
+        ::operator delete(_mtw_GameRecord_dtor(rec));
+        cell = (int *) &this->previewRecords->data_[slot];
+    }
+    *cell = 0;
 
-    Status *status = *statusHolder;
-    Mission *mission = new Mission();
-    status->setMission(mission);
+    GameRecord *preview = rh->recordStoreReadPreview(slot);
+    this->previewRecords->data_[slot] = preview;
+    delete rh;
 
-    status = *statusHolder;
-    status->setShip(Globals::ships->data_[5]->makeShip(-1));
-
-    (*statusHolder)->getShip()->setRace(0);
-
-    Item *it;
-    it = Globals::items->data_[2]->makeItem();
-    (*statusHolder)->getShip()->setEquipment(it, 0);
-    it = Globals::items->data_[5]->makeItem();
-    (*statusHolder)->getShip()->setEquipment(it, 1);
-    it = Globals::items->data_[36]->makeItem(10);
-    (*statusHolder)->getShip()->setEquipment(it, 0);
-    it = Globals::items->data_[81]->makeItem();
-    (*statusHolder)->getShip()->setEquipment(it, 0);
-    it = Globals::items->data_[51]->makeItem();
-    (*statusHolder)->getShip()->setEquipment(it, 1);
-    it = Globals::items->data_[86]->makeItem(10);
-    (*statusHolder)->getShip()->setEquipment(it, 2);
-    it = Globals::items->data_[85]->makeItem();
-    (*statusHolder)->getShip()->setEquipment(it, 3);
-
-    (*statusHolder)->setCredits(0);
-    Status *stationTarget = *statusHolder;
-    Station *station = reinterpret_cast<Station *>(Globals::galaxy->getStation(0x5b));
-    stationTarget->setStation(station);
-    (*statusHolder)->setSystemVisibility(6, true);
-    (*statusHolder)->setSystemVisibility(0x19, true);
-    (*statusHolder)->setCredits(0);
-
-    OptionsRecord *optB = (OptionsRecord *) Globals::options;
-    (*statusHolder)->field_84 = 0x1a0a;
-    unsigned char *hints = Globals::hints;
-    hints[8] = 1;
-    hints[9] = 1;
-    hints[13] = 1;
-    hints[14] = 1;
-    hints[28] = 1;
-    hints[29] = 1;
-    hints[32] = 1;
-    hints[33] = 1;
-    hints[34] = 1;
-    hints[35] = 1;
-    hints[23] = 1;
-    hints[10] = 1;
-    hints[21] = 1;
-    hints[19] = 1;
-    hints[15] = 1;
-    hints[30] = 1;
-    hints[36] = 1;
-    hints[54] = 0;
-    hints[50] = 0;
-    hints[51] = 0;
-    hints[52] = 0;
-    hints[53] = 0;
-    hints[56] = 1;
-    optB->flag_0x34 = 1;
-
-    Globals::achievements->setMedal(0x17, 3);
-    Globals::achievements->setMedal(0x1e, 1);
-    Globals::recordHandler->saveOptions();
-    (*statusHolder)->setKills(0xc5);
-    Globals::sound->stop(Globals::sound->currentMusicEvent);
-
-    optB->fadeValue = this->fadeValue;
-    Globals::appManager->SetCurrentApplicationModule(5);
+    this->createRecordButtons(true);
+    ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
+    String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x32);
+    cw->set(*s, false);
+    this->messageShowing = 1;
+    this->saveDialogShowing = 0;
 }
 
+// lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+// _mtw_Ship_addCargo removed: ship->addCargo(item)
+
+// lint: void_ptr (external symbol; param type is mangling-load-bearing)
+
+void MenuTouchWindow::showSupernovaMessage() {
+    ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
+    GameText *gt = Globals::gameText;
+    String *s1 = (String *) _mtw_GameText_getText(gt, 0x266);
+    String *s2 = (String *) _mtw_GameText_getText(Globals::gameText, 0x267);
+    cw->set(*s1, *s2, false);
+    this->messageShowing = 1;
+    this->supernovaMessageShowing = 1;
+}
+
+int MenuTouchWindow::loadGame(int slot) {
+    RecordHandler *rh = new RecordHandler();
+    GameRecord *rec = rh->readRecord(slot);
+
+    if (rec != 0) {
+        if (rec->versionMismatchFlag != 0 && Globals::options[55] == 0) {
+            this->choiceWindow->set(*Globals::gameText->getText(102), false);
+            this->messageShowing = 1;
+            delete rec;
+            delete rh;
+            return 0;
+        }
+        if (rec->dlcRequiredFlag != 0 && Globals::options[53] == 0) {
+            this->choiceWindow->set(*Globals::gameText->getText(101), false);
+            this->messageShowing = 1;
+            delete rec;
+            delete rh;
+            return 0;
+        }
+    } else {
+        Globals::status->resetGame();
+        this->choiceWindow->set(*Globals::gameText->getText(100), false);
+        this->messageShowing = 1;
+        this->loadFailedDialogShowing = 1;
+        delete rh;
+        return 0;
+    }
+
+    Globals::status->resetGame();
+    rec->load();
+    delete rh;
+    delete rec;
+    ModStation *ms = (ModStation *) Globals::appManager->GetApplicationModule(5);
+    ms->setGameLoaded();
+    Globals::switch_to_target_setting = 0;
+    Globals::appManager->SetCurrentApplicationModule(5);
+    return 1;
+}
+
+float MenuTouchWindow::getRelativeScrollStartPos() {
+    int offset = this->scrollOffset;
+    if (offset > 0)
+        return 0.0f;
+    return -(float) offset / (float) this->pageHeight;
+}
+
+float MenuTouchWindow::getRelativeScrollHeight() {
+    int content = this->contentHeight;
+    int page = this->pageHeight;
+    if (content > page)
+        return 0.0f;
+
+    int pos = this->scrollOffset;
+    if (pos >= 1) {
+        return (float) (content - pos) / (float) page;
+    }
+    if (pos >= content - page) {
+        return (float) content / (float) page;
+    }
+    return (float) (pos + page) / (float) page;
+}
+
+void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
+    int shipY = Globals::layout->field_0x10c_rowBaseY;
+    Globals::Canvas->SetColor(0xffffffffu);
+    int nameY = Globals::layout->field_0x110_strip58;
+    int infoY = Globals::layout->field_0x114_strip5c;
+    int width = Globals::w - Globals::layout->buttonInsetX * 2 - this->listX * 2;
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
+        if (Globals::iPadHD) {
+            nameY = 8;
+            infoY = 5;
+        } else if (Globals::iPadLarge) {
+            nameY = 12;
+            infoY = 8;
+        } else {
+            nameY = 6;
+            infoY = 4;
+        }
+        // Side borders.
+        int borderWidth = Globals::Canvas->GetImage2DWidth(this->scrollbarImageId);
+        int borderHeight = Globals::Canvas->GetImage2DHeight(this->scrollbarImageId);
+        int count = Globals::h / borderHeight;
+        int y = 0;
+        for (int i = 0; i <= count; i++) {
+            Globals::Canvas->DrawImage2D(this->scrollbarImageId,
+                                         Globals::layout->buttonInsetX - borderWidth + this->listX, y, 1);
+            Globals::Canvas->DrawImage2D(this->scrollbarImageId, Globals::layout->buttonInsetX + width + this->listX,
+                                         y, 0);
+            y += borderHeight;
+        }
+    }
+    this->okButton->setPosition(Globals::w - this->listX - Globals::layout->buttonInsetX,
+                                (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
+                                this->scrollOffset +
+                                (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin) +
+                                Globals::layout->field_0x108);
+
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        int y = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->scrollOffset + (Globals::layout->field_0x70_rowHeight + this->listRowGap) * i;
+        if (y < 0 || y > Globals::h)
+            continue;
+        Globals::Canvas->SetColor(0xffffffffu);
+        Globals::layout->drawBox(i == this->selectedRow ? 4 : 3, Globals::layout->buttonInsetX + this->listX, y,
+                                 width - 3, Globals::layout->field_0x70_rowHeight, String(""));
+        int nameLineY = y + nameY;
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[0],
+                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
+                                    nameLineY, false);
+        GameRecord *record = (*this->previewRecords)[i];
+        if (record != 0 && record->shipId < 64)
+            Globals::imageFactory->drawShip(record->shipId,
+                                            Globals::layout->buttonInsetX + this->listX +
+                                            Globals::layout->field_0x2c_rowHeight + this->metricB,
+                                            shipY + y);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[1],
+                                    Globals::layout->buttonInsetX + this->listX +
+                                    Globals::layout->field_0x2c_rowHeight * 2 + this->metricB +
+                                    Globals::layout->field_0x2c4,
+                                    nameLineY, false);
+        Globals::Canvas->SetColor(0x777777ffu);
+        int infoLineY = y + infoY;
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[2],
+                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
+                                    infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[3],
+                                    Globals::layout->buttonInsetX + this->listX +
+                                    Globals::layout->field_0x2c_rowHeight * 2 + this->metricB +
+                                    Globals::layout->field_0x2c4,
+                                    infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[4],
+                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c4 +
+                                    (Globals::layout->field_0x2c_rowHeight + this->metricA) * 2,
+                                    nameLineY, false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[5],
+                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c4 +
+                                    (Globals::layout->field_0x2c_rowHeight + this->metricA) * 2,
+                                    infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
+        if (i == this->selectedRow)
+            this->okButton->draw();
+    }
+}
+
+void MenuTouchWindow::draw() {
+    Globals::is_menu_visible = 1;
+    int state = this->menuState;
+    Globals::topMenuIndex = state;
+
+    Array<TouchButton *> *btnArr = this->buttons;
+    if (state == 0xc) btnArr = this->buttonsB4;
+    if (state == 0xe) btnArr = this->buttonsB0;
+    Array<TouchButton *> *arr = btnArr;
+
+    int *posX = Globals::sub_menu_buttons_x;
+    int *posY = Globals::sub_menu_buttons_y;
+    for (unsigned int i = 0; i < *(unsigned int *) arr; i++) {
+        if (i < 10) {
+            Vector dpos = arr->data_[i]->getPosition();
+            posX[i] = (int) dpos.x;
+            dpos = arr->data_[i]->getPosition();
+            posY[i] = (int) dpos.y;
+        }
+    }
+    Globals::sub_menu_button_count = *(unsigned int *) arr;
+
+    if (this->backgroundEnabled != 0) {
+        unsigned int s = this->menuState;
+        if ((s | 4) != 0xd) {
+            Globals::layout->drawBG();
+        }
+    }
+
+    switch (this->menuState) {
+        case 0: _mtw_draw_mainMenu(this);
+            break;
+        case 1:
+        case 2: _mtw_draw_loadSaveList(this);
+            break;
+        case 3: _mtw_draw_optionsTabs(this);
+            break;
+        case 4: _mtw_draw_scrollA(this);
+            break;
+        case 7: _mtw_draw_audioOptions(this);
+            break;
+        case 8: _mtw_draw_keyConfig(this);
+            break;
+        case 9: _mtw_draw_missions(this);
+            break;
+        case 0xb: _mtw_draw_cinematic(this);
+            break;
+        case 0xc: _mtw_draw_buttonsB4(this);
+            break;
+        case 0xd: _mtw_draw_store(this);
+            break;
+        case 0xe: _mtw_draw_buttonsB0(this);
+            break;
+        case 0xf:
+        case 0x10: _mtw_draw_scrollB(this);
+            break;
+        case 0x11: _mtw_draw_buttonsB8(this);
+            break;
+        default: break;
+    }
+}
+
+void MenuTouchWindow::update(int dt) {
+    if (this->menuState == 1 || this->menuState == 2 || this->menuState == 15) {
+        // Inertial scrolling with spring-back at both ends.
+        if (!this->dragging) {
+            this->inertiaVel = this->inertiaDecay * this->inertiaVel;
+            if (MTW_ABS(this->inertiaVel) > 1.0f)
+                this->scrollOffset = (int) (this->inertiaVel + (float) this->scrollOffset);
+        }
+        if (this->scrollOffset >= 1) {
+            this->inertiaDecay = 1.0f;
+            this->inertiaVel = (float) -this->scrollOffset * 0.5f;
+        }
+        int limit = this->contentHeight - this->pageHeight;
+        if (limit > -1) {
+            this->scrollOffset = 0;
+            this->inertiaVel = 0.0f;
+        } else if (limit > this->scrollOffset) {
+            this->inertiaDecay = 1.0f;
+            this->inertiaVel = (float) (limit - this->scrollOffset) * 0.5f;
+        }
+    }
+
+    MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
+    if ((this->dlcMessageShowing || this->purchaseRestorePending) && appData->purchaseReadyFlag) {
+        // Store purchase finished: open the supernova/DLC list.
+        this->contentHeight = Globals::h - Globals::layout->field_0x10_rightMargin -
+                              Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
+                              Globals::layout->field_0x24;
+        this->contentHeightCache = Globals::Canvas->GetImage2DHeight(this->heapBufA[0]);
+        this->menuState = 15;
+        this->messageShowing = 0;
+        this->dlcMessageShowing = 0;
+        this->pageHeight = (this->contentHeightCache + Globals::layout->field_0x2c_rowHeight) * 5;
+        appData->purchaseReadyFlag = 0;
+        Globals::options[59] = 1;
+        Globals::recordHandler->saveOptions();
+    }
+    if ((this->dlcMessageShowing || this->purchaseRestorePending) && appData->purchaseErrorFlag) {
+        this->choiceWindow->set(*Globals::gameText->getText(100));
+        this->messageShowing = 1;
+        this->dlcErrorDialogShowing = 1;
+        this->dlcMessageShowing = 0;
+        this->field_0x17b = 0;
+        appData->purchaseErrorFlag = 0;
+        this->purchaseRestorePending = 0;
+    }
+    if (appData->purchaseCode <= 4 && appData->purchaseResultFlag) {
+        switch (appData->purchaseCode) {
+        case 0:
+            Globals::options[53] = 1;
+            Globals::status->setSystemVisibility(25, true);
+            this->choiceWindow->set(*Globals::gameText->getText(92));
+            break;
+        case 1:
+            Globals::status->field_114 = 3;
+            Globals::options[54] = 1;
+            this->choiceWindow->set(*Globals::gameText->getText(93));
+            break;
+        case 2:
+            Globals::options[55] = 1;
+            Globals::status->setSystemVisibility(25, true);
+            this->choiceWindow->set(*Globals::gameText->getText(94));
+            break;
+        case 3:
+            Globals::options[56] = 1;
+            this->choiceWindow->set(*Globals::gameText->getText(95));
+            break;
+        case 4:
+            Globals::options[57] = 1;
+            Globals::options[53] = 1;
+            Globals::status->setSystemVisibility(25, true);
+            Globals::options[55] = 1;
+            this->choiceWindow->set(*Globals::gameText->getText(96));
+            break;
+        }
+        Globals::recordHandler->saveOptions();
+        this->messageShowing = 1;
+        this->dlcMessageShowing = 0;
+        this->dlcResultDialogShowing = 1;
+        appData->purchaseResultFlag = 0;
+    } else if (this->purchaseRestorePending && appData->purchaseResultFlag) {
+        Globals::recordHandler->saveOptions();
+        if (this->purchaseRestorePending) {
+            this->choiceWindow->set(*Globals::gameText->getText(76));
+            this->purchaseRestorePending = 0;
+        }
+        this->messageShowing = 1;
+        this->dlcMessageShowing = 0;
+        this->dlcResultDialogShowing = 1;
+        appData->purchaseResultFlag = 0;
+    }
+    if (Globals::isTelekomCustomer && (uint8_t) (this->messageShowing | Globals::options[53]) == 0) {
+        this->choiceWindow->set(*Globals::gameText->getText(3234));
+        this->messageShowing = 1;
+        this->supernovaPurchaseDialogShowing = 1;
+        Globals::options[53] = 1;
+        Globals::status->setSystemVisibility(25, true);
+        Globals::recordHandler->saveOptions();
+    }
+
+    switch (this->menuState) {
+    case 0:
+        if (this->backgroundEnabled == 1) {
+            // Centre the main menu buttons vertically.
+            int top = Globals::h / 2 - (this->buttons->size() * Globals::layout->field_0x30_rowHeight +
+                                        this->buttonRowGap * (this->buttons->size() - 1)) / 2;
+            for (unsigned int i = 0; i < this->buttons->size(); i++) {
+                (*this->buttons)[i]->setYPosition((Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * i + top);
+                if ((*this->buttons)[i]->id == 18 && (*this->buttons)[i]->isVisible() && this->cutsceneMode)
+                    (*this->buttons)[i]->setYPosition((int) (*this->buttons)[i - 1]->getPosition().y);
+            }
+        }
+        break;
+    case 3: {
+        int top = Globals::h / 2 - (this->optionsButtons->size() * Globals::layout->field_0x30_rowHeight +
+                                    (this->buttons->size() - 1) * this->buttonRowGap) / 2;
+        for (unsigned int i = 0; i < this->optionsButtons->size(); i++)
+            (*this->optionsButtons)[i]->setYPosition((Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * i +
+                                                     top);
+        break;
+    }
+    case 4:
+        this->scrollWindowA->update(dt);
+        break;
+    case 9:
+        if (this->missionsWindow != 0)
+            this->missionsWindow->update(dt);
+        break;
+    case 15:
+        this->scrollWindowB->update(dt);
+        break;
+    }
+    if (this->messageShowing)
+        this->choiceWindow->update(dt);
+
+    if (this->menuState == 13) {
+        if (((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag) {
+            int state = ((Engine *) Globals::appManager->GetEngine())->field_0x100;
+            if (state == 2) {
+                this->choiceWindow->set(*Globals::gameText->getText(56));
+                this->storeInitDialogShowing = 0;
+                this->messageShowing = 1;
+                ((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag = 0;
+            } else if (state == 1) {
+                this->choiceWindow->set(*Globals::gameText->getText(55));
+                this->storeInitDialogShowing = 0;
+                this->messageShowing = 1;
+                ((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag = 0;
+            }
+        }
+        if (((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag) {
+            int result = ((MtwAppData *) Globals::appManager->GetApplicationData())->storeResultCode;
+            if (result == 2) {
+                this->choiceWindow->set(*Globals::gameText->getText(58));
+                this->screenshotState = -1;
+                this->messageShowing = 1;
+                ((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag = 0;
+            } else if (result == 1) {
+                this->choiceWindow->set(*Globals::gameText->getText(57));
+                this->screenshotState = -1;
+                this->messageShowing = 1;
+                ((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag = 0;
+            }
+        }
+    }
+}
 
 int MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     if (this->messageShowing) {
@@ -942,506 +1813,6 @@ int MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_p
     return 0;
 }
 
-
-int MenuTouchWindow::loadGame(int slot) {
-    RecordHandler *rh = new RecordHandler();
-    GameRecord *rec = rh->readRecord(slot);
-
-    if (rec != 0) {
-        if (rec->versionMismatchFlag != 0 && Globals::options[55] == 0) {
-            this->choiceWindow->set(*Globals::gameText->getText(102), false);
-            this->messageShowing = 1;
-            delete rec;
-            delete rh;
-            return 0;
-        }
-        if (rec->dlcRequiredFlag != 0 && Globals::options[53] == 0) {
-            this->choiceWindow->set(*Globals::gameText->getText(101), false);
-            this->messageShowing = 1;
-            delete rec;
-            delete rh;
-            return 0;
-        }
-    } else {
-        Globals::status->resetGame();
-        this->choiceWindow->set(*Globals::gameText->getText(100), false);
-        this->messageShowing = 1;
-        this->loadFailedDialogShowing = 1;
-        delete rh;
-        return 0;
-    }
-
-    Globals::status->resetGame();
-    rec->load();
-    delete rh;
-    delete rec;
-    ModStation *ms = (ModStation *) Globals::appManager->GetApplicationModule(5);
-    ms->setGameLoaded();
-    Globals::switch_to_target_setting = 0;
-    Globals::appManager->SetCurrentApplicationModule(5);
-    return 1;
-}
-
-void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton *> *arr, int yOff) {
-    TouchButton *btn = new TouchButton(label, 0, Globals::w / 2 - this->buttonWidth / 2,
-                                       (yOff - this->buttonYBias) + Globals::h / 2 +
-                                       (Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * row,
-                                       this->buttonWidth, 0x11, 0x04);
-    btn->id = id;
-    ArrayAdd<TouchButton *>(btn, *arr);
-
-    int *posX = Globals::sub_menu_buttons_x;
-    int *posY = Globals::sub_menu_buttons_y;
-    for (uint32_t i = 0; i < arr->count; i++) {
-        if (i < 10) {
-            {
-                Vector bpos = arr->data_[i]->getPosition();
-                posX[i] = (int) bpos.x;
-            }
-            {
-                Vector bpos = arr->data_[i]->getPosition();
-                posY[i] = (int) bpos.y;
-            }
-        }
-    }
-    Globals::sub_menu_button_count = arr->count;
-}
-
-void MenuTouchWindow::setCutsceneMode(bool mode) {
-    this->cutsceneMode = (uint8_t) mode;
-    bool notMode = !mode;
-    for (uint32_t i = 0; i < this->buttons->count; i++) {
-        TouchButton *btn = this->buttons->data_[i];
-        if (btn->id == 0x13) {
-            btn->setVisible(notMode);
-        }
-    }
-}
-
-
-typedef void (*RefreshFn)();
-
-
-void MenuTouchWindow::loadPreviewRecords() {
-    this->scrollOffset = 0;
-
-    this->dragLastX = 0;
-    memset(this->pad_0x210, 0, sizeof(this->pad_0x210));
-    this->dragVelocity = 0;
-    this->inertiaDecay = 0;
-    this->inertiaVel = 0.0f;
-    this->dragStartX = 0;
-    this->dragging = 0;
-
-    int *metrics = &Globals::h;
-    Layout *layout = Globals::layout;
-    int *rowObj = &Globals::recordSlots;
-
-    this->contentHeight = (((metrics[0] - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin)
-                           - layout->field_0x20_top) - layout->field_0x24;
-
-    this->pageHeight = rowObj[0] * (layout->field_0x70_rowHeight + this->listRowGap);
-
-    Array<GameRecord *> *rec = this->previewRecords;
-    if (rec != 0) {
-        delete rec;
-        this->previewRecords = 0;
-    }
-    RecordHandler *rh = new RecordHandler();
-    this->previewRecords = (Array<GameRecord *> *) rh->readAllPreviewRecords();
-    delete rh;
-
-}
-
-
-void MenuTouchWindow::saveGame(int slot) {
-    RecordHandler *rh = new RecordHandler();
-    rh->recordStoreWrite(slot);
-    rh->recordStoreWritePreview(slot);
-
-    int *arr = (int *) this->previewRecords->data_;
-    GameRecord *rec = this->previewRecords->data_[slot];
-    int *cell;
-    if (rec == 0) {
-        cell = arr + slot;
-    } else {
-        ::operator delete(_mtw_GameRecord_dtor(rec));
-        cell = (int *) &this->previewRecords->data_[slot];
-    }
-    *cell = 0;
-
-    GameRecord *preview = rh->recordStoreReadPreview(slot);
-    this->previewRecords->data_[slot] = preview;
-    delete rh;
-
-    this->createRecordButtons(true);
-    ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-    String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x32);
-    cw->set(*s, false);
-    this->messageShowing = 1;
-    this->saveDialogShowing = 0;
-}
-
-
-
-#define MTW_ABS(v) ((v) > 0 ? (v) : -(v))
-
-void MenuTouchWindow::update(int dt) {
-    if (this->menuState == 1 || this->menuState == 2 || this->menuState == 15) {
-        // Inertial scrolling with spring-back at both ends.
-        if (!this->dragging) {
-            this->inertiaVel = this->inertiaDecay * this->inertiaVel;
-            if (MTW_ABS(this->inertiaVel) > 1.0f)
-                this->scrollOffset = (int) (this->inertiaVel + (float) this->scrollOffset);
-        }
-        if (this->scrollOffset >= 1) {
-            this->inertiaDecay = 1.0f;
-            this->inertiaVel = (float) -this->scrollOffset * 0.5f;
-        }
-        int limit = this->contentHeight - this->pageHeight;
-        if (limit > -1) {
-            this->scrollOffset = 0;
-            this->inertiaVel = 0.0f;
-        } else if (limit > this->scrollOffset) {
-            this->inertiaDecay = 1.0f;
-            this->inertiaVel = (float) (limit - this->scrollOffset) * 0.5f;
-        }
-    }
-
-    MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
-    if ((this->dlcMessageShowing || this->purchaseRestorePending) && appData->purchaseReadyFlag) {
-        // Store purchase finished: open the supernova/DLC list.
-        this->contentHeight = Globals::h - Globals::layout->field_0x10_rightMargin -
-                              Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
-                              Globals::layout->field_0x24;
-        this->contentHeightCache = Globals::Canvas->GetImage2DHeight(this->heapBufA[0]);
-        this->menuState = 15;
-        this->messageShowing = 0;
-        this->dlcMessageShowing = 0;
-        this->pageHeight = (this->contentHeightCache + Globals::layout->field_0x2c_rowHeight) * 5;
-        appData->purchaseReadyFlag = 0;
-        Globals::options[59] = 1;
-        Globals::recordHandler->saveOptions();
-    }
-    if ((this->dlcMessageShowing || this->purchaseRestorePending) && appData->purchaseErrorFlag) {
-        this->choiceWindow->set(*Globals::gameText->getText(100));
-        this->messageShowing = 1;
-        this->dlcErrorDialogShowing = 1;
-        this->dlcMessageShowing = 0;
-        this->pad_0x17b = 0;
-        appData->purchaseErrorFlag = 0;
-        this->purchaseRestorePending = 0;
-    }
-    if (appData->purchaseCode <= 4 && appData->purchaseResultFlag) {
-        switch (appData->purchaseCode) {
-        case 0:
-            Globals::options[53] = 1;
-            Globals::status->setSystemVisibility(25, true);
-            this->choiceWindow->set(*Globals::gameText->getText(92));
-            break;
-        case 1:
-            Globals::status->field_114 = 3;
-            Globals::options[54] = 1;
-            this->choiceWindow->set(*Globals::gameText->getText(93));
-            break;
-        case 2:
-            Globals::options[55] = 1;
-            Globals::status->setSystemVisibility(25, true);
-            this->choiceWindow->set(*Globals::gameText->getText(94));
-            break;
-        case 3:
-            Globals::options[56] = 1;
-            this->choiceWindow->set(*Globals::gameText->getText(95));
-            break;
-        case 4:
-            Globals::options[57] = 1;
-            Globals::options[53] = 1;
-            Globals::status->setSystemVisibility(25, true);
-            Globals::options[55] = 1;
-            this->choiceWindow->set(*Globals::gameText->getText(96));
-            break;
-        }
-        Globals::recordHandler->saveOptions();
-        this->messageShowing = 1;
-        this->dlcMessageShowing = 0;
-        this->dlcResultDialogShowing = 1;
-        appData->purchaseResultFlag = 0;
-    } else if (this->purchaseRestorePending && appData->purchaseResultFlag) {
-        Globals::recordHandler->saveOptions();
-        if (this->purchaseRestorePending) {
-            this->choiceWindow->set(*Globals::gameText->getText(76));
-            this->purchaseRestorePending = 0;
-        }
-        this->messageShowing = 1;
-        this->dlcMessageShowing = 0;
-        this->dlcResultDialogShowing = 1;
-        appData->purchaseResultFlag = 0;
-    }
-    if (Globals::isTelekomCustomer && (uint8_t) (this->messageShowing | Globals::options[53]) == 0) {
-        this->choiceWindow->set(*Globals::gameText->getText(3234));
-        this->messageShowing = 1;
-        this->supernovaPurchaseDialogShowing = 1;
-        Globals::options[53] = 1;
-        Globals::status->setSystemVisibility(25, true);
-        Globals::recordHandler->saveOptions();
-    }
-
-    switch (this->menuState) {
-    case 0:
-        if (this->backgroundEnabled == 1) {
-            // Centre the main menu buttons vertically.
-            int top = Globals::h / 2 - (this->buttons->size() * Globals::layout->field_0x30_rowHeight +
-                                        this->buttonRowGap * (this->buttons->size() - 1)) / 2;
-            for (unsigned int i = 0; i < this->buttons->size(); i++) {
-                (*this->buttons)[i]->setYPosition((Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * i + top);
-                if ((*this->buttons)[i]->id == 18 && (*this->buttons)[i]->isVisible() && this->cutsceneMode)
-                    (*this->buttons)[i]->setYPosition((int) (*this->buttons)[i - 1]->getPosition().y);
-            }
-        }
-        break;
-    case 3: {
-        int top = Globals::h / 2 - (this->optionsButtons->size() * Globals::layout->field_0x30_rowHeight +
-                                    (this->buttons->size() - 1) * this->buttonRowGap) / 2;
-        for (unsigned int i = 0; i < this->optionsButtons->size(); i++)
-            (*this->optionsButtons)[i]->setYPosition((Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * i +
-                                                     top);
-        break;
-    }
-    case 4:
-        this->scrollWindowA->update(dt);
-        break;
-    case 9:
-        if (this->missionsWindow != 0)
-            this->missionsWindow->update(dt);
-        break;
-    case 15:
-        this->scrollWindowB->update(dt);
-        break;
-    }
-    if (this->messageShowing)
-        this->choiceWindow->update(dt);
-
-    if (this->menuState == 13) {
-        if (((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag) {
-            int state = ((Engine *) Globals::appManager->GetEngine())->field_0x100;
-            if (state == 2) {
-                this->choiceWindow->set(*Globals::gameText->getText(56));
-                this->storeInitDialogShowing = 0;
-                this->messageShowing = 1;
-                ((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag = 0;
-            } else if (state == 1) {
-                this->choiceWindow->set(*Globals::gameText->getText(55));
-                this->storeInitDialogShowing = 0;
-                this->messageShowing = 1;
-                ((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag = 0;
-            }
-        }
-        if (((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag) {
-            int result = ((MtwAppData *) Globals::appManager->GetApplicationData())->storeResultCode;
-            if (result == 2) {
-                this->choiceWindow->set(*Globals::gameText->getText(58));
-                this->screenshotState = -1;
-                this->messageShowing = 1;
-                ((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag = 0;
-            } else if (result == 1) {
-                this->choiceWindow->set(*Globals::gameText->getText(57));
-                this->screenshotState = -1;
-                this->messageShowing = 1;
-                ((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotResultFlag = 0;
-            }
-        }
-    }
-}
-
-void MenuTouchWindow::startSupernovaChallenge() {
-    Globals::status->resetGame();
-    Globals::status->setCurrentCampaignMission(152);
-    Globals::status->setShip(Globals::ships->data_[46]->makeShip(-1));
-
-    Item *it = Globals::items->data_[231]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 0);
-    it = Globals::items->data_[230]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 1);
-    it = Globals::items->data_[231]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 2);
-    it = Globals::items->data_[73]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 0);
-    it = Globals::items->data_[54]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 1);
-    it = Globals::items->data_[59]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 2);
-    it = Globals::items->data_[83]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 3);
-    it = Globals::items->data_[206]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 4);
-    it = Globals::items->data_[75]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 5);
-    it = Globals::items->data_[76]->makeItem();
-    Globals::status->getShip()->setEquipment(it, 6);
-    it = Globals::items->data_[216]->makeItem(5);
-    Globals::status->getShip()->setEquipment(it, 0);
-
-    Station *station = reinterpret_cast<Station *>(Globals::galaxy->getStation(111));
-    Globals::status->setStation(station);
-    Mission *mission = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0, 0,
-                                   station->getIndex(), 1);
-    Globals::status->setMission(mission);
-    Globals::status->setFreelanceMission(mission);
-
-    unsigned char *hints = Globals::hints;
-    hints[23] = 1;
-    hints[8] = 1;
-    hints[9] = 1;
-    hints[10] = 1;
-    hints[28] = 1;
-    hints[21] = 1;
-    hints[19] = 1;
-    hints[13] = 1;
-    hints[14] = 1;
-    hints[15] = 1;
-    hints[41] = 1;
-    hints[34] = 1;
-    hints[32] = 1;
-    hints[33] = 1;
-    Globals::status->setKills(500);
-    Globals::status->setKills(220);
-    Globals::sound->stop(Globals::sound->currentMusicEvent);
-    Globals::switch_to_target_setting = -1;
-    Globals::enterSpaceLounge = 0;
-    Globals::globals->playMusicAndFadeOutCurrent(1);
-    Globals::status->field_5c = -1;
-    Globals::status->field_60 = -1;
-    Globals::status->field_64 = -1;
-    Globals::appManager->SetCurrentApplicationModule(2);
-}
-
-
-void MenuTouchWindow::callDlcMenu() {
-    AppManager *const *holder = (AppManager *const *) &Globals::appManager;
-
-    MtwAppData *ad = (MtwAppData *) ((AbyssEngine::ApplicationManager*)*holder)->GetApplicationData();
-    ad->dlcMenuAckFlag = 0;
-    ad = (MtwAppData *) ((AbyssEngine::ApplicationManager*)*holder)->GetApplicationData();
-    GameText *const *gt = &Globals::gameText;
-    ad->dlcMenuRequestFlag = 1;
-    ChoiceWindow *win = (ChoiceWindow *) this->choiceWindow;
-    this->messageShowing = 1;
-    this->dlcMessageShowing = 1;
-    String *s1 = (String *) _mtw_GameText_getText(*gt, 0x47);
-    String *s2 = (String *) _mtw_GameText_getText(*gt, 0x1a9);
-    win->set(*s1, *s2);
-}
-
-void _mtw_draw_mainMenu(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_loadSaveList(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_optionsTabs(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_scrollA(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_audioOptions(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_keyConfig(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_missions(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_cinematic(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_buttonsB4(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_store(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_buttonsB0(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_scrollB(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_draw_buttonsB8(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void MenuTouchWindow::draw() {
-    Globals::is_menu_visible = 1;
-    int state = this->menuState;
-    Globals::topMenuIndex = state;
-
-    Array<TouchButton *> *btnArr = this->buttons;
-    if (state == 0xc) btnArr = this->buttonsB4;
-    if (state == 0xe) btnArr = this->buttonsB0;
-    Array<TouchButton *> *arr = btnArr;
-
-    int *posX = Globals::sub_menu_buttons_x;
-    int *posY = Globals::sub_menu_buttons_y;
-    for (unsigned int i = 0; i < *(unsigned int *) arr; i++) {
-        if (i < 10) {
-            Vector dpos = arr->data_[i]->getPosition();
-            posX[i] = (int) dpos.x;
-            dpos = arr->data_[i]->getPosition();
-            posY[i] = (int) dpos.y;
-        }
-    }
-    Globals::sub_menu_button_count = *(unsigned int *) arr;
-
-    if (this->backgroundEnabled != 0) {
-        unsigned int s = this->menuState;
-        if ((s | 4) != 0xd) {
-            Globals::layout->drawBG();
-        }
-    }
-
-    switch (this->menuState) {
-        case 0: _mtw_draw_mainMenu(this);
-            break;
-        case 1:
-        case 2: _mtw_draw_loadSaveList(this);
-            break;
-        case 3: _mtw_draw_optionsTabs(this);
-            break;
-        case 4: _mtw_draw_scrollA(this);
-            break;
-        case 7: _mtw_draw_audioOptions(this);
-            break;
-        case 8: _mtw_draw_keyConfig(this);
-            break;
-        case 9: _mtw_draw_missions(this);
-            break;
-        case 0xb: _mtw_draw_cinematic(this);
-            break;
-        case 0xc: _mtw_draw_buttonsB4(this);
-            break;
-        case 0xd: _mtw_draw_store(this);
-            break;
-        case 0xe: _mtw_draw_buttonsB0(this);
-            break;
-        case 0xf:
-        case 0x10: _mtw_draw_scrollB(this);
-            break;
-        case 0x11: _mtw_draw_buttonsB8(this);
-            break;
-        default: break;
-    }
-}
-
-float MenuTouchWindow::getRelativeScrollHeight() {
-    int content = this->contentHeight;
-    int page = this->pageHeight;
-    if (content > page)
-        return 0.0f;
-
-    int pos = this->scrollOffset;
-    if (pos >= 1) {
-        return (float) (content - pos) / (float) page;
-    }
-    if (pos >= content - page) {
-        return (float) content / (float) page;
-    }
-    return (float) (pos + page) / (float) page;
-}
-
-void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-// lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-void _mtw_Layout_OnTouchMove(void *layout, int y); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 
@@ -1630,146 +2001,228 @@ int MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_pt
     return 0;
 }
 
-void _mtw_buildMenu(void *self, int menuType); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
+int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    if (this->menuState == 0xb && touchId != 0) {
+        if (this->cinematicTouchIdA == touchId)
+            this->cinematicTouchIdA = 0;
+        if (this->cinematicTouchIdB == touchId)
+            this->cinematicTouchIdB = 0;
+        this->cinematicTouchState = 0;
+    }
 
-MenuTouchWindow::MenuTouchWindow(int menuType) {
-    Layout *layout = Globals::layout;
-    this->buttonWidth = layout->field_0x294_buttonWidth;
-    this->buttonYBias = layout->field_0x298_buttonYBias;
-    this->buttonRowGap = layout->field_0x29c_buttonRowGap;
-    this->listRowGap = layout->field_0x2a0_listRowGap;
-    this->metricA = layout->field_0x2a4_metricA;
-    this->metricB = layout->field_0x2a8_metricB;
-    this->metricC = layout->field_0x2ac_metricC;
+    this->pendingActivate = 0;
+    this->dragging = 0;
 
-    this->backgroundEnabled = menuType;
+    uint8_t *layoutGuard = (uint8_t *) Globals::layout;
+    if (*layoutGuard != 0) {
+        if (_mtw_Layout_OnTouchEnd(layoutGuard, y, x) != 0)
+            *layoutGuard = 0;
+        return 0;
+    }
 
-    Array<TouchButton *> *arr1 = (Array<TouchButton *> *) ::operator new(0xc);
-    _mtw_Array_TB_ctor(arr1);
-    this->buttons = arr1;
-    Array<TouchButton *> *arr2 = (Array<TouchButton *> *) ::operator new(0xc);
-    _mtw_Array_TB_ctor(arr2);
-    this->scrollEntries = arr2;
+    int state = this->menuState;
 
-    this->scrollUpButton = 0;
-    this->scrollExtraButton = 0;
-    this->buttonsB8 = 0;
-    this->buttonsB0 = 0;
-    this->buttonsB4 = 0;
-    this->cinematicSteerActive = 0;
-    this->field_0x120 = -1;
-    this->selectedRow = 0;
-    this->field_0x1c4 = 0;
-    this->heapBufA = 0;
-    this->heapBufB = 0;
-    this->field_0x1e0 = 0;
-    this->scrollWindowA = 0;
-    this->scrollWindowB = 0;
-    this->scrollSlots = 0;
-    this->field_0x230 = 0;
-    this->field_0x234 = 0;
-    this->cutsceneMode = 0;
-    this->previewStrings0 = 0;
-    this->previewStrings1 = 0;
-    this->previewRecords = 0;
-
-    this->loadPreviewRecords();
-
-    _mtw_buildMenu(this, menuType);
-}
-
-void MenuTouchWindow::setSkipButtonVisible(bool visible) {
-    Array<TouchButton *> *arr = this->buttons;
-    if (arr != 0) {
-        for (uint32_t i = 0; i < this->buttons->count; i++) {
-            TouchButton *btn = this->buttons->data_[i];
-            if (btn != 0 && btn->id == 0x12) {
-                btn->setVisible(visible);
+    if (state == 0) {
+        if (this->messageShowing != 0) {
+            ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
+            if (this->returnToMenuShowing != 0) {
+                int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
+                if (r == 1) {
+                    this->returnToMenuShowing = 0;
+                    this->messageShowing = 0;
+                } else if (r == 0) {
+                    _mtw_AppMgr_Quit(Globals::appManager);
+                }
+                return 0;
             }
+            if (this->genericConfirmB != 0) {
+                int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
+                if (r != 1) {
+                    if (r != 0) return 0;
+                    g_android_link_game_gp = 1;
+                }
+                this->messageShowing = 0;
+                this->genericConfirmB = 0;
+                return 0;
+            }
+            if (this->quitConfirmShowing != 0) {
+                int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
+                if (r == 1) {
+                    this->quitConfirmShowing = 0;
+                    this->messageShowing = 0;
+                    this->returnToMenuSubFlag = 0;
+                    return 0;
+                }
+                if (r != 0) return 0;
+                _mtw_FModSound_resumeAll(Globals::sound);
+                _mtw_FModSound_stopAll();
+                Globals::switch_to_target_setting = 2;
+                _mtw_AppMgr_SetCurrentApplicationModule(Globals::appManager,
+                                                        Globals::switch_to_target_setting);
+                this->quitConfirmShowing = 0;
+                this->messageShowing = 0;
+                return 0;
+            }
+            if (this->leaderboardDialogShowing != 0) {
+                unsigned int r = (unsigned int) _mtw_ChoiceWindow_OnTouchEnd(cw, y);
+                if (r < 2) Globals::globals->reportLeaderboards();
+                this->leaderboardDialogShowing = 0;
+                this->messageShowing = 0;
+            }
+            if (this->dlcMessageShowing != 0) {
+                _mtw_ChoiceWindow_OnTouchEnd(cw, y);
+                this->messageShowing = 0;
+                return 0;
+            }
+            if (this->dlcErrorDialogShowing != 0 || this->dlcResultDialogShowing != 0) {
+                _mtw_ChoiceWindow_OnTouchEnd(cw, y);
+                this->messageShowing = 0;
+                return 0;
+            }
+            if (this->loadFailedDialogShowing != 0) {
+                this->loadFailedDialogShowing = 0;
+            } else if (this->genericConfirmA != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
+                this->messageShowing = 0;
+                this->genericConfirmA = 0;
+                return 0;
+            } else if (this->supernovaMessageShowing != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
+                this->supernovaMessageShowing = 0;
+            } else if (this->supernovaPurchaseDialogShowing != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
+                this->supernovaPurchaseDialogShowing = 0;
+            } else {
+                _mtw_ChoiceWindow_OnTouchEnd(cw, y);
+            }
+            this->messageShowing = 0;
+            return 0;
         }
+        return _mtw_onTouchEnd_genericButtons(this, y, x, 0x4), 0;
     }
+
+    switch (state) {
+        case 1:
+        case 2:
+            if (this->listStateSuppress != 0) return 0;
+            _mtw_onTouchEnd_listState(this, y, x, state);
+            break;
+        case 3:
+            _mtw_onTouchEnd_genericButtons(this, y, x, 0xac);
+            break;
+        case 4:
+            _mtw_onTouchEnd_scrollState(this, y, x, 0xf0);
+            break;
+        case 7:
+        case 8:
+            _mtw_onTouchEnd_optionsState(this, y, x);
+            break;
+        case 9:
+            _mtw_onTouchEnd_missionsState(this, y, x);
+            break;
+        case 0xb:
+            _mtw_onTouchEnd_cinematicState(this, y, x);
+            break;
+        case 0xc:
+            _mtw_onTouchEnd_genericButtons(this, y, x, 0xb4);
+            break;
+        case 0xd:
+            _mtw_onTouchEnd_genericButtons(this, y, x, 0x4);
+            break;
+        case 0xe:
+            _mtw_onTouchEnd_genericButtons(this, y, x, 0xb0);
+            break;
+        case 0xf:
+        case 0x10:
+            _mtw_onTouchEnd_scrollState(this, y, x, 0xf4);
+            break;
+        case 0x11:
+            _mtw_onTouchEnd_genericButtons(this, y, x, 0xb8);
+            break;
+        default:
+            _mtw_onTouchEnd_genericButtons(this, y, x, 0x4);
+            break;
+    }
+    return 0;
 }
 
+// _mtw_Status_getShip / _mtw_Item_make / _mtw_Item_makeQty / _mtw_Ship_setItem removed:
+// real calls are Status::getShip(), Item::makeItem()/makeItem(int) on Globals::items
+// prototypes, and Ship::setEquipment(Item*, int) (proven from 0x12ca80 disasm).
 
-void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
-    int shipY = Globals::layout->field_0x10c_rowBaseY;
-    Globals::Canvas->SetColor(0xffffffffu);
-    int nameY = Globals::layout->field_0x110_strip58;
-    int infoY = Globals::layout->field_0x114_strip5c;
-    int width = Globals::w - Globals::layout->buttonInsetX * 2 - this->listX * 2;
-    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
-        if (Globals::iPadHD) {
-            nameY = 8;
-            infoY = 5;
-        } else if (Globals::iPadLarge) {
-            nameY = 12;
-            infoY = 8;
-        } else {
-            nameY = 6;
-            infoY = 4;
-        }
-        // Side borders.
-        int borderWidth = Globals::Canvas->GetImage2DWidth(this->scrollbarImageId);
-        int borderHeight = Globals::Canvas->GetImage2DHeight(this->scrollbarImageId);
-        int count = Globals::h / borderHeight;
-        int y = 0;
-        for (int i = 0; i <= count; i++) {
-            Globals::Canvas->DrawImage2D(this->scrollbarImageId,
-                                         Globals::layout->buttonInsetX - borderWidth + this->listX, y, 1);
-            Globals::Canvas->DrawImage2D(this->scrollbarImageId, Globals::layout->buttonInsetX + width + this->listX,
-                                         y, 0);
-            y += borderHeight;
-        }
-    }
-    this->okButton->setPosition(Globals::w - this->listX - Globals::layout->buttonInsetX,
-                                (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
-                                this->scrollOffset +
-                                (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin) +
-                                Globals::layout->field_0x108);
+void MenuTouchWindow::startValkyrie() {
+    Status *const *statusHolder = &Globals::status;
+    Globals::status->resetGame();
+    for (int i = 0; i < 0x2d; ++i)
+        (*statusHolder)->nextCampaignMission(false);
 
-    for (int i = 0; i < Globals::recordSlots; i++) {
-        int y = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->scrollOffset + (Globals::layout->field_0x70_rowHeight + this->listRowGap) * i;
-        if (y < 0 || y > Globals::h)
-            continue;
-        Globals::Canvas->SetColor(0xffffffffu);
-        Globals::layout->drawBox(i == this->selectedRow ? 4 : 3, Globals::layout->buttonInsetX + this->listX, y,
-                                 width - 3, Globals::layout->field_0x70_rowHeight, String(""));
-        int nameLineY = y + nameY;
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[0],
-                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
-                                    nameLineY, false);
-        GameRecord *record = (*this->previewRecords)[i];
-        if (record != 0 && record->shipId < 64)
-            Globals::imageFactory->drawShip(record->shipId,
-                                            Globals::layout->buttonInsetX + this->listX +
-                                            Globals::layout->field_0x2c_rowHeight + this->metricB,
-                                            shipY + y);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[1],
-                                    Globals::layout->buttonInsetX + this->listX +
-                                    Globals::layout->field_0x2c_rowHeight * 2 + this->metricB +
-                                    Globals::layout->field_0x2c4,
-                                    nameLineY, false);
-        Globals::Canvas->SetColor(0x777777ffu);
-        int infoLineY = y + infoY;
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[2],
-                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c_rowHeight,
-                                    infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[3],
-                                    Globals::layout->buttonInsetX + this->listX +
-                                    Globals::layout->field_0x2c_rowHeight * 2 + this->metricB +
-                                    Globals::layout->field_0x2c4,
-                                    infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[4],
-                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c4 +
-                                    (Globals::layout->field_0x2c_rowHeight + this->metricA) * 2,
-                                    nameLineY, false);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*(*this->recordRows)[i])[5],
-                                    Globals::layout->buttonInsetX + this->listX + Globals::layout->field_0x2c4 +
-                                    (Globals::layout->field_0x2c_rowHeight + this->metricA) * 2,
-                                    infoLineY + Globals::layout->field_0x70_rowHeight / 2, false);
-        if (i == this->selectedRow)
-            this->okButton->draw();
-    }
+    Status *status = *statusHolder;
+    Mission *mission = new Mission();
+    status->setMission(mission);
+
+    status = *statusHolder;
+    status->setShip(Globals::ships->data_[5]->makeShip(-1));
+
+    (*statusHolder)->getShip()->setRace(0);
+
+    Item *it;
+    it = Globals::items->data_[2]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[5]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[36]->makeItem(10);
+    (*statusHolder)->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[81]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[51]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[86]->makeItem(10);
+    (*statusHolder)->getShip()->setEquipment(it, 2);
+    it = Globals::items->data_[85]->makeItem();
+    (*statusHolder)->getShip()->setEquipment(it, 3);
+
+    (*statusHolder)->setCredits(0);
+    Status *stationTarget = *statusHolder;
+    Station *station = reinterpret_cast<Station *>(Globals::galaxy->getStation(0x5b));
+    stationTarget->setStation(station);
+    (*statusHolder)->setSystemVisibility(6, true);
+    (*statusHolder)->setSystemVisibility(0x19, true);
+    (*statusHolder)->setCredits(0);
+
+    OptionsRecord *optB = (OptionsRecord *) Globals::options;
+    (*statusHolder)->field_84 = 0x1a0a;
+    unsigned char *hints = Globals::hints;
+    hints[8] = 1;
+    hints[9] = 1;
+    hints[13] = 1;
+    hints[14] = 1;
+    hints[28] = 1;
+    hints[29] = 1;
+    hints[32] = 1;
+    hints[33] = 1;
+    hints[34] = 1;
+    hints[35] = 1;
+    hints[23] = 1;
+    hints[10] = 1;
+    hints[21] = 1;
+    hints[19] = 1;
+    hints[15] = 1;
+    hints[30] = 1;
+    hints[36] = 1;
+    hints[54] = 0;
+    hints[50] = 0;
+    hints[51] = 0;
+    hints[52] = 0;
+    hints[53] = 0;
+    hints[56] = 1;
+    optB->flag_0x34 = 1;
+
+    Globals::achievements->setMedal(0x17, 3);
+    Globals::achievements->setMedal(0x1e, 1);
+    Globals::recordHandler->saveOptions();
+    (*statusHolder)->setKills(0xc5);
+    Globals::sound->stop(Globals::sound->currentMusicEvent);
+
+    optB->fadeValue = this->fadeValue;
+    Globals::appManager->SetCurrentApplicationModule(5);
 }
 
 void MenuTouchWindow::startSupernova() {
@@ -1857,11 +2310,125 @@ void MenuTouchWindow::startSupernova() {
     thunk->transitionFn(reinterpret_cast<void *&>(thunk->transitionFn), 5); // lint: void_ptr (thunk slot reused as opaque context)
 }
 
-
 void MenuTouchWindow::startGOF2() {
     Globals::status->resetGame();
     ((OptionsRecord *) Globals::options)->fadeValue = this->fadeValue;
     Globals::sound->stop(Globals::sound->currentMusicEvent);
     Globals::sound->play(0x8f, nullptr, nullptr, 0.0f);
+    Globals::appManager->SetCurrentApplicationModule(2);
+}
+
+void MenuTouchWindow::render3D() {
+    if (this->menuState != 9)
+        return;
+    MissionsWindow *obj = (MissionsWindow *) this->missionsWindow;
+    if (obj == 0)
+        return;
+    return _mtw_render3D_inner(obj);
+}
+
+uint8_t MenuTouchWindow::isShowingMessage() {
+    return this->messageShowing;
+}
+
+bool MenuTouchWindow::inCinematicMode() {
+    return this->menuState == 0xd;
+}
+
+bool MenuTouchWindow::isMakingScreenshot() {
+    return this->screenshotState < 0x80000000u;
+}
+
+void MenuTouchWindow::hideMessage() {
+    this->messageShowing = 0;
+}
+
+void MenuTouchWindow::setSkipButtonVisible(bool visible) {
+    Array<TouchButton *> *arr = this->buttons;
+    if (arr != 0) {
+        for (uint32_t i = 0; i < this->buttons->count; i++) {
+            TouchButton *btn = this->buttons->data_[i];
+            if (btn != 0 && btn->id == 0x12) {
+                btn->setVisible(visible);
+            }
+        }
+    }
+}
+
+void MenuTouchWindow::callDlcMenu() {
+    AppManager *const *holder = (AppManager *const *) &Globals::appManager;
+
+    MtwAppData *ad = (MtwAppData *) ((AbyssEngine::ApplicationManager*)*holder)->GetApplicationData();
+    ad->dlcMenuAckFlag = 0;
+    ad = (MtwAppData *) ((AbyssEngine::ApplicationManager*)*holder)->GetApplicationData();
+    GameText *const *gt = &Globals::gameText;
+    ad->dlcMenuRequestFlag = 1;
+    ChoiceWindow *win = (ChoiceWindow *) this->choiceWindow;
+    this->messageShowing = 1;
+    this->dlcMessageShowing = 1;
+    String *s1 = (String *) _mtw_GameText_getText(*gt, 0x47);
+    String *s2 = (String *) _mtw_GameText_getText(*gt, 0x1a9);
+    win->set(*s1, *s2);
+}
+
+void MenuTouchWindow::startSupernovaChallenge() {
+    Globals::status->resetGame();
+    Globals::status->setCurrentCampaignMission(152);
+    Globals::status->setShip(Globals::ships->data_[46]->makeShip(-1));
+
+    Item *it = Globals::items->data_[231]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[230]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[231]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 2);
+    it = Globals::items->data_[73]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[54]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[59]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 2);
+    it = Globals::items->data_[83]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 3);
+    it = Globals::items->data_[206]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 4);
+    it = Globals::items->data_[75]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 5);
+    it = Globals::items->data_[76]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 6);
+    it = Globals::items->data_[216]->makeItem(5);
+    Globals::status->getShip()->setEquipment(it, 0);
+
+    Station *station = reinterpret_cast<Station *>(Globals::galaxy->getStation(111));
+    Globals::status->setStation(station);
+    Mission *mission = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0, 0,
+                                   station->getIndex(), 1);
+    Globals::status->setMission(mission);
+    Globals::status->setFreelanceMission(mission);
+
+    unsigned char *hints = Globals::hints;
+    hints[23] = 1;
+    hints[8] = 1;
+    hints[9] = 1;
+    hints[10] = 1;
+    hints[28] = 1;
+    hints[21] = 1;
+    hints[19] = 1;
+    hints[13] = 1;
+    hints[14] = 1;
+    hints[15] = 1;
+    hints[41] = 1;
+    hints[34] = 1;
+    hints[32] = 1;
+    hints[33] = 1;
+    Globals::status->setKills(500);
+    Globals::status->setKills(220);
+    Globals::sound->stop(Globals::sound->currentMusicEvent);
+    Globals::switch_to_target_setting = -1;
+    Globals::enterSpaceLounge = 0;
+    Globals::globals->playMusicAndFadeOutCurrent(1);
+    Globals::status->field_5c = -1;
+    Globals::status->field_60 = -1;
+    Globals::status->field_64 = -1;
     Globals::appManager->SetCurrentApplicationModule(2);
 }

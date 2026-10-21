@@ -129,82 +129,63 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ReleaseOrigami
 
 
 
-static bool g_LS_gameSaving = false;
-
-void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder) { // lint: void_ptr (exported free function; mangled signature is fixed)
-    // lint: void_ptr (exported free function; mangled signature is fixed)
+void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *fontHolder) { // lint: void_ptr (exported free function; mangled signature is fixed)
     canvas->ClearBuffer(0xff);
     canvas->Begin2d();
     canvas->SetColor(0xffffffffu);
+    if (fontHolder != nullptr) {
+        unsigned int font = *static_cast<unsigned int *>(fontHolder);
+        if (GameText::getLanguage() == 9 ||
+            !canvas->ResourceLoaded(font, static_cast<AbyssEngine::ResourceType>(1))) {
+            Globals::globals->loadFont(GameText::getLanguage());
+            *static_cast<unsigned int *>(fontHolder) = font;
+        }
 
-    if (resourceHolder == nullptr) {
-        canvas->End2d();
-        canvas->SwapBuffer();
-        return;
+        unsigned int spinner = 0xffffffffu;
+        Globals::Canvas->Image2DCreate(0x504, spinner);
+        unsigned int bar = 0xffffffffu;
+        Globals::Canvas->Image2DCreate(0x505, bar);
+        int barWidth = Globals::Canvas->GetImage2DWidth(bar);
+        int spinnerWidth = Globals::Canvas->GetImage2DWidth(spinner);
+        int barHeight = Globals::Canvas->GetImage2DHeight(bar);
+        int topOffset = Globals::layout->field_0x27c;
+
+        Globals::layout->drawBG();
+        Globals::layout->drawHeader();
+        Globals::layout->drawEmptyFooter(false);
+
+        AbyssEngine::String caption(*Globals::gameText->getText(Globals::gameSaving ? 0x18a : 0x189), false);
+
+        if (progress < 0) {
+            progress = 100;
+        }
+        int remaining = 100;
+        if (progress > 0) {
+            remaining = 100 - progress;
+        }
+
+        Globals::Canvas->DrawString(font, caption, (Globals::w >> 1) - Globals::Canvas->GetTextWidth(font, caption) / 2,
+                                    (Globals::h >> 1) - topOffset - Globals::layout->field_0x4 -
+                                        Globals::layout->field_0x280,
+                                    false);
+        Globals::Canvas->DrawImage2D(spinner, (Globals::w >> 1) - (spinnerWidth >> 1), (Globals::h >> 1) - topOffset);
+
+        if (remaining < 0) {
+            remaining = 0;
+        }
+        if (GameText::getLanguage() == 9) {
+            // Right-to-left bar: the fill width expression is repeated inline in the original.
+            Globals::Canvas->DrawRegion2D(
+                bar, (int) ((float) barWidth - (float) remaining * 0.01f * (float) barWidth), 0,
+                (int) ((float) remaining * 0.01f * (float) barWidth), barHeight, 0.0f, 0, 0,
+                (int) ((float) ((Globals::w >> 1) + (barWidth >> 1)) - (float) remaining * 0.01f * (float) barWidth),
+                (Globals::h >> 1) - topOffset + Globals::layout->field_0x290);
+        } else {
+            Globals::Canvas->DrawRegion2D(bar, 0, 0, (int) ((float) remaining * 0.01f * (float) barWidth), barHeight,
+                                          0.0f, 0, 0, (Globals::w >> 1) - (barWidth >> 1),
+                                          (Globals::h >> 1) - topOffset + Globals::layout->field_0x290);
+        }
     }
-
-    unsigned int resId = *static_cast<unsigned int *>(resourceHolder);
-    if (GameText::getLanguage() == 9 ||
-        !canvas->ResourceLoaded(resId, static_cast<AbyssEngine::ResourceType>(1))) {
-        Globals::globals->loadFont(GameText::getLanguage());
-        *static_cast<unsigned int *>(resourceHolder) = resId;
-    }
-
-    unsigned int spinner = 0xffffffffu;
-    unsigned int barFill = 0xffffffffu;
-    Globals::Canvas->Image2DCreate(0x504, spinner);
-    Globals::Canvas->Image2DCreate(0x505, barFill);
-
-    int barFillW = Globals::Canvas->GetImage2DWidth(barFill);
-    int spinnerW = Globals::Canvas->GetImage2DWidth(spinner);
-    int barFillH = Globals::Canvas->GetImage2DHeight(barFill);
-
-    int topMargin = *reinterpret_cast<int *>((unsigned char *) Globals::globals + 0x27c);
-
-    Globals::layout->drawBG();
-    Globals::layout->drawHeader();
-    Globals::layout->drawEmptyFooter(false);
-
-    int captionId = g_LS_gameSaving ? 0x18a : 0x189;
-    String caption(*Globals::gameText->getText(captionId), false);
-
-    if (progress < 0) progress = 100;
-    int barShortfall = 100;
-    if (progress > 0) barShortfall = 100 - progress;
-
-    int *layoutFields = *reinterpret_cast<int **>(Globals::layout);
-    int globalsCenterX = *reinterpret_cast<int *>((unsigned char *) Globals::globals);
-    int barBaseline = *reinterpret_cast<int *>((unsigned char *) Globals::globals + 0x290);
-
-    int captionW = canvas->GetTextWidth(resId, caption);
-    int captionX = (Globals::w / 2) - (captionW / 2);
-    int captionY = (Globals::h / 2) - topMargin - layoutFields[1] - layoutFields[0x280 / 4];
-    canvas->DrawString(resId, caption, captionX, captionY, false);
-
-    int spinnerX = (globalsCenterX / 2) - (spinnerW / 2);
-    int spinnerY = (Globals::h / 2) - topMargin;
-    canvas->DrawImage2D(spinner, spinnerX, spinnerY);
-
-    float fillW = static_cast<float>(barShortfall < 0 ? 0 : barShortfall) * 0.01f *
-                  static_cast<float>(barFillW);
-    int barTransY = barBaseline + ((Globals::h / 2) - topMargin);
-    int barCenterX = globalsCenterX / 2;
-
-    if (GameText::getLanguage() == 9) {
-        float pivot = static_cast<float>(barCenterX + (barFillW / 2)) - fillW;
-        Globals::Canvas->DrawRegion2D(barFill,
-                                  static_cast<int>(static_cast<float>(barFillW) - fillW), 0,
-                                  static_cast<int>(fillW), barFillH,
-                                  0.0f, 0, 0,
-                                  static_cast<int>(pivot), barTransY);
-    } else {
-        Globals::Canvas->DrawRegion2D(barFill,
-                                  0, 0,
-                                  static_cast<int>(fillW), barFillH,
-                                  0.0f, 0, 0,
-                                  barCenterX - (barFillW / 2), barTransY);
-    }
-
     canvas->End2d();
     canvas->SwapBuffer();
 }
@@ -1193,7 +1174,9 @@ int RecordHandler::recordStoreWrite(int slot) {
     if (pending != 0) {
         int count = 0;
         for (unsigned i = 0; i < pending->size(); i++) {
-            count += (*pending)[i] != 0 ? 1 : 0;
+            if ((*pending)[i] != 0) {
+                count++;
+            }
         }
         if (count != 0) {
             AEFile::Write((int32_t) count, fd);
@@ -1410,7 +1393,12 @@ int RecordHandler::recordStoreWrite(int slot) {
         AEFile::Write((int32_t) 0, fd);
     }
     for (unsigned i = 0; i < stack->size() + 1; i++) {
-        Station *station = i == stack->size() ? Globals::status->getStation() : (*stack)[i];
+        Station *station;
+        if (i == stack->size()) {
+            station = Globals::status->getStation();
+        } else {
+            station = (*stack)[i];
+        }
         if (station == 0) {
             continue;
         }
@@ -1998,16 +1986,18 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         }
         int voidShipCount = 0;
         AEFile::Read(voidShipCount, fd);
-        for (int k = 0; k < voidShipCount; k++) {
-            modCount = 0;
-            AEFile::Read(modCount, fd);
-            if (modCount >= 1) {
-                Array<int> *mods = new Array<int>();
-                ArraySetLength(modCount, *mods);
-                for (int i = 0; i < modCount; i++) {
-                    AEFile::Read((*mods)[i], fd);
+        if (voidShipCount >= 1) {
+            for (int k = 0; k < voidShipCount; k++) {
+                modCount = 0;
+                AEFile::Read(modCount, fd);
+                if (modCount >= 1) {
+                    Array<int> *mods = new Array<int>();
+                    ArraySetLength(modCount, *mods);
+                    for (int i = 0; i < modCount; i++) {
+                        AEFile::Read((*mods)[i], fd);
+                    }
+                    (*reinterpret_cast<Array<Ship *> *&>(rec->field_0x184))[k]->setMods(mods);
                 }
-                (*reinterpret_cast<Array<Ship *> *&>(rec->field_0x184))[k]->setMods(mods);
             }
         }
         for (unsigned s = 0; s < stack->size() + 1; s++) {
@@ -2017,23 +2007,25 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
             }
             int shipCount = 0;
             AEFile::Read(shipCount, fd);
-            for (int j = 0; j < shipCount; j++) {
-                int count2 = 0;
-                AEFile::Read(count2, fd);
-                for (int m = 0; m < count2; m++) {
-                    int mod;
-                    AEFile::Read(mod, fd);
-                    (*station->getShips())[j]->addMod(mod);
+            if (shipCount >= 1) {
+                for (int j = 0; j < shipCount; j++) {
+                    int count2 = 0;
+                    AEFile::Read(count2, fd);
+                    for (int m = 0; m < count2; m++) {
+                        int mod;
+                        AEFile::Read(mod, fd);
+                        (*station->getShips())[j]->addMod(mod);
+                    }
                 }
             }
         }
 
-        int wantedCount = 0;
-        AEFile::Read(wantedCount, fd);
-        if (wantedCount >= 1) {
+        count = 0;
+        AEFile::Read(count, fd);
+        if (count >= 1) {
             reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4) = new Array<Wanted *>();
-            ArraySetLength(wantedCount, *reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4));
-            for (int i = 0; i < wantedCount; i++) {
+            ArraySetLength(count, *reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4));
+            for (int i = 0; i < count; i++) {
                 (*reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4))[i] = (Wanted *)this->readWanted(fd);
             }
         }

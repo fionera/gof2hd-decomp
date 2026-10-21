@@ -74,15 +74,11 @@ public:
     int buttonY0;
     int buttonX;
     int hoverAgent;
-    int field_0x8c;
-    int field_0x90;
-    int field_0x94;
-    int field_0x98;
-    int field_0x9c;
-    int field_0xa0;
+    AbyssEngine::Vector agentTopLeft;     // @0x8c: screen rect of the agent being talked to
+    AbyssEngine::Vector agentBottomRight; // @0x98
     String title;
     uint8_t initialized;
-    uint8_t field_0xb1;
+    bool postEffectWasActive; // @0xb1
     uint8_t touchDown;
     int touchX;
     int touchY;
@@ -104,7 +100,7 @@ public:
 
     int OnTouchBegin(int x, int y);
 
-    void OnTouchEnd(int x, int y);
+    int OnTouchEnd(int x, int y);
 
     int OnTouchMove(int x, int y);
 
@@ -130,7 +126,7 @@ public:
 
     unsigned char mapMode();
 
-    void onKeyPress(int key);
+    int onKeyPress(int key);
 
     void refresh();
 
