@@ -143,9 +143,9 @@ public:
 
     void setPlayerGun(bool v);
 
-    void shoot(Matrix m, int n, bool b);
+    bool shoot(Matrix m, int n, bool b);
 
-    void shootAt(Matrix m, int n, Player *p, bool b);
+    bool shootAt(Matrix m, int n, Player *p, bool b);
 
     void translate(const Vector &v);
 
