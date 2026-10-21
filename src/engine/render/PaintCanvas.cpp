@@ -1670,25 +1670,24 @@ void PaintCanvas::Initialize(bool landscape) {
     float fw = (float) (int) this->engine->GetDisplayWidth();
     float fh = (float) (int) this->engine->GetDisplayHeight();
 
-    float ymul = fw;
-    if (orient == 2) {
-        proj[0] = 2.0f / fw;
-        ymul = fh;
-    } else {
+    if (orient != 2) {
+        proj[0] = 2.0f / fh;
+        proj[5] = -2.0f / fw;
         float *view = this->worldViewMatrix;
         memset(view, 0, sizeof(this->worldViewMatrix));
-        view[15] = 1.0f;
-        proj[0] = 2.0f / fh;
         view[1] = -1.0f;
-        view[10] = 1.0f;
         view[4] = 1.0f;
+        view[10] = 1.0f;
+        view[15] = 1.0f;
         view[13] = fw;
+    } else {
+        proj[0] = 2.0f / fw;
+        proj[5] = -2.0f / fh;
     }
     proj[10] = -0.05f;
     proj[15] = 1.0f;
     proj[12] = -1.0f;
     proj[13] = 1.0f;
-    proj[5] = -2.0f / ymul;
 
     return this->SetProjectionMatrix3d(16384.0f, 512.0f, 65536.0f);
 }
@@ -3161,8 +3160,8 @@ PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
         e[4] = (unsigned short) ((i << 2) | 3);
         e[5] = (unsigned short) ((i << 2) | 2);
     }
-    this->field_0x1f8 = 1;
     this->field_0x1cc = 0;
+    this->field_0x1f8 = 1;
 }
 
 void PaintCanvas::TransformRemoveMesh(unsigned int transformIndex, unsigned short meshResId) {
