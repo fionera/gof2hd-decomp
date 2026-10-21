@@ -82,11 +82,11 @@ void Ship::refreshValue() {
     this->agility = 0;
     this->maxPassengers = 0;
     this->firePower = 0;
-    this->signatureRace = -1;
     this->radarType = 0;
     this->boostSpeed = 0;
     this->boostDelay = 0;
     this->boostTime = 0;
+    this->signatureRace = -1;
     if (Globals::status != nullptr && Globals::status->getStanding() != 0)
         ((Standing *) (intptr_t) Globals::status->getStanding())->setPlayerSignatureRace(-1);
     this->value = this->price;
@@ -141,13 +141,11 @@ void Ship::refreshValue() {
                 this->hasEmergency = 1;
                 break;
             case 28: {
-                float rate = 1.0f - (float) (*this->equipment)[i]->getAttribute(39) / 100.0f;
-                if (rate == -979797952.0f)
-                    rate = 1.0f;
-                this->fireRateFactor = rate;
-                float damage = (float) (*this->equipment)[i]->getAttribute(40) / 100.0f + 1.0f;
-                this->damageFactor = damage;
-                if (damage == -979797952.0f)
+                this->fireRateFactor = 1.0f - (float) (*this->equipment)[i]->getAttribute(39) / 100.0f;
+                if (this->fireRateFactor == -979797952.0f)
+                    this->fireRateFactor = 1.0f;
+                this->damageFactor = (float) (*this->equipment)[i]->getAttribute(40) / 100.0f + 1.0f;
+                if (this->damageFactor == -979797952.0f)
                     this->damageFactor = 1.0f;
                 break;
             }
