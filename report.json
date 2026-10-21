@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4540,
   "compared": 4523,
-  "avg_match": 95.17,
-  "byte_exact": 1309,
-  "linked_exact": 3962,
-  "fuzzy_perfect": 3962,
+  "avg_match": 96.84,
+  "byte_exact": 1314,
+  "linked_exact": 4074,
+  "fuzzy_perfect": 4074,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15,30 +15,6 @@
   "extra": 16
  },
  "rows": [
-  {
-   "name": "_ZN11AbyssEngine6AEMath6MatrixaSERKS1_",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 58,
-   "usize": 32
-  },
-  {
-   "name": "_ZN11AbyssEngine6AEMathmlERKNS0_6MatrixES3_",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 384,
-   "usize": 370
-  },
-  {
-   "name": "_ZN14PlayerCreature4hookEi",
-   "pct": 0.0,
-   "byte": false,
-   "linked": false,
-   "osize": 10,
-   "usize": 56
-  },
   {
    "name": "_ZN5Agent16setMissionStringEN11AbyssEngine6StringE",
    "pct": 0.0,
@@ -72,30 +48,6 @@
    "usize": 616
   },
   {
-   "name": "_ZN14ListItemWindow3setEP8ListItemjjjjb",
-   "pct": 3.3,
-   "byte": false,
-   "linked": false,
-   "osize": 6820,
-   "usize": 612
-  },
-  {
-   "name": "_ZN6LayoutC1Ev",
-   "pct": 3.5,
-   "byte": false,
-   "linked": false,
-   "osize": 7072,
-   "usize": 684
-  },
-  {
-   "name": "_ZN6LayoutC2Ev",
-   "pct": 3.5,
-   "byte": false,
-   "linked": false,
-   "osize": 7072,
-   "usize": 684
-  },
-  {
    "name": "_ZN10SpacePointC1EiRKN11AbyssEngine6AEMath6VectorES4_i",
    "pct": 5.4,
    "byte": false,
@@ -110,22 +62,6 @@
    "linked": false,
    "osize": 58,
    "usize": 36
-  },
-  {
-   "name": "_ZN7StationC1Ev",
-   "pct": 6.1,
-   "byte": false,
-   "linked": false,
-   "osize": 124,
-   "usize": 48
-  },
-  {
-   "name": "_ZN7StationC2Ev",
-   "pct": 6.1,
-   "byte": false,
-   "linked": false,
-   "osize": 124,
-   "usize": 48
   },
   {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
@@ -152,84 +88,12 @@
    "usize": 42
   },
   {
-   "name": "_ZN12ImageFactoryC1Ev",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 132,
-   "usize": 124
-  },
-  {
-   "name": "_ZN12ImageFactoryC2Ev",
-   "pct": 7.5,
-   "byte": false,
-   "linked": false,
-   "osize": 132,
-   "usize": 124
-  },
-  {
-   "name": "_ZN10ModStation10OnTouchEndEiiPv",
-   "pct": 8.1,
-   "byte": false,
-   "linked": false,
-   "osize": 5404,
-   "usize": 3196
-  },
-  {
    "name": "_ZN11AbyssEngine6AEMath6MatrixmLERKS1_",
    "pct": 10.1,
    "byte": false,
    "linked": false,
    "osize": 350,
    "usize": 414
-  },
-  {
-   "name": "_ZN4Item12getAttributeEi",
-   "pct": 10.5,
-   "byte": false,
-   "linked": false,
-   "osize": 52,
-   "usize": 44
-  },
-  {
-   "name": "_ZN14ScrollTouchBox4drawEv",
-   "pct": 11.4,
-   "byte": false,
-   "linked": false,
-   "osize": 408,
-   "usize": 40
-  },
-  {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 12.1,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 39412
-  },
-  {
-   "name": "_ZN7Globals18getDialogueSoundIdEiP5Agent",
-   "pct": 12.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1724,
-   "usize": 1700
-  },
-  {
-   "name": "_ZN11AbyssEngine6AEMath16MatrixSetScalingERNS0_6MatrixEfff",
-   "pct": 12.4,
-   "byte": false,
-   "linked": false,
-   "osize": 196,
-   "usize": 140
-  },
-  {
-   "name": "_ZN11HackingGame8render2DEv",
-   "pct": 12.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2090,
-   "usize": 1504
   },
   {
    "name": "_ZN14PendingProductC1EiN11AbyssEngine6StringEii",
@@ -248,68 +112,12 @@
    "usize": 26
   },
   {
-   "name": "_ZN10ModStation12OnInitializeEv",
-   "pct": 13.0,
+   "name": "_ZN11AbyssEngine6AEMathmlERKNS0_6MatrixES3_",
+   "pct": 14.2,
    "byte": false,
    "linked": false,
-   "osize": 6396,
-   "usize": 2904
-  },
-  {
-   "name": "_ZN7StationC1EN11AbyssEngine6StringEiiii",
-   "pct": 13.0,
-   "byte": false,
-   "linked": false,
-   "osize": 74,
-   "usize": 52
-  },
-  {
-   "name": "_ZN7StationC2EN11AbyssEngine6StringEiiii",
-   "pct": 13.0,
-   "byte": false,
-   "linked": false,
-   "osize": 74,
-   "usize": 52
-  },
-  {
-   "name": "_ZN12WantedWindow4drawEv",
-   "pct": 14.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1928,
-   "usize": 1972
-  },
-  {
-   "name": "_ZN7Globals26getInAppPurchaseArrayIndexEiP5ArrayIPN11AbyssEngine6StringEE",
-   "pct": 14.5,
-   "byte": false,
-   "linked": false,
-   "osize": 716,
-   "usize": 544
-  },
-  {
-   "name": "_ZN7Globals12getShipGroupEiib",
-   "pct": 15.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1856,
-   "usize": 1464
-  },
-  {
-   "name": "_ZN10ModStation10OnRender2DEv",
-   "pct": 15.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1816,
-   "usize": 1836
-  },
-  {
-   "name": "_ZN5MGame10OnRender3DEv",
-   "pct": 17.1,
-   "byte": false,
-   "linked": false,
-   "osize": 240,
-   "usize": 268
+   "osize": 384,
+   "usize": 392
   },
   {
    "name": "_ZN11BoundingAAB25projectCollisionOnSurfaceERKN11AbyssEngine6AEMath6VectorE",
@@ -320,44 +128,12 @@
    "usize": 316
   },
   {
-   "name": "_ZN11AbyssEngine12ConfigReader10GetNewLineEv",
-   "pct": 18.3,
-   "byte": false,
-   "linked": false,
-   "osize": 276,
-   "usize": 584
-  },
-  {
-   "name": "_ZN11AbyssEngine6AEMath15MatrixGetLookAtERKNS0_6VectorES3_S3_",
-   "pct": 19.4,
-   "byte": false,
-   "linked": false,
-   "osize": 172,
-   "usize": 248
-  },
-  {
-   "name": "_ZN10ModStation12OnTouchBeginEiiPv",
+   "name": "_ZN7Globals18getDialogueSoundIdEiP5Agent",
    "pct": 19.9,
    "byte": false,
    "linked": false,
-   "osize": 468,
-   "usize": 480
-  },
-  {
-   "name": "_ZN9RocketGun6updateEi",
-   "pct": 20.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1908,
-   "usize": 1892
-  },
-  {
-   "name": "_ZN11AbyssEngine10Quaternion4LerpEPKfS2_f",
-   "pct": 20.5,
-   "byte": false,
-   "linked": false,
-   "osize": 120,
-   "usize": 144
+   "osize": 1724,
+   "usize": 1738
   },
   {
    "name": "_ZN11AbyssEngine6AEMath17MatrixSetRotationERNS0_6MatrixEfffNS0_13RotationOrderE",
@@ -368,28 +144,20 @@
    "usize": 728
   },
   {
-   "name": "_ZN14MissionsWindow4initEv",
-   "pct": 21.1,
+   "name": "_ZN6LayoutC1Ev",
+   "pct": 21.8,
    "byte": false,
    "linked": false,
-   "osize": 2468,
-   "usize": 2360
+   "osize": 7072,
+   "usize": 6260
   },
   {
-   "name": "_ZN11AbyssEngine12ConfigReaderC1EPNS_6EngineE",
-   "pct": 21.3,
+   "name": "_ZN6LayoutC2Ev",
+   "pct": 21.8,
    "byte": false,
    "linked": false,
-   "osize": 216,
-   "usize": 552
-  },
-  {
-   "name": "_ZN11AbyssEngine12ConfigReaderC2EPNS_6EngineE",
-   "pct": 21.3,
-   "byte": false,
-   "linked": false,
-   "osize": 216,
-   "usize": 552
+   "osize": 7072,
+   "usize": 6260
   },
   {
    "name": "_ZN13PlayerFighter6updateEi",
@@ -398,14 +166,6 @@
    "linked": false,
    "osize": 10376,
    "usize": 6156
-  },
-  {
-   "name": "_ZN10ModStation8OnUpdateEv",
-   "pct": 22.2,
-   "byte": false,
-   "linked": false,
-   "osize": 3652,
-   "usize": 2272
   },
   {
    "name": "_ZN11AbyssEngine11BloomShaderD1Ev",
@@ -440,84 +200,12 @@
    "usize": 4
   },
   {
-   "name": "_ZN14PlayerCreature9getWeightEv",
-   "pct": 22.2,
-   "byte": false,
-   "linked": false,
-   "osize": 20,
-   "usize": 4
-  },
-  {
-   "name": "_Z13simulateTouchPN11AbyssEngine6EngineE",
-   "pct": 22.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1928,
-   "usize": 1628
-  },
-  {
-   "name": "_ZN6AEFile4OpenERN11AbyssEngine6StringENS_12FileOpenTypeEPj",
-   "pct": 22.4,
-   "byte": false,
-   "linked": false,
-   "osize": 516,
-   "usize": 536
-  },
-  {
-   "name": "_ZN9ObjectGun6renderEv",
-   "pct": 22.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1456,
-   "usize": 1484
-  },
-  {
-   "name": "_ZN6AEFile11findPakFileERKN11AbyssEngine6StringE",
-   "pct": 23.1,
-   "byte": false,
-   "linked": false,
-   "osize": 360,
-   "usize": 304
-  },
-  {
-   "name": "_ZN6Galaxy10getStationEi",
-   "pct": 23.2,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 96
-  },
-  {
-   "name": "_ZN11TractorBeam6updateEiP5RadarP5LevelP3Hud",
-   "pct": 23.9,
-   "byte": false,
-   "linked": false,
-   "osize": 852,
-   "usize": 704
-  },
-  {
-   "name": "ndk_iapBoughtConsumable",
-   "pct": 24.0,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 40
-  },
-  {
    "name": "_ZN14BoundingVolume6updateEfff",
    "pct": 24.1,
    "byte": false,
    "linked": false,
    "osize": 140,
    "usize": 88
-  },
-  {
-   "name": "_ZN7Globals16longToTimeStringExRN11AbyssEngine6StringE",
-   "pct": 24.1,
-   "byte": false,
-   "linked": false,
-   "osize": 724,
-   "usize": 884
   },
   {
    "name": "_ZN14BoundingVolume31staticProjectCollisionOnSurfaceERKN11AbyssEngine6AEMath6VectorEP5ArrayIPS_E",
@@ -528,44 +216,12 @@
    "usize": 168
   },
   {
-   "name": "InitializeBlowfish",
-   "pct": 25.5,
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 26.2,
    "byte": false,
    "linked": false,
-   "osize": 416,
-   "usize": 380
-  },
-  {
-   "name": "_ZN11SolarSystemC1EiN11AbyssEngine6StringEibiiiiiiPiP5ArrayIiES5_S5_",
-   "pct": 25.7,
-   "byte": false,
-   "linked": false,
-   "osize": 184,
-   "usize": 120
-  },
-  {
-   "name": "_ZN11SolarSystemC2EiN11AbyssEngine6StringEibiiiiiiPiP5ArrayIiES5_S5_",
-   "pct": 25.7,
-   "byte": false,
-   "linked": false,
-   "osize": 184,
-   "usize": 120
-  },
-  {
-   "name": "_ZN14ScrollTouchBox7setTextEN11AbyssEngine6StringEi",
-   "pct": 25.7,
-   "byte": false,
-   "linked": false,
-   "osize": 268,
-   "usize": 96
-  },
-  {
-   "name": "_ZN8FileRead15loadSpacePointsEii",
-   "pct": 25.8,
-   "byte": false,
-   "linked": false,
-   "osize": 648,
-   "usize": 552
+   "osize": 57232,
+   "usize": 55236
   },
   {
    "name": "_ZN18TargetFollowCamera6updateEi",
@@ -574,30 +230,6 @@
    "linked": false,
    "osize": 2104,
    "usize": 1780
-  },
-  {
-   "name": "_ZN14ScrollTouchBoxC1Eiiii",
-   "pct": 26.3,
-   "byte": false,
-   "linked": false,
-   "osize": 64,
-   "usize": 56
-  },
-  {
-   "name": "_ZN14ScrollTouchBoxC2Eiiii",
-   "pct": 26.3,
-   "byte": false,
-   "linked": false,
-   "osize": 64,
-   "usize": 56
-  },
-  {
-   "name": "_ZN14MissionsWindow4drawEv",
-   "pct": 26.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1228,
-   "usize": 1148
   },
   {
    "name": "_ZN3Hud10touchBeginEjjPv",
@@ -616,14 +248,6 @@
    "usize": 40
   },
   {
-   "name": "_ZN5MGame22startChargingJumpDriveEv",
-   "pct": 27.8,
-   "byte": false,
-   "linked": false,
-   "osize": 404,
-   "usize": 268
-  },
-  {
    "name": "_ZN7Globals14setCoordsSteerEiiiiRtS0_S0_S0_S0_S0_S0_S0_S0_S0_",
    "pct": 27.8,
    "byte": false,
@@ -632,36 +256,12 @@
    "usize": 928
   },
   {
-   "name": "_ZN11ModMainMenu12OnInitializeEv",
-   "pct": 28.0,
-   "byte": false,
-   "linked": false,
-   "osize": 568,
-   "usize": 236
-  },
-  {
    "name": "_ZN14BoundingSphere25projectCollisionOnSurfaceERKN11AbyssEngine6AEMath6VectorE",
    "pct": 28.1,
    "byte": false,
    "linked": false,
    "osize": 172,
    "usize": 176
-  },
-  {
-   "name": "_ZN11AbyssEngine10Quaternion3SetEfff",
-   "pct": 28.4,
-   "byte": false,
-   "linked": false,
-   "osize": 212,
-   "usize": 216
-  },
-  {
-   "name": "_ZN5Level10assignGunsEv",
-   "pct": 28.5,
-   "byte": false,
-   "linked": false,
-   "osize": 2948,
-   "usize": 2360
   },
   {
    "name": "_ZN11AbyssEngine20ImageFontCheckStringEPNS_9ImageFontEPKtj",
@@ -696,6 +296,14 @@
    "usize": 50
   },
   {
+   "name": "_ZN11ModMainMenu12OnInitializeEv",
+   "pct": 28.7,
+   "byte": false,
+   "linked": false,
+   "osize": 568,
+   "usize": 236
+  },
+  {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
    "pct": 29.0,
    "byte": false,
@@ -728,68 +336,12 @@
    "usize": 1648
   },
   {
-   "name": "_ZN11AbyssEngine9TransformC1Ev",
-   "pct": 30.6,
-   "byte": false,
-   "linked": false,
-   "osize": 480,
-   "usize": 540
-  },
-  {
-   "name": "_ZN11AbyssEngine9TransformC2Ev",
-   "pct": 30.6,
-   "byte": false,
-   "linked": false,
-   "osize": 480,
-   "usize": 540
-  },
-  {
-   "name": "_ZN6AEFile20sortPakFileEntryListEv",
-   "pct": 30.6,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 104
-  },
-  {
    "name": "_ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj",
    "pct": 31.1,
    "byte": false,
    "linked": false,
    "osize": 1832,
    "usize": 1796
-  },
-  {
-   "name": "_ZN11AbyssEngine17MeshReleaseInternEPNS_6EngineEPPNS_4MeshE",
-   "pct": 31.4,
-   "byte": false,
-   "linked": false,
-   "osize": 340,
-   "usize": 256
-  },
-  {
-   "name": "_ZN11SolarSystem13hasPirateBaseEv",
-   "pct": 31.4,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 52
-  },
-  {
-   "name": "_ZN11SolarSystem18hasHiddenBlueprintEv",
-   "pct": 31.4,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 52
-  },
-  {
-   "name": "ndk_resetNativeItemInformationList",
-   "pct": 31.4,
-   "byte": false,
-   "linked": false,
-   "osize": 676,
-   "usize": 148
   },
   {
    "name": "_ZN11AbyssEngine10Quaternion7ConvertERNS_6AEMath6MatrixE",
@@ -824,44 +376,12 @@
    "usize": 264
   },
   {
-   "name": "_ZN11AbyssEngine19ImageCreateFromFileEPNS_6EngineEPKcPPNS_5ImageE",
-   "pct": 32.0,
-   "byte": false,
-   "linked": false,
-   "osize": 760,
-   "usize": 692
-  },
-  {
    "name": "_ZN9ObjectGun6updateEi",
    "pct": 32.6,
    "byte": false,
    "linked": false,
    "osize": 1092,
    "usize": 1080
-  },
-  {
-   "name": "_ZN11AbyssEngine6AEMath7BSphere5MergeERKNS_9TransformE",
-   "pct": 33.1,
-   "byte": false,
-   "linked": false,
-   "osize": 208,
-   "usize": 164
-  },
-  {
-   "name": "_ZN17ScrollTouchWindowC1Eiiii",
-   "pct": 33.3,
-   "byte": false,
-   "linked": false,
-   "osize": 132,
-   "usize": 132
-  },
-  {
-   "name": "_ZN17ScrollTouchWindowC2Eiiii",
-   "pct": 33.3,
-   "byte": false,
-   "linked": false,
-   "osize": 132,
-   "usize": 132
   },
   {
    "name": "_ZN5Agent15setSellItemDataEiii",
@@ -888,44 +408,20 @@
    "usize": 620
   },
   {
-   "name": "_ZN14PlayerCreature4rageEi",
-   "pct": 34.3,
-   "byte": false,
-   "linked": false,
-   "osize": 80,
-   "usize": 48
-  },
-  {
-   "name": "_ZN10ModStationC1Ev",
-   "pct": 35.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1008,
-   "usize": 752
-  },
-  {
-   "name": "_ZN10ModStationC2Ev",
-   "pct": 35.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1008,
-   "usize": 752
-  },
-  {
-   "name": "_ZN14PlayerCreatureC1EiiP6PlayerP10AEGeometryfff",
+   "name": "_ZN11AbyssEngine10Quaternion3SetEfff",
    "pct": 35.3,
    "byte": false,
    "linked": false,
-   "osize": 204,
-   "usize": 248
+   "osize": 212,
+   "usize": 216
   },
   {
-   "name": "_ZN14PlayerCreatureC2EiiP6PlayerP10AEGeometryfff",
+   "name": "_ZN11AbyssEngine6AEMath6MatrixaSERKS1_",
    "pct": 35.3,
    "byte": false,
    "linked": false,
-   "osize": 204,
-   "usize": 248
+   "osize": 58,
+   "usize": 38
   },
   {
    "name": "_ZN3GunC1EiiiiiifN11AbyssEngine6AEMath6VectorES2_",
@@ -952,36 +448,12 @@
    "usize": 556
   },
   {
-   "name": "_ZN11AbyssEngine10Quaternion4LerpERKS0_S2_f",
-   "pct": 35.6,
+   "name": "_Z13loadingScreenPN11AbyssEngine11PaintCanvasEiPv",
+   "pct": 36.4,
    "byte": false,
    "linked": false,
-   "osize": 104,
-   "usize": 96
-  },
-  {
-   "name": "_ZN12WantedWindow4initEv",
-   "pct": 35.7,
-   "byte": false,
-   "linked": false,
-   "osize": 908,
-   "usize": 900
-  },
-  {
-   "name": "_ZN10MiningGame8render2DEv",
-   "pct": 35.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1456,
-   "usize": 1428
-  },
-  {
-   "name": "_ZN12WantedWindow12selectWantedEi",
-   "pct": 36.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1904,
-   "usize": 1584
+   "osize": 736,
+   "usize": 764
   },
   {
    "name": "_ZN14PendingProductC1EP9BluePrint",
@@ -1008,12 +480,20 @@
    "usize": 54
   },
   {
-   "name": "_ZN7BeamGun6updateEi",
-   "pct": 37.1,
+   "name": "_ZN11HackingGame8render2DEv",
+   "pct": 36.9,
    "byte": false,
    "linked": false,
-   "osize": 636,
-   "usize": 692
+   "osize": 2090,
+   "usize": 2086
+  },
+  {
+   "name": "_ZN11AbyssEngine6AEMath7BSphere5MergeERKNS_9TransformE",
+   "pct": 37.2,
+   "byte": false,
+   "linked": false,
+   "osize": 208,
+   "usize": 176
   },
   {
    "name": "_ZN11ModMainMenu11OnTouchMoveEiiPv",
@@ -1032,14 +512,6 @@
    "usize": 18
   },
   {
-   "name": "_ZN8FileRead18loadStationsBinaryEP11SolarSystem",
-   "pct": 37.5,
-   "byte": false,
-   "linked": false,
-   "osize": 364,
-   "usize": 384
-  },
-  {
    "name": "_ZN9ImagePartC1Ejii",
    "pct": 37.5,
    "byte": false,
@@ -1056,14 +528,6 @@
    "usize": 28
   },
   {
-   "name": "_ZN4Item11transactionEbib",
-   "pct": 37.8,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 80
-  },
-  {
    "name": "_ZN7Globals13setCoordsFireEiijjRjRtS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_S1_",
    "pct": 38.2,
    "byte": false,
@@ -1078,30 +542,6 @@
    "linked": false,
    "osize": 398,
    "usize": 414
-  },
-  {
-   "name": "_ZN16SystemPathFinder15getJumpDistanceEP5ArrayIP11SolarSystemEii",
-   "pct": 38.5,
-   "byte": false,
-   "linked": false,
-   "osize": 38,
-   "usize": 28
-  },
-  {
-   "name": "_ZN9FModSound23updateEvent3DAttributesEPN4FMOD5EventEiPN11AbyssEngine6AEMath6VectorES6_b",
-   "pct": 38.8,
-   "byte": false,
-   "linked": false,
-   "osize": 584,
-   "usize": 572
-  },
-  {
-   "name": "_ZN8FileRead15loadNamesBinaryEibb",
-   "pct": 39.3,
-   "byte": false,
-   "linked": false,
-   "osize": 884,
-   "usize": 704
   },
   {
    "name": "_ZN14BoundingSphere18getCollisionNormalERKN11AbyssEngine6AEMath6VectorE",
@@ -1126,14 +566,6 @@
    "linked": false,
    "osize": 728,
    "usize": 808
-  },
-  {
-   "name": "_ZN11AbyssEngine13MeshIntersectEffPNS_4MeshE",
-   "pct": 39.9,
-   "byte": false,
-   "linked": false,
-   "osize": 680,
-   "usize": 672
   },
   {
    "name": "_ZN11AbyssEngine16esMatrixMultiplyEPNS_8ESMatrixES1_S1_",
@@ -1176,14 +608,6 @@
    "usize": 552
   },
   {
-   "name": "_ZN6Sprite10drawRegionEiiii",
-   "pct": 40.9,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 124
-  },
-  {
    "name": "_ZN9BluePrint7addItemEP4Itemii",
    "pct": 41.1,
    "byte": false,
@@ -1192,36 +616,12 @@
    "usize": 308
   },
   {
-   "name": "_ZN6Sprite4drawEff",
-   "pct": 41.9,
-   "byte": false,
-   "linked": false,
-   "osize": 292,
-   "usize": 284
-  },
-  {
    "name": "_ZN9ImagePart4drawEiib",
    "pct": 41.9,
    "byte": false,
    "linked": false,
    "osize": 72,
    "usize": 54
-  },
-  {
-   "name": "_ZN11AbyssEngine23ImageCreateFontFromFileEPNS_6EngineEPKctPPNS_9ImageFontE",
-   "pct": 42.0,
-   "byte": false,
-   "linked": false,
-   "osize": 920,
-   "usize": 888
-  },
-  {
-   "name": "_ZN17ScrollTouchWindow10drawTextBGEv",
-   "pct": 42.0,
-   "byte": false,
-   "linked": false,
-   "osize": 192,
-   "usize": 188
   },
   {
    "name": "_ZN8Standing7isEnemyEi",
@@ -1248,28 +648,12 @@
    "usize": 144
   },
   {
-   "name": "_ZN8FileRead19loadWeaponPositionsEi",
-   "pct": 43.0,
-   "byte": false,
-   "linked": false,
-   "osize": 500,
-   "usize": 512
-  },
-  {
    "name": "_ZN5MGame19handleAccelerometerEv",
    "pct": 43.1,
    "byte": false,
    "linked": false,
    "osize": 564,
    "usize": 552
-  },
-  {
-   "name": "_ZN5MGame8useCloakEv",
-   "pct": 43.3,
-   "byte": false,
-   "linked": false,
-   "osize": 352,
-   "usize": 456
   },
   {
    "name": "_ZN10MeshMergerC1ERK5ArrayItES0_IN11AbyssEngine6AEMath6MatrixEEPNS4_11PaintCanvasEt",
@@ -1296,28 +680,12 @@
    "usize": 1988
   },
   {
-   "name": "_ZN12ImageFactory9loadImageEiii",
-   "pct": 43.9,
-   "byte": false,
-   "linked": false,
-   "osize": 268,
-   "usize": 228
-  },
-  {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
    "pct": 44.3,
    "byte": false,
    "linked": false,
    "osize": 2632,
    "usize": 2544
-  },
-  {
-   "name": "_ZN4Ship12refreshValueEv",
-   "pct": 44.6,
-   "byte": false,
-   "linked": false,
-   "osize": 924,
-   "usize": 760
   },
   {
    "name": "_ZN11AbyssEngine6String7CompareEPKc",
@@ -1328,12 +696,12 @@
    "usize": 64
   },
   {
-   "name": "_ZN4Item9fabricateEPS_P5ArrayIS0_Ei",
-   "pct": 45.3,
+   "name": "_Z13simulateTouchPN11AbyssEngine6EngineE",
+   "pct": 45.1,
    "byte": false,
    "linked": false,
-   "osize": 138,
-   "usize": 148
+   "osize": 1928,
+   "usize": 1688
   },
   {
    "name": "_ZN5Level19initParticleSystemsEv",
@@ -1342,14 +710,6 @@
    "linked": false,
    "osize": 1872,
    "usize": 1896
-  },
-  {
-   "name": "_ZN14PlayerWormHole6updateEi",
-   "pct": 45.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1056,
-   "usize": 1068
   },
   {
    "name": "_ZN5TrailC1Eii",
@@ -1416,22 +776,6 @@
    "usize": 346
   },
   {
-   "name": "_ZN6GalaxyC1Ev",
-   "pct": 47.1,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 92
-  },
-  {
-   "name": "_ZN6GalaxyC2Ev",
-   "pct": 47.1,
-   "byte": false,
-   "linked": false,
-   "osize": 76,
-   "usize": 92
-  },
-  {
    "name": "_Z15IsSubMenuActivei",
    "pct": 47.5,
    "byte": false,
@@ -1464,38 +808,6 @@
    "usize": 2760
   },
   {
-   "name": "_ZN10ModStation11showDlcMenuEv",
-   "pct": 48.0,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 200
-  },
-  {
-   "name": "_ZN4Item8mixItemsEP5ArrayIPS_ES3_",
-   "pct": 48.2,
-   "byte": false,
-   "linked": false,
-   "osize": 476,
-   "usize": 444
-  },
-  {
-   "name": "_ZN7StationD1Ev",
-   "pct": 48.3,
-   "byte": false,
-   "linked": false,
-   "osize": 244,
-   "usize": 248
-  },
-  {
-   "name": "_ZN7StationD2Ev",
-   "pct": 48.3,
-   "byte": false,
-   "linked": false,
-   "osize": 244,
-   "usize": 248
-  },
-  {
    "name": "_ZN5Level9createGunEiiiiiiii",
    "pct": 48.5,
    "byte": false,
@@ -1512,12 +824,20 @@
    "usize": 104
   },
   {
-   "name": "_ZN17ScrollTouchWindow4drawEv",
+   "name": "ndk_iapBoughtConsumable",
+   "pct": 48.5,
+   "byte": false,
+   "linked": false,
+   "osize": 84,
+   "usize": 88
+  },
+  {
+   "name": "_ZN9RocketGun6updateEi",
    "pct": 48.7,
    "byte": false,
    "linked": false,
-   "osize": 340,
-   "usize": 348
+   "osize": 1908,
+   "usize": 1868
   },
   {
    "name": "_ZN6Layout12drawBGBorderEjjiiiiii",
@@ -1544,36 +864,12 @@
    "usize": 84
   },
   {
-   "name": "_ZN11AbyssEngine10Quaternion3DotERKS0_S2_",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 54,
-   "usize": 54
-  },
-  {
    "name": "_ZN11AbyssEngine9Transform17SetAnimationStateENS_13AnimationModeEPv",
    "pct": 50.0,
    "byte": false,
    "linked": false,
    "osize": 32,
    "usize": 32
-  },
-  {
-   "name": "_ZN11AbyssEngineeqERKNS_6StringES2_",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 80,
-   "usize": 80
-  },
-  {
-   "name": "_ZN14PlayerCreature8isHookedEv",
-   "pct": 50.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 6
   },
   {
    "name": "_ZNK11AbyssEngine6AEMath6VectorixEi",
@@ -1584,22 +880,6 @@
    "usize": 6
   },
   {
-   "name": "_Z10keyPressedPN11AbyssEngine6EngineEi",
-   "pct": 50.4,
-   "byte": false,
-   "linked": false,
-   "osize": 708,
-   "usize": 668
-  },
-  {
-   "name": "_Z11keyReleasedPN11AbyssEngine6EngineEi",
-   "pct": 50.5,
-   "byte": false,
-   "linked": false,
-   "osize": 396,
-   "usize": 372
-  },
-  {
    "name": "_ZN11ModMainMenu8OnUpdateEv",
    "pct": 50.5,
    "byte": false,
@@ -1608,12 +888,12 @@
    "usize": 110
   },
   {
-   "name": "_ZN17ScrollTouchWindow7setTextEN11AbyssEngine6StringES1_i",
-   "pct": 51.1,
+   "name": "_ZN8FileRead18loadStationsBinaryEv",
+   "pct": 51.0,
    "byte": false,
    "linked": false,
-   "osize": 100,
-   "usize": 132
+   "osize": 256,
+   "usize": 256
   },
   {
    "name": "_ZN11AbyssEngine9Transform23SetAnimationRangeInTimeExx",
@@ -1622,14 +902,6 @@
    "linked": false,
    "osize": 292,
    "usize": 272
-  },
-  {
-   "name": "_ZN12ImageFactory8drawItemEiiii",
-   "pct": 52.3,
-   "byte": false,
-   "linked": false,
-   "osize": 156,
-   "usize": 152
   },
   {
    "name": "_ZN7StarMap11OnTouchMoveEii",
@@ -1664,14 +936,6 @@
    "usize": 612
   },
   {
-   "name": "_ZN10RepairBeam6updateEiP5RadarP5LevelP3Hud",
-   "pct": 53.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1872,
-   "usize": 1908
-  },
-  {
    "name": "_ZN6Layout13drawBGPatternEjiiii",
    "pct": 53.4,
    "byte": false,
@@ -1680,60 +944,20 @@
    "usize": 388
   },
   {
-   "name": "_ZN6Player5shootEiixbN11AbyssEngine6AEMath6MatrixE",
-   "pct": 53.4,
-   "byte": false,
-   "linked": false,
-   "osize": 468,
-   "usize": 480
-  },
-  {
-   "name": "_ZN17ScrollTouchWindow7setTextEN11AbyssEngine6StringES1_",
+   "name": "_ZN7Globals26getInAppPurchaseArrayIndexEiP5ArrayIPN11AbyssEngine6StringEE",
    "pct": 53.5,
    "byte": false,
    "linked": false,
-   "osize": 96,
-   "usize": 128
-  },
-  {
-   "name": "_ZN8FileRead17loadSystemsBinaryEv",
-   "pct": 53.7,
-   "byte": false,
-   "linked": false,
    "osize": 716,
-   "usize": 728
+   "usize": 708
   },
   {
-   "name": "_ZN14ListItemWindowC1Ev",
-   "pct": 53.8,
+   "name": "_ZN14MissionsWindow4initEv",
+   "pct": 54.0,
    "byte": false,
    "linked": false,
-   "osize": 140,
-   "usize": 132
-  },
-  {
-   "name": "_ZN14ListItemWindowC2Ev",
-   "pct": 53.8,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 132
-  },
-  {
-   "name": "_ZN11AbyssEngine9TransformC1EPS0_",
-   "pct": 54.3,
-   "byte": false,
-   "linked": false,
-   "osize": 596,
-   "usize": 612
-  },
-  {
-   "name": "_ZN11AbyssEngine9TransformC2EPS0_",
-   "pct": 54.3,
-   "byte": false,
-   "linked": false,
-   "osize": 596,
-   "usize": 612
+   "osize": 2468,
+   "usize": 2452
   },
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
@@ -1750,14 +974,6 @@
    "linked": false,
    "osize": 134,
    "usize": 132
-  },
-  {
-   "name": "_ZN8CutScene14checkForTurretEv",
-   "pct": 55.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1048,
-   "usize": 1024
   },
   {
    "name": "_ZN14DialogueWindow51pickGermanGenericTextBecauseWeSaved100EurosWithThatEiP5Agent",
@@ -1800,22 +1016,6 @@
    "usize": 9620
   },
   {
-   "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
-   "pct": 55.6,
-   "byte": false,
-   "linked": false,
-   "osize": 968,
-   "usize": 984
-  },
-  {
-   "name": "_ZN7MineGun6updateEi",
-   "pct": 56.1,
-   "byte": false,
-   "linked": false,
-   "osize": 472,
-   "usize": 444
-  },
-  {
    "name": "_ZN9Generator14getShipBuyListEP7Station",
    "pct": 56.1,
    "byte": false,
@@ -1840,14 +1040,6 @@
    "usize": 17360
   },
   {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 56.5,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2644
-  },
-  {
    "name": "_ZN3Gun7shootAtEN11AbyssEngine6AEMath6MatrixEiP6Playerb",
    "pct": 56.5,
    "byte": false,
@@ -1856,28 +1048,12 @@
    "usize": 1800
   },
   {
-   "name": "_ZN14PlayerCreature6updateEi",
+   "name": "_ZN10ModStation10OnTouchEndEiiPv",
    "pct": 56.7,
    "byte": false,
    "linked": false,
-   "osize": 592,
-   "usize": 580
-  },
-  {
-   "name": "_ZN11AbyssEngine25ImageCreateRegionFromFileEPNS_6EngineEPKctPNS_7Image2DE",
-   "pct": 57.1,
-   "byte": false,
-   "linked": false,
-   "osize": 644,
-   "usize": 624
-  },
-  {
-   "name": "_ZN11SolarSystem17isFullyDiscoveredEv",
-   "pct": 57.1,
-   "byte": false,
-   "linked": false,
-   "osize": 64,
-   "usize": 68
+   "osize": 5404,
+   "usize": 5488
   },
   {
    "name": "_ZN14BoundingSphere12outerCollideEfff",
@@ -1888,20 +1064,20 @@
    "usize": 144
   },
   {
-   "name": "_ZN6SpriteC1EPjiii",
-   "pct": 57.1,
+   "name": "_ZN10RepairBeam6updateEiP5RadarP5LevelP3Hud",
+   "pct": 57.2,
    "byte": false,
    "linked": false,
-   "osize": 96,
-   "usize": 100
+   "osize": 1872,
+   "usize": 1872
   },
   {
-   "name": "_ZN6SpriteC2EPjiii",
-   "pct": 57.1,
+   "name": "_ZN6Player5shootEiixbN11AbyssEngine6AEMath6MatrixE",
+   "pct": 57.4,
    "byte": false,
    "linked": false,
-   "osize": 96,
-   "usize": 100
+   "osize": 468,
+   "usize": 476
   },
   {
    "name": "_ZN15MenuTouchWindow11OnTouchMoveEiiPv",
@@ -1928,20 +1104,12 @@
    "usize": 620
   },
   {
-   "name": "ndk23_newrender",
-   "pct": 57.7,
+   "name": "_ZN11AbyssEngine19ImageCreateFromFileEPNS_6EngineEPKcPPNS_5ImageE",
+   "pct": 57.9,
    "byte": false,
    "linked": false,
-   "osize": 340,
-   "usize": 308
-  },
-  {
-   "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
-   "pct": 58.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1332,
-   "usize": 1288
+   "osize": 760,
+   "usize": 764
   },
   {
    "name": "_ZN12HangarWindow10OnTouchEndEii",
@@ -1960,36 +1128,12 @@
    "usize": 1420
   },
   {
-   "name": "_ZN10MiningGameC1EiiP3Hud",
-   "pct": 58.4,
-   "byte": false,
-   "linked": false,
-   "osize": 972,
-   "usize": 944
-  },
-  {
-   "name": "_ZN10MiningGameC2EiiP3Hud",
-   "pct": 58.4,
-   "byte": false,
-   "linked": false,
-   "osize": 972,
-   "usize": 944
-  },
-  {
    "name": "_ZN5MGame11OnTouchMoveEiiPv",
    "pct": 58.4,
    "byte": false,
    "linked": false,
    "osize": 544,
    "usize": 532
-  },
-  {
-   "name": "_ZN14ScrollTouchBox7setTextEN11AbyssEngine6StringE",
-   "pct": 58.5,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 112
   },
   {
    "name": "_ZN8Standing15getMissionBonusEi",
@@ -2024,12 +1168,12 @@
    "usize": 322
   },
   {
-   "name": "Blowfish_decipher",
+   "name": "_ZN11AbyssEngine6AEMath15MatrixGetLookAtERKNS0_6VectorES3_S3_",
    "pct": 59.0,
    "byte": false,
    "linked": false,
-   "osize": 80,
-   "usize": 84
+   "osize": 172,
+   "usize": 176
   },
   {
    "name": "_ZN14BoundingVolume19getProjectionVectorERKN11AbyssEngine6AEMath6VectorE",
@@ -2040,12 +1184,20 @@
    "usize": 80
   },
   {
-   "name": "_ZN20FileInterfaceAndroid8OpenReadEN11AbyssEngine6StringEibiij",
-   "pct": 59.9,
+   "name": "_ZN14ScrollTouchBox4drawEv",
+   "pct": 59.7,
    "byte": false,
    "linked": false,
-   "osize": 552,
-   "usize": 500
+   "osize": 408,
+   "usize": 400
+  },
+  {
+   "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
+   "pct": 59.8,
+   "byte": false,
+   "linked": false,
+   "osize": 968,
+   "usize": 996
   },
   {
    "name": "_ZN10AEGeometry11getRotationEv",
@@ -2056,44 +1208,12 @@
    "usize": 14
   },
   {
-   "name": "_ZN10ModStation11OnTouchMoveEiiPv",
-   "pct": 60.0,
-   "byte": false,
-   "linked": false,
-   "osize": 384,
-   "usize": 448
-  },
-  {
-   "name": "_ZN14ScrollTouchBox23getRelativeScrollHeightEv",
-   "pct": 60.0,
-   "byte": false,
-   "linked": false,
-   "osize": 80,
-   "usize": 58
-  },
-  {
    "name": "_ZN15IParticleSystem10emitManualEN11AbyssEngine6AEMath6VectorEiPKS2_f",
    "pct": 60.1,
    "byte": false,
    "linked": false,
    "osize": 944,
    "usize": 960
-  },
-  {
-   "name": "_ZN9PlayerEgo20approachDockingPointEP3HudiP5Radar",
-   "pct": 60.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2532,
-   "usize": 2448
-  },
-  {
-   "name": "_ZN9PlayerEgo16handleAutoTurretEi",
-   "pct": 60.8,
-   "byte": false,
-   "linked": false,
-   "osize": 956,
-   "usize": 1000
   },
   {
    "name": "_ZN3Hud22drawChallengeModeScoreEi",
@@ -2120,12 +1240,12 @@
    "usize": 28856
   },
   {
-   "name": "_ZN4Item4initEv",
-   "pct": 61.3,
+   "name": "_ZN10ModStation12OnInitializeEv",
+   "pct": 61.1,
    "byte": false,
    "linked": false,
-   "osize": 82,
-   "usize": 74
+   "osize": 6396,
+   "usize": 6392
   },
   {
    "name": "_ZN6Layout6reloadEv",
@@ -2134,22 +1254,6 @@
    "linked": false,
    "osize": 1064,
    "usize": 952
-  },
-  {
-   "name": "_ZN7Station7addItemEP4Item",
-   "pct": 61.7,
-   "byte": false,
-   "linked": false,
-   "osize": 128,
-   "usize": 120
-  },
-  {
-   "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
-   "pct": 62.0,
-   "byte": false,
-   "linked": false,
-   "osize": 2112,
-   "usize": 2112
   },
   {
    "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
@@ -2176,20 +1280,20 @@
    "usize": 1932
   },
   {
-   "name": "Blowfish_encipher",
-   "pct": 62.3,
-   "byte": false,
-   "linked": false,
-   "osize": 80,
-   "usize": 84
-  },
-  {
    "name": "_ZN8NewsItem5cloneEv",
    "pct": 62.5,
    "byte": false,
    "linked": false,
    "osize": 74,
    "usize": 88
+  },
+  {
+   "name": "_ZN11AbyssEngine10Quaternion4LerpEPKfS2_f",
+   "pct": 62.7,
+   "byte": false,
+   "linked": false,
+   "osize": 120,
+   "usize": 128
   },
   {
    "name": "_ZN3Hud14touchedElementEjj",
@@ -2200,6 +1304,14 @@
    "usize": 1152
   },
   {
+   "name": "_ZN11AbyssEngine13MeshIntersectEffPNS_4MeshE",
+   "pct": 62.9,
+   "byte": false,
+   "linked": false,
+   "osize": 680,
+   "usize": 688
+  },
+  {
    "name": "_ZN5Route11getWaypointEi",
    "pct": 62.9,
    "byte": false,
@@ -2208,12 +1320,12 @@
    "usize": 164
   },
   {
-   "name": "_ZN16SystemPathFinder13getSystemPathEP5ArrayIP11SolarSystemEii",
+   "name": "_ZN10ModStation10OnRender2DEv",
    "pct": 63.0,
    "byte": false,
    "linked": false,
-   "osize": 360,
-   "usize": 376
+   "osize": 1816,
+   "usize": 1824
   },
   {
    "name": "loadAPKAndZip",
@@ -2224,28 +1336,20 @@
    "usize": 68
   },
   {
-   "name": "_ZN4Item15checkCargoSpaceEv",
-   "pct": 63.6,
-   "byte": false,
-   "linked": false,
-   "osize": 56,
-   "usize": 52
-  },
-  {
-   "name": "_ZN6Galaxy8distanceEP11SolarSystemS1_",
-   "pct": 63.6,
-   "byte": false,
-   "linked": false,
-   "osize": 280,
-   "usize": 272
-  },
-  {
    "name": "_ZN6MTitle10OnRender2DEv",
    "pct": 63.8,
    "byte": false,
    "linked": false,
    "osize": 312,
    "usize": 296
+  },
+  {
+   "name": "_ZN11AbyssEngine23ImageCreateFontFromFileEPNS_6EngineEPKctPPNS_9ImageFontE",
+   "pct": 63.9,
+   "byte": false,
+   "linked": false,
+   "osize": 920,
+   "usize": 936
   },
   {
    "name": "_ZN12StatusWindow4drawEv",
@@ -2256,12 +1360,20 @@
    "usize": 6300
   },
   {
-   "name": "_ZN6Player14playShootSoundEiiPN11AbyssEngine6AEMath6VectorEf",
-   "pct": 64.0,
+   "name": "_ZN10ModStation8OnUpdateEv",
+   "pct": 64.1,
    "byte": false,
    "linked": false,
-   "osize": 188,
-   "usize": 180
+   "osize": 3652,
+   "usize": 3704
+  },
+  {
+   "name": "_ZN11TractorBeam6updateEiP5RadarP5LevelP3Hud",
+   "pct": 64.6,
+   "byte": false,
+   "linked": false,
+   "osize": 852,
+   "usize": 836
   },
   {
    "name": "_ZN13LodMeshMergerD1Ev",
@@ -2296,14 +1408,6 @@
    "usize": 2028
   },
   {
-   "name": "_ZN8FileRead16loadStationPartsEii",
-   "pct": 65.0,
-   "byte": false,
-   "linked": false,
-   "osize": 412,
-   "usize": 424
-  },
-  {
    "name": "_ZN10MeshMergerC1EiiPN11AbyssEngine11PaintCanvasEt",
    "pct": 65.1,
    "byte": false,
@@ -2320,12 +1424,12 @@
    "usize": 408
   },
   {
-   "name": "_ZN5MGame9nextCamIdEi",
-   "pct": 65.1,
+   "name": "_ZN8CutScene14checkForTurretEv",
+   "pct": 65.2,
    "byte": false,
    "linked": false,
-   "osize": 152,
-   "usize": 152
+   "osize": 1048,
+   "usize": 1032
   },
   {
    "name": "_ZN9Generator14getItemBuyListEP7Station",
@@ -2360,38 +1464,6 @@
    "usize": 2800
   },
   {
-   "name": "_ZN6SpriteC1Ejii",
-   "pct": 65.9,
-   "byte": false,
-   "linked": false,
-   "osize": 112,
-   "usize": 116
-  },
-  {
-   "name": "_ZN6SpriteC2Ejii",
-   "pct": 65.9,
-   "byte": false,
-   "linked": false,
-   "osize": 112,
-   "usize": 116
-  },
-  {
-   "name": "_ZN7BeamGunC1EiP3GuniP5Level",
-   "pct": 66.2,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 184
-  },
-  {
-   "name": "_ZN7BeamGunC2EiP3GuniP5Level",
-   "pct": 66.2,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 184
-  },
-  {
    "name": "_ZN9PlayerEgo14checkForTurretEv",
    "pct": 66.5,
    "byte": false,
@@ -2408,12 +1480,20 @@
    "usize": 4
   },
   {
-   "name": "_ZN8FileRead18loadStationsBinaryEv",
+   "name": "_ZN9PlayerEgo20approachDockingPointEP3HudiP5Radar",
    "pct": 66.7,
    "byte": false,
    "linked": false,
-   "osize": 256,
-   "usize": 200
+   "osize": 2532,
+   "usize": 2536
+  },
+  {
+   "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
+   "pct": 67.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2112,
+   "usize": 2144
   },
   {
    "name": "_ZN6Status10moveWantedEv",
@@ -2422,6 +1502,14 @@
    "linked": false,
    "osize": 860,
    "usize": 828
+  },
+  {
+   "name": "_ZN10ModStation10OnKeyPressExx",
+   "pct": 67.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2516,
+   "usize": 2488
   },
   {
    "name": "_ZN7StarMap10OnTouchEndEii",
@@ -2464,14 +1552,6 @@
    "usize": 160
   },
   {
-   "name": "_ZN10ModStation10OnKeyPressExx",
-   "pct": 67.6,
-   "byte": false,
-   "linked": false,
-   "osize": 2516,
-   "usize": 2484
-  },
-  {
    "name": "_ZN5Level11createSceneEv",
    "pct": 67.6,
    "byte": false,
@@ -2488,12 +1568,20 @@
    "usize": 5184
   },
   {
-   "name": "_ZN12ImageFactory8drawItemEiii",
-   "pct": 68.2,
+   "name": "_ZN9ObjectGun6renderEv",
+   "pct": 67.7,
    "byte": false,
    "linked": false,
-   "osize": 112,
-   "usize": 108
+   "osize": 1456,
+   "usize": 1456
+  },
+  {
+   "name": "_ZN5Level10assignGunsEv",
+   "pct": 68.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2948,
+   "usize": 2916
   },
   {
    "name": "_ZN3Hud20drawOrbitInformationEv",
@@ -2504,20 +1592,20 @@
    "usize": 616
   },
   {
-   "name": "_ZN9PlayerEgo16approachAsteroidEP3HudiP5Radar",
-   "pct": 68.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1156,
-   "usize": 1164
-  },
-  {
    "name": "_ZN14MissionsWindow10OnTouchEndEii",
    "pct": 68.6,
    "byte": false,
    "linked": false,
    "osize": 1088,
    "usize": 1080
+  },
+  {
+   "name": "_ZN10ModStation11OnTouchMoveEiiPv",
+   "pct": 68.8,
+   "byte": false,
+   "linked": false,
+   "osize": 384,
+   "usize": 444
   },
   {
    "name": "_ZN11TouchSliderC1Eiiif",
@@ -2592,14 +1680,6 @@
    "usize": 60
   },
   {
-   "name": "_ZN11AbyssEngine12ConfigReader9ParseFileENS_6StringE",
-   "pct": 70.1,
-   "byte": false,
-   "linked": false,
-   "osize": 280,
-   "usize": 264
-  },
-  {
    "name": "_ZN17PlayerFixedObject7collideEfff",
    "pct": 70.1,
    "byte": false,
@@ -2656,20 +1736,20 @@
    "usize": 1328
   },
   {
-   "name": "_Z23ActualizeMouseVisibiltyi",
-   "pct": 71.1,
-   "byte": false,
-   "linked": false,
-   "osize": 592,
-   "usize": 576
-  },
-  {
    "name": "_ZN12MarqueeImage6updateEi",
    "pct": 71.1,
    "byte": false,
    "linked": false,
    "osize": 88,
    "usize": 84
+  },
+  {
+   "name": "_Z23ActualizeMouseVisibiltyi",
+   "pct": 71.3,
+   "byte": false,
+   "linked": false,
+   "osize": 592,
+   "usize": 592
   },
   {
    "name": "_ZN5Level13createWingmenEv",
@@ -2741,7 +1821,7 @@
    "byte": false,
    "linked": false,
    "osize": 8852,
-   "usize": 8816
+   "usize": 8820
   },
   {
    "name": "_ZN5Trail6updateEffffff",
@@ -2758,6 +1838,22 @@
    "linked": false,
    "osize": 88,
    "usize": 92
+  },
+  {
+   "name": "_Z10keyPressedPN11AbyssEngine6EngineEi",
+   "pct": 72.8,
+   "byte": false,
+   "linked": false,
+   "osize": 708,
+   "usize": 704
+  },
+  {
+   "name": "_ZN8FileRead17loadSystemsBinaryEv",
+   "pct": 73.0,
+   "byte": false,
+   "linked": false,
+   "osize": 716,
+   "usize": 732
   },
   {
    "name": "_ZN11AbyssEngine12CurveReleaseEPPNS_5CurveE",
@@ -2784,44 +1880,36 @@
    "usize": 268
   },
   {
-   "name": "_ZN11AbyssEngine22MeshConvertToVBOInternEPNS_4MeshE",
-   "pct": 74.0,
-   "byte": false,
-   "linked": false,
-   "osize": 720,
-   "usize": 664
-  },
-  {
-   "name": "_ZN16SystemPathFinder13constructPathEP4Node",
+   "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
    "pct": 74.2,
    "byte": false,
    "linked": false,
-   "osize": 122,
-   "usize": 124
+   "osize": 1332,
+   "usize": 1332
   },
   {
-   "name": "_ZN6Player5shootEixbN11AbyssEngine6AEMath6MatrixE",
+   "name": "_ZN7Station7addItemEP4Item",
    "pct": 74.2,
    "byte": false,
    "linked": false,
-   "osize": 412,
-   "usize": 400
+   "osize": 128,
+   "usize": 126
   },
   {
-   "name": "_ZN11TractorBeamC1EP10AEGeometryi",
-   "pct": 74.6,
+   "name": "_ZN7BeamGunC1EiP3GuniP5Level",
+   "pct": 74.4,
    "byte": false,
    "linked": false,
-   "osize": 92,
-   "usize": 76
+   "osize": 224,
+   "usize": 216
   },
   {
-   "name": "_ZN11TractorBeamC2EP10AEGeometryi",
-   "pct": 74.6,
+   "name": "_ZN7BeamGunC2EiP3GuniP5Level",
+   "pct": 74.4,
    "byte": false,
    "linked": false,
-   "osize": 92,
-   "usize": 76
+   "osize": 224,
+   "usize": 216
   },
   {
    "name": "_ZN11AbyssEngine18computeFloatStringEfiPiS0_i",
@@ -2832,6 +1920,14 @@
    "usize": 416
   },
   {
+   "name": "_ZN4Ship12refreshValueEv",
+   "pct": 74.7,
+   "byte": false,
+   "linked": false,
+   "osize": 924,
+   "usize": 924
+  },
+  {
    "name": "_ZN9RocketGun9seekEnemyEii",
    "pct": 74.7,
    "byte": false,
@@ -2840,28 +1936,12 @@
    "usize": 340
   },
   {
-   "name": "_ZN11AbyssEngine6String3SetEf",
-   "pct": 74.8,
-   "byte": false,
-   "linked": false,
-   "osize": 460,
-   "usize": 464
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine14SetTextureSlotEjj",
    "pct": 75.0,
    "byte": false,
    "linked": false,
    "osize": 196,
    "usize": 196
-  },
-  {
-   "name": "_ZN7Station7addShipEP4Ship",
-   "pct": 75.0,
-   "byte": false,
-   "linked": false,
-   "osize": 110,
-   "usize": 96
   },
   {
    "name": "_ZN11TouchButton4drawEv",
@@ -2880,22 +1960,6 @@
    "usize": 2928
   },
   {
-   "name": "_ZN11AbyssEngine6AEMath7BSphere5MergeERKS1_",
-   "pct": 75.7,
-   "byte": false,
-   "linked": false,
-   "osize": 324,
-   "usize": 304
-  },
-  {
-   "name": "_ZN11AbyssEngine27TextureCreateFromFileInternEPNS_6EngineEPKcPFvPNS_5ImageEPvES6_PjfPNS_15AELoadedTextureEb",
-   "pct": 76.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2036,
-   "usize": 1972
-  },
-  {
    "name": "_ZN11AbyssEngine8MaterialC2EPS0_",
    "pct": 76.2,
    "byte": false,
@@ -2904,12 +1968,12 @@
    "usize": 276
   },
   {
-   "name": "_ZN11AbyssEngine9Transform10InCameraVFEPNS_6AEMath6MatrixEPNS_6CameraE",
-   "pct": 76.4,
+   "name": "_ZN12ImageFactory9loadImageEiii",
+   "pct": 76.2,
    "byte": false,
    "linked": false,
-   "osize": 304,
-   "usize": 304
+   "osize": 268,
+   "usize": 236
   },
   {
    "name": "_ZN17ScrollTouchWindowC1Eiiiib",
@@ -2952,6 +2016,14 @@
    "usize": 824
   },
   {
+   "name": "_ZN6Player5shootEixbN11AbyssEngine6AEMath6MatrixE",
+   "pct": 76.9,
+   "byte": false,
+   "linked": false,
+   "osize": 412,
+   "usize": 400
+  },
+  {
    "name": "_ZN11AbyssEngine11PaintCanvasC1EPNS_6EngineE",
    "pct": 77.0,
    "byte": false,
@@ -2974,14 +2046,6 @@
    "linked": false,
    "osize": 360,
    "usize": 344
-  },
-  {
-   "name": "_ZN6Player16calcWeaponSoundsEi",
-   "pct": 77.0,
-   "byte": false,
-   "linked": false,
-   "osize": 412,
-   "usize": 408
   },
   {
    "name": "_ZN7StarMapC1EbP7Missionbi",
@@ -3008,28 +2072,12 @@
    "usize": 1892
   },
   {
-   "name": "_ZN16SystemPathFinder6searchEP4NodeS1_",
-   "pct": 77.2,
-   "byte": false,
-   "linked": false,
-   "osize": 200,
-   "usize": 204
-  },
-  {
    "name": "_ZN14DialogueWindow11loadContentEv",
    "pct": 77.3,
    "byte": false,
    "linked": false,
    "osize": 3484,
    "usize": 3468
-  },
-  {
-   "name": "_ZN10LODManager11forceUpdateEib",
-   "pct": 77.7,
-   "byte": false,
-   "linked": false,
-   "osize": 192,
-   "usize": 184
   },
   {
    "name": "_ZN6Status13departStationEP7Station",
@@ -3040,20 +2088,20 @@
    "usize": 996
   },
   {
-   "name": "_ZN8GameText12ReadLangFileEji",
-   "pct": 78.1,
-   "byte": false,
-   "linked": false,
-   "osize": 332,
-   "usize": 328
-  },
-  {
    "name": "_ZN9Generator12createAgentsEP7Station",
    "pct": 78.4,
    "byte": false,
    "linked": false,
    "osize": 1464,
    "usize": 1476
+  },
+  {
+   "name": "_ZN10ModStation12OnTouchBeginEiiPv",
+   "pct": 78.6,
+   "byte": false,
+   "linked": false,
+   "osize": 468,
+   "usize": 516
   },
   {
    "name": "_ZN14BoundingVolumeC2Effffff",
@@ -3080,12 +2128,44 @@
    "usize": 504
   },
   {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 79.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2700
+  },
+  {
    "name": "_ZN4Item12extractItemsEP5ArrayIPS_Eb",
    "pct": 79.5,
    "byte": false,
    "linked": false,
    "osize": 104,
    "usize": 106
+  },
+  {
+   "name": "_ZN8FileRead15loadNamesBinaryEibb",
+   "pct": 79.5,
+   "byte": false,
+   "linked": false,
+   "osize": 884,
+   "usize": 880
+  },
+  {
+   "name": "_ZN11AbyssEngine12ConfigReader10GetNewLineEv",
+   "pct": 79.6,
+   "byte": false,
+   "linked": false,
+   "osize": 276,
+   "usize": 256
+  },
+  {
+   "name": "_ZN10ModStation10checkHintsEv",
+   "pct": 79.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2748,
+   "usize": 2776
   },
   {
    "name": "_ZN15MenuTouchWindow19createRecordButtonsEb",
@@ -3110,14 +2190,6 @@
    "linked": false,
    "osize": 608,
    "usize": 604
-  },
-  {
-   "name": "_ZN10ModStation10checkHintsEv",
-   "pct": 79.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2748,
-   "usize": 2772
   },
   {
    "name": "_ZN5Level9enemyDiedEib",
@@ -3168,20 +2240,20 @@
    "usize": 292
   },
   {
-   "name": "_ZN11AbyssEnginepsERKNS_6StringE",
-   "pct": 80.0,
-   "byte": false,
-   "linked": false,
-   "osize": 12,
-   "usize": 12
-  },
-  {
    "name": "_ZN9PlayerEgo10stopMiningEv",
    "pct": 80.1,
    "byte": false,
    "linked": false,
    "osize": 524,
    "usize": 524
+  },
+  {
+   "name": "_ZN9PlayerEgo16handleAutoTurretEi",
+   "pct": 80.1,
+   "byte": false,
+   "linked": false,
+   "osize": 956,
+   "usize": 960
   },
   {
    "name": "ndk23_handleAcceleration",
@@ -3240,14 +2312,6 @@
    "usize": 2228
   },
   {
-   "name": "_ZN12ImageFactory8drawShipEiii",
-   "pct": 81.2,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 140
-  },
-  {
    "name": "_ZN6Status17activateNewWantedEv",
    "pct": 81.2,
    "byte": false,
@@ -3262,6 +2326,14 @@
    "linked": false,
    "osize": 172,
    "usize": 172
+  },
+  {
+   "name": "_ZN11AbyssEngine27TextureCreateFromFileInternEPNS_6EngineEPKcPFvPNS_5ImageEPvES6_PjfPNS_15AELoadedTextureEb",
+   "pct": 81.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2036,
+   "usize": 2028
   },
   {
    "name": "_ZN5Level15createGasCloudsEv",
@@ -3286,6 +2358,14 @@
    "linked": false,
    "osize": 1596,
    "usize": 1592
+  },
+  {
+   "name": "_ZN8FileRead15loadSpacePointsEii",
+   "pct": 82.5,
+   "byte": false,
+   "linked": false,
+   "osize": 648,
+   "usize": 648
   },
   {
    "name": "_ZN11SpaceLounge10onKeyPressEi",
@@ -3328,6 +2408,14 @@
    "usize": 704
   },
   {
+   "name": "_ZN6Player14playShootSoundEiiPN11AbyssEngine6AEMath6VectorEf",
+   "pct": 83.1,
+   "byte": false,
+   "linked": false,
+   "osize": 188,
+   "usize": 188
+  },
+  {
    "name": "_ZN11MovingStars6updateEiN11AbyssEngine6AEMath6MatrixEbf",
    "pct": 83.2,
    "byte": false,
@@ -3336,20 +2424,20 @@
    "usize": 1352
   },
   {
-   "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 16,
-   "usize": 16
-  },
-  {
    "name": "_ZN11SpaceLounge9startChatEv",
    "pct": 83.3,
    "byte": false,
    "linked": false,
    "osize": 14450,
    "usize": 14398
+  },
+  {
+   "name": "_ZN7Station7addShipEP4Ship",
+   "pct": 83.3,
+   "byte": false,
+   "linked": false,
+   "osize": 110,
+   "usize": 106
   },
   {
    "name": "_ZN9RocketGunC1EiP3GuniijibP5Level",
@@ -3376,14 +2464,6 @@
    "usize": 1408
   },
   {
-   "name": "_ZN8CutScene10initializeEv",
-   "pct": 84.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1088,
-   "usize": 1096
-  },
-  {
    "name": "_ZN10MeshMerger4initEv",
    "pct": 84.1,
    "byte": false,
@@ -3398,6 +2478,38 @@
    "linked": false,
    "osize": 620,
    "usize": 616
+  },
+  {
+   "name": "_ZN10MiningGameC1EiiP3Hud",
+   "pct": 84.2,
+   "byte": false,
+   "linked": false,
+   "osize": 972,
+   "usize": 984
+  },
+  {
+   "name": "_ZN10MiningGameC2EiiP3Hud",
+   "pct": 84.2,
+   "byte": false,
+   "linked": false,
+   "osize": 972,
+   "usize": 984
+  },
+  {
+   "name": "_ZN17ScrollTouchWindow4drawEv",
+   "pct": 84.5,
+   "byte": false,
+   "linked": false,
+   "osize": 340,
+   "usize": 340
+  },
+  {
+   "name": "_ZN5MGame22startChargingJumpDriveEv",
+   "pct": 84.5,
+   "byte": false,
+   "linked": false,
+   "osize": 404,
+   "usize": 412
   },
   {
    "name": "_ZN9Explosion6renderEv",
@@ -3416,14 +2528,6 @@
    "usize": 2272
   },
   {
-   "name": "_ZN12WantedWindow10OnTouchEndEii",
-   "pct": 85.0,
-   "byte": false,
-   "linked": false,
-   "osize": 924,
-   "usize": 916
-  },
-  {
    "name": "_ZN10PlayerJunk6updateEi",
    "pct": 85.1,
    "byte": false,
@@ -3438,14 +2542,6 @@
    "linked": false,
    "osize": 792,
    "usize": 772
-  },
-  {
-   "name": "_ZN14ScrollTouchBox6updateEi",
-   "pct": 85.1,
-   "byte": false,
-   "linked": false,
-   "osize": 138,
-   "usize": 130
   },
   {
    "name": "_ZN3Hud8drawMenuEi",
@@ -3472,6 +2568,22 @@
    "usize": 248
   },
   {
+   "name": "_ZN14PlayerCreature6unhookEv",
+   "pct": 85.7,
+   "byte": false,
+   "linked": false,
+   "osize": 24,
+   "usize": 24
+  },
+  {
+   "name": "_ZN12WantedWindow10OnTouchEndEii",
+   "pct": 85.8,
+   "byte": false,
+   "linked": false,
+   "osize": 924,
+   "usize": 920
+  },
+  {
    "name": "_ZN13RecordHandler11readMissionEj",
    "pct": 86.2,
    "byte": false,
@@ -3488,12 +2600,52 @@
    "usize": 508
   },
   {
-   "name": "_ZN17PlayerFixedObject6updateEi",
+   "name": "_ZN10ModStationC1Ev",
    "pct": 86.7,
    "byte": false,
    "linked": false,
-   "osize": 2768,
-   "usize": 2748
+   "osize": 1008,
+   "usize": 1008
+  },
+  {
+   "name": "_ZN10ModStationC2Ev",
+   "pct": 86.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1008,
+   "usize": 1008
+  },
+  {
+   "name": "_ZN6Galaxy10getStationEi",
+   "pct": 86.7,
+   "byte": false,
+   "linked": false,
+   "osize": 76,
+   "usize": 76
+  },
+  {
+   "name": "_ZN14PlayerCreature6updateEi",
+   "pct": 86.8,
+   "byte": false,
+   "linked": false,
+   "osize": 592,
+   "usize": 584
+  },
+  {
+   "name": "_ZN11AbyssEngine9TransformC1EPS0_",
+   "pct": 86.9,
+   "byte": false,
+   "linked": false,
+   "osize": 596,
+   "usize": 596
+  },
+  {
+   "name": "_ZN11AbyssEngine9TransformC2EPS0_",
+   "pct": 86.9,
+   "byte": false,
+   "linked": false,
+   "osize": 596,
+   "usize": 596
   },
   {
    "name": "_ZN13AutoPilotList4drawEv",
@@ -3504,36 +2656,12 @@
    "usize": 232
   },
   {
-   "name": "_ZN11AbyssEngineplERKNS_6StringERKf",
-   "pct": 87.2,
-   "byte": false,
-   "linked": false,
-   "osize": 120,
-   "usize": 120
-  },
-  {
-   "name": "_ZN11AbyssEngineplERKNS_6StringERKi",
-   "pct": 87.2,
-   "byte": false,
-   "linked": false,
-   "osize": 120,
-   "usize": 120
-  },
-  {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",
    "pct": 87.3,
    "byte": false,
    "linked": false,
    "osize": 3488,
    "usize": 3480
-  },
-  {
-   "name": "_ZN9PlayerEgo10handleShipEi",
-   "pct": 87.3,
-   "byte": false,
-   "linked": false,
-   "osize": 896,
-   "usize": 904
   },
   {
    "name": "_ZN9Generator11getLootListEii",
@@ -3544,12 +2672,12 @@
    "usize": 500
   },
   {
-   "name": "_ZN11AbyssEngineplERKNS_6StringERKx",
+   "name": "_ZN20FileInterfaceAndroid8OpenReadEN11AbyssEngine6StringEibiij",
    "pct": 87.5,
    "byte": false,
    "linked": false,
-   "osize": 124,
-   "usize": 124
+   "osize": 552,
+   "usize": 548
   },
   {
    "name": "_ZN12HangarWindow10selectItemEP8ListItem",
@@ -3632,28 +2760,12 @@
    "usize": 756
   },
   {
-   "name": "_Z10MouseInputii",
-   "pct": 88.6,
-   "byte": false,
-   "linked": false,
-   "osize": 84,
-   "usize": 84
-  },
-  {
    "name": "_ZN5Level15createAsteroidsEv",
    "pct": 88.7,
    "byte": false,
    "linked": false,
    "osize": 1588,
    "usize": 1588
-  },
-  {
-   "name": "_ZN11AbyssEngineplERKNS_6StringES2_",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 92
   },
   {
    "name": "_ZN5MGame15freeCamTouchEndEiiPv",
@@ -3678,6 +2790,30 @@
    "linked": false,
    "osize": 412,
    "usize": 412
+  },
+  {
+   "name": "_ZN11AbyssEngine9TransformC1Ev",
+   "pct": 89.2,
+   "byte": false,
+   "linked": false,
+   "osize": 480,
+   "usize": 480
+  },
+  {
+   "name": "_ZN11AbyssEngine9TransformC2Ev",
+   "pct": 89.2,
+   "byte": false,
+   "linked": false,
+   "osize": 480,
+   "usize": 480
+  },
+  {
+   "name": "_ZN7BeamGun6updateEi",
+   "pct": 89.2,
+   "byte": false,
+   "linked": false,
+   "osize": 636,
+   "usize": 636
   },
   {
    "name": "_ZN10HangarList11fillBuyListEP8ListItem",
@@ -3720,6 +2856,14 @@
    "usize": 352
   },
   {
+   "name": "_ZN7Globals16longToTimeStringExRN11AbyssEngine6StringE",
+   "pct": 90.0,
+   "byte": false,
+   "linked": false,
+   "osize": 724,
+   "usize": 724
+  },
+  {
    "name": "_ZN8FileRead10loadWantedEv",
    "pct": 90.5,
    "byte": false,
@@ -3734,14 +2878,6 @@
    "linked": false,
    "osize": 116,
    "usize": 120
-  },
-  {
-   "name": "ndk23_handleTouchPadEvent",
-   "pct": 90.7,
-   "byte": false,
-   "linked": false,
-   "osize": 156,
-   "usize": 156
   },
   {
    "name": "_ZN6Sparks6updateEi",
@@ -3760,6 +2896,14 @@
    "usize": 236
   },
   {
+   "name": "_ZN9PlayerEgo16approachAsteroidEP3HudiP5Radar",
+   "pct": 91.2,
+   "byte": false,
+   "linked": false,
+   "osize": 1156,
+   "usize": 1156
+  },
+  {
    "name": "_ZN20ParticleSystemSprite22updateAreaExitParticleEif",
    "pct": 91.6,
    "byte": false,
@@ -3776,36 +2920,12 @@
    "usize": 968
   },
   {
-   "name": "_ZN11AbyssEngineplERKfRKNS_6StringE",
+   "name": "_ZN12WantedWindow4initEv",
    "pct": 91.7,
    "byte": false,
    "linked": false,
-   "osize": 92,
-   "usize": 92
-  },
-  {
-   "name": "_ZN11AbyssEngineplERKiRKNS_6StringE",
-   "pct": 91.7,
-   "byte": false,
-   "linked": false,
-   "osize": 92,
-   "usize": 92
-  },
-  {
-   "name": "_ZN6AEFile15collectPakFilesERKN11AbyssEngine6StringE",
-   "pct": 91.7,
-   "byte": false,
-   "linked": false,
-   "osize": 244,
-   "usize": 244
-  },
-  {
-   "name": "_ZN11AbyssEngineplERKxRKNS_6StringE",
-   "pct": 91.9,
-   "byte": false,
-   "linked": false,
-   "osize": 96,
-   "usize": 96
+   "osize": 908,
+   "usize": 904
   },
   {
    "name": "_ZN18ParticleSystemMesh12updateSingleEif",
@@ -3824,6 +2944,22 @@
    "usize": 696
   },
   {
+   "name": "_ZN5MGame9nextCamIdEi",
+   "pct": 92.1,
+   "byte": false,
+   "linked": false,
+   "osize": 152,
+   "usize": 152
+  },
+  {
+   "name": "_ZN8GameText12ReadLangFileEji",
+   "pct": 92.1,
+   "byte": false,
+   "linked": false,
+   "osize": 332,
+   "usize": 332
+  },
+  {
    "name": "_ZN12HangarWindow12OnTouchBeginEii",
    "pct": 92.5,
    "byte": false,
@@ -3840,6 +2976,14 @@
    "usize": 816
   },
   {
+   "name": "_ZN6AEFile15collectPakFilesERKN11AbyssEngine6StringE",
+   "pct": 92.7,
+   "byte": false,
+   "linked": false,
+   "osize": 244,
+   "usize": 244
+  },
+  {
    "name": "_ZN11AbyssEngine6Engine14SetTexturesExtEjz",
    "pct": 93.0,
    "byte": false,
@@ -3848,20 +2992,12 @@
    "usize": 312
   },
   {
-   "name": "_ZN7MineGunC1EP3GuniiiP5Level",
-   "pct": 93.2,
+   "name": "Blowfish_decipher",
+   "pct": 93.3,
    "byte": false,
    "linked": false,
-   "osize": 284,
-   "usize": 288
-  },
-  {
-   "name": "_ZN7MineGunC2EP3GuniiiP5Level",
-   "pct": 93.2,
-   "byte": false,
-   "linked": false,
-   "osize": 284,
-   "usize": 288
+   "osize": 80,
+   "usize": 80
   },
   {
    "name": "_ZN13RecordHandler16recordStoreWriteEi",
@@ -3910,6 +3046,22 @@
    "linked": false,
    "osize": 704,
    "usize": 704
+  },
+  {
+   "name": "_ZN14PlayerCreatureC1EiiP6PlayerP10AEGeometryfff",
+   "pct": 93.8,
+   "byte": false,
+   "linked": false,
+   "osize": 204,
+   "usize": 204
+  },
+  {
+   "name": "_ZN14PlayerCreatureC2EiiP6PlayerP10AEGeometryfff",
+   "pct": 93.8,
+   "byte": false,
+   "linked": false,
+   "osize": 204,
+   "usize": 204
   },
   {
    "name": "_ZN15IParticleSystem9rotateUVsEPfiS0_",
@@ -3982,14 +3134,6 @@
    "linked": false,
    "osize": 60,
    "usize": 60
-  },
-  {
-   "name": "_Z13loadingScreenPN11AbyssEngine11PaintCanvasEiPv",
-   "pct": 94.9,
-   "byte": false,
-   "linked": false,
-   "osize": 736,
-   "usize": 736
   },
   {
    "name": "_ZN11HackingGame6reInitEv",
@@ -4072,14 +3216,6 @@
    "usize": 412
   },
   {
-   "name": "_ZN11AbyssEngine18SpriteSystemCreateEPNS_6EngineEtbPPNS_12SpriteSystemE",
-   "pct": 95.9,
-   "byte": false,
-   "linked": false,
-   "osize": 400,
-   "usize": 400
-  },
-  {
    "name": "_ZN11AbyssEngine6EngineC1Ev",
    "pct": 96.2,
    "byte": false,
@@ -4128,6 +3264,14 @@
    "usize": 80
   },
   {
+   "name": "_ZN11AbyssEngine18SpriteSystemCreateEPNS_6EngineEtbPPNS_12SpriteSystemE",
+   "pct": 96.6,
+   "byte": false,
+   "linked": false,
+   "osize": 400,
+   "usize": 400
+  },
+  {
    "name": "_ZN18ParticleSystemMesh16updateTrailEdgesEii",
    "pct": 96.7,
    "byte": false,
@@ -4168,12 +3312,20 @@
    "usize": 448
   },
   {
-   "name": "_ZN6AEFile22collectFilesInPakFilesERN11AbyssEngine6StringE",
-   "pct": 97.1,
+   "name": "_ZN10LODManager11forceUpdateEib",
+   "pct": 97.2,
    "byte": false,
    "linked": false,
-   "osize": 372,
-   "usize": 372
+   "osize": 192,
+   "usize": 192
+  },
+  {
+   "name": "_ZN6AEFile4OpenERN11AbyssEngine6StringENS_12FileOpenTypeEPj",
+   "pct": 97.2,
+   "byte": false,
+   "linked": false,
+   "osize": 516,
+   "usize": 516
   },
   {
    "name": "_ZN12PlayerTurretC1EiP6PlayerP10AEGeometryfff",
@@ -4206,14 +3358,6 @@
    "linked": false,
    "osize": 572,
    "usize": 572
-  },
-  {
-   "name": "_ZN6Galaxy24getAsteroidProbabilitiesEP7Station",
-   "pct": 97.5,
-   "byte": false,
-   "linked": false,
-   "osize": 432,
-   "usize": 432
   },
   {
    "name": "_ZN12StatusWindow10OnTouchEndEii",
@@ -4288,14 +3432,6 @@
    "usize": 264
   },
   {
-   "name": "_ZN6Galaxy22getPlasmaProbabilitiesEP7Station",
-   "pct": 97.8,
-   "byte": false,
-   "linked": false,
-   "osize": 388,
-   "usize": 388
-  },
-  {
    "name": "_ZN18TargetFollowCameraC1EjP10AEGeometryN11AbyssEngine6AEMath6VectorES4_",
    "pct": 97.9,
    "byte": false,
@@ -4328,30 +3464,6 @@
    "usize": 128
   },
   {
-   "name": "_ZN8FileRead18loadWreckCollisionEi",
-   "pct": 98.1,
-   "byte": false,
-   "linked": false,
-   "osize": 284,
-   "usize": 284
-  },
-  {
-   "name": "_ZN8FileRead19loadStaticCollisionEi",
-   "pct": 98.1,
-   "byte": false,
-   "linked": false,
-   "osize": 284,
-   "usize": 284
-  },
-  {
-   "name": "_ZN8FileRead20loadStationCollisionEi",
-   "pct": 98.1,
-   "byte": false,
-   "linked": false,
-   "osize": 284,
-   "usize": 284
-  },
-  {
    "name": "_ZN14PlayerGasCloud6updateEi",
    "pct": 98.2,
    "byte": false,
@@ -4360,12 +3472,12 @@
    "usize": 1124
   },
   {
-   "name": "_ZN9PlayerEgo5shakeEi",
-   "pct": 98.2,
+   "name": "_ZN17PlayerFixedObject6updateEi",
+   "pct": 98.3,
    "byte": false,
    "linked": false,
-   "osize": 172,
-   "usize": 172
+   "osize": 2768,
+   "usize": 2768
   },
   {
    "name": "_ZN5MGame17freeCamTouchBeginEiiPv",
@@ -4384,36 +3496,20 @@
    "usize": 202
   },
   {
-   "name": "_ZN5MGame9OnSuspendEv",
-   "pct": 98.5,
+   "name": "InitializeBlowfish",
+   "pct": 98.8,
    "byte": false,
    "linked": false,
-   "osize": 192,
-   "usize": 192
+   "osize": 416,
+   "usize": 416
   },
   {
    "name": "_ZN5MGame12OnInitializeEv",
-   "pct": 98.7,
+   "pct": 98.8,
    "byte": false,
    "linked": false,
    "osize": 2080,
    "usize": 2080
-  },
-  {
-   "name": "_ZN6PlayerC1Eiiiii",
-   "pct": 98.8,
-   "byte": false,
-   "linked": false,
-   "osize": 448,
-   "usize": 448
-  },
-  {
-   "name": "_ZN6PlayerC2Eiiiii",
-   "pct": 98.8,
-   "byte": false,
-   "linked": false,
-   "osize": 448,
-   "usize": 448
   },
   {
    "name": "_ZN11AbyssEngine6String9SplitTagsES0_",
@@ -4424,12 +3520,12 @@
    "usize": 456
   },
   {
-   "name": "_ZN9FModSound13freeAllEventsEv",
-   "pct": 99.0,
+   "name": "_ZN9FModSound23updateEvent3DAttributesEPN4FMOD5EventEiPN11AbyssEngine6AEMath6VectorES6_b",
+   "pct": 99.1,
    "byte": false,
    "linked": false,
-   "osize": 260,
-   "usize": 260
+   "osize": 584,
+   "usize": 584
   },
   {
    "name": "_ZN3Hud8hudEventEiP9PlayerEgoi",
@@ -4502,6 +3598,22 @@
    "linked": false,
    "osize": 21562,
    "usize": 21562
+  },
+  {
+   "name": "_ZN7Globals12getShipGroupEiib",
+   "pct": 99.9,
+   "byte": false,
+   "linked": false,
+   "osize": 1856,
+   "usize": 1856
+  },
+  {
+   "name": "Blowfish_encipher",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 80,
+   "usize": 80
   },
   {
    "name": "CRYPTO_memcmp",
@@ -4880,6 +3992,14 @@
    "usize": 6
   },
   {
+   "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 16,
+   "usize": 16
+  },
+  {
    "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU",
    "pct": 100.0,
    "byte": false,
@@ -5056,6 +4176,14 @@
    "usize": 272
   },
   {
+   "name": "_Z10MouseInputii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 84,
+   "usize": 84
+  },
+  {
    "name": "_Z10MouseWheelff",
    "pct": 100.0,
    "byte": false,
@@ -5174,6 +4302,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_Z11keyReleasedPN11AbyssEngine6EngineEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 396,
+   "usize": 396
   },
   {
    "name": "_Z12ArrayReleaseIN11AbyssEngine6AEMath6MatrixEEvR5ArrayIT_E",
@@ -7424,6 +6560,14 @@
    "usize": 6
   },
   {
+   "name": "_ZN10MiningGame8render2DEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1456,
+   "usize": 1456
+  },
+  {
    "name": "_ZN10MiningGameD1Ev",
    "pct": 100.0,
    "byte": false,
@@ -7470,6 +6614,14 @@
    "linked": true,
    "osize": 468,
    "usize": 468
+  },
+  {
+   "name": "_ZN10ModStation11showDlcMenuEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 224,
+   "usize": 224
   },
   {
    "name": "_ZN10ModStation12OnKeyReleaseExx",
@@ -8248,6 +7400,14 @@
    "usize": 76
   },
   {
+   "name": "_ZN11AbyssEngine10Quaternion3DotERKS0_S2_",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 54,
+   "usize": 54
+  },
+  {
    "name": "_ZN11AbyssEngine10Quaternion3SetENS_6AEMath6VectorE",
    "pct": 100.0,
    "byte": false,
@@ -8262,6 +7422,14 @@
    "linked": true,
    "osize": 532,
    "usize": 532
+  },
+  {
+   "name": "_ZN11AbyssEngine10Quaternion4LerpERKS0_S2_f",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 104,
+   "usize": 104
   },
   {
    "name": "_ZN11AbyssEngine10QuaternionC1ENS_6AEMath6VectorE",
@@ -10248,6 +9416,30 @@
    "usize": 84
   },
   {
+   "name": "_ZN11AbyssEngine12ConfigReader9ParseFileENS_6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 280,
+   "usize": 280
+  },
+  {
+   "name": "_ZN11AbyssEngine12ConfigReaderC1EPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 216,
+   "usize": 216
+  },
+  {
+   "name": "_ZN11AbyssEngine12ConfigReaderC2EPNS_6EngineE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 216,
+   "usize": 216
+  },
+  {
    "name": "_ZN11AbyssEngine12ConfigReaderD1Ev",
    "pct": 100.0,
    "byte": false,
@@ -11752,6 +10944,14 @@
    "usize": 128
   },
   {
+   "name": "_ZN11AbyssEngine17MeshReleaseInternEPNS_6EngineEPPNS_4MeshE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 340,
+   "usize": 340
+  },
+  {
    "name": "_ZN11AbyssEngine17ResourceTransformD2Ev",
    "pct": 100.0,
    "byte": false,
@@ -12864,6 +12064,14 @@
    "usize": 56
   },
   {
+   "name": "_ZN11AbyssEngine22MeshConvertToVBOInternEPNS_4MeshE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 720,
+   "usize": 720
+  },
+  {
    "name": "_ZN11AbyssEngine22SimpleRefractionShader11SetInActiveEv",
    "pct": 100.0,
    "byte": false,
@@ -12990,6 +12198,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN11AbyssEngine25ImageCreateRegionFromFileEPNS_6EngineEPKctPNS_7Image2DE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 644,
+   "usize": 644
   },
   {
    "name": "_ZN11AbyssEngine26CameraIsPointinViewFrustumERKNS_6AEMath6VectorEPNS0_6MatrixEPNS_6CameraE",
@@ -13166,6 +12382,14 @@
    "linked": true,
    "osize": 158,
    "usize": 158
+  },
+  {
+   "name": "_ZN11AbyssEngine6AEMath16MatrixSetScalingERNS0_6MatrixEfff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 196,
+   "usize": 196
   },
   {
    "name": "_ZN11AbyssEngine6AEMath17MatrixGetPositionERKNS0_6MatrixE",
@@ -13406,6 +12630,14 @@
    "linked": true,
    "osize": 50,
    "usize": 50
+  },
+  {
+   "name": "_ZN11AbyssEngine6AEMath7BSphere5MergeERKS1_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 324,
+   "usize": 324
   },
   {
    "name": "_ZN11AbyssEngine6AEMath7BSphereaSERKS1_",
@@ -14320,6 +13552,14 @@
    "usize": 172
   },
   {
+   "name": "_ZN11AbyssEngine6String3SetEf",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 460,
+   "usize": 460
+  },
+  {
    "name": "_ZN11AbyssEngine6String3SetEx",
    "pct": 100.0,
    "byte": false,
@@ -15024,6 +14264,14 @@
    "usize": 36
   },
   {
+   "name": "_ZN11AbyssEngine9Transform10InCameraVFEPNS_6AEMath6MatrixEPNS_6CameraE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 304,
+   "usize": 304
+  },
+  {
    "name": "_ZN11AbyssEngine9Transform10SetVFCFlagEb",
    "pct": 100.0,
    "byte": false,
@@ -15176,6 +14424,14 @@
    "usize": 64
   },
   {
+   "name": "_ZN11AbyssEngineeqERKNS_6StringES2_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 80,
+   "usize": 80
+  },
+  {
    "name": "_ZN11AbyssEnginemiERKNS_10QuaternionES2_",
    "pct": 100.0,
    "byte": false,
@@ -15198,6 +14454,70 @@
    "linked": true,
    "osize": 74,
    "usize": 74
+  },
+  {
+   "name": "_ZN11AbyssEngineplERKNS_6StringERKf",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 120,
+   "usize": 120
+  },
+  {
+   "name": "_ZN11AbyssEngineplERKNS_6StringERKi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 120,
+   "usize": 120
+  },
+  {
+   "name": "_ZN11AbyssEngineplERKNS_6StringERKx",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 124,
+   "usize": 124
+  },
+  {
+   "name": "_ZN11AbyssEngineplERKNS_6StringES2_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 92,
+   "usize": 92
+  },
+  {
+   "name": "_ZN11AbyssEngineplERKfRKNS_6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 92,
+   "usize": 92
+  },
+  {
+   "name": "_ZN11AbyssEngineplERKiRKNS_6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 92,
+   "usize": 92
+  },
+  {
+   "name": "_ZN11AbyssEngineplERKxRKNS_6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 96,
+   "usize": 96
+  },
+  {
+   "name": "_ZN11AbyssEnginepsERKNS_6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 12,
+   "usize": 12
   },
   {
    "name": "_ZN11BoundingAAB12outerCollideEfff",
@@ -15704,6 +15024,14 @@
    "usize": 24
   },
   {
+   "name": "_ZN11SolarSystem13hasPirateBaseEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 76,
+   "usize": 76
+  },
+  {
    "name": "_ZN11SolarSystem15getTextureIndexEv",
    "pct": 100.0,
    "byte": true,
@@ -15736,6 +15064,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN11SolarSystem17isFullyDiscoveredEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 64,
+   "usize": 64
+  },
+  {
    "name": "_ZN11SolarSystem17stationIsInSystemEP7Station",
    "pct": 100.0,
    "byte": false,
@@ -15750,6 +15086,14 @@
    "linked": true,
    "osize": 34,
    "usize": 34
+  },
+  {
+   "name": "_ZN11SolarSystem18hasHiddenBlueprintEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 76,
+   "usize": 76
   },
   {
    "name": "_ZN11SolarSystem19getStationEnumIndexEi",
@@ -15854,6 +15198,22 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN11SolarSystemC1EiN11AbyssEngine6StringEibiiiiiiPiP5ArrayIiES5_S5_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 184,
+   "usize": 184
+  },
+  {
+   "name": "_ZN11SolarSystemC2EiN11AbyssEngine6StringEibiiiiiiPiP5ArrayIiES5_S5_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 184,
+   "usize": 184
   },
   {
    "name": "_ZN11SolarSystemD1Ev",
@@ -16430,6 +15790,22 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN11TractorBeamC1EP10AEGeometryi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 92,
+   "usize": 92
+  },
+  {
+   "name": "_ZN11TractorBeamC2EP10AEGeometryi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 92,
+   "usize": 92
   },
   {
    "name": "_ZN11TractorBeamD1Ev",
@@ -17168,12 +16544,52 @@
    "usize": 116
   },
   {
+   "name": "_ZN12ImageFactory8drawItemEiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 112,
+   "usize": 112
+  },
+  {
+   "name": "_ZN12ImageFactory8drawItemEiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 156,
+   "usize": 156
+  },
+  {
+   "name": "_ZN12ImageFactory8drawShipEiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
+  },
+  {
    "name": "_ZN12ImageFactory8loadCharEPi",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 112,
    "usize": 112
+  },
+  {
+   "name": "_ZN12ImageFactoryC1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 132,
+   "usize": 132
+  },
+  {
+   "name": "_ZN12ImageFactoryC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 132,
+   "usize": 132
   },
   {
    "name": "_ZN12ImageFactoryD1Ev",
@@ -17712,6 +17128,14 @@
    "usize": 156
   },
   {
+   "name": "_ZN12WantedWindow12selectWantedEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1904,
+   "usize": 1904
+  },
+  {
    "name": "_ZN12WantedWindow15setHangarUpdateEb",
    "pct": 100.0,
    "byte": true,
@@ -17750,6 +17174,14 @@
    "linked": true,
    "osize": 48,
    "usize": 48
+  },
+  {
+   "name": "_ZN12WantedWindow4drawEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1928,
+   "usize": 1928
   },
   {
    "name": "_ZN12WantedWindow6updateEi",
@@ -18840,6 +18272,14 @@
    "usize": 96
   },
   {
+   "name": "_ZN14ListItemWindow3setEP8ListItemjjjjb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 6820,
+   "usize": 6820
+  },
+  {
    "name": "_ZN14ListItemWindow4drawEv",
    "pct": 100.0,
    "byte": false,
@@ -18862,6 +18302,22 @@
    "linked": true,
    "osize": 352,
    "usize": 352
+  },
+  {
+   "name": "_ZN14ListItemWindowC1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
+  },
+  {
+   "name": "_ZN14ListItemWindowC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
   },
   {
    "name": "_ZN14ListItemWindowD1Ev",
@@ -18910,6 +18366,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN14MissionsWindow4drawEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1228,
+   "usize": 1228
   },
   {
    "name": "_ZN14MissionsWindow6updateEi",
@@ -19176,6 +18640,22 @@
    "usize": 6
   },
   {
+   "name": "_ZN14PlayerCreature4hookEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 10,
+   "usize": 10
+  },
+  {
+   "name": "_ZN14PlayerCreature4rageEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 80,
+   "usize": 80
+  },
+  {
    "name": "_ZN14PlayerCreature5resetEv",
    "pct": 100.0,
    "byte": false,
@@ -19190,14 +18670,6 @@
    "linked": true,
    "osize": 36,
    "usize": 36
-  },
-  {
-   "name": "_ZN14PlayerCreature6unhookEv",
-   "pct": 100.0,
-   "byte": true,
-   "linked": true,
-   "osize": 24,
-   "usize": 24
   },
   {
    "name": "_ZN14PlayerCreature7collideEfff",
@@ -19222,6 +18694,22 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN14PlayerCreature8isHookedEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
+   "name": "_ZN14PlayerCreature9getWeightEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 20,
+   "usize": 20
   },
   {
    "name": "_ZN14PlayerCreatureD0Ev",
@@ -19488,6 +18976,14 @@
    "usize": 14
   },
   {
+   "name": "_ZN14PlayerWormHole6updateEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1056,
+   "usize": 1056
+  },
+  {
    "name": "_ZN14PlayerWormHoleC1EiP10AEGeometryfffb",
    "pct": 100.0,
    "byte": false,
@@ -19584,12 +19080,60 @@
    "usize": 6
   },
   {
+   "name": "_ZN14ScrollTouchBox23getRelativeScrollHeightEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 80,
+   "usize": 80
+  },
+  {
    "name": "_ZN14ScrollTouchBox25getRelativeScrollStartPosEv",
    "pct": 100.0,
    "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
+  },
+  {
+   "name": "_ZN14ScrollTouchBox6updateEi",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 138,
+   "usize": 138
+  },
+  {
+   "name": "_ZN14ScrollTouchBox7setTextEN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 96,
+   "usize": 96
+  },
+  {
+   "name": "_ZN14ScrollTouchBox7setTextEN11AbyssEngine6StringEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 268,
+   "usize": 268
+  },
+  {
+   "name": "_ZN14ScrollTouchBoxC1Eiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 64,
+   "usize": 64
+  },
+  {
+   "name": "_ZN14ScrollTouchBoxC2Eiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 64,
+   "usize": 64
   },
   {
    "name": "_ZN14ScrollTouchBoxD1Ev",
@@ -20016,6 +19560,38 @@
    "usize": 30
   },
   {
+   "name": "_ZN16SystemPathFinder13constructPathEP4Node",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 122,
+   "usize": 122
+  },
+  {
+   "name": "_ZN16SystemPathFinder13getSystemPathEP5ArrayIP11SolarSystemEii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 360,
+   "usize": 360
+  },
+  {
+   "name": "_ZN16SystemPathFinder15getJumpDistanceEP5ArrayIP11SolarSystemEii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 38,
+   "usize": 38
+  },
+  {
+   "name": "_ZN16SystemPathFinder6searchEP4NodeS1_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 200,
+   "usize": 200
+  },
+  {
    "name": "_ZN16SystemPathFinder8containsEP5ArrayIP4NodeES2_",
    "pct": 100.0,
    "byte": true,
@@ -20288,6 +19864,14 @@
    "usize": 18
   },
   {
+   "name": "_ZN17ScrollTouchWindow10drawTextBGEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 192,
+   "usize": 192
+  },
+  {
    "name": "_ZN17ScrollTouchWindow11OnTouchMoveEii",
    "pct": 100.0,
    "byte": false,
@@ -20326,6 +19910,38 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN17ScrollTouchWindow7setTextEN11AbyssEngine6StringES1_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 96,
+   "usize": 96
+  },
+  {
+   "name": "_ZN17ScrollTouchWindow7setTextEN11AbyssEngine6StringES1_i",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 100,
+   "usize": 100
+  },
+  {
+   "name": "_ZN17ScrollTouchWindowC1Eiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 132,
+   "usize": 132
+  },
+  {
+   "name": "_ZN17ScrollTouchWindowC2Eiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 132,
+   "usize": 132
   },
   {
    "name": "_ZN17ScrollTouchWindowD1Ev",
@@ -22072,6 +21688,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN4Item11transactionEbib",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 84,
+   "usize": 84
+  },
+  {
    "name": "_ZN4Item12changeAmountEi",
    "pct": 100.0,
    "byte": true,
@@ -22094,6 +21718,14 @@
    "linked": true,
    "osize": 338,
    "usize": 338
+  },
+  {
+   "name": "_ZN4Item12getAttributeEi",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 52,
+   "usize": 52
   },
   {
    "name": "_ZN4Item12getOccurenceEv",
@@ -22166,6 +21798,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN4Item15checkCargoSpaceEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 56,
+   "usize": 56
   },
   {
    "name": "_ZN4Item16getStationAmountEv",
@@ -22272,6 +21912,14 @@
    "usize": 16
   },
   {
+   "name": "_ZN4Item4initEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 82,
+   "usize": 82
+  },
+  {
    "name": "_ZN4Item5cloneEv",
    "pct": 100.0,
    "byte": false,
@@ -22368,12 +22016,28 @@
    "usize": 18
   },
   {
+   "name": "_ZN4Item8mixItemsEP5ArrayIPS_ES3_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 476,
+   "usize": 476
+  },
+  {
    "name": "_ZN4Item8setPriceEi",
    "pct": 100.0,
    "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN4Item9fabricateEPS_P5ArrayIS0_Ei",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 138,
+   "usize": 138
   },
   {
    "name": "_ZN4Item9getAmountEv",
@@ -25128,6 +24792,14 @@
    "usize": 2
   },
   {
+   "name": "_ZN5MGame10OnRender3DEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 240,
+   "usize": 240
+  },
+  {
    "name": "_ZN5MGame10OnTouchEndEii",
    "pct": 100.0,
    "byte": true,
@@ -25288,12 +24960,28 @@
    "usize": 52
   },
   {
+   "name": "_ZN5MGame8useCloakEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 352,
+   "usize": 352
+  },
+  {
    "name": "_ZN5MGame9OnReleaseEv",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 536,
    "usize": 536
+  },
+  {
+   "name": "_ZN5MGame9OnSuspendEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 192,
+   "usize": 192
   },
   {
    "name": "_ZN5MGameC1Ev",
@@ -25832,6 +25520,14 @@
    "usize": 68
   },
   {
+   "name": "_ZN6AEFile11findPakFileERKN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 360,
+   "usize": 360
+  },
+  {
    "name": "_ZN6AEFile12ReadSwitchedERN11AbyssEngine6StringEj",
    "pct": 100.0,
    "byte": false,
@@ -25926,6 +25622,22 @@
    "linked": true,
    "osize": 24,
    "usize": 24
+  },
+  {
+   "name": "_ZN6AEFile20sortPakFileEntryListEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 96,
+   "usize": 96
+  },
+  {
+   "name": "_ZN6AEFile22collectFilesInPakFilesERN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 372,
+   "usize": 372
   },
   {
    "name": "_ZN6AEFile4ReadERN11AbyssEngine6StringEjb",
@@ -26232,6 +25944,22 @@
    "usize": 20
   },
   {
+   "name": "_ZN6Galaxy22getPlasmaProbabilitiesEP7Station",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 388,
+   "usize": 388
+  },
+  {
+   "name": "_ZN6Galaxy24getAsteroidProbabilitiesEP7Station",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 432,
+   "usize": 432
+  },
+  {
    "name": "_ZN6Galaxy5resetEv",
    "pct": 100.0,
    "byte": true,
@@ -26240,12 +25968,36 @@
    "usize": 18
   },
   {
+   "name": "_ZN6Galaxy8distanceEP11SolarSystemS1_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 280,
+   "usize": 280
+  },
+  {
    "name": "_ZN6Galaxy9getSystemEi",
    "pct": 100.0,
    "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN6GalaxyC1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 76,
+   "usize": 76
+  },
+  {
+   "name": "_ZN6GalaxyC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 76,
+   "usize": 76
   },
   {
    "name": "_ZN6GalaxyD1Ev",
@@ -27232,6 +26984,14 @@
    "usize": 36
   },
   {
+   "name": "_ZN6Player16calcWeaponSoundsEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 412,
+   "usize": 412
+  },
+  {
    "name": "_ZN6Player16getEmpDamageRateEv",
    "pct": 100.0,
    "byte": true,
@@ -27480,6 +27240,22 @@
    "usize": 8
   },
   {
+   "name": "_ZN6PlayerC1Eiiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 448,
+   "usize": 448
+  },
+  {
+   "name": "_ZN6PlayerC2Eiiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 448,
+   "usize": 448
+  },
+  {
    "name": "_ZN6PlayerD1Ev",
    "pct": 100.0,
    "byte": false,
@@ -27560,6 +27336,14 @@
    "usize": 22
   },
   {
+   "name": "_ZN6Sprite10drawRegionEiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
+  },
+  {
    "name": "_ZN6Sprite11setPositionEii",
    "pct": 100.0,
    "byte": true,
@@ -27608,6 +27392,14 @@
    "usize": 6
   },
   {
+   "name": "_ZN6Sprite4drawEff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 292,
+   "usize": 292
+  },
+  {
    "name": "_ZN6Sprite8getFrameEv",
    "pct": 100.0,
    "byte": true,
@@ -27638,6 +27430,38 @@
    "linked": true,
    "osize": 8,
    "usize": 8
+  },
+  {
+   "name": "_ZN6SpriteC1EPjiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 96,
+   "usize": 96
+  },
+  {
+   "name": "_ZN6SpriteC1Ejii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 112,
+   "usize": 112
+  },
+  {
+   "name": "_ZN6SpriteC2EPjiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 96,
+   "usize": 96
+  },
+  {
+   "name": "_ZN6SpriteC2Ejii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 112,
+   "usize": 112
   },
   {
    "name": "_ZN6SpriteD1Ev",
@@ -29120,6 +28944,14 @@
    "usize": 46
   },
   {
+   "name": "_ZN7MineGun6updateEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 472,
+   "usize": 472
+  },
+  {
    "name": "_ZN7MineGun9isMineGunEv",
    "pct": 100.0,
    "byte": true,
@@ -29134,6 +28966,22 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN7MineGunC1EP3GuniiiP5Level",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 284,
+   "usize": 284
+  },
+  {
+   "name": "_ZN7MineGunC2EP3GuniiiP5Level",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 284,
+   "usize": 284
   },
   {
    "name": "_ZN7MineGunD0Ev",
@@ -29904,6 +29752,54 @@
    "usize": 36
   },
   {
+   "name": "_ZN7StationC1EN11AbyssEngine6StringEiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 74,
+   "usize": 74
+  },
+  {
+   "name": "_ZN7StationC1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 124,
+   "usize": 124
+  },
+  {
+   "name": "_ZN7StationC2EN11AbyssEngine6StringEiiii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 74,
+   "usize": 74
+  },
+  {
+   "name": "_ZN7StationC2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 124,
+   "usize": 124
+  },
+  {
+   "name": "_ZN7StationD1Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 244,
+   "usize": 244
+  },
+  {
+   "name": "_ZN7StationD2Ev",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 244,
+   "usize": 244
+  },
+  {
    "name": "_ZN7_JNIEnv13CallIntMethodEP8_jobjectP10_jmethodIDz",
    "pct": 100.0,
    "byte": false,
@@ -29942,6 +29838,14 @@
    "linked": true,
    "osize": 56,
    "usize": 56
+  },
+  {
+   "name": "_ZN8CutScene10initializeEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1088,
+   "usize": 1088
   },
   {
    "name": "_ZN8CutScene11resetCameraEv",
@@ -30080,12 +29984,60 @@
    "usize": 296
   },
   {
+   "name": "_ZN8FileRead16loadStationPartsEii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 412,
+   "usize": 412
+  },
+  {
+   "name": "_ZN8FileRead18loadStationsBinaryEP11SolarSystem",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 364,
+   "usize": 364
+  },
+  {
    "name": "_ZN8FileRead18loadStationsBinaryEPsi",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 352,
    "usize": 352
+  },
+  {
+   "name": "_ZN8FileRead18loadWreckCollisionEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 284,
+   "usize": 284
+  },
+  {
+   "name": "_ZN8FileRead19loadStaticCollisionEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 284,
+   "usize": 284
+  },
+  {
+   "name": "_ZN8FileRead19loadWeaponPositionsEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 500,
+   "usize": 500
+  },
+  {
+   "name": "_ZN8FileRead20loadStationCollisionEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 284,
+   "usize": 284
   },
   {
    "name": "_ZN8FileReadC1Ev",
@@ -31872,6 +31824,14 @@
    "usize": 92
   },
   {
+   "name": "_ZN9FModSound13freeAllEventsEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 260,
+   "usize": 260
+  },
+  {
    "name": "_ZN9FModSound13setParamValueEPKcif",
    "pct": 100.0,
    "byte": false,
@@ -32462,6 +32422,14 @@
    "linked": true,
    "osize": 14,
    "usize": 14
+  },
+  {
+   "name": "_ZN9PlayerEgo10handleShipEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 896,
+   "usize": 896
   },
   {
    "name": "_ZN9PlayerEgo10setCollideEb",
@@ -33438,6 +33406,14 @@
    "linked": true,
    "osize": 584,
    "usize": 584
+  },
+  {
+   "name": "_ZN9PlayerEgo5shakeEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 172,
+   "usize": 172
   },
   {
    "name": "_ZN9PlayerEgo5shootEii",
@@ -35608,6 +35584,14 @@
    "usize": 4
   },
   {
+   "name": "ndk23_handleTouchPadEvent",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 156,
+   "usize": 156
+  },
+  {
    "name": "ndk23_handleTouchScreenEvent",
    "pct": 100.0,
    "byte": false,
@@ -35622,6 +35606,14 @@
    "linked": true,
    "osize": 40,
    "usize": 40
+  },
+  {
+   "name": "ndk23_newrender",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 340,
+   "usize": 340
   },
   {
    "name": "ndk23_resetScreenshotFlag",
@@ -35774,6 +35766,14 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "ndk_resetNativeItemInformationList",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 676,
+   "usize": 676
   },
   {
    "name": "ndk_setNativeItemInformationList",

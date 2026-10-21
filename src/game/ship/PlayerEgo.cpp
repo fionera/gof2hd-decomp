@@ -903,9 +903,8 @@ void PlayerEgo::setAutoTurret(bool on) {
     if (!on) ((Player *) this->player)->stopShooting(2);
 }
 
-unsigned char PlayerEgo::autoTurretIsEnabled() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->autoTurretEnabled);
+bool PlayerEgo::autoTurretIsEnabled() {
+    return this->autoTurretEnabled;
 }
 
 void PlayerEgo::setTurretPosition(Vector v) {
@@ -1121,7 +1120,7 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     }
     if (kip->field_0x72 != 0) this->goingToWaypointFlag = 1;
     AbyssEngine::Engine *eng = (AbyssEngine::Engine *) Globals::appManager->GetEngine();
-    ((AbyssEngine::Engine *) eng)->autoPilotEngaged = 0;
+    ((AbyssEngine::Engine *) eng)->wheelDelta = 0.0f;
     ((int &) this->thrust) = 0x3f800000;
 }
 
@@ -1142,9 +1141,8 @@ bool PlayerEgo::goingToPlanet() {
     return false;
 }
 
-unsigned char PlayerEgo::isAutoPilot() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->autoPilot);
+bool PlayerEgo::isAutoPilot() {
+    return this->autoPilot;
 }
 
 int PlayerEgo::goingToStream() {
@@ -3671,9 +3669,8 @@ void PlayerEgo::changeThrust(float v) {
     this->thrust = p2;
 }
 
-int PlayerEgo::getThrust() {
-    PlayerEgo *self = this;
-    return ((int &) this->thrust);
+float PlayerEgo::getThrust() {
+    return this->thrust;
 }
 
 int PlayerEgo::getSpeed() {
