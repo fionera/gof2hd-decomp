@@ -106,12 +106,6 @@ unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const c
 }
 
 namespace AbyssEngine {
-    Quaternion operator*(const Quaternion &a, float s) {
-        return Quaternion(a.x * s, a.y * s, a.z * s, a.w * s);
-    }
-}
-
-namespace AbyssEngine {
     void getAppVersion() {
         Engine *self = AE_getInitGLThis();
         int width = AE_getInitGLWidth();
@@ -170,12 +164,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    Quaternion operator-(const Quaternion &a, const Quaternion &b) {
-        return Quaternion(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-    }
-}
-
-namespace AbyssEngine {
     void CurveRelease(Curve **slot) {
         Curve *curve = (Curve *) *slot;
         if (curve == 0)
@@ -209,12 +197,6 @@ namespace AbyssEngine {
         if (*slot != 0)
             operator delete(*slot);
         *slot = 0;
-    }
-}
-
-namespace AbyssEngine {
-    Quaternion operator+(const Quaternion &a, const Quaternion &b) {
-        return Quaternion(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
     }
 }
 
