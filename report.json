@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4537,
   "compared": 4523,
-  "avg_match": 97.77,
+  "avg_match": 97.78,
   "byte_exact": 1327,
-  "linked_exact": 4160,
-  "fuzzy_perfect": 4160,
+  "linked_exact": 4161,
+  "fuzzy_perfect": 4161,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -94,14 +94,6 @@
    "linked": false,
    "osize": 724,
    "usize": 728
-  },
-  {
-   "name": "_ZN3Hud10touchBeginEjjPv",
-   "pct": 27.3,
-   "byte": false,
-   "linked": false,
-   "osize": 186,
-   "usize": 198
   },
   {
    "name": "_ZN10HangarList16getCurrentItemAtEi",
@@ -192,22 +184,6 @@
    "usize": 56648
   },
   {
-   "name": "_ZN6LayoutC1Ev",
-   "pct": 33.0,
-   "byte": false,
-   "linked": false,
-   "osize": 7072,
-   "usize": 6664
-  },
-  {
-   "name": "_ZN6LayoutC2Ev",
-   "pct": 33.0,
-   "byte": false,
-   "linked": false,
-   "osize": 7072,
-   "usize": 6664
-  },
-  {
    "name": "_ZN11AbyssEngine9Transform18InsertKeyFrame_oldEPKfxi",
    "pct": 33.7,
    "byte": false,
@@ -254,6 +230,22 @@
    "linked": false,
    "osize": 58,
    "usize": 38
+  },
+  {
+   "name": "_ZN6LayoutC1Ev",
+   "pct": 35.6,
+   "byte": false,
+   "linked": false,
+   "osize": 7072,
+   "usize": 6472
+  },
+  {
+   "name": "_ZN6LayoutC2Ev",
+   "pct": 35.6,
+   "byte": false,
+   "linked": false,
+   "osize": 7072,
+   "usize": 6472
   },
   {
    "name": "_ZN11HackingGame8render2DEv",
@@ -1648,6 +1640,14 @@
    "usize": 4552
   },
   {
+   "name": "_ZN3Hud10touchBeginEjjPv",
+   "pct": 80.9,
+   "byte": false,
+   "linked": false,
+   "osize": 186,
+   "usize": 190
+  },
+  {
    "name": "_ZN7StarMap4initEbP7Missionbi",
    "pct": 81.0,
    "byte": false,
@@ -2840,28 +2840,20 @@
    "usize": 584
   },
   {
-   "name": "_ZN3Hud8hudEventEiP9PlayerEgoi",
-   "pct": 99.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2656,
-   "usize": 2656
-  },
-  {
-   "name": "_ZN3Hud11initHudMenuEiP5Level",
-   "pct": 99.5,
-   "byte": false,
-   "linked": false,
-   "osize": 3364,
-   "usize": 3364
-  },
-  {
    "name": "_ZN10HangarList11initShipTabEP4Ship",
    "pct": 99.6,
    "byte": false,
    "linked": false,
    "osize": 672,
    "usize": 672
+  },
+  {
+   "name": "_ZN3Hud11initHudMenuEiP5Level",
+   "pct": 99.6,
+   "byte": false,
+   "linked": false,
+   "osize": 3364,
+   "usize": 3364
   },
   {
    "name": "_ZN10NewsTickerC1Eiiiii",
@@ -21150,6 +21142,14 @@
    "linked": true,
    "osize": 62,
    "usize": 62
+  },
+  {
+   "name": "_ZN3Hud8hudEventEiP9PlayerEgoi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 2656,
+   "usize": 2656
   },
   {
    "name": "_ZN3Hud8touchEndEjjPv",
