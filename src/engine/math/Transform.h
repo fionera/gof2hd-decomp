@@ -36,7 +36,7 @@ namespace AbyssEngine {
     public:
         AEMath::Matrix worldMatrix;
         Array<Mesh *> meshes;
-        int id;
+        int color;  // 0x48: packed alpha colour (0xffffffff in the ctor)
         Array<Transform *> children;
 
         int flags;
@@ -50,7 +50,7 @@ namespace AbyssEngine {
         bool visible;
         bool animating;
         float animationSpeed;
-        int color;
+        int field_0xf4;
         longlong animationLength;
         longlong rangeStart;
         longlong rangeEnd;

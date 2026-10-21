@@ -26,7 +26,7 @@ public:
 
     ~FileRead();
 
-    int32_t loadStation(int32_t id);
+    Station *loadStation(int32_t id);
 
     int32_t loadStationsBinary();
 

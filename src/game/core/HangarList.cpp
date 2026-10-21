@@ -53,17 +53,22 @@ Array<ListItem *> *HangarList::getCurrentTabItems() {
 }
 
 void HangarList::release() {
-    Array<Array<ListItem *> *> *tabs = this->tabs;
-    if (tabs != nullptr) {
-        for (uint32_t i = 0; i < tabs->size(); ++i) {
-            Array<ListItem *> *items = (*tabs)[i];
-            if (items != nullptr) {
-                ArrayReleaseClasses(*items);
-                delete items;
+    if (this->tabs != nullptr) {
+        for (uint32_t i = 0; i < this->tabs->size(); ++i) {
+            if ((*this->tabs)[i] != nullptr) {
+                if ((*this->tabs)[i]->size() != 0) {
+                    ArrayReleaseClasses(*(*this->tabs)[i]);
+                }
+                if ((*this->tabs)[i] != nullptr) {
+                    delete (*this->tabs)[i];
+                }
             }
-            (*tabs)[i] = nullptr;
+            (*this->tabs)[i] = nullptr;
         }
-        delete tabs;
+        ArrayReleaseClasses(*this->tabs);
+        if (this->tabs != nullptr) {
+            delete this->tabs;
+        }
     }
     this->tabs = nullptr;
 }

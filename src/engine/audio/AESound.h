@@ -21,7 +21,7 @@ namespace AbyssEngine {
 
         void stop() override;
 
-        int isPlaying() override;
+        bool isPlaying() override;
 
         int loaded() override;
 

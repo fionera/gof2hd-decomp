@@ -59,19 +59,30 @@ public:
     float weightY;
     int imageWidthSq;
     int imageHeightSq;
-    int onScreen;
+    uint8_t onScreen;
+    uint8_t field_0x11d;
+    uint8_t field_0x11e;
+    uint8_t field_0x11f;
     uint8_t field_0x120;
     int field_0x124; // Ghidra
     int field_0x128; // Ghidra
     int turretScopeHalfWidth;
     uint8_t plasmaInRange;
-    int radarPosX;
+    int field_0x134;
+    int field_0x138;
+    int field_0x13c;
+    int field_0x140;
+    int field_0x144;
+    int field_0x148;
+    int field_0x14c;
+    int field_0x150;
+    // radar-space position of the tracked target (Vector), written by update()
+    float radarPosX;
     float radarPosY;
     float radarPosZ;
     // ASM (Radar ctor): labelStrings zeroed @0x188, lockLabel String ctor @0x18c, strb @0x1a8,
     // ints zeroed @0x1b4/0x1b8/0x1bc, transform ctor @0x1d0, @0x20c zeroed, screenWidth block
     // @0x21c-0x230 filled from the engine display size.
-    uint8_t pad_0x140_to_0x160[0x160 - 0x140];
     int field_0x160;
     int field_0x164;
     int field_0x168;
@@ -144,7 +155,7 @@ public:
 
     void drawCurrentLock(Hud *hud);
 
-    void calcDistance(float p0, float a, float b, float c, float d, float e);
+    AbyssEngine::String calcDistance(float x1, float y1, float z1, float x2, float y2, float z2);
 
     static unsigned char drawTarget;
 };
@@ -154,7 +165,7 @@ static_assert(offsetof(Radar, planetDockIndex) == 0x40, "getPlanetDockIndex read
 static_assert(offsetof(Radar, enabled) == 0x48, "ctor strb 1 @0x48");
 static_assert(offsetof(Radar, hasReservation) == 0x70, "");
 static_assert(offsetof(Radar, screenX) == 0xfc, "");
-static_assert(offsetof(Radar, radarPosX) == 0x134, "ctor zeroes @0x134");
+static_assert(offsetof(Radar, radarPosX) == 0x154, "update() writes the radar-space Vector @0x154");
 static_assert(offsetof(Radar, labelStrings) == 0x188, "ctor zeroes @0x188");
 static_assert(offsetof(Radar, lockLabel) == 0x18c, "ctor String @0x18c");
 static_assert(offsetof(Radar, scannerAvailable) == 0x1ab, "");

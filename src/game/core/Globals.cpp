@@ -136,7 +136,7 @@ int Globals::is_dialogue_window_visible = 0;
 int Globals::is_choice_window_visible = 0;
 int Globals::is_menu_visible = 0;
 int Globals::is_hacking_visible = 0;
-unsigned char Globals::isStarMapVisible = 0;
+bool Globals::isStarMapVisible = false;
 unsigned char Globals::isCinematicModeActive = 0;
 int Globals::mouseCursorActivated = 0;
 unsigned char Globals::showMouseDuringGameOver = 0;
@@ -238,7 +238,7 @@ unsigned char Globals::isIOS6Installed;
 int Globals::other_buttons_x[10];
 int Globals::other_buttons_y[10];
 unsigned char Globals::showWingmanMenu;
-unsigned char Globals::first_start_ever;
+bool Globals::first_start_ever;
 int Globals::globalPriceRaise;
 unsigned char Globals::initMemoryWarning;
 int Globals::instantActionType;
@@ -270,7 +270,7 @@ float Globals::quickmenu_button_start_y;
 int Globals::lastCampaignMissionFailed;
 int Globals::secondaryWeaponsProbChange;
 int Globals::lastCampaignMissionFailCount;
-unsigned char Globals::startLiteVersionWithMoreCredits;
+bool Globals::startLiteVersionWithMoreCredits;
 AbyssEngine::AERandom *Globals::rnd;
 void *Globals::font; // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
 // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
@@ -289,8 +289,8 @@ float Globals::boost_x;
 float Globals::boost_y;
 float Globals::boost_z;
 Globals *Globals::globals;
-float Globals::pause_x;
-float Globals::pause_y;
+int Globals::pause_x;
+int Globals::pause_y;
 float Globals::pause_z;
 GameText *Globals::gameText;
 void *Globals::fontAlien; // lint: void_ptr (unknown alien-font handle, never referenced)
@@ -429,10 +429,10 @@ float Globals::sqrt(float x) {
 }
 
 
-void Globals::getRandomSystemForDrinks() {
+SolarSystem *Globals::getRandomSystemForDrinks() {
     Galaxy *galaxy = Globals::galaxy;
     int picked = Globals::rnd->nextInt(0x16);
-    galaxy->getSystem(picked);
+    return (SolarSystem *) (intptr_t) galaxy->getSystem(picked);
 }
 
 void Globals::addSoundResourceToList(int snd) {
@@ -1897,7 +1897,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     }
 
     Globals::instantActionPoints = 0;
-    Globals::first_start_ever = 1;
+    Globals::first_start_ever = true;
     InitZeroObject *obj = (InitZeroObject *) Globals::hints;
     obj->slots[0] = 0;
     obj->slots[1] = 0;

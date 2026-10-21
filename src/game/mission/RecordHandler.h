@@ -57,13 +57,13 @@ public:
 
     void loadOptions();
 
-    void loadResolutionValue(float resolution);
+    float loadResolutionValue(float resolution);
 
     void *readAgent(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
 
-    void *readAllPreviewRecords(); // lint: void_ptr (method signature; return type fixed)
+    Array<GameRecord *> *readAllPreviewRecords();
 
-    void *readAllRecords(); // lint: void_ptr (method signature; return type fixed)
+    Array<GameRecord *> *readAllRecords();
 
     void *readMission(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
 
@@ -81,7 +81,7 @@ public:
 
     GameRecord *recordStoreReadPreview(int slot);
 
-    void recordStoreWrite(int slot);
+    int recordStoreWrite(int slot);
 
     int recordStoreWritePreview(GameRecord *rec, int slot);
 

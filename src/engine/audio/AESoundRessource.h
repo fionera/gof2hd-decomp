@@ -9,7 +9,7 @@ namespace AbyssEngine {
     class AESoundRessource {
     public:
         const AESoundInfo *soundInfoTable;
-        Array<AESoundInterface *> *sounds;
+        Array<AESoundInterface *> sounds;
         int numSounds;
 
         AESoundRessource();
@@ -44,7 +44,7 @@ namespace AbyssEngine {
 
         void pause(int id);
 
-        int pause();
+        void pause();
 
         void resume(int id);
 

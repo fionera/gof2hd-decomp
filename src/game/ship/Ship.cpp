@@ -560,7 +560,7 @@ void Ship::refreshValue() {
                 case 0x19: {
                     float a = (float) cur->getAttribute(9);
                     float b = (float) cur->getAttribute(0xb);
-                    this->firePower = (int) ((float) this->firePower + (a / b) * 1.0f);
+                    this->firePower = this->firePower + (a / b) * 1.0f;
                     break;
                 }
                 case 9:
@@ -639,7 +639,7 @@ void Ship::refreshValue() {
             float dmg = this->damageFactor;
             float a = (float) cur->getAttribute(9);
             float b = (float) cur->getAttribute(0xb);
-            this->firePower = (int) ((float) this->firePower + ((dmg * a) / (this->fireRateFactor * b)) * 1.0f);
+            this->firePower = this->firePower + ((dmg * a) / (this->fireRateFactor * b)) * 1.0f;
         }
         eq = this->equipment;
         n = eq->size();
@@ -810,8 +810,8 @@ int Ship::getPrice() { return this->price; }
 void Ship::setPrice(int price) { this->price = price; }
 int Ship::getUnmoddedHandling() { return *(int *) &this->handling; }
 float Ship::getFireRateFactor() { return this->fireRateFactor; }
-int Ship::getDamageFactor() { return *(int *) &this->damageFactor; }
-int Ship::getFirePower() { return this->firePower; }
+float Ship::getDamageFactor() { return this->damageFactor; }
+float Ship::getFirePower() { return this->firePower; }
 int Ship::getAgility() { return this->agility; }
 int Ship::getRadarType() { return this->radarType; }
 int Ship::getRepairType() { return this->repairType; }

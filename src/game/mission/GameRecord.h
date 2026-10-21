@@ -5,7 +5,6 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 
-#pragma pack(push, 1)
 class GameRecord {
 public:
     uint8_t *data;
@@ -13,11 +12,7 @@ public:
     uint32_t field_0x08;
     uint32_t field_0x0c;
 
-    // 0x10..0x17 is read both as a {pointer, uint32} pair and as a single int64 playTime
-    // (RecordHandler.cpp). Kept as the two real members; the int64 view is
-    // reinterpret_cast<int64_t &>(playTimeObj) at the few sites that need it.
-    uint8_t *playTimeObj;
-    uint32_t field_0x14;
+    int64_t playTime;
 
     uint32_t field_0x18;
     uint32_t field_0x1c;
@@ -165,10 +160,9 @@ public:
 
     void load();
 };
-#pragma pack(pop)
 
 #if __SIZEOF_POINTER__ == 4
-static_assert(sizeof(GameRecord) == 449, "GameRecord must be 449 bytes (0x1c1)");
+static_assert(sizeof(GameRecord) == 456, "GameRecord must be 456 bytes (0x1c8)");
 static_assert(offsetof(GameRecord, data) == 0x0, "");
 static_assert(offsetof(GameRecord, field_0x98) == 0x98, "");
 static_assert(offsetof(GameRecord, field_0xa8) == 0xa8, "");
@@ -181,8 +175,7 @@ static_assert(offsetof(GameRecord, field_0x100) == 0x100, "");
 static_assert(offsetof(GameRecord, field_0x102) == 0x102, "");
 static_assert(offsetof(GameRecord, dlcRequiredFlag) == 0x115, "dlcRequiredFlag");
 static_assert(offsetof(GameRecord, versionMismatchFlag) == 0x117, "versionMismatchFlag");
-static_assert(offsetof(GameRecord, playTimeObj) == 0x10, "playTimeObj");
-static_assert(offsetof(GameRecord, field_0x14) == 0x14, "field_0x14");
+static_assert(offsetof(GameRecord, playTime) == 0x10, "playTime");
 static_assert(offsetof(GameRecord, field_0x18) == 0x18, "field_0x18");
 static_assert(offsetof(GameRecord, killsText) == 0x20, "killsText");
 static_assert(offsetof(GameRecord, pilotName) == 0x194, "pilotName");
