@@ -181,94 +181,86 @@ void ObjectGun::update(int dt) {
     this->deltaTime = dt;
     this->gun->update(dt);
 
-    if (this->hasGeometry == 0) {
-        if (!this->gun->isPlayerGun() && this->gun->owner != nullptr &&
-            this->gun->owner->getKIPlayer() != nullptr && this->gun->owner->getKIPlayer()->field_0x3f_b != 0) {
-            this->hasGeometry = 1;
-            this->geometry = new AEGeometry((uint16_t) kProjectileMeshes[this->gun->itemIndex], Globals::Canvas,
-                                            false);
-        }
-        if (this->hasGeometry == 0)
-            goto tail;
+    if (this->hasGeometry == 0 && !this->gun->isPlayerGun() && this->gun->owner != nullptr &&
+        this->gun->owner->getKIPlayer() != nullptr && this->gun->owner->getKIPlayer()->field_0x3f_b != 0) {
+        this->hasGeometry = 1;
+        this->geometry = new AEGeometry((uint16_t) kProjectileMeshes[this->gun->itemIndex], Globals::Canvas, false);
     }
 
-    if (this->gun->delayActive == 0) {
-        // Idle: rewind the muzzle animation.
-        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
-        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-    } else {
-        PlayerEgo *ego = this->level->getPlayer();
-        Vector position;
-        if (this->gun->isPlayerGun())
-            position = ego->getPosition();
-        else
-            position = this->gun->owner->getPosition();
+    if (this->hasGeometry != 0) {
+        if (this->gun->delayActive != 0) {
+            PlayerEgo *ego = this->level->getPlayer();
+            Vector position = this->gun->isPlayerGun() ? ego->getPosition() : this->gun->owner->getPosition();
 
-        Gun *gun = this->gun;
-        Matrix shipMatrix = reinterpret_cast<const Matrix &>(
-                (gun->isPlayerGun() ? ego->player : gun->owner)->transform[0]);
-        Vector barrel = gun->offset;
-        barrel.z += -100.0f;
-        position += AbyssEngine::AEMath::MatrixRotateVector(shipMatrix, barrel);
-        this->geometry->setPosition(position);
-        static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
-                ->Update((int64_t) dt, false);
+            Gun *gun = this->gun;
+            Matrix shipMatrix = reinterpret_cast<const Matrix &>(
+                    (gun->isPlayerGun() ? ego->player : gun->owner)->transform[0]);
+            Vector barrel = gun->offset;
+            barrel.z += -100.0f;
+            position += AbyssEngine::AEMath::MatrixRotateVector(shipMatrix, barrel);
+            this->geometry->setPosition(position);
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
+                    ->Update((int64_t) dt, false);
 
-        if (this->gun->weaponType == ITEM_SORT_TURRET) {
-            Matrix turret = ego->turretRoot->getMatrix() * ego->turretGeometry->getMatrix();
-            gun = this->gun;
-            int item = gun->itemIndex;
-            Vector muzzle;
-            muzzle.x = 0.0f;
-            muzzle.y = 0.0f;
-            switch (item) {
-                case 0x2f: muzzle.z = 260.0f;
-                    break;
-                case 0xb5: muzzle.z = 190.0f;
-                    break;
-                case 0x31: muzzle.z = 200.0f;
-                    break;
-                case 0xb4: muzzle.z = 172.0f;
-                    break;
-                case 0x30: muzzle.z = 170.0f;
-                    break;
-                case 0xe0: muzzle.z = 147.0f;
-                    break;
-                case 0xb6: muzzle.z = 150.0f;
-                    break;
-                default: muzzle.z = 205.0f;
-                    break;
-            }
-            if (gun->field_0xa4_b0) {
-                if (item == 0xb5) {
-                    muzzle.x = gun->field_0xa6 ? -35.0f : 35.0f;
-                } else {
-                    float side = item == 0x30 ? 20.0f : 45.0f;
-                    muzzle.x = gun->field_0xa6 ? gun->offset.x + -side : side - gun->offset.x;
-                }
-            }
-            if (gun->field_0xa5) {
-                if (item == 0xe0)
-                    muzzle.y = gun->field_0xa7 ? -13.0f : 13.0f;
+            if (this->gun->weaponType == ITEM_SORT_TURRET) {
+                Matrix turret = ego->turretRoot->getMatrix() * ego->turretGeometry->getMatrix();
+                gun = this->gun;
+                int item = gun->itemIndex;
+                // Muzzle offset along the barrel per turret model.
+                float barrelLength;
+                if (item == 0x2f)
+                    barrelLength = 260.0f;
                 else if (item == 0xb5)
-                    muzzle.y = gun->field_0xa7 ? -16.5f : 16.5f;
+                    barrelLength = 190.0f;
+                else if (item == 0x31)
+                    barrelLength = 200.0f;
+                else if (item == 0xb4)
+                    barrelLength = 172.0f;
+                else if (item == 0x30)
+                    barrelLength = 170.0f;
+                else if (item == 0xb6)
+                    barrelLength = 115.0f;
+                else
+                    barrelLength = 205.0f;
+                Vector muzzle = {0.0f, 0.0f, barrelLength};
+                if (item == 0xe0)
+                    muzzle.z = 147.0f;
+                else if (item == 0xb6)
+                    muzzle.z = 150.0f;
+                if (gun->field_0xa4_b0) {
+                    if (item == 0xb5) {
+                        muzzle.x = gun->field_0xa6 ? -35.0f : 35.0f;
+                    } else {
+                        float side = item == 0x30 ? 20.0f : 45.0f;
+                        muzzle.x = gun->field_0xa6 ? gun->offset.x + -side : side - gun->offset.x;
+                    }
+                }
+                if (gun->field_0xa5) {
+                    if (item == 0xe0)
+                        muzzle.y = gun->field_0xa7 ? -13.0f : 13.0f;
+                    else if (item == 0xb5)
+                        muzzle.y = gun->field_0xa7 ? -16.5f : 16.5f;
+                }
+                Vector rotated = AbyssEngine::AEMath::MatrixRotateVector(turret, muzzle);
+                this->geometry->setMatrix(turret);
+                this->geometry->translate(rotated);
+            } else {
+                PaintCanvas *canvas = Globals::Canvas;
+                Matrix camera = *reinterpret_cast<const Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                this->geometry->setDirection(AbyssEngine::AEMath::MatrixGetDir(shipMatrix),
+                                             AbyssEngine::AEMath::MatrixGetUp(camera));
             }
-            Vector rotated = AbyssEngine::AEMath::MatrixRotateVector(turret, muzzle);
-            this->geometry->setMatrix(turret);
-            this->geometry->translate(rotated);
         } else {
-            PaintCanvas *canvas = Globals::Canvas;
-            Matrix camera = *reinterpret_cast<const Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-            this->geometry->setDirection(AbyssEngine::AEMath::MatrixGetDir(shipMatrix),
-                                         AbyssEngine::AEMath::MatrixGetUp(camera));
+            // Idle: rewind the muzzle animation.
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+            static_cast<AbyssEngine::Transform *>(Globals::Canvas->TransformGetTransform(this->geometry->transform))
+                    ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
         }
     }
 
-tail:
     this->wasFiring = this->gun->delayActive;
     if (this->gun->weaponType == ITEM_SORT_SCATTER_GUN) {
         for (uint32_t i = 0; i < this->gun->count; ++i) {

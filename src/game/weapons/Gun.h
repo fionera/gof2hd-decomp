@@ -88,7 +88,7 @@ public:
     int field_0xd4;
     Vector targetDir;
     Vector velocity;
-    uint8_t playerGun;
+    bool playerGun;
     int slotIndex;
     uint8_t levelCollision;
     bool friendGun;
@@ -113,7 +113,7 @@ public:
 
     void ignite();
 
-    uint8_t isPlayerGun();
+    bool isPlayerGun();
 
     void removeAllEnemies();
 

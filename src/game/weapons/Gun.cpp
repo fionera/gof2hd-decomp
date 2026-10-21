@@ -156,7 +156,7 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->field_0xcc = 0;
     this->ammoCount = 0;
     this->field_0x78 = 0;
-    this->playerGun = 0;
+    this->playerGun = false;
     this->field_0xa8 = 0;
 
     this->offset = dir;
@@ -310,7 +310,7 @@ void Gun::setLevel(Level *lvl) {
 void Gun::setPlayerGun(bool v) {
     this->playerGun = v;
 }
-uint8_t Gun::isPlayerGun() {
+bool Gun::isPlayerGun() {
     return this->playerGun;
 }
 bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
