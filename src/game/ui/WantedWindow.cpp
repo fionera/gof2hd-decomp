@@ -267,144 +267,118 @@ int WantedWindow::OnTouchEnd(int x, int y) {
 
 
 void WantedWindow::draw() {
-    if (this->showingMap != 0) {
+    if (this->showingMap) {
         this->starMap->draw();
         return;
     }
 
-    Layout *layout = Globals::layout;
-    PaintCanvas *canvas = Globals::Canvas;
-    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
+    Globals::Canvas->EnableClip(this->windowX,
+                                this->windowY + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                Globals::layout->field_0x5c,
+                                this->windowWidth, Globals::layout->field_0x2c_rowHeight + this->visibleHeight);
+    float startPos = this->getRelativeScrollStartPos();
+    float visible = (float) this->visibleHeight;
+    float scrollHeight = this->getRelativeScrollHeight();
+    int barHeight = (int) (scrollHeight * visible);
+    int barStart = (int) (startPos * visible);
+    if (barHeight > 0 || barStart > 0)
+        Globals::layout->drawScrollBar(
+                this->windowX + (this->windowWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                Globals::layout->field_0x48,
+                this->windowY + Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0xc_leftMargin +
+                Globals::layout->field_0x20_top + Globals::layout->field_0x5c,
+                this->visibleHeight, barStart, barHeight);
 
-    canvas->EnableClip(this->windowX,
-                       this->windowY + layout->field_0xc_leftMargin +
-                       layout->field_0x20_top + layout->field_0x5c,
-                       this->windowWidth,
-                       layout->field_0x2c_rowHeight + this->visibleHeight);
-
-    float relStart = this->getRelativeScrollStartPos();
-    float visf = (float) this->visibleHeight;
-    float relHeight = this->getRelativeScrollHeight();
-    int barSize = (int) (relHeight * visf);
-    int barStart = (int) (relStart * visf);
-    if (barSize >= 1 || barStart >= 0) {
-        layout->drawScrollBar(((this->windowX + (this->windowWidth >> 1)) -
-                               layout->field_0x2c_rowHeight) - layout->field_0x48,
-                              this->windowY + layout->field_0x2c_rowHeight +
-                              layout->field_0xc_leftMargin + layout->field_0x20_top +
-                              layout->field_0x5c,
-                              this->visibleHeight, barStart, barSize);
-    }
-
-    int y = this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top +
-            layout->field_0x5c + layout->field_0x2c_rowHeight + this->scrollOffset;
-    int inset = barSize < 1 ? 0 : layout->field_0x2c_rowHeight + layout->field_0x48;
-
-    for (uint32_t i = 0; i < this->wantedList->size(); ++i) {
-        int style = (i == this->selectedWanted || i == this->highlightedWanted) ? 4 : 3;
-        String boxLabel("", false);
-        layout->drawBox(style, layout->buttonInsetX + this->windowX, y,
-                        (this->windowWidth >> 1) -
-                        (inset + layout->buttonInsetX + layout->field_0x2c_rowHeight),
-                        layout->field_0x70_rowHeight, boxLabel, 0);
-
-        Wanted *wanted = (*this->wantedList)[i];
-        canvas->SetColor(wanted->isActive() ? 0xffffffffu : 0xff808080u);
-        String name = wanted->getName();
-        int textY = y + layout->field_0x70_rowHeight / 2 - canvas->GetTextHeight(font) / 2;
-        canvas->DrawString(font, name,
-                           this->windowX + layout->buttonInsetX +
-                           layout->field_0x44,
-                           textY, false);
-
-        int campaign = Globals::status->getCurrentCampaignMission();
-        if ((i == 0 && campaign == 0x80) ||
-            (i == 1 && Globals::status->getCurrentCampaignMission() == 0x82)) {
-            String marked = wanted->getName();
-            marked += String(" *", false);
-            int textW = canvas->GetTextWidth(font, marked);
-            canvas->DrawImage2D(this->bgImage,
-                                this->windowX + layout->buttonInsetX +
-                                layout->field_0x44 + textW,
-                                textY);
+    // The list of wanted persons on the left half.
+    int rowY = this->windowY + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+               Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight + this->scrollOffset;
+    int scrollBarWidth = barHeight >= 1 ? Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x48 : 0;
+    for (unsigned int i = 0; i < this->wantedList->size(); i++) {
+        Globals::layout->drawBox(i == this->selectedWanted || i == this->highlightedWanted ? 4 : 3,
+                                 this->windowX + Globals::layout->buttonInsetX, rowY,
+                                 (this->windowWidth >> 1) - (scrollBarWidth + Globals::layout->buttonInsetX +
+                                                             Globals::layout->field_0x2c_rowHeight),
+                                 Globals::layout->field_0x70_rowHeight, String("", false));
+        Globals::Canvas->SetColor((*this->wantedList)[i]->isActive() ? 0xffffffffu : 0x777777ffu);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, (*this->wantedList)[i]->getName(),
+                                    this->windowX + Globals::layout->buttonInsetX + Globals::layout->field_0x44,
+                                    rowY + Globals::layout->field_0x70_rowHeight / 2 -
+                                    Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2,
+                                    false);
+        if ((i == 0 && Globals::status->getCurrentCampaignMission() == 128) ||
+            (i == 1 && Globals::status->getCurrentCampaignMission() == 130)) {
+            // Mark the campaign target.
+            Globals::Canvas->DrawImage2D(
+                    this->bgImage,
+                    this->windowX + Globals::layout->buttonInsetX + Globals::layout->field_0x44 +
+                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                                  (*this->wantedList)[i]->getName() + String(" ", false)),
+                    rowY + Globals::layout->field_0x70_rowHeight / 2 -
+                    Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2);
         }
-
-        y += layout->field_0x34 + layout->field_0x70_rowHeight;
+        rowY += Globals::layout->field_0x70_rowHeight + Globals::layout->field_0x34;
     }
+    Globals::Canvas->DisableClip();
+    Globals::Canvas->SetColor(0xffffffffu);
 
-    canvas->DisableClip();
-    canvas->SetColor(0xffffffffu);
-    String header;
-    header.copy((Globals::gameText)->getText(0xc93), false);
-    layout->drawHeader(header);
-
-    for (uint32_t i = 0; i < this->buttons->size(); ++i) {
+    Globals::layout->drawHeader(*Globals::gameText->getText(3219));
+    for (unsigned int i = 0; i < this->buttons->size(); i++)
         (*this->buttons)[i]->draw();
-    }
 
-    String leftHdr;
-    leftHdr.copy((Globals::gameText)->getText(0xc95), false);
-    layout->drawBox(1, layout->buttonInsetX + this->windowX,
-                    this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top,
-                    (this->windowWidth >> 1) - (layout->field_0x2c_rowHeight + layout->buttonInsetX),
-                    layout->field_0x5c, leftHdr, 0);
+    Globals::layout->drawBox(1, this->windowX + Globals::layout->buttonInsetX,
+                             this->windowY + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+                             (this->windowWidth >> 1) - (Globals::layout->field_0x2c_rowHeight +
+                                                         Globals::layout->buttonInsetX),
+                             Globals::layout->field_0x5c, *Globals::gameText->getText(3221));
+    Globals::layout->drawBox(5, this->windowX + Globals::layout->buttonInsetX,
+                             this->windowY + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                             Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight,
+                             (this->windowWidth >> 1) - (Globals::layout->field_0x2c_rowHeight +
+                                                         Globals::layout->buttonInsetX),
+                             this->windowHeight - (Globals::layout->field_0x20_top +
+                                                   Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x5c +
+                                                   Globals::layout->field_0x2c_rowHeight * 2) -
+                             Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+                             String("", false));
+    Globals::layout->drawBox(1, this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight,
+                             this->windowY + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
+                             (this->windowWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                             Globals::layout->buttonInsetX,
+                             Globals::layout->field_0x5c, *Globals::gameText->getText(3222));
+    Globals::layout->drawBox(5, this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight,
+                             this->windowY + Globals::layout->field_0x2c_rowHeight +
+                             Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                             Globals::layout->field_0x5c,
+                             (this->windowWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                             Globals::layout->buttonInsetX,
+                             this->windowHeight - (Globals::layout->field_0xc_leftMargin +
+                                                   Globals::layout->field_0x2c_rowHeight * 2 +
+                                                   Globals::layout->field_0x20_top + Globals::layout->field_0x5c) -
+                             Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+                             String("", false));
 
-    String leftBody("", false);
-    layout->drawBox(5, layout->buttonInsetX + this->windowX,
-                    this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top +
-                    layout->field_0x5c + layout->field_0x2c_rowHeight,
-                    (this->windowWidth >> 1) - (layout->field_0x2c_rowHeight + layout->buttonInsetX),
-                    ((this->windowHeight -
-                      (layout->field_0x20_top + layout->field_0xc_leftMargin +
-                       layout->field_0x5c + layout->field_0x2c_rowHeight * 2)) -
-                     layout->field_0x10_rightMargin) -
-                    layout->field_0x24,
-                    leftBody, 0);
-
-    String rightHdr;
-    rightHdr.copy((Globals::gameText)->getText(0xc95), false);
-    layout->drawBox(1, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight,
-                    this->windowY + layout->field_0xc_leftMargin + layout->field_0x20_top,
-                    ((this->windowWidth >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX,
-                    layout->field_0x5c, rightHdr, 0);
-
-    String rightBody("", false);
-    layout->drawBox(5, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight,
-                    this->windowY + layout->field_0x2c_rowHeight + layout->field_0xc_leftMargin +
-                    layout->field_0x20_top + layout->field_0x5c,
-                    ((this->windowWidth >> 1) - layout->field_0x2c_rowHeight) - layout->buttonInsetX,
-                    ((this->windowHeight -
-                      (layout->field_0xc_leftMargin + layout->field_0x2c_rowHeight * 2 +
-                       layout->field_0x20_top + layout->field_0x5c)) -
-                     layout->field_0x10_rightMargin) -
-                    layout->field_0x24,
-                    rightBody, 0);
-
+    // Details of the selected wanted person on the right half.
     if (this->imageParts != nullptr) {
-        int charX = this->windowX + (this->windowWidth >> 1) + layout->field_0x2c_rowHeight;
-        int charY = layout->field_0x5c + this->windowY + layout->field_0x2c_rowHeight +
-                    layout->field_0xc_leftMargin + layout->field_0x20_top;
-        (Globals::imageFactory)->drawChar(this->imageParts, charX, charY, false);
-        int textX = layout->field_0x2d4 + charX + layout->field_0x2c_rowHeight;
-        canvas->DrawString(font, this->nameText, textX, charY, false);
-
-        String fromLine = String("from: ", false) +
-                          *(Globals::gameText)->getText(0xc93) + this->fromText;
-        canvas->DrawString(font, fromLine, textX, charY + layout->field_0x4 * 2, false);
-
-        String toLine = String("to: ", false) +
-                        *(Globals::gameText)->getText(0xc93) + this->toText;
-        canvas->DrawString(font, toLine, textX, charY + layout->field_0x4 * 3, false);
-
+        int imageX = this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight;
+        int imageY = this->windowY + Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0xc_leftMargin +
+                     Globals::layout->field_0x20_top + Globals::layout->field_0x5c;
+        Globals::imageFactory->drawChar(this->imageParts, imageX, imageY, false);
+        int textX = Globals::layout->field_0x2d4 + imageX + Globals::layout->field_0x2c_rowHeight;
+        int textY = imageY;
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->nameText, textX, textY, false);
+        textY += Globals::layout->field_0x4 * 2;
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                    *Globals::gameText->getText(3226) + String(" ", false) + this->detailText,
+                                    textX, textY, false);
+        textY += Globals::layout->field_0x4;
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                    *Globals::gameText->getText(3225) + String(" ", false) + this->rewardText,
+                                    textX, textY, false);
         this->scrollWindow->draw();
     }
-
-    if (this->detailButton != nullptr &&
-        (*this->wantedList)[this->selectedWanted]->isActive() != 0) {
+    if (this->detailButton != nullptr && (*this->wantedList)[this->selectedWanted]->isActive())
         this->detailButton->draw();
-    }
-
-    layout->drawFooter();
+    Globals::layout->drawFooter();
 }
 
 
