@@ -2050,199 +2050,238 @@ void Status::departStation(Station *dest) {
 }
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
-    unsigned which = (unsigned) docked;
-    unsigned both = which & (unsigned) extra;
-
-    for (unsigned i = 0; i < missions->size(); i = i + 1) {
+    for (unsigned i = 0; i < missions->size(); i++) {
         Mission *m = (*missions)[i];
-        if (m->hasWon() != 0)
+        if (m->hasWon()) {
             return 0;
-
-        if (m == 0 ||
-            (!m->isCampaignMission() && m->getAgent() == 0 &&
-             m->getClientImage() == 0 && m->getTargetStation() == 0))
+        }
+        if (m == 0) {
             continue;
-
-        int type = m->getType();
-        switch (type) {
+        }
+        // The original queries the target station twice here.
+        if (!m->isCampaignMission() && m->getAgent() == 0 && m->getClientImage() == 0 &&
+            m->getTargetStation() == 0 && m->getTargetStation() == 0) {
+            continue;
+        }
+        switch (m->getType()) {
+            case 0xa7:
+            case 0xae:
+                if (m->getStatusValue() >= m->getProductionGoodAmount()) {
+                    m->setWon(true);
+                    return m;
+                }
+                break;
+            case 8:
+                if (m->isCampaignMission() && Globals::status->currentCampaignMission == 0x8f && !atStation) {
+                    if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
+                        for (unsigned j = 0; j < pendingProducts->size(); j++) {
+                            PendingProduct *pp = (*pendingProducts)[j];
+                            if (pp != 0 && pp->blueprintIndex == 0xd2) {
+                                return m;
+                            }
+                        }
+                    }
+                }
+                if (atStation && station->getIndex() == m->getTargetStation()) {
+                    int index = m->getProductionGoodIndex();
+                    int amount = m->getProductionGoodAmount();
+                    if (Item::isInList(index, amount, ship->getCargo())) {
+                        return m;
+                    }
+                }
+                break;
+            case 0:
+            case 0xb:
+                if (atStation && station->getIndex() == m->getTargetStation()) {
+                    return m;
+                }
+                break;
+            case 0xd:
+                if (atStation && field_0xf0) {
+                    return m;
+                }
+                break;
+            case 0xe:
+                if (atStation && station->getIndex() == m->getAgent()->getStation() &&
+                    Item::isInList(0x73, ship->getCargo())) {
+                    return m;
+                }
+                break;
             case 0x96:
-                if (m->getStatusValue() <= missionCount) {
+                if (missionCount >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
             case 0x97:
-                if (m->getStatusValue() <= kills) {
-                    m->setWon(true);
-                    return m;
-                }
-                break;
-            case 0x99:
-                if (m->getStatusValue() <= stationsVisited) {
-                    m->setWon(true);
-                    return m;
-                }
-                break;
-            case 0x9b:
-                if (m->getStatusValue() <= goodsProduced) {
+                if (kills >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
             case 0x98: {
-                Array<Item *> *eq = ship->getEquipment();
-                for (unsigned j = 0; j < eq->size(); j = j + 1) {
-                    Item *it = (*eq)[j];
-                    if (it != 0 && it->getIndex() == m->getStatusValue())
+                Array<Item *> *equipment = ship->getEquipment();
+                for (unsigned j = 0; j < equipment->size(); j++) {
+                    if ((*equipment)[j] != 0 && (*equipment)[j]->getIndex() == m->getStatusValue()) {
                         return m;
-                }
-                break;
-            }
-            case 0x9a:
-                if (m->getProductionGoodAmount() <= ship->getCurrentLoad()) {
-                    m->setWon(true);
-                    return m;
-                }
-                break;
-            case 0xa7:
-            case 0xae:
-                if (m->getProductionGoodAmount() <= m->getStatusValue()) {
-                    m->setWon(true);
-                    return m;
-                }
-                break;
-            case 0x9c:
-                if (!docked) {
-                    if (extra >= 0x2711 && station->getIndex() == m->getTargetStation()) return m;
-                }
-                break;
-            case 0xa0:
-                if (docked) return m;
-                if (extra < 0x2711 && station->getIndex() != m->getTargetStation()) return m;
-                break;
-            case 0x9d: {
-                Array<Item *> *eq = ship->getEquipment();
-                for (unsigned j = 0; j < eq->size(); j = j + 1) {
-                    Item *it = (*eq)[j];
-                    if (it != 0 && it->getType() == m->getStatusValue())
-                        return m;
-                }
-                break;
-            }
-            case 0x9e: {
-                Array<Item *> *eq = ship->getEquipment();
-                bool hasGood = false, hasSpecial = false;
-                for (unsigned j = 0; j < eq->size(); j = j + 1) {
-                    Item *it = (*eq)[j];
-                    if (it != 0) {
-                        if (it->getType() == 0)
-                            hasGood = true;
-                        else if (it->getSort() == 10)
-                            hasSpecial = true;
                     }
                 }
-                if (hasGood && hasSpecial) return m;
+                break;
+            }
+            case 0x99:
+                if (stationsVisited >= m->getStatusValue()) {
+                    m->setWon(true);
+                    return m;
+                }
+                break;
+            case 0x9a:
+                if (ship->getCurrentLoad() >= m->getStatusValue()) {
+                    m->setWon(true);
+                    return m;
+                }
+                break;
+            case 0x9b:
+                if (goodsProduced >= m->getStatusValue()) {
+                    m->setWon(true);
+                    return m;
+                }
+                break;
+            case 0x9e: {
+                Array<Item *> *equipment = ship->getEquipment();
+                bool hasSpecial = false;
+                bool hasGood = false;
+                for (unsigned j = 0; j < equipment->size(); j++) {
+                    if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == 0) {
+                        hasGood = true;
+                    } else if ((*equipment)[j] != 0 && (*equipment)[j]->getSort() == 10) {
+                        hasSpecial = true;
+                    }
+                }
+                if (hasGood && hasSpecial) {
+                    return m;
+                }
                 break;
             }
             case 0xa2:
-                if (docked && station->getIndex() == m->getTargetStation()) {
-                    BluePrint *bp = (*bluePrints)[m->getStatusValue()];
-                    if (bp->getCompletionRate() >= 1.0f) return m;
-                }
-                break;
-            case 0xa3: {
-                Array<int> *arr = field_90;
-                bool all = true;
-                for (unsigned j = 0; j < arr->size(); j = j + 1) {
-                    if ((*arr)[j] < 0) {
-                        all = false;
-                        break;
+                if (atStation && station->getIndex() == m->getTargetStation()) {
+                    BluePrint *bluePrint = (*bluePrints)[m->getStatusValue()];
+                    Array<int> *ingredients = bluePrint->getIngredientList();
+                    Array<int> *quantities = bluePrint->getQuantityList();
+                    bool complete = true;
+                    for (unsigned j = 0; j < ingredients->size(); j++) {
+                        if (!ship->hasCargo((*ingredients)[j], (*quantities)[j])) {
+                            complete = false;
+                            break;
+                        }
+                    }
+                    if (complete) {
+                        return m;
                     }
                 }
-                if (all) return m;
                 break;
-            }
-            case 0xa8: {
-                Status * s = Globals::status;
-                if (m->getStatusValue() <= s->field_178) {
-                    m->setWon(true);
-                    s->field_178 = 0;
-                    return m;
+            case 0xa6:
+                if (atStation && station->getIndex() == m->getTargetStation()) {
+                    int index = m->getProductionGoodIndex();
+                    int amount = m->getProductionGoodAmount();
+                    if (Item::isInList(index, amount, ship->getCargo())) {
+                        return m;
+                    }
+                    if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) {
+                        return m;
+                    }
                 }
                 break;
-            }
             case 0xaa:
                 if (m->getStatusValue() == 1) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 0xab:
-                if (docked && station->getIndex() == m->getTargetStation()) return m;
-                break;
-            case 0xac:
-                if (both != 0 && station->getIndex() == m->getTargetStation()) {
-                    int idx = m->getProductionGoodIndex();
-                    int amt = m->getProductionGoodAmount();
-                    if (Item::isInList(idx, amt, ship->getCargo())) return m;
-                }
-                break;
-            case 0xa6:
-                if (docked && station->getIndex() == m->getTargetStation()) {
-                    int idx = m->getProductionGoodIndex();
-                    int amt = m->getProductionGoodAmount();
-                    if (Item::isInList(idx, amt, ship->getCargo())) return m;
-                    if (!Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) return m;
-                }
-                break;
             case 0xb8:
                 if (m->getStatusValue() == 0) {
-                    Status * s = Globals::status;
-                    if (s->currentCampaignMission != 0x5c || s->inAlienOrbit() ||
-                        s->station->getIndex() != 0x71) {
+                    if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
+                        Globals::status->station->getIndex() != 0x71) {
                         m->setWon(true);
                         return m;
                     }
                 }
                 break;
             case 0xbd:
-                if (docked) {
-                    Array<Item *> *eq = ship->getEquipment();
-                    for (unsigned j = 0; j < eq->size(); j = j + 1) {
-                        Item *it = (*eq)[j];
-                        if (it != 0 && it->getSort() == m->getStatusValue())
+                if (atStation) {
+                    Array<Item *> *equipment = ship->getEquipment();
+                    for (unsigned j = 0; j < equipment->size(); j++) {
+                        if ((*equipment)[j] != 0 && (*equipment)[j]->getSort() == m->getStatusValue()) {
                             return m;
+                        }
                     }
                 }
                 break;
-            default:
-
-                if (type == 8) {
-                    if (m->isCampaignMission() && Globals::status->currentCampaignMission == 0x8f && !docked) {
-                        if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
-                            for (unsigned j = 0; j < pendingProducts->size(); j = j + 1) {
-                                PendingProduct *pp = (*pendingProducts)[j];
-                                if (pp != 0 && pp->blueprintIndex == 0xd2)
-                                    return m;
-                            }
-                        }
+            case 0x9c:
+                if (!atStation && station->getIndex() == m->getTargetStation() && extra > 10000) {
+                    return m;
+                }
+                break;
+            case 0x9d: {
+                Array<Item *> *equipment = ship->getEquipment();
+                for (unsigned j = 0; j < equipment->size(); j++) {
+                    if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == m->getStatusValue()) {
+                        return m;
                     }
-                    if (docked && station->getIndex() == m->getTargetStation()) {
-                        int idx = m->getProductionGoodIndex();
-                        int amt = m->getProductionGoodAmount();
-                        if (Item::isInList(idx, amt, ship->getCargo())) return m;
+                }
+                break;
+            }
+            case 0xa0:
+                if (atStation) {
+                    return m;
+                }
+                if (extra > 10000 && station->getIndex() != m->getTargetStation()) {
+                    return m;
+                }
+                break;
+            case 0xa3: {
+                bool none = true;
+                for (unsigned j = 0; j < field_90->size(); j++) {
+                    if ((*field_90)[j] >= 0) {
+                        none = false;
+                        break;
                     }
-                } else if (type == 0xd) {
-                    if (docked && field_0xf0 != 0) return m;
-                } else if (type == 0xe) {
-                    if (docked) {
-                        Agent *ag = m->getAgent();
-                        if (station->getIndex() == ag->getStation()) {
-                            if (Item::isInList(0x73, ship->getCargo())) return m;
-                        }
+                }
+                if (none) {
+                    return m;
+                }
+                break;
+            }
+            case 0xa4:
+                if (!atStation && extra > 10000) {
+                    return m;
+                }
+                break;
+            case 0xa5:
+                return m;
+            case 0xa8:
+                if (Globals::status->field_178 >= m->getStatusValue()) {
+                    m->setWon(true);
+                    Globals::status->field_178 = 0;
+                    return m;
+                }
+                break;
+            case 0xa9:
+                if (!atStation && extra > 2000) {
+                    return m;
+                }
+                break;
+            case 0xab:
+                if (atStation && docked && station->getIndex() == m->getTargetStation()) {
+                    return m;
+                }
+                break;
+            case 0xac:
+                if (atStation && docked && station->getIndex() == m->getTargetStation()) {
+                    int index = m->getProductionGoodIndex();
+                    int amount = m->getProductionGoodAmount();
+                    if (Item::isInList(index, amount, ship->getCargo())) {
+                        return m;
                     }
-                } else if (type == 0xb || type == 0) {
-                    if (docked && station->getIndex() == m->getTargetStation()) return m;
                 }
                 break;
         }

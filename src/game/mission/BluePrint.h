@@ -68,7 +68,6 @@ public:
 
     Array<int> *getIngredientList();
 
-private:
     Array<int> *getQuantityList();
 };
 #endif
