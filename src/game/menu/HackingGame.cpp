@@ -144,15 +144,15 @@ void HackingGame::render2D() {
         progress = progress < 1.0f ? progress : 1.0f;
         offset[1][1] = (int) (progress * (float) tileHeight);
         offset[0][0] = (int) (progress * (float) tileWidth);
-        offset[3][1] = (int) -(progress * (float) tileHeight);
-        offset[4][0] = (int) -(progress * (float) tileWidth);
+        offset[3][1] = (int) (-progress * (float) tileHeight);
+        offset[4][0] = (int) (-progress * (float) tileWidth);
     } else if (this->rotatingRight) {
         float progress = (float) this->rotateTimer / 300.0f;
         progress = progress < 1.0f ? progress : 1.0f;
         offset[2][1] = (int) (progress * (float) tileHeight);
         offset[1][0] = (int) (progress * (float) tileWidth);
-        offset[4][1] = (int) -(progress * (float) tileHeight);
-        offset[5][0] = (int) -(progress * (float) tileWidth);
+        offset[4][1] = (int) (-progress * (float) tileHeight);
+        offset[5][0] = (int) (-progress * (float) tileWidth);
     }
 
     if (solved) {
