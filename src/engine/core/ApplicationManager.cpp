@@ -775,9 +775,9 @@ void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigToke
 void ApplicationManager::EnablePerformanceTest(int count) {
     AbyssEngine::performanceOverallModulSwitches = count;
     AbyssEngine::performanceModulSwitches = 0;
-    AbyssEngine::triDrawn = 0;
-    AbyssEngine::performanceTime = 0;
     AbyssEngine::performanceFrameCounter = 0;
+    AbyssEngine::performanceTime = 0;
+    AbyssEngine::triDrawn = 0;
     AbyssEngine::performanceTest = 1;
     AbyssEngine::performanceTestEnded = 0;
 }
