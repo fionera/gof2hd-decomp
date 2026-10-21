@@ -2672,27 +2672,6 @@ void PaintCanvas::Suspend() {
     }
 }
 
-void PaintCanvas::DrawTransform(Transform *tf, const AbyssEngine::AEMath::Matrix &m2,
-                                AbyssEngine::AEMath::Matrix &m3) {
-    if (tf && tf->visible) {
-        AbyssEngine::AEMath::Matrix world = m2 * tf->worldMatrix;
-        if (tf->keyFrames.size() != 0) {
-            world *= tf->rotationMatrix;
-        }
-        for (unsigned int i = 0; i < tf->meshes.size(); i++) {
-            this->DrawMesh(tf->meshes[i], world, m3, tf->color, tf->localMatrix);
-        }
-        for (unsigned int i = 0; i < tf->children.size(); i++) {
-            if (this->currentCamera < this->cameras.count &&
-                tf->children[i]->InCameraVF(&world, (this->cameras.data_)[this->currentCamera])) {
-                this->DrawTransform(tf->children[i], world, m3);
-            } else {
-                this->culledCount += 1;
-            }
-        }
-    }
-}
-
 void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
                               int w, int h, unsigned char alignFlags, unsigned char anchorFlags,
                               unsigned char flipFlags) {
