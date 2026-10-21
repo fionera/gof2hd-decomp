@@ -525,8 +525,11 @@ void DialogueWindow::loadContent() {
                 textId = 378;
                 this->bodyText = *Globals::gameText->getText(textId);
             } else if (this->mission != 0 && this->mission->getTargetStation() == 108) {
-                const int *script =
-                    Globals::status->field_114 == 2 ? g_dw_station108ScriptLate : g_dw_station108Script;
+                const int *script;
+                if (Globals::status->field_114 == 2)
+                    script = g_dw_station108ScriptLate;
+                else
+                    script = g_dw_station108Script;
                 textId = script[this->page * 2 | 1];
                 this->bodyText = *Globals::gameText->getText(textId);
                 int scriptSpeaker = script[this->page * 2];
@@ -548,13 +551,12 @@ void DialogueWindow::loadContent() {
                                                               this->mission->getTargetStationName(), String("#S"));
                 textId = 389;
             } else if (this->mission->getType() == 12) {
-                String *text = Globals::gameText->getText(370);
-                String extra = storyAgent ? String("\n\n") + Globals::status->replaceHash(
-                                                                  String(*Globals::gameText->getText(389), false),
-                                                                  this->mission->getAgent()->getStationName(),
-                                                                  String("#S"))
-                                          : String("");
-                this->bodyText = *text + extra;
+                this->bodyText = *Globals::gameText->getText(370) +
+                                 (storyAgent ? String("\n\n") + Globals::status->replaceHash(
+                                                                     String(*Globals::gameText->getText(389), false),
+                                                                     this->mission->getAgent()->getStationName(),
+                                                                     String("#S"))
+                                             : String(""));
                 this->bodyText = Globals::status->replaceHash(
                     Globals::status->replaceHash(String(this->bodyText, false), String(this->level->killCountB),
                                                  String("#Q1")),
