@@ -265,7 +265,7 @@ namespace AbyssEngine {
 
         float CameraGetCurrentFactor1();
 
-        int CameraIsSphereinViewFrustum(const Vector &point, float radius);
+        bool CameraIsSphereinViewFrustum(const Vector &point, float radius);
 
         int CameraIsPointinViewFrustum(const Vector &point);
 

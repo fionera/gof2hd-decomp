@@ -100,7 +100,7 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int CameraIsSphereinViewFrustum(const Vector &center, float radius, Matrix *extra, Camera *cam) {
+    bool CameraIsSphereinViewFrustum(const Vector &center, float radius, Matrix *extra, Camera *cam) {
         if (!(radius != 0.0f && Engine::vfc != 0))
             return 1;
 
