@@ -26,7 +26,7 @@ public:
     uint32_t field_0x34;
     uint32_t field_0x38;
     uint32_t field_0x3c;
-    uint32_t field_0x40;
+    int32_t field_0x40;
     uint32_t field_0x44;
     uint32_t field_0x48;
     uint32_t field_0x4c;
@@ -91,9 +91,9 @@ public:
     uint8_t field_0x112;
     uint8_t field_0x113;
     uint8_t field_0x114;
-    uint8_t dlcRequiredFlag;
+    bool dlcRequiredFlag;
     uint8_t field_0x116;
-    uint8_t versionMismatchFlag;
+    bool versionMismatchFlag;
     uint8_t field_0x118;
     uint8_t field_0x119;
     uint8_t field_0x11a;

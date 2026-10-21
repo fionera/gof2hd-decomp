@@ -216,104 +216,69 @@ void GameRecord::load() {
     st->field_7c = this->field_0x48;
     st->field_84 = this->field_0x4c;
     st->field_88 = this->field_0x50;
-    if (this->dlcRequiredFlag == '\0') {
-        if (this->versionMismatchFlag == '\0') {
-            if (0x2d < (long) this->field_0x40) {
-                this->field_0x40 = 0x2d;
-            }
-            goto applyMissionCap;
-        }
-    LAB_dlcUnlocked:
-        campaignLocked = true;
-    } else {
-        if (this->versionMismatchFlag != '\0') goto LAB_dlcUnlocked;
-    applyMissionCap:
-        if (0x54 < (long) this->field_0x40) {
-            this->field_0x40 = 0x54;
-        }
-        campaignLocked = false;
-    }
-    if (((this->dlcRequiredFlag != '\0' || campaignLocked) && (this->field_0x40 == 0x2e)) &&
-        (campaignStage = ((Mission *) this->field_0x58)->isEmpty(), campaignStage != 0)) {
-        this->field_0x40 = 0x2d;
-    }
+    // Saves from older versions are capped to the campaign part they contain.
+    if (!this->dlcRequiredFlag && !this->versionMismatchFlag && this->field_0x40 > 45)
+        this->field_0x40 = 45;
+    if (!this->versionMismatchFlag && this->field_0x40 > 84)
+        this->field_0x40 = 84;
+    if ((this->dlcRequiredFlag || this->versionMismatchFlag) && this->field_0x40 == 46 &&
+        ((Mission *) this->field_0x58)->isEmpty())
+        this->field_0x40 = 45;
     Globals::status->setCurrentCampaignMission(this->field_0x40);
     this->hintFlags[30] = this->field_0x40 > 45;
-    this->field_0x119 = 0x55 < (long) this->field_0x40;
+    this->field_0x119 = this->field_0x40 > 85;
     Globals::status->setFreelanceMission((Mission *) this->field_0x54);
     Globals::status->setCampaignMission((Mission *) this->field_0x58);
     Globals::status->setStationStack((Array<Station *> *) this->field_0x5c);
-    campaignStage = this->field_0x40;
-    if (campaignStage == 0x23) {
-        targetStation = ((Mission *) this->field_0x58)->getTargetStation();
-        if (targetStation != 0x1d) {
-            Globals::status->setCampaignMission(new Mission(0xb, 0, 0x1d));
-        }
-        campaignStage = this->field_0x40;
+
+    // Repair campaign states broken by earlier versions.
+    if (this->field_0x40 == 35 && ((Mission *) this->field_0x58)->getTargetStation() != 29)
+        Globals::status->setCampaignMission(new Mission(11, 0, 29));
+    if (this->field_0x40 == 29) {
+        this->field_0x44 = 91;
+        this->field_0x48 = 18;
+        Globals::status->setCurrentCampaignMission(28);
+        Globals::status->setCampaignMission(new Mission(4, 0, 91));
     }
-    if (campaignStage == 0x1d) {
-        this->field_0x44 = 0x5b;
-        this->field_0x48 = 0x12;
-        Globals::status->setCurrentCampaignMission(0x1c);
-        Globals::status->setCampaignMission(new Mission(4, 0, 0x5b));
-        campaignStage = this->field_0x40;
-    }
-    if (campaignStage == 0x19) {
-        this->field_0x44 = 0x30;
+    if (this->field_0x40 == 25) {
+        this->field_0x44 = 48;
         this->field_0x48 = 9;
-        Globals::status->setCurrentCampaignMission(0x18);
-        Globals::status->setCampaignMission(new Mission(4, 0, 0x30));
-        campaignStage = this->field_0x40;
+        Globals::status->setCurrentCampaignMission(24);
+        Globals::status->setCampaignMission(new Mission(4, 0, 48));
     }
-    if (campaignStage == 0x29) {
-        Globals::status->setCurrentCampaignMission(0x27);
-        Globals::status->setCampaignMission(new Mission(0xb, 0, 0x1e));
+    if (this->field_0x40 == 41) {
+        Globals::status->setCurrentCampaignMission(39);
+        Globals::status->setCampaignMission(new Mission(11, 0, 30));
     }
-    if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-        ((this->field_0x40 == 0x56 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
-                                       != 100)))) {
+    if ((this->versionMismatchFlag || this->field_0x118) && this->field_0x40 == 86 &&
+        ((Mission *) this->field_0x58)->getTargetStation() != 100) {
         Globals::hints[49] = 1;
-        Globals::status->setCampaignMission(new Mission(0xb, 0, 100));
+        Globals::status->setCampaignMission(new Mission(11, 0, 100));
     }
-    if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-        ((this->field_0x40 == 0x57 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
-                                       != 10)))) {
+    if ((this->versionMismatchFlag || this->field_0x118) && this->field_0x40 == 87 &&
+        ((Mission *) this->field_0x58)->getTargetStation() != 10) {
         Globals::hints[49] = 1;
         Globals::status->setCampaignMission(new Mission(4, 0, 10));
     }
-    if ((((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-         (this->field_0x40 == 0x58)) && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(),
-                                         targetStation != 10)) {
+    if ((this->versionMismatchFlag || this->field_0x118) && this->field_0x40 == 88 &&
+        ((Mission *) this->field_0x58)->getTargetStation() != 10) {
         Globals::hints[49] = 1;
-        Globals::status->setCampaignMission(new Mission(0xb, 0, 10));
+        Globals::status->setCampaignMission(new Mission(11, 0, 10));
     }
-    if (((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) &&
-        ((this->field_0x40 == 0x59 && (targetStation = ((Mission *) this->field_0x58)->getTargetStation(), targetStation
-                                       != 10)))) {
+    if ((this->versionMismatchFlag || this->field_0x118) && this->field_0x40 == 89 &&
+        ((Mission *) this->field_0x58)->getTargetStation() != 10) {
         Globals::hints[49] = 1;
-        Globals::status->setCurrentCampaignMission(0x56);
-        Globals::status->setCampaignMission(new Mission(0xb, 0, 100));
+        Globals::status->setCurrentCampaignMission(86);
+        Globals::status->setCampaignMission(new Mission(11, 0, 100));
     }
-    if ((this->versionMismatchFlag != '\0') || (this->field_0x118 != '\0')) {
-        campaignStage = this->field_0x40;
-        if (campaignStage == 0x5b) {
-            targetStation = ((Mission *) this->field_0x58)->getTargetStation();
-            if (targetStation == 0x6e) {
-                campaignStage = this->field_0x40;
-                goto LAB_checkStageRange;
-            }
-        } else {
-        LAB_checkStageRange:
-            if ((0xc < campaignStage - 0x5bU) ||
-                (((Array<uint8_t> *) this->field_0x160)->data_[0x1b] != '\0'))
-                goto stationStackLoaded;
-        }
+    if ((this->versionMismatchFlag || this->field_0x118) &&
+        ((this->field_0x40 == 91 && ((Mission *) this->field_0x58)->getTargetStation() != 110) ||
+         ((unsigned int) (this->field_0x40 - 91) <= 12 && !((Array<uint8_t> *) this->field_0x160)->data_[27]))) {
         Globals::hints[49] = 1;
-        this->field_0x40 = 0x56;
+        this->field_0x40 = 86;
         Globals::status->setCurrentCampaignMission(this->field_0x40);
-        Globals::status->setCampaignMission(new Mission(0xb, 0, 100));
+        Globals::status->setCampaignMission(new Mission(11, 0, 100));
     }
-stationStackLoaded:
     ((Station *) Globals::status->voidStation)->setItems((Array<Item *> *) this->field_0x180, true);
     ((Station *) Globals::status->voidStation)->setShips((Array<Ship *> *) this->field_0x184, true);
     st = Globals::status;
@@ -391,7 +356,7 @@ afterDlcUnsaleable:
             }
         }
     }
-    if (0x79 < (long) this->field_0x40) {
+    if (this->field_0x40 > 121) {
         Array<Item *> *cargo = ((Ship *) (Globals::status->getShip()))->getCargo();
         if (cargo != (Array<Item *> *) 0x0) {
             for (i = 0; i < cargo->size(); i = i + 1) {
