@@ -955,16 +955,8 @@ void Layout::resetWindowDimensions() {
     }
 }
 
-static const String *g_tagBaseString = nullptr;
-
-static const char g_tagLit0[] = "";
-
-static const char g_tagLit1[] = "";
-
-static const char g_tagLit2[] = "";
-
 String Layout::tagString(String in) {
-    return String(g_tagLit0) + *g_tagBaseString + String(g_tagLit1) + in + String(g_tagLit2);
+    return String("<c:") + String((int) 0xff8000ff) + String(">") + in + String("<c:>");
 }
 
 
@@ -1149,33 +1141,27 @@ void Layout::drawFooterStation() {
     }
 }
 
-static unsigned *g_dhColor = nullptr;
 
 
 
 void Layout::drawHeader(String title, bool transition) {
-    PaintCanvas *pc = Globals::Canvas;
-    unsigned img = *g_dhColor;
-    pc->SetColor(this->drawColor);
-    int iw = pc->GetImage2DWidth(img);
-    int ih = pc->GetImage2DHeight(img);
-    pc->DrawImage2D(this->headerCapImage, this->windowX, this->windowY);
-    this->drawBGPattern(this->headerPatternImage, this->windowX + iw, this->windowY, this->windowWidth + iw * -2, ih);
-    pc->DrawImage2D(this->headerCapImage,
-                    this->windowWidth + this->windowX,
-                    this->windowY, iw, ih, (unsigned char) (0x11), (unsigned char) (0x12), (unsigned char) (0x01));
+    Globals::Canvas->SetColor(this->drawColor);
+    int capW = Globals::Canvas->GetImage2DWidth(this->headerCapImage);
+    int capH = Globals::Canvas->GetImage2DHeight(this->headerCapImage);
+    Globals::Canvas->DrawImage2D(this->headerCapImage, this->windowX, this->windowY);
+    this->drawBGPattern(this->headerPatternImage, this->windowX + capW, this->windowY, this->windowWidth - 2 * capW,
+                        capH);
+    Globals::Canvas->DrawImage2D(this->headerCapImage, this->windowWidth + this->windowX, this->windowY, capW, capH,
+                                 0x11, 0x12, 1);
     if (title.size() != 0) {
-        pc->DrawImage2D(this->headerIconImage, this->windowX, this->windowY);
-        int *m = (int *) Globals::layout;
-        pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), title,
-                       m[0x28 / 4] + m[0x44 / 4] + this->windowX,
-                       this->headerTitleY + this->windowY, false);
+        Globals::Canvas->DrawImage2D(this->headerIconImage, this->windowX, this->windowY);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, title,
+                                    Globals::layout->field_0x44 + this->windowX + Globals::layout->buttonInsetX,
+                                    this->headerTitleY + this->windowY, false);
     }
     this->helpButtonEnabled = transition;
-    if (transition && this->choiceWindowOpen == 0) {
-        alignas(4) unsigned char sp[8];
-        TouchButton_footerAnim(this->helpButton, 0, 0, sp);
-    }
+    if (transition && this->choiceWindowOpen == 0)
+        this->helpButton->draw();
 }
 
 
