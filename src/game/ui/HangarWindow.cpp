@@ -1130,13 +1130,13 @@ int HangarWindow::OnTouchBegin(int touch, int coord) {
 
     if (this->dialogActive != 0) {
         if (this->buyCreditsActive != 0) {
-            for (int i = 12; i != 17; i++) {
-                (*this->buttons)[i]->OnTouchBegin(touch, coord);
+            for (int i = 0; i < 5; i++) {
+                (*this->buttons)[12 + i]->OnTouchBegin(touch, coord);
             }
             (*this->buttons)[17]->OnTouchBegin(touch, coord);
         } else if (this->freeCreditsActive != 0) {
-            for (int i = 18; i != 23; i++) {
-                (*this->buttons)[i]->OnTouchBegin(touch, coord);
+            for (int i = 0; i < 5; i++) {
+                (*this->buttons)[18 + i]->OnTouchBegin(touch, coord);
             }
         }
         this->dialog->OnTouchBegin(touch, coord);
@@ -1797,13 +1797,13 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
 
     if (this->dialogActive != 0) {
         if (this->buyCreditsActive != 0) {
-            for (int i = 12; i != 17; i++) {
-                (*this->buttons)[i]->OnTouchMove(touch, coord);
+            for (int i = 0; i < 5; i++) {
+                (*this->buttons)[12 + i]->OnTouchMove(touch, coord);
             }
             (*this->buttons)[17]->OnTouchMove(touch, coord);
         } else if (this->freeCreditsActive != 0) {
-            for (int i = 18; i != 23; i++) {
-                (*this->buttons)[i]->OnTouchMove(touch, coord);
+            for (int i = 0; i < 5; i++) {
+                (*this->buttons)[18 + i]->OnTouchMove(touch, coord);
             }
         }
         this->dialog->OnTouchMove(touch, coord);
@@ -1823,20 +1823,20 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
         this->scrollOffset = this->scrollOffset + dy;
         this->lastTouchY = coord;
 
-        bool touched = (*this->buttons)[8]->isTouched() ? true : (*this->buttons)[9]->isTouched();
+        bool touched = (*this->buttons)[8]->isTouched() || (*this->buttons)[9]->isTouched();
         int dist = coord - this->touchStartY;
         if (dist < 0) {
             dist = -dist;
         }
-        if (!touched && dist > 5) {
+        if (!(touched || dist < 6)) {
             this->holdTime = 0;
             this->repeatTimer = 0;
             for (unsigned int i = 0; i < this->buttons->size(); i++) {
                 (*this->buttons)[i]->OnTouchMove(touch, coord);
             }
             this->setSellMode(false);
-            this->sellConfirmPending = 0;
             this->selectedItem = 0;
+            this->sellConfirmPending = 0;
             (*this->buttons)[8]->resetTouch();
             (*this->buttons)[9]->resetTouch();
         }
