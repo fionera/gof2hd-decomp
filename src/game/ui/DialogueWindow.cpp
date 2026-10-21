@@ -491,7 +491,7 @@ void DialogueWindow::loadContent() {
                 Globals::sound->stop(Globals::sound->currentMusicEvent);
                 Globals::sound->play(136, 0, 0, 0.0f);
                 Globals::sound->play(162, 0, 0, 0.0f);
-            } else if (textId == 2782 && GameText::getLanguage() == 1) {
+            } else if (GameText::getLanguage() == 1 && textId == 2782) {
                 this->clientImage = g_dw_speakerFaces[0];
                 this->agentName = *Globals::gameText->getText(1597);
                 this->mirrorFace = playerSpeaks;
@@ -500,7 +500,7 @@ void DialogueWindow::loadContent() {
                 this->bodyText = *Globals::gameText->getText(textId);
             }
         } else {
-            String extra = (unsigned int) (this->campaignMission - 38) <= 3 && this->campaignMission != 39
+            String extra = this->campaignMission == 38 || this->campaignMission == 40 || this->campaignMission == 41
                                ? String(*Globals::gameText->getText(527), false)
                                : String("");
             this->bodyText = *Globals::gameText->getText(392) + String("\n") + extra + String("\n\n") +
