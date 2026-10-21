@@ -195,7 +195,8 @@ StarSystem::StarSystem(int mode) {
         this->tintColor = kSystemTints[((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex()];
     }
 
-    for (uint32_t i = 1; i < this->texturesArray->size(); ++i) {
+    uint32_t i;
+    for (i = 1; i < this->texturesArray->size(); ++i) {
         if (stations->data()[i - 1] == Globals::status->getStation()->getIndex()) {
             if (Globals::status->getCurrentCampaignMission() == 0 && mode == 3) {
                 this->selectedStationSlot = i;
@@ -593,22 +594,12 @@ void StarSystem::renderSunStreak() {
 void StarSystem::render() {
     using namespace AbyssEngine::AEMath;
     Vector cameraPos = MatrixGetPosition(*(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
-    for (unsigned i = 0; i < this->planetsArray->size(); ++i) {
+    for (int i = 0; i < this->planetsArray->size(); ++i) {
         if (this->planetsArray->size() >= 2) {
             if (i == 0) {
                 Matrix m = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-                {
-                    Vector target = (*this->positionsArray)[0] + cameraPos;
-                    Vector up;
-                    if (this->supernovaSystem) {
-                        up.x = 1.0f;
-                        up.y = 0.0f;
-                        up.z = 0.0f;
-                    } else {
-                        up = MatrixGetUp(m);
-                    }
-                    m = MatrixGetLookAt(target, cameraPos, up);
-                }
+                m = MatrixGetLookAt((*this->positionsArray)[0] + cameraPos, cameraPos,
+                                    this->supernovaSystem ? Vector(1.0f, 0.0f, 0.0f) : MatrixGetUp(m));
                 (*this->planetsArray)[0]->setRotation(0.0f, 0.0f, 0.0f);
                 Vector scaling = (*this->planetsArray)[0]->getScaling();
                 float grow = (this->lensFlare->intensity + -10.0f) * 0.015625f;
@@ -667,11 +658,9 @@ void StarSystem::render2D() {
     if (this->lensFlare == nullptr)
         return;
 
-    Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-    Vector pos;
-    pos.x = local->m[3] + this->lightDirection.x * 65536.0f;
-    pos.y = local->m[7] + this->lightDirection.y * 65536.0f;
-    pos.z = local->m[11] + this->lightDirection.z * 65536.0f;
+    Matrix local = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+    Vector pos(local.m[3] + this->lightDirection.x * 65536.0f, local.m[7] + this->lightDirection.y * 65536.0f,
+               local.m[11] + this->lightDirection.z * 65536.0f);
     this->lensFlare->update(0);
     if (Globals::Canvas->GetScreenPosition(pos, pos)) {
         this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);

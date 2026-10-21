@@ -266,20 +266,10 @@ namespace AbyssEngine {
         }
         this->rangeEnd = rangeEnd;
 
-        longlong rangeStart = start;
-        if (length < start || start < 0) {
-            rangeStart = 0;
-        }
-        this->rangeStart = rangeStart;
+        this->rangeStart = start >= 0 ? (length < start ? 0 : start) : 0;
 
         longlong current = this->currentTime;
-        if (end < current) {
-            current = end;
-        }
-        if (current < start) {
-            current = start;
-        }
-        this->currentTime = current;
+        this->currentTime = current < start ? start : (current > end ? end : current);
 
         for (uint i = 0; i < this->meshes.size(); ++i) {
             Mesh *mesh = this->meshes[i];
@@ -327,28 +317,27 @@ namespace AbyssEngine {
         }
 
         if (updateBounds) {
-            this->bounds() = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
+            this->boundingSphere = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
 
-            // Mesh::boundsCenterX..boundsRadiusSq is a BSphere in the original layout.
             for (uint i = 0; i < this->meshes.size(); ++i) {
                 Mesh *mesh = this->meshes[i];
                 if (mesh != 0 && mesh->animation != 0) {
                     mesh->animation->Update(time, false);
-                    AEMath::BSphere sphere = *(AEMath::BSphere *) &this->meshes[i]->boundsCenterX;
+                    AEMath::BSphere sphere = this->meshes[i]->bounds;
                     sphere.center = AEMath::MatrixTransformVector(this->meshes[i]->animation->rotationMatrix,
                                                                   sphere.center);
-                    this->bounds().Merge(sphere);
+                    this->boundingSphere.Merge(sphere);
                 } else {
-                    AEMath::BSphere sphere = *(AEMath::BSphere *) &mesh->boundsCenterX;
-                    this->bounds().Merge(sphere);
+                    AEMath::BSphere sphere = mesh->bounds;
+                    this->boundingSphere.Merge(sphere);
                 }
             }
 
             for (uint i = 0; i < this->children.size(); ++i) {
                 this->children[i]->Update(time, false);
-                AEMath::BSphere sphere = this->children[i]->bounds();
+                AEMath::BSphere sphere = this->children[i]->boundingSphere;
                 sphere.center = AEMath::MatrixTransformVector(this->children[i]->rotationMatrix, sphere.center);
-                this->bounds().Merge(sphere);
+                this->boundingSphere.Merge(sphere);
             }
         }
     }
@@ -356,18 +345,18 @@ namespace AbyssEngine {
     void Transform::DebugOut(int value) {}
 
     Transform::Transform(Transform *other)
-        : boundingCenter(), boundingRadius(0.0f), boundingRadius2(1.0f), translation(), scale(), localTranslation(),
+        : translation(), scale(), localTranslation(),
           localScale() {
         if (other == 0) {
             // The original "delegates" by constructing (and immediately destroying) a temporary.
             Transform();
         } else {
-            this->animating = true;
             this->animationStart = other->animationStart;
+            this->animating = true;
             this->animationSpeed = 1.0f;
-            this->color = -1;
             this->animationLength = other->animationLength;
             this->rangeStart = other->rangeStart;
+            this->color = -1;
             this->rangeEnd = other->rangeEnd;
             this->currentTime = other->currentTime;
             this->currentKeyFrameIndex = other->currentKeyFrameIndex;
@@ -390,7 +379,7 @@ namespace AbyssEngine {
                 Transform * child = new Transform(other->children[i]);
                 ArrayAdd(child, this->children);
             }
-            this->bounds() = other->bounds();
+            this->boundingSphere = other->boundingSphere;
             this->visible = true;
             this->vfcEnabled = true;
             this->keyFramesShared = true;
@@ -402,21 +391,22 @@ namespace AbyssEngine {
         if (mode == static_cast<AnimationMode>(3)) {
             this->animating = true;
             this->currentTime = this->rangeStart;
-        } else if (mode == AnimationMode_0) {
-            this->animating = false;
+        } else {
+            if (mode == AnimationMode_0)
+                this->animating = false;
             this->flags = mode;
         }
     }
 
     Transform::Transform()
-        : boundingCenter(), boundingRadius(0.0f), boundingRadius2(1.0f), translation(), scale(), localTranslation(),
+        : translation(), scale(), localTranslation(),
           localScale() {
         this->animationLength = 0;
         this->color = -1;
         this->animating = true;
-        this->animationSpeed = 1.0f;
         this->rangeStart = 0;
         this->rangeEnd = 0;
+        this->animationSpeed = 1.0f;
         this->currentTime = 0;
         this->currentKeyFrameIndex = 0;
 
@@ -425,8 +415,8 @@ namespace AbyssEngine {
         this->scale = this->localScale = AEMath::Vector{1.0f, 1.0f, 1.0f};
         this->rotationMatrix = this->localMatrix = AEMath::Matrix();
 
-        this->flags = 2;
         this->localMatrix.m[5] = -1.0f;
+        this->flags = 2;
         this->vfcEnabled = true;
         this->keyFramesShared = false;
         this->visible = true;
@@ -462,7 +452,7 @@ namespace AbyssEngine {
                 AEMath::Matrix identity;
                 this->localMatrix = identity;
                 if (Engine::enableShader == 0)
-                    this->localMatrix.m[5] = -1.0f;
+                    this->localMatrix.m.e5 = -1.0f;
                 return;
             }
 
@@ -479,15 +469,11 @@ namespace AbyssEngine {
             } else {
                 KeyFrame *prev = cursor[-2];
                 longlong prevTime = prev->timestamp;
-                float t;
-                {
-                    Quaternion fromRotation(prev->rotation);
-                    float elapsed = (float) (current - prevTime);
-                    float span = (float) (nextTime - prevTime);
-                    Quaternion toRotation(this->keyFrames[this->currentKeyFrameIndex]->rotation);
-                    t = elapsed / span;
-                    this->rotation = Quaternion::Lerp(fromRotation, toRotation, t);
-                }
+                float elapsed = (float) (current - prevTime);
+                float span = (float) (nextTime - prevTime);
+                float t = elapsed / span;
+                this->rotation = Quaternion::Lerp(Quaternion(prev->rotation),
+                                                  Quaternion(this->keyFrames[this->currentKeyFrameIndex]->rotation), t);
 
                 this->translation = AEMath::VectorLerp(this->keyFrames[this->currentKeyFrameIndex - 1]->translation,
                                                        this->keyFrames[this->currentKeyFrameIndex]->translation, t);
@@ -497,11 +483,8 @@ namespace AbyssEngine {
                 KeyFrame *to = this->keyFrames[this->currentKeyFrameIndex];
                 this->alpha = from->alpha + t * (to->alpha - from->alpha);
 
-                {
-                    Quaternion fromLocal(from->localRotation);
-                    Quaternion toLocal(this->keyFrames[this->currentKeyFrameIndex]->localRotation);
-                    this->localRotation = Quaternion::Lerp(fromLocal, toLocal, t);
-                }
+                this->localRotation = Quaternion::Lerp(Quaternion(from->localRotation),
+                                                       Quaternion(this->keyFrames[this->currentKeyFrameIndex]->localRotation), t);
 
                 this->localTranslation = AEMath::VectorLerp(
                     this->keyFrames[this->currentKeyFrameIndex - 1]->localTranslation,
@@ -539,18 +522,16 @@ namespace AbyssEngine {
             float w = this->localRotation.w;
             float xx = x * x, yy = y * y, zz = z * z;
             float zw = z * w, xy = x * y, yw = y * w, xz = x * z, xw = x * w, yz = y * z;
+            this->localMatrix.m[3] = this->localMatrix.m[7] = this->localMatrix.m[11] = 0.0f;
             this->localMatrix.m[0] = (float) (1.0 - 2.0 * ((double) yy + (double) zz));
             this->localMatrix.m[1] = (float) (2.0 * ((double) xy - (double) zw));
             this->localMatrix.m[2] = (float) (2.0 * ((double) xz + (double) yw));
-            this->localMatrix.m[3] = 0.0f;
             this->localMatrix.m[4] = (float) (2.0 * ((double) xy + (double) zw));
             this->localMatrix.m[5] = (float) (1.0 - 2.0 * ((double) xx + (double) zz));
             this->localMatrix.m[6] = (float) (2.0 * ((double) yz - (double) xw));
-            this->localMatrix.m[7] = 0.0f;
             this->localMatrix.m[8] = (float) (2.0 * ((double) xz - (double) yw));
             this->localMatrix.m[9] = (float) (2.0 * ((double) yz + (double) xw));
             this->localMatrix.m[10] = (float) (1.0 - 2.0 * ((double) xx + (double) yy));
-            this->localMatrix.m[11] = 0.0f;
 
             AEMath::Matrix toCenter;
             toCenter.m[3] = -0.5f;
@@ -575,27 +556,27 @@ namespace AbyssEngine {
         }
 
         if (!updateBounds) {
-            this->bounds() = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
+            this->boundingSphere = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
 
             for (uint i = 0; i < this->meshes.size(); ++i) {
                 Mesh *mesh = this->meshes[i];
                 if (mesh != 0 && mesh->animation != 0) {
                     mesh->animation->InternUpdate(time, false);
-                    AEMath::BSphere sphere = *reinterpret_cast<AEMath::BSphere *>(&this->meshes[i]->boundsCenterX);
+                    AEMath::BSphere sphere = this->meshes[i]->bounds;
                     sphere.center = AEMath::MatrixTransformVector(this->meshes[i]->animation->rotationMatrix,
                                                                   sphere.center);
-                    this->bounds().Merge(sphere);
+                    this->boundingSphere.Merge(sphere);
                 } else {
-                    AEMath::BSphere sphere = *reinterpret_cast<AEMath::BSphere *>(&mesh->boundsCenterX);
-                    this->bounds().Merge(sphere);
+                    AEMath::BSphere sphere = mesh->bounds;
+                    this->boundingSphere.Merge(sphere);
                 }
             }
 
             for (uint i = 0; i < this->children.size(); ++i) {
                 this->children[i]->InternUpdate(time, false);
-                AEMath::BSphere sphere = this->children[i]->bounds();
+                AEMath::BSphere sphere = this->children[i]->boundingSphere;
                 sphere.center = AEMath::MatrixTransformVector(this->children[i]->rotationMatrix, sphere.center);
-                this->bounds().Merge(sphere);
+                this->boundingSphere.Merge(sphere);
             }
         }
     }
@@ -697,22 +678,22 @@ namespace AbyssEngine {
                 {
                     float value = values[0];
                     key->scale.x = value;
-                    if (value > this->boundingRadius2)
-                        this->boundingRadius2 = value;
+                    if (value > this->boundingSphere.radius2)
+                        this->boundingSphere.radius2 = value;
                 }                break;
             case 0x10:
                 {
                     float value = values[0];
                     key->scale.y = value;
-                    if (value > this->boundingRadius2)
-                        this->boundingRadius2 = value;
+                    if (value > this->boundingSphere.radius2)
+                        this->boundingSphere.radius2 = value;
                 }                break;
             case 0x20:
                 {
                     float value = values[0];
                     key->scale.z = value;
-                    if (value > this->boundingRadius2)
-                        this->boundingRadius2 = value;
+                    if (value > this->boundingSphere.radius2)
+                        this->boundingSphere.radius2 = value;
                 }                break;
             case 0x38:
                 key->scale.x = values[0];
@@ -721,8 +702,8 @@ namespace AbyssEngine {
                 {
                     float largest = values[0] > values[1] ? values[0] : values[1];
                     largest = largest > values[2] ? largest : values[2];
-                    if (largest > this->boundingRadius2)
-                        this->boundingRadius2 = largest;
+                    if (largest > this->boundingSphere.radius2)
+                        this->boundingSphere.radius2 = largest;
                 }
                 break;
             case 0x40:
@@ -833,22 +814,22 @@ namespace AbyssEngine {
                 {
                     float value = values[0];
                     key->scale.x = value;
-                    if (value > this->boundingRadius2)
-                        this->boundingRadius2 = value;
+                    if (value > this->boundingSphere.radius2)
+                        this->boundingSphere.radius2 = value;
                 }                break;
             case 0x10:
                 {
                     float value = values[0];
                     key->scale.y = value;
-                    if (value > this->boundingRadius2)
-                        this->boundingRadius2 = value;
+                    if (value > this->boundingSphere.radius2)
+                        this->boundingSphere.radius2 = value;
                 }                break;
             case 0x20:
                 {
                     float value = values[0];
                     key->scale.z = value;
-                    if (value > this->boundingRadius2)
-                        this->boundingRadius2 = value;
+                    if (value > this->boundingSphere.radius2)
+                        this->boundingSphere.radius2 = value;
                 }                break;
             case 0x38:
                 key->scale.x = values[0];
@@ -857,8 +838,8 @@ namespace AbyssEngine {
                 {
                     float largest = values[0] > values[1] ? values[0] : values[1];
                     largest = largest > values[2] ? largest : values[2];
-                    if (largest > this->boundingRadius2)
-                        this->boundingRadius2 = largest;
+                    if (largest > this->boundingSphere.radius2)
+                        this->boundingSphere.radius2 = largest;
                 }
                 break;
             case 0x40:
@@ -1313,9 +1294,9 @@ namespace AbyssEngine {
             return 1;
         }
 
-        const AEMath::Vector &bc = this->boundingCenter;
+        const AEMath::Vector &bc = this->boundingSphere.center;
         AEMath::Vector center = {0.0f, 0.0f, 0.0f};
-        AEMath::Vector extent = {this->boundingRadius, this->boundingRadius, this->boundingRadius};
+        AEMath::Vector extent = {this->boundingSphere.radius, this->boundingSphere.radius, this->boundingSphere.radius};
         if (matrix != 0) {
             center = AEMath::MatrixTransformVector(*matrix * this->worldMatrix, bc);
             extent = AEMath::MatrixRotateVector(*matrix * this->worldMatrix, extent);
@@ -1330,6 +1311,6 @@ namespace AbyssEngine {
         float m = ax > ay ? ax : ay;
         m = m > az ? m : az;
 
-        return CameraIsSphereinViewFrustum(center, this->boundingRadius2 * m, 0, camera);
+        return CameraIsSphereinViewFrustum(center, this->boundingSphere.radius2 * m, 0, camera);
     }
 }

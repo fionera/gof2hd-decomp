@@ -221,7 +221,7 @@ void LevelScript::skipCutscene() {
     }
 }
 
-int LevelScript::process(int delta) {
+bool LevelScript::process(int delta) {
     // Reconstruction pass 1 of _ZN11LevelScript7processEi (original 0xdf90 bytes @ 0x137d18).
     // Implemented faithfully here: prologue accessors + mission dispatch (0x137d18),
     // the mission==1 intro state machine (0x137d82-0x137e82) and the shared "active" tail
@@ -5161,7 +5161,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
 
     if (Globals::status->getCurrentCampaignMission() == 80) {
         m_pGeometry0 = new AEGeometry(14370, Globals::Canvas, false);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))->boundingRadius =
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))->boundingSphere.radius =
                 1000000.0f;
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))
                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);

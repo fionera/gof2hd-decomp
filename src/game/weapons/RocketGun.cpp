@@ -198,15 +198,15 @@ void RocketGun::update(int elapsed) {
         side = VectorNormalize(side);
         up = VectorCross(heading, side);
         up = VectorNormalize(up);
-        frame.m[0] = side.x;
-        frame.m[1] = up.x;
-        frame.m[2] = heading.x;
-        frame.m[4] = side.y;
-        frame.m[5] = up.y;
-        frame.m[6] = heading.y;
-        frame.m[8] = side.z;
-        frame.m[9] = up.z;
-        frame.m[10] = heading.z;
+        frame.m.e0 = side.x;
+        frame.m.e1 = up.x;
+        frame.m.e2 = heading.x;
+        frame.m.e4 = side.y;
+        frame.m.e5 = up.y;
+        frame.m.e6 = heading.y;
+        frame.m.e8 = side.z;
+        frame.m.e9 = up.z;
+        frame.m.e10 = heading.z;
         Globals::Canvas->TransformSetLocal(this->transform, frame);
 
         if (this->trailMatrices == nullptr) {
@@ -305,9 +305,9 @@ void RocketGun::update(int elapsed) {
                 MatrixSetTranslation((*this->trailMatrices)[i], ahead.x, ahead.y, ahead.z);
                 const Vector heading = VectorNormalize(this->gun->velocities.data()[i]);
                 Matrix &trail = (*this->trailMatrices)[i];
-                trail.m[2] = heading.x;
-                trail.m[6] = heading.y;
-                trail.m[10] = heading.z;
+                trail.m.e2 = heading.x;
+                trail.m.e6 = heading.y;
+                trail.m.e10 = heading.z;
                 MatrixSetTranslation(trail, ahead.x, ahead.y, ahead.z);
             }
         }

@@ -2002,7 +2002,7 @@ void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child) {
             arr = (char **) this->transforms.data_;
             p = (AbyssEngine::Transform *) arr[parent];
             c = (AbyssEngine::Transform *) arr[child];
-            p->bounds().Merge(*c);
+            p->boundingSphere.Merge(*c);
             arr = (char **) this->transforms.data_;
             return ((AbyssEngine::Transform*)arr[parent])->CollectAnimationData();
         }
@@ -2050,8 +2050,8 @@ void PaintCanvas::TransformAddMesh(unsigned int transformIndex,
         }
         ArrayAdd<AbyssEngine::Mesh *>(this->meshes.data_[meshIndex],
                                       this->transforms.data_[transformIndex]->meshes);
-        this->transforms.data_[transformIndex]->bounds().Merge(
-                *(const AbyssEngine::AEMath::BSphere *) &this->meshes.data_[meshIndex]->boundsCenterX);
+        this->transforms.data_[transformIndex]->boundingSphere.Merge(
+                this->meshes.data_[meshIndex]->bounds);
         AbyssEngine::Transform *anim = this->meshes.data_[meshIndex]->animation;
         if (anim != 0) {
             if (this->transforms.data_[transformIndex]->animationLength < anim->animationLength) {
@@ -2235,8 +2235,8 @@ void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int m
         return;
     }
     ArrayAdd<AbyssEngine::Mesh *>(this->meshes.data_[meshIndex], this->transforms.data_[transformIndex]->meshes);
-    this->transforms.data_[transformIndex]->bounds().Merge(
-            *(const AbyssEngine::AEMath::BSphere *) &this->meshes.data_[meshIndex]->boundsCenterX);
+    this->transforms.data_[transformIndex]->boundingSphere.Merge(
+            this->meshes.data_[meshIndex]->bounds);
 
     AbyssEngine::Transform *animation = this->meshes.data_[meshIndex]->animation;
     if (animation != 0) {
@@ -2936,8 +2936,8 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
         // Animated sub-mesh: rotate around the mesh pivot by the animation transform's rotation.
         AbyssEngine::AEMath::Matrix fromPivot;
         AbyssEngine::AEMath::Matrix toPivot;
-        AbyssEngine::AEMath::MatrixSetTranslation(fromPivot, -mesh->pivotX, -mesh->pivotZ, mesh->pivotY);
-        AbyssEngine::AEMath::MatrixSetTranslation(toPivot, mesh->pivotX, mesh->pivotZ, -mesh->pivotY);
+        AbyssEngine::AEMath::MatrixSetTranslation(fromPivot, -mesh->pivot.x, -mesh->pivot.z, mesh->pivot.y);
+        AbyssEngine::AEMath::MatrixSetTranslation(toPivot, mesh->pivot.x, mesh->pivot.z, -mesh->pivot.y);
         AbyssEngine::AEMath::Matrix position;
         AbyssEngine::AEMath::MatrixSetTranslation(
                 position, AbyssEngine::AEMath::MatrixGetPosition(mesh->animation->rotationMatrix));
@@ -2956,8 +2956,8 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
     }
 
     AbyssEngine::AEMath::Vector center = AbyssEngine::AEMath::MatrixTransformVector(
-            world, *(const AbyssEngine::AEMath::Vector *) &mesh->boundsCenterX);
-    AbyssEngine::AEMath::Vector extent = {mesh->boundsRadius, mesh->boundsRadius, mesh->boundsRadius};
+            world, mesh->bounds.center);
+    AbyssEngine::AEMath::Vector extent = {mesh->bounds.radius, mesh->bounds.radius, mesh->bounds.radius};
     extent = AbyssEngine::AEMath::MatrixRotateVector(world, extent);
     float ax = extent.x > 0.0f ? extent.x : -extent.x;
     float ay = extent.y > 0.0f ? extent.y : -extent.y;
@@ -2966,7 +2966,7 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
 
     if (mesh->vertexCount != 0) {
         float radius = axy > az ? axy : az;
-        if (!this->CameraIsSphereinViewFrustum(center, radius * mesh->boundsRadiusSq)) {
+        if (!this->CameraIsSphereinViewFrustum(center, radius * mesh->bounds.radius2)) {
             this->culledCount += 1;
             return;
         }

@@ -88,7 +88,7 @@ Explosion::Explosion(int type) {
     if (this->secondaryMesh != 0) {
         ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState(
             (AbyssEngine::AnimationMode) 1, 0);
-        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->boundingRadius = 20000.0f;
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->boundingSphere.radius = 20000.0f;
     }
 
     long long primaryLength =
@@ -108,7 +108,7 @@ Explosion::Explosion(int type) {
         this->duration = 0;
     }
 
-    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->boundingRadius = 20000.0f;
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->boundingSphere.radius = 20000.0f;
     this->weaponIndex = -1;
     this->reset();
 }
@@ -224,7 +224,7 @@ void Explosion::addFireStreaks() {
         (*this->fireStreaks)[i] = new AEGeometry((uint16_t) 0x37d4, Globals::Canvas, false);
         ((Transform *) Globals::Canvas->TransformGetTransform((*this->fireStreaks)[i]->transform))->SetAnimationState(
             (AbyssEngine::AnimationMode) 1, 0);
-        ((Transform *) Globals::Canvas->TransformGetTransform((*this->fireStreaks)[i]->transform))->boundingRadius =
+        ((Transform *) Globals::Canvas->TransformGetTransform((*this->fireStreaks)[i]->transform))->boundingSphere.radius =
             10000.0f;
         (*this->fireStreaks)[i]->setRotation((float) Globals::rnd->nextInt(360) / 180.0f * 3.1415927f,
                                              (float) Globals::rnd->nextInt(360) / 180.0f * 3.1415927f,

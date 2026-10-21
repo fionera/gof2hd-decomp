@@ -444,22 +444,22 @@ void Ship::removeCargo(int index) {
     removeCargo(index, 9999999);
 }
 
-int Ship::removeCargo(int index, int amount) {
+bool Ship::removeCargo(int index, int amount) {
     if (this->cargo == 0) {
-        return 0;
+        return false;
     }
     for (unsigned int i = 0; i < this->cargo->size(); i = i + 1) {
         if (this->cargo->data()[i]->getIndex() == index) {
             this->cargo->data()[i]->changeAmount(-amount);
             if (this->cargo->data()[i]->getAmount() < 1) {
                 setCargo(Item::extractItems(this->cargo, true));
-                return 1;
+                return true;
             }
             break;
         }
     }
     setCargo(this->cargo);
-    return 0;
+    return false;
 }
 
 void Ship::removeAllCargo() {

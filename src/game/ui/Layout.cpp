@@ -132,14 +132,14 @@ bool Layout::OnTouchMove(int x, int y) {
     return this->secondaryButton->OnTouchMove(x, y);
 }
 
-int Layout::OnTouchEnd(int x, int y) {
+bool Layout::OnTouchEnd(int x, int y) {
     if (this->choiceWindowOpen == 0 && this->helpButtonEnabled != 0)
         this->helpPressedFlag = this->helpButton->OnTouchEnd(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0)
         return this->choiceWindow->OnTouchEnd(x, y) == 0;
     if (this->backButton->isVisible() != 0)
-        return static_cast<int>(this->backButton->OnTouchEnd(x, y));
-    return static_cast<int>(this->secondaryButton->OnTouchEnd(x, y));
+        return this->backButton->OnTouchEnd(x, y);
+    return this->secondaryButton->OnTouchEnd(x, y);
 }
 
 void Layout::startFade(bool fadeOut, int color, int duration) {
@@ -959,28 +959,28 @@ void Layout::reload() {
     this->footerPatternImage = -1;
     this->field_0x348 = -1;
     this->field_0x34c = -1;
-    this->field_0x350 = -1;
-    this->field_0x354 = -1;
-    this->field_0x358 = -1;
-    this->field_0x35c = -1;
-    this->field_0x360 = -1;
-    this->field_0x364 = -1;
-    this->field_0x368 = -1;
-    this->field_0x36c = -1;
-    this->field_0x370 = -1;
     this->scrollBarImage = -1;
     this->scrollBarFillImage = -1;
     this->field_0x37c = -1;
-    this->field_0x380 = -1;
-    this->field_0x384 = -1;
-    this->field_0x388 = -1;
-    this->field_0x38c = -1;
-    this->field_0x390 = -1;
-    this->field_0x394 = -1;
     this->tipBoxImage = -1;
-    this->field_0x39c = -1;
-    this->field_0x3a0 = -1;
     this->field_0x3a8 = -1;
+    this->field_0x354 = -1;
+    this->field_0x350 = -1;
+    this->field_0x36c = -1;
+    this->field_0x35c = -1;
+    this->field_0x368 = -1;
+    this->field_0x364 = -1;
+    this->field_0x358 = -1;
+    this->field_0x360 = -1;
+    this->field_0x370 = -1;
+    this->field_0x384 = -1;
+    this->field_0x380 = -1;
+    this->field_0x38c = -1;
+    this->field_0x388 = -1;
+    this->field_0x394 = -1;
+    this->field_0x390 = -1;
+    this->field_0x3a0 = -1;
+    this->field_0x39c = -1;
 
     Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x503), reinterpret_cast<unsigned int &>(this->tipBoxImage));
     Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47e), reinterpret_cast<unsigned int &>(this->bgPatternImage));

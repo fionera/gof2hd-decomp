@@ -46,7 +46,7 @@ public:
 
     bool OnTouchBegin(int x, int y);
 
-    int OnTouchEnd(int x, int y);
+    bool OnTouchEnd(int x, int y);
 
     void setHangarUpdate(bool v);
 

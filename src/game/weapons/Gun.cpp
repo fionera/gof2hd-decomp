@@ -622,19 +622,17 @@ void Gun::calcCharacterCollision() {
             if (!enemy->egoFlag && (ki == nullptr || !(uint8_t) ki->field_0x8c)) {
                 continue;
             }
-            bool hit;
-            if (ki != nullptr && ki->field_0x40) {
-                hit = ki->outerCollide(position) != 0;
-            } else {
+            bool outer = ki != nullptr && ki->field_0x40;
+            if (!(outer && ki->outerCollide(position))) {
                 float r = (float) radius;
-                float dx = enemyPosition.x - position.x + velocity.x;
-                float dy = enemyPosition.y - position.y + velocity.y;
-                float dz = enemyPosition.z - position.z + velocity.z;
-                hit = dx < r && dx > (float) -radius && dy < r && dy > (float) -radius && dz < r &&
-                      dz > (float) -radius;
-            }
-            if (!hit) {
-                continue;
+                if (!(enemyPosition.x - position.x + velocity.x < r &&
+                      enemyPosition.x - position.x + velocity.x > (float) -radius &&
+                      enemyPosition.y - position.y + velocity.y < r &&
+                      enemyPosition.y - position.y + velocity.y > (float) -radius &&
+                      enemyPosition.z - position.z + velocity.z < r &&
+                      enemyPosition.z - position.z + velocity.z > (float) -radius && !outer)) {
+                    continue;
+                }
             }
 
             if (enemy->isAsteroid()) {
@@ -662,11 +660,12 @@ void Gun::calcCharacterCollision() {
                 }
             } else if (mine) {
                 float r = (float) enemy->radius;
-                float dx = enemyPosition.x - position.x + velocity.x;
-                float dy = enemyPosition.y - position.y + velocity.y;
-                float dz = enemyPosition.z - position.z + velocity.z;
-                if (dx < r && dx > (float) -enemy->radius && dy < r && dy > (float) -enemy->radius && dz < r &&
-                    dz > (float) -enemy->radius) {
+                if (enemyPosition.x - position.x + velocity.x < r &&
+                    enemyPosition.x - position.x + velocity.x > (float) -enemy->radius &&
+                    enemyPosition.y - position.y + velocity.y < r &&
+                    enemyPosition.y - position.y + velocity.y > (float) -enemy->radius &&
+                    enemyPosition.z - position.z + velocity.z < r &&
+                    enemyPosition.z - position.z + velocity.z > (float) -enemy->radius) {
                     this->ignite();
                     return;
                 }

@@ -648,7 +648,7 @@ void DialogueWindow::update(int dt) {
 
 
 
-int DialogueWindow::OnTouchEnd(int x, int y) {
+bool DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->choiceActive != 0) {
         int result = this->choiceWindow->OnTouchEnd(x, y);
         if (result == 0) {
@@ -660,11 +660,11 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
             }
             if (this->voiceSound != -1)
                 Globals::sound->stop(this->voiceSound);
-            return 1;
+            return true;
         } else if (result == 1) {
             this->choiceActive = 0;
         }
-        return 0;
+        return false;
     }
 
     this->scrollWindow->OnTouchEnd(x, y);
@@ -675,14 +675,14 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->nextButton->OnTouchEnd(x, y) != 0) {
         (Globals::sound)->stop(this->voiceSound);
         if (this->nextPage() == 0) {
-            return 1;
+            return true;
         }
     }
     if (this->moreButton->OnTouchEnd(x, y) != 0) {
         this->choiceWindow->set(*Globals::gameText->getText(0x18c), true);
         this->choiceActive = 1;
     }
-    return 0;
+    return false;
 }
 
 static const char g_dw_defaultAgentName[] = "";

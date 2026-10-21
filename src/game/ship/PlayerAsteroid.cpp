@@ -26,7 +26,7 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->scaling = scaling;
     this->quality = quality;
     this->player->setRadius((int) (static_cast<AbyssEngine::Transform *>(
-            Globals::Canvas->TransformGetTransform(geometry->transform))->boundingRadius * scaling * 0.7f));
+            Globals::Canvas->TransformGetTransform(geometry->transform))->boundingSphere.radius * scaling * 0.7f));
     this->player->setMaxHitpoints((int) (scaling * 100.0f + 30.0f));
     this->lastHitpoints = this->player->getHitpoints();
     this->minable = quality > 3;
