@@ -492,111 +492,83 @@ static inline void freeObj(T **slot, void *(*dtor)(void *)) { // lint: void_ptr 
 }
 
 MenuTouchWindow::~MenuTouchWindow() {
-    {
-        Array<TouchButton *> *a = this->buttons;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->buttons;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->buttons = 0;
+    if (this->buttons != 0) {
+        ArrayReleaseClasses(*this->buttons);
+        delete this->buttons;
     }
-    {
-        Array<TouchButton *> *a = this->optionsButtons;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->optionsButtons;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->optionsButtons = 0;
+    this->buttons = 0;
+    if (this->optionsButtons != 0) {
+        ArrayReleaseClasses(*this->optionsButtons);
+        delete this->optionsButtons;
     }
-    {
-        Array<TouchButton *> *a = this->scrollEntries;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->scrollEntries;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->scrollEntries = 0;
+    this->optionsButtons = 0;
+    if (this->scrollEntries != 0) {
+        ArrayReleaseClasses(*this->scrollEntries);
+        delete this->scrollEntries;
     }
-    {
-        Array<TouchButton *> *a = this->buttonsB4;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->buttonsB4;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->buttonsB4 = 0;
+    this->scrollEntries = 0;
+    if (this->buttonsB4 != 0) {
+        ArrayReleaseClasses(*this->buttonsB4);
+        delete this->buttonsB4;
     }
-    {
-        Array<TouchButton *> *a = this->buttonsB8;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->buttonsB8;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->buttonsB8 = 0;
+    this->buttonsB4 = 0;
+    if (this->buttonsB8 != 0) {
+        ArrayReleaseClasses(*this->buttonsB8);
+        delete this->buttonsB8;
     }
-    {
-        Array<TouchButton *> *a = this->buttonsB0;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->buttonsB0;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->buttonsB0 = 0;
+    this->buttonsB8 = 0;
+    if (this->buttonsB0 != 0) {
+        ArrayReleaseClasses(*this->buttonsB0);
+        delete this->buttonsB0;
     }
-
-    {
-        Array<TouchSlider *> *a = (Array<TouchSlider *> *) this->sliders;
-        if (a != 0) {
-            ArrayReleaseClasses<TouchSlider *>(*a);
-            Array<TouchSlider *> *b = this->sliders;
-            if (b != 0) ::operator delete(_mtw_Array_TS_dtor(b));
-        }
-        this->sliders = 0;
+    this->buttonsB0 = 0;
+    if (this->sliders != 0) {
+        ArrayReleaseClasses(*this->sliders);
+        delete this->sliders;
     }
-
-    {
-        Array<TouchButton *> *a = this->scrollSlots;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->scrollSlots;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->scrollSlots = 0;
+    this->sliders = 0;
+    if (this->scrollSlots != 0) {
+        ArrayReleaseClasses(*this->scrollSlots);
+        delete this->scrollSlots;
     }
-
-    {
-        Array<AbyssEngine::String *> **slots[2] = {&this->previewStrings0, &this->previewStrings1};
-        for (int k = 0; k < 2; k++) {
-            Array<AbyssEngine::String *> *a = *slots[k];
-            if (a != 0) {
-                _mtw_ArrayReleaseClasses_Str(a);
-                Array<AbyssEngine::String *> *b = *slots[k];
-                if (b != 0) ::operator delete(_mtw_Array_Str_dtor(b));
-            }
-            *slots[k] = 0;
-        }
+    this->scrollSlots = 0;
+    if (this->previewStrings0 != 0) {
+        ArrayReleaseClasses(*this->previewStrings0);
+        delete this->previewStrings0;
     }
-
-    freeObj(&this->optBtnCC, _mtw_TouchButton_dtor);
-    freeObj(&this->okButton, _mtw_TouchButton_dtor);
-    freeObj(&this->optBtnD0, _mtw_TouchButton_dtor);
-    freeObj(&this->optBtnD4, _mtw_TouchButton_dtor);
-    freeObj(&this->optBtnD8, _mtw_TouchButton_dtor);
-    freeObj(&this->optBtnDC, _mtw_TouchButton_dtor);
-
-    freeObj(&this->choiceWindow, _mtw_ChoiceWindow_dtor);
-    freeObj(&this->backButton, _mtw_TouchButton_dtor);
-    freeObj(&this->scrollExtraButton, _mtw_TouchButton_dtor);
-
-    freeObj(&this->scrollWindowA, _mtw_ScrollTouchWindow_dtor);
-    freeObj(&this->scrollWindowB, _mtw_ScrollTouchWindow_dtor);
-
-    if (this->heapBufA != 0) ::operator delete[](this->heapBufA);
+    this->previewStrings0 = 0;
+    if (this->previewStrings1 != 0) {
+        ArrayReleaseClasses(*this->previewStrings1);
+        delete this->previewStrings1;
+    }
+    this->previewStrings1 = 0;
+    delete this->optBtnCC;
+    this->optBtnCC = 0;
+    delete this->okButton;
+    this->okButton = 0;
+    delete this->optBtnD0;
+    this->optBtnD0 = 0;
+    delete this->optBtnD4;
+    this->optBtnD4 = 0;
+    delete this->optBtnD8;
+    this->optBtnD8 = 0;
+    delete this->optBtnDC;
+    this->optBtnDC = 0;
+    delete this->choiceWindow;
+    this->choiceWindow = 0;
+    delete this->backButton;
+    this->backButton = 0;
+    delete this->scrollExtraButton;
+    this->scrollExtraButton = 0;
+    delete this->scrollWindowA;
+    this->scrollWindowA = 0;
+    delete this->scrollWindowB;
+    this->scrollWindowB = 0;
+    if (this->heapBufA != 0)
+        ::operator delete[](this->heapBufA);
     this->heapBufA = 0;
-    if (this->heapBufB != 0) ::operator delete[](this->heapBufB);
+    if (this->heapBufB != 0)
+        ::operator delete[](this->heapBufB);
     this->heapBufB = 0;
 }
 

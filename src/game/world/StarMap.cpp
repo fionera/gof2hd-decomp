@@ -636,46 +636,38 @@ void StarMap::render() {
 }
 
 void StarMap::drawKey() {
-    uint32_t canvas = (uint32_t)(uintptr_t)Globals::Canvas;
-    int imageWidth = Globals::Canvas->GetImage2DWidth((unsigned int) (this->keyImageDiscovered));
-    Layout *layout = *g_StarMap_drawKey_layout;
-    int screenW = *g_StarMap_drawKey_screenW;
-    int screenH = *g_StarMap_drawKey_screenH;
+    int iconWidth = Globals::Canvas->GetImage2DWidth(this->keyImageDiscovered);
+    Layout *layout = Globals::layout;
+    int screenH = Globals::h;
     int boxW = this->keyBoxWidth;
     int boxH = this->keyBoxHeight;
-    int marginY = ((Layout *) layout)->field_0x4;
-    int padY = ((Layout *) layout)->windowTopInset;
-    int rightPad = ((Layout *) layout)->field_0x10_rightMargin;
-    int lineH = ((Layout *) layout)->field_0x2c_rowHeight;
+    int x = Globals::w - boxW;
+    layout->drawBox(7, x, screenH - layout->field_0x10_rightMargin - boxH - layout->windowTopInset, boxW,
+                    layout->windowTopInset + boxH, String(""));
 
-    String empty;
-    int x = screenH - boxW;
-    ((Layout *) (layout))->drawBox(7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, empty, 0);
-    int drawX = x + lineH;
-    int textX = imageWidth + lineH + drawX;
-    int y = ((screenW - lineH) - rightPad) - marginY;
+    int iconX = x + layout->field_0x2c_rowHeight;
+    int textX = iconWidth + layout->field_0x2c_rowHeight + iconX;
+    int y = screenH - layout->field_0x2c_rowHeight - layout->field_0x10_rightMargin - layout->field_0x4;
 
-    void(*drawImage)(uint32_t, uint32_t, int, int) = g_StarMap_drawKey_drawImage;
-    drawImage(canvas, this->keyImageRetreat, drawX, y);
-
-    GameText **textHolder = g_StarMap_drawKey_text;
-    String * (*getText)(GameText *, int) = g_StarMap_drawKey_getText;
-    unsigned char **fontHolder = g_StarMap_drawKey_font;
-    void(*drawString)(uint32_t, unsigned char *, String *, int, int, bool) = g_StarMap_drawKey_drawString;
-
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x112), textX, y, false);
-    y -= ((Layout *) layout)->field_0x4;
-    drawImage(canvas, this->keyImageDiscovered, drawX, y);
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x191), textX, y, false);
-    y -= ((Layout *) layout)->field_0x4;
-    drawImage(canvas, this->keyImageCurrent, drawX, y);
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x223), textX, y, false);
-    y -= ((Layout *) layout)->field_0x4;
-    drawImage(canvas, this->keyImageMission, drawX, y);
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x22c), textX, y, false);
-    y -= ((Layout *) layout)->field_0x4;
-    drawImage(canvas, this->keyImageWanted, drawX, y);
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x22b), textX, y, false);
+    Globals::Canvas->DrawImage2D(this->keyImageRetreat, iconX, y);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(274), textX, y,
+                                false);
+    y -= Globals::layout->field_0x4;
+    Globals::Canvas->DrawImage2D(this->keyImageDiscovered, iconX, y);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(401), textX, y,
+                                false);
+    y -= Globals::layout->field_0x4;
+    Globals::Canvas->DrawImage2D(this->keyImageCurrent, iconX, y);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(547), textX, y,
+                                false);
+    y -= Globals::layout->field_0x4;
+    Globals::Canvas->DrawImage2D(this->keyImageMission, iconX, y);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(556), textX, y,
+                                false);
+    y -= Globals::layout->field_0x4;
+    Globals::Canvas->DrawImage2D(this->keyImageWanted, iconX, y);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(555), textX, y,
+                                false);
 }
 
 void StarMap::drawOnScreenInfo(int index, bool stationMode) {
