@@ -1164,17 +1164,17 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
         this->camera->setFastForwardMode(true);
         return;
     }
-    if (this->cloakAttribute >= 1 && this->timeWarpState >= 0 && (flags & 0x100)) {
-        if (this->timeWarpState < 1) {
-            this->hud->setTimeExtender(true, false, true, true);
-            Globals::sound->setDownPitch(true);
-            this->timeWarpState = this->cloakAttribute;
-            Globals::sound->play(1120, nullptr, nullptr, 0.0f);
-        } else {
+    if (this->cloakAttribute >= 1 && this->timeWarpState >= 0 && (this->hudTouchFlags & 0x100)) {
+        if (this->timeWarpState > 0) {
             this->timeWarpState = -1;
             Globals::sound->setDownPitch(false);
             this->hud->setTimeExtender(true, false, false, false);
             Globals::sound->play(1119, nullptr, nullptr, 0.0f);
+        } else {
+            this->hud->setTimeExtender(true, false, true, true);
+            Globals::sound->setDownPitch(true);
+            this->timeWarpState = this->cloakAttribute;
+            Globals::sound->play(1120, nullptr, nullptr, 0.0f);
         }
         return;
     }
