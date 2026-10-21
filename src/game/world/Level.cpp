@@ -176,7 +176,6 @@ static int *g_ips_envA = nullptr;
 
 static int *g_ips_envB = nullptr;
 
-static int **g_cwm_seedSrc = nullptr;
 
 static unsigned int g_level_texOutScratch;
 
@@ -209,7 +208,6 @@ static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit)
 
 static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned i, Vector *out);
 
-static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i);
 
 bool Level::hasMiningPlant() {
     return miningPlant > 0;
@@ -6760,52 +6758,44 @@ void Level::initParticleSystems() {
 }
 
 void Level::createWingmen() {
-    if (Globals::status->inSupernovaSystem() != 0 ||
-        Globals::status->getCurrentCampaignMission() == 0x9e ||
-        Globals::status->getWingmen() == 0 ||
-        this->player == nullptr)
+    if (Globals::status->inSupernovaSystem() || Globals::status->getCurrentCampaignMission() == 0x9e
+        || Globals::status->getWingmen() == 0 || player == nullptr) {
         return;
-
-    Array<KIPlayer *> *arr = new Array<KIPlayer *>();
-    unsigned *wm = (unsigned *) Globals::status->getWingmen();
-    ArraySetLength(*wm, *arr);
-
-    unsigned n = arr->size();
-    for (unsigned i = 0; i < n; i = i + 1) {
-        int seed = **g_cwm_seedSrc;
-        Globals::status->getWingmen();
-        ((AbyssEngine::AERandom *) (intptr_t) seed)->setSeed((long long) seed);
-        int fighter = (int) Globals::globals->getRandomEnemyFighter((int) Globals::status->fadeValue);
-        int ship = (int) (intptr_t) createShip(5, 0, fighter, 0, 1, 0);
-        (*arr)[i] = (KIPlayer *) (intptr_t) ship;
-
-        int *slot = (int *) &(*arr)[i];
-        levelPlaceWingman(this, slot, i);
-
-        ((*arr)[i])->setWingman(true, i);
-        (*arr)[i]->player->setAlwaysFriend(1);
-        (*arr)[i]->player->setHitpoints(0x258);
-
-        int wmList = Globals::status->getWingmen();
-        (*arr)[i]->name =
-                **(String **) (*(int *) (wmList + 4) + i * 4);
-        (*arr)[i]->shipGroup = (int) Globals::status->fadeValue;
-
-        Globals::status->getMission();
-        if (((Mission *) Globals::status->getMission())->getType() == 0xc)
-            (*arr)[i]->field_0x25 = 0;
     }
 
-    if (this->enemies == nullptr) {
-        this->enemies = arr;
-    } else {
-        for (unsigned i = 0; i < n; i = i + 1) {
-            ArrayAdd((*arr)[i], *(this->enemies));
-            n = arr->size();
+    Array<KIPlayer *> *wingmen = new Array<KIPlayer *>();
+    ArraySetLength(((Array<String *> *) (intptr_t) Globals::status->getWingmen())->count, *wingmen);
+    for (unsigned int i = 0; i < wingmen->size(); i++) {
+        // each wingman's ship is seeded by its name so it stays the same between visits
+        Globals::rnd->setSeed((unsigned int) ((*(Array<String *> *) (intptr_t) Globals::status->getWingmen())[i]->length * 5));
+        (*wingmen)[i] = createShip(5, 0, Globals::globals->getRandomEnemyFighter(Globals::status->field_0x2c),
+                                   nullptr, true, false);
+
+        Vector position = player->geometry->getPosition();
+        position += player->geometry->getRightVector() * (i == 0 ? -1000.0f : (i == 1 ? 2000.0f : 0.0f));
+        position -= player->geometry->getDirection() * 2000.0f;
+        position.y += i == 2 ? 1000.0f : 0.0f;
+        (*wingmen)[i]->setPosition(position);
+        (*wingmen)[i]->geometry->setDirection(player->geometry->getDirection(), Vector{0.0f, 1.0f, 0.0f});
+
+        (*wingmen)[i]->setWingman(true, i);
+        (*wingmen)[i]->player->setAlwaysFriend(true);
+        (*wingmen)[i]->player->setHitpoints(600);
+        (*wingmen)[i]->name = *(*(Array<String *> *) (intptr_t) Globals::status->getWingmen())[i];
+        (*wingmen)[i]->shipGroup = Globals::status->field_0x2c;
+        if (((Mission *) Globals::status->getMission())->getType() == 12) {
+            (*wingmen)[i]->field_0x25 = 0;
         }
-        delete arr;
     }
-    ((AbyssEngine::AERandom *) (intptr_t) * *g_cwm_seedSrc)->reset();
+
+    if (enemies != nullptr) {
+        for (unsigned int i = 0; i < wingmen->size(); i++) {
+            ArrayAdd((*wingmen)[i], *enemies);
+        }
+    } else {
+        enemies = wingmen;
+    }
+    Globals::rnd->reset();
 }
 
 void Level::createScene() {
@@ -7155,15 +7145,6 @@ static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned 
     out->z = p.z + (float) (((AbyssEngine::AERandom *) (intptr_t) rng)->nextInt() % 160000 - 80000);
 }
 
-static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i) {
-    if (kiSlot == 0)
-        return;
-    Vector p = (self->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : self->player->getPosition());
-
-    float side = ((i & 1) ? -1.0f : 1.0f) * (float) (2000 + (int) (i / 2) * 1500);
-    float back = (float) (2000 + (int) (i / 2) * 2500);
-    ((KIPlayer *) kiSlot)->setPosition(p.x + side, p.y, p.z - back);
-}
 
 unsigned char Level::doInstantJump;
 Station *Level::programmedStation;
