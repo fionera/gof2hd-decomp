@@ -3556,8 +3556,9 @@ void PlayerEgo::draw(bool allowHud) {
         return;
     }
 
+    // Reaching here with the autopilot on implies the turret is active.
     Matrix view;
-    if (!this->autoPilot && !this->turretActive)
+    if (!this->turretActive)
         view = this->geometry->getMatrix();
     Globals::Canvas->SetColor(0xffffffff);
     if (this->turretActive && Globals::status->getShip()->getFirstEquipmentOfSort(35)) {
