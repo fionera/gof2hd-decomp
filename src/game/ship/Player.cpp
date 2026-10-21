@@ -857,12 +857,16 @@ void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
         soundId = kWeaponSounds[type];
     else if ((unsigned int) this->kiPlayer->shipGroup <= 10)
         soundId = kRaceShootSounds[this->kiPlayer->shipGroup];
-    if ((channel == 2 || channel == 3 || channel == 8) && Globals::sound->isPlaying(soundId)) {
-        if (Globals::options[15])
-            Globals::sound->updateEvent3DAttributes(soundId, pos, nullptr, false);
-        return;
+    if (channel == 2 || channel == 3 || channel == 8) {
+        if (Globals::sound->isPlaying(soundId)) {
+            if (Globals::options[15])
+                Globals::sound->updateEvent3DAttributes(soundId, pos, nullptr, false);
+        } else {
+            Globals::sound->play(soundId, Globals::options[15] ? pos : nullptr, nullptr, volume);
+        }
+    } else {
+        Globals::sound->play(soundId, Globals::options[15] ? pos : nullptr, nullptr, volume);
     }
-    Globals::sound->play(soundId, Globals::options[15] ? pos : nullptr, nullptr, volume);
 }
 
 void Player::damage(int amount, bool ownFire, int weaponId) {
@@ -1075,7 +1079,7 @@ bool Player::shoot(int slot, int itemIndex, long long target, bool flag, Matrix 
         return true;
     if (!((unsigned int) slot < this->guns->size() && slot >= 0 && (*this->guns)[slot] != nullptr))
         return true;
-    int ready = 1;
+    uint8_t ready = 1;
     for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
         Gun *gun = (*(*this->guns)[slot])[i];
         if ((gun->weaponType == 6 || gun->weaponType == 7 || gun->weaponType == 34) && gun->lifetimes[0] >= 0) {
@@ -1091,7 +1095,8 @@ bool Player::shoot(int slot, int itemIndex, long long target, bool flag, Matrix 
                     this->playShootSound(fired->itemIndex, fired->weaponType, &position, fired->field_0xb0);
                 }
                 gun->timer = 0;
-                return true;
+                ready = 1;
+                break;
             }
             if (gun->ammoCount < 1)
                 ready = 0;
@@ -1107,8 +1112,8 @@ bool Player::shoot(int slot, long long target, bool flag) {
 
 bool Player::shoot(int slot, long long target, bool flag, Matrix mat) {
     Matrix transform = mat;
-    if (this->guns != nullptr && this->shootingEnabled != 0 && slot >= 0
-        && (unsigned int) slot < this->guns->size() && (*this->guns)[slot] != nullptr) {
+    if (this->guns != nullptr && this->shootingEnabled != 0 && (unsigned int) slot < this->guns->size()
+        && slot >= 0 && (*this->guns)[slot] != nullptr) {
         for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
             Gun *gun = (*(*this->guns)[slot])[i];
             if (gun->timer > gun->fireDelay && gun->shootAt(transform, (int) target, this, flag)) {
