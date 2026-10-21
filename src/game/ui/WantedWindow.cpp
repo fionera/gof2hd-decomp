@@ -278,9 +278,8 @@ void WantedWindow::draw() {
                                 this->windowWidth, Globals::layout->field_0x2c_rowHeight + this->visibleHeight);
     float startPos = this->getRelativeScrollStartPos();
     float visible = (float) this->visibleHeight;
-    float scrollHeight = this->getRelativeScrollHeight();
-    int barHeight = (int) (scrollHeight * visible);
     int barStart = (int) (startPos * visible);
+    int barHeight = (int) (this->getRelativeScrollHeight() * visible);
     if (barHeight > 0 || barStart > 0)
         Globals::layout->drawScrollBar(
                 this->windowX + (this->windowWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
@@ -305,8 +304,8 @@ void WantedWindow::draw() {
                                     rowY + Globals::layout->field_0x70_rowHeight / 2 -
                                     Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2,
                                     false);
-        if ((i == 0 && Globals::status->getCurrentCampaignMission() == 128) ||
-            (i == 1 && Globals::status->getCurrentCampaignMission() == 130)) {
+        if ((Globals::status->getCurrentCampaignMission() == 128 && i == 0) ||
+            (Globals::status->getCurrentCampaignMission() == 130 && i == 1)) {
             // Mark the campaign target.
             Globals::Canvas->DrawImage2D(
                     this->bgImage,
