@@ -484,75 +484,37 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
 void Globals::reportSupernovaChallengeScore() {
 }
 
-static const char gGLA_newline[] = "";
 
 void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
                            Array<String *> *out) {
-    String *line = static_cast<String *>(::operator new(sizeof(String)));
-    {
-        String *_s = line;
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    String work;
-    work.Set((const_cast<String *>(&text))->data);
-    String nl;
-    nl.ctor_char(gGLA_newline, false);
-    work += nl;
-
-    const int total = static_cast<int>(work.size());
+    String *line = new String();
+    String work(text, false);
+    work += String("\n", false);
 
     unsigned count = 0;
-    for (int consumed = 0; consumed < total;) {
-        String rest;
-        rest = work.SubString(consumed, total);
-        getLine(font, rest, maxWidth, line);
-        consumed += static_cast<int>(line->size());
-        count++;
+    for (int consumed = 0; consumed < work.length; count++) {
+        String rest = work.SubString(consumed, work.length);
+        getLine(font, String(rest, false), maxWidth, line);
+        consumed += line->length;
     }
-    {
-        String *_s = line;
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    ::operator delete(line);
+    delete line;
 
     ArraySetLength(count, *out);
-    for (unsigned i = 0; i < count; i++) {
-        String *s = static_cast<String *>(::operator new(sizeof(String)));
-        {
-            String *_s = s;
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        (*out)[i] = s;
-    }
+    for (unsigned i = 0; i < count; i++)
+        (*out)[i] = new String();
 
     int consumed = 0;
     for (unsigned i = 0; i < count; i++) {
-        String *slot = (*out)[i];
-        String rest;
-        rest = work.SubString(consumed, total);
-        getLine(font, rest, maxWidth, slot);
-        consumed += static_cast<int>(slot->size());
-
-        int lo = 0;
-        int hi = static_cast<int>(slot->size());
-        while (*slot->index(lo) == 0x20) {
-            lo++;
-        }
-        hi++;
-        do {
-            hi--;
-        } while (*slot->index(hi - 2) == 0x20);
-
-        String trimmed;
-        trimmed = slot->SubString(lo, hi);
-        *slot = trimmed;
+        String rest = work.SubString(consumed, work.length);
+        getLine(font, String(rest, false), maxWidth, (*out)[i]);
+        int end = (*out)[i]->length;
+        consumed += end;
+        int start = 0;
+        while (*(*(*out)[i])[start] == ' ')
+            start++;
+        while (*(*(*out)[i])[end - 1] == ' ')
+            end--;
+        *(*out)[i] = (*out)[i]->SubString(start, end);
     }
 }
 
@@ -612,47 +574,15 @@ void Globals::longToTimeString(long long ms, String &out) {
     return;
 }
 
-static int **const gGBS_guardHolder = nullptr;
-static String ***const gGBS_strPtr = nullptr;
-static int ***const gGBS_canvas = nullptr;
-static const char gGBS_prefix[] = "";
 
 String Globals::getBoundedString(const String &text, int width) {
-    int *guardP = *gGBS_guardHolder;
-    int saved = *guardP;
-
-    String result;
-    result.Set((const_cast<String *>(&text))->data);
-
-    String **strPtr = *gGBS_strPtr;
-    int **canvas = *gGBS_canvas;
-    int w = ((PaintCanvas *) (long) **canvas)->GetTextWidth(0, **strPtr);
-    if (width < w) {
-        String *line = (String *) ::operator new(0xc);
-        {
-            String *_s = line;
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-
-        int font = (int) (long) *strPtr;
-        String tmpText;
-        tmpText.Set((const_cast<String *>(&text))->data);
-        Globals::globals->getLine((unsigned) font, tmpText, width - 3, line);
-
-        String prefix;
-        prefix.ctor_char(gGBS_prefix, false);
-        result = prefix + *line;
-
-        {
-            String *_s = line;
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
+    String result(text, false);
+    if (Globals::Canvas->GetTextWidth(reinterpret_cast<unsigned int &>(Globals::font), text) > width) {
+        String *line = new String();
+        getLine(reinterpret_cast<unsigned int &>(Globals::font), String(text, false), width - 3, line);
+        result = *line + String("...", false);
+        delete line;
     }
-
     return result;
 }
 
@@ -2342,90 +2272,56 @@ static const char gGRN_noFirst[] = "";
 static const char gGRN_noLast[] = "";
 static const char gGRN_space[] = "";
 
-String Globals::getRandomName(int kind, bool both) {
-
-    FileRead *fr = (FileRead *) ::operator new(1);
-    FileRead_ctor(fr);
-    Array<String *> *first = fr->loadNamesBinary(kind, both, 1);
-    Array<String *> *last = fr->loadNamesBinary(kind, both, 0);
-
-    String firstStr, lastStr;
-    if (first == 0) {
-        firstStr.ctor_char(gGRN_noFirst, false);
-    } else {
-        int idx = nextInt_71aa4(Globals::rnd);
-        firstStr.Set(((*first)[idx])->data);
+String Globals::getRandomName(int race, bool female) {
+    FileRead *reader = new FileRead();
+    Array<String *> *firstNames = reader->loadNamesBinary(race, female, true);
+    Array<String *> *lastNames = reader->loadNamesBinary(race, female, false);
+    String firstName = firstNames == nullptr
+                           ? String("", false)
+                           : String(*(*firstNames)[Globals::rnd->nextInt(firstNames->size())], false);
+    String lastName = lastNames == nullptr
+                          ? String("", false)
+                          : String(*(*lastNames)[Globals::rnd->nextInt(lastNames->size())], false);
+    if (firstNames != nullptr) {
+        ArrayReleaseClasses(*firstNames);
+        delete firstNames;
     }
-    if (last == 0) {
-        lastStr.ctor_char(gGRN_noLast, false);
-    } else {
-        int idx = nextInt_71aa4(Globals::rnd);
-        lastStr.Set(((*last)[idx])->data);
+    if (lastNames != nullptr) {
+        ArrayReleaseClasses(*lastNames);
+        delete lastNames;
     }
-
-    if (first != 0) {
-        ArrayReleaseClasses(*first);
-        delete first;
-    }
-    if (last != 0) {
-        ArrayReleaseClasses(*last);
-        delete last;
-    }
-    ::operator delete(FileRead_dtor(fr));
-
-    String result;
-    if (firstStr.size() == 0) {
-        result.Set((firstStr).data);
-    } else {
-        String space, mid;
-        space.ctor_char(gGRN_space, false);
-        mid = firstStr + space;
-        result = mid + lastStr;
-    }
-
-    return result;
+    delete reader;
+    if (lastName.length != 0)
+        return firstName + String(" ", false) + lastName;
+    return String(firstName, false);
 }
 
-static const char gGL_empty[] = "";
 
 void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
     int lang = GameText::getLanguage();
-    int width = 5;
-    if (((unsigned) (lang | 1)) == 0xb) width = 0xf;
-    if ((unsigned) lang == 0xf) width = 0xf;
-
-    int *canvas = (int *) &Globals::Canvas;
+    int width = (lang | 1) == 11 ? 15 : 5;
+    if (lang == 15) width = lang;
     unsigned lastSpace = 0;
-    unsigned len = text.size();
-
-    String tmp;
-    for (unsigned i = 0; i < len;) {
-        short ch = *text.index(i);
-        width += ((PaintCanvas *) (long) *canvas)->GetTextWidth(font, text, i, i + 1);
-        if (ch == 0x20) {
-            lastSpace = i;
-        }
-        if (maxWidth <= width) {
-            if (ch == 0x0a || ch == 0x0d) {
-                tmp = text.SubString(0, i + 1);
-            } else if ((int) lastSpace < 1) {
-                tmp = text.SubString(0, i + 1);
-            } else {
-                tmp = text.SubString(0, lastSpace + 1);
-            }
-            *out = tmp;
+    for (unsigned i = 0; i < (unsigned) text.length; i++) {
+        unsigned short c = *text[i];
+        width += Globals::Canvas->GetTextWidth(font, text, i, i + 1);
+        if (c == ' ') lastSpace = i;
+        if (width >= maxWidth) {
+            if ((int) lastSpace >= 1)
+                *out = text.SubString(0, lastSpace + 1);
+            else
+                *out = text.SubString(0, i + 1);
             return;
         }
-        i++;
-        len = text.size();
+        if (*text[i] == '\n' || *text[i] == '\r') {
+            *out = text.SubString(0, i + 1);
+            return;
+        }
     }
-
-    if ((int) len < 2) {
-        tmp.ctor_char(gGL_empty, false);
-    } else {
-        tmp = text.SubString(0, len);
-    }
-    *out = tmp;
+    if (text.length >= 2)
+        *out = text.SubString(0, text.length);
+    else
+        *out = String("", false);
 }
 
 #include "engine/core/AERandom.h"
