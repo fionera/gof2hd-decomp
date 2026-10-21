@@ -142,19 +142,12 @@ static float *g_up_clampZ = nullptr;
 
 static float *g_up_clampW = nullptr;
 
-static float *g_flash2_a = nullptr;
 
-static float *g_flash2_b = nullptr;
 
-static float *g_flash2_c = nullptr;
 
-static float *g_flashCol_r = nullptr;
 
-static float *g_flashCol_g = nullptr;
 
-static float *g_flashCol_b = nullptr;
 
-static void (**g_levelSubCtor)(Matrix *) = nullptr;
 
 static int **g_cso_textA = nullptr;
 
@@ -642,61 +635,60 @@ Level::~Level() {
     field_9c = nullptr;
     if (field_a4) {
         ArrayReleaseClasses(*field_a4);
-        delete field_a4;
-        field_a4 = nullptr;
     }
+    delete field_a4;
+    field_a4 = nullptr;
     if (field_a8) {
-        delete field_a8;
-        field_a8 = nullptr;
+        ArrayRelease(*field_a8);
     }
+    delete field_a8;
+    field_a8 = nullptr;
     if (playerGuns) {
         ArrayReleaseClasses(*playerGuns);
-        delete playerGuns;
-        playerGuns = nullptr;
     }
+    delete playerGuns;
+    playerGuns = nullptr;
     if (enemyGuns) {
         ArrayReleaseClasses(*enemyGuns);
-        delete enemyGuns;
-        enemyGuns = nullptr;
     }
+    delete enemyGuns;
+    enemyGuns = nullptr;
     if (enemies) {
         ArrayReleaseClasses(*enemies);
-        delete enemies;
-        enemies = nullptr;
     }
+    delete enemies;
+    enemies = nullptr;
     if (asteroids) {
         ArrayReleaseClasses(*asteroids);
-        delete asteroids;
-        asteroids = nullptr;
     }
+    delete asteroids;
+    asteroids = nullptr;
     if (gasClouds) {
         ArrayReleaseClasses(*gasClouds);
-        delete gasClouds;
-        gasClouds = nullptr;
     }
+    delete gasClouds;
+    gasClouds = nullptr;
     if (landmarks) {
         ArrayReleaseClasses(*landmarks);
-        delete landmarks;
-        landmarks = nullptr;
     }
+    delete landmarks;
+    landmarks = nullptr;
     if (messages) {
         ArrayReleaseClasses(*messages);
-        delete messages;
-        messages = nullptr;
     }
+    delete messages;
+    messages = nullptr;
     if (field_104) {
         ArrayReleaseClasses(*field_104);
-        delete field_104;
-        field_104 = nullptr;
     }
+    delete field_104;
+    field_104 = nullptr;
     delete lodManager;
     lodManager = nullptr;
     delete field_a0;
     field_a0 = nullptr;
-    if (field_b0) {
-        delete field_b0;
-        field_b0 = nullptr;
-    }
+    delete field_b0;
+    field_b0 = nullptr;
 }
 
 void Level::incNumDeliveredPassengers(int delta) {
@@ -5167,26 +5159,26 @@ void Level::flashScreen(int type) {
     }
     flashDurationA = dur;
     flashDurationB = dur;
-    if (type == 2) {
-        flashColor.x = *g_flash2_a * 1.5f;
-        flashColor.y = *g_flash2_b * 1.5f;
-        flashColor.z = *g_flash2_c * 1.5f;
-    } else if (type == 4) {
+    if (flashType == 2) {
+        flashColor.x = i_r * 1.5f;
+        flashColor.y = i_g * 1.5f;
+        flashColor.z = i_b * 1.5f;
+    } else if (flashType == 4) {
         flashColor.x = 0;
         flashColor.y = 0;
         flashColor.z = 255.0f;
-    } else if (type == 3) {
+    } else if (flashType == 3) {
         flashColor.x = 0;
         flashColor.y = 0;
         flashColor.z = 0;
         player->hitCamera();
     } else {
-        float k = (type == 1) ? 8.0f : 5.0f;
-        flashColor.x = clampChannel(k * *g_flashCol_r);
-        flashColor.y = clampChannel(k * *g_flashCol_g);
-        flashColor.z = clampChannel(k * *g_flashCol_b);
+        float k = (flashType == 1) ? 8.0f : 5.0f;
+        flashColor.x = clampChannel(k * i_r);
+        flashColor.y = clampChannel(k * i_g);
+        flashColor.z = clampChannel(k * i_b);
     }
-    *(float *) &flashField = 255.0f;
+    flashAlpha = 255.0f;
 }
 
 void Level::createPlayer() {
@@ -5310,37 +5302,34 @@ void Level::wingmanDied(AbyssEngine::String const &name) {
     }
 }
 
-static inline void zero16(unsigned char *p) {
-    ((int *) p)[0] = 0;
-    ((int *) p)[1] = 0;
-    ((int *) p)[2] = 0;
-    ((int *) p)[3] = 0;
-}
 
-Level::Level(int mission) {
-    void(*ctor)(Matrix *) = *g_levelSubCtor;
-    field_b4 = 0;
-    field_b8 = 0;
-    field_bc = 0;
-    field_c8 = 0;
-    field_cc = 0;
-    field_d0 = 0;
-    field_18c = 0;
-    field_190 = 0;
-    field_194 = 0;
-    ctor(&this->skyMatrix);
-    ctor(&this->cloudMatrix);
-    ctor(&this->reversalMatrix);
-    zero16((unsigned char *) &field_1c);
-    zero16((unsigned char *) &this->field_90);
-    zero16((unsigned char *) &this->particleRenderBoolPtr);
-    zero16((unsigned char *) &this->field_74);
+Level::Level(int mission)
+        : field_b4(0), field_b8(0), field_bc(0),
+          field_c8(0), field_cc(0), field_d0(0),
+          field_18c(0), field_190(0), field_194(0) {
+    field_1c = 0;
+    killCountA = 0;
+    killCountB = 0;
+    objectivesA = nullptr;
+    objectivesB = nullptr;
+    field_30 = 0;
+    field_90 = nullptr;
+    field_94 = nullptr;
+    field_98 = nullptr;
+    field_9c = nullptr;
+    particleRenderBoolPtr = nullptr;
+    skybox2Mesh = nullptr;
+    field_8c = nullptr;
+    field_74 = nullptr;
+    particleEmitBoolPtr = nullptr;
+    particleSystemMgr = nullptr;
+    field_80 = nullptr;
     skyboxMesh = -1;
     field_08 = -1;
     skyboxTexture = -1;
     field_10 = -1;
     missionPtr = mission;
-    collisionVolume = 0;
+    collisionVolume = nullptr;
     field_b0 = nullptr;
     flashColor.x = 0;
     flashColor.y = 0;
@@ -5348,14 +5337,43 @@ Level::Level(int mission) {
     flashDurationA = 0;
     flashDurationB = 0;
     flashActive = 0;
-
-    objectivesA = nullptr;
-    objectivesB = nullptr;
-    memset(&this->asteroidWaypoint, 0, 0x65);
-    zero16((unsigned char *) &this->hostileCount);
-    zero16((unsigned char *) &this->flashType);
+    asteroidWaypoint = nullptr;
+    field_dc = 0;
+    field_e0 = 0;
+    playerGuns = nullptr;
+    enemyGuns = nullptr;
+    starSystem = nullptr;
+    player = nullptr;
+    gasClouds = nullptr;
+    enemies = nullptr;
+    asteroids = nullptr;
+    landmarks = nullptr;
+    field_104 = nullptr;
+    playerRoute = nullptr;
+    friendRoute = nullptr;
+    enemyRoute = nullptr;
+    messages = nullptr;
+    enemiesLeft = 0;
+    friendsLeft = 0;
+    field_120 = 0;
+    field_124 = 0;
+    asteroidsLeft = 0;
+    kills = 0;
+    timeLimit = 0;
+    field_134 = 0;
+    field_138 = 0;
+    friendCargoStolen = 0;
+    hostileCount = 0;
+    alienAttackTimer = 0;
+    orbitWaveTimer = 0;
+    field_178 = 0;
+    flashType = 0;
+    friendCount = 0;
+    field_164 = 0;
+    field_168 = 0;
     field_18a = 0;
     field_188 = 0;
+    alarmRequested = 0;
     movingStarsIndex = -1;
     field_284 = -1;
     field_34 = -1;
@@ -5364,28 +5382,21 @@ Level::Level(int mission) {
     field_48 = -1;
     field_4c = -1;
     field_17c = 0;
-    field_180 = 0;
+    field_180 = nullptr;
     field_184 = 0;
     field_69 = 0;
     field_6c = 0;
     field_288 = 0;
-    field_a0 = 0;
+    supernovaFlareActive = 0;
+    field_a0 = nullptr;
     field_a4 = nullptr;
     field_a8 = nullptr;
-
-    playerGuns = nullptr;
-    enemyGuns = nullptr;
-    gasClouds = nullptr;
-    enemies = nullptr;
-    asteroids = nullptr;
-    landmarks = nullptr;
-    field_104 = nullptr;
-    messages = nullptr;
     miningPlantIndex = -1;
     miningPlant = 0;
     numDeliveredOre = 0;
     numDeliveredPassengers = 0;
     field_29c = 0;
+    field_29d = 0;
     field_29e = 0;
     field_1b4 = -1;
     field_1b8 = -1;

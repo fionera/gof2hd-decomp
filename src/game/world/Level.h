@@ -54,7 +54,8 @@ public:
     int killCountB;
     Objective *objectivesA;
     Objective *objectivesB;
-    int field_30;
+    uint8_t field_30;
+    uint8_t pad_31[3];
     int field_34;
     int field_38;
     int field_3c;
@@ -126,7 +127,7 @@ public:
     uint8_t friendCargoStolen;
     uint8_t pad_13d[3];
     Vector flashColor;
-    int flashField;
+    float flashAlpha;
     int flashDurationA;
     int flashDurationB;
     uint8_t flashActive;
