@@ -94,7 +94,7 @@ public:
     // was union { ScrollTouchBox* scrollBox; FlagWord scrollBoxFlags; }
     ScrollTouchBox *scrollBox;
 
-    int introTimer;
+    Mission *dialogueMission; // mission whose briefing/debriefing dialogue is shown
     // Station info box (x, y, width, height) drawn by OnRender2D.
     int infoBoxX;
     int infoBoxY;
@@ -155,7 +155,8 @@ public:
     AbyssEngine::EaseInOut *easeX;
     AbyssEngine::EaseInOut *easeY;
     AbyssEngine::EaseInOut *easeZ;
-    uint32_t field_0x148;
+    uint8_t flag_0x148;
+    uint8_t _pad_0x149[3];
     uint8_t field_0x14c[0x278 - 0x14c];
     float camCoordX;
     float camCoordY;
@@ -246,7 +247,7 @@ static_assert(__builtin_offsetof(ModStation, choiceWindow) == 0x70, "");
 static_assert(__builtin_offsetof(ModStation, spaceLounge) == 0x74, "");
 static_assert(__builtin_offsetof(ModStation, buttonCredits) == 0x94, "");
 static_assert(__builtin_offsetof(ModStation, scrollBox) == 0x98, "");
-static_assert(__builtin_offsetof(ModStation, introTimer) == 0x9c, "");
+static_assert(__builtin_offsetof(ModStation, dialogueMission) == 0x9c, "");
 static_assert(__builtin_offsetof(ModStation, flag_0xb0) == 0xb0, "");
 static_assert(__builtin_offsetof(ModStation, flag_0xd8) == 0xd8, "");
 static_assert(__builtin_offsetof(ModStation, flag_0xdc) == 0xdc, "");
@@ -258,7 +259,7 @@ static_assert(__builtin_offsetof(ModStation, flag_0x118) == 0x118, "");
 static_assert(__builtin_offsetof(ModStation, lightDirection) == 0x11c, "");
 static_assert(__builtin_offsetof(ModStation, savedPostEffect) == 0x12c, "");
 static_assert(__builtin_offsetof(ModStation, camKeyX) == 0x130, "");
-static_assert(__builtin_offsetof(ModStation, field_0x148) == 0x148, "");
+static_assert(__builtin_offsetof(ModStation, flag_0x148) == 0x148, "");
 static_assert(__builtin_offsetof(ModStation, field_0x14c) == 0x14c, "");
 #endif
 

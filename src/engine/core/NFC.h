@@ -41,7 +41,7 @@ public:
 
     void showMoreGames();
 
-    void rateGame();
+    static void rateGame();
 
     void openTermsOfService();
 
