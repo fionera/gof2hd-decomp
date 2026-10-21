@@ -1076,8 +1076,8 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
     return result;
 }
 
-static Array<Item *> **g_Generator_lootItems;
-static int g_Generator_typeChances[8];
+// Chance (in %) that a randomly drawn loot item of each Item type is accepted.
+static const int kLootTypeChance[5] = {10, 40, 2, 10, 100};
 
 Array<int> *Generator::getLootList(int itemIndex, int amount) {
     if (itemIndex >= 0) {
@@ -1087,73 +1087,57 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
         return result;
     }
 
-    Array<Item *> **itemsPtr = g_Generator_lootItems;
-    Array<Item *> *itemsForOccurence = *itemsPtr;
-    Array<Item *> *items = *itemsPtr;
-    int itemCount = (int) itemsForOccurence->size();
-
-    int pairCount = Globals::rnd->nextInt();
-    if (Globals::rnd->nextInt() == 0) {
+    Array<Item *> *items = Globals::items;
+    int pairCount = Globals::rnd->nextInt(3);
+    if (Globals::rnd->nextInt(3) == 0) {
         return nullptr;
     }
 
     Array<int> *result = new Array<int>();
-    uint32_t length = (uint32_t)(pairCount << 1);
-    if (pairCount == 0) {
-        length = 2;
-    }
-    ArraySetLength(length, *result);
+    ArraySetLength(pairCount == 0 ? 2u : (uint32_t) (pairCount << 1), *result);
 
+    Array<Item *> *allItems = Globals::items;
+    int type = 0;
     for (uint32_t out = 0; out < result->size(); out += 2) {
         bool found = false;
-        int type = 0;
         int selected = 0;
-
-        for (uint32_t tries = 0; !found && tries < 100; ++tries) {
-            selected = Globals::rnd->nextInt();
-            Item *item = items->data()[selected];
-            type = item->getType();
-            if (item->getIngredients() == 0 &&
-                Globals::rnd->nextInt() < g_Generator_typeChances[type]) {
-                int roll = Globals::rnd->nextInt();
-                int occurrence =
-                        itemsForOccurence->data()[selected]->getOccurence();
-                if (roll < occurrence && item->getSinglePrice() >= 1) {
+        uint32_t tries = 0;
+        while (!found && tries < 100) {
+            selected = Globals::rnd->nextInt(items->size());
+            type = (*allItems)[selected]->getType();
+            found = false;
+            if ((*allItems)[selected]->getIngredients() == 0 &&
+                Globals::rnd->nextInt(100) < kLootTypeChance[type] &&
+                Globals::rnd->nextInt(100) < (*items)[selected]->getOccurence() &&
+                (*allItems)[selected]->getSinglePrice() >= 1) {
+                if ((uint32_t) (selected - 217) < 2 || selected == 164 || selected == 175) {
+                    found = false;
+                } else if (type == 4 || (*allItems)[selected]->getTecLevel() <= 7) {
                     found = true;
-                    if ((uint32_t)(selected - 0xd9) < 2 || selected == 0xa4 ||
-                        selected == 0xaf) {
-                        found = false;
-                    } else if (type != 4 && item->getTecLevel() > 7) {
-                        found = false;
-                    }
                 }
             }
+            ++tries;
         }
 
         int count;
         if (found) {
             result->data()[out] = selected;
             if (type == 4) {
-                count = Globals::rnd->nextInt();
-                type = 4;
+                count = Globals::rnd->nextInt(9);
             } else {
-                count = Globals::rnd->nextInt();
+                count = Globals::rnd->nextInt(3);
             }
         } else {
-            result->data()[out] = Globals::rnd->nextInt() + 0x9a;
-            count = Globals::rnd->nextInt();
+            result->data()[out] = Globals::rnd->nextInt(10) + 154;
+            count = Globals::rnd->nextInt(9);
             type = 4;
         }
         result->data()[out | 1] = count + 1;
     }
 
-    Ship *ship = Globals::status->getShip();
-    if (ship->hasJumpDrive() != 0) {
-        ship = Globals::status->getShip();
-        if (ship->hasCargo(0x7a, 1) == 0 &&
-            Globals::rnd->nextInt() < 10) {
-            result->data()[0] = 0x7a;
-        }
+    if (Globals::status->getShip()->hasJumpDrive() && !Globals::status->getShip()->hasCargo(122, 1) &&
+        Globals::rnd->nextInt(100) < 10) {
+        result->data()[0] = 122;
     }
     return result;
 }
