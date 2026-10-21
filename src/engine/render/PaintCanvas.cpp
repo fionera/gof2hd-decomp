@@ -2546,13 +2546,16 @@ PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
     this->currentCamera = 0xffffffff;
 
     AbyssEngine::MeshCreate(engine, 4, 2, 0x11, (AbyssEngine::Mesh **) &this->lineMesh);
-    unsigned short *quad = (unsigned short *) ((PCMeshView *) this->lineMesh)->indexBuffer;
-    quad[0] = 0;
-    quad[1] = 2;
-    quad[2] = 1;
-    quad[3] = 0;
-    quad[4] = 3;
-    quad[5] = 2;
+    {
+        // Two triangles for the line quad.
+        unsigned short *quad = (unsigned short *) ((PCMeshView *) this->lineMesh)->indexBuffer;
+        quad[0] = 0;
+        quad[1] = 2;
+        quad[2] = 1;
+        quad[3] = 0;
+        quad[4] = 3;
+        quad[5] = 2;
+    }
     this->colorR = 1.0f;
     this->colorG = 1.0f;
     this->colorB = 1.0f;
