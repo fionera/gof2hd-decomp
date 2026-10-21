@@ -467,154 +467,136 @@ void MissionsWindow::render3D() {
         this->m_pStarMap->render();
 }
 
-void MissionsWindow::OnTouchEnd(int y, int z) {
+int MissionsWindow::OnTouchEnd(int x, int y) {
     if (this->m_mode == 1) {
-        this->m_pWantedWindow->OnTouchEnd(y, z);
+        int result = this->m_pWantedWindow->OnTouchEnd(x, y);
+        // The wanted board's first button leads back to the mission list.
         if (this->m_pWantedWindow->lastButtonHit == 0) {
             this->m_mode = 0;
             this->m_pWantedWindow->lastButtonHit = 1;
         }
-        return;
+        return result;
     }
 
-    if (this->m_choiceActive != 0) {
-        int r = this->m_pChoiceWindow->OnTouchEnd(y, z);
-        if (r == 1) {
-            this->m_choiceActive = 0;
-            return;
-        }
-        if (r == 0) {
-            Status *st = Globals::status;
-            Mission *fm = st->getFreelanceMission();
-            int type = fm->getType();
-            bool clearCargo = (type == 0) || (fm->getType() == 3) || (fm->getType() == 5);
-            if (clearCargo) {
-                Array<Item *> *cargo = ((Ship *) (st->getShip()))->getCargo();
+    if (this->m_choiceActive) {
+        int choice = this->m_pChoiceWindow->OnTouchEnd(x, y);
+        if (choice == 0) {
+            // Abort the freelance mission: take back mission cargo and passengers.
+            if (Globals::status->getFreelanceMission()->getType() == 0 ||
+                Globals::status->getFreelanceMission()->getType() == 3 ||
+                Globals::status->getFreelanceMission()->getType() == 5) {
+                Array<Item *> *cargo = Globals::status->getShip()->getCargo();
                 if (cargo != nullptr) {
                     for (unsigned int i = 0; i < cargo->size(); i++) {
-                        Item *item = (*cargo)[i];
-                        if (item->isUnsaleable() != 0 && item->getIndex() == 0x74) {
-                            ((Ship *) (st->getShip()))->removeCargo(item);
+                        if ((*cargo)[i]->isUnsaleable() && (*cargo)[i]->getIndex() == 116) {
+                            Globals::status->getShip()->removeCargo((*cargo)[i]);
                             this->m_hangarNeedsUpdate = 1;
                             break;
                         }
                     }
                 }
-            } else if (fm->getType() == 0xb) {
-                st->setPassengers(0);
+            } else if (Globals::status->getFreelanceMission()->getType() == 11) {
+                Globals::status->setPassengers(0);
             }
-
-            Agent *agent = fm->getAgent();
-            if (agent->isGenericAgent() == 0)
-                fm->getAgent()->setOfferAccepted(false);
-            st->setFreelanceMission(nullptr);
-
-            unsigned char savedFlag = this->m_hangarNeedsUpdate;
+            if (!Globals::status->getFreelanceMission()->getAgent()->isGenericAgent())
+                Globals::status->getFreelanceMission()->getAgent()->setOfferAccepted(false);
+            Globals::status->setFreelanceMission(Mission::empty);
+            uint8_t hangarNeedsUpdate = this->m_hangarNeedsUpdate;
             this->init();
-            this->m_hangarNeedsUpdate = savedFlag;
-            return;
+            this->m_hangarNeedsUpdate = hangarNeedsUpdate;
+            return 0;
+        }
+        if (choice == 1) {
+            this->m_choiceActive = 0;
+            return 0;
         }
     }
 
-    if (this->m_starMapActive == 0) {
-        if (Globals::status->wantedBoardAccessible() != 0) {
-            Array<TouchButton *> *tabs = this->m_pTabButtons;
-            for (unsigned int i = 0; i < tabs->size(); i++) {
-                if ((*tabs)[i]->OnTouchEnd(y, z) != 0)
-                    this->m_mode = (int) i;
-            }
-        }
-        this->m_pCampaignWindow->OnTouchEnd(y, z);
-        this->m_pFreelanceWindow->OnTouchEnd(y, z);
-
-        if (this->m_pAcceptButton && this->m_pAcceptButton->OnTouchEnd(y, z) != 0) {
-            ApplicationManager *appMgr = Globals::appManager;
-            ModStation *mod = (ModStation *) appMgr->GetApplicationModule(5);
-            StarMap *map = mod->starMap;
-            this->m_pStarMap = map;
-            if (map == nullptr) {
-                StarMap *m = new StarMap(true,
-                                         (Mission *) (intptr_t) Globals::status->getCampaignMission(),
-                                         false, -1);
-                ModStation *mod2 = (ModStation *) appMgr->GetApplicationModule(5);
-                mod2->starMap = m;
-                ModStation *mod3 = (ModStation *) appMgr->GetApplicationModule(5);
-                this->m_pStarMap = mod3->starMap;
-            } else {
-                this->m_pStarMap->init(true,
-                                       (Mission *) (intptr_t) Globals::status->getCampaignMission(),
-                                       false, -1);
-            }
-            this->m_starMapActive = 1;
-            (Globals::layout)->resetWindowDimensions();
-        } else {
-            if (this->m_pMapButton && this->m_pMapButton->OnTouchEnd(y, z) != 0) {
-                String *t = Globals::gameText->getText(0x1a2);
-                this->m_pChoiceWindow->set(*t, true);
-                this->m_choiceActive = 1;
-            }
-            if (this->m_pRejectButton && this->m_pRejectButton->OnTouchEnd(y, z) != 0) {
-                ApplicationManager *appMgr = Globals::appManager;
-                ModStation *mod = (ModStation *) appMgr->GetApplicationModule(5);
-                StarMap *map = mod->starMap;
-                this->m_pStarMap = map;
-                if (map == nullptr) {
-                    StarMap *m = new StarMap(true,
-                                             Globals::status->getFreelanceMission(), false, -1);
-                    ModStation *mod2 = (ModStation *) appMgr->GetApplicationModule(5);
-                    mod2->starMap = m;
-                    this->m_pStarMap = m;
-                } else {
-                    this->m_pStarMap->init(true,
-                                           Globals::status->getFreelanceMission(), false, -1);
-                }
-                this->m_starMapActive = 1;
-                (Globals::layout)->resetWindowDimensions();
-                return;
-            }
-            Layout *layout = Globals::layout;
-            if (layout->OnTouchEnd(z, 0) != 0) {
-                layout->resetWindowDimensions();
-                return;
-            }
-            if (layout->helpPressed() != 0) {
-                String *t = Globals::gameText->getText(0x27b);
-                String title(*t);
-                layout->initHelpWindow(title);
-            }
-        }
-    } else {
-        if (this->m_pStarMap->OnTouchEnd(y, z) != 0) {
-            int wantW, wantH, posX;
-            if (Globals::iPad == 0) {
+    if (this->m_starMapActive) {
+        if (this->m_pStarMap->OnTouchEnd(x, y)) {
+            int width;
+            int height;
+            if (!Globals::iPad) {
+                height = Globals::h;
+                width = Globals::w;
                 this->m_x = 0;
                 this->m_y = 0;
-                wantW = 0;
-                wantH = 0;
-                posX = 0;
             } else {
-                if (Globals::iPadHD == 0) {
-                    int w = 1000, h = 0x514;
-                    if (Globals::iPadLarge == 0) {
-                        w = 500;
-                        h = 0x28a;
-                    }
-                    posX = h >> 1;
-                    wantW = w;
-                    wantH = h;
+                int halfWidth;
+                if (Globals::iPadHD) {
+                    height = 703;
+                    halfWidth = 457;
+                    width = 914;
                 } else {
-                    wantW = 0x2bf;
-                    posX = 0x1c9;
-                    wantH = 0x392;
+                    height = 1000;
+                    width = 1300;
+                    if (!Globals::iPadLarge) {
+                        height = 500;
+                        width = 650;
+                    }
+                    halfWidth = (unsigned int) width >> 1;
                 }
-                this->m_x = (Globals::w >> 1) - posX;
-                this->m_y = (Globals::h >> 1) - (wantW >> 1);
+                int left = (Globals::w >> 1) - halfWidth;
+                int top = (Globals::h >> 1) - ((unsigned int) height >> 1);
+                this->m_x = left;
+                this->m_y = top;
             }
-            this->m_width = wantH;
-            this->m_height = wantW;
+            this->m_width = width;
+            this->m_height = height;
             this->m_starMapActive = 0;
         }
+        return 0;
     }
+
+    if (Globals::status->wantedBoardAccessible()) {
+        for (unsigned int i = 0; i < this->m_pTabButtons->size(); i++) {
+            if ((*this->m_pTabButtons)[i]->OnTouchEnd(x, y))
+                this->m_mode = i;
+        }
+    }
+    this->m_pCampaignWindow->OnTouchEnd(x, y);
+    this->m_pFreelanceWindow->OnTouchEnd(x, y);
+
+    if (this->m_pAcceptButton != nullptr && this->m_pAcceptButton->OnTouchEnd(x, y)) {
+        // Show the campaign mission on the star map.
+        this->m_pStarMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+        if (this->m_pStarMap != nullptr) {
+            this->m_pStarMap->init(true, (Mission *) (intptr_t) Globals::status->getCampaignMission(), false, -1);
+        } else {
+            ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap =
+                    new StarMap(true, (Mission *) (intptr_t) Globals::status->getCampaignMission(), false, -1);
+            this->m_pStarMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+        }
+        this->m_starMapActive = 1;
+        Globals::layout->resetWindowDimensions();
+        return 0;
+    }
+    if (this->m_pMapButton != nullptr && this->m_pMapButton->OnTouchEnd(x, y)) {
+        this->m_pChoiceWindow->set(*Globals::gameText->getText(418), true);
+        this->m_choiceActive = 1;
+    }
+    if (this->m_pRejectButton != nullptr && this->m_pRejectButton->OnTouchEnd(x, y)) {
+        // Show the freelance mission on the star map.
+        this->m_pStarMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+        if (this->m_pStarMap != nullptr) {
+            this->m_pStarMap->init(true, Globals::status->getFreelanceMission(), false, -1);
+        } else {
+            ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap =
+                    new StarMap(true, Globals::status->getFreelanceMission(), false, -1);
+            this->m_pStarMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+        }
+        this->m_starMapActive = 1;
+        Globals::layout->resetWindowDimensions();
+        return 0;
+    }
+
+    if (Globals::layout->OnTouchEnd(x, y)) {
+        Globals::layout->resetWindowDimensions();
+        return 1;
+    }
+    if (Globals::layout->helpPressed())
+        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
+    return 0;
 }
 
 void MissionsWindow::update(int dt) {
