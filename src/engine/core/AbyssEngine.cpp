@@ -805,8 +805,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    static char *g_uvFlipFlag;
-    static char *g_tangentEnabled;
 
     int MeshReadData(Engine *engine, const unsigned int &handleRef, unsigned int flags, Mesh **slot,
                      Material *mat);
@@ -918,7 +916,7 @@ namespace AbyssEngine {
                 unsigned char *uv = (unsigned char *) ::operator new[](vcount << 3);
                 m->texCoords = uv;
                 m = *slot;
-                char flip = *g_uvFlipFlag;
+                char flip = Engine::enableShader;
                 short *rawShorts = (short *) raw;
                 float *uvFloats = (float *) m->texCoords;
                 const double scale = 1.0 / 32767.0;
@@ -938,7 +936,7 @@ namespace AbyssEngine {
                 m->texCoords = uv;
                 if (AEFile::Read((uint32_t)((*slot)->vertexCount << 3), (*slot)->texCoords, handle) == 0)
                     return -1;
-                if (*g_uvFlipFlag != 0) {
+                if (Engine::enableShader != 0) {
                     m = *slot;
                     float *uvFloats = (float *) m->texCoords;
                     for (unsigned int i = 0; i < (unsigned int) (m->vertexCount << 1); i += 2) {
@@ -1000,7 +998,7 @@ namespace AbyssEngine {
                     return -1;
             }
 
-            if (*g_tangentEnabled != 0) {
+            if (Engine::enableShader != 0) {
                 m = *slot;
                 unsigned char *tan = (unsigned char *) ::operator new[](vcount * 0xc);
                 m->tangents = tan;
@@ -2169,10 +2167,6 @@ namespace AbyssEngine {
     void glTexEnvi(unsigned int t, unsigned int p, int v);
     }
 
-    static char *g_cubemapEnabledFlag;
-    static char *g_texEnvFlag;
-    static char *g_clampFlag;
-    static float *g_anisoMaxPtr;
     static char *g_labelObjectsFlag;
 
     int ImageCreateFromFile(Engine *engine, const char *path, Image **out);
@@ -2205,7 +2199,7 @@ namespace AbyssEngine {
         int format = (int) img->format;
 
         if (format == 6) {
-            if (*g_cubemapEnabledFlag != 0) {
+            if (Engine::enableShader != 0) {
                 glBindTexture(0x8513, *outIds);
                 glTexParameteri(0x8513, 0x2800, 0x2601);
                 glTexParameteri(0x8513, 0x2801, 0x2601);
@@ -2221,11 +2215,11 @@ namespace AbyssEngine {
         } else {
             glBindTexture(0xde1, *outIds);
             glPixelStorei(0xcf5, 1);
-            if (*g_texEnvFlag == 0)
+            if (Engine::enableShader == 0)
                 glTexEnvi(0x2300, 0x2200, 0x2100);
 
             int wrap;
-            if (*g_clampFlag != 0) {
+            if (Engine::clampTextures != 0) {
                 glTexParameteri(0xde1, 0x2802, 0x812f);
                 wrap = 0x812f;
             } else {
@@ -2242,15 +2236,15 @@ namespace AbyssEngine {
                     glTexParameteri(0xde1, 0x2800, 0x2600);
                     glTexParameteri(0xde1, 0x2801, 0x2600);
                 }
-            } else if (*g_anisoMaxPtr <= 0.0f) {
+            } else if (Engine::AnisotropyValue <= 0.0f) {
                 glTexParameteri(0xde1, 0x2801, 0x2703);
                 glTexParameteri(0xde1, 0x2800, 0x2601);
             } else {
-                glTexParameterf(0xde1, 0x84fe, *g_anisoMaxPtr);
+                glTexParameterf(0xde1, 0x84fe, Engine::AnisotropyValue);
                 glTexParameteri(0xde1, 0x2801, 0x2703);
             }
 
-            if (*g_clampFlag != 0) {
+            if (Engine::clampTextures != 0) {
                 glTexParameteri(0xde1, 0x2800, 0x2601);
                 glTexParameteri(0xde1, 0x2801, 0x2601);
             }
