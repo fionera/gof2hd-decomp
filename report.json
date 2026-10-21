@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4540,
   "compared": 4523,
-  "avg_match": 96.84,
+  "avg_match": 96.89,
   "byte_exact": 1314,
-  "linked_exact": 4074,
-  "fuzzy_perfect": 4074,
+  "linked_exact": 4078,
+  "fuzzy_perfect": 4078,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -312,14 +312,6 @@
    "usize": 10224
   },
   {
-   "name": "_ZN7Globals15createBillBoardEiiffffi",
-   "pct": 29.4,
-   "byte": false,
-   "linked": false,
-   "osize": 684,
-   "usize": 692
-  },
-  {
    "name": "_ZN11AbyssEngine18MeshCreateFromFileEPNS_6EngineEPKcPPNS_4MeshEPNS_8MaterialE",
    "pct": 29.6,
    "byte": false,
@@ -438,14 +430,6 @@
    "linked": false,
    "osize": 532,
    "usize": 500
-  },
-  {
-   "name": "_ZN7Globals17getWreckCollisionEiP10AEGeometry",
-   "pct": 35.5,
-   "byte": false,
-   "linked": false,
-   "osize": 604,
-   "usize": 556
   },
   {
    "name": "_Z13loadingScreenPN11AbyssEngine11PaintCanvasEiPv",
@@ -710,22 +694,6 @@
    "linked": false,
    "osize": 1872,
    "usize": 1896
-  },
-  {
-   "name": "_ZN5TrailC1Eii",
-   "pct": 45.8,
-   "byte": false,
-   "linked": false,
-   "osize": 412,
-   "usize": 400
-  },
-  {
-   "name": "_ZN5TrailC2Eii",
-   "pct": 45.8,
-   "byte": false,
-   "linked": false,
-   "osize": 412,
-   "usize": 400
   },
   {
    "name": "_ZN16SimpleMeshMergerC1ERK5ArrayItES0_IN11AbyssEngine6AEMath6MatrixEEPNS4_11PaintCanvasEt",
@@ -1816,14 +1784,6 @@
    "usize": 1296
   },
   {
-   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
-   "pct": 72.5,
-   "byte": false,
-   "linked": false,
-   "osize": 8852,
-   "usize": 8820
-  },
-  {
    "name": "_ZN5Trail6updateEffffff",
    "pct": 72.7,
    "byte": false,
@@ -2080,6 +2040,14 @@
    "usize": 3468
   },
   {
+   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
+   "pct": 77.3,
+   "byte": false,
+   "linked": false,
+   "osize": 8852,
+   "usize": 8852
+  },
+  {
    "name": "_ZN6Status13departStationEP7Station",
    "pct": 77.8,
    "byte": false,
@@ -2126,14 +2094,6 @@
    "linked": false,
    "osize": 500,
    "usize": 504
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 79.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2700
   },
   {
    "name": "_ZN4Item12extractItemsEP5ArrayIPS_Eb",
@@ -2494,6 +2454,14 @@
    "linked": false,
    "osize": 972,
    "usize": 984
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 84.5,
+   "byte": false,
+   "linked": false,
+   "osize": 2696,
+   "usize": 2692
   },
   {
    "name": "_ZN17ScrollTouchWindow4drawEv",
@@ -25464,6 +25432,22 @@
    "usize": 98
   },
   {
+   "name": "_ZN5TrailC1Eii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 412,
+   "usize": 412
+  },
+  {
+   "name": "_ZN5TrailC2Eii",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 412,
+   "usize": 412
+  },
+  {
    "name": "_ZN5TrailD1Ev",
    "pct": 100.0,
    "byte": false,
@@ -28752,6 +28736,14 @@
    "usize": 520
   },
   {
+   "name": "_ZN7Globals15createBillBoardEiiffffi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 684,
+   "usize": 684
+  },
+  {
    "name": "_ZN7Globals16getBoundedStringERKN11AbyssEngine6StringEi",
    "pct": 100.0,
    "byte": false,
@@ -28782,6 +28774,14 @@
    "linked": true,
    "osize": 40,
    "usize": 40
+  },
+  {
+   "name": "_ZN7Globals17getWreckCollisionEiP10AEGeometry",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 604,
+   "usize": 604
   },
   {
    "name": "_ZN7Globals18reportLeaderboardsEv",

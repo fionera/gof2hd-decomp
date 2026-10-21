@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1314,
-  "linked_exact": 4074,
+  "linked_exact": 4078,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 16,
-  "avg_match": 96.84,
+  "avg_match": 96.89,
   "compared": 4523
  },
  "data": {
@@ -22,12 +22,8 @@
   "_Unwind_Resume",
   "_Unwind_VRS_Get",
   "_Unwind_VRS_Set",
-  "_Z11VectorScalePvf",
-  "_Z13FileRead_ctorPv",
-  "_Z13FileRead_dtorPv",
   "_Z14CameraGetLocalPvj",
   "_Z15_mtw_draw_storePv",
-  "_Z16BoundingAAB_ctorPvffffff",
   "_Z16OnCheatActivatediPv",
   "_Z16String_printImplPKc",
   "_Z16ndk23_renderstepii",
