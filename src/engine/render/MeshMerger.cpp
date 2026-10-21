@@ -110,48 +110,31 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
     this->dirty = 0;
 }
 
-MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags) {
-    this->transformedMeshes = nullptr;
-    this->matrices = nullptr;
-    this->mergedMesh = nullptr;
-    this->lods = nullptr;
+MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
+    : transformedMeshes(nullptr), matrices(nullptr), mergedMesh(nullptr), lods(nullptr) {
     this->canvas = canvas;
     this->rows = rows;
     this->cols = cols;
 
-    int bytes = cols * rows * 4;
-    long long need = (long long) (unsigned) (cols * rows) * 4;
-    int req = (int) ((need >> 32) != 0 ? 0xffffffff : (unsigned) need);
-
-    this->sourceMeshes = (Mesh **) new unsigned char[req];
-    memset(this->sourceMeshes, 0, bytes);
-    this->transformedMeshes = (Mesh **) new unsigned char[req];
-    memset(this->transformedMeshes, 0, bytes);
-
-    this->lods = (int8_t *) new unsigned char[rows];
+    int count = cols * rows;
+    this->sourceMeshes = new Mesh *[count];
+    memset(this->sourceMeshes, 0, count * sizeof(Mesh *));
+    this->transformedMeshes = new Mesh *[count];
+    memset(this->transformedMeshes, 0, count * sizeof(Mesh *));
+    this->lods = new int8_t[rows];
     memset(this->lods, 0, rows);
-
-    long long mneed = (long long) (unsigned) rows * 0x3c;
-    int mreq = (int) ((mneed >> 32) != 0 ? 0xffffffff : (unsigned) mneed);
-    char *matrices = (char *) new unsigned char[mreq];
-    for (int off = 0; rows != 0 && off != rows * 0x3c; off += 0x3c)
-        new(matrices + off) Matrix();
-    this->matrices = matrices;
-
-    Matrix ident;
-    int n = this->rows;
-    for (int i = 0, off = 0; i < n; i++, off += 0x3c)
-        *(Matrix *) (matrices + off) = ident;
-
-    n = this->rows;
-    uint8_t *en = new uint8_t[n];
-    this->enabledFlags = en;
-    for (int i = 0; i < n; i++) en[i] = 1;
-
-    uint8_t *vis = new uint8_t[n];
-    this->visibleFlags = vis;
-    for (int i = 0; i < n; i++) vis[i] = 1;
-
+    this->matrices = new Matrix[rows];
+    for (int i = 0; i < this->rows; i++) {
+        this->matrices[i] = Matrix();
+    }
+    this->enabledFlags = new uint8_t[this->rows];
+    for (int i = 0; i < this->rows; i++) {
+        this->enabledFlags[i] = 1;
+    }
+    this->visibleFlags = new uint8_t[this->rows];
+    for (int i = 0; i < this->rows; i++) {
+        this->visibleFlags[i] = 1;
+    }
     this->dirty = 0;
     this->flags = flags;
     this->initialized = 0;
@@ -190,7 +173,7 @@ MeshMerger::~MeshMerger() {
 }
 
 void MeshMerger::setMatrix(int index, const Matrix &m) {
-    *(Matrix *) (this->matrices + index * 0x3c) = m;
+    this->matrices[index] = m;
 }
 
 void MeshMerger::setLod(int index, signed char lod) {
@@ -284,7 +267,7 @@ void MeshMerger::init() {
             Mesh *mesh = this->sourceMeshes[this->rows * c + i];
             if (mesh != nullptr) {
                 this->transformedMeshes[this->rows * c + i] =
-                        transformMesh(mesh, *(const Matrix *) (this->matrices + i * 0x3c));
+                        transformMesh(mesh, this->matrices[i]);
             }
         }
     }
