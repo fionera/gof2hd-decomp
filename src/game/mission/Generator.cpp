@@ -123,7 +123,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 
     for (int i = 0; i < items->size(); ++i) {
         Item *item = (*items)[i];
-        bool systemGood = item->getIndex() >= 132 && item->getIndex() < 154;
+        int systemGood = item->getIndex() >= 132 && item->getIndex() < 154;
         bool stationExclusive = false;
         if (station->getIndex() == item->getAttribute(61)) {
             if (item->getIndex() >= 196 && item->getIndex() <= 196 &&
@@ -164,11 +164,20 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
             int mission = Globals::status->getCurrentCampaignMission();
             if (occurrence == 0 && ((index >= 196 && Globals::options[55]) || (index <= 195 && Globals::options[53]))) {
                 occurrence = 0;
-                if (((item->getType() != 4) & (index != 85)) && item->getIngredients() == nullptr &&
-                    (index != 181 || mission >= 59) &&
-                    (((sort == 34) | (sort == 33) | (sort == 35)) != 1 || mission >= 142) && sort != 36 &&
-                    !((mission < 142) & (sort == 43)) && index != 209 && index != 210 && index != 217 && index != 218 &&
-                    !((mission < 94) & (index == 205))) {
+                if ((item->getType() == 4) | (index == 85)) {
+                    occurrence = 0;
+                } else if (item->getIngredients() != nullptr) {
+                    occurrence = 0;
+                } else if (index == 181 && mission < 59) {
+                    occurrence = 0;
+                } else if (((sort == 34) | (sort == 33 || sort == 35)) == 1 && mission < 142) {
+                    occurrence = 0;
+                } else if (sort == 36 || ((mission < 142) & (sort == 43)) == 1) {
+                    occurrence = 0;
+                } else if ((((index == 209) | (index == 210) | (index == 217) | (index == 218)) |
+                            ((mission < 94) & (index == 205))) == 1) {
+                    occurrence = 0;
+                } else {
                     bool blocked = false;
                     for (unsigned k = 0; k < 9; ++k) {
                         if (kNeverUnlockedItems[k] == index) {
@@ -191,7 +200,13 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
                 if (tec > station->getTecLevel() || occurrence == 0) goto next;
                 if (item->getSinglePrice() == 0) goto next;
                 if (item->getAttribute(60) == 1 && (*systems)[station->getSystem()]->getRace() != 1) goto next;
-                if (stationId != 106 && systemGood && item->getIndex() != station->getSystem() + 132) goto next;
+                if (stationId == 106) {
+                    // Kaamo supplies goods from every system.
+                } else if (systemGood != 1) {
+                    // Other items are not tied to a system.
+                } else if (item->getIndex() != station->getSystem() + 132) {
+                    goto next;
+                }
             }
             if (Globals::status->hardCoreMode() && (item->getSort() == 23 || item->getSort() == 24)) goto next;
             switch (stationId) {
@@ -209,7 +224,9 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 
             int chance = (int) (priceFactor * (float) occurrence);
             if (!stationExclusive) {
-                if (tec > stationTec && !systemGood) goto next;
+                if (tec > stationTec) {
+                    if (systemGood != 1) goto next;
+                }
                 if (Globals::rnd->nextInt(100) >= chance) goto next;
                 if (((item->getIndex() != 122) & (tec < minTec)) && Globals::rnd->nextInt(100) > 60) goto next;
             }
