@@ -155,7 +155,7 @@ public:
 
     float getFireRateFactor();
 
-    int getDamageFactor();
+    float getDamageFactor();
 
     float getFirePower();
 
