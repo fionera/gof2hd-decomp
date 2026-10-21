@@ -780,7 +780,12 @@ void HangarWindow::render() {
                                 hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
                                 textX + Globals::layout->buttonInsetX + this->hintOffsetX,
                                 y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
-                        } else if (tab == 1 || i >= 2) {
+                        } else if (tab != 1 && i < 2) {
+                            Globals::Canvas->DrawString(
+                                hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
+                                textX + Globals::layout->buttonInsetX + this->hintOffsetX,
+                                y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
+                        } else {
                             Globals::Canvas->SetColor(
                                 item->ship->getPrice() - Globals::status->getShip()->getPrice() >
                                 Globals::status->getCredits()
@@ -790,11 +795,6 @@ void HangarWindow::render() {
                                 hangarFont(),
                                 Globals::layout->formatCredits(item->ship->getPrice() -
                                                                Globals::status->getShip()->getPrice()),
-                                textX + Globals::layout->buttonInsetX + this->hintOffsetX,
-                                y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
-                        } else {
-                            Globals::Canvas->DrawString(
-                                hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
                                 textX + Globals::layout->buttonInsetX + this->hintOffsetX,
                                 y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
                         }
@@ -954,12 +954,12 @@ void HangarWindow::render() {
             for (unsigned int i = 0; i < this->tabButtons->size(); i++)
                 (*this->tabButtons)[i]->draw();
         }
-        if (this->viewMode == 1) {
-            this->viewMode = 0;
-            this->render();
-            this->viewMode = 1;
-            this->listItemWindow->draw();
-        }
+    }
+    if (this->viewMode == 1) {
+        this->viewMode = 0;
+        this->render();
+        this->viewMode = 1;
+        this->listItemWindow->draw();
     }
 
     Globals::layout->drawFooter();
