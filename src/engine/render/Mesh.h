@@ -13,13 +13,13 @@ namespace AbyssEngine {
 
         uint16_t vertexCount;
 
-        unsigned char *positions;
+        float *positions;
 
         unsigned char *texCoords;
 
         unsigned char *colors;
 
-        unsigned char *normals;
+        float *normals;
 
         unsigned char *tangents;
 
