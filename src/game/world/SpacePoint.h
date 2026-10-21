@@ -12,7 +12,7 @@ public:
     AbyssEngine::AEMath::Vector position;
     AbyssEngine::AEMath::Vector direction;
     int type;
-    uint8_t free;
+    bool free;
     int param;
 
     SpacePoint(int type, const AbyssEngine::AEMath::Vector &position,
@@ -24,7 +24,7 @@ public:
 
     void take();
 
-    uint8_t isFree();
+    bool isFree();
 
     int getIndex();
 };

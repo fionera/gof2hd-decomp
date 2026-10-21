@@ -147,7 +147,7 @@ void BluePrint::addItem(Item *item, int amount, int station) {
         if ((*il)[i] == item->getIndex()) {
             (*ingredientCounters)[i] -= amount;
             spentValue += item->getSinglePrice() * amount;
-            if (station >= 0 && stationIndex < 0) {
+            if (stationIndex < 0 && station >= 0) {
                 stationIndex = station;
                 if (Globals::status->getStation()->getIndex() == station) {
                     stationName = Globals::status->getStation()->getName();
