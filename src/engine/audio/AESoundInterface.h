@@ -23,7 +23,7 @@ namespace AbyssEngine {
 
         virtual void stop() = 0;
 
-        virtual int isPlaying() = 0;
+        virtual bool isPlaying() = 0;
 
         virtual void setGain(int gain) = 0;
 

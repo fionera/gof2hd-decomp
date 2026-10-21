@@ -73,7 +73,8 @@ public:
     uint8_t field_69;
     uint8_t pad_6a[2];
     int field_6c;
-    int field_70;
+    uint8_t field_70;
+    uint8_t pad_71[3];
     ParticleSystemManager *field_74;
     ParticleSystemManager *particleEmitBoolPtr;
     ParticleSystemManager *particleSystemMgr;
@@ -90,9 +91,7 @@ public:
     Array<int> *field_a8;
     int miningPlantIndex;
     Array<KIPlayer *> *field_b0;
-    int field_b4;
-    int field_b8;
-    int field_bc;
+    Vector playerPosition;
     int missionPtr;
     BoundingVolume *collisionVolume;
     float field_c8;
@@ -231,7 +230,7 @@ public:
 
     Gun *createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color);
 
-    int createStaticObject(Waypoint *wp, int type, bool jitter);
+    KIPlayer *createStaticObject(Waypoint *waypoint, int type, bool scatter);
 
     PlayerFixedObject *createShip(int race, int shipClass, int type, Waypoint *wp, bool hostile, bool group);
 
@@ -239,7 +238,7 @@ public:
 
     void setPlayerRoute(Route *route);
 
-    void createRadioMessages(int set);
+    Array<RadioMessage *> *createRadioMessages(int set);
 
     Array<BoundingVolume *> *getBoundingVolume(int id, AEGeometry *geometry);
 
@@ -311,7 +310,7 @@ public:
 
     void updateAsteroidCluster();
 
-    void update(long long time, bool param);
+    void update(long long dt, bool skipLod);
 
     int checkObjective(int param);
 
@@ -365,8 +364,6 @@ public:
 
     void incNumDeliveredPassengers(int delta);
 
-    void crm_dispatch(int egoComm, void *queue); // lint: void_ptr (method param is symbol-baked)
-
     static unsigned char doInstantJump;
     static Station *programmedStation;
     static unsigned char comingFromAlienWorld;
@@ -378,9 +375,9 @@ public:
     static float i_b;
     static float i_g;
     static float i_r;
-    static float b_min;
-    static float g_min;
-    static float r_min;
+    static int b_min;
+    static int g_min;
+    static int r_min;
 };
 
 #if __SIZEOF_POINTER__ == 4

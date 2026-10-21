@@ -27,60 +27,66 @@
 #include <cstddef>
 
 namespace {
-#pragma pack(push, 1)
+    // View of Globals::hints as raw boolean flags.
+    struct HintFlags {
+        bool flag[59];
+    };
+
+    // View of Globals::options as the options file serializes it (floats = volumes/sensitivities,
+    // bools = toggles).
     struct OptionsBuffer {
-        int32_t i32_0x00;
-        int32_t i32_0x04;
+        float f_0x00;
+        float f_0x04;
         float volumeSfx;
-        uint8_t byte_0x0c;
-        uint8_t byte_0x0d;
-        uint8_t byte_0x0e;
+        bool byte_0x0c;
+        bool byte_0x0d;
+        bool byte_0x0e;
         uint8_t pad_0x0f;
-        uint8_t byte_0x10;
-        uint8_t byte_0x11;
+        bool byte_0x10;
+        bool byte_0x11;
         uint8_t pad_0x12[2];
-        int32_t i32_0x14;
-        int32_t i32_0x18;
-        int32_t i32_0x1c;
+        float f_0x14;
+        float f_0x18;
+        float f_0x1c;
         float volumeMusic;
-        int32_t i32_0x24;
-        int32_t i32_0x28;
-        uint8_t pad_0x2c[6];
-        uint8_t byte_0x32;
-        uint8_t byte_0x33;
-        uint8_t byte_0x34;
-        uint8_t byte_0x35;
-        uint8_t byte_0x36;
-        uint8_t byte_0x37;
-        uint8_t byte_0x38;
+        float f_0x24;
+        float f_0x28;
+        float difficulty;
+        uint8_t pad_0x30[2];
+        bool byte_0x32;
+        bool byte_0x33;
+        bool byte_0x34;
+        bool byte_0x35;
+        bool byte_0x36;
+        bool byte_0x37;
+        bool byte_0x38;
         uint8_t pad_0x39;
-        uint8_t byte_0x3a;
-        uint8_t byte_0x3b;
-        uint8_t byte_0x3c;
-        uint8_t byte_0x3d;
-        uint8_t byte_0x3e;
-        uint8_t byte_0x3f;
-        uint8_t byte_0x40;
-        uint8_t byte_0x41;
+        bool byte_0x3a;
+        bool byte_0x3b;
+        bool byte_0x3c;
+        bool byte_0x3d;
+        bool byte_0x3e;
+        bool byte_0x3f;
+        bool byte_0x40;
+        bool byte_0x41;
         uint8_t pad_0x42[2];
         float volumeAmbient;
-        uint8_t byte_0x48;
-        uint8_t byte_0x49;
-        uint8_t byte_0x4a;
-        uint8_t byte_0x4b;
-        uint8_t byte_0x4c;
-        uint8_t byte_0x4d;
-        uint8_t byte_0x4e;
+        bool byte_0x48;
+        bool byte_0x49;
+        bool byte_0x4a;
+        bool byte_0x4b;
+        bool byte_0x4c;
+        bool byte_0x4d;
+        bool byte_0x4e;
         uint8_t pad_0x4f;
         int32_t i32_0x50;
         int32_t i32_0x54;
         int32_t i32_0x58;
         uint8_t pad_0x5c[4];
-        uint8_t byte_0x60;
-        uint8_t byte_0x61;
-        uint8_t byte_0x62;
+        bool byte_0x60;
+        bool byte_0x61;
+        bool byte_0x62;
     };
-#pragma pack(pop)
 
 #if __SIZEOF_POINTER__ == 4
     static_assert(offsetof(OptionsBuffer, volumeSfx) == 0x08, "OptionsBuffer.volumeSfx");
@@ -90,11 +96,15 @@ namespace {
     static_assert(offsetof(OptionsBuffer, volumeAmbient) == 0x44, "OptionsBuffer.volumeAmbient");
     static_assert(offsetof(OptionsBuffer, i32_0x50) == 0x50, "OptionsBuffer.i32_0x50");
     static_assert(offsetof(OptionsBuffer, byte_0x62) == 0x62, "OptionsBuffer.byte_0x62");
-    static_assert(sizeof(OptionsBuffer) == 0x63, "OptionsBuffer size");
+    static_assert(sizeof(OptionsBuffer) == 0x64, "OptionsBuffer size");
 #endif
 }
 
 const char *g_android_origami_super_club = nullptr;
+
+struct Sha256Context {
+    unsigned char state[0x70];
+};
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetOrigamiSuperClub( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv *env, jobject /*thiz*/, jstring value) {
@@ -194,160 +204,104 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourc
     canvas->SwapBuffer();
 }
 
-static int *g_RH_recordCount = nullptr;
-
-void *RecordHandler::readAllRecords() { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
-    Array<GameRecord *> *arr = new Array<GameRecord *>();
-    int *cnt = g_RH_recordCount;
-    ArraySetLength(*cnt, *arr);
-    for (int i = 0; i < *cnt; i++) {
-        GameRecord *r = this->recordStoreRead(i);
-        (*arr)[i] = r;
+Array<GameRecord *> *RecordHandler::readAllRecords() {
+    Array<GameRecord *> *records = new Array<GameRecord *>();
+    ArraySetLength(Globals::recordSlots, *records);
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        (*records)[i] = this->recordStoreRead(i);
     }
-    return arr;
+    return records;
 }
 
-void *RecordHandler::readAllPreviewRecords() { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
-    Array<GameRecord *> *arr = new Array<GameRecord *>();
-    int *cnt = g_RH_recordCount;
-    ArraySetLength(*cnt, *arr);
-    for (int i = 0; i < *cnt; i++) {
-        GameRecord *r = this->recordStoreReadPreview(i);
-        (*arr)[i] = r;
+Array<GameRecord *> *RecordHandler::readAllPreviewRecords() {
+    Array<GameRecord *> *records = new Array<GameRecord *>();
+    ArraySetLength(Globals::recordSlots, *records);
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        (*records)[i] = this->recordStoreReadPreview(i);
     }
-    return arr;
+    return records;
 }
 
 bool RecordHandler::notEnoughMemory() {
     return (int)AEFile::GetDeviceFreeSpace() < 900;
 }
 
-static int *g_CSV_count = nullptr;
-
 void RecordHandler::convertSDVersionSaves() {
-    Array<signed char *> *a0 = new Array<signed char *>();
-    int *cnt = g_CSV_count;
-    ArraySetLength(*cnt, *a0);
-    Array<signed char *> *a1 = new Array<signed char *>();
-    ArraySetLength(*cnt, *a1);
+    Array<signed char *> *records = new Array<signed char *>();
+    ArraySetLength(Globals::recordSlots, *records);
+    Array<signed char *> *previews = new Array<signed char *>();
+    ArraySetLength(Globals::recordSlots, *previews);
 
-    unsigned n = *cnt;
-    int *sizes0 = new int[n];
-    int *sizes1 = new int[n];
-
-    for (int i = 0; i < (int) n; i++) {
-        sizes0[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
-        sizes1[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
-
-        String num, path;
-        num.Set((long long) (i));
-        path = this->recordDir + num;
-        AEFile::FileDelete(path);
-
-        num.Set((long long) (i));
-        path = this->backupDir + num;
-        AEFile::FileDelete(path);
-        n = *cnt;
+    int *recordSizes = new int[Globals::recordSlots];
+    int *previewSizes = new int[Globals::recordSlots];
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        recordSizes[i] = this->readRecordAsByteArray(&(*records)[i], i, false);
+        previewSizes[i] = this->readRecordAsByteArray(&(*previews)[i], i, true);
+        AEFile::FileDelete(this->recordDir + String(i));
+        AEFile::FileDelete(this->backupDir + String(i));
     }
 
-    int i = 0;
-    while (true) {
-        int last = (int) n - 1;
-        int j = i;
-        signed char *rec = 0;
-        bool found = false;
-        while (j < last) {
-            rec = (*a0)[j];
-            if (rec != 0) {
-                found = true;
-                break;
-            }
-            j++;
+    // SD-version slots are shifted up by one; the last slot wraps to slot 0.
+    for (int i = 0; i < Globals::recordSlots - 1; i++) {
+        if ((*records)[i] != 0) {
+            this->writeByteArrayAsRecord((*records)[i], recordSizes[i], i + 1, false);
+            this->addHash(i + 1);
+            this->writeByteArrayAsRecord((*previews)[i], previewSizes[i], i + 1, true);
         }
-        if (!found) {
-            signed char *lastRec = (*a0)[last];
-            if (lastRec != 0) {
-                this->writeByteArrayAsRecord(lastRec, sizes0[last], 0, false);
-                this->addHash(0);
-                int idx = (int) (*cnt) - 1;
-                this->writeByteArrayAsRecord((*a1)[idx], sizes1[idx], 0, true);
-            }
-            break;
-        }
-        int next = j + 1;
-        this->writeByteArrayAsRecord(rec, sizes0[j], next, false);
-        this->addHash(next);
-        this->writeByteArrayAsRecord((*a1)[j], sizes1[j], next, true);
-        i = next;
-        n = *cnt;
+    }
+    int last = Globals::recordSlots - 1;
+    if ((*records)[last] != 0) {
+        this->writeByteArrayAsRecord((*records)[last], recordSizes[last], 0, false);
+        this->addHash(0);
+        this->writeByteArrayAsRecord((*previews)[Globals::recordSlots - 1], previewSizes[Globals::recordSlots - 1], 0,
+                                     true);
     }
 
-    ArrayReleaseArrays(*a0);
-    ArrayReleaseArrays(*a1);
-    delete a0;
-    delete a1;
-    delete[] sizes0;
-    delete[] sizes1;
-
-    return;
+    ArrayReleaseArrays(*records);
+    ArrayReleaseArrays(*previews);
+    delete[] recordSizes;
+    delete[] previewSizes;
 }
-
-static const unsigned char RH_ah_salt[0x19] = {};
-
-static unsigned char **RH_ah_key = nullptr;
 
 void RecordHandler::addHash(int slot) {
     signed char *data = 0;
-    int len = this->readRecordAsByteArray(&data, slot, false);
-    if (-1 < len) {
-        unsigned char *md = new unsigned char[0x20];
-        unsigned char *c = new unsigned char[0x70];
-        SHA256_Init(c);
-        SHA256_Update(c, data, len);
-        SHA256_Update(c, RH_ah_salt, 0x19);
-        SHA256_Update(c, *RH_ah_key, 0x10);
-        SHA256_Final(md, c);
-
-        signed char *out = new signed char[len + 0x20];
-        memcpy(out, data, len);
-        unsigned long long *dst = (unsigned long long *) (out + len);
-        unsigned long long *src = (unsigned long long *) md;
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = src[2];
-        dst[3] = src[3];
-        this->writeByteArrayAsRecord(out, len + 0x20, slot, false);
-
-        delete[] data;
-        delete[] out;
-        delete[] md;
-        delete[] c;
+    int length = this->readRecordAsByteArray(&data, slot, false);
+    if (length < 0) {
+        return;
     }
+    unsigned char *digest = new unsigned char[32];
+    Sha256Context *context = new Sha256Context;
+    SHA256_Init(context);
+    SHA256_Update(context, data, length);
+    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+    SHA256_Update(context, salt, 25);
+    SHA256_Update(context, g_android_origami_super_club, 16);
+    SHA256_Final(digest, context);
+
+    signed char *hashed = new signed char[length + 32];
+    memcpy(hashed, data, length);
+    memcpy(hashed + length, digest, 32);
+    this->writeByteArrayAsRecord(hashed, length + 32, slot, false);
+
+    delete[] data;
+    data = 0;
+    delete[] hashed;
+    delete[] digest;
+    delete context;
 }
 
 int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromBackup) {
-    String num;
-    String path;
-    unsigned int fd;
-    int sz;
-
-    num.Set((long long) (slot));
-    String &dir = fromBackup ? this->backupDir : this->recordDir;
-    path = dir + num;
-
+    String path = (fromBackup ? this->backupDir : this->recordDir) + String(slot);
     if (AEFile::FileExist(path) != 0) {
+        unsigned int fd;
         AEFile::OpenRead(path, &fd);
-        sz = AEFile::GetFileSize(fd);
-        signed char *b = new signed char[sz | (sz >> 31)];
-        *out = b;
-        AEFile::Read(sz, b, fd);
+        int size = AEFile::GetFileSize(fd);
+        *out = new signed char[size | (size >> 31)];
+        AEFile::Read(size, *out, fd);
         AEFile::Close(fd);
-    } else {
-        sz = -1;
+        return size;
     }
-    return sz;
+    return -1;
 }
 
 GameRecord *RecordHandler::readRecord(int slot) {
@@ -410,65 +364,43 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     return w;
 }
 
-static int *g_RH_csd_count = nullptr;
-
-static char **g_RH_csd_flag = nullptr;
-
 void RecordHandler::changeSaveDirectoryToBackupDirectory() {
-    Array<signed char *> *a0 = new Array<signed char *>();
-    int *cnt = g_RH_csd_count;
-    ArraySetLength(*cnt, *a0);
-    Array<signed char *> *a1 = new Array<signed char *>();
-    ArraySetLength(*cnt, *a1);
+    Array<signed char *> *records = new Array<signed char *>();
+    ArraySetLength(Globals::recordSlots, *records);
+    Array<signed char *> *previews = new Array<signed char *>();
+    ArraySetLength(Globals::recordSlots, *previews);
 
-    unsigned int n = *cnt;
-    int *sizes0 = new int[n];
-    int *sizes1 = new int[n];
-
-    for (int i = 0; i < (int) n; i++) {
-        sizes0[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
-        sizes1[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
-        n = *cnt;
+    int *recordSizes = new int[Globals::recordSlots];
+    int *previewSizes = new int[Globals::recordSlots];
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        recordSizes[i] = this->readRecordAsByteArray(&(*records)[i], i, false);
+        previewSizes[i] = this->readRecordAsByteArray(&(*previews)[i], i, true);
     }
 
-    **g_RH_csd_flag = 1;
-    int i = 0;
-    while (i < (int) n) {
-        signed char *rec = (*a0)[i];
-        if (rec == 0) {
-            i++;
-        } else {
-            this->writeByteArrayAsRecord(rec, sizes0[i], i, false);
-            int next = i + 1;
-            this->addHash(next);
-            this->writeByteArrayAsRecord((*a1)[i], sizes1[i], i, true);
-            n = *cnt;
-            i = next;
+    AbyssEngine::Engine::backupSaveGames = 1;
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        if ((*records)[i] != 0) {
+            this->writeByteArrayAsRecord((*records)[i], recordSizes[i], i, false);
+            this->addHash(i + 1);
+            this->writeByteArrayAsRecord((*previews)[i], previewSizes[i], i, true);
         }
     }
 
-    ArrayReleaseArrays(*a0);
-    ArrayReleaseArrays(*a1);
-    delete a0;
-    delete a1;
-    delete[] sizes0;
-    delete[] sizes1;
+    ArrayReleaseArrays(*records);
+    ArrayReleaseArrays(*previews);
+    delete[] recordSizes;
+    delete[] previewSizes;
 }
 
 GameRecord *RecordHandler::recordStoreReadPreview(int slot) {
-    String path;
-    String num;
-
-    num.Set((long long) (slot));
-    path = this->backupDir + num;
-
-    unsigned int fd;
+    String path = this->backupDir + String(slot);
     GameRecord *gr = 0;
     if (AEFile::FileExist(path) != 0) {
+        unsigned int fd;
         AEFile::OpenRead(path, &fd);
         gr = new GameRecord();
 
-        AEFile::Read(reinterpret_cast<int64_t &>(gr->playTimeObj), fd);
+        AEFile::Read(gr->playTime, fd);
         AEFile::Read(reinterpret_cast<int32_t &>(gr->field_0x08), fd);
         AEFile::Read(reinterpret_cast<String &>(gr->pilotName), fd, (bool)1);
         AEFile::Read(reinterpret_cast<String &>(gr->field_0x188), fd, (bool)1);
@@ -481,18 +413,10 @@ GameRecord *RecordHandler::recordStoreReadPreview(int slot) {
     return gr;
 }
 
-static const char RH_lit0[] = "";
-
-static const char RH_lit1[] = "";
-
-static const char RH_lit2[] = "";
-
-RecordHandler::RecordHandler()
-    : currentMission(0),
-      currentAgent(0),
-      optionsPath(RH_lit0),
-      recordDir(RH_lit1),
-      backupDir(RH_lit2) {
+RecordHandler::RecordHandler() {
+    optionsPath = String("gof2_save_options");
+    recordDir = String("gof2_save_game_");
+    backupDir = String("gof2_save_game_preview_");
 }
 
 RecordHandler::~RecordHandler() {
@@ -658,209 +582,159 @@ void RecordHandler::writeMission(Mission *m, unsigned int fd) {
     return;
 }
 
-static unsigned char *g_LO_settings = nullptr;
-
-static int **g_LO_statusObj = nullptr;
-
-static int *g_LO_nameSlot = nullptr;
-
-static int *g_LO_extraInt = nullptr;
-
-static bool *g_LO_flag1 = nullptr;
-
-static bool *g_LO_flag2 = nullptr;
-
-static int *g_LO_textObj = nullptr;
-
-static int *g_LO_fontKind = nullptr;
-
-static int *g_LO_fmodSlot = nullptr;
-
 void RecordHandler::loadOptions() {
-    String &path = this->optionsPath;
-    if (AEFile::FileExist(path) != 0) {
-        unsigned int fd;
-        AEFile::OpenRead(path, &fd);
-        int valid = this->checkHash(fd);
-        AEFile::Close(fd);
-        if (valid != 0) {
-            AEFile::OpenRead(path, &fd);
-            OptionsBuffer *s = reinterpret_cast<OptionsBuffer *>(g_LO_settings);
+    if (AEFile::FileExist(this->optionsPath) == 0) {
+        return;
+    }
+    unsigned int fd;
+    AEFile::OpenRead(this->optionsPath, &fd);
+    bool valid = this->checkHash(fd);
+    AEFile::Close(fd);
+    if (!valid) {
+        return;
+    }
+    AEFile::OpenRead(this->optionsPath, &fd);
+    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
+    AEFile::Read(options->byte_0x10, fd);
+    AEFile::Read(options->byte_0x11, fd);
+    Globals::status->_pad_0xfa[0] = options->byte_0x11;
+    AEFile::Read(options->f_0x14, fd);
+    AEFile::Read(options->f_0x18, fd);
+    AEFile::Read(options->f_0x1c, fd);
+    AEFile::Read(options->f_0x00, fd);
+    AEFile::Read(options->byte_0x0c, fd);
+    AEFile::Read(options->byte_0x0d, fd);
+    AEFile::Read(options->f_0x04, fd);
+    AEFile::Read(options->f_0x24, fd);
+    AEFile::Read(options->f_0x28, fd);
 
-            AEFile::Read(s->byte_0x10, fd);
-            AEFile::Read(s->byte_0x11, fd);
-            reinterpret_cast<Status *>(*g_LO_statusObj)->_pad_0xfa[0] = s->byte_0x11;
-
-            AEFile::Read(s->i32_0x14, fd);
-            AEFile::Read(s->i32_0x18, fd);
-            AEFile::Read(s->i32_0x1c, fd);
-            AEFile::Read(s->i32_0x00, fd);
-            AEFile::Read(s->byte_0x0c, fd);
-            AEFile::Read(s->byte_0x0d, fd);
-            AEFile::Read(s->i32_0x04, fd);
-            AEFile::Read(s->i32_0x24, fd);
-            AEFile::Read(s->i32_0x28, fd);
-
-            int *nameSlot = g_LO_nameSlot;
-            if (*nameSlot != 0) {
-                delete (String *) (long) *nameSlot;
-                *nameSlot = 0;
-            }
-
-            String name;
-            {
-                if (name.data) delete[] name.data;
-                name.data = nullptr;
-                name.length = 0;
-            }
-            AEFile::Read(name, fd, (bool)false);
-            String *ns = new String(name);
-            *nameSlot = (int) (long) ns;
-
-            AEFile::Read(*g_LO_extraInt, fd);
-            AEFile::Read(*g_LO_flag1, fd);
-            AEFile::Read(s->i32_0x54, fd);
-            AEFile::Read(s->i32_0x58, fd);
-            AEFile::Read(s->volumeSfx, fd);
-            AEFile::Read(s->byte_0x0e, fd);
-            AEFile::Read(s->byte_0x32, fd);
-            AEFile::Read(s->byte_0x33, fd);
-            AEFile::Read(s->byte_0x34, fd);
-            AEFile::Read(s->volumeMusic, fd);
-
-            short lang = -1;
-            AEFile::Read(reinterpret_cast<int16_t &>(lang), fd);
-            AEFile::Read(*g_LO_flag2, fd);
-            AEFile::Read(s->byte_0x35, fd);
-            AEFile::Read(s->byte_0x36, fd);
-            AEFile::Read(s->byte_0x3a, fd);
-            AEFile::Read(s->byte_0x3b, fd);
-            AEFile::Read(s->byte_0x3c, fd);
-            AEFile::Read(s->byte_0x37, fd);
-            AEFile::Read(s->byte_0x3d, fd);
-            AEFile::Read(s->byte_0x3e, fd);
-            AEFile::Read(s->byte_0x3f, fd);
-            AEFile::Read(s->byte_0x40, fd);
-            AEFile::Read(s->byte_0x41, fd);
-            AEFile::Read(s->volumeAmbient, fd);
-            AEFile::Read(s->byte_0x48, fd);
-            AEFile::Read(s->byte_0x38, fd);
-            AEFile::Read(s->byte_0x4e, fd);
-            AEFile::Read(s->byte_0x49, fd);
-            AEFile::Read(s->byte_0x4a, fd);
-            AEFile::Read(s->byte_0x4b, fd);
-            AEFile::Read(s->byte_0x4c, fd);
-            AEFile::Read(s->byte_0x4d, fd);
-            AEFile::Read(s->i32_0x50, fd);
-            AEFile::Read(s->byte_0x60, fd);
-            AEFile::Read(s->byte_0x61, fd);
-            AEFile::Close(fd);
-
-            int langVal = lang;
-            if (-1 < langVal) {
-                if (langVal == 9) langVal = 0;
-                ((GameText *) ((short) **(int **) g_LO_textObj))->setLanguage_i(langVal);
-                Globals::globals->loadFont(**(int **) g_LO_fontKind);
-            }
-
-            int *fmodSlot = g_LO_fmodSlot;
-            if (*fmodSlot != 0) {
-                FModSound *fm = (FModSound *) (long) *fmodSlot;
-                ((FModSound *) (fm))->setAudioLanguage(lang);
-
-                ((FModSound *) (fm))->enableCategory(0, s->byte_0x32 != 0);
-                ((FModSound *) (fm))->enableCategory(1, s->byte_0x33 != 0);
-                ((FModSound *) (fm))->enableCategory(2, s->byte_0x34 != 0);
-                ((FModSound *) (fm))->setVolume(0, s->volumeSfx);
-                ((FModSound *) (fm))->setVolume(1, s->volumeMusic);
-                ((FModSound *) (fm))->setVolume(2, s->volumeAmbient);
-            }
-
-            AEFile::Read(s->byte_0x62, fd);
-        }
+    if (Globals::instantActionPlayerName != 0) {
+        delete Globals::instantActionPlayerName;
+        Globals::instantActionPlayerName = 0;
+    }
+    String name;
+    AEFile::Read(name, fd, false);
+    if (name.length != 0) {
+        Globals::instantActionPlayerName = new String(name);
     }
 
-    return;
+    AEFile::Read(Globals::lastRecordWritten, fd);
+    AEFile::Read(Globals::first_start_ever, fd);
+    AEFile::Read(options->i32_0x54, fd);
+    AEFile::Read(options->i32_0x58, fd);
+    AEFile::Read(options->volumeSfx, fd);
+    AEFile::Read(options->byte_0x0e, fd);
+    AEFile::Read(options->byte_0x32, fd);
+    AEFile::Read(options->byte_0x33, fd);
+    AEFile::Read(options->byte_0x34, fd);
+    AEFile::Read(options->volumeMusic, fd);
+    short language = -1;
+    AEFile::Read(language, fd);
+    AEFile::Read(Globals::startLiteVersionWithMoreCredits, fd);
+    AEFile::Read(options->byte_0x35, fd);
+    AEFile::Read(options->byte_0x36, fd);
+    AEFile::Read(options->byte_0x3a, fd);
+    AEFile::Read(options->byte_0x3b, fd);
+    AEFile::Read(options->byte_0x3c, fd);
+    AEFile::Read(options->byte_0x37, fd);
+    AEFile::Read(options->byte_0x3d, fd);
+    AEFile::Read(options->byte_0x3e, fd);
+    AEFile::Read(options->byte_0x3f, fd);
+    AEFile::Read(options->byte_0x40, fd);
+    AEFile::Read(options->byte_0x41, fd);
+    AEFile::Read(options->volumeAmbient, fd);
+    AEFile::Read(options->byte_0x48, fd);
+    AEFile::Read(options->byte_0x38, fd);
+    AEFile::Read(options->byte_0x4e, fd);
+    AEFile::Read(options->byte_0x49, fd);
+    AEFile::Read(options->byte_0x4a, fd);
+    AEFile::Read(options->byte_0x4b, fd);
+    AEFile::Read(options->byte_0x4c, fd);
+    AEFile::Read(options->byte_0x4d, fd);
+    AEFile::Read(options->i32_0x50, fd);
+    AEFile::Read(options->byte_0x60, fd);
+    AEFile::Read(options->byte_0x61, fd);
+    AEFile::Close(fd);
+
+    if (language > -1) {
+        if (language == 9) {
+            language = 0;
+        }
+        Globals::gameText->setLanguage(language, 3401);
+        Globals::globals->loadFont(language);
+    }
+    if (Globals::sound != 0) {
+        Globals::sound->setAudioLanguage(language);
+        Globals::sound->enableCategory(1, options->byte_0x0d);
+        Globals::sound->enableCategory(2, options->byte_0x0c);
+        Globals::sound->enableCategory(3, options->byte_0x0e);
+        Globals::sound->setVolume(1, options->f_0x00);
+        Globals::sound->setVolume(2, options->f_0x04);
+        Globals::sound->setVolume(3, options->volumeSfx);
+    }
+    // The original reads this flag after the handle has already been closed.
+    AEFile::Read(options->byte_0x62, fd);
 }
 
-void RecordHandler::loadResolutionValue(float resolution) {
-    (void) resolution;
-    String &path = this->optionsPath;
-    if (AEFile::FileExist(path) != 0) {
+float RecordHandler::loadResolutionValue(float resolution) {
+    if (AEFile::FileExist(this->optionsPath) != 0) {
         unsigned int fd;
-        AEFile::OpenRead(path, &fd);
-
-        OptionsBuffer buf;
-        OptionsBuffer *r = &buf;
-
-        AEFile::Read(r->byte_0x10, fd);
-        AEFile::Read(r->byte_0x11, fd);
-        AEFile::Read(r->i32_0x14, fd);
-        AEFile::Read(r->i32_0x18, fd);
-        AEFile::Read(r->i32_0x1c, fd);
-        AEFile::Read(r->i32_0x00, fd);
-        AEFile::Read(r->byte_0x0c, fd);
-        AEFile::Read(r->byte_0x0d, fd);
-        AEFile::Read(r->i32_0x04, fd);
-        AEFile::Read(r->i32_0x24, fd);
-        AEFile::Read(r->i32_0x28, fd);
-
+        AEFile::OpenRead(this->optionsPath, &fd);
+        OptionsBuffer options;
+        AEFile::Read(options.byte_0x10, fd);
+        AEFile::Read(options.byte_0x11, fd);
+        AEFile::Read(options.f_0x14, fd);
+        AEFile::Read(options.f_0x18, fd);
+        AEFile::Read(options.f_0x1c, fd);
+        AEFile::Read(options.f_0x00, fd);
+        AEFile::Read(options.byte_0x0c, fd);
+        AEFile::Read(options.byte_0x0d, fd);
+        AEFile::Read(options.f_0x04, fd);
+        AEFile::Read(options.f_0x24, fd);
+        AEFile::Read(options.f_0x28, fd);
         String name;
-        {
-            if (name.data) delete[] name.data;
-            name.data = nullptr;
-            name.length = 0;
-        }
-        AEFile::Read(name, fd, (bool)false);
-
-        int iv9c;
-        bool b9d;
-        AEFile::Read(reinterpret_cast<int32_t &>(iv9c), fd);
-        AEFile::Read(b9d, fd);
-        AEFile::Read(r->i32_0x54, fd);
-        AEFile::Read(r->i32_0x58, fd);
-        AEFile::Read(r->volumeSfx, fd);
-        AEFile::Read(r->byte_0x0e, fd);
-        AEFile::Read(r->byte_0x32, fd);
-        AEFile::Read(r->byte_0x33, fd);
-        AEFile::Read(r->byte_0x34, fd);
-        AEFile::Read(r->volumeMusic, fd);
-
-        short resVal = -1;
-        AEFile::Read(reinterpret_cast<int16_t &>(resVal), fd);
-        AEFile::Read(b9d, fd);
-        AEFile::Read(r->byte_0x35, fd);
-        AEFile::Read(r->byte_0x36, fd);
-        AEFile::Read(r->byte_0x3a, fd);
-        AEFile::Read(r->byte_0x3b, fd);
-        AEFile::Read(r->byte_0x3c, fd);
-        AEFile::Read(r->byte_0x37, fd);
-        AEFile::Read(r->byte_0x3d, fd);
-        AEFile::Read(r->byte_0x3e, fd);
-        AEFile::Read(r->byte_0x3f, fd);
-        AEFile::Read(r->byte_0x40, fd);
-        AEFile::Read(r->byte_0x41, fd);
-        AEFile::Read(r->volumeAmbient, fd);
-
+        AEFile::Read(name, fd, false);
+        int lastRecord;
+        bool flag;
+        AEFile::Read(lastRecord, fd);
+        AEFile::Read(flag, fd);
+        AEFile::Read(options.i32_0x54, fd);
+        AEFile::Read(options.i32_0x58, fd);
+        AEFile::Read(options.volumeSfx, fd);
+        AEFile::Read(options.byte_0x0e, fd);
+        AEFile::Read(options.byte_0x32, fd);
+        AEFile::Read(options.byte_0x33, fd);
+        AEFile::Read(options.byte_0x34, fd);
+        AEFile::Read(options.volumeMusic, fd);
+        short language = -1;
+        AEFile::Read(language, fd);
+        AEFile::Read(flag, fd);
+        AEFile::Read(options.byte_0x35, fd);
+        AEFile::Read(options.byte_0x36, fd);
+        AEFile::Read(options.byte_0x3a, fd);
+        AEFile::Read(options.byte_0x3b, fd);
+        AEFile::Read(options.byte_0x3c, fd);
+        AEFile::Read(options.byte_0x37, fd);
+        AEFile::Read(options.byte_0x3d, fd);
+        AEFile::Read(options.byte_0x3e, fd);
+        AEFile::Read(options.byte_0x3f, fd);
+        AEFile::Read(options.byte_0x40, fd);
+        AEFile::Read(options.byte_0x41, fd);
+        AEFile::Read(options.volumeAmbient, fd);
+        resolution = options.volumeAmbient;
         AEFile::Close(fd);
     }
-
-    return;
+    return resolution;
 }
 
 int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup) {
-    String num;
-    String path;
-    unsigned int fd;
-
-    num.Set((long long) (slot));
-    String &dir = toBackup ? this->backupDir : this->recordDir;
-    path = dir + num;
-
-    if (AEFile::FileExist(path) != 0)
+    String path = (toBackup ? this->backupDir : this->recordDir) + String(slot);
+    if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
+    }
+    unsigned int fd;
     AEFile::OpenWrite(path, &fd);
-    ((AEFile *) (n))->Write(buf, fd);
+    AEFile::Write((uint32_t) n, buf, fd);
     AEFile::Close(fd);
     return n;
 }
@@ -957,89 +831,67 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
     return mission;
 }
 
-static unsigned char *g_SO_settings = nullptr;
-
-static String **g_SO_playerName = nullptr;
-
-static const char g_SO_defName[] = "";
-
-static int *g_SO_extraInt = nullptr;
-
-static unsigned char *g_SO_flag1 = nullptr;
-
-static unsigned char *g_SO_flag2 = nullptr;
-
 void RecordHandler::saveOptions() {
-    String &path = this->optionsPath;
-    if (AEFile::FileExist(path) != 0) {
-        AEFile::FileDelete(path);
+    if (AEFile::FileExist(this->optionsPath) != 0) {
+        AEFile::FileDelete(this->optionsPath);
     }
     unsigned int fd;
-    AEFile::OpenWrite(path, &fd);
-
-    OptionsBuffer *s = reinterpret_cast<OptionsBuffer *>(g_SO_settings);
-
-    AEFile::Write(s->byte_0x10, fd);
-    AEFile::Write(s->byte_0x11, fd);
-    AEFile::Write(s->i32_0x14, fd);
-    AEFile::Write(s->i32_0x18, fd);
-    AEFile::Write(s->i32_0x1c, fd);
-    AEFile::Write(s->i32_0x00, fd);
-    AEFile::Write(s->byte_0x0c, fd);
-    AEFile::Write(s->byte_0x0d, fd);
-    AEFile::Write(s->i32_0x04, fd);
-    AEFile::Write(s->i32_0x24, fd);
-    AEFile::Write(s->i32_0x28, fd);
-
-    String *name = *g_SO_playerName;
-    if (name == 0) {
-        String def(g_SO_defName);
-        AEFile::Write(def, fd, (bool)false);
+    AEFile::OpenWrite(this->optionsPath, &fd);
+    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
+    AEFile::Write(options->byte_0x10, fd);
+    AEFile::Write(options->byte_0x11, fd);
+    AEFile::Write(options->f_0x14, fd);
+    AEFile::Write(options->f_0x18, fd);
+    AEFile::Write(options->f_0x1c, fd);
+    AEFile::Write(options->f_0x00, fd);
+    AEFile::Write(options->byte_0x0c, fd);
+    AEFile::Write(options->byte_0x0d, fd);
+    AEFile::Write(options->f_0x04, fd);
+    AEFile::Write(options->f_0x24, fd);
+    AEFile::Write(options->f_0x28, fd);
+    if (Globals::instantActionPlayerName != 0) {
+        AEFile::Write(*Globals::instantActionPlayerName, fd, false);
     } else {
-        AEFile::Write(*name, fd, (bool)false);
+        AEFile::Write(String(""), fd, false);
     }
-
-    AEFile::Write((int32_t)*g_SO_extraInt, fd);
-    AEFile::Write(*g_SO_flag1, fd);
-    AEFile::Write(s->i32_0x54, fd);
-    AEFile::Write(s->i32_0x58, fd);
-    AEFile::Write(s->volumeSfx, fd);
-    AEFile::Write(s->byte_0x0e, fd);
-    AEFile::Write(s->byte_0x32, fd);
-    AEFile::Write(s->byte_0x33, fd);
-    AEFile::Write(s->byte_0x34, fd);
-    AEFile::Write(s->volumeMusic, fd);
-
-    AEFile::Write((int16_t)GameText::getLanguage(), fd);
-    AEFile::Write(*g_SO_flag2, fd);
-    AEFile::Write(s->byte_0x35, fd);
-    AEFile::Write(s->byte_0x36, fd);
-    AEFile::Write(s->byte_0x3a, fd);
-    AEFile::Write(s->byte_0x3b, fd);
-    AEFile::Write(s->byte_0x3c, fd);
-    AEFile::Write(s->byte_0x37, fd);
-    AEFile::Write(s->byte_0x3d, fd);
-    AEFile::Write(s->byte_0x3e, fd);
-    AEFile::Write(s->byte_0x3f, fd);
-    AEFile::Write(s->byte_0x40, fd);
-    AEFile::Write(s->byte_0x41, fd);
-    AEFile::Write(s->volumeAmbient, fd);
-    AEFile::Write(s->byte_0x48, fd);
-    AEFile::Write(s->byte_0x38, fd);
-    AEFile::Write(s->byte_0x4e, fd);
-    AEFile::Write(s->byte_0x49, fd);
-    AEFile::Write(s->byte_0x4a, fd);
-    AEFile::Write(s->byte_0x4b, fd);
-    AEFile::Write(s->byte_0x4c, fd);
-    AEFile::Write(s->byte_0x4d, fd);
-    AEFile::Write(s->i32_0x50, fd);
-    AEFile::Write(s->byte_0x60, fd);
-    AEFile::Write(s->byte_0x61, fd);
-    AEFile::Write(s->byte_0x62, fd);
+    AEFile::Write((int32_t) Globals::lastRecordWritten, fd);
+    AEFile::Write(Globals::first_start_ever, fd);
+    AEFile::Write(options->i32_0x54, fd);
+    AEFile::Write(options->i32_0x58, fd);
+    AEFile::Write(options->volumeSfx, fd);
+    AEFile::Write(options->byte_0x0e, fd);
+    AEFile::Write(options->byte_0x32, fd);
+    AEFile::Write(options->byte_0x33, fd);
+    AEFile::Write(options->byte_0x34, fd);
+    AEFile::Write(options->volumeMusic, fd);
+    AEFile::Write(GameText::getLanguage(), fd);
+    AEFile::Write(Globals::startLiteVersionWithMoreCredits, fd);
+    AEFile::Write(options->byte_0x35, fd);
+    AEFile::Write(options->byte_0x36, fd);
+    AEFile::Write(options->byte_0x3a, fd);
+    AEFile::Write(options->byte_0x3b, fd);
+    AEFile::Write(options->byte_0x3c, fd);
+    AEFile::Write(options->byte_0x37, fd);
+    AEFile::Write(options->byte_0x3d, fd);
+    AEFile::Write(options->byte_0x3e, fd);
+    AEFile::Write(options->byte_0x3f, fd);
+    AEFile::Write(options->byte_0x40, fd);
+    AEFile::Write(options->byte_0x41, fd);
+    AEFile::Write(options->volumeAmbient, fd);
+    AEFile::Write(options->byte_0x48, fd);
+    AEFile::Write(options->byte_0x38, fd);
+    AEFile::Write(options->byte_0x4e, fd);
+    AEFile::Write(options->byte_0x49, fd);
+    AEFile::Write(options->byte_0x4a, fd);
+    AEFile::Write(options->byte_0x4b, fd);
+    AEFile::Write(options->byte_0x4c, fd);
+    AEFile::Write(options->byte_0x4d, fd);
+    AEFile::Write(options->i32_0x50, fd);
+    AEFile::Write(options->byte_0x60, fd);
+    AEFile::Write(options->byte_0x61, fd);
+    AEFile::Write(options->byte_0x62, fd);
     AEFile::Close(fd);
     this->addHashToOptions();
-
-    return;
 }
 
 void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
@@ -1179,7 +1031,6 @@ void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method sign
 }
 
 void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
-    (void) this;
     AEFile::Write(w->isActive(), fd);
     AEFile::Write(w->isTerminated(), fd);
     AEFile::Write((int32_t)w->getCurrentLocation(), fd);
@@ -1211,545 +1062,477 @@ void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
 }
 
 int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
-    if (rec == 0)
+    if (rec == 0) {
         return 0;
-
-    String path;
-    String num;
-    unsigned int fd;
-
-    num.Set((long long) (slot));
-    path = this->backupDir + num;
-
-    if (AEFile::FileExist(path) != 0)
+    }
+    String path = this->backupDir + String(slot);
+    if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
+    }
+    unsigned int fd;
     AEFile::OpenWrite(path, &fd);
-
-    AEFile::Write(reinterpret_cast<int64_t &>(rec->playTimeObj), fd);
-    AEFile::Write((int32_t)rec->field_0x08, fd);
-
-    num = ((Station *) (&num))->getName();
-    AEFile::Write(num, fd, (bool)true);
-
-    AEFile::Write(reinterpret_cast<String &>(rec->field_0x188), fd, (bool)true);
-    AEFile::Write((int32_t)rec->field_0x40, fd);
-    AEFile::Write((int32_t)rec->killsText, fd);
+    AEFile::Write(rec->playTime, fd);
+    AEFile::Write((int32_t) rec->field_0x08, fd);
+    AEFile::Write(reinterpret_cast<Station *>((intptr_t) rec->field_0x138)->getName(), fd, true);
+    AEFile::Write(reinterpret_cast<String &>(rec->field_0x188), fd, true);
+    AEFile::Write((int32_t) rec->field_0x40, fd);
+    AEFile::Write((int32_t) rec->killsText, fd);
     AEFile::Write(rec->rank, fd);
-    AEFile::Write((int32_t)reinterpret_cast<Ship *>((intptr_t) rec->field_0x130)->getIndex(), fd);
-
+    AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) rec->field_0x130)->getIndex(), fd);
     AEFile::Close(fd);
     return 1;
 }
 
-#pragma pack(push, 1)
-struct OptFlagsBlob {
-    uint8_t flag[0x3b];
-};
-
-struct UiFlagsBlob {
-    uint8_t flag[0x38];
-};
-#pragma pack(pop)
-
-static OptFlagsBlob *g_RSW_optFlags = nullptr;
-
-static UiFlagsBlob *g_RSW_uiFlags = nullptr;
-
-static int g_RSW_modVersion = 0;
-
-void RecordHandler::recordStoreWrite(int slot) {
-    String num, path;
-    num.Set((long long) (slot));
-    path = this->recordDir + num;
-
+int RecordHandler::recordStoreWrite(int slot) {
+    String path = this->recordDir + String(slot);
     if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
     }
     unsigned int fd;
     AEFile::OpenWrite(path, &fd);
 
-    uint8_t *visited = Globals::galaxy->getVisited();
-    AEFile::Write((int32_t)0x87, fd);
-    for (unsigned i = 0; i < 0x87; i++) {
-        AEFile::Write((bool)(visited[i] != 0), fd);
+    bool *visited = Globals::galaxy->getVisited();
+    AEFile::Write((int32_t) 135, fd);
+    for (unsigned i = 0; i < 135; i++) {
+        AEFile::Write(visited[i], fd);
     }
 
-    AEFile::Write((int32_t)Globals::status->getCredits(), fd);
-    AEFile::Write((int32_t)Globals::status->getRating(), fd);
+    AEFile::Write((int32_t) Globals::status->getCredits(), fd);
+    AEFile::Write((int32_t) Globals::status->getRating(), fd);
     AEFile::Write(Globals::status->getPlayingTime(), fd);
-    AEFile::Write((int32_t)Globals::status->getKills(), fd);
-    AEFile::Write((int32_t)Globals::status->getMissionCount(), fd);
-    AEFile::Write((int32_t)Globals::status->getLevel(), fd);
-    AEFile::Write((int32_t)Globals::status->getLastXP(), fd);
-    AEFile::Write((int32_t)Globals::status->getGoodsProduced(), fd);
-    AEFile::Write((int32_t)Globals::status->getStationsVisited(), fd);
-    AEFile::Write((int32_t)Globals::status->getCurrentCampaignMission(), fd);
+    AEFile::Write((int32_t) Globals::status->getKills(), fd);
+    AEFile::Write((int32_t) Globals::status->getMissionCount(), fd);
+    AEFile::Write((int32_t) Globals::status->getLevel(), fd);
+    AEFile::Write((int32_t) Globals::status->getLastXP(), fd);
+    AEFile::Write((int32_t) Globals::status->getGoodsProduced(), fd);
+    AEFile::Write((int32_t) Globals::status->getStationsVisited(), fd);
+    AEFile::Write((int32_t) Globals::status->getCurrentCampaignMission(), fd);
     this->writeMission(Globals::status->getFreelanceMission(), fd);
     this->writeMission(reinterpret_cast<Mission *>(Globals::status->getCampaignMission()), fd);
-    AEFile::Write((int32_t)Globals::status->getJumpgateUsed(), fd);
-    AEFile::Write((int32_t)Globals::status->getCapturedCrates(), fd);
-    AEFile::Write((int32_t)Globals::status->getBoughtEquipment(), fd);
-    AEFile::Write((int32_t)Globals::status->getPirateKills(), fd);
-    AEFile::Write((int32_t)Globals::status->field_80, fd);
+    AEFile::Write((int32_t) Globals::status->getJumpgateUsed(), fd);
+    AEFile::Write((int32_t) Globals::status->getCapturedCrates(), fd);
+    AEFile::Write((int32_t) Globals::status->getBoughtEquipment(), fd);
+    AEFile::Write((int32_t) Globals::status->getPirateKills(), fd);
+    AEFile::Write((int32_t) Globals::status->field_80, fd);
+    AEFile::Write((int32_t) Globals::status->field_7c, fd);
+    AEFile::Write((int32_t) Globals::status->field_84, fd);
+    AEFile::Write((int32_t) Globals::status->field_88, fd);
+    AEFile::Write((int32_t) Globals::status->field_94->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_94->size(); i++) {
+        AEFile::Write((*Globals::status->field_94)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_98->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_98->size(); i++) {
+        AEFile::Write((*Globals::status->field_98)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_9c, fd);
+    AEFile::Write((int32_t) Globals::status->field_a0, fd);
+    AEFile::Write((int32_t) Globals::status->field_a4, fd);
+    AEFile::Write((int32_t) Globals::status->field_a8, fd);
+    AEFile::Write((int32_t) Globals::status->field_ac->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_ac->size(); i++) {
+        AEFile::Write((*Globals::status->field_ac)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_b0, fd);
+    AEFile::Write((int32_t) Globals::status->field_b4->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_b4->size(); i++) {
+        AEFile::Write((*Globals::status->field_b4)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_b8, fd);
+    AEFile::Write(reinterpret_cast<int64_t &>(Globals::status->field_c0), fd);
+    AEFile::Write((int32_t) Globals::status->field_c8, fd);
+    AEFile::Write((int32_t) Globals::status->field_cc, fd);
+    AEFile::Write((int32_t) Globals::status->field_d0, fd);
+    AEFile::Write((int32_t) Globals::status->field_d4, fd);
+    AEFile::Write((int32_t) Globals::status->field_d8, fd);
+    AEFile::Write((int32_t) Globals::status->field_dc, fd);
+    AEFile::Write((int32_t) Globals::status->field_e0, fd);
+    AEFile::Write((int32_t) Globals::status->field_e4, fd);
+    AEFile::Write((int32_t) Globals::status->field_e8, fd);
+    AEFile::Write((int32_t) Globals::status->field_ec, fd);
 
-    {
-        Status *status = Globals::status;
-        OptFlagsBlob *flags = reinterpret_cast<OptFlagsBlob *>(g_RSW_optFlags);
-        UiFlagsBlob *ui = reinterpret_cast<UiFlagsBlob *>(g_RSW_uiFlags);
-
-        AEFile::Write(status->field_7c, fd);
-        AEFile::Write((int32_t)status->field_84, fd);
-        AEFile::Write((int32_t)(intptr_t)status->field_90, fd);
-
-        {
-            Array<bool> *arr = status->field_94;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<bool> *arr = status->field_98;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write((int32_t)status->field_9c, fd);
-        AEFile::Write((int32_t)status->field_a0, fd);
-        AEFile::Write((int32_t)status->field_a4, fd);
-        AEFile::Write((int32_t)status->field_a8, fd);
-        {
-            Array<bool> *arr = status->field_ac;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write((int32_t)status->field_b0, fd);
-        {
-            Array<bool> *arr = status->field_b4;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write((int32_t)status->field_b8, fd);
-        AEFile::Write(reinterpret_cast<int64_t &>(status->field_c8), fd);
-
-        AEFile::Write(status->field_c8, fd);
-        AEFile::Write((int32_t)status->field_cc, fd);
-        AEFile::Write((int32_t)status->field_d0, fd);
-        AEFile::Write((int32_t)status->field_d4, fd);
-        AEFile::Write((int32_t)status->field_d8, fd);
-        AEFile::Write((int32_t)status->field_dc, fd);
-        AEFile::Write((int32_t)status->field_e0, fd);
-        AEFile::Write((int32_t)status->field_e4, fd);
-        AEFile::Write((int32_t)status->field_e8, fd);
-        AEFile::Write((int32_t)status->field_ec, fd);
-
-        int *medals = Globals::achievements->getMedals();
-        AEFile::Write((int32_t)0x2d, fd);
-        for (unsigned i = 0; i < 0x2d; i++) {
-            AEFile::Write((int32_t)medals[i], fd);
-        }
-
-        Ship *ship = status->getShip();
-        AEFile::Write((int32_t)((Ship *) ship)->getIndex(), fd);
-        AEFile::Write((int32_t)((Ship *) ship)->getRace(), fd);
-        {
-            Array<Item *> *eq = ((Ship *) ship)->getEquipment();
-            if (eq == 0) {
-                AEFile::Write((int32_t)0, fd);
-            } else {
-                AEFile::Write((int32_t)eq->size(), fd);
-                for (unsigned i = 0; i < eq->size(); i++) {
-                    Item *it = (*eq)[i];
-                    if (it == 0) {
-                        AEFile::Write((int32_t)-1, fd);
-                        continue;
-                    }
-                    AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                    AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                }
-            }
-        }
-        {
-            Array<Item *> *cg = ((Ship *) ship)->getCargo();
-            if (cg == 0) {
-                AEFile::Write((int32_t)0, fd);
-            } else {
-                AEFile::Write((int32_t)cg->size(), fd);
-                for (unsigned i = 0; i < cg->size(); i++) {
-                    Item *it = (*cg)[i];
-                    AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getSinglePrice(), fd);
-                    AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                }
-            }
-        }
-
-        Array<Station *> *stack = status->getStationStack();
-        AEFile::Write((int32_t)3, fd);
-        for (unsigned i = 0; i < stack->size() + 1; i++) {
-            Station *cur = (i == stack->size())
-                               ? (Station *) status->getStation()
-                               : (*stack)[i];
-            if (cur == 0) {
-                AEFile::Write((int32_t)-1, fd);
-                continue;
-            }
-            AEFile::Write((int32_t)((Station *) cur)->getIndex(), fd);
-
-            Array<Item *> *items = (Array<Item *> *) ((Station *) cur)->getItems();
-            if (items == 0) { AEFile::Write((int32_t)0, fd); } else {
-                AEFile::Write((int32_t)items->size(), fd);
-                for (unsigned j = 0; j < items->size(); j++) {
-                    Item *it = (*items)[j];
-                    AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                    AEFile::Write((int32_t)((Item *) (it))->getSinglePrice(), fd);
-                    AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                }
-            }
-            Array<Ship *> *ships = (Array<Ship *> *) ((Station *) cur)->getShips();
-            if (ships == 0) { AEFile::Write((int32_t)0, fd); } else {
-                AEFile::Write((int32_t)ships->size(), fd);
-                for (unsigned j = 0; j < ships->size(); j++) {
-                    Ship *s = (*ships)[j];
-                    AEFile::Write((int32_t)((Ship *) s)->getIndex(), fd);
-                    AEFile::Write((int32_t)((Ship *) s)->getRace(), fd);
-                }
-            }
-            Array<Agent *> *agents = (Array<Agent *> *) ((Station *) cur)->getAgents();
-            if (agents == 0) { AEFile::Write((int32_t)0, fd); } else {
-                AEFile::Write((int32_t)agents->size(), fd);
-                for (unsigned j = 0; j < agents->size(); j++) {
-                    this->writeAgent((*agents)[j], fd);
-                }
-            }
-            AEFile::Write((bool)((Station *) cur)->hasAttackedFriends(), fd);
-        }
-
-        int *standings = ((Standing *) (status->getStanding()))->getStandings();
-        AEFile::Write((int32_t)2, fd);
-        for (unsigned i = 0; i < 2; i++) {
-            AEFile::Write((int32_t)standings[i], fd);
-        }
-
-        Array<BluePrint *> *bps = status->bluePrints;
-        AEFile::Write((int32_t)bps->size(), fd);
-        for (unsigned i = 0; i < bps->size(); i++) {
-            BluePrint *bp = (*bps)[i];
-            Array<int> *ingredients = bp->ingredientCounters;
-            for (unsigned j = 0; j < ingredients->size(); j++) {
-                AEFile::Write((int32_t)(*ingredients)[j], fd);
-            }
-            AEFile::Write(bp->spentValue, fd);
-            AEFile::Write((bool)(bp->locked != 0), fd);
-            AEFile::Write(bp->productionCount, fd);
-            AEFile::Write(bp->stationIndex, fd);
-            AEFile::Write(bp->stationName, fd, (bool)true);
-        }
-
-        Array<PendingProduct *> *pending = status->pendingProducts;
-        if (pending == 0) { AEFile::Write((int32_t)-1, fd); } else {
-            int count = 0;
-            for (unsigned i = 0; i < pending->size(); i++) {
-                if ((*pending)[i] != 0) count++;
-            }
-            if (count == 0) { AEFile::Write((int32_t)-1, fd); } else {
-                AEFile::Write((int32_t)count, fd);
-                for (unsigned i = 0; i < pending->size(); i++) {
-                    PendingProduct *pp = (*pending)[i];
-                    if (pp == 0) continue;
-
-                    AEFile::Write((int32_t)pp->blueprintIndex, fd);
-                    AEFile::Write((int32_t)pp->quantity, fd);
-                    AEFile::Write((int32_t)pp->stationIndex, fd);
-                    AEFile::Write(pp->stationName, fd, (bool)true);
-                }
-            }
-        }
-
-        Array<String *> *wingmen = status->wingmen;
-
-        if (wingmen == 0) { AEFile::Write((int32_t)-1, fd); } else {
-            AEFile::Write((int32_t)wingmen->size(), fd);
-            for (unsigned i = 0; i < wingmen->size(); i++) {
-                AEFile::Write(*(*wingmen)[i], fd, (bool)true);
-            }
-            AEFile::Write((int32_t)status->fadeValue, fd);
-
-            AEFile::Write((int32_t)status->fadeValue, fd);
-            AEFile::Write((int32_t)5, fd);
-
-            int *wingmenStats = reinterpret_cast<int *>((intptr_t) reinterpret_cast<int32_t &>(status->_byte_0x28));
-            for (unsigned i = 0; i < 5; i++) {
-                AEFile::Write((int32_t)wingmenStats[i], fd);
-            }
-        }
-
-        AEFile::Write(reinterpret_cast<int32_t &>(status->_byte_0x34), fd);
-        {
-            Array<bool> *arr = status->systemVisibilities;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<int> *arr = status->field_0x40;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<int> *arr = status->field_0x3c;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<int> *arr = status->field_0x48;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<int> *arr = status->field_0x44;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        {
-            Array<bool> *arr = status->field_4c;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-
-        Array<Agent *> *agents = status->agents;
-        AEFile::Write((int32_t)agents->size(), fd);
-        for (unsigned i = 0; i < agents->size(); i++) {
-            this->writeAgent((*agents)[i], fd);
-        }
-
-        for (int off = 0x8; off <= 0x20; off++) {
-            if (off == 0x21) continue;
-            AEFile::Write((bool)(flags->flag[off] != 0), fd);
-        }
-        AEFile::Write((bool)(flags->flag[0x22] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x21] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x23] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x24] != 0), fd);
-
-        AEFile::Write(reinterpret_cast<int64_t &>(status->field_10c), fd);
-
-        AEFile::Write((bool)(flags->flag[0x25] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x26] != 0), fd);
-
-        Ship *wingShip = reinterpret_cast<Ship *>(status->field_94);
-
-        if (wingShip == 0) { AEFile::Write((int32_t)0, fd); } else {
-            AEFile::Write((int32_t)1, fd);
-            AEFile::Write((int32_t)((Ship *) wingShip)->getIndex(), fd);
-            AEFile::Write((int32_t)((Ship *) wingShip)->getRace(), fd);
-            {
-                Array<Item *> *eq = ((Ship *) wingShip)->getEquipment();
-                if (eq == 0) {
-                    AEFile::Write((int32_t)0, fd);
-                } else {
-                    AEFile::Write((int32_t)eq->size(), fd);
-                    for (unsigned i = 0; i < eq->size(); i++) {
-                        Item *it = (*eq)[i];
-                        if (it == 0) {
-                            AEFile::Write((int32_t)-1, fd);
-                            continue;
-                        }
-                        AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                        AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                        AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                    }
-                }
-            }
-            {
-                Array<Item *> *cg = ((Ship *) wingShip)->getCargo();
-                if (cg == 0) {
-                    AEFile::Write((int32_t)0, fd);
-                } else {
-                    AEFile::Write((int32_t)cg->size(), fd);
-                    for (unsigned i = 0; i < cg->size(); i++) {
-                        Item *it = (*cg)[i];
-                        AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                        AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                        AEFile::Write((int32_t)((Item *) (it))->getSinglePrice(), fd);
-                        AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-                    }
-                }
-            }
-        }
-
-        {
-            Array<int> *arr = status->field_90;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((int32_t)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write(status->field_10c, fd);
-        AEFile::Write((bool)status->field_110, fd);
-        AEFile::Write(status->field_114, fd);
-        AEFile::Write((bool)status->field_0x111, fd);
-
-        Station *station = (Station *) status->getStation();
-        Array<Item *> *sItems = (Array<Item *> *) ((Station *) station)->getItems();
-        if (sItems == 0) { AEFile::Write((int32_t)0, fd); } else {
-            AEFile::Write((int32_t)sItems->size(), fd);
-            for (unsigned i = 0; i < sItems->size(); i++) {
-                Item *it = (*sItems)[i];
-                AEFile::Write((int32_t)((Item *) (it))->getIndex(), fd);
-                AEFile::Write((int32_t)((Item *) (it))->getAmount(), fd);
-                AEFile::Write((int32_t)((Item *) (it))->getSinglePrice(), fd);
-                AEFile::Write((bool)((Item *) (it))->isUnsaleable(), fd);
-            }
-        }
-        Array<Ship *> *sShips = (Array<Ship *> *) ((Station *) station)->getShips();
-        if (sShips == 0) { AEFile::Write((int32_t)0, fd); } else {
-            AEFile::Write((int32_t)sShips->size(), fd);
-            for (unsigned i = 0; i < sShips->size(); i++) {
-                Ship *s = (*sShips)[i];
-                AEFile::Write((int32_t)((Ship *) s)->getIndex(), fd);
-                AEFile::Write((int32_t)((Ship *) s)->getRace(), fd);
-            }
-        }
-
-        AEFile::Write((bool)(flags->flag[0x27] != 0), fd);
-        AEFile::Write((bool)(ui->flag[0x35] != 0), fd);
-        AEFile::Write((bool)(ui->flag[0x36] != 0), fd);
-        {
-            Array<bool> *arr = status->field_54;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-
-        AEFile::Write((int32_t)g_RSW_modVersion, fd);
-        {
-            Ship *mShip = ship;
-            Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
-            if (mShip == 0 || mods == 0) {
-                AEFile::Write((int32_t)0, fd);
-            } else {
-                AEFile::Write((int32_t)mods->size(), fd);
-                for (unsigned i = 0; i < mods->size(); i++) {
-                    AEFile::Write((int32_t)(*mods)[i], fd);
-                }
-            }
-        }
-        {
-            Ship *mShip = wingShip;
-            Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
-            if (mShip == 0 || mods == 0) {
-                AEFile::Write((int32_t)0, fd);
-            } else {
-                AEFile::Write((int32_t)mods->size(), fd);
-                for (unsigned i = 0; i < mods->size(); i++) {
-                    AEFile::Write((int32_t)(*mods)[i], fd);
-                }
-            }
-        }
-        if (sShips == 0) { AEFile::Write((int32_t)0, fd); } else {
-            AEFile::Write((int32_t)sShips->size(), fd);
-            for (unsigned i = 0; i < sShips->size(); i++) {
-                Ship *mShip = (*sShips)[i];
-                Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
-                if (mShip == 0 || mods == 0) {
-                    AEFile::Write((int32_t)0, fd);
-                } else {
-                    AEFile::Write((int32_t)mods->size(), fd);
-                    for (unsigned k = 0; k < mods->size(); k++) {
-                        AEFile::Write((int32_t)(*mods)[k], fd);
-                    }
-                }
-            }
-        }
-        for (unsigned i = 0; i < stack->size() + 1; i++) {
-            Station *cur = (i == stack->size())
-                               ? (Station *) status->getStation()
-                               : (*stack)[i];
-            if (cur == 0) continue;
-            Array<Ship *> *cShips = (Array<Ship *> *) ((Station *) cur)->getShips();
-            if (cShips == 0) {
-                AEFile::Write((int32_t)0, fd);
-                continue;
-            }
-            AEFile::Write((int32_t)cShips->size(), fd);
-            for (unsigned j = 0; j < cShips->size(); j++) {
-                Ship *mShip = (*cShips)[j];
-                Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
-                if (mShip == 0 || mods == 0) {
-                    AEFile::Write((int32_t)0, fd);
-                } else {
-                    AEFile::Write((int32_t)mods->size(), fd);
-                    for (unsigned k = 0; k < mods->size(); k++) {
-                        AEFile::Write((int32_t)(*mods)[k], fd);
-                    }
-                }
-            }
-        }
-
-        Array<Wanted *> *wanted = status->wanted;
-        AEFile::Write((int32_t)wanted->size(), fd);
-        for (unsigned i = 0; i < wanted->size(); i++) {
-            this->writeWanted((*wanted)[i], fd);
-        }
-        for (unsigned i = 0; i < 4; i++) {
-            AEFile::Write((int32_t)status->getCollectedBounties(i), fd);
-        }
-        AEFile::Write((bool)(ui->flag[0x37] != 0), fd);
-        AEFile::Write((int32_t)status->field_178, fd);
-        AEFile::Write((bool)(flags->flag[0x28] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x29] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2c] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2a] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2b] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2e] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2f] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x30] != 0), fd);
-        {
-            Array<bool> *arr = status->field_58;
-            AEFile::Write((int32_t)arr->size(), fd);
-            for (unsigned i = 0; i < arr->size(); i++) {
-                AEFile::Write((bool)(*arr)[i], fd);
-            }
-        }
-        AEFile::Write((bool)(flags->flag[0x31] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x2d] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x32] != 0), fd);
-        AEFile::Write((int32_t)status->field_118, fd);
-        AEFile::Write((bool)(flags->flag[0x33] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x34] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x35] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x36] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x37] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x38] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x39] != 0), fd);
-        AEFile::Write((bool)(flags->flag[0x3a] != 0), fd);
+    int *medals = Globals::achievements->getMedals();
+    AEFile::Write((int32_t) 45, fd);
+    for (unsigned i = 0; i < 45; i++) {
+        AEFile::Write((int32_t) medals[i], fd);
     }
 
+    AEFile::Write((int32_t) Globals::status->getShip()->getIndex(), fd);
+    AEFile::Write((int32_t) Globals::status->getShip()->getRace(), fd);
+    Array<Item *> *items = Globals::status->getShip()->getEquipment();
+    if (items != 0) {
+        AEFile::Write((int32_t) items->size(), fd);
+        for (unsigned i = 0; i < items->size(); i++) {
+            if ((*items)[i] != 0) {
+                AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+                AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+                AEFile::Write((*items)[i]->isUnsaleable(), fd);
+            } else {
+                AEFile::Write((int32_t) -1, fd);
+            }
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    items = Globals::status->getShip()->getCargo();
+    if (items != 0) {
+        AEFile::Write((int32_t) items->size(), fd);
+        for (unsigned i = 0; i < items->size(); i++) {
+            AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+            AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+            AEFile::Write((int32_t) (*items)[i]->getSinglePrice(), fd);
+            AEFile::Write((*items)[i]->isUnsaleable(), fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+
+    Array<Station *> *stack = Globals::status->getStationStack();
+    AEFile::Write((int32_t) 3, fd);
+    for (unsigned i = 0; i < stack->size() + 1; i++) {
+        Station *station = i == stack->size() ? Globals::status->getStation() : (*stack)[i];
+        if (station == 0) {
+            AEFile::Write((int32_t) -1, fd);
+            continue;
+        }
+        AEFile::Write((int32_t) station->getIndex(), fd);
+        Array<Item *> *stationItems = station->getItems();
+        if (stationItems != 0) {
+            AEFile::Write((int32_t) stationItems->size(), fd);
+            for (unsigned j = 0; j < stationItems->size(); j++) {
+                AEFile::Write((int32_t) (*stationItems)[j]->getIndex(), fd);
+                AEFile::Write((int32_t) (*stationItems)[j]->getAmount(), fd);
+                AEFile::Write((int32_t) (*stationItems)[j]->getSinglePrice(), fd);
+                AEFile::Write((*stationItems)[j]->isUnsaleable(), fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+        Array<Ship *> *ships = station->getShips();
+        if (ships != 0) {
+            AEFile::Write((int32_t) ships->size(), fd);
+            for (unsigned j = 0; j < ships->size(); j++) {
+                AEFile::Write((int32_t) (*ships)[j]->getIndex(), fd);
+                AEFile::Write((int32_t) (*ships)[j]->getRace(), fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+        Array<Agent *> *agents = station->getAgents();
+        if (agents != 0) {
+            AEFile::Write((int32_t) agents->size(), fd);
+            for (unsigned j = 0; j < agents->size(); j++) {
+                this->writeAgent((*agents)[j], fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+        AEFile::Write(station->hasAttackedFriends(), fd);
+    }
+
+    int *standings = reinterpret_cast<Standing *>(Globals::status->getStanding())->getStandings();
+    AEFile::Write((int32_t) 2, fd);
+    for (unsigned i = 0; i < 2; i++) {
+        AEFile::Write((int32_t) standings[i], fd);
+    }
+
+    Array<BluePrint *> *bluePrints = reinterpret_cast<Array<BluePrint *> *>(Globals::status->getBluePrints());
+    AEFile::Write((int32_t) bluePrints->size(), fd);
+    for (unsigned i = 0; i < bluePrints->size(); i++) {
+        BluePrint *bluePrint = (*bluePrints)[i];
+        for (unsigned j = 0; j < bluePrint->ingredientCounters->size(); j++) {
+            AEFile::Write((int32_t) (*bluePrint->ingredientCounters)[j], fd);
+        }
+        AEFile::Write((int32_t) bluePrint->spentValue, fd);
+        AEFile::Write(bluePrint->locked, fd);
+        AEFile::Write((int32_t) bluePrint->productionCount, fd);
+        AEFile::Write((int32_t) bluePrint->stationIndex, fd);
+        AEFile::Write(bluePrint->stationName, fd, true);
+    }
+
+    Array<PendingProduct *> *pending =
+        reinterpret_cast<Array<PendingProduct *> *>(Globals::status->getPendingProducts());
+    if (pending != 0) {
+        int count = 0;
+        for (unsigned i = 0; i < pending->size(); i++) {
+            count += (*pending)[i] != 0 ? 1 : 0;
+        }
+        if (count != 0) {
+            AEFile::Write((int32_t) count, fd);
+            for (unsigned i = 0; i < pending->size(); i++) {
+                if ((*pending)[i] != 0) {
+                    AEFile::Write((int32_t) (*pending)[i]->blueprintIndex, fd);
+                    AEFile::Write((int32_t) (*pending)[i]->quantity, fd);
+                    AEFile::Write((int32_t) (*pending)[i]->stationIndex, fd);
+                    AEFile::Write((*pending)[i]->stationName, fd, true);
+                }
+            }
+        } else {
+            AEFile::Write((int32_t) -1, fd);
+        }
+    } else {
+        AEFile::Write((int32_t) -1, fd);
+    }
+
+    if (Globals::status->wingmen != 0) {
+        AEFile::Write((int32_t) Globals::status->wingmen->size(), fd);
+        for (unsigned i = 0; i < Globals::status->wingmen->size(); i++) {
+            AEFile::Write(*(*Globals::status->wingmen)[i], fd, true);
+        }
+        AEFile::Write((int32_t) Globals::status->field_0x2c, fd);
+        AEFile::Write((int32_t) Globals::status->fadeValue, fd);
+        AEFile::Write((int32_t) 5, fd);
+        for (unsigned i = 0; i <= 4; i++) {
+            AEFile::Write((int32_t) ((int *) (intptr_t) reinterpret_cast<int32_t &>(Globals::status->_byte_0x28))[i],
+                          fd);
+        }
+    } else {
+        AEFile::Write((int32_t) -1, fd);
+    }
+    AEFile::Write(reinterpret_cast<int32_t &>(Globals::status->_byte_0x34), fd);
+    AEFile::Write((int32_t) Globals::status->systemVisibilities->size(), fd);
+    for (unsigned i = 0; i < Globals::status->systemVisibilities->size(); i++) {
+        AEFile::Write((*Globals::status->systemVisibilities)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_0x40->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_0x40->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_0x40)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_0x3c->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_0x3c->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_0x3c)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_0x48->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_0x48->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_0x48)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_0x44->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_0x44->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_0x44)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_4c->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_4c->size(); i++) {
+        AEFile::Write((*Globals::status->field_4c)[i], fd);
+    }
+    Array<Agent *> *agents = reinterpret_cast<Array<Agent *> *>(Globals::status->getAgents());
+    AEFile::Write((int32_t) agents->size(), fd);
+    for (unsigned i = 0; i < agents->size(); i++) {
+        this->writeAgent((*agents)[i], fd);
+    }
+
+    HintFlags *hints = reinterpret_cast<HintFlags *>(Globals::hints);
+    AEFile::Write(hints->flag[8], fd);
+    AEFile::Write(hints->flag[9], fd);
+    AEFile::Write(hints->flag[10], fd);
+    AEFile::Write(hints->flag[11], fd);
+    AEFile::Write(hints->flag[12], fd);
+    AEFile::Write(hints->flag[13], fd);
+    AEFile::Write(hints->flag[14], fd);
+    AEFile::Write(hints->flag[15], fd);
+    AEFile::Write(hints->flag[16], fd);
+    AEFile::Write(hints->flag[17], fd);
+    AEFile::Write(hints->flag[18], fd);
+    AEFile::Write(hints->flag[19], fd);
+    AEFile::Write(hints->flag[20], fd);
+    AEFile::Write(hints->flag[21], fd);
+    AEFile::Write(hints->flag[22], fd);
+    AEFile::Write(hints->flag[23], fd);
+    AEFile::Write(hints->flag[24], fd);
+    AEFile::Write(hints->flag[25], fd);
+    AEFile::Write(hints->flag[26], fd);
+    AEFile::Write(hints->flag[27], fd);
+    AEFile::Write(hints->flag[28], fd);
+    AEFile::Write(hints->flag[29], fd);
+    AEFile::Write(hints->flag[30], fd);
+    AEFile::Write(hints->flag[31], fd);
+    AEFile::Write(hints->flag[32], fd);
+    AEFile::Write(hints->flag[34], fd);
+    AEFile::Write(hints->flag[33], fd);
+    AEFile::Write(hints->flag[35], fd);
+    AEFile::Write(hints->flag[36], fd);
+    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
+    AEFile::Write(options->difficulty, fd);
+    AEFile::Write(reinterpret_cast<int64_t &>(Globals::status->field_0x100), fd);
+    AEFile::Write(hints->flag[37], fd);
+    AEFile::Write(hints->flag[38], fd);
+
+    Ship *wingman = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c);
+    if (wingman != 0) {
+        AEFile::Write((int32_t) 1, fd);
+        AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getIndex(), fd);
+        AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getRace(), fd);
+        items = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getEquipment();
+        if (items != 0) {
+            AEFile::Write((int32_t) items->size(), fd);
+            for (unsigned i = 0; i < items->size(); i++) {
+                if ((*items)[i] != 0) {
+                    AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+                    AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+                    AEFile::Write((*items)[i]->isUnsaleable(), fd);
+                } else {
+                    AEFile::Write((int32_t) -1, fd);
+                }
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+        items = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getCargo();
+        if (items != 0) {
+            AEFile::Write((int32_t) items->size(), fd);
+            for (unsigned i = 0; i < items->size(); i++) {
+                AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+                AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+                AEFile::Write((int32_t) (*items)[i]->getSinglePrice(), fd);
+                AEFile::Write((*items)[i]->isUnsaleable(), fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+
+    AEFile::Write((int32_t) Globals::status->field_90->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_90->size(); i++) {
+        AEFile::Write((int32_t) (*Globals::status->field_90)[i], fd);
+    }
+    AEFile::Write((int32_t) Globals::status->field_10c, fd);
+    AEFile::Write(Globals::status->field_110, fd);
+    AEFile::Write((int32_t) Globals::status->field_114, fd);
+    AEFile::Write(Globals::status->field_0x111, fd);
+
+    items = Globals::status->voidStation->getItems();
+    if (items != 0) {
+        AEFile::Write((int32_t) items->size(), fd);
+        for (unsigned i = 0; i < items->size(); i++) {
+            AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
+            AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
+            AEFile::Write((int32_t) (*items)[i]->getSinglePrice(), fd);
+            AEFile::Write((*items)[i]->isUnsaleable(), fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    Array<Ship *> *voidShips = Globals::status->voidStation->getShips();
+    if (voidShips != 0) {
+        AEFile::Write((int32_t) voidShips->size(), fd);
+        for (unsigned i = 0; i < voidShips->size(); i++) {
+            AEFile::Write((int32_t) (*voidShips)[i]->getIndex(), fd);
+            AEFile::Write((int32_t) (*voidShips)[i]->getRace(), fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+
+    AEFile::Write(hints->flag[39], fd);
+    AEFile::Write(options->byte_0x35, fd);
+    AEFile::Write(options->byte_0x36, fd);
+    AEFile::Write((int32_t) Globals::status->field_54->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_54->size(); i++) {
+        AEFile::Write((*Globals::status->field_54)[i], fd);
+    }
+
+    AEFile::Write((int32_t) 0x6e6a78, fd);
+    Array<int> *mods = Globals::status->getShip()->getMods();
+    if (mods != 0) {
+        AEFile::Write((int32_t) mods->size(), fd);
+        for (unsigned i = 0; i < mods->size(); i++) {
+            AEFile::Write((int32_t) (*mods)[i], fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    if (Globals::status->field_8c != 0) {
+        mods = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getMods();
+        if (mods != 0) {
+            AEFile::Write((int32_t) mods->size(), fd);
+            for (unsigned i = 0; i < mods->size(); i++) {
+                AEFile::Write((int32_t) (*mods)[i], fd);
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    if (voidShips != 0) {
+        AEFile::Write((int32_t) voidShips->size(), fd);
+        for (unsigned i = 0; i < voidShips->size(); i++) {
+            mods = (*voidShips)[i]->getMods();
+            if (mods != 0) {
+                AEFile::Write((int32_t) mods->size(), fd);
+                for (unsigned j = 0; j < mods->size(); j++) {
+                    AEFile::Write((int32_t) (*mods)[j], fd);
+                }
+            } else {
+                AEFile::Write((int32_t) 0, fd);
+            }
+        }
+    } else {
+        AEFile::Write((int32_t) 0, fd);
+    }
+    for (unsigned i = 0; i < stack->size() + 1; i++) {
+        Station *station = i == stack->size() ? Globals::status->getStation() : (*stack)[i];
+        if (station == 0) {
+            continue;
+        }
+        Array<Ship *> *ships = station->getShips();
+        if (ships != 0) {
+            AEFile::Write((int32_t) ships->size(), fd);
+            for (unsigned j = 0; j < ships->size(); j++) {
+                if ((*ships)[j]->getMods() != 0) {
+                    AEFile::Write((uint32_t) (*ships)[j]->getMods()->size(), fd);
+                    mods = (*ships)[j]->getMods();
+                    for (unsigned k = 0; k < mods->size(); k++) {
+                        AEFile::Write((int32_t) (*mods)[k], fd);
+                    }
+                } else {
+                    AEFile::Write((int32_t) 0, fd);
+                }
+            }
+        } else {
+            AEFile::Write((int32_t) 0, fd);
+        }
+    }
+
+    AEFile::Write((int32_t) Globals::status->wanted->size(), fd);
+    for (unsigned i = 0; i < Globals::status->wanted->size(); i++) {
+        this->writeWanted((*Globals::status->wanted)[i], fd);
+    }
+    for (int i = 0; i < 4; i++) {
+        AEFile::Write((int32_t) Globals::status->getCollectedBounties(i), fd);
+    }
+    AEFile::Write(options->byte_0x37, fd);
+    AEFile::Write((int32_t) Globals::status->field_178, fd);
+    AEFile::Write(hints->flag[40], fd);
+    AEFile::Write(hints->flag[41], fd);
+    AEFile::Write(hints->flag[44], fd);
+    AEFile::Write(hints->flag[42], fd);
+    AEFile::Write(hints->flag[43], fd);
+    AEFile::Write(hints->flag[46], fd);
+    AEFile::Write(hints->flag[47], fd);
+    AEFile::Write(hints->flag[48], fd);
+    AEFile::Write((int32_t) Globals::status->field_58->size(), fd);
+    for (unsigned i = 0; i < Globals::status->field_58->size(); i++) {
+        AEFile::Write((*Globals::status->field_58)[i], fd);
+    }
+    AEFile::Write(hints->flag[49], fd);
+    AEFile::Write(hints->flag[45], fd);
+    AEFile::Write(hints->flag[50], fd);
+    AEFile::Write((int32_t) Globals::status->field_118, fd);
+    AEFile::Write(hints->flag[51], fd);
+    AEFile::Write(hints->flag[52], fd);
+    AEFile::Write(hints->flag[53], fd);
+    AEFile::Write(hints->flag[54], fd);
+    AEFile::Write(hints->flag[55], fd);
+    AEFile::Write(hints->flag[56], fd);
+    AEFile::Write(hints->flag[57], fd);
+    AEFile::Write(hints->flag[58], fd);
     AEFile::Close(fd);
     this->addHash(slot);
-
-    return;
+    Globals::lastRecordWritten = slot;
+    this->saveOptions();
+    return 1;
 }
 
 void *Galaxy_getStationByIndex(int idx); // lint: void_ptr (external symbol; mangled signature is fixed)
@@ -1808,7 +1591,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
 
             AEFile::Read(rec->field_0x08, fd);
             AEFile::Read(rec->field_0x0c, fd);
-            AEFile::Read(reinterpret_cast<int64_t &>(rec->playTimeObj), fd);
+            AEFile::Read(rec->playTime, fd);
             AEFile::Read(rec->field_0x18, fd);
             AEFile::Read(rec->field_0x1c, fd);
             AEFile::Read(rec->killsText, fd);
@@ -2405,71 +2188,63 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
     return rec;
 }
 
-static const unsigned char RH_ch_salt[0x19] = {};
-
-static unsigned char **RH_ch_key = nullptr;
-
 bool RecordHandler::checkHash(unsigned int fd) {
-    int result = 0;
+    int size = AEFile::GetFileSize(fd);
+    if (size >= 0) {
+        unsigned char *buffer = new unsigned char[size];
+        AEFile::Read(size, buffer, fd);
+        Array<unsigned char> *bytes = new Array<unsigned char>();
+        ArrayAdd(buffer, size, *bytes);
+        delete[] buffer;
 
-    int sz = AEFile::GetFileSize(fd);
-    if (-1 < sz) {
-        unsigned char *buf = new unsigned char[(unsigned) sz];
-        AEFile::Read((unsigned) sz, (signed char *) buf, fd);
-        Array<unsigned char> *arr = new Array<unsigned char>();
-        ArrayAdd(buf, (unsigned) sz, *arr);
-        delete[] buf;
+        if (bytes->size() > 33) {
+            unsigned char *digest = new unsigned char[32];
+            Sha256Context *context = new Sha256Context;
+            SHA256_Init(context);
+            SHA256_Update(context, bytes->data(), bytes->size() - 32);
+            char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+            SHA256_Update(context, salt, 25);
+            SHA256_Update(context, g_android_origami_super_club, 16);
+            SHA256_Final(digest, context);
 
-        unsigned len = arr->size();
-        if (0x21 < len) {
-            unsigned char *md = new unsigned char[0x20];
-            unsigned char *c = new unsigned char[0x70];
-            SHA256_Init(c);
-            unsigned char *data = arr->data();
-            SHA256_Update(c, data, (int) len - 0x20);
-            SHA256_Update(c, RH_ch_salt, 0x19);
-            SHA256_Update(c, *RH_ch_key, 0x10);
-            SHA256_Final(md, c);
-
-            result = (CRYPTO_memcmp(md, &data[(int) len - 0x20], 0x20) == 0) ? 1 : 0;
-            delete[] md;
-            delete[] c;
+            bool valid = true;
+            for (int i = 0; i < 32; i++) {
+                if (digest[i] != (*bytes)[bytes->size() - 32 + i]) {
+                    valid = false;
+                    break;
+                }
+            }
+            delete[] digest;
+            delete context;
+            return valid;
         }
     }
-
-    return result;
+    return false;
 }
-
-static const unsigned char RH_aho_salt[0x19] = {};
-
-static unsigned char **RH_aho_key = nullptr;
 
 void RecordHandler::addHashToOptions() {
     signed char *data = 0;
-    int len = this->readOptionsFileAsByteArray(&data);
-    if (len < 0)
+    int length = this->readOptionsFileAsByteArray(&data);
+    if (length < 0) {
         return;
+    }
+    unsigned char *digest = new unsigned char[32];
+    Sha256Context *context = new Sha256Context;
+    SHA256_Init(context);
+    SHA256_Update(context, data, length);
+    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+    SHA256_Update(context, salt, 25);
+    SHA256_Update(context, g_android_origami_super_club, 16);
+    SHA256_Final(digest, context);
 
-    unsigned char *md = new unsigned char[0x20];
-    unsigned char *c = new unsigned char[0x70];
-    SHA256_Init(c);
-    SHA256_Update(c, data, len);
-    SHA256_Update(c, RH_aho_salt, 0x19);
-    SHA256_Update(c, *RH_aho_key, 0x10);
-    SHA256_Final(md, c);
-
-    signed char *out = new signed char[len + 0x20];
-    memcpy(out, data, len);
-    unsigned long long *dst = (unsigned long long *) (out + len);
-    unsigned long long *src = (unsigned long long *) md;
-    dst[0] = src[0];
-    dst[1] = src[1];
-    dst[2] = src[2];
-    dst[3] = src[3];
-    this->writeByteArrayAsOptionsFile(out, len + 0x20);
+    signed char *hashed = new signed char[length + 32];
+    memcpy(hashed, data, length);
+    memcpy(hashed + length, digest, 32);
+    this->writeByteArrayAsOptionsFile(hashed, length + 32);
 
     delete[] data;
-    delete[] out;
-    delete[] md;
-    delete[] c;
+    data = 0;
+    delete[] hashed;
+    delete[] digest;
+    delete context;
 }

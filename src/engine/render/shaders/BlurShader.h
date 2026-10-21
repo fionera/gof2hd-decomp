@@ -22,6 +22,8 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
+        int field_0x20;
+        unsigned int blurProgram;
         int aPosition;
         int uMvpMatrix;
         int aTexCoord;
@@ -31,9 +33,12 @@ namespace AbyssEngine {
         int uStrength;
         int uCenter;
         unsigned int positionAttrib;
+        int field_0x4c;
         unsigned int texCoordAttrib;
+        int field_0x54;
         float strength;
         float blurScale;
+        int field_0x60;
 
         BlurShader();
 

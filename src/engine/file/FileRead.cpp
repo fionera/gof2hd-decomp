@@ -23,13 +23,12 @@ FileRead::FileRead() {
 FileRead::~FileRead() {
 }
 
-int32_t FileRead::loadStation(int32_t id) {
-    int16_t selected = (int16_t) id;
-    Array<Station *> *stations = loadStationsBinary(&selected, 1);
-    int32_t result = (int32_t)(intptr_t)
-    stations->data()[0];
-    delete stations;
-    return result;
+Station *FileRead::loadStation(int32_t id) {
+    int16_t *ids = new int16_t[1];
+    ids[0] = (int16_t) id;
+    Station *station = loadStationsBinary(ids, 1)->data()[0];
+    delete[] ids;
+    return station;
 }
 
 int32_t FileRead::loadStationsBinary() {
@@ -603,210 +602,204 @@ Array<Agent *> *FileRead::loadAgents() {
 }
 
 Array<int32_t> *FileRead::loadWreckCollision(int32_t id) {
-    String path("wreck_collision.bin");
-
-    Array<int32_t> *result = 0;
-    if (AEFile::FileExist(path) != 0) {
-        uint32_t handle;
-        AEFile::OpenRead("wreck_collision.bin", &handle);
-
-        int32_t key = 0;
-        uint32_t count = 0;
-        for (uint32_t i = 0; i < 6; i++) {
-            AEFile::Read(key, handle);
-            AEFile::Read((int32_t &) count, handle);
-            count++;
-            if (key == id) {
-                result = new Array<int32_t>();
-                int32_t *buffer = new int32_t[count];
-                AEFile::Read(count << 2, buffer, handle);
-                ArraySetLength<int32_t>(count, *result);
-                for (int32_t j = 0; j < (int32_t) count; j++) {
-                    result->data()[j] = buffer[j];
-                }
-                delete[] buffer;
-                AEFile::Close(handle);
-                return result;
-            }
-            AEFile::Skip(count << 2, handle);
-        }
-        AEFile::Close(handle);
+    if (AEFile::FileExist(String("wreck_collision.bin")) == 0) {
+        return nullptr;
     }
-    return result;
+
+    uint32_t handle;
+    AEFile::OpenRead("wreck_collision.bin", &handle);
+
+    int32_t key = 0;
+    int32_t count = 0;
+    for (uint32_t i = 0; i < 6; i++) {
+        AEFile::Read(key, handle);
+        AEFile::Read(count, handle);
+        count++;
+        if (key == id) {
+            Array<int32_t> *result = new Array<int32_t>();
+            int32_t *buffer = new int32_t[(uint32_t) count];
+            AEFile::Read(count << 2, buffer, handle);
+            ArraySetLength<int32_t>(count, *result);
+            for (int32_t j = 0; j < count; j++) {
+                result->data()[j] = buffer[j];
+            }
+            delete[] buffer;
+            AEFile::Close(handle);
+            return result;
+        }
+        AEFile::Skip(count << 2, handle);
+    }
+    AEFile::Close(handle);
+    return nullptr;
 }
 
 Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
-    String path("station_collision.bin");
-
-    Array<int32_t> *result = 0;
-    if (AEFile::FileExist(path) != 0) {
-        uint32_t handle;
-        AEFile::OpenRead("station_collision.bin", &handle);
-
-        int32_t key = 0;
-        uint32_t count = 0;
-        for (uint32_t i = 0; i < 0x88; i++) {
-            AEFile::Read(key, handle);
-            AEFile::Read((int32_t &) count, handle);
-            count++;
-            if (key == id) {
-                result = new Array<int32_t>();
-                int32_t *buffer = new int32_t[count];
-                AEFile::Read(count << 2, buffer, handle);
-                ArraySetLength<int32_t>(count, *result);
-                for (int32_t j = 0; j < (int32_t) count; j++) {
-                    result->data()[j] = buffer[j];
-                }
-                delete[] buffer;
-                AEFile::Close(handle);
-                return result;
-            }
-            AEFile::Skip(count << 2, handle);
-        }
-        AEFile::Close(handle);
+    if (AEFile::FileExist(String("station_collision.bin")) == 0) {
+        return nullptr;
     }
-    return result;
+
+    uint32_t handle;
+    AEFile::OpenRead("station_collision.bin", &handle);
+
+    int32_t key = 0;
+    int32_t count = 0;
+    for (uint32_t i = 0; i < 0x88; i++) {
+        AEFile::Read(key, handle);
+        AEFile::Read(count, handle);
+        count++;
+        if (key == id) {
+            Array<int32_t> *result = new Array<int32_t>();
+            int32_t *buffer = new int32_t[(uint32_t) count];
+            AEFile::Read(count << 2, buffer, handle);
+            ArraySetLength<int32_t>(count, *result);
+            for (int32_t j = 0; j < count; j++) {
+                result->data()[j] = buffer[j];
+            }
+            delete[] buffer;
+            AEFile::Close(handle);
+            return result;
+        }
+        AEFile::Skip(count << 2, handle);
+    }
+    AEFile::Close(handle);
+    return nullptr;
 }
 
 Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
-    String path("static_collision.bin");
-
-    Array<int32_t> *result = 0;
-    if (AEFile::FileExist(path) != 0) {
-        uint32_t handle;
-        AEFile::OpenRead("static_collision.bin", &handle);
-
-        int32_t key = 0;
-        uint32_t count = 0;
-        for (uint32_t i = 0; i < 7; i++) {
-            AEFile::Read(key, handle);
-            AEFile::Read((int32_t &) count, handle);
-            count++;
-            if (key == id) {
-                result = new Array<int32_t>();
-                int32_t *buffer = new int32_t[count];
-                AEFile::Read(count << 2, buffer, handle);
-                ArraySetLength<int32_t>(count, *result);
-                for (int32_t j = 0; j < (int32_t) count; j++) {
-                    result->data()[j] = buffer[j];
-                }
-                delete[] buffer;
-                AEFile::Close(handle);
-                return result;
-            }
-            AEFile::Skip(count << 2, handle);
-        }
-        AEFile::Close(handle);
+    if (AEFile::FileExist(String("static_collision.bin")) == 0) {
+        return nullptr;
     }
-    return result;
+
+    uint32_t handle;
+    AEFile::OpenRead("static_collision.bin", &handle);
+
+    int32_t key = 0;
+    int32_t count = 0;
+    for (uint32_t i = 0; i < 7; i++) {
+        AEFile::Read(key, handle);
+        AEFile::Read(count, handle);
+        count++;
+        if (key == id) {
+            Array<int32_t> *result = new Array<int32_t>();
+            int32_t *buffer = new int32_t[(uint32_t) count];
+            AEFile::Read(count << 2, buffer, handle);
+            ArraySetLength<int32_t>(count, *result);
+            for (int32_t j = 0; j < count; j++) {
+                result->data()[j] = buffer[j];
+            }
+            delete[] buffer;
+            AEFile::Close(handle);
+            return result;
+        }
+        AEFile::Skip(count << 2, handle);
+    }
+    AEFile::Close(handle);
+    return nullptr;
 }
 
 Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
-    String path("station_parts.bin");
-
-    Array<int32_t> *parts = 0;
-    if (AEFile::FileExist(path) != 0) {
-        uint32_t handle;
-        AEFile::OpenRead("station_parts.bin", &handle);
-
-        int32_t wanted = id + 1;
-        if (special == 1) {
-            wanted = 0x65;
-        }
-
-        for (uint32_t i = 0; i < 0x88; i++) {
-            char group;
-            char count;
-            int16_t station;
-            AEFile::Read(group, handle);
-            AEFile::ReadSwitched(station, handle);
-            AEFile::Read(count, handle);
-
-            parts = new Array<int32_t>();
-            ArraySetLength<int32_t>((int8_t) count * 7 + 7, *parts);
-            int32_t *data = parts->data();
-            data[0] = station;
-            data[1] = 0;
-            data[2] = 0;
-            data[3] = 0;
-            data[4] = 0;
-            data[5] = 0x800;
-            data[6] = 0;
-
-            for (uint32_t off = 7; off < parts->size(); off += 7) {
-                int16_t value;
-                AEFile::ReadSwitched(value, handle);
-                data[off] = value;
-                AEFile::ReadSwitched(data[off + 1], handle);
-                AEFile::ReadSwitched(data[off + 2], handle);
-                AEFile::ReadSwitched(data[off + 3], handle);
-                AEFile::ReadSwitched(value, handle);
-                data[off + 4] = value;
-                AEFile::ReadSwitched(value, handle);
-                data[off + 5] = value;
-                AEFile::ReadSwitched(value, handle);
-                data[off + 6] = value;
-            }
-
-            if (wanted == (int8_t) group) {
-                return parts;
-            }
-            delete parts;
-            parts = 0;
-        }
-        AEFile::Close(handle);
+    Array<int32_t> *parts = nullptr;
+    if (AEFile::FileExist(String("station_parts.bin")) == 0) {
+        return parts;
     }
+
+    uint32_t handle;
+    AEFile::OpenRead("station_parts.bin", &handle);
+
+    int32_t wanted = id + 1;
+    if (special == 1) {
+        wanted = 0x65;
+    }
+
+    for (uint32_t i = 0; i < 0x88; i++) {
+        int8_t group;
+        int16_t station;
+        int8_t count;
+        AEFile::Read(group, handle);
+        AEFile::ReadSwitched(station, handle);
+        AEFile::Read(count, handle);
+
+        parts = new Array<int32_t>();
+        ArraySetLength<int32_t>(count * 7 + 7, *parts);
+        int32_t *data = parts->data();
+        data[0] = station;
+        data[1] = 0;
+        data[2] = 0;
+        data[3] = 0;
+        data[4] = 0;
+        data[5] = 0x800;
+        data[6] = 0;
+
+        for (uint32_t off = 7; off < parts->size(); off += 7) {
+            int16_t value;
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off] = value;
+            AEFile::ReadSwitched((*parts)[off + 1], handle);
+            AEFile::ReadSwitched((*parts)[off + 2], handle);
+            AEFile::ReadSwitched((*parts)[off + 3], handle);
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off + 4] = value;
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off + 5] = value;
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off + 6] = value;
+        }
+
+        if (wanted == group) {
+            return parts;
+        }
+        ArrayRelease(*parts);
+    }
+    AEFile::Close(handle);
     return parts;
 }
 
 Array<int32_t> *FileRead::loadShipParts(int32_t id) {
-    String path("ship_parts.bin");
+    if (AEFile::FileExist(String("ship_parts.bin")) == 0) {
+        return nullptr;
+    }
 
-    Array<int32_t> *parts = 0;
-    if (AEFile::FileExist(path) != 0) {
-        uint32_t handle;
-        AEFile::OpenRead("ship_parts.bin", &handle);
+    uint32_t handle;
+    AEFile::OpenRead("ship_parts.bin", &handle);
 
-        int32_t wanted = id + 1;
-        for (uint32_t i = 0; i <= 0x40; i++) {
-            if (i > 0x3f) {
-                AEFile::Close(handle);
-                break;
-            }
-            char group;
-            char count;
-            AEFile::Read(group, handle);
-            AEFile::Read(count, handle);
+    int32_t wanted = id + 1;
+    Array<int32_t> *parts = nullptr;
+    for (uint32_t i = 0;; i++) {
+        if (i >= 0x40) {
+            AEFile::Close(handle);
+            return parts;
+        }
+        int8_t group;
+        int8_t count;
+        AEFile::Read(group, handle);
+        AEFile::Read(count, handle);
 
-            parts = new Array<int32_t>();
-            ArraySetLength<int32_t>((int8_t) count * 10, *parts);
-            int32_t *data = parts->data();
-            for (uint32_t off = 0; off < parts->size(); off += 10) {
-                int16_t value;
-                AEFile::ReadSwitched(value, handle);
-                data[off] = value;
-                AEFile::ReadSwitched(data[off + 1], handle);
-                AEFile::ReadSwitched(data[off + 2], handle);
-                AEFile::ReadSwitched(data[off + 3], handle);
-                AEFile::ReadSwitched(value, handle);
-                data[off + 4] = value;
-                AEFile::ReadSwitched(value, handle);
-                data[off + 5] = value;
-                AEFile::ReadSwitched(value, handle);
-                data[off + 6] = value;
-                AEFile::ReadSwitched(value, handle);
-                data[off + 7] = value;
-                AEFile::ReadSwitched(value, handle);
-                data[off + 8] = value;
-                AEFile::ReadSwitched(value, handle);
-                data[off + 9] = value;
-            }
-            if (wanted == (int8_t) group) {
-                break;
-            }
+        parts = new Array<int32_t>();
+        ArraySetLength<int32_t>(count * 10, *parts);
+        for (uint32_t off = 0; off < parts->size(); off += 10) {
+            int16_t value;
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off] = value;
+            AEFile::ReadSwitched((*parts)[off + 1], handle);
+            AEFile::ReadSwitched((*parts)[off + 2], handle);
+            AEFile::ReadSwitched((*parts)[off + 3], handle);
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off + 4] = value;
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off + 5] = value;
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off + 6] = value;
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off + 7] = value;
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off + 8] = value;
+            AEFile::ReadSwitched(value, handle);
+            (*parts)[off + 9] = value;
+        }
+        if (wanted == group) {
+            return parts;
         }
     }
-    return parts;
 }
 
 Array<Item *> *FileRead::loadItemsBinary() {

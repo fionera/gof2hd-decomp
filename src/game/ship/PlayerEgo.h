@@ -67,12 +67,12 @@ public:
     AbyssEngine::AEMath::Matrix rollMatrix;  // 0x40..0x7c (ctor calls Matrix::Matrix() on this+0x40)
     float rocketPitch;                       // 0x7c (up/down in rocket control)
     float rocketYaw;                         // 0x80 (left/right in rocket control)
-    uint8_t _pad_0x84[4]; // original field_0x84 region (1-byte field + 3 pad)
+    uint8_t field_0x84;
     int targetFollowCamera;
 
     Explosion *explosion;
     Explosion *explosion2;
-    uint8_t _pad_0x94[24]; // missing fields between explosion2 and field_0xac (0x94..0xac)
+    int field_0x94[6];
     int field_0xac;
     uint8_t field_0xb0;
     uint8_t switchToStandardCam;
@@ -137,7 +137,7 @@ public:
     int rocketControlGun;
     int rocketBanking;
     AEGeometry *dockCameraMid;
-    uint8_t turretActive;
+    bool turretActive;
     uint8_t field_0x1a1;
     float lookPitch;
     float lookYaw;
@@ -213,13 +213,15 @@ public:
     int currentSystem;
     int smokeSystem;
     int explosionSmoke;
-    uint8_t _pad_0x308[1]; // original field_0x308
+    uint8_t field_0x308;
     uint8_t field_0x309;
+    uint8_t field_0x30a;
     int emergencySystemTimer;
     int emergencyVal1;
     AbyssEngine::AEMath::Vector emergencyVec;
     float emergencyVal2;
     uint8_t autoLevel;
+    uint8_t field_0x325;
     int hitShakeTimer;
     uint8_t hitShake;
     uint8_t field_0x32d;
@@ -229,7 +231,7 @@ public:
     int maneuverType;
     AbyssEngine::AEMath::Vector strafeTargetVec;
     AbyssEngine::AEMath::Vector facingVec;
-    SpacePoint *navPoint;
+    int maneuverTimer;
     // ASM: setAutoTurret writes autoTurretEnabled at [this,#853]=0x355, dockedFlag readers load @0x356.
     // The @0x354 slot is a distinct field; autoTurretEnabled is @0x355 and dockedFlag @0x356.
     uint8_t field_0x354;
@@ -252,7 +254,7 @@ public:
     uint32_t cloakMaterial1;    // 0x388
     uint32_t cloakMaterial2;    // 0x38c
     uint32_t cloakMaterial3;    // 0x390
-    unsigned char *field_0x394;
+    int originalBlendMode;
     uint8_t volatileGoods;
     uint8_t field_0x399;
     uint8_t field_0x39a;
@@ -284,7 +286,7 @@ public:
 
     void alignToHorizon();
 
-    void approachAsteroid(Hud *hud, int hud2, Radar *radar);
+    int approachAsteroid(Hud *hud, int unused, Radar *radar);
 
     int approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
 
@@ -474,7 +476,7 @@ public:
 
     unsigned char lostMiningGame();
 
-    void moveToPosition(AbyssEngine::AEMath::Vector target, bool steer, float speed);
+    float moveToPosition(AbyssEngine::AEMath::Vector target, bool steer, float speed);
 
     void pitchAllPrimaryGuns(float);
 
@@ -586,7 +588,8 @@ public:
 
     void up(int frameTime, float delta);
 
-    void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6, int arg7);
+    void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool mouseLocked,
+                int controlMode);
 
     int updateManeuver();
 
@@ -628,7 +631,7 @@ static_assert(__builtin_offsetof(PlayerEgo, rolling) == 0x2f4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2f5) == 0x2f5, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x309) == 0x309, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x32d) == 0x32d, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x394) == 0x394, "");
+static_assert(__builtin_offsetof(PlayerEgo, originalBlendMode) == 0x394, "");
 // Relocated matrices and the field immediately after the last drift field, to pin the tail.
 static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x40, "");
 static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x2ac, "");

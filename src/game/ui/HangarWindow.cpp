@@ -99,13 +99,11 @@ static unsigned int **g_hw_imageCountSlot;
 static uint8_t *g_hw_specialModeFlag;
 static uint8_t *g_hw_listModeFlag;
 static float g_hw_posScale;
-static int *g_hw_openCounter;
 
 static const char hw_rnd_empty[1] = "", hw_rnd_a[1] = "", hw_rnd_b[1] = "",
         hw_rnd_c[1] = "", hw_rnd_d[1] = "", hw_rnd_e[1] = "", hw_rnd_x[1] = "";
 static const char hw_buy_yes[1] = "", hw_buy_no[1] = "", hw_buy_icon[1] = "";
 static const char hw_buy2_yes[1] = "", hw_buy2_no[1] = "", hw_buy2_icon[1] = "";
-static float hw_buy_heightScale;
 static const char hw_init_buy[1] = "", hw_init_sell[1] = "", hw_init_lbl[1] = "",
         hw_init_more[1] = "", hw_init_back[1] = "", hw_init_help[1] = "";
 
@@ -304,7 +302,7 @@ void HangarWindow::render() {
                                                               ? 0xa35b5bffu
                                                               : 0x7aa35bffu;
                             ((PaintCanvas *) canvas)->SetColor(shipPriceColor);
-                            String price = Layout::formatCredits(((ListItem *) li)->ship->getPrice());
+                            String price = Globals::layout->formatCredits(((ListItem *) li)->ship->getPrice());
                             ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, price,
                                                                  contentBase + layout->buttonInsetX + this->hintOffsetX,
                                                                  0, (bool) 1);
@@ -409,7 +407,7 @@ void HangarWindow::render() {
                             ((PaintCanvas *) canvas)->SetColor(0x777777ffu);
                         }
                         if (this->upgradeMode == 0) {
-                            String price = Layout::formatCredits(((Item *) ((ListItem *) li)->item)->getSinglePrice());
+                            String price = Globals::layout->formatCredits(((Item *) ((ListItem *) li)->item)->getSinglePrice());
                             ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, price,
                                                                  contentBase + layout->buttonInsetX + this->hintOffsetX,
                                                                  0, (bool) 1);
@@ -455,7 +453,7 @@ void HangarWindow::render() {
     (*btns)[(0x2c) >> 2]->setVisible(true);
     (*btns)[(0x2c) >> 2]->setAlwaysPressed(g_hw_optionFlags[0x4e] == 0);
     {
-        String credits = Layout::formatCredits(Globals::status->getCredits());
+        String credits = Globals::layout->formatCredits(Globals::status->getCredits());
         (*btns)[(0x2c) >> 2]->setText(credits);
     }
     (*btns)[(0x2c) >> 2]->draw();
@@ -606,7 +604,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             if ((*self->buttons)[(0x5c) >> 2]->OnTouchEnd(touch, coord) != 0) {
                 self->bluePrint->getAutoCompletionPrice();
                 String line, priceStr, fmt, msg;
-                priceStr = Layout::formatCredits(0);
+                priceStr = Globals::layout->formatCredits(0);
                 Status_replaceHash(&msg, globals, &line, &priceStr);
                 self->dialog->set(*(String *) &msg, true);
                 self->autoCompletePending = 1;
@@ -681,7 +679,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             int price = self->bluePrint->getAutoCompletionPrice();
             if (Globals::status->getCredits() < price) {
                 String line, priceStr, fmt, msg, suffix, combined;
-                priceStr = Layout::formatCredits(Globals::status->getCredits());
+                priceStr = Globals::layout->formatCredits(Globals::status->getCredits());
                 Status_replaceHash(&msg, globals, &line, &priceStr);
                 Globals::gameText->getText(*g_hw_notEnoughTextId);
                 combined = suffix + suffix;
@@ -817,7 +815,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->buyMode = 0;
                 if (Globals::status->getCredits() < cost && self->localBluePrint == 0) {
                     String line, priceStr, fmt, msg;
-                    priceStr = Layout::formatCredits(Globals::status->getCredits());
+                    priceStr = Globals::layout->formatCredits(Globals::status->getCredits());
                     Status_replaceHash(&msg, globals, &line, &priceStr);
                     self->dialog->set(g_HangarWindow_emptyDialogText);
                     self->dialogActive = 1;
@@ -856,7 +854,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 if (Globals::status->getCredits() < price) {
                     String line, priceStr, fmt, msg, suffix, combined;
                     ((ListItem *) self->selectedItem)->ship->getPrice();
-                    priceStr = Layout::formatCredits(Globals::status->getCredits());
+                    priceStr = Globals::layout->formatCredits(Globals::status->getCredits());
                     Status_replaceHash(&msg, globals, &line, &priceStr);
                     Globals::gameText->getText(*g_hw_sellShipTextId);
                     combined = suffix + suffix;
@@ -1010,63 +1008,45 @@ void HangarWindow::update(int delta) {
     }
 
     unsigned int tab = this->hangarList->getCurrentTab();
-    Array<TouchButton *> *buttons = this->tabButtons;
-    for (unsigned int i = 0; i < buttons->size(); i++) {
-        bool pressed = true;
-        if (i != tab && !(tab == 3 && i == 0))
-            pressed = (i == 2 && tab == 4);
-        ((TouchButton *) (buttons->data()[i]))->setAlwaysPressed(pressed);
+    for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
+        (*this->tabButtons)[i]->setAlwaysPressed(i == tab || (tab == 3 && i == 0) || (i == 2 && tab == 4));
     }
 
     if (this->dragging == 0) {
-        float v = this->damping * this->velocity;
-        this->velocity = v;
-        float mag = v > 0.0f ? v : -v;
-        if (mag >= 1.0f) {
-            float pos = VectorSignedToFloat(this->scrollOffset, 0);
-            this->scrollOffset = (int) (v + pos);
+        this->velocity = this->damping * this->velocity;
+        float speed = this->velocity > 0.0f ? this->velocity : -this->velocity;
+        if (speed > 1.0f) {
+            this->scrollOffset = (int) (this->velocity + (float) this->scrollOffset);
         }
     }
 
     if (this->scrollOffset > 0) {
-        float f = VectorSignedToFloat(-this->scrollOffset, 0);
         this->damping = 1.0f;
-        this->velocity = f * 0.5f;
+        this->velocity = (float) -this->scrollOffset * 0.5f;
     }
 
-    if (((HangarList *) this->hangarList)->getCurrentTabItems() != 0) {
-        int diff = this->visibleHeight - this->currentContentHeight;
-        if (diff < 0) {
-            if (this->scrollOffset < diff) {
-                float f = VectorSignedToFloat(diff - this->scrollOffset, 0);
-                this->damping = 1.0f;
-                this->velocity = f * 0.5f;
-            }
-        } else {
-            this->velocity = 0;
+    if (this->hangarList->getCurrentTabItems() != 0) {
+        int minOffset = this->visibleHeight - this->currentContentHeight;
+        if (minOffset > -1) {
             this->scrollOffset = 0;
+            this->velocity = 0;
+        } else if (minOffset > this->scrollOffset) {
+            this->damping = 1.0f;
+            this->velocity = (float) (minOffset - this->scrollOffset) * 0.5f;
         }
     }
 
-    if (this->buyMode != 0) {
-        TouchButton *btnUp = (*this->buttons)[(0x20) >> 2];
-        TouchButton *btnDown = (*this->buttons)[(0x24) >> 2];
-        if (((TouchButton *) (btnUp))->isTouched() != 0 || ((TouchButton *) (btnDown))->isTouched() != 0) {
-            int t6c = this->holdTime + delta;
-            int t70 = this->repeatTimer + delta;
-            this->holdTime = t6c;
-            this->repeatTimer = t70;
-            int threshold = (t6c > 0x5dc) ? 0x1e : 200;
-            if (t70 > threshold && (this->repeatTimer = 0,
-                                    this->buyMode != 0 || this->specialMode != 0)) {
-                if (((TouchButton *) (btnDown))->isTouched() != 0 && ((TouchButton *) (btnDown))->isVisible() != 0) {
-                    int n = (this->holdTime > 4000) ? 5 : 1;
-                    for (; n != 0; n--)
+    if (this->buyMode != 0 && ((*this->buttons)[8]->isTouched() || (*this->buttons)[9]->isTouched())) {
+        this->holdTime += delta;
+        this->repeatTimer += delta;
+        if (this->repeatTimer > (this->holdTime > 1500 ? 30 : 200)) {
+            this->repeatTimer = 0;
+            if (this->buyMode != 0 || this->specialMode != 0) {
+                if ((*this->buttons)[9]->isTouched() && (*this->buttons)[9]->isVisible()) {
+                    for (int n = this->holdTime > 4000 ? 5 : 1; n != 0; n--)
                         this->transaction(true);
-                } else if (((TouchButton *) (btnUp))->isTouched() != 0 &&
-                           ((TouchButton *) (btnUp))->isVisible() != 0) {
-                    int n = (this->holdTime > 4000) ? 5 : 1;
-                    for (; n != 0; n--)
+                } else if ((*this->buttons)[8]->isTouched() && (*this->buttons)[8]->isVisible()) {
+                    for (int n = this->holdTime > 4000 ? 5 : 1; n != 0; n--)
                         this->transaction(false);
                 }
             }
@@ -1143,149 +1123,113 @@ void HangarWindow::demountItem(Item *item, int slot) {
     (*g_hw_sound)->play(0x60, nullptr, nullptr, 0.0f);
 }
 
-void HangarWindow::OnTouchBegin(int touch, int coord) {
-    HangarWindow *self = this;
-    self->holdTime = 0;
-    self->repeatTimer = 0;
-    unsigned char handled = (unsigned char) (*g_hw_layout)->OnTouchBegin(touch, coord);
+int HangarWindow::OnTouchBegin(int touch, int coord) {
+    this->holdTime = 0;
+    this->repeatTimer = 0;
+    bool handled = Globals::layout->OnTouchBegin(touch, coord);
 
-    if (self->dialogActive != 0) {
-        if (self->buyCreditsActive != 0) {
-            for (int i = 0xc; i != 0x11; i++)
-                (*self->buttons)[(i * 4) >> 2]->OnTouchBegin(touch, coord);
-            (*self->buttons)[(0x44) >> 2]->OnTouchBegin(touch, coord);
-        } else if (self->freeCreditsActive != 0) {
-            for (int i = 0x12; i != 0x17; i++)
-                (*self->buttons)[(i * 4) >> 2]->OnTouchBegin(touch, coord);
+    if (this->dialogActive != 0) {
+        if (this->buyCreditsActive != 0) {
+            for (int i = 0; i < 5; i++) {
+                (*this->buttons)[12 + i]->OnTouchBegin(touch, coord);
+            }
+            (*this->buttons)[17]->OnTouchBegin(touch, coord);
+        } else if (this->freeCreditsActive != 0) {
+            for (int i = 0; i < 5; i++) {
+                (*this->buttons)[18 + i]->OnTouchBegin(touch, coord);
+            }
         }
-        self->dialog->OnTouchBegin(touch, coord);
-        return;
+        this->dialog->OnTouchBegin(touch, coord);
+        return 0;
     }
 
-    self->touchStartY = coord;
-    self->lastTouchY = coord;
-    self->scrollDelta = 0;
-    self->dragging = 1;
+    this->lastTouchY = coord;
+    this->touchStartY = coord;
+    this->scrollDelta = 0;
+    this->dragging = 1;
 
-    if (self->viewMode == 1) {
-        self->listItemWindow->OnTouchBegin(touch, coord);
-        return;
+    if (this->viewMode == 1) {
+        this->listItemWindow->OnTouchBegin(touch, coord);
+        return 0;
     }
 
-    Layout *layout = *g_hw_layout;
-    unsigned char skip = 1;
-    if (layout->field_0xc_leftMargin < coord && coord < *g_hw_screenWidth - layout->field_0x10_rightMargin) {
-        int row = IDIV(
-            ((coord - layout->field_0xc_leftMargin) - layout->field_0x20_top) - self->field_0x100.d -
-            self->scrollOffset,
-            layout->field_0x70_rowHeight + self->field_0x100.d);
-        if (self->hangarList->getCurrentLength() > row) {
-            self->hangarList->setCurrentItemIndex(row);
-            self->highlightItem(self->hangarList->getCurrentItem());
-            skip = 0;
-            if (self->upgradeMode != 0) {
-                ListItem *ci = self->hangarList->getCurrentItem();
-                if (((ListItem *) (ci))->isShip() != 0 &&
-                    self->hangarList->getCurrentTab() == 1) {
-                    Globals::status->getShip()->setCargo(Item::extractItems((ItemArray *) (self->itemList), true));
-                    Globals::status->getStation()->setItems(Item::extractItems(self->itemList, false), false);
-                }
+    bool outsideList = true;
+    Layout *layout = Globals::layout;
+    if (layout->field_0xc_leftMargin < coord && coord < Globals::h - layout->field_0x10_rightMargin) {
+        int index = (coord - layout->field_0xc_leftMargin - layout->field_0x20_top - this->field_0x100.d -
+                     this->scrollOffset) / (layout->field_0x70_rowHeight + this->field_0x100.d);
+        if (index < (int) this->hangarList->getCurrentLength()) {
+            this->hangarList->setCurrentItemIndex(index);
+            this->highlightItem(this->hangarList->getCurrentItem());
+            outsideList = false;
+            if (this->upgradeMode && this->hangarList->getCurrentItem()->isShip() &&
+                this->hangarList->getCurrentTab() == 1) {
+                Globals::status->getShip()->setCargo(Item::extractItems(this->itemList, true));
+                Globals::status->getStation()->setItems(Item::extractItems(this->itemList, false), false);
             }
         }
     }
 
-    if (self->hangarList->getCurrentTab() == 4 && self->buyMode != 0 &&
-        !(!skip && self->selectedItem == self->bluePrintItem) && self->bluePrintBuyCount > 0 &&
-        self->dialogActive == 0 && self->bluePrint->isEmpty() == 0) {
-        if (self->bluePrint->getStationIndex() != Globals::status->getStation()->getIndex()) {
-            Globals *globals = (Globals *) *g_hw_globals;
-            int bpIdx = ((Item *) ((ListItem *) self->bluePrintItem)->item)->getIndex();
-            bool localBp = (bpIdx == 0xd1) ||
-                           (((Item *) ((ListItem *) self->bluePrintItem)->item)->getIndex() == 0xcc);
-            self->localBluePrint = localBp;
+    if (this->hangarList->getCurrentTab() == 4 && this->buyMode != 0 &&
+        (this->selectedItem != this->bluePrintItem || outsideList) && this->bluePrintBuyCount >= 1 &&
+        this->dialogActive == 0 && !this->bluePrint->isEmpty() &&
+        this->bluePrint->getStationIndex() != Globals::status->getStation()->getIndex()) {
+        this->localBluePrint = this->bluePrintItem->item->getIndex() == 209 ||
+                               this->bluePrintItem->item->getIndex() == 204;
+        String msg;
+        msg = this->localBluePrint ? String(*Globals::gameText->getText(289))
+                                   : String(*Globals::gameText->getText(288));
+        if (!this->localBluePrint) {
+            msg = Globals::status->replaceHash(msg, String(this->bluePrint->getStationName(), false),
+                                               String("#S"));
+            msg = Globals::status->replaceHash(
+                    msg,
+                    String(Globals::layout->formatCredits(this->bluePrintItem->item->getBlueprintAmount() * 200),
+                           false),
+                    String("#C"));
+        }
+        this->dialog->set(msg, !this->localBluePrint);
+        this->dialogActive = 1;
+        this->bluePrintPurchasePending = 1;
+        this->suppressTouchEnd = 1;
+        return 0;
+    }
 
-            String msg;
-            {
-                String *_s = (String *) &msg;
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            String line;
-
-            if (self->localBluePrint == 0) {
-                String copy, sname, fmt, result;
-                ((String *) &copy)->Set((msg).data);
-                self->bluePrint->getStationName();
-                Status_replaceHash(&result, globals, &copy, &sname, &fmt);
-
-                String copy2, priceStr, fmt2, result2;
-                ((String *) &copy2)->Set((msg).data);
-                priceStr = Layout::formatCredits(
-                    ((Item *) ((ListItem *) self->bluePrintItem)->item)->getBlueprintAmount());
-                Status_replaceHash(&result2, globals, &copy2, &priceStr, &fmt2);
-            }
-            bool flag = (self->localBluePrint == 0);
-            self->dialog->set(*(String *) &msg, flag);
-            self->dialogActive = 1;
-            self->bluePrintPurchasePending = 1;
-            self->suppressTouchEnd = 1;
-            return;
+    for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
+        handled |= (*this->tabButtons)[i]->OnTouchBegin(touch, coord);
+    }
+    for (unsigned int i = 0; i < this->buttons->size(); i++) {
+        if ((*this->buttons)[i] != 0) {
+            (*this->buttons)[i]->OnTouchBegin(touch, coord);
         }
     }
 
-    Array<TouchButton *> *tabs = self->tabButtons;
-    for (unsigned int i = 0; i < tabs->size(); i++)
-        handled |= (unsigned char) ((TouchButton *) (tabs->data()[i]))->OnTouchBegin(touch, coord);
-
-    Array<TouchButton *> *buttons = self->buttons;
-    for (unsigned int i = 0; i < buttons->size(); i++) {
-        TouchButton *btn = buttons->data()[i];
-        if (btn != 0)
-            btn->OnTouchBegin(touch, coord);
+    if (this->autoEquipPending != 0 && this->hangarList->getCurrentTab() == 1 && (int) this->autoEquipIndex >= 0 &&
+        !((int) this->autoEquipIndex == (int) this->hangarList->getCurrentItemIndex() && !handled)) {
+        this->autoEquipPending = 0;
+        this->autoEquipSecondaryWeapons(this->autoEquipIndex);
     }
-
-    if (self->autoEquipPending != 0 && self->hangarList->getCurrentTab() == 1) {
-        int idx = self->autoEquipIndex;
-        if (idx >= 0 &&
-            !(!handled && (unsigned int) idx == self->hangarList->getCurrentItemIndex())) {
-            self->autoEquipPending = 0;
-            self->autoEquipSecondaryWeapons(idx);
-        }
-    }
+    return 0;
 }
 
 void HangarWindow::showCreditsBuyWindow() {
-    unsigned char *appData = ApplicationManager_GetApplicationData();
-    *((uint8_t *) appData + 0x4c) = 0;
-    appData = ApplicationManager_GetApplicationData();
-    *((uint8_t *) appData + 0x3d) = 1;
+    ((unsigned char *) Globals::appManager->GetApplicationData())[0x4c] = 0;
+    ((unsigned char *) Globals::appManager->GetApplicationData())[0x3d] = 1;
 
     ChoiceWindow *win = this->dialog;
-    String a, b, yes, no;
-
-    if (this->listModeFlag == 0) {
-        AbyssEngine::String *body = Globals::gameText->getText(*g_hw_buyTextId);
-        (void) body;
-        win->set(*(String const *) &a, *(String const *) &b);
-    } else {
-        AbyssEngine::String *body = Globals::gameText->getText(*g_hw_buyTextId2);
-        (void) body;
-        win->set(*(String const *) &a, *(String const *) &b);
-
-        int h;
-        ChoiceWindow *win2;
-        if (*g_hw_buyFlag == 0) {
-            this->dialog->setWidth(*g_hw_buyWidth);
-            h = *g_hw_buyHeight;
-            win2 = this->dialog;
-        } else {
+    if (this->listModeFlag != 0) {
+        win->set(String(""), String(""), false, String(""), String(""), *Globals::gameText->getText(170), -1, -1);
+        if (Globals::iPad) {
             this->dialog->setWidth(this->buttonWidth * 3);
-            float v = VectorSignedToFloat(this->gridButtonHeight, 0);
-            win2 = this->dialog;
-            h = (int) (v * hw_buy_heightScale);
+            int h = (int) ((float) this->gridButtonHeight * 2.3f);
+            this->dialog->setHeight(h);
+        } else {
+            this->dialog->setWidth(Globals::w);
+            this->dialog->setHeight(Globals::h);
         }
-        ((ChoiceWindow *) (win2))->setHeight(h);
+    } else {
+        win->set(String(""), String("\n\n\n\n\n\n\n\n"), false, String(""), String(""),
+                 *Globals::gameText->getText(170), -1, -1);
     }
 
     this->dialogActive = 1;
@@ -1582,7 +1526,7 @@ void HangarWindow::selectItem(ListItem *item) {
         int oldPrice = Globals::status->getShip()->getPrice();
         if (oldPrice + credits < price && self->upgradeMode == 0) {
             String line, priceStr, fmt, msg, suffix, combined;
-            priceStr = Layout::formatCredits(
+            priceStr = Globals::layout->formatCredits(
                 ((ListItem *) (item))->getPrice() - Globals::status->getCredits() - Globals::status->getShip()->
                 getPrice());
             ((String *) &line)->Set((priceStr).data);
@@ -1731,79 +1675,68 @@ float HangarWindow::getRelativeScrollHeight() {
 
 void HangarWindow::transaction(bool buy) {
     unsigned int tab = this->hangarList->getCurrentTab();
-    Item *cur = ((ListItem *) this->selectedItem)->item;
 
     if (tab < 2) {
-        if (((Item *) (cur))->isUnsaleable() != 0) {
-            this->dialog->set(*(String *) Globals::gameText->getText(*g_hw_unsaleableTextId));
-            this->buyMode = 0;
+        if (this->selectedItem->item->isUnsaleable()) {
+            this->dialog->set(*Globals::gameText->getText(323));
             this->dialogActive = 1;
+            this->buyMode = 0;
             return;
         }
 
-        unsigned int result = ((Item *) cur)->transaction(buy, this->currentLoad, this->upgradeMode);
-        unsigned int idx = ((Item *) (cur))->getIndex();
-        Globals *globals = (Globals *) *g_hw_globals;
+        int result = this->selectedItem->item->transaction(buy, this->currentLoad, this->upgradeMode);
+        unsigned int itemIndex = this->selectedItem->item->getIndex();
+        Array<bool> *seenItems = Globals::status->field_54;
+        if (itemIndex < seenItems->size()) {
+            (*seenItems)[this->selectedItem->item->getIndex()] = true;
+        }
 
-        unsigned int *avail = globals->field_0x54;
-        if (idx < avail[0])
-            *((uint8_t *) avail[1] + ((Item *) (cur))->getIndex()) = 1;
-
-        if (result >= 0x80000000 && buy) {
+        if (buy && result < 0) {
             this->currentLoad = this->currentLoad + 1;
             Globals::status->getShip()->changeLoad(1);
-            int li = ((ListItem *) (this->selectedItem))->getIndex();
-            if (li >= 0x84 && ((ListItem *) (this->selectedItem))->getIndex() < 0x9a) {
-                int base = globals->field_0xac;
-                *((uint8_t *) (*(int *) ((char *) (uintptr_t) base + (4))) +
-                  ((ListItem *) (this->selectedItem))->getIndex() - 0x84) = 1;
+            if (this->selectedItem->getIndex() >= 132 && this->selectedItem->getIndex() <= 153) {
+                (*Globals::status->field_ac)[this->selectedItem->getIndex() - 132] = true;
             }
-        } else if (result == 0 && buy) {
-            if (Globals::status->getCredits() < ((Item *) (cur))->getSinglePrice()) {
+        } else if (buy && result == 0) {
+            if (Globals::status->getCredits() < this->selectedItem->item->getSinglePrice()) {
                 if (this->upgradeMode != 0)
                     return;
-                String line, priceStr, fmt, msg, suffix, combined;
-                priceStr = Layout::formatCredits(((Item *) (cur))->getSinglePrice());
-                ((String *) &line)->Set((priceStr).data);
-                Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
-                Globals::gameText->getText(*g_hw_notEnoughTextId);
-                combined = suffix + suffix;
-                *((String *) &msg) += combined;
-                this->dialog->set(*(String *) &msg, true);
-                this->dialogActive = 1;
+                String msg = Globals::status->replaceHash(
+                        *Globals::gameText->getText(203),
+                        String(Globals::layout->formatCredits(this->selectedItem->item->getSinglePrice() -
+                                                              Globals::status->getCredits()), false),
+                        String("#C"));
+                msg += String("\n\n") + *Globals::gameText->getText(124);
+                this->dialog->set(msg, true);
                 this->notEnoughCredits = 1;
-                (*this->buttons)[(0x20) >> 2]->resetTouch();
-                (*this->buttons)[(0x24) >> 2]->resetTouch();
+                this->dialogActive = 1;
+                (*this->buttons)[8]->resetTouch();
+                (*this->buttons)[9]->resetTouch();
             }
-        } else if ((int) result > 0 && !buy) {
+        } else if (!buy && result > 0) {
             this->currentLoad = this->currentLoad - 1;
             Globals::status->getShip()->changeLoad(-1);
         }
 
         if (this->upgradeMode == 0)
-            Status_changeCredits(globals);
+            Globals::status->changeCredits(result);
     } else if (tab == 4) {
-        if (buy) {
-            int bpAmt = ((Item *) (cur))->getBlueprintAmount();
-            BluePrint *bp = this->bluePrint;
-            int remaining = ((BluePrint *) (bp))->getRemainingAmount(((Item *) (cur))->getIndex());
-            if (bpAmt < remaining) {
-                int r = ((Item *) (cur))->transactionBlueprint(false, 0);
-                if (r < 0) {
-                    this->currentLoad = this->currentLoad + 1;
-                } else if (r != 0) {
-                    this->bluePrintBuyCount = this->bluePrintBuyCount + 1;
-                    Globals::status->getShip()->changeLoad(-1);
-                }
+        if (buy && this->selectedItem->item->getBlueprintAmount() <
+                   this->bluePrint->getRemainingAmount(this->selectedItem->item->getIndex())) {
+            int r = this->selectedItem->item->transactionBlueprint(false, this->currentLoad);
+            if (r < 0) {
+                this->currentLoad = this->currentLoad + 1;
+            } else if (r != 0) {
+                this->bluePrintBuyCount = this->bluePrintBuyCount + 1;
+                Globals::status->getShip()->changeLoad(-1);
             }
         }
         Array<Item *> *cargo = Globals::status->getShip()->getCargo();
         if (cargo != 0) {
-            Array<Item *> *arr = cargo;
-            for (unsigned int i = 0; i < arr->size(); i++) {
-                if (((Item *) (arr->data()[i]))->getIndex() == ((Item *) (cur))->getIndex()) {
-                    ((Item *) (arr->data()[i]))->setAmount(((Item *) (arr->data()[i]))->getAmount());
-                    ((Item *) (arr->data()[i]))->setBlueprintAmount(((Item *) (cur))->getBlueprintAmount());
+            for (unsigned int i = 0; i < cargo->size(); i++) {
+                if ((*cargo)[i]->getIndex() == this->selectedItem->item->getIndex()) {
+                    (*cargo)[i]->setAmount(this->selectedItem->item->getAmount());
+                    (*cargo)[i]->setBlueprintAmount(this->selectedItem->item->getBlueprintAmount());
                 }
             }
         }
@@ -1860,17 +1793,18 @@ void HangarWindow::mountItem(Item *item) {
 }
 
 unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
-    Layout *layout = *g_hw_layout;
-    ((Layout *) (layout))->OnTouchMove(touch, coord);
+    Globals::layout->OnTouchMove(touch, coord);
 
     if (this->dialogActive != 0) {
         if (this->buyCreditsActive != 0) {
-            for (int i = 0xc; i != 0x11; i++)
-                (*this->buttons)[(i * 4) >> 2]->OnTouchMove(touch, coord);
-            (*this->buttons)[(0x44) >> 2]->OnTouchMove(touch, coord);
+            for (int i = 0; i < 5; i++) {
+                (*this->buttons)[12 + i]->OnTouchMove(touch, coord);
+            }
+            (*this->buttons)[17]->OnTouchMove(touch, coord);
         } else if (this->freeCreditsActive != 0) {
-            for (int i = 0x12; i != 0x17; i++)
-                (*this->buttons)[(i * 4) >> 2]->OnTouchMove(touch, coord);
+            for (int i = 0; i < 5; i++) {
+                (*this->buttons)[18 + i]->OnTouchMove(touch, coord);
+            }
         }
         this->dialog->OnTouchMove(touch, coord);
         return 0;
@@ -1881,125 +1815,95 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
         return 0;
     }
 
-    if (layout->field_0xc_leftMargin < coord && coord < *g_hw_screenWidth - layout->field_0x10_rightMargin) {
+    Layout *layout = Globals::layout;
+    if (layout->field_0xc_leftMargin < coord && coord < Globals::h - layout->field_0x10_rightMargin) {
         int dy = coord - this->lastTouchY;
         this->scrollDelta = dy;
         this->damping = 1.0f;
         this->scrollOffset = this->scrollOffset + dy;
         this->lastTouchY = coord;
 
-        TouchButton *btnUp = (*this->buttons)[(0x20) >> 2];
-        TouchButton *btnDown = (*this->buttons)[(0x24) >> 2];
-        int touched = ((TouchButton *) (btnUp))->isTouched();
-        if (touched != 0)
-            touched = 1;
-        else
-            touched = ((TouchButton *) (btnDown))->isTouched();
-
-        int adist = coord - this->touchStartY;
-        if (adist < 0)
-            adist = -adist;
-
-        if (touched == 0 && adist > 5) {
+        bool touched = (*this->buttons)[8]->isTouched() || (*this->buttons)[9]->isTouched();
+        int dist = coord - this->touchStartY;
+        if (dist < 0) {
+            dist = -dist;
+        }
+        if (!(touched || dist < 6)) {
             this->holdTime = 0;
             this->repeatTimer = 0;
-            Array<TouchButton *> *buttons = this->buttons;
-            for (unsigned int i = 0; i < buttons->size(); i++)
-                buttons->data()[i]->OnTouchMove(touch, coord);
-            this->setSellMode(true);
-            this->sellConfirmPending = 0;
+            for (unsigned int i = 0; i < this->buttons->size(); i++) {
+                (*this->buttons)[i]->OnTouchMove(touch, coord);
+            }
+            this->setSellMode(false);
             this->selectedItem = 0;
-            ((TouchButton *) (btnUp))->resetTouch();
-            ((TouchButton *) (btnDown))->resetTouch();
+            this->sellConfirmPending = 0;
+            (*this->buttons)[8]->resetTouch();
+            (*this->buttons)[9]->resetTouch();
         }
     }
 
-    Array<TouchButton *> *tabs = this->tabButtons;
-    for (unsigned int i = 0; i < tabs->size(); i++)
-        ((TouchButton *) (tabs->data()[i]))->OnTouchMove(touch, coord);
+    for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
+        (*this->tabButtons)[i]->OnTouchMove(touch, coord);
+    }
     return 0;
 }
 
 void HangarWindow::autoEquipSecondaryWeapons(int row) {
-    ListItem *item = (ListItem *) this->hangarList->getCurrentItemAt(row);
-    if (item == 0)
-        return;
-    Item *itm = item->item;
-    if (itm == 0 || ((Item *) (itm))->getType() != 1)
-        return;
-    if (((ListItem *) (item))->isItem() == 0 || ((Item *) (itm))->getType() != 1)
-        return;
-    if (((Item *) (itm))->getAmount() <= 0)
+    ListItem *item = this->hangarList->getCurrentItemAt(row);
+    if (item == 0 || item->item == 0 || item->item->getType() != 1 || !item->isItem() ||
+        item->item->getType() != 1 || item->item->getAmount() < 1)
         return;
 
-    Ship *ship = Globals::status->getShip();
-    Array<Item *> *equip = ((Ship *) ship)->getEquipment(1);
-    if (equip == 0)
+    Array<Item *> *equipment = Globals::status->getShip()->getEquipment(1);
+    if (equipment == 0)
         return;
 
-    Array<Item *> *arr = equip;
-    for (unsigned int i = 0; i < arr->size(); i++) {
-        Item *cur = arr->data()[i];
-        if (cur == 0)
-            continue;
-        if (((Item *) (cur))->getIndex() != ((Item *) (itm))->getIndex())
-            continue;
-
-        Item *made = ((Item *) (itm))->makeItem();
-
-        Array<Item *> *cargo = this->itemList;
-        if (cargo != 0) {
-            for (unsigned int j = 0; j < cargo->size(); j++) {
-                if (((Item *) (cargo->data()[j]))->getIndex() == ((Item *) (made))->getIndex())
-                    ((Item *) (cargo->data()[j]))->setAmount(0);
-                cargo = this->itemList;
+    for (unsigned int i = 0; i < equipment->size(); i++) {
+        Item *mounted = (*equipment)[i];
+        if (mounted != 0 && mounted->getIndex() == item->item->getIndex()) {
+            Item *merged = item->item->makeItem(item->item->getAmount() + mounted->getAmount());
+            if (this->itemList != 0) {
+                for (unsigned int j = 0; j < this->itemList->size(); j++) {
+                    if ((*this->itemList)[j]->getIndex() == merged->getIndex())
+                        (*this->itemList)[j]->setAmount(0);
+                }
             }
+            Globals::status->getShip()->setEquipment(merged, i);
+            Globals::status->getShip()->removeCargo(merged->getIndex(), merged->getAmount());
+            this->hangarList->initShipTab(Globals::status->getShip());
+
+            String msg = *Globals::gameText->getText(208);
+            msg = Globals::status->replaceHash(msg, *Globals::gameText->getText(merged->getIndex() + 1274),
+                                               String("#N"));
+            this->dialog->set(msg);
+            this->dialogActive = 1;
+            this->autoEquipped = 1;
+            return;
         }
-
-        ((Ship *) (Globals::status->getShip()))->setEquipment((Item *) made);
-        ((Ship *) (Globals::status->getShip()))->removeCargo(((Item *) (made))->getIndex(),
-                                                             ((Item *) (itm))->getAmount());
-        this->hangarList->initShipTab((Ship *) Globals::status->getShip());
-
-        String msg, msgCopy, name, fmt;
-        String result;
-        Status_replaceHash(&result, *g_hw_globals, &msgCopy, &name, &fmt);
-
-        this->dialog->set(*(String const *) &msg);
-        this->autoEquipped = 1;
-        this->dialogActive = 1;
-        break;
     }
 }
 
 void HangarWindow::showFreeCreditsWindow() {
-    unsigned char *appData = ApplicationManager_GetApplicationData();
-    *((uint8_t *) appData + 0x4c) = 0;
-    appData = ApplicationManager_GetApplicationData();
-    *((uint8_t *) appData + 0x3d) = 1;
+    ((unsigned char *) Globals::appManager->GetApplicationData())[0x4c] = 0;
+    ((unsigned char *) Globals::appManager->GetApplicationData())[0x3d] = 1;
 
-    ChoiceWindow *win = this->dialog;
-    String title, title2, yes, no;
-    AbyssEngine::String *body = Globals::gameText->getText(*g_hw_freeCreditsTextId);
-    (void) body;
-    win->set(*(String const *) &title, *(String const *) &title2);
+    this->dialog->set(String(""), String(""), false, String(""), String(""), *Globals::gameText->getText(170), -1,
+                      -1);
+    this->dialog->setHeight((*this->buttons)[18]->getHeight() * 5);
 
-    int rowH = (*this->buttons)[(0x48) >> 2]->getHeight();
-    this->dialog->setHeight(rowH * 5);
-
-    int maxW = 0;
-    for (int i = 5; i != 0; i--) {
-        AbyssEngine::String *t = Globals::gameText->getText(*g_hw_freeCreditsTextId);
-        int w = Globals::Canvas->GetTextWidth(0, *t);
-        if (maxW < w)
-            maxW = w;
+    int maxWidth = 0;
+    for (int i = 0; i < 5; i++) {
+        int w = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                              *Globals::gameText->getText(i == 0 ? 3400 : 112 + i));
+        if (w > maxWidth)
+            maxWidth = w;
     }
-    int btnW = ((TouchButton *) (0))->getWidth();
-    Layout *layout = *g_hw_layout;
-    this->dialog->setWidth(layout->field_0x2c_rowHeight + btnW + maxW + layout->buttonInsetX * 4);
+    int width = (*this->buttons)[18]->getWidth() + maxWidth + Globals::layout->buttonInsetX * 4 +
+                Globals::layout->field_0x2c_rowHeight;
+    this->dialog->setWidth(width);
 
-    this->freeCreditsActive = 1;
     this->dialogActive = 1;
+    this->freeCreditsActive = 1;
     this->buyCreditsActive = 0;
     this->notEnoughCredits = 0;
 }
@@ -2132,7 +2036,7 @@ void HangarWindow::initialize() {
     {
         String credits;
         TouchButton *e11 = (TouchButton *) ::operator new(200);
-        credits = Layout::formatCredits(Globals::status->getCredits());
+        credits = Globals::layout->formatCredits(Globals::status->getCredits());
         TouchButton_ctor_img(e11, &credits, 0xb, *g_hw_screenWidth, *g_hw_screenHeight,
                              layout->getFooterTransitionWidth(), 0x22, 4);
         (*self->buttons)[(0x2c) >> 2] = (TouchButton *) (e11);
@@ -2323,8 +2227,6 @@ void HangarWindow::initialize() {
 }
 
 HangarWindow::HangarWindow() {
-    Layout *lay = *g_hw_layout;
-
     this->bluePrint = nullptr;
     this->bluePrintItem = nullptr;
     this->dialogActive = 0;
@@ -2334,9 +2236,9 @@ HangarWindow::HangarWindow() {
     this->choiceWindow = nullptr;
     this->dialog = nullptr;
     this->localBluePrint = 0;
-    *g_hw_openCounter = 1;
-    this->routeWarningPending = 0;
+    HangarWindow::lastTab = 1;
     this->dragging = 0;
+    this->routeWarningPending = 0;
     this->tabButtons = nullptr;
     this->buttons = nullptr;
     this->shipSwapPending = 0;
@@ -2347,6 +2249,7 @@ HangarWindow::HangarWindow() {
     this->freeCreditsActive = 0;
     this->autoCompletePending = 0;
 
+    Layout *lay = Globals::layout;
     this->field_0x100 = lay->field_0x238_blk16;
     this->buttonHeight = lay->field_0x248;
     this->field_0x114 = lay->field_0x24c;

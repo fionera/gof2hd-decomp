@@ -192,7 +192,7 @@ void Station::setAttackedFriends(bool v) {
     attackedFriends = v;
 }
 
-uint8_t Station::hasAttackedFriends() {
+bool Station::hasAttackedFriends() {
     return attackedFriends;
 }
 

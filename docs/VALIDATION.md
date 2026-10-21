@@ -167,7 +167,18 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   entry address was "named" and produced phantom linked_exact flips on untouched functions
   whenever unrelated code shifted the layout (±2-5 noise per relink, observed on BeamGun dtors /
   shader Init family).
-- **Inline Thumb literal pools are decoded honestly** (2026-10-21): the pool is found by a linear
+- **Data references compare by what they name** (2026-10-21): every PIC `ldr rX,[pc,#N]` /
+  `add rX,pc` address is resolved — a GOT slot to the symbol its dynamic relocation binds
+  (GLOB_DAT/ABS32; RELATIVE slots to the object they point at), a direct address to the exported
+  data object (+offset) it lies in, or to the string literal it points at (content; long strings by
+  length+CRC). Before this, all such words were masked, so a function reading the wrong global,
+  string or callee-pointer could still score `linked_exact`: 52 such rows were found and demoted
+  (e.g. shader `Init`s passing `"a0"`/`"BumpShader.vsh"` where the original passes `"a_position"`
+  and embeds the GLSL source, `zip_close` passing zlib version "1.2.3" vs the original's "1.2.7",
+  `PlayerEgo::shake` taking `AERandom::next` vs `nextInt`). linked 3316 -> 3264 is that correction,
+  not a code regression.
+- **Inline Thumb literal pools and tbb/tbh jump tables are decoded honestly** (2026-10-21; jump-table
+  entries compare by raw value): the pool is found by a linear
   sweep that ignores pc-relative "loads" decoded out of pool data (they used to mark real code as
   pool and mask it); the code is then decoded from a copy with pool bytes replaced by NOPs, because
   binutils recovers IT state by scanning backwards and a pool word that looks like `IT` put
@@ -185,7 +196,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1254, linked_exact 3291, avg 83.7%**
+Current numbers (of **4523** compared): **byte_exact 1291, linked_exact 3541, avg 89.11%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
