@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-21
 
-Current: **byte_exact 1254, linked_exact 3291, avg 83.7%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1254, linked_exact 3316, avg 84.15%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
