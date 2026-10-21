@@ -56,12 +56,12 @@ public:
 
     // Ghidra: shipTransform@0x8c/addonTransform@0x90/camera@0x94 precede the 2 preview
     // matrices at 0x98 and 0xd4, and field_0x110 precedes baseAngle(=field_0x114).
-    int shipTransform;
-    int addonTransform;
-    int camera;
+    unsigned int shipTransform;
+    unsigned int addonTransform;
+    unsigned int camera;
     AbyssEngine::AEMath::Matrix previewTransform;
     AbyssEngine::AEMath::Matrix previewTransform2;
-    int field_0x110;
+    unsigned int shipTexture;
     float baseAngle;
     float previewAngle;
     int dragAccum;

@@ -79,7 +79,7 @@ public:
     uint8_t switchToStandardCam;
     uint8_t field_0xb2;
     int engineSoundId;
-    int speed;
+    float speed;
     float thrust;
     uint8_t _pad_0xc0[4]; // original field_0xc0 region (1-byte field + 3 pad)
     uint8_t freeLookMode;
@@ -285,7 +285,7 @@ public:
 
     int approachAsteroid(Hud *hud, int unused, Radar *radar);
 
-    int approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
+    bool approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
 
     bool autoTurretIsEnabled();
 

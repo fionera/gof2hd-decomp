@@ -44,7 +44,7 @@ public:
     uint8_t &missionCrateLost() { return this->diedWithMissionCrate; }
     uint8_t &missionCrateCaptured() { return this->lostMissionCrateToEgo; }
     uint8_t &crateLost() { return this->field_0x6a; }
-    Route *&routeClone() { return this->route; }
+    Route *&routeClone() { return this->KIPlayer::route; }
     uint8_t &exhaustHidden() { return this->field_0x74; }
     AEGeometry *&wreckGeometry() { return this->crateGeometry; }
     Vector &resetVecA() { return reinterpret_cast<Vector &>(this->field_0x90); }
