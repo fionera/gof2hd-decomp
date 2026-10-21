@@ -274,8 +274,8 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->layoutHeight = this->height;
         this->width = w;
         this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(this->frameImages[1][0]) / 2;
-        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(this->frameImages[1][0]) / 2;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(subId) / 2;
+        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(subId) / 2;
         break;
     }
     case 13: {
@@ -287,8 +287,8 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->layoutHeight = this->height;
         this->width = w;
         this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(this->frameImages[1][0]) / 2;
-        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(this->frameImages[1][0]) / 2;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(subId) / 2;
+        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(subId) / 2;
         break;
     }
     case 14: {
@@ -341,32 +341,11 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->layoutHeight = this->height;
         this->width = w;
         this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(this->frameImages[1][0]) / 2;
-        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(this->frameImages[1][0]) / 2;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(subId) / 2;
+        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(subId) / 2;
         break;
     }
     case 17: {
-        Globals::Canvas->Image2DCreate(3008, (unsigned int &) this->frameImages[1][0]);
-        Globals::Canvas->Image2DCreate(3009, (unsigned int &) this->frameImages[0][0]);
-        unsigned short language = GameText::getLanguage();
-        float lineFactor;
-        if (language < 16 && ((1 << language) & 0x8c00))
-            lineFactor = 1.0f;
-        else
-            lineFactor = language == 14 ? 1.0f : 1.5f;
-        this->frameImages[2][0] = this->frameImages[0][0];
-        this->height = Globals::Canvas->GetImage2DHeight(this->frameImages[1][0]);
-        int w = Globals::Canvas->GetImage2DWidth(this->frameImages[1][0]);
-        this->layoutHeight = this->height;
-        this->width = w;
-        this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
-        this->textOffsetY = (int) ((float) (this->height / 2) +
-                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
-        this->touchMargin = Globals::layout->field_0x80_touchMargin;
-        break;
-    }
-    case 18: {
         Globals::Canvas->Image2DCreate(3008, (unsigned int &) this->frameImages[1][0]);
         Globals::Canvas->Image2DCreate(3009, (unsigned int &) this->frameImages[0][0]);
         unsigned short language = GameText::getLanguage();
@@ -395,13 +374,19 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->layoutHeight = this->height;
         this->width = w;
         this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(this->frameImages[1][0]) / 2;
-        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(this->frameImages[1][0]) / 2;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(subId) / 2;
+        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(subId) / 2;
         break;
     }
+    case 18:
     case 20: {
-        Globals::Canvas->Image2DCreate(8046, (unsigned int &) this->frameImages[1][0]);
-        Globals::Canvas->Image2DCreate(8047, (unsigned int &) this->frameImages[0][0]);
+        if (kind == 20) {
+            Globals::Canvas->Image2DCreate(8046, (unsigned int &) this->frameImages[1][0]);
+            Globals::Canvas->Image2DCreate(8047, (unsigned int &) this->frameImages[0][0]);
+        } else {
+            Globals::Canvas->Image2DCreate(3008, (unsigned int &) this->frameImages[1][0]);
+            Globals::Canvas->Image2DCreate(3009, (unsigned int &) this->frameImages[0][0]);
+        }
         unsigned short language = GameText::getLanguage();
         float lineFactor;
         if (language < 16 && ((1 << language) & 0x8c00))
