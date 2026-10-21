@@ -305,131 +305,132 @@ namespace AbyssEngine {
         if (engine == 0 || path == 0)
             return -4;
 
-        Image *img = new Image;
-        img->hasMipmaps = 0;
-        *(uint32_t *) &img->width = 0;
-        img->format = 0;
-        img->data = 0;
-        *out = img;
-
+        *out = new Image();
         unsigned int handle = 0;
-        if (AEFile::OpenRead(path, (uint32_t *) (&handle)) == 0) {
+        unsigned char format = 0;
+        unsigned short paletteCount = 0;
+        static const char want[8] = "AEimage";
+        char magic[8];
+        unsigned int size;
+        if (AEFile::OpenRead(path, (uint32_t *) &handle) == 0) {
             if (*out != 0)
                 delete *out;
             *out = 0;
             return -1;
         }
 
-        static const char magic[8] = {'*', '*', '*', '*', 0, 0, 0, 0};
-        char hdr[8];
-        for (int i = 0; i < 4; ++i) hdr[i] = '*';
-        if (AEFile::Read((uint32_t)(8), hdr, handle) == 0)
+        memcpy(magic, "*******", 8);
+        if (AEFile::Read((uint32_t) 8, magic, handle) == 0)
             goto fail;
-        for (unsigned int k = 0; k < 8; ++k) {
-            if (magic[k] != hdr[k])
+        for (unsigned int k = 0; k < 8; ++k)
+            if (want[k] != magic[k])
                 goto fail;
-        }
+
+        if (AEFile::Read((uint32_t) 1, &format, handle) == 0)
+            goto fail;
+        if (AEFile::Read((uint32_t) 2, &(*out)->width, handle) == 0)
+            goto fail;
+        if (AEFile::Read((uint32_t) 2, &(*out)->height, handle) == 0)
+            goto fail;
+        if (AEFile::Read((uint32_t) 2, &paletteCount, handle) == 0)
+            goto fail;
+        AEFile::Skip((uint32_t) paletteCount * 8, handle);
+
+        if (format & 2)
+            (*out)->hasMipmaps = 1;
 
         {
-            Image *im = *out;
-            unsigned char fmt = 0;
-            unsigned short palCount = 0;
-            if (AEFile::Read((uint32_t)(1), &fmt, handle) == 0) goto fail;
-            if (AEFile::Read((uint32_t)(2), &im->width, handle) == 0) goto fail;
-            if (AEFile::Read((uint32_t)(2), &im->height, handle) == 0) goto fail;
-            if (AEFile::Read((uint32_t)(2), &palCount, handle) == 0) goto fail;
-
-            AEFile::Skip((uint32_t)((unsigned int) palCount << 3), handle);
-
-            if (fmt & 2)
-                im->hasMipmaps = 1;
-
-            unsigned int dataLen = 0;
-            switch (fmt) {
-                case 1:
-                case 3:
-                case 0x81: {
-                    unsigned int sz = (unsigned int) im->width * (unsigned int) im->height * 4;
-                    unsigned char *p = new unsigned char[sz];
-                    im->data = p;
-                    im = *out;
-                    if (AEFile::Read((uint32_t)(sz), im->data, handle) == 0) goto fail;
-                    im = *out;
-                    im->dataLen = sz;
-                    {
-                        unsigned int v = (unsigned int) (int) (signed char) fmt;
-                        unsigned int code = ((int) v < 0) ? ((v > 0x7fffffff) ? 6u : v) : 3u;
-                        if ((int) v >= 0) code = 3;
-                        im->format = code;
-                    }
+            switch (format) {
+                case 13:
+                case 15:
+                    if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                        goto fail;
+                    (*out)->data = new unsigned char[size];
+                    if (AEFile::Read(size, (*out)->data, handle) == 0)
+                        goto fail;
+                    (*out)->format = 4;
+                    (*out)->dataLen = size;
                     break;
-                }
-                case 0xd:
-                case 0xf:
-                    if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-                    im->data = new unsigned char[dataLen];
-                    if (AEFile::Read((uint32_t)(dataLen), im->data, handle) == 0) goto fail;
-                    im->format = 4;
-                    im->dataLen = dataLen;
-                    break;
-                case 0x10:
-                case 0x12:
-                    if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-                    im->data = new unsigned char[dataLen];
-                    if (AEFile::Read((uint32_t)(dataLen), im->data, handle) == 0) goto fail;
-                    im->format = 5;
-                    im->dataLen = dataLen;
-                    break;
-                case 0x11:
-                case 0x13:
-                    if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
-                    im->format = 7;
-                    im->data = new unsigned char[im->dataLen];
-                    if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
-                    break;
-                case 0x14:
-                case 0x16:
-                case 0x17:
+                case 20:
+                case 22:
+                case 23:
                 case 0x40:
                 case 0x42:
-                    if (fmt == 0x40)
-                        im->hasMipmaps = 0;
-                    if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-                    im->data = new unsigned char[dataLen];
-                    if (AEFile::Read((uint32_t)(dataLen), im->data, handle) == 0) goto fail;
-                    im->format = 0xb;
-                    im->dataLen = dataLen;
-                    if (fmt == 0x17)
-                        im->hasMipmaps = 0;
+                    if (format == 0x40)
+                        (*out)->hasMipmaps = 0;
+                    if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                        goto fail;
+                    (*out)->data = new unsigned char[size];
+                    if (AEFile::Read(size, (*out)->data, handle) == 0)
+                        goto fail;
+                    (*out)->format = 11;
+                    (*out)->dataLen = size;
+                    if (format == 23)
+                        (*out)->hasMipmaps = 0;
                     break;
-                case 0x20:
-                case 0x22:
-                    if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
-                    im->format = 8;
-                    im->data = new unsigned char[im->dataLen];
-                    if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
+                case 1:
+                case 3:
+                case 0x81:
+                    // Uncompressed RGBA; the high bit selects the alternate pixel order.
+                    (*out)->data = new unsigned char[(*out)->width * (*out)->height * 4];
+                    if (AEFile::Read((uint32_t) ((*out)->width * (*out)->height * 4), (*out)->data, handle) == 0)
+                        goto fail;
+                    (*out)->dataLen = (*out)->width * (*out)->height * 4;
+                    (*out)->format = (signed char) format > -1 ? 3 : 6;
                     break;
-                case 0x21:
-                case 0x23:
-                    if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
-                    im->format = 9;
-                    im->data = new unsigned char[im->dataLen];
-                    if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
+                case 32:
+                case 34:
+                    if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                        goto fail;
+                    (*out)->format = 8;
+                    (*out)->data = new unsigned char[(*out)->dataLen];
+                    if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
+                        goto fail;
                     break;
-                case 0x24:
-                case 0x26:
-                    if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
-                    im->format = 10;
-                    im->data = new unsigned char[im->dataLen];
-                    if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
+                case 33:
+                case 35:
+                    if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                        goto fail;
+                    (*out)->format = 9;
+                    (*out)->data = new unsigned char[(*out)->dataLen];
+                    if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
+                        goto fail;
+                    break;
+                case 36:
+                case 38:
+                    if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                        goto fail;
+                    (*out)->format = 10;
+                    (*out)->data = new unsigned char[(*out)->dataLen];
+                    if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
+                        goto fail;
+                    break;
+                case 16:
+                case 18:
+                    if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                        goto fail;
+                    (*out)->data = new unsigned char[size];
+                    if (AEFile::Read(size, (*out)->data, handle) == 0)
+                        goto fail;
+                    (*out)->format = 5;
+                    (*out)->dataLen = size;
+                    break;
+                case 17:
+                case 19:
+                    if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                        goto fail;
+                    (*out)->format = 7;
+                    (*out)->data = new unsigned char[(*out)->dataLen];
+                    if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
+                        goto fail;
                     break;
                 default:
                     break;
             }
-
-            AEFile::Close(handle);
-            return 1;
         }
+
+        AEFile::Close(handle);
+        return 1;
 
     fail:
         ImageRelease(out);
