@@ -12,8 +12,8 @@ namespace AbyssEngine {
 
     BlurShader::BlurShader() {
         BlurShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"BlurShader";
-        this->strength = -4.051786824441422e-28f;
+        this->name = String("BlurShader");
+        this->strength = 0.1667f;
         this->blurScale = 2.0f;
     }
 
@@ -21,16 +21,16 @@ namespace AbyssEngine {
     }
 
     void BlurShader::Init(Engine *) {
-        this->program = this->ES2LoadProgram("BlurShader.vsh", "BlurShader.fsh");
-        this->aPosition = glGetAttribLocation(this->program, "a_position");
-        this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
-        this->uMvpMatrix = glGetUniformLocation(this->program, "u_mvpMatrix");
-        this->sTexture = glGetUniformLocation(this->program, "s_texture");
-        this->uTexelSize = glGetUniformLocation(this->program, "u_texelSize");
-        this->uCenter = glGetUniformLocation(this->program, "u_center");
-        this->uBlurAmount = glGetUniformLocation(this->program, "u_blurAmount");
-        this->uStrength = glGetUniformLocation(this->program, "u_strength");
-        glUseProgram(this->program);
+        this->blurProgram = this->ES2LoadProgram("BlurShader.vsh", "BlurShader.fsh");
+        this->aPosition = glGetAttribLocation(this->blurProgram, "a_position");
+        this->aTexCoord = glGetAttribLocation(this->blurProgram, "a_texCoord");
+        this->uMvpMatrix = glGetUniformLocation(this->blurProgram, "u_mvpMatrix");
+        this->sTexture = glGetUniformLocation(this->blurProgram, "s_texture");
+        this->uTexelSize = glGetUniformLocation(this->blurProgram, "u_texelSize");
+        this->uCenter = glGetUniformLocation(this->blurProgram, "u_center");
+        this->uBlurAmount = glGetUniformLocation(this->blurProgram, "u_blurAmount");
+        this->uStrength = glGetUniformLocation(this->blurProgram, "u_strength");
+        glUseProgram(this->blurProgram);
         glUniform1i(this->sTexture, 0);
     }
 
@@ -58,7 +58,7 @@ namespace AbyssEngine {
         glDisable(0xb71);
         glDepthMask(0);
         glDisable(0xbe2);
-        glUseProgram(this->program);
+        glUseProgram(this->blurProgram);
         glActiveTexture(0x84c0);
         fbo->Activate();
 
@@ -157,21 +157,21 @@ namespace AbyssEngine {
 
         int texelLocation = this->uTexelSize;
         if (texelLocation >= 0) {
-            float width;
-            float height;
+            float texelX;
+            float texelY;
             if (engine->appManager->paintCanvas->gameOrientation == 2) {
-                width = (float) engine->GetDisplayWidth();
-                height = (float) engine->GetDisplayHeight();
+                texelX = 1.0f / (float) (int) engine->GetDisplayWidth();
+                texelY = 1.0f / (float) (int) engine->GetDisplayHeight();
             } else {
-                width = (float) engine->GetDisplayHeight();
-                height = (float) engine->GetDisplayWidth();
+                texelX = 1.0f / (float) (int) engine->GetDisplayHeight();
+                texelY = 1.0f / (float) (int) engine->GetDisplayWidth();
             }
-            glUniform2f(texelLocation, 1.0f / width, 1.0f / height);
+            glUniform2f(texelLocation, texelX, texelY);
         }
 
         int centerLocation = this->uCenter;
         if (centerLocation >= 0) {
-            glUniform2f(centerLocation, 0.5f, 0.5f);
+            glUniform2f(centerLocation, 0.5f, 0.3f);
         }
 
         int strengthLocation = this->uStrength;
