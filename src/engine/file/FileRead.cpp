@@ -316,10 +316,10 @@ Array<Wanted *> *FileRead::loadWanted() {
             AEFile::ReadSwitched(k, handle);
             AEFile::ReadSwitched(l, handle);
 
-            wanted->data()[index] = new Wanted(id, name, a, b, c == 1, d, e, f, g, h, i, j, k, l);
+            wanted->data()[index++] = new Wanted(id, name, a, b, c == 1, d, e, f, g, h, i, j, k, l);
 
             AEFile::ReadSwitched(imageCount, handle);
-            uint32_t oldIndex = index++;
+            uint32_t oldIndex = index - 1;
             if (imageCount > 0) {
                 int32_t *parts = new int32_t[5];
                 int8_t part;
