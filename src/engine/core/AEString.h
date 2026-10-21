@@ -21,13 +21,15 @@ namespace AbyssEngine {
 
         String(const String &other, bool reverse);
 
-        explicit String(char c);
+        // The numeric constructors are header-inline in the original (weak C2-only symbols; every
+        // caller references the C2 variant), so they are defined here rather than in String.cpp.
+        explicit String(char c) : data(nullptr) { Set((long long) c); }
 
-        explicit String(int v);
+        explicit String(int v) : data(nullptr) { Set((long long) v); }
 
-        explicit String(float v);
+        explicit String(float v) : data(nullptr) { ctor_float(v); }
 
-        explicit String(long long v);
+        explicit String(long long v) : data(nullptr) { ctor_longlong(v); }
 
         virtual ~String();
 

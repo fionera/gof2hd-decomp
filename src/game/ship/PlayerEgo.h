@@ -137,7 +137,7 @@ public:
     int rocketControlGun;
     int rocketBanking;
     AEGeometry *dockCameraMid;
-    uint8_t turretActive;
+    bool turretActive;
     uint8_t field_0x1a1;
     float lookPitch;
     float lookYaw;

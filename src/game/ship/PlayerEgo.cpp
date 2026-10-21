@@ -2319,46 +2319,28 @@ void PlayerEgo::revive() {
 void PlayerEgo::drawThrottle() {
     if (this->throttleStarted == 0)
         return;
+    int fade = this->throttle;
+    if (fade > 500)
+        fade = 2000 - fade;
+    float alpha = (float) fade / 500.0f;
+    alpha = alpha < 1.0f ? alpha : 1.0f;
+    Globals::Canvas->SetColor((int) (alpha * 255.0f) + 0xffffff00);
 
-    int t = this->throttle;
-    if (t > 500)
-        t = 2000 - t;
-    float frac = (float) t / g_PE_t_timerDiv;
-    if (frac > 1.0f)
-        frac = 1.0f;
+    int width = Globals::Canvas->GetImage2DWidth(this->hpGaugeImage);
+    int height = Globals::Canvas->GetImage2DHeight(this->hpGaugeImage);
+    int filled = (int) (this->thrust * (float) height);
+    Globals::Canvas->DrawRegion2D(this->hpGaugeImage, 0, height - filled, width, (int) (this->thrust * (float) height),
+                                  0.0f, 0, 0, (int) (crosshairPos.x - (float) (width / 2)),
+                                  (int) (crosshairPos.y + (float) height - (float) filled));
 
-    PaintCanvas *canvas = Globals::Canvas;
-    Globals::Canvas->SetColor((unsigned int) (0xffffff00 | (unsigned int) (int) (frac * 255.0f) - 0x100));
-
-    int img = this->hpGaugeImage;
-    int w = ((PaintCanvas *) (long) (canvas))->GetImage2DWidth((unsigned int) (img));
-    int h = ((PaintCanvas *) (long) (canvas))->GetImage2DHeight((unsigned int) (img));
-
-    float thrust = this->thrust;
-    int fillH = (int) (thrust * (float) h);
-    float *anchor = g_PE_t_anchor;
-
-    ((PaintCanvas *) (long) (canvas))->DrawRegion2D((unsigned int) (img), 0, h - fillH, w, fillH,
-                                                    (float) ((int) ((anchor[1] + (float) h) - (float) fillH)), 0, 0, 0,
-                                                    (int) (anchor[0] - (float) (w / 2)));
-
-    unsigned char pct[12];
-    ((String *) (pct))->Set((long long) (int) (thrust * g_PE_t_pctScale));
-
-    int th = ((PaintCanvas *) (long) (canvas))->GetImage2DHeight((unsigned int) (img));
-    String *pctStr = *g_PE_t_pctStr;
-    int tw = ((PaintCanvas *) (long) (canvas))->GetTextWidth((unsigned int) (long) (canvas), *pctStr);
-    ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (canvas), *pctStr, (int) (long) (pct),
-                                                  (int) ((anchor[0] - (float) (tw / 2)) - 1.0f),
-                                                  (bool) (int) (anchor[1] + (float) th / g_PE_t_textDiv));
-    Globals::Canvas->SetColor((unsigned int) (0xffffffff));
-
-    {
-        String *_s = ((String *) (pct));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
+    AbyssEngine::String percent((int) (this->thrust * 100.0f));
+    int textHeight = Globals::Canvas->GetImage2DHeight(this->hpGaugeImage);
+    Globals::Canvas->DrawString(
+        (unsigned int) (uintptr_t) Globals::font, percent,
+        (int) (crosshairPos.x - (float) (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, percent) / 2)
+               + -1.0f),
+        (int) (crosshairPos.y + (float) (int) ((float) textHeight / 1.6f)), false);
+    Globals::Canvas->SetColor(0xffffffff);
 }
 
 void PlayerEgo::setAutoPilot(KIPlayer *kip) {
@@ -2632,59 +2614,37 @@ void PlayerEgo::addGun(Array<Gun *> *arr, int x) {
 }
 
 void PlayerEgo::render(bool allowHud) {
-    Level *level = this->level;
-
-    if (((PlayerEgo *) (this))->isDead() == 0) {
+    if (this->isDead()) {
+        if (this->explosion != nullptr) {
+            this->explosion->render();
+            if (this->explosionTimer < 3000)
+                this->geometry->render();
+        }
+        if (this->explosion2 != nullptr)
+            this->explosion2->render();
+        this->level->enableMovingStars(true);
+    } else {
         if (this->field_0x309 == 0)
             return;
-
-        if (this->explosion != 0) {
-            ((Explosion *) (this->explosion))->render();
-            if (this->explosionTimer <= 0xbb7)
-                ((AEGeometry *) (this->geometry))->render();
-        }
-        if (this->explosion2 != 0)
-            ((Explosion *) (this->explosion2))->render();
-
-        ((AEGeometry *) (this->geometry))->render();
-
-        if (((intptr_t) this->field_0xac) != 0 && this->emergencySystemTimer >= 1)
-            ((AEGeometry *) (this->geometry))->render();
-
+        if (this->explosion != nullptr)
+            this->explosion->render();
+        this->geometry->render();
+        if (this->field_0xac != 0 && this->emergencySystemTimer >= 1)
+            ((AEGeometry *) (intptr_t) this->field_0xac)->render();
         if (this->shieldVisible != 0)
-            ((AEGeometry *) (this->shieldGeometry))->render();
-
+            this->shieldGeometry->render();
         if (this->turretMode != 0) {
-            if (this->turretExtraGeo != 0)
-                ((AEGeometry *) (this->turretExtraGeo))->setVisible(this->turretActive != 0);
-            ((AEGeometry *) (this->turretRoot))->render();
+            if (this->turretExtraGeo != nullptr)
+                this->turretExtraGeo->setVisible(this->turretActive);
+            this->turretRoot->render();
         }
-
-        if (this->tractorBeam != 0)
-            ((TractorBeam *) (this->tractorBeam))->render();
-
-        Array<RepairBeam *> *beams = this->repairBeams;
-        if (beams != 0) {
-            for (unsigned int i = 0; i < beams->size(); i++) {
-                (*beams)[i]->render();
-            }
+        if (this->tractorBeam != nullptr)
+            this->tractorBeam->render();
+        if (this->repairBeams != nullptr) {
+            for (unsigned int i = 0; i < this->repairBeams->size(); i++)
+                (*this->repairBeams)[i]->render();
         }
-
-        int flag = 1;
-        if (this->freeze == 0 && allowHud != 0)
-            flag = (this->dockingPointIndex - 1) != 0 ? 1 : 0;
-        else
-            flag = 1;
-        level->enableMovingStars(flag != 0);
-    } else {
-        if (this->explosion != 0) {
-            ((Explosion *) (this->explosion))->render();
-            if (this->explosionTimer < 3000)
-                ((AEGeometry *) (this->geometry))->render();
-        }
-        if (((intptr_t) this->field_0xac) != 0)
-            ((Explosion *) (this->explosion))->render();
-        level->enableMovingStars(true);
+        this->level->enableMovingStars(this->freeze == 0 && allowHud && this->dockingPointIndex != 1);
     }
 }
 

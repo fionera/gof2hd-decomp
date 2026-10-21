@@ -1100,7 +1100,7 @@ void paintcanvas_ext_transform_shaderanim(AbyssEngine::PaintCanvas *, void *, fl
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
-unsigned short PaintCanvas::GetImage2DWidth(unsigned int index) {
+int PaintCanvas::GetImage2DWidth(unsigned int index) {
     if (index < this->images.count) {
         PCImage2DView *img = (PCImage2DView *) (this->images.data_)[index];
         return img->width;
@@ -1253,7 +1253,7 @@ void PaintCanvas::DrawRectangle(int x, int y, int w, int h) {
     }
 }
 
-unsigned short PaintCanvas::GetImage2DHeight(unsigned int index) {
+int PaintCanvas::GetImage2DHeight(unsigned int index) {
     if (index < this->images.count) {
         PCImage2DView *img = (PCImage2DView *) (this->images.data_)[index];
         return img->height;
