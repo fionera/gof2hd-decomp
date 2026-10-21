@@ -266,20 +266,10 @@ namespace AbyssEngine {
         }
         this->rangeEnd = rangeEnd;
 
-        longlong rangeStart = start;
-        if (length < start || start < 0) {
-            rangeStart = 0;
-        }
-        this->rangeStart = rangeStart;
+        this->rangeStart = start >= 0 ? (length < start ? 0 : start) : 0;
 
         longlong current = this->currentTime;
-        if (end < current) {
-            current = end;
-        }
-        if (current < start) {
-            current = start;
-        }
-        this->currentTime = current;
+        this->currentTime = current < start ? start : (current > end ? end : current);
 
         for (uint i = 0; i < this->meshes.size(); ++i) {
             Mesh *mesh = this->meshes[i];
@@ -361,12 +351,12 @@ namespace AbyssEngine {
             // The original "delegates" by constructing (and immediately destroying) a temporary.
             Transform();
         } else {
-            this->animating = true;
             this->animationStart = other->animationStart;
-            this->color = -1;
+            this->animating = true;
             this->animationSpeed = 1.0f;
             this->animationLength = other->animationLength;
             this->rangeStart = other->rangeStart;
+            this->color = -1;
             this->rangeEnd = other->rangeEnd;
             this->currentTime = other->currentTime;
             this->currentKeyFrameIndex = other->currentKeyFrameIndex;
