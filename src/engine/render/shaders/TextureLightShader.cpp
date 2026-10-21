@@ -145,18 +145,19 @@ namespace AbyssEngine {
             glUniform4f(this->uColor0, engine->lightDir.x, engine->lightDir.y,
                         engine->lightDir.z, engine->lightDirty[0]);
 
-            if (engine->lightCount < 2) {
-                glUniform3f(this->uLight0Color, 0, 0, 0);
-                glUniform3f(this->uLight1Color, 0, 0, 0);
-                glUniform3f(this->uLight2Color, 0, 0, 0);
-            } else {
+            if (engine->lightCount >= 2) {
                 glUniform3fv(this->uLight0Color, 1, (float *) &engine->lightSpecularShaded);
                 glUniform3fv(this->uLight1Color, 1, (float *) &engine->field_0x308);
                 glUniform3fv(this->uLight2Color, 1, (float *) &engine->particleAmbient);
+                glUniform4f(this->uColor1, engine->field_0x33c.x, engine->field_0x33c.y,
+                            engine->field_0x33c.z, engine->lightDirty[1]);
+            } else {
+                glUniform3f(this->uLight0Color, 0, 0, 0);
+                glUniform3f(this->uLight1Color, 0, 0, 0);
+                glUniform3f(this->uLight2Color, 0, 0, 0);
+                glUniform4f(this->uColor1, engine->field_0x33c.x, engine->field_0x33c.y,
+                            engine->field_0x33c.z, engine->lightDirty[1]);
             }
-
-            glUniform4f(this->uColor1, engine->field_0x33c.x, engine->field_0x33c.y,
-                        engine->field_0x33c.z, engine->lightDirty[1]);
             glUniform1f(this->uShininess, engine->materialShininess);
             if (this->uSpecularColor >= 0)
                 glUniform3f(this->uSpecularColor, engine->lightColor.x, engine->lightColor.y,

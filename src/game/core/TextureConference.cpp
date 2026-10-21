@@ -67,7 +67,7 @@ namespace AbyssEngine {
         long long elapsed =
                 (long long) engine->appManager->GetElapsedTimeMillis();
         long long t = this->animTime + elapsed / 5;
-        this->animTime = (t < 0xe10) ? t : (t - 0xe10);
+        this->animTime = (t > 3600) ? (t - 3600) : t;
         glUniform1i(this->uColor, (int) this->animTime);
 
         glEnableVertexAttribArray(this->aPosition);

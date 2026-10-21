@@ -10,7 +10,6 @@ extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol
 float sinf(float x);
 }
 
-static float PulseShader_timeScale = 0.0f;
 
 static const char *const kPulseShaderVertexSource =
     "attribute highp vec4 a_position;   \n"
@@ -97,9 +96,8 @@ namespace AbyssEngine {
             if (this->u9Loc >= 0)
                 glUniform4fv(this->u9Loc, 1, engine->materialSpecular);
 
-            long long t = Globals::appManager->GetCurrentTimeMillis();
-            float v = sinf((float) t / PulseShader_timeScale);
-            glUniform1f(this->u4Loc, v + 2.0f);
+            float pulse = sinf((float) engine->appManager->GetCurrentTimeMillis() / 1000.0f) + 2.0f;
+            glUniform1f(this->u4Loc, pulse);
             this->dirty = 0;
         }
 
