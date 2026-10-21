@@ -2611,33 +2611,25 @@ void PaintCanvas::Resume() {
 }
 
 void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int meshIndex) {
-    if (transformIndex >= this->transforms.count ||
-        meshIndex >= this->meshes.count) {
+    if (transformIndex >= this->transforms.count || meshIndex >= this->meshes.count) {
         return;
     }
-    PCTransformView *tf = (PCTransformView *) this->transforms.data_[transformIndex];
-    PCMeshView *mesh = (PCMeshView *) this->meshes.data_[meshIndex];
-    ArrayAdd<AbyssEngine::Mesh *>(*reinterpret_cast<AbyssEngine::Mesh **>(mesh),
-                                  *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&tf->meshCount));
-    ((AbyssEngine::AEMath::BSphere*)&tf->bsphere)->Merge(*(const AbyssEngine::AEMath::BSphere*)&mesh->bounds3c);
+    ArrayAdd<AbyssEngine::Mesh *>(this->meshes.data_[meshIndex], this->transforms.data_[transformIndex]->meshes);
+    this->transforms.data_[transformIndex]->bounds().Merge(
+            *(const AbyssEngine::AEMath::BSphere *) &this->meshes.data_[meshIndex]->boundsCenterX);
 
-    PCTransformView *res = (PCTransformView *) mesh->materialRes;
-    if (res != 0) {
-        long long resLen = res->animLength;
-        long long tfLen = tf->animLength;
-        if (tfLen < resLen) {
-            ((AbyssEngine::Transform*)tf)->SetAnimationLength(resLen);
-            tf = (PCTransformView *) this->transforms.data_[transformIndex];
+    AbyssEngine::Transform *animation = this->meshes.data_[meshIndex]->animation;
+    if (animation != 0) {
+        if (this->transforms.data_[transformIndex]->animationLength < animation->animationLength) {
+            this->transforms.data_[transformIndex]->SetAnimationLength(animation->animationLength);
         }
-        long long tfStart = tf->animStart;
-        PCTransformView *res2 = (PCTransformView *) mesh->materialRes;
-        long long resStart = res2->animStart;
-        if (tfStart == 0 || resStart < tfStart) {
-            tf->animStart = resStart;
+        if (this->transforms.data_[transformIndex]->rangeStart == 0 ||
+            this->meshes.data_[meshIndex]->animation->rangeStart < this->transforms.data_[transformIndex]->rangeStart) {
+            this->transforms.data_[transformIndex]->rangeStart = this->meshes.data_[meshIndex]->animation->rangeStart;
         }
-        ((AbyssEngine::Transform*)tf)->SetAnimationState((AbyssEngine::AnimationMode)2, nullptr);
+        this->transforms.data_[transformIndex]->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
     }
-    ((AbyssEngine::Transform*)this->transforms.data_[transformIndex])->CollectAnimationData();
+    this->transforms.data_[transformIndex]->CollectAnimationData();
 }
 
 AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in) {
@@ -4305,84 +4297,54 @@ PaintCanvas::TransformGet2DPickedTextureRegion(Transform *transform, int x, int 
     return result;
 }
 
-static const double g_dt_gravscale_898d8 = 0;
 
 void PaintCanvas::DrawTransform(unsigned int index, const AbyssEngine::AEMath::Matrix *viewMatrix) {
-    if (index >= this->transforms.count) {
+    if (index >= this->transforms.count || !this->transforms.data_[index]->visible) {
         return;
     }
-    char *tf = ((char **) this->transforms.data_)[index];
-    if (((PCTransformView *) tf)->visible == 0) {
-        return;
-    }
-
-    float worldM[16];
-    memset(worldM, 0, sizeof(worldM));
-    worldM[0] = 1.0f;
-    worldM[5] = 1.0f;
-    worldM[14] = 1.0f;
-
+    AbyssEngine::AEMath::Matrix world;
     if (this->currentCamera < this->cameras.count) {
-        AbyssEngine::Camera *cam = this->cameras.data_[this->currentCamera];
-        if (this->initialized == 0) {
-            int vis = ((AbyssEngine::Transform*)this->transforms.data_[index])->InCameraVF(nullptr, cam);
-            if (vis == 0) {
+        if (this->initialized != 0) {
+            // Tilt-controlled view: roll the camera by the device gravity angle.
+            AbyssEngine::AEMath::Matrix roll;
+            AbyssEngine::AEMath::MatrixIdentity(roll);
+            float angle = (float) (this->engine->GetGravValue()[1] * 1.5707963705062866);
+            float rot = (this->gameOrientation == 1) ? angle : -angle;
+            float s = AbyssEngine::AEMath::Sinf(rot);
+            float c = AbyssEngine::AEMath::Cosf(rot);
+            roll.m[0] = c;
+            roll.m[5] = c;
+            roll.m[1] = -s;
+            roll.m[4] = s;
+            if (!this->transforms.data_[index]->InCameraVF(&roll, this->cameras.data_[this->currentCamera])) {
                 this->culledCount += 1;
                 return;
             }
-            float inv[16];
-            paintcanvas_ext_dt2_mtx_getinv(inv, worldM);
-            *(AbyssEngine::AEMath::Matrix*)worldM = *(const AbyssEngine::AEMath::Matrix*)inv;
-        } else {
-            float rotM[16];
-            char scratch[60];
-            memset(rotM, 0, sizeof(rotM));
-            rotM[0] = 1.0f;
-            rotM[5] = 1.0f;
-            rotM[14] = 1.0f;
-            paintcanvas_ext_dt2_matidentity(scratch, rotM);
-
-            PCGravView *grav = (PCGravView *) ((AbyssEngine::Engine*)this->engine)->GetGravValue();
-            double angle = grav->angle * g_dt_gravscale_898d8;
-            float a = (float) angle;
-            int orient = this->gameOrientation;
-            float ang = (orient == 1) ? a : -a;
-            float s = sinf(ang);
-            float c = cosf(ang);
-            rotM[0] = c;
-            rotM[5] = c;
-            *(unsigned int *) &rotM[1] = *(unsigned int *) &s ^ 0x80000000;
-            rotM[4] = s;
-
-            int vis = ((AbyssEngine::Transform*)this->transforms.data_[index])->InCameraVF((AbyssEngine::AEMath::Matrix*)rotM, cam);
-            if (vis == 0) {
-                this->culledCount += 1;
-                return;
-            }
-
-            float viewM[16];
-            const float *src;
-            if (viewMatrix == 0) {
-                src = ((PCCameraView *) ((char **) this->cameras.data_)[this->currentCamera])->localMatrix;
+            AbyssEngine::AEMath::Matrix view;
+            if (viewMatrix != 0) {
+                view = *viewMatrix;
             } else {
-                src = *viewMatrix;
+                view = this->cameras.data_[this->currentCamera]->projection;
             }
-            *(AbyssEngine::AEMath::Matrix*)viewM = *(const AbyssEngine::AEMath::Matrix*)src;
-            (*(AbyssEngine::AEMath::Matrix*)viewM) *= *(const AbyssEngine::AEMath::Matrix*)rotM;
-            paintcanvas_ext_dt2_mtx_getinv(scratch, viewM);
-            *(AbyssEngine::AEMath::Matrix*)worldM = *(const AbyssEngine::AEMath::Matrix*)scratch;
+            view *= roll;
+            world = AbyssEngine::AEMath::MatrixGetInverse(view);
+        } else {
+            if (!this->transforms.data_[index]->InCameraVF(nullptr, this->cameras.data_[this->currentCamera])) {
+                this->culledCount += 1;
+                return;
+            }
+            if (viewMatrix != 0) {
+                world = AbyssEngine::AEMath::MatrixGetInverse(*viewMatrix);
+            } else {
+                world = AbyssEngine::AEMath::MatrixGetInverse(this->cameras.data_[this->currentCamera]->projection);
+            }
         }
-        PCCameraEyeView *cam2 = (PCCameraEyeView *) this->cameras.data_[this->currentCamera];
-        ((AbyssEngine::Engine*)this->engine)->SetEyePosition(cam2->eyeX, cam2->eyeY, cam2->eyeZ);
-        tf = ((char **) this->transforms.data_)[index];
+        AbyssEngine::Camera *camera = this->cameras.data_[this->currentCamera];
+        this->engine->SetEyePosition(camera->projection.m[3], camera->projection.m[7], camera->projection.m[11]);
     }
-
-    float ident[16];
-    memset(ident, 0, sizeof(ident));
-    ident[0] = 1.0f;
-    ident[5] = 1.0f;
-    ident[14] = 1.0f;
-    this->DrawTransform((AbyssEngine::Transform*)tf, *(const AbyssEngine::AEMath::Matrix*)ident, *(AbyssEngine::AEMath::Matrix*)worldM);
+    AbyssEngine::Transform *transform = this->transforms.data_[index];
+    AbyssEngine::AEMath::Matrix identity;
+    this->DrawTransform(transform, identity, world);
 }
 
 void PaintCanvas::FontSetSpacing(unsigned int index, short spacing) {
