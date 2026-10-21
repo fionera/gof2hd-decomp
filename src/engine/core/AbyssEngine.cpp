@@ -138,49 +138,29 @@ namespace AbyssEngine {
         if (Engine::vfc == 0)
             return 1;
 
-        Matrix local;
-        Matrix transformed;
-        Vector pos, dir, axis;
-        Vector camPoint = {0.0f, 0.0f, 0.0f};
-
-        Matrix *srcMatrix = &cam->projection;
-        Matrix *dstMatrix;
-        if (extra == 0) {
-            dstMatrix = &local;
+        const Matrix &view = cam->projection;
+        // Point in camera space (computed but unused; a plain float[3] in the original).
+        float camPoint[3] = {0.0f, 0.0f, 0.0f};
+        if (extra != 0) {
+            Matrix combined = view;
+            combined *= *extra;
+            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(combined, point);
         } else {
-            memcpy(&local, srcMatrix, 0x3c);
-            local *= *extra;
-            dstMatrix = &transformed;
-            srcMatrix = &local;
+            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(view, point);
         }
 
-        *(Vector *) dstMatrix = AEMath::MatrixInverseTransformVector(*srcMatrix, *(Vector *) dstMatrix);
-        camPoint = *(Vector *) dstMatrix;
-
-        pos = AEMath::MatrixGetPosition(*dstMatrix);
-        pos -= point;
-        dir = AEMath::MatrixGetDir(*dstMatrix);
-        axis -= dir;
-        Vector normAxis = AEMath::VectorNormalize(axis);
-        float fwd = AEMath::VectorDot(pos, normAxis);
-
-        if (fwd > cam->position[2] || fwd < cam->position[1])
+        Vector toPoint = point - AEMath::MatrixGetPosition(view);
+        float depth = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(-AEMath::MatrixGetDir(view)));
+        if (depth > cam->position[2] || depth < cam->position[1])
             return 0;
 
-        axis = AEMath::MatrixGetUp(*dstMatrix);
-        normAxis = AEMath::VectorNormalize(axis);
-        float up = AEMath::VectorDot(pos, normAxis);
-
-        float hLimit = fwd * cam->frustumTanHalfFov;
-        if (up > hLimit || up < -hLimit)
+        float vertical = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(AEMath::MatrixGetUp(view)));
+        float vLimit = depth * cam->frustumTanHalfFov;
+        if (vertical > vLimit || vertical < -(depth * cam->frustumTanHalfFov))
             return 0;
 
-        axis = AEMath::MatrixGetRight(*dstMatrix);
-        normAxis = AEMath::VectorNormalize(axis);
-        float right = AEMath::VectorDot(pos, normAxis);
-
-        float vLimit = hLimit * cam->frustumAspect;
-        return (right <= vLimit && right >= -vLimit) ? 1 : 0;
+        float horizontal = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(AEMath::MatrixGetRight(view)));
+        return !(horizontal > vLimit * cam->frustumAspect) && !(horizontal < -(vLimit * cam->frustumAspect));
     }
 }
 
@@ -2644,59 +2624,37 @@ namespace AbyssEngine {
         if (!(radius != 0.0f && Engine::vfc != 0))
             return 1;
 
-        Matrix local;
-        Matrix transformed;
-        Vector pos, dir, axis;
-        Vector camPoint = {0.0f, 0.0f, 0.0f};
-
-        Matrix *srcMatrix = &cam->projection;
-        Matrix *dstMatrix;
-        if (extra == 0) {
-            dstMatrix = &local;
+        const Matrix &view = cam->projection;
+        // Point in camera space (computed but unused; a plain float[3] in the original).
+        float camPoint[3] = {0.0f, 0.0f, 0.0f};
+        if (extra != 0) {
+            Matrix combined = view;
+            combined *= *extra;
+            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(combined, center);
         } else {
-            memcpy(&local, srcMatrix, 0x3c);
-            local *= *extra;
-            dstMatrix = &transformed;
-            srcMatrix = &local;
+            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(view, center);
         }
 
-        *(Vector *) dstMatrix = AEMath::MatrixInverseTransformVector(*srcMatrix, *(Vector *) dstMatrix);
-        camPoint = *(Vector *) dstMatrix;
-
-        pos = AEMath::MatrixGetPosition(*dstMatrix);
-        pos -= center;
-        dir = AEMath::MatrixGetDir(*dstMatrix);
-        axis -= dir;
-        Vector normAxis = AEMath::VectorNormalize(axis);
-        float fwd = AEMath::VectorDot(pos, normAxis);
-
-        if (fwd > cam->position[2] + radius)
+        Vector toCenter = center - AEMath::MatrixGetPosition(view);
+        float depth = AEMath::VectorDot(toCenter, AEMath::VectorNormalize(-AEMath::MatrixGetDir(view)));
+        if (depth > cam->position[2] + radius)
             return 0;
-        if (fwd < cam->position[1] - radius)
+        if (depth < cam->position[1] - radius)
             return 0;
 
-        axis = AEMath::MatrixGetRight(*dstMatrix);
-        normAxis = AEMath::VectorNormalize(axis);
-        float right = AEMath::VectorDot(pos, normAxis);
-
-        float rightPad = cam->frustumInvCosX * radius;
-        float rightLimit = fwd * cam->frustumTanHalfFov * cam->frustumAspect;
-        if (right > rightLimit + rightPad)
+        float horizontal = AEMath::VectorDot(toCenter, AEMath::VectorNormalize(AEMath::MatrixGetRight(view)));
+        float hLimit = depth * cam->frustumTanHalfFov * cam->frustumAspect;
+        float hPad = cam->frustumInvCosX * radius;
+        if (horizontal > hLimit + hPad)
             return 0;
-        if (right < -rightLimit - rightPad)
+        if (horizontal < -hLimit - hPad)
             return 0;
 
-        axis = AEMath::MatrixGetUp(*dstMatrix);
-        normAxis = AEMath::VectorNormalize(axis);
-        float up = AEMath::VectorDot(pos, normAxis);
-
-        float upPad = cam->frustumInvCosY * radius;
-        float upLimit = fwd * cam->frustumTanHalfFov;
-        if (up > upLimit + upPad)
+        float vertical = AEMath::VectorDot(toCenter, AEMath::VectorNormalize(AEMath::MatrixGetUp(view)));
+        float vLimit = depth * cam->frustumTanHalfFov;
+        float vPad = cam->frustumInvCosY * radius;
+        if (vertical > vLimit + vPad || vertical < -vLimit - vPad)
             return 0;
-        if (up < -upLimit - upPad)
-            return 0;
-
         return 1;
     }
 }
