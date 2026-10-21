@@ -138,7 +138,7 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int CameraIsPointinViewFrustum(const Vector &point, Matrix *extra, Camera *cam) {
-        if (*g_Camera_frustumEnabledFlag == 0)
+        if (Engine::vfc == 0)
             return 1;
 
         Matrix local;
@@ -289,7 +289,7 @@ namespace AbyssEngine {
         if (sys == 0 || idx >= count)
             return;
 
-        char flag = *g_SpriteSystem_uvFlipFlag;
+        char flag = Engine::enableShader;
         float *p = (float *) sys->mesh->texCoords + (unsigned int) idx * 8;
 
         if (flag == 0) {
@@ -525,7 +525,7 @@ namespace AbyssEngine {
                             out.u = (uv[i0 * 2] + uv[i1 * 2] + uv[i2 * 2]) / 3.0f;
                             float vv = (uv[i0 * 2 + 1] + uv[i1 * 2 + 1] + uv[i2 * 2 + 1]) / 3.0f;
                             out.v = vv;
-                            if (*g_MeshIntersect_flipVFlag != 0)
+                            if (Engine::enableShader != 0)
                                 out.v = 1.0f - vv;
                             return out;
                         }
@@ -555,7 +555,7 @@ namespace AbyssEngine {
             return -4;
 
         unsigned char flags = mesh->vertexFormat;
-        if (*g_Mesh_shaderPathFlag == 0 && mesh->uploaded != 0) {
+        if (Engine::enableShader == 0 && mesh->uploaded != 0) {
             glBindBuffer(0x8892, mesh->positionVBO);
             engine->AEClientState(0x8074, true);
             glVertexPointer(3, 0x1406, 0, 0);
@@ -1253,7 +1253,7 @@ namespace AbyssEngine {
         for (unsigned int i = 0; i <= vcount * 4 && vcount * 4 - i != 0; ++i)
             colors[i] = 1.0f;
 
-        char tangent = *g_SpriteSystem_tangentFlag;
+        char tangent = Engine::enableShader;
         float *normals = (float *) m->normals;
         float *tangents = (float *) m->tangents;
         float *binormals = (float *) m->binormals;
@@ -2022,7 +2022,7 @@ namespace AbyssEngine {
             glBindBuffer(0x8892, m->normalVBO);
             glBufferData(0x8892, vcount * 0xc, m->normals, 0x88e4);
             m->vboByteSize += (int) (vcount * 0xc);
-            if (*g_Mesh_tangentEnabledFlag != 0) {
+            if (Engine::enableShader != 0) {
                 glGenBuffers(1, &m->tangentVBO);
                 glBindBuffer(0x8892, m->tangentVBO);
                 glBufferData(0x8892, vcount * 0xc, tanArr, 0x88e4);
@@ -2045,7 +2045,7 @@ namespace AbyssEngine {
         glBindBuffer(0x8893, 0);
 
         if (glGetError() == 0) {
-            if (*g_Mesh_keepCpuCopyFlag == 0) {
+            if (Engine::KeepRawMeshData == 0) {
                 if (m->positions != 0) operator delete[](m->positions);
                 m->positions = 0;
                 if (m->texCoords != 0) operator delete[](m->texCoords);
@@ -2062,7 +2062,7 @@ namespace AbyssEngine {
                 m->binormals = 0;
             }
             m->uploaded = 1;
-            *g_Mesh_vboByteCounter += m->vboByteSize;
+            Engine::vboSize += m->vboByteSize;
             return 1;
         }
 
@@ -2076,7 +2076,7 @@ namespace AbyssEngine {
             }
             if (f & 4) {
                 glDeleteBuffers(1, &m->normalVBO);
-                if (*g_Mesh_tangentDelFlag != 0) {
+                if (Engine::enableShader != 0) {
                     glDeleteBuffers(1, &m->tangentVBO);
                     glDeleteBuffers(1, &m->binormalVBO);
                 }
@@ -2468,7 +2468,7 @@ namespace AbyssEngine {
                 }
                 if (flags & 4) {
                     glDeleteBuffers(1, &m->normalVBO);
-                    if (*g_Mesh_tangentEnabledFlag != 0) {
+                    if (Engine::enableShader != 0) {
                         glDeleteBuffers(1, &m->tangentVBO);
                         glDeleteBuffers(1, &m->binormalVBO);
                     }
@@ -2488,7 +2488,7 @@ namespace AbyssEngine {
             if (m->normals != 0) operator delete[](m->normals);
             m->normals = 0;
 
-            if (*g_Mesh_extraArraysFlag != 0) {
+            if (Engine::enableShader != 0) {
                 if (m->tangents != 0) operator delete[](m->tangents);
                 m->tangents = 0;
                 if (m->binormals != 0) operator delete[](m->binormals);
@@ -2680,7 +2680,7 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int CameraIsSphereinViewFrustum(const Vector &center, float radius, Matrix *extra, Camera *cam) {
-        if (!(radius != 0.0f && *g_Camera_frustumEnabledFlag != 0))
+        if (!(radius != 0.0f && Engine::vfc != 0))
             return 1;
 
         Matrix local;
