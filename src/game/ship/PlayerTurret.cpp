@@ -282,7 +282,7 @@ void PlayerTurret::pickEnemy() {
         return;
 
     // The turret's world position is the KIPlayer vector at 0x2c.
-    const Vector &position = reinterpret_cast<const Vector &>(this->autoPilotState);
+    const Vector &position = this->shipPosition;
     for (unsigned int i = 0; i < enemies->size(); ++i) {
         Player *enemy = (*enemies)[i];
         if (enemy->isDead() || !enemy->isActive())

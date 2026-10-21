@@ -221,7 +221,6 @@ int NFC::getWidth() {
     return value;
 }
 
-int g_android_back_button_pressed = 0;
 
 int NFC::getHeight() {
     jclass cls = g_pEnv->FindClass("net/fishlabs/ow_utils/DeviceInfo");
@@ -231,4 +230,4 @@ int NFC::getHeight() {
     return value;
 }
 
-const char *NFC::interface_path;
+const char *NFC::interface_path = "net/fishlabs/gof2hdallandroid2012/NativeFunctionCalls";

@@ -48,7 +48,10 @@ public:
     int32_t currentLod;
     PaintCanvas *canvas;
 
-    Vector rotation;
+    // Plain floats, not a Vector: the original ctors assign them in the body (no ctor zeroing).
+    float rotationX;
+    float rotationY;
+    float rotationZ;
     float scalingX;
     float scalingY;
     float scalingZ;

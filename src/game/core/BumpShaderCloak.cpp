@@ -6,7 +6,7 @@
 #include "engine/core/ApplicationManager.h"
 
 namespace AbyssEngine {
-    int BumpShaderCloak::ShaderIndex;
+    int BumpShaderCloak::ShaderIndex = -1;
 
     BumpShaderCloak::BumpShaderCloak() {
         BumpShaderCloak::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
@@ -160,15 +160,15 @@ namespace AbyssEngine {
             if (this->uGlColor >= 0)
                 glUniform4fv(this->uGlColor, 1, eng->glColor);
             if (this->uAmbientColor[0] >= 0)
-                glUniform3fv(this->uAmbientColor[0], 1, (const float *) &eng->lightAmbientShaded);
+                glUniform3fv(this->uAmbientColor[0], 1, (const float *) eng->ambientShaded[0]);
             if (this->uDiffuseColor[0] >= 0)
-                glUniform3fv(this->uDiffuseColor[0], 1, (const float *) &eng->field_0x2fc);
+                glUniform3fv(this->uDiffuseColor[0], 1, (const float *) eng->diffuseShaded[0]);
             if (this->uSpecularColor[0] >= 0)
-                glUniform3fv(this->uSpecularColor[0], 1, (const float *) &eng->lightDiffuseShaded);
+                glUniform3fv(this->uSpecularColor[0], 1, (const float *) eng->specularShaded[0]);
             if (this->uSpecularPower >= 0)
                 glUniform1f(this->uSpecularPower, eng->materialShininess);
             if (this->uRimColor >= 0)
-                glUniform3fv(this->uRimColor, 1, (const float *) &eng->rimColor);
+                glUniform3fv(this->uRimColor, 1, (const float *) eng->rimColor);
 
             int texelLoc = this->uTexelSize;
             if (texelLoc >= 0) {
@@ -190,9 +190,9 @@ namespace AbyssEngine {
                 glUniform1f(this->uCloakRate, mesh->shaderAnimValue0);
 
             if (eng->lightCount >= 2) {
-                glUniform3fv(this->uAmbientColor[1], 1, (const float *) &eng->lightSpecularShaded);
-                glUniform3fv(this->uDiffuseColor[1], 1, (const float *) &eng->field_0x308);
-                glUniform3fv(this->uSpecularColor[1], 1, (const float *) &eng->particleAmbient);
+                glUniform3fv(this->uAmbientColor[1], 1, (const float *) eng->ambientShaded[1]);
+                glUniform3fv(this->uDiffuseColor[1], 1, (const float *) eng->diffuseShaded[1]);
+                glUniform3fv(this->uSpecularColor[1], 1, (const float *) eng->specularShaded[1]);
                 glUniform3f(this->uLightDirModel[1], eng->field_0x33c.x, eng->field_0x33c.y, eng->field_0x33c.z);
             } else {
                 glUniform3f(this->uAmbientColor[1], 0.0f, 0.0f, 0.0f);

@@ -41,8 +41,8 @@ public:
 
     void render() override;
 
-    void translate(const AbyssEngine::AEMath::Vector &v) override;
+    void translate(const AbyssEngine::AEMath::Vector & /*v*/) override {}
 
-    void replaceGun(unsigned int mesh, int unused) override;
+    void replaceGun(unsigned int /*mesh*/, int /*unused*/) override {}
 };
 #endif

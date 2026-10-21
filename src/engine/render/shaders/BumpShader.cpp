@@ -105,7 +105,7 @@ static const char *const kBumpShaderFragmentSource =
     "}  \n";
 
 namespace AbyssEngine {
-    int BumpShader::ShaderIndex;
+    int BumpShader::ShaderIndex = -1;
 
     BumpShader::BumpShader() {
         BumpShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
@@ -173,15 +173,15 @@ namespace AbyssEngine {
             if (this->uGlColorLoc >= 0)
                 glUniform4fv(this->uGlColorLoc, 1, ctx->glColor);
             if (this->uAmbientColor0Loc >= 0)
-                glUniform3fv(this->uAmbientColor0Loc, 1, (const float *) &ctx->lightAmbientShaded);
+                glUniform3fv(this->uAmbientColor0Loc, 1, (const float *) ctx->ambientShaded[0]);
             if (this->uDiffuseColor0Loc >= 0)
-                glUniform3fv(this->uDiffuseColor0Loc, 1, (const float *) &ctx->field_0x2fc);
+                glUniform3fv(this->uDiffuseColor0Loc, 1, (const float *) ctx->diffuseShaded[0]);
             if (this->uSpecularColor0Loc >= 0)
-                glUniform3fv(this->uSpecularColor0Loc, 1, (const float *) &ctx->lightDiffuseShaded);
+                glUniform3fv(this->uSpecularColor0Loc, 1, (const float *) ctx->specularShaded[0]);
             if (this->uSpecularPowerLoc >= 0)
                 glUniform1f(this->uSpecularPowerLoc, ctx->materialShininess);
             if (this->uRimColorLoc >= 0)
-                glUniform3fv(this->uRimColorLoc, 1, (const float *) &ctx->rimColor);
+                glUniform3fv(this->uRimColorLoc, 1, (const float *) ctx->rimColor);
             if (this->uFogColorLoc >= 0)
                 glUniform3fv(this->uFogColorLoc, 1, ctx->fogColor);
             if (this->uFogMinDistLoc >= 0)
@@ -192,9 +192,9 @@ namespace AbyssEngine {
                 glUniform1i(this->uEnableFogLoc, AbyssEngine::Engine::fogEnabled);
 
             if (ctx->lightCount >= 2) {
-                glUniform3fv(this->uAmbientColor1Loc, 1, (const float *) &ctx->lightSpecularShaded);
-                glUniform3fv(this->uDiffuseColor1Loc, 1, (const float *) &ctx->field_0x308);
-                glUniform3fv(this->uSpecularColor1Loc, 1, (const float *) &ctx->particleAmbient);
+                glUniform3fv(this->uAmbientColor1Loc, 1, (const float *) ctx->ambientShaded[1]);
+                glUniform3fv(this->uDiffuseColor1Loc, 1, (const float *) ctx->diffuseShaded[1]);
+                glUniform3fv(this->uSpecularColor1Loc, 1, (const float *) ctx->specularShaded[1]);
                 glUniform3f(this->uLightdirmodel1Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
                             ctx->field_0x33c.z);
             } else {

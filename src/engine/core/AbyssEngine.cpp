@@ -57,29 +57,29 @@ namespace AbyssEngine {
     extern char *g_SpriteSystem_tangentFlag;
     extern char *g_SpriteSystem_uvFlipFlag;
 
-    int currentUsedShaderIndex;
+    int currentUsedShaderIndex = -1;
 
     int currentFps;
     float debugTouch[4];
     int fpsCounter;
     int SwapCounter;
-    unsigned char firstRender;
+    unsigned char firstRender = 1;
     int loadTexture;
     float currentLODBias;
     int CubeMapSetIndex;
     int debugModusIndex;
-    unsigned char firstRenderGlow;
+    unsigned char firstRenderGlow = 1;
     unsigned char performanceTest;
     long long performanceTime;
-    float timeBetweenFrames;
-    unsigned char BiasErrorOutputFlag;
+    float timeBetweenFrames = 1000000.0f;
+    bool BiasErrorOutputFlag = true;
     unsigned char performanceTestEnded;
     int orientationChangeTimer;
     long long performanceFrameCounter;
     long long performanceModulSwitches;
     long long performanceOverallModulSwitches;
     int lauf;
-    float i_fov;
+    float i_fov = -1.0f;
     float i_zFar;
     float i_zNear;
     int fpsTimer;
@@ -103,12 +103,6 @@ unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const c
     (void) name;
     (void) label;
     return glIdentifier;
-}
-
-namespace AbyssEngine {
-    Quaternion operator*(const Quaternion &a, float s) {
-        return Quaternion(a.x * s, a.y * s, a.z * s, a.w * s);
-    }
 }
 
 namespace AbyssEngine {
@@ -170,12 +164,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    Quaternion operator-(const Quaternion &a, const Quaternion &b) {
-        return Quaternion(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-    }
-}
-
-namespace AbyssEngine {
     void CurveRelease(Curve **slot) {
         if (*slot == 0)
             return;
@@ -202,12 +190,6 @@ namespace AbyssEngine {
         if (*slot != 0)
             operator delete(*slot);
         *slot = 0;
-    }
-}
-
-namespace AbyssEngine {
-    Quaternion operator+(const Quaternion &a, const Quaternion &b) {
-        return Quaternion(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
     }
 }
 

@@ -3,7 +3,7 @@
 
 #include <jni.h>
 
-// JNI environment of the render thread (set by ToJNI_initialize, defined in JniBridge.cpp).
+// JNI environment of the render thread (set by ToJNI_setEnvironmentVariables, defined in main.c).
 extern JNIEnv *g_pEnv;
 
 // Purchase-in-flight flags raised by the NFC store buttons.

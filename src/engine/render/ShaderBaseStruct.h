@@ -42,20 +42,27 @@ namespace AbyssEngine {
 
         // vtable order (from original _ZTV ABS32): 2-arg, 4-arg, 3-arg-ref, 5-arg, DeleteShader, UseShader.
         // The 4-arg and 5-arg RenderEffect are VIRTUAL (slots 6 & 8), interleaved — were non-virtual in ours.
-        virtual void RenderEffect(FBOContainer *source, Engine *engine);
+        virtual void RenderEffect(FBOContainer * /*source*/, Engine * /*engine*/) {
+        }
 
-        virtual void RenderEffect(FBOContainer *source, Engine *engine, float strength, AEMath::Vector tint);
+        virtual void RenderEffect(FBOContainer * /*source*/, Engine * /*engine*/, float /*strength*/,
+                                  AEMath::Vector /*tint*/) {
+        }
 
-        virtual void RenderEffect(FBOContainer *source, FBOContainer *&target, AbyssEngine::Engine *engine);
+        virtual void RenderEffect(FBOContainer * /*source*/, FBOContainer *& /*target*/, Engine * /*engine*/) {
+        }
 
-        virtual void RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine, float strength,
-                                  AEMath::Vector tint);
+        virtual void RenderEffect(FBOContainer * /*source*/, FBOContainer *& /*target*/, Engine * /*engine*/,
+                                  float /*strength*/, AEMath::Vector /*tint*/) {
+        }
 
         virtual void DeleteShader();
 
         virtual void UseShader(bool useExtra);
 
-        String GetShaderName();
+        String GetShaderName() {
+            return String(this->name, false);
+        }
 
         void Update();
 

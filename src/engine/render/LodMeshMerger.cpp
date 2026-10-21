@@ -148,8 +148,8 @@ void LodMeshMerger::init() {
     uint32_t indexCount = 0;
     for (int i = 0; i < rows; i++) {
         Mesh *mesh = meshes.data()[i];
-        indexCount += (uint32_t) mesh->indexCount / 3u;
         vertexCount += mesh->vertexCount;
+        indexCount += (uint32_t) mesh->indexCount / 3u;
     }
     if (vertexCount > 65535u) vertexCount = 65535u;
     if (indexCount > 65535u) indexCount = 65535u;

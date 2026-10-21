@@ -45,7 +45,7 @@ static const char *const kBumpMappingFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int BumpMapping::ShaderIndex;
+    int BumpMapping::ShaderIndex = -1;
 
     BumpMapping::BumpMapping() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

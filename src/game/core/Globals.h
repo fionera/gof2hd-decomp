@@ -69,7 +69,7 @@ public:
 
     AEGeometry *getShipGroup(int type, int variant, bool wireframe);
 
-    int init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine);
+    void init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine);
 
     float sqrt(float x);
 
@@ -210,11 +210,11 @@ public:
     static AbyssEngine::ApplicationManager *appManager;
     static unsigned char gameLoaded;
     static unsigned char gameSaving;
-    static float sec_fire_x;
-    static float sec_fire_y;
+    static int sec_fire_x;
+    static int sec_fire_y;
     static float sec_fire_z;
-    static float autopilot_x;
-    static float autopilot_y;
+    static int autopilot_x;
+    static int autopilot_y;
     static float autopilot_z;
     static int mouseDeltaX;
     static int mouseDeltaY;
@@ -230,16 +230,16 @@ public:
     static int simulateFire;
     static int subMenuIndex;
     static int topMenuIndex;
-    static float action_menu_x;
-    static float action_menu_y;
+    static int action_menu_x;
+    static int action_menu_y;
     static float action_menu_z;
     static RecordHandler *recordHandler;
     static float touch_stick_z;
-    static float turret_view_x;
-    static float turret_view_y;
+    static int turret_view_x;
+    static int turret_view_y;
     static float turret_view_z;
-    static float fast_forward_x;
-    static float fast_forward_y;
+    static int fast_forward_x;
+    static int fast_forward_y;
     static float fast_forward_z;
     static int fontLangSelect;
     static int keyboard_swipe;
@@ -290,13 +290,13 @@ public:
     static Array<Item *> *items;
     static Array<Ship *> *ships;
     static AbyssEngine::PaintCanvas *Canvas;
-    static float fire_x;
-    static float fire_y;
+    static int fire_x;
+    static int fire_y;
     static float fire_z;
     static Galaxy *galaxy;
     static Layout *layout;
-    static float boost_x;
-    static float boost_y;
+    static int boost_x;
+    static int boost_y;
     static float boost_z;
     static Globals *globals;
     static int pause_x;

@@ -44,7 +44,7 @@ struct OptionsRecord {
     uint8_t field_0x25;
     uint8_t flag_0x26;
     uint8_t field_0x27[5];
-    uint32_t fadeValue;
+    float fadeValue;
     uint8_t field_0x30;
     uint8_t flag_0x31;
 

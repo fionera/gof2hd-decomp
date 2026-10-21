@@ -54,9 +54,8 @@ namespace {
     };
 }
 
-static inline bool isArabicJoining(unsigned short c) {
-    return c >= 0x600 && c != 0x61f && c != 0x60c;
-}
+// A letter that joins to its neighbour (Arabic block, except the Arabic comma and question mark).
+#define IS_ARABIC_JOINING(c) ((c) >= 0x600 && (c) != 0x61f && (c) != 0x60c)
 
 
 
@@ -124,7 +123,7 @@ String GameText::convertStringFromArabic(String in) {
                 for (int r = 0; r <= 40; ++r) {
                     if (kArabicForms[r][0] == buf[i]) {
                         int form = 1;
-                        if (i < last && isArabicJoining(buf[i + 1]))
+                        if (i < last && IS_ARABIC_JOINING(buf[i + 1]))
                             form = 4;
                         buf[i] = kArabicForms[r][form];
                         break;
@@ -139,16 +138,15 @@ String GameText::convertStringFromArabic(String in) {
                 continue;
             int form;
             if (i == 0) {
-                form = (length != 1 && isArabicJoining(buf[i + 1])) ? 4 : 1;
+                form = (length != 1 && IS_ARABIC_JOINING(buf[i + 1])) ? 4 : 1;
             } else if (i < last) {
-                bool nextJoins = isArabicJoining(buf[i + 1]);
-                bool prevJoins = isArabicJoining(buf[i - 1]);
-                if (!nextJoins)
-                    form = prevJoins ? 2 : 1;
+                // Medial position: initial/medial/final/isolated from both neighbours.
+                if (IS_ARABIC_JOINING(buf[i + 1]))
+                    form = IS_ARABIC_JOINING(buf[i - 1]) ? 3 : 4;
                 else
-                    form = prevJoins ? 3 : 4;
+                    form = IS_ARABIC_JOINING(buf[i - 1]) ? 2 : 1;
             } else {
-                form = isArabicJoining(buf[i - 1]) ? 2 : 1;
+                form = IS_ARABIC_JOINING(buf[i - 1]) ? 2 : 1;
             }
             buf[i] = kArabicForms[r][form];
         }
@@ -367,4 +365,4 @@ AbyssEngine::String *GameText::getText(int key) {
 }
 
 
-unsigned short GameText::currentLang;
+unsigned short GameText::currentLang = 0xffff;
