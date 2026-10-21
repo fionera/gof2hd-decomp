@@ -83,7 +83,7 @@ public:
     int touchX;
     int touchY;
     uint8_t cameraAnimating;
-    uint8_t introDone;
+    bool introDone;
     AbyssEngine::EaseInOut *headEase;
     uint8_t headBobReverse;
     AbyssEngine::Matrix baseMatrix;
@@ -120,7 +120,7 @@ public:
 
     int init();
 
-    unsigned char introFinished();
+    bool introFinished();
 
     bool listMode();
 

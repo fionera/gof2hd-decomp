@@ -424,7 +424,7 @@ int SpaceLounge::init() {
     return 0;
 }
 
-unsigned char SpaceLounge::introFinished() {
+bool SpaceLounge::introFinished() {
     return this->introDone;
 }
 
