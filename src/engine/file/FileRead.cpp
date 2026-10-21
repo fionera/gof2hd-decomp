@@ -134,61 +134,51 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
 
         uint16_t current = 0;
         uint16_t count = 0;
-        do {
+        Vector position = {0.0f, 0.0f, 0.0f};
+        Vector rotation = {0.0f, 0.0f, 0.0f};
+        Vector unused = {0.0f, 0.0f, 0.0f};
+        Vector direction = {0.0f, 0.0f, 0.0f};
+        for (;;) {
             AEFile::Read(current, handle);
             AEFile::Read(count, handle);
-            if ((uint32_t) current != (uint32_t) id) {
-                AEFile::Skip((uint32_t) count * 0x26, handle);
-            }
-        } while ((uint32_t) current != (uint32_t) id);
+            if ((uint32_t) current == (uint32_t) id)
+                break;
+            AEFile::Skip((uint32_t) count * 0x26, handle);
+        }
 
         points = new Array<SpacePoint *>();
 
-        const float angleScale = 0.017453292f;
-        const float rollScale = -0.017453292f;
-
+        const float toRadNeg = -0.017453292f;
+        const float toRad = 0.017453292f;
+        uint16_t type;
         for (uint32_t i = 0; i < count; i++) {
-            uint16_t type;
             AEFile::Read(type, handle);
+            AEFile::Read(position.x, handle);
+            AEFile::Read(position.y, handle);
+            AEFile::Read(position.z, handle);
+            AEFile::Read(rotation.x, handle);
+            AEFile::Read(rotation.y, handle);
+            AEFile::Read(rotation.z, handle);
+            AEFile::Read(unused.x, handle);
+            AEFile::Read(unused.y, handle);
+            AEFile::Read(unused.z, handle);
 
-            float a;
-            float b;
-            float c;
-            float rx;
-            float ry;
-            float rz;
-            float ignored0;
-            float ignored1;
-            float ignored2;
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(a), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(b), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(c), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(rx), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ry), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(rz), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ignored0), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ignored1), handle);
-            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ignored2), handle);
-
-            Vector position;
-            position.x = a;
-            position.y = c;
-            position.z = -b;
+            // File space is Y-up/right-handed the other way: swap Y/Z and negate.
+            float py = position.y;
+            position.y = position.z;
+            position.z = -py;
+            float ry = rotation.y;
+            rotation.x = rotation.x * toRadNeg;
+            rotation.y = rotation.z * toRadNeg;
+            rotation.z = ry * toRad;
 
             Matrix matrix;
-            MatrixIdentity(matrix);
-            Matrix rotation =
-                    MatrixSetRotation(matrix, rx * angleScale, rz * angleScale, ry * rollScale,
-                                      AbyssEngine::AEMath::ROTATION_ORDER_XZY);
-            Vector direction = MatrixGetDir(rotation);
+            matrix = MatrixSetRotation(matrix, rotation.x, rotation.y, rotation.z,
+                                       AbyssEngine::AEMath::ROTATION_ORDER_XZY);
+            direction = MatrixGetDir(matrix);
 
-            uint32_t selected = 0;
-            if (group != -1) {
-                selected = i >> 1;
-            }
-            if (group == -1 || selected == (uint32_t) group) {
-                SpacePoint *point = new SpacePoint((int32_t) type, position, direction, (int32_t) i);
-                ArrayAdd<SpacePoint *>(point, *points);
+            if (group == -1 || (i >> 1) == (uint32_t) group) {
+                ArrayAdd<SpacePoint *>(new SpacePoint((int32_t) type, position, direction, (int32_t) i), *points);
             }
         }
         AEFile::Close(handle);
