@@ -614,8 +614,8 @@ void FModSound::freeAllEvents() {
     this->eventVel = 0;
 }
 
-uint8_t FModSound::IsCategoryEnabled(int p1) {
-    uint8_t r = 0;
+bool FModSound::IsCategoryEnabled(int p1) {
+    bool r = false;
     if (p1 <= 3 && this->system != 0)
         r = this->categoryEnabled[p1] != 0;
     return r;

@@ -2440,23 +2440,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
             if (this->field_0xcf) {
                 // Black market: sell the whole cargo?
                 int choice = this->choiceWindow->OnTouchEnd(x, y);
-                if (choice == 1) {
-                    Array<KIPlayer *> *enemies = this->level->getEnemies();
-                    if (enemies != nullptr) {
-                        for (unsigned i = 0; i < enemies->size(); i++) {
-                            KIPlayer *enemy = (*enemies)[i];
-                            if (enemy->shipGroup == 8) {
-                                enemy->field_0x25 = 1;
-                            }
-                        }
-                    }
-                    Globals::status->field_0x111 = 1;
-                    this->level->createRadioMessage(11, 8);
-                    this->pauseOpen = 0;
-                    this->choiceWindowOpen = 0;
-                    this->field_0xcf = 0;
-                    resumeSounds();
-                } else if (choice == 0) {
+                switch (choice) {
+                    case 0: {
                     if (Globals::status->getCredits() < this->choiceItemCount) {
                         this->choiceWindow->set(
                             Globals::status->replaceHash(
@@ -2493,16 +2478,34 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     this->choiceWindowOpen = 0;
                     this->field_0xcf = 0;
                     resumeSounds();
+                        break;
+                    }
+                    case 1: {
+                    Array<KIPlayer *> *enemies = this->level->getEnemies();
+                    if (enemies != nullptr) {
+                        for (unsigned i = 0; i < enemies->size(); i++) {
+                            KIPlayer *enemy = (*enemies)[i];
+                            if (enemy->shipGroup == 8) {
+                                enemy->field_0x25 = 1;
+                            }
+                        }
+                    }
+                    Globals::status->field_0x111 = 1;
+                    this->level->createRadioMessage(11, 8);
+                    this->pauseOpen = 0;
+                    this->choiceWindowOpen = 0;
+                    this->field_0xcf = 0;
+                    resumeSounds();
+                        break;
+                    }
+                    default:
+                        break;
                 }
             } else if (this->_bca) {
                 // Mining plant: refine the ore in the cargo hold.
                 int choice = this->choiceWindow->OnTouchEnd(x, y);
-                if (choice == 1) {
-                    this->choiceWindowOpen = 0;
-                    this->_bca = 0;
-                    this->pauseOpen = 0;
-                    resumeSounds();
-                } else if (choice == 0) {
+                switch (choice) {
+                    case 0: {
                     String report;
                     Ship *ship = Globals::status->getShip();
                     bool refinedAny = false;
@@ -2531,6 +2534,17 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     } else {
                         this->choiceWindow->set(*Globals::gameText->getText(292));
                     }
+                        break;
+                    }
+                    case 1: {
+                    this->choiceWindowOpen = 0;
+                    this->_bca = 0;
+                    this->pauseOpen = 0;
+                    resumeSounds();
+                        break;
+                    }
+                    default:
+                        break;
                 }
             } else {
                 bool supernovaChallenge = this->field_0x1e4;
@@ -2541,49 +2555,54 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         this->choiceWindowOpen = 0;
                         resumeSounds();
                     }
-                } else if (choice == 2) {
-                    return;
-                } else if (choice == 1) {
-                    Globals::globals->playMusicAndFadeOutCurrent(2);
-                    this->active = 0;
-                    this->applicationManager->SetCurrentApplicationModule(1);
-                    Globals::status->resetGame();
-                    return;
-                } else if (choice == 0) {
-                    if (this->menuWindow == nullptr) {
-                        this->menuWindow = new MenuTouchWindow(1);
+                } else {
+                    switch (choice) {
+                        case 0:
+                            if (this->menuWindow == nullptr) {
+                                this->menuWindow = new MenuTouchWindow(1);
+                            }
+                            this->menuWindow->startSupernovaChallenge();
+                            return;
+                        case 1:
+                            Globals::globals->playMusicAndFadeOutCurrent(2);
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(1);
+                            Globals::status->resetGame();
+                            return;
+                        case 2:
+                            return;
+                        default:
+                            break;
                     }
-                    this->menuWindow->startSupernovaChallenge();
-                    return;
                 }
             }
         } else if (this->autopilotMenuOpen) {
-            int choice = this->choiceWindow->OnTouchEnd(x, y);
-            if (choice == 1) {
-                // Pick another destination on the jump map.
-                this->autopilotMenuOpen = 0;
-                if (this->starMap == nullptr) {
-                    this->starMap = new StarMap(false, nullptr, false, -1);
-                }
-                static_cast<Engine *>(this->applicationManager->GetEngine())->SetPostEffect(0x1400002, false);
-                this->starMap->initLights();
-                this->starMap->setJumpMapMode(true, false);
-                this->pauseOpen = 1;
-                this->starMapOpen = 1;
-                pauseSounds();
-                return;
+            switch (this->choiceWindow->OnTouchEnd(x, y)) {
+                case 0:
+                    this->autopilotMenuOpen = 0;
+                    if (this->player->isInTurretMode()) {
+                        this->player->setTurretMode(false);
+                    }
+                    this->usingJumpDrive = 0;
+                    startJumpScene();
+                    this->player->resetGunDelay();
+                    return;
+                case 1:
+                    // Pick another destination on the jump map.
+                    this->autopilotMenuOpen = 0;
+                    if (this->starMap == nullptr) {
+                        this->starMap = new StarMap(false, nullptr, false, -1);
+                    }
+                    static_cast<Engine *>(this->applicationManager->GetEngine())->SetPostEffect(0x1400002, false);
+                    this->starMap->initLights();
+                    this->starMap->setJumpMapMode(true, false);
+                    this->starMapOpen = 1;
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    return;
+                default:
+                    return;
             }
-            if (choice != 0) {
-                return;
-            }
-            this->autopilotMenuOpen = 0;
-            if (this->player->isInTurretMode()) {
-                this->player->setTurretMode(false);
-            }
-            this->usingJumpDrive = 0;
-            startJumpScene();
-            this->player->resetGunDelay();
-            return;
         } else if (!this->field_0xc4) {
             if (this->starMapOpen) {
                 if (Globals::layout->choiceWindowOpen) {

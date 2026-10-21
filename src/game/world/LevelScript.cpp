@@ -165,7 +165,7 @@ LevelScript::~LevelScript() {
     m_pGeometry4 = 0;
 }
 
-uint32_t LevelScript::canSkipCutsceneNow() {
+bool LevelScript::canSkipCutsceneNow() {
     if (Globals::status->getCurrentCampaignMission() == 0x9a) {
         if (!(m_nState >= 1 && m_nState <= 9)) {
             return 0;

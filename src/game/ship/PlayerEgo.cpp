@@ -123,9 +123,9 @@ float PlayerEgo::getDriveChargeRate() {
     return d >= 0.0f ? d : 1.0f;
 }
 
-unsigned char PlayerEgo::isAutoPilot() {
+bool PlayerEgo::isAutoPilot() {
     PlayerEgo *self = this;
-    return ((uint8_t &) this->autoPilot);
+    return this->autoPilot;
 }
 
 bool PlayerEgo::goingToWormhole() {
@@ -183,7 +183,7 @@ void PlayerEgo::forceBoost() {
     this->boostDelay = 0;
 }
 
-int PlayerEgo::isDead() {
+bool PlayerEgo::isDead() {
     PlayerEgo *self = this;
     return ((PlayerEgo *) (self))->getHitpoints() < 1;
 }
@@ -700,9 +700,9 @@ unsigned char PlayerEgo::aboutToReachAutoTarget() {
     return ((uint8_t &) this->aboutToReachAutoTargetFlag);
 }
 
-unsigned char PlayerEgo::autoTurretIsEnabled() {
+bool PlayerEgo::autoTurretIsEnabled() {
     PlayerEgo *self = this;
-    return ((uint8_t &) this->autoTurretEnabled);
+    return this->autoTurretEnabled;
 }
 
 bool PlayerEgo::readyToBoost() {
