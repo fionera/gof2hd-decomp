@@ -852,76 +852,66 @@ static unsigned char *g_SO_flag1 = nullptr;
 static unsigned char *g_SO_flag2 = nullptr;
 
 void RecordHandler::saveOptions() {
-    String &path = this->optionsPath;
-    if (AEFile::FileExist(path) != 0) {
-        AEFile::FileDelete(path);
+    if (AEFile::FileExist(this->optionsPath) != 0) {
+        AEFile::FileDelete(this->optionsPath);
     }
     unsigned int fd;
-    AEFile::OpenWrite(path, &fd);
-
-    OptionsBuffer *s = reinterpret_cast<OptionsBuffer *>(g_SO_settings);
-
-    AEFile::Write(s->byte_0x10, fd);
-    AEFile::Write(s->byte_0x11, fd);
-    AEFile::Write(s->f_0x14, fd);
-    AEFile::Write(s->f_0x18, fd);
-    AEFile::Write(s->f_0x1c, fd);
-    AEFile::Write(s->f_0x00, fd);
-    AEFile::Write(s->byte_0x0c, fd);
-    AEFile::Write(s->byte_0x0d, fd);
-    AEFile::Write(s->f_0x04, fd);
-    AEFile::Write(s->f_0x24, fd);
-    AEFile::Write(s->f_0x28, fd);
-
-    String *name = *g_SO_playerName;
-    if (name == 0) {
-        String def(g_SO_defName);
-        AEFile::Write(def, fd, (bool)false);
+    AEFile::OpenWrite(this->optionsPath, &fd);
+    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
+    AEFile::Write(options->byte_0x10, fd);
+    AEFile::Write(options->byte_0x11, fd);
+    AEFile::Write(options->f_0x14, fd);
+    AEFile::Write(options->f_0x18, fd);
+    AEFile::Write(options->f_0x1c, fd);
+    AEFile::Write(options->f_0x00, fd);
+    AEFile::Write(options->byte_0x0c, fd);
+    AEFile::Write(options->byte_0x0d, fd);
+    AEFile::Write(options->f_0x04, fd);
+    AEFile::Write(options->f_0x24, fd);
+    AEFile::Write(options->f_0x28, fd);
+    if (Globals::instantActionPlayerName != 0) {
+        AEFile::Write(*Globals::instantActionPlayerName, fd, false);
     } else {
-        AEFile::Write(*name, fd, (bool)false);
+        AEFile::Write(String(""), fd, false);
     }
-
-    AEFile::Write((int32_t)*g_SO_extraInt, fd);
-    AEFile::Write(*g_SO_flag1, fd);
-    AEFile::Write(s->i32_0x54, fd);
-    AEFile::Write(s->i32_0x58, fd);
-    AEFile::Write(s->volumeSfx, fd);
-    AEFile::Write(s->byte_0x0e, fd);
-    AEFile::Write(s->byte_0x32, fd);
-    AEFile::Write(s->byte_0x33, fd);
-    AEFile::Write(s->byte_0x34, fd);
-    AEFile::Write(s->volumeMusic, fd);
-
-    AEFile::Write((int16_t)GameText::getLanguage(), fd);
-    AEFile::Write(*g_SO_flag2, fd);
-    AEFile::Write(s->byte_0x35, fd);
-    AEFile::Write(s->byte_0x36, fd);
-    AEFile::Write(s->byte_0x3a, fd);
-    AEFile::Write(s->byte_0x3b, fd);
-    AEFile::Write(s->byte_0x3c, fd);
-    AEFile::Write(s->byte_0x37, fd);
-    AEFile::Write(s->byte_0x3d, fd);
-    AEFile::Write(s->byte_0x3e, fd);
-    AEFile::Write(s->byte_0x3f, fd);
-    AEFile::Write(s->byte_0x40, fd);
-    AEFile::Write(s->byte_0x41, fd);
-    AEFile::Write(s->volumeAmbient, fd);
-    AEFile::Write(s->byte_0x48, fd);
-    AEFile::Write(s->byte_0x38, fd);
-    AEFile::Write(s->byte_0x4e, fd);
-    AEFile::Write(s->byte_0x49, fd);
-    AEFile::Write(s->byte_0x4a, fd);
-    AEFile::Write(s->byte_0x4b, fd);
-    AEFile::Write(s->byte_0x4c, fd);
-    AEFile::Write(s->byte_0x4d, fd);
-    AEFile::Write(s->i32_0x50, fd);
-    AEFile::Write(s->byte_0x60, fd);
-    AEFile::Write(s->byte_0x61, fd);
-    AEFile::Write(s->byte_0x62, fd);
+    AEFile::Write((int32_t) Globals::lastRecordWritten, fd);
+    AEFile::Write(Globals::first_start_ever, fd);
+    AEFile::Write(options->i32_0x54, fd);
+    AEFile::Write(options->i32_0x58, fd);
+    AEFile::Write(options->volumeSfx, fd);
+    AEFile::Write(options->byte_0x0e, fd);
+    AEFile::Write(options->byte_0x32, fd);
+    AEFile::Write(options->byte_0x33, fd);
+    AEFile::Write(options->byte_0x34, fd);
+    AEFile::Write(options->volumeMusic, fd);
+    AEFile::Write(GameText::getLanguage(), fd);
+    AEFile::Write(Globals::startLiteVersionWithMoreCredits, fd);
+    AEFile::Write(options->byte_0x35, fd);
+    AEFile::Write(options->byte_0x36, fd);
+    AEFile::Write(options->byte_0x3a, fd);
+    AEFile::Write(options->byte_0x3b, fd);
+    AEFile::Write(options->byte_0x3c, fd);
+    AEFile::Write(options->byte_0x37, fd);
+    AEFile::Write(options->byte_0x3d, fd);
+    AEFile::Write(options->byte_0x3e, fd);
+    AEFile::Write(options->byte_0x3f, fd);
+    AEFile::Write(options->byte_0x40, fd);
+    AEFile::Write(options->byte_0x41, fd);
+    AEFile::Write(options->volumeAmbient, fd);
+    AEFile::Write(options->byte_0x48, fd);
+    AEFile::Write(options->byte_0x38, fd);
+    AEFile::Write(options->byte_0x4e, fd);
+    AEFile::Write(options->byte_0x49, fd);
+    AEFile::Write(options->byte_0x4a, fd);
+    AEFile::Write(options->byte_0x4b, fd);
+    AEFile::Write(options->byte_0x4c, fd);
+    AEFile::Write(options->byte_0x4d, fd);
+    AEFile::Write(options->i32_0x50, fd);
+    AEFile::Write(options->byte_0x60, fd);
+    AEFile::Write(options->byte_0x61, fd);
+    AEFile::Write(options->byte_0x62, fd);
     AEFile::Close(fd);
     this->addHashToOptions();
-
-    return;
 }
 
 void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
