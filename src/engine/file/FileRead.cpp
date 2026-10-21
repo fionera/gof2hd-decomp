@@ -168,9 +168,10 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
             position.y = position.z;
             position.z = -py;
             float ry = rotation.y;
-            rotation.x = rotation.x * toRadNeg;
-            rotation.y = rotation.z * toRadNeg;
+            float rz = rotation.z;
             rotation.z = ry * toRad;
+            rotation.x = rotation.x * toRadNeg;
+            rotation.y = rz * toRadNeg;
 
             Matrix matrix;
             matrix = MatrixSetRotation(matrix, rotation.x, rotation.y, rotation.z,

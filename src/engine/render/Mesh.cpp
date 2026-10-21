@@ -175,25 +175,46 @@ namespace AbyssEngine {
             }
 
             // Rotation track.
-            if (AEFile::Read(2, &type, file) == 0) goto fail;
+            if (AEFile::Read(2, &type, file) == 0) {
+                delete anim;
+                return -1;
+            }
             switch (type) {
                 case 1: {
-                if (AEFile::Read(2, &count, file) == 0) goto fail;
+                if (AEFile::Read(2, &count, file) == 0) {
+                    delete anim;
+                    return -1;
+                }
                 for (unsigned int i = 0; i < count; i++) {
-                    if (AEFile::Read(4, &scalar, file) == 0) goto fail;
+                    if (AEFile::Read(4, &scalar, file) == 0) {
+                        delete anim;
+                        return -1;
+                    }
                     trackFrameStep(scalar);
-                    if (AEFile::Read(12, vec, file) == 0) goto fail;
+                    if (AEFile::Read(12, vec, file) == 0) {
+                        delete anim;
+                        return -1;
+                    }
                     anim->InsertKeyFrame(vec, 0x1c0, (int) scalar);
                 }
                     break;
                 }
                 case 0: {
                 for (unsigned int axis = 0; axis < 3; axis++) {
-                    if (AEFile::Read(2, &count, file) == 0) goto fail;
+                    if (AEFile::Read(2, &count, file) == 0) {
+                        delete anim;
+                        return -1;
+                    }
                     for (unsigned int i = 0; i < count; i++) {
-                        if (AEFile::Read(4, vec, file) == 0) goto fail;
+                        if (AEFile::Read(4, vec, file) == 0) {
+                            delete anim;
+                            return -1;
+                        }
                         trackFrameStep(vec[0]);
-                        if (AEFile::Read(4, &scalar, file) == 0) goto fail;
+                        if (AEFile::Read(4, &scalar, file) == 0) {
+                            delete anim;
+                            return -1;
+                        }
                         switch (axis) {
                             case 0:
                                 anim->InsertKeyFrame(&scalar, 0x40, (int) vec[0]);
@@ -250,13 +271,25 @@ namespace AbyssEngine {
 
             // Alpha track.
             if ((flags & 0x18) != 0) {
-                if (AEFile::Read(2, &type, file) == 0) goto fail;
+                if (AEFile::Read(2, &type, file) == 0) {
+                    delete anim;
+                    return -1;
+                }
                 if ((unsigned short) type == 2) {
-                    if (AEFile::Read(2, &count, file) == 0) goto fail;
+                    if (AEFile::Read(2, &count, file) == 0) {
+                        delete anim;
+                        return -1;
+                    }
                     for (unsigned int i = 0; i < count; i++) {
-                        if (AEFile::Read(4, vec, file) == 0) goto fail;
+                        if (AEFile::Read(4, vec, file) == 0) {
+                            delete anim;
+                            return -1;
+                        }
                         trackFrameStep(vec[0]);
-                        if (AEFile::Read(4, &scalar, file) == 0) goto fail;
+                        if (AEFile::Read(4, &scalar, file) == 0) {
+                            delete anim;
+                            return -1;
+                        }
                         anim->InsertKeyFrame(&scalar, 0x200, (int) vec[0]);
                     }
                 }
@@ -264,15 +297,27 @@ namespace AbyssEngine {
 
             // Material/shader animation tracks.
             if ((flags & 0x10) != 0) {
-                if (AEFile::Read(2, &count, file) == 0) goto fail;
+                if (AEFile::Read(2, &count, file) == 0) {
+                    delete anim;
+                    return -1;
+                }
                 if (count != 0) {
                     for (unsigned int channel = 0; channel < 7; channel++) {
                         short keys;
-                        if (AEFile::Read(2, &keys, file) == 0) goto fail;
+                        if (AEFile::Read(2, &keys, file) == 0) {
+                            delete anim;
+                            return -1;
+                        }
                         for (int i = 0; i < keys; i++) {
-                            if (AEFile::Read(4, vec, file) == 0) goto fail;
+                            if (AEFile::Read(4, vec, file) == 0) {
+                                delete anim;
+                                return -1;
+                            }
                             trackFrameStep(vec[0]);
-                            if (AEFile::Read(4, &scalar, file) == 0) goto fail;
+                            if (AEFile::Read(4, &scalar, file) == 0) {
+                                delete anim;
+                                return -1;
+                            }
                             scalar = scalar / 100.0f;
                             long long channelFlags;
                             switch (channel) {
