@@ -688,20 +688,19 @@ void StarMap::drawKey() {
     int iconWidth = Globals::Canvas->GetImage2DWidth(this->keyImageDiscovered);
     Layout *layout = Globals::layout;
     int screenH = Globals::h;
-    int lineSpacing = layout->field_0x4;
     int boxW = this->keyBoxWidth;
-    int boxH = this->keyBoxHeight;
     int screenW = Globals::w;
-    int padY = layout->windowTopInset;
-    int bottomMargin = layout->field_0x10_rightMargin;
     int indent = layout->field_0x2c_rowHeight;
+    int bottomMargin = layout->field_0x10_rightMargin;
+    int boxH = this->keyBoxHeight;
+    int padY = layout->windowTopInset;
+    int lineSpacing = layout->field_0x4;
 
     int x = screenW - boxW;
-    layout->drawBox(7, x, screenH - bottomMargin - boxH - padY, boxW, padY + boxH, String(""));
-
     int iconX = x + indent;
     int textX = iconWidth + indent + iconX;
     int y = screenH - indent - bottomMargin - lineSpacing;
+    layout->drawBox(7, x, screenH - bottomMargin - boxH - padY, boxW, padY + boxH, String(""));
 
     Globals::Canvas->DrawImage2D(this->keyImageRetreat, iconX, y);
     Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(274), textX, y,
