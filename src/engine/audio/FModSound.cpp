@@ -568,11 +568,10 @@ unsigned FModSound::isPlaying(int p1) {
 }
 
 void FModSound::freeAllEvents() {
-    static const char kProjName[8] = "GoF2";
     if (this->system != 0) {
         FMOD::EventProject *proj[1];
         proj[0] = 0;
-        FMOD_EventSystem_getProject(this->system, kProjName, proj);
+        FMOD_EventSystem_getProject(this->system, "FMOD_GOF2", proj);
         if (proj[0] == 0)
             return;
         for (unsigned i = 0; i < 0x8f5u; ++i) {

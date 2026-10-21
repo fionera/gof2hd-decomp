@@ -920,7 +920,7 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
 
 void Engine::SetPostEffect(uint32_t effect, bool enable) {
     if (this->postEffectFBO == 0 && enable) {
-        this->postEffectFBO = new FBOContainer(this, String("posteffect"));
+        this->postEffectFBO = new FBOContainer(this, String("render2TextureFBO"));
         if (this->appManager->paintCanvas->gameOrientation == 2) {
             this->postEffectFBO->Create(this->displayWidth, this->displayHeight, true, false);
         } else {

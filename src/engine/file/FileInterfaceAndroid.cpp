@@ -242,9 +242,9 @@ void FileInterfaceAndroid::ResetSaveDirectory() {
 struct zip *APKArchive = nullptr;
 struct zip *ZIPArchive = nullptr;
 uint32_t FileInterfaceAndroid::FileExist(String name) {
-    String apkPath("assets/");
+    String apkPath("assets/", false);
     apkPath += name;
-    String zipPath("47947_GOF2CONTENT_ETC/assets/");
+    String zipPath("47947_GOF2CONTENT_ETC/assets/", false);
     zipPath += name;
 
     zip_file *apkFile = zip_fopen(APKArchive, apkPath.GetAEChar(), 0);
@@ -277,15 +277,12 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
         return 0;
 
     const unsigned short *relative = (*wname == '/') ? wname + 1 : wname;
-    String apkPath("assets/");
+    String apkPath("assets/", false);
     apkPath += String(relative, false);
-    String zipPath("47947_GOF2CONTENT_ETC/assets/");
+    String zipPath("47947_GOF2CONTENT_ETC/assets/", false);
     zipPath += String(relative, false);
 
-    // TODO(decomp): the original traces here with
-    //   fprintf(stderr, "OpenRead('%s', %d, %d, %d, %d, %d)\n", apkPath.GetAEChar(), p2, p3, p4, p5, p6);
-    // which needs the fprintf import admitted to the ratchet baseline first.
-    (void) p2;
+    fprintf(stderr, "OpenRead('%s', %d, %d, %d, %d, %d)\n", apkPath.GetAEChar(), p2, p3, p4, p5, p6);
 
     zip_file *apkFile = zip_fopen(APKArchive, apkPath.GetAEChar(), 0);
     zip_file *zipFile = 0;

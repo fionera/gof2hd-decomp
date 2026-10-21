@@ -1053,7 +1053,7 @@ int LevelScript::process(int delta) {
                     if (player->isDockedToDockingPoint() && player->hackingWon() &&
                         player->getHackingGameDockIndex() >= 0) {
                         ((PlayerFixedObject *) level->getDockingTarget(player->getHackingGameDockIndex()))
-                            ->setName(String("kJIWQhkbw+d4d44Y9dqVSwNS7N453I", false));
+                            ->setName(String("", false));
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                             ->setDockingType(0);
                         m_nState++;

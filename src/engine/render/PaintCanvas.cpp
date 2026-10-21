@@ -1,5 +1,6 @@
 #include "engine/render/PaintCanvas.h"
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 #include <GLES2/gl2.h>
 #include <GLES/gl.h>
@@ -471,7 +472,6 @@ static inline void paintcanvas_ext_dr3_meshdraw(void *eng, void *mesh) { AbyssEn
 
 static inline void paintcanvas_ext_dr3_glenable(unsigned int cap) { glEnable(cap); }
 
-void paintcanvas_ext_tg2d_errmsg(void *out); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_tg2di_meshintersect(void *out, float a, float b, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -3868,32 +3868,23 @@ AbyssEngine::ResourceTransform::~ResourceTransform() {
     this->dataB = nullptr;
 }
 
-static const unsigned int g_tg2d_defval_7b590 = 0;
-
 AbyssEngine::PickedTextureRegion
 PaintCanvas::TransformGet2DPickedTextureRegion(unsigned int transformIndex, int x, int y, int z,
                                                int w) {
-    PickedTextureRegion result;
-    char vecbuf[64];
-
     if (transformIndex < this->transforms.count) {
-        char *tf = ((char **) this->transforms.data_)[transformIndex];
-        memcpy(vecbuf, tf, 0x3c);
-        float fy = (float)y;
-        float fz = (float)z;
-        float fx = (float)w;
-        float vin[3];
-        vin[0] = fy;
-        vin[1] = fz;
-        vin[2] = fx;
-        *(AbyssEngine::AEMath::Vector*)vin = AbyssEngine::AEMath::MatrixInverseTransformVector(*(const AbyssEngine::AEMath::Matrix*)vecbuf, *(const AbyssEngine::AEMath::Vector*)vin);
-        result = this->TransformGet2DPickedTextureRegion(
-            reinterpret_cast<Transform *>(tf), x, (int) vin[0], (int) vin[1], 0);
-    } else {
-        result.u = *(const float *) &g_tg2d_defval_7b590;
-        result.v = *(const float *) &g_tg2d_defval_7b590;
-        paintcanvas_ext_tg2d_errmsg(&result);
+        Transform *transform = this->transforms[transformIndex];
+        AbyssEngine::AEMath::Matrix matrix = transform->worldMatrix;
+        AbyssEngine::AEMath::Vector position;
+        position.x = (float) x;
+        position.y = (float) y;
+        position.z = (float) z;
+        position = AbyssEngine::AEMath::MatrixInverseTransformVector(matrix, position);
+        return this->TransformGet2DPickedTextureRegion(transform, (int) position.x, (int) position.y,
+                                                       (int) position.z, w);
     }
+    PickedTextureRegion result = {-1.0f, -1.0f};
+    fprintf(stderr, "TransformGet2DPickedTextureRegion Error %d >= %d\n", transformIndex,
+            this->transforms.count);
     return result;
 }
 

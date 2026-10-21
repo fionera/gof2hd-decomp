@@ -1074,18 +1074,18 @@ String Globals::getAgentMissionText(Agent *agent) {
     return text;
 }
 
-static const char gIAP_prefixA[] = "";
-static const char gIAP_prefixB[] = "";
-static const char gIAP_id50[] = "";
-static const char gIAP_id0[] = "";
-static const char gIAP_id1[] = "";
-static const char gIAP_id2[] = "";
-static const char gIAP_id3[] = "";
-static const char gIAP_id4[] = "";
-static const char gIAP_id51[] = "";
-static const char gIAP_id52[] = "";
-static const char gIAP_id53[] = "";
-static const char gIAP_id54[] = "";
+static const char gIAP_prefixA[] = "www.fishlabs.net.gof2hd";
+static const char gIAP_prefixB[] = ".";
+static const char gIAP_id50[] = "dlcCredits1";
+static const char gIAP_id0[] = "dlc1";
+static const char gIAP_id1[] = "dlc2";
+static const char gIAP_id2[] = "dlc3";
+static const char gIAP_id3[] = "dlc4";
+static const char gIAP_id4[] = "dlc5";
+static const char gIAP_id51[] = "dlcCredits2";
+static const char gIAP_id52[] = "dlcCredits3";
+static const char gIAP_id53[] = "dlcCredits4.0";
+static const char gIAP_id54[] = "dlcCredits5";
 
 int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) {
     int result = -1;

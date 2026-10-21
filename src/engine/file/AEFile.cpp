@@ -352,7 +352,7 @@ void AEFile::collectPakFiles(const String &path) {
         String entry;
         while (AEFile::fileInterface->FileGetNextEnum(entry) != 0) {
             String entryCopy(entry);
-            if (entry.IndexOf(String(".pak")) != 0xffffffffu) {
+            if (entry.IndexOf(String(".aez")) != 0xffffffffu) {
                 collectFilesInPakFiles(entryCopy);
             }
         }

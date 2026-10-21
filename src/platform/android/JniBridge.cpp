@@ -483,7 +483,15 @@ extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getPremiumSKU( /
 
 extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv *env, jclass /*clazz*/) {
-    return env->NewStringUTF("net.fishlabs.gof2hdallandroid2012");
+    // Google Play licensing public key (base64 X.509 SubjectPublicKeyInfo).
+    return env->NewStringUTF(
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiSfBidMj3fOEJih9J4/2"
+        "RUjqwsjbcl1O1gbHSVB9LpKh5G5ds0rLsVGw52j44szFre/CinNDST/OjnDBkMlr"
+        "ewUxZwXPrYycO3JTE3BjS9Fl8kADtN2aU4LvdVGZBSk32TVgqBLLGDNUFfda3fv+"
+        "MTQmcXDCFmTRbZwjHFhGOd56L3RO35KUszkak9ST5UL2nNJL9yOqcQ2BWkT+oI3a"
+        "hALETTUCE6VdHEoliW9Mb+E9BaU2hOmowkJIWQhkbw+d4d44Y9dqVSwNS7N453IV"
+        "wifLXANv7MY+9nIO7qHtGTNQC1VKgcHEs/slbpqahUBcsifJP3xgD6/pNbOzGHpY"
+        "VQIDAQAB");
 }
 
 extern "C" jint Java_net_fishlabs_playhaven_ToJNI_getCurrentApplicationModule( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
