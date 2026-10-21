@@ -328,7 +328,8 @@ void GameText::ReadLangFile(unsigned int file, int count) {
             this->release();
             break;
         }
-        length = static_cast<unsigned short>((length >> 8) | (length << 8));
+        // Lengths are stored big-endian.
+        length = static_cast<unsigned short>(((length >> 8) & 0xff) | ((length & 0xff) << 8));
 
         char *utf8 = new char[length + 1];
         if (!AEFile::Read(length, utf8, file)) {
