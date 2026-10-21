@@ -1487,69 +1487,64 @@ static const int StarMap_shipRaces[64] = {
 bool StarMap::OnTouchEnd(int x, int y) {
     if (this->choiceVisible != 0) {
         int answer = this->choiceWindow->OnTouchEnd(x, y);
-        if (answer == 1) {
+        if (answer == 0) {
             this->choiceVisible = 0;
-            this->alienJumpPending = 0;
-            return false;
-        }
-        if (answer != 0) {
-            return false;
-        }
-        this->choiceVisible = 0;
-        if (this->suppressNextClose != 0) {
-            this->suppressNextClose = 0;
-            return false;
-        }
-        if (this->mode == 3 && (*this->stations)[this->selectedStation]->getIndex() ==
-                                  Globals::status->getStation()->getIndex()) {
-            this->suppressNextClose = 0;
-            return false;
-        }
-        if (this->alienJumpPending != 0 && this->mode == 0 && this->pad_0xa8_a == 0 && this->autoMode == 0) {
-            // Confirmed jump into the alien world.
-            Level::programmedStation = Globals::status->playerStation;
-            this->alienJumpPending = 0;
-            this->exitRequested = 1;
-            Level::doInstantJump = 1;
-            Level::energyCellsForNextJump = this->jumpCost;
-            Globals::Canvas->CameraSetCurrent(this->prevCamera);
-            return true;
-        }
-        if (this->pad_0xa8_a != 0 || this->mode != 3) {
-            return false;
-        }
-        if (this->jumpMapModeB != 0 && this->cargoAmount < this->jumpCost) {
-            if (this->jumpCost != 1) {
+            if (this->suppressNextClose != 0 ||
+                (this->mode == 3 && (*this->stations)[this->selectedStation]->getIndex() ==
+                                       Globals::status->getStation()->getIndex())) {
+                this->suppressNextClose = 0;
                 return false;
             }
+            if (this->alienJumpPending != 0 && this->mode == 0 && this->pad_0xa8_a == 0 && this->autoMode == 0) {
+                // Confirmed jump into the alien world.
+                Level::programmedStation = Globals::status->playerStation;
+                this->exitRequested = 1;
+                this->alienJumpPending = 0;
+                Level::doInstantJump = 1;
+                Level::energyCellsForNextJump = this->jumpCost;
+                Globals::Canvas->CameraSetCurrent(this->prevCamera);
+                return true;
+            }
+            if (this->pad_0xa8_a != 0 || this->mode != 3) {
+                return false;
+            }
+            if (this->jumpMapModeB != 0 && this->cargoAmount < this->jumpCost) {
+                if (this->jumpCost != 1) {
+                    return false;
+                }
+                if (this->jumpMapModeA == 0) {
+                    this->depart(false);
+                    return false;
+                }
+                Level::programmedStation = (*this->stations)[this->selectedStation];
+                Level::doInstantJump = 0;
+                this->exitRequested = 1;
+                Globals::Canvas->CameraSetCurrent(this->prevCamera);
+                return true;
+            }
             if (this->jumpMapModeA == 0) {
-                this->depart(false);
+                this->depart(true);
                 return false;
             }
             Level::programmedStation = (*this->stations)[this->selectedStation];
-            Level::doInstantJump = 0;
+            if (this->jumpMapModeB == 0) {
+                Level::doInstantJump = 0;
+            } else {
+                int toSystem = (*this->stations)[this->selectedStation]->getSystem();
+                int current = ((SolarSystem *) Globals::status->getSystem())->getIndex();
+                Level::doInstantJump = toSystem != current;
+                if (toSystem != current) {
+                    Level::energyCellsForNextJump = this->jumpCost;
+                }
+            }
             this->exitRequested = 1;
             Globals::Canvas->CameraSetCurrent(this->prevCamera);
             return true;
+        } else if (answer == 1) {
+            this->alienJumpPending = 0;
+            this->choiceVisible = 0;
         }
-        if (this->jumpMapModeA == 0) {
-            this->depart(true);
-            return false;
-        }
-        Level::programmedStation = (*this->stations)[this->selectedStation];
-        if (this->jumpMapModeB == 0) {
-            Level::doInstantJump = 0;
-        } else {
-            int toSystem = (*this->stations)[this->selectedStation]->getSystem();
-            int current = ((SolarSystem *) Globals::status->getSystem())->getIndex();
-            Level::doInstantJump = toSystem != current;
-            if (toSystem != current) {
-                Level::energyCellsForNextJump = this->jumpCost;
-            }
-        }
-        this->exitRequested = 1;
-        Globals::Canvas->CameraSetCurrent(this->prevCamera);
-        return true;
+        return false;
     }
 
     if (this->transitionIn != 0 || this->transitionOut != 0) {
@@ -1583,45 +1578,43 @@ bool StarMap::OnTouchEnd(int x, int y) {
 
     if (this->dragging != 0) {
         this->momentumFactor = 0.9f;
-        this->dragging = 0;
         this->velocityX = absf_end(this->touchDeltaX) > 3.0f ? this->touchDeltaX : 0.0f;
         this->velocityY = absf_end(this->touchDeltaY) > 3.0f ? this->touchDeltaY : 0.0f;
 
+        this->dragging = 0;
         if (this->mode == 0) {
             if (this->selectedSystem >= 0) {
                 if (this->autoMode != 0 || this->pad_0xa8_a != 0 || this->lastSelectedSystem != this->selectedSystem) {
-                    this->lastSelectedSystem = -1;
                     this->pathAnim = 1;
+                    this->lastSelectedSystem = -1;
                 } else {
                     if (this->jumpMapModeB == 0 &&
                         !((SolarSystem *) Globals::status->getSystem())
                                  ->systemIsInSystemRoutes((*this->systems)[this->selectedSystem]->getIndex())) {
                         this->choiceWindow->set(*Globals::gameText->getText(420), false);
-                        this->choiceVisible = 1;
-                        return false;
-                    }
-                    if (this->jumpMapModeB != 0 && Globals::status->getShip()->hasVolatileGoods() &&
-                        !((SolarSystem *) Globals::status->getSystem())
+                    } else if (this->jumpMapModeB != 0 && Globals::status->getShip()->hasVolatileGoods() &&
+                               !((SolarSystem *) Globals::status->getSystem())
                                  ->systemIsInSystemRoutes((*this->systems)[this->selectedSystem]->getIndex())) {
                         this->choiceWindow->set(*Globals::gameText->getText(612), false);
-                        this->choiceVisible = 1;
+                    } else {
+                        // Zoom into the selected system.
+                        Globals::sound->play(0x6a, 0, 0, 0.0f);
+                        this->initStarSystem();
+                        this->transitionIn = 1;
+                        this->scratchVector = (*this->systemGeoms)[this->selectedSystem]->getPosition();
+                        this->scratchVector.z += -500.0f;
+                        PaintCanvas *canvas = Globals::Canvas;
+                        this->scratchVector2 = AbyssEngine::AEMath::MatrixGetPosition(
+                                *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                        this->easeX->SetRange(this->scratchVector2.x, this->scratchVector.x);
+                        this->easeY->SetRange(this->scratchVector2.y, this->scratchVector.y);
+                        this->easeZ->SetRange(this->scratchVector2.z, this->scratchVector.z);
+                        this->momentumFactor = 0.0f;
+                        this->velocityX = 0.0f;
+                        this->velocityY = 0.0f;
                         return false;
                     }
-                    // Zoom into the selected system.
-                    Globals::sound->play(0x6a, 0, 0, 0.0f);
-                    this->initStarSystem();
-                    this->transitionIn = 1;
-                    this->scratchVector = (*this->systemGeoms)[this->selectedSystem]->getPosition();
-                    this->scratchVector.z += -500.0f;
-                    PaintCanvas *canvas = Globals::Canvas;
-                    this->scratchVector2 = AbyssEngine::AEMath::MatrixGetPosition(
-                            *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-                    this->easeX->SetRange(this->scratchVector2.x, this->scratchVector.x);
-                    this->easeY->SetRange(this->scratchVector2.y, this->scratchVector.y);
-                    this->easeZ->SetRange(this->scratchVector2.z, this->scratchVector.z);
-                    this->momentumFactor = 0.0f;
-                    this->velocityX = 0.0f;
-                    this->velocityY = 0.0f;
+                    this->choiceVisible = 1;
                     return false;
                 }
             }
