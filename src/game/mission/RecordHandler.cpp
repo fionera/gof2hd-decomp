@@ -301,7 +301,7 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
         unsigned int fd;
         AEFile::OpenRead(path, &fd);
         int size = AEFile::GetFileSize(fd);
-        *out = new signed char[size | (size >> 31)];
+        *out = new signed char[size];
         AEFile::Read(size, *out, fd);
         AEFile::Close(fd);
         return size;
@@ -1495,7 +1495,7 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
         unsigned int fd;
         AEFile::OpenRead(tmp, &fd);
         sz = AEFile::GetFileSize(fd);
-        signed char *buf = new signed char[sz | (sz >> 31)];
+        signed char *buf = new signed char[sz];
         *out = buf;
         AEFile::Read(sz, buf, fd);
         AEFile::Close(fd);
