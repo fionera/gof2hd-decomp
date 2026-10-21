@@ -204,7 +204,7 @@ public:
     int field_0x2a4_metricA;
     int field_0x2a8_metricB;
     int field_0x2ac_metricC;
-    uint8_t _pad_0x2b0[4];
+    int field_0x2b0;
     int field_0x2b4;
     int field_0x2b8;
     int field_0x2bc;
