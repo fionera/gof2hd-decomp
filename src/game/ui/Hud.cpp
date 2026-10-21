@@ -1126,13 +1126,13 @@ void Hud::drawEventQueue() {
         alpha = 510 - alpha;
     int bannerY = Globals::layout->field_0x1e4;
     float bannerScale = Globals::layout->eventBannerScale;
+    int y = bannerY + barY;
     Globals::Canvas->SetColor(0xff, 0xff, 0xff, (unsigned char) alpha);
     int textOffset = (int) ((targetMode == 0 ? -2.0f : -1.0f) * bannerScale);
     Globals::Canvas->DrawImage2D(this->image_0x354, this->field_0x3e0,
                                  (Radar::drawTarget != 0 ? this->field_0x3e2 : 0) - Globals::layout->field_0x1e4);
     ListItem *item = (*this->eventQueue)[1];
     if (item != 0) {
-        int y = bannerY + barY;
         if (item->buttonKind == 1)
             Globals::Canvas->SetColor(0xff, 0x2a, 0, (unsigned char) alpha);
         else if (item->buttonKind == 2)
