@@ -14,8 +14,9 @@ void loadPortraits(AbyssEngine::Engine *engine) {
     using namespace AbyssEngine;
     PaintCanvas *canvas = engine->appManager->paintCanvas;
 
+    bool ipadClass = Globals::retinaDisplay || Globals::iPad || Globals::n9;
     String suffix(Globals::iPadLarge ? "_ipad_large" : Globals::iPadHD ? "_ipad_1440" :
-                  (Globals::retinaDisplay || Globals::iPad || Globals::n9) ? "_ipad" : "", false);
+                  ipadClass ? "_ipad" : "", false);
 
     // BEGIN GENERATED (gen_portraits.py)
     canvas->AddResource(new Resource(10200, RESOURCE_TEXTURE, new ResourceTexture(

@@ -200,7 +200,7 @@ namespace AbyssEngine {
             }
             case 1:
             case 3:
-                if (AEFile::Skip((uint32_t) atlasH * atlasW * 4, handle) == 0)
+                if (AEFile::Skip((uint32_t) atlasW * atlasH * 4, handle) == 0)
                     goto fail;
                 break;
             default:
@@ -263,8 +263,8 @@ namespace AbyssEngine {
                 pos[10] = h;
                 pos[11] = 0;
 
-                float invH = (float) (1.0 / (double) atlasH);
                 float invW = (float) (1.0 / (double) atlasW);
+                float invH = (float) (1.0 / (double) atlasH);
                 float u0 = (float) u * invW;
                 float v0 = (float) v * invH;
                 float u1 = (w + (float) u) * invW;
