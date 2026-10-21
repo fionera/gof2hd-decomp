@@ -126,7 +126,7 @@ public:
     uint32_t turretCamera;
     AEGeometry *dockCameraNode;
     AEGeometry *dockCameraLeaf;
-    uint8_t autoTurretEquipped;
+    bool autoTurretEquipped;
     int autoTurretTimer;
     int autoTurretFireTimer;
     KIPlayer *autoTurretTarget;
@@ -405,7 +405,7 @@ public:
 
     void handleTurretView(int dt);
 
-    unsigned char hasAutoTurret();
+    bool hasAutoTurret();
 
     bool hasCloak();
 

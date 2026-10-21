@@ -424,7 +424,7 @@ int SpaceLounge::init() {
     return 0;
 }
 
-unsigned char SpaceLounge::introFinished() {
+bool SpaceLounge::introFinished() {
     return this->introDone;
 }
 
@@ -1978,7 +1978,7 @@ bool SpaceLounge::OnTouchMove(int x, int y) {
     return false;
 }
 
-int SpaceLounge::OnTouchEnd(int x, int y) {
+bool SpaceLounge::OnTouchEnd(int x, int y) {
     this->touchDown = 0;
     if (this->choiceVisible || this->chatActive) {
         int choice = this->choiceWindow->OnTouchEnd(x, y);
@@ -1986,35 +1986,35 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
             this->onKeyPress(0x10000);
         else if (choice == 1)
             this->chatActive = 0;
-        return 0;
+        return false;
     }
     if (this->mapVisible) {
         if (this->starMap->OnTouchEnd(x, y)) {
             this->cutScene->resetCamera();
             this->mapVisible = 0;
         }
-        return 0;
+        return false;
     }
     if (Globals::layout->OnTouchEnd(x, y)) {
         // Back button.
         if (this->listVisible) {
             Globals::layout->resetWindowDimensions();
             this->listVisible = 0;
-            return 0;
+            return false;
         }
         if (this->mode == 0)
-            return 1;
+            return true;
         if (this->selectedAgent >= 0 && (*this->agents)[this->selectedAgent]->isGenericAgent())
             (*this->agents)[this->selectedAgent]->setEvent(1);
         this->singleOffer = 0;
         this->mode = 0;
-        return 0;
+        return false;
     }
     if (this->listVisible) {
         this->listWindow->OnTouchEnd(x, y);
         if (Globals::layout->helpPressed())
             Globals::layout->initHelpWindow(*Globals::gameText->getText(643));
-        return 0;
+        return false;
     }
 
     switch (this->mode) {
@@ -2032,7 +2032,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                 this->cameraEase->SetRange(camera, camera);
             this->introDone = 1;
             this->headBobPhase = 0;
-            return 0;
+            return false;
         }
         if (this->agents != 0) {
             this->selectedAgent = -1;
@@ -2044,7 +2044,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                     bottomRight->y < (float) y) {
                     this->selectedAgent = i;
                     this->onKeyPress(0x10000);
-                    return 0;
+                    return false;
                 }
             }
         }
@@ -2072,7 +2072,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                                                                          String("#C")),
                                            false);
                     this->choiceVisible = 1;
-                    return 0;
+                    return false;
                     }
                     message = *Globals::gameText->getText(885);
                     message = Globals::status->replaceHash(
@@ -2094,7 +2094,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                         }
                         this->scrollWindow->setText(agent->getName(), text);
                         this->chatScroll = 0;
-                        return 0;
+                        return false;
                     }
                     if (agent->getMission()->getType() == 0) {
                         int amount = agent->getMission()->getProductionGoodAmount();
@@ -2153,7 +2153,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                                                                          String("#C")),
                                            false);
                     this->choiceVisible = 1;
-                    return 0;
+                    return false;
                     }
                     switch (offer) {
                     case 8:
@@ -2215,7 +2215,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                     if (Globals::status->getWingmen() != 0) {
                         this->choiceWindow->set(*Globals::gameText->getText(785), false);
                         this->choiceVisible = 1;
-                        return 0;
+                        return false;
                     }
                     if (Globals::status->getCredits() < agent->getCosts()) {
                         this->choiceWindow->set(Globals::status->replaceHash(*Globals::gameText->getText(203),
@@ -2223,7 +2223,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                                                                          String("#C")),
                                            false);
                     this->choiceVisible = 1;
-                    return 0;
+                    return false;
                     }
                     message = *Globals::gameText->getText(Globals::achievements->gotAllMedals() ? 867 : 866);
                     message = Globals::status->replaceHash(
@@ -2233,7 +2233,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                     break;
                 case 1:
                     this->mode = 0;
-                    return 0;
+                    return false;
                 default:
                     break;
                 }
@@ -2336,7 +2336,7 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
     this->scrollWindow->OnTouchEnd(x, y);
     if (Globals::layout->helpPressed())
         Globals::layout->initHelpWindow(*Globals::gameText->getText(627));
-    return 0;
+    return false;
 }
 
 void SpaceLounge::OnRender3D() {

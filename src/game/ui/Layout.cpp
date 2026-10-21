@@ -132,14 +132,14 @@ bool Layout::OnTouchMove(int x, int y) {
     return this->secondaryButton->OnTouchMove(x, y);
 }
 
-int Layout::OnTouchEnd(int x, int y) {
+bool Layout::OnTouchEnd(int x, int y) {
     if (this->choiceWindowOpen == 0 && this->helpButtonEnabled != 0)
         this->helpPressedFlag = this->helpButton->OnTouchEnd(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0)
         return this->choiceWindow->OnTouchEnd(x, y) == 0;
     if (this->backButton->isVisible() != 0)
-        return static_cast<int>(this->backButton->OnTouchEnd(x, y));
-    return static_cast<int>(this->secondaryButton->OnTouchEnd(x, y));
+        return this->backButton->OnTouchEnd(x, y);
+    return this->secondaryButton->OnTouchEnd(x, y);
 }
 
 void Layout::startFade(bool fadeOut, int color, int duration) {

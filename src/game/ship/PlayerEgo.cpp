@@ -892,9 +892,8 @@ void PlayerEgo::shoot(int weapon, int type) {
     }
 }
 
-unsigned char PlayerEgo::hasAutoTurret() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->autoTurretEquipped);
+bool PlayerEgo::hasAutoTurret() {
+    return this->autoTurretEquipped;
 }
 
 void PlayerEgo::setAutoTurret(bool on) {

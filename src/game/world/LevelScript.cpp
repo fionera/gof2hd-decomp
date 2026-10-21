@@ -221,7 +221,7 @@ void LevelScript::skipCutscene() {
     }
 }
 
-int LevelScript::process(int delta) {
+bool LevelScript::process(int delta) {
     // Reconstruction pass 1 of _ZN11LevelScript7processEi (original 0xdf90 bytes @ 0x137d18).
     // Implemented faithfully here: prologue accessors + mission dispatch (0x137d18),
     // the mission==1 intro state machine (0x137d82-0x137e82) and the shared "active" tail
