@@ -6,7 +6,7 @@ String Agent::getStationName() {
     return String(this->stationName, false);
 }
 
-uint8_t Agent::hasAcceptedOffer() {
+bool Agent::hasAcceptedOffer() {
     return this->offerAccepted;
 }
 
@@ -42,7 +42,7 @@ String Agent::getMissionString() {
     return String(this->missionString, false);
 }
 
-uint8_t Agent::isMale() {
+bool Agent::isMale() {
     return this->male;
 }
 
@@ -67,7 +67,7 @@ void Agent::nextEvent() {
     this->eventCount = this->eventCount + 1;
 }
 
-uint8_t Agent::hasReward() {
+bool Agent::hasReward() {
     return this->rewardAtNextChat;
 }
 
@@ -246,10 +246,10 @@ Agent::Agent(int kind, String name, int station, int system, int race,
     this->sellBlueprintIndex = sellBlueprintIndex;
     if (sellBlueprintIndex >= 0)
         this->offer = 3;
-    this->offerAccepted = 0;
-    this->rewardAtNextChat = 0;
-    this->wasAskedForDifficulty = 0;
-    this->wasAskedForLocation = 0;
+    this->offerAccepted = false;
+    this->rewardAtNextChat = false;
+    this->wasAskedForDifficulty = false;
+    this->wasAskedForLocation = false;
     this->wingman1 = nullptr;
     this->wingman2 = nullptr;
     this->wingmanCount = 0;

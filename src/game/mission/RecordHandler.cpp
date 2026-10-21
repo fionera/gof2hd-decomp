@@ -913,9 +913,9 @@ void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method sign
     AEFile::Read(reinterpret_cast<int32_t &>(system), fd);
     AEFile::Read(wingmen, fd);
 
-    unsigned char male = 0;
+    bool male = false;
     bool hasReward = false, accepted = false;
-    unsigned char raw24 = 0, raw25 = 0;
+    bool raw24 = false, raw25 = false;
     AEFile::Read(male, fd);
     AEFile::Read(hasReward, fd);
     AEFile::Read(accepted, fd);

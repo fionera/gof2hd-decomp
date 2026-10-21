@@ -27,7 +27,7 @@ uint8_t Achievements::gotAllSupernovaMedals() {
     return this->gotAllSupernovaMedals_;
 }
 
-uint8_t Achievements::gotAllMedals() {
+bool Achievements::gotAllMedals() {
     return this->gotAllMedals_;
 }
 
@@ -67,7 +67,7 @@ Achievements::Achievements() {
     this->medals = new int[45];
     this->newMedals = new int[45];
     this->gotAllSupernovaMedals_ = 0;
-    this->gotAllMedals_ = 0;
+    this->gotAllMedals_ = false;
     this->gotAllGoldMedals_ = 0;
 }
 
@@ -144,7 +144,7 @@ void Achievements::countMedals() {
     int gOk = (golds == 36);
     this->gotAllSupernovaMedals_ = (uint8_t)(sOk & gOk);
     this->gotAllGoldMedals_ = (uint8_t)gOk;
-    this->gotAllMedals_ = (uint8_t)(total == 36);
+    this->gotAllMedals_ = total == 36;
 }
 
 static const int gCFN_req[135] = {

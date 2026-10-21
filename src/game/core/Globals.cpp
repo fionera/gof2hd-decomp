@@ -773,13 +773,17 @@ String Globals::getAgentMissionText(Agent *agent) {
                                                     String("#C", false));
                 break;
             }
-            case 5:
+            case 5: {
                 if (agent->getMission() == nullptr) {
                     Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
                     agent->setMission(Globals::generator->createMission(agent, systems));
                 }
-                agent->field_0x28 = agent->field_0x28 == -1 ? 777 + Globals::rnd->nextInt(2) : agent->field_0x28;
-                text += *Globals::gameText->getText(agent->field_0x28);
+                int firstLine = agent->field_0x28;
+                if (firstLine == -1) {
+                    firstLine = 777 + Globals::rnd->nextInt(2);
+                }
+                agent->field_0x28 = firstLine;
+                text += *Globals::gameText->getText(firstLine);
                 text = Globals::status->replaceHash(
                     String(text, false),
                     String(String(agent->getMission()->getProductionGoodAmount()), false),
@@ -793,9 +797,14 @@ String Globals::getAgentMissionText(Agent *agent) {
                     String(Globals::layout->formatCredits(agent->getMission()->getReward()), false),
                     String("#C", false));
                 break;
+            }
             case 1: {
-                agent->field_0x28 = agent->field_0x28 == -1 ? 824 : agent->field_0x28;
-                text = *Globals::gameText->getText(agent->field_0x28);
+                int firstLine = agent->field_0x28;
+                if (firstLine == -1) {
+                    firstLine = 824;
+                }
+                agent->field_0x28 = firstLine;
+                text = *Globals::gameText->getText(firstLine);
                 Globals::rnd->setSeed(agent->getName().size() * agent->getRace() +
                                       Globals::status->getStation()->getIndex());
                 if ((int) text.IndexOf(String("#S")) >= 0) {
@@ -848,8 +857,12 @@ String Globals::getAgentMissionText(Agent *agent) {
                 }
                 text = Globals::status->replaceHash(String(text, false), String(mission->getTargetName(), false),
                                                     String("#N", false));
-                agent->field_0x28 = agent->field_0x28 == -1 ? 764 + Globals::rnd->nextInt(3) : agent->field_0x28;
-                text += String("\n") + *Globals::gameText->getText(agent->field_0x28);
+                int firstLine = agent->field_0x28;
+                if (firstLine == -1) {
+                    firstLine = 764 + Globals::rnd->nextInt(3);
+                }
+                agent->field_0x28 = firstLine;
+                text += String("\n") + *Globals::gameText->getText(firstLine);
 
                 float bonus = ((Standing *) (intptr_t) Globals::status->getStanding())->getMissionBonus(agent->getRace());
                 String bonusText = bonus > 0.0f
@@ -873,11 +886,19 @@ String Globals::getAgentMissionText(Agent *agent) {
                 }
                 break;
             }
-            case 2:
-                agent->field_0x28 = agent->field_0x28 == -1 ? 768 + Globals::rnd->nextInt(5) : agent->field_0x28;
-                text += *Globals::gameText->getText(agent->field_0x28);
-                agent->field_0x2c = agent->field_0x2c == -1 ? 773 + Globals::rnd->nextInt(2) : agent->field_0x2c;
-                text += String("\n") + *Globals::gameText->getText(agent->field_0x2c);
+            case 2: {
+                int firstLine = agent->field_0x28;
+                if (firstLine == -1) {
+                    firstLine = 768 + Globals::rnd->nextInt(5);
+                }
+                agent->field_0x28 = firstLine;
+                text += *Globals::gameText->getText(firstLine);
+                int secondLine = agent->field_0x2c;
+                if (secondLine == -1) {
+                    secondLine = 773 + Globals::rnd->nextInt(2);
+                }
+                agent->field_0x2c = secondLine;
+                text += String("\n") + *Globals::gameText->getText(secondLine);
                 text = Globals::status->replaceHash(String(text, false),
                                                     String(String(agent->getSellItemQuantity()), false),
                                                     String("#Q", false));
@@ -898,6 +919,7 @@ String Globals::getAgentMissionText(Agent *agent) {
                         String("#C", false));
                 }
                 break;
+            }
             case 6:
                 text += *Globals::gameText->getText((Globals::achievements->gotAllMedals() ? 782 : 779) +
                                                     agent->getWingmanFriendsCount());
@@ -909,6 +931,8 @@ String Globals::getAgentMissionText(Agent *agent) {
                                                         String("#W", false));
                 }
                 break;
+            case 3:
+            case 4:
             default:
                 break;
         }
@@ -936,8 +960,12 @@ String Globals::getAgentMissionText(Agent *agent) {
                     Globals::status->field_d0--;
                     return text;
                 }
-                agent->field_0x28 = agent->field_0x28 == -1 ? 874 + Globals::rnd->nextInt(2) : agent->field_0x28;
-                text = *Globals::gameText->getText(agent->field_0x28);
+                int firstLine = agent->field_0x28;
+                if (firstLine == -1) {
+                    firstLine = 874 + Globals::rnd->nextInt(2);
+                }
+                agent->field_0x28 = firstLine;
+                text = *Globals::gameText->getText(firstLine);
                 text += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 text += String(" ") + *Globals::gameText->getText(879);
                 text = Globals::status->replaceHash(
@@ -948,11 +976,19 @@ String Globals::getAgentMissionText(Agent *agent) {
                            false),
                     String("#C", false));
             } else if (agent->getOffer() == 9) {
-                agent->field_0x28 = agent->field_0x28 == -1 ? 874 + Globals::rnd->nextInt(2) : agent->field_0x28;
-                text = *Globals::gameText->getText(agent->field_0x28);
+                int firstLine = agent->field_0x28;
+                if (firstLine == -1) {
+                    firstLine = 874 + Globals::rnd->nextInt(2);
+                }
+                agent->field_0x28 = firstLine;
+                text = *Globals::gameText->getText(firstLine);
                 text += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                agent->field_0x2c = agent->field_0x2c == -1 ? 773 + Globals::rnd->nextInt(2) : agent->field_0x2c;
-                text += String("\n") + *Globals::gameText->getText(agent->field_0x2c);
+                int secondLine = agent->field_0x2c;
+                if (secondLine == -1) {
+                    secondLine = 773 + Globals::rnd->nextInt(2);
+                }
+                agent->field_0x2c = secondLine;
+                text += String("\n") + *Globals::gameText->getText(secondLine);
                 text = Globals::status->replaceHash(String(text, false),
                                                     String(String(agent->getSellItemQuantity()), false),
                                                     String("#Q", false));
@@ -968,11 +1004,19 @@ String Globals::getAgentMissionText(Agent *agent) {
                            false),
                     String("#C", false));
             } else if (agent->getOffer() == 10) {
-                agent->field_0x28 = agent->field_0x28 == -1 ? 874 + Globals::rnd->nextInt(2) : agent->field_0x28;
-                text = *Globals::gameText->getText(agent->field_0x28);
+                int firstLine = agent->field_0x28;
+                if (firstLine == -1) {
+                    firstLine = 874 + Globals::rnd->nextInt(2);
+                }
+                agent->field_0x28 = firstLine;
+                text = *Globals::gameText->getText(firstLine);
                 text += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                agent->field_0x2c = agent->field_0x2c == -1 ? 773 + Globals::rnd->nextInt(2) : agent->field_0x2c;
-                text += String("\n") + *Globals::gameText->getText(agent->field_0x2c);
+                int secondLine = agent->field_0x2c;
+                if (secondLine == -1) {
+                    secondLine = 773 + Globals::rnd->nextInt(2);
+                }
+                agent->field_0x2c = secondLine;
+                text += String("\n") + *Globals::gameText->getText(secondLine);
                 text = Globals::status->replaceHash(String(text, false), String(String(1), false),
                                                     String("#Q", false));
                 text = Globals::status->replaceHash(
@@ -987,8 +1031,12 @@ String Globals::getAgentMissionText(Agent *agent) {
                            false),
                     String("#C", false));
             } else if (agent->getOffer() == 4) {
-                agent->field_0x28 = agent->field_0x28 == -1 ? 874 + Globals::rnd->nextInt(2) : agent->field_0x28;
-                text = *Globals::gameText->getText(agent->field_0x28);
+                int firstLine = agent->field_0x28;
+                if (firstLine == -1) {
+                    firstLine = 874 + Globals::rnd->nextInt(2);
+                }
+                agent->field_0x28 = firstLine;
+                text = *Globals::gameText->getText(firstLine);
                 text += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 text += String(" ") + *Globals::gameText->getText(877);
                 SolarSystem *system = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(agent->getSellSystemIndex());
@@ -999,8 +1047,12 @@ String Globals::getAgentMissionText(Agent *agent) {
                     String(Globals::layout->formatCredits(agent->getSellItemPrice()), false),
                     String("#C", false));
             } else {
-                agent->field_0x28 = agent->field_0x28 == -1 ? 874 + Globals::rnd->nextInt(2) : agent->field_0x28;
-                text = *Globals::gameText->getText(agent->field_0x28);
+                int firstLine = agent->field_0x28;
+                if (firstLine == -1) {
+                    firstLine = 874 + Globals::rnd->nextInt(2);
+                }
+                agent->field_0x28 = firstLine;
+                text = *Globals::gameText->getText(firstLine);
                 text += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 text += String(" ") + *Globals::gameText->getText(876);
                 text = Globals::status->replaceHash(
