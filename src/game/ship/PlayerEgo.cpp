@@ -1,4 +1,8 @@
 #include "game/ship/PlayerEgo.h"
+#include "game/world/Station.h"
+#include "game/world/StarSystem.h"
+#include "engine/render/ParticleSettings.h"
+#include "engine/render/ParticleSettingsRef.h"
 #include "engine/render/Camera.h"
 #include "engine/render/MovingStars.h"
 #include "engine/core/AERandom.h"
@@ -67,7 +71,6 @@ namespace {
     static float *g_PE_dr_posNoLock = nullptr;
     static float *g_PE_dr_posBlink = nullptr;
     static float *g_PE_dr_posNormal = nullptr;
-    static const float g_PE_upd_handlingBias = 0.0f;
         static float *g_PE_t_anchor = nullptr;
     static String **g_PE_t_pctStr = nullptr;
     static const float g_PE_t_timerDiv = 0.0f;
@@ -98,13 +101,6 @@ static_assert(__builtin_offsetof(PE_MatrixBuf, m11) == 0x14, "m11");
 static_assert(__builtin_offsetof(PE_MatrixBuf, m22) == 0x28, "m22");
 #endif
 
-struct PE_MaterialBlock {
-    char pad0[0x20];
-    unsigned char *materialList;
-};
-#if __SIZEOF_POINTER__ == 4
-static_assert(__builtin_offsetof(PE_MaterialBlock, materialList) == 0x20, "materialList");
-#endif
 
 struct PE_AsteroidMineTarget {
     char pad0[0x44];
@@ -122,7 +118,6 @@ void MatrixSetRotation(void *, void *, float, float, float); // lint: void_ptr (
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-int aeabi_idiv_(int a, int b);
 
 int PE_adp_approach(PlayerEgo *self, void *station); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -136,7 +131,6 @@ static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-static inline void Vec_assign(void *dst, const void *src) { for(int _i=0;_i<3;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -174,9 +168,7 @@ void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint); // lint: v
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void PE_upd_boost(PlayerEgo *self, int dt);
 
-void PE_upd_docksFinishDelivery(PlayerEgo *self, void *radio); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -210,9 +202,7 @@ void Mat_mul(void *out, const void *a, const void *b); // lint: void_ptr (extern
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHandle);
 
-void *TractorBeam_new(void *geo, int kind); // lint: void_ptr (fn-ptr slot; param type load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -928,7 +918,6 @@ Vec3 PlayerEgo::getTurretPosition() {
     return MatrixGetPosition(world);
 }
 
-static inline void Vec_scale(void *out, const void *v, float s) { for(int _i=0;_i<3;_i++) ((float*)out)[_i]=((const float*)v)[_i]*s; } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -1845,7 +1834,7 @@ void PlayerEgo::PlayEngineSound() {
     this->player->PlayEngineSound(this->field_0x1c, nullptr);
 }
 
-void PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
+float PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
     float t[3] = {target.x, target.y, target.z};
     PE_mtp_steer(this, t, steer ? 1 : 0, speed);
 
@@ -1872,6 +1861,7 @@ void PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
 
     Mat_assign(((Player *) this->player)->transform, ((AEGeometry *) (this->geometry))->getMatrix());
     ((AEGeometry *) (this->geometry))->getPosition();
+    return 0.0f; // TODO(decomp): moveToPosition returns the bank angle (see update)
 }
 
 void PlayerEgo::resetGunDelay() {
@@ -2450,118 +2440,795 @@ void PlayerEgo::draw(bool allowHud) {
     ((PlayerEgo *) (this))->drawThrottle();
 }
 
-void PE_upd_subsystems(PlayerEgo *self, int dt, void *radar, void *hud, // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-                       // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-                       void *radio, // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-                       void *script); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void PE_upd_post(PlayerEgo *self, int dt, void *radar, void *hud, // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-                 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-                 void *radio, int arg5); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6,
-                       int arg7) {
-    (void) arg6;
-    (void) arg7;
-    (void) script;
+// Blueprint unlocked by the hidden blueprint of the station (rodata 0x1fba34).
+static const int kHiddenBlueprints[5] = {226, 221, 223, 225, 227};
 
-    if (((intptr_t) this->hud) == 0)
-        return;
+void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool mouseLocked,
+                       int controlMode) {
+    (void) arg5;
+    this->levelScript = script;
+    if (this->hud == 0) {
+        this->hud = (int) (intptr_t) hud;
+        this->field_0x14 = radar;
+        this->radioRef = radio;
+    }
     if (this->freeze != 0)
         return;
 
-    float pos[3];
-    ((PlayerEgo *) (this))->getPosition();
-    ((int &) this->dockOffsetVec.x) = *(int *) &pos[0];
-    ((int &) this->dockOffsetVec.y) = *(int *) &pos[1];
-    this->boostSoundId = *(int *) &pos[2];
+    this->dockOffsetVec = this->geometry->getPosition();
+    this->shakeIntensity = dt;
+    if (this->boostTimer < 0 && this->boostTimer + dt * 3 > 0)
+        this->boostTimer = 0;
+    this->boostTimer += dt;
 
-    PE_upd_subsystems(this, dt, radar, hud, radio, script);
-
-    PE_upd_boost(this, dt);
-
-    if (((char &) this->dockingState) != 0) {
-        this->field_0x145 = 1;
-        if (((intptr_t) this->asteroidTarget) == 0 || ((PlayerEgo *) (this))->isDead() != 0) {
-            ((PlayerEgo *) (this))->dockToAsteroid(nullptr, nullptr);
-            PE_upd_post(this, dt, radar, hud, radio, arg5);
-            return;
+    if (this->field_0x39a && !this->field_0x399 && this->player->getShieldHP() <= 0
+        && Globals::status->getShip()->getFirstEquipmentOfSort(43) != nullptr) {
+        int cells = Globals::status->getShip()->getFirstEquipmentOfSort(43)->getAttribute(59);
+        if (Globals::status->getShip()->hasCargo(202, cells)) {
+            this->field_0x399 = 1;
+            Globals::sound->play(2258, nullptr, nullptr, 0.0f);
+            Globals::sound->play(2257, nullptr, nullptr, 0.0f);
+            Vector velocity = {0.0f, 0.0f, 0.0f};
+            Vector position = this->getPosition();
+            Globals::sound->updateEvent3DAttributes(2258, &position, &velocity, false);
+            Globals::status->getShip()->removeCargo(202, cells);
+            hud->hudEvent(47, this, cells);
         }
-        ((PlayerEgo *) (this))->approachAsteroid(hud, (int) (intptr_t) hud, radar);
+    }
+    if (this->field_0x399) {
+        if (this->player->getShieldHP() < this->player->getMaxShieldHP()) {
+            float regen = (float) dt * 0.15f;
+            this->player->setShieldHP((int) ((regen < 1.0f ? 1.0f : regen) + (float) this->player->getShieldHP()));
+            Globals::sound->setParamValue(0, 2257,
+                                          (float) this->player->getShieldHP() / (float) this->player->getMaxShieldHP());
+            Vector velocity = {0.0f, 0.0f, 0.0f};
+            Vector position = this->getPosition();
+            Globals::sound->updateEvent3DAttributes(2257, &position, &velocity, false);
+        } else {
+            Globals::sound->play(2259, nullptr, nullptr, 0.0f);
+            Globals::sound->stop(2257);
+            Vector velocity = {0.0f, 0.0f, 0.0f};
+            Vector position = this->getPosition();
+            Globals::sound->updateEvent3DAttributes(2259, &position, &velocity, false);
+            this->field_0x399 = 0;
+        }
     }
 
-    if (this->dockedFlag != 0 && ((Player *) (this->player))->getHitpoints() > 0) {
-        this->field_0x145 = 1;
-        if (((intptr_t) this->asteroidTarget) == 0 || ((PlayerEgo *) (this))->isDead() != 0) {
-            ((PlayerEgo *) (this))->dockToDockingPoint(nullptr, nullptr);
-            PE_upd_post(this, dt, radar, hud, radio, arg5);
-            return;
-        }
-        if (((PlayerEgo *) (this))->approachDockingPoint(hud, 0, radar) != 0)
-            PE_upd_docksFinishDelivery(this, radio);
+    if (this->cloakRechargeTimer >= 1) {
+        this->cloakRechargeTimer -= dt;
+        if (this->cloakRechargeTimer <= 0)
+            hud->hudEvent(46, this, 0);
     }
 
-    if (this->turretActive != 0 || this->field_0x1a1 != 0)
-        ((PlayerEgo *) (this))->handleTurretView(dt);
-
-    bool autopilot = (this->autoPilot != 0 && this->autoPilotTarget != 0);
-    if (!autopilot) {
-        if (this->field_0x145 == 0) {
-            if (this->turretActive == 0 && this->field_0x1a1 == 0) {
-                ((PlayerEgo *) (this))->roll(this->shakeIntensity);
-                if (((PlayerEgo *) (this))->updateManeuver() == 0)
-                    ((PlayerEgo *) (this))->handleShip(dt);
-            } else {
-                ((PlayerEgo *) (this))->handleTurretView(dt);
+    if (this->hackingGame != 0) {
+        ((HackingGame *) (intptr_t) this->hackingGame)->update(this->shakeIntensity);
+        if (((HackingGame *) (intptr_t) this->hackingGame)->gameWon()) {
+            hud->setHackingGameActive(false);
+            if (Globals::status->getStation()->stationHasHiddenBlueprint(false)) {
+                int blueprint = Globals::status->getStation()->getHiddenBlueprintIndex();
+                Globals::status->unlockBluePrint(kHiddenBlueprints[blueprint]);
+                if (this->hackingGame != 0)
+                    delete (HackingGame *) (intptr_t) this->hackingGame;
+                this->hackingGame = 0;
+                Array<KIPlayer *> *enemies = this->level->getEnemies();
+                if (enemies != nullptr) {
+                    for (unsigned int i = 0; i < enemies->size(); i++) {
+                        if ((*enemies)[i]->field_0x70) {
+                            (*enemies)[i]->field_0x70 = 0;
+                            ((PlayerFixedObject *) (*enemies)[i])->setDockingType(0);
+                            delete (*enemies)[i]->cargo;
+                            (*enemies)[i]->cargo = nullptr;
+                            break;
+                        }
+                    }
+                }
+                this->level->createRadioMessage(blueprint + 21, 0);
+                (*Globals::status->field_58)[blueprint] = true;
             }
         }
-    } else if (this->field_0x145 == 0 && ((PlayerEgo *) (this))->updateManeuver() == 0) {
-        Waypoint *wp = (Waypoint *) (intptr_t) this->autoPilotTarget;
-        if (this->goingToWaypointFlag != 0 && wp != 0 && ((Waypoint *) wp)->route != 0) {
-            wp = (Waypoint *) ((Route *) (this->autoPilotTarget))->getWaypoint();
-            this->autoPilotTarget = (int) (intptr_t) wp;
+    }
+
+    if (Globals::status->getShip()->getFreeSpace() < this->freeCargoSpace) {
+        this->freeCargoSpace = Globals::status->getShip()->getFreeSpace();
+        this->volatileGoods = Globals::status->getShip()->hasVolatileGoods();
+    }
+
+    if (this->boostingFlag) {
+        if (this->volatileGoods) {
+            float shake = 0.13f;
+            Item *booster = Globals::status->getShip()->getFirstEquipmentOfSort(14);
+            if (booster != nullptr)
+                shake = booster->getIndex() == 195 ? 0.17f : 0.13f;
+            this->player->flShake += (float) dt * 0.001f * shake;
         }
-        if (wp == 0 || this->dockedToStream != 0) {
-            this->setAutoPilot(nullptr);
-        } else {
-            AbyssEngine::AEMath::Vector wpVec = ((KIPlayer *) wp)->getPosition();
-            float wpPos[3] = {wpVec.x, wpVec.y, wpVec.z};
-            ((int &) this->waypointX) = *(int *) &wpPos[0];
-            ((int &) this->waypointY) = *(int *) &wpPos[1];
-            ((int &) this->waypointZ) = *(int *) &wpPos[2];
-
-            float me[3];
-            ((PlayerEgo *) (this))->getPosition();
-            float dx = me[0] - wpPos[0], dy = me[1] - wpPos[1], dz = me[2] - wpPos[2];
-            if ((int) (dx * dx + dy * dy + dz * dz) < 20000)
-                this->aboutToReachAutoTargetFlag = 1;
-
-            float speed = 4.0f;
-            float h = ((Ship *) (PE_status()->getShip()))->getHandling();
-            if (h + g_PE_upd_handlingBias < 4.0f)
-                speed = ((Ship *) (PE_status()->getShip()))->getHandling() + g_PE_upd_handlingBias;
-            ((PlayerEgo *) (this))->moveToPosition(Vector{
-                                                       this->waypointX, this->waypointY, this->waypointZ
-                                                   }, true, speed);
-            if (this->turretActive != 0)
-                ((PlayerEgo *) (this))->handleTurretView(dt);
+        if (this->level->field_a4 != nullptr) {
+            ParticleSettings &settings = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur);
+            for (unsigned int i = 0; i < this->level->field_a4->size(); i++) {
+                float scale = (*this->level->field_a4)[i]->getScaling().x;
+                reinterpret_cast<float &>(settings.sets[29 + i].lifeBase) =
+                    scale * 250.0f * (this->getBoostPercentage() * 0.5f + 1.0f);
+            }
+        }
+        if (this->boostTimer > this->boostTime) {
+            ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->SetPostEffect(0x01400002, false);
+            this->boostingFlag = 0;
+            ((float &) this->speed) = 2.0f;
+            this->boostTimer = -this->boostDelay;
+            if (!this->field_0x146) {
+                this->boostSpeed = 2;
+                this->boostTime = 0;
+                this->boostDelay = 0;
+            }
         }
     }
 
-    if (this->dockedFlag != 0 && ((uint32_t &) this->dockingPointIndex) != 1
-        && this->turretActive == 0 && (((uint32_t &) this->dockingPointIndex) | 1) != 3)
-        ((PlayerEgo *) (this))->updateManeuver();
+    if (this->cloaked) {
+        this->cloakCharge += this->shakeIntensity;
+        reinterpret_cast<long long &>(Globals::status->field_c0) += this->shakeIntensity;
+        if (this->cloakCharge < 2000) {
+            int alpha = 255 - (int) ((float) this->cloakCharge / 2000.0f * 255.0f);
+            if (alpha <= 50)
+                alpha = 50;
+            if (this->cloakCharge == 0)
+                this->cloakCharge = 1;
+            unsigned int color = alpha | 0xffffff00;
+            Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->field_0x4->meshId),
+                                                       (float) this->cloakCharge / 2000.0f, 1);
+            if (this->turretMode) {
+                Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->turretBaseGeo->meshId),
+                                                           (float) this->cloakCharge / 2000.0f, 1);
+                Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->turretGeometry->meshId),
+                                                           (float) this->cloakCharge / 2000.0f, 1);
+            }
+            if ((int) this->field_0x4->parentTransform != -1)
+                Globals::Canvas->TransformSetColor(this->field_0x4->parentTransform, color);
+            if ((int) this->field_0x4->childTransform != -1)
+                Globals::Canvas->TransformSetColor(this->field_0x4->childTransform, color);
+            if (this->turretMode) {
+                Globals::Canvas->TransformSetColor(this->turretBaseGeo->transform, color);
+                Globals::Canvas->TransformSetColor(this->turretGeometry->transform, color);
+            }
+            if (this->getCloakingPercentage() > 25.0f && !this->field_0x325) {
+                this->field_0x325 = 1;
+                if (this->field_0x4 != nullptr && (int) this->field_0x4->childTransform != -1)
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->field_0x4->childTransform))
+                        ->SetVisible(!this->field_0x325);
+            }
+        }
+        Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->field_0x4->meshId),
+                                                   (float) this->cloakCharge * 0.001f, 2);
+        if (this->turretMode) {
+            Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->turretBaseGeo->meshId),
+                                                       (float) this->cloakCharge * 0.001f, 2);
+            Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->turretGeometry->meshId),
+                                                       (float) this->cloakCharge * 0.001f, 2);
+        }
+        if (this->cloakCharge > this->cloakChargeMax - 2000) {
+            int fadeStart = this->cloakChargeMax - 2000;
+            Globals::Canvas->MeshChangeShaderAnimValue(
+                Globals::Canvas->MeshGetPointer(this->field_0x4->meshId),
+                1.0f - ((float) this->cloakCharge - (float) (this->cloakChargeMax - 2000)) / 2000.0f, 1);
+            int alpha = (int) (((float) this->cloakCharge - (float) fadeStart) / 2000.0f * 255.0f);
+            if (alpha <= 50)
+                alpha = 50;
+            unsigned int color = alpha | 0xffffff00;
+            if (this->turretMode) {
+                Globals::Canvas->MeshChangeShaderAnimValue(
+                    Globals::Canvas->MeshGetPointer(this->turretBaseGeo->meshId),
+                    1.0f - ((float) this->cloakCharge - (float) (this->cloakChargeMax - 2000)) / 2000.0f, 1);
+                Globals::Canvas->MeshChangeShaderAnimValue(
+                    Globals::Canvas->MeshGetPointer(this->turretGeometry->meshId),
+                    1.0f - ((float) this->cloakCharge - (float) (this->cloakChargeMax - 2000)) / 2000.0f, 1);
+            }
+            if ((int) this->field_0x4->parentTransform != -1)
+                Globals::Canvas->TransformSetColor(this->field_0x4->parentTransform, color);
+            if ((int) this->field_0x4->childTransform != -1)
+                Globals::Canvas->TransformSetColor(this->field_0x4->childTransform, color);
+            if (this->turretMode) {
+                Globals::Canvas->TransformSetColor(this->turretBaseGeo->transform, color);
+                Globals::Canvas->TransformSetColor(this->turretGeometry->transform, color);
+            }
+            if (this->getCloakingPercentage() < 25.0f && this->field_0x325) {
+                this->field_0x325 = 0;
+                if (this->field_0x4 != nullptr && (int) this->field_0x4->childTransform != -1)
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->field_0x4->childTransform))
+                        ->SetVisible(!this->field_0x325);
+            }
+        }
+        if (this->cloakCharge > this->cloakChargeMax) {
+            this->cloaked = 0;
+            this->cloakCharge = 0;
+            this->cloakRechargeTimer = this->cloakRechargeMax;
+            this->player->field_5e = 0;
+            Globals::sound->play(30, nullptr, nullptr, 0.0f);
+            if (this->field_0x325) {
+                this->field_0x325 = 0;
+                if (this->field_0x4 != nullptr && (int) this->field_0x4->childTransform != -1)
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->field_0x4->childTransform))
+                        ->SetVisible(!this->field_0x325);
+            }
+            ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial1))->blendMode =
+                this->originalBlendMode;
+            if (this->turretMode) {
+                ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial2))->blendMode =
+                    this->originalBlendMode;
+                ((AbyssEngine::Material *) Globals::Canvas->MaterialGetMaterial(this->cloakMaterial3))->blendMode =
+                    this->originalBlendMode;
+                if (this->turretMode) {
+                    unsigned short resId = 20102;
+                    Item *item = Globals::status->getShip()->getFirstEquipmentOfSort(8);
+                    if (item != nullptr && item->getIndex() == 224)
+                        resId = 24085;
+                    item = Globals::status->getShip()->getFirstEquipmentOfSort(35);
+                    if (item != nullptr) {
+                        int index = item->getIndex();
+                        resId = 29035;
+                        if (index == 199)
+                            resId = 29029;
+                        if (index == 198)
+                            resId = 29023;
+                    }
+                    Globals::Canvas->MeshChangeResourceMaterial(this->turretBaseGeo->meshId, resId);
+                    Globals::Canvas->MeshChangeResourceMaterial(this->turretGeometry->meshId, resId);
+                }
+            }
+        }
+        float engineColor = 221.0f + this->getCloakingPercentage() * -201.0f * 0.01f;
+        if (engineColor >= 221.0f)
+            engineColor = 221.0f;
+        else if (engineColor < 0.0f)
+            engineColor = 0.0f;
+        this->level->setPlayerEngineColor((short) (int) engineColor);
+    } else if (this->chargingCloak) {
+        this->cloakCharge += this->shakeIntensity;
+        if (this->cloakCharge > this->cloakDischargeMax) {
+            hud->hudEvent(29, this, 0);
+            this->toggleCloaking();
+            this->chargingCloak = 0;
+        }
+    }
 
-    if (this->autoTurretEquipped != 0 && this->autoTurretEnabled != 0) {
-        if (((PlayerEgo *) (this))->isDead() == 0) {
-            ((PlayerEgo *) (this))->handleAutoTurret(dt);
+    if (this->chargingDrive) {
+        this->driveCharge += this->shakeIntensity;
+        if (this->driveCharge >= this->driveChargeMax) {
+            this->shieldVisible = 0;
+            hud->hudEvent(26, this, 0);
+        }
+        if (this->volatileGoods)
+            this->player->flShake += (float) dt * 0.001f * 0.5f;
+    }
+    if (this->tractorBeam != nullptr)
+        this->tractorBeam->update(this->shakeIntensity, radar, this->level, hud);
+    if (this->repairBeams != nullptr) {
+        for (unsigned int i = 0; i < this->repairBeams->size(); i++)
+            (*this->repairBeams)[i]->update(this->shakeIntensity, radar, this->level, hud);
+    }
+    if (this->throttleStarted) {
+        this->throttle += dt;
+        if (this->throttle >= 2000)
+            this->throttleStarted = 0;
+    }
+
+    if (this->turretMode && !this->autoTurretEquipped && this->turretActive
+        && Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretGeometry->transform))
+            ->Update((long long) dt, true);
+        if (this->turretExtraGeo != nullptr)
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->turretExtraGeo->transform))
+                ->Update((long long) dt, false);
+    }
+    if (this->shieldGeometry != nullptr && this->shieldVisible) {
+        this->shieldGeometry->setScaling(this->shieldRadius, this->shieldRadius, this->shieldRadius);
+        this->shieldGeometry->setDirection(
+            AbyssEngine::AEMath::VectorNormalize(this->level->getStarSystem()->getLightDirection()),
+            Vector{0.0f, 1.0f, 0.0f});
+        this->shieldGeometry->setPosition(this->geometry->getPosition());
+        if (Globals::status->getShip()->getIndex() == 8)
+            this->shieldGeometry->translate(AbyssEngine::AEMath::VectorNormalize(this->geometry->getDirection()) * 300.0f);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->shieldGeometry->transform))
+            ->Update((long long) this->shakeIntensity, true);
+    }
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->field_0x4->transform))
+        ->Update((long long) dt, true);
+
+    this->aboutToReachAutoTargetFlag = 0;
+    this->field_0x145 = 0;
+    bool moving = false;
+    if (this->computerControlled) {
+        this->field_0x145 = 1;
+        if (this->dockingToPlanet)
+            this->planetDockTimer += this->shakeIntensity;
+        moving = true;
+    } else if (this->dockingToPlanet) {
+        this->field_0x145 = 1;
+        this->planetDockTimer += this->shakeIntensity;
+        moving = true;
+    } else if (this->dockedToStream) {
+        this->field_0x145 = 1;
+        moving = true;
+    }
+    if (moving) {
+        this->geometry->moveForward(((float &) this->speed) * (float) dt);
+        reinterpret_cast<Matrix &>(this->player->transform[0]) =
+            *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
+            * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
+    }
+
+    if (this->collide && this->player->isActive()) {
+        this->collidesWithStationFlag = 0;
+        this->calcCollision(this->level->getLandmarks());
+        this->calcCollision(this->level->getEnemies());
+        this->calcCollision(this->level->getAsteroids());
+        if (this->collidesWithStationFlag && this->turretActive)
+            this->handleTurretView(dt);
+    }
+
+    if (this->volatileGoods) {
+        if (!Globals::sound->isPlaying(35))
+            Globals::sound->play(35, nullptr, nullptr, 0.0f);
+        float pitchDelta = this->yawAccumD - (float &) this->field_0x274;
+        float rollDelta = this->rollAccum - (float &) this->field_0x26c;
+        float pitchLevel = pitchDelta > 0.0f ? pitchDelta : -pitchDelta;
+        float rollLevel = rollDelta > 0.0f ? rollDelta : -rollDelta;
+        this->player->flShake += (float) dt * 0.001f * 0.5f * (pitchLevel > rollLevel ? pitchLevel : rollLevel);
+        (float &) this->field_0x26c = this->rollAccum;
+        (float &) this->field_0x274 = this->yawAccumD;
+        if (this->player->flShake >= 1.0f && !this->dockingToPlanet && !this->dockedToStream) {
+            this->player->setHitpoints(0);
+            if (this->explosion2 == nullptr) {
+                this->explosion2 = new Explosion(12);
+                this->explosion2->setScaling(0.7f);
+                this->explosion2->start(this->geometry->getPosition(), Vector{0.0f, 0.0f, 0.0f});
+            }
+        }
+        if (this->player->getHitpoints() >= 1)
+            Globals::sound->setParamValue(0, 35, this->player->flShake);
+        else
+            Globals::sound->setParamValue(0, 35, 0.0f);
+    } else {
+        this->player->flShake = 0;
+    }
+
+    if (this->player->getGammaHP() <= 0 && !this->dockingToPlanet && !this->dockingToStream)
+        this->player->setHitpoints(0);
+
+    if ((char &) this->dockingState) {
+        this->field_0x145 = 1;
+        KIPlayer *asteroid = (KIPlayer *) (intptr_t) this->asteroidTarget;
+        if (asteroid == nullptr || asteroid->isDying() || ((KIPlayer *) (intptr_t) this->asteroidTarget)->isDead()) {
+            this->dockToAsteroid(nullptr, radar);
+            return;
+        }
+        this->approachAsteroid(hud, 0, radar);
+    }
+
+    if (this->dockedFlag && this->player->getHitpoints() >= 1) {
+        this->field_0x145 = 1;
+        KIPlayer *station = (KIPlayer *) (intptr_t) this->asteroidTarget;
+        if (station == nullptr || station->isDying() || ((KIPlayer *) (intptr_t) this->asteroidTarget)->isDead()) {
+            this->dockToDockingPoint(nullptr, nullptr);
+            return;
+        }
+        if (this->approachDockingPoint(hud, 0, radar)) {
+            Mission *mission = Globals::status->getMission();
+            Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
+            PlayerFixedObject *dock = (PlayerFixedObject *) (intptr_t) this->asteroidTarget;
+            if (!mission->isEmpty() && (mission->getType() == 15 || mission->getType() == 184)
+                && dock->getDockingType() == 1) {
+                int delivered = this->dockTransferedAmount;
+                if (delivered != this->dockTotalAmount) {
+                    this->dockTransferedAmount =
+                        (int) ((float) this->field_0x35c / (mission->getType() == 184 ? 1500.0f : 1000.0f));
+                    if (this->dockTotalAmount <= this->dockTransferedAmount) {
+                        if (delivered < this->dockTransferedAmount)
+                            hud->hudEvent(mission->getType() == 184 ? 38 : 42, this, 0);
+                        this->dockTransferedAmount = this->dockTotalAmount;
+                    }
+                    if (this->dockTransferedAmount > delivered) {
+                        if (mission->getType() == 184) {
+                            if (Globals::status->field_178 >= 1) {
+                                Globals::status->field_178 += delivered - this->dockTransferedAmount;
+                                mission->setStatusValue(mission->getStatusValue() + delivered - this->dockTransferedAmount);
+                                if (mission->getStatusValue() < 0)
+                                    mission->setStatusValue(0);
+                                if (Globals::status->field_178 < 0)
+                                    Globals::status->field_178 = 0;
+                            }
+                        } else if (mission->getType() == 15) {
+                            Globals::status->getShip()->removeCargo(mission->getProductionGoodIndex(),
+                                                                     this->dockTransferedAmount - delivered);
+                            this->level->incNumDeliveredOre(this->dockTransferedAmount - delivered);
+                        }
+                    }
+                }
+            } else if (!mission->isEmpty() && (mission->getType() == 184 || mission->getType() == 168)
+                       && dock->getDockingType() == 2) {
+                int delivered = this->dockTransferedAmount;
+                if (delivered != this->dockTotalAmount) {
+                    this->dockTransferedAmount = (int) ((float) this->field_0x35c / 1500.0f);
+                    if (this->dockTotalAmount <= this->dockTransferedAmount) {
+                        if (delivered < this->dockTransferedAmount)
+                            hud->hudEvent(mission->getType() == 184 || mission->getType() == 168 ? 36 : 40, this, 0);
+                        this->dockTransferedAmount = this->dockTotalAmount;
+                    }
+                    if (this->dockTransferedAmount > delivered)
+                        Globals::status->field_178 += this->dockTransferedAmount - delivered;
+                }
+            } else if (campaign != nullptr && !campaign->isEmpty()
+                       && (campaign->getType() == 167 || campaign->getType() == 174) && dock->getDockingType() == 1) {
+                int delivered = this->dockTransferedAmount;
+                if (delivered != this->dockTotalAmount) {
+                    this->dockTransferedAmount = (int) ((float) this->field_0x35c / 1000.0f);
+                    if (this->dockTotalAmount <= this->dockTransferedAmount) {
+                        if (delivered < this->dockTransferedAmount)
+                            hud->hudEvent(42, this, 0);
+                        this->dockTransferedAmount = this->dockTotalAmount;
+                    }
+                    if (this->dockTransferedAmount > delivered) {
+                        Globals::status->getShip()->removeCargo(campaign->getProductionGoodIndex(),
+                                                                 this->dockTransferedAmount - delivered);
+                        campaign->setStatusValue(campaign->getStatusValue() + 1);
+                    }
+                }
+            } else if (dock->getDockingType() == 3 && this->hackingGame == 0) {
+                int dockIndex = 0;
+                for (int i = 0; i < this->level->getNumDockingTargets(); i++) {
+                    if (this->asteroidTarget == this->level->getDockingTarget(i))
+                        dockIndex = i;
+                }
+                int campaignMission = Globals::status->getCurrentCampaignMission();
+                this->hackingGame = (int) (intptr_t) new HackingGame(0, campaignMission == 91 ? 1 : 4, -1, -1, dockIndex);
+                hud->setHackingGameActive(true);
+            }
+            this->field_0x35c += this->shakeIntensity;
+        }
+        if (this->turretActive || this->field_0x1a1)
+            this->handleTurretView(dt);
+    }
+
+    float bank = 0.0f;
+    if (this->autoPilot && this->autoPilotTarget != 0) {
+        if (!this->field_0x145 && !this->updateManeuver()) {
+            KIPlayer *target = (KIPlayer *) (intptr_t) this->autoPilotTarget;
+            if (this->goingToWaypointFlag && ((Waypoint *) target)->route != nullptr) {
+                target = (KIPlayer *) (intptr_t) ((Waypoint *) target)->route->getWaypoint();
+                this->autoPilotTarget = (int) (intptr_t) target;
+            }
+            if (target == nullptr || this->dockedToStream) {
+                this->setAutoPilot(nullptr);
+            } else {
+                *(Vector *) &this->waypointX = target->getPosition();
+                if ((int) AbyssEngine::AEMath::VectorLength(*(Vector *) &this->waypointX - this->getPosition()) <= 19999)
+                    this->aboutToReachAutoTargetFlag = 1;
+                float speed = 4.0f;
+                if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
+                    speed = Globals::status->getShip()->getHandling() + 2.7f;
+                bank = this->moveToPosition(*(Vector *) &this->waypointX, true, speed);
+                if (this->turretActive)
+                    this->handleTurretView(dt);
+            }
+        }
+    } else if (!this->field_0x145) {
+        if (this->turretActive || this->field_0x1a1) {
+            this->handleTurretView(dt);
         } else {
+            this->roll(this->shakeIntensity);
+            if (!this->updateManeuver())
+                this->handleShip(dt);
+        }
+    }
+
+    if (this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive
+        && (this->dockingPointIndex | 1) != 3)
+        this->updateManeuver();
+
+    if (this->autoTurretEquipped && this->autoTurretEnabled
+        && (!this->field_0x354 || script->m_nScriptTime >= 10000)) {
+        if (this->isDead()) {
             this->autoTurretEnabled = 0;
-            ((Player *) (this->player))->stopShooting(0);
+            this->player->stopShooting(2);
+        } else {
+            this->handleAutoTurret(dt);
         }
     }
 
-    PE_upd_post(this, dt, radar, hud, radio, arg5);
+    if (!(char &) this->dockingState && (unsigned int) (this->dockingPointIndex - 1) >= 2) {
+        Matrix rotation;
+        bool steered;
+        if (this->autoPilotTarget == 0 || this->dockedToStream) {
+            steered = false;
+        } else {
+            float step = this->handling * (float) dt * 0.012345679f;
+            float yaw = (float &) this->field_0x280;
+            if (yaw < bank) {
+                yaw += step;
+                (float &) this->field_0x280 = yaw;
+                if (yaw > bank) {
+                    yaw = bank;
+                    (float &) this->field_0x280 = bank;
+                }
+            } else if (yaw > bank) {
+                yaw -= step;
+                (float &) this->field_0x280 = yaw;
+                if (yaw < bank) {
+                    yaw = bank;
+                    (float &) this->field_0x280 = bank;
+                }
+            }
+            steered = true;
+            this->yawAccumF = yaw;
+        }
+        rotation = AbyssEngine::AEMath::MatrixSetRotation(
+            rotation, (float) ((double) this->pitchAccumD * 0.25 * 0.000244140625 * 6.2831854820251465),
+            this->yawAccumF * -0.000244140625f * 6.2831855f, 0.0f);
+        this->field_0x4->setMatrix(rotation);
+        if (steered) {
+            reinterpret_cast<Matrix &>(this->player->transform[0]) =
+                *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
+                * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
+        }
+
+        float yaw = this->yawAccumF;
+        if (Globals::mouseCursorActivated) {
+            if (yaw > 0.0f && this->yawAccumDir == 0) {
+                this->yawAccumF = yaw * 0.7f;
+                if (this->yawAccumF < 0.0f)
+                    this->yawAccumF = 0;
+            } else if (yaw < 0.0f && this->yawAccumDir == 0) {
+                this->yawAccumF = yaw * 0.7f;
+                if (this->yawAccumF > 0.0f)
+                    this->yawAccumF = 0;
+            }
+        } else if (yaw > 0.0f && this->yawAccumDir == 0) {
+            this->yawAccumF = yaw + this->handling * (float) dt / -126.0f;
+            if (this->yawAccumF < 0.0f)
+                this->yawAccumF = 0;
+        } else if (yaw < 0.0f && this->yawAccumDir == 0) {
+            this->yawAccumF = yaw + this->handling * (float) dt / 126.0f;
+            if (this->yawAccumF > 0.0f)
+                this->yawAccumF = 0;
+        }
+        float pitch = this->pitchAccumD;
+        if (pitch > 0.0f && this->pitchAccumDir == 0) {
+            this->pitchAccumD = pitch + this->handling * (float) dt / -126.0f;
+            if (this->pitchAccumD < 0.0f)
+                this->pitchAccumD = 0;
+        } else if (pitch < 0.0f && this->pitchAccumDir == 0) {
+            this->pitchAccumD = pitch + this->handling * (float) dt / 126.0f;
+            if (this->pitchAccumD > 0.0f)
+                this->pitchAccumD = 0;
+        }
+        if (this->rocketControlGun != 0)
+            ((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->setRumblePercentage(0.2f, 70);
+        this->pitchRamp = 0;
+        this->yawRamp = 0;
+        this->pitchAccumDir = 0;
+        this->yawAccumDir = 0;
+        this->yawAccumD = 0;
+        this->rollAccum = 0;
+    }
+
+    if (Globals::status->getShip()->getShieldRegen() >= 1 && !this->isDead()) {
+        this->shieldRegenTick += dt;
+        if (this->shieldRegenTick > 100) {
+            this->shieldRegenTick = 0;
+            this->player->regenerateShield(this->shieldRegenRate);
+        }
+    }
+    int repairType = Globals::status->getShip()->getRepairType();
+    if (repairType >= 0 && !this->isDead()) {
+        this->repairHPTick += dt;
+        this->repairArmorTick += dt;
+        if ((repairType == 0 ? 600.0f : 420.0f) < (float) this->repairHPTick) {
+            this->repairHPTick = 0;
+            if (this->player->getHitpoints() < this->player->getMaxHitpoints())
+                this->player->regenerateHull();
+        }
+        if ((repairType == 0 ? 1000.0f : 700.0f) < (float) this->repairArmorTick) {
+            this->repairArmorTick = 0;
+            if (this->player->getHitpoints() >= this->player->getMaxHitpoints()
+                && this->player->getArmorHP() < this->player->getMaxArmorHP())
+                this->player->regenerateArmor();
+        }
+    }
+
+    if (this->field_0xac != 0 && this->emergencySystemTimer >= 1) {
+        AEGeometry *emergency = (AEGeometry *) (intptr_t) this->field_0xac;
+        this->player->setVulnerable(false);
+        this->emergencySystemTimer -= dt;
+        emergency->setMatrix(reinterpret_cast<Matrix &>(this->player->transform[0]));
+        ((AEGeometry *) (intptr_t) this->field_0xac)->translate(AbyssEngine::AEMath::MatrixRotateVector(
+            reinterpret_cast<Matrix &>(this->player->transform[0]), this->emergencyVec));
+        AbyssEngine::Mesh *mesh = Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->field_0xac)->meshId);
+        mesh->shaderAnimValue1 += (float) dt * 0.001f;
+        float total = (float) this->emergencyVal1;
+        float left = (float) this->emergencySystemTimer;
+        float scale;
+        if (total * 0.95f < left)
+            scale = (float) (this->emergencyVal1 - this->emergencySystemTimer) / (total * 0.05f);
+        else if (total * 0.05f > left)
+            scale = left / (total * 0.05f);
+        else
+            scale = 1.0f;
+        scale *= this->emergencyVal2;
+        ((AEGeometry *) (intptr_t) this->field_0xac)->setScaling(scale, scale, scale);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
+             ((AEGeometry *) (intptr_t) this->field_0xac)->transform))
+            ->Update((long long) dt, false);
+        if (this->emergencySystemTimer <= 0) {
+            if (this->field_0xac != 0)
+                delete (AEGeometry *) (intptr_t) this->field_0xac;
+            this->field_0xac = 0;
+            this->player->setVulnerable(true);
+            Globals::sound->stop(1115);
+            Globals::status->field_13c = 0;
+        }
+    }
+
+    this->player->update(dt, this->isDead() ? false : this->field_0x1c != -1);
+    if (this->shieldVisible && Globals::options[15] != 0 && this->engineSoundId != -1) {
+        Vector position = this->player->getPosition();
+        Globals::sound->updateEvent3DAttributes(this->engineSoundId, &position, nullptr, false);
+    }
+    vec_up = AbyssEngine::AEMath::MatrixGetUp(*(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform));
+    if (this->boostingFlag) {
+        ParticleSettings::Interpolate((ParticleSettings::ParticleSet) 4, (ParticleSettings::ParticleSet) 6,
+                                      this->getBoostPercentage(), (ParticleSettings::ParticleSet) 4);
+    } else {
+        ParticleSettings &current = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur);
+        uint32_t color = current.sets[4].color0;
+        current.sets[4] = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::init).sets[4];
+        current.sets[4].color0 = color;
+    }
+
+    if (this->route != 0) {
+        int previous = ((Route *) (intptr_t) this->route)->getCurrent();
+        ((Route *) (intptr_t) this->route)->update(this->dockOffsetVec);
+        if (((Route *) (intptr_t) this->route)->getCurrent() != previous) {
+            if (((Route *) (intptr_t) this->route)->loop || ((Route *) (intptr_t) this->route)->getCurrent() != 0)
+                hud->hudEvent(23, this, 0);
+            else
+                hud->hudEvent(24, this, 0);
+        }
+    }
+
+    this->field_0x20 = 0;
+    this->field_0x30a = 0;
+    if (Globals::mouseCursorActivated != this->field_0x378)
+        this->field_0x84 = 1;
+    if (this->lastHP > this->player->getCombinedHP() && !this->computerControlled && !this->freeze) {
+        hud->playerHit();
+        this->lastHP = this->player->getCombinedHP();
+        this->hitCamera();
+        if (this->player->shieldHit) {
+            this->field_0x30a = 1;
+            Globals::sound->play(25, nullptr, nullptr, 0.0f);
+            this->player->shieldHit = 0;
+        } else if (this->player->armorHit) {
+            Globals::sound->play(23, nullptr, nullptr, 0.0f);
+            this->player->armorHit = 0;
+        } else if (this->player->hullHit) {
+            Globals::sound->play(24, nullptr, nullptr, 0.0f);
+            this->player->hullHit = 0;
+        }
+        Vector hitDirection = AbyssEngine::AEMath::VectorNormalize(this->player->getHitVector());
+        Vector screen = {0.0f, 0.0f, 0.0f};
+        Globals::Canvas->GetScreenPosition(hitDirection * 5000.0f + this->dockOffsetVec, screen);
+        int side;
+        if (!(screen.x > 0.0f))
+            side = 1;
+        else
+            side = screen.x < (float) Globals::w ? 0 : 2;
+        this->field_0x20 = side;
+        if (screen.z < 0.0f) {
+            this->field_0x20 = side | 16;
+        } else {
+            this->field_0x20 = side | 32;
+            if (screen.x < -50000.0f)
+                this->field_0x20 = 1;
+            else if (screen.x < -15000.0f)
+                this->field_0x20 = side | 33;
+            if (screen.x > 50000.0f)
+                this->field_0x20 = 2;
+            else if (screen.x > 15000.0f)
+                this->field_0x20 |= 2;
+        }
+    }
+
+    Vector aimPosition = AbyssEngine::AEMath::MatrixGetPosition(reinterpret_cast<Matrix &>(this->player->transform[0]));
+    Vector aimDirection = AbyssEngine::AEMath::MatrixGetDir(reinterpret_cast<Matrix &>(this->player->transform[0]));
+    if (this->turretActive) {
+        Matrix turret = this->turretRoot->getMatrix() * this->turretGeometry->getMatrix();
+        aimPosition = AbyssEngine::AEMath::MatrixGetPosition(turret);
+        aimDirection = AbyssEngine::AEMath::MatrixGetDir(turret);
+    }
+    if (Globals::mouseCursorActivated && !mouseLocked && controlMode != 3
+        && (controlMode == 1 || !this->autoPilot)) {
+        float centerX = (float) (Globals::w >> 1);
+        float centerY = (float) (Globals::h >> 1);
+        float rangeX = (float) ((double) centerX * 0.7);
+        float rangeY = (float) ((double) centerY * 0.7);
+        float mouseX = (float) Globals::mouseDeltaX;
+        float mouseY = (float) Globals::mouseDeltaY;
+        float clampedX = rangeX > mouseX ? mouseX : rangeX;
+        float clampedY = rangeY > mouseY ? mouseY : rangeY;
+        if (clampedX < -rangeX)
+            clampedX = -rangeX;
+        if (clampedY < -rangeY)
+            clampedY = -rangeY;
+        int deltaX = (int) clampedX;
+        int deltaY = (int) clampedY;
+        float maxX = centerX + rangeX;
+        float maxY = centerY + rangeY;
+        if (maxX > centerX + (float) deltaX)
+            maxX = centerX + (float) deltaX;
+        if (maxY > centerY + (float) deltaY)
+            maxY = centerY + (float) deltaY;
+        if (centerX - rangeX > maxX)
+            maxX = centerX - rangeX;
+        if (centerY - rangeY > maxY)
+            maxY = centerY - rangeY;
+        crosshairPos.x = maxX;
+        Globals::mouseDeltaX = (int) clampedX;
+        Globals::mouseDeltaY = (int) clampedY;
+        crosshairPos.y = maxY;
+        if (deltaX >= 1)
+            this->right(dt, (float) deltaX / rangeX);
+        else if (deltaX <= -1)
+            this->left(dt, -(float) deltaX / rangeX);
+        if (deltaY >= 1)
+            this->down(dt, (float) deltaY / rangeY);
+        else if (deltaY <= -1)
+            this->up(dt, -(float) deltaY / rangeY);
+        Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
+                                           crosshairShootPos);
+        crosshairShootPos = crosshairShootPos.z > 0.0f ? crosshairShootPos
+                                                       : crosshairShootPos * 0.2f + *(Vector *) &this->field_0x94[3] * 0.8f;
+        *(Vector *) &this->field_0x94[3] = crosshairShootPos;
+    } else {
+        Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
+                                           crosshairPos);
+        crosshairPos = crosshairPos.z > 0.0f ? crosshairPos
+                                             : crosshairPos * 0.2f + *(Vector *) &this->field_0x94[0] * 0.8f;
+    }
+    if (this->field_0x84 && !((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->isInFastForwardMode()) {
+        if (Globals::mouseCursorActivated)
+            ((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->setShipHandling(this->handling);
+        else
+            ((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->resetShipHandling();
+        this->field_0x84 = 0;
+    }
+    this->field_0x378 = Globals::mouseCursorActivated != 0;
+    *(Vector *) &this->field_0x94[0] = crosshairPos;
+
+    if (this->isDead() && this->explosion != nullptr) {
+        this->player->stopShooting(0);
+        if (this->tractorBeam != nullptr)
+            Globals::sound->stop(0);
+        if (this->repairBeams != nullptr)
+            Globals::sound->stop(0);
+        if (!this->dockedFlag || this->dockingPointIndex != 1)
+            this->field_0x4->rotate(0.03f, 0.03f, 0.03f);
+        if (this->explosionTimer <= 2999) {
+            if (this->explosionTimer + this->shakeIntensity >= 3000) {
+                this->explosion->start(this->geometry->getPosition(), Vector{0.0f, 0.0f, 0.0f});
+                this->level->field_74->enableSystemEmit(this->currentSystem, false);
+                this->level->field_74->enableSystemRender(this->currentSystem, false);
+                this->level->field_74->emitManual(this->level->field_3c, aimPosition, 0, aimDirection, -1.0f);
+            }
+        } else if (this->explosionTimer != 3000) {
+            this->explosion->update(this->shakeIntensity, this->geometry->getPosition());
+        }
+        if (this->explosion2 != nullptr)
+            this->explosion2->update(this->shakeIntensity, this->geometry->getPosition());
+        this->explosionTimer += this->shakeIntensity;
+    }
+    if (this->turretMode) {
+        this->turretRoot->setMatrix(*(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
+                                    * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform));
+    }
 }
 
 void PlayerEgo::setTurretPosition(Vector v) {
@@ -2869,7 +3536,7 @@ void PlayerEgo::stopBoost() {
 void PlayerEgo::setShip(int race, int group) {
     this->field_0x4 = Globals::globals->getShipGroup(race, group, true);
     AbyssEngine::Mesh *mesh = Globals::Canvas->MeshGetPointer(this->field_0x4->meshId);
-    this->field_0x394 = ((PE_MaterialBlock *) mesh->material)->materialList;
+    this->originalBlendMode = ((AbyssEngine::Material *) mesh->material)->blendMode;
 
     this->geometry = new AEGeometry(Globals::Canvas);
     this->geometry->addChild(this->field_0x4->transform);

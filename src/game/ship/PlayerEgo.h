@@ -221,6 +221,7 @@ public:
     AbyssEngine::AEMath::Vector emergencyVec;
     float emergencyVal2;
     uint8_t autoLevel;
+    uint8_t field_0x325;
     int hitShakeTimer;
     uint8_t hitShake;
     uint8_t field_0x32d;
@@ -253,7 +254,7 @@ public:
     uint32_t cloakMaterial1;    // 0x388
     uint32_t cloakMaterial2;    // 0x38c
     uint32_t cloakMaterial3;    // 0x390
-    unsigned char *field_0x394;
+    int originalBlendMode;
     uint8_t volatileGoods;
     uint8_t field_0x399;
     uint8_t field_0x39a;
@@ -475,7 +476,7 @@ public:
 
     unsigned char lostMiningGame();
 
-    void moveToPosition(AbyssEngine::AEMath::Vector target, bool steer, float speed);
+    float moveToPosition(AbyssEngine::AEMath::Vector target, bool steer, float speed);
 
     void pitchAllPrimaryGuns(float);
 
@@ -587,7 +588,8 @@ public:
 
     void up(int frameTime, float delta);
 
-    void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6, int arg7);
+    void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool mouseLocked,
+                int controlMode);
 
     int updateManeuver();
 
@@ -629,7 +631,7 @@ static_assert(__builtin_offsetof(PlayerEgo, rolling) == 0x2f4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2f5) == 0x2f5, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x309) == 0x309, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x32d) == 0x32d, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x394) == 0x394, "");
+static_assert(__builtin_offsetof(PlayerEgo, originalBlendMode) == 0x394, "");
 // Relocated matrices and the field immediately after the last drift field, to pin the tail.
 static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x40, "");
 static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x2ac, "");
